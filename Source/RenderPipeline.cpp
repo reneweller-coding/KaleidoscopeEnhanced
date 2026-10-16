@@ -148,7 +148,7 @@ void RenderPipeline::loadSettings()
             M_Marked.insert( k );
     s.endGroup();
 
-    // Cue memory: [cues] <track>/<sekunde> = <Szene>.  A favourite pressed while
+    // Cue memory: [cues] <track>/<second> = <scene>.  A favourite pressed while
     // a track is identified remembers WHERE it was pressed; the next time the
     // same track reaches that point, that scene comes back.  The visualiser
     // learns a favourite picture per song, one press at a time.
@@ -338,12 +338,12 @@ RenderPipeline::RenderPipeline()
       ,
       m_triggerImageload( false ),
       m_waitForImageToLoad( false )
-      // KALEIDO_TIME_START setzt die Uhr vor, mit der jeder Shader rechnet.
-      // Ohne das laesst sich "haelt die Szene nach einer Stunde noch?" nur
-      // pruefen, indem man eine Stunde wartet -- und genau diese Frage hat
-      // eine ganze Klasse leerer Szenen versteckt: wer die Kamera mit
-      // time*k vorwaerts schiebt, ohne dass die Geometrie das mitmacht,
-      // fliegt irgendwann aus seiner eigenen Welt heraus.
+      // KALEIDO_TIME_START sets forward the clock every shader computes with.
+      // Without it, "does the scene still hold after an hour?" can only be
+      // checked by waiting an hour -- and exactly that question hid a whole
+      // class of empty scenes: whoever pushes the camera forward with time*k
+      // without the geometry keeping up flies out of its own world at some
+      // point.
       ,
       m_globaltime( static_cast<double>( qEnvironmentVariableIntValue( "KALEIDO_TIME_START" ) ) ),
       m_nanotimer(),
@@ -821,7 +821,7 @@ void RenderPipeline::resize( int width, int height )
     }
     glBindTexture( GL_TEXTURE_2D, 0 );
 
-    // Final-(Present)- und Bloom-Texturen zieht der PresentPass nach.
+    // The PresentPass resizes the final (present) and bloom textures.
     m_present.resize( m_width, m_height, m_texInternalFormat, m_texFormat, m_texType );
 
     // Resize the feedback/trail ping-pong textures.
@@ -845,7 +845,7 @@ void RenderPipeline::resize( int width, int height )
 // false and paint() falls back to drawing the combine result straight to screen.
 void RenderPipeline::setupSafety()
 {
-    // Finaler FBO, Present-Programm und Bloom: alles im PresentPass.
+    // Final FBO, present program and bloom: all in the PresentPass.
     m_present.setup( m_width, m_height, m_texInternalFormat, m_texFormat, m_texType );
 
     // ---- Feedback / trails ping-pong buffers (mipmapped: present reads them) ----
@@ -923,15 +923,14 @@ void RenderPipeline::setupSafety()
 // halo keeps the text readable over any content.
 void RenderPipeline::showTitle( const QString &title, const QString &artist )
 {
-    // 2x Auflösung ggü. dem ursprünglichen 1024x256 (gleiches Seitenverhältnis
-    // 4:1, alle Maße/Schriftgrade proportional mitskaliert): mehrere Einflug-
-    // Stile vergrößern die Textur beim Reveal bis auf das ~3.5-fache (z.B.
-    // "zoom-through"), und der gemeinsame Ausklang aller Stile ("wächst sanft
-    // dem Betrachter entgegen") vergrößert zusätzlich bis 1.55x - bei der alten
-    // Auflösung wurde dabei das Texel-Raster sichtbar (verpixelter Text, je
-    // nach Stil unterschiedlich stark, wegen des gemeinsamen Ausklangs aber
-    // IMMER auch am Ende jedes Reveals). Kostet nichts an Laufzeit: wird nur
-    // einmal pro Trackwechsel gerendert.
+    // 2x the resolution of the original 1024x256 (same 4:1 aspect, all
+    // dimensions/font sizes scaled along): several fly-in styles enlarge the
+    // texture up to ~3.5x during the reveal (e.g. "zoom-through"), and the
+    // common ending of all styles ("grows gently towards the viewer")
+    // enlarges by up to 1.55x on top - at the old resolution the texel grid
+    // became visible (pixelated text, more or less depending on the style,
+    // but ALWAYS at the end of every reveal because of the common ending).
+    // Costs nothing at run time: rendered only once per track change.
     const float S = 2.0f;
     const int   W = static_cast<int>( 1024 * S ), H = static_cast<int>( 256 * S );
     QImage      img( W, H, QImage::Format_ARGB32 );
@@ -1314,9 +1313,9 @@ void RenderPipeline::favoriteCurrentEffect()
  * @return
  *   Lower-cased key with every non-alphanumeric character replaced by '_', truncated to 96 characters.
  *
- * Settings-Schluessel duerfen keine beliebigen Zeichen tragen: "artist|title"
- * wird auf [a-z0-9_] reduziert.  Kollisionen zweier Titel sind damit denkbar,
- * aber ein Cue am falschen Song ist ein falsches Bild, kein Absturz.
+ * Settings keys must not carry arbitrary characters: "artist|title" is
+ * reduced to [a-z0-9_].  Collisions of two titles are thus possible, but a
+ * cue on the wrong song is a wrong picture, not a crash.
  **/
 static QString cueKey( const QString &trackKey )
 {
@@ -1839,9 +1838,9 @@ SceneScheduler::Tick RenderPipeline::buildSchedulerTick( const AudioFeatures &au
 {
     /*********************** Szenen-Wahl: SceneScheduler ***********************/
 
-    // Trigger (Novelty/Section/Drop, Pin) + Effekt-Zustandsmaschine.  Der
-    // Combine-Teil (tickFx) laeuft weiter NACH den Effekt-Passes, weil
-    // erst dort m_trueStereoHold entsteht.
+    // Triggers (novelty/section/drop, pin) + the effect state machine.  The
+    // combine part (tickFx) still runs AFTER the effect passes, because
+    // m_trueStereoHold only arises there.
     SceneScheduler::Tick sched_tick;
     sched_tick.dt = timeSinceLastFrameSec;
     sched_tick.downbeatTick = m_audioConditioner.downbeatTick();
@@ -1878,10 +1877,10 @@ SceneScheduler::Tick RenderPipeline::buildSchedulerTick( const AudioFeatures &au
 void RenderPipeline::stepSimulations( const AudioFeatures &audio, float timeSinceLastFrameSec,
                                       const AudioFeatures &audioFx )
 {
-    // GPU-/Host-Simulationen (GpuSims): Bedarf ermitteln (nur steppen, was
-    // ein sichtbarer Effekt wirklich sampelt - der aktive oder, während einer
-    // Überblendung, der einblendende), Frame-Kontext übergeben, laufen lassen.
-    // GpuSims bindet die neuesten Felder auf die globalen Units 7-11/28.
+    // GPU/host simulations (GpuSims): determine the demand (step only what a
+    // visible effect really samples - the active one or, during a cross-fade,
+    // the incoming one), hand over the frame context, let them run.  GpuSims
+    // binds the newest fields to the global units 7-11/28.
     {
         EffectShader   *akt_e = m_effectTextures[m_scheduler.actTexture()];
         EffectShader   *nxt_e = m_effectTextures[m_scheduler.nextTexture()];
@@ -2132,11 +2131,11 @@ void RenderPipeline::renderActiveScenePass( const AudioFeatures &audioFx )
 
     // Transparent geometry goes in afterwards, over the opaque frame this scene
     // just produced and against the depth it just wrote.
-    // (b45cdff schob die Debug-Marke unter ein KLAMMERLOSES if und machte
-    // renderOitPass damit unbedingt: der Resolve band oitAccum/oitReveal auf
-    // die Foto-Units 0/1, und jede EINBLENDENDE Szene sampelte die OIT-Puffer
-    // statt der Fotos -- der "Helligkeitsabfall + Textur-Wechsel" am Ende
-    // jeder Szenen-Blende. Klammern + Rebind im Resolve, siehe dort.)
+    // (b45cdff pushed the debug marker under a BRACELESS if and thereby made
+    // renderOitPass unconditional: the resolve bound oitAccum/oitReveal to the
+    // photo units 0/1, and every INCOMING scene sampled the OIT buffers
+    // instead of the photos -- the "brightness drop + texture change" at the
+    // end of every scene fade.  Braces + a rebind in the resolve, see there.)
     if ( !m_trueStereoPacked && m_effectTextures[m_scheduler.actTexture()]->usesOit() )
     {
         glcoreDebugMark( "oit" );
@@ -2382,8 +2381,8 @@ void RenderPipeline::renderFinalBlend()
     glViewport( 0, 0, m_width, m_height );
 
 
-    glUniform1i( m_texPointFxUni1, 5 ); // texture Unit 0, nicht mit texId verwechseln
-    glUniform1i( m_texPointFxUni2, 6 ); // texture Unit 0, nicht mit texId verwechseln
+    glUniform1i( m_texPointFxUni1, 5 ); // texture unit 0, not to be confused with texId
+    glUniform1i( m_texPointFxUni2, 6 ); // texture unit 0, not to be confused with texId
     glUniform2f( m_texSizeRcpFxUni, static_cast<float>( m_width ), static_cast<float>( m_height ) );
     glUniform1f( m_interpolationFxUni, m_scheduler.fxInterp() );
     glUniform1f( m_timeFxUni, m_globaltime );
@@ -2624,9 +2623,9 @@ void RenderPipeline::runPresentPass( GLuint presentSource, const AudioFeatures &
         pin.lyricsScrollU = m_overlay.lyricsScrollU;
         pin.artistAlpha = m_overlay.artistAlpha;
         pin.artistAspect = m_overlay.artistAspect;
-        // Zeit-Regie: Rewind/Echo/Breath.  Das Zeitecho traeumt in Ambient-
-        // Passagen und blitzt nach einem Drop als Flashback auf; waehrend
-        // eines Rewinds pausiert es (History auf History waere Matsch).
+        // Time direction: rewind/echo/breath.  The time echo dreams in ambient
+        // passages and flashes up as a flashback after a drop; during a
+        // rewind it pauses (history on history would be mush).
         pin.rewindSecs = m_audioConditioner.rewindBack();
         pin.rewindMix = m_audioConditioner.rewindMix();
         pin.echoAmt = std::max( 0.50f * audioFx.dropPulse,
@@ -2657,9 +2656,9 @@ void RenderPipeline::runPresentPass( GLuint presentSource, const AudioFeatures &
                 pin.gradeAmtB = pin.gradeModeB > 0.f ? 1.f - w : 0.f;
             }
         }
-        // Welle 2: Letterbox, Schockwelle, Cover-Palette, Zeilen-Slam,
-        // 2.5D-Parallaxe (Tiefe der AKTIVEN Szene; eine 2D-Szene hat auf
-        // die Fernebene geloeschte Tiefe -> Parallaxe neutralisiert sich).
+        // Wave 2: letterbox, shockwave, cover palette, line slam, 2.5D
+        // parallax (depth of the ACTIVE scene; a 2D scene has its depth
+        // cleared to the far plane -> the parallax cancels out).
         pin.letterbox = m_audioConditioner.letterbox();
         pin.shockR = m_audioConditioner.shockR();
         pin.shockAmp = m_audioConditioner.shockAmp();
@@ -2704,10 +2703,11 @@ void RenderPipeline::paint( const float *rotMatrix, float tx, float ty, float tz
 
     const AudioFeatures audio_fx = conditionAudio( audio, time_since_last_frame_sec );
 
-    // KALEIDO_FEATURE_LOG=<datei>: eine CSV-Zeile je Frame mit den Groessen,
-    // an denen Regie-Entscheidungen haengen.  Ohne das liess sich "trifft die
-    // Drop-Vorhersage?" oder "folgt die Tonhoehe dem Bass?" nur aus dem Bild
-    // raten -- und das Bild ist die Wirkung, nicht die Ursache.
+    // KALEIDO_FEATURE_LOG=<file>: one CSV line per frame with the quantities
+    // the direction decisions depend on.  Without it, "does the drop
+    // prediction hit?" or "does the pitch follow the bass?" could only be
+    // guessed from the picture -- and the picture is the effect, not the
+    // cause.
     {
         static FILE *flog = []
         {

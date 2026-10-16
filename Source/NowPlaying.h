@@ -57,24 +57,23 @@ public:
      **/
     QString artist() const;
 
-    /** Playback-Zeitachse der SMTC-Session (für Lyrics-Sync).
+    /** Playback timeline of the SMTC session (for the lyrics sync).
      *
-     * Viele Player melden die Position nur alle paar Sekunden - positionNowSec()
-     * extrapoliert deshalb mit der lokalen Uhr, solange playing gilt.
+     * Many players report the position only every few seconds - positionNowSec()
+     * therefore extrapolates with the local clock while playing holds.
      **/
     struct Timeline
     {
-        double positionSec = -1.0; ///< Sekunden in den Track; <0 = unbekannt (noch nicht bestätigt, siehe
+        double positionSec = -1.0; ///< Seconds into the track; <0 = unknown (not confirmed yet, see
                                    ///< threadFunc()).
-        double durationSec = 0.0;  ///< Gesamtlänge des Tracks in Sekunden; 0 = unbekannt.
-        bool   playing = false;    ///< true, wenn die Session "Playing" meldet (nicht pausiert/gestoppt).
-        qint64 stampMs = 0; ///< Lokale Uhr (QDateTime::currentMSecsSinceEpoch) beim Erfassen dieser Momentaufnahme.
-        /** Extrapolations-RATE statt Positions-Sprüngen.
+        double durationSec = 0.0;  ///< Total length of the track in seconds; 0 = unknown.
+        bool   playing = false;    ///< true if the session reports "Playing" (not paused/stopped).
+        qint64 stampMs = 0;        ///< Local clock (QDateTime::currentMSecsSinceEpoch) when this snapshot was taken.
+        /** Extrapolation RATE instead of position jumps.
          *
-         * Abweichungen zwischen SMTC und eigener Hochrechnung werden als leicht veränderte
-         * Laufgeschwindigkeit ausgeglichen (Gleiten). Die veröffentlichte Position ist dadurch
-         * MONOTON - sie läuft nie rückwärts, was vorher Karaoke kurz in die Vorzeile flippen und
-         * den Scroll hüpfen ließ.
+         * Differences between SMTC and our own extrapolation are evened out as a slightly changed
+         * playing speed (gliding).  The published position is thus MONOTONIC - it never runs
+         * backwards, which used to flip karaoke briefly to the previous line and make the scroll hop.
          **/
         double rate = 1.0;
     };

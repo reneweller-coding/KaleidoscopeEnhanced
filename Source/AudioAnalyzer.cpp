@@ -689,12 +689,12 @@ void AudioAnalyzer::run()
     // and a drop-gate coin flip via rand() and runs entirely on THIS thread,
     // so without its own seed those two picks would replay identically on
     // every launch even after main()'s fix.
-    // KALEIDO_SEED pinnt den Zufall auf einen festen Wert.  Ohne das ist ein
-    // Vorher/Nachher-Vergleich zweier Laeufe wertlos: die Szenen wuerfeln ihre
-    // Parameter und Seeds pro Lauf neu, und unveraenderte Kontrollszenen
-    // schwankten in der Messung um den Faktor zwei -- mehr als die Wirkung,
-    // die belegt werden sollte.  Nur fuer Messlaeufe gedacht, im Betrieb nicht
-    // gesetzt und damit weiterhin uhrgeseedet.
+    // KALEIDO_SEED pins the randomness to a fixed value.  Without it a
+    // before/after comparison of two runs is worthless: the scenes roll their
+    // parameters and seeds anew per run, and unchanged control scenes varied
+    // by a factor of two in the measurement -- more than the effect that was
+    // to be shown.  Meant for measurement runs only; not set in normal use,
+    // which therefore stays seeded from the clock.
     {
         const char *seed_env = getenv( "KALEIDO_SEED" );
         srand( seed_env ? static_cast<unsigned>( strtoul( seed_env, nullptr, 10 ) )

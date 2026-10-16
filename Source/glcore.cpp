@@ -429,9 +429,9 @@ int glcoreInit( void )
     // instances="N" need it, and Scene3DShader falls back to a plain
     // glDrawArrays when the pointer is null.
     GLC_LOAD_OPT( glDrawArraysInstanced )
-    // Occlusion queries -- nur fuer die Abdeckungsmessung
-    // (KALEIDO_COVER_LOG).  Optional: ohne sie laeuft alles weiter,
-    // nur die Messung entfaellt.
+    // Occlusion queries -- only for the coverage measurement
+    // (KALEIDO_COVER_LOG).  Optional: without them everything keeps running,
+    // only the measurement is dropped.
     GLC_LOAD_OPT( glGenQueries )
     GLC_LOAD_OPT( glDeleteQueries )
     GLC_LOAD_OPT( glBeginQuery )
@@ -442,7 +442,7 @@ int glcoreInit( void )
     GLC_LOAD_OPT( glBlendFunci )
     GLC_LOAD_OPT( glDrawBuffers )
     GLC_LOAD_OPT( glClearBufferfv )
-    // Frame-History-Ring (optional: ohne sie bleiben Echo/Rewind einfach aus)
+    // Frame history ring (optional: without these, echo/rewind simply stay off)
     GLC_LOAD_OPT( glTexImage3D )
     GLC_LOAD_OPT( glFramebufferTextureLayer )
     GLC_LOAD_OPT( glBlitFramebuffer )

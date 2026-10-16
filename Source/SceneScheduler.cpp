@@ -107,8 +107,8 @@ static bool baseLess( const char *a, const char *b )
  **/
 void SceneScheduler::reset()
 {
-    // Initiale Zufallswahl - exakt der alte start()-Block (inkl. der etwas
-    // anderen Komplexitätsbudgets 12 bzw. 20 der Erst-Wahl).
+    // Initial random pick - exactly the old start() block (including the
+    // slightly different complexity budgets 12 and 20 of the first pick).
     for ( unsigned int i = 0; i < MaxSearch; ++i )
     {
         m_actTexture = rand() % m_textures->size();
@@ -177,8 +177,8 @@ void SceneScheduler::reset()
     restart( m_clockEffectFx );
 }
 
-// Remote-Szenen-Browser: DIREKT zu Szene idx springen (gleicher Sofort-Pfad
-// wie ein manueller 'n'-Cut, aber mit gewähltem Ziel statt Zufalls-Roll).
+// Remote scene browser: jump DIRECTLY to scene idx (the same immediate path
+// as a manual 'n' cut, but with a chosen target instead of a random roll).
 /**  Jump directly to effect index @p idx (remote scene browser).
  *
  * Takes the same immediate path as a manual 'n' cut (forceEffectChange).
@@ -340,11 +340,11 @@ void SceneScheduler::noteTextureShown( unsigned int idx )
         m_recentTex.erase( m_recentTex.begin() );
 }
 
-// Mood-basierter Auswahl-Bias - zwei Komponenten:
-//   1. Busyness: Shader-Komplexität soll grob zum Arousal passen.
-//   2. Mood-TAGS (config mood="dark,bright,calm,aggressive"): Bonus bei
-//      Übereinstimmung, Malus bei klarem Widerspruch; ungetaggte bleiben
-//      neutral.  Probabilistisch - ein Bias, kein harter Filter.
+// Mood-based selection bias - two components:
+//   1. Busyness: the shader's complexity should roughly match the arousal.
+//   2. Mood TAGS (config mood="dark,bright,calm,aggressive"): bonus on a
+//      match, malus on a clear contradiction; untagged shaders stay
+//      neutral.  Probabilistic - a bias, not a hard filter.
 /**  Probabilistic mood-based accept test for a selection candidate.
  *
  * Combines three signals into an acceptance probability, then rolls a
@@ -364,7 +364,7 @@ bool SceneScheduler::moodAccept( EffectShader *s ) const
     float diff = fabsf( static_cast<float>( s->getComplexity() ) - target ) / 9.f;
     float accept = 1.f - 0.6f * diff; // closer match -> likelier
 
-    // Learned taste (skip-malus / favourite-bonus, persistent beim Aufrufer).
+    // Learned taste (skip-malus / favourite-bonus, persisted by the caller).
     accept *= tasteOf( s->fragmentName() );
 
     unsigned int f = s->moodFlags();
@@ -438,24 +438,25 @@ void SceneScheduler::tick( const Tick &t )
             m_forceEffectChange = true;
         m_noveltyCooldown = 8.0f; // at most one musical cut every ~8 s
     }
-    // REGIE: den Bogen auf den Drop legen.  Steigt die Spannung (buildUp
-    // ueber 0.45, steigende Flanke) und laeuft gerade eine INSZENIERTE Szene
-    // (sceneProgress / rig-progress), wird ihr Fortschritt so gebogen, dass
-    // der Hoehepunkt auf der naechsten 8-Takt-Grenze landet -- dort faellt
-    // in Tanzmusik der Drop.  Assemblys letztes Stueck setzt sich dann auf
-    // dem Schlag, statt irgendwann.  Stetig (kein Ruecksprung), nur wenn die
-    // Vorhersage in 4..45 s liegt, hoechstens alle 20 s.
+    // DIRECTION: lay the arc onto the drop.  When the tension rises (buildUp
+    // above 0.45, rising edge) and a STAGED scene is running (sceneProgress /
+    // rig progress), its progress is bent so that the climax lands on the
+    // next 8-bar boundary -- that is where the drop falls in dance music.
+    // An assembly's last piece then settles on the beat instead of at some
+    // point.  Continuous (no jump back), only when the prediction lies in
+    // 4..45 s, at most every 20 s.
     m_arcCooldown -= t.dt;
     m_regieWarm += t.dt;
-    // Nach einem Drop kommt der Groove zurueck, und der Analyzer liest genau
-    // diese Rueckkehr als Aufbau (Flanken 238/243 s hinter einem Sprung bei
-    // 222 s auf DMT).  Ein Bogen fuer einen Drop, der schon vorbei ist, ist
-    // keiner: 15 s Ruhe nach jedem Drop.
+    // After a drop the groove comes back, and the analyzer reads exactly that
+    // return as a build-up (edges at 238/243 s after a jump at 222 s on DMT).
+    // An arc for a drop that is already over is none: 15 s of rest after
+    // every drop.
     if ( t.dropCount != m_lastDropCount )
         m_arcCooldown = ( m_arcCooldown > 15.f ) ? m_arcCooldown : 15.f;
-    // Die ersten 20 s liest der Analyzer JEDEN Groove als Aufbau (seine
-    // 10-s-Baselines klettern noch: buildUp 0,67 im Intro, 0,43 im echten
-    // Aufbau).  Der Analyzer selbst schont sein Drop-Arming genauso.
+    // For the first 20 s the analyzer reads EVERY groove as a build-up (its
+    // 10 s baselines are still climbing: buildUp 0.67 in the intro, 0.43 in
+    // the real build-up).  The analyzer itself spares its drop arming the
+    // same way.
     if ( !m_reviewMode && m_regieWarm > 20.f && t.buildUp > 0.45f && m_buildUpPrev <= 0.45f
          && m_arcCooldown <= 0.f && t.phraseSecsLeft >= 4.f && t.phraseSecsLeft <= 45.f
          && m_actTexture < tex.size() && tex[m_actTexture]->usesProgress() )
@@ -467,10 +468,10 @@ void SceneScheduler::tick( const Tick &t )
     }
     m_buildUpPrev = t.buildUp;
 
-    // SECTION change (Strophe -> Refrain -> Bridge) + Song-Struktur-Gedächtnis:
-    // eine WIEDERKEHRENDE Section (Refrain #2 = Refrain #1) spielt Shader,
-    // Combine und exakte Parameter von damals; eine NEUE rollt frisch und ihr
-    // Look wird nach dem Wechsel unter der id gespeichert.
+    // SECTION change (verse -> chorus -> bridge) + song-structure memory: a
+    // RECURRING section (chorus #2 = chorus #1) plays the shader, combine and
+    // exact parameters of back then; a NEW one rolls fresh and its look is
+    // stored under the id after the change.
     if ( !m_reviewMode && t.sectionCount == m_lastSectionCount + 1 )
     {
         int  id = t.sectionId;
@@ -490,11 +491,11 @@ void SceneScheduler::tick( const Tick &t )
                  known ? "replay" : "fresh roll" );
         if ( known && it->second == m_actTexture )
         {
-            // Der richtige Shader ist bereits auf dem Schirm.  Frueher wurden
-            // hier SOFORT die gespeicherten Parameter draufgesetzt - ein
-            // harter, unueberblendeter Sprung auf einen komplett anderen Look
-            // mitten im laufenden Bild.  Visuelle Kontinuitaet schlaegt
-            // Replay-Treue: der aktuelle Look bleibt einfach stehen.
+            // The right shader is already on screen.  Formerly the stored
+            // parameters were applied here AT ONCE - a hard, unblended jump
+            // to a completely different look in the middle of the running
+            // picture.  Visual continuity beats replay fidelity: the current
+            // look simply stays.
         }
         else
         {
@@ -684,9 +685,9 @@ void SceneScheduler::tick( const Tick &t )
                         if ( zoom >= 0 )
                             m_actTransition = static_cast<unsigned int>( zoom );
                     }
-                    // Dev-Haken: KALEIDO_TRANS_STYLE erzwingt einen Uebergang
-                    // (Proben einzelner Uebergaenge ohne Wuerfel-Glueck) -
-                    // Dateiname ("Shatter.frag") oder Listen-Index.
+                    // Dev hook: KALEIDO_TRANS_STYLE forces a transition (probes
+                    // of single transitions without luck of the dice) - a
+                    // file name ("Shatter.frag") or a list index.
                     if ( const char *fs = getenv( "KALEIDO_TRANS_STYLE" ) )
                     {
                         int idx = findTransition( fs );
@@ -748,10 +749,11 @@ void SceneScheduler::tick( const Tick &t )
                                  m_texFadeDur, cfg_t, floor_t );
                 }
 
-                // Drop-Dramaturgie: der Wechsel kam von einem erkannten DROP.
-                // Musikvideo-Schnitt statt Dissolve - haelfte hart (2-3 Frames),
-                // haelfte als Shatter (die alte Szene zerbirst auf den Hit).
-                // NACH der Dauer-Berechnung, damit nichts sie ueberschreibt.
+                // Drop dramaturgy: the change came from a detected DROP.  A
+                // music-video cut instead of a dissolve - half hard (2-3
+                // frames), half as a shatter (the old scene bursts on the
+                // hit).  AFTER the duration computation, so nothing
+                // overwrites it.
                 if ( m_dropCutPending && !m_reviewMode && m_sceneFadeMin > 0.f )
                     m_dropCutPending = false; // a calm preset never snaps on a drop
                 if ( m_dropCutPending && !m_reviewMode )
@@ -773,14 +775,13 @@ void SceneScheduler::tick( const Tick &t )
 
                 tex[m_nextTexture]->startInterpolators();
 
-                // Song-Struktur-Gedaechtnis: die gespeicherten Parameter der
-                // wiederkehrenden Section JETZT setzen - der Effekt blendet
-                // dann bereits MIT dem gespeicherten Look ein.  (Frueher
-                // passierte das erst am FADE-ENDE: die Szene blendete mit
-                // frisch gewuerfelten Parametern ein und sprang im Moment des
-                // Abschlusses hart auf den gespeicherten Look um - der vom
-                // User gemeldete "Sprung zu einem komplett anderen Bild
-                // direkt nach dem Szenenwechsel".)
+                // Song-structure memory: set the stored parameters of the
+                // recurring section NOW - the effect then already fades in
+                // WITH the stored look.  (Formerly this happened only at the
+                // END OF THE FADE: the scene faded in with freshly rolled
+                // parameters and jumped hard to the stored look at the moment
+                // of completion - the "jump to a completely different picture
+                // right after the scene change" the user reported.)
                 if ( m_pendingSectionRestore >= 0 )
                 {
                     auto ip = m_sectionParams.find( m_pendingSectionRestore );
@@ -793,7 +794,7 @@ void SceneScheduler::tick( const Tick &t )
             }
         }
     }
-    // ---- Effekt-Zustandsmaschine: Fade läuft ----
+    // ---- Effect state machine: fade running ----
     else
     {
         float ts = secsSince( m_clockEffectTexture );
@@ -808,11 +809,11 @@ void SceneScheduler::tick( const Tick &t )
             m_actTexture = m_nextTexture;
             noteTextureShown( m_actTexture );
 
-            // Song-Struktur-Gedaechtnis: das RESTORE passiert inzwischen am
-            // FADE-START (s.o., der Effekt blendet mit dem gespeicherten Look
-            // ein); hier am Abschluss wird nur noch der Look einer NEUEN
-            // Section gespeichert (dafuer muessen die finalen Parameter
-            // feststehen - Fade-Ende ist der richtige Moment).
+            // Song-structure memory: the RESTORE now happens at the START OF
+            // THE FADE (see above, the effect fades in with the stored look);
+            // here at completion only the look of a NEW section is stored
+            // (the final parameters must be settled for that - the end of
+            // the fade is the right moment).
             if ( m_pendingSectionStore >= 0 )
             {
                 m_sectionEffect[m_pendingSectionStore] = m_actTexture;
@@ -824,7 +825,7 @@ void SceneScheduler::tick( const Tick &t )
                 m_pendingSectionStore = -1;
             }
 
-            // Remote-Direktsprung gewinnt gegen ALLES (auch Review).
+            // A remote direct jump wins over EVERYTHING (review too).
             if ( m_forcedNextTexture >= 0
                  && m_forcedNextTexture < static_cast<int>( tex.size() ) )
             {
@@ -880,13 +881,13 @@ void SceneScheduler::tick( const Tick &t )
                     // search is running dry (a small preset, a narrow filter).
                     if ( i < MaxSearch * 2 / 3 && isRecentTexture( m_nextTexture ) )
                         continue;
-                    // Keine Vorliebe fuer INSZENIERTE Szenen (sceneProgress) bei
-                    // steigender Spannung mehr (29.09.2026).  Die Regel sollte deren
-                    // Hoehepunkt auf den Drop legen, zog aber genau die Szenen nach
-                    // vorn, die im Programm eher die ruhigen, langweiligen sind --
-                    // 51 % aller Wechsel bei 12 % des Katalogs.  Laeuft zufaellig
-                    // eine inszenierte Szene, biegt setClimaxIn() ihren Bogen
-                    // weiterhin auf den Drop; ausgesucht wird sie dafuer nicht.
+                    // No more preference for STAGED scenes (sceneProgress) when
+                    // the tension rises (29.09.2026).  The rule was meant to lay
+                    // their climax onto the drop, but pulled forward exactly the
+                    // scenes that tend to be the calm, boring ones in the
+                    // programme -- 51 % of all changes for 12 % of the catalogue.
+                    // If a staged scene happens to be running, setClimaxIn()
+                    // still bends its arc onto the drop; it is not picked for it.
                     if ( m_nextTexture != m_actTexture
                          && ( ( tex[m_actTexture]->getComplexity() + tex[m_nextTexture]->getComplexity()
                                 + comb[m_actFx]->getComplexity() + comb[m_nextFx]->getComplexity() )
@@ -987,7 +988,7 @@ void SceneScheduler::tickFx( const Tick &t, bool trueStereoHold )
             }
         }
     }
-    // ---- Combine-Zustandsmaschine: Fade läuft ----
+    // ---- Combine state machine: fade running ----
     else
     {
         float ts = secsSince( m_clockEffectFx );
@@ -1076,7 +1077,7 @@ void SceneScheduler::tickFx( const Tick &t, bool trueStereoHold )
                             }
                         }
                     }
-                } // Ende: keine erzwungene FX-Wahl
+                } // end: no forced FX choice
             }
 
             m_fxInterp = 1.0;

@@ -15,37 +15,37 @@
 #ifndef RECORDER_H
 #define RECORDER_H
 
-// Video-Recorder + Instant-Replay, herausgelöst aus GLwidget (2026-08-14).
+// Video recorder + instant replay, split out of GLwidget (2026-08-14).
 //
-// Zwei Betriebsarten mit getrennten Ausgabewegen:
-//   RECORDING  (Taste 'r'): ~30 fps als ROHE RGBA-Frames in eine laufende
-//              ffmpeg-Instanz (recordings/rec_*/video.mp4), am Ende mit dem
-//              Audio-WAV zu kaleidoscope.mp4 gemuxt — das Video wird dabei
-//              nur KOPIERT, nicht neu kodiert.
-//   REPLAY     (Taste 'y' scharf, 'x' speichert): rollender ~30-s-Ring aus
-//              JPEG-Frames im RAM (~15 fps) + PCM-Ring des Analyzers.
+// Two modes with separate output paths:
+//   RECORDING  (key 'r'): ~30 fps as RAW RGBA frames into a running ffmpeg
+//              instance (recordings/rec_*/video.mp4), muxed with the audio
+//              WAV into kaleidoscope.mp4 at the end — the video is only
+//              COPIED then, not encoded again.
+//   REPLAY     (key 'y' arms, 'x' saves): a rolling ~30 s ring of JPEG frames
+//              in RAM (~15 fps) + the analyzer's PCM ring.
 //
-// Warum roh: früher wurde jeder Frame ZWEIMAL kodiert — hier per CPU zu JPEG,
-// danach dekodierte ffmpeg alle wieder, um daraus h264 zu machen — und alles
-// über 720 px wurde vorher weggeworfen. Der JPEG-Pool (bis zu 6 Threads)
-// existierte nur, um diese Stufe überhaupt bei 30 fps zu halten. Jetzt schafft
-// EIN Schreib-Thread 30 fps bei voller Auflösung, weil er nur noch spiegelt
-// und in eine Pipe schreibt. Der Pool bedient weiterhin den Replay-Ring und
-// den Rückfallweg, falls ffmpeg nicht startet.
+// Why raw: formerly every frame was encoded TWICE — here to JPEG by the CPU,
+// then ffmpeg decoded them all again to make h264 of them — and everything
+// above 720 px was thrown away first.  The JPEG pool (up to 6 threads)
+// existed only to keep that stage at 30 fps at all.  Now ONE writer thread
+// manages 30 fps at full resolution, because it only mirrors and writes into
+// a pipe.  The pool still serves the replay ring and the fallback path in
+// case ffmpeg does not start.
 //
-// GPU-seitig läuft die Erfassung über einen doppelt gepufferten PBO-Readback:
-// glReadPixels in ein Pixel-Pack-Buffer kehrt sofort zurück; konsumiert wird
-// der Puffer des VORHERIGEN Frames, dessen DMA längst fertig ist. Ein Frame
-// Latenz, kein GPU→CPU-Stall. Begrenzte Queues droppen Frames statt Speicher
-// aufzublähen — die verlorene Zeit wandert als Carry in die Dauer des nächsten
-// Frames, und der Pipe-Schreiber rechnet gemessene Dauern in ganze Frames bei
-// fester Bildrate um, sodass die Ausgabe CFR ist und trotzdem genau so lange
-// dauert wie die Aufnahme.
+// On the GPU side the capture runs through a double-buffered PBO readback:
+// glReadPixels into a pixel pack buffer returns at once; consumed is the
+// buffer of the PREVIOUS frame, whose DMA finished long ago.  One frame of
+// latency, no GPU->CPU stall.  Bounded queues drop frames instead of
+// bloating memory — the lost time moves as a carry into the duration of the
+// next frame, and the pipe writer converts measured durations into whole
+// frames at a fixed frame rate, so that the output is CFR and still lasts
+// exactly as long as the recording.
 //
-// Threading-Vertrag: alle public-Methoden werden vom GL-/GUI-Thread gerufen;
-// captureIfDue() braucht einen aktuellen GL-Kontext. Der Pool fasst nur Queue
-// + Replay-Ring an, der Pipe-Thread nur seine eigene Queue und den ffmpeg-
-// Prozess (QProcess ist nicht thread-sicher — er gehört diesem Thread allein).
+// Threading contract: all public methods are called from the GL/GUI thread;
+// captureIfDue() needs a current GL context.  The pool touches only the
+// queue + replay ring, the pipe thread only its own queue and the ffmpeg
+// process (QProcess is not thread-safe — it belongs to this thread alone).
 
 #include <thread>
 #include <mutex>
@@ -84,22 +84,15 @@ class Recorder
 {
 public:
     Recorder();
-    /**  Only joins the worker thread now; call shutdown() beforehand to finalise a live recording (joint nur noch den
-     * Worker; shutdown() vorher rufen!).
-     **/
+    /** Only joins the worker thread now; call shutdown() beforehand to finalise a live recording. */
     ~Recorder();
 
-    /** Der Analyzer liefert das Audio (WAV-Mitschnitt bzw. Replay-PCM-Ring).
-     *  nullptr ist erlaubt — dann entstehen stumme Videos. */
     /**  Set the audio source used for the recording WAV and the replay PCM ring.
      *
      * @param a  Analyzer to pull audio from; nullptr is allowed and yields silent videos. (in)
      **/
     void setAudioAnalyzer( AudioAnalyzer *a ) { m_audio = a; }
 
-    /** VOR dem Löschen des AudioAnalyzers rufen (z.B. im ~GLwidget-Rumpf):
-     *  finalisiert eine laufende Aufnahme (Drain + Mux) und vergisst den
-     *  Analyzer — der Destruktor fasst ihn danach nicht mehr an. */
     /**  Finalise any in-progress recording (drain the worker + start the ffmpeg mux) and forget the audio analyzer.
      *
      * Must be called before the AudioAnalyzer is destroyed (e.g. in the body
@@ -107,7 +100,7 @@ public:
      **/
     void shutdown();
 
-    // ---- Recording (Taste 'r' / CLI -r / Batch-Ende) ----
+    // ---- Recording (key 'r' / CLI -r / end of a batch) ----
     /**  Toggle recording on/off: starts a new timestamped recordings/rec_* directory and worker, or stops and
      * finalises the current one.
      **/
@@ -139,9 +132,6 @@ public:
      **/
     void saveReplay();
 
-    /** Pro Frame rufen (GL-Kontext aktuell, Bild fertig gerendert, noch ohne
-     *  Overlays). Erfasst je nach Modus mit ~30 bzw. ~15 fps; w/h = physische
-     *  Framebuffer-Größe. */
     /**  Capture the current framebuffer if the active mode's frame interval has elapsed.
      *
      * @param w  Physical framebuffer width in pixels. (in)
@@ -227,7 +217,7 @@ private:
     QElapsedTimer m_clock; ///< Recorder's own monotonic clock, started in the constructor; only deltas are ever used
                            ///< (via nowMs()) for frame pacing and durations.
 
-    // Recording-Zustand
+    // Recording state
     bool    m_recording = false; ///< True while a full recording is in progress.
     QString m_recDir;            ///< Output directory for the current/last recording (recordings/rec_*).
     int     m_recFrame = 0;      ///< Number of recording frames written so far.
@@ -340,7 +330,7 @@ private:
     int m_mbW = 0, m_mbH = 0; ///< Height in pixels the blur targets were allocated for.
     int m_mbCount = 0;        ///< Frames summed since the last capture; the divisor is this MEASURED count.
 
-    // PBO-Doppelpuffer für den asynchronen Readback
+    // PBO double buffer for the asynchronous readback
     GLuint m_pbo[2] = { 0, 0 }; ///< Double-buffered pixel-pack buffer objects for async glReadPixels.
     int    m_pboIdx = 0;        ///< Index of the PBO slot used for THIS frame's readback (the other slot is consumed).
     /** Bookkeeping for one PBO slot's in-flight readback. */

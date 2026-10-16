@@ -23,8 +23,8 @@
 #include <QtCore/QSettings>
 #include <QtCore/QStringList>
 
-#include "glcore.h"       // Core-Profile-Einsprungpunkte (PBO-Funktionen)
-#include "shader_setup.h" // setShaders() fuer den Akkumulations-Pass
+#include "glcore.h"       // core-profile entry points (PBO functions)
+#include "shader_setup.h" // setShaders() for the accumulation pass
 #include "Recorder.h"
 #include "PlatformQt.h"
 #include "AudioAnalyzer.h"
@@ -348,8 +348,8 @@ Recorder::Recorder()
 
 Recorder::~Recorder()
 {
-    // shutdown() sollte vorher gelaufen sein (finalisiert mit lebendem
-    // AudioAnalyzer). Falls nicht: wenigstens den Worker sauber beenden.
+    // shutdown() should have run before (it finalises with a live
+    // AudioAnalyzer).  If not: at least stop the worker cleanly.
     shutdown();
 }
 
@@ -428,7 +428,7 @@ void Recorder::toggle()
             m_audio->startRecording( m_recDir + "/audio.wav" );
         // Encoder-Worker starten (EIN Thread -> Frames bleiben in Reihenfolge).
         ensureWorker();
-        warmVideoEncoderProbe(); // Codec-Probe jetzt, nicht erst beim Stoppen
+        warmVideoEncoderProbe(); // codec probe now, not only when stopping
 
         {
             QSettings st( Platform::assetPath( "..\\kaleidoscope_settings.ini" ), QSettings::IniFormat );
@@ -436,7 +436,7 @@ void Recorder::toggle()
         }
         m_mbCount = 0;
 
-        // Raw-Pipe-Schreiber: nimmt ab jetzt die Aufnahme-Frames entgegen.
+        // Raw pipe writer: takes the recording frames from now on.
         m_pipeQuit = false;
         m_pipeFallback = false;
         m_pipeW = m_pipeH = 0;
@@ -451,7 +451,7 @@ void Recorder::toggle()
     {
         m_recording = false;
         finishRecording();
-        // Der Worker bedient auch den Replay-Ring — bei Bedarf neu starten.
+        // The worker serves the replay ring too — restart it if needed.
         if ( m_replayArmed )
             ensureWorker();
     }
@@ -469,7 +469,7 @@ void Recorder::toggleReplayArm()
     if ( m_replayArmed )
     {
         ensureWorker();
-        warmVideoEncoderProbe(); // ein Replay-Save muxt ebenfalls
+        warmVideoEncoderProbe(); // a replay save muxes too
         m_repLastFrame = 0;
     }
     fprintf( stderr, "Instant-Replay-Puffer: %s\n", m_replayArmed ? "AN" : "AUS" );
@@ -640,8 +640,8 @@ void Recorder::resolveBlur( int w, int h )
     glBindFramebuffer( GL_READ_FRAMEBUFFER, m_mbResolveFbo );
 }
 
-// Encoder-Worker: spiegelt, skaliert und JPEG-encodiert die Frames abseits
-// des GL-Threads, damit die Aufnahme das Rendern nicht mehr ausbremst.
+// Encoder worker: mirrors, scales and JPEG-encodes the frames away from the
+// GL thread, so that recording no longer slows the rendering down.
 /**  Encoder worker thread loop.
  *
  * Waits on m_cv for either a queued job or a quit request; on quit it still
@@ -666,7 +666,7 @@ void Recorder::worker()
             if ( m_queue.empty() )
             {
                 if ( m_quit )
-                    return; // erst beenden, wenn alles geschrieben ist
+                    return; // stop only once everything is written
                 continue;
             }
             job = std::move( m_queue.front() );
@@ -677,7 +677,7 @@ void Recorder::worker()
         // frames in RAM, so its size is the constraint. Recordings go through
         // the raw pipe instead and keep their full resolution.
         int    h = job.img.height();
-        QImage out = job.img.mirrored( false, true ) // GL ist bottom-up
+        QImage out = job.img.mirrored( false, true ) // GL is bottom-up
                                                      // FastTransformation, not Smooth: this is a 1080->720 downscale
                          // that is then JPEG-encoded at quality 80-85, where the
                          // difference is not visible, and Smooth was a large share of
@@ -686,7 +686,7 @@ void Recorder::worker()
 
         if ( job.path.isEmpty() )
         {
-            // Replay-Ring-Job: in den Speicher encodieren, ~30 s Historie halten.
+            // Replay-ring job: encode into memory, keep ~30 s of history.
             QByteArray jpg;
             QBuffer    buf( &jpg );
             buf.open( QIODevice::WriteOnly );
@@ -740,9 +740,9 @@ static double recordFps()
     if ( fps == 0.0 )
     {
         QSettings st( Platform::assetPath( "..\\kaleidoscope_settings.ini" ), QSettings::IniFormat );
-        // KALEIDO_RECORD_FPS schlaegt die ini -- fuer Messlaeufe, die 60 fps
-        // brauchen (das Strobe-Mass aliast bei 30), ohne die Einstellung
-        // des Nutzers anzufassen.
+        // KALEIDO_RECORD_FPS beats the ini -- for measurement runs that need
+        // 60 fps (the strobe measure aliases at 30), without touching the
+        // user's setting.
         const int env_fps = qEnvironmentVariableIntValue( "KALEIDO_RECORD_FPS" );
         const int v = ( env_fps > 0 ) ? env_fps : st.value( "recordFps", 30 ).toInt();
         fps = ( v >= 45 ) ? 60.0 : 30.0; // only these two are offered
@@ -928,8 +928,8 @@ void Recorder::ensureWorker()
         m_threads.emplace_back( &Recorder::worker, this );
 }
 
-// Instant Replay: ~15 fps in den rollenden Ring, solange scharf (und nicht
-// ohnehin aufgenommen wird — der Recording-Pfad erfasst mit 30 fps).
+// Instant replay: ~15 fps into the rolling ring while armed (and not
+// recording anyway — the recording path captures at 30 fps).
 /**  Rate-limit and dispatch one replay-ring capture (~15 fps).
  *
  * Skips the frame if less than ~66 ms (1/15 s) has elapsed since the last
@@ -944,15 +944,15 @@ void Recorder::captureReplayFrame( int w, int h )
         return;
     float dur = ( m_repLastFrame == 0 ) ? ( 1.f / 15.f ) : static_cast<float>( now - m_repLastFrame ) / 1000.f;
     if ( dur > 0.5f )
-        dur = 0.5f; // Lücken klemmen (Pause, 1. Frame)
+        dur = 0.5f; // clamp gaps (pause, 1st frame)
     m_repLastFrame = now;
 
     asyncCapture( dur, true, w, h );
 }
 
-// PBO-doppelt-gepufferter Async-Readback — siehe Header-Kommentar. Stellt den
-// glReadPixels DIESES Frames in PBO[cur] ein (kehrt sofort zurück) und
-// konsumiert den fertigen Transfer des VORHERIGEN Frames aus PBO[prev].
+// PBO double-buffered async readback — see the header comment.  Queues THIS
+// frame's glReadPixels into PBO[cur] (returns at once) and consumes the
+// finished transfer of the PREVIOUS frame from PBO[prev].
 /**  Issue this frame's async PBO readback and consume the previous frame's completed transfer into the encoder queue.
  *
  * This is the core of the "one frame of latency, zero GPU->CPU stall"
@@ -986,8 +986,8 @@ void Recorder::asyncCapture( float dur, bool toReplay, int w, int h )
     const int cur = m_pboIdx;
     const int prev = 1 - m_pboIdx;
 
-    // 1. Readback dieses Frames einreihen (Orphaning passt die Größe bei
-    //    Auflösungswechseln an)
+    // 1. Queue this frame's readback (orphaning adapts the size on
+    //    resolution changes)
     glBindBuffer( GL_PIXEL_PACK_BUFFER, m_pbo[cur] );
     glBufferData( GL_PIXEL_PACK_BUFFER, static_cast<GLsizeiptr>( w ) * h * 4, NULL, GL_STREAM_READ );
     glReadPixels( 0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, 0 );
@@ -997,7 +997,7 @@ void Recorder::asyncCapture( float dur, bool toReplay, int w, int h )
     m_pboMeta[cur].w = w;
     m_pboMeta[cur].h = h;
 
-    // 2. Daten des vorherigen Frames konsumieren (DMA ist längst fertig)
+    // 2. Consume the previous frame's data (its DMA finished long ago)
     PboMeta &pm = m_pboMeta[prev];
     if ( pm.pending )
     {
@@ -1073,7 +1073,7 @@ void Recorder::asyncCapture( float dur, bool toReplay, int w, int h )
     m_pboIdx = prev;
 }
 
-// Replay-Ring (Frames + rollendes Audio) speichern und wie eine Aufnahme muxen.
+// Save the replay ring (frames + rolling audio) and mux it like a recording.
 /**  Save the current replay ring to disk and mux it (with trimmed audio) into replays/replay_TIMESTAMP/replay.mp4.
  *
  * Bails out (with a stderr hint) if fewer than 15 frames are buffered.
@@ -1082,7 +1082,7 @@ void Recorder::asyncCapture( float dur, bool toReplay, int w, int h )
  * analyzer for a WAV dump covering the ring's total video duration (+0.5 s
  * slack). Because the audio ring typically holds MORE history than the
  * video ring, the WAV input is trimmed from the front via ffmpeg's -ss so
- * both streams end bündig (flush) together at the end. The mux itself runs
+ * both streams end flush together at the end. The mux itself runs
  * as a detached ffmpeg process, exactly like finishRecording()'s.
  **/
 void Recorder::saveReplay()
@@ -1131,8 +1131,8 @@ void Recorder::saveReplay()
     args << "-y" << "-f" << "concat" << "-safe" << "0" << "-i" << ( dir + "/frames.txt" );
     if ( have_audio )
     {
-        // Der Audio-Ring hält MEHR als das Video: Anfang so trimmen, dass
-        // beide Enden bündig liegen (ffmpeg -ss auf dem WAV-Input).
+        // The audio ring holds MORE than the video: trim the start so that
+        // both ends lie flush (ffmpeg -ss on the WAV input).
         float wav_len = total + 0.5f;
         args << "-ss" << QString::number( std::max( 0.f, wav_len - total ), 'f', 2 )
              << "-i" << ( dir + "/audio.wav" );
@@ -1148,9 +1148,9 @@ void Recorder::saveReplay()
              static_cast<int>( frames.size() ), total, dir.toLocal8Bit().constData() );
 }
 
-// Das frisch gerenderte Bild (sauber, vor jedem Overlay) mit ~30 fps erfassen
-// und dem Encoder-Worker übergeben; auf dem GL-Thread bleiben nur glReadPixels
-// + ein memcpy. Die ffmpeg-concat-Liste entsteht hier mit den echten Dauern.
+// Capture the freshly rendered picture (clean, before any overlay) at ~30 fps
+// and hand it to the encoder worker; only glReadPixels + a memcpy stay on the
+// GL thread.  The ffmpeg concat list is built here with the real durations.
 /**  Rate-limit and dispatch one recording capture (~30 fps).
  *
  * Skips the frame if less than ~33 ms (1/30 s) has elapsed since the last
@@ -1197,14 +1197,14 @@ void Recorder::captureFrame( int w, int h )
     if ( blurred )
         resolveBlur( w, h );
 
-    asyncCapture( dur, false, w, h ); // PBO-Pfad: kein GPU->CPU-Stall
+    asyncCapture( dur, false, w, h ); // PBO path: no GPU->CPU stall
 
     if ( blurred )
         glBindFramebuffer( GL_READ_FRAMEBUFFER, static_cast<GLuint>( prev_read ) );
 }
 
-// Finalisieren: WAV schließen, concat-Liste + make_video.bat schreiben und
-// ffmpeg detacht die Frames + Audio zu kaleidoscope.mp4 muxen lassen.
+// Finalise: close the WAV, write the concat list + make_video.bat and let a
+// detached ffmpeg mux the frames + audio into kaleidoscope.mp4.
 /**  Finalise a recording: drop any in-flight PBO frame, drain and stop the worker, close the audio WAV, write the
  * concat list and a fallback batch file, and launch a detached ffmpeg mux.
  *
@@ -1226,8 +1226,8 @@ void Recorder::captureFrame( int w, int h )
  **/
 void Recorder::finishRecording()
 {
-    // Zuerst jeden In-Flight-PBO-Frame verwerfen: er darf nicht als
-    // verirrter Recording-Job konsumiert werden, nachdem frames.txt final ist.
+    // First discard every in-flight PBO frame: it must not be consumed as a
+    // stray recording job after frames.txt is final.
     m_pboMeta[0].pending = false;
     m_pboMeta[1].pending = false;
     if ( m_dropped )
@@ -1238,8 +1238,8 @@ void Recorder::finishRecording()
                  m_dropped, recordFps() );
     m_dropped = 0;
 
-    // Raw-Pipe zuerst schließen: der Thread schreibt die Restframes, sendet
-    // ffmpeg EOF und wartet, bis die Videodatei fertig geschrieben ist.
+    // Close the raw pipe first: the thread writes the remaining frames, sends
+    // ffmpeg EOF and waits until the video file is completely written.
     if ( m_pipeThread.joinable() )
     {
         {
@@ -1250,8 +1250,8 @@ void Recorder::finishRecording()
         m_pipeThread.join();
     }
 
-    // Worker drainen + beenden (er endet erst bei leerer Queue, jeder
-    // eingereihte Frame wird also noch geschrieben, bevor der Mux startet).
+    // Drain + stop the worker (it ends only with an empty queue, so every
+    // queued frame is still written before the mux starts).
     if ( !m_threads.empty() )
     {
         {
@@ -1266,7 +1266,7 @@ void Recorder::finishRecording()
     }
 
     if ( m_audio )
-        m_audio->stopRecording(); // flusht + schließt das WAV
+        m_audio->stopRecording(); // flushes + closes the WAV
 
     QStringList args;
     QString     bat_cmd;
@@ -1293,7 +1293,7 @@ void Recorder::finishRecording()
         if ( lf.open( QIODevice::WriteOnly | QIODevice::Text ) )
         {
             QByteArray data = m_recConcat.toLocal8Bit();
-            if ( m_recFrame > 0 ) // concat-Demuxer will den letzten Eintrag doppelt, ohne Dauer
+            if ( m_recFrame > 0 ) // the concat demuxer wants the last entry twice, without a duration
                 data += QString( "file 'frame_%1.jpg'\n" ).arg( m_recFrame - 1, 6, 10, QChar( '0' ) ).toLocal8Bit();
             lf.write( data );
             lf.close();
@@ -1317,8 +1317,8 @@ void Recorder::finishRecording()
         bf.close();
     }
 
-    // Sofort automatisch muxen (detacht; ffmpeg ist auf dem PATH).
-    // make_video.bat bleibt als Fallback liegen.
+    // Mux automatically right away (detached; ffmpeg is on the PATH).
+    // make_video.bat stays as a fallback.
     QProcess::startDetached( "ffmpeg", args );
     joinVideoEncoderProbe();
 

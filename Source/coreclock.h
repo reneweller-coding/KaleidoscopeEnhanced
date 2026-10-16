@@ -15,9 +15,9 @@
 #ifndef CORECLOCK_H
 #define CORECLOCK_H
 
-// Qt-freier Drop-in-Ersatz für QElapsedTimer im Render-Kern (Task 5,
-// RendererCore-Vorbereitung): gleiche Semantik - Wanduhr, elapsed() in
-// Millisekunden - über std::chrono::steady_clock.
+// Qt-free drop-in replacement for QElapsedTimer in the render core (task 5,
+// RendererCore preparation): the same semantics - wall clock, elapsed() in
+// milliseconds - via std::chrono::steady_clock.
 
 #include <chrono>
 
@@ -42,7 +42,7 @@ public:
     void start() { m_t0 = std::chrono::steady_clock::now(); }
     /** Alias for start(), matching QElapsedTimer's API. */
     void restart() { start(); }
-    /**  Milliseconds since start() - wie QElapsedTimer::elapsed().
+    /**  Milliseconds since start() - like QElapsedTimer::elapsed().
      *
      * @return
      *   Elapsed time in milliseconds since the last start()/restart().

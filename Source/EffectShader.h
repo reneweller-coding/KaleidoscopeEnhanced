@@ -1294,9 +1294,9 @@ protected:
     GLint m_progressUni = -1;  ///< Location of the `sceneProgress` uniform (-1 if the shader doesn't declare it).
     GLint m_sceneTimeUni = -1; ///< Location of the `sceneTime` uniform: seconds since THIS activation. `time` runs
                                ///< since program start and grows without bound.
-    float m_advanceAtReset = -1.0e9f; ///< audioAdvance beim ersten Frame nach der Aktivierung; `sceneAdvance` ist die
-                                      ///< Differenz dazu.
-    unsigned m_activations = 0;       ///< Auftritte dieser Szene seit Programmstart; Teil des Szenen-Seeds unter
+    float m_advanceAtReset = -1.0e9f; ///< audioAdvance at the first frame after the activation; `sceneAdvance` is the
+                                      ///< difference to it.
+    unsigned m_activations = 0;       ///< Appearances of this scene since program start; part of the scene seed under
                                       ///< KALEIDO_SEED.
     float m_soloAtReset = 0.f;        ///< m_timeSolo as it stood at the last resetParameters(), in seconds.
     float m_activationTime = -1.0e9f; ///< `time` at the first setUniforms() after activation; sentinel means "not yet

@@ -16,25 +16,25 @@
 #ifndef GPUSIMS_H
 #define GPUSIMS_H
 
-// GPU-Simulationen, herausgelöst aus RenderPipeline (Refactor 3/4, 2026-08-14).
+// GPU simulations, split out of RenderPipeline (refactor 3/4, 2026-08-14).
 //
-// Fünf lebende Felder + zwei Host-Historien, die Effekte über globale
-// Sampler-Units anzapfen:
-//   Reaction-Diffusion (Gray-Scott, 320², RGBA16F-Ping-Pong)  -> "texSim",     Unit 7
-//   Fluid (Curl-Noise-Farbstoff-Advektion, 512²)              -> "texFluid",   Unit 8
-//   Smoke3D (gekacheltes Pseudo-3D-Feuer/Rauch-Atlas 320x256) -> "texSmoke3D", Unit 9
-//   SSM (Selbstähnlichkeits-Matrix, host-berechnet, 256²)     -> "texSSM",     Unit 10
-//   Physarum (1M Agenten + 1024²-Trail-Map)                   -> "texPhysarum",Unit 11
-//   Spektrogramm-Ring (32 Bänder x 256 Zeilen, host-gefüllt)  -> "texSpectro", Unit 28
+// Five living fields + two host histories, which effects tap through global
+// sampler units:
+//   reaction-diffusion (Gray-Scott, 320², RGBA16F ping-pong)  -> "texSim",     unit 7
+//   fluid (curl-noise dye advection, 512²)                    -> "texFluid",   unit 8
+//   Smoke3D (tiled pseudo-3D fire/smoke atlas 320x256)        -> "texSmoke3D", unit 9
+//   SSM (self-similarity matrix, computed on the host, 256²)  -> "texSSM",     unit 10
+//   Physarum (1M agents + 1024² trail map)                    -> "texPhysarum",unit 11
+//   spectrogram ring (32 bands x 256 rows, filled by host)    -> "texSpectro", unit 28
 //
-// Alle GPU-Sims folgen demselben Fail-Safe-Muster: schlägt das Setup fehl,
-// bleibt ihr ready-Flag false und der anzeigende Effekt degradiert sichtbar,
-// aber crashfrei. Die Host-Historien (SSM/Spectro) akkumulieren IMMER (billig,
-// und die Struktur muss existieren, BEVOR der Effekt erscheint); Textur-Upload
-// und Stepping der GPU-Sims passieren nur bei Bedarf (usesX-Gating macht der
-// Aufrufer und übergibt Demand).
+// All GPU sims follow the same fail-safe pattern: if the setup fails, their
+// ready flag stays false and the displaying effect degrades visibly but
+// without a crash.  The host histories (SSM/spectro) ALWAYS accumulate (cheap,
+// and the structure must exist BEFORE the effect appears); texture upload and
+// stepping of the GPU sims happen only on demand (the caller does the usesX
+// gating and hands over the Demand).
 //
-// Bewusst Qt-frei - dieser Baustein gehört zum späteren RendererCore.
+// Deliberately Qt-free - this building block belongs to the later RendererCore.
 
 #include "glcore.h"
 #include "AudioFeatures.h"
@@ -56,8 +56,6 @@
 class GpuSims
 {
 public:
-    /** Welche Sims dieser Frame wirklich braucht (usesSim/usesFluid/... des
-     *  aktiven und ggf. einblendenden Effekts, ermittelt vom Aufrufer). */
     /** Per-frame flags telling run() which simulations are actually needed this frame.
      *
      * Filled by the caller from the active (and any cross-fading) effect's
@@ -74,8 +72,6 @@ public:
         bool spectro = false;  ///< Upload/bind the spectrogram ring texture (unit 28) if rows are pending.
     };
 
-    /** Frame-Kontext aus der Pipeline: integrierte Phasen (anti-flicker) und
-     *  die Bildquellen, die der Fluid-Sim als Farbstoff dienen. */
     /** Per-frame pipeline context: integrated time phases plus the image(s) the fluid sim uses as dye.
      *
      * globalTime/audioAdvance are already integrated ("anti-flicker") phase
@@ -97,8 +93,6 @@ public:
         bool  hold = false;       ///< Freeze (VJ or comparison run): no step, the newest states stay bound.
     };
 
-    /** Alle Sim-Ressourcen anlegen (GL-Kontext aktuell); idempotent, wird aus
-     *  RenderPipeline::setupSafety()/reinit gerufen. */
     /**  Creates/validates all GPU simulation resources (FBOs, textures, shader programs).
      *
      * Idempotent: existing GL objects are reused rather than recreated on a
@@ -108,10 +102,6 @@ public:
      **/
     void setupAll();
 
-    /** Ein Frame: Historien fortschreiben (immer), benötigte Sims steppen und
-     *  ihre neuesten Felder auf die globalen Units 7-11/28 binden.
-     *  Lässt GL_TEXTURE0 als aktive Unit zurück (wie der alte Inline-Code:
-     *  die Folge-Pässe setzen ihre Units selbst). */
     /**  Advances one frame: always updates the host histories, steps only the demanded GPU sims, and (re)binds their
      * newest textures to the fixed global sampler units.
      *
@@ -126,7 +116,7 @@ public:
      **/
     void run( const AudioFeatures &audio, float dt, const Demand &need, const Frame &f );
 
-    // ---- Ring-Buchhaltung für die audioFx-Uniforms (Export VOR run()!) ----
+    // ---- Ring bookkeeping for the audioFx uniforms (export BEFORE run()!) ----
     /**  Normalized [0,1) write-head position in the self-similarity ring, for the audioFx uniform.
      *
      * @return
@@ -141,10 +131,6 @@ public:
      *   Fill fraction of SSMSize.
      **/
     float ssmFillNorm() const { return static_cast<float>( m_ssmCount ) / static_cast<float>( SSMSize ); }
-    /** Kontinuierliche "Jetzt"-T-Koordinate des Spektrogramm-Rings: hinkt dem
-     *  Schreibkopf bewusst 2 Zeilen hinterher und faltet den Sub-Zeilen-Anteil
-     *  ein, damit das Terrain nicht alle 80 ms vorwärts ruckt (Details siehe
-     *  alte paint()-Kommentare). */
     /**  Continuous "now" T-coordinate of the spectrogram ring, for the audioFx uniform.
      *
      * @return
@@ -252,11 +238,11 @@ private:
      **/
     void stepSpectro( const AudioFeatures &a, float dt );
     /** Lazily creates the SSM texture (unit 10) and re-uploads it whole whenever the matrix data is dirty. */
-    void bindSSMTexture(); // Unit 10: Textur (lazy) anlegen + Upload bei dirty
+    void bindSSMTexture(); // unit 10: create the texture (lazily) + upload when dirty
     /**  Lazily creates the spectrogram texture (unit 28) and uploads only the rows written since the last upload
      * (split into two uploads if the pending run straddles the ring wrap).
      **/
-    void bindSpectroTexture(); // Unit 28: dito, mit Teil-Upload der neuen Zeilen
+    void bindSpectroTexture(); // unit 28: likewise, with a partial upload of the new rows
 
     /**  Clears the currently-bound FBO and draws the shared fullscreen triangle; the common draw call used by every
      * simulation's fragment-shader step.
@@ -380,7 +366,7 @@ private:
     bool  m_physReady = false;                      ///< True once setup succeeded; gates stepping and texture binding.
     bool  m_physSeeded = false;                     ///< False until the first step has written the seed pattern.
 
-    // ---- SSM (host-berechnete Selbstähnlichkeits-Matrix) ----
+    // ---- SSM (self-similarity matrix computed on the host) ----
     static const int SSMSize = 256; ///< Ring capacity (feature-vector history length) and side length of the resulting
                                     ///< similarity matrix texture.
     static const int SSMDims = 20;  ///< Dimensionality of each stored feature vector (12 chroma bins + 8 coarse
@@ -397,7 +383,7 @@ private:
     GLuint m_texSSM = 0;                             ///< Lazily-created R8 texture (unit 10) holding m_ssmData.
     bool   m_ssmDirty = false; ///< True when m_ssmData has changed since the last upload to m_texSSM.
 
-    // ---- Spektrogramm-Ring (host-gefüllt) ----
+    // ---- Spectrogram ring (filled by the host) ----
     static const int SpectroW = AudioFeatures::SpectrumBands; ///< Spectrogram texture width in texels: one column per
                                                               ///< spectrum band (32).
     static const int SpectroH = 256; ///< Spectrogram ring depth in rows of history; at SpectroStride per row that is

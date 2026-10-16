@@ -1,8 +1,7 @@
 //---------------------------------------------------------------------------
 //                              Mesh
 //---------------------------------------------------------------------------
-//  Copyright (C): Stephan Mock, Randolf Schärfig, cg.in.tu-clausthal; changes 2026 reneweller, MIT License (see
-//  LICENSE)
+//  Copyright (C): Stephan Mock, Randolf Schärfig, cg.in.tu-clausthal; changes 2026 reneweller (MIT, see LICENSE)
 //---------------------------------------------------------------------------
 /*! @file
  *

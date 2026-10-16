@@ -16,16 +16,16 @@
 #ifndef AUDIOCONDITIONER_H
 #define AUDIOCONDITIONER_H
 
-// Audio-Konditionierung, herausgelöst aus RenderPipeline::paint() (Refactor,
-// 2026-08-19). Reiner Zustandsautomat: liest rohe AudioFeatures + Zeitdelta,
-// schreibt eine integrierte/geslewte Kopie plus ein paar Regie-Signale, die
-// keinen Platz in AudioFeatures haben (Kamera-Drift, Rewind, Letterbox,
-// Shockwave). Rührt selbst keinen GL-Zustand an -- der einzige GL-Touch in
-// der Nähe (Title-Reveal-Upload) blieb bewusst in RenderPipeline::paint(),
-// weil er echt mit dem Wandzeit-Teil dort verzahnt ist.
+// Audio conditioning, split out of RenderPipeline::paint() (refactor,
+// 2026-08-19).  A pure state machine: reads raw AudioFeatures + a time delta,
+// writes an integrated/slewed copy plus a few direction signals that have no
+// place in AudioFeatures (camera drift, rewind, letterbox, shockwave).  It
+// touches no GL state itself -- the only GL touch nearby (the title-reveal
+// upload) deliberately stayed in RenderPipeline::paint(), because it is
+// really interlocked with the wall-time part there.
 //
-// Bewusst Qt-frei (RendererCore-Baustein, wie GpuSims/PresentPass/
-// SceneScheduler).
+// Deliberately Qt-free (a RendererCore building block, like GpuSims/
+// PresentPass/SceneScheduler).
 
 #include "AudioFeatures.h"
 

@@ -244,10 +244,10 @@ void EffectShader::cleanShaderPrograms()
  *   KALEIDO_SOLO_SECS if set to a positive value (read once), else EffectShader::M_ReviewSolo (0 outside review
  *   mode = no cap).
  *
- * Die Solo-Spanne, ueber die sceneProgress normiert wird.  KALEIDO_SOLO_SECS
- * pinnt sie fuer Messlaeufe, deren Fenster kuerzer ist als die Review-Spanne
- * von 25 s: mit 8 s Haltezeit sah das Screening von einer inszenierten Szene
- * nie das Ende ihres Bogens -- Assembly stand in jedem Fenster als Wolke.
+ * KALEIDO_SOLO_SECS pins it for measurement runs whose window is shorter
+ * than the review span of 25 s: with a holding time of 8 s the screening
+ * never saw the end of a staged scene's arc -- Assembly stood as a cloud in
+ * every window.
  **/
 static float soloCap()
 {
@@ -260,12 +260,13 @@ static float soloCap()
 void EffectShader::resetParameters()
 {
     m_secCount = -1; // section memory restarts: the first sight is no door
-    // Zufall PRO SZENE statt global.  Mit KALEIDO_SEED bekommt jede
-    // Aktivierung ihren eigenen Strom aus (Seed, Shadername, Auftrittszaehler).
-    // Vorher hing jede Ziehung davon ab, wer VOR dieser Szene dran war: derselbe
-    // Shader mass in einer Neun-Szenen-Probe 0,22 und im 112er-Chunk 0,0006,
-    // und der Nachbau scheiterte, weil die Nachbarn andere waren.  Ohne
-    // KALEIDO_SEED wird NICHT neu geseedet -- die Show bleibt uhrgeseedet.
+    // Randomness PER SCENE instead of global.  With KALEIDO_SEED every
+    // activation gets its own stream from (seed, shader name, appearance
+    // counter).  Before, every draw depended on who came BEFORE this scene:
+    // the same shader measured 0.22 in a nine-scene probe and 0.0006 in a
+    // chunk of 112, and reproducing it failed because the neighbours were
+    // different.  Without KALEIDO_SEED nothing is reseeded -- the show stays
+    // seeded from the clock.
     static const char *pin_env = getenv( "KALEIDO_SEED" );
     ++m_activations;
     if ( pin_env )
@@ -285,15 +286,15 @@ void EffectShader::resetParameters()
     // left as a sentinel because this function has no time to work from, so
     // the first setUniforms() after the reset fills it in.
     m_soloAtReset = static_cast<float>( m_timeSolo );
-    // Auf dem Review-Prueftisch zeigt der Scheduler jede Szene nur
-    // ReviewSoloSecs lang, sceneProgress normierte aber weiter ueber die
-    // gewuerfelte Solo-Spanne -- eine inszenierte Szene lief damit genau
-    // dort nie zu Ende, wo man sie beurteilen will.
+    // On the review bench the scheduler shows each scene for only
+    // ReviewSoloSecs, but sceneProgress kept normalising over the rolled solo
+    // span -- a staged scene thus never ran to its end exactly where one
+    // wants to judge it.
     if ( soloCap() > 0.01f && m_soloAtReset > soloCap() )
         m_soloAtReset = soloCap();
     m_activationTime = -1.0e9f;
     m_progressT0 = -1.0e9f;
-    m_advanceAtReset = -1.0e9f; // sceneAdvance faengt neu bei 0 an
+    m_advanceAtReset = -1.0e9f; // sceneAdvance starts again at 0
     m_sceneProgress = 0.f;
 
     // The "life" budget handed to each Uniform is solo + 2*interpolation: one
@@ -317,10 +318,10 @@ void EffectShader::resetParameters()
     m_walk.pending = true;
     m_cam.pending = true;
 
-    // Unter KALEIDO_SEED protokollieren, was gezogen wurde: der Beweis, dass
-    // dieselbe Szene in jeder Konfiguration dieselben Zahlen bekommt, ist
-    // ein Diff dieser Zeilen -- nicht ein Bildvergleich, den die Ueberblendung
-    // vom Nachbarn verfaelscht.
+    // Under KALEIDO_SEED, log what was drawn: the proof that the same scene
+    // gets the same numbers in every configuration is a diff of these lines
+    // -- not a picture comparison, which the cross-fade from the neighbour
+    // falsifies.
     if ( pin_env )
         fprintf( stderr,
                  "SEEDED %s act=%u seeds=%.4f %.4f %.4f solo=%u"
@@ -395,8 +396,8 @@ void EffectShader::dropVariants( bool release )
 void EffectShader::setUniforms( float time, float interpolation, GLint texLoc1, GLint texLoc2 )
 {
     m_exprTime = time;                      // formula layer reads this frame's time
-    glUniform1i( m_texPointUni1, texLoc1 ); // Combine Unit 0, nicht mit texId verwechseln
-    glUniform1i( m_texPointUni2, texLoc2 ); // Combine Unit 0, nicht mit texId verwechseln
+    glUniform1i( m_texPointUni1, texLoc1 ); // combine unit 0, not to be confused with texId
+    glUniform1i( m_texPointUni2, texLoc2 ); // combine unit 0, not to be confused with texId
     glUniform2f( m_texSizeRcpUni, static_cast<float>( m_width ), static_cast<float>( m_height ) );
     glUniform1f( m_timeUni, time );
     glUniform1f( m_interpolationUni, interpolation );
@@ -426,13 +427,13 @@ void EffectShader::setUniforms( float time, float interpolation, GLint texLoc1, 
     if ( m_progressUni >= 0 )
         glUniform1f( m_progressUni, m_sceneProgress );
 
-    // sceneTime: Sekunden SEIT DIESER Aktivierung, im Gegensatz zu `time`,
-    // das seit dem Programmstart laeuft und nie zurueckgesetzt wird.  Wer
-    // eine Kamera mit `time` vorwaerts schiebt, deren Welt aber nur nahe dem
-    // Ursprung existiert, fliegt nach Minuten aus ihr heraus und zeigt nur
-    // noch Hintergrund -- gemessen an einer Szene, die bei Uhr 0 eine
-    // Struktur von 0.19 hat und bei Uhr 3600 noch 0.0005.  Gegen sceneTime
-    // geschrieben faengt so ein Flug bei jeder Aktivierung neu an.
+    // sceneTime: seconds SINCE THIS activation, unlike `time`, which runs
+    // since program start and is never reset.  A camera pushed forward with
+    // `time` through a world that exists only near the origin flies out of
+    // it after minutes and shows nothing but background -- measured on a
+    // scene with a structure of 0.19 at clock 0 and only 0.0005 at clock
+    // 3600.  Written against sceneTime, such a flight starts anew at every
+    // activation.
     m_lastSceneTime = time - m_activationTime;
     if ( M_FreezeTime >= 0.f ) // a comparison run: the scene stands at this moment
         m_lastSceneTime = M_FreezeTime;
@@ -734,17 +735,17 @@ enum AudioLocE
     AL_SHADOWPASS2,
     AL_LIGHTDIR2,
     AL_TEXPREVFRAME,
-    // audioAdvance seit DIESER Aktivierung.  `audioAdvance` selbst ist ein
-    // Integrator ohne Obergrenze (m_audioAdvance += dt * advRate) und taugt
-    // damit -- wie `time` -- nur als Phase, nicht als Position.  Das
-    // Gegenstueck zu `sceneTime`, damit eine Szene ihren Flug musikgetrieben
-    // halten kann, ohne ihm davonzufliegen.
+    // audioAdvance since THIS activation.  `audioAdvance` itself is an
+    // integrator without an upper bound (m_audioAdvance += dt * advRate) and
+    // is therefore -- like `time` -- good only as a phase, not as a position.
+    // The counterpart of `sceneTime`, so that a scene can keep its flight
+    // music-driven without flying away from it.
     AL_SCENEADVANCE,
-    // Die MELODIE-Tonhoehe (HPS ab 150 Hz), damit eine Szene die Melodie
-    // statt des Grundtons bekommt; audioPitch bleibt der dominante Ton.
+    // The MELODY pitch (HPS from 150 Hz), so that a scene gets the melody
+    // instead of the root; audioPitch stays the dominant tone.
     AL_MELODYPITCH,
-    // Die 8-Takt-Phrase: Position 0..1 und Sekunden bis zur naechsten Grenze
-    // (= der vorhergesagte Drop).  Fuer Szenen, die auf den Drop hin zaehlen.
+    // The 8-bar phrase: position 0..1 and seconds to the next boundary (= the
+    // predicted drop).  For scenes that count towards the drop.
     AL_PHRASEPOS,
     AL_PHRASELEFT,
     AL_SECTIONID,
@@ -775,7 +776,7 @@ const char *kAudioLocNames[AL_COUNT] = {
     "texShadow", "lightM", "shadowPass", "lightDir", "shadowTexel",
     "oitPass", "shadowExtent",
     "texShadow2", "lightM2", "shadowPass2", "lightDir2", "texPrevFrame",
-    "sceneAdvance", // Reihenfolge MUSS zum AL_-Enum passen (Tools/check_enum_tables.py)
+    "sceneAdvance", // the order MUST match the AL_ enum (Tools/check_enum_tables.py)
     "audioMelodyPitch",
     "audioPhrasePos", "audioPhraseLeft",
     "audioSectionId", "audioSectionPrev", "audioSectionAge", "audioSectionKnown", "audioSectionCount",
@@ -1036,8 +1037,8 @@ void EffectShader::applyAudioFeatures( const AudioFeatures &f )
         glUniform1f( locs[AL_PHASE], f.audioRotPhase );
     if ( locs[AL_ADVANCE] >= 0 )
         glUniform1f( locs[AL_ADVANCE], f.audioAdvance );
-    // Nullpunkt beim ersten Frame nach der Aktivierung merken, damit
-    // sceneAdvance bei 0 anfaengt. resetParameters() setzt die Marke zurueck.
+    // Remember the zero point at the first frame after the activation, so
+    // that sceneAdvance starts at 0.  resetParameters() resets the mark.
     if ( m_advanceAtReset < -0.9e9f )
         m_advanceAtReset = f.audioAdvance;
     if ( locs[AL_MELODYPITCH] >= 0 )
@@ -1149,9 +1150,9 @@ void EffectShader::fillExprVars( const AudioFeatures &f, float timeVal,
     v[ExprVars::V_FLATNESS] = f.spectralFlatness;
     v[ExprVars::V_ZCR] = f.zeroCrossingRate;
     v[ExprVars::V_FADEOUT] = f.fadeOut;
-    // `progress` ist KEIN Audio-Merkmal, sondern der Stand der Szene selbst.
-    // fillExprVars ist static (die Seeds kommen als Parameter), deshalb wird
-    // er vom Aufrufer nachgetragen -- hier steht nur der sichere Vorgabewert.
+    // `progress` is NOT an audio feature but the scene's own state.
+    // fillExprVars is static (the seeds come as parameters), so the caller
+    // fills it in afterwards -- here stands only the safe default.
     v[ExprVars::V_PROGRESS] = 0.f;
     v[ExprVars::V_SEED1] = seeds[0];
     v[ExprVars::V_SEED2] = seeds[1];

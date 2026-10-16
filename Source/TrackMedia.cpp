@@ -34,8 +34,8 @@
 #include <algorithm>
 #include <cmath>
 
-// Lyrics-Textur: Breite fix, Zeilenhöhe fix - die Höhe wächst mit der
-// Zeilenzahl (gekappt, ~190 Zeilen reichen für jeden Songtext).
+// Lyrics texture: fixed width, fixed line height - the height grows with the
+// number of lines (capped, ~190 lines are enough for any song text).
 static const int LyrTexW = 1000;    ///< Nominal (normally-visible) lyrics-texture width in pixels; the actual image can
                                     ///< be wider (see renderLyricsImage()) but this fixed value is what the on-screen
                                     ///< text size is scaled against.
@@ -53,8 +53,8 @@ int TrackMedia::lyricsNominalTexWidth()
     return LyrTexW;
 }
 
-// Negativ-Cache ("nichts gefunden") verfällt nach 7 Tagen - vielleicht
-// trägt ja jemand die Lyrics nach.
+// The negative cache ("nothing found") expires after 7 days - maybe someone
+// adds the lyrics later.
 static const qint64 NegCacheTtlSec = 7 * 24 * 3600; ///< TTL for a "lyrics not found" cache entry before the chain is
                                                     ///< retried against the network.
 
@@ -99,8 +99,8 @@ TrackMedia::~TrackMedia()
 QNetworkReply *TrackMedia::get( const QString &url )
 {
     QNetworkRequest req( ( QUrl( url ) ) );
-    // LRCLIB bittet um einen identifizierenden User-Agent; die anderen
-    // Dienste stören sich nicht daran.
+    // LRCLIB asks for an identifying User-Agent; the other services do not
+    // mind it.
     req.setHeader( QNetworkRequest::UserAgentHeader,
                    "KaleidoscopeVisualizer/1.0 (github.com/reneweller-coding)" );
     req.setTransferTimeout( 15000 );
@@ -144,7 +144,7 @@ void TrackMedia::requestTrack( const QString &artist, const QString &title, doub
     m_artist = artist.trimmed();
     m_title = title.trimmed();
 
-    // Alte Ergebnisse verwerfen (Revision zählt hoch -> Consumer lädt neu).
+    // Discard old results (the revision counts up -> the consumer reloads).
     m_lines.clear();
     m_lyricsImage = QImage();
     ++m_lyricsRevision;
@@ -192,7 +192,7 @@ void TrackMedia::lyricsFromCacheOrNet()
         }
         if ( age < NegCacheTtlSec )
         {
-            // Bekannt erfolglos, TTL läuft noch: Netz gar nicht erst fragen.
+            // Known to fail, the TTL still runs: do not even ask the network.
             m_lyricsPending = false;
             fprintf( stderr, "[Lyrics] Cache: bekannt-ohne-Treffer (\"%s - %s\")\n",
                      m_artist.toLocal8Bit().constData(),
@@ -355,8 +355,8 @@ void TrackMedia::tryNetease()
                                    .toObject()
                                    .value( "songs" )
                                    .toArray();
-            // Titel muss grob passen, sonst landet man bei Cover-Versionen
-            // von voellig anderen Stuecken.
+            // The title must roughly match, otherwise one ends up with cover
+            // versions of completely different pieces.
             for ( const auto &v : songs )
             {
                 QJsonObject s = v.toObject();
@@ -392,7 +392,7 @@ void TrackMedia::tryNetease()
                                   .toString();
                 if ( !lrc.trimmed().isEmpty() )
                 {
-                    // LRC mit Zeitstempeln? Sonst als Plain behandeln.
+                    // LRC with timestamps?  Otherwise treat it as plain.
                     bool hat_sync = lrc.contains( QRegularExpression( "\\[\\d+:\\d{2}" ) );
                     lyricsFound( hat_sync ? lrc : QString(),
                                  hat_sync ? QString() : lrc, "NetEase" );
@@ -434,7 +434,7 @@ void TrackMedia::tryLyricsOvh()
     } );
 }
 
-// LRC: "[mm:ss.xx]text" - mehrere Zeitstempel pro Zeile sind erlaubt.
+// LRC: "[mm:ss.xx]text" - several timestamps per line are allowed.
 /**  Parses LRC-format synced lyrics ("[mm:ss.xx]text", possibly multiple timestamps per line) into time-sorted
  * LyricLine entries.
  *
@@ -461,7 +461,7 @@ void TrackMedia::parseSynced( const QString &lrc )
         while ( it.hasNext() )
         {
             auto m = it.next();
-            if ( m.capturedStart() != last ) // Zeitstempel nur am Zeilenanfang
+            if ( m.capturedStart() != last ) // timestamps only at the start of the line
                 break;
             double  frac = 0.0;
             QString f = m.captured( 3 );
@@ -505,15 +505,16 @@ void TrackMedia::parsePlain( const QString &plain )
     {
         QString text = raw.trimmed();
         if ( text.isEmpty() )
-            continue; // Leerzeilen sparen Texturhöhe
+            continue; // blank lines save texture height
         LyricLine l;
         l.text = text;
         m_lines.push_back( l );
     }
 }
 
-// Alle Zeilen untereinander in EINE hohe transparente Textur rendern
-// (Stil wie der Titel-Reveal: weiß mit dunklem Halo, lesbar über allem).
+// Render all lines one below the other into ONE tall transparent texture
+// (styled like the title reveal: white with a dark halo, readable over
+// everything).
 /**  Renders every parsed lyric line into one tall transparent QImage (white text with a dark halo), truncating if the
  * real-line budget would exceed LyrMaxH, and fills in each line's v0/v1 texture-V band.
  *
@@ -663,7 +664,7 @@ void TrackMedia::renderLyricsImage()
 }
 
 // ===========================================================================
-// Künstlerbilder: Cache -> Deezer + TheAudioDB + iTunes (bis 50, gedrosselt)
+// Artist images: cache -> Deezer + TheAudioDB + iTunes (up to 50, throttled)
 // ===========================================================================
 
 /**  Returns one artist image, decoding it from disk on demand.
@@ -706,10 +707,10 @@ void TrackMedia::imagesFromCacheOrNet()
         fprintf( stderr, "[Artist] Cache: %d Bild(er) fuer \"%s\"\n",
                  static_cast<int>( m_imagePaths.size() ), m_artist.toLocal8Bit().constData() );
     }
-    // Genug im Cache? Dann kein Netz.  Sonst (auch bei wenigen Treffern
-    // eines früheren Laufs) alle Quellen anwerfen - Dedupe läuft über URLs,
-    // doppelte DATEIEN entstehen dabei nicht, weil die URL-Liste pro Lauf
-    // frisch ist und der Cache-Bestand mitzählt (MaxImages-Deckel).
+    // Enough in the cache?  Then no network.  Otherwise (also with few hits
+    // from an earlier run) start all sources - dedupe goes by URL; duplicate
+    // FILES do not arise, because the URL list is fresh per run and the
+    // cached stock counts towards the MaxImages cap.
     if ( m_imagePaths.size() >= 8 )
         return;
     fetchDeezer();
@@ -800,9 +801,9 @@ void TrackMedia::fetchDeezer()
                               .toArray();
         if ( data.isEmpty() )
             return;
-        // Der ERSTE Suchtreffer ist oft ein Namensvetter ohne Foto
-        // (Platzhalter tragen die MD5 des leeren Strings).  Also: unter den
-        // Kandidaten den mit echtem Foto und den meisten Fans nehmen.
+        // The FIRST search hit is often a namesake without a photo
+        // (placeholders carry the MD5 of the empty string).  So: among the
+        // candidates take the one with a real photo and the most fans.
         static const char *EmptyMd5 = "d41d8cd98f00b204e9800998ecf8427e";
         QJsonObject        artist;
         double             best_fans = -1.0;
@@ -845,8 +846,8 @@ void TrackMedia::fetchDeezer()
     } );
 }
 
-// TheAudioDB: echte BAND-FOTOS (Thumb + bis zu 4 Fanart-Stills) über den
-// öffentlichen Test-Key "2" - gerade für bekannte Nischen-Acts oft gepflegt.
+// TheAudioDB: real BAND PHOTOS (thumb + up to 4 fanart stills) via the
+// public test key "2" - often well kept especially for known niche acts.
 /**  Queries TheAudioDB (public test key) for the first matching artist and enqueues its thumbnail plus up to 4 fanart
  * images.
  **/
@@ -879,8 +880,8 @@ void TrackMedia::fetchAudioDb()
     } );
 }
 
-// iTunes Search: weitere Album-Cover; die 100px-Artwork-URL lässt sich per
-// Namenskonvention auf 600px hochsetzen.
+// iTunes Search: more album covers; the 100px artwork URL can be raised to
+// 600px by its naming convention.
 /**  Queries iTunes Search for albums by the artist (name-matched) and enqueues each cover art URL upscaled from 100px
  * to 600px.
  **/
@@ -906,7 +907,7 @@ void TrackMedia::fetchITunes()
         for ( const auto &v : res )
         {
             QJsonObject o = v.toObject();
-            // Nur Alben, deren Künstler wirklich passt (die Suche streut).
+            // Only albums whose artist really matches (the search scatters).
             if ( !o.value( "artistName" ).toString().contains( m_artist, Qt::CaseInsensitive ) )
                 continue;
             QString art = o.value( "artworkUrl100" ).toString();
@@ -951,7 +952,7 @@ void TrackMedia::videoFromCacheOrNet( double durationSec )
         qint64      age = QDateTime::currentSecsSinceEpoch()
                           - static_cast<qint64>( o.value( "ts" ).toDouble() );
         if ( age < VideoNegCacheTtlSec )
-            return; // bekannt kein Treffer, TTL laeuft noch
+            return; // known: no hit, the TTL still runs
     }
 
     (void)durationSec; // already captured into m_videoDurationSec by requestTrack()
@@ -1122,10 +1123,9 @@ void TrackMedia::startVideoDownload( const QString &videoId )
         else
         {
             QFile::remove( tmp_path );
-            // KEIN Negativ-Cache hier: der Download ist gescheitert (Netz,
-            // Format, geo-blockiert, ...), nicht "kein Video vorhanden" --
-            // beim naechsten Mal (Song wiederholt sich) wird es erneut
-            // versucht statt wochenlang aufzugeben.
+            // NO negative cache here: the download failed (network, format,
+            // geo-blocked, ...), not "no video exists" -- next time (the song
+            // repeats) it is tried again instead of giving up for weeks.
             fprintf( stderr, "[Video] Download fehlgeschlagen fuer \"%s - %s\"\n",
                      m_artist.toLocal8Bit().constData(), m_title.toLocal8Bit().constData() );
         }

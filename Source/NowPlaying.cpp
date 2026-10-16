@@ -197,28 +197,27 @@ void NowPlaying::threadFunc()
     { /* already initialised on this thread is fine */
     }
 
-    // Laufende Basislinie für die Drift-Korrektur unten (bleibt auf DIESEM
-    // Thread, kein Lock nötig - nur der veröffentlichte m_timeline braucht ihn).
+    // Running baseline for the drift correction below (stays on THIS thread,
+    // no lock needed - only the published m_timeline needs one).
     Timeline prev_tl;
     QString  prev_title;
-    qint64   track_change_ms = 0;   // wann WIR den aktuellen Titel erkannt haben
-    bool     pos_confirmed = false; // erst TRUE, sobald zwei Meldungen zueinander passen
-    Timeline candidate;             // erste (noch unbestätigte) Meldung des neuen Tracks
+    qint64   track_change_ms = 0;   // when WE recognised the current title
+    bool     pos_confirmed = false; // TRUE only once two reports agree with each other
+    Timeline candidate;             // first (not yet confirmed) report of the new track
 
-    // Titel-Bestätigung (analog zur Positions-Bestätigung oben, aber bisher
-    // NIE existiert): der publizierte Titel wechselt erst, wenn zwei
-    // aufeinanderfolgende Polls dasselbe (Titel,Artist)-Paar liefern. Ohne
-    // das löste ein einzelner falscher/leerer SMTC-Read (OS liefert kurz
-    // eine stale oder leere Property, üblich rund um Play/Pause-Flackern
-    // oder App-interne Übergänge) in glwidget.cpp einen kompletten
-    // "neuer Track"-Reset aus - PLL neu aufgesetzt, Lyrics+Künstlerbild neu
-    // geladen, Scroll auf 0 - und der NÄCHSTE Poll (SMTC korrigiert sich
-    // von selbst) kehrte das wieder um: ein einzelner Ausreißer wurde so zu
-    // ZWEI sichtbaren Sprüngen. Trifft nur das PUBLIZIERTE m_title/m_artist;
-    // ist_neuer_track/die Positions-Bestätigung unten bleiben unverändert auf
-    // dem rohen `t` (ein spuriges ist_neuer_track=true bei einem Titel-Blip
-    // ist harmlos - es liefert höchstens kurz positionSec=-1, und der
-    // Aufrufer fällt dafür schon auf seine eigene Uhr zurück).
+    // Title confirmation (like the position confirmation above, but it NEVER
+    // existed before): the published title changes only when two successive
+    // polls deliver the same (title, artist) pair.  Without it a single
+    // wrong/empty SMTC read (the OS briefly delivers a stale or empty
+    // property, common around play/pause flicker or app-internal transitions)
+    // triggered a complete "new track" reset in glwidget.cpp - PLL set up
+    // again, lyrics + artist image reloaded, scroll to 0 - and the NEXT poll
+    // (SMTC corrects itself) undid it again: a single outlier thus became TWO
+    // visible jumps.  Affects only the PUBLISHED m_title/m_artist; the
+    // new-track detection and the position confirmation below keep working
+    // on the raw `t` (a spurious new-track flag on a title blip is harmless -
+    // at most it briefly yields positionSec=-1, and the caller already falls
+    // back to its own clock for that).
     QString pending_title, pending_artist;
     QString published_title, published_artist;
 
@@ -238,9 +237,9 @@ void NowPlaying::threadFunc()
                     t = QString::fromWCharArray( props.Title().c_str() );
                     a = QString::fromWCharArray( props.Artist().c_str() );
 
-                    // Zeitachse für den Lyrics-Sync.  TimeSpan zählt in
-                    // 100-ns-Ticks; StartTime abziehen (Streams starten
-                    // nicht immer bei 0).
+                    // Timeline for the lyrics sync.  TimeSpan counts in
+                    // 100 ns ticks; subtract StartTime (streams do not always
+                    // start at 0).
                     auto         tp = session.GetTimelineProperties();
                     auto         pi = session.GetPlaybackInfo();
                     const double Tick = 1e-7;
@@ -266,24 +265,23 @@ void NowPlaying::threadFunc()
                 parseVlcTitle( scan.text, t, a );
         }
 
-        // Der ROHE SMTC-Wert dieses Polls bleibt unangetastet in `raw` -
-        // `tl` ist die Version, die am Ende veröffentlicht wird.
+        // The RAW SMTC value of this poll stays untouched in `raw` - `tl` is
+        // the version that is published at the end.
         const Timeline raw = tl;
         const bool     ist_neuer_track = !t.isEmpty() && ( t != prev_title );
 
         if ( ist_neuer_track )
         {
-            // NEUER Track: SMTC liefert direkt nach einem Wechsel manchmal
-            // noch 1-2 Polls lang die Position des VORHERIGEN Titels (das OS
-            // hat die Property noch nicht aktualisiert) - genau das erzeugte
-            // den gemeldeten "Sprung in zwei Stufen": erst die falsche
-            // Alt-Position, kurz danach die Korrektur auf die echte. EIN
-            // fixer Schwellwert ("muss nahe 0 sein") wäre aber falsch - ein
-            // Track kann völlig legitim mit einer großen Position beginnen,
-            // z.B. wenn die App erst MITTEN im Song gestartet wird. Deshalb:
-            // jede Meldung wird erst veröffentlicht, sobald sie von der
-            // NÄCHSTEN bestätigt wird (siehe unten); bis dahin nutzt der
-            // Aufrufer seine eigene lokale Uhr seit dem Wechsel (Position < 0).
+            // NEW track: right after a change, SMTC sometimes still delivers
+            // the position of the PREVIOUS title for 1-2 polls (the OS has not
+            // updated the property yet) - exactly that caused the reported
+            // "jump in two steps": first the wrong old position, shortly after
+            // the correction to the real one.  A fixed threshold ("must be
+            // near 0") would be wrong, though - a track can quite legitimately
+            // begin with a large position, e.g. when the app is started only
+            // IN THE MIDDLE of the song.  Therefore every report is published
+            // only once the NEXT one confirms it (see below); until then the
+            // caller uses its own local clock since the change (position < 0).
             track_change_ms = raw.stampMs;
             pos_confirmed = false;
             candidate = raw;
@@ -291,15 +289,14 @@ void NowPlaying::threadFunc()
         }
         else if ( !pos_confirmed && raw.positionSec >= 0.0 && candidate.positionSec >= 0.0 )
         {
-            // Gleitendes Fenster (nicht nur "1. vs. 2. Meldung"): passt DIESE
-            // Meldung zu der VORHERIGEN (im Rahmen normaler Weiterspielzeit,
-            // < 0.6s Abweichung - deutlich enger als der ~1s-Poll-Abstand,
-            // damit zwei gleich EINGEFRORENE Alt-Werte nicht fälschlich als
-            // "konsistent" durchgehen)? Dann bestätigen sich beide gegenseitig
-            // - ab jetzt vertrauen wir dem Verlauf. Passt sie NICHT, wird SIE
-            // selbst der neue Kandidat für den nächsten Vergleich (kann sein,
-            // dass auch sie noch stale ist - erst zwei AUFEINANDERFOLGENDE,
-            // zueinander passende Meldungen gelten als sicher).
+            // Sliding window (not just "1st vs. 2nd report"): does THIS report
+            // match the PREVIOUS one (within normal playing time, < 0.6s off -
+            // clearly tighter than the ~1s poll interval, so that two equally
+            // FROZEN old values do not wrongly pass as "consistent")?  Then
+            // both confirm each other - from now on we trust the course.  If
+            // it does NOT match, IT becomes the new candidate for the next
+            // comparison (it may be stale too - only two SUCCESSIVE reports
+            // that match each other count as safe).
             const double erwartet = candidate.positionSec
                                     + static_cast<double>( raw.stampMs - candidate.stampMs ) * 0.001;
             if ( std::fabs( raw.positionSec - erwartet ) < 0.6 )
@@ -316,19 +313,18 @@ void NowPlaying::threadFunc()
         else if ( pos_confirmed && prev_tl.positionSec >= 0.0 && prev_tl.playing
                   && tl.playing == prev_tl.playing )
         {
-            // MONOTONE Positions-Fortschreibung (bestätigter Track, laufend
-            // unverändert): SMTC aktualisiert die Position oft nur alle paar
-            // Sekunden, und der frische Wert liegt fast immer etwas neben
-            // unserer eigenen Hochrechnung. Frühere Fassungen übernahmen einen
-            // Teil der Abweichung als POSITIONS-Schritt - jeder Poll erzeugte
-            // damit einen kleinen Sprung (auch rückwärts!), sichtbar als
-            // hüpfender Scroll und als Karaoke-Flip in die Vorzeile, wenn der
-            // Rückschritt eine Zeilengrenze kreuzte. Jetzt bleibt die Position
-            // exakt auf der Hochrechnung (kontinuierlich, monoton) und die
-            // Abweichung wird stattdessen in die LAUFRATE gelegt: bei bis zu
-            // ±15% Tempo-Anpassung gleitet die Anzeige unmerklich auf SMTCs
-            // Zeitachse zu, statt zu springen. Nur ein echter Seek (>1.5s)
-            // wird weiterhin sofort als Sprung übernommen (Rate zurück auf 1).
+            // MONOTONIC position update (confirmed track, unchanged and
+            // playing): SMTC often updates the position only every few
+            // seconds, and the fresh value almost always lies a little off our
+            // own extrapolation.  Earlier versions took part of the difference
+            // as a POSITION step - every poll thus caused a small jump (even
+            // backwards!), visible as a hopping scroll and as a karaoke flip to
+            // the previous line when the step back crossed a line boundary.
+            // Now the position stays exactly on the extrapolation (continuous,
+            // monotonic) and the difference goes into the RATE instead: with
+            // up to ±15% tempo adjustment the display glides imperceptibly onto
+            // SMTC's timeline instead of jumping.  Only a real seek (>1.5s) is
+            // still taken over at once as a jump (rate back to 1).
             const double erwartet = prev_tl.positionSec
                                     + static_cast<double>( tl.stampMs - prev_tl.stampMs ) * 0.001
                                           * prev_tl.rate;

@@ -762,12 +762,12 @@ GLuint ComputeFX::stepLightning( const AudioFeatures &a, [[maybe_unused]] float 
         glUniform1ui( glGetUniformLocation( pseed, "seed" ), static_cast<GLuint>( t * 811.f ) );
         float sx = 0.5f + 0.42f * sinf( t * 2.7f ) * cosf( t * 1.3f );
         glUniform1f( glGetUniformLocation( pseed, "startX" ), sx );
-        // War 55+35*level: bei ruhigem Pegel starben die Laeufer nach nur
-        // ~55 Schritten * 0.01 Schrittweite = 0.55 der Bildhoehe - der GESAMTE
-        // untere Bildbereich blieb ausserhalb der Screen-Space-Beleuchtung
-        // dauerhaft schwarz ("LightningStorm ist einfach nur schwarz").  Jetzt
-        // mit satter Reserve (Wander-Ineffizienz durch die Winkel-Drift
-        // eingerechnet) IMMER bis zum unteren Rand, unabhaengig vom Pegel.
+        // Was 55+35*level: at a quiet level the walkers died after only ~55
+        // steps * 0.01 step width = 0.55 of the picture height - the WHOLE
+        // lower part of the picture stayed outside the screen-space lighting,
+        // permanently black ("LightningStorm is just black").  Now with ample
+        // reserve (the wandering inefficiency from the angle drift included)
+        // ALWAYS down to the bottom edge, regardless of the level.
         glUniform1f( glGetUniformLocation( pseed, "life" ), 170.f + 70.f * a.overallLevel );
         glDispatchCompute( groups( Tips, 128 ), 1, 1 );
         glMemoryBarrier( GL_SHADER_STORAGE_BARRIER_BIT );

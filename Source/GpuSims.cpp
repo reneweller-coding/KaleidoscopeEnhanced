@@ -35,8 +35,8 @@ extern GLuint fullscreenVAO();
 #define GL_VERTEX_PROGRAM_POINT_SIZE 0x8642
 #endif
 
-// Lokale Pendants der (aus Performance-Gründen ohnehin stillgelegten)
-// RenderPipeline-Prüfhelfer - identisches Verhalten, keine Abhängigkeit.
+// Local counterparts of the RenderPipeline check helpers (disabled anyway for
+// performance reasons) - identical behaviour, no dependency.
 /**  Local stand-in for RenderPipeline's framebuffer-completeness check; always returns true (the real check is
  * disabled for profiling reasons, see RenderPipeline::checkFramebufferStatus).
  *
@@ -45,7 +45,7 @@ extern GLuint fullscreenVAO();
  **/
 static bool fbStatusOk()
 {
-    return true; // wie RenderPipeline::checkFramebufferStatus (rwrwtest profiling)
+    return true; // like RenderPipeline::checkFramebufferStatus (rwrwtest profiling)
 }
 
 /**  Local stand-in for RenderPipeline's glGetError polling; intentionally a no-op (disabled for profiling reasons,
@@ -55,7 +55,7 @@ static bool fbStatusOk()
  **/
 static void glErrCheck( const char * /*label*/ )
 {
-    // wie RenderPipeline::checkGLErrors: deaktiviert (rwrwtest profiling)
+    // like RenderPipeline::checkGLErrors: disabled (rwrwtest profiling)
 }
 
 /**  Clears the currently-bound FBO and draws the shared fullscreen triangle.
@@ -102,8 +102,8 @@ void GpuSims::setupAll()
  **/
 void GpuSims::run( const AudioFeatures &audio, float dt, const Demand &need, const Frame &f )
 {
-    // Reihenfolge, Sub-Step-Zahlen und Unit-Bindings exakt wie der alte
-    // Inline-Block in RenderPipeline::paint().
+    // Order, sub-step counts and unit bindings exactly as in the old inline
+    // block in RenderPipeline::paint().
     // f.hold (a freeze): every sim keeps its state -- the binds below still run,
     // so the scenes sample the newest one as before.
     if ( need.rd && m_rdReady )
@@ -144,7 +144,7 @@ void GpuSims::run( const AudioFeatures &audio, float dt, const Demand &need, con
         glActiveTexture( GL_TEXTURE0 ); // see stepFluid(): leave unit 0 selected
     }
 
-    // Historien akkumulieren IMMER; Textur nur bei Bedarf anlegen/hochladen.
+    // Histories ALWAYS accumulate; create/upload the texture only on demand.
     stepSSM( audio, dt );
     if ( need.ssm )
         bindSSMTexture();
@@ -833,7 +833,7 @@ void GpuSims::stepReactionDiffusion( const AudioFeatures &audio )
     m_rdIdx = prev; // ping-pong swap; newest state is now m_texRD[1 - m_rdIdx]
 }
 
-// SSM-Textur (Unit 10): lazy anlegen, bei Änderung komplett hochladen.
+// SSM texture (unit 10): created lazily, uploaded whole when it changed.
 /** Lazily creates the SSM texture (unit 10) and re-uploads it whole whenever the matrix data is dirty. */
 void GpuSims::bindSSMTexture()
 {
@@ -861,8 +861,8 @@ void GpuSims::bindSSMTexture()
     glActiveTexture( GL_TEXTURE0 ); // see stepFluid()
 }
 
-// Spektrogramm-Textur (Unit 28): lazy anlegen, nur die seit dem letzten
-// Upload geschriebenen Zeilen hochladen (ggf. am Ring-Wrap gesplittet).
+// Spectrogram texture (unit 28): created lazily; only the rows written since
+// the last upload are uploaded (split at the ring's wrap if needed).
 /**  Lazily creates the spectrogram texture (unit 28) and uploads only the rows written since the last upload.
  *
  * A freshly-created texture uploads the whole ring (m_spectroPend forced to

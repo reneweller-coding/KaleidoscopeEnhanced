@@ -183,7 +183,7 @@ public:
         m_moodBucket = -1;
     }
 
-    // ---- Remote-/Setup-Tool-Schalter für die optionalen Online-Extras ----
+    // ---- Remote/setup-tool switches for the optional online extras ----
     // (Web-Remote /api/toggle + /api/set; the keyboard shortcuts 'w'/'o'/'g'/
     // 'p' set the same members directly, these just add a remote-safe API.)
     /**  Whether adaptive render-scale (key 'g') is currently on.
@@ -556,11 +556,11 @@ protected:
     QString     m_lastNpTitle;           ///< Last title seen from m_nowPlaying, used to detect a track change.
     qint64      m_npShownAt = -100000;   ///< m_fpsTimer timestamp when the current title reveal started.
 
-    // ---- Lyrics + Künstlerbilder (TrackMedia: LRCLIB / Deezer, optional) ----
-    // Taste 'w' schaltet den Lyrics-Modus (aus -> Scroll -> Karaoke), Taste
-    // 'o' die Künstlerbilder.  updateTrackOverlays() berechnet pro Frame den
-    // Overlay-Zustand (Playback-Sync, Blenden, Bildrotation) und reicht ihn
-    // samt Texturen an den RenderPipeline/PresentPass durch.
+    // ---- Lyrics + artist images (TrackMedia: LRCLIB / Deezer, optional) ----
+    // Key 'w' cycles the lyrics mode (off -> scroll -> karaoke), key 'o'
+    // toggles the artist images.  updateTrackOverlays() computes the overlay
+    // state every frame (playback sync, fades, image rotation) and hands it,
+    // together with the textures, to the RenderPipeline/PresentPass.
     /**  Computes this frame's lyrics/artist-image overlay state (sync position via a consumer PLL, karaoke line,
      * fades, palette) and uploads any changed textures, then hands the result to the given RenderPipeline's present
      * pass.
@@ -579,19 +579,19 @@ protected:
     void        requestCurrentTrackMedia();
     TrackMedia *m_trackMedia = nullptr; ///< Fetches synced lyrics + artist images (LRCLIB/Deezer) for the current
                                         ///< track.
-    // Default beim allerersten Start (keine gespeicherten Settings): Karaoke
-    // + Künstlerbilder an - ab dann persistiert loadUiSettings()/saveUiSettings()
-    // den zuletzt gewählten Zustand.
-    int  m_lyricsMode = 2;    ///< 0 aus, 1 Scroll, 2 Karaoke (persistiert)
-    bool m_artistShow = true; ///< Künstlerbilder an/aus (persistiert)
-    // Eigener Schalter, UNABHÄNGIG von m_artistShow: wer Künstlerbilder will,
-    // aber keine automatischen YouTube-Downloads (Netzwerk/Platte), kann das
-    // hier separat abschalten -- der Video-PiP braucht trotzdem BEIDE Flags
-    // (siehe updateTrackOverlays()), weil er sich denselben Eck-Slot teilt.
-    bool m_videoEnabled = true; ///< Musikvideo-Suche/-Wiedergabe an/aus (persistiert), zusätzlich zu m_artistShow.
-    // Kinetischer Zeilen-Slam beim Karaoke-Zeilenwechsel: per User-Feedback
-    // ("springt zuviel") standardmäßig AUS, per Umschalt+W zuschaltbar
-    // (persistiert wie die anderen Overlay-Einstellungen).
+    // Default on the very first start (no saved settings): karaoke + artist
+    // images on - from then on loadUiSettings()/saveUiSettings() persist the
+    // last chosen state.
+    int  m_lyricsMode = 2;    ///< 0 off, 1 scroll, 2 karaoke (persisted)
+    bool m_artistShow = true; ///< Artist images on/off (persisted)
+    // A switch of its own, INDEPENDENT of m_artistShow: whoever wants artist
+    // images but no automatic YouTube downloads (network/disk) can turn this
+    // off separately -- the video PiP still needs BOTH flags (see
+    // updateTrackOverlays()), because it shares the same corner slot.
+    bool m_videoEnabled = true; ///< Music-video search/playback on/off (persisted), on top of m_artistShow.
+    // Kinetic line slam on a karaoke line change: OFF by default after user
+    // feedback ("jumps too much"), switched on with Shift+W (persisted like
+    // the other overlay settings).
     bool m_lyricsKinetic = false; ///< Kinetic line-slam animation on karaoke line change, off by default (Shift+W).
     // Optional, and off unless the user switches it on in the setup tool --
     // it is the only thing here that contacts a server on its own.
@@ -610,49 +610,49 @@ protected:
                                 ///< use site for why the fade-out is an immediate cut instead).
     float m_scrollVSm = 0.f;               ///< Slewed (smoothed) vertical scroll position of the lyrics texture.
     int   m_karaokeLine = -1;              ///< Index of the currently active/highlighted karaoke line.
-    // Kinetik: wann die aktive Karaoke-Zeile zuletzt gewechselt hat
-    // (Slam-Einflug der frischen Zeile im Present).
+    // Kinetics: when the active karaoke line last changed (the fresh line's
+    // slam-in in the present pass).
     int    m_lastKaraokeLineSeen = -1; ///< Last karaoke line index seen, to detect a line change.
     qint64 m_lineChangeMs = -1;        ///< m_fpsTimer timestamp of the last karaoke line change.
-    // Cover-Palette: dominante Farben des aktuellen Kuenstlerbilds.
+    // Cover palette: dominant colours of the current artist image.
     float  m_palA[3] = { 0.f, 0.f, 0.f }; ///< Dominant RGB color extracted from the current artist image.
     float  m_palB[3] = { 0.f, 0.f, 0.f }; ///< Secondary RGB color extracted from the current artist image.
     bool m_palValid = false; ///< Whether extractPalette() found a usable (non-greyscale) palette for the current image.
     float  m_palAmtSm = 0.f;              ///< Slewed (smoothed) blend amount of the cover palette grading.
-    qint64 m_trackStartMs = 0;            ///< Fallback-Uhr ohne SMTC-Position
-    bool   m_lyricsTest = false;          ///< KALEIDO_LYRICS_TEST aktiv
-    // Echtes dt fürs Scroll-/Blend-Smoothing (nicht an die 60-Hz-Annahme
-    // gekoppelt) - ohne das ruckelt es, sobald die Framezeit schwankt.
+    qint64 m_trackStartMs = 0;            ///< Fallback clock without an SMTC position
+    bool   m_lyricsTest = false;          ///< KALEIDO_LYRICS_TEST active
+    // Real dt for the scroll/blend smoothing (not tied to a 60 Hz assumption)
+    // - without it the motion stutters as soon as the frame time varies.
     qint64 m_overlayLastMs = -1; ///< m_fpsTimer timestamp of the previous updateTrackOverlays() call, for real dt.
-    // Consumer-seitige PLL für die Playback-Position: EIGENE, stetig
-    // integrierte Uhr, die nur zur jeweils verfügbaren Referenz (SMTC oder
-    // lokale Uhr) hin BESCHLEUNIGT oder BREMST (Rate 0..1.15) - springen
-    // kann sie konstruktionsbedingt nur bei einem echten Seek (>1.5s).
-    // Deckt ALLE Restquellen von Rückwärtsschritten ab (Playing-Flackern,
-    // Titel-Flackern/Settle-Resets, SMTC<->Lokaluhr-Übergabe).
+    // Consumer-side PLL for the playback position: its OWN, continuously
+    // integrated clock, which only SPEEDS UP or SLOWS DOWN (rate 0..1.15)
+    // towards whichever reference is available (SMTC or the local clock) -
+    // by construction it can jump only on a real seek (>1.5s).  Covers ALL
+    // remaining sources of backward steps (Playing flicker, title flicker /
+    // settle resets, hand-over between SMTC and the local clock).
     double m_posSmooth = -1.0; ///< Consumer-PLL smoothed playback position (seconds); < 0 = not yet initialized.
-    // Rückwärts-Sprünge der Referenz werden erst nach ~2s konsistenter
-    // Bestätigung übernommen (echter Rückwärts-Seek) - kürzeres Flackern
-    // (Titel-/Playing-Flaps) wird komplett überbrückt.
+    // Backward jumps of the reference are only taken over after ~2s of
+    // consistent confirmation (a real backward seek) - shorter flicker
+    // (title/Playing flaps) is bridged completely.
     qint64 m_backJumpSince = -1; ///< m_fpsTimer timestamp when a backward reference jump was first observed; -1 = none
                                  ///< pending.
     double m_backJumpRef = 0.0;  ///< Reference position of the pending backward jump candidate.
-    // Dieselbe Bestätigung jetzt auch VORWÄRTS, nur kürzer (0.4s statt 2s -
-    // ein echter Vorspul-Seek soll sich weiter sofort anfühlen). Vorher
-    // sprang ein einzelner verrutschter Referenzwert >1.5s voraus GANZ OHNE
-    // Bestätigung durch - unauffällig für sich allein, aber sobald die
-    // Referenz eine Umlaufzeit später wieder auf den echten Wert zurückfiel,
-    // erkannte die Rückwärts-Logik genau DAS als "2s konsistent falsch" und
-    // sprang zurück: ein einzelner Ausreißer wurde so zu ZWEI sichtbaren
-    // Sprüngen (vor, dann zurück) - exakt das gemeldete Huepfen, durch eine
-    // PLL-Simulation mit realistischem Referenz-Rauschen nachgestellt.
+    // The same confirmation now FORWARD too, only shorter (0.4s instead of
+    // 2s - a real fast-forward seek should still feel immediate).  Before,
+    // a single stray reference value >1.5s ahead went through WITHOUT ANY
+    // confirmation - unremarkable on its own, but as soon as the reference
+    // fell back to the true value one round trip later, the backward logic
+    // took exactly THAT as "2s consistently wrong" and jumped back: a single
+    // outlier thus became TWO visible jumps (forward, then back) - exactly
+    // the reported hopping, reproduced by a PLL simulation with realistic
+    // reference noise.
     qint64 m_fwdJumpSince = -1; ///< m_fpsTimer timestamp when a forward reference jump was first observed; -1 = none
                                 ///< pending.
     double m_fwdJumpRef = 0.0;  ///< Reference position of the pending forward jump candidate.
-    // An WELCHEN RenderPipeline die Overlay-Texturen zuletzt hochgeladen wurden:
-    // jede Konfiguration hat ihren EIGENEN PresentPass - nach einem Preset-
-    // Wechsel müssen Lyrics-/Künstlerbild-Texturen dort neu hochgeladen
-    // werden, sonst sind sie "verloren".
+    // WHICH RenderPipeline the overlay textures were last uploaded to: every
+    // configuration has its OWN PresentPass - after a preset switch the
+    // lyrics/artist-image textures must be uploaded there again, otherwise
+    // they are "lost".
     RenderPipeline *m_overlayFs = nullptr; ///< RenderPipeline that last received the overlay textures, to detect a
                                            ///< preset switch.
 
@@ -692,9 +692,9 @@ protected:
     int m_midiMap[MIDI_TARGETS] = { 1, 2, 3, -1, -1, -1, -1 }; ///< CC/note nr per MIDI_* target, -1 = frei
     int m_midiLearn = -1;                                      ///< -1 = off, else target being learned
 
-    // Recording + Instant Replay: komplett in Source/Recorder.{h,cpp}
-    // gekapselt (PBO-Readback, Encoder-Worker, Replay-Ring, ffmpeg-Mux).
-    // GLwidget ruft nur noch toggle()/captureIfDue()/saveReplay() etc.
+    // Recording + instant replay: fully encapsulated in Source/Recorder.{h,cpp}
+    // (PBO readback, encoder workers, replay ring, ffmpeg mux).  GLwidget only
+    // calls toggle()/captureIfDue()/saveReplay() etc.
     Recorder m_recorder; ///< Screen recording + instant-replay ring buffer (PBO readback, encoder worker, ffmpeg mux).
     std::vector<unsigned char> m_snapBuf;  ///< glReadPixels scratch (Web-Snapshot)
 
@@ -788,10 +788,10 @@ protected:
     void saveUiSettings();
     /**  Persists everything: RenderPipeline::saveSettings() (look knobs) plus saveUiSettings() (UI state).
      *
-     * Bündelt saveUiSettings() + RenderPipeline::saveSettings() - ruft die
-     * Taste 'k' auf UND jeder Quit-Pfad (auch die harten exit(0)-Stellen,
-     * die keine C++-Destruktoren mehr durchlaufen), damit der zuletzt
-     * gewählte Zustand wirklich immer übersteht.
+     * Bundles saveUiSettings() + RenderPipeline::saveSettings() - called by
+     * key 'k' AND by every quit path (including the hard exit(0) spots,
+     * which run no C++ destructors any more), so the last chosen state
+     * really always survives.
      **/
     void saveAllSettings();
     /** Opens the remote-control menu at its root. */

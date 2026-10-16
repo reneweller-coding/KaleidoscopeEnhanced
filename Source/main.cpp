@@ -391,12 +391,12 @@ int main( int argc, char *argv[] )
     // NOTE: MSVC's rand()/srand() keep PER-THREAD state (verified
     // empirically), so this does NOT seed rand() on other threads --
     // AudioAnalyzer's capture thread seeds itself separately in ::run().
-    // KALEIDO_SEED pinnt den Zufall auf einen festen Wert.  Ohne das ist ein
-    // Vorher/Nachher-Vergleich zweier Laeufe wertlos: die Szenen wuerfeln ihre
-    // Parameter und Seeds pro Lauf neu, und unveraenderte Kontrollszenen
-    // schwankten in der Messung um den Faktor zwei -- mehr als die Wirkung,
-    // die belegt werden sollte.  Nur fuer Messlaeufe gedacht, im Betrieb nicht
-    // gesetzt und damit weiterhin uhrgeseedet.
+    // KALEIDO_SEED pins the randomness to a fixed value.  Without it a
+    // before/after comparison of two runs is worthless: the scenes roll their
+    // parameters and seeds anew per run, and unchanged control scenes varied
+    // by a factor of two in the measurement -- more than the effect that was
+    // to be shown.  Meant for measurement runs only; not set in normal use,
+    // which therefore stays seeded from the clock.
     {
         const char *seed_env = getenv( "KALEIDO_SEED" );
         srand( seed_env ? static_cast<unsigned>( strtoul( seed_env, nullptr, 10 ) )
@@ -464,13 +464,13 @@ int main( int argc, char *argv[] )
     // The normal windowed-app path: build the Qt application and its single top-level
     // window, then either show it windowed or on the chosen fullscreen monitor.
     QApplication app( argc, argv );
-    // Ohne dies fragt Qt bei der ALLERERSTEN Netzwerk-Anfrage (Lyrics-/
-    // Künstlerbild-Abruf in TrackMedia, ausgelöst synchron aus paintGL() bei
-    // jedem Trackwechsel) unter Windows per WinHttpGetProxyForUrl SYNCHRON
-    // auf dem aufrufenden Thread nach einem System-Proxy (WPAD-Autoerkennung)
-    // - das kann mehrere Sekunden blockieren und friert damit den GUI/Render-
-    // Thread ein (reproduziert als Hänger 4-9s nach Start, CPU-Zeit-Plateau,
-    // Fenster reagiert nicht mehr). Die App braucht keinen System-Proxy.
+    // Without this, on the VERY FIRST network request (the lyrics/artist-image
+    // fetch in TrackMedia, triggered synchronously from paintGL() on every
+    // track change) Qt on Windows asks for a system proxy SYNCHRONOUSLY on the
+    // calling thread via WinHttpGetProxyForUrl (WPAD auto-detection) - that
+    // can block for several seconds and thus freezes the GUI/render thread
+    // (reproduced as a hang 4-9s after start, a CPU-time plateau, the window
+    // no longer responding).  The app needs no system proxy.
     QNetworkProxy::setApplicationProxy( QNetworkProxy::NoProxy );
 
     // -q: the score-cue self test.  It needs the Qt event loop (it binds a real socket and feeds it
@@ -498,11 +498,11 @@ int main( int argc, char *argv[] )
         }
     }
     app.setOverrideCursor( Qt::BlankCursor );
-    // Stack statt new-ohne-delete: so läuft ~QMyWindow/~GLwidget (Recorder-
-    // Finalisierung, GL-Cleanup mit aktuellem Kontext) GARANTIERT VOR
-    // ~QApplication.  Der frühere Leak ließ die Widgets erst irgendwo im
-    // App-Teardown sterben — Nährboden für Exit-Asserts der Debug-Qt
-    // ("Must construct a QGuiApplication before a QPixmap" & Co.).
+    // Stack instead of new-without-delete: this way ~QMyWindow/~GLwidget
+    // (recorder finalisation, GL cleanup with a current context) runs
+    // GUARANTEED BEFORE ~QApplication.  The former leak let the widgets die
+    // somewhere in the app teardown — a breeding ground for the debug Qt's
+    // exit asserts ("Must construct a QGuiApplication before a QPixmap" & co.).
     QMyWindow window( NULL );
     QObject::connect( &window, SIGNAL( signalQuitApp() ), &app, SLOT( quit() ) );
     app.setWindowIcon( QIcon( QString( "icon.ico" ) ) ); // multi-res: Qt picks the best size per context

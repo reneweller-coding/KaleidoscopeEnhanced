@@ -42,7 +42,7 @@ static void drawFullscreen()
  **/
 static bool fbStatusOk()
 {
-    return true; // wie RenderPipeline::checkFramebufferStatus (rwrwtest profiling)
+    return true; // like RenderPipeline::checkFramebufferStatus (rwrwtest profiling)
 }
 
 /**  Clamp a value to [lo, hi].
@@ -211,7 +211,7 @@ void PresentPass::setup( int renderW, int renderH,
 void PresentPass::resize( int renderW, int renderH,
                           GLenum internalFmt, GLenum fmt, GLenum type )
 {
-    // Verhalten wie der alte resize(): nur nachziehen, was schon existiert.
+    // Behaves like the old resize(): only resizes what already exists.
     if ( m_texFinal != 0 )
         updateFinalTexture( renderW, renderH, internalFmt, fmt, type );
 
@@ -231,8 +231,8 @@ void PresentPass::resize( int renderW, int renderH,
     glBindTexture( GL_TEXTURE_2D, 0 );
 }
 
-// RGBA8-Bild in eine (ggf. neue) Textur laden - gemeinsames Muster für
-// Lyrics- und Künstlerbild-Overlay.
+// Load an RGBA8 image into a (possibly new) texture - the pattern shared by
+// the lyrics and artist-image overlays.
 /**  Upload an RGBA8 image into a texture, creating it on first use.
  *
  * @param tex   Texture handle to (re)use or create (updated in place). (in,out)
@@ -256,10 +256,10 @@ static void uploadRGBA( GLuint &tex, const void *rgba, int w, int h )
     glBindTexture( GL_TEXTURE_2D, 0 );
 }
 
-// ---- Frame-History-Ring -----------------------------------------------------
-// Drittel-Auflösung reicht: Rewind trägt ohnehin einen VHS-Look (der die
-// Weichheit verkauft) und das Zeitecho ist eine Geisterschicht.  96 Layer bei
-// ~30 Aufnahmen/s = ~3.2 s Vergangenheit; bei 1080p-Rendering ~88 MB VRAM.
+// ---- Frame history ring -----------------------------------------------------
+// One-third resolution is enough: the rewind wears a VHS look anyway (which
+// sells the softness) and the time echo is a ghost layer.  96 layers at ~30
+// captures/s = ~3.2 s of the past; ~88 MB of VRAM when rendering at 1080p.
 /**  Capture the current frame into the history ring at a fixed ~30 Hz wall-clock cadence, via an FBO blit (no CPU
  * readback).
  *
@@ -319,8 +319,8 @@ void PresentPass::captureHistory( GLuint sourceTex, int renderW, int renderH,
     if ( m_histFboSrc == 0 )
         glGenFramebuffers( 1, &m_histFboSrc );
 
-    // Fixe Aufnahme-Kadenz auf der WANDzeit - der Layer-Abstand ist dadurch
-    // (näherungsweise) konstant 1/30 s, egal wie die Framerate schwankt.
+    // Fixed capture cadence on WALL time - the layer spacing is thus
+    // (approximately) a constant 1/30 s, however the frame rate varies.
     m_histAccum += dtWall;
     if ( m_histAccum < 1.f / 30.f )
         return;
@@ -342,7 +342,7 @@ void PresentPass::captureHistory( GLuint sourceTex, int renderW, int renderH,
         ++m_histCount;
 }
 
-// Sekunden zurück -> Layer-Index (geklemmt auf das, was der Ring hält).
+// Seconds back -> layer index (clamped to what the ring holds).
 float PresentPass::historyLayerBack( float secs ) const
 {
     int slots = static_cast<int>( secs * 30.f + 0.5f );
@@ -369,8 +369,8 @@ void PresentPass::setArtistExternalTexture( GLuint texId )
     m_artistExternalTex = texId;
 }
 
-// Frisch gerenderten Titel hochladen; Reveal-Uhr auf 0 (Stil/Seed setzt der
-// Aufrufer separat - die Musik-Zuordnung der Stile bleibt seine Sache).
+// Upload a freshly rendered title; reveal clock to 0 (the caller sets style
+// and seed separately - mapping the styles to the music stays its business).
 void PresentPass::setTitleImage( const void *rgba, int w, int h )
 {
     if ( m_titleTex == 0 )
@@ -378,8 +378,8 @@ void PresentPass::setTitleImage( const void *rgba, int w, int h )
     glBindTexture( GL_TEXTURE_2D, m_titleTex );
     glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA8, w, h, 0,
                   GL_RGBA, GL_UNSIGNED_BYTE, rgba );
-    // Mipmaps: einige Einflug-Stile verkleinern die Textur zeitweise (z.B.
-    // "rises from depth") - ohne Mip-Kette flimmert Text bei Minifikation.
+    // Mipmaps: some fly-in styles shrink the texture for a while (e.g. "rises
+    // from depth") - without a mip chain, text flickers under minification.
     glGenerateMipmap( GL_TEXTURE_2D );
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR );
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
@@ -429,9 +429,9 @@ void PresentPass::run( const Inputs &in )
         return;
     const AudioFeatures &audio_fx = *in.fx;
 
-    // Frame-History-Ring: das frische Frame aufzeichnen, BEVOR irgendetwas
-    // präsentiert wird - so speist auch ein laufender Rewind den Ring weiter
-    // mit dem Live-Bild (die Pipeline rendert ja normal weiter).
+    // Frame history ring: record the fresh frame BEFORE anything is
+    // presented - so even a running rewind keeps feeding the ring with the
+    // live picture (the pipeline keeps rendering normally, after all).
     captureHistory( in.source, in.renderW, in.renderH, in.dtWall );
 
     glActiveTexture( GL_TEXTURE0 );
@@ -712,7 +712,7 @@ void PresentPass::run( const Inputs &in )
                 glUniform1f( m_presentTitleSeedUni, m_titleSeed );
         }
     }
-    // Lyrics- und Künstlerbild-Overlay (Units 3/4; Alpha 0 = inaktiv).
+    // Lyrics and artist-image overlay (units 3/4; alpha 0 = inactive).
     if ( m_presentLyricsAlphaUni >= 0 )
     {
         float la = ( m_lyricsTex != 0 ) ? in.lyricsAlpha : 0.f;
@@ -758,10 +758,10 @@ void PresentPass::run( const Inputs &in )
         }
     }
 
-    // ---- Zeit-Regie: Rewind / Zeitecho / Atem-anhalten ----
-    // Der Array-Sampler MUSS immer auf einer eigenen Unit stehen (5): zwei
-    // Sampler-TYPEN auf derselben Unit machen den ganzen Draw ungültig,
-    // auch wenn der Array-Sampler nie abgetastet wird.
+    // ---- Time direction: rewind / time echo / held breath ----
+    // The array sampler MUST always sit on a unit of its own (5): two sampler
+    // TYPES on the same unit make the whole draw invalid, even if the array
+    // sampler is never sampled.
     {
         if ( m_presentHistTexUni >= 0 )
             glUniform1i( m_presentHistTexUni, 5 );
@@ -809,7 +809,7 @@ void PresentPass::run( const Inputs &in )
         if ( m_presentPalBUni >= 0 )
             glUniform3f( m_presentPalBUni,
                          in.paletteB[0], in.paletteB[1], in.paletteB[2] );
-        // Tiefen-Sampler IMMER auf eigener Unit (6) - siehe histTex-Kommentar.
+        // Depth sampler ALWAYS on a unit of its own (6) - see the histTex comment.
         if ( m_presentSceneDepthUni >= 0 )
             glUniform1i( m_presentSceneDepthUni, 6 );
         float dp = ( in.sceneDepthTex != 0 ) ? in.depthPar : 0.f;

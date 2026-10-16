@@ -452,7 +452,7 @@ void SetupWindow::buildContent()
     f_behav->addRow( QString(), m_lightShow );
     root->addWidget( g_behav );
 
-    // ---- Bild/Ton-Feintuning ----
+    // ---- Picture/sound fine-tuning ----
     auto *g_tune = new QGroupBox( uiString( S_SETUP_GROUP_TUNE ) );
     auto *f_tune = new QFormLayout( g_tune );
     m_reactivity = new QDoubleSpinBox();

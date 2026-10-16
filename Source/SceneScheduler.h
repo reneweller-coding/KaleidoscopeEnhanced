@@ -15,26 +15,26 @@
 #ifndef SCENESCHEDULER_H
 #define SCENESCHEDULER_H
 
-// Szenen-Scheduler, herausgelöst aus RenderPipeline (Refactor 3/4 Teil c).
+// Scene scheduler, split out of RenderPipeline (refactor 3/4, part c).
 //
-// Entscheidet WANN gewechselt wird und WOHIN - die Render-Pipeline fragt nur
-// noch ab (actTexture/nextTexture/texInterp/...):
-//  - Zustandsmaschinen für Effekt- und Combine-Überblendung (Solo -> Fade),
-//    beat-quantisiert auf den Downbeat (mit Timeout + No-Music-Escape)
-//  - Musikalische Trigger: Novelty/Key-Change, Section-Wechsel (mit
-//    SONG-STRUKTUR-GEDÄCHTNIS: Refrain #2 spielt exakt den Look von
-//    Refrain #1), EDM-Drops; Pin unterdrückt alle erzwungenen Cuts
-//  - Auswahl des nächsten Effekts: Zufall + Komplexitätsbudget + useShader
-//    + moodAccept (Arousal-Busyness, Mood-Tags, gelerntes Taste via Callback)
-//  - Review-Modus (Test*-Presets): alphabetisch, fix 8 s pro Szene
-//  - Remote-Direktsprung (forceScene) schlägt alles
-//  - Übergangs-Wahl: ein Shader aus Transitions/ pro Fade (probability- und
-//    mood-gewichtet; Crossfade bleibt der häufigste)
+// Decides WHEN to change and to WHAT - the render pipeline only queries it
+// (actTexture/nextTexture/texInterp/...):
+//  - state machines for the effect and combine cross-fades (solo -> fade),
+//    beat-quantised to the downbeat (with timeout + no-music escape)
+//  - musical triggers: novelty/key change, section change (with
+//    SONG-STRUCTURE MEMORY: chorus #2 plays exactly the look of chorus #1),
+//    EDM drops; pin suppresses all forced cuts
+//  - choice of the next effect: chance + complexity budget + useShader
+//    + moodAccept (arousal busyness, mood tags, learned taste via callback)
+//  - review mode (Test* presets): alphabetical, a fixed time per scene
+//  - a remote direct jump (forceScene) beats everything
+//  - transition choice: one shader from Transitions/ per fade (weighted by
+//    probability and mood; the cross-fade stays the most frequent)
 //
-// Uhren: std::chrono::steady_clock - exakt die Wandzeit-Semantik der alten
-// QElapsedTimer (Freeze/Pin re-armen die Uhren jeden gehaltenen Frame).
-// Qt-frei (RendererCore-Baustein); das Taste-PERSISTIEREN (QSettings) bleibt
-// beim Aufrufer und kommt als tasteFor-Callback herein.
+// Clocks: std::chrono::steady_clock - exactly the wall-time semantics of
+// the old QElapsedTimer (freeze/pin re-arm the clocks every held frame).
+// Qt-free (a RendererCore building block); PERSISTING the taste (QSettings)
+// stays with the caller and comes in as the tasteFor callback.
 
 #include <chrono>
 #include <functional>
@@ -86,7 +86,7 @@ public:
     /** Roll the initial act/next scene and combine picks and (re)start both clocks (the old start() block). */
     void reset();
 
-    // ---- Konfiguration / Zustand von außen ----
+    // ---- Configuration / state from outside ----
     /** Review bench pacing: how long each scene holds in review mode (Test* presets).
      *
      * 25 s is a full musical phrase at ~120 BPM, so a scene's slow camera arcs and palette drifts complete at least
@@ -131,8 +131,6 @@ public:
         m_lastValence = valence;
         m_lastAmbient = ambient;
     }
-    /** Gelerntes Taste (Skip-Malus/Favoriten-Bonus): Faktor je Fragment-Pfad.
-     *  Persistenz macht der Aufrufer; ohne Callback zählt alles als 1.0. */
     /**  Install the learned-taste callback (skip-malus / favourite-bonus per fragment path).
      *
      * @param f  Callback mapping a fragment path to a taste multiplier; persistence is the caller's job. Without a
@@ -169,7 +167,7 @@ public:
      * be relied on to show a given one at a known moment.
      **/
     void forceFx( int idx );
-    /**  Solo-Alter des aktuellen Effekts (Skip-Malus-Fenster, !status etc.).
+    /**  Solo age of the current effect (skip-malus window, !status etc.).
      *
      * @return
      *   Seconds since it went solo.
@@ -180,8 +178,6 @@ public:
     {
         return secsSince( m_clockEffectTexture );
     }
-    /** Freeze/Pin: Effekt-/Combine-Uhren re-armen, damit hinter dem
-     *  gehaltenen Bild kein Wechsel "fällig" wird. */
     /** Re-arm both effect/combine clocks so no change is "due" the moment a freeze/pin lifts. */
     void rearmEffectClocks()
     {
@@ -230,12 +226,12 @@ public:
         bool sectionKnown = false;  ///< True only if the analyzer RECOGNISED the section by fingerprint; false for a
                                     ///< newly stored one (even when its id slot was recycled from an older section).
         int dropCount = 0;          ///< Running count of detected EDM drops; a rising edge triggers a drop cut.
-        // Übergangs-Timing
+        // Transition timing
         float rhythmStrength = 0.f; ///< Beat confidence 0..1; above 0.55 lets the 4-beat cross-fade duration kick in.
         float estimatedBPM = 0.f;   ///< Estimated tempo, used to compute the 4-beat cross-fade duration.
         float logAttackTime = 0.f;  ///< Articulation (staccato vs. legato); shortens the cross-fade for staccato
                                     ///< material.
-        // Regie: Bogen auf den Drop
+        // Direction: the arc onto the drop
         float buildUp = 0.f; ///< Build-up tension 0..1 (analyzer); a rising edge past 0.45 arms the drop-synchronous
                              ///< arc.
         float phraseSecsLeft = 0.f; ///< Seconds to the next 8-bar boundary = the predicted drop; 0 when the tempo is
@@ -259,7 +255,7 @@ public:
      **/
     void tickFx( const Tick &t, bool trueStereoHold );
 
-    // ---- Abfragen der Pipeline ----
+    // ---- Queries from the pipeline ----
     /**  Index of the currently active (solo or fade-from) effect/texture shader.
      *
      * @return
@@ -388,7 +384,7 @@ private:
     std::vector<EffectShader *> *m_fxShaders = nullptr;   ///< FX/overlay shader list (not owned).
     std::vector<EffectShader *> *m_transitions = nullptr; ///< Scene-transition shader list (not owned).
 
-    // Auswahl-Zustand
+    // Selection state
     unsigned int m_actTexture = 0;                           ///< Currently active effect/texture shader index.
     unsigned int m_nextTexture = 0;                          ///< Effect/texture shader index being faded to.
     unsigned int m_actFx = 0;                                ///< Currently active combine shader index.
@@ -430,13 +426,13 @@ private:
                                                             ///< the same ratio to ComplexityBudget as the original
                                                             ///< 12:20.
 
-    // Regie: Bogen auf den Drop
+    // Direction: the arc onto the drop
     float m_buildUpPrev = 0.f; ///< Last frame's buildUp, for the rising edge past 0.45.
     float m_arcCooldown = 0.f; ///< Seconds until the next arc re-timing is allowed (20 s).
     float m_regieWarm = 0.f;   ///< Seconds since start; the arc regie ignores build-ups in the first 20 s (analyzer
                                ///< baselines still settling).
 
-    // Erzwungene Wechsel + Beat-Quantisierung
+    // Forced changes + beat quantisation
     bool m_forceEffectChange = false; ///< Set by requestChange()/forceScene()/triggers; consumed at the next Solo-phase
                                       ///< check.
     // A MANUAL cut (key 'n', remote) may fire after a brief 0.6 s solo; a
@@ -462,13 +458,13 @@ private:
                                    ///< limit).
     int m_lastSectionCount = 0;    ///< Last seen Tick::sectionCount, to detect the rising edge of a new section.
     int m_lastDropCount = 0;       ///< Last seen Tick::dropCount, to detect the rising edge of a new drop.
-    // Ein Drop hat den Wechsel ausgelöst: beim Feuern wird daraus ein HARTER
-    // Schnitt (Musikvideo-Look) oder der Shatter-Übergang statt des normalen
-    // Crossfades.
+    // A drop triggered the change: when it fires, it becomes a HARD cut
+    // (music-video look) or the shatter transition instead of the normal
+    // cross-fade.
     bool m_dropCutPending = false; ///< A drop triggered the pending change: when it fires, use a hard cut or the
                                    ///< shatter transition instead of a normal cross-fade.
 
-    // Song-Struktur-Gedächtnis.  Keyed by the analyzer's section id, which
+    // Song-structure memory.  Keyed by the analyzer's section id, which
     // is a RECYCLED 8-slot LRU index: a new section of a later song inherits
     // an id some earlier, unrelated section once carried.  These maps are
     // never cleared (there is no track-change signal), so a replay decision
@@ -522,10 +518,10 @@ private:
     std::vector<int> m_reviewOrder;   ///< Texture indices sorted alphabetically by fragment basename (built lazily).
     int              m_reviewPos = 0; ///< Current position within m_reviewOrder.
 
-    // Übergangs-Auswahl (ein Shader pro Fade, aus Transitions/)
+    // Transition choice (one shader per fade, from Transitions/)
     unsigned int m_actTransition = 0; ///< Transition shader rolled for the effect slot's current/last fade.
 
-    // Mood-Snapshot für moodAccept
+    // Mood snapshot for moodAccept
     float m_lastArousal = 0.5f; ///< Last mood arousal snapshot (0..1) from setMood().
     float m_lastValence = 0.5f; ///< Last mood valence snapshot (0..1) from setMood().
     float m_lastAmbient = 0.f;  ///< Last mood ambient-level snapshot (0..1) from setMood().

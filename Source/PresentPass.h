@@ -15,24 +15,24 @@
 #ifndef PRESENTPASS_H
 #define PRESENTPASS_H
 
-// Finaler Present-Pass, herausgelöst aus RenderPipeline (Refactor 3/4 Teil b).
+// Final present pass, split out of RenderPipeline (refactor 3/4, part b).
 //
-// Aufgaben (unverändert aus dem alten paint()-Schwanz):
-//  - Photosensitivitäts-Limiter: mittlere Frame-Luminanz (grobe Mip, Readback
-//    nur jeden 3. Frame) begrenzt, wie schnell die GESAMThelligkeit steigen
-//    darf (~2.0 Luma/s); der Scale kann nur abdunkeln, nie aufhellen.
-//  - GPU-Perzentil-Auto-Exposure (CfxHistogram.comp -> SSBO Bindepunkt 3,
-//    liest Present.frag direkt - kein CPU-Sync).
-//  - Zweipass-Gauß-Bloom in Viertel-Auflösung.
-//  - Present.frag: Upscale Render- -> Display-Auflösung, Mood-Grade,
-//    virtuelle Kamera, Stereo-Reprojektion, Lightshow, CAS-Schärfung,
-//    Blackout/Break/Fade-Dimmung und der Titel-Reveal.
+// Tasks (unchanged from the old tail of paint()):
+//  - photosensitivity limiter: the mean frame luminance (coarse mip, read back
+//    only every 3rd frame) limits how fast the OVERALL brightness may rise
+//    (~2.0 luma/s); the scale can only darken, never brighten.
+//  - GPU percentile auto-exposure (CfxHistogram.comp -> SSBO binding point 3,
+//    read by Present.frag directly - no CPU sync).
+//  - two-pass Gaussian bloom at quarter resolution.
+//  - Present.frag: upscale from render to display resolution, mood grade,
+//    virtual camera, stereo reprojection, light show, CAS sharpening,
+//    blackout/break/fade dimming and the title reveal.
 //
-// Fail-safe wie immer: schlägt das Setup fehl, bleibt ready() false und der
-// Aufrufer rendert das Combine-Ergebnis direkt auf den Screen.
+// Fail-safe as always: if the setup fails, ready() stays false and the
+// caller renders the combine result straight to the screen.
 //
-// Qt-frei (RendererCore-Baustein): der Titel wird als fertige RGBA-Pixel
-// übergeben (die Qt-Textrenderei bleibt beim Aufrufer).
+// Qt-free (a RendererCore building block): the title is handed over as
+// finished RGBA pixels (the Qt text rendering stays with the caller).
 
 #include "glcore.h"
 #include "AudioFeatures.h"
@@ -75,8 +75,6 @@ public:
      **/
     float liveMotion() const { return m_liveMotion; }
 
-    /** Alles anlegen (GL-Kontext aktuell); idempotent. Formate = die der
-     *  übrigen Offscreen-Texturen der Pipeline. */
     /**  Create the final FBO, the present/bloom shader programs, and the bloom FBOs.
      *
      * @param renderW      Render-resolution width (source resolution, before display upscale). (in)
@@ -90,8 +88,6 @@ public:
     void setup( int renderW, int renderH,
                 GLenum internalFmt, GLenum fmt, GLenum type );
 
-    /** Leichter Resize: final + Bloom-Texturen auf neue Render-Auflösung
-     *  nachziehen (nur wenn bereits angelegt - Verhalten wie zuvor). */
     /**  Resize the final and bloom textures to a new render resolution, without recreating programs.
      *
      * @param renderW      New render-resolution width. (in)
@@ -111,7 +107,7 @@ public:
      *   True once setup() succeeded; run() is a no-op otherwise.
      **/
     bool ready() const { return m_safetyReady; }
-    /**  Combine-Ziel: der finale FBO (wenn ready), sonst muss der Aufrufer direkt in seinen Default-FBO rendern.
+    /**  Combine target: the final FBO (when ready), else the caller must render straight into its default FBO.
      *
      * @return
      *   The intermediate framebuffer object.
@@ -130,8 +126,7 @@ public:
      **/
     GLuint finalTex() const { return m_texFinal; }
 
-    // ---- Titel-Reveal ----
-    /** Fertig gerendertes RGBA8-Bild hochladen; startet die Reveal-Uhr neu. */
+    // ---- Title reveal ----
     /**  Upload a finished RGBA8 title image and restart the reveal clock.
      *
      * @param rgba  Pointer to tightly packed RGBA8 pixel data. (in)
@@ -149,14 +144,13 @@ public:
         m_titleStyle = style;
         m_titleSeed = seed;
     }
-    /** Reveal-Uhr läuft auf der WANDzeit weiter (spielt über Freeze/Stop). */
     /**  Advance the title reveal clock by wall-clock time (keeps playing through freeze/stop).
      *
      * @param dtWall  Wall-clock seconds elapsed since the last call. (in)
      **/
     void advanceTitle( float dtWall ) { m_titleAge += dtWall; }
 
-    // ---- Lyrics-/Künstlerbild-Overlay (Qt-Seite liefert fertige Pixel) ----
+    // ---- Lyrics/artist-image overlay (the Qt side delivers finished pixels) ----
     /**  Upload/replace the lyrics overlay image (RGBA8, caller-rendered).
      *
      * @param rgba  Pointer to tightly packed RGBA8 pixel data. (in)
@@ -186,8 +180,6 @@ public:
      **/
     void setArtistExternalTexture( GLuint texId );
 
-    /** Frame-Eingaben für run() - alles Werte, die weiterhin der Pipeline/
-     *  den Statics von RenderPipeline gehören. */
     /** Per-frame inputs to run(); everything here still belongs to the pipeline/RenderPipeline's statics, not to
      * PresentPass itself.
      **/
@@ -247,7 +239,7 @@ public:
         float        dtWall = 0.f;     ///< Wall-clock frame delta time (drives blackout slew and history-ring cadence).
         float        globalTime = 0.f; ///< Global shader time uniform.
         float        chasePhase = 0.f; ///< Chase-light phase uniform.
-        // Virtuelle Kamera (Regie-Layer, berechnet der Aufrufer)
+        // Virtual camera (direction layer, computed by the caller)
         float camZoom = 1.f,
               /**< Virtual-camera zoom factor (1 = none), computed by the caller's director layer. */ camRot = 0.f,
               /**< Virtual-camera roll in radians (small). */ camOffX = 0.f,
@@ -257,15 +249,15 @@ public:
         bool  stereoPacked = false; ///< True if the source frame already holds a packed stereo pair.
         int   stereoMode = 0;       ///< Stereo output mode (e.g. off/SBS/TB/anaglyph) forwarded to Present.frag.
         float stereoDepth = 1.f;    ///< Stereo depth/separation strength.
-        // Dimm-Kanäle
+        // Dimming channels
         bool  blackout = false;  ///< VJ blackout ('b'): slewed to full black.
         float breakSmooth = 0.f; ///< Smoothed "break" dim amount (music breakdown).
         float fadeOutEnv = 0.f;  ///< Detected song fade-out envelope; dims the picture slightly.
-        // Look-Regler
+        // Look knobs
         float moodStrength = 1.f; ///< Scales how far the mood-grade uniforms deviate from neutral.
         float lightShow = 0.f;    ///< Lightshow/chase-lamp intensity uniform.
         float renderScale = 1.f;  ///< Render-to-display scale factor; drives the CAS sharpening amount when < 1.
-        // Lyrics-Overlay (Alpha 0 = aus; Hl-V0 < 0 = kein Karaoke-Highlight)
+        // Lyrics overlay (alpha 0 = off; HlV0 < 0 = no karaoke highlight)
         float lyricsAlpha = 0.f;    ///< Lyrics overlay opacity (0 = off).
         float lyricsScrollV = 0.f;  ///< Lyrics vertical scroll position.
         float lyricsAspect = 1.f;   ///< Lyrics image aspect ratio.
@@ -278,48 +270,45 @@ public:
                                     ///< marquee applies only here.
         float lyricsFocusV1 = -1.f; ///< End of the focused line's vertical band.
         float lyricsScrollU = 0.f;  ///< Horizontal marquee offset (texture-U units) for the focused line.
-        // Künstlerbild-Overlay
+        // Artist-image overlay
         float artistAlpha = 0.f;  ///< Artist-image overlay opacity (0 = off).
         float artistAspect = 1.f; ///< Artist image aspect ratio.
-        // ---- Zeit-Regie (Frame-History-Ring) ----
-        // rewindSecs > 0: statt des Live-Bilds den Ring-Frame von vor N
-        // Sekunden zeigen (Drop-Rewind / Break-Scrub); rewindMix blendet.
+        // ---- Time direction (frame history ring) ----
+        // rewindSecs > 0: show the ring frame from N seconds ago instead of
+        // the live picture (drop rewind / break scrub); rewindMix blends.
         float rewindSecs = 0.f; ///< Seconds back in the history ring to show instead of the live frame.
         float rewindMix = 0.f;  ///< Blend amount for the rewound frame (drop-rewind / break-scrub).
-        // Zeitecho: Geisterschicht von vor echoDelay Sekunden (Screen-Blend).
+        // Time echo: a ghost layer from echoDelay seconds ago (screen blend).
         float echoAmt = 0.f;    ///< Time-echo ghost-layer blend amount.
         float echoDelay = 1.4f; ///< Time-echo delay in seconds (looked up in the history ring).
-        // Build-up-"Atem anhalten": Entsättigen + Dimmen + Vignette 0..1.
+        // Build-up "held breath": desaturate + dim + vignette 0..1.
         float breath = 0.f; ///< "Held breath" build-up effect: desaturate + dim + vignette, 0..1.
-        // Szenen-Grade (Preset-Attribut grade="fade,grey,sepia"): Modus (0 aus, 1 verblasst,
-        // 2 grau, 3 Sepia) und Gewicht der ausgehenden (A) und kommenden (B) Szene;
-        // die Gewichte tragen die Szenen-Ueberblendung schon in sich (kein Sprung).
-        float gradeModeA = 0.f,
-              /**< Grade of the outgoing/solo scene (0 none, 1 faded, 2 grey, 3 sepia). */ gradeAmtA = 0.f,
-              /**< Its weight (texInterp while fading, 1 solo). */ gradeModeB = 0.f,
-              /**< Grade of the incoming scene during a fade. */ gradeAmtB = 0.f; ///< Its weight (1 - texInterp).
-        // CinemaScope-Letterbox 0..1 (Balken je ~11% Bildhöhe bei 1).
+        // Scene grade (preset attribute grade="fade,grey,sepia"): mode (0 off, 1 faded,
+        // 2 grey, 3 sepia) and weight of the outgoing (A) and incoming (B) scene;
+        // the weights already carry the scene cross-fade (no jump).
+        float gradeModeA = 0.f; ///< Grade of the outgoing/solo scene (0 none, 1 faded, 2 grey, 3 sepia).
+        float gradeAmtA = 0.f;  ///< Its weight (texInterp while fading, 1 solo).
+        float gradeModeB = 0.f; ///< Grade of the incoming scene during a fade.
+        float gradeAmtB = 0.f;  ///< Its weight (1 - texInterp).
+        // CinemaScope letterbox 0..1 (bars of ~11% of the frame height each at 1).
         float letterbox = 0.f; ///< CinemaScope letterbox amount 0..1 (bars ~11% of frame height at 1).
-        // Bass-Schockwelle: expandierender Verzerrungsring.
+        // Bass shockwave: an expanding distortion ring.
         float shockR = 9.f;   ///< Bass-shockwave ring radius.
         float shockAmp = 0.f; ///< Bass-shockwave distortion amplitude.
-        // Kinetik: Sekunden seit Wechsel der aktiven Karaoke-Zeile.
+        // Kinetics: seconds since the active karaoke line changed.
         float lyricsLineAge = 999.f; ///< Seconds since the active karaoke line last changed (drives a "slam" kinetic
                                      ///< accent).
-        // Cover-Palette (dominante Künstlerbild-Farben) + Stärke.
+        // Cover palette (dominant artist-image colours) + strength.
         float paletteAmt = 0.f;                ///< Strength of the cover-art palette grade.
         float paletteA[3] = { 0.f, 0.f, 0.f }; ///< Dominant cover-art color A (RGB).
         float paletteB[3] = { 0.f, 0.f, 0.f }; ///< Dominant cover-art color B (RGB).
-        // 2.5D-Parallaxe: Tiefentextur der aktiven Szene + Stärke (geslewt).
+        // 2.5D parallax: depth texture of the active scene + strength (slewed).
         GLuint sceneDepthTex = 0; ///< Active scene's depth texture for 2.5D parallax (0 = none).
         float  depthPar = 0.f;    ///< Parallax strength (slewed by the caller).
-        /** Near-plane distance (world units) of the scene camera, used to linearise sceneDepthTex. */
-        float nearZ = 0.5f, farZ = 220.f; ///< Far-plane distance (world units) of the scene camera, used to linearise
-                                          ///< sceneDepthTex.
+        float nearZ = 0.5f; ///< Near-plane distance (world units) of the scene camera, used to linearise sceneDepthTex.
+        float farZ = 220.f; ///< Far-plane distance (world units) of the scene camera, used to linearise sceneDepthTex.
     };
 
-    /** Den kompletten Present ausführen (Limiter, AutoExposure, Bloom,
-     *  Present.frag in Display-Auflösung).  Nur rufen wenn ready(). */
     /**  Run the full present sequence: history capture, brightness limiter, auto-exposure, bloom, then Present.frag
      * at display resolution.
      *
@@ -380,7 +369,7 @@ private:
     GLint m_presentStereoDepthUni = -1; ///< Uniform location: stereo depth/separation ("stereoDepth").
     GLint m_presentStereoSrcUni = -1;   ///< Uniform location: source-already-packed-stereo flag ("stereoSource").
 
-    // ---- Limiter-/Belichtungs-Zustand ----
+    // ---- Limiter/exposure state ----
     float m_prevMeanLum = -1.f;     ///< Mean luminance of the previous limiter sample, the reference the rise limit is
                                     ///< measured against (< 0 = not yet initialised).
     float m_liveStd = 0.f;          ///< Spatial spread of the same 64-pixel sample: 'is there anything to see'.
@@ -419,11 +408,11 @@ private:
     int    m_titleStyle = 0;    ///< Title reveal style index.
     float  m_titleSeed = 0.f;   ///< Title reveal random seed.
 
-    // ---- Frame-History-Ring (Zeitecho / Drop-Rewind) ----
-    // 2D-Array-Textur (Drittel-Auflösung, RGBA8) mit den letzten ~3 s des
-    // fertigen Bilds, ~30 Aufnahmen/s per FBO-Blit.  Fällt SOFT aus: ohne
-    // die GL-Einstiegspunkte bleibt m_histReady false und Echo/Rewind sind
-    // einfach unsichtbar.
+    // ---- Frame history ring (time echo / drop rewind) ----
+    // 2D array texture (one-third resolution, RGBA8) with the last ~3 s of
+    // the finished picture, ~30 captures/s by FBO blit.  Fails SOFT: without
+    // the GL entry points m_histReady stays false and echo/rewind are simply
+    // invisible.
     /**  Blit the current source frame into the next slot of the frame-history ring, at a fixed ~1/30 s wall-clock
      * cadence.
      *
@@ -447,7 +436,7 @@ private:
      * @return
      *   Layer index into the history-ring array texture.
      **/
-    float            historyLayerBack( float secs ) const; // Sek. zurück -> Layer-Index
+    float            historyLayerBack( float secs ) const; // seconds back -> layer index
     static const int HistLayers = 96; ///< Number of ring layers: ~3.2 s of history at the fixed 30 Hz capture cadence.
     GLuint           m_histTex = 0;                        ///< GL_TEXTURE_2D_ARRAY holding the ring's frames.
     GLuint m_histFboDst = 0; ///< Blit destination FBO, re-attached to the current ring layer of m_histTex before each
@@ -480,7 +469,7 @@ private:
     GLint m_presentDepthParUni = -1;   ///< Uniform location: parallax strength ("depthPar").
     GLint m_presentNearFar2Uni = -1;   ///< Uniform location: near/far plane distances ("nearFar2").
 
-    // ---- Lyrics / Künstlerbild ----
+    // ---- Lyrics / artist image ----
     GLuint m_lyricsTex = 0;               ///< Uploaded lyrics overlay texture.
     GLuint m_artistTex = 0;               ///< Uploaded artist-image overlay texture.
     GLuint m_artistExternalTex = 0; ///< Set via setArtistExternalTexture(); 0 = no override (use m_artistTex), else a

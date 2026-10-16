@@ -61,7 +61,7 @@ ORIGINS = {
                       "www.lighthouse3d.com; changes " + COPYRIGHT ),
     "textfile.cpp": ( "www.lighthouse3d.com (\"You may use these functions freely\"); adapted by " + AUTHOR, None ),
     "mesh.h":       ( "Stephan Mock and Randolf Schärfig, modified by cg.in.tu-clausthal; adapted by " + AUTHOR,
-                      "Stephan Mock, Randolf Schärfig, cg.in.tu-clausthal; changes " + COPYRIGHT ),
+                      "Stephan Mock, Randolf Schärfig, cg.in.tu-clausthal; changes 2026 reneweller (MIT, see LICENSE)" ),
     "mesh.cpp":     ( "Stephan Mock and Randolf Schärfig, modified by cg.in.tu-clausthal; adapted by " + AUTHOR, None ),
 }
 

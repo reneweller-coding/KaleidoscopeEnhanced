@@ -334,18 +334,18 @@ AudioFeatures AudioConditioner::update( const AudioFeatures &audio, float rawDt,
     // Self-similarity ring bookkeeping for the SelfSimilarity effect.
     audio_fx.ssmHead = ctx.ssmHead;
     audio_fx.ssmFill = ctx.ssmFill;
-    // Scrolling-spectrogram ring bookkeeping (kontinuierlicher Kopf mit
-    // Sub-Zeilen-Anteil - Details in GpuSims::spectroHeadNorm).
+    // Scrolling-spectrogram ring bookkeeping (a continuous head with the
+    // sub-row fraction - details in GpuSims::spectroHeadNorm).
     audio_fx.spectroHead = ctx.spectroHead;
     audio_fx.spectroFill = ctx.spectroFill;
     // The DJ-stop slam-back rides the same "hit" channel as a drop
     // (camera punch + shake + the shaders' audioDrop uniform).
     audio_fx.dropPulse = std::max( audio.dropPulse, audio.breakSlam ) * gate;
 
-    // Dev-Haken KALEIDO_FORCE_DROP=<sek>: injiziert einmalig einen
-    // synthetischen Drop (Zaehler + Puls) zur angegebenen globalen Zeit -
-    // macht die ganze Drop-Kette (Schnitt/Shatter, Rewind-Race, Streaks)
-    // deterministisch probbar, ohne den Detektor treffen zu muessen.
+    // Dev hook KALEIDO_FORCE_DROP=<sec>: injects one synthetic drop (counter
+    // + pulse) at the given global time - makes the whole drop chain
+    // (cut/shatter, rewind race, streaks) deterministically testable without
+    // having to hit the detector.
     if ( m_forceDropAt < -1.f )
     {
         const char *fd = getenv( "KALEIDO_FORCE_DROP" );
@@ -368,11 +368,11 @@ AudioFeatures AudioConditioner::update( const AudioFeatures &audio, float rawDt,
     // hard.  All terms are either slew-limited envelopes or fixed-
     // frequency oscillations — no phase remapping, no flicker.
     {
-        // Downbeat-Punch UND Kick-Shake gedaempft (User-Feedback: die
-        // Beat-Reaktion, insbesondere das Pulsieren, war zu praesent) -
-        // der Drop-Hit (1.1*dropPulse weiter unten, 0.010*dropPulse im
-        // Shake) bleibt bewusst kraeftig, das ist der dramaturgische
-        // Moment; nur das PRO-BEAT-Dauerpumpen wird leiser.
+        // Downbeat punch AND kick shake damped (user feedback: the beat
+        // reaction, the pulsing in particular, was too present) - the drop
+        // hit (1.1*dropPulse further down, 0.010*dropPulse in the shake)
+        // deliberately stays strong, that is the dramatic moment; only the
+        // constant PER-BEAT pumping gets quieter.
         if ( m_downbeatTick )
             m_camPunch = std::max( m_camPunch, 0.13f + 0.16f * m_downbeatSmooth );
         m_camPunch *= expf( -dt / 0.35f );
@@ -396,9 +396,9 @@ AudioFeatures AudioConditioner::update( const AudioFeatures &audio, float rawDt,
         float       shake_amp = ( 0.0022f * m_kickSmooth * gate
                                   + 0.010f * audio_fx.dropPulse )
                                 * mesh_calm;
-        // Gate-Weave: das feine 24-fps-Zittern einer Filmkopie im
-        // Projektor - diskrete, winzige Versaetze pro "Filmbild"
-        // (kein Audio-Faktor auf absoluter Zeit, nur Wandzeit-Hash).
+        // Gate weave: the fine 24 fps jitter of a film print in the projector
+        // - discrete, tiny offsets per "film frame" (no audio factor on
+        // absolute time, only a wall-time hash).
         float film = floorf( ctx.globalTime * 24.f );
         float wvx = ( sinf( film * 12.9898f ) * 43758.5453f );
         wvx = ( wvx - floorf( wvx ) - 0.5f ) * 0.0012f;
@@ -414,9 +414,9 @@ AudioFeatures AudioConditioner::update( const AudioFeatures &audio, float rawDt,
             oy = 0.f;
         }
         // The zoom must always pay for the offset + rotation so no edge
-        // ever samples outside the frame.  Die 2.5D-Parallaxe verschiebt
-        // nahe Strukturen bis 1.8x staerker als den Frame selbst - der
-        // Deckungs-Faktor waechst mit (Vorframe-Wert des Slews reicht).
+        // ever samples outside the frame.  The 2.5D parallax shifts near
+        // structures up to 1.8x more than the frame itself - the coverage
+        // factor grows with it (the slew's previous-frame value suffices).
         float need = ( fabsf( ox ) + fabsf( oy ) ) * ( 1.f + 1.8f * ctx.trailDepth3D )
                      + 0.62f * fabsf( sway );
         zoom = std::max( zoom, 1.f + 2.4f * need );
@@ -428,9 +428,9 @@ AudioFeatures AudioConditioner::update( const AudioFeatures &audio, float rawDt,
 
     // ---- Zeit-Regie: Drop-Rewind, Break-Scrub, Zeitecho, Atem-anhalten --
     {
-        // Drop-Rewind-Race: auf ~40% der Drops springt die Anzeige 1.6 s
-        // in die Vergangenheit und holt in ~0.5 s sichtbar auf - der
-        // Tape-Catch-up landet genau im Drop-Hit.
+        // Drop rewind race: on ~40% of the drops the display jumps 1.6 s into
+        // the past and visibly catches up in ~0.5 s - the tape catch-up lands
+        // exactly on the drop hit.
         const int drop_count_now = audio.dropCount + m_fakeDrops;
         if ( m_lastDropSeen < 0 )
             m_lastDropSeen = drop_count_now;
@@ -444,9 +444,9 @@ AudioFeatures AudioConditioner::update( const AudioFeatures &audio, float rawDt,
                 m_rewindRace = true;
             }
         }
-        // DJ-Stop: solange die Musik den Atem anhaelt, scrubbt das Bild
-        // rueckwaerts (max ~2.8 s Ring-Tiefe); der Slam-back schnappt es
-        // mit hoher Rate zurueck auf live.
+        // DJ stop: while the music holds its breath, the picture scrubs
+        // backwards (at most ~2.8 s of ring depth); the slam-back snaps it
+        // back to live at a high rate.
         if ( !ctx.calm && audio.breakHold > 0.5f && !m_rewindRace )
             m_rewindBack = std::min( m_rewindBack + 1.5f * dt, 2.8f );
         else if ( m_rewindBack > 0.f )
@@ -459,21 +459,21 @@ AudioFeatures AudioConditioner::update( const AudioFeatures &audio, float rawDt,
                 m_rewindRace = false;
             }
         }
-        // Sichtbarkeit schnell, aber nicht hart schalten (12/s Slew);
-        // das ENDE des Race bleibt ein knackiger Schnitt zurueck auf live.
+        // Switch the visibility fast but not hard (12/s slew); the END of the
+        // race stays a crisp cut back to live.
         float rm_target = ( m_rewindBack > 0.02f ) ? 1.f : 0.f;
         m_rewindMixSm = slewToward( m_rewindMixSm, rm_target, 12.f, dt );
 
-        // Atem-anhalten: erst die obere Haelfte des Build-ups zaehlt -
-        // ein normaler Groove soll das Bild nicht staendig entsaettigen.
+        // Held breath: only the upper half of the build-up counts - a normal
+        // groove should not keep desaturating the picture.
         float b_target = std::max( 0.f, std::min( 1.f,
                                                   ( audio.buildUp - 0.5f ) * 2.2f ) )
                          * gate;
         m_breathSm = slewToward( m_breathSm, b_target, 2.5f, dt );
 
-        // CinemaScope-Letterbox: die Balken KRIECHEN im Build-up herein
-        // (0.8/s - man merkt erst spaet, dass das Bild enger wird) und
-        // reissen auf den Drop schlagartig auf (12/s).
+        // CinemaScope letterbox: the bars CREEP in during the build-up
+        // (0.8/s - one notices only late that the picture narrows) and tear
+        // open abruptly on the drop (12/s).
         {
             // calmMotion: the bars never snap, they only creep (2/s).
             float lb_rate = ( audio_fx.dropPulse > 0.4f && !ctx.calm ) ? 12.f
@@ -481,9 +481,9 @@ AudioFeatures AudioConditioner::update( const AudioFeatures &audio, float rawDt,
             m_letterSm = slewToward( m_letterSm, b_target, lb_rate, dt );
         }
 
-        // Bass-Schockwelle: auf jeden kraeftigen Kick startet ein
-        // Verzerrungsring im Zentrum (klein), auf einen Drop ein grosser.
-        // Reine Verschiebung, keine Helligkeit - photosensitiv unkritisch.
+        // Bass shockwave: every strong kick starts a distortion ring in the
+        // centre (small), a drop a big one.  Pure displacement, no brightness
+        // - harmless for photosensitivity.
         {
             bool kick_edge = ( m_kickSmooth > 0.55f && m_prevShockKick <= 0.55f );
             bool drop_edge = ( audio_fx.dropPulse > 0.85f && m_prevShockDrop <= 0.85f );
@@ -507,9 +507,9 @@ AudioFeatures AudioConditioner::update( const AudioFeatures &audio, float rawDt,
             m_shockAmp *= expf( -dt / 0.30f );
         }
 
-        // Dev-Haken KALEIDO_REGIE_TEST: festes 12-s-Muster (3 s Echo,
-        // 3 s Breath, 2 s Rewind-Scrub, Rest live) fuer deterministische
-        // Frame-Proben der Zeit-Regie ohne echte Drops/Build-ups.
+        // Dev hook KALEIDO_REGIE_TEST: a fixed 12 s pattern (3 s echo, 3 s
+        // breath, 2 s rewind scrub, the rest live) for deterministic frame
+        // probes of the time direction without real drops/build-ups.
         static int regie_test = -1;
         if ( regie_test < 0 )
             regie_test = getenv( "KALEIDO_REGIE_TEST" ) ? 1 : 0;
@@ -518,7 +518,7 @@ AudioFeatures AudioConditioner::update( const AudioFeatures &audio, float rawDt,
             float ph = fmodf( ctx.globalTime, 12.f );
             m_echoOverride = ( ph < 3.f ) ? 0.40f : 0.f;
             m_breathSm = ( ph >= 3.f && ph < 6.f ) ? 1.f : 0.f;
-            m_letterSm = m_breathSm; // Balken folgen dem Breath
+            m_letterSm = m_breathSm; // the bars follow the breath
             if ( ph >= 6.0f && ph < 6.4f && m_shockR > 1.f )
             {
                 m_shockR = 0.f;

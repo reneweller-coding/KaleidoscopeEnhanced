@@ -325,9 +325,9 @@ extern "C"
     // formation from a single buffer (Fleet), instead of uploading N copies.
     GLC_FN( void, glDrawArraysInstanced, ( GLenum, GLint, GLsizei, GLsizei ) )
     GLC_FN( void, glPatchParameteri, ( GLenum, GLint ) )
-    // Occlusion queries: KALEIDO_COVER_LOG zaehlt damit die Fragmente, die ein
-    // Mesh-Draw schreibt.  Kernbestandteil seit GL 1.5, aber dieser Loader holt
-    // jeden Einstiegspunkt selbst, also muessen auch alte Funktionen hier stehen.
+    // Occlusion queries: KALEIDO_COVER_LOG counts the fragments a mesh draw
+    // writes with them.  Core since GL 1.5, but this loader fetches every
+    // entry point itself, so old functions have to be listed here too.
     GLC_FN( void, glGenQueries, (GLsizei, GLuint *))
     GLC_FN( void, glDeleteQueries, (GLsizei, const GLuint *))
     GLC_FN( void, glBeginQuery, ( GLenum, GLuint ) )
@@ -349,8 +349,8 @@ extern "C"
     GLC_FN( void, glBlendFunci, ( GLuint, GLenum, GLenum ) )
     GLC_FN( void, glDrawBuffers, (GLsizei, const GLenum *))
     GLC_FN( void, glClearBufferfv, (GLenum, GLint, const GLfloat *))
-    // Frame-History-Ring: 2D-Array-Textur als Ringpuffer der letzten Sekunden,
-    // gefuellt per FBO-zu-Layer-Blit (Downscale inklusive).
+    // Frame history ring: a 2D array texture as a ring buffer of the last
+    // seconds, filled by FBO-to-layer blits (downscale included).
     GLC_FN( void, glTexImage3D, (GLenum, GLint, GLint, GLsizei, GLsizei, GLsizei, GLint, GLenum, GLenum, const void *))
     GLC_FN( void, glFramebufferTextureLayer, ( GLenum, GLenum, GLuint, GLint, GLint ) )
     GLC_FN( void, glBlitFramebuffer, ( GLint, GLint, GLint, GLint, GLint, GLint, GLint, GLint, GLbitfield, GLenum ) )

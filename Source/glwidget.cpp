@@ -292,9 +292,9 @@ void GLwidget::remoteFavorite()
 
 QString GLwidget::cueTrackKey() const
 {
-    // KALEIDO_FAKE_TRACK=artist|title macht das Cue-Gedaechtnis offline
-    // pruefbar: es gibt dann keinen SMTC-Titel, aber einen festen Schluessel
-    // und die Laufzeit als Position.
+    // KALEIDO_FAKE_TRACK=artist|title makes the cue memory testable offline:
+    // there is no SMTC title then, but a fixed key and the run time as the
+    // position.
     static const QString Fake = qEnvironmentVariable( "KALEIDO_FAKE_TRACK" );
     if ( !Fake.isEmpty() )
         return Fake;
@@ -620,15 +620,15 @@ GLwidget::GLwidget( QWidget *parent )
 
 GLwidget::~GLwidget()
 {
-    // Messung mitnehmen, bevor alles abgebaut wird (No-op ohne
-    // KALEIDO_COST_LOG).
+    // Take the measurement along before everything is torn down (no-op
+    // without KALEIDO_COST_LOG).
     dumpSceneCost();
-    // Zuletzt gewählten Zustand sichern - deckt den GRACEFUL Quit-Pfad ab
-    // (Fenster-X, Menü "Exit": app.quit() -> app.exec() kehrt zurück ->
-    // dieser Destruktor läuft). Die harten exit(0)-Stellen (Escape/Q/
-    // Doppelklick) rufen saveAllSettings() zusätzlich VOR exit() selbst -
-    // exit() unterbricht die Ausführung sofort und durchläuft KEINE
-    // C++-Destruktoren, dieser hier käme für sie also nie zum Zug.
+    // Save the last chosen state - covers the GRACEFUL quit path (window X,
+    // menu "Exit": app.quit() -> app.exec() returns -> this destructor runs).
+    // The hard exit(0) spots (Escape/Q/double click) additionally call
+    // saveAllSettings() themselves BEFORE exit() - exit() stops execution at
+    // once and runs NO C++ destructors, so this one would never get its turn
+    // for them.
     saveAllSettings();
 
     // Closing mid-recording: finalise cleanly (drains + joins the encoder
@@ -804,13 +804,13 @@ void GLwidget::initializeGL()
     m_nowPlaying = new NowPlaying();
     m_nowPlaying->start();
 
-    // Lyrics + Künstlerbilder (LRCLIB / Deezer) - lädt erst bei Trackwechsel
-    // und nur, wenn einer der Modi aktiv ist.
+    // Lyrics + artist images (LRCLIB / Deezer) - loads only on a track change
+    // and only if one of the modes is active.
     m_trackMedia = new TrackMedia();
-    // Test-Hook: KALEIDO_LYRICS_TEST="Artist|Titel" erzwingt einen Abruf ohne
-    // laufenden Player; die Playback-Position läuft dann auf der App-Uhr
-    // (deterministisch für Batch-Proben).  KALEIDO_LYRICS_MODE=1|2 wählt den
-    // Modus, Künstlerbilder gehen mit an.
+    // Test hook: KALEIDO_LYRICS_TEST="Artist|Title" forces a fetch without a
+    // running player; the playback position then runs on the app clock
+    // (deterministic for batch probes).  KALEIDO_LYRICS_MODE=1|2 picks the
+    // mode; artist images are switched on with it.
     {
         QByteArray t = qgetenv( "KALEIDO_LYRICS_TEST" );
         if ( !t.isEmpty() )
@@ -967,11 +967,11 @@ void GLwidget::dumpSceneCost()
 
 void GLwidget::paintGL()
 {
-    // KALEIDO_COST_LOG=1: wie teuer ist jede Szene WIRKLICH.  Das
-    // complexity-Attribut, an dem das Auswahlbudget des Schedulers haengt,
-    // ist bis heute Handarbeit -- eine Schaetzung, die nie jemand
-    // nachgemessen hat.  Hier faellt die Wahrheit nebenbei ab: Frame-Zeit,
-    // der gerade aktiven Szene zugeschlagen, am Ende als JSON ausgegeben.
+    // KALEIDO_COST_LOG=1: how expensive is each scene REALLY.  The complexity
+    // attribute the scheduler's selection budget depends on is hand-made to
+    // this day -- an estimate nobody ever measured.  Here the truth comes for
+    // free: frame time, charged to the scene active at the moment, written
+    // out as JSON at the end.
     static const bool CostLog = qEnvironmentVariableIsSet( "KALEIDO_COST_LOG" );
     // KALEIDO_FRAME_LOG=<ms>: report every frame that took longer than <ms>
     // (default 25).  A stutter is ONE long frame; the per-second fps average
@@ -1389,11 +1389,11 @@ void GLwidget::draw()
             if ( m_actConfiguration && m_actConfiguration->renderPipeline() )
                 m_actConfiguration->renderPipeline()->showTitle( np_title,
                                                                  m_nowPlaying->artist() );
-            // Trackwechsel: Lyrics + Künstlerbilder für den neuen Titel holen
-            // (nur wenn ein Modus aktiv ist - sonst keine Netz-Anfragen).
+            // Track change: fetch lyrics + artist images for the new title
+            // (only if a mode is active - otherwise no network requests).
             m_trackStartMs = m_fpsTimer.elapsed();
-            m_posSmooth = -1.0; // Consumer-PLL neu aufsetzen (neuer Song = neue Zeitachse)
-            m_palValid = false; // Cover-Palette gehoert zum alten Kuenstler
+            m_posSmooth = -1.0; // set the consumer PLL up again (new song = new timeline)
+            m_palValid = false; // the cover palette belongs to the old artist
             m_lastKaraokeLineSeen = -1;
             m_lineChangeMs = -1;
             if ( m_trackMedia && !m_lyricsTest
@@ -1412,8 +1412,8 @@ void GLwidget::draw()
         }
     }
 
-    // Lyrics-/Künstlerbild-Overlay: Zustand berechnen + Texturen hochladen
-    // (GL-Kontext ist hier aktuell), dann an den PresentPass durchreichen.
+    // Lyrics/artist-image overlay: compute the state + upload the textures
+    // (the GL context is current here), then hand it to the PresentPass.
     if ( m_actConfiguration && m_actConfiguration->renderPipeline() )
         updateTrackOverlays( m_actConfiguration->renderPipeline() );
     // Demo/test hook: KALEIDO_TITLE_TEST=1 fires one reveal a few seconds in
@@ -2049,10 +2049,10 @@ void GLwidget::drawFeatureOverlay( QPainter *painter, const AudioFeatures &f )
         { "level", f.overallLevel },
     };
 
-    // Was das BILD tut, nicht was die Musik tut.  Dieselben zwei Zahlen,
-    // nach denen das Offline-Screening den ganzen Katalog sortiert -- hier
-    // live, damit man eine Shader-Aenderung ansieht statt sie zu rendern,
-    // zu extrahieren und dann anzusehen.
+    // What the PICTURE does, not what the music does.  The same two numbers
+    // the offline screening sorts the whole catalogue by -- live here, so a
+    // shader change can be watched instead of rendered, extracted and then
+    // watched.
     float pic_std = 0.f, pic_mot = 0.f;
     if ( m_actConfiguration && m_actConfiguration->renderPipeline() )
     {
@@ -2061,12 +2061,12 @@ void GLwidget::drawFeatureOverlay( QPainter *painter, const AudioFeatures &f )
     }
     const Row pic_rows[] = {
         { "BILD Struktur", pic_std },
-        { "BILD Bewegung", pic_mot * 8.f }, // x8: sonst klebt der Balken am Rand
+        { "BILD Bewegung", pic_mot * 8.f }, // x8: otherwise the bar sticks to the edge
     };
     const int n = static_cast<int>( sizeof( rows ) / sizeof( rows[0] ) );
     const int x = 24, y0 = 66, lh = 22, bw = 130, bh = 12;
 
-    // +3 Zeilen: die Leerzeile und die zwei BILD-Werte darunter.
+    // +3 lines: the blank line and the two BILD (picture) values below it.
     painter->fillRect( x - 14, 14, 360, ( n + 3 ) * lh + 68, QColor( 0, 0, 0, 160 ) );
     painter->setFont( QFont( "Consolas", 12, QFont::Bold ) );
     painter->setPen( QColor( 120, 200, 255 ) );
@@ -2107,9 +2107,10 @@ void GLwidget::drawFeatureOverlay( QPainter *painter, const AudioFeatures &f )
         painter->drawText( bx + bw + 8, ry, txt );
     }
 
-    // Und darunter, abgesetzt: was das BILD tut.  Gruen, sobald die Szene
-    // ueber dem 10-%-Quantil des Katalogs liegt (0.045) -- rot darunter,
-    // weil das die Schwelle ist, ab der eine Szene im Screening auffaellt.
+    // And below, set apart: what the PICTURE does.  Green as soon as the
+    // scene lies above the catalogue's 10 % quantile (0.045) -- red below,
+    // because that is the threshold at which a scene stands out in the
+    // screening.
     const int pn = static_cast<int>( sizeof( pic_rows ) / sizeof( pic_rows[0] ) );
     for ( int i = 0; i < pn; ++i )
     {
@@ -2279,12 +2280,12 @@ void GLwidget::applyMidi()
  *   True if a usable (sufficiently colorful) palette was found; false for near-greyscale images, in which case
  *   palA/palB are unmodified.
  *
- * Cover-Palette: die zwei dominanten Farben eines Kuenstlerbilds.  12 Hue-
- * Eimer, gewichtet mit Saettigung*Helligkeit (Grau/Schwarz zaehlt nicht);
- * Sieger = gewichtetes RGB-Mittel seines Eimers, Zweitfarbe = bester Eimer
- * mit Kreis-Abstand >= 2 (sonst dunkle Schattierung der Ersten).  Liefert
- * false fuer praktisch farblose Cover (S/W-Fotos) - dann bleibt das Grading
- * neutral statt einen Zufallston zu erfinden.
+ * Cover palette: the two dominant colours of an artist image.  12 hue
+ * buckets, weighted by saturation*brightness (grey/black does not count);
+ * winner = weighted RGB mean of its bucket, second colour = best bucket at
+ * a circular distance >= 2 (else a dark shade of the first).  Returns false
+ * for practically colourless covers (b/w photos) - the grading then stays
+ * neutral instead of inventing a random tint.
  **/
 static bool extractPalette( const QImage &src, float *palA, float *palB )
 {
@@ -2312,7 +2313,7 @@ static bool extractPalette( const QImage &src, float *palA, float *palB )
     for ( int k = 1; k < 12; ++k )
         if ( w_sum[k] > w_sum[best] )
             best = k;
-    // Mindestens ~4% der Pixel muessen farbig auf den Sieger einzahlen.
+    // At least ~4% of the pixels must count, in colour, towards the winner.
     if ( w_sum[best] < 24.0 * 24.0 * 0.04 * 0.25 )
         return false;
     palA[0] = static_cast<float>( r_sum[best] / w_sum[best] );
@@ -2338,10 +2339,10 @@ static bool extractPalette( const QImage &src, float *palA, float *palB )
     return true;
 }
 
-// Lyrics-/Künstlerbild-Overlay: pro Frame den Anzeige-Zustand berechnen.
-// Sync-Quelle ist die SMTC-Playback-Position (extrapoliert); ohne sie (VLC-
-// Fallback, Testmodus) läuft eine lokale Uhr ab Trackwechsel.  Alle Blenden
-// sind geslewt, damit nichts hart aufpoppt.
+// Lyrics/artist-image overlay: compute the display state every frame.  The
+// sync source is the SMTC playback position (extrapolated); without it (VLC
+// fallback, test mode) a local clock runs from the track change.  All fades
+// are slewed so that nothing pops up hard.
 void GLwidget::updateTrackOverlays( RenderPipeline *fs )
 {
     RenderPipeline::OverlayFrame o;
@@ -2351,10 +2352,10 @@ void GLwidget::updateTrackOverlays( RenderPipeline *fs )
         return;
     }
 
-    // Echtes dt statt einer festen 60-Hz-Annahme: schwankt die Framezeit
-    // (GPU-Last, adaptive Render-Skalierung, Compute-Sims), ruckelt das
-    // Scroll-Smoothing sonst, weil der Slew-Schritt nicht zur tatsächlich
-    // vergangenen Zeit passt. Erster Aufruf / lange Aussetzer werden geklemmt.
+    // Real dt instead of a fixed 60 Hz assumption: when the frame time varies
+    // (GPU load, adaptive render scale, compute sims), the scroll smoothing
+    // stutters otherwise, because the slew step does not match the time that
+    // really passed.  The first call / long dropouts are clamped.
     const qint64 now_ms = m_fpsTimer.elapsed();
     float        dt = ( m_overlayLastMs < 0 ) ? ( 1.f / 60.f )
                                               : static_cast<float>( now_ms - m_overlayLastMs ) * 0.001f;
@@ -2372,9 +2373,9 @@ void GLwidget::updateTrackOverlays( RenderPipeline *fs )
         return ( cur - target < step ) ? target : cur - step;
     };
 
-    // Preset-Wechsel: die neue Konfiguration hat einen EIGENEN PresentPass
-    // ohne unsere Texturen - Upload-Merker zurücksetzen, damit Lyrics und
-    // Künstlerbild unten sofort neu hochgeladen werden.
+    // Preset switch: the new configuration has its OWN PresentPass without
+    // our textures - reset the upload markers so that lyrics and artist image
+    // are uploaded again right below.
     if ( fs != m_overlayFs )
     {
         m_overlayFs = fs;
@@ -2383,8 +2384,8 @@ void GLwidget::updateTrackOverlays( RenderPipeline *fs )
         m_artistRevSeen = -1;
     }
 
-    // Playback-Position: SMTC, sonst lokale Uhr seit Trackwechsel - beides
-    // nur als REFERENZ für die PLL unten.
+    // Playback position: SMTC, else a local clock since the track change -
+    // both only as the REFERENCE for the PLL below.
     double pos = m_nowPlaying ? m_nowPlaying->positionNowSec() : -1.0;
     double dur = 0.0;
     if ( m_nowPlaying )
@@ -2392,25 +2393,24 @@ void GLwidget::updateTrackOverlays( RenderPipeline *fs )
     if ( pos < 0.0 || m_lyricsTest )
         pos = static_cast<double>( m_fpsTimer.elapsed() - m_trackStartMs ) * 0.001;
 
-    // Consumer-PLL (die Aufnahme des Users hat es bewiesen: trotz monotoner
-    // NowPlaying-Publikation kamen noch Rückwärtsschritte an - z.B. wenn ein
-    // Player kurz playing=false flackert und dabei ein roher Alt-Wert
-    // durchrutscht, oder ein Titel-Flackern das Settle-Fenster auf die
-    // lokale Uhr zurücksetzt). Deshalb final HIER, an der einzigen
-    // Verbrauchsstelle: eine eigene, mit dem Frame-dt integrierte Position,
-    // die zur Referenz nur hin-GLEITET (Rate 0..1.15 - bremst bei Pause bis
-    // zum Stillstand, läuft nie rückwärts). Sprünge in BEIDE Richtungen erst
-    // nach kurzer Bestätigung: VORWÄRTS 0.4s (ein echter Vorspul-Seek fühlt
-    // sich weiter sofort an), RÜCKWÄRTS 2s (echtes Zurückspulen). Beide
-    // Fenster waren frueher asymmetrisch (vorwaerts ganz ohne Bestaetigung,
-    // "harmlos fuers Auge") - eine PLL-Simulation mit realistischem Referenz-
-    // Rauschen zeigte aber: ein einzelner Ausreisser >1.5s voraus sprang
-    // SOFORT, und wenn die Referenz eine Umlaufzeit spaeter auf den echten
-    // Wert zurueckfiel, erkannte die Rueckwaerts-Bestaetigung genau DAS als
-    // "2s konsistent falsch" und sprang zurueck - ein einzelner Ausreisser
-    // wurde so zu ZWEI sichtbaren Spruengen (vor, dann zurueck), exakt das
-    // gemeldete Huepfen. Kuerzeres Flackern jeder Art wird jetzt in BEIDEN
-    // Richtungen komplett ueberbrueckt, die Anzeige laeuft einfach weiter.
+    // Consumer PLL (the user's recording proved it: despite the monotonic
+    // NowPlaying publication, backward steps still arrived - e.g. when a
+    // player briefly flickers playing=false and a raw old value slips
+    // through, or a title flicker resets the settle window to the local
+    // clock).  Hence finally HERE, at the only consumer: a position of its
+    // own, integrated with the frame dt, that only GLIDES towards the
+    // reference (rate 0..1.15 - slows down to a standstill on pause, never
+    // runs backwards).  Jumps in BOTH directions only after a short
+    // confirmation: FORWARD 0.4s (a real fast-forward seek still feels
+    // immediate), BACKWARD 2s (real rewinding).  Both windows used to be
+    // asymmetric (forward without any confirmation, "harmless to the eye") -
+    // but a PLL simulation with realistic reference noise showed: a single
+    // outlier >1.5s ahead jumped AT ONCE, and when the reference fell back to
+    // the true value one round trip later, the backward confirmation took
+    // exactly THAT as "2s consistently wrong" and jumped back - a single
+    // outlier thus became TWO visible jumps (forward, then back), exactly the
+    // reported hopping.  Shorter flicker of any kind is now bridged
+    // completely in BOTH directions; the display simply runs on.
     if ( m_posSmooth < 0.0 )
     {
         m_posSmooth = pos;
@@ -2426,7 +2426,7 @@ void GLwidget::updateTrackOverlays( RenderPipeline *fs )
                                         : 0.0 );
         if ( m_fwdJumpSince < 0 || fabs( pos - erwartet ) > 1.0 )
         {
-            m_fwdJumpSince = pll_now; // (neuer) Vorwärts-Kandidat
+            m_fwdJumpSince = pll_now; // (new) forward candidate
             m_fwdJumpRef = pos;
         }
         else if ( pll_now - m_fwdJumpSince > 400 )
@@ -2459,7 +2459,7 @@ void GLwidget::updateTrackOverlays( RenderPipeline *fs )
                                         : 0.0 );
         if ( m_backJumpSince < 0 || fabs( pos - erwartet ) > 1.0 )
         {
-            m_backJumpSince = pll_now; // (neuer) Rückwärts-Kandidat
+            m_backJumpSince = pll_now; // (new) backward candidate
             m_backJumpRef = pos;
         }
         else if ( pll_now - m_backJumpSince > 2000 )
@@ -2481,10 +2481,10 @@ void GLwidget::updateTrackOverlays( RenderPipeline *fs )
     {
         m_backJumpSince = -1;
         m_fwdJumpSince = -1;
-        // Asymmetrischer Gain: hinterherhinken sanft aufholen (0.3), aber
-        // VORAUSlaufen hart abbremsen (2.0) - sonst schiebt eine Pause
-        // (eingefrorene Referenz) die Position erst 3.3s über das Ziel
-        // hinaus und über die 1.5s-Schwelle in den Vorwärts-Pfad.
+        // Asymmetric gain: catch up gently when lagging behind (0.3), but
+        // brake hard when running AHEAD (2.0) - otherwise a pause (frozen
+        // reference) first pushes the position 3.3s past the target and over
+        // the 1.5s threshold into the forward path.
         const double err = pos - m_posSmooth;
         double       r = 1.0 + err * ( err < 0.0 ? 2.0 : 0.3 );
         if ( r < 0.0 )
@@ -2510,14 +2510,14 @@ void GLwidget::updateTrackOverlays( RenderPipeline *fs )
     }
 
     bool lyrics_on = ( m_lyricsMode > 0 ) && m_trackMedia->hasLyrics();
-    // Laengere textlose Pausen (Intro, Solo, Outro): Lyrics sanft ausblenden
-    // statt eine tote/alte Zeile stehenzulassen.  Nutzt den Karaoke-
-    // Zeilenindex vom LETZTEN Frame (kontinuierlicher Zustand, 16ms alt -
-    // fuer diese Entscheidung unkritisch, vermeidet eine zweite Zeilensuche).
-    // WICHTIG: die Hysterese-Suche unten haelt i waehrend einer Luecke auf
-    // der VORHERIGEN (zuletzt aktiven) Zeile, nicht auf der kommenden - eine
-    // erste Fassung nahm faelschlich lines[i].t0 als Luecken-Ende und fand
-    // dadurch nie eine Luecke (durch eine Zeilen-Simulation aufgedeckt).
+    // Longer pauses without text (intro, solo, outro): fade the lyrics out
+    // gently instead of leaving a dead/old line standing.  Uses the karaoke
+    // line index of the LAST frame (continuous state, 16ms old - harmless for
+    // this decision, avoids a second line search).
+    // IMPORTANT: the hysteresis search below keeps i on the PREVIOUS (last
+    // active) line during a gap, not on the coming one - a first version
+    // wrongly took lines[i].t0 as the end of the gap and therefore never
+    // found a gap (uncovered by a line simulation).
     if ( lyrics_on && m_trackMedia->syncedLyrics() )
     {
         const auto &lines = m_trackMedia->lines();
@@ -2528,16 +2528,16 @@ void GLwidget::updateTrackOverlays( RenderPipeline *fs )
             bool in_long_gap = false;
             if ( pos < lines[i].t0 )
             {
-                // Intro (nur bei i==0 stabil): vor der allerersten Zeile.
+                // Intro (only stable at i==0): before the very first line.
                 in_long_gap = ( lines[i].t0 > 9.f ) && ( pos < lines[i].t0 - 2.f );
             }
             else if ( lines[i].text.isEmpty() && pos < lines[i].t1 )
             {
-                // Aktive "Zeile" ist ein Instrumental-Marker (leerer Text,
-                // siehe TrackMedia::parseSynced) -- Solo/Break MITTEN im Song,
-                // nicht nur Intro/Outro. i steht hier bereits stabil auf dem
-                // Marker (die Hysterese-Suche unten haelt es dort), darum
-                // reicht dessen eigene Spanne als Luecke.
+                // The active "line" is an instrumental marker (empty text,
+                // see TrackMedia::parseSynced) -- a solo/break IN THE MIDDLE
+                // of the song, not just intro/outro.  i already rests stably
+                // on the marker here (the hysteresis search below keeps it
+                // there), so the marker's own span suffices as the gap.
                 in_long_gap = ( lines[i].t1 - lines[i].t0 > 9.f )
                               && ( pos > lines[i].t0 + 2.f )
                               && ( pos < lines[i].t1 - 2.f );
@@ -2565,12 +2565,12 @@ void GLwidget::updateTrackOverlays( RenderPipeline *fs )
         const auto   &lines = m_trackMedia->lines();
         const QImage &img = m_trackMedia->lyricsImage();
         o.lyricsAlpha = m_lyricsAlphaSm * 0.92f;
-        // Aspect bewusst gegen die NOMINALE (nicht die tatsaechliche) Breite
-        // gerechnet: eine einzelne ueberlange Zeile kann die Textur breiter
-        // machen (siehe TrackMedia::renderLyricsImage()), soll aber nicht
-        // alle anderen Zeilen sichtbar verkleinern. lyricsUScale traegt die
-        // Differenz in den Shader (Present.frag rechnet die Sample-Koordinate
-        // damit zurueck auf die tatsaechliche Texturbreite).
+        // Aspect deliberately computed against the NOMINAL (not the actual)
+        // width: a single overlong line can make the texture wider (see
+        // TrackMedia::renderLyricsImage()) but should not visibly shrink all
+        // the other lines.  lyricsUScale carries the difference into the
+        // shader (Present.frag uses it to map the sample coordinate back to
+        // the actual texture width).
         const int nom_w = TrackMedia::lyricsNominalTexWidth();
         o.lyricsAspect = img.isNull() ? 1.f
                                       : static_cast<float>( nom_w ) / static_cast<float>( img.height() );
@@ -2581,11 +2581,10 @@ void GLwidget::updateTrackOverlays( RenderPipeline *fs )
         float target_v = m_scrollVSm;
         if ( m_trackMedia->syncedLyrics() )
         {
-            // Aktive Zeile suchen (Cache + Vorwärts-/Rückwärtsscan für Seeks).
-            // RÜCKWÄRTS mit 0.3s Hysterese: nur ein echtes Zurückspulen soll
-            // die Zeile wechseln - ein winziger Positions-Rückschritt (falls
-            // je einer durchrutscht) darf das Highlight nicht in die Vorzeile
-            // flippen lassen.
+            // Find the active line (cache + forward/backward scan for seeks).
+            // BACKWARD with 0.3s hysteresis: only real rewinding should change
+            // the line - a tiny step back of the position (should one ever
+            // slip through) must not flip the highlight to the previous line.
             int n = static_cast<int>( lines.size() );
             int i = ( m_karaokeLine >= 0 && m_karaokeLine < n ) ? m_karaokeLine : 0;
             while ( i + 1 < n && pos >= lines[i].t1 )
@@ -2611,7 +2610,7 @@ void GLwidget::updateTrackOverlays( RenderPipeline *fs )
                          lines[i].t0, lines[i].t1 );
             m_karaokeLine = i;
 
-            // Kinetik: Zeilen-Alter fuer den Slam-Einflug der frischen Zeile.
+            // Kinetics: line age for the fresh line's slam-in.
             if ( i != m_lastKaraokeLineSeen )
             {
                 m_lastKaraokeLineSeen = i;
@@ -2626,37 +2625,37 @@ void GLwidget::updateTrackOverlays( RenderPipeline *fs )
                 line_frac = static_cast<float>( ( pos - l.t0 ) / ( l.t1 - l.t0 ) );
             line_frac = std::min( std::max( line_frac, 0.f ), 1.f );
 
-            // Scroll-Ziel: Zentrum gleitet kontinuierlich zur nächsten Zeile.
+            // Scroll target: the centre glides continuously to the next line.
             float c0 = 0.5f * ( l.v0 + l.v1 );
             float c1 = ( i + 1 < n ) ? 0.5f * ( lines[i + 1].v0 + lines[i + 1].v1 )
                                      : c0;
             target_v = c0 + ( c1 - c0 ) * line_frac;
 
-            // Highlight IMMER auf der (hysterese-stabilen) aktiven Zeile -
-            // frueher war es an "pos >= t0" gebunden, wodurch ein winziger
-            // Positions-Ruecklauf um den Zeilenanfang das Highlight kurz
-            // ausblendete: alle Zeilen poppten auf volle Helligkeit und
-            // zurueck ("Huepfen"), obwohl gar nichts scrollte.
+            // Highlight ALWAYS on the (hysteresis-stable) active line - it
+            // used to be tied to "pos >= t0", so a tiny backward step of the
+            // position around the start of a line briefly hid the highlight:
+            // all lines popped to full brightness and back ("hopping"),
+            // although nothing scrolled at all.
             if ( m_lyricsMode == 2 )
             {
                 o.lyricsHlV0 = l.v0;
                 o.lyricsHlV1 = l.v1;
-                o.lyricsHlProg = line_frac; // bereits auf 0..1 geklemmt
+                o.lyricsHlProg = line_frac; // already clamped to 0..1
             }
 
-            // Marquee: die gerade gelesene Zeile (beide Modi -- L ist auch im
-            // reinen Scroll die per Hysterese stabile "aktive" Zeile) wird,
-            // falls sie beim Rendern nicht ins Fenster passte (L.overflowU),
-            // statt abgeschnitten horizontal durchgescrollt -- gekoppelt an
-            // line_frac (0..1 durch die Sing-Dauer DIESER Zeile, oben schon
-            // berechnet) statt an eine feste px/s-Geschwindigkeit: die ersten
-            // 30% steht der Text still (Lesezeit fuer den Anfang), von 30%
-            // bis 90% scrollt er (mit Ease-in/out) bis ganz ans Ende, die
-            // letzten 10% steht er dort. Kein Zurueckscrollen noetig, da die
-            // naechste Zeile ohnehin bei 0 neu beginnt -- und laengere Zeilen
-            // (die typischerweise laenger klingen) bekommen automatisch mehr
-            // Zeit zum Scrollen als kurze, statt einer fuer alle gleich
-            // schnellen, unabhaengig von der Zeilendauer wirkenden Animation.
+            // Marquee: the line being read (both modes -- in plain scroll, L
+            // is the hysteresis-stable "active" line too) is, if it did not
+            // fit into the window when rendered (L.overflowU), scrolled
+            // through horizontally instead of cut off -- tied to line_frac
+            // (0..1 through the sung duration of THIS line, computed above)
+            // instead of a fixed px/s speed: for the first 30% the text stands
+            // still (reading time for the beginning), from 30% to 90% it
+            // scrolls (with ease-in/out) all the way to the end, for the last
+            // 10% it stands there.  No scrolling back is needed, since the
+            // next line starts at 0 anyway -- and longer lines (which usually
+            // sound longer) automatically get more time to scroll than short
+            // ones, instead of one animation equally fast for all, regardless
+            // of the line's duration.
             o.lyricsFocusV0 = l.v0;
             o.lyricsFocusV1 = l.v1;
             if ( l.overflowU > 0.f )
@@ -2670,8 +2669,8 @@ void GLwidget::updateTrackOverlays( RenderPipeline *fs )
         }
         else
         {
-            // Unsynchronisiert: gleichmäßig über die Songdauer scrollen;
-            // ohne Dauer mit fester, gemächlicher Geschwindigkeit.
+            // Unsynchronised: scroll evenly over the song's duration; without
+            // a duration, at a fixed, leisurely speed.
             if ( dur > 10.0 )
                 target_v = static_cast<float>( pos / dur );
             else
@@ -2679,11 +2678,11 @@ void GLwidget::updateTrackOverlays( RenderPipeline *fs )
             target_v = std::min( std::max( target_v, 0.f ), 1.f );
         }
 
-        // Immer weich nachziehen statt zu teleportieren - auch bei einem
-        // großen Sprung (Seek, oder eine seltene, vom Settle-Fenster in
-        // NowPlaying nicht abgefangene Korrektur) mit deutlich höherer Rate,
-        // damit es "schnell aufholt" statt zu schneiden. Ein Sprung über die
-        // halbe Textur braucht damit ~0.2s statt eines Einzelframe-Cuts.
+        // Always follow smoothly instead of teleporting - even on a big jump
+        // (a seek, or a rare correction the settle window in NowPlaying did
+        // not catch) with a clearly higher rate, so that it "catches up
+        // fast" instead of cutting.  A jump across half the texture thus
+        // takes ~0.2s instead of a single-frame cut.
         const bool big_gap = fabsf( target_v - m_scrollVSm ) > 0.08f;
         // Edge-triggered (once per episode, not every frame of a ~0.2-0.5s
         // catch-up): this is the "visible but not instant" jump candidate --
@@ -2703,17 +2702,17 @@ void GLwidget::updateTrackOverlays( RenderPipeline *fs )
         o.lyricsScrollV = m_scrollVSm;
     }
 
-    // ---- Künstlerbilder: Rotation, alle ~45 s für ~14 s eingeblendet ----
-    // (weicht dem Musikvideo-PiP unten, falls für den Song eins bereit ist —
-    // gleicher Eck-Slot, siehe setArtistExternalTexture()).
+    // ---- Artist images: rotation, faded in every ~45 s for ~14 s ----
+    // (gives way to the music-video PiP below if one is ready for the song —
+    // same corner slot, see setArtistExternalTexture()).
     bool  artist_on = m_artistShow
                       && !( m_videoEnabled && m_trackMedia->videoReady() )
                       && m_trackMedia->imageCount() > 0;
     float artist_target = 0.f;
     if ( artist_on )
     {
-        // Bei großen Sammlungen (bis 50 Bilder) rotiert es flotter, damit
-        // über einen Abend auch wirklich viele Bilder drankommen.
+        // With large collections (up to 50 images) it rotates faster, so
+        // that over an evening really many images get their turn.
         const bool   viele = m_trackMedia->imageCount() >= 10;
         const qint64 cycle_ms = viele ? 26000 : 45000;
         const qint64 show_ms = viele ? 12000 : 14000;
@@ -2733,8 +2732,8 @@ void GLwidget::updateTrackOverlays( RenderPipeline *fs )
                 m_artistRevSeen = m_trackMedia->imagesRevision();
                 const QImage &img = m_trackMedia->imageAt( idx );
                 fs->setArtistTexture( img.constBits(), img.width(), img.height() );
-                // Cover-Palette aus dem frisch gewaehlten Bild ziehen - der
-                // Song bekommt organisch die Farbwelt seines Kuenstlers.
+                // Take the cover palette from the freshly chosen image - the
+                // song organically gets its artist's colour world.
                 m_palValid = extractPalette( img, m_palA, m_palB );
             }
             float in = std::min( 1.f, static_cast<float>( ph ) / static_cast<float>( fade_ms ) );
@@ -2743,9 +2742,9 @@ void GLwidget::updateTrackOverlays( RenderPipeline *fs )
         }
     }
     m_artistAlphaSm = slew( m_artistAlphaSm, artist_target, 1.2f, dt );
-    // Cover-Palette: sehr langsam einblenden (0.3/s) - die Farbwelt eines
-    // Songs soll sich etablieren, nicht aufpoppen.  Unabhaengig davon, ob
-    // das Bild selbst gerade sichtbar ist.
+    // Cover palette: fade in very slowly (0.3/s) - a song's colour world
+    // should establish itself, not pop up.  Independent of whether the image
+    // itself is visible at the moment.
     m_palAmtSm = slew( m_palAmtSm, m_palValid ? 1.f : 0.f, 0.3f, dt );
     if ( m_palAmtSm > 0.001f )
     {
@@ -2764,12 +2763,12 @@ void GLwidget::updateTrackOverlays( RenderPipeline *fs )
         o.artistAspect = static_cast<float>( img.width() ) / static_cast<float>( std::max( img.height(), 1 ) );
     }
 
-    // ---- Musikvideo-PiP: übernimmt dieselbe Ecke, sobald TrackMedia ein
-    // gecachtes Video für den laufenden Song bereit hat (siehe TrackMedia::
-    // requestTrack()'s Download-Kette). Läuft per Seek synchron zur echten
-    // Song-Position statt einer eigenen Uhr — ein Video, das kürzer ist als
-    // der Song, loopt einfach (siehe VideoPiP::videoPipLoad()'s Infinite-
-    // Loop-Setting) und bleibt trotzdem an der richtigen Stelle.
+    // ---- Music-video PiP: takes over the same corner as soon as TrackMedia
+    // has a cached video ready for the current song (see the download chain
+    // of TrackMedia::requestTrack()).  Kept in sync with the real song
+    // position by seeking instead of running a clock of its own — a video
+    // shorter than the song simply loops (see the infinite-loop setting in
+    // VideoPiP::videoPipLoad()) and still stays at the right place.
     bool video_on = m_artistShow && m_videoEnabled && m_trackMedia->videoReady();
     if ( video_on )
     {
@@ -2796,10 +2795,10 @@ void GLwidget::updateTrackOverlays( RenderPipeline *fs )
         videoPipRelease();
         m_videoPathLoaded.clear();
     }
-    // Nur der Einblend-Ramp ist geglättet; das Ausblenden ist absichtlich
-    // hart (kein slew auf dem Lesezugriff unten) — sobald video_on false wird,
-    // löscht videoPipRelease() gerade dessen GL-Textur, ein weiches Ausfaden
-    // würde also eine bereits gelöschte Textur zu binden versuchen.
+    // Only the fade-in ramp is smoothed; the fade-out is deliberately hard
+    // (no slew on the read below) — as soon as video_on turns false,
+    // videoPipRelease() deletes its GL texture, so a soft fade-out would try
+    // to bind an already deleted texture.
     m_videoAlphaSm = slew( m_videoAlphaSm, video_on ? 1.f : 0.f, 1.2f, dt );
     if ( video_on && m_videoAlphaSm > 0.001f )
     {
@@ -3654,9 +3653,9 @@ void GLwidget::keyPressEvent( QKeyEvent *event )
             fprintf( stderr, "Now-playing display: %s\n", m_showNowPlaying ? "ON" : "OFF" );
             break;
 
-        // ---- Lyrics-Modus zyklisch: aus -> Scroll -> Karaoke ----
-        // Umschalt+W: kinetischer Zeilen-Slam an/aus (separat, da manchen der
-        // Einflug beim Zeilenwechsel zu unruhig ist).
+        // ---- Lyrics mode, cyclic: off -> scroll -> karaoke ----
+        // Shift+W: kinetic line slam on/off (separate, since some find the
+        // fly-in on a line change too restless).
         case Qt::Key_W:
         {
             if ( event->modifiers() & Qt::ShiftModifier )
@@ -3672,7 +3671,7 @@ void GLwidget::keyPressEvent( QKeyEvent *event )
             break;
         }
 
-        // ---- Künstlerbilder an/aus ----
+        // ---- Artist images on/off ----
         case Qt::Key_O:
             setArtistImagesEnabled( !m_artistShow );
             fprintf( stderr, "Kuenstlerbilder: %s\n", m_artistShow ? "AN" : "AUS" );

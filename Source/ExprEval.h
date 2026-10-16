@@ -72,9 +72,9 @@ enum IndexE
     V_FLATNESS,
     V_ZCR,
     V_FADEOUT,
-    // 0 bei Szenenbeginn, 1 am Ende der Solo-Spanne -- derselbe Wert, den
-    // ein Shader als `sceneProgress` sieht.  Erlaubt einer Szene einen
-    // Bogen ueber ihr Rig statt nur ueber ihren eigenen Quelltext.
+    // 0 at the start of the scene, 1 at the end of the solo span -- the same
+    // value a shader sees as `sceneProgress`.  Gives a scene an arc through
+    // its rig instead of only through its own source.
     V_PROGRESS,
     V_SEED1,
     V_SEED2,

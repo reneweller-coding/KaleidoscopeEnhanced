@@ -15,37 +15,37 @@
 
 #pragma once
 
-// TrackMedia: Internet-Zusatzmaterial zum laufenden Track (optional).
+// TrackMedia: online extras for the current track (optional).
 // ---------------------------------------------------------------------------
-//  LYRICS - Ketten-Fallback über drei kostenlose Dienste (ohne API-Key),
-//  damit auch Abseits-vom-Mainstream-Musik gefunden wird:
-//    1. LRCLIB (lrclib.net)          - synchronisiert + plain, exakt & Suche
-//    2. NetEase Cloud Music (163.com)- riesige LRC-Datenbank, oft synchron
-//    3. lyrics.ovh                   - Plain-Text als letzte Rettung
+//  LYRICS - a fallback chain over three free services (no API key), so that
+//  music off the mainstream is found too:
+//    1. LRCLIB (lrclib.net)          - synced + plain, exact & search
+//    2. NetEase Cloud Music (163.com)- huge LRC database, often synced
+//    3. lyrics.ovh                   - plain text as the last resort
 //
-//  KÜNSTLERBILDER - bis zu 50 pro Künstler aus drei Quellen (dedupliziert,
-//  max. 4 parallele Downloads):
-//    Deezer   (Artist-Foto XL + bis zu ~25 Album-Cover)
-//    TheAudioDB (echte Band-Fotos: Thumb + Fanarts, freier Test-Key)
-//    iTunes Search (weitere Album-Cover, auf 600px hochskalierte URLs)
+//  ARTIST IMAGES - up to 50 per artist from three sources (deduplicated,
+//  at most 4 parallel downloads):
+//    Deezer   (artist photo XL + up to ~25 album covers)
+//    TheAudioDB (real band photos: thumb + fanarts, free test key)
+//    iTunes Search (more album covers, URLs upscaled to 600px)
 //
-//  MUSIKVIDEO (optional, braucht yt-dlp auf PATH) - für Songs unter
-//  VideoMaxDurationSec: sucht per yt-dlp-Suche nach dem OFFIZIELLEN
-//  Musikvideo (Text-/Kanal-Heuristik + Längenabgleich, siehe
-//  scoreCandidate()), lädt es herunter und übernimmt danach denselben
-//  Künstlerbild-Eck-Slot (GLwidget spielt es via Source/VideoPiP synchron
-//  zur echten Song-Position ab). Fehlt yt-dlp, degradiert das Feature still
-//  (kein Absturz, einfach keine Videos) - siehe m_ytdlpProc/errorOccurred.
+//  MUSIC VIDEO (optional, needs yt-dlp on the PATH) - for songs shorter than
+//  VideoMaxDurationSec: searches with yt-dlp for the OFFICIAL music video
+//  (text/channel heuristics + length match, see scoreCandidate()),
+//  downloads it and then takes over the same artist-image corner slot
+//  (GLwidget plays it via Source/VideoPiP in sync with the real song
+//  position).  Without yt-dlp the feature degrades silently (no crash,
+//  simply no videos) - see m_ytdlpProc/errorOccurred.
 //
-//  CACHE - alles landet neben den Presets unter ..\cache\:
-//    cache\lyrics\<md5>.json      (auch "nicht gefunden", TTL 7 Tage)
-//    cache\artist\<md5>\NN.jpg    (Bilder; lazy von Platte dekodiert)
-//    cache\video\<md5>\video.mp4  (oder negative.json, TTL 14 Tage)
-//  Ein erneut gespielter Track kommt damit komplett ohne Netz aus.
+//  CACHE - everything lands next to the presets under ..\cache\:
+//    cache\lyrics\<md5>.json      (also "not found", TTL 7 days)
+//    cache\artist\<md5>\NN.jpg    (images; decoded lazily from disk)
+//    cache\video\<md5>\video.mp4  (or negative.json, TTL 14 days)
+//  A track played again thus needs no network at all.
 //
-// Lyrics/Bilder laufen asynchron über QNetworkAccessManager, das Musikvideo
-// über QProcess (yt-dlp) - beides auf dem Qt-Hauptthread; GLwidget pollt die
-// Ergebnisse pro Frame. Fehler degradieren in jedem Zweig still.
+// Lyrics/images run asynchronously via QNetworkAccessManager, the music video
+// via QProcess (yt-dlp) - both on the Qt main thread; GLwidget polls the
+// results every frame.  Errors degrade silently in every branch.
 
 #include <QtCore/QString>
 #include <QtCore/QStringList>
@@ -91,9 +91,6 @@ public:
      **/
     ~TrackMedia();
 
-    /** Neuen Track anfordern (bei Trackwechsel rufen).  Identische
-     *  Wiederholungen werden ignoriert; ein neuer Track verwirft die
-     *  alten Ergebnisse. */
     /**  Requests lyrics + artist images (+ an optional music video) for a (possibly new) track; call on every track
      * change.
      *
@@ -188,7 +185,6 @@ public:
     {
         return m_lines;
     }
-    /** Zählt hoch, wenn neue Lyrics fertig gerendert sind (Upload-Trigger). */
     /**  Increments whenever a fresh lyricsImage() has finished rendering.
      *
      * @return
@@ -196,7 +192,7 @@ public:
      **/
     int lyricsRevision() const { return m_lyricsRevision; }
 
-    // ---- Künstlerbilder ----
+    // ---- Artist images ----
     /**  Number of artist images currently available on disk for the active track's artist.
      *
      * @return
@@ -206,7 +202,6 @@ public:
     {
         return static_cast<int>( m_imagePaths.size() );
     }
-    /** Lazy: dekodiert bei Bedarf von der Platte (LRU-Cache: 1 Bild). */
     /**  Returns one artist image, decoding it from disk on demand.
      *
      * @param i  Index into the available images, [0, imageCount()). (in)
@@ -459,7 +454,7 @@ private:
     int m_lyricsRevision = 0; ///< Bumped whenever m_lyricsImage is (re)rendered or the track changes; consumers use it
                               ///< to detect new content.
 
-    // Bilder: Pfade auf Platte (Cache-Verzeichnis); Download-Warteschlange
+    // Images: paths on disk (cache directory); download queue
     static const int MaxImages = 50; ///< Hard cap on the number of artist images kept (cached + queued) per track.
     static const int ParallelDownloads = 4; ///< Maximum number of artist-image downloads in flight at once.
     QStringList      m_imagePaths; ///< Disk paths (cache dir) of every artist image available so far, in the order

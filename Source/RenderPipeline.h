@@ -115,29 +115,24 @@ public:
     void paint( const float *rotMatrix, float tx, float ty, float tz,
                 const AudioFeatures &audio = AudioFeatures{} );
 
-    /** The framebuffer the final image must be drawn into.  Under QOpenGLWidget
-     *  the visible buffer is NOT 0 but QOpenGLWidget::defaultFramebufferObject();
-     *  the widget passes it here every frame before paint().  Defaults to 0. */
     /**  Sets the framebuffer the final image must be drawn into.
      *
      * @param fbo  Target FBO id (QOpenGLWidget::defaultFramebufferObject() under QOpenGLWidget; 0 for a plain
      *             default framebuffer). (in)
+     *
+     * Under QOpenGLWidget the visible buffer is NOT 0 but QOpenGLWidget::defaultFramebufferObject(); the widget
+     * passes it here every frame before paint().  Defaults to 0.
      **/
     void setDefaultFBO( GLuint fbo ) { m_defaultFBO = fbo; }
 
-    /** Preset name (set by Configuration after loading the XML) — namespaces
-     *  the persistent taste-learning factors, so likes/dislikes are learned
-     *  PER PRESET. */
     /**  Sets the preset name that namespaces the persistent taste-learning factors.
      *
      * @param n  Preset name (used as the "<PresetName>/<file>" key prefix in tasteFor()/bumpTaste()). (in)
+     *
+     * Set by Configuration after loading the XML, so likes/dislikes are learned PER PRESET.
      **/
     void setPresetName( const QString &n ) { m_presetName = n; }
 
-    /** Track-title REVEAL: renders "title / artist" into a texture that the
-     *  present pass unfolds out of a kaleidoscopic swirl, holds readable and
-     *  dissolves toward the viewer (~8 s).  Called by the widget on a track
-     *  change (replaces the old QPainter lower third). */
     /**  Renders "title / artist" text into a texture for the present pass's kaleidoscopic reveal.
      *
      * @param title   Track title (font auto-shrinks to fit, falling back to eliding only if even the smallest size
@@ -145,25 +140,25 @@ public:
      * @param artist  Track artist (same auto-shrink/elide fallback; drawn smaller below the title, omitted if
      *                empty). (in)
      *
+     * The present pass unfolds the text out of a kaleidoscopic swirl, holds it readable and dissolves it toward the
+     * viewer (~8 s).  Called by the widget on a track change (replaces the old QPainter lower third).
+     *
      * Only rasterises the text with QPainter into m_titlePending here; the actual GL upload and
      * mood-matched reveal-style pick happen at the next paint() call, where a GL context is current.
      **/
     void showTitle( const QString &title, const QString &artist );
 
-    /** Lyrics-/Künstlerbild-Overlay: GLwidget berechnet den Frame-Zustand
-     *  (Sync, Blenden, Bildrotation) und liefert fertige Texturen; hier wird
-     *  nur an den PresentPass durchgereicht. */
     /** Per-frame state for the lyrics/artist-image overlay, computed by GLwidget and passed through to PresentPass. */
     struct OverlayFrame
     {
         float lyricsAlpha = 0.f;   ///< Lyrics overlay opacity, 0 (hidden) .. 1 (fully visible).
         float lyricsScrollV = 0.f; ///< Vertical scroll offset of the lyrics text block.
         float lyricsAspect = 1.f;  ///< Aspect ratio of the lyrics texture (for correct on-screen scaling).
-        // Kinetik: Sekunden seit dem Wechsel der aktiven Karaoke-Zeile
-        // (Slam-Einflug der frischen Zeile); gross = kein Slam.
+        // Kinetics: seconds since the active karaoke line changed (slam-in of
+        // the fresh line); large = no slam.
         float lyricsLineAge = 999.f; ///< Seconds since the active karaoke line changed; large = no "slam" entrance
                                      ///< animation.
-        // Cover-Palette: zwei dominante Farben des Kuenstlerbilds + Staerke.
+        // Cover palette: two dominant colours of the artist image + strength.
         float paletteAmt = 0.f; ///< Strength with which the cover-art palette colours tint the frame, 0..1.
         float paletteA[3] = { 0.f, 0.f, 0.f }; ///< First dominant cover-art colour (RGB, 0..1).
         float paletteB[3] = { 0.f, 0.f, 0.f }; ///< Second dominant cover-art colour (RGB, 0..1).
@@ -218,26 +213,21 @@ public:
      **/
     void setArtistExternalTexture( GLuint texId ) { m_present.setArtistExternalTexture( texId ); }
 
-    /** Request an early cross-fade to the next texture effect (manual 'n' key,
-     *  MIDI pad or web remote).  Honoured at the next opportunity.  TASTE
-     *  LEARNING: skipping an effect that has only just appeared counts as
-     *  "gefaellt mir nicht" — its selection weight gets a persistent, slowly
-     *  decaying malus. */
     /**  Requests an early manual cross-fade to the next texture effect (key 'n', MIDI pad, web remote).
      *
-     * Ignored while PIN or FREEZE is active (a message explains why on stderr). If the current
-     * effect has been on screen less than 10 s, skipping it is treated as a dislike and its
-     * persistent taste weight is multiplied down (see bumpTaste()).
+     * Honoured at the next opportunity; ignored while PIN or FREEZE is active (a message explains why on stderr).
+     * TASTE LEARNING: if the current effect has been on screen less than 10 s, skipping it counts as "don't like
+     * it" and its persistent taste weight is multiplied down (see bumpTaste()) -- a slowly decaying malus.
      **/
     void requestSceneChange();
 
-    /** Remote scene browser: names of the preset's texture shaders, and a
-     *  DIRECT jump to one of them (instant, unquantised, respects pin/freeze). */
     /**  Lists the preset's texture-effect shader names (bare file names, no path/extension), for a remote scene
      * browser.
      *
      * @return
      *   One name per configured texture effect, in registration order.
+     *
+     * The browser can jump DIRECTLY to one of them (instant, unquantised, respects pin/freeze).
      **/
     QStringList sceneNames() const;
     /**  Jumps directly to texture effect @p idx (instant, unquantised cut).
@@ -287,12 +277,12 @@ public:
      **/
     bool sceneTransitioning() const { return m_scheduler.texState() != 0; }
 
-    /** Review mode (Test* presets): scenes run alphabetically, 25 s each,
-     *  'n' steps to the next in order.  No mood/taste filtering, no beat
-     *  quantisation — a systematic viewing bench. */
     /**  Enables/disables review mode (alphabetical fixed-length walk through every scene, for systematic viewing).
      *
      * @param on  true to enable review mode, false to return to normal mood/taste-driven selection. (in)
+     *
+     * Review mode (Test* presets): scenes run alphabetically, 25 s each, 'n' steps to the next in order.  No
+     * mood/taste filtering, no beat quantisation — a systematic viewing bench.
      **/
     void setReviewMode( bool on ) { m_scheduler.setReviewMode( on ); }
     /**  Preset-wide floor on scene fades (seconds); see SceneScheduler::setSceneFadeMin().
@@ -304,11 +294,10 @@ public:
         m_scheduler.setSceneFadeMin( secs );
     }
 
-    /** Validation aid (KALEIDO_COMPILE_ALL=1): eagerly compile every effect
-     *  and combine shader of this configuration — the log then holds one
-     *  Compilation/Linking verdict per shader.  GL context must be current. */
     /**  Eagerly compiles every texture-effect and combine-effect shader of this configuration (validation aid; GL
      * context must be current).
+     *
+     * Enabled by KALEIDO_COMPILE_ALL=1: the log then holds one Compilation/Linking verdict per shader.
      **/
     void compileAllShaders();
 
@@ -377,8 +366,6 @@ public:
      **/
     int sceneIndexByBase( const QString &base ) const;
 
-    /** Hot-reload (dev aid): recompile every effect/combine whose fragment file
-     *  matches the given bare name.  GL context must be current. */
     /**  Recompiles every texture-effect/combine-effect program whose fragment file matches @p bareName (dev
      * hot-reload aid; GL context must be current).
      *
@@ -766,7 +753,7 @@ public:
      **/
     void resize( int width, int height );
 
-    // Baut Trails/StereoMix + delegiert Present/Bloom an den PresentPass.
+    // Builds trails/stereo mix + delegates present/bloom to the PresentPass.
     /**  Builds the feedback/trail ping-pong buffers and the stereo cross-mix shader, and sets up the PresentPass
      * (final tone-mapping/bloom/present target).
      *
@@ -1057,8 +1044,8 @@ private:
     // komplett im PresentPass gekapselt.
     PresentPass m_present;  ///< Final present stage: brightness limiter, auto-exposure, bloom, title reveal, stereo
                             ///< packing — fully encapsulated in PresentPass.
-    OverlayFrame m_overlay; ///< Lyrics/Künstlerbild, pro Frame von GLwidget gesetzt — lyrics/artist-image overlay state
-                            ///< for the current frame, set by GLwidget via setOverlayFrame().
+    OverlayFrame m_overlay; ///< Lyrics/artist-image overlay state for the current frame, set by GLwidget via
+                            ///< setOverlayFrame().
 
     // ---- Track-title reveal state (see showTitle) ----
     QImage m_titlePending; ///< Rendered "title / artist" text image awaiting GL upload (consumed and cleared at the top
@@ -1531,8 +1518,8 @@ private:
     GLuint    m_cfxLast[CFX_COUNT] = {}; ///< Texture each compute sim published last (bound again while frozen).
 
 
-    // GPU-/Host-Simulationen (RD, Fluid, Smoke3D, Physarum, SSM, Spectro):
-    // komplett in GpuSims gekapselt; paint() meldet nur den Bedarf.
+    // GPU/host simulations (RD, fluid, Smoke3D, Physarum, SSM, spectro): fully
+    // encapsulated in GpuSims; paint() only reports the demand.
     GpuSims m_sims; ///< Older GPU/host simulations (reaction-diffusion, fluid, smoke3D, Physarum, self-similarity
                     ///< matrix, spectrogram): fully encapsulated in GpuSims; paint() only reports demand.
     // Szenen-/Combine-Wahl, Trigger, Review, Song-Struktur: SceneScheduler.

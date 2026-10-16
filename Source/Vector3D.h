@@ -221,22 +221,24 @@ public:
      **/
     inline float scalarProd( const Vector3D &b ) const;
 
-    //! return the angle between the vector and b in radians
-    /**  for speed-purposes, this routine assumes, that the two vectors are normalized
+    /**  return the angle between the vector and b in radians
      *
      * @param b  The other vector; both must have unit length. (in)
      *
      * @return
      *   The angle in radians, 0..pi.
+     *
+     * for speed-purposes, this routine assumes, that the two vectors are normalized
      **/
     inline float angleRad( const Vector3D &b ) const;
-    //! return the angle between the vector and b in degrees
-    /**  for speed-purposes, this routine assumes, that the two vectors are normalized
+    /**  return the angle between the vector and b in degrees
      *
      * @param b  The other vector; both must have unit length. (in)
      *
      * @return
      *   The angle in degrees, 0..180.
+     *
+     * for speed-purposes, this routine assumes, that the two vectors are normalized
      **/
     inline float angleDeg( const Vector3D &b ) const;
 
@@ -279,10 +281,11 @@ public:
      **/
     inline Vector3D normalized() const;
 
-    //! if the angle between the two vectors is greater than 90� flip the calling one
-    /**  for speed-purposes, this routine assumes, that the two vectors are normalized
+    /**  if the angle between the two vectors is greater than 90° flip the calling one
      *
      * @param b  The reference direction. (in)
+     *
+     * for speed-purposes, this routine assumes, that the two vectors are normalized
      **/
     inline void faceForward( const Vector3D &b );
 
