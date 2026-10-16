@@ -34,9 +34,7 @@
  * timing. The (m_stateRotation-driven) continuous-rotation state machine is
  * present but its body is fully commented out in setUniforms() - only the
  * power state machine and the flip-flop m_interpolationRotation reset in
- * resetParameters() are currently active. TextureEffectTunnel and
- * TextureEffectTunnelReverse derive from this class to add tunnel-specific
- * scroll-speed uniforms on top.
+ * resetParameters() are currently active.
  **/
 class TextureEffectKaleidoscopeBase : public EffectShader
 {
@@ -155,6 +153,15 @@ protected:
                    ///< reaching the shader from this class.
     unsigned int m_maxSides; ///< Range width added to m_minSides when rolling m_sides.
     unsigned int m_minSides; ///< Lower bound for rolling m_sides.
+private:
+    /** Not copyable (CGVR template: copy constructor and assignment are always declared). */
+    TextureEffectKaleidoscopeBase( const TextureEffectKaleidoscopeBase & ) = delete;
+    /**  Not assignable; see the copy constructor.
+     *
+     * @return
+     *   Nothing: the operator is deleted, so no call compiles.
+     **/
+    TextureEffectKaleidoscopeBase &operator=( const TextureEffectKaleidoscopeBase & ) = delete;
 };
 
 

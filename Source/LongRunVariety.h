@@ -47,6 +47,8 @@
 class RecentScenes
 {
 public:
+    /** Default construction, which the declared copy operations would otherwise suppress: empty, capacity 40. */
+    RecentScenes() = default;
     /**  Sets how many scenes the memory holds; the oldest beyond it are dropped.
      *
      * @param n  Capacity in scenes. (in)
@@ -125,6 +127,15 @@ private:
     std::deque<std::string>              m_names;    ///< The names, oldest first.
     std::unordered_map<std::string, int> m_count;    ///< How often each name is in m_names.
     size_t                               m_cap = 40; ///< Capacity in scenes.
+private:
+    /** Not copyable (CGVR template: copy constructor and assignment are always declared). */
+    RecentScenes( const RecentScenes & ) = delete;
+    /**  Not assignable; see the copy constructor.
+     *
+     * @return
+     *   Nothing: the operator is deleted, so no call compiles.
+     **/
+    RecentScenes &operator=( const RecentScenes & ) = delete;
 };
 
 /** @class LabShareClock
@@ -137,6 +148,8 @@ private:
 class LabShareClock
 {
 public:
+    /** Default construction, which the declared copy operations would otherwise suppress: no share asked for. */
+    LabShareClock() = default;
     /**  Sets the share the preset asks for.
      *
      * @param share  Share of the screen time, 0..1 (0: the labs are scenes like any other). (in)
@@ -199,6 +212,15 @@ private:
     float                  m_target = 0.f;     ///< The share the preset asks for.
     float                  m_lab = 0.f;        ///< Decayed seconds of walking labs.
     float                  m_all = 0.f;        ///< Decayed seconds of everything.
+private:
+    /** Not copyable (CGVR template: copy constructor and assignment are always declared). */
+    LabShareClock( const LabShareClock & ) = delete;
+    /**  Not assignable; see the copy constructor.
+     *
+     * @return
+     *   Nothing: the operator is deleted, so no call compiles.
+     **/
+    LabShareClock &operator=( const LabShareClock & ) = delete;
 };
 
 /**  How new a chain class is to the viewer: the weight a lab's walk gives a candidate class.

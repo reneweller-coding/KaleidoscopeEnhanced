@@ -78,7 +78,6 @@ HEADERS += \
     Source/SpoutOut.h \
     Source/stdinc.h \
     Source/textfile.h \
-    Source/TextureEffect.h \
     Source/TextureEffectKaleidoscopeBase.h \
     Source/Uniform.h \
     Source/Utils.h \

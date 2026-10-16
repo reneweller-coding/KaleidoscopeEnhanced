@@ -32,7 +32,6 @@ readable, robust or maintainable; every such case is listed below with its reaso
 | Braces on lines of their own | One-line member functions inside a class body stay on one line (`int count() const { return m_count; }`); `case X: return y;` stays on one line | Four lines per accessor or per entry of a value table would bury the interface; each line still holds one statement |
 | — | Continuation lines start with the operator (`* audioSwell`) | The guidelines do not say; the code did this in 1,713 places and after it in 126 |
 | — | Comment lines of the form `// @name ...` are never wrapped | The app parses them at run time (`EffectShader`: `@chainclasses`, `@chainord`, `@chainss`, `@chainopening`, `@chainbake`; `gen.py`: `@expr`) |
-| Whole code base formatted | The `#if 0` block in `Source/Uniform.cpp` (the original Shader Maker `CUniform`, kept as reference) is untouched | clang-format does not format disabled code |
 | Generated files follow the guidelines | `Tools/scenegen/src/*.glsl` (the generator's sources) keep their own layout | `gen.py` and `make_chainpass.py` cut and patch that text with patterns written for it; their output is formatted when it is written |
 
 ## Text the app and the tools read out of the shaders
@@ -86,7 +85,6 @@ hand.
 | Classes are CamelCase | `Ui_MainWindow` stays | uic generates that name |
 | Local variables are lower case | `W`, `H`, `N`, `NB` stay where they are `const` | They are named constants (`const int W = 64`), and constants are written like `MaxNum` |
 | Global C functions carry a module prefix | Not applied | C++ here: namespaces (`Strings::`, `Platform::`) and class scope do that job |
-| — | `FxEffectKaleidoscope`, `FxEffectMulti`, `TextureEffect`, `TextureEffectTunnel`, `TextureEffectTunnelReverse` and the `#if 0` block in `Uniform.cpp` keep their old names | No build compiles them, so a rename could not be checked |
 
 ## Names (GLSL)
 

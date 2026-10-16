@@ -40,9 +40,9 @@
  * the shader source. Compilation is lazy: prepare() only records the render
  * size, and the actual GL program build happens on first use via
  * ensureCompiled(), so a preset with many shaders starts instantly instead of
- * blocking on dozens of compiles up front. Kaleidoscope/tunnel/FX-overlay
- * subclasses (TextureEffectKaleidoscopeBase, FxEffectKaleidoscope,
- * FxEffectMulti, ...) all derive from this class, chaining into its
+ * blocking on dozens of compiles up front. The subclasses
+ * (TextureEffectKaleidoscopeBase for the classic kaleidoscope, Scene3DShader
+ * for the real 3D scenes) chain into its
  * initUniforms()/setUniforms()/resetParameters() to add their own uniform
  * locations and randomised parameters on top.
  **/

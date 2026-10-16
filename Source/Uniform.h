@@ -13,11 +13,10 @@
  *  details, see main.cpp or COPYING there.
  *
  *  NOTE (Kaleidoscope Enhanced): the class below has been trimmed down from the original "Shader Maker" CUniform
- *  (see the `#if 0` block at the end of Uniform.cpp for the original, matrix/vector-capable implementation this
- *  project no longer uses) to just the bool/int/float/interpolator-float scalar cases actually needed by this
- *  project's shaders.  The class-level doc comment further down (originally written for CUniform) is kept for
- *  historical context but describes capabilities (matrices, getColumnVector etc.) that are no longer present on
- *  this class.
+ *  (the matrix/vector-capable implementation, kept here as disabled code until 16.10.2026 -- the git history has
+ *  it) to just the bool/int/float/interpolator-float scalar cases actually needed by this project's shaders.  The
+ *  class-level doc comment further down (originally written for CUniform) is kept for historical context but
+ *  describes capabilities (matrices, getColumnVector etc.) that are no longer present on this class.
  *
  *  @author Markus Kramer (Shader Maker, 2007-2008); trimmed down by René Weller
  *

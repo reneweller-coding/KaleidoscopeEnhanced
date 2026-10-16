@@ -20,8 +20,8 @@ import cgvr_format                                          # noqa: E402
 
 # Copied or moved by value somewhere (containers, return values): member-wise copies are what they had before.
 COPYABLE = { "ExprProgram" }
-# Not ours or not compiled: uic's form class, the classes of the files no build compiles.
-SKIP_FILES = re.compile( r"mainwindow\.h$|FxEffect|TextureEffect", re.I )
+# Not ours: uic's form class.
+SKIP_FILES = re.compile( r"mainwindow\.h$", re.I )
 CLASS = re.compile( r"^([ \t]*)class[ \t]+(\w+)\b([^;{]*)\{", re.M )
 
 
