@@ -1,22 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file NeonSignAlley.frag
- * @brief NEON SIGN ALLEY: a narrow back street at night, hundreds of neon
- * blade signs hanging off both walls into the depth, rain falling through
- * their light and the wet asphalt mirroring all of it.  The camera glides
- * down the alley at a steady walking pace; each sign belongs to a spectrum
- * band and burns with it, so the whole street plays the music as light.
+/*****************************************************************************\
+ *                              NeonSignAlley.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSpectrum[32] -> brightness of each sign (its band)
- *   sceneAdvance      -> the walk down the alley (continuous)
- *   audioSwell        -> haze density (slow)
- *   audioHigh         -> rain sparkle (light)
- *   audioKick         -> a soft surge of the whole neon glow (light only)
+ *  @brief
+ *  NEON SIGN ALLEY: a narrow back street at night, hundreds of neon blade signs hanging off both walls into the
+ *  depth, rain falling through their light and the wet asphalt mirroring all of it.
  *
- * Per-activation variety: densityP (signs per metre), hueP.
+ *  The camera glides down the alley at a steady walking pace; each sign belongs to a spectrum band and burns with
+ *  it, so the whole street plays the music as light.
+ *
+ *  Audio Reactivity:
+ *    audioSpectrum[32] -> brightness of each sign (its band)
+ *    sceneAdvance      -> the walk down the alley (continuous)
+ *    audioSwell        -> haze density (slow)
+ *    audioHigh         -> rain sparkle (light)
+ *    audioKick         -> a soft surge of the whole neon glow (light only)
+ *
+ *  Per-activation variety: densityP (signs per metre), hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

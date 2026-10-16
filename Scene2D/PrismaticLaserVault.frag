@@ -1,20 +1,27 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file PrismaticLaserVault.frag
- * @brief PRISMATIC LASER VAULT: Volumetric 64-beam laser maze with dichroic prism cubes,
- * optical smoke volume scattering, and beam-splitter refractions filling 100% viewport.
- *   audioKick    -> flashes laser wattage into blinding flare blooms
- *   audioMid     -> modulates laser beam oscillation frequencies
- *   audioAdvance -> rotates dichroic prism mirrors in 3D
- *   audioSwell   -> thickens volumetric smoke density
+/*****************************************************************************\
+ *                              PrismaticLaserVault.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   beamP    float laser beam density & width              (0.5..2.2)
- *   prismP   float dichroic prism rotation speed           (0.5..1.8)
- *   smokeP   float atmospheric haze / smoke scattering     (0.5..2.0)
- *   hueP     float RGB beam spectrum color offset          (0..6.28)
+ *  @brief
+ *  PRISMATIC LASER VAULT: Volumetric 64-beam laser maze with dichroic prism cubes, optical smoke volume scattering,
+ *  and beam-splitter refractions filling 100% viewport.
+ *
+ *    audioKick    -> flashes laser wattage into blinding flare blooms
+ *    audioMid     -> modulates laser beam oscillation frequencies
+ *    audioAdvance -> rotates dichroic prism mirrors in 3D
+ *    audioSwell   -> thickens volumetric smoke density
+ *
+ *  Per-activation variety:
+ *    beamP    float laser beam density & width              (0.5..2.2)
+ *    prismP   float dichroic prism rotation speed           (0.5..1.8)
+ *    smokeP   float atmospheric haze / smoke scattering     (0.5..2.0)
+ *    hueP     float RGB beam spectrum color offset          (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

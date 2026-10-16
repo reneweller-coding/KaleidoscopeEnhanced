@@ -1,18 +1,25 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file MobiusStripRollerDrive.frag
- * @brief MOBIUS STRIP ROLLER DRIVE: High-velocity 3D roller coaster ride along a
- * twisted single-sided Möbius strip. Seamless continuous surface traversal with
- * periodic complementary color inversions, laser track rails, and neon sparks.
+/*****************************************************************************\
+ *                              MobiusStripRollerDrive.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance -> drives continuous forward roller-coaster velocity along the strip
- *   audioKick    -> flashes track neon energy nodes & triggers orientation flip burst
- *   audioCentroid-> sharpens laser rail line resolution & track sparks
- *   audioSubBass -> expands strip width breathing amplitude
- *   audioChromaHue-> steers the continuous non-orientable rainbow palette
+ *  @brief
+ *  MOBIUS STRIP ROLLER DRIVE: High-velocity 3D roller coaster ride along a twisted single-sided Möbius strip.
+ *
+ *  Seamless continuous surface traversal with periodic complementary color inversions, laser track rails, and neon
+ *  sparks.
+ *
+ *  Audio Reactivity:
+ *    audioAdvance -> drives continuous forward roller-coaster velocity along the strip
+ *    audioKick    -> flashes track neon energy nodes & triggers orientation flip burst
+ *    audioCentroid-> sharpens laser rail line resolution & track sparks
+ *    audioSubBass -> expands strip width breathing amplitude
+ *    audioChromaHue-> steers the continuous non-orientable rainbow palette
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

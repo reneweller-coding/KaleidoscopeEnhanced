@@ -1,20 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SubglacialVolcanicPillowLava.frag
- * @brief SUBGLACIAL VOLCANIC PILLOW LAVA: 220x120 heightfield grid of basaltic pillow lava
- * extruding under glacial ice sheets. Glassy quenching basalt crust, incandescent magma
- * fissure glows, hydrothermal steam cavitation, and photo texturing.
- *   audioAdvance -> drives subglacial lava lobe extrusion & spreading
- *   audioKick    -> fractures glassy basalt crust with molten magma flashes
- *   audioSwell   -> widens incandescent fissure thickness & thermal luminance
- *   audioCentroid-> shifts magma thermal emission spectra (amber to gold)
+/*****************************************************************************\
+ *                              SubglacialVolcanicPillowLava.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   pillowScaleP float pillow lava lobe packing density     (2.5..6.0)
- *   lavaHeatP    float incandescent fissure magma luminance (0.8..2.5)
- *   crustGlowP   float glassy basalt crust specular sheen   (0.6..2.0)
+ *  @brief
+ *  SUBGLACIAL VOLCANIC PILLOW LAVA: 220x120 heightfield grid of basaltic pillow lava extruding under glacial ice
+ *  sheets.
+ *
+ *  Glassy quenching basalt crust, incandescent magma fissure glows, hydrothermal steam cavitation, and photo
+ *  texturing.
+ *
+ *    audioAdvance -> drives subglacial lava lobe extrusion & spreading
+ *    audioKick    -> fractures glassy basalt crust with molten magma flashes
+ *    audioSwell   -> widens incandescent fissure thickness & thermal luminance
+ *    audioCentroid-> shifts magma thermal emission spectra (amber to gold)
+ *
+ *  Per-activation variety:
+ *    pillowScaleP float pillow lava lobe packing density     (2.5..6.0)
+ *    lavaHeatP    float incandescent fissure magma luminance (0.8..2.5)
+ *    crustGlowP   float glassy basalt crust specular sheen   (0.6..2.0)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec2  vUV;     ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 in vec3  vNormal; ///< Surface normal (from the vertex stage).

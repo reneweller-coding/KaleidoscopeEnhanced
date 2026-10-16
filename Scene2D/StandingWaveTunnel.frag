@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file StandingWaveTunnel.frag
- * @brief STANDING WAVE TUNNEL: flying through a tunnel that vibrates like the
- * inside of an organ pipe -- its wall bulges and pinches in a standing
- * wave along its length and around its circumference, nodes and
- * antinodes breathing in and out, the photograph stretched over the
- * moving wall and lit by how the wall faces us: bulges glow, pinches
- * darken into rings.  Endless, mirrorable; the wall continues beyond the
- * frame.
+/*****************************************************************************\
+ *                              StandingWaveTunnel.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the flight (integrated, jump-free)
- *   audioPhase      -> the wave's phase (integrated)
- *   audioSpread     -> wave amplitude (slow)
- *   audioMode       -> lobes around the tunnel: 4 in minor, 6 in major (blended)
- *   audioKick       -> the antinode rings glow (light)
- *   audioSwell      -> depth glow (slow)
+ *  @brief
+ *  STANDING WAVE TUNNEL: flying through a tunnel that vibrates like the inside of an organ pipe -- its wall bulges
+ *  and pinches in a standing wave along its length and around its circumference, nodes and antinodes breathing in
+ *  and out, the photograph stretched over the moving wall and lit by how the wall faces us: bulges glow, pinches
+ *  darken into rings.
  *
- * Knobs: waveP (wavelength), ampP (base amplitude), wallZoomP, hueP.
+ *  Endless, mirrorable; the wall continues beyond the frame.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the flight (integrated, jump-free)
+ *    audioPhase      -> the wave's phase (integrated)
+ *    audioSpread     -> wave amplitude (slow)
+ *    audioMode       -> lobes around the tunnel: 4 in minor, 6 in major (blended)
+ *    audioKick       -> the antinode rings glow (light)
+ *    audioSwell      -> depth glow (slow)
+ *
+ *  Knobs: waveP (wavelength), ampP (base amplitude), wallZoomP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

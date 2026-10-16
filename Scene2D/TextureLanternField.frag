@@ -1,26 +1,32 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureLanternField.frag
- * @brief TEXTURE LANTERN FIELD: looking straight up into a night sky full of
- * floating paper lanterns -- hundreds of glowing lanterns at every depth,
- * the near ones large and soft with the photograph printed on their paper
- * (each shows a different piece of it, lit from within), the far ones
- * small warm points, all drifting slowly upward and away, turning gently.
- * No horizon, no ground: the field of lanterns is endless and mirrors
- * without seams; the sky between them is deep blue with a warm haze.
+/*****************************************************************************\
+ *                              TextureLanternField.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the lanterns drift (integrated, jump-free)
- *   audioSpread     -> how deep the field reaches (more layers)
- *   audioBass       -> the flames inside glow brighter (light)
- *   audioMode       -> the flame colour: amber in minor, rose-gold in major (slow blend)
- *   audioSwell      -> the warm haze between them (slow)
- *   audioHigh       -> the flames flicker (light)
+ *  @brief
+ *  TEXTURE LANTERN FIELD: looking straight up into a night sky full of floating paper lanterns -- hundreds of
+ *  glowing lanterns at every depth, the near ones large and soft with the photograph printed on their paper (each
+ *  shows a different piece of it, lit from within), the far ones small warm points, all drifting slowly upward and
+ *  away, turning gently.
  *
- * Knobs: densityP (how many), sizeP (lantern size), photoP (how much the
- * paper shows the photo), hueP.
+ *  No horizon, no ground: the field of lanterns is endless and mirrors without seams; the sky between them is deep
+ *  blue with a warm haze.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the lanterns drift (integrated, jump-free)
+ *    audioSpread     -> how deep the field reaches (more layers)
+ *    audioBass       -> the flames inside glow brighter (light)
+ *    audioMode       -> the flame colour: amber in minor, rose-gold in major (slow blend)
+ *    audioSwell      -> the warm haze between them (slow)
+ *    audioHigh       -> the flames flicker (light)
+ *
+ *  Knobs: densityP (how many), sizeP (lantern size), photoP (how much the
+ *  paper shows the photo), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

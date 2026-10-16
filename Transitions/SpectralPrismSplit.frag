@@ -1,21 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SpectralPrismSplit.frag
- * @brief TRANSITION SPECTRAL PRISM SPLIT: Optical prism dispersion transition.
- * The image splits into red, green, and blue spectral sub-images that
- * disperse across the screen with chromatic aberration and recombine
- * smoothly into the incoming scene.
- *   interpolation -> sweeps dispersion angle & channel separation
- *   audioKick     -> flashes spectral rainbow flare streaks
- *   audioSwell    -> widens chromatic channel separation distance
+/*****************************************************************************\
+ *                              SpectralPrismSplit.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   prismP float dispersion intensity & separation width (0.5..2.2)
- *   splitP float split angle direction multiplier        (0.5..2.0)
- *   speedP float animation speed                         (0.5..2.0)
- *   hueP   float spectral hue offset                     (0..6.28)
+ *  @brief
+ *  TRANSITION SPECTRAL PRISM SPLIT: Optical prism dispersion transition.
+ *
+ *  The image splits into red, green, and blue spectral sub-images that disperse across the screen with chromatic
+ *  aberration and recombine smoothly into the incoming scene.
+ *
+ *    interpolation -> sweeps dispersion angle & channel separation
+ *    audioKick     -> flashes spectral rainbow flare streaks
+ *    audioSwell    -> widens chromatic channel separation distance
+ *
+ *  Per-activation variety:
+ *    prismP float dispersion intensity & separation width (0.5..2.2)
+ *    splitP float split angle direction multiplier        (0.5..2.0)
+ *    speedP float animation speed                         (0.5..2.0)
+ *    hueP   float spectral hue offset                     (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

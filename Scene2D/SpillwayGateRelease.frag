@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SpillwayGateRelease.frag
- * @brief SPILLWAY GATE RELEASE: the face of a dam with radial gates.  As
- * the swell rises the gates lift and the water goes over the crest in
- * smooth glassy sheets that break into white further down; spray hangs in
- * front of the face as round droplets and a rainbow stands in it.  Each
- * gate takes one chroma class for the light on its pier.  The kick is a
- * surge in the plunge pool, felt as light on the foam, not as a jolt.
- * Camera fixed downstream.
+/*****************************************************************************\
+ *                              SpillwayGateRelease.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSwell      -> gate opening: how much water goes over (slow)
- *   sceneAdvance    -> the fall, the spray, the plunge pool (continuous)
- *   audioChroma[12] -> the pier lights (light)
- *   audioKick       -> a surge lighting the foam (light)
- *   audioHigh       -> spray sparkle (light)
+ *  @brief
+ *  SPILLWAY GATE RELEASE: the face of a dam with radial gates.
  *
- * Per-activation variety: gatesP, sprayP, hueP.
+ *  As the swell rises the gates lift and the water goes over the crest in smooth glassy sheets that break into
+ *  white further down; spray hangs in front of the face as round droplets and a rainbow stands in it.  Each gate
+ *  takes one chroma class for the light on its pier.  The kick is a surge in the plunge pool, felt as light on the
+ *  foam, not as a jolt. Camera fixed downstream.
+ *
+ *  Audio Reactivity:
+ *    audioSwell      -> gate opening: how much water goes over (slow)
+ *    sceneAdvance    -> the fall, the spray, the plunge pool (continuous)
+ *    audioChroma[12] -> the pier lights (light)
+ *    audioKick       -> a surge lighting the foam (light)
+ *    audioHigh       -> spray sparkle (light)
+ *
+ *  Per-activation variety: gatesP, sprayP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

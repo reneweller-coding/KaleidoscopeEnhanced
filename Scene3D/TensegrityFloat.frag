@@ -1,15 +1,20 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TensegrityFloat.frag
- * @brief Fragment stage for TensegrityFloat: a soft studio of the photo
- * behind, the struts as photo-wrapped bars with a per-face shade, the
- * cables as thin lines that light with their pitch class, the kick a
- * glint along every cable, the swell the studio light.
+/*****************************************************************************\
+ *                              TensegrityFloat.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity: audioChroma[12] -> cable light; audioKick -> cable
- *                   glint; audioSwell -> studio light; audioLevel.
+ *  @brief
+ *  Fragment stage for TensegrityFloat: a soft studio of the photo behind, the struts as photo-wrapped bars with a
+ *  per-face shade, the cables as thin lines that light with their pitch class, the kick a glint along every cable,
+ *  the swell the studio light.
+ *
+ *  Audio Reactivity: audioChroma[12] -> cable light; audioKick -> cable
+ *                    glint; audioSwell -> studio light; audioLevel.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 in vec2  vTexCoord; ///< Texture coordinate (from the vertex stage).
 in vec3  vWorld;    ///< World position (from the vertex stage).
 in float vKind;     ///< Element kind (from the vertex stage).

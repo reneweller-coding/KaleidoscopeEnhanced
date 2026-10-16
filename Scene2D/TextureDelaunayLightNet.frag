@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureDelaunayLightNet.frag
- * @brief TEXTURE DELAUNAY LIGHT NET: a living net of light -- glowing nodes
- * drift slowly over the dark photograph and every pair of nearby nodes is
- * joined by a thin luminous thread, fading as they move apart and
- * brightening as they approach, so the web continually re-knits itself;
- * nodes take their colour from the photo beneath them and gather more
- * densely on its bright parts; small triangles between close nodes fill
- * with a faint tinted glow.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              TextureDelaunayLightNet.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the nodes drift (integrated, jump-free)
- *   audioSpread     -> link reach (how far threads span)
- *   audioKick       -> the nodes flash (light)
- *   audioHigh       -> the threads shimmer (light)
- *   audioMode       -> palette: cool in minor, warm in major
- *   audioSwell      -> the triangle fills (slow)
+ *  @brief
+ *  TEXTURE DELAUNAY LIGHT NET: a living net of light -- glowing nodes drift slowly over the dark photograph and
+ *  every pair of nearby nodes is joined by a thin luminous thread, fading as they move apart and brightening as
+ *  they approach, so the web continually re-knits itself; nodes take their colour from the photo beneath them and
+ *  gather more densely on its bright parts; small triangles between close nodes fill with a faint tinted glow.
  *
- * Knobs: nodeP (node spacing), threadP (thread brightness), photoP (photo visibility), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the nodes drift (integrated, jump-free)
+ *    audioSpread     -> link reach (how far threads span)
+ *    audioKick       -> the nodes flash (light)
+ *    audioHigh       -> the threads shimmer (light)
+ *    audioMode       -> palette: cool in minor, warm in major
+ *    audioSwell      -> the triangle fills (slow)
+ *
+ *  Knobs: nodeP (node spacing), threadP (thread brightness), photoP (photo visibility), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

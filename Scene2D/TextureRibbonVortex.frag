@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureRibbonVortex.frag
- * @brief TEXTURE RIBBON VORTEX: broad ribbons of the photograph spiral down
- * into a vortex -- two sets of curling bands, one winding clockwise, the
- * other counter-clockwise, weave over and under each other as they are
- * drawn toward the bright eye in the centre; each ribbon is curved like
- * silk, dark at its folded edges and catching a sheen along its crown,
- * the photo streaming along it.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              TextureRibbonVortex.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the ribbons stream inward (integrated, jump-free)
- *   audioPhase      -> the vortex turns (integrated)
- *   audioSpread     -> ribbon width
- *   audioKick       -> the crown sheen flares (light)
- *   audioMode       -> the eye's colour: cool in minor, warm in major
- *   audioSwell      -> the eye's glow (slow)
+ *  @brief
+ *  TEXTURE RIBBON VORTEX: broad ribbons of the photograph spiral down into a vortex -- two sets of curling bands,
+ *  one winding clockwise, the other counter-clockwise, weave over and under each other as they are drawn toward the
+ *  bright eye in the centre; each ribbon is curved like silk, dark at its folded edges and catching a sheen along
+ *  its crown, the photo streaming along it.
  *
- * Knobs: pitchP (spiral tightness), weaveP (how much the second set shows), zoomP (photo scale), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the ribbons stream inward (integrated, jump-free)
+ *    audioPhase      -> the vortex turns (integrated)
+ *    audioSpread     -> ribbon width
+ *    audioKick       -> the crown sheen flares (light)
+ *    audioMode       -> the eye's colour: cool in minor, warm in major
+ *    audioSwell      -> the eye's glow (slow)
+ *
+ *  Knobs: pitchP (spiral tightness), weaveP (how much the second set shows), zoomP (photo scale), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

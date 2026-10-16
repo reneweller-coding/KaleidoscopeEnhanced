@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file IoVolcanicPlumes.frag
- * @brief IO VOLCANIC PLUMES: Jupiter fills the sky, banded and turning on
- * the scene clock; below, Io's sulphur plains (the photo as the surface)
- * with volcanic vents.  Each vent runs a continuous umbrella plume --
- * material rises on a travelling phase and falls back in an arc, as Io's
- * plumes do in vacuum -- and an onset brightens the plume from the vent up
- * (light), so the eruptions pulse with the music without a single
- * geometric jump.  The camera never moves.
+/*****************************************************************************\
+ *                              IoVolcanicPlumes.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   sceneAdvance -> Jupiter's bands turn, the plumes' flow (continuous)
- *   audioOnset   -> plume brightness from the vent (light)
- *   audioSwell   -> plume height (slow)
- *   audioLevel   -> surface brightness
- *   audioBass    -> vent glow (light)
+ *  @brief
+ *  IO VOLCANIC PLUMES: Jupiter fills the sky, banded and turning on the scene clock; below, Io's sulphur plains
+ *  (the photo as the surface) with volcanic vents.
  *
- * Per-activation variety: ventsP (vent count), jupP (Jupiter size), hueP.
+ *  Each vent runs a continuous umbrella plume -- material rises on a travelling phase and falls back in an arc, as
+ *  Io's plumes do in vacuum -- and an onset brightens the plume from the vent up (light), so the eruptions pulse
+ *  with the music without a single geometric jump.  The camera never moves.
+ *
+ *  Audio Reactivity:
+ *    sceneAdvance -> Jupiter's bands turn, the plumes' flow (continuous)
+ *    audioOnset   -> plume brightness from the vent (light)
+ *    audioSwell   -> plume height (slow)
+ *    audioLevel   -> surface brightness
+ *    audioBass    -> vent glow (light)
+ *
+ *  Per-activation variety: ventsP (vent count), jupP (Jupiter size), hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

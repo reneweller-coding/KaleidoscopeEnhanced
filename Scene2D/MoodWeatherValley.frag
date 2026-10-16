@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file MoodWeatherValley.frag
- * @brief MOOD WEATHER VALLEY: a valley of the photo under weather that is
- * the mood of the music.  Arousal is the wind -- the grass and the cloud
- * drift faster, the trees lean (slowly, as a real gust builds); valence is
- * the sun or the rain -- high valence clears the sky and warms the light,
- * low valence brings cloud, rain as round falling drops and a cold cast.
- * Both axes are slow, so the weather changes as weather does.  The kick is
- * distant lightning in the cloud.  Camera fixed on the valley.
+/*****************************************************************************\
+ *                              MoodWeatherValley.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioArousal -> wind speed and lean (slow)
- *   audioValence -> sun vs rain, warmth (slow)
- *   sceneAdvance -> cloud and rain motion (continuous)
- *   audioKick    -> lightning in the cloud (light)
- *   audioLevel   -> brightness
+ *  @brief
+ *  MOOD WEATHER VALLEY: a valley of the photo under weather that is the mood of the music.
  *
- * Per-activation variety: hillsP, rainP, hueP.
+ *  Arousal is the wind -- the grass and the cloud drift faster, the trees lean (slowly, as a real gust builds);
+ *  valence is the sun or the rain -- high valence clears the sky and warms the light, low valence brings cloud,
+ *  rain as round falling drops and a cold cast. Both axes are slow, so the weather changes as weather does.  The
+ *  kick is distant lightning in the cloud.  Camera fixed on the valley.
+ *
+ *  Audio Reactivity:
+ *    audioArousal -> wind speed and lean (slow)
+ *    audioValence -> sun vs rain, warmth (slow)
+ *    sceneAdvance -> cloud and rain motion (continuous)
+ *    audioKick    -> lightning in the cloud (light)
+ *    audioLevel   -> brightness
+ *
+ *  Per-activation variety: hillsP, rainP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

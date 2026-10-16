@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SumiEnsoField.frag
- * @brief SUMI ENSO FIELD: Zen ink circles drawn again and again -- bold
- * enso brush circles appear across a field of rice paper, each drawn in
- * one sweep as we watch (the stroke growing around, dry-brush streaks
- * where the ink ran out, a heavy start and a flicking tail), then slowly
- * fading while new ones are drawn elsewhere; the paper carries the
- * photograph as a faint wash.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              SumiEnsoField.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the drawing (integrated, jump-free)
- *   audioSpread     -> the circles' size
- *   audioRoughness  -> dry-brush streaks
- *   audioKick       -> the wet ink gleams (light)
- *   audioMode       -> ink: blue-black in minor, sepia/cinnabar accents in major (blend)
- *   audioSwell      -> the photo wash on the paper (slow)
+ *  @brief
+ *  SUMI ENSO FIELD: Zen ink circles drawn again and again -- bold enso brush circles appear across a field of rice
+ *  paper, each drawn in one sweep as we watch (the stroke growing around, dry-brush streaks where the ink ran out,
+ *  a heavy start and a flicking tail), then slowly fading while new ones are drawn elsewhere; the paper carries the
+ *  photograph as a faint wash.
  *
- * Knobs: densityP (circles), brushP (brush width), gapP (the open gap of the circle), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the drawing (integrated, jump-free)
+ *    audioSpread     -> the circles' size
+ *    audioRoughness  -> dry-brush streaks
+ *    audioKick       -> the wet ink gleams (light)
+ *    audioMode       -> ink: blue-black in minor, sepia/cinnabar accents in major (blend)
+ *    audioSwell      -> the photo wash on the paper (slow)
+ *
+ *  Knobs: densityP (circles), brushP (brush width), gapP (the open gap of the circle), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

@@ -1,4 +1,24 @@
 #version 330 core
+/*****************************************************************************\
+ *                              HairCurtain.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Shades a curtain of hair strands with Kajiya-Kay anisotropic shading: two materials picked by vKind, a soft
+ *  photo-tinted backdrop behind the curtain, and individual strands lit by a ring-integral diffuse term plus a
+ *  primary root-shifted highlight and a secondary, pigment-tinted, glinting highlight shifted the other way.
+ *
+ *  audioAmbient tints the backdrop and lifts the strand diffuse floor,
+ *  audioHigh brightens the primary highlight, audioLevel strengthens the
+ *  glinting secondary highlight, audioKick and audioSubBass brighten a wave
+ *  of light that continually travels down the curtain, audioChromaHue picks
+ *  the pigment hue (kept to a narrow black-to-blond range) and the
+ *  traveling wave's hue, and audioBeat pulses the final brightness. camHP
+ *  sets the view height used to build the view vector.
+ *
+ *  @author René Weller
+ */
 out vec4 fragColor; ///< The pixel's colour (output).
 // HairCurtain.frag — Kajiya-Kay anisotropic shading.
 // -----------------------------------------------------------------------
@@ -19,23 +39,6 @@ in vec3  vTangent; ///< Tangent (from the vertex stage).
 in float vAlong;   ///< Along (from the vertex stage).
 in float vTint;    ///< Tint (from the vertex stage).
 in float vKind;    ///< Element kind (from the vertex stage).
-
-/**
- * @file HairCurtain.frag
- * @brief Shades a curtain of hair strands with Kajiya-Kay anisotropic
- * shading: two materials picked by vKind, a soft photo-tinted backdrop
- * behind the curtain, and individual strands lit by a ring-integral
- * diffuse term plus a primary root-shifted highlight and a secondary,
- * pigment-tinted, glinting highlight shifted the other way.
- *
- * audioAmbient tints the backdrop and lifts the strand diffuse floor,
- * audioHigh brightens the primary highlight, audioLevel strengthens the
- * glinting secondary highlight, audioKick and audioSubBass brighten a wave
- * of light that continually travels down the curtain, audioChromaHue picks
- * the pigment hue (kept to a narrow black-to-blond range) and the
- * traveling wave's hue, and audioBeat pulses the final brightness. camHP
- * sets the view height used to build the view vector.
- */
 
 uniform sampler2D tex0;          ///< The current photo.
 uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.

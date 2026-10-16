@@ -1,13 +1,20 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file ReactionDiffusionSim.frag
- * @brief One step of a Gray-Scott reaction-diffusion simulation, run on the GPU in
- * a ping-pong pair of RGBA16F buffers (R = reagent A, G = reagent B).  Each
- * frame this shader reads the previous state and writes the next — a genuine
- * PDE integrator on the graphics card.  Audio onsets inject fresh reagent so
- * the pattern blossoms on the beat.  Displayed by ReactionDiffusion.frag.
+/*****************************************************************************\
+ *                              ReactionDiffusionSim.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  One step of a Gray-Scott reaction-diffusion simulation, run on the GPU in a ping-pong pair of RGBA16F buffers (R
+ *  = reagent A, G = reagent B).
+ *
+ *  Each frame this shader reads the previous state and writes the next — a genuine PDE integrator on the graphics
+ *  card.  Audio onsets inject fresh reagent so the pattern blossoms on the beat.  Displayed by
+ *  ReactionDiffusion.frag.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform sampler2D texPrev;    ///< previous simulation state (R=A, G=B)
 uniform vec2      resolution; ///< grid size

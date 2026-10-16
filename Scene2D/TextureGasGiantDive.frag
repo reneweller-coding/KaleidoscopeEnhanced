@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureGasGiantDive.frag
- * @brief TEXTURE GAS GIANT DIVE: hovering over the cloud tops of a gas
- * giant -- broad bands of atmosphere race past each other in opposite
- * directions, their edges curling into festoons and eddies, great oval
- * storms turn slowly between them, and the colours (cream, ochre, rust,
- * blue-grey) are drawn from the photograph's palette; the band structure
- * stretches endlessly across the view.  Mirrorable.
+/*****************************************************************************\
+ *                              TextureGasGiantDive.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the jets flow (integrated, jump-free)
- *   audioSpread     -> the jets' speed contrast
- *   audioRoughness  -> turbulence at the band edges
- *   audioKick       -> lightning in the storms (light)
- *   audioMode       -> palette warmth
- *   audioSwell      -> the storms swell (slow)
+ *  @brief
+ *  TEXTURE GAS GIANT DIVE: hovering over the cloud tops of a gas giant -- broad bands of atmosphere race past each
+ *  other in opposite directions, their edges curling into festoons and eddies, great oval storms turn slowly
+ *  between them, and the colours (cream, ochre, rust, blue-grey) are drawn from the photograph's palette; the band
+ *  structure stretches endlessly across the view.
  *
- * Knobs: bandP (band count), stormP (storm size), contrastP, hueP.
+ *  Mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the jets flow (integrated, jump-free)
+ *    audioSpread     -> the jets' speed contrast
+ *    audioRoughness  -> turbulence at the band edges
+ *    audioKick       -> lightning in the storms (light)
+ *    audioMode       -> palette warmth
+ *    audioSwell      -> the storms swell (slow)
+ *
+ *  Knobs: bandP (band count), stormP (storm size), contrastP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

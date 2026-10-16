@@ -1,4 +1,26 @@
 #version 330 core
+/*****************************************************************************\
+ *                              BloomSculpt.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Lights a tessellated, lobed sculptural bloom shape with restrained shading built to read its silhouette: a
+ *  shadow-mapped key light, a cooler fill light, an equirect environment-mirror reflection of the slideshow photo,
+ *  a rim light, and a hue derived from surface radius (via the photo-arc imgPalette()).
+ *
+ *  audioChromaHue drives imgPalette()'s rotating photo-arc sample point and a
+ *  small hue-cycle offset over the surface radius; audioValence shapes that
+ *  palette's saturation and audioAdvance slowly drifts it; audioHigh
+ *  brightens the specular highlight, audioLevel the rim light, audioKick the
+ *  glow along the most-displaced ridges (gated by vSwell against the bloomP
+ *  preset), and audioBeat/audioAmbient add a final overall brightness lift.
+ *  glossP scales specular sharpness and the environment-reflection strength.
+ *  A percentage-closer-filtered shadow map (texShadow/lightM) darkens the
+ *  deep folds between lobes so a convoluted surface stays legible.
+ *
+ *  @author René Weller
+ */
 out vec4 fragColor; ///< The pixel's colour (output).
 // BloomSculpt.frag — a polished shell, lit so the silhouette reads.
 // The whole point of the tessellation is the SHAPE, so the shading stays
@@ -11,25 +33,6 @@ in vec3  vView;   ///< View vector (from the vertex stage).
 in vec3  vWorld;  ///< World position (from the vertex stage).
 in float vSwell;  ///< Swell (from the vertex stage).
 in vec2  vSurfUV; ///< Surf UV (from the vertex stage).
-
-/**
- * @file BloomSculpt.frag
- * @brief Lights a tessellated, lobed sculptural bloom shape with restrained
- * shading built to read its silhouette: a shadow-mapped key light, a cooler
- * fill light, an equirect environment-mirror reflection of the slideshow
- * photo, a rim light, and a hue derived from surface radius (via the
- * photo-arc imgPalette()).
- *
- * audioChromaHue drives imgPalette()'s rotating photo-arc sample point and a
- * small hue-cycle offset over the surface radius; audioValence shapes that
- * palette's saturation and audioAdvance slowly drifts it; audioHigh
- * brightens the specular highlight, audioLevel the rim light, audioKick the
- * glow along the most-displaced ridges (gated by vSwell against the bloomP
- * preset), and audioBeat/audioAmbient add a final overall brightness lift.
- * glossP scales specular sharpness and the environment-reflection strength.
- * A percentage-closer-filtered shadow map (texShadow/lightM) darkens the
- * deep folds between lobes so a convoluted surface stays legible.
- */
 
 uniform sampler2D       tex0;          ///< The current photo.
 uniform sampler2DShadow texShadow;     ///< Shadow map of the key light (depth comparison).

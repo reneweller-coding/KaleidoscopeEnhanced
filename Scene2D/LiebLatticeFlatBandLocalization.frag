@@ -1,22 +1,31 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file LiebLatticeFlatBandLocalization.frag
- * @brief LIEB LATTICE FLAT BAND LOCALIZATION: 2D line-centered square Lieb lattice with a strictly
- * dispersionless flat band at zero energy. Destructive quantum interference creates compactly
- * localized loop states (Aharonov-Bohm cages) with photo-derived wavepacket phase texturing.
- *   audioAdvance -> navigates compact localized state phase rotation & hopping dynamics
- *   audioKick    -> flashes flat-band excitation & dispersive Dirac cone transition bursts
- *   audioSwell   -> widens lattice site wavepacket penetration & cage luminescence
- *   audioCentroid-> shifts flat-band vs dispersive band quantum state color spectra
- *   audioPhase   -> twists Aharonov-Bohm magnetic flux cage interference
+/*****************************************************************************\
+ *                              LiebLatticeFlatBandLocalization.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   gridPitchP   float Lieb lattice unit cell packing density    (2.5..7.0)
- *   abFluxP      float Aharonov-Bohm synthetic magnetic flux     (0.5..2.2)
- *   cageGlowP    float compact localized loop state luminance    (0.8..2.5)
- *   sublatticeP  float A/B/C sublattice energy offset contrast   (0.4..1.8)
+ *  @brief
+ *  LIEB LATTICE FLAT BAND LOCALIZATION: 2D line-centered square Lieb lattice with a strictly dispersionless flat
+ *  band at zero energy.
+ *
+ *  Destructive quantum interference creates compactly localized loop states (Aharonov-Bohm cages) with
+ *  photo-derived wavepacket phase texturing.
+ *
+ *    audioAdvance -> navigates compact localized state phase rotation & hopping dynamics
+ *    audioKick    -> flashes flat-band excitation & dispersive Dirac cone transition bursts
+ *    audioSwell   -> widens lattice site wavepacket penetration & cage luminescence
+ *    audioCentroid-> shifts flat-band vs dispersive band quantum state color spectra
+ *    audioPhase   -> twists Aharonov-Bohm magnetic flux cage interference
+ *
+ *  Per-activation variety:
+ *    gridPitchP   float Lieb lattice unit cell packing density    (2.5..7.0)
+ *    abFluxP      float Aharonov-Bohm synthetic magnetic flux     (0.5..2.2)
+ *    cageGlowP    float compact localized loop state luminance    (0.8..2.5)
+ *    sublatticeP  float A/B/C sublattice energy offset contrast   (0.4..1.8)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

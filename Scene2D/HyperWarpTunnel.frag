@@ -1,28 +1,35 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file HyperWarpTunnel.frag
- * @brief HYPER WARP TUNNEL: Full-screen infinite warp tunnel with dynamic polar
- * coordinates, multi-frequency FBM domain warping, and high-velocity flight.
- * The wall is a photo sample DIVIDED BY THE PHOTO'S OWN MEAN (imgDC), so the
- * picture supplies texture and colour while the tunnel supplies its own light:
- * a dark nebula and a bright portrait now light the same tunnel.
- *   audioAdvance -> continuous high-speed forward progression (wall scroll,
- *                   ring phase, streak dashes -- all integrated, no flicker)
- *   audioKick    -> explosive tunnel expansion & FOV shockwave pulse, ring and
- *                   vanishing-point flare
- *   audioFlux    -> tunnel wall ripple distortion & domain twisting
- *   audioCentroid-> dynamic color temperature mapping
- *   audioSubBass -> deep tunnel wall pulsing
- *   audioMid     -> vanishing-point halo
- *   audioHigh    -> warp-streak brightness & chromatic aberration
+/*****************************************************************************\
+ *                              HyperWarpTunnel.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety (0 = default):
- *   speedP  float flight speed multiplier       (0 -> 1.0; 0.5..1.8)
- *   warpP   float FBM warp intensity multiplier (0 -> 1.0; 0.5..2.0)
- *   twistP  float tunnel twist intensity        (0 -> 1.0; 0.3..1.5)
- *   hueP    float global hue rotation           (0 -> none; 0..6.28)
+ *  @brief
+ *  HYPER WARP TUNNEL: Full-screen infinite warp tunnel with dynamic polar coordinates, multi-frequency FBM domain
+ *  warping, and high-velocity flight.
+ *
+ *  The wall is a photo sample DIVIDED BY THE PHOTO'S OWN MEAN (imgDC), so the picture supplies texture and colour
+ *  while the tunnel supplies its own light: a dark nebula and a bright portrait now light the same tunnel.
+ *
+ *    audioAdvance -> continuous high-speed forward progression (wall scroll,
+ *                    ring phase, streak dashes -- all integrated, no flicker)
+ *    audioKick    -> explosive tunnel expansion & FOV shockwave pulse, ring and
+ *                    vanishing-point flare
+ *    audioFlux    -> tunnel wall ripple distortion & domain twisting
+ *    audioCentroid-> dynamic color temperature mapping
+ *    audioSubBass -> deep tunnel wall pulsing
+ *    audioMid     -> vanishing-point halo
+ *    audioHigh    -> warp-streak brightness & chromatic aberration
+ *
+ *  Per-activation variety (0 = default):
+ *    speedP  float flight speed multiplier       (0 -> 1.0; 0.5..1.8)
+ *    warpP   float FBM warp intensity multiplier (0 -> 1.0; 0.5..2.0)
+ *    twistP  float tunnel twist intensity        (0 -> 1.0; 0.3..1.5)
+ *    hueP    float global hue rotation           (0 -> none; 0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

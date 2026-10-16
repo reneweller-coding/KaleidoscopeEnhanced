@@ -1,19 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file GrapheneGyroidTriplyPeriodicMinimalSurface.frag
- * @brief GRAPHENE GYROID TRIPLY PERIODIC MINIMAL SURFACE: 220x120 heightfield grid of a continuous
- * 3D Gyroid minimal surface (TPMS). Endless interpenetrating non-self-intersecting labyrinth channels,
- * sp2 carbon honeycomb sheen, and crystallographic photo texturing.
- *   audioAdvance -> navigates gyroid minimal surface isometric deformation & rotation
- *   audioKick    -> flashes gyroid neck opening & saddle-point specular reflections
- *   audioSwell   -> widens gyroid channel cross-section & structural luminescence
- *   audioCentroid-> shifts zero-mean-curvature surface potential color spectra
+/*****************************************************************************\
+ *                              GrapheneGyroidTriplyPeriodicMinimalSurface.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   gyroidAmpP float gyroid surface amplitude          (0.4..1.8)
- *   specularP  float minimal surface facet specular gain(0.8..2.5)
+ *  @brief
+ *  GRAPHENE GYROID TRIPLY PERIODIC MINIMAL SURFACE: 220x120 heightfield grid of a continuous 3D Gyroid minimal
+ *  surface (TPMS).
+ *
+ *  Endless interpenetrating non-self-intersecting labyrinth channels, sp2 carbon honeycomb sheen, and
+ *  crystallographic photo texturing.
+ *
+ *    audioAdvance -> navigates gyroid minimal surface isometric deformation & rotation
+ *    audioKick    -> flashes gyroid neck opening & saddle-point specular reflections
+ *    audioSwell   -> widens gyroid channel cross-section & structural luminescence
+ *    audioCentroid-> shifts zero-mean-curvature surface potential color spectra
+ *
+ *  Per-activation variety:
+ *    gyroidAmpP float gyroid surface amplitude          (0.4..1.8)
+ *    specularP  float minimal surface facet specular gain(0.8..2.5)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec2  vUV;          ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 in vec3  vNormal;      ///< Surface normal (from the vertex stage).

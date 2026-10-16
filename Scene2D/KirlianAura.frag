@@ -1,23 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file KirlianAura.frag
- * @brief KIRLIAN AURA: the photo as a Kirlian print -- its edges crowned
- * with corona discharge, violet-blue filaments streaming outward from every
- * contour.  The treble drives the discharge (a light effect: brightness and
- * reach of the filaments), the filaments flicker on a continuous noise
- * clock, the bass warms the glow.  Camera still; the print itself never
- * moves.
+/*****************************************************************************\
+ *                              KirlianAura.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioHigh    -> corona brightness and reach (light)
- *   audioBass    -> glow warmth (colour)
- *   audioKick    -> a bright pulse along the edges (light)
- *   audioSwell   -> the print itself fades in from dark (slow)
- *   audioLevel   -> brightness
+ *  @brief
+ *  KIRLIAN AURA: the photo as a Kirlian print -- its edges crowned with corona discharge, violet-blue filaments
+ *  streaming outward from every contour.
  *
- * Per-activation variety: reachP, filP (filament density), hueP.
+ *  The treble drives the discharge (a light effect: brightness and reach of the filaments), the filaments flicker
+ *  on a continuous noise clock, the bass warms the glow.  Camera still; the print itself never moves.
+ *
+ *  Audio Reactivity:
+ *    audioHigh    -> corona brightness and reach (light)
+ *    audioBass    -> glow warmth (colour)
+ *    audioKick    -> a bright pulse along the edges (light)
+ *    audioSwell   -> the print itself fades in from dark (slow)
+ *    audioLevel   -> brightness
+ *
+ *  Per-activation variety: reachP, filP (filament density), hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

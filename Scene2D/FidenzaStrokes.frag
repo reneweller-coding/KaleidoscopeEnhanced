@@ -1,26 +1,31 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file FidenzaStrokes.frag
- * @brief FIDENZA STROKES: fat curving ribbons of paint laid side by side
- * along a flow field, in the manner of generative flow-field art -- each
- * ribbon follows the field's curves, broken into strokes of different
- * lengths with rounded ends, the strokes coloured from the photograph's
- * palette, with a thin dark gap between neighbours and a subtle painted
- * texture inside each stroke.  The field slowly bends, so the whole
- * composition flows, ribbons are born and fade where the field turns.
- * Endless, mirrorable.
+/*****************************************************************************\
+ *                              FidenzaStrokes.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the strokes slide along their ribbons (integrated)
- *   audioSpread     -> ribbon width (few fat ones or many thin ones)
- *   audioRoughness  -> the painted texture inside the strokes
- *   audioMode       -> the palette: muted in minor, vivid in major
- *   audioKick       -> the strokes brighten (light)
- *   audioHarmChange -> the field bends further (slow, smoothed)
+ *  @brief
+ *  FIDENZA STROKES: fat curving ribbons of paint laid side by side along a flow field, in the manner of generative
+ *  flow-field art -- each ribbon follows the field's curves, broken into strokes of different lengths with rounded
+ *  ends, the strokes coloured from the photograph's palette, with a thin dark gap between neighbours and a subtle
+ *  painted texture inside each stroke.
  *
- * Knobs: curlP (how much the field curls), strokeP (stroke length), gapP (gap width), hueP.
+ *  The field slowly bends, so the whole composition flows, ribbons are born and fade where the field turns.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the strokes slide along their ribbons (integrated)
+ *    audioSpread     -> ribbon width (few fat ones or many thin ones)
+ *    audioRoughness  -> the painted texture inside the strokes
+ *    audioMode       -> the palette: muted in minor, vivid in major
+ *    audioKick       -> the strokes brighten (light)
+ *    audioHarmChange -> the field bends further (slow, smoothed)
+ *
+ *  Knobs: curlP (how much the field curls), strokeP (stroke length), gapP (gap width), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

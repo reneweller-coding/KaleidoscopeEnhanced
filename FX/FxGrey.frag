@@ -1,9 +1,15 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file FxGrey.frag
- * @brief Flat greyscale desaturation of the blended scene -- no motion, no params.
+/*****************************************************************************\
+ *                              FxGrey.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Flat greyscale desaturation of the blended scene -- no motion, no params.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

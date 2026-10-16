@@ -1,26 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureStainedGlassField.frag
- * @brief TEXTURE STAINED GLASS FIELD: an endless wall of stained glass lit
- * from behind -- the photograph is cut into glass pieces of irregular,
- * slightly curved shapes, each piece a single deep jewel colour taken from
- * the photo at that place, joined by dark lead cames; the light behind the
- * glass moves slowly, so pieces brighten and dim in drifting waves, and
- * the glass itself has ripples and seeds that make the light sparkle.  The
- * pieces recut themselves slowly (the leading wanders).  Endless and
- * mirrorable.
+/*****************************************************************************\
+ *                              TextureStainedGlassField.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the light behind drifts (integrated, jump-free)
- *   audioSpread     -> piece size (wide spectrum = smaller pieces)
- *   audioRoughness  -> the glass ripples more
- *   audioMode       -> the light warms in major
- *   audioBass       -> the light's strength (light)
- *   audioHigh       -> seeds in the glass sparkle (light)
+ *  @brief
+ *  TEXTURE STAINED GLASS FIELD: an endless wall of stained glass lit from behind -- the photograph is cut into
+ *  glass pieces of irregular, slightly curved shapes, each piece a single deep jewel colour taken from the photo at
+ *  that place, joined by dark lead cames; the light behind the glass moves slowly, so pieces brighten and dim in
+ *  drifting waves, and the glass itself has ripples and seeds that make the light sparkle.
  *
- * Knobs: sizeP (piece size), leadP (lead width), saturateP (colour depth), hueP.
+ *  The pieces recut themselves slowly (the leading wanders).  Endless and mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the light behind drifts (integrated, jump-free)
+ *    audioSpread     -> piece size (wide spectrum = smaller pieces)
+ *    audioRoughness  -> the glass ripples more
+ *    audioMode       -> the light warms in major
+ *    audioBass       -> the light's strength (light)
+ *    audioHigh       -> seeds in the glass sparkle (light)
+ *
+ *  Knobs: sizeP (piece size), leadP (lead width), saturateP (colour depth), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

@@ -1,8 +1,13 @@
 #version 330 core
-/**
- * @file QuantumVortexField.vert
- * @brief Vertex stage companion to QuantumVortexField.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              QuantumVortexField.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to QuantumVortexField.frag -- see that file's header for this scene's description.
+ *
+ *  @author René Weller
  */
 // QuantumVortexField.vert — Indirect render pass for compute magnetic filaments
 in vec4 attrA; ///< xyz = world pos, w = hue

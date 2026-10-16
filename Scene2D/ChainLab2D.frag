@@ -1,41 +1,45 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file ChainLab2D.frag
- * @brief CHAIN LAB 2D: the chain laboratory -- every time the scene starts it
- * rolls a new chain of up to four continuous transforms from four classes (each
- * with 'none' at its calm end): a global map (kaleidoscope, log-polar spiral, tunnel, Moebius, Droste, polar,
- * exponential, sine, inversion, hyperbolic Poincare tiling, bipolar
- * stream, rotating Riemann sphere, loxodromic stream, Farris wallpaper
- * functions, the hyperbolic band, Escher's spiral Droste, Peirce's quincuncial
- * sphere), a symmetry (none, kaleidoscope, p6m, p4m,
- * iterated fold, mirror line, Apollonian inversion fold,
- * Penrose mirror), a second global map (none, spiral, tunnel,
- * inversion, square, lens, kaleidoscope, Joukowski, blossom, Farris rosette) and a warp (none, twirl, shear wave,
- * ripple, domain warp, turning).  With the sub-variants (number of mirrors,
- * spiral arms, lattice size) that is tens of thousands of chains in one file.
- * Every stage is continuous and the stages are joined by the photo's mirror
- * repeat, so each chain is seamless; the photograph flows through it without
- * end.  Rendered as the photo, a lit relief, glowing edges, flowing contour lines or
- * combed flow (noise in the chain's space smeared along its contours),
- * with a colour field that follows the chain's own coordinates and wanders
- * with the music.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              ChainLab2D.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the flow through the chain (integrated, jump-free)
- *   sceneAdvance    -> the chain morphs on to the next transform (integrated)
- *   audioPhase      -> the kaleidoscopes turn, the colour field wanders (integrated)
- *   audioSpread     -> the strength of the distorting stages
- *   audioKick       -> the edges flare (light)
- *   audioMode       -> the tint and the palette: cool in minor, warm in major
- *   audioSwell      -> the relief light and the palette saturation (slow)
+ *  @brief
+ *  CHAIN LAB 2D: the chain laboratory -- every time the scene starts it rolls a new chain of up to four continuous
+ *  transforms from four classes (each with 'none' at its calm end): a global map (kaleidoscope, log-polar spiral,
+ *  tunnel, Moebius, Droste, polar, exponential, sine, inversion, hyperbolic Poincare tiling, bipolar stream,
+ *  rotating Riemann sphere, loxodromic stream, Farris wallpaper functions, the hyperbolic band, Escher's spiral
+ *  Droste, Peirce's quincuncial sphere), a symmetry (none, kaleidoscope, p6m, p4m, iterated fold, mirror line,
+ *  Apollonian inversion fold, Penrose mirror), a second global map (none, spiral, tunnel, inversion, square, lens,
+ *  kaleidoscope, Joukowski, blossom, Farris rosette) and a warp (none, twirl, shear wave, ripple, domain warp,
+ *  turning).
  *
- * Knobs: chainAP / chainBP / chainCP / chainDP (the transform of each stage and
- * its sub-variant -- rolled once per start, so the chain never switches while it
- * runs), orderP (the order of the four stages: one of 24), morphP (the chain walk: none, one stage, or every stage and
- * the look -- driven by the music, always as a cross-fade), styleP (photo / relief / glowing edges / contour lines /
- * flow), speedP (flow speed), detailP (texture sharpness), paletteP (photo colours / colour field), hueP.
+ *  With the sub-variants (number of mirrors, spiral arms, lattice size) that is tens of thousands of chains in one
+ *  file. Every stage is continuous and the stages are joined by the photo's mirror repeat, so each chain is
+ *  seamless; the photograph flows through it without end.  Rendered as the photo, a lit relief, glowing edges,
+ *  flowing contour lines or combed flow (noise in the chain's space smeared along its contours), with a colour
+ *  field that follows the chain's own coordinates and wanders with the music.  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the flow through the chain (integrated, jump-free)
+ *    sceneAdvance    -> the chain morphs on to the next transform (integrated)
+ *    audioPhase      -> the kaleidoscopes turn, the colour field wanders (integrated)
+ *    audioSpread     -> the strength of the distorting stages
+ *    audioKick       -> the edges flare (light)
+ *    audioMode       -> the tint and the palette: cool in minor, warm in major
+ *    audioSwell      -> the relief light and the palette saturation (slow)
+ *
+ *  Knobs: chainAP / chainBP / chainCP / chainDP (the transform of each stage and
+ *  its sub-variant -- rolled once per start, so the chain never switches while it
+ *  runs), orderP (the order of the four stages: one of 24), morphP (the chain walk: none, one stage, or every stage
+ *  and the
+ *  look -- driven by the music, always as a cross-fade), styleP (photo / relief / glowing edges / contour lines /
+ *  flow), speedP (flow
+ *  speed), detailP (texture sharpness), paletteP (photo colours / colour field), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

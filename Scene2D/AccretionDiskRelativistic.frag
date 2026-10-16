@@ -1,26 +1,31 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file AccretionDiskRelativistic.frag
- * @brief RELATIVISTIC ACCRETION DISK: a black hole seen almost edge-on, its
- * disc bent over the top and under the bottom by the hole's gravity (rays
- * are marched with a 1/r^2 pull toward the centre, so the far side of the
- * disc appears above and below the shadow), and Doppler-beamed: the side
- * of the disc coming toward us burns brighter and bluer, the receding side
- * dims and reddens.  The disc turns on the music's pace, inner rings faster
- * than outer (Kepler); the turbulence in the gas follows the roughness of
- * the sound.  The camera never moves.
+/*****************************************************************************\
+ *                              AccretionDiskRelativistic.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   sceneAdvance     -> disc rotation (Keplerian, continuous)
- *   audioRoughness   -> turbulence contrast in the gas (light)
- *   audioMelodyPitch -> colour temperature of the disc (light)
- *   audioSwell       -> radius of the brightest ring (slow)
- *   audioBass        -> glow of the photon ring
- *   audioKick        -> the photon ring flashes
+ *  @brief
+ *  RELATIVISTIC ACCRETION DISK: a black hole seen almost edge-on, its disc bent over the top and under the bottom
+ *  by the hole's gravity (rays are marched with a 1/r^2 pull toward the centre, so the far side of the disc appears
+ *  above and below the shadow), and Doppler-beamed: the side of the disc coming toward us burns brighter and bluer,
+ *  the receding side dims and reddens.
  *
- * Per-activation variety: tiltP (viewing angle), spinP (rotation sense), hueP.
+ *  The disc turns on the music's pace, inner rings faster than outer (Kepler); the turbulence in the gas follows
+ *  the roughness of the sound.  The camera never moves.
+ *
+ *  Audio Reactivity:
+ *    sceneAdvance     -> disc rotation (Keplerian, continuous)
+ *    audioRoughness   -> turbulence contrast in the gas (light)
+ *    audioMelodyPitch -> colour temperature of the disc (light)
+ *    audioSwell       -> radius of the brightest ring (slow)
+ *    audioBass        -> glow of the photon ring
+ *    audioKick        -> the photon ring flashes
+ *
+ *  Per-activation variety: tiltP (viewing angle), spinP (rotation sense), hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

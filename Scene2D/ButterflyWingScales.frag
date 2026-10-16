@@ -1,23 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file ButterflyWingScales.frag
- * @brief BUTTERFLY WING SCALES: gliding low over a butterfly's wing under the
- * microscope -- rows of tiny overlapping scales laid like roof tiles, each
- * a rounded paddle with fine ridges along it, and the colour in them is
- * structural: iridescent blue shifting to violet and green as the angle
- * changes, like a morpho's wing, broken by a band of the wing's pattern
- * where the scales turn black and a patch where they turn orange.  The
- * scales ripple slightly as the view glides steadily across the wing.
+/*****************************************************************************\
+ *                              ButterflyWingScales.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSwell  -> the iridescent sheen (slow)
- *   audioHigh   -> sparkle on the scale ridges (light)
- *   audioLevel  -> brightness
- *   sceneTime / sceneAdvance -> the glide across the wing (constant speed)
+ *  @brief
+ *  BUTTERFLY WING SCALES: gliding low over a butterfly's wing under the microscope -- rows of tiny overlapping
+ *  scales laid like roof tiles, each a rounded paddle with fine ridges along it, and the colour in them is
+ *  structural: iridescent blue shifting to violet and green as the angle changes, like a morpho's wing, broken by a
+ *  band of the wing's pattern where the scales turn black and a patch where they turn orange.
  *
- * Per-activation variety: patternP (the wing's pattern), hueP.
+ *  The scales ripple slightly as the view glides steadily across the wing.
+ *
+ *  Audio Reactivity:
+ *    audioSwell  -> the iridescent sheen (slow)
+ *    audioHigh   -> sparkle on the scale ridges (light)
+ *    audioLevel  -> brightness
+ *    sceneTime / sceneAdvance -> the glide across the wing (constant speed)
+ *
+ *  Per-activation variety: patternP (the wing's pattern), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

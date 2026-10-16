@@ -1,4 +1,24 @@
 #version 330 core
+/*****************************************************************************\
+ *                              FeatherStorm.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Cuts a single feather's silhouette out of its quad and shades it as a backlit, barbed vane rather than a flat
+ *  leaf shape.
+ *
+ *  audioLevel brightens the through-vane translucency, audioKick strengthens
+ *  the fresnel rim, audioHigh brightens the specular highlight, audioAmbient
+ *  adds a flat ambient tint, and audioBeat/audioSubBass pulse the final
+ *  brightness; hue comes from the rotating photo-arc palette (imgPalette),
+ *  whose arc position follows audioChromaHue with a slow audioAdvance drift
+ *  and audioValence-controlled saturation. Reads back the quad geometry
+ *  (position, normal, quill-to-tip / across-vane UV) that the paired
+ *  FeatherStorm.comp regenerates every frame.
+ *
+ *  @author René Weller
+ */
 out vec4 fragColor; ///< The pixel's colour (output).
 // FeatherStorm.frag — cut a feather out of a quad.
 // -----------------------------------------------------------------------
@@ -19,21 +39,6 @@ in vec3 vNormal;  ///< Surface normal (from the vertex stage).
 in vec3 vView;    ///< View vector (from the vertex stage).
 in vec3 vObj;     ///< Object-space position (from the vertex stage).
 in vec2 vFeather; ///< x = quill..tip, y = -1..1 across
-
-/**
- * @file FeatherStorm.frag
- * @brief Cuts a single feather's silhouette out of its quad and shades it as
- * a backlit, barbed vane rather than a flat leaf shape.
- *
- * audioLevel brightens the through-vane translucency, audioKick strengthens
- * the fresnel rim, audioHigh brightens the specular highlight, audioAmbient
- * adds a flat ambient tint, and audioBeat/audioSubBass pulse the final
- * brightness; hue comes from the rotating photo-arc palette (imgPalette),
- * whose arc position follows audioChromaHue with a slow audioAdvance drift
- * and audioValence-controlled saturation. Reads back the quad geometry
- * (position, normal, quill-to-tip / across-vane UV) that the paired
- * FeatherStorm.comp regenerates every frame.
- */
 
 uniform sampler2D tex0;          ///< The current photo.
 uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.

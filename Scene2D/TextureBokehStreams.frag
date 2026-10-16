@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureBokehStreams.frag
- * @brief TEXTURE BOKEH STREAMS: rivers of out-of-focus lights -- like city
- * traffic seen through a defocused lens at night, streams of soft
- * glowing discs flow along gently curving lanes across the view, near
- * ones large and faint, far ones small and bright, each disc with the
- * faint ring and cat's-eye shape of a real lens; the colours come from
- * the photograph (warm red tail lights, white headlights, its own hues).
- * Endless, mirrorable.
+/*****************************************************************************\
+ *                              TextureBokehStreams.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the streams flow (integrated, jump-free)
- *   audioSpread     -> the defocus (disc size)
- *   audioKick       -> the discs brighten (light)
- *   audioMode       -> palette: cool city in minor, warm traffic in major
- *   audioHigh       -> sparkles on the near discs (light)
- *   audioSwell      -> haze (slow)
+ *  @brief
+ *  TEXTURE BOKEH STREAMS: rivers of out-of-focus lights -- like city traffic seen through a defocused lens at
+ *  night, streams of soft glowing discs flow along gently curving lanes across the view, near ones large and faint,
+ *  far ones small and bright, each disc with the faint ring and cat's-eye shape of a real lens; the colours come
+ *  from the photograph (warm red tail lights, white headlights, its own hues).
  *
- * Knobs: laneP (lane count), densityP (lights per lane), curveP (lane curvature), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the streams flow (integrated, jump-free)
+ *    audioSpread     -> the defocus (disc size)
+ *    audioKick       -> the discs brighten (light)
+ *    audioMode       -> palette: cool city in minor, warm traffic in major
+ *    audioHigh       -> sparkles on the near discs (light)
+ *    audioSwell      -> haze (slow)
+ *
+ *  Knobs: laneP (lane count), densityP (lights per lane), curveP (lane curvature), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

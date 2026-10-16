@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file CloisonneEnamelCells.frag
- * @brief CLOISONNE ENAMEL CELLS: a copper plate with gold wires bent into
- * a scrolling pattern, the compartments between them filled with coloured
- * enamel.  Over the scene arc the cells are filled one after another and
- * then fired: the enamel sinks, wets out and comes up glassy, so each
- * cell goes from powder to a domed pane of colour.  The chroma classes
- * pick the enamels, the treble is the gold wire catching the light, and
- * the swell is the light in the workshop.  Camera fixed above the plate.
+/*****************************************************************************\
+ *                              CloisonneEnamelCells.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   sceneProgress   -> cells fill and fire (the arc)
- *   audioChroma[12] -> the enamel colours (light)
- *   audioHigh       -> the gold wire's shine (light)
- *   audioSwell      -> the workshop light (slow)
- *   audioKick       -> a spark from the kiln lights one cell (light)
+ *  @brief
+ *  CLOISONNE ENAMEL CELLS: a copper plate with gold wires bent into a scrolling pattern, the compartments between
+ *  them filled with coloured enamel.
  *
- * Per-activation variety: cellsP, wireP, hueP.
+ *  Over the scene arc the cells are filled one after another and then fired: the enamel sinks, wets out and comes
+ *  up glassy, so each cell goes from powder to a domed pane of colour.  The chroma classes pick the enamels, the
+ *  treble is the gold wire catching the light, and the swell is the light in the workshop.  Camera fixed above the
+ *  plate.
+ *
+ *  Audio Reactivity:
+ *    sceneProgress   -> cells fill and fire (the arc)
+ *    audioChroma[12] -> the enamel colours (light)
+ *    audioHigh       -> the gold wire's shine (light)
+ *    audioSwell      -> the workshop light (slow)
+ *    audioKick       -> a spark from the kiln lights one cell (light)
+ *
+ *  Per-activation variety: cellsP, wireP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

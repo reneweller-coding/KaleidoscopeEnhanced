@@ -1,27 +1,32 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file AlcoholInkBlooms.frag
- * @brief ALCOHOL INK BLOOMS: alcohol ink on white synthetic paper, blooming --
- * drops of intensely coloured ink spread out in soft-edged pools, each pool
- * pushing its pigment to the rim so it ends in a dark, sharp, lacy
- * boundary, often with a thin metallic gold line along it; pools push into
- * each other, leaving pale channels and cell-like shapes; the paper shows
- * white where the alcohol has cleared it.  New blooms keep opening and
- * spreading over the old ones.  The ink colours come from the photograph.
- * An endless field, mirrorable.
+/*****************************************************************************\
+ *                              AlcoholInkBlooms.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the blooms spread (integrated, jump-free)
- *   audioHarmChange -> a fresh bloom starts on chord changes (smoothed)
- *   audioSpread     -> bloom size
- *   audioRoughness  -> the rims get lacier
- *   audioHigh       -> the gold lines glint (light)
- *   audioSwell      -> ink saturation (slow)
+ *  @brief
+ *  ALCOHOL INK BLOOMS: alcohol ink on white synthetic paper, blooming -- drops of intensely coloured ink spread out
+ *  in soft-edged pools, each pool pushing its pigment to the rim so it ends in a dark, sharp, lacy boundary, often
+ *  with a thin metallic gold line along it; pools push into each other, leaving pale channels and cell-like shapes;
+ *  the paper shows white where the alcohol has cleared it.
  *
- * Knobs: bloomsP (how many), goldP (metallic rims), paperP (how much white
- * shows), hueP.
+ *  New blooms keep opening and spreading over the old ones.  The ink colours come from the photograph. An endless
+ *  field, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the blooms spread (integrated, jump-free)
+ *    audioHarmChange -> a fresh bloom starts on chord changes (smoothed)
+ *    audioSpread     -> bloom size
+ *    audioRoughness  -> the rims get lacier
+ *    audioHigh       -> the gold lines glint (light)
+ *    audioSwell      -> ink saturation (slow)
+ *
+ *  Knobs: bloomsP (how many), goldP (metallic rims), paperP (how much white
+ *  shows), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

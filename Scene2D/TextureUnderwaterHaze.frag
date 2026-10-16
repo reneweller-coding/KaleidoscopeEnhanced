@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureUnderwaterHaze.frag
- * @brief TEXTURE UNDERWATER HAZE: drifting through open water beneath the
- * surface -- shafts of sunlight slant down through blue-green haze and
- * sway with the waves above, the rippled surface shimmering far overhead,
- * floating particles and tiny bubbles rising through the beams, and the
- * photograph looming faintly out of the haze as a reef or wreck in the
- * distance.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              TextureUnderwaterHaze.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the drift and the rising bubbles (integrated, jump-free)
- *   audioSpread     -> the beams widen
- *   audioBass       -> the beams brighten (light)
- *   audioMode       -> the water: deep blue in minor, tropical turquoise in major
- *   audioHigh       -> the bubbles sparkle (light)
- *   audioSwell      -> the haze thickens (slow)
+ *  @brief
+ *  TEXTURE UNDERWATER HAZE: drifting through open water beneath the surface -- shafts of sunlight slant down
+ *  through blue-green haze and sway with the waves above, the rippled surface shimmering far overhead, floating
+ *  particles and tiny bubbles rising through the beams, and the photograph looming faintly out of the haze as a
+ *  reef or wreck in the distance.
  *
- * Knobs: beamP (number of beams), particleP (particle density), reefP (photo in the haze), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the drift and the rising bubbles (integrated, jump-free)
+ *    audioSpread     -> the beams widen
+ *    audioBass       -> the beams brighten (light)
+ *    audioMode       -> the water: deep blue in minor, tropical turquoise in major
+ *    audioHigh       -> the bubbles sparkle (light)
+ *    audioSwell      -> the haze thickens (slow)
+ *
+ *  Knobs: beamP (number of beams), particleP (particle density), reefP (photo in the haze), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

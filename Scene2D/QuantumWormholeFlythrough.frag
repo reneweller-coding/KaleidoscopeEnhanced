@@ -1,18 +1,25 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file QuantumWormholeFlythrough.frag
- * @brief QUANTUM WORMHOLE FLYTHROUGH: Relativistic Kerr wormhole transit raytracing.
- * Gravitational lensing around the photon ring throat, seamless universe transit,
- * Doppler blue/redshift optical distortions, and cosmic void shockwaves.
+/*****************************************************************************\
+ *                              QuantumWormholeFlythrough.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance -> drives relativistic forward plunge through the wormhole throat
- *   audioKick    -> flashes throat event singularity & gravitational wave chirp
- *   audioCentroid-> modulates photon ring diffraction ring density
- *   audioSubBass -> expands throat diameter breathing
- *   audioChromaHue-> shifts universe 1 vs universe 2 chromatic palette
+ *  @brief
+ *  QUANTUM WORMHOLE FLYTHROUGH: Relativistic Kerr wormhole transit raytracing.
+ *
+ *  Gravitational lensing around the photon ring throat, seamless universe transit, Doppler blue/redshift optical
+ *  distortions, and cosmic void shockwaves.
+ *
+ *  Audio Reactivity:
+ *    audioAdvance -> drives relativistic forward plunge through the wormhole throat
+ *    audioKick    -> flashes throat event singularity & gravitational wave chirp
+ *    audioCentroid-> modulates photon ring diffraction ring density
+ *    audioSubBass -> expands throat diameter breathing
+ *    audioChromaHue-> shifts universe 1 vs universe 2 chromatic palette
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

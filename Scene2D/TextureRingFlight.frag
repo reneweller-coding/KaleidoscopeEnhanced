@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureRingFlight.frag
- * @brief TEXTURE RING FLIGHT: flying through an endless procession of
- * floating rings -- great hoops of the photograph, each tilted and turned
- * its own way, hang in a dark space one behind another along a gently
- * curving path, and we glide through them one by one, each ring sweeping
- * past the edge of the view; their rims glow, the ones far ahead are
- * small bright halos.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              TextureRingFlight.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the flight (integrated, jump-free)
- *   audioPhase      -> the rings spin (integrated)
- *   audioSpread     -> the rings tilt more
- *   audioKick       -> the rims flash (light)
- *   audioMode       -> the light: cool in minor, warm in major
- *   audioSwell      -> the glow of the far rings (slow)
+ *  @brief
+ *  TEXTURE RING FLIGHT: flying through an endless procession of floating rings -- great hoops of the photograph,
+ *  each tilted and turned its own way, hang in a dark space one behind another along a gently curving path, and we
+ *  glide through them one by one, each ring sweeping past the edge of the view; their rims glow, the ones far ahead
+ *  are small bright halos.
  *
- * Knobs: spacingP (ring spacing), bandP (ring band width), curveP (path curvature), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the flight (integrated, jump-free)
+ *    audioPhase      -> the rings spin (integrated)
+ *    audioSpread     -> the rings tilt more
+ *    audioKick       -> the rims flash (light)
+ *    audioMode       -> the light: cool in minor, warm in major
+ *    audioSwell      -> the glow of the far rings (slow)
+ *
+ *  Knobs: spacingP (ring spacing), bandP (ring band width), curveP (path curvature), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

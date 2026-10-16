@@ -1,8 +1,14 @@
 #version 330 core
-/**
- * @file BioluminescentMyceliumCave.vert
- * @brief Vertex stage companion to BioluminescentMyceliumCave.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              BioluminescentMyceliumCave.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to BioluminescentMyceliumCave.frag -- see that file's header for this scene's
+ *  description.
+ *
+ *  @author René Weller
  */
 // BioluminescentMyceliumCave.vert
 

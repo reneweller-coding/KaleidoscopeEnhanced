@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file RustBloomRoughness.frag
- * @brief RUST BLOOM ROUGHNESS: a chrome plate of the photo that rusts with
- * the roughness of the sound -- the psychoacoustic roughness (beating
- * partials, distortion) is the corrosion: as it rises, rust blooms across
- * the chrome from seeds, pitting the mirror; a harmony change is the
- * polish -- a wave of restored chrome sweeps the plate, and the rust
- * begins again.  Roughness is slow, so the bloom grows as a bloom does;
- * the polish sweep runs on the scene clock from the change.  Camera
- * fixed on the plate.
+/*****************************************************************************\
+ *                              RustBloomRoughness.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioRoughness  -> rust extent (slow)
- *   audioHarmChange -> polish sweep (light-and-material, one sweep per change)
- *   sceneAdvance    -> sweep motion and reflection drift (continuous)
- *   audioKick       -> chrome highlight (light)
- *   audioLevel      -> brightness
+ *  @brief
+ *  RUST BLOOM ROUGHNESS: a chrome plate of the photo that rusts with the roughness of the sound -- the
+ *  psychoacoustic roughness (beating partials, distortion) is the corrosion: as it rises, rust blooms across the
+ *  chrome from seeds, pitting the mirror; a harmony change is the polish -- a wave of restored chrome sweeps the
+ *  plate, and the rust begins again.
  *
- * Per-activation variety: seedsP, pitP, hueP.
+ *  Roughness is slow, so the bloom grows as a bloom does; the polish sweep runs on the scene clock from the change.
+ *  Camera fixed on the plate.
+ *
+ *  Audio Reactivity:
+ *    audioRoughness  -> rust extent (slow)
+ *    audioHarmChange -> polish sweep (light-and-material, one sweep per change)
+ *    sceneAdvance    -> sweep motion and reflection drift (continuous)
+ *    audioKick       -> chrome highlight (light)
+ *    audioLevel      -> brightness
+ *
+ *  Per-activation variety: seedsP, pitP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

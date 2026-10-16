@@ -1,11 +1,16 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file FxShroom.frag
- * @brief FX SHROOM: psychedelic "trip" warp -- a Lissajous-style offset field
- * displaces the UVs frame to frame, smeared by a short motion-blur
- * accumulation for a breathing, hallucinatory wobble.
+/*****************************************************************************\
+ *                              FxShroom.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  FX SHROOM: psychedelic "trip" warp -- a Lissajous-style offset field displaces the UVs frame to frame, smeared
+ *  by a short motion-blur accumulation for a breathing, hallucinatory wobble.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

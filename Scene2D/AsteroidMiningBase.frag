@@ -1,27 +1,32 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file AsteroidMiningBase.frag
- * @brief ASTEROID MINING BASE: a slow orbit round a big asteroid that has
- * been turned into a mine.  Its cratered grey-brown surface carries lit
- * domes with warm windows and blinking pad lights; a mining ship hangs
- * above it, cutting into the rock with a laser whose impact throws a hot
- * glow; smaller lumpy asteroids tumble in the field around it, sharp in the
- * light of a distant sun.  The camera circles steadily (never on audio);
- * the music is the light of the base and the laser.
+/*****************************************************************************\
+ *                              AsteroidMiningBase.frag
+\*****************************************************************************/
+/*! @file
  *
- * Replaces a cube-geometry version whose asteroids were boxes.
+ *  @brief
+ *  ASTEROID MINING BASE: a slow orbit round a big asteroid that has been turned into a mine.
  *
- *   sceneTime/sceneAdvance -> the orbit, the tumbling rocks (continuous)
- *   audioKick     -> the laser's impact glow (light only)
- *   audioSwell    -> sunlight and dust glow (slow)
- *   audioChromaHue-> photo tint of the base lights
+ *  Its cratered grey-brown surface carries lit domes with warm windows and blinking pad lights; a mining ship hangs
+ *  above it, cutting into the rock with a laser whose impact throws a hot glow; smaller lumpy asteroids tumble in
+ *  the field around it, sharp in the light of a distant sun.  The camera circles steadily (never on audio); the
+ *  music is the light of the base and the laser.
  *
- * Per-activation variety:
- *   dustP float density of the dust haze (0.5..1.5)
- *   laserP float laser intensity (0.6..1.8)
- *   hueP float palette offset (0..6.28)
+ *  Replaces a cube-geometry version whose asteroids were boxes.
+ *
+ *    sceneTime/sceneAdvance -> the orbit, the tumbling rocks (continuous)
+ *    audioKick     -> the laser's impact glow (light only)
+ *    audioSwell    -> sunlight and dust glow (slow)
+ *    audioChromaHue-> photo tint of the base lights
+ *
+ *  Per-activation variety:
+ *    dustP float density of the dust haze (0.5..1.5)
+ *    laserP float laser intensity (0.6..1.8)
+ *    hueP float palette offset (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

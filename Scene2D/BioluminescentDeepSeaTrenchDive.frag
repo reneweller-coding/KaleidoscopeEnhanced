@@ -1,18 +1,25 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file BioluminescentDeepSeaTrenchDive.frag
- * @brief BIOLUMINESCENT DEEP SEA TRENCH DIVE: Vertical 3D Raymarching dive into an abyss
- * trench canyon. Rocky canyon walls encrusted with glowing deep-sea corals, hydrothermal
- * black smoker chimneys, floating bioluminescent jellyfish, and volumetric marine snow.
+/*****************************************************************************\
+ *                              BioluminescentDeepSeaTrenchDive.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance -> drives continuous vertical plunge velocity into the trench
- *   audioKick    -> flashes hydrothermal chimney vent eruption cores & coral bio-bursts
- *   audioCentroid-> sharpens rock wall normal textures & glowing coral tentacles
- *   audioSubBass -> expands abyss trench canyon width breathing
- *   audioChromaHue-> rotates the deep ocean cyan / indigo / emerald spectrum
+ *  @brief
+ *  BIOLUMINESCENT DEEP SEA TRENCH DIVE: Vertical 3D Raymarching dive into an abyss trench canyon.
+ *
+ *  Rocky canyon walls encrusted with glowing deep-sea corals, hydrothermal black smoker chimneys, floating
+ *  bioluminescent jellyfish, and volumetric marine snow.
+ *
+ *  Audio Reactivity:
+ *    audioAdvance -> drives continuous vertical plunge velocity into the trench
+ *    audioKick    -> flashes hydrothermal chimney vent eruption cores & coral bio-bursts
+ *    audioCentroid-> sharpens rock wall normal textures & glowing coral tentacles
+ *    audioSubBass -> expands abyss trench canyon width breathing
+ *    audioChromaHue-> rotates the deep ocean cyan / indigo / emerald spectrum
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

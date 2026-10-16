@@ -1,28 +1,32 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file CurvedMirrorKaleido.frag
- * @brief CURVED MIRROR KALEIDO: a kaleidoscope whose mirrors are not flat --
- * the photo is folded through a ring of wedge mirrors whose surfaces bow
- * and breathe, so the seams curve like petals, the reflections swell and
- * pinch toward the rim, and the rosette opens and closes like a flower.
- * Each fold also nests a smaller, turned rosette inside (a second
- * kaleidoscope stage), so the pattern has depth.  The fold continues
- * endlessly outward and mirrors without seams, like the original
- * Kaleidoscope.
+/*****************************************************************************\
+ *                              CurvedMirrorKaleido.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioPhase      -> the rosette turns (integrated, jump-free)
- *   audioAdvance    -> the window drifts through the photo (integrated)
- *   audioMode       -> mirror curvature: straight petals in minor, full bowed petals in major
- *   audioHarmChange -> the rosette breathes open on chord changes (slow release)
- *   audioRoughness  -> the mirror glass ripples
- *   audioSpread     -> the inner stage's scale
- *   audioHigh       -> the mirror seams glint (light)
+ *  @brief
+ *  CURVED MIRROR KALEIDO: a kaleidoscope whose mirrors are not flat -- the photo is folded through a ring of wedge
+ *  mirrors whose surfaces bow and breathe, so the seams curve like petals, the reflections swell and pinch toward
+ *  the rim, and the rosette opens and closes like a flower.
  *
- * Knobs: sidesP (number of mirrors), bowP (base curvature), innerP (inner
- * stage strength), hueP.
+ *  Each fold also nests a smaller, turned rosette inside (a second kaleidoscope stage), so the pattern has depth.
+ *  The fold continues endlessly outward and mirrors without seams, like the original Kaleidoscope.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioPhase      -> the rosette turns (integrated, jump-free)
+ *    audioAdvance    -> the window drifts through the photo (integrated)
+ *    audioMode       -> mirror curvature: straight petals in minor, full bowed petals in major
+ *    audioHarmChange -> the rosette breathes open on chord changes (slow release)
+ *    audioRoughness  -> the mirror glass ripples
+ *    audioSpread     -> the inner stage's scale
+ *    audioHigh       -> the mirror seams glint (light)
+ *
+ *  Knobs: sidesP (number of mirrors), bowP (base curvature), innerP (inner
+ *  stage strength), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

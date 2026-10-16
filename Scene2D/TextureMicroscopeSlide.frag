@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureMicroscopeSlide.frag
- * @brief TEXTURE MICROSCOPE SLIDE: panning across a fluorescence-stained
- * tissue section under the microscope -- a dense carpet of cells, their
- * nuclei glowing blue, the cell bodies and membranes in green and red,
- * fibres threading between them in a third colour; the tissue's layout
- * follows the photograph (its dark and light regions become different
- * tissue densities), and the focus breathes slowly, bringing layers in and
- * out of sharpness.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              TextureMicroscopeSlide.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the slide pans (integrated, jump-free)
- *   audioSpread     -> cell density
- *   audioKick       -> the stain glows brighter (light)
- *   audioMode       -> stain: fluorescence in minor, H&E (pink/purple on white) in major (blended)
- *   audioRoughness  -> the fibres
- *   audioSwell      -> the focus breathes deeper (slow)
+ *  @brief
+ *  TEXTURE MICROSCOPE SLIDE: panning across a fluorescence-stained tissue section under the microscope -- a dense
+ *  carpet of cells, their nuclei glowing blue, the cell bodies and membranes in green and red, fibres threading
+ *  between them in a third colour; the tissue's layout follows the photograph (its dark and light regions become
+ *  different tissue densities), and the focus breathes slowly, bringing layers in and out of sharpness.
  *
- * Knobs: cellP (cell size), fibreP (fibre amount), focusP (base focus), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the slide pans (integrated, jump-free)
+ *    audioSpread     -> cell density
+ *    audioKick       -> the stain glows brighter (light)
+ *    audioMode       -> stain: fluorescence in minor, H&E (pink/purple on white) in major (blended)
+ *    audioRoughness  -> the fibres
+ *    audioSwell      -> the focus breathes deeper (slow)
+ *
+ *  Knobs: cellP (cell size), fibreP (fibre amount), focusP (base focus), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

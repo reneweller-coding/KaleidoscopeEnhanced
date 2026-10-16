@@ -1,21 +1,25 @@
 #version 330 core
+/*****************************************************************************\
+ *                              StrangeAttractor.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Additive glow-sprite shader for the chaotic-attractor particle trails (Lorenz, Thomas, Aizawa or Halvorsen,
+ *  chosen per activation in the vertex stage): renders each trajectory point as a soft point sprite whose strands
+ *  sum into glowing ribbons of light.
+ *
+ *  No audio uniforms are read here; audio reactivity (the attractor's
+ *  breathing parameters, travel speed along each trajectory, and
+ *  velocity-to-colour mapping via the photo-arc palette) is computed entirely
+ *  in the companion vertex shader and arrives already baked into vCol.
+ *
+ *  @author René Weller
+ */
 out vec4 fragColor; ///< The pixel's colour (output).
 // StrangeAttractor.frag — soft additive glow sprite; the attractor's
 // strands sum into ribbons of light.
 in vec4 vCol; ///< Colour (from the vertex stage).
-
-/**
- * @file StrangeAttractor.frag
- * @brief Additive glow-sprite shader for the chaotic-attractor particle
- * trails (Lorenz, Thomas, Aizawa or Halvorsen, chosen per activation in the
- * vertex stage): renders each trajectory point as a soft point sprite whose
- * strands sum into glowing ribbons of light.
- *
- * No audio uniforms are read here; audio reactivity (the attractor's
- * breathing parameters, travel speed along each trajectory, and
- * velocity-to-colour mapping via the photo-arc palette) is computed entirely
- * in the companion vertex shader and arrives already baked into vCol.
- */
 
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()

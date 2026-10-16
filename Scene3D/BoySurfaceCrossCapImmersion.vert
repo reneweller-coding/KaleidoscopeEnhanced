@@ -1,13 +1,19 @@
 #version 330 core
-/**
- * @file BoySurfaceCrossCapImmersion.vert
- * @brief Vertex stage companion to BoySurfaceCrossCapImmersion.frag -- see that file's
- * header for this scene's description.
+/*****************************************************************************\
+ *                              BoySurfaceCrossCapImmersion.vert
+\*****************************************************************************/
+/*! @file
  *
- * The 220x120 host grid is split into four independent 110x60 sub-meshes by cell
- * index: three NESTED, counter-rotating Boy-surface shells (hero / mid / outer)
- * plus one block spent on far-field dust motes distributed in FRUSTUM coordinates,
- * so the immersion fills the frame instead of floating in an empty field.
+ *  @brief
+ *  Vertex stage companion to BoySurfaceCrossCapImmersion.frag -- see that file's header for this scene's
+ *  description.
+ *
+ *  The 220x120 host grid is split into four independent 110x60 sub-meshes by cell
+ *  index: three NESTED, counter-rotating Boy-surface shells (hero / mid / outer)
+ *  plus one block spent on far-field dust motes distributed in FRUSTUM coordinates,
+ *  so the immersion fills the frame instead of floating in an empty field.
+ *
+ *  @author René Weller
  */
 
 in vec4 attrA; ///< xy = Patch UV [0,1], z = 0, w = Cell index

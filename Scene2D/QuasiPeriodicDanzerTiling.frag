@@ -1,18 +1,25 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file QuasiPeriodicDanzerTiling.frag
- * @brief QUASI PERIODIC DANZER TILING: 6D-to-3D cut-and-project icosahedral Danzer
- * quasicrystal tiling. Golden ratio (phi = 1.618) fractal star needles, never-repeating
- * aperiodic lattice nodes, and glowing holographic crystal diffraction facets.
+/*****************************************************************************\
+ *                              QuasiPeriodicDanzerTiling.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance -> drives continuous drift of 6D hyperspace cut-and-project plane
- *   audioKick    -> flashes icosahedral quasicrystal vertex nodes & shockwave burst
- *   audioCentroid-> modulates aperiodic needle sharpness & fine grid resolution
- *   audioSubBass -> expands quasicrystal lattice scale breathing
- *   audioChromaHue-> rotates the luminous icosahedral rainbow palette
+ *  @brief
+ *  QUASI PERIODIC DANZER TILING: 6D-to-3D cut-and-project icosahedral Danzer quasicrystal tiling.
+ *
+ *  Golden ratio (phi = 1.618) fractal star needles, never-repeating aperiodic lattice nodes, and glowing
+ *  holographic crystal diffraction facets.
+ *
+ *  Audio Reactivity:
+ *    audioAdvance -> drives continuous drift of 6D hyperspace cut-and-project plane
+ *    audioKick    -> flashes icosahedral quasicrystal vertex nodes & shockwave burst
+ *    audioCentroid-> modulates aperiodic needle sharpness & fine grid resolution
+ *    audioSubBass -> expands quasicrystal lattice scale breathing
+ *    audioChromaHue-> rotates the luminous icosahedral rainbow palette
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

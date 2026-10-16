@@ -1,4 +1,20 @@
 #version 330 core
+/*****************************************************************************\
+ *                              MosaicWave.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Shades one tile of a mosaic wall built from photo tiles that flip between front (the image) and back (a
+ *  hue-inverted twin), with thin dark grout lines keeping the mosaic pattern readable.
+ *
+ *  vFlip (front/back sign from the vertex stage) selects which face is
+ *  shown, hue-rotating the back face by audioChromaHue; vLight (also
+ *  baked upstream) shades edge-on tiles darker as they flip; audioDrop
+ *  adds a final brightness pulse across the whole wall.
+ *
+ *  @author René Weller
+ */
 out vec4 fragColor; ///< The pixel's colour (output).
 // MosaicWave.frag — front = the image; back = hue-inverted twin.  Thin dark
 // grout lines keep the mosaic readable.
@@ -9,18 +25,6 @@ uniform float     audioDrop;      ///< Drop envelope: high after a detected drop
 in vec2  vUV;    ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 in float vFlip;  ///< Flip (from the vertex stage).
 in float vLight; ///< Light (from the vertex stage).
-
-/**
- * @file MosaicWave.frag
- * @brief Shades one tile of a mosaic wall built from photo tiles that
- * flip between front (the image) and back (a hue-inverted twin), with
- * thin dark grout lines keeping the mosaic pattern readable.
- *
- * vFlip (front/back sign from the vertex stage) selects which face is
- * shown, hue-rotating the back face by audioChromaHue; vLight (also
- * baked upstream) shades edge-on tiles darker as they flip; audioDrop
- * adds a final brightness pulse across the whole wall.
- */
 
 /**  Rotates a colour's hue by an angle (about the grey axis).
  *

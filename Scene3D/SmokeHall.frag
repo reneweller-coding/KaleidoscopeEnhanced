@@ -1,4 +1,27 @@
 #version 330 core
+/*****************************************************************************\
+ *                              SmokeHall.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Two-mode fragment shader for the SmokeHall colonnade built by SmokeHall.comp: shades opaque stone (floor,
+ *  pillars, beams) in the opaque pass, and integrates light shafts through smoke as a participating medium in the
+ *  OIT transparent pass, both by querying the same real shadow map the hall casts.
+ *
+ *  In the stone pass, audioAmbient lifts the sky-bounce fill and audioLevel
+ *  brightens the beam-underside bounce light, with audioBeat pulsing the
+ *  final exposure. In the smoke pass, the drift noise rides audioAdvance
+ *  (never absolute time scaled by a live level, so the volume never jumps
+ *  when the music gets louder); audioLevel scales smoke density; audioKick
+ *  and audioSubBass brighten the lit beam colour; audioChromaHue (with hueP)
+ *  drives the beam's hue via imgPalette/hue2rgb. Each of the 56 smoke slices
+ *  is shaded independently and blended with a flat OIT weight so the resolve
+ *  averages the whole volume into visible shafts rather than one nearest
+ *  slice's shadow pattern.
+ *
+ *  @author René Weller
+ */
 // SmokeHall.frag — stone in the opaque pass, participating medium in the
 // transparent one.
 // -----------------------------------------------------------------------
@@ -19,26 +42,6 @@ in vec3  vView;   ///< View vector (from the vertex stage).
 in vec3  vWorld;  ///< World position (from the vertex stage).
 in float vKind;   ///< Element kind (from the vertex stage).
 in float vExtra;  ///< Extra (from the vertex stage).
-
-/**
- * @file SmokeHall.frag
- * @brief Two-mode fragment shader for the SmokeHall colonnade built by
- * SmokeHall.comp: shades opaque stone (floor, pillars, beams) in the opaque
- * pass, and integrates light shafts through smoke as a participating medium
- * in the OIT transparent pass, both by querying the same real shadow map the
- * hall casts.
- *
- * In the stone pass, audioAmbient lifts the sky-bounce fill and audioLevel
- * brightens the beam-underside bounce light, with audioBeat pulsing the
- * final exposure. In the smoke pass, the drift noise rides audioAdvance
- * (never absolute time scaled by a live level, so the volume never jumps
- * when the music gets louder); audioLevel scales smoke density; audioKick
- * and audioSubBass brighten the lit beam colour; audioChromaHue (with hueP)
- * drives the beam's hue via imgPalette/hue2rgb. Each of the 56 smoke slices
- * is shaded independently and blended with a flat OIT weight so the resolve
- * averages the whole volume into visible shafts rather than one nearest
- * slice's shadow pattern.
- */
 
 uniform sampler2D       tex0;          ///< The current photo.
 uniform sampler2DShadow texShadow;     ///< Shadow map of the key light (depth comparison).

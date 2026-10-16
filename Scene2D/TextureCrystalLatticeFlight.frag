@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureCrystalLatticeFlight.frag
- * @brief TEXTURE CRYSTAL LATTICE FLIGHT: gliding through the inside of a
- * vast crystal lattice -- an endless three-dimensional grid of glowing
- * struts meeting at bright nodes, receding in perfect perspective in all
- * directions, the struts sheathed in the photograph's colours, the whole
- * lattice slowly rolling as we fly diagonally through it; fog swallows the
- * far rows in the photo's tint.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              TextureCrystalLatticeFlight.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the flight (integrated, jump-free)
- *   audioPhase      -> the lattice rolls (integrated)
- *   audioSpread     -> strut thickness
- *   audioKick       -> the nodes flash (light)
- *   audioMode       -> the light: cool in minor, warm in major
- *   audioSwell      -> the fog (slow)
+ *  @brief
+ *  TEXTURE CRYSTAL LATTICE FLIGHT: gliding through the inside of a vast crystal lattice -- an endless
+ *  three-dimensional grid of glowing struts meeting at bright nodes, receding in perfect perspective in all
+ *  directions, the struts sheathed in the photograph's colours, the whole lattice slowly rolling as we fly
+ *  diagonally through it; fog swallows the far rows in the photo's tint.
  *
- * Knobs: cellP (cell size), glowP (strut glow), fogP (base fog), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the flight (integrated, jump-free)
+ *    audioPhase      -> the lattice rolls (integrated)
+ *    audioSpread     -> strut thickness
+ *    audioKick       -> the nodes flash (light)
+ *    audioMode       -> the light: cool in minor, warm in major
+ *    audioSwell      -> the fog (slow)
+ *
+ *  Knobs: cellP (cell size), glowP (strut glow), fogP (base fog), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

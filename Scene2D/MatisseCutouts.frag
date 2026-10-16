@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file MatisseCutouts.frag
- * @brief MATISSE CUTOUTS: paper cut-outs in the late Matisse manner --
- * bold, freely cut shapes (seaweed fronds, leaves, stars, blobs) in flat
- * gouache colours float over large coloured panels, each shape turning
- * and drifting slowly like something swimming, casting a faint shadow on
- * the paper beneath; the panel colours and some shapes take their tones
- * from the photograph, the gouache has a dry-brushed grain.  Endless,
- * mirrorable.
+/*****************************************************************************\
+ *                              MatisseCutouts.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the shapes drift and turn (integrated, jump-free)
- *   audioSpread     -> the shapes grow
- *   audioMode       -> the gouache warms (major) or cools (minor)
- *   audioKick       -> the colours brighten (light)
- *   audioRoughness  -> the cut edges get more ragged
- *   audioSwell      -> the shadows deepen (slow)
+ *  @brief
+ *  MATISSE CUTOUTS: paper cut-outs in the late Matisse manner -- bold, freely cut shapes (seaweed fronds, leaves,
+ *  stars, blobs) in flat gouache colours float over large coloured panels, each shape turning and drifting slowly
+ *  like something swimming, casting a faint shadow on the paper beneath; the panel colours and some shapes take
+ *  their tones from the photograph, the gouache has a dry-brushed grain.
  *
- * Knobs: shapeP (shape density), lobeP (lobes per shape), photoP (photo colours), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the shapes drift and turn (integrated, jump-free)
+ *    audioSpread     -> the shapes grow
+ *    audioMode       -> the gouache warms (major) or cools (minor)
+ *    audioKick       -> the colours brighten (light)
+ *    audioRoughness  -> the cut edges get more ragged
+ *    audioSwell      -> the shadows deepen (slow)
+ *
+ *  Knobs: shapeP (shape density), lobeP (lobes per shape), photoP (photo colours), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

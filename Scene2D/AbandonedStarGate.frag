@@ -1,20 +1,27 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file AbandonedStarGate.frag
- * @brief ABANDONED STAR GATE: A massive, ancient and corroded ring structure
- * drifting in deep space. It occasionally sparks with unstable, violent wormhole
- * energy that pulses to the music.
- *   audioAdvance -> slow drifting past the structure
- *   audioKick    -> violent energy sparks and unstable wormhole flashes
- *   audioSwell   -> ambient brightness of the dormant energy ring
- *   audioChromaHue-> palette offset for the wormhole energy
+/*****************************************************************************\
+ *                              AbandonedStarGate.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   rustP float amount of corrosion and damage (0.5..1.5)
- *   sparkP float intensity of the unstable energy (0.5..2.0)
- *   hueP float palette offset (0..6.28)
+ *  @brief
+ *  ABANDONED STAR GATE: A massive, ancient and corroded ring structure drifting in deep space.
+ *
+ *  It occasionally sparks with unstable, violent wormhole energy that pulses to the music.
+ *
+ *    audioAdvance -> slow drifting past the structure
+ *    audioKick    -> violent energy sparks and unstable wormhole flashes
+ *    audioSwell   -> ambient brightness of the dormant energy ring
+ *    audioChromaHue-> palette offset for the wormhole energy
+ *
+ *  Per-activation variety:
+ *    rustP float amount of corrosion and damage (0.5..1.5)
+ *    sparkP float intensity of the unstable energy (0.5..2.0)
+ *    hueP float palette offset (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

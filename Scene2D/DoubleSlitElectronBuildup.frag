@@ -1,27 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file DoubleSlitElectronBuildup.frag
- * @brief DOUBLE SLIT ELECTRON BUILD-UP: the experiment that shows one
- * particle at a time still interferes, in two panels.  On the left, seen
- * from above: the gun, the barrier with its two slits, and the waves --
- * plane waves before the barrier, two circular waves after it, crossing
- * into bright and dark rays.  On the right, the phosphor screen face on:
- * single electrons arrive as round green dots, each at a place drawn from
- * the interference probability, and over the scene arc the dots pile up
- * into the fringes the waves predicted.  The fringe spacing follows the
- * tonal centre (slowly), fresh arrivals flash on an onset, the gun glows
- * with the bass.  Camera still.
+/*****************************************************************************\
+ *                              DoubleSlitElectronBuildup.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   sceneProgress  -> accumulation (the arc)
- *   audioChromaHue -> fringe spacing (slow)
- *   audioOnset     -> the newest arrivals flash (light)
- *   audioBass      -> gun glow (light)
- *   audioLevel     -> brightness
+ *  @brief
+ *  DOUBLE SLIT ELECTRON BUILD-UP: the experiment that shows one particle at a time still interferes, in two panels.
  *
- * Per-activation variety: slitP (slit separation), grainP, hueP.
+ *  On the left, seen from above: the gun, the barrier with its two slits, and the waves -- plane waves before the
+ *  barrier, two circular waves after it, crossing into bright and dark rays.  On the right, the phosphor screen
+ *  face on: single electrons arrive as round green dots, each at a place drawn from the interference probability,
+ *  and over the scene arc the dots pile up into the fringes the waves predicted.  The fringe spacing follows the
+ *  tonal centre (slowly), fresh arrivals flash on an onset, the gun glows with the bass.  Camera still.
+ *
+ *  Audio Reactivity:
+ *    sceneProgress  -> accumulation (the arc)
+ *    audioChromaHue -> fringe spacing (slow)
+ *    audioOnset     -> the newest arrivals flash (light)
+ *    audioBass      -> gun glow (light)
+ *    audioLevel     -> brightness
+ *
+ *  Per-activation variety: slitP (slit separation), grainP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

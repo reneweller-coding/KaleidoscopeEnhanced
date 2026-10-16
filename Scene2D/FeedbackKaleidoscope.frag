@@ -1,29 +1,36 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file FeedbackKaleidoscope.frag
- * @brief Analog VIDEO FEEDBACK, kaleidoscope edition: last frame's fully composited image
- * (`texPrevFrame`) is folded through an n-way mirror, slightly zoomed and rotated, decayed, and
- * blended back in -- like a camera pointed at its own monitor, but the monitor is a kaleidoscope.
- * Because the fold applies again to an already-folded previous frame every single frame, detail
- * recursively compounds into ever-finer symmetric structure that never repeats exactly, unlike the
- * static procedural folds elsewhere in the catalogue. A small continuous injection of the current
- * photo -- level-normalised against the photo's own mean, so a dark nebula and a bright portrait
- * drive the loop equally -- keeps it from decaying to black or drifting into meaningless mush.
- * Two things stop the loop turning into the grey wash a linear feedback always converges to: the
- * retained frame is weighted by its own brightness (bright trails persist, dim haze dies), and the
- * mirror's own geometry -- seams, petal ribs, rosette -- is re-drawn crisp on top every frame.
- *   audioKick    -> brief extra zoom punch (bounded, not a runaway multiplier) + seam flare
- *   audioBeat    -> rotation direction/speed swings
- *   audioSwell   -> injection strength breathes (louder passages feed in more fresh photo)
- *   audioAdvance -> petal ribs roll outward (integrated phase, never a factor on `time`)
- *   audioLevel   -> overall drive
- *   audioCentroid-> cool/warm tint of the accumulated feedback
- *   audioChromaHue -> slow hue drift of the accumulated feedback
- *   audioValence -> palette saturation (via imgPalette)
- * If texPrevFrame is unavailable (e.g. the very first frames after launch), it reads black, and
- * the scene starts from pure photo injection and grows into feedback within a few frames.
+/*****************************************************************************\
+ *                              FeedbackKaleidoscope.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Analog VIDEO FEEDBACK, kaleidoscope edition: last frame's fully composited image (`texPrevFrame`) is folded
+ *  through an n-way mirror, slightly zoomed and rotated, decayed, and blended back in -- like a camera pointed at
+ *  its own monitor, but the monitor is a kaleidoscope.
+ *
+ *  Because the fold applies again to an already-folded previous frame every single frame, detail recursively
+ *  compounds into ever-finer symmetric structure that never repeats exactly, unlike the static procedural folds
+ *  elsewhere in the catalogue. A small continuous injection of the current photo -- level-normalised against the
+ *  photo's own mean, so a dark nebula and a bright portrait drive the loop equally -- keeps it from decaying to
+ *  black or drifting into meaningless mush. Two things stop the loop turning into the grey wash a linear feedback
+ *  always converges to: the retained frame is weighted by its own brightness (bright trails persist, dim haze
+ *  dies), and the mirror's own geometry -- seams, petal ribs, rosette -- is re-drawn crisp on top every frame.
+ *
+ *    audioKick    -> brief extra zoom punch (bounded, not a runaway multiplier) + seam flare
+ *    audioBeat    -> rotation direction/speed swings
+ *    audioSwell   -> injection strength breathes (louder passages feed in more fresh photo)
+ *    audioAdvance -> petal ribs roll outward (integrated phase, never a factor on `time`)
+ *    audioLevel   -> overall drive
+ *    audioCentroid-> cool/warm tint of the accumulated feedback
+ *    audioChromaHue -> slow hue drift of the accumulated feedback
+ *    audioValence -> palette saturation (via imgPalette)
+ *  If texPrevFrame is unavailable (e.g. the very first frames after launch), it reads black, and
+ *  the scene starts from pure photo injection and grows into feedback within a few frames.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

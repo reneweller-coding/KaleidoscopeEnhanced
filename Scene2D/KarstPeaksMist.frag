@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file KarstPeaksMist.frag
- * @brief KARST PEAKS MIST: the tower karst of Guilin at dawn -- row behind
- * row of steep, rounded limestone peaks, each range paler and bluer than
- * the one before, with bands of mist lying between them.  A calm river
- * winds through the foreground mirroring the peaks, and a bamboo raft with
- * a fisherman and his lamp drifts slowly across it.  The morning sun glows
- * through the mist behind the ranges.  The mist drifts and the raft moves
- * at their own gentle pace; the music is the light.
+/*****************************************************************************\
+ *                              KarstPeaksMist.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSwell  -> the sun's glow in the mist (slow)
- *   audioKick   -> the fisherman's lamp brightens (light only)
- *   audioLevel  -> brightness
- *   audioChromaHue -> photo tint of the dawn colours
- *   sceneTime / sceneAdvance -> mist drift, raft, ripples (continuous)
+ *  @brief
+ *  KARST PEAKS MIST: the tower karst of Guilin at dawn -- row behind row of steep, rounded limestone peaks, each
+ *  range paler and bluer than the one before, with bands of mist lying between them.
  *
- * Per-activation variety: rangesP (how many ranges), mistP, hueP.
+ *  A calm river winds through the foreground mirroring the peaks, and a bamboo raft with a fisherman and his lamp
+ *  drifts slowly across it.  The morning sun glows through the mist behind the ranges.  The mist drifts and the
+ *  raft moves at their own gentle pace; the music is the light.
+ *
+ *  Audio Reactivity:
+ *    audioSwell  -> the sun's glow in the mist (slow)
+ *    audioKick   -> the fisherman's lamp brightens (light only)
+ *    audioLevel  -> brightness
+ *    audioChromaHue -> photo tint of the dawn colours
+ *    sceneTime / sceneAdvance -> mist drift, raft, ripples (continuous)
+ *
+ *  Per-activation variety: rangesP (how many ranges), mistP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

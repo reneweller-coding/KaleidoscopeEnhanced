@@ -1,16 +1,22 @@
 #version 430 core
-/**
- * @file MangroveRootsTide.comp
- * @brief MANGROVE ROOTS TIDE: standing in the shallows among mangrove
- * prop roots.  Each tree drops a fan of arching roots into the water;
- * fish weave between them on the scene clock, and leaves drift on the
- * surface overhead.  Roots are emitted as short camera-facing segments
- * along their arch, so a root reads as one continuous curve.
+/*****************************************************************************\
+ *                              MangroveRootsTide.comp
+\*****************************************************************************/
+/*! @file
  *
- * Kinds: -1 canopy/sky above the water, -2 seabed, 0 root segment,
- *        1 fish body, 2 fish tail, 3 floating leaf, 4 surface pane.
+ *  @brief
+ *  MANGROVE ROOTS TIDE: standing in the shallows among mangrove prop roots.
  *
- * Per-instance: treesP, fishP, hueP.
+ *  Each tree drops a fan of arching roots into the water; fish weave between them on the scene clock, and leaves
+ *  drift on the surface overhead.  Roots are emitted as short camera-facing segments along their arch, so a root
+ *  reads as one continuous curve.
+ *
+ *  Kinds: -1 canopy/sky above the water, -2 seabed, 0 root segment,
+ *         1 fish body, 2 fish tail, 3 floating leaf, 4 surface pane.
+ *
+ *  Per-instance: treesP, fishP, hueP.
+ *
+ *  @author René Weller
  */
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( local_size_x = 4, local_size_y = 4, local_size_z = 4 ) in;

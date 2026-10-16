@@ -1,25 +1,33 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file GyroidTriplyPeriodicLabyrinth.frag
- * @brief GYROID TRIPLY PERIODIC LABYRINTH: Raymarched infinite non-Euclidean minimal
- * surface (TPMS) dividing 3D space into two interpenetrating congruent labyrinths.
- * Seamless camera flight through twisting titanium and crystal passages with
- * caustic reflections, photo mapping, and audio-reactive wall breathing.
- *   audioAdvance -> navigates camera through the infinite gyroid tunnels
- *   audioBass    -> modulates gyroid isosurface threshold & wall opening
- *   audioKick    -> flashes chromatic neon caustics along the corridor silhouettes,
- *                   and widens the flight cone
- *   audioSwell   -> brightness of the proximity glow gathered along the ray, i.e.
- *                   how far the corridors light up ahead of the camera
- *   audioLevel   -> headlamp reach, and the level of the deep-labyrinth backdrop
+/*****************************************************************************\
+ *                              GyroidTriplyPeriodicLabyrinth.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   scaleP  float gyroid spatial lattice frequency   (0.5..2.2)
- *   wallP   float gyroid corridor wall thickness     (0.5..2.0)
- *   speedP  float camera traversal velocity          (0.5..2.0)
- *   hueP    float structural chromatic hue offset   (0..6.28)
+ *  @brief
+ *  GYROID TRIPLY PERIODIC LABYRINTH: Raymarched infinite non-Euclidean minimal surface (TPMS) dividing 3D space
+ *  into two interpenetrating congruent labyrinths.
+ *
+ *  Seamless camera flight through twisting titanium and crystal passages with caustic reflections, photo mapping,
+ *  and audio-reactive wall breathing.
+ *
+ *    audioAdvance -> navigates camera through the infinite gyroid tunnels
+ *    audioBass    -> modulates gyroid isosurface threshold & wall opening
+ *    audioKick    -> flashes chromatic neon caustics along the corridor silhouettes,
+ *                    and widens the flight cone
+ *    audioSwell   -> brightness of the proximity glow gathered along the ray, i.e.
+ *                    how far the corridors light up ahead of the camera
+ *    audioLevel   -> headlamp reach, and the level of the deep-labyrinth backdrop
+ *
+ *  Per-activation variety:
+ *    scaleP  float gyroid spatial lattice frequency   (0.5..2.2)
+ *    wallP   float gyroid corridor wall thickness     (0.5..2.0)
+ *    speedP  float camera traversal velocity          (0.5..2.0)
+ *    hueP    float structural chromatic hue offset   (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file BinauralTunnel.frag
- * @brief BINAURAL TUNNEL: a tunnel whose cross-section is the stereo image.
- * The left wall is pushed out by the left channel's energy, the right wall
- * by the right's, and the stereo width stretches the tube vertically: a mono
- * track is a round pipe, a wide mix a cathedral nave, a hard-panned part
- * bulges one wall.  Ribs stream past on the music's pace; each wall is lit
- * by its own channel, so the tube leans visibly toward whichever side is
- * playing.
+/*****************************************************************************\
+ *                              BinauralTunnel.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioStereoL / R -> left / right wall LIGHT (the whole point)
- *   audioStereo      -> the arris lines of the vault
- *   audioSwell       -> the vault opens on builds (slow geometry)
- *   sceneAdvance     -> forward travel (music-paced, continuous)
- *   audioKick        -> the ribs flash
- *   audioBass        -> throat glow
+ *  @brief
+ *  BINAURAL TUNNEL: a tunnel whose cross-section is the stereo image.
  *
- * Per-activation variety: ribP (rib spacing), zoomP, hueP.
+ *  The left wall is pushed out by the left channel's energy, the right wall by the right's, and the stereo width
+ *  stretches the tube vertically: a mono track is a round pipe, a wide mix a cathedral nave, a hard-panned part
+ *  bulges one wall.  Ribs stream past on the music's pace; each wall is lit by its own channel, so the tube leans
+ *  visibly toward whichever side is playing.
+ *
+ *  Audio Reactivity:
+ *    audioStereoL / R -> left / right wall LIGHT (the whole point)
+ *    audioStereo      -> the arris lines of the vault
+ *    audioSwell       -> the vault opens on builds (slow geometry)
+ *    sceneAdvance     -> forward travel (music-paced, continuous)
+ *    audioKick        -> the ribs flash
+ *    audioBass        -> throat glow
+ *
+ *  Per-activation variety: ribP (rib spacing), zoomP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

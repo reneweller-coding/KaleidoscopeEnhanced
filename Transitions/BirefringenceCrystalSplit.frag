@@ -1,21 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file BirefringenceCrystalSplit.frag
- * @brief TRANSITION BIREFRINGENCE CRYSTAL SPLIT: Calcite crystal optical birefringence transition.
- * An anisotropic uniaxial crystal splits light rays into ordinary (o-ray) and
- * extraordinary (e-ray) polarized components that separate, display polarization
- * color fringes, and recombine seamlessly into the incoming scene.
- *   interpolation -> sweeps optical crystal thickness & o/e ray displacement
- *   audioKick     -> flashes polarized isochromatic interference fringes
- *   audioSwell    -> widens ordinary/extraordinary ray birefringence separation
+/*****************************************************************************\
+ *                              BirefringenceCrystalSplit.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   birefP float birefringence Delta-n separation scale (0.5..2.2)
- *   angleP float optic axis crystal orientation         (0.5..2.0)
- *   speedP float animation speed multiplier             (0.5..2.0)
- *   hueP   float polarization fringe hue offset         (0..6.28)
+ *  @brief
+ *  TRANSITION BIREFRINGENCE CRYSTAL SPLIT: Calcite crystal optical birefringence transition.
+ *
+ *  An anisotropic uniaxial crystal splits light rays into ordinary (o-ray) and extraordinary (e-ray) polarized
+ *  components that separate, display polarization color fringes, and recombine seamlessly into the incoming scene.
+ *
+ *    interpolation -> sweeps optical crystal thickness & o/e ray displacement
+ *    audioKick     -> flashes polarized isochromatic interference fringes
+ *    audioSwell    -> widens ordinary/extraordinary ray birefringence separation
+ *
+ *  Per-activation variety:
+ *    birefP float birefringence Delta-n separation scale (0.5..2.2)
+ *    angleP float optic axis crystal orientation         (0.5..2.0)
+ *    speedP float animation speed multiplier             (0.5..2.0)
+ *    hueP   float polarization fringe hue offset         (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

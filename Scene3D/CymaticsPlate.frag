@@ -1,4 +1,20 @@
 #version 330 core
+/*****************************************************************************\
+ *                              CymaticsPlate.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Point-sprite shader for the Chladni-figure sand grains: an additive dot with a bright core and a broad halo, so
+ *  grains that have converged onto a nodal line read as glowing figures rather than as clipped pin-pricks that the
+ *  frame's own downscale averages away.
+ *
+ *  audioLevel and audioKick both boost the sprite's overall brightness; the
+ *  grain's own colour (vCol) and its position on the vibrating plate are
+ *  computed upstream in this scene's vertex/compute stage.
+ *
+ *  @author René Weller
+ */
 out vec4 fragColor; ///< The pixel's colour (output).
 // Frag-side music pulse (added by the deaf-scene pass: reactivity
 // measured ~0 -- the vert-side coupling barely moved any pixels).
@@ -19,18 +35,6 @@ uniform float audioKick;  ///< Kick-drum envelope, 0..1 (fast attack, short deca
 // pixels is the only lever that works, so the core is broad and the halo
 // carries real weight.
 in vec4 vCol; ///< Colour (from the vertex stage).
-
-/**
- * @file CymaticsPlate.frag
- * @brief Point-sprite shader for the Chladni-figure sand grains: an additive
- * dot with a bright core and a broad halo, so grains that have converged onto
- * a nodal line read as glowing figures rather than as clipped pin-pricks that
- * the frame's own downscale averages away.
- *
- * audioLevel and audioKick both boost the sprite's overall brightness; the
- * grain's own colour (vCol) and its position on the vibrating plate are
- * computed upstream in this scene's vertex/compute stage.
- */
 
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()

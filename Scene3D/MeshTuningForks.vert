@@ -1,11 +1,17 @@
 #version 330 core
-/**
- * @file MeshTuningForks.vert
- * @brief Vertex stage companion to MeshTuningForks.frag -- see that file's
- * header. ONE tuning fork drawn twelve times (instances="12"), one per
- * pitch class, in a row on the sounding board; gl_InstanceID is the class.
- * The forks do not move -- a fork that visibly vibrates is a jolt -- they
- * RING in light. The shell is drawn by instance 0 only.
+/*****************************************************************************\
+ *                              MeshTuningForks.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to MeshTuningForks.frag -- see that file's header.
+ *
+ *  ONE tuning fork drawn twelve times (instances="12"), one per pitch class, in a row on the sounding board;
+ *  gl_InstanceID is the class. The forks do not move -- a fork that visibly vibrates is a jolt -- they RING in
+ *  light. The shell is drawn by instance 0 only.
+ *
+ *  @author René Weller
  */
 
 in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an

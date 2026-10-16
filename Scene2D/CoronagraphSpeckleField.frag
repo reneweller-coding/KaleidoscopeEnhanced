@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file CoronagraphSpeckleField.frag
- * @brief CORONAGRAPH SPECKLE FIELD: direct imaging of exoplanets.  A
- * coronagraph mask blocks the star; what remains is the speckle halo --
- * a field of diffraction speckles whose brightness is the spectrum (band
- * by radius) -- rotating slowly with the sky (angular differential
- * imaging: the speckles turn with the telescope, the planets do not), so
- * the few steady round dots that stay put are the planets.  The photo is
- * the residual halo texture; the swell is the halo level.  Camera still.
+/*****************************************************************************\
+ *                              CoronagraphSpeckleField.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSpectrum[32] -> speckle brightness by radius (light)
- *   sceneAdvance      -> field rotation (continuous)
- *   audioSwell        -> halo level (slow)
- *   audioKick         -> the mask edge glints (light)
- *   audioLevel        -> brightness
+ *  @brief
+ *  CORONAGRAPH SPECKLE FIELD: direct imaging of exoplanets.
  *
- * Per-activation variety: planetsP, speckleP, hueP.
+ *  A coronagraph mask blocks the star; what remains is the speckle halo -- a field of diffraction speckles whose
+ *  brightness is the spectrum (band by radius) -- rotating slowly with the sky (angular differential imaging: the
+ *  speckles turn with the telescope, the planets do not), so the few steady round dots that stay put are the
+ *  planets.  The photo is the residual halo texture; the swell is the halo level.  Camera still.
+ *
+ *  Audio Reactivity:
+ *    audioSpectrum[32] -> speckle brightness by radius (light)
+ *    sceneAdvance      -> field rotation (continuous)
+ *    audioSwell        -> halo level (slow)
+ *    audioKick         -> the mask edge glints (light)
+ *    audioLevel        -> brightness
+ *
+ *  Per-activation variety: planetsP, speckleP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

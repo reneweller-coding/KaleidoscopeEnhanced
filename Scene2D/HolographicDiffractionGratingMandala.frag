@@ -1,18 +1,24 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file HolographicDiffractionGratingMandala.frag
- * @brief HOLOGRAPHIC DIFFRACTION GRATING MANDALA: Triple crossed laser interference
- * gratings at 120 degrees creating a hyper-sharp holographic security seal mandala
- * with rainbow diffraction sparkle, micro-etched fractal rings, and laser nodes.
+/*****************************************************************************\
+ *                              HolographicDiffractionGratingMandala.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance -> drives continuous grating phase translation & rainbow rotation
- *   audioKick    -> flashes holographic laser nodes & expands diffraction bandwidth
- *   audioCentroid-> modulates micro-etched grating line frequency
- *   audioSubBass -> expands holographic mandala radius breathing
- *   audioChromaHue-> steers the prismatic holographic foil spectrum
+ *  @brief
+ *  HOLOGRAPHIC DIFFRACTION GRATING MANDALA: Triple crossed laser interference gratings at 120 degrees creating a
+ *  hyper-sharp holographic security seal mandala with rainbow diffraction sparkle, micro-etched fractal rings, and
+ *  laser nodes.
+ *
+ *  Audio Reactivity:
+ *    audioAdvance -> drives continuous grating phase translation & rainbow rotation
+ *    audioKick    -> flashes holographic laser nodes & expands diffraction bandwidth
+ *    audioCentroid-> modulates micro-etched grating line frequency
+ *    audioSubBass -> expands holographic mandala radius breathing
+ *    audioChromaHue-> steers the prismatic holographic foil spectrum
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

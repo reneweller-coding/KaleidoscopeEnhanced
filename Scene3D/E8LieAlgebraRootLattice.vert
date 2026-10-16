@@ -1,8 +1,13 @@
 #version 330 core
-/**
- * @file E8LieAlgebraRootLattice.vert
- * @brief Vertex stage companion to E8LieAlgebraRootLattice.frag -- see that file's
- * header for this scene's description.
+/*****************************************************************************\
+ *                              E8LieAlgebraRootLattice.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to E8LieAlgebraRootLattice.frag -- see that file's header for this scene's description.
+ *
+ *  @author René Weller
  */
 
 in vec4 attrA; ///< xyz = cube corner (-0.5..0.5), w = cube index

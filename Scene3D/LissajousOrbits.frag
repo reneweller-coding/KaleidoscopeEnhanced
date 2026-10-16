@@ -1,20 +1,24 @@
 #version 330 core
+/*****************************************************************************\
+ *                              LissajousOrbits.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Additive point-sprite shader for six particle streams tracing closed 3D Lissajous figures, rendering each point
+ *  as a soft radial glow.
+ *
+ *  Colour, including the per-stream photo-palette hue and the
+ *  audioAdvance/audioSwell/audioBass/audioChromaHue/audioValence response
+ *  that shapes the streams and their brightness, is computed upstream in
+ *  LissajousOrbits.vert and arrives baked in vCol; this stage only applies
+ *  the Gaussian falloff from the point centre.
+ *
+ *  @author René Weller
+ */
 out vec4 fragColor; ///< The pixel's colour (output).
 // LissajousOrbits.frag — soft glowing point (additive blending).
 in vec4 vCol; ///< Colour (from the vertex stage).
-
-/**
- * @file LissajousOrbits.frag
- * @brief Additive point-sprite shader for six particle streams tracing
- * closed 3D Lissajous figures, rendering each point as a soft radial
- * glow.
- *
- * Colour, including the per-stream photo-palette hue and the
- * audioAdvance/audioSwell/audioBass/audioChromaHue/audioValence response
- * that shapes the streams and their brightness, is computed upstream in
- * LissajousOrbits.vert and arrives baked in vCol; this stage only applies
- * the Gaussian falloff from the point centre.
- */
 
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()

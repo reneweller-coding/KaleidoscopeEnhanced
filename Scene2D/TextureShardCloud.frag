@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureShardCloud.frag
- * @brief TEXTURE SHARD CLOUD: a slowly tumbling cloud of glass shards -- a
- * shattered pane of the photograph floats in the dark, hundreds of
- * triangular fragments drifting apart and together, each tilted its own
- * way so it shows its piece of the picture slightly shifted and flashes a
- * bright edge when it turns toward the light; fragments at different
- * depths drift at different speeds, the far ones smaller and dimmer.
- * Endless, mirrorable.
+/*****************************************************************************\
+ *                              TextureShardCloud.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the shards drift (integrated, jump-free)
- *   audioSpread     -> the pane breaks further apart
- *   audioKick       -> edge flashes (light)
- *   audioMode       -> the light: cool in minor, warm in major
- *   audioHigh       -> sparkles on the edges (light)
- *   audioSwell      -> depth haze (slow)
+ *  @brief
+ *  TEXTURE SHARD CLOUD: a slowly tumbling cloud of glass shards -- a shattered pane of the photograph floats in the
+ *  dark, hundreds of triangular fragments drifting apart and together, each tilted its own way so it shows its
+ *  piece of the picture slightly shifted and flashes a bright edge when it turns toward the light; fragments at
+ *  different depths drift at different speeds, the far ones smaller and dimmer.
  *
- * Knobs: shardP (shard size), layerP (depth layers), tiltP (tumbling), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the shards drift (integrated, jump-free)
+ *    audioSpread     -> the pane breaks further apart
+ *    audioKick       -> edge flashes (light)
+ *    audioMode       -> the light: cool in minor, warm in major
+ *    audioHigh       -> sparkles on the edges (light)
+ *    audioSwell      -> depth haze (slow)
+ *
+ *  Knobs: shardP (shard size), layerP (depth layers), tiltP (tumbling), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

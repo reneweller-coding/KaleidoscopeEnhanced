@@ -1,18 +1,22 @@
 #version 430 core
-/**
- * @file BeeWaggleDance.comp
- * @brief BEE WAGGLE DANCE: the comb face, and the dancers.  Honeycomb
- * cells (hexagons of the photo) fill the frame; on them, forager bees run
- * the figure-eight of the waggle dance -- a straight waggle run, a loop
- * back, the run again -- each on a continuous phase of the scene clock;
- * the run's angle (the direction to the flowers) follows the stereo
- * balance, slowly, and the followers crowd behind each dancer.  The
- * generator only gets the swell, so the dance angle sweeps on the clock
- * and the fragment adds the balance as light... no: the angle stays a
- * slow function of the clock here; the balance steers the light in the
- * fragment.  No state.  Camera still, looking at the comb.
+/*****************************************************************************\
+ *                              BeeWaggleDance.comp
+\*****************************************************************************/
+/*! @file
  *
- * Per-instance: dancersP, cellP, hueP.
+ *  @brief
+ *  BEE WAGGLE DANCE: the comb face, and the dancers.
+ *
+ *  Honeycomb cells (hexagons of the photo) fill the frame; on them, forager bees run the figure-eight of the waggle
+ *  dance -- a straight waggle run, a loop back, the run again -- each on a continuous phase of the scene clock; the
+ *  run's angle (the direction to the flowers) follows the stereo balance, slowly, and the followers crowd behind
+ *  each dancer.  The generator only gets the swell, so the dance angle sweeps on the clock and the fragment adds
+ *  the balance as light... no: the angle stays a slow function of the clock here; the balance steers the light in
+ *  the fragment.  No state.  Camera still, looking at the comb.
+ *
+ *  Per-instance: dancersP, cellP, hueP.
+ *
+ *  @author René Weller
  */
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( local_size_x = 4, local_size_y = 4, local_size_z = 4 ) in;

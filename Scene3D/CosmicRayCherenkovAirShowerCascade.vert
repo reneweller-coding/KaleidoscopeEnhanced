@@ -1,8 +1,14 @@
 #version 330 core
-/**
- * @file CosmicRayCherenkovAirShowerCascade.vert
- * @brief Vertex stage companion to CosmicRayCherenkovAirShowerCascade.frag -- see that file's
- * header for this scene's description.
+/*****************************************************************************\
+ *                              CosmicRayCherenkovAirShowerCascade.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to CosmicRayCherenkovAirShowerCascade.frag -- see that file's header for this scene's
+ *  description.
+ *
+ *  @author René Weller
  */
 
 // attrA.xyz = view-space pos (the generator lays the field out for 16:9),

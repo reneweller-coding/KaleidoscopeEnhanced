@@ -1,21 +1,25 @@
 #version 330 core
+/*****************************************************************************\
+ *                              SpectrumArena.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Shades the depth-tested equalizer-column cubes of a circular "arena" the camera flies inside, drawing each cube
+ *  as a dark face with a luminous rim where its corner faces the eye.
+ *
+ *  This fragment stage reads no audio uniforms directly: all reactivity
+ *  (per-column spectrum band level, kick shockwave ring, downbeat jump,
+ *  chroma-driven hue) is computed once per vertex in the companion vertex
+ *  shader and arrives already baked into vCol; here it is only modulated by
+ *  the screen-space edge falloff derived from vCorner.
+ *
+ *  @author René Weller
+ */
 out vec4 fragColor; ///< The pixel's colour (output).
 // SpectrumArena.frag — dark cube faces with luminous edges (depth-tested).
 in vec4 vCol;    ///< Colour (from the vertex stage).
 in vec3 vCorner; ///< Corner (from the vertex stage).
-
-/**
- * @file SpectrumArena.frag
- * @brief Shades the depth-tested equalizer-column cubes of a circular
- * "arena" the camera flies inside, drawing each cube as a dark face with a
- * luminous rim where its corner faces the eye.
- *
- * This fragment stage reads no audio uniforms directly: all reactivity
- * (per-column spectrum band level, kick shockwave ring, downbeat jump,
- * chroma-driven hue) is computed once per vertex in the companion vertex
- * shader and arrives already baked into vCol; here it is only modulated by
- * the screen-space edge falloff derived from vCorner.
- */
 
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()

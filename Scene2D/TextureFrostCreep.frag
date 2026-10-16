@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureFrostCreep.frag
- * @brief TEXTURE FROST CREEP: frost growing over a window pane with the
- * photograph behind it -- feathery ice ferns creep across the glass from
- * many seeds, branching and filling in, frosting the view into a soft
- * blur; then they slowly melt back, the glass clears in patches and the
- * picture shines through sharp again, until the frost returns.  The ferns
- * sparkle where light catches their facets.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              TextureFrostCreep.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the frost grows and melts (integrated, jump-free)
- *   audioSpread     -> how far the frost reaches
- *   audioHigh       -> the crystals sparkle (light)
- *   audioMode       -> the light behind: cold blue in minor, warm in major
- *   audioRoughness  -> the fern branching
- *   audioSwell      -> the pane mists up (slow)
+ *  @brief
+ *  TEXTURE FROST CREEP: frost growing over a window pane with the photograph behind it -- feathery ice ferns creep
+ *  across the glass from many seeds, branching and filling in, frosting the view into a soft blur; then they slowly
+ *  melt back, the glass clears in patches and the picture shines through sharp again, until the frost returns.
  *
- * Knobs: fernP (fern scale), seedP (seed density), clearP (how clear the photo shows), hueP.
+ *  The ferns sparkle where light catches their facets.  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the frost grows and melts (integrated, jump-free)
+ *    audioSpread     -> how far the frost reaches
+ *    audioHigh       -> the crystals sparkle (light)
+ *    audioMode       -> the light behind: cold blue in minor, warm in major
+ *    audioRoughness  -> the fern branching
+ *    audioSwell      -> the pane mists up (slow)
+ *
+ *  Knobs: fernP (fern scale), seedP (seed density), clearP (how clear the photo shows), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

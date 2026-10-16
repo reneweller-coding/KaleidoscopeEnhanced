@@ -1,29 +1,35 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file LeafVeinPerfusion.frag
- * @brief TRANSITION LEAF VEIN PERFUSION: dye enters at the petiole and runs
- * through a leaf's venation.  The incoming scene appears only where the network
- * has already carried it.
+/*****************************************************************************\
+ *                              LeafVeinPerfusion.frag
+\*****************************************************************************/
+/*! @file
  *
- * The order is the point.  Dye does not arrive by distance from the stalk, it
- * arrives by distance ALONG THE VEINS -- so a spot at the leaf's tip fills
- * before a spot the same distance away that has to be reached the long way
- * round a secondary.  Every pixel here works out which vein serves it and how
- * far along the network that is, and one advancing front crosses those path
- * lengths.
+ *  @brief
+ *  TRANSITION LEAF VEIN PERFUSION: dye enters at the petiole and runs through a leaf's venation.
  *
- * The thicknesses follow Murray's law: a vein's radius goes with the cube root
- * of the flow it carries, so the midrib is thick, the secondaries thinner by a
- * fixed ratio, and the tertiaries thinner again.  Drawing them all the same
- * width is what makes a drawn network look like a drawn network.
+ *  The incoming scene appears only where the network has already carried it.
  *
- * Audio Reactivity:
- *   audioHigh    -> the sheen on a filled vein (light)
- *   audioKick    -> the light in the filled network (light)
+ *  The order is the point.  Dye does not arrive by distance from the stalk, it
+ *  arrives by distance ALONG THE VEINS -- so a spot at the leaf's tip fills
+ *  before a spot the same distance away that has to be reached the long way
+ *  round a secondary.  Every pixel here works out which vein serves it and how
+ *  far along the network that is, and one advancing front crosses those path
+ *  lengths.
  *
- * Per-activation variety: veinsP, bleedP, hueP.
+ *  The thicknesses follow Murray's law: a vein's radius goes with the cube root
+ *  of the flow it carries, so the midrib is thick, the secondaries thinner by a
+ *  fixed ratio, and the tertiaries thinner again.  Drawing them all the same
+ *  width is what makes a drawn network look like a drawn network.
+ *
+ *  Audio Reactivity:
+ *    audioHigh    -> the sheen on a filled vein (light)
+ *    audioKick    -> the light in the filled network (light)
+ *
+ *  Per-activation variety: veinsP, bleedP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

@@ -1,19 +1,27 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file EventHorizonSwirl.frag
- * @brief TRANSITION EVENT HORIZON SWIRL: Kerr black hole ergosphere frame-dragging transition.
- * Spacetime frame-dragging twists the outgoing scene into a relativistic
- * spiral vortex around a rotating event horizon, drawing the new scene out.
- *   interpolation -> controls frame-dragging angular momentum & horizon size
- *   audioKick     -> flashes ergosphere frame-dragging boundary
+/*****************************************************************************\
+ *                              EventHorizonSwirl.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   spinP  float Kerr black hole spin parameter    (0.5..2.2)
- *   dragP  float frame dragging spiral distortion  (0.5..2.0)
- *   speedP float animation speed multiplier        (0.5..2.0)
- *   hueP   float ergosphere emission hue offset    (0..6.28)
+ *  @brief
+ *  TRANSITION EVENT HORIZON SWIRL: Kerr black hole ergosphere frame-dragging transition.
+ *
+ *  Spacetime frame-dragging twists the outgoing scene into a relativistic spiral vortex around a rotating event
+ *  horizon, drawing the new scene out.
+ *
+ *    interpolation -> controls frame-dragging angular momentum & horizon size
+ *    audioKick     -> flashes ergosphere frame-dragging boundary
+ *
+ *  Per-activation variety:
+ *    spinP  float Kerr black hole spin parameter    (0.5..2.2)
+ *    dragP  float frame dragging spiral distortion  (0.5..2.0)
+ *    speedP float animation speed multiplier        (0.5..2.0)
+ *    hueP   float ergosphere emission hue offset    (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

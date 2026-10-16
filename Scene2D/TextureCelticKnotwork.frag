@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureCelticKnotwork.frag
- * @brief TEXTURE CELTIC KNOTWORK: an endless Celtic knot -- broad ribbons
- * weave diagonally over and under each other, turning at the borders of
- * a grid of cells so they form one continuous interlace, each ribbon cut
- * from the photograph and outlined in dark ink, shaded where it dips
- * under its crossing partner; light pulses travel along the ribbons, and
- * the knot pattern slowly re-routes as crossing points open and close.
- * Endless, mirrorable.
+/*****************************************************************************\
+ *                              TextureCelticKnotwork.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the pulses travel along the ribbons (integrated)
- *   audioSpread     -> ribbon width
- *   audioKick       -> the pulses flare (light)
- *   audioMode       -> the ink: black in minor, gold in major
- *   audioHarmChange -> the knot re-routes (slow, smoothed)
- *   audioSwell      -> the ground between ribbons glows (slow)
+ *  @brief
+ *  TEXTURE CELTIC KNOTWORK: an endless Celtic knot -- broad ribbons weave diagonally over and under each other,
+ *  turning at the borders of a grid of cells so they form one continuous interlace, each ribbon cut from the
+ *  photograph and outlined in dark ink, shaded where it dips under its crossing partner; light pulses travel along
+ *  the ribbons, and the knot pattern slowly re-routes as crossing points open and close.
  *
- * Knobs: cellP (knot scale), breakP (open crossings), photoP (photo on the ribbons), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the pulses travel along the ribbons (integrated)
+ *    audioSpread     -> ribbon width
+ *    audioKick       -> the pulses flare (light)
+ *    audioMode       -> the ink: black in minor, gold in major
+ *    audioHarmChange -> the knot re-routes (slow, smoothed)
+ *    audioSwell      -> the ground between ribbons glows (slow)
+ *
+ *  Knobs: cellP (knot scale), breakP (open crossings), photoP (photo on the ribbons), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

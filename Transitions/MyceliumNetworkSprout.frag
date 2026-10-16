@@ -1,20 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file MyceliumNetworkSprout.frag
- * @brief TRANSITION MYCELIUM NETWORK SPROUT: Branching fungal hyphae network transition.
- * Organic fungal mycelial threads sprout and branch across the screen, conducting
- * bioluminescent action-potential pulses that bridge and cross-fade the scenes.
- *   interpolation -> sweeps mycelial growth front from center to boundaries
- *   audioKick     -> flashes action potential electrical pulses along hyphae cords
- *   audioSwell    -> widens mycelial thread network thickness
+/*****************************************************************************\
+ *                              MyceliumNetworkSprout.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   hyphaeP float mycelial network branch density (0.5..2.2)
- *   branchP float tip branching angle divergence  (0.5..2.0)
- *   speedP  float growth velocity multiplier      (0.5..2.0)
- *   hueP    float bioluminescent hyphae hue offset (0..6.28)
+ *  @brief
+ *  TRANSITION MYCELIUM NETWORK SPROUT: Branching fungal hyphae network transition.
+ *
+ *  Organic fungal mycelial threads sprout and branch across the screen, conducting bioluminescent action-potential
+ *  pulses that bridge and cross-fade the scenes.
+ *
+ *    interpolation -> sweeps mycelial growth front from center to boundaries
+ *    audioKick     -> flashes action potential electrical pulses along hyphae cords
+ *    audioSwell    -> widens mycelial thread network thickness
+ *
+ *  Per-activation variety:
+ *    hyphaeP float mycelial network branch density (0.5..2.2)
+ *    branchP float tip branching angle divergence  (0.5..2.0)
+ *    speedP  float growth velocity multiplier      (0.5..2.0)
+ *    hueP    float bioluminescent hyphae hue offset (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

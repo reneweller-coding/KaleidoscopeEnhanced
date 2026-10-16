@@ -1,25 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file OilDropsOnWater.frag
- * @brief OIL DROPS ON WATER: the classic macro photograph -- a dish of water
- * with drops of oil floating on it, held above a colourful background, so
- * every oil drop is a lens that shows the background magnified and
- * bent, ringed by a dark refraction edge and a bright rim; small drops
- * cluster around big ones, drops drift together and merge.  The
- * background is the photograph, soft and colourful, and moves slowly
- * beneath.  An endless field, mirrorable.
+/*****************************************************************************\
+ *                              OilDropsOnWater.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the drops drift (integrated, jump-free)
- *   audioSpread     -> magnification of the lenses
- *   audioSwell      -> drop size (slow)
- *   audioRoughness  -> the water surface trembles (ripples in the view)
- *   audioHigh       -> the rims sparkle (light)
- *   audioMode       -> the background warms in major
+ *  @brief
+ *  OIL DROPS ON WATER: the classic macro photograph -- a dish of water with drops of oil floating on it, held above
+ *  a colourful background, so every oil drop is a lens that shows the background magnified and bent, ringed by a
+ *  dark refraction edge and a bright rim; small drops cluster around big ones, drops drift together and merge.
  *
- * Knobs: dropsP (how many), sizeP (drop size), blurP (background blur), hueP.
+ *  The background is the photograph, soft and colourful, and moves slowly beneath.  An endless field, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the drops drift (integrated, jump-free)
+ *    audioSpread     -> magnification of the lenses
+ *    audioSwell      -> drop size (slow)
+ *    audioRoughness  -> the water surface trembles (ripples in the view)
+ *    audioHigh       -> the rims sparkle (light)
+ *    audioMode       -> the background warms in major
+ *
+ *  Knobs: dropsP (how many), sizeP (drop size), blurP (background blur), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

@@ -1,28 +1,33 @@
 #version 430
+/*****************************************************************************\
+ *                              MagnetarCrustalQuakeAlfvenResonance.comp
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Compute generator companion to MagnetarCrustalQuakeAlfvenResonance.frag -- generates 3D magnetar crustal
+ *  fracture lines, magnetic field loops, and relativistic Alfven wave shear resonances in ultrastrong magnetic
+ *  fields (B > 10^14 G).
+ *
+ *  SCREEN FILL: there were only 64 dipolar loops, all capped at L = 2.5 and all
+ *  pinched to a mathematical POINT at both footpoints, so the magnetosphere was
+ *  a small knot of hairlines in a black frame (occ 0.17, luma 0.008).  It is now
+ *  a full magnetosphere: 160 loops whose L-shells are biased OUTWARD to 4.8 (past
+ *  the frame corners), footpoints lifted onto an actual stellar surface, ribbon
+ *  width growing with radius so the outer field lines do not thin to sub-pixel
+ *  hairs, plus a far-field X-ray speck field over a plasma-haze panel.
+ *
+ *  The FIELD LINES AND SPECKS are what fill the frame; the haze panel is only a
+ *  sky. That distinction is the whole of the second fix: coverage is measured
+ *  against the frame's modal luma bucket, so a bright smooth panel is not
+ *  filler, it is a raised floor that hides everything within one bucket of it.
+ *  The loops' brightness ramp is therefore wide (0.27 at the outermost shell to
+ *  2.6 at the crust, where it caps) and the panel is held dark.
+ *
+ *  @author René Weller
+ */
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( local_size_x = 4, local_size_y = 4, local_size_z = 4 ) in;
-
-/**
- * @file MagnetarCrustalQuakeAlfvenResonance.comp
- * @brief Compute generator companion to MagnetarCrustalQuakeAlfvenResonance.frag --
- * generates 3D magnetar crustal fracture lines, magnetic field loops, and relativistic
- * Alfven wave shear resonances in ultrastrong magnetic fields (B > 10^14 G).
- *
- * SCREEN FILL: there were only 64 dipolar loops, all capped at L = 2.5 and all
- * pinched to a mathematical POINT at both footpoints, so the magnetosphere was
- * a small knot of hairlines in a black frame (occ 0.17, luma 0.008).  It is now
- * a full magnetosphere: 160 loops whose L-shells are biased OUTWARD to 4.8 (past
- * the frame corners), footpoints lifted onto an actual stellar surface, ribbon
- * width growing with radius so the outer field lines do not thin to sub-pixel
- * hairs, plus a far-field X-ray speck field over a plasma-haze panel.
- *
- * The FIELD LINES AND SPECKS are what fill the frame; the haze panel is only a
- * sky. That distinction is the whole of the second fix: coverage is measured
- * against the frame's modal luma bucket, so a bright smooth panel is not
- * filler, it is a raised floor that hides everything within one bucket of it.
- * The loops' brightness ramp is therefore wide (0.27 at the outermost shell to
- * 2.6 at the crust, where it caps) and the panel is held dark.
- */
 
 /// The output vertex buffer: eight floats per vertex (attribute A, attribute B) that the scene draws.
 layout( std430, binding = 0 ) buffer Verts

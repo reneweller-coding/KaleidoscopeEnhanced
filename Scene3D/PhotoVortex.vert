@@ -1,8 +1,13 @@
 #version 330 core
-/**
- * @file PhotoVortex.vert
- * @brief Vertex stage companion to PhotoVortex.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              PhotoVortex.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to PhotoVortex.frag -- see that file's header for this scene's description.
+ *
+ *  @author René Weller
  */
 // PhotoVortex.vert — the current image spirals down a whirlpool funnel;
 // kicks make the vortex gulp, the music's advance drives the swirl.

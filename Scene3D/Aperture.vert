@@ -1,13 +1,20 @@
 #version 330 core
-/**
- * @file Aperture.vert
- * @brief Vertex stage companion to Aperture.frag. geom="mesh"; see
- * Tools/SHADER_AUTHORING.md's `mesh` row for the attribute contract.
+/*****************************************************************************\
+ *                              Aperture.vert
+\*****************************************************************************/
+/*! @file
  *
- * The model is not lit here and its surface detail never shows -- it is used
- * purely as a SHAPE. So this stage only has to put a big, well-framed
- * silhouette on screen and keep it turning slowly enough that the outline
- * stays readable while it changes.
+ *  @brief
+ *  Vertex stage companion to Aperture.frag.
+ *
+ *  geom="mesh"; see Tools/SHADER_AUTHORING.md's `mesh` row for the attribute contract.
+ *
+ *  The model is not lit here and its surface detail never shows -- it is used
+ *  purely as a SHAPE. So this stage only has to put a big, well-framed
+ *  silhouette on screen and keep it turning slowly enough that the outline
+ *  stays readable while it changes.
+ *
+ *  @author René Weller
  */
 
 in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an

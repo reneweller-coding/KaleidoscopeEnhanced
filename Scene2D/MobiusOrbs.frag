@@ -1,19 +1,25 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file MobiusOrbs.frag
- * @brief Adapted from an untitled Shadertoy Möbius-inversion orb field (pasted by the
- * user; exact page/author not given).  A ring of glowing orbs seen through a
- * Möbius (1/r^2) inversion, swirling into a hypnotic kaleidoscopic knot.
+/*****************************************************************************\
+ *                              MobiusOrbs.frag
+\*****************************************************************************/
+/*! @file
  *
- * Adapted to our engine: GLSL 1.20 (gl_FragCoord/resolution/time), jump-free
- * audio motion (host-integrated audioAdvance added to time, never time*audio),
- * beat/onset brightness, mood grade, and IMAGE-DRIVEN colour: a drifting crop
- * of the source picture (imgPal) rotates the palette's hue (hueRot) so the orb
- * colours come from the ever-changing image.  Only "Variant 01" of the
- * original's three `#define` presets is used (the other two were commented out
- * in the source and would just swap the numeric constants below).
+ *  @brief
+ *  Adapted from an untitled Shadertoy Möbius-inversion orb field (pasted by the user; exact page/author not given).
+ *
+ *  A ring of glowing orbs seen through a Möbius (1/r^2) inversion, swirling into a hypnotic kaleidoscopic knot.
+ *
+ *  Adapted to our engine: GLSL 1.20 (gl_FragCoord/resolution/time), jump-free
+ *  audio motion (host-integrated audioAdvance added to time, never time*audio),
+ *  beat/onset brightness, mood grade, and IMAGE-DRIVEN colour: a drifting crop
+ *  of the source picture (imgPal) rotates the palette's hue (hueRot) so the orb
+ *  colours come from the ever-changing image.  Only "Variant 01" of the
+ *  original's three `#define` presets is used (the other two were commented out
+ *  in the source and would just swap the numeric constants below).
+ *
+ *  @author an unknown Shadertoy author (the original shader), René Weller (adaptation)
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file KintsugiGoldSeams.frag
- * @brief KINTSUGI GOLD SEAMS: a bowl that was broken and mended with gold.
- * The crack network is a Voronoi seam field over the bowl; over the scene
- * arc the breaks spread outward from the first fracture and the gold
- * flows into them behind the spreading front, so the piece is whole, then
- * broken, then mended -- one continuous sweep with no cut.  The glaze is
- * the photo; the treble is the gold catching the light, the kick a glint
- * running along one seam.  Camera fixed above the bowl.
+/*****************************************************************************\
+ *                              KintsugiGoldSeams.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   sceneProgress -> the break spreads and the gold follows (the arc)
- *   audioHigh     -> the gold's sheen (light)
- *   audioKick     -> a glint travelling one seam (light)
- *   audioSwell    -> the room light on the glaze (slow)
- *   audioLevel    -> brightness
+ *  @brief
+ *  KINTSUGI GOLD SEAMS: a bowl that was broken and mended with gold.
  *
- * Per-activation variety: shardsP, goldP, hueP.
+ *  The crack network is a Voronoi seam field over the bowl; over the scene arc the breaks spread outward from the
+ *  first fracture and the gold flows into them behind the spreading front, so the piece is whole, then broken, then
+ *  mended -- one continuous sweep with no cut.  The glaze is the photo; the treble is the gold catching the light,
+ *  the kick a glint running along one seam.  Camera fixed above the bowl.
+ *
+ *  Audio Reactivity:
+ *    sceneProgress -> the break spreads and the gold follows (the arc)
+ *    audioHigh     -> the gold's sheen (light)
+ *    audioKick     -> a glint travelling one seam (light)
+ *    audioSwell    -> the room light on the glaze (slow)
+ *    audioLevel    -> brightness
+ *
+ *  Per-activation variety: shardsP, goldP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file PhytoplanktonEddies.frag
- * @brief PHYTOPLANKTON EDDIES: the ocean from orbit -- a spring bloom of
- * plankton drawn out into the swirls of mesoscale eddies.  The photo is
- * the ocean colour; the bloom is advected by a field of slowly turning
- * vortices on the scene clock (Lamb-Oseen cores, incompressible), so the
- * green filaments wind ever finer; the bloom strength is the swell, the
- * treble is sun glitter on the sea, the bass deepens the blue.  Camera
- * fixed high above.
+/*****************************************************************************\
+ *                              PhytoplanktonEddies.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   sceneAdvance -> the eddy field and advection (continuous)
- *   audioSwell   -> bloom strength (slow)
- *   audioHigh    -> sun glitter (light)
- *   audioBass    -> water depth colour (colour)
- *   audioLevel   -> brightness
+ *  @brief
+ *  PHYTOPLANKTON EDDIES: the ocean from orbit -- a spring bloom of plankton drawn out into the swirls of mesoscale
+ *  eddies.
  *
- * Per-activation variety: eddiesP, windP, hueP.
+ *  The photo is the ocean colour; the bloom is advected by a field of slowly turning vortices on the scene clock
+ *  (Lamb-Oseen cores, incompressible), so the green filaments wind ever finer; the bloom strength is the swell, the
+ *  treble is sun glitter on the sea, the bass deepens the blue.  Camera fixed high above.
+ *
+ *  Audio Reactivity:
+ *    sceneAdvance -> the eddy field and advection (continuous)
+ *    audioSwell   -> bloom strength (slow)
+ *    audioHigh    -> sun glitter (light)
+ *    audioBass    -> water depth colour (colour)
+ *    audioLevel   -> brightness
+ *
+ *  Per-activation variety: eddiesP, windP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

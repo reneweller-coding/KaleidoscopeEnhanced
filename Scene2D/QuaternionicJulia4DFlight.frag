@@ -1,29 +1,37 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file QuaternionicJulia4DFlight.frag
- * @brief QUATERNIONIC JULIA 4D FLIGHT: Raymarched flight through a true 4D
- * Quaternion Julia fractal (q_{n+1} = q_n^2 + C). Projected into 3D via
- * 4D hyper-rotations with metallic specular highlights, audio-reactive
- * constant morphing, and continuous photo texture refraction.
- *   audioAdvance -> rotates 4D hyper-plane slicing angles (xw, yw, zw)
- *   audioKick    -> morphs quaternion constant C & triggers metallic flashes
- *   audioBass    -> pulses 4D Julia escape radius and fractal density
- *   audioSwell   -> increases specular glossiness and iridescence
+/*****************************************************************************\
+ *                              QuaternionicJulia4DFlight.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   iterP   float raymarching & fractal iteration depth (0.5..2.0)
- *   sliceP  float 4D hyperspace slice offset            (0.5..2.2)
- *   speedP  float 4D rotation velocity                 (0.5..2.0)
- *   hueP    float metallic iridescence hue offset      (0..6.28)
+ *  @brief
+ *  QUATERNIONIC JULIA 4D FLIGHT: Raymarched flight through a true 4D Quaternion Julia fractal (q_{n+1} = q_n^2 +
+ *  C).
  *
- * The distance field itself is BAKED by the companion QuaternionicJulia4DFlight.comp
- * into texBake (a 96^3 RG32F volume: R = distance, G = orbit trap), re-baked
- * every few frames rather than evaluated live at every one of the march's 48
- * steps -- see EffectShader::stepBake(). The 9-iteration quaternion-squaring
- * formula itself now lives ONLY in the .comp file; this file just samples the
- * result, so a change to the fractal formula belongs there, not here.
+ *  Projected into 3D via 4D hyper-rotations with metallic specular highlights, audio-reactive constant morphing,
+ *  and continuous photo texture refraction.
+ *
+ *    audioAdvance -> rotates 4D hyper-plane slicing angles (xw, yw, zw)
+ *    audioKick    -> morphs quaternion constant C & triggers metallic flashes
+ *    audioBass    -> pulses 4D Julia escape radius and fractal density
+ *    audioSwell   -> increases specular glossiness and iridescence
+ *
+ *  Per-activation variety:
+ *    iterP   float raymarching & fractal iteration depth (0.5..2.0)
+ *    sliceP  float 4D hyperspace slice offset            (0.5..2.2)
+ *    speedP  float 4D rotation velocity                 (0.5..2.0)
+ *    hueP    float metallic iridescence hue offset      (0..6.28)
+ *
+ *  The distance field itself is BAKED by the companion QuaternionicJulia4DFlight.comp
+ *  into texBake (a 96^3 RG32F volume: R = distance, G = orbit trap), re-baked
+ *  every few frames rather than evaluated live at every one of the march's 48
+ *  steps -- see EffectShader::stepBake(). The 9-iteration quaternion-squaring
+ *  formula itself now lives ONLY in the .comp file; this file just samples the
+ *  result, so a change to the fractal formula belongs there, not here.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

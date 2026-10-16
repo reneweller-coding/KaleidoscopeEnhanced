@@ -1,20 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file BismuthFerriteMultiferroicDomains.frag
- * @brief BISMUTH FERRITE MULTIFERROIC DOMAINS: 3D quad terraces of multiferroic domain walls
- * in BiFeO3. Displays cross-coupled ferroelectric polarization terraces, conductive domain wall
- * channels, metallic ceramic reflections, and photo texturing.
- *   audioAdvance -> switches ferroelectric domain wall polarization states
- *   audioKick    -> flashes conductive domain wall nano-channel current pulses
- *   audioSwell   -> thickens multiferroic terrace step height & ceramic sheen
- *   audioCentroid-> shifts polarization domain color spectra
+/*****************************************************************************\
+ *                              BismuthFerriteMultiferroicDomains.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   stepHeightP  float domain terrace step elevation        (0.04..0.18)
- *   channelGlowP float conductive domain wall edge luminance (0.8..2.5)
- *   specularP    float perovskite ceramic specular sheen     (0.8..2.2)
+ *  @brief
+ *  BISMUTH FERRITE MULTIFERROIC DOMAINS: 3D quad terraces of multiferroic domain walls in BiFeO3.
+ *
+ *  Displays cross-coupled ferroelectric polarization terraces, conductive domain wall channels, metallic ceramic
+ *  reflections, and photo texturing.
+ *
+ *    audioAdvance -> switches ferroelectric domain wall polarization states
+ *    audioKick    -> flashes conductive domain wall nano-channel current pulses
+ *    audioSwell   -> thickens multiferroic terrace step height & ceramic sheen
+ *    audioCentroid-> shifts polarization domain color spectra
+ *
+ *  Per-activation variety:
+ *    stepHeightP  float domain terrace step elevation        (0.04..0.18)
+ *    channelGlowP float conductive domain wall edge luminance (0.8..2.5)
+ *    specularP    float perovskite ceramic specular sheen     (0.8..2.2)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec2  vUV;         ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 in vec3  vNormal;     ///< Surface normal (from the vertex stage).

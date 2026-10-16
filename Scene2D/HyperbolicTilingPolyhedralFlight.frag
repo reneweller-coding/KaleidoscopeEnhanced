@@ -1,18 +1,25 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file HyperbolicTilingPolyhedralFlight.frag
- * @brief HYPERBOLIC TILING POLYHEDRAL FLIGHT: 3D Raymarching flight through
- * non-Euclidean curved dodecahedral honeycombs in hyperbolic 3-space (H^3).
- * Endless grand cathedral arches, relativistic curvature warping, and glowing struts.
+/*****************************************************************************\
+ *                              HyperbolicTilingPolyhedralFlight.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance -> continuous forward flight trajectory through hyperbolic arches
- *   audioKick    -> flashes polyhedral facet vertex nodes & shockwave burst
- *   audioCentroid-> modulates structural strut density & ribbing
- *   audioSubBass -> expands hyperbolic space curvature radius
- *   audioChromaHue-> rotates the luminous stained-glass arch palette
+ *  @brief
+ *  HYPERBOLIC TILING POLYHEDRAL FLIGHT: 3D Raymarching flight through non-Euclidean curved dodecahedral honeycombs
+ *  in hyperbolic 3-space (H^3).
+ *
+ *  Endless grand cathedral arches, relativistic curvature warping, and glowing struts.
+ *
+ *  Audio Reactivity:
+ *    audioAdvance -> continuous forward flight trajectory through hyperbolic arches
+ *    audioKick    -> flashes polyhedral facet vertex nodes & shockwave burst
+ *    audioCentroid-> modulates structural strut density & ribbing
+ *    audioSubBass -> expands hyperbolic space curvature radius
+ *    audioChromaHue-> rotates the luminous stained-glass arch palette
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

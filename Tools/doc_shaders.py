@@ -7,6 +7,8 @@ almost all the same few names in every file (time, audioSwell, tex0, main,
 hash21, imgLod ...).  This tool documents them mechanically, without touching
 any code:
 
+  0. The file header in the CGVR layout right after #version: banner and
+     /*! @file block (Tools/glsl_fileheader.py).
   1. A top-level function gets the CGVR function block (Tools/glsl_docs.py): the
      comment above it -- also a plain // one -- in the template's order, with
      what it lacks from Tools/glsl_doc_table.py and FUNCS.
@@ -33,6 +35,7 @@ import argparse, io, os, re, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import glsl_docs                                            # noqa: E402
 import glsl_doc_vars as V                                   # noqa: E402
+import glsl_fileheader                                      # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DIRS = ["Scene2D", "Scene3D", "FX", "Transitions", "Engine"]
@@ -387,6 +390,7 @@ def declaration(out, lines, i, l, d, path, head):
 
 def annotate(text, path=""):
     """Doc comments for one shader's text (see the module description); returns the new text."""
+    text = glsl_fileheader.convert(text, path)                   # rule 0: the file header (Tools/glsl_fileheader.py)
     nl = "\r\n" if "\r\n" in text else "\n"
     lines = text.replace("\r\n", "\n").split("\n")
     head = V.header_text(text)

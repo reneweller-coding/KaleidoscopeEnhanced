@@ -1,13 +1,18 @@
 #version 400 core
-/**
- * @file PermafrostPolygons.tese
- * @brief Tessellation evaluation for PermafrostPolygons: patterned ground
- * of the tundra -- ice-wedge polygons, each a low-centred cell rimmed by
- * ridges, the troughs between them flooded with meltwater.  The polygons
- * are a Voronoi field (centres fixed; only the water level breathes on
- * the swell), the far tundra rises into low hills so the horizon is full.
- * The trough depth and the cell id go to the fragment stage.  Projection
- * after displacement; no camera motion.
+/*****************************************************************************\
+ *                              PermafrostPolygons.tese
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Tessellation evaluation for PermafrostPolygons: patterned ground of the tundra -- ice-wedge polygons, each a
+ *  low-centred cell rimmed by ridges, the troughs between them flooded with meltwater.
+ *
+ *  The polygons are a Voronoi field (centres fixed; only the water level breathes on the swell), the far tundra
+ *  rises into low hills so the horizon is full. The trough depth and the cell id go to the fragment stage.
+ *  Projection after displacement; no camera motion.
+ *
+ *  @author René Weller
  */
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( quads, fractional_odd_spacing, ccw ) in;

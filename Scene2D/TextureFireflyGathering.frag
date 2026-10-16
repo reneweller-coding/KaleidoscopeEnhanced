@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureFireflyGathering.frag
- * @brief TEXTURE FIREFLY GATHERING: a swarm of fireflies over the dark
- * photograph -- thousands of small glowing points that drift, blink and
- * gather where the photo is bright, as if drawn to its light, tracing its
- * shapes in living sparks, then disperse and gather again elsewhere as the
- * photo drifts; each firefly glows yellow-green (or in the photo's colour),
- * blinking on its own rhythm with a soft halo.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              TextureFireflyGathering.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the swarm drifts (integrated, jump-free)
- *   audioSpread     -> how tightly they gather on the bright parts
- *   audioKick       -> a wave of synchronized flashes (light)
- *   audioHigh       -> the blinking brightens (light)
- *   audioSwell      -> how much of the photo shows (slow)
- *   audioMode       -> colour: green-yellow in minor, warm gold in major
+ *  @brief
+ *  TEXTURE FIREFLY GATHERING: a swarm of fireflies over the dark photograph -- thousands of small glowing points
+ *  that drift, blink and gather where the photo is bright, as if drawn to its light, tracing its shapes in living
+ *  sparks, then disperse and gather again elsewhere as the photo drifts; each firefly glows yellow-green (or in the
+ *  photo's colour), blinking on its own rhythm with a soft halo.
  *
- * Knobs: countP (fireflies), photoP (photo visibility), colourP (photo colours vs. firefly green), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the swarm drifts (integrated, jump-free)
+ *    audioSpread     -> how tightly they gather on the bright parts
+ *    audioKick       -> a wave of synchronized flashes (light)
+ *    audioHigh       -> the blinking brightens (light)
+ *    audioSwell      -> how much of the photo shows (slow)
+ *    audioMode       -> colour: green-yellow in minor, warm gold in major
+ *
+ *  Knobs: countP (fireflies), photoP (photo visibility), colourP (photo colours vs. firefly green), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

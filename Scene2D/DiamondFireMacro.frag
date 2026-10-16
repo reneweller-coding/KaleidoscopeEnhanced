@@ -1,23 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file DiamondFireMacro.frag
- * @brief DIAMOND FIRE MACRO: a brilliant-cut diamond seen from above,
- * filling the frame -- the table in the middle, the star and kite facets
- * around it, the crown facets out to the girdle.  Every facet mirrors the
- * photo at its own angle, and the stone's dispersion splits white light
- * into spectral "fire": small flashes of pure colour that move across the
- * facets as the light source circles slowly overhead.  The facets keep
- * still; the light moves, and the music is how brightly the fire burns.
+/*****************************************************************************\
+ *                              DiamondFireMacro.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSpectrum[32] -> fire intensity on each facet ring, band by band
- *   audioHigh         -> scintillation sparks (light)
- *   audioSwell        -> overall brilliance (slow)
- *   sceneTime         -> the light circling overhead (continuous)
+ *  @brief
+ *  DIAMOND FIRE MACRO: a brilliant-cut diamond seen from above, filling the frame -- the table in the middle, the
+ *  star and kite facets around it, the crown facets out to the girdle.
  *
- * Per-activation variety: cutP (number of facets), hueP.
+ *  Every facet mirrors the photo at its own angle, and the stone's dispersion splits white light into spectral
+ *  "fire": small flashes of pure colour that move across the facets as the light source circles slowly overhead.
+ *  The facets keep still; the light moves, and the music is how brightly the fire burns.
+ *
+ *  Audio Reactivity:
+ *    audioSpectrum[32] -> fire intensity on each facet ring, band by band
+ *    audioHigh         -> scintillation sparks (light)
+ *    audioSwell        -> overall brilliance (slow)
+ *    sceneTime         -> the light circling overhead (continuous)
+ *
+ *  Per-activation variety: cutP (number of facets), hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

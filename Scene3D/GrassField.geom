@@ -1,8 +1,13 @@
 #version 330 core
-/**
- * @file GrassField.geom
- * @brief Geometry stage companion to GrassField.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              GrassField.geom
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Geometry stage companion to GrassField.frag -- see that file's header for this scene's description.
+ *
+ *  @author René Weller
  */
 // GrassField.geom — grow a blade of grass out of every point.
 // -----------------------------------------------------------------------

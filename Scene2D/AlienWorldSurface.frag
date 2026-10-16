@@ -1,27 +1,33 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file AlienWorldSurface.frag
- * @brief ALIEN WORLD SURFACE: standing on the ground of another world. A
- * raymarched terrain of ridged mountains and wind-carved spires runs back to
- * a real horizon; over it hangs an alien sky with a low sun, a banded gas
- * giant with its ring seen edge-on, a second small moon, and high cirrus
- * that drifts across both. Bioluminescent growth glows in the hollows where
- * the light does not reach, and a haze layer separates every ridge line from
- * the one behind it -- the depth cue that makes a landscape read as vast.
- *   audioAdvance -> the walk forward across the terrain
- *   audioSwell   -> haze depth and the glow of the bioluminescent growth
- *   audioKick    -> a pulse through the glowing flora
- *   audioBass    -> ridge relief (the mountains breathe)
- *   audioBeatPhase-> slow pulse in the gas giant's aurora
- *   audioChromaHue-> sky and flora hue follow the musical key
+/*****************************************************************************\
+ *                              AlienWorldSurface.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   reliefP float mountain relief / how jagged the world is (0.5..1.8)
- *   skyP    float gas giant size in the sky                 (0.5..1.7)
- *   glowP   float bioluminescence intensity                 (0.5..2.0)
- *   hueP    float palette offset                            (0..6.28)
+ *  @brief
+ *  ALIEN WORLD SURFACE: standing on the ground of another world.
+ *
+ *  A raymarched terrain of ridged mountains and wind-carved spires runs back to a real horizon; over it hangs an
+ *  alien sky with a low sun, a banded gas giant with its ring seen edge-on, a second small moon, and high cirrus
+ *  that drifts across both. Bioluminescent growth glows in the hollows where the light does not reach, and a haze
+ *  layer separates every ridge line from the one behind it -- the depth cue that makes a landscape read as vast.
+ *
+ *    audioAdvance -> the walk forward across the terrain
+ *    audioSwell   -> haze depth and the glow of the bioluminescent growth
+ *    audioKick    -> a pulse through the glowing flora
+ *    audioBass    -> ridge relief (the mountains breathe)
+ *    audioBeatPhase-> slow pulse in the gas giant's aurora
+ *    audioChromaHue-> sky and flora hue follow the musical key
+ *
+ *  Per-activation variety:
+ *    reliefP float mountain relief / how jagged the world is (0.5..1.8)
+ *    skyP    float gas giant size in the sky                 (0.5..1.7)
+ *    glowP   float bioluminescence intensity                 (0.5..2.0)
+ *    hueP    float palette offset                            (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

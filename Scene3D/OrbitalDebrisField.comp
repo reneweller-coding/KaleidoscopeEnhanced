@@ -1,23 +1,28 @@
 #version 430 core
-/**
- * @file OrbitalDebrisField.comp
- * @brief ORBITAL DEBRIS FIELD: twenty thousand fragments in low orbit around
- * a derelict station, the camera parked in the stream.  Every fragment is a
- * function of its id and the scene clock -- an orbit (radius, inclination,
- * phase) plus a tumble -- so the stream flows past without state and
- * without drift, and nothing ever pops in or out.  Collisions are light:
- * an onset flashes a family of fragments as if they had just struck; the
- * roughness of the sound is the glint of the metal.  The camera never
- * moves; the debris does.
+/*****************************************************************************\
+ *                              OrbitalDebrisField.comp
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (generator stage):
- *   sceneAdvance   -> orbital motion and tumble (music-paced, continuous)
- *   audioOnset     -> collision flashes on a family of fragments (light)
- *   audioRoughness -> glint (light, fragment stage)
- *   audioSwell     -> the station lights up (slow)
+ *  @brief
+ *  ORBITAL DEBRIS FIELD: twenty thousand fragments in low orbit around a derelict station, the camera parked in the
+ *  stream.
  *
- * Per-instance: densP (fraction of the 20k drawn), radiusP (stream radius),
- *               tumbleP (tumble rate), hueP.
+ *  Every fragment is a function of its id and the scene clock -- an orbit (radius, inclination, phase) plus a
+ *  tumble -- so the stream flows past without state and without drift, and nothing ever pops in or out.  Collisions
+ *  are light: an onset flashes a family of fragments as if they had just struck; the roughness of the sound is the
+ *  glint of the metal.  The camera never moves; the debris does.
+ *
+ *  Audio Reactivity (generator stage):
+ *    sceneAdvance   -> orbital motion and tumble (music-paced, continuous)
+ *    audioOnset     -> collision flashes on a family of fragments (light)
+ *    audioRoughness -> glint (light, fragment stage)
+ *    audioSwell     -> the station lights up (slow)
+ *
+ *  Per-instance: densP (fraction of the 20k drawn), radiusP (stream radius),
+ *                tumbleP (tumble rate), hueP.
+ *
+ *  @author René Weller
  */
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( local_size_x = 4, local_size_y = 4, local_size_z = 4 ) in;

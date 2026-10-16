@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureIrisShutter.frag
- * @brief TEXTURE IRIS SHUTTER: an endless nest of camera irises -- a ring of
- * overlapping metal blades (each a sheet of the photograph, polished and
- * darkened like blued steel) forms a turning polygonal aperture that
- * slowly opens and closes; through the aperture lies the next iris, and
- * the next, and we drift inward through them forever.  Each iris has its
- * own blade count and turn; the blades' edges catch a bright line of
- * light.  The blades continue beyond the frame; mirrorable.
+/*****************************************************************************\
+ *                              TextureIrisShutter.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the drift inward (integrated, jump-free)
- *   audioPhase      -> the irises turn (integrated)
- *   audioSpread     -> the apertures open wider
- *   audioKick       -> the blade edges flash (light)
- *   audioMode       -> the steel: cold blue in minor, bronze in major
- *   audioSwell      -> the light shining through from the far centre (slow)
+ *  @brief
+ *  TEXTURE IRIS SHUTTER: an endless nest of camera irises -- a ring of overlapping metal blades (each a sheet of
+ *  the photograph, polished and darkened like blued steel) forms a turning polygonal aperture that slowly opens and
+ *  closes; through the aperture lies the next iris, and the next, and we drift inward through them forever.
  *
- * Knobs: bladesP (blade count), curveP (blade curvature), photoP (photo on the blades), hueP.
+ *  Each iris has its own blade count and turn; the blades' edges catch a bright line of light.  The blades continue
+ *  beyond the frame; mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the drift inward (integrated, jump-free)
+ *    audioPhase      -> the irises turn (integrated)
+ *    audioSpread     -> the apertures open wider
+ *    audioKick       -> the blade edges flash (light)
+ *    audioMode       -> the steel: cold blue in minor, bronze in major
+ *    audioSwell      -> the light shining through from the far centre (slow)
+ *
+ *  Knobs: bladesP (blade count), curveP (blade curvature), photoP (photo on the blades), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

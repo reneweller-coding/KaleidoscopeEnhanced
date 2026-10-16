@@ -1,4 +1,23 @@
 #version 430
+/*****************************************************************************\
+ *                              ShadowForest.comp
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Compute kernel that builds the ground plane and a scattered stand of 64 tapered, four-sided tree trunks for the
+ *  ShadowForest scene, whose whole subject is the shadow pattern the trunks throw across the ground.
+ *
+ *  audioAdvance scrolls the stand toward the camera and phases each trunk's
+ *  lean sway; audioLevel scales how far the trunks sway with the music. The
+ *  trunk and floor quads are written into the Verts SSBO (with the Cmd SSBO's
+ *  atomic counter tracking the draw count) for indirect drawing. This
+ *  geometry is rendered both into a real shadow map and into the final image
+ *  by ShadowForest.frag, which reads that shadow map back to darken the
+ *  ground and trunks wherever another trunk blocks the light.
+ *
+ *  @author René Weller
+ */
 // ShadowForest.comp — a stand of trunks whose shadows are the subject.
 // -----------------------------------------------------------------------
 // The trunks themselves are almost nothing: tapered four-sided prisms, dark,
@@ -14,21 +33,6 @@
 // -----------------------------------------------------------------------
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( local_size_x = 4, local_size_y = 4, local_size_z = 4 ) in;
-
-/**
- * @file ShadowForest.comp
- * @brief Compute kernel that builds the ground plane and a scattered stand
- * of 64 tapered, four-sided tree trunks for the ShadowForest scene, whose
- * whole subject is the shadow pattern the trunks throw across the ground.
- *
- * audioAdvance scrolls the stand toward the camera and phases each trunk's
- * lean sway; audioLevel scales how far the trunks sway with the music. The
- * trunk and floor quads are written into the Verts SSBO (with the Cmd SSBO's
- * atomic counter tracking the draw count) for indirect drawing. This
- * geometry is rendered both into a real shadow map and into the final image
- * by ShadowForest.frag, which reads that shadow map back to darken the
- * ground and trunks wherever another trunk blocks the light.
- */
 
 /// The output vertex buffer: eight floats per vertex (attribute A, attribute B) that the scene draws.
 layout( std430, binding = 0 ) buffer Verts

@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureP6Crystal.frag
- * @brief TEXTURE P6 CRYSTAL: the photograph cut into a crystal of
- * six-fold pinwheels -- each hexagonal cell holds the picture six times,
- * rotated (not mirrored) around its centre, so the cells swirl like
- * turbines; every one of the six wedges is a bevelled facet catching a
- * slowly circling light, with sharp bright facet edges and a small
- * refracting jewel at each cell centre.  The photo glides under the
- * crystal, the facet light wanders.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              TextureP6Crystal.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the photo glides under the crystal (integrated)
- *   audioPhase      -> the crystal lattice turns (integrated)
- *   audioSpread     -> bevel depth
- *   audioKick       -> the facet edges flash (light)
- *   audioMode       -> light temperature: cool in minor, warm in major
- *   audioHigh       -> the jewels sparkle (light)
+ *  @brief
+ *  TEXTURE P6 CRYSTAL: the photograph cut into a crystal of six-fold pinwheels -- each hexagonal cell holds the
+ *  picture six times, rotated (not mirrored) around its centre, so the cells swirl like turbines; every one of the
+ *  six wedges is a bevelled facet catching a slowly circling light, with sharp bright facet edges and a small
+ *  refracting jewel at each cell centre.
  *
- * Knobs: cellP (cell size), twistP (pinwheel twist inside the cells), photoZoomP, hueP.
+ *  The photo glides under the crystal, the facet light wanders.  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the photo glides under the crystal (integrated)
+ *    audioPhase      -> the crystal lattice turns (integrated)
+ *    audioSpread     -> bevel depth
+ *    audioKick       -> the facet edges flash (light)
+ *    audioMode       -> light temperature: cool in minor, warm in major
+ *    audioHigh       -> the jewels sparkle (light)
+ *
+ *  Knobs: cellP (cell size), twistP (pinwheel twist inside the cells), photoZoomP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

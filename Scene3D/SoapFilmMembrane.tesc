@@ -1,11 +1,17 @@
 #version 400 core
-/**
- * @file SoapFilmMembrane.tesc
- * @brief Tessellation control for SoapFilmMembrane: a fine, nearly uniform
- * level (the film is close and fills the frame), slightly finer with the
- * swell so the ripples resolve; fractional_odd_spacing keeps every level
- * change continuous.  Edge levels from the edge midpoints so neighbouring
- * patches agree.
+/*****************************************************************************\
+ *                              SoapFilmMembrane.tesc
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Tessellation control for SoapFilmMembrane: a fine, nearly uniform level (the film is close and fills the frame),
+ *  slightly finer with the swell so the ripples resolve; fractional_odd_spacing keeps every level change
+ *  continuous.
+ *
+ *  Edge levels from the edge midpoints so neighbouring patches agree.
+ *
+ *  @author René Weller
  */
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( vertices = 4 ) out;

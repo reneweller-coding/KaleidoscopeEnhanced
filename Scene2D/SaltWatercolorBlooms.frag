@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SaltWatercolorBlooms.frag
- * @brief SALT WATERCOLOR BLOOMS: salt sprinkled into wet watercolour -- in a
- * dark, saturated wash, each salt grain draws the pigment away and leaves
- * a pale starburst: tiny feathery crystals of light spread across the
- * colour like frost flowers, clustering where the salt fell thickly,
- * while the wash itself shifts slowly between the photograph's colours.
- * Endless, mirrorable.
+/*****************************************************************************\
+ *                              SaltWatercolorBlooms.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the washes drift, the bursts grow (integrated, jump-free)
- *   audioSpread     -> burst size
- *   audioKick       -> the bursts brighten (light)
- *   audioMode       -> the wash: cool deep blues in minor, warm magentas in major (tint)
- *   audioRoughness  -> the feathering of the bursts
- *   audioSwell      -> wash saturation (slow)
+ *  @brief
+ *  SALT WATERCOLOR BLOOMS: salt sprinkled into wet watercolour -- in a dark, saturated wash, each salt grain draws
+ *  the pigment away and leaves a pale starburst: tiny feathery crystals of light spread across the colour like
+ *  frost flowers, clustering where the salt fell thickly, while the wash itself shifts slowly between the
+ *  photograph's colours.
  *
- * Knobs: saltP (salt density), washP (wash darkness), photoP (photo colours in the wash), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the washes drift, the bursts grow (integrated, jump-free)
+ *    audioSpread     -> burst size
+ *    audioKick       -> the bursts brighten (light)
+ *    audioMode       -> the wash: cool deep blues in minor, warm magentas in major (tint)
+ *    audioRoughness  -> the feathering of the bursts
+ *    audioSwell      -> wash saturation (slow)
+ *
+ *  Knobs: saltP (salt density), washP (wash darkness), photoP (photo colours in the wash), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

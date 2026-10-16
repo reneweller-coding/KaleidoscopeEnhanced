@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file ForaminiferaSpiralShells.frag
- * @brief FORAMINIFERA SPIRAL SHELLS: the chambered shells of forams --
- * single cells that build a spiral of ever larger chambers.  Several
- * shells fill the frame; each grows chamber by chamber over the scene
- * arc (a new chamber inflates smoothly at the aperture), the chambers
- * carry the photo as their calcite wall and are tinted by the chroma
- * class of their index, the pores glint with the treble, and the whole
- * field drifts very slowly as if under a microscope.  Camera still.
+/*****************************************************************************\
+ *                              ForaminiferaSpiralShells.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   sceneProgress    -> chamber growth (the arc)
- *   audioChroma[12]  -> chamber tint by index (light)
- *   audioHigh        -> pore glints (light)
- *   audioSwell       -> microscope light (slow)
- *   audioLevel       -> brightness
+ *  @brief
+ *  FORAMINIFERA SPIRAL SHELLS: the chambered shells of forams -- single cells that build a spiral of ever larger
+ *  chambers.
  *
- * Per-activation variety: countP, ratioP (chamber growth ratio), hueP.
+ *  Several shells fill the frame; each grows chamber by chamber over the scene arc (a new chamber inflates smoothly
+ *  at the aperture), the chambers carry the photo as their calcite wall and are tinted by the chroma class of their
+ *  index, the pores glint with the treble, and the whole field drifts very slowly as if under a microscope.  Camera
+ *  still.
+ *
+ *  Audio Reactivity:
+ *    sceneProgress    -> chamber growth (the arc)
+ *    audioChroma[12]  -> chamber tint by index (light)
+ *    audioHigh        -> pore glints (light)
+ *    audioSwell       -> microscope light (slow)
+ *    audioLevel       -> brightness
+ *
+ *  Per-activation variety: countP, ratioP (chamber growth ratio), hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

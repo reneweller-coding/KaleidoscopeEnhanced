@@ -1,26 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SlotMachineReels.frag
- * @brief SLOT MACHINE REELS: a fruit machine in a dark casino.  Behind the
- * glass three drum reels turn, each at its own steady rate for the whole
- * activation -- cherries, lucky sevens, golden bells, BAR plates, blue
- * diamonds and lemons wrapping round the curved drums, darkening toward
- * the top and bottom of the window.  The cabinet is red and chrome, rimmed
- * by a chase of round bulbs; the red pay line glows across the middle; the
- * casino behind is a blur of coloured bokeh.  The reels never snap to a
- * stop -- a reel jerking to a halt on a beat is exactly the jolt this
- * catalogue avoids.
+/*****************************************************************************\
+ *                              SlotMachineReels.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   sceneAdvance    -> the reels turn, the bulbs chase (continuous)
- *   audioSwell      -> the pay line and the cabinet light (slow)
- *   audioChroma[12] -> each symbol glows with its class (light)
- *   audioKick       -> the coin tray (light, local)
- *   audioHigh       -> the chrome and glass sparkle (light)
+ *  @brief
+ *  SLOT MACHINE REELS: a fruit machine in a dark casino.
  *
- * Per-activation variety: symbolsP (symbol mix), speedP, hueP.
+ *  Behind the glass three drum reels turn, each at its own steady rate for the whole activation -- cherries, lucky
+ *  sevens, golden bells, BAR plates, blue diamonds and lemons wrapping round the curved drums, darkening toward the
+ *  top and bottom of the window.  The cabinet is red and chrome, rimmed by a chase of round bulbs; the red pay line
+ *  glows across the middle; the casino behind is a blur of coloured bokeh.  The reels never snap to a stop -- a
+ *  reel jerking to a halt on a beat is exactly the jolt this catalogue avoids.
+ *
+ *  Audio Reactivity:
+ *    sceneAdvance    -> the reels turn, the bulbs chase (continuous)
+ *    audioSwell      -> the pay line and the cabinet light (slow)
+ *    audioChroma[12] -> each symbol glows with its class (light)
+ *    audioKick       -> the coin tray (light, local)
+ *    audioHigh       -> the chrome and glass sparkle (light)
+ *
+ *  Per-activation variety: symbolsP (symbol mix), speedP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

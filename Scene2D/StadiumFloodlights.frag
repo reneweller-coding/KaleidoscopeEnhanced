@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file StadiumFloodlights.frag
- * @brief STADIUM FLOODLIGHTS: an empty football stadium on a rainy night --
- * the four great floodlight masts at the corners, each a tall lattice
- * tower carrying a banked grid of lamps, their beams cutting down through
- * the drizzle and mist as solid white cones that meet over the pitch; the
- * rain shows up as silver streaks in the light and falls away into dark
- * outside it.  The stands curve round in shadow, rows of empty seats; the
- * wet green pitch shines with the reflections of the lamps.  The camera
- * stands still in the top of the stand.
+/*****************************************************************************\
+ *                              StadiumFloodlights.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioKick   -> the lamp banks brighten (light)
- *   audioSwell  -> the mist in the beams (slow)
- *   audioHigh   -> the glitter of the rain in the beams (light)
- *   audioLevel  -> brightness
- *   sceneTime / sceneAdvance -> the rain falling, the mist drifting
+ *  @brief
+ *  STADIUM FLOODLIGHTS: an empty football stadium on a rainy night -- the four great floodlight masts at the
+ *  corners, each a tall lattice tower carrying a banked grid of lamps, their beams cutting down through the drizzle
+ *  and mist as solid white cones that meet over the pitch; the rain shows up as silver streaks in the light and
+ *  falls away into dark outside it.
  *
- * Per-activation variety: rainP (how hard it rains), hueP.
+ *  The stands curve round in shadow, rows of empty seats; the wet green pitch shines with the reflections of the
+ *  lamps.  The camera stands still in the top of the stand.
+ *
+ *  Audio Reactivity:
+ *    audioKick   -> the lamp banks brighten (light)
+ *    audioSwell  -> the mist in the beams (slow)
+ *    audioHigh   -> the glitter of the rain in the beams (light)
+ *    audioLevel  -> brightness
+ *    sceneTime / sceneAdvance -> the rain falling, the mist drifting
+ *
+ *  Per-activation variety: rainP (how hard it rains), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

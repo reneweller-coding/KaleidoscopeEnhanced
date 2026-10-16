@@ -1,21 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file RelativisticAccretionTorusMHD.frag
- * @brief RELATIVISTIC ACCRETION TORUS MHD: Thick geometrically-inflated accretion torus
- * (Polish Donut) around a Kerr black hole, with the wide spiral-corrugated accretion flow
- * that feeds it flaring out of the tube's inner wall to the frame edges. Relativistic Doppler
- * beaming boost, turbulent magnetohydrodynamic spiral ripples, a radial temperature gradient,
- * event horizon shadow illumination, and photo texturing.
- *   audioAdvance -> drives Keplerian accretion orbital rotation velocity
- *   audioKick    -> flares three drifting magnetic reconnection hot spots on the torus
- *   audioSwell   -> thickens radiation-pressure-supported torus funnel & cross-section
- *   audioCentroid-> shifts synchrotron / bremsstrahlung emission spectra
+/*****************************************************************************\
+ *                              RelativisticAccretionTorusMHD.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   dopplerBoostP float relativistic Doppler beaming intensity (0.6..2.2)
- *   flareGlowP    float magnetic flare hot-spot luminance     (0.8..2.5)
+ *  @brief
+ *  RELATIVISTIC ACCRETION TORUS MHD: Thick geometrically-inflated accretion torus (Polish Donut) around a Kerr
+ *  black hole, with the wide spiral-corrugated accretion flow that feeds it flaring out of the tube's inner wall to
+ *  the frame edges.
+ *
+ *  Relativistic Doppler beaming boost, turbulent magnetohydrodynamic spiral ripples, a radial temperature gradient,
+ *  event horizon shadow illumination, and photo texturing.
+ *
+ *    audioAdvance -> drives Keplerian accretion orbital rotation velocity
+ *    audioKick    -> flares three drifting magnetic reconnection hot spots on the torus
+ *    audioSwell   -> thickens radiation-pressure-supported torus funnel & cross-section
+ *    audioCentroid-> shifts synchrotron / bremsstrahlung emission spectra
+ *
+ *  Per-activation variety:
+ *    dopplerBoostP float relativistic Doppler beaming intensity (0.6..2.2)
+ *    flareGlowP    float magnetic flare hot-spot luminance     (0.8..2.5)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec2  vUV;      ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 in vec3  vNormal;  ///< Surface normal (from the vertex stage).

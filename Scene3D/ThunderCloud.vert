@@ -1,8 +1,13 @@
 #version 330 core
-/**
- * @file ThunderCloud.vert
- * @brief Vertex stage companion to ThunderCloud.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              ThunderCloud.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to ThunderCloud.frag -- see that file's header for this scene's description.
+ *
+ *  @author René Weller
  */
 // ThunderCloud.vert — inside a night thunderstorm: a towering cloud mass
 // broods overhead, and jagged lightning bolts tear through it — every

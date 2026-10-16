@@ -1,23 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file HaboobDustWall.frag
- * @brief HABOOB DUST WALL: a wall of dust a kilometre high rolling over a
- * desert town.  The wall advances steadily on the scene clock (it never
- * quite arrives: the front breathes forward and back over a long period),
- * its height follows the swell, its face boils with round-lobed billows,
- * lightning flickers inside it on the kick, and the town -- the photo --
- * is swallowed from the far edge in.  The camera stands in the street.
+/*****************************************************************************\
+ *                              HaboobDustWall.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   sceneAdvance -> the wall's advance and the billowing (continuous)
- *   audioSwell   -> wall height (slow)
- *   audioKick    -> lightning inside the dust (light)
- *   audioBass    -> the dusk glow through the dust (light)
- *   audioLevel   -> brightness
+ *  @brief
+ *  HABOOB DUST WALL: a wall of dust a kilometre high rolling over a desert town.
  *
- * Per-activation variety: heightP, billowP, hueP.
+ *  The wall advances steadily on the scene clock (it never quite arrives: the front breathes forward and back over
+ *  a long period), its height follows the swell, its face boils with round-lobed billows, lightning flickers inside
+ *  it on the kick, and the town -- the photo -- is swallowed from the far edge in.  The camera stands in the
+ *  street.
+ *
+ *  Audio Reactivity:
+ *    sceneAdvance -> the wall's advance and the billowing (continuous)
+ *    audioSwell   -> wall height (slow)
+ *    audioKick    -> lightning inside the dust (light)
+ *    audioBass    -> the dusk glow through the dust (light)
+ *    audioLevel   -> brightness
+ *
+ *  Per-activation variety: heightP, billowP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

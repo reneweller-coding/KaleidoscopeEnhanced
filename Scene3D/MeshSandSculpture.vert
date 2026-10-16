@@ -1,12 +1,17 @@
 #version 330 core
-/**
- * @file MeshSandSculpture.vert
- * @brief MESH SAND SCULPTURE: a model carved in sand on the beach.  The
- * roughness of the sound is the wind that erodes it: the surface sinks
- * along its normal by a noise field scaled by the roughness (slow), and
- * over the scene arc the sculpture is rebuilt -- the erosion allowance
- * closes toward the end so it stands whole again.  It turns slowly on the
- * scene clock.  No camera motion.
+/*****************************************************************************\
+ *                              MeshSandSculpture.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  MESH SAND SCULPTURE: a model carved in sand on the beach.
+ *
+ *  The roughness of the sound is the wind that erodes it: the surface sinks along its normal by a noise field
+ *  scaled by the roughness (slow), and over the scene arc the sculpture is rebuilt -- the erosion allowance closes
+ *  toward the end so it stands whole again.  It turns slowly on the scene clock.  No camera motion.
+ *
+ *  @author René Weller
  */
 in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an
                ///< index).

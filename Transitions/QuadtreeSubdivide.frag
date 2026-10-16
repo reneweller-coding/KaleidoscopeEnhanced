@@ -1,19 +1,27 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file QuadtreeSubdivide.frag
- * @brief TRANSITION QUADTREE SUBDIVIDE: Hierarchical recursive quadtree partitioning
- * dividing the viewport into multi-scale tiles. Smaller sub-quads flip and
- * resolve with cybernetic neon boundary grids to reveal the incoming scene.
- *   interpolation -> drives recursive quadtree depth & tile flip progress
- *   audioKick     -> flashes quadtree partition grid lines
+/*****************************************************************************\
+ *                              QuadtreeSubdivide.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   depthP float maximum quadtree recursion depth (0.5..2.2)
- *   gridP  float partition grid line intensity   (0.5..2.0)
- *   speedP float animation speed multiplier      (0.5..2.0)
- *   hueP   float partition line hue offset       (0..6.28)
+ *  @brief
+ *  TRANSITION QUADTREE SUBDIVIDE: Hierarchical recursive quadtree partitioning dividing the viewport into
+ *  multi-scale tiles.
+ *
+ *  Smaller sub-quads flip and resolve with cybernetic neon boundary grids to reveal the incoming scene.
+ *
+ *    interpolation -> drives recursive quadtree depth & tile flip progress
+ *    audioKick     -> flashes quadtree partition grid lines
+ *
+ *  Per-activation variety:
+ *    depthP float maximum quadtree recursion depth (0.5..2.2)
+ *    gridP  float partition grid line intensity   (0.5..2.0)
+ *    speedP float animation speed multiplier      (0.5..2.0)
+ *    hueP   float partition line hue offset       (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

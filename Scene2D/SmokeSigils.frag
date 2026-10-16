@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SmokeSigils.frag
- * @brief SMOKE SIGILS: smoke blown through a lattice of glyphs.  A slab of
- * volumetric smoke (fbm, warped and driven on the scene clock) streams
- * upward; in its middle plane stands a grid of sigils -- procedural glyphs
- * cut from a cell hash -- and the smoke only shows where a glyph lets it
- * through, so the signs appear as shapes of moving smoke and vanish where
- * the smoke thins.  The melody lifts single glyphs into light (the class of
- * the note picks the column); the kick lights the lattice.  Nothing but
- * the smoke moves, and it moves continuously.
+/*****************************************************************************\
+ *                              SmokeSigils.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   sceneAdvance     -> smoke flow (continuous)
- *   audioMelodyPitch -> which glyph column glows (light, smooth kernel)
- *   audioKick        -> lattice flash (light)
- *   audioSwell       -> smoke density (slow)
- *   audioLevel       -> brightness
+ *  @brief
+ *  SMOKE SIGILS: smoke blown through a lattice of glyphs.
  *
- * Per-activation variety: gridP (glyph size), densP, hueP.
+ *  A slab of volumetric smoke (fbm, warped and driven on the scene clock) streams upward; in its middle plane
+ *  stands a grid of sigils -- procedural glyphs cut from a cell hash -- and the smoke only shows where a glyph lets
+ *  it through, so the signs appear as shapes of moving smoke and vanish where the smoke thins.  The melody lifts
+ *  single glyphs into light (the class of the note picks the column); the kick lights the lattice.  Nothing but the
+ *  smoke moves, and it moves continuously.
+ *
+ *  Audio Reactivity:
+ *    sceneAdvance     -> smoke flow (continuous)
+ *    audioMelodyPitch -> which glyph column glows (light, smooth kernel)
+ *    audioKick        -> lattice flash (light)
+ *    audioSwell       -> smoke density (slow)
+ *    audioLevel       -> brightness
+ *
+ *  Per-activation variety: gridP (glyph size), densP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

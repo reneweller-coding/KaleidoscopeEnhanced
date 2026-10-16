@@ -1,22 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file AlienPlanetOrbit.frag
- * @brief ALIEN PLANET ORBIT: A slow orbital flight above a massive alien world,
- * viewing its atmosphere, city lights on the night side, and orbital megastructures.
- * The planet's terminator line separates day and night. Space stations and
- * satellites float in the foreground.
- *   audioAdvance -> orbital progression and station rotation
- *   audioSwell   -> atmospheric glow intensity and station thrusters
- *   audioKick    -> city lights pulsing on the dark side
- *   audioChromaHue-> atmosphere hue follows the musical key
+/*****************************************************************************\
+ *                              AlienPlanetOrbit.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   planetP float planet size / curvature (0.7..1.5)
- *   stationP float station density (0.5..1.8)
- *   glowP float atmospheric and light intensity (0.6..1.8)
- *   hueP float palette offset (0..6.28)
+ *  @brief
+ *  ALIEN PLANET ORBIT: A slow orbital flight above a massive alien world, viewing its atmosphere, city lights on
+ *  the night side, and orbital megastructures.
+ *
+ *  The planet's terminator line separates day and night. Space stations and satellites float in the foreground.
+ *
+ *    audioAdvance -> orbital progression and station rotation
+ *    audioSwell   -> atmospheric glow intensity and station thrusters
+ *    audioKick    -> city lights pulsing on the dark side
+ *    audioChromaHue-> atmosphere hue follows the musical key
+ *
+ *  Per-activation variety:
+ *    planetP float planet size / curvature (0.7..1.5)
+ *    stationP float station density (0.5..1.8)
+ *    glowP float atmospheric and light intensity (0.6..1.8)
+ *    hueP float palette offset (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

@@ -1,21 +1,27 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file MeshZoetrope.frag
- * @brief MESH ZOETROPE: a real Victorian zoetrope (model=) on a parlour
- * table, its drum turning on its spindle while the base stands still. An
- * oil lamp lights the room with the swell; the strip of figures inside
- * glows through the slits; the kick is a flare of the lamp; the treble a
- * sheen on the japanned tin. The mesh counterpart of ZoetropeDrum.
+/*****************************************************************************\
+ *                              MeshZoetrope.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSwell -> lamp light, the glow of the strip (slow)
- *   audioKick  -> lamp flare (light)
- *   audioHigh  -> sheen on the tin (light)
- *   time       -> the spin (continuous, vertex stage)
+ *  @brief
+ *  MESH ZOETROPE: a real Victorian zoetrope (model=) on a parlour table, its drum turning on its spindle while the
+ *  base stands still.
  *
- * Per-instance: sizeP, rateP, splitP. Per-activation variety: hueP.
+ *  An oil lamp lights the room with the swell; the strip of figures inside glows through the slits; the kick is a
+ *  flare of the lamp; the treble a sheen on the japanned tin. The mesh counterpart of ZoetropeDrum.
+ *
+ *  Audio Reactivity:
+ *    audioSwell -> lamp light, the glow of the strip (slow)
+ *    audioKick  -> lamp flare (light)
+ *    audioHigh  -> sheen on the tin (light)
+ *    time       -> the spin (continuous, vertex stage)
+ *
+ *  Per-instance: sizeP, rateP, splitP. Per-activation variety: hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform sampler2DArray texMeshMaterial;       ///< The mesh's material textures (albedo, roughness, normal ...).
 uniform int            texMeshMaterialLayers; ///< Number of layers in texMeshMaterial.

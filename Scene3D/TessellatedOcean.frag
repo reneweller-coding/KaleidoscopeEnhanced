@@ -1,29 +1,34 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TessellatedOcean.frag
- * @brief TESSELLATED OCEAN: a night sea whose fineness is the treble.  The
- * tessellation control stage splits the water finer when the mix is bright
- * (continuous, fractional spacing) -- a loud passage ripples the whole sea,
- * a dull one leaves it glassy -- and the fragment stage lights it as a
- * night ocean: a Fresnel mirror of the photo as the sky, and phosphorescence
- * on the breaking crests that flares on the kick.  Camera height fixed,
- * swell on the slow envelope, waves on the scene clock.
+/*****************************************************************************\
+ *                              TessellatedOcean.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioHigh (+swell) -> tessellation fineness (control stage, continuous)
- *   audioSwell         -> wave height (evaluation stage, slow)
- *   audioKick          -> phosphorescence flares on the crests (light)
- *   audioLevel         -> water brightness
- *   audioChromaHue     -> phosphor tint via the palette
+ *  @brief
+ *  TESSELLATED OCEAN: a night sea whose fineness is the treble.
  *
- * Per-activation variety: camHP (eye height), detailP, swellP, choppyP, hueP.
+ *  The tessellation control stage splits the water finer when the mix is bright (continuous, fractional spacing) --
+ *  a loud passage ripples the whole sea, a dull one leaves it glassy -- and the fragment stage lights it as a night
+ *  ocean: a Fresnel mirror of the photo as the sky, and phosphorescence on the breaking crests that flares on the
+ *  kick.  Camera height fixed, swell on the slow envelope, waves on the scene clock.
+ *
+ *  Audio Reactivity:
+ *    audioHigh (+swell) -> tessellation fineness (control stage, continuous)
+ *    audioSwell         -> wave height (evaluation stage, slow)
+ *    audioKick          -> phosphorescence flares on the crests (light)
+ *    audioLevel         -> water brightness
+ *    audioChromaHue     -> phosphor tint via the palette
+ *
+ *  Per-activation variety: camHP (eye height), detailP, swellP, choppyP, hueP.
+ *
+ *  @author René Weller
  */
-in vec3  vWorld;  ///< World position (from the vertex stage).
-in vec2  vSurfUV; ///< Surf UV (from the vertex stage).
-in float vCrest;  ///< Crest (from the vertex stage).
-in vec3  vNormal; ///< Surface normal (from the vertex stage).
-in float vDist;   ///< Distance (from the vertex stage).
+out vec4 fragColor; ///< The pixel's colour (output).
+in vec3  vWorld;    ///< World position (from the vertex stage).
+in vec2  vSurfUV;   ///< Surf UV (from the vertex stage).
+in float vCrest;    ///< Crest (from the vertex stage).
+in vec3  vNormal;   ///< Surface normal (from the vertex stage).
+in float vDist;     ///< Distance (from the vertex stage).
 
 uniform sampler2D tex0;          ///< The current photo.
 uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).

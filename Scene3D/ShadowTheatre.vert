@@ -1,22 +1,29 @@
 #version 330 core
-/**
- * @file ShadowTheatre.vert
- * @brief Vertex stage for ShadowTheatre.frag: a shadow play. The model stands
- * between a lamp and a lit screen, and what the audience sees is its outline.
+/*****************************************************************************\
+ *                              ShadowTheatre.vert
+\*****************************************************************************/
+/*! @file
  *
- * An earlier version of this family used the engine's real shadow map
- * (shadowPass/lightM/texShadow, the way Origami does). It rendered black: the
- * shadow pass is driven by a GLOBAL, EffectShader::s_shadowPass, and a
- * geom="mesh" scene reads it without the engine ever running the light pass for
- * it -- so the vertex stage kept taking the light-space branch and nothing ever
- * reached the camera. Proven by forcing that branch off, which brought the whole
- * frame back at once. A shadow PLAY needs no depth map: the screen is lit
- * directly, the caster is drawn as a silhouette in front of it, and the
- * softness comes from how close the caster is to the lamp -- which is exactly
- * what governs a real penumbra.
+ *  @brief
+ *  Vertex stage for ShadowTheatre.frag: a shadow play.
  *
- * The caster turns on two axes, because a shadow only changes when the profile
- * facing the lamp changes.
+ *  The model stands between a lamp and a lit screen, and what the audience sees is its outline.
+ *
+ *  An earlier version of this family used the engine's real shadow map
+ *  (shadowPass/lightM/texShadow, the way Origami does). It rendered black: the
+ *  shadow pass is driven by a GLOBAL, EffectShader::s_shadowPass, and a
+ *  geom="mesh" scene reads it without the engine ever running the light pass for
+ *  it -- so the vertex stage kept taking the light-space branch and nothing ever
+ *  reached the camera. Proven by forcing that branch off, which brought the whole
+ *  frame back at once. A shadow PLAY needs no depth map: the screen is lit
+ *  directly, the caster is drawn as a silhouette in front of it, and the
+ *  softness comes from how close the caster is to the lamp -- which is exactly
+ *  what governs a real penumbra.
+ *
+ *  The caster turns on two axes, because a shadow only changes when the profile
+ *  facing the lamp changes.
+ *
+ *  @author René Weller
  */
 
 in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an

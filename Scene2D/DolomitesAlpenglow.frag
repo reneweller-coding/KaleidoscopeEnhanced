@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file DolomitesAlpenglow.frag
- * @brief DOLOMITES ALPENGLOW: the pale limestone towers of the Dolomites just
- * after sunset -- a row of sheer, fluted rock spires above a dark alpine
- * meadow, and on them the alpenglow: the rock burning rose and orange
- * while the valley already lies in blue dusk, the earth's shadow climbing
- * slowly up the walls and the glow withdrawing to the summits.  Snow lies
- * on the ledges, a hut on the meadow shows a warm window, larches stand
- * dark, the sky shades from deep blue to the pink belt of Venus.  The
- * glow of the rock rises and falls with the music's swell.
+/*****************************************************************************\
+ *                              DolomitesAlpenglow.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSwell  -> the strength of the alpenglow on the rock (slow)
- *   audioHigh   -> the first stars (light)
- *   audioLevel  -> brightness
- *   sceneTime / sceneAdvance -> the earth's shadow climbing (bounded, continuous)
+ *  @brief
+ *  DOLOMITES ALPENGLOW: the pale limestone towers of the Dolomites just after sunset -- a row of sheer, fluted rock
+ *  spires above a dark alpine meadow, and on them the alpenglow: the rock burning rose and orange while the valley
+ *  already lies in blue dusk, the earth's shadow climbing slowly up the walls and the glow withdrawing to the
+ *  summits.
  *
- * Per-activation variety: spiresP (how jagged the towers), hueP.
+ *  Snow lies on the ledges, a hut on the meadow shows a warm window, larches stand dark, the sky shades from deep
+ *  blue to the pink belt of Venus.  The glow of the rock rises and falls with the music's swell.
+ *
+ *  Audio Reactivity:
+ *    audioSwell  -> the strength of the alpenglow on the rock (slow)
+ *    audioHigh   -> the first stars (light)
+ *    audioLevel  -> brightness
+ *    sceneTime / sceneAdvance -> the earth's shadow climbing (bounded, continuous)
+ *
+ *  Per-activation variety: spiresP (how jagged the towers), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

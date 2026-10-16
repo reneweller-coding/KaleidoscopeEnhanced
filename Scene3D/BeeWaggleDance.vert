@@ -1,9 +1,16 @@
 #version 330 core
-/**
- * @file BeeWaggleDance.vert
- * @brief Vertex stage for BeeWaggleDance: world positions pass through
- * (camera at the origin, +z ahead); id, run intensity, kind and uv go to
- * the fragment stage.  No camera motion.
+/*****************************************************************************\
+ *                              BeeWaggleDance.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage for BeeWaggleDance: world positions pass through (camera at the origin, +z ahead); id, run
+ *  intensity, kind and uv go to the fragment stage.
+ *
+ *  No camera motion.
+ *
+ *  @author René Weller
  */
 layout( location = 0 ) in vec4 attrA; ///< xyz = position, w = id (comb: cell size)
 layout( location = 1 ) in vec4 attrB; ///< x = run intensity, y = kind, zw = uv

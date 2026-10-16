@@ -1,10 +1,15 @@
 #version 330 core
-/**
- * @file GalaxyMergerNBody.vert
- * @brief Vertex stage for GalaxyMergerNBody.comp/.frag: tilts the merging
- * pair toward the camera, turns it slowly on the music's pace and colours
- * each star by its galaxy (two palette families) and its speed (attrB.x:
- * the tidal streams run hot).
+/*****************************************************************************\
+ *                              GalaxyMergerNBody.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage for GalaxyMergerNBody.comp/.frag: tilts the merging pair toward the camera, turns it slowly on the
+ *  music's pace and colours each star by its galaxy (two palette families) and its speed (attrB.x: the tidal
+ *  streams run hot).
+ *
+ *  @author René Weller
  */
 layout( location = 0 ) in vec4 attrA; ///< xyz = position, w = star id
 layout( location = 1 ) in vec4 attrB; ///< x = speed, y = kind (-1 sky, 2 core, 0/1 galaxy), zw = uv

@@ -1,26 +1,31 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureGeodeInterior.frag
- * @brief TEXTURE GEODE INTERIOR: looking into a hollow geode that opens
- * endlessly into the depth -- the cavity is lined with crystal points, all
- * pointing inward toward the centre, ring after ring of them receding, each
- * crystal a faceted wedge glowing with light that shines through the
- * stone from outside; the crystals' colours are the photo's colours, and
- * the banded agate crust between the rings is the photo itself.  A light
- * travels slowly around the cavity and sets the facets sparkling.  An
- * endless polar field (like Tunnel), mirrorable.
+/*****************************************************************************\
+ *                              TextureGeodeInterior.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the drift into the depth (integrated, jump-free)
- *   audioPhase      -> the ring of crystals turns (integrated)
- *   audioSpread     -> crystal length (wide spectrum = long points)
- *   audioMode       -> the glow: violet-blue in minor, amber-gold in major (slow blend)
- *   audioHigh       -> facets sparkle (light)
- *   audioBass       -> the light through the stone (light)
+ *  @brief
+ *  TEXTURE GEODE INTERIOR: looking into a hollow geode that opens endlessly into the depth -- the cavity is lined
+ *  with crystal points, all pointing inward toward the centre, ring after ring of them receding, each crystal a
+ *  faceted wedge glowing with light that shines through the stone from outside; the crystals' colours are the
+ *  photo's colours, and the banded agate crust between the rings is the photo itself.
  *
- * Knobs: countP (crystals per ring), bandP (share of agate crust), glowP, hueP.
+ *  A light travels slowly around the cavity and sets the facets sparkling.  An endless polar field (like Tunnel),
+ *  mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the drift into the depth (integrated, jump-free)
+ *    audioPhase      -> the ring of crystals turns (integrated)
+ *    audioSpread     -> crystal length (wide spectrum = long points)
+ *    audioMode       -> the glow: violet-blue in minor, amber-gold in major (slow blend)
+ *    audioHigh       -> facets sparkle (light)
+ *    audioBass       -> the light through the stone (light)
+ *
+ *  Knobs: countP (crystals per ring), bandP (share of agate crust), glowP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

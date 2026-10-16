@@ -1,22 +1,31 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file QuantumHallSkyrmionCrystal.frag
- * @brief QUANTUM HALL SKYRMION CRYSTAL: 2D triangular crystal of spin-textured Skyrmions
- * in a quantum Hall ferromagnet near filling factor nu = 1. Features entangled electron spin
- * textures, fractional quantized Hall current ripples, and Landau level photo texturing.
- *   audioAdvance -> navigates chiral Hall drift & cyclotron phase evolution
- *   audioKick    -> flashes fractional quasiparticle injection & annihilation bursts
- *   audioBass    -> undulates skyrmion spin stiffness & out-of-plane core diameter
- *   audioSwell   -> enriches quantum Hall ferromagnet background coherence
- *   audioCentroid-> shifts Landau level transition emission spectra
+/*****************************************************************************\
+ *                              QuantumHallSkyrmionCrystal.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   crystalPitchP float triangular skyrmion lattice density       (2.0..6.0)
- *   spinRadiusP   float skyrmion spin-texture transition width    (0.4..1.8)
- *   hallCurrentP  float fractional Hall edge current brightness   (0.8..2.5)
- *   cyclotronP    float electron cyclotron orbit ripple frequency (8.0..24.0)
+ *  @brief
+ *  QUANTUM HALL SKYRMION CRYSTAL: 2D triangular crystal of spin-textured Skyrmions in a quantum Hall ferromagnet
+ *  near filling factor nu = 1.
+ *
+ *  Features entangled electron spin textures, fractional quantized Hall current ripples, and Landau level photo
+ *  texturing.
+ *
+ *    audioAdvance -> navigates chiral Hall drift & cyclotron phase evolution
+ *    audioKick    -> flashes fractional quasiparticle injection & annihilation bursts
+ *    audioBass    -> undulates skyrmion spin stiffness & out-of-plane core diameter
+ *    audioSwell   -> enriches quantum Hall ferromagnet background coherence
+ *    audioCentroid-> shifts Landau level transition emission spectra
+ *
+ *  Per-activation variety:
+ *    crystalPitchP float triangular skyrmion lattice density       (2.0..6.0)
+ *    spinRadiusP   float skyrmion spin-texture transition width    (0.4..1.8)
+ *    hallCurrentP  float fractional Hall edge current brightness   (0.8..2.5)
+ *    cyclotronP    float electron cyclotron orbit ripple frequency (8.0..24.0)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

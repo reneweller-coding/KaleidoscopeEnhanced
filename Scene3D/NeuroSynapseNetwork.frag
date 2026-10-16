@@ -1,22 +1,27 @@
 #version 330 core
+/*****************************************************************************\
+ *                              NeuroSynapseNetwork.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Renders one particle of the 60,000-node neural-connectome point cloud as a tight-cored, short-tailed glow
+ *  sprite.
+ *
+ *  Reads no audio uniforms directly: per-particle position, the electrical
+ *  action-potential flashes and colour are all computed in the paired
+ *  NeuroSynapseNetwork.vert (which itself reacts to audioKick, audioBass,
+ *  audioSubBass, audioHigh, audioSwell and the spectrum bins) and arrive
+ *  here as vCol and vLife. vLife brightens the glow for firing particles,
+ *  and a soft-knee tone-map compresses hot additive overlap instead of
+ *  clipping the whole frame to white.
+ *
+ *  @author René Weller
+ */
 out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec4  vCol;  ///< Colour (from the vertex stage).
 in float vLife; ///< Life (from the vertex stage).
-
-/**
- * @file NeuroSynapseNetwork.frag
- * @brief Renders one particle of the 60,000-node neural-connectome point
- * cloud as a tight-cored, short-tailed glow sprite.
- *
- * Reads no audio uniforms directly: per-particle position, the electrical
- * action-potential flashes and colour are all computed in the paired
- * NeuroSynapseNetwork.vert (which itself reacts to audioKick, audioBass,
- * audioSubBass, audioHigh, audioSwell and the spectrum bins) and arrive
- * here as vCol and vLife. vLife brightens the glow for firing particles,
- * and a soft-knee tone-map compresses hot additive overlap instead of
- * clipping the whole frame to white.
- */
 
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()

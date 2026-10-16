@@ -1,17 +1,23 @@
 #version 430 core
-/**
- * @file EscalatorHallCrossing.comp
- * @brief ESCALATOR HALL CROSSING: a station hall with escalators crossing
- * each other in an X, one pair running up and one down.  Each escalator
- * is a run of step quads travelling along its own line on the scene clock
- * (steady -- a whole flight snapping to a beat would be the jolt this
- * catalogue avoids), with a balustrade band beside it, a handrail loop,
- * and riders standing on the steps as capsule quads.
+/*****************************************************************************\
+ *                              EscalatorHallCrossing.comp
+\*****************************************************************************/
+/*! @file
  *
- * Kinds: -1 sky/hall wall, -2 floor, 0 step, 1 balustrade, 2 handrail,
- *        3 rider body, 4 rider head, 5 advertising panel.
+ *  @brief
+ *  ESCALATOR HALL CROSSING: a station hall with escalators crossing each other in an X, one pair running up and one
+ *  down.
  *
- * Per-instance: flightsP, ridersP, hueP.
+ *  Each escalator is a run of step quads travelling along its own line on the scene clock (steady -- a whole flight
+ *  snapping to a beat would be the jolt this catalogue avoids), with a balustrade band beside it, a handrail loop,
+ *  and riders standing on the steps as capsule quads.
+ *
+ *  Kinds: -1 sky/hall wall, -2 floor, 0 step, 1 balustrade, 2 handrail,
+ *         3 rider body, 4 rider head, 5 advertising panel.
+ *
+ *  Per-instance: flightsP, ridersP, hueP.
+ *
+ *  @author René Weller
  */
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( local_size_x = 4, local_size_y = 4, local_size_z = 4 ) in;

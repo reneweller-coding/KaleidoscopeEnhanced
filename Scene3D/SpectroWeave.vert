@@ -1,8 +1,13 @@
 #version 330 core
-/**
- * @file SpectroWeave.vert
- * @brief Vertex stage companion to SpectroWeave.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              SpectroWeave.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to SpectroWeave.frag -- see that file's header for this scene's description.
+ *
+ *  @author René Weller
  */
 // SpectroWeave.vert — the bundle arrives finished; fly the camera down its axis.
 //

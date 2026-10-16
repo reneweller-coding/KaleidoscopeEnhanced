@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file PivotIrrigationCircles.frag
- * @brief PIVOT IRRIGATION CIRCLES: centre-pivot fields seen from above,
- * as a satellite sees them -- a grid of green discs on dry ground, each
- * with its irrigation arm sweeping round on the scene clock and leaving a
- * darker, wetter wedge behind it that dries out again over the turn.
- * Each field takes a chroma class for its crop colour; the kick raises a
- * dust plume behind a tractor on one of the section roads.  The photo is
- * the soil and the crop texture.  Camera fixed, straight down.
+/*****************************************************************************\
+ *                              PivotIrrigationCircles.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioChroma[12] -> crop colour per field (light)
- *   sceneAdvance    -> the pivot arms sweep (continuous)
- *   audioSwell      -> how green the season is (slow)
- *   audioKick       -> a dust plume on a road (light)
- *   audioHigh       -> the sprinkler mist sparkle (light)
+ *  @brief
+ *  PIVOT IRRIGATION CIRCLES: centre-pivot fields seen from above, as a satellite sees them -- a grid of green discs
+ *  on dry ground, each with its irrigation arm sweeping round on the scene clock and leaving a darker, wetter wedge
+ *  behind it that dries out again over the turn.
  *
- * Per-activation variety: fieldsP, dryP, hueP.
+ *  Each field takes a chroma class for its crop colour; the kick raises a dust plume behind a tractor on one of the
+ *  section roads.  The photo is the soil and the crop texture.  Camera fixed, straight down.
+ *
+ *  Audio Reactivity:
+ *    audioChroma[12] -> crop colour per field (light)
+ *    sceneAdvance    -> the pivot arms sweep (continuous)
+ *    audioSwell      -> how green the season is (slow)
+ *    audioKick       -> a dust plume on a road (light)
+ *    audioHigh       -> the sprinkler mist sparkle (light)
+ *
+ *  Per-activation variety: fieldsP, dryP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

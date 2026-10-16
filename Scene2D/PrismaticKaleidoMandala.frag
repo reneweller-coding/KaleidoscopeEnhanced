@@ -1,21 +1,27 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file PrismaticKaleidoMandala.frag
- * @brief PRISMATIC KALEIDO MANDALA: Non-Euclidean Poincaré disk hyperbolic kaleidoscope
- * with sacred geometry rosettes, infinite crystalline mirror reflections,
- * prismatic chromatic dispersion, and golden-ratio harmonic unfolding.
- *   audioPhase   -> rotates interlocking reflection symmetry axes
- *   audioSwell   -> unfolds deeper geometric rosette harmonics
- *   audioKick    -> triggers radiant jewel bursts and mirror bloom
- *   audioCentroid-> shifts crystalline refraction spectra
+/*****************************************************************************\
+ *                              PrismaticKaleidoMandala.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   symmetryP   float kaleidoscope sector count multiplier (0.6..2.0)
- *   zoomP       float hyperbolic zoom / depth scale        (0.5..1.8)
- *   facetP      float faceted crystal bevel intensity      (0.5..2.2)
- *   hueP        float chromatic palette rotation           (0..6.28)
+ *  @brief
+ *  PRISMATIC KALEIDO MANDALA: Non-Euclidean Poincaré disk hyperbolic kaleidoscope with sacred geometry rosettes,
+ *  infinite crystalline mirror reflections, prismatic chromatic dispersion, and golden-ratio harmonic unfolding.
+ *
+ *    audioPhase   -> rotates interlocking reflection symmetry axes
+ *    audioSwell   -> unfolds deeper geometric rosette harmonics
+ *    audioKick    -> triggers radiant jewel bursts and mirror bloom
+ *    audioCentroid-> shifts crystalline refraction spectra
+ *
+ *  Per-activation variety:
+ *    symmetryP   float kaleidoscope sector count multiplier (0.6..2.0)
+ *    zoomP       float hyperbolic zoom / depth scale        (0.5..1.8)
+ *    facetP      float faceted crystal bevel intensity      (0.5..2.2)
+ *    hueP        float chromatic palette rotation           (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

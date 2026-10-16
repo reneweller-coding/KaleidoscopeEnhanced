@@ -1,21 +1,25 @@
 #version 330 core
+/*****************************************************************************\
+ *                              HopfTorusCliffordKlein.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Shades one strand of a Hopf-torus / Clifford-torus tube lattice: blends its per-vertex color (vCol) with a
+ *  slideshow photo that scrolls along the strand's length (vLength, animated by time), with a bright rim along the
+ *  strand's cross-section edge (vSide).
+ *
+ *  This fragment shader declares no audio uniforms directly; any audio
+ *  reactivity arrives already baked into the per-vertex vCol supplied by
+ *  the companion vertex shader.
+ *
+ *  @author René Weller
+ */
 out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec4  vCol;    ///< Colour (from the vertex stage).
 in float vSide;   ///< Which side of a strip (from the vertex stage).
 in float vLength; ///< Length (from the vertex stage).
-
-/**
- * @file HopfTorusCliffordKlein.frag
- * @brief Shades one strand of a Hopf-torus / Clifford-torus tube lattice:
- * blends its per-vertex color (vCol) with a slideshow photo that scrolls
- * along the strand's length (vLength, animated by time), with a bright rim
- * along the strand's cross-section edge (vSide).
- *
- * This fragment shader declares no audio uniforms directly; any audio
- * reactivity arrives already baked into the per-vertex vCol supplied by
- * the companion vertex shader.
- */
 
 uniform sampler2D tex0;          ///< The current photo.
 uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).

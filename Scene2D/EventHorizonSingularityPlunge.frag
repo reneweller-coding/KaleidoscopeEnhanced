@@ -1,18 +1,24 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file EventHorizonSingularityPlunge.frag
- * @brief EVENT HORIZON SINGULARITY PLUNGE: Relativistic free-fall plunge past the
- * Schwarzschild event horizon into the central singularity with tidal spaghettification,
- * celestial sky compression into a shrinking Einstein circle, and chaotic plasma flares.
+/*****************************************************************************\
+ *                              EventHorizonSingularityPlunge.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance -> drives continuous relativistic gravitational plunge progression
- *   audioKick    -> flashes singularity core & triggers tidal force gravitational wave chirps
- *   audioCentroid-> modulates relativistic accretion filament frequency
- *   audioSubBass -> expands tidal stretching distortion amplitude
- *   audioChromaHue-> steers the extreme gravitational redshift/blueshift spectrum
+ *  @brief
+ *  EVENT HORIZON SINGULARITY PLUNGE: Relativistic free-fall plunge past the Schwarzschild event horizon into the
+ *  central singularity with tidal spaghettification, celestial sky compression into a shrinking Einstein circle,
+ *  and chaotic plasma flares.
+ *
+ *  Audio Reactivity:
+ *    audioAdvance -> drives continuous relativistic gravitational plunge progression
+ *    audioKick    -> flashes singularity core & triggers tidal force gravitational wave chirps
+ *    audioCentroid-> modulates relativistic accretion filament frequency
+ *    audioSubBass -> expands tidal stretching distortion amplitude
+ *    audioChromaHue-> steers the extreme gravitational redshift/blueshift spectrum
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

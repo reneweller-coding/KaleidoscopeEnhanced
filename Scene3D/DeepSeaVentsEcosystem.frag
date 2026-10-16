@@ -1,32 +1,36 @@
 #version 330 core
+/*****************************************************************************\
+ *                              DeepSeaVentsEcosystem.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Lighting for a hydrothermal-vent ecosystem's particles: colours each one by species (vSpecies) -- sulfur-mineral
+ *  smoker particles, bioluminescent siphonophores, or tube-worm plume tips -- tinted toward the house photo palette
+ *  and brightened by its own bio-glow value (vBioGlow).
+ *
+ *  audioKick pumps the overall brightness of every organism, and hueP applies
+ *  a final preset hue rotation; the photo palette itself follows the musical
+ *  key via audioChromaHue/audioAdvance inside imgPalette, with audioValence
+ *  shaping its saturation.
+ *
+ *  Audio Reactivity:
+ *    audioKick      -> brightness pump on every organism
+ *    audioChromaHue -> rotates the photo palette arc with the musical key
+ *    audioValence   -> saturation of that palette
+ *    audioAdvance   -> slow palette drift (pre-integrated)
+ *    audioMode      -> water temperature: a minor key sinks the whole vent
+ *                      field into cold abyssal blue, a major key lets the
+ *                      sulfur golds and hemoglobin reds burn through
+ *    (audioLowMid / audioRoughness shape the plume upstream in the .vert.)
+ *
+ *  @author René Weller
+ */
 in vec3  vPos;     ///< Position (from the vertex stage).
 in float vSpecies; ///< Species (from the vertex stage).
 in float vBioGlow; ///< Bio glow (from the vertex stage).
 
 out vec4 fragColor; ///< The pixel's colour (output).
-
-/**
- * @file DeepSeaVentsEcosystem.frag
- * @brief Lighting for a hydrothermal-vent ecosystem's particles: colours each
- * one by species (vSpecies) -- sulfur-mineral smoker particles, bioluminescent
- * siphonophores, or tube-worm plume tips -- tinted toward the house photo
- * palette and brightened by its own bio-glow value (vBioGlow).
- *
- * audioKick pumps the overall brightness of every organism, and hueP applies
- * a final preset hue rotation; the photo palette itself follows the musical
- * key via audioChromaHue/audioAdvance inside imgPalette, with audioValence
- * shaping its saturation.
- *
- * Audio Reactivity:
- *   audioKick      -> brightness pump on every organism
- *   audioChromaHue -> rotates the photo palette arc with the musical key
- *   audioValence   -> saturation of that palette
- *   audioAdvance   -> slow palette drift (pre-integrated)
- *   audioMode      -> water temperature: a minor key sinks the whole vent
- *                     field into cold abyssal blue, a major key lets the
- *                     sulfur golds and hemoglobin reds burn through
- *   (audioLowMid / audioRoughness shape the plume upstream in the .vert.)
- */
 
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

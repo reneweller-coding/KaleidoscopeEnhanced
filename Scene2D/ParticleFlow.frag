@@ -1,18 +1,25 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file ParticleFlow.frag
- * @brief Two million curl-noise-advected particles (simulated upstream into
- *        texParticles), rendered here as a silky, glowing flow of the photo.
+/*****************************************************************************\
+ *                              ParticleFlow.frag
+\*****************************************************************************/
+/*! @file
  *
- * This pass adds a directional smear along a slowly rotating axis (its angle
- * driven by audioAdvance) so the particle field reads as motion blur without
- * per-particle history, plus an 8-tap halo whose radius grows with audioBeat
- * and whose strength is boosted by audioKick. audioLevel widens the smear
- * length, and audioHigh sparkles the densest filaments white. A very dark,
- * squared copy of the plain photo (tex0) is added underneath to keep the
- * gaps between filaments from going fully black.
+ *  @brief
+ *  Two million curl-noise-advected particles (simulated upstream into
+ *
+ *         texParticles), rendered here as a silky, glowing flow of the photo.
+ *
+ *  This pass adds a directional smear along a slowly rotating axis (its angle
+ *  driven by audioAdvance) so the particle field reads as motion blur without
+ *  per-particle history, plus an 8-tap halo whose radius grows with audioBeat
+ *  and whose strength is boosted by audioKick. audioLevel widens the smear
+ *  length, and audioHigh sparkles the densest filaments white. A very dark,
+ *  squared copy of the plain photo (tex0) is added underneath to keep the
+ *  gaps between filaments from going fully black.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 // The sim (Blend/CfxParticleStep.comp) carries the photo's colours into a
 // divergence-free curl-noise flow; this pass adds the silk: an anisotropic
 // smear along the local flow direction plus a soft glow.

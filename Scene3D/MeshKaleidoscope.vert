@@ -1,17 +1,22 @@
 #version 330 core
-/**
- * @file MeshKaleidoscope.vert
- * @brief MESH KALEIDOSCOPE: a real loaded model between two tilted mirrors.
- * The model is drawn twelve times (instances="12"): every copy is turned
- * about the view axis by k * 30 degrees and every second copy is mirrored,
- * which is exactly the image set a two-mirror kaleidoscope makes of one
- * object.  The ring of copies turns slowly on the scene clock and the
- * object itself tumbles on time; the copies are sized from the model's own
- * bounding sphere so any asset fits.  The sky shell is drawn once
- * (collapsed on the other instances) and painted by the fragment stage.
+/*****************************************************************************\
+ *                              MeshKaleidoscope.vert
+\*****************************************************************************/
+/*! @file
  *
- * Audio here: none in the geometry (rule V7d) -- light and colour live in
- * the fragment stage.
+ *  @brief
+ *  MESH KALEIDOSCOPE: a real loaded model between two tilted mirrors.
+ *
+ *  The model is drawn twelve times (instances="12"): every copy is turned about the view axis by k * 30 degrees and
+ *  every second copy is mirrored, which is exactly the image set a two-mirror kaleidoscope makes of one object.
+ *  The ring of copies turns slowly on the scene clock and the object itself tumbles on time; the copies are sized
+ *  from the model's own bounding sphere so any asset fits.  The sky shell is drawn once (collapsed on the other
+ *  instances) and painted by the fragment stage.
+ *
+ *  Audio here: none in the geometry (rule V7d) -- light and colour live in
+ *  the fragment stage.
+ *
+ *  @author René Weller
  */
 in vec4 attrA; ///< mesh: xyz = object-space position, w = U.  shell: xyz = world-space position on the shell.
 in vec4 attrB; ///< mesh: xyz = object-space normal,   w = V.  shell: xyz = outward direction.

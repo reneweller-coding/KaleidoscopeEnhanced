@@ -1,36 +1,41 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-
-/**
- * @file CrossSection.frag
- * @brief A plane sweeps through a real 3D model and everything in front of it
- * is cut away, leaving the object opened like a scan through a body. The cut
- * face glows; a bright contour runs along the exact line where the surface
- * meets the plane, so the shape of the section reads even where the interior
- * is dark.
+/*****************************************************************************\
+ *                              CrossSection.frag
+\*****************************************************************************/
+/*! @file
  *
- * These meshes are HOLLOW shells with no interior, so a real solid section is
- * not available. What sells it instead is that culling is off engine-wide
- * (RenderPipeline disables GL_CULL_FACE), so once the near wall is cut away
- * the FAR wall's inside is already being drawn -- shading those inward-facing
- * fragments as a machined surface reads as the inside of a solid object. Which
- * side a fragment is on is decided by the normal against the view direction,
- * NOT by gl_FrontFacing: these models wind inconsistently (the same trap
- * Detonation.frag documents).
+ *  @brief
+ *  A plane sweeps through a real 3D model and everything in front of it is cut away, leaving the object opened like
+ *  a scan through a body.
  *
- * The plane travels on the music rather than on a clock: it advances with
- * audioAdvance and jumps forward on a kick, so a section arrives ON a beat
- * instead of drifting past it.
+ *  The cut face glows; a bright contour runs along the exact line where the surface meets the plane, so the shape
+ *  of the section reads even where the interior is dark.
  *
- *   audioAdvance -> plane travel
- *   audioKick    -> forward jolt + cut-face flare
- *   audioSwell   -> contour brightness
- *   audioHigh    -> measurement ticks on the cut
+ *  These meshes are HOLLOW shells with no interior, so a real solid section is
+ *  not available. What sells it instead is that culling is off engine-wide
+ *  (RenderPipeline disables GL_CULL_FACE), so once the near wall is cut away
+ *  the FAR wall's inside is already being drawn -- shading those inward-facing
+ *  fragments as a machined surface reads as the inside of a solid object. Which
+ *  side a fragment is on is decided by the normal against the view direction,
+ *  NOT by gl_FrontFacing: these models wind inconsistently (the same trap
+ *  Detonation.frag documents).
  *
- * Per-instance: sizeP, spinP (turn rate), axisP (which object axis the plane
- *               travels along, 0/1/2), tintP (cut-face hue, radians).
- * Per-activation variety: hueP float palette offset (0..6.28).
+ *  The plane travels on the music rather than on a clock: it advances with
+ *  audioAdvance and jumps forward on a kick, so a section arrives ON a beat
+ *  instead of drifting past it.
+ *
+ *    audioAdvance -> plane travel
+ *    audioKick    -> forward jolt + cut-face flare
+ *    audioSwell   -> contour brightness
+ *    audioHigh    -> measurement ticks on the cut
+ *
+ *  Per-instance: sizeP, spinP (turn rate), axisP (which object axis the plane
+ *                travels along, 0/1/2), tintP (cut-face hue, radians).
+ *  Per-activation variety: hueP float palette offset (0..6.28).
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform sampler2DArray texMeshMaterial;       ///< layer 0 = baseColor+opacity, layer 1 = (unused,roughness,metallic)
 uniform int            texMeshMaterialLayers; ///< Number of layers in texMeshMaterial.

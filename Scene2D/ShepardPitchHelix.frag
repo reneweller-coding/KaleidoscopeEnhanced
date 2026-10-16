@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file ShepardPitchHelix.frag
- * @brief SHEPARD PITCH HELIX: pitch as a helix -- one turn per octave,
- * the twelve chroma classes around it, octaves stacked as floors -- seen
- * side-on, turning slowly on the scene clock.  The melody history (96
- * samples) winds up the helix as a glowing thread of round beads, the
- * newest at the head; each class's post on the helix lights with its
- * chroma energy; the kick lights the current note; the photo is the hall
- * behind.  Camera still.
+/*****************************************************************************\
+ *                              ShepardPitchHelix.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioMelody[96] / audioMelodyHead -> the thread (continuous history)
- *   audioChroma[12]  -> class posts (light)
- *   sceneAdvance     -> helix rotation (continuous)
- *   audioKick        -> the current note flashes (light)
- *   audioLevel       -> brightness
+ *  @brief
+ *  SHEPARD PITCH HELIX: pitch as a helix -- one turn per octave, the twelve chroma classes around it, octaves
+ *  stacked as floors -- seen side-on, turning slowly on the scene clock.
  *
- * Per-activation variety: turnsP (octaves shown), radiusP, hueP.
+ *  The melody history (96 samples) winds up the helix as a glowing thread of round beads, the newest at the head;
+ *  each class's post on the helix lights with its chroma energy; the kick lights the current note; the photo is the
+ *  hall behind.  Camera still.
+ *
+ *  Audio Reactivity:
+ *    audioMelody[96] / audioMelodyHead -> the thread (continuous history)
+ *    audioChroma[12]  -> class posts (light)
+ *    sceneAdvance     -> helix rotation (continuous)
+ *    audioKick        -> the current note flashes (light)
+ *    audioLevel       -> brightness
+ *
+ *  Per-activation variety: turnsP (octaves shown), radiusP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

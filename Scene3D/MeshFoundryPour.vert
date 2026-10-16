@@ -1,12 +1,18 @@
 #version 330 core
-/**
- * @file MeshFoundryPour.vert
- * @brief Vertex stage companion to MeshFoundryPour.frag -- see that file's
- * header. Two models: the sand mould (model=) on the foundry floor, and the
- * ladle (model2=) hanging above it, tipping toward the mould on the scene
- * clock -- a rotation about its trunnion axis, eased, and back up again at
- * the end. The lip's and the cup's world positions go to the fragment
- * stage, which paints the stream between them on the shell.
+/*****************************************************************************\
+ *                              MeshFoundryPour.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to MeshFoundryPour.frag -- see that file's header.
+ *
+ *  Two models: the sand mould (model=) on the foundry floor, and the ladle (model2=) hanging above it, tipping
+ *  toward the mould on the scene clock -- a rotation about its trunnion axis, eased, and back up again at the end.
+ *  The lip's and the cup's world positions go to the fragment stage, which paints the stream between them on the
+ *  shell.
+ *
+ *  @author René Weller
  */
 
 in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an

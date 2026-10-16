@@ -1,23 +1,27 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file StarryNightFlow.frag
- * @brief STARRY NIGHT FLOW: the photo repainted in thick, flowing brush
- * strokes, the way Van Gogh painted a night sky.  A few great vortices
- * turn in the picture and everything else streams around them; every
- * stroke follows the flow, the paint is laid on in ridges, and the
- * brightest places of the photo become stars wrapped in rings of strokes.
- * The strokes creep along the flow on the music's pace; each vortex's
- * halo glows with its own band.
+/*****************************************************************************\
+ *                              StarryNightFlow.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   sceneAdvance      -> the strokes creep along the flow (continuous)
- *   audioSpectrum[32] -> glow of the vortex halos (one band each)
- *   audioSwell        -> how strongly the vortices wind the picture (slow)
- *   audioHigh         -> sparkle in the star rings (light)
+ *  @brief
+ *  STARRY NIGHT FLOW: the photo repainted in thick, flowing brush strokes, the way Van Gogh painted a night sky.
  *
- * Per-activation variety: swirlP (number of vortices), hueP.
+ *  A few great vortices turn in the picture and everything else streams around them; every stroke follows the flow,
+ *  the paint is laid on in ridges, and the brightest places of the photo become stars wrapped in rings of strokes.
+ *  The strokes creep along the flow on the music's pace; each vortex's halo glows with its own band.
+ *
+ *  Audio Reactivity:
+ *    sceneAdvance      -> the strokes creep along the flow (continuous)
+ *    audioSpectrum[32] -> glow of the vortex halos (one band each)
+ *    audioSwell        -> how strongly the vortices wind the picture (slow)
+ *    audioHigh         -> sparkle in the star rings (light)
+ *
+ *  Per-activation variety: swirlP (number of vortices), hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

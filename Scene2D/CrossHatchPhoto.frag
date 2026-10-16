@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file CrossHatchPhoto.frag
- * @brief CROSS HATCH PHOTO: the photograph as a living copperplate engraving
- * -- its tones are cut in layers of fine parallel lines: light areas get a
- * single sparse layer, darker ones a second layer across it, the darkest
- * three and four, each line swelling and thinning with the tone like an
- * engraver's burin; the lines bend gently along the picture's forms, and
- * the hatching directions slowly turn while the photo drifts.  Ink on
- * paper.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              CrossHatchPhoto.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the photo drifts (integrated, jump-free)
- *   audioPhase      -> the hatch directions turn (integrated)
- *   audioSpread     -> contrast (how deep the dark layers go)
- *   audioKick       -> the lines brighten (light)
- *   audioMode       -> the paper: cool grey in minor, warm cream in major
- *   audioSwell      -> the photo's colour in the ink (slow)
+ *  @brief
+ *  CROSS HATCH PHOTO: the photograph as a living copperplate engraving -- its tones are cut in layers of fine
+ *  parallel lines: light areas get a single sparse layer, darker ones a second layer across it, the darkest three
+ *  and four, each line swelling and thinning with the tone like an engraver's burin; the lines bend gently along
+ *  the picture's forms, and the hatching directions slowly turn while the photo drifts.
  *
- * Knobs: lineP (line spacing), bendP (lines follow forms), zoomP, hueP.
+ *  Ink on paper.  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the photo drifts (integrated, jump-free)
+ *    audioPhase      -> the hatch directions turn (integrated)
+ *    audioSpread     -> contrast (how deep the dark layers go)
+ *    audioKick       -> the lines brighten (light)
+ *    audioMode       -> the paper: cool grey in minor, warm cream in major
+ *    audioSwell      -> the photo's colour in the ink (slow)
+ *
+ *  Knobs: lineP (line spacing), bendP (lines follow forms), zoomP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

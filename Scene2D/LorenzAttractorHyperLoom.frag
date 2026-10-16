@@ -1,18 +1,24 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file LorenzAttractorHyperLoom.frag
- * @brief LORENZ ATTRACTOR HYPER LOOM: High-density chaotic Lorenz attractor trajectory
- * field woven into a glowing butterfly-wing hyper-dimensional loom with orbital particle
- * pulses, chaotic parameter morphing, and volumetric luminous energy sheets.
+/*****************************************************************************\
+ *                              LorenzAttractorHyperLoom.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance -> drives continuous integration of chaotic Lorenz trajectories
- *   audioKick    -> flashes chaotic singularity lobes & shoots particle pulses
- *   audioCentroid-> modulates Rayleigh number rho & trajectory sharpness
- *   audioSubBass -> expands butterfly wing lobe separation
- *   audioChromaHue-> rotates the chaotic attractor rainbow palette
+ *  @brief
+ *  LORENZ ATTRACTOR HYPER LOOM: High-density chaotic Lorenz attractor trajectory field woven into a glowing
+ *  butterfly-wing hyper-dimensional loom with orbital particle pulses, chaotic parameter morphing, and volumetric
+ *  luminous energy sheets.
+ *
+ *  Audio Reactivity:
+ *    audioAdvance -> drives continuous integration of chaotic Lorenz trajectories
+ *    audioKick    -> flashes chaotic singularity lobes & shoots particle pulses
+ *    audioCentroid-> modulates Rayleigh number rho & trajectory sharpness
+ *    audioSubBass -> expands butterfly wing lobe separation
+ *    audioChromaHue-> rotates the chaotic attractor rainbow palette
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

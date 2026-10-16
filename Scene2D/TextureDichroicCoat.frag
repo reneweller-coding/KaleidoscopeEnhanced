@@ -1,25 +1,31 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureDichroicCoat.frag
- * @brief TEXTURE DICHROIC COAT: dichroic glass -- a sheet of glass coated
- * with thin metal-oxide layers that transmit one colour and reflect its
- * complement: the photograph seen through it takes on the transmitted
- * hue while bright reflected patches flash in the opposite colour, and as
- * the sheet slowly tilts, the pair of colours slides through the spectrum
- * (cyan/red, magenta/green, gold/blue); the glass is cut into fused
- * pieces with polished bevels.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              TextureDichroicCoat.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the tilt changes (integrated, jump-free)
- *   audioSpread     -> the colour shift across the sheet
- *   audioKick       -> the reflections flash (light)
- *   audioMode       -> the base pair: cool in minor, warm in major
- *   audioRoughness  -> the coating's crackle texture
- *   audioSwell      -> reflection vs. transmission (slow)
+ *  @brief
+ *  TEXTURE DICHROIC COAT: dichroic glass -- a sheet of glass coated with thin metal-oxide layers that transmit one
+ *  colour and reflect its complement: the photograph seen through it takes on the transmitted hue while bright
+ *  reflected patches flash in the opposite colour, and as the sheet slowly tilts, the pair of colours slides
+ *  through the spectrum (cyan/red, magenta/green, gold/blue); the glass is cut into fused pieces with polished
+ *  bevels.
  *
- * Knobs: pieceP (piece size), bevelP (bevel width), photoP (photo through the glass), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the tilt changes (integrated, jump-free)
+ *    audioSpread     -> the colour shift across the sheet
+ *    audioKick       -> the reflections flash (light)
+ *    audioMode       -> the base pair: cool in minor, warm in major
+ *    audioRoughness  -> the coating's crackle texture
+ *    audioSwell      -> reflection vs. transmission (slow)
+ *
+ *  Knobs: pieceP (piece size), bevelP (bevel width), photoP (photo through the glass), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

@@ -1,23 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file JupiterJunoSwirls.frag
- * @brief JUPITER JUNO SWIRLS: Jupiter's clouds seen close, as the Juno probe
- * photographed them -- belts and zones sheared into each other, chains of
- * white ovals, filaments that curl into Kelvin-Helmholtz waves along every
- * belt edge, and a great storm spot rolling at the centre.  The whole
- * field fills the frame and flows: the bands drift in opposite directions
- * and every edge rolls up in eddies.  Colour comes from the photo, pushed
- * into cream, ochre and blue-grey; the music is the storms' glow.
+/*****************************************************************************\
+ *                              JupiterJunoSwirls.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSpectrum[32] -> brightness of each belt (one band per belt)
- *   audioSwell        -> contrast of the cloud field (slow)
- *   audioKick         -> lightning flicker in the dark belts (light)
- *   sceneAdvance      -> the flow of the bands (continuous)
+ *  @brief
+ *  JUPITER JUNO SWIRLS: Jupiter's clouds seen close, as the Juno probe photographed them -- belts and zones sheared
+ *  into each other, chains of white ovals, filaments that curl into Kelvin-Helmholtz waves along every belt edge,
+ *  and a great storm spot rolling at the centre.
  *
- * Per-activation variety: stormP (size of the central storm), hueP.
+ *  The whole field fills the frame and flows: the bands drift in opposite directions and every edge rolls up in
+ *  eddies.  Colour comes from the photo, pushed into cream, ochre and blue-grey; the music is the storms' glow.
+ *
+ *  Audio Reactivity:
+ *    audioSpectrum[32] -> brightness of each belt (one band per belt)
+ *    audioSwell        -> contrast of the cloud field (slow)
+ *    audioKick         -> lightning flicker in the dark belts (light)
+ *    sceneAdvance      -> the flow of the bands (continuous)
+ *
+ *  Per-activation variety: stormP (size of the central storm), hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

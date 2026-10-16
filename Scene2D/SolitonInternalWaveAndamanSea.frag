@@ -1,28 +1,33 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SolitonInternalWaveAndamanSea.frag
- * @brief SOLITON INTERNAL WAVE ANDAMAN SEA: the Andaman Sea seen from orbit,
- * in the sun glint -- the view the famous astronaut photographs show.  The
- * sea is a sheet of silver-bronze light fading to deep navy; across it run
- * trains of internal solitons, curved arcs of rough and smooth water that
- * spread from a submarine sill far off to one side, a new packet every
- * tide.  Islands with coral shallows and white surf lie in the glint;
- * popcorn cumulus throw small shadows on the water.  The trains travel at
- * their own slow, steady pace; the music is the light on the sea.
+/*****************************************************************************\
+ *                              SolitonInternalWaveAndamanSea.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSwell   -> glint brightness and packet contrast (slow)
- *   audioMid     -> fine roughness texture in the packets (light)
- *   audioLevel   -> overall light
- *   sceneTime/sceneAdvance -> packet propagation and the slow pan (continuous)
+ *  @brief
+ *  SOLITON INTERNAL WAVE ANDAMAN SEA: the Andaman Sea seen from orbit, in the sun glint -- the view the famous
+ *  astronaut photographs show.
  *
- * Per-activation variety:
- *   packetCountP float solitons per packet (3.0..8.0)
- *   pycnoclineP  float packet contrast (0.6..2.2)
- *   glitterP     float glint strength (0.8..2.5)
- *   roughnessP   float wind roughness texture (0.5..2.0)
+ *  The sea is a sheet of silver-bronze light fading to deep navy; across it run trains of internal solitons, curved
+ *  arcs of rough and smooth water that spread from a submarine sill far off to one side, a new packet every tide.
+ *  Islands with coral shallows and white surf lie in the glint; popcorn cumulus throw small shadows on the water.
+ *  The trains travel at their own slow, steady pace; the music is the light on the sea.
+ *
+ *  Audio Reactivity:
+ *    audioSwell   -> glint brightness and packet contrast (slow)
+ *    audioMid     -> fine roughness texture in the packets (light)
+ *    audioLevel   -> overall light
+ *    sceneTime/sceneAdvance -> packet propagation and the slow pan (continuous)
+ *
+ *  Per-activation variety:
+ *    packetCountP float solitons per packet (3.0..8.0)
+ *    pycnoclineP  float packet contrast (0.6..2.2)
+ *    glitterP     float glint strength (0.8..2.5)
+ *    roughnessP   float wind roughness texture (0.5..2.0)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

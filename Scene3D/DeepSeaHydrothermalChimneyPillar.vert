@@ -1,19 +1,25 @@
 #version 330 core
-/**
- * @file DeepSeaHydrothermalChimneyPillar.vert
- * @brief Vertex stage companion to DeepSeaHydrothermalChimneyPillar.frag -- see that file's
- * header for this scene's description.
+/*****************************************************************************\
+ *                              DeepSeaHydrothermalChimneyPillar.vert
+\*****************************************************************************/
+/*! @file
  *
- * The 220 x 120 grid is cut into bands by CELL INDEX (never by the raw vertex
- * uv, which is shared across a cell boundary and would tear the mesh):
- *   v band 0            -> one continuous 220 x 30 sheet used as the abyssal
- *                          water column behind everything
- *   v bands 1..3, u x 5 -> 15 independent chimneys, three depth layers of five
+ *  @brief
+ *  Vertex stage companion to DeepSeaHydrothermalChimneyPillar.frag -- see that file's header for this scene's
+ *  description.
  *
- * A single chimney was one thin vertical bar in the middle of a black frame
- * (occ 0.16).  The chimneys are now placed in FRUSTUM coordinates -- lateral
- * offset and tower size both scale with depth -- so the vent field stays evenly
- * spread across the picture however far back a layer sits.
+ *  The 220 x 120 grid is cut into bands by CELL INDEX (never by the raw vertex
+ *  uv, which is shared across a cell boundary and would tear the mesh):
+ *    v band 0            -> one continuous 220 x 30 sheet used as the abyssal
+ *                           water column behind everything
+ *    v bands 1..3, u x 5 -> 15 independent chimneys, three depth layers of five
+ *
+ *  A single chimney was one thin vertical bar in the middle of a black frame
+ *  (occ 0.16).  The chimneys are now placed in FRUSTUM coordinates -- lateral
+ *  offset and tower size both scale with depth -- so the vent field stays evenly
+ *  spread across the picture however far back a layer sits.
+ *
+ *  @author René Weller
  */
 
 in vec4 attrA; ///< xy = grid UV [0,1], z = 0, w = cell index (220 x 120 cells)

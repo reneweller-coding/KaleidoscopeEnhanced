@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file PaintPourCells.frag
- * @brief PAINT POUR CELLS: an acrylic pour seen close -- ribbons of glossy
- * paint (deep teal, magenta, gold, white, black) stretched and swirled
- * across the canvas, and scattered through them the "cells": round holes
- * where the silicone pushed the top layer apart, each ringed by thin lacy
- * rims of the colours beneath.  The paint keeps flowing, slowly, as if the
- * canvas were still being tilted; cells drift and stretch with it.  A soft
- * studio light gives the wet surface a gloss.  The music is in the light.
+/*****************************************************************************\
+ *                              PaintPourCells.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSwell  -> the gloss of the wet paint (slow)
- *   audioKick   -> the cell rims glint (light only)
- *   audioLevel  -> brightness
- *   audioChromaHue / hueP -> which paint set (photo-tinted)
- *   sceneTime / sceneAdvance -> the flow (continuous)
+ *  @brief
+ *  PAINT POUR CELLS: an acrylic pour seen close -- ribbons of glossy paint (deep teal, magenta, gold, white, black)
+ *  stretched and swirled across the canvas, and scattered through them the "cells": round holes where the silicone
+ *  pushed the top layer apart, each ringed by thin lacy rims of the colours beneath.
  *
- * Per-activation variety: cellsP (cell density), hueP.
+ *  The paint keeps flowing, slowly, as if the canvas were still being tilted; cells drift and stretch with it.  A
+ *  soft studio light gives the wet surface a gloss.  The music is in the light.
+ *
+ *  Audio Reactivity:
+ *    audioSwell  -> the gloss of the wet paint (slow)
+ *    audioKick   -> the cell rims glint (light only)
+ *    audioLevel  -> brightness
+ *    audioChromaHue / hueP -> which paint set (photo-tinted)
+ *    sceneTime / sceneAdvance -> the flow (continuous)
+ *
+ *  Per-activation variety: cellsP (cell density), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

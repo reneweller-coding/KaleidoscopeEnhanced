@@ -1,28 +1,32 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-
-/**
- * @file LaserSpireArray.frag
- * @brief Shades the crystalline laser-spire array extruded by
- * LaserSpireArray.geom: lit hexagonal pillar facets, or (where gBeam
- * marks a beam quad) a pure emissive skyward laser column.
+/*****************************************************************************\
+ *                              LaserSpireArray.frag
+\*****************************************************************************/
+/*! @file
  *
- * All colour, including the audioSpectrum-driven per-spire height/hue
- * and the audioKick pulse baked into gCol by the geometry stage, arrives
- * pre-computed; this fragment stage only adds a fixed-direction diffuse
- * and specular term to the pillar facets and adds a height-based energy
- * glow (brighter with world-space Y) on top, while beam quads are
- * written out unlit.
+ *  @brief
+ *  Shades the crystalline laser-spire array extruded by LaserSpireArray.geom: lit hexagonal pillar facets, or
+ *  (where gBeam marks a beam quad) a pure emissive skyward laser column.
  *
- * Audio Reactivity:
- *   audioUpperMid -> the METAL in the material: a scraping, industrial
- *                    2-6 kHz band pulls the facet highlight into a tight
- *                    chrome glint, a warm dull mix leaves a broad matte
- *                    sheen (energy-balanced -- the wide highlight is dimmed
- *                    by as much as it spreads)
- *   (audioSpectrum / audioKick / audioAdvance / audioBuildUp / audioTrebRel
- *    all act upstream in LaserSpireArray.geom -- see that file.)
+ *  All colour, including the audioSpectrum-driven per-spire height/hue
+ *  and the audioKick pulse baked into gCol by the geometry stage, arrives
+ *  pre-computed; this fragment stage only adds a fixed-direction diffuse
+ *  and specular term to the pillar facets and adds a height-based energy
+ *  glow (brighter with world-space Y) on top, while beam quads are
+ *  written out unlit.
+ *
+ *  Audio Reactivity:
+ *    audioUpperMid -> the METAL in the material: a scraping, industrial
+ *                     2-6 kHz band pulls the facet highlight into a tight
+ *                     chrome glint, a warm dull mix leaves a broad matte
+ *                     sheen (energy-balanced -- the wide highlight is dimmed
+ *                     by as much as it spreads)
+ *    (audioSpectrum / audioKick / audioAdvance / audioBuildUp / audioTrebRel
+ *     all act upstream in LaserSpireArray.geom -- see that file.)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec3  gNormal; ///< Normal (from the geometry stage).
 in vec3  gWorld;  ///< World (from the geometry stage).

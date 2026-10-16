@@ -1,8 +1,13 @@
 #version 330 core
-/**
- * @file DrumSkin.vert
- * @brief Vertex stage companion to DrumSkin.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              DrumSkin.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to DrumSkin.frag -- see that file's header for this scene's description.
+ *
+ *  @author René Weller
  */
 // DrumSkin.vert — look across the head, not down at it.  Seen from directly
 // above, a membrane mode is a flat pattern and could have been drawn; seen at a

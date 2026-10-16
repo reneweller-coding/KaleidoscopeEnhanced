@@ -1,18 +1,25 @@
 #version 330 core
-/**
- * @file MirrorShatterExplosion.geom
- * @brief Extrudes each of ~2,500 scatter seed points into a small triangular mirror shard, placed
- * with the same wedge-mirror kaleidoscope construction as ParticleTunnelFlight/WormholeMirrorWeave
- * (index-picked wedge, alternating copies mirrored -- real symmetry, not a fragment fold), and
- * blasts every shard outward from the centre right on the beat before settling back in, all from a
- * single stateless envelope driven by audioBeatPhase (no persistent state needed: audioBeatPhase
- * already re-triggers itself every beat on its own). Where MirrorShardKaleidoscope (geom="cubes")
- * is a static disc of tilting mirrors, this is a genuine explosion the geometry shader rebuilds
- * from scratch every single frame -- the shard triangles themselves don't exist as a mesh at all
- * until this stage emits them.
- *   audioBeatPhase -> the stateless explode/settle envelope (1 right on the beat, 0 just before the next)
- *   audioKick       -> extra outward kick + a bright white flash
- *   audioPhase      -> whole shatter slowly spins (integrated, jump-free)
+/*****************************************************************************\
+ *                              MirrorShatterExplosion.geom
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Extrudes each of ~2,500 scatter seed points into a small triangular mirror shard, placed with the same
+ *  wedge-mirror kaleidoscope construction as ParticleTunnelFlight/WormholeMirrorWeave (index-picked wedge,
+ *  alternating copies mirrored -- real symmetry, not a fragment fold), and blasts every shard outward from the
+ *  centre right on the beat before settling back in, all from a single stateless envelope driven by audioBeatPhase
+ *  (no persistent state needed: audioBeatPhase already re-triggers itself every beat on its own).
+ *
+ *  Where MirrorShardKaleidoscope (geom="cubes") is a static disc of tilting mirrors, this is a genuine explosion
+ *  the geometry shader rebuilds from scratch every single frame -- the shard triangles themselves don't exist as a
+ *  mesh at all until this stage emits them.
+ *
+ *    audioBeatPhase -> the stateless explode/settle envelope (1 right on the beat, 0 just before the next)
+ *    audioKick       -> extra outward kick + a bright white flash
+ *    audioPhase      -> whole shatter slowly spins (integrated, jump-free)
+ *
+ *  @author René Weller
  */
 
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).

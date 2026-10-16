@@ -1,15 +1,20 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file MeshKaleidoscope.frag
- * @brief Fragment stage for MeshKaleidoscope: the twelve copies of the model
- * lit by one key light plus a rim that is the palette's colour, alternating
- * copies tinted warm/cool so the mirror symmetry reads; the sky shell is a
- * dark velvet with the photo as a soft glow behind the wreath.
+/*****************************************************************************\
+ *                              MeshKaleidoscope.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity: audioKick flashes the rim; audioSwell brightens the key;
- *                   audioChromaHue drives the tint via the palette.
+ *  @brief
+ *  Fragment stage for MeshKaleidoscope: the twelve copies of the model lit by one key light plus a rim that is the
+ *  palette's colour, alternating copies tinted warm/cool so the mirror symmetry reads; the sky shell is a dark
+ *  velvet with the photo as a soft glow behind the wreath.
+ *
+ *  Audio Reactivity: audioKick flashes the rim; audioSwell brightens the key;
+ *                    audioChromaHue drives the tint via the palette.
+ *
+ *  @author René Weller
  */
+out vec4               fragColor;             ///< The pixel's colour (output).
 uniform sampler2DArray texMeshMaterial;       ///< The mesh's material textures (albedo, roughness, normal ...).
 uniform int            texMeshMaterialLayers; ///< Number of layers in texMeshMaterial.
 uniform sampler2D      tex0;                  ///< The current photo.

@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureDustMotes.frag
- * @brief TEXTURE DUST MOTES: a quiet sunbeam in a dim old room -- a broad
- * slanting shaft of light crosses the view, and in it thousands of dust
- * motes drift and swirl lazily in the air currents, sparkling when they
- * catch the light and vanishing when they leave the beam; behind, the
- * photograph hangs in the dim room, dimly lit by the scattered light.
- * The beam slowly shifts as the sun moves.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              TextureDustMotes.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the motes drift (integrated, jump-free)
- *   audioSpread     -> the beam widens
- *   audioHigh       -> the motes sparkle (light)
- *   audioKick       -> the beam brightens (light)
- *   audioMode       -> the light: cool morning in minor, golden afternoon in major
- *   audioSwell      -> the room's dim light (slow)
+ *  @brief
+ *  TEXTURE DUST MOTES: a quiet sunbeam in a dim old room -- a broad slanting shaft of light crosses the view, and
+ *  in it thousands of dust motes drift and swirl lazily in the air currents, sparkling when they catch the light
+ *  and vanishing when they leave the beam; behind, the photograph hangs in the dim room, dimly lit by the scattered
+ *  light.
  *
- * Knobs: moteP (mote density), beamP (beam angle), swirlP (air currents), hueP.
+ *  The beam slowly shifts as the sun moves.  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the motes drift (integrated, jump-free)
+ *    audioSpread     -> the beam widens
+ *    audioHigh       -> the motes sparkle (light)
+ *    audioKick       -> the beam brightens (light)
+ *    audioMode       -> the light: cool morning in minor, golden afternoon in major
+ *    audioSwell      -> the room's dim light (slow)
+ *
+ *  Knobs: moteP (mote density), beamP (beam angle), swirlP (air currents), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

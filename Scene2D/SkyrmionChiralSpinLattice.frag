@@ -1,23 +1,31 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SkyrmionChiralSpinLattice.frag
- * @brief SKYRMION CHIRAL SPIN LATTICE: Dense 2D triangular lattice of topological
- * magnetic skyrmion vortices governed by chiral Dzyaloshinskii-Moriya exchange interactions.
- * Displays swirling out-of-plane magnetization cores, gyrotropic Skyrmion Hall drift,
- * and holographic magneto-optical Faraday rotation patterns.
- *   audioAdvance -> drives gyrotropic Skyrmion Hall angle drift & spin precession
- *   audioKick    -> compresses lattice spacing triggering topological annihilation pulses
- *   audioBass    -> undulates skyrmion core diameter & out-of-plane helicity
- *   audioSwell   -> intensifies background ferromagnetic domain coherence
- *   audioCentroid-> shifts magneto-optical Kerr effect polarization colors
+/*****************************************************************************\
+ *                              SkyrmionChiralSpinLattice.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   latticeP float hexagonal skyrmion packing density         (2.0..6.0)
- *   coreP    float vortex core sharpness & radius             (0.4..1.8)
- *   chiralP  float Dzyaloshinskii-Moriya twisting chirality   (0.5..2.2)
- *   driftP   float gyrotropic Hall current velocity           (0.3..1.5)
+ *  @brief
+ *  SKYRMION CHIRAL SPIN LATTICE: Dense 2D triangular lattice of topological magnetic skyrmion vortices governed by
+ *  chiral Dzyaloshinskii-Moriya exchange interactions.
+ *
+ *  Displays swirling out-of-plane magnetization cores, gyrotropic Skyrmion Hall drift, and holographic
+ *  magneto-optical Faraday rotation patterns.
+ *
+ *    audioAdvance -> drives gyrotropic Skyrmion Hall angle drift & spin precession
+ *    audioKick    -> compresses lattice spacing triggering topological annihilation pulses
+ *    audioBass    -> undulates skyrmion core diameter & out-of-plane helicity
+ *    audioSwell   -> intensifies background ferromagnetic domain coherence
+ *    audioCentroid-> shifts magneto-optical Kerr effect polarization colors
+ *
+ *  Per-activation variety:
+ *    latticeP float hexagonal skyrmion packing density         (2.0..6.0)
+ *    coreP    float vortex core sharpness & radius             (0.4..1.8)
+ *    chiralP  float Dzyaloshinskii-Moriya twisting chirality   (0.5..2.2)
+ *    driftP   float gyrotropic Hall current velocity           (0.3..1.5)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

@@ -1,20 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file LavaWorldTidalLock.frag
- * @brief LAVA WORLD TIDAL LOCK: The day-side of a tidally locked planet.
- * The surface is a continuous, roiling ocean of glowing magma constantly
- * baked by a massive, close star. Eruptions and waves pulse to the beat.
- *   audioAdvance -> slow pan across the magma ocean
- *   audioKick    -> explosive magma bursts and solar flares
- *   audioSwell   -> brightness of the star and magma heat
- *   audioChromaHue-> palette offset for the magma
+/*****************************************************************************\
+ *                              LavaWorldTidalLock.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   lavaP float turbulence of the magma ocean (0.5..1.5)
- *   starP float intensity of the close star (0.5..2.0)
- *   hueP float palette offset (0..6.28)
+ *  @brief
+ *  LAVA WORLD TIDAL LOCK: The day-side of a tidally locked planet.
+ *
+ *  The surface is a continuous, roiling ocean of glowing magma constantly baked by a massive, close star. Eruptions
+ *  and waves pulse to the beat.
+ *
+ *    audioAdvance -> slow pan across the magma ocean
+ *    audioKick    -> explosive magma bursts and solar flares
+ *    audioSwell   -> brightness of the star and magma heat
+ *    audioChromaHue-> palette offset for the magma
+ *
+ *  Per-activation variety:
+ *    lavaP float turbulence of the magma ocean (0.5..1.5)
+ *    starP float intensity of the close star (0.5..2.0)
+ *    hueP float palette offset (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

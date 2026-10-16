@@ -1,15 +1,22 @@
 #version 330 core
-/**
- * @file NeuralAxonSynapseCloud.vert
- * @brief 60,000 particles (geom="points") simulating the human cerebral cortex connectome.
- * Action potentials race along axonal pathways, igniting synaptic neurotransmitter
- * flares in an interactive 3D neural cloud.
+/*****************************************************************************\
+ *                              NeuralAxonSynapseCloud.vert
+\*****************************************************************************/
+/*! @file
  *
- * Three quarters of the particles build the clusters; the remaining quarter
- * become the FAR CORTICAL HAZE, laid out in frustum coordinates so the
- * picture is filled at every depth instead of only where the compact ball of
- * clusters happens to be. audioSwell lifts that haze, and audioSpectrum bands
- * it the same way it bands the clusters.
+ *  @brief
+ *  60,000 particles (geom="points") simulating the human cerebral cortex connectome.
+ *
+ *  Action potentials race along axonal pathways, igniting synaptic neurotransmitter flares in an interactive 3D
+ *  neural cloud.
+ *
+ *  Three quarters of the particles build the clusters; the remaining quarter
+ *  become the FAR CORTICAL HAZE, laid out in frustum coordinates so the
+ *  picture is filled at every depth instead of only where the compact ball of
+ *  clusters happens to be. audioSwell lifts that haze, and audioSpectrum bands
+ *  it the same way it bands the clusters.
+ *
+ *  @author René Weller
  */
 
 layout( location = 0 ) in vec4 attrA; ///< w = point ID [0..59999]

@@ -1,20 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file GyroidMembraneMelt.frag
- * @brief TRANSITION GYROID MEMBRANE MELT: Triply periodic minimal surface (TPMS) gyroid transition.
- * A mathematical gyroid labyrinth surface divides space into two continuous
- * interlocking fluid channels, shifting its isovalue to smoothly transfer scenes.
- *   interpolation -> sweeps gyroid isovalue threshold from -1.4 to +1.4
- *   audioKick     -> flashes gyroid minimal surface nodal line boundaries
- *   audioSwell    -> undulates gyroid spatial labyrinth frequency
+/*****************************************************************************\
+ *                              GyroidMembraneMelt.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   gyroidP float gyroid spatial frequency & density (0.5..2.2)
- *   isoP    float membrane thickness & sharpness    (0.5..2.0)
- *   speedP  float animation speed multiplier        (0.5..2.0)
- *   hueP    float membrane glow hue offset          (0..6.28)
+ *  @brief
+ *  TRANSITION GYROID MEMBRANE MELT: Triply periodic minimal surface (TPMS) gyroid transition.
+ *
+ *  A mathematical gyroid labyrinth surface divides space into two continuous interlocking fluid channels, shifting
+ *  its isovalue to smoothly transfer scenes.
+ *
+ *    interpolation -> sweeps gyroid isovalue threshold from -1.4 to +1.4
+ *    audioKick     -> flashes gyroid minimal surface nodal line boundaries
+ *    audioSwell    -> undulates gyroid spatial labyrinth frequency
+ *
+ *  Per-activation variety:
+ *    gyroidP float gyroid spatial frequency & density (0.5..2.2)
+ *    isoP    float membrane thickness & sharpness    (0.5..2.0)
+ *    speedP  float animation speed multiplier        (0.5..2.0)
+ *    hueP    float membrane glow hue offset          (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

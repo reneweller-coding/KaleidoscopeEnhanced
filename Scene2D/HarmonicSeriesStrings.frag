@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file HarmonicSeriesStrings.frag
- * @brief HARMONIC SERIES STRINGS: a monochord and its overtones.  Eight
- * strings span the frame, the n-th sounding the n-th harmonic; each shows
- * its standing wave as a lit envelope (n antinodes) -- never the fast
- * vibration itself, only the envelope, so nothing flickers -- and the
- * envelope's brightness is the energy of the band that harmonic falls in.
- * The nodes are round beads of light; the bridge glows with the bass; the
- * kick plucks (a brightness pulse down every string); the photo is the
- * soundboard.  Camera still.
+/*****************************************************************************\
+ *                              HarmonicSeriesStrings.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSpectrum[32] -> envelope brightness per harmonic (light)
- *   audioKick         -> pluck pulse (light)
- *   audioBass         -> bridge glow (light)
- *   sceneAdvance      -> the pulse travel (continuous)
- *   audioLevel        -> brightness
+ *  @brief
+ *  HARMONIC SERIES STRINGS: a monochord and its overtones.
  *
- * Per-activation variety: stringsP, ampP, hueP.
+ *  Eight strings span the frame, the n-th sounding the n-th harmonic; each shows its standing wave as a lit
+ *  envelope (n antinodes) -- never the fast vibration itself, only the envelope, so nothing flickers -- and the
+ *  envelope's brightness is the energy of the band that harmonic falls in. The nodes are round beads of light; the
+ *  bridge glows with the bass; the kick plucks (a brightness pulse down every string); the photo is the soundboard.
+ *  Camera still.
+ *
+ *  Audio Reactivity:
+ *    audioSpectrum[32] -> envelope brightness per harmonic (light)
+ *    audioKick         -> pluck pulse (light)
+ *    audioBass         -> bridge glow (light)
+ *    sceneAdvance      -> the pulse travel (continuous)
+ *    audioLevel        -> brightness
+ *
+ *  Per-activation variety: stringsP, ampP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

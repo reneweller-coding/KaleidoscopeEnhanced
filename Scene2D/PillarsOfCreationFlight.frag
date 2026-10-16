@@ -1,20 +1,27 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file PillarsOfCreationFlight.frag
- * @brief PILLARS OF CREATION FLIGHT: A majestic, slow flight through colossal
- * columns of interstellar dust and gas. Newborn stars within the pillars
- * illuminate the dense clouds and react to the beat.
- *   audioAdvance -> flight speed through the nebula
- *   audioKick    -> flashes from newly ignited protostars
- *   audioSwell   -> ambient brightness of the dust clouds
- *   audioChromaHue-> palette offset for the nebula gas
+/*****************************************************************************\
+ *                              PillarsOfCreationFlight.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   dustP float density and complexity of the dust pillars (0.5..1.5)
- *   starP float intensity of the newborn stars (0.5..2.0)
- *   hueP float palette offset (0..6.28)
+ *  @brief
+ *  PILLARS OF CREATION FLIGHT: A majestic, slow flight through colossal columns of interstellar dust and gas.
+ *
+ *  Newborn stars within the pillars illuminate the dense clouds and react to the beat.
+ *
+ *    audioAdvance -> flight speed through the nebula
+ *    audioKick    -> flashes from newly ignited protostars
+ *    audioSwell   -> ambient brightness of the dust clouds
+ *    audioChromaHue-> palette offset for the nebula gas
+ *
+ *  Per-activation variety:
+ *    dustP float density and complexity of the dust pillars (0.5..1.5)
+ *    starP float intensity of the newborn stars (0.5..2.0)
+ *    hueP float palette offset (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

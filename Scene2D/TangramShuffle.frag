@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TangramShuffle.frag
- * @brief TANGRAM SHUFFLE: the seven pieces -- two large triangles, one
- * medium, two small, a square and a parallelogram -- each carrying its
- * part of the photo, gliding between figures over the scene arc: the
- * square, a cat, a bird, a boat, a runner.  Every piece moves and turns
- * by a smooth blend between its poses (no snaps); the piece that has
- * just settled lights on the kick, the swell is the lamp on the table,
- * the treble the lacquer glint.  Camera fixed over the table.
+/*****************************************************************************\
+ *                              TangramShuffle.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   sceneProgress -> the sequence of figures (the arc)
- *   audioKick     -> the settled piece lights (light)
- *   audioSwell    -> lamp (slow)
- *   audioHigh     -> lacquer glint (light)
- *   audioLevel    -> brightness
+ *  @brief
+ *  TANGRAM SHUFFLE: the seven pieces -- two large triangles, one medium, two small, a square and a parallelogram --
+ *  each carrying its part of the photo, gliding between figures over the scene arc: the square, a cat, a bird, a
+ *  boat, a runner.
  *
- * Per-activation variety: sizeP, lacquerP, hueP.
+ *  Every piece moves and turns by a smooth blend between its poses (no snaps); the piece that has just settled
+ *  lights on the kick, the swell is the lamp on the table, the treble the lacquer glint.  Camera fixed over the
+ *  table.
+ *
+ *  Audio Reactivity:
+ *    sceneProgress -> the sequence of figures (the arc)
+ *    audioKick     -> the settled piece lights (light)
+ *    audioSwell    -> lamp (slow)
+ *    audioHigh     -> lacquer glint (light)
+ *    audioLevel    -> brightness
+ *
+ *  Per-activation variety: sizeP, lacquerP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

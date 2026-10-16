@@ -1,22 +1,27 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file ApollonianGasketNebulaFlight.frag
- * @brief APOLLONIAN GASKET NEBULA FLIGHT: 3D Raymarching camera flight through
- * nested Apollonian sphere packing gasket voids immersed in glowing volumetric
- * cosmic nebula clouds with metallic reflections.
+/*****************************************************************************\
+ *                              ApollonianGasketNebulaFlight.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance -> drives continuous forward 3D flight trajectory
- *   audioKick    -> flashes the void rim glow on rays that miss the packing
- *   audioCentroid-> modulates the sphere packing folding scale (`s` in the IFS)
- *   audioSubBass -> breathes the whole packing in and out (applied as a uniform
- *                   scale around the estimator, not inside the fold)
- *   audioLevel   -> nebula accumulation density
- *   audioHigh    -> star dust brightness
- *   audioSwell   -> field of view breathing and nebula/haze strength
- *   audioChromaHue-> steers the nebula & metallic reflection palette
+ *  @brief
+ *  APOLLONIAN GASKET NEBULA FLIGHT: 3D Raymarching camera flight through nested Apollonian sphere packing gasket
+ *  voids immersed in glowing volumetric cosmic nebula clouds with metallic reflections.
+ *
+ *  Audio Reactivity:
+ *    audioAdvance -> drives continuous forward 3D flight trajectory
+ *    audioKick    -> flashes the void rim glow on rays that miss the packing
+ *    audioCentroid-> modulates the sphere packing folding scale (`s` in the IFS)
+ *    audioSubBass -> breathes the whole packing in and out (applied as a uniform
+ *                    scale around the estimator, not inside the fold)
+ *    audioLevel   -> nebula accumulation density
+ *    audioHigh    -> star dust brightness
+ *    audioSwell   -> field of view breathing and nebula/haze strength
+ *    audioChromaHue-> steers the nebula & metallic reflection palette
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

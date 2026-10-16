@@ -1,23 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SolidLightCones.frag
- * @brief SOLID LIGHT CONES: a dark hall filled with haze, and projectors at
- * its far end whose beams become surfaces -- each projects a slowly
- * changing line drawing onto the wall behind the viewer, and in the haze
- * that line becomes a luminous sheet stretching from the lens to us (after
- * Anthony McCall's solid-light works).  We stand inside the cones.  Each
- * drawing belongs to a band group and brightens with it; the haze drifts
- * and thickens with the swell.  Camera fixed.
+/*****************************************************************************\
+ *                              SolidLightCones.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioBass / audioMid / audioHigh -> brightness of the three drawings
- *   audioSwell        -> haze density (slow)
- *   sceneAdvance      -> the drawings morph (continuous, never on a beat)
- *   audioKick         -> the lenses flare (light)
+ *  @brief
+ *  SOLID LIGHT CONES: a dark hall filled with haze, and projectors at its far end whose beams become surfaces --
+ *  each projects a slowly changing line drawing onto the wall behind the viewer, and in the haze that line becomes
+ *  a luminous sheet stretching from the lens to us (after Anthony McCall's solid-light works).
  *
- * Per-activation variety: shapeP (which drawings), hueP.
+ *  We stand inside the cones.  Each drawing belongs to a band group and brightens with it; the haze drifts and
+ *  thickens with the swell.  Camera fixed.
+ *
+ *  Audio Reactivity:
+ *    audioBass / audioMid / audioHigh -> brightness of the three drawings
+ *    audioSwell        -> haze density (slow)
+ *    sceneAdvance      -> the drawings morph (continuous, never on a beat)
+ *    audioKick         -> the lenses flare (light)
+ *
+ *  Per-activation variety: shapeP (which drawings), hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

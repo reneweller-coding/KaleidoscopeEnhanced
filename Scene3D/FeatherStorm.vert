@@ -1,8 +1,13 @@
 #version 330 core
-/**
- * @file FeatherStorm.vert
- * @brief Vertex stage companion to FeatherStorm.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              FeatherStorm.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to FeatherStorm.frag -- see that file's header for this scene's description.
+ *
+ *  @author René Weller
  */
 // FeatherStorm.vert — the quads arrive oriented; this only places the column.
 

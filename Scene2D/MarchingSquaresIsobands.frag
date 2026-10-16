@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file MarchingSquaresIsobands.frag
- * @brief MARCHING SQUARES ISOBANDS: the photograph as a stepped relief map of
- * flat coloured bands, as a plotter would draw it -- its brightness sliced
- * into contour bands, each band a flat layer of colour stacked like cut
- * paper, with a small drop shadow at each step so the layers read as
- * terraces; the levels creep slowly so the terraces grow and shrink.
- * Endless, mirrorable.
+/*****************************************************************************\
+ *                              MarchingSquaresIsobands.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the levels creep (integrated, jump-free)
- *   audioSpread     -> the number of bands
- *   audioKick       -> the band edges catch light (light)
- *   audioMode       -> palette: cool (blue-teal) in minor, warm (sand-red) in major
- *   audioSwell      -> the shadow depth (slow)
- *   audioRoughness  -> the band edges get more detailed
+ *  @brief
+ *  MARCHING SQUARES ISOBANDS: the photograph as a stepped relief map of flat coloured bands, as a plotter would
+ *  draw it -- its brightness sliced into contour bands, each band a flat layer of colour stacked like cut paper,
+ *  with a small drop shadow at each step so the layers read as terraces; the levels creep slowly so the terraces
+ *  grow and shrink.
  *
- * Knobs: smoothP (relief smoothness), paletteP (palette spread), shadowP (layer shadows), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the levels creep (integrated, jump-free)
+ *    audioSpread     -> the number of bands
+ *    audioKick       -> the band edges catch light (light)
+ *    audioMode       -> palette: cool (blue-teal) in minor, warm (sand-red) in major
+ *    audioSwell      -> the shadow depth (slow)
+ *    audioRoughness  -> the band edges get more detailed
+ *
+ *  Knobs: smoothP (relief smoothness), paletteP (palette spread), shadowP (layer shadows), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

@@ -1,26 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file ProjectionMappedFacade.frag
- * @brief PROJECTION MAPPED FACADE: a baroque palace front at night, a
- * projection-mapping show playing on it.  Pilasters with capitals, heavy
- * cornices, arched windows, a portal and a pediment -- and the photograph
- * projected over all of it, broken by the relief: the cornices throw
- * shadows, the window recesses swallow the light, the column shafts catch
- * it.  The show moves through its acts: the photo on the stone, light
- * running along the outlines of the architecture, a glowing sweep that
- * passes over the front.  A crowd stands in the dark square.  The facade
- * and the camera are still; the show is light.
+/*****************************************************************************\
+ *                              ProjectionMappedFacade.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioKick   -> the outlines flash (light)
- *   audioBass   -> the projector's brightness (light)
- *   audioSwell  -> the sweep (slow)
- *   audioLevel  -> brightness
- *   sceneTime / sceneAdvance -> the acts of the show, the running light
+ *  @brief
+ *  PROJECTION MAPPED FACADE: a baroque palace front at night, a projection-mapping show playing on it.
  *
- * Per-activation variety: bayP (how many window bays), hueP.
+ *  Pilasters with capitals, heavy cornices, arched windows, a portal and a pediment -- and the photograph projected
+ *  over all of it, broken by the relief: the cornices throw shadows, the window recesses swallow the light, the
+ *  column shafts catch it.  The show moves through its acts: the photo on the stone, light running along the
+ *  outlines of the architecture, a glowing sweep that passes over the front.  A crowd stands in the dark square.
+ *  The facade and the camera are still; the show is light.
+ *
+ *  Audio Reactivity:
+ *    audioKick   -> the outlines flash (light)
+ *    audioBass   -> the projector's brightness (light)
+ *    audioSwell  -> the sweep (slow)
+ *    audioLevel  -> brightness
+ *    sceneTime / sceneAdvance -> the acts of the show, the running light
+ *
+ *  Per-activation variety: bayP (how many window bays), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

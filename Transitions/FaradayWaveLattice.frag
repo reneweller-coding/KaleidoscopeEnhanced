@@ -1,20 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file FaradayWaveLattice.frag
- * @brief TRANSITION FARADAY WAVE LATTICE: Parametric fluid surface Faraday wave transition.
- * Vertical oscillation of a fluid layer excites subharmonic standing wave lattices
- * (Faraday crispatio), whose undulating nodal grids cross-fade and morph between scenes.
- *   interpolation -> sweeps Faraday standing wave amplitude & lattice modes
- *   audioKick     -> flashes parametric resonance wave crest peaks
- *   audioSwell    -> drives vertical fluid acceleration & wave height
+/*****************************************************************************\
+ *                              FaradayWaveLattice.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   faradayP float Faraday wave frequency & wavenumber (0.5..2.2)
- *   gridP    float square vs hexagonal lattice mode    (0.5..2.0)
- *   speedP   float animation speed multiplier          (0.5..2.0)
- *   hueP     float fluid highlight hue offset          (0..6.28)
+ *  @brief
+ *  TRANSITION FARADAY WAVE LATTICE: Parametric fluid surface Faraday wave transition.
+ *
+ *  Vertical oscillation of a fluid layer excites subharmonic standing wave lattices (Faraday crispatio), whose
+ *  undulating nodal grids cross-fade and morph between scenes.
+ *
+ *    interpolation -> sweeps Faraday standing wave amplitude & lattice modes
+ *    audioKick     -> flashes parametric resonance wave crest peaks
+ *    audioSwell    -> drives vertical fluid acceleration & wave height
+ *
+ *  Per-activation variety:
+ *    faradayP float Faraday wave frequency & wavenumber (0.5..2.2)
+ *    gridP    float square vs hexagonal lattice mode    (0.5..2.0)
+ *    speedP   float animation speed multiplier          (0.5..2.0)
+ *    hueP     float fluid highlight hue offset          (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

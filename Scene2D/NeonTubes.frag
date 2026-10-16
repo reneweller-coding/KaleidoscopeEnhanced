@@ -1,15 +1,22 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file NeonTubes.frag
- * @brief Adapted from a \@kishimisu code-golf raymarch (2022, CC BY-NC-SA 4.0).
- * "A nice mix between an intended result and happy bugs integrated as features."
+/*****************************************************************************\
+ *                              NeonTubes.frag
+\*****************************************************************************/
+/*! @file
  *
- * A fly-through of pulsing neon rings/tubes in a repeating domain.  Adapted to
- * our engine: image-forward (the picture colours the tubes + drifts as a faint
- * nebula), audio-reactive & jump-free (forward travel via audioAdvance; beats
- * brighten; centroid/valence grade).
+ *  @brief
+ *  Adapted from a \@kishimisu code-golf raymarch (2022, CC BY-NC-SA 4.0).
+ *
+ *  "A nice mix between an intended result and happy bugs integrated as features."
+ *
+ *  A fly-through of pulsing neon rings/tubes in a repeating domain.  Adapted to
+ *  our engine: image-forward (the picture colours the tubes + drifts as a faint
+ *  nebula), audio-reactive & jump-free (forward travel via audioAdvance; beats
+ *  brighten; centroid/valence grade).
+ *
+ *  @author kishimisu (the original shader, CC BY-NC-SA 4.0), René Weller (adaptation)
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

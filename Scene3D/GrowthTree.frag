@@ -1,4 +1,24 @@
 #version 330 core
+/*****************************************************************************\
+ *                              GrowthTree.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Shades the grown grove with three materials picked by vKind: bark that warms from dark trunk to lighter young
+ *  wood along vDepth with an inner sap-glow near the tips, leaves lit mainly by backlit translucency, and the
+ *  forest floor, whose far reaches dissolve into a palette-tinted mist; a cool counter-light keeps the far side of
+ *  the trunks from going flat black.
+ *
+ *  audioChromaHue picks the sap-glow, leaf and ground-mist hues from the
+ *  photo-arc palette (imgPalette), audioKick and audioSubBass run a surge of
+ *  the sap glow up toward the growing tips, audioHigh brightens the leaf's
+ *  inner glow, audioAmbient lifts leaf backlight translucency AND the ground
+ *  mist, audioLevel strengthens the sky-reflection rim light, and audioBeat
+ *  pulses the final brightness.
+ *
+ *  @author René Weller
+ */
 out vec4 fragColor; ///< The pixel's colour (output).
 // GrowthTree.frag — bark near the root, sap-lit twigs at the tips, and leaves
 // that catch the light from behind.  The depth-along-the-tree value is what
@@ -10,23 +30,6 @@ in vec3  vNormal; ///< Surface normal (from the vertex stage).
 in vec3  vView;   ///< View vector (from the vertex stage).
 in float vDepth;  ///< 0 = trunk, 1 = tip  (on the ground: 0 = near, 1 = far)
 in float vKind;   ///< 0 = wood, 1 = leaf, 2 = forest floor
-
-/**
- * @file GrowthTree.frag
- * @brief Shades the grown grove with three materials picked by vKind: bark
- * that warms from dark trunk to lighter young wood along vDepth with an
- * inner sap-glow near the tips, leaves lit mainly by backlit translucency,
- * and the forest floor, whose far reaches dissolve into a palette-tinted
- * mist; a cool counter-light keeps the far side of the trunks from going
- * flat black.
- *
- * audioChromaHue picks the sap-glow, leaf and ground-mist hues from the
- * photo-arc palette (imgPalette), audioKick and audioSubBass run a surge of
- * the sap glow up toward the growing tips, audioHigh brightens the leaf's
- * inner glow, audioAmbient lifts leaf backlight translucency AND the ground
- * mist, audioLevel strengthens the sky-reflection rim light, and audioBeat
- * pulses the final brightness.
- */
 
 uniform sampler2D tex0;          ///< The current photo.
 uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.

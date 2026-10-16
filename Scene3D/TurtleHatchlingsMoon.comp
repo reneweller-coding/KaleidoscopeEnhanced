@@ -1,14 +1,20 @@
 #version 430 core
-/**
- * @file TurtleHatchlingsMoon.comp
- * @brief TURTLE HATCHLINGS MOON: a nesting beach at night.  Hatchlings
- * -- round-backed, flippers paddling -- crawl from the nest at the dune
- * down to the moonlit sea on continuous phases (each is reborn at the
- * nest when it reaches the water), the waves slide up the sand on the
- * clock, the moon is the swell, the photo is the sand and the sea
- * (fragment).  No state.  Camera fixed on the beach.
+/*****************************************************************************\
+ *                              TurtleHatchlingsMoon.comp
+\*****************************************************************************/
+/*! @file
  *
- * Per-instance: clutchP, pathP, hueP.
+ *  @brief
+ *  TURTLE HATCHLINGS MOON: a nesting beach at night.
+ *
+ *  Hatchlings -- round-backed, flippers paddling -- crawl from the nest at the dune down to the moonlit sea on
+ *  continuous phases (each is reborn at the nest when it reaches the water), the waves slide up the sand on the
+ *  clock, the moon is the swell, the photo is the sand and the sea (fragment).  No state.  Camera fixed on the
+ *  beach.
+ *
+ *  Per-instance: clutchP, pathP, hueP.
+ *
+ *  @author René Weller
  */
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( local_size_x = 4, local_size_y = 4, local_size_z = 4 ) in;

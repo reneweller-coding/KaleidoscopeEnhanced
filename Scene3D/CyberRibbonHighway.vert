@@ -1,8 +1,13 @@
 #version 330 core
-/**
- * @file CyberRibbonHighway.vert
- * @brief Vertex stage companion to CyberRibbonHighway.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              CyberRibbonHighway.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to CyberRibbonHighway.frag -- see that file's header for this scene's description.
+ *
+ *  @author René Weller
  */
 // CyberRibbonHighway.vert — 20 intertwined neon hyper-loop highway ribbons
 // spiraling through 3D space with high-speed pulse packets and lane markings.

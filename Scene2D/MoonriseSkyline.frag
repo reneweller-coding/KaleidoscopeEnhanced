@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file MoonriseSkyline.frag
- * @brief MOONRISE SKYLINE: the telephoto shot of a full moon rising behind a
- * city -- the moon enormous, filling half the height of the frame, its
- * maria and bright crater rays sharp, tinted orange by the thick air near
- * the horizon, and in front of it the skyline in silhouette: towers,
- * spires, a radio mast with a red warning light, lit windows scattered
- * over the dark facades.  The moon rises slowly and steadily, paling as
- * it climbs; heat shimmer ripples its lower edge.  The windows light up
- * with the bands of the music.
+/*****************************************************************************\
+ *                              MoonriseSkyline.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSpectrum[32] -> the lit windows, band by band (light)
- *   audioSwell        -> the glow around the moon (slow)
- *   audioLevel        -> brightness
- *   sceneTime / sceneAdvance -> the moon rising (bounded, continuous)
+ *  @brief
+ *  MOONRISE SKYLINE: the telephoto shot of a full moon rising behind a city -- the moon enormous, filling half the
+ *  height of the frame, its maria and bright crater rays sharp, tinted orange by the thick air near the horizon,
+ *  and in front of it the skyline in silhouette: towers, spires, a radio mast with a red warning light, lit windows
+ *  scattered over the dark facades.
  *
- * Per-activation variety: skylineP (the skyline's density), hueP.
+ *  The moon rises slowly and steadily, paling as it climbs; heat shimmer ripples its lower edge.  The windows light
+ *  up with the bands of the music.
+ *
+ *  Audio Reactivity:
+ *    audioSpectrum[32] -> the lit windows, band by band (light)
+ *    audioSwell        -> the glow around the moon (slow)
+ *    audioLevel        -> brightness
+ *    sceneTime / sceneAdvance -> the moon rising (bounded, continuous)
+ *
+ *  Per-activation variety: skylineP (the skyline's density), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

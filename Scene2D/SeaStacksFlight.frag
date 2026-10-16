@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SeaStacksFlight.frag
- * @brief SEA STACKS FLIGHT: a low glide over the sea at sunset between
- * towering sea stacks -- sheer rock pillars rising out of the swell, their
- * sunward faces glowing orange, their shadow sides deep violet, surf
- * foaming at their feet.  The sun hangs low ahead, laying a glittering road
- * across the water; spray haze hangs between the pillars; gulls wheel as
- * round dark specks.  The glide is steady and level; the music is the
- * light: the sun's glow and the glitter on the sea.
+/*****************************************************************************\
+ *                              SeaStacksFlight.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSwell  -> the sun's glow and the haze (slow)
- *   audioHigh   -> glitter on the water (light)
- *   audioKick   -> the surf flares white at the pillars' feet (light)
- *   audioLevel  -> brightness
- *   sceneTime / sceneAdvance -> the glide, the swell (continuous)
+ *  @brief
+ *  SEA STACKS FLIGHT: a low glide over the sea at sunset between towering sea stacks -- sheer rock pillars rising
+ *  out of the swell, their sunward faces glowing orange, their shadow sides deep violet, surf foaming at their
+ *  feet.
  *
- * Per-activation variety: stacksP (density of the pillars), hazeP, hueP.
+ *  The sun hangs low ahead, laying a glittering road across the water; spray haze hangs between the pillars; gulls
+ *  wheel as round dark specks.  The glide is steady and level; the music is the light: the sun's glow and the
+ *  glitter on the sea.
+ *
+ *  Audio Reactivity:
+ *    audioSwell  -> the sun's glow and the haze (slow)
+ *    audioHigh   -> glitter on the water (light)
+ *    audioKick   -> the surf flares white at the pillars' feet (light)
+ *    audioLevel  -> brightness
+ *    sceneTime / sceneAdvance -> the glide, the swell (continuous)
+ *
+ *  Per-activation variety: stacksP (density of the pillars), hazeP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

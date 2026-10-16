@@ -1,24 +1,32 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file MagnetotacticBacteriaChains.frag
- * @brief MAGNETOTACTIC BACTERIA CHAINS: a whole CULTURE of helical swimming chains of
- * magnetotactic bacteria -- 306 of them spread through the cell at every depth -- containing
- * biomineralized magnetite nanocrystal cubes aligned along 3D geomagnetic field lines.
- * Octahedral crystal faceting, magnetic dipole orientation glints, and photo texturing.
- * Each chain carries its own level (how deep it swims x how strongly it mineralised), so
- * bright chains cross dark ones over the black of the medium.
- *   audioAdvance -> drives swimming flagellar propulsion, the glide along each field line,
- *                   & helical precession
- *   audioKick    -> flashes magnetic dipole alignment specular glints
- *   audioSwell   -> thickens flagellar envelope & cellular sheath glow, and swells the
- *                   magnetite crystals
- *   audioCentroid-> shifts magnetosome biomineral color spectra
+/*****************************************************************************\
+ *                              MagnetotacticBacteriaChains.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   magnetosomeSizeP float magnetite crystal facet size      (0.03..0.12)
- *   specularP        float crystal facet specular brightness (0.8..2.5)
+ *  @brief
+ *  MAGNETOTACTIC BACTERIA CHAINS: a whole CULTURE of helical swimming chains of magnetotactic bacteria -- 306 of
+ *  them spread through the cell at every depth -- containing biomineralized magnetite nanocrystal cubes aligned
+ *  along 3D geomagnetic field lines.
+ *
+ *  Octahedral crystal faceting, magnetic dipole orientation glints, and photo texturing. Each chain carries its own
+ *  level (how deep it swims x how strongly it mineralised), so bright chains cross dark ones over the black of the
+ *  medium.
+ *
+ *    audioAdvance -> drives swimming flagellar propulsion, the glide along each field line,
+ *                    & helical precession
+ *    audioKick    -> flashes magnetic dipole alignment specular glints
+ *    audioSwell   -> thickens flagellar envelope & cellular sheath glow, and swells the
+ *                    magnetite crystals
+ *    audioCentroid-> shifts magnetosome biomineral color spectra
+ *
+ *  Per-activation variety:
+ *    magnetosomeSizeP float magnetite crystal facet size      (0.03..0.12)
+ *    specularP        float crystal facet specular brightness (0.8..2.5)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec3  vNormal;   ///< Surface normal (from the vertex stage).
 in vec3  vCol;      ///< Colour (from the vertex stage).

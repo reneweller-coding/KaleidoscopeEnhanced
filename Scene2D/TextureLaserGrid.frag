@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureLaserGrid.frag
- * @brief TEXTURE LASER GRID: a laser show in haze -- fans of thin coloured
- * beams sweep through a smoky room from several projectors, crossing into
- * shimmering grids and tunnels, the beams visible only where they cut
- * through the haze, flaring where they cross; the photograph is projected
- * as a laser-scanned image (glowing contour lines) on the far wall.
- * Endless, mirrorable.
+/*****************************************************************************\
+ *                              TextureLaserGrid.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the fans sweep (integrated, jump-free)
- *   audioPhase      -> the fans rotate (integrated)
- *   audioSpread     -> the fan opening
- *   audioKick       -> the beams flash (light)
- *   audioMode       -> palette: green-cyan in minor, red-magenta in major
- *   audioSwell      -> the haze density (slow)
+ *  @brief
+ *  TEXTURE LASER GRID: a laser show in haze -- fans of thin coloured beams sweep through a smoky room from several
+ *  projectors, crossing into shimmering grids and tunnels, the beams visible only where they cut through the haze,
+ *  flaring where they cross; the photograph is projected as a laser-scanned image (glowing contour lines) on the
+ *  far wall.
  *
- * Knobs: beamP (beams per fan), projP (projectors), wallP (the photo on the wall), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the fans sweep (integrated, jump-free)
+ *    audioPhase      -> the fans rotate (integrated)
+ *    audioSpread     -> the fan opening
+ *    audioKick       -> the beams flash (light)
+ *    audioMode       -> palette: green-cyan in minor, red-magenta in major
+ *    audioSwell      -> the haze density (slow)
+ *
+ *  Knobs: beamP (beams per fan), projP (projectors), wallP (the photo on the wall), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

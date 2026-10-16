@@ -1,20 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file OceanBreakerWave.frag
- * @brief TRANSITION OCEAN BREAKER WAVE: Ocean breaker wave rolling & foam wash transition.
- * A powerful ocean swell rolls across the frame, cresting into a curling breaker
- * wave that crashes with turbulent sea foam and washes into the incoming scene.
- *   interpolation -> sweeps the rolling breaker wave front across the viewport
- *   audioKick     -> flashes churning sea foam spray on wave break
- *   audioSwell    -> drives ocean swell wave amplitude & curl steepness
+/*****************************************************************************\
+ *                              OceanBreakerWave.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   waveP  float ocean swell wavelength & scale (0.5..2.2)
- *   foamP  float crest sea foam spray density   (0.5..2.0)
- *   speedP float wave propagation velocity       (0.5..2.0)
- *   hueP   float ocean water hue offset          (0..6.28)
+ *  @brief
+ *  TRANSITION OCEAN BREAKER WAVE: Ocean breaker wave rolling & foam wash transition.
+ *
+ *  A powerful ocean swell rolls across the frame, cresting into a curling breaker wave that crashes with turbulent
+ *  sea foam and washes into the incoming scene.
+ *
+ *    interpolation -> sweeps the rolling breaker wave front across the viewport
+ *    audioKick     -> flashes churning sea foam spray on wave break
+ *    audioSwell    -> drives ocean swell wave amplitude & curl steepness
+ *
+ *  Per-activation variety:
+ *    waveP  float ocean swell wavelength & scale (0.5..2.2)
+ *    foamP  float crest sea foam spray density   (0.5..2.0)
+ *    speedP float wave propagation velocity       (0.5..2.0)
+ *    hueP   float ocean water hue offset          (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

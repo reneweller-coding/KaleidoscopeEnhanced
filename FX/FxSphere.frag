@@ -1,16 +1,20 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file FxSphere.frag
- * @brief FX SPHERE: circular lens region that tiles the scene into
- * concentric repeated copies radiating from the centre, drifting over time
- * and optionally rotated; outside the lens the scene passes through
- * unchanged.
+/*****************************************************************************\
+ *                              FxSphere.frag
+\*****************************************************************************/
+/*! @file
  *
- * This effect declares no audio-reactive uniforms.
- *   interpolation -> linearly cross-fades tex0 over tex1, both inside and
- *                    outside the lens
+ *  @brief
+ *  FX SPHERE: circular lens region that tiles the scene into concentric repeated copies radiating from the centre,
+ *  drifting over time and optionally rotated; outside the lens the scene passes through unchanged.
+ *
+ *  This effect declares no audio-reactive uniforms.
+ *    interpolation -> linearly cross-fades tex0 over tex1, both inside and
+ *                     outside the lens
+ *
+ *  @author René Weller; contains code by Inigo Quilez (iq, 2013, CC BY-NC-SA 3.0)
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 // FxSphere.frag (Inigo Quilez, iq/2013)
 // FX SPHERE: a circular lens region tiles the scene into "copies"
 // concentric repeats radiating from the centre, drifting and optionally

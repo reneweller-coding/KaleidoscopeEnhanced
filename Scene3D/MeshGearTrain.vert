@@ -1,13 +1,18 @@
 #version 330 core
-/**
- * @file MeshGearTrain.vert
- * @brief Vertex stage companion to MeshGearTrain.frag -- see that file's
- * header. ONE brass gear drawn seven times (instances="7") as a meshing
- * train across the frame, neighbours counter-rotating on a steady rate.
- * The gear's axis is the model's THINNEST extent, whichever axis the
- * generator put it on; that axis is turned to face the camera, and the
- * spin is about it. Steady on time, never on the beat integrator: a train
- * that speeds up on every kick reads as a glitch, not as music.
+/*****************************************************************************\
+ *                              MeshGearTrain.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to MeshGearTrain.frag -- see that file's header.
+ *
+ *  ONE brass gear drawn seven times (instances="7") as a meshing train across the frame, neighbours
+ *  counter-rotating on a steady rate. The gear's axis is the model's THINNEST extent, whichever axis the generator
+ *  put it on; that axis is turned to face the camera, and the spin is about it. Steady on time, never on the beat
+ *  integrator: a train that speeds up on every kick reads as a glitch, not as music.
+ *
+ *  @author René Weller
  */
 
 in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an

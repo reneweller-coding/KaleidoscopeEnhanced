@@ -1,27 +1,31 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file HologramGauze.frag
- * @brief HOLOGRAM GAUZE: the Pepper's-ghost trick of a modern stage show -- an
- * invisible gauze stretched across a dark stage, and on it, floating in
- * mid-air, a giant dancer of light, arms raised, her gown dissolving into
- * light below, filled with the photograph: its bright parts glowing, its
- * dark parts thinning out, fine scan lines running
- * through it, a cold halo around it.  It turns slowly in space as if it
- * stood there in three dimensions.  Behind it the stage is black, heavy
- * red curtains frame the opening, the floor mirrors the apparition, and
- * the audience sits in silhouette with the ghost's light on their heads.
- * The camera is still.
+/*****************************************************************************\
+ *                              HologramGauze.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioBass   -> the apparition's brightness (light)
- *   audioHigh   -> the shimmer of the scan lines (light)
- *   audioSwell  -> the haze in the projector beam (slow)
- *   audioLevel  -> brightness
- *   sceneTime / sceneAdvance -> the slow turn, the drifting scan lines
+ *  @brief
+ *  HOLOGRAM GAUZE: the Pepper's-ghost trick of a modern stage show -- an invisible gauze stretched across a dark
+ *  stage, and on it, floating in mid-air, a giant dancer of light, arms raised, her gown dissolving into light
+ *  below, filled with the photograph: its bright parts glowing, its dark parts thinning out, fine scan lines
+ *  running through it, a cold halo around it.
  *
- * Per-activation variety: turnP (how far the figure turns), hueP.
+ *  It turns slowly in space as if it stood there in three dimensions.  Behind it the stage is black, heavy red
+ *  curtains frame the opening, the floor mirrors the apparition, and the audience sits in silhouette with the
+ *  ghost's light on their heads. The camera is still.
+ *
+ *  Audio Reactivity:
+ *    audioBass   -> the apparition's brightness (light)
+ *    audioHigh   -> the shimmer of the scan lines (light)
+ *    audioSwell  -> the haze in the projector beam (slow)
+ *    audioLevel  -> brightness
+ *    sceneTime / sceneAdvance -> the slow turn, the drifting scan lines
+ *
+ *  Per-activation variety: turnP (how far the figure turns), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

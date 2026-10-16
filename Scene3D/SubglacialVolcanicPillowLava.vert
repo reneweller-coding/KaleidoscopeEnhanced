@@ -1,8 +1,14 @@
 #version 330 core
-/**
- * @file SubglacialVolcanicPillowLava.vert
- * @brief Vertex stage companion to SubglacialVolcanicPillowLava.frag -- see that file's
- * header for this scene's description.
+/*****************************************************************************\
+ *                              SubglacialVolcanicPillowLava.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to SubglacialVolcanicPillowLava.frag -- see that file's header for this scene's
+ *  description.
+ *
+ *  @author René Weller
  */
 
 in vec4 attrA; ///< xy = Cell UV [0,1], z = 0, w = Cell index

@@ -1,16 +1,21 @@
 #version 430 core
-/**
- * @file KaleidocycleFold.comp
- * @brief KALEIDOCYCLE FOLD: the paper toy -- a ring of six tetrahedra
- * hinged edge to edge that turns endlessly through its own centre, each
- * face coming round to the top in turn.  The ring is built from the
- * hinge geometry: hinge k lies on a circle of radius R at angle k*60,
- * alternately horizontal and tilted; the fold angle advances on the scene
- * clock so the ring rotates through itself; each tetrahedron's four faces
- * are photo triangles (fragment lights them by band).  No state.  Camera
- * fixed above the table.
+/*****************************************************************************\
+ *                              KaleidocycleFold.comp
+\*****************************************************************************/
+/*! @file
  *
- * Per-instance: sizeP, speedP, hueP.
+ *  @brief
+ *  KALEIDOCYCLE FOLD: the paper toy -- a ring of six tetrahedra hinged edge to edge that turns endlessly through
+ *  its own centre, each face coming round to the top in turn.
+ *
+ *  The ring is built from the hinge geometry: hinge k lies on a circle of radius R at angle k*60, alternately
+ *  horizontal and tilted; the fold angle advances on the scene clock so the ring rotates through itself; each
+ *  tetrahedron's four faces are photo triangles (fragment lights them by band).  No state.  Camera fixed above the
+ *  table.
+ *
+ *  Per-instance: sizeP, speedP, hueP.
+ *
+ *  @author René Weller
  */
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( local_size_x = 4, local_size_y = 4, local_size_z = 4 ) in;

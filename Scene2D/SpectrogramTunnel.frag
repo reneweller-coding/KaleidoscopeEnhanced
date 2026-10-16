@@ -1,29 +1,34 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SpectrogramTunnel.frag
- * @brief SPECTROGRAM TUNNEL: the tunnel IS the music.  The host's scrolling
- * spectrogram (texSpectro: 32 log-spaced bands across, ~20 s of history down,
- * a ring) is rolled into a tube -- frequency runs around the wall, bass at
- * the top and bottom, treble along the sides, mirrored so the tube is
- * symmetric -- and history runs down the tunnel.  You fly through the last
- * eight seconds of what you are hearing: every note is a bump on the wall,
- * every kick a ring that rushes past.
+/*****************************************************************************\
+ *                              SpectrogramTunnel.frag
+\*****************************************************************************/
+/*! @file
  *
- * The flight comes from the spectrogram sliding through the tube (spectroHead
- * is continuous), plus a slow forward drift; nothing here depends on absolute
- * time, so it holds for hours.
+ *  @brief
+ *  SPECTROGRAM TUNNEL: the tunnel IS the music.
  *
- * Audio Reactivity:
- *   texSpectro     -> wall relief and light (the picture itself)
- *   audioMelodyPitch -> a bright travelling ring at the melody's band
- *   audioKick      -> the tube breathes outward for a beat
- *   audioSwell     -> fog thickness (loud builds close in, quiet opens up)
- *   audioBarPhase  -> gentle roll of the whole tube
+ *  The host's scrolling spectrogram (texSpectro: 32 log-spaced bands across, ~20 s of history down, a ring) is
+ *  rolled into a tube -- frequency runs around the wall, bass at the top and bottom, treble along the sides,
+ *  mirrored so the tube is symmetric -- and history runs down the tunnel.  You fly through the last eight seconds
+ *  of what you are hearing: every note is a bump on the wall, every kick a ring that rushes past.
  *
- * Per-activation variety: twistP (wall twist per unit depth), speedP (drift),
- *                         glowP (relief light), hueP.
+ *  The flight comes from the spectrogram sliding through the tube (spectroHead
+ *  is continuous), plus a slow forward drift; nothing here depends on absolute
+ *  time, so it holds for hours.
+ *
+ *  Audio Reactivity:
+ *    texSpectro     -> wall relief and light (the picture itself)
+ *    audioMelodyPitch -> a bright travelling ring at the melody's band
+ *    audioKick      -> the tube breathes outward for a beat
+ *    audioSwell     -> fog thickness (loud builds close in, quiet opens up)
+ *    audioBarPhase  -> gentle roll of the whole tube
+ *
+ *  Per-activation variety: twistP (wall twist per unit depth), speedP (drift),
+ *                          glowP (relief light), hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

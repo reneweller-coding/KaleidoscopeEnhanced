@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureSilkVeils.frag
- * @brief TEXTURE SILK VEILS: layers of sheer silk drifting in a slow breeze
- * -- translucent veils printed with the photograph billow and fold one
- * behind another, each sagging in soft catenary waves, their folds
- * gathering colour where the fabric doubles up, light shining through
- * from behind so the thin places glow; the veils slide past each other in
- * slow parallax.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              TextureSilkVeils.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the veils drift (integrated, jump-free)
- *   audioSpread     -> the billowing
- *   audioBass       -> the backlight (light)
- *   audioMode       -> the light: cool moonlight in minor, warm sunset in major
- *   audioRoughness  -> small ripples in the fabric
- *   audioSwell      -> the veils' opacity (slow)
+ *  @brief
+ *  TEXTURE SILK VEILS: layers of sheer silk drifting in a slow breeze -- translucent veils printed with the
+ *  photograph billow and fold one behind another, each sagging in soft catenary waves, their folds gathering colour
+ *  where the fabric doubles up, light shining through from behind so the thin places glow; the veils slide past
+ *  each other in slow parallax.
  *
- * Knobs: veilP (number of veils), foldP (fold frequency), printP (the photo on the silk), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the veils drift (integrated, jump-free)
+ *    audioSpread     -> the billowing
+ *    audioBass       -> the backlight (light)
+ *    audioMode       -> the light: cool moonlight in minor, warm sunset in major
+ *    audioRoughness  -> small ripples in the fabric
+ *    audioSwell      -> the veils' opacity (slow)
+ *
+ *  Knobs: veilP (number of veils), foldP (fold frequency), printP (the photo on the silk), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

@@ -1,16 +1,22 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file OverlayBlend.frag
- * @brief The FINAL pass blending the outgoing and incoming OVERLAY outputs
- * during an FX-overlay switch: a plain linear mix.
+/*****************************************************************************\
+ *                              OverlayBlend.frag
+\*****************************************************************************/
+/*! @file
  *
- * The styled transition variety lives in Transitions/ and fires on SCENE
- * fades; overlay switches are deliberately a simple dissolve (they are
- * infrequent, and with FxPlain carrying ~90% of the overlay time most
- * switches are Plain <-> X where a styled wipe would barely register).
- * interpolation: 1 = old overlay (tex0) fully visible .. 0 = new (tex1).
+ *  @brief
+ *  The FINAL pass blending the outgoing and incoming OVERLAY outputs during an FX-overlay switch: a plain linear
+ *  mix.
+ *
+ *  The styled transition variety lives in Transitions/ and fires on SCENE
+ *  fades; overlay switches are deliberately a simple dissolve (they are
+ *  infrequent, and with FxPlain carrying ~90% of the overlay time most
+ *  switches are Plain <-> X where a styled wipe would barely register).
+ *  interpolation: 1 = old overlay (tex0) fully visible .. 0 = new (tex1).
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform sampler2D tex0;          ///< The current photo.
 uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).

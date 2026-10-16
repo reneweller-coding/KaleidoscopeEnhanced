@@ -1,29 +1,35 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureMirrorSeamsWander.frag
- * @brief TEXTURE MIRROR SEAMS WANDER: a kaleidoscope without straight
- * mirrors -- the photograph is reflected across curved seams that wander
- * over the plane like slow rivers: wherever a seam passes, the picture on
- * one side appears mirrored on the other, and where several seams cross,
- * the reflections multiply into rosettes that form, drift and dissolve.
- * The seams glow faintly like the edges of liquid glass.  An endless
- * field, mirrorable, never repeating the same rosette twice.
+/*****************************************************************************\
+ *                              TextureMirrorSeamsWander.frag
+\*****************************************************************************/
+/*! @file
  *
- * Each seam is the zero line of a smooth field f; a point is mirrored by
- * stepping back across the zero line along the gradient (p - 2 f grad f /
- * |grad f|^2), which gives an exact local reflection.
+ *  @brief
+ *  TEXTURE MIRROR SEAMS WANDER: a kaleidoscope without straight mirrors -- the photograph is reflected across
+ *  curved seams that wander over the plane like slow rivers: wherever a seam passes, the picture on one side
+ *  appears mirrored on the other, and where several seams cross, the reflections multiply into rosettes that form,
+ *  drift and dissolve.
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the seams wander (integrated, jump-free)
- *   audioPhase      -> the whole picture turns (integrated)
- *   audioSpread     -> how many seams are active (blended)
- *   audioRoughness  -> the seams meander more finely
- *   audioMode       -> the seam glow warms in major
- *   audioHigh       -> the seams glint (light)
+ *  The seams glow faintly like the edges of liquid glass.  An endless field, mirrorable, never repeating the same
+ *  rosette twice.
  *
- * Knobs: seamsP (base seam count), scaleP (how close), curveP (how curved), hueP.
+ *  Each seam is the zero line of a smooth field f; a point is mirrored by
+ *  stepping back across the zero line along the gradient (p - 2 f grad f /
+ *  |grad f|^2), which gives an exact local reflection.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the seams wander (integrated, jump-free)
+ *    audioPhase      -> the whole picture turns (integrated)
+ *    audioSpread     -> how many seams are active (blended)
+ *    audioRoughness  -> the seams meander more finely
+ *    audioMode       -> the seam glow warms in major
+ *    audioHigh       -> the seams glint (light)
+ *
+ *  Knobs: seamsP (base seam count), scaleP (how close), curveP (how curved), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

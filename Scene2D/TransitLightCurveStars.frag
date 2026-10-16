@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TransitLightCurveStars.frag
- * @brief TRANSIT LIGHT CURVE STARS: the exoplanet transit method as a sky.
- * A field of stars; each hosts a planet on its own period, and when the
- * planet crosses the star the star dims by the transit depth (a light
- * event: nothing moves but brightness).  Below the sky, three light curves
- * scroll steadily -- the brightness histories of three host stars picked
- * by the tonal centre -- showing the characteristic flat-bottomed dips.
- * The photo is the star colours and the nebulosity behind.  Camera still.
+/*****************************************************************************\
+ *                              TransitLightCurveStars.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   sceneAdvance   -> orbital phases and curve scroll (continuous)
- *   audioChromaHue -> which stars are the three featured hosts (slow)
- *   audioKick      -> twinkle (light)
- *   audioSwell     -> nebula glow (slow)
- *   audioLevel     -> brightness
+ *  @brief
+ *  TRANSIT LIGHT CURVE STARS: the exoplanet transit method as a sky.
  *
- * Per-activation variety: countP, depthP, hueP.
+ *  A field of stars; each hosts a planet on its own period, and when the planet crosses the star the star dims by
+ *  the transit depth (a light event: nothing moves but brightness).  Below the sky, three light curves scroll
+ *  steadily -- the brightness histories of three host stars picked by the tonal centre -- showing the
+ *  characteristic flat-bottomed dips. The photo is the star colours and the nebulosity behind.  Camera still.
+ *
+ *  Audio Reactivity:
+ *    sceneAdvance   -> orbital phases and curve scroll (continuous)
+ *    audioChromaHue -> which stars are the three featured hosts (slow)
+ *    audioKick      -> twinkle (light)
+ *    audioSwell     -> nebula glow (slow)
+ *    audioLevel     -> brightness
+ *
+ *  Per-activation variety: countP, depthP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

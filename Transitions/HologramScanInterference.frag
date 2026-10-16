@@ -1,20 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file HologramScanInterference.frag
- * @brief TRANSITION HOLOGRAM SCAN INTERFERENCE: Volumetric laser holographic scanline
- * transition. Laser interference fringes and horizontal spatial-light-modulator
- * scanlines reconstruct the incoming scene with chromatic hologram diffraction.
- *   interpolation -> sweeps holographic phase modulation & reconstruction
- *   audioKick     -> flashes laser interference fringe lines
- *   audioSwell    -> sharpens the scanline edge (slow)
+/*****************************************************************************\
+ *                              HologramScanInterference.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   scanP  float scanline density & line frequency (0.5..2.2)
- *   holoP  float holographic depth displacement   (0.5..2.0)
- *   speedP float scan velocity multiplier          (0.5..2.0)
- *   hueP   float hologram laser hue offset         (0..6.28)
+ *  @brief
+ *  TRANSITION HOLOGRAM SCAN INTERFERENCE: Volumetric laser holographic scanline transition.
+ *
+ *  Laser interference fringes and horizontal spatial-light-modulator scanlines reconstruct the incoming scene with
+ *  chromatic hologram diffraction.
+ *
+ *    interpolation -> sweeps holographic phase modulation & reconstruction
+ *    audioKick     -> flashes laser interference fringe lines
+ *    audioSwell    -> sharpens the scanline edge (slow)
+ *
+ *  Per-activation variety:
+ *    scanP  float scanline density & line frequency (0.5..2.2)
+ *    holoP  float holographic depth displacement   (0.5..2.0)
+ *    speedP float scan velocity multiplier          (0.5..2.0)
+ *    hueP   float hologram laser hue offset         (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

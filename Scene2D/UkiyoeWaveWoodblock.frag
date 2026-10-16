@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file UkiyoeWaveWoodblock.frag
- * @brief UKIYO-E WAVE WOODBLOCK: a great wave in the manner of the
- * woodblock print -- flat colour fields in Prussian blue and cream, the
- * black key line, the foam claws as rows of round dots, the paper grain.
- * The wave rises and curls over the scene arc (its crest reaching further
- * with the swell, slowly), the far mountain sits under it; the photo is
- * the print paper and the sky's colour field.  The kick brightens the
- * claws, the treble the spray dots.  Camera fixed: it is a print.
+/*****************************************************************************\
+ *                              UkiyoeWaveWoodblock.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   sceneProgress -> the wave's rise and curl (the arc)
- *   audioSwell    -> crest reach (slow)
- *   audioKick     -> claw light (light)
- *   audioHigh     -> spray dots (light)
- *   audioLevel    -> brightness
+ *  @brief
+ *  UKIYO-E WAVE WOODBLOCK: a great wave in the manner of the woodblock print -- flat colour fields in Prussian blue
+ *  and cream, the black key line, the foam claws as rows of round dots, the paper grain.
  *
- * Per-activation variety: crestP, blueP, hueP.
+ *  The wave rises and curls over the scene arc (its crest reaching further with the swell, slowly), the far
+ *  mountain sits under it; the photo is the print paper and the sky's colour field.  The kick brightens the claws,
+ *  the treble the spray dots.  Camera fixed: it is a print.
+ *
+ *  Audio Reactivity:
+ *    sceneProgress -> the wave's rise and curl (the arc)
+ *    audioSwell    -> crest reach (slow)
+ *    audioKick     -> claw light (light)
+ *    audioHigh     -> spray dots (light)
+ *    audioLevel    -> brightness
+ *
+ *  Per-activation variety: crestP, blueP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

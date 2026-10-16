@@ -1,30 +1,36 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TapeHeadCrossfade.frag
- * @brief TRANSITION TAPE HEAD CROSSFADE: a splice runs across the playback
- * head.  The cut is diagonal, the transport wows, and the join gives a bump as
- * it passes.
+/*****************************************************************************\
+ *                              TapeHeadCrossfade.frag
+\*****************************************************************************/
+/*! @file
  *
- * A tape splice is cut at an angle on purpose: a square cut would put the whole
- * width across the head in one instant and click, while a diagonal one crosses
- * it progressively and the join is inaudible.  So the boundary here is a
- * diagonal, and it travels at a steady rate the way tape does.
+ *  @brief
+ *  TRANSITION TAPE HEAD CROSSFADE: a splice runs across the playback head.
  *
- * The other half is the transport.  Wow is the slow speed error of an
- * eccentric capstan and flutter is the fast one, so the picture is stretched
- * along the direction of travel by a sum of two rates, one slow and one fast --
- * and because it is a SPEED error, what it bends is the position, continuously,
- * never in a step.
+ *  The cut is diagonal, the transport wows, and the join gives a bump as it passes.
  *
- * Audio Reactivity:
- *   audioSwell  -> the wow: how far the transport drifts (slow)
- *   audioFlux    -> the tape hiss (light)
- *   audioHigh    -> the head bump as the join passes (light)
- *   audioMid     -> the tape's own colour (colour)
+ *  A tape splice is cut at an angle on purpose: a square cut would put the whole
+ *  width across the head in one instant and click, while a diagonal one crosses
+ *  it progressively and the join is inaudible.  So the boundary here is a
+ *  diagonal, and it travels at a steady rate the way tape does.
  *
- * Per-activation variety: angleP, wowP, hueP.
+ *  The other half is the transport.  Wow is the slow speed error of an
+ *  eccentric capstan and flutter is the fast one, so the picture is stretched
+ *  along the direction of travel by a sum of two rates, one slow and one fast --
+ *  and because it is a SPEED error, what it bends is the position, continuously,
+ *  never in a step.
+ *
+ *  Audio Reactivity:
+ *    audioSwell  -> the wow: how far the transport drifts (slow)
+ *    audioFlux    -> the tape hiss (light)
+ *    audioHigh    -> the head bump as the join passes (light)
+ *    audioMid     -> the tape's own colour (colour)
+ *
+ *  Per-activation variety: angleP, wowP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

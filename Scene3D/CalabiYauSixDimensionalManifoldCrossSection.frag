@@ -1,19 +1,27 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file CalabiYauSixDimensionalManifoldCrossSection.frag
- * @brief CALABI-YAU SIX-DIMENSIONAL MANIFOLD CROSS SECTION: 220x120 heightfield grid of a 3D
- * projection of a 6-dimensional Ricci-flat Calabi-Yau compactification manifold (quintic threefold).
- * Toric folds, complex Käler metric modulations, glass specular sheen, and string-theory photo texturing.
- *   audioAdvance -> navigates complex structure moduli space deformation & rotation
- *   audioKick    -> flashes singular conifold transition & mirror symmetry bursts
- *   audioSwell   -> expands Calabi-Yau compactification radius & Kähler volume form
- *   audioCentroid-> shifts Ricci-flat metric curvature invariant color spectra
+/*****************************************************************************\
+ *                              CalabiYauSixDimensionalManifoldCrossSection.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   calabiScaleP float Calabi-Yau manifold 3D scale           (0.8..2.2)
- *   specularP    float complex manifold facet specular gain  (0.8..2.5)
+ *  @brief
+ *  CALABI-YAU SIX-DIMENSIONAL MANIFOLD CROSS SECTION: 220x120 heightfield grid of a 3D projection of a
+ *  6-dimensional Ricci-flat Calabi-Yau compactification manifold (quintic threefold).
+ *
+ *  Toric folds, complex Käler metric modulations, glass specular sheen, and string-theory photo texturing.
+ *
+ *    audioAdvance -> navigates complex structure moduli space deformation & rotation
+ *    audioKick    -> flashes singular conifold transition & mirror symmetry bursts
+ *    audioSwell   -> expands Calabi-Yau compactification radius & Kähler volume form
+ *    audioCentroid-> shifts Ricci-flat metric curvature invariant color spectra
+ *
+ *  Per-activation variety:
+ *    calabiScaleP float Calabi-Yau manifold 3D scale           (0.8..2.2)
+ *    specularP    float complex manifold facet specular gain  (0.8..2.5)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec2  vUV;          ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 in vec3  vNormal;      ///< Surface normal (from the vertex stage).

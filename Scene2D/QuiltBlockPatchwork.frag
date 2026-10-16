@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file QuiltBlockPatchwork.frag
- * @brief QUILT BLOCK PATCHWORK: a quilt assembling itself block by block
- * over the scene arc.  Each block is a traditional pieced pattern -- half
- * square triangles, a nine patch, a flying goose -- cut from the photo,
- * and the blocks arrive in row-major order, each fading in over its own
- * slice of the arc.  Running stitch lines cross every seam, the chroma
- * classes pick the fabrics, and the kick lights the block that has just
- * been set.  Camera fixed above the quilt.
+/*****************************************************************************\
+ *                              QuiltBlockPatchwork.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   sceneProgress   -> blocks arrive one after another (the arc)
- *   audioChroma[12] -> the fabric colours (light)
- *   audioKick       -> the newest block lights (light)
- *   audioSwell      -> the lamp over the frame (slow)
- *   audioHigh       -> the thread sheen (light)
+ *  @brief
+ *  QUILT BLOCK PATCHWORK: a quilt assembling itself block by block over the scene arc.
  *
- * Per-activation variety: blocksP, sashP, hueP.
+ *  Each block is a traditional pieced pattern -- half square triangles, a nine patch, a flying goose -- cut from
+ *  the photo, and the blocks arrive in row-major order, each fading in over its own slice of the arc.  Running
+ *  stitch lines cross every seam, the chroma classes pick the fabrics, and the kick lights the block that has just
+ *  been set.  Camera fixed above the quilt.
+ *
+ *  Audio Reactivity:
+ *    sceneProgress   -> blocks arrive one after another (the arc)
+ *    audioChroma[12] -> the fabric colours (light)
+ *    audioKick       -> the newest block lights (light)
+ *    audioSwell      -> the lamp over the frame (slow)
+ *    audioHigh       -> the thread sheen (light)
+ *
+ *  Per-activation variety: blocksP, sashP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

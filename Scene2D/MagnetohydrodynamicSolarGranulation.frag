@@ -1,22 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file MagnetohydrodynamicSolarGranulation.frag
- * @brief MAGNETOHYDRODYNAMIC SOLAR GRANULATION: Solar photosphere turbulent thermal convection.
- * Rising hot plasma plumes form bright polygonal convective granules, sinking dark intergranular
- * magnetic lanes, high-frequency acoustic p-mode waves, and magnetic micro-flare brightenings.
- *   audioAdvance -> drives turbulent plasma convective turnover velocity
- *   audioKick    -> ignites explosive magnetic reconnection micro-flares in lanes
- *   audioBass    -> undulates deep sub-photospheric convection cell expansion
- *   audioSwell   -> brightens hot plasma granule core thermal radiation
- *   audioCentroid-> shifts photospheric blackbody radiation color temperature
+/*****************************************************************************\
+ *                              MagnetohydrodynamicSolarGranulation.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   granuleScaleP float Voronoi convection cell packing density (2.0..6.0)
- *   laneWidthP    float intergranular magnetic lane width       (0.6..2.2)
- *   flareP        float magnetic micro-flare burst brightness   (0.8..2.5)
- *   pmodeP        float acoustic p-mode oscillation amplitude   (0.4..1.8)
+ *  @brief
+ *  MAGNETOHYDRODYNAMIC SOLAR GRANULATION: Solar photosphere turbulent thermal convection.
+ *
+ *  Rising hot plasma plumes form bright polygonal convective granules, sinking dark intergranular magnetic lanes,
+ *  high-frequency acoustic p-mode waves, and magnetic micro-flare brightenings.
+ *
+ *    audioAdvance -> drives turbulent plasma convective turnover velocity
+ *    audioKick    -> ignites explosive magnetic reconnection micro-flares in lanes
+ *    audioBass    -> undulates deep sub-photospheric convection cell expansion
+ *    audioSwell   -> brightens hot plasma granule core thermal radiation
+ *    audioCentroid-> shifts photospheric blackbody radiation color temperature
+ *
+ *  Per-activation variety:
+ *    granuleScaleP float Voronoi convection cell packing density (2.0..6.0)
+ *    laneWidthP    float intergranular magnetic lane width       (0.6..2.2)
+ *    flareP        float magnetic micro-flare burst brightness   (0.8..2.5)
+ *    pmodeP        float acoustic p-mode oscillation amplitude   (0.4..1.8)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

@@ -1,22 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file BasilicaCisternColumns.frag
- * @brief BASILICA CISTERN COLUMNS: an underground cistern -- a forest of
- * stone columns under brick cross vaults, standing in black water that
- * mirrors all of it.  Every column is lit from its foot by a warm uplight;
- * drops fall from the vault and ring the water.  We glide slowly between
- * the rows.  Each uplight belongs to a spectrum band and swells with it, so
- * the music moves through the hall as light along the colonnade.
+/*****************************************************************************\
+ *                              BasilicaCisternColumns.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSpectrum[32] -> each column's uplight (its band)
- *   audioSwell        -> the haze in the hall (slow)
- *   audioHigh         -> glints on the water rings (light)
- *   sceneAdvance      -> the glide between the columns (continuous)
+ *  @brief
+ *  BASILICA CISTERN COLUMNS: an underground cistern -- a forest of stone columns under brick cross vaults, standing
+ *  in black water that mirrors all of it.
  *
- * Per-activation variety: lightP (warm/cool uplights), hueP.
+ *  Every column is lit from its foot by a warm uplight; drops fall from the vault and ring the water.  We glide
+ *  slowly between the rows.  Each uplight belongs to a spectrum band and swells with it, so the music moves through
+ *  the hall as light along the colonnade.
+ *
+ *  Audio Reactivity:
+ *    audioSpectrum[32] -> each column's uplight (its band)
+ *    audioSwell        -> the haze in the hall (slow)
+ *    audioHigh         -> glints on the water rings (light)
+ *    sceneAdvance      -> the glide between the columns (continuous)
+ *
+ *  Per-activation variety: lightP (warm/cool uplights), hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

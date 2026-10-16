@@ -1,13 +1,18 @@
 #version 400 core
-/**
- * @file SoapFilmMembrane.tese
- * @brief Tessellation evaluation for SoapFilmMembrane: a soap film stretched
- * in a frame in front of the camera, bulging and rippling as a film does --
- * standing modes of the rectangle on the scene clock, amplitude on the slow
- * swell, plus a slow breath (the film blown gently).  The film thickness
- * (for the interference colour) is computed here: it drains downward over
- * the arc (thin at the top, thick at the bottom) and follows the ripples.
- * Projection after displacement; no camera motion.
+/*****************************************************************************\
+ *                              SoapFilmMembrane.tese
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Tessellation evaluation for SoapFilmMembrane: a soap film stretched in a frame in front of the camera, bulging
+ *  and rippling as a film does -- standing modes of the rectangle on the scene clock, amplitude on the slow swell,
+ *  plus a slow breath (the film blown gently).
+ *
+ *  The film thickness (for the interference colour) is computed here: it drains downward over the arc (thin at the
+ *  top, thick at the bottom) and follows the ripples. Projection after displacement; no camera motion.
+ *
+ *  @author René Weller
  */
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( quads, fractional_odd_spacing, ccw ) in;

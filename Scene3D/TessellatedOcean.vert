@@ -1,9 +1,14 @@
 #version 330 core
-/**
- * @file TessellatedOcean.vert
- * @brief Vertex stage companion to TessellatedOcean.frag -- passes the patch
- * corner through; placement happens in the evaluation stage after the
- * displacement.
+/*****************************************************************************\
+ *                              TessellatedOcean.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to TessellatedOcean.frag -- passes the patch corner through; placement happens in the
+ *  evaluation stage after the displacement.
+ *
+ *  @author René Weller
  */
 in vec4 attrA; ///< xy = global (u,v) of this patch corner, w = patch index
 in vec4 attrB; ///< per-patch hashes

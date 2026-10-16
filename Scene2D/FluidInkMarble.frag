@@ -1,21 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file FluidInkMarble.frag
- * @brief FLUID INK MARBLE: 100% Full-screen liquid hydrodynamics & reaction-diffusion
- * surface. Loaded photos act as vibrant floating inks in turbulent vorticity
- * and Curl-Noise fluid streams.
- *   audioKick    -> radial liquid splash & shockwaves
- *   audioFlux    -> turbulent swirl generation & fluid vorticity
- *   audioValence -> color temperature & palette shifting
- *   audioSwell   -> fluid expansion & flow velocity
+/*****************************************************************************\
+ *                              FluidInkMarble.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety (0 = default):
- *   viscosityP float liquid viscosity multiplier (0 -> 1.0; 0.5..1.8)
- *   swirlP     float vorticity swirl intensity   (0 -> 1.0; 0.6..2.0)
- *   flowP      float fluid flow speed multiplier (0 -> 1.0; 0.4..1.6)
- *   hueP       float global hue rotation         (0 -> none; 0..6.28)
+ *  @brief
+ *  FLUID INK MARBLE: 100% Full-screen liquid hydrodynamics & reaction-diffusion surface.
+ *
+ *  Loaded photos act as vibrant floating inks in turbulent vorticity and Curl-Noise fluid streams.
+ *
+ *    audioKick    -> radial liquid splash & shockwaves
+ *    audioFlux    -> turbulent swirl generation & fluid vorticity
+ *    audioValence -> color temperature & palette shifting
+ *    audioSwell   -> fluid expansion & flow velocity
+ *
+ *  Per-activation variety (0 = default):
+ *    viscosityP float liquid viscosity multiplier (0 -> 1.0; 0.5..1.8)
+ *    swirlP     float vorticity swirl intensity   (0 -> 1.0; 0.6..2.0)
+ *    flowP      float fluid flow speed multiplier (0 -> 1.0; 0.4..1.6)
+ *    hueP       float global hue rotation         (0 -> none; 0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

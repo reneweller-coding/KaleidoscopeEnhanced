@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file MeltingCrayonRainbow.frag
- * @brief MELTING CRAYON RAINBOW: rows of wax crayons melting down a canvas
- * under a hot-air blower -- along the top of each band a row of crayons
- * in the photograph's colours, and from each one a glossy rivulet of
- * molten wax runs down, splitting and splattering, the runs of
- * neighbouring colours braiding together; the drips grow slowly longer,
- * the bands repeat so the plane is endless.  Mirrorable.
+/*****************************************************************************\
+ *                              MeltingCrayonRainbow.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the wax runs (integrated, jump-free)
- *   audioSpread     -> the runs splay sideways
- *   audioKick       -> the wet wax gleams (light)
- *   audioMode       -> the canvas: black in minor, white in major (blend)
- *   audioRoughness  -> splatter
- *   audioSwell      -> the runs grow longer (slow)
+ *  @brief
+ *  MELTING CRAYON RAINBOW: rows of wax crayons melting down a canvas under a hot-air blower -- along the top of
+ *  each band a row of crayons in the photograph's colours, and from each one a glossy rivulet of molten wax runs
+ *  down, splitting and splattering, the runs of neighbouring colours braiding together; the drips grow slowly
+ *  longer, the bands repeat so the plane is endless.
  *
- * Knobs: crayonP (crayons per band), bandP (band height), photoP (photo colours vs rainbow), hueP.
+ *  Mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the wax runs (integrated, jump-free)
+ *    audioSpread     -> the runs splay sideways
+ *    audioKick       -> the wet wax gleams (light)
+ *    audioMode       -> the canvas: black in minor, white in major (blend)
+ *    audioRoughness  -> splatter
+ *    audioSwell      -> the runs grow longer (slow)
+ *
+ *  Knobs: crayonP (crayons per band), bandP (band height), photoP (photo colours vs rainbow), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

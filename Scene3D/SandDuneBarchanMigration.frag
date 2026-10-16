@@ -1,35 +1,42 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SandDuneBarchanMigration.frag
- * @brief SAND DUNE BARCHAN MIGRATION: golden barchan dunes seen from above in
- * late light - crescent slip faces, wind-ripple specular, photo blended
- * into the sand.  The gold stays gold (no global hue spin).
+/*****************************************************************************\
+ *                              SandDuneBarchanMigration.frag
+\*****************************************************************************/
+/*! @file
  *
- * The field is a perspective carpet that runs to the horizon (see the .vert),
- * so the dune sea fills the frame; distance is carried by a dark dusk haze
- * whose temperature follows the same audioMode as the shadows.
+ *  @brief
+ *  SAND DUNE BARCHAN MIGRATION: golden barchan dunes seen from above in late light - crescent slip faces,
+ *  wind-ripple specular, photo blended into the sand.
  *
- * Audio Reactivity:
- *   audioBass      -> dune swell
- *   audioKick      -> sand-glint flash
- *   audioSwell     -> lift of the far dusk haze (distance breathes with the
- *                     music's overall energy)
- *   audioAdvance   -> slow downwind dune migration
- *   audioHigh      -> saltation-ripple amplitude (see .vert)
- *   audioZCR       -> sand grain: noisy material rakes the field into wind
- *                     ripples, a clean tone leaves it smooth (see .vert)
- *   audioSharpness -> CRISPNESS OF THE SUN GLINT: dull, dark material gives a
- *                     broad low sheen across the slip faces, bright harsh
- *                     material (cymbals, sibilance) hardens it into a narrow
- *                     glitter along the crests.  The specular gain is scaled
- *                     inversely to the lobe width, so the broad end does not
- *                     integrate to a brighter frame
- *   audioMode      -> SHADOW TEMPERATURE only: minor harmony cools the shaded
- *                     side of each dune toward blue dusk, major warms it.
- *                     The lit sand_gold is deliberately untouched -- the dunes
- *                     must stay sand-coloured
+ *  The gold stays gold (no global hue spin).
+ *
+ *  The field is a perspective carpet that runs to the horizon (see the .vert),
+ *  so the dune sea fills the frame; distance is carried by a dark dusk haze
+ *  whose temperature follows the same audioMode as the shadows.
+ *
+ *  Audio Reactivity:
+ *    audioBass      -> dune swell
+ *    audioKick      -> sand-glint flash
+ *    audioSwell     -> lift of the far dusk haze (distance breathes with the
+ *                      music's overall energy)
+ *    audioAdvance   -> slow downwind dune migration
+ *    audioHigh      -> saltation-ripple amplitude (see .vert)
+ *    audioZCR       -> sand grain: noisy material rakes the field into wind
+ *                      ripples, a clean tone leaves it smooth (see .vert)
+ *    audioSharpness -> CRISPNESS OF THE SUN GLINT: dull, dark material gives a
+ *                      broad low sheen across the slip faces, bright harsh
+ *                      material (cymbals, sibilance) hardens it into a narrow
+ *                      glitter along the crests.  The specular gain is scaled
+ *                      inversely to the lobe width, so the broad end does not
+ *                      integrate to a brighter frame
+ *    audioMode      -> SHADOW TEMPERATURE only: minor harmony cools the shaded
+ *                      side of each dune toward blue dusk, major warms it.
+ *                      The lit sand_gold is deliberately untouched -- the dunes
+ *                      must stay sand-coloured
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec3 vWorldPos; ///< World position (from the vertex stage).
 in vec3 vNormal;   ///< Surface normal (from the vertex stage).

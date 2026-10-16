@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file KlineBlackStrokes.frag
- * @brief KLINE BLACK STROKES: Franz Kline's huge black brushstrokes on white,
- * in motion -- massive beams of black paint slash across the canvas,
- * crossing in girders and arches, their edges dry and ragged where the
- * broad brush dragged, white paint cut back over them in places; the
- * strokes slowly sweep, rotate and re-form, the photograph showing
- * faintly as the ground's warm off-white and grey.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              KlineBlackStrokes.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the strokes sweep (integrated, jump-free)
- *   audioSpread     -> stroke width
- *   audioRoughness  -> the dry-brush edges
- *   audioKick       -> the wet black gleams (light)
- *   audioMode       -> black on white in minor, deep blue-black on cream in major
- *   audioSwell      -> the photo in the ground (slow)
+ *  @brief
+ *  KLINE BLACK STROKES: Franz Kline's huge black brushstrokes on white, in motion -- massive beams of black paint
+ *  slash across the canvas, crossing in girders and arches, their edges dry and ragged where the broad brush
+ *  dragged, white paint cut back over them in places; the strokes slowly sweep, rotate and re-form, the photograph
+ *  showing faintly as the ground's warm off-white and grey.
  *
- * Knobs: strokeP (stroke count), curveP (arching), photoP, hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the strokes sweep (integrated, jump-free)
+ *    audioSpread     -> stroke width
+ *    audioRoughness  -> the dry-brush edges
+ *    audioKick       -> the wet black gleams (light)
+ *    audioMode       -> black on white in minor, deep blue-black on cream in major
+ *    audioSwell      -> the photo in the ground (slow)
+ *
+ *  Knobs: strokeP (stroke count), curveP (arching), photoP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

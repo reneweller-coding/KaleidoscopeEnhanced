@@ -1,20 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file FrozenMethaneLakes.frag
- * @brief FROZEN METHANE LAKES: The surface of an icy moon (like Titan).
- * Still, alien lakes of liquid methane reflect the colossal, ringed gas giant
- * hanging in the sky. Gentle alien winds and distant ring-glints pulse to the audio.
- *   audioAdvance -> gentle panning across the landscape
- *   audioKick    -> flashes from meteor impacts on the rings
- *   audioSwell   -> ambient brightness of the rings and reflection
- *   audioChromaHue-> palette offset for the icy landscape
+/*****************************************************************************\
+ *                              FrozenMethaneLakes.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   iceP float ruggedness of the icy terrain (0.5..1.5)
- *   ringP float brightness and size of the planetary rings (0.5..2.0)
- *   hueP float palette offset (0..6.28)
+ *  @brief
+ *  FROZEN METHANE LAKES: The surface of an icy moon (like Titan).
+ *
+ *  Still, alien lakes of liquid methane reflect the colossal, ringed gas giant hanging in the sky. Gentle alien
+ *  winds and distant ring-glints pulse to the audio.
+ *
+ *    audioAdvance -> gentle panning across the landscape
+ *    audioKick    -> flashes from meteor impacts on the rings
+ *    audioSwell   -> ambient brightness of the rings and reflection
+ *    audioChromaHue-> palette offset for the icy landscape
+ *
+ *  Per-activation variety:
+ *    iceP float ruggedness of the icy terrain (0.5..1.5)
+ *    ringP float brightness and size of the planetary rings (0.5..2.0)
+ *    hueP float palette offset (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

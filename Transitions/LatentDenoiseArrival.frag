@@ -1,30 +1,35 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file LatentDenoiseArrival.frag
- * @brief TRANSITION LATENT DENOISE ARRIVAL: the incoming scene comes out of
- * noise the way a diffusion model samples it -- the noise level falls, coarse
- * structure settles first, detail last, and on the way there are shapes that
- * look right and are not.
+/*****************************************************************************\
+ *                              LatentDenoiseArrival.frag
+\*****************************************************************************/
+/*! @file
  *
- * The order is what makes this recognisable.  A denoiser cannot recover fine
- * detail while the noise still swamps it, so what survives early is only the
- * low frequencies: big blocks of roughly the right colour in roughly the right
- * place.  Detail arrives at the end, quickly.  Fading the finished picture in
- * would show every frequency at once, which is what a cross-fade already does.
+ *  @brief
+ *  TRANSITION LATENT DENOISE ARRIVAL: the incoming scene comes out of noise the way a diffusion model samples it --
+ *  the noise level falls, coarse structure settles first, detail last, and on the way there are shapes that look
+ *  right and are not.
  *
- * The intermediate wrongness is deliberate too.  Early in the reverse process
- * the estimate is confidently wrong -- shapes that belong to no part of the
- * final picture -- so the coarse estimate here is warped by its own noise while
- * the level is high, and settles into place as the level falls.
+ *  The order is what makes this recognisable.  A denoiser cannot recover fine
+ *  detail while the noise still swamps it, so what survives early is only the
+ *  low frequencies: big blocks of roughly the right colour in roughly the right
+ *  place.  Detail arrives at the end, quickly.  Fading the finished picture in
+ *  would show every frequency at once, which is what a cross-fade already does.
  *
- * Audio Reactivity:
- *   audioHigh  -> the residual noise (light)
- *   audioMid   -> the colour of the noise (colour)
- *   audioKick  -> the light in the noise (light)
+ *  The intermediate wrongness is deliberate too.  Early in the reverse process
+ *  the estimate is confidently wrong -- shapes that belong to no part of the
+ *  final picture -- so the coarse estimate here is warped by its own noise while
+ *  the level is high, and settles into place as the level falls.
  *
- * Per-activation variety: stepsP, warpP, hueP.
+ *  Audio Reactivity:
+ *    audioHigh  -> the residual noise (light)
+ *    audioMid   -> the colour of the noise (colour)
+ *    audioKick  -> the light in the noise (light)
+ *
+ *  Per-activation variety: stepsP, warpP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

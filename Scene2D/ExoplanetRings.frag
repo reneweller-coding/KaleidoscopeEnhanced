@@ -1,20 +1,27 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file ExoplanetRings.frag
- * @brief EXOPLANET RINGS: The camera skims closely over the immense,
- * icy ring system of an exoplanet. Massive chunks of ice and rock tumble
- * past, catching the light of a distant star.
- *   audioAdvance -> flight speed over the rings
- *   audioKick    -> flashes from micro-collisions in the rings
- *   audioSwell   -> ambient brightness of the star and ring dust
- *   audioChromaHue-> palette offset for the ice and rock colors
+/*****************************************************************************\
+ *                              ExoplanetRings.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   densP float density of the ring debris (0.5..1.5)
- *   sizeP float size of the individual ice chunks (0.5..2.0)
- *   hueP float palette offset (0..6.28)
+ *  @brief
+ *  EXOPLANET RINGS: The camera skims closely over the immense, icy ring system of an exoplanet.
+ *
+ *  Massive chunks of ice and rock tumble past, catching the light of a distant star.
+ *
+ *    audioAdvance -> flight speed over the rings
+ *    audioKick    -> flashes from micro-collisions in the rings
+ *    audioSwell   -> ambient brightness of the star and ring dust
+ *    audioChromaHue-> palette offset for the ice and rock colors
+ *
+ *  Per-activation variety:
+ *    densP float density of the ring debris (0.5..1.5)
+ *    sizeP float size of the individual ice chunks (0.5..2.0)
+ *    hueP float palette offset (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

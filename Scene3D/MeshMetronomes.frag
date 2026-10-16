@@ -1,22 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file MeshMetronomes.frag
- * @brief MESH METRONOMES: twelve real metronomes (body model= and a rod
- * from model2=, instances="12") on a bench in two rows, each ticking at
- * its own tempo, their rods swinging on time. Each body answers a spectrum
- * band, glowing on its scale plate; the brass weights glint on the kick
- * and flash at the ends of their swings (the tick); the swell is the lamp.
- * The mesh counterpart of the procedural MetronomeForest.
+/*****************************************************************************\
+ *                              MeshMetronomes.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSpectrum[32] -> each body's band glow (light)
- *   audioKick         -> weights glint (light)
- *   audioSwell        -> lamp (slow)
- *   time              -> the swings and the ticks (continuous)
+ *  @brief
+ *  MESH METRONOMES: twelve real metronomes (body model= and a rod from model2=, instances="12") on a bench in two
+ *  rows, each ticking at its own tempo, their rods swinging on time.
  *
- * Per-instance: sizeP, armP, pivotP, frontP. Per-activation variety: hueP.
+ *  Each body answers a spectrum band, glowing on its scale plate; the brass weights glint on the kick and flash at
+ *  the ends of their swings (the tick); the swell is the lamp. The mesh counterpart of the procedural
+ *  MetronomeForest.
+ *
+ *  Audio Reactivity:
+ *    audioSpectrum[32] -> each body's band glow (light)
+ *    audioKick         -> weights glint (light)
+ *    audioSwell        -> lamp (slow)
+ *    time              -> the swings and the ticks (continuous)
+ *
+ *  Per-instance: sizeP, armP, pivotP, frontP. Per-activation variety: hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform sampler2DArray texMeshMaterial;        ///< the body
 uniform int            texMeshMaterialLayers;  ///< Number of layers in texMeshMaterial.

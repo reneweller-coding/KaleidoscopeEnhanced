@@ -1,18 +1,25 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file LaserCavityTransverseModes.frag
- * @brief LASER CAVITY TRANSVERSE MODES: Higher-order Hermite-Gaussian (TEM_mn) and
- * Laguerre-Gaussian (LG_l^p) laser cavity resonator transverse modes carrying orbital
- * angular momentum. Geometrical laser petal flowers, phase vortices, and resonant cavity flares.
+/*****************************************************************************\
+ *                              LaserCavityTransverseModes.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance -> drives continuous orbital angular momentum phase rotation
- *   audioKick    -> flashes laser cavity mode nodes & triggers mode index hopping
- *   audioCentroid-> modulates transverse mode indices (m, n) & radial petal count
- *   audioSubBass -> expands laser beam waist radius w0 breathing
- *   audioChromaHue-> rotates the monochromatic laser emission spectrum
+ *  @brief
+ *  LASER CAVITY TRANSVERSE MODES: Higher-order Hermite-Gaussian (TEM_mn) and Laguerre-Gaussian (LG_l^p) laser
+ *  cavity resonator transverse modes carrying orbital angular momentum.
+ *
+ *  Geometrical laser petal flowers, phase vortices, and resonant cavity flares.
+ *
+ *  Audio Reactivity:
+ *    audioAdvance -> drives continuous orbital angular momentum phase rotation
+ *    audioKick    -> flashes laser cavity mode nodes & triggers mode index hopping
+ *    audioCentroid-> modulates transverse mode indices (m, n) & radial petal count
+ *    audioSubBass -> expands laser beam waist radius w0 breathing
+ *    audioChromaHue-> rotates the monochromatic laser emission spectrum
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file LenticularCloudStack.frag
- * @brief LENTICULAR CLOUD STACK: a lone snow volcano at dusk, and hovering
- * over its summit a stack of lenticular clouds -- smooth lens-shaped
- * discs piled one on the other like a stack of plates, their rims crisp,
- * their tops catching the last pink and orange light of the sun, their
- * undersides lavender in shadow, a thin fibrous veil trailing from their
- * lee edges.  The mountain's snowfields glow faintly rose, the sky shades
- * from deep blue to peach at the horizon, and the whole stack breathes
- * slowly as the wind flows over the peak.  The camera is still.
+/*****************************************************************************\
+ *                              LenticularCloudStack.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSwell  -> the pink light on the clouds and the snow (slow)
- *   audioHigh   -> the first stars (light)
- *   audioLevel  -> brightness
- *   sceneTime / sceneAdvance -> the stack breathing, the veils drifting
+ *  @brief
+ *  LENTICULAR CLOUD STACK: a lone snow volcano at dusk, and hovering over its summit a stack of lenticular clouds
+ *  -- smooth lens-shaped discs piled one on the other like a stack of plates, their rims crisp, their tops catching
+ *  the last pink and orange light of the sun, their undersides lavender in shadow, a thin fibrous veil trailing
+ *  from their lee edges.
  *
- * Per-activation variety: layersP (how many discs), hueP.
+ *  The mountain's snowfields glow faintly rose, the sky shades from deep blue to peach at the horizon, and the
+ *  whole stack breathes slowly as the wind flows over the peak.  The camera is still.
+ *
+ *  Audio Reactivity:
+ *    audioSwell  -> the pink light on the clouds and the snow (slow)
+ *    audioHigh   -> the first stars (light)
+ *    audioLevel  -> brightness
+ *    sceneTime / sceneAdvance -> the stack breathing, the veils drifting
+ *
+ *  Per-activation variety: layersP (how many discs), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

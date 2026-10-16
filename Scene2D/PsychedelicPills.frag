@@ -1,16 +1,23 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file PsychedelicPills.frag
- * @brief Adapted from "Psychedelic Pills" by \@kishimisu (2022) — https://www.shadertoy.com/view/csfSRN
- * Original licensed CC BY-NC-SA 4.0 (attribution kept per the licence).
+/*****************************************************************************\
+ *                              PsychedelicPills.frag
+\*****************************************************************************/
+/*! @file
  *
- * Raymarched capsules ("pills") in a repeating domain with psychedelic colours.
- * (The original's antialiasing template is dropped -> a single sample.)  Adapted
- * to our engine: image-forward (the picture colours the pills + drifts as a faint
- * nebula), audio-reactive & jump-free (scroll via audioAdvance, spin via
- * audioPhase; beats brighten; centroid/valence grade).
+ *  @brief
+ *  Adapted from "Psychedelic Pills" by \@kishimisu (2022) — https://www.shadertoy.com/view/csfSRN
+ *
+ *  Original licensed CC BY-NC-SA 4.0 (attribution kept per the licence).
+ *
+ *  Raymarched capsules ("pills") in a repeating domain with psychedelic colours.
+ *  (The original's antialiasing template is dropped -> a single sample.)  Adapted
+ *  to our engine: image-forward (the picture colours the pills + drifts as a faint
+ *  nebula), audio-reactive & jump-free (scroll via audioAdvance, spin via
+ *  audioPhase; beats brighten; centroid/valence grade).
+ *
+ *  @author kishimisu (the original shader, CC BY-NC-SA 4.0), René Weller (adaptation)
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

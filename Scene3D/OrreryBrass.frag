@@ -1,17 +1,21 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file OrreryBrass.frag
- * @brief Fragment stage for OrreryBrass: a dark study (the photo as the
- * bookshelves), the brass base engraved with rings, the arms and column
- * in warm brass, the sun lamp glowing with the bass, the planets as photo
- * spheres lit from the sun side (the orbit angle gives the terminator),
- * moons as small ivory beads; the kick glints the brass, the treble the
- * engraving.
+/*****************************************************************************\
+ *                              OrreryBrass.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity: audioBass -> sun lamp; audioKick -> brass glints;
- *                   audioHigh -> engraving sparkle; audioSwell -> study light; audioLevel.
+ *  @brief
+ *  Fragment stage for OrreryBrass: a dark study (the photo as the bookshelves), the brass base engraved with rings,
+ *  the arms and column in warm brass, the sun lamp glowing with the bass, the planets as photo spheres lit from the
+ *  sun side (the orbit angle gives the terminator), moons as small ivory beads; the kick glints the brass, the
+ *  treble the engraving.
+ *
+ *  Audio Reactivity: audioBass -> sun lamp; audioKick -> brass glints;
+ *                    audioHigh -> engraving sparkle; audioSwell -> study light; audioLevel.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 in vec2  vTexCoord; ///< Texture coordinate (from the vertex stage).
 in vec3  vWorld;    ///< World position (from the vertex stage).
 in float vKind;     ///< Element kind (from the vertex stage).

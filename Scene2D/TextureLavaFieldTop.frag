@@ -1,26 +1,31 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureLavaFieldTop.frag
- * @brief TEXTURE LAVA FIELD TOP: an active lava field seen from straight
- * above at night -- channels and rivers of bright molten rock wind between
- * plates of black cooled crust, the crust split by glowing cracks, fresh
- * lava oozing out as bright lobes that cool from yellow-white to orange to
- * dark red at their edges; the flow creeps along the channels.  The
- * channel network is shaped by the photograph (its dark valleys are where
- * the lava runs).  Faint heat haze and steam drift over it.  Endless,
- * mirrorable.
+/*****************************************************************************\
+ *                              TextureLavaFieldTop.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the lava creeps along its channels (integrated)
- *   audioBass       -> the glow of the molten rock (light)
- *   audioSpread     -> how much of the field is molten
- *   audioRoughness  -> the crust edges crumble
- *   audioMode       -> temperature: dull red in minor, bright yellow in major
- *   audioSwell      -> steam over the field (slow)
+ *  @brief
+ *  TEXTURE LAVA FIELD TOP: an active lava field seen from straight above at night -- channels and rivers of bright
+ *  molten rock wind between plates of black cooled crust, the crust split by glowing cracks, fresh lava oozing out
+ *  as bright lobes that cool from yellow-white to orange to dark red at their edges; the flow creeps along the
+ *  channels.
  *
- * Knobs: channelP (channel width), crustP (crack density), steamP, hueP.
+ *  The channel network is shaped by the photograph (its dark valleys are where the lava runs).  Faint heat haze and
+ *  steam drift over it.  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the lava creeps along its channels (integrated)
+ *    audioBass       -> the glow of the molten rock (light)
+ *    audioSpread     -> how much of the field is molten
+ *    audioRoughness  -> the crust edges crumble
+ *    audioMode       -> temperature: dull red in minor, bright yellow in major
+ *    audioSwell      -> steam over the field (slow)
+ *
+ *  Knobs: channelP (channel width), crustP (crack density), steamP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

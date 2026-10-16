@@ -1,26 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file VacuumDecayBubble.frag
- * @brief VACUUM DECAY BUBBLE: a bubble of true vacuum drifts through space
- * and rewrites the physics inside it.  Outside, a starfield and the photo
- * as a nebula; inside the wall the same sky with the constants changed --
- * colours inverted toward the palette, space refracted, stars split into
- * spectra, the nebula's structure at another scale.  The wall itself is a
- * thin refracting shell with chromatic dispersion.  The bubble's radius
- * grows with the build-up (seconds-slow) and eases back after the release;
- * its centre drifts on the scene clock.  Inside and outside blend across
- * the wall, so nothing ever cuts.  The camera never moves.
+/*****************************************************************************\
+ *                              VacuumDecayBubble.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioBuildUp  -> bubble radius (slow)
- *   sceneAdvance  -> the bubble drifts, the sky turns slowly
- *   audioDrop     -> the wall flashes (light)
- *   audioKick     -> the inside pulses (light)
- *   audioLevel    -> brightness
+ *  @brief
+ *  VACUUM DECAY BUBBLE: a bubble of true vacuum drifts through space and rewrites the physics inside it.
  *
- * Per-activation variety: sizeP (base radius), dispP (dispersion), hueP.
+ *  Outside, a starfield and the photo as a nebula; inside the wall the same sky with the constants changed --
+ *  colours inverted toward the palette, space refracted, stars split into spectra, the nebula's structure at
+ *  another scale.  The wall itself is a thin refracting shell with chromatic dispersion.  The bubble's radius grows
+ *  with the build-up (seconds-slow) and eases back after the release; its centre drifts on the scene clock.  Inside
+ *  and outside blend across the wall, so nothing ever cuts.  The camera never moves.
+ *
+ *  Audio Reactivity:
+ *    audioBuildUp  -> bubble radius (slow)
+ *    sceneAdvance  -> the bubble drifts, the sky turns slowly
+ *    audioDrop     -> the wall flashes (light)
+ *    audioKick     -> the inside pulses (light)
+ *    audioLevel    -> brightness
+ *
+ *  Per-activation variety: sizeP (base radius), dispP (dispersion), hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

@@ -1,22 +1,26 @@
 #version 330 core
+/*****************************************************************************\
+ *                              SuperfluidHeliumVortexTurbulence.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Draws quantized vortex lines in turbulent superfluid helium as glowing point sprites, coloured from the rotating
+ *  photo-arc palette and flashed white-hot where local "kelvin wave" amplitude (vKelvin) spikes.
+ *
+ *  vCirculation (the vortex line's local circulation strength, from the
+ *  vertex stage) sets both the palette sample position and the brightness
+ *  multiplier; audioKick adds an overall brightness pulse; hueP rotates the
+ *  final colour. A soft-knee tone map keeps loud passages from crushing to
+ *  flat white.
+ *
+ *  @author René Weller
+ */
 in vec3  vPos;         ///< Position (from the vertex stage).
 in float vKelvin;      ///< Kelvin (from the vertex stage).
 in float vCirculation; ///< Circulation (from the vertex stage).
 
 out vec4 fragColor; ///< The pixel's colour (output).
-
-/**
- * @file SuperfluidHeliumVortexTurbulence.frag
- * @brief Draws quantized vortex lines in turbulent superfluid helium as
- * glowing point sprites, coloured from the rotating photo-arc palette and
- * flashed white-hot where local "kelvin wave" amplitude (vKelvin) spikes.
- *
- * vCirculation (the vortex line's local circulation strength, from the
- * vertex stage) sets both the palette sample position and the brightness
- * multiplier; audioKick adds an overall brightness pulse; hueP rotates the
- * final colour. A soft-knee tone map keeps loud passages from crushing to
- * flat white.
- */
 
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

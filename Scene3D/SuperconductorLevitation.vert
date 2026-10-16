@@ -1,8 +1,13 @@
 #version 330 core
-/**
- * @file SuperconductorLevitation.vert
- * @brief Vertex stage companion to SuperconductorLevitation.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              SuperconductorLevitation.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to SuperconductorLevitation.frag -- see that file's header for this scene's description.
+ *
+ *  @author René Weller
  */
 // SuperconductorLevitation.vert — 4,900 quantum-locked superconducting tiles
 // levitating and undulating over an active magnetic flux field.

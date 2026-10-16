@@ -1,18 +1,24 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file HyperspaceGridToroidTube.frag
- * @brief HYPERSPACE GRID TOROID TUBE: High-speed 3D flight within the curved lumen
- * of a giant toroidal geometry tube. Pulsing kinetic neon polygon scales,
- * curving camera bankings, and high-frequency energy grid waves.
+/*****************************************************************************\
+ *                              HyperspaceGridToroidTube.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance -> drives continuous forward flight progression inside the toroid
- *   audioKick    -> flashes polygon scale grid vertices & energy pulses
- *   audioCentroid-> modulates kinetic scale tessellation frequency
- *   audioSubBass -> expands toroid minor tube radius breathing
- *   audioChromaHue-> rotates the luminous neon grid palette
+ *  @brief
+ *  HYPERSPACE GRID TOROID TUBE: High-speed 3D flight within the curved lumen of a giant toroidal geometry tube.
+ *
+ *  Pulsing kinetic neon polygon scales, curving camera bankings, and high-frequency energy grid waves.
+ *
+ *  Audio Reactivity:
+ *    audioAdvance -> drives continuous forward flight progression inside the toroid
+ *    audioKick    -> flashes polygon scale grid vertices & energy pulses
+ *    audioCentroid-> modulates kinetic scale tessellation frequency
+ *    audioSubBass -> expands toroid minor tube radius breathing
+ *    audioChromaHue-> rotates the luminous neon grid palette
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

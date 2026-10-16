@@ -1,21 +1,26 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file MangroveRootsTide.frag
- * @brief MANGROVE ROOTS TIDE (fragment): standing in the shallows among
- * prop roots.  Light comes down through the surface as a moving net of
- * caustics that lands on the bed and on every root; the water is green
- * and thickens with distance; fish flicker silver as they turn.  The tide
- * level rides the swell, the bass is the depth colour, the treble the
- * caustic sparkle, the kick a fish flashing its flank.
+/*****************************************************************************\
+ *                              MangroveRootsTide.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSwell -> tide level and light (slow)
- *   audioBass  -> water colour and depth (slow)
- *   audioHigh  -> caustic sparkle (light)
- *   audioKick  -> a fish flank flash (light)
- *   audioLevel -> brightness
+ *  @brief
+ *  MANGROVE ROOTS TIDE (fragment): standing in the shallows among prop roots.
+ *
+ *  Light comes down through the surface as a moving net of caustics that lands on the bed and on every root; the
+ *  water is green and thickens with distance; fish flicker silver as they turn.  The tide level rides the swell,
+ *  the bass is the depth colour, the treble the caustic sparkle, the kick a fish flashing its flank.
+ *
+ *  Audio Reactivity:
+ *    audioSwell -> tide level and light (slow)
+ *    audioBass  -> water colour and depth (slow)
+ *    audioHigh  -> caustic sparkle (light)
+ *    audioKick  -> a fish flank flash (light)
+ *    audioLevel -> brightness
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

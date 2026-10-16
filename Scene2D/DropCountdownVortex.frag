@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file DropCountdownVortex.frag
- * @brief DROP COUNTDOWN VORTEX: a vortex that counts down to the drop.  The
- * host predicts the next 8-bar boundary (audioPhraseLeft, seconds); rings of
- * the vortex are spaced one beat apart and slide toward the throat as the
- * boundary nears, tightening and heating with the build-up -- and on the
- * drop they snap shut and the vortex blows out into a bright tube.  When no
- * tempo is known the vortex just turns and breathes with the level.
+/*****************************************************************************\
+ *                              DropCountdownVortex.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioPhraseLeft -> ring spacing/speed (the countdown)
- *   audioBuildUp    -> the throat narrows and the colour heats
- *   audioDrop       -> the snap and blow-out
- *   audioBeatPhase  -> each ring pulses on its beat
- *   audioBass       -> throat glow
- *   sceneAdvance    -> vortex rotation, continuous
+ *  @brief
+ *  DROP COUNTDOWN VORTEX: a vortex that counts down to the drop.
  *
- * Per-activation variety: twistP (arm twist), throatP (throat size), hueP.
+ *  The host predicts the next 8-bar boundary (audioPhraseLeft, seconds); rings of the vortex are spaced one beat
+ *  apart and slide toward the throat as the boundary nears, tightening and heating with the build-up -- and on the
+ *  drop they snap shut and the vortex blows out into a bright tube.  When no tempo is known the vortex just turns
+ *  and breathes with the level.
+ *
+ *  Audio Reactivity:
+ *    audioPhraseLeft -> ring spacing/speed (the countdown)
+ *    audioBuildUp    -> the throat narrows and the colour heats
+ *    audioDrop       -> the snap and blow-out
+ *    audioBeatPhase  -> each ring pulses on its beat
+ *    audioBass       -> throat glow
+ *    sceneAdvance    -> vortex rotation, continuous
+ *
+ *  Per-activation variety: twistP (arm twist), throatP (throat size), hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

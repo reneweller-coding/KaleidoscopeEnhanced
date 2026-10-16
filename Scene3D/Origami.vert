@@ -1,8 +1,13 @@
 #version 330 core
-/**
- * @file Origami.vert
- * @brief Vertex stage companion to Origami.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              Origami.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to Origami.frag -- see that file's header for this scene's description.
+ *
+ *  @author René Weller
  */
 // Origami.vert — the sheet arrives finished from Origami.comp.  All this does is
 // tip it so we look ACROSS the corrugation rather than down at it: seen from

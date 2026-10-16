@@ -1,20 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SpaceStationPromenade.frag
- * @brief SPACE STATION PROMENADE: The camera wanders through the grand, high-tech
- * promenade of a massive rotating space station. Huge windows offer glimpses of the
- * starfield outside. Neon lights and holograms pulse to the beat.
- *   audioAdvance -> walking/flight speed along the promenade
- *   audioKick    -> flashes from advertising holograms and accent lights
- *   audioSwell   -> ambient daylight/interior lighting
- *   audioChromaHue-> palette offset for the interior lights
+/*****************************************************************************\
+ *                              SpaceStationPromenade.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   archP float complexity of the station architecture (0.5..1.5)
- *   glowP float intensity of the neon lights (0.5..2.0)
- *   hueP float palette offset (0..6.28)
+ *  @brief
+ *  SPACE STATION PROMENADE: The camera wanders through the grand, high-tech promenade of a massive rotating space
+ *  station.
+ *
+ *  Huge windows offer glimpses of the starfield outside. Neon lights and holograms pulse to the beat.
+ *
+ *    audioAdvance -> walking/flight speed along the promenade
+ *    audioKick    -> flashes from advertising holograms and accent lights
+ *    audioSwell   -> ambient daylight/interior lighting
+ *    audioChromaHue-> palette offset for the interior lights
+ *
+ *  Per-activation variety:
+ *    archP float complexity of the station architecture (0.5..1.5)
+ *    glowP float intensity of the neon lights (0.5..2.0)
+ *    hueP float palette offset (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

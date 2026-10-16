@@ -1,22 +1,26 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SuspensionBridgeCables.frag
- * @brief SUSPENSION BRIDGE CABLES (fragment): under the deck of a
- * suspension bridge, flying along it on the scene clock.  The main cables
- * sweep in their catenary with lamp beads along them, the hangers drop to
- * the girder overhead, the towers pass, and the water below carries the
- * lights.  Each lamp takes a spectrum band; the swell is the fog that
- * softens the far end; the kick lifts the aircraft warning lights on the
- * tower tops (light only).
+/*****************************************************************************\
+ *                              SuspensionBridgeCables.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSpectrum[32] -> lamp colours along the cable (light)
- *   audioSwell        -> fog depth (slow)
- *   audioKick         -> tower warning lights (light)
- *   audioHigh         -> water sparkle (light)
- *   audioLevel        -> brightness
+ *  @brief
+ *  SUSPENSION BRIDGE CABLES (fragment): under the deck of a suspension bridge, flying along it on the scene clock.
+ *
+ *  The main cables sweep in their catenary with lamp beads along them, the hangers drop to the girder overhead, the
+ *  towers pass, and the water below carries the lights.  Each lamp takes a spectrum band; the swell is the fog that
+ *  softens the far end; the kick lifts the aircraft warning lights on the tower tops (light only).
+ *
+ *  Audio Reactivity:
+ *    audioSpectrum[32] -> lamp colours along the cable (light)
+ *    audioSwell        -> fog depth (slow)
+ *    audioKick         -> tower warning lights (light)
+ *    audioHigh         -> water sparkle (light)
+ *    audioLevel        -> brightness
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

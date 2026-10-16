@@ -1,18 +1,23 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file LyapunovSpaceBioLoom.frag
- * @brief LYAPUNOV SPACE BIO LOOM: Quasi-periodic Lyapunov exponent fractal space
- * with dynamic sequence switching, bio-luminescent cellular stability zones,
- * and 3D embossed normal relief.
+/*****************************************************************************\
+ *                              LyapunovSpaceBioLoom.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance -> drives continuous navigation through (A, B) parameter space
- *   audioKick    -> flashes chaotic Lyapunov boundary nodes & stability burst
- *   audioCentroid-> modulates forced sequence order & fine cellular ridges
- *   audioSubBass -> expands cellular basin breathing
- *   audioChromaHue-> rotates the bio-luminescent stability spectrum
+ *  @brief
+ *  LYAPUNOV SPACE BIO LOOM: Quasi-periodic Lyapunov exponent fractal space with dynamic sequence switching,
+ *  bio-luminescent cellular stability zones, and 3D embossed normal relief.
+ *
+ *  Audio Reactivity:
+ *    audioAdvance -> drives continuous navigation through (A, B) parameter space
+ *    audioKick    -> flashes chaotic Lyapunov boundary nodes & stability burst
+ *    audioCentroid-> modulates forced sequence order & fine cellular ridges
+ *    audioSubBass -> expands cellular basin breathing
+ *    audioChromaHue-> rotates the bio-luminescent stability spectrum
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

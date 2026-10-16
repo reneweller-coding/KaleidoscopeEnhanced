@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file HeatHazeOverFlames.frag
- * @brief HEAT HAZE OVER FLAMES: the photograph seen through the shimmering
- * air above a row of flames -- along the bottom of each band low blue and
- * orange flames flicker, and above them the hot air ripples and wavers,
- * bending the picture behind in rising, wobbling streaks, the distortion
- * strongest just above the flames and calming higher up; the bands repeat
- * so the plane is endless.  Mirrorable.
+/*****************************************************************************\
+ *                              HeatHazeOverFlames.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the shimmer rises (integrated, jump-free)
- *   audioSpread     -> the shimmer strength
- *   audioBass       -> the flames flare (light)
- *   audioMode       -> the flames: blue gas in minor, orange wood fire in major
- *   audioRoughness  -> the turbulence of the rising air
- *   audioSwell      -> the glow on the picture (slow)
+ *  @brief
+ *  HEAT HAZE OVER FLAMES: the photograph seen through the shimmering air above a row of flames -- along the bottom
+ *  of each band low blue and orange flames flicker, and above them the hot air ripples and wavers, bending the
+ *  picture behind in rising, wobbling streaks, the distortion strongest just above the flames and calming higher
+ *  up; the bands repeat so the plane is endless.
  *
- * Knobs: bandP (band height), flameP (flame height), photoP (photo sharpness), hueP.
+ *  Mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the shimmer rises (integrated, jump-free)
+ *    audioSpread     -> the shimmer strength
+ *    audioBass       -> the flames flare (light)
+ *    audioMode       -> the flames: blue gas in minor, orange wood fire in major
+ *    audioRoughness  -> the turbulence of the rising air
+ *    audioSwell      -> the glow on the picture (slow)
+ *
+ *  Knobs: bandP (band height), flameP (flame height), photoP (photo sharpness), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

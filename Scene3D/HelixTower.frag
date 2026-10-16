@@ -1,18 +1,22 @@
 #version 330 core
+/*****************************************************************************\
+ *                              HelixTower.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Shades one point of the helix tower as a soft radial glow sprite (additive blending), a Gaussian falloff from
+ *  the point-sprite center so overlapping points pool into brighter light.
+ *
+ *  This fragment shader declares no audio uniforms of its own; the point's
+ *  audio-reactive color and brightness (vCol) are computed per-vertex by
+ *  the companion vertex shader and only shaped here by the radial falloff.
+ *
+ *  @author René Weller
+ */
 out vec4 fragColor; ///< The pixel's colour (output).
 // HelixTower.frag — soft glowing point (additive blending).
 in vec4 vCol; ///< Colour (from the vertex stage).
-
-/**
- * @file HelixTower.frag
- * @brief Shades one point of the helix tower as a soft radial glow sprite
- * (additive blending), a Gaussian falloff from the point-sprite center so
- * overlapping points pool into brighter light.
- *
- * This fragment shader declares no audio uniforms of its own; the point's
- * audio-reactive color and brightness (vCol) are computed per-vertex by
- * the companion vertex shader and only shaped here by the radial falloff.
- */
 
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()

@@ -1,15 +1,21 @@
 #version 430 core
-/**
- * @file GlassVesselsOIT.comp
- * @brief GLASS VESSELS: twelve glass vessels on a shelf, one per pitch
- * class -- flasks, bottles, beakers of different profiles -- with the photo
- * refracted inside them.  The vessels are lathe surfaces (a profile turned
- * about the vertical), built here as quads with normals; the shelf and the
- * back wall are opaque.  A vessel that sounds glows (fragment stage).  The
- * shelf turns very slowly on the scene clock so the vessels pass in front
- * of one another and the refraction plays.  No state.  Camera still.
+/*****************************************************************************\
+ *                              GlassVesselsOIT.comp
+\*****************************************************************************/
+/*! @file
  *
- * Per-instance: shapeP (profile family), sizeP, hueP.
+ *  @brief
+ *  GLASS VESSELS: twelve glass vessels on a shelf, one per pitch class -- flasks, bottles, beakers of different
+ *  profiles -- with the photo refracted inside them.
+ *
+ *  The vessels are lathe surfaces (a profile turned about the vertical), built here as quads with normals; the
+ *  shelf and the back wall are opaque.  A vessel that sounds glows (fragment stage).  The shelf turns very slowly
+ *  on the scene clock so the vessels pass in front of one another and the refraction plays.  No state.  Camera
+ *  still.
+ *
+ *  Per-instance: shapeP (profile family), sizeP, hueP.
+ *
+ *  @author René Weller
  */
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( local_size_x = 4, local_size_y = 4, local_size_z = 4 ) in;

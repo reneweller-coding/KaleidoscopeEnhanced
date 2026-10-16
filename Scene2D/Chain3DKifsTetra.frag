@@ -1,26 +1,35 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file Chain3DKifsTetra.frag
- * @brief CHAIN3DKIFSTETRA: a raymarched world built from a chain of continuous 3D space
- * transforms -- a Sierpinski-tetrahedron fractal: tetrahedral mirror folds, a turning axis and a doubling scale,
- * repeated six times.  We fly slowly through it; the surfaces are textured with the photograph read through a 2D
- * transform chain of its own (triplanar), lit and fogged. Every stage is continuous, so the structure morphs without
- * jumps. Endless, mirrorable.
+/*****************************************************************************\
+ *                              Chain3DKifsTetra.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the flight (integrated, jump-free)
- *   audioPhase      -> the folds turn (integrated)
- *   audioSpread     -> the bodies thicken
- *   audioKick       -> the rims flare (light)
- *   audioMode       -> the light: cool in minor, warm in major
- *   audioSwell      -> the fog glow, the colour saturation and the width of the flight tube (slow)
- *   audioPhase      -> the surface colours wander (integrated, jump-free)
+ *  @brief
+ *  CHAIN3DKIFSTETRA: a raymarched world built from a chain of continuous 3D space transforms -- a
+ *  Sierpinski-tetrahedron fractal: tetrahedral mirror folds, a turning axis and a doubling scale, repeated six
+ *  times.
  *
- * Knobs: styleP (photo surface / glowing rims), speedP (flight speed), detailP (texture sharpness), paletteP (photo
- * colours / a colour field following the 2D chain), camP (the first gaze: ahead, out of a side window, slanted down or
- * up, floating, an orthographic side view -- the scene pans on every few minutes), hueP.
+ *  We fly slowly through it; the surfaces are textured with the photograph read through a 2D transform chain of its
+ *  own (triplanar), lit and fogged. Every stage is continuous, so the structure morphs without jumps. Endless,
+ *  mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the flight (integrated, jump-free)
+ *    audioPhase      -> the folds turn (integrated)
+ *    audioSpread     -> the bodies thicken
+ *    audioKick       -> the rims flare (light)
+ *    audioMode       -> the light: cool in minor, warm in major
+ *    audioSwell      -> the fog glow, the colour saturation and the width of the flight tube (slow)
+ *    audioPhase      -> the surface colours wander (integrated, jump-free)
+ *
+ *  Knobs: styleP (photo surface / glowing rims), speedP (flight speed), detailP (texture sharpness), paletteP
+ *  (photo colours / a colour field
+ *  following the 2D chain), camP (the first gaze: ahead, out of a side window, slanted down or up,
+ *  floating, an orthographic side view -- the scene pans on every few minutes), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

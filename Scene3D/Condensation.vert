@@ -1,8 +1,15 @@
 #version 330 core
-/**
- * @file Condensation.vert
- * @brief Pass-through into Condensation.geom, which builds the volume. See that
- * file for the scene.
+/*****************************************************************************\
+ *                              Condensation.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Pass-through into Condensation.geom, which builds the volume.
+ *
+ *  See that file for the scene.
+ *
+ *  @author René Weller
  */
 
 in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an

@@ -1,16 +1,20 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file HotAirBalloonDawn.frag
- * @brief Fragment stage for HotAirBalloonDawn: a dawn sky (orange to blue)
- * with the sun on the horizon and the swell as its strength, the misty
- * field below as the photo, the envelopes in gores of the photo tinted per
- * balloon and lit from the east, the baskets in wicker, the burners
- * flaring on the kick and glowing into the envelope from below.
+/*****************************************************************************\
+ *                              HotAirBalloonDawn.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity: audioKick -> burner flare; audioSwell -> sunrise;
- *                   audioBass -> burner roar glow; audioLevel -> brightness.
+ *  @brief
+ *  Fragment stage for HotAirBalloonDawn: a dawn sky (orange to blue) with the sun on the horizon and the swell as
+ *  its strength, the misty field below as the photo, the envelopes in gores of the photo tinted per balloon and lit
+ *  from the east, the baskets in wicker, the burners flaring on the kick and glowing into the envelope from below.
+ *
+ *  Audio Reactivity: audioKick -> burner flare; audioSwell -> sunrise;
+ *                    audioBass -> burner roar glow; audioLevel -> brightness.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 in vec2  vTexCoord; ///< Texture coordinate (from the vertex stage).
 in vec3  vWorld;    ///< World position (from the vertex stage).
 in float vKind;     ///< Element kind (from the vertex stage).

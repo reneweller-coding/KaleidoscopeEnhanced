@@ -1,19 +1,27 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file HelicoidMinimalSurface.frag
- * @brief TRANSITION HELICOID MINIMAL SURFACE: Ruled helicoid minimal surface screw transition.
- * A continuous helical ramp surface (z = c * theta) rotates and screws the outgoing
- * scene along its ruled geodesics, seamlessly unfurling into the incoming scene.
- *   interpolation -> sweeps helicoid rotation & helical screw pitch
- *   audioKick     -> flashes helicoid minimal surface ruling lines
+/*****************************************************************************\
+ *                              HelicoidMinimalSurface.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   pitchP float helical screw pitch & tightness  (0.5..2.2)
- *   screwP float rotation angular velocity ratio  (0.5..2.0)
- *   speedP float animation speed multiplier       (0.5..2.0)
- *   hueP   float minimal surface hue offset       (0..6.28)
+ *  @brief
+ *  TRANSITION HELICOID MINIMAL SURFACE: Ruled helicoid minimal surface screw transition.
+ *
+ *  A continuous helical ramp surface (z = c * theta) rotates and screws the outgoing scene along its ruled
+ *  geodesics, seamlessly unfurling into the incoming scene.
+ *
+ *    interpolation -> sweeps helicoid rotation & helical screw pitch
+ *    audioKick     -> flashes helicoid minimal surface ruling lines
+ *
+ *  Per-activation variety:
+ *    pitchP float helical screw pitch & tightness  (0.5..2.2)
+ *    screwP float rotation angular velocity ratio  (0.5..2.0)
+ *    speedP float animation speed multiplier       (0.5..2.0)
+ *    hueP   float minimal surface hue offset       (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

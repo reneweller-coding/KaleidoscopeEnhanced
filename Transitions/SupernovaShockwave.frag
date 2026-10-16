@@ -1,20 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SupernovaShockwave.frag
- * @brief TRANSITION SUPERNOVA SHOCKWAVE: Spherical supernova blast wave transition.
- * A hyper-velocity relativistic blast wave detonates at the center, expanding
- * radially outward with glowing shock compression and revealing the new scene.
- *   interpolation -> sweeps the spherical shockwave radius across the viewport
- *   audioKick     -> detonates primary supernova core explosion flash
- *   audioSwell    -> drives shockwave displacement amplitude
+/*****************************************************************************\
+ *                              SupernovaShockwave.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   blastP float shockwave expansion velocity multiplier (0.5..2.2)
- *   shockP float shock front compression thickness       (0.5..2.0)
- *   speedP float animation speed multiplier              (0.5..2.0)
- *   hueP   float shockwave ionization hue offset         (0..6.28)
+ *  @brief
+ *  TRANSITION SUPERNOVA SHOCKWAVE: Spherical supernova blast wave transition.
+ *
+ *  A hyper-velocity relativistic blast wave detonates at the center, expanding radially outward with glowing shock
+ *  compression and revealing the new scene.
+ *
+ *    interpolation -> sweeps the spherical shockwave radius across the viewport
+ *    audioKick     -> detonates primary supernova core explosion flash
+ *    audioSwell    -> drives shockwave displacement amplitude
+ *
+ *  Per-activation variety:
+ *    blastP float shockwave expansion velocity multiplier (0.5..2.2)
+ *    shockP float shock front compression thickness       (0.5..2.0)
+ *    speedP float animation speed multiplier              (0.5..2.0)
+ *    hueP   float shockwave ionization hue offset         (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

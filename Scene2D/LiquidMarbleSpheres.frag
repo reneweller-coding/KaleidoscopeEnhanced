@@ -1,23 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file LiquidMarbleSpheres.frag
- * @brief LIQUID MARBLE SPHERES: glass marbles rolling slowly across a mirror
- * table -- each marble holds a twisted ribbon of colour inside (from the
- * photograph) that turns as the marble rolls, the glass bending and
- * flipping the view of the table and the other marbles behind it, a crisp
- * highlight and a soft reflection beneath each one.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              LiquidMarbleSpheres.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the marbles roll (integrated, jump-free)
- *   audioSpread     -> marble size
- *   audioKick       -> the highlights flash (light)
- *   audioMode       -> the table: cool steel in minor, warm brass in major
- *   audioRoughness  -> the ribbon twist
- *   audioSwell      -> the table's reflection (slow)
+ *  @brief
+ *  LIQUID MARBLE SPHERES: glass marbles rolling slowly across a mirror table -- each marble holds a twisted ribbon
+ *  of colour inside (from the photograph) that turns as the marble rolls, the glass bending and flipping the view
+ *  of the table and the other marbles behind it, a crisp highlight and a soft reflection beneath each one.
  *
- * Knobs: marbleP (marble density), ribbonP (ribbon width), photoP (photo colours), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the marbles roll (integrated, jump-free)
+ *    audioSpread     -> marble size
+ *    audioKick       -> the highlights flash (light)
+ *    audioMode       -> the table: cool steel in minor, warm brass in major
+ *    audioRoughness  -> the ribbon twist
+ *    audioSwell      -> the table's reflection (slow)
+ *
+ *  Knobs: marbleP (marble density), ribbonP (ribbon width), photoP (photo colours), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

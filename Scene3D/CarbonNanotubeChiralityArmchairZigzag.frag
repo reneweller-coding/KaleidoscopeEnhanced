@@ -1,20 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file CarbonNanotubeChiralityArmchairZigzag.frag
- * @brief CARBON NANOTUBE CHIRALITY ARMCHAIR ZIGZAG: Single-walled carbon nanotube (SWCNT)
- * network -- seven crossing tubes of a buckypaper mat, each with a tunable chiral vector
- * (n,m). Armchair, zigzag, and chiral helicities with
- * ballistic 1D pi-electron conduction pulses, metallic sp2 luster, and photo texturing.
- *   audioAdvance -> drives ballistic pi-electron current drift & tube rotation
- *   audioKick    -> flashes 1D Van Hove singularity electronic transition bursts
- *   audioSwell   -> thickens carbon nanotube diameter & metallic conduction sheen
- *   audioCentroid-> shifts chiral nanotube optical absorption spectra
+/*****************************************************************************\
+ *                              CarbonNanotubeChiralityArmchairZigzag.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   ribbonWidthP float nanotube ribbon wall thickness        (0.02..0.1)
- *   conductGlowP float ballistic electron pulse luminance    (0.8..2.5)
+ *  @brief
+ *  CARBON NANOTUBE CHIRALITY ARMCHAIR ZIGZAG: Single-walled carbon nanotube (SWCNT) network -- seven crossing tubes
+ *  of a buckypaper mat, each with a tunable chiral vector (n,m).
+ *
+ *  Armchair, zigzag, and chiral helicities with ballistic 1D pi-electron conduction pulses, metallic sp2 luster,
+ *  and photo texturing.
+ *
+ *    audioAdvance -> drives ballistic pi-electron current drift & tube rotation
+ *    audioKick    -> flashes 1D Van Hove singularity electronic transition bursts
+ *    audioSwell   -> thickens carbon nanotube diameter & metallic conduction sheen
+ *    audioCentroid-> shifts chiral nanotube optical absorption spectra
+ *
+ *  Per-activation variety:
+ *    ribbonWidthP float nanotube ribbon wall thickness        (0.02..0.1)
+ *    conductGlowP float ballistic electron pulse luminance    (0.8..2.5)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec2  vUV;           ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 in float vSide;         ///< Which side of a strip (from the vertex stage).

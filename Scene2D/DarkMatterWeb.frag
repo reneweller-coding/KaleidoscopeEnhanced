@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file DarkMatterWeb.frag
- * @brief DARK MATTER WEB: the cosmic web as the big simulations draw it --
- * filaments of dark matter strung between bright halos where they cross,
- * voids of near-black between them, galaxies strung along the threads
- * like dew.  Three depths of the web lie behind one another and drift at
- * their own slow speeds (parallax), the nearest brightest: gold-white
- * cores, a violet-blue dark-matter glow around them.  Knots of light
- * travel along the filaments toward the halos, the way matter flows.
+/*****************************************************************************\
+ *                              DarkMatterWeb.frag
+\*****************************************************************************/
+/*! @file
  *
- *   sceneTime/sceneAdvance -> drift of the layers, flow along the threads
- *   audioSwell    -> halo brightness (slow)
- *   audioKick     -> the halos flare (light only)
- *   audioChromaHue-> photo tint of the glow
+ *  @brief
+ *  DARK MATTER WEB: the cosmic web as the big simulations draw it -- filaments of dark matter strung between bright
+ *  halos where they cross, voids of near-black between them, galaxies strung along the threads like dew.
  *
- * Per-activation variety:
- *   webP float density of the web (0.85..1.5)
- *   glowP float brightness of the flow (0.5..2.0)
- *   hueP float palette offset (0..6.28)
+ *  Three depths of the web lie behind one another and drift at their own slow speeds (parallax), the nearest
+ *  brightest: gold-white cores, a violet-blue dark-matter glow around them.  Knots of light travel along the
+ *  filaments toward the halos, the way matter flows.
+ *
+ *    sceneTime/sceneAdvance -> drift of the layers, flow along the threads
+ *    audioSwell    -> halo brightness (slow)
+ *    audioKick     -> the halos flare (light only)
+ *    audioChromaHue-> photo tint of the glow
+ *
+ *  Per-activation variety:
+ *    webP float density of the web (0.85..1.5)
+ *    glowP float brightness of the flow (0.5..2.0)
+ *    hueP float palette offset (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

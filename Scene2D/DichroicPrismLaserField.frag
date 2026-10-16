@@ -1,18 +1,24 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file DichroicPrismLaserField.frag
- * @brief DICHROIC PRISM LASER FIELD: Multi-angle floating dichroic glass prism plates
- * with polarized thin-film color splitting (Cyan/Yellow/Magenta), high-intensity
- * laser beam reflections, and luminous internal optical diffraction nodes.
+/*****************************************************************************\
+ *                              DichroicPrismLaserField.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance -> drives continuous glass plate orbital rotation & laser tracking
- *   audioKick    -> flashes internal laser beam slicing bursts & plate transmissions
- *   audioCentroid-> sharpens polarized dichroic thin-film transmission bands
- *   audioSubBass -> expands prism plate breathing scale
- *   audioChromaHue-> steers the dichroic glass transmission spectrum
+ *  @brief
+ *  DICHROIC PRISM LASER FIELD: Multi-angle floating dichroic glass prism plates with polarized thin-film color
+ *  splitting (Cyan/Yellow/Magenta), high-intensity laser beam reflections, and luminous internal optical
+ *  diffraction nodes.
+ *
+ *  Audio Reactivity:
+ *    audioAdvance -> drives continuous glass plate orbital rotation & laser tracking
+ *    audioKick    -> flashes internal laser beam slicing bursts & plate transmissions
+ *    audioCentroid-> sharpens polarized dichroic thin-film transmission bands
+ *    audioSubBass -> expands prism plate breathing scale
+ *    audioChromaHue-> steers the dichroic glass transmission spectrum
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

@@ -1,30 +1,37 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureEffectParallaxKaleidoscope.frag
- * @brief A mirrored-segment kaleidoscope viewed through a 32-layer retro
- *        pixel-parallax: each depth layer is a coarsely pixellated sample of
- *        the kaleidoscope-warped photo, offset by its own orbiting parallax
- *        drift, composited front layer over back until a luma test decides
- *        the ray has "hit" something.
+/*****************************************************************************\
+ *                              TextureEffectParallaxKaleidoscope.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *  - audioAdvance  -> adds to the parallax orbit angle (integrated, jump-free), on
- *                     top of the base speedMovement*time drift
- *  - audioPhase    -> adds to the mirrored-segment rotation angle inside the
- *                     per-layer kaleidoscope sample (integrated, jump-free)
- *  - audioSwell    -> widens the orbit radius (`extend`) on slow energy swells
- *  - audioZCR      -> RETRO PIXEL GRAIN: broadband noisiness coarsens the parallax
- *                     quantisation grid, so a harsh mix breaks the image into fat
- *                     lo-fi blocks and a pure tone keeps it fine. The grid step is
- *                     divided out again when the layer UV is rebuilt, so the framing
- *                     and orbit radius are untouched -- only the blockiness moves
- *  - audioFlatness -> PARALLAX DEPTH: a tonal spectrum makes the ray "hit" early, so
- *                     few layers composite and the mosaic reads crisp and near; a
- *                     noise-like one lets it fall deep into the stack, hazing out
- *  - audioMode     -> HAZE COLOUR: the depth fog the deep layers fade into is a cold
- *                     blue-grey in minor keys and a warm sand-grey in major ones
+ *  @brief
+ *  A mirrored-segment kaleidoscope viewed through a 32-layer retro
+ *
+ *         pixel-parallax: each depth layer is a coarsely pixellated sample of
+ *         the kaleidoscope-warped photo, offset by its own orbiting parallax
+ *         drift, composited front layer over back until a luma test decides
+ *         the ray has "hit" something.
+ *
+ *  Audio Reactivity:
+ *   - audioAdvance  -> adds to the parallax orbit angle (integrated, jump-free), on
+ *                      top of the base speedMovement*time drift
+ *   - audioPhase    -> adds to the mirrored-segment rotation angle inside the
+ *                      per-layer kaleidoscope sample (integrated, jump-free)
+ *   - audioSwell    -> widens the orbit radius (`extend`) on slow energy swells
+ *   - audioZCR      -> RETRO PIXEL GRAIN: broadband noisiness coarsens the parallax
+ *                      quantisation grid, so a harsh mix breaks the image into fat
+ *                      lo-fi blocks and a pure tone keeps it fine. The grid step is
+ *                      divided out again when the layer UV is rebuilt, so the framing
+ *                      and orbit radius are untouched -- only the blockiness moves
+ *   - audioFlatness -> PARALLAX DEPTH: a tonal spectrum makes the ray "hit" early, so
+ *                      few layers composite and the mosaic reads crisp and near; a
+ *                      noise-like one lets it fall deep into the stack, hazing out
+ *   - audioMode     -> HAZE COLOUR: the depth fog the deep layers fade into is a cold
+ *                      blue-grey in minor keys and a warm sand-grey in major ones
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;             ///< The pixel's colour (output).
 uniform vec2      resolution;            ///< Size of the render target in pixels.
 uniform float     time;                  ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;                  ///< The current photo.

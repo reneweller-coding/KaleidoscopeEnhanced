@@ -1,19 +1,24 @@
 #version 330 core
-/**
- * @file DeepSeaVentsEcosystem.vert
- * @brief Vertex stage companion to DeepSeaVentsEcosystem.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              DeepSeaVentsEcosystem.vert
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioKick      -> plume lift + organism brightness (also in the generator)
- *   audioAdvance   -> plume convection phase (pre-integrated, in the generator)
- *   audioPhase     -> carrier for the turbulent shimmer below (pre-integrated)
- *   audioLowMid    -> the vent's HEAT: 150-500 Hz warmth swells the smoker
- *                     column outward, a thin mix draws it back to a thread
- *   audioRoughness -> dissonance shakes the plume into turbulent eddies;
- *                     consonant harmony lets it rise in laminar ribbons
- *   audioMode      -> (fragment stage) abyssal-cold vs sulfur-warm water
- *   audioChromaHue / audioValence -> (fragment stage) photo palette + saturation
+ *  @brief
+ *  Vertex stage companion to DeepSeaVentsEcosystem.frag -- see that file's header for this scene's description.
+ *
+ *  Audio Reactivity:
+ *    audioKick      -> plume lift + organism brightness (also in the generator)
+ *    audioAdvance   -> plume convection phase (pre-integrated, in the generator)
+ *    audioPhase     -> carrier for the turbulent shimmer below (pre-integrated)
+ *    audioLowMid    -> the vent's HEAT: 150-500 Hz warmth swells the smoker
+ *                      column outward, a thin mix draws it back to a thread
+ *    audioRoughness -> dissonance shakes the plume into turbulent eddies;
+ *                      consonant harmony lets it rise in laminar ribbons
+ *    audioMode      -> (fragment stage) abyssal-cold vs sulfur-warm water
+ *    audioChromaHue / audioValence -> (fragment stage) photo palette + saturation
+ *
+ *  @author René Weller
  */
 // attrA.xyz = world pos (baked by the compute generator), attrA.w = species
 // attrB.w   = bioGlow (Scene3DShader.cpp GEOM_INDIRECT, 8-float vertex layout)

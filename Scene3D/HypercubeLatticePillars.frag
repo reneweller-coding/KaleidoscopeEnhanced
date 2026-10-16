@@ -1,4 +1,22 @@
 #version 330 core
+/*****************************************************************************\
+ *                              HypercubeLatticePillars.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Shades a lattice of tesseract/hypercube pillar monoliths: a dark photo-textured monolith face with sci-fi neon
+ *  edge lines picked out near each cube corner (vTexCoord), lit with a simple diffuse+specular term.
+ *
+ *  audioHigh brightens the neon edge color, audioKick intensifies the
+ *  specular highlight, and audioChromaHue (plus the hueP preset) rotates
+ *  the final color's hue. Most of the other declared audio* uniforms in
+ *  this file (audioPhase, audioAdvance, audioSwell, audioLevel,
+ *  audioCentroid, audioValence, audioSubBass, audioBass, audioMid,
+ *  audioFlux) are unused by this particular fragment stage.
+ *
+ *  @author René Weller
+ */
 out vec4 fragColor; ///< The pixel's colour (output).
 // HypercubeLatticePillars.frag
 
@@ -29,20 +47,6 @@ in vec3  vNormal;   ///< Surface normal (from the vertex stage).
 in vec2  vTexCoord; ///< Texture coordinate (from the vertex stage).
 in vec4  vColor;    ///< Color (from the vertex stage).
 in float vHeight;   ///< Height (from the vertex stage).
-
-/**
- * @file HypercubeLatticePillars.frag
- * @brief Shades a lattice of tesseract/hypercube pillar monoliths: a dark
- * photo-textured monolith face with sci-fi neon edge lines picked out near
- * each cube corner (vTexCoord), lit with a simple diffuse+specular term.
- *
- * audioHigh brightens the neon edge color, audioKick intensifies the
- * specular highlight, and audioChromaHue (plus the hueP preset) rotates
- * the final color's hue. Most of the other declared audio* uniforms in
- * this file (audioPhase, audioAdvance, audioSwell, audioLevel,
- * audioCentroid, audioValence, audioSubBass, audioBass, audioMid,
- * audioFlux) are unused by this particular fragment stage.
- */
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

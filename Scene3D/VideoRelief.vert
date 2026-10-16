@@ -1,8 +1,13 @@
 #version 330 core
-/**
- * @file VideoRelief.vert
- * @brief Vertex stage companion to VideoRelief.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              VideoRelief.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to VideoRelief.frag -- see that file's header for this scene's description.
+ *
+ *  @author René Weller
  */
 // VideoRelief.vert — the picture as terrain.
 // -----------------------------------------------------------------------

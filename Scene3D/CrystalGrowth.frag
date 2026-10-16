@@ -1,4 +1,21 @@
 #version 330 core
+/*****************************************************************************\
+ *                              CrystalGrowth.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Lighting for the growing crystal-branch cluster: faceted gem faces with luminous edges where three faces meet,
+ *  depth-tested; a drop blows the edges out into a blinding sparkle.
+ *
+ *  audioDrop widens and brightens the edge glow directly in this fragment
+ *  stage, while audioLevel and audioKick apply a further overall brightness
+ *  multiplier. The branch colour, growth length and drop-triggered ice-white
+ *  flash (vCol) are computed upstream in CrystalGrowth.vert from
+ *  audioBuildUp, audioDrop, audioSwell and audioChromaHue.
+ *
+ *  @author René Weller
+ */
 out vec4 fragColor; ///< The pixel's colour (output).
 // Frag-side music pulse (added by the deaf-scene pass: reactivity
 // measured ~0 -- the vert-side coupling barely moved any pixels).
@@ -9,19 +26,6 @@ uniform float audioKick;  ///< Kick-drum envelope, 0..1 (fast attack, short deca
 uniform float audioDrop; ///< Drop envelope: high after a detected drop, decaying.
 in vec4       vCol;      ///< Colour (from the vertex stage).
 in vec3       vCorner;   ///< Corner (from the vertex stage).
-
-/**
- * @file CrystalGrowth.frag
- * @brief Lighting for the growing crystal-branch cluster: faceted gem faces
- * with luminous edges where three faces meet, depth-tested; a drop blows the
- * edges out into a blinding sparkle.
- *
- * audioDrop widens and brightens the edge glow directly in this fragment
- * stage, while audioLevel and audioKick apply a further overall brightness
- * multiplier. The branch colour, growth length and drop-triggered ice-white
- * flash (vCol) are computed upstream in CrystalGrowth.vert from
- * audioBuildUp, audioDrop, audioSwell and audioChromaHue.
- */
 
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()

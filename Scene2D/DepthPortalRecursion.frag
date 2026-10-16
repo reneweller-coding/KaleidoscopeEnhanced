@@ -1,28 +1,33 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file DepthPortalRecursion.frag
- * @brief DEPTH PORTAL RECURSION: a Droste zoom built from the engine's own
- * previous frame.  A rounded portal in the middle of the picture shows the
- * LAST frame, shrunk and turned -- which already contains the portal, which
- * contains the portal ...  The recursion is real, not painted: every level is
- * one frame older than the one around it, so a beat that flashes the rim
- * travels inward level by level over the following frames.
+/*****************************************************************************\
+ *                              DepthPortalRecursion.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioBeat      -> the portal rim flashes; the flash then sinks inward
- *   sceneAdvance   -> continuous inward drift (the zoom never stops, never jumps)
- *   audioBarPhase  -> the portal centre wanders in a slow ellipse
- *   audioMelodyPitch -> portal aspect: high notes make it tall, low notes wide
- *   audioSwell     -> how far the colour shifts per level (spectral depth)
- *   audioKick      -> a one-frame radial push on the outer picture
+ *  @brief
+ *  DEPTH PORTAL RECURSION: a Droste zoom built from the engine's own previous frame.
  *
- * Per-activation variety: portalP (portal radius), twistP (turn per level),
- *                         decayP (how many levels survive), hueP.
+ *  A rounded portal in the middle of the picture shows the LAST frame, shrunk and turned -- which already contains
+ *  the portal, which contains the portal ...  The recursion is real, not painted: every level is one frame older
+ *  than the one around it, so a beat that flashes the rim travels inward level by level over the following frames.
  *
- * Feedback safety (V10): the previous frame is decayed AND its luminance is
- * soft-knee'd before re-injection, so the loop converges instead of blooming.
+ *  Audio Reactivity:
+ *    audioBeat      -> the portal rim flashes; the flash then sinks inward
+ *    sceneAdvance   -> continuous inward drift (the zoom never stops, never jumps)
+ *    audioBarPhase  -> the portal centre wanders in a slow ellipse
+ *    audioMelodyPitch -> portal aspect: high notes make it tall, low notes wide
+ *    audioSwell     -> how far the colour shifts per level (spectral depth)
+ *    audioKick      -> a one-frame radial push on the outer picture
+ *
+ *  Per-activation variety: portalP (portal radius), twistP (turn per level),
+ *                          decayP (how many levels survive), hueP.
+ *
+ *  Feedback safety (V10): the previous frame is decayed AND its luminance is
+ *  soft-knee'd before re-injection, so the loop converges instead of blooming.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

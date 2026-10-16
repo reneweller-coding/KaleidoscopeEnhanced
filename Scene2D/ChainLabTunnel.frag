@@ -1,31 +1,36 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file ChainLabTunnel.frag
- * @brief CHAIN LAB TUNNEL: the chain laboratory as a tunnel, like the original
- * Tunnel scenes -- every start rolls a new chain of four continuous transforms
- * (the 2D chain lab's classes: global map, symmetry, second map, warp), the
- * photograph flows through it, and the chain is wrapped around the inside of a
- * tube whose axis winds slowly, so the vanishing point wanders.  The chain's
- * brightness becomes real depth: the wall is a relief that stands out into the
- * tube, lit by a light travelling with the camera, with a colour field that
- * follows the chain and wanders with the music.  The camera flies on the axis
- * and the relief never reaches it.  Endless.
+/*****************************************************************************\
+ *                              ChainLabTunnel.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the flight and the flow through the chain (integrated, jump-free)
- *   sceneAdvance    -> the chain morphs on to the next transform (integrated)
- *   audioPhase      -> the kaleidoscopes turn, the colours wander (integrated)
- *   audioSpread     -> the strength of the distorting stages
- *   audioKick       -> the relief crests flare (light)
- *   audioMode       -> the light and the palette: cool in minor, warm in major
- *   audioSwell      -> the relief rises, the colours saturate (slow)
+ *  @brief
+ *  CHAIN LAB TUNNEL: the chain laboratory as a tunnel, like the original Tunnel scenes -- every start rolls a new
+ *  chain of four continuous transforms (the 2D chain lab's classes: global map, symmetry, second map, warp), the
+ *  photograph flows through it, and the chain is wrapped around the inside of a tube whose axis winds slowly, so
+ *  the vanishing point wanders.
  *
- * Knobs: chainAP / chainBP / chainCP / chainDP (the chain, rolled per start),
- * morphP (which stage, if any, morphs on with the music), depthP (relief
- * height), styleP (lit photo / glowing crests), speedP (flight speed),
- * detailP (texture sharpness), paletteP (photo colours / colour field), hueP.
+ *  The chain's brightness becomes real depth: the wall is a relief that stands out into the tube, lit by a light
+ *  travelling with the camera, with a colour field that follows the chain and wanders with the music.  The camera
+ *  flies on the axis and the relief never reaches it.  Endless.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the flight and the flow through the chain (integrated, jump-free)
+ *    sceneAdvance    -> the chain morphs on to the next transform (integrated)
+ *    audioPhase      -> the kaleidoscopes turn, the colours wander (integrated)
+ *    audioSpread     -> the strength of the distorting stages
+ *    audioKick       -> the relief crests flare (light)
+ *    audioMode       -> the light and the palette: cool in minor, warm in major
+ *    audioSwell      -> the relief rises, the colours saturate (slow)
+ *
+ *  Knobs: chainAP / chainBP / chainCP / chainDP (the chain, rolled per start),
+ *  morphP (which stage, if any, morphs on with the music), depthP (relief
+ *  height), styleP (lit photo / glowing crests), speedP (flight speed),
+ *  detailP (texture sharpness), paletteP (photo colours / colour field), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

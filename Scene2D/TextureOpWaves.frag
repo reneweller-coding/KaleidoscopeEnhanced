@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureOpWaves.frag
- * @brief TEXTURE OP WAVES: an op-art painting in motion -- fine parallel
- * stripes that swell, pinch and ripple in waves so the flat surface seems
- * to billow like cloth; the photograph bends the stripes (its bright parts
- * push them apart, dark parts pull them together), so each photo creates
- * its own landscape of optical folds; the stripes run in interleaved
- * colours taken from the photo, and a slow wave travels through them.
- * Endless, mirrorable.
+/*****************************************************************************\
+ *                              TextureOpWaves.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the waves travel (integrated, jump-free)
- *   audioSpread     -> how strongly the photo bends the stripes
- *   audioHarmChange -> the stripe direction turns (slow, smoothed)
- *   audioMode       -> palette: black/white in minor, photo colours in major
- *   audioKick       -> the light stripes brighten (light)
- *   audioSwell      -> wave height (slow)
+ *  @brief
+ *  TEXTURE OP WAVES: an op-art painting in motion -- fine parallel stripes that swell, pinch and ripple in waves so
+ *  the flat surface seems to billow like cloth; the photograph bends the stripes (its bright parts push them apart,
+ *  dark parts pull them together), so each photo creates its own landscape of optical folds; the stripes run in
+ *  interleaved colours taken from the photo, and a slow wave travels through them.
  *
- * Knobs: stripeP (stripe density), bendP (base bending), colourP (colour stripes), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the waves travel (integrated, jump-free)
+ *    audioSpread     -> how strongly the photo bends the stripes
+ *    audioHarmChange -> the stripe direction turns (slow, smoothed)
+ *    audioMode       -> palette: black/white in minor, photo colours in major
+ *    audioKick       -> the light stripes brighten (light)
+ *    audioSwell      -> wave height (slow)
+ *
+ *  Knobs: stripeP (stripe density), bendP (base bending), colourP (colour stripes), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

@@ -1,19 +1,23 @@
 #version 330 core
+/*****************************************************************************\
+ *                              Tornado.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Additive glow-sprite shader for the debris-vortex tornado scene: renders each of the 60k
+ *  funnel/debris/lightning-bolt points as a soft round point of light.
+ *
+ *  No audio uniforms are read here; the funnel's spin rate, kick-driven
+ *  cinching, snare-triggered forked-lightning bolts, and flung-debris flares
+ *  are all computed in the companion vertex shader (Tornado.vert) and arrive
+ *  pre-baked in vCol.
+ *
+ *  @author René Weller
+ */
 out vec4 fragColor; ///< The pixel's colour (output).
 // Tornado.frag — soft glowing point (additive blending).
 in vec4 vCol; ///< Colour (from the vertex stage).
-
-/**
- * @file Tornado.frag
- * @brief Additive glow-sprite shader for the debris-vortex tornado scene:
- * renders each of the 60k funnel/debris/lightning-bolt points as a soft
- * round point of light.
- *
- * No audio uniforms are read here; the funnel's spin rate, kick-driven
- * cinching, snare-triggered forked-lightning bolts, and flung-debris flares
- * are all computed in the companion vertex shader (Tornado.vert) and arrive
- * pre-baked in vCol.
- */
 
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()

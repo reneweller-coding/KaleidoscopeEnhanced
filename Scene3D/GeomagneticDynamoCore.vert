@@ -1,8 +1,13 @@
 #version 330 core
-/**
- * @file GeomagneticDynamoCore.vert
- * @brief Vertex stage companion to GeomagneticDynamoCore.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              GeomagneticDynamoCore.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to GeomagneticDynamoCore.frag -- see that file's header for this scene's description.
+ *
+ *  @author René Weller
  */
 layout( location = 0 ) in vec4 attrA; ///< xyz = sprite centre, w = corner code
 layout( location = 1 ) in vec4 attrB; ///< x = radius, y = phase, z = isHaze, w = spare

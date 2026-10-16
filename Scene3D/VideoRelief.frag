@@ -1,4 +1,23 @@
 #version 330 core
+/*****************************************************************************\
+ *                              VideoRelief.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Lights the image-as-terrain relief built in VideoRelief.vert (the slideshow photo's luminance raised into
+ *  height) while keeping the source picture itself the dominant term, so the result reads as the photo standing up
+ *  rather than a shaded landscape.
+ *
+ *  audioHigh sharpens a specular highlight; audioKick and audioChromaHue
+ *  drive a rim-light wash along the ridge lines, coloured from the rotating
+ *  photo-arc palette; audioBeat and audioSubBass pulse overall exposure;
+ *  audioAmbient adds a flat fill from the source image; and inkP (a preset)
+ *  controls how strongly the directional lighting is allowed to bite into
+ *  the picture versus leaving it untouched.
+ *
+ *  @author René Weller
+ */
 out vec4 fragColor; ///< The pixel's colour (output).
 // VideoRelief.frag — light the terrain, but keep the picture readable.
 // The temptation is to shade it like rock, which buries the source; the image
@@ -10,21 +29,6 @@ in vec2  vUv;     ///< Uv (from the vertex stage).
 in vec3  vNormal; ///< Surface normal (from the vertex stage).
 in vec3  vView;   ///< View vector (from the vertex stage).
 in float vHeight; ///< Height (from the vertex stage).
-
-/**
- * @file VideoRelief.frag
- * @brief Lights the image-as-terrain relief built in VideoRelief.vert (the
- * slideshow photo's luminance raised into height) while keeping the source
- * picture itself the dominant term, so the result reads as the photo
- * standing up rather than a shaded landscape.
- *
- * audioHigh sharpens a specular highlight; audioKick and audioChromaHue
- * drive a rim-light wash along the ridge lines, coloured from the rotating
- * photo-arc palette; audioBeat and audioSubBass pulse overall exposure;
- * audioAmbient adds a flat fill from the source image; and inkP (a preset)
- * controls how strongly the directional lighting is allowed to bite into
- * the picture versus leaving it untouched.
- */
 
 uniform sampler2D tex0;          ///< The current photo.
 uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.

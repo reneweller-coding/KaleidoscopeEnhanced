@@ -1,20 +1,26 @@
 #version 330 core
-/**
- * @file ShipFlyby.vert
- * @brief Vertex stage companion to ShipFlyby.frag -- see that file's header.
+/*****************************************************************************\
+ *                              ShipFlyby.vert
+\*****************************************************************************/
+/*! @file
  *
- * The whole point of this scene is the PASS, and a pass has a beginning, a
- * middle and an end, so it is staged on `sceneProgress` (0 at activation, 1
- * when the scene's solo time runs out) rather than on `time`. The ship is
- * therefore off-frame at both ends and closest at the halfway mark no matter
- * how long the scheduler happens to give this scene -- which is exactly the
- * "passage length tied to the scene length" behaviour asked for. Driving it
- * off `time` instead would make a short scene show a fragment of the pass
- * and a long one show the ship leave and never come back.
+ *  @brief
+ *  Vertex stage companion to ShipFlyby.frag -- see that file's header.
  *
- * Every ship in this batch came out of the generator NOSE ALONG +Z (measured
- * across all 80), so a fixed quarter turn about Y puts the long axis along
- * the travel direction and the ship flies nose-first.
+ *  The whole point of this scene is the PASS, and a pass has a beginning, a
+ *  middle and an end, so it is staged on `sceneProgress` (0 at activation, 1
+ *  when the scene's solo time runs out) rather than on `time`. The ship is
+ *  therefore off-frame at both ends and closest at the halfway mark no matter
+ *  how long the scheduler happens to give this scene -- which is exactly the
+ *  "passage length tied to the scene length" behaviour asked for. Driving it
+ *  off `time` instead would make a short scene show a fragment of the pass
+ *  and a long one show the ship leave and never come back.
+ *
+ *  Every ship in this batch came out of the generator NOSE ALONG +Z (measured
+ *  across all 80), so a fixed quarter turn about Y puts the long axis along
+ *  the travel direction and the ship flies nose-first.
+ *
+ *  @author René Weller
  */
 
 in vec4 attrA; ///< mesh: xyz = object-space position, w = U.  shell: xyz = world-space position on the shell.

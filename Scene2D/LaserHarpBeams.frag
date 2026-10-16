@@ -1,23 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file LaserHarpBeams.frag
- * @brief LASER HARP BEAMS: twelve vertical laser beams standing in haze,
- * one per chroma class.  A beam brightens when its class sounds; a hand
- * crosses the row on the scene clock and every beam it interrupts blooms
- * at the point of contact and throws a splash of scattered light.  The
- * frame is the emitter bar below and the mirror strip above.  The photo
- * is the hall behind the haze.  Camera fixed in front of the harp.
+/*****************************************************************************\
+ *                              LaserHarpBeams.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioChroma[12] -> beam brightness, one class each (light)
- *   sceneAdvance    -> the hand crosses, haze drifts (continuous)
- *   audioSwell      -> haze density (slow)
- *   audioHigh       -> scatter sparkle (light)
- *   audioKick       -> the emitter bar pulses (light, local)
+ *  @brief
+ *  LASER HARP BEAMS: twelve vertical laser beams standing in haze, one per chroma class.
  *
- * Per-activation variety: spreadP, hazeP, hueP.
+ *  A beam brightens when its class sounds; a hand crosses the row on the scene clock and every beam it interrupts
+ *  blooms at the point of contact and throws a splash of scattered light.  The frame is the emitter bar below and
+ *  the mirror strip above.  The photo is the hall behind the haze.  Camera fixed in front of the harp.
+ *
+ *  Audio Reactivity:
+ *    audioChroma[12] -> beam brightness, one class each (light)
+ *    sceneAdvance    -> the hand crosses, haze drifts (continuous)
+ *    audioSwell      -> haze density (slow)
+ *    audioHigh       -> scatter sparkle (light)
+ *    audioKick       -> the emitter bar pulses (light, local)
+ *
+ *  Per-activation variety: spreadP, hazeP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

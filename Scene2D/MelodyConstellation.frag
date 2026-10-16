@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file MelodyConstellation.frag
- * @brief MELODY CONSTELLATION: the last ~8 seconds of melody drawn as stars
- * on a night sky and joined into a constellation that writes itself as the
- * song goes.  The host keeps 96 samples of the melody pitch (audioMelody,
- * a ring with audioMelodyHead, one sample per 80 ms); each becomes a star --
- * position from time (a slow spiral, so the constellation curls instead of
- * scrolling) and pitch (radius), brightness from how recently it sounded.
- * Consecutive stars are joined by faint lines; a leap in pitch draws a long
- * strut, a held note a tight cluster.  Silence lifts the pen.
+/*****************************************************************************\
+ *                              MelodyConstellation.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioMelody[96] / audioMelodyHead -> the stars and their lines
- *   audioDeltaPitch -> twinkle (melodic activity)
- *   audioOnset      -> the newest star flares
- *   audioSwell      -> nebula haze behind the constellation
- *   audioBarPhase   -> the sky turns one bar per rotation step
+ *  @brief
+ *  MELODY CONSTELLATION: the last ~8 seconds of melody drawn as stars on a night sky and joined into a
+ *  constellation that writes itself as the song goes.
  *
- * Per-activation variety: spreadP (radius scale), sizeP (star size), hueP.
+ *  The host keeps 96 samples of the melody pitch (audioMelody, a ring with audioMelodyHead, one sample per 80 ms);
+ *  each becomes a star -- position from time (a slow spiral, so the constellation curls instead of scrolling) and
+ *  pitch (radius), brightness from how recently it sounded. Consecutive stars are joined by faint lines; a leap in
+ *  pitch draws a long strut, a held note a tight cluster.  Silence lifts the pen.
+ *
+ *  Audio Reactivity:
+ *    audioMelody[96] / audioMelodyHead -> the stars and their lines
+ *    audioDeltaPitch -> twinkle (melodic activity)
+ *    audioOnset      -> the newest star flares
+ *    audioSwell      -> nebula haze behind the constellation
+ *    audioBarPhase   -> the sky turns one bar per rotation step
+ *
+ *  Per-activation variety: spreadP (radius scale), sizeP (star size), hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

@@ -1,26 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file WindMapStreamlines.frag
- * @brief WIND MAP STREAMLINES: a living wind map -- thousands of fine glowing
- * streamlines trace the air currents across a dark map, bright and warm
- * where the wind is fast, cool and faint where it is calm, whirling around
- * the pressure systems, and the whole pattern streams forward along the
- * lines.  The pressure field is the photograph: its bright regions are
- * highs, its dark regions lows, and the wind circles them, so every photo
- * gives its own weather; the photo's shape shows faintly as the land.
- * Endless, mirrorable.
+/*****************************************************************************\
+ *                              WindMapStreamlines.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the streaming along the lines (integrated, jump-free)
- *   audioSpread     -> streak length
- *   audioRoughness  -> gusts (turbulence added to the wind)
- *   audioSwell      -> overall wind strength (slow)
- *   audioHigh       -> the fastest streams sparkle (light)
- *   audioMode       -> the colour scale: cool-to-warm range shifts
+ *  @brief
+ *  WIND MAP STREAMLINES: a living wind map -- thousands of fine glowing streamlines trace the air currents across a
+ *  dark map, bright and warm where the wind is fast, cool and faint where it is calm, whirling around the pressure
+ *  systems, and the whole pattern streams forward along the lines.
  *
- * Knobs: densityP (lines), scaleP (map scale), landP (how much the land shows), hueP.
+ *  The pressure field is the photograph: its bright regions are highs, its dark regions lows, and the wind circles
+ *  them, so every photo gives its own weather; the photo's shape shows faintly as the land. Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the streaming along the lines (integrated, jump-free)
+ *    audioSpread     -> streak length
+ *    audioRoughness  -> gusts (turbulence added to the wind)
+ *    audioSwell      -> overall wind strength (slow)
+ *    audioHigh       -> the fastest streams sparkle (light)
+ *    audioMode       -> the colour scale: cool-to-warm range shifts
+ *
+ *  Knobs: densityP (lines), scaleP (map scale), landP (how much the land shows), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

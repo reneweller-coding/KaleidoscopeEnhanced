@@ -1,23 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file KoiPondAbove.frag
- * @brief KOI POND ABOVE: a garden pond seen straight down.  Koi -- white,
- * orange and black-patched -- glide in slow curves under the surface; the
- * sky and the overhanging branches mirror on the water; a few maple leaves
- * float on top; caustics ripple over the stones on the bottom.  The fish
- * swim at their own gentle pace.  The music is light on the water: each
- * fish's colour glows a little with its band, and the swell brightens the
- * sky in the reflection.
+/*****************************************************************************\
+ *                              KoiPondAbove.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSpectrum[32] -> glow of each fish's colour (its band)
- *   audioSwell        -> sky brightness in the reflection (slow)
- *   audioHigh         -> sparkle on the ripples (light)
- *   sceneTime         -> the swimming and the ripples (continuous)
+ *  @brief
+ *  KOI POND ABOVE: a garden pond seen straight down.
  *
- * Per-activation variety: fishP (how many koi), hueP.
+ *  Koi -- white, orange and black-patched -- glide in slow curves under the surface; the sky and the overhanging
+ *  branches mirror on the water; a few maple leaves float on top; caustics ripple over the stones on the bottom.
+ *  The fish swim at their own gentle pace.  The music is light on the water: each fish's colour glows a little with
+ *  its band, and the swell brightens the sky in the reflection.
+ *
+ *  Audio Reactivity:
+ *    audioSpectrum[32] -> glow of each fish's colour (its band)
+ *    audioSwell        -> sky brightness in the reflection (slow)
+ *    audioHigh         -> sparkle on the ripples (light)
+ *    sceneTime         -> the swimming and the ripples (continuous)
+ *
+ *  Per-activation variety: fishP (how many koi), hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

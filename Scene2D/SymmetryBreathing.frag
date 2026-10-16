@@ -1,27 +1,31 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SymmetryBreathing.frag
- * @brief SYMMETRY BREATHING: a kaleidoscope whose symmetry itself breathes --
- * the photograph folded into a rosette that grows smoothly from 3-fold to
- * 12-fold and back, each count blending continuously into the next (the
- * mirrors slide apart as a new wedge opens between them), while the
- * rosette rotates and the window into the photo drifts.  Rings of the
- * rosette carry different symmetries at once, so the pattern is a stack
- * of concentric kaleidoscopes, each breathing at its own pace.  Endless,
- * mirrorable, like the original Kaleidoscope.
+/*****************************************************************************\
+ *                              SymmetryBreathing.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioPhase      -> rotation (integrated, jump-free)
- *   audioAdvance    -> the window drifts through the photo (integrated)
- *   audioSwell      -> the symmetry grows toward more folds (slow)
- *   audioMode       -> round petals in major, pointed star in minor (superellipse)
- *   audioHarmChange -> the ring layers shift against each other (smoothed)
- *   audioHigh       -> the mirror seams glint (light)
+ *  @brief
+ *  SYMMETRY BREATHING: a kaleidoscope whose symmetry itself breathes -- the photograph folded into a rosette that
+ *  grows smoothly from 3-fold to 12-fold and back, each count blending continuously into the next (the mirrors
+ *  slide apart as a new wedge opens between them), while the rosette rotates and the window into the photo drifts.
  *
- * Knobs: minFoldP, maxFoldP (the breathing range), ringsP (how many ring
- * layers), hueP.
+ *  Rings of the rosette carry different symmetries at once, so the pattern is a stack of concentric kaleidoscopes,
+ *  each breathing at its own pace.  Endless, mirrorable, like the original Kaleidoscope.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioPhase      -> rotation (integrated, jump-free)
+ *    audioAdvance    -> the window drifts through the photo (integrated)
+ *    audioSwell      -> the symmetry grows toward more folds (slow)
+ *    audioMode       -> round petals in major, pointed star in minor (superellipse)
+ *    audioHarmChange -> the ring layers shift against each other (smoothed)
+ *    audioHigh       -> the mirror seams glint (light)
+ *
+ *  Knobs: minFoldP, maxFoldP (the breathing range), ringsP (how many ring
+ *  layers), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

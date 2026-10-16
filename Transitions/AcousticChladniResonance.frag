@@ -1,20 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file AcousticChladniResonance.frag
- * @brief TRANSITION ACOUSTIC CHLADNI RESONANCE: 2D vibrating plate Chladni resonance transition.
- * Acoustic standing wave eigenmodes vibrate the image plane, collecting sand
- * grains along nodal zero-vibration lines that morph and cross-fade between scenes.
- *   interpolation -> sweeps acoustic resonance frequency & Chladni mode transitions
- *   audioKick     -> flashes acoustic antinodal acceleration peaks
- *   audioSwell    -> drives vibrating plate amplitude & mode numbers (n, m)
+/*****************************************************************************\
+ *                              AcousticChladniResonance.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   modeP  float Chladni eigenmode harmonic multiplier (0.5..2.2)
- *   nodalP float nodal line sand line sharpness        (0.5..2.0)
- *   speedP float animation speed multiplier            (0.5..2.0)
- *   hueP   float acoustic glow hue offset              (0..6.28)
+ *  @brief
+ *  TRANSITION ACOUSTIC CHLADNI RESONANCE: 2D vibrating plate Chladni resonance transition.
+ *
+ *  Acoustic standing wave eigenmodes vibrate the image plane, collecting sand grains along nodal zero-vibration
+ *  lines that morph and cross-fade between scenes.
+ *
+ *    interpolation -> sweeps acoustic resonance frequency & Chladni mode transitions
+ *    audioKick     -> flashes acoustic antinodal acceleration peaks
+ *    audioSwell    -> drives vibrating plate amplitude & mode numbers (n, m)
+ *
+ *  Per-activation variety:
+ *    modeP  float Chladni eigenmode harmonic multiplier (0.5..2.2)
+ *    nodalP float nodal line sand line sharpness        (0.5..2.0)
+ *    speedP float animation speed multiplier            (0.5..2.0)
+ *    hueP   float acoustic glow hue offset              (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

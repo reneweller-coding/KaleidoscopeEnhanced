@@ -1,22 +1,27 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file FortressStation.frag
- * @brief GEOM="MESH" STATION FAMILY: armored/military hulls (bastions,
- * citadels, border patrol posts, defense platforms, fortified outposts),
- * shown against a moody dust nebula painted onto the sky shell
- * Scene3DShader::buildGeometry() appends after the loaded mesh (see
- * FortressStation.vert) -- vBg selects shell vs. hull. Harsh single-source
- * key light (a searchlight/beacon, not a soft star) plus a pulsing red
- * alarm-strobe accent on the hull's brightest baked markings; no
- * photo-tinting on the hull itself -- the nebula carries the color.
- *   audioKick    -> alarm-strobe flashes
- *   audioSwell   -> key-light intensity
- *   audioAdvance -> tumble speed (vertex stage)
+/*****************************************************************************\
+ *                              FortressStation.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-instance: sizeP (relative scale), alarmP (strobe intensity).
- * Per-activation variety: hueP float palette offset (0..6.28).
+ *  @brief
+ *  GEOM="MESH" STATION FAMILY: armored/military hulls (bastions, citadels, border patrol posts, defense platforms,
+ *  fortified outposts), shown against a moody dust nebula painted onto the sky shell Scene3DShader::buildGeometry()
+ *  appends after the loaded mesh (see FortressStation.vert) -- vBg selects shell vs. hull.
+ *
+ *  Harsh single-source key light (a searchlight/beacon, not a soft star) plus a pulsing red alarm-strobe accent on
+ *  the hull's brightest baked markings; no photo-tinting on the hull itself -- the nebula carries the color.
+ *
+ *    audioKick    -> alarm-strobe flashes
+ *    audioSwell   -> key-light intensity
+ *    audioAdvance -> tumble speed (vertex stage)
+ *
+ *  Per-instance: sizeP (relative scale), alarmP (strobe intensity).
+ *  Per-activation variety: hueP float palette offset (0..6.28).
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform sampler2DArray texMeshMaterial;       ///< The mesh's material textures (albedo, roughness, normal ...).
 uniform int            texMeshMaterialLayers; ///< Number of layers in texMeshMaterial.

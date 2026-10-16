@@ -1,18 +1,26 @@
 #version 330 core
-/**
- * @file ParticleTunnelFlight.vert
- * @brief 60,000 points arranged as rings around a long recycling tunnel, folded into a real
- * mirror-kaleidoscope cross-section (sidesP wedges, alternating copies mirrored) instead of a
- * plain circular tube -- genuine 3D depth/parallax through a kaleidoscopic tunnel, unlike the
- * fragment-shader 2D folds and raymarched tunnels already in the catalogue. The camera flies
- * straight down +Z at an audio-integrated speed; each point's fixed identity Z position is
- * wrapped modulo the tunnel length relative to the camera, so points recycle seamlessly into an
- * infinite flight instead of ever running out.
- *   audioAdvance -> forward flight speed (integrated, jump-free)
- *   audioPhase   -> cross-section spin
- *   audioKick    -> radial shockwave pulse + brief brightness flash
- *   audioSwell   -> tunnel radius breathes
- *   audioSubBass -> lateral camera sway strength
+/*****************************************************************************\
+ *                              ParticleTunnelFlight.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  60,000 points arranged as rings around a long recycling tunnel, folded into a real mirror-kaleidoscope
+ *  cross-section (sidesP wedges, alternating copies mirrored) instead of a plain circular tube -- genuine 3D
+ *  depth/parallax through a kaleidoscopic tunnel, unlike the fragment-shader 2D folds and raymarched tunnels
+ *  already in the catalogue.
+ *
+ *  The camera flies straight down +Z at an audio-integrated speed; each point's fixed identity Z position is
+ *  wrapped modulo the tunnel length relative to the camera, so points recycle seamlessly into an infinite flight
+ *  instead of ever running out.
+ *
+ *    audioAdvance -> forward flight speed (integrated, jump-free)
+ *    audioPhase   -> cross-section spin
+ *    audioKick    -> radial shockwave pulse + brief brightness flash
+ *    audioSwell   -> tunnel radius breathes
+ *    audioSubBass -> lateral camera sway strength
+ *
+ *  @author René Weller
  */
 
 in vec4 attrA; ///< .w = point index

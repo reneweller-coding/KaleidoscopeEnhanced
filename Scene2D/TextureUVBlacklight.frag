@@ -1,25 +1,31 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureUVBlacklight.frag
- * @brief TEXTURE UV BLACKLIGHT: the photograph under a black light -- the
- * picture itself sinks into a deep violet dark, while fluorescent paint
- * glows on it: contour lines of the photo's brightness, drawn in neon pink,
- * acid green, orange and cyan, creep slowly across the picture as their
- * levels rise and fall (like a psychedelic black-light poster that keeps
- * redrawing itself), the brightest parts of the photo fluoresce blue-white,
- * and specks of fluorescent lint float in the air.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              TextureUVBlacklight.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the contour levels creep (integrated, jump-free)
- *   audioSpread     -> how many contour lines glow
- *   audioKick       -> the paint flares (light)
- *   audioHigh       -> the floating lint sparkles (light)
- *   audioMode       -> palette: cool (cyan/violet/green) in minor, hot (pink/orange/yellow) in major
- *   audioSwell      -> the photo's own fluorescence (slow)
+ *  @brief
+ *  TEXTURE UV BLACKLIGHT: the photograph under a black light -- the picture itself sinks into a deep violet dark,
+ *  while fluorescent paint glows on it: contour lines of the photo's brightness, drawn in neon pink, acid green,
+ *  orange and cyan, creep slowly across the picture as their levels rise and fall (like a psychedelic black-light
+ *  poster that keeps redrawing itself), the brightest parts of the photo fluoresce blue-white, and specks of
+ *  fluorescent lint float in the air.
  *
- * Knobs: lineP (line width), detailP (how detailed the contours are), lintP, hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the contour levels creep (integrated, jump-free)
+ *    audioSpread     -> how many contour lines glow
+ *    audioKick       -> the paint flares (light)
+ *    audioHigh       -> the floating lint sparkles (light)
+ *    audioMode       -> palette: cool (cyan/violet/green) in minor, hot (pink/orange/yellow) in major
+ *    audioSwell      -> the photo's own fluorescence (slow)
+ *
+ *  Knobs: lineP (line width), detailP (how detailed the contours are), lintP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

@@ -1,18 +1,23 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file QuantumTachyonWarpTunnel.frag
- * @brief QUANTUM TACHYON WARP TUNNEL: Superluminal tachyon warp tunnel with Cherenkov
- * radiation shock cones, relativistic optical headlight beaming, hyper-speed star streaks,
- * and high-energy spacetime compression pulses.
+/*****************************************************************************\
+ *                              QuantumTachyonWarpTunnel.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance -> drives extreme superluminal warp flight progression
- *   audioKick    -> flashes Cherenkov shockwave cones & hyperdrive burst
- *   audioCentroid-> sharpens radial tachyon streak resolution & color temperature
- *   audioSubBass -> expands warp tunnel diameter breathing
- *   audioChromaHue-> steers the Cherenkov blue-to-hyperviolet spectrum
+ *  @brief
+ *  QUANTUM TACHYON WARP TUNNEL: Superluminal tachyon warp tunnel with Cherenkov radiation shock cones, relativistic
+ *  optical headlight beaming, hyper-speed star streaks, and high-energy spacetime compression pulses.
+ *
+ *  Audio Reactivity:
+ *    audioAdvance -> drives extreme superluminal warp flight progression
+ *    audioKick    -> flashes Cherenkov shockwave cones & hyperdrive burst
+ *    audioCentroid-> sharpens radial tachyon streak resolution & color temperature
+ *    audioSubBass -> expands warp tunnel diameter breathing
+ *    audioChromaHue-> steers the Cherenkov blue-to-hyperviolet spectrum
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

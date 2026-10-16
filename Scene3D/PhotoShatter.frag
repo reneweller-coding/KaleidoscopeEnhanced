@@ -1,4 +1,19 @@
 #version 330 core
+/*****************************************************************************\
+ *                              PhotoShatter.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Shades one flying shard of the shattered current photo (tex0): the plain image, lit by vLight, with hot
+ *  fracture-line edges.
+ *
+ *  audioDrop is what ignites the fracture edges — they stay faint between
+ *  drops and blaze orange on one — and audioChromaHue hue-rotates that
+ *  edge colour so it tracks the music's key.
+ *
+ *  @author René Weller
+ */
 out vec4 fragColor; ///< The pixel's colour (output).
 // PhotoShatter.frag — plain image shards with a hot edge while flying.
 uniform sampler2D tex0;           ///< The current photo.
@@ -7,16 +22,6 @@ uniform float     audioChromaHue; ///< Hue of the dominant pitch class (radians,
 
 in vec2  vUV;    ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 in float vLight; ///< Light (from the vertex stage).
-
-/**
- * @file PhotoShatter.frag
- * @brief Shades one flying shard of the shattered current photo (tex0):
- * the plain image, lit by vLight, with hot fracture-line edges.
- *
- * audioDrop is what ignites the fracture edges — they stay faint between
- * drops and blaze orange on one — and audioChromaHue hue-rotates that
- * edge colour so it tracks the music's key.
- */
 
 /**  Rotates a colour's hue by an angle (about the grey axis).
  *

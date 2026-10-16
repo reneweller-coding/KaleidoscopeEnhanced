@@ -1,21 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file InterstellarGenerationShip.frag
- * @brief INTERSTELLAR GENERATION SHIP: A colossal rotating cylinder traveling
- * through interstellar space. The camera glides along its miles-long hull,
- * revealing lit habitation domes, solar arrays, and a glowing propulsion drive.
- *   audioAdvance -> flight speed of the ship and camera progression
- *   audioKick    -> flashes from external comms and engine pulses
- *   audioSwell   -> ambient illumination and starfield brightness
- *   audioPhase   -> rotation of the cylinder
- *   audioChromaHue-> palette offset for the biosphere lights
+/*****************************************************************************\
+ *                              InterstellarGenerationShip.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   hullP float complexity of the hull (0.7..1.5)
- *   glowP float intensity of the biosphere windows (0.6..1.8)
- *   hueP float palette offset (0..6.28)
+ *  @brief
+ *  INTERSTELLAR GENERATION SHIP: A colossal rotating cylinder traveling through interstellar space.
+ *
+ *  The camera glides along its miles-long hull, revealing lit habitation domes, solar arrays, and a glowing
+ *  propulsion drive.
+ *
+ *    audioAdvance -> flight speed of the ship and camera progression
+ *    audioKick    -> flashes from external comms and engine pulses
+ *    audioSwell   -> ambient illumination and starfield brightness
+ *    audioPhase   -> rotation of the cylinder
+ *    audioChromaHue-> palette offset for the biosphere lights
+ *
+ *  Per-activation variety:
+ *    hullP float complexity of the hull (0.7..1.5)
+ *    glowP float intensity of the biosphere windows (0.6..1.8)
+ *    hueP float palette offset (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

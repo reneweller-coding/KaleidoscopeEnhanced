@@ -1,15 +1,20 @@
 #version 430 core
-/**
- * @file BorromeanRingsOrbit.comp
- * @brief BORROMEAN RINGS ORBIT: three rings, no two of which are linked,
- * yet inseparable -- built as three tori in mutually perpendicular
- * planes, each displaced along its own axis so they interlock the
- * Borromean way; the whole turns slowly on the scene clock.  Translucent
- * glass rings (OIT), each lit by a band group (fragment).  Torus normals
- * are packed as xy in the uv slots with the z sign in kind.  No state.
- * Camera still.
+/*****************************************************************************\
+ *                              BorromeanRingsOrbit.comp
+\*****************************************************************************/
+/*! @file
  *
- * Per-instance: sizeP, thickP, hueP.
+ *  @brief
+ *  BORROMEAN RINGS ORBIT: three rings, no two of which are linked, yet inseparable -- built as three tori in
+ *  mutually perpendicular planes, each displaced along its own axis so they interlock the Borromean way; the whole
+ *  turns slowly on the scene clock.
+ *
+ *  Translucent glass rings (OIT), each lit by a band group (fragment).  Torus normals are packed as xy in the uv
+ *  slots with the z sign in kind.  No state. Camera still.
+ *
+ *  Per-instance: sizeP, thickP, hueP.
+ *
+ *  @author René Weller
  */
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( local_size_x = 4, local_size_y = 4, local_size_z = 4 ) in;

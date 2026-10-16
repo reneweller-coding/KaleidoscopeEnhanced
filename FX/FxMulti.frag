@@ -1,12 +1,19 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file FxMulti.frag
- * @brief FX MULTI: mirrored tile grid -- the scene repeats into a "copies" x
- * "copies" grid of mirrored tiles, optionally rotated 45 deg.
- *   audioPhase -> per-activation continuous grid spin (spinP)
- *   audioSwell -> the whole grid looms slightly closer on loudness swells
+/*****************************************************************************\
+ *                              FxMulti.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  FX MULTI: mirrored tile grid -- the scene repeats into a "copies" x "copies" grid of mirrored tiles, optionally
+ *  rotated 45 deg.
+ *
+ *    audioPhase -> per-activation continuous grid spin (spinP)
+ *    audioSwell -> the whole grid looms slightly closer on loudness swells
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

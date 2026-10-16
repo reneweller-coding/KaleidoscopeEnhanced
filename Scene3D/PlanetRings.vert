@@ -1,8 +1,13 @@
 #version 330 core
-/**
- * @file PlanetRings.vert
- * @brief Vertex stage companion to PlanetRings.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              PlanetRings.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to PlanetRings.frag -- see that file's header for this scene's description.
+ *
+ *  @author René Weller
  */
 // PlanetRings.vert — a pointillist gas giant with particle rings and a far
 // starfield.  The rings orbit Kepler-style (inner faster), a kick sends a

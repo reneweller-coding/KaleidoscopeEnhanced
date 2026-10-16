@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureContourNeonMap.frag
- * @brief TEXTURE CONTOUR NEON MAP: the photograph read as a landscape and
- * drawn as a glowing topographic map -- contour lines at every height
- * level, index contours brighter and thicker, the colour running through
- * a neon hypsometric scale from deep valleys to high peaks; the terrain
- * slowly heaves as the photo drifts, the contours sliding and merging,
- * and a scanning light line passes over the map.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              TextureContourNeonMap.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the terrain drifts (integrated, jump-free)
- *   audioSpread     -> the relief exaggeration (more contours)
- *   audioKick       -> the index contours flash (light)
- *   audioMode       -> the scale: cool (blue-violet) in minor, warm (orange-pink) in major
- *   audioSwell      -> the hillshade under the lines (slow)
- *   audioHigh       -> the scan line glints (light)
+ *  @brief
+ *  TEXTURE CONTOUR NEON MAP: the photograph read as a landscape and drawn as a glowing topographic map -- contour
+ *  lines at every height level, index contours brighter and thicker, the colour running through a neon hypsometric
+ *  scale from deep valleys to high peaks; the terrain slowly heaves as the photo drifts, the contours sliding and
+ *  merging, and a scanning light line passes over the map.
  *
- * Knobs: levelP (contour spacing), smoothP (terrain smoothness), fillP (colour fill between lines), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the terrain drifts (integrated, jump-free)
+ *    audioSpread     -> the relief exaggeration (more contours)
+ *    audioKick       -> the index contours flash (light)
+ *    audioMode       -> the scale: cool (blue-violet) in minor, warm (orange-pink) in major
+ *    audioSwell      -> the hillshade under the lines (slow)
+ *    audioHigh       -> the scan line glints (light)
+ *
+ *  Knobs: levelP (contour spacing), smoothP (terrain smoothness), fillP (colour fill between lines), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

@@ -1,26 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SporeReleaseGills.frag
- * @brief SPORE RELEASE GILLS: a mushroom cap from below, filling the
- * frame -- the gills radiating from the stem, and the spores (round)
- * drifting down out of them on the scene clock in slow curtains, lit from
- * the side by the treble.  The cap is the photo; the gills glow faintly
- * with their spectrum band (a gill per band around the circle); the
- * bass is the damp warmth of the forest floor light from below; the kick
- * a puff releases a denser cloud (as light on the spores).  Camera fixed
- * under the cap.
+/*****************************************************************************\
+ *                              SporeReleaseGills.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   sceneAdvance      -> spore drift (continuous)
- *   audioSpectrum[32] -> gill glow by band (light)
- *   audioHigh         -> spore side-light (light)
- *   audioBass         -> floor light (light)
- *   audioKick         -> puff brightness (light)
- *   audioLevel        -> brightness
+ *  @brief
+ *  SPORE RELEASE GILLS: a mushroom cap from below, filling the frame -- the gills radiating from the stem, and the
+ *  spores (round) drifting down out of them on the scene clock in slow curtains, lit from the side by the treble.
  *
- * Per-activation variety: gillsP, sporeP, hueP.
+ *  The cap is the photo; the gills glow faintly with their spectrum band (a gill per band around the circle); the
+ *  bass is the damp warmth of the forest floor light from below; the kick a puff releases a denser cloud (as light
+ *  on the spores).  Camera fixed under the cap.
+ *
+ *  Audio Reactivity:
+ *    sceneAdvance      -> spore drift (continuous)
+ *    audioSpectrum[32] -> gill glow by band (light)
+ *    audioHigh         -> spore side-light (light)
+ *    audioBass         -> floor light (light)
+ *    audioKick         -> puff brightness (light)
+ *    audioLevel        -> brightness
+ *
+ *  Per-activation variety: gillsP, sporeP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

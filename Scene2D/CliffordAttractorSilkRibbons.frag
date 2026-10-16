@@ -1,18 +1,23 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file CliffordAttractorSilkRibbons.frag
- * @brief CLIFFORD ATTRACTOR SILK RIBBONS: Hyper-dense trigonometric Clifford / De Jong
- * attractor density maps with silky flowing ribbon sheets, dynamic parameter morphing,
- * and high-luminance glowing caustics.
+/*****************************************************************************\
+ *                              CliffordAttractorSilkRibbons.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance -> drives continuous Clifford parameter modulation & ribbon flow
- *   audioKick    -> flashes attractor density caustic peaks & shockwave ripple
- *   audioCentroid-> modulates trigonometric frequency parameters (a, b)
- *   audioSubBass -> expands silk ribbon fold amplitude
- *   audioChromaHue-> rotates the flowing iridescent silk spectrum
+ *  @brief
+ *  CLIFFORD ATTRACTOR SILK RIBBONS: Hyper-dense trigonometric Clifford / De Jong attractor density maps with silky
+ *  flowing ribbon sheets, dynamic parameter morphing, and high-luminance glowing caustics.
+ *
+ *  Audio Reactivity:
+ *    audioAdvance -> drives continuous Clifford parameter modulation & ribbon flow
+ *    audioKick    -> flashes attractor density caustic peaks & shockwave ripple
+ *    audioCentroid-> modulates trigonometric frequency parameters (a, b)
+ *    audioSubBass -> expands silk ribbon fold amplitude
+ *    audioChromaHue-> rotates the flowing iridescent silk spectrum
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

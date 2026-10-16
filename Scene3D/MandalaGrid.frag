@@ -1,4 +1,22 @@
 #version 330 core
+/*****************************************************************************\
+ *                              MandalaGrid.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Renders an 8/10-fold (rolled per activation via sceneSeed) mirrored plasma rosette in folded polar space, its
+ *  layered sine fields mapped into the current photo palette and flowing slowly inward.
+ *
+ *  audioAdvance drives both the rosette's slow spin and the inward flow
+ *  speed; audioBarPhase positions a soft ring of light that breathes
+ *  outward once per bar; audioSwell/audioDrop brighten the whole pattern;
+ *  audioChromaHue (via the house imgPalette helper) sets the palette's
+ *  hue arc and audioValence its saturation. vLift (per-vertex relief from
+ *  the vertex stage) adds subtle 3D shading.
+ *
+ *  @author René Weller
+ */
 out vec4 fragColor; ///< The pixel's colour (output).
 // MandalaGrid.frag — an 8-fold colour rosette flowing softly inward; the
 // bar phase rolls a gentle ring of light through the pattern.
@@ -17,20 +35,6 @@ uniform float     audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 
 in vec2  vPolar; ///< Polar (from the vertex stage).
 in float vLift;  ///< Lift (from the vertex stage).
-
-/**
- * @file MandalaGrid.frag
- * @brief Renders an 8/10-fold (rolled per activation via sceneSeed)
- * mirrored plasma rosette in folded polar space, its layered sine fields
- * mapped into the current photo palette and flowing slowly inward.
- *
- * audioAdvance drives both the rosette's slow spin and the inward flow
- * speed; audioBarPhase positions a soft ring of light that breathes
- * outward once per bar; audioSwell/audioDrop brighten the whole pattern;
- * audioChromaHue (via the house imgPalette helper) sets the palette's
- * hue arc and audioValence its saturation. vLift (per-vertex relief from
- * the vertex stage) adds subtle 3D shading.
- */
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

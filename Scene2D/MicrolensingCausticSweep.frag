@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file MicrolensingCausticSweep.frag
- * @brief MICROLENSING CAUSTIC SWEEP: a pair of point-mass lenses drifts
- * across a star field, and where their caustics -- the folds of the lens
- * map -- pass over a star, it flares: that is a microlensing event, and
- * here it happens all over the sky.  The star field is sampled through the
- * lens map (each pixel asks which source it sees), and the magnification is
- * the inverse Jacobian of that map, so the caustic curves appear as lines
- * of light where the map folds.  The lenses glide on the scene clock; the
- * swell is their mass (slow).  The camera never moves.
+/*****************************************************************************\
+ *                              MicrolensingCausticSweep.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   sceneAdvance -> the lenses drift, the caustics sweep (continuous)
- *   audioSwell   -> lens mass (slow)
- *   audioKick    -> the lenses' own dark discs ring with light (light)
- *   audioLevel   -> star brightness
+ *  @brief
+ *  MICROLENSING CAUSTIC SWEEP: a pair of point-mass lenses drifts across a star field, and where their caustics --
+ *  the folds of the lens map -- pass over a star, it flares: that is a microlensing event, and here it happens all
+ *  over the sky.
  *
- * Per-activation variety: sepP (lens separation), massP, hueP.
+ *  The star field is sampled through the lens map (each pixel asks which source it sees), and the magnification is
+ *  the inverse Jacobian of that map, so the caustic curves appear as lines of light where the map folds.  The
+ *  lenses glide on the scene clock; the swell is their mass (slow).  The camera never moves.
+ *
+ *  Audio Reactivity:
+ *    sceneAdvance -> the lenses drift, the caustics sweep (continuous)
+ *    audioSwell   -> lens mass (slow)
+ *    audioKick    -> the lenses' own dark discs ring with light (light)
+ *    audioLevel   -> star brightness
+ *
+ *  Per-activation variety: sepP (lens separation), massP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

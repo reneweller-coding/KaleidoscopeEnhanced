@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file VaultShaftUp.frag
- * @brief VAULT SHAFT UP: lying on the floor of an endless tower and looking
- * straight up -- storey after storey of arcades and galleries recede into
- * the height around the square shaft, each level ringed by arches whose
- * openings show the photograph like stained glass lit from outside, the
- * stone ribs converging toward the bright sky at the top; we rise slowly
- * through the levels and the tower turns.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              VaultShaftUp.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the rise (integrated, jump-free)
- *   audioPhase      -> the tower turns (integrated)
- *   audioSpread     -> the arches grow taller
- *   audioKick       -> the windows flare (light)
- *   audioMode       -> the light: cool in minor, golden in major
- *   audioSwell      -> the sky glow at the top (slow)
+ *  @brief
+ *  VAULT SHAFT UP: lying on the floor of an endless tower and looking straight up -- storey after storey of arcades
+ *  and galleries recede into the height around the square shaft, each level ringed by arches whose openings show
+ *  the photograph like stained glass lit from outside, the stone ribs converging toward the bright sky at the top;
+ *  we rise slowly through the levels and the tower turns.
  *
- * Knobs: archP (arches per wall), storeyP (storey height), glassP (window brightness), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the rise (integrated, jump-free)
+ *    audioPhase      -> the tower turns (integrated)
+ *    audioSpread     -> the arches grow taller
+ *    audioKick       -> the windows flare (light)
+ *    audioMode       -> the light: cool in minor, golden in major
+ *    audioSwell      -> the sky glow at the top (slow)
+ *
+ *  Knobs: archP (arches per wall), storeyP (storey height), glassP (window brightness), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

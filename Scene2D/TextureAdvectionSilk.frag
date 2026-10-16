@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureAdvectionSilk.frag
- * @brief TEXTURE ADVECTION SILK: the photograph carried along by a slow,
- * swirling current and drawn out into fine silk threads -- every point of
- * the picture is smeared along the flow's streamlines (line integral
- * convolution), so its colours become long glossy fibres that curl around
- * the vortices; the flow itself slowly evolves, the fibres shimmer with a
- * sheen that runs along them.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              TextureAdvectionSilk.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the silk streams along the flow (integrated, jump-free)
- *   audioSpread     -> the swirl strength
- *   audioKick       -> the sheen flares (light)
- *   audioMode       -> the silk: cool pearl in minor, warm gold in major (tint)
- *   audioRoughness  -> the fibres get finer
- *   audioSwell      -> how much of the photo's own colour shows (slow)
+ *  @brief
+ *  TEXTURE ADVECTION SILK: the photograph carried along by a slow, swirling current and drawn out into fine silk
+ *  threads -- every point of the picture is smeared along the flow's streamlines (line integral convolution), so
+ *  its colours become long glossy fibres that curl around the vortices; the flow itself slowly evolves, the fibres
+ *  shimmer with a sheen that runs along them.
  *
- * Knobs: fibreP (fibre length), vortexP (vortex size), sheenP, hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the silk streams along the flow (integrated, jump-free)
+ *    audioSpread     -> the swirl strength
+ *    audioKick       -> the sheen flares (light)
+ *    audioMode       -> the silk: cool pearl in minor, warm gold in major (tint)
+ *    audioRoughness  -> the fibres get finer
+ *    audioSwell      -> how much of the photo's own colour shows (slow)
+ *
+ *  Knobs: fibreP (fibre length), vortexP (vortex size), sheenP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

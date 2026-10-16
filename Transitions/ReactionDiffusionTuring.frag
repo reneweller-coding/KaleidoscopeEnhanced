@@ -1,19 +1,27 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file ReactionDiffusionTuring.frag
- * @brief TRANSITION REACTION DIFFUSION TURING: Morphogenetic Turing pattern transition.
- * Chemical activator-inhibitor reaction-diffusion spots and labyrinthine stripes
- * spontaneously organize across the frame, carrying the cross-fade between scenes.
- *   interpolation -> sweeps chemical reaction equilibrium & pattern growth
- *   audioKick     -> flashes Turing chemical reaction boundary fronts
+/*****************************************************************************\
+ *                              ReactionDiffusionTuring.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   turingP float reaction-diffusion pattern complexity (0.5..2.2)
- *   scaleP  float Turing spot/labyrinth spatial scale   (0.5..2.0)
- *   speedP  float animation speed multiplier            (0.5..2.0)
- *   hueP    float chemical pigment hue offset           (0..6.28)
+ *  @brief
+ *  TRANSITION REACTION DIFFUSION TURING: Morphogenetic Turing pattern transition.
+ *
+ *  Chemical activator-inhibitor reaction-diffusion spots and labyrinthine stripes spontaneously organize across the
+ *  frame, carrying the cross-fade between scenes.
+ *
+ *    interpolation -> sweeps chemical reaction equilibrium & pattern growth
+ *    audioKick     -> flashes Turing chemical reaction boundary fronts
+ *
+ *  Per-activation variety:
+ *    turingP float reaction-diffusion pattern complexity (0.5..2.2)
+ *    scaleP  float Turing spot/labyrinth spatial scale   (0.5..2.0)
+ *    speedP  float animation speed multiplier            (0.5..2.0)
+ *    hueP    float chemical pigment hue offset           (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

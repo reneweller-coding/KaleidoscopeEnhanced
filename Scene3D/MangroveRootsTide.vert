@@ -1,9 +1,16 @@
 #version 330 core
-/**
- * @file MangroveRootsTide.vert
- * @brief Vertex stage for MangroveRootsTide: world positions pass through
- * (camera at the origin, +z ahead); id, the along-parameter, kind and uv
- * go to the fragment stage.  No camera motion -- the water moves.
+/*****************************************************************************\
+ *                              MangroveRootsTide.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage for MangroveRootsTide: world positions pass through (camera at the origin, +z ahead); id, the
+ *  along-parameter, kind and uv go to the fragment stage.
+ *
+ *  No camera motion -- the water moves.
+ *
+ *  @author René Weller
  */
 layout( location = 0 ) in vec4 attrA; ///< xyz = position, w = id
 layout( location = 1 ) in vec4 attrB; ///< x = along-parameter, y = kind, zw = uv

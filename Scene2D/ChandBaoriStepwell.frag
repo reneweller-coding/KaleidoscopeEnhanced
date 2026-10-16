@@ -1,23 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file ChandBaoriStepwell.frag
- * @brief CHAND BAORI STEPWELL: an Indian stepwell seen from straight above --
- * a square funnel of sandstone sinking level after level toward a small
- * pool of green water at the bottom, every level a zigzag of double
- * flights of steps, thousands of treads catching the sun and thousands of
- * risers in shadow.  The rim wall throws a hard diagonal shadow down into
- * the well that creeps around as the sun moves; the water glints.  The
- * camera is still; the light wanders slowly.
+/*****************************************************************************\
+ *                              ChandBaoriStepwell.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSwell  -> the warmth and strength of the sunlight (slow)
- *   audioHigh   -> glints on the water (light)
- *   audioLevel  -> brightness
- *   sceneTime / sceneAdvance -> the wandering sun (continuous)
+ *  @brief
+ *  CHAND BAORI STEPWELL: an Indian stepwell seen from straight above -- a square funnel of sandstone sinking level
+ *  after level toward a small pool of green water at the bottom, every level a zigzag of double flights of steps,
+ *  thousands of treads catching the sun and thousands of risers in shadow.
  *
- * Per-activation variety: levelsP (how deep the well), hueP.
+ *  The rim wall throws a hard diagonal shadow down into the well that creeps around as the sun moves; the water
+ *  glints.  The camera is still; the light wanders slowly.
+ *
+ *  Audio Reactivity:
+ *    audioSwell  -> the warmth and strength of the sunlight (slow)
+ *    audioHigh   -> glints on the water (light)
+ *    audioLevel  -> brightness
+ *    sceneTime / sceneAdvance -> the wandering sun (continuous)
+ *
+ *  Per-activation variety: levelsP (how deep the well), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

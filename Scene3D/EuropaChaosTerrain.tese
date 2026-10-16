@@ -1,14 +1,19 @@
 #version 400 core
-/**
- * @file EuropaChaosTerrain.tese
- * @brief Tessellation evaluation for EuropaChaosTerrain: the chaos terrain
- * of Europa -- ice rafts (Voronoi cells) that broke off the crust and
- * refroze tilted in a matrix of rubble ice.  Each raft is a tilted plateau
- * (tilt fixed per raft); the rafts drift very slowly on the scene clock as
- * if the matrix were still soft; the far end rises into the ridged plains
- * so the frame is full above the horizon.  The seam distance (edge of a
- * raft) goes to the fragment stage, where the ocean light comes through.
- * Projection after displacement; no camera motion.
+/*****************************************************************************\
+ *                              EuropaChaosTerrain.tese
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Tessellation evaluation for EuropaChaosTerrain: the chaos terrain of Europa -- ice rafts (Voronoi cells) that
+ *  broke off the crust and refroze tilted in a matrix of rubble ice.
+ *
+ *  Each raft is a tilted plateau (tilt fixed per raft); the rafts drift very slowly on the scene clock as if the
+ *  matrix were still soft; the far end rises into the ridged plains so the frame is full above the horizon.  The
+ *  seam distance (edge of a raft) goes to the fragment stage, where the ocean light comes through. Projection after
+ *  displacement; no camera motion.
+ *
+ *  @author René Weller
  */
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( quads, fractional_odd_spacing, ccw ) in;

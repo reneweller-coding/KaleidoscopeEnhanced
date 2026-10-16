@@ -1,20 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file VoronoiShatter.frag
- * @brief TRANSITION VORONOI SHATTER: Smooth transition where the scene dissolves through
- * a floating Voronoi cell mosaic. Each polygonal cell smoothly lifts, rotates,
- * and cross-fades with glowing cell boundaries that pulse to the audio.
- *   interpolation -> controls continuous cross-fade & cell lift progress
- *   audioKick     -> flashes cell boundary edges
- *   audioSwell    -> undulates cell rotation amplitude
+/*****************************************************************************\
+ *                              VoronoiShatter.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   cellP  float Voronoi cell grid density (0.5..2.2)
- *   liftP  float cell lift & displacement  (0.5..2.0)
- *   speedP float cell rotation velocity    (0.5..2.0)
- *   hueP   float edge glow hue offset      (0..6.28)
+ *  @brief
+ *  TRANSITION VORONOI SHATTER: Smooth transition where the scene dissolves through a floating Voronoi cell mosaic.
+ *
+ *  Each polygonal cell smoothly lifts, rotates, and cross-fades with glowing cell boundaries that pulse to the
+ *  audio.
+ *
+ *    interpolation -> controls continuous cross-fade & cell lift progress
+ *    audioKick     -> flashes cell boundary edges
+ *    audioSwell    -> undulates cell rotation amplitude
+ *
+ *  Per-activation variety:
+ *    cellP  float Voronoi cell grid density (0.5..2.2)
+ *    liftP  float cell lift & displacement  (0.5..2.0)
+ *    speedP float cell rotation velocity    (0.5..2.0)
+ *    hueP   float edge glow hue offset      (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

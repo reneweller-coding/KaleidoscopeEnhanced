@@ -1,24 +1,31 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file BauhausGeo.frag
- * @brief BAUHAUS GEOMETRY: a rotating composition of flat geometric primitives
- * (discs, quarter-circle arcs, bars, triangles) on a grid — Kandinsky /
- * Bauhaus poster style.  The palette is REDUCED and taken from the image
- * (each panel samples its colour from the picture), so the artwork follows
- * the photos and the music's mood.
- *   snare  -> a hashed subset of panels flashes its accent (envelope, smooth)
- *   barPhase -> a diagonal accent sweep crosses the grid once per bar
- *   beat   -> the composition breathes minimally
- *   arousal-> handled by the host's selection (complexity)
- * Jump-free: panel spins ride time + audioPhase (integrated).
+/*****************************************************************************\
+ *                              BauhausGeo.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety (0 = default):
- *   gridP    int   grid resolution            (0 -> 5; 3..8)
- *   paletteP float palette hue rotation       (0 -> none; 0..6.28)
- *   spinP    float panel spin speed multiplier(0 -> 1.0; 0.5..1.5)
- *   accentP  float accent flash strength      (0 -> 1.0; 0.5..1.6)
+ *  @brief
+ *  BAUHAUS GEOMETRY: a rotating composition of flat geometric primitives (discs, quarter-circle arcs, bars,
+ *  triangles) on a grid — Kandinsky / Bauhaus poster style.
+ *
+ *  The palette is REDUCED and taken from the image (each panel samples its colour from the picture), so the artwork
+ *  follows the photos and the music's mood.
+ *
+ *    snare  -> a hashed subset of panels flashes its accent (envelope, smooth)
+ *    barPhase -> a diagonal accent sweep crosses the grid once per bar
+ *    beat   -> the composition breathes minimally
+ *    arousal-> handled by the host's selection (complexity)
+ *  Jump-free: panel spins ride time + audioPhase (integrated).
+ *
+ *  Per-activation variety (0 = default):
+ *    gridP    int   grid resolution            (0 -> 5; 3..8)
+ *    paletteP float palette hue rotation       (0 -> none; 0..6.28)
+ *    spinP    float panel spin speed multiplier(0 -> 1.0; 0.5..1.5)
+ *    accentP  float accent flash strength      (0 -> 1.0; 0.5..1.6)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

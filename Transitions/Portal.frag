@@ -1,16 +1,21 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file Portal.frag
- * @brief Portal: the new scene opens along the OLD scene's real depth -
- * near geometry peels away first, a glowing rim rides the depth threshold
- * (3D scenes only; falls back to a linear mix without valid depth).
+/*****************************************************************************\
+ *                              Portal.frag
+\*****************************************************************************/
+/*! @file
  *
- * Scene TRANSITION shader (Transitions/): blends the outgoing scene
- * (tex0) into the incoming one (tex1) over one cross-fade.
- * interpolation: 1 = old scene fully visible .. 0 = new scene.
- * Extracted from the former FxPlain.frag 28-style library.
+ *  @brief
+ *  Portal: the new scene opens along the OLD scene's real depth - near geometry peels away first, a glowing rim
+ *  rides the depth threshold (3D scenes only; falls back to a linear mix without valid depth).
+ *
+ *  Scene TRANSITION shader (Transitions/): blends the outgoing scene
+ *  (tex0) into the incoming one (tex1) over one cross-fade.
+ *  interpolation: 1 = old scene fully visible .. 0 = new scene.
+ *  Extracted from the former FxPlain.frag 28-style library.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform sampler2D tex0;          ///< The current photo.
 uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).

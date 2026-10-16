@@ -1,22 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file FerrohydrodynamicRosensweigSpikes.frag
- * @brief FERROHYDRODYNAMIC ROSENSWEIG SPIKES: Normal-field Rosensweig instability in magnetic
- * ferrofluids. Critical magnetic threshold breaks liquid surface into a highly ordered hexagonal
- * array of needle-sharp ferrofluid spikes with specular oily sheen and magnetic field texturing.
- *   audioAdvance -> navigates magnetic spike tip precession & ferrofluid surface wave modulation
- *   audioKick    -> flashes magnetic field pulse sharp spike apex elongation & glints
- *   audioBass    -> undulates overall magnetic induction field strength & spike height
- *   audioSwell   -> enriches ferrofluid oil surfactant sheen & specular reflection depth
- *   audioCentroid-> shifts colloidal magnetite nanoparticle suspension color spectra
+/*****************************************************************************\
+ *                              FerrohydrodynamicRosensweigSpikes.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   spikePitchP  float hexagonal Rosensweig spike packing density (2.5..7.0)
- *   sharpnessP   float ferrofluid spike needle tip sharpness     (1.0..4.0)
- *   sheenP       float oily surfactant specular reflection gain  (0.8..2.5)
- *   magneticAmpP float vertical magnetic field induction strength(0.6..2.2)
+ *  @brief
+ *  FERROHYDRODYNAMIC ROSENSWEIG SPIKES: Normal-field Rosensweig instability in magnetic ferrofluids.
+ *
+ *  Critical magnetic threshold breaks liquid surface into a highly ordered hexagonal array of needle-sharp
+ *  ferrofluid spikes with specular oily sheen and magnetic field texturing.
+ *
+ *    audioAdvance -> navigates magnetic spike tip precession & ferrofluid surface wave modulation
+ *    audioKick    -> flashes magnetic field pulse sharp spike apex elongation & glints
+ *    audioBass    -> undulates overall magnetic induction field strength & spike height
+ *    audioSwell   -> enriches ferrofluid oil surfactant sheen & specular reflection depth
+ *    audioCentroid-> shifts colloidal magnetite nanoparticle suspension color spectra
+ *
+ *  Per-activation variety:
+ *    spikePitchP  float hexagonal Rosensweig spike packing density (2.5..7.0)
+ *    sharpnessP   float ferrofluid spike needle tip sharpness     (1.0..4.0)
+ *    sheenP       float oily surfactant specular reflection gain  (0.8..2.5)
+ *    magneticAmpP float vertical magnetic field induction strength(0.6..2.2)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file CosmicMicrowaveBackgroundSky.frag
- * @brief COSMIC MICROWAVE BACKGROUND SKY: the oldest light, as a sky.  The
- * anisotropy map is built from noise at eight angular scales, and the
- * amplitude of each scale is a spectrum band -- the acoustic peaks of the
- * early universe were literally sound waves in the plasma, so here the
- * music's spectrum IS the power spectrum: bass paints the large blobs,
- * treble the fine grain.  We look out from inside the sphere; the view
- * turns slowly and breathes closer on the swell; the classic blue-red map
- * is tinted by the palette.  The camera never jolts.
+/*****************************************************************************\
+ *                              CosmicMicrowaveBackgroundSky.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSpectrum[32] -> multipole amplitudes (the whole point)
- *   sceneAdvance      -> the sky turns (continuous)
- *   audioSwell        -> zoom breath (slow)
- *   audioKick         -> the dipole (our own motion) flashes (light)
- *   audioLevel        -> brightness
+ *  @brief
+ *  COSMIC MICROWAVE BACKGROUND SKY: the oldest light, as a sky.
  *
- * Per-activation variety: grainP (fine-scale weight), tiltP (view axis), hueP.
+ *  The anisotropy map is built from noise at eight angular scales, and the amplitude of each scale is a spectrum
+ *  band -- the acoustic peaks of the early universe were literally sound waves in the plasma, so here the music's
+ *  spectrum IS the power spectrum: bass paints the large blobs, treble the fine grain.  We look out from inside the
+ *  sphere; the view turns slowly and breathes closer on the swell; the classic blue-red map is tinted by the
+ *  palette.  The camera never jolts.
+ *
+ *  Audio Reactivity:
+ *    audioSpectrum[32] -> multipole amplitudes (the whole point)
+ *    sceneAdvance      -> the sky turns (continuous)
+ *    audioSwell        -> zoom breath (slow)
+ *    audioKick         -> the dipole (our own motion) flashes (light)
+ *    audioLevel        -> brightness
+ *
+ *  Per-activation variety: grainP (fine-scale weight), tiltP (view axis), hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

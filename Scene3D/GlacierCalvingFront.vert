@@ -1,9 +1,16 @@
 #version 330 core
-/**
- * @file GlacierCalvingFront.vert
- * @brief Vertex stage for GlacierCalvingFront: world positions pass
- * through (camera at the origin on the water, +z ahead); kind, life and
- * uv go to the fragment stage.  No camera motion.
+/*****************************************************************************\
+ *                              GlacierCalvingFront.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage for GlacierCalvingFront: world positions pass through (camera at the origin on the water, +z
+ *  ahead); kind, life and uv go to the fragment stage.
+ *
+ *  No camera motion.
+ *
+ *  @author René Weller
  */
 layout( location = 0 ) in vec4 attrA; ///< xyz = position, w = id
 layout( location = 1 ) in vec4 attrB; ///< x = life, y = kind, zw = uv

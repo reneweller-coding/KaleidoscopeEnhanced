@@ -1,9 +1,16 @@
 #version 330 core
-/**
- * @file ProteinFoldingChain.vert
- * @brief Vertex stage for ProteinFoldingChain: world positions pass
- * through (camera at the origin, +z ahead); residue index, hydrophobic
- * flag, kind and uv go to the fragment stage.  No camera motion.
+/*****************************************************************************\
+ *                              ProteinFoldingChain.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage for ProteinFoldingChain: world positions pass through (camera at the origin, +z ahead); residue
+ *  index, hydrophobic flag, kind and uv go to the fragment stage.
+ *
+ *  No camera motion.
+ *
+ *  @author René Weller
  */
 layout( location = 0 ) in vec4 attrA; ///< xyz = position, w = residue index
 layout( location = 1 ) in vec4 attrB; ///< x = hydrophobic flag, y = kind, zw = uv

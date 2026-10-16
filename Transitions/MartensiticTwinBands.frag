@@ -1,29 +1,36 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file MartensiticTwinBands.frag
- * @brief TRANSITION MARTENSITIC TWIN BANDS: a shear transformation runs through
- * the frame.  Lens-shaped twin bands nucleate on two habit planes, widen, and
- * each one carries the incoming scene sheared by the transformation strain.
+/*****************************************************************************\
+ *                              MartensiticTwinBands.frag
+\*****************************************************************************/
+/*! @file
  *
- * A martensitic transformation is diffusionless: the lattice SHEARS into its
- * new shape rather than rearranging atom by atom.  Two things follow, and both
- * are what make this read as metal rather than as a wipe.  First every band
- * shears by the SAME fixed amount -- the transformation strain is a property of
- * the lattice, not of the band -- so a band widens but never shears further
- * once it has formed.  Second the bands lie on two habit planes and cross,
- * because that is how the twins accommodate each other's strain.
+ *  @brief
+ *  TRANSITION MARTENSITIC TWIN BANDS: a shear transformation runs through the frame.
  *
- * How many bands there are is rolled ONCE per activation.  Re-rolling a count
- * per frame is what makes a pattern flicker instead of transform.
+ *  Lens-shaped twin bands nucleate on two habit planes, widen, and each one carries the incoming scene sheared by
+ *  the transformation strain.
  *
- * Audio Reactivity:
- *   audioKick    -> the light on a band that has just nucleated (light)
- *   audioHigh    -> the glint along a twin boundary (light)
- *   audioMid     -> the metal's temper colour (colour)
+ *  A martensitic transformation is diffusionless: the lattice SHEARS into its
+ *  new shape rather than rearranging atom by atom.  Two things follow, and both
+ *  are what make this read as metal rather than as a wipe.  First every band
+ *  shears by the SAME fixed amount -- the transformation strain is a property of
+ *  the lattice, not of the band -- so a band widens but never shears further
+ *  once it has formed.  Second the bands lie on two habit planes and cross,
+ *  because that is how the twins accommodate each other's strain.
  *
- * Per-activation variety: bandsP, shearP, hueP.
+ *  How many bands there are is rolled ONCE per activation.  Re-rolling a count
+ *  per frame is what makes a pattern flicker instead of transform.
+ *
+ *  Audio Reactivity:
+ *    audioKick    -> the light on a band that has just nucleated (light)
+ *    audioHigh    -> the glint along a twin boundary (light)
+ *    audioMid     -> the metal's temper colour (colour)
+ *
+ *  Per-activation variety: bandsP, shearP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

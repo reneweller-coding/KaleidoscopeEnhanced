@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureNeonCalligraphy.frag
- * @brief TEXTURE NEON CALLIGRAPHY: glowing brush calligraphy written in light
- * -- broad sweeping strokes that swell and taper like a brush pen, drawn
- * across the dark as we watch, loops and hooks and flourishes, each
- * stroke a neon tube of the photograph's colours with a hot white core
- * and a soft bloom; old strokes fade as new ones are written, the whole
- * script drifting slowly.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              TextureNeonCalligraphy.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the writing (integrated, jump-free)
- *   audioSpread     -> stroke width
- *   audioKick       -> the strokes flare (light)
- *   audioMode       -> palette: cool neon in minor, warm neon in major (tint)
- *   audioRoughness  -> the strokes get shakier
- *   audioSwell      -> the bloom (slow)
+ *  @brief
+ *  TEXTURE NEON CALLIGRAPHY: glowing brush calligraphy written in light -- broad sweeping strokes that swell and
+ *  taper like a brush pen, drawn across the dark as we watch, loops and hooks and flourishes, each stroke a neon
+ *  tube of the photograph's colours with a hot white core and a soft bloom; old strokes fade as new ones are
+ *  written, the whole script drifting slowly.
  *
- * Knobs: strokeP (stroke count), loopP (loopiness), photoP (photo colours), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the writing (integrated, jump-free)
+ *    audioSpread     -> stroke width
+ *    audioKick       -> the strokes flare (light)
+ *    audioMode       -> palette: cool neon in minor, warm neon in major (tint)
+ *    audioRoughness  -> the strokes get shakier
+ *    audioSwell      -> the bloom (slow)
+ *
+ *  Knobs: strokeP (stroke count), loopP (loopiness), photoP (photo colours), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

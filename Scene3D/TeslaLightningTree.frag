@@ -1,33 +1,38 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TeslaLightningTree.frag
- * @brief TESLA LIGHTNING TREE: a branching discharge tree grown fresh every
- * frame, camera ORBITING the trunk; plasma tinted by a bounded hue wobble
- * (never a full rainbow spin), photo colours in the corona.
+/*****************************************************************************\
+ *                              TeslaLightningTree.frag
+\*****************************************************************************/
+/*! @file
  *
- * Three families come out of the generator, told apart by their per-segment
- * gain (attrB.x): the main bolts striking a wide ground disc, the Lichtenberg
- * SURFACE CREEP running outward from each strike, and a sparse CORONA of
- * ionised streamers hanging in the dielectric around the tree.  The latter two
- * are deliberately far dimmer -- they exist to carry the frame's outer tiles,
- * which the bare bolt column left black.
+ *  @brief
+ *  TESLA LIGHTNING TREE: a branching discharge tree grown fresh every frame, camera ORBITING the trunk; plasma
+ *  tinted by a bounded hue wobble (never a full rainbow spin), photo colours in the corona.
  *
- * Audio Reactivity:
- *   audioKick      -> branch flash (heat + thickness, .comp generator)
- *   audioHigh      -> arc jitter (.comp generator)
- *   audioAdvance   -> camera orbit around the trunk
- *   audioChromaHue -> bounded plasma tint (never a full rainbow spin)
- *   audioSnare     -> return stroke: snares/claps flare the tree and drive
- *                     its ionisation heat (see .vert)
- *   audioTrebRel   -> stepped-leader wander, self-normalising per mix (.vert)
- *   audioSharpness -> CORONA vs CORE: dull dark material keeps the discharge
- *                     a broad violet/cyan corona, bright harsh material
- *                     (cymbals, crackle) collapses it into a hard white
- *                     ionised core with the corona pushed to the edges.
- *                     Only the core threshold and its width move -- the
- *                     existing tonemap below is untouched
+ *  Three families come out of the generator, told apart by their per-segment
+ *  gain (attrB.x): the main bolts striking a wide ground disc, the Lichtenberg
+ *  SURFACE CREEP running outward from each strike, and a sparse CORONA of
+ *  ionised streamers hanging in the dielectric around the tree.  The latter two
+ *  are deliberately far dimmer -- they exist to carry the frame's outer tiles,
+ *  which the bare bolt column left black.
+ *
+ *  Audio Reactivity:
+ *    audioKick      -> branch flash (heat + thickness, .comp generator)
+ *    audioHigh      -> arc jitter (.comp generator)
+ *    audioAdvance   -> camera orbit around the trunk
+ *    audioChromaHue -> bounded plasma tint (never a full rainbow spin)
+ *    audioSnare     -> return stroke: snares/claps flare the tree and drive
+ *                      its ionisation heat (see .vert)
+ *    audioTrebRel   -> stepped-leader wander, self-normalising per mix (.vert)
+ *    audioSharpness -> CORONA vs CORE: dull dark material keeps the discharge
+ *                      a broad violet/cyan corona, bright harsh material
+ *                      (cymbals, crackle) collapses it into a hard white
+ *                      ionised core with the corona pushed to the edges.
+ *                      Only the core threshold and its width move -- the
+ *                      existing tonemap below is untouched
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec3  vPos;    ///< Position (from the vertex stage).
 in float vHeat;   ///< Heat (from the vertex stage).

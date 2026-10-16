@@ -1,8 +1,13 @@
 #version 330 core
-/**
- * @file PlasmaSheet.vert
- * @brief Vertex stage companion to PlasmaSheet.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              PlasmaSheet.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to PlasmaSheet.frag -- see that file's header for this scene's description.
+ *
+ *  @author René Weller
  */
 // PlasmaSheet.vert — a great silk sheet of plasma hanging in space,
 // rippling with two slow interference trains; the classic MilkDrop plasma

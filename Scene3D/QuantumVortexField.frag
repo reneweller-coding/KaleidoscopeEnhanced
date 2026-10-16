@@ -1,13 +1,19 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file QuantumVortexField.frag
- * @brief QUANTUM VORTEX FIELD: a toroidal magnetosphere of filament streamlines -
- * thin ribbon fibres integrated through a poloidal/toroidal vector field
- * (tamed Lorenz perturbation), forming a feathered vortex ring.
- *   audioKick -> filament width + glow    audioSubBass -> ring radius
- *   audioSpectrum -> per-filament glow
+/*****************************************************************************\
+ *                              QuantumVortexField.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  QUANTUM VORTEX FIELD: a toroidal magnetosphere of filament streamlines - thin ribbon fibres integrated through a
+ *  poloidal/toroidal vector field (tamed Lorenz perturbation), forming a feathered vortex ring.
+ *
+ *    audioKick -> filament width + glow    audioSubBass -> ring radius
+ *    audioSpectrum -> per-filament glow
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec4 vCol;    ///< Colour (from the vertex stage).
 in vec3 vNormal; ///< Surface normal (from the vertex stage).

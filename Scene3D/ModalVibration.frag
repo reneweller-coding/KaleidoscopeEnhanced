@@ -1,26 +1,31 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-
-/**
- * @file ModalVibration.frag
- * @brief A real object rung by the music: four spectral bands drive four spatial
- * standing waves across its surface (the displacement itself is in the vertex
- * stage). This stage paints where the surface is moving -- crests hot, nodes
- * dark -- so the vibration pattern is visible even when the displacement is too
- * small to see as motion.
+/*****************************************************************************\
+ *                              ModalVibration.frag
+\*****************************************************************************/
+/*! @file
  *
- * The nodal lines are what carry it. On a struck plate the still lines between
- * moving regions are the thing the eye locks onto, so they get drawn
- * explicitly: |amplitude| near zero is inked dark, which is the same figure
- * sand makes on a Chladni plate.
+ *  @brief
+ *  A real object rung by the music: four spectral bands drive four spatial standing waves across its surface (the
+ *  displacement itself is in the vertex stage).
  *
- *   audioSubBass..audioHigh -> the four modes (vertex stage)
- *   audioKick    -> a strike that excites every mode at once
- *   audioSwell   -> glow on the crests
+ *  This stage paints where the surface is moving -- crests hot, nodes dark -- so the vibration pattern is visible
+ *  even when the displacement is too small to see as motion.
  *
- * Per-instance: sizeP, spinP, gainP (displacement scale), tintP (crest hue).
- * Per-activation variety: hueP float palette offset (0..6.28).
+ *  The nodal lines are what carry it. On a struck plate the still lines between
+ *  moving regions are the thing the eye locks onto, so they get drawn
+ *  explicitly: |amplitude| near zero is inked dark, which is the same figure
+ *  sand makes on a Chladni plate.
+ *
+ *    audioSubBass..audioHigh -> the four modes (vertex stage)
+ *    audioKick    -> a strike that excites every mode at once
+ *    audioSwell   -> glow on the crests
+ *
+ *  Per-instance: sizeP, spinP, gainP (displacement scale), tintP (crest hue).
+ *  Per-activation variety: hueP float palette offset (0..6.28).
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform sampler2DArray texMeshMaterial;       ///< The mesh's material textures (albedo, roughness, normal ...).
 uniform int            texMeshMaterialLayers; ///< Number of layers in texMeshMaterial.

@@ -1,22 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file QuantumHallFractionalAnyonBraiding.frag
- * @brief QUANTUM HALL FRACTIONAL ANYON BRAIDING: 2D fractional quantum Hall liquid near filling
- * factor nu = 5/2. Non-Abelian Moore-Read Ising anyons orbit lithographic antidot islands,
- * braiding fractional statistics worldlines with Berry phase quantum interference ribbons.
- *   audioAdvance -> drives anyon orbital trajectory circulation & Berry phase accumulation
- *   audioKick    -> flashes non-Abelian topological state fusion & interference fringe shifts
- *   audioSwell   -> widens fractional incompressible quantum Hall liquid gap luminance
- *   audioCentroid-> shifts non-Abelian anyon quantum phase color spectra
- *   audioPhase   -> modulates fractional charge e/4 Aharonov-Bohm flux modulation
+/*****************************************************************************\
+ *                              QuantumHallFractionalAnyonBraiding.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   antidotCountP float number of antidot island braiding centers  (2.0..6.0)
- *   anyonOrbitP   float anyon orbital radius scale               (0.4..1.8)
- *   berryGlowP    float Berry phase interference fringe luminance(0.8..2.5)
- *   fractionalP   float fractional quasiparticle charge parameter (0.5..2.2)
+ *  @brief
+ *  QUANTUM HALL FRACTIONAL ANYON BRAIDING: 2D fractional quantum Hall liquid near filling factor nu = 5/2.
+ *
+ *  Non-Abelian Moore-Read Ising anyons orbit lithographic antidot islands, braiding fractional statistics
+ *  worldlines with Berry phase quantum interference ribbons.
+ *
+ *    audioAdvance -> drives anyon orbital trajectory circulation & Berry phase accumulation
+ *    audioKick    -> flashes non-Abelian topological state fusion & interference fringe shifts
+ *    audioSwell   -> widens fractional incompressible quantum Hall liquid gap luminance
+ *    audioCentroid-> shifts non-Abelian anyon quantum phase color spectra
+ *    audioPhase   -> modulates fractional charge e/4 Aharonov-Bohm flux modulation
+ *
+ *  Per-activation variety:
+ *    antidotCountP float number of antidot island braiding centers  (2.0..6.0)
+ *    anyonOrbitP   float anyon orbital radius scale               (0.4..1.8)
+ *    berryGlowP    float Berry phase interference fringe luminance(0.8..2.5)
+ *    fractionalP   float fractional quasiparticle charge parameter (0.5..2.2)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

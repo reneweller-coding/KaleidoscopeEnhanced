@@ -1,30 +1,35 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file CyanotypeSunPrint.frag
- * @brief TRANSITION CYANOTYPE SUN PRINT: the incoming scene exposes itself onto
- * the outgoing one as a blueprint, then a water front rinses the sheet and the
- * true colours come back.
+/*****************************************************************************\
+ *                              CyanotypeSunPrint.frag
+\*****************************************************************************/
+/*! @file
  *
- * A cyanotype exposes in order of how much light each part receives, so the
- * shader gives every pixel a threshold taken from the incoming scene's own
- * luminance and lets one rising exposure value cross those thresholds.  The
- * picture therefore builds shadows-first, the way a real sun print does, rather
- * than fading in uniformly.
+ *  @brief
+ *  TRANSITION CYANOTYPE SUN PRINT: the incoming scene exposes itself onto the outgoing one as a blueprint, then a
+ *  water front rinses the sheet and the true colours come back.
  *
- * The colour path matters as much as the order: unexposed sensitiser is a pale
- * yellow-green, and it goes through a dull sage before Prussian blue appears.
- * Taking the short way straight to blue would look like a blue tint instead of
- * a chemical change.
+ *  A cyanotype exposes in order of how much light each part receives, so the
+ *  shader gives every pixel a threshold taken from the incoming scene's own
+ *  luminance and lets one rising exposure value cross those thresholds.  The
+ *  picture therefore builds shadows-first, the way a real sun print does, rather
+ *  than fading in uniformly.
  *
- * Audio Reactivity:
- *   audioSwell -> how hard the sun is: the softness of the exposure edge (slow)
- *   audioMid   -> the paper's warmth (colour)
- *   audioHigh  -> the wet sheen along the rinse front (light)
- *   audioKick  -> the light on the wet paper (light)
+ *  The colour path matters as much as the order: unexposed sensitiser is a pale
+ *  yellow-green, and it goes through a dull sage before Prussian blue appears.
+ *  Taking the short way straight to blue would look like a blue tint instead of
+ *  a chemical change.
  *
- * Per-activation variety: contrastP, washP, hueP.
+ *  Audio Reactivity:
+ *    audioSwell -> how hard the sun is: the softness of the exposure edge (slow)
+ *    audioMid   -> the paper's warmth (colour)
+ *    audioHigh  -> the wet sheen along the rinse front (light)
+ *    audioKick  -> the light on the wet paper (light)
+ *
+ *  Per-activation variety: contrastP, washP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

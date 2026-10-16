@@ -1,23 +1,27 @@
 #version 330 core
+/*****************************************************************************\
+ *                              TokamakFusionCore.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Draws the magnetically confined plasma filaments of a tokamak fusion core (geometry baked by a compute generator
+ *  and passed in as vPos/vHeat/vStrand) as glowing point sprites shading from the rotating photo-arc palette toward
+ *  white-hot at high heat.
+ *
+ *  vHeat (per-point plasma temperature) mixes the core colour toward
+ *  near-white and scales overall intensity; audioKick adds an extra
+ *  brightness surge; vStrand selects the point's position along the
+ *  photo-palette arc; hueP rotates the final colour. A soft-knee tone map
+ *  keeps loud passages from clipping to flat white.
+ *
+ *  @author René Weller
+ */
 in vec3  vPos;    ///< Position (from the vertex stage).
 in float vHeat;   ///< Heat (from the vertex stage).
 in float vStrand; ///< Strand (from the vertex stage).
 
 out vec4 fragColor; ///< The pixel's colour (output).
-
-/**
- * @file TokamakFusionCore.frag
- * @brief Draws the magnetically confined plasma filaments of a tokamak
- * fusion core (geometry baked by a compute generator and passed in as
- * vPos/vHeat/vStrand) as glowing point sprites shading from the rotating
- * photo-arc palette toward white-hot at high heat.
- *
- * vHeat (per-point plasma temperature) mixes the core colour toward
- * near-white and scales overall intensity; audioKick adds an extra
- * brightness surge; vStrand selects the point's position along the
- * photo-palette arc; hueP rotates the final colour. A soft-knee tone map
- * keeps loud passages from clipping to flat white.
- */
 
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

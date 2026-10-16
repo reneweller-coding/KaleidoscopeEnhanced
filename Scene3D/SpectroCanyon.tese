@@ -1,8 +1,14 @@
 #version 400 core
-/**
- * @file SpectroCanyon.tese
- * @brief Tessellation-evaluation stage companion to SpectroCanyon.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              SpectroCanyon.tese
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Tessellation-evaluation stage companion to SpectroCanyon.frag -- see that file's header for this scene's
+ *  description.
+ *
+ *  @author René Weller
  */
 // SpectroCanyon.tese — a landscape whose terrain IS the music's history.
 // -----------------------------------------------------------------------

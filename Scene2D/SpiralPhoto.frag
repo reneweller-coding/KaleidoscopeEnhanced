@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SpiralPhoto.frag
- * @brief SPIRAL PHOTO: the photograph drawn with one single spiral line --
- * a groove winds out from the centre like a record, and its thickness
- * swells where the picture is dark and thins where it is light, so the
- * image appears out of the line itself; the spiral turns and flows
- * slowly outward, the photo drifts beneath, and the line lies as ink on
- * paper, tinted by the photo's colours.  Endless,
- * mirrorable.
+/*****************************************************************************\
+ *                              SpiralPhoto.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the line flows outward (integrated, jump-free)
- *   audioPhase      -> the spiral turns (integrated)
- *   audioSpread     -> the line's range of thickness (contrast)
- *   audioKick       -> the line brightens (light)
- *   audioMode       -> the paper: cool grey in minor, warm cream in major
- *   audioSwell      -> the colour of the photo in the line (slow)
+ *  @brief
+ *  SPIRAL PHOTO: the photograph drawn with one single spiral line -- a groove winds out from the centre like a
+ *  record, and its thickness swells where the picture is dark and thins where it is light, so the image appears out
+ *  of the line itself; the spiral turns and flows slowly outward, the photo drifts beneath, and the line lies as
+ *  ink on paper, tinted by the photo's colours.
  *
- * Knobs: pitchP (turn spacing), zoomP (photo scale), wobbleP (the line wavers), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the line flows outward (integrated, jump-free)
+ *    audioPhase      -> the spiral turns (integrated)
+ *    audioSpread     -> the line's range of thickness (contrast)
+ *    audioKick       -> the line brightens (light)
+ *    audioMode       -> the paper: cool grey in minor, warm cream in major
+ *    audioSwell      -> the colour of the photo in the line (slow)
+ *
+ *  Knobs: pitchP (turn spacing), zoomP (photo scale), wobbleP (the line wavers), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

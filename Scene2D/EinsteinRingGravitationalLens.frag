@@ -1,22 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file EinsteinRingGravitationalLens.frag
- * @brief EINSTEIN RING GRAVITATIONAL LENS: Relativistic gravitational lensing around
- * a massive rotating dark-matter singularity. Background photo textures are
- * warped into Einstein rings, arc mirages, and multiple relativistic images
- * with Doppler frequency shifts and gravitational wave metric ripples.
- *   audioAdvance -> rotates relativistic accretion and frame dragging
- *   audioKick    -> fires gravitational metric compression shockwaves
- *   audioSubBass -> expands Einstein radius and event horizon shadow
- *   audioChromaHue-> shifts relativistic Doppler color grading
+/*****************************************************************************\
+ *                              EinsteinRingGravitationalLens.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   lensP   float Einstein ring deflection strength (0.5..2.2)
- *   massP   float central singularity mass scale    (0.5..2.0)
- *   speedP  float orbital frame dragging velocity  (0.5..2.0)
- *   hueP    float base chromatic palette offset     (0..6.28)
+ *  @brief
+ *  EINSTEIN RING GRAVITATIONAL LENS: Relativistic gravitational lensing around a massive rotating dark-matter
+ *  singularity.
+ *
+ *  Background photo textures are warped into Einstein rings, arc mirages, and multiple relativistic images with
+ *  Doppler frequency shifts and gravitational wave metric ripples.
+ *
+ *    audioAdvance -> rotates relativistic accretion and frame dragging
+ *    audioKick    -> fires gravitational metric compression shockwaves
+ *    audioSubBass -> expands Einstein radius and event horizon shadow
+ *    audioChromaHue-> shifts relativistic Doppler color grading
+ *
+ *  Per-activation variety:
+ *    lensP   float Einstein ring deflection strength (0.5..2.2)
+ *    massP   float central singularity mass scale    (0.5..2.0)
+ *    speedP  float orbital frame dragging velocity  (0.5..2.0)
+ *    hueP    float base chromatic palette offset     (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

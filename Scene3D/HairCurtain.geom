@@ -1,8 +1,13 @@
 #version 330 core
-/**
- * @file HairCurtain.geom
- * @brief Geometry stage companion to HairCurtain.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              HairCurtain.geom
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Geometry stage companion to HairCurtain.frag -- see that file's header for this scene's description.
+ *
+ *  @author René Weller
  */
 // HairCurtain.geom — hang a strand of hair from every point.
 // -----------------------------------------------------------------------

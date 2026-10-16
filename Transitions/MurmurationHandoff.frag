@@ -1,29 +1,34 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file MurmurationHandoff.frag
- * @brief TRANSITION MURMURATION HANDOFF: a starling flock lifts off the
- * outgoing scene and settles as the incoming one.
+/*****************************************************************************\
+ *                              MurmurationHandoff.frag
+\*****************************************************************************/
+/*! @file
  *
- * The picture is carried by the flock's DENSITY, not by any bird's position.
- * A bird is a bird -- a small round speck with a soft edge -- and it exists at
- * all only where the target picture is dark enough to want one.  That is what
- * lets a murmuration hold a shape while every individual keeps moving: nothing
- * has to be placed, only counted.  Painting the picture onto the birds instead
- * would make the flock a texture, and it would flicker as birds crossed edges.
+ *  @brief
+ *  TRANSITION MURMURATION HANDOFF: a starling flock lifts off the outgoing scene and settles as the incoming one.
  *
- * Every bird drifts on the same slowly turning flow field with its own offset,
- * so the whole cloud shears and folds the way a real flock does, continuously,
- * with nothing jumping at any point in the turn.
+ *  The picture is carried by the flock's DENSITY, not by any bird's position.
+ *  A bird is a bird -- a small round speck with a soft edge -- and it exists at
+ *  all only where the target picture is dark enough to want one.  That is what
+ *  lets a murmuration hold a shape while every individual keeps moving: nothing
+ *  has to be placed, only counted.  Painting the picture onto the birds instead
+ *  would make the flock a texture, and it would flicker as birds crossed edges.
  *
- * Audio Reactivity:
- *   audioSwell  -> the flock's cohesion: how tightly it holds the shape (slow)
- *   audioHigh    -> the flash of wings turning over (light)
- *   audioAdvance -> the flow field turns, continuously
- *   audioMid     -> the sky's own light (colour)
+ *  Every bird drifts on the same slowly turning flow field with its own offset,
+ *  so the whole cloud shears and folds the way a real flock does, continuously,
+ *  with nothing jumping at any point in the turn.
  *
- * Per-activation variety: birdsP, flowP, hueP.
+ *  Audio Reactivity:
+ *    audioSwell  -> the flock's cohesion: how tightly it holds the shape (slow)
+ *    audioHigh    -> the flash of wings turning over (light)
+ *    audioAdvance -> the flow field turns, continuously
+ *    audioMid     -> the sky's own light (colour)
+ *
+ *  Per-activation variety: birdsP, flowP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

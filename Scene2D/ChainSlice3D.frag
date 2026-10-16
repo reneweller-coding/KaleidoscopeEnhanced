@@ -1,36 +1,41 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file ChainSlice3D.frag
- * @brief CHAIN SLICE 3D: the 3D chain laboratory without raymarching -- the
- * screen is a plane through a rolled 3D world (a space, a fold core and an end
- * body, the 3D lab's classes), every pixel one point sent once through the
- * chain of space transforms.  Up to eight planes behind each other (layerP):
- * the first that cuts matter is shown, the deeper ones through its holes, a
- * stack of cut plates.  Matter is coloured by a rolled 2D chain projected on
- * three planes of the folded point, air stays dim, the cut edges glow.  The
- * plane drifts through the world with the flight and turns between
- * orientations (across, along, diagonal, slowly turning) every few minutes.
+/*****************************************************************************\
+ *                              ChainSlice3D.frag
+\*****************************************************************************/
+/*! @file
  *
- * (The space-time cut of the 2D chain itself lives in the 2D chain labs as tiltP.)
+ *  @brief
+ *  CHAIN SLICE 3D: the 3D chain laboratory without raymarching -- the screen is a plane through a rolled 3D world
+ *  (a space, a fold core and an end body, the 3D lab's classes), every pixel one point sent once through the chain
+ *  of space transforms.
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the drift through the world and the flow through the colour chain (integrated, jump-free)
- *   audioPhase      -> the folds turn, the colours wander (integrated)
- *   audioSpread     -> the bodies thicken, the colour chain distorts more
- *   audioKick       -> the rims flare (light)
- *   audioMode       -> the light and the palette: cool in minor, warm in major
- *   audioSwell      -> the fog glow and the colour saturation (slow)
+ *  Up to eight planes behind each other (layerP): the first that cuts matter is shown, the deeper ones through its
+ *  holes, a stack of cut plates.  Matter is coloured by a rolled 2D chain projected on three planes of the folded
+ *  point, air stays dim, the cut edges glow.  The plane drifts through the world with the flight and turns between
+ *  orientations (across, along, diagonal, slowly turning) every few minutes.
  *
- * Knobs: spaceP / coreP / bodyP (the 3D chain), layerP (1..8 planes), hyperP (the plane
- * at rest, the world's own time running: a cut through 4D),
- * solidP (the colour chain on three planes, or as a solid texture), reliefP
- * (the surfaces bulge with the colour chain's brightness), chainAP..chainDP
- * (the 2D colour chain), orderP, morphP, styleP (lit / glowing rims), speedP
- * (drift speed), detailP, paletteP, camP (the first plane orientation), hueP,
- * isoP (contour lines of the distance field: the air around the bodies drawn
- * like a map's height lines, running slowly outward; none below ~0.35).
+ *  (The space-time cut of the 2D chain itself lives in the 2D chain labs as tiltP.)
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the drift through the world and the flow through the colour chain (integrated, jump-free)
+ *    audioPhase      -> the folds turn, the colours wander (integrated)
+ *    audioSpread     -> the bodies thicken, the colour chain distorts more
+ *    audioKick       -> the rims flare (light)
+ *    audioMode       -> the light and the palette: cool in minor, warm in major
+ *    audioSwell      -> the fog glow and the colour saturation (slow)
+ *
+ *  Knobs: spaceP / coreP / bodyP (the 3D chain), layerP (1..8 planes), hyperP (the plane
+ *  at rest, the world's own time running: a cut through 4D),
+ *  solidP (the colour chain on three planes, or as a solid texture), reliefP
+ *  (the surfaces bulge with the colour chain's brightness), chainAP..chainDP
+ *  (the 2D colour chain), orderP, morphP, styleP (lit / glowing rims), speedP
+ *  (drift speed), detailP, paletteP, camP (the first plane orientation), hueP,
+ *  isoP (contour lines of the distance field: the air around the bodies drawn
+ *  like a map's height lines, running slowly outward; none below ~0.35).
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

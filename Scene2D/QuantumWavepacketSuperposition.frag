@@ -1,18 +1,25 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file QuantumWavepacketSuperposition.frag
- * @brief QUANTUM WAVEPACKET SUPERPOSITION: Time-dependent 2D Schrödinger wavepacket
- * superposition and collision. High-frequency quantum interference fringes, complex
- * phase rotation coloring, probability density nodes, and measurement collapse flashes.
+/*****************************************************************************\
+ *                              QuantumWavepacketSuperposition.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance -> drives continuous wavepacket propagation & quantum phase evolution
- *   audioKick    -> triggers localized quantum wavepacket collapse flash
- *   audioCentroid-> modulates de Broglie wavelength & fine interference fringe spacing
- *   audioSubBass -> expands wavepacket Gaussian envelope width
- *   audioChromaHue-> rotates the quantum complex phase spectrum
+ *  @brief
+ *  QUANTUM WAVEPACKET SUPERPOSITION: Time-dependent 2D Schrödinger wavepacket superposition and collision.
+ *
+ *  High-frequency quantum interference fringes, complex phase rotation coloring, probability density nodes, and
+ *  measurement collapse flashes.
+ *
+ *  Audio Reactivity:
+ *    audioAdvance -> drives continuous wavepacket propagation & quantum phase evolution
+ *    audioKick    -> triggers localized quantum wavepacket collapse flash
+ *    audioCentroid-> modulates de Broglie wavelength & fine interference fringe spacing
+ *    audioSubBass -> expands wavepacket Gaussian envelope width
+ *    audioChromaHue-> rotates the quantum complex phase spectrum
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

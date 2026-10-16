@@ -1,8 +1,13 @@
 #version 330 core
-/**
- * @file CosmicStringHyperspaceWeb.vert
- * @brief Vertex stage companion to CosmicStringHyperspaceWeb.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              CosmicStringHyperspaceWeb.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to CosmicStringHyperspaceWeb.frag -- see that file's header for this scene's description.
+ *
+ *  @author René Weller
  */
 // CosmicStringHyperspaceWeb.vert — 20 hyper-dimensional cosmic strings
 // spanning a 3D web with standing Kelvin wave vibrations and metric deficit angles.

@@ -1,26 +1,31 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file NebulaCliffs.frag
- * @brief NEBULA CLIFFS: the "cosmic cliffs" of a star-forming region, as the
- * infrared telescopes show them -- a wall of orange-brown dust rising from
- * the bottom of the frame in three ranges, its crags lit gold along the
- * ionisation front where the young cluster above (off frame) burns into
- * it, steam-like wisps boiling off the edges, and above it all a glowing
- * blue-cyan cavity of hot gas strewn with stars, the brightest wearing
- * six-pointed diffraction spikes.  The ranges drift past at their own
- * depths (slow parallax); the music is the light.
+/*****************************************************************************\
+ *                              NebulaCliffs.frag
+\*****************************************************************************/
+/*! @file
  *
- *   sceneTime/sceneAdvance -> the drift of the ranges, the wisps (continuous)
- *   audioSwell    -> the backlight: cavity glow and rim brightness (slow)
- *   audioKick     -> protostars embedded in the dust glow up (light only)
- *   audioChromaHue-> photo tint of gas and dust
+ *  @brief
+ *  NEBULA CLIFFS: the "cosmic cliffs" of a star-forming region, as the infrared telescopes show them -- a wall of
+ *  orange-brown dust rising from the bottom of the frame in three ranges, its crags lit gold along the ionisation
+ *  front where the young cluster above (off frame) burns into it, steam-like wisps boiling off the edges, and above
+ *  it all a glowing blue-cyan cavity of hot gas strewn with stars, the brightest wearing six-pointed diffraction
+ *  spikes.
  *
- * Per-activation variety:
- *   dustP float height and density of the cliffs (0.5..1.5)
- *   glowP float brightness of the ionisation front (0.5..2.0)
- *   hueP float palette offset (0..6.28)
+ *  The ranges drift past at their own depths (slow parallax); the music is the light.
+ *
+ *    sceneTime/sceneAdvance -> the drift of the ranges, the wisps (continuous)
+ *    audioSwell    -> the backlight: cavity glow and rim brightness (slow)
+ *    audioKick     -> protostars embedded in the dust glow up (light only)
+ *    audioChromaHue-> photo tint of gas and dust
+ *
+ *  Per-activation variety:
+ *    dustP float height and density of the cliffs (0.5..1.5)
+ *    glowP float brightness of the ionisation front (0.5..2.0)
+ *    hueP float palette offset (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

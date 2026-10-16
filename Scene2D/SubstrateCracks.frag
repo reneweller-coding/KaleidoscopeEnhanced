@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SubstrateCracks.frag
- * @brief SUBSTRATE CRACKS: in the manner of Jared Tarbell's "Substrate" --
- * straight lines grow across the plane like cracks, each starting from an
- * existing line at a right angle and running until it hits another,
- * carving the space into an architectural city map of rectangles and
- * slivers; soft watercolour sand trails along one side of each crack in
- * colours sampled from the photograph; the map slowly redraws itself
- * region by region.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              SubstrateCracks.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the cracks grow and the map redraws (integrated, jump-free)
- *   audioSpread     -> crack density
- *   audioKick       -> the crack lines darken (light)
- *   audioMode       -> the paper: white in major, dark with light lines in minor (blend)
- *   audioRoughness  -> the angle of the cracks varies more
- *   audioSwell      -> the colour trails widen (slow)
+ *  @brief
+ *  SUBSTRATE CRACKS: in the manner of Jared Tarbell's "Substrate" -- straight lines grow across the plane like
+ *  cracks, each starting from an existing line at a right angle and running until it hits another, carving the
+ *  space into an architectural city map of rectangles and slivers; soft watercolour sand trails along one side of
+ *  each crack in colours sampled from the photograph; the map slowly redraws itself region by region.
  *
- * Knobs: scaleP (map scale), trailP (colour trail width), photoP (photo colours), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the cracks grow and the map redraws (integrated, jump-free)
+ *    audioSpread     -> crack density
+ *    audioKick       -> the crack lines darken (light)
+ *    audioMode       -> the paper: white in major, dark with light lines in minor (blend)
+ *    audioRoughness  -> the angle of the cracks varies more
+ *    audioSwell      -> the colour trails widen (slow)
+ *
+ *  Knobs: scaleP (map scale), trailP (colour trail width), photoP (photo colours), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

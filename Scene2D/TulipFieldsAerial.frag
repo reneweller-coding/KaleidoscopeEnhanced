@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TulipFieldsAerial.frag
- * @brief TULIP FIELDS AERIAL: the Dutch bulb fields in April seen from a
- * drone high above -- parcels of land laid out like a flag, each striped
- * with rows of tulips in pure colours, red, yellow, pink, orange, white,
- * purple, the stripes of neighbouring parcels running at their own angle,
- * narrow canals between them shining with the sky, a farm with its
- * shadow.  Soft cloud shadows drift across the land.  The view glides
- * slowly and steadily over the fields.  Each colour answers a band of the
- * music: its rows glow up when the band sounds.
+/*****************************************************************************\
+ *                              TulipFieldsAerial.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSpectrum[32] -> the glow of each colour's rows (light)
- *   audioSwell        -> the sun between the cloud shadows (slow)
- *   audioLevel        -> brightness
- *   sceneTime / sceneAdvance -> the glide over the fields, the drifting clouds
+ *  @brief
+ *  TULIP FIELDS AERIAL: the Dutch bulb fields in April seen from a drone high above -- parcels of land laid out
+ *  like a flag, each striped with rows of tulips in pure colours, red, yellow, pink, orange, white, purple, the
+ *  stripes of neighbouring parcels running at their own angle, narrow canals between them shining with the sky, a
+ *  farm with its shadow.
  *
- * Per-activation variety: parcelP (the size of the parcels), hueP.
+ *  Soft cloud shadows drift across the land.  The view glides slowly and steadily over the fields.  Each colour
+ *  answers a band of the music: its rows glow up when the band sounds.
+ *
+ *  Audio Reactivity:
+ *    audioSpectrum[32] -> the glow of each colour's rows (light)
+ *    audioSwell        -> the sun between the cloud shadows (slow)
+ *    audioLevel        -> brightness
+ *    sceneTime / sceneAdvance -> the glide over the fields, the drifting clouds
+ *
+ *  Per-activation variety: parcelP (the size of the parcels), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

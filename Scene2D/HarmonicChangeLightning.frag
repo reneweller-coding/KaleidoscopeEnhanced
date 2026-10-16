@@ -1,23 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file HarmonicChangeLightning.frag
- * @brief HARMONIC CHANGE LIGHTNING: a still night over a dark sea.  Nothing
- * moves but the clouds' slow drift -- until the harmony changes: then a
- * bolt strikes, and its branching is the chroma vector, twelve limbs whose
- * lengths are the twelve pitch classes, so every chord change draws a
- * different tree of light.  The bolt lights the clouds from within and
- * mirrors in the water.  All light, no motion; the camera never moves.
+/*****************************************************************************\
+ *                              HarmonicChangeLightning.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioHarmChange -> the strike (envelope, light)
- *   audioChroma[12] -> the branching of the bolt
- *   audioKick       -> distant sheet lightning in the clouds (light)
- *   audioSwell      -> cloud glow (slow)
- *   sceneAdvance    -> cloud drift, the strike point wanders slowly
+ *  @brief
+ *  HARMONIC CHANGE LIGHTNING: a still night over a dark sea.
  *
- * Per-activation variety: heightP (cloud base), seaP (sea brightness), hueP.
+ *  Nothing moves but the clouds' slow drift -- until the harmony changes: then a bolt strikes, and its branching is
+ *  the chroma vector, twelve limbs whose lengths are the twelve pitch classes, so every chord change draws a
+ *  different tree of light.  The bolt lights the clouds from within and mirrors in the water.  All light, no
+ *  motion; the camera never moves.
+ *
+ *  Audio Reactivity:
+ *    audioHarmChange -> the strike (envelope, light)
+ *    audioChroma[12] -> the branching of the bolt
+ *    audioKick       -> distant sheet lightning in the clouds (light)
+ *    audioSwell      -> cloud glow (slow)
+ *    sceneAdvance    -> cloud drift, the strike point wanders slowly
+ *
+ *  Per-activation variety: heightP (cloud base), seaP (sea brightness), hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

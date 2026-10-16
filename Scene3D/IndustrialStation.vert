@@ -1,18 +1,21 @@
 #version 330 core
-/**
- * @file IndustrialStation.vert
- * @brief Vertex stage companion to IndustrialStation.frag -- see that
- * file's header. Shared by every mining/refinery/salvage station
- * (geom="mesh"): these are kilometers-long megastructures, not debris --
- * they hold a FIXED orientation (a one-time angle, chosen only so the hull
- * isn't seen flat-on) and float stably; the "machinery running" feel comes
- * from the furnace/vent glow flicker in the fragment stage, not from the
- * whole structure juddering. The camera's own sweep (this scene's rig*
- * formulas in Presets/Komplett.xml) supplies the actual motion.
- * gl_VertexID picks the vertex's own branch: below meshVertexCount it is
- * the loaded model, at or above it the enclosing sky shell Scene3DShader::
- * buildGeometry() appends -- IndustrialStation.frag paints an asteroid
- * field onto it.
+/*****************************************************************************\
+ *                              IndustrialStation.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to IndustrialStation.frag -- see that file's header.
+ *
+ *  Shared by every mining/refinery/salvage station (geom="mesh"): these are kilometers-long megastructures, not
+ *  debris -- they hold a FIXED orientation (a one-time angle, chosen only so the hull isn't seen flat-on) and float
+ *  stably; the "machinery running" feel comes from the furnace/vent glow flicker in the fragment stage, not from
+ *  the whole structure juddering. The camera's own sweep (this scene's rig* formulas in Presets/Komplett.xml)
+ *  supplies the actual motion. gl_VertexID picks the vertex's own branch: below meshVertexCount it is the loaded
+ *  model, at or above it the enclosing sky shell Scene3DShader:: buildGeometry() appends -- IndustrialStation.frag
+ *  paints an asteroid field onto it.
+ *
+ *  @author René Weller
  */
 
 in vec4 attrA; ///< mesh: xyz = object-space position, w = U.  shell: xyz = world-space position on the shell.

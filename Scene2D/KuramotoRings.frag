@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file KuramotoRings.frag
- * @brief KURAMOTO RINGS: a field of thousands of blinking lights that keep
- * falling into step -- each light is an oscillator; at first they flicker
- * at random, then neighbours pull each other into rhythm and spiral waves
- * of flashes sweep across the field, turning around wandering centres
- * like the waves in a chemical clock; then the order dissolves into
- * flicker again, and re-forms elsewhere.  Each light takes its colour from
- * the photograph beneath.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              KuramotoRings.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the waves travel (integrated, jump-free)
- *   audioSpread     -> how strongly the field synchronises
- *   audioKick       -> the flashes flare (light)
- *   audioMode       -> colour: cool in minor, warm in major
- *   audioHigh       -> the flicker sparkles (light)
- *   audioSwell      -> the glow between the lights (slow)
+ *  @brief
+ *  KURAMOTO RINGS: a field of thousands of blinking lights that keep falling into step -- each light is an
+ *  oscillator; at first they flicker at random, then neighbours pull each other into rhythm and spiral waves of
+ *  flashes sweep across the field, turning around wandering centres like the waves in a chemical clock; then the
+ *  order dissolves into flicker again, and re-forms elsewhere.
  *
- * Knobs: dotP (light spacing), armsP (spiral arms), photoP (photo colours), hueP.
+ *  Each light takes its colour from the photograph beneath.  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the waves travel (integrated, jump-free)
+ *    audioSpread     -> how strongly the field synchronises
+ *    audioKick       -> the flashes flare (light)
+ *    audioMode       -> colour: cool in minor, warm in major
+ *    audioHigh       -> the flicker sparkles (light)
+ *    audioSwell      -> the glow between the lights (slow)
+ *
+ *  Knobs: dotP (light spacing), armsP (spiral arms), photoP (photo colours), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

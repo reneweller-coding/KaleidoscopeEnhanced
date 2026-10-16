@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureOrbifoldFlow.frag
- * @brief TEXTURE ORBIFOLD FLOW: a kaleidoscope whose mirrors are themselves
- * in motion -- the photograph is folded into a hexagonal mirror pattern
- * (p6m), but the mirror lattice is bent by a slow flow field, so the
- * mirror walls sway and curve like water plants, the rosettes stretch and
- * swirl, and the picture inside streams through the folds.  The fold
- * continues endlessly beyond the frame; mirrorable by construction.
+/*****************************************************************************\
+ *                              TextureOrbifoldFlow.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the photo streams through the folds (integrated)
- *   audioPhase      -> the lattice rotates (integrated, jump-free)
- *   audioSpread     -> how strongly the flow bends the mirrors
- *   audioMode       -> six-fold (major) or three-fold (minor) rosettes, blended
- *   audioRoughness  -> fine ripples on the mirror walls
- *   audioHigh       -> the mirror walls glint (light)
+ *  @brief
+ *  TEXTURE ORBIFOLD FLOW: a kaleidoscope whose mirrors are themselves in motion -- the photograph is folded into a
+ *  hexagonal mirror pattern (p6m), but the mirror lattice is bent by a slow flow field, so the mirror walls sway
+ *  and curve like water plants, the rosettes stretch and swirl, and the picture inside streams through the folds.
  *
- * Knobs: cellP (cell size), bendP (base bending), photoZoomP, hueP.
+ *  The fold continues endlessly beyond the frame; mirrorable by construction.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the photo streams through the folds (integrated)
+ *    audioPhase      -> the lattice rotates (integrated, jump-free)
+ *    audioSpread     -> how strongly the flow bends the mirrors
+ *    audioMode       -> six-fold (major) or three-fold (minor) rosettes, blended
+ *    audioRoughness  -> fine ripples on the mirror walls
+ *    audioHigh       -> the mirror walls glint (light)
+ *
+ *  Knobs: cellP (cell size), bendP (base bending), photoZoomP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

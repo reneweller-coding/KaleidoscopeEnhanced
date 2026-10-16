@@ -1,19 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file DendriticSnowflakeIceCrystalHabit.frag
- * @brief DENDRITIC SNOWFLAKE ICE CRYSTAL HABIT: Hexagonal 6-fold dendritic snowflake growth
- * (stellar dendrite / fernlike crystal habit). Non-linear diffusion-limited aggregation,
- * faceted ice prism specular highlights, prismatic refraction, and cryogenic photo texturing.
- *   audioAdvance -> navigates supersaturated ice vapor diffusion & branch growth
- *   audioKick    -> flashes ice crystal facet specular glints & diamond sparkles
- *   audioSwell   -> widens hexagonal dendritic branch width & ice crystal transparency
- *   audioCentroid-> shifts ice birefringence / cryogenic dispersion spectra
+/*****************************************************************************\
+ *                              DendriticSnowflakeIceCrystalHabit.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   flakeScaleP float snowflake 3D scale                  (0.8..2.2)
- *   specularP   float hexagonal facet specular shine gain (0.8..2.5)
+ *  @brief
+ *  DENDRITIC SNOWFLAKE ICE CRYSTAL HABIT: Hexagonal 6-fold dendritic snowflake growth (stellar dendrite / fernlike
+ *  crystal habit).
+ *
+ *  Non-linear diffusion-limited aggregation, faceted ice prism specular highlights, prismatic refraction, and
+ *  cryogenic photo texturing.
+ *
+ *    audioAdvance -> navigates supersaturated ice vapor diffusion & branch growth
+ *    audioKick    -> flashes ice crystal facet specular glints & diamond sparkles
+ *    audioSwell   -> widens hexagonal dendritic branch width & ice crystal transparency
+ *    audioCentroid-> shifts ice birefringence / cryogenic dispersion spectra
+ *
+ *  Per-activation variety:
+ *    flakeScaleP float snowflake 3D scale                  (0.8..2.2)
+ *    specularP   float hexagonal facet specular shine gain (0.8..2.5)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec2  vUV;      ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 in vec3  vNormal;  ///< Surface normal (from the vertex stage).

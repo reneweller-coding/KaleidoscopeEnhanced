@@ -1,20 +1,24 @@
 #version 330 core
+/*****************************************************************************\
+ *                              AuroraVeil.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Shades one strip of a translucent aurora curtain: a bright glowing hem where vSide approaches -1 and a soft, dim
+ *  body across the rest of the strip, using two Gaussian falloffs over the cross-curtain coordinate.
+ *
+ *  No audio uniforms appear in this fragment stage -- vCol (the strip's
+ *  colour, already audio-modulated per vertex, e.g. by the beat/kick) and
+ *  vSide (the cross-curtain position) are the only inputs, so the curtain's
+ *  reactivity to the music is driven entirely by the companion vertex shader.
+ *
+ *  @author René Weller
+ */
 out vec4 fragColor; ///< The pixel's colour (output).
 // AuroraVeil.frag — translucent curtain: bright lower hem, airy top.
 in vec4  vCol;  ///< Colour (from the vertex stage).
 in float vSide; ///< Which side of a strip (from the vertex stage).
-
-/**
- * @file AuroraVeil.frag
- * @brief Shades one strip of a translucent aurora curtain: a bright glowing
- * hem where vSide approaches -1 and a soft, dim body across the rest of the
- * strip, using two Gaussian falloffs over the cross-curtain coordinate.
- *
- * No audio uniforms appear in this fragment stage -- vCol (the strip's
- * colour, already audio-modulated per vertex, e.g. by the beat/kick) and
- * vSide (the cross-curtain position) are the only inputs, so the curtain's
- * reactivity to the music is driven entirely by the companion vertex shader.
- */
 
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()

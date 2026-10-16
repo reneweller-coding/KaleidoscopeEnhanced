@@ -1,26 +1,32 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SeifertSurfaceBraidKnot.frag
- * @brief SEIFERT SURFACE BRAID KNOT: a torus knot as a studio sculpture --
- * a thick tube of polished, thin-film-iridescent glaze winding three times
- * through the hole of a torus while circling it five times, turning slowly
- * on a dark stage under a softbox; inside its loops the Seifert surface is
- * suggested by a soap film spanning the knot, shimmering in interference
- * colours.  A soft reflection lies on the glossy floor.  The rotation is
- * steady; the music is the light: the glaze's sheen and the film's colours.
+/*****************************************************************************\
+ *                              SeifertSurfaceBraidKnot.frag
+\*****************************************************************************/
+/*! @file
  *
- * Replaces a Scene3D ribbon version (a flat white torus in the catalogue).
+ *  @brief
+ *  SEIFERT SURFACE BRAID KNOT: a torus knot as a studio sculpture -- a thick tube of polished, thin-film-iridescent
+ *  glaze winding three times through the hole of a torus while circling it five times, turning slowly on a dark
+ *  stage under a softbox; inside its loops the Seifert surface is suggested by a soap film spanning the knot,
+ *  shimmering in interference colours.
  *
- * Audio Reactivity:
- *   sceneTime/sceneAdvance -> the slow turn (continuous)
- *   audioSwell  -> softbox brightness (slow)
- *   audioKick   -> a glint runs over the glaze (light only)
- *   audioChromaHue -> photo tint of the glaze
+ *  A soft reflection lies on the glossy floor.  The rotation is steady; the music is the light: the glaze's sheen
+ *  and the film's colours.
  *
- * Per-activation variety: knotP (which knot), ribbonWidthP (tube
- * thickness), sheenP (gloss).
+ *  Replaces a Scene3D ribbon version (a flat white torus in the catalogue).
+ *
+ *  Audio Reactivity:
+ *    sceneTime/sceneAdvance -> the slow turn (continuous)
+ *    audioSwell  -> softbox brightness (slow)
+ *    audioKick   -> a glint runs over the glaze (light only)
+ *    audioChromaHue -> photo tint of the glaze
+ *
+ *  Per-activation variety: knotP (which knot), ribbonWidthP (tube
+ *  thickness), sheenP (gloss).
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

@@ -1,28 +1,33 @@
 #version 330 core
+/*****************************************************************************\
+ *                              MyceliumNeuralPulse.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  MYCELIUM NEURAL PULSE: an underground hyphae network - teal resting threads through which photo-palette-coloured
+ *  action potentials flash, camera orbiting the thicket.
+ *
+ *  Audio Reactivity:
+ *    audioKick      -> action-potential firing (.comp generator)
+ *    audioAdvance   -> camera orbit + photo-palette arc drift
+ *    audioChromaHue -> musical key picks the photo-palette arc
+ *    audioValence   -> saturation of the palette (bleak = greyer)
+ *    audioMode      -> resting-thread colour temperature: minor harmony gives
+ *                      a cold blue-teal mycelium, major a warm green-gold one
+ *                      (the two ends are luminance-matched, so this is a hue
+ *                      shift and not a brightness change)
+ *    audioLowMid    -> harmonic breath of the whole mat (see .vert)
+ *    audioRoughness -> dissonance tangles the strands (see .vert)
+ *    pulseP/glowP   -> firing rate and brightness
+ *
+ *  @author René Weller
+ */
 in vec3  vPos;   ///< Position (from the vertex stage).
 in float vPulse; ///< Pulse (from the vertex stage).
 in float vLevel; ///< Level (from the vertex stage).
 
 out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file MyceliumNeuralPulse.frag
- * @brief MYCELIUM NEURAL PULSE: an underground hyphae network - teal resting
- * threads through which photo-palette-coloured action potentials flash,
- * camera orbiting the thicket.
- *
- * Audio Reactivity:
- *   audioKick      -> action-potential firing (.comp generator)
- *   audioAdvance   -> camera orbit + photo-palette arc drift
- *   audioChromaHue -> musical key picks the photo-palette arc
- *   audioValence   -> saturation of the palette (bleak = greyer)
- *   audioMode      -> resting-thread colour temperature: minor harmony gives
- *                     a cold blue-teal mycelium, major a warm green-gold one
- *                     (the two ends are luminance-matched, so this is a hue
- *                     shift and not a brightness change)
- *   audioLowMid    -> harmonic breath of the whole mat (see .vert)
- *   audioRoughness -> dissonance tangles the strands (see .vert)
- *   pulseP/glowP   -> firing rate and brightness
- */
 
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

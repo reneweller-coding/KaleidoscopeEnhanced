@@ -1,23 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file AnticrepuscularRays.frag
- * @brief ANTICREPUSCULAR RAYS: looking out to sea at sunset with the sun at
- * your back -- and across the whole sky great bands of light and shadow
- * run from behind you over your head and converge again on a point on the
- * far horizon ahead, where the sun is not.  Between them the sky is pink
- * and violet, low down the blue band of the earth's shadow rises from the
- * sea, a few clouds glow pink, and the calm sea mirrors the fan of rays.
- * The rays drift slowly as the clouds behind you move.  The camera is still.
+/*****************************************************************************\
+ *                              AnticrepuscularRays.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSwell  -> the contrast of the rays (slow)
- *   audioBass   -> the pink glow of the sky (light)
- *   audioLevel  -> brightness
- *   sceneTime / sceneAdvance -> the rays drifting, the swell of the sea
+ *  @brief
+ *  ANTICREPUSCULAR RAYS: looking out to sea at sunset with the sun at your back -- and across the whole sky great
+ *  bands of light and shadow run from behind you over your head and converge again on a point on the far horizon
+ *  ahead, where the sun is not.
  *
- * Per-activation variety: raysP (how many rays), hueP.
+ *  Between them the sky is pink and violet, low down the blue band of the earth's shadow rises from the sea, a few
+ *  clouds glow pink, and the calm sea mirrors the fan of rays. The rays drift slowly as the clouds behind you move.
+ *  The camera is still.
+ *
+ *  Audio Reactivity:
+ *    audioSwell  -> the contrast of the rays (slow)
+ *    audioBass   -> the pink glow of the sky (light)
+ *    audioLevel  -> brightness
+ *    sceneTime / sceneAdvance -> the rays drifting, the swell of the sea
+ *
+ *  Per-activation variety: raysP (how many rays), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

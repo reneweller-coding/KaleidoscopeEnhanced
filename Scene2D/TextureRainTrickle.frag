@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureRainTrickle.frag
- * @brief TEXTURE RAIN TRICKLE: rain running down a window at night -- the
- * photograph outside is blurred into soft coloured lights by the wet
- * glass, and rivulets of water snake down it, each rivulet a sharp lens
- * showing the scene clearly (flipped and bright) inside its narrow
- * channel, with a fat drop at its head that pauses, gathers, and then
- * runs on; tiny beads cover the rest of the pane.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              TextureRainTrickle.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the drops run down (integrated, jump-free)
- *   audioSpread     -> the rivulets meander more
- *   audioKick       -> the drop highlights flash (light)
- *   audioMode       -> the night outside: cool in minor, warm in major (tint)
- *   audioHigh       -> the beads sparkle (light)
- *   audioSwell      -> the blur of the outside (slow)
+ *  @brief
+ *  TEXTURE RAIN TRICKLE: rain running down a window at night -- the photograph outside is blurred into soft
+ *  coloured lights by the wet glass, and rivulets of water snake down it, each rivulet a sharp lens showing the
+ *  scene clearly (flipped and bright) inside its narrow channel, with a fat drop at its head that pauses, gathers,
+ *  and then runs on; tiny beads cover the rest of the pane.
  *
- * Knobs: rivuletP (rivulet count), beadP (bead density), clarityP (sharpness in the channels), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the drops run down (integrated, jump-free)
+ *    audioSpread     -> the rivulets meander more
+ *    audioKick       -> the drop highlights flash (light)
+ *    audioMode       -> the night outside: cool in minor, warm in major (tint)
+ *    audioHigh       -> the beads sparkle (light)
+ *    audioSwell      -> the blur of the outside (slow)
+ *
+ *  Knobs: rivuletP (rivulet count), beadP (bead density), clarityP (sharpness in the channels), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

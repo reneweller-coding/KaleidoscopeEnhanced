@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureAmberSubsurface.frag
- * @brief TEXTURE AMBER SUBSURFACE: looking into a great slab of amber held
- * against the light -- warm golden resin glowing from within, deeper
- * where it is thick, full of the photograph's forms like flow lines and
- * inclusions frozen in the honey-coloured depth, tiny air bubbles and
- * crackled sun spangles catching the light; a light source moves slowly
- * behind the slab so the glow wanders and the inner layers shift by
- * parallax.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              TextureAmberSubsurface.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the light wanders behind (integrated, jump-free)
- *   audioBass       -> the inner glow (light)
- *   audioSpread     -> the depth of the parallax layers
- *   audioMode       -> the resin: cherry-dark in minor, clear honey in major
- *   audioHigh       -> the spangles sparkle (light)
- *   audioSwell      -> the slab's thickness (slow)
+ *  @brief
+ *  TEXTURE AMBER SUBSURFACE: looking into a great slab of amber held against the light -- warm golden resin glowing
+ *  from within, deeper where it is thick, full of the photograph's forms like flow lines and inclusions frozen in
+ *  the honey-coloured depth, tiny air bubbles and crackled sun spangles catching the light; a light source moves
+ *  slowly behind the slab so the glow wanders and the inner layers shift by parallax.
  *
- * Knobs: layerP (inner layers), spangleP (sun spangles), bubbleP (air bubbles), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the light wanders behind (integrated, jump-free)
+ *    audioBass       -> the inner glow (light)
+ *    audioSpread     -> the depth of the parallax layers
+ *    audioMode       -> the resin: cherry-dark in minor, clear honey in major
+ *    audioHigh       -> the spangles sparkle (light)
+ *    audioSwell      -> the slab's thickness (slow)
+ *
+ *  Knobs: layerP (inner layers), spangleP (sun spangles), bubbleP (air bubbles), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

@@ -1,18 +1,24 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file RelativisticKerrPlasmaDisk.frag
- * @brief RELATIVISTIC KERR PLASMA DISK: Rotating Kerr black hole accretion disk with
- * Lense-Thirring frame dragging, relativistic Doppler beaming (approaching side blueshifted
- * and super-bright), gravitational lensing light arcs, and inner ISCO plasma turbulence.
+/*****************************************************************************\
+ *                              RelativisticKerrPlasmaDisk.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance -> drives continuous Kerr black hole spin & plasma accretion rotation
- *   audioKick    -> flashes ISCO innermost stable circular orbit & plasma flares
- *   audioCentroid-> modulates relativistic accretion disk turbulence frequency
- *   audioSubBass -> expands accretion disk outer radius breathing
- *   audioChromaHue-> steers the relativistic Doppler blueshift / redshift spectrum
+ *  @brief
+ *  RELATIVISTIC KERR PLASMA DISK: Rotating Kerr black hole accretion disk with Lense-Thirring frame dragging,
+ *  relativistic Doppler beaming (approaching side blueshifted and super-bright), gravitational lensing light arcs,
+ *  and inner ISCO plasma turbulence.
+ *
+ *  Audio Reactivity:
+ *    audioAdvance -> drives continuous Kerr black hole spin & plasma accretion rotation
+ *    audioKick    -> flashes ISCO innermost stable circular orbit & plasma flares
+ *    audioCentroid-> modulates relativistic accretion disk turbulence frequency
+ *    audioSubBass -> expands accretion disk outer radius breathing
+ *    audioChromaHue-> steers the relativistic Doppler blueshift / redshift spectrum
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

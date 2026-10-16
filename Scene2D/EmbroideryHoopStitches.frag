@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file EmbroideryHoopStitches.frag
- * @brief EMBROIDERY HOOP STITCHES: a hoop of linen with a design worked
- * in it.  Satin stitch fills the petals in bands of parallel floss, stem
- * stitch draws the lines, and French knots sit as round beads in the
- * centres.  The design is worked over the scene arc, stitch after stitch,
- * and the needle with its trailing thread sits at the working point.  The
- * chroma classes pick the flosses; the treble is the silk sheen, which is
- * what makes satin stitch read as satin.  Camera fixed on the hoop.
+/*****************************************************************************\
+ *                              EmbroideryHoopStitches.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   sceneProgress   -> the design is worked (the arc)
- *   audioChroma[12] -> the floss colours (light)
- *   audioHigh       -> the silk sheen across the satin bands (light)
- *   audioSwell      -> the lamp (slow)
- *   audioKick       -> the needle glints (light)
+ *  @brief
+ *  EMBROIDERY HOOP STITCHES: a hoop of linen with a design worked in it.
  *
- * Per-activation variety: petalsP, knotsP, hueP.
+ *  Satin stitch fills the petals in bands of parallel floss, stem stitch draws the lines, and French knots sit as
+ *  round beads in the centres.  The design is worked over the scene arc, stitch after stitch, and the needle with
+ *  its trailing thread sits at the working point.  The chroma classes pick the flosses; the treble is the silk
+ *  sheen, which is what makes satin stitch read as satin.  Camera fixed on the hoop.
+ *
+ *  Audio Reactivity:
+ *    sceneProgress   -> the design is worked (the arc)
+ *    audioChroma[12] -> the floss colours (light)
+ *    audioHigh       -> the silk sheen across the satin bands (light)
+ *    audioSwell      -> the lamp (slow)
+ *    audioKick       -> the needle glints (light)
+ *
+ *  Per-activation variety: petalsP, knotsP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

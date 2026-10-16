@@ -1,14 +1,18 @@
 #version 330 core
-/**
- * @file MeshPendulumWave.vert
- * @brief Vertex stage companion to MeshPendulumWave.frag -- see that file's
- * header. ONE pendulum drawn twelve times (instances="12") in a row, each
- * swinging about its own pivot at the top of the frame with its own period:
- * the n-th makes n/8 more swings than the first per cycle, so the row
- * drifts from a line into a travelling wave, into two counter-waves, into
- * chaos and back into a line. The swings run on time (never on a beat
- * tracker, so no resync can jolt them); only the amplitude eases with the
- * swell.
+/*****************************************************************************\
+ *                              MeshPendulumWave.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to MeshPendulumWave.frag -- see that file's header.
+ *
+ *  ONE pendulum drawn twelve times (instances="12") in a row, each swinging about its own pivot at the top of the
+ *  frame with its own period: the n-th makes n/8 more swings than the first per cycle, so the row drifts from a
+ *  line into a travelling wave, into two counter-waves, into chaos and back into a line. The swings run on time
+ *  (never on a beat tracker, so no resync can jolt them); only the amplitude eases with the swell.
+ *
+ *  @author René Weller
  */
 
 in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an

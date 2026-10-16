@@ -1,8 +1,13 @@
 #version 400 core
-/**
- * @file GlacierTessellation.vert
- * @brief Vertex stage companion to GlacierTessellation.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              GlacierTessellation.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to GlacierTessellation.frag -- see that file's header for this scene's description.
+ *
+ *  @author René Weller
  */
 // GlacierTessellation.vert — pass quad patch control points to Tessellation Control stage
 in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an

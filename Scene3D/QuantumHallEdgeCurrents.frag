@@ -1,24 +1,28 @@
 #version 330 core
+/*****************************************************************************\
+ *                              QuantumHallEdgeCurrents.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Shades the 20 chiral edge-current ribbons of the Quantum Hall scene: a soft-edged glowing strip per ribbon,
+ *  blended with a scrolling sample of the live slideshow photo and brightened toward its edges.
+ *
+ *  This fragment stage reads no audio uniforms directly — all of the audio
+ *  reactivity (cyclotron skipping-orbit radius from audioBass, kick phase
+ *  jumps from audioKick, chiral pulse timing, hue rotation from
+ *  audioChromaHue/audioSwell) is computed per-vertex in
+ *  QuantumHallEdgeCurrents.vert and arrives here already baked into vCol;
+ *  this shader only uses vSide for the cross-ribbon edge glow and vLength to
+ *  scroll the photo sample lengthwise along the ribbon.
+ *
+ *  @author René Weller
+ */
 out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec4  vCol;    ///< Colour (from the vertex stage).
 in float vSide;   ///< Which side of a strip (from the vertex stage).
 in float vLength; ///< Length (from the vertex stage).
-
-/**
- * @file QuantumHallEdgeCurrents.frag
- * @brief Shades the 20 chiral edge-current ribbons of the Quantum Hall
- * scene: a soft-edged glowing strip per ribbon, blended with a scrolling
- * sample of the live slideshow photo and brightened toward its edges.
- *
- * This fragment stage reads no audio uniforms directly — all of the audio
- * reactivity (cyclotron skipping-orbit radius from audioBass, kick phase
- * jumps from audioKick, chiral pulse timing, hue rotation from
- * audioChromaHue/audioSwell) is computed per-vertex in
- * QuantumHallEdgeCurrents.vert and arrives here already baked into vCol;
- * this shader only uses vSide for the cross-ribbon edge glow and vLength to
- * scroll the photo sample lengthwise along the ribbon.
- */
 
 uniform sampler2D tex0;          ///< The current photo.
 uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).

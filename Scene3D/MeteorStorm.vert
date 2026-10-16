@@ -1,8 +1,13 @@
 #version 330 core
-/**
- * @file MeteorStorm.vert
- * @brief Vertex stage companion to MeteorStorm.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              MeteorStorm.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to MeteorStorm.frag -- see that file's header for this scene's description.
+ *
+ *  @author René Weller
  */
 // MeteorStorm.vert — shooting stars over a still night sky: 56 meteors
 // (500 trail particles each), the rest a star field.  Meteor cycles run on

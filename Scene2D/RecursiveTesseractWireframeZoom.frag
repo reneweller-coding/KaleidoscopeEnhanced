@@ -1,18 +1,25 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file RecursiveTesseractWireframeZoom.frag
- * @brief RECURSIVE TESSERACT WIREFRAME ZOOM: Continuous 4D-to-3D Schlegel projection
- * plunge through nested 8-cell Tesseract hypercube wireframe cages. Seamless 4D inner-outer
- * cell inversion, neon laser edge struts, and dimensional portal flashes.
+/*****************************************************************************\
+ *                              RecursiveTesseractWireframeZoom.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance -> drives continuous 4D rotation & forward plunge through hypercube cells
- *   audioKick    -> flashes 4D vertex nodes & triggers Schlegel cell inversion burst
- *   audioCentroid-> modulates 4D wireframe edge strut thickness & sharpness
- *   audioSubBass -> expands 4D hypercube spatial volume breathing
- *   audioChromaHue-> rotates the glowing 4D neon wireframe spectrum
+ *  @brief
+ *  RECURSIVE TESSERACT WIREFRAME ZOOM: Continuous 4D-to-3D Schlegel projection plunge through nested 8-cell
+ *  Tesseract hypercube wireframe cages.
+ *
+ *  Seamless 4D inner-outer cell inversion, neon laser edge struts, and dimensional portal flashes.
+ *
+ *  Audio Reactivity:
+ *    audioAdvance -> drives continuous 4D rotation & forward plunge through hypercube cells
+ *    audioKick    -> flashes 4D vertex nodes & triggers Schlegel cell inversion burst
+ *    audioCentroid-> modulates 4D wireframe edge strut thickness & sharpness
+ *    audioSubBass -> expands 4D hypercube spatial volume breathing
+ *    audioChromaHue-> rotates the glowing 4D neon wireframe spectrum
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

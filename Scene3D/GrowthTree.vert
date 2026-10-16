@@ -1,8 +1,13 @@
 #version 330 core
-/**
- * @file GrowthTree.vert
- * @brief Vertex stage companion to GrowthTree.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              GrowthTree.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to GrowthTree.frag -- see that file's header for this scene's description.
+ *
+ *  @author René Weller
  */
 // GrowthTree.vert — vertices arrive finished from GrowthTree.comp; place the
 // tree and pass the shading data through.

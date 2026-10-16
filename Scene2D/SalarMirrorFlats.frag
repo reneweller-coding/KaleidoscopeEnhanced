@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SalarMirrorFlats.frag
- * @brief SALAR MIRROR FLATS: the salt flat after rain -- a few centimetres
- * of water over the crust make the largest mirror on Earth.  The sky is
- * the photo; the flat mirrors it exactly, so the horizon vanishes; under
- * the water the hexagonal salt crust shows through; walkers stand as
- * round-headed silhouettes on the clock, mirrored too.  The cloud light is
- * the swell, the treble is the glitter of ripples, the kick a far flash.
- * Camera fixed at eye height.
+/*****************************************************************************\
+ *                              SalarMirrorFlats.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSwell   -> cloud light (slow)
- *   sceneAdvance -> walkers and ripples (continuous)
- *   audioHigh    -> ripple glitter (light)
- *   audioKick    -> far lightning (light)
- *   audioLevel   -> brightness
+ *  @brief
+ *  SALAR MIRROR FLATS: the salt flat after rain -- a few centimetres of water over the crust make the largest
+ *  mirror on Earth.
  *
- * Per-activation variety: crustP, walkersP, hueP.
+ *  The sky is the photo; the flat mirrors it exactly, so the horizon vanishes; under the water the hexagonal salt
+ *  crust shows through; walkers stand as round-headed silhouettes on the clock, mirrored too.  The cloud light is
+ *  the swell, the treble is the glitter of ripples, the kick a far flash. Camera fixed at eye height.
+ *
+ *  Audio Reactivity:
+ *    audioSwell   -> cloud light (slow)
+ *    sceneAdvance -> walkers and ripples (continuous)
+ *    audioHigh    -> ripple glitter (light)
+ *    audioKick    -> far lightning (light)
+ *    audioLevel   -> brightness
+ *
+ *  Per-activation variety: crustP, walkersP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

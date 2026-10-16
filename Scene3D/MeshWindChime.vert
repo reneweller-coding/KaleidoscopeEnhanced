@@ -1,12 +1,17 @@
 #version 330 core
-/**
- * @file MeshWindChime.vert
- * @brief Vertex stage companion to MeshWindChime.frag -- see that file's
- * header. The chime hangs from its hook at the top of the frame and sways
- * as a whole in a slow breeze: a small rotation about the hook, on time,
- * its amplitude eased by the swell. The tubes themselves do not move when
- * they sound (a struck tube RINGS in light). Half turn for the generator's
- * +Z front.
+/*****************************************************************************\
+ *                              MeshWindChime.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to MeshWindChime.frag -- see that file's header.
+ *
+ *  The chime hangs from its hook at the top of the frame and sways as a whole in a slow breeze: a small rotation
+ *  about the hook, on time, its amplitude eased by the swell. The tubes themselves do not move when they sound (a
+ *  struck tube RINGS in light). Half turn for the generator's +Z front.
+ *
+ *  @author René Weller
  */
 
 in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an

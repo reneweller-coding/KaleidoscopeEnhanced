@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file KarmanVortexStreet.frag
- * @brief KARMAN VORTEX STREET: a flight down the wake behind a cylinder in
- * a stream -- the alternating vortices of a von Karman street, seen as a
- * tunnel of swirling dye.  The vortices are objects on the scene clock: they
- * shed in turn, drift downstream, grow and fade; an onset brightens the
- * one shedding now (light).  The dye is the photo advected by the vortex
- * field (a sum of Lamb-Oseen vortices), so the picture swirls without a
- * simulation.  The camera flies steadily along the wake.
+/*****************************************************************************\
+ *                              KarmanVortexStreet.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   sceneAdvance -> flight and vortex shedding (continuous)
- *   audioOnset   -> the newest vortex brightens (light)
- *   audioSwell   -> vortex strength (slow)
- *   audioLevel   -> dye brightness
- *   audioKick    -> the cylinder's wake glows (light)
+ *  @brief
+ *  KARMAN VORTEX STREET: a flight down the wake behind a cylinder in a stream -- the alternating vortices of a von
+ *  Karman street, seen as a tunnel of swirling dye.
  *
- * Per-activation variety: spacingP (vortex spacing), swirlP, hueP.
+ *  The vortices are objects on the scene clock: they shed in turn, drift downstream, grow and fade; an onset
+ *  brightens the one shedding now (light).  The dye is the photo advected by the vortex field (a sum of Lamb-Oseen
+ *  vortices), so the picture swirls without a simulation.  The camera flies steadily along the wake.
+ *
+ *  Audio Reactivity:
+ *    sceneAdvance -> flight and vortex shedding (continuous)
+ *    audioOnset   -> the newest vortex brightens (light)
+ *    audioSwell   -> vortex strength (slow)
+ *    audioLevel   -> dye brightness
+ *    audioKick    -> the cylinder's wake glows (light)
+ *
+ *  Per-activation variety: spacingP (vortex spacing), swirlP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

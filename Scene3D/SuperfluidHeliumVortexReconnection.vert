@@ -1,8 +1,14 @@
 #version 330 core
-/**
- * @file SuperfluidHeliumVortexReconnection.vert
- * @brief Vertex stage companion to SuperfluidHeliumVortexReconnection.frag -- see that file's
- * header for this scene's description.
+/*****************************************************************************\
+ *                              SuperfluidHeliumVortexReconnection.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to SuperfluidHeliumVortexReconnection.frag -- see that file's header for this scene's
+ *  description.
+ *
+ *  @author René Weller
  */
 
 // attrA.xyz = world pos, attrA.w = depthNorm

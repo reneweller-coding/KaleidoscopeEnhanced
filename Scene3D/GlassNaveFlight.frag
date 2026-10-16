@@ -1,14 +1,20 @@
 #version 330 core
-/**
- * @file GlassNaveFlight.frag
- * @brief Fragment stage for GlassNaveFlight: stone (pillars, floor) and sky
- * in the opaque pass, backlit glass panes in the weighted-blended OIT pass.
- * Each pane's glow is its spectrum band; the sun's height and colour come
- * from the host day clock; the floor takes the coloured light of the panes
- * as a soft wash.  Declares oitPass, so the host runs the transparent pass.
+/*****************************************************************************\
+ *                              GlassNaveFlight.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity: audioSpectrum[32] -> pane glow (light); audioKick ->
- *   stone rim flash; audioLevel -> overall; dayPhase -> sun.
+ *  @brief
+ *  Fragment stage for GlassNaveFlight: stone (pillars, floor) and sky in the opaque pass, backlit glass panes in
+ *  the weighted-blended OIT pass.
+ *
+ *  Each pane's glow is its spectrum band; the sun's height and colour come from the host day clock; the floor takes
+ *  the coloured light of the panes as a soft wash.  Declares oitPass, so the host runs the transparent pass.
+ *
+ *  Audio Reactivity: audioSpectrum[32] -> pane glow (light); audioKick ->
+ *    stone rim flash; audioLevel -> overall; dayPhase -> sun.
+ *
+ *  @author René Weller
  */
 layout( location = 0 ) out vec4 outAccum;  ///< Accum (output).
 layout( location = 1 ) out vec4 outReveal; ///< Reveal (output).

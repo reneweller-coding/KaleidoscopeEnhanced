@@ -1,31 +1,38 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureEffectParallaxKaleidoscopeTunnel.frag
- * @brief The same 32-layer retro pixel-parallax as
- *        TextureEffectParallaxKaleidoscope.frag, but each layer's kaleidoscope
- *        sample is remapped into a scrolling tunnel UV (radius feeds a forward
- *        scroll coordinate, angle feeds the cross coordinate) instead of a
- *        direct planar sample, so the parallax reads as flying down a
- *        mirrored tunnel rather than orbiting over a flat mosaic.
+/*****************************************************************************\
+ *                              TextureEffectParallaxKaleidoscopeTunnel.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *  - audioAdvance  -> adds to the parallax orbit angle AND to the tunnel's forward
- *                     scroll coordinate (integrated, jump-free)
- *  - audioPhase    -> adds to the mirrored-segment rotation angle (integrated,
- *                     jump-free), on top of the base time*speed rotation
- *  - audioSwell    -> widens the orbit radius (`extend`) on slow energy swells
- *  - audioZCR      -> RETRO PIXEL GRAIN: broadband noisiness coarsens the parallax
- *                     quantisation grid, so a harsh mix breaks the tunnel into fat
- *                     lo-fi blocks and a pure tone keeps it fine. The grid step is
- *                     divided out again when the layer UV is rebuilt, so the framing
- *                     and orbit radius are untouched -- only the blockiness moves
- *  - audioFlatness -> PARALLAX DEPTH: a tonal spectrum makes the ray "hit" early, so
- *                     few layers composite and the tunnel wall reads crisp and near;
- *                     a noise-like one lets it fall deep into the stack, hazing out
- *  - audioMode     -> HAZE COLOUR: the depth fog down the tunnel is a cold blue-grey
- *                     in minor keys and a warm sand-grey in major ones
+ *  @brief
+ *  The same 32-layer retro pixel-parallax as
+ *
+ *         TextureEffectParallaxKaleidoscope.frag, but each layer's kaleidoscope
+ *         sample is remapped into a scrolling tunnel UV (radius feeds a forward
+ *         scroll coordinate, angle feeds the cross coordinate) instead of a
+ *         direct planar sample, so the parallax reads as flying down a
+ *         mirrored tunnel rather than orbiting over a flat mosaic.
+ *
+ *  Audio Reactivity:
+ *   - audioAdvance  -> adds to the parallax orbit angle AND to the tunnel's forward
+ *                      scroll coordinate (integrated, jump-free)
+ *   - audioPhase    -> adds to the mirrored-segment rotation angle (integrated,
+ *                      jump-free), on top of the base time*speed rotation
+ *   - audioSwell    -> widens the orbit radius (`extend`) on slow energy swells
+ *   - audioZCR      -> RETRO PIXEL GRAIN: broadband noisiness coarsens the parallax
+ *                      quantisation grid, so a harsh mix breaks the tunnel into fat
+ *                      lo-fi blocks and a pure tone keeps it fine. The grid step is
+ *                      divided out again when the layer UV is rebuilt, so the framing
+ *                      and orbit radius are untouched -- only the blockiness moves
+ *   - audioFlatness -> PARALLAX DEPTH: a tonal spectrum makes the ray "hit" early, so
+ *                      few layers composite and the tunnel wall reads crisp and near;
+ *                      a noise-like one lets it fall deep into the stack, hazing out
+ *   - audioMode     -> HAZE COLOUR: the depth fog down the tunnel is a cold blue-grey
+ *                      in minor keys and a warm sand-grey in major ones
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;             ///< The pixel's colour (output).
 uniform vec2      resolution;            ///< Size of the render target in pixels.
 uniform float     time;                  ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;                  ///< The current photo.

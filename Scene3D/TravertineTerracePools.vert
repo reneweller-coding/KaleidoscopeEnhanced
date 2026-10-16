@@ -1,8 +1,14 @@
 #version 330 core
-/**
- * @file TravertineTerracePools.vert
- * @brief Vertex stage for TravertineTerracePools: passes the patch corner
- * through; the terraces are formed in the evaluation stage.
+/*****************************************************************************\
+ *                              TravertineTerracePools.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage for TravertineTerracePools: passes the patch corner through; the terraces are formed in the
+ *  evaluation stage.
+ *
+ *  @author René Weller
  */
 in vec4 attrA; ///< xy = global (u,v) of this patch corner, w = patch index
 in vec4 attrB; ///< per-patch hashes

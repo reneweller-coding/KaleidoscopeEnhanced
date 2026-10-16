@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file PlanetaryNebulaShells.frag
- * @brief PLANETARY NEBULA SHELLS: a dying star has thrown off shell after
- * shell of gas, and we fly inward through them.  The shells sit at radii
- * doubling outward, each one a thin sphere of fbm-mottled gas that glows
- * with its own spectrum band -- the innermost the bass, the outermost the
- * treble -- lit by the white dwarf at the centre.  Because the shell radii
- * double, the configuration is self-similar under "one shell inward", so
- * the flight is a log-periodic zoom: endless and seamless at the wrap.  The
- * camera flies steadily on the scene clock; the music is the shells' light.
+/*****************************************************************************\
+ *                              PlanetaryNebulaShells.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSpectrum[32] -> shell brightness (light)
- *   sceneAdvance      -> the inward flight (periodic, seamless)
- *   audioKick         -> the white dwarf flashes (light)
- *   audioSwell        -> gas density (slow)
- *   audioLevel        -> brightness
+ *  @brief
+ *  PLANETARY NEBULA SHELLS: a dying star has thrown off shell after shell of gas, and we fly inward through them.
  *
- * Per-activation variety: speedP, thickP (shell thickness), hueP.
+ *  The shells sit at radii doubling outward, each one a thin sphere of fbm-mottled gas that glows with its own
+ *  spectrum band -- the innermost the bass, the outermost the treble -- lit by the white dwarf at the centre.
+ *  Because the shell radii double, the configuration is self-similar under "one shell inward", so the flight is a
+ *  log-periodic zoom: endless and seamless at the wrap.  The camera flies steadily on the scene clock; the music is
+ *  the shells' light.
+ *
+ *  Audio Reactivity:
+ *    audioSpectrum[32] -> shell brightness (light)
+ *    sceneAdvance      -> the inward flight (periodic, seamless)
+ *    audioKick         -> the white dwarf flashes (light)
+ *    audioSwell        -> gas density (slow)
+ *    audioLevel        -> brightness
+ *
+ *  Per-activation variety: speedP, thickP (shell thickness), hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

@@ -1,26 +1,31 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file GlacierCrevasseDescent.frag
- * @brief GLACIER CREVASSE DESCENT: a steady descent into a blue crevasse.
- * The walls are old ice -- layered, veined, lit from the sky far above so
- * they glow deep blue near the top and fall into indigo dark below; ice
- * crystals in the walls glint with the treble; the sub-bass is the glacier's
- * groan, felt as light welling from the depth; drips of meltwater fall as
- * round drops on the scene clock.  The crevasse narrows and widens along
- * its length (slowly, on the descent), never with the beat.  The camera
- * descends at constant pace; it never jolts.
+/*****************************************************************************\
+ *                              GlacierCrevasseDescent.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   sceneAdvance -> the descent (continuous)
- *   audioHigh    -> crystal glint (light)
- *   audioSubBass -> deep light (light)
- *   audioSwell   -> skylight strength (slow)
- *   audioKick    -> a drop catches the light (light)
- *   audioLevel   -> brightness
+ *  @brief
+ *  GLACIER CREVASSE DESCENT: a steady descent into a blue crevasse.
  *
- * Per-activation variety: widthP, veinP (vein density), hueP.
+ *  The walls are old ice -- layered, veined, lit from the sky far above so they glow deep blue near the top and
+ *  fall into indigo dark below; ice crystals in the walls glint with the treble; the sub-bass is the glacier's
+ *  groan, felt as light welling from the depth; drips of meltwater fall as round drops on the scene clock.  The
+ *  crevasse narrows and widens along its length (slowly, on the descent), never with the beat.  The camera descends
+ *  at constant pace; it never jolts.
+ *
+ *  Audio Reactivity:
+ *    sceneAdvance -> the descent (continuous)
+ *    audioHigh    -> crystal glint (light)
+ *    audioSubBass -> deep light (light)
+ *    audioSwell   -> skylight strength (slow)
+ *    audioKick    -> a drop catches the light (light)
+ *    audioLevel   -> brightness
+ *
+ *  Per-activation variety: widthP, veinP (vein density), hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

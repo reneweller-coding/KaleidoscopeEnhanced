@@ -1,23 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureMicaGlitter.frag
- * @brief TEXTURE MICA GLITTER: a slab of mica-flecked stone -- dark
- * granite-like ground (the photograph's forms) dense with flakes of mica
- * that lie in layers at slightly different angles, so whole sheets of them
- * flash golden or silver together as a light sweeps across, the
- * flashes rolling over the stone in waves.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              TextureMicaGlitter.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the light sweeps (integrated, jump-free)
- *   audioSpread     -> sheet size
- *   audioKick       -> the flashes flare (light)
- *   audioMode       -> mica: silver in minor, gold in major
- *   audioHigh       -> single flakes twinkle (light)
- *   audioSwell      -> the stone's own colour (slow)
+ *  @brief
+ *  TEXTURE MICA GLITTER: a slab of mica-flecked stone -- dark granite-like ground (the photograph's forms) dense
+ *  with flakes of mica that lie in layers at slightly different angles, so whole sheets of them flash golden or
+ *  silver together as a light sweeps across, the flashes rolling over the stone in waves.
  *
- * Knobs: flakeP (flake density), sheetP (sheet alignment), stoneP (photo as the stone), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the light sweeps (integrated, jump-free)
+ *    audioSpread     -> sheet size
+ *    audioKick       -> the flashes flare (light)
+ *    audioMode       -> mica: silver in minor, gold in major
+ *    audioHigh       -> single flakes twinkle (light)
+ *    audioSwell      -> the stone's own colour (slow)
+ *
+ *  Knobs: flakeP (flake density), sheetP (sheet alignment), stoneP (photo as the stone), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

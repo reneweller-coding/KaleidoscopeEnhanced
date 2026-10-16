@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file BlueHourSkylineMirror.frag
- * @brief BLUE HOUR SKYLINE MIRROR: a city skyline across a wide river in the
- * blue hour -- the sky deep blue above, a last band of orange at the
- * horizon, the towers dark silhouettes pricked with thousands of lit
- * windows, a few crowned with coloured lights and red aircraft beacons.  A
- * bridge with its string of lamps crosses in front; the river doubles
- * everything in long, trembling streaks, and a small boat draws a line of
- * light across it.  The camera is still; the music lights the windows,
- * each tower with its own band.
+/*****************************************************************************\
+ *                              BlueHourSkylineMirror.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSpectrum[32] -> window brightness, tower by tower (light)
- *   audioSwell        -> the horizon glow (slow)
- *   audioKick         -> the beacons flare (light)
- *   audioLevel        -> brightness
- *   sceneTime / sceneAdvance -> the boat, the ripples (continuous)
+ *  @brief
+ *  BLUE HOUR SKYLINE MIRROR: a city skyline across a wide river in the blue hour -- the sky deep blue above, a last
+ *  band of orange at the horizon, the towers dark silhouettes pricked with thousands of lit windows, a few crowned
+ *  with coloured lights and red aircraft beacons.
  *
- * Per-activation variety: towersP (density of the skyline), hueP.
+ *  A bridge with its string of lamps crosses in front; the river doubles everything in long, trembling streaks, and
+ *  a small boat draws a line of light across it.  The camera is still; the music lights the windows, each tower
+ *  with its own band.
+ *
+ *  Audio Reactivity:
+ *    audioSpectrum[32] -> window brightness, tower by tower (light)
+ *    audioSwell        -> the horizon glow (slow)
+ *    audioKick         -> the beacons flare (light)
+ *    audioLevel        -> brightness
+ *    sceneTime / sceneAdvance -> the boat, the ripples (continuous)
+ *
+ *  Per-activation variety: towersP (density of the skyline), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

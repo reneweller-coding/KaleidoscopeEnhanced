@@ -1,22 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file MoireTwistedBilayerGraphene.frag
- * @brief MOIRE TWISTED BILAYER GRAPHENE: Magic-angle (~1.1 deg) twisted bilayer graphene.
- * Creates massive macroscopic Moiré superlattices, localized flat-band electron density
- * islands, Dirac cone topological splitting, and correlated quantum interference fringes.
- *   audioAdvance -> rotates bilayer twist angle smoothly around magic-angle resonance
- *   audioKick    -> discharges correlated Mott insulator electron conduction bursts
- *   audioCentroid-> shifts Fermi surface level & flat-band localized state colors
- *   audioSwell   -> widens quantum tunneling conductance between graphene sheets
- *   audioHigh    -> excites atomic carbon honeycomb sub-lattice lattice ripples
+/*****************************************************************************\
+ *                              MoireTwistedBilayerGraphene.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   twistP   float Moiré superlattice twist angle scale   (0.5..2.0)
- *   flatBandP float localized AA-stacking island sharpness (0.6..2.2)
- *   interfP  float quantum interference fringe contrast    (0.8..2.5)
- *   honeyP   float microscopic honeycomb lattice visibility (0.2..1.2)
+ *  @brief
+ *  MOIRE TWISTED BILAYER GRAPHENE: Magic-angle (~1.1 deg) twisted bilayer graphene.
+ *
+ *  Creates massive macroscopic Moiré superlattices, localized flat-band electron density islands, Dirac cone
+ *  topological splitting, and correlated quantum interference fringes.
+ *
+ *    audioAdvance -> rotates bilayer twist angle smoothly around magic-angle resonance
+ *    audioKick    -> discharges correlated Mott insulator electron conduction bursts
+ *    audioCentroid-> shifts Fermi surface level & flat-band localized state colors
+ *    audioSwell   -> widens quantum tunneling conductance between graphene sheets
+ *    audioHigh    -> excites atomic carbon honeycomb sub-lattice lattice ripples
+ *
+ *  Per-activation variety:
+ *    twistP   float Moiré superlattice twist angle scale   (0.5..2.0)
+ *    flatBandP float localized AA-stacking island sharpness (0.6..2.2)
+ *    interfP  float quantum interference fringe contrast    (0.8..2.5)
+ *    honeyP   float microscopic honeycomb lattice visibility (0.2..1.2)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

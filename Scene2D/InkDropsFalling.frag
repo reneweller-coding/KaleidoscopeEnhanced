@@ -1,25 +1,31 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file InkDropsFalling.frag
- * @brief INK DROPS FALLING: drops of ink falling into a tank of clear water,
- * seen from the side against a bright, softly blurred photograph -- each
- * drop plunges in and becomes a descending vortex ring, a mushroom head
- * curling outward with a thin stem trailing behind, the head spreading,
- * branching into smaller rings and finally dissolving into a coloured
- * cloud; dozens of plumes at different depths, each ink its own colour,
- * absorbing the light like real dye.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              InkDropsFalling.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the plumes sink (integrated, jump-free)
- *   audioSpread     -> how wide the heads spread
- *   audioRoughness  -> turbulence in the plumes
- *   audioBass       -> the backlight brightens (light)
- *   audioMode       -> ink colours: cool in minor, warm in major
- *   audioSwell      -> ink strength (slow)
+ *  @brief
+ *  INK DROPS FALLING: drops of ink falling into a tank of clear water, seen from the side against a bright, softly
+ *  blurred photograph -- each drop plunges in and becomes a descending vortex ring, a mushroom head curling outward
+ *  with a thin stem trailing behind, the head spreading, branching into smaller rings and finally dissolving into a
+ *  coloured cloud; dozens of plumes at different depths, each ink its own colour, absorbing the light like real
+ *  dye.
  *
- * Knobs: dropsP (plume density), inkP (ink darkness), photoP (photo behind), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the plumes sink (integrated, jump-free)
+ *    audioSpread     -> how wide the heads spread
+ *    audioRoughness  -> turbulence in the plumes
+ *    audioBass       -> the backlight brightens (light)
+ *    audioMode       -> ink colours: cool in minor, warm in major
+ *    audioSwell      -> ink strength (slow)
+ *
+ *  Knobs: dropsP (plume density), inkP (ink darkness), photoP (photo behind), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

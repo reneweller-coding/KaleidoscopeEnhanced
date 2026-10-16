@@ -1,21 +1,27 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file PrismaticRainbowCloud.frag
- * @brief PRISMATIC RAINBOW CLOUD: Polar stratospheric nacreous (mother-of-pearl) clouds
- * with high-altitude Mie/Rayleigh pastel diffraction iridescence, glowing twilight
- * crepuscular rays, and delicate fluid-like cloud wisp advection.
- *   audioSwell   -> thickens cloud density and illuminates internal pastel glow
- *   audioPhase   -> drifts diffraction iridescence color spectra
- *   audioKick    -> pulses crepuscular god rays and lens sparkles
- *   audioBass    -> creates deep atmospheric gravity wave ripples
+/*****************************************************************************\
+ *                              PrismaticRainbowCloud.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   densityP float nacreous cloud density & thickness      (0.5..1.8)
- *   waveP    float atmospheric gravity wave frequency      (0.5..2.0)
- *   rayP     float crepuscular sun ray intensity           (0.5..2.2)
- *   hueP     float iridescent pastel spectrum offset       (0..6.28)
+ *  @brief
+ *  PRISMATIC RAINBOW CLOUD: Polar stratospheric nacreous (mother-of-pearl) clouds with high-altitude Mie/Rayleigh
+ *  pastel diffraction iridescence, glowing twilight crepuscular rays, and delicate fluid-like cloud wisp advection.
+ *
+ *    audioSwell   -> thickens cloud density and illuminates internal pastel glow
+ *    audioPhase   -> drifts diffraction iridescence color spectra
+ *    audioKick    -> pulses crepuscular god rays and lens sparkles
+ *    audioBass    -> creates deep atmospheric gravity wave ripples
+ *
+ *  Per-activation variety:
+ *    densityP float nacreous cloud density & thickness      (0.5..1.8)
+ *    waveP    float atmospheric gravity wave frequency      (0.5..2.0)
+ *    rayP     float crepuscular sun ray intensity           (0.5..2.2)
+ *    hueP     float iridescent pastel spectrum offset       (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

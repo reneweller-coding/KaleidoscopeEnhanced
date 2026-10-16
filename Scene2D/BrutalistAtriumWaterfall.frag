@@ -1,27 +1,32 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file BrutalistAtriumWaterfall.frag
- * @brief BRUTALIST ATRIUM WATERFALL: a tall concrete atrium, galleries on both
- * sides stacked floor over floor, their board-marked slabs carrying
- * planters from which green vines hang down, and at the far end a
- * waterfall pouring over the whole height of the end wall into a pool.
- * Daylight falls from a skylight high above, straight into the spray, so
- * the mist glows and shafts of light stand in it; droplets glitter.  The
- * camera is still; the water falls and the mist drifts.
+/*****************************************************************************\
+ *                              BrutalistAtriumWaterfall.frag
+\*****************************************************************************/
+/*! @file
  *
- * The galleries are traced analytically (slabs as boxes, the vines as a
- * hanging curtain plane in front of each).
+ *  @brief
+ *  BRUTALIST ATRIUM WATERFALL: a tall concrete atrium, galleries on both sides stacked floor over floor, their
+ *  board-marked slabs carrying planters from which green vines hang down, and at the far end a waterfall pouring
+ *  over the whole height of the end wall into a pool.
  *
- * Audio Reactivity:
- *   audioSwell  -> the mist and its glow (slow)
- *   audioBass   -> the brightness of the falling water (light)
- *   audioHigh   -> glittering droplets in the spray (light)
- *   audioLevel  -> brightness
- *   sceneTime / sceneAdvance -> the falling water, the drifting mist
+ *  Daylight falls from a skylight high above, straight into the spray, so the mist glows and shafts of light stand
+ *  in it; droplets glitter.  The camera is still; the water falls and the mist drifts.
  *
- * Per-activation variety: plantsP (how green the galleries are), hueP.
+ *  The galleries are traced analytically (slabs as boxes, the vines as a
+ *  hanging curtain plane in front of each).
+ *
+ *  Audio Reactivity:
+ *    audioSwell  -> the mist and its glow (slow)
+ *    audioBass   -> the brightness of the falling water (light)
+ *    audioHigh   -> glittering droplets in the spray (light)
+ *    audioLevel  -> brightness
+ *    sceneTime / sceneAdvance -> the falling water, the drifting mist
+ *
+ *  Per-activation variety: plantsP (how green the galleries are), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

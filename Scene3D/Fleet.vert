@@ -1,19 +1,26 @@
 #version 330 core
-/**
- * @file Fleet.vert
- * @brief One loaded craft, drawn as a whole formation. geom="mesh" with
- * instances="N" on the scene entry: the same buffer is drawn N times and this
- * stage places each copy from gl_InstanceID.
+/*****************************************************************************\
+ *                              Fleet.vert
+\*****************************************************************************/
+/*! @file
  *
- * Every other mesh family shows one object, or two. A formation is a different
- * kind of image entirely -- what the eye reads is the ORDER, and the individual
- * craft stops mattering. That also means the interesting audio coupling is not
- * on the ships but on the geometry between them: the formation closes up and
- * opens out, and a drop breaks it.
+ *  @brief
+ *  One loaded craft, drawn as a whole formation.
  *
- * The sky shell is in the SAME buffer as the mesh, so it would be drawn N times
- * on top of itself. Instance 0 keeps it; every other instance collapses it to a
- * degenerate point. That costs nothing and needs no second draw call.
+ *  geom="mesh" with instances="N" on the scene entry: the same buffer is drawn N times and this stage places each
+ *  copy from gl_InstanceID.
+ *
+ *  Every other mesh family shows one object, or two. A formation is a different
+ *  kind of image entirely -- what the eye reads is the ORDER, and the individual
+ *  craft stops mattering. That also means the interesting audio coupling is not
+ *  on the ships but on the geometry between them: the formation closes up and
+ *  opens out, and a drop breaks it.
+ *
+ *  The sky shell is in the SAME buffer as the mesh, so it would be drawn N times
+ *  on top of itself. Instance 0 keeps it; every other instance collapses it to a
+ *  degenerate point. That costs nothing and needs no second draw call.
+ *
+ *  @author René Weller
  */
 
 in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an

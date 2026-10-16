@@ -1,23 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SundialShadowSweep.frag
- * @brief SUNDIAL SHADOW SWEEP: a garden sundial from above.  The gnomon
- * throws its shadow across the dial and the shadow sweeps the hour lines
- * over the scene arc; as it goes the light warms from morning through
- * noon to evening and the shadow lengthens again.  Each hour numeral
- * lights as the shadow passes it, taking the colour of a chroma class.
- * The photo is the weathered bronze of the plate.  Camera fixed above.
+/*****************************************************************************\
+ *                              SundialShadowSweep.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   sceneProgress   -> the shadow sweeps the day (the arc)
- *   audioChroma[12] -> the numerals as the shadow reaches them (light)
- *   audioSwell      -> the sunlight (slow)
- *   audioHigh       -> the bronze sheen (light)
- *   audioKick       -> a cloud shadow passes (light, broad and soft)
+ *  @brief
+ *  SUNDIAL SHADOW SWEEP: a garden sundial from above.
  *
- * Per-activation variety: hoursP, mossP, hueP.
+ *  The gnomon throws its shadow across the dial and the shadow sweeps the hour lines over the scene arc; as it goes
+ *  the light warms from morning through noon to evening and the shadow lengthens again.  Each hour numeral lights
+ *  as the shadow passes it, taking the colour of a chroma class. The photo is the weathered bronze of the plate.
+ *  Camera fixed above.
+ *
+ *  Audio Reactivity:
+ *    sceneProgress   -> the shadow sweeps the day (the arc)
+ *    audioChroma[12] -> the numerals as the shadow reaches them (light)
+ *    audioSwell      -> the sunlight (slow)
+ *    audioHigh       -> the bronze sheen (light)
+ *    audioKick       -> a cloud shadow passes (light, broad and soft)
+ *
+ *  Per-activation variety: hoursP, mossP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

@@ -1,10 +1,17 @@
 #version 330 core
-/**
- * @file OrbitalDebrisField.vert
- * @brief Vertex stage for OrbitalDebrisField.comp/.frag: the camera sits at
- * the origin inside the stream, looking at the station; fragments are shaded
- * by their generator lighting (attrB.x) and kind (attrB.y: -1 sky, 3 planet
- * limb, 2 station, 0 debris).  No camera motion of any kind.
+/*****************************************************************************\
+ *                              OrbitalDebrisField.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage for OrbitalDebrisField.comp/.frag: the camera sits at the origin inside the stream, looking at the
+ *  station; fragments are shaded by their generator lighting (attrB.x) and kind (attrB.y: -1 sky, 3 planet limb, 2
+ *  station, 0 debris).
+ *
+ *  No camera motion of any kind.
+ *
+ *  @author René Weller
  */
 layout( location = 0 ) in vec4 attrA; ///< xyz = position, w = id
 layout( location = 1 ) in vec4 attrB; ///< x = lit, y = kind, zw = uv

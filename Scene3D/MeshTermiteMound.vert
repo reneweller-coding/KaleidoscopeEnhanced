@@ -1,10 +1,16 @@
 #version 330 core
-/**
- * @file MeshTermiteMound.vert
- * @brief Vertex stage companion to MeshTermiteMound.frag -- see that file's
- * header. gl_VertexID picks the loaded mound (below meshVertexCount) or the
- * enclosing sky shell. The mound stands on the savanna and does not move;
- * a half turn brings the generator's front (+Z, away from our camera) round.
+/*****************************************************************************\
+ *                              MeshTermiteMound.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to MeshTermiteMound.frag -- see that file's header.
+ *
+ *  gl_VertexID picks the loaded mound (below meshVertexCount) or the enclosing sky shell. The mound stands on the
+ *  savanna and does not move; a half turn brings the generator's front (+Z, away from our camera) round.
+ *
+ *  @author René Weller
  */
 
 in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an

@@ -1,23 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file PhraseTideBeach.frag
- * @brief PHRASE TIDE BEACH: a beach where the tide is the phrase clock --
- * the water line climbs the sand through each phrase and falls back as the
- * next begins (a sine of the phrase position, continuous through the wrap)
- * -- and the drop is the breaking wave: at the drop a wall of foam rolls
- * up the beach as round spray, then draws back.  The photo is the sand
- * and the sky; wet sand mirrors it.  Camera fixed on the shore.
+/*****************************************************************************\
+ *                              PhraseTideBeach.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioPhrasePos -> tide level (continuous: sin of the position)
- *   audioDrop      -> the breaking wave (the drop; foam and spray, objects)
- *   sceneAdvance   -> wavelets and spray drift (continuous)
- *   audioSwell     -> sunlight on the water (slow)
- *   audioLevel     -> brightness
+ *  @brief
+ *  PHRASE TIDE BEACH: a beach where the tide is the phrase clock -- the water line climbs the sand through each
+ *  phrase and falls back as the next begins (a sine of the phrase position, continuous through the wrap) -- and the
+ *  drop is the breaking wave: at the drop a wall of foam rolls up the beach as round spray, then draws back.
  *
- * Per-activation variety: slopeP, foamP, hueP.
+ *  The photo is the sand and the sky; wet sand mirrors it.  Camera fixed on the shore.
+ *
+ *  Audio Reactivity:
+ *    audioPhrasePos -> tide level (continuous: sin of the position)
+ *    audioDrop      -> the breaking wave (the drop; foam and spray, objects)
+ *    sceneAdvance   -> wavelets and spray drift (continuous)
+ *    audioSwell     -> sunlight on the water (slow)
+ *    audioLevel     -> brightness
+ *
+ *  Per-activation variety: slopeP, foamP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

@@ -1,20 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file AntimatterWeapon.frag
- * @brief ANTIMATTER WEAPON: A doomsday superweapon firing a continuous beam
- * of pure antimatter into a target. The annihilation zone flashes violently
- * with pure energy on audio kicks, sending ripples of destruction through space.
- *   audioAdvance -> flow of the antimatter particles in the beam
- *   audioKick    -> blinding annihilation flashes at the impact site
- *   audioSwell   -> ambient brightness of the destruction
- *   audioChromaHue-> palette offset for the exotic antimatter energy
+/*****************************************************************************\
+ *                              AntimatterWeapon.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   beamP float width and instability of the weapon beam (0.5..1.5)
- *   blastP float intensity of the impact annihilation (0.5..2.0)
- *   hueP float palette offset (0..6.28)
+ *  @brief
+ *  ANTIMATTER WEAPON: A doomsday superweapon firing a continuous beam of pure antimatter into a target.
+ *
+ *  The annihilation zone flashes violently with pure energy on audio kicks, sending ripples of destruction through
+ *  space.
+ *
+ *    audioAdvance -> flow of the antimatter particles in the beam
+ *    audioKick    -> blinding annihilation flashes at the impact site
+ *    audioSwell   -> ambient brightness of the destruction
+ *    audioChromaHue-> palette offset for the exotic antimatter energy
+ *
+ *  Per-activation variety:
+ *    beamP float width and instability of the weapon beam (0.5..1.5)
+ *    blastP float intensity of the impact annihilation (0.5..2.0)
+ *    hueP float palette offset (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

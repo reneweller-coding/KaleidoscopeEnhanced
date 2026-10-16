@@ -1,27 +1,32 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file FanVaultFlight.frag
- * @brief FAN VAULT FLIGHT: gliding slowly along the nave of a late-Gothic
- * chapel, after King's College, under its fan vault -- from every wall
- * shaft an inverted cone of stone spreads upward like a fan, ribbed like
- * a palm leaf, the fans meeting overhead in a lace of ribs and bosses.
- * The ribs are drawn in light, lines of it running out along the fans in
- * the rhythm; tall windows glow dimly between the shafts, and far ahead,
- * rows of candles burn along the choir stalls.  The camera glides at an
- * even pace.
+/*****************************************************************************\
+ *                              FanVaultFlight.frag
+\*****************************************************************************/
+/*! @file
  *
- * The vault is a height field (one conoid per springer) traced by marching.
+ *  @brief
+ *  FAN VAULT FLIGHT: gliding slowly along the nave of a late-Gothic chapel, after King's College, under its fan
+ *  vault -- from every wall shaft an inverted cone of stone spreads upward like a fan, ribbed like a palm leaf, the
+ *  fans meeting overhead in a lace of ribs and bosses.
  *
- * Audio Reactivity:
- *   audioSpectrum[32] -> the light in the rings of ribs, low to high up the fans
- *   audioBass         -> the light running out along the radial ribs
- *   audioSwell        -> the candle glow (slow)
- *   audioLevel        -> brightness
- *   sceneTime / sceneAdvance -> the glide (constant speed), the running light
+ *  The ribs are drawn in light, lines of it running out along the fans in the rhythm; tall windows glow dimly
+ *  between the shafts, and far ahead, rows of candles burn along the choir stalls.  The camera glides at an even
+ *  pace.
  *
- * Per-activation variety: ribsP (how many ribs per fan), hueP.
+ *  The vault is a height field (one conoid per springer) traced by marching.
+ *
+ *  Audio Reactivity:
+ *    audioSpectrum[32] -> the light in the rings of ribs, low to high up the fans
+ *    audioBass         -> the light running out along the radial ribs
+ *    audioSwell        -> the candle glow (slow)
+ *    audioLevel        -> brightness
+ *    sceneTime / sceneAdvance -> the glide (constant speed), the running light
+ *
+ *  Per-activation variety: ribsP (how many ribs per fan), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

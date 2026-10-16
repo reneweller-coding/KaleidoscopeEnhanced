@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file DropCoalescence.frag
- * @brief DROP COALESCENCE: coloured liquid drops seen from above in a dark
- * dish -- glossy blobs of ink-coloured liquid wander, touch, and flow into
- * each other with a soft neck, their colours mixing where they merge, then
- * pull apart again; each drop is a small lens showing the photograph
- * magnified and bent inside it, with a bright meniscus highlight and a
- * darker rim.  The drops' colours come from the photo beneath them.
- * Endless, mirrorable.
+/*****************************************************************************\
+ *                              DropCoalescence.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the drops wander (integrated, jump-free)
- *   audioSpread     -> drop size: more merging when the music is wide
- *   audioRoughness  -> a haze of tiny satellite droplets
- *   audioKick       -> the highlights flare (light)
- *   audioMode       -> the dish: cool in minor, warm in major
- *   audioSwell      -> the photo glows through the dish (slow)
+ *  @brief
+ *  DROP COALESCENCE: coloured liquid drops seen from above in a dark dish -- glossy blobs of ink-coloured liquid
+ *  wander, touch, and flow into each other with a soft neck, their colours mixing where they merge, then pull apart
+ *  again; each drop is a small lens showing the photograph magnified and bent inside it, with a bright meniscus
+ *  highlight and a darker rim.
  *
- * Knobs: countP (drop scale), mergeP (how readily they merge), lensP (lens strength), hueP.
+ *  The drops' colours come from the photo beneath them. Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the drops wander (integrated, jump-free)
+ *    audioSpread     -> drop size: more merging when the music is wide
+ *    audioRoughness  -> a haze of tiny satellite droplets
+ *    audioKick       -> the highlights flare (light)
+ *    audioMode       -> the dish: cool in minor, warm in major
+ *    audioSwell      -> the photo glows through the dish (slow)
+ *
+ *  Knobs: countP (drop scale), mergeP (how readily they merge), lensP (lens strength), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

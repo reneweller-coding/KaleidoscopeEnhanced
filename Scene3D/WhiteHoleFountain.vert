@@ -1,9 +1,16 @@
 #version 330 core
-/**
- * @file WhiteHoleFountain.vert
- * @brief Vertex stage for WhiteHoleFountain.comp/.frag: the camera sits in
- * front of the horizon and the tiles fly toward and past it.  Tiles carry
- * their photo window (attrB.zw) and life (attrB.x).  No camera motion.
+/*****************************************************************************\
+ *                              WhiteHoleFountain.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage for WhiteHoleFountain.comp/.frag: the camera sits in front of the horizon and the tiles fly toward
+ *  and past it.
+ *
+ *  Tiles carry their photo window (attrB.zw) and life (attrB.x).  No camera motion.
+ *
+ *  @author René Weller
  */
 layout( location = 0 ) in vec4 attrA; ///< xyz = position, w = id
 layout( location = 1 ) in vec4 attrB; ///< x = life, y = kind (-1 sky, 2 horizon, 0 tile), zw = photo uv

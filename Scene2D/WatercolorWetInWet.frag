@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file WatercolorWetInWet.frag
- * @brief WATERCOLOR WET IN WET: watercolour painted wet-in-wet, forever --
- * soft washes of pigment bloom into damp paper, feathering out in
- * irregular clouds with the darker tide-line edges watercolour leaves
- * when it dries, colours running into each other and granulating in the
- * paper's tooth; new drops of colour touch down and spread while old
- * washes pale.  The pigments come from the photograph.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              WatercolorWetInWet.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the washes spread (integrated, jump-free)
- *   audioSpread     -> bloom size
- *   audioRoughness  -> granulation and feathering
- *   audioMode       -> palette: cool washes in minor, warm in major (tint)
- *   audioKick       -> fresh drops touch down (light: a brighter wet sheen)
- *   audioSwell      -> pigment strength (slow)
+ *  @brief
+ *  WATERCOLOR WET IN WET: watercolour painted wet-in-wet, forever -- soft washes of pigment bloom into damp paper,
+ *  feathering out in irregular clouds with the darker tide-line edges watercolour leaves when it dries, colours
+ *  running into each other and granulating in the paper's tooth; new drops of colour touch down and spread while
+ *  old washes pale.
  *
- * Knobs: bloomP (bloom count), edgeP (tide-line darkness), paperP (paper texture), hueP.
+ *  The pigments come from the photograph.  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the washes spread (integrated, jump-free)
+ *    audioSpread     -> bloom size
+ *    audioRoughness  -> granulation and feathering
+ *    audioMode       -> palette: cool washes in minor, warm in major (tint)
+ *    audioKick       -> fresh drops touch down (light: a brighter wet sheen)
+ *    audioSwell      -> pigment strength (slow)
+ *
+ *  Knobs: bloomP (bloom count), edgeP (tide-line darkness), paperP (paper texture), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

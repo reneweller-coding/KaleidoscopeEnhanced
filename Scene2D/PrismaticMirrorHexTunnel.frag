@@ -1,20 +1,25 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file PrismaticMirrorHexTunnel.frag
- * @brief PRISMATIC MIRROR HEX TUNNEL: 3D Hexagonal infinity mirror tunnel with
- * recursive multi-bounce reflections, chromatic dispersion spectral fringe,
- * dynamic iris aperture contractions, and high-energy laser strut pulses.
+/*****************************************************************************\
+ *                              PrismaticMirrorHexTunnel.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance -> drives continuous forward flight progression through the hex tunnel
- *   audioKick    -> flashes interior laser nodes & iris aperture contraction burst
- *   audioCentroid-> sharpens reflection dispersion fringe
- *   audioSubBass -> expands hexagonal tunnel radius breathing
- *   audioChromaHue-> rotates the prismatic mirror reflection spectrum
- *   audioLevel   -> brightness of the prismatic dust haze filling the tube
- *   audioPhase   -> phase of the haze's slow radial ripple (pre-integrated)
+ *  @brief
+ *  PRISMATIC MIRROR HEX TUNNEL: 3D Hexagonal infinity mirror tunnel with recursive multi-bounce reflections,
+ *  chromatic dispersion spectral fringe, dynamic iris aperture contractions, and high-energy laser strut pulses.
+ *
+ *  Audio Reactivity:
+ *    audioAdvance -> drives continuous forward flight progression through the hex tunnel
+ *    audioKick    -> flashes interior laser nodes & iris aperture contraction burst
+ *    audioCentroid-> sharpens reflection dispersion fringe
+ *    audioSubBass -> expands hexagonal tunnel radius breathing
+ *    audioChromaHue-> rotates the prismatic mirror reflection spectrum
+ *    audioLevel   -> brightness of the prismatic dust haze filling the tube
+ *    audioPhase   -> phase of the haze's slow radial ripple (pre-integrated)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

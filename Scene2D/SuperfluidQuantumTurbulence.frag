@@ -1,18 +1,25 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SuperfluidQuantumTurbulence.frag
- * @brief SUPERFLUID QUANTUM TURBULENCE: Microscopic quantized vortex filament tangle
- * in liquid Helium-4 (Gross-Pitaevskii condensate). Luminous vortex core singularities,
- * dynamic reconnections, phase-slip acoustic waves, and Kelvin wave ripples.
+/*****************************************************************************\
+ *                              SuperfluidQuantumTurbulence.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance -> drives continuous quantized vortex advection & reconnection
- *   audioKick    -> flashes vortex reconnection singularities & acoustic shockwave burst
- *   audioCentroid-> modulates vortex core density & Kelvin wave frequency
- *   audioSubBass -> expands condensate density breathing
- *   audioChromaHue-> rotates the cryogenic superfluid spectrum
+ *  @brief
+ *  SUPERFLUID QUANTUM TURBULENCE: Microscopic quantized vortex filament tangle in liquid Helium-4 (Gross-Pitaevskii
+ *  condensate).
+ *
+ *  Luminous vortex core singularities, dynamic reconnections, phase-slip acoustic waves, and Kelvin wave ripples.
+ *
+ *  Audio Reactivity:
+ *    audioAdvance -> drives continuous quantized vortex advection & reconnection
+ *    audioKick    -> flashes vortex reconnection singularities & acoustic shockwave burst
+ *    audioCentroid-> modulates vortex core density & Kelvin wave frequency
+ *    audioSubBass -> expands condensate density breathing
+ *    audioChromaHue-> rotates the cryogenic superfluid spectrum
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

@@ -1,12 +1,17 @@
 #version 330 core
-/**
- * @file MeshCoolingTowers.vert
- * @brief Vertex stage companion to MeshCoolingTowers.frag -- see that
- * file's header. ONE cooling-tower model drawn three times (instances="3"):
- * gl_InstanceID places each copy on the plant floor at a fixed spot the
- * fragment stage knows too (it paints each tower's plume above it on the
- * sky shell). The shell is drawn by instance 0 only; the other instances
- * collapse it to a point. Concrete does not move.
+/*****************************************************************************\
+ *                              MeshCoolingTowers.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to MeshCoolingTowers.frag -- see that file's header.
+ *
+ *  ONE cooling-tower model drawn three times (instances="3"): gl_InstanceID places each copy on the plant floor at
+ *  a fixed spot the fragment stage knows too (it paints each tower's plume above it on the sky shell). The shell is
+ *  drawn by instance 0 only; the other instances collapse it to a point. Concrete does not move.
+ *
+ *  @author René Weller
  */
 
 in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an

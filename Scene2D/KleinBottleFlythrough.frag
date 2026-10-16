@@ -1,25 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file KleinBottleFlythrough.frag
- * @brief KLEIN BOTTLE FLYTHROUGH: a ray-marched flight through a bottle
- * whose neck bends over and re-enters its own body.  The camera rides a
- * closed loop that runs down the neck, through the wall into the belly and
- * out again, so "inside" and "outside" trade places every lap without a
- * cut: the wall you fly along is the same wall you just flew through.  The
- * surface is glass-lit from within; the photo is laid over it as a
- * triplanar skin.  Flight on the music's pace, the bottle breathing slowly
- * on the swell -- no fast signal touches the geometry.
+/*****************************************************************************\
+ *                              KleinBottleFlythrough.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   sceneAdvance -> flight along the loop (continuous, periodic)
- *   audioSwell   -> the bottle inflates (slow)
- *   audioKick    -> inner light flashes
- *   audioLevel   -> glass brightness
- *   audioMelodyPitch -> tint of the inner light
+ *  @brief
+ *  KLEIN BOTTLE FLYTHROUGH: a ray-marched flight through a bottle whose neck bends over and re-enters its own body.
  *
- * Per-activation variety: neckP (neck radius), speedP, hueP.
+ *  The camera rides a closed loop that runs down the neck, through the wall into the belly and out again, so
+ *  "inside" and "outside" trade places every lap without a cut: the wall you fly along is the same wall you just
+ *  flew through.  The surface is glass-lit from within; the photo is laid over it as a triplanar skin.  Flight on
+ *  the music's pace, the bottle breathing slowly on the swell -- no fast signal touches the geometry.
+ *
+ *  Audio Reactivity:
+ *    sceneAdvance -> flight along the loop (continuous, periodic)
+ *    audioSwell   -> the bottle inflates (slow)
+ *    audioKick    -> inner light flashes
+ *    audioLevel   -> glass brightness
+ *    audioMelodyPitch -> tint of the inner light
+ *
+ *  Per-activation variety: neckP (neck radius), speedP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

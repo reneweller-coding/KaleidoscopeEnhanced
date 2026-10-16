@@ -1,8 +1,13 @@
 #version 330 core
-/**
- * @file PlasmaFilamentTornado.vert
- * @brief Vertex stage companion to PlasmaFilamentTornado.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              PlasmaFilamentTornado.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to PlasmaFilamentTornado.frag -- see that file's header for this scene's description.
+ *
+ *  @author René Weller
  */
 // PlasmaFilamentTornado.vert
 

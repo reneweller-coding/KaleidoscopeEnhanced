@@ -1,18 +1,24 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file KaleidoscopicLichtenbergZoom.frag
- * @brief KALEIDOSCOPIC LICHTENBERG ZOOM: Infinite recursive zoom into high-voltage
- * dielectric Lichtenberg electrical discharge trees folded across hexagonal mirror
- * symmetries with searing lightning sparks, charge streamers, and kick flashes.
+/*****************************************************************************\
+ *                              KaleidoscopicLichtenbergZoom.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance -> drives continuous deep lightning tree zoom trajectory
- *   audioKick    -> strikes violent high-voltage discharge arcs & flashes
- *   audioCentroid-> modulates streamer branching frequency & electrical spark density
- *   audioSubBass -> expands plasma tree voltage glow
- *   audioChromaHue-> rotates the electrical discharge spectrum
+ *  @brief
+ *  KALEIDOSCOPIC LICHTENBERG ZOOM: Infinite recursive zoom into high-voltage dielectric Lichtenberg electrical
+ *  discharge trees folded across hexagonal mirror symmetries with searing lightning sparks, charge streamers, and
+ *  kick flashes.
+ *
+ *  Audio Reactivity:
+ *    audioAdvance -> drives continuous deep lightning tree zoom trajectory
+ *    audioKick    -> strikes violent high-voltage discharge arcs & flashes
+ *    audioCentroid-> modulates streamer branching frequency & electrical spark density
+ *    audioSubBass -> expands plasma tree voltage glow
+ *    audioChromaHue-> rotates the electrical discharge spectrum
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

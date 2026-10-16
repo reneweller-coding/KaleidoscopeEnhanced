@@ -1,22 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file MarangoniConvectionTearsOfWine.frag
- * @brief MARANGONI CONVECTION TEARS OF WINE: Solutal Marangoni effect on glass surfaces.
- * Alcohol evaporation gradients create surface tension differentials, driving climbing thin liquid
- * films, capillary rim instability beads, and cascading droplet rivulets (tears of wine).
- *   audioAdvance -> drives upward climbing film velocity & droplet rivulet cascade flow
- *   audioKick    -> flashes capillary bead pinch-off & falling droplet impacts
- *   audioSwell   -> thickens wine film meniscus depth & ruby transmission sheen
- *   audioCentroid-> shifts wine tannin/anthocyanin ruby absorption spectra
- *   audioMid     -> excites capillary wave ripples along climbing meniscus front
+/*****************************************************************************\
+ *                              MarangoniConvectionTearsOfWine.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   tearCountP   float number of descending droplet rivulet tears (4.0..12.0)
- *   climbSpeedP  float Marangoni climbing film upward velocity   (0.6..2.2)
- *   wineSheenP   float ruby liquid film specular transmission   (0.8..2.5)
- *   meniscusP    float capillary meniscus thickness scale        (0.4..1.8)
+ *  @brief
+ *  MARANGONI CONVECTION TEARS OF WINE: Solutal Marangoni effect on glass surfaces.
+ *
+ *  Alcohol evaporation gradients create surface tension differentials, driving climbing thin liquid films,
+ *  capillary rim instability beads, and cascading droplet rivulets (tears of wine).
+ *
+ *    audioAdvance -> drives upward climbing film velocity & droplet rivulet cascade flow
+ *    audioKick    -> flashes capillary bead pinch-off & falling droplet impacts
+ *    audioSwell   -> thickens wine film meniscus depth & ruby transmission sheen
+ *    audioCentroid-> shifts wine tannin/anthocyanin ruby absorption spectra
+ *    audioMid     -> excites capillary wave ripples along climbing meniscus front
+ *
+ *  Per-activation variety:
+ *    tearCountP   float number of descending droplet rivulet tears (4.0..12.0)
+ *    climbSpeedP  float Marangoni climbing film upward velocity   (0.6..2.2)
+ *    wineSheenP   float ruby liquid film specular transmission   (0.8..2.5)
+ *    meniscusP    float capillary meniscus thickness scale        (0.4..1.8)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TimeReflectionPond.frag
- * @brief TIME REFLECTION POND: ripples on a pond, seen from above through
- * the water to the photo on the pond floor -- and a time reflection: when
- * the medium changes abruptly in time (the drop), every wave reverses,
- * its outgoing rings running back to their sources.  The reversal is a
- * smooth change of the phase velocity sign over the drop envelope (the
- * waves slow, stop, run back), so it is continuous; the drop is the one
- * cut the rules allow.  Sources ring on the scene clock; the swell is the
- * wave amplitude; the treble the glints.  Camera still.
+/*****************************************************************************\
+ *                              TimeReflectionPond.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   sceneAdvance -> wave propagation (continuous)
- *   audioDrop    -> time reversal (the drop)
- *   audioSwell   -> amplitude (slow)
- *   audioHigh    -> glints (light)
- *   audioLevel   -> brightness
+ *  @brief
+ *  TIME REFLECTION POND: ripples on a pond, seen from above through the water to the photo on the pond floor -- and
+ *  a time reflection: when the medium changes abruptly in time (the drop), every wave reverses, its outgoing rings
+ *  running back to their sources.
  *
- * Per-activation variety: sourcesP, wavelenP, hueP.
+ *  The reversal is a smooth change of the phase velocity sign over the drop envelope (the waves slow, stop, run
+ *  back), so it is continuous; the drop is the one cut the rules allow.  Sources ring on the scene clock; the swell
+ *  is the wave amplitude; the treble the glints.  Camera still.
+ *
+ *  Audio Reactivity:
+ *    sceneAdvance -> wave propagation (continuous)
+ *    audioDrop    -> time reversal (the drop)
+ *    audioSwell   -> amplitude (slow)
+ *    audioHigh    -> glints (light)
+ *    audioLevel   -> brightness
+ *
+ *  Per-activation variety: sourcesP, wavelenP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

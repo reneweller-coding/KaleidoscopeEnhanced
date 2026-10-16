@@ -1,27 +1,33 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file HilbertSpaceFillingCurveZoom.frag
- * @brief HILBERT SPACE FILLING CURVE: a true Hilbert curve (order 7, one
- * unbroken path through 16,384 cells) drawn as a neon tube on a dark
- * ground, its colour running through the spectrum along the path, so the
- * curve's nested U-shapes read as nested colour regions.  Bright comets
- * travel along the path, each trailing a fading tail, and show how the one
- * line winds through every cell.  The view drifts slowly over the curve.
+/*****************************************************************************\
+ *                              HilbertSpaceFillingCurveZoom.frag
+\*****************************************************************************/
+/*! @file
  *
- * The earlier version was not a Hilbert curve at all but a tiled U-motif
- * with a sawtooth zoom that snapped back each cycle.
+ *  @brief
+ *  HILBERT SPACE FILLING CURVE: a true Hilbert curve (order 7, one unbroken path through 16,384 cells) drawn as a
+ *  neon tube on a dark ground, its colour running through the spectrum along the path, so the curve's nested
+ *  U-shapes read as nested colour regions.
  *
- * Audio Reactivity:
- *   audioKick     -> the comets flare (light only)
- *   audioSwell    -> the tube glows brighter (slow)
- *   audioCentroid -> tube core sharpness
- *   audioChromaHue-> photo tint of the spectrum
- *   sceneTime / sceneAdvance -> comets travelling, the slow drift (continuous)
+ *  Bright comets travel along the path, each trailing a fading tail, and show how the one line winds through every
+ *  cell.  The view drifts slowly over the curve.
  *
- * Per-activation variety: speedP (comet speed), scaleP (cells on screen),
- * lineThicknessP, glowP, hueP.
+ *  The earlier version was not a Hilbert curve at all but a tiled U-motif
+ *  with a sawtooth zoom that snapped back each cycle.
+ *
+ *  Audio Reactivity:
+ *    audioKick     -> the comets flare (light only)
+ *    audioSwell    -> the tube glows brighter (slow)
+ *    audioCentroid -> tube core sharpness
+ *    audioChromaHue-> photo tint of the spectrum
+ *    sceneTime / sceneAdvance -> comets travelling, the slow drift (continuous)
+ *
+ *  Per-activation variety: speedP (comet speed), scaleP (cells on screen),
+ *  lineThicknessP, glowP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

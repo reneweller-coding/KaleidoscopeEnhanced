@@ -1,18 +1,25 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file HyperbolicHoneycombTessellation.frag
- * @brief HYPERBOLIC HONEYCOMB TESSELLATION: Poincaré disk model of a 7-fold {7,3}
- * hyperbolic honeycomb tiling. Non-Euclidean SL(2, R) Möbius translations,
- * exponential boundary tile packing, and glowing hyperbolic circular arcs.
+/*****************************************************************************\
+ *                              HyperbolicHoneycombTessellation.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance -> drives continuous non-Euclidean hyperbolic geodesic translation
- *   audioKick    -> flashes hyperbolic vertex nodes & boundary shockwaves
- *   audioCentroid-> modulates 7-fold symmetry ribbing resolution
- *   audioSubBass -> expands Poincaré disk breathing radius
- *   audioChromaHue-> rotates the non-Euclidean hyperbolic spectrum
+ *  @brief
+ *  HYPERBOLIC HONEYCOMB TESSELLATION: Poincaré disk model of a 7-fold {7,3} hyperbolic honeycomb tiling.
+ *
+ *  Non-Euclidean SL(2, R) Möbius translations, exponential boundary tile packing, and glowing hyperbolic circular
+ *  arcs.
+ *
+ *  Audio Reactivity:
+ *    audioAdvance -> drives continuous non-Euclidean hyperbolic geodesic translation
+ *    audioKick    -> flashes hyperbolic vertex nodes & boundary shockwaves
+ *    audioCentroid-> modulates 7-fold symmetry ribbing resolution
+ *    audioSubBass -> expands Poincaré disk breathing radius
+ *    audioChromaHue-> rotates the non-Euclidean hyperbolic spectrum
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

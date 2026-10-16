@@ -1,10 +1,16 @@
 #version 330 core
-/**
- * @file AnglerfishAbyss.vert
- * @brief ANGLERFISH ABYSS: the Anglerfish model hangs in black water, sized
- * from its bounding sphere and turning slowly on time; the sky shell is the
- * abyss.  No audio in the geometry (rule V7d): the lamp does the reacting
- * in the fragment stage.
+/*****************************************************************************\
+ *                              AnglerfishAbyss.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  ANGLERFISH ABYSS: the Anglerfish model hangs in black water, sized from its bounding sphere and turning slowly
+ *  on time; the sky shell is the abyss.
+ *
+ *  No audio in the geometry (rule V7d): the lamp does the reacting in the fragment stage.
+ *
+ *  @author René Weller
  */
 in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an
                ///< index).

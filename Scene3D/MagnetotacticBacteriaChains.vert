@@ -1,24 +1,30 @@
 #version 330 core
-/**
- * @file MagnetotacticBacteriaChains.vert
- * @brief Vertex stage companion to MagnetotacticBacteriaChains.frag -- see that file's
- * header for this scene's description.
+/*****************************************************************************\
+ *                              MagnetotacticBacteriaChains.vert
+\*****************************************************************************/
+/*! @file
  *
- * The 4900 cubes make 306 chains of 16, but the old layout put chain n at
- * z = (n - 8) * 0.35: chain 300 sat 100 units down the view axis, so all but
- * the first couple of dozen chains were sub-pixel specks strung out into the
- * far dark, and the whole frame carried one small clump (luma 0.017).  The
- * chains are now laid out on a jittered 22 x 14 lattice in FRUSTUM coordinates
- * -- lateral slot, chain length, helix radius and crystal size all scale with
- * depth -- so a chain 30 units back subtends the same angle as one at 4, and
- * the culture fills the whole cell.
+ *  @brief
+ *  Vertex stage companion to MagnetotacticBacteriaChains.frag -- see that file's header for this scene's
+ *  description.
  *
- * Filling the cell is not the same as having a picture in it.  Every crystal
- * used to come out at nearly the same level, so the culture measured as an even
- * dark mush (contrast 0.037).  Each chain now carries its own vChainLit -- how
- * deep in the medium it swims times how strongly that cell mineralised -- which
- * spans about 9x from the darkest chain to the brightest, at the ~1-tile scale
- * a chain occupies on screen.
+ *  The 4900 cubes make 306 chains of 16, but the old layout put chain n at
+ *  z = (n - 8) * 0.35: chain 300 sat 100 units down the view axis, so all but
+ *  the first couple of dozen chains were sub-pixel specks strung out into the
+ *  far dark, and the whole frame carried one small clump (luma 0.017).  The
+ *  chains are now laid out on a jittered 22 x 14 lattice in FRUSTUM coordinates
+ *  -- lateral slot, chain length, helix radius and crystal size all scale with
+ *  depth -- so a chain 30 units back subtends the same angle as one at 4, and
+ *  the culture fills the whole cell.
+ *
+ *  Filling the cell is not the same as having a picture in it.  Every crystal
+ *  used to come out at nearly the same level, so the culture measured as an even
+ *  dark mush (contrast 0.037).  Each chain now carries its own vChainLit -- how
+ *  deep in the medium it swims times how strongly that cell mineralised -- which
+ *  spans about 9x from the darkest chain to the brightest, at the ~1-tile scale
+ *  a chain occupies on screen.
+ *
+ *  @author René Weller
  */
 
 in vec4 attrA; ///< xyz = cube corner (-0.5..0.5), w = cube index

@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureMurmurationShape.frag
- * @brief TEXTURE MURMURATION SHAPE: a starling murmuration at dusk -- tens
- * of thousands of birds swirl as one living cloud against the evening
- * sky, the flock thickening and thinning in waves that ripple through it,
- * folding, splitting and rejoining; the flock's shape is drawn from the
- * photograph's dark forms, which it keeps morphing toward; each bird is a
- * tiny dark fleck.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              TextureMurmurationShape.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the flock wheels and ripples (integrated, jump-free)
- *   audioSpread     -> the flock spreads out
- *   audioKick       -> a wave of density ripples through (light: darker)
- *   audioMode       -> the sky: blue dusk in minor, orange sunset in major
- *   audioRoughness  -> the flock frays at its edges
- *   audioSwell      -> the sky glow (slow)
+ *  @brief
+ *  TEXTURE MURMURATION SHAPE: a starling murmuration at dusk -- tens of thousands of birds swirl as one living
+ *  cloud against the evening sky, the flock thickening and thinning in waves that ripple through it, folding,
+ *  splitting and rejoining; the flock's shape is drawn from the photograph's dark forms, which it keeps morphing
+ *  toward; each bird is a tiny dark fleck.
  *
- * Knobs: birdP (bird density), waveP (ripple strength), shapeP (how much the photo shapes the flock), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the flock wheels and ripples (integrated, jump-free)
+ *    audioSpread     -> the flock spreads out
+ *    audioKick       -> a wave of density ripples through (light: darker)
+ *    audioMode       -> the sky: blue dusk in minor, orange sunset in major
+ *    audioRoughness  -> the flock frays at its edges
+ *    audioSwell      -> the sky glow (slow)
+ *
+ *  Knobs: birdP (bird density), waveP (ripple strength), shapeP (how much the photo shapes the flock), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

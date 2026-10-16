@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SolarEclipseTotality.frag
- * @brief SOLAR ECLIPSE TOTALITY: the moon's disc over the sun, and the
- * corona that only totality shows -- thirty-two streamers whose lengths are
- * the thirty-two spectrum bands, so the corona breathes with the music
- * band by band; red prominences on the limb; the chromosphere's thin pink
- * ring; the diamond ring where a sliver of photosphere shows.  The host's
- * day clock moves the moon across the sun (a slow sin, never a wrap), so
- * totality comes and goes over minutes.  The sky darkens to stars during
- * totality.  The camera never moves.
+/*****************************************************************************\
+ *                              SolarEclipseTotality.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSpectrum[32] -> streamer lengths (light)
- *   dayPhase          -> moon position (slow, continuous)
- *   audioKick         -> the diamond ring flares (light)
- *   audioSwell        -> prominence height (slow)
- *   audioLevel        -> corona brightness
+ *  @brief
+ *  SOLAR ECLIPSE TOTALITY: the moon's disc over the sun, and the corona that only totality shows -- thirty-two
+ *  streamers whose lengths are the thirty-two spectrum bands, so the corona breathes with the music band by band;
+ *  red prominences on the limb; the chromosphere's thin pink ring; the diamond ring where a sliver of photosphere
+ *  shows.
  *
- * Per-activation variety: coronaP (streamer reach), tiltP (limb axis), hueP.
+ *  The host's day clock moves the moon across the sun (a slow sin, never a wrap), so totality comes and goes over
+ *  minutes.  The sky darkens to stars during totality.  The camera never moves.
+ *
+ *  Audio Reactivity:
+ *    audioSpectrum[32] -> streamer lengths (light)
+ *    dayPhase          -> moon position (slow, continuous)
+ *    audioKick         -> the diamond ring flares (light)
+ *    audioSwell        -> prominence height (slow)
+ *    audioLevel        -> corona brightness
+ *
+ *  Per-activation variety: coronaP (streamer reach), tiltP (limb axis), hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

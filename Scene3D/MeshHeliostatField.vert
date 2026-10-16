@@ -1,20 +1,28 @@
 #version 330 core
-/**
- * @file MeshHeliostatField.vert
- * @brief Vertex stage companion to MeshHeliostatField.frag -- see that
- * file's header. Two models and the shell, drawn instances="N" times:
- *   [0, meshVertexCount)                 the receiver tower (model=), instance 0 only
- *   [meshVertexCount, mesh2VertexCount)  one heliostat (model2=), placed by gl_InstanceID
- *   [mesh2VertexCount, ...)              the sky shell, instance 0 only
- * The other instances collapse the tower and the shell to a point.
+/*****************************************************************************\
+ *                              MeshHeliostatField.vert
+\*****************************************************************************/
+/*! @file
  *
- * Every heliostat is aimed the way a real one is: its mirror normal
- * bisects the direction to the sun and the direction to the receiver, so
- * the field is a ring pattern of tilted panels. The sun creeps across the
- * sky on time, and the panels track it. The mirror model's panel faces
- * its own +Z (the generator's camera side); the rotation below takes +Z
- * to the aiming normal. The pedestal tilts with the panel, which is wrong
- * by a few degrees and invisible at this size.
+ *  @brief
+ *  Vertex stage companion to MeshHeliostatField.frag -- see that file's header.
+ *
+ *  Two models and the shell, drawn instances="N" times:
+ *
+ *    [0, meshVertexCount)                 the receiver tower (model=), instance 0 only
+ *    [meshVertexCount, mesh2VertexCount)  one heliostat (model2=), placed by gl_InstanceID
+ *    [mesh2VertexCount, ...)              the sky shell, instance 0 only
+ *  The other instances collapse the tower and the shell to a point.
+ *
+ *  Every heliostat is aimed the way a real one is: its mirror normal
+ *  bisects the direction to the sun and the direction to the receiver, so
+ *  the field is a ring pattern of tilted panels. The sun creeps across the
+ *  sky on time, and the panels track it. The mirror model's panel faces
+ *  its own +Z (the generator's camera side); the rotation below takes +Z
+ *  to the aiming normal. The pedestal tilts with the panel, which is wrong
+ *  by a few degrees and invisible at this size.
+ *
+ *  @author René Weller
  */
 
 in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an

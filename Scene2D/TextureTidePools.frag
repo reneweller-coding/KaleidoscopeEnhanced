@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureTidePools.frag
- * @brief TEXTURE TIDE POOLS: looking down into rock pools at low tide --
- * the photograph is the rocky shore, and in its hollows clear water
- * stands in pools, rippling gently in the breeze so the rock and pebbles
- * at their bottoms wobble, caustic light nets dancing across them, bits of
- * seaweed swaying; as the tide slowly rises and falls, the pools grow and
- * shrink along the rock's contours.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              TextureTidePools.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the ripples and the tide (integrated, jump-free)
- *   audioSpread     -> how high the tide stands
- *   audioBass       -> the caustics brighten (light)
- *   audioMode       -> the water: cold green in minor, tropical turquoise in major
- *   audioRoughness  -> breeze on the water
- *   audioSwell      -> the wet sheen on the rock (slow)
+ *  @brief
+ *  TEXTURE TIDE POOLS: looking down into rock pools at low tide -- the photograph is the rocky shore, and in its
+ *  hollows clear water stands in pools, rippling gently in the breeze so the rock and pebbles at their bottoms
+ *  wobble, caustic light nets dancing across them, bits of seaweed swaying; as the tide slowly rises and falls, the
+ *  pools grow and shrink along the rock's contours.
  *
- * Knobs: poolP (pool depth), causticP (caustic strength), rockP (rock relief), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the ripples and the tide (integrated, jump-free)
+ *    audioSpread     -> how high the tide stands
+ *    audioBass       -> the caustics brighten (light)
+ *    audioMode       -> the water: cold green in minor, tropical turquoise in major
+ *    audioRoughness  -> breeze on the water
+ *    audioSwell      -> the wet sheen on the rock (slow)
+ *
+ *  Knobs: poolP (pool depth), causticP (caustic strength), rockP (rock relief), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

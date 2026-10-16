@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureFiberOptic.frag
- * @brief TEXTURE FIBER OPTIC: a fibre-optic lamp seen from above -- a dense
- * spray of thin glass fibres fans out from several hubs, each fibre dark
- * along its length but glowing at its tip in the colour the colour wheel
- * inside the lamp is showing, the wheel being the photograph turning
- * slowly behind the hubs; the fibres sway gently, the tips twinkle.
- * Endless, mirrorable.
+/*****************************************************************************\
+ *                              TextureFiberOptic.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the colour wheel turns (integrated, jump-free)
- *   audioSpread     -> the fibres fan out further
- *   audioKick       -> the tips flare (light)
- *   audioHigh       -> the tips twinkle (light)
- *   audioMode       -> the wheel: cool in minor, warm in major (tint)
- *   audioSwell      -> the fibres sway (slow)
+ *  @brief
+ *  TEXTURE FIBER OPTIC: a fibre-optic lamp seen from above -- a dense spray of thin glass fibres fans out from
+ *  several hubs, each fibre dark along its length but glowing at its tip in the colour the colour wheel inside the
+ *  lamp is showing, the wheel being the photograph turning slowly behind the hubs; the fibres sway gently, the tips
+ *  twinkle.
  *
- * Knobs: fibreP (fibre density), hubP (hub spacing), tipP (tip size), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the colour wheel turns (integrated, jump-free)
+ *    audioSpread     -> the fibres fan out further
+ *    audioKick       -> the tips flare (light)
+ *    audioHigh       -> the tips twinkle (light)
+ *    audioMode       -> the wheel: cool in minor, warm in major (tint)
+ *    audioSwell      -> the fibres sway (slow)
+ *
+ *  Knobs: fibreP (fibre density), hubP (hub spacing), tipP (tip size), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

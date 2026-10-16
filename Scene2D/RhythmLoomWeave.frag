@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file RhythmLoomWeave.frag
- * @brief RHYTHM LOOM WEAVE: a loom weaving the music into cloth.  Thirty-
- * two warp threads run top to bottom, one per spectrum band, lit by their
- * band; the weft shuttle crosses on the scene clock, laying a new row each
- * pass, and the cloth already woven scrolls slowly down carrying the
- * photo in its weave (the photo is the pattern card).  The kick is the
- * beater striking the row home (a flash along the fell line), the treble
- * glints the shuttle.  Camera still.
+/*****************************************************************************\
+ *                              RhythmLoomWeave.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSpectrum[32] -> warp thread light (light)
- *   sceneAdvance      -> shuttle and cloth advance (continuous)
- *   audioKick         -> beater flash (light)
- *   audioHigh         -> shuttle glint (light)
- *   audioSwell        -> loom lamp (slow)
- *   audioLevel        -> brightness
+ *  @brief
+ *  RHYTHM LOOM WEAVE: a loom weaving the music into cloth.
  *
- * Per-activation variety: pitchP (thread spacing), weaveP (pattern), hueP.
+ *  Thirty- two warp threads run top to bottom, one per spectrum band, lit by their band; the weft shuttle crosses
+ *  on the scene clock, laying a new row each pass, and the cloth already woven scrolls slowly down carrying the
+ *  photo in its weave (the photo is the pattern card).  The kick is the beater striking the row home (a flash along
+ *  the fell line), the treble glints the shuttle.  Camera still.
+ *
+ *  Audio Reactivity:
+ *    audioSpectrum[32] -> warp thread light (light)
+ *    sceneAdvance      -> shuttle and cloth advance (continuous)
+ *    audioKick         -> beater flash (light)
+ *    audioHigh         -> shuttle glint (light)
+ *    audioSwell        -> loom lamp (slow)
+ *    audioLevel        -> brightness
+ *
+ *  Per-activation variety: pitchP (thread spacing), weaveP (pattern), hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

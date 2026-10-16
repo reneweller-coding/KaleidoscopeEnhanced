@@ -1,18 +1,25 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file NeutronStarMagneticFunnelPlunge.frag
- * @brief NEUTRON STAR MAGNETIC FUNNEL PLUNGE: Relativistic plunge along magnetic dipole
- * field lines into the magnetic polar cap of a rotating millisecond pulsar. Gleaming synchrotron
- * radiation cones, magnetic funnel plasma pinch, and high-energy X-ray beam flashes.
+/*****************************************************************************\
+ *                              NeutronStarMagneticFunnelPlunge.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance -> drives continuous relativistic plunge along magnetic dipole lines
- *   audioKick    -> flashes pulsar polar cap magnetic reconnection & X-ray pulse
- *   audioCentroid-> modulates synchrotron magnetic field line density
- *   audioSubBass -> expands magnetic funnel diameter breathing
- *   audioChromaHue-> steers the high-energy X-ray / ultraviolet / aurum spectrum
+ *  @brief
+ *  NEUTRON STAR MAGNETIC FUNNEL PLUNGE: Relativistic plunge along magnetic dipole field lines into the magnetic
+ *  polar cap of a rotating millisecond pulsar.
+ *
+ *  Gleaming synchrotron radiation cones, magnetic funnel plasma pinch, and high-energy X-ray beam flashes.
+ *
+ *  Audio Reactivity:
+ *    audioAdvance -> drives continuous relativistic plunge along magnetic dipole lines
+ *    audioKick    -> flashes pulsar polar cap magnetic reconnection & X-ray pulse
+ *    audioCentroid-> modulates synchrotron magnetic field line density
+ *    audioSubBass -> expands magnetic funnel diameter breathing
+ *    audioChromaHue-> steers the high-energy X-ray / ultraviolet / aurum spectrum
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

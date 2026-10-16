@@ -1,18 +1,26 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file LogarithmicSpiralChamberZoom.frag
- * @brief LOGARITHMIC SPIRAL CHAMBER ZOOM: Infinite scale plunge into the golden-ratio
- * chambers of a logarithmic spiral (Nautilus shell). Iridescent mother-of-pearl (nacre)
- * septum walls, seamless octave zoom transitions, and glowing spiral vortex currents.
+/*****************************************************************************\
+ *                              LogarithmicSpiralChamberZoom.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance -> drives continuous exponential spiral chamber plunge
- *   audioKick    -> flashes nacre chamber septum walls & explodes vortex core
- *   audioCentroid-> sharpens spiral growth rate b & fine chamber ribbing
- *   audioSubBass -> expands spiral chamber width breathing
- *   audioChromaHue-> steers the iridescent mother-of-pearl (nacre) spectrum
+ *  @brief
+ *  LOGARITHMIC SPIRAL CHAMBER ZOOM: Infinite scale plunge into the golden-ratio chambers of a logarithmic spiral
+ *  (Nautilus shell).
+ *
+ *  Iridescent mother-of-pearl (nacre) septum walls, seamless octave zoom transitions, and glowing spiral vortex
+ *  currents.
+ *
+ *  Audio Reactivity:
+ *    audioAdvance -> drives continuous exponential spiral chamber plunge
+ *    audioKick    -> flashes nacre chamber septum walls & explodes vortex core
+ *    audioCentroid-> sharpens spiral growth rate b & fine chamber ribbing
+ *    audioSubBass -> expands spiral chamber width breathing
+ *    audioChromaHue-> steers the iridescent mother-of-pearl (nacre) spectrum
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

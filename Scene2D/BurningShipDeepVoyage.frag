@@ -1,18 +1,25 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file BurningShipDeepVoyage.frag
- * @brief BURNING SHIP DEEP VOYAGE: Continuous deep plunge into the non-analytic
- * Burning Ship fractal z -> (|Re(z)| + i|Im(z)|)^2 + c. Glowing fire kathedrals,
- * burning masts, and high-temperature plasma flares.
+/*****************************************************************************\
+ *                              BurningShipDeepVoyage.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance -> drives continuous deep zoom into fractal mast structures
- *   audioKick    -> flashes interior ship core & explodes solar flares
- *   audioCentroid-> sharpens flame filigree & iteration escape boundaries
- *   audioSubBass -> expands ship hull breathing amplitude
- *   audioChromaHue-> steers the fiery aurum/crimson/violet palette
+ *  @brief
+ *  BURNING SHIP DEEP VOYAGE: Continuous deep plunge into the non-analytic Burning Ship fractal z -> (|Re(z)| +
+ *  i|Im(z)|)^2 + c.
+ *
+ *  Glowing fire kathedrals, burning masts, and high-temperature plasma flares.
+ *
+ *  Audio Reactivity:
+ *    audioAdvance -> drives continuous deep zoom into fractal mast structures
+ *    audioKick    -> flashes interior ship core & explodes solar flares
+ *    audioCentroid-> sharpens flame filigree & iteration escape boundaries
+ *    audioSubBass -> expands ship hull breathing amplitude
+ *    audioChromaHue-> steers the fiery aurum/crimson/violet palette
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

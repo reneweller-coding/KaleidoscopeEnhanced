@@ -1,12 +1,18 @@
 #version 330 core
-/**
- * @file MeshSeismograph.vert
- * @brief Vertex stage companion to MeshSeismograph.frag -- see that file's
- * header. Two models: the instrument's base with its pen arm (model=), held
- * still, and the recording drum (model2=), turning about its horizontal
- * axle on time at the rate the fragment stage assumes when it draws the
- * trace. The drum's place beside the pen is set by three fractions of the
- * base's extents (drumXP/YP/ZP), tuned once against the models.
+/*****************************************************************************\
+ *                              MeshSeismograph.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to MeshSeismograph.frag -- see that file's header.
+ *
+ *  Two models: the instrument's base with its pen arm (model=), held still, and the recording drum (model2=),
+ *  turning about its horizontal axle on time at the rate the fragment stage assumes when it draws the trace. The
+ *  drum's place beside the pen is set by three fractions of the base's extents (drumXP/YP/ZP), tuned once against
+ *  the models.
+ *
+ *  @author René Weller
  */
 
 in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an

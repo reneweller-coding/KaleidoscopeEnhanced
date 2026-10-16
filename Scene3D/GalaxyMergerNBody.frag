@@ -1,15 +1,21 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file GalaxyMergerNBody.frag
- * @brief Fragment stage for GalaxyMergerNBody: soft star dots, two glowing
- * cores and a deep-space sky.  A star is a quad that discards outside its
- * radial falloff, so the discs read as dust rather than confetti; the cores
- * (kind 2) are wide soft glows swelling with the bass; the sky (kind -1) is
- * near-black with the photo's grain as a distant star field.
+/*****************************************************************************\
+ *                              GalaxyMergerNBody.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity: audioKick flashes the stars; audioBass swells the cores.
+ *  @brief
+ *  Fragment stage for GalaxyMergerNBody: soft star dots, two glowing cores and a deep-space sky.
+ *
+ *  A star is a quad that discards outside its radial falloff, so the discs read as dust rather than confetti; the
+ *  cores (kind 2) are wide soft glows swelling with the bass; the sky (kind -1) is near-black with the photo's
+ *  grain as a distant star field.
+ *
+ *  Audio Reactivity: audioKick flashes the stars; audioBass swells the cores.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 in vec4  vColor;    ///< Color (from the vertex stage).
 in vec2  vTexCoord; ///< Texture coordinate (from the vertex stage).
 in float vDepth;    ///< Depth (from the vertex stage).

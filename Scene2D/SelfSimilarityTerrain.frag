@@ -1,29 +1,33 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SelfSimilarityTerrain.frag
- * @brief SELF SIMILARITY TERRAIN: the song's self-similarity matrix as a
- * moonlit mountain range.  Where the music repeats itself the land rises
- * into snowy ridges -- the diagonal, "now against now", is the main range
- * running away from the camera -- and where it is new the land falls into
- * valleys with a still lake in them that mirrors the moon.  Under a starry
- * sky and a large moon the snow glows blue-white, mist lies in the low
- * ground, and as the song goes on the ranges flow slowly toward the viewer
- * (the matrix scrolls with time).  A natural fractal relief underneath
- * keeps the land alive before the matrix has filled.
+/*****************************************************************************\
+ *                              SelfSimilarityTerrain.frag
+\*****************************************************************************/
+/*! @file
  *
- * Replaces a Scene3D tessellated version (a grey slab in the catalogue).
+ *  @brief
+ *  SELF SIMILARITY TERRAIN: the song's self-similarity matrix as a moonlit mountain range.
  *
- * Audio Reactivity:
- *   texSSM / ssmHead / ssmFill -> the ranges
- *   audioSwell -> moonlight (slow)
- *   audioKick  -> the nearest ridge lights (light)
- *   audioBass  -> warm light in the valleys (light)
- *   audioHigh  -> glints on the snow (light)
- *   audioLevel -> brightness
+ *  Where the music repeats itself the land rises into snowy ridges -- the diagonal, "now against now", is the main
+ *  range running away from the camera -- and where it is new the land falls into valleys with a still lake in them
+ *  that mirrors the moon.  Under a starry sky and a large moon the snow glows blue-white, mist lies in the low
+ *  ground, and as the song goes on the ranges flow slowly toward the viewer (the matrix scrolls with time).  A
+ *  natural fractal relief underneath keeps the land alive before the matrix has filled.
  *
- * Per-activation variety: camHP (camera height), detailP, heightP, hueP.
+ *  Replaces a Scene3D tessellated version (a grey slab in the catalogue).
+ *
+ *  Audio Reactivity:
+ *    texSSM / ssmHead / ssmFill -> the ranges
+ *    audioSwell -> moonlight (slow)
+ *    audioKick  -> the nearest ridge lights (light)
+ *    audioBass  -> warm light in the valleys (light)
+ *    audioHigh  -> glints on the snow (light)
+ *    audioLevel -> brightness
+ *
+ *  Per-activation variety: camHP (camera height), detailP, heightP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

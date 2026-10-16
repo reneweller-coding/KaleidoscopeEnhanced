@@ -1,21 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file GammaRayBurst.frag
- * @brief GAMMA RAY BURST: The most powerful explosion in the universe. We are
- * looking almost directly down the barrel of a massive dying star as it fires
- * an ultra-relativistic jet of blinding gamma radiation. The beam violently
- * distorts space and pulses brutally to the audio.
- *   audioAdvance -> velocity of the relativistic particles
- *   audioKick    -> catastrophic spikes in beam intensity
- *   audioSwell   -> overall blinding brightness of the burst
- *   audioChromaHue-> palette offset for the extreme plasma
+/*****************************************************************************\
+ *                              GammaRayBurst.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   beamP float focus and narrowness of the central beam (0.5..1.5)
- *   shockP float intensity of the surrounding shockwaves (0.5..2.0)
- *   hueP float palette offset (0..6.28)
+ *  @brief
+ *  GAMMA RAY BURST: The most powerful explosion in the universe.
+ *
+ *  We are looking almost directly down the barrel of a massive dying star as it fires an ultra-relativistic jet of
+ *  blinding gamma radiation. The beam violently distorts space and pulses brutally to the audio.
+ *
+ *    audioAdvance -> velocity of the relativistic particles
+ *    audioKick    -> catastrophic spikes in beam intensity
+ *    audioSwell   -> overall blinding brightness of the burst
+ *    audioChromaHue-> palette offset for the extreme plasma
+ *
+ *  Per-activation variety:
+ *    beamP float focus and narrowness of the central beam (0.5..1.5)
+ *    shockP float intensity of the surrounding shockwaves (0.5..2.0)
+ *    hueP float palette offset (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

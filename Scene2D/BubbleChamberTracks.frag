@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file BubbleChamberTracks.frag
- * @brief BUBBLE CHAMBER TRACKS: the physicist's photograph -- charged
- * particles spiralling in a magnetic field, their tracks as strings of
- * round bubbles.  Tracks are born on a continuous clock at a vertex, grow
- * along their spiral over their life, and fade; the onsets do not spawn
- * anything (that would be a cut) but light the tracks brighter as they
- * happen.  Curvature per track = charge and momentum, once at birth.  The
- * photo is the chamber wall behind the liquid.  Camera still.
+/*****************************************************************************\
+ *                              BubbleChamberTracks.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   sceneAdvance -> track birth and growth (continuous)
- *   audioOnset   -> track brightness (light)
- *   audioBass    -> the vertex glow (light)
- *   audioSwell   -> bubble density along the tracks (slow)
- *   audioLevel   -> brightness
+ *  @brief
+ *  BUBBLE CHAMBER TRACKS: the physicist's photograph -- charged particles spiralling in a magnetic field, their
+ *  tracks as strings of round bubbles.
  *
- * Per-activation variety: curlP (field strength), tracksP, hueP.
+ *  Tracks are born on a continuous clock at a vertex, grow along their spiral over their life, and fade; the onsets
+ *  do not spawn anything (that would be a cut) but light the tracks brighter as they happen.  Curvature per track =
+ *  charge and momentum, once at birth.  The photo is the chamber wall behind the liquid.  Camera still.
+ *
+ *  Audio Reactivity:
+ *    sceneAdvance -> track birth and growth (continuous)
+ *    audioOnset   -> track brightness (light)
+ *    audioBass    -> the vertex glow (light)
+ *    audioSwell   -> bubble density along the tracks (slow)
+ *    audioLevel   -> brightness
+ *
+ *  Per-activation variety: curlP (field strength), tracksP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

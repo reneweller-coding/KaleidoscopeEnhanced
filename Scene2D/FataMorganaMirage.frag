@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file FataMorganaMirage.frag
- * @brief FATA MORGANA MIRAGE: a ship on the horizon seen through layered
- * air -- the mirage stretches it, inverts it, stacks it into towers that
- * shift as the air layers breathe.  The photo is the scene beyond the
- * horizon: it is drawn in horizontal slices, each slice mapped by a
- * refraction profile that wobbles slowly on the scene clock; the heat is
- * the swell (stronger stretching), the shimmer is the treble, the bass
- * is the warm haze.  Camera fixed on the shore.
+/*****************************************************************************\
+ *                              FataMorganaMirage.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   sceneAdvance -> layer breathing (continuous)
- *   audioSwell   -> mirage strength (slow)
- *   audioHigh    -> shimmer (light-sized wobble)
- *   audioBass    -> haze warmth (light)
- *   audioLevel   -> brightness
+ *  @brief
+ *  FATA MORGANA MIRAGE: a ship on the horizon seen through layered air -- the mirage stretches it, inverts it,
+ *  stacks it into towers that shift as the air layers breathe.
  *
- * Per-activation variety: layersP, stackP, hueP.
+ *  The photo is the scene beyond the horizon: it is drawn in horizontal slices, each slice mapped by a refraction
+ *  profile that wobbles slowly on the scene clock; the heat is the swell (stronger stretching), the shimmer is the
+ *  treble, the bass is the warm haze.  Camera fixed on the shore.
+ *
+ *  Audio Reactivity:
+ *    sceneAdvance -> layer breathing (continuous)
+ *    audioSwell   -> mirage strength (slow)
+ *    audioHigh    -> shimmer (light-sized wobble)
+ *    audioBass    -> haze warmth (light)
+ *    audioLevel   -> brightness
+ *
+ *  Per-activation variety: layersP, stackP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

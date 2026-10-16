@@ -1,25 +1,29 @@
 #version 330 core
+/*****************************************************************************\
+ *                              HolographicMemoryCore.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Shades a hexagonal holographic memory-crystal wafer: a hard hex-boundary cutout, a rim glow at its edge, the
+ *  current slideshow photo as its stored imagery with scanning optical data-track lines, an iridescent per-tier
+ *  photo-arc tint (imgPalette), and a cyan laser pulse that reads across it.
+ *
+ *  audioKick boosts the laser read pulse (vReadLaser) by up to 4x, and
+ *  audioSwell brightens the blend of stored photo and iridescent tint. The
+ *  iridescent tint's arc position follows audioChromaHue with a slow
+ *  audioAdvance drift and audioValence-controlled saturation. glowP and
+ *  laserP scale overall brightness and laser strength, and hueP applies a
+ *  final hue rotation.
+ *
+ *  @author René Weller
+ */
 in vec3  vPos;       ///< Position (from the vertex stage).
 in vec2  vUV;        ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 in float vTier;      ///< Tier (from the vertex stage).
 in float vReadLaser; ///< Read laser (from the vertex stage).
 
 out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file HolographicMemoryCore.frag
- * @brief Shades a hexagonal holographic memory-crystal wafer: a hard
- * hex-boundary cutout, a rim glow at its edge, the current slideshow photo
- * as its stored imagery with scanning optical data-track lines, an
- * iridescent per-tier photo-arc tint (imgPalette), and a cyan laser pulse
- * that reads across it.
- *
- * audioKick boosts the laser read pulse (vReadLaser) by up to 4x, and
- * audioSwell brightens the blend of stored photo and iridescent tint. The
- * iridescent tint's arc position follows audioChromaHue with a slow
- * audioAdvance drift and audioValence-controlled saturation. glowP and
- * laserP scale overall brightness and laser strength, and hueP applies a
- * final hue rotation.
- */
 
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

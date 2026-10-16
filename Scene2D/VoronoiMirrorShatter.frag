@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file VoronoiMirrorShatter.frag
- * @brief VORONOI MIRROR SHATTER: a mirror that breaks and mends over the
- * scene's arc.  The picture is cut into Voronoi shards; each shard is a
- * small kaleidoscope of the photo.  Along the arc (sceneProgress, which the
- * drop regie can bend onto the drop) the shards drift apart, tilt and let
- * the dark through, then close again -- a slow breakage, never a cut, so
- * the drop lands on the moment the mirror is most open.  Shard edges catch
- * light on the kick.
+/*****************************************************************************\
+ *                              VoronoiMirrorShatter.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   sceneProgress  -> shatter and reassembly (staged, continuous)
- *   audioKick      -> shard edges flash (light)
- *   audioSwell     -> the gaps glow (slow)
- *   sceneAdvance   -> the shards' kaleidoscopes turn (continuous)
- *   audioLevel     -> brightness
+ *  @brief
+ *  VORONOI MIRROR SHATTER: a mirror that breaks and mends over the scene's arc.
  *
- * Per-activation variety: shardsP (shard density), spreadP (how far apart), hueP.
+ *  The picture is cut into Voronoi shards; each shard is a small kaleidoscope of the photo.  Along the arc
+ *  (sceneProgress, which the drop regie can bend onto the drop) the shards drift apart, tilt and let the dark
+ *  through, then close again -- a slow breakage, never a cut, so the drop lands on the moment the mirror is most
+ *  open.  Shard edges catch light on the kick.
+ *
+ *  Audio Reactivity:
+ *    sceneProgress  -> shatter and reassembly (staged, continuous)
+ *    audioKick      -> shard edges flash (light)
+ *    audioSwell     -> the gaps glow (slow)
+ *    sceneAdvance   -> the shards' kaleidoscopes turn (continuous)
+ *    audioLevel     -> brightness
+ *
+ *  Per-activation variety: shardsP (shard density), spreadP (how far apart), hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

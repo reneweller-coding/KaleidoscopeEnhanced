@@ -1,16 +1,21 @@
 #version 430 core
-/**
- * @file WindTurbineFieldDusk.comp
- * @brief WIND TURBINE FIELD DUSK: a field of turbines standing in rows
- * across a plain at dusk.  Each has a tower, a nacelle and three blades
- * turning at its own steady rate on the scene clock -- never on a beat,
- * because a whole field snapping to a kick is exactly the jolt this
- * catalogue does not do.  Blades are emitted as tapered quads swept from
- * the hub; the nav light on each nacelle is its own small quad.
+/*****************************************************************************\
+ *                              WindTurbineFieldDusk.comp
+\*****************************************************************************/
+/*! @file
  *
- * Kinds: -1 sky, -2 ground, 0 blade, 1 tower, 2 nacelle, 3 nav light.
+ *  @brief
+ *  WIND TURBINE FIELD DUSK: a field of turbines standing in rows across a plain at dusk.
  *
- * Per-instance: rowsP, speedP, hueP.
+ *  Each has a tower, a nacelle and three blades turning at its own steady rate on the scene clock -- never on a
+ *  beat, because a whole field snapping to a kick is exactly the jolt this catalogue does not do.  Blades are
+ *  emitted as tapered quads swept from the hub; the nav light on each nacelle is its own small quad.
+ *
+ *  Kinds: -1 sky, -2 ground, 0 blade, 1 tower, 2 nacelle, 3 nav light.
+ *
+ *  Per-instance: rowsP, speedP, hueP.
+ *
+ *  @author René Weller
  */
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( local_size_x = 4, local_size_y = 4, local_size_z = 4 ) in;

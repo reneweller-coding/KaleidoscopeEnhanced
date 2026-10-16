@@ -1,27 +1,32 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureNeonTrace.frag
- * @brief TEXTURE NEON TRACE: the photograph redrawn in neon -- every strong
- * edge of the texture becomes a glowing tube, the tubes bend along the
- * material's own contours (the grain of wood, the cracks in a glaze, the
- * fibres of felt), each with its halo in the dark, and between them the
- * photo itself lies dim and wet, catching the glow as reflections.  Waves
- * of light run through the tubes; the whole field drifts slowly, so the
- * picture is endless and mirrors without seams.  Every photo of the pool
- * gives a different neon drawing.
+/*****************************************************************************\
+ *                              TextureNeonTrace.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioSpread     -> which edges light: wide spectrum brings in the fine ones
- *   audioMode       -> the tube colours: cool in minor, warm in major
- *   audioRoughness  -> the tubes shiver (a fine stetig ripple along them)
- *   audioAdvance    -> the light waves running through the tubes (integrated)
- *   audioKick       -> the tubes flare (light)
- *   audioSwell      -> the halos widen (slow)
+ *  @brief
+ *  TEXTURE NEON TRACE: the photograph redrawn in neon -- every strong edge of the texture becomes a glowing tube,
+ *  the tubes bend along the material's own contours (the grain of wood, the cracks in a glaze, the fibres of felt),
+ *  each with its halo in the dark, and between them the photo itself lies dim and wet, catching the glow as
+ *  reflections.
  *
- * Knobs: scaleP (how close we are), detailP (fine or coarse edges), waveP
- * (the pattern of the light waves), hueP.
+ *  Waves of light run through the tubes; the whole field drifts slowly, so the picture is endless and mirrors
+ *  without seams.  Every photo of the pool gives a different neon drawing.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioSpread     -> which edges light: wide spectrum brings in the fine ones
+ *    audioMode       -> the tube colours: cool in minor, warm in major
+ *    audioRoughness  -> the tubes shiver (a fine stetig ripple along them)
+ *    audioAdvance    -> the light waves running through the tubes (integrated)
+ *    audioKick       -> the tubes flare (light)
+ *    audioSwell      -> the halos widen (slow)
+ *
+ *  Knobs: scaleP (how close we are), detailP (fine or coarse edges), waveP
+ *  (the pattern of the light waves), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

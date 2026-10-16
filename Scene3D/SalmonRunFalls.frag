@@ -1,21 +1,26 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SalmonRunFalls.frag
- * @brief SALMON RUN FALLS (fragment): the step in the river where the
- * fish jump.  The chutes are white water with streaks running down them,
- * the pool below churns, spray hangs in the light, and the salmon are
- * silver with a red flank that catches the sun at the top of the arc.
- * The swell is how much water comes over, the treble the spray sparkle,
- * the kick lights the foam at the foot -- as light, never as motion.
+/*****************************************************************************\
+ *                              SalmonRunFalls.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSwell -> water volume and light (slow)
- *   audioHigh  -> spray sparkle (light)
- *   audioKick  -> foam flash at the foot (light)
- *   audioBass  -> the pool's depth colour (slow)
- *   audioLevel -> brightness
+ *  @brief
+ *  SALMON RUN FALLS (fragment): the step in the river where the fish jump.
+ *
+ *  The chutes are white water with streaks running down them, the pool below churns, spray hangs in the light, and
+ *  the salmon are silver with a red flank that catches the sun at the top of the arc. The swell is how much water
+ *  comes over, the treble the spray sparkle, the kick lights the foam at the foot -- as light, never as motion.
+ *
+ *  Audio Reactivity:
+ *    audioSwell -> water volume and light (slow)
+ *    audioHigh  -> spray sparkle (light)
+ *    audioKick  -> foam flash at the foot (light)
+ *    audioBass  -> the pool's depth colour (slow)
+ *    audioLevel -> brightness
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

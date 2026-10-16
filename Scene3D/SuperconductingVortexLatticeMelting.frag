@@ -1,19 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SuperconductingVortexLatticeMelting.frag
- * @brief SUPERCONDUCTING VORTEX LATTICE MELTING: 60,000 magnetic flux quanta (Abrikosov vortices)
- * in a high-Tc cuprate superconductor. Ordered triangular vortex solid undergoes thermal melting
- * into entangled vortex liquid and vortex glass phases with photo texturing.
- *   audioAdvance -> accelerates thermal vortex fluctuations & vortex liquid drift velocity
- *   audioKick    -> flashes vortex depinning avalanches & flux-flow voltage spikes
- *   audioSwell   -> expands vortex melting puddle radius & superfluid density
- *   audioCentroid-> shifts vortex core normal-state electronic excitation spectra
+/*****************************************************************************\
+ *                              SuperconductingVortexLatticeMelting.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   pointGainP float point sprite base luminance gain (0.5..1.8)
- *   haloP      float gaussian core halo profile width (0.6..2.2)
+ *  @brief
+ *  SUPERCONDUCTING VORTEX LATTICE MELTING: 60,000 magnetic flux quanta (Abrikosov vortices) in a high-Tc cuprate
+ *  superconductor.
+ *
+ *  Ordered triangular vortex solid undergoes thermal melting into entangled vortex liquid and vortex glass phases
+ *  with photo texturing.
+ *
+ *    audioAdvance -> accelerates thermal vortex fluctuations & vortex liquid drift velocity
+ *    audioKick    -> flashes vortex depinning avalanches & flux-flow voltage spikes
+ *    audioSwell   -> expands vortex melting puddle radius & superfluid density
+ *    audioCentroid-> shifts vortex core normal-state electronic excitation spectra
+ *
+ *  Per-activation variety:
+ *    pointGainP float point sprite base luminance gain (0.5..1.8)
+ *    haloP      float gaussian core halo profile width (0.6..2.2)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec3  vCol;          ///< Colour (from the vertex stage).
 in float vMeltingState; ///< Melting state (from the vertex stage).

@@ -1,15 +1,20 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file CavitationCloudPropeller.frag
- * @brief Fragment stage for CavitationCloudPropeller: green-blue water
- * with light shafts from above, the propeller in dark bronze, the bubbles
- * as round lenses with a bright rim that flash white as they collapse
- * (the kick lights the collapse), the treble a sparkle on the cloud.
+/*****************************************************************************\
+ *                              CavitationCloudPropeller.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity: audioKick -> collapse flash; audioHigh -> sparkle;
- *                   audioBass -> shaft glow; audioLevel -> brightness.
+ *  @brief
+ *  Fragment stage for CavitationCloudPropeller: green-blue water with light shafts from above, the propeller in
+ *  dark bronze, the bubbles as round lenses with a bright rim that flash white as they collapse (the kick lights
+ *  the collapse), the treble a sparkle on the cloud.
+ *
+ *  Audio Reactivity: audioKick -> collapse flash; audioHigh -> sparkle;
+ *                    audioBass -> shaft glow; audioLevel -> brightness.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 in vec2  vTexCoord; ///< Texture coordinate (from the vertex stage).
 in vec3  vWorld;    ///< World position (from the vertex stage).
 in float vKind;     ///< Element kind (from the vertex stage).

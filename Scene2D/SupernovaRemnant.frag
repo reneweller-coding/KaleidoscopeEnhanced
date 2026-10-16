@@ -1,20 +1,27 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SupernovaRemnant.frag
- * @brief SUPERNOVA REMNANT: A beautiful, chaotic expanding shell of colorful
- * ionized gas from a recent stellar explosion. The gas filaments ripple and
- * pulse intensely to the music.
- *   audioAdvance -> slow expansion / flight through the gas
- *   audioKick    -> shockwaves propagating through the nebula
- *   audioSwell   -> brightness of the ionized gas
- *   audioChromaHue-> palette offset for the colorful gas layers
+/*****************************************************************************\
+ *                              SupernovaRemnant.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   gasP float complexity of the gas filaments (0.5..1.5)
- *   shockP float intensity of the shockwaves (0.5..2.0)
- *   hueP float palette offset (0..6.28)
+ *  @brief
+ *  SUPERNOVA REMNANT: A beautiful, chaotic expanding shell of colorful ionized gas from a recent stellar explosion.
+ *
+ *  The gas filaments ripple and pulse intensely to the music.
+ *
+ *    audioAdvance -> slow expansion / flight through the gas
+ *    audioKick    -> shockwaves propagating through the nebula
+ *    audioSwell   -> brightness of the ionized gas
+ *    audioChromaHue-> palette offset for the colorful gas layers
+ *
+ *  Per-activation variety:
+ *    gasP float complexity of the gas filaments (0.5..1.5)
+ *    shockP float intensity of the shockwaves (0.5..2.0)
+ *    hueP float palette offset (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

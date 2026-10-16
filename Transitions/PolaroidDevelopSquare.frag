@@ -1,30 +1,35 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file PolaroidDevelopSquare.frag
- * @brief TRANSITION POLAROID DEVELOP SQUARE: the incoming scene arrives as an
- * integral print that clears from its edges inward and takes its dyes on in the
- * order the chemistry actually releases them.
+/*****************************************************************************\
+ *                              PolaroidDevelopSquare.frag
+\*****************************************************************************/
+/*! @file
  *
- * Two details carry the whole thing.  First the clearing runs from the border
- * inward, because the opacifier thins first where the sheet is thinnest -- a
- * uniform fade would look like an ordinary dissolve.  Second the dyes arrive
- * yellow, then magenta, then cyan, and a dye removes its own complementary
- * channel, so the picture passes through a warm, then a rosy stage before it
- * settles.  Ramping all three channels together would skip exactly the part
- * everybody recognises.
+ *  @brief
+ *  TRANSITION POLAROID DEVELOP SQUARE: the incoming scene arrives as an integral print that clears from its edges
+ *  inward and takes its dyes on in the order the chemistry actually releases them.
  *
- * The white border grows in at the start and runs off the frame at the end, so
- * the last frame is the incoming scene full bleed with nothing left over.
+ *  Two details carry the whole thing.  First the clearing runs from the border
+ *  inward, because the opacifier thins first where the sheet is thinnest -- a
+ *  uniform fade would look like an ordinary dissolve.  Second the dyes arrive
+ *  yellow, then magenta, then cyan, and a dye removes its own complementary
+ *  channel, so the picture passes through a warm, then a rosy stage before it
+ *  settles.  Ramping all three channels together would skip exactly the part
+ *  everybody recognises.
  *
- * Audio Reactivity:
- *   audioSwell  -> how soft the clearing front is (slow)
- *   audioValence -> how strong the early warm cast reads (colour)
- *   audioHigh    -> the gloss across the print's surface (light)
- *   audioKick    -> the light on the card (light)
+ *  The white border grows in at the start and runs off the frame at the end, so
+ *  the last frame is the incoming scene full bleed with nothing left over.
  *
- * Per-activation variety: clearP, dyeP, hueP.
+ *  Audio Reactivity:
+ *    audioSwell  -> how soft the clearing front is (slow)
+ *    audioValence -> how strong the early warm cast reads (colour)
+ *    audioHigh    -> the gloss across the print's surface (light)
+ *    audioKick    -> the light on the card (light)
+ *
+ *  Per-activation variety: clearP, dyeP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

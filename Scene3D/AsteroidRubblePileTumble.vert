@@ -1,9 +1,16 @@
 #version 330 core
-/**
- * @file AsteroidRubblePileTumble.vert
- * @brief Vertex stage for AsteroidRubblePileTumble: world positions pass
- * through (camera at the origin, +z ahead); the sunward term, kind and
- * photo uv go to the fragment stage.  No camera motion.
+/*****************************************************************************\
+ *                              AsteroidRubblePileTumble.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage for AsteroidRubblePileTumble: world positions pass through (camera at the origin, +z ahead); the
+ *  sunward term, kind and photo uv go to the fragment stage.
+ *
+ *  No camera motion.
+ *
+ *  @author René Weller
  */
 layout( location = 0 ) in vec4 attrA; ///< xyz = position, w = id
 layout( location = 1 ) in vec4 attrB; ///< x = lit (dot(n, sun)) or puff life, y = kind, zw = uv

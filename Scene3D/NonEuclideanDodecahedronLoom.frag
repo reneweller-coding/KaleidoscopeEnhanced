@@ -1,15 +1,21 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file NonEuclideanDodecahedronLoom.frag
- * @brief NON-EUCLIDEAN DODECAHEDRON LOOM: a frame-spanning shell of twenty
- * glowing thread-knots, one woven around each vertex axis of a real
- * dodecahedron, tumbling around all three axes; each strand takes its colour
- * from the photo-palette arc.
- *   audioPhase -> thread colour drift    audioAdvance + time -> tumble
- *   audioKick  -> swells the ribbon width
- *   (additive threads, source-level gains, final colour capped)
+/*****************************************************************************\
+ *                              NonEuclideanDodecahedronLoom.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  NON-EUCLIDEAN DODECAHEDRON LOOM: a frame-spanning shell of twenty glowing thread-knots, one woven around each
+ *  vertex axis of a real dodecahedron, tumbling around all three axes; each strand takes its colour from the
+ *  photo-palette arc.
+ *
+ *    audioPhase -> thread colour drift    audioAdvance + time -> tumble
+ *    audioKick  -> swells the ribbon width
+ *    (additive threads, source-level gains, final colour capped)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec3  vWorldPos;    ///< World position (from the vertex stage).
 in vec2  vTexCoord;    ///< Texture coordinate (from the vertex stage).

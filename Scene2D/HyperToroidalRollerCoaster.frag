@@ -1,25 +1,32 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file HyperToroidalRollerCoaster.frag
- * @brief HYPER TOROIDAL ROLLER COASTER: Extreme 3D Frenet-Serret camera tracking ride
- * along a complex (3, 7)-torus knot roller-coaster track in hyperspace. Neon laser track rails,
- * high-G bankings and loopings, and chromatic tunnel speed streaks.
+/*****************************************************************************\
+ *                              HyperToroidalRollerCoaster.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance -> drives continuous forward roller-coaster velocity along the knot
- *   audioKick    -> flashes track rail support gantries & triggers inversion burst
- *   audioCentroid-> sharpens tubular rail line resolution & track sparks
- *   audioSubBass -> expands torus knot spatial envelope breathing
- *   audioChromaHue-> rotates the luminous hyperspace track spectrum
+ *  @brief
+ *  HYPER TOROIDAL ROLLER COASTER: Extreme 3D Frenet-Serret camera tracking ride along a complex (3, 7)-torus knot
+ *  roller-coaster track in hyperspace.
  *
- * The (3,7) knot has THREE strands at every azimuth; the old distance estimate
- * only ever found one of them, so two thirds of the track was invisible and the
- * ride happened inside an empty frame.  All three lobes are searched now, the
- * rail carries a volumetric haze and quantised support gantries, and the
- * hyperspace around it is filled with the chromatic speed streaks this header
- * always promised.
+ *  Neon laser track rails, high-G bankings and loopings, and chromatic tunnel speed streaks.
+ *
+ *  Audio Reactivity:
+ *    audioAdvance -> drives continuous forward roller-coaster velocity along the knot
+ *    audioKick    -> flashes track rail support gantries & triggers inversion burst
+ *    audioCentroid-> sharpens tubular rail line resolution & track sparks
+ *    audioSubBass -> expands torus knot spatial envelope breathing
+ *    audioChromaHue-> rotates the luminous hyperspace track spectrum
+ *
+ *  The (3,7) knot has THREE strands at every azimuth; the old distance estimate
+ *  only ever found one of them, so two thirds of the track was invisible and the
+ *  ride happened inside an empty frame.  All three lobes are searched now, the
+ *  rail carries a volumetric haze and quantised support gantries, and the
+ *  hyperspace around it is filled with the chromatic speed streaks this header
+ *  always promised.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

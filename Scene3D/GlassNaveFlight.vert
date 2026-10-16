@@ -1,10 +1,16 @@
 #version 330 core
-/**
- * @file GlassNaveFlight.vert
- * @brief Vertex stage for GlassNaveFlight.comp/.frag: passes stone in the
- * opaque pass and glass in the OIT pass (the other kind collapses), rebuilds
- * the face normal from the face code, and hands the pane's spectrum band on.
- * No camera motion here: the flight lives in the generator's bay phase.
+/*****************************************************************************\
+ *                              GlassNaveFlight.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage for GlassNaveFlight.comp/.frag: passes stone in the opaque pass and glass in the OIT pass (the
+ *  other kind collapses), rebuilds the face normal from the face code, and hands the pane's spectrum band on.
+ *
+ *  No camera motion here: the flight lives in the generator's bay phase.
+ *
+ *  @author René Weller
  */
 layout( location = 0 ) in vec4 attrA; ///< xyz = position, w = band
 layout( location = 1 ) in vec4 attrB; ///< x = face code, y = kind (0 stone, 1 glass, 2 sky), zw = uv

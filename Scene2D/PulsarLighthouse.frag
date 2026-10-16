@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file PulsarLighthouse.frag
- * @brief PULSAR LIGHTHOUSE: we stand on a dark plain under a pulsar.  Its
- * beam cone sweeps around once per beat -- the beat phase IS the rotation
- * angle, so the sweep is locked to the music without a single jump -- and
- * every time the cone crosses the camera the whole landscape is lit for an
- * instant: the plain, the nebula, the dust in the air.  Three cones turn
- * together: a kick cone, a snare cone and a hat cone, each in its own
- * colour and each only as bright as its instrument is playing.  The camera
- * never moves; only the light does.
+/*****************************************************************************\
+ *                              PulsarLighthouse.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioBeatPhase        -> cone angle (continuous; cos/sin of the phase)
- *   audioKick/Snare/Hat   -> brightness of the three cones (light)
- *   audioLevel            -> nebula glow
- *   audioSwell            -> haze density (slow)
- *   sceneAdvance          -> slow drift of the nebula
+ *  @brief
+ *  PULSAR LIGHTHOUSE: we stand on a dark plain under a pulsar.
  *
- * Per-activation variety: heightP (pulsar height), tiltP (cone tilt), hueP.
+ *  Its beam cone sweeps around once per beat -- the beat phase IS the rotation angle, so the sweep is locked to the
+ *  music without a single jump -- and every time the cone crosses the camera the whole landscape is lit for an
+ *  instant: the plain, the nebula, the dust in the air.  Three cones turn together: a kick cone, a snare cone and a
+ *  hat cone, each in its own colour and each only as bright as its instrument is playing.  The camera never moves;
+ *  only the light does.
+ *
+ *  Audio Reactivity:
+ *    audioBeatPhase        -> cone angle (continuous; cos/sin of the phase)
+ *    audioKick/Snare/Hat   -> brightness of the three cones (light)
+ *    audioLevel            -> nebula glow
+ *    audioSwell            -> haze density (slow)
+ *    sceneAdvance          -> slow drift of the nebula
+ *
+ *  Per-activation variety: heightP (pulsar height), tiltP (cone tilt), hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

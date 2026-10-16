@@ -1,23 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file FogBridgeTowers.frag
- * @brief FOG BRIDGE TOWERS: early morning above a bay filled with fog -- a
- * smooth white sea of cloud lying in the strait, and rising out of it the
- * two towers of a great suspension bridge, red-orange steel lit by the
- * low sun, the main cables sweeping in catenaries between them and down
- * into the fog, the thin suspender ropes hanging in rows.  Hills stand
- * dark on either side, the far shore's hills floating above the fog.
- * The fog rolls slowly in waves through the strait; the camera is still.
+/*****************************************************************************\
+ *                              FogBridgeTowers.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSwell  -> the warmth of the sunrise light (slow)
- *   audioBass   -> the glow of the fog where the sun strikes it (light)
- *   audioLevel  -> brightness
- *   sceneTime / sceneAdvance -> the fog rolling (continuous)
+ *  @brief
+ *  FOG BRIDGE TOWERS: early morning above a bay filled with fog -- a smooth white sea of cloud lying in the strait,
+ *  and rising out of it the two towers of a great suspension bridge, red-orange steel lit by the low sun, the main
+ *  cables sweeping in catenaries between them and down into the fog, the thin suspender ropes hanging in rows.
  *
- * Per-activation variety: fogP (how high the fog lies), hueP.
+ *  Hills stand dark on either side, the far shore's hills floating above the fog. The fog rolls slowly in waves
+ *  through the strait; the camera is still.
+ *
+ *  Audio Reactivity:
+ *    audioSwell  -> the warmth of the sunrise light (slow)
+ *    audioBass   -> the glow of the fog where the sun strikes it (light)
+ *    audioLevel  -> brightness
+ *    sceneTime / sceneAdvance -> the fog rolling (continuous)
+ *
+ *  Per-activation variety: fogP (how high the fog lies), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

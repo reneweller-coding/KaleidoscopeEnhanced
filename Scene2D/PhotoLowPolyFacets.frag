@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file PhotoLowPolyFacets.frag
- * @brief PHOTO LOW POLY FACETS: the photograph as low-poly art -- the
- * picture broken into a mesh of triangles, each filled with the average
- * colour of the photo beneath it and shaded like a faceted crystal
- * surface catching a moving light; the mesh vertices drift, so the
- * facets slowly shift and re-form, some facets flashing as they tilt into
- * the light.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              PhotoLowPolyFacets.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the vertices drift (integrated, jump-free)
- *   audioSpread     -> facet size
- *   audioKick       -> facets flash (light)
- *   audioMode       -> the light: cool in minor, warm in major
- *   audioRoughness  -> the facets tilt more
- *   audioSwell      -> edge lines (slow)
+ *  @brief
+ *  PHOTO LOW POLY FACETS: the photograph as low-poly art -- the picture broken into a mesh of triangles, each
+ *  filled with the average colour of the photo beneath it and shaded like a faceted crystal surface catching a
+ *  moving light; the mesh vertices drift, so the facets slowly shift and re-form, some facets flashing as they tilt
+ *  into the light.
  *
- * Knobs: facetP (facet density), reliefP (faceting relief), edgeP (edge lines), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the vertices drift (integrated, jump-free)
+ *    audioSpread     -> facet size
+ *    audioKick       -> facets flash (light)
+ *    audioMode       -> the light: cool in minor, warm in major
+ *    audioRoughness  -> the facets tilt more
+ *    audioSwell      -> edge lines (slow)
+ *
+ *  Knobs: facetP (facet density), reliefP (faceting relief), edgeP (edge lines), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

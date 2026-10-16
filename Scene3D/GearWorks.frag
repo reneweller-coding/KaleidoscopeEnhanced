@@ -1,19 +1,23 @@
 #version 330 core
+/*****************************************************************************\
+ *                              GearWorks.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Shades a gear-mechanism face as flat brass with machined, luminous edges: distance from each cube corner
+ *  (vCorner) picks out the beveled edge lines and brightens them against a dim flat face.
+ *
+ *  This fragment shader declares no audio uniforms directly; its color
+ *  (vCol) is computed per-vertex by the companion vertex shader, so any
+ *  audio reactivity arrives already baked into that per-vertex color.
+ *
+ *  @author René Weller
+ */
 out vec4 fragColor; ///< The pixel's colour (output).
 // GearWorks.frag — brass faces with machined luminous edges (depth-tested).
 in vec4 vCol;    ///< Colour (from the vertex stage).
 in vec3 vCorner; ///< Corner (from the vertex stage).
-
-/**
- * @file GearWorks.frag
- * @brief Shades a gear-mechanism face as flat brass with machined,
- * luminous edges: distance from each cube corner (vCorner) picks out the
- * beveled edge lines and brightens them against a dim flat face.
- *
- * This fragment shader declares no audio uniforms directly; its color
- * (vCol) is computed per-vertex by the companion vertex shader, so any
- * audio reactivity arrives already baked into that per-vertex color.
- */
 
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()

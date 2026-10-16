@@ -1,18 +1,23 @@
 #version 430
+/*****************************************************************************\
+ *                              MagnetoRotationalHypernovaInstability.comp
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Compute generator companion to MagnetoRotationalHypernovaInstability.frag -- generates 3D helical magnetic flux
+ *  tubes and collimated relativistic plasma jets.
+ *
+ *  The strand count is up from 64 to 192 and the torus reaches out past the
+ *  frame edges; 96 further branches draw a far-field ejecta haze in FRUSTUM
+ *  coordinates (flagged attrB.x = 1, which exempts them from the camera tilt).
+ *  The real reason the earlier widening pass did not show up in the metrics was
+ *  in the VERTEX stage, not here -- see that file.
+ *
+ *  @author René Weller
+ */
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( local_size_x = 4, local_size_y = 4, local_size_z = 4 ) in;
-
-/**
- * @file MagnetoRotationalHypernovaInstability.comp
- * @brief Compute generator companion to MagnetoRotationalHypernovaInstability.frag --
- * generates 3D helical magnetic flux tubes and collimated relativistic plasma jets.
- *
- * The strand count is up from 64 to 192 and the torus reaches out past the
- * frame edges; 96 further branches draw a far-field ejecta haze in FRUSTUM
- * coordinates (flagged attrB.x = 1, which exempts them from the camera tilt).
- * The real reason the earlier widening pass did not show up in the metrics was
- * in the VERTEX stage, not here -- see that file.
- */
 
 /// The output vertex buffer: eight floats per vertex (attribute A, attribute B) that the scene draws.
 layout( std430, binding = 0 ) buffer Verts

@@ -1,20 +1,27 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file QuantumSlipstream.frag
- * @brief QUANTUM SLIPSTREAM: An intense, high-speed journey through a warp tunnel.
- * Energetic, fluid-like bands of quantum energy twist and wrap around the camera,
- * pulsating violently to the beat.
- *   audioAdvance -> flight speed through the slipstream
- *   audioKick    -> high-frequency energy ripples and flashes
- *   audioSwell   -> tunnel width and overall brightness
- *   audioChromaHue-> palette offset for the quantum energies
+/*****************************************************************************\
+ *                              QuantumSlipstream.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   twistP float amount of twisting in the tunnel (0.5..2.0)
- *   energyP float intensity of the energy bands (0.5..1.5)
- *   hueP float palette offset (0..6.28)
+ *  @brief
+ *  QUANTUM SLIPSTREAM: An intense, high-speed journey through a warp tunnel.
+ *
+ *  Energetic, fluid-like bands of quantum energy twist and wrap around the camera, pulsating violently to the beat.
+ *
+ *    audioAdvance -> flight speed through the slipstream
+ *    audioKick    -> high-frequency energy ripples and flashes
+ *    audioSwell   -> tunnel width and overall brightness
+ *    audioChromaHue-> palette offset for the quantum energies
+ *
+ *  Per-activation variety:
+ *    twistP float amount of twisting in the tunnel (0.5..2.0)
+ *    energyP float intensity of the energy bands (0.5..1.5)
+ *    hueP float palette offset (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

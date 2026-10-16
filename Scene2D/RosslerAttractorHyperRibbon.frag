@@ -1,18 +1,26 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file RosslerAttractorHyperRibbon.frag
- * @brief ROSSLER ATTRACTOR HYPER RIBBON: Chaotic Rössler attractor system dx/dt = -y - z,
- * dy/dt = x + ay, dz/dt = b + z(x - c). Smooth logarithmic spiral disk with explosive
- * chaotic vertical Z-popping loop excursions and twisting Möbius ribbon sheets.
+/*****************************************************************************\
+ *                              RosslerAttractorHyperRibbon.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance -> drives continuous integration of Rössler attractor ribbon
- *   audioKick    -> flashes vertical chaotic Z-escape pulses & burst loops
- *   audioCentroid-> modulates parameter c & attractor trajectory sharpness
- *   audioSubBass -> expands spiral disk diameter breathing
- *   audioChromaHue-> rotates the chaotic Rössler ribbon spectrum
+ *  @brief
+ *  ROSSLER ATTRACTOR HYPER RIBBON: Chaotic Rössler attractor system dx/dt = -y - z, dy/dt = x + ay, dz/dt = b + z(x
+ *  - c).
+ *
+ *  Smooth logarithmic spiral disk with explosive chaotic vertical Z-popping loop excursions and twisting Möbius
+ *  ribbon sheets.
+ *
+ *  Audio Reactivity:
+ *    audioAdvance -> drives continuous integration of Rössler attractor ribbon
+ *    audioKick    -> flashes vertical chaotic Z-escape pulses & burst loops
+ *    audioCentroid-> modulates parameter c & attractor trajectory sharpness
+ *    audioSubBass -> expands spiral disk diameter breathing
+ *    audioChromaHue-> rotates the chaotic Rössler ribbon spectrum
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

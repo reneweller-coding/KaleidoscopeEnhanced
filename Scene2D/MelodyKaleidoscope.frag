@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file MelodyKaleidoscope.frag
- * @brief MELODY KALEIDOSCOPE: the mirrored motif is the melody itself.  The
- * last eight seconds of pitch (audioMelody, 96 samples at 80 ms) are drawn
- * as a glowing contour -- age along the wedge, pitch across it -- and folded
- * n-way, so every phrase becomes an ornament that ages outward through the
- * mirror.  The contour is thick where the melody was loud and thin where it
- * was quiet, and the photo shows through it as the light behind stained
- * glass.  Fold count fixed, rotation on the scene clock; the only thing
- * that changes fast is what was sung.
+/*****************************************************************************\
+ *                              MelodyKaleidoscope.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioMelody[96] / audioMelodyHead -> the contour (the point)
- *   audioMelodyPitch -> colour of the newest segment (light)
- *   sceneAdvance     -> rotation (continuous)
- *   audioKick        -> the centre flashes (light)
- *   audioLevel       -> brightness
+ *  @brief
+ *  MELODY KALEIDOSCOPE: the mirrored motif is the melody itself.
  *
- * Per-activation variety: sidesP (fold count), widthP (contour width), hueP.
+ *  The last eight seconds of pitch (audioMelody, 96 samples at 80 ms) are drawn as a glowing contour -- age along
+ *  the wedge, pitch across it -- and folded n-way, so every phrase becomes an ornament that ages outward through
+ *  the mirror.  The contour is thick where the melody was loud and thin where it was quiet, and the photo shows
+ *  through it as the light behind stained glass.  Fold count fixed, rotation on the scene clock; the only thing
+ *  that changes fast is what was sung.
+ *
+ *  Audio Reactivity:
+ *    audioMelody[96] / audioMelodyHead -> the contour (the point)
+ *    audioMelodyPitch -> colour of the newest segment (light)
+ *    sceneAdvance     -> rotation (continuous)
+ *    audioKick        -> the centre flashes (light)
+ *    audioLevel       -> brightness
+ *
+ *  Per-activation variety: sidesP (fold count), widthP (contour width), hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

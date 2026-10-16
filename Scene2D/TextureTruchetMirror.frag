@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureTruchetMirror.frag
- * @brief TEXTURE TRUCHET MIRROR: quarter-circle Truchet tiles whose arcs are
- * mirrors -- each tile holds two arcs, and the bands between the arcs
- * show the photograph reflected back and forth across them, so the
- * picture folds into endless meandering ribbons of mirrored image; tiles
- * turn slowly (cross-faded, never jumping), re-routing the ribbons, and
- * the arc mirrors gleam.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              TextureTruchetMirror.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the tiles re-route and the photo streams (integrated, jump-free)
- *   audioSpread     -> ribbon width
- *   audioKick       -> the mirror arcs gleam (light)
- *   audioMode       -> the tint: cool in minor, warm in major
- *   audioPhase      -> the field turns (integrated)
- *   audioSwell      -> the glow between the ribbons (slow)
+ *  @brief
+ *  TEXTURE TRUCHET MIRROR: quarter-circle Truchet tiles whose arcs are mirrors -- each tile holds two arcs, and the
+ *  bands between the arcs show the photograph reflected back and forth across them, so the picture folds into
+ *  endless meandering ribbons of mirrored image; tiles turn slowly (cross-faded, never jumping), re-routing the
+ *  ribbons, and the arc mirrors gleam.
  *
- * Knobs: tileP (tile size), mirrorP (mirror sharpness), photoZoomP, hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the tiles re-route and the photo streams (integrated, jump-free)
+ *    audioSpread     -> ribbon width
+ *    audioKick       -> the mirror arcs gleam (light)
+ *    audioMode       -> the tint: cool in minor, warm in major
+ *    audioPhase      -> the field turns (integrated)
+ *    audioSwell      -> the glow between the ribbons (slow)
+ *
+ *  Knobs: tileP (tile size), mirrorP (mirror sharpness), photoZoomP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file WeatherRadarSweep.frag
- * @brief WEATHER RADAR SWEEP: a weather radar screen at night -- the beam
- * sweeps around and around, and in its wake the rain echoes light up in
- * the radar palette (green drizzle, yellow rain, red downpours, magenta
- * hail cores) and slowly fade until the next pass; the echoes are storm
- * cells shaped by the photograph and drifting with the wind; range rings,
- * a faint map (the photo's edges) and the sweep's bright leading line.
- * Several radar sites overlap across the endless plane.  Mirrorable.
+/*****************************************************************************\
+ *                              WeatherRadarSweep.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the storms drift (integrated, jump-free)
- *   audioPhase      -> the sweep turns (integrated)
- *   audioSpread     -> the storms grow and intensify
- *   audioKick       -> the leading line flashes (light)
- *   audioMode       -> the screen: green phosphor in minor, modern colour in major
- *   audioSwell      -> the afterglow lasts longer (slow)
+ *  @brief
+ *  WEATHER RADAR SWEEP: a weather radar screen at night -- the beam sweeps around and around, and in its wake the
+ *  rain echoes light up in the radar palette (green drizzle, yellow rain, red downpours, magenta hail cores) and
+ *  slowly fade until the next pass; the echoes are storm cells shaped by the photograph and drifting with the wind;
+ *  range rings, a faint map (the photo's edges) and the sweep's bright leading line.
  *
- * Knobs: siteP (radar site spacing), stormP (storm density), mapP (map lines), hueP.
+ *  Several radar sites overlap across the endless plane.  Mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the storms drift (integrated, jump-free)
+ *    audioPhase      -> the sweep turns (integrated)
+ *    audioSpread     -> the storms grow and intensify
+ *    audioKick       -> the leading line flashes (light)
+ *    audioMode       -> the screen: green phosphor in minor, modern colour in major
+ *    audioSwell      -> the afterglow lasts longer (slow)
+ *
+ *  Knobs: siteP (radar site spacing), stormP (storm density), mapP (map lines), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

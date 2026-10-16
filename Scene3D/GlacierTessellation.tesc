@@ -1,8 +1,14 @@
 #version 400 core
-/**
- * @file GlacierTessellation.tesc
- * @brief Tessellation-control stage companion to GlacierTessellation.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              GlacierTessellation.tesc
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Tessellation-control stage companion to GlacierTessellation.frag -- see that file's header for this scene's
+ *  description.
+ *
+ *  @author René Weller
  */
 /// GlacierTessellation.tesc — Distance-adaptive GPU Hardware Tessellation
 layout( vertices = 4 ) out;

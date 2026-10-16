@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureVortexCloud.frag
- * @brief TEXTURE VORTEX CLOUD: looking up into the heart of a rotating storm
- * -- a vast spiral of clouds winds around a clear eye, the cloud bands
- * stretched by the rotation into long streaks that sweep inward faster
- * near the centre, their undersides tinted by the photograph and lit from
- * the eye's pale glow; lightning flickers within the bands.  Endless
- * beyond the frame; mirrorable.
+/*****************************************************************************\
+ *                              TextureVortexCloud.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the rotation (integrated, jump-free)
- *   audioSpread     -> the spiral winds tighter
- *   audioKick       -> lightning in the bands (light)
- *   audioMode       -> the light: steel blue in minor, sulphur-orange in major
- *   audioRoughness  -> the turbulence in the bands
- *   audioSwell      -> the eye's glow (slow)
+ *  @brief
+ *  TEXTURE VORTEX CLOUD: looking up into the heart of a rotating storm -- a vast spiral of clouds winds around a
+ *  clear eye, the cloud bands stretched by the rotation into long streaks that sweep inward faster near the centre,
+ *  their undersides tinted by the photograph and lit from the eye's pale glow; lightning flickers within the bands.
  *
- * Knobs: armP (spiral arms), eyeP (eye size), densityP (cloud density), hueP.
+ *  Endless beyond the frame; mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the rotation (integrated, jump-free)
+ *    audioSpread     -> the spiral winds tighter
+ *    audioKick       -> lightning in the bands (light)
+ *    audioMode       -> the light: steel blue in minor, sulphur-orange in major
+ *    audioRoughness  -> the turbulence in the bands
+ *    audioSwell      -> the eye's glow (slow)
+ *
+ *  Knobs: armP (spiral arms), eyeP (eye size), densityP (cloud density), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

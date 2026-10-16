@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureConfettiVolume.frag
- * @brief TEXTURE CONFETTI VOLUME: flying through a slow storm of glittering
- * confetti -- countless small metallic flakes (squares, circles and
- * strips) tumble toward the viewer in deep perspective, each catching the
- * light only when it turns flat to us, so the air sparkles in waves; the
- * flakes carry the photograph's colours, far ones tiny and dim, near ones
- * sailing past large and soft.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              TextureConfettiVolume.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the flight through the confetti (integrated, jump-free)
- *   audioSpread     -> the flakes swirl wider
- *   audioKick       -> a wave of flashes (light)
- *   audioMode       -> palette: silver and blue in minor, gold and red in major (tint)
- *   audioHigh       -> sparkle (light)
- *   audioSwell      -> the glow of the air (slow)
+ *  @brief
+ *  TEXTURE CONFETTI VOLUME: flying through a slow storm of glittering confetti -- countless small metallic flakes
+ *  (squares, circles and strips) tumble toward the viewer in deep perspective, each catching the light only when it
+ *  turns flat to us, so the air sparkles in waves; the flakes carry the photograph's colours, far ones tiny and
+ *  dim, near ones sailing past large and soft.
  *
- * Knobs: densityP (flakes), sizeP (flake size), photoP (photo colours), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the flight through the confetti (integrated, jump-free)
+ *    audioSpread     -> the flakes swirl wider
+ *    audioKick       -> a wave of flashes (light)
+ *    audioMode       -> palette: silver and blue in minor, gold and red in major (tint)
+ *    audioHigh       -> sparkle (light)
+ *    audioSwell      -> the glow of the air (slow)
+ *
+ *  Knobs: densityP (flakes), sizeP (flake size), photoP (photo colours), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

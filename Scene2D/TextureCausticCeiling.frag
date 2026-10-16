@@ -1,31 +1,36 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureCausticCeiling.frag
- * @brief TEXTURE CAUSTIC CEILING: sunlight through moving water, cast onto a
- * pale surface -- the bright, sharp, ever-changing net of caustic lines
- * that dances on the bottom of a pool, but the water's surface is shaped
- * by the photograph: its relief becomes the waves, so the net takes the
- * photo's structure (tight cells over fine grain, long lines along veins
- * and ridges), and the light carries the photo's colours, split into
- * rainbow fringes at the brightest lines.  The waves travel continuously;
- * the net is endless and mirrors without seams.
+/*****************************************************************************\
+ *                              TextureCausticCeiling.frag
+\*****************************************************************************/
+/*! @file
  *
- * The caustic is computed properly: each point of the water surface
- * refracts the light by the surface slope; the brightness where the rays
- * land is the inverse of the area they spread over (the Jacobian).
+ *  @brief
+ *  TEXTURE CAUSTIC CEILING: sunlight through moving water, cast onto a pale surface -- the bright, sharp,
+ *  ever-changing net of caustic lines that dances on the bottom of a pool, but the water's surface is shaped by the
+ *  photograph: its relief becomes the waves, so the net takes the photo's structure (tight cells over fine grain,
+ *  long lines along veins and ridges), and the light carries the photo's colours, split into rainbow fringes at the
+ *  brightest lines.
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the waves travel (integrated, jump-free)
- *   audioSpread     -> the depth of the water (focus): lines sharpen or soften
- *   audioRoughness  -> choppy small waves on top
- *   audioMode       -> the light warms in major
- *   audioHigh       -> sparkle on the brightest lines (light)
- *   audioSwell      -> sun strength (slow)
+ *  The waves travel continuously; the net is endless and mirrors without seams.
  *
- * Knobs: waveP (share of photo relief vs. free waves), scaleP, fringeP
- * (colour fringes), hueP.
+ *  The caustic is computed properly: each point of the water surface
+ *  refracts the light by the surface slope; the brightness where the rays
+ *  land is the inverse of the area they spread over (the Jacobian).
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the waves travel (integrated, jump-free)
+ *    audioSpread     -> the depth of the water (focus): lines sharpen or soften
+ *    audioRoughness  -> choppy small waves on top
+ *    audioMode       -> the light warms in major
+ *    audioHigh       -> sparkle on the brightest lines (light)
+ *    audioSwell      -> sun strength (slow)
+ *
+ *  Knobs: waveP (share of photo relief vs. free waves), scaleP, fringeP
+ *  (colour fringes), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

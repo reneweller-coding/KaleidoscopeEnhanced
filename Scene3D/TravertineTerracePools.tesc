@@ -1,10 +1,16 @@
 #version 400 core
-/**
- * @file TravertineTerracePools.tesc
- * @brief Tessellation control for TravertineTerracePools: adaptive by
- * distance, a little finer with the swell.  fractional_odd_spacing keeps
- * the level changes continuous, so a rim never pops as the level steps.
- * EXTENT must match the evaluation stage exactly.
+/*****************************************************************************\
+ *                              TravertineTerracePools.tesc
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Tessellation control for TravertineTerracePools: adaptive by distance, a little finer with the swell.
+ *
+ *  fractional_odd_spacing keeps the level changes continuous, so a rim never pops as the level steps. EXTENT must
+ *  match the evaluation stage exactly.
+ *
+ *  @author René Weller
  */
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( vertices = 4 ) out;

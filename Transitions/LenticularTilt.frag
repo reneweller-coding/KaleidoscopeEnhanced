@@ -1,29 +1,36 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file LenticularTilt.frag
- * @brief TRANSITION LENTICULAR TILT: two interlaced pictures under a lens
- * array.  The viewing angle swings, and the pictures trade places -- with the
- * banding ghost across the changeover that gives every lenticular print away.
+/*****************************************************************************\
+ *                              LenticularTilt.frag
+\*****************************************************************************/
+/*! @file
  *
- * Nothing moves.  A lenticular sheet holds both pictures side by side under
- * each lenticule, and which one reaches the eye depends only on the ANGLE the
- * sheet is seen from: the lens maps that angle onto a position within its own
- * strip.  So the transition here is a swing of one angle, and the two strips
- * are static -- which is exactly why a lenticular does not read as a wipe.
+ *  @brief
+ *  TRANSITION LENTICULAR TILT: two interlaced pictures under a lens array.
  *
- * Because a real lens has a focal spread, the changeover is not clean: for a
- * range of angles both strips are partly visible and the picture shows the
- * characteristic interlace banding.  That band is the effect, not an artefact
- * to be smoothed away.
+ *  The viewing angle swings, and the pictures trade places -- with the banding ghost across the changeover that
+ *  gives every lenticular print away.
  *
- * Audio Reactivity:
- *   audioHigh  -> the gloss along each lenticule (light)
- *   audioSwell -> the lens's focal spread: how wide the ghost band is (slow)
- *   audioKick  -> the light across the sheet (light)
+ *  Nothing moves.  A lenticular sheet holds both pictures side by side under
+ *  each lenticule, and which one reaches the eye depends only on the ANGLE the
+ *  sheet is seen from: the lens maps that angle onto a position within its own
+ *  strip.  So the transition here is a swing of one angle, and the two strips
+ *  are static -- which is exactly why a lenticular does not read as a wipe.
  *
- * Per-activation variety: pitchP, spreadP, hueP.
+ *  Because a real lens has a focal spread, the changeover is not clean: for a
+ *  range of angles both strips are partly visible and the picture shows the
+ *  characteristic interlace banding.  That band is the effect, not an artefact
+ *  to be smoothed away.
+ *
+ *  Audio Reactivity:
+ *    audioHigh  -> the gloss along each lenticule (light)
+ *    audioSwell -> the lens's focal spread: how wide the ghost band is (slow)
+ *    audioKick  -> the light across the sheet (light)
+ *
+ *  Per-activation variety: pitchP, spreadP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

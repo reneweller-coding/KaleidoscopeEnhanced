@@ -1,23 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file BatikWaxCracks.frag
- * @brief BATIK WAX CRACKS: cloth under wax, dyed.  A drawn motif of dots
- * and vines is reserved in wax; the wax then crazes into a network of
- * fine cracks, and the dye seeps into every crack, so the cloth ends up
- * with the pattern plus a web of thin dark veins.  Over the scene arc the
- * crack net grows and the dye deepens; the bass is how far the dye
- * spreads, the chroma classes pick the dye bath.  Camera fixed on the cloth.
+/*****************************************************************************\
+ *                              BatikWaxCracks.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   sceneProgress   -> the crazing spreads and the dye takes (the arc)
- *   audioBass       -> how deep the dye runs into the cracks (slow)
- *   audioChroma[12] -> the dye colours (light)
- *   audioHigh       -> the wax sheen (light)
- *   audioKick       -> the cloth is lifted: a light ripple (light only)
+ *  @brief
+ *  BATIK WAX CRACKS: cloth under wax, dyed.
  *
- * Per-activation variety: motifP, crackP, hueP.
+ *  A drawn motif of dots and vines is reserved in wax; the wax then crazes into a network of fine cracks, and the
+ *  dye seeps into every crack, so the cloth ends up with the pattern plus a web of thin dark veins.  Over the scene
+ *  arc the crack net grows and the dye deepens; the bass is how far the dye spreads, the chroma classes pick the
+ *  dye bath.  Camera fixed on the cloth.
+ *
+ *  Audio Reactivity:
+ *    sceneProgress   -> the crazing spreads and the dye takes (the arc)
+ *    audioBass       -> how deep the dye runs into the cracks (slow)
+ *    audioChroma[12] -> the dye colours (light)
+ *    audioHigh       -> the wax sheen (light)
+ *    audioKick       -> the cloth is lifted: a light ripple (light only)
+ *
+ *  Per-activation variety: motifP, crackP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

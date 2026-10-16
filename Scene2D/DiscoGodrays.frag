@@ -1,20 +1,27 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file DiscoGodrays.frag
- * @brief Adapted from "Disco Godrays" by \@kishimisu (2023) — https://www.shadertoy.com/view/Dt33RS
- * Original licensed CC BY-NC-SA 4.0 (attribution kept per the licence).
+/*****************************************************************************\
+ *                              DiscoGodrays.frag
+\*****************************************************************************/
+/*! @file
  *
- * Kaleidoscopic volumetric "godrays": a densely-sampled raymarch through a
- * mirror-ball fold of a tube + sphere, giving fans of coloured light.
- * Adapted to our engine:
- *   * Shadertoy -> ours (gl_FragCoord/resolution/time, GLSL 1.20; round() ->
- *     floor(x+.5); the blue-noise channel -> a cheap hash; the mat2(cos vec4)
- *     trick -> a proper rotation).
- *   * IMAGE-FORWARD: the source image colours the rays and drifts as a faint nebula.
- *   * Audio-reactive & JUMP-FREE: the disco spin uses audioPhase (never time*audio);
- *     beats/onsets brighten; centroid/valence grade the palette.
+ *  @brief
+ *  Adapted from "Disco Godrays" by \@kishimisu (2023) — https://www.shadertoy.com/view/Dt33RS
+ *
+ *  Original licensed CC BY-NC-SA 4.0 (attribution kept per the licence).
+ *
+ *  Kaleidoscopic volumetric "godrays": a densely-sampled raymarch through a
+ *  mirror-ball fold of a tube + sphere, giving fans of coloured light.
+ *  Adapted to our engine:
+ *    * Shadertoy -> ours (gl_FragCoord/resolution/time, GLSL 1.20; round() ->
+ *      floor(x+.5); the blue-noise channel -> a cheap hash; the mat2(cos vec4)
+ *      trick -> a proper rotation).
+ *    * IMAGE-FORWARD: the source image colours the rays and drifts as a faint nebula.
+ *    * Audio-reactive & JUMP-FREE: the disco spin uses audioPhase (never time*audio);
+ *      beats/onsets brighten; centroid/valence grade the palette.
+ *
+ *  @author kishimisu (the original shader, CC BY-NC-SA 4.0), René Weller (adaptation)
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

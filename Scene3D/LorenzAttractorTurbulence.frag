@@ -1,4 +1,21 @@
 #version 330 core
+/*****************************************************************************\
+ *                              LorenzAttractorTurbulence.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Shades one ribbon-tube segment of the strange-attractor flow traced in LorenzAttractorTurbulence.vert: a glowing
+ *  tube core whose hue Doppler-shifts from blue to magenta with the local path speed (vVelocity), overlaid with
+ *  fast travelling pulse packets and a sampled strip of the current photo.
+ *
+ *  audioKick sharpens and brightens the travelling pulse packets;
+ *  audioChromaHue, together with the hueP preset, rotates the final hue;
+ *  glowP scales overall brightness. A soft-knee tone curve keeps the
+ *  additive core+pulse+photo mix from clipping to white.
+ *
+ *  @author René Weller
+ */
 out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec3  vPos;      ///< Position (from the vertex stage).
@@ -6,20 +23,6 @@ in float vT;        ///< T (from the vertex stage).
 in float vRibbonID; ///< Ribbon ID (from the vertex stage).
 in float vVelocity; ///< Velocity (from the vertex stage).
 in float vSide;     ///< Which side of a strip (from the vertex stage).
-
-/**
- * @file LorenzAttractorTurbulence.frag
- * @brief Shades one ribbon-tube segment of the strange-attractor flow
- * traced in LorenzAttractorTurbulence.vert: a glowing tube core whose
- * hue Doppler-shifts from blue to magenta with the local path speed
- * (vVelocity), overlaid with fast travelling pulse packets and a sampled
- * strip of the current photo.
- *
- * audioKick sharpens and brightens the travelling pulse packets;
- * audioChromaHue, together with the hueP preset, rotates the final hue;
- * glowP scales overall brightness. A soft-knee tone curve keeps the
- * additive core+pulse+photo mix from clipping to white.
- */
 
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

@@ -1,16 +1,20 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file GlacierCalvingFront.frag
- * @brief Fragment stage for GlacierCalvingFront: a grey polar sky, the
- * cliff face of blue-white ice carrying the photo as its crevasse pattern
- * and lit from within by the bass, the sea dark with the cliff reflected,
- * slabs as photo ice, spray as round white drops, the kick a flash along
- * the fresh calving scar.
+/*****************************************************************************\
+ *                              GlacierCalvingFront.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity: audioBass -> ice glow; audioKick -> scar flash;
- *                   audioSwell -> daylight; audioHigh -> spray sparkle; audioLevel.
+ *  @brief
+ *  Fragment stage for GlacierCalvingFront: a grey polar sky, the cliff face of blue-white ice carrying the photo as
+ *  its crevasse pattern and lit from within by the bass, the sea dark with the cliff reflected, slabs as photo ice,
+ *  spray as round white drops, the kick a flash along the fresh calving scar.
+ *
+ *  Audio Reactivity: audioBass -> ice glow; audioKick -> scar flash;
+ *                    audioSwell -> daylight; audioHigh -> spray sparkle; audioLevel.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 in vec2  vTexCoord; ///< Texture coordinate (from the vertex stage).
 in vec3  vWorld;    ///< World position (from the vertex stage).
 in float vKind;     ///< Element kind (from the vertex stage).

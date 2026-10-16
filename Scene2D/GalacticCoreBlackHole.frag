@@ -1,20 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file GalacticCoreBlackHole.frag
- * @brief GALACTIC CORE BLACK HOLE: A fast-paced orbit around Sagittarius A* at
- * the center of the galaxy. Extreme density of fast-moving stars zooming past,
- * heavily distorted by the immense gravitational lensing of the black hole.
- *   audioAdvance -> camera orbital speed
- *   audioKick    -> flashes from stars being torn apart / accretion flares
- *   audioSwell   -> brightness of the dense galactic core background
- *   audioChromaHue-> palette offset for the core's light
+/*****************************************************************************\
+ *                              GalacticCoreBlackHole.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   starP float density and speed of orbiting stars (0.5..2.0)
- *   lensP float strength of the gravitational lensing (0.5..1.5)
- *   hueP float palette offset (0..6.28)
+ *  @brief
+ *  GALACTIC CORE BLACK HOLE: A fast-paced orbit around Sagittarius A* at the center of the galaxy.
+ *
+ *  Extreme density of fast-moving stars zooming past, heavily distorted by the immense gravitational lensing of the
+ *  black hole.
+ *
+ *    audioAdvance -> camera orbital speed
+ *    audioKick    -> flashes from stars being torn apart / accretion flares
+ *    audioSwell   -> brightness of the dense galactic core background
+ *    audioChromaHue-> palette offset for the core's light
+ *
+ *  Per-activation variety:
+ *    starP float density and speed of orbiting stars (0.5..2.0)
+ *    lensP float strength of the gravitational lensing (0.5..1.5)
+ *    hueP float palette offset (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

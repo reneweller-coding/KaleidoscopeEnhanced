@@ -1,17 +1,24 @@
 #version 330 core
+/*****************************************************************************\
+ *                              MirrorShatterExplosion.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Shades one triangular mirror shard from MirrorShatterExplosion.geom: a lit glinting facet (fixed-direction
+ *  diffuse + tight specular) with a Fresnel rim so shards read as sharp glass/mirror fragments rather than flat
+ *  matte confetti.
+ *
+ *  All placement, colour and the beat- synced explosion are computed in the geometry stage and arrive pre-baked in
+ *  gCol.
+ *
+ *  @author René Weller
+ */
 out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec3 gNormal; ///< Normal (from the geometry stage).
 in vec3 gWorld;  ///< World (from the geometry stage).
 in vec3 gCol;    ///< The colour gathered so far for this pixel.
-
-/**
- * @file MirrorShatterExplosion.frag
- * @brief Shades one triangular mirror shard from MirrorShatterExplosion.geom: a lit glinting
- * facet (fixed-direction diffuse + tight specular) with a Fresnel rim so shards read as sharp
- * glass/mirror fragments rather than flat matte confetti. All placement, colour and the beat-
- * synced explosion are computed in the geometry stage and arrive pre-baked in gCol.
- */
 
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()

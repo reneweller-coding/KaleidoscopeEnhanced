@@ -1,24 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file GlowwormCaveThreads.frag
- * @brief GLOWWORM CAVE THREADS: the ceiling of a glow-worm cave -- a
- * galaxy of blue-green lights, each a larva at the top of a hanging silk
- * thread strung with sticky beads (round), the still water below mirroring
- * it all.  The lights glow with their spectrum band (each worm a band),
- * the beads catch the treble, a drip from the ceiling on the kick sends
- * a ring across the water; the photo is the wet rock.  Camera fixed in
- * the boat.
+/*****************************************************************************\
+ *                              GlowwormCaveThreads.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSpectrum[32] -> glow-worm brightness by band (light)
- *   audioHigh         -> bead sparkle (light)
- *   audioKick         -> a drip and its ring (light)
- *   sceneAdvance      -> the threads sway gently, rings spread (continuous)
- *   audioLevel        -> brightness
+ *  @brief
+ *  GLOWWORM CAVE THREADS: the ceiling of a glow-worm cave -- a galaxy of blue-green lights, each a larva at the top
+ *  of a hanging silk thread strung with sticky beads (round), the still water below mirroring it all.
  *
- * Per-activation variety: densP, threadP, hueP.
+ *  The lights glow with their spectrum band (each worm a band), the beads catch the treble, a drip from the ceiling
+ *  on the kick sends a ring across the water; the photo is the wet rock.  Camera fixed in the boat.
+ *
+ *  Audio Reactivity:
+ *    audioSpectrum[32] -> glow-worm brightness by band (light)
+ *    audioHigh         -> bead sparkle (light)
+ *    audioKick         -> a drip and its ring (light)
+ *    sceneAdvance      -> the threads sway gently, rings spread (continuous)
+ *    audioLevel        -> brightness
+ *
+ *  Per-activation variety: densP, threadP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

@@ -1,11 +1,17 @@
 #version 330 core
-/**
- * @file MeshServerAisle.vert
- * @brief Vertex stage companion to MeshServerAisle.frag -- see that file's
- * header. ONE server rack drawn sixteen times (instances="16"): two rows of
- * eight down a cold aisle, their fronts turned to face it, receding toward
- * a vanishing point. The generator's front is +Z; a quarter turn either
- * way faces it into the aisle. The shell is drawn by instance 0 only.
+/*****************************************************************************\
+ *                              MeshServerAisle.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to MeshServerAisle.frag -- see that file's header.
+ *
+ *  ONE server rack drawn sixteen times (instances="16"): two rows of eight down a cold aisle, their fronts turned
+ *  to face it, receding toward a vanishing point. The generator's front is +Z; a quarter turn either way faces it
+ *  into the aisle. The shell is drawn by instance 0 only.
+ *
+ *  @author René Weller
  */
 
 in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an

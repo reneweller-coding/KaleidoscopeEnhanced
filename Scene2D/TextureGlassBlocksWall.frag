@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureGlassBlocksWall.frag
- * @brief TEXTURE GLASS BLOCKS WALL: a wall of pressed glass blocks with the
- * photograph moving slowly behind it -- each block bends the view in its
- * own pattern (ribbed, rippled, pillowed or with concentric waves), so
- * the picture breaks into a grid of distorted fragments, sharp in some
- * blocks and swimming in others; the blocks' edges gleam, the mortar
- * joints are pale, and a highlight wanders across the glass.  Endless,
- * mirrorable.
+/*****************************************************************************\
+ *                              TextureGlassBlocksWall.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the scene behind glides past (integrated, jump-free)
- *   audioSpread     -> refraction strength
- *   audioKick       -> the block edges gleam (light)
- *   audioMode       -> glass tint: blue-green in minor, amber in major
- *   audioRoughness  -> the ripples get finer
- *   audioSwell      -> the light behind brightens (slow)
+ *  @brief
+ *  TEXTURE GLASS BLOCKS WALL: a wall of pressed glass blocks with the photograph moving slowly behind it -- each
+ *  block bends the view in its own pattern (ribbed, rippled, pillowed or with concentric waves), so the picture
+ *  breaks into a grid of distorted fragments, sharp in some blocks and swimming in others; the blocks' edges gleam,
+ *  the mortar joints are pale, and a highlight wanders across the glass.
  *
- * Knobs: blockP (block size), mortarP (joint width), patternP (pattern mix), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the scene behind glides past (integrated, jump-free)
+ *    audioSpread     -> refraction strength
+ *    audioKick       -> the block edges gleam (light)
+ *    audioMode       -> glass tint: blue-green in minor, amber in major
+ *    audioRoughness  -> the ripples get finer
+ *    audioSwell      -> the light behind brightens (slow)
+ *
+ *  Knobs: blockP (block size), mortarP (joint width), patternP (pattern mix), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

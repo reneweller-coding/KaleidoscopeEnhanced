@@ -1,22 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file QuaternionFractalHopfLoom.frag
- * @brief QUATERNION FRACTAL HOPF LOOM: 4D hypercomplex quaternion Julia fractal
- * sliced dynamically and projected via continuous Hopf fibration into interlocking
- * self-similar 3D/2D nested torus weaves and iridescent optical filaments.
- *   audioAdvance -> navigates hypercomplex 4D slice coordinates (w-axis orbit)
- *   audioPhase   -> twists Hopf fibration projection angles
- *   audioKick    -> flashes fractal boundary orbit-trap contact points
- *   audioSwell   -> deepens fractal iteration glow & luminous field density
- *   audioCentroid-> shifts orbit-trap distance palette spectra
+/*****************************************************************************\
+ *                              QuaternionFractalHopfLoom.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   iterP    float fractal iteration depth & detail        (6.0..14.0)
- *   sliceP   float 4D quaternion hyper-rotation speed      (0.3..1.5)
- *   trapP    float orbit trap geometry scale & sharpness   (0.5..2.2)
- *   hopfP    float Hopf fibration fiber winding density    (1.0..3.5)
+ *  @brief
+ *  QUATERNION FRACTAL HOPF LOOM: 4D hypercomplex quaternion Julia fractal sliced dynamically and projected via
+ *  continuous Hopf fibration into interlocking self-similar 3D/2D nested torus weaves and iridescent optical
+ *  filaments.
+ *
+ *    audioAdvance -> navigates hypercomplex 4D slice coordinates (w-axis orbit)
+ *    audioPhase   -> twists Hopf fibration projection angles
+ *    audioKick    -> flashes fractal boundary orbit-trap contact points
+ *    audioSwell   -> deepens fractal iteration glow & luminous field density
+ *    audioCentroid-> shifts orbit-trap distance palette spectra
+ *
+ *  Per-activation variety:
+ *    iterP    float fractal iteration depth & detail        (6.0..14.0)
+ *    sliceP   float 4D quaternion hyper-rotation speed      (0.3..1.5)
+ *    trapP    float orbit trap geometry scale & sharpness   (0.5..2.2)
+ *    hopfP    float Hopf fibration fiber winding density    (1.0..3.5)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

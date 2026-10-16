@@ -1,13 +1,18 @@
 #version 400 core
-/**
- * @file AnechoicChamberWedges.tese
- * @brief Tessellation evaluation for AnechoicChamberWedges: the far wall
- * of an anechoic chamber -- a field of foam wedges (pyramids on a grid)
- * facing the camera, filling the frame.  The (u,v) patch plane is the
- * wall; each wedge rises toward the camera by a triangle-wave height so
- * the ridges are sharp.  Nothing moves: the wall is fixed.  The wedge
- * index and the height along the wedge go to the fragment stage, where
- * the bands light the tips.  No camera motion.
+/*****************************************************************************\
+ *                              AnechoicChamberWedges.tese
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Tessellation evaluation for AnechoicChamberWedges: the far wall of an anechoic chamber -- a field of foam wedges
+ *  (pyramids on a grid) facing the camera, filling the frame.
+ *
+ *  The (u,v) patch plane is the wall; each wedge rises toward the camera by a triangle-wave height so the ridges
+ *  are sharp.  Nothing moves: the wall is fixed.  The wedge index and the height along the wedge go to the fragment
+ *  stage, where the bands light the tips.  No camera motion.
+ *
+ *  @author René Weller
  */
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( quads, fractional_odd_spacing, ccw ) in;

@@ -1,28 +1,34 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file ScratchboardReveal.frag
- * @brief TRANSITION SCRATCHBOARD REVEAL: the outgoing scene goes to a black
- * ground, and the incoming one is scraped out of it in hatched strokes.
+/*****************************************************************************\
+ *                              ScratchboardReveal.frag
+\*****************************************************************************/
+/*! @file
  *
- * Three hatch sets at fixed angles open one after another, and a stroke only
- * opens where the incoming picture is bright enough to deserve it -- so the
- * first set carves the highlights, the second the midtones, the third fills in.
- * That is how a scratchboard is actually worked, and it is why the picture
- * arrives as drawing rather than as a wipe.
+ *  @brief
+ *  TRANSITION SCRATCHBOARD REVEAL: the outgoing scene goes to a black ground, and the incoming one is scraped out
+ *  of it in hatched strokes.
  *
- * Each stroke's width is jittered along its own length, which is what keeps the
- * line chalky instead of mechanical.  Coverage is forced to one at the very end
- * so the ground is completely gone in the last frame.
+ *  Three hatch sets at fixed angles open one after another, and a stroke only
+ *  opens where the incoming picture is bright enough to deserve it -- so the
+ *  first set carves the highlights, the second the midtones, the third fills in.
+ *  That is how a scratchboard is actually worked, and it is why the picture
+ *  arrives as drawing rather than as a wipe.
  *
- * Audio Reactivity:
- *   audioAdvance -> a slow drift of the stroke phase (continuous)
- *   audioSwell  -> the stroke width (slow)
- *   audioHigh    -> the chalky glow along a fresh stroke (light)
- *   audioSwell   -> the ground's depth (colour)
+ *  Each stroke's width is jittered along its own length, which is what keeps the
+ *  line chalky instead of mechanical.  Coverage is forced to one at the very end
+ *  so the ground is completely gone in the last frame.
  *
- * Per-activation variety: hatchP, angleP, hueP.
+ *  Audio Reactivity:
+ *    audioAdvance -> a slow drift of the stroke phase (continuous)
+ *    audioSwell  -> the stroke width (slow)
+ *    audioHigh    -> the chalky glow along a fresh stroke (light)
+ *    audioSwell   -> the ground's depth (colour)
+ *
+ *  Per-activation variety: hatchP, angleP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

@@ -1,22 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TieDyeFold.frag
- * @brief TIE-DYE FOLD: the photo folded radially like a shirt tied for
- * dyeing -- the plane folded into wedges, the dye soaking in along the folds
- * in rings and spirals.  The dye diffuses on the swell (the wet-in-wet
- * bleeding grows as the music swells and stays), the fold turns steadily on
- * the scene clock, and the kick brightens the dye fronts.  Camera still.
+/*****************************************************************************\
+ *                              TieDyeFold.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   sceneAdvance -> fold rotation and dye spiral (continuous)
- *   audioSwell   -> dye diffusion width (slow)
- *   audioKick    -> dye fronts brighten (light)
- *   audioBass    -> dye saturation (light/colour)
- *   audioLevel   -> brightness
+ *  @brief
+ *  TIE-DYE FOLD: the photo folded radially like a shirt tied for dyeing -- the plane folded into wedges, the dye
+ *  soaking in along the folds in rings and spirals.
  *
- * Per-activation variety: foldsP, spiralP, hueP.
+ *  The dye diffuses on the swell (the wet-in-wet bleeding grows as the music swells and stays), the fold turns
+ *  steadily on the scene clock, and the kick brightens the dye fronts.  Camera still.
+ *
+ *  Audio Reactivity:
+ *    sceneAdvance -> fold rotation and dye spiral (continuous)
+ *    audioSwell   -> dye diffusion width (slow)
+ *    audioKick    -> dye fronts brighten (light)
+ *    audioBass    -> dye saturation (light/colour)
+ *    audioLevel   -> brightness
+ *
+ *  Per-activation variety: foldsP, spiralP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

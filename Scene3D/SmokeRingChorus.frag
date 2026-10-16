@@ -1,16 +1,22 @@
 #version 330 core
-/**
- * @file SmokeRingChorus.frag
- * @brief SMOKE RING CHORUS: two-pass shader.  Opaque pass: the dark room
- * behind, the photo as a faint far wall lit by the mouths' glow.  OIT pass:
- * the rings as translucent smoke -- soft-edged (alpha falls toward the
- * tube's silhouette), thinning as they expand and age, tinted by the
- * palette, lit from the front; the onsets brighten every ring in flight,
- * the kick warms them, the treble adds a curl of light on the rims.
- * Weighted-blended OIT as in CathedralGlass (tone-map before accumulating).
+/*****************************************************************************\
+ *                              SmokeRingChorus.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity: audioOnset -> ring brightness; audioKick -> warmth;
- *                   audioHigh -> rim light; audioLevel -> brightness.
+ *  @brief
+ *  SMOKE RING CHORUS: two-pass shader.
+ *
+ *  Opaque pass: the dark room behind, the photo as a faint far wall lit by the mouths' glow.  OIT pass: the rings
+ *  as translucent smoke -- soft-edged (alpha falls toward the tube's silhouette), thinning as they expand and age,
+ *  tinted by the palette, lit from the front; the onsets brighten every ring in flight, the kick warms them, the
+ *  treble adds a curl of light on the rims. Weighted-blended OIT as in CathedralGlass (tone-map before
+ *  accumulating).
+ *
+ *  Audio Reactivity: audioOnset -> ring brightness; audioKick -> warmth;
+ *                    audioHigh -> rim light; audioLevel -> brightness.
+ *
+ *  @author René Weller
  */
 layout( location = 0 ) out vec4 outAccum;  ///< Accum (output).
 layout( location = 1 ) out vec4 outReveal; ///< Reveal (output).

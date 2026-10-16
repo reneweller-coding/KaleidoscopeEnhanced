@@ -1,4 +1,20 @@
 #version 330 core
+/*****************************************************************************\
+ *                              PhotoVortex.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Shades the vortex throat: the current slideshow image is wound into mirrored rings that stream inward and
+ *  stretch as they fall toward a glowing eye.
+ *
+ *  tex0/tex1 are crossfaded by interpolation. audioAdvance drives the
+ *  inward streaming speed of the image rings; audioKick pulses the
+ *  throat's eye glow, audioDrop blazes it; audioChromaHue sets the eye's
+ *  hue.
+ *
+ *  @author René Weller
+ */
 out vec4 fragColor; ///< The pixel's colour (output).
 // PhotoVortex.frag — the image is dragged into the throat: texture rings
 // stream inward, stretching as they fall; the throat glows on the drop.
@@ -14,18 +30,6 @@ uniform float audioChromaHue;    ///< Hue of the dominant pitch class (radians, 
 
 in vec2  vUV;    ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 in float vDepth; ///< Depth (from the vertex stage).
-
-/**
- * @file PhotoVortex.frag
- * @brief Shades the vortex throat: the current slideshow image is wound
- * into mirrored rings that stream inward and stretch as they fall toward
- * a glowing eye.
- *
- * tex0/tex1 are crossfaded by interpolation. audioAdvance drives the
- * inward streaming speed of the image rings; audioKick pulses the
- * throat's eye glow, audioDrop blazes it; audioChromaHue sets the eye's
- * hue.
- */
 
 /**  Rotates a colour's hue by an angle (about the grey axis).
  *

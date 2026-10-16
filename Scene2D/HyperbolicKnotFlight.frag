@@ -1,18 +1,24 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file HyperbolicKnotFlight.frag
- * @brief HYPERBOLIC KNOT FLIGHT: High-G 3D roller-coaster ride along a parametric
- * (p, q) torus knot curve with Frenet-Serret camera banking, concentric neon
- * plasma rings, reflective mirror-chamber walls, and dynamic velocity boosts.
+/*****************************************************************************\
+ *                              HyperbolicKnotFlight.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance -> drives continuous roller coaster forward progress along the knot
- *   audioKick    -> accelerates flight velocity in loopings & flashes plasma rings
- *   audioCentroid-> modulates knot p/q harmonic frequencies & track twist
- *   audioSubBass -> expands plasma ring diameter breathing
- *   audioChromaHue-> rotates the neon roller coaster spectrum
+ *  @brief
+ *  HYPERBOLIC KNOT FLIGHT: High-G 3D roller-coaster ride along a parametric (p, q) torus knot curve with
+ *  Frenet-Serret camera banking, concentric neon plasma rings, reflective mirror-chamber walls, and dynamic
+ *  velocity boosts.
+ *
+ *  Audio Reactivity:
+ *    audioAdvance -> drives continuous roller coaster forward progress along the knot
+ *    audioKick    -> accelerates flight velocity in loopings & flashes plasma rings
+ *    audioCentroid-> modulates knot p/q harmonic frequencies & track twist
+ *    audioSubBass -> expands plasma ring diameter breathing
+ *    audioChromaHue-> rotates the neon roller coaster spectrum
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

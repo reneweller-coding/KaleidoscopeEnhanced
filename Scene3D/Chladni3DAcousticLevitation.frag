@@ -1,20 +1,27 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file Chladni3DAcousticLevitation.frag
- * @brief CHLADNI 3D ACOUSTIC LEVITATION: 3D acoustic levitation in a multi-emitter ultrasound
- * standing wave array. Thousands of levitating microparticle clusters fill the whole working
- * volume of the chamber, trapped on the 3D Chladni acoustic Gor'kov radiation force nodal
- * surfaces, with ultrasonic field glows and photo texturing.
- *   audioAdvance -> navigates 3D acoustic trap focal shifting & particle rotation
- *   audioKick    -> flashes ultrasonic standing wave acoustic pressure antinode bursts
- *   audioSwell   -> enriches acoustic radiation force field strength & particle glow
- *   audioCentroid-> shifts ultrasonic Gor'kov potential color spectra
+/*****************************************************************************\
+ *                              Chladni3DAcousticLevitation.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   particleSizeP float microparticle cluster cube size      (0.03..0.12)
- *   specularP     float particle facet specular highlight    (0.8..2.5)
+ *  @brief
+ *  CHLADNI 3D ACOUSTIC LEVITATION: 3D acoustic levitation in a multi-emitter ultrasound standing wave array.
+ *
+ *  Thousands of levitating microparticle clusters fill the whole working volume of the chamber, trapped on the 3D
+ *  Chladni acoustic Gor'kov radiation force nodal surfaces, with ultrasonic field glows and photo texturing.
+ *
+ *    audioAdvance -> navigates 3D acoustic trap focal shifting & particle rotation
+ *    audioKick    -> flashes ultrasonic standing wave acoustic pressure antinode bursts
+ *    audioSwell   -> enriches acoustic radiation force field strength & particle glow
+ *    audioCentroid-> shifts ultrasonic Gor'kov potential color spectra
+ *
+ *  Per-activation variety:
+ *    particleSizeP float microparticle cluster cube size      (0.03..0.12)
+ *    specularP     float particle facet specular highlight    (0.8..2.5)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec3  vNormal;       ///< Surface normal (from the vertex stage).
 in vec3  vCol;          ///< Colour (from the vertex stage).

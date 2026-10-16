@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file StellaProtractors.frag
- * @brief STELLA PROTRACTORS: Frank Stella's Protractor paintings in motion
- * -- great interlaced half-circles and full circles of bold concentric
- * bands (each band a flat fluorescent colour) overlap and weave over and
- * under each other across the canvas, separated by thin white lines; the
- * arcs slowly rotate around their centres and the colours cycle outward
- * through the bands.  Colours drawn from the photograph.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              StellaProtractors.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the colours cycle and the arcs turn (integrated, jump-free)
- *   audioSpread     -> band width
- *   audioKick       -> the colours brighten (light)
- *   audioMode       -> palette: cool fluorescents in minor, warm in major (tint)
- *   audioPhase      -> the whole composition rotates slowly (integrated)
- *   audioSwell      -> the white separating lines (slow)
+ *  @brief
+ *  STELLA PROTRACTORS: Frank Stella's Protractor paintings in motion -- great interlaced half-circles and full
+ *  circles of bold concentric bands (each band a flat fluorescent colour) overlap and weave over and under each
+ *  other across the canvas, separated by thin white lines; the arcs slowly rotate around their centres and the
+ *  colours cycle outward through the bands.
  *
- * Knobs: arcP (arc size), bandP (bands per arc), photoP (photo colours), hueP.
+ *  Colours drawn from the photograph.  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the colours cycle and the arcs turn (integrated, jump-free)
+ *    audioSpread     -> band width
+ *    audioKick       -> the colours brighten (light)
+ *    audioMode       -> palette: cool fluorescents in minor, warm in major (tint)
+ *    audioPhase      -> the whole composition rotates slowly (integrated)
+ *    audioSwell      -> the white separating lines (slow)
+ *
+ *  Knobs: arcP (arc size), bandP (bands per arc), photoP (photo colours), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

@@ -1,17 +1,23 @@
 #version 330 core
-/**
- * @file GeothermalFumaroleMineralSpires.vert
- * @brief Vertex stage companion to GeothermalFumaroleMineralSpires.frag -- see that file's
- * header for this scene's description.
+/*****************************************************************************\
+ *                              GeothermalFumaroleMineralSpires.vert
+\*****************************************************************************/
+/*! @file
  *
- * The whole 220x120 grid used to collapse onto ONE cone, so the picture was a
- * single small chimney in the middle of a black frame, and nothing on it
- * actually moved.  The grid is now cut into a FIELD of spires: the u axis is
- * tiled into NS chimneys, the v axis into MS depth rows, and every chimney is
- * placed in FRUSTUM coordinates (x,y scaled by its own depth) so the field
- * stays evenly spread over the picture from the foreground out to the far
- * dark.  The bottom v band is spent on a full-frustum vent-steam curtain that
- * keeps the empty sky above the field off pure black.
+ *  @brief
+ *  Vertex stage companion to GeothermalFumaroleMineralSpires.frag -- see that file's header for this scene's
+ *  description.
+ *
+ *  The whole 220x120 grid used to collapse onto ONE cone, so the picture was a
+ *  single small chimney in the middle of a black frame, and nothing on it
+ *  actually moved.  The grid is now cut into a FIELD of spires: the u axis is
+ *  tiled into NS chimneys, the v axis into MS depth rows, and every chimney is
+ *  placed in FRUSTUM coordinates (x,y scaled by its own depth) so the field
+ *  stays evenly spread over the picture from the foreground out to the far
+ *  dark.  The bottom v band is spent on a full-frustum vent-steam curtain that
+ *  keeps the empty sky above the field off pure black.
+ *
+ *  @author René Weller
  */
 
 in vec4 attrA; ///< xy = global grid UV [0,1], z = 0, w = cell index

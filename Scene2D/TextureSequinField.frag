@@ -1,26 +1,31 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureSequinField.frag
- * @brief TEXTURE SEQUIN FIELD: a wall of sequins that shows the photograph --
- * thousands of small round metal discs in overlapping rows like fish
- * scales, each tinted with the colour of the photo at its place, and waves
- * run across the wall that tip the sequins over: where a wave passes they
- * flip from the photo's colour to their bright metallic backs and catch
- * the light in a sweep of glints.  Several waves cross at once, curving
- * and interfering; the wall is endless and mirrors without seams.
+/*****************************************************************************\
+ *                              TextureSequinField.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the waves travel (integrated, jump-free)
- *   audioSpread     -> wave length: a wide spectrum makes more, shorter waves
- *   audioMode       -> the metallic backs: silver in minor, gold in major (slow blend)
- *   audioRoughness  -> the sequins shimmer out of step
- *   audioKick       -> the glints flare (light)
- *   audioSwell      -> how far the sequins tip (slow)
+ *  @brief
+ *  TEXTURE SEQUIN FIELD: a wall of sequins that shows the photograph -- thousands of small round metal discs in
+ *  overlapping rows like fish scales, each tinted with the colour of the photo at its place, and waves run across
+ *  the wall that tip the sequins over: where a wave passes they flip from the photo's colour to their bright
+ *  metallic backs and catch the light in a sweep of glints.
  *
- * Knobs: sizeP (sequin size), wavesP (how many wave sources), photoP
- * (how much of the photo shows), hueP.
+ *  Several waves cross at once, curving and interfering; the wall is endless and mirrors without seams.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the waves travel (integrated, jump-free)
+ *    audioSpread     -> wave length: a wide spectrum makes more, shorter waves
+ *    audioMode       -> the metallic backs: silver in minor, gold in major (slow blend)
+ *    audioRoughness  -> the sequins shimmer out of step
+ *    audioKick       -> the glints flare (light)
+ *    audioSwell      -> how far the sequins tip (slow)
+ *
+ *  Knobs: sizeP (sequin size), wavesP (how many wave sources), photoP
+ *  (how much of the photo shows), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

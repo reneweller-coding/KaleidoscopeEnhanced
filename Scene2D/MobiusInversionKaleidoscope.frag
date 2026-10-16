@@ -1,18 +1,25 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file MobiusInversionKaleidoscope.frag
- * @brief An Escher "Circle Limit"-style infinite kaleidoscope: NOT an angular mirror fold and NOT
- * escape-time iteration, but repeated CIRCLE INVERSION through a symmetric ring of n circles (the
- * classic Apollonian-gasket / Kleinian-group construction) -- a point that falls inside any circle
- * is inverted back out through it, over and over, so the picture appears infinitely nested into
- * ever-smaller tangent circles right up to their boundary. Iteration count (how many inversions a
- * pixel needed to escape) modulates brightness, giving the fractal lattice of nested circles its
- * own visible structure independent of the photo underneath.
- *   audioPhase  -> the ring of circles slowly rotates (integrated, jump-free)
- *   audioSwell  -> circle radius breathes, changing how deep the nesting reads
- *   audioBeat/audioKick -> brief flash on the boundary lattice
+/*****************************************************************************\
+ *                              MobiusInversionKaleidoscope.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  An Escher "Circle Limit"-style infinite kaleidoscope: NOT an angular mirror fold and NOT escape-time iteration,
+ *  but repeated CIRCLE INVERSION through a symmetric ring of n circles (the classic Apollonian-gasket /
+ *  Kleinian-group construction) -- a point that falls inside any circle is inverted back out through it, over and
+ *  over, so the picture appears infinitely nested into ever-smaller tangent circles right up to their boundary.
+ *
+ *  Iteration count (how many inversions a pixel needed to escape) modulates brightness, giving the fractal lattice
+ *  of nested circles its own visible structure independent of the photo underneath.
+ *
+ *    audioPhase  -> the ring of circles slowly rotates (integrated, jump-free)
+ *    audioSwell  -> circle radius breathes, changing how deep the nesting reads
+ *    audioBeat/audioKick -> brief flash on the boundary lattice
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

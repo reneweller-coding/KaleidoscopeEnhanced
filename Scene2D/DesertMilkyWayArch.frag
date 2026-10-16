@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file DesertMilkyWayArch.frag
- * @brief DESERT MILKY WAY ARCH: a sandstone arch in the desert at night,
- * the Milky Way rising through it -- a band of countless round stars with
- * dark dust lanes and the warm glow of the galactic core, turning slowly
- * across the sky as the night goes on.  A small campfire at the foot of the
- * arch lights its inner curve orange; beyond, the desert floor and distant
- * buttes lie in starlight.  The sky's turn is steady; the music is the
- * light: the fire's flicker and the core's glow.
+/*****************************************************************************\
+ *                              DesertMilkyWayArch.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSwell  -> the core's glow (slow)
- *   audioKick   -> the fire flares (light only)
- *   audioBass   -> the fire's warmth on the rock (light)
- *   audioLevel  -> brightness
- *   sceneTime / sceneAdvance -> the sky's turn, the flicker (continuous)
+ *  @brief
+ *  DESERT MILKY WAY ARCH: a sandstone arch in the desert at night, the Milky Way rising through it -- a band of
+ *  countless round stars with dark dust lanes and the warm glow of the galactic core, turning slowly across the sky
+ *  as the night goes on.
  *
- * Per-activation variety: starsP (star density), fireP, hueP.
+ *  A small campfire at the foot of the arch lights its inner curve orange; beyond, the desert floor and distant
+ *  buttes lie in starlight.  The sky's turn is steady; the music is the light: the fire's flicker and the core's
+ *  glow.
+ *
+ *  Audio Reactivity:
+ *    audioSwell  -> the core's glow (slow)
+ *    audioKick   -> the fire flares (light only)
+ *    audioBass   -> the fire's warmth on the rock (light)
+ *    audioLevel  -> brightness
+ *    sceneTime / sceneAdvance -> the sky's turn, the flicker (continuous)
+ *
+ *  Per-activation variety: starsP (star density), fireP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

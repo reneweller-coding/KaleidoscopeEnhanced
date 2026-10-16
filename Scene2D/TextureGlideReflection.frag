@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureGlideReflection.frag
- * @brief TEXTURE GLIDE REFLECTION: a frieze of the photograph repeated by
- * glide reflection -- tiles of the picture, each mirrored and shifted half
- * a step against its neighbour, interlock in herringbone and zigzag like
- * a woven or parquet pattern; the pattern slowly glides along its axis,
- * the axis itself turns, and the tiles' borders are inlaid with thin
- * lines of light.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              TextureGlideReflection.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the pattern glides (integrated, jump-free)
- *   audioPhase      -> the axis turns (integrated)
- *   audioSpread     -> the tile aspect (longer planks when wide)
- *   audioKick       -> the inlay lines flash (light)
- *   audioMode       -> the tiles alternate light/dark tint (minor) or colour (major)
- *   audioSwell      -> the relief shading (slow)
+ *  @brief
+ *  TEXTURE GLIDE REFLECTION: a frieze of the photograph repeated by glide reflection -- tiles of the picture, each
+ *  mirrored and shifted half a step against its neighbour, interlock in herringbone and zigzag like a woven or
+ *  parquet pattern; the pattern slowly glides along its axis, the axis itself turns, and the tiles' borders are
+ *  inlaid with thin lines of light.
  *
- * Knobs: tileP (tile size), shiftP (glide offset), inlayP (inlay width), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the pattern glides (integrated, jump-free)
+ *    audioPhase      -> the axis turns (integrated)
+ *    audioSpread     -> the tile aspect (longer planks when wide)
+ *    audioKick       -> the inlay lines flash (light)
+ *    audioMode       -> the tiles alternate light/dark tint (minor) or colour (major)
+ *    audioSwell      -> the relief shading (slow)
+ *
+ *  Knobs: tileP (tile size), shiftP (glide offset), inlayP (inlay width), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

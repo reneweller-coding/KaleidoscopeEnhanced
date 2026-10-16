@@ -1,23 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file Teleidoscope.frag
- * @brief TELEIDOSCOPE: the three-mirror kaleidoscope with a lens at the
- * end -- the world (the photo) reflected in an equilateral-triangle mirror
- * tube, so the plane tiles with mirrored triangles.  The mirrors slide on
- * the swell (the triangle grows and shrinks, slowly), the object cell turns
- * steadily on the scene clock, and the lens ball at the end bulges the
- * image.  The kick lights the mirror seams.  Camera still.
+/*****************************************************************************\
+ *                              Teleidoscope.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   sceneAdvance -> rotation of the object cell (continuous)
- *   audioSwell   -> mirror spacing (slow)
- *   audioKick    -> seam highlights (light)
- *   audioHigh    -> glass sparkle (light)
- *   audioLevel   -> brightness
+ *  @brief
+ *  TELEIDOSCOPE: the three-mirror kaleidoscope with a lens at the end -- the world (the photo) reflected in an
+ *  equilateral-triangle mirror tube, so the plane tiles with mirrored triangles.
  *
- * Per-activation variety: sizeP, lensP, hueP.
+ *  The mirrors slide on the swell (the triangle grows and shrinks, slowly), the object cell turns steadily on the
+ *  scene clock, and the lens ball at the end bulges the image.  The kick lights the mirror seams.  Camera still.
+ *
+ *  Audio Reactivity:
+ *    sceneAdvance -> rotation of the object cell (continuous)
+ *    audioSwell   -> mirror spacing (slow)
+ *    audioKick    -> seam highlights (light)
+ *    audioHigh    -> glass sparkle (light)
+ *    audioLevel   -> brightness
+ *
+ *  Per-activation variety: sizeP, lensP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

@@ -1,7 +1,13 @@
 #version 430 core
-/**
- * @file CrystallineCavernTessellation.vert
- * @brief attrA.xy = corner uv (0..1), attrA.w = cell ID; attrB = per-cell seeds
+/*****************************************************************************\
+ *                              CrystallineCavernTessellation.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  attrA.xy = corner uv (0..1), attrA.w = cell ID; attrB = per-cell seeds
+ *
+ *  @author René Weller
  */
 in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an
                ///< index).

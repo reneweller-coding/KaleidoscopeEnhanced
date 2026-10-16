@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureSnowVolume.frag
- * @brief TEXTURE SNOW VOLUME: heavy snow falling at night under a street
- * lamp -- flakes of every size drift down through deep space toward us,
- * near ones large, soft and out of focus, far ones tiny and sharp, all
- * swirling on gusts; the lamp's cone of light picks them out, and behind
- * the snow the photograph glows as blurred lights of a town.  Endless,
- * mirrorable.
+/*****************************************************************************\
+ *                              TextureSnowVolume.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the snowfall (integrated, jump-free)
- *   audioSpread     -> gusts swirl the flakes
- *   audioKick       -> the lamp flickers brighter (light)
- *   audioMode       -> the light: cold blue in minor, warm sodium in major
- *   audioHigh       -> flakes glitter (light)
- *   audioSwell      -> the town lights behind (slow)
+ *  @brief
+ *  TEXTURE SNOW VOLUME: heavy snow falling at night under a street lamp -- flakes of every size drift down through
+ *  deep space toward us, near ones large, soft and out of focus, far ones tiny and sharp, all swirling on gusts;
+ *  the lamp's cone of light picks them out, and behind the snow the photograph glows as blurred lights of a town.
  *
- * Knobs: densityP (snow density), flakeP (flake size), lampP (lamp cone), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the snowfall (integrated, jump-free)
+ *    audioSpread     -> gusts swirl the flakes
+ *    audioKick       -> the lamp flickers brighter (light)
+ *    audioMode       -> the light: cold blue in minor, warm sodium in major
+ *    audioHigh       -> flakes glitter (light)
+ *    audioSwell      -> the town lights behind (slow)
+ *
+ *  Knobs: densityP (snow density), flakeP (flake size), lampP (lamp cone), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

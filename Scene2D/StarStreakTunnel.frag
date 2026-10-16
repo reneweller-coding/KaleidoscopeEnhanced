@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file StarStreakTunnel.frag
- * @brief STAR STREAK TUNNEL: the jump to light speed -- thousands of stars
- * stretch into streaks that race outward from the centre, each streak
- * coloured from the photograph (which lines a faint tunnel behind them),
- * longer and brighter the faster we go; the streaks come in waves, a soft
- * glow sits at the vanishing point, and the whole starfield slowly rolls.
- * Endless, mirrorable.
+/*****************************************************************************\
+ *                              StarStreakTunnel.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the flight (integrated, jump-free)
- *   audioSpread     -> streak length (the sense of speed)
- *   audioKick       -> the streaks flare (light)
- *   audioPhase      -> the starfield rolls (integrated)
- *   audioMode       -> colour: blue-white in minor, the photo's warm colours in major
- *   audioSwell      -> the tunnel behind shows (slow)
+ *  @brief
+ *  STAR STREAK TUNNEL: the jump to light speed -- thousands of stars stretch into streaks that race outward from
+ *  the centre, each streak coloured from the photograph (which lines a faint tunnel behind them), longer and
+ *  brighter the faster we go; the streaks come in waves, a soft glow sits at the vanishing point, and the whole
+ *  starfield slowly rolls.
  *
- * Knobs: densityP (stars), widthP (streak width), tunnelP (tunnel brightness), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the flight (integrated, jump-free)
+ *    audioSpread     -> streak length (the sense of speed)
+ *    audioKick       -> the streaks flare (light)
+ *    audioPhase      -> the starfield rolls (integrated)
+ *    audioMode       -> colour: blue-white in minor, the photo's warm colours in major
+ *    audioSwell      -> the tunnel behind shows (slow)
+ *
+ *  Knobs: densityP (stars), widthP (streak width), tunnelP (tunnel brightness), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

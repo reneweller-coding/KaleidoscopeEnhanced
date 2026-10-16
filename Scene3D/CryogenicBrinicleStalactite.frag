@@ -1,22 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file CryogenicBrinicleStalactite.frag
- * @brief CRYOGENIC BRINICLE STALACTITE: a CURTAIN of hollow ice stalactite tubes (brinicles)
- * descending from polar sea ice into supercooled seawater at every depth, through a suspended
- * field of frost motes. Freezing brine channels, benthic frost webs, refractive ice crystal
- * glints, and polar deep ocean photo texturing.
- *   audioAdvance -> drives descending brine icicle growth, the freeze front running down each
- *                   tube, & polar current drift of the frost motes
- *   audioKick    -> flashes brittle ice crystal fracturing & spark glints
- *   audioSwell   -> thickens hollow icicle tube diameter & frost web density, and brightens
- *                   the suspended motes
- *   audioCentroid-> shifts polar ice crystal refraction colors
+/*****************************************************************************\
+ *                              CryogenicBrinicleStalactite.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   iceGlowP float cryogenic ice crystal luminance          (0.8..2.5)
- *   refrP    float ice refractive dispersion intensity      (0.5..2.2)
+ *  @brief
+ *  CRYOGENIC BRINICLE STALACTITE: a CURTAIN of hollow ice stalactite tubes (brinicles) descending from polar sea
+ *  ice into supercooled seawater at every depth, through a suspended field of frost motes.
+ *
+ *  Freezing brine channels, benthic frost webs, refractive ice crystal glints, and polar deep ocean photo
+ *  texturing.
+ *
+ *    audioAdvance -> drives descending brine icicle growth, the freeze front running down each
+ *                    tube, & polar current drift of the frost motes
+ *    audioKick    -> flashes brittle ice crystal fracturing & spark glints
+ *    audioSwell   -> thickens hollow icicle tube diameter & frost web density, and brightens
+ *                    the suspended motes
+ *    audioCentroid-> shifts polar ice crystal refraction colors
+ *
+ *  Per-activation variety:
+ *    iceGlowP float cryogenic ice crystal luminance          (0.8..2.5)
+ *    refrP    float ice refractive dispersion intensity      (0.5..2.2)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec3  vPos;   ///< Position (from the vertex stage).
 in float vDepth; ///< Depth (from the vertex stage).

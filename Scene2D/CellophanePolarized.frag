@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file CellophanePolarized.frag
- * @brief CELLOPHANE POLARIZED: crumpled cellophane between crossed polarising
- * filters -- the layers of stretched film light up in vivid interference
- * colours that depend on how many layers overlap and how they were
- * stretched: overlapping angular shards of colour (magenta, yellow, cyan,
- * green) with sharp creases, over a black background where no film is;
- * as the filter slowly turns, every colour shifts to its complement and
- * back.  The shards' shapes are cut from the photograph.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              CellophanePolarized.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the analyser turns (integrated, jump-free)
- *   audioSpread     -> the number of layers
- *   audioKick       -> the colours flash brighter (light)
- *   audioMode       -> crossed polars (dark ground); parallel polars (light ground) only at very major moments
- *   audioRoughness  -> the crumpling
- *   audioSwell      -> the stretch (retardation) (slow)
+ *  @brief
+ *  CELLOPHANE POLARIZED: crumpled cellophane between crossed polarising filters -- the layers of stretched film
+ *  light up in vivid interference colours that depend on how many layers overlap and how they were stretched:
+ *  overlapping angular shards of colour (magenta, yellow, cyan, green) with sharp creases, over a black background
+ *  where no film is; as the filter slowly turns, every colour shifts to its complement and back.
  *
- * Knobs: shardP (shard size), layerP (layers), photoP (photo shapes the shards), hueP.
+ *  The shards' shapes are cut from the photograph.  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the analyser turns (integrated, jump-free)
+ *    audioSpread     -> the number of layers
+ *    audioKick       -> the colours flash brighter (light)
+ *    audioMode       -> crossed polars (dark ground); parallel polars (light ground) only at very major moments
+ *    audioRoughness  -> the crumpling
+ *    audioSwell      -> the stretch (retardation) (slow)
+ *
+ *  Knobs: shardP (shard size), layerP (layers), photoP (photo shapes the shards), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

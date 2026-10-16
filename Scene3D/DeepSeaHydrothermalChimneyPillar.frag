@@ -1,25 +1,32 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file DeepSeaHydrothermalChimneyPillar.frag
- * @brief DEEP SEA HYDROTHERMAL CHIMNEY PILLAR: an abyssal black-smoker VENT FIELD --
- * fifteen mineral chimney towers in three depth layers, standing in a slowly swelling
- * water column threaded with marine snow.  400C mineral-laden superheated hydrothermal
- * fluid vents from every summit into near-freezing ocean water, precipitating anhydrite,
- * chalcopyrite, and pyrite crystals with deep-sea photo texturing.
- *   audioAdvance -> drives hydrothermal fluid convective ascent, the water column's
- *                   swell and the drift of the marine snow and the mineral plume
- *   audioKick    -> flashes superheated hydrothermal steam cavitation bursts
- *   audioSwell   -> widens mineral chimney tower girth & sulfide precipitate density,
- *                   and brightens the water column, its mineral plume and its
- *                   marine snow
- *   audioCentroid-> shifts mineral sulfide (chalcopyrite/pyrite/sulfur) color spectra
+/*****************************************************************************\
+ *                              DeepSeaHydrothermalChimneyPillar.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   pillarScaleP float hydrothermal chimney pillar diameter   (0.8..2.2)
- *   ventGlowP    float superheated hydrothermal vent luminance(0.8..2.5)
- *   specularP    float mineral crystal facet sheen gain       (0.8..2.5)
+ *  @brief
+ *  DEEP SEA HYDROTHERMAL CHIMNEY PILLAR: an abyssal black-smoker VENT FIELD -- fifteen mineral chimney towers in
+ *  three depth layers, standing in a slowly swelling water column threaded with marine snow.
+ *
+ *  400C mineral-laden superheated hydrothermal fluid vents from every summit into near-freezing ocean water,
+ *  precipitating anhydrite, chalcopyrite, and pyrite crystals with deep-sea photo texturing.
+ *
+ *    audioAdvance -> drives hydrothermal fluid convective ascent, the water column's
+ *                    swell and the drift of the marine snow and the mineral plume
+ *    audioKick    -> flashes superheated hydrothermal steam cavitation bursts
+ *    audioSwell   -> widens mineral chimney tower girth & sulfide precipitate density,
+ *                    and brightens the water column, its mineral plume and its
+ *                    marine snow
+ *    audioCentroid-> shifts mineral sulfide (chalcopyrite/pyrite/sulfur) color spectra
+ *
+ *  Per-activation variety:
+ *    pillarScaleP float hydrothermal chimney pillar diameter   (0.8..2.2)
+ *    ventGlowP    float superheated hydrothermal vent luminance(0.8..2.5)
+ *    specularP    float mineral crystal facet sheen gain       (0.8..2.5)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec2  vUV;         ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 in vec3  vNormal;     ///< Surface normal (from the vertex stage).

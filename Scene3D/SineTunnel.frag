@@ -1,4 +1,21 @@
 #version 330 core
+/*****************************************************************************\
+ *                              SineTunnel.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Shades the procedural warp tunnel of SineTunnel.vert with smooth longitudinal colour bands flowing toward the
+ *  camera and a slow double helix stripe winding around the tube wall, in a deep teal-violet palette.
+ *
+ *  audioAdvance drives the flow speed of the bands and helix; audioChromaHue
+ *  rotates between the two band hues via hueRot; audioSwell and audioKick
+ *  brighten the wall; distance fog fades the far tube. A soft-knee tone-map
+ *  (the catalogue-review fix noted inline) compresses loud-audio exposure
+ *  instead of clipping the frame to white.
+ *
+ *  @author René Weller
+ */
 out vec4 fragColor; ///< The pixel's colour (output).
 // SineTunnel.frag — smooth colour bands flow along the tube; a gentle
 // helix stripe winds around it.  Deep teal-violet palette, no strobes.
@@ -12,19 +29,6 @@ uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short 
 in vec2  vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 in float vDist; ///< Distance (from the vertex stage).
 in float vAng;  ///< Ang (from the vertex stage).
-
-/**
- * @file SineTunnel.frag
- * @brief Shades the procedural warp tunnel of SineTunnel.vert with smooth
- * longitudinal colour bands flowing toward the camera and a slow double
- * helix stripe winding around the tube wall, in a deep teal-violet palette.
- *
- * audioAdvance drives the flow speed of the bands and helix; audioChromaHue
- * rotates between the two band hues via hueRot; audioSwell and audioKick
- * brighten the wall; distance fog fades the far tube. A soft-knee tone-map
- * (the catalogue-review fix noted inline) compresses loud-audio exposure
- * instead of clipping the frame to white.
- */
 
 /**  Rotates a colour's hue by an angle (about the grey axis).
  *

@@ -1,23 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file CherenkovRadiationWakefield.frag
- * @brief CHERENKOV RADIATION WAKEFIELD: Relativistic charged particle wakefield
- * traversing a dense dielectric medium. Emits superluminal Cherenkov shockwave
- * cones, plasma bubble cavitation cavities, travelling optical Mach fringes,
- * and photo-driven dielectric polarization glow.
- *   audioAdvance -> drives relativistic particle beam & shockwave propagation
- *   audioKick    -> triggers high-gradient plasma cavitation detonations
- *   audioCentroid-> modulates Cherenkov cone opening angle & optical dispersion
- *   audioSwell   -> intensifies background dielectric polarization glow
- *   audioSubBass -> pulses plasma wakefield bubble diameter
+/*****************************************************************************\
+ *                              CherenkovRadiationWakefield.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   machP    float Cherenkov Mach angle & dispersion       (0.6..1.8)
- *   bubbleP  float plasma wakefield cavity scale           (0.5..2.0)
- *   fringeP  float optical interference fringe density     (1.0..3.5)
- *   glowP    float dielectric polarization luminance       (0.8..2.5)
+ *  @brief
+ *  CHERENKOV RADIATION WAKEFIELD: Relativistic charged particle wakefield traversing a dense dielectric medium.
+ *
+ *  Emits superluminal Cherenkov shockwave cones, plasma bubble cavitation cavities, travelling optical Mach
+ *  fringes, and photo-driven dielectric polarization glow.
+ *
+ *    audioAdvance -> drives relativistic particle beam & shockwave propagation
+ *    audioKick    -> triggers high-gradient plasma cavitation detonations
+ *    audioCentroid-> modulates Cherenkov cone opening angle & optical dispersion
+ *    audioSwell   -> intensifies background dielectric polarization glow
+ *    audioSubBass -> pulses plasma wakefield bubble diameter
+ *
+ *  Per-activation variety:
+ *    machP    float Cherenkov Mach angle & dispersion       (0.6..1.8)
+ *    bubbleP  float plasma wakefield cavity scale           (0.5..2.0)
+ *    fringeP  float optical interference fringe density     (1.0..3.5)
+ *    glowP    float dielectric polarization luminance       (0.8..2.5)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

@@ -1,18 +1,25 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file OpticalDispersionCausticVault.frag
- * @brief OPTICAL DISPERSION CAUSTIC VAULT: High-resolution multi-wavelength
- * dispersive refraction caustics. Crystal chamber water wave interference
- * with full RGB spectral splitting, specular focal nodes, and luminous caustics.
+/*****************************************************************************\
+ *                              OpticalDispersionCausticVault.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance -> drives continuous fluid caustic wave motion & focal shifts
- *   audioKick    -> flashes intense caustic focal nodes & chromatic shockwaves
- *   audioCentroid-> modulates wave frequency & caustic network filigree
- *   audioSubBass -> expands wave amplitude breathing
- *   audioChromaHue-> rotates the prismatic refractive spectrum
+ *  @brief
+ *  OPTICAL DISPERSION CAUSTIC VAULT: High-resolution multi-wavelength dispersive refraction caustics.
+ *
+ *  Crystal chamber water wave interference with full RGB spectral splitting, specular focal nodes, and luminous
+ *  caustics.
+ *
+ *  Audio Reactivity:
+ *    audioAdvance -> drives continuous fluid caustic wave motion & focal shifts
+ *    audioKick    -> flashes intense caustic focal nodes & chromatic shockwaves
+ *    audioCentroid-> modulates wave frequency & caustic network filigree
+ *    audioSubBass -> expands wave amplitude breathing
+ *    audioChromaHue-> rotates the prismatic refractive spectrum
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

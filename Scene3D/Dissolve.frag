@@ -1,26 +1,32 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-
-/**
- * @file Dissolve.frag
- * @brief The object as a cloud of its own surface: every triangle is a splat
- * (the placement is in the geometry stage), drifting out on a curl field and
- * drawn back in. The silhouette survives as density, not as shape.
+/*****************************************************************************\
+ *                              Dissolve.frag
+\*****************************************************************************/
+/*! @file
  *
- * Each splat keeps the colour its triangle had, so the cloud is not a uniform
- * dust -- it carries the object's own markings, and a hull's panels or a
- * statue's shadows stay faintly readable in the drift. That is what keeps the
- * object identifiable while it is scattered, and it is the reason to build the
- * particles from the mesh rather than from a random distribution.
+ *  @brief
+ *  The object as a cloud of its own surface: every triangle is a splat (the placement is in the geometry stage),
+ *  drifting out on a curl field and drawn back in.
  *
- *   audioSwell -> how far the cloud opens
- *   audioDrop  -> it blows out
- *   audioKick  -> a pulse through the cloud
- *   audioAdvance -> the curl field turns
+ *  The silhouette survives as density, not as shape.
  *
- * Per-instance: sizeP, looseP (travel), grainP (splat size), tintP.
- * Per-activation variety: hueP float palette offset (0..6.28).
+ *  Each splat keeps the colour its triangle had, so the cloud is not a uniform
+ *  dust -- it carries the object's own markings, and a hull's panels or a
+ *  statue's shadows stay faintly readable in the drift. That is what keeps the
+ *  object identifiable while it is scattered, and it is the reason to build the
+ *  particles from the mesh rather than from a random distribution.
+ *
+ *    audioSwell -> how far the cloud opens
+ *    audioDrop  -> it blows out
+ *    audioKick  -> a pulse through the cloud
+ *    audioAdvance -> the curl field turns
+ *
+ *  Per-instance: sizeP, looseP (travel), grainP (splat size), tintP.
+ *  Per-activation variety: hueP float palette offset (0..6.28).
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform sampler2DArray texMeshMaterial;       ///< The mesh's material textures (albedo, roughness, normal ...).
 uniform int            texMeshMaterialLayers; ///< Number of layers in texMeshMaterial.

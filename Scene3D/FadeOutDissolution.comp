@@ -1,23 +1,28 @@
 #version 430 core
-/**
- * @file FadeOutDissolution.comp
- * @brief FADE-OUT DISSOLUTION: the photo as a curtain of 48,000 particles,
- * and as the song fades out the curtain lets go -- particle by particle the
- * picture lifts off, drifts, and thins into the dark, so the END of a track
- * is staged for the first time.  Between fade-outs the curtain still lives:
- * a slow dissolve wave rolls through it on the scene clock so a corner is
- * always coming apart and re-forming.  No particle state: every particle
- * is a function of its grid cell and the clocks, so nothing drifts away for
- * good.  The camera never moves.
+/*****************************************************************************\
+ *                              FadeOutDissolution.comp
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (generator stage):
- *   audioFadeOut  -> the dissolution (slow envelope, the whole point)
- *   sceneAdvance  -> the rolling dissolve wave (continuous)
- *   audioSwell    -> particles breathe apart a little (slow)
- *   audioKick     -> particle sparkle (fragment stage, light)
+ *  @brief
+ *  FADE-OUT DISSOLUTION: the photo as a curtain of 48,000 particles, and as the song fades out the curtain lets go
+ *  -- particle by particle the picture lifts off, drifts, and thins into the dark, so the END of a track is staged
+ *  for the first time.
  *
- * Per-instance: gridP (grid density), driftP (how far a freed particle
- *               drifts), hueP.
+ *  Between fade-outs the curtain still lives: a slow dissolve wave rolls through it on the scene clock so a corner
+ *  is always coming apart and re-forming.  No particle state: every particle is a function of its grid cell and the
+ *  clocks, so nothing drifts away for good.  The camera never moves.
+ *
+ *  Audio Reactivity (generator stage):
+ *    audioFadeOut  -> the dissolution (slow envelope, the whole point)
+ *    sceneAdvance  -> the rolling dissolve wave (continuous)
+ *    audioSwell    -> particles breathe apart a little (slow)
+ *    audioKick     -> particle sparkle (fragment stage, light)
+ *
+ *  Per-instance: gridP (grid density), driftP (how far a freed particle
+ *                drifts), hueP.
+ *
+ *  @author René Weller
  */
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( local_size_x = 4, local_size_y = 4, local_size_z = 4 ) in;

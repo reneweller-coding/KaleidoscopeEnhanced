@@ -1,20 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file StellarEngine.frag
- * @brief STELLAR ENGINE: A gigantic Shkadov thruster (a planet-sized mirror)
- * built to move an entire star system across the galaxy. The camera hovers
- * behind the massive mirror as it harnesses explosive solar flares.
- *   audioAdvance -> intense propulsion and solar wind flow
- *   audioKick    -> massive plasma bursts hitting the mirror
- *   audioSwell   -> brightness of the star and reflected light
- *   audioChromaHue-> palette offset for the star's plasma
+/*****************************************************************************\
+ *                              StellarEngine.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   mirrorP float complexity of the mirror structure (0.5..1.5)
- *   flareP float intensity of the solar flares (0.5..2.0)
- *   hueP float palette offset (0..6.28)
+ *  @brief
+ *  STELLAR ENGINE: A gigantic Shkadov thruster (a planet-sized mirror) built to move an entire star system across
+ *  the galaxy.
+ *
+ *  The camera hovers behind the massive mirror as it harnesses explosive solar flares.
+ *
+ *    audioAdvance -> intense propulsion and solar wind flow
+ *    audioKick    -> massive plasma bursts hitting the mirror
+ *    audioSwell   -> brightness of the star and reflected light
+ *    audioChromaHue-> palette offset for the star's plasma
+ *
+ *  Per-activation variety:
+ *    mirrorP float complexity of the mirror structure (0.5..1.5)
+ *    flareP float intensity of the solar flares (0.5..2.0)
+ *    hueP float palette offset (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

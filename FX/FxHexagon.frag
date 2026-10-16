@@ -1,12 +1,19 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file FxHexagon.frag
- * @brief FX HEXAGON: snaps the scene onto a honeycomb of hexagonal cells.
- *   audioBeat  -> thin dark cell borders flash on each beat
- *   audioOnset -> percussive hits brighten the cell interiors
- *   sizeP      -> per-activation hex density
+/*****************************************************************************\
+ *                              FxHexagon.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  FX HEXAGON: snaps the scene onto a honeycomb of hexagonal cells.
+ *
+ *    audioBeat  -> thin dark cell borders flash on each beat
+ *    audioOnset -> percussive hits brighten the cell interiors
+ *    sizeP      -> per-activation hex density
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

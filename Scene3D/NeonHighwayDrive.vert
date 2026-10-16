@@ -1,16 +1,24 @@
 #version 330 core
-/**
- * @file NeonHighwayDrive.vert
- * @brief A genuine ground-plane "driving" effect -- undulating terrain either side of a flattened
- * road strip, with roadside pylons periodically spiking out of the heightfield -- rather than the
- * tube/tunnel raymarch flythroughs already in the catalogue. The camera itself stays put; the
- * height and pylon functions are phase-scrolled by the integrated drive distance instead (the
- * same "treadmill" trick a scrolling texture uses), so the road reads as endless and the pylons
- * as rushing past, without ever having to translate or recycle the mesh itself.
- *   audioAdvance -> forward drive speed (integrated, jump-free)
- *   audioBass    -> terrain undulation depth
- *   audioKick    -> pylon flash + brief height pulse
- *   audioHigh    -> road-surface shimmer ripple
+/*****************************************************************************\
+ *                              NeonHighwayDrive.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  A genuine ground-plane "driving" effect -- undulating terrain either side of a flattened road strip, with
+ *  roadside pylons periodically spiking out of the heightfield -- rather than the tube/tunnel raymarch flythroughs
+ *  already in the catalogue.
+ *
+ *  The camera itself stays put; the height and pylon functions are phase-scrolled by the integrated drive distance
+ *  instead (the same "treadmill" trick a scrolling texture uses), so the road reads as endless and the pylons as
+ *  rushing past, without ever having to translate or recycle the mesh itself.
+ *
+ *    audioAdvance -> forward drive speed (integrated, jump-free)
+ *    audioBass    -> terrain undulation depth
+ *    audioKick    -> pylon flash + brief height pulse
+ *    audioHigh    -> road-surface shimmer ripple
+ *
+ *  @author René Weller
  */
 
 in vec4 attrA; ///< .xy = cell UV [0,1] for geom=grid

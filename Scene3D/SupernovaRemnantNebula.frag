@@ -1,22 +1,26 @@
 #version 330 core
+/*****************************************************************************\
+ *                              SupernovaRemnantNebula.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Shades the supernova-remnant filament strands built in SupernovaRemnantNebula.vert, blending the current
+ *  slideshow photo (tex0/ tex1, cross-faded by interpolation) with each strand's emission-line colour and
+ *  brightening a filament-edge glow along its width.
+ *
+ *  This fragment stage reads no audio uniforms directly: the emission-line
+ *  colour mix ([SII] red / [OIII] cyan / H-alpha pink), the central pulsar
+ *  flash (driven by audioKick and audioSubBass), and the audioChromaHue/hueP
+ *  colour rotation are all computed per-vertex and arrive pre-baked in
+ *  vColor.
+ *
+ *  @author René Weller
+ */
 out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec4 vColor;    ///< Color (from the vertex stage).
 in vec2 vTexCoord; ///< Texture coordinate (from the vertex stage).
-
-/**
- * @file SupernovaRemnantNebula.frag
- * @brief Shades the supernova-remnant filament strands built in
- * SupernovaRemnantNebula.vert, blending the current slideshow photo (tex0/
- * tex1, cross-faded by interpolation) with each strand's emission-line
- * colour and brightening a filament-edge glow along its width.
- *
- * This fragment stage reads no audio uniforms directly: the emission-line
- * colour mix ([SII] red / [OIII] cyan / H-alpha pink), the central pulsar
- * flash (driven by audioKick and audioSubBass), and the audioChromaHue/hueP
- * colour rotation are all computed per-vertex and arrive pre-baked in
- * vColor.
- */
 
 uniform sampler2D tex0;          ///< The current photo.
 uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).

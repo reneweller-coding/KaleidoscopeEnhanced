@@ -1,18 +1,24 @@
 #version 330 core
-/**
- * @file MeshTerrain.vert
- * @brief Vertex stage for MeshTerrain.frag: the model is not an object here,
- * it is the LANDSCAPE. Scaled up by two orders of magnitude, laid flat and
- * flown over.
+/*****************************************************************************\
+ *                              MeshTerrain.vert
+\*****************************************************************************/
+/*! @file
  *
- * Nothing about the asset changes; only the relationship between it and the
- * camera does. A sculpture's folds become ridges and valleys once they are
- * kilometres across and lit from the side, and the eye has no way to tell that
- * the mountain range it is crossing used to be a bust on a plinth. That is the
- * whole trick, and it costs one transform.
+ *  @brief
+ *  Vertex stage for MeshTerrain.frag: the model is not an object here, it is the LANDSCAPE.
  *
- * The flight is along +Z and WRAPS: the terrain is repeated by shifting the
- * model by its own depth, so the flight never ends and never jumps.
+ *  Scaled up by two orders of magnitude, laid flat and flown over.
+ *
+ *  Nothing about the asset changes; only the relationship between it and the
+ *  camera does. A sculpture's folds become ridges and valleys once they are
+ *  kilometres across and lit from the side, and the eye has no way to tell that
+ *  the mountain range it is crossing used to be a bust on a plinth. That is the
+ *  whole trick, and it costs one transform.
+ *
+ *  The flight is along +Z and WRAPS: the terrain is repeated by shifting the
+ *  model by its own depth, so the flight never ends and never jumps.
+ *
+ *  @author René Weller
  */
 
 in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an

@@ -1,18 +1,25 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file ApollonianSpherePackingDive.frag
- * @brief APOLLONIAN SPHERE PACKING DIVE: 3D Raymarching continuous dive into the voids
- * of an Apollonian sphere packing (mutually tangent Soddy spheres). Endless recursive
- * sphere inversions, glowing circular contact laser rings, and infinite depth reflection.
+/*****************************************************************************\
+ *                              ApollonianSpherePackingDive.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance -> drives continuous forward dive into tangent sphere voids
- *   audioKick    -> flashes sphere contact tangency nodes & triggers inversion burst
- *   audioCentroid-> sharpens spherical laser contact ring contours
- *   audioSubBass -> expands Soddy sphere radii breathing
- *   audioChromaHue-> rotates the luminous Apollonian gemstone spectrum
+ *  @brief
+ *  APOLLONIAN SPHERE PACKING DIVE: 3D Raymarching continuous dive into the voids of an Apollonian sphere packing
+ *  (mutually tangent Soddy spheres).
+ *
+ *  Endless recursive sphere inversions, glowing circular contact laser rings, and infinite depth reflection.
+ *
+ *  Audio Reactivity:
+ *    audioAdvance -> drives continuous forward dive into tangent sphere voids
+ *    audioKick    -> flashes sphere contact tangency nodes & triggers inversion burst
+ *    audioCentroid-> sharpens spherical laser contact ring contours
+ *    audioSubBass -> expands Soddy sphere radii breathing
+ *    audioChromaHue-> rotates the luminous Apollonian gemstone spectrum
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

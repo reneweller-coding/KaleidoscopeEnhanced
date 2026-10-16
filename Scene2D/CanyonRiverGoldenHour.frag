@@ -1,27 +1,33 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file CanyonRiverGoldenHour.frag
- * @brief CANYON RIVER GOLDEN HOUR: flying low through a winding desert canyon
- * in the last hour of sun -- red sandstone walls rising in ledges and
- * cliffs, banded by their strata, one wall blazing gold where the low sun
- * strikes it, the other deep in blue shadow, and far below a green river
- * winding along the floor, glittering where it catches the light.  Warm
- * haze fills the distance.  The camera glides along the river's course at
- * an even speed, following its bends smoothly.
+/*****************************************************************************\
+ *                              CanyonRiverGoldenHour.frag
+\*****************************************************************************/
+/*! @file
  *
- * The canyon is a height field (terraced walls around a winding path),
- * ray-marched, with a soft shadow toward the sun.
+ *  @brief
+ *  CANYON RIVER GOLDEN HOUR: flying low through a winding desert canyon in the last hour of sun -- red sandstone
+ *  walls rising in ledges and cliffs, banded by their strata, one wall blazing gold where the low sun strikes it,
+ *  the other deep in blue shadow, and far below a green river winding along the floor, glittering where it catches
+ *  the light.
  *
- * Audio Reactivity:
- *   audioHigh   -> glitter on the river (light)
- *   audioSwell  -> the warmth of the haze (slow)
- *   audioBass   -> the strength of the sunlight on the walls (light)
- *   audioLevel  -> brightness
- *   sceneTime / sceneAdvance -> the flight (constant speed)
+ *  Warm haze fills the distance.  The camera glides along the river's course at an even speed, following its bends
+ *  smoothly.
  *
- * Per-activation variety: depthP (how deep the canyon), hueP.
+ *  The canyon is a height field (terraced walls around a winding path),
+ *  ray-marched, with a soft shadow toward the sun.
+ *
+ *  Audio Reactivity:
+ *    audioHigh   -> glitter on the river (light)
+ *    audioSwell  -> the warmth of the haze (slow)
+ *    audioBass   -> the strength of the sunlight on the walls (light)
+ *    audioLevel  -> brightness
+ *    sceneTime / sceneAdvance -> the flight (constant speed)
+ *
+ *  Per-activation variety: depthP (how deep the canyon), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

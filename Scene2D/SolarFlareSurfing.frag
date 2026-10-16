@@ -1,20 +1,27 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SolarFlareSurfing.frag
- * @brief SOLAR FLARE SURFING: Extreme close-up flight over the turbulent
- * surface of a star. Massive solar flares and plasma prominences loop
- * overhead, reacting violently to the beat.
- *   audioAdvance -> flight speed over the stellar surface
- *   audioKick    -> explosive solar flares erupting upwards
- *   audioSwell   -> brightness and height of the plasma waves
- *   audioChromaHue-> palette offset for the star's color
+/*****************************************************************************\
+ *                              SolarFlareSurfing.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   waveP float intensity of the surface plasma waves (0.5..2.0)
- *   flareP float frequency of solar flares (0.5..2.0)
- *   hueP float palette offset (0..6.28)
+ *  @brief
+ *  SOLAR FLARE SURFING: Extreme close-up flight over the turbulent surface of a star.
+ *
+ *  Massive solar flares and plasma prominences loop overhead, reacting violently to the beat.
+ *
+ *    audioAdvance -> flight speed over the stellar surface
+ *    audioKick    -> explosive solar flares erupting upwards
+ *    audioSwell   -> brightness and height of the plasma waves
+ *    audioChromaHue-> palette offset for the star's color
+ *
+ *  Per-activation variety:
+ *    waveP float intensity of the surface plasma waves (0.5..2.0)
+ *    flareP float frequency of solar flares (0.5..2.0)
+ *    hueP float palette offset (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

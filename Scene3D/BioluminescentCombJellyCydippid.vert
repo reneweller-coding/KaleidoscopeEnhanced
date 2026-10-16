@@ -1,21 +1,27 @@
 #version 330 core
-/**
- * @file BioluminescentCombJellyCydippid.vert
- * @brief Vertex stage companion to BioluminescentCombJellyCydippid.frag -- see that file's
- * header for this scene's description.
+/*****************************************************************************\
+ *                              BioluminescentCombJellyCydippid.vert
+\*****************************************************************************/
+/*! @file
  *
- * A single cydippid sat as one small oval in the middle of a black frame.  The
- * 300 segments of every ribbon are now split into SIX runs: five of them draw
- * one meridional ctene row on each of five drifting jellies, spread over the
- * frustum so the bloom reaches all four corners, and the sixth draws the long
- * trailing tentacle each ribbon streams from its jelly, out past the picture
- * edge.  Every jelly still carries all twenty comb rows.
+ *  @brief
+ *  Vertex stage companion to BioluminescentCombJellyCydippid.frag -- see that file's header for this scene's
+ *  description.
  *
- * Because each ribbon segment is its own pair of triangles, the runs can jump
- * between jellies freely -- the one quad that straddles a boundary is pinched
- * to zero width and zero brightness by the pole taper (which is also how a
- * real ctene row ends, short of the poles), so no strand is ever drawn across
- * the gap.
+ *  A single cydippid sat as one small oval in the middle of a black frame.  The
+ *  300 segments of every ribbon are now split into SIX runs: five of them draw
+ *  one meridional ctene row on each of five drifting jellies, spread over the
+ *  frustum so the bloom reaches all four corners, and the sixth draws the long
+ *  trailing tentacle each ribbon streams from its jelly, out past the picture
+ *  edge.  Every jelly still carries all twenty comb rows.
+ *
+ *  Because each ribbon segment is its own pair of triangles, the runs can jump
+ *  between jellies freely -- the one quad that straddles a boundary is pinched
+ *  to zero width and zero brightness by the pole taper (which is also how a
+ *  real ctene row ends, short of the poles), so no strand is ever drawn across
+ *  the gap.
+ *
+ *  @author René Weller
  */
 
 in vec4 attrA; ///< x = t [0,1], y = side (-1/+1), z = 0, w = ribbon index

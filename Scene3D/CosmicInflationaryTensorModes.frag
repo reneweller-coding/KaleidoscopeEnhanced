@@ -1,19 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file CosmicInflationaryTensorModes.frag
- * @brief COSMIC INFLATIONARY TENSOR MODES: 220x120 heightfield grid of primordial gravitational
- * wave tensor fluctuations from the inflationary epoch. Plus (+) and cross (x) polarization metric
- * strains stretch and squeeze spacetime grid lines with cosmic microwave background photo texturing.
- *   audioAdvance -> propagates cosmological tensor gravitational wave perturbations
- *   audioKick    -> flashes quantum metric fluctuation horizon re-entry bursts
- *   audioSwell   -> widens inflationary spacetime metric tensor strain amplitude
- *   audioCentroid-> shifts tensor mode quadrupolar temperature anisotropy spectra
+/*****************************************************************************\
+ *                              CosmicInflationaryTensorModes.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   tensorScaleP float gravitational wave metric strain amplitude(0.6..2.2)
- *   specularP    float spacetime metric grid specular highlight  (0.8..2.5)
+ *  @brief
+ *  COSMIC INFLATIONARY TENSOR MODES: 220x120 heightfield grid of primordial gravitational wave tensor fluctuations
+ *  from the inflationary epoch.
+ *
+ *  Plus (+) and cross (x) polarization metric strains stretch and squeeze spacetime grid lines with cosmic
+ *  microwave background photo texturing.
+ *
+ *    audioAdvance -> propagates cosmological tensor gravitational wave perturbations
+ *    audioKick    -> flashes quantum metric fluctuation horizon re-entry bursts
+ *    audioSwell   -> widens inflationary spacetime metric tensor strain amplitude
+ *    audioCentroid-> shifts tensor mode quadrupolar temperature anisotropy spectra
+ *
+ *  Per-activation variety:
+ *    tensorScaleP float gravitational wave metric strain amplitude(0.6..2.2)
+ *    specularP    float spacetime metric grid specular highlight  (0.8..2.5)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec2  vUV;            ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 in vec3  vNormal;        ///< Surface normal (from the vertex stage).

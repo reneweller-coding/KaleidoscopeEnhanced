@@ -1,25 +1,33 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file MagnetarCrustalQuakeAlfvenResonance.frag
- * @brief MAGNETAR CRUSTAL QUAKE ALFVÉN RESONANCE: Crustal fracture and global seismic oscillations
- * on an ultrastrong magnetar (SGR / AXP). Relativistic shear fractures inject high-frequency
- * torsional Alfven waves into a FULL twisted magnetosphere -- 160 dipolar L-shells reaching past
- * the frame corners, over a far X-ray point-source field and a trapped pair-plasma haze --
- * igniting giant gamma-ray flare fireballs.
- *   audioAdvance -> drives magnetospheric Alfven wave propagation & crustal strain buildup,
- *                   and drifts the pair-plasma haze bands
- *   audioKick    -> flashes catastrophic crustal rupture & gamma-ray flare detonation bursts
- *                   (gated on the crust, so it no longer washes the whole magnetosphere)
- *   audioBass    -> deepens magnetar core gravitational potential & dipolar field compression
- *   audioSwell   -> widens trapped relativistic pair fireball volume & magnetic loop glow
- *   audioHigh    -> twinkles the distant X-ray point sources
- *   audioCentroid-> shifts magnetar thermal X-ray / synchrotron gamma emission spectra
+/*****************************************************************************\
+ *                              MagnetarCrustalQuakeAlfvenResonance.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   quakeGlowP  float crustal fracture flare peak luminance (0.8..2.5)
- *   fireballP   float trapped pair plasma fireball / far-haze intensity (0.6..2.2)
+ *  @brief
+ *  MAGNETAR CRUSTAL QUAKE ALFVÉN RESONANCE: Crustal fracture and global seismic oscillations on an ultrastrong
+ *  magnetar (SGR / AXP).
+ *
+ *  Relativistic shear fractures inject high-frequency torsional Alfven waves into a FULL twisted magnetosphere --
+ *  160 dipolar L-shells reaching past the frame corners, over a far X-ray point-source field and a trapped
+ *  pair-plasma haze -- igniting giant gamma-ray flare fireballs.
+ *
+ *    audioAdvance -> drives magnetospheric Alfven wave propagation & crustal strain buildup,
+ *                    and drifts the pair-plasma haze bands
+ *    audioKick    -> flashes catastrophic crustal rupture & gamma-ray flare detonation bursts
+ *                    (gated on the crust, so it no longer washes the whole magnetosphere)
+ *    audioBass    -> deepens magnetar core gravitational potential & dipolar field compression
+ *    audioSwell   -> widens trapped relativistic pair fireball volume & magnetic loop glow
+ *    audioHigh    -> twinkles the distant X-ray point sources
+ *    audioCentroid-> shifts magnetar thermal X-ray / synchrotron gamma emission spectra
+ *
+ *  Per-activation variety:
+ *    quakeGlowP  float crustal fracture flare peak luminance (0.8..2.5)
+ *    fireballP   float trapped pair plasma fireball / far-haze intensity (0.6..2.2)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec3  vPos;   ///< Position (from the vertex stage).
 in float vDepth; ///< Depth (from the vertex stage).

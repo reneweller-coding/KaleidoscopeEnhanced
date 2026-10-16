@@ -1,30 +1,35 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file ChromatophoreSkinWave.frag
- * @brief TRANSITION CHROMATOPHORE SKIN WAVE: the picture changes the way
- * squid skin does -- thousands of pigment sacs open, each one a round dot that
- * takes its colour from the incoming scene, with waves of muscle running across
- * the field.
+/*****************************************************************************\
+ *                              ChromatophoreSkinWave.frag
+\*****************************************************************************/
+/*! @file
  *
- * A chromatophore is not a pixel that fades.  It is a pigment sac pulled open
- * by radial muscles, so it OPENS: a small dot becomes a large one, and the
- * colour it shows is the pigment it already held.  That is why each dot here
- * grows rather than brightens, and why its colour is sampled once at the sac's
- * own centre instead of per pixel -- the skin is a mosaic of whole sacs, not a
- * resampling of a picture.
+ *  @brief
+ *  TRANSITION CHROMATOPHORE SKIN WAVE: the picture changes the way squid skin does -- thousands of pigment sacs
+ *  open, each one a round dot that takes its colour from the incoming scene, with waves of muscle running across
+ *  the field.
  *
- * The waves matter as much as the dots.  Cuttlefish and squid run travelling
- * bands of activation across the mantle, so the sacs do not open all together;
- * a band sweeps and the pattern arrives behind it.
+ *  A chromatophore is not a pixel that fades.  It is a pigment sac pulled open
+ *  by radial muscles, so it OPENS: a small dot becomes a large one, and the
+ *  colour it shows is the pigment it already held.  That is why each dot here
+ *  grows rather than brightens, and why its colour is sampled once at the sac's
+ *  own centre instead of per pixel -- the skin is a mosaic of whole sacs, not a
+ *  resampling of a picture.
  *
- * Audio Reactivity:
- *   audioSwell  -> how far the sacs open (slow)
- *   audioAdvance -> the wave travels, continuously
- *   audioHigh    -> the iridophores under the sacs (light)
+ *  The waves matter as much as the dots.  Cuttlefish and squid run travelling
+ *  bands of activation across the mantle, so the sacs do not open all together;
+ *  a band sweeps and the pattern arrives behind it.
  *
- * Per-activation variety: densityP, waveP, hueP.
+ *  Audio Reactivity:
+ *    audioSwell  -> how far the sacs open (slow)
+ *    audioAdvance -> the wave travels, continuously
+ *    audioHigh    -> the iridophores under the sacs (light)
+ *
+ *  Per-activation variety: densityP, waveP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

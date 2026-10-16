@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file MeshFoundryPour.frag
- * @brief MESH FOUNDRY POUR: a real sand mould (model=) on the foundry floor
- * and a real ladle (model2=) tipping molten metal into it on the scene
- * clock. The stream is painted on the shell along the line from the lip to
- * the pouring cup (there is no geometry for it, and everything the stream
- * crosses on screen is background); the melt spreads in the mould and cools
- * from white through orange to dull red; sparks fly from the cup; the glow
- * lights the whole shop. The bass is the furnace roar as light, the kick a
- * burst of sparks, the swell the pour's brightness. The mesh counterpart
- * of the procedural FoundryPour.
+/*****************************************************************************\
+ *                              MeshFoundryPour.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   sceneProgress -> the pour, the melt, the cooling (the clock)
- *   audioKick     -> spark bursts (light)
- *   audioBass     -> furnace glow (light)
- *   audioSwell    -> the stream's brightness (slow)
+ *  @brief
+ *  MESH FOUNDRY POUR: a real sand mould (model=) on the foundry floor and a real ladle (model2=) tipping molten
+ *  metal into it on the scene clock.
  *
- * Per-instance: sizeP, ladleP, lipP. Per-activation variety: hueP.
+ *  The stream is painted on the shell along the line from the lip to the pouring cup (there is no geometry for it,
+ *  and everything the stream crosses on screen is background); the melt spreads in the mould and cools from white
+ *  through orange to dull red; sparks fly from the cup; the glow lights the whole shop. The bass is the furnace
+ *  roar as light, the kick a burst of sparks, the swell the pour's brightness. The mesh counterpart of the
+ *  procedural FoundryPour.
+ *
+ *  Audio Reactivity:
+ *    sceneProgress -> the pour, the melt, the cooling (the clock)
+ *    audioKick     -> spark bursts (light)
+ *    audioBass     -> furnace glow (light)
+ *    audioSwell    -> the stream's brightness (slow)
+ *
+ *  Per-instance: sizeP, ladleP, lipP. Per-activation variety: hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform sampler2DArray texMeshMaterial;        ///< the mould
 uniform int            texMeshMaterialLayers;  ///< Number of layers in texMeshMaterial.

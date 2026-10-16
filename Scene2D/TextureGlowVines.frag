@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureGlowVines.frag
- * @brief TEXTURE GLOW VINES: luminous vines creeping over the dark
- * photograph -- slender stems wind along the picture's contours, curl
- * into spiral tendrils and sprout glowing leaves in pairs, and pulses of
- * light travel along them like sap; where the vines cross the photo's
- * bright parts they glow brighter.  The vines sway slowly.  Endless,
- * mirrorable.
+/*****************************************************************************\
+ *                              TextureGlowVines.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the sap pulses travel (integrated, jump-free)
- *   audioSpread     -> how many vines grow
- *   audioKick       -> the pulses flare (light)
- *   audioHigh       -> the leaf tips sparkle (light)
- *   audioMode       -> colour: cyan-violet in minor, green-gold in major
- *   audioSwell      -> the vines sway (slow)
+ *  @brief
+ *  TEXTURE GLOW VINES: luminous vines creeping over the dark photograph -- slender stems wind along the picture's
+ *  contours, curl into spiral tendrils and sprout glowing leaves in pairs, and pulses of light travel along them
+ *  like sap; where the vines cross the photo's bright parts they glow brighter.
  *
- * Knobs: vineP (vine density), leafP (leaves), photoP (photo visibility), hueP.
+ *  The vines sway slowly.  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the sap pulses travel (integrated, jump-free)
+ *    audioSpread     -> how many vines grow
+ *    audioKick       -> the pulses flare (light)
+ *    audioHigh       -> the leaf tips sparkle (light)
+ *    audioMode       -> colour: cyan-violet in minor, green-gold in major
+ *    audioSwell      -> the vines sway (slow)
+ *
+ *  Knobs: vineP (vine density), leafP (leaves), photoP (photo visibility), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

@@ -1,4 +1,23 @@
 #version 330 core
+/*****************************************************************************\
+ *                              PlasmaSheet.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Shades the classic smooth plasma sheet: three drifting sine fields summed and mapped through the house photo
+ *  palette.
+ *
+ *  audioAdvance drifts the sine fields' phase; audioSwell and audioLevel
+ *  scale overall brightness; the sheet's colour is drawn from the house
+ *  imgPalette (a rotating sample arc over the current slideshow photo,
+ *  tex0/tex1 crossfaded by interpolation) whose angle follows
+ *  audioChromaHue with an audioAdvance drift and whose saturation follows
+ *  audioValence. vH (the vertex-computed ripple height) adds a subtle
+ *  relief brightening.
+ *
+ *  @author René Weller
+ */
 out vec4 fragColor; ///< The pixel's colour (output).
 // PlasmaSheet.frag — the timeless smooth plasma: three drifting sine
 // fields summed and mapped through a soft palette, hue keyed to the music.
@@ -15,20 +34,6 @@ uniform float     audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 
 in vec2  vUV; ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 in float vH;  ///< H (from the vertex stage).
-
-/**
- * @file PlasmaSheet.frag
- * @brief Shades the classic smooth plasma sheet: three drifting sine
- * fields summed and mapped through the house photo palette.
- *
- * audioAdvance drifts the sine fields' phase; audioSwell and audioLevel
- * scale overall brightness; the sheet's colour is drawn from the house
- * imgPalette (a rotating sample arc over the current slideshow photo,
- * tex0/tex1 crossfaded by interpolation) whose angle follows
- * audioChromaHue with an audioAdvance drift and whose saturation follows
- * audioValence. vH (the vertex-computed ripple height) adds a subtle
- * relief brightening.
- */
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

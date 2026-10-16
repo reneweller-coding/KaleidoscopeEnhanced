@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureTumblingBlocks.frag
- * @brief TEXTURE TUMBLING BLOCKS: the classic tumbling-blocks illusion --
- * a lattice of rhombi that reads as stacked cubes, each face a piece of
- * the photograph; as the light slowly circles, the faces' shading shifts,
- * and the cubes flip in the mind between standing up and hanging down,
- * rolling in waves across the pattern; bevelled edges catch the light.
- * Endless, mirrorable.
+/*****************************************************************************\
+ *                              TextureTumblingBlocks.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the light circles, the photo drifts (integrated)
- *   audioSpread     -> the shading contrast (how strongly the cubes pop)
- *   audioKick       -> the edges gleam (light)
- *   audioMode       -> light: cool in minor, warm in major
- *   audioPhase      -> the lattice turns (integrated)
- *   audioSwell      -> the photo's colour saturation (slow)
+ *  @brief
+ *  TEXTURE TUMBLING BLOCKS: the classic tumbling-blocks illusion -- a lattice of rhombi that reads as stacked
+ *  cubes, each face a piece of the photograph; as the light slowly circles, the faces' shading shifts, and the
+ *  cubes flip in the mind between standing up and hanging down, rolling in waves across the pattern; bevelled edges
+ *  catch the light.
  *
- * Knobs: blockP (block size), waveP (flip waves), edgeP (edge bevel), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the light circles, the photo drifts (integrated)
+ *    audioSpread     -> the shading contrast (how strongly the cubes pop)
+ *    audioKick       -> the edges gleam (light)
+ *    audioMode       -> light: cool in minor, warm in major
+ *    audioPhase      -> the lattice turns (integrated)
+ *    audioSwell      -> the photo's colour saturation (slow)
+ *
+ *  Knobs: blockP (block size), waveP (flip waves), edgeP (edge bevel), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

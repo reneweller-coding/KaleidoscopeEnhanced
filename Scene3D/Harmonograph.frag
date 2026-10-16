@@ -1,4 +1,24 @@
 #version 330 core
+/*****************************************************************************\
+ *                              Harmonograph.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Shades the harmonograph's wire trace as a drawn line rather than a lit object: hue sweeps three full turns along
+ *  the trace (vAlong) so the pendulum's start and its wound-down finish read as distinct colors, with brightness
+ *  carrying most of the shape information.
+ *
+ *  audioLevel and the per-vertex vEnergy (the chroma-driven strength from
+ *  the companion compute pass) brighten the glow, audioHigh adds a sharp
+ *  white highlight core, audioKick brightens the trace's newest/widest end,
+ *  audioAmbient adds a flat tint, and audioBeat/audioSubBass pulse the
+ *  final brightness. Hue comes from the rotating photo-arc palette
+ *  (imgPalette) keyed by audioChromaHue with an audioAdvance drift and
+ *  audioValence-controlled saturation.
+ *
+ *  @author René Weller
+ */
 out vec4 fragColor; ///< The pixel's colour (output).
 // Harmonograph.frag — a drawn line, not a lit object.
 // The wire is thinner than the shading would need to be interesting, so the
@@ -10,22 +30,6 @@ in vec3  vNormal; ///< Surface normal (from the vertex stage).
 in vec3  vView;   ///< View vector (from the vertex stage).
 in float vAlong;  ///< 0 at the start of the trace, 1 at the end
 in float vEnergy; ///< Energy (from the vertex stage).
-
-/**
- * @file Harmonograph.frag
- * @brief Shades the harmonograph's wire trace as a drawn line rather than a
- * lit object: hue sweeps three full turns along the trace (vAlong) so the
- * pendulum's start and its wound-down finish read as distinct colors, with
- * brightness carrying most of the shape information.
- *
- * audioLevel and the per-vertex vEnergy (the chroma-driven strength from
- * the companion compute pass) brighten the glow, audioHigh adds a sharp
- * white highlight core, audioKick brightens the trace's newest/widest end,
- * audioAmbient adds a flat tint, and audioBeat/audioSubBass pulse the
- * final brightness. Hue comes from the rotating photo-arc palette
- * (imgPalette) keyed by audioChromaHue with an audioAdvance drift and
- * audioValence-controlled saturation.
- */
 
 uniform sampler2D tex0;          ///< The current photo.
 uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.

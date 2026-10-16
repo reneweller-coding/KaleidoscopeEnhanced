@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureSandRipples.frag
- * @brief TEXTURE SAND RIPPLES: a desert seen from above in low evening sun --
- * wind ripples run across the sand in long wavy crests that bend around
- * the dunes (the photograph's large shapes), every crest casting a thin
- * shadow and catching a line of warm light; fine sand streams across the
- * surface in wisps, and the ripples creep slowly downwind.  The sand
- * takes its tint from the photo.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              TextureSandRipples.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the ripples creep and the sand streams (integrated)
- *   audioSpread     -> ripple wavelength
- *   audioRoughness  -> the crests break up (more defects)
- *   audioMode       -> the light: blue dusk in minor, golden hour in major
- *   audioKick       -> the crest highlights flare (light)
- *   audioSwell      -> the drifting sand wisps (slow)
+ *  @brief
+ *  TEXTURE SAND RIPPLES: a desert seen from above in low evening sun -- wind ripples run across the sand in long
+ *  wavy crests that bend around the dunes (the photograph's large shapes), every crest casting a thin shadow and
+ *  catching a line of warm light; fine sand streams across the surface in wisps, and the ripples creep slowly
+ *  downwind.
  *
- * Knobs: duneP (dune height), rippleP (ripple sharpness), tintP (photo tint), hueP.
+ *  The sand takes its tint from the photo.  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the ripples creep and the sand streams (integrated)
+ *    audioSpread     -> ripple wavelength
+ *    audioRoughness  -> the crests break up (more defects)
+ *    audioMode       -> the light: blue dusk in minor, golden hour in major
+ *    audioKick       -> the crest highlights flare (light)
+ *    audioSwell      -> the drifting sand wisps (slow)
+ *
+ *  Knobs: duneP (dune height), rippleP (ripple sharpness), tintP (photo tint), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

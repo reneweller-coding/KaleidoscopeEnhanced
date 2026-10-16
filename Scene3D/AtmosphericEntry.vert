@@ -1,16 +1,22 @@
 #version 330 core
-/**
- * @file AtmosphericEntry.vert
- * @brief Vertex stage companion to AtmosphericEntry.frag -- see that file's
- * header. Staged on `sceneProgress`: the ship starts high and far, pitches
- * over into the descent, and by the end is deep in the glow with the planet
- * filling the frame. That arc has to complete exactly once per scene, which
- * is what sceneProgress gives and `time` cannot.
+/*****************************************************************************\
+ *                              AtmosphericEntry.vert
+\*****************************************************************************/
+/*! @file
  *
- * The planet is painted on the sky shell rather than being real geometry
- * (see the .frag): a body big enough to fly INTO would have to be modelled
- * at a scale that breaks the depth range, and none of it would be visible
- * except the bit under the ship anyway.
+ *  @brief
+ *  Vertex stage companion to AtmosphericEntry.frag -- see that file's header.
+ *
+ *  Staged on `sceneProgress`: the ship starts high and far, pitches over into the descent, and by the end is deep
+ *  in the glow with the planet filling the frame. That arc has to complete exactly once per scene, which is what
+ *  sceneProgress gives and `time` cannot.
+ *
+ *  The planet is painted on the sky shell rather than being real geometry
+ *  (see the .frag): a body big enough to fly INTO would have to be modelled
+ *  at a scale that breaks the depth range, and none of it would be visible
+ *  except the bit under the ship anyway.
+ *
+ *  @author René Weller
  */
 
 in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an

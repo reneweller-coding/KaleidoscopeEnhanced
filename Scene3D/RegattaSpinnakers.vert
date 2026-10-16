@@ -1,9 +1,16 @@
 #version 330 core
-/**
- * @file RegattaSpinnakers.vert
- * @brief Vertex stage for RegattaSpinnakers: world positions pass through
- * (camera at the origin on the water, +z ahead); id, wind term, kind and
- * uv go to the fragment stage.  No camera motion.
+/*****************************************************************************\
+ *                              RegattaSpinnakers.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage for RegattaSpinnakers: world positions pass through (camera at the origin on the water, +z ahead);
+ *  id, wind term, kind and uv go to the fragment stage.
+ *
+ *  No camera motion.
+ *
+ *  @author René Weller
  */
 layout( location = 0 ) in vec4 attrA; ///< xyz = position, w = boat id
 layout( location = 1 ) in vec4 attrB; ///< x = wind term, y = kind, zw = uv

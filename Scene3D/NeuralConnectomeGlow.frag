@@ -1,18 +1,21 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file NeuralConnectomeGlow.frag
- * @brief Fragment stage for NeuralConnectomeGlow: deep tissue dark with
- * the photo faint, somas as round glowing cells, dendrites as faint
- * fibres, axons carrying spikes -- bright pulses that travel along the
- * fibre on a continuous phase of the scene clock at a rate set by the
- * axon's band energy... no: the rate is fixed, the band energy is the
- * pulse brightness (continuity rule); the kick lights every soma, the
- * swell the tissue.
+/*****************************************************************************\
+ *                              NeuralConnectomeGlow.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity: audioSpectrum[32] -> spike brightness per axon;
- *                   audioKick -> soma flash; audioSwell -> tissue light; audioLevel.
+ *  @brief
+ *  Fragment stage for NeuralConnectomeGlow: deep tissue dark with the photo faint, somas as round glowing cells,
+ *  dendrites as faint fibres, axons carrying spikes -- bright pulses that travel along the fibre on a continuous
+ *  phase of the scene clock at a rate set by the axon's band energy... no: the rate is fixed, the band energy is
+ *  the pulse brightness (continuity rule); the kick lights every soma, the swell the tissue.
+ *
+ *  Audio Reactivity: audioSpectrum[32] -> spike brightness per axon;
+ *                    audioKick -> soma flash; audioSwell -> tissue light; audioLevel.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 in vec2  vTexCoord; ///< Texture coordinate (from the vertex stage).
 in vec3  vWorld;    ///< World position (from the vertex stage).
 in float vKind;     ///< Element kind (from the vertex stage).

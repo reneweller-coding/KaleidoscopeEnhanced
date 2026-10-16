@@ -1,39 +1,45 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file FuturisticCityFlight.frag
- * @brief FUTURISTIC CITY FLIGHT: a low, steady flight down one street of a
- * night city.  Towers line both sides of the canyon, their windows lit in a
- * pattern that holds still, neon signs on the street walls, traffic lights
- * streaming through the canyon above the car, fog closing the far end.
+/*****************************************************************************\
+ *                              FuturisticCityFlight.frag
+\*****************************************************************************/
+/*! @file
  *
- * REBUILT.  The previous versions raymarched a city-block lattice with a
- * corridor cut through it, and three things about that never worked
- * (reported three times as "pure chaos"): the corridor's floor sat five units
- * below the camera, so there was no street to fly along; the buildings were
- * boxes on a 4-unit lattice with a detail cube on top, so the canyon had no
- * walls, only a field of stumps; and the window pattern was computed from a
- * finite-difference normal that flipped between wall directions at every
- * lattice seam, so the windows rewrote themselves every frame.
+ *  @brief
+ *  FUTURISTIC CITY FLIGHT: a low, steady flight down one street of a night city.
  *
- * Now the city is one street: a flat road at y = 0, and on each side a row
- * of buildings, one per block along z, each with its own width, height and
- * setback from the kerb.  The distance field is six boxes (the block the
- * point is in and its two neighbours, on both sides) plus the road, so it
- * costs almost nothing and has no seams.  The normal is ANALYTIC -- read off
- * whichever face of the nearest box is closest -- so a wall is a wall, and
- * its windows are indexed in that wall's own coordinates.  Nothing about a
- * building depends on where the camera is.
+ *  Towers line both sides of the canyon, their windows lit in a pattern that holds still, neon signs on the street
+ *  walls, traffic lights streaming through the canyon above the car, fog closing the far end.
  *
- * Audio Reactivity:
- *   sceneAdvance    -> the flight (continuous, camera on the scene clock only)
- *   audioKick       -> the neon signs and the headlights flare (light)
- *   audioLevel      -> how many windows are lit (light, slow ramp)
- *   audioSwell      -> the fog and the sky glow (slow)
- *   audioChromaHue  -> the neon palette follows the key (colour)
+ *  REBUILT.  The previous versions raymarched a city-block lattice with a
+ *  corridor cut through it, and three things about that never worked
+ *  (reported three times as "pure chaos"): the corridor's floor sat five units
+ *  below the camera, so there was no street to fly along; the buildings were
+ *  boxes on a 4-unit lattice with a detail cube on top, so the canyon had no
+ *  walls, only a field of stumps; and the window pattern was computed from a
+ *  finite-difference normal that flipped between wall directions at every
+ *  lattice seam, so the windows rewrote themselves every frame.
  *
- * Per-activation variety: buildP (tower height), glowP, fogP, hueP.
+ *  Now the city is one street: a flat road at y = 0, and on each side a row
+ *  of buildings, one per block along z, each with its own width, height and
+ *  setback from the kerb.  The distance field is six boxes (the block the
+ *  point is in and its two neighbours, on both sides) plus the road, so it
+ *  costs almost nothing and has no seams.  The normal is ANALYTIC -- read off
+ *  whichever face of the nearest box is closest -- so a wall is a wall, and
+ *  its windows are indexed in that wall's own coordinates.  Nothing about a
+ *  building depends on where the camera is.
+ *
+ *  Audio Reactivity:
+ *    sceneAdvance    -> the flight (continuous, camera on the scene clock only)
+ *    audioKick       -> the neon signs and the headlights flare (light)
+ *    audioLevel      -> how many windows are lit (light, slow ramp)
+ *    audioSwell      -> the fog and the sky glow (slow)
+ *    audioChromaHue  -> the neon palette follows the key (colour)
+ *
+ *  Per-activation variety: buildP (tower height), glowP, fogP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

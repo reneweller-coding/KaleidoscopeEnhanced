@@ -1,9 +1,14 @@
 #version 400 core
-/**
- * @file PermafrostPolygons.tesc
- * @brief Tessellation control for PermafrostPolygons: adaptive by distance,
- * a little finer with the swell; fractional_odd_spacing keeps level changes
- * continuous; edge levels from the edge midpoints.
+/*****************************************************************************\
+ *                              PermafrostPolygons.tesc
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Tessellation control for PermafrostPolygons: adaptive by distance, a little finer with the swell;
+ *  fractional_odd_spacing keeps level changes continuous; edge levels from the edge midpoints.
+ *
+ *  @author René Weller
  */
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( vertices = 4 ) out;

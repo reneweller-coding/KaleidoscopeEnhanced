@@ -1,19 +1,24 @@
 #version 400 core
-/**
- * @file TravertineTerracePools.tese
- * @brief Tessellation evaluation for TravertineTerracePools: a hillside of
- * travertine -- water carrying dissolved lime spills down a slope and
- * leaves rimstone dams behind, so the hill becomes a stack of shallow
- * pools, each held by a lip that bulges where the water runs fastest.
+/*****************************************************************************\
+ *                              TravertineTerracePools.tese
+\*****************************************************************************/
+/*! @file
  *
- * The height is built from three parts: a slope that falls toward the
- * camera, a terrace staircase whose STEP EDGES are smoothed (a hard step
- * would be a discontinuity, and the rule of this catalogue is that every
- * surface is continuous), and the rim bulge just behind each lip.  The
- * water level in each pool breathes with the swell -- slow, and only the
- * level, never the geometry of the dam.
+ *  @brief
+ *  Tessellation evaluation for TravertineTerracePools: a hillside of travertine -- water carrying dissolved lime
+ *  spills down a slope and leaves rimstone dams behind, so the hill becomes a stack of shallow pools, each held by
+ *  a lip that bulges where the water runs fastest.
  *
- * The far end rises into the hill so the horizon is filled.
+ *  The height is built from three parts: a slope that falls toward the
+ *  camera, a terrace staircase whose STEP EDGES are smoothed (a hard step
+ *  would be a discontinuity, and the rule of this catalogue is that every
+ *  surface is continuous), and the rim bulge just behind each lip.  The
+ *  water level in each pool breathes with the swell -- slow, and only the
+ *  level, never the geometry of the dam.
+ *
+ *  The far end rises into the hill so the horizon is filled.
+ *
+ *  @author René Weller
  */
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( quads, fractional_odd_spacing, ccw ) in;

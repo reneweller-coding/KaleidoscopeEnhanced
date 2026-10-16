@@ -1,28 +1,35 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file Rorschach.frag
- * @brief An ever-morphing Rorschach inkblot: an fbm noise field mirrored on
- *        the vertical axis, rendered as dark ink on a warm paper ghost of
- *        the photo (or inverted to a "positive plate" when `positive` is set).
+/*****************************************************************************\
+ *                              Rorschach.frag
+\*****************************************************************************/
+/*! @file
  *
- * Legacy per-activation uniforms (fiOffset, posX/Y/Z, divisor) seed the blot's
- * noise offset and scale so each activation looks distinct.
+ *  @brief
+ *  An ever-morphing Rorschach inkblot: an fbm noise field mirrored on
  *
- * Audio Reactivity:
- *  - audioAdvance   -> integrates into the fbm noise phase, so the blot continuously
- *                      morphs in step with the music (never snaps)
- *  - audioKick      -> dilates the ink field, so the blot pulses outward on kicks
- *  - audioLevel     -> densifies the ink field and raises the ink's opacity
- *  - audioFlatness  -> INK BLEED: a tonal, single-band spectrum gives razor-crisp,
- *                      printed-looking ink edges; a noise-like, evenly spread one
- *                      lets the ink bleed softly into the paper
- *  - audioRoughness -> TORTURED SHAPE: sensory dissonance raises the fbm domain-warp
- *                      strength, so consonant music yields smooth, rounded lobes and
- *                      rough clusters twist the blot into knotted, agitated forms
- *  - audioMode      -> PAPER MOOD: minor keys cool the plate to a cold clinical grey,
- *                      major keys warm it to aged cream
+ *         the vertical axis, rendered as dark ink on a warm paper ghost of
+ *         the photo (or inverted to a "positive plate" when `positive` is set).
+ *
+ *  Legacy per-activation uniforms (fiOffset, posX/Y/Z, divisor) seed the blot's
+ *  noise offset and scale so each activation looks distinct.
+ *
+ *  Audio Reactivity:
+ *   - audioAdvance   -> integrates into the fbm noise phase, so the blot continuously
+ *                       morphs in step with the music (never snaps)
+ *   - audioKick      -> dilates the ink field, so the blot pulses outward on kicks
+ *   - audioLevel     -> densifies the ink field and raises the ink's opacity
+ *   - audioFlatness  -> INK BLEED: a tonal, single-band spectrum gives razor-crisp,
+ *                       printed-looking ink edges; a noise-like, evenly spread one
+ *                       lets the ink bleed softly into the paper
+ *   - audioRoughness -> TORTURED SHAPE: sensory dissonance raises the fbm domain-warp
+ *                       strength, so consonant music yields smooth, rounded lobes and
+ *                       rough clusters twist the blot into knotted, agitated forms
+ *   - audioMode      -> PAPER MOOD: minor keys cool the plate to a cold clinical grey,
+ *                       major keys warm it to aged cream
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

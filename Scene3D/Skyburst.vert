@@ -1,8 +1,13 @@
 #version 330 core
-/**
- * @file Skyburst.vert
- * @brief Vertex stage companion to Skyburst.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              Skyburst.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to Skyburst.frag -- see that file's header for this scene's description.
+ *
+ *  @author René Weller
  */
 // Skyburst.vert — sparks arrive finished; place them under a night sky.
 

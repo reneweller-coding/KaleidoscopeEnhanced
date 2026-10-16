@@ -1,4 +1,23 @@
 #version 330 core
+/*****************************************************************************\
+ *                              OceanNight.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Shades a night ocean: deep blue water, a moon-glitter lane running to the horizon, and foam sparkle on the
+ *  crests.
+ *
+ *  audioDrop flashes the whole surface brighter, audioCentroid warms or
+ *  cools the overall tint, and audioChromaHue turns the deep-water base
+ *  colour through a hue rotation. Colour is further pulled toward the
+ *  house imgPalette (a rotating sample arc over the current slideshow
+ *  photo, tex0/tex1 crossfaded by interpolation) whose sampling angle
+ *  follows audioChromaHue with an audioAdvance drift and whose saturation
+ *  follows audioValence.
+ *
+ *  @author René Weller
+ */
 out vec4 fragColor; ///< The pixel's colour (output).
 // OceanNight.frag — deep blue water, a moon-glitter lane running to the
 // horizon, foam sparkle on the crests.
@@ -16,20 +35,6 @@ uniform float audioValence;       ///< Mood valence: 0 dark .. 1 bright.
 in vec3  vWorld; ///< World position (from the vertex stage).
 in float vSpec;  ///< Spec (from the vertex stage).
 in float vDist;  ///< Distance (from the vertex stage).
-
-/**
- * @file OceanNight.frag
- * @brief Shades a night ocean: deep blue water, a moon-glitter lane
- * running to the horizon, and foam sparkle on the crests.
- *
- * audioDrop flashes the whole surface brighter, audioCentroid warms or
- * cools the overall tint, and audioChromaHue turns the deep-water base
- * colour through a hue rotation. Colour is further pulled toward the
- * house imgPalette (a rotating sample arc over the current slideshow
- * photo, tex0/tex1 crossfaded by interpolation) whose sampling angle
- * follows audioChromaHue with an audioAdvance drift and whose saturation
- * follows audioValence.
- */
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

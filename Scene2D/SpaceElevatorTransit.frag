@@ -1,20 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SpaceElevatorTransit.frag
- * @brief SPACE ELEVATOR TRANSIT: A high-speed ascent up a colossal space elevator
- * tether. The camera looks out from a glass transit pod, watching the glowing
- * planetary surface curve away below while massive orbital structures loom above.
- *   audioAdvance -> ascent speed of the elevator pod
- *   audioKick    -> flashes from passing structural rings and transit lights
- *   audioSwell   -> brightness of the planet's city lights below
- *   audioChromaHue-> palette offset for the elevator's neon lighting
+/*****************************************************************************\
+ *                              SpaceElevatorTransit.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   speedP float perceived speed of the transit (0.5..2.0)
- *   cityP float density and brightness of the planet below (0.5..1.5)
- *   hueP float palette offset (0..6.28)
+ *  @brief
+ *  SPACE ELEVATOR TRANSIT: A high-speed ascent up a colossal space elevator tether.
+ *
+ *  The camera looks out from a glass transit pod, watching the glowing planetary surface curve away below while
+ *  massive orbital structures loom above.
+ *
+ *    audioAdvance -> ascent speed of the elevator pod
+ *    audioKick    -> flashes from passing structural rings and transit lights
+ *    audioSwell   -> brightness of the planet's city lights below
+ *    audioChromaHue-> palette offset for the elevator's neon lighting
+ *
+ *  Per-activation variety:
+ *    speedP float perceived speed of the transit (0.5..2.0)
+ *    cityP float density and brightness of the planet below (0.5..1.5)
+ *    hueP float palette offset (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

@@ -1,27 +1,32 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SchillerOverTexture.frag
- * @brief SCHILLER OVER TEXTURE: the photograph turned into labradorite -- a
- * dark polished stone in which, where the light catches the hidden crystal
- * lamellae, sheets of electric blue, teal, gold and violet flash up out of
- * the dark and slide across the surface as the light wanders.  The
- * lamellae follow the photo's own structure: its bands and grain become
- * the planes that light up, so every photo gives a different stone.  The
- * whole surface stays in motion because the light never stops moving;
- * endless, mirroring without seams.
+/*****************************************************************************\
+ *                              SchillerOverTexture.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioPhase      -> the light's path across the stone (integrated, jump-free)
- *   audioMode       -> the flash colours: blue-teal in minor, gold-orange in major (slow blend)
- *   audioSpread     -> how narrow the flash angle is (wide spectrum = broader sheets)
- *   audioRoughness  -> the lamellae break into finer domains
- *   audioHigh       -> sparkle in the flashes (light)
- *   audioSwell      -> overall schiller strength (slow)
+ *  @brief
+ *  SCHILLER OVER TEXTURE: the photograph turned into labradorite -- a dark polished stone in which, where the light
+ *  catches the hidden crystal lamellae, sheets of electric blue, teal, gold and violet flash up out of the dark and
+ *  slide across the surface as the light wanders.
  *
- * Knobs: scaleP (how close), domainP (size of the crystal domains),
- * darkP (how dark the host stone), hueP.
+ *  The lamellae follow the photo's own structure: its bands and grain become the planes that light up, so every
+ *  photo gives a different stone.  The whole surface stays in motion because the light never stops moving; endless,
+ *  mirroring without seams.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioPhase      -> the light's path across the stone (integrated, jump-free)
+ *    audioMode       -> the flash colours: blue-teal in minor, gold-orange in major (slow blend)
+ *    audioSpread     -> how narrow the flash angle is (wide spectrum = broader sheets)
+ *    audioRoughness  -> the lamellae break into finer domains
+ *    audioHigh       -> sparkle in the flashes (light)
+ *    audioSwell      -> overall schiller strength (slow)
+ *
+ *  Knobs: scaleP (how close), domainP (size of the crystal domains),
+ *  darkP (how dark the host stone), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

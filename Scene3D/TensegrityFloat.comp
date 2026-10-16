@@ -1,15 +1,20 @@
 #version 430 core
-/**
- * @file TensegrityFloat.comp
- * @brief TENSEGRITY FLOAT: a six-strut tensegrity -- rigid struts that
- * touch nothing, held in the air by a net of cables in pure tension --
- * floating in front of the camera, turning and swaying gently on the
- * scene clock.  The struts carry the photo; each cable belongs to a
- * pitch class and lights with it (fragment).  Geometry: the expanded
- * octahedron (three parallel strut pairs), each strut end tied to its
- * four nearest foreign ends.  No state.  The camera never moves.
+/*****************************************************************************\
+ *                              TensegrityFloat.comp
+\*****************************************************************************/
+/*! @file
  *
- * Per-instance: sizeP, swayP, hueP.
+ *  @brief
+ *  TENSEGRITY FLOAT: a six-strut tensegrity -- rigid struts that touch nothing, held in the air by a net of cables
+ *  in pure tension -- floating in front of the camera, turning and swaying gently on the scene clock.
+ *
+ *  The struts carry the photo; each cable belongs to a pitch class and lights with it (fragment).  Geometry: the
+ *  expanded octahedron (three parallel strut pairs), each strut end tied to its four nearest foreign ends.  No
+ *  state.  The camera never moves.
+ *
+ *  Per-instance: sizeP, swayP, hueP.
+ *
+ *  @author René Weller
  */
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( local_size_x = 4, local_size_y = 4, local_size_z = 4 ) in;

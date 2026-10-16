@@ -1,23 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file MeshGearTrain.frag
- * @brief MESH GEAR TRAIN: seven real brass gears (one model,
- * instances="7") meshing across the frame inside a dark clockwork, turning
- * steadily, neighbours counter-rotating. Teeth catch the lamp as they
- * pass; the kick throws sparks at the meshing points; the swell warms the
- * brass. The mesh counterpart of the procedural TempoGearwork (which
- * locked its angles to the bar clock; here the rate is steady, so nothing
- * can jolt).
+/*****************************************************************************\
+ *                              MeshGearTrain.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioKick  -> sparks at the meshing points (light)
- *   audioSwell -> the lamp warms the brass (slow)
- *   audioHigh  -> tooth glints (light)
- *   time       -> the rotation (continuous, vertex stage)
+ *  @brief
+ *  MESH GEAR TRAIN: seven real brass gears (one model, instances="7") meshing across the frame inside a dark
+ *  clockwork, turning steadily, neighbours counter-rotating.
  *
- * Per-instance: sizeP, rateP. Per-activation variety: hueP.
+ *  Teeth catch the lamp as they pass; the kick throws sparks at the meshing points; the swell warms the brass. The
+ *  mesh counterpart of the procedural TempoGearwork (which locked its angles to the bar clock; here the rate is
+ *  steady, so nothing can jolt).
+ *
+ *  Audio Reactivity:
+ *    audioKick  -> sparks at the meshing points (light)
+ *    audioSwell -> the lamp warms the brass (slow)
+ *    audioHigh  -> tooth glints (light)
+ *    time       -> the rotation (continuous, vertex stage)
+ *
+ *  Per-instance: sizeP, rateP. Per-activation variety: hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform sampler2DArray texMeshMaterial;       ///< The mesh's material textures (albedo, roughness, normal ...).
 uniform int            texMeshMaterialLayers; ///< Number of layers in texMeshMaterial.

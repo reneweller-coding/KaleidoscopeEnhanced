@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file ChordRailwaySwitches.frag
- * @brief CHORD RAILWAY SWITCHES: a marshalling yard from above -- five
- * parallel tracks crossing the field diagonally, twelve crossovers along
- * them, one per chroma class: each crossover has a signal lit by its
- * class and a switch blade that leans over smoothly as the class sounds.
- * Trains of photo wagons run the yard on the scene clock, each on a route
- * fixed for the activation, sliding across the crossovers on smooth
- * S-curves; the kick lights the headlamps.  The photo is the landscape.
- * Camera fixed above the yard.
+/*****************************************************************************\
+ *                              ChordRailwaySwitches.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioChroma[12] -> signals and switch blades (light / gentle)
- *   sceneAdvance    -> the trains (continuous)
- *   audioKick       -> headlamps (light)
- *   audioSwell      -> daylight (slow)
- *   audioLevel      -> brightness
+ *  @brief
+ *  CHORD RAILWAY SWITCHES: a marshalling yard from above -- five parallel tracks crossing the field diagonally,
+ *  twelve crossovers along them, one per chroma class: each crossover has a signal lit by its class and a switch
+ *  blade that leans over smoothly as the class sounds.
  *
- * Per-activation variety: trainsP, routeP, hueP.
+ *  Trains of photo wagons run the yard on the scene clock, each on a route fixed for the activation, sliding across
+ *  the crossovers on smooth S-curves; the kick lights the headlamps.  The photo is the landscape. Camera fixed
+ *  above the yard.
+ *
+ *  Audio Reactivity:
+ *    audioChroma[12] -> signals and switch blades (light / gentle)
+ *    sceneAdvance    -> the trains (continuous)
+ *    audioKick       -> headlamps (light)
+ *    audioSwell      -> daylight (slow)
+ *    audioLevel      -> brightness
+ *
+ *  Per-activation variety: trainsP, routeP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

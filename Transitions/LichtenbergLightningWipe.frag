@@ -1,20 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file LichtenbergLightningWipe.frag
- * @brief TRANSITION LICHTENBERG LIGHTNING WIPE: High-voltage electrical dielectric breakdown.
- * Luminous fractal Lichtenberg discharge trees branch violently across the
- * glass plate, conducting electrical arcs that ionize and cross-fade between scenes.
- *   interpolation -> sweeps dielectric breakdown wave front across the viewport
- *   audioKick     -> triggers full-screen high-voltage lightning discharge arcs
- *   audioHigh     -> sharpens micro-fractal streamer tip branches
+/*****************************************************************************\
+ *                              LichtenbergLightningWipe.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   branchP  float Lichtenberg fractal branch density   (0.5..2.2)
- *   voltageP float electrical arc ionization intensity  (0.5..2.0)
- *   speedP   float animation speed multiplier           (0.5..2.0)
- *   hueP     float plasma ionization hue offset         (0..6.28)
+ *  @brief
+ *  TRANSITION LICHTENBERG LIGHTNING WIPE: High-voltage electrical dielectric breakdown.
+ *
+ *  Luminous fractal Lichtenberg discharge trees branch violently across the glass plate, conducting electrical arcs
+ *  that ionize and cross-fade between scenes.
+ *
+ *    interpolation -> sweeps dielectric breakdown wave front across the viewport
+ *    audioKick     -> triggers full-screen high-voltage lightning discharge arcs
+ *    audioHigh     -> sharpens micro-fractal streamer tip branches
+ *
+ *  Per-activation variety:
+ *    branchP  float Lichtenberg fractal branch density   (0.5..2.2)
+ *    voltageP float electrical arc ionization intensity  (0.5..2.0)
+ *    speedP   float animation speed multiplier           (0.5..2.0)
+ *    hueP     float plasma ionization hue offset         (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

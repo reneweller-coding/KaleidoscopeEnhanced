@@ -1,23 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file MeshTuningForks.frag
- * @brief MESH TUNING FORKS: twelve real tuning forks (one model,
- * instances="12") in a row on a sounding board in a dark room, one per
- * pitch class. A fork RINGS when its class sounds: it glows in its class
- * colour and throws halos -- concentric rings travelling outward across
- * the wall behind it on the scene clock. The kick is the mallet striking
- * the loudest fork (a flash on that fork), the swell the room light. The
- * mesh counterpart of the procedural TuningForkChoir.
+/*****************************************************************************\
+ *                              MeshTuningForks.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioChroma[12] -> each fork's glow and its halos (light)
- *   audioKick       -> the strike on the loudest fork (light)
- *   audioSwell      -> the room light (slow)
- *   sceneTime       -> the halos travel outward (continuous)
+ *  @brief
+ *  MESH TUNING FORKS: twelve real tuning forks (one model, instances="12") in a row on a sounding board in a dark
+ *  room, one per pitch class.
  *
- * Per-instance: sizeP. Per-activation variety: hueP.
+ *  A fork RINGS when its class sounds: it glows in its class colour and throws halos -- concentric rings travelling
+ *  outward across the wall behind it on the scene clock. The kick is the mallet striking the loudest fork (a flash
+ *  on that fork), the swell the room light. The mesh counterpart of the procedural TuningForkChoir.
+ *
+ *  Audio Reactivity:
+ *    audioChroma[12] -> each fork's glow and its halos (light)
+ *    audioKick       -> the strike on the loudest fork (light)
+ *    audioSwell      -> the room light (slow)
+ *    sceneTime       -> the halos travel outward (continuous)
+ *
+ *  Per-instance: sizeP. Per-activation variety: hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform sampler2DArray texMeshMaterial;       ///< The mesh's material textures (albedo, roughness, normal ...).
 uniform int            texMeshMaterialLayers; ///< Number of layers in texMeshMaterial.

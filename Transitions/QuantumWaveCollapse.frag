@@ -1,19 +1,27 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file QuantumWaveCollapse.frag
- * @brief TRANSITION QUANTUM WAVE COLLAPSE: Quantum state superposition & wavefunction
- * collapse transition. Complex probability wavepackets interference patterns
- * collapse abruptly from superposition into the definite incoming state.
- *   interpolation -> sweeps quantum superposition to eigenstate measurement
- *   audioKick     -> triggers wavefunction collapse flash
+/*****************************************************************************\
+ *                              QuantumWaveCollapse.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   waveP     float matter wave frequency & interference density (0.5..2.2)
- *   collapseP float wavefunction collapse sharpness              (0.5..2.0)
- *   speedP    float quantum phase velocity multiplier            (0.5..2.0)
- *   hueP      float quantum probability phase hue offset         (0..6.28)
+ *  @brief
+ *  TRANSITION QUANTUM WAVE COLLAPSE: Quantum state superposition & wavefunction collapse transition.
+ *
+ *  Complex probability wavepackets interference patterns collapse abruptly from superposition into the definite
+ *  incoming state.
+ *
+ *    interpolation -> sweeps quantum superposition to eigenstate measurement
+ *    audioKick     -> triggers wavefunction collapse flash
+ *
+ *  Per-activation variety:
+ *    waveP     float matter wave frequency & interference density (0.5..2.2)
+ *    collapseP float wavefunction collapse sharpness              (0.5..2.0)
+ *    speedP    float quantum phase velocity multiplier            (0.5..2.0)
+ *    hueP      float quantum probability phase hue offset         (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

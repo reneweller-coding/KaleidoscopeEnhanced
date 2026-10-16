@@ -1,20 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file CryosleepChamber.frag
- * @brief CRYOSLEEP CHAMBER: Flight down an endless, monumental hallway lined with
- * thousands of cryosleep pods aboard a generation ship. The pods pulse with
- * vital signs and life-support lights synchronized to the beat.
- *   audioAdvance -> camera flight speed down the hallway
- *   audioKick    -> flashes of alarm/activation lights
- *   audioSwell   -> ambient corridor lighting and fog
- *   audioChromaHue-> palette offset for the pod lights
+/*****************************************************************************\
+ *                              CryosleepChamber.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   podP float complexity and layout of the pods (0.5..1.5)
- *   glowP float intensity of the life-support lights (0.5..1.5)
- *   hueP float palette offset (0..6.28)
+ *  @brief
+ *  CRYOSLEEP CHAMBER: Flight down an endless, monumental hallway lined with thousands of cryosleep pods aboard a
+ *  generation ship.
+ *
+ *  The pods pulse with vital signs and life-support lights synchronized to the beat.
+ *
+ *    audioAdvance -> camera flight speed down the hallway
+ *    audioKick    -> flashes of alarm/activation lights
+ *    audioSwell   -> ambient corridor lighting and fog
+ *    audioChromaHue-> palette offset for the pod lights
+ *
+ *  Per-activation variety:
+ *    podP float complexity and layout of the pods (0.5..1.5)
+ *    glowP float intensity of the life-support lights (0.5..1.5)
+ *    hueP float palette offset (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

@@ -1,23 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file ThreeBodyFigureEight.frag
- * @brief THREE BODY FIGURE EIGHT: the figure-eight choreography of the
- * three-body problem -- three equal suns chasing one another around one
- * lemniscate, one third of a period apart.  The suns carry the photo,
- * leave fading trails along the curve, and glow with the bass; the one
- * passing through the centre crossing lights on the kick.  The orbit runs
- * on the scene clock; the camera never moves.
+/*****************************************************************************\
+ *                              ThreeBodyFigureEight.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   sceneAdvance -> the orbit (continuous)
- *   audioBass    -> sun glow (light)
- *   audioKick    -> the centre crossing flashes (light)
- *   audioSwell   -> trail length (slow)
- *   audioLevel   -> brightness
+ *  @brief
+ *  THREE BODY FIGURE EIGHT: the figure-eight choreography of the three-body problem -- three equal suns chasing one
+ *  another around one lemniscate, one third of a period apart.
  *
- * Per-activation variety: sizeP, tiltP, hueP.
+ *  The suns carry the photo, leave fading trails along the curve, and glow with the bass; the one passing through
+ *  the centre crossing lights on the kick.  The orbit runs on the scene clock; the camera never moves.
+ *
+ *  Audio Reactivity:
+ *    sceneAdvance -> the orbit (continuous)
+ *    audioBass    -> sun glow (light)
+ *    audioKick    -> the centre crossing flashes (light)
+ *    audioSwell   -> trail length (slow)
+ *    audioLevel   -> brightness
+ *
+ *  Per-activation variety: sizeP, tiltP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

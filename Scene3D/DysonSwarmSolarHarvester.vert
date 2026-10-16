@@ -1,8 +1,13 @@
 #version 330 core
-/**
- * @file DysonSwarmSolarHarvester.vert
- * @brief Vertex stage companion to DysonSwarmSolarHarvester.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              DysonSwarmSolarHarvester.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to DysonSwarmSolarHarvester.frag -- see that file's header for this scene's description.
+ *
+ *  @author René Weller
  */
 // attrA.xy = quad-local corner uv (0..1), attrA.w = quad id, attrB = seeds
 // (Scene3DShader.cpp GEOM_QUADS)

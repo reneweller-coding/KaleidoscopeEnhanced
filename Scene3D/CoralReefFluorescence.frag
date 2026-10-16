@@ -1,18 +1,24 @@
 #version 330 core
+/*****************************************************************************\
+ *                              CoralReefFluorescence.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  CORAL REEF FLUORESCENCE: a reef ridge under UV night light - the coral tips fluoresce in colours drawn from the
+ *  photo-palette arc (GFP/RFP style), deep-ocean blue ambient below.
+ *
+ *    audioKick -> fluorescence pulse    audioSwell -> polyp sway
+ *    glowP/fluorP -> emission strength
+ *
+ *  @author René Weller
+ */
 in vec3  vPos;          ///< Position (from the vertex stage).
 in vec3  vNormal;       ///< Surface normal (from the vertex stage).
 in vec2  vUV;           ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 in float vFluorescence; ///< Fluorescence (from the vertex stage).
 
 out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file CoralReefFluorescence.frag
- * @brief CORAL REEF FLUORESCENCE: a reef ridge under UV night light - the coral
- * tips fluoresce in colours drawn from the photo-palette arc (GFP/RFP
- * style), deep-ocean blue ambient below.
- *   audioKick -> fluorescence pulse    audioSwell -> polyp sway
- *   glowP/fluorP -> emission strength
- */
 
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

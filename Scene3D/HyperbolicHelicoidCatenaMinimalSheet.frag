@@ -1,19 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file HyperbolicHelicoidCatenaMinimalSheet.frag
- * @brief HYPERBOLIC HELICOID CATENA MINIMAL SHEET: 220x120 heightfield grid of the continuous
- * isometric Bonnet deformation between a catenoid and a helicoid. Zero mean curvature throughout
- * deformation, saddle-point glass specular sheen, and minimal surface photo texturing.
- *   audioAdvance -> navigates Bonnet isometric morphing parameter & minimal surface rotation
- *   audioKick    -> flashes minimal surface waist throat & helicoid ramp specular reflections
- *   audioSwell   -> widens minimal surface throat radius & soap-film transparency
- *   audioCentroid-> shifts zero-mean-curvature isometric energy spectra
+/*****************************************************************************\
+ *                              HyperbolicHelicoidCatenaMinimalSheet.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   sheetScaleP float minimal surface 3D scale           (0.8..2.2)
- *   specularP   float minimal surface facet specular gain(0.8..2.5)
+ *  @brief
+ *  HYPERBOLIC HELICOID CATENA MINIMAL SHEET: 220x120 heightfield grid of the continuous isometric Bonnet
+ *  deformation between a catenoid and a helicoid.
+ *
+ *  Zero mean curvature throughout deformation, saddle-point glass specular sheen, and minimal surface photo
+ *  texturing.
+ *
+ *    audioAdvance -> navigates Bonnet isometric morphing parameter & minimal surface rotation
+ *    audioKick    -> flashes minimal surface waist throat & helicoid ramp specular reflections
+ *    audioSwell   -> widens minimal surface throat radius & soap-film transparency
+ *    audioCentroid-> shifts zero-mean-curvature isometric energy spectra
+ *
+ *  Per-activation variety:
+ *    sheetScaleP float minimal surface 3D scale           (0.8..2.2)
+ *    specularP   float minimal surface facet specular gain(0.8..2.5)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec2  vUV;          ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 in vec3  vNormal;      ///< Surface normal (from the vertex stage).

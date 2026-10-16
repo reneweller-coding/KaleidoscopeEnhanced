@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureForkingTunnel.frag
- * @brief TEXTURE FORKING TUNNEL: a tunnel that keeps branching -- ahead of
- * us the passage splits into two (or three) smaller tunnels, and we drift
- * toward one of them; as we enter it, it grows to fill the view and
- * splits again, and again, forever, like flying down the branches of a
- * tree of caves; the walls are lined with the photograph, the branch
- * openings glow.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              TextureForkingTunnel.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the descent into the branches (integrated, jump-free)
- *   audioPhase      -> the fork pattern turns (integrated)
- *   audioSpread     -> the openings widen
- *   audioKick       -> the openings flare (light)
- *   audioMode       -> the glow in the openings: cool in minor, warm in major
- *   audioSwell      -> the glow in the openings (slow)
+ *  @brief
+ *  TEXTURE FORKING TUNNEL: a tunnel that keeps branching -- ahead of us the passage splits into two (or three)
+ *  smaller tunnels, and we drift toward one of them; as we enter it, it grows to fill the view and splits again,
+ *  and again, forever, like flying down the branches of a tree of caves; the walls are lined with the photograph,
+ *  the branch openings glow.
  *
- * Knobs: forkP (fork spread), wallZoomP, rimP (opening rims), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the descent into the branches (integrated, jump-free)
+ *    audioPhase      -> the fork pattern turns (integrated)
+ *    audioSpread     -> the openings widen
+ *    audioKick       -> the openings flare (light)
+ *    audioMode       -> the glow in the openings: cool in minor, warm in major
+ *    audioSwell      -> the glow in the openings (slow)
+ *
+ *  Knobs: forkP (fork spread), wallZoomP, rimP (opening rims), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

@@ -1,20 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file XenophyophoreGiantProtistSarcodina.frag
- * @brief XENOPHYOPHORE GIANT PROTIST SARCODINA: Hadal zone giant single-celled xenophyophore
- * (Syringammina fragilissima). Complex branching networks of agglutinated sediment granellare tubes,
- * streaming translucent reticulopodia plasma strands, bioelectric waves, and photo texturing.
- *   audioAdvance -> drives protoplasmic cytoplasmic streaming velocity
- *   audioKick    -> flashes bioelectric membrane depolarization waves
- *   audioSwell   -> thickens plasma vein translucency & sediment glow
- *   audioCentroid-> shifts organic bioluminescent nutrient flow spectra
+/*****************************************************************************\
+ *                              XenophyophoreGiantProtistSarcodina.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   branchScaleP float reticulopodia network expansion scale (0.8..2.2)
- *   ribbonWidthP float protoplasmic vein thickness           (0.02..0.1)
- *   glowP        float bioelectric plasma tube luminance     (0.8..2.5)
+ *  @brief
+ *  XENOPHYOPHORE GIANT PROTIST SARCODINA: Hadal zone giant single-celled xenophyophore (Syringammina fragilissima).
+ *
+ *  Complex branching networks of agglutinated sediment granellare tubes, streaming translucent reticulopodia plasma
+ *  strands, bioelectric waves, and photo texturing.
+ *
+ *    audioAdvance -> drives protoplasmic cytoplasmic streaming velocity
+ *    audioKick    -> flashes bioelectric membrane depolarization waves
+ *    audioSwell   -> thickens plasma vein translucency & sediment glow
+ *    audioCentroid-> shifts organic bioluminescent nutrient flow spectra
+ *
+ *  Per-activation variety:
+ *    branchScaleP float reticulopodia network expansion scale (0.8..2.2)
+ *    ribbonWidthP float protoplasmic vein thickness           (0.02..0.1)
+ *    glowP        float bioelectric plasma tube luminance     (0.8..2.5)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec2  vUV;       ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 in float vSide;     ///< Which side of a strip (from the vertex stage).

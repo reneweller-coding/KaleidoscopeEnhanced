@@ -1,27 +1,32 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file PenguinHuddleRotation.frag
- * @brief PENGUIN HUDDLE ROTATION: emperor penguins huddled on the sea ice
- * in the polar twilight.  The huddle is a slowly turning mound of birds --
- * black heads, white fronts, the golden ear patches -- the ones at the
- * front drifting one way, the ones behind the other, so over minutes every
- * bird takes its turn at the cold edge.  The sky glows rose and violet
- * above a sun that never quite rises; blowing snow streams across in round
- * flakes, spindrift snakes over the sastrugi, and the warmth of the huddle
- * rises as a faint vapour lit by the low light.
+/*****************************************************************************\
+ *                              PenguinHuddleRotation.frag
+\*****************************************************************************/
+/*! @file
  *
- * Replaces a Scene3D compute/indirect version (a dark ring of ovals).
+ *  @brief
+ *  PENGUIN HUDDLE ROTATION: emperor penguins huddled on the sea ice in the polar twilight.
  *
- * Audio Reactivity:
- *   audioSwell -> storm density (slow)
- *   audioBass  -> the warmth rising from the huddle (light)
- *   audioKick  -> a gust whitens the air for a moment (light)
- *   audioLevel -> brightness
- *   sceneTime / sceneAdvance -> the huddle's rotation, the snow (continuous)
+ *  The huddle is a slowly turning mound of birds -- black heads, white fronts, the golden ear patches -- the ones
+ *  at the front drifting one way, the ones behind the other, so over minutes every bird takes its turn at the cold
+ *  edge.  The sky glows rose and violet above a sun that never quite rises; blowing snow streams across in round
+ *  flakes, spindrift snakes over the sastrugi, and the warmth of the huddle rises as a faint vapour lit by the low
+ *  light.
  *
- * Per-activation variety: colonyP (huddle size), packP (how tight), hueP.
+ *  Replaces a Scene3D compute/indirect version (a dark ring of ovals).
+ *
+ *  Audio Reactivity:
+ *    audioSwell -> storm density (slow)
+ *    audioBass  -> the warmth rising from the huddle (light)
+ *    audioKick  -> a gust whitens the air for a moment (light)
+ *    audioLevel -> brightness
+ *    sceneTime / sceneAdvance -> the huddle's rotation, the snow (continuous)
+ *
+ *  Per-activation variety: colonyP (huddle size), packP (how tight), hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;      ///< The pixel's colour (output).
 uniform vec2      resolution;     ///< Size of the render target in pixels.
 uniform float     time;           ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;           ///< The current photo.

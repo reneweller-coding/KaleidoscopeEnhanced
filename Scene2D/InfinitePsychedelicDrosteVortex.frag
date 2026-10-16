@@ -1,18 +1,23 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file InfinitePsychedelicDrosteVortex.frag
- * @brief INFINITE PSYCHEDELIC DROSTE VORTEX: Dual counter-rotating logarithmic
- * Droste spiral infinite zoom with seamless multi-octave blending, conformal
- * Möbius twist, and deep inward/outward recursive photo reflections.
+/*****************************************************************************\
+ *                              InfinitePsychedelicDrosteVortex.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance -> drives continuous infinite logarithmic zoom progression
- *   audioKick    -> flashes spiral octave transition boundaries & ripple burst
- *   audioCentroid-> modulates Droste spiral twist angle (alpha)
- *   audioSubBass -> expands spiral vortex breathing
- *   audioChromaHue-> rotates the chromatic spiral palette
+ *  @brief
+ *  INFINITE PSYCHEDELIC DROSTE VORTEX: Dual counter-rotating logarithmic Droste spiral infinite zoom with seamless
+ *  multi-octave blending, conformal Möbius twist, and deep inward/outward recursive photo reflections.
+ *
+ *  Audio Reactivity:
+ *    audioAdvance -> drives continuous infinite logarithmic zoom progression
+ *    audioKick    -> flashes spiral octave transition boundaries & ripple burst
+ *    audioCentroid-> modulates Droste spiral twist angle (alpha)
+ *    audioSubBass -> expands spiral vortex breathing
+ *    audioChromaHue-> rotates the chromatic spiral palette
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

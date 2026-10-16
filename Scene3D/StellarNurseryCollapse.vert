@@ -1,7 +1,13 @@
 #version 330 core
-/**
- * @file StellarNurseryCollapse.vert
- * @brief attrA.xyz = 0.0, attrA.w = point ID (0..59999), attrB = seeds (GEOM_POINTS).
+/*****************************************************************************\
+ *                              StellarNurseryCollapse.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  attrA.xyz = 0.0, attrA.w = point ID (0..59999), attrB = seeds (GEOM_POINTS).
+ *
+ *  @author René Weller
  */
 in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an
                ///< index).

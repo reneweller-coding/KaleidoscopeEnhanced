@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureOpalFire.frag
- * @brief TEXTURE OPAL FIRE: the play-of-colour of a black opal -- the
- * photograph becomes the dark body of the stone, and within it a harlequin
- * mosaic of patches flashes in pure spectral colours, each patch lighting
- * up in its own colour as the stone slowly turns in the light, then
- * dimming while its neighbours flare; fine striations run through the
- * patches, a milky sheen floats over them.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              TextureOpalFire.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the stone turns (integrated, jump-free)
- *   audioSpread     -> how many patches flash at once
- *   audioKick       -> the flashes flare (light)
- *   audioHigh       -> fine pinfire sparkle (light)
- *   audioMode       -> the body: blue-black in minor, crystal-milky in major
- *   audioSwell      -> the milky sheen (slow)
+ *  @brief
+ *  TEXTURE OPAL FIRE: the play-of-colour of a black opal -- the photograph becomes the dark body of the stone, and
+ *  within it a harlequin mosaic of patches flashes in pure spectral colours, each patch lighting up in its own
+ *  colour as the stone slowly turns in the light, then dimming while its neighbours flare; fine striations run
+ *  through the patches, a milky sheen floats over them.
  *
- * Knobs: patchP (patch size), fireP (colour intensity), bodyP (photo in the body), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the stone turns (integrated, jump-free)
+ *    audioSpread     -> how many patches flash at once
+ *    audioKick       -> the flashes flare (light)
+ *    audioHigh       -> fine pinfire sparkle (light)
+ *    audioMode       -> the body: blue-black in minor, crystal-milky in major
+ *    audioSwell      -> the milky sheen (slow)
+ *
+ *  Knobs: patchP (patch size), fireP (colour intensity), bodyP (photo in the body), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

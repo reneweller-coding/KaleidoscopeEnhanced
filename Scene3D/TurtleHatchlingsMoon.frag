@@ -1,17 +1,21 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TurtleHatchlingsMoon.frag
- * @brief Fragment stage for TurtleHatchlingsMoon: a night sky with a
- * moon (the swell) and round stars, the sea as the photo in silver-blue
- * with a moon path and waves sliding up on the clock (the bass), the
- * beach as pale sand (the photo), the hatchlings as dark round shells
- * with a moonlit sheen, their tracks; the kick a wave breaking brighter,
- * the treble the wet-sand sparkle.
+/*****************************************************************************\
+ *                              TurtleHatchlingsMoon.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity: audioSwell -> moon; audioBass -> waves; audioKick ->
- *                   breaking foam; audioHigh -> sparkle; audioLevel.
+ *  @brief
+ *  Fragment stage for TurtleHatchlingsMoon: a night sky with a moon (the swell) and round stars, the sea as the
+ *  photo in silver-blue with a moon path and waves sliding up on the clock (the bass), the beach as pale sand (the
+ *  photo), the hatchlings as dark round shells with a moonlit sheen, their tracks; the kick a wave breaking
+ *  brighter, the treble the wet-sand sparkle.
+ *
+ *  Audio Reactivity: audioSwell -> moon; audioBass -> waves; audioKick ->
+ *                    breaking foam; audioHigh -> sparkle; audioLevel.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 in vec2  vTexCoord; ///< Texture coordinate (from the vertex stage).
 in vec3  vWorld;    ///< World position (from the vertex stage).
 in float vKind;     ///< Element kind (from the vertex stage).

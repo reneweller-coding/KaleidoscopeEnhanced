@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file PhotoWovenThreads.frag
- * @brief PHOTO WOVEN THREADS: the photograph woven into cloth -- the warp
- * threads carry the picture, the weft threads carry a second, shifted
- * view of it, and they pass over and under each other in a twill, each
- * thread round and shaded like real yarn with a fine fibre texture; the
- * cloth billows in slow waves, the threads ripple, and the picture
- * emerges from the interlacing.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              PhotoWovenThreads.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the pictures drift through the cloth (integrated)
- *   audioSpread     -> the billowing waves
- *   audioKick       -> the silk sheen flares (light)
- *   audioMode       -> the weft: complementary colours in minor, the same photo in major (blend)
- *   audioRoughness  -> the fibre fuzz
- *   audioSwell      -> the threads' sheen (slow)
+ *  @brief
+ *  PHOTO WOVEN THREADS: the photograph woven into cloth -- the warp threads carry the picture, the weft threads
+ *  carry a second, shifted view of it, and they pass over and under each other in a twill, each thread round and
+ *  shaded like real yarn with a fine fibre texture; the cloth billows in slow waves, the threads ripple, and the
+ *  picture emerges from the interlacing.
  *
- * Knobs: threadP (thread count), twillP (twill step), gapP (gaps between threads), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the pictures drift through the cloth (integrated)
+ *    audioSpread     -> the billowing waves
+ *    audioKick       -> the silk sheen flares (light)
+ *    audioMode       -> the weft: complementary colours in minor, the same photo in major (blend)
+ *    audioRoughness  -> the fibre fuzz
+ *    audioSwell      -> the threads' sheen (slow)
+ *
+ *  Knobs: threadP (thread count), twillP (twill step), gapP (gaps between threads), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

@@ -1,21 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file PulsarMagnetosphereJets.frag
- * @brief PULSAR MAGNETOSPHERE JETS: Rapidly spinning millisecond pulsar with twisted
- * dipole magnetic light cylinder, polar synchrotron radiation lighthouse beams
- * sweeping directly across viewport, and photo texture warping in magnetosphere.
- *   audioAdvance -> locks rotation velocity of the millisecond pulsar
- *   audioKick    -> flashes blinding lighthouse synchrotron beam pass
- *   audioSubBass -> expands pulsar magnetosphere Alfvén wave ripples
- *   audioHigh    -> sparks synchrotron gamma-ray flashes
+/*****************************************************************************\
+ *                              PulsarMagnetosphereJets.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   spinP    float pulsar rotation period multiplier       (0.5..2.2)
- *   beamP    float relativistic lighthouse beam intensity  (0.5..2.2)
- *   fieldP   float dipole magnetic field line density      (0.5..1.8)
- *   hueP     float synchrotron radiation hue offset        (0..6.28)
+ *  @brief
+ *  PULSAR MAGNETOSPHERE JETS: Rapidly spinning millisecond pulsar with twisted dipole magnetic light cylinder,
+ *  polar synchrotron radiation lighthouse beams sweeping directly across viewport, and photo texture warping in
+ *  magnetosphere.
+ *
+ *    audioAdvance -> locks rotation velocity of the millisecond pulsar
+ *    audioKick    -> flashes blinding lighthouse synchrotron beam pass
+ *    audioSubBass -> expands pulsar magnetosphere Alfvén wave ripples
+ *    audioHigh    -> sparks synchrotron gamma-ray flashes
+ *
+ *  Per-activation variety:
+ *    spinP    float pulsar rotation period multiplier       (0.5..2.2)
+ *    beamP    float relativistic lighthouse beam intensity  (0.5..2.2)
+ *    fieldP   float dipole magnetic field line density      (0.5..1.8)
+ *    hueP     float synchrotron radiation hue offset        (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

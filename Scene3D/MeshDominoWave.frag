@@ -1,21 +1,26 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file MeshDominoWave.frag
- * @brief MESH DOMINO WAVE: 224 real dominoes (one model, instances="224")
- * standing in serpentine lanes on a table, seen low, and the wave of
- * toppling running along them on the scene clock. A spotlight follows the
- * front; the tiles' faces catch the lamp as they turn; the kick is a
- * glint on the standing tiles, the swell the room light. The mesh
- * counterpart of the procedural DominoCascadeWave.
+/*****************************************************************************\
+ *                              MeshDominoWave.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   sceneProgress -> the wave (vertex stage, the clock)
- *   audioKick     -> glints (light)
- *   audioSwell    -> room light (slow)
+ *  @brief
+ *  MESH DOMINO WAVE: 224 real dominoes (one model, instances="224") standing in serpentine lanes on a table, seen
+ *  low, and the wave of toppling running along them on the scene clock.
  *
- * Per-instance: sizeP. Per-activation variety: hueP.
+ *  A spotlight follows the front; the tiles' faces catch the lamp as they turn; the kick is a glint on the standing
+ *  tiles, the swell the room light. The mesh counterpart of the procedural DominoCascadeWave.
+ *
+ *  Audio Reactivity:
+ *    sceneProgress -> the wave (vertex stage, the clock)
+ *    audioKick     -> glints (light)
+ *    audioSwell    -> room light (slow)
+ *
+ *  Per-instance: sizeP. Per-activation variety: hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform sampler2DArray texMeshMaterial;       ///< The mesh's material textures (albedo, roughness, normal ...).
 uniform int            texMeshMaterialLayers; ///< Number of layers in texMeshMaterial.

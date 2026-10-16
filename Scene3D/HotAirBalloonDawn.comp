@@ -1,13 +1,19 @@
 #version 430 core
-/**
- * @file HotAirBalloonDawn.comp
- * @brief HOT AIR BALLOON DAWN: a fleet of balloons lifting off at sunrise
- * -- each envelope a photo-patterned globe (built from lat-long quads),
- * each rising on its own continuous phase, drifting with the dawn wind,
- * its burner flaring on the kick (fragment).  No state.  The camera
- * stands in the launch field.
+/*****************************************************************************\
+ *                              HotAirBalloonDawn.comp
+\*****************************************************************************/
+/*! @file
  *
- * Per-instance: fleetP, windP, hueP.
+ *  @brief
+ *  HOT AIR BALLOON DAWN: a fleet of balloons lifting off at sunrise -- each envelope a photo-patterned globe (built
+ *  from lat-long quads), each rising on its own continuous phase, drifting with the dawn wind, its burner flaring
+ *  on the kick (fragment).
+ *
+ *  No state.  The camera stands in the launch field.
+ *
+ *  Per-instance: fleetP, windP, hueP.
+ *
+ *  @author René Weller
  */
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( local_size_x = 4, local_size_y = 4, local_size_z = 4 ) in;

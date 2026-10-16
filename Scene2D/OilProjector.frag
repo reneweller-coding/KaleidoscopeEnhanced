@@ -1,31 +1,35 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file OilProjector.frag
- * @brief OIL PROJECTOR (rebuilt 30.09.2026): a Mathmos oil-wheel light show,
- * built from what makes the real one mesmerising -- two immiscible dyed
- * oils and clear water sealed between glass, so the picture is made of
- * SHARP rounded interfaces, never of smeared colour: blobs of deep magenta
- * and yellow oil float in the bright water, where they overlap the dyes
- * multiply to red and green, every interface is a dark refraction line
- * with a bright focused rim and a rainbow fringe from the lens, and small
- * air bubbles drift through with dark rings.  The wheel turns slowly, the
- * oils creep and merge under the lamp's heat.  Two or three projectors
- * overlap, their soft light circles blending into one endless wall of
- * light.  The dyes are taken from the photo where it has colour.
+/*****************************************************************************\
+ *                              OilProjector.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the heat that makes the oils creep (integrated, jump-free)
- *   audioPhase      -> the wheel's turning (integrated)
- *   audioSpread     -> viscosity: a wide spectrum makes the blobs smaller and busier
- *   audioMode       -> the dye pair shifts warmer in major (slow blend)
- *   audioRoughness  -> the interfaces tremble
- *   audioBass       -> the lamps' brightness (light)
- *   audioSwell      -> the size of the oil blobs (slow)
+ *  @brief
+ *  OIL PROJECTOR (rebuilt 30.09.2026): a Mathmos oil-wheel light show, built from what makes the real one
+ *  mesmerising -- two immiscible dyed oils and clear water sealed between glass, so the picture is made of SHARP
+ *  rounded interfaces, never of smeared colour: blobs of deep magenta and yellow oil float in the bright water,
+ *  where they overlap the dyes multiply to red and green, every interface is a dark refraction line with a bright
+ *  focused rim and a rainbow fringe from the lens, and small air bubbles drift through with dark rings.
  *
- * Knobs: projP (how many projectors), focusP (sharp or dreamy focus),
- * bubbleP (amount of air bubbles), scaleP (magnification), hueP.
+ *  The wheel turns slowly, the oils creep and merge under the lamp's heat.  Two or three projectors overlap, their
+ *  soft light circles blending into one endless wall of light.  The dyes are taken from the photo where it has
+ *  colour.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the heat that makes the oils creep (integrated, jump-free)
+ *    audioPhase      -> the wheel's turning (integrated)
+ *    audioSpread     -> viscosity: a wide spectrum makes the blobs smaller and busier
+ *    audioMode       -> the dye pair shifts warmer in major (slow blend)
+ *    audioRoughness  -> the interfaces tremble
+ *    audioBass       -> the lamps' brightness (light)
+ *    audioSwell      -> the size of the oil blobs (slow)
+ *
+ *  Knobs: projP (how many projectors), focusP (sharp or dreamy focus),
+ *  bubbleP (amount of air bubbles), scaleP (magnification), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

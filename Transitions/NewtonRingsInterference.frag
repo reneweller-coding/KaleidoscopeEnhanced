@@ -1,20 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file NewtonRingsInterference.frag
- * @brief TRANSITION NEWTON RINGS INTERFERENCE: Optical thin-film Newton's rings transition.
- * Interference between a spherical lens surface and an optical flat produces
- * concentric chromatic interference rings that expand radially to reveal the incoming scene.
- *   interpolation -> sweeps air gap thickness & expanding interference fringe radius
- *   audioKick     -> flashes constructive interference rainbow rings
- *   audioSwell    -> undulates lens curvature & ring spacing
+/*****************************************************************************\
+ *                              NewtonRingsInterference.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   ringP  float Newton ring radial frequency (0.5..2.2)
- *   gapP   float optical air gap depth scale  (0.5..2.0)
- *   speedP float animation speed multiplier   (0.5..2.0)
- *   hueP   float interference ring hue offset (0..6.28)
+ *  @brief
+ *  TRANSITION NEWTON RINGS INTERFERENCE: Optical thin-film Newton's rings transition.
+ *
+ *  Interference between a spherical lens surface and an optical flat produces concentric chromatic interference
+ *  rings that expand radially to reveal the incoming scene.
+ *
+ *    interpolation -> sweeps air gap thickness & expanding interference fringe radius
+ *    audioKick     -> flashes constructive interference rainbow rings
+ *    audioSwell    -> undulates lens curvature & ring spacing
+ *
+ *  Per-activation variety:
+ *    ringP  float Newton ring radial frequency (0.5..2.2)
+ *    gapP   float optical air gap depth scale  (0.5..2.0)
+ *    speedP float animation speed multiplier   (0.5..2.0)
+ *    hueP   float interference ring hue offset (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

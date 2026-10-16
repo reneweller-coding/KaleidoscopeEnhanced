@@ -1,27 +1,31 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file MeshPipeOrgan.frag
- * @brief MESH PIPE ORGAN: a real baroque organ case (model=) in a dark
- * church, lit by candlelight from below, and the music is in its pipes: the
- * silver pipe metal is picked out of the material (metallic, unsaturated),
- * each pipe's place across the front gives it a pitch class, and the pipe
- * SPEAKS -- glows, with a shimmer running up its speaking length -- when
- * that class sounds (audioChroma). The kick brings the tallest pipes up like
- * the pedal rank, the swell is the swell box, literally: the whole case
- * brightens. High behind the case a rose window with twelve petals, one per
- * pitch class, lit the same way. The gilding catches the candles. Nothing
- * moves but light; the camera's rig sweep carries the shot. The counterpart
- * of the procedural PipeOrganChroma.
+/*****************************************************************************\
+ *                              MeshPipeOrgan.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioChroma[12] -> which pipes speak, which petals light (light)
- *   audioKick       -> the pedal rank (light)
- *   audioSwell      -> swell-box light (slow)
- *   audioHigh       -> the shimmer on the speaking length (light)
+ *  @brief
+ *  MESH PIPE ORGAN: a real baroque organ case (model=) in a dark church, lit by candlelight from below, and the
+ *  music is in its pipes: the silver pipe metal is picked out of the material (metallic, unsaturated), each pipe's
+ *  place across the front gives it a pitch class, and the pipe SPEAKS -- glows, with a shimmer running up its
+ *  speaking length -- when that class sounds (audioChroma).
  *
- * Per-instance: sizeP, yawP. Per-activation variety: hueP.
+ *  The kick brings the tallest pipes up like the pedal rank, the swell is the swell box, literally: the whole case
+ *  brightens. High behind the case a rose window with twelve petals, one per pitch class, lit the same way. The
+ *  gilding catches the candles. Nothing moves but light; the camera's rig sweep carries the shot. The counterpart
+ *  of the procedural PipeOrganChroma.
+ *
+ *  Audio Reactivity:
+ *    audioChroma[12] -> which pipes speak, which petals light (light)
+ *    audioKick       -> the pedal rank (light)
+ *    audioSwell      -> swell-box light (slow)
+ *    audioHigh       -> the shimmer on the speaking length (light)
+ *
+ *  Per-instance: sizeP, yawP. Per-activation variety: hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform sampler2DArray texMeshMaterial;       ///< The mesh's material textures (albedo, roughness, normal ...).
 uniform int            texMeshMaterialLayers; ///< Number of layers in texMeshMaterial.

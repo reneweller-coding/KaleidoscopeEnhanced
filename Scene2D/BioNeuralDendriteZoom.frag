@@ -1,20 +1,27 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file BioNeuralDendriteZoom.frag
- * @brief BIO NEURAL DENDRITE ZOOM: Microscopic continuous dive through a dense
- * bioluminescent neural axon arborization. Luminous synaptic vesicles, action potentials
- * firing like high-voltage electric pulses along dendrites, and glowing soma cell bodies.
+/*****************************************************************************\
+ *                              BioNeuralDendriteZoom.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance -> surges the forward plunge along the axon on top of a steady flight
- *   audioKick    -> flashes synaptic neurotransmitter bursts & triggers action potential
- *   audioCentroid-> tightens the axon halo around rays that miss the arborization
- *   audioSubBass -> expands soma neuron cell body diameter breathing
- *   audioSwell   -> field of view of the dive
- *   audioLevel   -> brightness of the neuropil behind the branches
- *   audioChromaHue-> rotates the bioluminescent neural bio-fluorescence spectrum
+ *  @brief
+ *  BIO NEURAL DENDRITE ZOOM: Microscopic continuous dive through a dense bioluminescent neural axon arborization.
+ *
+ *  Luminous synaptic vesicles, action potentials firing like high-voltage electric pulses along dendrites, and
+ *  glowing soma cell bodies.
+ *
+ *  Audio Reactivity:
+ *    audioAdvance -> surges the forward plunge along the axon on top of a steady flight
+ *    audioKick    -> flashes synaptic neurotransmitter bursts & triggers action potential
+ *    audioCentroid-> tightens the axon halo around rays that miss the arborization
+ *    audioSubBass -> expands soma neuron cell body diameter breathing
+ *    audioSwell   -> field of view of the dive
+ *    audioLevel   -> brightness of the neuropil behind the branches
+ *    audioChromaHue-> rotates the bioluminescent neural bio-fluorescence spectrum
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

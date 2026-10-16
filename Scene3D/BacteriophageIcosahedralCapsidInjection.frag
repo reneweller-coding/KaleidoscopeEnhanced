@@ -1,21 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file BacteriophageIcosahedralCapsidInjection.frag
- * @brief BACTERIOPHAGE ICOSAHEDRAL CAPSID INJECTION: T4 Bacteriophage viral injection nanomachine.
- * Icosahedral protein capsid, contractile tail sheath, baseplate spikes, and high-pressure viral
- * DNA genome injection pulse into a host bacterium with cryo-EM photo texturing.  A whole SWARM
- * of phages descending through the host cell's cytoplasm (see the .vert).
- *   audioAdvance -> navigates viral tail sheath contraction & DNA translocation drift
- *   audioKick    -> flashes high-pressure viral DNA genome ejection & baseplate perforation
- *   audioSwell   -> widens icosahedral capsid diameter & protein capsomer luminescence,
- *                   and breathes the host cytoplasm behind the swarm
- *   audioCentroid-> shifts viral protein / nucleic acid fluorescence spectra
+/*****************************************************************************\
+ *                              BacteriophageIcosahedralCapsidInjection.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   phageScaleP float T4 phage macromolecular complex scale (0.8..2.2)
- *   specularP   float protein capsomer facet specular gain  (0.8..2.5)
+ *  @brief
+ *  BACTERIOPHAGE ICOSAHEDRAL CAPSID INJECTION: T4 Bacteriophage viral injection nanomachine.
+ *
+ *  Icosahedral protein capsid, contractile tail sheath, baseplate spikes, and high-pressure viral DNA genome
+ *  injection pulse into a host bacterium with cryo-EM photo texturing.  A whole SWARM of phages descending through
+ *  the host cell's cytoplasm (see the .vert).
+ *
+ *    audioAdvance -> navigates viral tail sheath contraction & DNA translocation drift
+ *    audioKick    -> flashes high-pressure viral DNA genome ejection & baseplate perforation
+ *    audioSwell   -> widens icosahedral capsid diameter & protein capsomer luminescence,
+ *                    and breathes the host cytoplasm behind the swarm
+ *    audioCentroid-> shifts viral protein / nucleic acid fluorescence spectra
+ *
+ *  Per-activation variety:
+ *    phageScaleP float T4 phage macromolecular complex scale (0.8..2.2)
+ *    specularP   float protein capsomer facet specular gain  (0.8..2.5)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec2  vUV;         ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 in vec3  vNormal;     ///< Surface normal (from the vertex stage).

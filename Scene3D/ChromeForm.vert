@@ -1,13 +1,21 @@
 #version 330 core
-/**
- * @file ChromeForm.vert
- * @brief Vertex stage for ChromeForm.frag. geom="mesh".
+/*****************************************************************************\
+ *                              ChromeForm.vert
+\*****************************************************************************/
+/*! @file
  *
- * A mirror shows its surroundings, not itself, so the only thing this stage
- * has to get right is that the surface keeps TURNING: a static mirror is a
- * still picture of a room. The turn is slow and about one axis, because what
- * the eye follows here is the reflection sliding across the form, and a tumble
- * would scramble that into noise.
+ *  @brief
+ *  Vertex stage for ChromeForm.frag.
+ *
+ *  geom="mesh".
+ *
+ *  A mirror shows its surroundings, not itself, so the only thing this stage
+ *  has to get right is that the surface keeps TURNING: a static mirror is a
+ *  still picture of a room. The turn is slow and about one axis, because what
+ *  the eye follows here is the reflection sliding across the form, and a tumble
+ *  would scramble that into noise.
+ *
+ *  @author René Weller
  */
 
 in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an

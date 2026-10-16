@@ -1,23 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file IndustrialStation.frag
- * @brief GEOM="MESH" STATION FAMILY: mining/refinery/salvage hulls (asteroid
- * refineries, mining cores, fuel depots, ice processors, scrap yards), shown
- * drifting through a real asteroid field painted onto the sky shell
- * Scene3DShader::buildGeometry() appends after the loaded mesh (see
- * IndustrialStation.vert) -- vBg selects shell vs. hull. Dim, grimy ambient
- * light plus a warm furnace/vent glow that flickers with the beat, standing
- * in for open smelting/venting machinery; no photo-tinting on the hull
- * itself -- the field carries the color.
- *   audioKick    -> furnace-glow flare
- *   audioSwell   -> ambient light level (never fully bright -- this is a
- *                   working yard, not a showroom)
- *   audioAdvance -> tumble speed (vertex stage)
+/*****************************************************************************\
+ *                              IndustrialStation.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-instance: sizeP (relative scale), glowP (furnace-glow intensity).
- * Per-activation variety: hueP float palette offset (0..6.28).
+ *  @brief
+ *  GEOM="MESH" STATION FAMILY: mining/refinery/salvage hulls (asteroid refineries, mining cores, fuel depots, ice
+ *  processors, scrap yards), shown drifting through a real asteroid field painted onto the sky shell
+ *  Scene3DShader::buildGeometry() appends after the loaded mesh (see IndustrialStation.vert) -- vBg selects shell
+ *  vs. hull.
+ *
+ *  Dim, grimy ambient light plus a warm furnace/vent glow that flickers with the beat, standing in for open
+ *  smelting/venting machinery; no photo-tinting on the hull itself -- the field carries the color.
+ *
+ *    audioKick    -> furnace-glow flare
+ *    audioSwell   -> ambient light level (never fully bright -- this is a
+ *                    working yard, not a showroom)
+ *    audioAdvance -> tumble speed (vertex stage)
+ *
+ *  Per-instance: sizeP (relative scale), glowP (furnace-glow intensity).
+ *  Per-activation variety: hueP float palette offset (0..6.28).
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform sampler2DArray texMeshMaterial;       ///< The mesh's material textures (albedo, roughness, normal ...).
 uniform int            texMeshMaterialLayers; ///< Number of layers in texMeshMaterial.

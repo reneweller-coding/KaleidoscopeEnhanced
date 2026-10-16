@@ -1,27 +1,32 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file WaveformRiver.frag
- * @brief WAVEFORM RIVER: the oscilloscope as geography.  A river winds
- * through a night landscape; the camera flies down it on the music's pace.
- * The water surface IS the waveform -- audioWave[64] laid along the river as
- * ripples of light, so the wave you hear is the water you fly over -- and
- * the melody sets the river's width and the colour it glows: a rising line
- * widens the river and warms it, a bass-heavy passage floods the banks.
- * The landscape is a fixed height field (nothing runs away), the river a
- * continuous meander cut into it.
+/*****************************************************************************\
+ *                              WaveformRiver.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioWave[64]    -> ripples on the water (the whole point)
- *   audioMelodyPitch -> glow hue of the water
- *   audioSwell       -> river width and water level (slow)
- *   audioBass        -> glow of the water
- *   sceneAdvance     -> flight down the river (music-paced)
- *   audioKick        -> the water flashes
- *   audioSwell       -> sky brightness
+ *  @brief
+ *  WAVEFORM RIVER: the oscilloscope as geography.
  *
- * Per-activation variety: bendP (meander amplitude), heightP (relief), hueP.
+ *  A river winds through a night landscape; the camera flies down it on the music's pace. The water surface IS the
+ *  waveform -- audioWave[64] laid along the river as ripples of light, so the wave you hear is the water you fly
+ *  over -- and the melody sets the river's width and the colour it glows: a rising line widens the river and warms
+ *  it, a bass-heavy passage floods the banks. The landscape is a fixed height field (nothing runs away), the river
+ *  a continuous meander cut into it.
+ *
+ *  Audio Reactivity:
+ *    audioWave[64]    -> ripples on the water (the whole point)
+ *    audioMelodyPitch -> glow hue of the water
+ *    audioSwell       -> river width and water level (slow)
+ *    audioBass        -> glow of the water
+ *    sceneAdvance     -> flight down the river (music-paced)
+ *    audioKick        -> the water flashes
+ *    audioSwell       -> sky brightness
+ *
+ *  Per-activation variety: bendP (meander amplitude), heightP (relief), hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

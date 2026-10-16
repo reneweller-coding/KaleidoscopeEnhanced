@@ -1,20 +1,27 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file PulsarJet.frag
- * @brief PULSAR JET: A highly energetic, rapidly spinning neutron star emitting
- * blinding relativistic jets. The accretion disk and jets pulsate violently to
- * the music's beat, while the camera orbits the system.
- *   audioAdvance -> camera orbit speed around the pulsar
- *   audioKick    -> intense energy pulses traveling along the jet
- *   audioSwell   -> brightness of the accretion disk and surrounding gas
- *   audioChromaHue-> base palette offset for the extreme energy radiation
+/*****************************************************************************\
+ *                              PulsarJet.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   energyP float overall energy output / brightness (0.7..1.5)
- *   spinP float base rotation speed of the pulsar (0.5..2.0)
- *   hueP float palette offset (0..6.28)
+ *  @brief
+ *  PULSAR JET: A highly energetic, rapidly spinning neutron star emitting blinding relativistic jets.
+ *
+ *  The accretion disk and jets pulsate violently to the music's beat, while the camera orbits the system.
+ *
+ *    audioAdvance -> camera orbit speed around the pulsar
+ *    audioKick    -> intense energy pulses traveling along the jet
+ *    audioSwell   -> brightness of the accretion disk and surrounding gas
+ *    audioChromaHue-> base palette offset for the extreme energy radiation
+ *
+ *  Per-activation variety:
+ *    energyP float overall energy output / brightness (0.7..1.5)
+ *    spinP float base rotation speed of the pulsar (0.5..2.0)
+ *    hueP float palette offset (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

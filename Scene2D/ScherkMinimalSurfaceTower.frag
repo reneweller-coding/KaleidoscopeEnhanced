@@ -1,22 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file ScherkMinimalSurfaceTower.frag
- * @brief SCHERK MINIMAL SURFACE TOWER: Raymarched infinite minimal surface towers
- * governed by Scherk's doubly periodic minimal surface equation (e^z cos(x) = cos(y)).
- * Intersecting saddle surfaces, glass and titanium reflections, caustic
- * light sheets, and continuous non-Euclidean photo mapping.
- *   audioAdvance -> navigates camera through the infinite Scherk towers
- *   audioKick    -> flashes caustic reflection lines & edge highlights
- *   audioBass    -> undulates saddle surface pitch and tower spacing
- *   audioChromaHue-> rotates crystal glass dispersion colors
+/*****************************************************************************\
+ *                              ScherkMinimalSurfaceTower.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   saddleP float Scherk saddle curvature scale         (0.5..2.2)
- *   towerP  float tower lattice grid density            (0.5..2.0)
- *   speedP  float camera traversal velocity             (0.5..2.0)
- *   hueP    float structural chromatic hue offset       (0..6.28)
+ *  @brief
+ *  SCHERK MINIMAL SURFACE TOWER: Raymarched infinite minimal surface towers governed by Scherk's doubly periodic
+ *  minimal surface equation (e^z cos(x) = cos(y)).
+ *
+ *  Intersecting saddle surfaces, glass and titanium reflections, caustic light sheets, and continuous non-Euclidean
+ *  photo mapping.
+ *
+ *    audioAdvance -> navigates camera through the infinite Scherk towers
+ *    audioKick    -> flashes caustic reflection lines & edge highlights
+ *    audioBass    -> undulates saddle surface pitch and tower spacing
+ *    audioChromaHue-> rotates crystal glass dispersion colors
+ *
+ *  Per-activation variety:
+ *    saddleP float Scherk saddle curvature scale         (0.5..2.2)
+ *    towerP  float tower lattice grid density            (0.5..2.0)
+ *    speedP  float camera traversal velocity             (0.5..2.0)
+ *    hueP    float structural chromatic hue offset       (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

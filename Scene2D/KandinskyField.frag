@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file KandinskyField.frag
- * @brief KANDINSKY FIELD: a composition in the spirit of Kandinsky's
- * Bauhaus paintings, forever recomposing -- circles with halos, sharp
- * triangles, crossing straight lines, checkerboards and arcs float over a
- * softly graded ground, each element drifting and turning slowly on its
- * own, some circles pulsing their halos; colours bold and primary with
- * the photograph lending the ground its tone.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              KandinskyField.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the elements drift and turn (integrated, jump-free)
- *   audioSpread     -> the elements grow
- *   audioKick       -> the circles' halos pulse (light)
- *   audioMode       -> the ground: deep blue-black in minor, warm cream in major
- *   audioHigh       -> the lines glint (light)
- *   audioSwell      -> the photo tone in the ground (slow)
+ *  @brief
+ *  KANDINSKY FIELD: a composition in the spirit of Kandinsky's Bauhaus paintings, forever recomposing -- circles
+ *  with halos, sharp triangles, crossing straight lines, checkerboards and arcs float over a softly graded ground,
+ *  each element drifting and turning slowly on its own, some circles pulsing their halos; colours bold and primary
+ *  with the photograph lending the ground its tone.
  *
- * Knobs: circleP (circles), lineP (lines and triangles), checkP (checkerboards), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the elements drift and turn (integrated, jump-free)
+ *    audioSpread     -> the elements grow
+ *    audioKick       -> the circles' halos pulse (light)
+ *    audioMode       -> the ground: deep blue-black in minor, warm cream in major
+ *    audioHigh       -> the lines glint (light)
+ *    audioSwell      -> the photo tone in the ground (slow)
+ *
+ *  Knobs: circleP (circles), lineP (lines and triangles), checkP (checkerboards), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

@@ -1,15 +1,20 @@
 #version 430 core
-/**
- * @file NeuralConnectomeGlow.comp
- * @brief NEURAL CONNECTOME GLOW: a forest of neurons in a volume -- somas
- * with branching dendrites, and long axons running between them -- and
- * the spikes: pulses of light travelling along the axons on continuous
- * phases (the fragment draws the pulse at the phase's position along each
- * fibre).  Each axon belongs to a spectrum band; the band's energy is the
- * firing rate seen as brightness.  The geometry is fixed per activation;
- * the volume turns very slowly.  No state.  Camera still.
+/*****************************************************************************\
+ *                              NeuralConnectomeGlow.comp
+\*****************************************************************************/
+/*! @file
  *
- * Per-instance: neuronsP, branchP, hueP.
+ *  @brief
+ *  NEURAL CONNECTOME GLOW: a forest of neurons in a volume -- somas with branching dendrites, and long axons
+ *  running between them -- and the spikes: pulses of light travelling along the axons on continuous phases (the
+ *  fragment draws the pulse at the phase's position along each fibre).
+ *
+ *  Each axon belongs to a spectrum band; the band's energy is the firing rate seen as brightness.  The geometry is
+ *  fixed per activation; the volume turns very slowly.  No state.  Camera still.
+ *
+ *  Per-instance: neuronsP, branchP, hueP.
+ *
+ *  @author René Weller
  */
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( local_size_x = 4, local_size_y = 4, local_size_z = 4 ) in;

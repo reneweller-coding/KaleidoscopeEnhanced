@@ -1,23 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SpiderOrbWebDew.frag
- * @brief SPIDER ORB WEB WITH DEW: an orb web at dawn, strung with dew.
- * The web is built over the scene arc the way a spider builds it -- radii
- * first, then the spiral from the hub outward; each radius belongs to a
- * spectrum band and glows with it; the dew drops (round, on the spiral)
- * sparkle with the treble; the sun rises behind on the swell; the photo
- * is the garden out of focus.  Camera still.
+/*****************************************************************************\
+ *                              SpiderOrbWebDew.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   sceneProgress     -> web construction (the arc)
- *   audioSpectrum[32] -> radius glow by band (light)
- *   audioHigh         -> dew sparkle (light)
- *   audioSwell        -> sunrise (slow)
- *   audioLevel        -> brightness
+ *  @brief
+ *  SPIDER ORB WEB WITH DEW: an orb web at dawn, strung with dew.
  *
- * Per-activation variety: radiiP, dewP, hueP.
+ *  The web is built over the scene arc the way a spider builds it -- radii first, then the spiral from the hub
+ *  outward; each radius belongs to a spectrum band and glows with it; the dew drops (round, on the spiral) sparkle
+ *  with the treble; the sun rises behind on the swell; the photo is the garden out of focus.  Camera still.
+ *
+ *  Audio Reactivity:
+ *    sceneProgress     -> web construction (the arc)
+ *    audioSpectrum[32] -> radius glow by band (light)
+ *    audioHigh         -> dew sparkle (light)
+ *    audioSwell        -> sunrise (slow)
+ *    audioLevel        -> brightness
+ *
+ *  Per-activation variety: radiiP, dewP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

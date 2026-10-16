@@ -1,18 +1,25 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file ThomasAttractorCosmicLabyrinth.frag
- * @brief THOMAS ATTRACTOR COSMIC LABYRINTH: Cyclically symmetric chaotic Thomas attractor
- * dx/dt = sin(y) - bx, dy/dt = sin(z) - by, dz/dt = sin(x) - bz. Hypnotic smooth 3D
- * space curve labyrinth with 3-fold cyclic symmetry, glowing energy packets, and orbital flow.
+/*****************************************************************************\
+ *                              ThomasAttractorCosmicLabyrinth.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance -> drives continuous integration along Thomas attractor curve
- *   audioKick    -> flashes attractor loop nodes & shoots energy pulses
- *   audioCentroid-> modulates damping parameter b & trajectory sharpness
- *   audioSubBass -> expands attractor labyrinth spatial volume
- *   audioChromaHue-> rotates the chaotic cyclic attractor palette
+ *  @brief
+ *  THOMAS ATTRACTOR COSMIC LABYRINTH: Cyclically symmetric chaotic Thomas attractor dx/dt = sin(y) - bx, dy/dt =
+ *  sin(z) - by, dz/dt = sin(x) - bz.
+ *
+ *  Hypnotic smooth 3D space curve labyrinth with 3-fold cyclic symmetry, glowing energy packets, and orbital flow.
+ *
+ *  Audio Reactivity:
+ *    audioAdvance -> drives continuous integration along Thomas attractor curve
+ *    audioKick    -> flashes attractor loop nodes & shoots energy pulses
+ *    audioCentroid-> modulates damping parameter b & trajectory sharpness
+ *    audioSubBass -> expands attractor labyrinth spatial volume
+ *    audioChromaHue-> rotates the chaotic cyclic attractor palette
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

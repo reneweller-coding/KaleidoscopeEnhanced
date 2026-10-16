@@ -1,31 +1,38 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file Kaleidoscope.frag
- * @brief The classic kaleidoscope fold: photo pixels are read back through a polar mirror-and-repeat of `sides`
- * segments, with an optional superellipse warp via the `power` exponent.
+/*****************************************************************************\
+ *                              Kaleidoscope.frag
+\*****************************************************************************/
+/*! @file
  *
- * audioLevel, audioFlip, audioCentroid, audioFlux and audioValence are declared and documented here but are not read by
- * this shader's own logic; the mood colour, saturation and loudness brightness they describe are applied globally
- * afterwards, in the final present pass.
+ *  @brief
+ *  The classic kaleidoscope fold: photo pixels are read back through a polar mirror-and-repeat of `sides` segments,
+ *  with an optional superellipse warp via the `power` exponent.
  *
- * Audio Reactivity:
- *  - audioPhase      -> integrated, jump-free rotation angle added directly to the
- *                       segment angle, so the pattern spins in step with the music
- *                       without ever snapping
- *  - audioBeat       -> a very subtle radial zoom-breath, blended in at low strength
- *                       by design (an earlier, stronger beat flash was tiring)
- *  - audioMode       -> ROSETTE SHAPE: the superellipse exponent of the radial metric.
- *                       Minor keys pinch the fold into a spiky, star-like rosette,
- *                       major keys round it out into full, blooming petals
- *  - audioHarmChange -> CHORD-CHANGE BREATH: every chord/key move gives the rosette a
- *                       visible zoom pulse, so the harmony -- not just the drums --
- *                       drives the pattern's punctuation
- *  - audioRoughness  -> WAVY MIRROR GLASS: sensory dissonance ripples the folded
- *                       segment angle along the radius, so consonant passages have
- *                       perfectly straight mirror seams and rough clusters bend them
- *                       like old, warped kaleidoscope glass
+ *  audioLevel, audioFlip, audioCentroid, audioFlux and audioValence are declared and documented here but are not
+ *  read by
+ *  this shader's own logic; the mood colour, saturation and loudness brightness they describe are applied globally
+ *  afterwards, in the final present pass.
+ *
+ *  Audio Reactivity:
+ *   - audioPhase      -> integrated, jump-free rotation angle added directly to the
+ *                        segment angle, so the pattern spins in step with the music
+ *                        without ever snapping
+ *   - audioBeat       -> a very subtle radial zoom-breath, blended in at low strength
+ *                        by design (an earlier, stronger beat flash was tiring)
+ *   - audioMode       -> ROSETTE SHAPE: the superellipse exponent of the radial metric.
+ *                        Minor keys pinch the fold into a spiky, star-like rosette,
+ *                        major keys round it out into full, blooming petals
+ *   - audioHarmChange -> CHORD-CHANGE BREATH: every chord/key move gives the rosette a
+ *                        visible zoom pulse, so the harmony -- not just the drums --
+ *                        drives the pattern's punctuation
+ *   - audioRoughness  -> WAVY MIRROR GLASS: sensory dissonance ripples the folded
+ *                        segment angle along the radius, so consonant passages have
+ *                        perfectly straight mirror seams and rough clusters bend them
+ *                        like old, warped kaleidoscope glass
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;             ///< The pixel's colour (output).
 uniform vec2      resolution;            ///< Size of the render target in pixels.
 uniform float     time;                  ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;                  ///< The current photo.

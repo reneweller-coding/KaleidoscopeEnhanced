@@ -1,15 +1,21 @@
 #version 330 core
-/**
- * @file BorromeanRingsOrbit.frag
- * @brief BORROMEAN RINGS ORBIT: two-pass shader.  Opaque pass: the wall
- * behind, the photo dim.  OIT pass: three glass rings, each tinted and lit
- * by a band group (low, mid, high), the photo refracted through the glass,
- * a Fresnel rim, a highlight; a pulse of light runs around each ring on
- * the scene clock; the kick sparks the highlights.  Weighted-blended OIT
- * as in CathedralGlass (tone-map before accumulating).
+/*****************************************************************************\
+ *                              BorromeanRingsOrbit.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity: audioBass / audioMid / audioHigh -> ring light (light);
- *                   audioKick -> highlight; audioSwell -> wall light; audioLevel.
+ *  @brief
+ *  BORROMEAN RINGS ORBIT: two-pass shader.
+ *
+ *  Opaque pass: the wall behind, the photo dim.  OIT pass: three glass rings, each tinted and lit by a band group
+ *  (low, mid, high), the photo refracted through the glass, a Fresnel rim, a highlight; a pulse of light runs
+ *  around each ring on the scene clock; the kick sparks the highlights.  Weighted-blended OIT as in CathedralGlass
+ *  (tone-map before accumulating).
+ *
+ *  Audio Reactivity: audioBass / audioMid / audioHigh -> ring light (light);
+ *                    audioKick -> highlight; audioSwell -> wall light; audioLevel.
+ *
+ *  @author René Weller
  */
 layout( location = 0 ) out vec4 outAccum;  ///< Accum (output).
 layout( location = 1 ) out vec4 outReveal; ///< Reveal (output).

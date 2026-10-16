@@ -1,4 +1,22 @@
 #version 330 core
+/*****************************************************************************\
+ *                              JellyBody.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Lighting for a single translucent jelly body: deep saturated colour, fresnel rim, wet specular highlight, and
+ *  light seeming to pass through from behind.
+ *
+ *  The body's shape and per-vertex deformation (vDefo) and hue (vHue) are
+ *  computed upstream in JellyBody.vert from the instrument-triggered modal
+ *  ringing (audioKick/audioSnare/audioHat); this stage only reads
+ *  audioSwell and audioDrop, using them to brighten the subsurface glow
+ *  that pools where the body is currently deformed, making the ring-down
+ *  itself visible as travelling light.
+ *
+ *  @author René Weller
+ */
 out vec4 fragColor; ///< The pixel's colour (output).
 // JellyBody.frag — translucent wobbling jelly: deep saturated body colour,
 // strong fresnel rim (the classic gummy look), wet specular, and a subtle
@@ -12,20 +30,6 @@ in vec3  vNorm; ///< Norm (from the vertex stage).
 in vec3  vView; ///< View vector (from the vertex stage).
 in float vDefo; ///< Defo (from the vertex stage).
 in float vHue;  ///< Hue (from the vertex stage).
-
-/**
- * @file JellyBody.frag
- * @brief Lighting for a single translucent jelly body: deep saturated
- * colour, fresnel rim, wet specular highlight, and light seeming to pass
- * through from behind.
- *
- * The body's shape and per-vertex deformation (vDefo) and hue (vHue) are
- * computed upstream in JellyBody.vert from the instrument-triggered modal
- * ringing (audioKick/audioSnare/audioHat); this stage only reads
- * audioSwell and audioDrop, using them to brighten the subsurface glow
- * that pools where the body is currently deformed, making the ring-down
- * itself visible as travelling light.
- */
 
 /**  Rotates a colour's hue by an angle (about the grey axis).
  *

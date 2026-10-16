@@ -1,18 +1,24 @@
 #version 430 core
-/**
- * @file OpticalLatticeAtoms.comp
- * @brief OPTICAL LATTICE ATOMS: ultracold atoms held in the standing-wave
- * lattice of crossed laser beams -- an egg-crate of light with one glowing
- * atom per site.  The atoms tunnel: each oscillates between its site and
- * a neighbour on its own continuous phase (a cosine, never a jump); the
- * lattice depth (the swell) sets how far they stray; the lattice beams
- * cross the volume as faint red lines.  The camera never moves.
+/*****************************************************************************\
+ *                              OpticalLatticeAtoms.comp
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (generator stage):
- *   sceneAdvance -> tunnelling oscillations (continuous)
- *   audioSwell   -> lattice depth: less stray when deep (slow)
+ *  @brief
+ *  OPTICAL LATTICE ATOMS: ultracold atoms held in the standing-wave lattice of crossed laser beams -- an egg-crate
+ *  of light with one glowing atom per site.
  *
- * Per-instance: pitchP (site spacing), fillP (filling fraction), hueP.
+ *  The atoms tunnel: each oscillates between its site and a neighbour on its own continuous phase (a cosine, never
+ *  a jump); the lattice depth (the swell) sets how far they stray; the lattice beams cross the volume as faint red
+ *  lines.  The camera never moves.
+ *
+ *  Audio Reactivity (generator stage):
+ *    sceneAdvance -> tunnelling oscillations (continuous)
+ *    audioSwell   -> lattice depth: less stray when deep (slow)
+ *
+ *  Per-instance: pitchP (site spacing), fillP (filling fraction), hueP.
+ *
+ *  @author René Weller
  */
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( local_size_x = 4, local_size_y = 4, local_size_z = 4 ) in;

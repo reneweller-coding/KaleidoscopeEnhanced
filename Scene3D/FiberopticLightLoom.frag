@@ -1,22 +1,26 @@
 #version 330 core
+/*****************************************************************************\
+ *                              FiberopticLightLoom.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Shades a woven bundle of fiber-optic strands: each strand's cross-section (vSide) blends its per-vertex color
+ *  with a slideshow photo that scrolls lengthwise along the strand (vLength, animated by time), and a bright rim
+ *  picks out the strand's outer edge.
+ *
+ *  This fragment stage declares no audio uniforms itself; any audio-driven
+ *  brightness arrives already baked into the per-vertex vCol supplied by the
+ *  companion vertex shader. A soft-knee tone-mapping pass at the end
+ *  compresses hot highlights instead of clipping them to flat white.
+ *
+ *  @author René Weller
+ */
 out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec4  vCol;    ///< Colour (from the vertex stage).
 in float vSide;   ///< Which side of a strip (from the vertex stage).
 in float vLength; ///< Length (from the vertex stage).
-
-/**
- * @file FiberopticLightLoom.frag
- * @brief Shades a woven bundle of fiber-optic strands: each strand's
- * cross-section (vSide) blends its per-vertex color with a slideshow photo
- * that scrolls lengthwise along the strand (vLength, animated by time), and
- * a bright rim picks out the strand's outer edge.
- *
- * This fragment stage declares no audio uniforms itself; any audio-driven
- * brightness arrives already baked into the per-vertex vCol supplied by the
- * companion vertex shader. A soft-knee tone-mapping pass at the end
- * compresses hot highlights instead of clipping them to flat white.
- */
 
 uniform sampler2D tex0;          ///< The current photo.
 uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).

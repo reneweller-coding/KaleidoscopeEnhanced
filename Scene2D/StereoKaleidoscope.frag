@@ -1,23 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file StereoKaleidoscope.frag
- * @brief STEREO KALEIDOSCOPE: the first kaleidoscope that hears in stereo.
- * The left half of the picture is folded from the left channel's energy, the
- * right half from the right's -- fold count, rotation and zoom differ per
- * side by exactly the stereo difference of the mix.  A mono track gives one
- * symmetric ornament; a wide mix pulls the two halves apart and they meet in
- * a seam down the middle that shimmers with the stereo width.  A hard-panned
- * synth line visibly lives on one side.
+/*****************************************************************************\
+ *                              StereoKaleidoscope.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioStereoL / R -> per-side fold rotation and zoom (the whole point)
- *   audioStereo      -> width of the seam and how far the halves diverge
- *   audioSwell       -> the halves drift apart on builds
- *   sceneAdvance     -> slow continuous turn (no jumps, no run-away)
+ *  @brief
+ *  STEREO KALEIDOSCOPE: the first kaleidoscope that hears in stereo.
  *
- * Per-activation variety: sidesP (base fold count 5..9), zoomP, hueP.
+ *  The left half of the picture is folded from the left channel's energy, the right half from the right's -- fold
+ *  count, rotation and zoom differ per side by exactly the stereo difference of the mix.  A mono track gives one
+ *  symmetric ornament; a wide mix pulls the two halves apart and they meet in a seam down the middle that shimmers
+ *  with the stereo width.  A hard-panned synth line visibly lives on one side.
+ *
+ *  Audio Reactivity:
+ *    audioStereoL / R -> per-side fold rotation and zoom (the whole point)
+ *    audioStereo      -> width of the seam and how far the halves diverge
+ *    audioSwell       -> the halves drift apart on builds
+ *    sceneAdvance     -> slow continuous turn (no jumps, no run-away)
+ *
+ *  Per-activation variety: sidesP (base fold count 5..9), zoomP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

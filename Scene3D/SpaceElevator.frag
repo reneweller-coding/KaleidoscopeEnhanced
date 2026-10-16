@@ -1,20 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SpaceElevator.frag
- * @brief SPACE ELEVATOR: A colossal tether extending into orbit.
- * Glowing cars race up and down the structure, while massive support rings
- * pulse with energy synchronized to the music.
- *   audioAdvance -> climbing speed up the tether
- *   audioKick    -> flashes from the elevator cars and warning beacons
- *   audioSwell   -> ambient daylight and atmospheric scattering
- *   audioChromaHue-> palette offset for the lights
+/*****************************************************************************\
+ *                              SpaceElevator.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   tetherP float complexity of the tether structure (0.7..1.5)
- *   glowP float intensity of the lights (0.6..1.8)
- *   hueP float palette offset (0..6.28)
+ *  @brief
+ *  SPACE ELEVATOR: A colossal tether extending into orbit.
+ *
+ *  Glowing cars race up and down the structure, while massive support rings pulse with energy synchronized to the
+ *  music.
+ *
+ *    audioAdvance -> climbing speed up the tether
+ *    audioKick    -> flashes from the elevator cars and warning beacons
+ *    audioSwell   -> ambient daylight and atmospheric scattering
+ *    audioChromaHue-> palette offset for the lights
+ *
+ *  Per-activation variety:
+ *    tetherP float complexity of the tether structure (0.7..1.5)
+ *    glowP float intensity of the lights (0.6..1.8)
+ *    hueP float palette offset (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform float time;           ///< Seconds since the program started (never reset; see sceneTime).
 uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs

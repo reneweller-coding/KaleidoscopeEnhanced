@@ -1,25 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file EinsteinHatTiling.frag
- * @brief EINSTEIN HAT TILING: the aperiodic monotile of 2023 -- one shape
- * that tiles the plane but never repeats.  The hat is a polykite: eight
- * kites of the [3.4.6.4] kite lattice; here the lattice of kites is drawn
- * exactly and grouped into hats by a deterministic aperiodic rule of the
- * kite index (a substitution-flavoured hash), so the picture reads as
- * the hat tiling: every hat a piece of the photo, the reflected hats lit
- * by chroma, the tile edges glowing on the kick.  The field drifts and
- * zooms slowly on the scene clock.  Camera still.
+/*****************************************************************************\
+ *                              EinsteinHatTiling.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   sceneAdvance    -> drift and slow zoom (continuous)
- *   audioChroma[12] -> reflected-hat light (light)
- *   audioKick       -> edge glow (light)
- *   audioSwell      -> paper light (slow)
- *   audioLevel      -> brightness
+ *  @brief
+ *  EINSTEIN HAT TILING: the aperiodic monotile of 2023 -- one shape that tiles the plane but never repeats.
  *
- * Per-activation variety: scaleP, flipP (reflected fraction), hueP.
+ *  The hat is a polykite: eight kites of the [3.4.6.4] kite lattice; here the lattice of kites is drawn exactly and
+ *  grouped into hats by a deterministic aperiodic rule of the kite index (a substitution-flavoured hash), so the
+ *  picture reads as the hat tiling: every hat a piece of the photo, the reflected hats lit by chroma, the tile
+ *  edges glowing on the kick.  The field drifts and zooms slowly on the scene clock.  Camera still.
+ *
+ *  Audio Reactivity:
+ *    sceneAdvance    -> drift and slow zoom (continuous)
+ *    audioChroma[12] -> reflected-hat light (light)
+ *    audioKick       -> edge glow (light)
+ *    audioSwell      -> paper light (slow)
+ *    audioLevel      -> brightness
+ *
+ *  Per-activation variety: scaleP, flipP (reflected fraction), hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

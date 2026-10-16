@@ -1,21 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file BioluminescentCombJellyCydippid.frag
- * @brief BIOLUMINESCENT COMB JELLY CYDIPPID: Abyssal ctenophore (Mertensia ovum / Beroe cucumis).
- * A BLOOM of five animals drifting at different depths, each carrying 20 meridional rows of
- * coordinated metachronal beating ciliated comb plates (ctenes) producing rainbow diffraction
- * iridescence, bioelectric green fluorescent flashes, and photo texturing -- with the long
- * sticky tentacles trailing off past the edges of the picture between them.
- *   audioAdvance -> accelerates metachronal ciliary comb plate beating wave speed
- *   audioKick    -> flashes defensive coelenterazine bioluminescent shock pulses
- *   audioSwell   -> thickens gelatinous mesoglea body volume & refraction glow
- *   audioCentroid-> shifts ctenophore diffraction rainbow & GFP emission spectra
+/*****************************************************************************\
+ *                              BioluminescentCombJellyCydippid.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   ribbonWidthP float comb plate row ribbon width          (0.02..0.1)
- *   cteneGlowP   float metachronal ciliary wave luminance    (0.8..2.5)
+ *  @brief
+ *  BIOLUMINESCENT COMB JELLY CYDIPPID: Abyssal ctenophore (Mertensia ovum / Beroe cucumis).
+ *
+ *  A BLOOM of five animals drifting at different depths, each carrying 20 meridional rows of coordinated
+ *  metachronal beating ciliated comb plates (ctenes) producing rainbow diffraction iridescence, bioelectric green
+ *  fluorescent flashes, and photo texturing -- with the long sticky tentacles trailing off past the edges of the
+ *  picture between them.
+ *
+ *    audioAdvance -> accelerates metachronal ciliary comb plate beating wave speed
+ *    audioKick    -> flashes defensive coelenterazine bioluminescent shock pulses
+ *    audioSwell   -> thickens gelatinous mesoglea body volume & refraction glow
+ *    audioCentroid-> shifts ctenophore diffraction rainbow & GFP emission spectra
+ *
+ *  Per-activation variety:
+ *    ribbonWidthP float comb plate row ribbon width          (0.02..0.1)
+ *    cteneGlowP   float metachronal ciliary wave luminance    (0.8..2.5)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec2  vUV;        ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 in float vSide;      ///< Which side of a strip (from the vertex stage).

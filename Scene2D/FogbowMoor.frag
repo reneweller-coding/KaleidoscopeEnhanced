@@ -1,23 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file FogbowMoor.frag
- * @brief FOGBOW MOOR: an early morning on a moor in fog, the low sun at your
- * back -- and standing in the fog ahead a fogbow: a broad, ghostly white
- * arch, faintly orange on its outer rim and bluish inside, far wider and
- * paler than a rainbow.  Beneath it the moor fades away in layers: brown
- * heather and pale grass tussocks close by, dark peat pools mirroring the
- * white sky, a line of birches and a stone wall dissolving into the fog.
- * Dew glitters on the grass.  The fog drifts slowly; the camera is still.
+/*****************************************************************************\
+ *                              FogbowMoor.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSwell  -> the brightness of the fogbow and the fog (slow)
- *   audioHigh   -> dew glittering on the grass (light)
- *   audioLevel  -> brightness
- *   sceneTime / sceneAdvance -> the drifting fog
+ *  @brief
+ *  FOGBOW MOOR: an early morning on a moor in fog, the low sun at your back -- and standing in the fog ahead a
+ *  fogbow: a broad, ghostly white arch, faintly orange on its outer rim and bluish inside, far wider and paler than
+ *  a rainbow.
  *
- * Per-activation variety: fogP (how dense the fog), hueP.
+ *  Beneath it the moor fades away in layers: brown heather and pale grass tussocks close by, dark peat pools
+ *  mirroring the white sky, a line of birches and a stone wall dissolving into the fog. Dew glitters on the grass.
+ *  The fog drifts slowly; the camera is still.
+ *
+ *  Audio Reactivity:
+ *    audioSwell  -> the brightness of the fogbow and the fog (slow)
+ *    audioHigh   -> dew glittering on the grass (light)
+ *    audioLevel  -> brightness
+ *    sceneTime / sceneAdvance -> the drifting fog
+ *
+ *  Per-activation variety: fogP (how dense the fog), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

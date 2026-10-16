@@ -1,8 +1,14 @@
 #version 430 core
-/**
- * @file CrystallineCavernTessellation.tesc
- * @brief Tessellation-control stage companion to CrystallineCavernTessellation.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              CrystallineCavernTessellation.tesc
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Tessellation-control stage companion to CrystallineCavernTessellation.frag -- see that file's header for this
+ *  scene's description.
+ *
+ *  @author René Weller
  */
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( vertices = 4 ) out;

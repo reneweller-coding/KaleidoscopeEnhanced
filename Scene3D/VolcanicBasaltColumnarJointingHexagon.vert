@@ -1,17 +1,23 @@
 #version 330 core
-/**
- * @file VolcanicBasaltColumnarJointingHexagon.vert
- * @brief Vertex stage companion to VolcanicBasaltColumnarJointingHexagon.frag -- see that file's
- * header for this scene's description.
+/*****************************************************************************\
+ *                              VolcanicBasaltColumnarJointingHexagon.vert
+\*****************************************************************************/
+/*! @file
  *
- * The 4900 cubes used to be spent on a 12 x 12 patch stacked 34 deep along the
- * view axis: a terrace barely 2.6 units across, sitting as a small clump in the
- * middle of a black frame, with 97 % of the prisms hidden behind each other.
- * They are now one 70 x 70 causeway (4900 = 70 x 70 exactly) laid out so that
- * it covers the WHOLE picture: the rows step away from the camera in a
- * geometric progression and the column pitch grows with the row's depth, which
- * is what keeps the prisms the same size on screen from the front edge to the
- * far terrace.
+ *  @brief
+ *  Vertex stage companion to VolcanicBasaltColumnarJointingHexagon.frag -- see that file's header for this scene's
+ *  description.
+ *
+ *  The 4900 cubes used to be spent on a 12 x 12 patch stacked 34 deep along the
+ *  view axis: a terrace barely 2.6 units across, sitting as a small clump in the
+ *  middle of a black frame, with 97 % of the prisms hidden behind each other.
+ *  They are now one 70 x 70 causeway (4900 = 70 x 70 exactly) laid out so that
+ *  it covers the WHOLE picture: the rows step away from the camera in a
+ *  geometric progression and the column pitch grows with the row's depth, which
+ *  is what keeps the prisms the same size on screen from the front edge to the
+ *  far terrace.
+ *
+ *  @author René Weller
  */
 
 in vec4 attrA; ///< xyz = cube corner (-0.5..0.5), w = cube index

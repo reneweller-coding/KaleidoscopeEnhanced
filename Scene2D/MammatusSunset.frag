@@ -1,23 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file MammatusSunset.frag
- * @brief MAMMATUS SUNSET: after a thunderstorm, the underside of its anvil
- * hangs over the land in mammatus -- hundreds of round pouches bulging
- * down from the cloud base, filling the whole sky, receding in perspective
- * toward the horizon, and the setting sun shining in underneath them from
- * a clear strip on the horizon, so every pouch glows red and orange on
- * its lower side and falls into deep violet shadow above.  A dark land
- * lies under the burning strip.  The pouches swell and drift slowly.
+/*****************************************************************************\
+ *                              MammatusSunset.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSwell  -> the strength of the red light (slow)
- *   audioBass   -> the glow in the gap on the horizon (light)
- *   audioLevel  -> brightness
- *   sceneTime / sceneAdvance -> the pouches drifting and swelling
+ *  @brief
+ *  MAMMATUS SUNSET: after a thunderstorm, the underside of its anvil hangs over the land in mammatus -- hundreds of
+ *  round pouches bulging down from the cloud base, filling the whole sky, receding in perspective toward the
+ *  horizon, and the setting sun shining in underneath them from a clear strip on the horizon, so every pouch glows
+ *  red and orange on its lower side and falls into deep violet shadow above.
  *
- * Per-activation variety: pouchP (the size of the pouches), hueP.
+ *  A dark land lies under the burning strip.  The pouches swell and drift slowly.
+ *
+ *  Audio Reactivity:
+ *    audioSwell  -> the strength of the red light (slow)
+ *    audioBass   -> the glow in the gap on the horizon (light)
+ *    audioLevel  -> brightness
+ *    sceneTime / sceneAdvance -> the pouches drifting and swelling
+ *
+ *  Per-activation variety: pouchP (the size of the pouches), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

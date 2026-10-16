@@ -1,15 +1,21 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file FxDroneWarp.frag
- * @brief The first AMBIENT-reactive combine pass: a slow, round, liquid domain warp
- * of the combined frame (research: harmonic/sustained material -> soft, curved
- * forms; loudness swell -> gentle expansion).
- *   audioSwell   -> warp amplitude + a slow looming zoom breathe;
- *   audioAmbient -> overall engagement (in beat music it stays nearly plain,
- *                   so it can safely sit in any preset);
- *   audioPhase   -> slow jump-free drift of the warp field.
+/*****************************************************************************\
+ *                              FxDroneWarp.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  The first AMBIENT-reactive combine pass: a slow, round, liquid domain warp of the combined frame (research:
+ *  harmonic/sustained material -> soft, curved forms; loudness swell -> gentle expansion).
+ *
+ *    audioSwell   -> warp amplitude + a slow looming zoom breathe;
+ *    audioAmbient -> overall engagement (in beat music it stays nearly plain,
+ *                    so it can safely sit in any preset);
+ *    audioPhase   -> slow jump-free drift of the warp field.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

@@ -1,19 +1,23 @@
 #version 330 core
+/*****************************************************************************\
+ *                              Jellyfish.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Additive point-sprite shader for a bloom of bioluminescent jellyfish, rendering each point (bell shell or
+ *  trailing tentacle particle) as a soft radial glow.
+ *
+ *  The colour (vCol) is fully computed upstream in Jellyfish.vert, where
+ *  the beat-phase pulse, onset flashes and drop brighten each jelly; this
+ *  stage only shapes a Gaussian falloff from the point's centre and
+ *  multiplies it onto that colour for additive blending.
+ *
+ *  @author René Weller
+ */
 out vec4 fragColor; ///< The pixel's colour (output).
 // Jellyfish.frag — soft glowing point (additive blending).
 in vec4 vCol; ///< Colour (from the vertex stage).
-
-/**
- * @file Jellyfish.frag
- * @brief Additive point-sprite shader for a bloom of bioluminescent
- * jellyfish, rendering each point (bell shell or trailing tentacle
- * particle) as a soft radial glow.
- *
- * The colour (vCol) is fully computed upstream in Jellyfish.vert, where
- * the beat-phase pulse, onset flashes and drop brighten each jelly; this
- * stage only shapes a Gaussian falloff from the point's centre and
- * multiplies it onto that colour for additive blending.
- */
 
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()

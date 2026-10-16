@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureCoilSpring.frag
- * @brief TEXTURE COIL SPRING: flying through the inside of an endless coil
- * -- a thick helical ribbon, wrapped in the photograph, winds around us
- * turn after turn into the distance, lit from inside so its inner face
- * glows and its edges catch the light; through the gaps between the
- * turns a second, slower coil turns in the opposite direction further
- * out, and behind it a dim glow.  The coil stretches and compresses like
- * a spring as we fly.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              TextureCoilSpring.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the flight (integrated, jump-free)
- *   audioPhase      -> the coils turn (integrated)
- *   audioSpread     -> the spring stretches (wider gaps)
- *   audioKick       -> the edges flash (light)
- *   audioMode       -> the light: cool in minor, warm in major
- *   audioSwell      -> the glow behind (slow)
+ *  @brief
+ *  TEXTURE COIL SPRING: flying through the inside of an endless coil -- a thick helical ribbon, wrapped in the
+ *  photograph, winds around us turn after turn into the distance, lit from inside so its inner face glows and its
+ *  edges catch the light; through the gaps between the turns a second, slower coil turns in the opposite direction
+ *  further out, and behind it a dim glow.
  *
- * Knobs: turnsP (turn density), widthP (ribbon width), outerP (outer coil), hueP.
+ *  The coil stretches and compresses like a spring as we fly.  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the flight (integrated, jump-free)
+ *    audioPhase      -> the coils turn (integrated)
+ *    audioSpread     -> the spring stretches (wider gaps)
+ *    audioKick       -> the edges flash (light)
+ *    audioMode       -> the light: cool in minor, warm in major
+ *    audioSwell      -> the glow behind (slow)
+ *
+ *  Knobs: turnsP (turn density), widthP (ribbon width), outerP (outer coil), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

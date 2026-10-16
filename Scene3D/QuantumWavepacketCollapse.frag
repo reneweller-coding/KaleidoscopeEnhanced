@@ -1,28 +1,32 @@
 #version 330 core
+/*****************************************************************************\
+ *                              QuantumWavepacketCollapse.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Additive point-sprite shader for a cloud of particles representing a superposed 3D quantum eigenstate wavepacket
+ *  that collapses toward a shifting nodal centre on the beat.
+ *
+ *  Each sprite is a soft circular blob (gl_PointCoord falloff, discarded
+ *  outside its radius). Its colour comes from imgPalette — a live sample of
+ *  the slideshow photo whose sampling angle is driven by the per-particle
+ *  phase angle vPhase plus audioPhase, and internally by audioChromaHue,
+ *  audioAdvance and audioValence — pushed past normal saturation because
+ *  thousands of additive sprites would otherwise pile up to plain white.
+ *  Brightness follows the particle's probability density vProb, boosted by
+ *  audioKick so the whole cloud flashes on the collapse transient; hueP
+ *  optionally rotates the final hue. The underlying collapse motion (mixing
+ *  each particle toward a moving singularity on a kick) is computed in
+ *  QuantumWavepacketCollapse.vert.
+ *
+ *  @author René Weller
+ */
 in vec3  vPos;   ///< Position (from the vertex stage).
 in float vProb;  ///< Prob (from the vertex stage).
 in float vPhase; ///< Phase (from the vertex stage).
 
 out vec4 fragColor; ///< The pixel's colour (output).
-
-/**
- * @file QuantumWavepacketCollapse.frag
- * @brief Additive point-sprite shader for a cloud of particles representing
- * a superposed 3D quantum eigenstate wavepacket that collapses toward a
- * shifting nodal centre on the beat.
- *
- * Each sprite is a soft circular blob (gl_PointCoord falloff, discarded
- * outside its radius). Its colour comes from imgPalette — a live sample of
- * the slideshow photo whose sampling angle is driven by the per-particle
- * phase angle vPhase plus audioPhase, and internally by audioChromaHue,
- * audioAdvance and audioValence — pushed past normal saturation because
- * thousands of additive sprites would otherwise pile up to plain white.
- * Brightness follows the particle's probability density vProb, boosted by
- * audioKick so the whole cloud flashes on the collapse transient; hueP
- * optionally rotates the final hue. The underlying collapse motion (mixing
- * each particle toward a moving singularity on a kick) is computed in
- * QuantumWavepacketCollapse.vert.
- */
 
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

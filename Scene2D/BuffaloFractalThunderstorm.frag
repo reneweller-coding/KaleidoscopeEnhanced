@@ -1,19 +1,25 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file BuffaloFractalThunderstorm.frag
- * @brief BUFFALO FRACTAL THUNDERSTORM: Deep plunge into the non-holomorphic Buffalo
- * fractal z -> (|Re(z)| + i|Im(z)|)^2 - |Re(z)| + c with pointed horn cusps,
- * high-voltage lightning discharges running along boundary ridges, and thunderous flares.
+/*****************************************************************************\
+ *                              BuffaloFractalThunderstorm.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance -> surges the deep zoom into the Buffalo horn boundary
- *   audioKick    -> flashes lightning discharge arcs & explodes thunder core
- *   audioCentroid-> sharpens spiky fractal horn edge contours
- *   audioSubBass -> expands horn cavity breathing amplitude
- *   audioValence -> photo-vs-palette mix across the storm
- *   audioChromaHue-> steers the electric indigo / violet / golden lightning palette
+ *  @brief
+ *  BUFFALO FRACTAL THUNDERSTORM: Deep plunge into the non-holomorphic Buffalo fractal z -> (|Re(z)| + i|Im(z)|)^2 -
+ *  |Re(z)| + c with pointed horn cusps, high-voltage lightning discharges running along boundary ridges, and
+ *  thunderous flares.
+ *
+ *  Audio Reactivity:
+ *    audioAdvance -> surges the deep zoom into the Buffalo horn boundary
+ *    audioKick    -> flashes lightning discharge arcs & explodes thunder core
+ *    audioCentroid-> sharpens spiky fractal horn edge contours
+ *    audioSubBass -> expands horn cavity breathing amplitude
+ *    audioValence -> photo-vs-palette mix across the storm
+ *    audioChromaHue-> steers the electric indigo / violet / golden lightning palette
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

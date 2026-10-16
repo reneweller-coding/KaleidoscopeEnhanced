@@ -1,23 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file StripePhoto.frag
- * @brief STRIPE PHOTO: the photograph rendered by bent stripes -- parallel
- * lines sweep across the view and bend where the picture is bright, as if
- * the image were a relief pushing up through a striped sheet (the classic
- * "line displacement" portrait); the stripes slide slowly, the photo
- * drifts beneath, and the stripe direction turns.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              StripePhoto.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the stripes slide (integrated, jump-free)
- *   audioPhase      -> the stripe direction turns (integrated)
- *   audioSpread     -> displacement depth
- *   audioKick       -> the stripes brighten (light)
- *   audioMode       -> light lines on black in minor, dark lines on paper in major (blend)
- *   audioSwell      -> the stripes take on the photo's colours (slow)
+ *  @brief
+ *  STRIPE PHOTO: the photograph rendered by bent stripes -- parallel lines sweep across the view and bend where the
+ *  picture is bright, as if the image were a relief pushing up through a striped sheet (the classic "line
+ *  displacement" portrait); the stripes slide slowly, the photo drifts beneath, and the stripe direction turns.
  *
- * Knobs: stripeP (stripe density), widthP (line width), zoomP (photo scale), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the stripes slide (integrated, jump-free)
+ *    audioPhase      -> the stripe direction turns (integrated)
+ *    audioSpread     -> displacement depth
+ *    audioKick       -> the stripes brighten (light)
+ *    audioMode       -> light lines on black in minor, dark lines on paper in major (blend)
+ *    audioSwell      -> the stripes take on the photo's colours (slow)
+ *
+ *  Knobs: stripeP (stripe density), widthP (line width), zoomP (photo scale), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

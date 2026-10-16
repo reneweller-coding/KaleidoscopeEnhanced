@@ -1,18 +1,26 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file CalabiYauManifoldKaleido.frag
- * @brief CALABI-YAU MANIFOLD KALEIDO: 2D cross-section through a 6D Calabi-Yau compactification
- * (Quintic Threefold in CP4) from superstring theory. Organic multi-curved complex
- * polynomial manifolds folding like a transcendent cosmic lotus with moduli-space morphing.
+/*****************************************************************************\
+ *                              CalabiYauManifoldKaleido.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance -> drives continuous navigation through Calabi-Yau moduli space psi
- *   audioKick    -> flashes manifold singularity nodes & triggers dimensional burst
- *   audioCentroid-> sharpens complex polynomial curve contours & string tension
- *   audioSubBass -> expands compactification breathing volume
- *   audioChromaHue-> rotates the superstring vacuum spectrum
+ *  @brief
+ *  CALABI-YAU MANIFOLD KALEIDO: 2D cross-section through a 6D Calabi-Yau compactification (Quintic Threefold in
+ *  CP4) from superstring theory.
+ *
+ *  Organic multi-curved complex polynomial manifolds folding like a transcendent cosmic lotus with moduli-space
+ *  morphing.
+ *
+ *  Audio Reactivity:
+ *    audioAdvance -> drives continuous navigation through Calabi-Yau moduli space psi
+ *    audioKick    -> flashes manifold singularity nodes & triggers dimensional burst
+ *    audioCentroid-> sharpens complex polynomial curve contours & string tension
+ *    audioSubBass -> expands compactification breathing volume
+ *    audioChromaHue-> rotates the superstring vacuum spectrum
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

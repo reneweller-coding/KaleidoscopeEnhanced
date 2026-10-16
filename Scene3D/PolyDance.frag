@@ -1,22 +1,26 @@
 #version 330 core
+/*****************************************************************************\
+ *                              PolyDance.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Shades one cube of the nested platonic-shell constellation with dark faces and luminous edges (depth-tested).
+ *
+ *  Reads no audio uniforms directly. The paired PolyDance.vert places the
+ *  cubes on three counter-rotating Fibonacci-lattice spherical shells,
+ *  each shell's size and brightness keyed to its own register (audioBass/
+ *  audioMid/audioHigh), audioSwell adding a further brightness lift, and
+ *  audioChromaHue setting each shell's hue a musical third apart; this
+ *  shader turns the resulting vCol and the per-corner vCorner coordinate
+ *  into the edge-highlighted look.
+ *
+ *  @author René Weller
+ */
 out vec4 fragColor; ///< The pixel's colour (output).
 // PolyDance.frag — dark faces, luminous edges (depth-tested).
 in vec4 vCol;    ///< Colour (from the vertex stage).
 in vec3 vCorner; ///< Corner (from the vertex stage).
-
-/**
- * @file PolyDance.frag
- * @brief Shades one cube of the nested platonic-shell constellation with
- * dark faces and luminous edges (depth-tested).
- *
- * Reads no audio uniforms directly. The paired PolyDance.vert places the
- * cubes on three counter-rotating Fibonacci-lattice spherical shells,
- * each shell's size and brightness keyed to its own register (audioBass/
- * audioMid/audioHigh), audioSwell adding a further brightness lift, and
- * audioChromaHue setting each shell's hue a musical third apart; this
- * shader turns the resulting vCol and the per-corner vCorner coordinate
- * into the edge-highlighted look.
- */
 
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()

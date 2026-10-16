@@ -1,23 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file GasGiantAtmosphere.frag
- * @brief GAS GIANT ATMOSPHERE: cruising low over the cloud deck of a gas
- * giant.  Billowing tops in the planet's own zone-and-belt colours (cream,
- * ochre, rust) run to a warm hazy horizon; convective towers rise here and
- * there, lit by a low sun with long shadows.  Above, the planet's rings arch
- * across a blue-violet sky beside a crescent moon.  Storm cells deep in the
- * deck light up from inside with the kick.
- *   sceneTime/sceneAdvance -> the cruise (continuous, steady)
- *   audioKick    -> lightning glowing inside the storm cells (light only)
- *   audioSwell   -> sunlight and ring brightness (slow)
- *   audioChromaHue-> photo tint of haze and rings
+/*****************************************************************************\
+ *                              GasGiantAtmosphere.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   cloudP float density and thickness of the clouds (0.5..1.5)
- *   stormP float intensity of the lightning storms (0.5..2.0)
- *   hueP float palette offset (0..6.28)
+ *  @brief
+ *  GAS GIANT ATMOSPHERE: cruising low over the cloud deck of a gas giant.
+ *
+ *  Billowing tops in the planet's own zone-and-belt colours (cream, ochre, rust) run to a warm hazy horizon;
+ *  convective towers rise here and there, lit by a low sun with long shadows.  Above, the planet's rings arch
+ *  across a blue-violet sky beside a crescent moon.  Storm cells deep in the deck light up from inside with the
+ *  kick.
+ *
+ *    sceneTime/sceneAdvance -> the cruise (continuous, steady)
+ *    audioKick    -> lightning glowing inside the storm cells (light only)
+ *    audioSwell   -> sunlight and ring brightness (slow)
+ *    audioChromaHue-> photo tint of haze and rings
+ *
+ *  Per-activation variety:
+ *    cloudP float density and thickness of the clouds (0.5..1.5)
+ *    stormP float intensity of the lightning storms (0.5..2.0)
+ *    hueP float palette offset (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file MeshPeacockDisplay.frag
- * @brief MESH PEACOCK DISPLAY: a real peacock (model=) in full display on a
- * lawn at dusk, turning slowly to present the train. The structural colour
- * of the feathers is done as it works in life: the hue of the green-and-blue
- * texels shifts with the viewing angle, and the treble adds a shimmer to
- * that shift; the eyespots glow with the treble; the shafts glint on the
- * kick; the bass warms the body from below. Around it, a dusk sky with the
- * sun just down, a treeline, and fireflies over the grass. The counterpart
- * of the procedural PeacockTrainFan -- the same question as the rocket:
- * does a generated mesh beat a stylised 2D object?
+/*****************************************************************************\
+ *                              MeshPeacockDisplay.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSwell -> the train's quiver amplitude (vertex stage, slow), key light
- *   audioHigh  -> iridescence shimmer and the eyespots (light/colour)
- *   audioKick  -> glints on the shafts (light)
- *   audioBass  -> warm bounce on the body (light)
+ *  @brief
+ *  MESH PEACOCK DISPLAY: a real peacock (model=) in full display on a lawn at dusk, turning slowly to present the
+ *  train.
  *
- * Per-instance: sizeP, yawP. Per-activation variety: hueP.
+ *  The structural colour of the feathers is done as it works in life: the hue of the green-and-blue texels shifts
+ *  with the viewing angle, and the treble adds a shimmer to that shift; the eyespots glow with the treble; the
+ *  shafts glint on the kick; the bass warms the body from below. Around it, a dusk sky with the sun just down, a
+ *  treeline, and fireflies over the grass. The counterpart of the procedural PeacockTrainFan -- the same question
+ *  as the rocket: does a generated mesh beat a stylised 2D object?
+ *
+ *  Audio Reactivity:
+ *    audioSwell -> the train's quiver amplitude (vertex stage, slow), key light
+ *    audioHigh  -> iridescence shimmer and the eyespots (light/colour)
+ *    audioKick  -> glints on the shafts (light)
+ *    audioBass  -> warm bounce on the body (light)
+ *
+ *  Per-instance: sizeP, yawP. Per-activation variety: hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform sampler2DArray texMeshMaterial;       ///< The mesh's material textures (albedo, roughness, normal ...).
 uniform int            texMeshMaterialLayers; ///< Number of layers in texMeshMaterial.

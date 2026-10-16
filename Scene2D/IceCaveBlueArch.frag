@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file IceCaveBlueArch.frag
- * @brief ICE CAVE BLUE ARCH: inside a glacier cave.  The walls and ceiling
- * are glacial ice lit from outside, glowing an impossible sapphire blue,
- * scalloped by meltwater into shallow cups whose rims catch the light; dark
- * bands of rock dust run through the ice; at the far end the mouth of the
- * cave opens onto white daylight.  A trickle of meltwater glints on the
- * floor.  The camera drifts slowly toward the mouth and back (bounded);
- * the music is the light in the ice.
+/*****************************************************************************\
+ *                              IceCaveBlueArch.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSwell  -> the glow of the ice (slow)
- *   audioHigh   -> glints on the scallop rims and the water (light)
- *   audioKick   -> the daylight at the mouth brightens (light)
- *   audioLevel  -> brightness
- *   sceneTime / sceneAdvance -> the drift, the water (continuous)
+ *  @brief
+ *  ICE CAVE BLUE ARCH: inside a glacier cave.
  *
- * Per-activation variety: scallopP (scallop size), dustP (dust bands), hueP.
+ *  The walls and ceiling are glacial ice lit from outside, glowing an impossible sapphire blue, scalloped by
+ *  meltwater into shallow cups whose rims catch the light; dark bands of rock dust run through the ice; at the far
+ *  end the mouth of the cave opens onto white daylight.  A trickle of meltwater glints on the floor.  The camera
+ *  drifts slowly toward the mouth and back (bounded); the music is the light in the ice.
+ *
+ *  Audio Reactivity:
+ *    audioSwell  -> the glow of the ice (slow)
+ *    audioHigh   -> glints on the scallop rims and the water (light)
+ *    audioKick   -> the daylight at the mouth brightens (light)
+ *    audioLevel  -> brightness
+ *    sceneTime / sceneAdvance -> the drift, the water (continuous)
+ *
+ *  Per-activation variety: scallopP (scallop size), dustP (dust bands), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

@@ -1,26 +1,31 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file LibraryOfBabel.frag
- * @brief LIBRARY OF BABEL: Borges' library -- an endless stack of hexagonal
- * galleries around a central air shaft, floor above floor above floor
- * without end, each gallery's walls lined with shelves of books, a low
- * railing at the edge of every floor, a warm lamp hanging in each
- * gallery.  The camera rises steadily up the shaft, looking out across it
- * at the galleries sliding past, the floors above and below vanishing
- * into warm darkness.  The lamps glow with the music.
+/*****************************************************************************\
+ *                              LibraryOfBabel.frag
+\*****************************************************************************/
+/*! @file
  *
- * The shaft, floors and walls are traced analytically (a hexagonal prism
- * inside a hexagonal prism, cut by the floor slabs).
+ *  @brief
+ *  LIBRARY OF BABEL: Borges' library -- an endless stack of hexagonal galleries around a central air shaft, floor
+ *  above floor above floor without end, each gallery's walls lined with shelves of books, a low railing at the edge
+ *  of every floor, a warm lamp hanging in each gallery.
  *
- * Audio Reactivity:
- *   audioBass   -> the glow of the lamps (light)
- *   audioSwell  -> the warmth of the dust in the shaft (slow)
- *   audioLevel  -> brightness
- *   sceneTime / sceneAdvance -> the steady climb (constant speed)
+ *  The camera rises steadily up the shaft, looking out across it at the galleries sliding past, the floors above
+ *  and below vanishing into warm darkness.  The lamps glow with the music.
  *
- * Per-activation variety: viewP (where the camera looks), hueP.
+ *  The shaft, floors and walls are traced analytically (a hexagonal prism
+ *  inside a hexagonal prism, cut by the floor slabs).
+ *
+ *  Audio Reactivity:
+ *    audioBass   -> the glow of the lamps (light)
+ *    audioSwell  -> the warmth of the dust in the shaft (slow)
+ *    audioLevel  -> brightness
+ *    sceneTime / sceneAdvance -> the steady climb (constant speed)
+ *
+ *  Per-activation variety: viewP (where the camera looks), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

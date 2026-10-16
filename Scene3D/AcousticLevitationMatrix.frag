@@ -1,4 +1,25 @@
 #version 330 core
+/*****************************************************************************\
+ *                              AcousticLevitationMatrix.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Lit voxel cubes levitated in an acoustic standing-wave grid, each face a blend of a per-vertex colour and the
+ *  current slideshow photo with a fixed-direction diffuse/specular highlight.
+ *
+ *  This fragment shader carries no audio uniforms of its own -- reactivity
+ *  (how the cubes jump, cluster and resonate with the beat) lives entirely in
+ *  the companion vertex shader; here only the incoming vCol (already
+ *  audio-modulated per vertex) and vNormal/vUV feed the lighting and photo
+ *  blend.
+ *
+ *  vCol.a carries the vertex stage's per-primitive brightness: 1.0 down to 0.42
+ *  for voxels fading into the depth of the trap, ~0.26 for the far transducer
+ *  panel wall that fills the space between them.
+ *
+ *  @author René Weller
+ */
 out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec4 vCol;    ///< Colour (from the vertex stage).
@@ -8,23 +29,6 @@ in vec3 vNormal; ///< Surface normal (from the vertex stage).
 uniform sampler2D tex0;          ///< The current photo.
 uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
 uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
-
-/**
- * @file AcousticLevitationMatrix.frag
- * @brief Lit voxel cubes levitated in an acoustic standing-wave grid, each
- * face a blend of a per-vertex colour and the current slideshow photo with a
- * fixed-direction diffuse/specular highlight.
- *
- * This fragment shader carries no audio uniforms of its own -- reactivity
- * (how the cubes jump, cluster and resonate with the beat) lives entirely in
- * the companion vertex shader; here only the incoming vCol (already
- * audio-modulated per vertex) and vNormal/vUV feed the lighting and photo
- * blend.
- *
- * vCol.a carries the vertex stage's per-primitive brightness: 1.0 down to 0.42
- * for voxels fading into the depth of the trap, ~0.26 for the far transducer
- * panel wall that fills the space between them.
- */
 
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()

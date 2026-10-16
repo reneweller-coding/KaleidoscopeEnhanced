@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TenPrintMaze.frag
- * @brief TEN PRINT MAZE: the famous one-line maze, alive -- every cell holds
- * a diagonal, "/" or "\", and together they form an endless labyrinth;
- * the diagonals slowly rotate from one to the other in waves (cross-faded
- * smoothly, never jumping), so corridors open and close across the maze;
- * the lines glow in the photograph's colours, and pulses of light race
- * along them.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              TenPrintMaze.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the flip waves and the pulses (integrated, jump-free)
- *   audioSpread     -> the flip waves spread
- *   audioKick       -> the pulses flare (light)
- *   audioMode       -> glowing lines on black in minor, dark lines on light in major (blend)
- *   audioRoughness  -> line width varies
- *   audioSwell      -> the photo in the cells (slow)
+ *  @brief
+ *  TEN PRINT MAZE: the famous one-line maze, alive -- every cell holds a diagonal, "/" or "\", and together they
+ *  form an endless labyrinth; the diagonals slowly rotate from one to the other in waves (cross-faded smoothly,
+ *  never jumping), so corridors open and close across the maze; the lines glow in the photograph's colours, and
+ *  pulses of light race along them.
  *
- * Knobs: cellP (cell size), lineP (line width), photoP (photo colours), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the flip waves and the pulses (integrated, jump-free)
+ *    audioSpread     -> the flip waves spread
+ *    audioKick       -> the pulses flare (light)
+ *    audioMode       -> glowing lines on black in minor, dark lines on light in major (blend)
+ *    audioRoughness  -> line width varies
+ *    audioSwell      -> the photo in the cells (slow)
+ *
+ *  Knobs: cellP (cell size), lineP (line width), photoP (photo colours), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

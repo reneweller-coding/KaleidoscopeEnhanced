@@ -1,20 +1,26 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file FractalMorphoDendrite.frag
- * @brief FRACTAL MORPHO DENDRITE: A whole COLONY of growing bio-luminescent coral &
- * electric dendrite KIFS fractals, one per lattice cell across the frame, with dynamic
- * angular branch unfolding, synaptic discharge tips, and high-voltage organic pulsations.
+/*****************************************************************************\
+ *                              FractalMorphoDendrite.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance -> surges the branch unfolding & growth on top of a steady base growth
- *   audioKick    -> flashes electric branch tip discharges & shoots lightning arcs
- *   audioCentroid-> sharpens the branch/gap falloff (finer tendrils)
- *   audioSubBass -> expands branch trunk thickness breathing
- *   audioLevel   -> plasma in the water between the colonies
- *   audioValence -> photo-vs-palette mix on the branch surface
- *   audioChromaHue-> rotates the bio-fluorescent color spectrum
+ *  @brief
+ *  FRACTAL MORPHO DENDRITE: A whole COLONY of growing bio-luminescent coral & electric dendrite KIFS fractals, one
+ *  per lattice cell across the frame, with dynamic angular branch unfolding, synaptic discharge tips, and
+ *  high-voltage organic pulsations.
+ *
+ *  Audio Reactivity:
+ *    audioAdvance -> surges the branch unfolding & growth on top of a steady base growth
+ *    audioKick    -> flashes electric branch tip discharges & shoots lightning arcs
+ *    audioCentroid-> sharpens the branch/gap falloff (finer tendrils)
+ *    audioSubBass -> expands branch trunk thickness breathing
+ *    audioLevel   -> plasma in the water between the colonies
+ *    audioValence -> photo-vs-palette mix on the branch surface
+ *    audioChromaHue-> rotates the bio-fluorescent color spectrum
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

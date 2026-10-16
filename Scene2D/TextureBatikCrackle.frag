@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureBatikCrackle.frag
- * @brief TEXTURE BATIK CRACKLE: batik cloth with its famous crackle -- the
- * photograph's shapes become wax-resist motifs in pale colours on a deep
- * dyed ground, and the dye has seeped through a fine web of cracks in
- * the wax, veining the pale areas with dark lines; layers of dye (light
- * to dark) build up in stages as the pattern slowly re-dyes itself.
- * Endless, mirrorable.
+/*****************************************************************************\
+ *                              TextureBatikCrackle.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the re-dyeing (integrated, jump-free)
- *   audioSpread     -> the motif threshold (more or less wax)
- *   audioKick       -> the pale motifs brighten (light)
- *   audioMode       -> palette: indigo in minor, madder red and ochre in major
- *   audioRoughness  -> the crackle density
- *   audioSwell      -> the dye depth (slow)
+ *  @brief
+ *  TEXTURE BATIK CRACKLE: batik cloth with its famous crackle -- the photograph's shapes become wax-resist motifs
+ *  in pale colours on a deep dyed ground, and the dye has seeped through a fine web of cracks in the wax, veining
+ *  the pale areas with dark lines; layers of dye (light to dark) build up in stages as the pattern slowly re-dyes
+ *  itself.
  *
- * Knobs: crackP (crackle scale), layerP (dye layers), photoP (photo motifs vs. noise), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the re-dyeing (integrated, jump-free)
+ *    audioSpread     -> the motif threshold (more or less wax)
+ *    audioKick       -> the pale motifs brighten (light)
+ *    audioMode       -> palette: indigo in minor, madder red and ochre in major
+ *    audioRoughness  -> the crackle density
+ *    audioSwell      -> the dye depth (slow)
+ *
+ *  Knobs: crackP (crackle scale), layerP (dye layers), photoP (photo motifs vs. noise), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

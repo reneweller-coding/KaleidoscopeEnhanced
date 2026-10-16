@@ -1,21 +1,27 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file Spaceship.frag
- * @brief GEOM="MESH" SHOWCASE: a real loaded 3D model (config attribute
- * model=, see Source/MeshImport.h) tumbling through a real backdrop -- a
- * dust nebula + starfield painted onto the sky shell Scene3DShader::
- * buildGeometry() appends after the loaded mesh (see Spaceship.vert) --
- * vBg selects shell vs. hull. Lit from its own baked material plus a
- * shield-flicker rim; no photo-tinting on the hull itself, the nebula
- * carries the color.
- *   audioAdvance -> tumble speed
- *   audioKick    -> vertical bob (vertex stage) + shield-flicker flashes
- *   audioSwell   -> key light / rim glow intensity
+/*****************************************************************************\
+ *                              Spaceship.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   hueP float palette offset (0..6.28)
+ *  @brief
+ *  GEOM="MESH" SHOWCASE: a real loaded 3D model (config attribute model=, see Source/MeshImport.h) tumbling through
+ *  a real backdrop -- a dust nebula + starfield painted onto the sky shell Scene3DShader:: buildGeometry() appends
+ *  after the loaded mesh (see Spaceship.vert) -- vBg selects shell vs. hull.
+ *
+ *  Lit from its own baked material plus a shield-flicker rim; no photo-tinting on the hull itself, the nebula
+ *  carries the color.
+ *
+ *    audioAdvance -> tumble speed
+ *    audioKick    -> vertical bob (vertex stage) + shield-flicker flashes
+ *    audioSwell   -> key light / rim glow intensity
+ *
+ *  Per-activation variety:
+ *    hueP float palette offset (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform sampler2DArray texMeshMaterial;       ///< layer 0 = baseColor+opacity, layer 1 = (unused,roughness,metallic)
 uniform int            texMeshMaterialLayers; ///< 1 = base color only, 2 = + metallic-roughness

@@ -1,20 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file FerrofluidSpikes.frag
- * @brief TRANSITION FERROFLUID SPIKES: Magnetic ferrofluid Rosensweig instability transition.
- * Applied magnetic fields pull the scene into an array of sharp conical spikes,
- * reflecting metallic gloss and dissolving into the incoming scene as spikes relax.
- *   interpolation -> sweeps magnetic field strength & spike eruption/relaxation
- *   audioKick     -> flashes sharp metallic spike apex specular highlights
- *   audioSwell    -> drives magnetic spike height & Rosensweig cone sharpness
+/*****************************************************************************\
+ *                              FerrofluidSpikes.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   spikeP float Rosensweig spike hexagonal density (0.5..2.2)
- *   magP   float magnetic pull displacement scale   (0.5..2.0)
- *   speedP float animation speed multiplier         (0.5..2.0)
- *   hueP   float metallic specular hue offset       (0..6.28)
+ *  @brief
+ *  TRANSITION FERROFLUID SPIKES: Magnetic ferrofluid Rosensweig instability transition.
+ *
+ *  Applied magnetic fields pull the scene into an array of sharp conical spikes, reflecting metallic gloss and
+ *  dissolving into the incoming scene as spikes relax.
+ *
+ *    interpolation -> sweeps magnetic field strength & spike eruption/relaxation
+ *    audioKick     -> flashes sharp metallic spike apex specular highlights
+ *    audioSwell    -> drives magnetic spike height & Rosensweig cone sharpness
+ *
+ *  Per-activation variety:
+ *    spikeP float Rosensweig spike hexagonal density (0.5..2.2)
+ *    magP   float magnetic pull displacement scale   (0.5..2.0)
+ *    speedP float animation speed multiplier         (0.5..2.0)
+ *    hueP   float metallic specular hue offset       (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

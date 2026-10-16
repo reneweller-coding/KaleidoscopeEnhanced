@@ -1,8 +1,13 @@
 #version 330 core
-/**
- * @file VolumetricFire.vert
- * @brief Vertex stage companion to VolumetricFire.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              VolumetricFire.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to VolumetricFire.frag -- see that file's header for this scene's description.
+ *
+ *  @author René Weller
  */
 // VolumetricFire.vert — a genuine GPU-simulated fire/smoke rendered as stacks
 // of 20 front-facing, additively-blended depth-slice billboards (the classic

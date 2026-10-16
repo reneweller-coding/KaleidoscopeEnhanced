@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file MonetLilyPond.frag
- * @brief MONET LILY POND: the water-lily pond at Giverny as Monet painted
- * it -- no horizon, only water: the sky and the willows mirrored in it in
- * lilac, blue and green, and floating on it clusters of lily pads with
- * pink and white blossoms, all laid down in short visible brushstrokes.
- * The strokes are the picture: every pixel takes the colour of the stroke
- * it lies in, strokes lie horizontal on the water and follow the pads'
- * curve, and the paint shimmers as the reflections drift.  The pads drift
- * on the slow current; the music is the light on the water.
+/*****************************************************************************\
+ *                              MonetLilyPond.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSwell  -> the sky's light in the reflection (slow)
- *   audioSpectrum[32] -> the blossoms glow, each with its band (light)
- *   audioLevel  -> brightness
- *   sceneTime / sceneAdvance -> the drift of pads and reflections (continuous)
+ *  @brief
+ *  MONET LILY POND: the water-lily pond at Giverny as Monet painted it -- no horizon, only water: the sky and the
+ *  willows mirrored in it in lilac, blue and green, and floating on it clusters of lily pads with pink and white
+ *  blossoms, all laid down in short visible brushstrokes.
  *
- * Per-activation variety: padsP (how many pads), strokeP (stroke size), hueP.
+ *  The strokes are the picture: every pixel takes the colour of the stroke it lies in, strokes lie horizontal on
+ *  the water and follow the pads' curve, and the paint shimmers as the reflections drift.  The pads drift on the
+ *  slow current; the music is the light on the water.
+ *
+ *  Audio Reactivity:
+ *    audioSwell  -> the sky's light in the reflection (slow)
+ *    audioSpectrum[32] -> the blossoms glow, each with its band (light)
+ *    audioLevel  -> brightness
+ *    sceneTime / sceneAdvance -> the drift of pads and reflections (continuous)
+ *
+ *  Per-activation variety: padsP (how many pads), strokeP (stroke size), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

@@ -1,29 +1,34 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-
-/**
- * @file ChromeForm.frag
- * @brief The model as polished metal: it shows almost nothing of itself and
- * almost everything of the room around it. The environment it reflects is the
- * same one drawn on the sky shell, and the warm part of it is taken from the
- * CURRENT PHOTOGRAPH -- so the object mirrors the picture the rest of the show
- * is built on, and changes colour when the picture does.
+/*****************************************************************************\
+ *                              ChromeForm.frag
+\*****************************************************************************/
+/*! @file
  *
- * A mirror is defined by what it borrows, which makes this family unusually
- * dependent on having something worth reflecting: the sky is deliberately
- * structured (a horizon, a light source, banding) rather than a smooth
- * gradient, because a mirror pointed at a featureless room reads as flat grey
- * paint. Both the shell and the surface call the SAME environment function, so
- * the reflection is always consistent with the visible background.
+ *  @brief
+ *  The model as polished metal: it shows almost nothing of itself and almost everything of the room around it.
  *
- *   audioAdvance -> the environment drifts past the surface
- *   audioKick    -> the light source flares
- *   audioSwell   -> reflection strength
- *   audioHigh    -> anisotropic streaking (brushed rather than mirrored)
+ *  The environment it reflects is the same one drawn on the sky shell, and the warm part of it is taken from the
+ *  CURRENT PHOTOGRAPH -- so the object mirrors the picture the rest of the show is built on, and changes colour
+ *  when the picture does.
  *
- * Per-instance: sizeP, spinP, brushP (0 = mirror, 1 = brushed), tintP.
- * Per-activation variety: hueP float palette offset (0..6.28).
+ *  A mirror is defined by what it borrows, which makes this family unusually
+ *  dependent on having something worth reflecting: the sky is deliberately
+ *  structured (a horizon, a light source, banding) rather than a smooth
+ *  gradient, because a mirror pointed at a featureless room reads as flat grey
+ *  paint. Both the shell and the surface call the SAME environment function, so
+ *  the reflection is always consistent with the visible background.
+ *
+ *    audioAdvance -> the environment drifts past the surface
+ *    audioKick    -> the light source flares
+ *    audioSwell   -> reflection strength
+ *    audioHigh    -> anisotropic streaking (brushed rather than mirrored)
+ *
+ *  Per-instance: sizeP, spinP, brushP (0 = mirror, 1 = brushed), tintP.
+ *  Per-activation variety: hueP float palette offset (0..6.28).
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform sampler2D tex0; ///< The current photo.
 uniform sampler2D tex1; ///< The next photo (cross-faded in by interpolation).

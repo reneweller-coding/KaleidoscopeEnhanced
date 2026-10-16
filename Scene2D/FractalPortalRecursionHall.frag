@@ -1,18 +1,25 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file FractalPortalRecursionHall.frag
- * @brief FRACTAL PORTAL RECURSION HALL: Infinite recursive corridor of nested affine
- * portal gates. Each portal frame rotates and scales into the next transfinite portal
- * chamber with glowing elliptical laser rings and chromatic feedback echoes.
+/*****************************************************************************\
+ *                              FractalPortalRecursionHall.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance -> drives continuous forward plunge through the recursive portals
- *   audioKick    -> flashes portal event horizons & triggers dimensional zoom leaps
- *   audioCentroid-> modulates portal frame rotation angle & laser ring sharpness
- *   audioSubBass -> expands portal ellipse aspect ratio breathing
- *   audioChromaHue-> rotates the transfinite portal gate spectrum
+ *  @brief
+ *  FRACTAL PORTAL RECURSION HALL: Infinite recursive corridor of nested affine portal gates.
+ *
+ *  Each portal frame rotates and scales into the next transfinite portal chamber with glowing elliptical laser
+ *  rings and chromatic feedback echoes.
+ *
+ *  Audio Reactivity:
+ *    audioAdvance -> drives continuous forward plunge through the recursive portals
+ *    audioKick    -> flashes portal event horizons & triggers dimensional zoom leaps
+ *    audioCentroid-> modulates portal frame rotation angle & laser ring sharpness
+ *    audioSubBass -> expands portal ellipse aspect ratio breathing
+ *    audioChromaHue-> rotates the transfinite portal gate spectrum
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

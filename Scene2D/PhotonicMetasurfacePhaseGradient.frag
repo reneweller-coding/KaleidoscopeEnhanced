@@ -1,22 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file PhotonicMetasurfacePhaseGradient.frag
- * @brief PHOTONIC METASURFACE PHASE GRADIENT: Dielectric subwavelength gradient metasurface.
- * Spatial variation of nanoantenna phase shifts implements generalized Snell's laws of reflection
- * and refraction, forming anomalous optical beams, orbital angular momentum vortices, and photo spectra.
- *   audioAdvance -> navigates phase gradient translation & orbital angular momentum beam rotation
- *   audioKick    -> flashes anomalous wavefront deflection & optical resonance burst peaks
- *   audioSwell   -> thickens nanoantenna resonant cross-section & phase discontinuity glow
- *   audioCentroid-> shifts metasurface dielectric dispersion resonance spectra
- *   audioPhase   -> twists helical wavefront phase step spiral
+/*****************************************************************************\
+ *                              PhotonicMetasurfacePhaseGradient.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   gradSlopeP   float phase gradient steepness dPhi/dx         (1.0..4.0)
- *   oamChargeP   float orbital angular momentum topological charge l (1.0..5.0)
- *   antennaP     float nanoantenna array cell density           (6.0..20.0)
- *   anomalousP   float anomalous refracted beam luminance gain   (0.8..2.5)
+ *  @brief
+ *  PHOTONIC METASURFACE PHASE GRADIENT: Dielectric subwavelength gradient metasurface.
+ *
+ *  Spatial variation of nanoantenna phase shifts implements generalized Snell's laws of reflection and refraction,
+ *  forming anomalous optical beams, orbital angular momentum vortices, and photo spectra.
+ *
+ *    audioAdvance -> navigates phase gradient translation & orbital angular momentum beam rotation
+ *    audioKick    -> flashes anomalous wavefront deflection & optical resonance burst peaks
+ *    audioSwell   -> thickens nanoantenna resonant cross-section & phase discontinuity glow
+ *    audioCentroid-> shifts metasurface dielectric dispersion resonance spectra
+ *    audioPhase   -> twists helical wavefront phase step spiral
+ *
+ *  Per-activation variety:
+ *    gradSlopeP   float phase gradient steepness dPhi/dx         (1.0..4.0)
+ *    oamChargeP   float orbital angular momentum topological charge l (1.0..5.0)
+ *    antennaP     float nanoantenna array cell density           (6.0..20.0)
+ *    anomalousP   float anomalous refracted beam luminance gain   (0.8..2.5)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

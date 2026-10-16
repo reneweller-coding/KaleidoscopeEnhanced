@@ -1,34 +1,39 @@
 #version 330 core
-/**
- * @file TorusKnot.vert
- * @brief Vertex stage companion to TorusKnot.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              TorusKnot.vert
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance   -> flow of the particles along both closed curves and the
- *                     slow circling drift of the ember haze
- *                     (pre-integrated, never a factor on absolute time)
- *   audioBass      -> tube breath
- *   audioSwell     -> overall glow of the knots and of the haze
- *   audioChromaHue -> hue sweep along the knot (musical key)
- *   audioMidRel    -> TUBE PUNCH: the mid register's instant / slow-average
- *                     ratio (MilkDrop's mid_att idiom, ~1.0 = "as loud as
- *                     usual right now") swells and thins the tube on every
- *                     hit.  Self-normalising, so the knot punches just as
- *                     hard on a quiet acoustic track as on a loud master
- *   audioSpread    -> DISPERSION off the curve: a narrow spectrum keeps the
- *                     particles hugging one clean line, rich wide harmonics
- *                     let them drift out into a haze around it -- and opens
- *                     the surrounding ember field wider at the same time.
- *                     The ember extent only ever grows from an already
- *                     frame-filling base, so a thin mix cannot bunch the
- *                     additive sprites up and brighten the picture
- *   audioMode      -> colour temperature: minor cools both knots and the
- *                     embers to blue, major restores their warm ember orange
+ *  @brief
+ *  Vertex stage companion to TorusKnot.frag -- see that file's header for this scene's description.
  *
- * NOTE: neither the knots' (p,q) families nor the `s * 0.8` hue sweep may be
- * audio-driven -- both multiply `s`, which carries absolute `time`, and any
- * change would remap the whole accumulated phase in one frame.
+ *  Audio Reactivity:
+ *    audioAdvance   -> flow of the particles along both closed curves and the
+ *                      slow circling drift of the ember haze
+ *                      (pre-integrated, never a factor on absolute time)
+ *    audioBass      -> tube breath
+ *    audioSwell     -> overall glow of the knots and of the haze
+ *    audioChromaHue -> hue sweep along the knot (musical key)
+ *    audioMidRel    -> TUBE PUNCH: the mid register's instant / slow-average
+ *                      ratio (MilkDrop's mid_att idiom, ~1.0 = "as loud as
+ *                      usual right now") swells and thins the tube on every
+ *                      hit.  Self-normalising, so the knot punches just as
+ *                      hard on a quiet acoustic track as on a loud master
+ *    audioSpread    -> DISPERSION off the curve: a narrow spectrum keeps the
+ *                      particles hugging one clean line, rich wide harmonics
+ *                      let them drift out into a haze around it -- and opens
+ *                      the surrounding ember field wider at the same time.
+ *                      The ember extent only ever grows from an already
+ *                      frame-filling base, so a thin mix cannot bunch the
+ *                      additive sprites up and brighten the picture
+ *    audioMode      -> colour temperature: minor cools both knots and the
+ *                      embers to blue, major restores their warm ember orange
+ *
+ *  NOTE: neither the knots' (p,q) families nor the `s * 0.8` hue sweep may be
+ *  audio-driven -- both multiply `s`, which carries absolute `time`, and any
+ *  change would remap the whole accumulated phase in one frame.
+ *
+ *  @author René Weller
  */
 // TorusKnot.vert — a glowing (p,q) torus knot of streaming particles, wrapped
 // by a second, much wider knot of the same family tumbling the other way, the

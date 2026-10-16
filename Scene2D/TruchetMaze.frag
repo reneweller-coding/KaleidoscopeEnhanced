@@ -1,26 +1,31 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TruchetMaze.frag
- * @brief TRUCHET MAZE: an endless Truchet labyrinth -- every cell holds two
- * quarter-circle bands that join the neighbours' bands into long winding
- * loops, never ending, never branching; in the bands the kaleidoscoped
- * photograph flows like liquid through tubes, lit as rounded pipes, while the
- * gaps between them show the photo dim and far away.  Two layers of
- * different size lie over each other, the whole field drifting and slowly
- * turning; waves of light travel through the pipes with the music.
- * No up or down: endless, mirrorable.
+/*****************************************************************************\
+ *                              TruchetMaze.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the field drifts, the photo flows through the pipes (integrated, jump-free)
- *   audioPhase      -> the colour field wanders (integrated)
- *   audioSwell      -> the pipes swell (slow)
- *   audioKick       -> light waves in the pipes flash (light)
- *   audioMode       -> the palette: cool in minor, warm in major
+ *  @brief
+ *  TRUCHET MAZE: an endless Truchet labyrinth -- every cell holds two quarter-circle bands that join the
+ *  neighbours' bands into long winding loops, never ending, never branching; in the bands the kaleidoscoped
+ *  photograph flows like liquid through tubes, lit as rounded pipes, while the gaps between them show the photo dim
+ *  and far away.
  *
- * Knobs: cellP (cell size), widthP (pipe width), layerP (second layer),
- * styleP (photo pipes / neon pipes), hueP.
+ *  Two layers of different size lie over each other, the whole field drifting and slowly turning; waves of light
+ *  travel through the pipes with the music. No up or down: endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the field drifts, the photo flows through the pipes (integrated, jump-free)
+ *    audioPhase      -> the colour field wanders (integrated)
+ *    audioSwell      -> the pipes swell (slow)
+ *    audioKick       -> light waves in the pipes flash (light)
+ *    audioMode       -> the palette: cool in minor, warm in major
+ *
+ *  Knobs: cellP (cell size), widthP (pipe width), layerP (second layer),
+ *  styleP (photo pipes / neon pipes), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

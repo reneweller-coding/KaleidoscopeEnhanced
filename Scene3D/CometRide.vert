@@ -1,8 +1,13 @@
 #version 330 core
-/**
- * @file CometRide.vert
- * @brief Vertex stage companion to CometRide.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              CometRide.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to CometRide.frag -- see that file's header for this scene's description.
+ *
+ *  @author René Weller
  */
 // CometRide.vert — flying in formation with a comet: a tumbling icy
 // nucleus, geysers venting on every kick, a straight blue ion tail and a

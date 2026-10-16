@@ -1,14 +1,19 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file OrbitalDebrisField.frag
- * @brief Fragment stage for OrbitalDebrisField: metal plates with a glint,
- * the station hull with running lights, a planet limb with an atmosphere
- * gradient (kind 3) and a hashed star sky (kind -1).
+/*****************************************************************************\
+ *                              OrbitalDebrisField.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity: audioRoughness sharpens the glint; audioKick flashes the
- *                   station lights; audioSwell warms the atmosphere.
+ *  @brief
+ *  Fragment stage for OrbitalDebrisField: metal plates with a glint, the station hull with running lights, a planet
+ *  limb with an atmosphere gradient (kind 3) and a hashed star sky (kind -1).
+ *
+ *  Audio Reactivity: audioRoughness sharpens the glint; audioKick flashes the
+ *                    station lights; audioSwell warms the atmosphere.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 in vec4  vColor;    ///< Color (from the vertex stage).
 in vec2  vTexCoord; ///< Texture coordinate (from the vertex stage).
 in float vDepth;    ///< Depth (from the vertex stage).

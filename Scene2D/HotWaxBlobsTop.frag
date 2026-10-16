@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file HotWaxBlobsTop.frag
- * @brief HOT WAX BLOBS TOP: looking down into a giant lava lamp -- soft,
- * glowing blobs of coloured wax rise toward us, grow, merge and pull apart
- * in the warm liquid, their centres bright where they are closest and
- * their edges dark and translucent, lit from below so the whole lamp
- * glows; the blobs' colours come from the photograph.  Endless,
- * mirrorable.
+/*****************************************************************************\
+ *                              HotWaxBlobsTop.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the blobs rise and drift (integrated, jump-free)
- *   audioSpread     -> blob size
- *   audioBass       -> the lamp glows brighter (light)
- *   audioMode       -> the liquid: blue in minor, amber in major
- *   audioRoughness  -> the blob surfaces wobble
- *   audioSwell      -> blob merging (slow)
+ *  @brief
+ *  HOT WAX BLOBS TOP: looking down into a giant lava lamp -- soft, glowing blobs of coloured wax rise toward us,
+ *  grow, merge and pull apart in the warm liquid, their centres bright where they are closest and their edges dark
+ *  and translucent, lit from below so the whole lamp glows; the blobs' colours come from the photograph.
  *
- * Knobs: blobP (blob count), glowP (glow strength), photoP (photo colours), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the blobs rise and drift (integrated, jump-free)
+ *    audioSpread     -> blob size
+ *    audioBass       -> the lamp glows brighter (light)
+ *    audioMode       -> the liquid: blue in minor, amber in major
+ *    audioRoughness  -> the blob surfaces wobble
+ *    audioSwell      -> blob merging (slow)
+ *
+ *  Knobs: blobP (blob count), glowP (glow strength), photoP (photo colours), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

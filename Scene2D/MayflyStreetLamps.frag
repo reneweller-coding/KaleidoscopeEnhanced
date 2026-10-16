@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file MayflyStreetLamps.frag
- * @brief MAYFLY STREET LAMPS: a summer night on an old river bridge, the
- * mayflies hatching -- around each of the bridge's lamps a dense swirling
- * cloud of insects, every one a tiny point of light caught in the glow,
- * whirling in loose orbits like snow in a lamp beam.  The row of lamps
- * recedes along the bridge in perspective, their clouds smaller with
- * distance; the iron railing stands dark, the river below mirrors the
- * lamps in long rippling streaks.  The camera is still; the swarms whirl.
+/*****************************************************************************\
+ *                              MayflyStreetLamps.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioHigh   -> the sparkle of the insects (light)
- *   audioBass   -> the glow of the lamps (light)
- *   audioSwell  -> the haze around the lamps (slow)
- *   audioLevel  -> brightness
- *   sceneTime / sceneAdvance -> the swarms whirling (continuous)
+ *  @brief
+ *  MAYFLY STREET LAMPS: a summer night on an old river bridge, the mayflies hatching -- around each of the bridge's
+ *  lamps a dense swirling cloud of insects, every one a tiny point of light caught in the glow, whirling in loose
+ *  orbits like snow in a lamp beam.
  *
- * Per-activation variety: swarmP (how dense the swarms), hueP.
+ *  The row of lamps recedes along the bridge in perspective, their clouds smaller with distance; the iron railing
+ *  stands dark, the river below mirrors the lamps in long rippling streaks.  The camera is still; the swarms whirl.
+ *
+ *  Audio Reactivity:
+ *    audioHigh   -> the sparkle of the insects (light)
+ *    audioBass   -> the glow of the lamps (light)
+ *    audioSwell  -> the haze around the lamps (slow)
+ *    audioLevel  -> brightness
+ *    sceneTime / sceneAdvance -> the swarms whirling (continuous)
+ *
+ *  Per-activation variety: swarmP (how dense the swarms), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

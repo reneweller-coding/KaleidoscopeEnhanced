@@ -1,22 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file NonlinearKerrOpticalSolitonCollision.frag
- * @brief NONLINEAR KERR OPTICAL SOLITON COLLISION: Spatial optical solitons in a self-focusing
- * Kerr medium. Stable self-trapped wavepackets undergo elastic and inelastic collisions,
- * generating four-wave mixing fringes, dispersive shock waves, and photo-derived optical spectra.
- *   audioAdvance -> propels spatial soliton trajectories towards collision center
- *   audioKick    -> flashes nonlinear four-wave mixing energy peak detonation
- *   audioSwell   -> thickens self-focusing Kerr waveguide channel width
- *   audioCentroid-> shifts self-phase modulation dispersion colors
- *   audioMid     -> excites dispersive radiation ripples escaping the collision
+/*****************************************************************************\
+ *                              NonlinearKerrOpticalSolitonCollision.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   solitonCountP float number of converging optical solitons     (2.0..6.0)
- *   kerrNonlinP   float nonlinear self-focusing intensity        (0.6..2.2)
- *   shockP        float dispersive shockwave ripple frequency    (8.0..24.0)
- *   crossPhaseP   float cross-phase modulation interaction scale (0.5..2.0)
+ *  @brief
+ *  NONLINEAR KERR OPTICAL SOLITON COLLISION: Spatial optical solitons in a self-focusing Kerr medium.
+ *
+ *  Stable self-trapped wavepackets undergo elastic and inelastic collisions, generating four-wave mixing fringes,
+ *  dispersive shock waves, and photo-derived optical spectra.
+ *
+ *    audioAdvance -> propels spatial soliton trajectories towards collision center
+ *    audioKick    -> flashes nonlinear four-wave mixing energy peak detonation
+ *    audioSwell   -> thickens self-focusing Kerr waveguide channel width
+ *    audioCentroid-> shifts self-phase modulation dispersion colors
+ *    audioMid     -> excites dispersive radiation ripples escaping the collision
+ *
+ *  Per-activation variety:
+ *    solitonCountP float number of converging optical solitons     (2.0..6.0)
+ *    kerrNonlinP   float nonlinear self-focusing intensity        (0.6..2.2)
+ *    shockP        float dispersive shockwave ripple frequency    (8.0..24.0)
+ *    crossPhaseP   float cross-phase modulation interaction scale (0.5..2.0)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

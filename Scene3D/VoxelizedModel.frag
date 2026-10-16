@@ -1,23 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file VoxelizedModel.frag
- * @brief VOXELIZED MODEL: the model as a voxel sculpture of the photo.  The
- * surface is coloured per voxel cell -- one photo sample per cell, flat --
- * and lit per cell with the normal snapped to the nearest axis, with a
- * thin dark seam at the cell boundaries, so the smooth mesh reads as
- * stacked cubes.  The cell size breathes on the swell (slowly: fewer, bigger
- * voxels in the quiet, a fine sculpture at the peak), the cells glow with
- * the bass, the kick lights the seams.  Behind: the photo as a studio wall.
+/*****************************************************************************\
+ *                              VoxelizedModel.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSwell -> voxel resolution (slow)
- *   audioBass  -> cell glow (light)
- *   audioKick  -> seam light (light)
- *   audioLevel -> brightness
+ *  @brief
+ *  VOXELIZED MODEL: the model as a voxel sculpture of the photo.
  *
- * Per-activation variety: sizeP, tiltP, resP (base resolution), hueP.
+ *  The surface is coloured per voxel cell -- one photo sample per cell, flat -- and lit per cell with the normal
+ *  snapped to the nearest axis, with a thin dark seam at the cell boundaries, so the smooth mesh reads as stacked
+ *  cubes.  The cell size breathes on the swell (slowly: fewer, bigger voxels in the quiet, a fine sculpture at the
+ *  peak), the cells glow with the bass, the kick lights the seams.  Behind: the photo as a studio wall.
+ *
+ *  Audio Reactivity:
+ *    audioSwell -> voxel resolution (slow)
+ *    audioBass  -> cell glow (light)
+ *    audioKick  -> seam light (light)
+ *    audioLevel -> brightness
+ *
+ *  Per-activation variety: sizeP, tiltP, resP (base resolution), hueP.
+ *
+ *  @author René Weller
  */
+out vec4               fragColor;       ///< The pixel's colour (output).
 uniform sampler2DArray texMeshMaterial; ///< The mesh's material textures (albedo, roughness, normal ...).
 uniform sampler2D      tex0;            ///< The current photo.
 uniform sampler2D      tex1;            ///< The next photo (cross-faded in by interpolation).

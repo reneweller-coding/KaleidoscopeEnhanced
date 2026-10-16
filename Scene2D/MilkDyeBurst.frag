@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file MilkDyeBurst.frag
- * @brief MILK DYE BURST: the kitchen experiment of food colour on milk
- * touched with soap -- blobs of vivid dye rest on the white milk, and at
- * wandering points the surface tension breaks: the dye rushes outward in
- * a burst of streaks and fingers, petals of colour stretch and swirl,
- * then the flow calms and the colours drift until the next burst elsewhere.
- * The dye colours come from the photograph.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              MilkDyeBurst.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the bursts and the drift (integrated, jump-free)
- *   audioSpread     -> burst strength
- *   audioRoughness  -> the fingering of the streaks
- *   audioKick       -> the milk's sheen flares (light)
- *   audioMode       -> palette: cool dyes in minor, warm in major
- *   audioSwell      -> how much dye lies on the milk (slow)
+ *  @brief
+ *  MILK DYE BURST: the kitchen experiment of food colour on milk touched with soap -- blobs of vivid dye rest on
+ *  the white milk, and at wandering points the surface tension breaks: the dye rushes outward in a burst of streaks
+ *  and fingers, petals of colour stretch and swirl, then the flow calms and the colours drift until the next burst
+ *  elsewhere.
  *
- * Knobs: blobP (dye blob size), burstP (burst reach), milkP (milk whiteness), hueP.
+ *  The dye colours come from the photograph.  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the bursts and the drift (integrated, jump-free)
+ *    audioSpread     -> burst strength
+ *    audioRoughness  -> the fingering of the streaks
+ *    audioKick       -> the milk's sheen flares (light)
+ *    audioMode       -> palette: cool dyes in minor, warm in major
+ *    audioSwell      -> how much dye lies on the milk (slow)
+ *
+ *  Knobs: blobP (dye blob size), burstP (burst reach), milkP (milk whiteness), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

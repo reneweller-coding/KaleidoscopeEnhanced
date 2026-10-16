@@ -1,17 +1,21 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file LidarSweepPointCloud.frag
- * @brief Fragment stage for LidarSweepPointCloud: black (no room is drawn,
- * only what the beam has seen), the points as round dots coloured by the
- * photo at their uv and by height (the classic range colouring), fading
- * with their age; the scanner as a small glowing box, the beam as a line;
- * the bass is the scanner glow, the kick a flash along the beam, the
- * treble sparkles the freshest points.
+/*****************************************************************************\
+ *                              LidarSweepPointCloud.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity: audioBass -> scanner glow; audioKick -> beam flash;
- *                   audioHigh -> fresh-point sparkle; audioLevel -> brightness.
+ *  @brief
+ *  Fragment stage for LidarSweepPointCloud: black (no room is drawn, only what the beam has seen), the points as
+ *  round dots coloured by the photo at their uv and by height (the classic range colouring), fading with their age;
+ *  the scanner as a small glowing box, the beam as a line; the bass is the scanner glow, the kick a flash along the
+ *  beam, the treble sparkles the freshest points.
+ *
+ *  Audio Reactivity: audioBass -> scanner glow; audioKick -> beam flash;
+ *                    audioHigh -> fresh-point sparkle; audioLevel -> brightness.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 in vec2  vTexCoord; ///< Texture coordinate (from the vertex stage).
 in vec3  vWorld;    ///< World position (from the vertex stage).
 in float vKind;     ///< Element kind (from the vertex stage).

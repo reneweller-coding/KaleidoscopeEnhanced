@@ -1,14 +1,20 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file ChiralLiquidCrystalCholesteric.frag
- * @brief CHIRAL LIQUID CRYSTAL (CHOLESTERIC): 20 helical director ribbons seen
- * from the SIDE at a slow orbit - layered golden wave-sheets whose twist
- * period (the cholesteric pitch) reads directly in the picture; Bragg
- * colours come from the photo palette.
- *   audioAdvance -> orbit + helix twist    audioKick -> ribbon width
- *   pitchP/twistP -> cholesteric pitch and twist rate
+/*****************************************************************************\
+ *                              ChiralLiquidCrystalCholesteric.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  CHIRAL LIQUID CRYSTAL (CHOLESTERIC): 20 helical director ribbons seen from the SIDE at a slow orbit - layered
+ *  golden wave-sheets whose twist period (the cholesteric pitch) reads directly in the picture; Bragg colours come
+ *  from the photo palette.
+ *
+ *    audioAdvance -> orbit + helix twist    audioKick -> ribbon width
+ *    pitchP/twistP -> cholesteric pitch and twist rate
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec3  vWorldPos;   ///< World position (from the vertex stage).
 in vec2  vTexCoord;   ///< Texture coordinate (from the vertex stage).

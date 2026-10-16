@@ -1,4 +1,26 @@
 #version 330 core
+/*****************************************************************************\
+ *                              ShadowForest.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Shades the ground and trunks of the ShadowForest colonnade, reading a real shadow map (texShadow/lightM, built
+ *  from the geometry ShadowForest.comp generates) so the sixty overlapping trunk shadows fall correctly across the
+ *  ground rather than being faked.
+ *
+ *  audioLevel boosts both the direct sunlight term on the ground and the
+ *  dappled canopy light that carries the floor; audioAmbient
+ *  scales the sky-bounce fill light and the distance haze; audioKick
+ *  strengthens the trunks' silhouette rim light; audioBeat and audioSubBass
+ *  pulse the overall exposure; audioHigh adds a faint white highlight.
+ *  hueP/audioChromaHue/audioValence drive imgPalette, a live sample of the
+ *  slideshow photo that tints the sunlight colour, with audioAdvance
+ *  providing its slow drift. vKind selects ground vs. trunk shading and vVar
+ *  varies bark tone between trunks.
+ *
+ *  @author René Weller
+ */
 out vec4 fragColor; ///< The pixel's colour (output).
 // ShadowForest.frag — the ground is the canvas and the trunks are the brush.
 // The ground gets a bright, warm direct term so every shadow crossing it reads
@@ -11,24 +33,6 @@ in vec3  vView;   ///< View vector (from the vertex stage).
 in vec3  vWorld;  ///< World position (from the vertex stage).
 in float vKind;   ///< Element kind (from the vertex stage).
 in float vVar;    ///< Var (from the vertex stage).
-
-/**
- * @file ShadowForest.frag
- * @brief Shades the ground and trunks of the ShadowForest colonnade,
- * reading a real shadow map (texShadow/lightM, built from the geometry
- * ShadowForest.comp generates) so the sixty overlapping trunk shadows fall
- * correctly across the ground rather than being faked.
- *
- * audioLevel boosts both the direct sunlight term on the ground and the
- * dappled canopy light that carries the floor; audioAmbient
- * scales the sky-bounce fill light and the distance haze; audioKick
- * strengthens the trunks' silhouette rim light; audioBeat and audioSubBass
- * pulse the overall exposure; audioHigh adds a faint white highlight.
- * hueP/audioChromaHue/audioValence drive imgPalette, a live sample of the
- * slideshow photo that tints the sunlight colour, with audioAdvance
- * providing its slow drift. vKind selects ground vs. trunk shading and vVar
- * varies bark tone between trunks.
- */
 
 uniform sampler2D       tex0;          ///< The current photo.
 uniform sampler2DShadow texShadow;     ///< Shadow map of the key light (depth comparison).

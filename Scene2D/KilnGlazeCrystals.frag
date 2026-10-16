@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file KilnGlazeCrystals.frag
- * @brief KILN GLAZE CRYSTALS: a crystalline glaze -- zinc-silicate flowers
- * that grow in the glaze while the kiln holds its temperature.  A bowl
- * fills the frame; over the scene arc the crystals nucleate and grow as
- * radiating fans (each a fixed seed, its radius on the arc), each lit by
- * a chroma class; the glaze body is the photo, glossy; the kiln glow is
- * the bass, the kick a spark of the pyrometer, the treble the gloss.
- * Camera fixed above the bowl.
+/*****************************************************************************\
+ *                              KilnGlazeCrystals.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   sceneProgress   -> crystal growth (the arc)
- *   audioChroma[12] -> crystal light by class (light)
- *   audioBass       -> kiln glow (light)
- *   audioHigh       -> gloss highlights (light)
- *   audioLevel      -> brightness
+ *  @brief
+ *  KILN GLAZE CRYSTALS: a crystalline glaze -- zinc-silicate flowers that grow in the glaze while the kiln holds
+ *  its temperature.
  *
- * Per-activation variety: seedsP, fanP, hueP.
+ *  A bowl fills the frame; over the scene arc the crystals nucleate and grow as radiating fans (each a fixed seed,
+ *  its radius on the arc), each lit by a chroma class; the glaze body is the photo, glossy; the kiln glow is the
+ *  bass, the kick a spark of the pyrometer, the treble the gloss. Camera fixed above the bowl.
+ *
+ *  Audio Reactivity:
+ *    sceneProgress   -> crystal growth (the arc)
+ *    audioChroma[12] -> crystal light by class (light)
+ *    audioBass       -> kiln glow (light)
+ *    audioHigh       -> gloss highlights (light)
+ *    audioLevel      -> brightness
+ *
+ *  Per-activation variety: seedsP, fanP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

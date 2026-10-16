@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TexturePlanktonDrift.frag
- * @brief TEXTURE PLANKTON DRIFT: a dark-field microscope view of drifting
- * plankton -- glassy diatoms (discs and needles),
- * radiolarian spheres with spiny halos and tiny copepods glide through
- * the view at different depths, glowing against black in dark-field
- * light, their colours tinted by the photograph; out-of-focus ones blur
- * into soft shapes.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              TexturePlanktonDrift.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the drift (integrated, jump-free)
- *   audioSpread     -> the number of organisms
- *   audioKick       -> the organisms flash (light)
- *   audioMode       -> the light: cool blue in minor, golden in major
- *   audioRoughness  -> the spines grow
- *   audioSwell      -> depth of field (slow)
+ *  @brief
+ *  TEXTURE PLANKTON DRIFT: a dark-field microscope view of drifting plankton -- glassy diatoms (discs and needles),
+ *  radiolarian spheres with spiny halos and tiny copepods glide through the view at different depths, glowing
+ *  against black in dark-field light, their colours tinted by the photograph; out-of-focus ones blur into soft
+ *  shapes.
  *
- * Knobs: sizeP (organism size), kindP (mix of kinds), photoP (photo tint), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the drift (integrated, jump-free)
+ *    audioSpread     -> the number of organisms
+ *    audioKick       -> the organisms flash (light)
+ *    audioMode       -> the light: cool blue in minor, golden in major
+ *    audioRoughness  -> the spines grow
+ *    audioSwell      -> depth of field (slow)
+ *
+ *  Knobs: sizeP (organism size), kindP (mix of kinds), photoP (photo tint), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

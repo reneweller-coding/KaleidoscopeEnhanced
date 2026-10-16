@@ -1,11 +1,17 @@
 #version 330 core
-/**
- * @file SmokeRingChorus.vert
- * @brief Vertex stage for SmokeRingChorus: world positions pass through
- * (camera at the origin, +z ahead).  The torus normal arrives as xy in the
- * uv slots with its z sign in kind; it is rebuilt here.  In the opaque
- * pass only the wall is drawn, in the OIT pass only the rings (the other
- * half is collapsed behind the near plane).  No camera motion.
+/*****************************************************************************\
+ *                              SmokeRingChorus.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage for SmokeRingChorus: world positions pass through (camera at the origin, +z ahead).
+ *
+ *  The torus normal arrives as xy in the uv slots with its z sign in kind; it is rebuilt here.  In the opaque pass
+ *  only the wall is drawn, in the OIT pass only the rings (the other half is collapsed behind the near plane).  No
+ *  camera motion.
+ *
+ *  @author René Weller
  */
 layout( location = 0 ) in vec4 attrA; ///< xyz = position, w = ring id
 layout( location = 1 ) in vec4 attrB; ///< x = life, y = kind (-1 wall, 0/1 ring by normal z sign), zw = normal xy

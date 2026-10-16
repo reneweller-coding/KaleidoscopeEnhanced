@@ -1,18 +1,26 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file AlcubierreWarpDriveHighway.frag
- * @brief ALCUBIERRE WARP DRIVE HIGHWAY: Faster-than-light warp bubble flight in curved
- * spacetime based on the Alcubierre metric. Spacetime compression ahead (blueshift gleam),
- * expansion behind (redshift), and glowing negative-energy exotic matter containment rings.
+/*****************************************************************************\
+ *                              AlcubierreWarpDriveHighway.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance -> drives extreme relativistic warp drive forward progression
- *   audioKick    -> flashes exotic matter warp bubble nodes & spacetime compression burst
- *   audioCentroid-> sharpens radial warp ring resolution & Doppler color shift
- *   audioSubBass -> expands warp bubble diameter breathing
- *   audioChromaHue-> steers the extreme Doppler blueshift / redshift spectrum
+ *  @brief
+ *  ALCUBIERRE WARP DRIVE HIGHWAY: Faster-than-light warp bubble flight in curved spacetime based on the Alcubierre
+ *  metric.
+ *
+ *  Spacetime compression ahead (blueshift gleam), expansion behind (redshift), and glowing negative-energy exotic
+ *  matter containment rings.
+ *
+ *  Audio Reactivity:
+ *    audioAdvance -> drives extreme relativistic warp drive forward progression
+ *    audioKick    -> flashes exotic matter warp bubble nodes & spacetime compression burst
+ *    audioCentroid-> sharpens radial warp ring resolution & Doppler color shift
+ *    audioSubBass -> expands warp bubble diameter breathing
+ *    audioChromaHue-> steers the extreme Doppler blueshift / redshift spectrum
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

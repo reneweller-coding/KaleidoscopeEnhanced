@@ -1,25 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file PapercutShadowBox.frag
- * @brief PAPERCUT SHADOW BOX: layered paper cut-outs in a lit box.  Six
- * sheets stand one behind the other, each cut into a silhouette (hills,
- * trees, waves -- from noise), each a little further from the light and
- * therefore darker; the light behind is the photo, seen through the
- * cut-outs, in the palette's colour.  The sheets slide past one another
- * with parallax on the scene clock (a steady drift, never a jolt); the
- * chroma tints the sheets, the swell lifts the backlight, and the kick
- * lights the paper edges.
+/*****************************************************************************\
+ *                              PapercutShadowBox.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   sceneAdvance -> parallax drift (continuous)
- *   audioChroma  -> sheet tint via the palette (light)
- *   audioSwell   -> backlight (slow)
- *   audioKick    -> paper edges flash (light)
- *   audioLevel   -> brightness
+ *  @brief
+ *  PAPERCUT SHADOW BOX: layered paper cut-outs in a lit box.
  *
- * Per-activation variety: layersP, cutP (cut roughness), hueP.
+ *  Six sheets stand one behind the other, each cut into a silhouette (hills, trees, waves -- from noise), each a
+ *  little further from the light and therefore darker; the light behind is the photo, seen through the cut-outs, in
+ *  the palette's colour.  The sheets slide past one another with parallax on the scene clock (a steady drift, never
+ *  a jolt); the chroma tints the sheets, the swell lifts the backlight, and the kick lights the paper edges.
+ *
+ *  Audio Reactivity:
+ *    sceneAdvance -> parallax drift (continuous)
+ *    audioChroma  -> sheet tint via the palette (light)
+ *    audioSwell   -> backlight (slow)
+ *    audioKick    -> paper edges flash (light)
+ *    audioLevel   -> brightness
+ *
+ *  Per-activation variety: layersP, cutP (cut roughness), hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

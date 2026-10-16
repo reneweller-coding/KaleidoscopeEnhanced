@@ -1,26 +1,31 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureAnodizeRainbow.frag
- * @brief TEXTURE ANODIZE RAINBOW: anodised titanium -- the photograph is
- * stamped into a sheet of brushed titanium, and a slowly travelling wave
- * of anodising voltage grows an oxide film across it whose thickness
- * paints the metal in its famous colour sequence: straw gold, bronze,
- * purple, deep blue, teal, gold and magenta; the photo's relief changes
- * the thickness, so the picture appears in bands of colour; brushed
- * grain and a moving specular highlight make it metal.  Endless,
- * mirrorable.
+/*****************************************************************************\
+ *                              TextureAnodizeRainbow.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the voltage wave travels (integrated, jump-free)
- *   audioSpread     -> the thickness range (more colour bands)
- *   audioKick       -> the highlight flares (light)
- *   audioMode       -> the base voltage: blues/purples in minor, golds in major
- *   audioRoughness  -> the brushing gets coarser
- *   audioSwell      -> the relief depth (slow)
+ *  @brief
+ *  TEXTURE ANODIZE RAINBOW: anodised titanium -- the photograph is stamped into a sheet of brushed titanium, and a
+ *  slowly travelling wave of anodising voltage grows an oxide film across it whose thickness paints the metal in
+ *  its famous colour sequence: straw gold, bronze, purple, deep blue, teal, gold and magenta; the photo's relief
+ *  changes the thickness, so the picture appears in bands of colour; brushed grain and a moving specular highlight
+ *  make it metal.
  *
- * Knobs: bandP (photo influence on the bands), brushP (brush grain), shineP, hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the voltage wave travels (integrated, jump-free)
+ *    audioSpread     -> the thickness range (more colour bands)
+ *    audioKick       -> the highlight flares (light)
+ *    audioMode       -> the base voltage: blues/purples in minor, golds in major
+ *    audioRoughness  -> the brushing gets coarser
+ *    audioSwell      -> the relief depth (slow)
+ *
+ *  Knobs: bandP (photo influence on the bands), brushP (brush grain), shineP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

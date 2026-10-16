@@ -1,18 +1,24 @@
 #version 430 core
-/**
- * @file KiteFestival.comp
- * @brief KITE FESTIVAL: hundreds of kites on a windy hillside, each a
- * diamond of the photo with a ribbon tail, flying on its string in a wind
- * field.  The wind strength is the swell (slow): more wind, the kites fly
- * higher and lean further; the gusts are sines on the scene clock, so the
- * whole sky sways continuously and never jolts.  No state; every kite is a
- * function of its seed and the clock.  The camera never moves.
+/*****************************************************************************\
+ *                              KiteFestival.comp
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (generator stage):
- *   audioSwell   -> wind strength (slow)
- *   sceneAdvance -> gusts and tail ripple (continuous)
+ *  @brief
+ *  KITE FESTIVAL: hundreds of kites on a windy hillside, each a diamond of the photo with a ribbon tail, flying on
+ *  its string in a wind field.
  *
- * Per-instance: countP (fraction of kites), windP, hueP.
+ *  The wind strength is the swell (slow): more wind, the kites fly higher and lean further; the gusts are sines on
+ *  the scene clock, so the whole sky sways continuously and never jolts.  No state; every kite is a function of its
+ *  seed and the clock.  The camera never moves.
+ *
+ *  Audio Reactivity (generator stage):
+ *    audioSwell   -> wind strength (slow)
+ *    sceneAdvance -> gusts and tail ripple (continuous)
+ *
+ *  Per-instance: countP (fraction of kites), windP, hueP.
+ *
+ *  @author René Weller
  */
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( local_size_x = 4, local_size_y = 4, local_size_z = 4 ) in;

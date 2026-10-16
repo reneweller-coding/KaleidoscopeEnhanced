@@ -1,35 +1,46 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file LightningStorm.frag
- * @brief Displays the branching electrical discharge simulated in Engine/CfxLightningStep, built around the fact that a
- * real bolt reads mostly as afterglow rather than as the thin flash itself.
+/*****************************************************************************\
+ *                              LightningStorm.frag
+\*****************************************************************************/
+/*! @file
  *
- * The simulation grows exactly ONE tree of leaders per strike, from one point on the top edge, so on its own it hangs
- * in a single narrow column of the picture. This pass re-projects that tree through three different UV frames — the
- * original, a mirrored one and a shifted, shorter one — so a strike lights the frame the way a real storm front does,
- * with sibling discharges going off across the sky. Behind them a roiling cloud ceiling is lit by the same flash, which
- * is what turns the space between the bolts into weather instead of dead black.
+ *  @brief
+ *  Displays the branching electrical discharge simulated in Engine/CfxLightningStep, built around the fact that a
+ *  real bolt reads mostly as afterglow rather than as the thin flash itself.
  *
- * texLightning is bloomed at two scales per instance, a tight halo for the filament and a very wide one for the
- * sheet-lightning glow, and that far halo's brightness gates how much of the photo is briefly revealed, cold and
- * desaturated, as if lit by the storm. audioLevel, audioKick, audioBeat and audioChromaHue are declared but not read by
- * this pass itself, since the bolt's own timing and shape are already driven by audio inside the CfxLightningStep
- * compute simulation.
+ *  The simulation grows exactly ONE tree of leaders per strike, from one point on the top edge, so on its own it
+ *  hangs
+ *  in a single narrow column of the picture. This pass re-projects that tree through three different UV frames —
+ *  the
+ *  original, a mirrored one and a shifted, shorter one — so a strike lights the frame the way a real storm front
+ *  does,
+ *  with sibling discharges going off across the sky. Behind them a roiling cloud ceiling is lit by the same flash,
+ *  which
+ *  is what turns the space between the bolts into weather instead of dead black.
  *
- * Audio Reactivity:
- *  - audioDrop      -> punches up the overall exposure on a drop
- *  - audioSnare     -> THUNDER FLASH: snares and claps deepen how far the sheet
- *                      glow reveals the photo, so every backbeat lights the
- *                      landscape up under the storm
- *  - audioSharpness -> FILAMENT vs SHEET: bright, incisive material puts the energy
- *                      into the tight halo (a crisp, hard bolt), dull material moves
- *                      it into the wide halo (diffuse sheet lightning). An energy
- *                      trade between two existing terms, so exposure stays put
- *  - audioZCR       -> CRACKLE: broadband noisiness scatters the halo ring taps per
- *                      pixel, fraying the corona into a noisy, crackling discharge
- *                      instead of a clean glow
+ *  texLightning is bloomed at two scales per instance, a tight halo for the filament and a very wide one for the
+ *  sheet-lightning glow, and that far halo's brightness gates how much of the photo is briefly revealed, cold and
+ *  desaturated, as if lit by the storm. audioLevel, audioKick, audioBeat and audioChromaHue are declared but not
+ *  read by
+ *  this pass itself, since the bolt's own timing and shape are already driven by audio inside the CfxLightningStep
+ *  compute simulation.
+ *
+ *  Audio Reactivity:
+ *   - audioDrop      -> punches up the overall exposure on a drop
+ *   - audioSnare     -> THUNDER FLASH: snares and claps deepen how far the sheet
+ *                       glow reveals the photo, so every backbeat lights the
+ *                       landscape up under the storm
+ *   - audioSharpness -> FILAMENT vs SHEET: bright, incisive material puts the energy
+ *                       into the tight halo (a crisp, hard bolt), dull material moves
+ *                       it into the wide halo (diffuse sheet lightning). An energy
+ *                       trade between two existing terms, so exposure stays put
+ *   - audioZCR       -> CRACKLE: broadband noisiness scatters the halo ring taps per
+ *                       pixel, fraying the corona into a noisy, crackling discharge
+ *                       instead of a clean glow
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 // LightningStorm.frag — the branching discharge from Engine/CfxLightningStep.
 // A bolt is mostly AFTERGLOW: the visible event is short, the bloom and the
 // lit-up surroundings are what the eye actually reads, so most of the work

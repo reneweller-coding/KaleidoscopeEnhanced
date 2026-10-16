@@ -1,8 +1,13 @@
 #version 330 core
-/**
- * @file KaleidoscopeOrganism.vert
- * @brief Vertex stage companion to KaleidoscopeOrganism.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              KaleidoscopeOrganism.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to KaleidoscopeOrganism.frag -- see that file's header for this scene's description.
+ *
+ *  @author René Weller
  */
 // KaleidoscopeOrganism.vert — the organism arrives already mirror-replicated
 // by the compute generator (see KaleidoscopeOrganism.comp); this stage just

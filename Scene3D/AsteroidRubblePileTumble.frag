@@ -1,16 +1,20 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file AsteroidRubblePileTumble.frag
- * @brief Fragment stage for AsteroidRubblePileTumble: boulders of the
- * photo, grey-brown regolith with the sunward term from the generator
- * (hard shadow on the night side, a little earthshine from the palette),
- * the probe as a bright box, the touchdown dust as soft round puffs that
- * the kick lights, the Sun and round stars behind.
+/*****************************************************************************\
+ *                              AsteroidRubblePileTumble.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity: audioKick -> dust puff light; audioSwell -> sunlight;
- *                   audioHigh -> regolith glints; audioLevel -> brightness.
+ *  @brief
+ *  Fragment stage for AsteroidRubblePileTumble: boulders of the photo, grey-brown regolith with the sunward term
+ *  from the generator (hard shadow on the night side, a little earthshine from the palette), the probe as a bright
+ *  box, the touchdown dust as soft round puffs that the kick lights, the Sun and round stars behind.
+ *
+ *  Audio Reactivity: audioKick -> dust puff light; audioSwell -> sunlight;
+ *                    audioHigh -> regolith glints; audioLevel -> brightness.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 in vec2  vTexCoord; ///< Texture coordinate (from the vertex stage).
 in vec3  vWorld;    ///< World position (from the vertex stage).
 in float vKind;     ///< Element kind (from the vertex stage).

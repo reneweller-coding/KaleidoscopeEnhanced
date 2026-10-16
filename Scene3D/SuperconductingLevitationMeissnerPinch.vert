@@ -1,18 +1,24 @@
 #version 330 core
-/**
- * @file SuperconductingLevitationMeissnerPinch.vert
- * @brief Vertex stage companion to SuperconductingLevitationMeissnerPinch.frag -- see that file's
- * header for this scene's description.
+/*****************************************************************************\
+ *                              SuperconductingLevitationMeissnerPinch.vert
+\*****************************************************************************/
+/*! @file
  *
- * SCREEN FILL: one levitation assembly, 1.15 units of disc radius seen from
- * 4.5 units away, covered barely a third of the frame width and left the rest
- * black (occ 0.17).  The 220 x 120 patch is now split into a 4 x 2 array of
- * EIGHT independent assemblies -- GEOM_GRID emits each cell as its own pair of
- * triangles, so a split taken from the CELL INDEX (never from the continuous
- * uv) cannot stretch a triangle between two blocks -- and each assembly's
- * profile has gained a wide cryostat cold plate whose rim overlaps its
- * neighbours', so the array reads as one continuous cold bed rather than eight
- * islands.
+ *  @brief
+ *  Vertex stage companion to SuperconductingLevitationMeissnerPinch.frag -- see that file's header for this scene's
+ *  description.
+ *
+ *  SCREEN FILL: one levitation assembly, 1.15 units of disc radius seen from
+ *  4.5 units away, covered barely a third of the frame width and left the rest
+ *  black (occ 0.17).  The 220 x 120 patch is now split into a 4 x 2 array of
+ *  EIGHT independent assemblies -- GEOM_GRID emits each cell as its own pair of
+ *  triangles, so a split taken from the CELL INDEX (never from the continuous
+ *  uv) cannot stretch a triangle between two blocks -- and each assembly's
+ *  profile has gained a wide cryostat cold plate whose rim overlaps its
+ *  neighbours', so the array reads as one continuous cold bed rather than eight
+ *  islands.
+ *
+ *  @author René Weller
  */
 
 in vec4 attrA; ///< xy = Patch UV [0,1], z = 0, w = Patch index

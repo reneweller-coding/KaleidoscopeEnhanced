@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file CameraObscuraRoom.frag
- * @brief CAMERA OBSCURA ROOM: a darkened room with a pinhole in one wall.
- * The world outside (the photo) stands upside-down and left-right reversed
- * on the far wall, soft at the edges as a pinhole image is.  The aperture
- * breathes with the swell -- wide open means bright and soft, stopped down
- * means dim and sharp -- dust motes drift through the light cone on the
- * scene clock, and the kick is a flicker of the daylight outside (a cloud
- * passing, light only).  Camera fixed in the room.
+/*****************************************************************************\
+ *                              CameraObscuraRoom.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSwell   -> aperture: brightness and blur together (slow)
- *   sceneAdvance -> dust motes and the slow drift of the projection (continuous)
- *   audioKick    -> daylight flicker (light)
- *   audioHigh    -> mote sparkle (light)
- *   audioLevel   -> brightness
+ *  @brief
+ *  CAMERA OBSCURA ROOM: a darkened room with a pinhole in one wall.
  *
- * Per-activation variety: holeP (aperture size), dustP, hueP.
+ *  The world outside (the photo) stands upside-down and left-right reversed on the far wall, soft at the edges as a
+ *  pinhole image is.  The aperture breathes with the swell -- wide open means bright and soft, stopped down means
+ *  dim and sharp -- dust motes drift through the light cone on the scene clock, and the kick is a flicker of the
+ *  daylight outside (a cloud passing, light only).  Camera fixed in the room.
+ *
+ *  Audio Reactivity:
+ *    audioSwell   -> aperture: brightness and blur together (slow)
+ *    sceneAdvance -> dust motes and the slow drift of the projection (continuous)
+ *    audioKick    -> daylight flicker (light)
+ *    audioHigh    -> mote sparkle (light)
+ *    audioLevel   -> brightness
+ *
+ *  Per-activation variety: holeP (aperture size), dustP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

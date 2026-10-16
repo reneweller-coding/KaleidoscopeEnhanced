@@ -1,8 +1,13 @@
 #version 330 core
-/**
- * @file LargeHadronCollision.vert
- * @brief Vertex stage companion to LargeHadronCollision.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              LargeHadronCollision.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to LargeHadronCollision.frag -- see that file's header for this scene's description.
+ *
+ *  @author René Weller
  */
 layout( location = 0 ) in vec3 inPos;    ///< Pos (vertex attribute).
 layout( location = 1 ) in vec3 inNormal; ///< Normal (vertex attribute).

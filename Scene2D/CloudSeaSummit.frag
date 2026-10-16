@@ -1,23 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file CloudSeaSummit.frag
- * @brief CLOUD SEA SUMMIT: above a sea of cloud at sunrise.  The cloud
- * tops roll slowly through the valleys below, billowed and lit gold on the
- * sun side, blue in their troughs; ridges and summits stand out of the sea
- * in layers that fade into the haze, and the sun sits on the horizon with
- * its light running across the cloud tops.  The music is in the light:
- * the swell raises the sun's glow, the bands brighten the ridge rims, the
- * treble sparkles on the rime of the nearest summit.
+/*****************************************************************************\
+ *                              CloudSeaSummit.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSwell        -> sunrise glow and cloud-top light (slow)
- *   audioSpectrum[32] -> rim light on the ridges, one band per ridge layer
- *   audioHigh         -> rime sparkle on the near summit (light)
- *   sceneAdvance      -> the cloud sea flows (continuous)
+ *  @brief
+ *  CLOUD SEA SUMMIT: above a sea of cloud at sunrise.
  *
- * Per-activation variety: sunP (sun position), hueP.
+ *  The cloud tops roll slowly through the valleys below, billowed and lit gold on the sun side, blue in their
+ *  troughs; ridges and summits stand out of the sea in layers that fade into the haze, and the sun sits on the
+ *  horizon with its light running across the cloud tops.  The music is in the light: the swell raises the sun's
+ *  glow, the bands brighten the ridge rims, the treble sparkles on the rime of the nearest summit.
+ *
+ *  Audio Reactivity:
+ *    audioSwell        -> sunrise glow and cloud-top light (slow)
+ *    audioSpectrum[32] -> rim light on the ridges, one band per ridge layer
+ *    audioHigh         -> rime sparkle on the near summit (light)
+ *    sceneAdvance      -> the cloud sea flows (continuous)
+ *
+ *  Per-activation variety: sunP (sun position), hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

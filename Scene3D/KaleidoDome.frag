@@ -1,4 +1,20 @@
 #version 330 core
+/*****************************************************************************\
+ *                              KaleidoDome.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Renders a spinning kaleidoscope rosette of the current slideshow photo projected onto a dome, folded into
+ *  8/10/12/14 mirrored sectors chosen per activation from sceneSeed.
+ *
+ *  audioAdvance drives both the sector spin and a slow radial creep across
+ *  the source image so the crop never repeats; audioSwell breathes the
+ *  sampled radius; audioKick blooms the dome's centre and audioDrop
+ *  flashes the whole sky; audioChromaHue tints the glowing sector seams.
+ *
+ *  @author René Weller
+ */
 out vec4 fragColor; ///< The pixel's colour (output).
 // KaleidoDome.frag — a 10-sector kaleidoscope rosette of the current image
 // spinning across the dome; kicks bloom the centre, the bar phase breathes
@@ -15,18 +31,6 @@ uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, u
 
 in vec2  vUV; ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 in float vR;  ///< R (from the vertex stage).
-
-/**
- * @file KaleidoDome.frag
- * @brief Renders a spinning kaleidoscope rosette of the current slideshow
- * photo projected onto a dome, folded into 8/10/12/14 mirrored sectors
- * chosen per activation from sceneSeed.
- *
- * audioAdvance drives both the sector spin and a slow radial creep across
- * the source image so the crop never repeats; audioSwell breathes the
- * sampled radius; audioKick blooms the dome's centre and audioDrop
- * flashes the whole sky; audioChromaHue tints the glowing sector seams.
- */
 
 /**  Rotates a colour's hue by an angle (about the grey axis).
  *

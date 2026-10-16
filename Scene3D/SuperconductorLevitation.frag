@@ -1,25 +1,29 @@
 #version 330 core
+/*****************************************************************************\
+ *                              SuperconductorLevitation.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Lights the 70x70 field of levitating superconductor tiles from SuperconductorLevitation.vert as metallic plates:
+ *  a directional key light plus specular highlight, a glowing grid-edge trim per tile, and the current slideshow
+ *  photo reflected faintly across each tile's top face.
+ *
+ *  This fragment stage itself reads no audio uniforms; the tiles' levitation
+ *  height, tilt, and per-tile colour (audioSpectrum band level, audioKick
+ *  magnetic shockwave, audioChromaHue/hueP rotation) are all computed in the
+ *  companion vertex shader and arrive pre-baked in vCol, so here audio only
+ *  shows through as whatever normal/position that vertex work already
+ *  produced.
+ *
+ *  @author René Weller
+ */
 out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec4 vCol;      ///< Colour (from the vertex stage).
 in vec3 vNormal;   ///< Surface normal (from the vertex stage).
 in vec3 vWorldPos; ///< World position (from the vertex stage).
 in vec2 vUV;       ///< Texture coordinate 0..1 over the screen (from the vertex stage).
-
-/**
- * @file SuperconductorLevitation.frag
- * @brief Lights the 70x70 field of levitating superconductor tiles from
- * SuperconductorLevitation.vert as metallic plates: a directional key light
- * plus specular highlight, a glowing grid-edge trim per tile, and the
- * current slideshow photo reflected faintly across each tile's top face.
- *
- * This fragment stage itself reads no audio uniforms; the tiles' levitation
- * height, tilt, and per-tile colour (audioSpectrum band level, audioKick
- * magnetic shockwave, audioChromaHue/hueP rotation) are all computed in the
- * companion vertex shader and arrive pre-baked in vCol, so here audio only
- * shows through as whatever normal/position that vertex work already
- * produced.
- */
 
 uniform sampler2D tex0;          ///< The current photo.
 uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).

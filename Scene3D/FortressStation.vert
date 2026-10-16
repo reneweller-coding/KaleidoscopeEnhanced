@@ -1,16 +1,20 @@
 #version 330 core
-/**
- * @file FortressStation.vert
- * @brief Vertex stage companion to FortressStation.frag -- see that file's
- * header. Shared by every armored/military station (geom="mesh"): these are
- * kilometers-long megastructures, not debris -- they hold a FIXED
- * orientation (a one-time angle, chosen only so the hull isn't seen flat-on)
- * and float stably; all the camera-facing motion comes from the camera's
- * own sweep (this scene's rig* formulas in Presets/Komplett.xml) plus
- * a small audio-reactive rattle, not from the hull tumbling in place.
- * gl_VertexID picks the vertex's own branch: below meshVertexCount it is the
- * loaded model, at or above it the enclosing sky shell Scene3DShader::
- * buildGeometry() appends -- FortressStation.frag paints a nebula onto it.
+/*****************************************************************************\
+ *                              FortressStation.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to FortressStation.frag -- see that file's header.
+ *
+ *  Shared by every armored/military station (geom="mesh"): these are kilometers-long megastructures, not debris --
+ *  they hold a FIXED orientation (a one-time angle, chosen only so the hull isn't seen flat-on) and float stably;
+ *  all the camera-facing motion comes from the camera's own sweep (this scene's rig* formulas in
+ *  Presets/Komplett.xml) plus a small audio-reactive rattle, not from the hull tumbling in place. gl_VertexID picks
+ *  the vertex's own branch: below meshVertexCount it is the loaded model, at or above it the enclosing sky shell
+ *  Scene3DShader:: buildGeometry() appends -- FortressStation.frag paints a nebula onto it.
+ *
+ *  @author René Weller
  */
 
 in vec4 attrA; ///< mesh: xyz = object-space position, w = U.  shell: xyz = world-space position on the shell.

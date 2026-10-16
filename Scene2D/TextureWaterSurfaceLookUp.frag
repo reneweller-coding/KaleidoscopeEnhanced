@@ -1,26 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureWaterSurfaceLookUp.frag
- * @brief TEXTURE WATER SURFACE LOOK UP: lying on the bottom of a pool and
- * looking straight up -- the whole sky (the photograph) is squeezed into
- * a bright circle overhead, Snell's window, its rim fringed with rainbow
- * colours; the waves on the surface ripple and bend the picture inside
- * it, and outside the window the surface turns into a dark mirror
- * reflecting the depths; dancing light nets and shafts hang in the water.
- * The circle is centred on the screen; the water continues beyond the
- * frame; mirrorable.
+/*****************************************************************************\
+ *                              TextureWaterSurfaceLookUp.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the waves travel (integrated, jump-free)
- *   audioSpread     -> wave height
- *   audioBass       -> the light nets brighten (light)
- *   audioMode       -> the water: deep blue in minor, green-turquoise in major
- *   audioRoughness  -> small ripples
- *   audioSwell      -> the window widens a little (slow)
+ *  @brief
+ *  TEXTURE WATER SURFACE LOOK UP: lying on the bottom of a pool and looking straight up -- the whole sky (the
+ *  photograph) is squeezed into a bright circle overhead, Snell's window, its rim fringed with rainbow colours; the
+ *  waves on the surface ripple and bend the picture inside it, and outside the window the surface turns into a dark
+ *  mirror reflecting the depths; dancing light nets and shafts hang in the water.
  *
- * Knobs: windowP (window size), waveP (wave scale), rimP (rainbow rim), hueP.
+ *  The circle is centred on the screen; the water continues beyond the frame; mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the waves travel (integrated, jump-free)
+ *    audioSpread     -> wave height
+ *    audioBass       -> the light nets brighten (light)
+ *    audioMode       -> the water: deep blue in minor, green-turquoise in major
+ *    audioRoughness  -> small ripples
+ *    audioSwell      -> the window widens a little (slow)
+ *
+ *  Knobs: windowP (window size), waveP (wave scale), rimP (rainbow rim), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

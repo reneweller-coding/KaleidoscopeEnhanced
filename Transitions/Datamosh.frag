@@ -1,15 +1,20 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file Datamosh.frag
- * @brief Datamosh glitch: RGB-split, stuttering block-shifted 'corrupted
- * P-frame' look, most intense mid-fade.
+/*****************************************************************************\
+ *                              Datamosh.frag
+\*****************************************************************************/
+/*! @file
  *
- * Scene TRANSITION shader (Transitions/): blends the outgoing scene
- * (tex0) into the incoming one (tex1) over one cross-fade.
- * interpolation: 1 = old scene fully visible .. 0 = new scene.
- * Extracted from the former FxPlain.frag 28-style library.
+ *  @brief
+ *  Datamosh glitch: RGB-split, stuttering block-shifted 'corrupted P-frame' look, most intense mid-fade.
+ *
+ *  Scene TRANSITION shader (Transitions/): blends the outgoing scene
+ *  (tex0) into the incoming one (tex1) over one cross-fade.
+ *  interpolation: 1 = old scene fully visible .. 0 = new scene.
+ *  Extracted from the former FxPlain.frag 28-style library.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

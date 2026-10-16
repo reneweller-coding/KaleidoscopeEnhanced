@@ -1,18 +1,26 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file PsychedelicReactionDiffusionWave.frag
- * @brief PSYCHEDELIC REACTION DIFFUSION WAVE: Non-linear excitable medium chemical
- * spiral waves (FitzHugh-Nagumo / Belousov-Zhabotinsky). Rotating spiral wave tips,
- * collision wavefronts generating new phase singularities, and glowing chemical luminescence.
+/*****************************************************************************\
+ *                              PsychedelicReactionDiffusionWave.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance -> drives continuous chemical reaction wave propagation & spiral rotation
- *   audioKick    -> initiates new spiral wave tip singularities & wavefront shockwaves
- *   audioCentroid-> modulates diffusion rate & fine wave curvature resolution
- *   audioSubBass -> expands spiral wave core breathing scale
- *   audioChromaHue-> rotates the excitable medium chemical reagent spectrum
+ *  @brief
+ *  PSYCHEDELIC REACTION DIFFUSION WAVE: Non-linear excitable medium chemical spiral waves (FitzHugh-Nagumo /
+ *  Belousov-Zhabotinsky).
+ *
+ *  Rotating spiral wave tips, collision wavefronts generating new phase singularities, and glowing chemical
+ *  luminescence.
+ *
+ *  Audio Reactivity:
+ *    audioAdvance -> drives continuous chemical reaction wave propagation & spiral rotation
+ *    audioKick    -> initiates new spiral wave tip singularities & wavefront shockwaves
+ *    audioCentroid-> modulates diffusion rate & fine wave curvature resolution
+ *    audioSubBass -> expands spiral wave core breathing scale
+ *    audioChromaHue-> rotates the excitable medium chemical reagent spectrum
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

@@ -1,20 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file PhotonicChiralMetamaterialGyroidHelix.frag
- * @brief PHOTONIC CHIRAL METAMATERIAL GYROID HELIX: 3D chiral metamaterial micro-helix array.
- * A 5 x 4 frustum lattice of helical metallic nano-springs, each tumbling on its own axis pair,
- * exhibits giant circular dichroism and optical activity, selectively
- * transmitting left vs right circularly polarized light with chiral plasmonic photo texturing.
- *   audioAdvance -> screws the micro-helices, drifts the lattice & rotates polarization angle
- *   audioKick    -> flashes circular dichroism resonance & plasmonic hot spot bursts
- *   audioSwell   -> widens micro-helix ribbon diameter & optical activity path length
- *   audioCentroid-> shifts chiral photonic bandgap wavelength spectra
+/*****************************************************************************\
+ *                              PhotonicChiralMetamaterialGyroidHelix.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   ribbonWidthP float micro-helix ribbon width          (0.02..0.1)
- *   chiralGlowP  float circular dichroism pulse luminance(0.8..2.5)
+ *  @brief
+ *  PHOTONIC CHIRAL METAMATERIAL GYROID HELIX: 3D chiral metamaterial micro-helix array.
+ *
+ *  A 5 x 4 frustum lattice of helical metallic nano-springs, each tumbling on its own axis pair, exhibits giant
+ *  circular dichroism and optical activity, selectively transmitting left vs right circularly polarized light with
+ *  chiral plasmonic photo texturing.
+ *
+ *    audioAdvance -> screws the micro-helices, drifts the lattice & rotates polarization angle
+ *    audioKick    -> flashes circular dichroism resonance & plasmonic hot spot bursts
+ *    audioSwell   -> widens micro-helix ribbon diameter & optical activity path length
+ *    audioCentroid-> shifts chiral photonic bandgap wavelength spectra
+ *
+ *  Per-activation variety:
+ *    ribbonWidthP float micro-helix ribbon width          (0.02..0.1)
+ *    chiralGlowP  float circular dichroism pulse luminance(0.8..2.5)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec2  vUV;          ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 in float vSide;        ///< Which side of a strip (from the vertex stage).

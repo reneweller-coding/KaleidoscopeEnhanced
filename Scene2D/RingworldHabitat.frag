@@ -1,23 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file RingworldHabitat.frag
- * @brief RINGWORLD HABITAT: the camera glides low over the inner surface of
- * a colossal ring around its sun.  Ahead the land -- oceans, fields, shore
- * cities -- rises and rises until it arches overhead as a narrowing band
- * against black space, walled at both edges by the rim walls.  Shadow
- * squares orbiting the sun throw night bands across the arch; the cities in
- * them glitter.  The glide is steady; the music is the light.
- *   sceneTime/sceneAdvance -> glide along the ring (continuous)
- *   audioKick    -> city lights flare (light only)
- *   audioSwell   -> daylight and cloud brightness (slow)
- *   audioChromaHue-> photo tint of fields and cities
+/*****************************************************************************\
+ *                              RingworldHabitat.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   cityP float density of city clusters (0.5..1.5)
- *   cloudP float cloud density (0.5..1.5)
- *   hueP float palette offset (0..6.28)
+ *  @brief
+ *  RINGWORLD HABITAT: the camera glides low over the inner surface of a colossal ring around its sun.
+ *
+ *  Ahead the land -- oceans, fields, shore cities -- rises and rises until it arches overhead as a narrowing band
+ *  against black space, walled at both edges by the rim walls.  Shadow squares orbiting the sun throw night bands
+ *  across the arch; the cities in them glitter.  The glide is steady; the music is the light.
+ *
+ *    sceneTime/sceneAdvance -> glide along the ring (continuous)
+ *    audioKick    -> city lights flare (light only)
+ *    audioSwell   -> daylight and cloud brightness (slow)
+ *    audioChromaHue-> photo tint of fields and cities
+ *
+ *  Per-activation variety:
+ *    cityP float density of city clusters (0.5..1.5)
+ *    cloudP float cloud density (0.5..1.5)
+ *    hueP float palette offset (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

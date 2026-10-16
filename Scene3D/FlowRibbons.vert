@@ -1,8 +1,13 @@
 #version 330 core
-/**
- * @file FlowRibbons.vert
- * @brief Vertex stage companion to FlowRibbons.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              FlowRibbons.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to FlowRibbons.frag -- see that file's header for this scene's description.
+ *
+ *  @author René Weller
  */
 // FlowRibbons.vert — the ribbons arrive finished; place them and pass through.
 

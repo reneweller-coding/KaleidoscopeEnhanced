@@ -1,20 +1,25 @@
 #version 330 core
-/**
- * @file ChladniAcousticPlate.vert
- * @brief Vertex stage companion to ChladniAcousticPlate.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              ChladniAcousticPlate.vert
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance   -> slow walk through the Chladni mode numbers (jump-free)
- *   audioBass      -> n mode number + bounce height
- *   audioMid       -> m mode number
- *   audioKick      -> grains jump off the plate and briefly stop settling
- *   audioSpread    -> modal complexity: a pure tone rings a simple low-order
- *                     figure, a broadband spectrum drives high-order lines
- *   audioZCR       -> grain scatter: hiss keeps the sand skittering, a held
- *                     tone lets it settle into razor-sharp nodal lines
- *   audioHarmChange-> a chord change re-tunes the plate; the sand is thrown
- *                     off the lines and has to settle all over again
+ *  @brief
+ *  Vertex stage companion to ChladniAcousticPlate.frag -- see that file's header for this scene's description.
+ *
+ *  Audio Reactivity:
+ *    audioAdvance   -> slow walk through the Chladni mode numbers (jump-free)
+ *    audioBass      -> n mode number + bounce height
+ *    audioMid       -> m mode number
+ *    audioKick      -> grains jump off the plate and briefly stop settling
+ *    audioSpread    -> modal complexity: a pure tone rings a simple low-order
+ *                      figure, a broadband spectrum drives high-order lines
+ *    audioZCR       -> grain scatter: hiss keeps the sand skittering, a held
+ *                      tone lets it settle into razor-sharp nodal lines
+ *    audioHarmChange-> a chord change re-tunes the plate; the sand is thrown
+ *                      off the lines and has to settle all over again
+ *
+ *  @author René Weller
  */
 layout( location = 0 ) in vec3 inPos;    ///< Pos (vertex attribute).
 layout( location = 1 ) in vec3 inNormal; ///< Normal (vertex attribute).

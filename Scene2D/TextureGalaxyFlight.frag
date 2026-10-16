@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureGalaxyFlight.frag
- * @brief TEXTURE GALAXY FLIGHT: drifting over the face of a spiral galaxy --
- * the photograph wound into the galaxy's arms (its colours become the
- * star clouds, dust lanes darken the inner edges of the arms), a bright
- * yellow core, blue star-forming knots along the arms, pink nebulae,
- * countless faint stars; the galaxy turns slowly and we glide across it,
- * other galaxies drifting in the distance.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              TextureGalaxyFlight.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the galaxy turns (integrated, jump-free)
- *   audioSpread     -> the arms open wider
- *   audioKick       -> the star-forming knots flare (light)
- *   audioMode       -> palette: cool blue galaxy in minor, warm golden in major (tint)
- *   audioHigh       -> the stars twinkle (light)
- *   audioSwell      -> the core glow (slow)
+ *  @brief
+ *  TEXTURE GALAXY FLIGHT: drifting over the face of a spiral galaxy -- the photograph wound into the galaxy's arms
+ *  (its colours become the star clouds, dust lanes darken the inner edges of the arms), a bright yellow core, blue
+ *  star-forming knots along the arms, pink nebulae, countless faint stars; the galaxy turns slowly and we glide
+ *  across it, other galaxies drifting in the distance.
  *
- * Knobs: armsP (arm count), dustP (dust lanes), photoP (photo colours), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the galaxy turns (integrated, jump-free)
+ *    audioSpread     -> the arms open wider
+ *    audioKick       -> the star-forming knots flare (light)
+ *    audioMode       -> palette: cool blue galaxy in minor, warm golden in major (tint)
+ *    audioHigh       -> the stars twinkle (light)
+ *    audioSwell      -> the core glow (slow)
+ *
+ *  Knobs: armsP (arm count), dustP (dust lanes), photoP (photo colours), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

@@ -1,22 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file BoseEinsteinGiantVortexTurbulence.frag
- * @brief BOSE-EINSTEIN GIANT VORTEX TURBULENCE: 2D quantum turbulence in a trapped Bose-Einstein
- * condensate. Multiple counter-rotating quantized vortex pairs undergo an inverse energy cascade,
- * clustering into giant macroscopic Onsager vortex storms with photo-derived phase texturing.
- *   audioAdvance -> integrates Gross-Pitaevskii macroscopic wavefunction phase
- *   audioKick    -> excites vortex-antivortex pair annihilation shockwaves
- *   audioBass    -> undulates giant Onsager vortex cluster precession & core size
- *   audioSwell   -> enriches condensate background density & Thomas-Fermi radius
- *   audioCentroid-> shifts quantum vorticity stream colors
+/*****************************************************************************\
+ *                              BoseEinsteinGiantVortexTurbulence.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   vortexCountP float number of active quantized vortex cores    (4.0..16.0)
- *   cascadeP     float inverse energy cascade clustering strength (0.5..2.2)
- *   coreRadiusP  float healing length vortex core radius          (0.02..0.12)
- *   soundSpeedP  float Bogoliubov acoustic speed of sound         (0.6..2.2)
+ *  @brief
+ *  BOSE-EINSTEIN GIANT VORTEX TURBULENCE: 2D quantum turbulence in a trapped Bose-Einstein condensate.
+ *
+ *  Multiple counter-rotating quantized vortex pairs undergo an inverse energy cascade, clustering into giant
+ *  macroscopic Onsager vortex storms with photo-derived phase texturing.
+ *
+ *    audioAdvance -> integrates Gross-Pitaevskii macroscopic wavefunction phase
+ *    audioKick    -> excites vortex-antivortex pair annihilation shockwaves
+ *    audioBass    -> undulates giant Onsager vortex cluster precession & core size
+ *    audioSwell   -> enriches condensate background density & Thomas-Fermi radius
+ *    audioCentroid-> shifts quantum vorticity stream colors
+ *
+ *  Per-activation variety:
+ *    vortexCountP float number of active quantized vortex cores    (4.0..16.0)
+ *    cascadeP     float inverse energy cascade clustering strength (0.5..2.2)
+ *    coreRadiusP  float healing length vortex core radius          (0.02..0.12)
+ *    soundSpeedP  float Bogoliubov acoustic speed of sound         (0.6..2.2)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

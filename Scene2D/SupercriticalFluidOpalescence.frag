@@ -1,22 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SupercriticalFluidOpalescence.frag
- * @brief SUPERCRITICAL FLUID OPALESCENCE: Thermodynamic critical point in a supercritical fluid
- * (CO2/Xenon). Diverging correlation length and scale-invariant density fluctuations scatter
- * all wavelengths of visible light, creating milky iridescent opalescent clouds and liquid-gas fog.
- *   audioAdvance -> churns supercritical density fluctuation clusters & thermal diffusion
- *   audioKick    -> flashes critical phase transition condensation & boiling flashes
- *   audioSwell   -> thickens milky opalescent scattering haze & critical point proximity
- *   audioCentroid-> shifts Rayleigh/Mie multi-scale wavelength scattering spectra
- *   audioFlux    -> excites sparkling sub-micron critical nucleus nucleation flashes
+/*****************************************************************************\
+ *                              SupercriticalFluidOpalescence.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   fractalScaleP float multi-scale density fluctuation depth    (2.0..6.0)
- *   opalescenceP  float milky iridescent scattering brightness   (0.8..2.5)
- *   turbSpeedP    float critical thermal diffusion drift speed   (0.5..2.2)
- *   clusterDensP  float supercritical droplet cluster density    (3.0..8.0)
+ *  @brief
+ *  SUPERCRITICAL FLUID OPALESCENCE: Thermodynamic critical point in a supercritical fluid (CO2/Xenon).
+ *
+ *  Diverging correlation length and scale-invariant density fluctuations scatter all wavelengths of visible light,
+ *  creating milky iridescent opalescent clouds and liquid-gas fog.
+ *
+ *    audioAdvance -> churns supercritical density fluctuation clusters & thermal diffusion
+ *    audioKick    -> flashes critical phase transition condensation & boiling flashes
+ *    audioSwell   -> thickens milky opalescent scattering haze & critical point proximity
+ *    audioCentroid-> shifts Rayleigh/Mie multi-scale wavelength scattering spectra
+ *    audioFlux    -> excites sparkling sub-micron critical nucleus nucleation flashes
+ *
+ *  Per-activation variety:
+ *    fractalScaleP float multi-scale density fluctuation depth    (2.0..6.0)
+ *    opalescenceP  float milky iridescent scattering brightness   (0.8..2.5)
+ *    turbSpeedP    float critical thermal diffusion drift speed   (0.5..2.2)
+ *    clusterDensP  float supercritical droplet cluster density    (3.0..8.0)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

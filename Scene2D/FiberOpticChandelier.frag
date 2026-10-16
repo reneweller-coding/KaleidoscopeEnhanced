@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file FiberOpticChandelier.frag
- * @brief FIBER OPTIC CHANDELIER: a vast fibre-optic chandelier seen from
- * directly below, in the dark stairwell it hangs in -- the handrails of the
- * floors above ringing it, smaller and smaller toward the top -- a thousand glass
- * strands spraying out from a glowing hub like a dandelion clock, sagging
- * as they fan out, each ending in a point of light.  Pulses of light run
- * outward through the strands, and the tips glow in the colour of their
- * pitch class: when a note sounds, its strands light up across the whole
- * crown.  The chandelier and the camera are still.
+/*****************************************************************************\
+ *                              FiberOpticChandelier.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioChroma[12] -> the tips and pulses of each pitch class's strands (light)
- *   audioBass       -> the hub's glow (light)
- *   audioLevel      -> brightness
- *   sceneTime / sceneAdvance -> the pulses running out along the strands
+ *  @brief
+ *  FIBER OPTIC CHANDELIER: a vast fibre-optic chandelier seen from directly below, in the dark stairwell it hangs
+ *  in -- the handrails of the floors above ringing it, smaller and smaller toward the top -- a thousand glass
+ *  strands spraying out from a glowing hub like a dandelion clock, sagging as they fan out, each ending in a point
+ *  of light.
  *
- * Per-activation variety: spreadP (how wide the crown fans), hueP.
+ *  Pulses of light run outward through the strands, and the tips glow in the colour of their pitch class: when a
+ *  note sounds, its strands light up across the whole crown.  The chandelier and the camera are still.
+ *
+ *  Audio Reactivity:
+ *    audioChroma[12] -> the tips and pulses of each pitch class's strands (light)
+ *    audioBass       -> the hub's glow (light)
+ *    audioLevel      -> brightness
+ *    sceneTime / sceneAdvance -> the pulses running out along the strands
+ *
+ *  Per-activation variety: spreadP (how wide the crown fans), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

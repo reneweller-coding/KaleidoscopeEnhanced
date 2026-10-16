@@ -1,24 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file EarthriseLunar.frag
- * @brief EARTHRISE LUNAR: the Apollo 8 view -- the grey, cratered horizon
- * of the Moon in the foreground, harsh sunlight from the side throwing
- * long black crater shadows, and above it, in the black sky, the Earth
- * half lit: blue oceans, brown-green land, swirling white cloud bands, the
- * thin blue rim of its atmosphere, the night side dark.  The Earth rises
- * with the slowness of an orbit and turns; the Moon's surface slides past
- * beneath, as it did from the command module window.  The music is the
- * light: the glow of the atmosphere and the glint of the oceans.
+/*****************************************************************************\
+ *                              EarthriseLunar.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSwell  -> the atmosphere's glow (slow)
- *   audioHigh   -> the sun's glint on the oceans (light)
- *   audioLevel  -> brightness
- *   sceneTime / sceneAdvance -> Earth rising and turning, the Moon passing
+ *  @brief
+ *  EARTHRISE LUNAR: the Apollo 8 view -- the grey, cratered horizon of the Moon in the foreground, harsh sunlight
+ *  from the side throwing long black crater shadows, and above it, in the black sky, the Earth half lit: blue
+ *  oceans, brown-green land, swirling white cloud bands, the thin blue rim of its atmosphere, the night side dark.
  *
- * Per-activation variety: phaseP (how much of the Earth is lit), hueP.
+ *  The Earth rises with the slowness of an orbit and turns; the Moon's surface slides past beneath, as it did from
+ *  the command module window.  The music is the light: the glow of the atmosphere and the glint of the oceans.
+ *
+ *  Audio Reactivity:
+ *    audioSwell  -> the atmosphere's glow (slow)
+ *    audioHigh   -> the sun's glint on the oceans (light)
+ *    audioLevel  -> brightness
+ *    sceneTime / sceneAdvance -> Earth rising and turning, the Moon passing
+ *
+ *  Per-activation variety: phaseP (how much of the Earth is lit), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

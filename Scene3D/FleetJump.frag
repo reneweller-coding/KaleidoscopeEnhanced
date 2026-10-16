@@ -1,15 +1,20 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file FleetJump.frag
- * @brief Fragment stage for FleetJump: hulls from their own material, drives
- * spooling up along the arc (light), a hyperspace streak tint as a craft
- * jumps; the sky shell is a starfield with a faint nebula the drives light
- * on the kick.
+/*****************************************************************************\
+ *                              FleetJump.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity: audioKick pulses the drive glow; audioSwell brightens the
- *                   key light; sceneProgress spools the drives.
+ *  @brief
+ *  Fragment stage for FleetJump: hulls from their own material, drives spooling up along the arc (light), a
+ *  hyperspace streak tint as a craft jumps; the sky shell is a starfield with a faint nebula the drives light on
+ *  the kick.
+ *
+ *  Audio Reactivity: audioKick pulses the drive glow; audioSwell brightens the
+ *                    key light; sceneProgress spools the drives.
+ *
+ *  @author René Weller
  */
+out vec4               fragColor;             ///< The pixel's colour (output).
 uniform sampler2DArray texMeshMaterial;       ///< The mesh's material textures (albedo, roughness, normal ...).
 uniform int            texMeshMaterialLayers; ///< Number of layers in texMeshMaterial.
 uniform sampler2D      tex0;                  ///< The current photo.

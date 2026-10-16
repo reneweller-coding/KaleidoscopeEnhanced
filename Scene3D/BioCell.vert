@@ -1,8 +1,13 @@
 #version 330 core
-/**
- * @file BioCell.vert
- * @brief Vertex stage companion to BioCell.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              BioCell.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to BioCell.frag -- see that file's header for this scene's description.
+ *
+ *  @author René Weller
  */
 // BioCell.vert — a journey INSIDE a living cell: the membrane breathes
 // around you with the bass, the nucleus pulses like a heart, mitochondria

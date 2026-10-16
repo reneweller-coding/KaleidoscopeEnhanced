@@ -1,26 +1,31 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file UVMineralsGlow.frag
- * @brief UV MINERALS GLOW: a collection of fluorescent minerals under a
- * shortwave ultraviolet lamp in a dark room -- rough rock specimens on a
- * black shelf, and in them the minerals blazing in impossible colours:
- * willemite in electric green, calcite in fiery red, fluorite in deep
- * violet-blue, bands and veins and crystal clusters glowing out of the
- * dull grey host rock.  The lamp's violet light washes over everything;
- * the glow of each specimen spills softly onto the shelf.  The camera
- * is still; the lamp's reach wanders slowly over the collection.
+/*****************************************************************************\
+ *                              UVMineralsGlow.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioBass   -> the green of the willemite (light)
- *   audioMid    -> the red of the calcite (light)
- *   audioHigh   -> the blue of the fluorite (light)
- *   audioSwell  -> the lamp's violet wash (slow)
- *   audioLevel  -> brightness
- *   sceneTime / sceneAdvance -> the lamp's reach wandering
+ *  @brief
+ *  UV MINERALS GLOW: a collection of fluorescent minerals under a shortwave ultraviolet lamp in a dark room --
+ *  rough rock specimens on a black shelf, and in them the minerals blazing in impossible colours: willemite in
+ *  electric green, calcite in fiery red, fluorite in deep violet-blue, bands and veins and crystal clusters glowing
+ *  out of the dull grey host rock.
  *
- * Per-activation variety: rocksP (the arrangement), hueP.
+ *  The lamp's violet light washes over everything; the glow of each specimen spills softly onto the shelf.  The
+ *  camera is still; the lamp's reach wanders slowly over the collection.
+ *
+ *  Audio Reactivity:
+ *    audioBass   -> the green of the willemite (light)
+ *    audioMid    -> the red of the calcite (light)
+ *    audioHigh   -> the blue of the fluorite (light)
+ *    audioSwell  -> the lamp's violet wash (slow)
+ *    audioLevel  -> brightness
+ *    sceneTime / sceneAdvance -> the lamp's reach wandering
+ *
+ *  Per-activation variety: rocksP (the arrangement), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

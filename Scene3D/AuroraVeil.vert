@@ -1,19 +1,24 @@
 #version 330 core
-/**
- * @file AuroraVeil.vert
- * @brief Vertex stage companion to AuroraVeil.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              AuroraVeil.vert
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSwell     -> curtain fold amplitude + overall brightness
- *   audioLevel     -> brightness
- *   audioChromaHue -> hue rotation of the green/violet gradient
- *   audioAdvance   -> serpentine drift phase (pre-integrated, jump-free)
- *   audioMode      -> major/minor warms or cools the whole aurora palette
- *   audioFlatness  -> tonal music keeps crisp vertical rays, noise smears the
- *                     curtain into one diffuse veil
- *   audioRolloff   -> how high the green skirt reaches before the violet crown
- *                     takes over (vertical colour distribution)
+ *  @brief
+ *  Vertex stage companion to AuroraVeil.frag -- see that file's header for this scene's description.
+ *
+ *  Audio Reactivity:
+ *    audioSwell     -> curtain fold amplitude + overall brightness
+ *    audioLevel     -> brightness
+ *    audioChromaHue -> hue rotation of the green/violet gradient
+ *    audioAdvance   -> serpentine drift phase (pre-integrated, jump-free)
+ *    audioMode      -> major/minor warms or cools the whole aurora palette
+ *    audioFlatness  -> tonal music keeps crisp vertical rays, noise smears the
+ *                      curtain into one diffuse veil
+ *    audioRolloff   -> how high the green skirt reaches before the violet crown
+ *                      takes over (vertical colour distribution)
+ *
+ *  @author René Weller
  */
 // AuroraVeil.vert — true 3D aurora curtains: each ribbon is a tall veil
 // hanging in the night sky, slowly folding on itself; the swell drives the

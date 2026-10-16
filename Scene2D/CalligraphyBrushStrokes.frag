@@ -1,26 +1,31 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file CalligraphyBrushStrokes.frag
- * @brief CALLIGRAPHY BRUSH STROKES: a brush writing on paper.  Strokes
- * are laid down on the scene clock -- each a curve drawn from its start
- * with a pressure profile that swells and thins -- and the ink bleeds
- * into the paper on the swell (the strokes soften and spread), the bass
- * sets the pressure (stroke width, slow), the kick is a dab of the brush
- * (a splash of ink as round drops), the treble the dry-brush fibre.  The
- * photo is the paper's watermark and the ink's washes.  Camera fixed over
- * the desk.
+/*****************************************************************************\
+ *                              CalligraphyBrushStrokes.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   sceneAdvance -> strokes drawn (continuous)
- *   audioSwell   -> ink bleed (slow)
- *   audioBass    -> pressure / stroke width (slow)
- *   audioKick    -> ink splash drops (light)
- *   audioHigh    -> dry-brush fibre (light)
- *   audioLevel   -> brightness
+ *  @brief
+ *  CALLIGRAPHY BRUSH STROKES: a brush writing on paper.
  *
- * Per-activation variety: strokesP, widthP, hueP.
+ *  Strokes are laid down on the scene clock -- each a curve drawn from its start with a pressure profile that
+ *  swells and thins -- and the ink bleeds into the paper on the swell (the strokes soften and spread), the bass
+ *  sets the pressure (stroke width, slow), the kick is a dab of the brush (a splash of ink as round drops), the
+ *  treble the dry-brush fibre.  The photo is the paper's watermark and the ink's washes.  Camera fixed over the
+ *  desk.
+ *
+ *  Audio Reactivity:
+ *    sceneAdvance -> strokes drawn (continuous)
+ *    audioSwell   -> ink bleed (slow)
+ *    audioBass    -> pressure / stroke width (slow)
+ *    audioKick    -> ink splash drops (light)
+ *    audioHigh    -> dry-brush fibre (light)
+ *    audioLevel   -> brightness
+ *
+ *  Per-activation variety: strokesP, widthP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

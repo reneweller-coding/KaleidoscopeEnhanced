@@ -1,20 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file BinaryStarSystem.frag
- * @brief BINARY STAR SYSTEM: Two massive stars orbit each other in a close binary
- * system, tearing stellar material from one another. Solar flares and the shared
- * plasma stream react violently to the beat.
- *   audioAdvance -> camera orbit speed
- *   audioKick    -> intense solar flares and plasma bursts
- *   audioSwell   -> brightness of the stellar coronas
- *   audioChromaHue-> palette offset for the star types
+/*****************************************************************************\
+ *                              BinaryStarSystem.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   distP float distance between the two stars (0.5..1.5)
- *   flareP float intensity of the solar flares (0.5..2.0)
- *   hueP float palette offset (0..6.28)
+ *  @brief
+ *  BINARY STAR SYSTEM: Two massive stars orbit each other in a close binary system, tearing stellar material from
+ *  one another.
+ *
+ *  Solar flares and the shared plasma stream react violently to the beat.
+ *
+ *    audioAdvance -> camera orbit speed
+ *    audioKick    -> intense solar flares and plasma bursts
+ *    audioSwell   -> brightness of the stellar coronas
+ *    audioChromaHue-> palette offset for the star types
+ *
+ *  Per-activation variety:
+ *    distP float distance between the two stars (0.5..1.5)
+ *    flareP float intensity of the solar flares (0.5..2.0)
+ *    hueP float palette offset (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

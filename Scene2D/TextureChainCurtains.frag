@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureChainCurtains.frag
- * @brief TEXTURE CHAIN CURTAINS: curtains of hanging beads and chains, like
- * a glittering stage curtain -- thousands of small glass beads on vertical
- * strings sway in slow waves, each bead a tiny lens showing the
- * photograph behind the curtain (which glows in coloured light) upside
- * down and bright, with a crisp highlight; the strings ripple as if
- * someone just walked through, and several curtains hang one behind
- * another.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              TextureChainCurtains.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the ripple travels (integrated, jump-free)
- *   audioSpread     -> the sway amplitude
- *   audioKick       -> the highlights flash (light)
- *   audioMode       -> light behind: cool in minor, warm in major
- *   audioHigh       -> sparkle on the beads (light)
- *   audioSwell      -> the light behind (slow)
+ *  @brief
+ *  TEXTURE CHAIN CURTAINS: curtains of hanging beads and chains, like a glittering stage curtain -- thousands of
+ *  small glass beads on vertical strings sway in slow waves, each bead a tiny lens showing the photograph behind
+ *  the curtain (which glows in coloured light) upside down and bright, with a crisp highlight; the strings ripple
+ *  as if someone just walked through, and several curtains hang one behind another.
  *
- * Knobs: stringP (string spacing), beadP (bead size), layerP (curtain layers), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the ripple travels (integrated, jump-free)
+ *    audioSpread     -> the sway amplitude
+ *    audioKick       -> the highlights flash (light)
+ *    audioMode       -> light behind: cool in minor, warm in major
+ *    audioHigh       -> sparkle on the beads (light)
+ *    audioSwell      -> the light behind (slow)
+ *
+ *  Knobs: stringP (string spacing), beadP (bead size), layerP (curtain layers), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

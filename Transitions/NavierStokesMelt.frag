@@ -1,20 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file NavierStokesMelt.frag
- * @brief TRANSITION NAVIER STOKES MELT: Fluid advection vorticity melting transition.
- * The outgoing scene liquifies into turbulent curl-noise fluid vortices,
- * melting and swirling seamlessly to reveal the incoming scene underneath.
- *   interpolation -> drives fluid viscosity reduction & melting progress
- *   audioKick     -> injects turbulent fluid velocity impulses
- *   audioSwell    -> undulates large-scale convective vortex rolls
+/*****************************************************************************\
+ *                              NavierStokesMelt.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   viscP   float fluid viscosity & curl noise scale (0.5..2.2)
- *   vortexP float vorticity spin intensity          (0.5..2.0)
- *   speedP  float advection velocity multiplier      (0.5..2.0)
- *   hueP    float fluid highlight hue offset         (0..6.28)
+ *  @brief
+ *  TRANSITION NAVIER STOKES MELT: Fluid advection vorticity melting transition.
+ *
+ *  The outgoing scene liquifies into turbulent curl-noise fluid vortices, melting and swirling seamlessly to reveal
+ *  the incoming scene underneath.
+ *
+ *    interpolation -> drives fluid viscosity reduction & melting progress
+ *    audioKick     -> injects turbulent fluid velocity impulses
+ *    audioSwell    -> undulates large-scale convective vortex rolls
+ *
+ *  Per-activation variety:
+ *    viscP   float fluid viscosity & curl noise scale (0.5..2.2)
+ *    vortexP float vorticity spin intensity          (0.5..2.0)
+ *    speedP  float advection velocity multiplier      (0.5..2.0)
+ *    hueP    float fluid highlight hue offset         (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

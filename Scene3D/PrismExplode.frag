@@ -1,4 +1,25 @@
 #version 330 core
+/*****************************************************************************\
+ *                              PrismExplode.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Renders the exploding shell of glass-prism shards built by PrismExplode.comp, refracting a procedural sky
+ *  through each facet with real chromatic dispersion (Cauchy's equation, one refraction per colour channel) instead
+ *  of a painted rainbow gradient.
+ *
+ *  audioKick and audioSubBass widen the dispersion spread on transients;
+ *  audioBeat and audioSubBass also pulse the overall exposure. audioHigh adds
+ *  a faint white highlight and audioAmbient lifts the ambient fill. The
+ *  palette comes from imgPalette, a live sample of the current slideshow
+ *  photo whose sampling angle follows audioChromaHue (with an audioAdvance
+ *  drift) and whose saturation follows audioValence. The per-vertex vWedge
+ *  (facet wedge angle) scales how strongly a shard splits colour, and vSeed
+ *  varies facet-edge tinting between shards.
+ *
+ *  @author René Weller
+ */
 out vec4 fragColor; ///< The pixel's colour (output).
 // PrismExplode.frag — real dispersion, from Cauchy's equation.
 // -----------------------------------------------------------------------
@@ -25,23 +46,6 @@ in vec3  vView;   ///< View vector (from the vertex stage).
 in vec3  vObj;    ///< Object-space position (from the vertex stage).
 in float vWedge;  ///< Wedge (from the vertex stage).
 in float vSeed;   ///< Per-instance random seed (from the vertex stage).
-
-/**
- * @file PrismExplode.frag
- * @brief Renders the exploding shell of glass-prism shards built by
- * PrismExplode.comp, refracting a procedural sky through each facet with
- * real chromatic dispersion (Cauchy's equation, one refraction per colour
- * channel) instead of a painted rainbow gradient.
- *
- * audioKick and audioSubBass widen the dispersion spread on transients;
- * audioBeat and audioSubBass also pulse the overall exposure. audioHigh adds
- * a faint white highlight and audioAmbient lifts the ambient fill. The
- * palette comes from imgPalette, a live sample of the current slideshow
- * photo whose sampling angle follows audioChromaHue (with an audioAdvance
- * drift) and whose saturation follows audioValence. The per-vertex vWedge
- * (facet wedge angle) scales how strongly a shard splits colour, and vSeed
- * varies facet-edge tinting between shards.
- */
 
 uniform sampler2D tex0;          ///< The current photo.
 uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.

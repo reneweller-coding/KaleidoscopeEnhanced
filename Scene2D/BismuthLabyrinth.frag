@@ -1,23 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file BismuthLabyrinth.frag
- * @brief BISMUTH LABYRINTH: Raymarched infinite 3D hopper crystal labyrinth of metallic
- * elemental bismuth. Stepped 90-degree geometric terraces, thin-film optical
- * interference rainbow oxidation layers, specular metallic reflections, and
- * audio-reactive architectural fractals filling the screen.
- *   audioSwell   -> pulses fractal hopper terrace depth & step density
- *   audioKick    -> flashes chromatic iridescent oxidation reflection
- *   audioCentroid-> shifts thin-film rainbow oxide thickness
- *   audioSubBass -> opens out the flight corridor carved through the crystal
- *                   (the chamber widens as the sub-bass fills)
+/*****************************************************************************\
+ *                              BismuthLabyrinth.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   iterP         float fractal iteration / step scale    (0.6..1.8)
- *   stepP         float terrace hopper step depth         (0.5..1.6)
- *   iridescenceP  float rainbow oxidation glow intensity  (0.5..2.2)
- *   hueP          float global hue rotation               (0..6.28)
+ *  @brief
+ *  BISMUTH LABYRINTH: Raymarched infinite 3D hopper crystal labyrinth of metallic elemental bismuth.
+ *
+ *  Stepped 90-degree geometric terraces, thin-film optical interference rainbow oxidation layers, specular metallic
+ *  reflections, and audio-reactive architectural fractals filling the screen.
+ *
+ *    audioSwell   -> pulses fractal hopper terrace depth & step density
+ *    audioKick    -> flashes chromatic iridescent oxidation reflection
+ *    audioCentroid-> shifts thin-film rainbow oxide thickness
+ *    audioSubBass -> opens out the flight corridor carved through the crystal
+ *                    (the chamber widens as the sub-bass fills)
+ *
+ *  Per-activation variety:
+ *    iterP         float fractal iteration / step scale    (0.6..1.8)
+ *    stepP         float terrace hopper step depth         (0.5..1.6)
+ *    iridescenceP  float rainbow oxidation glow intensity  (0.5..2.2)
+ *    hueP          float global hue rotation               (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

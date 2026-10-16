@@ -1,8 +1,13 @@
 #version 400 core
-/**
- * @file Ocean.tesc
- * @brief Tessellation-control stage companion to Ocean.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              Ocean.tesc
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Tessellation-control stage companion to Ocean.frag -- see that file's header for this scene's description.
+ *
+ *  @author René Weller
  */
 // Ocean.tesc — adaptive tessellation by distance.
 // -----------------------------------------------------------------------

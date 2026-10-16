@@ -1,21 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file DNAOrigamiNanotubeLattice.frag
- * @brief DNA ORIGAMI NANOTUBE LATTICE: Bionanotechnological self-assembled 4-helix bundle DNA
- * origami nanotubes -- ten of them on a slowly turning ring lattice, each at its own
- * depth in the culture so the near bundles are lit and the far ones sink into the medium.
- * Interweaving phosphoribosyl double helices, staple strand crossovers,
- * Cy5/Cy3 fluorophore tagging pulses, and biomolecular photo texturing.
- *   audioAdvance -> drives DNA helicoidal rotation & molecular conformational dynamics
- *   audioKick    -> flashes fluorophore Förster resonance energy transfer (FRET) bursts
- *   audioSwell   -> thickens DNA phosphate backbone ribbon width & hydration shell glow
- *   audioCentroid-> shifts fluorophore emission spectra (Cy3 green to Cy5 red)
+/*****************************************************************************\
+ *                              DNAOrigamiNanotubeLattice.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   ribbonWidthP float DNA backbone ribbon thickness         (0.02..0.08)
- *   fretGlowP    float fluorophore FRET emission luminance   (0.8..2.5)
+ *  @brief
+ *  DNA ORIGAMI NANOTUBE LATTICE: Bionanotechnological self-assembled 4-helix bundle DNA origami nanotubes -- ten of
+ *  them on a slowly turning ring lattice, each at its own depth in the culture so the near bundles are lit and the
+ *  far ones sink into the medium.
+ *
+ *  Interweaving phosphoribosyl double helices, staple strand crossovers, Cy5/Cy3 fluorophore tagging pulses, and
+ *  biomolecular photo texturing.
+ *
+ *    audioAdvance -> drives DNA helicoidal rotation & molecular conformational dynamics
+ *    audioKick    -> flashes fluorophore Förster resonance energy transfer (FRET) bursts
+ *    audioSwell   -> thickens DNA phosphate backbone ribbon width & hydration shell glow
+ *    audioCentroid-> shifts fluorophore emission spectra (Cy3 green to Cy5 red)
+ *
+ *  Per-activation variety:
+ *    ribbonWidthP float DNA backbone ribbon thickness         (0.02..0.08)
+ *    fretGlowP    float fluorophore FRET emission luminance   (0.8..2.5)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec2  vUV;         ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 in float vSide;       ///< Which side of a strip (from the vertex stage).

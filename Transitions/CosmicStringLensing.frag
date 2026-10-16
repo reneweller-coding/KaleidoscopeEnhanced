@@ -1,21 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file CosmicStringLensing.frag
- * @brief TRANSITION COSMIC STRING LENSING: Relativistic topological cosmic string deficit angle.
- * A 1D GUT-scale cosmic string passes across spacetime, cutting a conical deficit angle
- * (Delta_theta = 8 pi G mu) that duplicates and shears the image into dual wedge copies,
- * fusing smoothly into the incoming scene.
- *   interpolation -> sweeps cosmic string position across the cosmological horizon
- *   audioKick     -> flashes relativistic cosmic string core mass-energy density
- *   audioSwell    -> widens conical spacetime deficit angle
+/*****************************************************************************\
+ *                              CosmicStringLensing.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   tensionP float cosmic string tension G*mu scale     (0.5..2.2)
- *   deficitP float angular wedge shear magnitude        (0.5..2.0)
- *   speedP   float animation speed multiplier           (0.5..2.0)
- *   hueP     float GUT string core emission hue offset  (0..6.28)
+ *  @brief
+ *  TRANSITION COSMIC STRING LENSING: Relativistic topological cosmic string deficit angle.
+ *
+ *  A 1D GUT-scale cosmic string passes across spacetime, cutting a conical deficit angle (Delta_theta = 8 pi G mu)
+ *  that duplicates and shears the image into dual wedge copies, fusing smoothly into the incoming scene.
+ *
+ *    interpolation -> sweeps cosmic string position across the cosmological horizon
+ *    audioKick     -> flashes relativistic cosmic string core mass-energy density
+ *    audioSwell    -> widens conical spacetime deficit angle
+ *
+ *  Per-activation variety:
+ *    tensionP float cosmic string tension G*mu scale     (0.5..2.2)
+ *    deficitP float angular wedge shear magnitude        (0.5..2.0)
+ *    speedP   float animation speed multiplier           (0.5..2.0)
+ *    hueP     float GUT string core emission hue offset  (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

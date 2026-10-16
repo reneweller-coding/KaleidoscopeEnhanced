@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file LanternRise.frag
- * @brief LANTERN RISE: the night of the lantern festival.  Over a wide
- * river at dusk, hundreds of paper sky lanterns drift up into a deep blue
- * sky -- warm glowing shells with a bright flame at the base, near ones
- * large and soft, far ones tiny sparks thinning into the stars -- and the
- * river doubles them in shimmering streaks.  On the far bank a temple
- * roofline and a crowd stand in silhouette, a few floating krathong candles
- * drift on the water.  The lanterns rise at their own gentle pace and sway
- * in the breeze; the music is their glow.
+/*****************************************************************************\
+ *                              LanternRise.frag
+\*****************************************************************************/
+/*! @file
  *
- * Replaces a Scene3D point-sprite version (grey dots in the catalogue).
+ *  @brief
+ *  LANTERN RISE: the night of the lantern festival.
  *
- * Audio Reactivity:
- *   audioSwell -> the lanterns' glow (slow)
- *   audioKick  -> the flames flare (light only)
- *   audioLevel -> brightness
- *   audioChromaHue -> photo tint of the paper
- *   sceneTime / sceneAdvance -> rising, swaying, the river (continuous)
+ *  Over a wide river at dusk, hundreds of paper sky lanterns drift up into a deep blue sky -- warm glowing shells
+ *  with a bright flame at the base, near ones large and soft, far ones tiny sparks thinning into the stars -- and
+ *  the river doubles them in shimmering streaks.  On the far bank a temple roofline and a crowd stand in
+ *  silhouette, a few floating krathong candles drift on the water.  The lanterns rise at their own gentle pace and
+ *  sway in the breeze; the music is their glow.
+ *
+ *  Replaces a Scene3D point-sprite version (grey dots in the catalogue).
+ *
+ *  Audio Reactivity:
+ *    audioSwell -> the lanterns' glow (slow)
+ *    audioKick  -> the flames flare (light only)
+ *    audioLevel -> brightness
+ *    audioChromaHue -> photo tint of the paper
+ *    sceneTime / sceneAdvance -> rising, swaying, the river (continuous)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

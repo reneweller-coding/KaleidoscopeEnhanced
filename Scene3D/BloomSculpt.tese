@@ -1,8 +1,14 @@
 #version 400 core
-/**
- * @file BloomSculpt.tese
- * @brief Tessellation-evaluation stage companion to BloomSculpt.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              BloomSculpt.tese
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Tessellation-evaluation stage companion to BloomSculpt.frag -- see that file's header for this scene's
+ *  description.
+ *
+ *  @author René Weller
  */
 // BloomSculpt.tese — a sphere grown into a flower by the twelve chroma bins.
 // -----------------------------------------------------------------------

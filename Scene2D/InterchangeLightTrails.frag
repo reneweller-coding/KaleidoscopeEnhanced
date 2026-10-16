@@ -1,24 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file InterchangeLightTrails.frag
- * @brief INTERCHANGE LIGHT TRAILS: a motorway interchange at night from
- * straight above, as in a long exposure -- the ramps loop and cross in
- * great curves over each other, a cloverleaf around the centre, and along
- * every lane the traffic has left streams of light: white headlights on
- * the lanes coming one way, red tail lights on the lanes going the other,
- * pulses of brighter light travelling along the streams as the cars flow.
- * Orange sodium lamps glow on the verges; the dark land between.  The
- * camera hangs still.
+/*****************************************************************************\
+ *                              InterchangeLightTrails.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSpectrum[32] -> the brightness of the lanes, band by band (light)
- *   audioSwell        -> the sodium glow (slow)
- *   audioLevel        -> brightness
- *   sceneTime / sceneAdvance -> the traffic flowing (continuous)
+ *  @brief
+ *  INTERCHANGE LIGHT TRAILS: a motorway interchange at night from straight above, as in a long exposure -- the
+ *  ramps loop and cross in great curves over each other, a cloverleaf around the centre, and along every lane the
+ *  traffic has left streams of light: white headlights on the lanes coming one way, red tail lights on the lanes
+ *  going the other, pulses of brighter light travelling along the streams as the cars flow.
  *
- * Per-activation variety: loopsP (how many loops), hueP.
+ *  Orange sodium lamps glow on the verges; the dark land between.  The camera hangs still.
+ *
+ *  Audio Reactivity:
+ *    audioSpectrum[32] -> the brightness of the lanes, band by band (light)
+ *    audioSwell        -> the sodium glow (slow)
+ *    audioLevel        -> brightness
+ *    sceneTime / sceneAdvance -> the traffic flowing (continuous)
+ *
+ *  Per-activation variety: loopsP (how many loops), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

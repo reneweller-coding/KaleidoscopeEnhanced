@@ -1,24 +1,27 @@
 #version 330 core
+/*****************************************************************************\
+ *                              MoireHyperInterference.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Shades the 220x120 heightfield of optical Moire superlattice fringes built in MoireHyperInterference.vert: the
+ *  baked interference palette blended with the current photo, a fixed-light specular highlight, and an amber glow
+ *  where the two gratings' beat pattern (vInterference) is strongest.
+ *
+ *  All audio response (grating rotation speed, beat-frequency depth,
+ *  kick elevation, hue rotation) is computed upstream in the vertex
+ *  stage and arrives baked in vCol/vInterference; this fragment stage
+ *  itself reads no audio uniforms directly.
+ *
+ *  @author René Weller
+ */
 out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec4  vCol;          ///< Colour (from the vertex stage).
 in vec2  vUV;           ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 in vec3  vNormal;       ///< Surface normal (from the vertex stage).
 in float vInterference; ///< Interference (from the vertex stage).
-
-/**
- * @file MoireHyperInterference.frag
- * @brief Shades the 220x120 heightfield of optical Moire superlattice
- * fringes built in MoireHyperInterference.vert: the baked interference
- * palette blended with the current photo, a fixed-light specular
- * highlight, and an amber glow where the two gratings' beat pattern
- * (vInterference) is strongest.
- *
- * All audio response (grating rotation speed, beat-frequency depth,
- * kick elevation, hue rotation) is computed upstream in the vertex
- * stage and arrives baked in vCol/vInterference; this fragment stage
- * itself reads no audio uniforms directly.
- */
 
 uniform sampler2D tex0;          ///< The current photo.
 uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).

@@ -1,25 +1,31 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TruchetFlowWeave.frag
- * @brief TRUCHET FLOW WEAVE: a woven fabric of glowing bands -- quarter-circle
- * Truchet tiles join into endless meandering ribbons that wind over and
- * under one another; each ribbon carries a stripe of the photograph along
- * its length, and pulses of light run along the ribbons so the whole weave
- * seems to flow.  Every so often a tile turns over and the ribbons
- * re-route (a smooth rotation, never a cut).  Endless and mirrorable.
+/*****************************************************************************\
+ *                              TruchetFlowWeave.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the light pulses flow along the ribbons (integrated)
- *   audioHarmChange -> tiles turn over (smoothed)
- *   audioSpread     -> ribbon width
- *   audioMode       -> the pulse colour warms in major
- *   audioKick       -> the pulses flare (light)
- *   audioSwell      -> the photo's share in the ribbons (slow)
+ *  @brief
+ *  TRUCHET FLOW WEAVE: a woven fabric of glowing bands -- quarter-circle Truchet tiles join into endless meandering
+ *  ribbons that wind over and under one another; each ribbon carries a stripe of the photograph along its length,
+ *  and pulses of light run along the ribbons so the whole weave seems to flow.
  *
- * Knobs: scaleP (tile size), weaveP (ribbon relief), flipP (how often tiles
- * turn), hueP.  (weaveP: how rounded the ribbons look)
+ *  Every so often a tile turns over and the ribbons re-route (a smooth rotation, never a cut).  Endless and
+ *  mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the light pulses flow along the ribbons (integrated)
+ *    audioHarmChange -> tiles turn over (smoothed)
+ *    audioSpread     -> ribbon width
+ *    audioMode       -> the pulse colour warms in major
+ *    audioKick       -> the pulses flare (light)
+ *    audioSwell      -> the photo's share in the ribbons (slow)
+ *
+ *  Knobs: scaleP (tile size), weaveP (ribbon relief), flipP (how often tiles
+ *  turn), hueP.  (weaveP: how rounded the ribbons look)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

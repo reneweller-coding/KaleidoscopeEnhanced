@@ -1,18 +1,25 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file AnamorphicMirrorLabyrinth.frag
- * @brief ANAMORPHIC MIRROR LABYRINTH: Cylindrical & conical optical anamorphic
- * transformation labyrinth. Virtual chrome mirror columns reconstruct distorted
- * psychedelic image projections into sharp holographic mandalas.
+/*****************************************************************************\
+ *                              AnamorphicMirrorLabyrinth.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance -> rotates the anamorphic distortion fields & mirror centers
- *   audioKick    -> flashes liquid specular ripples & mirror axis pulse
- *   audioSubBass -> expands radial mirror column radius
- *   audioCentroid-> sharpens optical focal caustics
- *   audioChromaHue-> rotates the chrome reflections & background colors
+ *  @brief
+ *  ANAMORPHIC MIRROR LABYRINTH: Cylindrical & conical optical anamorphic transformation labyrinth.
+ *
+ *  Virtual chrome mirror columns reconstruct distorted psychedelic image projections into sharp holographic
+ *  mandalas.
+ *
+ *  Audio Reactivity:
+ *    audioAdvance -> rotates the anamorphic distortion fields & mirror centers
+ *    audioKick    -> flashes liquid specular ripples & mirror axis pulse
+ *    audioSubBass -> expands radial mirror column radius
+ *    audioCentroid-> sharpens optical focal caustics
+ *    audioChromaHue-> rotates the chrome reflections & background colors
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

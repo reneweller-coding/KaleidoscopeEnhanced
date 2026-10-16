@@ -1,4 +1,31 @@
 #version 330 core
+/*****************************************************************************\
+ *                              SpectroWeave.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Shades a bundle of glowing tube strands, one per frequency band, so the audio spectrum reads as a woven cable of
+ *  light the camera flies past.
+ *
+ *  Each strand's hue comes from its band (vBand, bass deep red through violet)
+ *  combined with audioChromaHue; its brightness and bloom scale with the
+ *  band's live energy (vEnergy), further pulsed by audioBeat, audioSubBass
+ *  and audioKick (over a floor, so a band that is silent this instant is still
+ *  visible geometry). audioHigh sharpens the specular highlight, audioAmbient
+ *  adds a flat fill, and audioValence controls how saturated the rotating
+ *  photo-arc palette (audioAdvance-driven, luminance-normalised) looks.
+ *  Distance fog (vDist) sinks the far end of the bundle toward the water-dark
+ *  background so depth reads correctly, without erasing it.
+ *
+ *  vBand = -1 marks the second primitive family: the dust motes that hang far
+ *  behind the cable and keep the corners of the frame from being empty. They
+ *  take their hue from the same photo-arc palette, are lifted by audioAmbient
+ *  and pulsed by audioBeat/audioSubBass like everything else, and run their
+ *  own fade rather than the bundle's distance haze.
+ *
+ *  @author René Weller
+ */
 out vec4 fragColor; ///< The pixel's colour (output).
 // SpectroWeave.frag — each strand carries its band's own colour, so the
 // spectrum is legible as hue across the bundle while the loud bands are also
@@ -12,28 +39,6 @@ in float vEnergy; ///< Energy (from the vertex stage).
 in float vBand;   ///< 0..1 = strand band, -1 = dust mote
 in float vDist;   ///< Distance (from the vertex stage).
 in vec2  vQuad;   ///< dust mote's quad coordinate
-
-/**
- * @file SpectroWeave.frag
- * @brief Shades a bundle of glowing tube strands, one per frequency band, so
- * the audio spectrum reads as a woven cable of light the camera flies past.
- *
- * Each strand's hue comes from its band (vBand, bass deep red through violet)
- * combined with audioChromaHue; its brightness and bloom scale with the
- * band's live energy (vEnergy), further pulsed by audioBeat, audioSubBass
- * and audioKick (over a floor, so a band that is silent this instant is still
- * visible geometry). audioHigh sharpens the specular highlight, audioAmbient
- * adds a flat fill, and audioValence controls how saturated the rotating
- * photo-arc palette (audioAdvance-driven, luminance-normalised) looks.
- * Distance fog (vDist) sinks the far end of the bundle toward the water-dark
- * background so depth reads correctly, without erasing it.
- *
- * vBand = -1 marks the second primitive family: the dust motes that hang far
- * behind the cable and keep the corners of the frame from being empty. They
- * take their hue from the same photo-arc palette, are lifted by audioAmbient
- * and pulsed by audioBeat/audioSubBass like everything else, and run their
- * own fade rather than the bundle's distance haze.
- */
 
 uniform sampler2D tex0;          ///< The current photo.
 uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.

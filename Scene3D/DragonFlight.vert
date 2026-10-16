@@ -1,8 +1,13 @@
 #version 330 core
-/**
- * @file DragonFlight.vert
- * @brief Vertex stage companion to DragonFlight.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              DragonFlight.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to DragonFlight.frag -- see that file's header for this scene's description.
+ *
+ *  @author René Weller
  */
 // DragonFlight.vert — a serpentine particle dragon undulates through the
 // night, flying TOWARD the chasing camera: scaled body tube with a belly

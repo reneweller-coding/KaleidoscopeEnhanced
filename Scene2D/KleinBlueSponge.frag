@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file KleinBlueSponge.frag
- * @brief KLEIN BLUE SPONGE: Yves Klein's sponge reliefs in motion -- a wall
- * covered with natural sea sponges soaked in pure ultramarine pigment,
- * their porous bodies catching light and swallowing it in that deep,
- * velvety blue; the sponges are round lumpy forms of every size with
- * holes and pores, casting soft shadows; a slow light moves over the
- * relief, and the photograph lends faint undertones to the pigment.
- * Endless, mirrorable.
+/*****************************************************************************\
+ *                              KleinBlueSponge.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the light moves (integrated, jump-free)
- *   audioSpread     -> the sponges swell
- *   audioKick       -> the pigment glows (light)
- *   audioMode       -> in major some sponges turn Klein gold or pink (IKB stays the ground)
- *   audioRoughness  -> the pores get coarser
- *   audioSwell      -> the relief shadows deepen (slow)
+ *  @brief
+ *  KLEIN BLUE SPONGE: Yves Klein's sponge reliefs in motion -- a wall covered with natural sea sponges soaked in
+ *  pure ultramarine pigment, their porous bodies catching light and swallowing it in that deep, velvety blue; the
+ *  sponges are round lumpy forms of every size with holes and pores, casting soft shadows; a slow light moves over
+ *  the relief, and the photograph lends faint undertones to the pigment.
  *
- * Knobs: spongeP (sponge density), poreP (pore size), undertoneP (photo undertone), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the light moves (integrated, jump-free)
+ *    audioSpread     -> the sponges swell
+ *    audioKick       -> the pigment glows (light)
+ *    audioMode       -> in major some sponges turn Klein gold or pink (IKB stays the ground)
+ *    audioRoughness  -> the pores get coarser
+ *    audioSwell      -> the relief shadows deepen (slow)
+ *
+ *  Knobs: spongeP (sponge density), poreP (pore size), undertoneP (photo undertone), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

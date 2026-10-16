@@ -1,8 +1,14 @@
 #version 330 core
-/**
- * @file JellyfishBioluminescenceAbyss.vert
- * @brief Vertex stage companion to JellyfishBioluminescenceAbyss.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              JellyfishBioluminescenceAbyss.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to JellyfishBioluminescenceAbyss.frag -- see that file's header for this scene's
+ *  description.
+ *
+ *  @author René Weller
  */
 // attrA.xyz = world pos (baked by the compute generator), attrA.w = tentacleIdx
 // attrB.w   = bioGlow (Scene3DShader.cpp GEOM_INDIRECT, 8-float vertex layout)

@@ -1,4 +1,24 @@
 #version 330 core
+/*****************************************************************************\
+ *                              CliffordTorusVillarceauLinks.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Shades the interlinked Villarceau circles of a Clifford torus (its characteristic linked-loop decomposition) as
+ *  a SOLID stereographic surface reaching past the top and bottom edges, blending the slideshow photo with a
+ *  topological-phase colour and simple diffuse/specular lighting, then fading to a dark fog with distance -- over a
+ *  faint field of 4D dust motes that carries the corners the donut can never reach.
+ *
+ *  audioPhase offsets imgPalette()'s sample point per-loop (via vIndex), so
+ *  each linked circle's colour cycles with the audio phase; audioKick
+ *  brightens the specular highlight and swells the cubes; audioSwell sizes the
+ *  dust motes; audioChromaHue and the hueP preset both apply a final hue
+ *  rotation via hueRot(). torusP/linkP/speedP are declared for the companion
+ *  vertex shader's torus radius/link count/rotation speed.
+ *
+ *  @author René Weller
+ */
 out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec3  vWorldPos; ///< World position (from the vertex stage).
@@ -6,23 +26,6 @@ in vec3  vNormal;   ///< Surface normal (from the vertex stage).
 in vec2  vTexCoord; ///< Texture coordinate (from the vertex stage).
 in float vIndex;    ///< Index (from the vertex stage).
 in float vDust;     ///< Dust (from the vertex stage).
-
-/**
- * @file CliffordTorusVillarceauLinks.frag
- * @brief Shades the interlinked Villarceau circles of a Clifford torus (its
- * characteristic linked-loop decomposition) as a SOLID stereographic surface
- * reaching past the top and bottom edges, blending the slideshow photo with a
- * topological-phase colour and simple diffuse/specular lighting, then fading
- * to a dark fog with distance -- over a faint field of 4D dust motes that
- * carries the corners the donut can never reach.
- *
- * audioPhase offsets imgPalette()'s sample point per-loop (via vIndex), so
- * each linked circle's colour cycles with the audio phase; audioKick
- * brightens the specular highlight and swells the cubes; audioSwell sizes the
- * dust motes; audioChromaHue and the hueP preset both apply a final hue
- * rotation via hueRot(). torusP/linkP/speedP are declared for the companion
- * vertex shader's torus radius/link count/rotation speed.
- */
 
 uniform sampler2D tex0;          ///< The current photo.
 uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).

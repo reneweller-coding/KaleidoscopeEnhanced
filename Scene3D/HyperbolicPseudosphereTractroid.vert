@@ -1,16 +1,22 @@
 #version 330 core
-/**
- * @file HyperbolicPseudosphereTractroid.vert
- * @brief Vertex stage companion to HyperbolicPseudosphereTractroid.frag -- see that file's
- * header for this scene's description.
+/*****************************************************************************\
+ *                              HyperbolicPseudosphereTractroid.vert
+\*****************************************************************************/
+/*! @file
  *
- * A single tractricoid sat as one small horn in the middle of a black frame.
- * The 220 x 120 grid is now cut into a 5 x 4 block LATTICE: twenty complete
- * pseudospheres, each built from its own 44 x 30 block of cells, hung in
- * FRUSTUM coordinates (x, y scaled by depth) so the lattice covers the whole
- * picture no matter how deep each horn sits.  Blocks are selected from the
- * CELL INDEX, so every block is a closed, self-contained surface -- no quad
- * ever straddles two horns and there is nothing to taper away.
+ *  @brief
+ *  Vertex stage companion to HyperbolicPseudosphereTractroid.frag -- see that file's header for this scene's
+ *  description.
+ *
+ *  A single tractricoid sat as one small horn in the middle of a black frame.
+ *  The 220 x 120 grid is now cut into a 5 x 4 block LATTICE: twenty complete
+ *  pseudospheres, each built from its own 44 x 30 block of cells, hung in
+ *  FRUSTUM coordinates (x, y scaled by depth) so the lattice covers the whole
+ *  picture no matter how deep each horn sits.  Blocks are selected from the
+ *  CELL INDEX, so every block is a closed, self-contained surface -- no quad
+ *  ever straddles two horns and there is nothing to taper away.
+ *
+ *  @author René Weller
  */
 
 in vec4 attrA; ///< xy = Patch UV [0,1], z = 0, w = Patch index

@@ -1,15 +1,22 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file InsideSystem.frag
- * @brief Adapted from "Inside the System" by \@kishimisu (2022) — https://www.shadertoy.com/view/msj3D3
- * Original licensed CC BY-NC-SA 4.0 (attribution kept per the licence).
+/*****************************************************************************\
+ *                              InsideSystem.frag
+\*****************************************************************************/
+/*! @file
  *
- * Neon torus lights in an infinitely-repeating domain, flown through by an
- * orbiting camera.  Adapted to our engine: image-forward (the picture colours
- * the neon glow + drifts as a faint nebula), audio-reactive & jump-free (camera
- * travel from audioAdvance; beats/onsets brighten; centroid/valence grade).
+ *  @brief
+ *  Adapted from "Inside the System" by \@kishimisu (2022) — https://www.shadertoy.com/view/msj3D3
+ *
+ *  Original licensed CC BY-NC-SA 4.0 (attribution kept per the licence).
+ *
+ *  Neon torus lights in an infinitely-repeating domain, flown through by an
+ *  orbiting camera.  Adapted to our engine: image-forward (the picture colours
+ *  the neon glow + drifts as a faint nebula), audio-reactive & jump-free (camera
+ *  travel from audioAdvance; beats/onsets brighten; centroid/valence grade).
+ *
+ *  @author kishimisu (the original shader, CC BY-NC-SA 4.0), René Weller (adaptation)
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

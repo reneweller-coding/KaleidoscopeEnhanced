@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureFloatingLights.frag
- * @brief TEXTURE FLOATING LIGHTS: a night festival of floating lanterns on a
- * dark lake -- hundreds of small paper lanterns drift on the water in
- * slow currents, each glowing warm from within, its reflection wavering
- * beneath it in the ripples, the far ones tiny sparks near the horizon;
- * the lanterns take their tints from the photograph, which also shows
- * faintly as the far shore's lights reflected in the lake.  Endless
- * sideways, mirrorable.
+/*****************************************************************************\
+ *                              TextureFloatingLights.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the lanterns drift (integrated, jump-free)
- *   audioSpread     -> the current spreads them
- *   audioKick       -> the lanterns flare (light)
- *   audioMode       -> the light: pale blue in minor, warm amber in major
- *   audioRoughness  -> ripples on the lake
- *   audioSwell      -> the glow on the water (slow)
+ *  @brief
+ *  TEXTURE FLOATING LIGHTS: a night festival of floating lanterns on a dark lake -- hundreds of small paper
+ *  lanterns drift on the water in slow currents, each glowing warm from within, its reflection wavering beneath it
+ *  in the ripples, the far ones tiny sparks near the horizon; the lanterns take their tints from the photograph,
+ *  which also shows faintly as the far shore's lights reflected in the lake.
  *
- * Knobs: densityP (lanterns), sizeP (lantern size), shoreP (photo lights on the shore), hueP.
+ *  Endless sideways, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the lanterns drift (integrated, jump-free)
+ *    audioSpread     -> the current spreads them
+ *    audioKick       -> the lanterns flare (light)
+ *    audioMode       -> the light: pale blue in minor, warm amber in major
+ *    audioRoughness  -> ripples on the lake
+ *    audioSwell      -> the glow on the water (slow)
+ *
+ *  Knobs: densityP (lanterns), sizeP (lantern size), shoreP (photo lights on the shore), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

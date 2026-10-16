@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file ThermalIronbowStreet.frag
- * @brief THERMAL IRONBOW STREET: a street seen through a thermal camera.
- * The photo becomes a temperature field in the ironbow palette -- black
- * through purple and orange to white -- warm bodies walk across it on the
- * scene clock as soft blobs with a bright core, exhaust breath drifts,
- * and the ambient heat rises with the swell.  The kick is a hot doorway
- * opening (a local flare, not a frame flash).  The camera's own furniture
- * (spot meter, scale bar, noise) sits on top.  Camera fixed.
+/*****************************************************************************\
+ *                              ThermalIronbowStreet.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSwell   -> ambient temperature and the scale (slow)
- *   sceneAdvance -> the walkers and their breath (continuous)
- *   audioKick    -> the doorway flare (light, local)
- *   audioBass    -> the road's stored heat (slow)
- *   audioHigh    -> sensor noise (light)
+ *  @brief
+ *  THERMAL IRONBOW STREET: a street seen through a thermal camera.
  *
- * Per-activation variety: walkP, gainP, hueP.
+ *  The photo becomes a temperature field in the ironbow palette -- black through purple and orange to white -- warm
+ *  bodies walk across it on the scene clock as soft blobs with a bright core, exhaust breath drifts, and the
+ *  ambient heat rises with the swell.  The kick is a hot doorway opening (a local flare, not a frame flash).  The
+ *  camera's own furniture (spot meter, scale bar, noise) sits on top.  Camera fixed.
+ *
+ *  Audio Reactivity:
+ *    audioSwell   -> ambient temperature and the scale (slow)
+ *    sceneAdvance -> the walkers and their breath (continuous)
+ *    audioKick    -> the doorway flare (light, local)
+ *    audioBass    -> the road's stored heat (slow)
+ *    audioHigh    -> sensor noise (light)
+ *
+ *  Per-activation variety: walkP, gainP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

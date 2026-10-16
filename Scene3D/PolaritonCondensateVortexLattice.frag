@@ -1,20 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file PolaritonCondensateVortexLattice.frag
- * @brief POLARITON CONDENSATE VORTEX LATTICE: 220x120 heightfield grid of an exciton-polariton
- * quantum condensate. Quantized vortices create macroscopic phase dislocations, superfluid
- * density dips, Bogoliubov phonon ripples, and dynamic photo-palette interference.
- *   audioAdvance -> integrates macroscopic polariton condensate phase evolution
- *   audioKick    -> excites quantized vortex-antivortex pair creation bursts
- *   audioSwell   -> lifts condensate wavefield height & density
- *   audioCentroid-> shifts polariton dispersion branch colors
+/*****************************************************************************\
+ *                              PolaritonCondensateVortexLattice.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   vortexDensityP float quantized vortex grid density     (1.0..4.0)
- *   waveHeightP    float condensate heightfield amplitude   (0.2..0.8)
- *   glowP          float superfluid luminescence brightness (0.8..2.5)
+ *  @brief
+ *  POLARITON CONDENSATE VORTEX LATTICE: 220x120 heightfield grid of an exciton-polariton quantum condensate.
+ *
+ *  Quantized vortices create macroscopic phase dislocations, superfluid density dips, Bogoliubov phonon ripples,
+ *  and dynamic photo-palette interference.
+ *
+ *    audioAdvance -> integrates macroscopic polariton condensate phase evolution
+ *    audioKick    -> excites quantized vortex-antivortex pair creation bursts
+ *    audioSwell   -> lifts condensate wavefield height & density
+ *    audioCentroid-> shifts polariton dispersion branch colors
+ *
+ *  Per-activation variety:
+ *    vortexDensityP float quantized vortex grid density     (1.0..4.0)
+ *    waveHeightP    float condensate heightfield amplitude   (0.2..0.8)
+ *    glowP          float superfluid luminescence brightness (0.8..2.5)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec2  vUV;     ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 in vec3  vNormal; ///< Surface normal (from the vertex stage).

@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file AbacusBeadCount.frag
- * @brief ABACUS BEAD COUNT: a soroban counting the music.  One rod per
- * spectrum band; on each rod the beads slide toward the reckoning bar to
- * the value of that band, so the whole frame reads as a bar chart made of
- * wooden beads.  The beads glide -- their position is a smoothed function
- * of the band, never a jump -- and a rod's beads brighten as they reach
- * the bar.  The photo is the frame's wood and the felt behind.  Camera
- * fixed on the abacus.
+/*****************************************************************************\
+ *                              AbacusBeadCount.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSpectrum[32] -> bead positions per rod (smoothed, gliding)
- *   audioSwell        -> the lamp over the frame (slow)
- *   audioHigh         -> the lacquer sheen (light)
- *   audioKick         -> the frame is tapped: the beads glint (light)
- *   sceneAdvance      -> a slow drift of the lamp (continuous)
+ *  @brief
+ *  ABACUS BEAD COUNT: a soroban counting the music.
  *
- * Per-activation variety: rodsP, beadsP, hueP.
+ *  One rod per spectrum band; on each rod the beads slide toward the reckoning bar to the value of that band, so
+ *  the whole frame reads as a bar chart made of wooden beads.  The beads glide -- their position is a smoothed
+ *  function of the band, never a jump -- and a rod's beads brighten as they reach the bar.  The photo is the
+ *  frame's wood and the felt behind.  Camera fixed on the abacus.
+ *
+ *  Audio Reactivity:
+ *    audioSpectrum[32] -> bead positions per rod (smoothed, gliding)
+ *    audioSwell        -> the lamp over the frame (slow)
+ *    audioHigh         -> the lacquer sheen (light)
+ *    audioKick         -> the frame is tapped: the beads glint (light)
+ *    sceneAdvance      -> a slow drift of the lamp (continuous)
+ *
+ *  Per-activation variety: rodsP, beadsP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

@@ -1,30 +1,36 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file DewettingFilmRupture.frag
- * @brief TRANSITION DEWETTING FILM RUPTURE: the outgoing scene is a thin film
- * that ruptures.  Holes nucleate, their rims thicken as they sweep material up,
- * the ligaments between them thin out and break, and the incoming scene is the
- * substrate underneath.
+/*****************************************************************************\
+ *                              DewettingFilmRupture.frag
+\*****************************************************************************/
+/*! @file
  *
- * The rim is the whole point.  A dewetting film does not simply vanish where a
- * hole opens: the material has to go somewhere, and it collects in a raised
- * ring around the hole that grows brighter and thicker as the hole widens.
- * Holes without rims read as a mask being erased; holes with rims read as a
- * liquid pulling itself apart.  So the rim here is a function of the hole's own
- * radius, and it is what carries the light.
+ *  @brief
+ *  TRANSITION DEWETTING FILM RUPTURE: the outgoing scene is a thin film that ruptures.
  *
- * The holes sit on a jittered grid, which is what a nucleation field looks like
- * once the sites have repelled each other, and each has its own moment of
- * rupture -- fixed for the activation, never re-rolled.
+ *  Holes nucleate, their rims thicken as they sweep material up, the ligaments between them thin out and break, and
+ *  the incoming scene is the substrate underneath.
  *
- * Audio Reactivity:
- *   audioHigh  -> the light on the rims (light)
- *   audioSwell -> the rim's thickness (slow)
- *   audioKick  -> the flash of a ligament snapping (light)
+ *  The rim is the whole point.  A dewetting film does not simply vanish where a
+ *  hole opens: the material has to go somewhere, and it collects in a raised
+ *  ring around the hole that grows brighter and thicker as the hole widens.
+ *  Holes without rims read as a mask being erased; holes with rims read as a
+ *  liquid pulling itself apart.  So the rim here is a function of the hole's own
+ *  radius, and it is what carries the light.
  *
- * Per-activation variety: sitesP, rimP, hueP.
+ *  The holes sit on a jittered grid, which is what a nucleation field looks like
+ *  once the sites have repelled each other, and each has its own moment of
+ *  rupture -- fixed for the activation, never re-rolled.
+ *
+ *  Audio Reactivity:
+ *    audioHigh  -> the light on the rims (light)
+ *    audioSwell -> the rim's thickness (slow)
+ *    audioKick  -> the flash of a ligament snapping (light)
+ *
+ *  Per-activation variety: sitesP, rimP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

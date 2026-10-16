@@ -1,18 +1,24 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file LiquidMarbleEbruAcidWash.frag
- * @brief LIQUID MARBLE EBRU ACID WASH: Traditional Turkish Ebru water marbling
- * peacock comb displacement algorithms supercharged with psychedelic acid wash feedback,
- * melting fluid swirls, and high-energy chromatic edge degradation.
+/*****************************************************************************\
+ *                              LiquidMarbleEbruAcidWash.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance -> drives continuous comb tine dragging & fluid marbling advection
- *   audioKick    -> flashes liquid acid color inversions & drop splatter shockwaves
- *   audioCentroid-> modulates comb tine spacing & fine filament ripple resolution
- *   audioSubBass -> expands fluid viscosity curl amplitude
- *   audioChromaHue-> rotates the marbled oil-drop rainbow spectrum
+ *  @brief
+ *  LIQUID MARBLE EBRU ACID WASH: Traditional Turkish Ebru water marbling peacock comb displacement algorithms
+ *  supercharged with psychedelic acid wash feedback, melting fluid swirls, and high-energy chromatic edge
+ *  degradation.
+ *
+ *  Audio Reactivity:
+ *    audioAdvance -> drives continuous comb tine dragging & fluid marbling advection
+ *    audioKick    -> flashes liquid acid color inversions & drop splatter shockwaves
+ *    audioCentroid-> modulates comb tine spacing & fine filament ripple resolution
+ *    audioSubBass -> expands fluid viscosity curl amplitude
+ *    audioChromaHue-> rotates the marbled oil-drop rainbow spectrum
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

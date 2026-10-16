@@ -1,4 +1,25 @@
 #version 330 core
+/*****************************************************************************\
+ *                              MonolithField.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Shades the near-black monolith slabs and drifting shards built in MonolithField.vert -- their faces stay almost
+ *  unlit while segmented luminous glyph dashes trace the vertical edges -- plus the two plain solids that carry the
+ *  frame around them: the ground slabs of the plain itself and the sky-dust haze above the horizon.
+ *
+ *  vCorner (the vertex's local cube-corner position) picks out the
+ *  edges and their dashed glyph segmentation; vFlat marks the ground and
+ *  sky solids, which take no glyphs at all; vCol carries the
+ *  per-object colour and brightness already computed in the vertex stage
+ *  from its own spectrum band, the downbeat choir pulse and the drop
+ *  levitation. This stage's own audioLevel/audioKick uniforms were added
+ *  afterward to give the glyphs a small extra pulse, since the vert-side
+ *  coupling alone barely moved any pixels.
+ *
+ *  @author René Weller
+ */
 out vec4 fragColor; ///< The pixel's colour (output).
 // Frag-side music pulse (added by the deaf-scene pass: reactivity
 // measured ~0 -- the vert-side coupling barely moved any pixels).
@@ -9,24 +30,6 @@ uniform float audioKick;  ///< Kick-drum envelope, 0..1 (fast attack, short deca
 in vec4  vCol;    ///< Colour (from the vertex stage).
 in vec3  vCorner; ///< Corner (from the vertex stage).
 in float vFlat;   ///< Flat (from the vertex stage).
-
-/**
- * @file MonolithField.frag
- * @brief Shades the near-black monolith slabs and drifting shards built in
- * MonolithField.vert -- their faces stay almost unlit while segmented
- * luminous glyph dashes trace the vertical edges -- plus the two plain
- * solids that carry the frame around them: the ground slabs of the plain
- * itself and the sky-dust haze above the horizon.
- *
- * vCorner (the vertex's local cube-corner position) picks out the
- * edges and their dashed glyph segmentation; vFlat marks the ground and
- * sky solids, which take no glyphs at all; vCol carries the
- * per-object colour and brightness already computed in the vertex stage
- * from its own spectrum band, the downbeat choir pulse and the drop
- * levitation. This stage's own audioLevel/audioKick uniforms were added
- * afterward to give the glyphs a small extra pulse, since the vert-side
- * coupling alone barely moved any pixels.
- */
 
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()

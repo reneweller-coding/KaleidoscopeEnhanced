@@ -1,18 +1,23 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file NewtonBasinPsychedelicSea.frag
- * @brief NEWTON BASIN PSYCHEDELIC SEA: Higher-order complex Newton-Raphson
- * root attraction basins with 3D embossed normal relief, fluid relaxation
- * currents, specular wave glints, and dynamic polynomial coefficient rotation.
+/*****************************************************************************\
+ *                              NewtonBasinPsychedelicSea.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance -> rotates complex polynomial roots & drives wave relaxation
- *   audioKick    -> flashes root convergence singularities & shockwave pulse
- *   audioCentroid-> selects polynomial degree power & fine basin ridges
- *   audioSubBass -> expands ocean basin wave amplitude
- *   audioChromaHue-> rotates the iridescent sea sunset palette
+ *  @brief
+ *  NEWTON BASIN PSYCHEDELIC SEA: Higher-order complex Newton-Raphson root attraction basins with 3D embossed normal
+ *  relief, fluid relaxation currents, specular wave glints, and dynamic polynomial coefficient rotation.
+ *
+ *  Audio Reactivity:
+ *    audioAdvance -> rotates complex polynomial roots & drives wave relaxation
+ *    audioKick    -> flashes root convergence singularities & shockwave pulse
+ *    audioCentroid-> selects polynomial degree power & fine basin ridges
+ *    audioSubBass -> expands ocean basin wave amplitude
+ *    audioChromaHue-> rotates the iridescent sea sunset palette
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

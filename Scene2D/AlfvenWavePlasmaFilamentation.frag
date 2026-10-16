@@ -1,22 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file AlfvenWavePlasmaFilamentation.frag
- * @brief ALFVÉN WAVE PLASMA FILAMENTATION: Torsional shear Alfvén waves in solar coronal flux tubes.
- * Magnetohydrodynamic wave propagation along magnetic field lines undergoes non-linear filamentation,
- * creating phase-mixed current sheets, turbulent plasma heating channels, and coronal photo texturing.
- *   audioAdvance -> propagates Alfvén wave packets along magnetized coronal flux tubes
- *   audioKick    -> flashes phase-mixed current sheet Joule heating reconnection bursts
- *   audioBass    -> deepens coronal flux tube guide field compression & magnetic pressure
- *   audioSwell   -> widens plasma filamentation channel thickness & thermal luminance
- *   audioCentroid-> shifts extreme ultraviolet (EUV) Fe XIV/Fe XVI emission spectra
+/*****************************************************************************\
+ *                              AlfvenWavePlasmaFilamentation.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   filamentCountP float number of filamentary plasma channels   (3.0..10.0)
- *   alfvenSpeedP   float Alfvén wave phase velocity               (0.6..2.2)
- *   jouleHeatP     float current sheet Joule heating brightness  (0.8..2.5)
- *   phaseMixP      float phase-mixing shear gradient strength    (0.5..2.2)
+ *  @brief
+ *  ALFVÉN WAVE PLASMA FILAMENTATION: Torsional shear Alfvén waves in solar coronal flux tubes.
+ *
+ *  Magnetohydrodynamic wave propagation along magnetic field lines undergoes non-linear filamentation, creating
+ *  phase-mixed current sheets, turbulent plasma heating channels, and coronal photo texturing.
+ *
+ *    audioAdvance -> propagates Alfvén wave packets along magnetized coronal flux tubes
+ *    audioKick    -> flashes phase-mixed current sheet Joule heating reconnection bursts
+ *    audioBass    -> deepens coronal flux tube guide field compression & magnetic pressure
+ *    audioSwell   -> widens plasma filamentation channel thickness & thermal luminance
+ *    audioCentroid-> shifts extreme ultraviolet (EUV) Fe XIV/Fe XVI emission spectra
+ *
+ *  Per-activation variety:
+ *    filamentCountP float number of filamentary plasma channels   (3.0..10.0)
+ *    alfvenSpeedP   float Alfvén wave phase velocity               (0.6..2.2)
+ *    jouleHeatP     float current sheet Joule heating brightness  (0.8..2.5)
+ *    phaseMixP      float phase-mixing shear gradient strength    (0.5..2.2)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

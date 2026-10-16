@@ -1,21 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SuperfluidVortexRingPinchOff.frag
- * @brief SUPERFLUID VORTEX RING PINCH OFF: Quantized vortex filament reconnection and ring pinch-off
- * in superfluid Helium-II. Crow instability on anti-parallel vortex pairs undergoes topological
- * reconnection, launching stable self-propelling quantized vortex rings with Kelvin wave cascades.
- * A ring GAS of 168 rings fills the cell, laid out on a jittered lattice in frustum
- * coordinates by the sibling .comp so it covers the frame at every depth.
- *   audioAdvance -> propels vortex rings along self-induced velocity drift axes
- *   audioKick    -> flashes vortex core reconnection topological pinch-off bursts
- *   audioSwell   -> widens vortex ring core diameter & superfluid luminescence
- *   audioCentroid-> shifts vortex core circulation phase color spectra
+/*****************************************************************************\
+ *                              SuperfluidVortexRingPinchOff.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   pinchGlowP float reconnection pinch-off luminance gain  (0.8..2.5)
- *   kelvinP    float Kelvin wave cascade ripple intensity    (0.6..2.2)
+ *  @brief
+ *  SUPERFLUID VORTEX RING PINCH OFF: Quantized vortex filament reconnection and ring pinch-off in superfluid
+ *  Helium-II.
+ *
+ *  Crow instability on anti-parallel vortex pairs undergoes topological reconnection, launching stable
+ *  self-propelling quantized vortex rings with Kelvin wave cascades. A ring GAS of 168 rings fills the cell, laid
+ *  out on a jittered lattice in frustum coordinates by the sibling .comp so it covers the frame at every depth.
+ *
+ *    audioAdvance -> propels vortex rings along self-induced velocity drift axes
+ *    audioKick    -> flashes vortex core reconnection topological pinch-off bursts
+ *    audioSwell   -> widens vortex ring core diameter & superfluid luminescence
+ *    audioCentroid-> shifts vortex core circulation phase color spectra
+ *
+ *  Per-activation variety:
+ *    pinchGlowP float reconnection pinch-off luminance gain  (0.8..2.5)
+ *    kelvinP    float Kelvin wave cascade ripple intensity    (0.6..2.2)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec3  vPos;   ///< Position (from the vertex stage).
 in float vDepth; ///< Depth (from the vertex stage).

@@ -1,10 +1,16 @@
 #version 400 core
-/**
- * @file EuropaChaosTerrain.tesc
- * @brief Tessellation control for EuropaChaosTerrain: adaptive by distance
- * (the near rafts finest), a little finer with the swell; fractional_odd_
- * spacing keeps level changes continuous.  Edge levels from the edge
- * midpoints so neighbouring patches agree.
+/*****************************************************************************\
+ *                              EuropaChaosTerrain.tesc
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Tessellation control for EuropaChaosTerrain: adaptive by distance (the near rafts finest), a little finer with
+ *  the swell; fractional_odd_ spacing keeps level changes continuous.
+ *
+ *  Edge levels from the edge midpoints so neighbouring patches agree.
+ *
+ *  @author René Weller
  */
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( vertices = 4 ) out;

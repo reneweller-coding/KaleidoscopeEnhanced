@@ -1,22 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file MarbleVeinsFlight.frag
- * @brief MARBLE VEINS FLIGHT: gliding low over a vast polished slab of marble
- * -- black Nero Marquina or white Calacatta, its surface a mirror, the
- * veins winding through it in branching rivers of white, grey and inlaid
- * gold that glint as the light slides over them.  A soft studio light
- * hangs above and its long reflection runs along the polish.  The view
- * glides steadily over the stone, the slab receding into a soft blur.
+/*****************************************************************************\
+ *                              MarbleVeinsFlight.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSwell  -> the reflection of the studio light (slow)
- *   audioHigh   -> glints on the gold veins (light)
- *   audioLevel  -> brightness
- *   sceneTime / sceneAdvance -> the glide (constant speed)
+ *  @brief
+ *  MARBLE VEINS FLIGHT: gliding low over a vast polished slab of marble -- black Nero Marquina or white Calacatta,
+ *  its surface a mirror, the veins winding through it in branching rivers of white, grey and inlaid gold that glint
+ *  as the light slides over them.
  *
- * Per-activation variety: stoneP (black or white marble), hueP.
+ *  A soft studio light hangs above and its long reflection runs along the polish.  The view glides steadily over
+ *  the stone, the slab receding into a soft blur.
+ *
+ *  Audio Reactivity:
+ *    audioSwell  -> the reflection of the studio light (slow)
+ *    audioHigh   -> glints on the gold veins (light)
+ *    audioLevel  -> brightness
+ *    sceneTime / sceneAdvance -> the glide (constant speed)
+ *
+ *  Per-activation variety: stoneP (black or white marble), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

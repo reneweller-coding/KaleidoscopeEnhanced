@@ -1,8 +1,13 @@
 #version 330 core
-/**
- * @file ShatterSculpture.geom
- * @brief Geometry stage companion to ShatterSculpture.frag -- see that file's
- * header for this scene's description.
+/*****************************************************************************\
+ *                              ShatterSculpture.geom
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Geometry stage companion to ShatterSculpture.frag -- see that file's header for this scene's description.
+ *
+ *  @author René Weller
  */
 // ShatterSculpture.geom -- blow the statue apart into its own triangles.
 // -----------------------------------------------------------------------

@@ -1,28 +1,33 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file AnechoicChamberWedges.frag
- * @brief ANECHOIC CHAMBER WEDGES: the quietest room, seen wall-on.  Grey
- * foam wedges absorb everything; here they give the music back as light:
- * each wedge belongs to a spectrum band by its column, its tip glows with
- * that band, the base stays dark; the room light (the swell) rakes across
- * the pyramids from one side so their ridges read; the kick pulses the
- * whole wall's tips; the photo is the foam's faint mottle.  Nothing moves
- * but light; camera still.
+/*****************************************************************************\
+ *                              AnechoicChamberWedges.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSpectrum[32] -> wedge-tip light by column (light)
- *   audioSwell        -> room light (slow)
- *   audioKick         -> all tips pulse (light)
- *   audioLevel        -> brightness
+ *  @brief
+ *  ANECHOIC CHAMBER WEDGES: the quietest room, seen wall-on.
  *
- * Per-activation variety: detailP, wedgeP, hueP.
+ *  Grey foam wedges absorb everything; here they give the music back as light: each wedge belongs to a spectrum
+ *  band by its column, its tip glows with that band, the base stays dark; the room light (the swell) rakes across
+ *  the pyramids from one side so their ridges read; the kick pulses the whole wall's tips; the photo is the foam's
+ *  faint mottle.  Nothing moves but light; camera still.
+ *
+ *  Audio Reactivity:
+ *    audioSpectrum[32] -> wedge-tip light by column (light)
+ *    audioSwell        -> room light (slow)
+ *    audioKick         -> all tips pulse (light)
+ *    audioLevel        -> brightness
+ *
+ *  Per-activation variety: detailP, wedgeP, hueP.
+ *
+ *  @author René Weller
  */
-in vec3  vWorld;  ///< World position (from the vertex stage).
-in vec2  vSurfUV; ///< Surf UV (from the vertex stage).
-in vec3  vNormal; ///< Surface normal (from the vertex stage).
-in float vWedge;  ///< Wedge (from the vertex stage).
-in float vHeight; ///< Height (from the vertex stage).
+out vec4 fragColor; ///< The pixel's colour (output).
+in vec3  vWorld;    ///< World position (from the vertex stage).
+in vec2  vSurfUV;   ///< Surf UV (from the vertex stage).
+in vec3  vNormal;   ///< Surface normal (from the vertex stage).
+in float vWedge;    ///< Wedge (from the vertex stage).
+in float vHeight;   ///< Height (from the vertex stage).
 
 uniform sampler2D tex0;          ///< The current photo.
 uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).

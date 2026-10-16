@@ -1,26 +1,31 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file HyperbolicKaleidoscope.frag
- * @brief HYPERBOLIC KALEIDOSCOPE: a kaleidoscope folded in the Poincare
- * disc.  A flat kaleidoscope has p mirrors meeting at one point; this one
- * reflects across the edges of a regular {p,q} polygon of the hyperbolic
- * plane, so infinitely many chambers crowd toward the rim, each a smaller
- * copy of the last.  The camera drives toward the rim forever: a hyperbolic
- * translation by exactly one polygon step is a symmetry of the tiling, so
- * the drive is periodic and the wrap invisible.  Outside the disc the
- * picture is the disc inverted in its own rim, so the screen is full.
+/*****************************************************************************\
+ *                              HyperbolicKaleidoscope.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   sceneAdvance -> the drive toward the rim (music-paced, periodic)
- *   audioSwell   -> the disc breathes on builds (slow)
- *   audioKick    -> the mirror seams flash
- *   audioSwell   -> chamber brightness
- *   audioMelodyPitch -> hue of the chamber generations
+ *  @brief
+ *  HYPERBOLIC KALEIDOSCOPE: a kaleidoscope folded in the Poincare disc.
  *
- * Per-activation variety: sidesP (p = 4, 6 or 8), qP (q within the
- * hyperbolic range), speedP, hueP.
+ *  A flat kaleidoscope has p mirrors meeting at one point; this one reflects across the edges of a regular {p,q}
+ *  polygon of the hyperbolic plane, so infinitely many chambers crowd toward the rim, each a smaller copy of the
+ *  last.  The camera drives toward the rim forever: a hyperbolic translation by exactly one polygon step is a
+ *  symmetry of the tiling, so the drive is periodic and the wrap invisible.  Outside the disc the picture is the
+ *  disc inverted in its own rim, so the screen is full.
+ *
+ *  Audio Reactivity:
+ *    sceneAdvance -> the drive toward the rim (music-paced, periodic)
+ *    audioSwell   -> the disc breathes on builds (slow)
+ *    audioKick    -> the mirror seams flash
+ *    audioSwell   -> chamber brightness
+ *    audioMelodyPitch -> hue of the chamber generations
+ *
+ *  Per-activation variety: sidesP (p = 4, 6 or 8), qP (q within the
+ *  hyperbolic range), speedP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

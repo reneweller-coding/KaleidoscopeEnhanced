@@ -1,21 +1,27 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file AnglerfishAbyss.frag
- * @brief ANGLERFISH ABYSS: black water, and the only light is the fish's own
- * lure -- a small lamp that hangs in front of it and tints with the melody.
- * The body is lit by that lamp alone (plus a faint blue from far above),
- * marine snow drifts through the beam, and a drop makes the lamp flare and
- * the bioluminescent flanks pulse.  Dark, but staged: the whole scene is
- * one pool of light in the dark.  No camera motion of any kind.
+/*****************************************************************************\
+ *                              AnglerfishAbyss.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioMelodyPitch -> lamp colour (light)
- *   audioDrop        -> lamp flare (light)
- *   audioKick        -> flank bioluminescence pulses (light)
- *   audioSwell       -> the faint light from above (slow)
- *   audioLevel       -> lamp brightness
+ *  @brief
+ *  ANGLERFISH ABYSS: black water, and the only light is the fish's own lure -- a small lamp that hangs in front of
+ *  it and tints with the melody.
+ *
+ *  The body is lit by that lamp alone (plus a faint blue from far above), marine snow drifts through the beam, and
+ *  a drop makes the lamp flare and the bioluminescent flanks pulse.  Dark, but staged: the whole scene is one pool
+ *  of light in the dark.  No camera motion of any kind.
+ *
+ *  Audio Reactivity:
+ *    audioMelodyPitch -> lamp colour (light)
+ *    audioDrop        -> lamp flare (light)
+ *    audioKick        -> flank bioluminescence pulses (light)
+ *    audioSwell       -> the faint light from above (slow)
+ *    audioLevel       -> lamp brightness
+ *
+ *  @author René Weller
  */
+out vec4               fragColor;             ///< The pixel's colour (output).
 uniform sampler2DArray texMeshMaterial;       ///< The mesh's material textures (albedo, roughness, normal ...).
 uniform int            texMeshMaterialLayers; ///< Number of layers in texMeshMaterial.
 uniform sampler2D      tex0;                  ///< The current photo.

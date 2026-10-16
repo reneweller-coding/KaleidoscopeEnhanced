@@ -1,17 +1,22 @@
 #version 330 core
-/**
- * @file MajoranaNanowireBraiding.vert
- * @brief Vertex stage companion to MajoranaNanowireBraiding.frag -- see that file's
- * header for this scene's description.
+/*****************************************************************************\
+ *                              MajoranaNanowireBraiding.vert
+\*****************************************************************************/
+/*! @file
  *
- * SCREEN FILL: all 20 ribbons used to braid inside ONE bundle 1.3 units across,
- * lying on the view axis 4.5 units out -- a small knot of hair-thin threads in
- * the middle of a black frame (occ 0.31), and half of every wire turned
- * edge-on because the ribbon widened around the wire's own axis instead of
- * across the screen.  The 20 ribbons are now THREE braided bundles standing
- * side by side across the whole picture width, their wire axes running
- * vertically past both the top and bottom edges, plus two wide backdrop bands
- * that keep the superconducting vacuum around them off pure black.
+ *  @brief
+ *  Vertex stage companion to MajoranaNanowireBraiding.frag -- see that file's header for this scene's description.
+ *
+ *  SCREEN FILL: all 20 ribbons used to braid inside ONE bundle 1.3 units across,
+ *  lying on the view axis 4.5 units out -- a small knot of hair-thin threads in
+ *  the middle of a black frame (occ 0.31), and half of every wire turned
+ *  edge-on because the ribbon widened around the wire's own axis instead of
+ *  across the screen.  The 20 ribbons are now THREE braided bundles standing
+ *  side by side across the whole picture width, their wire axes running
+ *  vertically past both the top and bottom edges, plus two wide backdrop bands
+ *  that keep the superconducting vacuum around them off pure black.
+ *
+ *  @author René Weller
  */
 
 in vec4 attrA; ///< x = t [0,1], y = side (-1/+1), z = 0, w = ribbon index

@@ -1,22 +1,31 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file RelativisticKelvinHelmholtzShear.frag
- * @brief RELATIVISTIC KELVIN-HELMHOLTZ SHEAR: Relativistic shear instability at the boundary of
- * collimated astrophysical radio jets. Fast internal plasma flow past ambient medium generates
- * non-linear cat's-eye vortex trains, magnetic field compression ribbons, and synchrotron glow.
- *   audioAdvance -> drives relativistic jet shear flow velocity & vortex rolling
- *   audioKick    -> flashes magnetic reconnection & synchrotron shock detonation bursts
- *   audioBass    -> undulates jet boundary shear layer width & vortex core diameter
- *   audioSwell   -> enriches relativistic plasma density & synchrotron halo glow
- *   audioCentroid-> shifts relativistic synchrotron emission spectra (radio to X-ray)
+/*****************************************************************************\
+ *                              RelativisticKelvinHelmholtzShear.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   vortexTrainP float number of Kelvin-Helmholtz cat's-eye vortices (3.0..8.0)
- *   shearThickP  float shear layer transition thickness             (0.4..1.8)
- *   synchGlowP   float synchrotron magnetic shockwave luminance     (0.8..2.5)
- *   jetSpeedP    float relativistic bulk Lorentz factor gamma       (0.6..2.2)
+ *  @brief
+ *  RELATIVISTIC KELVIN-HELMHOLTZ SHEAR: Relativistic shear instability at the boundary of collimated astrophysical
+ *  radio jets.
+ *
+ *  Fast internal plasma flow past ambient medium generates non-linear cat's-eye vortex trains, magnetic field
+ *  compression ribbons, and synchrotron glow.
+ *
+ *    audioAdvance -> drives relativistic jet shear flow velocity & vortex rolling
+ *    audioKick    -> flashes magnetic reconnection & synchrotron shock detonation bursts
+ *    audioBass    -> undulates jet boundary shear layer width & vortex core diameter
+ *    audioSwell   -> enriches relativistic plasma density & synchrotron halo glow
+ *    audioCentroid-> shifts relativistic synchrotron emission spectra (radio to X-ray)
+ *
+ *  Per-activation variety:
+ *    vortexTrainP float number of Kelvin-Helmholtz cat's-eye vortices (3.0..8.0)
+ *    shearThickP  float shear layer transition thickness             (0.4..1.8)
+ *    synchGlowP   float synchrotron magnetic shockwave luminance     (0.8..2.5)
+ *    jetSpeedP    float relativistic bulk Lorentz factor gamma       (0.6..2.2)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

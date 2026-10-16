@@ -1,19 +1,27 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file DroneDepths.frag
- * @brief An AMBIENT-FIRST primary effect, built for drone / dark-ambient music (no
- * beat dependence at all).  Research-informed mappings:
- *   swell (slow loudness build)  -> luminous breathing + LOOMING zoom
- *                                   (loudness -> expansion/approach);
- *   dominantPitch                -> vertical drift of the whole nebula
- *                                   (pitch -> elevation);
- *   centroid                     -> brightness / colour temperature;
- *   harmonicChange               -> slow morphs of the cloud structure.
- * The image is the substance of the nebula (image-forward), softly rounded
- * (harmonic material -> round, curved forms), with imgPal/hueRot colour
- * variance.  Jump-free motion (audioPhase/audioAdvance).
+/*****************************************************************************\
+ *                              DroneDepths.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  An AMBIENT-FIRST primary effect, built for drone / dark-ambient music (no beat dependence at all).
+ *
+ *  Research-informed mappings:
+ *
+ *    swell (slow loudness build)  -> luminous breathing + LOOMING zoom
+ *                                    (loudness -> expansion/approach);
+ *    dominantPitch                -> vertical drift of the whole nebula
+ *                                    (pitch -> elevation);
+ *    centroid                     -> brightness / colour temperature;
+ *    harmonicChange               -> slow morphs of the cloud structure.
+ *  The image is the substance of the nebula (image-forward), softly rounded
+ *  (harmonic material -> round, curved forms), with imgPal/hueRot colour
+ *  variance.  Jump-free motion (audioPhase/audioAdvance).
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

@@ -1,28 +1,36 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file CausticPool.frag
- * @brief The photograph seen as a pool floor through a rippling water surface lit by caustics.
+/*****************************************************************************\
+ *                              CausticPool.frag
+\*****************************************************************************/
+/*! @file
  *
- * texCaustics (written by the CfxPhoton compute pass) supplies both the refraction, whose gradient bends the tex0
- * lookup so the floor appears to wobble under moving water, and the light pattern itself, blurred into a soft glow and
- * blended in multiplicatively so it reveals the floor rather than sitting on top of it. The warpP and glowP presets
- * scale refraction strength and blur radius.
+ *  @brief
+ *  The photograph seen as a pool floor through a rippling water surface lit by caustics.
  *
- * Audio Reactivity:
- *  - audioSubBass   -> strengthens the refraction, so the floor wobbles harder
- *  - audioLevel     -> brightens the multiplicative caustic light
- *  - audioBeat      -> brightens the squared caustic glow term
- *  - audioAmbient   -> dims or lifts the whole image
- *  - audioSharpness -> caustic-net CRISPNESS: a bright, incisive mix tightens the
- *                      glow blur radius to a sharp filigree net, a dull mix lets
- *                      it bloom into a soft wide shimmer
- *  - audioRolloff   -> water COLOUR TEMPERATURE: bass-concentrated music gives a
- *                      deep, cold blue pool, energy reaching into the highs turns
- *                      it into shallow bright turquoise
- *  - audioLowMid    -> harmonic warmth thickens the water: more low-mid body means
- *                      a denser depth tint away from the lit caustic lines
+ *  texCaustics (written by the CfxPhoton compute pass) supplies both the refraction, whose gradient bends the tex0
+ *  lookup so the floor appears to wobble under moving water, and the light pattern itself, blurred into a soft glow
+ *  and
+ *  blended in multiplicatively so it reveals the floor rather than sitting on top of it. The warpP and glowP
+ *  presets
+ *  scale refraction strength and blur radius.
+ *
+ *  Audio Reactivity:
+ *   - audioSubBass   -> strengthens the refraction, so the floor wobbles harder
+ *   - audioLevel     -> brightens the multiplicative caustic light
+ *   - audioBeat      -> brightens the squared caustic glow term
+ *   - audioAmbient   -> dims or lifts the whole image
+ *   - audioSharpness -> caustic-net CRISPNESS: a bright, incisive mix tightens the
+ *                       glow blur radius to a sharp filigree net, a dull mix lets
+ *                       it bloom into a soft wide shimmer
+ *   - audioRolloff   -> water COLOUR TEMPERATURE: bass-concentrated music gives a
+ *                       deep, cold blue pool, energy reaching into the highs turns
+ *                       it into shallow bright turquoise
+ *   - audioLowMid    -> harmonic warmth thickens the water: more low-mid body means
+ *                       a denser depth tint away from the lit caustic lines
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 // CausticPool.frag — the photo as a pool floor under a rippling surface.
 // Blend/CfxPhoton.comp splats refracted photons into texCaustics; here the
 // same caustic field also displaces the floor, so the picture appears to be

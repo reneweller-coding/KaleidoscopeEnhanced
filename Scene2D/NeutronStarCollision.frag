@@ -1,20 +1,27 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file NeutronStarCollision.frag
- * @brief NEUTRON STAR COLLISION: Two incredibly dense neutron stars spiraling
- * towards each other. They emit blinding, high-frequency jets of gamma radiation
- * that pulse violently to the beat.
- *   audioAdvance -> rotation speed of the binary system
- *   audioKick    -> intense energy bursts and jet pulses
- *   audioSwell   -> overall brightness of the accretion disc and jets
- *   audioChromaHue-> palette offset for the extreme radiation
+/*****************************************************************************\
+ *                              NeutronStarCollision.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   distP float distance between the stars (0.5..1.5)
- *   jetP float intensity of the radiation jets (0.5..2.0)
- *   hueP float palette offset (0..6.28)
+ *  @brief
+ *  NEUTRON STAR COLLISION: Two incredibly dense neutron stars spiraling towards each other.
+ *
+ *  They emit blinding, high-frequency jets of gamma radiation that pulse violently to the beat.
+ *
+ *    audioAdvance -> rotation speed of the binary system
+ *    audioKick    -> intense energy bursts and jet pulses
+ *    audioSwell   -> overall brightness of the accretion disc and jets
+ *    audioChromaHue-> palette offset for the extreme radiation
+ *
+ *  Per-activation variety:
+ *    distP float distance between the stars (0.5..1.5)
+ *    jetP float intensity of the radiation jets (0.5..2.0)
+ *    hueP float palette offset (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

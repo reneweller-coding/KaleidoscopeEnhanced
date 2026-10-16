@@ -1,23 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file RooftopRainTokyo.frag
- * @brief ROOFTOP RAIN TOKYO: a rainy night over the rooftops of a dense city
- * district -- flat roofs at every height with their railings, towers
- * behind them studded with lit windows, all of it wet and shining, puddles on the
- * roofs mirroring the vertical neon signs that climb the building
- * fronts in pink, cyan and amber; towers rise behind into the low clouds,
- * which glow with the city's light.  Rain falls in fine slanting streaks
- * and rings spread in the puddles.  The camera is still.
+/*****************************************************************************\
+ *                              RooftopRainTokyo.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSpectrum[32] -> the neon signs, band by band (light)
- *   audioSwell        -> the glow of the clouds (slow)
- *   audioLevel        -> brightness
- *   sceneTime / sceneAdvance -> the rain, the rings in the puddles
+ *  @brief
+ *  ROOFTOP RAIN TOKYO: a rainy night over the rooftops of a dense city district -- flat roofs at every height with
+ *  their railings, towers behind them studded with lit windows, all of it wet and shining, puddles on the roofs
+ *  mirroring the vertical neon signs that climb the building fronts in pink, cyan and amber; towers rise behind
+ *  into the low clouds, which glow with the city's light.
  *
- * Per-activation variety: rainP (how hard it rains), hueP.
+ *  Rain falls in fine slanting streaks and rings spread in the puddles.  The camera is still.
+ *
+ *  Audio Reactivity:
+ *    audioSpectrum[32] -> the neon signs, band by band (light)
+ *    audioSwell        -> the glow of the clouds (slow)
+ *    audioLevel        -> brightness
+ *    sceneTime / sceneAdvance -> the rain, the rings in the puddles
+ *
+ *  Per-activation variety: rainP (how hard it rains), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureRippleInterference.frag
- * @brief TEXTURE RIPPLE INTERFERENCE: raindrops falling on a still pond over
- * a picture -- from every drop a train of rings spreads out, the rings
- * cross each other and form shimmering interference patterns, and through
- * the moving surface the photograph on the bottom wobbles and bends,
- * while the rings catch a bright sky reflection on their crests; drops
- * keep falling at wandering places.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              TextureRippleInterference.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the rings travel (integrated, jump-free)
- *   audioSpread     -> ring height
- *   audioKick       -> the crests flash (light)
- *   audioMode       -> the sky: cool in minor, warm evening in major
- *   audioRoughness  -> ring wavelength gets finer
- *   audioSwell      -> the pond darkens and reflects more (slow)
+ *  @brief
+ *  TEXTURE RIPPLE INTERFERENCE: raindrops falling on a still pond over a picture -- from every drop a train of
+ *  rings spreads out, the rings cross each other and form shimmering interference patterns, and through the moving
+ *  surface the photograph on the bottom wobbles and bends, while the rings catch a bright sky reflection on their
+ *  crests; drops keep falling at wandering places.
  *
- * Knobs: dropP (drop density), refractP (bending of the photo), skyP (sky reflection), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the rings travel (integrated, jump-free)
+ *    audioSpread     -> ring height
+ *    audioKick       -> the crests flash (light)
+ *    audioMode       -> the sky: cool in minor, warm evening in major
+ *    audioRoughness  -> ring wavelength gets finer
+ *    audioSwell      -> the pond darkens and reflects more (slow)
+ *
+ *  Knobs: dropP (drop density), refractP (bending of the photo), skyP (sky reflection), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

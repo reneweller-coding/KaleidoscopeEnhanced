@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file ProtoplanetaryDiscRings.frag
- * @brief PROTOPLANETARY DISC: a young star's dust disc seen from above at
- * an angle, divided into 32 rings -- the 32 bands of the spectrum analyser.
- * Each ring glows with its own band, bass inside, treble at the rim, so a
- * chord is a set of bright rings and a cymbal a flash at the edge.  Three
- * planets plough their gaps and carry the disc's rotation (Keplerian, on
- * the music's pace).  The spectrum analyser as a solar system; the camera
- * never moves.
+/*****************************************************************************\
+ *                              ProtoplanetaryDiscRings.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSpectrum[32] -> ring brightness (the whole point)
- *   sceneAdvance      -> disc rotation, planets orbit (continuous)
- *   audioLevel        -> star glow
- *   audioSwell        -> disc haze (slow)
- *   audioKick         -> the star flashes
+ *  @brief
+ *  PROTOPLANETARY DISC: a young star's dust disc seen from above at an angle, divided into 32 rings -- the 32 bands
+ *  of the spectrum analyser.
  *
- * Per-activation variety: tiltP (viewing angle), gapP (planet gap width), hueP.
+ *  Each ring glows with its own band, bass inside, treble at the rim, so a chord is a set of bright rings and a
+ *  cymbal a flash at the edge.  Three planets plough their gaps and carry the disc's rotation (Keplerian, on the
+ *  music's pace).  The spectrum analyser as a solar system; the camera never moves.
+ *
+ *  Audio Reactivity:
+ *    audioSpectrum[32] -> ring brightness (the whole point)
+ *    sceneAdvance      -> disc rotation, planets orbit (continuous)
+ *    audioLevel        -> star glow
+ *    audioSwell        -> disc haze (slow)
+ *    audioKick         -> the star flashes
+ *
+ *  Per-activation variety: tiltP (viewing angle), gapP (planet gap width), hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

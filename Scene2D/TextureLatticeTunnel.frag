@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureLatticeTunnel.frag
- * @brief TEXTURE LATTICE TUNNEL: flying through a tube built of a steel
- * lattice -- diagonal girders crossing in a diamond pattern, their joints
- * studded with lights -- and through the gaps between the girders the
- * photograph shines, lining a wider tunnel further out that moves past
- * at its own slower pace (parallax); the lattice twists slowly as we go.
- * Endless, mirrorable; the tunnel continues beyond the frame.
+/*****************************************************************************\
+ *                              TextureLatticeTunnel.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the flight (integrated, jump-free)
- *   audioPhase      -> the lattice twists (integrated)
- *   audioSpread     -> girder spacing (open lattice when wide)
- *   audioKick       -> the joint lights flare (light)
- *   audioMode       -> light colour: cool in minor, warm in major
- *   audioSwell      -> depth glow (slow)
+ *  @brief
+ *  TEXTURE LATTICE TUNNEL: flying through a tube built of a steel lattice -- diagonal girders crossing in a diamond
+ *  pattern, their joints studded with lights -- and through the gaps between the girders the photograph shines,
+ *  lining a wider tunnel further out that moves past at its own slower pace (parallax); the lattice twists slowly
+ *  as we go.
  *
- * Knobs: girderP (girder width), countP (girders around), outerP (outer tunnel brightness), hueP.
+ *  Endless, mirrorable; the tunnel continues beyond the frame.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the flight (integrated, jump-free)
+ *    audioPhase      -> the lattice twists (integrated)
+ *    audioSpread     -> girder spacing (open lattice when wide)
+ *    audioKick       -> the joint lights flare (light)
+ *    audioMode       -> light colour: cool in minor, warm in major
+ *    audioSwell      -> depth glow (slow)
+ *
+ *  Knobs: girderP (girder width), countP (girders around), outerP (outer tunnel brightness), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

@@ -1,22 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file LiquidMercuryFerrofluidChamber.frag
- * @brief LIQUID MERCURY FERROFLUID CHAMBER: Raymarched reflective pool of liquid
- * mercury and magnetic ferrofluid. Paramagnetic Rosensweig instability cone
- * spikes erupt in hexagonal arrays under shifting magnetic fields, with
- * standing Faraday ripples, chrome mirror reflections, and photo dispersion.
- *   audioAdvance -> rotates magnetic field poles & advects liquid ripples
- *   audioKick    -> violently erupts sharp Rosensweig cone spikes from pool
- *   audioBass    -> undulates Faraday standing-wave frequency and height
- *   audioCentroid-> modulates specular chrome highlight sharpness
+/*****************************************************************************\
+ *                              LiquidMercuryFerrofluidChamber.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   spikeP   float Rosensweig cone spike sharpness & height (0.5..2.2)
- *   faradayP float Faraday ripple wave amplitude           (0.5..2.0)
- *   speedP   float magnetic field oscillation velocity     (0.5..2.0)
- *   hueP     float metallic sheen hue offset               (0..6.28)
+ *  @brief
+ *  LIQUID MERCURY FERROFLUID CHAMBER: Raymarched reflective pool of liquid mercury and magnetic ferrofluid.
+ *
+ *  Paramagnetic Rosensweig instability cone spikes erupt in hexagonal arrays under shifting magnetic fields, with
+ *  standing Faraday ripples, chrome mirror reflections, and photo dispersion.
+ *
+ *    audioAdvance -> rotates magnetic field poles & advects liquid ripples
+ *    audioKick    -> violently erupts sharp Rosensweig cone spikes from pool
+ *    audioBass    -> undulates Faraday standing-wave frequency and height
+ *    audioCentroid-> modulates specular chrome highlight sharpness
+ *
+ *  Per-activation variety:
+ *    spikeP   float Rosensweig cone spike sharpness & height (0.5..2.2)
+ *    faradayP float Faraday ripple wave amplitude           (0.5..2.0)
+ *    speedP   float magnetic field oscillation velocity     (0.5..2.0)
+ *    hueP     float metallic sheen hue offset               (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

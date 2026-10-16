@@ -1,18 +1,23 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file NestedMandalaInfiniteDive.frag
- * @brief NESTED MANDALA INFINITE DIVE: Multi-plane continuous forward plunge
- * through stacked ornate mandala gates with center puncture shockwaves,
- * depth-of-field bokeh blur, and kaleidoscopic petal folding.
+/*****************************************************************************\
+ *                              NestedMandalaInfiniteDive.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance -> drives continuous forward plunge velocity through mandala gates
- *   audioKick    -> triggers gate puncture shatter & radial shockwave expansion
- *   audioCentroid-> modulates mandala petal symmetry order & fine filigree
- *   audioSubBass -> expands radial gate aperture breathing
- *   audioChromaHue-> rotates the luminous temple gate palette
+ *  @brief
+ *  NESTED MANDALA INFINITE DIVE: Multi-plane continuous forward plunge through stacked ornate mandala gates with
+ *  center puncture shockwaves, depth-of-field bokeh blur, and kaleidoscopic petal folding.
+ *
+ *  Audio Reactivity:
+ *    audioAdvance -> drives continuous forward plunge velocity through mandala gates
+ *    audioKick    -> triggers gate puncture shatter & radial shockwave expansion
+ *    audioCentroid-> modulates mandala petal symmetry order & fine filigree
+ *    audioSubBass -> expands radial gate aperture breathing
+ *    audioChromaHue-> rotates the luminous temple gate palette
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

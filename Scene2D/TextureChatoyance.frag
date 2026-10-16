@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureChatoyance.frag
- * @brief TEXTURE CHATOYANCE: tiger's eye -- a polished slab of fibrous stone
- * whose silky bands of golden brown and deep blue flash bright and dark
- * as the light moves, each band's fibres running in its own direction, so
- * the stripes seem to roll like a cat's eye as the stone is turned; the
- * bands follow the photograph's structure, its colours shifting the stone
- * between tiger's eye, hawk's eye and red cat's eye.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              TextureChatoyance.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the light rolls across (integrated, jump-free)
- *   audioSpread     -> the band width
- *   audioKick       -> the flash brightens (light)
- *   audioMode       -> the stone: blue hawk's eye in minor, golden tiger's eye in major
- *   audioRoughness  -> fibre crispness
- *   audioSwell      -> the polish (slow)
+ *  @brief
+ *  TEXTURE CHATOYANCE: tiger's eye -- a polished slab of fibrous stone whose silky bands of golden brown and deep
+ *  blue flash bright and dark as the light moves, each band's fibres running in its own direction, so the stripes
+ *  seem to roll like a cat's eye as the stone is turned; the bands follow the photograph's structure, its colours
+ *  shifting the stone between tiger's eye, hawk's eye and red cat's eye.
  *
- * Knobs: bandP (band count), fibreP (fibre fineness), photoP (photo influence), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the light rolls across (integrated, jump-free)
+ *    audioSpread     -> the band width
+ *    audioKick       -> the flash brightens (light)
+ *    audioMode       -> the stone: blue hawk's eye in minor, golden tiger's eye in major
+ *    audioRoughness  -> fibre crispness
+ *    audioSwell      -> the polish (slow)
+ *
+ *  Knobs: bandP (band count), fibreP (fibre fineness), photoP (photo influence), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

@@ -1,21 +1,26 @@
 #version 330 core
+/*****************************************************************************\
+ *                              MirrorShardKaleidoscope.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Lights each mirror shard from MirrorShardKaleidoscope.vert as a real reflective facet: the view ray from the
+ *  (near-origin) camera to the shard is reflected off its tilted normal and used to sample the current slideshow
+ *  photo as a wrapped equirectangular environment -- the shard genuinely shows a different sliver of the picture
+ *  depending on its current tilt, the same trick as Scene3D/ChromeFlow.frag's chrome reflections.
+ *
+ *  A Fresnel term brightens the mirror at grazing angles, a cool metallic base tint keeps facets readable even when
+ *  the reflection swings away from the photo, and a kick-driven flash briefly overexposes toward white.
+ *
+ *  @author René Weller
+ */
 out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec3  vNormal;   ///< Surface normal (from the vertex stage).
 in vec3  vWorldPos; ///< World position (from the vertex stage).
 in vec3  vTint;     ///< Tint (from the vertex stage).
 in float vFlash;    ///< Flash (from the vertex stage).
-
-/**
- * @file MirrorShardKaleidoscope.frag
- * @brief Lights each mirror shard from MirrorShardKaleidoscope.vert as a real reflective facet:
- * the view ray from the (near-origin) camera to the shard is reflected off its tilted normal and
- * used to sample the current slideshow photo as a wrapped equirectangular environment -- the
- * shard genuinely shows a different sliver of the picture depending on its current tilt, the same
- * trick as Scene3D/ChromeFlow.frag's chrome reflections. A Fresnel term brightens the mirror at
- * grazing angles, a cool metallic base tint keeps facets readable even when the reflection swings
- * away from the photo, and a kick-driven flash briefly overexposes toward white.
- */
 
 uniform sampler2D tex0;          ///< The current photo.
 uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).

@@ -1,23 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file MirrorBallRoom.frag
- * @brief MIRROR BALL ROOM: an empty ballroom at night with a mirror ball
- * turning under the ceiling.  A spotlight hits the ball and a thousand
- * small squares of light wander steadily over the walls, the parquet and
- * the columns; in the haze each reflection draws a thin beam back to the
- * ball.  The ball keeps its own slow speed -- the music is in the light:
- * the spot brightens with the kick, and the reflections take their colour
- * from the band of the facet they come from.
+/*****************************************************************************\
+ *                              MirrorBallRoom.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioKick         -> the spotlight on the ball (light)
- *   audioSpectrum[32] -> brightness of each reflection, by facet band
- *   audioSwell        -> haze in the room, so more beams show (slow)
- *   sceneTime         -> the ball's rotation (continuous, constant)
+ *  @brief
+ *  MIRROR BALL ROOM: an empty ballroom at night with a mirror ball turning under the ceiling.
  *
- * Per-activation variety: tintP (white or coloured light), hueP.
+ *  A spotlight hits the ball and a thousand small squares of light wander steadily over the walls, the parquet and
+ *  the columns; in the haze each reflection draws a thin beam back to the ball.  The ball keeps its own slow speed
+ *  -- the music is in the light: the spot brightens with the kick, and the reflections take their colour from the
+ *  band of the facet they come from.
+ *
+ *  Audio Reactivity:
+ *    audioKick         -> the spotlight on the ball (light)
+ *    audioSpectrum[32] -> brightness of each reflection, by facet band
+ *    audioSwell        -> haze in the room, so more beams show (slow)
+ *    sceneTime         -> the ball's rotation (continuous, constant)
+ *
+ *  Per-activation variety: tintP (white or coloured light), hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

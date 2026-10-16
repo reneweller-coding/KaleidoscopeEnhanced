@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file MatrioshkaBrain.frag
- * @brief MATRIOSHKA BRAIN: a star wrapped in nested shells of computer,
- * seen from outside.  Three concentric spheres of panels, each turning on
- * its own slow axis: the outer shell cold and dark red with its waste heat,
- * the middle one orange, the inner one yellow-hot -- and where panels are
- * missing, the view falls through to the next shell and finally to the
- * star's white-gold surface.  Seams between the panels carry streams of
- * light, the data flowing round the shells.
+/*****************************************************************************\
+ *                              MatrioshkaBrain.frag
+\*****************************************************************************/
+/*! @file
  *
- *   sceneTime/sceneAdvance -> the shells turning, data along the seams
- *   audioSwell    -> the star's glow through the gaps (slow)
- *   audioKick     -> the data streams flare (light only)
- *   audioChromaHue-> photo tint of the panels
+ *  @brief
+ *  MATRIOSHKA BRAIN: a star wrapped in nested shells of computer, seen from outside.
  *
- * Per-activation variety:
- *   techP float panel density (0.5..1.5)
- *   dataP float brightness of the data streams (0.5..2.0)
- *   hueP float palette offset (0..6.28)
+ *  Three concentric spheres of panels, each turning on its own slow axis: the outer shell cold and dark red with
+ *  its waste heat, the middle one orange, the inner one yellow-hot -- and where panels are missing, the view falls
+ *  through to the next shell and finally to the star's white-gold surface.  Seams between the panels carry streams
+ *  of light, the data flowing round the shells.
+ *
+ *    sceneTime/sceneAdvance -> the shells turning, data along the seams
+ *    audioSwell    -> the star's glow through the gaps (slow)
+ *    audioKick     -> the data streams flare (light only)
+ *    audioChromaHue-> photo tint of the panels
+ *
+ *  Per-activation variety:
+ *    techP float panel density (0.5..1.5)
+ *    dataP float brightness of the data streams (0.5..2.0)
+ *    hueP float palette offset (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

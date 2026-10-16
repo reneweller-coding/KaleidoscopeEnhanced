@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureMitosisField.frag
- * @brief TEXTURE MITOSIS FIELD: a sheet of living cells dividing -- each
- * translucent cell swells, its nucleus lines up, the cell stretches,
- * pinches in the middle and splits into two daughters that drift apart
- * and shrink back to size, over and over, each at its own pace, so the
- * whole field seethes with divisions; the cells carry the photograph's
- * colours, lit from behind like a microscope.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              TextureMitosisField.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the division cycles (integrated, jump-free)
- *   audioSpread     -> cell size
- *   audioKick       -> the nuclei glow (light)
- *   audioMode       -> light: cool dark-field in minor, warm bright-field in major (tint)
- *   audioRoughness  -> the membranes ripple
- *   audioSwell      -> the halo around the cells (slow)
+ *  @brief
+ *  TEXTURE MITOSIS FIELD: a sheet of living cells dividing -- each translucent cell swells, its nucleus lines up,
+ *  the cell stretches, pinches in the middle and splits into two daughters that drift apart and shrink back to
+ *  size, over and over, each at its own pace, so the whole field seethes with divisions; the cells carry the
+ *  photograph's colours, lit from behind like a microscope.
  *
- * Knobs: rateP (division rate), cellP (cell density), photoP (photo colours), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the division cycles (integrated, jump-free)
+ *    audioSpread     -> cell size
+ *    audioKick       -> the nuclei glow (light)
+ *    audioMode       -> light: cool dark-field in minor, warm bright-field in major (tint)
+ *    audioRoughness  -> the membranes ripple
+ *    audioSwell      -> the halo around the cells (slow)
+ *
+ *  Knobs: rateP (division rate), cellP (cell density), photoP (photo colours), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

@@ -1,22 +1,31 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file FerroelectricDomainVortexArray.frag
- * @brief FERROELECTRIC DOMAIN VORTEX ARRAY: 2D square array of nanoscale electric polarization
- * vortices and antivortices in PbTiO3/SrTiO3 oxide superlattices. Continuous curling of electric
- * dipoles creates localized piezoelectric shear strain, toroidal dipole moments, and photo texturing.
- *   audioAdvance -> rotates ferroelectric polarization curl vectors & domain wall drift
- *   audioKick    -> flashes piezoelectric stress-release polarization switching pulses
- *   audioSwell   -> enriches dipolar vortex core depth & spontaneous polarization magnitude
- *   audioCentroid-> shifts ferroelectric domain birefringent color spectra
- *   audioPhase   -> twists alternating vortex-antivortex chirality
+/*****************************************************************************\
+ *                              FerroelectricDomainVortexArray.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   vortexPitchP float ferroelectric vortex cell pitch scale     (2.5..7.0)
- *   polarStrP    float spontaneous electric polarization strength (0.6..2.2)
- *   piezoP       float piezoelectric shear birefringence contrast (0.8..2.5)
- *   coreDipP     float vortex core electric field singularity     (0.4..1.8)
+ *  @brief
+ *  FERROELECTRIC DOMAIN VORTEX ARRAY: 2D square array of nanoscale electric polarization vortices and antivortices
+ *  in PbTiO3/SrTiO3 oxide superlattices.
+ *
+ *  Continuous curling of electric dipoles creates localized piezoelectric shear strain, toroidal dipole moments,
+ *  and photo texturing.
+ *
+ *    audioAdvance -> rotates ferroelectric polarization curl vectors & domain wall drift
+ *    audioKick    -> flashes piezoelectric stress-release polarization switching pulses
+ *    audioSwell   -> enriches dipolar vortex core depth & spontaneous polarization magnitude
+ *    audioCentroid-> shifts ferroelectric domain birefringent color spectra
+ *    audioPhase   -> twists alternating vortex-antivortex chirality
+ *
+ *  Per-activation variety:
+ *    vortexPitchP float ferroelectric vortex cell pitch scale     (2.5..7.0)
+ *    polarStrP    float spontaneous electric polarization strength (0.6..2.2)
+ *    piezoP       float piezoelectric shear birefringence contrast (0.8..2.5)
+ *    coreDipP     float vortex core electric field singularity     (0.4..1.8)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

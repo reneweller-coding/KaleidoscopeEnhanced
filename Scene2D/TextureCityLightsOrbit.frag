@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureCityLightsOrbit.frag
- * @brief TEXTURE CITY LIGHTS ORBIT: the Earth at night seen from orbit,
- * gliding slowly beneath -- the photograph becomes a continent: where it
- * is bright, cities sprawl as clusters of countless tiny sodium-orange and
- * white lights, strung together by glowing roads along its edges; its
- * dark areas are sea and wilderness, faintly moonlit; thin clouds drift
- * over it, lit from within now and then by lightning.  Endless,
- * mirrorable.
+/*****************************************************************************\
+ *                              TextureCityLightsOrbit.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the orbit (integrated, jump-free)
- *   audioSpread     -> the cities sprawl further
- *   audioKick       -> lightning in the clouds (light)
- *   audioHigh       -> the lights twinkle through the air (light)
- *   audioMode       -> sodium orange in minor, LED white in major
- *   audioSwell      -> the cloud cover (slow)
+ *  @brief
+ *  TEXTURE CITY LIGHTS ORBIT: the Earth at night seen from orbit, gliding slowly beneath -- the photograph becomes
+ *  a continent: where it is bright, cities sprawl as clusters of countless tiny sodium-orange and white lights,
+ *  strung together by glowing roads along its edges; its dark areas are sea and wilderness, faintly moonlit; thin
+ *  clouds drift over it, lit from within now and then by lightning.
  *
- * Knobs: cityP (light density), roadP (road glow), cloudP, hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the orbit (integrated, jump-free)
+ *    audioSpread     -> the cities sprawl further
+ *    audioKick       -> lightning in the clouds (light)
+ *    audioHigh       -> the lights twinkle through the air (light)
+ *    audioMode       -> sodium orange in minor, LED white in major
+ *    audioSwell      -> the cloud cover (slow)
+ *
+ *  Knobs: cityP (light density), roadP (road glow), cloudP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

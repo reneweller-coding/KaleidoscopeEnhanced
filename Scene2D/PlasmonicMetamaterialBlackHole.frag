@@ -1,22 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file PlasmonicMetamaterialBlackHole.frag
- * @brief PLASMONIC METAMATERIAL BLACK HOLE: Omnidirectional optical absorber in graded-index
- * metamaterials. Continuous radial variation of dielectric permittivity and magnetic permeability
- * curves light rays into logarithmic spiral orbits toward a central plasmonic absorbing core.
- *   audioAdvance -> rotates spiral Poynting vector energy trajectories towards core
- *   audioKick    -> flashes central plasmonic core resistive dissipation hot spots
- *   audioSwell   -> widens metamaterial gradient trapping radius & Poynting streamline glow
- *   audioCentroid-> shifts transformation optics dielectric dispersion spectra
- *   audioSubBass -> deepens central optical trap absorption null depth
+/*****************************************************************************\
+ *                              PlasmonicMetamaterialBlackHole.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   trapRadiusP  float graded-index metamaterial outer trap radius (0.6..1.6)
- *   spiralCurlP  float logarithmic ray-bending curvature         (2.0..6.0)
- *   absorberP    float central plasmonic core absorption gain     (0.8..2.5)
- *   poyntingP    float Poynting vector streamline ripple density  (8.0..24.0)
+ *  @brief
+ *  PLASMONIC METAMATERIAL BLACK HOLE: Omnidirectional optical absorber in graded-index metamaterials.
+ *
+ *  Continuous radial variation of dielectric permittivity and magnetic permeability curves light rays into
+ *  logarithmic spiral orbits toward a central plasmonic absorbing core.
+ *
+ *    audioAdvance -> rotates spiral Poynting vector energy trajectories towards core
+ *    audioKick    -> flashes central plasmonic core resistive dissipation hot spots
+ *    audioSwell   -> widens metamaterial gradient trapping radius & Poynting streamline glow
+ *    audioCentroid-> shifts transformation optics dielectric dispersion spectra
+ *    audioSubBass -> deepens central optical trap absorption null depth
+ *
+ *  Per-activation variety:
+ *    trapRadiusP  float graded-index metamaterial outer trap radius (0.6..1.6)
+ *    spiralCurlP  float logarithmic ray-bending curvature         (2.0..6.0)
+ *    absorberP    float central plasmonic core absorption gain     (0.8..2.5)
+ *    poyntingP    float Poynting vector streamline ripple density  (8.0..24.0)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

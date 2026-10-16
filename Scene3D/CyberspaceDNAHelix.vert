@@ -1,18 +1,23 @@
 #version 330 core
-/**
- * @file CyberspaceDNAHelix.vert
- * @brief Vertex stage companion to CyberspaceDNAHelix.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              CyberspaceDNAHelix.vert
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance   -> helix twist phase (pre-integrated, jump-free)
- *   audioKick      -> transcription-pulse flash + backbone ribbon thickness
- *   audioSwell     -> width of the unzipping replication fork
- *   audioHarmChange-> a chord/key change forces the strands further apart --
- *                     the fork tears open on every harmonic turn
- *   audioUpperMid  -> 2-6 kHz metallic edge focuses the transcription
- *                     read-head from a broad wash to a razor scan line
- *   audioMode      -> (fragment stage) warm/cold nucleotide palette
+ *  @brief
+ *  Vertex stage companion to CyberspaceDNAHelix.frag -- see that file's header for this scene's description.
+ *
+ *  Audio Reactivity:
+ *    audioAdvance   -> helix twist phase (pre-integrated, jump-free)
+ *    audioKick      -> transcription-pulse flash + backbone ribbon thickness
+ *    audioSwell     -> width of the unzipping replication fork
+ *    audioHarmChange-> a chord/key change forces the strands further apart --
+ *                      the fork tears open on every harmonic turn
+ *    audioUpperMid  -> 2-6 kHz metallic edge focuses the transcription
+ *                      read-head from a broad wash to a razor scan line
+ *    audioMode      -> (fragment stage) warm/cold nucleotide palette
+ *
+ *  @author René Weller
  */
 // attrA.x = t along ribbon (0..1), attrA.y = side (-1..+1), attrA.w = ribbon
 // id, attrB = per-ribbon seeds (Scene3DShader.cpp GEOM_RIBBON).

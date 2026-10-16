@@ -1,28 +1,34 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-
-/**
- * @file MeshTerrain.frag
- * @brief Flying low across a landscape that is really a 3D model blown up two
- * orders of magnitude (the transform is in the vertex stage). Grazing light and
- * distance haze do the rest: at that scale, folds become ridges and the eye
- * stops asking what the object used to be.
+/*****************************************************************************\
+ *                              MeshTerrain.frag
+\*****************************************************************************/
+/*! @file
  *
- * Two things make this read as terrain rather than as a big object:
+ *  @brief
+ *  Flying low across a landscape that is really a 3D model blown up two orders of magnitude (the transform is in
+ *  the vertex stage).
  *
- *  - The light is LOW. A raking sun turns every fold into a lit face and a
- *    dark one, which is how relief is read from the air. Overhead light
- *    flattens the same geometry into a texture.
- *  - Distance HAZE. Aerial perspective is the strongest depth cue there is for
- *    a landscape, and it costs one mix() against the sky colour.
+ *  Grazing light and distance haze do the rest: at that scale, folds become ridges and the eye stops asking what
+ *  the object used to be.
  *
- *   audioAdvance -> flight speed (vertex stage)
- *   audioSwell   -> sun strength, haze density
- *   audioKick    -> a pulse of light along the ridges
+ *  Two things make this read as terrain rather than as a big object:
  *
- * Per-instance: sizeP, speedP, heightP (relief), tintP (light hue).
- * Per-activation variety: hueP float palette offset (0..6.28).
+ *   - The light is LOW. A raking sun turns every fold into a lit face and a
+ *     dark one, which is how relief is read from the air. Overhead light
+ *     flattens the same geometry into a texture.
+ *   - Distance HAZE. Aerial perspective is the strongest depth cue there is for
+ *     a landscape, and it costs one mix() against the sky colour.
+ *
+ *    audioAdvance -> flight speed (vertex stage)
+ *    audioSwell   -> sun strength, haze density
+ *    audioKick    -> a pulse of light along the ridges
+ *
+ *  Per-instance: sizeP, speedP, heightP (relief), tintP (light hue).
+ *  Per-activation variety: hueP float palette offset (0..6.28).
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform sampler2DArray texMeshMaterial;       ///< The mesh's material textures (albedo, roughness, normal ...).
 uniform int            texMeshMaterialLayers; ///< Number of layers in texMeshMaterial.

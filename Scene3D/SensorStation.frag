@@ -1,23 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SensorStation.frag
- * @brief GEOM="MESH" STATION FAMILY: science/sensor/comms hulls (relay
- * stations, laboratories, terraforming observers, comms arrays, deep-space
- * probes), watching over a colorful deep-space nebula painted onto the sky
- * shell Scene3DShader::buildGeometry() appends after the loaded mesh (see
- * SensorStation.vert) -- vBg selects shell vs. hull. Cool cyan tech light
- * plus a slow scanning band that sweeps along the hull's own local axis (in
- * OBJECT space, so it reads as the station's instrument scanning rather
- * than a shadow tied to world position); no photo-tinting on the hull
- * itself -- the nebula carries the color.
- *   audioSwell   -> key-light + scan-band intensity
- *   audioKick    -> a brief scan-band flare, like a returned ping
- *   audioAdvance -> tumble speed (vertex stage)
+/*****************************************************************************\
+ *                              SensorStation.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-instance: sizeP (relative scale), scanP (scan speed).
- * Per-activation variety: hueP float palette offset (0..6.28).
+ *  @brief
+ *  GEOM="MESH" STATION FAMILY: science/sensor/comms hulls (relay stations, laboratories, terraforming observers,
+ *  comms arrays, deep-space probes), watching over a colorful deep-space nebula painted onto the sky shell
+ *  Scene3DShader::buildGeometry() appends after the loaded mesh (see SensorStation.vert) -- vBg selects shell vs.
+ *  hull.
+ *
+ *  Cool cyan tech light plus a slow scanning band that sweeps along the hull's own local axis (in OBJECT space, so
+ *  it reads as the station's instrument scanning rather than a shadow tied to world position); no photo-tinting on
+ *  the hull itself -- the nebula carries the color.
+ *
+ *    audioSwell   -> key-light + scan-band intensity
+ *    audioKick    -> a brief scan-band flare, like a returned ping
+ *    audioAdvance -> tumble speed (vertex stage)
+ *
+ *  Per-instance: sizeP (relative scale), scanP (scan speed).
+ *  Per-activation variety: hueP float palette offset (0..6.28).
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform sampler2DArray texMeshMaterial;       ///< The mesh's material textures (albedo, roughness, normal ...).
 uniform int            texMeshMaterialLayers; ///< Number of layers in texMeshMaterial.

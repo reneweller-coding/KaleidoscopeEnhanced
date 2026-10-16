@@ -1,27 +1,32 @@
 #version 430 core
-/**
- * @file GalaxyMergerNBody.comp
- * @brief GALAXY MERGER: two spiral discs on a decaying orbit, 32,768 stars
- * integrated live in a persistent state buffer.  Every star feels the two
- * galactic cores (softened point masses moving on an analytic in-spiral) --
- * the restricted three-body scheme of Toomre & Toomre, which is exactly what
- * throws the tidal bridges and tails real mergers show.  The discs are
- * seeded on cold circular orbits, so the first pass is calm and the tails
- * grow as the cores close; after the merge the stars keep swinging through
- * the combined well.  The simulation pace follows the music.
+/*****************************************************************************\
+ *                              GalaxyMergerNBody.comp
+\*****************************************************************************/
+/*! @file
  *
- * State (binding 2): magic, then four clocks (simT, theta, lastT, lastAdv),
- * then 8 floats per star: pos xyz, vel xyz, galaxy, pad.  Self-healing init:
- * a wrong magic re-seeds every star from its id; pass 1 stamps the magic and
- * the clocks, so the whole frame agrees on whether it was an init frame.
+ *  @brief
+ *  GALAXY MERGER: two spiral discs on a decaying orbit, 32,768 stars integrated live in a persistent state buffer.
  *
- * Audio Reactivity (generator stage):
- *   sceneAdvance -> simulation pace (music-paced, continuous)
- *   audioLevel   -> pace as well (loud = faster)
- *   audioKick    -> star flash (fragment stage)
- *   audioBass    -> core glow
+ *  Every star feels the two galactic cores (softened point masses moving on an analytic in-spiral) -- the
+ *  restricted three-body scheme of Toomre & Toomre, which is exactly what throws the tidal bridges and tails real
+ *  mergers show.  The discs are seeded on cold circular orbits, so the first pass is calm and the tails grow as the
+ *  cores close; after the merge the stars keep swinging through the combined well.  The simulation pace follows the
+ *  music.
  *
- * Per-instance: massP (core mass), spinP (disc tilt), hueP.
+ *  State (binding 2): magic, then four clocks (simT, theta, lastT, lastAdv),
+ *  then 8 floats per star: pos xyz, vel xyz, galaxy, pad.  Self-healing init:
+ *  a wrong magic re-seeds every star from its id; pass 1 stamps the magic and
+ *  the clocks, so the whole frame agrees on whether it was an init frame.
+ *
+ *  Audio Reactivity (generator stage):
+ *    sceneAdvance -> simulation pace (music-paced, continuous)
+ *    audioLevel   -> pace as well (loud = faster)
+ *    audioKick    -> star flash (fragment stage)
+ *    audioBass    -> core glow
+ *
+ *  Per-instance: massP (core mass), spinP (disc tilt), hueP.
+ *
+ *  @author René Weller
  */
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( local_size_x = 4, local_size_y = 4, local_size_z = 4 ) in;

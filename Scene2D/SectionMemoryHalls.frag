@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SectionMemoryHalls.frag
- * @brief SECTION MEMORY HALLS: the song's structure as a suite of rooms.
- * Every section the analyser recognises gets its own hall -- its own colour,
- * pillar spacing, ceiling ornament and lamp tone -- and a RETURNING section
- * (the second chorus) leads back into the SAME hall, lit warm as a place
- * already visited; a new section opens a cool, unfamiliar one.  The change
- * never cuts: when a section boundary arrives, a lit doorway appears far
- * down the hall and the camera flies through it a few seconds later into
- * the new room.  Verse / chorus / bridge become a corridor of places.
+/*****************************************************************************\
+ *                              SectionMemoryHalls.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSectionId / Prev / Age / Known -> which hall, which one behind, where the door is
- *   audioBeatPhase -> lamps pulse in turn down the hall (continuous phase)
- *   audioKick      -> the lamps flash
- *   audioBass      -> floor glow
- *   audioSwell     -> overall light
+ *  @brief
+ *  SECTION MEMORY HALLS: the song's structure as a suite of rooms.
  *
- * Per-activation variety: speedP (flight speed), widthP (hall width), hueP.
+ *  Every section the analyser recognises gets its own hall -- its own colour, pillar spacing, ceiling ornament and
+ *  lamp tone -- and a RETURNING section (the second chorus) leads back into the SAME hall, lit warm as a place
+ *  already visited; a new section opens a cool, unfamiliar one.  The change never cuts: when a section boundary
+ *  arrives, a lit doorway appears far down the hall and the camera flies through it a few seconds later into the
+ *  new room.  Verse / chorus / bridge become a corridor of places.
+ *
+ *  Audio Reactivity:
+ *    audioSectionId / Prev / Age / Known -> which hall, which one behind, where the door is
+ *    audioBeatPhase -> lamps pulse in turn down the hall (continuous phase)
+ *    audioKick      -> the lamps flash
+ *    audioBass      -> floor glow
+ *    audioSwell     -> overall light
+ *
+ *  Per-activation variety: speedP (flight speed), widthP (hall width), hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

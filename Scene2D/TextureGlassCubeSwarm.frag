@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureGlassCubeSwarm.frag
- * @brief TEXTURE GLASS CUBE SWARM: a swarm of clear glass cubes tumbling
- * slowly through space in front of the photograph -- each cube refracts the
- * photo behind it into a shifted, magnified, chromatically fringed tile,
- * its edges bright, its faces tinted by the thickness of glass, near cubes
- * large and sharp, far ones small; they turn slowly on their own axes so
- * the refracted tiles slide and flip.  The photo behind drifts; the field
- * of cubes is endless.  Mirrorable.
+/*****************************************************************************\
+ *                              TextureGlassCubeSwarm.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the swarm drifts (integrated, jump-free)
- *   audioPhase      -> the cubes turn (integrated)
- *   audioSpread     -> refraction strength
- *   audioMode       -> the glass tint warms in major
- *   audioHigh       -> the edges glint (light)
- *   audioSwell      -> the light behind (slow)
+ *  @brief
+ *  TEXTURE GLASS CUBE SWARM: a swarm of clear glass cubes tumbling slowly through space in front of the photograph
+ *  -- each cube refracts the photo behind it into a shifted, magnified, chromatically fringed tile, its edges
+ *  bright, its faces tinted by the thickness of glass, near cubes large and sharp, far ones small; they turn slowly
+ *  on their own axes so the refracted tiles slide and flip.
  *
- * Knobs: countP (how many cubes), sizeP, dispP (colour fringing), hueP.
+ *  The photo behind drifts; the field of cubes is endless.  Mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the swarm drifts (integrated, jump-free)
+ *    audioPhase      -> the cubes turn (integrated)
+ *    audioSpread     -> refraction strength
+ *    audioMode       -> the glass tint warms in major
+ *    audioHigh       -> the edges glint (light)
+ *    audioSwell      -> the light behind (slow)
+ *
+ *  Knobs: countP (how many cubes), sizeP, dispP (colour fringing), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

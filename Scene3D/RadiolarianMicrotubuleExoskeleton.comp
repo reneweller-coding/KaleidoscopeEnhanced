@@ -1,18 +1,23 @@
 #version 430
+/*****************************************************************************\
+ *                              RadiolarianMicrotubuleExoskeleton.comp
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Compute generator companion to RadiolarianMicrotubuleExoskeleton.frag -- generates 3D porous icosahedral
+ *  biosilica skeletons and radial axopodia spicules.
+ *
+ *  Builds a PLANKTON FIELD of seven radiolaria spread through the view frustum,
+ *  plus a fine silica-dust haze.  Previously one skeleton sat on the origin and
+ *  consisted of nothing but 64 radial hairlines -- the porous shell the header
+ *  promises was never actually generated -- so the frame was a small spiky ball
+ *  adrift in black (measured occ 0.34, luma 0.013).
+ *
+ *  @author René Weller
+ */
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( local_size_x = 4, local_size_y = 4, local_size_z = 4 ) in;
-
-/**
- * @file RadiolarianMicrotubuleExoskeleton.comp
- * @brief Compute generator companion to RadiolarianMicrotubuleExoskeleton.frag --
- * generates 3D porous icosahedral biosilica skeletons and radial axopodia spicules.
- *
- * Builds a PLANKTON FIELD of seven radiolaria spread through the view frustum,
- * plus a fine silica-dust haze.  Previously one skeleton sat on the origin and
- * consisted of nothing but 64 radial hairlines -- the porous shell the header
- * promises was never actually generated -- so the frame was a small spiky ball
- * adrift in black (measured occ 0.34, luma 0.013).
- */
 
 /// The output vertex buffer: eight floats per vertex (attribute A, attribute B) that the scene draws.
 layout( std430, binding = 0 ) buffer Verts

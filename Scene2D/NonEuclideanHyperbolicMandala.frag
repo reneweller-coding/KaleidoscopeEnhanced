@@ -1,12 +1,17 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file NonEuclideanHyperbolicMandala.frag
- * @brief NON-EUCLIDEAN HYPERBOLIC MANDALA: 100% viewport-filling infinite
- * hyperbolic space tessellation on the Poincare disk with {7,3} sacred
- * geometry Coxeter circle inversions, logarithmic spirals, deep fractal
- * zoom, and recursive kaleidoscopic photo texture folding.
+/*****************************************************************************\
+ *                              NonEuclideanHyperbolicMandala.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  NON-EUCLIDEAN HYPERBOLIC MANDALA: 100% viewport-filling infinite hyperbolic space tessellation on the Poincare
+ *  disk with {7,3} sacred geometry Coxeter circle inversions, logarithmic spirals, deep fractal zoom, and recursive
+ *  kaleidoscopic photo texture folding.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

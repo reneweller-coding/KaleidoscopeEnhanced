@@ -1,18 +1,25 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file HyperbolicEscherCircleLimit.frag
- * @brief HYPERBOLIC ESCHER CIRCLE LIMIT: Conformal Poincaré disk tessellation
- * with infinite tile density toward the boundary and dynamic Möbius inversions.
- * Fills the screen with breathing non-Euclidean hyperbolic symmetries.
+/*****************************************************************************\
+ *                              HyperbolicEscherCircleLimit.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance -> continuous rotation & hyperbolic space translation
- *   audioKick    -> inward/outward inversion shockwave
- *   audioSubBass -> pulses the hyperbolic curvature & boundary breathing
- *   audioCentroid-> modulates tile complexity & spectral edge highlights
- *   audioChromaHue-> rotates the generative and texture-driven palette
+ *  @brief
+ *  HYPERBOLIC ESCHER CIRCLE LIMIT: Conformal Poincaré disk tessellation with infinite tile density toward the
+ *  boundary and dynamic Möbius inversions.
+ *
+ *  Fills the screen with breathing non-Euclidean hyperbolic symmetries.
+ *
+ *  Audio Reactivity:
+ *    audioAdvance -> continuous rotation & hyperbolic space translation
+ *    audioKick    -> inward/outward inversion shockwave
+ *    audioSubBass -> pulses the hyperbolic curvature & boundary breathing
+ *    audioCentroid-> modulates tile complexity & spectral edge highlights
+ *    audioChromaHue-> rotates the generative and texture-driven palette
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

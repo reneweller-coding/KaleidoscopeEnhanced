@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file HoneyFold.frag
- * @brief HONEY FOLD: a thick stream of honey falling onto itself, seen close
- * and backlit -- the viscous rope coils and folds into loops on a growing
- * mound, the golden light shining through it, bright where it is thin and
- * deep amber where it is thick, with glossy highlights along every fold and
- * tiny air bubbles caught inside.  Many ropes side by side fill the frame,
- * each coiling at its own rhythm, so the whole picture is an endless
- * golden weave in motion.  The honey's tint follows the photo's warm tones.
+/*****************************************************************************\
+ *                              HoneyFold.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the coiling (integrated, jump-free)
- *   audioSpread     -> rope thickness
- *   audioRoughness  -> the coils wobble
- *   audioBass       -> the backlight (light)
- *   audioHigh       -> the glints on the folds (light)
- *   audioMode       -> pale acacia honey in major, dark buckwheat in minor
+ *  @brief
+ *  HONEY FOLD: a thick stream of honey falling onto itself, seen close and backlit -- the viscous rope coils and
+ *  folds into loops on a growing mound, the golden light shining through it, bright where it is thin and deep amber
+ *  where it is thick, with glossy highlights along every fold and tiny air bubbles caught inside.
  *
- * Knobs: ropesP (how many ropes), coilP (coil size), bubbleP, hueP.
+ *  Many ropes side by side fill the frame, each coiling at its own rhythm, so the whole picture is an endless
+ *  golden weave in motion.  The honey's tint follows the photo's warm tones.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the coiling (integrated, jump-free)
+ *    audioSpread     -> rope thickness
+ *    audioRoughness  -> the coils wobble
+ *    audioBass       -> the backlight (light)
+ *    audioHigh       -> the glints on the folds (light)
+ *    audioMode       -> pale acacia honey in major, dark buckwheat in minor
+ *
+ *  Knobs: ropesP (how many ropes), coilP (coil size), bubbleP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

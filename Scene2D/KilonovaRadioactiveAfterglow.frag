@@ -1,22 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file KilonovaRadioactiveAfterglow.frag
- * @brief KILONOVA RADIOACTIVE AFTERGLOW: Binary neutron star merger fireball.
- * Expanding relativistic ejecta cloud synthesis of heavy r-process elements (gold, platinum),
- * lanthanide-rich line opacity absorption, shock break-out gamma flash, and photo texturing.
- *   audioAdvance -> drives relativistic ejecta fireball expansion & turbulent billows
- *   audioKick    -> ignites gamma-ray burst shock break-out flashes
- *   audioSwell   -> swells dense radioactive core thermal luminosity
- *   audioBass    -> undulates magneto-hydrodynamic ejecta filament tearing
- *   audioCentroid-> shifts lanthanide absorption edge spectra
+/*****************************************************************************\
+ *                              KilonovaRadioactiveAfterglow.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   ejectaP  float merger ejecta velocity & turbulence scale (0.6..2.0)
- *   coreP    float radioactive central engine hotness       (0.8..2.5)
- *   lanthP   float lanthanide opacity absorption strength   (0.5..2.2)
- *   shockP   float shock break-out ray intensity           (0.4..1.8)
+ *  @brief
+ *  KILONOVA RADIOACTIVE AFTERGLOW: Binary neutron star merger fireball.
+ *
+ *  Expanding relativistic ejecta cloud synthesis of heavy r-process elements (gold, platinum), lanthanide-rich line
+ *  opacity absorption, shock break-out gamma flash, and photo texturing.
+ *
+ *    audioAdvance -> drives relativistic ejecta fireball expansion & turbulent billows
+ *    audioKick    -> ignites gamma-ray burst shock break-out flashes
+ *    audioSwell   -> swells dense radioactive core thermal luminosity
+ *    audioBass    -> undulates magneto-hydrodynamic ejecta filament tearing
+ *    audioCentroid-> shifts lanthanide absorption edge spectra
+ *
+ *  Per-activation variety:
+ *    ejectaP  float merger ejecta velocity & turbulence scale (0.6..2.0)
+ *    coreP    float radioactive central engine hotness       (0.8..2.5)
+ *    lanthP   float lanthanide opacity absorption strength   (0.5..2.2)
+ *    shockP   float shock break-out ray intensity           (0.4..1.8)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file RingSpokesAndWakes.frag
- * @brief RING SPOKES AND WAKES: the rings of Saturn seen from above the
- * plane, the planet's limb at one edge.  Thirty-two ringlets whose
- * density is the spectrum (bass innermost); tiny moons on their orbits
- * raise wakes -- wavy edges that trail behind them -- and the dark radial
- * spokes rotate with the ring, lit by the kick.  The whole ring turns
- * steadily on the scene clock (differentially: inner faster).  The photo
- * tints the ring particles.  Camera still.
+/*****************************************************************************\
+ *                              RingSpokesAndWakes.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSpectrum[32] -> ringlet density (light)
- *   sceneAdvance      -> rotation, moon orbits, wakes (continuous)
- *   audioKick         -> spokes flash (light)
- *   audioSwell        -> sunlight (slow)
- *   audioLevel        -> brightness
+ *  @brief
+ *  RING SPOKES AND WAKES: the rings of Saturn seen from above the plane, the planet's limb at one edge.
  *
- * Per-activation variety: tiltP, moonsP, hueP.
+ *  Thirty-two ringlets whose density is the spectrum (bass innermost); tiny moons on their orbits raise wakes --
+ *  wavy edges that trail behind them -- and the dark radial spokes rotate with the ring, lit by the kick.  The
+ *  whole ring turns steadily on the scene clock (differentially: inner faster).  The photo tints the ring
+ *  particles.  Camera still.
+ *
+ *  Audio Reactivity:
+ *    audioSpectrum[32] -> ringlet density (light)
+ *    sceneAdvance      -> rotation, moon orbits, wakes (continuous)
+ *    audioKick         -> spokes flash (light)
+ *    audioSwell        -> sunlight (slow)
+ *    audioLevel        -> brightness
+ *
+ *  Per-activation variety: tiltP, moonsP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

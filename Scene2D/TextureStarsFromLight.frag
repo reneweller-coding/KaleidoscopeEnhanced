@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureStarsFromLight.frag
- * @brief TEXTURE STARS FROM LIGHT: the photograph turned into a night sky --
- * each bright spot of the picture becomes a star, bigger and brighter the
- * brighter the spot, coloured like real stars from blue-white to orange by
- * the photo's hue, with diffraction spikes on the brightest; faint ones
- * form milky clouds where the photo is soft, and the whole firmament
- * turns slowly around a distant pole.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              TextureStarsFromLight.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the sky turns (integrated, jump-free)
- *   audioSpread     -> how many stars appear
- *   audioHigh       -> the stars twinkle (light)
- *   audioKick       -> the spikes flare (light)
- *   audioMode       -> the sky: blue-black in minor, warm dusk in major
- *   audioSwell      -> the milky glow (slow)
+ *  @brief
+ *  TEXTURE STARS FROM LIGHT: the photograph turned into a night sky -- each bright spot of the picture becomes a
+ *  star, bigger and brighter the brighter the spot, coloured like real stars from blue-white to orange by the
+ *  photo's hue, with diffraction spikes on the brightest; faint ones form milky clouds where the photo is soft, and
+ *  the whole firmament turns slowly around a distant pole.
  *
- * Knobs: densityP (star density), spikeP (diffraction spikes), milkyP, hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the sky turns (integrated, jump-free)
+ *    audioSpread     -> how many stars appear
+ *    audioHigh       -> the stars twinkle (light)
+ *    audioKick       -> the spikes flare (light)
+ *    audioMode       -> the sky: blue-black in minor, warm dusk in major
+ *    audioSwell      -> the milky glow (slow)
+ *
+ *  Knobs: densityP (star density), spikeP (diffraction spikes), milkyP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

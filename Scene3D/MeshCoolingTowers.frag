@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file MeshCoolingTowers.frag
- * @brief MESH COOLING TOWERS: three real hyperboloid towers (one model,
- * instances="3") against an evening sky, each breathing a plume of steam
- * that rises and leans away on the scene clock. The plumes are painted on
- * the sky shell above each tower, lit from below by the plant floodlights
- * and from the side by the last sun, and each carries the colour of a
- * spectrum band by height, so the sky reads the music. The swell is how
- * much steam there is; the kick is a floodlight on the concrete; the bass
- * the glow inside the towers. The mesh counterpart of CoolingTowerPlumes.
+/*****************************************************************************\
+ *                              MeshCoolingTowers.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSpectrum[32] -> the plume colours by height (light)
- *   audioSwell        -> plume volume (slow)
- *   audioKick         -> a floodlight on the shell (light, local)
- *   audioBass         -> the glow inside the towers (light)
- *   sceneTime         -> the plumes rise and drift (continuous)
+ *  @brief
+ *  MESH COOLING TOWERS: three real hyperboloid towers (one model, instances="3") against an evening sky, each
+ *  breathing a plume of steam that rises and leans away on the scene clock.
  *
- * Per-instance: sizeP. Per-activation variety: hueP.
+ *  The plumes are painted on the sky shell above each tower, lit from below by the plant floodlights and from the
+ *  side by the last sun, and each carries the colour of a spectrum band by height, so the sky reads the music. The
+ *  swell is how much steam there is; the kick is a floodlight on the concrete; the bass the glow inside the towers.
+ *  The mesh counterpart of CoolingTowerPlumes.
+ *
+ *  Audio Reactivity:
+ *    audioSpectrum[32] -> the plume colours by height (light)
+ *    audioSwell        -> plume volume (slow)
+ *    audioKick         -> a floodlight on the shell (light, local)
+ *    audioBass         -> the glow inside the towers (light)
+ *    sceneTime         -> the plumes rise and drift (continuous)
+ *
+ *  Per-instance: sizeP. Per-activation variety: hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform sampler2DArray texMeshMaterial;       ///< The mesh's material textures (albedo, roughness, normal ...).
 uniform int            texMeshMaterialLayers; ///< Number of layers in texMeshMaterial.

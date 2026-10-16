@@ -1,18 +1,24 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file PhotonicCrystalFiberCore.frag
- * @brief PHOTONIC CRYSTAL FIBER CORE: the cross-section lattice of a holey fiber
- * (hexagonal cladding, hollow core) slowly rolling; LIGHT PULSES race down
- * the guided core on the kick, supercontinuum colours from the photo arc.
- *   audioKick -> guided light pulse    audioPhase -> supercontinuum drift
- *   audioSwell -> brightness of the bulk glass behind the cladding
- *   time -> slow roll around the fiber axis
+/*****************************************************************************\
+ *                              PhotonicCrystalFiberCore.frag
+\*****************************************************************************/
+/*! @file
  *
- * vKind = 1 marks the single slab that stands in for the fibre's BULK GLASS,
- * shaded as the guided light diffusing outward from the axis; without it the
- * gaps between the capillaries were simply black.
+ *  @brief
+ *  PHOTONIC CRYSTAL FIBER CORE: the cross-section lattice of a holey fiber (hexagonal cladding, hollow core) slowly
+ *  rolling; LIGHT PULSES race down the guided core on the kick, supercontinuum colours from the photo arc.
+ *
+ *    audioKick -> guided light pulse    audioPhase -> supercontinuum drift
+ *    audioSwell -> brightness of the bulk glass behind the cladding
+ *    time -> slow roll around the fiber axis
+ *
+ *  vKind = 1 marks the single slab that stands in for the fibre's BULK GLASS,
+ *  shaded as the guided light diffusing outward from the axis; without it the
+ *  gaps between the capillaries were simply black.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec3  vWorldPos; ///< World position (from the vertex stage).
 in vec3  vNormal;   ///< Surface normal (from the vertex stage).

@@ -1,12 +1,18 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file BioluminescentAbyssalTrenches.frag
- * @brief BIOLUMINESCENT ABYSSAL TRENCHES: 100% viewport-filling deep-sea Hadal
- * zone (11,000m depth). Volumetric raymarched hydrothermal spires, flashing
- * siphonophore colonies, pyrosome light tubes, marine snow, and deep-sea
- * photo refraction across turbulent oceanic thermal boundary layers.
+/*****************************************************************************\
+ *                              BioluminescentAbyssalTrenches.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  BIOLUMINESCENT ABYSSAL TRENCHES: 100% viewport-filling deep-sea Hadal zone (11,000m depth).
+ *
+ *  Volumetric raymarched hydrothermal spires, flashing siphonophore colonies, pyrosome light tubes, marine snow,
+ *  and deep-sea photo refraction across turbulent oceanic thermal boundary layers.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

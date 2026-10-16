@@ -1,20 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file NonEuclideanKleinQuarticTile.frag
- * @brief NON-EUCLIDEAN KLEIN QUARTIC TILE: Hyperbolic tiling of the Klein quartic Riemann surface
- * (genus 3) by 24 regular heptagons with PSL(2,7) symmetry group of order 168. Features glassy
- * hyperbolic heptagon facets, specular reflections, and photo-derived geometric texturing.
- *   audioAdvance -> drives non-Euclidean hyperbolic geodesic isometry flow
- *   audioKick    -> flashes specular facet reflections & symmetry axis pulses
- *   audioSwell   -> thickens hyperbolic glass facet curvature & transmission
- *   audioCentroid-> shifts Riemann surface immersion color spectra
+/*****************************************************************************\
+ *                              NonEuclideanKleinQuarticTile.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   quarticScaleP float Klein quartic 3D immersion scale      (0.8..2.2)
- *   fresnelP      float glass facet Fresnel reflection gain   (0.8..2.5)
- *   heptagonP     float heptagonal boundary crease sharpness  (0.6..2.2)
+ *  @brief
+ *  NON-EUCLIDEAN KLEIN QUARTIC TILE: Hyperbolic tiling of the Klein quartic Riemann surface (genus 3) by 24 regular
+ *  heptagons with PSL(2,7) symmetry group of order 168.
+ *
+ *  Features glassy hyperbolic heptagon facets, specular reflections, and photo-derived geometric texturing.
+ *
+ *    audioAdvance -> drives non-Euclidean hyperbolic geodesic isometry flow
+ *    audioKick    -> flashes specular facet reflections & symmetry axis pulses
+ *    audioSwell   -> thickens hyperbolic glass facet curvature & transmission
+ *    audioCentroid-> shifts Riemann surface immersion color spectra
+ *
+ *  Per-activation variety:
+ *    quarticScaleP float Klein quartic 3D immersion scale      (0.8..2.2)
+ *    fresnelP      float glass facet Fresnel reflection gain   (0.8..2.5)
+ *    heptagonP     float heptagonal boundary crease sharpness  (0.6..2.2)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec2  vUV;      ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 in vec3  vNormal;  ///< Surface normal (from the vertex stage).

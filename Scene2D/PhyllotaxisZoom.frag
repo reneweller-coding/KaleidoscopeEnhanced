@@ -1,25 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file PhyllotaxisZoom.frag
- * @brief PHYLLOTAXIS ZOOM: a sunflower spiral that never ends in either
- * direction.  Seed n sits at log-radius b*n and angle n*golden angle, so the
- * pattern maps onto itself under "one seed inward" (shrink by e^b, turn by
- * the golden angle): the zoom is periodic in that step and seamless, the
- * seeds grow with their radius as in the real flower, and the centre is
- * not a centre but another infinity.  Each seed carries a pitch class: the
- * twelve chroma classes tile the spiral, so a chord lights whole parastichy
- * arms at once.
+/*****************************************************************************\
+ *                              PhyllotaxisZoom.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioChroma[12]  -> which seeds glow (n mod 12 = pitch class)
- *   audioMelodyPitch -> detunes the golden angle a hair: the arms tilt
- *   audioBeat        -> seeds swell (envelope, continuous)
- *   audioKick        -> a light pulse from the centre
- *   sceneAdvance     -> the zoom (music-paced, periodic, seamless)
+ *  @brief
+ *  PHYLLOTAXIS ZOOM: a sunflower spiral that never ends in either direction.
  *
- * Per-activation variety: zoomP (zoom rate), tiltP (chirality), hueP.
+ *  Seed n sits at log-radius b*n and angle n*golden angle, so the pattern maps onto itself under "one seed inward"
+ *  (shrink by e^b, turn by the golden angle): the zoom is periodic in that step and seamless, the seeds grow with
+ *  their radius as in the real flower, and the centre is not a centre but another infinity.  Each seed carries a
+ *  pitch class: the twelve chroma classes tile the spiral, so a chord lights whole parastichy arms at once.
+ *
+ *  Audio Reactivity:
+ *    audioChroma[12]  -> which seeds glow (n mod 12 = pitch class)
+ *    audioMelodyPitch -> detunes the golden angle a hair: the arms tilt
+ *    audioBeat        -> seeds swell (envelope, continuous)
+ *    audioKick        -> a light pulse from the centre
+ *    sceneAdvance     -> the zoom (music-paced, periodic, seamless)
+ *
+ *  Per-activation variety: zoomP (zoom rate), tiltP (chirality), hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

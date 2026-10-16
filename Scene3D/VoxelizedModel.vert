@@ -1,11 +1,17 @@
 #version 330 core
-/**
- * @file VoxelizedModel.vert
- * @brief VOXELIZED MODEL: the model turns slowly on the scene clock in
- * front of the camera; the fragment stage paints it as a voxel sculpture of
- * the photo whose resolution breathes on the swell.  Positions are never
- * quantised (that would pop): the voxel look lives entirely in the colour
- * and the lighting.  No camera motion.
+/*****************************************************************************\
+ *                              VoxelizedModel.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  VOXELIZED MODEL: the model turns slowly on the scene clock in front of the camera; the fragment stage paints it
+ *  as a voxel sculpture of the photo whose resolution breathes on the swell.
+ *
+ *  Positions are never quantised (that would pop): the voxel look lives entirely in the colour and the lighting.
+ *  No camera motion.
+ *
+ *  @author René Weller
  */
 in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an
                ///< index).

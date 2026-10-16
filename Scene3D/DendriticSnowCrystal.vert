@@ -1,8 +1,13 @@
 #version 330 core
-/**
- * @file DendriticSnowCrystal.vert
- * @brief attrA.xyz = world pos, attrA.w = iceRefract
- * attrB.w = flakeSector (GEOM_INDIRECT, 8-float layout)
+/*****************************************************************************\
+ *                              DendriticSnowCrystal.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  attrA.xyz = world pos, attrA.w = iceRefract attrB.w = flakeSector (GEOM_INDIRECT, 8-float layout)
+ *
+ *  @author René Weller
  */
 in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an
                ///< index).

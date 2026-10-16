@@ -1,23 +1,31 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file ChainTriangleStreet.frag
- * @brief CHAINTRIANGLESTREET: a chain of continuous transforms -- a triangle mirror lattice (p3m1), its tiles streaming
- * with a vortex street.  Every stage is continuous and the stages are joined by the photo's mirror repeat, so the whole
- * map is seamless; the photograph flows through it endlessly and never repeats.  Rendered as the photo, as a lit relief
- * of it, or as glowing edges or as glowing contour lines (styleP blends through them).  Endless, mirrorable.
+/*****************************************************************************\
+ *                              ChainTriangleStreet.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the flow through the chain (integrated, jump-free)
- *   audioPhase      -> the kaleidoscope turns (integrated)
- *   audioSpread     -> the strength of the distorting stages
- *   audioKick       -> the edges flare (light)
- *   audioMode       -> the tint: cool in minor, warm in major
- *   audioSwell      -> the relief light (slow)
+ *  @brief
+ *  CHAINTRIANGLESTREET: a chain of continuous transforms -- a triangle mirror lattice (p3m1), its tiles streaming
+ *  with a vortex street.
  *
- * Knobs: styleP (photo / relief / glowing edges / contour lines), speedP (flow speed), detailP (texture sharpness),
- * hueP.
+ *  Every stage is continuous and the stages are joined by the photo's mirror repeat, so the whole map is seamless;
+ *  the photograph flows through it endlessly and never repeats.  Rendered as the photo, as a lit relief of it, or
+ *  as glowing edges or as glowing contour lines (styleP blends through them).  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the flow through the chain (integrated, jump-free)
+ *    audioPhase      -> the kaleidoscope turns (integrated)
+ *    audioSpread     -> the strength of the distorting stages
+ *    audioKick       -> the edges flare (light)
+ *    audioMode       -> the tint: cool in minor, warm in major
+ *    audioSwell      -> the relief light (slow)
+ *
+ *  Knobs: styleP (photo / relief / glowing edges / contour lines), speedP (flow speed), detailP (texture
+ *  sharpness), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

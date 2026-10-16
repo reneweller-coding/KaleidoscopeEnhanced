@@ -1,28 +1,33 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file PantheonOculusShaft.frag
- * @brief PANTHEON OCULUS SHAFT: inside the Pantheon, looking up into the
- * coffered dome -- rings of stepped coffers shrinking toward the open
- * oculus at the top, where the sky shows white-blue, and through it the
- * sun drives a solid column of light down through the dusty air, so
- * dense you could touch it, landing as a bright disc on the coffers and
- * the drum below.  The disc creeps across the dome as the sun moves, its
- * light making every step of the coffers stand out; dust motes glitter
- * in the shaft.  The camera is still.
+/*****************************************************************************\
+ *                              PantheonOculusShaft.frag
+\*****************************************************************************/
+/*! @file
  *
- * The dome and drum are ray-traced (a sphere on a cylinder); the shaft is
- * the exact length of the view ray inside the beam's cylinder.
+ *  @brief
+ *  PANTHEON OCULUS SHAFT: inside the Pantheon, looking up into the coffered dome -- rings of stepped coffers
+ *  shrinking toward the open oculus at the top, where the sky shows white-blue, and through it the sun drives a
+ *  solid column of light down through the dusty air, so dense you could touch it, landing as a bright disc on the
+ *  coffers and the drum below.
  *
- * Audio Reactivity:
- *   audioSwell  -> the dust in the shaft (slow)
- *   audioHigh   -> the glitter of the motes (light)
- *   audioBass   -> the sunlight's strength (light)
- *   audioLevel  -> brightness
- *   sceneTime / sceneAdvance -> the sun's slow travel, drifting dust
+ *  The disc creeps across the dome as the sun moves, its light making every step of the coffers stand out; dust
+ *  motes glitter in the shaft.  The camera is still.
  *
- * Per-activation variety: sunP (the sun's height), hueP.
+ *  The dome and drum are ray-traced (a sphere on a cylinder); the shaft is
+ *  the exact length of the view ray inside the beam's cylinder.
+ *
+ *  Audio Reactivity:
+ *    audioSwell  -> the dust in the shaft (slow)
+ *    audioHigh   -> the glitter of the motes (light)
+ *    audioBass   -> the sunlight's strength (light)
+ *    audioLevel  -> brightness
+ *    sceneTime / sceneAdvance -> the sun's slow travel, drifting dust
+ *
+ *  Per-activation variety: sunP (the sun's height), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

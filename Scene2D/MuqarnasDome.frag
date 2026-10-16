@@ -1,23 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file MuqarnasDome.frag
- * @brief MUQARNAS DOME: looking straight up into a honeycomb vault of
- * stalactite niches, tier upon tier of pointed cells stepping inward to a
- * star-shaped oculus full of daylight.  Every cell is a small concave niche
- * lit from the centre, its rim gilded, its hollow tiled in the colours of
- * the photo; alternate tiers are offset by half a cell so the rows
- * interlock.  The vault turns very slowly; the gold of each tier glows with
- * its spectrum band, and the oculus breathes with the swell.
+/*****************************************************************************\
+ *                              MuqarnasDome.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSpectrum[32] -> gold glow of each tier (light)
- *   audioSwell        -> daylight through the oculus (slow)
- *   sceneAdvance      -> the slow turn of the vault (continuous)
- *   audioHigh         -> glints on the gilded edges (light)
+ *  @brief
+ *  MUQARNAS DOME: looking straight up into a honeycomb vault of stalactite niches, tier upon tier of pointed cells
+ *  stepping inward to a star-shaped oculus full of daylight.
  *
- * Per-activation variety: tiersP (cells per tier), hueP.
+ *  Every cell is a small concave niche lit from the centre, its rim gilded, its hollow tiled in the colours of the
+ *  photo; alternate tiers are offset by half a cell so the rows interlock.  The vault turns very slowly; the gold
+ *  of each tier glows with its spectrum band, and the oculus breathes with the swell.
+ *
+ *  Audio Reactivity:
+ *    audioSpectrum[32] -> gold glow of each tier (light)
+ *    audioSwell        -> daylight through the oculus (slow)
+ *    sceneAdvance      -> the slow turn of the vault (continuous)
+ *    audioHigh         -> glints on the gilded edges (light)
+ *
+ *  Per-activation variety: tiersP (cells per tier), hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

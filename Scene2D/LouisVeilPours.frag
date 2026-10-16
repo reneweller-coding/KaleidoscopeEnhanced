@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file LouisVeilPours.frag
- * @brief LOUIS VEIL POURS: after Morris Louis's "Veils" -- translucent sheets
- * of thinned acrylic poured over one another, each a flowing curtain of
- * colour with soft, tide-marked edges, the layers glazing into deeper
- * colours where they overlap; the pours keep coming, each veil flowing
- * across and slowly fading as newer ones cover it.  The colours come from
- * the photograph; the raw canvas shows where no paint reached.  Endless,
- * mirrorable (the veils flow in several directions, no gravity edge).
+/*****************************************************************************\
+ *                              LouisVeilPours.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the pours flow (integrated, jump-free)
- *   audioHarmChange -> a new veil begins (smoothed)
- *   audioSpread     -> veil width
- *   audioRoughness  -> the tide lines get more ragged
- *   audioMode       -> the palette warms in major
- *   audioSwell      -> saturation (slow)
+ *  @brief
+ *  LOUIS VEIL POURS: after Morris Louis's "Veils" -- translucent sheets of thinned acrylic poured over one another,
+ *  each a flowing curtain of colour with soft, tide-marked edges, the layers glazing into deeper colours where they
+ *  overlap; the pours keep coming, each veil flowing across and slowly fading as newer ones cover it.
  *
- * Knobs: layersP (how many veils), glazeP (transparency), canvasP (raw canvas), hueP.
+ *  The colours come from the photograph; the raw canvas shows where no paint reached.  Endless, mirrorable (the
+ *  veils flow in several directions, no gravity edge).
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the pours flow (integrated, jump-free)
+ *    audioHarmChange -> a new veil begins (smoothed)
+ *    audioSpread     -> veil width
+ *    audioRoughness  -> the tide lines get more ragged
+ *    audioMode       -> the palette warms in major
+ *    audioSwell      -> saturation (slow)
+ *
+ *  Knobs: layersP (how many veils), glazeP (transparency), canvasP (raw canvas), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

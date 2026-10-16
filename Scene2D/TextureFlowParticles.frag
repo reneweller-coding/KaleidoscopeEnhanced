@@ -1,27 +1,32 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureFlowParticles.frag
- * @brief TEXTURE FLOW PARTICLES: the photograph dissolved into a river of
- * light particles -- countless fine grains stream along the contours of
- * the texture (the flow runs across its brightness gradient, so it follows
- * the grain of wood, the rings of agate, the veins of marble), each grain
- * carrying the colour of the photo where it is, drawn as a short glowing
- * streak.  Denser streams gather where the texture has strong structure,
- * sparse drift fills the calm areas.  An endless field that mirrors
- * without seams; every photo gives its own current.
+/*****************************************************************************\
+ *                              TextureFlowParticles.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the streams' flow (integrated, jump-free)
- *   audioSpread     -> streak length: a wide spectrum draws long threads
- *   audioRoughness  -> turbulence mixed into the flow
- *   audioMode       -> the flow's sense of rotation leans (slow blend)
- *   audioHigh       -> the grains sparkle (light)
- *   audioSwell      -> particle density (slow)
+ *  @brief
+ *  TEXTURE FLOW PARTICLES: the photograph dissolved into a river of light particles -- countless fine grains stream
+ *  along the contours of the texture (the flow runs across its brightness gradient, so it follows the grain of
+ *  wood, the rings of agate, the veins of marble), each grain carrying the colour of the photo where it is, drawn
+ *  as a short glowing streak.
  *
- * Knobs: scaleP (how close), densityP (grains), curlP (share of free
- * turbulence against the photo's own contours), hueP.
+ *  Denser streams gather where the texture has strong structure, sparse drift fills the calm areas.  An endless
+ *  field that mirrors without seams; every photo gives its own current.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the streams' flow (integrated, jump-free)
+ *    audioSpread     -> streak length: a wide spectrum draws long threads
+ *    audioRoughness  -> turbulence mixed into the flow
+ *    audioMode       -> the flow's sense of rotation leans (slow blend)
+ *    audioHigh       -> the grains sparkle (light)
+ *    audioSwell      -> particle density (slow)
+ *
+ *  Knobs: scaleP (how close), densityP (grains), curlP (share of free
+ *  turbulence against the photo's own contours), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

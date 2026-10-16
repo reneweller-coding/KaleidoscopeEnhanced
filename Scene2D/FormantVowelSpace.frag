@@ -1,25 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file FormantVowelSpace.frag
- * @brief FORMANT VOWEL SPACE: the vowel chart of phonetics -- the second
- * formant across (high F2 on the left, as the chart is drawn), the first
- * formant down -- with the cardinal vowels as photo blobs at their
- * places.  A marker glides to where the spectral shape points (a smoothed
- * centroid and spread read from the spectrogram history, so it never
- * jumps), trailing the recent seconds as a fading path of dots; the blob
- * nearest the marker lights, its vowel rings with the treble.  The kick
- * is a soft pulse of the marker.  Camera fixed on the chart.
+/*****************************************************************************\
+ *                              FormantVowelSpace.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   texSpectro (history) -> centroid / spread over rows: marker and trail (smoothed)
- *   audioHigh            -> the lit vowel rings (light)
- *   audioKick            -> marker pulse (light)
- *   audioSwell           -> chart light (slow)
- *   audioLevel           -> brightness
+ *  @brief
+ *  FORMANT VOWEL SPACE: the vowel chart of phonetics -- the second formant across (high F2 on the left, as the
+ *  chart is drawn), the first formant down -- with the cardinal vowels as photo blobs at their places.
  *
- * Per-activation variety: blobP, trailP, hueP.
+ *  A marker glides to where the spectral shape points (a smoothed centroid and spread read from the spectrogram
+ *  history, so it never jumps), trailing the recent seconds as a fading path of dots; the blob nearest the marker
+ *  lights, its vowel rings with the treble.  The kick is a soft pulse of the marker.  Camera fixed on the chart.
+ *
+ *  Audio Reactivity:
+ *    texSpectro (history) -> centroid / spread over rows: marker and trail (smoothed)
+ *    audioHigh            -> the lit vowel rings (light)
+ *    audioKick            -> marker pulse (light)
+ *    audioSwell           -> chart light (slow)
+ *    audioLevel           -> brightness
+ *
+ *  Per-activation variety: blobP, trailP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

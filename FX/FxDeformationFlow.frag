@@ -1,11 +1,16 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file FxDeformationFlow.frag
- * @brief Polar radial-flow warp (Inigo Quilez, iq/2013): unwraps the scene into
- * polar coordinates around a moving point pair and scrolls it, tiled into
- * "copies" mirrored repeats; an optional grid overlay shows the seams.
+/*****************************************************************************\
+ *                              FxDeformationFlow.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Polar radial-flow warp (Inigo Quilez, iq/2013): unwraps the scene into polar coordinates around a moving point
+ *  pair and scrolls it, tiled into "copies" mirrored repeats; an optional grid overlay shows the seams.
+ *
+ *  @author René Weller; contains code by Inigo Quilez (iq, 2013, CC BY-NC-SA 3.0)
  */
+out vec4          fragColor;         ///< The pixel's colour (output).
 uniform vec2      resolution;        ///< Size of the render target in pixels.
 uniform float     time;              ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;              ///< The current photo.

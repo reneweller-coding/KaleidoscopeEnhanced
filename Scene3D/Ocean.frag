@@ -1,4 +1,24 @@
 #version 330 core
+/*****************************************************************************\
+ *                              Ocean.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Shades the tessellated ocean surface: a Fresnel mix between the water body colour and a reflected sky built from
+ *  the current slideshow photo.
+ *
+ *  audioLevel lifts the water body's brightness, audioHigh sharpens the sun
+ *  glitter's specular lobe, audioKick pumps the foam on breaking crests,
+ *  audioSubBass drives a subsurface glow in the wave backs, audioBeat adds
+ *  a final overall pulse, and audioChromaHue nudges the water's hue within
+ *  a bounded range so a full turn of the musical key cannot push the sea
+ *  into purple. audioAmbient lifts the water body colour independently of
+ *  the Fresnel term, and camHP sets the eye height used to build the view
+ *  vector.
+ *
+ *  @author René Weller
+ */
 out vec4 fragColor; ///< The pixel's colour (output).
 // Ocean.frag — water shading for the tessellated surface.
 // Fresnel decides the mix: looking down you see into the water, looking
@@ -10,22 +30,6 @@ in vec2  vSurfUV; ///< Surf UV (from the vertex stage).
 in float vFoam;   ///< Foam (from the vertex stage).
 in vec3  vNormal; ///< Surface normal (from the vertex stage).
 in float vDist;   ///< Distance (from the vertex stage).
-
-/**
- * @file Ocean.frag
- * @brief Shades the tessellated ocean surface: a Fresnel mix between the
- * water body colour and a reflected sky built from the current slideshow
- * photo.
- *
- * audioLevel lifts the water body's brightness, audioHigh sharpens the sun
- * glitter's specular lobe, audioKick pumps the foam on breaking crests,
- * audioSubBass drives a subsurface glow in the wave backs, audioBeat adds
- * a final overall pulse, and audioChromaHue nudges the water's hue within
- * a bounded range so a full turn of the musical key cannot push the sea
- * into purple. audioAmbient lifts the water body colour independently of
- * the Fresnel term, and camHP sets the eye height used to build the view
- * vector.
- */
 
 uniform sampler2D tex0;          ///< the slideshow photo = the sky this sea reflects
 uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.

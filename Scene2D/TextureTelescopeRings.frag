@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureTelescopeRings.frag
- * @brief TEXTURE TELESCOPE RINGS: looking into an endless telescope of
- * nested rings -- band after band of the photograph, each ring a
- * separately turning barrel stepping down into the next, with knurled
- * metal edges, engraved scale ticks and a bevelled step that catches the
- * light; the rings slide toward us as if the telescope were being drawn
- * out forever, each turning at its own speed and direction.  Endless,
- * mirrorable.
+/*****************************************************************************\
+ *                              TextureTelescopeRings.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the rings slide out (integrated, jump-free)
- *   audioPhase      -> the rings turn (integrated)
- *   audioSpread     -> ring width
- *   audioKick       -> the bevel edges flash (light)
- *   audioMode       -> metal: steel in minor, brass in major
- *   audioSwell      -> the glow in the eyepiece (slow)
+ *  @brief
+ *  TEXTURE TELESCOPE RINGS: looking into an endless telescope of nested rings -- band after band of the photograph,
+ *  each ring a separately turning barrel stepping down into the next, with knurled metal edges, engraved scale
+ *  ticks and a bevelled step that catches the light; the rings slide toward us as if the telescope were being drawn
+ *  out forever, each turning at its own speed and direction.
  *
- * Knobs: tickP (scale ticks), knurlP (knurling), photoP (photo on the rings), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the rings slide out (integrated, jump-free)
+ *    audioPhase      -> the rings turn (integrated)
+ *    audioSpread     -> ring width
+ *    audioKick       -> the bevel edges flash (light)
+ *    audioMode       -> metal: steel in minor, brass in major
+ *    audioSwell      -> the glow in the eyepiece (slow)
+ *
+ *  Knobs: tickP (scale ticks), knurlP (knurling), photoP (photo on the rings), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

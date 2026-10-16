@@ -1,22 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file RelativisticPlasmaZpinchInstability.frag
- * @brief RELATIVISTIC PLASMA Z-PINCH INSTABILITY: Megampere relativistic pulsed-power Z-pinch.
- * Intense axial plasma current self-compresses via azimuthal Lorentz force, degenerating into
- * violent m=0 (sausage) and m=1 (kink) magneto-Rayleigh-Taylor instabilities and fusion hot spots.
- *   audioAdvance -> drives relativistic axial current flow & magnetic pinch dynamics
- *   audioKick    -> ignites thermonuclear fusion hotspot micro-detonations
- *   audioBass    -> pulses azimuthal magnetic pinch Lorentz compression force
- *   audioSwell   -> thickens dense bremsstrahlung emission haze & pinch diameter
- *   audioCentroid-> shifts high-temperature plasma X-ray/EUV emission spectra
+/*****************************************************************************\
+ *                              RelativisticPlasmaZpinchInstability.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   kinkAmpP     float m=1 helical kink instability amplitude   (0.5..2.2)
- *   sausageP     float m=0 necking sausage mode wavelength      (4.0..16.0)
- *   pinchRadiusP float central dense plasma pinch radius        (0.08..0.35)
- *   xrayGlowP    float thermonuclear hot-spot X-ray brightness   (0.8..2.5)
+ *  @brief
+ *  RELATIVISTIC PLASMA Z-PINCH INSTABILITY: Megampere relativistic pulsed-power Z-pinch.
+ *
+ *  Intense axial plasma current self-compresses via azimuthal Lorentz force, degenerating into violent m=0
+ *  (sausage) and m=1 (kink) magneto-Rayleigh-Taylor instabilities and fusion hot spots.
+ *
+ *    audioAdvance -> drives relativistic axial current flow & magnetic pinch dynamics
+ *    audioKick    -> ignites thermonuclear fusion hotspot micro-detonations
+ *    audioBass    -> pulses azimuthal magnetic pinch Lorentz compression force
+ *    audioSwell   -> thickens dense bremsstrahlung emission haze & pinch diameter
+ *    audioCentroid-> shifts high-temperature plasma X-ray/EUV emission spectra
+ *
+ *  Per-activation variety:
+ *    kinkAmpP     float m=1 helical kink instability amplitude   (0.5..2.2)
+ *    sausageP     float m=0 necking sausage mode wavelength      (4.0..16.0)
+ *    pinchRadiusP float central dense plasma pinch radius        (0.08..0.35)
+ *    xrayGlowP    float thermonuclear hot-spot X-ray brightness   (0.8..2.5)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

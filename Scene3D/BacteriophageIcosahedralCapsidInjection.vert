@@ -1,16 +1,22 @@
 #version 330 core
-/**
- * @file BacteriophageIcosahedralCapsidInjection.vert
- * @brief Vertex stage companion to BacteriophageIcosahedralCapsidInjection.frag -- see that file's
- * header for this scene's description.
+/*****************************************************************************\
+ *                              BacteriophageIcosahedralCapsidInjection.vert
+\*****************************************************************************/
+/*! @file
  *
- * The whole 220x120 grid used to collapse onto ONE phage sitting in the middle
- * of a black frame, tumbling on a single slow axis.  The grid is now cut into
- * a SWARM: the u axis tiles into NS phages, the v axis into MS depth rows, and
- * every phage is placed in FRUSTUM coordinates (x,y scaled by its own depth)
- * so the swarm stays spread over the whole picture from the foreground out to
- * the far dark.  The bottom v band becomes the host cell's cytoplasm haze, so
- * the space between the phages is never pure black.
+ *  @brief
+ *  Vertex stage companion to BacteriophageIcosahedralCapsidInjection.frag -- see that file's header for this
+ *  scene's description.
+ *
+ *  The whole 220x120 grid used to collapse onto ONE phage sitting in the middle
+ *  of a black frame, tumbling on a single slow axis.  The grid is now cut into
+ *  a SWARM: the u axis tiles into NS phages, the v axis into MS depth rows, and
+ *  every phage is placed in FRUSTUM coordinates (x,y scaled by its own depth)
+ *  so the swarm stays spread over the whole picture from the foreground out to
+ *  the far dark.  The bottom v band becomes the host cell's cytoplasm haze, so
+ *  the space between the phages is never pure black.
+ *
+ *  @author René Weller
  */
 
 in vec4 attrA; ///< xy = global grid UV [0,1], z = 0, w = cell index

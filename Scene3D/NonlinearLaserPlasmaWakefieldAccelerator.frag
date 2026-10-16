@@ -1,23 +1,31 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file NonlinearLaserPlasmaWakefieldAccelerator.frag
- * @brief NONLINEAR LASER PLASMA WAKEFIELD ACCELERATOR: Laser plasma wakefield acceleration (LWFA)
- * in the non-linear bubble (blowout) regime. Relativistic laser ponderomotive force expels ambient
- * electrons, creating a spherical accelerating ion bubble with trapped GeV electron bunch injection.
- * The plasma oscillates behind the driver, so the blowout repeats as a damped TRAIN of cavities
- * down the whole channel, its sheath drawn by one strand per ribbon.  A tube can only ever be a
- * band across the picture, so the ambient gas jet the channel is bored through is drawn too:
- * twenty long ionisation filaments criss-crossing the frame at their own angles and depths.
- *   audioAdvance -> accelerates laser pulse & accelerating cavity co-moving frame drift
- *   audioKick    -> flashes relativistic electron self-injection & betatron radiation bursts
- *   audioSwell   -> widens plasma bubble blowout radius & wakefield accelerating gradient glow
- *   audioCentroid-> shifts betatron X-ray radiation emission spectra
+/*****************************************************************************\
+ *                              NonlinearLaserPlasmaWakefieldAccelerator.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   ribbonWidthP float plasma sheath ribbon width        (0.02..0.1)
- *   bunchGlowP   float injected electron bunch luminance (0.8..2.5)
+ *  @brief
+ *  NONLINEAR LASER PLASMA WAKEFIELD ACCELERATOR: Laser plasma wakefield acceleration (LWFA) in the non-linear
+ *  bubble (blowout) regime.
+ *
+ *  Relativistic laser ponderomotive force expels ambient electrons, creating a spherical accelerating ion bubble
+ *  with trapped GeV electron bunch injection. The plasma oscillates behind the driver, so the blowout repeats as a
+ *  damped TRAIN of cavities down the whole channel, its sheath drawn by one strand per ribbon.  A tube can only
+ *  ever be a band across the picture, so the ambient gas jet the channel is bored through is drawn too: twenty long
+ *  ionisation filaments criss-crossing the frame at their own angles and depths.
+ *
+ *    audioAdvance -> accelerates laser pulse & accelerating cavity co-moving frame drift
+ *    audioKick    -> flashes relativistic electron self-injection & betatron radiation bursts
+ *    audioSwell   -> widens plasma bubble blowout radius & wakefield accelerating gradient glow
+ *    audioCentroid-> shifts betatron X-ray radiation emission spectra
+ *
+ *  Per-activation variety:
+ *    ribbonWidthP float plasma sheath ribbon width        (0.02..0.1)
+ *    bunchGlowP   float injected electron bunch luminance (0.8..2.5)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec2  vUV;          ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 in float vSide;        ///< Which side of a strip (from the vertex stage).

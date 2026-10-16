@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureIronFilings.frag
- * @brief TEXTURE IRON FILINGS: iron filings on paper over moving magnets --
- * thousands of tiny dark needles lie on the photograph (printed on the
- * paper) and align themselves with the magnetic field: they trace the
- * field lines between the poles in arcs and spirals, bunch up densely at
- * the poles, and as the hidden magnets glide and turn beneath the paper
- * the whole pattern slowly re-forms.  The poles glow faintly.  Endless,
- * mirrorable.
+/*****************************************************************************\
+ *                              TextureIronFilings.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the magnets glide (integrated, jump-free)
- *   audioPhase      -> the magnets turn (integrated)
- *   audioSpread     -> the field reaches further (more filings aligned)
- *   audioKick       -> the poles glow (light)
- *   audioMode       -> the paper: cool grey in minor, warm cream in major
- *   audioRoughness  -> the filings jitter
+ *  @brief
+ *  TEXTURE IRON FILINGS: iron filings on paper over moving magnets -- thousands of tiny dark needles lie on the
+ *  photograph (printed on the paper) and align themselves with the magnetic field: they trace the field lines
+ *  between the poles in arcs and spirals, bunch up densely at the poles, and as the hidden magnets glide and turn
+ *  beneath the paper the whole pattern slowly re-forms.
  *
- * Knobs: densityP (filings), lengthP (needle length), photoP (the printed photo), hueP.
+ *  The poles glow faintly.  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the magnets glide (integrated, jump-free)
+ *    audioPhase      -> the magnets turn (integrated)
+ *    audioSpread     -> the field reaches further (more filings aligned)
+ *    audioKick       -> the poles glow (light)
+ *    audioMode       -> the paper: cool grey in minor, warm cream in major
+ *    audioRoughness  -> the filings jitter
+ *
+ *  Knobs: densityP (filings), lengthP (needle length), photoP (the printed photo), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

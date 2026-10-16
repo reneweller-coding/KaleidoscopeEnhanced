@@ -1,23 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file StippleVoronoiRelax.frag
- * @brief STIPPLE VORONOI RELAX: weighted Voronoi stippling of the photo --
- * the dots are denser and larger where the picture is dark, as in a
- * pen-and-ink stipple, and they relax on the scene clock (each dot drifts
- * on a small smooth orbit as if Lloyd's iteration were still settling).
- * The swell tightens the pattern (finer dots), the kick lights the dots
- * on the darkest tones, the treble the lightest.  Camera still.
+/*****************************************************************************\
+ *                              StippleVoronoiRelax.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   sceneAdvance -> relaxation drift (continuous)
- *   audioSwell   -> dot density (slow)
- *   audioKick    -> dark-tone dots flash (light)
- *   audioHigh    -> light-tone dots flash (light)
- *   audioLevel   -> brightness
+ *  @brief
+ *  STIPPLE VORONOI RELAX: weighted Voronoi stippling of the photo -- the dots are denser and larger where the
+ *  picture is dark, as in a pen-and-ink stipple, and they relax on the scene clock (each dot drifts on a small
+ *  smooth orbit as if Lloyd's iteration were still settling).
  *
- * Per-activation variety: densP, inkP (ink colour blend), hueP.
+ *  The swell tightens the pattern (finer dots), the kick lights the dots on the darkest tones, the treble the
+ *  lightest.  Camera still.
+ *
+ *  Audio Reactivity:
+ *    sceneAdvance -> relaxation drift (continuous)
+ *    audioSwell   -> dot density (slow)
+ *    audioKick    -> dark-tone dots flash (light)
+ *    audioHigh    -> light-tone dots flash (light)
+ *    audioLevel   -> brightness
+ *
+ *  Per-activation variety: densP, inkP (ink colour blend), hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

@@ -1,21 +1,27 @@
 #version 330 core
-/**
- * @file SuperconductingFluxoniumQubitCircuit.vert
- * @brief Vertex stage companion to SuperconductingFluxoniumQubitCircuit.frag -- see that file's
- * header for this scene's description.
+/*****************************************************************************\
+ *                              SuperconductingFluxoniumQubitCircuit.vert
+\*****************************************************************************/
+/*! @file
  *
- * One fluxonium loop is one small ring, and one small ring in the middle of a
- * black frame is what the catalogue scan measured.  A real device is a DIE: a
- * lattice of qubits wired together by coplanar-waveguide traces.  So each
- * ribbon's 300 segments are split into six runs -- five of them draw one
- * z-layer of one of five qubit loops placed in FRUSTUM coordinates across the
- * chip, the sixth draws that ribbon's readout trace meandering the full width
- * or height of the picture.  Every loop still gets all twenty layers.
+ *  @brief
+ *  Vertex stage companion to SuperconductingFluxoniumQubitCircuit.frag -- see that file's header for this scene's
+ *  description.
  *
- * The ribbon tapers to exactly zero at both ends of every run, so the quad
- * that bridges two runs collapses to zero area.  On the loops that taper is
- * visible as the gap in the ring -- which is exactly where a fluxonium's
- * single small Josephson junction interrupts the superinductance.
+ *  One fluxonium loop is one small ring, and one small ring in the middle of a
+ *  black frame is what the catalogue scan measured.  A real device is a DIE: a
+ *  lattice of qubits wired together by coplanar-waveguide traces.  So each
+ *  ribbon's 300 segments are split into six runs -- five of them draw one
+ *  z-layer of one of five qubit loops placed in FRUSTUM coordinates across the
+ *  chip, the sixth draws that ribbon's readout trace meandering the full width
+ *  or height of the picture.  Every loop still gets all twenty layers.
+ *
+ *  The ribbon tapers to exactly zero at both ends of every run, so the quad
+ *  that bridges two runs collapses to zero area.  On the loops that taper is
+ *  visible as the gap in the ring -- which is exactly where a fluxonium's
+ *  single small Josephson junction interrupts the superinductance.
+ *
+ *  @author René Weller
  */
 
 in vec4 attrA; ///< x = t [0,1], y = side (-1/+1), z = 0, w = ribbon index

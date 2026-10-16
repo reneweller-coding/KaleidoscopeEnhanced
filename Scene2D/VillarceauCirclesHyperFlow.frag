@@ -1,18 +1,25 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file VillarceauCirclesHyperFlow.frag
- * @brief VILLARCEAU CIRCLES HYPER FLOW: Bitangential oblique planar slices of a torus
- * producing pairs of perfectly circular Villarceau circles. Intertwined counter-swirling
- * luminous rings, high-contrast chromatic trails, and phase-locked geometric flow.
+/*****************************************************************************\
+ *                              VillarceauCirclesHyperFlow.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance -> drives continuous counter-rotation of Villarceau circle pairs
- *   audioKick    -> flashes circle intersection nodes & radial shockwaves
- *   audioCentroid-> sharpens Villarceau circular ribbon edge resolution
- *   audioSubBass -> expands torus major/minor radius ratio breathing
- *   audioChromaHue-> rotates the luminous Villarceau rainbow palette
+ *  @brief
+ *  VILLARCEAU CIRCLES HYPER FLOW: Bitangential oblique planar slices of a torus producing pairs of perfectly
+ *  circular Villarceau circles.
+ *
+ *  Intertwined counter-swirling luminous rings, high-contrast chromatic trails, and phase-locked geometric flow.
+ *
+ *  Audio Reactivity:
+ *    audioAdvance -> drives continuous counter-rotation of Villarceau circle pairs
+ *    audioKick    -> flashes circle intersection nodes & radial shockwaves
+ *    audioCentroid-> sharpens Villarceau circular ribbon edge resolution
+ *    audioSubBass -> expands torus major/minor radius ratio breathing
+ *    audioChromaHue-> rotates the luminous Villarceau rainbow palette
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

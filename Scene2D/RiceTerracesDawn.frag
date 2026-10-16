@@ -1,28 +1,33 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file RiceTerracesDawn.frag
- * @brief RICE TERRACES DAWN: a hillside of flooded paddies at sunrise, the
- * way the Yuanyang photographs show it.  Curving terraces step down the
- * slope in hundreds of thin panes, each a mirror of the sky, separated by
- * dark earthen bunds with a line of grass; mist lies in the valley below
- * and blue ridges fade behind.  Over the scene arc the sun rises: the sky
- * and every pane with it turn from blue-grey through rose to gold, and a
- * column of sun-glitter runs down the panes beneath it.  A breeze crosses a
- * pane now and then; egrets lift on the kick.  Camera fixed.
+/*****************************************************************************\
+ *                              RiceTerracesDawn.frag
+\*****************************************************************************/
+/*! @file
  *
- * Replaces a Scene3D tessellated version (grey slabs in the catalogue).
+ *  @brief
+ *  RICE TERRACES DAWN: a hillside of flooded paddies at sunrise, the way the Yuanyang photographs show it.
  *
- * Audio Reactivity:
- *   sceneProgress -> the sunrise (the arc)
- *   audioSwell    -> daylight and mist glow (slow)
- *   audioBass     -> the sky in the water (slow)
- *   audioHigh     -> breeze sparkle on a pane (light)
- *   audioKick     -> an egret lifting (light)
+ *  Curving terraces step down the slope in hundreds of thin panes, each a mirror of the sky, separated by dark
+ *  earthen bunds with a line of grass; mist lies in the valley below and blue ridges fade behind.  Over the scene
+ *  arc the sun rises: the sky and every pane with it turn from blue-grey through rose to gold, and a column of
+ *  sun-glitter runs down the panes beneath it.  A breeze crosses a pane now and then; egrets lift on the kick.
+ *  Camera fixed.
  *
- * Per-activation variety: camHP (terrace count), detailP, stepsP (how
- * winding the contours are), hueP.
+ *  Replaces a Scene3D tessellated version (grey slabs in the catalogue).
+ *
+ *  Audio Reactivity:
+ *    sceneProgress -> the sunrise (the arc)
+ *    audioSwell    -> daylight and mist glow (slow)
+ *    audioBass     -> the sky in the water (slow)
+ *    audioHigh     -> breeze sparkle on a pane (light)
+ *    audioKick     -> an egret lifting (light)
+ *
+ *  Per-activation variety: camHP (terrace count), detailP, stepsP (how
+ *  winding the contours are), hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform sampler2D tex0;          ///< The current photo.
 uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
 uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.

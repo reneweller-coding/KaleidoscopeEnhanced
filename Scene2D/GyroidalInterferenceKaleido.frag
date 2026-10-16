@@ -1,18 +1,23 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file GyroidalInterferenceKaleido.frag
- * @brief GYROIDAL INTERFERENCE KALEIDO: Dual counter-rotating triply periodic
- * minimal surface (TPMS) Gyroid lattices creating dynamic moiré mandalas,
- * phase-slip wave interference, and glowing non-Euclidean fluid channels.
+/*****************************************************************************\
+ *                              GyroidalInterferenceKaleido.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance -> drives continuous Gyroid phase translation & rotation
- *   audioKick    -> flashes Gyroid nodal surfaces & phase-slip shockwaves
- *   audioCentroid-> modulates Gyroid spatial frequency & fine moiré rings
- *   audioSubBass -> expands Gyroid channel thickness breathing
- *   audioChromaHue-> rotates the luminous TPMS interference spectrum
+ *  @brief
+ *  GYROIDAL INTERFERENCE KALEIDO: Dual counter-rotating triply periodic minimal surface (TPMS) Gyroid lattices
+ *  creating dynamic moiré mandalas, phase-slip wave interference, and glowing non-Euclidean fluid channels.
+ *
+ *  Audio Reactivity:
+ *    audioAdvance -> drives continuous Gyroid phase translation & rotation
+ *    audioKick    -> flashes Gyroid nodal surfaces & phase-slip shockwaves
+ *    audioCentroid-> modulates Gyroid spatial frequency & fine moiré rings
+ *    audioSubBass -> expands Gyroid channel thickness breathing
+ *    audioChromaHue-> rotates the luminous TPMS interference spectrum
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

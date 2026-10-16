@@ -1,29 +1,35 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureHoloFoil.frag
- * @brief TEXTURE HOLO FOIL: the photograph printed on crumpled holographic
- * foil -- every facet of the crinkled foil throws back a different slice
- * of the rainbow as the light moves, colours racing across the folds in
- * sheets, while the photo shows through the foil's diffraction as its
- * pattern.  The foil itself breathes slowly (the creases shift), the light
- * wanders, so the whole frame shimmers.  An endless field, mirrorable.
+/*****************************************************************************\
+ *                              TextureHoloFoil.frag
+\*****************************************************************************/
+/*! @file
  *
- * Diffraction: the colour of a facet is the grating equation's
- * wavelength for its tilt against the light, so neighbouring facets show
- * neighbouring hues, as real holographic foil does.
+ *  @brief
+ *  TEXTURE HOLO FOIL: the photograph printed on crumpled holographic foil -- every facet of the crinkled foil
+ *  throws back a different slice of the rainbow as the light moves, colours racing across the folds in sheets,
+ *  while the photo shows through the foil's diffraction as its pattern.
  *
- * Audio Reactivity (structure, not only light):
- *   audioPhase      -> the light's path (integrated, jump-free)
- *   audioAdvance    -> the creases shift (integrated)
- *   audioSpread     -> crease size (wide spectrum = finer crinkle)
- *   audioRoughness  -> extra fine creases
- *   audioHigh       -> sparkle on the sharpest creases (light)
- *   audioSwell      -> the rainbow's strength (slow)
+ *  The foil itself breathes slowly (the creases shift), the light wanders, so the whole frame shimmers.  An endless
+ *  field, mirrorable.
  *
- * Knobs: crinkleP (crease depth), photoP (how much the photo shows),
- * gratingP (rainbow spacing), hueP.
+ *  Diffraction: the colour of a facet is the grating equation's
+ *  wavelength for its tilt against the light, so neighbouring facets show
+ *  neighbouring hues, as real holographic foil does.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioPhase      -> the light's path (integrated, jump-free)
+ *    audioAdvance    -> the creases shift (integrated)
+ *    audioSpread     -> crease size (wide spectrum = finer crinkle)
+ *    audioRoughness  -> extra fine creases
+ *    audioHigh       -> sparkle on the sharpest creases (light)
+ *    audioSwell      -> the rainbow's strength (slow)
+ *
+ *  Knobs: crinkleP (crease depth), photoP (how much the photo shows),
+ *  gratingP (rainbow spacing), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

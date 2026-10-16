@@ -1,16 +1,22 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SphereGrid.frag
- * @brief Adapted from an untitled \@kishimisu raymarch (CC BY-NC-SA 4.0): a fly-through
- * of an infinite lattice of spheres down a bright corridor.
+/*****************************************************************************\
+ *                              SphereGrid.frag
+\*****************************************************************************/
+/*! @file
  *
- * Adapted to our engine, and COLOURED BY THE IMAGE: instead of a fixed cosine
- * palette, each depth takes its colour from a slowly-drifting crop of the source
- * picture (imgPal), so the palette is the image itself and keeps changing (like
- * the kaleidoscope folding different crops).  Audio-reactive & jump-free
- * (forward travel via audioAdvance; beats brighten; centroid/valence grade).
+ *  @brief
+ *  Adapted from an untitled \@kishimisu raymarch (CC BY-NC-SA 4.0): a fly-through of an infinite lattice of spheres
+ *  down a bright corridor.
+ *
+ *  Adapted to our engine, and COLOURED BY THE IMAGE: instead of a fixed cosine
+ *  palette, each depth takes its colour from a slowly-drifting crop of the source
+ *  picture (imgPal), so the palette is the image itself and keeps changing (like
+ *  the kaleidoscope folding different crops).  Audio-reactive & jump-free
+ *  (forward travel via audioAdvance; beats brighten; centroid/valence grade).
+ *
+ *  @author kishimisu (the original shader, CC BY-NC-SA 4.0), René Weller (adaptation)
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

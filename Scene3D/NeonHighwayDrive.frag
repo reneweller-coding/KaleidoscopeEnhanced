@@ -1,4 +1,19 @@
 #version 330 core
+/*****************************************************************************\
+ *                              NeonHighwayDrive.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Shades the NeonHighwayDrive heightfield: a dark asphalt road strip lit by a headlight cone that travels with the
+ *  camera, neon-tinted centre and edge lines, glowing roadside pylons (vPylonGlow, baked per-vertex from the
+ *  height/kick pulse), and image-palette-tinted terrain either side that dims into distance haze.
+ *
+ *  audioKick brightens the pylon glow and headlight reach; this stage reads no other audio directly, since drive
+ *  speed/terrain/pylon placement are already baked into vWorldPos/vNormal/vRoadMask by the companion vertex shader.
+ *
+ *  @author René Weller
+ */
 out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec3  vWorldPos;  ///< World position (from the vertex stage).
@@ -6,16 +21,6 @@ in vec3  vNormal;    ///< Surface normal (from the vertex stage).
 in float vRoadMask;  ///< Road mask (from the vertex stage).
 in float vPylonGlow; ///< Pylon glow (from the vertex stage).
 in vec3  vTint;      ///< Tint (from the vertex stage).
-
-/**
- * @file NeonHighwayDrive.frag
- * @brief Shades the NeonHighwayDrive heightfield: a dark asphalt road strip lit by a headlight
- * cone that travels with the camera, neon-tinted centre and edge lines, glowing roadside pylons
- * (vPylonGlow, baked per-vertex from the height/kick pulse), and image-palette-tinted terrain
- * either side that dims into distance haze. audioKick brightens the pylon glow and headlight
- * reach; this stage reads no other audio directly, since drive speed/terrain/pylon placement are
- * already baked into vWorldPos/vNormal/vRoadMask by the companion vertex shader.
- */
 
 uniform float audioKick; ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 

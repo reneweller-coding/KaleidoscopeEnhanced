@@ -1,8 +1,13 @@
 #version 330 core
-/**
- * @file PrismExplode.vert
- * @brief Vertex stage companion to PrismExplode.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              PrismExplode.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to PrismExplode.frag -- see that file's header for this scene's description.
+ *
+ *  @author René Weller
  */
 // PrismExplode.vert — place the shell and pass the facet data through.
 

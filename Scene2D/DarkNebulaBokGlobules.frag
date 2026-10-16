@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file DarkNebulaBokGlobules.frag
- * @brief DARK NEBULA / BOK GLOBULES: cocoons of dust in silhouette before a
- * glowing emission nebula -- the photo IS the nebula.  The globules are a
- * ray-marched density field (fbm blobs, domain-warped on the scene clock),
- * and the nebula and the stars behind them dim by the integrated column,
- * so the cocoons have a front, a back and soft edges where the dust thins.
- * The swell thickens the dust (slow); onsets ignite protostars deep inside
- * the cocoons, which then glow through the dust as reddened points -- light,
- * never motion.  The camera never moves.
+/*****************************************************************************\
+ *                              DarkNebulaBokGlobules.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   sceneAdvance -> the dust drifts and folds (continuous)
- *   audioSwell   -> dust density (slow)
- *   audioOnset   -> protostars ignite inside the globules (light)
- *   audioLevel   -> nebula brightness
- *   audioKick    -> the nebula's rim glow pulses (light)
+ *  @brief
+ *  DARK NEBULA / BOK GLOBULES: cocoons of dust in silhouette before a glowing emission nebula -- the photo IS the
+ *  nebula.
  *
- * Per-activation variety: densP, globP (globule count/scale), hueP.
+ *  The globules are a ray-marched density field (fbm blobs, domain-warped on the scene clock), and the nebula and
+ *  the stars behind them dim by the integrated column, so the cocoons have a front, a back and soft edges where the
+ *  dust thins. The swell thickens the dust (slow); onsets ignite protostars deep inside the cocoons, which then
+ *  glow through the dust as reddened points -- light, never motion.  The camera never moves.
+ *
+ *  Audio Reactivity:
+ *    sceneAdvance -> the dust drifts and folds (continuous)
+ *    audioSwell   -> dust density (slow)
+ *    audioOnset   -> protostars ignite inside the globules (light)
+ *    audioLevel   -> nebula brightness
+ *    audioKick    -> the nebula's rim glow pulses (light)
+ *
+ *  Per-activation variety: densP, globP (globule count/scale), hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

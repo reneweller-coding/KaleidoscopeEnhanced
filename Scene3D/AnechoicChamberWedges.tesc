@@ -1,10 +1,16 @@
 #version 400 core
-/**
- * @file AnechoicChamberWedges.tesc
- * @brief Tessellation control for AnechoicChamberWedges: a high, nearly
- * uniform level -- the wedges are sharp pyramids and need the resolution
- * everywhere; a little finer with the swell.  Edge levels from the edge
- * midpoints so neighbouring patches agree.
+/*****************************************************************************\
+ *                              AnechoicChamberWedges.tesc
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Tessellation control for AnechoicChamberWedges: a high, nearly uniform level -- the wedges are sharp pyramids
+ *  and need the resolution everywhere; a little finer with the swell.
+ *
+ *  Edge levels from the edge midpoints so neighbouring patches agree.
+ *
+ *  @author René Weller
  */
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( vertices = 4 ) out;

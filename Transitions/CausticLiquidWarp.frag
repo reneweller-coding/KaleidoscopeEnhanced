@@ -1,20 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file CausticLiquidWarp.frag
- * @brief TRANSITION CAUSTIC LIQUID WARP: Underwater optical caustic refraction transition.
- * Overlapping fluid wave harmonics generate shimmering light caustics and
- * refraction warps that dissolve the outgoing scene into the incoming one.
- *   interpolation -> controls water surface submergence & clearing progress
- *   audioKick     -> flashes sharp caustic refraction focus lines
- *   audioSwell    -> undulates water wave height & refraction amplitude
+/*****************************************************************************\
+ *                              CausticLiquidWarp.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   causticP float caustic sharpness & intensity (0.5..2.2)
- *   rippleP  float water ripple wave frequency   (0.5..2.0)
- *   speedP   float fluid wave velocity           (0.5..2.0)
- *   hueP     float aquatic caustic hue offset    (0..6.28)
+ *  @brief
+ *  TRANSITION CAUSTIC LIQUID WARP: Underwater optical caustic refraction transition.
+ *
+ *  Overlapping fluid wave harmonics generate shimmering light caustics and refraction warps that dissolve the
+ *  outgoing scene into the incoming one.
+ *
+ *    interpolation -> controls water surface submergence & clearing progress
+ *    audioKick     -> flashes sharp caustic refraction focus lines
+ *    audioSwell    -> undulates water wave height & refraction amplitude
+ *
+ *  Per-activation variety:
+ *    causticP float caustic sharpness & intensity (0.5..2.2)
+ *    rippleP  float water ripple wave frequency   (0.5..2.0)
+ *    speedP   float fluid wave velocity           (0.5..2.0)
+ *    hueP     float aquatic caustic hue offset    (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureNewtonRings.frag
- * @brief TEXTURE NEWTON RINGS: Newton's rings where a curved glass touches a
- * flat -- concentric rainbow rings of interference fan out from several
- * contact points pressed onto the photograph, the rings tightening toward
- * the edges, their colours running through the interference orders; the
- * glasses slowly slide and press harder, so the ring systems breathe and
- * merge into contour-like patterns over the picture.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              TextureNewtonRings.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the glasses slide (integrated, jump-free)
- *   audioSpread     -> ring spacing (the glass curvature)
- *   audioBass       -> pressing harder (the dark centre spreads, smoothed light-level)
- *   audioMode       -> the light: white; sodium-yellow (monochrome rings) at very major moments
- *   audioKick       -> the rings brighten (light)
- *   audioSwell      -> the photo shows through (slow)
+ *  @brief
+ *  TEXTURE NEWTON RINGS: Newton's rings where a curved glass touches a flat -- concentric rainbow rings of
+ *  interference fan out from several contact points pressed onto the photograph, the rings tightening toward the
+ *  edges, their colours running through the interference orders; the glasses slowly slide and press harder, so the
+ *  ring systems breathe and merge into contour-like patterns over the picture.
  *
- * Knobs: contactP (contact points), orderP (visible orders), photoP (photo visibility), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the glasses slide (integrated, jump-free)
+ *    audioSpread     -> ring spacing (the glass curvature)
+ *    audioBass       -> pressing harder (the dark centre spreads, smoothed light-level)
+ *    audioMode       -> the light: white; sodium-yellow (monochrome rings) at very major moments
+ *    audioKick       -> the rings brighten (light)
+ *    audioSwell      -> the photo shows through (slow)
+ *
+ *  Knobs: contactP (contact points), orderP (visible orders), photoP (photo visibility), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

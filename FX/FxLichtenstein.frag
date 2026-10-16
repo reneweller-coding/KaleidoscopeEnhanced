@@ -1,11 +1,16 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file FxLichtenstein.frag
- * @brief FX LICHTENSTEIN: halftone-dot pop-art look -- the scene is quantized
- * into a grid of circular dots (Ben-Day dots), flat grey outside each
- * dot's radius.
+/*****************************************************************************\
+ *                              FxLichtenstein.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  FX LICHTENSTEIN: halftone-dot pop-art look -- the scene is quantized into a grid of circular dots (Ben-Day
+ *  dots), flat grey outside each dot's radius.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

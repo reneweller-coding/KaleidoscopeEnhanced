@@ -1,4 +1,22 @@
 #version 330 core
+/*****************************************************************************\
+ *                              SilkPhoto.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Renders the current slideshow photo mapped straight onto a wind-rippled silk banner (the ripple mesh comes from
+ *  SilkPhoto.vert), shaded by the fold slope vShade and overlaid with a silky diagonal sheen that wanders across
+ *  the fabric over time.
+ *
+ *  audioChromaHue rotates the sheen's colour via hueRot; audioSwell scales
+ *  how strongly the sheen highlight shows; audioDrop punches up the overall
+ *  brightness on a drop. The banner's wind sway, kick ripple and fold shading
+ *  itself are driven by audioLevel, audioSwell, audioKick and audioBass in
+ *  SilkPhoto.vert.
+ *
+ *  @author René Weller
+ */
 out vec4 fragColor; ///< The pixel's colour (output).
 // SilkPhoto.frag — the photo itself, recognisable, with cloth shading and a
 // silky key-coloured sheen wandering across the folds.
@@ -10,20 +28,6 @@ uniform float     audioDrop;      ///< Drop envelope: high after a detected drop
 
 in vec2  vUV;    ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 in float vShade; ///< Shade (from the vertex stage).
-
-/**
- * @file SilkPhoto.frag
- * @brief Renders the current slideshow photo mapped straight onto a
- * wind-rippled silk banner (the ripple mesh comes from SilkPhoto.vert),
- * shaded by the fold slope vShade and overlaid with a silky diagonal sheen
- * that wanders across the fabric over time.
- *
- * audioChromaHue rotates the sheen's colour via hueRot; audioSwell scales
- * how strongly the sheen highlight shows; audioDrop punches up the overall
- * brightness on a drop. The banner's wind sway, kick ripple and fold shading
- * itself are driven by audioLevel, audioSwell, audioKick and audioBass in
- * SilkPhoto.vert.
- */
 
 /**  Rotates a colour's hue by an angle (about the grey axis).
  *

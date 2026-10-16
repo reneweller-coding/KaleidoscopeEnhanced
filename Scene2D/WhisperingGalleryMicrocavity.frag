@@ -1,23 +1,31 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file WhisperingGalleryMicrocavity.frag
- * @brief WHISPERING GALLERY MICROCAVITY: Deformed optical microcavity resonator
- * exhibiting quantum chaos, ray-wave correspondence, and whispering gallery modes.
- * Total internal reflection orbits create rich caustic networks and evanescent
- * boundary tunneling light rays across the whole viewport.
- *   audioAdvance -> rotates chaotic Poincaré ray trajectory phase
- *   audioPhase   -> deforms microcavity boundary quadropole / octupole shape
- *   audioSnare   -> triggers evanescent laser tunneling bursts
- *   audioSwell   -> thickens volumetric caustic interference sheets
- *   audioTreble  -> modulates high-frequency whispering gallery mode fringes
+/*****************************************************************************\
+ *                              WhisperingGalleryMicrocavity.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   deformP  float cavity boundary deformation parameter   (0.05..0.35)
- *   orbitP   float ray-orbit chaos & bounce density        (1.0..3.0)
- *   fringeP  float azimuthal mode wavenumber fringe density (8.0..24.0)
- *   tunnelP  float evanescent tunneling radiation gain     (0.5..2.0)
+ *  @brief
+ *  WHISPERING GALLERY MICROCAVITY: Deformed optical microcavity resonator exhibiting quantum chaos, ray-wave
+ *  correspondence, and whispering gallery modes.
+ *
+ *  Total internal reflection orbits create rich caustic networks and evanescent boundary tunneling light rays
+ *  across the whole viewport.
+ *
+ *    audioAdvance -> rotates chaotic Poincaré ray trajectory phase
+ *    audioPhase   -> deforms microcavity boundary quadropole / octupole shape
+ *    audioSnare   -> triggers evanescent laser tunneling bursts
+ *    audioSwell   -> thickens volumetric caustic interference sheets
+ *    audioTreble  -> modulates high-frequency whispering gallery mode fringes
+ *
+ *  Per-activation variety:
+ *    deformP  float cavity boundary deformation parameter   (0.05..0.35)
+ *    orbitP   float ray-orbit chaos & bounce density        (1.0..3.0)
+ *    fringeP  float azimuthal mode wavenumber fringe density (8.0..24.0)
+ *    tunnelP  float evanescent tunneling radiation gain     (0.5..2.0)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

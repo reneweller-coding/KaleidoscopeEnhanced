@@ -1,8 +1,13 @@
 #version 330 core
-/**
- * @file PhotoCarousel.vert
- * @brief Vertex stage companion to PhotoCarousel.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              PhotoCarousel.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to PhotoCarousel.frag -- see that file's header for this scene's description.
+ *
+ *  @author René Weller
  */
 // PhotoCarousel.vert — the camera stands inside a slowly revolving cylinder
 // of 3000 photo cards (50 stacked rings x 60 cards); every card shows its

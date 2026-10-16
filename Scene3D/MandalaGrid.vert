@@ -1,8 +1,13 @@
 #version 330 core
-/**
- * @file MandalaGrid.vert
- * @brief Vertex stage companion to MandalaGrid.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              MandalaGrid.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to MandalaGrid.frag -- see that file's header for this scene's description.
+ *
+ *  @author René Weller
  */
 // MandalaGrid.vert — a breathing mandala disc floating in space: the grid
 // becomes a circular membrane whose surface carries slow radial standing

@@ -1,23 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SpectrumStalactiteCave.frag
- * @brief SPECTRUM STALACTITE CAVE: a limestone cave whose stalactites hang
- * one per spectral band across the ceiling, the bass bands the thickest
- * and longest.  Each band's energy lights its stalactite from within
- * (calcite glow) and lets it drip: drops form at the tip and fall as round
- * beads on a continuous clock, brighter on onsets.  Below, a still pool
- * mirrors it all in the photo's colours.  The camera never moves.
+/*****************************************************************************\
+ *                              SpectrumStalactiteCave.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSpectrum[32] -> stalactite glow and drip rate (light)
- *   audioOnset        -> drops flash (light)
- *   sceneAdvance      -> drip fall (continuous)
- *   audioSwell        -> torchlight (slow)
- *   audioLevel        -> brightness
+ *  @brief
+ *  SPECTRUM STALACTITE CAVE: a limestone cave whose stalactites hang one per spectral band across the ceiling, the
+ *  bass bands the thickest and longest.
  *
- * Per-activation variety: lengthP, poolP, hueP.
+ *  Each band's energy lights its stalactite from within (calcite glow) and lets it drip: drops form at the tip and
+ *  fall as round beads on a continuous clock, brighter on onsets.  Below, a still pool mirrors it all in the
+ *  photo's colours.  The camera never moves.
+ *
+ *  Audio Reactivity:
+ *    audioSpectrum[32] -> stalactite glow and drip rate (light)
+ *    audioOnset        -> drops flash (light)
+ *    sceneAdvance      -> drip fall (continuous)
+ *    audioSwell        -> torchlight (slow)
+ *    audioLevel        -> brightness
+ *
+ *  Per-activation variety: lengthP, poolP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

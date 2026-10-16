@@ -1,21 +1,25 @@
 #version 330 core
+/*****************************************************************************\
+ *                              ThunderCloud.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Additive glow-sprite shader for the thunderstorm point cloud (billowing cloud mass, jagged lightning bolts,
+ *  falling rain, and the far overcast sky behind them): renders each point with an extra-soft, wide Gaussian
+ *  falloff suited to cloud and flash glow.
+ *
+ *  No audio uniforms are read here; the storm's reactivity -- snare-triggered
+ *  lightning strikes, kick/drop-driven flash intensity, cloud billows lit from
+ *  within by "their" bolt, and the distant sheet lightning flickering across
+ *  the far sky -- is entirely computed in the companion vertex shader
+ *  (ThunderCloud.vert) and arrives pre-baked in vCol.
+ *
+ *  @author René Weller
+ */
 out vec4 fragColor; ///< The pixel's colour (output).
 // ThunderCloud.frag — extra-soft point for the cloud/flash look.
 in vec4 vCol; ///< Colour (from the vertex stage).
-
-/**
- * @file ThunderCloud.frag
- * @brief Additive glow-sprite shader for the thunderstorm point cloud
- * (billowing cloud mass, jagged lightning bolts, falling rain, and the far
- * overcast sky behind them): renders each point with an extra-soft, wide
- * Gaussian falloff suited to cloud and flash glow.
- *
- * No audio uniforms are read here; the storm's reactivity -- snare-triggered
- * lightning strikes, kick/drop-driven flash intensity, cloud billows lit from
- * within by "their" bolt, and the distant sheet lightning flickering across
- * the far sky -- is entirely computed in the companion vertex shader
- * (ThunderCloud.vert) and arrives pre-baked in vCol.
- */
 
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()

@@ -1,30 +1,35 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TravertineTerracePools.frag
- * @brief TRAVERTINE TERRACE POOLS: a white limestone hillside of stacked
- * pools.  The crust is blinding white, the water in each pool is a shallow
- * turquoise mirror of the sky (the photo), and the rims are wet and
- * glassy where the water pours over them.  The sky light in the pools
- * rides the bass, the wet rims glint with the treble, the sun is the
- * swell, and the kick is a wader lifting off as a flash of white.
- * Camera height fixed.
+/*****************************************************************************\
+ *                              TravertineTerracePools.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioBass  -> the sky in the pools (light)
- *   audioHigh  -> wet rim glints (light)
- *   audioSwell -> sunlight and the water level (slow)
- *   audioKick  -> a bird flash (light)
- *   audioLevel -> brightness
+ *  @brief
+ *  TRAVERTINE TERRACE POOLS: a white limestone hillside of stacked pools.
  *
- * Per-activation variety: camHP, detailP, stepsP, hueP.
+ *  The crust is blinding white, the water in each pool is a shallow turquoise mirror of the sky (the photo), and
+ *  the rims are wet and glassy where the water pours over them.  The sky light in the pools rides the bass, the wet
+ *  rims glint with the treble, the sun is the swell, and the kick is a wader lifting off as a flash of white.
+ *  Camera height fixed.
+ *
+ *  Audio Reactivity:
+ *    audioBass  -> the sky in the pools (light)
+ *    audioHigh  -> wet rim glints (light)
+ *    audioSwell -> sunlight and the water level (slow)
+ *    audioKick  -> a bird flash (light)
+ *    audioLevel -> brightness
+ *
+ *  Per-activation variety: camHP, detailP, stepsP, hueP.
+ *
+ *  @author René Weller
  */
-in vec3  vWorld;   ///< World position (from the vertex stage).
-in vec2  vSurfUV;  ///< Surf UV (from the vertex stage).
-in vec3  vNormal;  ///< Surface normal (from the vertex stage).
-in float vPool;    ///< Pool (from the vertex stage).
-in float vTerrace; ///< Terrace (from the vertex stage).
-in float vDist;    ///< Distance (from the vertex stage).
+out vec4 fragColor; ///< The pixel's colour (output).
+in vec3  vWorld;    ///< World position (from the vertex stage).
+in vec2  vSurfUV;   ///< Surf UV (from the vertex stage).
+in vec3  vNormal;   ///< Surface normal (from the vertex stage).
+in float vPool;     ///< Pool (from the vertex stage).
+in float vTerrace;  ///< Terrace (from the vertex stage).
+in float vDist;     ///< Distance (from the vertex stage).
 
 uniform sampler2D tex0;          ///< The current photo.
 uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).

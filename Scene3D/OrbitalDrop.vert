@@ -1,8 +1,13 @@
 #version 330 core
-/**
- * @file OrbitalDrop.vert
- * @brief Vertex stage companion to OrbitalDrop.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              OrbitalDrop.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to OrbitalDrop.frag -- see that file's header for this scene's description.
+ *
+ *  @author René Weller
  */
 // OrbitalDrop.vert — atmospheric re-entry, looping forever: the fall
 // begins among the stars, plasma fire streaks past the view, then a cloud

@@ -1,16 +1,21 @@
 #version 330 core
-/**
- * @file FleetJump.vert
- * @brief FLEET JUMP: a squadron of one craft (instances) charging a
- * hyperspace jump over the scene's arc.  Along sceneProgress the ships hold
- * formation and their drives spool up (light); in the last stretch of the
- * arc each hull STRETCHES along its own axis and streaks away ahead -- a
- * deformation of the objects, on a continuous ramp the drop regie can time
- * to the drop.  No hull hops, no formation twitch, no camera motion.
+/*****************************************************************************\
+ *                              FleetJump.vert
+\*****************************************************************************/
+/*! @file
  *
- * Geometry: craft centred and normalised by the model's bounding sphere,
- * longest axis put on Z (nose toward -Z, i.e. toward the camera... no: the
- * fleet flies AWAY, so the nose points +Z).  Sky shell drawn once.
+ *  @brief
+ *  FLEET JUMP: a squadron of one craft (instances) charging a hyperspace jump over the scene's arc.
+ *
+ *  Along sceneProgress the ships hold formation and their drives spool up (light); in the last stretch of the arc
+ *  each hull STRETCHES along its own axis and streaks away ahead -- a deformation of the objects, on a continuous
+ *  ramp the drop regie can time to the drop.  No hull hops, no formation twitch, no camera motion.
+ *
+ *  Geometry: craft centred and normalised by the model's bounding sphere,
+ *  longest axis put on Z (nose toward -Z, i.e. toward the camera... no: the
+ *  fleet flies AWAY, so the nose points +Z).  Sky shell drawn once.
+ *
+ *  @author René Weller
  */
 in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an
                ///< index).

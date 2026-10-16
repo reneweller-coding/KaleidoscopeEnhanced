@@ -1,18 +1,25 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file CliffordTorusStereographicKaleido.frag
- * @brief CLIFFORD TORUS STEREOGRAPHIC KALEIDO: 4D Clifford Torus (S1 x S1 in S3)
- * stereographically projected into 3D space. Nested Villarceau circles, continuous
- * isoclinic SO(4) rotations, and dynamic conformal interference rings.
+/*****************************************************************************\
+ *                              CliffordTorusStereographicKaleido.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance -> drives continuous 4D Villarceau circle rotation & flight
- *   audioKick    -> flashes Villarceau ring intersection nodes & radial shockwave
- *   audioCentroid-> modulates ring frequency & stereographic grid density
- *   audioSubBass -> expands Clifford torus major radius breathing
- *   audioChromaHue-> rotates the stereographic torus rainbow palette
+ *  @brief
+ *  CLIFFORD TORUS STEREOGRAPHIC KALEIDO: 4D Clifford Torus (S1 x S1 in S3) stereographically projected into 3D
+ *  space.
+ *
+ *  Nested Villarceau circles, continuous isoclinic SO(4) rotations, and dynamic conformal interference rings.
+ *
+ *  Audio Reactivity:
+ *    audioAdvance -> drives continuous 4D Villarceau circle rotation & flight
+ *    audioKick    -> flashes Villarceau ring intersection nodes & radial shockwave
+ *    audioCentroid-> modulates ring frequency & stereographic grid density
+ *    audioSubBass -> expands Clifford torus major radius breathing
+ *    audioChromaHue-> rotates the stereographic torus rainbow palette
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

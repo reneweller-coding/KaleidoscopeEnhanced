@@ -1,4 +1,26 @@
 #version 330 core
+/*****************************************************************************\
+ *                              SpectroCanyon.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Shades a canyon whose terrain is read out of a live spectrogram (built in the SpectroCanyon.vert/.tesc/.tese
+ *  tessellation pipeline): rock lit from a low sun, with the loud parts of the spectrum glowing from inside the
+ *  stone.
+ *
+ *  The emission is keyed to the same per-vertex energy (vEnergy) and frequency band (vFreq) that shaped the terrain
+ *  height, so a peak is both a peak and a light — the canyon is a spectrum analyser you fly through.
+ *
+ *  audioLevel scales the rock's direct-light and emission brightness;
+ *  audioKick strengthens the crest rim glow; audioHigh sharpens the wet-stone
+ *  specular glint; audioAmbient lifts the sky-bounce fill; audioBeat and
+ *  audioSubBass pulse the final exposure. hueP/audioChromaHue/audioValence
+ *  (via imgPalette, with an audioAdvance drift) set the emission hue per
+ *  frequency band, and the far end fades into a photo-tinted haze.
+ *
+ *  @author René Weller
+ */
 out vec4 fragColor; ///< The pixel's colour (output).
 // SpectroCanyon.frag — rock lit from a low sun, with the loud parts of the
 // spectrum glowing from inside the stone.  The emission is keyed to the SAME
@@ -9,24 +31,6 @@ in vec3  vNormal; ///< Surface normal (from the vertex stage).
 in float vEnergy; ///< Energy (from the vertex stage).
 in float vFreq;   ///< Freq (from the vertex stage).
 in float vDist;   ///< Distance (from the vertex stage).
-
-/**
- * @file SpectroCanyon.frag
- * @brief Shades a canyon whose terrain is read out of a live spectrogram
- * (built in the SpectroCanyon.vert/.tesc/.tese tessellation pipeline): rock
- * lit from a low sun, with the loud parts of the spectrum glowing from
- * inside the stone. The emission is keyed to the same per-vertex energy
- * (vEnergy) and frequency band (vFreq) that shaped the terrain height, so a
- * peak is both a peak and a light — the canyon is a spectrum analyser you
- * fly through.
- *
- * audioLevel scales the rock's direct-light and emission brightness;
- * audioKick strengthens the crest rim glow; audioHigh sharpens the wet-stone
- * specular glint; audioAmbient lifts the sky-bounce fill; audioBeat and
- * audioSubBass pulse the final exposure. hueP/audioChromaHue/audioValence
- * (via imgPalette, with an audioAdvance drift) set the emission hue per
- * frequency band, and the far end fades into a photo-tinted haze.
- */
 
 uniform sampler2D tex0;          ///< The current photo.
 uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.

@@ -1,4 +1,22 @@
 #version 330 core
+/*****************************************************************************\
+ *                              GrassField.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Shades a field of grass with three materials picked by vKind: a photo-tinted sky gradient, a soil-to-lawn ground
+ *  plane, and individual blades shaded mostly by occlusion along their own length (dark base, lit tip) plus backlit
+ *  translucency and large-scale patchiness so the sward doesn't read as a flat green mat.
+ *
+ *  audioLevel brightens a warm sky glow band, audioAmbient lifts soil
+ *  brightness and blade backlight translucency, audioHigh brightens the
+ *  specular sheen on blade tips, audioKick brightens a band of light that
+ *  sweeps across the field, audioChromaHue nudges the overall hue, and
+ *  audioBeat/audioSubBass pulse the final brightness.
+ *
+ *  @author René Weller
+ */
 out vec4 fragColor; ///< The pixel's colour (output).
 // GrassField.frag — three materials in one shader, chosen by vKind.
 // The blade shading is mostly ambient occlusion along its own length: grass
@@ -10,21 +28,6 @@ in vec3  vNormal; ///< Surface normal (from the vertex stage).
 in float vAlong;  ///< Along (from the vertex stage).
 in float vTint;   ///< Tint (from the vertex stage).
 in float vKind;   ///< Element kind (from the vertex stage).
-
-/**
- * @file GrassField.frag
- * @brief Shades a field of grass with three materials picked by vKind: a
- * photo-tinted sky gradient, a soil-to-lawn ground plane, and individual
- * blades shaded mostly by occlusion along their own length (dark base, lit
- * tip) plus backlit translucency and large-scale patchiness so the sward
- * doesn't read as a flat green mat.
- *
- * audioLevel brightens a warm sky glow band, audioAmbient lifts soil
- * brightness and blade backlight translucency, audioHigh brightens the
- * specular sheen on blade tips, audioKick brightens a band of light that
- * sweeps across the field, audioChromaHue nudges the overall hue, and
- * audioBeat/audioSubBass pulse the final brightness.
- */
 
 uniform sampler2D tex0;          ///< The current photo.
 uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.

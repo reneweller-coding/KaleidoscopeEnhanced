@@ -1,22 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file ChiralNematicBeetleCuticle.frag
- * @brief CHIRAL NEMATIC BEETLE CUTICLE: Biomimetic jewel scarab beetle cuticle (Chrysina resplendens).
- * Helical cholesteric liquid-crystal chitin nanofibril multilayers generate circular polarization,
- * angle-dependent Bragg structural color, hexagonal cellular micro-faceting, and metallic iridescence.
- *   audioAdvance -> rotates cholesteric helical director pitch & viewing angle
- *   audioPhase   -> shifts chiral nematic polarization phase
- *   audioKick    -> flashes specular metallic facet glints & Bragg resonance peaks
- *   audioSwell   -> enriches structural iridescence color saturation & depth
- *   audioCentroid-> modulates micro-cellular hexagon facet curvature
+/*****************************************************************************\
+ *                              ChiralNematicBeetleCuticle.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   pitchP   float cholesteric helical pitch wavelength     (0.5..2.2)
- *   hexP     float hexagonal cellular micro-facet scale     (2.0..8.0)
- *   iridP    float Bragg structural interference intensity  (0.8..2.5)
- *   metalP   float specular metallic sheen reflection       (0.5..2.0)
+ *  @brief
+ *  CHIRAL NEMATIC BEETLE CUTICLE: Biomimetic jewel scarab beetle cuticle (Chrysina resplendens).
+ *
+ *  Helical cholesteric liquid-crystal chitin nanofibril multilayers generate circular polarization, angle-dependent
+ *  Bragg structural color, hexagonal cellular micro-faceting, and metallic iridescence.
+ *
+ *    audioAdvance -> rotates cholesteric helical director pitch & viewing angle
+ *    audioPhase   -> shifts chiral nematic polarization phase
+ *    audioKick    -> flashes specular metallic facet glints & Bragg resonance peaks
+ *    audioSwell   -> enriches structural iridescence color saturation & depth
+ *    audioCentroid-> modulates micro-cellular hexagon facet curvature
+ *
+ *  Per-activation variety:
+ *    pitchP   float cholesteric helical pitch wavelength     (0.5..2.2)
+ *    hexP     float hexagonal cellular micro-facet scale     (2.0..8.0)
+ *    iridP    float Bragg structural interference intensity  (0.8..2.5)
+ *    metalP   float specular metallic sheen reflection       (0.5..2.0)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

@@ -1,28 +1,34 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file StarshipPlanetaryOrbit.frag
- * @brief STARSHIP PLANETARY ORBIT: a heavy cruiser holding station over a
- * living world. The planet is an analytic sphere -- oceans, continents, an
- * ice cap and a SEPARATE cloud shell above the surface that is domain-warped
- * and advected every frame, so the weather genuinely deforms rather than
- * scrolling. A soft terminator runs across it, city lights come up on the
- * night side, and the atmosphere scatters into a rim that brightens toward
- * the day/night line. The ship crosses in the foreground, lit from the same
- * sun and bounce-lit from the planet below it.
- *   audioAdvance -> orbital progress (planet spin + cloud advection)
- *   audioSwell   -> engine glow and the strength of the atmospheric rim
- *   audioKick    -> thruster flare on the cruiser
- *   audioBass    -> weather system scale (the cloud deck breathes)
- *   audioBeatPhase-> navigation strobe
- *   audioChromaHue-> ocean and atmosphere hue follow the musical key
+/*****************************************************************************\
+ *                              StarshipPlanetaryOrbit.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   cloudP  float cloud deck coverage                (0.3..1.5)
- *   shipP   float how large the cruiser sits in frame(0.6..1.7)
- *   glowP   float engine / city-light intensity      (0.6..1.8)
- *   hueP    float palette offset                     (0..6.28)
+ *  @brief
+ *  STARSHIP PLANETARY ORBIT: a heavy cruiser holding station over a living world.
+ *
+ *  The planet is an analytic sphere -- oceans, continents, an ice cap and a SEPARATE cloud shell above the surface
+ *  that is domain-warped and advected every frame, so the weather genuinely deforms rather than scrolling. A soft
+ *  terminator runs across it, city lights come up on the night side, and the atmosphere scatters into a rim that
+ *  brightens toward the day/night line. The ship crosses in the foreground, lit from the same sun and bounce-lit
+ *  from the planet below it.
+ *
+ *    audioAdvance -> orbital progress (planet spin + cloud advection)
+ *    audioSwell   -> engine glow and the strength of the atmospheric rim
+ *    audioKick    -> thruster flare on the cruiser
+ *    audioBass    -> weather system scale (the cloud deck breathes)
+ *    audioBeatPhase-> navigation strobe
+ *    audioChromaHue-> ocean and atmosphere hue follow the musical key
+ *
+ *  Per-activation variety:
+ *    cloudP  float cloud deck coverage                (0.3..1.5)
+ *    shipP   float how large the cruiser sits in frame(0.6..1.7)
+ *    glowP   float engine / city-light intensity      (0.6..1.8)
+ *    hueP    float palette offset                     (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

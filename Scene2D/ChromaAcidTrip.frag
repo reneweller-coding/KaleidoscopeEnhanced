@@ -1,21 +1,27 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file ChromaAcidTrip.frag
- * @brief CHROMA ACID TRIP: Hypnotic psychedelic feedback vortex with melting contour
- * lines, reaction-diffusion spirals, liquid rainbow gradients, optical
- * warp displacement, and high-energy audio-driven color state transformations.
- *   audioLevel   -> drives feedback displacement velocity & melt intensity
- *   audioKick    -> triggers chromatic inversion flash & color ripple shockwaves
- *   audioChromaHue-> rotates liquid psychedelic color spectrum
- *   audioSwell   -> widens feedback vortex expansion & saturation
+/*****************************************************************************\
+ *                              ChromaAcidTrip.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   meltP      float liquid contour melting intensity     (0.5..2.2)
- *   feedbackP  float recursive feedback zoom factor       (0.5..1.8)
- *   speedP     float psychedelic swirl velocity           (0.5..1.8)
- *   hueP       float base hue palette shift               (0..6.28)
+ *  @brief
+ *  CHROMA ACID TRIP: Hypnotic psychedelic feedback vortex with melting contour lines, reaction-diffusion spirals,
+ *  liquid rainbow gradients, optical warp displacement, and high-energy audio-driven color state transformations.
+ *
+ *    audioLevel   -> drives feedback displacement velocity & melt intensity
+ *    audioKick    -> triggers chromatic inversion flash & color ripple shockwaves
+ *    audioChromaHue-> rotates liquid psychedelic color spectrum
+ *    audioSwell   -> widens feedback vortex expansion & saturation
+ *
+ *  Per-activation variety:
+ *    meltP      float liquid contour melting intensity     (0.5..2.2)
+ *    feedbackP  float recursive feedback zoom factor       (0.5..1.8)
+ *    speedP     float psychedelic swirl velocity           (0.5..1.8)
+ *    hueP       float base hue palette shift               (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

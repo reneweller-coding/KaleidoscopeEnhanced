@@ -1,10 +1,16 @@
 #version 400 core
-/**
- * @file TessellatedLavaLake.tesc
- * @brief Tessellation control for TessellatedLavaLake: adaptive by distance
- * (the near crust finest), a little finer with the swell so the plate
- * edges resolve; fractional_odd_spacing keeps level changes continuous.
- * Edge levels from the edge midpoints so neighbouring patches agree.
+/*****************************************************************************\
+ *                              TessellatedLavaLake.tesc
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Tessellation control for TessellatedLavaLake: adaptive by distance (the near crust finest), a little finer with
+ *  the swell so the plate edges resolve; fractional_odd_spacing keeps level changes continuous.
+ *
+ *  Edge levels from the edge midpoints so neighbouring patches agree.
+ *
+ *  @author René Weller
  */
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( vertices = 4 ) out;

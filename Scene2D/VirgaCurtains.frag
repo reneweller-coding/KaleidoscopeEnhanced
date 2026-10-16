@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file VirgaCurtains.frag
- * @brief VIRGA CURTAINS: late afternoon over a high desert plain -- a deck of
- * dark storm cloud across the sky, and hanging from its base curtains of
- * rain that never reach the ground: long soft streaks swept back by the
- * wind, fading into nothing halfway down as the drops evaporate in the
- * dry air.  The sun stands behind the clouds, so the curtains nearest it
- * glow gold and silver in the backlight while those further off are grey
- * veils.  Below, the ochre plain runs to a line of mesas; a road leads
- * away into it.  The rain drifts and falls; the camera is still.
+/*****************************************************************************\
+ *                              VirgaCurtains.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSwell  -> the backlight through the curtains (slow)
- *   audioBass   -> the glow of the sun's rim in the cloud gaps (light)
- *   audioLevel  -> brightness
- *   sceneTime / sceneAdvance -> the falling streaks, the drifting curtains
+ *  @brief
+ *  VIRGA CURTAINS: late afternoon over a high desert plain -- a deck of dark storm cloud across the sky, and
+ *  hanging from its base curtains of rain that never reach the ground: long soft streaks swept back by the wind,
+ *  fading into nothing halfway down as the drops evaporate in the dry air.
  *
- * Per-activation variety: rainP (how much virga), hueP.
+ *  The sun stands behind the clouds, so the curtains nearest it glow gold and silver in the backlight while those
+ *  further off are grey veils.  Below, the ochre plain runs to a line of mesas; a road leads away into it.  The
+ *  rain drifts and falls; the camera is still.
+ *
+ *  Audio Reactivity:
+ *    audioSwell  -> the backlight through the curtains (slow)
+ *    audioBass   -> the glow of the sun's rim in the cloud gaps (light)
+ *    audioLevel  -> brightness
+ *    sceneTime / sceneAdvance -> the falling streaks, the drifting curtains
+ *
+ *  Per-activation variety: rainP (how much virga), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

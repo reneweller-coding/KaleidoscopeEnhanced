@@ -1,16 +1,21 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file ProteinFoldingChain.frag
- * @brief Fragment stage for ProteinFoldingChain: the cytoplasm behind (the
- * photo soft and warm), residues as round shaded beads -- side chains
- * coloured by chroma class (index mod 12), the hydrophobic ones glowing
- * from within with the bass as the core forms -- bonds as pale tubes, the
- * kick a flash on the newest contacts, the treble a sparkle of water.
+/*****************************************************************************\
+ *                              ProteinFoldingChain.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity: audioChroma[12] -> bead colour by class; audioBass ->
- *                   hydrophobic glow; audioKick -> contact flash; audioLevel.
+ *  @brief
+ *  Fragment stage for ProteinFoldingChain: the cytoplasm behind (the photo soft and warm), residues as round shaded
+ *  beads -- side chains coloured by chroma class (index mod 12), the hydrophobic ones glowing from within with the
+ *  bass as the core forms -- bonds as pale tubes, the kick a flash on the newest contacts, the treble a sparkle of
+ *  water.
+ *
+ *  Audio Reactivity: audioChroma[12] -> bead colour by class; audioBass ->
+ *                    hydrophobic glow; audioKick -> contact flash; audioLevel.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 in vec2  vTexCoord; ///< Texture coordinate (from the vertex stage).
 in vec3  vWorld;    ///< World position (from the vertex stage).
 in float vKind;     ///< Element kind (from the vertex stage).

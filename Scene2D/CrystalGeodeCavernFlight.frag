@@ -1,18 +1,23 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file CrystalGeodeCavernFlight.frag
- * @brief CRYSTAL GEODE CAVERN FLIGHT: 3D Raymarching flight through a subterranean
- * amethyst & emerald crystal geode cavern with sharp faceted prism pillars,
- * volumetric specular light beams, and glowing gemstone refractions.
+/*****************************************************************************\
+ *                              CrystalGeodeCavernFlight.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance -> drives continuous forward flight through crystal tunnels
- *   audioKick    -> flashes interior gemstone crystal nodes & specular bursts
- *   audioCentroid-> sharpens crystal facet normal reflections
- *   audioSubBass -> expands geode cavern chamber diameter
- *   audioChromaHue-> rotates the amethyst/emerald/sapphire crystal spectrum
+ *  @brief
+ *  CRYSTAL GEODE CAVERN FLIGHT: 3D Raymarching flight through a subterranean amethyst & emerald crystal geode
+ *  cavern with sharp faceted prism pillars, volumetric specular light beams, and glowing gemstone refractions.
+ *
+ *  Audio Reactivity:
+ *    audioAdvance -> drives continuous forward flight through crystal tunnels
+ *    audioKick    -> flashes interior gemstone crystal nodes & specular bursts
+ *    audioCentroid-> sharpens crystal facet normal reflections
+ *    audioSubBass -> expands geode cavern chamber diameter
+ *    audioChromaHue-> rotates the amethyst/emerald/sapphire crystal spectrum
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

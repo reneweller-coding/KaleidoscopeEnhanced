@@ -1,27 +1,32 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SectionStrataCanyon.frag
- * @brief SECTION STRATA CANYON: the song as geology, in a canyon at golden
- * hour.  Across the gorge rises a wall of banded rock -- deep red, orange,
- * cream, maroon, the colours of a desert canyon -- carved into mesas and
- * side canyons, its ledges catching the low sun; a river glints far below
- * and a shaded near cliff frames the view.  The bands at the top of the
- * wall are the song: every section that has played is a stratum there, the
- * current one being laid down on top and growing with its age, so the rim
- * rises as the song goes on.  The erosion drifts slowly past on the scene
- * clock; the bass lights the seams, the kick drops grains from the rim.
+/*****************************************************************************\
+ *                              SectionStrataCanyon.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSectionId / Count / Age -> the song strata on the rim (structure)
- *   sceneAdvance    -> erosion drift, river glints (continuous)
- *   audioBass       -> seam light (light)
- *   audioKick       -> grains falling from the rim (light)
- *   audioSwell      -> the sun on the wall (slow)
- *   audioLevel      -> brightness
+ *  @brief
+ *  SECTION STRATA CANYON: the song as geology, in a canyon at golden hour.
  *
- * Per-activation variety: layerP (stratum thickness), erosionP, hueP.
+ *  Across the gorge rises a wall of banded rock -- deep red, orange, cream, maroon, the colours of a desert canyon
+ *  -- carved into mesas and side canyons, its ledges catching the low sun; a river glints far below and a shaded
+ *  near cliff frames the view.  The bands at the top of the wall are the song: every section that has played is a
+ *  stratum there, the current one being laid down on top and growing with its age, so the rim rises as the song
+ *  goes on.  The erosion drifts slowly past on the scene clock; the bass lights the seams, the kick drops grains
+ *  from the rim.
+ *
+ *  Audio Reactivity:
+ *    audioSectionId / Count / Age -> the song strata on the rim (structure)
+ *    sceneAdvance    -> erosion drift, river glints (continuous)
+ *    audioBass       -> seam light (light)
+ *    audioKick       -> grains falling from the rim (light)
+ *    audioSwell      -> the sun on the wall (slow)
+ *    audioLevel      -> brightness
+ *
+ *  Per-activation variety: layerP (stratum thickness), erosionP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

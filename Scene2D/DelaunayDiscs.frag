@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file DelaunayDiscs.frag
- * @brief DELAUNAY DISCS: Robert Delaunay's "simultaneous contrasts" set in
- * motion -- great discs of concentric rings, each ring split into
- * quarter-sectors of bold contrasting colour, overlap across the whole
- * picture; the rings turn slowly, neighbouring rings in opposite
- * directions, so the colours slide past each other and the discs seem to
- * pulse and vibrate; the colours are drawn from the photograph, with a
- * painted, brushed surface.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              DelaunayDiscs.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the rings turn (integrated, jump-free)
- *   audioSpread     -> the discs grow (more overlap)
- *   audioMode       -> palette: cool contrasts in minor, warm in major
- *   audioKick       -> the colours brighten (light)
- *   audioRoughness  -> the brushed paint texture
- *   audioHarmChange -> the discs drift to new places (slow, smoothed)
+ *  @brief
+ *  DELAUNAY DISCS: Robert Delaunay's "simultaneous contrasts" set in motion -- great discs of concentric rings,
+ *  each ring split into quarter-sectors of bold contrasting colour, overlap across the whole picture; the rings
+ *  turn slowly, neighbouring rings in opposite directions, so the colours slide past each other and the discs seem
+ *  to pulse and vibrate; the colours are drawn from the photograph, with a painted, brushed surface.
  *
- * Knobs: ringP (ring count), sectorP (sectors per ring), photoP (photo colours), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the rings turn (integrated, jump-free)
+ *    audioSpread     -> the discs grow (more overlap)
+ *    audioMode       -> palette: cool contrasts in minor, warm in major
+ *    audioKick       -> the colours brighten (light)
+ *    audioRoughness  -> the brushed paint texture
+ *    audioHarmChange -> the discs drift to new places (slow, smoothed)
+ *
+ *  Knobs: ringP (ring count), sectorP (sectors per ring), photoP (photo colours), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

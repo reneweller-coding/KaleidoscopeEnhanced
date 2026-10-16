@@ -1,8 +1,13 @@
 #version 330 core
-/**
- * @file PhysarumDeposit.vert
- * @brief Vertex stage companion to PhysarumDeposit.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              PhysarumDeposit.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to PhysarumDeposit.frag -- see that file's header for this scene's description.
+ *
+ *  @author René Weller
  */
 // PhysarumDeposit.vert — one point per agent: fetch the agent's position
 // from the state texture (vertex texture fetch — texture2D is legal in a

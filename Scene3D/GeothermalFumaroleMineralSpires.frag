@@ -1,23 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file GeothermalFumaroleMineralSpires.frag
- * @brief GEOTHERMAL FUMAROLE MINERAL SPIRES: Deep-sea hydrothermal vent chimneys and volcanic
- * solfatara mineral towers. Sulfide mineral precipitations, superheated black smoker hydrothermal
- * venting, mineral crust crystalline sheen, and geothermal photo texturing.  A whole FIELD of
- * chimneys marching away from the camera (see the .vert), standing against a far curtain of
- * mineral steam.
- *   audioAdvance -> drives hydrothermal fluid convective ascent & gas plume eruption
- *   audioKick    -> flashes superheated hydrothermal steam cavitation bursts
- *   audioSwell   -> widens mineral chimney spire girth & sulfide precipitate density,
- *                   and breathes the far steam curtain
- *   audioCentroid-> shifts mineral sulfide (chalcopyrite/pyrite/sulfur) color spectra
+/*****************************************************************************\
+ *                              GeothermalFumaroleMineralSpires.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   spireScaleP float hydrothermal chimney spire diameter    (0.8..2.2)
- *   ventGlowP   float superheated hydrothermal vent luminance (0.8..2.5)
- *   specularP   float mineral crystal facet sheen gain        (0.8..2.5)
+ *  @brief
+ *  GEOTHERMAL FUMAROLE MINERAL SPIRES: Deep-sea hydrothermal vent chimneys and volcanic solfatara mineral towers.
+ *
+ *  Sulfide mineral precipitations, superheated black smoker hydrothermal venting, mineral crust crystalline sheen,
+ *  and geothermal photo texturing.  A whole FIELD of chimneys marching away from the camera (see the .vert),
+ *  standing against a far curtain of mineral steam.
+ *
+ *    audioAdvance -> drives hydrothermal fluid convective ascent & gas plume eruption
+ *    audioKick    -> flashes superheated hydrothermal steam cavitation bursts
+ *    audioSwell   -> widens mineral chimney spire girth & sulfide precipitate density,
+ *                    and breathes the far steam curtain
+ *    audioCentroid-> shifts mineral sulfide (chalcopyrite/pyrite/sulfur) color spectra
+ *
+ *  Per-activation variety:
+ *    spireScaleP float hydrothermal chimney spire diameter    (0.8..2.2)
+ *    ventGlowP   float superheated hydrothermal vent luminance (0.8..2.5)
+ *    specularP   float mineral crystal facet sheen gain        (0.8..2.5)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec2  vUV;       ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 in vec3  vNormal;   ///< Surface normal (from the vertex stage).

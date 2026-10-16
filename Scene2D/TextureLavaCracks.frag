@@ -1,29 +1,33 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureLavaCracks.frag
- * @brief TEXTURE LAVA CRACKS: the photograph as a cooling lava crust -- its
- * dark lines and hollows split open and glow white-yellow-orange with the
- * molten rock beneath, while the plates between them are the photo itself,
- * darkened and cooling, with a thin red rim where they meet the heat.  The
- * heat flows slowly through the network of cracks like a pulse through
- * veins, the crust drifts and the cracks widen and close in slow waves.
- * An endless field, mirroring without seams; every photo gives its own
- * crack network (the veins of marble, the joints of basalt, the mesh of
- * crackle glaze ...).
+/*****************************************************************************\
+ *                              TextureLavaCracks.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioSwell      -> how far the cracks open (slow)
- *   audioSpread     -> which lines open: wide spectrum opens the fine ones too
- *   audioRoughness  -> the crust's edges boil (fine stetig ripple)
- *   audioMode       -> the glow's temperature: deep red in minor, yellow-white in major
- *   audioAdvance    -> the heat pulse running through the veins (integrated)
- *   audioBass       -> the glow's brightness (light)
- *   audioHigh       -> sparks rising from the hottest cracks (light)
+ *  @brief
+ *  TEXTURE LAVA CRACKS: the photograph as a cooling lava crust -- its dark lines and hollows split open and glow
+ *  white-yellow-orange with the molten rock beneath, while the plates between them are the photo itself, darkened
+ *  and cooling, with a thin red rim where they meet the heat.
  *
- * Knobs: scaleP (how close), crustP (how much crust vs. open lava),
- * flowP (the pattern of the heat pulse), hueP.
+ *  The heat flows slowly through the network of cracks like a pulse through veins, the crust drifts and the cracks
+ *  widen and close in slow waves. An endless field, mirroring without seams; every photo gives its own crack
+ *  network (the veins of marble, the joints of basalt, the mesh of crackle glaze ...).
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioSwell      -> how far the cracks open (slow)
+ *    audioSpread     -> which lines open: wide spectrum opens the fine ones too
+ *    audioRoughness  -> the crust's edges boil (fine stetig ripple)
+ *    audioMode       -> the glow's temperature: deep red in minor, yellow-white in major
+ *    audioAdvance    -> the heat pulse running through the veins (integrated)
+ *    audioBass       -> the glow's brightness (light)
+ *    audioHigh       -> sparks rising from the hottest cracks (light)
+ *
+ *  Knobs: scaleP (how close), crustP (how much crust vs. open lava),
+ *  flowP (the pattern of the heat pulse), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

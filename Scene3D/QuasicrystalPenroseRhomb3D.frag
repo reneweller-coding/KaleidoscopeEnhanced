@@ -1,19 +1,27 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file QuasicrystalPenroseRhomb3D.frag
- * @brief QUASICRYSTAL PENROSE RHOMB 3D: 3D icosahedral Penrose quasicrystal (Ammann-Kramer-Neri tiling).
- * Rhombohedral building blocks with 5-fold non-crystallographic aperiodic order, Bragg diffraction
- * glints, golden ratio shell scaling, and photo texturing.
- *   audioAdvance -> rotates 6D-to-3D projection slice & aperiodic phason dynamics
- *   audioKick    -> flashes 5-fold Bragg diffraction specular reflections
- *   audioSwell   -> thickens rhombohedron crystal facet cross-section & sheen
- *   audioCentroid-> shifts aperiodic quasi-lattice color spectra
+/*****************************************************************************\
+ *                              QuasicrystalPenroseRhomb3D.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   cubeSizeP float rhombohedral crystal facet size          (0.03..0.12)
- *   specularP float quasicrystal facet specular highlight    (0.8..2.5)
+ *  @brief
+ *  QUASICRYSTAL PENROSE RHOMB 3D: 3D icosahedral Penrose quasicrystal (Ammann-Kramer-Neri tiling).
+ *
+ *  Rhombohedral building blocks with 5-fold non-crystallographic aperiodic order, Bragg diffraction glints, golden
+ *  ratio shell scaling, and photo texturing.
+ *
+ *    audioAdvance -> rotates 6D-to-3D projection slice & aperiodic phason dynamics
+ *    audioKick    -> flashes 5-fold Bragg diffraction specular reflections
+ *    audioSwell   -> thickens rhombohedron crystal facet cross-section & sheen
+ *    audioCentroid-> shifts aperiodic quasi-lattice color spectra
+ *
+ *  Per-activation variety:
+ *    cubeSizeP float rhombohedral crystal facet size          (0.03..0.12)
+ *    specularP float quasicrystal facet specular highlight    (0.8..2.5)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec3  vNormal;     ///< Surface normal (from the vertex stage).
 in vec3  vCol;        ///< Colour (from the vertex stage).

@@ -1,8 +1,13 @@
 #version 330 core
-/**
- * @file SpectrumArena.vert
- * @brief Vertex stage companion to SpectrumArena.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              SpectrumArena.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to SpectrumArena.frag -- see that file's header for this scene's description.
+ *
+ *  @author René Weller
  */
 // SpectrumArena.vert — the camera stands INSIDE a circular equalizer arena:
 // 98 columns of 50 stacked cubes wrap around; each column belongs to a

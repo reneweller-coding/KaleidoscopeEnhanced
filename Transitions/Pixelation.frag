@@ -1,15 +1,20 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file Pixelation.frag
- * @brief Pixelation morph: the frame coarsens into blocks, swaps scenes,
- * and sharpens back.
+/*****************************************************************************\
+ *                              Pixelation.frag
+\*****************************************************************************/
+/*! @file
  *
- * Scene TRANSITION shader (Transitions/): blends the outgoing scene
- * (tex0) into the incoming one (tex1) over one cross-fade.
- * interpolation: 1 = old scene fully visible .. 0 = new scene.
- * Extracted from the former FxPlain.frag 28-style library.
+ *  @brief
+ *  Pixelation morph: the frame coarsens into blocks, swaps scenes, and sharpens back.
+ *
+ *  Scene TRANSITION shader (Transitions/): blends the outgoing scene
+ *  (tex0) into the incoming one (tex1) over one cross-fade.
+ *  interpolation: 1 = old scene fully visible .. 0 = new scene.
+ *  Extracted from the former FxPlain.frag 28-style library.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform sampler2D tex0;          ///< The current photo.
 uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).

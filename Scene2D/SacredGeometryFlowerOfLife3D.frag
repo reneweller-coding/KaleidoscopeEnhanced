@@ -1,18 +1,23 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SacredGeometryFlowerOfLife3D.frag
- * @brief SACRED GEOMETRY FLOWER OF LIFE 3D: Volumetric raymarching of extruded
- * Flower of Life interlocking torus fields, Metatron's Cube hyper-lattices,
- * and kinetic multi-frequency moiré light conduits.
+/*****************************************************************************\
+ *                              SacredGeometryFlowerOfLife3D.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance -> drives continuous 3D camera orbital flight & lattice rotation
- *   audioKick    -> flashes central merkaba core & expands toroidal radius
- *   audioCentroid-> modulates moiré interference frequency
- *   audioSubBass -> pulses sacred geometric node spheres
- *   audioChromaHue-> rotates the luminous spectral rainbow palette
+ *  @brief
+ *  SACRED GEOMETRY FLOWER OF LIFE 3D: Volumetric raymarching of extruded Flower of Life interlocking torus fields,
+ *  Metatron's Cube hyper-lattices, and kinetic multi-frequency moiré light conduits.
+ *
+ *  Audio Reactivity:
+ *    audioAdvance -> drives continuous 3D camera orbital flight & lattice rotation
+ *    audioKick    -> flashes central merkaba core & expands toroidal radius
+ *    audioCentroid-> modulates moiré interference frequency
+ *    audioSubBass -> pulses sacred geometric node spheres
+ *    audioChromaHue-> rotates the luminous spectral rainbow palette
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

@@ -1,16 +1,22 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file StarlingMurmuration.frag
- * @brief Fragment stage for StarlingMurmuration: bird silhouettes over a dusk sky.
- * An indirect scene has no background shell, so the generator emits one
- * huge sky quad (vKind = 1) that is painted here as a dusk gradient sampled
- * from the slideshow image; every other fragment is a bird, shaded as a
- * silhouette that catches the sky at the flock's fringe.
+/*****************************************************************************\
+ *                              StarlingMurmuration.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity: audioKick brightens the wing edges for a beat;
- *                   audioSwell warms the sky.
+ *  @brief
+ *  Fragment stage for StarlingMurmuration: bird silhouettes over a dusk sky.
+ *
+ *  An indirect scene has no background shell, so the generator emits one huge sky quad (vKind = 1) that is painted
+ *  here as a dusk gradient sampled from the slideshow image; every other fragment is a bird, shaded as a silhouette
+ *  that catches the sky at the flock's fringe.
+ *
+ *  Audio Reactivity: audioKick brightens the wing edges for a beat;
+ *                    audioSwell warms the sky.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 in vec4  vColor;    ///< Color (from the vertex stage).
 in vec2  vTexCoord; ///< Texture coordinate (from the vertex stage).
 in float vDepth;    ///< Depth (from the vertex stage).

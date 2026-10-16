@@ -1,19 +1,27 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file MoireInterference.frag
- * @brief TRANSITION MOIRE INTERFERENCE: Optical Moiré superlattice interference fringes
- * bridging the transition between scenes. Overlapping rotating line gratings
- * produce dynamic macroscopic interference waves that carry the cross-fade.
- *   interpolation -> controls grating rotation angle & interference phase
- *   audioKick     -> flashes Moiré constructive interference maxima
+/*****************************************************************************\
+ *                              MoireInterference.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   freqP  float grating spatial frequency (0.5..2.2)
- *   angleP float relative grating twist     (0.5..2.0)
- *   speedP float animation speed multiplier (0.5..2.0)
- *   hueP   float interference fringe hue    (0..6.28)
+ *  @brief
+ *  TRANSITION MOIRE INTERFERENCE: Optical Moiré superlattice interference fringes bridging the transition between
+ *  scenes.
+ *
+ *  Overlapping rotating line gratings produce dynamic macroscopic interference waves that carry the cross-fade.
+ *
+ *    interpolation -> controls grating rotation angle & interference phase
+ *    audioKick     -> flashes Moiré constructive interference maxima
+ *
+ *  Per-activation variety:
+ *    freqP  float grating spatial frequency (0.5..2.2)
+ *    angleP float relative grating twist     (0.5..2.0)
+ *    speedP float animation speed multiplier (0.5..2.0)
+ *    hueP   float interference fringe hue    (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

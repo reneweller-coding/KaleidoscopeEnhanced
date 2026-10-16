@@ -1,15 +1,22 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TheCore.frag
- * @brief Adapted from "The Core" by \@kishimisu (2023) — https://www.shadertoy.com/view/cdy3Dd
- * Original licensed CC BY-NC-SA 4.0 (attribution kept per the licence).
+/*****************************************************************************\
+ *                              TheCore.frag
+\*****************************************************************************/
+/*! @file
  *
- * A glowing warm "core" seen down a twisting, domain-repeating tunnel of tubes.
- * Adapted to our engine: image-forward (the picture colours the glow + drifts as
- * a faint nebula), audio-reactive & jump-free (tunnel scroll via audioAdvance,
- * twist via audioPhase; beats brighten; centroid/valence grade).
+ *  @brief
+ *  Adapted from "The Core" by \@kishimisu (2023) — https://www.shadertoy.com/view/cdy3Dd
+ *
+ *  Original licensed CC BY-NC-SA 4.0 (attribution kept per the licence).
+ *
+ *  A glowing warm "core" seen down a twisting, domain-repeating tunnel of tubes.
+ *  Adapted to our engine: image-forward (the picture colours the glow + drifts as
+ *  a faint nebula), audio-reactive & jump-free (tunnel scroll via audioAdvance,
+ *  twist via audioPhase; beats brighten; centroid/valence grade).
+ *
+ *  @author kishimisu (the original shader, CC BY-NC-SA 4.0), René Weller (adaptation)
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

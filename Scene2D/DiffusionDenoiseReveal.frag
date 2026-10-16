@@ -1,26 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file DiffusionDenoiseReveal.frag
- * @brief DIFFUSION DENOISE REVEAL: a diffusion model sampling, as a
- * picture.  Each phrase begins as pure Gaussian noise and, step by step,
- * the photo emerges from it (the noise level falls with the phrase
- * position; the blend is smooth), the way a generated image resolves; at
- * the phrase end the image is re-noised with a soft crossfade and the next
- * phrase resolves it again.  The drop finishes the reveal at once.  A
- * faint grid of the latent patches shows through; the kick lights the
- * patch edges; the treble adds the high-frequency detail last, as the
- * real thing does.  Camera still.
+/*****************************************************************************\
+ *                              DiffusionDenoiseReveal.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioPhrasePos -> noise level (smooth reveal per phrase)
- *   audioDrop      -> instant full reveal (the drop)
- *   audioHigh      -> fine detail (light)
- *   audioKick      -> patch-grid flash (light)
- *   audioLevel     -> brightness
+ *  @brief
+ *  DIFFUSION DENOISE REVEAL: a diffusion model sampling, as a picture.
  *
- * Per-activation variety: grainP, patchP, hueP.
+ *  Each phrase begins as pure Gaussian noise and, step by step, the photo emerges from it (the noise level falls
+ *  with the phrase position; the blend is smooth), the way a generated image resolves; at the phrase end the image
+ *  is re-noised with a soft crossfade and the next phrase resolves it again.  The drop finishes the reveal at once.
+ *  A faint grid of the latent patches shows through; the kick lights the patch edges; the treble adds the
+ *  high-frequency detail last, as the real thing does.  Camera still.
+ *
+ *  Audio Reactivity:
+ *    audioPhrasePos -> noise level (smooth reveal per phrase)
+ *    audioDrop      -> instant full reveal (the drop)
+ *    audioHigh      -> fine detail (light)
+ *    audioKick      -> patch-grid flash (light)
+ *    audioLevel     -> brightness
+ *
+ *  Per-activation variety: grainP, patchP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

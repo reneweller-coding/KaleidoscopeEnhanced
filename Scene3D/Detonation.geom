@@ -1,8 +1,13 @@
 #version 330 core
-/**
- * @file Detonation.geom
- * @brief Geometry stage companion to Detonation.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              Detonation.geom
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Geometry stage companion to Detonation.frag -- see that file's header for this scene's description.
+ *
+ *  @author René Weller
  */
 // Detonation.geom — break a shell into its own triangles and blow them apart.
 // -----------------------------------------------------------------------

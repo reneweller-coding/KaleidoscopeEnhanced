@@ -1,22 +1,27 @@
 #version 430
+/*****************************************************************************\
+ *                              CryogenicBrinicleStalactite.comp
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Compute generator companion to CryogenicBrinicleStalactite.frag -- generates 3D hollow cryogenic brine icicles
+ *  descending from sea ice into polar depths.
+ *
+ *  THREE structural bugs used to hide this scene: emitSegment widened every
+ *  ribbon along the VIEW AXIS (see there), so a tube hanging straight down the
+ *  frame rendered as a zero-width sliver whatever thickness was asked for; the
+ *  tubes descended along WORLD Z (into the view depth, not down the frame); and
+ *  the vertex stage's 0.55 rad tilt was applied AFTER the +4.8 translate, which
+ *  swung the whole bundle sin(0.55)*4.8 = 2.5 units below the picture.  The
+ *  descent is now along -Y and the tubes are placed in FRUSTUM coordinates --
+ *  lateral offset, length and girth all scale with depth -- so the curtain
+ *  fills the frame at every layer.
+ *
+ *  @author René Weller
+ */
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( local_size_x = 4, local_size_y = 4, local_size_z = 4 ) in;
-
-/**
- * @file CryogenicBrinicleStalactite.comp
- * @brief Compute generator companion to CryogenicBrinicleStalactite.frag --
- * generates 3D hollow cryogenic brine icicles descending from sea ice into polar depths.
- *
- * THREE structural bugs used to hide this scene: emitSegment widened every
- * ribbon along the VIEW AXIS (see there), so a tube hanging straight down the
- * frame rendered as a zero-width sliver whatever thickness was asked for; the
- * tubes descended along WORLD Z (into the view depth, not down the frame); and
- * the vertex stage's 0.55 rad tilt was applied AFTER the +4.8 translate, which
- * swung the whole bundle sin(0.55)*4.8 = 2.5 units below the picture.  The
- * descent is now along -Y and the tubes are placed in FRUSTUM coordinates --
- * lateral offset, length and girth all scale with depth -- so the curtain
- * fills the frame at every layer.
- */
 
 /// The output vertex buffer: eight floats per vertex (attribute A, attribute B) that the scene draws.
 layout( std430, binding = 0 ) buffer Verts

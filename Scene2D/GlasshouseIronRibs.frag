@@ -1,23 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file GlasshouseIronRibs.frag
- * @brief GLASSHOUSE IRON RIBS: inside a Victorian palm house, looking up
- * along the barrel vault.  Iron ribs and glazing bars converge toward the
- * ridge, the panes carry the sky and the garden beyond (the photo),
- * condensation drops slide down the glass on the scene clock, and the sun
- * crosses the vault over the scene arc so the whole cast pattern travels.
- * The bass is the warm haze under the roof.  Camera fixed, looking up.
+/*****************************************************************************\
+ *                              GlasshouseIronRibs.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   sceneProgress -> the sun crosses the vault (the arc)
- *   sceneAdvance  -> condensation drops slide, haze drifts (continuous)
- *   audioSwell    -> daylight (slow)
- *   audioBass     -> warm haze under the glass (slow)
- *   audioHigh     -> glints on the wet glass (light)
+ *  @brief
+ *  GLASSHOUSE IRON RIBS: inside a Victorian palm house, looking up along the barrel vault.
  *
- * Per-activation variety: ribsP, dropP, hueP.
+ *  Iron ribs and glazing bars converge toward the ridge, the panes carry the sky and the garden beyond (the photo),
+ *  condensation drops slide down the glass on the scene clock, and the sun crosses the vault over the scene arc so
+ *  the whole cast pattern travels. The bass is the warm haze under the roof.  Camera fixed, looking up.
+ *
+ *  Audio Reactivity:
+ *    sceneProgress -> the sun crosses the vault (the arc)
+ *    sceneAdvance  -> condensation drops slide, haze drifts (continuous)
+ *    audioSwell    -> daylight (slow)
+ *    audioBass     -> warm haze under the glass (slow)
+ *    audioHigh     -> glints on the wet glass (light)
+ *
+ *  Per-activation variety: ribsP, dropP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

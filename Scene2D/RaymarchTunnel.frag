@@ -1,17 +1,26 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file RaymarchTunnel.frag
- * @brief A ray-marched wormhole papered with the SOURCE IMAGE, mirror-folded around
- * the bore so the picture radiates in symmetric wedges.  Now with:
- *   * a per-activation SPIRAL TWIST of the fold (the wedges corkscrew away),
- *   * corrugated rib shading so the walls have depth,
- *   * TEMPO-LOCKED LIGHT RINGS racing down the bore on the continuous beat
- *     phase (they land ON the beat, travelling smoothly - no snapping),
- *   * a warm light at the end of the tunnel breathing with the slow swell,
- *   * image-driven hue variance (imgPal/hueRot) + a per-bar hue sweep.
- * Camera flight via audioAdvance/audioPhase (jump-free).
+/*****************************************************************************\
+ *                              RaymarchTunnel.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  A ray-marched wormhole papered with the SOURCE IMAGE, mirror-folded around the bore so the picture radiates in
+ *  symmetric wedges.
+ *
+ *  Now with:
+ *
+ *    * a per-activation SPIRAL TWIST of the fold (the wedges corkscrew away),
+ *    * corrugated rib shading so the walls have depth,
+ *    * TEMPO-LOCKED LIGHT RINGS racing down the bore on the continuous beat
+ *      phase (they land ON the beat, travelling smoothly - no snapping),
+ *    * a warm light at the end of the tunnel breathing with the slow swell,
+ *    * image-driven hue variance (imgPal/hueRot) + a per-bar hue sweep.
+ *  Camera flight via audioAdvance/audioPhase (jump-free).
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file ChromaKaleidoscope.frag
- * @brief CHROMA KALEIDOSCOPE: twelve mirror segments, one per pitch class.
- * The chroma vector decides how brightly each segment burns, so a chord is a
- * pattern of lit wedges and a key change rotates that pattern around the
- * ring; the melody note breathes a soft halo over its own wedge.  In fifths
- * mode the wedges are ordered by the circle of fifths, so harmonic
- * neighbours sit side by side and a diatonic chord lights a contiguous arc.
- * Harmony becomes geometry -- and the fold count is fixed at twelve, so the
- * mirror itself never jumps.
+/*****************************************************************************\
+ *                              ChromaKaleidoscope.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioChroma[12]  -> wedge brightness (the whole point)
- *   audioMelodyPitch -> soft halo over the melody's wedge (glides)
- *   audioKick        -> the ring pulses inward
- *   audioBeat        -> wedge brightness (light only, V7d)
- *   sceneAdvance     -> ring rotation and the endless photo zoom
+ *  @brief
+ *  CHROMA KALEIDOSCOPE: twelve mirror segments, one per pitch class.
  *
- * Per-activation variety: fifthsP (chromatic or fifths order), zoomP, hueP.
+ *  The chroma vector decides how brightly each segment burns, so a chord is a pattern of lit wedges and a key
+ *  change rotates that pattern around the ring; the melody note breathes a soft halo over its own wedge.  In fifths
+ *  mode the wedges are ordered by the circle of fifths, so harmonic neighbours sit side by side and a diatonic
+ *  chord lights a contiguous arc. Harmony becomes geometry -- and the fold count is fixed at twelve, so the mirror
+ *  itself never jumps.
+ *
+ *  Audio Reactivity:
+ *    audioChroma[12]  -> wedge brightness (the whole point)
+ *    audioMelodyPitch -> soft halo over the melody's wedge (glides)
+ *    audioKick        -> the ring pulses inward
+ *    audioBeat        -> wedge brightness (light only, V7d)
+ *    sceneAdvance     -> ring rotation and the endless photo zoom
+ *
+ *  Per-activation variety: fifthsP (chromatic or fifths order), zoomP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

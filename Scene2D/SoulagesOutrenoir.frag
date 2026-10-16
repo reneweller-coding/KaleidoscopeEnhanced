@@ -1,27 +1,31 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SoulagesOutrenoir.frag
- * @brief SOULAGES OUTRENOIR: black beyond black, after Pierre Soulages -- a
- * surface of thick black paint combed and ridged in broad strokes, and all
- * that is visible is LIGHT on black: the grooves and ridges catch a moving
- * light so that bands of sheen slide across the black, silvery, bluish,
- * warm, while the paint itself stays black.  The strokes follow the
- * photograph's structure (its gradients set the direction of the combing),
- * so every photo gives its own relief.  The light never stops moving.
- * Endless, mirrorable.
+/*****************************************************************************\
+ *                              SoulagesOutrenoir.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioPhase      -> the light's path (integrated, jump-free)
- *   audioSpread     -> comb spacing (wide spectrum = finer grooves)
- *   audioRoughness  -> the ridges get rougher
- *   audioMode       -> the sheen warms in major
- *   audioSwell      -> sheen strength (slow)
- *   audioHigh       -> sparkle on the sharpest crests (light)
+ *  @brief
+ *  SOULAGES OUTRENOIR: black beyond black, after Pierre Soulages -- a surface of thick black paint combed and
+ *  ridged in broad strokes, and all that is visible is LIGHT on black: the grooves and ridges catch a moving light
+ *  so that bands of sheen slide across the black, silvery, bluish, warm, while the paint itself stays black.
  *
- * Knobs: grooveP (groove depth), bandP (width of the stroke bands),
- * sheenP (glossiness), hueP.
+ *  The strokes follow the photograph's structure (its gradients set the direction of the combing), so every photo
+ *  gives its own relief.  The light never stops moving. Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioPhase      -> the light's path (integrated, jump-free)
+ *    audioSpread     -> comb spacing (wide spectrum = finer grooves)
+ *    audioRoughness  -> the ridges get rougher
+ *    audioMode       -> the sheen warms in major
+ *    audioSwell      -> sheen strength (slow)
+ *    audioHigh       -> sparkle on the sharpest crests (light)
+ *
+ *  Knobs: grooveP (groove depth), bandP (width of the stroke bands),
+ *  sheenP (glossiness), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

@@ -1,25 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file RibosomeAssemblyLine.frag
- * @brief RIBOSOME ASSEMBLY LINE: translation, seen as the factory it is.
- * An mRNA tape runs steadily through the ribosome (two subunits, centre
- * frame); at each codon the ribosome adds an amino acid -- a round bead
- * coloured by the pitch class that is loudest at that moment -- to the
- * growing chain, which curls away and begins to fold.  The tape carries
- * the photo as its codon pattern; the tRNAs arrive on the clock; the
- * kick lights the peptide bond; the swell is the cytoplasm glow.  Camera
- * still.
+/*****************************************************************************\
+ *                              RibosomeAssemblyLine.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   sceneAdvance    -> tape motion, tRNA arrivals (continuous)
- *   audioChroma[12] -> bead colours (by the class energies at each bead's index)
- *   audioKick       -> peptide-bond flash (light)
- *   audioSwell      -> cytoplasm glow (slow)
- *   audioLevel      -> brightness
+ *  @brief
+ *  RIBOSOME ASSEMBLY LINE: translation, seen as the factory it is.
  *
- * Per-activation variety: speedP, curlP, hueP.
+ *  An mRNA tape runs steadily through the ribosome (two subunits, centre frame); at each codon the ribosome adds an
+ *  amino acid -- a round bead coloured by the pitch class that is loudest at that moment -- to the growing chain,
+ *  which curls away and begins to fold.  The tape carries the photo as its codon pattern; the tRNAs arrive on the
+ *  clock; the kick lights the peptide bond; the swell is the cytoplasm glow.  Camera still.
+ *
+ *  Audio Reactivity:
+ *    sceneAdvance    -> tape motion, tRNA arrivals (continuous)
+ *    audioChroma[12] -> bead colours (by the class energies at each bead's index)
+ *    audioKick       -> peptide-bond flash (light)
+ *    audioSwell      -> cytoplasm glow (slow)
+ *    audioLevel      -> brightness
+ *
+ *  Per-activation variety: speedP, curlP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

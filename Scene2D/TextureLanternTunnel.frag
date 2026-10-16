@@ -1,26 +1,32 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureLanternTunnel.frag
- * @brief TEXTURE LANTERN TUNNEL: flying through a tunnel whose wall is made of
- * glowing paper lanterns -- ring after ring of lanterns hung close together
- * line the bore, each lit from within, each showing a different piece of
- * the photograph on its paper, their warm light filling the tunnel and
- * reflecting on the ribs between them; far ahead the rings melt into a
- * golden glow.  An endless polar field like the Tunnel, mirrorable.
+/*****************************************************************************\
+ *                              TextureLanternTunnel.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the flight (integrated, jump-free)
- *   audioPhase      -> the rings slowly turn (integrated)
- *   audioSpread     -> throat depth
- *   audioMode       -> the lantern colour: amber in minor, rose-gold in major (slow blend)
- *   audioRoughness  -> the lanterns sway on their cords
- *   audioBass       -> the flames glow (light)
- *   audioKick       -> a ripple of brightness runs along the rings (light)
+ *  @brief
+ *  TEXTURE LANTERN TUNNEL: flying through a tunnel whose wall is made of glowing paper lanterns -- ring after ring
+ *  of lanterns hung close together line the bore, each lit from within, each showing a different piece of the
+ *  photograph on its paper, their warm light filling the tunnel and reflecting on the ribs between them; far ahead
+ *  the rings melt into a golden glow.
  *
- * Knobs: countP (lanterns per ring), photoP (how much the paper shows the photo),
- * gapP (spacing), hueP.
+ *  An endless polar field like the Tunnel, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the flight (integrated, jump-free)
+ *    audioPhase      -> the rings slowly turn (integrated)
+ *    audioSpread     -> throat depth
+ *    audioMode       -> the lantern colour: amber in minor, rose-gold in major (slow blend)
+ *    audioRoughness  -> the lanterns sway on their cords
+ *    audioBass       -> the flames glow (light)
+ *    audioKick       -> a ripple of brightness runs along the rings (light)
+ *
+ *  Knobs: countP (lanterns per ring), photoP (how much the paper shows the photo),
+ *  gapP (spacing), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

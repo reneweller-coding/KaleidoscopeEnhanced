@@ -1,8 +1,14 @@
 #version 330 core
-/**
- * @file TessellatedLavaLake.vert
- * @brief Vertex stage for TessellatedLavaLake: passes the patch corner
- * through; placement happens in the evaluation stage after displacement.
+/*****************************************************************************\
+ *                              TessellatedLavaLake.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage for TessellatedLavaLake: passes the patch corner through; placement happens in the evaluation stage
+ *  after displacement.
+ *
+ *  @author René Weller
  */
 in vec4 attrA; ///< xy = global (u,v) of this patch corner, w = patch index
 in vec4 attrB; ///< per-patch hashes

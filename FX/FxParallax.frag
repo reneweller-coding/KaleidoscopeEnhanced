@@ -1,11 +1,16 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file FxParallax.frag
- * @brief FX PARALLAX: 32-layer depth parallax -- the scene is resampled at
- * increasing depths along a circling offset, retro-pixellated, each
- * layer masked by its own luminance so nearer layers occlude farther ones.
+/*****************************************************************************\
+ *                              FxParallax.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  FX PARALLAX: 32-layer depth parallax -- the scene is resampled at increasing depths along a circling offset,
+ *  retro-pixellated, each layer masked by its own luminance so nearer layers occlude farther ones.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

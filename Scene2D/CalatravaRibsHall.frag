@@ -1,27 +1,31 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file CalatravaRibsHall.frag
- * @brief CALATRAVA RIBS HALL: gliding through a vast white hall built of ribs,
- * after Calatrava's Oculus -- white steel ribs rising in an ellipse on
- * both sides like the skeleton of a great animal, glass between them, the
- * ribs parting at the top along a long skylight spine, the polished
- * marble floor mirroring everything.  Along the inner edge of each rib
- * runs a line of light; one after another the ribs light up with the
- * bands of the music, so light runs through the hall in the rhythm.  The
- * camera glides forward at a slow, even pace.
+/*****************************************************************************\
+ *                              CalatravaRibsHall.frag
+\*****************************************************************************/
+/*! @file
  *
- * The hall is traced analytically: an inner and an outer elliptical shell,
- * the ribs as slabs between them.
+ *  @brief
+ *  CALATRAVA RIBS HALL: gliding through a vast white hall built of ribs, after Calatrava's Oculus -- white steel
+ *  ribs rising in an ellipse on both sides like the skeleton of a great animal, glass between them, the ribs
+ *  parting at the top along a long skylight spine, the polished marble floor mirroring everything.
  *
- * Audio Reactivity:
- *   audioSpectrum[32] -> the light lines of the ribs, one band per rib (light)
- *   audioSwell        -> the sky's brightness through the glass (slow)
- *   audioLevel        -> brightness
- *   sceneTime / sceneAdvance -> the glide (constant speed)
+ *  Along the inner edge of each rib runs a line of light; one after another the ribs light up with the bands of the
+ *  music, so light runs through the hall in the rhythm.  The camera glides forward at a slow, even pace.
  *
- * Per-activation variety: ribP (rib spacing), hueP.
+ *  The hall is traced analytically: an inner and an outer elliptical shell,
+ *  the ribs as slabs between them.
+ *
+ *  Audio Reactivity:
+ *    audioSpectrum[32] -> the light lines of the ribs, one band per rib (light)
+ *    audioSwell        -> the sky's brightness through the glass (slow)
+ *    audioLevel        -> brightness
+ *    sceneTime / sceneAdvance -> the glide (constant speed)
+ *
+ *  Per-activation variety: ribP (rib spacing), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

@@ -1,26 +1,31 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file PlanetaryRingRings.frag
- * @brief PLANETARY RING RINGS: skimming the ring plane of a super-Saturn.
- * The rings stretch to the horizon as a sheet of ringlets in perspective,
- * bright and dark bands running to the vanishing point, and close under
- * the camera the ice chunks themselves -- round, sunlit boulders of every
- * size -- drift past and out of view.  Above, the banded planet fills half
- * the sky with the rings' shadow lying across it, against black space.
- * The glide is steady; the music is the light: sparkle on the ice, the
- * sunlight on the planet.
+/*****************************************************************************\
+ *                              PlanetaryRingRings.frag
+\*****************************************************************************/
+/*! @file
  *
- *   sceneTime/sceneAdvance -> the glide over the rings (continuous)
- *   audioSwell    -> sunlight on planet and rings (slow)
- *   audioKick     -> glints on the ice chunks (light only)
- *   audioChromaHue-> photo tint of the planet's bands
+ *  @brief
+ *  PLANETARY RING RINGS: skimming the ring plane of a super-Saturn.
  *
- * Per-activation variety:
- *   ringP float density of ringlets and chunks (0.5..1.5)
- *   sparkP float strength of the glints (0.5..2.0)
- *   hueP float palette offset (0..6.28)
+ *  The rings stretch to the horizon as a sheet of ringlets in perspective, bright and dark bands running to the
+ *  vanishing point, and close under the camera the ice chunks themselves -- round, sunlit boulders of every size --
+ *  drift past and out of view.  Above, the banded planet fills half the sky with the rings' shadow lying across it,
+ *  against black space. The glide is steady; the music is the light: sparkle on the ice, the sunlight on the
+ *  planet.
+ *
+ *    sceneTime/sceneAdvance -> the glide over the rings (continuous)
+ *    audioSwell    -> sunlight on planet and rings (slow)
+ *    audioKick     -> glints on the ice chunks (light only)
+ *    audioChromaHue-> photo tint of the planet's bands
+ *
+ *  Per-activation variety:
+ *    ringP float density of ringlets and chunks (0.5..1.5)
+ *    sparkP float strength of the glints (0.5..2.0)
+ *    hueP float palette offset (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

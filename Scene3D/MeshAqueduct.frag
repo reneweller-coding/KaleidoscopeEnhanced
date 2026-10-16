@@ -1,21 +1,27 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file MeshAqueduct.frag
- * @brief MESH AQUEDUCT: a real Roman aqueduct (model=) striding across a
- * valley in the late afternoon. Each arch is lit from beneath by one
- * chroma class, water glitters in the channel along the top, swifts
- * cross the openings as round silhouettes, the daylight follows the swell.
- * The mesh counterpart of the procedural AqueductArchesValley.
+/*****************************************************************************\
+ *                              MeshAqueduct.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioChroma[12] -> the light under each arch (light)
- *   audioHigh       -> water glitter in the channel (light)
- *   audioSwell      -> daylight (slow)
- *   time            -> the water and the swifts (continuous)
+ *  @brief
+ *  MESH AQUEDUCT: a real Roman aqueduct (model=) striding across a valley in the late afternoon.
  *
- * Per-instance: sizeP, yawP. Per-activation variety: hueP.
+ *  Each arch is lit from beneath by one chroma class, water glitters in the channel along the top, swifts cross the
+ *  openings as round silhouettes, the daylight follows the swell. The mesh counterpart of the procedural
+ *  AqueductArchesValley.
+ *
+ *  Audio Reactivity:
+ *    audioChroma[12] -> the light under each arch (light)
+ *    audioHigh       -> water glitter in the channel (light)
+ *    audioSwell      -> daylight (slow)
+ *    time            -> the water and the swifts (continuous)
+ *
+ *  Per-instance: sizeP, yawP. Per-activation variety: hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform sampler2DArray texMeshMaterial;       ///< The mesh's material textures (albedo, roughness, normal ...).
 uniform int            texMeshMaterialLayers; ///< Number of layers in texMeshMaterial.

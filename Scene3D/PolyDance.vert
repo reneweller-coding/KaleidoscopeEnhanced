@@ -1,8 +1,13 @@
 #version 330 core
-/**
- * @file PolyDance.vert
- * @brief Vertex stage companion to PolyDance.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              PolyDance.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to PolyDance.frag -- see that file's header for this scene's description.
+ *
+ *  @author René Weller
  */
 // PolyDance.vert — nested platonic constellations: cubes sit on the
 // vertices of three slowly counter-rotating spherical shells (fibonacci

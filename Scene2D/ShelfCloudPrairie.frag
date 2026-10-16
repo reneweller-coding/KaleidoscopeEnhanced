@@ -1,23 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file ShelfCloudPrairie.frag
- * @brief SHELF CLOUD PRAIRIE: a supercell's gust front rolling over the
- * prairie -- a vast shelf cloud spanning the whole horizon like a stepped
- * wedge, its leading edge smooth and layered in tiers, blue-grey and
- * tinged green beneath, the scud ragged along its base, and behind it the
- * black wall of rain.  In front of it a strip of clear golden sky still
- * lights the wheat, which bends and ripples in the gust.  Lightning
- * flickers deep inside the cloud.  The shelf advances slowly overhead.
+/*****************************************************************************\
+ *                              ShelfCloudPrairie.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioKick   -> lightning inside the cloud (light only)
- *   audioSwell  -> the golden light under the shelf (slow)
- *   audioLevel  -> brightness
- *   sceneTime / sceneAdvance -> the shelf advancing, the wheat rippling
+ *  @brief
+ *  SHELF CLOUD PRAIRIE: a supercell's gust front rolling over the prairie -- a vast shelf cloud spanning the whole
+ *  horizon like a stepped wedge, its leading edge smooth and layered in tiers, blue-grey and tinged green beneath,
+ *  the scud ragged along its base, and behind it the black wall of rain.
  *
- * Per-activation variety: tiersP (how many tiers), hueP.
+ *  In front of it a strip of clear golden sky still lights the wheat, which bends and ripples in the gust.
+ *  Lightning flickers deep inside the cloud.  The shelf advances slowly overhead.
+ *
+ *  Audio Reactivity:
+ *    audioKick   -> lightning inside the cloud (light only)
+ *    audioSwell  -> the golden light under the shelf (slow)
+ *    audioLevel  -> brightness
+ *    sceneTime / sceneAdvance -> the shelf advancing, the wheat rippling
+ *
+ *  Per-activation variety: tiersP (how many tiers), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

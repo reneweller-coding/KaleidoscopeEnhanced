@@ -1,15 +1,21 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file DysonSwarmConstruction.frag
- * @brief Fragment stage for DysonSwarmConstruction: the star, the sky and the
- * panels.  The star is a soft disc (kind 2) that discards outside its glow;
- * the sky (kind -1) is deep space with the photo's grain as a star field;
- * panels get a thin frame and, on the kick, a flare on their back.
+/*****************************************************************************\
+ *                              DysonSwarmConstruction.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity: audioKick flares the panel backs; audioBass swells the
- *                   star; audioSwell warms the sky.
+ *  @brief
+ *  Fragment stage for DysonSwarmConstruction: the star, the sky and the panels.
+ *
+ *  The star is a soft disc (kind 2) that discards outside its glow; the sky (kind -1) is deep space with the
+ *  photo's grain as a star field; panels get a thin frame and, on the kick, a flare on their back.
+ *
+ *  Audio Reactivity: audioKick flares the panel backs; audioBass swells the
+ *                    star; audioSwell warms the sky.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 in vec4  vColor;    ///< Color (from the vertex stage).
 in vec2  vTexCoord; ///< Texture coordinate (from the vertex stage).
 in float vDepth;    ///< Depth (from the vertex stage).

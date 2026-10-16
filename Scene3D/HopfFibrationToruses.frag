@@ -1,24 +1,28 @@
 #version 330 core
+/*****************************************************************************\
+ *                              HopfFibrationToruses.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Shades one fiber of a Hopf-fibration torus arrangement (Villarceau circles) as a glowing strand with a soft
+ *  cross-section falloff (cross_edge) and a light pulse that visibly travels along the fiber over time.
+ *
+ *  Each fiber's chromatic hue comes from the photo-arc palette (imgPalette)
+ *  offset by its fiber ID (vFiberID) and audioPhase, so the phase of the
+ *  music shifts which color sits where along the fibration; the per-vertex
+ *  vEnergy supplied by the companion vertex shader scales overall
+ *  brightness, and glowP scales it further. The palette's arc also carries
+ *  an audioAdvance drift and audioValence-controlled saturation.
+ *
+ *  @author René Weller
+ */
 in vec3  vPos;     ///< Position (from the vertex stage).
 in vec2  vUV;      ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 in float vFiberID; ///< Fiber ID (from the vertex stage).
 in float vEnergy;  ///< Energy (from the vertex stage).
 
 out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file HopfFibrationToruses.frag
- * @brief Shades one fiber of a Hopf-fibration torus arrangement (Villarceau
- * circles) as a glowing strand with a soft cross-section falloff
- * (cross_edge) and a light pulse that visibly travels along the fiber over
- * time.
- *
- * Each fiber's chromatic hue comes from the photo-arc palette (imgPalette)
- * offset by its fiber ID (vFiberID) and audioPhase, so the phase of the
- * music shifts which color sits where along the fibration; the per-vertex
- * vEnergy supplied by the companion vertex shader scales overall
- * brightness, and glowP scales it further. The palette's arc also carries
- * an audioAdvance drift and audioValence-controlled saturation.
- */
 
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

@@ -1,18 +1,24 @@
 #version 330 core
-/**
- * @file SolarProminenceHelicalMagneticRope.vert
- * @brief Vertex stage companion to SolarProminenceHelicalMagneticRope.frag -- see that file's
- * header for this scene's description.
+/*****************************************************************************\
+ *                              SolarProminenceHelicalMagneticRope.vert
+\*****************************************************************************/
+/*! @file
  *
- * SCREEN-FILL PASS: the original built ONE flux rope whose "arch" lay flat in the
- * XZ plane, so it projected to a thin horizontal thread across the middle of an
- * otherwise black frame (occ 0.08).  The arch now rises in Y as a real prominence
- * loop, and the engine's 20 ribbons are routed into a whole ACTIVE REGION:
- *   ri  0..15  four helical flux ropes (4 twisted strands each), footpoints
- *              spread along the photospheric limb in frustum coordinates so the
- *              loop field spans the full picture width
- *   ri 16..19  four coronal streamer fans rooted on the same limb, wide and dim,
- *              filling the corona above and beside the loops
+ *  @brief
+ *  Vertex stage companion to SolarProminenceHelicalMagneticRope.frag -- see that file's header for this scene's
+ *  description.
+ *
+ *  SCREEN-FILL PASS: the original built ONE flux rope whose "arch" lay flat in the
+ *  XZ plane, so it projected to a thin horizontal thread across the middle of an
+ *  otherwise black frame (occ 0.08).  The arch now rises in Y as a real prominence
+ *  loop, and the engine's 20 ribbons are routed into a whole ACTIVE REGION:
+ *    ri  0..15  four helical flux ropes (4 twisted strands each), footpoints
+ *               spread along the photospheric limb in frustum coordinates so the
+ *               loop field spans the full picture width
+ *    ri 16..19  four coronal streamer fans rooted on the same limb, wide and dim,
+ *               filling the corona above and beside the loops
+ *
+ *  @author René Weller
  */
 
 in vec4 attrA; ///< x = t [0,1], y = side (-1/+1), z = 0, w = ribbon index

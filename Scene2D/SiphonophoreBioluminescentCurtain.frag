@@ -1,22 +1,31 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SiphonophoreBioluminescentCurtain.frag
- * @brief SIPHONOPHORE BIOLUMINESCENT CURTAIN: Massive colonial siphonophore (Praya dubia / Apolemia)
- * cascading through deep abyssal oceanic trenches. Translucent swimming bells (nectophores),
- * bioluminescent glowing tentilla curtains, and rhythmic contraction light waves.
- *   audioAdvance -> drives oceanic current drift & tentacle undulating waves
- *   audioKick    -> flashes defensive bioluminescent luminescence cascades
- *   audioSwell   -> thickens colonial bell volume & oceanic caustic haze
- *   audioCentroid-> shifts bio-luciferin amber/cyan emission spectra
- *   audioFlux    -> excites sparkling nematocyst battery point flashes
+/*****************************************************************************\
+ *                              SiphonophoreBioluminescentCurtain.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   nectoCountP  float nectophore swimming bell density         (3.0..8.0)
- *   tentillaP    float tentacle curtain strand density          (8.0..24.0)
- *   bioGlowP     float bioluminescence emission brightness      (0.8..2.5)
- *   waveScaleP   float hydrodynamic tentacle wave amplitude     (0.5..2.2)
+ *  @brief
+ *  SIPHONOPHORE BIOLUMINESCENT CURTAIN: Massive colonial siphonophore (Praya dubia / Apolemia) cascading through
+ *  deep abyssal oceanic trenches.
+ *
+ *  Translucent swimming bells (nectophores), bioluminescent glowing tentilla curtains, and rhythmic contraction
+ *  light waves.
+ *
+ *    audioAdvance -> drives oceanic current drift & tentacle undulating waves
+ *    audioKick    -> flashes defensive bioluminescent luminescence cascades
+ *    audioSwell   -> thickens colonial bell volume & oceanic caustic haze
+ *    audioCentroid-> shifts bio-luciferin amber/cyan emission spectra
+ *    audioFlux    -> excites sparkling nematocyst battery point flashes
+ *
+ *  Per-activation variety:
+ *    nectoCountP  float nectophore swimming bell density         (3.0..8.0)
+ *    tentillaP    float tentacle curtain strand density          (8.0..24.0)
+ *    bioGlowP     float bioluminescence emission brightness      (0.8..2.5)
+ *    waveScaleP   float hydrodynamic tentacle wave amplitude     (0.5..2.2)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

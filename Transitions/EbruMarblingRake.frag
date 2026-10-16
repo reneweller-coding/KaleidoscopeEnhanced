@@ -1,20 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file EbruMarblingRake.frag
- * @brief TRANSITION EBRU MARBLING RAKE: Turkish paper marbling (Ebru) rake transition.
- * Fine comb teeth sweep through floating pigments in alternating directions,
- * drawing elegant capillary plumes and chevron folds that reveal the next scene.
- *   interpolation -> drives rake comb sweep across the liquid surface
- *   audioKick     -> flashes sharp pigment boundary swirls
- *   audioSwell    -> undulates comb teeth displacement depth
+/*****************************************************************************\
+ *                              EbruMarblingRake.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   rakeP  float comb teeth frequency & density (0.5..2.2)
- *   swirlP float capillary vortex curl intensity (0.5..2.0)
- *   speedP float animation speed multiplier      (0.5..2.0)
- *   hueP   float pigment color hue offset        (0..6.28)
+ *  @brief
+ *  TRANSITION EBRU MARBLING RAKE: Turkish paper marbling (Ebru) rake transition.
+ *
+ *  Fine comb teeth sweep through floating pigments in alternating directions, drawing elegant capillary plumes and
+ *  chevron folds that reveal the next scene.
+ *
+ *    interpolation -> drives rake comb sweep across the liquid surface
+ *    audioKick     -> flashes sharp pigment boundary swirls
+ *    audioSwell    -> undulates comb teeth displacement depth
+ *
+ *  Per-activation variety:
+ *    rakeP  float comb teeth frequency & density (0.5..2.2)
+ *    swirlP float capillary vortex curl intensity (0.5..2.0)
+ *    speedP float animation speed multiplier      (0.5..2.0)
+ *    hueP   float pigment color hue offset        (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureAccretionStreams.frag
- * @brief TEXTURE ACCRETION STREAMS: looking down onto a vast glowing disc of
- * matter spiralling inward -- many rings of hot streams circling a bright
- * centre, inner rings faster than outer ones (Kepler shear), so the streams
- * are drawn out into fine spiral filaments; the streams are made of the
- * photograph, sheared along the orbits, glowing hot white-gold near the
- * centre and cooling to red and violet outward, with dark lanes between.
- * The disc fills the frame and continues beyond it.  Endless polar field.
+/*****************************************************************************\
+ *                              TextureAccretionStreams.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the orbiting (integrated, jump-free)
- *   audioSpread     -> shear: how strongly inner and outer rings differ
- *   audioRoughness  -> turbulence in the streams
- *   audioMode       -> the colour ramp warms in major
- *   audioBass       -> the centre's glow (light)
- *   audioSwell      -> the brightness of the streams (slow)
+ *  @brief
+ *  TEXTURE ACCRETION STREAMS: looking down onto a vast glowing disc of matter spiralling inward -- many rings of
+ *  hot streams circling a bright centre, inner rings faster than outer ones (Kepler shear), so the streams are
+ *  drawn out into fine spiral filaments; the streams are made of the photograph, sheared along the orbits, glowing
+ *  hot white-gold near the centre and cooling to red and violet outward, with dark lanes between.
  *
- * Knobs: tiltP (view tilt), laneP (dark lane contrast), photoP, hueP.
+ *  The disc fills the frame and continues beyond it.  Endless polar field.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the orbiting (integrated, jump-free)
+ *    audioSpread     -> shear: how strongly inner and outer rings differ
+ *    audioRoughness  -> turbulence in the streams
+ *    audioMode       -> the colour ramp warms in major
+ *    audioBass       -> the centre's glow (light)
+ *    audioSwell      -> the brightness of the streams (slow)
+ *
+ *  Knobs: tiltP (view tilt), laneP (dark lane contrast), photoP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

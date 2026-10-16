@@ -1,8 +1,14 @@
 #version 430 core
-/**
- * @file AuroraBorealisOverFjord.tese
- * @brief Tessellation-evaluation stage companion to AuroraBorealisOverFjord.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              AuroraBorealisOverFjord.tese
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Tessellation-evaluation stage companion to AuroraBorealisOverFjord.frag -- see that file's header for this
+ *  scene's description.
+ *
+ *  @author René Weller
  */
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( quads, fractional_odd_spacing, ccw ) in;

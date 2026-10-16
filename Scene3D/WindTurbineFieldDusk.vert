@@ -1,9 +1,16 @@
 #version 330 core
-/**
- * @file WindTurbineFieldDusk.vert
- * @brief Vertex stage for WindTurbineFieldDusk: world positions pass
- * through (camera at the origin, +z ahead); the turbine id, the blade
- * index, kind and uv go to the fragment stage.  No camera motion.
+/*****************************************************************************\
+ *                              WindTurbineFieldDusk.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage for WindTurbineFieldDusk: world positions pass through (camera at the origin, +z ahead); the
+ *  turbine id, the blade index, kind and uv go to the fragment stage.
+ *
+ *  No camera motion.
+ *
+ *  @author René Weller
  */
 layout( location = 0 ) in vec4 attrA; ///< xyz = position, w = turbine id
 layout( location = 1 ) in vec4 attrB; ///< x = blade index / aux, y = kind, zw = uv

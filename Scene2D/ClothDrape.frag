@@ -1,16 +1,26 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file ClothDrape.frag
- * @brief A silk curtain whose folds are a real Verlet mass-spring simulation, printed with the current photo.
+/*****************************************************************************\
+ *                              ClothDrape.frag
+\*****************************************************************************/
+/*! @file
  *
- * texCloth (from the CfxCloth compute pass) supplies a displacement field: its RGB warps the tex0 lookup so the printed
- * photo rides with the fabric, and its gradient gives the surface normal used for diffuse, specular and rim-sheen
- * lighting. audioKick punches up the specular highlight, audioBeat swells the silk sheen, audioHigh adds a bright glint
- * on top of the specular term, and audioAmbient scales the overall exposure. The highlight and sheen tint comes from an
- * imgPalette arc sampled from the photo, rotated by audioChromaHue and audioAdvance with audioValence controlling its
- * saturation.
+ *  @brief
+ *  A silk curtain whose folds are a real Verlet mass-spring simulation, printed with the current photo.
+ *
+ *  texCloth (from the CfxCloth compute pass) supplies a displacement field: its RGB warps the tex0 lookup so the
+ *  printed
+ *  photo rides with the fabric, and its gradient gives the surface normal used for diffuse, specular and rim-sheen
+ *  lighting. audioKick punches up the specular highlight, audioBeat swells the silk sheen, audioHigh adds a bright
+ *  glint
+ *  on top of the specular term, and audioAmbient scales the overall exposure. The highlight and sheen tint comes
+ *  from an
+ *  imgPalette arc sampled from the photo, rotated by audioChromaHue and audioAdvance with audioValence controlling
+ *  its
+ *  saturation.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 // ClothDrape.frag — a curtain of light.  Blend/CfxCloth.comp solves a Verlet
 // mass-spring sheet on a grid, one particle per texel, so the displacement
 // field can be sampled directly here: the surface normal comes from the

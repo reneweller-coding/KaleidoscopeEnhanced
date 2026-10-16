@@ -1,20 +1,27 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file PoincareSpin.frag
- * @brief TRANSITION POINCARE SPIN: Conformal hyperbolic Poincaré disk inversion and
- * continuous Möbius transformation. The outgoing scene turns inside out
- * through hyperbolic circle inversions while the incoming scene expands
- * smoothly from the non-Euclidean horizon.
- *   interpolation -> sweeps hyperbolic Möbius translation from 0 to 1
- *   audioKick     -> flashes hyperbolic geodesic boundaries
+/*****************************************************************************\
+ *                              PoincareSpin.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   diskP  float Poincaré disk metric curvature (0.5..2.2)
- *   spinP  float hyperbolic rotation velocity   (0.5..2.0)
- *   speedP float animation speed multiplier      (0.5..2.0)
- *   hueP   float geodesic rim hue offset        (0..6.28)
+ *  @brief
+ *  TRANSITION POINCARE SPIN: Conformal hyperbolic Poincaré disk inversion and continuous Möbius transformation.
+ *
+ *  The outgoing scene turns inside out through hyperbolic circle inversions while the incoming scene expands
+ *  smoothly from the non-Euclidean horizon.
+ *
+ *    interpolation -> sweeps hyperbolic Möbius translation from 0 to 1
+ *    audioKick     -> flashes hyperbolic geodesic boundaries
+ *
+ *  Per-activation variety:
+ *    diskP  float Poincaré disk metric curvature (0.5..2.2)
+ *    spinP  float hyperbolic rotation velocity   (0.5..2.0)
+ *    speedP float animation speed multiplier      (0.5..2.0)
+ *    hueP   float geodesic rim hue offset        (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

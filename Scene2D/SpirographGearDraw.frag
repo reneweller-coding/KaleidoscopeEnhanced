@@ -1,29 +1,34 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SpirographGearDraw.frag
- * @brief SPIROGRAPH GEAR DRAW: the toy, in gel-pen neon on dark paper.  A
- * translucent gear rolls inside a toothed ring, the pen in one of its holes
- * drawing a hypotrochoid in glowing ink; when the figure closes, the next
- * one begins with another gear and another colour, and the earlier figures
- * stay on the paper, slowly fading, so the sheet is always a layered
- * rosette of several drawings.  The gear rolls on the scene clock; the pen
- * glows with the kick, the ink with the harmony.
+/*****************************************************************************\
+ *                              SpirographGearDraw.frag
+\*****************************************************************************/
+/*! @file
  *
- * The curve is found analytically: |P(t)|^2 of a hypotrochoid depends only
- * on cos(k t), so for each pixel the few parameters at its radius are
- * solved directly (2p candidates for a ratio p/q) instead of sampling the
- * whole curve.
+ *  @brief
+ *  SPIROGRAPH GEAR DRAW: the toy, in gel-pen neon on dark paper.
  *
- * Audio Reactivity:
- *   sceneAdvance    -> the rolling gear and the pen (continuous)
- *   audioChroma[12] -> ink brightness (light)
- *   audioKick       -> pen light (light)
- *   audioHigh       -> gear teeth glint (light)
- *   audioLevel      -> brightness
+ *  A translucent gear rolls inside a toothed ring, the pen in one of its holes drawing a hypotrochoid in glowing
+ *  ink; when the figure closes, the next one begins with another gear and another colour, and the earlier figures
+ *  stay on the paper, slowly fading, so the sheet is always a layered rosette of several drawings.  The gear rolls
+ *  on the scene clock; the pen glows with the kick, the ink with the harmony.
  *
- * Per-activation variety: ratioP (first gear), holeP (pen offset), hueP.
+ *  The curve is found analytically: |P(t)|^2 of a hypotrochoid depends only
+ *  on cos(k t), so for each pixel the few parameters at its radius are
+ *  solved directly (2p candidates for a ratio p/q) instead of sampling the
+ *  whole curve.
+ *
+ *  Audio Reactivity:
+ *    sceneAdvance    -> the rolling gear and the pen (continuous)
+ *    audioChroma[12] -> ink brightness (light)
+ *    audioKick       -> pen light (light)
+ *    audioHigh       -> gear teeth glint (light)
+ *    audioLevel      -> brightness
+ *
+ *  Per-activation variety: ratioP (first gear), holeP (pen offset), hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

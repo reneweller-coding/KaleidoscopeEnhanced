@@ -1,27 +1,32 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file RichterSqueegee.frag
- * @brief RICHTER SQUEEGEE: a painting in the manner of Gerhard Richter's
- * squeegee abstractions, endlessly being made -- broad drags of a rubber
- * blade pull layers of wet oil paint across each other, the upper layer
- * torn open into skips and ridges where the paint underneath shows through,
- * streaked in the direction of the pull, the thick paint catching the
- * light on its crests.  The layers are the photograph: each layer is the
- * photo smeared along the pull, so every photo gives its own palette and
- * structure.  New drags keep sweeping across the canvas; the canvas is an
- * endless field that mirrors without seams.
+/*****************************************************************************\
+ *                              RichterSqueegee.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the drags travel (integrated, jump-free)
- *   audioHarmChange -> the tears open wider on chord changes (slow release)
- *   audioSpread     -> the length of the smear (wide spectrum = longer streaks)
- *   audioRoughness  -> the skips get more ragged
- *   audioMode       -> the lower layer warms in major
- *   audioSwell      -> the gloss on the paint ridges (slow)
+ *  @brief
+ *  RICHTER SQUEEGEE: a painting in the manner of Gerhard Richter's squeegee abstractions, endlessly being made --
+ *  broad drags of a rubber blade pull layers of wet oil paint across each other, the upper layer torn open into
+ *  skips and ridges where the paint underneath shows through, streaked in the direction of the pull, the thick
+ *  paint catching the light on its crests.
  *
- * Knobs: layersP (how many layers show), angleP (pull direction), scaleP, hueP.
+ *  The layers are the photograph: each layer is the photo smeared along the pull, so every photo gives its own
+ *  palette and structure.  New drags keep sweeping across the canvas; the canvas is an endless field that mirrors
+ *  without seams.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the drags travel (integrated, jump-free)
+ *    audioHarmChange -> the tears open wider on chord changes (slow release)
+ *    audioSpread     -> the length of the smear (wide spectrum = longer streaks)
+ *    audioRoughness  -> the skips get more ragged
+ *    audioMode       -> the lower layer warms in major
+ *    audioSwell      -> the gloss on the paint ridges (slow)
+ *
+ *  Knobs: layersP (how many layers show), angleP (pull direction), scaleP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

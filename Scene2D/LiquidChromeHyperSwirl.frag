@@ -1,18 +1,24 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file LiquidChromeHyperSwirl.frag
- * @brief LIQUID CHROME HYPER SWIRL: Ultra-reflective liquid mercury sea agitated
- * by multiple orbiting gravitational vortex sinks with chromatic normal reflections,
- * high-frequency capillary ripples, and glowing Fresnel metallic highlights.
+/*****************************************************************************\
+ *                              LiquidChromeHyperSwirl.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance -> drives continuous multi-vortex liquid fluid advection
- *   audioKick    -> excites high-amplitude capillary surface ripples & specular bursts
- *   audioCentroid-> sharpens chrome environment reflection curvature
- *   audioSubBass -> expands gravitational vortex suction depth
- *   audioChromaHue-> rotates the liquid chrome reflection palette
+ *  @brief
+ *  LIQUID CHROME HYPER SWIRL: Ultra-reflective liquid mercury sea agitated by multiple orbiting gravitational
+ *  vortex sinks with chromatic normal reflections, high-frequency capillary ripples, and glowing Fresnel metallic
+ *  highlights.
+ *
+ *  Audio Reactivity:
+ *    audioAdvance -> drives continuous multi-vortex liquid fluid advection
+ *    audioKick    -> excites high-amplitude capillary surface ripples & specular bursts
+ *    audioCentroid-> sharpens chrome environment reflection curvature
+ *    audioSubBass -> expands gravitational vortex suction depth
+ *    audioChromaHue-> rotates the liquid chrome reflection palette
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

@@ -1,22 +1,27 @@
 #version 330 core
+/*****************************************************************************\
+ *                              SuperfluidVortexTangle.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Draws a tangle of quantized superfluid vortex rings as glowing point sprites, blending a
+ *  deep-ocean-blue-to-electric-cyan/emerald circulation colour with a faint reflection of the current slideshow
+ *  photo.
+ *
+ *  vCirc (local circulation, from the vertex stage) drives a pulsing core
+ *  glow that brightens toward white; vRingID cycles the base circulation hue
+ *  over time; audioKick punches overall brightness (scaled by the vortexP
+ *  preset), and audioChromaHue plus hueP rotate the final colour. A
+ *  soft-knee tone map keeps hot audio from clipping to flat white.
+ *
+ *  @author René Weller
+ */
 out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec3  vPos;    ///< Position (from the vertex stage).
 in float vCirc;   ///< Circ (from the vertex stage).
 in float vRingID; ///< Ring ID (from the vertex stage).
-
-/**
- * @file SuperfluidVortexTangle.frag
- * @brief Draws a tangle of quantized superfluid vortex rings as glowing
- * point sprites, blending a deep-ocean-blue-to-electric-cyan/emerald
- * circulation colour with a faint reflection of the current slideshow photo.
- *
- * vCirc (local circulation, from the vertex stage) drives a pulsing core
- * glow that brightens toward white; vRingID cycles the base circulation hue
- * over time; audioKick punches overall brightness (scaled by the vortexP
- * preset), and audioChromaHue plus hueP rotate the final colour. A
- * soft-knee tone map keeps hot audio from clipping to flat white.
- */
 
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

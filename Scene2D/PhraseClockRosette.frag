@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file PhraseClockRosette.frag
- * @brief PHRASE CLOCK ROSETTE: a 32-beat rosette that shows WHERE in the
- * 8-bar phrase the music is.  The host integrates beats from the tempo
- * since the last drop (audioPhrasePos, 0..1 over 32 beats): a hand sweeps
- * the rosette, the 32 petals fill behind it, and the build-up tightens the
- * whole flower toward its centre -- until the phrase boundary, where dance
- * music puts its drops, when it blooms open.  For the first time a scene
- * counts DOWN to the drop instead of only reacting to it.
+/*****************************************************************************\
+ *                              PhraseClockRosette.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioPhrasePos   -> the hand and the filled petals
- *   audioPhraseLeft  -> tension toward the boundary (petals close in)
- *   audioBuildUp     -> the flower contracts and heats up
- *   audioDrop        -> bloom (petals spring open, a shockwave ring)
- *   audioBeatPhase   -> the innermost ring ticks every beat
- *   audioKick        -> petal tips flash
+ *  @brief
+ *  PHRASE CLOCK ROSETTE: a 32-beat rosette that shows WHERE in the 8-bar phrase the music is.
  *
- * Per-activation variety: petalP (petal length), spinP (rosette turn), hueP.
+ *  The host integrates beats from the tempo since the last drop (audioPhrasePos, 0..1 over 32 beats): a hand sweeps
+ *  the rosette, the 32 petals fill behind it, and the build-up tightens the whole flower toward its centre -- until
+ *  the phrase boundary, where dance music puts its drops, when it blooms open.  For the first time a scene counts
+ *  DOWN to the drop instead of only reacting to it.
+ *
+ *  Audio Reactivity:
+ *    audioPhrasePos   -> the hand and the filled petals
+ *    audioPhraseLeft  -> tension toward the boundary (petals close in)
+ *    audioBuildUp     -> the flower contracts and heats up
+ *    audioDrop        -> bloom (petals spring open, a shockwave ring)
+ *    audioBeatPhase   -> the innermost ring ticks every beat
+ *    audioKick        -> petal tips flash
+ *
+ *  Per-activation variety: petalP (petal length), spinP (rosette turn), hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

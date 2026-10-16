@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file NeonPoolNight.frag
- * @brief NEON POOL NIGHT: a swimming pool at night seen straight from above,
- * the water lit from inside by underwater lamps in turquoise and magenta.
- * Caustic nets dance over the tiled floor and the lane lines; the wall
- * lamps throw their colour in soft pools; the waterline of the coping
- * glows; a lone inflatable ring drifts slowly across and its shadow slides
- * over the floor.  The pool deck around it is dark, wet, with the neon
- * reflected in puddles.  The swell is the light; the bass sets the water
- * rolling -- the caustics move harder, nothing else does.
+/*****************************************************************************\
+ *                              NeonPoolNight.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioBass   -> the swell of the water: caustic strength (light)
- *   audioSwell  -> the lamps' brightness (slow)
- *   audioSpectrum[32] -> each wall lamp with its band (light)
- *   audioLevel  -> brightness
- *   sceneTime / sceneAdvance -> ripples, the drifting ring (continuous)
+ *  @brief
+ *  NEON POOL NIGHT: a swimming pool at night seen straight from above, the water lit from inside by underwater
+ *  lamps in turquoise and magenta.
  *
- * Per-activation variety: lampsP (lamp colours), hueP.
+ *  Caustic nets dance over the tiled floor and the lane lines; the wall lamps throw their colour in soft pools; the
+ *  waterline of the coping glows; a lone inflatable ring drifts slowly across and its shadow slides over the floor.
+ *  The pool deck around it is dark, wet, with the neon reflected in puddles.  The swell is the light; the bass sets
+ *  the water rolling -- the caustics move harder, nothing else does.
+ *
+ *  Audio Reactivity:
+ *    audioBass   -> the swell of the water: caustic strength (light)
+ *    audioSwell  -> the lamps' brightness (slow)
+ *    audioSpectrum[32] -> each wall lamp with its band (light)
+ *    audioLevel  -> brightness
+ *    sceneTime / sceneAdvance -> ripples, the drifting ring (continuous)
+ *
+ *  Per-activation variety: lampsP (lamp colours), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

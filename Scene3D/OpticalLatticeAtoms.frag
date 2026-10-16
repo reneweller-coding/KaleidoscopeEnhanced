@@ -1,17 +1,21 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file OpticalLatticeAtoms.frag
- * @brief Fragment stage for OpticalLatticeAtoms: the vacuum chamber dark
- * with the photo faint on its far window, the lattice beams as faint red
- * lines, the atoms as round glowing discs whose colour is their chroma
- * class and whose brightness is that class's energy (the fluorescence
- * imaging), the magneto-optical-trap glow with the level, the treble a
- * sparkle on the beam crossings.
+/*****************************************************************************\
+ *                              OpticalLatticeAtoms.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity: audioChroma[12] -> atom brightness by class;
- *                   audioLevel -> MOT glow; audioHigh -> sparkle; audioKick -> beam flash.
+ *  @brief
+ *  Fragment stage for OpticalLatticeAtoms: the vacuum chamber dark with the photo faint on its far window, the
+ *  lattice beams as faint red lines, the atoms as round glowing discs whose colour is their chroma class and whose
+ *  brightness is that class's energy (the fluorescence imaging), the magneto-optical-trap glow with the level, the
+ *  treble a sparkle on the beam crossings.
+ *
+ *  Audio Reactivity: audioChroma[12] -> atom brightness by class;
+ *                    audioLevel -> MOT glow; audioHigh -> sparkle; audioKick -> beam flash.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 in vec2  vTexCoord; ///< Texture coordinate (from the vertex stage).
 in vec3  vWorld;    ///< World position (from the vertex stage).
 in float vKind;     ///< Element kind (from the vertex stage).

@@ -1,7 +1,13 @@
 #version 330 core
-/**
- * @file BioluminescentOceanSwell.vert
- * @brief attrA.xy = u, w (0..1), attrA.w = cell ID, attrB = seeds (GEOM_GRID).
+/*****************************************************************************\
+ *                              BioluminescentOceanSwell.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  attrA.xy = u, w (0..1), attrA.w = cell ID, attrB = seeds (GEOM_GRID).
+ *
+ *  @author René Weller
  */
 in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an
                ///< index).

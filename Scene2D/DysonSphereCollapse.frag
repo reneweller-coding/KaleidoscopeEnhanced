@@ -1,21 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file DysonSphereCollapse.frag
- * @brief DYSON SPHERE COLLAPSE: A massive metal shell completely encasing a star
- * is suffering a catastrophic structural failure. The enraged star's plasma
- * bursts violently through the shattering metal plates, tearing the megastructure
- * apart in sync with the audio.
- *   audioAdvance -> slow rotation/drift of the crumbling sphere
- *   audioKick    -> massive plasma eruptions blowing off armor plates
- *   audioSwell   -> blinding internal brightness of the trapped star
- *   audioChromaHue-> palette offset for the escaping stellar plasma
+/*****************************************************************************\
+ *                              DysonSphereCollapse.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   damageP float extent of the structural damage (0.5..1.5)
- *   flareP float intensity of the escaping plasma (0.5..2.0)
- *   hueP float palette offset (0..6.28)
+ *  @brief
+ *  DYSON SPHERE COLLAPSE: A massive metal shell completely encasing a star is suffering a catastrophic structural
+ *  failure.
+ *
+ *  The enraged star's plasma bursts violently through the shattering metal plates, tearing the megastructure apart
+ *  in sync with the audio.
+ *
+ *    audioAdvance -> slow rotation/drift of the crumbling sphere
+ *    audioKick    -> massive plasma eruptions blowing off armor plates
+ *    audioSwell   -> blinding internal brightness of the trapped star
+ *    audioChromaHue-> palette offset for the escaping stellar plasma
+ *
+ *  Per-activation variety:
+ *    damageP float extent of the structural damage (0.5..1.5)
+ *    flareP float intensity of the escaping plasma (0.5..2.0)
+ *    hueP float palette offset (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

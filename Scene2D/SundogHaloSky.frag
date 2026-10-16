@@ -1,23 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SundogHaloSky.frag
- * @brief SUNDOG HALO SKY: a low winter sun in a sky full of ice crystals,
- * and the optics they draw -- the 22 degree halo, the two sun dogs on the
- * parhelic circle, the upper tangent arc, a sun pillar.  The crystal load
- * (the treble) is the halo brightness, the sun itself is the swell, the
- * bass warms the low light; the photo is the snowy landscape below and
- * the thin cloud the crystals float in.  Camera fixed.
+/*****************************************************************************\
+ *                              SundogHaloSky.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioHigh  -> halo and sun-dog brightness (light)
- *   audioSwell -> sun strength (slow)
- *   audioBass  -> low warm light (light)
- *   audioKick  -> a glint on the diamond dust (light)
- *   audioLevel -> brightness
+ *  @brief
+ *  SUNDOG HALO SKY: a low winter sun in a sky full of ice crystals, and the optics they draw -- the 22 degree halo,
+ *  the two sun dogs on the parhelic circle, the upper tangent arc, a sun pillar.
  *
- * Per-activation variety: elevP (sun elevation), dustP, hueP.
+ *  The crystal load (the treble) is the halo brightness, the sun itself is the swell, the bass warms the low light;
+ *  the photo is the snowy landscape below and the thin cloud the crystals float in.  Camera fixed.
+ *
+ *  Audio Reactivity:
+ *    audioHigh  -> halo and sun-dog brightness (light)
+ *    audioSwell -> sun strength (slow)
+ *    audioBass  -> low warm light (light)
+ *    audioKick  -> a glint on the diamond dust (light)
+ *    audioLevel -> brightness
+ *
+ *  Per-activation variety: elevP (sun elevation), dustP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

@@ -1,24 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file LavenderRowsSunset.frag
- * @brief LAVENDER ROWS SUNSET: a Provence lavender field at sunset, seen
- * straight down its rows -- mounded purple rows running away in perfect
- * central perspective toward a low sun on the horizon, the pale earth
- * furrows between them glowing in the backlight, every bush rimmed in
- * gold where the sun catches its flower spikes.  A lone tree and a stone
- * farmhouse stand on the horizon, the sky burns orange to violet.  Each
- * row answers a band of the music: its gold rim brightens with it, so
- * light runs across the rows.  The camera is still.
+/*****************************************************************************\
+ *                              LavenderRowsSunset.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSpectrum[32] -> the golden rims, one band per row (light)
- *   audioSwell        -> the sun's glow and the haze (slow)
- *   audioLevel        -> brightness
- *   sceneTime / sceneAdvance -> the sun sinking slowly, the air shimmering
+ *  @brief
+ *  LAVENDER ROWS SUNSET: a Provence lavender field at sunset, seen straight down its rows -- mounded purple rows
+ *  running away in perfect central perspective toward a low sun on the horizon, the pale earth furrows between them
+ *  glowing in the backlight, every bush rimmed in gold where the sun catches its flower spikes.
  *
- * Per-activation variety: rowsP (how wide the rows), hueP.
+ *  A lone tree and a stone farmhouse stand on the horizon, the sky burns orange to violet.  Each row answers a band
+ *  of the music: its gold rim brightens with it, so light runs across the rows.  The camera is still.
+ *
+ *  Audio Reactivity:
+ *    audioSpectrum[32] -> the golden rims, one band per row (light)
+ *    audioSwell        -> the sun's glow and the haze (slow)
+ *    audioLevel        -> brightness
+ *    sceneTime / sceneAdvance -> the sun sinking slowly, the air shimmering
+ *
+ *  Per-activation variety: rowsP (how wide the rows), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

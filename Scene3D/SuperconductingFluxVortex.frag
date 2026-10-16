@@ -1,4 +1,28 @@
 #version 330 core
+/*****************************************************************************\
+ *                              SuperconductingFluxVortex.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Shades the two primitive families of the superconducting vortex lattice: the flux-tube ribbons (a glowing core
+ *  fading toward the ribbon's edges, per-vertex cyan flux line / violet Cooper-pair / green Meissner tint mixed in
+ *  the vertex stage) and the soft round motes of the expelled Meissner field that fill the far background.
+ *
+ *  vHaze tells the two apart.
+ *
+ *  Only audioChromaHue and the hueP preset are read here, rotating the whole
+ *  picture's colour; the underlying vortex colour mix, its rotation, and its
+ *  audioKick/audioLevel-driven brightness are computed in the companion
+ *  vertex shader (SuperconductingFluxVortex.vert). dist_from_center (from
+ *  vTexCoord.x) shapes the glowing core profile across the ribbon's width.
+ *
+ *  This pass is drawn OPAQUE and depth-tested (geom="indirect"), so a
+ *  fragment that is nearly black still writes depth and would punch a hole in
+ *  whatever sits behind it -- hence the discard on the haze motes' faded rim.
+ *
+ *  @author René Weller
+ */
 out vec4 fragColor; ///< The pixel's colour (output).
 // SuperconductingFluxVortex.frag
 
@@ -10,25 +34,6 @@ uniform float hueP;           ///< Hue knob (radians), usually the music's chrom
 in vec4  vColor;    ///< Color (from the vertex stage).
 in vec2  vTexCoord; ///< Texture coordinate (from the vertex stage).
 in float vHaze;     ///< Haze (from the vertex stage).
-
-/**
- * @file SuperconductingFluxVortex.frag
- * @brief Shades the two primitive families of the superconducting vortex
- * lattice: the flux-tube ribbons (a glowing core fading toward the ribbon's
- * edges, per-vertex cyan flux line / violet Cooper-pair / green Meissner
- * tint mixed in the vertex stage) and the soft round motes of the expelled
- * Meissner field that fill the far background.  vHaze tells the two apart.
- *
- * Only audioChromaHue and the hueP preset are read here, rotating the whole
- * picture's colour; the underlying vortex colour mix, its rotation, and its
- * audioKick/audioLevel-driven brightness are computed in the companion
- * vertex shader (SuperconductingFluxVortex.vert). dist_from_center (from
- * vTexCoord.x) shapes the glowing core profile across the ribbon's width.
- *
- * This pass is drawn OPAQUE and depth-tested (geom="indirect"), so a
- * fragment that is nearly black still writes depth and would punch a hole in
- * whatever sits behind it -- hence the discard on the haze motes' faded rim.
- */
 
 /**  Rotates a colour's hue by an angle (about the grey axis).
  *

@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureOilSlickSheen.frag
- * @brief TEXTURE OIL SLICK SHEEN: a film of oil on a wet road at night --
- * rainbow interference colours swirl across the dark asphalt (the
- * photograph as the road's texture beneath), the thin film spreading and
- * twisting in slow eddies, thicker bands showing the richer second-order
- * colours, the film breaking into islands where it thins; a street light
- * glints on the wet surface.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              TextureOilSlickSheen.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the film swirls (integrated, jump-free)
- *   audioSpread     -> the film's thickness range
- *   audioKick       -> the glint flares (light)
- *   audioMode       -> the road: cold blue night in minor, sodium orange in major
- *   audioRoughness  -> the film breaks into islands
- *   audioSwell      -> the wet sheen (slow)
+ *  @brief
+ *  TEXTURE OIL SLICK SHEEN: a film of oil on a wet road at night -- rainbow interference colours swirl across the
+ *  dark asphalt (the photograph as the road's texture beneath), the thin film spreading and twisting in slow
+ *  eddies, thicker bands showing the richer second-order colours, the film breaking into islands where it thins; a
+ *  street light glints on the wet surface.
  *
- * Knobs: swirlP, filmP (film coverage), roadP (road texture), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the film swirls (integrated, jump-free)
+ *    audioSpread     -> the film's thickness range
+ *    audioKick       -> the glint flares (light)
+ *    audioMode       -> the road: cold blue night in minor, sodium orange in major
+ *    audioRoughness  -> the film breaks into islands
+ *    audioSwell      -> the wet sheen (slow)
+ *
+ *  Knobs: swirlP, filmP (film coverage), roadP (road texture), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

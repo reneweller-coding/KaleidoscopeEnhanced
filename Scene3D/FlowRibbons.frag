@@ -1,4 +1,25 @@
 #version 330 core
+/*****************************************************************************\
+ *                              FlowRibbons.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Shades a twisting flow ribbon as a thin, two-sided, iridescent surface -- lit from both faces since a ribbon has
+ *  no volume, with a tight specular flash that fires when a twisting face swings toward the camera and a
+ *  fresnel-driven iridescent hue shift like a thin film.
+ *
+ *  audioHigh brightens the specular flash, audioLevel strengthens the
+ *  iridescent fresnel glow, audioKick brightens a pulse that continually
+ *  travels along each ribbon, audioAmbient adds a flat tint, and
+ *  audioBeat/audioSubBass pulse the final brightness. Hue comes from the
+ *  rotating photo-arc palette (imgPalette) keyed by audioChromaHue with an
+ *  audioAdvance drift and audioValence-controlled saturation, and
+ *  per-ribbon randomness (vRnd) spreads the flow into distinguishable
+ *  colored strands; distance fog (vDist) fades far ribbons into haze.
+ *
+ *  @author René Weller
+ */
 out vec4 fragColor; ///< The pixel's colour (output).
 // FlowRibbons.frag — thin, two-sided, iridescent.
 // A ribbon has no inside, so both faces are lit; and because its normal swings
@@ -12,23 +33,6 @@ in vec3  vView;   ///< View vector (from the vertex stage).
 in float vAlong;  ///< Along (from the vertex stage).
 in float vRnd;    ///< Rnd (from the vertex stage).
 in float vDist;   ///< Distance (from the vertex stage).
-
-/**
- * @file FlowRibbons.frag
- * @brief Shades a twisting flow ribbon as a thin, two-sided, iridescent
- * surface -- lit from both faces since a ribbon has no volume, with a
- * tight specular flash that fires when a twisting face swings toward the
- * camera and a fresnel-driven iridescent hue shift like a thin film.
- *
- * audioHigh brightens the specular flash, audioLevel strengthens the
- * iridescent fresnel glow, audioKick brightens a pulse that continually
- * travels along each ribbon, audioAmbient adds a flat tint, and
- * audioBeat/audioSubBass pulse the final brightness. Hue comes from the
- * rotating photo-arc palette (imgPalette) keyed by audioChromaHue with an
- * audioAdvance drift and audioValence-controlled saturation, and
- * per-ribbon randomness (vRnd) spreads the flow into distinguishable
- * colored strands; distance fog (vDist) fades far ribbons into haze.
- */
 
 uniform sampler2D tex0;          ///< The current photo.
 uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.

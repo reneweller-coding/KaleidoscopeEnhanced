@@ -1,20 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file RoguePlanet.frag
- * @brief ROGUE PLANET: A dark, frozen world drifting without a star. The atmosphere
- * is thick with volcanic ash and bioluminescent fissures glow intensely across
- * its frozen surface, pulsating to the beat.
- *   audioAdvance -> flight speed over the surface
- *   audioKick    -> flashes from volcanic vents
- *   audioSwell   -> ambient fog and bioluminescence glow
- *   audioChromaHue-> palette offset for the fissures
+/*****************************************************************************\
+ *                              RoguePlanet.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   reliefP float depth of the fissures (0.5..1.8)
- *   glowP float intensity of the bioluminescence (0.5..2.0)
- *   hueP float palette offset (0..6.28)
+ *  @brief
+ *  ROGUE PLANET: A dark, frozen world drifting without a star.
+ *
+ *  The atmosphere is thick with volcanic ash and bioluminescent fissures glow intensely across its frozen surface,
+ *  pulsating to the beat.
+ *
+ *    audioAdvance -> flight speed over the surface
+ *    audioKick    -> flashes from volcanic vents
+ *    audioSwell   -> ambient fog and bioluminescence glow
+ *    audioChromaHue-> palette offset for the fissures
+ *
+ *  Per-activation variety:
+ *    reliefP float depth of the fissures (0.5..1.8)
+ *    glowP float intensity of the bioluminescence (0.5..2.0)
+ *    hueP float palette offset (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

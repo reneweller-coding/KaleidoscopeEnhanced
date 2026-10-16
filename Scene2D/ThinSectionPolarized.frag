@@ -1,32 +1,37 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file ThinSectionPolarized.frag
- * @brief THIN SECTION POLARIZED: a rock thin section under the polarising
- * microscope, crossed polars -- a mosaic of mineral grains, each glowing in
- * its own vivid interference colour (the Michel-Levy chart: blues, magentas,
- * golds, greens), with twinned grains striped, and as the stage turns every
- * grain passes through its colours and blacks out at extinction, so the
- * whole mosaic flickers slowly through the spectrum.  The grain pattern is
- * the photograph's structure (its regions become grains); the round field
- * of view fills the frame.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              ThinSectionPolarized.frag
+\*****************************************************************************/
+/*! @file
  *
- * Interference colour: a grain with retardation R under white light shows
- * the colour of the path difference R (approximated by a sum of cosines
- * over the visible spectrum); its brightness goes as sin^2(2*theta) with
- * the stage angle theta relative to the grain's optical axis.
+ *  @brief
+ *  THIN SECTION POLARIZED: a rock thin section under the polarising microscope, crossed polars -- a mosaic of
+ *  mineral grains, each glowing in its own vivid interference colour (the Michel-Levy chart: blues, magentas,
+ *  golds, greens), with twinned grains striped, and as the stage turns every grain passes through its colours and
+ *  blacks out at extinction, so the whole mosaic flickers slowly through the spectrum.
  *
- * Audio Reactivity (structure, not only light):
- *   audioPhase      -> the stage turns (integrated, jump-free)
- *   audioAdvance    -> the section slides slowly (integrated)
- *   audioSpread     -> grain size
- *   audioMode       -> retardation range: lower orders in minor, higher in major
- *   audioSwell      -> the lamp's brightness (slow)
- *   audioHigh       -> sparkle on grain boundaries (light)
+ *  The grain pattern is the photograph's structure (its regions become grains); the round field of view fills the
+ *  frame.  Endless, mirrorable.
  *
- * Knobs: grainP (grain size), orderP (retardation / colour order), twinP
- * (share of twinned grains), hueP.
+ *  Interference colour: a grain with retardation R under white light shows
+ *  the colour of the path difference R (approximated by a sum of cosines
+ *  over the visible spectrum); its brightness goes as sin^2(2*theta) with
+ *  the stage angle theta relative to the grain's optical axis.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioPhase      -> the stage turns (integrated, jump-free)
+ *    audioAdvance    -> the section slides slowly (integrated)
+ *    audioSpread     -> grain size
+ *    audioMode       -> retardation range: lower orders in minor, higher in major
+ *    audioSwell      -> the lamp's brightness (slow)
+ *    audioHigh       -> sparkle on grain boundaries (light)
+ *
+ *  Knobs: grainP (grain size), orderP (retardation / colour order), twinP
+ *  (share of twinned grains), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

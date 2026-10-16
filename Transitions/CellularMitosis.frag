@@ -1,20 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file CellularMitosis.frag
- * @brief TRANSITION CELLULAR MITOSIS: Biological cell division & cytokinesis transition.
- * A parent biological cell elongates, forms a pinching cleavage furrow, and
- * divides into daughter cells that separate and morph into the incoming scene.
- *   interpolation -> controls cell elongation, cleavage furrow & cytokinesis
- *   audioKick     -> flashes mitotic spindle fiber glowing microtubules
- *   audioSwell    -> undulates cell membrane elasticity & expansion
+/*****************************************************************************\
+ *                              CellularMitosis.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   mitosisP float cell membrane curvature & size     (0.5..2.2)
- *   cleaveP  float cytokinesis cleavage furrow depth (0.5..2.0)
- *   speedP   float animation speed multiplier        (0.5..2.0)
- *   hueP     float membrane glow hue offset          (0..6.28)
+ *  @brief
+ *  TRANSITION CELLULAR MITOSIS: Biological cell division & cytokinesis transition.
+ *
+ *  A parent biological cell elongates, forms a pinching cleavage furrow, and divides into daughter cells that
+ *  separate and morph into the incoming scene.
+ *
+ *    interpolation -> controls cell elongation, cleavage furrow & cytokinesis
+ *    audioKick     -> flashes mitotic spindle fiber glowing microtubules
+ *    audioSwell    -> undulates cell membrane elasticity & expansion
+ *
+ *  Per-activation variety:
+ *    mitosisP float cell membrane curvature & size     (0.5..2.2)
+ *    cleaveP  float cytokinesis cleavage furrow depth (0.5..2.0)
+ *    speedP   float animation speed multiplier        (0.5..2.0)
+ *    hueP     float membrane glow hue offset          (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

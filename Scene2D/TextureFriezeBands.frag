@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureFriezeBands.frag
- * @brief TEXTURE FRIEZE BANDS: a wall of stacked friezes -- horizontal bands
- * of the photograph, each band a different frieze symmetry (mirrored,
- * rotated, glided, translated) of its own strip of the picture, running
- * sideways at its own speed and direction like a many-layered ornamental
- * border, separated by gilded mouldings with rows of beads; the bands
- * breathe in height.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              TextureFriezeBands.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the bands run (integrated, jump-free)
- *   audioSpread     -> the speed differences between the bands
- *   audioKick       -> the bead mouldings flash (light)
- *   audioMode       -> the gilding: silver in minor, gold in major
- *   audioRoughness  -> relief shading on the friezes
- *   audioSwell      -> band height breathing (slow)
+ *  @brief
+ *  TEXTURE FRIEZE BANDS: a wall of stacked friezes -- horizontal bands of the photograph, each band a different
+ *  frieze symmetry (mirrored, rotated, glided, translated) of its own strip of the picture, running sideways at its
+ *  own speed and direction like a many-layered ornamental border, separated by gilded mouldings with rows of beads;
+ *  the bands breathe in height.
  *
- * Knobs: bandP (band count), repeatP (motif width), mouldP (moulding width), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the bands run (integrated, jump-free)
+ *    audioSpread     -> the speed differences between the bands
+ *    audioKick       -> the bead mouldings flash (light)
+ *    audioMode       -> the gilding: silver in minor, gold in major
+ *    audioRoughness  -> relief shading on the friezes
+ *    audioSwell      -> band height breathing (slow)
+ *
+ *  Knobs: bandP (band count), repeatP (motif width), mouldP (moulding width), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

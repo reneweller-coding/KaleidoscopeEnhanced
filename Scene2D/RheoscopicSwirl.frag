@@ -1,28 +1,34 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file RheoscopicSwirl.frag
- * @brief RHEOSCOPIC SWIRL: a rheoscopic fluid -- water filled with tiny
- * pearly flakes that line up with the flow, so every current, eddy and
- * shear layer becomes visible as silky bands of light and shadow, shimmering
- * like mother-of-pearl.  Slow vortices turn and merge, thin shear lines
- * wind around them, and the dye in the fluid takes its colours from the
- * photograph (where it is grey, a soft pearly hue field).  The whole frame
- * flows continuously; an endless field that mirrors without seams.
+/*****************************************************************************\
+ *                              RheoscopicSwirl.frag
+\*****************************************************************************/
+/*! @file
  *
- * The flake orientation follows the local strain of a slowly evolving
- * divergence-free flow; brightness is how much the flakes face the light.
+ *  @brief
+ *  RHEOSCOPIC SWIRL: a rheoscopic fluid -- water filled with tiny pearly flakes that line up with the flow, so
+ *  every current, eddy and shear layer becomes visible as silky bands of light and shadow, shimmering like
+ *  mother-of-pearl.
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the fluid's motion (integrated, jump-free)
- *   audioSpread     -> the vortex scale (wide spectrum = smaller, busier eddies)
- *   audioRoughness  -> fine turbulence on the shear lines
- *   audioMode       -> the pearl sheen warms in major
- *   audioHigh       -> the glitter of the flakes (light)
- *   audioSwell      -> sheen strength (slow)
+ *  Slow vortices turn and merge, thin shear lines wind around them, and the dye in the fluid takes its colours from
+ *  the photograph (where it is grey, a soft pearly hue field).  The whole frame flows continuously; an endless
+ *  field that mirrors without seams.
  *
- * Knobs: scaleP (eddy scale), dyeP (how much colour), speedP (flow speed), hueP.
+ *  The flake orientation follows the local strain of a slowly evolving
+ *  divergence-free flow; brightness is how much the flakes face the light.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the fluid's motion (integrated, jump-free)
+ *    audioSpread     -> the vortex scale (wide spectrum = smaller, busier eddies)
+ *    audioRoughness  -> fine turbulence on the shear lines
+ *    audioMode       -> the pearl sheen warms in major
+ *    audioHigh       -> the glitter of the flakes (light)
+ *    audioSwell      -> sheen strength (slow)
+ *
+ *  Knobs: scaleP (eddy scale), dyeP (how much colour), speedP (flow speed), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

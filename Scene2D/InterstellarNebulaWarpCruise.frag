@@ -1,18 +1,24 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file InterstellarNebulaWarpCruise.frag
- * @brief INTERSTELLAR NEBULA WARP CRUISE: Volumetric 3D FBM raymarching flight through
- * dense stellar nursery emission nebulae (Pillars of Creation) with self-luminous
- * protostellar cores, cosmic absorption dust lanes, and spectral gas clouds.
+/*****************************************************************************\
+ *                              InterstellarNebulaWarpCruise.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance -> drives continuous forward cruising through the nebula clouds
- *   audioKick    -> flashes interior protostar fusion cores & gas ionization bursts
- *   audioCentroid-> sharpens volumetric dust lane turbulence resolution
- *   audioSubBass -> expands nebula density volume breathing
- *   audioChromaHue-> steers the ionized oxygen/hydrogen/sulfur spectral palette
+ *  @brief
+ *  INTERSTELLAR NEBULA WARP CRUISE: Volumetric 3D FBM raymarching flight through dense stellar nursery emission
+ *  nebulae (Pillars of Creation) with self-luminous protostellar cores, cosmic absorption dust lanes, and spectral
+ *  gas clouds.
+ *
+ *  Audio Reactivity:
+ *    audioAdvance -> drives continuous forward cruising through the nebula clouds
+ *    audioKick    -> flashes interior protostar fusion cores & gas ionization bursts
+ *    audioCentroid-> sharpens volumetric dust lane turbulence resolution
+ *    audioSubBass -> expands nebula density volume breathing
+ *    audioChromaHue-> steers the ionized oxygen/hydrogen/sulfur spectral palette
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

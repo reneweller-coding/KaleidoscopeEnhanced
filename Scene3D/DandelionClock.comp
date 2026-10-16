@@ -1,20 +1,25 @@
 #version 430 core
-/**
- * @file DandelionClock.comp
- * @brief DANDELION CLOCK: a seed head close in front of the camera, a
- * sphere of eight hundred seeds on their stalks, each with its parachute
- * of bristles.  The seeds let go on the swell: as the swell rises past a
- * seed's own threshold it lifts off (smoothly -- a released fraction
- * crossfades its flight in over a small band of swell, so nothing pops)
- * and drifts away on the wind on a continuous phase of the scene clock,
- * tumbling; when the swell falls the head fills again the same way.  No
- * state.  The camera never moves.
+/*****************************************************************************\
+ *                              DandelionClock.comp
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (generator stage):
- *   audioSwell   -> released fraction (slow, smooth per seed)
- *   sceneAdvance -> the drift (continuous)
+ *  @brief
+ *  DANDELION CLOCK: a seed head close in front of the camera, a sphere of eight hundred seeds on their stalks, each
+ *  with its parachute of bristles.
  *
- * Per-instance: fluffP (bristle length), windP, hueP.
+ *  The seeds let go on the swell: as the swell rises past a seed's own threshold it lifts off (smoothly -- a
+ *  released fraction crossfades its flight in over a small band of swell, so nothing pops) and drifts away on the
+ *  wind on a continuous phase of the scene clock, tumbling; when the swell falls the head fills again the same way.
+ *  No state.  The camera never moves.
+ *
+ *  Audio Reactivity (generator stage):
+ *    audioSwell   -> released fraction (slow, smooth per seed)
+ *    sceneAdvance -> the drift (continuous)
+ *
+ *  Per-instance: fluffP (bristle length), windP, hueP.
+ *
+ *  @author René Weller
  */
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( local_size_x = 4, local_size_y = 4, local_size_z = 4 ) in;

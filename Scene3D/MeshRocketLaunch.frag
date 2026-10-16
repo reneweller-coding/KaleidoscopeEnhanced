@@ -1,30 +1,34 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file MeshRocketLaunch.frag
- * @brief MESH ROCKET LAUNCH: a real launch pad (model=) and a real rocket
- * (model2=) at night, seen from the causeway. The floodlights come up with
- * the build-up; the engines light just before the liftoff mark and the
- * rocket climbs out of the frame on the scene's own clock, its flame
- * lighting the pad, the exhaust cloud rolling out across the ground behind
- * it, the sky glowing round the plume. The counterpart of the procedural
- * BuildUpRocketLaunch, built to answer one question: does a generated mesh
- * read better than a stylised 2D object?
+/*****************************************************************************\
+ *                              MeshRocketLaunch.frag
+\*****************************************************************************/
+/*! @file
  *
- * Lighting: moon (cool key), two warm floodlights on the ground, and the
- * engine flame as a point light that rises with the rocket. Every hull is
- * exposed against its own material average (materialExposure).
+ *  @brief
+ *  MESH ROCKET LAUNCH: a real launch pad (model=) and a real rocket (model2=) at night, seen from the causeway.
  *
- * Audio Reactivity:
- *   audioBuildUp  -> floodlights come up (slow)
- *   audioBass     -> engine glow and the flame light (light)
- *   audioKick     -> flame flare (light)
- *   audioSwell    -> sky-glow strength (slow)
- *   sceneProgress -> ignition and the climb (vertex stage, the clock)
+ *  The floodlights come up with the build-up; the engines light just before the liftoff mark and the rocket climbs
+ *  out of the frame on the scene's own clock, its flame lighting the pad, the exhaust cloud rolling out across the
+ *  ground behind it, the sky glowing round the plume. The counterpart of the procedural BuildUpRocketLaunch, built
+ *  to answer one question: does a generated mesh read better than a stylised 2D object?
  *
- * Per-instance: sizeP, platP, offP, depthP (placing the rocket on THIS pad).
- * Per-activation variety: liftP (when the liftoff falls), hueP.
+ *  Lighting: moon (cool key), two warm floodlights on the ground, and the
+ *  engine flame as a point light that rises with the rocket. Every hull is
+ *  exposed against its own material average (materialExposure).
+ *
+ *  Audio Reactivity:
+ *    audioBuildUp  -> floodlights come up (slow)
+ *    audioBass     -> engine glow and the flame light (light)
+ *    audioKick     -> flame flare (light)
+ *    audioSwell    -> sky-glow strength (slow)
+ *    sceneProgress -> ignition and the climb (vertex stage, the clock)
+ *
+ *  Per-instance: sizeP, platP, offP, depthP (placing the rocket on THIS pad).
+ *  Per-activation variety: liftP (when the liftoff falls), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform sampler2DArray texMeshMaterial;        ///< the pad
 uniform int            texMeshMaterialLayers;  ///< Number of layers in texMeshMaterial.

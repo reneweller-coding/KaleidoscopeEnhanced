@@ -1,20 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file StarShattering.frag
- * @brief STAR SHATTERING: A massive star is being violently ripped apart by
- * a rogue black hole. Stellar material is violently siphoned off into an
- * accretion disk, causing the star to shatter and explode with the audio.
- *   audioAdvance -> speed of the material being sucked into the black hole
- *   audioKick    -> catastrophic explosions on the star's surface
- *   audioSwell   -> blinding brightness of the dying star
- *   audioChromaHue-> palette offset for the stellar plasma
+/*****************************************************************************\
+ *                              StarShattering.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   gravityP float strength of the black hole's pull (0.5..1.5)
- *   shatterP float intensity of the star's surface destruction (0.5..2.0)
- *   hueP float palette offset (0..6.28)
+ *  @brief
+ *  STAR SHATTERING: A massive star is being violently ripped apart by a rogue black hole.
+ *
+ *  Stellar material is violently siphoned off into an accretion disk, causing the star to shatter and explode with
+ *  the audio.
+ *
+ *    audioAdvance -> speed of the material being sucked into the black hole
+ *    audioKick    -> catastrophic explosions on the star's surface
+ *    audioSwell   -> blinding brightness of the dying star
+ *    audioChromaHue-> palette offset for the stellar plasma
+ *
+ *  Per-activation variety:
+ *    gravityP float strength of the black hole's pull (0.5..1.5)
+ *    shatterP float intensity of the star's surface destruction (0.5..2.0)
+ *    hueP float palette offset (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

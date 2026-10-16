@@ -1,8 +1,13 @@
 #version 330 core
-/**
- * @file Hologram.geom
- * @brief Geometry stage companion to Hologram.frag -- see that file's header
- * for this scene's description.
+/*****************************************************************************\
+ *                              Hologram.geom
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Geometry stage companion to Hologram.frag -- see that file's header for this scene's description.
+ *
+ *  @author René Weller
  */
 // Hologram.geom -- barycentric coordinates for the wireframe, plus the
 // horizontal signal glitch.

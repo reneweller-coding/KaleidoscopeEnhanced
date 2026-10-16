@@ -1,8 +1,14 @@
 #version 330 core
-/**
- * @file Chladni3DAcousticLevitation.vert
- * @brief Vertex stage companion to Chladni3DAcousticLevitation.frag -- see that file's
- * header for this scene's description.
+/*****************************************************************************\
+ *                              Chladni3DAcousticLevitation.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to Chladni3DAcousticLevitation.frag -- see that file's header for this scene's
+ *  description.
+ *
+ *  @author René Weller
  */
 
 in vec4 attrA; ///< xyz = cube corner (-0.5..0.5), w = cube index

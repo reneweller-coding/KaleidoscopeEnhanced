@@ -1,21 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file VolcanicBasaltColumnarJointingHexagon.frag
- * @brief VOLCANIC BASALT COLUMNAR JOINTING HEXAGON: Hexagonal columnar jointed basalt terraces
- * (Giant's Causeway / Fingal's Cave). Thermal contraction cracking during slow basaltic lava cooling
- * creates stepped polygonal stone prisms with volcanic fracture magma glow and basalt photo texturing.
- *   audioAdvance -> navigates lava cooling thermal stress fracture propagation & terrace drift
- *   audioKick    -> flashes subsurface molten magma crack decompression bursts
- *   audioSwell   -> thickens basalt column prism cross-section & magma glow radiance
- *   audioCentroid-> shifts basalt mineral (plagioclase/pyroxene/olivine) color spectra
+/*****************************************************************************\
+ *                              VolcanicBasaltColumnarJointingHexagon.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   columnPitchP  float joint pitch of the causeway, relative to the row
- *                       depth ramp: fine columns .. coarse ones      (0.1..0.4)
- *   columnHeightP float stepped basalt column height contrast (0.4..1.8)
- *   specularP     float basalt stone facet specular gain       (0.8..2.5)
+ *  @brief
+ *  VOLCANIC BASALT COLUMNAR JOINTING HEXAGON: Hexagonal columnar jointed basalt terraces (Giant's Causeway /
+ *  Fingal's Cave).
+ *
+ *  Thermal contraction cracking during slow basaltic lava cooling creates stepped polygonal stone prisms with
+ *  volcanic fracture magma glow and basalt photo texturing.
+ *
+ *    audioAdvance -> navigates lava cooling thermal stress fracture propagation & terrace drift
+ *    audioKick    -> flashes subsurface molten magma crack decompression bursts
+ *    audioSwell   -> thickens basalt column prism cross-section & magma glow radiance
+ *    audioCentroid-> shifts basalt mineral (plagioclase/pyroxene/olivine) color spectra
+ *
+ *  Per-activation variety:
+ *    columnPitchP  float joint pitch of the causeway, relative to the row
+ *                        depth ramp: fine columns .. coarse ones      (0.1..0.4)
+ *    columnHeightP float stepped basalt column height contrast (0.4..1.8)
+ *    specularP     float basalt stone facet specular gain       (0.8..2.5)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec3  vNormal;     ///< Surface normal (from the vertex stage).
 in vec3  vCol;        ///< Colour (from the vertex stage).

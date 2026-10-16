@@ -1,18 +1,25 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file KleinianLimitSetAbyss.frag
- * @brief KLEINIAN LIMIT SET ABYSS: Iterated Schottky & Maskit-slice Kleinian group
- * limit sets (Indra's Pearls). Infinite fractal kissing pearl circles, deep zoom
- * into parabolic tangency cusps, and dynamic complex moduli morphing.
+/*****************************************************************************\
+ *                              KleinianLimitSetAbyss.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance -> navigates through complex moduli space & deep cusp zoom
- *   audioKick    -> flashes cusp tangency nodes & explodes circle boundaries
- *   audioCentroid-> increases iteration depth & edge detail
- *   audioSubBass -> expands circle radius breathing
- *   audioChromaHue-> rotates the iridescent pearl spectrum
+ *  @brief
+ *  KLEINIAN LIMIT SET ABYSS: Iterated Schottky & Maskit-slice Kleinian group limit sets (Indra's Pearls).
+ *
+ *  Infinite fractal kissing pearl circles, deep zoom into parabolic tangency cusps, and dynamic complex moduli
+ *  morphing.
+ *
+ *  Audio Reactivity:
+ *    audioAdvance -> navigates through complex moduli space & deep cusp zoom
+ *    audioKick    -> flashes cusp tangency nodes & explodes circle boundaries
+ *    audioCentroid-> increases iteration depth & edge detail
+ *    audioSubBass -> expands circle radius breathing
+ *    audioChromaHue-> rotates the iridescent pearl spectrum
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

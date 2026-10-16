@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file MelodyRidgeline.frag
- * @brief MELODY RIDGELINE: the melody as mountains.  The 96-sample melody
- * history is the profile of the nearest ridge (newest at the right),
- * scrolling steadily leftward with the sample clock; behind it, older
- * ridges -- the same history at larger delays, hazed by distance -- so
- * the tune stands as a range of hills under a sky of the photo.  The
- * swell is the daylight, the kick a flash on the nearest summit, the
- * treble the snow glints.  Camera fixed.
+/*****************************************************************************\
+ *                              MelodyRidgeline.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioMelody[96] / audioMelodyHead -> the ridges (continuous history)
- *   audioSwell   -> daylight (slow)
- *   audioKick    -> summit flash (light)
- *   audioHigh    -> snow glints (light)
- *   audioLevel   -> brightness
+ *  @brief
+ *  MELODY RIDGELINE: the melody as mountains.
  *
- * Per-activation variety: ridgesP, heightP, hueP.
+ *  The 96-sample melody history is the profile of the nearest ridge (newest at the right), scrolling steadily
+ *  leftward with the sample clock; behind it, older ridges -- the same history at larger delays, hazed by distance
+ *  -- so the tune stands as a range of hills under a sky of the photo.  The swell is the daylight, the kick a flash
+ *  on the nearest summit, the treble the snow glints.  Camera fixed.
+ *
+ *  Audio Reactivity:
+ *    audioMelody[96] / audioMelodyHead -> the ridges (continuous history)
+ *    audioSwell   -> daylight (slow)
+ *    audioKick    -> summit flash (light)
+ *    audioHigh    -> snow glints (light)
+ *    audioLevel   -> brightness
+ *
+ *  Per-activation variety: ridgesP, heightP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

@@ -1,20 +1,25 @@
 #version 330 core
-/**
- * @file RainOnWater.vert
- * @brief Vertex stage companion to RainOnWater.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              RainOnWater.vert
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioLevel     -> depth of the raindrop rings
- *   audioSwell     -> the far standing swell that keeps the water alive
- *   audioZCR       -> GRAIN of the surface: a pure tone or drone leaves the
- *                     pond glassy, broadband/noisy material roughens it into
- *                     a fine wind chop that catches the moon lane
- *   audioHat       -> hi-hats and cymbals ARE the drizzle -- each hat onset
- *                     makes the drops land harder and the rings bite deeper
- *                     (and drives the falling drizzle itself, see .frag)
- *   audioMode      -> moon colour temperature (see .frag)
- *   audioChromaHue -> key tint of the water and ring crests (see .frag)
+ *  @brief
+ *  Vertex stage companion to RainOnWater.frag -- see that file's header for this scene's description.
+ *
+ *  Audio Reactivity:
+ *    audioLevel     -> depth of the raindrop rings
+ *    audioSwell     -> the far standing swell that keeps the water alive
+ *    audioZCR       -> GRAIN of the surface: a pure tone or drone leaves the
+ *                      pond glassy, broadband/noisy material roughens it into
+ *                      a fine wind chop that catches the moon lane
+ *    audioHat       -> hi-hats and cymbals ARE the drizzle -- each hat onset
+ *                      makes the drops land harder and the rings bite deeper
+ *                      (and drives the falling drizzle itself, see .frag)
+ *    audioMode      -> moon colour temperature (see .frag)
+ *    audioChromaHue -> key tint of the water and ring crests (see .frag)
+ *
+ *  @author René Weller
  */
 // RainOnWater.vert — a still pond at night under a low moon; raindrops land
 // on their own unhurried clocks and send damped rings gliding outward.  The

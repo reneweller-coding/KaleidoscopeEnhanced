@@ -1,8 +1,13 @@
 #version 330 core
-/**
- * @file CrystalMonoliths.vert
- * @brief Vertex stage companion to CrystalMonoliths.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              CrystalMonoliths.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to CrystalMonoliths.frag -- see that file's header for this scene's description.
+ *
+ *  @author René Weller
  */
 // CrystalMonoliths.vert — 3,000 obsidian and prismatic glass monoliths orbiting
 // in 3D spiral formations, projecting photo textures with chromatic dispersion.

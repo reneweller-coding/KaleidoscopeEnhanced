@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureNacreSheen.frag
- * @brief TEXTURE NACRE SHEEN: mother-of-pearl -- the photograph becomes the
- * inside of a shell: its structure turns into fine growth terraces and
- * layered platelets whose thin-film interference plays in pink, green,
- * gold and blue, the colours sliding across the surface as if the shell
- * were slowly tilted in the light; a soft pearly white underlies it all,
- * a bright sheen band wanders over it.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              TextureNacreSheen.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the tilt changes (integrated, jump-free)
- *   audioSpread     -> how strongly the colours play
- *   audioHigh       -> the platelets glitter (light)
- *   audioKick       -> the sheen band brightens (light)
- *   audioMode       -> the base: silver-blue in minor, warm pink in major
- *   audioSwell      -> terrace depth (slow)
+ *  @brief
+ *  TEXTURE NACRE SHEEN: mother-of-pearl -- the photograph becomes the inside of a shell: its structure turns into
+ *  fine growth terraces and layered platelets whose thin-film interference plays in pink, green, gold and blue, the
+ *  colours sliding across the surface as if the shell were slowly tilted in the light; a soft pearly white
+ *  underlies it all, a bright sheen band wanders over it.
  *
- * Knobs: terraceP (terrace density), plateP (platelet size), colourP (colour play), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the tilt changes (integrated, jump-free)
+ *    audioSpread     -> how strongly the colours play
+ *    audioHigh       -> the platelets glitter (light)
+ *    audioKick       -> the sheen band brightens (light)
+ *    audioMode       -> the base: silver-blue in minor, warm pink in major
+ *    audioSwell      -> terrace depth (slow)
+ *
+ *  Knobs: terraceP (terrace density), plateP (platelet size), colourP (colour play), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

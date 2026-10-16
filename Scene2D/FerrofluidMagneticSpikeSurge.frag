@@ -1,18 +1,23 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file FerrofluidMagneticSpikeSurge.frag
- * @brief FERROFLUID MAGNETIC SPIKE SURGE: Liquid metal ferrofluid Rosensweig normal-field
- * instability with explosive magnetic spike eruptions, mirror-chrome liquid reflections,
- * and high-luminance specular field glints.
+/*****************************************************************************\
+ *                              FerrofluidMagneticSpikeSurge.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance -> drives continuous magnetic dipole rotation & spike growth
- *   audioKick    -> flashes magnetic spike tips & triggers ferrofluid eruption shockwaves
- *   audioCentroid-> modulates ferrofluid spike sharpness & cone resolution
- *   audioSubBass -> expands ferrofluid pool diameter & spike height
- *   audioChromaHue-> rotates the mirror chrome / dark obsidian / gold spectrum
+ *  @brief
+ *  FERROFLUID MAGNETIC SPIKE SURGE: Liquid metal ferrofluid Rosensweig normal-field instability with explosive
+ *  magnetic spike eruptions, mirror-chrome liquid reflections, and high-luminance specular field glints.
+ *
+ *  Audio Reactivity:
+ *    audioAdvance -> drives continuous magnetic dipole rotation & spike growth
+ *    audioKick    -> flashes magnetic spike tips & triggers ferrofluid eruption shockwaves
+ *    audioCentroid-> modulates ferrofluid spike sharpness & cone resolution
+ *    audioSubBass -> expands ferrofluid pool diameter & spike height
+ *    audioChromaHue-> rotates the mirror chrome / dark obsidian / gold spectrum
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

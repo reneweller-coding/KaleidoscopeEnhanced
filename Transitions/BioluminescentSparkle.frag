@@ -1,20 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file BioluminescentSparkle.frag
- * @brief TRANSITION BIOLUMINESCENT SPARKLE: Marine dinoflagellate bioluminescence transition.
- * Thousands of sparkling blue-green bioluminescent cellular flashes ignite
- * across fluid wave currents, illuminating and transitioning between scenes.
- *   interpolation -> sweeps bioluminescent sparkling wave front
- *   audioKick     -> triggers full-screen dinoflagellate flash cascade
- *   audioHigh     -> ignites sharp point sparkle glints
+/*****************************************************************************\
+ *                              BioluminescentSparkle.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   sparkleP float sparkle flash duration & brightness (0.5..2.2)
- *   densityP float sparkling cellular point density     (0.5..2.0)
- *   speedP   float animation speed multiplier           (0.5..2.0)
- *   hueP     float bioluminescent cyan hue offset       (0..6.28)
+ *  @brief
+ *  TRANSITION BIOLUMINESCENT SPARKLE: Marine dinoflagellate bioluminescence transition.
+ *
+ *  Thousands of sparkling blue-green bioluminescent cellular flashes ignite across fluid wave currents,
+ *  illuminating and transitioning between scenes.
+ *
+ *    interpolation -> sweeps bioluminescent sparkling wave front
+ *    audioKick     -> triggers full-screen dinoflagellate flash cascade
+ *    audioHigh     -> ignites sharp point sparkle glints
+ *
+ *  Per-activation variety:
+ *    sparkleP float sparkle flash duration & brightness (0.5..2.2)
+ *    densityP float sparkling cellular point density     (0.5..2.0)
+ *    speedP   float animation speed multiplier           (0.5..2.0)
+ *    hueP     float bioluminescent cyan hue offset       (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

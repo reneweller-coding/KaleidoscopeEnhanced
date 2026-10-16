@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureMoldBloom.frag
- * @brief TEXTURE MOLD BLOOM: colonies of mould and lichen spreading over the
- * photograph like over an old print -- round colonies grow outward in
- * rings of different colour (a dense centre, a fuzzy hyphal margin,
- * spore-darkened zones), meet each other and stop at sharp borders,
- * velvety in texture; old colonies fade back into the picture while new
- * ones sprout.  Oddly beautiful, like a petri dish of art.  Endless,
- * mirrorable.
+/*****************************************************************************\
+ *                              TextureMoldBloom.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the colonies grow (integrated, jump-free)
- *   audioSpread     -> colony size
- *   audioMode       -> palette: blue-green-grey in minor, ochre-orange-pink in major (tint)
- *   audioRoughness  -> the margins get fuzzier
- *   audioKick       -> the margins glow (light)
- *   audioSwell      -> how much of the picture shows through (slow)
+ *  @brief
+ *  TEXTURE MOLD BLOOM: colonies of mould and lichen spreading over the photograph like over an old print -- round
+ *  colonies grow outward in rings of different colour (a dense centre, a fuzzy hyphal margin, spore-darkened
+ *  zones), meet each other and stop at sharp borders, velvety in texture; old colonies fade back into the picture
+ *  while new ones sprout.
  *
- * Knobs: colonyP (colony density), ringP (ring zones), fuzzP (margin fuzz), hueP.
+ *  Oddly beautiful, like a petri dish of art.  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the colonies grow (integrated, jump-free)
+ *    audioSpread     -> colony size
+ *    audioMode       -> palette: blue-green-grey in minor, ochre-orange-pink in major (tint)
+ *    audioRoughness  -> the margins get fuzzier
+ *    audioKick       -> the margins glow (light)
+ *    audioSwell      -> how much of the picture shows through (slow)
+ *
+ *  Knobs: colonyP (colony density), ringP (ring zones), fuzzP (margin fuzz), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

@@ -1,18 +1,24 @@
 #version 330 core
-/**
- * @file NonlinearLaserPlasmaWakefieldAccelerator.vert
- * @brief Vertex stage companion to NonlinearLaserPlasmaWakefieldAccelerator.frag -- see that file's
- * header for this scene's description.
+/*****************************************************************************\
+ *                              NonlinearLaserPlasmaWakefieldAccelerator.vert
+\*****************************************************************************/
+/*! @file
  *
- * The accelerator channel is a TUBE, and a tube can only ever be a band across
- * the picture -- lengthening it further just made a longer band.  So every
- * ribbon's 300 segments are split into two runs: the first draws the cavity
- * train's sheath as before (all twenty strands, now on a longer, fatter
- * channel), the second draws one ionisation filament of the ambient plasma the
- * channel is bored through, laid out in FRUSTUM coordinates so the twenty
- * filaments criss-cross the entire frame at every depth.  The quad that
- * bridges the two runs is pinched to zero width and zero brightness by the
- * end taper, so no sheet is ever drawn between them.
+ *  @brief
+ *  Vertex stage companion to NonlinearLaserPlasmaWakefieldAccelerator.frag -- see that file's header for this
+ *  scene's description.
+ *
+ *  The accelerator channel is a TUBE, and a tube can only ever be a band across
+ *  the picture -- lengthening it further just made a longer band.  So every
+ *  ribbon's 300 segments are split into two runs: the first draws the cavity
+ *  train's sheath as before (all twenty strands, now on a longer, fatter
+ *  channel), the second draws one ionisation filament of the ambient plasma the
+ *  channel is bored through, laid out in FRUSTUM coordinates so the twenty
+ *  filaments criss-cross the entire frame at every depth.  The quad that
+ *  bridges the two runs is pinched to zero width and zero brightness by the
+ *  end taper, so no sheet is ever drawn between them.
+ *
+ *  @author René Weller
  */
 
 in vec4 attrA; ///< x = t [0,1], y = side (-1/+1), z = 0, w = ribbon index

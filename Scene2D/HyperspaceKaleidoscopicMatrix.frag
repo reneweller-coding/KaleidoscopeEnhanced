@@ -1,18 +1,24 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file HyperspaceKaleidoscopicMatrix.frag
- * @brief HYPERSPACE KALEIDOSCOPIC MATRIX: Digital cyber code rain streams folded
- * into an 8-fold kaleidoscopic hyper-mandala with high-velocity glyph cascades,
- * iridescent gold/cyan/magenta quantum glyph transitions, and kick flash bursts.
+/*****************************************************************************\
+ *                              HyperspaceKaleidoscopicMatrix.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance -> drives continuous code rain streaming & mandala rotation
- *   audioKick    -> flashes cyber glyph matrices into intense gold/white bursts
- *   audioCentroid-> modulates code column density & glyph symbol entropy
- *   audioSubBass -> expands radial mandala breathing
- *   audioChromaHue-> rotates the cyber code matrix spectrum
+ *  @brief
+ *  HYPERSPACE KALEIDOSCOPIC MATRIX: Digital cyber code rain streams folded into an 8-fold kaleidoscopic
+ *  hyper-mandala with high-velocity glyph cascades, iridescent gold/cyan/magenta quantum glyph transitions, and
+ *  kick flash bursts.
+ *
+ *  Audio Reactivity:
+ *    audioAdvance -> drives continuous code rain streaming & mandala rotation
+ *    audioKick    -> flashes cyber glyph matrices into intense gold/white bursts
+ *    audioCentroid-> modulates code column density & glyph symbol entropy
+ *    audioSubBass -> expands radial mandala breathing
+ *    audioChromaHue-> rotates the cyber code matrix spectrum
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

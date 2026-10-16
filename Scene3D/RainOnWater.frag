@@ -1,4 +1,39 @@
 #version 330 core
+/*****************************************************************************\
+ *                              RainOnWater.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Shades a night pond and the sky curtain behind it: near-black water, a trembling moon-lane reflection, pale
+ *  rings where raindrops (simulated in RainOnWater.vert) are still expanding across the surface, and above the
+ *  horizon a low moon, moonlit cloud shelves, stars and falling drizzle.
+ *
+ *  The moon-lane reflection flares wherever vSlope (the ripple surface slope
+ *  from the vertex shader) is non-zero, and converges on the moon's own
+ *  position at the horizon.  vSky (0 = water, 1 = sky curtain) selects which
+ *  half of the sheet a fragment belongs to; both halves are shaded in ANGULAR
+ *  coordinates (world position / distance), which is what lets the lane, the
+ *  moon and the drizzle line up across the horizon.
+ *
+ *  Audio Reactivity:
+ *    audioChromaHue -> key tint of the base water, the night sky and the
+ *                      ring-crest skylight
+ *    audioSwell     -> ring-crest skylight lift, so ripples read more alive
+ *    audioMode      -> COLOUR TEMPERATURE OF THE MOON: a minor key hangs a
+ *                      cold blue-white moon over the pond, a major key a warm
+ *                      amber one.  It colours the disc, its halo, the lane and
+ *                      the drizzle it lights.  The two ends are
+ *                      luminance-matched against the original lane colour, so
+ *                      only the warmth changes
+ *    audioHat       -> hat/cymbal onsets drive the rain harder: the drops land
+ *                      deeper (see .vert) AND the falling drizzle threads in
+ *                      the air brighten with every onset
+ *    audioLevel     -> depth of the raindrop rings (see .vert)
+ *    audioZCR       -> fine wind-chop grain across the whole surface (.vert)
+ *
+ *  @author René Weller
+ */
 out vec4 fragColor; ///< The pixel's colour (output).
 // RainOnWater.frag — ink-dark water under a low moon, ripple rings catching
 // its long trembling reflection, drizzle falling through the night sky behind.
@@ -12,37 +47,6 @@ in vec3  vWorld; ///< World position (from the vertex stage).
 in float vSlope; ///< Slope (from the vertex stage).
 in float vDist;  ///< Distance (from the vertex stage).
 in float vSky;   ///< Sky (from the vertex stage).
-
-/**
- * @file RainOnWater.frag
- * @brief Shades a night pond and the sky curtain behind it: near-black water,
- * a trembling moon-lane reflection, pale rings where raindrops (simulated in
- * RainOnWater.vert) are still expanding across the surface, and above the
- * horizon a low moon, moonlit cloud shelves, stars and falling drizzle.
- *
- * The moon-lane reflection flares wherever vSlope (the ripple surface slope
- * from the vertex shader) is non-zero, and converges on the moon's own
- * position at the horizon.  vSky (0 = water, 1 = sky curtain) selects which
- * half of the sheet a fragment belongs to; both halves are shaded in ANGULAR
- * coordinates (world position / distance), which is what lets the lane, the
- * moon and the drizzle line up across the horizon.
- *
- * Audio Reactivity:
- *   audioChromaHue -> key tint of the base water, the night sky and the
- *                     ring-crest skylight
- *   audioSwell     -> ring-crest skylight lift, so ripples read more alive
- *   audioMode      -> COLOUR TEMPERATURE OF THE MOON: a minor key hangs a
- *                     cold blue-white moon over the pond, a major key a warm
- *                     amber one.  It colours the disc, its halo, the lane and
- *                     the drizzle it lights.  The two ends are
- *                     luminance-matched against the original lane colour, so
- *                     only the warmth changes
- *   audioHat       -> hat/cymbal onsets drive the rain harder: the drops land
- *                     deeper (see .vert) AND the falling drizzle threads in
- *                     the air brighten with every onset
- *   audioLevel     -> depth of the raindrop rings (see .vert)
- *   audioZCR       -> fine wind-chop grain across the whole surface (.vert)
- */
 
 /**  Rotates a colour's hue by an angle (about the grey axis).
  *

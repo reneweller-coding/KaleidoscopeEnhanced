@@ -1,28 +1,33 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file ErodedLand.frag
- * @brief ERODED LAND: a slow glide over a worn mountain range -- long smooth
- * valleys and sharp crests (fractal terrain whose octaves are damped where
- * the slope is already steep, the classic erosion look), grass on the valley
- * floors, bare rock on the flanks, snow on the ridges, lakes in the hollows,
- * the far ranges fading into blue haze.  The sun wheels slowly overhead, so
- * the relief keeps turning in the light.
+/*****************************************************************************\
+ *                              ErodedLand.frag
+\*****************************************************************************/
+/*! @file
  *
- * This scene used to shade the CfxErosion droplet simulation from straight
- * above; that simulation ground its terrain into pixel speckle within
- * seconds and the scene was a purple noise field (catalogue review
- * 29.09.2026).  The analytic terrain needs no compute pass.
+ *  @brief
+ *  ERODED LAND: a slow glide over a worn mountain range -- long smooth valleys and sharp crests (fractal terrain
+ *  whose octaves are damped where the slope is already steep, the classic erosion look), grass on the valley
+ *  floors, bare rock on the flanks, snow on the ridges, lakes in the hollows, the far ranges fading into blue haze.
  *
- * Audio Reactivity:
- *  - audioRoughness -> RELIEF STEEPNESS of the lighting: consonant music
- *                      shades the land gently, dissonant clusters harshly
- *  - audioSharpness -> SPECULAR TIGHTNESS of the sun glint on the lakes
- *  - audioMode      -> SUNLIGHT COLOUR: cold overcast (minor) .. golden (major)
- *  - audioKick      -> the lakes catch the light (light only)
- *  - audioBeat      -> light pulse over the whole image
- *  - sceneTime / sceneAdvance -> the glide and the wheeling sun (continuous)
+ *  The sun wheels slowly overhead, so the relief keeps turning in the light.
+ *
+ *  This scene used to shade the CfxErosion droplet simulation from straight
+ *  above; that simulation ground its terrain into pixel speckle within
+ *  seconds and the scene was a purple noise field (catalogue review
+ *  29.09.2026).  The analytic terrain needs no compute pass.
+ *
+ *  Audio Reactivity:
+ *   - audioRoughness -> RELIEF STEEPNESS of the lighting: consonant music
+ *                       shades the land gently, dissonant clusters harshly
+ *   - audioSharpness -> SPECULAR TIGHTNESS of the sun glint on the lakes
+ *   - audioMode      -> SUNLIGHT COLOUR: cold overcast (minor) .. golden (major)
+ *   - audioKick      -> the lakes catch the light (light only)
+ *   - audioBeat      -> light pulse over the whole image
+ *   - sceneTime / sceneAdvance -> the glide and the wheeling sun (continuous)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform sampler2D tex0;          ///< The current photo.
 uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).

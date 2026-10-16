@@ -1,8 +1,14 @@
 #version 330 core
-/**
- * @file BioluminescentBreakingWave.vert
- * @brief Vertex stage companion to BioluminescentBreakingWave.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              BioluminescentBreakingWave.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to BioluminescentBreakingWave.frag -- see that file's header for this scene's
+ *  description.
+ *
+ *  @author René Weller
  */
 // BioluminescentBreakingWave.vert — 220x120 heightfield breaking ocean wave
 // with Gerstner wave harmonics and dinoflagellate bioluminescent crest emission.

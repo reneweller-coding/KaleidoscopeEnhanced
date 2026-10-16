@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureSuminagashiDrops.frag
- * @brief TEXTURE SUMINAGASHI DROPS: the Japanese art of floating ink --
- * drop after drop of ink and of clear water is laid on the surface, each
- * new drop spreading out and pushing all the older rings outward, so
- * nested, ever-deformed rings of colour grow across the water (computed
- * with the exact marbling transform); a gentle breath of air stirs the
- * rings into slow swirls.  The ink colours and the paper come from the
- * photograph.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              TextureSuminagashiDrops.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the drops fall (integrated, jump-free)
- *   audioSpread     -> drop size
- *   audioHarmChange -> the stirring swirls (slow, smoothed)
- *   audioMode       -> inks: indigo-black in minor, the photo's colours in major
- *   audioKick       -> the wet sheen on the water (light)
- *   audioSwell      -> the paper shows through (slow)
+ *  @brief
+ *  TEXTURE SUMINAGASHI DROPS: the Japanese art of floating ink -- drop after drop of ink and of clear water is laid
+ *  on the surface, each new drop spreading out and pushing all the older rings outward, so nested, ever-deformed
+ *  rings of colour grow across the water (computed with the exact marbling transform); a gentle breath of air stirs
+ *  the rings into slow swirls.
  *
- * Knobs: dropRateP, swirlP, colourP (photo colours in the ink), hueP.
+ *  The ink colours and the paper come from the photograph.  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the drops fall (integrated, jump-free)
+ *    audioSpread     -> drop size
+ *    audioHarmChange -> the stirring swirls (slow, smoothed)
+ *    audioMode       -> inks: indigo-black in minor, the photo's colours in major
+ *    audioKick       -> the wet sheen on the water (light)
+ *    audioSwell      -> the paper shows through (slow)
+ *
+ *  Knobs: dropRateP, swirlP, colourP (photo colours in the ink), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

@@ -1,8 +1,13 @@
 #version 330 core
-/**
- * @file DysonSphereCore.vert
- * @brief Vertex stage companion to DysonSphereCore.frag -- see that file's header
- * for this scene's description.
+/*****************************************************************************\
+ *                              DysonSphereCore.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to DysonSphereCore.frag -- see that file's header for this scene's description.
+ *
+ *  @author René Weller
  */
 
 in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an

@@ -1,13 +1,19 @@
 #version 430
-/**
- * @file CfxParticleInit.comp
- * @brief Scatters the particle-flow buffer uniformly across UV space, at rest.
+/*****************************************************************************\
+ *                              CfxParticleInit.comp
+\*****************************************************************************/
+/*! @file
  *
- * Writes vec4(pos.xy, 0, 0) for every particle in the Parts buffer (binding
- * 1), using a per-invocation PCG hash so the distribution is uniform and seed-
- * stable. Runs once at start; CfxParticleStep.comp then advects these
- * particles frame to frame through a divergence-free curl-noise field and
- * periodically re-seeds a fraction of them back to random positions.
+ *  @brief
+ *  Scatters the particle-flow buffer uniformly across UV space, at rest.
+ *
+ *  Writes vec4(pos.xy, 0, 0) for every particle in the Parts buffer (binding
+ *  1), using a per-invocation PCG hash so the distribution is uniform and seed-
+ *  stable. Runs once at start; CfxParticleStep.comp then advects these
+ *  particles frame to frame through a divergence-free curl-noise field and
+ *  periodically re-seeds a fraction of them back to random positions.
+ *
+ *  @author René Weller
  */
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( local_size_x = 256 ) in;

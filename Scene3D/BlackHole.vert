@@ -1,17 +1,22 @@
 #version 330 core
-/**
- * @file BlackHole.vert
- * @brief Vertex stage companion to BlackHole.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              BlackHole.vert
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance   -> orbital flow of the disk and of the infalling streams,
- *                     plus the slow churn of the lensed sky
- *                     (pre-integrated, never a factor on absolute time)
- *   audioBass      -> disk scale height (the disk breathes)
- *   audioSwell     -> overall glow of every layer, sky included
- *   audioChromaHue -> hue sweep of the emitting matter (musical key)
- *   audioDrop      -> fires the relativistic polar jets
+ *  @brief
+ *  Vertex stage companion to BlackHole.frag -- see that file's header for this scene's description.
+ *
+ *  Audio Reactivity:
+ *    audioAdvance   -> orbital flow of the disk and of the infalling streams,
+ *                      plus the slow churn of the lensed sky
+ *                      (pre-integrated, never a factor on absolute time)
+ *    audioBass      -> disk scale height (the disk breathes)
+ *    audioSwell     -> overall glow of every layer, sky included
+ *    audioChromaHue -> hue sweep of the emitting matter (musical key)
+ *    audioDrop      -> fires the relativistic polar jets
+ *
+ *  @author René Weller
  */
 // BlackHole.vert — an accretion disk around an invisible black hole:
 // white-hot inner rim, red-cool outer edge, Doppler-bright approaching

@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file RunwayApproachLights.frag
- * @brief RUNWAY APPROACH LIGHTS: final approach at night, seen from the
- * cockpit -- ahead in the dark the runway lies as a converging frame of
- * white edge lights, green threshold bar, the centre line of white lights
- * running away to the far end, and in front of it the approach lighting
- * system reaching toward us: rows of white crossbars on the extended
- * centre line, and the "rabbit", the sequenced strobes, racing along
- * them toward the runway again and again.  The city glows orange on the
- * horizon; mist halos every light.  The aircraft descends steadily.
+/*****************************************************************************\
+ *                              RunwayApproachLights.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioKick   -> the rabbit's strobes (light)
- *   audioBass   -> the intensity of the approach lights (light)
- *   audioSwell  -> the mist around the lights (slow)
- *   audioLevel  -> brightness
- *   sceneTime / sceneAdvance -> the approach (constant, looping smoothly)
+ *  @brief
+ *  RUNWAY APPROACH LIGHTS: final approach at night, seen from the cockpit -- ahead in the dark the runway lies as a
+ *  converging frame of white edge lights, green threshold bar, the centre line of white lights running away to the
+ *  far end, and in front of it the approach lighting system reaching toward us: rows of white crossbars on the
+ *  extended centre line, and the "rabbit", the sequenced strobes, racing along them toward the runway again and
+ *  again.
  *
- * Per-activation variety: mistP (how misty), hueP.
+ *  The city glows orange on the horizon; mist halos every light.  The aircraft descends steadily.
+ *
+ *  Audio Reactivity:
+ *    audioKick   -> the rabbit's strobes (light)
+ *    audioBass   -> the intensity of the approach lights (light)
+ *    audioSwell  -> the mist around the lights (slow)
+ *    audioLevel  -> brightness
+ *    sceneTime / sceneAdvance -> the approach (constant, looping smoothly)
+ *
+ *  Per-activation variety: mistP (how misty), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

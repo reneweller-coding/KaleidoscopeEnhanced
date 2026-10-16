@@ -1,8 +1,14 @@
 #version 330 core
-/**
- * @file SpinGlassFrustrationLattice.vert
- * @brief Vertex stage companion to SpinGlassFrustrationLattice.frag -- see that file's
- * header for this scene's description.
+/*****************************************************************************\
+ *                              SpinGlassFrustrationLattice.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to SpinGlassFrustrationLattice.frag -- see that file's header for this scene's
+ *  description.
+ *
+ *  @author René Weller
  */
 
 in vec4 attrA; ///< xyz = base coord, w = point index

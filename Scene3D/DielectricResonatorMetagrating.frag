@@ -1,19 +1,27 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file DielectricResonatorMetagrating.frag
- * @brief DIELECTRIC RESONATOR METAGRATING: 2D array of resonant high-refractive-index silicon
- * dielectric nanopillars. High-Q electric and magnetic Mie dipole resonances, polarimetric phase
- * retardation, diffraction beam splitting, and photo-derived optical texturing.
- *   audioAdvance -> navigates dielectric polarimetric phase wavefront translation
- *   audioKick    -> flashes high-Q Mie dipole resonance optical transmission bursts
- *   audioSwell   -> thickens silicon nanopillar cross-section & dielectric field glow
- *   audioCentroid-> shifts Mie resonance optical transmission wavelength spectra
+/*****************************************************************************\
+ *                              DielectricResonatorMetagrating.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   mieGlowP  float Mie dipole resonance field luminance (0.8..2.5)
- *   specularP float silicon facet specular reflectivity  (0.8..2.2)
+ *  @brief
+ *  DIELECTRIC RESONATOR METAGRATING: 2D array of resonant high-refractive-index silicon dielectric nanopillars.
+ *
+ *  High-Q electric and magnetic Mie dipole resonances, polarimetric phase retardation, diffraction beam splitting,
+ *  and photo-derived optical texturing.
+ *
+ *    audioAdvance -> navigates dielectric polarimetric phase wavefront translation
+ *    audioKick    -> flashes high-Q Mie dipole resonance optical transmission bursts
+ *    audioSwell   -> thickens silicon nanopillar cross-section & dielectric field glow
+ *    audioCentroid-> shifts Mie resonance optical transmission wavelength spectra
+ *
+ *  Per-activation variety:
+ *    mieGlowP  float Mie dipole resonance field luminance (0.8..2.5)
+ *    specularP float silicon facet specular reflectivity  (0.8..2.2)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec2  vUV;           ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 in vec3  vNormal;       ///< Surface normal (from the vertex stage).

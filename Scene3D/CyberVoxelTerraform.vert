@@ -1,8 +1,13 @@
 #version 330 core
-/**
- * @file CyberVoxelTerraform.vert
- * @brief Vertex stage companion to CyberVoxelTerraform.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              CyberVoxelTerraform.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to CyberVoxelTerraform.frag -- see that file's header for this scene's description.
+ *
+ *  @author René Weller
  */
 // attrA.xyz = unit-cube corner (-0.5..0.5), attrA.w = cube id, attrB = seeds
 // (Scene3DShader.cpp GEOM_CUBES) — no per-face normal is supplied, so it is

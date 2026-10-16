@@ -1,15 +1,21 @@
 #version 430
-/**
- * @file CfxBoidsGrid.comp
- * @brief Bins every boid into a uniform spatial-hash grid via atomic counters, rebuilt fresh each frame.
+/*****************************************************************************\
+ *                              CfxBoidsGrid.comp
+\*****************************************************************************/
+/*! @file
  *
- * Runs between CfxBoidsInit.comp (one-time seeding) and CfxBoidsStep.comp
- * (per-frame update) in the boids pipeline. Reads the position half of the
- * `Boids` SSBO (binding 1) and writes cell occupancy into the `Grid` SSBO
- * (binding 2), a `[count, idx0..idx(perCell-1)]` slot per cell; the host
- * clears the grid buffer to zero before dispatch. CfxBoidsStep.comp then
- * uses this grid to test each boid against only its 3x3 neighbouring cells
- * instead of the full population.
+ *  @brief
+ *  Bins every boid into a uniform spatial-hash grid via atomic counters, rebuilt fresh each frame.
+ *
+ *  Runs between CfxBoidsInit.comp (one-time seeding) and CfxBoidsStep.comp
+ *  (per-frame update) in the boids pipeline. Reads the position half of the
+ *  `Boids` SSBO (binding 1) and writes cell occupancy into the `Grid` SSBO
+ *  (binding 2), a `[count, idx0..idx(perCell-1)]` slot per cell; the host
+ *  clears the grid buffer to zero before dispatch. CfxBoidsStep.comp then
+ *  uses this grid to test each boid against only its 3x3 neighbouring cells
+ *  instead of the full population.
+ *
+ *  @author René Weller
  */
 /// CfxBoidsGrid.comp — bin every boid into a uniform grid with atomics.
 /// This is what buys the flock a REAL neighbourhood: without a spatial index

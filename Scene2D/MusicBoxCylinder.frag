@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file MusicBoxCylinder.frag
- * @brief MUSIC BOX CYLINDER: the works of a cylinder music box, lid open.
- * The pinned brass cylinder turns steadily on the scene clock; the steel
- * comb lies alongside it with one tooth per chroma class, and a tooth
- * lights when its class sounds -- as if the pin passing under it had just
- * plucked it.  The pins are laid out as the score, so the cylinder reads
- * as a rolled piece of music.  The photo is the lid's inlay and the
- * mirror inside it.  Camera fixed over the works.
+/*****************************************************************************\
+ *                              MusicBoxCylinder.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioChroma[12] -> which comb teeth ring (light)
- *   sceneAdvance    -> the cylinder turns and the governor spins (continuous)
- *   audioSwell      -> the lamp (slow)
- *   audioKick       -> the bedplate glints (light)
- *   audioHigh       -> the brass sheen (light)
+ *  @brief
+ *  MUSIC BOX CYLINDER: the works of a cylinder music box, lid open.
  *
- * Per-activation variety: pinsP, combP, hueP.
+ *  The pinned brass cylinder turns steadily on the scene clock; the steel comb lies alongside it with one tooth per
+ *  chroma class, and a tooth lights when its class sounds -- as if the pin passing under it had just plucked it.
+ *  The pins are laid out as the score, so the cylinder reads as a rolled piece of music.  The photo is the lid's
+ *  inlay and the mirror inside it.  Camera fixed over the works.
+ *
+ *  Audio Reactivity:
+ *    audioChroma[12] -> which comb teeth ring (light)
+ *    sceneAdvance    -> the cylinder turns and the governor spins (continuous)
+ *    audioSwell      -> the lamp (slow)
+ *    audioKick       -> the bedplate glints (light)
+ *    audioHigh       -> the brass sheen (light)
+ *
+ *  Per-activation variety: pinsP, combP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

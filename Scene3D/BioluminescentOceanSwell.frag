@@ -1,14 +1,20 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file BioluminescentOceanSwell.frag
- * @brief BIOLUMINESCENT OCEAN SWELL: open-ocean Gerstner swell viewed from a
- * gliding camera above the water, horizon high in the frame; narrow crest
- * bands glow bioluminescent cyan, the moon adds a specular path, the photo
- * tints sky reflection and glow.
- *   audioBass/Swell -> wave amplitude    audioKick -> splash + crest flash
- *   audioAdvance    -> forward glide over open water
+/*****************************************************************************\
+ *                              BioluminescentOceanSwell.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  BIOLUMINESCENT OCEAN SWELL: open-ocean Gerstner swell viewed from a gliding camera above the water, horizon high
+ *  in the frame; narrow crest bands glow bioluminescent cyan, the moon adds a specular path, the photo tints sky
+ *  reflection and glow.
+ *
+ *    audioBass/Swell -> wave amplitude    audioKick -> splash + crest flash
+ *    audioAdvance    -> forward glide over open water
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec3  vPos;    ///< Position (from the vertex stage).
 in vec3  vNormal; ///< Surface normal (from the vertex stage).

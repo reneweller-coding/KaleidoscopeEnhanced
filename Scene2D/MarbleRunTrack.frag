@@ -1,23 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file MarbleRunTrack.frag
- * @brief MARBLE RUN TRACK: a looping wooden track, and marbles (round,
- * glass, each a chroma class) rolling it on the scene clock -- down the
- * ramps, round the loops, through the funnel, back up the lift.  The
- * rail a marble rides lights in its class colour with that class's
- * energy; the kick is the bell at the bottom of the run; the photo is the
- * wall behind and the marbles' glass.  Camera fixed on the run.
+/*****************************************************************************\
+ *                              MarbleRunTrack.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   sceneAdvance    -> the marbles' travel (continuous)
- *   audioChroma[12] -> rail light by class (light)
- *   audioKick       -> the bell (light)
- *   audioSwell      -> room light (slow)
- *   audioLevel      -> brightness
+ *  @brief
+ *  MARBLE RUN TRACK: a looping wooden track, and marbles (round, glass, each a chroma class) rolling it on the
+ *  scene clock -- down the ramps, round the loops, through the funnel, back up the lift.
  *
- * Per-activation variety: marblesP, loopP, hueP.
+ *  The rail a marble rides lights in its class colour with that class's energy; the kick is the bell at the bottom
+ *  of the run; the photo is the wall behind and the marbles' glass.  Camera fixed on the run.
+ *
+ *  Audio Reactivity:
+ *    sceneAdvance    -> the marbles' travel (continuous)
+ *    audioChroma[12] -> rail light by class (light)
+ *    audioKick       -> the bell (light)
+ *    audioSwell      -> room light (slow)
+ *    audioLevel      -> brightness
+ *
+ *  Per-activation variety: marblesP, loopP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

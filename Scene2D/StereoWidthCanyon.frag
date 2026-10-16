@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file StereoWidthCanyon.frag
- * @brief STEREO WIDTH CANYON: a slot canyon whose width is the stereo
- * width of the mix -- a mono passage closes the walls to a crack of sky, a
- * wide mix opens them.  The width is slow (the balance is filtered), the
- * walls carry the photo as sandstone, sunlight falls from the slot above
- * and the left and right channel levels light their own wall.  Nothing
- * moves but the walls, slowly, and the light; the camera is fixed on the
- * canyon floor.
+/*****************************************************************************\
+ *                              StereoWidthCanyon.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioStereo (width via |balance| history is not available, so the
- *                channel difference |L - R| filtered by the swell stands in)
- *   audioStereoL / R -> wall light (light)
- *   audioSwell       -> sunlight (slow)
- *   audioKick        -> dust motes flash (light)
- *   audioLevel       -> brightness
+ *  @brief
+ *  STEREO WIDTH CANYON: a slot canyon whose width is the stereo width of the mix -- a mono passage closes the walls
+ *  to a crack of sky, a wide mix opens them.
  *
- * Per-activation variety: widthP, depthP, hueP.
+ *  The width is slow (the balance is filtered), the walls carry the photo as sandstone, sunlight falls from the
+ *  slot above and the left and right channel levels light their own wall.  Nothing moves but the walls, slowly, and
+ *  the light; the camera is fixed on the canyon floor.
+ *
+ *  Audio Reactivity:
+ *    audioStereo (width via |balance| history is not available, so the
+ *                 channel difference |L - R| filtered by the swell stands in)
+ *    audioStereoL / R -> wall light (light)
+ *    audioSwell       -> sunlight (slow)
+ *    audioKick        -> dust motes flash (light)
+ *    audioLevel       -> brightness
+ *
+ *  Per-activation variety: widthP, depthP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

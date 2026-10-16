@@ -1,22 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file CatatumboRelightningTower.frag
- * @brief CATATUMBO RELIGHTNING TOWER: Nocturnal continuous electrical storm column
- * above Lake Maracaibo. Kilometers-tall intra-cloud lightning arcs, methane-ionized
- * plasma channels, volumetric anvil cloud illuminations, and thunderous photo reflections.
- *   audioAdvance -> navigates atmospheric storm updrafts & cloud turbulence
- *   audioKick    -> fires explosive stepped leader lightning arc detonations
- *   audioSnare   -> triggers spiderweb cloud-to-cloud branch discharges
- *   audioSubBass -> rumbles volumetric thunder shockwave expansion
- *   audioSwell   -> thickens dense anvil cloud mist & ionization glow
+/*****************************************************************************\
+ *                              CatatumboRelightningTower.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   branchP  float lightning fractal branching complexity   (1.0..3.5)
- *   cloudP   float volumetric anvil cloud turbulence        (0.6..2.0)
- *   flashP   float stepped leader arc flash brightness      (0.8..2.5)
- *   methaneP float methane ionization blue/violet tint      (0.2..1.5)
+ *  @brief
+ *  CATATUMBO RELIGHTNING TOWER: Nocturnal continuous electrical storm column above Lake Maracaibo.
+ *
+ *  Kilometers-tall intra-cloud lightning arcs, methane-ionized plasma channels, volumetric anvil cloud
+ *  illuminations, and thunderous photo reflections.
+ *
+ *    audioAdvance -> navigates atmospheric storm updrafts & cloud turbulence
+ *    audioKick    -> fires explosive stepped leader lightning arc detonations
+ *    audioSnare   -> triggers spiderweb cloud-to-cloud branch discharges
+ *    audioSubBass -> rumbles volumetric thunder shockwave expansion
+ *    audioSwell   -> thickens dense anvil cloud mist & ionization glow
+ *
+ *  Per-activation variety:
+ *    branchP  float lightning fractal branching complexity   (1.0..3.5)
+ *    cloudP   float volumetric anvil cloud turbulence        (0.6..2.0)
+ *    flashP   float stepped leader arc flash brightness      (0.8..2.5)
+ *    methaneP float methane ionization blue/violet tint      (0.2..1.5)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

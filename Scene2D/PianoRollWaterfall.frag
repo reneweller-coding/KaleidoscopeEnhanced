@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file PianoRollWaterfall.frag
- * @brief PIANO ROLL WATERFALL: the melody falling onto a keyboard.  The
- * 96-sample melody history is drawn as note bars descending toward a
- * keyboard along the bottom -- the newest sample just above the keys, the
- * oldest at the top -- scrolling steadily with the sample clock; the key
- * of each sounding pitch class lights (chroma), the hammer flashes on the
- * kick, the photo is the piano's lid mirror and the bars' colour.
- * Camera fixed above the keys.
+/*****************************************************************************\
+ *                              PianoRollWaterfall.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioMelody[96] / audioMelodyHead -> the falling bars (continuous history)
- *   audioChroma[12] -> key light (light)
- *   audioKick       -> hammer flash (light)
- *   audioSwell      -> stage light (slow)
- *   audioLevel      -> brightness
+ *  @brief
+ *  PIANO ROLL WATERFALL: the melody falling onto a keyboard.
  *
- * Per-activation variety: octavesP, widthP, hueP.
+ *  The 96-sample melody history is drawn as note bars descending toward a keyboard along the bottom -- the newest
+ *  sample just above the keys, the oldest at the top -- scrolling steadily with the sample clock; the key of each
+ *  sounding pitch class lights (chroma), the hammer flashes on the kick, the photo is the piano's lid mirror and
+ *  the bars' colour. Camera fixed above the keys.
+ *
+ *  Audio Reactivity:
+ *    audioMelody[96] / audioMelodyHead -> the falling bars (continuous history)
+ *    audioChroma[12] -> key light (light)
+ *    audioKick       -> hammer flash (light)
+ *    audioSwell      -> stage light (slow)
+ *    audioLevel      -> brightness
+ *
+ *  Per-activation variety: octavesP, widthP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

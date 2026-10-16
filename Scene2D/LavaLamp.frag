@@ -1,29 +1,33 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file LavaLamp.frag
- * @brief LAVA LAMP (rebuilt 30.09.2026): inside a lava lamp, filling the frame
- * -- warm wax rises from the heat below in slow, heavy columns, bulges into
- * round heads, pinches off at thin necks, floats up, cools and sinks again,
- * blobs meet and melt into each other.  What makes a real lamp hypnotic and
- * what this rebuild is about: the wax GLOWS from inside (light scattered
- * through it, bright at the thin edges and necks, deep in the thick cores),
- * the liquid around it is tinted and lit from below, every blob is a lens
- * that bends the light behind it, and everything moves at the speed of
- * warm honey.  The wax and liquid colours come from the photo where it has
- * colour.  The view is a flat slab of the lamp, repeated and mirrored
- * across the frame so it runs on without edges.
+/*****************************************************************************\
+ *                              LavaLamp.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the heat that drives the wax up (integrated, jump-free)
- *   audioSwell      -> the amount of wax (slow)
- *   audioSpread     -> viscosity: wide spectrum makes smaller, quicker blobs
- *   audioMode       -> the wax warms from red toward orange-yellow in major (slow blend)
- *   audioBass       -> the glow of the heat below (light)
- *   audioRoughness  -> the wax surface shimmers
+ *  @brief
+ *  LAVA LAMP (rebuilt 30.09.2026): inside a lava lamp, filling the frame -- warm wax rises from the heat below in
+ *  slow, heavy columns, bulges into round heads, pinches off at thin necks, floats up, cools and sinks again, blobs
+ *  meet and melt into each other.
  *
- * Knobs: waxP (wax amount), sizeP (blob size), glowP (inner glow), hueP.
+ *  What makes a real lamp hypnotic and what this rebuild is about: the wax GLOWS from inside (light scattered
+ *  through it, bright at the thin edges and necks, deep in the thick cores), the liquid around it is tinted and lit
+ *  from below, every blob is a lens that bends the light behind it, and everything moves at the speed of warm
+ *  honey.  The wax and liquid colours come from the photo where it has colour.  The view is a flat slab of the
+ *  lamp, repeated and mirrored across the frame so it runs on without edges.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the heat that drives the wax up (integrated, jump-free)
+ *    audioSwell      -> the amount of wax (slow)
+ *    audioSpread     -> viscosity: wide spectrum makes smaller, quicker blobs
+ *    audioMode       -> the wax warms from red toward orange-yellow in major (slow blend)
+ *    audioBass       -> the glow of the heat below (light)
+ *    audioRoughness  -> the wax surface shimmers
+ *
+ *  Knobs: waxP (wax amount), sizeP (blob size), glowP (inner glow), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

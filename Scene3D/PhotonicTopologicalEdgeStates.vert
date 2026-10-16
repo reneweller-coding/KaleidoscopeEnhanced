@@ -1,8 +1,14 @@
 #version 330 core
-/**
- * @file PhotonicTopologicalEdgeStates.vert
- * @brief Vertex stage companion to PhotonicTopologicalEdgeStates.frag -- see that file's
- * header for this scene's description.
+/*****************************************************************************\
+ *                              PhotonicTopologicalEdgeStates.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to PhotonicTopologicalEdgeStates.frag -- see that file's header for this scene's
+ *  description.
+ *
+ *  @author René Weller
  */
 
 in vec4 attrA; ///< x = t in [0,1], y = side (-1/+1), z = 0, w = ribbon index

@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureSatelliteClouds.frag
- * @brief TEXTURE SATELLITE CLOUDS: a weather satellite's view drifting over
- * the planet -- white cloud decks, cloud streets in long parallel rows,
- * swirling cyclones with their spiral bands, and patches of clear sky
- * where the ground below (the photograph as land and sea) shows through,
- * with the clouds casting shadows on it; the whole scene drifts slowly
- * and the cyclones turn.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              TextureSatelliteClouds.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the drift and the cyclones' rotation (integrated, jump-free)
- *   audioSpread     -> cloud cover
- *   audioKick       -> lightning in the storm cells (light)
- *   audioMode       -> the sun: cool morning light in minor, warm evening in major
- *   audioRoughness  -> cloud texture detail
- *   audioSwell      -> the shadows (slow)
+ *  @brief
+ *  TEXTURE SATELLITE CLOUDS: a weather satellite's view drifting over the planet -- white cloud decks, cloud
+ *  streets in long parallel rows, swirling cyclones with their spiral bands, and patches of clear sky where the
+ *  ground below (the photograph as land and sea) shows through, with the clouds casting shadows on it; the whole
+ *  scene drifts slowly and the cyclones turn.
  *
- * Knobs: cycloneP (cyclones), streetP (cloud streets), groundP (the photo as ground), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the drift and the cyclones' rotation (integrated, jump-free)
+ *    audioSpread     -> cloud cover
+ *    audioKick       -> lightning in the storm cells (light)
+ *    audioMode       -> the sun: cool morning light in minor, warm evening in major
+ *    audioRoughness  -> cloud texture detail
+ *    audioSwell      -> the shadows (slow)
+ *
+ *  Knobs: cycloneP (cyclones), streetP (cloud streets), groundP (the photo as ground), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

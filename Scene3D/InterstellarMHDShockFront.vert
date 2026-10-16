@@ -1,8 +1,13 @@
 #version 330 core
-/**
- * @file InterstellarMHDShockFront.vert
- * @brief Vertex stage companion to InterstellarMHDShockFront.frag -- see that file's
- * header for this scene's description.
+/*****************************************************************************\
+ *                              InterstellarMHDShockFront.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to InterstellarMHDShockFront.frag -- see that file's header for this scene's description.
+ *
+ *  @author René Weller
  */
 
 in vec4 attrA; ///< xy = UV [0,1], z = 0, w = cell index

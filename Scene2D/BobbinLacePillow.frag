@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file BobbinLacePillow.frag
- * @brief BOBBIN LACE PILLOW: the lace maker's pillow under a warm lamp.
- * On a dome of blue-green cotton lies the buff pricking card; above the
- * working line the finished lace -- a torchon ground of twisted pairs with
- * round spiders and scalloped fans down both edges -- and below it the
- * pricking holes still waiting, brass pins in the last worked rows.  From
- * the line the threads run down to a fan of turned wooden bobbins, each
- * with its ring of coloured spangle beads, swaying gently.  The lace grows
- * down the card over the scene arc.  Camera fixed over the pillow.
+/*****************************************************************************\
+ *                              BobbinLacePillow.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   sceneProgress -> the lace grows (the arc)
- *   sceneAdvance  -> threads cross and twist, bobbins sway (continuous)
- *   audioChroma[12] -> the coloured threads (light)
- *   audioSwell    -> the lamp (slow)
- *   audioHigh     -> the linen sheen (light)
+ *  @brief
+ *  BOBBIN LACE PILLOW: the lace maker's pillow under a warm lamp.
  *
- * Per-activation variety: pairsP, pinsP, hueP.
+ *  On a dome of blue-green cotton lies the buff pricking card; above the working line the finished lace -- a
+ *  torchon ground of twisted pairs with round spiders and scalloped fans down both edges -- and below it the
+ *  pricking holes still waiting, brass pins in the last worked rows.  From the line the threads run down to a fan
+ *  of turned wooden bobbins, each with its ring of coloured spangle beads, swaying gently.  The lace grows down the
+ *  card over the scene arc.  Camera fixed over the pillow.
+ *
+ *  Audio Reactivity:
+ *    sceneProgress -> the lace grows (the arc)
+ *    sceneAdvance  -> threads cross and twist, bobbins sway (continuous)
+ *    audioChroma[12] -> the coloured threads (light)
+ *    audioSwell    -> the lamp (slow)
+ *    audioHigh     -> the linen sheen (light)
+ *
+ *  Per-activation variety: pairsP, pinsP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

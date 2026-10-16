@@ -1,18 +1,23 @@
 #version 330 core
-/**
- * @file CherenkovCascadeShower.vert
- * @brief Vertex stage companion to CherenkovCascadeShower.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              CherenkovCascadeShower.vert
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance  -> shower generation cycle (pre-integrated, jump-free)
- *   audioKick     -> shockwave explosion + particle size surge
- *   audioHigh     -> overall Cherenkov emission gain
- *   audioChromaHue-> rotates the cyan/ultraviolet track palette
- *   audioSpread   -> spatial spread of the cascade cone (narrow spectrum =
- *                    collimated pencil beam, broadband = wide fan)
- *   audioRoughness-> dissonance scatters tracks off their clean Lorentz helices
- *   audioHat      -> hi-hats/cymbals spark a subset of tracks bigger + white
+ *  @brief
+ *  Vertex stage companion to CherenkovCascadeShower.frag -- see that file's header for this scene's description.
+ *
+ *  Audio Reactivity:
+ *    audioAdvance  -> shower generation cycle (pre-integrated, jump-free)
+ *    audioKick     -> shockwave explosion + particle size surge
+ *    audioHigh     -> overall Cherenkov emission gain
+ *    audioChromaHue-> rotates the cyan/ultraviolet track palette
+ *    audioSpread   -> spatial spread of the cascade cone (narrow spectrum =
+ *                     collimated pencil beam, broadband = wide fan)
+ *    audioRoughness-> dissonance scatters tracks off their clean Lorentz helices
+ *    audioHat      -> hi-hats/cymbals spark a subset of tracks bigger + white
+ *
+ *  @author René Weller
  */
 // CherenkovCascadeShower.vert — 60,000 relativistic particle collision tracks
 // in heavy water with glowing cyan Cherenkov radiation and magnetic deflection.

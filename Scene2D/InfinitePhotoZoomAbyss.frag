@@ -1,12 +1,19 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file InfinitePhotoZoomAbyss.frag
- * @brief INFINITE PHOTO ZOOM ABYSS: 100% viewport-filling seamless infinite
- * logarithmic Droste spiral dive into the loaded photo texture.
- * Conformal mapping w = ln(z) transforms the image into an endless
- * self-similar recursive fractal spiral with smooth multi-octave blending.
+/*****************************************************************************\
+ *                              InfinitePhotoZoomAbyss.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  INFINITE PHOTO ZOOM ABYSS: 100% viewport-filling seamless infinite logarithmic Droste spiral dive into the
+ *  loaded photo texture.
+ *
+ *  Conformal mapping w = ln(z) transforms the image into an endless self-similar recursive fractal spiral with
+ *  smooth multi-octave blending.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

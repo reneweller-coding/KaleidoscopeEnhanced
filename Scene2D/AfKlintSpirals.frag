@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file AfKlintSpirals.frag
- * @brief AF KLINT SPIRALS: in the spirit of Hilma af Klint's temple
- * paintings -- great spirals wind in two alternating colours like snail
- * shells, circles split into contrasting halves, over a soft field of
- * pastel pinks, ochres and blues; the spirals slowly turn (some inward,
- * some outward), the halves rotate, everything breathing gently; the
- * colours are softened by the photograph, which shows through like the
- * texture of old tempera on paper.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              AfKlintSpirals.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the spirals turn (integrated, jump-free)
- *   audioSpread     -> the forms grow
- *   audioMode       -> palette: blue-violet in minor, rose-ochre in major (a tint)
- *   audioKick       -> the light colours brighten (light)
- *   audioHarmChange -> the forms drift (slow, smoothed)
- *   audioSwell      -> the paper texture shows (slow)
+ *  @brief
+ *  AF KLINT SPIRALS: in the spirit of Hilma af Klint's temple paintings -- great spirals wind in two alternating
+ *  colours like snail shells, circles split into contrasting halves, over a soft field of pastel pinks, ochres and
+ *  blues; the spirals slowly turn (some inward, some outward), the halves rotate, everything breathing gently; the
+ *  colours are softened by the photograph, which shows through like the texture of old tempera on paper.
  *
- * Knobs: turnsP (spiral turns), formP (form density), photoP, hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the spirals turn (integrated, jump-free)
+ *    audioSpread     -> the forms grow
+ *    audioMode       -> palette: blue-violet in minor, rose-ochre in major (a tint)
+ *    audioKick       -> the light colours brighten (light)
+ *    audioHarmChange -> the forms drift (slow, smoothed)
+ *    audioSwell      -> the paper texture shows (slow)
+ *
+ *  Knobs: turnsP (spiral turns), formP (form density), photoP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

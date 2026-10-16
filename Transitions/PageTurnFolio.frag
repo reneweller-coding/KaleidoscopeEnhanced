@@ -1,31 +1,36 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file PageTurnFolio.frag
- * @brief TRANSITION PAGE TURN FOLIO: the outgoing scene is a sheet of paper
- * that lifts along a slanted line and curls onto a cylinder, uncovering the
- * incoming scene where the sheet used to lie.
+/*****************************************************************************\
+ *                              PageTurnFolio.frag
+\*****************************************************************************/
+/*! @file
  *
- * The curl is solved, not painted.  For every pixel inside the roll band the
- * shader asks which point of the sheet, wrapped around a cylinder of radius R,
- * projects there: the horizontal offset from the axis IS the sine of the wrap
- * angle, so one asin() gives the angle, the angle gives the arc length, and the
- * arc length gives the point on the sheet to sample.  The same angle gives the
- * surface normal, which is what shades the roll -- a painted gradient would not
- * put the highlight in the right place as the roll tightens.
+ *  @brief
+ *  TRANSITION PAGE TURN FOLIO: the outgoing scene is a sheet of paper that lifts along a slanted line and curls
+ *  onto a cylinder, uncovering the incoming scene where the sheet used to lie.
  *
- * Paper is thin, so a little of what lies behind the sheet bleeds through the
- * curl.  That show-through is what makes it read as paper rather than as a
- * rolling tube.  The roll tightens as the turn proceeds, the way a sheet lifted
- * further wraps on a smaller radius.
+ *  The curl is solved, not painted.  For every pixel inside the roll band the
+ *  shader asks which point of the sheet, wrapped around a cylinder of radius R,
+ *  projects there: the horizontal offset from the axis IS the sine of the wrap
+ *  angle, so one asin() gives the angle, the angle gives the arc length, and the
+ *  arc length gives the point on the sheet to sample.  The same angle gives the
+ *  surface normal, which is what shades the roll -- a painted gradient would not
+ *  put the highlight in the right place as the roll tightens.
  *
- * Audio Reactivity:
- *   audioHigh  -> the sheen along the free edge (light)
- *   audioKick  -> the light on the roll's crest (light)
- *   audioMid   -> the warmth of the paper stock (colour)
+ *  Paper is thin, so a little of what lies behind the sheet bleeds through the
+ *  curl.  That show-through is what makes it read as paper rather than as a
+ *  rolling tube.  The roll tightens as the turn proceeds, the way a sheet lifted
+ *  further wraps on a smaller radius.
  *
- * Per-activation variety: tiltP, stiffP, hueP.
+ *  Audio Reactivity:
+ *    audioHigh  -> the sheen along the free edge (light)
+ *    audioKick  -> the light on the roll's crest (light)
+ *    audioMid   -> the warmth of the paper stock (colour)
+ *
+ *  Per-activation variety: tiltP, stiffP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

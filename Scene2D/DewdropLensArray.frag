@@ -1,25 +1,31 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file DewdropLensArray.frag
- * @brief DEWDROP LENS ARRAY: a field of dew drops on a sheet of glass in
- * front of the photograph -- hundreds of round drops of every size, each a
- * tiny lens that shows the photo behind it sharp, magnified and upside down,
- * with a bright rim of light on one side and a dark refraction ring on the
- * other, while the glass between the drops is fogged and shows the photo
- * soft and pale.  The drops slowly grow, merge and slide, the photo behind
- * drifts, so each drop's miniature keeps changing.  Endless and mirrorable.
+/*****************************************************************************\
+ *                              DewdropLensArray.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the photo drifts behind the glass (integrated)
- *   audioSpread     -> magnification of the drops
- *   audioSwell      -> how fogged the glass is (slow)
- *   audioRoughness  -> the drops tremble at their rims
- *   audioHigh       -> the highlights on the drops (light)
- *   audioMode       -> the fog tint: cool in minor, warm in major (slow blend)
+ *  @brief
+ *  DEWDROP LENS ARRAY: a field of dew drops on a sheet of glass in front of the photograph -- hundreds of round
+ *  drops of every size, each a tiny lens that shows the photo behind it sharp, magnified and upside down, with a
+ *  bright rim of light on one side and a dark refraction ring on the other, while the glass between the drops is
+ *  fogged and shows the photo soft and pale.
  *
- * Knobs: sizeP (drop size), densityP (how many), fogP (base fog), hueP.
+ *  The drops slowly grow, merge and slide, the photo behind drifts, so each drop's miniature keeps changing.
+ *  Endless and mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the photo drifts behind the glass (integrated)
+ *    audioSpread     -> magnification of the drops
+ *    audioSwell      -> how fogged the glass is (slow)
+ *    audioRoughness  -> the drops tremble at their rims
+ *    audioHigh       -> the highlights on the drops (light)
+ *    audioMode       -> the fog tint: cool in minor, warm in major (slow blend)
+ *
+ *  Knobs: sizeP (drop size), densityP (how many), fogP (base fog), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

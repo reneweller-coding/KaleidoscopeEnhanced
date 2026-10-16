@@ -1,28 +1,34 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file CapitalShipCruise.frag
- * @brief CAPITAL SHIP CRUISE: a kilometre-long capital ship under way through
- * deep space, seen from a camera flying alongside it. The silhouette is
- * raymarched from a handful of large primitives -- tapered hull, dorsal
- * spine, bridge tower, ventral keel and four engine bells -- while the
- * surface detail (panel seams, hull plating, window rows, running lights)
- * comes from the shading, which is how a ship this size reads on screen
- * without a million-triangle model. The nebula behind it inherits the
- * slideshow photo's palette; the starfield streams past to sell the motion.
- *   audioAdvance -> distance travelled (starfield stream + nebula drift)
- *   audioSwell   -> engine bell intensity and the exhaust plume's reach
- *   audioKick    -> thruster flare + a pulse down the running-light rows
- *   audioBass    -> slow roll of the hull key light
- *   audioBeatPhase-> the navigation strobe on the spine, once per beat
- *   audioChromaHue-> nebula hue follows the musical key
+/*****************************************************************************\
+ *                              CapitalShipCruise.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   hullP   float ship length / how much frame the hull takes   (0.7..1.6)
- *   glowP   float engine and running-light intensity            (0.6..1.8)
- *   nebulaP float nebula density behind the ship                (0.3..1.6)
- *   hueP    float palette offset of the nebula                  (0..6.28)
+ *  @brief
+ *  CAPITAL SHIP CRUISE: a kilometre-long capital ship under way through deep space, seen from a camera flying
+ *  alongside it.
+ *
+ *  The silhouette is raymarched from a handful of large primitives -- tapered hull, dorsal spine, bridge tower,
+ *  ventral keel and four engine bells -- while the surface detail (panel seams, hull plating, window rows, running
+ *  lights) comes from the shading, which is how a ship this size reads on screen without a million-triangle model.
+ *  The nebula behind it inherits the slideshow photo's palette; the starfield streams past to sell the motion.
+ *
+ *    audioAdvance -> distance travelled (starfield stream + nebula drift)
+ *    audioSwell   -> engine bell intensity and the exhaust plume's reach
+ *    audioKick    -> thruster flare + a pulse down the running-light rows
+ *    audioBass    -> slow roll of the hull key light
+ *    audioBeatPhase-> the navigation strobe on the spine, once per beat
+ *    audioChromaHue-> nebula hue follows the musical key
+ *
+ *  Per-activation variety:
+ *    hullP   float ship length / how much frame the hull takes   (0.7..1.6)
+ *    glowP   float engine and running-light intensity            (0.6..1.8)
+ *    nebulaP float nebula density behind the ship                (0.3..1.6)
+ *    hueP    float palette offset of the nebula                  (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

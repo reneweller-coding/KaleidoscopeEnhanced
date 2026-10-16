@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TexturePhosphorTrails.frag
- * @brief TEXTURE PHOSPHOR TRAILS: an old vector display drawing the
- * photograph -- a bright beam traces Lissajous-like figures whose shape is
- * steered by the picture, and on the long-persistence phosphor its path
- * glows and fades slowly behind it, so the screen fills with luminous
- * curves in green (or amber), brightest where the beam lingers; faint
- * scan grain and the glass's curvature vignette.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              TexturePhosphorTrails.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the figures evolve (integrated, jump-free)
- *   audioSpread     -> the figures' size
- *   audioKick       -> the beam flares (light)
- *   audioMode       -> phosphor: P1 green in minor, P3 amber in major
- *   audioRoughness  -> jitter on the beam
- *   audioSwell      -> the persistence (slow)
+ *  @brief
+ *  TEXTURE PHOSPHOR TRAILS: an old vector display drawing the photograph -- a bright beam traces Lissajous-like
+ *  figures whose shape is steered by the picture, and on the long-persistence phosphor its path glows and fades
+ *  slowly behind it, so the screen fills with luminous curves in green (or amber), brightest where the beam
+ *  lingers; faint scan grain and the glass's curvature vignette.
  *
- * Knobs: freqP (figure complexity), beamP (beam width), photoP (the picture steers the beam), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the figures evolve (integrated, jump-free)
+ *    audioSpread     -> the figures' size
+ *    audioKick       -> the beam flares (light)
+ *    audioMode       -> phosphor: P1 green in minor, P3 amber in major
+ *    audioRoughness  -> jitter on the beam
+ *    audioSwell      -> the persistence (slow)
+ *
+ *  Knobs: freqP (figure complexity), beamP (beam width), photoP (the picture steers the beam), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

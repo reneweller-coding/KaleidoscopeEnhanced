@@ -1,8 +1,13 @@
 #version 330 core
-/**
- * @file MoireHyperInterference.vert
- * @brief Vertex stage companion to MoireHyperInterference.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              MoireHyperInterference.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to MoireHyperInterference.frag -- see that file's header for this scene's description.
+ *
+ *  @author René Weller
  */
 // MoireHyperInterference.vert — 220x120 heightfield grid undulating
 // with optical Moiré superlattices and dynamic interference zone plates.

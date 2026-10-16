@@ -1,8 +1,13 @@
 #version 330 core
-/**
- * @file CoralGrowth.vert
- * @brief Vertex stage companion to CoralGrowth.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              CoralGrowth.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to CoralGrowth.frag -- see that file's header for this scene's description.
+ *
+ *  @author René Weller
  */
 // CoralGrowth.vert — the colony arrives finished; turn it slowly so its
 // branching structure is read as volume rather than as a flat thicket.

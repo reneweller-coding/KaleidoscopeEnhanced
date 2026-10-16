@@ -1,15 +1,21 @@
 #version 330 core
-/**
- * @file CrossSection.vert
- * @brief Vertex stage companion to CrossSection.frag -- see that file's header
- * for the scene. geom="mesh": attrA/attrB carry a REAL loaded model (see
- * Tools/SHADER_AUTHORING.md's `mesh` row); gl_VertexID below meshVertexCount
- * is the model, at or above it the enclosing sky shell.
+/*****************************************************************************\
+ *                              CrossSection.vert
+\*****************************************************************************/
+/*! @file
  *
- * The object holds one fixed attitude apart from a slow turn about a single
- * axis. All the motion in this scene belongs to the cutting plane, and a
- * tumbling subject would fight it: you cannot read where a plane is when the
- * thing it is cutting keeps changing which way it faces.
+ *  @brief
+ *  Vertex stage companion to CrossSection.frag -- see that file's header for the scene.
+ *
+ *  geom="mesh": attrA/attrB carry a REAL loaded model (see Tools/SHADER_AUTHORING.md's `mesh` row); gl_VertexID
+ *  below meshVertexCount is the model, at or above it the enclosing sky shell.
+ *
+ *  The object holds one fixed attitude apart from a slow turn about a single
+ *  axis. All the motion in this scene belongs to the cutting plane, and a
+ *  tumbling subject would fight it: you cannot read where a plane is when the
+ *  thing it is cutting keeps changing which way it faces.
+ *
+ *  @author René Weller
  */
 
 in vec4 attrA; ///< mesh: xyz = object-space position, w = U.  shell: xyz = world-space position on the shell.

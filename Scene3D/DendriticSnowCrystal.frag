@@ -1,21 +1,25 @@
 #version 330 core
+/*****************************************************************************\
+ *                              DendriticSnowCrystal.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Lighting for growing dendritic snow-crystal facets: mixes an icy- white core with a rainbow-dispersion tint per
+ *  facet (vRefract), overlays a refracted slideshow photo through the ice, and scatters bright hashed specular
+ *  sparkle glints across the surface.
+ *
+ *  audioKick intensifies the sparkle glints, and the facet's rainbow tint
+ *  (imgPalette) follows the musical key through audioChromaHue/audioAdvance
+ *  with audioValence shaping saturation; hueP applies the final hue rotation.
+ *
+ *  @author René Weller
+ */
 out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec3  vPos;     ///< Position (from the vertex stage).
 in float vRefract; ///< Refract (from the vertex stage).
 in float vSector;  ///< Sector (from the vertex stage).
-
-/**
- * @file DendriticSnowCrystal.frag
- * @brief Lighting for growing dendritic snow-crystal facets: mixes an icy-
- * white core with a rainbow-dispersion tint per facet (vRefract), overlays a
- * refracted slideshow photo through the ice, and scatters bright hashed
- * specular sparkle glints across the surface.
- *
- * audioKick intensifies the sparkle glints, and the facet's rainbow tint
- * (imgPalette) follows the musical key through audioChromaHue/audioAdvance
- * with audioValence shaping saturation; hueP applies the final hue rotation.
- */
 
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

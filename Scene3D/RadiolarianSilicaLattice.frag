@@ -1,14 +1,19 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file RadiolarianSilicaLattice.frag
- * @brief RADIOLARIAN SILICA LATTICE: concentric glass micro-skeleton shells
- * rotating against each other, seen from a safe distance (no camera
- * collisions); silica cards tinted by the photo palette, star sparkles
- * on the kick.
- *   audioKick -> shell burst    audioSwell -> lattice breathing
- *   latticeP  -> shell spacing
+/*****************************************************************************\
+ *                              RadiolarianSilicaLattice.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  RADIOLARIAN SILICA LATTICE: concentric glass micro-skeleton shells rotating against each other, seen from a safe
+ *  distance (no camera collisions); silica cards tinted by the photo palette, star sparkles on the kick.
+ *
+ *    audioKick -> shell burst    audioSwell -> lattice breathing
+ *    latticeP  -> shell spacing
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec4 vCol;      ///< Colour (from the vertex stage).
 in vec2 vUV;       ///< Texture coordinate 0..1 over the screen (from the vertex stage).

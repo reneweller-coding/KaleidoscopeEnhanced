@@ -1,32 +1,37 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file LaserSpeckleDecorrelation.frag
- * @brief TRANSITION LASER SPECKLE DECORRELATION: a coherent speckle field lies
- * over the outgoing scene, decorrelates until the picture is buried in grain,
- * and correlates again onto the incoming scene.
+/*****************************************************************************\
+ *                              LaserSpeckleDecorrelation.frag
+\*****************************************************************************/
+/*! @file
  *
- * Speckle is not noise sprinkled on an image.  It is the intensity of a sum of
- * randomly phased waves, so it is built here the way it forms: eight plane
- * waves with random directions and phases, summed as a complex amplitude, and
- * the intensity is that amplitude squared.  That is what gives speckle its
- * characteristic look -- elongated bright grains with genuinely black gaps and
- * the long bright tail of a negative-exponential distribution, which additive
- * noise never has.
+ *  @brief
+ *  TRANSITION LASER SPECKLE DECORRELATION: a coherent speckle field lies over the outgoing scene, decorrelates
+ *  until the picture is buried in grain, and correlates again onto the incoming scene.
  *
- * The decorrelation is real too: the phases travel from one random set to
- * another across the turn, so grains dissolve and re-form instead of
- * cross-fading.  And because the field MULTIPLIES the picture, the way a
- * laser's speckle actually modulates what it lights, the scene stays under the
- * grain instead of being covered by it.
+ *  Speckle is not noise sprinkled on an image.  It is the intensity of a sum of
+ *  randomly phased waves, so it is built here the way it forms: eight plane
+ *  waves with random directions and phases, summed as a complex amplitude, and
+ *  the intensity is that amplitude squared.  That is what gives speckle its
+ *  characteristic look -- elongated bright grains with genuinely black gaps and
+ *  the long bright tail of a negative-exponential distribution, which additive
+ *  noise never has.
  *
- * Audio Reactivity:
- *   audioSwell  -> how deep the grain bites (slow)
- *   audioAdvance -> the field boils slowly and continuously
- *   audioKick    -> the brightest grains flare (light)
+ *  The decorrelation is real too: the phases travel from one random set to
+ *  another across the turn, so grains dissolve and re-form instead of
+ *  cross-fading.  And because the field MULTIPLIES the picture, the way a
+ *  laser's speckle actually modulates what it lights, the scene stays under the
+ *  grain instead of being covered by it.
  *
- * Per-activation variety: grainP, biteP, hueP.
+ *  Audio Reactivity:
+ *    audioSwell  -> how deep the grain bites (slow)
+ *    audioAdvance -> the field boils slowly and continuously
+ *    audioKick    -> the brightest grains flare (light)
+ *
+ *  Per-activation variety: grainP, biteP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

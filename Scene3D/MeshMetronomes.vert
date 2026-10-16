@@ -1,13 +1,18 @@
 #version 330 core
-/**
- * @file MeshMetronomes.vert
- * @brief Vertex stage companion to MeshMetronomes.frag -- see that file's
- * header. Two models drawn instances="12" times: the metronome body
- * (model=) and, as its pendulum rod, the lab pendulum (model2=) turned
- * upside down so its brass sphere becomes the sliding weight. gl_InstanceID
- * places body and rod on a bench in two rows; every rod swings about the
- * pivot at the foot of its body at its own tempo, on time. The shell is
- * drawn by instance 0 only.
+/*****************************************************************************\
+ *                              MeshMetronomes.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to MeshMetronomes.frag -- see that file's header.
+ *
+ *  Two models drawn instances="12" times: the metronome body (model=) and, as its pendulum rod, the lab pendulum
+ *  (model2=) turned upside down so its brass sphere becomes the sliding weight. gl_InstanceID places body and rod
+ *  on a bench in two rows; every rod swings about the pivot at the foot of its body at its own tempo, on time. The
+ *  shell is drawn by instance 0 only.
+ *
+ *  @author René Weller
  */
 
 in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an

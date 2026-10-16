@@ -1,22 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SonoluminescenceBubble.frag
- * @brief SONOLUMINESCENCE BUBBLE: Acoustic cavitation bubble collapse in an
- * ultrasonic standing wave field. Adiabatic gas compression generates a
- * picosecond-duration 20,000K plasma flash with spherical acoustic shockwaves,
- * water refraction caustics, and liquid photo distortion.
- *   audioAdvance -> cycles ultrasonic acoustic compression phases
- *   audioKick    -> triggers maximum adiabatic bubble collapse & plasma flash
- *   audioBass    -> drives ultrasonic standing wave amplitude
- *   audioCentroid-> shifts plasma blackbody emission temperature
+/*****************************************************************************\
+ *                              SonoluminescenceBubble.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   cavityP float cavitation bubble scale & radius       (0.5..2.2)
- *   shockP  float acoustic shockwave ring intensity      (0.5..2.0)
- *   speedP  float ultrasonic frequency velocity          (0.5..2.0)
- *   hueP    float plasma spectrum chromatic hue offset   (0..6.28)
+ *  @brief
+ *  SONOLUMINESCENCE BUBBLE: Acoustic cavitation bubble collapse in an ultrasonic standing wave field.
+ *
+ *  Adiabatic gas compression generates a picosecond-duration 20,000K plasma flash with spherical acoustic
+ *  shockwaves, water refraction caustics, and liquid photo distortion.
+ *
+ *    audioAdvance -> cycles ultrasonic acoustic compression phases
+ *    audioKick    -> triggers maximum adiabatic bubble collapse & plasma flash
+ *    audioBass    -> drives ultrasonic standing wave amplitude
+ *    audioCentroid-> shifts plasma blackbody emission temperature
+ *
+ *  Per-activation variety:
+ *    cavityP float cavitation bubble scale & radius       (0.5..2.2)
+ *    shockP  float acoustic shockwave ring intensity      (0.5..2.0)
+ *    speedP  float ultrasonic frequency velocity          (0.5..2.0)
+ *    hueP    float plasma spectrum chromatic hue offset   (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

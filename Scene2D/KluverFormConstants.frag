@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file KluverFormConstants.frag
- * @brief KLUVER FORM CONSTANTS: the four geometric hallucination forms --
- * tunnel, spiral, lattice, cobweb -- as one continuously morphing field.
- * Each form is a phase function over the retinal (log-polar) plane; the
- * blend between them is picked by the arousal axis and drifts on the scene
- * clock, always by smooth weights, never by a switch.  The photo is the
- * colour source: the forms are stripes of it.  The whole field flows
- * steadily toward (or from) the centre; the camera never moves.
+/*****************************************************************************\
+ *                              KluverFormConstants.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioArousal -> which forms dominate (slow blend)
- *   sceneAdvance -> the flow and the drift of the blend (continuous)
- *   audioKick    -> stripe brightness (light)
- *   audioSwell   -> stripe contrast (slow)
- *   audioLevel   -> brightness
+ *  @brief
+ *  KLUVER FORM CONSTANTS: the four geometric hallucination forms -- tunnel, spiral, lattice, cobweb -- as one
+ *  continuously morphing field.
  *
- * Per-activation variety: densP (stripe density), twistP, hueP.
+ *  Each form is a phase function over the retinal (log-polar) plane; the blend between them is picked by the
+ *  arousal axis and drifts on the scene clock, always by smooth weights, never by a switch.  The photo is the
+ *  colour source: the forms are stripes of it.  The whole field flows steadily toward (or from) the centre; the
+ *  camera never moves.
+ *
+ *  Audio Reactivity:
+ *    audioArousal -> which forms dominate (slow blend)
+ *    sceneAdvance -> the flow and the drift of the blend (continuous)
+ *    audioKick    -> stripe brightness (light)
+ *    audioSwell   -> stripe contrast (slow)
+ *    audioLevel   -> brightness
+ *
+ *  Per-activation variety: densP (stripe density), twistP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

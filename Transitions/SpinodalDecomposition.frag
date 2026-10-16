@@ -1,38 +1,43 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SpinodalDecomposition.frag
- * @brief TRANSITION SPINODAL DECOMPOSITION: the two scenes demix like an alloy
- * quenched below its miscibility gap -- an interpenetrating labyrinth with one
- * scene in each phase, coarsening until one phase has taken the frame.
+/*****************************************************************************\
+ *                              SpinodalDecomposition.frag
+\*****************************************************************************/
+/*! @file
  *
- * Spinodal decomposition has no nucleation step: the mixture is unstable
- * everywhere at once, so it separates by AMPLIFYING one wavelength of its own
- * fluctuation across the whole volume simultaneously.  That is why it is built
- * here as a band-limited field thresholded against a level, rather than as
- * blobs grown from seeds -- every domain appears where the fluctuation already
- * was, not where a seed was placed.
+ *  @brief
+ *  TRANSITION SPINODAL DECOMPOSITION: the two scenes demix like an alloy quenched below its miscibility gap -- an
+ *  interpenetrating labyrinth with one scene in each phase, coarsening until one phase has taken the frame.
  *
- * The level sweeping across that field is the COMPOSITION sweeping across the
- * gap.  Near the ends the mixture is off-critical and the minority phase comes
- * out as separate domains; in the middle it is critical and the two phases are
- * bicontinuous -- the connected labyrinth this is named for.  Both stages are
- * real, and the sweep is what walks between them.
+ *  Spinodal decomposition has no nucleation step: the mixture is unstable
+ *  everywhere at once, so it separates by AMPLIFYING one wavelength of its own
+ *  fluctuation across the whole volume simultaneously.  That is why it is built
+ *  here as a band-limited field thresholded against a level, rather than as
+ *  blobs grown from seeds -- every domain appears where the fluctuation already
+ *  was, not where a seed was placed.
  *
- * The second law of the process is coarsening: the characteristic length grows
- * as the cube root of time, because the driving force is the interface energy.
- * The wavelength here follows that law, so the labyrinth gets visibly coarser
- * as the turn runs instead of just fading.
+ *  The level sweeping across that field is the COMPOSITION sweeping across the
+ *  gap.  Near the ends the mixture is off-critical and the minority phase comes
+ *  out as separate domains; in the middle it is critical and the two phases are
+ *  bicontinuous -- the connected labyrinth this is named for.  Both stages are
+ *  real, and the sweep is what walks between them.
  *
- * The interfaces themselves carry energy, which is why they light up.
+ *  The second law of the process is coarsening: the characteristic length grows
+ *  as the cube root of time, because the driving force is the interface energy.
+ *  The wavelength here follows that law, so the labyrinth gets visibly coarser
+ *  as the turn runs instead of just fading.
  *
- * Audio Reactivity:
- *   audioValence -> which phase is winning, and how fast (colour)
- *   audioHigh    -> the light on the interfaces (light)
- *   audioSwell  -> the interface width (slow)
+ *  The interfaces themselves carry energy, which is why they light up.
  *
- * Per-activation variety: scaleP, coarseP, hueP.
+ *  Audio Reactivity:
+ *    audioValence -> which phase is winning, and how fast (colour)
+ *    audioHigh    -> the light on the interfaces (light)
+ *    audioSwell  -> the interface width (slow)
+ *
+ *  Per-activation variety: scaleP, coarseP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

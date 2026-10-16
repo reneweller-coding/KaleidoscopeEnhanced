@@ -1,9 +1,14 @@
 #version 330 core
-/**
- * @file HypercubeLatticePillars.vert
- * @brief 4,900 cubes (geom="cubes") arranged into monolithic architectural towers
- * rising in concentric rings with sci-fi neon edge lighting and dynamic
- * audio-reactive height extrusions.
+/*****************************************************************************\
+ *                              HypercubeLatticePillars.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  4,900 cubes (geom="cubes") arranged into monolithic architectural towers rising in concentric rings with sci-fi
+ *  neon edge lighting and dynamic audio-reactive height extrusions.
+ *
+ *  @author René Weller
  */
 
 layout( location = 0 ) in vec4 attrA; ///< xyz = local cube vertex [-0.5, 0.5], w = cube ID [0..4899]

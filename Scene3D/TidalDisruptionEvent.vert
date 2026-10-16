@@ -1,11 +1,17 @@
 #version 330 core
-/**
- * @file TidalDisruptionEvent.vert
- * @brief Vertex stage for TidalDisruptionEvent.comp/.frag: a fixed camera
- * above the orbital plane looking at the hole; particles coloured by their
- * depth in the star (attrB.y: core bright, envelope dim) and their speed
- * (attrB.x: the stream runs hot).  sceneProgress is declared here so the
- * host treats the scene as staged (drop regie).  No camera motion.
+/*****************************************************************************\
+ *                              TidalDisruptionEvent.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage for TidalDisruptionEvent.comp/.frag: a fixed camera above the orbital plane looking at the hole;
+ *  particles coloured by their depth in the star (attrB.y: core bright, envelope dim) and their speed (attrB.x: the
+ *  stream runs hot).
+ *
+ *  sceneProgress is declared here so the host treats the scene as staged (drop regie).  No camera motion.
+ *
+ *  @author René Weller
  */
 layout( location = 0 ) in vec4 attrA; ///< xyz = position, w = id
 layout( location = 1 ) in vec4 attrB; ///< x = speed, y = kind (-1 sky, 2 hole, else radius fraction), zw = uv

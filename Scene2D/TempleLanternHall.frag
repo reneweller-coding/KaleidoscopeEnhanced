@@ -1,23 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TempleLanternHall.frag
- * @brief TEMPLE LANTERN HALL: a long temple hall whose whole ceiling is
- * hung with glowing paper lanterns, row behind row into the depth, between
- * red lacquered pillars, all of it mirrored in the polished dark floor.
- * The lanterns sway very gently on their cords; each one belongs to a
- * spectrum band and brightens with it, so the music drifts through the
- * canopy as light.  We walk slowly down the hall.
+/*****************************************************************************\
+ *                              TempleLanternHall.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSpectrum[32] -> each lantern's glow (its band)
- *   audioSwell        -> the incense haze (slow)
- *   audioKick         -> a soft warm surge through the whole canopy (light)
- *   sceneAdvance      -> the walk down the hall (continuous)
- *   sceneTime         -> the gentle sway of the lanterns (continuous)
+ *  @brief
+ *  TEMPLE LANTERN HALL: a long temple hall whose whole ceiling is hung with glowing paper lanterns, row behind row
+ *  into the depth, between red lacquered pillars, all of it mirrored in the polished dark floor.
  *
- * Per-activation variety: tintP (paper colour), hueP.
+ *  The lanterns sway very gently on their cords; each one belongs to a spectrum band and brightens with it, so the
+ *  music drifts through the canopy as light.  We walk slowly down the hall.
+ *
+ *  Audio Reactivity:
+ *    audioSpectrum[32] -> each lantern's glow (its band)
+ *    audioSwell        -> the incense haze (slow)
+ *    audioKick         -> a soft warm surge through the whole canopy (light)
+ *    sceneAdvance      -> the walk down the hall (continuous)
+ *    sceneTime         -> the gentle sway of the lanterns (continuous)
+ *
+ *  Per-activation variety: tintP (paper colour), hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

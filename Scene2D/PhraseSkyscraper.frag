@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file PhraseSkyscraper.frag
- * @brief PHRASE SKYSCRAPER: the music builds a city.  The current phrase
- * is a tower going up floor by floor with the phrase position -- the
- * floors are the photo, lit windows are the spectrum bands -- and the
- * phrases already finished stand as a skyline behind it (one tower per
- * finished phrase, counted from the section count), so a song ends as a
- * city.  The drop lights every window at once; the kick flashes the crane
- * beacon; night sky, round stars.  Camera fixed.
+/*****************************************************************************\
+ *                              PhraseSkyscraper.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioPhrasePos   -> the tower's height (continuous)
- *   audioSectionCount -> how many towers stand (grows through the song)
- *   audioSpectrum[32] -> lit windows (light)
- *   audioDrop        -> all windows light (the drop)
- *   audioKick        -> crane beacon (light)
- *   audioLevel       -> brightness
+ *  @brief
+ *  PHRASE SKYSCRAPER: the music builds a city.
  *
- * Per-activation variety: widthP, floorsP, hueP.
+ *  The current phrase is a tower going up floor by floor with the phrase position -- the floors are the photo, lit
+ *  windows are the spectrum bands -- and the phrases already finished stand as a skyline behind it (one tower per
+ *  finished phrase, counted from the section count), so a song ends as a city.  The drop lights every window at
+ *  once; the kick flashes the crane beacon; night sky, round stars.  Camera fixed.
+ *
+ *  Audio Reactivity:
+ *    audioPhrasePos   -> the tower's height (continuous)
+ *    audioSectionCount -> how many towers stand (grows through the song)
+ *    audioSpectrum[32] -> lit windows (light)
+ *    audioDrop        -> all windows light (the drop)
+ *    audioKick        -> crane beacon (light)
+ *    audioLevel       -> brightness
+ *
+ *  Per-activation variety: widthP, floorsP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

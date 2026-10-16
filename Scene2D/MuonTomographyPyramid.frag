@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file MuonTomographyPyramid.frag
- * @brief MUON TOMOGRAPHY PYRAMID: seeing through a pyramid with cosmic
- * rays.  Muons rain from the sky in straight tracks (light events on the
- * scene clock); where a track crosses less stone it survives, so over the
- * arc the hidden chamber -- the photo -- resolves inside the silhouette
- * as the region of excess flux.  The kick is a bright track, the bass the
- * detector glow beneath, the treble the scintillator sparkle.  Camera
- * still.
+/*****************************************************************************\
+ *                              MuonTomographyPyramid.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   sceneProgress -> chamber resolves (the arc)
- *   sceneAdvance  -> muon tracks (continuous)
- *   audioKick     -> bright track (light)
- *   audioBass     -> detector glow (light)
- *   audioHigh     -> scintillator sparkle (light)
- *   audioLevel    -> brightness
+ *  @brief
+ *  MUON TOMOGRAPHY PYRAMID: seeing through a pyramid with cosmic rays.
  *
- * Per-activation variety: rateP, chamberP, hueP.
+ *  Muons rain from the sky in straight tracks (light events on the scene clock); where a track crosses less stone
+ *  it survives, so over the arc the hidden chamber -- the photo -- resolves inside the silhouette as the region of
+ *  excess flux.  The kick is a bright track, the bass the detector glow beneath, the treble the scintillator
+ *  sparkle.  Camera still.
+ *
+ *  Audio Reactivity:
+ *    sceneProgress -> chamber resolves (the arc)
+ *    sceneAdvance  -> muon tracks (continuous)
+ *    audioKick     -> bright track (light)
+ *    audioBass     -> detector glow (light)
+ *    audioHigh     -> scintillator sparkle (light)
+ *    audioLevel    -> brightness
+ *
+ *  Per-activation variety: rateP, chamberP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

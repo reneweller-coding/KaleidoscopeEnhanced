@@ -1,20 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file LuttingerLiquidSpinChargeSeparation.frag
- * @brief LUTTINGER LIQUID SPIN-CHARGE SEPARATION: 1D quantum wire Tomonaga-Luttinger liquid.
- * Electrons split into independent holon (charge) and spinon (spin) density waves propagating
- * at different velocities along 3D ribbon channels with photo-palette interference.
- *   audioAdvance -> drives spinon/holon collective wave velocities
- *   audioKick    -> flashes electron injection quantum tunnel pulses
- *   audioSwell   -> widens 1D wire cross-section & wave amplitude
- *   audioCentroid-> shifts spin/charge color branch separation
+/*****************************************************************************\
+ *                              LuttingerLiquidSpinChargeSeparation.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   ribbonWidthP float quantum wire ribbon thickness       (0.02..0.1)
- *   speedRatioP  float holon-to-spinon velocity ratio      (1.2..3.0)
- *   glowP        float quantum wave excitation luminance   (0.8..2.5)
+ *  @brief
+ *  LUTTINGER LIQUID SPIN-CHARGE SEPARATION: 1D quantum wire Tomonaga-Luttinger liquid.
+ *
+ *  Electrons split into independent holon (charge) and spinon (spin) density waves propagating at different
+ *  velocities along 3D ribbon channels with photo-palette interference.
+ *
+ *    audioAdvance -> drives spinon/holon collective wave velocities
+ *    audioKick    -> flashes electron injection quantum tunnel pulses
+ *    audioSwell   -> widens 1D wire cross-section & wave amplitude
+ *    audioCentroid-> shifts spin/charge color branch separation
+ *
+ *  Per-activation variety:
+ *    ribbonWidthP float quantum wire ribbon thickness       (0.02..0.1)
+ *    speedRatioP  float holon-to-spinon velocity ratio      (1.2..3.0)
+ *    glowP        float quantum wave excitation luminance   (0.8..2.5)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec2  vUV;       ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 in float vSide;     ///< Which side of a strip (from the vertex stage).

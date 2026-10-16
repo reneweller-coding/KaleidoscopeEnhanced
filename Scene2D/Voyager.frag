@@ -1,21 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file Voyager.frag
- * @brief Adapted from "Voyager" by \@kishimisu (2024) — https://www.shadertoy.com/view/M33XDH
- * Original licensed CC BY-NC-SA 4.0 (attribution kept per the licence).
+/*****************************************************************************\
+ *                              Voyager.frag
+\*****************************************************************************/
+/*! @file
  *
- * A volumetric fly-through of glowing, endlessly-repeating cells — like a deep-
- * space probe drifting through a field of light.  Adapted to our engine:
- *   * Shadertoy conventions -> ours (gl_FragCoord/resolution/time/tex0, texture2D).
- *   * IMAGE-FORWARD: the source image is sampled through the mirror-folded screen
- *     coordinate; it colours the light field, shifts the palette along the ray
- *     (image-linked, like the original's channel texture) and drifts through as a
- *     faint nebula, so the picture is part of the scene.
- *   * Music drives the travel, glow and palette.  Motion is JUMP-FREE: the
- *     forward travel uses the host-integrated audioAdvance and rotation uses
- *     audioPhase, never time*audio (anti-flicker).
+ *  @brief
+ *  Adapted from "Voyager" by \@kishimisu (2024) — https://www.shadertoy.com/view/M33XDH
+ *
+ *  Original licensed CC BY-NC-SA 4.0 (attribution kept per the licence).
+ *
+ *  A volumetric fly-through of glowing, endlessly-repeating cells — like a deep-
+ *  space probe drifting through a field of light.  Adapted to our engine:
+ *    * Shadertoy conventions -> ours (gl_FragCoord/resolution/time/tex0, texture2D).
+ *    * IMAGE-FORWARD: the source image is sampled through the mirror-folded screen
+ *      coordinate; it colours the light field, shifts the palette along the ray
+ *      (image-linked, like the original's channel texture) and drifts through as a
+ *      faint nebula, so the picture is part of the scene.
+ *    * Music drives the travel, glow and palette.  Motion is JUMP-FREE: the
+ *      forward travel uses the host-integrated audioAdvance and rotation uses
+ *      audioPhase, never time*audio (anti-flicker).
+ *
+ *  @author kishimisu (the original shader, CC BY-NC-SA 4.0), René Weller (adaptation)
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

@@ -1,23 +1,27 @@
 #version 330 core
+/*****************************************************************************\
+ *                              CyberVoxelTerraform.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Lighting for a voxel landscape projected with a slideshow photo: diffuse-lit cube terrain blended with the photo
+ *  texture, coloured by elevation (vHeight) via the house photo-palette, with glowing neon rim lines on each
+ *  voxel's top face.
+ *
+ *  audioKick brightens the neon top-face rim, and the photo-palette itself
+ *  (imgPalette) follows the musical key through audioChromaHue and
+ *  audioAdvance with saturation shaped by audioValence; hueP applies an
+ *  additional preset hue rotation to the final colour.
+ *
+ *  @author René Weller
+ */
 in vec3  vPos;    ///< Position (from the vertex stage).
 in vec3  vNormal; ///< Surface normal (from the vertex stage).
 in vec2  vUV;     ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 in float vHeight; ///< Height (from the vertex stage).
 
 out vec4 fragColor; ///< The pixel's colour (output).
-
-/**
- * @file CyberVoxelTerraform.frag
- * @brief Lighting for a voxel landscape projected with a slideshow photo:
- * diffuse-lit cube terrain blended with the photo texture, coloured by
- * elevation (vHeight) via the house photo-palette, with glowing neon rim
- * lines on each voxel's top face.
- *
- * audioKick brightens the neon top-face rim, and the photo-palette itself
- * (imgPalette) follows the musical key through audioChromaHue and
- * audioAdvance with saturation shaped by audioValence; hueP applies an
- * additional preset hue rotation to the final colour.
- */
 
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

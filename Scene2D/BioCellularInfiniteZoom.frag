@@ -1,18 +1,24 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file BioCellularInfiniteZoom.frag
- * @brief BIO CELLULAR INFINITE ZOOM: Continuous multi-scale infinite zoom dive
- * transitioning from cosmic spiral galaxies down to biological cellular organelles,
- * crystal lattices, and subatomic quantum foam in an endless self-similar loop.
+/*****************************************************************************\
+ *                              BioCellularInfiniteZoom.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance -> drives continuous scale plunge across cosmic/biological scales
- *   audioKick    -> flashes cellular nucleus mitosis & quantum foam shockwave
- *   audioCentroid-> modulates organelle membrane ripple frequency
- *   audioSubBass -> drives deep cellular respiration breathing
- *   audioChromaHue-> steers the bio-luminescent scale transition palette
+ *  @brief
+ *  BIO CELLULAR INFINITE ZOOM: Continuous multi-scale infinite zoom dive transitioning from cosmic spiral galaxies
+ *  down to biological cellular organelles, crystal lattices, and subatomic quantum foam in an endless self-similar
+ *  loop.
+ *
+ *  Audio Reactivity:
+ *    audioAdvance -> drives continuous scale plunge across cosmic/biological scales
+ *    audioKick    -> flashes cellular nucleus mitosis & quantum foam shockwave
+ *    audioCentroid-> modulates organelle membrane ripple frequency
+ *    audioSubBass -> drives deep cellular respiration breathing
+ *    audioChromaHue-> steers the bio-luminescent scale transition palette
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

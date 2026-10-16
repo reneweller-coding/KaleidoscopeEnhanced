@@ -1,23 +1,28 @@
 #version 330 core
-/**
- * @file NebulaCloud.vert
- * @brief Vertex stage companion to NebulaCloud.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              NebulaCloud.vert
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioChromaHue -> hue of both nebula colour families (musical key)
- *   audioSwell     -> overall glow of the gas
- *   audioLevel     -> overall glow of the gas
- *   audioCentroid  -> brightness lift with spectral centre of mass
- *   audioFlatness  -> knot condensation: a tonal, single-band sound draws the
- *                     particles into tight bright clumps, broadband noise
- *                     lets each clump disperse into diffuse fog
- *   audioRolloff   -> vertical extent: bass-concentrated music flattens the
- *                     nebula into a pancake, energy reaching into the highs
- *                     stretches it into a tall column
- *   audioMode      -> emission-vs-reflection balance: major harmony biases
- *                     the cloud toward the warm emission family, minor toward
- *                     the cold blue reflection family
+ *  @brief
+ *  Vertex stage companion to NebulaCloud.frag -- see that file's header for this scene's description.
+ *
+ *  Audio Reactivity:
+ *    audioChromaHue -> hue of both nebula colour families (musical key)
+ *    audioSwell     -> overall glow of the gas
+ *    audioLevel     -> overall glow of the gas
+ *    audioCentroid  -> brightness lift with spectral centre of mass
+ *    audioFlatness  -> knot condensation: a tonal, single-band sound draws the
+ *                      particles into tight bright clumps, broadband noise
+ *                      lets each clump disperse into diffuse fog
+ *    audioRolloff   -> vertical extent: bass-concentrated music flattens the
+ *                      nebula into a pancake, energy reaching into the highs
+ *                      stretches it into a tall column
+ *    audioMode      -> emission-vs-reflection balance: major harmony biases
+ *                      the cloud toward the warm emission family, minor toward
+ *                      the cold blue reflection family
+ *
+ *  @author René Weller
  */
 // NebulaCloud.vert — a soft nebula: particles gathered in seeded clumps,
 // the whole cloud kneaded by slow sine winds and turning around its axis;

@@ -1,20 +1,27 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file FlowingWires.frag
- * @brief Adapted from "Flowing Wires" by \@kishimisu (2023) — https://www.shadertoy.com/view/DsBczR
- * Original licensed CC BY-NC-SA 4.0 (attribution kept per the licence).
+/*****************************************************************************\
+ *                              FlowingWires.frag
+\*****************************************************************************/
+/*! @file
  *
- * A 3D truchet pattern raymarched into interlocking glowing wire loops.
- * Adapted to our engine:
- *   * Shadertoy -> ours (gl_FragCoord/resolution/time, GLSL 1.20; round() -> floor(x+.5),
- *     the mat2(cos(a+vec4(0,33,11,0))) trick -> a proper rotation).
- *   * IMAGE-FORWARD: the source image colours the glow and drifts through as a
- *     faint nebula.
- *   * Audio-reactive & JUMP-FREE: forward travel from the host-integrated
- *     audioAdvance, spin from audioPhase (never time*audio); beats/onsets brighten
- *     the wires, centroid/valence grade the palette.
+ *  @brief
+ *  Adapted from "Flowing Wires" by \@kishimisu (2023) — https://www.shadertoy.com/view/DsBczR
+ *
+ *  Original licensed CC BY-NC-SA 4.0 (attribution kept per the licence).
+ *
+ *  A 3D truchet pattern raymarched into interlocking glowing wire loops.
+ *  Adapted to our engine:
+ *    * Shadertoy -> ours (gl_FragCoord/resolution/time, GLSL 1.20; round() -> floor(x+.5),
+ *      the mat2(cos(a+vec4(0,33,11,0))) trick -> a proper rotation).
+ *    * IMAGE-FORWARD: the source image colours the glow and drifts through as a
+ *      faint nebula.
+ *    * Audio-reactive & JUMP-FREE: forward travel from the host-integrated
+ *      audioAdvance, spin from audioPhase (never time*audio); beats/onsets brighten
+ *      the wires, centroid/valence grade the palette.
+ *
+ *  @author kishimisu (the original shader, CC BY-NC-SA 4.0), René Weller (adaptation)
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

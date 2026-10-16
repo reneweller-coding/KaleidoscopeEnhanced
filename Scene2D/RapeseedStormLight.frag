@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file RapeseedStormLight.frag
- * @brief RAPESEED STORM LIGHT: rolling fields of flowering rapeseed under a
- * black thunderstorm sky -- the kind of light photographers wait for: the
- * clouds slate-dark and heavy, and through a gap in them the sun strikes
- * the land, so the yellow blazes where the light falls and goes dull
- * olive in the cloud shadow.  The sunlit patch wanders slowly over the
- * hills as the clouds drift; a lone tree and a farmstead stand on a crest;
- * rain curtains hang in the distance and lightning flickers inside the
- * cloud on the kick.  The camera is still.
+/*****************************************************************************\
+ *                              RapeseedStormLight.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSwell  -> the strength of the sun through the gap (slow)
- *   audioKick   -> lightning inside the storm cloud (light only)
- *   audioLevel  -> brightness
- *   sceneTime / sceneAdvance -> the drifting clouds and the wandering light
+ *  @brief
+ *  RAPESEED STORM LIGHT: rolling fields of flowering rapeseed under a black thunderstorm sky -- the kind of light
+ *  photographers wait for: the clouds slate-dark and heavy, and through a gap in them the sun strikes the land, so
+ *  the yellow blazes where the light falls and goes dull olive in the cloud shadow.
  *
- * Per-activation variety: hillsP (how hilly), hueP.
+ *  The sunlit patch wanders slowly over the hills as the clouds drift; a lone tree and a farmstead stand on a
+ *  crest; rain curtains hang in the distance and lightning flickers inside the cloud on the kick.  The camera is
+ *  still.
+ *
+ *  Audio Reactivity:
+ *    audioSwell  -> the strength of the sun through the gap (slow)
+ *    audioKick   -> lightning inside the storm cloud (light only)
+ *    audioLevel  -> brightness
+ *    sceneTime / sceneAdvance -> the drifting clouds and the wandering light
+ *
+ *  Per-activation variety: hillsP (how hilly), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

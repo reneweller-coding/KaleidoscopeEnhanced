@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file GemInclusionFlight.frag
- * @brief GEM INCLUSION FLIGHT: gliding through the inside of an emerald -- a
- * deep green crystal world lit from behind, full of the inclusions a
- * gemologist calls its garden: fine needles of rutile crossing at angles,
- * wispy veils of liquid fingerprints, tiny three-phase cavities with
- * bubbles inside, glittering flakes of mica, and the crystal's facets
- * seen from within as bright planes where the light reflects.  Everything
- * drifts past slowly as the view floats steadily through the stone.
+/*****************************************************************************\
+ *                              GemInclusionFlight.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSwell  -> the light through the stone (slow)
- *   audioHigh   -> the glitter of the flakes (light)
- *   audioBass   -> the glow of the facet planes (light)
- *   audioLevel  -> brightness
- *   sceneTime / sceneAdvance -> the float through the stone (constant speed)
+ *  @brief
+ *  GEM INCLUSION FLIGHT: gliding through the inside of an emerald -- a deep green crystal world lit from behind,
+ *  full of the inclusions a gemologist calls its garden: fine needles of rutile crossing at angles, wispy veils of
+ *  liquid fingerprints, tiny three-phase cavities with bubbles inside, glittering flakes of mica, and the crystal's
+ *  facets seen from within as bright planes where the light reflects.
  *
- * Per-activation variety: gardenP (how dense the garden), hueP.
+ *  Everything drifts past slowly as the view floats steadily through the stone.
+ *
+ *  Audio Reactivity:
+ *    audioSwell  -> the light through the stone (slow)
+ *    audioHigh   -> the glitter of the flakes (light)
+ *    audioBass   -> the glow of the facet planes (light)
+ *    audioLevel  -> brightness
+ *    sceneTime / sceneAdvance -> the float through the stone (constant speed)
+ *
+ *  Per-activation variety: gardenP (how dense the garden), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

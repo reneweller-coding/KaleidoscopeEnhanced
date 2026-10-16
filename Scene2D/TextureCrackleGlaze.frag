@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureCrackleGlaze.frag
- * @brief TEXTURE CRACKLE GLAZE: a glazed ceramic surface with the photograph
- * fired into it -- a thick glossy glaze covers the picture, crazed by a
- * web of fine cracks at two scales, and molten gold slowly seeps into the
- * cracks like kintsugi, running along them, filling some and leaving
- * others dark, then fading as new veins fill; the glaze pools deeper in
- * the photo's hollows and catches a gliding light.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              TextureCrackleGlaze.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the gold runs along the cracks (integrated)
- *   audioSpread     -> how many cracks carry gold
- *   audioKick       -> the gold flares (light)
- *   audioMode       -> the glaze: celadon in minor, warm ivory in major
- *   audioRoughness  -> the fine crazing
- *   audioSwell      -> the glaze depth (slow)
+ *  @brief
+ *  TEXTURE CRACKLE GLAZE: a glazed ceramic surface with the photograph fired into it -- a thick glossy glaze covers
+ *  the picture, crazed by a web of fine cracks at two scales, and molten gold slowly seeps into the cracks like
+ *  kintsugi, running along them, filling some and leaving others dark, then fading as new veins fill; the glaze
+ *  pools deeper in the photo's hollows and catches a gliding light.
  *
- * Knobs: crackP (crack scale), goldP (gold brightness), glazeP (glaze tint), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the gold runs along the cracks (integrated)
+ *    audioSpread     -> how many cracks carry gold
+ *    audioKick       -> the gold flares (light)
+ *    audioMode       -> the glaze: celadon in minor, warm ivory in major
+ *    audioRoughness  -> the fine crazing
+ *    audioSwell      -> the glaze depth (slow)
+ *
+ *  Knobs: crackP (crack scale), goldP (gold brightness), glazeP (glaze tint), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

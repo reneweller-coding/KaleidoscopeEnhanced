@@ -1,22 +1,31 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file PenroseProcessErgosphereExtraction.frag
- * @brief PENROSE PROCESS ERGOSPHERE EXTRACTION: Relativistic rotational energy extraction
- * from a spinning Kerr black hole inside its oblate ergosphere. Decaying infalling geodesics,
- * negative-energy orbits, extreme Doppler blueshifted escaping photon fans, and photo lensing.
- *   audioAdvance -> accelerates black hole spin & frame-dragging swirl
- *   audioKick    -> injects high-energy matter chunks triggering Penrose bursts
- *   audioCentroid-> shifts relativistic beaming & Doppler color horizons
- *   audioSwell   -> widens ergosphere boundary radius & accretion thickness
- *   audioSubBass -> deepens event horizon gravitational shadow
+/*****************************************************************************\
+ *                              PenroseProcessErgosphereExtraction.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   spinP    float dimensionless Kerr spin parameter a/M   (0.7..0.99)
- *   ergoP    float ergosphere oblate deformation scale     (0.5..1.8)
- *   jetP     float escaping energy beam intensity          (0.6..2.2)
- *   lensP    float gravitational light bending strength    (0.8..2.5)
+ *  @brief
+ *  PENROSE PROCESS ERGOSPHERE EXTRACTION: Relativistic rotational energy extraction from a spinning Kerr black hole
+ *  inside its oblate ergosphere.
+ *
+ *  Decaying infalling geodesics, negative-energy orbits, extreme Doppler blueshifted escaping photon fans, and
+ *  photo lensing.
+ *
+ *    audioAdvance -> accelerates black hole spin & frame-dragging swirl
+ *    audioKick    -> injects high-energy matter chunks triggering Penrose bursts
+ *    audioCentroid-> shifts relativistic beaming & Doppler color horizons
+ *    audioSwell   -> widens ergosphere boundary radius & accretion thickness
+ *    audioSubBass -> deepens event horizon gravitational shadow
+ *
+ *  Per-activation variety:
+ *    spinP    float dimensionless Kerr spin parameter a/M   (0.7..0.99)
+ *    ergoP    float ergosphere oblate deformation scale     (0.5..1.8)
+ *    jetP     float escaping energy beam intensity          (0.6..2.2)
+ *    lensP    float gravitational light bending strength    (0.8..2.5)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

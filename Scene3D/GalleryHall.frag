@@ -1,4 +1,23 @@
 #version 330 core
+/*****************************************************************************\
+ *                              GalleryHall.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Shades a gallery wall of gold-framed photo crops (vKind < 0.5) under warm spotlighting, plus soft white ceiling
+ *  light-strip bars (vKind >= 0.5); each frame samples a per-instance seeded crop (vSeed) of the current slideshow
+ *  photo.
+ *
+ *  audioChromaHue rotates the gold frame's hue slightly, and audioDrop
+ *  punches the whole scene brighter on a musical drop. audioLevel and
+ *  audioKick were added specifically to this fragment stage because the
+ *  vertex-side coupling barely moved any pixels (measured near-zero
+ *  reactivity), so here they directly scale the final brightness alongside
+ *  the per-instance vLight term.
+ *
+ *  @author René Weller
+ */
 out vec4 fragColor; ///< The pixel's colour (output).
 // Frag-side music pulse (added by the deaf-scene pass: reactivity
 // measured ~0 -- the vert-side coupling barely moved any pixels).
@@ -14,21 +33,6 @@ in vec2  vUV;    ///< Texture coordinate 0..1 over the screen (from the vertex s
 in vec4  vSeed;  ///< Per-instance random seed (from the vertex stage).
 in float vLight; ///< Light (from the vertex stage).
 in float vKind;  ///< Element kind (from the vertex stage).
-
-/**
- * @file GalleryHall.frag
- * @brief Shades a gallery wall of gold-framed photo crops (vKind < 0.5)
- * under warm spotlighting, plus soft white ceiling light-strip bars
- * (vKind >= 0.5); each frame samples a per-instance seeded crop (vSeed) of
- * the current slideshow photo.
- *
- * audioChromaHue rotates the gold frame's hue slightly, and audioDrop
- * punches the whole scene brighter on a musical drop. audioLevel and
- * audioKick were added specifically to this fragment stage because the
- * vertex-side coupling barely moved any pixels (measured near-zero
- * reactivity), so here they directly scale the final brightness alongside
- * the per-instance vLight term.
- */
 
 /**  Rotates a colour's hue by an angle (about the grey axis).
  *

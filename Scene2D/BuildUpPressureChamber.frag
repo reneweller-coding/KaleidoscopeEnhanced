@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file BuildUpPressureChamber.frag
- * @brief BUILD-UP PRESSURE CHAMBER: a corridor whose walls close in as the
- * music builds.  The camera flies down it on the music's pace; the build-up
- * envelope (seconds-slow) narrows the walls and ceiling and reddens the
- * light, so the space itself tightens toward the drop -- and on the drop
- * the far end floods with light and the walls glow, then release.  The
- * walls never jump: build-up and release are slew-limited envelopes, and
- * the drop is light.  The regie as a scene, without a cut.
+/*****************************************************************************\
+ *                              BuildUpPressureChamber.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioBuildUp  -> wall distance and light colour (slow)
- *   audioDrop     -> the flood of light at the far end (light)
- *   sceneAdvance  -> flight (continuous)
- *   audioBass     -> floor glow (light)
- *   audioKick     -> wall lamps flash (light)
+ *  @brief
+ *  BUILD-UP PRESSURE CHAMBER: a corridor whose walls close in as the music builds.
  *
- * Per-activation variety: widthP, speedP, hueP.
+ *  The camera flies down it on the music's pace; the build-up envelope (seconds-slow) narrows the walls and ceiling
+ *  and reddens the light, so the space itself tightens toward the drop -- and on the drop the far end floods with
+ *  light and the walls glow, then release.  The walls never jump: build-up and release are slew-limited envelopes,
+ *  and the drop is light.  The regie as a scene, without a cut.
+ *
+ *  Audio Reactivity:
+ *    audioBuildUp  -> wall distance and light colour (slow)
+ *    audioDrop     -> the flood of light at the far end (light)
+ *    sceneAdvance  -> flight (continuous)
+ *    audioBass     -> floor glow (light)
+ *    audioKick     -> wall lamps flash (light)
+ *
+ *  Per-activation variety: widthP, speedP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

@@ -1,18 +1,23 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file VoronoiPrismShatterKaleido.frag
- * @brief VORONOI PRISM SHATTER KALEIDO: Dynamic Voronoi crystal cell shatter matrix
- * with tilting diamond facets, chromatic refraction dispersion, 8-fold kaleidoscopic
- * symmetry, and explosive fragment displacement shockwaves.
+/*****************************************************************************\
+ *                              VoronoiPrismShatterKaleido.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance -> drives continuous Voronoi crystal cell motion & facet rotation
- *   audioKick    -> explodes crystal cell shockwaves & flashes diamond edge facets
- *   audioCentroid-> modulates Voronoi cell density & dispersion sharpness
- *   audioSubBass -> expands crystal cell breathing displacement
- *   audioChromaHue-> rotates the prismatic diamond rainbow palette
+ *  @brief
+ *  VORONOI PRISM SHATTER KALEIDO: Dynamic Voronoi crystal cell shatter matrix with tilting diamond facets,
+ *  chromatic refraction dispersion, 8-fold kaleidoscopic symmetry, and explosive fragment displacement shockwaves.
+ *
+ *  Audio Reactivity:
+ *    audioAdvance -> drives continuous Voronoi crystal cell motion & facet rotation
+ *    audioKick    -> explodes crystal cell shockwaves & flashes diamond edge facets
+ *    audioCentroid-> modulates Voronoi cell density & dispersion sharpness
+ *    audioSubBass -> expands crystal cell breathing displacement
+ *    audioChromaHue-> rotates the prismatic diamond rainbow palette
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

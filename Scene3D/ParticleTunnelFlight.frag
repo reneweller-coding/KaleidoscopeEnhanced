@@ -1,19 +1,23 @@
 #version 330 core
+/*****************************************************************************\
+ *                              ParticleTunnelFlight.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Renders one particle of the mirror-kaleidoscope tunnel-flight point cloud as a tight- cored glow sprite.
+ *
+ *  Reads no audio uniforms directly: position, kaleidoscope fold, kick shockwave flash and colour
+ *  are all computed in the paired ParticleTunnelFlight.vert and arrive here as vCol and vLife
+ *  (0..~1.5, brightens the glow on a kick shockwave). A soft-knee tone-map compresses hot additive
+ *  overlap instead of clipping the whole frame to white.
+ *
+ *  @author René Weller
+ */
 out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec4  vCol;  ///< Colour (from the vertex stage).
 in float vLife; ///< Life (from the vertex stage).
-
-/**
- * @file ParticleTunnelFlight.frag
- * @brief Renders one particle of the mirror-kaleidoscope tunnel-flight point cloud as a tight-
- * cored glow sprite.
- *
- * Reads no audio uniforms directly: position, kaleidoscope fold, kick shockwave flash and colour
- * are all computed in the paired ParticleTunnelFlight.vert and arrive here as vCol and vLife
- * (0..~1.5, brightens the glow on a kick shockwave). A soft-knee tone-map compresses hot additive
- * overlap instead of clipping the whole frame to white.
- */
 
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()

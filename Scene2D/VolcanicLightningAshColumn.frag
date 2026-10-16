@@ -1,22 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file VolcanicLightningAshColumn.frag
- * @brief VOLCANIC LIGHTNING ASH COLUMN: Plinian volcanic eruption column. Boiling turbulent
- * tephra ash vortices rise violently, triboelectrically charging to gigavolt potentials and
- * discharging in thousands of branching volcanic lightning bolts, incandescent lava bombs, and glow.
- *   audioAdvance -> churns convective ash plume turbulence & upward eruption velocity
- *   audioKick    -> detonates explosive volcanic lightning flash discharges & magma sparks
- *   audioBass    -> rumbles deep infrasonic volcanic crater pressure & incandescent lava glow
- *   audioSwell   -> widens tephra ash plume umbrella & smoke density
- *   audioCentroid-> shifts magma thermal emission spectra (ember to brilliant violet-white)
+/*****************************************************************************\
+ *                              VolcanicLightningAshColumn.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   ashTurbP     float ash plume turbulent vortex frequency     (3.0..8.0)
- *   boltBranchP  float lightning fractal branching density      (1.0..3.5)
- *   magmaGlowP   float crater incandescent magma glow luminance (0.8..2.5)
- *   smokeDensP   float tephra cloud opacity & billow thickness  (0.6..2.0)
+ *  @brief
+ *  VOLCANIC LIGHTNING ASH COLUMN: Plinian volcanic eruption column.
+ *
+ *  Boiling turbulent tephra ash vortices rise violently, triboelectrically charging to gigavolt potentials and
+ *  discharging in thousands of branching volcanic lightning bolts, incandescent lava bombs, and glow.
+ *
+ *    audioAdvance -> churns convective ash plume turbulence & upward eruption velocity
+ *    audioKick    -> detonates explosive volcanic lightning flash discharges & magma sparks
+ *    audioBass    -> rumbles deep infrasonic volcanic crater pressure & incandescent lava glow
+ *    audioSwell   -> widens tephra ash plume umbrella & smoke density
+ *    audioCentroid-> shifts magma thermal emission spectra (ember to brilliant violet-white)
+ *
+ *  Per-activation variety:
+ *    ashTurbP     float ash plume turbulent vortex frequency     (3.0..8.0)
+ *    boltBranchP  float lightning fractal branching density      (1.0..3.5)
+ *    magmaGlowP   float crater incandescent magma glow luminance (0.8..2.5)
+ *    smokeDensP   float tephra cloud opacity & billow thickness  (0.6..2.0)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

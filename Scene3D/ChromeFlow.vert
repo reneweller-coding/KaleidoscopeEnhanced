@@ -1,8 +1,13 @@
 #version 330 core
-/**
- * @file ChromeFlow.vert
- * @brief Vertex stage companion to ChromeFlow.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              ChromeFlow.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to ChromeFlow.frag -- see that file's header for this scene's description.
+ *
+ *  @author René Weller
  */
 // ChromeFlow.vert — a sheet of liquid chrome: broad, slow undulations,
 // mirror-bright sheen bands gliding across the metal.  The bass leans on

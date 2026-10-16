@@ -1,8 +1,13 @@
 #version 330 core
-/**
- * @file HopfFibrationToruses.vert
- * @brief Vertex stage companion to HopfFibrationToruses.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              HopfFibrationToruses.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to HopfFibrationToruses.frag -- see that file's header for this scene's description.
+ *
+ *  @author René Weller
  */
 // attrA.x = t along ribbon (0..1), attrA.y = side (-1..+1), attrA.w = ribbon
 // id, attrB = per-ribbon seeds (Scene3DShader.cpp GEOM_RIBBON).

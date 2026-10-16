@@ -1,22 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file MagnetosphericBowShockTurbulence.frag
- * @brief MAGNETOSPHERIC BOW SHOCK TURBULENCE: Planetary magnetosphere collision with supersonic
- * solar wind. Features hyperbolic bow shock compression fronts, turbulent magnetosheath eddies,
- * ion cyclotron whistler wave ripples, and photo-derived auroral particle flux curtains.
- *   audioAdvance -> drives supersonic solar wind plasma inflow & magnetosheath turbulence
- *   audioKick    -> flashes geomagnetic substorm reconnection & auroral particle injections
- *   audioBass    -> undulates planetary magnetic dipole compression standoff distance
- *   audioSwell   -> enriches magnetospheric plasma density & auroral curtain thickness
- *   audioCentroid-> shifts magnetospheric ion excitation & oxygen/nitrogen emission spectra
+/*****************************************************************************\
+ *                              MagnetosphericBowShockTurbulence.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   shockCurvP   float hyperbolic bow shock curvature parameter (0.4..1.8)
- *   windSpeedP   float solar wind supersonic drift velocity      (0.6..2.2)
- *   whistlerP    float ion cyclotron whistler wave frequency     (8.0..24.0)
- *   auroraGlowP  float auroral particle curtain luminance gain   (0.8..2.5)
+ *  @brief
+ *  MAGNETOSPHERIC BOW SHOCK TURBULENCE: Planetary magnetosphere collision with supersonic solar wind.
+ *
+ *  Features hyperbolic bow shock compression fronts, turbulent magnetosheath eddies, ion cyclotron whistler wave
+ *  ripples, and photo-derived auroral particle flux curtains.
+ *
+ *    audioAdvance -> drives supersonic solar wind plasma inflow & magnetosheath turbulence
+ *    audioKick    -> flashes geomagnetic substorm reconnection & auroral particle injections
+ *    audioBass    -> undulates planetary magnetic dipole compression standoff distance
+ *    audioSwell   -> enriches magnetospheric plasma density & auroral curtain thickness
+ *    audioCentroid-> shifts magnetospheric ion excitation & oxygen/nitrogen emission spectra
+ *
+ *  Per-activation variety:
+ *    shockCurvP   float hyperbolic bow shock curvature parameter (0.4..1.8)
+ *    windSpeedP   float solar wind supersonic drift velocity      (0.6..2.2)
+ *    whistlerP    float ion cyclotron whistler wave frequency     (8.0..24.0)
+ *    auroraGlowP  float auroral particle curtain luminance gain   (0.8..2.5)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

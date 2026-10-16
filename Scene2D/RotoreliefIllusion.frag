@@ -1,23 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file RotoreliefIllusion.frag
- * @brief ROTORELIEF ILLUSION: the rotating discs of Duchamp -- eccentric
- * circles and spirals that, turning, seem to bulge and sink.  A field of
- * discs, one per chroma class, each turning steadily on the scene clock at
- * its own rate; the class that sounds lights its disc.  The eccentric rings
- * carry the photo in bands; the illusion of depth comes from the turn, not
- * from the camera, which never moves.
+/*****************************************************************************\
+ *                              RotoreliefIllusion.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   sceneAdvance    -> disc rotation (continuous)
- *   audioChroma[12] -> disc brightness per class (light)
- *   audioKick       -> disc centres flash (light)
- *   audioSwell      -> ring contrast (slow)
- *   audioLevel      -> brightness
+ *  @brief
+ *  ROTORELIEF ILLUSION: the rotating discs of Duchamp -- eccentric circles and spirals that, turning, seem to bulge
+ *  and sink.
  *
- * Per-activation variety: eccP (eccentricity), ringsP, hueP.
+ *  A field of discs, one per chroma class, each turning steadily on the scene clock at its own rate; the class that
+ *  sounds lights its disc.  The eccentric rings carry the photo in bands; the illusion of depth comes from the
+ *  turn, not from the camera, which never moves.
+ *
+ *  Audio Reactivity:
+ *    sceneAdvance    -> disc rotation (continuous)
+ *    audioChroma[12] -> disc brightness per class (light)
+ *    audioKick       -> disc centres flash (light)
+ *    audioSwell      -> ring contrast (slow)
+ *    audioLevel      -> brightness
+ *
+ *  Per-activation variety: eccP (eccentricity), ringsP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

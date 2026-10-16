@@ -1,20 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file PhotonicTopologicalEdgeStates.frag
- * @brief PHOTONIC TOPOLOGICAL EDGE STATES: 3D ribbon lattice of coupled optical waveguides.
- * Demonstrates robust, backscattering-immune topological edge currents routing light pulses
- * around defects, with core laser pulses and iridescent photo texturing.
- *   audioAdvance -> drives edge current photon propagation velocity
- *   audioKick    -> flashes high-energy laser pulse injection bursts
- *   audioSwell   -> thickens waveguide ribbon width & cladding glow
- *   audioCentroid-> shifts topological edge band spectrum
+/*****************************************************************************\
+ *                              PhotonicTopologicalEdgeStates.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   ribbonWidthP float waveguide ribbon thickness          (0.02..0.1)
- *   edgeSpeedP   float topological pulse propagation speed (0.8..3.0)
- *   glowP        float waveguide cladding luminance         (0.8..2.5)
+ *  @brief
+ *  PHOTONIC TOPOLOGICAL EDGE STATES: 3D ribbon lattice of coupled optical waveguides.
+ *
+ *  Demonstrates robust, backscattering-immune topological edge currents routing light pulses around defects, with
+ *  core laser pulses and iridescent photo texturing.
+ *
+ *    audioAdvance -> drives edge current photon propagation velocity
+ *    audioKick    -> flashes high-energy laser pulse injection bursts
+ *    audioSwell   -> thickens waveguide ribbon width & cladding glow
+ *    audioCentroid-> shifts topological edge band spectrum
+ *
+ *  Per-activation variety:
+ *    ribbonWidthP float waveguide ribbon thickness          (0.02..0.1)
+ *    edgeSpeedP   float topological pulse propagation speed (0.8..3.0)
+ *    glowP        float waveguide cladding luminance         (0.8..2.5)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec2  vUV;       ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 in float vSide;     ///< Which side of a strip (from the vertex stage).

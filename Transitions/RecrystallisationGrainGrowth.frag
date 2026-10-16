@@ -1,29 +1,34 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file RecrystallisationGrainGrowth.frag
- * @brief TRANSITION RECRYSTALLISATION GRAIN GROWTH: strain-free grains of the
- * incoming scene nucleate in the deformed outgoing one and eat it, until the
- * frame is a fresh grain structure.
+/*****************************************************************************\
+ *                              RecrystallisationGrainGrowth.frag
+\*****************************************************************************/
+/*! @file
  *
- * The tessellation is the physics.  Grains nucleate at different MOMENTS and
- * then grow at their own steady rates, so what owns a pixel is whichever grain
- * reaches it first: distance minus rate times the time since that grain was
- * born.  That is a Johnson-Mehl tessellation, and it looks different from a
- * plain Voronoi in exactly the way real recrystallised metal does -- early
- * grains are big with curved boundaries, late ones are small and wedged into
- * the gaps, and no boundary is a straight bisector.
+ *  @brief
+ *  TRANSITION RECRYSTALLISATION GRAIN GROWTH: strain-free grains of the incoming scene nucleate in the deformed
+ *  outgoing one and eat it, until the frame is a fresh grain structure.
  *
- * The parent phase is deformed, so it is drawn smeared along its own slip
- * direction; a grain that consumes it hands back an undistorted picture, which
- * is what recrystallisation actually buys.
+ *  The tessellation is the physics.  Grains nucleate at different MOMENTS and
+ *  then grow at their own steady rates, so what owns a pixel is whichever grain
+ *  reaches it first: distance minus rate times the time since that grain was
+ *  born.  That is a Johnson-Mehl tessellation, and it looks different from a
+ *  plain Voronoi in exactly the way real recrystallised metal does -- early
+ *  grains are big with curved boundaries, late ones are small and wedged into
+ *  the gaps, and no boundary is a straight bisector.
  *
- * Audio Reactivity:
- *   audioHigh    -> the light along a moving boundary (light)
- *   audioKick    -> the flash of a grain meeting another (light)
+ *  The parent phase is deformed, so it is drawn smeared along its own slip
+ *  direction; a grain that consumes it hands back an undistorted picture, which
+ *  is what recrystallisation actually buys.
  *
- * Per-activation variety: nucleiP, rateP, hueP.
+ *  Audio Reactivity:
+ *    audioHigh    -> the light along a moving boundary (light)
+ *    audioKick    -> the flash of a grain meeting another (light)
+ *
+ *  Per-activation variety: nucleiP, rateP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

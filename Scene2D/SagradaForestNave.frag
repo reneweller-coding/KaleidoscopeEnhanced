@@ -1,27 +1,31 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SagradaForestNave.frag
- * @brief SAGRADA FOREST NAVE: a church nave built as a stone forest, after
- * Gaudi -- slender columns rise like trunks and branch high up into a
- * canopy that carries the vault, whose cells open into bright star-like
- * skylights.  Down both sides run tall stained-glass windows, cool blues
- * and greens on the one side, fiery reds, oranges and yellows on the
- * other, and the low sun from the warm side sends coloured shafts through
- * the haze that fall across the floor as pools of coloured light.  At the
- * end of the nave a rose window glows.  The camera is still.
+/*****************************************************************************\
+ *                              SagradaForestNave.frag
+\*****************************************************************************/
+/*! @file
  *
- * Each window colour answers one band of the spectrum: when the band
- * sounds, those windows and their shafts burn brighter.
+ *  @brief
+ *  SAGRADA FOREST NAVE: a church nave built as a stone forest, after Gaudi -- slender columns rise like trunks and
+ *  branch high up into a canopy that carries the vault, whose cells open into bright star-like skylights.
  *
- * Audio Reactivity:
- *   audioSpectrum[32] -> the four window families (light)
- *   audioSwell        -> the haze in the shafts (slow)
- *   audioLevel        -> brightness
- *   sceneTime / sceneAdvance -> the sun creeping, the haze drifting
+ *  Down both sides run tall stained-glass windows, cool blues and greens on the one side, fiery reds, oranges and
+ *  yellows on the other, and the low sun from the warm side sends coloured shafts through the haze that fall across
+ *  the floor as pools of coloured light.  At the end of the nave a rose window glows.  The camera is still.
  *
- * Per-activation variety: branchP (how the columns branch), hueP.
+ *  Each window colour answers one band of the spectrum: when the band
+ *  sounds, those windows and their shafts burn brighter.
+ *
+ *  Audio Reactivity:
+ *    audioSpectrum[32] -> the four window families (light)
+ *    audioSwell        -> the haze in the shafts (slow)
+ *    audioLevel        -> brightness
+ *    sceneTime / sceneAdvance -> the sun creeping, the haze drifting
+ *
+ *  Per-activation variety: branchP (how the columns branch), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

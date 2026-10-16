@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file WeldingArcSeam.frag
- * @brief WELDING ARC SEAM: a torch running a seam across a steel plate on
- * the scene clock.  Ahead of it the bare plate (the photo as mill scale),
- * behind it the finished bead -- ripples of solidified metal cooling from
- * white through orange to blue temper colours.  The arc is a small violent
- * core with a wide glow; round sparks fly off it; the visor tint darkens
- * as the level rises, which is what a self-darkening helmet does.
- * Camera fixed on the plate.
+/*****************************************************************************\
+ *                              WeldingArcSeam.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   sceneAdvance -> the torch travels, sparks fly (continuous)
- *   audioLevel   -> visor darkening (slow, inverse brightness)
- *   audioHigh    -> spark rate and glitter (light)
- *   audioBass    -> arc size and heat (light)
- *   audioKick    -> a spatter burst (light)
+ *  @brief
+ *  WELDING ARC SEAM: a torch running a seam across a steel plate on the scene clock.
  *
- * Per-activation variety: speedP, sparkP, hueP.
+ *  Ahead of it the bare plate (the photo as mill scale), behind it the finished bead -- ripples of solidified metal
+ *  cooling from white through orange to blue temper colours.  The arc is a small violent core with a wide glow;
+ *  round sparks fly off it; the visor tint darkens as the level rises, which is what a self-darkening helmet does.
+ *  Camera fixed on the plate.
+ *
+ *  Audio Reactivity:
+ *    sceneAdvance -> the torch travels, sparks fly (continuous)
+ *    audioLevel   -> visor darkening (slow, inverse brightness)
+ *    audioHigh    -> spark rate and glitter (light)
+ *    audioBass    -> arc size and heat (light)
+ *    audioKick    -> a spatter burst (light)
+ *
+ *  Per-activation variety: speedP, sparkP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

@@ -1,20 +1,24 @@
 #version 330 core
+/*****************************************************************************\
+ *                              ParticleGalaxy.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Renders one star of the 60,000-point 3D spiral galaxy as a soft round additive glow sprite.
+ *
+ *  Reads no audio uniforms directly. The paired ParticleGalaxy.vert builds
+ *  the log-spiral arms, pumps the central bulge with audioBass, rolls an
+ *  outward shock ring along audioBeatPhase on every audioKick, flares the
+ *  whole disc on audioDrop, and tints the palette from the current
+ *  slideshow photo (via audioChromaHue/audioAdvance/audioValence); this
+ *  shader only shapes the resulting vCol into a gaussian point.
+ *
+ *  @author René Weller
+ */
 out vec4 fragColor; ///< The pixel's colour (output).
 // ParticleGalaxy.frag — soft round point sprite (additive blending).
 in vec4 vCol; ///< Colour (from the vertex stage).
-
-/**
- * @file ParticleGalaxy.frag
- * @brief Renders one star of the 60,000-point 3D spiral galaxy as a soft
- * round additive glow sprite.
- *
- * Reads no audio uniforms directly. The paired ParticleGalaxy.vert builds
- * the log-spiral arms, pumps the central bulge with audioBass, rolls an
- * outward shock ring along audioBeatPhase on every audioKick, flares the
- * whole disc on audioDrop, and tints the palette from the current
- * slideshow photo (via audioChromaHue/audioAdvance/audioValence); this
- * shader only shapes the resulting vCol into a gaussian point.
- */
 
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()

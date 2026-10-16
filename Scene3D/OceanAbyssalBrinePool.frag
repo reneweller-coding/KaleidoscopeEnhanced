@@ -1,13 +1,19 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file OceanAbyssalBrinePool.frag
- * @brief OCEAN ABYSSAL BRINE POOL: a deep-sea brine basin seen from above, the
- * camera slowly ORBITING the pool; hypersaline internal waves shimmer in
- * photo-palette colours against the abyssal blue shore.
- *   audioKick -> halocline shimmer    audioBass -> internal waves
- *   audioAdvance -> orbit
+/*****************************************************************************\
+ *                              OceanAbyssalBrinePool.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  OCEAN ABYSSAL BRINE POOL: a deep-sea brine basin seen from above, the camera slowly ORBITING the pool;
+ *  hypersaline internal waves shimmer in photo-palette colours against the abyssal blue shore.
+ *
+ *    audioKick -> halocline shimmer    audioBass -> internal waves
+ *    audioAdvance -> orbit
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec3 vWorldPos; ///< World position (from the vertex stage).
 in vec3 vNormal;   ///< Surface normal (from the vertex stage).

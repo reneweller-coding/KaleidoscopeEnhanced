@@ -1,13 +1,19 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file QuantumQubitArray.frag
- * @brief QUANTUM QUBIT ARRAY: a 70x70 quantum-processor die seen from above -
- * thousands of Josephson qubit plates whose Bloch rotations ripple across
- * the chip in waves, gold circuit substrate beneath.
- *   audioSpectrum -> plate heights by band    audioKick -> gate-flip wave
- *   audioBass -> overall lift    (state colours from the photo palette)
+/*****************************************************************************\
+ *                              QuantumQubitArray.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  QUANTUM QUBIT ARRAY: a 70x70 quantum-processor die seen from above - thousands of Josephson qubit plates whose
+ *  Bloch rotations ripple across the chip in waves, gold circuit substrate beneath.
+ *
+ *    audioSpectrum -> plate heights by band    audioKick -> gate-flip wave
+ *    audioBass -> overall lift    (state colours from the photo palette)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec3  vPos;        ///< Position (from the vertex stage).
 in vec3  vNormal;     ///< Surface normal (from the vertex stage).

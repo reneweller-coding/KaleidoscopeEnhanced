@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file BoogieWoogieGrid.frag
- * @brief BOOGIE WOOGIE GRID: Mondrian's Broadway Boogie Woogie set to music
- * -- a city grid of yellow streets on white, each street dotted with
- * small blocks of red, blue and grey that race along like traffic lights
- * and taxis, larger coloured blocks sitting in the squares between, some
- * holding a small window of the photograph; the street pattern is endless
- * and the traffic never stops.  Mirrorable.
+/*****************************************************************************\
+ *                              BoogieWoogieGrid.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the traffic moves (integrated, jump-free)
- *   audioSpread     -> the traffic density
- *   audioKick       -> the blocks light up (light)
- *   audioMode       -> the ground: grey night in minor, white day in major
- *   audioRoughness  -> the street widths vary
- *   audioSwell      -> the photo windows glow (slow)
+ *  @brief
+ *  BOOGIE WOOGIE GRID: Mondrian's Broadway Boogie Woogie set to music -- a city grid of yellow streets on white,
+ *  each street dotted with small blocks of red, blue and grey that race along like traffic lights and taxis, larger
+ *  coloured blocks sitting in the squares between, some holding a small window of the photograph; the street
+ *  pattern is endless and the traffic never stops.
  *
- * Knobs: gridP (grid density), blockP (block size), photoP (photo windows), hueP.
+ *  Mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the traffic moves (integrated, jump-free)
+ *    audioSpread     -> the traffic density
+ *    audioKick       -> the blocks light up (light)
+ *    audioMode       -> the ground: grey night in minor, white day in major
+ *    audioRoughness  -> the street widths vary
+ *    audioSwell      -> the photo windows glow (slow)
+ *
+ *  Knobs: gridP (grid density), blockP (block size), photoP (photo windows), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

@@ -1,28 +1,33 @@
 #version 330 core
-/**
- * @file TeslaLightningTree.vert
- * @brief attrA.xyz = world pos, attrA.w = heat
- * attrB.x = per-segment gain (1 = main stroke .. ~0.2 = surface creep/corona),
- * attrB.w = boltSeed (GEOM_INDIRECT, 8-float layout)
+/*****************************************************************************\
+ *                              TeslaLightningTree.vert
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (geometry; see the .frag header for the plasma shading):
- *   audioAdvance -> camera orbit around the trunk (pre-integrated)
- *   audioKick    -> bolt heat and thickness (in the .comp generator)
- *   audioHigh    -> stepped-leader jitter (in the .comp generator)
- *   audioSnare   -> RETURN STROKE: snares, claps and vocal hits are the
- *                   discharge.  Each one both flares the bolt tree outward
- *                   and drives its ionisation heat up, so the tree fires on
- *                   the backbeat instead of only on the kick
- *   audioTrebRel -> STEPPED-LEADER WANDER: the treble register's instant /
- *                   slow-average ratio (MilkDrop's treb_att idiom, ~1.0 =
- *                   "as loud as usual") pushes the arcs off their straight
- *                   path through a smooth spatial field.  Self-normalising,
- *                   so a quiet acoustic track wanders as much as a loud one
+ *  @brief
+ *  attrA.xyz = world pos, attrA.w = heat attrB.x = per-segment gain (1 = main stroke .. ~0.2 = surface
+ *  creep/corona), attrB.w = boltSeed (GEOM_INDIRECT, 8-float layout)
  *
- * NOTE: the compute generator (TeslaLightningTree.comp) is a SEPARATE program
- * and only receives the small hand-picked uniform set in
- * Scene3DShader::runGenerator(), so audioSnare / audioTrebRel have to be
- * applied here on the baked geometry instead.
+ *  Audio Reactivity (geometry; see the .frag header for the plasma shading):
+ *    audioAdvance -> camera orbit around the trunk (pre-integrated)
+ *    audioKick    -> bolt heat and thickness (in the .comp generator)
+ *    audioHigh    -> stepped-leader jitter (in the .comp generator)
+ *    audioSnare   -> RETURN STROKE: snares, claps and vocal hits are the
+ *                    discharge.  Each one both flares the bolt tree outward
+ *                    and drives its ionisation heat up, so the tree fires on
+ *                    the backbeat instead of only on the kick
+ *    audioTrebRel -> STEPPED-LEADER WANDER: the treble register's instant /
+ *                    slow-average ratio (MilkDrop's treb_att idiom, ~1.0 =
+ *                    "as loud as usual") pushes the arcs off their straight
+ *                    path through a smooth spatial field.  Self-normalising,
+ *                    so a quiet acoustic track wanders as much as a loud one
+ *
+ *  NOTE: the compute generator (TeslaLightningTree.comp) is a SEPARATE program
+ *  and only receives the small hand-picked uniform set in
+ *  Scene3DShader::runGenerator(), so audioSnare / audioTrebRel have to be
+ *  applied here on the baked geometry instead.
+ *
+ *  @author René Weller
  */
 in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an
                ///< index).

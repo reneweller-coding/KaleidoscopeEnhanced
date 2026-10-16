@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file MolecularCloudCore.frag
- * @brief MOLECULAR CLOUD CORE: a protostar deep in a dark molecular cloud,
- * as the infrared telescopes show it -- an hourglass of two cavities carved
- * by its outflow, their wispy walls lit gold above and cold blue below,
- * pinched at the neck by the dark lane of its edge-on disk.  Thin jets leave
- * both ways, Herbig-Haro knots travelling out along them.  Around it the
- * dust hides and reddens the background stars.  Everything moves at its own
- * slow pace; the music is the light.
- *   sceneTime     -> the knots travelling out, the dust drifting (continuous)
- *   audioSwell    -> the lobes and jets brighten (slow)
- *   audioKick     -> the protostar's glow at the neck (light only)
- *   audioChromaHue-> photo tint of the lobes
+/*****************************************************************************\
+ *                              MolecularCloudCore.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   dustP float density and opacity of the molecular cloud (0.5..1.5)
- *   starP float brightness of the jets (0.5..2.0)
- *   hueP float palette offset (0..6.28)
+ *  @brief
+ *  MOLECULAR CLOUD CORE: a protostar deep in a dark molecular cloud, as the infrared telescopes show it -- an
+ *  hourglass of two cavities carved by its outflow, their wispy walls lit gold above and cold blue below, pinched
+ *  at the neck by the dark lane of its edge-on disk.
+ *
+ *  Thin jets leave both ways, Herbig-Haro knots travelling out along them.  Around it the dust hides and reddens
+ *  the background stars.  Everything moves at its own slow pace; the music is the light.
+ *
+ *    sceneTime     -> the knots travelling out, the dust drifting (continuous)
+ *    audioSwell    -> the lobes and jets brighten (slow)
+ *    audioKick     -> the protostar's glow at the neck (light only)
+ *    audioChromaHue-> photo tint of the lobes
+ *
+ *  Per-activation variety:
+ *    dustP float density and opacity of the molecular cloud (0.5..1.5)
+ *    starP float brightness of the jets (0.5..2.0)
+ *    hueP float palette offset (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

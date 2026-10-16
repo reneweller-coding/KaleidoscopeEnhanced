@@ -1,31 +1,36 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TalbotCarpetRevival.frag
- * @brief TRANSITION TALBOT CARPET REVIVAL: a grating's near field scrambles the
- * outgoing scene into an interference carpet, and the incoming scene comes back
- * out of it at the revival distance.
+/*****************************************************************************\
+ *                              TalbotCarpetRevival.frag
+\*****************************************************************************/
+/*! @file
  *
- * The carpet is the real thing, not a stripe pattern.  A periodic field
- * propagating a distance z picks up a phase -pi * (z/zT) * n^2 on its n-th
- * diffraction order, and the intensity is what those orders add up to.  Summing
- * five orders with exactly that quadratic phase gives the Talbot carpet with
- * everything that makes it recognisable: sharp fringes at the start, the
- * half-period shift at half the Talbot distance, the doubled frequency at a
- * quarter of it, and the fractal branching in between.  A linear phase would
- * only slide the fringes sideways -- the n-SQUARED is the whole effect.
+ *  @brief
+ *  TRANSITION TALBOT CARPET REVIVAL: a grating's near field scrambles the outgoing scene into an interference
+ *  carpet, and the incoming scene comes back out of it at the revival distance.
  *
- * A second grating at a third of the period is summed in, which is what puts
- * the finer branches inside the coarse ones.
+ *  The carpet is the real thing, not a stripe pattern.  A periodic field
+ *  propagating a distance z picks up a phase -pi * (z/zT) * n^2 on its n-th
+ *  diffraction order, and the intensity is what those orders add up to.  Summing
+ *  five orders with exactly that quadratic phase gives the Talbot carpet with
+ *  everything that makes it recognisable: sharp fringes at the start, the
+ *  half-period shift at half the Talbot distance, the doubled frequency at a
+ *  quarter of it, and the fractal branching in between.  A linear phase would
+ *  only slide the fringes sideways -- the n-SQUARED is the whole effect.
  *
- * Audio Reactivity:
- *   audioCentroid -> the grating period (slow, colour of the structure)
- *   audioSwell   -> how far the carpet displaces the picture (slow)
- *   audioHigh     -> the fringes' brightness (light)
- *   audioKick     -> the light on the brightest fringes (light)
+ *  A second grating at a third of the period is summed in, which is what puts
+ *  the finer branches inside the coarse ones.
  *
- * Per-activation variety: periodP, angleP, hueP.
+ *  Audio Reactivity:
+ *    audioCentroid -> the grating period (slow, colour of the structure)
+ *    audioSwell   -> how far the carpet displaces the picture (slow)
+ *    audioHigh     -> the fringes' brightness (light)
+ *    audioKick     -> the light on the brightest fringes (light)
+ *
+ *  Per-activation variety: periodP, angleP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

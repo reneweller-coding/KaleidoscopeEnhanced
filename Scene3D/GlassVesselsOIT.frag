@@ -1,17 +1,22 @@
 #version 330 core
-/**
- * @file GlassVesselsOIT.frag
- * @brief GLASS VESSELS: two-pass shader.  Opaque pass: the back wall (the
- * photo as a lit studio wall) and the shelf.  OIT pass: the glass -- each
- * vessel tinted by its pitch class, the photo refracted through it (the
- * wall image sampled along the refracted ray), a Fresnel reflection, a
- * specular highlight; the class that sounds fills its vessel with light
- * (the chroma as the liquid level glow), the kick sparks the highlights,
- * the treble the caustic shimmer.  Weighted-blended OIT as in
- * CathedralGlass (tone-map before accumulating).
+/*****************************************************************************\
+ *                              GlassVesselsOIT.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity: audioChroma[12] -> vessel glow; audioKick -> highlights;
- *                   audioHigh -> shimmer; audioSwell -> wall light; audioLevel.
+ *  @brief
+ *  GLASS VESSELS: two-pass shader.
+ *
+ *  Opaque pass: the back wall (the photo as a lit studio wall) and the shelf.  OIT pass: the glass -- each vessel
+ *  tinted by its pitch class, the photo refracted through it (the wall image sampled along the refracted ray), a
+ *  Fresnel reflection, a specular highlight; the class that sounds fills its vessel with light (the chroma as the
+ *  liquid level glow), the kick sparks the highlights, the treble the caustic shimmer.  Weighted-blended OIT as in
+ *  CathedralGlass (tone-map before accumulating).
+ *
+ *  Audio Reactivity: audioChroma[12] -> vessel glow; audioKick -> highlights;
+ *                    audioHigh -> shimmer; audioSwell -> wall light; audioLevel.
+ *
+ *  @author René Weller
  */
 layout( location = 0 ) out vec4 outAccum;  ///< Accum (output).
 layout( location = 1 ) out vec4 outReveal; ///< Reveal (output).

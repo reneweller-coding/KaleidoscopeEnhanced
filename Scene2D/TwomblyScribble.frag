@@ -1,23 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TwomblyScribble.frag
- * @brief TWOMBLY SCRIBBLE: loops and scrawls in the manner of Cy Twombly's
- * blackboard paintings -- continuous looping white lines written across a
- * slate-grey ground, lines of chalk-like texture that loop, overlap and
- * drift, fading as they age, new rows of loops being written; the ground
- * holds the photograph as a smudged, erased memory.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              TwomblyScribble.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the writing moves on (integrated, jump-free)
- *   audioSpread     -> the loop size
- *   audioKick       -> the chalk brightens (light)
- *   audioMode       -> the board: slate grey in minor, warm cream with graphite lines in major
- *   audioRoughness  -> the chalk breaks up
- *   audioSwell      -> the erased photo shows (slow)
+ *  @brief
+ *  TWOMBLY SCRIBBLE: loops and scrawls in the manner of Cy Twombly's blackboard paintings -- continuous looping
+ *  white lines written across a slate-grey ground, lines of chalk-like texture that loop, overlap and drift, fading
+ *  as they age, new rows of loops being written; the ground holds the photograph as a smudged, erased memory.
  *
- * Knobs: rowP (rows of loops), loopP (loop tightness), lineP (line width), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the writing moves on (integrated, jump-free)
+ *    audioSpread     -> the loop size
+ *    audioKick       -> the chalk brightens (light)
+ *    audioMode       -> the board: slate grey in minor, warm cream with graphite lines in major
+ *    audioRoughness  -> the chalk breaks up
+ *    audioSwell      -> the erased photo shows (slow)
+ *
+ *  Knobs: rowP (rows of loops), loopP (loop tightness), lineP (line width), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

@@ -1,29 +1,34 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureBoreTunnel.frag
- * @brief TEXTURE BORE TUNNEL: a drill bore through the photograph -- the
- * tunnel's wall IS the texture, raised into a relief whose ridges and
- * grooves catch the light of a lamp travelling with the camera, rifled by
- * helical grooves, and far ahead the exit glows.  Like the original Tunnel
- * the picture is an endless polar field: it continues past the frame edges
- * and mirrors without seams, and every photo of the pool gives a different
- * bore (meteorite iron, basalt, felt, glaze ...).
+/*****************************************************************************\
+ *                              TextureBoreTunnel.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the forward drive (integrated, jump-free)
- *   audioPhase      -> slow roll of the bore (integrated)
- *   audioSpread     -> throat depth: how steeply the wall runs to the exit
- *   audioMode       -> cross-section: round in minor, squarer in major
- *   audioRoughness  -> the wall ripples along the radius
- *   audioRolloff    -> colour temperature of the lamp
- *   audioBass       -> the glow of the exit (light)
- *   audioHigh       -> glints on the ridges (light)
- *   audioSwell      -> the lamp's reach (slow)
+ *  @brief
+ *  TEXTURE BORE TUNNEL: a drill bore through the photograph -- the tunnel's wall IS the texture, raised into a
+ *  relief whose ridges and grooves catch the light of a lamp travelling with the camera, rifled by helical grooves,
+ *  and far ahead the exit glows.
  *
- * Knobs: sidesP (texture repeats around the wall), twistP (rifling twist),
- * reliefP (relief depth), hueP.
+ *  Like the original Tunnel the picture is an endless polar field: it continues past the frame edges and mirrors
+ *  without seams, and every photo of the pool gives a different bore (meteorite iron, basalt, felt, glaze ...).
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the forward drive (integrated, jump-free)
+ *    audioPhase      -> slow roll of the bore (integrated)
+ *    audioSpread     -> throat depth: how steeply the wall runs to the exit
+ *    audioMode       -> cross-section: round in minor, squarer in major
+ *    audioRoughness  -> the wall ripples along the radius
+ *    audioRolloff    -> colour temperature of the lamp
+ *    audioBass       -> the glow of the exit (light)
+ *    audioHigh       -> glints on the ridges (light)
+ *    audioSwell      -> the lamp's reach (slow)
+ *
+ *  Knobs: sidesP (texture repeats around the wall), twistP (rifling twist),
+ *  reliefP (relief depth), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureIceGlaze.frag
- * @brief TEXTURE ICE GLAZE: the photograph frozen under a sheet of clear ice
- * -- trapped air bubbles in strings and clouds, white fracture planes
- * cutting through the ice at angles (flashing when the light catches
- * them), the picture below bent and cooled by the ice's thickness, and
- * frost feathers growing at the edges of the cracks; a cold light slides
- * across the surface.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              TextureIceGlaze.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the light slides (integrated, jump-free)
- *   audioSpread     -> ice thickness (more bending)
- *   audioKick       -> the fracture planes flash (light)
- *   audioMode       -> the ice: blue-green in minor, clear-white in major
- *   audioHigh       -> the bubbles sparkle (light)
- *   audioSwell      -> frost at the cracks (slow)
+ *  @brief
+ *  TEXTURE ICE GLAZE: the photograph frozen under a sheet of clear ice -- trapped air bubbles in strings and
+ *  clouds, white fracture planes cutting through the ice at angles (flashing when the light catches them), the
+ *  picture below bent and cooled by the ice's thickness, and frost feathers growing at the edges of the cracks; a
+ *  cold light slides across the surface.
  *
- * Knobs: crackP (fractures), bubbleP (trapped air), photoP (photo clarity), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the light slides (integrated, jump-free)
+ *    audioSpread     -> ice thickness (more bending)
+ *    audioKick       -> the fracture planes flash (light)
+ *    audioMode       -> the ice: blue-green in minor, clear-white in major
+ *    audioHigh       -> the bubbles sparkle (light)
+ *    audioSwell      -> frost at the cracks (slow)
+ *
+ *  Knobs: crackP (fractures), bubbleP (trapped air), photoP (photo clarity), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

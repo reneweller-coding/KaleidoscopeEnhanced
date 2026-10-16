@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SaffmanTaylorFingers.frag
- * @brief SAFFMAN-TAYLOR FINGERS: viscous fingering in a Hele-Shaw cell.
- * A less viscous fluid (the photo) is pushed into a more viscous one (the
- * palette) between two plates; the interface is unstable and grows fingers
- * that split at their tips.  The pattern grows over the scene arc -- the
- * radius expands and higher modes (the tip splits) come in later, all
- * continuous; the swell is the injection pressure (a slow modulation of
- * the growth), the kick lights the interface, the bass the injection port.
- * Camera still.
+/*****************************************************************************\
+ *                              SaffmanTaylorFingers.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   sceneProgress -> growth (the arc)
- *   audioSwell    -> pressure (slow modulation of the radius)
- *   audioKick     -> interface light (light)
- *   audioBass     -> injection glow (light)
- *   audioLevel    -> brightness
+ *  @brief
+ *  SAFFMAN-TAYLOR FINGERS: viscous fingering in a Hele-Shaw cell.
  *
- * Per-activation variety: modesP, splitP, hueP.
+ *  A less viscous fluid (the photo) is pushed into a more viscous one (the palette) between two plates; the
+ *  interface is unstable and grows fingers that split at their tips.  The pattern grows over the scene arc -- the
+ *  radius expands and higher modes (the tip splits) come in later, all continuous; the swell is the injection
+ *  pressure (a slow modulation of the growth), the kick lights the interface, the bass the injection port. Camera
+ *  still.
+ *
+ *  Audio Reactivity:
+ *    sceneProgress -> growth (the arc)
+ *    audioSwell    -> pressure (slow modulation of the radius)
+ *    audioKick     -> interface light (light)
+ *    audioBass     -> injection glow (light)
+ *    audioLevel    -> brightness
+ *
+ *  Per-activation variety: modesP, splitP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

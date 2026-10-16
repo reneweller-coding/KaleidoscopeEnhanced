@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file MoebiusTunnel.frag
- * @brief MOEBIUS TUNNEL: a tunnel whose wall is a one-sided surface.  The
- * wall is built from a few ribbons that make an odd number of half-twists
- * per loop, so a ribbon that starts on the inside of the tube arrives on the
- * outside one loop later and comes back around: the stripes spiral past the
- * camera and never repeat the way a plain tunnel does.  Photo on the front
- * face, its palette-negative on the back face -- the twist is what swaps
- * them, continuously, as the tube streams by.
+/*****************************************************************************\
+ *                              MoebiusTunnel.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   sceneAdvance     -> forward travel (music-paced, continuous, bounded)
- *   audioSwell       -> the tube widens on builds (slow)
- *   audioKick        -> the gaps between ribbons flash open for a beat
- *   audioMelodyPitch -> hue of the front face glides with the melody
- *   audioFlux        -> contrast of the ribbon texture
+ *  @brief
+ *  MOEBIUS TUNNEL: a tunnel whose wall is a one-sided surface.
  *
- * Per-activation variety: twistP (half-twists per loop: 1 or 3, fixed),
- *                         sidesP (ribbons 2..4, fixed), hueP.
+ *  The wall is built from a few ribbons that make an odd number of half-twists per loop, so a ribbon that starts on
+ *  the inside of the tube arrives on the outside one loop later and comes back around: the stripes spiral past the
+ *  camera and never repeat the way a plain tunnel does.  Photo on the front face, its palette-negative on the back
+ *  face -- the twist is what swaps them, continuously, as the tube streams by.
+ *
+ *  Audio Reactivity:
+ *    sceneAdvance     -> forward travel (music-paced, continuous, bounded)
+ *    audioSwell       -> the tube widens on builds (slow)
+ *    audioKick        -> the gaps between ribbons flash open for a beat
+ *    audioMelodyPitch -> hue of the front face glides with the melody
+ *    audioFlux        -> contrast of the ribbon texture
+ *
+ *  Per-activation variety: twistP (half-twists per loop: 1 or 3, fixed),
+ *                          sidesP (ribbons 2..4, fixed), hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

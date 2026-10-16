@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file RangoliPowderMandala.frag
- * @brief RANGOLI POWDER MANDALA: coloured powder laid on a threshold in a
- * radial design.  The design is laid down ring by ring over the scene arc
- * (each ring fills from its start angle around, as a hand would), the
- * grains are round specks of colour, the colours come from the chroma
- * classes (a class per ring), the kick sprinkles an extra pinch of powder
- * (light), the treble the mica sparkle, the swell the doorway lamp.
- * Camera fixed above the threshold.
+/*****************************************************************************\
+ *                              RangoliPowderMandala.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   sceneProgress   -> the design laid down (the arc)
- *   audioChroma[12] -> ring colour brightness (light)
- *   audioKick       -> sprinkle (light)
- *   audioHigh       -> mica sparkle (light)
- *   audioSwell      -> lamp (slow)
- *   audioLevel      -> brightness
+ *  @brief
+ *  RANGOLI POWDER MANDALA: coloured powder laid on a threshold in a radial design.
  *
- * Per-activation variety: ringsP, petalsP, hueP.
+ *  The design is laid down ring by ring over the scene arc (each ring fills from its start angle around, as a hand
+ *  would), the grains are round specks of colour, the colours come from the chroma classes (a class per ring), the
+ *  kick sprinkles an extra pinch of powder (light), the treble the mica sparkle, the swell the doorway lamp. Camera
+ *  fixed above the threshold.
+ *
+ *  Audio Reactivity:
+ *    sceneProgress   -> the design laid down (the arc)
+ *    audioChroma[12] -> ring colour brightness (light)
+ *    audioKick       -> sprinkle (light)
+ *    audioHigh       -> mica sparkle (light)
+ *    audioSwell      -> lamp (slow)
+ *    audioLevel      -> brightness
+ *
+ *  Per-activation variety: ringsP, petalsP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

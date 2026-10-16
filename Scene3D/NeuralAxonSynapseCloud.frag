@@ -1,4 +1,23 @@
 #version 330 core
+/*****************************************************************************\
+ *                              NeuralAxonSynapseCloud.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Renders one particle of the 60,000-point cortical-connectome cloud as a soft gaussian point sprite, then
+ *  hue-rotates it.
+ *
+ *  Per-particle position, cluster/dendrite placement and the
+ *  action-potential flash brightness are all computed upstream in
+ *  NeuralAxonSynapseCloud.vert from a wide set of audio uniforms; this
+ *  fragment shader only discards outside the circular sprite, shapes the
+ *  gaussian core, and applies a final hueRot() driven directly by
+ *  audioChromaHue plus the hueP preset, so the whole connectome's colour
+ *  can still be nudged live.
+ *
+ *  @author René Weller
+ */
 out vec4 fragColor; ///< The pixel's colour (output).
 // NeuralAxonSynapseCloud.frag
 
@@ -9,20 +28,6 @@ uniform float hueP;           ///< Hue knob (radians), usually the music's chrom
 
 in vec4  vColor; ///< Color (from the vertex stage).
 in float vSize;  ///< Size (from the vertex stage).
-
-/**
- * @file NeuralAxonSynapseCloud.frag
- * @brief Renders one particle of the 60,000-point cortical-connectome cloud
- * as a soft gaussian point sprite, then hue-rotates it.
- *
- * Per-particle position, cluster/dendrite placement and the
- * action-potential flash brightness are all computed upstream in
- * NeuralAxonSynapseCloud.vert from a wide set of audio uniforms; this
- * fragment shader only discards outside the circular sprite, shapes the
- * gaussian core, and applies a final hueRot() driven directly by
- * audioChromaHue plus the hueP preset, so the whole connectome's colour
- * can still be nudged live.
- */
 
 /**  Rotates a colour's hue by an angle (about the grey axis).
  *

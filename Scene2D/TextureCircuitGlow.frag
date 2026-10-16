@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureCircuitGlow.frag
- * @brief TEXTURE CIRCUIT GLOW: the photograph etched into a glowing circuit --
- * its structure is traced as circuit traces running only horizontally,
- * vertically and at 45 degrees, with solder pads at the junctions and
- * little vias, on a dark green-black board; pulses of light race along the
- * traces from pad to pad, the board around the busy traces faintly
- * back-lit.  The trace layout follows the photo (each photo wires a
- * different board).  Endless, mirrorable.
+/*****************************************************************************\
+ *                              TextureCircuitGlow.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the pulses travel (integrated, jump-free)
- *   audioSpread     -> trace density
- *   audioKick       -> pulses flare (light)
- *   audioMode       -> pulse colour: cyan in minor, amber in major
- *   audioHigh       -> the pads sparkle (light)
- *   audioSwell      -> the board's backlight (slow)
+ *  @brief
+ *  TEXTURE CIRCUIT GLOW: the photograph etched into a glowing circuit -- its structure is traced as circuit traces
+ *  running only horizontally, vertically and at 45 degrees, with solder pads at the junctions and little vias, on a
+ *  dark green-black board; pulses of light race along the traces from pad to pad, the board around the busy traces
+ *  faintly back-lit.
  *
- * Knobs: gridP (grid pitch), padP (pad density), boardP (board colour), hueP.
+ *  The trace layout follows the photo (each photo wires a different board).  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the pulses travel (integrated, jump-free)
+ *    audioSpread     -> trace density
+ *    audioKick       -> pulses flare (light)
+ *    audioMode       -> pulse colour: cyan in minor, amber in major
+ *    audioHigh       -> the pads sparkle (light)
+ *    audioSwell      -> the board's backlight (slow)
+ *
+ *  Knobs: gridP (grid pitch), padP (pad density), boardP (board colour), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

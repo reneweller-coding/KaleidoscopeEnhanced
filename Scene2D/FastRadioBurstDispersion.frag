@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file FastRadioBurstDispersion.frag
- * @brief FAST RADIO BURST DISPERSION: a radio telescope under a sky that is
- * the dynamic spectrum -- frequency up the sky, time across it, the live
- * spectrogram scrolling steadily.  Fast radio bursts arrive as dispersed
- * chirps: a burst that left its galaxy at one instant reaches us high
- * frequencies first, low last, so it draws a sweeping curve (delay ~ DM /
- * f^2) across the sky.  Bursts are launched on the scene clock (each with
- * its own dispersion measure), the kick flashes the dish, the bass hums
- * the receiver glow.  Camera still.
+/*****************************************************************************\
+ *                              FastRadioBurstDispersion.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   texSpectro   -> the sky itself (live history)
- *   sceneAdvance -> burst launches, scroll (continuous)
- *   audioKick    -> dish flash (light)
- *   audioBass    -> receiver glow (light)
- *   audioLevel   -> brightness
+ *  @brief
+ *  FAST RADIO BURST DISPERSION: a radio telescope under a sky that is the dynamic spectrum -- frequency up the sky,
+ *  time across it, the live spectrogram scrolling steadily.
  *
- * Per-activation variety: dmP (dispersion strength), rateP, hueP.
+ *  Fast radio bursts arrive as dispersed chirps: a burst that left its galaxy at one instant reaches us high
+ *  frequencies first, low last, so it draws a sweeping curve (delay ~ DM / f^2) across the sky.  Bursts are
+ *  launched on the scene clock (each with its own dispersion measure), the kick flashes the dish, the bass hums the
+ *  receiver glow.  Camera still.
+ *
+ *  Audio Reactivity:
+ *    texSpectro   -> the sky itself (live history)
+ *    sceneAdvance -> burst launches, scroll (continuous)
+ *    audioKick    -> dish flash (light)
+ *    audioBass    -> receiver glow (light)
+ *    audioLevel   -> brightness
+ *
+ *  Per-activation variety: dmP (dispersion strength), rateP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

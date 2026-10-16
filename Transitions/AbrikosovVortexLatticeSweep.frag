@@ -1,21 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file AbrikosovVortexLatticeSweep.frag
- * @brief TRANSITION ABRIKOSOV VORTEX LATTICE SWEEP: Type-II superconductor vortex lattice.
- * A triangular lattice of quantized magnetic flux vortices (Abrikosov lattice)
- * sweeps across the screen, each vortex carrying 2pi phase winding that rotates
- * and transitions between scenes.
- *   interpolation -> sweeps superconducting flux penetration front across viewport
- *   audioKick     -> flashes quantized vortex core magnetic singularity points
- *   audioSwell    -> drives vortex lattice triangular constant & Kelvin waves
+/*****************************************************************************\
+ *                              AbrikosovVortexLatticeSweep.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   vortexP float Abrikosov vortex density & lattice scale (0.5..2.2)
- *   sweepP  float flux front sweep velocity ratio          (0.5..2.0)
- *   speedP  float animation speed multiplier               (0.5..2.0)
- *   hueP    float vortex core magnetic hue offset          (0..6.28)
+ *  @brief
+ *  TRANSITION ABRIKOSOV VORTEX LATTICE SWEEP: Type-II superconductor vortex lattice.
+ *
+ *  A triangular lattice of quantized magnetic flux vortices (Abrikosov lattice) sweeps across the screen, each
+ *  vortex carrying 2pi phase winding that rotates and transitions between scenes.
+ *
+ *    interpolation -> sweeps superconducting flux penetration front across viewport
+ *    audioKick     -> flashes quantized vortex core magnetic singularity points
+ *    audioSwell    -> drives vortex lattice triangular constant & Kelvin waves
+ *
+ *  Per-activation variety:
+ *    vortexP float Abrikosov vortex density & lattice scale (0.5..2.2)
+ *    sweepP  float flux front sweep velocity ratio          (0.5..2.0)
+ *    speedP  float animation speed multiplier               (0.5..2.0)
+ *    hueP    float vortex core magnetic hue offset          (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

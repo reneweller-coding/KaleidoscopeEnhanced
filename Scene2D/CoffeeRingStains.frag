@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file CoffeeRingStains.frag
- * @brief COFFEE RING STAINS: drops drying on a sheet -- round stains of
- * coffee, tea and wine spread and dry across the paper, each leaving the
- * characteristic dark ring at its edge (the coffee-ring effect) with a
- * pale centre, overlapping stains darkening each other, some with
- * satellite droplets and drips; the stains slowly fade as new ones fall.
- * The paper and the stain colours are tinted by the photograph.  Endless,
- * mirrorable.
+/*****************************************************************************\
+ *                              CoffeeRingStains.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> new stains fall and dry (integrated, jump-free)
- *   audioSpread     -> stain size
- *   audioKick       -> the wet stains shimmer (light)
- *   audioMode       -> tea/coffee browns in minor, wine reds in major
- *   audioRoughness  -> the rims get irregular
- *   audioSwell      -> stain darkness (slow)
+ *  @brief
+ *  COFFEE RING STAINS: drops drying on a sheet -- round stains of coffee, tea and wine spread and dry across the
+ *  paper, each leaving the characteristic dark ring at its edge (the coffee-ring effect) with a pale centre,
+ *  overlapping stains darkening each other, some with satellite droplets and drips; the stains slowly fade as new
+ *  ones fall.
  *
- * Knobs: stainP (stain density), ringP (ring sharpness), paperP (photo in the paper), hueP.
+ *  The paper and the stain colours are tinted by the photograph.  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> new stains fall and dry (integrated, jump-free)
+ *    audioSpread     -> stain size
+ *    audioKick       -> the wet stains shimmer (light)
+ *    audioMode       -> tea/coffee browns in minor, wine reds in major
+ *    audioRoughness  -> the rims get irregular
+ *    audioSwell      -> stain darkness (slow)
+ *
+ *  Knobs: stainP (stain density), ringP (ring sharpness), paperP (photo in the paper), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

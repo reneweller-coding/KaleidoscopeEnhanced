@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SyrupCurtain.frag
- * @brief SYRUP CURTAIN: thick golden syrup pouring in a slow curtain -- a
- * wide sheet of viscous amber liquid flows down, backlit so it glows,
- * folding into ropes and coils where it thickens, thinning into glassy
- * windows where it stretches (through which the photograph behind shows,
- * bent and amber-tinted); highlights run down the ropes.  The sheet
- * repeats in bands so the plane is endless.  Mirrorable.
+/*****************************************************************************\
+ *                              SyrupCurtain.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the flow (integrated, jump-free)
- *   audioSpread     -> the curtain folds more
- *   audioBass       -> the backlight glows (light)
- *   audioMode       -> the syrup: dark maple in minor, bright honey in major
- *   audioRoughness  -> the ropes twist
- *   audioSwell      -> the glassy windows open (slow)
+ *  @brief
+ *  SYRUP CURTAIN: thick golden syrup pouring in a slow curtain -- a wide sheet of viscous amber liquid flows down,
+ *  backlit so it glows, folding into ropes and coils where it thickens, thinning into glassy windows where it
+ *  stretches (through which the photograph behind shows, bent and amber-tinted); highlights run down the ropes.
  *
- * Knobs: ropeP (rope count), thickP (thickness), photoP (photo through the thin parts), hueP.
+ *  The sheet repeats in bands so the plane is endless.  Mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the flow (integrated, jump-free)
+ *    audioSpread     -> the curtain folds more
+ *    audioBass       -> the backlight glows (light)
+ *    audioMode       -> the syrup: dark maple in minor, bright honey in major
+ *    audioRoughness  -> the ropes twist
+ *    audioSwell      -> the glassy windows open (slow)
+ *
+ *  Knobs: ropeP (rope count), thickP (thickness), photoP (photo through the thin parts), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

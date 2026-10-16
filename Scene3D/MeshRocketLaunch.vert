@@ -1,19 +1,27 @@
 #version 330 core
-/**
- * @file MeshRocketLaunch.vert
- * @brief Vertex stage companion to MeshRocketLaunch.frag -- see that file's
- * header. Two loaded meshes and the sky shell, picked by gl_VertexID:
- *   [0, meshVertexCount)                 the launch pad (model=), still, on the ground
- *   [meshVertexCount, mesh2VertexCount)  the rocket (model2=), standing on the pad, then climbing
- *   [mesh2VertexCount, ...)              the sky shell
+/*****************************************************************************\
+ *                              MeshRocketLaunch.vert
+\*****************************************************************************/
+/*! @file
  *
- * Both meshes arrive normalised to a unit box, so their relative size is set
- * HERE from real proportions (a 65 m rocket beside a 75 m tower), not read
- * from the files. The liftoff is staged on sceneProgress: the engines light
- * just before the liftoff mark, then the climb accelerates for the rest of
- * the scene -- so the launch happens once and is over before the scene is,
- * whatever length the scheduler rolled for it. Nothing here moves on a fast
- * envelope: the burn is light, the climb is the clock.
+ *  @brief
+ *  Vertex stage companion to MeshRocketLaunch.frag -- see that file's header.
+ *
+ *  Two loaded meshes and the sky shell, picked by gl_VertexID:
+ *
+ *    [0, meshVertexCount)                 the launch pad (model=), still, on the ground
+ *    [meshVertexCount, mesh2VertexCount)  the rocket (model2=), standing on the pad, then climbing
+ *    [mesh2VertexCount, ...)              the sky shell
+ *
+ *  Both meshes arrive normalised to a unit box, so their relative size is set
+ *  HERE from real proportions (a 65 m rocket beside a 75 m tower), not read
+ *  from the files. The liftoff is staged on sceneProgress: the engines light
+ *  just before the liftoff mark, then the climb accelerates for the rest of
+ *  the scene -- so the launch happens once and is over before the scene is,
+ *  whatever length the scheduler rolled for it. Nothing here moves on a fast
+ *  envelope: the burn is light, the climb is the clock.
+ *
+ *  @author René Weller
  */
 
 in vec4 attrA; ///< mesh: xyz = object-space position, w = U.  shell: xyz = world-space position on the shell.

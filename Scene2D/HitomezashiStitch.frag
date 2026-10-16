@@ -1,25 +1,31 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file HitomezashiStitch.frag
- * @brief HITOMEZASHI STITCH: Japanese hitomezashi sashiko embroidery,
- * endlessly re-stitching itself -- white running stitches on indigo cloth
- * along every row and column, each line starting on or off the grid
- * according to a pattern, so that the dashes lock together into
- * surprising closed shapes and labyrinths; the row patterns slowly change
- * (lines fade out and are re-stitched offset), and the regions they
- * enclose are tinted by the photograph beneath.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              HitomezashiStitch.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the re-stitching (integrated, jump-free)
- *   audioSpread     -> how many lines change at once
- *   audioKick       -> the thread brightens (light)
- *   audioMode       -> white on indigo in minor, red on cream in major (blend)
- *   audioRoughness  -> the stitches get uneven
- *   audioSwell      -> the photo tint (slow)
+ *  @brief
+ *  HITOMEZASHI STITCH: Japanese hitomezashi sashiko embroidery, endlessly re-stitching itself -- white running
+ *  stitches on indigo cloth along every row and column, each line starting on or off the grid according to a
+ *  pattern, so that the dashes lock together into surprising closed shapes and labyrinths; the row patterns slowly
+ *  change (lines fade out and are re-stitched offset), and the regions they enclose are tinted by the photograph
+ *  beneath.
  *
- * Knobs: gridP (grid size), stitchP (stitch thickness), photoP (photo shading), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the re-stitching (integrated, jump-free)
+ *    audioSpread     -> how many lines change at once
+ *    audioKick       -> the thread brightens (light)
+ *    audioMode       -> white on indigo in minor, red on cream in major (blend)
+ *    audioRoughness  -> the stitches get uneven
+ *    audioSwell      -> the photo tint (slow)
+ *
+ *  Knobs: gridP (grid size), stitchP (stitch thickness), photoP (photo shading), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

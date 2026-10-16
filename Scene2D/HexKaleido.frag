@@ -1,19 +1,26 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file HexKaleido.frag
- * @brief Adapted from an untitled Shadertoy hex-kaleidoscope — https://www.shadertoy.com/view/Xljczw
- * (author not specified on the page; adapted under the site's standard terms).
+/*****************************************************************************\
+ *                              HexKaleido.frag
+\*****************************************************************************/
+/*! @file
  *
- * A layered hexagonal kaleidoscope: each iteration re-tiles the plane into
- * hexagons and rings glow at a shifting radius, giving a jewel-like radiating
- * lattice.  Adapted to our engine: GLSL 1.20 (gl_FragCoord/resolution/time),
- * jump-free audio motion (the host-integrated audioAdvance added to time,
- * never time*audio), beat/onset brightness, mood grade, and IMAGE-DRIVEN
- * colour: a slowly-drifting crop of the source picture (imgPal) rotates the
- * palette's hue (hueRot) so the jewel colours come from the ever-changing
- * image, exactly like the other adapted shaders in this set.
+ *  @brief
+ *  Adapted from an untitled Shadertoy hex-kaleidoscope — https://www.shadertoy.com/view/Xljczw
+ *
+ *  (author not specified on the page; adapted under the site's standard terms).
+ *
+ *  A layered hexagonal kaleidoscope: each iteration re-tiles the plane into
+ *  hexagons and rings glow at a shifting radius, giving a jewel-like radiating
+ *  lattice.  Adapted to our engine: GLSL 1.20 (gl_FragCoord/resolution/time),
+ *  jump-free audio motion (the host-integrated audioAdvance added to time,
+ *  never time*audio), beat/onset brightness, mood grade, and IMAGE-DRIVEN
+ *  colour: a slowly-drifting crop of the source picture (imgPal) rotates the
+ *  palette's hue (hueRot) so the jewel colours come from the ever-changing
+ *  image, exactly like the other adapted shaders in this set.
+ *
+ *  @author an unknown Shadertoy author (the original shader), René Weller (adaptation)
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

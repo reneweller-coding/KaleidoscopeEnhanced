@@ -1,9 +1,16 @@
 #version 330 core
-/**
- * @file MonarchRoostTree.vert
- * @brief Vertex stage for MonarchRoostTree: world positions pass through
- * (camera at the origin under the tree, +z ahead); id, flying flag, kind
- * and uv go to the fragment stage.  No camera motion.
+/*****************************************************************************\
+ *                              MonarchRoostTree.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage for MonarchRoostTree: world positions pass through (camera at the origin under the tree, +z ahead);
+ *  id, flying flag, kind and uv go to the fragment stage.
+ *
+ *  No camera motion.
+ *
+ *  @author René Weller
  */
 layout( location = 0 ) in vec4 attrA; ///< xyz = position, w = id
 layout( location = 1 ) in vec4 attrB; ///< x = flying, y = kind, zw = uv

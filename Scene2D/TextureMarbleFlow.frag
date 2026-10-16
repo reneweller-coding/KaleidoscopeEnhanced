@@ -1,23 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureMarbleFlow.frag
- * @brief TEXTURE MARBLE FLOW: polished marble that has not quite set -- the
- * photograph becomes the stone's body, its colours clouded and veined, and
- * the veins (white, gold or dark) flow slowly through it in folded
- * streams, like the stone still remembered being molten; a soft polish
- * reflection glides over the surface.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              TextureMarbleFlow.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the stone flows (integrated, jump-free)
- *   audioSpread     -> vein folding (turbulence)
- *   audioKick       -> the gold veins glint (light)
- *   audioMode       -> veins: white/grey in minor, gold in major
- *   audioRoughness  -> fine crackle veins
- *   audioSwell      -> the polish reflection (slow)
+ *  @brief
+ *  TEXTURE MARBLE FLOW: polished marble that has not quite set -- the photograph becomes the stone's body, its
+ *  colours clouded and veined, and the veins (white, gold or dark) flow slowly through it in folded streams, like
+ *  the stone still remembered being molten; a soft polish reflection glides over the surface.
  *
- * Knobs: veinP (vein density), cloudP (clouding of the photo), polishP, hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the stone flows (integrated, jump-free)
+ *    audioSpread     -> vein folding (turbulence)
+ *    audioKick       -> the gold veins glint (light)
+ *    audioMode       -> veins: white/grey in minor, gold in major
+ *    audioRoughness  -> fine crackle veins
+ *    audioSwell      -> the polish reflection (slow)
+ *
+ *  Knobs: veinP (vein density), cloudP (clouding of the photo), polishP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

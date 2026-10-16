@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureThinFilmSoap.frag
- * @brief TEXTURE THIN FILM SOAP: a vast soap film seen against the dark --
- * its thickness paints it in interference colours: bands of magenta,
- * gold, green and blue, thinning toward black at the top where the film
- * drains, while Marangoni swirls stir the colours into curling eddies and
- * plumes; the photograph shows faintly as a reflection in the film, a
- * soft window highlight glides over it.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              TextureThinFilmSoap.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the swirls turn and the film drains (integrated)
- *   audioSpread     -> the film's thickness range (more colour orders)
- *   audioRoughness  -> the turbulence
- *   audioKick       -> the highlight flares (light)
- *   audioMode       -> the light: cool in minor, warm in major
- *   audioSwell      -> the reflection of the photo (slow)
+ *  @brief
+ *  TEXTURE THIN FILM SOAP: a vast soap film seen against the dark -- its thickness paints it in interference
+ *  colours: bands of magenta, gold, green and blue, thinning toward black at the top where the film drains, while
+ *  Marangoni swirls stir the colours into curling eddies and plumes; the photograph shows faintly as a reflection
+ *  in the film, a soft window highlight glides over it.
  *
- * Knobs: swirlP, bandP (drainage banding), reflectP, hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the swirls turn and the film drains (integrated)
+ *    audioSpread     -> the film's thickness range (more colour orders)
+ *    audioRoughness  -> the turbulence
+ *    audioKick       -> the highlight flares (light)
+ *    audioMode       -> the light: cool in minor, warm in major
+ *    audioSwell      -> the reflection of the photo (slow)
+ *
+ *  Knobs: swirlP, bandP (drainage banding), reflectP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

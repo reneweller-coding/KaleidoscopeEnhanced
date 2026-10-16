@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureGoldLeafBurnish.frag
- * @brief TEXTURE GOLD LEAF BURNISH: a surface gilded with gold leaf -- square
- * leaves laid slightly overlapping, each with its own faint crinkles and
- * a slightly different tilt, so a moving light makes them flash one after
- * another, burnished parts mirror-bright, the photograph showing through
- * where the leaf has cracked and worn away (like an old icon); the light
- * sweeps slowly across.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              TextureGoldLeafBurnish.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the light sweeps (integrated, jump-free)
- *   audioSpread     -> how much of the leaf is worn away
- *   audioKick       -> the flashes (light)
- *   audioMode       -> leaf: white gold/silver in minor, yellow gold in major
- *   audioRoughness  -> the crinkles
- *   audioSwell      -> the photo beneath glows (slow)
+ *  @brief
+ *  TEXTURE GOLD LEAF BURNISH: a surface gilded with gold leaf -- square leaves laid slightly overlapping, each with
+ *  its own faint crinkles and a slightly different tilt, so a moving light makes them flash one after another,
+ *  burnished parts mirror-bright, the photograph showing through where the leaf has cracked and worn away (like an
+ *  old icon); the light sweeps slowly across.
  *
- * Knobs: leafP (leaf size), crackP (craquelure), photoP (photo visibility), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the light sweeps (integrated, jump-free)
+ *    audioSpread     -> how much of the leaf is worn away
+ *    audioKick       -> the flashes (light)
+ *    audioMode       -> leaf: white gold/silver in minor, yellow gold in major
+ *    audioRoughness  -> the crinkles
+ *    audioSwell      -> the photo beneath glows (slow)
+ *
+ *  Knobs: leafP (leaf size), crackP (craquelure), photoP (photo visibility), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

@@ -1,24 +1,33 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SolarProminenceHelicalMagneticRope.frag
- * @brief SOLAR PROMINENCE HELICAL MAGNETIC ROPE: Arching solar coronal magnetic flux rope supporting
- * dense chromospheric plasma. Torsional magnetic helicity, kink instabilities, coronal mass ejection
- * (CME) flare reconnection bursts, and extreme ultraviolet solar photo texturing.
- *   audioAdvance -> navigates solar prominence magnetic flux rope ascent & twist rotation
- *   audioKick    -> flashes solar flare magnetic reconnection & coronal mass ejection bursts
- *   audioSwell   -> widens magnetic flux rope diameter & chromospheric H-alpha emission glow,
- *                   and brightens the coronal streamer fans
- *   audioCentroid-> shifts extreme ultraviolet (He II 304A / Fe IX 171A) solar color spectra
+/*****************************************************************************\
+ *                              SolarProminenceHelicalMagneticRope.frag
+\*****************************************************************************/
+/*! @file
  *
- * Four helical flux ropes stand on a photospheric limb spread across the frame,
- * with four wide, dim coronal streamer fans carrying the corona around them
- * (vVeil selects between the two shading models).
+ *  @brief
+ *  SOLAR PROMINENCE HELICAL MAGNETIC ROPE: Arching solar coronal magnetic flux rope supporting dense chromospheric
+ *  plasma.
  *
- * Per-activation variety:
- *   ribbonWidthP float magnetic flux strand ribbon width (0.02..0.1)
- *   flareGlowP   float coronal flare apex luminance gain (0.8..2.5)
+ *  Torsional magnetic helicity, kink instabilities, coronal mass ejection (CME) flare reconnection bursts, and
+ *  extreme ultraviolet solar photo texturing.
+ *
+ *    audioAdvance -> navigates solar prominence magnetic flux rope ascent & twist rotation
+ *    audioKick    -> flashes solar flare magnetic reconnection & coronal mass ejection bursts
+ *    audioSwell   -> widens magnetic flux rope diameter & chromospheric H-alpha emission glow,
+ *                    and brightens the coronal streamer fans
+ *    audioCentroid-> shifts extreme ultraviolet (He II 304A / Fe IX 171A) solar color spectra
+ *
+ *  Four helical flux ropes stand on a photospheric limb spread across the frame,
+ *  with four wide, dim coronal streamer fans carrying the corona around them
+ *  (vVeil selects between the two shading models).
+ *
+ *  Per-activation variety:
+ *    ribbonWidthP float magnetic flux strand ribbon width (0.02..0.1)
+ *    flareGlowP   float coronal flare apex luminance gain (0.8..2.5)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec2  vUV;         ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 in float vSide;       ///< Which side of a strip (from the vertex stage).

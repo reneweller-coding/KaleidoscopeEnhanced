@@ -1,22 +1,26 @@
 #version 330 core
+/*****************************************************************************\
+ *                              AsteroidBelt.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Shades a single asteroid chunk with a matte rock face plus a faint cool rim light along its cube-corner edges,
+ *  keeping silhouettes readable against black space.
+ *
+ *  This fragment stage carries no audio uniforms of its own: vCol (the base
+ *  rock colour, already audio/position-modulated per vertex) and vCorner (a
+ *  local box coordinate used purely to detect edges via smoothstep) are the
+ *  only inputs, so any audio reactivity for this scene lives in the companion
+ *  vertex shader.
+ *
+ *  @author René Weller
+ */
 out vec4 fragColor; ///< The pixel's colour (output).
 // AsteroidBelt.frag — matte rock faces; a faint cool rim keeps silhouettes
 // readable against black space.
 in vec4 vCol;    ///< Colour (from the vertex stage).
 in vec3 vCorner; ///< Corner (from the vertex stage).
-
-/**
- * @file AsteroidBelt.frag
- * @brief Shades a single asteroid chunk with a matte rock face plus a faint
- * cool rim light along its cube-corner edges, keeping silhouettes readable
- * against black space.
- *
- * This fragment stage carries no audio uniforms of its own: vCol (the base
- * rock colour, already audio/position-modulated per vertex) and vCorner (a
- * local box coordinate used purely to detect edges via smoothstep) are the
- * only inputs, so any audio reactivity for this scene lives in the companion
- * vertex shader.
- */
 
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()

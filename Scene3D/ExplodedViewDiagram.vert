@@ -1,12 +1,17 @@
 #version 330 core
-/**
- * @file ExplodedViewDiagram.vert
- * @brief EXPLODED VIEW DIAGRAM: a ship model as the exploded drawing of a
- * technical manual.  Over the scene arc the parts move apart along smooth
- * radial paths (a low-frequency field of the position, so neighbouring
- * vertices move together and nothing tears), hold apart in the middle, and
- * come back together toward the end -- all on sceneProgress, never on a
- * beat.  The model turns slowly on the scene clock.  No camera motion.
+/*****************************************************************************\
+ *                              ExplodedViewDiagram.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  EXPLODED VIEW DIAGRAM: a ship model as the exploded drawing of a technical manual.
+ *
+ *  Over the scene arc the parts move apart along smooth radial paths (a low-frequency field of the position, so
+ *  neighbouring vertices move together and nothing tears), hold apart in the middle, and come back together toward
+ *  the end -- all on sceneProgress, never on a beat.  The model turns slowly on the scene clock.  No camera motion.
+ *
+ *  @author René Weller
  */
 in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an
                ///< index).

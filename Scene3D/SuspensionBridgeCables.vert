@@ -1,10 +1,16 @@
 #version 330 core
-/**
- * @file SuspensionBridgeCables.vert
- * @brief Vertex stage for SuspensionBridgeCables: world positions pass
- * through (camera at the origin, +z ahead); id, the along-parameter,
- * kind and uv go to the fragment stage.  No camera motion of its own --
- * the flight is baked into the generator's positions.
+/*****************************************************************************\
+ *                              SuspensionBridgeCables.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage for SuspensionBridgeCables: world positions pass through (camera at the origin, +z ahead); id, the
+ *  along-parameter, kind and uv go to the fragment stage.
+ *
+ *  No camera motion of its own -- the flight is baked into the generator's positions.
+ *
+ *  @author René Weller
  */
 layout( location = 0 ) in vec4 attrA; ///< xyz = position, w = id
 layout( location = 1 ) in vec4 attrB; ///< x = along-parameter, y = kind, zw = uv

@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file StormLighthouse.frag
- * @brief STORM LIGHTHOUSE: a lighthouse on a rock in a gale at night.  Its
- * lamp turns steadily and the beam sweeps as a solid shaft of light through
- * rain and spray; when it swings toward us the lantern flares.  Heavy
- * swell rolls in under a torn sky with the moon behind the clouds, and the
- * sea breaks white over the rock.  The music is the storm's light: the
- * lamp burns with the bass, the spray over the rock catches the kick, the
- * rain sparkles with the treble.  The beam never turns faster or slower
- * with the music -- a lighthouse keeps its period.
+/*****************************************************************************\
+ *                              StormLighthouse.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioBass         -> lamp brightness (light)
- *   audioKick         -> the breaking spray lights up (light)
- *   audioHigh         -> rain sparkle in the beam (light)
- *   audioSwell        -> height of the swell and the storm haze (slow)
- *   sceneTime         -> the lamp's rotation and the waves (continuous)
+ *  @brief
+ *  STORM LIGHTHOUSE: a lighthouse on a rock in a gale at night.
  *
- * Per-activation variety: periodP (beam period), hueP.
+ *  Its lamp turns steadily and the beam sweeps as a solid shaft of light through rain and spray; when it swings
+ *  toward us the lantern flares.  Heavy swell rolls in under a torn sky with the moon behind the clouds, and the
+ *  sea breaks white over the rock.  The music is the storm's light: the lamp burns with the bass, the spray over
+ *  the rock catches the kick, the rain sparkles with the treble.  The beam never turns faster or slower with the
+ *  music -- a lighthouse keeps its period.
+ *
+ *  Audio Reactivity:
+ *    audioBass         -> lamp brightness (light)
+ *    audioKick         -> the breaking spray lights up (light)
+ *    audioHigh         -> rain sparkle in the beam (light)
+ *    audioSwell        -> height of the swell and the storm haze (slow)
+ *    sceneTime         -> the lamp's rotation and the waves (continuous)
+ *
+ *  Per-activation variety: periodP (beam period), hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

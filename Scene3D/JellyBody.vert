@@ -1,8 +1,13 @@
 #version 330 core
-/**
- * @file JellyBody.vert
- * @brief Vertex stage companion to JellyBody.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              JellyBody.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to JellyBody.frag -- see that file's header for this scene's description.
+ *
+ *  @author René Weller
  */
 // JellyBody.vert — a soft ELASTIC body that RINGS after every hit: the
 // spring-mass idea seen through modal analysis.  A struck elastic body's

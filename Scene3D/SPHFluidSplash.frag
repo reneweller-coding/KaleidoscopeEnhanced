@@ -1,19 +1,24 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SPHFluidSplash.frag
- * @brief Shades the SPH fluid's per-particle tetrahedra as water: a cool
- * blue-cyan body, Fresnel-brightened rims, and a sharp specular highlight,
- * with brightness/saturation driven by each particle's local SPH density
- * (compressed regions -- the leading edge of a splash -- read brighter and
- * whiter, like foam). Faces are flat-shaded via screen-space derivatives of
- * the world position (SPHFluidSplash.comp doesn't emit explicit normals for
- * its tetrahedra, since a flat face's normal is exactly its own derivative).
+/*****************************************************************************\
+ *                              SPHFluidSplash.frag
+\*****************************************************************************/
+/*! @file
  *
- * audioKick drives the splash impulse itself (in the .comp, not here);
- * audioLevel brightens the whole pool; audioSubBass adds a slow overall
- * pulse; audioChromaHue nudges the water's hue via the house imgPalette.
+ *  @brief
+ *  Shades the SPH fluid's per-particle tetrahedra as water: a cool blue-cyan body, Fresnel-brightened rims, and a
+ *  sharp specular highlight, with brightness/saturation driven by each particle's local SPH density (compressed
+ *  regions -- the leading edge of a splash -- read brighter and whiter, like foam).
+ *
+ *  Faces are flat-shaded via screen-space derivatives of the world position (SPHFluidSplash.comp doesn't emit
+ *  explicit normals for its tetrahedra, since a flat face's normal is exactly its own derivative).
+ *
+ *  audioKick drives the splash impulse itself (in the .comp, not here);
+ *  audioLevel brightens the whole pool; audioSubBass adds a slow overall
+ *  pulse; audioChromaHue nudges the water's hue via the house imgPalette.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec3  vWorld;     ///< World position (from the vertex stage).
 in vec3  vSeed;      ///< Per-instance random seed (from the vertex stage).

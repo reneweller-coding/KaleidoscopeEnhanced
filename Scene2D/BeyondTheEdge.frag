@@ -1,21 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file BeyondTheEdge.frag
- * @brief BEYOND THE EDGE: Looking past the absolute edge of the observable
- * universe into the Cosmic Microwave Background and the true unknown. The CMB
- * ripples gently in ancient patterns, while audio kicks create massive, glowing
- * anomalies that tear through the cosmic horizon.
- *   audioAdvance -> slow panning across the cosmic horizon
- *   audioKick    -> massive, glowing anomalies piercing the CMB
- *   audioSwell   -> ambient brightness of the primordial radiation
- *   audioChromaHue-> palette offset for the CMB mapping
+/*****************************************************************************\
+ *                              BeyondTheEdge.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   cmbP float contrast and detail of the cosmic microwave background (0.5..1.5)
- *   anomalyP float intensity of the unknown anomalies (0.5..2.0)
- *   hueP float palette offset (0..6.28)
+ *  @brief
+ *  BEYOND THE EDGE: Looking past the absolute edge of the observable universe into the Cosmic Microwave Background
+ *  and the true unknown.
+ *
+ *  The CMB ripples gently in ancient patterns, while audio kicks create massive, glowing anomalies that tear
+ *  through the cosmic horizon.
+ *
+ *    audioAdvance -> slow panning across the cosmic horizon
+ *    audioKick    -> massive, glowing anomalies piercing the CMB
+ *    audioSwell   -> ambient brightness of the primordial radiation
+ *    audioChromaHue-> palette offset for the CMB mapping
+ *
+ *  Per-activation variety:
+ *    cmbP float contrast and detail of the cosmic microwave background (0.5..1.5)
+ *    anomalyP float intensity of the unknown anomalies (0.5..2.0)
+ *    hueP float palette offset (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

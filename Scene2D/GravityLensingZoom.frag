@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file GravityLensingZoom.frag
- * @brief GRAVITY LENSING ZOOM: an endless zoom into the photo through a
- * chain of gravitational lenses.  The picture lives in log-polar space and
- * repeats every zoom period, so the fall never ends and never wraps
- * visibly; along the way point-mass lenses sit at fixed places in that
- * space, each bending the picture into an Einstein ring and a pair of
- * arcs.  The lens masses swell slowly with the music; the bass lights the
- * rings, nothing fast moves the picture.
+/*****************************************************************************\
+ *                              GravityLensingZoom.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   sceneAdvance -> the fall (music-paced, periodic)
- *   audioSwell   -> lens mass (slow: rings widen on builds)
- *   audioBass    -> ring glow (light)
- *   audioKick    -> arcs flash (light)
- *   audioLevel   -> overall brightness
+ *  @brief
+ *  GRAVITY LENSING ZOOM: an endless zoom into the photo through a chain of gravitational lenses.
  *
- * Per-activation variety: zoomP (fall rate), massP (base mass), hueP.
+ *  The picture lives in log-polar space and repeats every zoom period, so the fall never ends and never wraps
+ *  visibly; along the way point-mass lenses sit at fixed places in that space, each bending the picture into an
+ *  Einstein ring and a pair of arcs.  The lens masses swell slowly with the music; the bass lights the rings,
+ *  nothing fast moves the picture.
+ *
+ *  Audio Reactivity:
+ *    sceneAdvance -> the fall (music-paced, periodic)
+ *    audioSwell   -> lens mass (slow: rings widen on builds)
+ *    audioBass    -> ring glow (light)
+ *    audioKick    -> arcs flash (light)
+ *    audioLevel   -> overall brightness
+ *
+ *  Per-activation variety: zoomP (fall rate), massP (base mass), hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

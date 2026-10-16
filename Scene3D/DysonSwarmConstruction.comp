@@ -1,25 +1,29 @@
 #version 430 core
-/**
- * @file DysonSwarmConstruction.comp
- * @brief DYSON SWARM CONSTRUCTION: twenty-four thousand collector panels
- * assemble around a star over the scene's arc.  Each panel has a launch
- * point in a scattered cloud and a berth on a Fibonacci sphere; it leaves
- * on its own cue along the arc (sceneProgress), flies a bowed path and
- * docks -- so the sphere closes panel by panel, thickest at the end, and the
- * host's drop regie can time that closing to the drop.  The finished shell
- * breathes: a slow travelling wave lifts and lowers bands of panels, and a
- * harmonic change swells that wave.  No particle state: every panel is a
- * function of its id and the clocks, so nothing drifts.
+/*****************************************************************************\
+ *                              DysonSwarmConstruction.comp
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (generator stage):
- *   sceneProgress   -> the assembly (staged; drop regie can bend it)
- *   sceneAdvance    -> the whole swarm orbits the star (music-paced)
- *   audioHarmChange -> the shell's breathing wave swells (envelope)
- *   audioKick       -> panels flare their backs for a beat (fragment stage)
- *   audioSwell      -> the camera closes in
+ *  @brief
+ *  DYSON SWARM CONSTRUCTION: twenty-four thousand collector panels assemble around a star over the scene's arc.
  *
- * Per-instance: panelsP (fraction of the 24k drawn), radiusP (shell size),
- *               tiltP (shell axis tilt), hueP.
+ *  Each panel has a launch point in a scattered cloud and a berth on a Fibonacci sphere; it leaves on its own cue
+ *  along the arc (sceneProgress), flies a bowed path and docks -- so the sphere closes panel by panel, thickest at
+ *  the end, and the host's drop regie can time that closing to the drop.  The finished shell breathes: a slow
+ *  travelling wave lifts and lowers bands of panels, and a harmonic change swells that wave.  No particle state:
+ *  every panel is a function of its id and the clocks, so nothing drifts.
+ *
+ *  Audio Reactivity (generator stage):
+ *    sceneProgress   -> the assembly (staged; drop regie can bend it)
+ *    sceneAdvance    -> the whole swarm orbits the star (music-paced)
+ *    audioHarmChange -> the shell's breathing wave swells (envelope)
+ *    audioKick       -> panels flare their backs for a beat (fragment stage)
+ *    audioSwell      -> the camera closes in
+ *
+ *  Per-instance: panelsP (fraction of the 24k drawn), radiusP (shell size),
+ *                tiltP (shell axis tilt), hueP.
+ *
+ *  @author René Weller
  */
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( local_size_x = 4, local_size_y = 4, local_size_z = 4 ) in;

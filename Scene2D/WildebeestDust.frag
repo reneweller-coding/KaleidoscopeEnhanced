@@ -1,24 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file WildebeestDust.frag
- * @brief WILDEBEEST DUST: the great migration crossing the savanna in the
- * late afternoon -- a herd of wildebeest walking in a long file and in
- * loose ranks through the dust they raise, the low sun straight ahead
- * turning the dust into glowing gold haze, the animals black silhouettes
- * with their humped shoulders, bearded heads and curved horns, legs
- * swinging in step, the far ranks dissolving in the glare.  A flat-topped
- * acacia stands against the sun.  The herd walks on steadily; the camera
- * is still.
+/*****************************************************************************\
+ *                              WildebeestDust.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSwell  -> the glow of the dust (slow)
- *   audioBass   -> the sun's blaze (light)
- *   audioLevel  -> brightness
- *   sceneTime / sceneAdvance -> the herd walking, the dust drifting
+ *  @brief
+ *  WILDEBEEST DUST: the great migration crossing the savanna in the late afternoon -- a herd of wildebeest walking
+ *  in a long file and in loose ranks through the dust they raise, the low sun straight ahead turning the dust into
+ *  glowing gold haze, the animals black silhouettes with their humped shoulders, bearded heads and curved horns,
+ *  legs swinging in step, the far ranks dissolving in the glare.
  *
- * Per-activation variety: herdP (how dense the herd), hueP.
+ *  A flat-topped acacia stands against the sun.  The herd walks on steadily; the camera is still.
+ *
+ *  Audio Reactivity:
+ *    audioSwell  -> the glow of the dust (slow)
+ *    audioBass   -> the sun's blaze (light)
+ *    audioLevel  -> brightness
+ *    sceneTime / sceneAdvance -> the herd walking, the dust drifting
+ *
+ *  Per-activation variety: herdP (how dense the herd), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

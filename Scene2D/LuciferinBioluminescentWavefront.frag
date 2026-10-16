@@ -1,22 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file LuciferinBioluminescentWavefront.frag
- * @brief LUCIFERIN BIOLUMINESCENT WAVEFRONT: Nocturnal ocean surf populated by dinoflagellates
- * (Noctiluca scintillans). Hydrodynamic shear stresses on breaking wave crests trigger
- * enzymatic luciferase-luciferin blue-green photon flashes, foam caustics, and water ripples.
- *   audioAdvance -> drives oceanic swell drift & shoreward wave-breaking velocity
- *   audioKick    -> triggers violent wave crest collapse & explosive shear light bursts
- *   audioFlux    -> excites sparkling dinoflagellate micro-plankton point flashes
- *   audioSwell   -> thickens deep oceanic swell volumetric depth & haze
- *   audioCentroid-> shifts bio-enzymatic photon emission spectrum (cyan to emerald)
+/*****************************************************************************\
+ *                              LuciferinBioluminescentWavefront.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   waveP    float ocean wave steepness & breaker density   (0.6..2.2)
- *   shearP   float hydrodynamic shear activation threshold (0.5..2.0)
- *   foamP    float bioluminescent foam persistence scale  (0.8..2.5)
- *   sparkP   float plankton micro-scintillation density    (1.0..3.5)
+ *  @brief
+ *  LUCIFERIN BIOLUMINESCENT WAVEFRONT: Nocturnal ocean surf populated by dinoflagellates (Noctiluca scintillans).
+ *
+ *  Hydrodynamic shear stresses on breaking wave crests trigger enzymatic luciferase-luciferin blue-green photon
+ *  flashes, foam caustics, and water ripples.
+ *
+ *    audioAdvance -> drives oceanic swell drift & shoreward wave-breaking velocity
+ *    audioKick    -> triggers violent wave crest collapse & explosive shear light bursts
+ *    audioFlux    -> excites sparkling dinoflagellate micro-plankton point flashes
+ *    audioSwell   -> thickens deep oceanic swell volumetric depth & haze
+ *    audioCentroid-> shifts bio-enzymatic photon emission spectrum (cyan to emerald)
+ *
+ *  Per-activation variety:
+ *    waveP    float ocean wave steepness & breaker density   (0.6..2.2)
+ *    shearP   float hydrodynamic shear activation threshold (0.5..2.0)
+ *    foamP    float bioluminescent foam persistence scale  (0.8..2.5)
+ *    sparkP   float plankton micro-scintillation density    (1.0..3.5)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

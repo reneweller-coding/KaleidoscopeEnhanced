@@ -1,22 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file RainOnWindowCity.frag
- * @brief RAIN ON WINDOW CITY: a night city seen through a rain-covered
- * window.  Out of focus behind the glass the city is soft colour and bokeh
- * discs; on the glass every raindrop is a small lens that shows the city
- * sharp and upside down, and now and then a drop grows heavy and runs down,
- * leaving a clear trail and a string of tiny beads.  The city lights are
- * the music: each bokeh disc belongs to a band and swells with it.
+/*****************************************************************************\
+ *                              RainOnWindowCity.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSpectrum[32] -> brightness of the bokeh lights (their bands)
- *   audioSwell        -> the glow of the city haze (slow)
- *   audioHigh         -> glints on the drop rims (light)
- *   sceneTime         -> running drops (continuous)
+ *  @brief
+ *  RAIN ON WINDOW CITY: a night city seen through a rain-covered window.
  *
- * Per-activation variety: rainP (drop density), hueP.
+ *  Out of focus behind the glass the city is soft colour and bokeh discs; on the glass every raindrop is a small
+ *  lens that shows the city sharp and upside down, and now and then a drop grows heavy and runs down, leaving a
+ *  clear trail and a string of tiny beads.  The city lights are the music: each bokeh disc belongs to a band and
+ *  swells with it.
+ *
+ *  Audio Reactivity:
+ *    audioSpectrum[32] -> brightness of the bokeh lights (their bands)
+ *    audioSwell        -> the glow of the city haze (slow)
+ *    audioHigh         -> glints on the drop rims (light)
+ *    sceneTime         -> running drops (continuous)
+ *
+ *  Per-activation variety: rainP (drop density), hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

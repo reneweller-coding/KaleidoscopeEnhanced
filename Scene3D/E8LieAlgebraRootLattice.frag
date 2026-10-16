@@ -1,20 +1,27 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file E8LieAlgebraRootLattice.frag
- * @brief E8 LIE ALGEBRA ROOT LATTICE: 240 root vectors of the exceptional 8D Lie group E8,
- * projected into 3D as rotatable faceted Gosset polytope cube clusters with sharp Bragg
- * reflections, edge bevel glows, and dynamic photo-palette mapping.
- *   audioAdvance -> rotates 8D Lie algebra projection planes
- *   audioKick    -> flashes root lattice Bragg diffraction resonance peaks
- *   audioSwell   -> widens polytope cluster radius & facet luminance
- *   audioCentroid-> shifts root vector weight shell colors
+/*****************************************************************************\
+ *                              E8LieAlgebraRootLattice.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   rootScaleP float 8D polytope projection radius          (0.8..2.2)
- *   cubeSizeP  float root vertex cubelet facet size         (0.04..0.16)
- *   specularP  float faceted cube specular reflection gain  (0.8..2.5)
+ *  @brief
+ *  E8 LIE ALGEBRA ROOT LATTICE: 240 root vectors of the exceptional 8D Lie group E8, projected into 3D as rotatable
+ *  faceted Gosset polytope cube clusters with sharp Bragg reflections, edge bevel glows, and dynamic photo-palette
+ *  mapping.
+ *
+ *    audioAdvance -> rotates 8D Lie algebra projection planes
+ *    audioKick    -> flashes root lattice Bragg diffraction resonance peaks
+ *    audioSwell   -> widens polytope cluster radius & facet luminance
+ *    audioCentroid-> shifts root vector weight shell colors
+ *
+ *  Per-activation variety:
+ *    rootScaleP float 8D polytope projection radius          (0.8..2.2)
+ *    cubeSizeP  float root vertex cubelet facet size         (0.04..0.16)
+ *    specularP  float faceted cube specular reflection gain  (0.8..2.5)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec3  vNormal;   ///< Surface normal (from the vertex stage).
 in vec3  vCol;      ///< Colour (from the vertex stage).

@@ -1,21 +1,27 @@
 #version 430 core
-/**
- * @file SuperconductingFluxVortex.comp
- * @brief GPU compute shader simulating quantized Abrikosov magnetic flux
- * vortex ribbons in a Type-II high-temperature superconductor lattice.
+/*****************************************************************************\
+ *                              SuperconductingFluxVortex.comp
+\*****************************************************************************/
+/*! @file
  *
- * 3,584 invocations build 112 flux tubes of 32 ribbon segments each; the
- * remaining 512 emit the camera-facing quads of the Meissner haze that
- * carries the far field (placed in FRUSTUM coordinates by the vertex stage,
- * which is the one that knows the aspect ratio).
+ *  @brief
+ *  GPU compute shader simulating quantized Abrikosov magnetic flux vortex ribbons in a Type-II high-temperature
+ *  superconductor lattice.
  *
- * The lattice used to be a 64-tube patch barely 3.5 units across in front of
- * a camera 6.5 units back -- roughly a quarter of the picture wide, and the
- * rest of the frame stayed black.  The slab is now wide enough, and the tubes
- * long enough, that the silhouette stays frame-filling through the whole slow
- * Y rotation: the lattice's x extent becomes DEPTH when the slab turns
- * edge-on, and the tube length becomes the picture's width, so the two are
- * deliberately matched.
+ *  3,584 invocations build 112 flux tubes of 32 ribbon segments each; the
+ *  remaining 512 emit the camera-facing quads of the Meissner haze that
+ *  carries the far field (placed in FRUSTUM coordinates by the vertex stage,
+ *  which is the one that knows the aspect ratio).
+ *
+ *  The lattice used to be a 64-tube patch barely 3.5 units across in front of
+ *  a camera 6.5 units back -- roughly a quarter of the picture wide, and the
+ *  rest of the frame stayed black.  The slab is now wide enough, and the tubes
+ *  long enough, that the silhouette stays frame-filling through the whole slow
+ *  Y rotation: the lattice's x extent becomes DEPTH when the slab turns
+ *  edge-on, and the tube length becomes the picture's width, so the two are
+ *  deliberately matched.
+ *
+ *  @author René Weller
  */
 
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).

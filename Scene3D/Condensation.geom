@@ -1,23 +1,29 @@
 #version 330 core
-/**
- * @file Condensation.geom
- * @brief A cloud that resolves into an object. Each triangle contributes one
- * large, soft puff of gas; over the scene's own screen time the puffs migrate
- * from a formless volume onto the surface they belong to, and the shape
- * emerges out of the fog.
+/*****************************************************************************\
+ *                              Condensation.geom
+\*****************************************************************************/
+/*! @file
  *
- * The staging is the point and it is the reverse of Dissolve's. Dissolve
- * breathes: it starts as the object and keeps returning to it. This one starts
- * as NOTHING recognisable and answers a question the viewer has been holding
- * for most of the scene -- so the whole family is built around sceneProgress,
- * not around a periodic function.
+ *  @brief
+ *  A cloud that resolves into an object.
  *
- * A real volume needs blending, and the mesh path draws with blending disabled
- * (RenderPipeline sets opaque state for GEOM_MESH). The fragment stage gets
- * density another way, by discarding stochastically: where many puffs overlap,
- * more fragments survive, and the accumulation IS the density. Same principle
- * the Hologram family uses for see-through, applied to a volume instead of a
- * surface.
+ *  Each triangle contributes one large, soft puff of gas; over the scene's own screen time the puffs migrate from a
+ *  formless volume onto the surface they belong to, and the shape emerges out of the fog.
+ *
+ *  The staging is the point and it is the reverse of Dissolve's. Dissolve
+ *  breathes: it starts as the object and keeps returning to it. This one starts
+ *  as NOTHING recognisable and answers a question the viewer has been holding
+ *  for most of the scene -- so the whole family is built around sceneProgress,
+ *  not around a periodic function.
+ *
+ *  A real volume needs blending, and the mesh path draws with blending disabled
+ *  (RenderPipeline sets opaque state for GEOM_MESH). The fragment stage gets
+ *  density another way, by discarding stochastically: where many puffs overlap,
+ *  more fragments survive, and the accumulation IS the density. Same principle
+ *  the Hologram family uses for see-through, applied to a volume instead of a
+ *  surface.
+ *
+ *  @author René Weller
  */
 
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).

@@ -1,12 +1,18 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file FluidPhotoMarblingEbru.frag
- * @brief FLUID PHOTO MARBLING EBRU: 100% viewport-filling traditional Turkish
- * Ebru paper-marbling simulation. The loaded photo floats as viscous liquid
- * oil pigments on a water bath, combed and raked into elegant peacock
- * plumes, curling swirls, and non-Euclidean fluid streamlines.
+/*****************************************************************************\
+ *                              FluidPhotoMarblingEbru.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  FLUID PHOTO MARBLING EBRU: 100% viewport-filling traditional Turkish Ebru paper-marbling simulation.
+ *
+ *  The loaded photo floats as viscous liquid oil pigments on a water bath, combed and raked into elegant peacock
+ *  plumes, curling swirls, and non-Euclidean fluid streamlines.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

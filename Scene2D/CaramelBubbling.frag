@@ -1,23 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file CaramelBubbling.frag
- * @brief CARAMEL BUBBLING: a pan of caramelising sugar seen from above --
- * a molten golden-to-amber surface crowded with bubbles of every size
- * that swell, glint and burst, leaving rings that close over, the colour
- * deepening from pale gold to dark amber in slow swirls; the photograph
- * lends its patterns to the swirls of colour.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              CaramelBubbling.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the bubbling (integrated, jump-free)
- *   audioSpread     -> bubble size
- *   audioKick       -> the bubble highlights glint (light)
- *   audioMode       -> the caramel: pale gold in minor, dark amber in major
- *   audioRoughness  -> more small bubbles
- *   audioSwell      -> the heat glow (slow)
+ *  @brief
+ *  CARAMEL BUBBLING: a pan of caramelising sugar seen from above -- a molten golden-to-amber surface crowded with
+ *  bubbles of every size that swell, glint and burst, leaving rings that close over, the colour deepening from pale
+ *  gold to dark amber in slow swirls; the photograph lends its patterns to the swirls of colour.
  *
- * Knobs: bubbleP (bubble density), swirlP (colour swirls), photoP (photo in the swirls), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the bubbling (integrated, jump-free)
+ *    audioSpread     -> bubble size
+ *    audioKick       -> the bubble highlights glint (light)
+ *    audioMode       -> the caramel: pale gold in minor, dark amber in major
+ *    audioRoughness  -> more small bubbles
+ *    audioSwell      -> the heat glow (slow)
+ *
+ *  Knobs: bubbleP (bubble density), swirlP (colour swirls), photoP (photo in the swirls), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

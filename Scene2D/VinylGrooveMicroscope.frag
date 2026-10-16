@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file VinylGrooveMicroscope.frag
- * @brief VINYL GROOVE MICROSCOPE: the record under a microscope -- the
- * groove walls carved by the waveform (audioWave shapes the wall), the
- * stylus riding in the groove, the groove scrolling past on the scene
- * clock, dust as round motes, the vinyl's black sheen carrying the photo
- * as a rainbow of diffraction.  The kick is a crackle flash, the treble
- * the wall glints, the bass widens the modulation (slow).  Camera fixed
- * over the stylus.
+/*****************************************************************************\
+ *                              VinylGrooveMicroscope.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioWave[64] -> the groove wall shape (light-sized, scrolling)
- *   sceneAdvance  -> the groove scrolls (continuous)
- *   audioKick     -> crackle flash (light)
- *   audioHigh     -> wall glints (light)
- *   audioBass     -> modulation depth (slow)
- *   audioLevel    -> brightness
+ *  @brief
+ *  VINYL GROOVE MICROSCOPE: the record under a microscope -- the groove walls carved by the waveform (audioWave
+ *  shapes the wall), the stylus riding in the groove, the groove scrolling past on the scene clock, dust as round
+ *  motes, the vinyl's black sheen carrying the photo as a rainbow of diffraction.
  *
- * Per-activation variety: pitchP (groove spacing), dustP, hueP.
+ *  The kick is a crackle flash, the treble the wall glints, the bass widens the modulation (slow).  Camera fixed
+ *  over the stylus.
+ *
+ *  Audio Reactivity:
+ *    audioWave[64] -> the groove wall shape (light-sized, scrolling)
+ *    sceneAdvance  -> the groove scrolls (continuous)
+ *    audioKick     -> crackle flash (light)
+ *    audioHigh     -> wall glints (light)
+ *    audioBass     -> modulation depth (slow)
+ *    audioLevel    -> brightness
+ *
+ *  Per-activation variety: pitchP (groove spacing), dustP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

@@ -1,19 +1,24 @@
 #version 430 core
-/**
- * @file CavitationCloudPropeller.comp
- * @brief CAVITATION CLOUD PROPELLER: a ship propeller turning under water,
- * and the cloud of cavitation bubbles that streams off its blade tips --
- * born in the low pressure behind each blade, carried downstream in a
- * helix, growing, then collapsing.  The propeller turns on the scene
- * clock; every bubble lives on a continuous phase (no state); the collapse
- * at the end of a life is a flash the fragment stage lights with the kick.
- * The camera never moves.
+/*****************************************************************************\
+ *                              CavitationCloudPropeller.comp
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (generator stage):
- *   sceneAdvance -> rotation and bubble travel (continuous)
- *   audioSwell   -> bubble count fraction / cloud density (slow)
+ *  @brief
+ *  CAVITATION CLOUD PROPELLER: a ship propeller turning under water, and the cloud of cavitation bubbles that
+ *  streams off its blade tips -- born in the low pressure behind each blade, carried downstream in a helix,
+ *  growing, then collapsing.
  *
- * Per-instance: bladesP, densP, hueP.
+ *  The propeller turns on the scene clock; every bubble lives on a continuous phase (no state); the collapse at the
+ *  end of a life is a flash the fragment stage lights with the kick. The camera never moves.
+ *
+ *  Audio Reactivity (generator stage):
+ *    sceneAdvance -> rotation and bubble travel (continuous)
+ *    audioSwell   -> bubble count fraction / cloud density (slow)
+ *
+ *  Per-instance: bladesP, densP, hueP.
+ *
+ *  @author René Weller
  */
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( local_size_x = 4, local_size_y = 4, local_size_z = 4 ) in;

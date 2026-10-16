@@ -1,8 +1,14 @@
 #version 330 core
-/**
- * @file MagnetarCrustalQuakeAlfvenResonance.vert
- * @brief Vertex stage companion to MagnetarCrustalQuakeAlfvenResonance.frag -- see that file's
- * header for this scene's description.
+/*****************************************************************************\
+ *                              MagnetarCrustalQuakeAlfvenResonance.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to MagnetarCrustalQuakeAlfvenResonance.frag -- see that file's header for this scene's
+ *  description.
+ *
+ *  @author René Weller
  */
 
 // attrA.xyz = world pos, attrA.w = depthNorm (or panel u for kind 2)

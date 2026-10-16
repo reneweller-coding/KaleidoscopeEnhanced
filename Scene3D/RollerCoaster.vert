@@ -1,8 +1,13 @@
 #version 330 core
-/**
- * @file RollerCoaster.vert
- * @brief Vertex stage companion to RollerCoaster.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              RollerCoaster.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to RollerCoaster.frag -- see that file's header for this scene's description.
+ *
+ *  @author René Weller
  */
 // RollerCoaster.vert — THE CAMERA RIDES THE TRACK.  A glowing coaster
 // track winds through a dark void; the view races along it, through neon

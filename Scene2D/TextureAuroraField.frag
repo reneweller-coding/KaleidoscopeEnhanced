@@ -1,27 +1,32 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureAuroraField.frag
- * @brief TEXTURE AURORA FIELD: lying on your back under a great aurora -- the
- * whole sky is curtains of light converging toward the zenith (the corona),
- * rays and folds rippling, green fading up into red and violet, and the
- * colours and the shape of the folds come from the photograph: its colours
- * where it has them, its structure as the ripples running along the
- * curtains.  No horizon: the view is straight up, the curtains radiate in
- * all directions, so the field continues past the edges and mirrors.
- * Stars show through where the curtains thin.
+/*****************************************************************************\
+ *                              TextureAuroraField.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioPhase      -> the corona turns slowly (integrated)
- *   audioAdvance    -> the folds travel along the curtains (integrated)
- *   audioSpread     -> how many curtains (wide spectrum = more, finer)
- *   audioRoughness  -> the curtains ripple faster and finer
- *   audioMode       -> the colours: classic green in minor, pinks and violets in major (slow blend)
- *   audioSwell      -> brightness of the aurora (slow)
- *   audioHigh       -> the rays flicker at their lower edges (light)
+ *  @brief
+ *  TEXTURE AURORA FIELD: lying on your back under a great aurora -- the whole sky is curtains of light converging
+ *  toward the zenith (the corona), rays and folds rippling, green fading up into red and violet, and the colours
+ *  and the shape of the folds come from the photograph: its colours where it has them, its structure as the ripples
+ *  running along the curtains.
  *
- * Knobs: foldsP (fold depth), rayP (ray fineness), photoP (share of photo colour), hueP.
+ *  No horizon: the view is straight up, the curtains radiate in all directions, so the field continues past the
+ *  edges and mirrors. Stars show through where the curtains thin.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioPhase      -> the corona turns slowly (integrated)
+ *    audioAdvance    -> the folds travel along the curtains (integrated)
+ *    audioSpread     -> how many curtains (wide spectrum = more, finer)
+ *    audioRoughness  -> the curtains ripple faster and finer
+ *    audioMode       -> the colours: classic green in minor, pinks and violets in major (slow blend)
+ *    audioSwell      -> brightness of the aurora (slow)
+ *    audioHigh       -> the rays flicker at their lower edges (light)
+ *
+ *  Knobs: foldsP (fold depth), rayP (ray fineness), photoP (share of photo colour), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

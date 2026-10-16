@@ -1,8 +1,14 @@
 #version 330 core
-/**
- * @file DielectricResonatorMetagrating.vert
- * @brief Vertex stage companion to DielectricResonatorMetagrating.frag -- see that file's
- * header for this scene's description.
+/*****************************************************************************\
+ *                              DielectricResonatorMetagrating.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to DielectricResonatorMetagrating.frag -- see that file's header for this scene's
+ *  description.
+ *
+ *  @author René Weller
  */
 
 in vec4 attrA; ///< xy = Quad local UV [0,1], z = 0, w = Quad index

@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureFanFold.frag
- * @brief TEXTURE FAN FOLD: the photograph printed on a huge sheet of paper
- * folded like an accordion -- pleats run across the picture, each face
- * tilted alternately toward and away from the light, the image squeezed
- * on the faces that turn away; the pleats slowly fold tighter and open
- * flat again in travelling waves, their direction turning, so the picture
- * ripples in and out of legibility.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              TextureFanFold.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the fold waves travel (integrated, jump-free)
- *   audioPhase      -> the pleat direction turns (integrated)
- *   audioSpread     -> how deep the pleats fold
- *   audioKick       -> the ridge lines catch light (light)
- *   audioMode       -> light temperature: cool in minor, warm in major
- *   audioSwell      -> the shadow depth (slow)
+ *  @brief
+ *  TEXTURE FAN FOLD: the photograph printed on a huge sheet of paper folded like an accordion -- pleats run across
+ *  the picture, each face tilted alternately toward and away from the light, the image squeezed on the faces that
+ *  turn away; the pleats slowly fold tighter and open flat again in travelling waves, their direction turning, so
+ *  the picture ripples in and out of legibility.
  *
- * Knobs: pleatP (pleat width), waveP (fold wave length), paperP (paper texture), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the fold waves travel (integrated, jump-free)
+ *    audioPhase      -> the pleat direction turns (integrated)
+ *    audioSpread     -> how deep the pleats fold
+ *    audioKick       -> the ridge lines catch light (light)
+ *    audioMode       -> light temperature: cool in minor, warm in major
+ *    audioSwell      -> the shadow depth (slow)
+ *
+ *  Knobs: pleatP (pleat width), waveP (fold wave length), paperP (paper texture), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

@@ -1,29 +1,33 @@
 #version 330 core
+/*****************************************************************************\
+ *                              RoseOrbit.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Shades the particle streams that trace three nested spirograph rose curves (r = cos(k*theta)) plus the pollen
+ *  field drifting between them, rendered as soft additive point sprites — a simple Gaussian falloff from the sprite
+ *  centre times the per-vertex colour vCol.
+ *
+ *  This fragment stage reads no audio uniforms directly; every mapping is
+ *  computed per-vertex in RoseOrbit.vert and arrives here baked into vCol.
+ *
+ *  Audio Reactivity (all applied in RoseOrbit.vert):
+ *    audioAdvance   -> flow along the curves + 3-axis precession + pollen drift
+ *    audioBass      -> petal radius pulse
+ *    audioSwell     -> overall glow of the three roses and the pollen
+ *    audioChromaHue -> hue turn along theta (musical key)
+ *    audioSpread    -> dispersion of the streams (thin drawn line vs soft tube)
+ *                      and how wide the pollen field opens
+ *    audioRoughness -> petal fray (clean arc vs serrated outline)
+ *    audioMode      -> petal temperature (minor = all roses blue, major =
+ *                      the warm pink / amber pair)
+ *
+ *  @author René Weller
+ */
 out vec4 fragColor; ///< The pixel's colour (output).
 // RoseOrbit.frag — soft glowing point (additive blending).
 in vec4 vCol; ///< Colour (from the vertex stage).
-
-/**
- * @file RoseOrbit.frag
- * @brief Shades the particle streams that trace three nested spirograph rose
- * curves (r = cos(k*theta)) plus the pollen field drifting between them,
- * rendered as soft additive point sprites — a simple Gaussian falloff from
- * the sprite centre times the per-vertex colour vCol.
- *
- * This fragment stage reads no audio uniforms directly; every mapping is
- * computed per-vertex in RoseOrbit.vert and arrives here baked into vCol.
- *
- * Audio Reactivity (all applied in RoseOrbit.vert):
- *   audioAdvance   -> flow along the curves + 3-axis precession + pollen drift
- *   audioBass      -> petal radius pulse
- *   audioSwell     -> overall glow of the three roses and the pollen
- *   audioChromaHue -> hue turn along theta (musical key)
- *   audioSpread    -> dispersion of the streams (thin drawn line vs soft tube)
- *                     and how wide the pollen field opens
- *   audioRoughness -> petal fray (clean arc vs serrated outline)
- *   audioMode      -> petal temperature (minor = all roses blue, major =
- *                     the warm pink / amber pair)
- */
 
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()

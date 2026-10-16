@@ -1,31 +1,35 @@
 #version 430 core
-/**
- * @file TidalDisruptionEvent.comp
- * @brief TIDAL DISRUPTION EVENT: a star falls past a black hole and is torn
- * into a stream.  24,576 particles make the star; each feels the hole's
- * gravity (softened point mass) and a self-gravity spring toward the star's
- * own centre, which rides an analytic fly-by orbit driven by the scene's
- * arc.  Far out the spring wins and the star holds; near pericentre the
- * tides win, the spring is released along the arc and the star draws out
- * into the classic two-armed stream that wraps the hole.  The drop regie
- * can bend the arc so pericentre lands on the drop -- and the tearing is
- * geometry that was always going to happen, not a jump: the release is a
- * smoothstep over a fifth of the arc.  The camera never moves.
+/*****************************************************************************\
+ *                              TidalDisruptionEvent.comp
+\*****************************************************************************/
+/*! @file
  *
- * State (binding 2): magic, clocks, then 8 floats per particle.  Init is
- * SELF-HEALING PER PARTICLE: a zero slot, a bad magic, a NaN or a particle
- * swallowed by the hole is reborn as star material at the star's current
- * place -- so the order of the two passes cannot matter, and nothing can
- * sit forever in the hole's softened well (which is what a zero state did).
+ *  @brief
+ *  TIDAL DISRUPTION EVENT: a star falls past a black hole and is torn into a stream.
  *
- * Audio Reactivity (generator stage):
- *   sceneProgress -> the fly-by and the release (staged, continuous)
- *   sceneAdvance  -> integration pace (music-paced)
- *   audioLevel    -> pace as well
- *   audioKick     -> particle flash (fragment stage)
- *   audioBass     -> the hole's glow (fragment stage)
+ *  24,576 particles make the star; each feels the hole's gravity (softened point mass) and a self-gravity spring
+ *  toward the star's own centre, which rides an analytic fly-by orbit driven by the scene's arc.  Far out the
+ *  spring wins and the star holds; near pericentre the tides win, the spring is released along the arc and the star
+ *  draws out into the classic two-armed stream that wraps the hole.  The drop regie can bend the arc so pericentre
+ *  lands on the drop -- and the tearing is geometry that was always going to happen, not a jump: the release is a
+ *  smoothstep over a fifth of the arc.  The camera never moves.
  *
- * Per-instance: massP (hole mass), spinP (star spin), hueP.
+ *  State (binding 2): magic, clocks, then 8 floats per particle.  Init is
+ *  SELF-HEALING PER PARTICLE: a zero slot, a bad magic, a NaN or a particle
+ *  swallowed by the hole is reborn as star material at the star's current
+ *  place -- so the order of the two passes cannot matter, and nothing can
+ *  sit forever in the hole's softened well (which is what a zero state did).
+ *
+ *  Audio Reactivity (generator stage):
+ *    sceneProgress -> the fly-by and the release (staged, continuous)
+ *    sceneAdvance  -> integration pace (music-paced)
+ *    audioLevel    -> pace as well
+ *    audioKick     -> particle flash (fragment stage)
+ *    audioBass     -> the hole's glow (fragment stage)
+ *
+ *  Per-instance: massP (hole mass), spinP (star spin), hueP.
+ *
+ *  @author René Weller
  */
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( local_size_x = 4, local_size_y = 4, local_size_z = 4 ) in;

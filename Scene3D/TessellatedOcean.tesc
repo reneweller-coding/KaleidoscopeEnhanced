@@ -1,14 +1,18 @@
 #version 400 core
-/**
- * @file TessellatedOcean.tesc
- * @brief Tessellation control for TessellatedOcean: the level is adaptive by
- * distance AND by the treble -- a loud, bright mix ripples the sea finer, a
- * dull one leaves it smooth.  The treble term rides a SLOW blend (its own
- * slew lives in the host's swell; here the raw high band is mixed at a
- * quarter with the swell) and fractional_odd_spacing makes every level
- * change continuous, so the mesh never pops.  Edge levels come from the
- * edge midpoints alone so neighbouring patches agree and the surface never
- * cracks.
+/*****************************************************************************\
+ *                              TessellatedOcean.tesc
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Tessellation control for TessellatedOcean: the level is adaptive by distance AND by the treble -- a loud, bright
+ *  mix ripples the sea finer, a dull one leaves it smooth.
+ *
+ *  The treble term rides a SLOW blend (its own slew lives in the host's swell; here the raw high band is mixed at a
+ *  quarter with the swell) and fractional_odd_spacing makes every level change continuous, so the mesh never pops.
+ *  Edge levels come from the edge midpoints alone so neighbouring patches agree and the surface never cracks.
+ *
+ *  @author René Weller
  */
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( vertices = 4 ) out;

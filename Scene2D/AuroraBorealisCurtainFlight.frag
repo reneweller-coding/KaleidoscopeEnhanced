@@ -1,18 +1,24 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file AuroraBorealisCurtainFlight.frag
- * @brief AURORA BOREALIS CURTAIN FLIGHT: Volumetric 3D flight directly through
- * rippling multilayered solar ionosphere Aurora curtains with vertical ray shooting,
- * emerald-to-violet geomagnetic ionization glows, and deep cosmic star fields.
+/*****************************************************************************\
+ *                              AuroraBorealisCurtainFlight.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance -> drives continuous forward flight through the aurora curtains
- *   audioKick    -> flashes vertical geomagnetic particle surges & curtain burst
- *   audioCentroid-> sharpens vertical ray shooting filament resolution
- *   audioSubBass -> expands curtain wave amplitude breathing
- *   audioChromaHue-> steers the geomagnetic fluorescent spectrum
+ *  @brief
+ *  AURORA BOREALIS CURTAIN FLIGHT: Volumetric 3D flight directly through rippling multilayered solar ionosphere
+ *  Aurora curtains with vertical ray shooting, emerald-to-violet geomagnetic ionization glows, and deep cosmic star
+ *  fields.
+ *
+ *  Audio Reactivity:
+ *    audioAdvance -> drives continuous forward flight through the aurora curtains
+ *    audioKick    -> flashes vertical geomagnetic particle surges & curtain burst
+ *    audioCentroid-> sharpens vertical ray shooting filament resolution
+ *    audioSubBass -> expands curtain wave amplitude breathing
+ *    audioChromaHue-> steers the geomagnetic fluorescent spectrum
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

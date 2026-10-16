@@ -1,22 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file HubStation.frag
- * @brief GEOM="MESH" STATION FAMILY: civilian/trade hubs (cargo docks,
- * merchanter outposts, shipyards, quarantine posts, trade promenades),
- * shown against a busy starfield (with faint distant nebula wisps) painted
- * onto the sky shell Scene3DShader::buildGeometry() appends after the
- * loaded mesh (see HubStation.vert) -- vBg selects shell vs. hull. Warm,
- * brighter key light plus busy amber docking-light speckle across the
- * hull's darker baked patches -- a hub that's alive with traffic, not a
- * single glow but many small ones; no photo-tinting on the hull itself.
- *   audioSwell   -> key-light strength, docking-light brightness
- *   audioKick    -> docking-light twinkle
- *   audioAdvance -> tumble speed (vertex stage)
+/*****************************************************************************\
+ *                              HubStation.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-instance: sizeP (relative scale), busyP (docking-light density).
- * Per-activation variety: hueP float palette offset (0..6.28).
+ *  @brief
+ *  GEOM="MESH" STATION FAMILY: civilian/trade hubs (cargo docks, merchanter outposts, shipyards, quarantine posts,
+ *  trade promenades), shown against a busy starfield (with faint distant nebula wisps) painted onto the sky shell
+ *  Scene3DShader::buildGeometry() appends after the loaded mesh (see HubStation.vert) -- vBg selects shell vs.
+ *  hull.
+ *
+ *  Warm, brighter key light plus busy amber docking-light speckle across the hull's darker baked patches -- a hub
+ *  that's alive with traffic, not a single glow but many small ones; no photo-tinting on the hull itself.
+ *
+ *    audioSwell   -> key-light strength, docking-light brightness
+ *    audioKick    -> docking-light twinkle
+ *    audioAdvance -> tumble speed (vertex stage)
+ *
+ *  Per-instance: sizeP (relative scale), busyP (docking-light density).
+ *  Per-activation variety: hueP float palette offset (0..6.28).
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform sampler2DArray texMeshMaterial;       ///< The mesh's material textures (albedo, roughness, normal ...).
 uniform int            texMeshMaterialLayers; ///< Number of layers in texMeshMaterial.

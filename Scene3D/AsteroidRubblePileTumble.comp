@@ -1,16 +1,21 @@
 #version 430 core
-/**
- * @file AsteroidRubblePileTumble.comp
- * @brief ASTEROID RUBBLE PILE: a rubble-pile asteroid -- thousands of
- * boulders held together by nothing but gravity, a spinning-top shape like
- * Bennu or Ryugu -- tumbling slowly in front of the camera.  Every boulder
- * is a photo tile sitting on the body surface (radius from a noise of its
- * direction), its own normal stored for the lighting; the body rotates on
- * the scene clock about a slowly precessing axis.  A probe hovers over one
- * site and its touchdown puff is a cloud of dust quads that the kick
- * lights (fragment).  No state.  The camera never moves.
+/*****************************************************************************\
+ *                              AsteroidRubblePileTumble.comp
+\*****************************************************************************/
+/*! @file
  *
- * Per-instance: densP (boulder fraction), spinP, hueP.
+ *  @brief
+ *  ASTEROID RUBBLE PILE: a rubble-pile asteroid -- thousands of boulders held together by nothing but gravity, a
+ *  spinning-top shape like Bennu or Ryugu -- tumbling slowly in front of the camera.
+ *
+ *  Every boulder is a photo tile sitting on the body surface (radius from a noise of its direction), its own normal
+ *  stored for the lighting; the body rotates on the scene clock about a slowly precessing axis.  A probe hovers
+ *  over one site and its touchdown puff is a cloud of dust quads that the kick lights (fragment).  No state.  The
+ *  camera never moves.
+ *
+ *  Per-instance: densP (boulder fraction), spinP, hueP.
+ *
+ *  @author René Weller
  */
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( local_size_x = 4, local_size_y = 4, local_size_z = 4 ) in;

@@ -1,22 +1,31 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file CavityOptomechanicsPhononLasing.frag
- * @brief CAVITY OPTOMECHANICS PHONON LASING: Optomechanical optical microcavity with movable
- * nanomechanical membrane mirrors. Radiation pressure creates parametric phonon amplification,
- * stimulated Brillouin acoustic shockwaves, laser optical frequency combs, and photo texturing.
- *   audioAdvance -> navigates optomechanical limit-cycle oscillations
- *   audioKick    -> flashes stimulated phonon-lasing threshold burst peaks
- *   audioSwell   -> widens acoustic membrane displacement amplitude
- *   audioCentroid-> shifts optical cavity laser frequency comb spectra
- *   audioHigh    -> modulates high-frequency phonon acoustic mode ripples
+/*****************************************************************************\
+ *                              CavityOptomechanicsPhononLasing.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   cavityQ_P    float optical cavity quality factor & sharpness (1.0..3.5)
- *   phononFreqP  float mechanical membrane resonance frequency   (6.0..20.0)
- *   combP        float optical frequency comb fringe density     (8.0..24.0)
- *   pressureP    float radiation pressure coupling strength      (0.5..2.2)
+ *  @brief
+ *  CAVITY OPTOMECHANICS PHONON LASING: Optomechanical optical microcavity with movable nanomechanical membrane
+ *  mirrors.
+ *
+ *  Radiation pressure creates parametric phonon amplification, stimulated Brillouin acoustic shockwaves, laser
+ *  optical frequency combs, and photo texturing.
+ *
+ *    audioAdvance -> navigates optomechanical limit-cycle oscillations
+ *    audioKick    -> flashes stimulated phonon-lasing threshold burst peaks
+ *    audioSwell   -> widens acoustic membrane displacement amplitude
+ *    audioCentroid-> shifts optical cavity laser frequency comb spectra
+ *    audioHigh    -> modulates high-frequency phonon acoustic mode ripples
+ *
+ *  Per-activation variety:
+ *    cavityQ_P    float optical cavity quality factor & sharpness (1.0..3.5)
+ *    phononFreqP  float mechanical membrane resonance frequency   (6.0..20.0)
+ *    combP        float optical frequency comb fringe density     (8.0..24.0)
+ *    pressureP    float radiation pressure coupling strength      (0.5..2.2)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file LeafVenationGrowth.frag
- * @brief LEAF VENATION GROWTH: a leaf lit through, and the growth of its
- * veins -- the midrib first, then the secondaries branching off, then the
- * finer orders, each order switching on later in the scene arc and
- * extending smoothly from its parent.  The photo is the leaf tissue seen
- * against the light; sap light pulses along the veins with the bass; the
- * treble sparkles the tissue; the swell is the sun behind the leaf.
- * Camera still.
+/*****************************************************************************\
+ *                              LeafVenationGrowth.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   sceneProgress -> vein growth (the arc)
- *   audioBass     -> sap light along the veins (light)
- *   audioSwell    -> backlight (slow)
- *   audioHigh     -> tissue sparkle (light)
- *   audioLevel    -> brightness
+ *  @brief
+ *  LEAF VENATION GROWTH: a leaf lit through, and the growth of its veins -- the midrib first, then the secondaries
+ *  branching off, then the finer orders, each order switching on later in the scene arc and extending smoothly from
+ *  its parent.
  *
- * Per-activation variety: ordersP, angleP, hueP.
+ *  The photo is the leaf tissue seen against the light; sap light pulses along the veins with the bass; the treble
+ *  sparkles the tissue; the swell is the sun behind the leaf. Camera still.
+ *
+ *  Audio Reactivity:
+ *    sceneProgress -> vein growth (the arc)
+ *    audioBass     -> sap light along the veins (light)
+ *    audioSwell    -> backlight (slow)
+ *    audioHigh     -> tissue sparkle (light)
+ *    audioLevel    -> brightness
+ *
+ *  Per-activation variety: ordersP, angleP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

@@ -1,10 +1,16 @@
 #version 330 core
-/**
- * @file KiteFestival.vert
- * @brief Vertex stage for KiteFestival.comp/.frag: world positions pass
- * straight through (the generator already placed everything in front of
- * the camera at the origin, +z ahead).  Kind, seed and photo uv are handed
- * to the fragment stage.  No camera motion.
+/*****************************************************************************\
+ *                              KiteFestival.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage for KiteFestival.comp/.frag: world positions pass straight through (the generator already placed
+ *  everything in front of the camera at the origin, +z ahead).
+ *
+ *  Kind, seed and photo uv are handed to the fragment stage.  No camera motion.
+ *
+ *  @author René Weller
  */
 layout( location = 0 ) in vec4 attrA; ///< xyz = position, w = id
 layout( location = 1 ) in vec4 attrB; ///< x = seed/lit, y = kind, zw = uv

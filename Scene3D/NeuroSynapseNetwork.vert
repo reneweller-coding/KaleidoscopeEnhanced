@@ -1,8 +1,13 @@
 #version 330 core
-/**
- * @file NeuroSynapseNetwork.vert
- * @brief Vertex stage companion to NeuroSynapseNetwork.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              NeuroSynapseNetwork.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to NeuroSynapseNetwork.frag -- see that file's header for this scene's description.
+ *
+ *  @author René Weller
  */
 // NeuroSynapseNetwork.vert — 60,000 synaptic nodes forming a 3D neural connectome.
 // Action potential electrical spikes race across axonal pathways on beat transients.

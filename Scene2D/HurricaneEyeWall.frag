@@ -1,23 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file HurricaneEyeWall.frag
- * @brief HURRICANE EYE WALL: standing in the eye.  All around, the stadium
- * of the eyewall rises -- a tilted amphitheatre of cloud turning steadily
- * on the scene clock -- and above, the calm blue sky.  The wall's height
- * is the swell, lightning flickers in it on the kick, the sea below heaves
- * with the bass, and the photo is the cloud texture of the wall.  Camera
- * fixed, looking across the eye.
+/*****************************************************************************\
+ *                              HurricaneEyeWall.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   sceneAdvance -> the wall's rotation (continuous)
- *   audioSwell   -> wall height (slow)
- *   audioKick    -> lightning in the wall (light)
- *   audioBass    -> the sea's light (light)
- *   audioLevel   -> brightness
+ *  @brief
+ *  HURRICANE EYE WALL: standing in the eye.
  *
- * Per-activation variety: radiusP, tiltP, hueP.
+ *  All around, the stadium of the eyewall rises -- a tilted amphitheatre of cloud turning steadily on the scene
+ *  clock -- and above, the calm blue sky.  The wall's height is the swell, lightning flickers in it on the kick,
+ *  the sea below heaves with the bass, and the photo is the cloud texture of the wall.  Camera fixed, looking
+ *  across the eye.
+ *
+ *  Audio Reactivity:
+ *    sceneAdvance -> the wall's rotation (continuous)
+ *    audioSwell   -> wall height (slow)
+ *    audioKick    -> lightning in the wall (light)
+ *    audioBass    -> the sea's light (light)
+ *    audioLevel   -> brightness
+ *
+ *  Per-activation variety: radiusP, tiltP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

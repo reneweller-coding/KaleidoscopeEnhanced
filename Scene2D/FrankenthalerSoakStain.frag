@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file FrankenthalerSoakStain.frag
- * @brief FRANKENTHALER SOAK STAIN: colour-field painting by soak-staining --
- * thinned washes of colour bleed into raw canvas in great translucent
- * pools, their edges darker where the pigment gathered as the pool dried,
- * the canvas weave showing through, overlapping pools mixing like
- * watercolour; the pools slowly spread, shift and fade into new ones.
- * The colours come from the photograph.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              FrankenthalerSoakStain.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the pools spread and move (integrated, jump-free)
- *   audioSpread     -> pool size
- *   audioMode       -> palette: cool washes in minor, warm in major (tint)
- *   audioKick       -> the colours brighten (light)
- *   audioRoughness  -> the pool edges get more ragged
- *   audioSwell      -> the saturation of the washes (slow)
+ *  @brief
+ *  FRANKENTHALER SOAK STAIN: colour-field painting by soak-staining -- thinned washes of colour bleed into raw
+ *  canvas in great translucent pools, their edges darker where the pigment gathered as the pool dried, the canvas
+ *  weave showing through, overlapping pools mixing like watercolour; the pools slowly spread, shift and fade into
+ *  new ones.
  *
- * Knobs: poolP (pool count), edgeP (dark drying edges), canvasP (canvas showing), hueP.
+ *  The colours come from the photograph.  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the pools spread and move (integrated, jump-free)
+ *    audioSpread     -> pool size
+ *    audioMode       -> palette: cool washes in minor, warm in major (tint)
+ *    audioKick       -> the colours brighten (light)
+ *    audioRoughness  -> the pool edges get more ragged
+ *    audioSwell      -> the saturation of the washes (slow)
+ *
+ *  Knobs: poolP (pool count), edgeP (dark drying edges), canvasP (canvas showing), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

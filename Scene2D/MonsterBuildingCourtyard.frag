@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file MonsterBuildingCourtyard.frag
- * @brief MONSTER BUILDING COURTYARD: lying on your back in the courtyard of a
- * Hong Kong housing block at dusk and looking straight up -- four walls
- * of flats soaring on every side, thousands of windows stacked floor on
- * floor, air-conditioner boxes under the sills, laundry on poles, the
- * facades in faded pastel, all of it converging to a small rectangle of
- * violet evening sky far above.  The windows are lit, warm and cool, and
- * they brighten with the bands of the music, whole families of windows
- * glowing up together.  The camera is still; clouds cross the sky square.
+/*****************************************************************************\
+ *                              MonsterBuildingCourtyard.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSpectrum[32] -> the lit windows, one band per family (light)
- *   audioSwell        -> the glow of the evening sky (slow)
- *   audioLevel        -> brightness
- *   sceneTime / sceneAdvance -> clouds drifting over the sky square
+ *  @brief
+ *  MONSTER BUILDING COURTYARD: lying on your back in the courtyard of a Hong Kong housing block at dusk and looking
+ *  straight up -- four walls of flats soaring on every side, thousands of windows stacked floor on floor,
+ *  air-conditioner boxes under the sills, laundry on poles, the facades in faded pastel, all of it converging to a
+ *  small rectangle of violet evening sky far above.
  *
- * Per-activation variety: heightP (how tall the blocks), hueP.
+ *  The windows are lit, warm and cool, and they brighten with the bands of the music, whole families of windows
+ *  glowing up together.  The camera is still; clouds cross the sky square.
+ *
+ *  Audio Reactivity:
+ *    audioSpectrum[32] -> the lit windows, one band per family (light)
+ *    audioSwell        -> the glow of the evening sky (slow)
+ *    audioLevel        -> brightness
+ *    sceneTime / sceneAdvance -> clouds drifting over the sky square
+ *
+ *  Per-activation variety: heightP (how tall the blocks), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

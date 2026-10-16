@@ -1,19 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file QuantumHallEdgeChiralRibbon.frag
- * @brief QUANTUM HALL EDGE CHIRAL RIBBON: Topologically protected 1D chiral edge channels
- * in the integer and fractional Quantum Hall effects. Dissipationless skipping orbits,
- * quantized Hall conductance plates, ballistic wavepacket pulses, and photo texturing.
- *   audioAdvance -> accelerates chiral electron skipping orbit velocity along boundary
- *   audioKick    -> flashes quantized Hall conductance plateau transition bursts
- *   audioSwell   -> widens magnetic length & edge channel ribbon thickness
- *   audioCentroid-> shifts Landau level edge state emission spectra
+/*****************************************************************************\
+ *                              QuantumHallEdgeChiralRibbon.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   ribbonWidthP float chiral edge state channel thickness    (0.02..0.1)
- *   edgeGlowP    float ballistic electron wavepacket luminance(0.8..2.5)
+ *  @brief
+ *  QUANTUM HALL EDGE CHIRAL RIBBON: Topologically protected 1D chiral edge channels in the integer and fractional
+ *  Quantum Hall effects.
+ *
+ *  Dissipationless skipping orbits, quantized Hall conductance plates, ballistic wavepacket pulses, and photo
+ *  texturing.
+ *
+ *    audioAdvance -> accelerates chiral electron skipping orbit velocity along boundary
+ *    audioKick    -> flashes quantized Hall conductance plateau transition bursts
+ *    audioSwell   -> widens magnetic length & edge channel ribbon thickness
+ *    audioCentroid-> shifts Landau level edge state emission spectra
+ *
+ *  Per-activation variety:
+ *    ribbonWidthP float chiral edge state channel thickness    (0.02..0.1)
+ *    edgeGlowP    float ballistic electron wavepacket luminance(0.8..2.5)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec2  vUV;          ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 in float vSide;        ///< Which side of a strip (from the vertex stage).

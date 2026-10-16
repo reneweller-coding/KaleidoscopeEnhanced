@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file OortCloudDrift.frag
- * @brief OORT CLOUD DRIFT: the million-year fall from the Oort cloud to the
- * Sun as one endless zoom.  Icy bodies hang in shells at every scale; in
- * log-polar space the shells repeat with a fixed period, so the zoom is
- * periodic and its wrap invisible, and the Sun waits at the centre as a
- * glow that never arrives.  Onsets ignite comets: a body near the onset
- * grows a tail pointing away from the Sun, its brightness the onset
- * envelope -- light, not motion.  The zoom runs on the music's pace.
+/*****************************************************************************\
+ *                              OortCloudDrift.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   sceneAdvance -> the fall (music-paced, periodic, seamless)
- *   audioOnset   -> comet tails ignite (envelope, light)
- *   audioLevel   -> the Sun's glow
- *   audioSwell   -> dust haze (slow)
- *   audioHigh    -> sparkle of the ice
+ *  @brief
+ *  OORT CLOUD DRIFT: the million-year fall from the Oort cloud to the Sun as one endless zoom.
  *
- * Per-activation variety: zoomP (fall rate), densP (body density), hueP.
+ *  Icy bodies hang in shells at every scale; in log-polar space the shells repeat with a fixed period, so the zoom
+ *  is periodic and its wrap invisible, and the Sun waits at the centre as a glow that never arrives.  Onsets ignite
+ *  comets: a body near the onset grows a tail pointing away from the Sun, its brightness the onset envelope --
+ *  light, not motion.  The zoom runs on the music's pace.
+ *
+ *  Audio Reactivity:
+ *    sceneAdvance -> the fall (music-paced, periodic, seamless)
+ *    audioOnset   -> comet tails ignite (envelope, light)
+ *    audioLevel   -> the Sun's glow
+ *    audioSwell   -> dust haze (slow)
+ *    audioHigh    -> sparkle of the ice
+ *
+ *  Per-activation variety: zoomP (fall rate), densP (body density), hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

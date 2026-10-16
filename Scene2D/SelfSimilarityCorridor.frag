@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SelfSimilarityCorridor.frag
- * @brief SELF-SIMILARITY CORRIDOR: an endless corridor whose floor, ceiling
- * and walls are tiled with the song's own structure.  The host keeps a 256x256
- * self-similarity matrix (texSSM: ~90 s of feature history against itself).
- * Walking down the corridor is walking down one time axis; the other time
- * axis runs across it.  A returning chorus lays bright diagonal bands across
- * the floor, a section change is a dark threshold you step over, a loop is a
- * fine grid.  The corridor is generated from the music's memory, so no two
- * songs build the same hallway.
+/*****************************************************************************\
+ *                              SelfSimilarityCorridor.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   texSSM         -> every tile (the architecture itself)
- *   ssmHead        -> "now" is the near end; the corridor slides as time passes
- *   audioBeat      -> the nearest tile row lights up
- *   audioSwell     -> ceiling height (builds lift the roof)
- *   audioChromaHue -> palette
+ *  @brief
+ *  SELF-SIMILARITY CORRIDOR: an endless corridor whose floor, ceiling and walls are tiled with the song's own
+ *  structure.
  *
- * Per-activation variety: scaleP (tiles per second of history), glowP, hueP.
+ *  The host keeps a 256x256 self-similarity matrix (texSSM: ~90 s of feature history against itself). Walking down
+ *  the corridor is walking down one time axis; the other time axis runs across it.  A returning chorus lays bright
+ *  diagonal bands across the floor, a section change is a dark threshold you step over, a loop is a fine grid.  The
+ *  corridor is generated from the music's memory, so no two songs build the same hallway.
+ *
+ *  Audio Reactivity:
+ *    texSSM         -> every tile (the architecture itself)
+ *    ssmHead        -> "now" is the near end; the corridor slides as time passes
+ *    audioBeat      -> the nearest tile row lights up
+ *    audioSwell     -> ceiling height (builds lift the roof)
+ *    audioChromaHue -> palette
+ *
+ *  Per-activation variety: scaleP (tiles per second of history), glowP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

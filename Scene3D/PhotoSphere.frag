@@ -1,4 +1,20 @@
 #version 330 core
+/*****************************************************************************\
+ *                              PhotoSphere.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Shades the photo-wrapped planet: the current slideshow image wraps the sphere twice, mirror-folded so the seam
+ *  never shows, with day-side lighting and a key-coloured atmosphere rim.
+ *
+ *  tex0/tex1 are crossfaded by interpolation so the wrap survives a photo
+ *  change mid-scene. audioChromaHue sets the rim colour, audioCentroid
+ *  brightens that rim, audioKick pulses a flash band at the equator, and
+ *  audioDrop lights the entire globe.
+ *
+ *  @author René Weller
+ */
 out vec4 fragColor; ///< The pixel's colour (output).
 // PhotoSphere.frag — the image wraps the planet twice around (mirror-folded
 // so the seam never shows); day-side lighting, a key-coloured rim, and an
@@ -15,18 +31,6 @@ uniform float     audioCentroid;  ///< Spectral centroid (brightness of the soun
 in vec2 vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 in vec3 vN;    ///< N (from the vertex stage).
 in vec3 vView; ///< View vector (from the vertex stage).
-
-/**
- * @file PhotoSphere.frag
- * @brief Shades the photo-wrapped planet: the current slideshow image
- * wraps the sphere twice, mirror-folded so the seam never shows, with
- * day-side lighting and a key-coloured atmosphere rim.
- *
- * tex0/tex1 are crossfaded by interpolation so the wrap survives a photo
- * change mid-scene. audioChromaHue sets the rim colour, audioCentroid
- * brightens that rim, audioKick pulses a flash band at the equator, and
- * audioDrop lights the entire globe.
- */
 
 /**  Rotates a colour's hue by an angle (about the grey axis).
  *

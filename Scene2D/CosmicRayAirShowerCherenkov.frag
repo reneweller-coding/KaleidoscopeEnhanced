@@ -1,22 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file CosmicRayAirShowerCherenkov.frag
- * @brief COSMIC RAY AIR SHOWER CHERENKOV: Ultra-high-energy cosmic ray striking
- * the upper atmosphere, generating a cascading air shower of billions of
- * relativistic secondary particles, nitrogen fluorescence in near-UV,
- * and forward-directed atmospheric Cherenkov light cones.
- *   audioAdvance -> drives relativistic particle cascade propagation
- *   audioKick    -> fires primary cosmic ray impact & giant Cherenkov shock flash
- *   audioBass    -> widens lateral particle distribution cone
- *   audioHigh    -> excites molecular nitrogen UV fluorescence lines
+/*****************************************************************************\
+ *                              CosmicRayAirShowerCherenkov.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   cascadeP float air shower particle multiplication depth (0.5..2.2)
- *   fluorP   float nitrogen fluorescence UV radiance        (0.5..2.0)
- *   speedP   float cascade arrival velocity                 (0.5..2.0)
- *   hueP     float atmospheric fluorescence hue offset      (0..6.28)
+ *  @brief
+ *  COSMIC RAY AIR SHOWER CHERENKOV: Ultra-high-energy cosmic ray striking the upper atmosphere, generating a
+ *  cascading air shower of billions of relativistic secondary particles, nitrogen fluorescence in near-UV, and
+ *  forward-directed atmospheric Cherenkov light cones.
+ *
+ *    audioAdvance -> drives relativistic particle cascade propagation
+ *    audioKick    -> fires primary cosmic ray impact & giant Cherenkov shock flash
+ *    audioBass    -> widens lateral particle distribution cone
+ *    audioHigh    -> excites molecular nitrogen UV fluorescence lines
+ *
+ *  Per-activation variety:
+ *    cascadeP float air shower particle multiplication depth (0.5..2.2)
+ *    fluorP   float nitrogen fluorescence UV radiance        (0.5..2.0)
+ *    speedP   float cascade arrival velocity                 (0.5..2.0)
+ *    hueP     float atmospheric fluorescence hue offset      (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

@@ -1,23 +1,28 @@
 #version 330 core
-/**
- * @file MyceliumNeuralPulse.vert
- * @brief Vertex stage companion to MyceliumNeuralPulse.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              MyceliumNeuralPulse.vert
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance   -> camera orbit around the thicket (pre-integrated phase)
- *   audioKick      -> action-potential firing (in the .comp generator)
- *   audioLowMid    -> harmonic breath: the whole mycelium mat inflates on
- *                     150-500 Hz pad/body warmth and contracts when the
- *                     harmony thins out
- *   audioRoughness -> dissonance tangle: rough/clustered harmony bends every
- *                     strand off its clean radial path through a smooth
- *                     spatial field, so the network visibly snarls
+ *  @brief
+ *  Vertex stage companion to MyceliumNeuralPulse.frag -- see that file's header for this scene's description.
  *
- * NOTE: the compute generator (MyceliumNeuralPulse.comp) is a SEPARATE
- * program and only receives the small hand-picked uniform set in
- * Scene3DShader::runGenerator(), so anything outside that set has to be
- * applied here on the baked geometry instead.
+ *  Audio Reactivity:
+ *    audioAdvance   -> camera orbit around the thicket (pre-integrated phase)
+ *    audioKick      -> action-potential firing (in the .comp generator)
+ *    audioLowMid    -> harmonic breath: the whole mycelium mat inflates on
+ *                      150-500 Hz pad/body warmth and contracts when the
+ *                      harmony thins out
+ *    audioRoughness -> dissonance tangle: rough/clustered harmony bends every
+ *                      strand off its clean radial path through a smooth
+ *                      spatial field, so the network visibly snarls
+ *
+ *  NOTE: the compute generator (MyceliumNeuralPulse.comp) is a SEPARATE
+ *  program and only receives the small hand-picked uniform set in
+ *  Scene3DShader::runGenerator(), so anything outside that set has to be
+ *  applied here on the baked geometry instead.
+ *
+ *  @author René Weller
  */
 // attrA.xyz = world pos (baked by the compute generator), attrA.w = pulse
 // attrB.w   = branchLevel (Scene3DShader.cpp GEOM_INDIRECT, 8-float layout)

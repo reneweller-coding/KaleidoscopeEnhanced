@@ -1,18 +1,25 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TricornFractalAntimatterSea.frag
- * @brief TRICORN FRACTAL ANTIMATTER SEA: Anti-holomorphic Tricorn (Mandelbar) fractal
- * z -> conj(z)^2 + c. Three-cornered fractal dragon scales, metallic antimatter fins,
- * and high-frequency glowing crest ripples over an infinite complex sea.
+/*****************************************************************************\
+ *                              TricornFractalAntimatterSea.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance -> drives continuous deep plunge into Tricorn dragon fin cusps
- *   audioKick    -> flashes antimatter core singularities & triggers crest bursts
- *   audioCentroid-> sharpens three-cornered boundary fin serrations
- *   audioSubBass -> expands dragon scale breathing scale
- *   audioChromaHue-> steers the deep ultraviolet / turquoise / platinum palette
+ *  @brief
+ *  TRICORN FRACTAL ANTIMATTER SEA: Anti-holomorphic Tricorn (Mandelbar) fractal z -> conj(z)^2 + c.
+ *
+ *  Three-cornered fractal dragon scales, metallic antimatter fins, and high-frequency glowing crest ripples over an
+ *  infinite complex sea.
+ *
+ *  Audio Reactivity:
+ *    audioAdvance -> drives continuous deep plunge into Tricorn dragon fin cusps
+ *    audioKick    -> flashes antimatter core singularities & triggers crest bursts
+ *    audioCentroid-> sharpens three-cornered boundary fin serrations
+ *    audioSubBass -> expands dragon scale breathing scale
+ *    audioChromaHue-> steers the deep ultraviolet / turquoise / platinum palette
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

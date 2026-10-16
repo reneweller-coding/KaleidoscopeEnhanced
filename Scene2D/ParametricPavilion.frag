@@ -1,26 +1,31 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file ParametricPavilion.frag
- * @brief PARAMETRIC PAVILION: a white, flowing interior in the manner of Zaha
- * Hadid -- walls, floor and ceiling one continuous surface that swells,
- * twists and folds as it runs ahead, with long slit skylights curving
- * along it, and in its creases lines of light that follow the curvature
- * and run along the surfaces in the rhythm.  All white, glossy, soft
- * shadows gathering in the folds.  The camera glides slowly through.
+/*****************************************************************************\
+ *                              ParametricPavilion.frag
+\*****************************************************************************/
+/*! @file
  *
- * The space is a deformed tube with a flat floor, ray-marched as a signed
- * distance field.
+ *  @brief
+ *  PARAMETRIC PAVILION: a white, flowing interior in the manner of Zaha Hadid -- walls, floor and ceiling one
+ *  continuous surface that swells, twists and folds as it runs ahead, with long slit skylights curving along it,
+ *  and in its creases lines of light that follow the curvature and run along the surfaces in the rhythm.
  *
- * Audio Reactivity:
- *   audioBass   -> the brightness of the light lines (light)
- *   audioKick   -> pulses running along them (light)
- *   audioSwell  -> the daylight through the skylights (slow)
- *   audioLevel  -> brightness
- *   sceneTime / sceneAdvance -> the glide (constant speed), the running light
+ *  All white, glossy, soft shadows gathering in the folds.  The camera glides slowly through.
  *
- * Per-activation variety: twistP (how strongly the space twists), hueP.
+ *  The space is a deformed tube with a flat floor, ray-marched as a signed
+ *  distance field.
+ *
+ *  Audio Reactivity:
+ *    audioBass   -> the brightness of the light lines (light)
+ *    audioKick   -> pulses running along them (light)
+ *    audioSwell  -> the daylight through the skylights (slow)
+ *    audioLevel  -> brightness
+ *    sceneTime / sceneAdvance -> the glide (constant speed), the running light
+ *
+ *  Per-activation variety: twistP (how strongly the space twists), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

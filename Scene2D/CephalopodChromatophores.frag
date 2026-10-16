@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file CephalopodChromatophores.frag
- * @brief CEPHALOPOD CHROMATOPHORES: octopus skin, close.  Thousands of
- * chromatophores -- round pigment sacs that muscles pull open -- expand
- * with the band their patch of skin listens to, iridophores beneath them
- * shimmer with the treble, and the "passing cloud" display -- dark waves
- * travelling across the skin -- runs on the scene clock.  The photo is the
- * skin's ground colour.  Nothing moves but the cells and the light; camera
- * fixed on the skin.
+/*****************************************************************************\
+ *                              CephalopodChromatophores.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSpectrum[32] -> chromatophore expansion by patch (light-sized, smooth)
- *   sceneAdvance      -> passing-cloud waves (continuous)
- *   audioHigh         -> iridophore shimmer (light)
- *   audioSwell        -> overall expansion bias (slow)
- *   audioLevel        -> brightness
+ *  @brief
+ *  CEPHALOPOD CHROMATOPHORES: octopus skin, close.
  *
- * Per-activation variety: densP, cloudP, hueP.
+ *  Thousands of chromatophores -- round pigment sacs that muscles pull open -- expand with the band their patch of
+ *  skin listens to, iridophores beneath them shimmer with the treble, and the "passing cloud" display -- dark waves
+ *  travelling across the skin -- runs on the scene clock.  The photo is the skin's ground colour.  Nothing moves
+ *  but the cells and the light; camera fixed on the skin.
+ *
+ *  Audio Reactivity:
+ *    audioSpectrum[32] -> chromatophore expansion by patch (light-sized, smooth)
+ *    sceneAdvance      -> passing-cloud waves (continuous)
+ *    audioHigh         -> iridophore shimmer (light)
+ *    audioSwell        -> overall expansion bias (slow)
+ *    audioLevel        -> brightness
+ *
+ *  Per-activation variety: densP, cloudP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

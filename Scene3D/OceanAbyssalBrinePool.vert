@@ -1,8 +1,13 @@
 #version 330 core
-/**
- * @file OceanAbyssalBrinePool.vert
- * @brief Vertex stage companion to OceanAbyssalBrinePool.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              OceanAbyssalBrinePool.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to OceanAbyssalBrinePool.frag -- see that file's header for this scene's description.
+ *
+ *  @author René Weller
  */
 layout( location = 0 ) in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g.
                                       ///< position or u/v and an index).

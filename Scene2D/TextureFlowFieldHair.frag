@@ -1,23 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureFlowFieldHair.frag
- * @brief TEXTURE FLOW FIELD HAIR: the photograph combed into hair -- countless
- * fine strands follow a flowing field that curls around the picture's
- * forms, each strand taking the colour of the photo where it grows, with
- * a silky sheen band running across the strands like light on real hair;
- * the field sways slowly as if in a breeze.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              TextureFlowFieldHair.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the sway (integrated, jump-free)
- *   audioSpread     -> the curls tighten
- *   audioKick       -> the sheen flares (light)
- *   audioMode       -> the sheen: cool in minor, warm in major
- *   audioRoughness  -> the strands frizz
- *   audioSwell      -> strand length (slow)
+ *  @brief
+ *  TEXTURE FLOW FIELD HAIR: the photograph combed into hair -- countless fine strands follow a flowing field that
+ *  curls around the picture's forms, each strand taking the colour of the photo where it grows, with a silky sheen
+ *  band running across the strands like light on real hair; the field sways slowly as if in a breeze.
  *
- * Knobs: strandP (strand density), curlP (curl scale), sheenP, hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the sway (integrated, jump-free)
+ *    audioSpread     -> the curls tighten
+ *    audioKick       -> the sheen flares (light)
+ *    audioMode       -> the sheen: cool in minor, warm in major
+ *    audioRoughness  -> the strands frizz
+ *    audioSwell      -> strand length (slow)
+ *
+ *  Knobs: strandP (strand density), curlP (curl scale), sheenP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

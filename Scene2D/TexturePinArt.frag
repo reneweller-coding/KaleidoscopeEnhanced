@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TexturePinArt.frag
- * @brief TEXTURE PIN ART: the pin-art toy -- a dense bed of polished metal
- * pins seen from above, pushed up into a relief of the photograph (bright
- * parts stand high, dark parts sink), each pin head a small shiny dome
- * reflecting the light, the high pins casting long shadows over the low
- * ones; slow waves roll through the bed as if a hand pressed from below,
- * and the relief slowly morphs as the photo drifts.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              TexturePinArt.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the waves roll and the photo drifts (integrated)
- *   audioSpread     -> relief depth
- *   audioBass       -> a push wave from the centre (slow-smoothed light-level motion)
- *   audioKick       -> the pin heads flash (light)
- *   audioMode       -> metal: chrome in minor, brass in major
- *   audioSwell      -> the light swings lower (longer shadows, slow)
+ *  @brief
+ *  TEXTURE PIN ART: the pin-art toy -- a dense bed of polished metal pins seen from above, pushed up into a relief
+ *  of the photograph (bright parts stand high, dark parts sink), each pin head a small shiny dome reflecting the
+ *  light, the high pins casting long shadows over the low ones; slow waves roll through the bed as if a hand
+ *  pressed from below, and the relief slowly morphs as the photo drifts.
  *
- * Knobs: pinP (pin density), waveP (wave height), tintP (photo tint on the heads), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the waves roll and the photo drifts (integrated)
+ *    audioSpread     -> relief depth
+ *    audioBass       -> a push wave from the centre (slow-smoothed light-level motion)
+ *    audioKick       -> the pin heads flash (light)
+ *    audioMode       -> metal: chrome in minor, brass in major
+ *    audioSwell      -> the light swings lower (longer shadows, slow)
+ *
+ *  Knobs: pinP (pin density), waveP (wave height), tintP (photo tint on the heads), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

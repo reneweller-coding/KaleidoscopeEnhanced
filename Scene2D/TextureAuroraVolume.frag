@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureAuroraVolume.frag
- * @brief TEXTURE AURORA VOLUME: standing beneath an aurora and looking up --
- * great curtains of green and violet light hang overhead in deep
- * perspective, their folds rippling and rolling across the sky, rays
- * streaming down from them toward us, a corona where the rays converge
- * straight above; stars shine through, and the colours are tinted by the
- * photograph.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              TextureAuroraVolume.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the curtains roll (integrated, jump-free)
- *   audioSpread     -> the curtains spread across the sky
- *   audioBass       -> the curtains brighten (light)
- *   audioMode       -> colours: green-violet in minor, red-gold in major (tint)
- *   audioRoughness  -> the fine rays flicker
- *   audioSwell      -> the corona (slow)
+ *  @brief
+ *  TEXTURE AURORA VOLUME: standing beneath an aurora and looking up -- great curtains of green and violet light
+ *  hang overhead in deep perspective, their folds rippling and rolling across the sky, rays streaming down from
+ *  them toward us, a corona where the rays converge straight above; stars shine through, and the colours are tinted
+ *  by the photograph.
  *
- * Knobs: curtainP (curtain count), rayP (ray density), photoP (photo tint), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the curtains roll (integrated, jump-free)
+ *    audioSpread     -> the curtains spread across the sky
+ *    audioBass       -> the curtains brighten (light)
+ *    audioMode       -> colours: green-violet in minor, red-gold in major (tint)
+ *    audioRoughness  -> the fine rays flicker
+ *    audioSwell      -> the corona (slow)
+ *
+ *  Knobs: curtainP (curtain count), rayP (ray density), photoP (photo tint), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

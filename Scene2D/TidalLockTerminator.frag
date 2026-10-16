@@ -1,26 +1,31 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TidalLockTerminator.frag
- * @brief TIDAL LOCK TERMINATOR: a flight along the day/night line of a
- * tidally locked planet.  The world turns under the camera on the music's
- * pace, so the terminator -- a band of long shadows, glowing cloud tops
- * and the first lights of the eternal night -- streams past forever.  The
- * host's day clock (dayPhase) shifts where the line falls; the valence of
- * the music is the weather on the day side (bright cumulus or a brooding
- * overcast); on the night side auroras breathe with the swell and storms
- * flash on the kick.  The camera never moves.
+/*****************************************************************************\
+ *                              TidalLockTerminator.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   sceneAdvance -> the planet turns under the camera (continuous)
- *   dayPhase     -> the terminator drifts (very slow)
- *   audioValence -> day-side weather (light/colour)
- *   audioSwell   -> aurora on the night side (slow)
- *   audioKick    -> storm flashes on the night side (light)
- *   audioLevel   -> sunlight strength
+ *  @brief
+ *  TIDAL LOCK TERMINATOR: a flight along the day/night line of a tidally locked planet.
  *
- * Per-activation variety: tiltP (view angle), cloudP (cloud cover), hueP.
+ *  The world turns under the camera on the music's pace, so the terminator -- a band of long shadows, glowing cloud
+ *  tops and the first lights of the eternal night -- streams past forever.  The host's day clock (dayPhase) shifts
+ *  where the line falls; the valence of the music is the weather on the day side (bright cumulus or a brooding
+ *  overcast); on the night side auroras breathe with the swell and storms flash on the kick.  The camera never
+ *  moves.
+ *
+ *  Audio Reactivity:
+ *    sceneAdvance -> the planet turns under the camera (continuous)
+ *    dayPhase     -> the terminator drifts (very slow)
+ *    audioValence -> day-side weather (light/colour)
+ *    audioSwell   -> aurora on the night side (slow)
+ *    audioKick    -> storm flashes on the night side (light)
+ *    audioLevel   -> sunlight strength
+ *
+ *  Per-activation variety: tiltP (view angle), cloudP (cloud cover), hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

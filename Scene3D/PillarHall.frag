@@ -1,4 +1,29 @@
 #version 330 core
+/*****************************************************************************\
+ *                              PillarHall.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Shades the shadow-mapped pillar hall: a warm sun-and-sky lit tiled floor and fluted colonnade with a cool second
+ *  shadow-casting rim/fill light, plus an emissive band climbing the pillars.
+ *
+ *  Both shadow terms are VISIBILITY MULTIPLIERS with a floor, not gates: the
+ *  hall stays lit and legible even if a depth-map lookup returns nothing, and a
+ *  working map still darkens what it occludes.
+ *
+ *  audioLevel brightens the sun term, audioHigh sharpens the specular
+ *  highlight, audioKick drives the emissive band climbing the pillars,
+ *  audioSubBass and audioBeat add a final overall pulse, audioAmbient lifts
+ *  both the unshadowed sky term and the second light's strength, and
+ *  audioChromaHue nudges the hue. The pillar and emissive-band hue is drawn
+ *  from the house imgPalette (a rotating sample arc over the current
+ *  slideshow photo, tex0/tex1 crossfaded by interpolation) driven by
+ *  audioAdvance and audioValence; camHP sets the eye height and softP the
+ *  shadow's softness (shared by both lights' maps).
+ *
+ *  @author René Weller
+ */
 out vec4 fragColor; ///< The pixel's colour (output).
 // PillarHall.frag — the shading half of the shadow-map contract.
 // -----------------------------------------------------------------------
@@ -18,27 +43,6 @@ in vec3  vNormal; ///< Surface normal (from the vertex stage).
 in float vKind;   ///< Element kind (from the vertex stage).
 in float vTint;   ///< Tint (from the vertex stage).
 in float vHeight; ///< Height (from the vertex stage).
-
-/**
- * @file PillarHall.frag
- * @brief Shades the shadow-mapped pillar hall: a warm sun-and-sky lit tiled
- * floor and fluted colonnade with a cool second shadow-casting rim/fill light,
- * plus an emissive band climbing the pillars.
- *
- * Both shadow terms are VISIBILITY MULTIPLIERS with a floor, not gates: the
- * hall stays lit and legible even if a depth-map lookup returns nothing, and a
- * working map still darkens what it occludes.
- *
- * audioLevel brightens the sun term, audioHigh sharpens the specular
- * highlight, audioKick drives the emissive band climbing the pillars,
- * audioSubBass and audioBeat add a final overall pulse, audioAmbient lifts
- * both the unshadowed sky term and the second light's strength, and
- * audioChromaHue nudges the hue. The pillar and emissive-band hue is drawn
- * from the house imgPalette (a rotating sample arc over the current
- * slideshow photo, tex0/tex1 crossfaded by interpolation) driven by
- * audioAdvance and audioValence; camHP sets the eye height and softP the
- * shadow's softness (shared by both lights' maps).
- */
 
 uniform sampler2D       tex0;       ///< The current photo.
 uniform sampler2DShadow texShadow;  ///< Shadow map of the key light (depth comparison).

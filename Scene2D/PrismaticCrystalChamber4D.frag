@@ -1,18 +1,23 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file PrismaticCrystalChamber4D.frag
- * @brief PRISMATIC CRYSTAL CHAMBER 4D: Raymarching within a 4-dimensional
- * hyper-polychoron with spectral dispersion, multi-facet reflections,
- * and high-velocity SO(4) isoclinic double rotations.
+/*****************************************************************************\
+ *                              PrismaticCrystalChamber4D.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance -> drives continuous 4D double rotation plane progression
- *   audioKick    -> flashes internal laser nodes & expands facet clearance
- *   audioCentroid-> modulates chromatic dispersion spread
- *   audioSubBass -> expands the hyper-chamber chamber breathing
- *   audioChromaHue-> steers the prism spectrum rotation
+ *  @brief
+ *  PRISMATIC CRYSTAL CHAMBER 4D: Raymarching within a 4-dimensional hyper-polychoron with spectral dispersion,
+ *  multi-facet reflections, and high-velocity SO(4) isoclinic double rotations.
+ *
+ *  Audio Reactivity:
+ *    audioAdvance -> drives continuous 4D double rotation plane progression
+ *    audioKick    -> flashes internal laser nodes & expands facet clearance
+ *    audioCentroid-> modulates chromatic dispersion spread
+ *    audioSubBass -> expands the hyper-chamber chamber breathing
+ *    audioChromaHue-> steers the prism spectrum rotation
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

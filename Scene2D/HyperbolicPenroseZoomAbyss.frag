@@ -1,18 +1,26 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file HyperbolicPenroseZoomAbyss.frag
- * @brief HYPERBOLIC PENROSE ZOOM ABYSS: Infinite logarithmic scale dive into a 5-fold
- * Penrose kite-and-dart aperiodic tiling. Continuous golden ratio deflation subdivisions,
- * self-similar multi-octave zoom blending, and glowing gold-metallic tile borders.
+/*****************************************************************************\
+ *                              HyperbolicPenroseZoomAbyss.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance -> drives continuous infinite zoom progression into Penrose tiles
- *   audioKick    -> flashes Penrose vertex nodes & triggers deflation scale bursts
- *   audioCentroid-> sharpens golden kite-and-dart tile edge lines
- *   audioSubBass -> expands Penrose star cluster breathing scale
- *   audioChromaHue-> rotates the golden aperiodic crystal spectrum
+ *  @brief
+ *  HYPERBOLIC PENROSE ZOOM ABYSS: Infinite logarithmic scale dive into a 5-fold Penrose kite-and-dart aperiodic
+ *  tiling.
+ *
+ *  Continuous golden ratio deflation subdivisions, self-similar multi-octave zoom blending, and glowing
+ *  gold-metallic tile borders.
+ *
+ *  Audio Reactivity:
+ *    audioAdvance -> drives continuous infinite zoom progression into Penrose tiles
+ *    audioKick    -> flashes Penrose vertex nodes & triggers deflation scale bursts
+ *    audioCentroid-> sharpens golden kite-and-dart tile edge lines
+ *    audioSubBass -> expands Penrose star cluster breathing scale
+ *    audioChromaHue-> rotates the golden aperiodic crystal spectrum
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

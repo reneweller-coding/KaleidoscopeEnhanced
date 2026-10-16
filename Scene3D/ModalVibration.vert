@@ -1,19 +1,25 @@
 #version 330 core
-/**
- * @file ModalVibration.vert
- * @brief Vertex stage for ModalVibration.frag: the model is displaced by
- * standing waves, as if the music were exciting it into its own resonances.
+/*****************************************************************************\
+ *                              ModalVibration.vert
+\*****************************************************************************/
+/*! @file
  *
- * The distinction that matters: this does not PUSH the object around, it makes
- * it RING. Four spectral bands drive four spatial modes, from one slow lobe over
- * the whole body down to a fine ripple -- low frequencies move a lot of surface
- * slowly, high frequencies move a little surface quickly, which is the actual
- * behaviour of a struck plate and is why it reads as sound rather than as
- * animation.
+ *  @brief
+ *  Vertex stage for ModalVibration.frag: the model is displaced by standing waves, as if the music were exciting it
+ *  into its own resonances.
  *
- * Displacement is along the NORMAL and driven by a function of the object-space
- * position, so the pattern is fixed to the body: a node stays a node while the
- * object turns, exactly as a nodal line on a Chladni plate does.
+ *  The distinction that matters: this does not PUSH the object around, it makes
+ *  it RING. Four spectral bands drive four spatial modes, from one slow lobe over
+ *  the whole body down to a fine ripple -- low frequencies move a lot of surface
+ *  slowly, high frequencies move a little surface quickly, which is the actual
+ *  behaviour of a struck plate and is why it reads as sound rather than as
+ *  animation.
+ *
+ *  Displacement is along the NORMAL and driven by a function of the object-space
+ *  position, so the pattern is fixed to the body: a node stays a node while the
+ *  object turns, exactly as a nodal line on a Chladni plate does.
+ *
+ *  @author René Weller
  */
 
 in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an

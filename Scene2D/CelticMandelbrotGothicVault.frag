@@ -1,18 +1,25 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file CelticMandelbrotGothicVault.frag
- * @brief CELTIC MANDELBROT GOTHIC VAULT: Celtic Mandelbrot variation z -> |Re(z^2)| + i*Im(z^2) + c.
- * Gothic cathedral tracery arches, lancet church window filigree, stained-glass luminescence,
- * and continuous deep plunge through endless vaulted fractal naves.
+/*****************************************************************************\
+ *                              CelticMandelbrotGothicVault.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance -> drives continuous deep plunge through Gothic cathedral arches
- *   audioKick    -> flashes stained-glass rosette window cores & cathedral flares
- *   audioCentroid-> sharpens lancet arch tracery & rib-vault boundaries
- *   audioSubBass -> expands cathedral nave arch width breathing
- *   audioChromaHue-> rotates the glowing stained-glass cathedral spectrum
+ *  @brief
+ *  CELTIC MANDELBROT GOTHIC VAULT: Celtic Mandelbrot variation z -> |Re(z^2)| + i*Im(z^2) + c.
+ *
+ *  Gothic cathedral tracery arches, lancet church window filigree, stained-glass luminescence, and continuous deep
+ *  plunge through endless vaulted fractal naves.
+ *
+ *  Audio Reactivity:
+ *    audioAdvance -> drives continuous deep plunge through Gothic cathedral arches
+ *    audioKick    -> flashes stained-glass rosette window cores & cathedral flares
+ *    audioCentroid-> sharpens lancet arch tracery & rib-vault boundaries
+ *    audioSubBass -> expands cathedral nave arch width breathing
+ *    audioChromaHue-> rotates the glowing stained-glass cathedral spectrum
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

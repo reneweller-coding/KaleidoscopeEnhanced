@@ -1,22 +1,28 @@
 #version 430 core
-/**
- * @file StarlingMurmuration.comp
- * @brief MURMURATION: a starling flock of 40,000 birds as one breathing body.
- * No particle state is kept between frames: every bird's place is a function
- * of its seed, a slowly deforming cloud shape and a curl-noise flow field
- * advanced on sceneAdvance -- so the flock is deterministic per frame, never
- * drifts away, and still reads as a living swarm because the noise field
- * folds the cloud into the waves and knots real murmurations show.
+/*****************************************************************************\
+ *                              StarlingMurmuration.comp
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (generator stage):
- *   audioOnset    -> a fright wave: birds near a random point scatter outward
- *   audioSwell    -> the flock compacts (builds pull it together)
- *   audioKick     -> a body-wide pulse
- *   sceneAdvance  -> the flow field turns; the flock wanders
- *   audioCentroid -> flight height (bright mixes lift the flock)
+ *  @brief
+ *  MURMURATION: a starling flock of 40,000 birds as one breathing body.
  *
- * Per-instance: birdsP (fraction of the 40k drawn), spreadP (cloud size),
- *               speedP (flow rate), hueP.
+ *  No particle state is kept between frames: every bird's place is a function of its seed, a slowly deforming cloud
+ *  shape and a curl-noise flow field advanced on sceneAdvance -- so the flock is deterministic per frame, never
+ *  drifts away, and still reads as a living swarm because the noise field folds the cloud into the waves and knots
+ *  real murmurations show.
+ *
+ *  Audio Reactivity (generator stage):
+ *    audioOnset    -> a fright wave: birds near a random point scatter outward
+ *    audioSwell    -> the flock compacts (builds pull it together)
+ *    audioKick     -> a body-wide pulse
+ *    sceneAdvance  -> the flow field turns; the flock wanders
+ *    audioCentroid -> flight height (bright mixes lift the flock)
+ *
+ *  Per-instance: birdsP (fraction of the 40k drawn), spreadP (cloud size),
+ *                speedP (flow rate), hueP.
+ *
+ *  @author René Weller
  */
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( local_size_x = 4, local_size_y = 4, local_size_z = 4 ) in;

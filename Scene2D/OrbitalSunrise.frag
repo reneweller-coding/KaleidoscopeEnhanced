@@ -1,26 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file OrbitalSunrise.frag
- * @brief ORBITAL SUNRISE: the view from low orbit as the sun comes over the
- * limb.  The planet's curve fills the lower frame; its atmosphere is a
- * stack of Rayleigh layers that go from deep blue through gold as the sun
- * climbs; city lights on the night side (round, jittered) fade out with
- * the dawn; clouds from the photo; stars above.  The sun's elevation is
- * the sine of the host's day clock -- it rises AND sets continuously, no
- * wrap ever shows.  The music is the weather and the light; the camera
- * never moves.
+/*****************************************************************************\
+ *                              OrbitalSunrise.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   dayPhase      -> sun elevation (sin, continuous)
- *   audioValence  -> cloud brightness / weather (light)
- *   audioSwell    -> atmosphere glow (slow)
- *   audioKick     -> city lights twinkle (light)
- *   audioLevel    -> overall
- *   sceneAdvance  -> the planet turns under us (continuous)
+ *  @brief
+ *  ORBITAL SUNRISE: the view from low orbit as the sun comes over the limb.
  *
- * Per-activation variety: altP (orbit height), hazeP, hueP.
+ *  The planet's curve fills the lower frame; its atmosphere is a stack of Rayleigh layers that go from deep blue
+ *  through gold as the sun climbs; city lights on the night side (round, jittered) fade out with the dawn; clouds
+ *  from the photo; stars above.  The sun's elevation is the sine of the host's day clock -- it rises AND sets
+ *  continuously, no wrap ever shows.  The music is the weather and the light; the camera never moves.
+ *
+ *  Audio Reactivity:
+ *    dayPhase      -> sun elevation (sin, continuous)
+ *    audioValence  -> cloud brightness / weather (light)
+ *    audioSwell    -> atmosphere glow (slow)
+ *    audioKick     -> city lights twinkle (light)
+ *    audioLevel    -> overall
+ *    sceneAdvance  -> the planet turns under us (continuous)
+ *
+ *  Per-activation variety: altP (orbit height), hazeP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

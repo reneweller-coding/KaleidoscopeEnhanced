@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file ResinGeodePour.frag
- * @brief RESIN GEODE POUR: resin art in the style of a geode -- concentric
- * bands of coloured resin poured in rings around a sparkling crystal
- * centre, each band a different colour from the photograph edged with
- * gold and white lacing where the resin cells opened, the bands slowly
- * spreading outward as fresh resin is poured, glittering crystals in the
- * middle.  Several geodes overlap across the plane.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              ResinGeodePour.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the bands spread (integrated, jump-free)
- *   audioSpread     -> geode size
- *   audioKick       -> the gold edges flash (light)
- *   audioMode       -> the edging: silver in minor, gold in major
- *   audioHigh       -> the crystals glitter (light)
- *   audioRoughness  -> the lacing (cells) in the bands
+ *  @brief
+ *  RESIN GEODE POUR: resin art in the style of a geode -- concentric bands of coloured resin poured in rings around
+ *  a sparkling crystal centre, each band a different colour from the photograph edged with gold and white lacing
+ *  where the resin cells opened, the bands slowly spreading outward as fresh resin is poured, glittering crystals
+ *  in the middle.
  *
- * Knobs: bandP (band count), lacingP (lacing strength), crystalP (crystal centre size), hueP.
+ *  Several geodes overlap across the plane.  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the bands spread (integrated, jump-free)
+ *    audioSpread     -> geode size
+ *    audioKick       -> the gold edges flash (light)
+ *    audioMode       -> the edging: silver in minor, gold in major
+ *    audioHigh       -> the crystals glitter (light)
+ *    audioRoughness  -> the lacing (cells) in the bands
+ *
+ *  Knobs: bandP (band count), lacingP (lacing strength), crystalP (crystal centre size), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

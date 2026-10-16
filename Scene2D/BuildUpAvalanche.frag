@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file BuildUpAvalanche.frag
- * @brief BUILD-UP AVALANCHE: a great alpine peak under a deep blue sky --
- * its left face in sun, ribbed with rock and couloirs, the right in blue
- * shade, a pale range behind, spruce along the valley floor.  As the music
- * builds, the snow loads the face (the rock disappears under it), the
- * cornice grows and a banner of spindrift streams off the summit; at the
- * drop the slab releases and a powder avalanche billows down the sunny
- * face, widening as it runs, and settles away.  The drop is the one allowed
- * cut, and it moves the snow, not the camera, which is fixed on the peak.
+/*****************************************************************************\
+ *                              BuildUpAvalanche.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioBuildUp -> snow load and cornice (slow)
- *   audioDrop    -> the release (the drop: the avalanche runs)
- *   sceneAdvance -> the run itself and the powder drift (continuous)
- *   audioBass    -> the rumble as light in the powder (light)
- *   audioLevel   -> brightness
+ *  @brief
+ *  BUILD-UP AVALANCHE: a great alpine peak under a deep blue sky -- its left face in sun, ribbed with rock and
+ *  couloirs, the right in blue shade, a pale range behind, spruce along the valley floor.
  *
- * Per-activation variety: slopeP, grainP, hueP.
+ *  As the music builds, the snow loads the face (the rock disappears under it), the cornice grows and a banner of
+ *  spindrift streams off the summit; at the drop the slab releases and a powder avalanche billows down the sunny
+ *  face, widening as it runs, and settles away.  The drop is the one allowed cut, and it moves the snow, not the
+ *  camera, which is fixed on the peak.
+ *
+ *  Audio Reactivity:
+ *    audioBuildUp -> snow load and cornice (slow)
+ *    audioDrop    -> the release (the drop: the avalanche runs)
+ *    sceneAdvance -> the run itself and the powder drift (continuous)
+ *    audioBass    -> the rumble as light in the powder (light)
+ *    audioLevel   -> brightness
+ *
+ *  Per-activation variety: slopeP, grainP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

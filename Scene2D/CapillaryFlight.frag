@@ -1,22 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file CapillaryFlight.frag
- * @brief CAPILLARY FLIGHT: a flight through a blood capillary.  The vessel
- * wall is a soft, translucent tube lit from within; red cells stream past
- * on the scene clock as objects (discs that tumble); the pulse is LIGHT --
- * the wall flushes with the sub-bass, never moves.  Branching side vessels
- * pass as dark mouths in the wall.  The camera flies steadily.
+/*****************************************************************************\
+ *                              CapillaryFlight.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   sceneAdvance -> flight and cell flow (continuous)
- *   audioSubBass -> wall flush (light)
- *   audioKick    -> cells brighten as they pass (light)
- *   audioSwell   -> vessel glow (slow)
- *   audioLevel   -> brightness
+ *  @brief
+ *  CAPILLARY FLIGHT: a flight through a blood capillary.
  *
- * Per-activation variety: cellsP (cell density), speedP, hueP.
+ *  The vessel wall is a soft, translucent tube lit from within; red cells stream past on the scene clock as objects
+ *  (discs that tumble); the pulse is LIGHT -- the wall flushes with the sub-bass, never moves.  Branching side
+ *  vessels pass as dark mouths in the wall.  The camera flies steadily.
+ *
+ *  Audio Reactivity:
+ *    sceneAdvance -> flight and cell flow (continuous)
+ *    audioSubBass -> wall flush (light)
+ *    audioKick    -> cells brighten as they pass (light)
+ *    audioSwell   -> vessel glow (slow)
+ *    audioLevel   -> brightness
+ *
+ *  Per-activation variety: cellsP (cell density), speedP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

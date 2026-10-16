@@ -1,25 +1,29 @@
 #version 330 core
+/*****************************************************************************\
+ *                              ChladniAcousticPlate.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Shades a single grain of sand settling into a Chladni acoustic resonance pattern, as a soft circular point
+ *  sprite whose colour shifts between a gold/bronze "resting on a nodal line" hue and an electric-azure "in flight"
+ *  hue.
+ *
+ *  vNodalDist (distance from the nearest vibration node, set per vertex)
+ *  selects that gold-to-azure mix, and vPlateEnergy (the plate's local
+ *  vibration energy) drives the grain's brightness; both already carry the
+ *  scene's audio reactivity from the vertex stage. hueP applies a final
+ *  uniform hue rotation via hueRot(), and glowP is available to scale overall
+ *  brightness. Ends with a soft-knee tone-map so loud audio compresses
+ *  instead of clipping to white.
+ *
+ *  @author René Weller
+ */
 in vec3  vPos;         ///< Position (from the vertex stage).
 in float vNodalDist;   ///< Nodal dist (from the vertex stage).
 in float vPlateEnergy; ///< Plate energy (from the vertex stage).
 
 out vec4 fragColor; ///< The pixel's colour (output).
-
-/**
- * @file ChladniAcousticPlate.frag
- * @brief Shades a single grain of sand settling into a Chladni acoustic
- * resonance pattern, as a soft circular point sprite whose colour shifts
- * between a gold/bronze "resting on a nodal line" hue and an electric-azure
- * "in flight" hue.
- *
- * vNodalDist (distance from the nearest vibration node, set per vertex)
- * selects that gold-to-azure mix, and vPlateEnergy (the plate's local
- * vibration energy) drives the grain's brightness; both already carry the
- * scene's audio reactivity from the vertex stage. hueP applies a final
- * uniform hue rotation via hueRot(), and glowP is available to scale overall
- * brightness. Ends with a soft-knee tone-map so loud audio compresses
- * instead of clipping to white.
- */
 
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

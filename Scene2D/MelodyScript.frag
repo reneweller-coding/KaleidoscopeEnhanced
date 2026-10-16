@@ -1,25 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file MelodyScript.frag
- * @brief MELODY SCRIPT: the tune written as ink calligraphy on rice paper.
- * The last eight seconds of melody run across the sheet as one brush
- * stroke -- pitch is height, the newest note at the right -- swelling where
- * the line lingers, thinning where it leaps, lifting off the paper where
- * the melody rests.  Fresh ink is black and wet; toward the left it dries,
- * lightens and breaks into dry-brush streaks.  A faint wash of stave lines
- * lies under it, a vermilion seal sits in the corner, and the whole script
- * glides steadily leftward: audioMelodyPhase carries it smoothly between
- * the 80 ms melody samples, so it never steps.
+/*****************************************************************************\
+ *                              MelodyScript.frag
+\*****************************************************************************/
+/*! @file
  *
- * Replaces a Scene3D ribbon version (stave and trace drawn as lines).
+ *  @brief
+ *  MELODY SCRIPT: the tune written as ink calligraphy on rice paper.
  *
- * Audio Reactivity:
- *   audioMelody[96] / audioMelodyHead / audioMelodyPhase -> the stroke
- *   audioOnset  -> the wet gleam at the brush tip (light)
- *   audioSwell  -> the lamp on the paper (slow)
- *   audioLevel  -> brightness
+ *  The last eight seconds of melody run across the sheet as one brush stroke -- pitch is height, the newest note at
+ *  the right -- swelling where the line lingers, thinning where it leaps, lifting off the paper where the melody
+ *  rests.  Fresh ink is black and wet; toward the left it dries, lightens and breaks into dry-brush streaks.  A
+ *  faint wash of stave lines lies under it, a vermilion seal sits in the corner, and the whole script glides
+ *  steadily leftward: audioMelodyPhase carries it smoothly between the 80 ms melody samples, so it never steps.
+ *
+ *  Replaces a Scene3D ribbon version (stave and trace drawn as lines).
+ *
+ *  Audio Reactivity:
+ *    audioMelody[96] / audioMelodyHead / audioMelodyPhase -> the stroke
+ *    audioOnset  -> the wet gleam at the brush tip (light)
+ *    audioSwell  -> the lamp on the paper (slow)
+ *    audioLevel  -> brightness
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

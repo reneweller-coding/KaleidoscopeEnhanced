@@ -1,21 +1,27 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file MeshPendulumWave.frag
- * @brief MESH PENDULUM WAVE: twelve real pendulums (one model,
- * instances="12") hanging from a rail in a dark lab, swinging the
- * pendulum-wave pattern on time. The bob glows with the bass; the bob
- * passing through centre lights on the beat; the swell is the lamp. The
- * mesh counterpart of the procedural PendulumWaveTempo.
+/*****************************************************************************\
+ *                              MeshPendulumWave.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioBeat  -> highlight on the bob passing centre (light)
- *   audioBass  -> bob glow (light)
- *   audioSwell -> lamp brightness, swing amplitude (slow)
- *   time       -> the swings (continuous, vertex stage)
+ *  @brief
+ *  MESH PENDULUM WAVE: twelve real pendulums (one model, instances="12") hanging from a rail in a dark lab,
+ *  swinging the pendulum-wave pattern on time.
  *
- * Per-instance: sizeP, cycleP. Per-activation variety: hueP.
+ *  The bob glows with the bass; the bob passing through centre lights on the beat; the swell is the lamp. The mesh
+ *  counterpart of the procedural PendulumWaveTempo.
+ *
+ *  Audio Reactivity:
+ *    audioBeat  -> highlight on the bob passing centre (light)
+ *    audioBass  -> bob glow (light)
+ *    audioSwell -> lamp brightness, swing amplitude (slow)
+ *    time       -> the swings (continuous, vertex stage)
+ *
+ *  Per-instance: sizeP, cycleP. Per-activation variety: hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform sampler2DArray texMeshMaterial;       ///< The mesh's material textures (albedo, roughness, normal ...).
 uniform int            texMeshMaterialLayers; ///< Number of layers in texMeshMaterial.

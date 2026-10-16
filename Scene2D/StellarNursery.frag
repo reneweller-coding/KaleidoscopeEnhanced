@@ -1,26 +1,31 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file StellarNursery.frag
- * @brief STELLAR NURSERY: pillars of creation -- three towering columns of
- * cold dust rising from the bottom of the frame into a glowing cavity, in
- * the narrow-band palette of the famous photographs (teal oxygen, gold
- * sulphur and hydrogen).  The tops of the pillars are lit and eroded by the
- * young stars above: bright rims, fingers of gas streaming off them, tiny
- * evaporating globules at the tips; a few protostars inside the pillars
- * blow thin bipolar jets.  The gas drifts and the jets' knots travel at
- * their own slow pace; the music is the light.
+/*****************************************************************************\
+ *                              StellarNursery.frag
+\*****************************************************************************/
+/*! @file
  *
- *   sceneTime/sceneAdvance -> gas drift, jet knots, streamers (continuous)
- *   audioSwell    -> the cavity glow and the rims (slow)
- *   audioKick     -> the protostars and jets flare (light only)
- *   audioChromaHue-> photo tint of the gas
+ *  @brief
+ *  STELLAR NURSERY: pillars of creation -- three towering columns of cold dust rising from the bottom of the frame
+ *  into a glowing cavity, in the narrow-band palette of the famous photographs (teal oxygen, gold sulphur and
+ *  hydrogen).
  *
- * Per-activation variety:
- *   starP float density of the stars (0.5..1.5)
- *   jetP float brightness of the jets (0.5..2.0)
- *   hueP float palette offset (0..6.28)
+ *  The tops of the pillars are lit and eroded by the young stars above: bright rims, fingers of gas streaming off
+ *  them, tiny evaporating globules at the tips; a few protostars inside the pillars blow thin bipolar jets.  The
+ *  gas drifts and the jets' knots travel at their own slow pace; the music is the light.
+ *
+ *    sceneTime/sceneAdvance -> gas drift, jet knots, streamers (continuous)
+ *    audioSwell    -> the cavity glow and the rims (slow)
+ *    audioKick     -> the protostars and jets flare (light only)
+ *    audioChromaHue-> photo tint of the gas
+ *
+ *  Per-activation variety:
+ *    starP float density of the stars (0.5..1.5)
+ *    jetP float brightness of the jets (0.5..2.0)
+ *    hueP float palette offset (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

@@ -1,9 +1,16 @@
 #version 330 core
-/**
- * @file LidarSweepPointCloud.vert
- * @brief Vertex stage for LidarSweepPointCloud: world positions pass
- * through (camera at the origin, +z ahead); lit (freshness), kind and the
- * photo uv go to the fragment stage.  No camera motion.
+/*****************************************************************************\
+ *                              LidarSweepPointCloud.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage for LidarSweepPointCloud: world positions pass through (camera at the origin, +z ahead); lit
+ *  (freshness), kind and the photo uv go to the fragment stage.
+ *
+ *  No camera motion.
+ *
+ *  @author René Weller
  */
 layout( location = 0 ) in vec4 attrA; ///< xyz = position, w = id
 layout( location = 1 ) in vec4 attrB; ///< x = lit, y = kind, zw = uv

@@ -1,8 +1,13 @@
 #version 330 core
-/**
- * @file LissajousOrbits.vert
- * @brief Vertex stage companion to LissajousOrbits.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              LissajousOrbits.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to LissajousOrbits.frag -- see that file's header for this scene's description.
+ *
+ *  @author René Weller
  */
 // LissajousOrbits.vert — six particle streams trace closed 3D Lissajous
 // figures whose phase relation drifts imperceptibly, so the figures morph

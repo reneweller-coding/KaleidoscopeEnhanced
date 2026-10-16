@@ -1,25 +1,31 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file NeonRingTunnel.frag
- * @brief NEON RING TUNNEL: flying through a tunnel of neon tubes -- ring after
- * ring of glowing tubes rush past, but the rings are not circles: each
- * ring's outline is traced from the photograph's contours around the tunnel
- * axis, so they buckle and notch like hand-bent neon, and every ring glows
- * in its own colour from the photo, with a halo in the haze and a
- * reflection smeared across the wet walls between.  Endless polar field.
+/*****************************************************************************\
+ *                              NeonRingTunnel.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the flight (integrated, jump-free)
- *   audioPhase      -> the rings turn (integrated)
- *   audioSpread     -> throat depth
- *   audioRoughness  -> the rings buckle more
- *   audioKick       -> a ring flares as it passes (light)
- *   audioSwell      -> the haze (slow)
+ *  @brief
+ *  NEON RING TUNNEL: flying through a tunnel of neon tubes -- ring after ring of glowing tubes rush past, but the
+ *  rings are not circles: each ring's outline is traced from the photograph's contours around the tunnel axis, so
+ *  they buckle and notch like hand-bent neon, and every ring glows in its own colour from the photo, with a halo in
+ *  the haze and a reflection smeared across the wet walls between.
  *
- * Knobs: ringsP (ring spacing), bendP (how much the photo bends the rings),
- * thickP (tube thickness), hueP.
+ *  Endless polar field.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the flight (integrated, jump-free)
+ *    audioPhase      -> the rings turn (integrated)
+ *    audioSpread     -> throat depth
+ *    audioRoughness  -> the rings buckle more
+ *    audioKick       -> a ring flares as it passes (light)
+ *    audioSwell      -> the haze (slow)
+ *
+ *  Knobs: ringsP (ring spacing), bendP (how much the photo bends the rings),
+ *  thickP (tube thickness), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

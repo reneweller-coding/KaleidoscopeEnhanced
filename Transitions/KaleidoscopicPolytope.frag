@@ -1,19 +1,27 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file KaleidoscopicPolytope.frag
- * @brief TRANSITION KALEIDOSCOPIC POLYTOPE: Coxeter reflection group 4D polytope transition.
- * Multiple hyper-plane reflection mirrors fold and unfurl space across regular
- * Coxeter symmetry facets, tessellating and transitioning between scenes.
- *   interpolation -> sweeps kaleidoscopic fold angle & facet recursion
- *   audioKick     -> flashes mirror facet intersection reflection planes
+/*****************************************************************************\
+ *                              KaleidoscopicPolytope.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   mirrorP float reflection symmetry folding order   (0.5..2.2)
- *   foldP   float facet fold depth & displacement    (0.5..2.0)
- *   speedP  float animation speed multiplier         (0.5..2.0)
- *   hueP    float kaleidoscopic facet hue offset     (0..6.28)
+ *  @brief
+ *  TRANSITION KALEIDOSCOPIC POLYTOPE: Coxeter reflection group 4D polytope transition.
+ *
+ *  Multiple hyper-plane reflection mirrors fold and unfurl space across regular Coxeter symmetry facets,
+ *  tessellating and transitioning between scenes.
+ *
+ *    interpolation -> sweeps kaleidoscopic fold angle & facet recursion
+ *    audioKick     -> flashes mirror facet intersection reflection planes
+ *
+ *  Per-activation variety:
+ *    mirrorP float reflection symmetry folding order   (0.5..2.2)
+ *    foldP   float facet fold depth & displacement    (0.5..2.0)
+ *    speedP  float animation speed multiplier         (0.5..2.0)
+ *    hueP    float kaleidoscopic facet hue offset     (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

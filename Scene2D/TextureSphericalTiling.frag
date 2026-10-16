@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureSphericalTiling.frag
- * @brief TEXTURE SPHERICAL TILING: a field of turning globes -- a lattice
- * of spheres, each one tiled like a football or a disco ball with facets
- * holding the photograph, rotating on its own tilted axis, lit from one
- * side with a bright specular glint and a shadowed terminator; the
- * spheres are packed tightly and drift slowly across the view.
- * Endless, mirrorable.
+/*****************************************************************************\
+ *                              TextureSphericalTiling.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the globes turn (integrated, jump-free)
- *   audioSpread     -> globe size
- *   audioKick       -> the glints flash (light)
- *   audioMode       -> the light: cool in minor, warm in major
- *   audioHigh       -> facet sparkles (light)
- *   audioSwell      -> the terminator softens (slow)
+ *  @brief
+ *  TEXTURE SPHERICAL TILING: a field of turning globes -- a lattice of spheres, each one tiled like a football or a
+ *  disco ball with facets holding the photograph, rotating on its own tilted axis, lit from one side with a bright
+ *  specular glint and a shadowed terminator; the spheres are packed tightly and drift slowly across the view.
  *
- * Knobs: facetP (facets), tiltP (axis tilt), mirrorP (mirror-ball vs. photo), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the globes turn (integrated, jump-free)
+ *    audioSpread     -> globe size
+ *    audioKick       -> the glints flash (light)
+ *    audioMode       -> the light: cool in minor, warm in major
+ *    audioHigh       -> facet sparkles (light)
+ *    audioSwell      -> the terminator softens (slow)
+ *
+ *  Knobs: facetP (facets), tiltP (axis tilt), mirrorP (mirror-ball vs. photo), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

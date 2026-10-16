@@ -1,8 +1,14 @@
 #version 330 core
-/**
- * @file GrapheneGyroidTriplyPeriodicMinimalSurface.vert
- * @brief Vertex stage companion to GrapheneGyroidTriplyPeriodicMinimalSurface.frag -- see that file's
- * header for this scene's description.
+/*****************************************************************************\
+ *                              GrapheneGyroidTriplyPeriodicMinimalSurface.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to GrapheneGyroidTriplyPeriodicMinimalSurface.frag -- see that file's header for this
+ *  scene's description.
+ *
+ *  @author René Weller
  */
 
 in vec4 attrA; ///< xy = Cell UV [0,1], z = 0, w = Cell index

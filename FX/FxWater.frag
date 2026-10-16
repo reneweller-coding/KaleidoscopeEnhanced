@@ -1,10 +1,16 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file FxWater.frag
- * @brief FX WATER: multi-directional ripple interference pattern refracts and
- * specular-highlights the scene like light through a rippling water surface.
+/*****************************************************************************\
+ *                              FxWater.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  FX WATER: multi-directional ripple interference pattern refracts and specular-highlights the scene like light
+ *  through a rippling water surface.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

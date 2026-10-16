@@ -1,22 +1,31 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SuperradiantBlackHoleBomb.frag
- * @brief SUPERRADIANT BLACK HOLE BOMB: Massive bosonic field trapped in an artificial reflecting
- * mirror cavity around a rapidly rotating Kerr black hole. Superradiant scattering exponentially
- * extracts rotational energy, creating violent photon amplification and ergosphere detonation rings.
- *   audioAdvance -> accelerates black hole spin & bosonic wavefield superradiant amplification
- *   audioKick    -> triggers runaway superradiant cavity explosion flashes
- *   audioSwell   -> widens mirror cavity radius & bosonic cloud density
- *   audioCentroid-> shifts superradiant resonance frequency colors
- *   audioSubBass -> deepens central event horizon gravitational shadow
+/*****************************************************************************\
+ *                              SuperradiantBlackHoleBomb.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   mirrorRadiusP float spherical reflecting cavity boundary radius (0.6..1.6)
- *   growthRateP   float superradiant instability exponential growth (0.5..2.2)
- *   modeL_P       float bosonic field azimuthal mode number m       (2.0..8.0)
- *   bombGlowP     float runaway explosion luminance gain            (0.8..2.5)
+ *  @brief
+ *  SUPERRADIANT BLACK HOLE BOMB: Massive bosonic field trapped in an artificial reflecting mirror cavity around a
+ *  rapidly rotating Kerr black hole.
+ *
+ *  Superradiant scattering exponentially extracts rotational energy, creating violent photon amplification and
+ *  ergosphere detonation rings.
+ *
+ *    audioAdvance -> accelerates black hole spin & bosonic wavefield superradiant amplification
+ *    audioKick    -> triggers runaway superradiant cavity explosion flashes
+ *    audioSwell   -> widens mirror cavity radius & bosonic cloud density
+ *    audioCentroid-> shifts superradiant resonance frequency colors
+ *    audioSubBass -> deepens central event horizon gravitational shadow
+ *
+ *  Per-activation variety:
+ *    mirrorRadiusP float spherical reflecting cavity boundary radius (0.6..1.6)
+ *    growthRateP   float superradiant instability exponential growth (0.5..2.2)
+ *    modeL_P       float bosonic field azimuthal mode number m       (2.0..8.0)
+ *    bombGlowP     float runaway explosion luminance gain            (0.8..2.5)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

@@ -1,25 +1,30 @@
 #version 330 core
-/**
- * @file SnowDrift.vert
- * @brief Vertex stage companion to SnowDrift.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              SnowDrift.vert
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSwell     -> wind lean across the column + overall glow
- *   audioLevel     -> overall glow
- *   audioChromaHue -> faint key tint of the flakes
- *   audioFlatness  -> WIDTH OF THE SNOWFALL: a held tone keeps the flakes in
- *                     a narrow near column, broadband noise (wind, hiss,
- *                     white-ish texture) opens it into a wide diffuse
- *                     curtain.  It only ever widens, so the additive sprites
- *                     cannot bunch up and brighten the frame
- *   audioSharpness  -> SPARKLE CONTRAST: dull dark material gives an even,
- *                     matte snowfall; bright harsh material (cymbals, hiss)
- *                     deepens each flake's tumble-glint into a hard twinkle.
- *                     The glint's MEAN falls as its swing grows, so a sharp
- *                     mix sparkles more without getting brighter overall
- *   audioMode      -> MOONLIGHT TEMPERATURE: a minor key hangs a cold blue
- *                     moon over the field, a major key a warm one
+ *  @brief
+ *  Vertex stage companion to SnowDrift.frag -- see that file's header for this scene's description.
+ *
+ *  Audio Reactivity:
+ *    audioSwell     -> wind lean across the column + overall glow
+ *    audioLevel     -> overall glow
+ *    audioChromaHue -> faint key tint of the flakes
+ *    audioFlatness  -> WIDTH OF THE SNOWFALL: a held tone keeps the flakes in
+ *                      a narrow near column, broadband noise (wind, hiss,
+ *                      white-ish texture) opens it into a wide diffuse
+ *                      curtain.  It only ever widens, so the additive sprites
+ *                      cannot bunch up and brighten the frame
+ *    audioSharpness  -> SPARKLE CONTRAST: dull dark material gives an even,
+ *                      matte snowfall; bright harsh material (cymbals, hiss)
+ *                      deepens each flake's tumble-glint into a hard twinkle.
+ *                      The glint's MEAN falls as its swing grows, so a sharp
+ *                      mix sparkles more without getting brighter overall
+ *    audioMode      -> MOONLIGHT TEMPERATURE: a minor key hangs a cold blue
+ *                      moon over the field, a major key a warm one
+ *
+ *  @author René Weller
  */
 // SnowDrift.vert — slow snowfall through a blue night; every flake sways
 // on its own pendulum, a faint ground glow catches them as they land.

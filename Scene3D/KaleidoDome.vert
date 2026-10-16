@@ -1,8 +1,13 @@
 #version 330 core
-/**
- * @file KaleidoDome.vert
- * @brief Vertex stage companion to KaleidoDome.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              KaleidoDome.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to KaleidoDome.frag -- see that file's header for this scene's description.
+ *
+ *  @author René Weller
  */
 // KaleidoDome.vert — INSIDE a planetarium dome fully covered with a living
 // kaleidoscope rosette of the current image.  The dome section always faces

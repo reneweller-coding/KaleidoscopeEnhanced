@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SurfBarrelInside.frag
- * @brief SURF BARREL INSIDE: riding deep inside the barrel of a breaking wave
- * -- the water curls from the wave face on the right, up over your head and
- * down in a falling curtain on the left, a tunnel of glassy turquoise, and
- * ahead the round opening where the tube ends shows the blinding sky and
- * the bright beach.  Sunlight shines through the thin lip overhead, so the
- * water glows green-gold there and darkens to deep teal where it is
- * thick; streaks of foam and bubbles stream around the tube as the water
- * spins, spray hangs in the air.  The ride goes on endlessly and evenly.
+/*****************************************************************************\
+ *                              SurfBarrelInside.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSwell  -> the light through the lip (slow)
- *   audioHigh   -> glitter in the spray (light)
- *   audioLevel  -> brightness
- *   sceneTime / sceneAdvance -> the water spinning around the tube (continuous)
+ *  @brief
+ *  SURF BARREL INSIDE: riding deep inside the barrel of a breaking wave -- the water curls from the wave face on
+ *  the right, up over your head and down in a falling curtain on the left, a tunnel of glassy turquoise, and ahead
+ *  the round opening where the tube ends shows the blinding sky and the bright beach.
  *
- * Per-activation variety: tubeP (how round the tube), hueP.
+ *  Sunlight shines through the thin lip overhead, so the water glows green-gold there and darkens to deep teal
+ *  where it is thick; streaks of foam and bubbles stream around the tube as the water spins, spray hangs in the
+ *  air.  The ride goes on endlessly and evenly.
+ *
+ *  Audio Reactivity:
+ *    audioSwell  -> the light through the lip (slow)
+ *    audioHigh   -> glitter in the spray (light)
+ *    audioLevel  -> brightness
+ *    sceneTime / sceneAdvance -> the water spinning around the tube (continuous)
+ *
+ *  Per-activation variety: tubeP (how round the tube), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

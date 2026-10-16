@@ -1,27 +1,32 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file WallpaperGroupCycle.frag
- * @brief WALLPAPER GROUP CYCLE: the photograph folded through the plane
- * symmetry groups -- a small cell of the texture is mirrored, rotated and
- * glide-reflected into an endless wallpaper, and the wallpaper wanders
- * slowly from one symmetry to the next (p4m, p6m, p3m1, p4g, pmm, cmm, p31m,
- * p6 ...), each change a soft cross-fade, while the window into the photo
- * drifts so the motif inside the cell keeps changing.  The mirror seams
- * glow faintly like the joints of a kaleidoscope.  Endless and mirrorable
- * by construction -- it IS a mirror pattern.
+/*****************************************************************************\
+ *                              WallpaperGroupCycle.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioPhase      -> the cell turns (integrated, jump-free)
- *   audioAdvance    -> the window drifts through the photo (integrated)
- *   audioSwell      -> the cell size breathes (slow)
- *   audioRoughness  -> the mirrors warp like old glass
- *   audioHarmChange -> the seams flare on chord changes (light)
- *   audioMode       -> the seam colour warms in major
+ *  @brief
+ *  WALLPAPER GROUP CYCLE: the photograph folded through the plane symmetry groups -- a small cell of the texture is
+ *  mirrored, rotated and glide-reflected into an endless wallpaper, and the wallpaper wanders slowly from one
+ *  symmetry to the next (p4m, p6m, p3m1, p4g, pmm, cmm, p31m, p6 ...), each change a soft cross-fade, while the
+ *  window into the photo drifts so the motif inside the cell keeps changing.
  *
- * Knobs: cellP (cell size), groupP (which groups the cycle favours),
- * speedP (how fast the groups change), hueP.
+ *  The mirror seams glow faintly like the joints of a kaleidoscope.  Endless and mirrorable by construction -- it
+ *  IS a mirror pattern.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioPhase      -> the cell turns (integrated, jump-free)
+ *    audioAdvance    -> the window drifts through the photo (integrated)
+ *    audioSwell      -> the cell size breathes (slow)
+ *    audioRoughness  -> the mirrors warp like old glass
+ *    audioHarmChange -> the seams flare on chord changes (light)
+ *    audioMode       -> the seam colour warms in major
+ *
+ *  Knobs: cellP (cell size), groupP (which groups the cycle favours),
+ *  speedP (how fast the groups change), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

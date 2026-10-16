@@ -1,8 +1,13 @@
 #version 330 core
-/**
- * @file MosaicWave.vert
- * @brief Vertex stage companion to MosaicWave.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              MosaicWave.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to MosaicWave.frag -- see that file's header for this scene's description.
+ *
+ *  @author René Weller
  */
 // MosaicWave.vert — a huge curved mosaic wall (100 x 30 tiles) showing the
 // current image; flip waves sweep across it with the bar, kicks pop the

@@ -1,8 +1,13 @@
 #version 330 core
-/**
- * @file WaveRibbon.vert
- * @brief Vertex stage companion to WaveRibbon.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              WaveRibbon.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to WaveRibbon.frag -- see that file's header for this scene's description.
+ *
+ *  @author René Weller
  */
 // WaveRibbon.vert — the classic MilkDrop waveform, reborn in 3D: 20 stacked
 // glowing wave lines drift back into space, each an "echo" of the front

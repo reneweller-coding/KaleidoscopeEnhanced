@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file ReactionDiffusionKaleidoscope.frag
- * @brief REACTION-DIFFUSION KALEIDOSCOPE: the living Gray-Scott field
- * (texSim: R = A, G = B) folded through an n-way mirror.  The chemistry
- * never repeats, the mirror makes it ornament: spots become rosettes,
- * worms become interlocking rings, and every fold seam is a line of
- * symmetry the pattern grows across.  Spectral change "cooks" the field --
- * a new layer entering the mix reads as the pattern boiling over.
+/*****************************************************************************\
+ *                              ReactionDiffusionKaleidoscope.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   texSim         -> the motif
- *   audioFlux      -> how hard the field is contrasted (boiling)
- *   audioBeat      -> body brightness (light only, V7d)
- *   audioSwell     -> zoom into the field on builds (slow)
- *   sceneAdvance   -> mirror rotation, continuous
- *   audioKick      -> a light pulse from the centre
+ *  @brief
+ *  REACTION-DIFFUSION KALEIDOSCOPE: the living Gray-Scott field (texSim: R = A, G = B) folded through an n-way
+ *  mirror.
  *
- * Per-activation variety: sidesP (fold count 4..10), zoomP, hueP.
+ *  The chemistry never repeats, the mirror makes it ornament: spots become rosettes, worms become interlocking
+ *  rings, and every fold seam is a line of symmetry the pattern grows across.  Spectral change "cooks" the field --
+ *  a new layer entering the mix reads as the pattern boiling over.
+ *
+ *  Audio Reactivity:
+ *    texSim         -> the motif
+ *    audioFlux      -> how hard the field is contrasted (boiling)
+ *    audioBeat      -> body brightness (light only, V7d)
+ *    audioSwell     -> zoom into the field on builds (slow)
+ *    sceneAdvance   -> mirror rotation, continuous
+ *    audioKick      -> a light pulse from the centre
+ *
+ *  Per-activation variety: sidesP (fold count 4..10), zoomP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

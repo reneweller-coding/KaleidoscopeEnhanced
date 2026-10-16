@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file ZaoWouKiStorm.frag
- * @brief ZAO WOU-KI STORM: a lyrical abstract painting in motion -- vast
- * masses of thinned oil colour swirl like a storm over the sea, deep blues
- * and near-blacks torn open by a luminous core of light, washes bleeding
- * into each other with soft edges, and across them fine, nervous
- * calligraphic strokes and spatters; the painting keeps churning slowly,
- * the light core wandering.  The colours come from the photograph.
- * Endless, mirrorable.
+/*****************************************************************************\
+ *                              ZaoWouKiStorm.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the masses churn (integrated, jump-free)
- *   audioSpread     -> how far the light tears the dark open
- *   audioRoughness  -> the calligraphic strokes grow nervous
- *   audioKick       -> the core flares (light)
- *   audioMode       -> the light: cold white in minor, golden in major
- *   audioSwell      -> the washes brighten (slow)
+ *  @brief
+ *  ZAO WOU-KI STORM: a lyrical abstract painting in motion -- vast masses of thinned oil colour swirl like a storm
+ *  over the sea, deep blues and near-blacks torn open by a luminous core of light, washes bleeding into each other
+ *  with soft edges, and across them fine, nervous calligraphic strokes and spatters; the painting keeps churning
+ *  slowly, the light core wandering.
  *
- * Knobs: churnP (warp strength), strokeP (stroke density), photoP (photo colours), hueP.
+ *  The colours come from the photograph. Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the masses churn (integrated, jump-free)
+ *    audioSpread     -> how far the light tears the dark open
+ *    audioRoughness  -> the calligraphic strokes grow nervous
+ *    audioKick       -> the core flares (light)
+ *    audioMode       -> the light: cold white in minor, golden in major
+ *    audioSwell      -> the washes brighten (slow)
+ *
+ *  Knobs: churnP (warp strength), strokeP (stroke density), photoP (photo colours), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

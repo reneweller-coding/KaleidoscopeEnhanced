@@ -1,26 +1,31 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file PointillistDots.frag
- * @brief POINTILLIST DOTS: the photograph repainted as a pointillist canvas
- * in the manner of Seurat and Signac -- thousands of small round dabs of
- * pure colour set side by side, each dab picking its hue from the photo but
- * split into complementary pure pigments that the eye mixes, the dabs
- * slightly overlapping, varied in size, set in the direction of the forms;
- * the dabs are continually repainted: one by one they fade and new ones
- * appear, so the canvas shimmers like air in summer light.  Endless,
- * mirrorable.
+/*****************************************************************************\
+ *                              PointillistDots.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the repainting (integrated, jump-free)
- *   audioSpread     -> dab size (wide spectrum = smaller dabs)
- *   audioMode       -> the palette: cooler in minor, warmer in major
- *   audioSwell      -> saturation of the pure colours (slow)
- *   audioHigh       -> brighter white dabs of light (light)
- *   audioRoughness  -> the dabs scatter more
+ *  @brief
+ *  POINTILLIST DOTS: the photograph repainted as a pointillist canvas in the manner of Seurat and Signac --
+ *  thousands of small round dabs of pure colour set side by side, each dab picking its hue from the photo but split
+ *  into complementary pure pigments that the eye mixes, the dabs slightly overlapping, varied in size, set in the
+ *  direction of the forms; the dabs are continually repainted: one by one they fade and new ones appear, so the
+ *  canvas shimmers like air in summer light.
  *
- * Knobs: sizeP (dab size), splitP (colour splitting), zoomP (how close), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the repainting (integrated, jump-free)
+ *    audioSpread     -> dab size (wide spectrum = smaller dabs)
+ *    audioMode       -> the palette: cooler in minor, warmer in major
+ *    audioSwell      -> saturation of the pure colours (slow)
+ *    audioHigh       -> brighter white dabs of light (light)
+ *    audioRoughness  -> the dabs scatter more
+ *
+ *  Knobs: sizeP (dab size), splitP (colour splitting), zoomP (how close), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

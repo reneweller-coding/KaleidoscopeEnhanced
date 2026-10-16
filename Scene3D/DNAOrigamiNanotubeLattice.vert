@@ -1,8 +1,13 @@
 #version 330 core
-/**
- * @file DNAOrigamiNanotubeLattice.vert
- * @brief Vertex stage companion to DNAOrigamiNanotubeLattice.frag -- see that file's
- * header for this scene's description.
+/*****************************************************************************\
+ *                              DNAOrigamiNanotubeLattice.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to DNAOrigamiNanotubeLattice.frag -- see that file's header for this scene's description.
+ *
+ *  @author René Weller
  */
 
 in vec4 attrA; ///< x = t [0,1], y = side (-1/+1), z = 0, w = ribbon index

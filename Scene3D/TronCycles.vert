@@ -1,8 +1,13 @@
 #version 330 core
-/**
- * @file TronCycles.vert
- * @brief Vertex stage companion to TronCycles.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              TronCycles.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to TronCycles.frag -- see that file's header for this scene's description.
+ *
+ *  @author René Weller
  */
 // TronCycles.vert — light-cycles race across a dark arena, leaving solid
 // glowing light WALLS that turn in sharp 90-degree corners.  Each cycle

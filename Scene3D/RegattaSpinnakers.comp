@@ -1,14 +1,19 @@
 #version 430 core
-/**
- * @file RegattaSpinnakers.comp
- * @brief REGATTA SPINNAKERS: a fleet of yachts running downwind under
- * spinnakers of the photo.  Each boat sails steadily on the scene clock
- * (its own speed, a gentle course), heels with the wind (the swell, slow)
- * and rides the sea's heave (a slow bob on the clock); the spinnaker is a
- * bellied quad-mesh, the hull a dark wedge.  No state.  Camera fixed on
- * the committee boat.
+/*****************************************************************************\
+ *                              RegattaSpinnakers.comp
+\*****************************************************************************/
+/*! @file
  *
- * Per-instance: fleetP, windP, hueP.
+ *  @brief
+ *  REGATTA SPINNAKERS: a fleet of yachts running downwind under spinnakers of the photo.
+ *
+ *  Each boat sails steadily on the scene clock (its own speed, a gentle course), heels with the wind (the swell,
+ *  slow) and rides the sea's heave (a slow bob on the clock); the spinnaker is a bellied quad-mesh, the hull a dark
+ *  wedge.  No state.  Camera fixed on the committee boat.
+ *
+ *  Per-instance: fleetP, windP, hueP.
+ *
+ *  @author René Weller
  */
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( local_size_x = 4, local_size_y = 4, local_size_z = 4 ) in;

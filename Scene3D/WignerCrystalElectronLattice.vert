@@ -1,8 +1,14 @@
 #version 330 core
-/**
- * @file WignerCrystalElectronLattice.vert
- * @brief Vertex stage companion to WignerCrystalElectronLattice.frag -- see that file's
- * header for this scene's description.
+/*****************************************************************************\
+ *                              WignerCrystalElectronLattice.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to WignerCrystalElectronLattice.frag -- see that file's header for this scene's
+ *  description.
+ *
+ *  @author René Weller
  */
 
 in vec4 attrA; ///< w = point index

@@ -1,20 +1,27 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TachyonCommRelay.frag
- * @brief TACHYON COMM RELAY: A gigantic communication relay with massive rotating
- * rings and a central data spire. Energy pulses shoot along its length,
- * synchronized with the bass drops.
- *   audioAdvance -> camera travel speed through the rings
- *   audioKick    -> data pulse flashes along the spire and rings
- *   audioSwell   -> ambient illumination of the energy field
- *   audioChromaHue-> energy color palette
+/*****************************************************************************\
+ *                              TachyonCommRelay.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   ringP float thickness/complexity of the rings (0.5..1.5)
- *   glowP float intensity of the data pulses (0.6..1.8)
- *   hueP float palette offset (0..6.28)
+ *  @brief
+ *  TACHYON COMM RELAY: A gigantic communication relay with massive rotating rings and a central data spire.
+ *
+ *  Energy pulses shoot along its length, synchronized with the bass drops.
+ *
+ *    audioAdvance -> camera travel speed through the rings
+ *    audioKick    -> data pulse flashes along the spire and rings
+ *    audioSwell   -> ambient illumination of the energy field
+ *    audioChromaHue-> energy color palette
+ *
+ *  Per-activation variety:
+ *    ringP float thickness/complexity of the rings (0.5..1.5)
+ *    glowP float intensity of the data pulses (0.6..1.8)
+ *    hueP float palette offset (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform float time;           ///< Seconds since the program started (never reset; see sceneTime).
 uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs

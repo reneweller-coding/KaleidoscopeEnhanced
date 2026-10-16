@@ -1,20 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file VoidLeviathan.frag
- * @brief VOID LEVIATHAN: Encounter with a colossal, space-dwelling entity in
- * the deep abyss. The creature's leathery skin is covered in bioluminescent
- * patterns that pulse to the beat, while massive tentacles drift past.
- *   audioAdvance -> flight speed alongside the leviathan
- *   audioKick    -> bright bioluminescent flashes on the creature's skin
- *   audioSwell   -> ambient visibility (starlight revealing the sheer scale)
- *   audioChromaHue-> palette offset for the bioluminescence
+/*****************************************************************************\
+ *                              VoidLeviathan.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   scaleP float apparent scale/distance to the creature (0.5..1.5)
- *   glowP float intensity of the bioluminescent patterns (0.5..2.0)
- *   hueP float palette offset (0..6.28)
+ *  @brief
+ *  VOID LEVIATHAN: Encounter with a colossal, space-dwelling entity in the deep abyss.
+ *
+ *  The creature's leathery skin is covered in bioluminescent patterns that pulse to the beat, while massive
+ *  tentacles drift past.
+ *
+ *    audioAdvance -> flight speed alongside the leviathan
+ *    audioKick    -> bright bioluminescent flashes on the creature's skin
+ *    audioSwell   -> ambient visibility (starlight revealing the sheer scale)
+ *    audioChromaHue-> palette offset for the bioluminescence
+ *
+ *  Per-activation variety:
+ *    scaleP float apparent scale/distance to the creature (0.5..1.5)
+ *    glowP float intensity of the bioluminescent patterns (0.5..2.0)
+ *    hueP float palette offset (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

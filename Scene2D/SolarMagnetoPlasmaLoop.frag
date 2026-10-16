@@ -1,18 +1,23 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SolarMagnetoPlasmaLoop.frag
- * @brief SOLAR MAGNETO PLASMA LOOP: Twisted magnetic helical coronal loops emerging
- * from a boiling solar photosphere with coronal reconnection flares, solar prominence
- * arcs, and high-energy coronal mass ejection (CME) shockwaves.
+/*****************************************************************************\
+ *                              SolarMagnetoPlasmaLoop.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance -> drives continuous solar magnetic convection & helical loop twist
- *   audioKick    -> triggers violent magnetic reconnection flares & CME plasma bursts
- *   audioCentroid-> sharpens magnetic flux rope filament resolution
- *   audioSubBass -> expands photospheric granulation convection boiling
- *   audioChromaHue-> steers the extreme solar flare hydrogen/helium spectrum
+ *  @brief
+ *  SOLAR MAGNETO PLASMA LOOP: Twisted magnetic helical coronal loops emerging from a boiling solar photosphere with
+ *  coronal reconnection flares, solar prominence arcs, and high-energy coronal mass ejection (CME) shockwaves.
+ *
+ *  Audio Reactivity:
+ *    audioAdvance -> drives continuous solar magnetic convection & helical loop twist
+ *    audioKick    -> triggers violent magnetic reconnection flares & CME plasma bursts
+ *    audioCentroid-> sharpens magnetic flux rope filament resolution
+ *    audioSubBass -> expands photospheric granulation convection boiling
+ *    audioChromaHue-> steers the extreme solar flare hydrogen/helium spectrum
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

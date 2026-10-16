@@ -1,27 +1,32 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureMaelstrom.frag
- * @brief TEXTURE MAELSTROM: looking down into a whirlpool whose walls are the
- * photograph -- the texture is wound into a logarithmic spiral that turns
- * and sinks toward the eye of the vortex, streaks of foam spiral down with
- * it, the walls grow darker and faster with depth, and at the bottom a
- * cold light glows.  An endless polar field like the Tunnel: it continues
- * past the frame edges and mirrors without seams; every photo gives its
- * own maelstrom.
+/*****************************************************************************\
+ *                              TextureMaelstrom.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the downward drift of the walls (integrated, jump-free)
- *   audioPhase      -> the turning of the vortex (integrated)
- *   audioSpread     -> how tightly the spiral winds
- *   audioMode       -> the number of spiral arms (fewer in minor, more in major -- blended, never snapping)
- *   audioRoughness  -> the walls churn (ripple along the spiral)
- *   audioHigh       -> the foam's sparkle (light)
- *   audioBass       -> the glow in the eye (light)
- *   audioSwell      -> the foam's density (slow)
+ *  @brief
+ *  TEXTURE MAELSTROM: looking down into a whirlpool whose walls are the photograph -- the texture is wound into a
+ *  logarithmic spiral that turns and sinks toward the eye of the vortex, streaks of foam spiral down with it, the
+ *  walls grow darker and faster with depth, and at the bottom a cold light glows.
  *
- * Knobs: armsP (base arm count), windP (base winding), foamP (foam amount), hueP.
+ *  An endless polar field like the Tunnel: it continues past the frame edges and mirrors without seams; every photo
+ *  gives its own maelstrom.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the downward drift of the walls (integrated, jump-free)
+ *    audioPhase      -> the turning of the vortex (integrated)
+ *    audioSpread     -> how tightly the spiral winds
+ *    audioMode       -> the number of spiral arms (fewer in minor, more in major -- blended, never snapping)
+ *    audioRoughness  -> the walls churn (ripple along the spiral)
+ *    audioHigh       -> the foam's sparkle (light)
+ *    audioBass       -> the glow in the eye (light)
+ *    audioSwell      -> the foam's density (slow)
+ *
+ *  Knobs: armsP (base arm count), windP (base winding), foamP (foam amount), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

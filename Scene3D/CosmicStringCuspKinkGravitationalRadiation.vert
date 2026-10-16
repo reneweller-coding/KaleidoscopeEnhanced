@@ -1,8 +1,14 @@
 #version 330 core
-/**
- * @file CosmicStringCuspKinkGravitationalRadiation.vert
- * @brief Vertex stage companion to CosmicStringCuspKinkGravitationalRadiation.frag -- see that file's
- * header for this scene's description.
+/*****************************************************************************\
+ *                              CosmicStringCuspKinkGravitationalRadiation.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to CosmicStringCuspKinkGravitationalRadiation.frag -- see that file's header for this
+ *  scene's description.
+ *
+ *  @author René Weller
  */
 
 // attrA.xyz = VIEW-space position, attrA.w = parameter along the loop

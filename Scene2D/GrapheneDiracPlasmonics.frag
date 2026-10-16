@@ -1,11 +1,16 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file GrapheneDiracPlasmonics.frag
- * @brief GRAPHENE DIRAC PLASMONICS: 100% viewport-filling 2D honeycomb carbon
- * graphene lattice visualizing Dirac cones, topological quantum Hall edge
- * states, localized electronic wavepacket hops, and plasmonic resonances.
+/*****************************************************************************\
+ *                              GrapheneDiracPlasmonics.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  GRAPHENE DIRAC PLASMONICS: 100% viewport-filling 2D honeycomb carbon graphene lattice visualizing Dirac cones,
+ *  topological quantum Hall edge states, localized electronic wavepacket hops, and plasmonic resonances.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

@@ -1,21 +1,25 @@
 #version 330 core
+/*****************************************************************************\
+ *                              CryovolcanicIceGeysers.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Fragment shader for the cryovolcanic ice-geyser plume particles: blends the incoming per-particle colour with a
+ *  slideshow photo sample and adds a soft glow toward the centre of each plume ribbon.
+ *
+ *  The plume colouring itself (icy cyan/white/sun-gold mix, audioChromaHue and
+ *  hueP hue rotation, audioLevel brightness) is computed upstream in
+ *  CryovolcanicIceGeysers.vert and passed in via vColor; this stage only
+ *  re-textures it with the current photo (tex0/tex1, cross-faded by
+ *  interpolation) and shapes the edge falloff.
+ *
+ *  @author René Weller
+ */
 out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec4 vColor;    ///< Color (from the vertex stage).
 in vec2 vTexCoord; ///< Texture coordinate (from the vertex stage).
-
-/**
- * @file CryovolcanicIceGeysers.frag
- * @brief Fragment shader for the cryovolcanic ice-geyser plume particles:
- * blends the incoming per-particle colour with a slideshow photo sample and
- * adds a soft glow toward the centre of each plume ribbon.
- *
- * The plume colouring itself (icy cyan/white/sun-gold mix, audioChromaHue and
- * hueP hue rotation, audioLevel brightness) is computed upstream in
- * CryovolcanicIceGeysers.vert and passed in via vColor; this stage only
- * re-textures it with the current photo (tex0/tex1, cross-faded by
- * interpolation) and shapes the edge falloff.
- */
 
 uniform sampler2D tex0;          ///< The current photo.
 uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).

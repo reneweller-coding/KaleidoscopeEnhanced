@@ -1,8 +1,13 @@
 #version 330 core
-/**
- * @file FiberopticLightLoom.vert
- * @brief Vertex stage companion to FiberopticLightLoom.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              FiberopticLightLoom.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to FiberopticLightLoom.frag -- see that file's header for this scene's description.
+ *
+ *  @author René Weller
  */
 // FiberopticLightLoom.vert — 20 woven fiberoptic ribbons flowing in 3D
 // warp-and-weft patterns transmitting high-speed data pulse packets.

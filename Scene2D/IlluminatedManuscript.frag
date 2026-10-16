@@ -1,25 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file IlluminatedManuscript.frag
- * @brief ILLUMINATED MANUSCRIPT: a vellum page with a gilded initial and a
- * border of vines.  The vines grow along the margins over the scene arc
- * (each tendril extends smoothly, its leaves opening as it passes), the
- * gold leaf catches the light as it turns on the swell (a slow sweep of
- * a highlight across the gilding), the miniature in the initial is the
- * photo, the text lines are ruled script; the kick is the flash of the
- * gold, the treble the sparkle of the burnished dots.  Camera fixed over
- * the page.
+/*****************************************************************************\
+ *                              IlluminatedManuscript.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   sceneProgress -> vine growth (the arc)
- *   audioSwell    -> the gold's highlight sweep (slow)
- *   audioKick     -> gold flash (light)
- *   audioHigh     -> burnish sparkle (light)
- *   audioLevel    -> brightness
+ *  @brief
+ *  ILLUMINATED MANUSCRIPT: a vellum page with a gilded initial and a border of vines.
  *
- * Per-activation variety: vineP, goldP, hueP.
+ *  The vines grow along the margins over the scene arc (each tendril extends smoothly, its leaves opening as it
+ *  passes), the gold leaf catches the light as it turns on the swell (a slow sweep of a highlight across the
+ *  gilding), the miniature in the initial is the photo, the text lines are ruled script; the kick is the flash of
+ *  the gold, the treble the sparkle of the burnished dots.  Camera fixed over the page.
+ *
+ *  Audio Reactivity:
+ *    sceneProgress -> vine growth (the arc)
+ *    audioSwell    -> the gold's highlight sweep (slow)
+ *    audioKick     -> gold flash (light)
+ *    audioHigh     -> burnish sparkle (light)
+ *    audioLevel    -> brightness
+ *
+ *  Per-activation variety: vineP, goldP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

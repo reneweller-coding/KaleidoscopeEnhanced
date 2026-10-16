@@ -1,25 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file LEDRainCurtain.frag
- * @brief LED RAIN CURTAIN: a light installation seen head-on and filling the
- * frame -- a curtain of hundreds of hanging LED tubes in a hazy dark room,
- * rows of them one behind the other, and down every tube runs a falling
- * drop of light with a fading tail, like rain made of light.  Each column
- * belongs to one pitch class: when that note sounds, the drops in its
- * tubes burn bright in its colour; silent notes leave their tubes a faint
- * glimmer.  The haze glows around the tubes, and a black glossy floor
- * mirrors the curtain.  The drops fall at their own steady pace; the camera
- * is still.
+/*****************************************************************************\
+ *                              LEDRainCurtain.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioChroma[12] -> the brightness of each pitch class's drops (light)
- *   audioSwell      -> the haze (slow)
- *   audioLevel      -> brightness
- *   sceneTime / sceneAdvance -> the falling drops (continuous)
+ *  @brief
+ *  LED RAIN CURTAIN: a light installation seen head-on and filling the frame -- a curtain of hundreds of hanging
+ *  LED tubes in a hazy dark room, rows of them one behind the other, and down every tube runs a falling drop of
+ *  light with a fading tail, like rain made of light.
  *
- * Per-activation variety: densityP (how close the tubes hang), hueP.
+ *  Each column belongs to one pitch class: when that note sounds, the drops in its tubes burn bright in its colour;
+ *  silent notes leave their tubes a faint glimmer.  The haze glows around the tubes, and a black glossy floor
+ *  mirrors the curtain.  The drops fall at their own steady pace; the camera is still.
+ *
+ *  Audio Reactivity:
+ *    audioChroma[12] -> the brightness of each pitch class's drops (light)
+ *    audioSwell      -> the haze (slow)
+ *    audioLevel      -> brightness
+ *    sceneTime / sceneAdvance -> the falling drops (continuous)
+ *
+ *  Per-activation variety: densityP (how close the tubes hang), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

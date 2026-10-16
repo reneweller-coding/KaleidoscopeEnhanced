@@ -1,4 +1,20 @@
 #version 330 core
+/*****************************************************************************\
+ *                              PhotoCarousel.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Shades one card of the photo carousel: a seeded crop of the current slideshow image (tex0) with a thin glowing
+ *  frame.
+ *
+ *  audioChromaHue sets the frame's hue (offset per card by its seed),
+ *  audioKick brightens the frame flashes, and audioDrop lifts the whole
+ *  card's exposure; vGlow (from the vertex shader) additionally modulates
+ *  per-card brightness.
+ *
+ *  @author René Weller
+ */
 out vec4 fragColor; ///< The pixel's colour (output).
 // PhotoCarousel.frag — each card is a seeded crop of the current image with
 // a thin glowing frame; the frame colour follows the music's key.
@@ -10,17 +26,6 @@ uniform float     audioDrop;      ///< Drop envelope: high after a detected drop
 in vec2  vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 in vec4  vSeed; ///< Per-instance random seed (from the vertex stage).
 in float vGlow; ///< Glow (from the vertex stage).
-
-/**
- * @file PhotoCarousel.frag
- * @brief Shades one card of the photo carousel: a seeded crop of the
- * current slideshow image (tex0) with a thin glowing frame.
- *
- * audioChromaHue sets the frame's hue (offset per card by its seed),
- * audioKick brightens the frame flashes, and audioDrop lifts the whole
- * card's exposure; vGlow (from the vertex shader) additionally modulates
- * per-card brightness.
- */
 
 /**  Rotates a colour's hue by an angle (about the grey axis).
  *

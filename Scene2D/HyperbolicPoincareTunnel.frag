@@ -1,12 +1,19 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file HyperbolicPoincareTunnel.frag
- * @brief HYPERBOLIC POINCARE TUNNEL: 100% viewport-filling infinite flight down
- * a non-Euclidean tunnel whose cross-section is an {8,3} hyperbolic
- * Poincare disk. The tunnel walls are paved with conformal self-similar
- * tiles of the loaded photo with hyperbolic circle reflections.
+/*****************************************************************************\
+ *                              HyperbolicPoincareTunnel.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  HYPERBOLIC POINCARE TUNNEL: 100% viewport-filling infinite flight down a non-Euclidean tunnel whose
+ *  cross-section is an {8,3} hyperbolic Poincare disk.
+ *
+ *  The tunnel walls are paved with conformal self-similar tiles of the loaded photo with hyperbolic circle
+ *  reflections.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

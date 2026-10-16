@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file WaxDripCascade.frag
- * @brief WAX DRIP CASCADE: a wall of candle wax -- layer upon layer of
- * coloured wax has run down it, each layer ending in rounded tongues and
- * fat drips that overlap the layer below, glossy on top and glowing
- * translucent where the wax is thin, as if lit from behind by the candle
- * flames above; the wall slowly scrolls upward, the drips lengthen and
- * swell, and the pigments swirl faintly inside the wax (from the
- * photograph).  Endless, mirrorable.
+/*****************************************************************************\
+ *                              WaxDripCascade.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the wall scrolls (integrated, jump-free)
- *   audioSpread     -> how far the drips run
- *   audioBass       -> the backlight glows through the wax (light)
- *   audioMode       -> palette: cool in minor, warm candle colours in major
- *   audioRoughness  -> the wax surface gets lumpy
- *   audioSwell      -> the gloss (slow)
+ *  @brief
+ *  WAX DRIP CASCADE: a wall of candle wax -- layer upon layer of coloured wax has run down it, each layer ending in
+ *  rounded tongues and fat drips that overlap the layer below, glossy on top and glowing translucent where the wax
+ *  is thin, as if lit from behind by the candle flames above; the wall slowly scrolls upward, the drips lengthen
+ *  and swell, and the pigments swirl faintly inside the wax (from the photograph).
  *
- * Knobs: layerP (layer spacing), dripP (drip density), photoP (pigment swirl), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the wall scrolls (integrated, jump-free)
+ *    audioSpread     -> how far the drips run
+ *    audioBass       -> the backlight glows through the wax (light)
+ *    audioMode       -> palette: cool in minor, warm candle colours in major
+ *    audioRoughness  -> the wax surface gets lumpy
+ *    audioSwell      -> the gloss (slow)
+ *
+ *  Knobs: layerP (layer spacing), dripP (drip density), photoP (pigment swirl), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

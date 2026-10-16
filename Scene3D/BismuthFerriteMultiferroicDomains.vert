@@ -1,8 +1,14 @@
 #version 330 core
-/**
- * @file BismuthFerriteMultiferroicDomains.vert
- * @brief Vertex stage companion to BismuthFerriteMultiferroicDomains.frag -- see that file's
- * header for this scene's description.
+/*****************************************************************************\
+ *                              BismuthFerriteMultiferroicDomains.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to BismuthFerriteMultiferroicDomains.frag -- see that file's header for this scene's
+ *  description.
+ *
+ *  @author René Weller
  */
 
 in vec4 attrA; ///< xy = corner UV [0,1], z = 0, w = quad index

@@ -1,21 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file PlasmaFilamentPinch.frag
- * @brief TRANSITION PLASMA FILAMENT PINCH: Magnetohydrodynamic Z-pinch plasma transition.
- * Axial electric currents generate azimuthal magnetic fields, compressing
- * plasma into ultra-dense filaments that develop sausage and kink instabilities
- * before bursting into the incoming scene.
- *   interpolation -> sweeps magnetic Bennett pinch compression & burst
- *   audioKick     -> triggers full-pinch thermonuclear radiation flash
- *   audioSwell    -> drives radial Lorentz force compression amplitude
+/*****************************************************************************\
+ *                              PlasmaFilamentPinch.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   pinchP float Z-pinch compression ratio & filament thickness (0.5..2.2)
- *   kinkP  float m=1 kink instability helical twist             (0.5..2.0)
- *   speedP float animation speed multiplier                     (0.5..2.0)
- *   hueP   float plasma emission hue offset                     (0..6.28)
+ *  @brief
+ *  TRANSITION PLASMA FILAMENT PINCH: Magnetohydrodynamic Z-pinch plasma transition.
+ *
+ *  Axial electric currents generate azimuthal magnetic fields, compressing plasma into ultra-dense filaments that
+ *  develop sausage and kink instabilities before bursting into the incoming scene.
+ *
+ *    interpolation -> sweeps magnetic Bennett pinch compression & burst
+ *    audioKick     -> triggers full-pinch thermonuclear radiation flash
+ *    audioSwell    -> drives radial Lorentz force compression amplitude
+ *
+ *  Per-activation variety:
+ *    pinchP float Z-pinch compression ratio & filament thickness (0.5..2.2)
+ *    kinkP  float m=1 kink instability helical twist             (0.5..2.0)
+ *    speedP float animation speed multiplier                     (0.5..2.0)
+ *    hueP   float plasma emission hue offset                     (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

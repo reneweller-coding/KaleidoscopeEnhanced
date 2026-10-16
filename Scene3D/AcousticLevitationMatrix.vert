@@ -1,8 +1,13 @@
 #version 330 core
-/**
- * @file AcousticLevitationMatrix.vert
- * @brief Vertex stage companion to AcousticLevitationMatrix.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              AcousticLevitationMatrix.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to AcousticLevitationMatrix.frag -- see that file's header for this scene's description.
+ *
+ *  @author René Weller
  */
 // AcousticLevitationMatrix.vert — 4,900 monolithic levitating voxels
 // trapped in an ultrasonic standing wave field creating a volumetric 3D photo display.

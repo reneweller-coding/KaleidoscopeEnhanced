@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file CentroidSunArc.frag
- * @brief CENTROID SUN ARC: the timbre as the time of day.  The spectral
- * centroid -- how bright the sound is -- is the height of the sun over a
- * landscape of the photo: dark, bassy passages are dusk with long shadows
- * and a red sun on the horizon, bright passages are noon; spectral
- * flatness is the haze (noisy sound = hazy air); the centroid is slow
- * enough on its own to move the sun smoothly.  Round birds cross on the
- * scene clock; the kick is a glint on the water.  Camera fixed.
+/*****************************************************************************\
+ *                              CentroidSunArc.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioCentroid -> sun height and colour (slow)
- *   audioFlatness -> haze (slow)
- *   sceneAdvance  -> birds and cloud drift (continuous)
- *   audioKick     -> water glint (light)
- *   audioLevel    -> brightness
+ *  @brief
+ *  CENTROID SUN ARC: the timbre as the time of day.
  *
- * Per-activation variety: hillsP, lakeP, hueP.
+ *  The spectral centroid -- how bright the sound is -- is the height of the sun over a landscape of the photo:
+ *  dark, bassy passages are dusk with long shadows and a red sun on the horizon, bright passages are noon; spectral
+ *  flatness is the haze (noisy sound = hazy air); the centroid is slow enough on its own to move the sun smoothly.
+ *  Round birds cross on the scene clock; the kick is a glint on the water.  Camera fixed.
+ *
+ *  Audio Reactivity:
+ *    audioCentroid -> sun height and colour (slow)
+ *    audioFlatness -> haze (slow)
+ *    sceneAdvance  -> birds and cloud drift (continuous)
+ *    audioKick     -> water glint (light)
+ *    audioLevel    -> brightness
+ *
+ *  Per-activation variety: hillsP, lakeP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

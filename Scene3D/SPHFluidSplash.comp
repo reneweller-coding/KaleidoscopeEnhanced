@@ -1,27 +1,32 @@
 #version 430
-/**
- * @file SPHFluidSplash.comp
- * @brief Real SPH (Smoothed Particle Hydrodynamics) fluid: 3000 particles in
- * a box, density/pressure computed from actual neighbours found via a 3D
- * spatial hash grid (same binning technique ComputeFX's Boids uses in 2D,
- * here extended to 3D), then meshed as one small tetrahedron per particle.
+/*****************************************************************************\
+ *                              SPHFluidSplash.comp
+\*****************************************************************************/
+/*! @file
  *
- * Five genPass stages (see Scene3DShader::runGenerator()'s genPassCount
- * extension -- this is the first generator in the engine that needs more
- * than the original "advance state, then mesh" two passes):
- *   0: clear the grid's per-cell particle counts
- *   1: bin every particle into its grid cell (atomic slot reservation)
- *   2: density + pressure per particle (sum a smoothing kernel over the
- *      27 neighbouring cells)
- *   3: pressure-gradient + viscosity forces, gravity, integrate velocity
- *      and position, bounce off the container's floor/walls
- *   4: emit a tetrahedron per particle into the indirect vertex buffer
+ *  @brief
+ *  Real SPH (Smoothed Particle Hydrodynamics) fluid: 3000 particles in a box, density/pressure computed from actual
+ *  neighbours found via a 3D spatial hash grid (same binning technique ComputeFX's Boids uses in 2D, here extended
+ *  to 3D), then meshed as one small tetrahedron per particle.
  *
- * The particle array and the grid share ONE persistent SSBO (m_stateBuf,
- * sized via setGenPassCount()'s sibling setStateBytes()) as two array
- * members of the same std430 block -- simplest way to get two differently-
- * typed persistent regions out of the one buffer binding runGenerator()
- * already provides, no engine change needed for a second buffer.
+ *  Five genPass stages (see Scene3DShader::runGenerator()'s genPassCount
+ *  extension -- this is the first generator in the engine that needs more
+ *  than the original "advance state, then mesh" two passes):
+ *    0: clear the grid's per-cell particle counts
+ *    1: bin every particle into its grid cell (atomic slot reservation)
+ *    2: density + pressure per particle (sum a smoothing kernel over the
+ *       27 neighbouring cells)
+ *    3: pressure-gradient + viscosity forces, gravity, integrate velocity
+ *       and position, bounce off the container's floor/walls
+ *    4: emit a tetrahedron per particle into the indirect vertex buffer
+ *
+ *  The particle array and the grid share ONE persistent SSBO (m_stateBuf,
+ *  sized via setGenPassCount()'s sibling setStateBytes()) as two array
+ *  members of the same std430 block -- simplest way to get two differently-
+ *  typed persistent regions out of the one buffer binding runGenerator()
+ *  already provides, no engine change needed for a second buffer.
+ *
+ *  @author René Weller
  */
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( local_size_x = 4, local_size_y = 4, local_size_z = 4 ) in;

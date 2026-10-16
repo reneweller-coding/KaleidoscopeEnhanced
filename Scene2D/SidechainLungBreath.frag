@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SidechainLungBreath.frag
- * @brief SIDECHAIN LUNG BREATH: a pair of lungs on a dark ground, the
- * bronchial tree branching into them; the lobes inflate with the swell
- * (a slow, smooth breath -- the scene clock adds a resting rhythm), the
- * alveoli are round cells carrying the photo, lit by the bands from the
- * bottom (bass) to the top (treble); the kick is the sidechain pump: a
- * dip of the light (never of the shape), read off on a gain-reduction
- * meter beside the lungs.  Camera fixed.
+/*****************************************************************************\
+ *                              SidechainLungBreath.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSwell        -> inflation (slow) and light
- *   audioKick         -> light dip (the duck) and the meter needle (light)
- *   audioSpectrum[32] -> alveoli brightness by height (light)
- *   sceneAdvance      -> the resting breath (continuous)
- *   audioLevel        -> brightness
+ *  @brief
+ *  SIDECHAIN LUNG BREATH: a pair of lungs on a dark ground, the bronchial tree branching into them; the lobes
+ *  inflate with the swell (a slow, smooth breath -- the scene clock adds a resting rhythm), the alveoli are round
+ *  cells carrying the photo, lit by the bands from the bottom (bass) to the top (treble); the kick is the sidechain
+ *  pump: a dip of the light (never of the shape), read off on a gain-reduction meter beside the lungs.
  *
- * Per-activation variety: depthP, cellP, hueP.
+ *  Camera fixed.
+ *
+ *  Audio Reactivity:
+ *    audioSwell        -> inflation (slow) and light
+ *    audioKick         -> light dip (the duck) and the meter needle (light)
+ *    audioSpectrum[32] -> alveoli brightness by height (light)
+ *    sceneAdvance      -> the resting breath (continuous)
+ *    audioLevel        -> brightness
+ *
+ *  Per-activation variety: depthP, cellP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

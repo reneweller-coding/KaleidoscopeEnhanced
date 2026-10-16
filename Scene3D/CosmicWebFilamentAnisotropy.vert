@@ -1,16 +1,22 @@
 #version 330 core
-/**
- * @file CosmicWebFilamentAnisotropy.vert
- * @brief Vertex stage companion to CosmicWebFilamentAnisotropy.frag -- see that file's
- * header for this scene's description.
+/*****************************************************************************\
+ *                              CosmicWebFilamentAnisotropy.vert
+\*****************************************************************************/
+/*! @file
  *
- * The web used to be a 3.2-radius ball whose brightness ran as exp(-|p|*0.6):
- * everything beyond the middle third was crushed to nothing, so 60k particles
- * lit one small blob in a black frame (occ 0.11).  Density now comes from the
- * distance to the nearest CLUSTER NODE of the lattice instead of from the
- * distance to the camera's origin, the web spans the whole frustum, and a
- * quarter of the particles form a far-field void glow placed in FRUSTUM
- * coordinates so the corners are never empty.
+ *  @brief
+ *  Vertex stage companion to CosmicWebFilamentAnisotropy.frag -- see that file's header for this scene's
+ *  description.
+ *
+ *  The web used to be a 3.2-radius ball whose brightness ran as exp(-|p|*0.6):
+ *  everything beyond the middle third was crushed to nothing, so 60k particles
+ *  lit one small blob in a black frame (occ 0.11).  Density now comes from the
+ *  distance to the nearest CLUSTER NODE of the lattice instead of from the
+ *  distance to the camera's origin, the web spans the whole frustum, and a
+ *  quarter of the particles form a far-field void glow placed in FRUSTUM
+ *  coordinates so the corners are never empty.
+ *
+ *  @author René Weller
  */
 
 in vec4 attrA; ///< w = point index

@@ -1,19 +1,24 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file PsychedelicReactionMelt.frag
- * @brief PSYCHEDELIC REACTION MELT: Turing / Gray-Scott procedural reaction-diffusion
- * morphogenetic labyrinth with melting liquid wax feedback, chromatic phase inversions,
- * and high-energy chemical spot/stripe division waves.
+/*****************************************************************************\
+ *                              PsychedelicReactionMelt.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance -> surges the chemical diffusion advection & melting on top of a
- *                   constant base drift rate (so the reaction never freezes)
- *   audioKick    -> triggers full chromatic phase inversions & chemical shockwave burst
- *   audioCentroid-> modulates Turing labyrinth stripe frequency & spot splitting
- *   audioSubBass -> expands liquid wax melting viscosity
- *   audioChromaHue-> rotates the liquid acid psychedelic palette
+ *  @brief
+ *  PSYCHEDELIC REACTION MELT: Turing / Gray-Scott procedural reaction-diffusion morphogenetic labyrinth with
+ *  melting liquid wax feedback, chromatic phase inversions, and high-energy chemical spot/stripe division waves.
+ *
+ *  Audio Reactivity:
+ *    audioAdvance -> surges the chemical diffusion advection & melting on top of a
+ *                    constant base drift rate (so the reaction never freezes)
+ *    audioKick    -> triggers full chromatic phase inversions & chemical shockwave burst
+ *    audioCentroid-> modulates Turing labyrinth stripe frequency & spot splitting
+ *    audioSubBass -> expands liquid wax melting viscosity
+ *    audioChromaHue-> rotates the liquid acid psychedelic palette
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

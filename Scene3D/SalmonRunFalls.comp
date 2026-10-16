@@ -1,17 +1,23 @@
 #version 430 core
-/**
- * @file SalmonRunFalls.comp
- * @brief SALMON RUN FALLS: a step in a river where the fish jump.  White
- * water pours over a rock ledge in several chutes; salmon launch out of
- * the plunge pool on continuous phases, arc through the air and land
- * above, and spray hangs in front of it all.  Each fish is a body quad
- * and a tail quad on a ballistic arc -- a real parabola, so the motion is
- * smooth from launch to landing and nothing ever teleports.
+/*****************************************************************************\
+ *                              SalmonRunFalls.comp
+\*****************************************************************************/
+/*! @file
  *
- * Kinds: -1 sky/forest, -2 pool surface, 0 fish body, 1 fish tail,
- *        2 chute sheet, 3 spray droplet, 4 ledge rock.
+ *  @brief
+ *  SALMON RUN FALLS: a step in a river where the fish jump.
  *
- * Per-instance: fishP, chuteP, hueP.
+ *  White water pours over a rock ledge in several chutes; salmon launch out of the plunge pool on continuous
+ *  phases, arc through the air and land above, and spray hangs in front of it all.  Each fish is a body quad and a
+ *  tail quad on a ballistic arc -- a real parabola, so the motion is smooth from launch to landing and nothing ever
+ *  teleports.
+ *
+ *  Kinds: -1 sky/forest, -2 pool surface, 0 fish body, 1 fish tail,
+ *         2 chute sheet, 3 spray droplet, 4 ledge rock.
+ *
+ *  Per-instance: fishP, chuteP, hueP.
+ *
+ *  @author René Weller
  */
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( local_size_x = 4, local_size_y = 4, local_size_z = 4 ) in;

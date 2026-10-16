@@ -1,19 +1,27 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file AtmosphericGravityWaveUndularBore.frag
- * @brief ATMOSPHERIC GRAVITY WAVE UNDULAR BORE: 220x120 heightfield grid of mesospheric
- * undular bore gravity wave solitons. Emits emerald hydroxyl airglow emission lines,
- * atmospheric curvature depth, and photo texturing.
- *   audioAdvance -> drives mesospheric gravity wave soliton propagation
- *   audioKick    -> flashes wave crest chemiluminescent airglow surges
- *   audioSwell   -> thickens atmospheric airglow layer & wave amplitude
- *   audioCentroid-> shifts atomic oxygen & hydroxyl emission spectra
+/*****************************************************************************\
+ *                              AtmosphericGravityWaveUndularBore.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   boreWaveP float gravity wave soliton frequency          (6.0..18.0)
- *   airglowP  float mesospheric chemiluminescence luminance (0.8..2.5)
+ *  @brief
+ *  ATMOSPHERIC GRAVITY WAVE UNDULAR BORE: 220x120 heightfield grid of mesospheric undular bore gravity wave
+ *  solitons.
+ *
+ *  Emits emerald hydroxyl airglow emission lines, atmospheric curvature depth, and photo texturing.
+ *
+ *    audioAdvance -> drives mesospheric gravity wave soliton propagation
+ *    audioKick    -> flashes wave crest chemiluminescent airglow surges
+ *    audioSwell   -> thickens atmospheric airglow layer & wave amplitude
+ *    audioCentroid-> shifts atomic oxygen & hydroxyl emission spectra
+ *
+ *  Per-activation variety:
+ *    boreWaveP float gravity wave soliton frequency          (6.0..18.0)
+ *    airglowP  float mesospheric chemiluminescence luminance (0.8..2.5)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec2  vUV;      ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 in vec3  vNormal;  ///< Surface normal (from the vertex stage).

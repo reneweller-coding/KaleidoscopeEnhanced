@@ -1,23 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file WaterfallCurtainRainbow.frag
- * @brief WATERFALL CURTAIN RAINBOW: a wide curtain of falling water filling
- * the frame between mossy cliffs, the sun behind the viewer, and in the
- * spray that boils up from the plunge pool a standing rainbow.  The water
- * streams down in countless threads, bright where it catches the light;
- * each stretch of the curtain carries a spectrum band, so the music runs
- * across it as light.  Spray and rainbow grow with the swell.  Camera fixed.
+/*****************************************************************************\
+ *                              WaterfallCurtainRainbow.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSpectrum[32] -> brightness of the curtain, band by band across it
- *   audioSwell        -> spray density and rainbow strength (slow)
- *   audioHigh         -> glitter on the falling threads (light)
- *   audioKick         -> a soft surge of light in the spray (light only)
- *   sceneTime         -> the fall itself (continuous, never on audio)
+ *  @brief
+ *  WATERFALL CURTAIN RAINBOW: a wide curtain of falling water filling the frame between mossy cliffs, the sun
+ *  behind the viewer, and in the spray that boils up from the plunge pool a standing rainbow.
  *
- * Per-activation variety: widthP (curtain width), hueP.
+ *  The water streams down in countless threads, bright where it catches the light; each stretch of the curtain
+ *  carries a spectrum band, so the music runs across it as light.  Spray and rainbow grow with the swell.  Camera
+ *  fixed.
+ *
+ *  Audio Reactivity:
+ *    audioSpectrum[32] -> brightness of the curtain, band by band across it
+ *    audioSwell        -> spray density and rainbow strength (slow)
+ *    audioHigh         -> glitter on the falling threads (light)
+ *    audioKick         -> a soft surge of light in the spray (light only)
+ *    sceneTime         -> the fall itself (continuous, never on audio)
+ *
+ *  Per-activation variety: widthP (curtain width), hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

@@ -1,8 +1,13 @@
 #version 330 core
-/**
- * @file Detonation.vert
- * @brief Vertex stage companion to Detonation.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              Detonation.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to Detonation.frag -- see that file's header for this scene's description.
+ *
+ *  @author René Weller
  */
 // Detonation.vert — wrap the flat grid onto a sphere.  The shell is broken
 // apart per triangle in the geometry shader, so nothing is displaced here.

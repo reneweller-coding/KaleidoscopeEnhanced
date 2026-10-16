@@ -1,22 +1,27 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file WhirlingDervishes.frag
- * @brief WHIRLING DERVISHES: the sema seen as a long-exposure photograph
- * from above.  A circle of turning dancers, each a white skirt blurred into
- * a luminous disc with soft folds, the whole ring itself slowly circling a
- * centre; warm lamplight from above, the floor dark wood.  The dancers turn
- * at their own steady speed; the music is in the light -- each skirt glows
- * with its band, and the swell brightens the lamps.
+/*****************************************************************************\
+ *                              WhirlingDervishes.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSpectrum[32] -> each skirt's glow (its band)
- *   audioSwell        -> the lamplight (slow)
- *   audioHigh         -> sparkle on the skirt hems (light)
- *   sceneTime         -> the turning of skirts and ring (continuous, constant)
+ *  @brief
+ *  WHIRLING DERVISHES: the sema seen as a long-exposure photograph from above.
  *
- * Per-activation variety: dancersP (how many dancers), hueP.
+ *  A circle of turning dancers, each a white skirt blurred into a luminous disc with soft folds, the whole ring
+ *  itself slowly circling a centre; warm lamplight from above, the floor dark wood.  The dancers turn at their own
+ *  steady speed; the music is in the light -- each skirt glows with its band, and the swell brightens the lamps.
+ *
+ *  Audio Reactivity:
+ *    audioSpectrum[32] -> each skirt's glow (its band)
+ *    audioSwell        -> the lamplight (slow)
+ *    audioHigh         -> sparkle on the skirt hems (light)
+ *    sceneTime         -> the turning of skirts and ring (continuous, constant)
+ *
+ *  Per-activation variety: dancersP (how many dancers), hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

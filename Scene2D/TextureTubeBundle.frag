@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureTubeBundle.frag
- * @brief TEXTURE TUBE BUNDLE: looking straight down a bundle of tubes -- a
- * honeycomb of round tubes, each one its own little tunnel lined with the
- * photograph, all flowing toward the viewer at their own pace, each ending
- * in its own coloured glow deep inside; the metal rims between them catch
- * the light, and the whole bundle turns slowly.  Tunnels of tunnels,
- * endless beyond the frame; mirrorable.
+/*****************************************************************************\
+ *                              TextureTubeBundle.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the flow through the tubes (integrated, jump-free)
- *   audioPhase      -> the bundle turns (integrated)
- *   audioSpread     -> how far the tubes' paces differ
- *   audioKick       -> the far glows flare (light)
- *   audioMode       -> glow colours: cool in minor, warm in major
- *   audioSwell      -> depth fog (slow)
+ *  @brief
+ *  TEXTURE TUBE BUNDLE: looking straight down a bundle of tubes -- a honeycomb of round tubes, each one its own
+ *  little tunnel lined with the photograph, all flowing toward the viewer at their own pace, each ending in its own
+ *  coloured glow deep inside; the metal rims between them catch the light, and the whole bundle turns slowly.
  *
- * Knobs: tubeP (tube size), rimP (rim width), wallZoomP, hueP.
+ *  Tunnels of tunnels, endless beyond the frame; mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the flow through the tubes (integrated, jump-free)
+ *    audioPhase      -> the bundle turns (integrated)
+ *    audioSpread     -> how far the tubes' paces differ
+ *    audioKick       -> the far glows flare (light)
+ *    audioMode       -> glow colours: cool in minor, warm in major
+ *    audioSwell      -> depth fog (slow)
+ *
+ *  Knobs: tubeP (tube size), rimP (rim width), wallZoomP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

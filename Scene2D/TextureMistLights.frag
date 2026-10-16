@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureMistLights.frag
- * @brief TEXTURE MIST LIGHTS: coloured lights glowing through drifting fog
- * at night -- dozens of soft lamps (the photograph's bright points,
- * scattered at different distances) bloom into large halos in the mist,
- * the fog rolling in banks between them so the halos swell and fade as
- * denser or thinner fog passes; near lights large and diffuse, far ones
- * small pinpoints.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              TextureMistLights.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the fog banks roll (integrated, jump-free)
- *   audioSpread     -> the halos spread
- *   audioBass       -> the lights brighten (light)
- *   audioMode       -> the fog: cool blue-grey in minor, warm in major
- *   audioHigh       -> the pinpoints sparkle (light)
- *   audioSwell      -> the fog density (slow)
+ *  @brief
+ *  TEXTURE MIST LIGHTS: coloured lights glowing through drifting fog at night -- dozens of soft lamps (the
+ *  photograph's bright points, scattered at different distances) bloom into large halos in the mist, the fog
+ *  rolling in banks between them so the halos swell and fade as denser or thinner fog passes; near lights large and
+ *  diffuse, far ones small pinpoints.
  *
- * Knobs: lightP (number of lights), haloP (halo size), fogP (base fog), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the fog banks roll (integrated, jump-free)
+ *    audioSpread     -> the halos spread
+ *    audioBass       -> the lights brighten (light)
+ *    audioMode       -> the fog: cool blue-grey in minor, warm in major
+ *    audioHigh       -> the pinpoints sparkle (light)
+ *    audioSwell      -> the fog density (slow)
+ *
+ *  Knobs: lightP (number of lights), haloP (halo size), fogP (base fog), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

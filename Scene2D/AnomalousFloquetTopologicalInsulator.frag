@@ -1,22 +1,31 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file AnomalousFloquetTopologicalInsulator.frag
- * @brief ANOMALOUS FLOQUET TOPOLOGICAL INSULATOR: Out-of-equilibrium Floquet topological state
- * driven by circularly polarized light. High-frequency time-periodic driving breaks time-reversal
- * symmetry, creating chiral edge states traversing bulk bandgaps with photo-derived quasienergy spectra.
- *   audioAdvance -> drives Floquet drive frequency & quasienergy phase integration
- *   audioKick    -> flashes Floquet band inversion topological transitions
- *   audioSwell   -> widens chiral edge state penetration depth & bandgap luminance
- *   audioCentroid-> shifts Floquet quasienergy Brillouin zone spectra
- *   audioPhase   -> modulates circular polarization driving helicity
+/*****************************************************************************\
+ *                              AnomalousFloquetTopologicalInsulator.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   latticePitchP float hexagonal lattice cell packing density   (2.5..7.0)
- *   driveAmpP     float periodic laser driving field intensity   (0.6..2.2)
- *   gapWidthP     float Floquet topological bandgap width        (0.4..1.8)
- *   edgeGlowP     float chiral boundary current luminance gain   (0.8..2.5)
+ *  @brief
+ *  ANOMALOUS FLOQUET TOPOLOGICAL INSULATOR: Out-of-equilibrium Floquet topological state driven by circularly
+ *  polarized light.
+ *
+ *  High-frequency time-periodic driving breaks time-reversal symmetry, creating chiral edge states traversing bulk
+ *  bandgaps with photo-derived quasienergy spectra.
+ *
+ *    audioAdvance -> drives Floquet drive frequency & quasienergy phase integration
+ *    audioKick    -> flashes Floquet band inversion topological transitions
+ *    audioSwell   -> widens chiral edge state penetration depth & bandgap luminance
+ *    audioCentroid-> shifts Floquet quasienergy Brillouin zone spectra
+ *    audioPhase   -> modulates circular polarization driving helicity
+ *
+ *  Per-activation variety:
+ *    latticePitchP float hexagonal lattice cell packing density   (2.5..7.0)
+ *    driveAmpP     float periodic laser driving field intensity   (0.6..2.2)
+ *    gapWidthP     float Floquet topological bandgap width        (0.4..1.8)
+ *    edgeGlowP     float chiral boundary current luminance gain   (0.8..2.5)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

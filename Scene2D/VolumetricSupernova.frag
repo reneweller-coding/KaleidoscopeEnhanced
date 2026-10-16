@@ -1,21 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file VolumetricSupernova.frag
- * @brief VOLUMETRIC SUPERNOVA: Full-screen raymarched volumetric plasma field &
- * shockwave explosion. 100% viewport coverage with 3D Curl Noise, light
- * absorption, and audio-driven corona flares.
- *   audioSubBass -> expands radial explosion shockwave outwards to screen corners
- *   audioKick    -> ignites core luminosity and chromatic flare burst
- *   audioHigh    -> sparks high-frequency plasma filaments
- *   audioSwell   -> thickens volumetric fog density
+/*****************************************************************************\
+ *                              VolumetricSupernova.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety (0 = default):
- *   densityP float fog density multiplier        (0 -> 1.0; 0.6..1.8)
- *   speedP   float plasma swirl speed multiplier (0 -> 1.0; 0.5..1.5)
- *   flareP   float chromatic flare intensity     (0 -> 1.0; 0.5..2.0)
- *   hueP     float global hue rotation           (0 -> none; 0..6.28)
+ *  @brief
+ *  VOLUMETRIC SUPERNOVA: Full-screen raymarched volumetric plasma field & shockwave explosion.
+ *
+ *  100% viewport coverage with 3D Curl Noise, light absorption, and audio-driven corona flares.
+ *
+ *    audioSubBass -> expands radial explosion shockwave outwards to screen corners
+ *    audioKick    -> ignites core luminosity and chromatic flare burst
+ *    audioHigh    -> sparks high-frequency plasma filaments
+ *    audioSwell   -> thickens volumetric fog density
+ *
+ *  Per-activation variety (0 = default):
+ *    densityP float fog density multiplier        (0 -> 1.0; 0.6..1.8)
+ *    speedP   float plasma swirl speed multiplier (0 -> 1.0; 0.5..1.5)
+ *    flareP   float chromatic flare intensity     (0 -> 1.0; 0.5..2.0)
+ *    hueP     float global hue rotation           (0 -> none; 0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureFireFront.frag
- * @brief TEXTURE FIRE FRONT: the photograph burning like paper held over a
- * flame -- a ragged front of glowing embers eats its way across the
- * picture, the paper browning and curling ahead of it, the burnt area
- * behind turning to grey-black ash with the image still faintly printed
- * in it, sparks rising from the front; then the ash cools and the picture
- * returns (as if regrowing) while fronts start elsewhere.  Endless,
- * mirrorable.
+/*****************************************************************************\
+ *                              TextureFireFront.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the fronts move (integrated, jump-free)
- *   audioSpread     -> the front width (the glowing band)
- *   audioBass       -> the embers glow (light)
- *   audioMode       -> the flame: deep red in minor, bright orange in major
- *   audioRoughness  -> the front gets more ragged
- *   audioHigh       -> sparks fly (light)
+ *  @brief
+ *  TEXTURE FIRE FRONT: the photograph burning like paper held over a flame -- a ragged front of glowing embers eats
+ *  its way across the picture, the paper browning and curling ahead of it, the burnt area behind turning to
+ *  grey-black ash with the image still faintly printed in it, sparks rising from the front; then the ash cools and
+ *  the picture returns (as if regrowing) while fronts start elsewhere.
  *
- * Knobs: burnP (burnt share of the picture), charP (browning ahead), ashP (image in the ash), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the fronts move (integrated, jump-free)
+ *    audioSpread     -> the front width (the glowing band)
+ *    audioBass       -> the embers glow (light)
+ *    audioMode       -> the flame: deep red in minor, bright orange in major
+ *    audioRoughness  -> the front gets more ragged
+ *    audioHigh       -> sparks fly (light)
+ *
+ *  Knobs: burnP (burnt share of the picture), charP (browning ahead), ashP (image in the ash), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

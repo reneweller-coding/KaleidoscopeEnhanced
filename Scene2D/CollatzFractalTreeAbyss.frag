@@ -1,18 +1,25 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file CollatzFractalTreeAbyss.frag
- * @brief COLLATZ FRACTAL TREE ABYSS: Analytic complex continuation of the Collatz (3n+1)
- * map f(z) = (1 + 4z - (1+2z)cos(pi*z))/4. Infinite fractal spires, needle feathers,
- * and high-voltage spiky branching forests.
+/*****************************************************************************\
+ *                              CollatzFractalTreeAbyss.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance -> drives continuous complex plane zoom & spire navigation
- *   audioKick    -> flashes Collatz parity branch singularity nodes
- *   audioCentroid-> sharpens transcendental cosine needle oscillations
- *   audioSubBass -> expands branch needle thickness breathing
- *   audioChromaHue-> rotates the spiky needle forest spectrum
+ *  @brief
+ *  COLLATZ FRACTAL TREE ABYSS: Analytic complex continuation of the Collatz (3n+1) map f(z) = (1 + 4z -
+ *  (1+2z)cos(pi*z))/4.
+ *
+ *  Infinite fractal spires, needle feathers, and high-voltage spiky branching forests.
+ *
+ *  Audio Reactivity:
+ *    audioAdvance -> drives continuous complex plane zoom & spire navigation
+ *    audioKick    -> flashes Collatz parity branch singularity nodes
+ *    audioCentroid-> sharpens transcendental cosine needle oscillations
+ *    audioSubBass -> expands branch needle thickness breathing
+ *    audioChromaHue-> rotates the spiky needle forest spectrum
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

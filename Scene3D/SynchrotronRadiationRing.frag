@@ -1,19 +1,25 @@
 #version 330 core
+/*****************************************************************************\
+ *                              SynchrotronRadiationRing.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  SYNCHROTRON RADIATION RING: a storage ring with 24 undulator wiggles - the electron beam glows golden where it
+ *  is bent, and TANGENTIAL RADIATION JETS spray off along the tangent (that IS synchrotron light), camera orbiting
+ *  with a top-down pitch.
+ *
+ *    audioKick -> beam + jet surge    audioBass -> wiggler amplitude
+ *    audioAdvance -> ring rotation + orbit
+ *
+ *  @author René Weller
+ */
 in vec3  vPos;       ///< Position (from the vertex stage).
 in vec2  vUV;        ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 in float vRadiation; ///< Radiation (from the vertex stage).
 in float vBeamID;    ///< Beam ID (from the vertex stage).
 
 out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SynchrotronRadiationRing.frag
- * @brief SYNCHROTRON RADIATION RING: a storage ring with 24 undulator wiggles -
- * the electron beam glows golden where it is bent, and TANGENTIAL
- * RADIATION JETS spray off along the tangent (that IS synchrotron light),
- * camera orbiting with a top-down pitch.
- *   audioKick -> beam + jet surge    audioBass -> wiggler amplitude
- *   audioAdvance -> ring rotation + orbit
- */
 
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

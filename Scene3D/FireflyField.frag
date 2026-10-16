@@ -1,18 +1,22 @@
 #version 330 core
+/*****************************************************************************\
+ *                              FireflyField.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Shades one firefly as a soft radial glow sprite (a Gaussian falloff from the point-sprite center), meant to be
+ *  additively blended so overlapping fireflies pool into brighter light.
+ *
+ *  This fragment shader declares no audio uniforms of its own; its
+ *  audio-reactive color and brightness (vCol) are computed per-vertex by the
+ *  companion vertex shader and only shaped here by the radial falloff.
+ *
+ *  @author René Weller
+ */
 out vec4 fragColor; ///< The pixel's colour (output).
 // FireflyField.frag — soft glowing point (additive blending).
 in vec4 vCol; ///< Colour (from the vertex stage).
-
-/**
- * @file FireflyField.frag
- * @brief Shades one firefly as a soft radial glow sprite (a Gaussian
- * falloff from the point-sprite center), meant to be additively blended so
- * overlapping fireflies pool into brighter light.
- *
- * This fragment shader declares no audio uniforms of its own; its
- * audio-reactive color and brightness (vCol) are computed per-vertex by the
- * companion vertex shader and only shaped here by the radial falloff.
- */
 
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()

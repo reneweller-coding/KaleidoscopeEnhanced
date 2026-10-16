@@ -1,13 +1,19 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file MetamaterialNegativeRefraction.frag
- * @brief METAMATERIAL NEGATIVE REFRACTION: a wave-carrying slab seen from above;
- * two media take their tints from opposite ends of the photo-palette arc,
- * the refraction kink runs through the middle and a superlens focal spot
- * glows in the slab plane on the kick.
- *   audioKick -> focal spot    audioBass -> wave amplitude
+/*****************************************************************************\
+ *                              MetamaterialNegativeRefraction.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  METAMATERIAL NEGATIVE REFRACTION: a wave-carrying slab seen from above; two media take their tints from opposite
+ *  ends of the photo-palette arc, the refraction kink runs through the middle and a superlens focal spot glows in
+ *  the slab plane on the kick.
+ *
+ *    audioKick -> focal spot    audioBass -> wave amplitude
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec3  vWorldPos;      ///< World position (from the vertex stage).
 in vec3  vNormal;        ///< Surface normal (from the vertex stage).

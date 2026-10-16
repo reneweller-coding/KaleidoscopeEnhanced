@@ -1,20 +1,27 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file XenobiologicalBioship.frag
- * @brief XENOBIOLOGICAL BIOSHIP: The camera flies through the grotesque, pulsing
- * interior of a massive living spaceship. Fleshy walls, glowing veins, and
- * strange internal organs ripple and contract to the beat.
- *   audioAdvance -> flight speed through the biological tunnel
- *   audioKick    -> intense contractions and bright bioluminescence flashes
- *   audioSwell   -> ambient brightness of the organic tissue
- *   audioChromaHue-> palette offset for the bioluminescent fluids
+/*****************************************************************************\
+ *                              XenobiologicalBioship.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   fleshP float complexity of the fleshy structures (0.5..1.5)
- *   veinP float intensity of the glowing veins (0.5..2.0)
- *   hueP float palette offset (0..6.28)
+ *  @brief
+ *  XENOBIOLOGICAL BIOSHIP: The camera flies through the grotesque, pulsing interior of a massive living spaceship.
+ *
+ *  Fleshy walls, glowing veins, and strange internal organs ripple and contract to the beat.
+ *
+ *    audioAdvance -> flight speed through the biological tunnel
+ *    audioKick    -> intense contractions and bright bioluminescence flashes
+ *    audioSwell   -> ambient brightness of the organic tissue
+ *    audioChromaHue-> palette offset for the bioluminescent fluids
+ *
+ *  Per-activation variety:
+ *    fleshP float complexity of the fleshy structures (0.5..1.5)
+ *    veinP float intensity of the glowing veins (0.5..2.0)
+ *    hueP float palette offset (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

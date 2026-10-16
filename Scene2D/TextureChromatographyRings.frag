@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureChromatographyRings.frag
- * @brief TEXTURE CHROMATOGRAPHY RINGS: paper chromatography, circle after
- * circle -- on filter paper, drops of ink spread outward as solvent
- * soaks through, and each ink separates into rings of its component
- * pigments (a black splitting into violet, blue, yellow and pink bands),
- * with feathered, spiky outer fronts; the paper takes its tone from the
- * photograph.  Many spots overlap across the endless sheet and slowly
- * develop anew.  Mirrorable.
+/*****************************************************************************\
+ *                              TextureChromatographyRings.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the solvent spreads (integrated, jump-free)
- *   audioSpread     -> spot size
- *   audioKick       -> the wet front glistens (light)
- *   audioMode       -> the inks: cool (blue-violet) in minor, warm (red-orange) in major (tint)
- *   audioRoughness  -> the front gets spikier
- *   audioSwell      -> ring intensity (slow)
+ *  @brief
+ *  TEXTURE CHROMATOGRAPHY RINGS: paper chromatography, circle after circle -- on filter paper, drops of ink spread
+ *  outward as solvent soaks through, and each ink separates into rings of its component pigments (a black splitting
+ *  into violet, blue, yellow and pink bands), with feathered, spiky outer fronts; the paper takes its tone from the
+ *  photograph.
  *
- * Knobs: spotP (spot density), bandP (bands per spot), paperP (photo in the paper), hueP.
+ *  Many spots overlap across the endless sheet and slowly develop anew.  Mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the solvent spreads (integrated, jump-free)
+ *    audioSpread     -> spot size
+ *    audioKick       -> the wet front glistens (light)
+ *    audioMode       -> the inks: cool (blue-violet) in minor, warm (red-orange) in major (tint)
+ *    audioRoughness  -> the front gets spikier
+ *    audioSwell      -> ring intensity (slow)
+ *
+ *  Knobs: spotP (spot density), bandP (bands per spot), paperP (photo in the paper), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

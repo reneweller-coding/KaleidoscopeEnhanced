@@ -1,26 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file AttentionHeadRibbons.frag
- * @brief ATTENTION HEAD RIBBONS: the harmony as an attention map, drawn as
- * a chord diagram.  The twelve pitch classes sit round a ring in circle-of-
- * fifths order, each an arc of the photo lit by its energy; glowing ribbons
- * curve through the middle between every pair that sounds together, one
- * colour per attention head -- fifths cyan, thirds magenta, steps gold,
- * tritones violet -- so a major chord draws a magenta triangle with a cyan
- * edge, and the web re-weaves itself, smoothly, as the harmony moves.
- * Light flows along the ribbons; the strongest token flares on the kick.
- * Camera still.
+/*****************************************************************************\
+ *                              AttentionHeadRibbons.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioChroma[12] -> ribbon weights (products of the two classes, continuous)
- *   sceneAdvance    -> light flowing along the ribbons (continuous)
- *   audioKick       -> the strongest token flares (light)
- *   audioSwell      -> ribbon opacity (slow)
- *   audioLevel      -> brightness
+ *  @brief
+ *  ATTENTION HEAD RIBBONS: the harmony as an attention map, drawn as a chord diagram.
  *
- * Per-activation variety: headsP (2..4 heads), hueP.
+ *  The twelve pitch classes sit round a ring in circle-of- fifths order, each an arc of the photo lit by its
+ *  energy; glowing ribbons curve through the middle between every pair that sounds together, one colour per
+ *  attention head -- fifths cyan, thirds magenta, steps gold, tritones violet -- so a major chord draws a magenta
+ *  triangle with a cyan edge, and the web re-weaves itself, smoothly, as the harmony moves. Light flows along the
+ *  ribbons; the strongest token flares on the kick. Camera still.
+ *
+ *  Audio Reactivity:
+ *    audioChroma[12] -> ribbon weights (products of the two classes, continuous)
+ *    sceneAdvance    -> light flowing along the ribbons (continuous)
+ *    audioKick       -> the strongest token flares (light)
+ *    audioSwell      -> ribbon opacity (slow)
+ *    audioLevel      -> brightness
+ *
+ *  Per-activation variety: headsP (2..4 heads), hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

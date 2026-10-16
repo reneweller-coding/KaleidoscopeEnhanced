@@ -1,21 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file NebulaShipyard.frag
- * @brief NEBULA SHIPYARD: A massive orbital drydock surrounded by scaffolding
- * and robotic arms, constructing new ships amidst a colorful nebula. Welding
- * flares and engine tests flash to the beat.
- *   audioAdvance -> camera flythrough speed
- *   audioKick    -> welding flares and construction sparks
- *   audioSwell   -> nebula brightness and floodlights
- *   audioChromaHue-> nebula and light palette
+/*****************************************************************************\
+ *                              NebulaShipyard.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   yardP float shipyard size/complexity (0.7..1.5)
- *   sparkP float intensity of welding sparks (0.6..1.8)
- *   nebP float nebula density (0.5..1.5)
- *   hueP float palette offset (0..6.28)
+ *  @brief
+ *  NEBULA SHIPYARD: A massive orbital drydock surrounded by scaffolding and robotic arms, constructing new ships
+ *  amidst a colorful nebula.
+ *
+ *  Welding flares and engine tests flash to the beat.
+ *
+ *    audioAdvance -> camera flythrough speed
+ *    audioKick    -> welding flares and construction sparks
+ *    audioSwell   -> nebula brightness and floodlights
+ *    audioChromaHue-> nebula and light palette
+ *
+ *  Per-activation variety:
+ *    yardP float shipyard size/complexity (0.7..1.5)
+ *    sparkP float intensity of welding sparks (0.6..1.8)
+ *    nebP float nebula density (0.5..1.5)
+ *    hueP float palette offset (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

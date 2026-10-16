@@ -1,24 +1,28 @@
 #version 330 core
+/*****************************************************************************\
+ *                              KelvinHelmholtzCloudWaves.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Shades a 220x120 heightfield of rolling cloud billows shaped by Kelvin-Helmholtz shear instability, lit as a
+ *  sunset sky (dusk indigo troughs, amber crests, white cloud caps).
+ *
+ *  The billow geometry, palette mixing and audio response (audioBass
+ *  swelling the wave height, audioKick puffing the crests, audioChromaHue
+ *  and hueP rotating the sky hue, audioLevel scaling brightness) are all
+ *  computed upstream in KelvinHelmholtzCloudWaves.vert; this stage blends
+ *  the baked vCol with the current photo texture and adds a specular
+ *  sun-glint plus a highlight on freshly-breaking crests (vBillow).
+ *
+ *  @author René Weller
+ */
 out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec4  vCol;    ///< Colour (from the vertex stage).
 in vec2  vUV;     ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 in vec3  vNormal; ///< Surface normal (from the vertex stage).
 in float vBillow; ///< Billow (from the vertex stage).
-
-/**
- * @file KelvinHelmholtzCloudWaves.frag
- * @brief Shades a 220x120 heightfield of rolling cloud billows shaped by
- * Kelvin-Helmholtz shear instability, lit as a sunset sky (dusk indigo
- * troughs, amber crests, white cloud caps).
- *
- * The billow geometry, palette mixing and audio response (audioBass
- * swelling the wave height, audioKick puffing the crests, audioChromaHue
- * and hueP rotating the sky hue, audioLevel scaling brightness) are all
- * computed upstream in KelvinHelmholtzCloudWaves.vert; this stage blends
- * the baked vCol with the current photo texture and adds a specular
- * sun-glint plus a highlight on freshly-breaking crests (vBillow).
- */
 
 uniform sampler2D tex0;          ///< The current photo.
 uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).

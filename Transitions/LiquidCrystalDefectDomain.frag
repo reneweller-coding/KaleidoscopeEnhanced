@@ -1,22 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file LiquidCrystalDefectDomain.frag
- * @brief TRANSITION LIQUID CRYSTAL DEFECT DOMAIN: Nematic liquid crystal Schlieren transition.
- * Topological point defects (disclinations with strength s = +/-1/2), rainbow
- * birefringence interference tints on the domains between them, and dark
- * extinction brushes rotate and annihilate as the director field aligns,
- * seamlessly transitioning into the incoming scene.
- *   interpolation -> sweeps director field alignment & defect annihilation
- *   audioKick     -> flashes topological disclination core singularities
- *   audioSwell    -> drives director field Frank elastic distortion
+/*****************************************************************************\
+ *                              LiquidCrystalDefectDomain.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   defectP float topological defect density & core scale (0.5..2.2)
- *   brushP  float cross-polarizer Schlieren brush width   (0.5..2.0)
- *   speedP  float animation speed multiplier              (0.5..2.0)
- *   hueP    float nematic birefringence hue offset        (0..6.28)
+ *  @brief
+ *  TRANSITION LIQUID CRYSTAL DEFECT DOMAIN: Nematic liquid crystal Schlieren transition.
+ *
+ *  Topological point defects (disclinations with strength s = +/-1/2), rainbow birefringence interference tints on
+ *  the domains between them, and dark extinction brushes rotate and annihilate as the director field aligns,
+ *  seamlessly transitioning into the incoming scene.
+ *
+ *    interpolation -> sweeps director field alignment & defect annihilation
+ *    audioKick     -> flashes topological disclination core singularities
+ *    audioSwell    -> drives director field Frank elastic distortion
+ *
+ *  Per-activation variety:
+ *    defectP float topological defect density & core scale (0.5..2.2)
+ *    brushP  float cross-polarizer Schlieren brush width   (0.5..2.0)
+ *    speedP  float animation speed multiplier              (0.5..2.0)
+ *    hueP    float nematic birefringence hue offset        (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

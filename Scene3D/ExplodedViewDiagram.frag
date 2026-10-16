@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file ExplodedViewDiagram.frag
- * @brief EXPLODED VIEW DIAGRAM: drawn as a technical illustration -- a
- * blueprint.  The paper is the photo, bleached and gridded; the model's
- * surfaces are shaded in the drawing's flat washes with ink edges where the
- * surface turns away from the eye; the parts that have flown apart carry
- * leader lines of light back toward the centre (the explosion's own
- * measure).  The bass warms the wash, the kick brightens the ink, the
- * treble adds the hatching.  Camera still.
+/*****************************************************************************\
+ *                              ExplodedViewDiagram.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioKick  -> ink edges (light)
- *   audioBass  -> wash warmth (colour)
- *   audioHigh  -> hatching (light)
- *   audioSwell -> paper light (slow)
- *   audioLevel -> brightness
+ *  @brief
+ *  EXPLODED VIEW DIAGRAM: drawn as a technical illustration -- a blueprint.
  *
- * Per-activation variety: sizeP, spreadP, hueP.
+ *  The paper is the photo, bleached and gridded; the model's surfaces are shaded in the drawing's flat washes with
+ *  ink edges where the surface turns away from the eye; the parts that have flown apart carry leader lines of light
+ *  back toward the centre (the explosion's own measure).  The bass warms the wash, the kick brightens the ink, the
+ *  treble adds the hatching.  Camera still.
+ *
+ *  Audio Reactivity:
+ *    audioKick  -> ink edges (light)
+ *    audioBass  -> wash warmth (colour)
+ *    audioHigh  -> hatching (light)
+ *    audioSwell -> paper light (slow)
+ *    audioLevel -> brightness
+ *
+ *  Per-activation variety: sizeP, spreadP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4               fragColor;       ///< The pixel's colour (output).
 uniform sampler2DArray texMeshMaterial; ///< The mesh's material textures (albedo, roughness, normal ...).
 uniform sampler2D      tex0;            ///< The current photo.
 uniform sampler2D      tex1;            ///< The next photo (cross-faded in by interpolation).

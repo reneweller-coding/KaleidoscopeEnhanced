@@ -1,20 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file DopplerBeamingWipe.frag
- * @brief TRANSITION DOPPLER BEAMING WIPE: Relativistic Doppler shift & headlamp effect.
- * Approaching scene elements experience intense blue-shifting and relativistic
- * beaming brightness amplification while receding elements red-shift away.
- *   interpolation -> sweeps relativistic velocity beta = v/c across screen
- *   audioKick     -> flashes relativistic Lorentz headlamp focus
- *   audioSwell    -> widens Doppler spectral frequency shift
+/*****************************************************************************\
+ *                              DopplerBeamingWipe.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   dopplerP float Doppler spectral shift magnitude (0.5..2.2)
- *   angleP   float relativistic boost angle         (0.5..2.0)
- *   speedP   float animation speed multiplier       (0.5..2.0)
- *   hueP     float Doppler chromatic hue offset     (0..6.28)
+ *  @brief
+ *  TRANSITION DOPPLER BEAMING WIPE: Relativistic Doppler shift & headlamp effect.
+ *
+ *  Approaching scene elements experience intense blue-shifting and relativistic beaming brightness amplification
+ *  while receding elements red-shift away.
+ *
+ *    interpolation -> sweeps relativistic velocity beta = v/c across screen
+ *    audioKick     -> flashes relativistic Lorentz headlamp focus
+ *    audioSwell    -> widens Doppler spectral frequency shift
+ *
+ *  Per-activation variety:
+ *    dopplerP float Doppler spectral shift magnitude (0.5..2.2)
+ *    angleP   float relativistic boost angle         (0.5..2.0)
+ *    speedP   float animation speed multiplier       (0.5..2.0)
+ *    hueP     float Doppler chromatic hue offset     (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

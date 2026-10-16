@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file DoyleSpiralTexture.frag
- * @brief DOYLE SPIRAL TEXTURE: a Doyle spiral -- a packing of circles, each
- * touching six neighbours, winding out from an infinitely small centre in
- * interlocking spiral arms, every circle bigger than the one before; each
- * circle holds its own copy of the photograph (the map is conformal, so
- * every picture keeps its true shape), framed by a thin gold rim; the
- * spiral turns and grows toward us forever.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              DoyleSpiralTexture.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the spiral grows outward (integrated, jump-free)
- *   audioPhase      -> the spiral turns (integrated)
- *   audioSpread     -> the circles swell (gaps close)
- *   audioKick       -> the rims flash (light)
- *   audioMode       -> the gaps: deep blue in minor, warm dark in major
- *   audioSwell      -> the pictures glow (slow)
+ *  @brief
+ *  DOYLE SPIRAL TEXTURE: a Doyle spiral -- a packing of circles, each touching six neighbours, winding out from an
+ *  infinitely small centre in interlocking spiral arms, every circle bigger than the one before; each circle holds
+ *  its own copy of the photograph (the map is conformal, so every picture keeps its true shape), framed by a thin
+ *  gold rim; the spiral turns and grows toward us forever.
  *
- * Knobs: armsP (spiral arms: 5-3 or 8-5 packing, blended), photoZoomP, rimP, hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the spiral grows outward (integrated, jump-free)
+ *    audioPhase      -> the spiral turns (integrated)
+ *    audioSpread     -> the circles swell (gaps close)
+ *    audioKick       -> the rims flash (light)
+ *    audioMode       -> the gaps: deep blue in minor, warm dark in major
+ *    audioSwell      -> the pictures glow (slow)
+ *
+ *  Knobs: armsP (spiral arms: 5-3 or 8-5 packing, blended), photoZoomP, rimP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

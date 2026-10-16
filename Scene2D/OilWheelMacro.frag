@@ -1,26 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file OilWheelMacro.frag
- * @brief OIL WHEEL MACRO: a close-up of the rotating liquid wheel of a
- * vintage oil projector -- between two glass discs, coloured oils and
- * water slowly churn as the wheel turns: big lens-like bubbles of clear
- * oil drift through pools of saturated dye, stretching into long curved
- * streaks along the rotation, their edges glowing where the light
- * refracts, air bubbles glinting; the dye colours come from the
- * photograph.  The wheel's centre sits off-screen so the flow sweeps
- * across in arcs.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              OilWheelMacro.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the wheel turns (integrated, jump-free)
- *   audioSpread     -> the oils stretch into longer streaks
- *   audioBass       -> the projector lamp (light)
- *   audioMode       -> palette: cool in minor, warm in major (tint)
- *   audioRoughness  -> the oils break into smaller droplets
- *   audioSwell      -> the lens bubbles grow (slow)
+ *  @brief
+ *  OIL WHEEL MACRO: a close-up of the rotating liquid wheel of a vintage oil projector -- between two glass discs,
+ *  coloured oils and water slowly churn as the wheel turns: big lens-like bubbles of clear oil drift through pools
+ *  of saturated dye, stretching into long curved streaks along the rotation, their edges glowing where the light
+ *  refracts, air bubbles glinting; the dye colours come from the photograph.
  *
- * Knobs: bubbleP (lens bubbles), dyeP (dye saturation), photoP (photo colours), hueP.
+ *  The wheel's centre sits off-screen so the flow sweeps across in arcs.  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the wheel turns (integrated, jump-free)
+ *    audioSpread     -> the oils stretch into longer streaks
+ *    audioBass       -> the projector lamp (light)
+ *    audioMode       -> palette: cool in minor, warm in major (tint)
+ *    audioRoughness  -> the oils break into smaller droplets
+ *    audioSwell      -> the lens bubbles grow (slow)
+ *
+ *  Knobs: bubbleP (lens bubbles), dyeP (dye saturation), photoP (photo colours), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

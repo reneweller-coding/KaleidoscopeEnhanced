@@ -1,31 +1,36 @@
 #version 330 core
+/*****************************************************************************\
+ *                              CyberspaceDNAHelix.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Lighting for the double-helix DNA strand: colours each base-pair rung by nucleotide
+ *  (Adenine/Thymine/Cytosine/Guanine, cycled along the strand) and flashes it toward white as a transcription pulse
+ *  travels past.
+ *
+ *  The transcription pulse itself (vTranscription, which drives both the
+ *  brightness boost and the colour mix toward the pulse colour) is generated
+ *  per-vertex in CyberspaceDNAHelix.vert, where audioKick sharpens it and
+ *  audioSwell widens the strand-unzipping fork at the helix's centre; this
+ *  fragment stage reads vTranscription back, colours the bases by musical
+ *  mode, and applies the preset hue rotation (hueP).
+ *
+ *  Audio Reactivity:
+ *    audioMode      -> nucleotide palette temperature: a minor key cools the
+ *                      whole A/T/C/G set toward steel-cyan, a major key lets
+ *                      the full warm base spectrum through
+ *    (audioKick / audioSwell / audioAdvance / audioHarmChange / audioUpperMid
+ *     all act upstream in CyberspaceDNAHelix.vert -- see that file.)
+ *
+ *  @author René Weller
+ */
 in vec3  vPos;           ///< Position (from the vertex stage).
 in vec2  vUV;            ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 in float vStrandID;      ///< Strand ID (from the vertex stage).
 in float vTranscription; ///< Transcription (from the vertex stage).
 
 out vec4 fragColor; ///< The pixel's colour (output).
-
-/**
- * @file CyberspaceDNAHelix.frag
- * @brief Lighting for the double-helix DNA strand: colours each base-pair
- * rung by nucleotide (Adenine/Thymine/Cytosine/Guanine, cycled along the
- * strand) and flashes it toward white as a transcription pulse travels past.
- *
- * The transcription pulse itself (vTranscription, which drives both the
- * brightness boost and the colour mix toward the pulse colour) is generated
- * per-vertex in CyberspaceDNAHelix.vert, where audioKick sharpens it and
- * audioSwell widens the strand-unzipping fork at the helix's centre; this
- * fragment stage reads vTranscription back, colours the bases by musical
- * mode, and applies the preset hue rotation (hueP).
- *
- * Audio Reactivity:
- *   audioMode      -> nucleotide palette temperature: a minor key cools the
- *                     whole A/T/C/G set toward steel-cyan, a major key lets
- *                     the full warm base spectrum through
- *   (audioKick / audioSwell / audioAdvance / audioHarmChange / audioUpperMid
- *    all act upstream in CyberspaceDNAHelix.vert -- see that file.)
- */
 
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

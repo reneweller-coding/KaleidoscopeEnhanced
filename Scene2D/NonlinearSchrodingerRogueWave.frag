@@ -1,22 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file NonlinearSchrodingerRogueWave.frag
- * @brief NONLINEAR SCHRÖDINGER ROGUE WAVE: Peregrine breather soliton / oceanic freak monster wave.
- * Non-linear modulational instability (Benjamin-Feir) focuses continuous background wave trains into
- * a sudden triple-height oceanic rogue wave wall with foaming crests and deep abyssal troughs.
- *   audioAdvance -> navigates Peregrine breather non-linear focusing spacetime coordinates
- *   audioKick    -> flashes catastrophic rogue wave breaking crest & foam detonation bursts
- *   audioBass    -> deepens preceding abyssal wave trough hole in the sea & gravitational swell
- *   audioSwell   -> widens rogue wave wall width & background wavepacket envelope
- *   audioCentroid-> shifts stormy ocean water transmission / foam scattering color spectra
+/*****************************************************************************\
+ *                              NonlinearSchrodingerRogueWave.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   breatherScaleP float Peregrine soliton spacetime focus scale  (0.8..2.2)
- *   carrierFreqP   float background carrier wave frequency        (6.0..20.0)
- *   crestFoamP     float breaking rogue wave foam luminance gain  (0.8..2.5)
- *   troughDepthP   float abyssal trough hole depth parameter      (0.6..2.2)
+ *  @brief
+ *  NONLINEAR SCHRÖDINGER ROGUE WAVE: Peregrine breather soliton / oceanic freak monster wave.
+ *
+ *  Non-linear modulational instability (Benjamin-Feir) focuses continuous background wave trains into a sudden
+ *  triple-height oceanic rogue wave wall with foaming crests and deep abyssal troughs.
+ *
+ *    audioAdvance -> navigates Peregrine breather non-linear focusing spacetime coordinates
+ *    audioKick    -> flashes catastrophic rogue wave breaking crest & foam detonation bursts
+ *    audioBass    -> deepens preceding abyssal wave trough hole in the sea & gravitational swell
+ *    audioSwell   -> widens rogue wave wall width & background wavepacket envelope
+ *    audioCentroid-> shifts stormy ocean water transmission / foam scattering color spectra
+ *
+ *  Per-activation variety:
+ *    breatherScaleP float Peregrine soliton spacetime focus scale  (0.8..2.2)
+ *    carrierFreqP   float background carrier wave frequency        (6.0..20.0)
+ *    crestFoamP     float breaking rogue wave foam luminance gain  (0.8..2.5)
+ *    troughDepthP   float abyssal trough hole depth parameter      (0.6..2.2)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

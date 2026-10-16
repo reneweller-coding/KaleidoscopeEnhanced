@@ -1,21 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file BioluminescentNebula.frag
- * @brief BIOLUMINESCENT NEBULA: Massive, fluid-like clouds of interstellar gas
- * that glow with organic, bioluminescent colors. The nebula ripples and pulses
- * like a living organism in response to the audio.
- *   audioAdvance -> drift speed through the nebula
- *   audioKick    -> flashes of bright light through the gas clouds
- *   audioSwell   -> overall glow intensity and color shifting
- *   audioPhase   -> rotation of the viewing angle
- *   audioChromaHue-> base color palette of the nebula
+/*****************************************************************************\
+ *                              BioluminescentNebula.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   densP float density of the nebula clouds (0.5..1.5)
- *   glowP float intensity of the bioluminescence (0.6..1.8)
- *   hueP float palette offset (0..6.28)
+ *  @brief
+ *  BIOLUMINESCENT NEBULA: Massive, fluid-like clouds of interstellar gas that glow with organic, bioluminescent
+ *  colors.
+ *
+ *  The nebula ripples and pulses like a living organism in response to the audio.
+ *
+ *    audioAdvance -> drift speed through the nebula
+ *    audioKick    -> flashes of bright light through the gas clouds
+ *    audioSwell   -> overall glow intensity and color shifting
+ *    audioPhase   -> rotation of the viewing angle
+ *    audioChromaHue-> base color palette of the nebula
+ *
+ *  Per-activation variety:
+ *    densP float density of the nebula clouds (0.5..1.5)
+ *    glowP float intensity of the bioluminescence (0.6..1.8)
+ *    hueP float palette offset (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

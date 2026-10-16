@@ -1,35 +1,40 @@
 #version 330 core
-/**
- * @file RoseOrbit.vert
- * @brief Vertex stage companion to RoseOrbit.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              RoseOrbit.vert
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance   -> flow of particles along the curves, the 3-axis
- *                     precession of all three roses, and the slow circling
- *                     drift of the pollen field
- *                     (pre-integrated, never a factor on absolute time)
- *   audioBass      -> petal radius pulse
- *   audioSwell     -> overall glow of the three roses and of the pollen
- *   audioChromaHue -> hue turn along theta (musical key)
- *   audioSpread    -> DISPERSION: a narrow spectrum draws the streams into one
- *                     thin drawn line and keeps the pollen field close in,
- *                     rich wide harmonics let the line bloom into a soft tube
- *                     and open the pollen out across the whole frame.  The
- *                     pollen extent only ever grows from an already
- *                     frame-filling base, so a thin mix cannot bunch the
- *                     additive sprites together and brighten the picture
- *   audioRoughness -> PETAL FRAY: consonant harmony keeps each petal a clean
- *                     analytic arc, dissonant clusters serrate its outline
- *                     (amplitude only -- the fray's spatial frequency is a
- *                     constant, so the accumulated theta is never remapped)
- *   audioMode      -> petal colour temperature: minor cools all three roses
- *                     and the pollen to blue, major restores the warm pink /
- *                     amber pair
+ *  @brief
+ *  Vertex stage companion to RoseOrbit.frag -- see that file's header for this scene's description.
  *
- * NOTE: the petal count k must NOT be audio-driven -- it multiplies theta,
- * which contains absolute `time`, so any change to it would remap the whole
- * accumulated phase in one frame (the project-wide anti-flicker rule).
+ *  Audio Reactivity:
+ *    audioAdvance   -> flow of particles along the curves, the 3-axis
+ *                      precession of all three roses, and the slow circling
+ *                      drift of the pollen field
+ *                      (pre-integrated, never a factor on absolute time)
+ *    audioBass      -> petal radius pulse
+ *    audioSwell     -> overall glow of the three roses and of the pollen
+ *    audioChromaHue -> hue turn along theta (musical key)
+ *    audioSpread    -> DISPERSION: a narrow spectrum draws the streams into one
+ *                      thin drawn line and keeps the pollen field close in,
+ *                      rich wide harmonics let the line bloom into a soft tube
+ *                      and open the pollen out across the whole frame.  The
+ *                      pollen extent only ever grows from an already
+ *                      frame-filling base, so a thin mix cannot bunch the
+ *                      additive sprites together and brighten the picture
+ *    audioRoughness -> PETAL FRAY: consonant harmony keeps each petal a clean
+ *                      analytic arc, dissonant clusters serrate its outline
+ *                      (amplitude only -- the fray's spatial frequency is a
+ *                      constant, so the accumulated theta is never remapped)
+ *    audioMode      -> petal colour temperature: minor cools all three roses
+ *                      and the pollen to blue, major restores the warm pink /
+ *                      amber pair
+ *
+ *  NOTE: the petal count k must NOT be audio-driven -- it multiplies theta,
+ *  which contains absolute `time`, so any change to it would remap the whole
+ *  accumulated phase in one frame (the project-wide anti-flicker rule).
+ *
+ *  @author René Weller
  */
 // RoseOrbit.vert — THREE nested rose curves (r = cos(k*theta)) drawn by
 // orbiting particle streams on tilted planes that precess independently of

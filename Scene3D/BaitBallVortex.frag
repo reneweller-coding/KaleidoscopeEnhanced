@@ -1,16 +1,20 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file BaitBallVortex.frag
- * @brief Fragment stage for BaitBallVortex: open water lit from above --
- * blue-green with caustic light from the photo and god rays -- the fish
- * silver-sided with the photo's tint, flashing as they turn (a per-fish
- * phase) and all at once on an onset (the fright flash is light, not
- * motion), the predator a dark shape with a pale belly.
+/*****************************************************************************\
+ *                              BaitBallVortex.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity: audioOnset -> silver flash; audioKick -> caustics
- *                   brighten; audioSwell -> sunlight; audioLevel -> brightness.
+ *  @brief
+ *  Fragment stage for BaitBallVortex: open water lit from above -- blue-green with caustic light from the photo and
+ *  god rays -- the fish silver-sided with the photo's tint, flashing as they turn (a per-fish phase) and all at
+ *  once on an onset (the fright flash is light, not motion), the predator a dark shape with a pale belly.
+ *
+ *  Audio Reactivity: audioOnset -> silver flash; audioKick -> caustics
+ *                    brighten; audioSwell -> sunlight; audioLevel -> brightness.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 in vec2  vTexCoord; ///< Texture coordinate (from the vertex stage).
 in vec3  vWorld;    ///< World position (from the vertex stage).
 in float vKind;     ///< Element kind (from the vertex stage).

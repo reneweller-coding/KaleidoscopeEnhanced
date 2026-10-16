@@ -1,28 +1,33 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SupercellMesocyclone.frag
- * @brief SUPERCELL MESOCYCLONE: the storm chasers' "mothership" over the
- * plains at dusk.  A colossal rotating updraft stacked in striated tiers
- * like a layer cake, lit gold on its sunset side and steel-blue in shade,
- * its striations turning slowly round the axis; a dark wall cloud lowers
- * beneath it; a grey curtain of rain hangs off to one side; an anvil
- * spreads overhead.  The flat plains below are lit by the last sun through
- * the gap under the storm, a road and fence posts running to the horizon.
- * Lightning glows inside the cloud with the kick.
+/*****************************************************************************\
+ *                              SupercellMesocyclone.frag
+\*****************************************************************************/
+/*! @file
  *
- *   sceneTime/sceneAdvance -> the rotation of the striations (continuous)
- *   audioKick    -> intracloud lightning glow (light only)
- *   audioBass    -> the darkness of the wall cloud (light)
- *   audioSwell   -> the sunset light (slow)
- *   audioCentroid-> colour temperature of the sunset
+ *  @brief
+ *  SUPERCELL MESOCYCLONE: the storm chasers' "mothership" over the plains at dusk.
  *
- * Per-activation variety:
- *   cloudP float tiers and bulk of the storm (0.5..2.2)
- *   stormP float strength of the lightning (0.5..2.0)
- *   speedP float rotation speed (0.5..2.0)
- *   hueP   float sky hue offset (0..6.28)
+ *  A colossal rotating updraft stacked in striated tiers like a layer cake, lit gold on its sunset side and
+ *  steel-blue in shade, its striations turning slowly round the axis; a dark wall cloud lowers beneath it; a grey
+ *  curtain of rain hangs off to one side; an anvil spreads overhead.  The flat plains below are lit by the last sun
+ *  through the gap under the storm, a road and fence posts running to the horizon. Lightning glows inside the cloud
+ *  with the kick.
+ *
+ *    sceneTime/sceneAdvance -> the rotation of the striations (continuous)
+ *    audioKick    -> intracloud lightning glow (light only)
+ *    audioBass    -> the darkness of the wall cloud (light)
+ *    audioSwell   -> the sunset light (slow)
+ *    audioCentroid-> colour temperature of the sunset
+ *
+ *  Per-activation variety:
+ *    cloudP float tiers and bulk of the storm (0.5..2.2)
+ *    stormP float strength of the lightning (0.5..2.0)
+ *    speedP float rotation speed (0.5..2.0)
+ *    hueP   float sky hue offset (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

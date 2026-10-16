@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TexturePinwheelTiling.frag
- * @brief TEXTURE PINWHEEL TILING: the photograph cut into a rotating
- * pinwheel pattern -- square blocks, each divided into four triangles
- * spinning around its centre, every triangle holding the same piece of
- * the picture rotated a quarter turn (p4 symmetry, no mirrors), so the
- * pattern whirls; neighbouring blocks turn in opposite directions, their
- * windmill blades meshing like gears.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              TexturePinwheelTiling.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the blades turn (integrated, jump-free)
- *   audioSpread     -> the blade curvature (straight to swirled)
- *   audioKick       -> the blade edges flash (light)
- *   audioMode       -> alternate blades tinted cool (minor) or warm (major)
- *   audioPhase      -> the whole field slowly rotates (integrated)
- *   audioSwell      -> the photo window wanders further (slow)
+ *  @brief
+ *  TEXTURE PINWHEEL TILING: the photograph cut into a rotating pinwheel pattern -- square blocks, each divided into
+ *  four triangles spinning around its centre, every triangle holding the same piece of the picture rotated a
+ *  quarter turn (p4 symmetry, no mirrors), so the pattern whirls; neighbouring blocks turn in opposite directions,
+ *  their windmill blades meshing like gears.
  *
- * Knobs: blockP (block size), twirlP (twirl inside the blocks), photoZoomP, hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the blades turn (integrated, jump-free)
+ *    audioSpread     -> the blade curvature (straight to swirled)
+ *    audioKick       -> the blade edges flash (light)
+ *    audioMode       -> alternate blades tinted cool (minor) or warm (major)
+ *    audioPhase      -> the whole field slowly rotates (integrated)
+ *    audioSwell      -> the photo window wanders further (slow)
+ *
+ *  Knobs: blockP (block size), twirlP (twirl inside the blocks), photoZoomP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

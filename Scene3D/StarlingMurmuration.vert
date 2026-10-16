@@ -1,10 +1,16 @@
 #version 330 core
-/**
- * @file StarlingMurmuration.vert
- * @brief Vertex stage for StarlingMurmuration.comp/.frag: places the flock over a
- * dusk horizon and colours each bird by its depth in the flock -- the dense
- * core reads dark, the fringe catches the sky.  Audio here is only tint and
- * brightness; the motion lives in the generator.
+/*****************************************************************************\
+ *                              StarlingMurmuration.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage for StarlingMurmuration.comp/.frag: places the flock over a dusk horizon and colours each bird by
+ *  its depth in the flock -- the dense core reads dark, the fringe catches the sky.
+ *
+ *  Audio here is only tint and brightness; the motion lives in the generator.
+ *
+ *  @author René Weller
  */
 layout( location = 0 ) in vec4 attrA; ///< xyz = position, w = bird id
 layout( location = 1 ) in vec4 attrB; ///< x = seed, y = density in flock, zw = uv

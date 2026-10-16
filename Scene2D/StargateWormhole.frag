@@ -1,22 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file StargateWormhole.frag
- * @brief STARGATE WORMHOLE: Relativistic Einstein-Rosen bridge hyperspace tunnel.
- * Gravitational light lensing around a central singularity, event horizon
- * photon sphere, relativistic Doppler shifts, hyper-velocity star streaks,
- * and explosive accretion corona bursts on audio transients.
- *   audioAdvance -> accelerates warp tunnel velocity & streak velocity
- *   audioSubBass -> expands gravitational lensing ring & singularity radius
- *   audioKick    -> flashes relativistic shockwave accretion flares
- *   audioHigh    -> sparks quantum particle emissions & blue Doppler shift
+/*****************************************************************************\
+ *                              StargateWormhole.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   warpP     float hyperspace distortion scale        (0.5..2.2)
- *   lensP     float gravitational lens curvature       (0.5..2.0)
- *   speedP    float travel velocity multiplier         (0.5..1.8)
- *   hueP      float Doppler color spectrum shift       (0..6.28)
+ *  @brief
+ *  STARGATE WORMHOLE: Relativistic Einstein-Rosen bridge hyperspace tunnel.
+ *
+ *  Gravitational light lensing around a central singularity, event horizon photon sphere, relativistic Doppler
+ *  shifts, hyper-velocity star streaks, and explosive accretion corona bursts on audio transients.
+ *
+ *    audioAdvance -> accelerates warp tunnel velocity & streak velocity
+ *    audioSubBass -> expands gravitational lensing ring & singularity radius
+ *    audioKick    -> flashes relativistic shockwave accretion flares
+ *    audioHigh    -> sparks quantum particle emissions & blue Doppler shift
+ *
+ *  Per-activation variety:
+ *    warpP     float hyperspace distortion scale        (0.5..2.2)
+ *    lensP     float gravitational lens curvature       (0.5..2.0)
+ *    speedP    float travel velocity multiplier         (0.5..1.8)
+ *    hueP      float Doppler color spectrum shift       (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

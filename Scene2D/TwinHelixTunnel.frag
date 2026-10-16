@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TwinHelixTunnel.frag
- * @brief TWIN HELIX TUNNEL: flying down a tunnel wound from two bands of the
- * photograph -- two broad ribbons spiral along the wall in opposite senses,
- * crossing over and under each other, each carrying the photo along its
- * length; in the diamond-shaped gaps between them glows light from behind
- * the wall, and bright seams run along the ribbon edges.  An endless polar
- * field like Tunnel, mirrorable.
+/*****************************************************************************\
+ *                              TwinHelixTunnel.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the flight (integrated, jump-free)
- *   audioPhase      -> the ribbons turn against each other (integrated)
- *   audioSpread     -> throat depth
- *   audioMode       -> the light in the gaps: cool in minor, warm in major
- *   audioBass       -> the light in the gaps (light)
- *   audioHigh       -> the edge seams glint (light)
+ *  @brief
+ *  TWIN HELIX TUNNEL: flying down a tunnel wound from two bands of the photograph -- two broad ribbons spiral along
+ *  the wall in opposite senses, crossing over and under each other, each carrying the photo along its length; in
+ *  the diamond-shaped gaps between them glows light from behind the wall, and bright seams run along the ribbon
+ *  edges.
  *
- * Knobs: pitchP (winding pitch), widthP (ribbon width), photoP, hueP.
+ *  An endless polar field like Tunnel, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the flight (integrated, jump-free)
+ *    audioPhase      -> the ribbons turn against each other (integrated)
+ *    audioSpread     -> throat depth
+ *    audioMode       -> the light in the gaps: cool in minor, warm in major
+ *    audioBass       -> the light in the gaps (light)
+ *    audioHigh       -> the edge seams glint (light)
+ *
+ *  Knobs: pitchP (winding pitch), widthP (ribbon width), photoP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

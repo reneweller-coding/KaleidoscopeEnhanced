@@ -1,20 +1,27 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file RogueWanderer.frag
- * @brief ROGUE WANDERER: An icy, dark planet drifting entirely without a star
- * in the cold depths of interstellar space. It is illuminated only by intensely
- * glowing volcanic fissures that pulse to the beat.
- *   audioAdvance -> slow rotation of the rogue planet
- *   audioKick    -> volcanic eruptions and fissure flashes
- *   audioSwell   -> ambient glow of the magma under the ice
- *   audioChromaHue-> palette offset for the volcanic energy
+/*****************************************************************************\
+ *                              RogueWanderer.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   iceP float roughness of the icy surface (0.5..1.5)
- *   magmaP float intensity of the glowing fissures (0.5..2.0)
- *   hueP float palette offset (0..6.28)
+ *  @brief
+ *  ROGUE WANDERER: An icy, dark planet drifting entirely without a star in the cold depths of interstellar space.
+ *
+ *  It is illuminated only by intensely glowing volcanic fissures that pulse to the beat.
+ *
+ *    audioAdvance -> slow rotation of the rogue planet
+ *    audioKick    -> volcanic eruptions and fissure flashes
+ *    audioSwell   -> ambient glow of the magma under the ice
+ *    audioChromaHue-> palette offset for the volcanic energy
+ *
+ *  Per-activation variety:
+ *    iceP float roughness of the icy surface (0.5..1.5)
+ *    magmaP float intensity of the glowing fissures (0.5..2.0)
+ *    hueP float palette offset (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

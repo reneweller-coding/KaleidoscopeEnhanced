@@ -1,27 +1,32 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file LenticularFlip.frag
- * @brief LENTICULAR FLIP: a lenticular print of the two photos.  Under the
- * ribbed lens sheet the two images are interlaced in strips; the viewing
- * angle -- which decides which strip each lenticule shows -- sweeps slowly
- * on the swell and drifts on the scene clock, so the print flips from one
- * photo to the other in a wave that runs across the sheet, with the
- * refracted smear and rainbow fringe of a real lenticular between the two.
- * The camera never moves; only the angle of view changes, smoothly.
+/*****************************************************************************\
+ *                              LenticularFlip.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSwell   -> viewing angle (slow)
- *   sceneAdvance -> angle drift and the wave across the sheet (continuous)
- *   audioKick    -> the ribs catch a highlight (light)
- *   audioHigh    -> rainbow fringe (light/colour)
- *   audioLevel   -> brightness
+ *  @brief
+ *  LENTICULAR FLIP: a lenticular print of the two photos.
  *
- * A holographic foil over the print throws rainbow bands and winking
- * glitter that sweep with the same viewing angle.
+ *  Under the ribbed lens sheet the two images are interlaced in strips; the viewing angle -- which decides which
+ *  strip each lenticule shows -- sweeps slowly on the swell and drifts on the scene clock, so the print flips from
+ *  one photo to the other in a wave that runs across the sheet, with the refracted smear and rainbow fringe of a
+ *  real lenticular between the two. The camera never moves; only the angle of view changes, smoothly.
  *
- * Per-activation variety: pitchP (lenticule pitch), waveP, hueP.
+ *  Audio Reactivity:
+ *    audioSwell   -> viewing angle (slow)
+ *    sceneAdvance -> angle drift and the wave across the sheet (continuous)
+ *    audioKick    -> the ribs catch a highlight (light)
+ *    audioHigh    -> rainbow fringe (light/colour)
+ *    audioLevel   -> brightness
+ *
+ *  A holographic foil over the print throws rainbow bands and winking
+ *  glitter that sweep with the same viewing angle.
+ *
+ *  Per-activation variety: pitchP (lenticule pitch), waveP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

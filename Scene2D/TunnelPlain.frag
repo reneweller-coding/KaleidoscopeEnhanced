@@ -1,29 +1,36 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TunnelPlain.frag
- * @brief A stripped-down mirrored-segment kaleidoscope tunnel: no base
- *        rotation/tilt, just the polar fold into `sides` wedges mapped onto a
- *        forward-scrolling UV. Includes an unused `clampQuadratic` helper
- *        (its call site is commented out) left over from an aspect-correction
- *        experiment.
+/*****************************************************************************\
+ *                              TunnelPlain.frag
+\*****************************************************************************/
+/*! @file
  *
- * audioFlip is declared but not read in main().
+ *  @brief
+ *  A stripped-down mirrored-segment kaleidoscope tunnel: no base
  *
- * Audio Reactivity:
- *  - audioAdvance  -> adds to the forward scroll (integrated, jump-free)
- *  - audioBeat     -> brightens the final colour
- *  - audioLevel    -> brightens the final colour
- *  - audioFlatness -> WEDGE SHAPE: scales the superellipse exponent of the radial
- *                      metric, so a tonal, single-band spectrum keeps the fold's
- *                      cross-section taut and structured while a noise-like one
- *                      rounds it into a soft, organic bore
- *  - audioHat      -> RIM SHIMMER: hi-hats and cymbals brighten only the outer rim of
- *                      the tunnel mouth, leaving the deep centre untouched, so the
- *                      shimmer reads as light catching the near edge
- *  - audioLowMid   -> WARMTH: 150-500 Hz harmonic body tints the walls from cool
- *                      steel toward warm amber (luminance-matched, no exposure change)
+ *         rotation/tilt, just the polar fold into `sides` wedges mapped onto a
+ *         forward-scrolling UV. Includes an unused `clampQuadratic` helper
+ *         (its call site is commented out) left over from an aspect-correction
+ *         experiment.
+ *
+ *  audioFlip is declared but not read in main().
+ *
+ *  Audio Reactivity:
+ *   - audioAdvance  -> adds to the forward scroll (integrated, jump-free)
+ *   - audioBeat     -> brightens the final colour
+ *   - audioLevel    -> brightens the final colour
+ *   - audioFlatness -> WEDGE SHAPE: scales the superellipse exponent of the radial
+ *                       metric, so a tonal, single-band spectrum keeps the fold's
+ *                       cross-section taut and structured while a noise-like one
+ *                       rounds it into a soft, organic bore
+ *   - audioHat      -> RIM SHIMMER: hi-hats and cymbals brighten only the outer rim of
+ *                       the tunnel mouth, leaving the deep centre untouched, so the
+ *                       shimmer reads as light catching the near edge
+ *   - audioLowMid   -> WARMTH: 150-500 Hz harmonic body tints the walls from cool
+ *                       steel toward warm amber (luminance-matched, no exposure change)
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

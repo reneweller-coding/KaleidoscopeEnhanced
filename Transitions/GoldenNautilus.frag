@@ -1,20 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file GoldenNautilus.frag
- * @brief TRANSITION GOLDEN NAUTILUS: Fibonacci golden spiral nautilus chamber sweep.
- * Logarithmic chambers unfurl across the screen in golden ratio proportions
- * (phi = 1.618), sweeping the old scene away and breathing in the new one.
- *   interpolation -> sweeps the golden spiral chamber wipe across the screen
- *   audioKick     -> flashes golden spiral septum chamber walls
- *   audioSwell    -> deepens the spiral warp (slow)
+/*****************************************************************************\
+ *                              GoldenNautilus.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   phiP   float golden ratio curvature scale (0.5..2.2)
- *   sweepP float chamber sweep sharpness      (0.5..2.0)
- *   speedP float animation speed multiplier   (0.5..2.0)
- *   hueP   float nautilus glow hue offset     (0..6.28)
+ *  @brief
+ *  TRANSITION GOLDEN NAUTILUS: Fibonacci golden spiral nautilus chamber sweep.
+ *
+ *  Logarithmic chambers unfurl across the screen in golden ratio proportions (phi = 1.618), sweeping the old scene
+ *  away and breathing in the new one.
+ *
+ *    interpolation -> sweeps the golden spiral chamber wipe across the screen
+ *    audioKick     -> flashes golden spiral septum chamber walls
+ *    audioSwell    -> deepens the spiral warp (slow)
+ *
+ *  Per-activation variety:
+ *    phiP   float golden ratio curvature scale (0.5..2.2)
+ *    sweepP float chamber sweep sharpness      (0.5..2.0)
+ *    speedP float animation speed multiplier   (0.5..2.0)
+ *    hueP   float nautilus glow hue offset     (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

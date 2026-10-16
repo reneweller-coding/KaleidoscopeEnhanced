@@ -1,16 +1,20 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file DandelionClock.frag
- * @brief Fragment stage for DandelionClock: a summer meadow behind (the
- * photo as soft bokeh with round highlights), the seed head backlit by a
- * low sun -- the pappus bristles as fine radial lines in a soft white
- * disc, the seeds as tiny brown grains, the stalks as hairlines; the
- * treble sparkles the bristles, the kick warms the backlight.
+/*****************************************************************************\
+ *                              DandelionClock.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity: audioHigh -> bristle sparkle; audioKick -> backlight;
- *                   audioSwell -> release (generator); audioLevel -> brightness.
+ *  @brief
+ *  Fragment stage for DandelionClock: a summer meadow behind (the photo as soft bokeh with round highlights), the
+ *  seed head backlit by a low sun -- the pappus bristles as fine radial lines in a soft white disc, the seeds as
+ *  tiny brown grains, the stalks as hairlines; the treble sparkles the bristles, the kick warms the backlight.
+ *
+ *  Audio Reactivity: audioHigh -> bristle sparkle; audioKick -> backlight;
+ *                    audioSwell -> release (generator); audioLevel -> brightness.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 in vec2  vTexCoord; ///< Texture coordinate (from the vertex stage).
 in vec3  vWorld;    ///< World position (from the vertex stage).
 in float vKind;     ///< Element kind (from the vertex stage).

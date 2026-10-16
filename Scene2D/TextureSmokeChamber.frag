@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureSmokeChamber.frag
- * @brief TEXTURE SMOKE CHAMBER: a dark hall filled with slowly rolling smoke,
- * cut by broad beams of projected light -- each beam carries the
- * photograph like a gobo, so its rays are patterned with the picture's
- * light and shadow and coloured with its colours; the beams sweep slowly
- * through the smoke, cross each other and mix, and the smoke only shows
- * where light catches it, in layered billows at different depths.
- * Endless, mirrorable.
+/*****************************************************************************\
+ *                              TextureSmokeChamber.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the smoke rolls (integrated, jump-free)
- *   audioPhase      -> the beams sweep (integrated)
- *   audioSpread     -> beam width
- *   audioBass       -> the beams brighten (light)
- *   audioMode       -> the haze colour: cold in minor, warm in major
- *   audioSwell      -> smoke density (slow)
+ *  @brief
+ *  TEXTURE SMOKE CHAMBER: a dark hall filled with slowly rolling smoke, cut by broad beams of projected light --
+ *  each beam carries the photograph like a gobo, so its rays are patterned with the picture's light and shadow and
+ *  coloured with its colours; the beams sweep slowly through the smoke, cross each other and mix, and the smoke
+ *  only shows where light catches it, in layered billows at different depths.
  *
- * Knobs: beamsP (number of beams), goboP (how strongly the photo patterns the rays), smokeP, hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the smoke rolls (integrated, jump-free)
+ *    audioPhase      -> the beams sweep (integrated)
+ *    audioSpread     -> beam width
+ *    audioBass       -> the beams brighten (light)
+ *    audioMode       -> the haze colour: cold in minor, warm in major
+ *    audioSwell      -> smoke density (slow)
+ *
+ *  Knobs: beamsP (number of beams), goboP (how strongly the photo patterns the rays), smokeP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

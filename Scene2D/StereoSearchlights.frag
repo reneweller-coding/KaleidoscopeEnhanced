@@ -1,23 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file StereoSearchlights.frag
- * @brief STEREO SEARCHLIGHTS: a night city skyline of the photo, with
- * searchlights sweeping the sky.  The beams point where the sound is: the
- * stereo balance steers them (smoothly -- the balance is filtered and the
- * beam follows it with a slow lag built from the scene clock), the left
- * and right channel levels set the two banks' brightness, and the swell
- * lights the low cloud they play on.  Camera fixed on the skyline.
+/*****************************************************************************\
+ *                              StereoSearchlights.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioStereo       -> beam direction (slow: a lagged follow)
- *   audioStereoL / R  -> left / right bank brightness (light)
- *   audioSwell        -> cloud lit from below (slow)
- *   audioKick         -> beam flare (light)
- *   audioLevel        -> brightness
+ *  @brief
+ *  STEREO SEARCHLIGHTS: a night city skyline of the photo, with searchlights sweeping the sky.
  *
- * Per-activation variety: beamsP, hazeP, hueP.
+ *  The beams point where the sound is: the stereo balance steers them (smoothly -- the balance is filtered and the
+ *  beam follows it with a slow lag built from the scene clock), the left and right channel levels set the two
+ *  banks' brightness, and the swell lights the low cloud they play on.  Camera fixed on the skyline.
+ *
+ *  Audio Reactivity:
+ *    audioStereo       -> beam direction (slow: a lagged follow)
+ *    audioStereoL / R  -> left / right bank brightness (light)
+ *    audioSwell        -> cloud lit from below (slow)
+ *    audioKick         -> beam flare (light)
+ *    audioLevel        -> brightness
+ *
+ *  Per-activation variety: beamsP, hazeP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

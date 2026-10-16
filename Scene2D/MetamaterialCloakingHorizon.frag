@@ -1,22 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file MetamaterialCloakingHorizon.frag
- * @brief METAMATERIAL CLOAKING HORIZON: Transformation-optics invisibility cloaking shell.
- * Coordinates are smoothly deformed by an inhomogeneous anisotropic permittivity/permeability
- * tensor, routing light rays around a central hidden core with compressed boundary caustics.
- *   audioAdvance -> navigates through continuous optical transformation coordinates
- *   audioPhase   -> rotates cloaking anisotropy axes
- *   audioKick    -> flashes metamaterial boundary resonance fringe rings
- *   audioSwell   -> widens invisibility cloaking cavity radius
- *   audioCentroid-> shifts transformation dispersion chromatic aberrations
+/*****************************************************************************\
+ *                              MetamaterialCloakingHorizon.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   cloakRadiusP float invisibility cloak core radius        (0.3..1.2)
- *   transScaleP  float coordinate transformation warp factor  (0.8..2.5)
- *   causticP     float compressed boundary caustic brightness (0.8..2.2)
- *   waveDensityP float optical wavefront fringe frequency     (6.0..20.0)
+ *  @brief
+ *  METAMATERIAL CLOAKING HORIZON: Transformation-optics invisibility cloaking shell.
+ *
+ *  Coordinates are smoothly deformed by an inhomogeneous anisotropic permittivity/permeability tensor, routing
+ *  light rays around a central hidden core with compressed boundary caustics.
+ *
+ *    audioAdvance -> navigates through continuous optical transformation coordinates
+ *    audioPhase   -> rotates cloaking anisotropy axes
+ *    audioKick    -> flashes metamaterial boundary resonance fringe rings
+ *    audioSwell   -> widens invisibility cloaking cavity radius
+ *    audioCentroid-> shifts transformation dispersion chromatic aberrations
+ *
+ *  Per-activation variety:
+ *    cloakRadiusP float invisibility cloak core radius        (0.3..1.2)
+ *    transScaleP  float coordinate transformation warp factor  (0.8..2.5)
+ *    causticP     float compressed boundary caustic brightness (0.8..2.2)
+ *    waveDensityP float optical wavefront fringe frequency     (6.0..20.0)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

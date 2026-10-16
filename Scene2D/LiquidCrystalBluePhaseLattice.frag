@@ -1,22 +1,31 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file LiquidCrystalBluePhaseLattice.frag
- * @brief LIQUID CRYSTAL BLUE PHASE LATTICE: 3D cubic network of double-twist cylinders in
- * highly chiral liquid crystals (Blue Phase I / II). Cubic defect disclination lines form
- * a 3D periodic photonic bandgap lattice with selective Bragg reflection of deep blue light.
- *   audioAdvance -> rotates chiral director double-twist cylinders & disclination lattice flow
- *   audioKick    -> flashes cubic unit cell orientation switching & selective reflection bursts
- *   audioSwell   -> widens double-twist cylinder diameter & chiral pitch coherence
- *   audioCentroid-> shifts Blue Phase selective Bragg reflection wavelength spectra
- *   audioPhase   -> modulates helical pitch twist chirality
+/*****************************************************************************\
+ *                              LiquidCrystalBluePhaseLattice.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   unitCellPitchP float cubic Blue Phase unit cell pitch scale  (2.5..7.0)
- *   chiralTwistP   float double-twist cylinder helical pitch     (0.6..2.2)
- *   disclinationP  float defect disclination line core sharpness (0.8..2.5)
- *   blueReflectP   float selective Bragg reflection brightness   (0.8..2.5)
+ *  @brief
+ *  LIQUID CRYSTAL BLUE PHASE LATTICE: 3D cubic network of double-twist cylinders in highly chiral liquid crystals
+ *  (Blue Phase I / II).
+ *
+ *  Cubic defect disclination lines form a 3D periodic photonic bandgap lattice with selective Bragg reflection of
+ *  deep blue light.
+ *
+ *    audioAdvance -> rotates chiral director double-twist cylinders & disclination lattice flow
+ *    audioKick    -> flashes cubic unit cell orientation switching & selective reflection bursts
+ *    audioSwell   -> widens double-twist cylinder diameter & chiral pitch coherence
+ *    audioCentroid-> shifts Blue Phase selective Bragg reflection wavelength spectra
+ *    audioPhase   -> modulates helical pitch twist chirality
+ *
+ *  Per-activation variety:
+ *    unitCellPitchP float cubic Blue Phase unit cell pitch scale  (2.5..7.0)
+ *    chiralTwistP   float double-twist cylinder helical pitch     (0.6..2.2)
+ *    disclinationP  float defect disclination line core sharpness (0.8..2.5)
+ *    blueReflectP   float selective Bragg reflection brightness   (0.8..2.5)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

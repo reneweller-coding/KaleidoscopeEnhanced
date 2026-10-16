@@ -1,28 +1,33 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file EuropaChaosTerrain.frag
- * @brief EUROPA CHAOS TERRAIN: blue-white ice rafts in a matrix of rubble
- * ice, the rust-red lineae along the raft edges, and -- the reason to be
- * here -- the ocean beneath, whose light wells up through the seams with
- * the sub-bass.  Low sunlight (the swell) rakes across the rafts; the
- * kick sparks frost on the ridges; the photo is the ice texture.  Camera
- * height fixed.
+/*****************************************************************************\
+ *                              EuropaChaosTerrain.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSubBass -> ocean light through the seams (light)
- *   audioSwell   -> sunlight (slow)
- *   audioKick    -> frost sparkle (light)
- *   audioLevel   -> brightness
+ *  @brief
+ *  EUROPA CHAOS TERRAIN: blue-white ice rafts in a matrix of rubble ice, the rust-red lineae along the raft edges,
+ *  and -- the reason to be here -- the ocean beneath, whose light wells up through the seams with the sub-bass.
  *
- * Per-activation variety: camHP, detailP, raftP, hueP.
+ *  Low sunlight (the swell) rakes across the rafts; the kick sparks frost on the ridges; the photo is the ice
+ *  texture.  Camera height fixed.
+ *
+ *  Audio Reactivity:
+ *    audioSubBass -> ocean light through the seams (light)
+ *    audioSwell   -> sunlight (slow)
+ *    audioKick    -> frost sparkle (light)
+ *    audioLevel   -> brightness
+ *
+ *  Per-activation variety: camHP, detailP, raftP, hueP.
+ *
+ *  @author René Weller
  */
-in vec3  vWorld;  ///< World position (from the vertex stage).
-in vec2  vSurfUV; ///< Surf UV (from the vertex stage).
-in vec3  vNormal; ///< Surface normal (from the vertex stage).
-in float vSeam;   ///< Seam (from the vertex stage).
-in float vRaft;   ///< Raft (from the vertex stage).
-in float vDist;   ///< Distance (from the vertex stage).
+out vec4 fragColor; ///< The pixel's colour (output).
+in vec3  vWorld;    ///< World position (from the vertex stage).
+in vec2  vSurfUV;   ///< Surf UV (from the vertex stage).
+in vec3  vNormal;   ///< Surface normal (from the vertex stage).
+in float vSeam;     ///< Seam (from the vertex stage).
+in float vRaft;     ///< Raft (from the vertex stage).
+in float vDist;     ///< Distance (from the vertex stage).
 
 uniform sampler2D tex0;          ///< The current photo.
 uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).

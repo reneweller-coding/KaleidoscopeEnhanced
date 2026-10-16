@@ -1,9 +1,16 @@
 #version 330 core
-/**
- * @file TensegrityFloat.vert
- * @brief Vertex stage for TensegrityFloat: world positions pass through
- * (camera at the origin, +z ahead); id, shade, kind and uv go to the
- * fragment stage.  No camera motion.
+/*****************************************************************************\
+ *                              TensegrityFloat.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage for TensegrityFloat: world positions pass through (camera at the origin, +z ahead); id, shade, kind
+ *  and uv go to the fragment stage.
+ *
+ *  No camera motion.
+ *
+ *  @author René Weller
  */
 layout( location = 0 ) in vec4 attrA; ///< xyz = position, w = id / class
 layout( location = 1 ) in vec4 attrB; ///< x = shade, y = kind, zw = uv

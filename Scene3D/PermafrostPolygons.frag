@@ -1,29 +1,34 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file PermafrostPolygons.frag
- * @brief PERMAFROST POLYGONS: the tundra from a low flight -- ice-wedge
- * polygons rimmed with ridges of moss and cotton grass, the troughs
- * between them flooded, every pond a mirror of the sky (the photo).  The
- * ponds brighten with the bass (the sky light in them), frost glints on
- * the ridges with the treble, the low arctic sun is the swell, the kick a
- * bird lifting as a flash of white.  Camera height fixed.
+/*****************************************************************************\
+ *                              PermafrostPolygons.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioBass  -> pond light (light)
- *   audioHigh  -> frost glints (light)
- *   audioSwell -> sunlight (slow)
- *   audioKick  -> bird flash (light)
- *   audioLevel -> brightness
+ *  @brief
+ *  PERMAFROST POLYGONS: the tundra from a low flight -- ice-wedge polygons rimmed with ridges of moss and cotton
+ *  grass, the troughs between them flooded, every pond a mirror of the sky (the photo).
  *
- * Per-activation variety: camHP, detailP, cellP, hueP.
+ *  The ponds brighten with the bass (the sky light in them), frost glints on the ridges with the treble, the low
+ *  arctic sun is the swell, the kick a bird lifting as a flash of white.  Camera height fixed.
+ *
+ *  Audio Reactivity:
+ *    audioBass  -> pond light (light)
+ *    audioHigh  -> frost glints (light)
+ *    audioSwell -> sunlight (slow)
+ *    audioKick  -> bird flash (light)
+ *    audioLevel -> brightness
+ *
+ *  Per-activation variety: camHP, detailP, cellP, hueP.
+ *
+ *  @author René Weller
  */
-in vec3  vWorld;  ///< World position (from the vertex stage).
-in vec2  vSurfUV; ///< Surf UV (from the vertex stage).
-in vec3  vNormal; ///< Surface normal (from the vertex stage).
-in float vTrough; ///< Trough (from the vertex stage).
-in float vCell;   ///< Cell (from the vertex stage).
-in float vDist;   ///< Distance (from the vertex stage).
+out vec4 fragColor; ///< The pixel's colour (output).
+in vec3  vWorld;    ///< World position (from the vertex stage).
+in vec2  vSurfUV;   ///< Surf UV (from the vertex stage).
+in vec3  vNormal;   ///< Surface normal (from the vertex stage).
+in float vTrough;   ///< Trough (from the vertex stage).
+in float vCell;     ///< Cell (from the vertex stage).
+in float vDist;     ///< Distance (from the vertex stage).
 
 uniform sampler2D tex0;          ///< The current photo.
 uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).

@@ -1,13 +1,18 @@
 #version 330 core
-/**
- * @file Spaceship.vert
- * @brief Vertex stage companion to Spaceship.frag -- see that file's header
- * for this scene's description. geom="mesh": attrA/attrB carry a REAL loaded
- * model's position/UV/normal (see Tools/SHADER_AUTHORING.md's `mesh` row),
- * not a procedural pattern. gl_VertexID picks the vertex's own branch: below
- * meshVertexCount it is the loaded model, at or above it the enclosing sky
- * shell Scene3DShader::buildGeometry() appends -- Spaceship.frag paints a
- * nebula onto it.
+/*****************************************************************************\
+ *                              Spaceship.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to Spaceship.frag -- see that file's header for this scene's description.
+ *
+ *  geom="mesh": attrA/attrB carry a REAL loaded model's position/UV/normal (see Tools/SHADER_AUTHORING.md's `mesh`
+ *  row), not a procedural pattern. gl_VertexID picks the vertex's own branch: below meshVertexCount it is the
+ *  loaded model, at or above it the enclosing sky shell Scene3DShader::buildGeometry() appends -- Spaceship.frag
+ *  paints a nebula onto it.
+ *
+ *  @author René Weller
  */
 
 in vec4 attrA; ///< mesh: xyz = object-space position, w = U.  shell: xyz = world-space position on the shell.

@@ -1,20 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file RayleighTaylorInstability.frag
- * @brief TRANSITION RAYLEIGH TAYLOR INSTABILITY: Fluid density stratification transition.
- * A denser fluid layer sinks into a lighter fluid layer under gravity, forming
- * mushrooming Rayleigh-Taylor instability fingers and curling vortex plumes.
- *   interpolation -> drives finger penetration depth & vortex roll-up growth
- *   audioKick     -> flashes turbulent finger tip vortex swirls
- *   audioSwell    -> widens Rayleigh-Taylor finger spacing & buoyancy acceleration
+/*****************************************************************************\
+ *                              RayleighTaylorInstability.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   fingerP float instability wavenumber & finger density (0.5..2.2)
- *   growthP float vortex roll-up curl magnitude           (0.5..2.0)
- *   speedP  float downward buoyancy speed multiplier       (0.5..2.0)
- *   hueP    float fluid interface hue offset              (0..6.28)
+ *  @brief
+ *  TRANSITION RAYLEIGH TAYLOR INSTABILITY: Fluid density stratification transition.
+ *
+ *  A denser fluid layer sinks into a lighter fluid layer under gravity, forming mushrooming Rayleigh-Taylor
+ *  instability fingers and curling vortex plumes.
+ *
+ *    interpolation -> drives finger penetration depth & vortex roll-up growth
+ *    audioKick     -> flashes turbulent finger tip vortex swirls
+ *    audioSwell    -> widens Rayleigh-Taylor finger spacing & buoyancy acceleration
+ *
+ *  Per-activation variety:
+ *    fingerP float instability wavenumber & finger density (0.5..2.2)
+ *    growthP float vortex roll-up curl magnitude           (0.5..2.0)
+ *    speedP  float downward buoyancy speed multiplier       (0.5..2.0)
+ *    hueP    float fluid interface hue offset              (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

@@ -1,27 +1,33 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file LichenColonisation.frag
- * @brief TRANSITION LICHEN COLONISATION: crustose lichen spreads out from
- * spores across the outgoing scene until the incoming one has taken the rock.
+/*****************************************************************************\
+ *                              LichenColonisation.frag
+\*****************************************************************************/
+/*! @file
  *
- * A crustose thallus grows only at its margin, so what it leaves behind is a
- * record: concentric zones of older and newer growth, and a margin that is
- * lobed rather than round because the growth rate varies around the rim.  Both
- * come free here from one radius that carries an angular ripple, and both are
- * what separate a lichen from a spreading circle.
+ *  @brief
+ *  TRANSITION LICHEN COLONISATION: crustose lichen spreads out from spores across the outgoing scene until the
+ *  incoming one has taken the rock.
  *
- * The other giveaway is what happens where two thalli meet: they do not merge
- * and they do not overlap, they stop and leave a dark competition line.  That
- * needs the two nearest colonies, not just the nearest.
+ *  A crustose thallus grows only at its margin, so what it leaves behind is a
+ *  record: concentric zones of older and newer growth, and a margin that is
+ *  lobed rather than round because the growth rate varies around the rim.  Both
+ *  come free here from one radius that carries an angular ripple, and both are
+ *  what separate a lichen from a spreading circle.
  *
- * Audio Reactivity:
- *   audioValence -> the species colour, grey-green to sulphur (colour)
- *   audioHigh    -> the light on the growing margin (light)
- *   audioMid     -> the texture of the older zones (colour)
+ *  The other giveaway is what happens where two thalli meet: they do not merge
+ *  and they do not overlap, they stop and leave a dark competition line.  That
+ *  needs the two nearest colonies, not just the nearest.
  *
- * Per-activation variety: sporesP, lobeP, hueP.
+ *  Audio Reactivity:
+ *    audioValence -> the species colour, grey-green to sulphur (colour)
+ *    audioHigh    -> the light on the growing margin (light)
+ *    audioMid     -> the texture of the older zones (colour)
+ *
+ *  Per-activation variety: sporesP, lobeP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

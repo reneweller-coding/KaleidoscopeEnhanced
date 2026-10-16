@@ -1,8 +1,13 @@
 #version 330 core
-/**
- * @file KelvinHelmholtzCloudWaves.vert
- * @brief Vertex stage companion to KelvinHelmholtzCloudWaves.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              KelvinHelmholtzCloudWaves.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to KelvinHelmholtzCloudWaves.frag -- see that file's header for this scene's description.
+ *
+ *  @author René Weller
  */
 // KelvinHelmholtzCloudWaves.vert — 220x120 heightfield atmospheric shear billows
 // and rolling breaking cloud waves illuminated by dramatic sunset backlighting.

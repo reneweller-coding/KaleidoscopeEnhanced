@@ -1,4 +1,21 @@
 #version 330 core
+/*****************************************************************************\
+ *                              BillboardCity.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Shades one animated billboard screen in a night-city block: a kaleido-mirrored, slowly sliding crop of the
+ *  slideshow photo behind a neon border, each screen carrying its own flicker and per-vertex spectrum band.
+ *
+ *  audioChromaHue rotates the neon border's hue; audioDrop punches a burst of
+ *  extra brightness into every screen on a drop. The per-board brightness
+ *  (vBand) and fade-in/out (vFade) are already audio- and lifetime-modulated
+ *  per vertex by the companion vertex shader; time drives both the crop's
+ *  slow slide and each screen's individual flicker rate.
+ *
+ *  @author René Weller
+ */
 out vec4 fragColor; ///< The pixel's colour (output).
 // BillboardCity.frag — each screen: kaleido-mirrored crop of the image,
 // neon border, brightness driven by the board's own spectrum band.
@@ -11,19 +28,6 @@ in vec2  vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex st
 in vec4  vSeed; ///< Per-instance random seed (from the vertex stage).
 in float vBand; ///< Band (from the vertex stage).
 in float vFade; ///< Fade (from the vertex stage).
-
-/**
- * @file BillboardCity.frag
- * @brief Shades one animated billboard screen in a night-city block: a
- * kaleido-mirrored, slowly sliding crop of the slideshow photo behind a neon
- * border, each screen carrying its own flicker and per-vertex spectrum band.
- *
- * audioChromaHue rotates the neon border's hue; audioDrop punches a burst of
- * extra brightness into every screen on a drop. The per-board brightness
- * (vBand) and fade-in/out (vFade) are already audio- and lifetime-modulated
- * per vertex by the companion vertex shader; time drives both the crop's
- * slow slide and each screen's individual flicker rate.
- */
 
 /**  Rotates a colour's hue by an angle (about the grey axis).
  *

@@ -1,22 +1,27 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file MeshCandleChapel.frag
- * @brief MESH CANDLE CHAPEL: three hundred real candles (one model,
- * instances="300") on a tiered stand in a dark chapel. Every flame
- * flickers on its own, and all of them breathe together with the swell --
- * the chapel brightens and dims as the music does; the kick makes a few
- * flames flare; high on the wall a window whose twelve panes are the
- * twelve pitch classes. The mesh counterpart of CandleForestBreath.
+/*****************************************************************************\
+ *                              MeshCandleChapel.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSwell      -> the breath of all the flames (slow)
- *   audioKick       -> a few flames flare (light)
- *   audioChroma[12] -> the window's panes (light)
- *   time            -> the flicker (continuous)
+ *  @brief
+ *  MESH CANDLE CHAPEL: three hundred real candles (one model, instances="300") on a tiered stand in a dark chapel.
  *
- * Per-instance: sizeP. Per-activation variety: hueP.
+ *  Every flame flickers on its own, and all of them breathe together with the swell -- the chapel brightens and
+ *  dims as the music does; the kick makes a few flames flare; high on the wall a window whose twelve panes are the
+ *  twelve pitch classes. The mesh counterpart of CandleForestBreath.
+ *
+ *  Audio Reactivity:
+ *    audioSwell      -> the breath of all the flames (slow)
+ *    audioKick       -> a few flames flare (light)
+ *    audioChroma[12] -> the window's panes (light)
+ *    time            -> the flicker (continuous)
+ *
+ *  Per-instance: sizeP. Per-activation variety: hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform sampler2DArray texMeshMaterial;       ///< The mesh's material textures (albedo, roughness, normal ...).
 uniform int            texMeshMaterialLayers; ///< Number of layers in texMeshMaterial.

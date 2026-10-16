@@ -1,26 +1,31 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file ModularSynthPatchbay.frag
- * @brief MODULAR SYNTH PATCHBAY: a wall of Eurorack modules -- panels
- * carrying the photo as their graphics, knobs turning slowly on the scene
- * clock, LEDs lit by the chroma classes, an oscilloscope module drawing
- * the waveform (audioWave), a spectrum module with the 32 bands, and patch
- * cables hanging in catenaries between jacks, each cable lit by the band
- * it carries.  The kick is the trigger LED, the swell the rack light.
- * Camera fixed in front of the rack.
+/*****************************************************************************\
+ *                              ModularSynthPatchbay.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioWave[64]     -> the scope trace (light)
- *   audioSpectrum[32] -> spectrum module and the cable glow (light)
- *   audioChroma[12]   -> LEDs (light)
- *   audioKick         -> trigger LED (light)
- *   audioSwell        -> rack light (slow)
- *   sceneAdvance      -> knob rotation (continuous)
- *   audioLevel        -> brightness
+ *  @brief
+ *  MODULAR SYNTH PATCHBAY: a wall of Eurorack modules -- panels carrying the photo as their graphics, knobs turning
+ *  slowly on the scene clock, LEDs lit by the chroma classes, an oscilloscope module drawing the waveform
+ *  (audioWave), a spectrum module with the 32 bands, and patch cables hanging in catenaries between jacks, each
+ *  cable lit by the band it carries.
  *
- * Per-activation variety: cablesP, colsP, hueP.
+ *  The kick is the trigger LED, the swell the rack light. Camera fixed in front of the rack.
+ *
+ *  Audio Reactivity:
+ *    audioWave[64]     -> the scope trace (light)
+ *    audioSpectrum[32] -> spectrum module and the cable glow (light)
+ *    audioChroma[12]   -> LEDs (light)
+ *    audioKick         -> trigger LED (light)
+ *    audioSwell        -> rack light (slow)
+ *    sceneAdvance      -> knob rotation (continuous)
+ *    audioLevel        -> brightness
+ *
+ *  Per-activation variety: cablesP, colsP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

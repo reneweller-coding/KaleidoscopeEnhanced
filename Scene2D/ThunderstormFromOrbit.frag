@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file ThunderstormFromOrbit.frag
- * @brief THUNDERSTORM FROM ORBIT: the night side of the Earth seen from low
- * orbit, a line of thunderstorms below.  Their towering tops are lit only
- * by the moon and by the lightning inside them -- whole cloud cells glow
- * from within, blue-white, and fade -- while between the storms the city
- * lights of the ground show through as a golden net of streets.  The limb
- * curves across the top with its thin green airglow and the stars above.
- * The view drifts slowly along the orbit.
+/*****************************************************************************\
+ *                              ThunderstormFromOrbit.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioKick / audioOnset -> lightning inside the storm cells (light; which
- *                             cells answer drifts continuously, never a jump)
- *   audioSpectrum[32]      -> each cell's own flicker level, one band per cell
- *   audioSwell             -> airglow and moonlight on the cloud tops (slow)
- *   sceneAdvance           -> the drift along the orbit (continuous)
+ *  @brief
+ *  THUNDERSTORM FROM ORBIT: the night side of the Earth seen from low orbit, a line of thunderstorms below.
  *
- * Per-activation variety: stormP (storm density), hueP.
+ *  Their towering tops are lit only by the moon and by the lightning inside them -- whole cloud cells glow from
+ *  within, blue-white, and fade -- while between the storms the city lights of the ground show through as a golden
+ *  net of streets.  The limb curves across the top with its thin green airglow and the stars above. The view drifts
+ *  slowly along the orbit.
+ *
+ *  Audio Reactivity:
+ *    audioKick / audioOnset -> lightning inside the storm cells (light; which
+ *                              cells answer drifts continuously, never a jump)
+ *    audioSpectrum[32]      -> each cell's own flicker level, one band per cell
+ *    audioSwell             -> airglow and moonlight on the cloud tops (slow)
+ *    sceneAdvance           -> the drift along the orbit (continuous)
+ *
+ *  Per-activation variety: stormP (storm density), hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

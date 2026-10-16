@@ -1,26 +1,32 @@
 #version 330 core
-/**
- * @file SolarSailArmada.vert
- * @brief attrA.xy = quad UV (0..1), attrA.w = quad ID (0..2999), attrB = seeds (GEOM_QUADS).
+/*****************************************************************************\
+ *                              SolarSailArmada.vert
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (geometry; see the .frag header for the shading side):
- *   audioAdvance   -> orbital phase of the fleet (pre-integrated)
- *   audioSwell     -> base amplitude of the sails' tacking motion
- *   audioKick      -> sail size pulse
- *   audioSpread    -> FLEET DISPERSION: a narrow spectrum draws the armada
- *                     into a tight formation near the star, rich wide
- *                     harmonics scatter it out to the far orbits.  Applied to
- *                     a SEPARATE display radius, never to `r` itself -- `r`
- *                     feeds orbit_speed, which multiplies absolute `time`, and
- *                     changing it would remap the whole orbital phase at once
- *   audioBuildUp   -> TACKING HARDER: as an EDM build climbs toward its drop
- *                     the sails pitch further over on each swing, so the fleet
- *                     flashes edge-on more and more violently.  Amplitude only
- *                     -- the swing's time coefficient stays constant
- *   audioSharpness -> GLINT LOBE: dull material gives a broad soft solar
- *                     sheen on the foil, harsh bright material a hard narrow
- *                     star.  The gain is scaled inversely to the lobe width,
- *                     so widening cannot brighten the (un-tonemapped) frame
+ *  @brief
+ *  attrA.xy = quad UV (0..1), attrA.w = quad ID (0..2999), attrB = seeds (GEOM_QUADS).
+ *
+ *  Audio Reactivity (geometry; see the .frag header for the shading side):
+ *    audioAdvance   -> orbital phase of the fleet (pre-integrated)
+ *    audioSwell     -> base amplitude of the sails' tacking motion
+ *    audioKick      -> sail size pulse
+ *    audioSpread    -> FLEET DISPERSION: a narrow spectrum draws the armada
+ *                      into a tight formation near the star, rich wide
+ *                      harmonics scatter it out to the far orbits.  Applied to
+ *                      a SEPARATE display radius, never to `r` itself -- `r`
+ *                      feeds orbit_speed, which multiplies absolute `time`, and
+ *                      changing it would remap the whole orbital phase at once
+ *    audioBuildUp   -> TACKING HARDER: as an EDM build climbs toward its drop
+ *                      the sails pitch further over on each swing, so the fleet
+ *                      flashes edge-on more and more violently.  Amplitude only
+ *                      -- the swing's time coefficient stays constant
+ *    audioSharpness -> GLINT LOBE: dull material gives a broad soft solar
+ *                      sheen on the foil, harsh bright material a hard narrow
+ *                      star.  The gain is scaled inversely to the lobe width,
+ *                      so widening cannot brighten the (un-tonemapped) frame
+ *
+ *  @author René Weller
  */
 in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an
                ///< index).

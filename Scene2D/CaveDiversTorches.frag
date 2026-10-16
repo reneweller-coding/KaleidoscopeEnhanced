@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file CaveDiversTorches.frag
- * @brief CAVE DIVERS TORCHES: inside a flooded limestone cave -- the tunnel
- * running away into blackness, its walls pale and scalloped by the water,
- * stalactites hanging from the roof, and two divers hovering in the
- * passage, their torches throwing long cones of light ahead that sweep
- * slowly over the rock, full of glittering suspended particles.  Where a
- * beam touches the wall the limestone lights up cream and gold; the rest
- * of the cave is darkness.  Silver bubbles rise from the divers in round
- * wobbling strings.  The camera hovers still.
+/*****************************************************************************\
+ *                              CaveDiversTorches.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioBass   -> the brightness of the torches (light)
- *   audioHigh   -> the glitter of the particles in the beams (light)
- *   audioSwell  -> the haze of the water (slow)
- *   audioLevel  -> brightness
- *   sceneTime / sceneAdvance -> the beams sweeping, bubbles rising
+ *  @brief
+ *  CAVE DIVERS TORCHES: inside a flooded limestone cave -- the tunnel running away into blackness, its walls pale
+ *  and scalloped by the water, stalactites hanging from the roof, and two divers hovering in the passage, their
+ *  torches throwing long cones of light ahead that sweep slowly over the rock, full of glittering suspended
+ *  particles.
  *
- * Per-activation variety: sweepP (how widely the beams sweep), hueP.
+ *  Where a beam touches the wall the limestone lights up cream and gold; the rest of the cave is darkness.  Silver
+ *  bubbles rise from the divers in round wobbling strings.  The camera hovers still.
+ *
+ *  Audio Reactivity:
+ *    audioBass   -> the brightness of the torches (light)
+ *    audioHigh   -> the glitter of the particles in the beams (light)
+ *    audioSwell  -> the haze of the water (slow)
+ *    audioLevel  -> brightness
+ *    sceneTime / sceneAdvance -> the beams sweeping, bubbles rising
+ *
+ *  Per-activation variety: sweepP (how widely the beams sweep), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

@@ -1,22 +1,27 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file BioluminescentBreakingWave.frag
- * @brief BIOLUMINESCENT BREAKING WAVE: rolling Gerstner swell seen from above the
- * surf line; the crests break into glowing dinoflagellate foam CELLS (not a
- * full-width neon bar), dark troughs carry the photo tint.
+/*****************************************************************************\
+ *                              BioluminescentBreakingWave.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioBass      -> swell / crest height
- *   audioKick      -> breaker splash + bio-glow surge
- *   audioHigh      -> cross-chop ripple
- *   audioAdvance   -> wave phase (pre-integrated, jump-free)
- *   audioZCR       -> grain of the foam: hiss shatters the long foam rolls
- *                     into fine scattered cells, a pure tone leaves them whole
- *   audioLowMid    -> deep swell body lifting the whole water column
- *   audioSharpness -> crispness of the specular water glitter (dull = broad
- *                     sheen, cymbal-bright = tight hard sparkles)
+ *  @brief
+ *  BIOLUMINESCENT BREAKING WAVE: rolling Gerstner swell seen from above the surf line; the crests break into
+ *  glowing dinoflagellate foam CELLS (not a full-width neon bar), dark troughs carry the photo tint.
+ *
+ *  Audio Reactivity:
+ *    audioBass      -> swell / crest height
+ *    audioKick      -> breaker splash + bio-glow surge
+ *    audioHigh      -> cross-chop ripple
+ *    audioAdvance   -> wave phase (pre-integrated, jump-free)
+ *    audioZCR       -> grain of the foam: hiss shatters the long foam rolls
+ *                      into fine scattered cells, a pure tone leaves them whole
+ *    audioLowMid    -> deep swell body lifting the whole water column
+ *    audioSharpness -> crispness of the specular water glitter (dull = broad
+ *                      sheen, cymbal-bright = tight hard sparkles)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec4  vCol;     ///< Colour (from the vertex stage).
 in vec2  vUV;      ///< Texture coordinate 0..1 over the screen (from the vertex stage).

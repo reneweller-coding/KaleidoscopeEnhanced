@@ -1,8 +1,13 @@
 #version 330 core
-/**
- * @file OrbitalShells.vert
- * @brief Vertex stage companion to OrbitalShells.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              OrbitalShells.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to OrbitalShells.frag -- see that file's header for this scene's description.
+ *
+ *  @author René Weller
  */
 // OrbitalShells.vert — a glowing nucleus wrapped in four precessing
 // electron shells; each shell's brightness follows its register (bass to

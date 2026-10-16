@@ -1,8 +1,13 @@
 #version 330 core
-/**
- * @file SciFiHUD.vert
- * @brief Vertex stage companion to SciFiHUD.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              SciFiHUD.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to SciFiHUD.frag -- see that file's header for this scene's description.
+ *
+ *  @author René Weller
  */
 // SciFiHUD.vert — a diegetic sci-fi cockpit interface floating in front of
 // the camera: bezel rings, a rotating radar sweep, a REAL oscilloscope

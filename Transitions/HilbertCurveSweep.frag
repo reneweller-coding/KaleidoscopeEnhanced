@@ -1,29 +1,34 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file HilbertCurveSweep.frag
- * @brief TRANSITION HILBERT CURVE SWEEP: a space-filling curve walks the frame
- * and drags the boundary between the two scenes along with it, so the wipe edge
- * is fractal instead of a line.
+/*****************************************************************************\
+ *                              HilbertCurveSweep.frag
+\*****************************************************************************/
+/*! @file
  *
- * The Hilbert index is computed, not approximated: for every cell the shader
- * walks down the orders, reads the quadrant bit by bit and rotates the frame
- * the way the construction does, which is what gives the curve its one useful
- * property -- cells that are close along the curve are close on screen.  That
- * is why the wipe stays local and compact instead of scattering: the boundary
- * is one connected front that folds through itself.
+ *  @brief
+ *  TRANSITION HILBERT CURVE SWEEP: a space-filling curve walks the frame and drags the boundary between the two
+ *  scenes along with it, so the wipe edge is fractal instead of a line.
  *
- * A plain diagonal or radial wipe covers area in a shape you can predict from
- * the first frame.  This one cannot be predicted and still never jumps: the
- * index is monotonic along the curve, so the covered set only ever grows.
+ *  The Hilbert index is computed, not approximated: for every cell the shader
+ *  walks down the orders, reads the quadrant bit by bit and rotates the frame
+ *  the way the construction does, which is what gives the curve its one useful
+ *  property -- cells that are close along the curve are close on screen.  That
+ *  is why the wipe stays local and compact instead of scattering: the boundary
+ *  is one connected front that folds through itself.
  *
- * Audio Reactivity:
- *   audioAdvance  -> a slow drift of the front (continuous)
- *   audioHigh     -> the light on the advancing front (light)
- *   audioKick     -> the front's brightness (light)
+ *  A plain diagonal or radial wipe covers area in a shape you can predict from
+ *  the first frame.  This one cannot be predicted and still never jumps: the
+ *  index is monotonic along the curve, so the covered set only ever grows.
  *
- * Per-activation variety: orderP, edgeP, hueP.
+ *  Audio Reactivity:
+ *    audioAdvance  -> a slow drift of the front (continuous)
+ *    audioHigh     -> the light on the advancing front (light)
+ *    audioKick     -> the front's brightness (light)
+ *
+ *  Per-activation variety: orderP, edgeP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

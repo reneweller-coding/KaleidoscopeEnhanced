@@ -1,25 +1,31 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file ShipDocking.frag
- * @brief GEOM="MESH" FAMILY: a small ship flies an approach and comes
- * alongside a far larger station. Two loaded meshes in one scene (model= is
- * the station, model2= the ship) -- see ShipDocking.vert for the buffer
- * layout and the eased approach path.
+/*****************************************************************************\
+ *                              ShipDocking.frag
+\*****************************************************************************/
+/*! @file
  *
- * The two hulls are shaded from SEPARATE material textures: texMeshMaterial
- * is the station's, texMeshMaterial2 the ship's. Sampling one for both would
- * stretch whichever atlas happened to load first across the other hull.
+ *  @brief
+ *  GEOM="MESH" FAMILY: a small ship flies an approach and comes alongside a far larger station.
  *
- *   sceneProgress -> the approach itself (vertex stage) and everything that
- *                    ramps with it: thrusters, floodlights, docking beacons
- *   audioKick     -> thruster pulses
- *   audioSwell    -> station lighting and beacon strength
+ *  Two loaded meshes in one scene (model= is the station, model2= the ship) -- see ShipDocking.vert for the buffer
+ *  layout and the eased approach path.
  *
- * Per-instance: sizeP (station scale), shipScaleP (ship size as a FRACTION of
- *               the station), spinP (station spin, 0 = none), tintP (nebula).
- * Per-activation variety: hueP float palette offset (0..6.28).
+ *  The two hulls are shaded from SEPARATE material textures: texMeshMaterial
+ *  is the station's, texMeshMaterial2 the ship's. Sampling one for both would
+ *  stretch whichever atlas happened to load first across the other hull.
+ *
+ *    sceneProgress -> the approach itself (vertex stage) and everything that
+ *                     ramps with it: thrusters, floodlights, docking beacons
+ *    audioKick     -> thruster pulses
+ *    audioSwell    -> station lighting and beacon strength
+ *
+ *  Per-instance: sizeP (station scale), shipScaleP (ship size as a FRACTION of
+ *                the station), spinP (station spin, 0 = none), tintP (nebula).
+ *  Per-activation variety: hueP float palette offset (0..6.28).
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform sampler2DArray texMeshMaterial;        ///< station
 uniform int            texMeshMaterialLayers;  ///< Number of layers in texMeshMaterial.

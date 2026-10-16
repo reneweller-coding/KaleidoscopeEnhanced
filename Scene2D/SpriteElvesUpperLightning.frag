@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SpriteElvesUpperLightning.frag
- * @brief SPRITES AND ELVES: the lightning above the storm.  A thundercloud
- * on the horizon glows from within with the bass; above it, red sprites --
- * columns of tendrils reaching up to the ionosphere -- flare on the kick
- * (light: their shapes are fixed per column, only their brightness comes
- * and goes), and elves -- expanding rings of light at the base of the
- * ionosphere -- are launched on the scene clock and spread outward.  The
- * photo is the night landscape below and the star sky above.  Camera still.
+/*****************************************************************************\
+ *                              SpriteElvesUpperLightning.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioKick    -> sprites flare (light)
- *   audioBass    -> the cloud glows from within (light)
- *   sceneAdvance -> elves launch and expand (continuous)
- *   audioHigh    -> the tendril tips sparkle (light)
- *   audioLevel   -> brightness
+ *  @brief
+ *  SPRITES AND ELVES: the lightning above the storm.
  *
- * Per-activation variety: columnsP, elveP, hueP.
+ *  A thundercloud on the horizon glows from within with the bass; above it, red sprites -- columns of tendrils
+ *  reaching up to the ionosphere -- flare on the kick (light: their shapes are fixed per column, only their
+ *  brightness comes and goes), and elves -- expanding rings of light at the base of the ionosphere -- are launched
+ *  on the scene clock and spread outward.  The photo is the night landscape below and the star sky above.  Camera
+ *  still.
+ *
+ *  Audio Reactivity:
+ *    audioKick    -> sprites flare (light)
+ *    audioBass    -> the cloud glows from within (light)
+ *    sceneAdvance -> elves launch and expand (continuous)
+ *    audioHigh    -> the tendril tips sparkle (light)
+ *    audioLevel   -> brightness
+ *
+ *  Per-activation variety: columnsP, elveP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

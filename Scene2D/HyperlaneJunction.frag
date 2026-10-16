@@ -1,20 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file HyperlaneJunction.frag
- * @brief HYPERLANE JUNCTION: A massive cosmic traffic hub for FTL travel.
- * Neon-lit super-highways of light intersect in the void. Glowing pulses
- * (ships) zip past along these lanes at incredible speeds.
- *   audioAdvance -> camera flight speed through the junction
- *   audioKick    -> flashes from ships entering/exiting FTL
- *   audioSwell   -> brightness of the hyperlanes
- *   audioChromaHue-> palette offset for the neon lanes
+/*****************************************************************************\
+ *                              HyperlaneJunction.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   trafficP float density of the FTL traffic (0.5..1.5)
- *   laneP float complexity of the hyperlane grid (0.5..2.0)
- *   hueP float palette offset (0..6.28)
+ *  @brief
+ *  HYPERLANE JUNCTION: A massive cosmic traffic hub for FTL travel.
+ *
+ *  Neon-lit super-highways of light intersect in the void. Glowing pulses (ships) zip past along these lanes at
+ *  incredible speeds.
+ *
+ *    audioAdvance -> camera flight speed through the junction
+ *    audioKick    -> flashes from ships entering/exiting FTL
+ *    audioSwell   -> brightness of the hyperlanes
+ *    audioChromaHue-> palette offset for the neon lanes
+ *
+ *  Per-activation variety:
+ *    trafficP float density of the FTL traffic (0.5..1.5)
+ *    laneP float complexity of the hyperlane grid (0.5..2.0)
+ *    hueP float palette offset (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

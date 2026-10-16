@@ -1,12 +1,19 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file QuantumChromodynamicsGluonPlasma.frag
- * @brief QUANTUM CHROMODYNAMICS GLUON PLASMA: 100% viewport-filling relativistic
- * heavy-ion collision simulation (RHIC / CERN LHC). Ultra-high temperature
- * deconfined quark-gluon fireball with SU(3) non-abelian color flux tubes,
- * asymptotic freedom string breaking, and gluon Cherenkov radiation.
+/*****************************************************************************\
+ *                              QuantumChromodynamicsGluonPlasma.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  QUANTUM CHROMODYNAMICS GLUON PLASMA: 100% viewport-filling relativistic heavy-ion collision simulation (RHIC /
+ *  CERN LHC).
+ *
+ *  Ultra-high temperature deconfined quark-gluon fireball with SU(3) non-abelian color flux tubes, asymptotic
+ *  freedom string breaking, and gluon Cherenkov radiation.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

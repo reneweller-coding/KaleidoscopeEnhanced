@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file StepSequencerGrid.frag
- * @brief STEP SEQUENCER GRID: the front panel of a step sequencer.  Rows
- * are voices, columns are steps, and every cell is a lit pad with the
- * photo showing through its window.  The playhead sweeps the grid on the
- * scene clock -- steadily, so it never snaps -- and a pad brightens when
- * the playhead is over it and its own voice is sounding.  The chroma
- * classes give each row its colour, the spectrum bands the pad glow, and
- * the kick lights the current column.  Camera fixed on the panel.
+/*****************************************************************************\
+ *                              StepSequencerGrid.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   sceneAdvance      -> the playhead sweeps (continuous)
- *   audioChroma[12]   -> the row colours and which rows are active (light)
- *   audioSpectrum[32] -> the pad glow (light)
- *   audioKick         -> the column under the playhead (light)
- *   audioSwell        -> the panel light (slow)
+ *  @brief
+ *  STEP SEQUENCER GRID: the front panel of a step sequencer.
  *
- * Per-activation variety: stepsP, voicesP, hueP.
+ *  Rows are voices, columns are steps, and every cell is a lit pad with the photo showing through its window.  The
+ *  playhead sweeps the grid on the scene clock -- steadily, so it never snaps -- and a pad brightens when the
+ *  playhead is over it and its own voice is sounding.  The chroma classes give each row its colour, the spectrum
+ *  bands the pad glow, and the kick lights the current column.  Camera fixed on the panel.
+ *
+ *  Audio Reactivity:
+ *    sceneAdvance      -> the playhead sweeps (continuous)
+ *    audioChroma[12]   -> the row colours and which rows are active (light)
+ *    audioSpectrum[32] -> the pad glow (light)
+ *    audioKick         -> the column under the playhead (light)
+ *    audioSwell        -> the panel light (slow)
+ *
+ *  Per-activation variety: stepsP, voicesP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

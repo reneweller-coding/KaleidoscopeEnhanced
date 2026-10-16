@@ -1,22 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file MeshServerAisle.frag
- * @brief MESH SERVER AISLE: sixteen real server racks (one model,
- * instances="16") in two rows down a cold aisle, in perspective toward a
- * vanishing point under strip lights. The racks' LEDs are the music: each
- * rack answers a spectrum band, its rows of lights blinking with the
- * band's energy; the kick lights every rack a little; the swell is the
- * aisle light. The mesh counterpart of the procedural ServerRoomAisle.
+/*****************************************************************************\
+ *                              MeshServerAisle.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSpectrum[32] -> the LEDs of each rack (light)
- *   audioKick         -> all the LEDs, a little (light)
- *   audioSwell        -> aisle light (slow)
- *   time              -> the blink patterns (continuous)
+ *  @brief
+ *  MESH SERVER AISLE: sixteen real server racks (one model, instances="16") in two rows down a cold aisle, in
+ *  perspective toward a vanishing point under strip lights.
  *
- * Per-instance: sizeP. Per-activation variety: hueP.
+ *  The racks' LEDs are the music: each rack answers a spectrum band, its rows of lights blinking with the band's
+ *  energy; the kick lights every rack a little; the swell is the aisle light. The mesh counterpart of the
+ *  procedural ServerRoomAisle.
+ *
+ *  Audio Reactivity:
+ *    audioSpectrum[32] -> the LEDs of each rack (light)
+ *    audioKick         -> all the LEDs, a little (light)
+ *    audioSwell        -> aisle light (slow)
+ *    time              -> the blink patterns (continuous)
+ *
+ *  Per-instance: sizeP. Per-activation variety: hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform sampler2DArray texMeshMaterial;       ///< The mesh's material textures (albedo, roughness, normal ...).
 uniform int            texMeshMaterialLayers; ///< Number of layers in texMeshMaterial.

@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SpiralStairwellDescent.frag
- * @brief SPIRAL STAIRWELL DESCENT: looking straight down an endless spiral
- * staircase.  The steps wind around a central well; the camera descends
- * steadily on the scene clock, so the steps rise toward us and pass, and
- * the well below stays a dark eye.  The steps carry the photo as inlaid
- * treads; lamps on every turn glow with the bands; the kick lights the
- * banister.  The descent is periodic in one step, so it is seamless; the
- * camera never jolts.
+/*****************************************************************************\
+ *                              SpiralStairwellDescent.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   sceneAdvance      -> the descent (music-paced, periodic)
- *   audioSpectrum[32] -> lamp brightness per turn (light)
- *   audioKick         -> banister flash (light)
- *   audioSwell        -> well glow from below (slow)
- *   audioLevel        -> brightness
+ *  @brief
+ *  SPIRAL STAIRWELL DESCENT: looking straight down an endless spiral staircase.
  *
- * Per-activation variety: turnsP (steps per turn), wellP (well radius), hueP.
+ *  The steps wind around a central well; the camera descends steadily on the scene clock, so the steps rise toward
+ *  us and pass, and the well below stays a dark eye.  The steps carry the photo as inlaid treads; lamps on every
+ *  turn glow with the bands; the kick lights the banister.  The descent is periodic in one step, so it is seamless;
+ *  the camera never jolts.
+ *
+ *  Audio Reactivity:
+ *    sceneAdvance      -> the descent (music-paced, periodic)
+ *    audioSpectrum[32] -> lamp brightness per turn (light)
+ *    audioKick         -> banister flash (light)
+ *    audioSwell        -> well glow from below (slow)
+ *    audioLevel        -> brightness
+ *
+ *  Per-activation variety: turnsP (steps per turn), wellP (well radius), hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

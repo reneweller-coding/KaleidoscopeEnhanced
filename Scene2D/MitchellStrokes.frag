@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file MitchellStrokes.frag
- * @brief MITCHELL STROKES: Joan Mitchell's gestural abstraction, alive --
- * clusters of energetic, crisscrossing brushstrokes in vivid colours
- * (from the photograph) tangle over a white ground like a windblown
- * thicket, dense in the middle of each cluster and loosening toward its
- * edges, individual strokes whipping in and fading as the clusters slowly
- * drift and re-form.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              MitchellStrokes.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> strokes whip in and fade (integrated, jump-free)
- *   audioSpread     -> the clusters spread
- *   audioKick       -> the colours brighten (light)
- *   audioMode       -> palette: blue-green-violet in minor, yellow-orange in major (tint)
- *   audioRoughness  -> the strokes become more agitated
- *   audioSwell      -> stroke density (slow)
+ *  @brief
+ *  MITCHELL STROKES: Joan Mitchell's gestural abstraction, alive -- clusters of energetic, crisscrossing
+ *  brushstrokes in vivid colours (from the photograph) tangle over a white ground like a windblown thicket, dense
+ *  in the middle of each cluster and loosening toward its edges, individual strokes whipping in and fading as the
+ *  clusters slowly drift and re-form.
  *
- * Knobs: clusterP (cluster count), strokeP (stroke length), photoP (photo colours), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> strokes whip in and fade (integrated, jump-free)
+ *    audioSpread     -> the clusters spread
+ *    audioKick       -> the colours brighten (light)
+ *    audioMode       -> palette: blue-green-violet in minor, yellow-orange in major (tint)
+ *    audioRoughness  -> the strokes become more agitated
+ *    audioSwell      -> stroke density (slow)
+ *
+ *  Knobs: clusterP (cluster count), strokeP (stroke length), photoP (photo colours), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

@@ -1,8 +1,13 @@
 #version 330 core
-/**
- * @file RibbonTunnel.vert
- * @brief Vertex stage companion to RibbonTunnel.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              RibbonTunnel.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to RibbonTunnel.frag -- see that file's header for this scene's description.
+ *
+ *  @author René Weller
  */
 // RibbonTunnel.vert — a REAL 3D tunnel of 20 glowing ribbons twisting around
 // the flight path, each on its own nested shell (radius 2.5 to 10.6) so the

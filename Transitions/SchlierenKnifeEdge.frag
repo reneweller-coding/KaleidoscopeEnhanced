@@ -1,30 +1,35 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SchlierenKnifeEdge.frag
- * @brief TRANSITION SCHLIEREN KNIFE EDGE: a knife edge travels across the frame
- * and, in the band around it, the difference between the two scenes shows up
- * the way a schlieren system shows air: as brightness on one side of every
- * gradient and darkness on the other.
+/*****************************************************************************\
+ *                              SchlierenKnifeEdge.frag
+\*****************************************************************************/
+/*! @file
  *
- * A schlieren system does not image density, it images the DERIVATIVE of
- * density along the knife: light bent toward the knife is blocked and goes
- * dark, light bent away misses it and goes bright.  So the field here is the
- * difference between the outgoing and the incoming scene -- the thing that is
- * actually changing -- and what is drawn is that field's gradient projected on
- * the knife direction, against the mid-grey of an undisturbed beam.  Drawing
- * the difference itself would give a ghost image, not schlieren.
+ *  @brief
+ *  TRANSITION SCHLIEREN KNIFE EDGE: a knife edge travels across the frame and, in the band around it, the
+ *  difference between the two scenes shows up the way a schlieren system shows air: as brightness on one side of
+ *  every gradient and darkness on the other.
  *
- * Everything happens in a band that travels with the knife, so the frame is the
- * outgoing scene ahead of it and the incoming scene behind it, and both ends of
- * the turn are the untouched scenes.
+ *  A schlieren system does not image density, it images the DERIVATIVE of
+ *  density along the knife: light bent toward the knife is blocked and goes
+ *  dark, light bent away misses it and goes bright.  So the field here is the
+ *  difference between the outgoing and the incoming scene -- the thing that is
+ *  actually changing -- and what is drawn is that field's gradient projected on
+ *  the knife direction, against the mid-grey of an undisturbed beam.  Drawing
+ *  the difference itself would give a ghost image, not schlieren.
  *
- * Audio Reactivity:
- *   audioSwell -> the gradient gain, i.e. how violent the flow reads (slow)
- *   audioSwell -> the width of the band (slow)
+ *  Everything happens in a band that travels with the knife, so the frame is the
+ *  outgoing scene ahead of it and the incoming scene behind it, and both ends of
+ *  the turn are the untouched scenes.
  *
- * Per-activation variety: gainP, bandP, hueP.
+ *  Audio Reactivity:
+ *    audioSwell -> the gradient gain, i.e. how violent the flow reads (slow)
+ *    audioSwell -> the width of the band (slow)
+ *
+ *  Per-activation variety: gainP, bandP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

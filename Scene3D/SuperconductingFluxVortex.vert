@@ -1,17 +1,22 @@
 #version 330 core
-/**
- * @file SuperconductingFluxVortex.vert
- * @brief Vertex stage companion to SuperconductingFluxVortex.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              SuperconductingFluxVortex.vert
+\*****************************************************************************/
+/*! @file
  *
- * Two kinds of primitive arrive from the compute stage, told apart by
- * attrA.w: the flux-tube ribbons (attrA.w = the vortex index, >= 0) and the
- * Meissner haze motes (attrA.w = -1, attrA.xyz carrying seeds instead of a
- * position).  The haze is placed here rather than in the compute stage
- * because only this stage knows the frame's aspect ratio, and the whole point
- * of the haze is that it is laid out in FRUSTUM coordinates -- x and y scaled
- * by depth -- so it stays evenly spread over the picture at every distance
- * instead of bunching into a box in the middle of a black frame.
+ *  @brief
+ *  Vertex stage companion to SuperconductingFluxVortex.frag -- see that file's header for this scene's description.
+ *
+ *  Two kinds of primitive arrive from the compute stage, told apart by
+ *  attrA.w: the flux-tube ribbons (attrA.w = the vortex index, >= 0) and the
+ *  Meissner haze motes (attrA.w = -1, attrA.xyz carrying seeds instead of a
+ *  position).  The haze is placed here rather than in the compute stage
+ *  because only this stage knows the frame's aspect ratio, and the whole point
+ *  of the haze is that it is laid out in FRUSTUM coordinates -- x and y scaled
+ *  by depth -- so it stays evenly spread over the picture at every distance
+ *  instead of bunching into a box in the middle of a black frame.
+ *
+ *  @author René Weller
  */
 // SuperconductingFluxVortex.vert
 

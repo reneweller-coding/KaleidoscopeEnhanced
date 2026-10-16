@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file GrandPrismaticAerial.frag
- * @brief GRAND PRISMATIC AERIAL: a great hot spring seen from high above -- a
- * pool of impossible deep blue in the middle, ringed by turquoise, then
- * bands of green, yellow, orange and rust where the heat-loving microbes
- * grow, their mats running out from the rim in fine radial fingers across
- * the pale sinter terraces.  A thin boardwalk crosses the white crust.
- * Steam rises off the hot water and drifts across in slow veils.  The
- * camera hangs still; the steam and the shimmer move.
+/*****************************************************************************\
+ *                              GrandPrismaticAerial.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSwell  -> the steam (slow)
- *   audioHigh   -> the glitter of the sun on the pool (light)
- *   audioBass   -> the glow of the deep blue (light)
- *   audioLevel  -> brightness
- *   sceneTime / sceneAdvance -> steam drifting, the water's shimmer
+ *  @brief
+ *  GRAND PRISMATIC AERIAL: a great hot spring seen from high above -- a pool of impossible deep blue in the middle,
+ *  ringed by turquoise, then bands of green, yellow, orange and rust where the heat-loving microbes grow, their
+ *  mats running out from the rim in fine radial fingers across the pale sinter terraces.
  *
- * Per-activation variety: ringsP (how wide the colour bands), hueP.
+ *  A thin boardwalk crosses the white crust. Steam rises off the hot water and drifts across in slow veils.  The
+ *  camera hangs still; the steam and the shimmer move.
+ *
+ *  Audio Reactivity:
+ *    audioSwell  -> the steam (slow)
+ *    audioHigh   -> the glitter of the sun on the pool (light)
+ *    audioBass   -> the glow of the deep blue (light)
+ *    audioLevel  -> brightness
+ *    sceneTime / sceneAdvance -> steam drifting, the water's shimmer
+ *
+ *  Per-activation variety: ringsP (how wide the colour bands), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

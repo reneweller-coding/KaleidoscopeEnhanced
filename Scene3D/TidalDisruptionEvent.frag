@@ -1,14 +1,19 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TidalDisruptionEvent.frag
- * @brief Fragment stage for TidalDisruptionEvent: soft star particles, the
- * black hole as a shadow disc with a photon ring that glows with the bass,
- * and a deep-space sky with round stars.
+/*****************************************************************************\
+ *                              TidalDisruptionEvent.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity: audioKick flashes the particles; audioBass glows the
- *                   photon ring; audioDrop floods the ring (the tearing).
+ *  @brief
+ *  Fragment stage for TidalDisruptionEvent: soft star particles, the black hole as a shadow disc with a photon ring
+ *  that glows with the bass, and a deep-space sky with round stars.
+ *
+ *  Audio Reactivity: audioKick flashes the particles; audioBass glows the
+ *                    photon ring; audioDrop floods the ring (the tearing).
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 in vec4  vColor;    ///< Color (from the vertex stage).
 in vec2  vTexCoord; ///< Texture coordinate (from the vertex stage).
 in float vDepth;    ///< Depth (from the vertex stage).

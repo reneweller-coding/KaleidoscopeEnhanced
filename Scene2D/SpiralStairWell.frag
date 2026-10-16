@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SpiralStairWell.frag
- * @brief SPIRAL STAIR WELL: looking straight down an endless spiral
- * staircase -- the steps wind around the open well in a helix, turn
- * after turn sinking into the depth, each step a slab of the photograph
- * with a bright nosing on its edge, a glowing handrail running along the
- * inner rim, and the well's wall behind the steps; we descend slowly
- * while the whole staircase turns.  Mirrorable; the steps continue
- * beyond the frame.
+/*****************************************************************************\
+ *                              SpiralStairWell.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the descent (integrated, jump-free)
- *   audioPhase      -> the staircase turns (integrated)
- *   audioSpread     -> the well opens wider
- *   audioKick       -> lights along the handrail flare (light)
- *   audioMode       -> the light: cool in minor, warm lamplight in major
- *   audioSwell      -> the glow from the bottom (slow)
+ *  @brief
+ *  SPIRAL STAIR WELL: looking straight down an endless spiral staircase -- the steps wind around the open well in a
+ *  helix, turn after turn sinking into the depth, each step a slab of the photograph with a bright nosing on its
+ *  edge, a glowing handrail running along the inner rim, and the well's wall behind the steps; we descend slowly
+ *  while the whole staircase turns.
  *
- * Knobs: stepsP (steps per turn), pitchP (height per turn), photoP (photo on the steps), hueP.
+ *  Mirrorable; the steps continue beyond the frame.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the descent (integrated, jump-free)
+ *    audioPhase      -> the staircase turns (integrated)
+ *    audioSpread     -> the well opens wider
+ *    audioKick       -> lights along the handrail flare (light)
+ *    audioMode       -> the light: cool in minor, warm lamplight in major
+ *    audioSwell      -> the glow from the bottom (slow)
+ *
+ *  Knobs: stepsP (steps per turn), pitchP (height per turn), photoP (photo on the steps), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

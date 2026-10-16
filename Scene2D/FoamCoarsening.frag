@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file FoamCoarsening.frag
- * @brief FOAM COARSENING: a sheet of soap foam in close-up -- polygonal
- * bubbles packed together, their thin walls glowing with interference
- * colours, thick bright Plateau borders where three walls meet, each
- * bubble a lens showing the photograph behind; the foam slowly shifts,
- * small bubbles shrink and big ones grow, walls slide and the pattern
- * rearranges; a second, fainter layer of foam lies behind.  Endless,
- * mirrorable.
+/*****************************************************************************\
+ *                              FoamCoarsening.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the foam shifts (integrated, jump-free)
- *   audioSpread     -> bubble size spread
- *   audioKick       -> the Plateau borders flash (light)
- *   audioMode       -> wall colours: cool in minor, warm in major
- *   audioHigh       -> sparkles on the walls (light)
- *   audioSwell      -> the photo shows through (slow)
+ *  @brief
+ *  FOAM COARSENING: a sheet of soap foam in close-up -- polygonal bubbles packed together, their thin walls glowing
+ *  with interference colours, thick bright Plateau borders where three walls meet, each bubble a lens showing the
+ *  photograph behind; the foam slowly shifts, small bubbles shrink and big ones grow, walls slide and the pattern
+ *  rearranges; a second, fainter layer of foam lies behind.
  *
- * Knobs: bubbleP (bubble size), wallP (wall brightness), lensP (lens effect), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the foam shifts (integrated, jump-free)
+ *    audioSpread     -> bubble size spread
+ *    audioKick       -> the Plateau borders flash (light)
+ *    audioMode       -> wall colours: cool in minor, warm in major
+ *    audioHigh       -> sparkles on the walls (light)
+ *    audioSwell      -> the photo shows through (slow)
+ *
+ *  Knobs: bubbleP (bubble size), wallP (wall brightness), lensP (lens effect), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

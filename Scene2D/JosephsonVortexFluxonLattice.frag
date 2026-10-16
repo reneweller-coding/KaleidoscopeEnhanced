@@ -1,22 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file JosephsonVortexFluxonLattice.frag
- * @brief JOSEPHSON VORTEX FLUXON LATTICE: Layered high-Tc superconductor stacked Josephson junctions.
- * Sine-Gordon magnetic fluxons (Josephson vortices) driven by relativistic Lorentz currents
- * race through insulator barriers, emitting coherent terahertz Cherenkov radiation fringes.
- *   audioAdvance -> accelerates fluxon velocity towards Swihart relativistic velocity
- *   audioKick    -> flashes Josephson fluxon collision & annihilation radiation bursts
- *   audioSwell   -> widens superconducting layer thickness & terahertz field luminance
- *   audioCentroid-> shifts terahertz Josephson emission color spectra
- *   audioHigh    -> excites high-frequency Cherenkov plasma wave ripple tails
+/*****************************************************************************\
+ *                              JosephsonVortexFluxonLattice.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   junctionCountP float number of stacked Josephson barriers     (3.0..8.0)
- *   fluxonDensityP float magnetic fluxon soliton packing density  (2.0..6.0)
- *   thzGlowP       float terahertz Cherenkov radiation brightness (0.8..2.5)
- *   swihartSpeedP  float Swihart velocity limit parameter        (0.6..2.2)
+ *  @brief
+ *  JOSEPHSON VORTEX FLUXON LATTICE: Layered high-Tc superconductor stacked Josephson junctions.
+ *
+ *  Sine-Gordon magnetic fluxons (Josephson vortices) driven by relativistic Lorentz currents race through insulator
+ *  barriers, emitting coherent terahertz Cherenkov radiation fringes.
+ *
+ *    audioAdvance -> accelerates fluxon velocity towards Swihart relativistic velocity
+ *    audioKick    -> flashes Josephson fluxon collision & annihilation radiation bursts
+ *    audioSwell   -> widens superconducting layer thickness & terahertz field luminance
+ *    audioCentroid-> shifts terahertz Josephson emission color spectra
+ *    audioHigh    -> excites high-frequency Cherenkov plasma wave ripple tails
+ *
+ *  Per-activation variety:
+ *    junctionCountP float number of stacked Josephson barriers     (3.0..8.0)
+ *    fluxonDensityP float magnetic fluxon soliton packing density  (2.0..6.0)
+ *    thzGlowP       float terahertz Cherenkov radiation brightness (0.8..2.5)
+ *    swihartSpeedP  float Swihart velocity limit parameter        (0.6..2.2)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

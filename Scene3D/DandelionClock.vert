@@ -1,9 +1,16 @@
 #version 330 core
-/**
- * @file DandelionClock.vert
- * @brief Vertex stage for DandelionClock.comp/.frag: world positions pass
- * through (camera at the origin, +z ahead); kind, life and uv go to the
- * fragment stage.  No camera motion.
+/*****************************************************************************\
+ *                              DandelionClock.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage for DandelionClock.comp/.frag: world positions pass through (camera at the origin, +z ahead); kind,
+ *  life and uv go to the fragment stage.
+ *
+ *  No camera motion.
+ *
+ *  @author René Weller
  */
 layout( location = 0 ) in vec4 attrA; ///< xyz = position, w = id
 layout( location = 1 ) in vec4 attrB; ///< x = lit, y = kind, zw = uv

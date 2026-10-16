@@ -1,19 +1,25 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file CyberpunkWireframeTerrainFlyover.frag
- * @brief CYBERPUNK WIREFRAME TERRAIN FLYOVER: fast flight over an infinite 80s
- * synthwave neon wireframe plain toward a segmented vector laser sun, stars
- * above.  (A mountain height function used to be computed here and never
- * drawn -- the plane is projected, not marched -- so the header no longer
- * promises mountains it cannot show.)
+/*****************************************************************************\
+ *                              CyberpunkWireframeTerrainFlyover.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance -> drives continuous high-velocity forward flight across terrain
- *   audioKick    -> flashes laser sun segments & sends ground grid shockwaves
- *   audioCentroid-> sharpens wireframe anti-aliasing & starfield sparkles
- *   audioChromaHue-> rotates the synthwave neon magenta/cyan/orange palette
+ *  @brief
+ *  CYBERPUNK WIREFRAME TERRAIN FLYOVER: fast flight over an infinite 80s synthwave neon wireframe plain toward a
+ *  segmented vector laser sun, stars above.
+ *
+ *  (A mountain height function used to be computed here and never drawn -- the plane is projected, not marched --
+ *  so the header no longer promises mountains it cannot show.)
+ *
+ *  Audio Reactivity:
+ *    audioAdvance -> drives continuous high-velocity forward flight across terrain
+ *    audioKick    -> flashes laser sun segments & sends ground grid shockwaves
+ *    audioCentroid-> sharpens wireframe anti-aliasing & starfield sparkles
+ *    audioChromaHue-> rotates the synthwave neon magenta/cyan/orange palette
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

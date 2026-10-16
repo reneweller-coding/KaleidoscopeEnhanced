@@ -1,8 +1,14 @@
 #version 330 core
-/**
- * @file RelativisticAccretionTorusMHD.vert
- * @brief Vertex stage companion to RelativisticAccretionTorusMHD.frag -- see that file's
- * header for this scene's description.
+/*****************************************************************************\
+ *                              RelativisticAccretionTorusMHD.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to RelativisticAccretionTorusMHD.frag -- see that file's header for this scene's
+ *  description.
+ *
+ *  @author René Weller
  */
 
 in vec4 attrA; ///< xy = Patch UV [0,1], z = 0, w = Patch index

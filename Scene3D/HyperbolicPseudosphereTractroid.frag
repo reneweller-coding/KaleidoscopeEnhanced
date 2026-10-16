@@ -1,20 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file HyperbolicPseudosphereTractroid.frag
- * @brief HYPERBOLIC PSEUDOSPHERE TRACTROID: a 5 x 4 LATTICE of pseudospheres of constant negative
- * Gaussian curvature (K = -1, the surface of revolution of the tractrix), each turning on its own
- * axis and hung in frustum coordinates so the lattice spans the whole frame. Flared trumpet horn
- * cusps, hyperbolic geodesic streamlines, glass specular sheen, and non-Euclidean photo texturing.
- *   audioAdvance -> navigates hyperbolic tractrix geodesic flow & horn rotation
- *   audioKick    -> flashes singular equator rim & cusp specular reflections
- *   audioSwell   -> widens pseudosphere trumpet flare radius & wall transmission
- *   audioCentroid-> shifts hyperbolic curvature dispersion spectra
+/*****************************************************************************\
+ *                              HyperbolicPseudosphereTractroid.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   pseudoScaleP float pseudosphere 3D scale               (0.8..2.2)
- *   fresnelP     float glass tractricoid Fresnel gain     (0.8..2.5)
+ *  @brief
+ *  HYPERBOLIC PSEUDOSPHERE TRACTROID: a 5 x 4 LATTICE of pseudospheres of constant negative Gaussian curvature (K =
+ *  -1, the surface of revolution of the tractrix), each turning on its own axis and hung in frustum coordinates so
+ *  the lattice spans the whole frame.
+ *
+ *  Flared trumpet horn cusps, hyperbolic geodesic streamlines, glass specular sheen, and non-Euclidean photo
+ *  texturing.
+ *
+ *    audioAdvance -> navigates hyperbolic tractrix geodesic flow & horn rotation
+ *    audioKick    -> flashes singular equator rim & cusp specular reflections
+ *    audioSwell   -> widens pseudosphere trumpet flare radius & wall transmission
+ *    audioCentroid-> shifts hyperbolic curvature dispersion spectra
+ *
+ *  Per-activation variety:
+ *    pseudoScaleP float pseudosphere 3D scale               (0.8..2.2)
+ *    fresnelP     float glass tractricoid Fresnel gain     (0.8..2.5)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec2  vUV;        ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 in vec3  vNormal;    ///< Surface normal (from the vertex stage).

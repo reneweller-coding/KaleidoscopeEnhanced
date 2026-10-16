@@ -1,17 +1,22 @@
 #version 330 core
-/**
- * @file CrystalShatterBurst.geom
- * @brief Geometry stage companion to CrystalShatterBurst.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              CrystalShatterBurst.geom
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioKick     -> explosive outward shard flight + gold tint
- *   audioSubBass  -> extra low-end shove on the fracture
- *   audioAdvance  -> shard tumble phase (pre-integrated, jump-free)
- *   audioSwell    -> camera pushes in
- *   audioSnare    -> snares/claps crack a SECOND subset of shards loose and
- *                    jolt their tumble
- *   audioBuildUp  -> rising EDM tension clenches the geode shut before the drop
+ *  @brief
+ *  Geometry stage companion to CrystalShatterBurst.frag -- see that file's header for this scene's description.
+ *
+ *  Audio Reactivity:
+ *    audioKick     -> explosive outward shard flight + gold tint
+ *    audioSubBass  -> extra low-end shove on the fracture
+ *    audioAdvance  -> shard tumble phase (pre-integrated, jump-free)
+ *    audioSwell    -> camera pushes in
+ *    audioSnare    -> snares/claps crack a SECOND subset of shards loose and
+ *                     jolt their tumble
+ *    audioBuildUp  -> rising EDM tension clenches the geode shut before the drop
+ *
+ *  @author René Weller
  */
 /// CrystalShatterBurst.geom — Geometry Shader intercepts triangles and violently
 /// fractures them into floating tetrahedral crystal shards along explosion vectors on beats.

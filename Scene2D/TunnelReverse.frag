@@ -1,30 +1,37 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TunnelReverse.frag
- * @brief Two mirrored-segment kaleidoscope tunnels blended 50/50: a forward
- *        layer (same construction as Tunnel.frag) and a second layer whose
- *        rotation and radial mapping run in the opposite sense, so the two
- *        tunnels shear against each other rather than simply co-scrolling.
+/*****************************************************************************\
+ *                              TunnelReverse.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *  - audioPhase     -> adds to the wedge rotation of BOTH layers (integrated, jump-free)
- *  - audioAdvance   -> adds to the forward layer's scroll but is SUBTRACTED (opposite
- *                      sign, half weight) from the reverse layer's, so the reverse
- *                      tunnel visibly recedes on energetic passages
- *  - audioKick      -> subtle brightness pulse on the combined result
- *  - audioBuildUp   -> LAYER TAKEOVER: as tension climbs the 50/50 blend tips toward
- *                      the RECEDING layer, so a build-up visibly pulls the image
- *                      backwards against the forward tunnel before the release
- *  - audioSpread    -> DEPTH MISMATCH: the reverse layer's radial term gets its own
- *                      spread-driven weight, so a wide spectrum pushes the two
- *                      tunnels' perspectives apart and the shear becomes obvious.
- *                      It scales only the radial term, which is ADDED to the scroll;
- *                      'time' keeps its own untouched coefficient
- *  - audioRoughness -> GRIND: dissonance ripples the reverse layer's angular
- *                      coordinate along the radius (the forward layer stays
- *                      straight), so the two tunnels visibly grate against each other
+ *  @brief
+ *  Two mirrored-segment kaleidoscope tunnels blended 50/50: a forward
+ *
+ *         layer (same construction as Tunnel.frag) and a second layer whose
+ *         rotation and radial mapping run in the opposite sense, so the two
+ *         tunnels shear against each other rather than simply co-scrolling.
+ *
+ *  Audio Reactivity:
+ *   - audioPhase     -> adds to the wedge rotation of BOTH layers (integrated, jump-free)
+ *   - audioAdvance   -> adds to the forward layer's scroll but is SUBTRACTED (opposite
+ *                       sign, half weight) from the reverse layer's, so the reverse
+ *                       tunnel visibly recedes on energetic passages
+ *   - audioKick      -> subtle brightness pulse on the combined result
+ *   - audioBuildUp   -> LAYER TAKEOVER: as tension climbs the 50/50 blend tips toward
+ *                       the RECEDING layer, so a build-up visibly pulls the image
+ *                       backwards against the forward tunnel before the release
+ *   - audioSpread    -> DEPTH MISMATCH: the reverse layer's radial term gets its own
+ *                       spread-driven weight, so a wide spectrum pushes the two
+ *                       tunnels' perspectives apart and the shear becomes obvious.
+ *                       It scales only the radial term, which is ADDED to the scroll;
+ *                       'time' keeps its own untouched coefficient
+ *   - audioRoughness -> GRIND: dissonance ripples the reverse layer's angular
+ *                       coordinate along the radius (the forward layer stays
+ *                       straight), so the two tunnels visibly grate against each other
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;             ///< The pixel's colour (output).
 uniform vec2      resolution;            ///< Size of the render target in pixels.
 uniform float     time;                  ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;                  ///< The current photo.

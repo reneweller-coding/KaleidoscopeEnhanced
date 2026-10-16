@@ -1,25 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file InterstellarMediumDust.frag
- * @brief INTERSTELLAR MEDIUM DUST: a volumetric dust cloud between the stars,
- * ray-marched as real density -- stars behind it dim by the integrated
- * column they shine through, not by a painted glow, so the cloud has a
- * front and a back.  The density field is fbm advected by a curl-noise flow
- * (domain warping on the scene clock: the cloud folds and drifts without a
- * simulation and without a jump).  The bass thickens the cloud (slow,
- * through the swell); a nearby star inside the cloud lights it on the kick.
- * The camera never moves.
+/*****************************************************************************\
+ *                              InterstellarMediumDust.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   sceneAdvance -> the cloud's flow (continuous)
- *   audioSwell   -> cloud density (slow)
- *   audioKick    -> the embedded star flashes (light)
- *   audioLevel   -> star brightness
- *   audioChromaHue -> cloud tint via the palette
+ *  @brief
+ *  INTERSTELLAR MEDIUM DUST: a volumetric dust cloud between the stars, ray-marched as real density -- stars behind
+ *  it dim by the integrated column they shine through, not by a painted glow, so the cloud has a front and a back.
  *
- * Per-activation variety: densP (base density), scaleP (cloud scale), hueP.
+ *  The density field is fbm advected by a curl-noise flow (domain warping on the scene clock: the cloud folds and
+ *  drifts without a simulation and without a jump).  The bass thickens the cloud (slow, through the swell); a
+ *  nearby star inside the cloud lights it on the kick. The camera never moves.
+ *
+ *  Audio Reactivity:
+ *    sceneAdvance -> the cloud's flow (continuous)
+ *    audioSwell   -> cloud density (slow)
+ *    audioKick    -> the embedded star flashes (light)
+ *    audioLevel   -> star brightness
+ *    audioChromaHue -> cloud tint via the palette
+ *
+ *  Per-activation variety: densP (base density), scaleP (cloud scale), hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

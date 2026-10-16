@@ -1,26 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file PersistenceOfVisionFan.frag
- * @brief PERSISTENCE-OF-VISION FAN: a picture that exists only in the
- * afterimage.  A few spokes turn about the centre; each frame they paint
- * the photo's colour along their length, and the previous frame
- * (texPrevFrame) is kept with a decay -- so the photo appears as the sum of
- * many sweeps, like the LED fans that draw pictures in the air, and fades
- * where the spokes have not passed for a while.  The spokes turn on the
- * music's pace; the spectrum decides how bright each radius is painted,
- * so the picture is an analyser of its own.  Feedback converges: decay
- * plus a soft knee before re-injection.
+/*****************************************************************************\
+ *                              PersistenceOfVisionFan.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   texPrevFrame      -> the afterimage (the whole point)
- *   sceneAdvance      -> spoke rotation (music-paced, continuous)
- *   audioSpectrum[32] -> paint brightness by radius (light)
- *   audioKick         -> the hub flashes (light)
- *   audioSwell        -> afterimage persistence (slow)
+ *  @brief
+ *  PERSISTENCE-OF-VISION FAN: a picture that exists only in the afterimage.
  *
- * Per-activation variety: spokesP (spoke count), speedP, hueP.
+ *  A few spokes turn about the centre; each frame they paint the photo's colour along their length, and the
+ *  previous frame (texPrevFrame) is kept with a decay -- so the photo appears as the sum of many sweeps, like the
+ *  LED fans that draw pictures in the air, and fades where the spokes have not passed for a while.  The spokes turn
+ *  on the music's pace; the spectrum decides how bright each radius is painted, so the picture is an analyser of
+ *  its own.  Feedback converges: decay plus a soft knee before re-injection.
+ *
+ *  Audio Reactivity:
+ *    texPrevFrame      -> the afterimage (the whole point)
+ *    sceneAdvance      -> spoke rotation (music-paced, continuous)
+ *    audioSpectrum[32] -> paint brightness by radius (light)
+ *    audioKick         -> the hub flashes (light)
+ *    audioSwell        -> afterimage persistence (slow)
+ *
+ *  Per-activation variety: spokesP (spoke count), speedP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

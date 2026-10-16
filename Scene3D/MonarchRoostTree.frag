@@ -1,16 +1,21 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file MonarchRoostTree.frag
- * @brief Fragment stage for MonarchRoostTree: a misty forest of the photo
- * behind, the fir in dark green-brown, the wings orange with black veins
- * and white-dotted margins, the photo showing through as the orange field
- * (a wing-shaped cut of it), flying ones brighter in the sun; the kick a
- * flash of sun through the boughs, the treble a shimmer on the wings.
+/*****************************************************************************\
+ *                              MonarchRoostTree.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity: audioSwell -> sun (and wing opening in the generator);
- *                   audioKick -> sun flash; audioHigh -> wing shimmer; audioLevel.
+ *  @brief
+ *  Fragment stage for MonarchRoostTree: a misty forest of the photo behind, the fir in dark green-brown, the wings
+ *  orange with black veins and white-dotted margins, the photo showing through as the orange field (a wing-shaped
+ *  cut of it), flying ones brighter in the sun; the kick a flash of sun through the boughs, the treble a shimmer on
+ *  the wings.
+ *
+ *  Audio Reactivity: audioSwell -> sun (and wing opening in the generator);
+ *                    audioKick -> sun flash; audioHigh -> wing shimmer; audioLevel.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 in vec2  vTexCoord; ///< Texture coordinate (from the vertex stage).
 in vec3  vWorld;    ///< World position (from the vertex stage).
 in float vKind;     ///< Element kind (from the vertex stage).

@@ -1,30 +1,35 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file LeidenfrostSkitter.frag
- * @brief TRANSITION LEIDENFROST SKITTER: the outgoing scene breaks into
- * droplets that ride on their own vapour and skitter away, uncovering the
- * incoming scene on the hot plate beneath.
+/*****************************************************************************\
+ *                              LeidenfrostSkitter.frag
+\*****************************************************************************/
+/*! @file
  *
- * Above the Leidenfrost point a drop does not wet the surface: it floats on a
- * cushion of its own vapour, and with almost nothing to hold it, it slides on
- * the smallest slope and hardly slows down.  So each droplet here keeps its own
- * direction and its own steady speed for the whole turn -- a drop that
- * decelerated would be a drop that is touching something.
+ *  @brief
+ *  TRANSITION LEIDENFROST SKITTER: the outgoing scene breaks into droplets that ride on their own vapour and
+ *  skitter away, uncovering the incoming scene on the hot plate beneath.
  *
- * The other half of the effect is under the drop, not in it: the vapour cushion
- * is a lens, so the incoming scene is bent where a droplet passes over it.  And
- * a floating drop shrinks as it boils away, which is what finally clears the
- * frame.
+ *  Above the Leidenfrost point a drop does not wet the surface: it floats on a
+ *  cushion of its own vapour, and with almost nothing to hold it, it slides on
+ *  the smallest slope and hardly slows down.  So each droplet here keeps its own
+ *  direction and its own steady speed for the whole turn -- a drop that
+ *  decelerated would be a drop that is touching something.
  *
- * Audio Reactivity:
- *   audioSwell -> the plate's temperature: the cushion's thickness (slow)
- *   audioSwell   -> the drift direction the drops all lean into (slow)
- *   audioHigh    -> the specular point on each drop (light)
- *   audioKick    -> the light off the plate (light)
+ *  The other half of the effect is under the drop, not in it: the vapour cushion
+ *  is a lens, so the incoming scene is bent where a droplet passes over it.  And
+ *  a floating drop shrinks as it boils away, which is what finally clears the
+ *  frame.
  *
- * Per-activation variety: dropsP, driftP, hueP.
+ *  Audio Reactivity:
+ *    audioSwell -> the plate's temperature: the cushion's thickness (slow)
+ *    audioSwell   -> the drift direction the drops all lean into (slow)
+ *    audioHigh    -> the specular point on each drop (light)
+ *    audioKick    -> the light off the plate (light)
+ *
+ *  Per-activation variety: dropsP, driftP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

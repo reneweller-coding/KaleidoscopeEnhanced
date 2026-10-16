@@ -1,27 +1,33 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file InkTank.frag
- * @brief INK TANK: drops of ink falling through a backlit tank of water, the
- * way the macro photographs show it -- each drop sinks as a vortex ring, its
- * head curling into a mushroom of fine filaments, a thinning stem trailing
- * behind, and the inks (deep blue, magenta, amber, tinted by the photo)
- * absorbing the white back-light where they overlap, so crossings go dark
- * and rich.  New drops enter at the top while old plumes spread and fade.
+/*****************************************************************************\
+ *                              InkTank.frag
+\*****************************************************************************/
+/*! @file
  *
- * The scene used to shade the compute Navier-Stokes solver; in the real app
- * that showed a grey photo wall with barely any ink (catalogue review
- * 29.09.2026).  This version is analytic and needs no compute pass.
+ *  @brief
+ *  INK TANK: drops of ink falling through a backlit tank of water, the way the macro photographs show it -- each
+ *  drop sinks as a vortex ring, its head curling into a mushroom of fine filaments, a thinning stem trailing
+ *  behind, and the inks (deep blue, magenta, amber, tinted by the photo) absorbing the white back-light where they
+ *  overlap, so crossings go dark and rich.
  *
- * Audio Reactivity:
- *   audioSwell   -> the back-light brightens (slow)
- *   audioKick    -> the filament edges catch a glint (light only)
- *   audioLevel   -> overall light
- *   audioChromaHue-> photo tint of the inks
- *   sceneTime / sceneAdvance -> the drops sinking and curling (continuous)
+ *  New drops enter at the top while old plumes spread and fade.
  *
- * Per-activation variety: glowP (edge glint), inkP (ink strength).
+ *  The scene used to shade the compute Navier-Stokes solver; in the real app
+ *  that showed a grey photo wall with barely any ink (catalogue review
+ *  29.09.2026).  This version is analytic and needs no compute pass.
+ *
+ *  Audio Reactivity:
+ *    audioSwell   -> the back-light brightens (slow)
+ *    audioKick    -> the filament edges catch a glint (light only)
+ *    audioLevel   -> overall light
+ *    audioChromaHue-> photo tint of the inks
+ *    sceneTime / sceneAdvance -> the drops sinking and curling (continuous)
+ *
+ *  Per-activation variety: glowP (edge glint), inkP (ink strength).
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform sampler2D tex0;          ///< The current photo.
 uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).

@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TaikoSilhouettes.frag
- * @brief TAIKO SILHOUETTES: a taiko ensemble on a dark stage, backlit.  A row
- * of drummers stands before the drums -- the great odaiko in the middle on
- * its stand, smaller shime and chu-daiko to either side -- their bodies
- * black cut-outs against a deep red backdrop, raised arms holding the
- * bachi.  Haze hangs in the stage light.  The picture is still: the drum
- * strikes are pure light -- every kick lights the skins and throws a flash
- * of warm light through the haze from behind the drums, the bass warms
- * the backdrop, and the snare catches the rim lights.
+/*****************************************************************************\
+ *                              TaikoSilhouettes.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioKick   -> the drum skins flash and light the haze (light only)
- *   audioBass   -> the backdrop's glow (light)
- *   audioSnare  -> rim lights on the drummers (light)
- *   audioSwell  -> the haze (slow)
- *   audioLevel  -> brightness
+ *  @brief
+ *  TAIKO SILHOUETTES: a taiko ensemble on a dark stage, backlit.
  *
- * Per-activation variety: drummersP (how many), hueP (backdrop colour).
+ *  A row of drummers stands before the drums -- the great odaiko in the middle on its stand, smaller shime and
+ *  chu-daiko to either side -- their bodies black cut-outs against a deep red backdrop, raised arms holding the
+ *  bachi.  Haze hangs in the stage light.  The picture is still: the drum strikes are pure light -- every kick
+ *  lights the skins and throws a flash of warm light through the haze from behind the drums, the bass warms the
+ *  backdrop, and the snare catches the rim lights.
+ *
+ *  Audio Reactivity:
+ *    audioKick   -> the drum skins flash and light the haze (light only)
+ *    audioBass   -> the backdrop's glow (light)
+ *    audioSnare  -> rim lights on the drummers (light)
+ *    audioSwell  -> the haze (slow)
+ *    audioLevel  -> brightness
+ *
+ *  Per-activation variety: drummersP (how many), hueP (backdrop colour).
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

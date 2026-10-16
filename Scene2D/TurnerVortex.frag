@@ -1,26 +1,31 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TurnerVortex.frag
- * @brief TURNER VORTEX: a painted maelstrom of light and weather in the
- * manner of J. M. W. Turner's late storms -- a great swirling vortex of
- * luminous haze, gold and white at the heart where the sun burns through,
- * wheeling out into bands of ochre, rust, grey-blue and smoke, the paint
- * laid on in broad soft sweeps and scumbles that follow the swirl, with
- * dark flecks of spray whirled around its edge.  The whole vortex turns
- * slowly and the light at its centre pulses.  The palette leans on the
- * photograph's colours.  Endless, mirrorable (the swirl continues out).
+/*****************************************************************************\
+ *                              TurnerVortex.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioPhase      -> the vortex turns (integrated, jump-free)
- *   audioAdvance    -> the paint flows along the swirl (integrated)
- *   audioSpread     -> how tightly the vortex winds
- *   audioRoughness  -> the brushwork gets choppier
- *   audioBass       -> the sun at the heart burns brighter (light)
- *   audioMode       -> the palette warms in major
+ *  @brief
+ *  TURNER VORTEX: a painted maelstrom of light and weather in the manner of J.
  *
- * Knobs: windP (base winding), sunP (sun strength), smokeP (smoke/spray amount), hueP.
+ *  M. W. Turner's late storms -- a great swirling vortex of luminous haze, gold and white at the heart where the
+ *  sun burns through, wheeling out into bands of ochre, rust, grey-blue and smoke, the paint laid on in broad soft
+ *  sweeps and scumbles that follow the swirl, with dark flecks of spray whirled around its edge.  The whole vortex
+ *  turns slowly and the light at its centre pulses.  The palette leans on the photograph's colours.  Endless,
+ *  mirrorable (the swirl continues out).
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioPhase      -> the vortex turns (integrated, jump-free)
+ *    audioAdvance    -> the paint flows along the swirl (integrated)
+ *    audioSpread     -> how tightly the vortex winds
+ *    audioRoughness  -> the brushwork gets choppier
+ *    audioBass       -> the sun at the heart burns brighter (light)
+ *    audioMode       -> the palette warms in major
+ *
+ *  Knobs: windP (base winding), sunP (sun strength), smokeP (smoke/spray amount), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

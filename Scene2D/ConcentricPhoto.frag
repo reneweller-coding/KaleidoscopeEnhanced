@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file ConcentricPhoto.frag
- * @brief CONCENTRIC PHOTO: the photograph drawn with concentric rings -- a
- * field of ring systems whose rings swell where the picture is dark and
- * thin where it is light, so the image emerges from rippling circles like
- * a halftone made of ripples; the ring centres drift, the rings flow
- * outward, and where two systems overlap they make moire.  Endless,
- * mirrorable.
+/*****************************************************************************\
+ *                              ConcentricPhoto.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the rings flow outward (integrated, jump-free)
- *   audioSpread     -> ring spacing
- *   audioKick       -> the rings brighten (light)
- *   audioMode       -> dark rings on light in major, light rings on dark in minor (blend)
- *   audioRoughness  -> the rings wobble
- *   audioSwell      -> the photo's colour in the rings (slow)
+ *  @brief
+ *  CONCENTRIC PHOTO: the photograph drawn with concentric rings -- a field of ring systems whose rings swell where
+ *  the picture is dark and thin where it is light, so the image emerges from rippling circles like a halftone made
+ *  of ripples; the ring centres drift, the rings flow outward, and where two systems overlap they make moire.
  *
- * Knobs: centreP (number of ring centres), contrastP, zoomP (photo scale), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the rings flow outward (integrated, jump-free)
+ *    audioSpread     -> ring spacing
+ *    audioKick       -> the rings brighten (light)
+ *    audioMode       -> dark rings on light in major, light rings on dark in minor (blend)
+ *    audioRoughness  -> the rings wobble
+ *    audioSwell      -> the photo's colour in the rings (slow)
+ *
+ *  Knobs: centreP (number of ring centres), contrastP, zoomP (photo scale), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

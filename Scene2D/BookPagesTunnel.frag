@@ -1,22 +1,27 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file BookPagesTunnel.frag
- * @brief BOOK PAGES TUNNEL: a tunnel whose walls are the pages of a book,
- * turning as we pass.  Each page is a leaf hinged on the tunnel's spine
- * that turns steadily on the scene clock (which runs with the music's
- * energy, never with a beat tracker, so a resync can never jolt the
- * leaves), carrying the photo on one side and its palette negative on the
- * other.  The flight down the spine is steady; the kick lights the edges.
+/*****************************************************************************\
+ *                              BookPagesTunnel.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   sceneAdvance  -> page angle and flight along the spine (continuous)
- *   audioKick     -> page edges flash (light)
- *   audioSwell    -> reading light (slow)
- *   audioLevel    -> brightness
+ *  @brief
+ *  BOOK PAGES TUNNEL: a tunnel whose walls are the pages of a book, turning as we pass.
  *
- * Per-activation variety: pagesP (pages per unit), sizeP, hueP.
+ *  Each page is a leaf hinged on the tunnel's spine that turns steadily on the scene clock (which runs with the
+ *  music's energy, never with a beat tracker, so a resync can never jolt the leaves), carrying the photo on one
+ *  side and its palette negative on the other.  The flight down the spine is steady; the kick lights the edges.
+ *
+ *  Audio Reactivity:
+ *    sceneAdvance  -> page angle and flight along the spine (continuous)
+ *    audioKick     -> page edges flash (light)
+ *    audioSwell    -> reading light (slow)
+ *    audioLevel    -> brightness
+ *
+ *  Per-activation variety: pagesP (pages per unit), sizeP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

@@ -1,11 +1,16 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file FxOilPaintFlow.frag
- * @brief FX OIL PAINT FLOW: FxOilPaint's Kuwahara smoothing plus a flowing fBm
- * warp field and Photoshop-style blend-mode compositing (overlay/screen),
- * giving the brushstrokes a slow marbled drift.
+/*****************************************************************************\
+ *                              FxOilPaintFlow.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  FX OIL PAINT FLOW: FxOilPaint's Kuwahara smoothing plus a flowing fBm warp field and Photoshop-style blend-mode
+ *  compositing (overlay/screen), giving the brushstrokes a slow marbled drift.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

@@ -1,4 +1,31 @@
 #version 330 core
+/*****************************************************************************\
+ *                              Skyburst.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Shades the firework spark trails built by Skyburst.comp as pure emissive light (no lighting model): a
+ *  blackbody-style cooling gradient from white-hot at the head (vAge near 0) through the shell's own hue to deep
+ *  red at the tail (vAge near 1), against a faint night sky.
+ *
+ *  audioChromaHue tints the shell's base colour via hue2rgb/imgPalette (with
+ *  audioAdvance and audioValence shaping that photo-sampled palette);
+ *  audioLevel scales the streak's overall glow; audioHigh brightens the
+ *  white-hot head so dense bursts read as light rather than coloured lines;
+ *  audioAmbient lifts the background sky; audioBeat, audioSubBass and
+ *  audioKick pulse the final exposure. skyP blends a dim, low slideshow-photo
+ *  sample into the night sky background.
+ *
+ *  vKind = 1 marks the sky dome that Skyburst.comp now builds as real
+ *  geometry: an elevation gradient from a town-glow horizon up to deep zenith
+ *  blue, an underlit cloud deck, a dense twinkling star field, the lights of
+ *  the town below the horizon, and the same skyP photo blend. audioAmbient
+ *  lifts the whole dome, its town glow, its clouds and its street lights, and
+ *  audioBeat/audioSubBass pulse it with everything else.
+ *
+ *  @author René Weller
+ */
 out vec4 fragColor; ///< The pixel's colour (output).
 // Skyburst.frag — sparks are emissive, so there is no lighting here at all.
 // What there IS: a colour that cools along the trail.  A burning ember goes
@@ -11,29 +38,6 @@ in float vHue;    ///< shell hue / sky azimuth
 in float vBright; ///< Bright (from the vertex stage).
 in float vDist;   ///< Distance (from the vertex stage).
 in float vKind;   ///< 0 = spark trail, 1 = sky dome
-
-/**
- * @file Skyburst.frag
- * @brief Shades the firework spark trails built by Skyburst.comp as pure
- * emissive light (no lighting model): a blackbody-style cooling gradient
- * from white-hot at the head (vAge near 0) through the shell's own hue to
- * deep red at the tail (vAge near 1), against a faint night sky.
- *
- * audioChromaHue tints the shell's base colour via hue2rgb/imgPalette (with
- * audioAdvance and audioValence shaping that photo-sampled palette);
- * audioLevel scales the streak's overall glow; audioHigh brightens the
- * white-hot head so dense bursts read as light rather than coloured lines;
- * audioAmbient lifts the background sky; audioBeat, audioSubBass and
- * audioKick pulse the final exposure. skyP blends a dim, low slideshow-photo
- * sample into the night sky background.
- *
- * vKind = 1 marks the sky dome that Skyburst.comp now builds as real
- * geometry: an elevation gradient from a town-glow horizon up to deep zenith
- * blue, an underlit cloud deck, a dense twinkling star field, the lights of
- * the town below the horizon, and the same skyP photo blend. audioAmbient
- * lifts the whole dome, its town glow, its clouds and its street lights, and
- * audioBeat/audioSubBass pulse it with everything else.
- */
 
 uniform sampler2D tex0;          ///< The current photo.
 uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.

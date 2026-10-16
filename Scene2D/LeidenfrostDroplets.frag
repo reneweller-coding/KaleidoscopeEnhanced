@@ -1,23 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file LeidenfrostDroplets.frag
- * @brief LEIDENFROST DROPLETS: water on a plate far above its boiling
- * point -- the drops ride their own vapour and skitter about, frictionless,
- * for a long time.  Round droplets glide on smooth paths (sums of sines
- * on the scene clock), each shrinking over its life and reborn; a vapour
- * halo glows beneath each with the swell; the plate is the photo, red-hot
- * with the bass; the treble glints on the drops.  Camera fixed over the plate.
+/*****************************************************************************\
+ *                              LeidenfrostDroplets.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   sceneAdvance -> skittering paths and life phases (continuous)
- *   audioSwell   -> vapour halo (slow)
- *   audioBass    -> plate heat glow (light)
- *   audioHigh    -> drop glints (light)
- *   audioLevel   -> brightness
+ *  @brief
+ *  LEIDENFROST DROPLETS: water on a plate far above its boiling point -- the drops ride their own vapour and
+ *  skitter about, frictionless, for a long time.
  *
- * Per-activation variety: countP, sizeP, hueP.
+ *  Round droplets glide on smooth paths (sums of sines on the scene clock), each shrinking over its life and
+ *  reborn; a vapour halo glows beneath each with the swell; the plate is the photo, red-hot with the bass; the
+ *  treble glints on the drops.  Camera fixed over the plate.
+ *
+ *  Audio Reactivity:
+ *    sceneAdvance -> skittering paths and life phases (continuous)
+ *    audioSwell   -> vapour halo (slow)
+ *    audioBass    -> plate heat glow (light)
+ *    audioHigh    -> drop glints (light)
+ *    audioLevel   -> brightness
+ *
+ *  Per-activation variety: countP, sizeP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file HourglassSandFall.frag
- * @brief HOURGLASS SAND FALL: a glass running through over the scene arc.
- * The upper bulb empties as a cone whose surface sinks, the stream falls
- * through the waist as a thin column of round grains, and the lower heap
- * grows into a mound with a crater where the stream lands.  All three are
- * one function of the arc, so the glass fills and empties without a cut.
- * The lamp behind it rides the swell, the treble is the grains catching
- * the light, and the kick is a knock that jolts a few grains loose (light).
- * Camera fixed on the glass.
+/*****************************************************************************\
+ *                              HourglassSandFall.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   sceneProgress -> the glass runs through (the arc)
- *   sceneAdvance  -> the grains fall (continuous)
- *   audioSwell    -> the lamp behind (slow)
- *   audioHigh     -> grain sparkle (light)
- *   audioKick     -> a knock lights the falling column (light)
+ *  @brief
+ *  HOURGLASS SAND FALL: a glass running through over the scene arc.
  *
- * Per-activation variety: waistP, grainP, hueP.
+ *  The upper bulb empties as a cone whose surface sinks, the stream falls through the waist as a thin column of
+ *  round grains, and the lower heap grows into a mound with a crater where the stream lands.  All three are one
+ *  function of the arc, so the glass fills and empties without a cut. The lamp behind it rides the swell, the
+ *  treble is the grains catching the light, and the kick is a knock that jolts a few grains loose (light). Camera
+ *  fixed on the glass.
+ *
+ *  Audio Reactivity:
+ *    sceneProgress -> the glass runs through (the arc)
+ *    sceneAdvance  -> the grains fall (continuous)
+ *    audioSwell    -> the lamp behind (slow)
+ *    audioHigh     -> grain sparkle (light)
+ *    audioKick     -> a knock lights the falling column (light)
+ *
+ *  Per-activation variety: waistP, grainP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

@@ -1,22 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file BallisticGrapheneElectronFocussing.frag
- * @brief BALLISTIC GRAPHENE ELECTRON FOCUSSING: Veselago electron-optic lens in monolayer graphene.
- * Relativistic Dirac electrons undergo negative refraction at p-n junction interfaces, forming
- * caustic cusp focal points, Klein tunneling fringes, and quantum interference lattices.
- *   audioAdvance -> steers ballistic electron trajectory wavefronts across p-n interface
- *   audioKick    -> flashes Klein tunneling transmission focal hot-spot peaks
- *   audioSwell   -> widens electron beam caustic cusp sharpness & focal brightness
- *   audioCentroid-> shifts Fermi energy Dirac cone transition spectra
- *   audioSnare   -> triggers quantum reflection interference fringe pulses
+/*****************************************************************************\
+ *                              BallisticGrapheneElectronFocussing.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   junctionAngleP float p-n interface tilt & curvature         (0.4..1.8)
- *   focalDistP     float Veselago electron focal length          (0.3..1.2)
- *   kleinFringeP   float Klein tunneling interference density    (8.0..24.0)
- *   causticGlowP   float caustic cusp focal luminance            (0.8..2.5)
+ *  @brief
+ *  BALLISTIC GRAPHENE ELECTRON FOCUSSING: Veselago electron-optic lens in monolayer graphene.
+ *
+ *  Relativistic Dirac electrons undergo negative refraction at p-n junction interfaces, forming caustic cusp focal
+ *  points, Klein tunneling fringes, and quantum interference lattices.
+ *
+ *    audioAdvance -> steers ballistic electron trajectory wavefronts across p-n interface
+ *    audioKick    -> flashes Klein tunneling transmission focal hot-spot peaks
+ *    audioSwell   -> widens electron beam caustic cusp sharpness & focal brightness
+ *    audioCentroid-> shifts Fermi energy Dirac cone transition spectra
+ *    audioSnare   -> triggers quantum reflection interference fringe pulses
+ *
+ *  Per-activation variety:
+ *    junctionAngleP float p-n interface tilt & curvature         (0.4..1.8)
+ *    focalDistP     float Veselago electron focal length          (0.3..1.2)
+ *    kleinFringeP   float Klein tunneling interference density    (8.0..24.0)
+ *    causticGlowP   float caustic cusp focal luminance            (0.8..2.5)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

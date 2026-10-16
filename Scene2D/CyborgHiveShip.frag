@@ -1,20 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file CyborgHiveShip.frag
- * @brief CYBORG HIVE SHIP: A terrifying, claustrophobic flight through the interior
- * of a massive, geometrically perfect cyborg hive ship. Cold steel, dense greebles,
- * and scanning lasers that react to the beat.
- *   audioAdvance -> camera flight speed through the hive
- *   audioKick    -> flashes from machinery and lasers
- *   audioSwell   -> ambient interior glow and active nodes
- *   audioChromaHue-> palette offset for the hive's energy
+/*****************************************************************************\
+ *                              CyborgHiveShip.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   techP float complexity of the greebles and structures (0.5..1.5)
- *   glowP float intensity of the hive nodes (0.5..2.0)
- *   hueP float palette offset (0..6.28)
+ *  @brief
+ *  CYBORG HIVE SHIP: A terrifying, claustrophobic flight through the interior of a massive, geometrically perfect
+ *  cyborg hive ship.
+ *
+ *  Cold steel, dense greebles, and scanning lasers that react to the beat.
+ *
+ *    audioAdvance -> camera flight speed through the hive
+ *    audioKick    -> flashes from machinery and lasers
+ *    audioSwell   -> ambient interior glow and active nodes
+ *    audioChromaHue-> palette offset for the hive's energy
+ *
+ *  Per-activation variety:
+ *    techP float complexity of the greebles and structures (0.5..1.5)
+ *    glowP float intensity of the hive nodes (0.5..2.0)
+ *    hueP float palette offset (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

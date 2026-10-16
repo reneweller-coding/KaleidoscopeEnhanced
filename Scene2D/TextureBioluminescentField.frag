@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureBioluminescentField.frag
- * @brief TEXTURE BIOLUMINESCENT FIELD: a dark shore at night teeming with
- * glowing plankton -- countless tiny cyan-blue sparks lie over the dark
- * photograph, and waves of excitation sweep through them in expanding
- * rings, as if something were stirring the water: each ring lights the
- * sparks it passes, which glow and slowly fade; the photo's bright
- * structures are densely populated, glowing filaments trace its edges.
- * Endless, mirrorable.
+/*****************************************************************************\
+ *                              TextureBioluminescentField.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the field drifts (integrated, jump-free)
- *   audioKick       -> a new ring of excitation, stronger (light)
- *   audioSpread     -> how far the rings spread
- *   audioHigh       -> the sparks glitter (light)
- *   audioMode       -> colour: cyan-blue in minor, green-gold in major
- *   audioSwell      -> the filaments along the photo glow (slow)
+ *  @brief
+ *  TEXTURE BIOLUMINESCENT FIELD: a dark shore at night teeming with glowing plankton -- countless tiny cyan-blue
+ *  sparks lie over the dark photograph, and waves of excitation sweep through them in expanding rings, as if
+ *  something were stirring the water: each ring lights the sparks it passes, which glow and slowly fade; the
+ *  photo's bright structures are densely populated, glowing filaments trace its edges.
  *
- * Knobs: sparkP (spark density), ringP (ring rate), filamentP, hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the field drifts (integrated, jump-free)
+ *    audioKick       -> a new ring of excitation, stronger (light)
+ *    audioSpread     -> how far the rings spread
+ *    audioHigh       -> the sparks glitter (light)
+ *    audioMode       -> colour: cyan-blue in minor, green-gold in major
+ *    audioSwell      -> the filaments along the photo glow (slow)
+ *
+ *  Knobs: sparkP (spark density), ringP (ring rate), filamentP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

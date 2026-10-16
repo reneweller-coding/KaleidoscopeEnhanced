@@ -1,27 +1,32 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureNebulaVolume.frag
- * @brief TEXTURE NEBULA VOLUME: flying through a nebula made of the
- * photograph -- the texture is stacked in many translucent layers that
- * drift toward the camera and past it, each one a veil of glowing gas in
- * the photo's colours with dark dust lanes where the photo is dark,
- * lit from within by hidden stars that shine through as soft bright cores,
- * with sharp stars far behind.  Layers fade in from the depth and fade out
- * as they pass the camera, so the flight never ends; the field is endless
- * sideways and mirrors without seams.
+/*****************************************************************************\
+ *                              TextureNebulaVolume.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the flight through the layers (integrated, jump-free)
- *   audioSpread     -> how deep the volume reaches (layer spacing)
- *   audioRoughness  -> turbulence twisting the gas
- *   audioMode       -> the emission colour leans warm (H-alpha) in major, cool (OIII) in minor
- *   audioBass       -> the embedded stars glow (light)
- *   audioSwell      -> gas density (slow)
+ *  @brief
+ *  TEXTURE NEBULA VOLUME: flying through a nebula made of the photograph -- the texture is stacked in many
+ *  translucent layers that drift toward the camera and past it, each one a veil of glowing gas in the photo's
+ *  colours with dark dust lanes where the photo is dark, lit from within by hidden stars that shine through as soft
+ *  bright cores, with sharp stars far behind.
  *
- * Knobs: densityP (gas), colourP (photo colour vs. emission colours),
- * turbP (turbulence), hueP.
+ *  Layers fade in from the depth and fade out as they pass the camera, so the flight never ends; the field is
+ *  endless sideways and mirrors without seams.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the flight through the layers (integrated, jump-free)
+ *    audioSpread     -> how deep the volume reaches (layer spacing)
+ *    audioRoughness  -> turbulence twisting the gas
+ *    audioMode       -> the emission colour leans warm (H-alpha) in major, cool (OIII) in minor
+ *    audioBass       -> the embedded stars glow (light)
+ *    audioSwell      -> gas density (slow)
+ *
+ *  Knobs: densityP (gas), colourP (photo colour vs. emission colours),
+ *  turbP (turbulence), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

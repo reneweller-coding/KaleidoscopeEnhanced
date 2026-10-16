@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureLeafStorm.frag
- * @brief TEXTURE LEAF STORM: an autumn storm of leaves swirling toward the
- * viewer -- thousands of leaves in several depth layers tumble and spin
- * through the air on gusty spiralling winds, each leaf a small pointed
- * shape with a midrib, its colour cut from the photograph (so every photo
- * gives its own foliage), turning so it flashes its lighter underside;
- * near leaves large and soft, far ones small and many.  Endless,
- * mirrorable.
+/*****************************************************************************\
+ *                              TextureLeafStorm.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the wind carries them (integrated, jump-free)
- *   audioSpread     -> the swirl of the gusts
- *   audioKick       -> a gust brightens the leaves (light)
- *   audioMode       -> palette: cool green-blue in minor, autumn gold-red in major (tint)
- *   audioHigh       -> the undersides flash (light)
- *   audioSwell      -> the dusk light behind (slow)
+ *  @brief
+ *  TEXTURE LEAF STORM: an autumn storm of leaves swirling toward the viewer -- thousands of leaves in several depth
+ *  layers tumble and spin through the air on gusty spiralling winds, each leaf a small pointed shape with a midrib,
+ *  its colour cut from the photograph (so every photo gives its own foliage), turning so it flashes its lighter
+ *  underside; near leaves large and soft, far ones small and many.
  *
- * Knobs: densityP (leaves), sizeP (leaf size), photoP (photo colours vs. autumn), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the wind carries them (integrated, jump-free)
+ *    audioSpread     -> the swirl of the gusts
+ *    audioKick       -> a gust brightens the leaves (light)
+ *    audioMode       -> palette: cool green-blue in minor, autumn gold-red in major (tint)
+ *    audioHigh       -> the undersides flash (light)
+ *    audioSwell      -> the dusk light behind (slow)
+ *
+ *  Knobs: densityP (leaves), sizeP (leaf size), photoP (photo colours vs. autumn), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

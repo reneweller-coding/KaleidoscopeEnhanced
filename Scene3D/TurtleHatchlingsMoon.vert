@@ -1,9 +1,16 @@
 #version 330 core
-/**
- * @file TurtleHatchlingsMoon.vert
- * @brief Vertex stage for TurtleHatchlingsMoon: world positions pass
- * through (camera on the beach at the origin, +z toward the sea); id,
- * phase, kind and uv go to the fragment stage.  No camera motion.
+/*****************************************************************************\
+ *                              TurtleHatchlingsMoon.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage for TurtleHatchlingsMoon: world positions pass through (camera on the beach at the origin, +z
+ *  toward the sea); id, phase, kind and uv go to the fragment stage.
+ *
+ *  No camera motion.
+ *
+ *  @author René Weller
  */
 layout( location = 0 ) in vec4 attrA; ///< xyz = position, w = id
 layout( location = 1 ) in vec4 attrB; ///< x = phase, y = kind, zw = uv

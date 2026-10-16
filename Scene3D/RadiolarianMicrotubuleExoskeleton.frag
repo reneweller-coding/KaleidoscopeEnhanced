@@ -1,19 +1,27 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file RadiolarianMicrotubuleExoskeleton.frag
- * @brief RADIOLARIAN MICROTUBULE EXOSKELETON: Intricate geometric silica micro-exoskeleton
- * of deep-sea radiolaria. 3D compute-generated porous icosahedral lattices, radiating axopodia
- * spicules, iridescent biosilica glass refraction, and photo texturing.
- *   audioAdvance -> rotates silica skeleton lattice & axopodia fluid flow
- *   audioKick    -> flashes cytoplasmic bioluminescence & spicule tip glints
- *   audioSwell   -> swells concentric icosahedral shell radius & strut thickness
- *   audioCentroid-> shifts biosilica opal dispersion colors
+/*****************************************************************************\
+ *                              RadiolarianMicrotubuleExoskeleton.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   silicaGlowP float glass strut luminance               (0.8..2.5)
- *   opalP       float thin-film opal iridescence intensity (0.5..2.2)
+ *  @brief
+ *  RADIOLARIAN MICROTUBULE EXOSKELETON: Intricate geometric silica micro-exoskeleton of deep-sea radiolaria.
+ *
+ *  3D compute-generated porous icosahedral lattices, radiating axopodia spicules, iridescent biosilica glass
+ *  refraction, and photo texturing.
+ *
+ *    audioAdvance -> rotates silica skeleton lattice & axopodia fluid flow
+ *    audioKick    -> flashes cytoplasmic bioluminescence & spicule tip glints
+ *    audioSwell   -> swells concentric icosahedral shell radius & strut thickness
+ *    audioCentroid-> shifts biosilica opal dispersion colors
+ *
+ *  Per-activation variety:
+ *    silicaGlowP float glass strut luminance               (0.8..2.5)
+ *    opalP       float thin-film opal iridescence intensity (0.5..2.2)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec3  vPos;    ///< Position (from the vertex stage).
 in float vRadius; ///< Radius (from the vertex stage).

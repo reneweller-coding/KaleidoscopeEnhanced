@@ -1,9 +1,16 @@
 #version 330 core
-/**
- * @file FerrisWheelNight.vert
- * @brief Vertex stage for FerrisWheelNight: world positions pass through
- * (camera at the origin, +z ahead); id, aux, kind and uv go to the
- * fragment stage.  No camera motion.
+/*****************************************************************************\
+ *                              FerrisWheelNight.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage for FerrisWheelNight: world positions pass through (camera at the origin, +z ahead); id, aux, kind
+ *  and uv go to the fragment stage.
+ *
+ *  No camera motion.
+ *
+ *  @author René Weller
  */
 layout( location = 0 ) in vec4 attrA; ///< xyz = position, w = id
 layout( location = 1 ) in vec4 attrB; ///< x = aux (angle / seed / rim fraction), y = kind, zw = uv

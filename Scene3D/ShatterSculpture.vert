@@ -1,13 +1,18 @@
 #version 330 core
-/**
- * @file ShatterSculpture.vert
- * @brief Vertex stage companion to ShatterSculpture.geom/.frag -- see the
- * .frag header for this scene's description. This stage is a PASS-THROUGH:
- * it hands object-space data on unchanged, because the shatter needs each
- * triangle's centroid, and a centroid is not a property any single vertex
- * has -- it only exists once the whole triangle is in view, which is
- * exactly what the geometry stage gets. All placement and projection
- * therefore happens in ShatterSculpture.geom.
+/*****************************************************************************\
+ *                              ShatterSculpture.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to ShatterSculpture.geom/.frag -- see the .frag header for this scene's description.
+ *
+ *  This stage is a PASS-THROUGH: it hands object-space data on unchanged, because the shatter needs each triangle's
+ *  centroid, and a centroid is not a property any single vertex has -- it only exists once the whole triangle is in
+ *  view, which is exactly what the geometry stage gets. All placement and projection therefore happens in
+ *  ShatterSculpture.geom.
+ *
+ *  @author René Weller
  */
 
 in vec4 attrA; ///< mesh: xyz = object-space position, w = U.  shell: xyz = world-space position on the shell.

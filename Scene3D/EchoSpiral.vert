@@ -1,8 +1,13 @@
 #version 330 core
-/**
- * @file EchoSpiral.vert
- * @brief Vertex stage companion to EchoSpiral.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              EchoSpiral.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to EchoSpiral.frag -- see that file's header for this scene's description.
+ *
+ *  @author René Weller
  */
 // EchoSpiral.vert — WHIPPING LIGHT-SNAKES: 20 comet ribbons chase their own
 // heads along seeded 3D Lissajous orbits, each ribbon the fading TRAIL of

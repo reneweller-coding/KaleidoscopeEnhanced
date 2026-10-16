@@ -1,18 +1,25 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file QuantumChromodynamicFluxTube.frag
- * @brief QUANTUM CHROMODYNAMIC FLUX TUBE: Microscopic QCD color field visualization.
- * Relativistic gluon flux tube strings connecting color-charged quarks (Red/Green/Blue)
- * in a nucleon with non-Abelian SU(3) vacuum foam fluctuations and string tension bursts.
+/*****************************************************************************\
+ *                              QuantumChromodynamicFluxTube.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance -> drives continuous gluon flux tube vibration & quark rotation
- *   audioKick    -> flashes quark color charge singularities & flux tube string snaps
- *   audioCentroid-> modulates non-Abelian SU(3) vacuum fluctuation frequency
- *   audioSubBass -> expands nucleon color bag radius breathing
- *   audioChromaHue-> steers the fundamental RGB quark color charge spectrum
+ *  @brief
+ *  QUANTUM CHROMODYNAMIC FLUX TUBE: Microscopic QCD color field visualization.
+ *
+ *  Relativistic gluon flux tube strings connecting color-charged quarks (Red/Green/Blue) in a nucleon with
+ *  non-Abelian SU(3) vacuum foam fluctuations and string tension bursts.
+ *
+ *  Audio Reactivity:
+ *    audioAdvance -> drives continuous gluon flux tube vibration & quark rotation
+ *    audioKick    -> flashes quark color charge singularities & flux tube string snaps
+ *    audioCentroid-> modulates non-Abelian SU(3) vacuum fluctuation frequency
+ *    audioSubBass -> expands nucleon color bag radius breathing
+ *    audioChromaHue-> steers the fundamental RGB quark color charge spectrum
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

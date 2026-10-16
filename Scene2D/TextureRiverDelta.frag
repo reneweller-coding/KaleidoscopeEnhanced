@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureRiverDelta.frag
- * @brief TEXTURE RIVER DELTA: a vast river delta seen from high above --
- * braided channels split and rejoin across the land in branching threads,
- * the water catching the sky in bright silver and turquoise, milky
- * sediment plumes streaming along the channels, sandbars in pale ochre,
- * the land between them the photograph's own colours and textures,
- * darkened like wetland vegetation.  The view drifts slowly downstream.
- * Endless, mirrorable.
+/*****************************************************************************\
+ *                              TextureRiverDelta.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the drift and the sediment flow (integrated)
- *   audioSpread     -> the channels widen (flood)
- *   audioKick       -> sun glints on the water (light)
- *   audioMode       -> water: steel blue in minor, turquoise in major
- *   audioRoughness  -> more small braids
- *   audioSwell      -> the sediment plumes (slow)
+ *  @brief
+ *  TEXTURE RIVER DELTA: a vast river delta seen from high above -- braided channels split and rejoin across the
+ *  land in branching threads, the water catching the sky in bright silver and turquoise, milky sediment plumes
+ *  streaming along the channels, sandbars in pale ochre, the land between them the photograph's own colours and
+ *  textures, darkened like wetland vegetation.
  *
- * Knobs: braidP (braiding), waterP (water brightness), landP (photo on the land), hueP.
+ *  The view drifts slowly downstream. Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the drift and the sediment flow (integrated)
+ *    audioSpread     -> the channels widen (flood)
+ *    audioKick       -> sun glints on the water (light)
+ *    audioMode       -> water: steel blue in minor, turquoise in major
+ *    audioRoughness  -> more small braids
+ *    audioSwell      -> the sediment plumes (slow)
+ *
+ *  Knobs: braidP (braiding), waterP (water brightness), landP (photo on the land), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

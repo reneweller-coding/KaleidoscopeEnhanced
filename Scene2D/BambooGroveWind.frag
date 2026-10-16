@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file BambooGroveWind.frag
- * @brief BAMBOO GROVE WIND: inside a grove of tall culms, looking up the
- * green columns into the light.  A slow wave of wind on the scene clock
- * runs through the grove and every culm sways with it (bending more
- * toward the top), the leaves at the top hiss with the treble as glints,
- * the light beyond the culms (the photo) is the swell, the bass is the
- * creak as a low warm glow at the base.  Camera fixed on the path.
+/*****************************************************************************\
+ *                              BambooGroveWind.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   sceneAdvance -> the wind wave (continuous, slow)
- *   audioSwell   -> light through the leaves (slow)
- *   audioHigh    -> leaf glints (light)
- *   audioBass    -> base glow (light)
- *   audioKick    -> a gust brightens the leaves (light)
- *   audioLevel   -> brightness
+ *  @brief
+ *  BAMBOO GROVE WIND: inside a grove of tall culms, looking up the green columns into the light.
  *
- * Per-activation variety: densP, windP, hueP.
+ *  A slow wave of wind on the scene clock runs through the grove and every culm sways with it (bending more toward
+ *  the top), the leaves at the top hiss with the treble as glints, the light beyond the culms (the photo) is the
+ *  swell, the bass is the creak as a low warm glow at the base.  Camera fixed on the path.
+ *
+ *  Audio Reactivity:
+ *    sceneAdvance -> the wind wave (continuous, slow)
+ *    audioSwell   -> light through the leaves (slow)
+ *    audioHigh    -> leaf glints (light)
+ *    audioBass    -> base glow (light)
+ *    audioKick    -> a gust brightens the leaves (light)
+ *    audioLevel   -> brightness
+ *
+ *  Per-activation variety: densP, windP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

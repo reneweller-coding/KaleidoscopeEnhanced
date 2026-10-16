@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file ZellijTilework.frag
- * @brief ZELLIJ TILEWORK: a wall of Moroccan zellij -- an eight-fold star
- * pattern of cut tiles, every tile a piece of the photo in its own glaze
- * colour.  The pattern is built from the {8/3} star lattice: stars, their
- * surrounding kites and the small squares between; the whole field
- * rotates very slowly on the scene clock and drifts, the tiles light by
- * chroma class (each colour a class), the grout darkens on the bass, the
- * kick glints the glaze.  Camera fixed on the wall.
+/*****************************************************************************\
+ *                              ZellijTilework.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   sceneAdvance    -> slow rotation and drift (continuous)
- *   audioChroma[12] -> tile brightness by colour class (light)
- *   audioKick       -> glaze glint (light)
- *   audioSwell      -> courtyard light (slow)
- *   audioLevel      -> brightness
+ *  @brief
+ *  ZELLIJ TILEWORK: a wall of Moroccan zellij -- an eight-fold star pattern of cut tiles, every tile a piece of the
+ *  photo in its own glaze colour.
  *
- * Per-activation variety: scaleP, glazeP, hueP.
+ *  The pattern is built from the {8/3} star lattice: stars, their surrounding kites and the small squares between;
+ *  the whole field rotates very slowly on the scene clock and drifts, the tiles light by chroma class (each colour
+ *  a class), the grout darkens on the bass, the kick glints the glaze.  Camera fixed on the wall.
+ *
+ *  Audio Reactivity:
+ *    sceneAdvance    -> slow rotation and drift (continuous)
+ *    audioChroma[12] -> tile brightness by colour class (light)
+ *    audioKick       -> glaze glint (light)
+ *    audioSwell      -> courtyard light (slow)
+ *    audioLevel      -> brightness
+ *
+ *  Per-activation variety: scaleP, glazeP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

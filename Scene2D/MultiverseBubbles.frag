@@ -1,21 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file MultiverseBubbles.frag
- * @brief MULTIVERSE BUBBLES: Floating in the higher-dimensional 'bulk', we see
- * countless other universes drifting like massive, glowing bubbles. When they
- * collide, catastrophic flashes of energy bridge the voids between them, syncing
- * to the audio kicks.
- *   audioAdvance -> slow drift through the bulk
- *   audioKick    -> flashes when universes bump into each other
- *   audioSwell   -> ambient brightness of the multiverse
- *   audioChromaHue-> palette offset for the bulk space
+/*****************************************************************************\
+ *                              MultiverseBubbles.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   bubbleP float density and number of universes (0.5..1.5)
- *   bulkP float brightness of the higher-dimensional space (0.5..2.0)
- *   hueP float palette offset (0..6.28)
+ *  @brief
+ *  MULTIVERSE BUBBLES: Floating in the higher-dimensional 'bulk', we see countless other universes drifting like
+ *  massive, glowing bubbles.
+ *
+ *  When they collide, catastrophic flashes of energy bridge the voids between them, syncing to the audio kicks.
+ *
+ *    audioAdvance -> slow drift through the bulk
+ *    audioKick    -> flashes when universes bump into each other
+ *    audioSwell   -> ambient brightness of the multiverse
+ *    audioChromaHue-> palette offset for the bulk space
+ *
+ *  Per-activation variety:
+ *    bubbleP float density and number of universes (0.5..1.5)
+ *    bulkP float brightness of the higher-dimensional space (0.5..2.0)
+ *    hueP float palette offset (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

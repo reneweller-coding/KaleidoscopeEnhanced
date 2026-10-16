@@ -1,4 +1,26 @@
 #version 330 core
+/*****************************************************************************\
+ *                              Blueprint.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Renders the morphing body as a cyanotype drafting drawing rather than a lit object: a dark blue paper wash with
+ *  a screen-space plate grid, a fwidth-based wireframe traced from barycentric coordinates, a silhouette rim,
+ *  periodic section lines, and a plotter-style measuring sweep.
+ *
+ *  audioAmbient brightens the paper wash and its grid; audioBeat adds an
+ *  overall brightness pulse to both paper and body; audioLevel strengthens
+ *  the wireframe lines and the body's final brightness; audioHigh whitens the
+ *  ink tone slightly; audioSubBass brightens the periodic section lines;
+ *  audioKick both intensifies the body's final brightness and drives the
+ *  time-scrolling measuring sweep that races around the body on every hit;
+ *  audioChromaHue applies a small bounded blue-channel hue rotation (kept
+ *  subtle since blueprints are meant to stay blue). lineP scales wireframe
+ *  line thickness and glowP scales both wireframe and rim glow strength.
+ *
+ *  @author René Weller
+ */
 out vec4 fragColor; ///< The pixel's colour (output).
 // Blueprint.frag — the body as a drafting drawing rather than a lit object.
 // Almost nothing here is shading: the surface is a dark wash and everything
@@ -12,24 +34,6 @@ in vec3      vNormal;   ///< Surface normal (from the vertex stage).
 in vec3      vView;     ///< View vector (from the vertex stage).
 in vec2      vUV;       ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 in float     vMorph;    ///< Morph (from the vertex stage).
-
-/**
- * @file Blueprint.frag
- * @brief Renders the morphing body as a cyanotype drafting drawing rather
- * than a lit object: a dark blue paper wash with a screen-space plate grid,
- * a fwidth-based wireframe traced from barycentric coordinates, a silhouette
- * rim, periodic section lines, and a plotter-style measuring sweep.
- *
- * audioAmbient brightens the paper wash and its grid; audioBeat adds an
- * overall brightness pulse to both paper and body; audioLevel strengthens
- * the wireframe lines and the body's final brightness; audioHigh whitens the
- * ink tone slightly; audioSubBass brightens the periodic section lines;
- * audioKick both intensifies the body's final brightness and drives the
- * time-scrolling measuring sweep that races around the body on every hit;
- * audioChromaHue applies a small bounded blue-channel hue rotation (kept
- * subtle since blueprints are meant to stay blue). lineP scales wireframe
- * line thickness and glowP scales both wireframe and rim glow strength.
- */
 
 uniform sampler2D tex0;          ///< The current photo.
 uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.

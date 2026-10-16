@@ -1,9 +1,16 @@
 #version 330 core
-/**
- * @file HotAirBalloonDawn.vert
- * @brief Vertex stage for HotAirBalloonDawn: world positions pass through
- * (camera at the origin on the field, +z ahead); id, light term, kind and
- * uv go to the fragment stage.  No camera motion.
+/*****************************************************************************\
+ *                              HotAirBalloonDawn.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage for HotAirBalloonDawn: world positions pass through (camera at the origin on the field, +z ahead);
+ *  id, light term, kind and uv go to the fragment stage.
+ *
+ *  No camera motion.
+ *
+ *  @author René Weller
  */
 layout( location = 0 ) in vec4 attrA; ///< xyz = position, w = balloon id
 layout( location = 1 ) in vec4 attrB; ///< x = light term / life, y = kind, zw = uv

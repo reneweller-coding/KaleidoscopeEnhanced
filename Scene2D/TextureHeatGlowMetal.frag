@@ -1,25 +1,31 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureHeatGlowMetal.frag
- * @brief TEXTURE HEAT GLOW METAL: a steel plate with the photograph stamped
- * into it, heated by wandering torches -- where the flames play, the metal
- * glows through the incandescent colours (dull red, cherry, orange,
- * yellow, near white), the relief of the photo glowing unevenly, and
- * around each hot spot the temper colours bloom in rings (straw, bronze,
- * purple, blue) where the steel has been heated and cooled; the rest is
- * dark forged steel with a faint sheen.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              TextureHeatGlowMetal.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the torches wander (integrated, jump-free)
- *   audioBass       -> the glow flares (light)
- *   audioSpread     -> the heat spreads wider
- *   audioMode       -> fewer, hotter torches in major; more, cooler in minor (blend)
- *   audioRoughness  -> the scale texture on the steel
- *   audioSwell      -> the temper rings widen (slow)
+ *  @brief
+ *  TEXTURE HEAT GLOW METAL: a steel plate with the photograph stamped into it, heated by wandering torches -- where
+ *  the flames play, the metal glows through the incandescent colours (dull red, cherry, orange, yellow, near
+ *  white), the relief of the photo glowing unevenly, and around each hot spot the temper colours bloom in rings
+ *  (straw, bronze, purple, blue) where the steel has been heated and cooled; the rest is dark forged steel with a
+ *  faint sheen.
  *
- * Knobs: torchP (torch count), temperP (temper colours), reliefP (photo relief), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the torches wander (integrated, jump-free)
+ *    audioBass       -> the glow flares (light)
+ *    audioSpread     -> the heat spreads wider
+ *    audioMode       -> fewer, hotter torches in major; more, cooler in minor (blend)
+ *    audioRoughness  -> the scale texture on the steel
+ *    audioSwell      -> the temper rings widen (slow)
+ *
+ *  Knobs: torchP (torch count), temperP (temper colours), reliefP (photo relief), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

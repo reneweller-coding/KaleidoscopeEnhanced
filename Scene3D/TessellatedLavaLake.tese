@@ -1,14 +1,18 @@
 #version 400 core
-/**
- * @file TessellatedLavaLake.tese
- * @brief Tessellation evaluation for TessellatedLavaLake: a lava lake whose
- * crust has broken into plates (Voronoi cells) that drift slowly on the
- * scene clock over a swelling lava surface.  Each plate rides a little
- * higher than the melt between (a plateau per cell, softened at the
- * seams), and the whole surface heaves on a slow wave (amplitude on the
- * swell).  The seam distance (how close to a plate edge) goes to the
- * fragment stage: that is where the glow lives.  Projection after
- * displacement; no camera motion.
+/*****************************************************************************\
+ *                              TessellatedLavaLake.tese
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Tessellation evaluation for TessellatedLavaLake: a lava lake whose crust has broken into plates (Voronoi cells)
+ *  that drift slowly on the scene clock over a swelling lava surface.
+ *
+ *  Each plate rides a little higher than the melt between (a plateau per cell, softened at the seams), and the
+ *  whole surface heaves on a slow wave (amplitude on the swell).  The seam distance (how close to a plate edge)
+ *  goes to the fragment stage: that is where the glow lives.  Projection after displacement; no camera motion.
+ *
+ *  @author René Weller
  */
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( quads, fractional_odd_spacing, ccw ) in;

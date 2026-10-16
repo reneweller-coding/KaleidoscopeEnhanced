@@ -1,18 +1,25 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file RiemannSphereInfinityFlight.frag
- * @brief RIEMANN SPHERE INFINITY FLIGHT: Stereographic conformal flight on the
- * Riemann number sphere (S^2). Dynamic continuous plunge from zero (South Pole)
- * to infinity (North Pole) via Möbius automorphisms f(z) = (az+b)/(cz+d).
+/*****************************************************************************\
+ *                              RiemannSphereInfinityFlight.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance -> drives continuous conformal flight pole trajectory
- *   audioKick    -> flashes polar singularities & spacetime expansion burst
- *   audioCentroid-> modulates stereographic grid resolution & latitude rings
- *   audioSubBass -> expands spherical metric curvature breathing
- *   audioChromaHue-> rotates the global conformal rainbow spectrum
+ *  @brief
+ *  RIEMANN SPHERE INFINITY FLIGHT: Stereographic conformal flight on the Riemann number sphere (S^2).
+ *
+ *  Dynamic continuous plunge from zero (South Pole) to infinity (North Pole) via Möbius automorphisms f(z) =
+ *  (az+b)/(cz+d).
+ *
+ *  Audio Reactivity:
+ *    audioAdvance -> drives continuous conformal flight pole trajectory
+ *    audioKick    -> flashes polar singularities & spacetime expansion burst
+ *    audioCentroid-> modulates stereographic grid resolution & latitude rings
+ *    audioSubBass -> expands spherical metric curvature breathing
+ *    audioChromaHue-> rotates the global conformal rainbow spectrum
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

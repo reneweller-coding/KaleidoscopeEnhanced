@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureEmberBed.frag
- * @brief TEXTURE EMBER BED: looking down into a bed of glowing embers -- the
- * photograph becomes the coals: its bright parts glow orange-white hot, its
- * dark parts are black charred crust with fine glowing cracks, and waves of
- * heat breathe across the bed so the glow swells and ebbs region by region,
- * while round sparks rise and drift away, and heat shimmer wavers above.
- * Endless, mirrorable.
+/*****************************************************************************\
+ *                              TextureEmberBed.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the heat waves roll across the bed (integrated, jump-free)
- *   audioBass       -> the glow swells (light)
- *   audioSpread     -> how much of the bed is hot
- *   audioRoughness  -> the heat shimmer
- *   audioHigh       -> sparks (light)
- *   audioMode       -> temperature: deep red in minor, yellow-white in major (slow blend)
+ *  @brief
+ *  TEXTURE EMBER BED: looking down into a bed of glowing embers -- the photograph becomes the coals: its bright
+ *  parts glow orange-white hot, its dark parts are black charred crust with fine glowing cracks, and waves of heat
+ *  breathe across the bed so the glow swells and ebbs region by region, while round sparks rise and drift away, and
+ *  heat shimmer wavers above.
  *
- * Knobs: heatP (overall heat), crackP (crack network), sparksP, hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the heat waves roll across the bed (integrated, jump-free)
+ *    audioBass       -> the glow swells (light)
+ *    audioSpread     -> how much of the bed is hot
+ *    audioRoughness  -> the heat shimmer
+ *    audioHigh       -> sparks (light)
+ *    audioMode       -> temperature: deep red in minor, yellow-white in major (slow blend)
+ *
+ *  Knobs: heatP (overall heat), crackP (crack network), sparksP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

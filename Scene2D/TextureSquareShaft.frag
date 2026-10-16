@@ -1,25 +1,31 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureSquareShaft.frag
- * @brief TEXTURE SQUARE SHAFT: flying down an endless square shaft whose
- * four walls are lined with the photograph -- the shaft twists slowly
- * around its axis as it goes deeper, so the corners spiral away into the
- * distance; the corners are lit by lines of light with pulses racing
- * along them, square frames of light rush past, and the far end glows.
- * Each wall is shaded by its own angle to a slowly circling light.  The
- * walls continue beyond the frame; mirrorable.
+/*****************************************************************************\
+ *                              TextureSquareShaft.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the flight down the shaft (integrated, jump-free)
- *   audioPhase      -> the shaft's roll (integrated)
- *   audioSpread     -> how strongly the shaft twists with depth
- *   audioKick       -> pulses on the corner lines and frames (light)
- *   audioMode       -> the light: cool in minor, warm in major
- *   audioSwell      -> the glow at the far end (slow)
+ *  @brief
+ *  TEXTURE SQUARE SHAFT: flying down an endless square shaft whose four walls are lined with the photograph -- the
+ *  shaft twists slowly around its axis as it goes deeper, so the corners spiral away into the distance; the corners
+ *  are lit by lines of light with pulses racing along them, square frames of light rush past, and the far end
+ *  glows.
  *
- * Knobs: twistP, frameP (frame spacing), wallZoomP, hueP.
+ *  Each wall is shaded by its own angle to a slowly circling light.  The walls continue beyond the frame;
+ *  mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the flight down the shaft (integrated, jump-free)
+ *    audioPhase      -> the shaft's roll (integrated)
+ *    audioSpread     -> how strongly the shaft twists with depth
+ *    audioKick       -> pulses on the corner lines and frames (light)
+ *    audioMode       -> the light: cool in minor, warm in major
+ *    audioSwell      -> the glow at the far end (slow)
+ *
+ *  Knobs: twistP, frameP (frame spacing), wallZoomP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

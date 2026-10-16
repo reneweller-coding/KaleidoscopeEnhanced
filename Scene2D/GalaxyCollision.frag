@@ -1,28 +1,36 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file GalaxyCollision.frag
- * @brief Displays the compute N-body simulation of two colliding galaxies (32k gravitating bodies) as a star field with
- * a tight stellar glow and a wide galactic haze.
+/*****************************************************************************\
+ *                              GalaxyCollision.frag
+\*****************************************************************************/
+/*! @file
  *
- * texNBody holds the simulated star field; this pass adds a two-scale halo, a near one for star glow and a far one for
- * galactic dust haze, and grades the result. The photo appears only as a heavily darkened deep-space backdrop showing
- * through the sparser regions.
+ *  @brief
+ *  Displays the compute N-body simulation of two colliding galaxies (32k gravitating bodies) as a star field with a
+ *  tight stellar glow and a wide galactic haze.
  *
- * Audio Reactivity:
- *  - audioSubBass -> widens the far halo and pulses the whole field like a slow breath
- *  - audioBeat    -> adds to that pulse
- *  - audioDrop    -> flashes the star cores white-hot on a drop
- *  - audioSpread  -> DUST DISPERSION: a narrow spectrum keeps the galactic haze tight
- *                    around the arms, a wide, harmonically rich one lets it sprawl far
- *                    out into intergalactic space
- *  - audioRolloff -> STELLAR COLOUR TEMPERATURE: bass-bound music reddens the field
- *                    into old giants, energy reaching into the highs turns it into
- *                    blue-hot young stars
- *  - audioTrebRel -> STAR-GLOW PUNCH: the tight halo's weight rides the treble's
- *                    instant/slow-average ratio, so cymbals and shimmer make the
- *                    individual stars flare and a dull passage lets them recede
+ *  texNBody holds the simulated star field; this pass adds a two-scale halo, a near one for star glow and a far one
+ *  for
+ *  galactic dust haze, and grades the result. The photo appears only as a heavily darkened deep-space backdrop
+ *  showing
+ *  through the sparser regions.
+ *
+ *  Audio Reactivity:
+ *   - audioSubBass -> widens the far halo and pulses the whole field like a slow breath
+ *   - audioBeat    -> adds to that pulse
+ *   - audioDrop    -> flashes the star cores white-hot on a drop
+ *   - audioSpread  -> DUST DISPERSION: a narrow spectrum keeps the galactic haze tight
+ *                     around the arms, a wide, harmonically rich one lets it sprawl far
+ *                     out into intergalactic space
+ *   - audioRolloff -> STELLAR COLOUR TEMPERATURE: bass-bound music reddens the field
+ *                     into old giants, energy reaching into the highs turns it into
+ *                     blue-hot young stars
+ *   - audioTrebRel -> STAR-GLOW PUNCH: the tight halo's weight rides the treble's
+ *                     instant/slow-average ratio, so cymbals and shimmer make the
+ *                     individual stars flare and a dull passage lets them recede
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 // GalaxyCollision.frag — 32k gravitating bodies from the compute N-body sim.
 // Star fields need the opposite grading from a fluid: tiny bright points with
 // long soft halos, so the bloom here is wide and the core is left sharp.

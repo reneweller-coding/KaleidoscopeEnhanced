@@ -1,30 +1,35 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SeamCarvingRetarget.frag
- * @brief TRANSITION SEAM CARVING RETARGET: seams of lowest energy are taken out
- * of the outgoing scene and seams of the incoming one are pushed in, so the
- * frame is squeezed together unevenly -- quiet areas vanish first and edges
- * hold their ground.
+/*****************************************************************************\
+ *                              SeamCarvingRetarget.frag
+\*****************************************************************************/
+/*! @file
  *
- * The point of seam carving is that it is CONTENT AWARE: it does not scale, it
- * removes the paths a picture can least afford to lose.  So the compression
- * here is driven by an energy profile measured from the picture itself -- the
- * gradient magnitude accumulated down each column -- and the displacement at a
- * point is how much low-energy width lies to its left.  A uniform squeeze would
- * be a scale, which is exactly the thing seam carving exists to avoid.
+ *  @brief
+ *  TRANSITION SEAM CARVING RETARGET: seams of lowest energy are taken out of the outgoing scene and seams of the
+ *  incoming one are pushed in, so the frame is squeezed together unevenly -- quiet areas vanish first and edges
+ *  hold their ground.
  *
- * The two pictures are carved in opposite directions: the outgoing one loses
- * seams and pulls together, the incoming one gains them and opens out, so at
- * the middle of the turn both are distorted and the join is invisible.
+ *  The point of seam carving is that it is CONTENT AWARE: it does not scale, it
+ *  removes the paths a picture can least afford to lose.  So the compression
+ *  here is driven by an energy profile measured from the picture itself -- the
+ *  gradient magnitude accumulated down each column -- and the displacement at a
+ *  point is how much low-energy width lies to its left.  A uniform squeeze would
+ *  be a scale, which is exactly the thing seam carving exists to avoid.
  *
- * Audio Reactivity:
- *   audioFlux -> the carving rate: how many seams go per moment (slow)
- *   audioHigh -> the light along a seam as it closes (light)
- *   audioSwell -> how far the frame is retargeted (slow)
+ *  The two pictures are carved in opposite directions: the outgoing one loses
+ *  seams and pulls together, the incoming one gains them and opens out, so at
+ *  the middle of the turn both are distorted and the join is invisible.
  *
- * Per-activation variety: energyP, amountP, hueP.
+ *  Audio Reactivity:
+ *    audioFlux -> the carving rate: how many seams go per moment (slow)
+ *    audioHigh -> the light along a seam as it closes (light)
+ *    audioSwell -> how far the frame is retargeted (slow)
+ *
+ *  Per-activation variety: energyP, amountP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

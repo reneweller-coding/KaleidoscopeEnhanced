@@ -1,25 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file WaterfallTunnel.frag
- * @brief WATERFALL TUNNEL: flying down a tunnel whose walls are falling
- * water -- sheets of water stream along the walls toward us, the
- * photograph behind them smeared and rippling through the flow, foam
- * streaks and white spray lines racing past, droplets glinting, and a
- * bright mist glowing at the far end.  The water keeps flowing even when
- * the flight slows.  Endless, mirrorable; the walls continue beyond the
- * frame.
+/*****************************************************************************\
+ *                              WaterfallTunnel.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the flight (integrated, jump-free)
- *   audioSpread     -> the water flows faster and wilder
- *   audioKick       -> the spray flashes (light)
- *   audioMode       -> the water: cold glacial in minor, warm sunlit in major
- *   audioHigh       -> droplets glint (light)
- *   audioSwell      -> the mist at the end (slow)
+ *  @brief
+ *  WATERFALL TUNNEL: flying down a tunnel whose walls are falling water -- sheets of water stream along the walls
+ *  toward us, the photograph behind them smeared and rippling through the flow, foam streaks and white spray lines
+ *  racing past, droplets glinting, and a bright mist glowing at the far end.
  *
- * Knobs: foamP (foam streaks), clarityP (how clearly the photo shows), twistP (the flow spirals), hueP.
+ *  The water keeps flowing even when the flight slows.  Endless, mirrorable; the walls continue beyond the frame.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the flight (integrated, jump-free)
+ *    audioSpread     -> the water flows faster and wilder
+ *    audioKick       -> the spray flashes (light)
+ *    audioMode       -> the water: cold glacial in minor, warm sunlit in major
+ *    audioHigh       -> droplets glint (light)
+ *    audioSwell      -> the mist at the end (slow)
+ *
+ *  Knobs: foamP (foam streaks), clarityP (how clearly the photo shows), twistP (the flow spirals), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

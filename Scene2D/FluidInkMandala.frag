@@ -1,26 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file FluidInkMandala.frag
- * @brief FLUID INK MANDALA: the Navier-Stokes dye field (texFluid) laid
- * into concentric rings, each ring an n-fold mirror of a wedge of the ink
- * and each ring turning against its neighbours.  The ink is real fluid --
- * it curls, tears and mixes on its own -- and the mandala only orders it,
- * so the ornament is never the same twice.  Onsets send ripples out from
- * the centre through every ring; the stereo balance decides which side of
- * the dye field the rings draw from, so a panned part shifts the whole
- * mandala's source.
+/*****************************************************************************\
+ *                              FluidInkMandala.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   texFluid          -> the ink (audio-driven simulation)
- *   audioOnset        -> ripples outward (envelope on a continuous phase)
- *   audioStereoL / R  -> ring tint balance
- *   audioBeat         -> ring seams glow
- *   sceneAdvance      -> ring rotation, alternating, continuous
- *   audioKick         -> centre pulse
+ *  @brief
+ *  FLUID INK MANDALA: the Navier-Stokes dye field (texFluid) laid into concentric rings, each ring an n-fold mirror
+ *  of a wedge of the ink and each ring turning against its neighbours.
  *
- * Per-activation variety: ringsP (ring count), sidesP (fold count), hueP.
+ *  The ink is real fluid -- it curls, tears and mixes on its own -- and the mandala only orders it, so the ornament
+ *  is never the same twice.  Onsets send ripples out from the centre through every ring; the stereo balance decides
+ *  which side of the dye field the rings draw from, so a panned part shifts the whole mandala's source.
+ *
+ *  Audio Reactivity:
+ *    texFluid          -> the ink (audio-driven simulation)
+ *    audioOnset        -> ripples outward (envelope on a continuous phase)
+ *    audioStereoL / R  -> ring tint balance
+ *    audioBeat         -> ring seams glow
+ *    sceneAdvance      -> ring rotation, alternating, continuous
+ *    audioKick         -> centre pulse
+ *
+ *  Per-activation variety: ringsP (ring count), sidesP (fold count), hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

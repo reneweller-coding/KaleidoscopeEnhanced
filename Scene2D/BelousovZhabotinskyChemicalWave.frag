@@ -1,22 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file BelousovZhabotinskyChemicalWave.frag
- * @brief BELOUSOV-ZHABOTINSKY CHEMICAL WAVE: Classic Belousov-Zhabotinsky (BZ) non-equilibrium
- * chemical oscillator. Spontaneous formation of rotating Archimedean spiral waves and concentric
- * target patterns undergoing mutual wave annihilation with photo-derived redox color gradients.
- *   audioAdvance -> drives chemical reaction diffusion phase rotation velocity
- *   audioKick    -> flashes autocatalytic oxidation wave burst fronts
- *   audioSwell   -> broadens chemical diffusion wave thickness & redox contrast
- *   audioCentroid-> shifts ferroin catalyst oxidation-reduction (red-blue) spectra
- *   audioPhase   -> modulates spiral core precession & wave front curvature
+/*****************************************************************************\
+ *                              BelousovZhabotinskyChemicalWave.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   spiralDensityP float number of active chemical spiral centers (2.0..8.0)
- *   waveSpeedP     float chemical wavefront propagation velocity (0.6..2.2)
- *   curvP          float Archimedean spiral wave curvature       (4.0..16.0)
- *   redoxContrastP float chemical oxidation contrast             (0.8..2.5)
+ *  @brief
+ *  BELOUSOV-ZHABOTINSKY CHEMICAL WAVE: Classic Belousov-Zhabotinsky (BZ) non-equilibrium chemical oscillator.
+ *
+ *  Spontaneous formation of rotating Archimedean spiral waves and concentric target patterns undergoing mutual wave
+ *  annihilation with photo-derived redox color gradients.
+ *
+ *    audioAdvance -> drives chemical reaction diffusion phase rotation velocity
+ *    audioKick    -> flashes autocatalytic oxidation wave burst fronts
+ *    audioSwell   -> broadens chemical diffusion wave thickness & redox contrast
+ *    audioCentroid-> shifts ferroin catalyst oxidation-reduction (red-blue) spectra
+ *    audioPhase   -> modulates spiral core precession & wave front curvature
+ *
+ *  Per-activation variety:
+ *    spiralDensityP float number of active chemical spiral centers (2.0..8.0)
+ *    waveSpeedP     float chemical wavefront propagation velocity (0.6..2.2)
+ *    curvP          float Archimedean spiral wave curvature       (4.0..16.0)
+ *    redoxContrastP float chemical oxidation contrast             (0.8..2.5)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

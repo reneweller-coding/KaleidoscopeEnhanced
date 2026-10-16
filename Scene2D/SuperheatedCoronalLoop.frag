@@ -1,12 +1,19 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SuperheatedCoronalLoop.frag
- * @brief SUPERHEATED CORONAL LOOP: 100% viewport-filling volumetric view of
- * solar coronal magnetic loops anchored in boiling photospheric convection
- * granules. Explosive magnetic reconnection flares, high-temperature
- * plasma fountains, coronal rain, and solar photo granulation.
+/*****************************************************************************\
+ *                              SuperheatedCoronalLoop.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  SUPERHEATED CORONAL LOOP: 100% viewport-filling volumetric view of solar coronal magnetic loops anchored in
+ *  boiling photospheric convection granules.
+ *
+ *  Explosive magnetic reconnection flares, high-temperature plasma fountains, coronal rain, and solar photo
+ *  granulation.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

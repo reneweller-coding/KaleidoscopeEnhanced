@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file DyedIceMelt.frag
- * @brief DYED ICE MELT: ice-dyeing seen from above -- a heap of ice crystals
- * sprinkled with powdered dyes melts slowly, and the coloured meltwater
- * seeps outward in crystalline, feathery blooms, the dyes splitting into
- * their component colours along the fronts (a purple breaking into blue
- * and magenta), pooling in intense spots, soaking into a white fabric
- * whose weave shows through.  The dye colours come from the photograph.
- * Endless, mirrorable.
+/*****************************************************************************\
+ *                              DyedIceMelt.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the melt spreads (integrated, jump-free)
- *   audioSpread     -> bloom size
- *   audioKick       -> the wet fronts gleam (light)
- *   audioMode       -> dyes: cool in minor, warm in major (tint)
- *   audioRoughness  -> the fronts get more feathery
- *   audioSwell      -> colour intensity (slow)
+ *  @brief
+ *  DYED ICE MELT: ice-dyeing seen from above -- a heap of ice crystals sprinkled with powdered dyes melts slowly,
+ *  and the coloured meltwater seeps outward in crystalline, feathery blooms, the dyes splitting into their
+ *  component colours along the fronts (a purple breaking into blue and magenta), pooling in intense spots, soaking
+ *  into a white fabric whose weave shows through.
  *
- * Knobs: bloomP (bloom count), splitP (colour splitting), fabricP (fabric weave), hueP.
+ *  The dye colours come from the photograph. Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the melt spreads (integrated, jump-free)
+ *    audioSpread     -> bloom size
+ *    audioKick       -> the wet fronts gleam (light)
+ *    audioMode       -> dyes: cool in minor, warm in major (tint)
+ *    audioRoughness  -> the fronts get more feathery
+ *    audioSwell      -> colour intensity (slow)
+ *
+ *  Knobs: bloomP (bloom count), splitP (colour splitting), fabricP (fabric weave), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

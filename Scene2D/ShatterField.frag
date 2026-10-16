@@ -1,19 +1,26 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file ShatterField.frag
- * @brief The photo blown apart into 1300 rigid shards (posed upstream in
- *        texShards) that spring back together, with the gaps between them
- *        falling away to near-black.
+/*****************************************************************************\
+ *                              ShatterField.frag
+\*****************************************************************************/
+/*! @file
  *
- * This pass only grades the shard sim's output and lights the cracks: it
- * reads the coverage mask's gradient to find every break line and adds a
- * rim-light glow there, tinted by imgPalette (a rotating sample arc over the
- * live photo, itself driven by audioChromaHue/audioAdvance and saturated by
- * audioValence). That rim glow is scaled by glowP and pulses with audioKick,
- * sparkles white with audioHigh, flashes fully on audioDrop, and the whole
- * frame brightens with audioBeat. voidP darkens the gaps between shards.
+ *  @brief
+ *  The photo blown apart into 1300 rigid shards (posed upstream in
+ *
+ *         texShards) that spring back together, with the gaps between them
+ *         falling away to near-black.
+ *
+ *  This pass only grades the shard sim's output and lights the cracks: it
+ *  reads the coverage mask's gradient to find every break line and adds a
+ *  rim-light glow there, tinted by imgPalette (a rotating sample arc over the
+ *  live photo, itself driven by audioChromaHue/audioAdvance and saturated by
+ *  audioValence). That rim glow is scaled by glowP and pulses with audioKick,
+ *  sparkles white with audioHigh, flashes fully on audioDrop, and the whole
+ *  frame brightens with audioBeat. voidP darkens the gaps between shards.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 // back together.  Blend/CfxShardStep.comp holds each shard's pose and splats
 // its own patch of the photo wherever it currently is; this pass only grades
 // the result and lights the cracks.

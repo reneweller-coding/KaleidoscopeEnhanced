@@ -1,13 +1,19 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file HyperDimensionalTesseractTunnel.frag
- * @brief HYPER DIMENSIONAL TESSERACT TUNNEL: 100% viewport-filling 4D hypercube
- * lattice rotating simultaneously across all 6 orthogonal Euclidean planes
- * (XY, XZ, XW, YZ, YW, ZW) and projected into a 3D perspective warp tunnel.
- * Infinite recursive interior mirror reflections, glowing neon hyper-edges,
- * multi-angle photo texturing on 4D hyper-faces, and hyperspace warp flow.
+/*****************************************************************************\
+ *                              HyperDimensionalTesseractTunnel.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  HYPER DIMENSIONAL TESSERACT TUNNEL: 100% viewport-filling 4D hypercube lattice rotating simultaneously across
+ *  all 6 orthogonal Euclidean planes (XY, XZ, XW, YZ, YW, ZW) and projected into a 3D perspective warp tunnel.
+ *
+ *  Infinite recursive interior mirror reflections, glowing neon hyper-edges, multi-angle photo texturing on 4D
+ *  hyper-faces, and hyperspace warp flow.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

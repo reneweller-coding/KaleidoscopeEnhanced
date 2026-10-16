@@ -1,25 +1,32 @@
 #version 330 core
-/**
- * @file Dissolve.geom
- * @brief The model's own surface becomes the particle set: every triangle is
- * replaced by one camera-facing splat sitting at its centre. The object exhales
- * itself into a cloud and draws it back in.
+/*****************************************************************************\
+ *                              Dissolve.geom
+\*****************************************************************************/
+/*! @file
  *
- * This is a different thing from ShatterSculpture and from Assembly. Those move
- * rigid CHUNKS -- pieces with edges, which stay recognisable as parts of the
- * object. Here the object becomes a continuum: no piece survives, only the
- * density does, and the silhouette persists as a shape made of dust rather than
- * as a broken solid.
+ *  @brief
+ *  The model's own surface becomes the particle set: every triangle is replaced by one camera-facing splat sitting
+ *  at its centre.
  *
- * No compute shader and no particle buffer is involved. A 150k-triangle mesh
- * already IS a 150k-point set, evenly distributed over the surface by
- * construction, and the geometry stage can read it straight from the same VBO
- * every other mesh family draws. The particle count is therefore the model's
- * own triangle count, and it costs one extra primitive per triangle.
+ *  The object exhales itself into a cloud and draws it back in.
  *
- * Drift is a curl-like field built from cheap noise, so the cloud swirls
- * instead of expanding radially -- radial dispersal reads as an explosion, and
- * an explosion has a cause. This should read as breathing.
+ *  This is a different thing from ShatterSculpture and from Assembly. Those move
+ *  rigid CHUNKS -- pieces with edges, which stay recognisable as parts of the
+ *  object. Here the object becomes a continuum: no piece survives, only the
+ *  density does, and the silhouette persists as a shape made of dust rather than
+ *  as a broken solid.
+ *
+ *  No compute shader and no particle buffer is involved. A 150k-triangle mesh
+ *  already IS a 150k-point set, evenly distributed over the surface by
+ *  construction, and the geometry stage can read it straight from the same VBO
+ *  every other mesh family draws. The particle count is therefore the model's
+ *  own triangle count, and it costs one extra primitive per triangle.
+ *
+ *  Drift is a curl-like field built from cheap noise, so the cloud swirls
+ *  instead of expanding radially -- radial dispersal reads as an explosion, and
+ *  an explosion has a cause. This should read as breathing.
+ *
+ *  @author René Weller
  */
 
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).

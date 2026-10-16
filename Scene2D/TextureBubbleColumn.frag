@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureBubbleColumn.frag
- * @brief TEXTURE BUBBLE COLUMN: columns of rising bubbles in a dark aquarium
- * -- streams of bubbles of every size well up from below in wavering
- * columns, big ones wobbling and flattening as they rise, small ones
- * racing in tight spirals, each bubble a little mirror with a bright rim
- * and a highlight, catching and bending the coloured light of the
- * photograph behind the glass.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              TextureBubbleColumn.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the bubbles rise (integrated, jump-free)
- *   audioSpread     -> the columns spread into plumes
- *   audioKick       -> the rims flash (light)
- *   audioMode       -> the water: blue in minor, green-gold in major
- *   audioHigh       -> the small bubbles sparkle (light)
- *   audioSwell      -> the light behind (slow)
+ *  @brief
+ *  TEXTURE BUBBLE COLUMN: columns of rising bubbles in a dark aquarium -- streams of bubbles of every size well up
+ *  from below in wavering columns, big ones wobbling and flattening as they rise, small ones racing in tight
+ *  spirals, each bubble a little mirror with a bright rim and a highlight, catching and bending the coloured light
+ *  of the photograph behind the glass.
  *
- * Knobs: columnP (column spacing), sizeP (bubble size), lensP (lens effect), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the bubbles rise (integrated, jump-free)
+ *    audioSpread     -> the columns spread into plumes
+ *    audioKick       -> the rims flash (light)
+ *    audioMode       -> the water: blue in minor, green-gold in major
+ *    audioHigh       -> the small bubbles sparkle (light)
+ *    audioSwell      -> the light behind (slow)
+ *
+ *  Knobs: columnP (column spacing), sizeP (bubble size), lensP (lens effect), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

@@ -1,24 +1,33 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file MagnetoRotationalHypernovaInstability.frag
- * @brief MAGNETOROTATIONAL HYPERNOVA INSTABILITY: Relativistic bipolar plasma jets launched
- * by core collapse in rapidly rotating magnetized hypernovae, wrapped by a frame-spanning
- * accretion torus and set against a far field of ejecta. Helical magnetic flux tubes,
- * Alfven wave turbulences, magnetic reconnection flares, and synchrotron photo texturing.
- *   audioAdvance -> accelerates helical magnetic jet outflow & rotation rate, and drifts the
- *                   far ejecta
- *   audioKick    -> ignites explosive magnetic reconnection flash detonations, and twinkles
- *                   the ejecta
- *   audioBass    -> pulses accretion torus diameter & magnetosphere envelope
- *   audioSwell   -> thickens relativistic plasma jet filament core glow & brightens the ejecta
- *   audioCentroid-> shifts synchrotron radiation emission spectra
+/*****************************************************************************\
+ *                              MagnetoRotationalHypernovaInstability.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   jetGlowP  float plasma jet filament luminance          (0.8..2.5)
- *   reconnP   float magnetic reconnection burst intensity   (0.5..2.2)
- *   coreRadP  float stellar core accretion torus brightness (0.6..2.0)
+ *  @brief
+ *  MAGNETOROTATIONAL HYPERNOVA INSTABILITY: Relativistic bipolar plasma jets launched by core collapse in rapidly
+ *  rotating magnetized hypernovae, wrapped by a frame-spanning accretion torus and set against a far field of
+ *  ejecta.
+ *
+ *  Helical magnetic flux tubes, Alfven wave turbulences, magnetic reconnection flares, and synchrotron photo
+ *  texturing.
+ *
+ *    audioAdvance -> accelerates helical magnetic jet outflow & rotation rate, and drifts the
+ *                    far ejecta
+ *    audioKick    -> ignites explosive magnetic reconnection flash detonations, and twinkles
+ *                    the ejecta
+ *    audioBass    -> pulses accretion torus diameter & magnetosphere envelope
+ *    audioSwell   -> thickens relativistic plasma jet filament core glow & brightens the ejecta
+ *    audioCentroid-> shifts synchrotron radiation emission spectra
+ *
+ *  Per-activation variety:
+ *    jetGlowP  float plasma jet filament luminance          (0.8..2.5)
+ *    reconnP   float magnetic reconnection burst intensity   (0.5..2.2)
+ *    coreRadP  float stellar core accretion torus brightness (0.6..2.0)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec3  vPos;     ///< Position (from the vertex stage).
 in float vFluxIdx; ///< Flux idx (from the vertex stage).

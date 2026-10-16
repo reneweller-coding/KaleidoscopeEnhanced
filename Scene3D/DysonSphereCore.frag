@@ -1,20 +1,27 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file DysonSphereCore.frag
- * @brief DYSON SPHERE CORE: Huge panels and spires of a megastructure surrounding
- * a central star. The geometry is built from instances, and shaded with intricate
- * tech patterns and emissive energy lines.
- *   audioAdvance -> rotation of the structure and camera travel
- *   audioKick    -> flashes from energy conduits
- *   audioSwell   -> ambient illumination and star brightness
- *   audioChromaHue-> color palette follows the musical key
+/*****************************************************************************\
+ *                              DysonSphereCore.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   panelP float panel density/size (0.7..1.5)
- *   energyP float brightness of energy lines (0.6..1.8)
- *   hueP float palette offset (0..6.28)
+ *  @brief
+ *  DYSON SPHERE CORE: Huge panels and spires of a megastructure surrounding a central star.
+ *
+ *  The geometry is built from instances, and shaded with intricate tech patterns and emissive energy lines.
+ *
+ *    audioAdvance -> rotation of the structure and camera travel
+ *    audioKick    -> flashes from energy conduits
+ *    audioSwell   -> ambient illumination and star brightness
+ *    audioChromaHue-> color palette follows the musical key
+ *
+ *  Per-activation variety:
+ *    panelP float panel density/size (0.7..1.5)
+ *    energyP float brightness of energy lines (0.6..1.8)
+ *    hueP float palette offset (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform float time;           ///< Seconds since the program started (never reset; see sceneTime).
 uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs

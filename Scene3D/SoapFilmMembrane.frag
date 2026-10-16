@@ -1,28 +1,33 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SoapFilmMembrane.frag
- * @brief SOAP FILM MEMBRANE: a soap film in a frame, filling the view.  Its
- * colour is thin-film interference from the thickness the evaluation stage
- * computed: the film drains over the scene arc, so the bands of colour
- * creep downward as they do on a real bubble, the black film appearing at
- * the top near the end.  The photo is reflected in the film (it is a
- * mirror) and seen through it, dimmer; the treble is the shimmer of the
- * thinnest zones, the kick a flash of the frame light.  Camera still.
+/*****************************************************************************\
+ *                              SoapFilmMembrane.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSwell    -> ripple amplitude (evaluation stage, slow)
- *   sceneProgress -> drainage (evaluation stage, the arc)
- *   audioHigh     -> shimmer (light)
- *   audioKick     -> frame-light flash (light)
- *   audioLevel    -> brightness
+ *  @brief
+ *  SOAP FILM MEMBRANE: a soap film in a frame, filling the view.
  *
- * Per-activation variety: detailP, modesP, drainP, hueP.
+ *  Its colour is thin-film interference from the thickness the evaluation stage computed: the film drains over the
+ *  scene arc, so the bands of colour creep downward as they do on a real bubble, the black film appearing at the
+ *  top near the end.  The photo is reflected in the film (it is a mirror) and seen through it, dimmer; the treble
+ *  is the shimmer of the thinnest zones, the kick a flash of the frame light.  Camera still.
+ *
+ *  Audio Reactivity:
+ *    audioSwell    -> ripple amplitude (evaluation stage, slow)
+ *    sceneProgress -> drainage (evaluation stage, the arc)
+ *    audioHigh     -> shimmer (light)
+ *    audioKick     -> frame-light flash (light)
+ *    audioLevel    -> brightness
+ *
+ *  Per-activation variety: detailP, modesP, drainP, hueP.
+ *
+ *  @author René Weller
  */
-in vec3  vWorld;  ///< World position (from the vertex stage).
-in vec2  vSurfUV; ///< Surf UV (from the vertex stage).
-in vec3  vNormal; ///< Surface normal (from the vertex stage).
-in float vThick;  ///< Thick (from the vertex stage).
+out vec4 fragColor; ///< The pixel's colour (output).
+in vec3  vWorld;    ///< World position (from the vertex stage).
+in vec2  vSurfUV;   ///< Surf UV (from the vertex stage).
+in vec3  vNormal;   ///< Surface normal (from the vertex stage).
+in float vThick;    ///< Thick (from the vertex stage).
 
 uniform sampler2D tex0;          ///< The current photo.
 uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).

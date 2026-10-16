@@ -1,25 +1,31 @@
 #version 330 core
-/**
- * @file Accumulate.frag
- * @brief Scaled texture copy, used for the recorder's motion-blur accumulation.
+/*****************************************************************************\
+ *                              Accumulate.frag
+\*****************************************************************************/
+/*! @file
  *
- * Two passes share this one shader, differing only in `scale` and blend state:
+ *  @brief
+ *  Scaled texture copy, used for the recorder's motion-blur accumulation.
  *
- *   ACCUMULATE  additive blending, scale = 1.0
- *               Every rendered frame is summed into an RGBA16F buffer. Float
- *               is not optional here: at 120 Hz into a 30 fps recording, four
- *               frames are summed, and an 8-bit target would clip anything
- *               above a quarter brightness into flat white.
+ *  Two passes share this one shader, differing only in `scale` and blend state:
  *
- *   RESOLVE     no blending, scale = 1/N
- *               Divides the sum by however many frames actually went in, into
- *               an 8-bit target the readback then reads. N is the measured
- *               count, not the nominal one, so a dropped or extra render frame
- *               changes the exposure of nothing.
+ *    ACCUMULATE  additive blending, scale = 1.0
+ *                Every rendered frame is summed into an RGBA16F buffer. Float
+ *                is not optional here: at 120 Hz into a 30 fps recording, four
+ *                frames are summed, and an 8-bit target would clip anything
+ *                above a quarter brightness into flat white.
  *
- * The result is a true temporal box filter over the capture interval, which is
- * what a camera shutter does -- and it costs no extra rendering, because those
- * frames were being drawn and thrown away already.
+ *    RESOLVE     no blending, scale = 1/N
+ *                Divides the sum by however many frames actually went in, into
+ *                an 8-bit target the readback then reads. N is the measured
+ *                count, not the nominal one, so a dropped or extra render frame
+ *                changes the exposure of nothing.
+ *
+ *  The result is a true temporal box filter over the capture interval, which is
+ *  what a camera shutter does -- and it costs no extra rendering, because those
+ *  frames were being drawn and thrown away already.
+ *
+ *  @author René Weller
  */
 uniform sampler2D tex;   ///< The input picture.
 uniform float     scale; ///< Weight of the frame (1 while accumulating, 1/n when resolving).

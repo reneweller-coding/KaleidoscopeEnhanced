@@ -1,18 +1,25 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file HopfFibrationStreamlines.frag
- * @brief HOPF FIBRATION STREAMLINES: 4D-to-3D Hopf Fibration (S3 -> S2) raymarching.
- * Luminous interlocking linked fiber tori, relativistic circular streamlines,
- * and high-velocity electric pulse cascades.
+/*****************************************************************************\
+ *                              HopfFibrationStreamlines.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance -> drives continuous circular stream flow along fiber links
- *   audioKick    -> flashes fiber linkage nodes & expands fiber tube radius
- *   audioCentroid-> modulates fiber density & fine stream resolution
- *   audioSubBass -> expands fiber bundle breathing
- *   audioChromaHue-> rotates the luminous Hopf fiber spectrum
+ *  @brief
+ *  HOPF FIBRATION STREAMLINES: 4D-to-3D Hopf Fibration (S3 -> S2) raymarching.
+ *
+ *  Luminous interlocking linked fiber tori, relativistic circular streamlines, and high-velocity electric pulse
+ *  cascades.
+ *
+ *  Audio Reactivity:
+ *    audioAdvance -> drives continuous circular stream flow along fiber links
+ *    audioKick    -> flashes fiber linkage nodes & expands fiber tube radius
+ *    audioCentroid-> modulates fiber density & fine stream resolution
+ *    audioSubBass -> expands fiber bundle breathing
+ *    audioChromaHue-> rotates the luminous Hopf fiber spectrum
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

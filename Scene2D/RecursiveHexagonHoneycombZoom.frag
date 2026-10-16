@@ -1,29 +1,34 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file RecursiveHexagonHoneycombZoom.frag
- * @brief RECURSIVE HEXAGON HONEYCOMB: a macro photograph of a honeycomb.
- * Pale wax walls in their hexagon lattice; cells brimming with amber honey
- * that catches the light in a bright glint, cells sealed under matte wax
- * caps, a few empty ones showing the depth of the cell.  Bees crawl over
- * the comb on their own unhurried paths, round-bodied, banded, their wings
- * a shimmer.  The view drifts slowly across the comb and settles ever
- * deeper -- a gentle, constant approach, with each hexagon repeating the
- * one before.  The music is the light in the honey.
+/*****************************************************************************\
+ *                              RecursiveHexagonHoneycombZoom.frag
+\*****************************************************************************/
+/*! @file
  *
- * The earlier version was a neon log-zoom of hexagon lines with shatter
- * flashes (audio driving the zoom) -- the kind of motion the catalogue
- * avoids and little to look at.
+ *  @brief
+ *  RECURSIVE HEXAGON HONEYCOMB: a macro photograph of a honeycomb.
  *
- * Audio Reactivity:
- *   audioSwell    -> the warm light on the comb (slow)
- *   audioKick     -> glints in the honey (light only)
- *   audioChromaHue-> photo tint of the honey
- *   sceneTime/sceneAdvance -> drift, approach, bees (continuous)
+ *  Pale wax walls in their hexagon lattice; cells brimming with amber honey that catches the light in a bright
+ *  glint, cells sealed under matte wax caps, a few empty ones showing the depth of the cell.  Bees crawl over the
+ *  comb on their own unhurried paths, round-bodied, banded, their wings a shimmer.  The view drifts slowly across
+ *  the comb and settles ever deeper -- a gentle, constant approach, with each hexagon repeating the one before.
+ *  The music is the light in the honey.
  *
- * Per-activation variety: speedP (drift and bees), scaleP (cell size),
- * wallWidthP, glowP (honey glow), hueP.
+ *  The earlier version was a neon log-zoom of hexagon lines with shatter
+ *  flashes (audio driving the zoom) -- the kind of motion the catalogue
+ *  avoids and little to look at.
+ *
+ *  Audio Reactivity:
+ *    audioSwell    -> the warm light on the comb (slow)
+ *    audioKick     -> glints in the honey (light only)
+ *    audioChromaHue-> photo tint of the honey
+ *    sceneTime/sceneAdvance -> drift, approach, bees (continuous)
+ *
+ *  Per-activation variety: speedP (drift and bees), scaleP (cell size),
+ *  wallWidthP, glowP (honey glow), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

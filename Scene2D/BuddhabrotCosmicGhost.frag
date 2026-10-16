@@ -1,18 +1,24 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file BuddhabrotCosmicGhost.frag
- * @brief BUDDHABROT COSMIC GHOST: Inverse orbit-density projection of escaping
- * Mandelbrot trajectories forming a luminous, meditating cosmic ghost figure
- * with multi-spectral exposure channels, nebula halos, and spiritual resonance.
+/*****************************************************************************\
+ *                              BuddhabrotCosmicGhost.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance -> drives continuous orbit trajectory integration & ghost rotation
- *   audioKick    -> flashes interior third-eye chakra & expands astral aura
- *   audioCentroid-> modulates fine orbit filament density & exposure sharpness
- *   audioSubBass -> expands meditating astral ghost respiration
- *   audioChromaHue-> rotates the luminous cosmic ghost palette
+ *  @brief
+ *  BUDDHABROT COSMIC GHOST: Inverse orbit-density projection of escaping Mandelbrot trajectories forming a
+ *  luminous, meditating cosmic ghost figure with multi-spectral exposure channels, nebula halos, and spiritual
+ *  resonance.
+ *
+ *  Audio Reactivity:
+ *    audioAdvance -> drives continuous orbit trajectory integration & ghost rotation
+ *    audioKick    -> flashes interior third-eye chakra & expands astral aura
+ *    audioCentroid-> modulates fine orbit filament density & exposure sharpness
+ *    audioSubBass -> expands meditating astral ghost respiration
+ *    audioChromaHue-> rotates the luminous cosmic ghost palette
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

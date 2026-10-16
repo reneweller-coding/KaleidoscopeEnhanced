@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureCometShower.frag
- * @brief TEXTURE COMET SHOWER: a shower of comets across a starry night --
- * bright heads streak diagonally over the sky trailing long curved tails
- * that fan out and fade, some tails split into a straight blue ion tail
- * and a curved golden dust tail; the sky behind is the photograph turned
- * into a deep night with faint stars, and the heads take their colours
- * from it.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              TextureCometShower.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the comets fly (integrated, jump-free)
- *   audioSpread     -> tail length
- *   audioKick       -> the heads flare (light)
- *   audioMode       -> palette: icy blue in minor, golden in major
- *   audioHigh       -> the stars twinkle (light)
- *   audioSwell      -> the sky's glow (slow)
+ *  @brief
+ *  TEXTURE COMET SHOWER: a shower of comets across a starry night -- bright heads streak diagonally over the sky
+ *  trailing long curved tails that fan out and fade, some tails split into a straight blue ion tail and a curved
+ *  golden dust tail; the sky behind is the photograph turned into a deep night with faint stars, and the heads take
+ *  their colours from it.
  *
- * Knobs: densityP (comets), angleP (flight direction), skyP (photo in the sky), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the comets fly (integrated, jump-free)
+ *    audioSpread     -> tail length
+ *    audioKick       -> the heads flare (light)
+ *    audioMode       -> palette: icy blue in minor, golden in major
+ *    audioHigh       -> the stars twinkle (light)
+ *    audioSwell      -> the sky's glow (slow)
+ *
+ *  Knobs: densityP (comets), angleP (flight direction), skyP (photo in the sky), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

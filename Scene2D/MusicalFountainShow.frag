@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file MusicalFountainShow.frag
- * @brief MUSICAL FOUNTAIN SHOW: a dancing fountain at night on a long
- * basin, a row of jets across the whole frame, each lit from below, the
- * spray hanging as glowing mist and the whole show mirrored in the dark
- * water.  Each jet is a spectrum band: its height follows the smoothed
- * energy of that band, so the row of water draws the spectrum as a living
- * silhouette.  A few tall centre jets breathe with the swell.  Behind the
- * basin a city skyline of the photo glows in the night.
+/*****************************************************************************\
+ *                              MusicalFountainShow.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSpectrum[32] -> height and light of each jet (smoothed by the host;
- *                        heights move continuously, never jump)
- *   audioSwell        -> the tall centre jets and the mist (slow)
- *   audioKick         -> the underwater lights surge (light)
- *   sceneTime         -> the water's own flicker and fall (continuous)
+ *  @brief
+ *  MUSICAL FOUNTAIN SHOW: a dancing fountain at night on a long basin, a row of jets across the whole frame, each
+ *  lit from below, the spray hanging as glowing mist and the whole show mirrored in the dark water.
  *
- * Per-activation variety: jetsP (number of jets), hueP.
+ *  Each jet is a spectrum band: its height follows the smoothed energy of that band, so the row of water draws the
+ *  spectrum as a living silhouette.  A few tall centre jets breathe with the swell.  Behind the basin a city
+ *  skyline of the photo glows in the night.
+ *
+ *  Audio Reactivity:
+ *    audioSpectrum[32] -> height and light of each jet (smoothed by the host;
+ *                         heights move continuously, never jump)
+ *    audioSwell        -> the tall centre jets and the mist (slow)
+ *    audioKick         -> the underwater lights surge (light)
+ *    sceneTime         -> the water's own flicker and fall (continuous)
+ *
+ *  Per-activation variety: jetsP (number of jets), hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

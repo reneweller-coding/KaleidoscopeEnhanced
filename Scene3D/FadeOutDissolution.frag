@@ -1,15 +1,20 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file FadeOutDissolution.frag
- * @brief Fragment stage for FadeOutDissolution: each particle shows its
- * patch of the photo; as it frees it fades toward the palette and sparkles
- * on the kick; the backdrop (kind -1) is near-black with a faint palette
- * glow so the dissolving picture has dark to thin into.
+/*****************************************************************************\
+ *                              FadeOutDissolution.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity: audioKick sparkles the freed particles; audioLevel is
- *                   the curtain brightness; audioFadeOut dims the backdrop.
+ *  @brief
+ *  Fragment stage for FadeOutDissolution: each particle shows its patch of the photo; as it frees it fades toward
+ *  the palette and sparkles on the kick; the backdrop (kind -1) is near-black with a faint palette glow so the
+ *  dissolving picture has dark to thin into.
+ *
+ *  Audio Reactivity: audioKick sparkles the freed particles; audioLevel is
+ *                    the curtain brightness; audioFadeOut dims the backdrop.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 in vec2  vTexCoord; ///< Texture coordinate (from the vertex stage).
 in float vDepth;    ///< Depth (from the vertex stage).
 in float vKind;     ///< Element kind (from the vertex stage).

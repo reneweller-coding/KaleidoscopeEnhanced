@@ -1,33 +1,36 @@
 #version 330 core
+/*****************************************************************************\
+ *                              CrystalShatterBurst.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Lighting for the exploding gem geode's tetrahedral shards: a directional diffuse plus specular highlight per
+ *  facet, with a bright wireframe line traced along each triangle's edges via barycentric coordinates.
+ *
+ *  All of this scene's audio reactivity happens further upstream in
+ *  CrystalShatterBurst.geom, which fractures the incoming cube mesh into
+ *  shards and flings them outward on audioKick and audioSubBass, tumbles
+ *  them with audioAdvance, and tints them toward gold on audioKick; this
+ *  fragment stage shades the already-audio-driven shard geometry it
+ *  receives via gNormal/gWorld/gCol/gBary, and cuts the facet highlight and
+ *  wireframe to the timbre's own edge with audioSharpness.
+ *
+ *  Audio Reactivity:
+ *    audioSharpness -> facet specular tightness + wireframe edge crispness
+ *                      (dull material = soft broad sheen and fat gem edges,
+ *                      cymbal-bright = hard glint on a hairline wireframe)
+ *    (audioKick / audioSubBass / audioAdvance / audioSnare / audioBuildUp all
+ *     act upstream in CrystalShatterBurst.geom -- see that file.)
+ *
+ *  @author René Weller
+ */
 out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec3 gNormal; ///< Normal (from the geometry stage).
 in vec3 gWorld;  ///< World (from the geometry stage).
 in vec4 gCol;    ///< The colour gathered so far for this pixel.
 in vec3 gBary;   ///< Bary (from the geometry stage).
-
-/**
- * @file CrystalShatterBurst.frag
- * @brief Lighting for the exploding gem geode's tetrahedral shards: a
- * directional diffuse plus specular highlight per facet, with a bright
- * wireframe line traced along each triangle's edges via barycentric
- * coordinates.
- *
- * All of this scene's audio reactivity happens further upstream in
- * CrystalShatterBurst.geom, which fractures the incoming cube mesh into
- * shards and flings them outward on audioKick and audioSubBass, tumbles
- * them with audioAdvance, and tints them toward gold on audioKick; this
- * fragment stage shades the already-audio-driven shard geometry it
- * receives via gNormal/gWorld/gCol/gBary, and cuts the facet highlight and
- * wireframe to the timbre's own edge with audioSharpness.
- *
- * Audio Reactivity:
- *   audioSharpness -> facet specular tightness + wireframe edge crispness
- *                     (dull material = soft broad sheen and fat gem edges,
- *                     cymbal-bright = hard glint on a hairline wireframe)
- *   (audioKick / audioSubBass / audioAdvance / audioSnare / audioBuildUp all
- *    act upstream in CrystalShatterBurst.geom -- see that file.)
- */
 
 uniform float audioSharpness; ///< Zwicker HF loudness: 0 = dull, 1 = harsh-bright
 

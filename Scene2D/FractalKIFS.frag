@@ -1,19 +1,26 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file FractalKIFS.frag
- * @brief Kaleidoscopic Iterated Function System (fold + rotate + scale): the source
- * image is sampled THROUGH the folded IFS coordinate, so the picture itself is
- * shattered into an endlessly self-similar fractal kaleidoscope, with the
- * orbit-trap structure glowing through it.  The *image* is the star (was a
- * dark procedural base with the picture only inside bright bits).
- *   audioMode     -> bends the c-vector's real part (minor = sharp/edgy, major = soft)
- *   audioPitch    -> zoom
- *   audioArousal  -> bends the c-vector's imaginary part (busier when energetic)
- *   audioPhase    -> smooth, jump-free overall rotation
- *   audioValence/Centroid -> palette & brightness; audioBeat -> lace bloom
- *   audioLevel/Flux -> overall exposure
+/*****************************************************************************\
+ *                              FractalKIFS.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Kaleidoscopic Iterated Function System (fold + rotate + scale): the source image is sampled THROUGH the folded
+ *  IFS coordinate, so the picture itself is shattered into an endlessly self-similar fractal kaleidoscope, with the
+ *  orbit-trap structure glowing through it.
+ *
+ *  The *image* is the star (was a dark procedural base with the picture only inside bright bits).
+ *
+ *    audioMode     -> bends the c-vector's real part (minor = sharp/edgy, major = soft)
+ *    audioPitch    -> zoom
+ *    audioArousal  -> bends the c-vector's imaginary part (busier when energetic)
+ *    audioPhase    -> smooth, jump-free overall rotation
+ *    audioValence/Centroid -> palette & brightness; audioBeat -> lace bloom
+ *    audioLevel/Flux -> overall exposure
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

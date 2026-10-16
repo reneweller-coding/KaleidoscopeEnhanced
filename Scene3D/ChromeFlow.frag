@@ -1,4 +1,24 @@
 #version 330 core
+/*****************************************************************************\
+ *                              ChromeFlow.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Renders a rolling sheet of molten chrome that mirrors the current slideshow photo via a true reflect()
+ *  environment lookup, overlaid with two sweeping polish-streak sheen bands and a fixed moonlight specular
+ *  highlight.
+ *
+ *  audioSwell strengthens the first sheen band and audioCentroid strengthens
+ *  the second; audioAdvance and audioChromaHue feed imgPalette() (via
+ *  palTint()) so the warm/cool sheen tints drift with the musical key, with
+ *  audioValence shaping that palette's saturation. time animates both sheen
+ *  bands' phase along the reflection vector. The reflection direction itself
+ *  is a fixed camera-relative ray (not audio-driven); distance fog fades the
+ *  sheet toward the horizon via vDist.
+ *
+ *  @author René Weller
+ */
 out vec4 fragColor; ///< The pixel's colour (output).
 // ChromeFlow.frag - LIQUID CHROME: a rolling sheet of molten metal that
 // MIRRORS the current photo (true reflect() environment lookup), with
@@ -18,22 +38,6 @@ uniform float audioValence;       ///< Mood valence: 0 dark .. 1 bright.
 in vec2  vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 in vec3  vNrm;  ///< Nrm (from the vertex stage).
 in float vDist; ///< Distance (from the vertex stage).
-
-/**
- * @file ChromeFlow.frag
- * @brief Renders a rolling sheet of molten chrome that mirrors the current
- * slideshow photo via a true reflect() environment lookup, overlaid with two
- * sweeping polish-streak sheen bands and a fixed moonlight specular
- * highlight.
- *
- * audioSwell strengthens the first sheen band and audioCentroid strengthens
- * the second; audioAdvance and audioChromaHue feed imgPalette() (via
- * palTint()) so the warm/cool sheen tints drift with the musical key, with
- * audioValence shaping that palette's saturation. time animates both sheen
- * bands' phase along the reflection vector. The reflection direction itself
- * is a fixed camera-relative ray (not audio-driven); distance fog fades the
- * sheet toward the horizon via vDist.
- */
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

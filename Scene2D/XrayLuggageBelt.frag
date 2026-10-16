@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file XrayLuggageBelt.frag
- * @brief XRAY LUGGAGE BELT: the operator's screen at a security scanner.
- * Bags glide right to left on the scene clock, drawn in the false-colour
- * palette of dual-energy X-ray -- orange for organic, green for mixed,
- * blue for metal -- with the photo showing through as their contents.
- * The spectrum bands set how dense each bag reads, the kick raises a
- * threat box around the densest object (light), and the screen furniture
- * (scan line, grid, readout bars) frames it all.  Camera fixed.
+/*****************************************************************************\
+ *                              XrayLuggageBelt.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   sceneAdvance      -> the belt (continuous)
- *   audioSpectrum[32] -> density of the contents by height (light)
- *   audioKick         -> the threat box (light)
- *   audioHigh         -> edge enhancement (light)
- *   audioSwell        -> screen brightness (slow)
+ *  @brief
+ *  XRAY LUGGAGE BELT: the operator's screen at a security scanner.
  *
- * Per-activation variety: bagsP, densityP, hueP.
+ *  Bags glide right to left on the scene clock, drawn in the false-colour palette of dual-energy X-ray -- orange
+ *  for organic, green for mixed, blue for metal -- with the photo showing through as their contents. The spectrum
+ *  bands set how dense each bag reads, the kick raises a threat box around the densest object (light), and the
+ *  screen furniture (scan line, grid, readout bars) frames it all.  Camera fixed.
+ *
+ *  Audio Reactivity:
+ *    sceneAdvance      -> the belt (continuous)
+ *    audioSpectrum[32] -> density of the contents by height (light)
+ *    audioKick         -> the threat box (light)
+ *    audioHigh         -> edge enhancement (light)
+ *    audioSwell        -> screen brightness (slow)
+ *
+ *  Per-activation variety: bagsP, densityP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

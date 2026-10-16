@@ -1,20 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file GasGiantCloudCity.frag
- * @brief GAS GIANT CLOUD CITY: Floating, sleek megastructures drifting deep
- * within the incredibly thick, turbulent atmosphere of a gas giant. Massive
- * lightning storms illuminate the dense clouds from within, syncing to the beat.
- *   audioAdvance -> flight speed through the heavy clouds
- *   audioKick    -> massive lightning flashes in the clouds
- *   audioSwell   -> ambient glow of the floating city structures
- *   audioChromaHue-> palette offset for the gas giant clouds
+/*****************************************************************************\
+ *                              GasGiantCloudCity.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   cloudP float turbulence and thickness of the clouds (0.5..1.5)
- *   cityP float density/brightness of the floating structures (0.5..2.0)
- *   hueP float palette offset (0..6.28)
+ *  @brief
+ *  GAS GIANT CLOUD CITY: Floating, sleek megastructures drifting deep within the incredibly thick, turbulent
+ *  atmosphere of a gas giant.
+ *
+ *  Massive lightning storms illuminate the dense clouds from within, syncing to the beat.
+ *
+ *    audioAdvance -> flight speed through the heavy clouds
+ *    audioKick    -> massive lightning flashes in the clouds
+ *    audioSwell   -> ambient glow of the floating city structures
+ *    audioChromaHue-> palette offset for the gas giant clouds
+ *
+ *  Per-activation variety:
+ *    cloudP float turbulence and thickness of the clouds (0.5..1.5)
+ *    cityP float density/brightness of the floating structures (0.5..2.0)
+ *    hueP float palette offset (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

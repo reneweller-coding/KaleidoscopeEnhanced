@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file GaltonBoardBeads.frag
- * @brief GALTON BOARD BEADS: the bean machine.  Round beads drop through
- * a triangular lattice of pegs, bouncing left or right at each row, and
- * pile up in the bins below; over the scene arc the heap in the bins
- * grows into the bell curve, which is the whole point of the machine.
- * Every bead falls on its own continuous phase, so beads are always in
- * flight and none ever appears from nothing.  The bins take their colour
- * from the spectrum bands; the kick lights the bin a bead lands in.
- * Camera fixed on the board.
+/*****************************************************************************\
+ *                              GaltonBoardBeads.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   sceneProgress     -> the bins fill toward the curve (the arc)
- *   sceneAdvance      -> the beads fall (continuous)
- *   audioSpectrum[32] -> the bin colours (light)
- *   audioKick         -> the bin that just received one lights (light)
- *   audioHigh         -> the bead sparkle (light)
+ *  @brief
+ *  GALTON BOARD BEADS: the bean machine.
  *
- * Per-activation variety: rowsP, beadsP, hueP.
+ *  Round beads drop through a triangular lattice of pegs, bouncing left or right at each row, and pile up in the
+ *  bins below; over the scene arc the heap in the bins grows into the bell curve, which is the whole point of the
+ *  machine. Every bead falls on its own continuous phase, so beads are always in flight and none ever appears from
+ *  nothing.  The bins take their colour from the spectrum bands; the kick lights the bin a bead lands in. Camera
+ *  fixed on the board.
+ *
+ *  Audio Reactivity:
+ *    sceneProgress     -> the bins fill toward the curve (the arc)
+ *    sceneAdvance      -> the beads fall (continuous)
+ *    audioSpectrum[32] -> the bin colours (light)
+ *    audioKick         -> the bin that just received one lights (light)
+ *    audioHigh         -> the bead sparkle (light)
+ *
+ *  Per-activation variety: rowsP, beadsP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

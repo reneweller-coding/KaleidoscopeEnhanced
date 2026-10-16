@@ -1,27 +1,32 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file KineticBallCeiling.frag
- * @brief KINETIC BALL CEILING: a kinetic sculpture of hundreds of polished
- * metal balls, each hanging on its own thin wire from a dark ceiling, the
- * whole field together forming one slowly flowing surface -- a wave that
- * rolls through, folds into a saddle, flattens and rises again.  Seen from
- * below at the edge of the field; every ball mirrors the photograph and
- * catches the spot lights of the hall.  The camera is still; the waves
- * move with time only, the music is the light on the metal.
+/*****************************************************************************\
+ *                              KineticBallCeiling.frag
+\*****************************************************************************/
+/*! @file
  *
- * The field is ray-traced through a grid walk (one ball per cell), the
- * balls anti-aliased by their analytic distance to the ray.
+ *  @brief
+ *  KINETIC BALL CEILING: a kinetic sculpture of hundreds of polished metal balls, each hanging on its own thin wire
+ *  from a dark ceiling, the whole field together forming one slowly flowing surface -- a wave that rolls through,
+ *  folds into a saddle, flattens and rises again.
  *
- * Audio Reactivity:
- *   audioBass   -> the spot lights of the hall (light)
- *   audioHigh   -> glints on the balls (light)
- *   audioSwell  -> the warm glow under the ceiling (slow)
- *   audioLevel  -> brightness
- *   sceneTime / sceneAdvance -> the flowing surface (continuous)
+ *  Seen from below at the edge of the field; every ball mirrors the photograph and catches the spot lights of the
+ *  hall.  The camera is still; the waves move with time only, the music is the light on the metal.
  *
- * Per-activation variety: waveP (the shape of the waves), hueP.
+ *  The field is ray-traced through a grid walk (one ball per cell), the
+ *  balls anti-aliased by their analytic distance to the ray.
+ *
+ *  Audio Reactivity:
+ *    audioBass   -> the spot lights of the hall (light)
+ *    audioHigh   -> glints on the balls (light)
+ *    audioSwell  -> the warm glow under the ceiling (slow)
+ *    audioLevel  -> brightness
+ *    sceneTime / sceneAdvance -> the flowing surface (continuous)
+ *
+ *  Per-activation variety: waveP (the shape of the waves), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

@@ -1,18 +1,23 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file QuasicrystalPenroseKaleido.frag
- * @brief QUASICRYSTAL PENROSE KALEIDO: 5D-to-2D De-Bruijn aperiodic quasicrystal
- * projection with golden-ratio phi symmetries, 10-fold non-repeating diffraction
- * planes, and dynamic multi-frequency interference ribbons.
+/*****************************************************************************\
+ *                              QuasicrystalPenroseKaleido.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance -> translates through 5D hyper-plane cut space
- *   audioKick    -> flashes aperiodic Bragg diffraction nodes
- *   audioCentroid-> modulates wave grid frequency & interference sharpness
- *   audioSubBass -> expands phi-ratio radial scale pulsation
- *   audioChromaHue-> rotates the diffraction rainbow spectrum
+ *  @brief
+ *  QUASICRYSTAL PENROSE KALEIDO: 5D-to-2D De-Bruijn aperiodic quasicrystal projection with golden-ratio phi
+ *  symmetries, 10-fold non-repeating diffraction planes, and dynamic multi-frequency interference ribbons.
+ *
+ *  Audio Reactivity:
+ *    audioAdvance -> translates through 5D hyper-plane cut space
+ *    audioKick    -> flashes aperiodic Bragg diffraction nodes
+ *    audioCentroid-> modulates wave grid frequency & interference sharpness
+ *    audioSubBass -> expands phi-ratio radial scale pulsation
+ *    audioChromaHue-> rotates the diffraction rainbow spectrum
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

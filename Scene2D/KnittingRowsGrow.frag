@@ -1,23 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file KnittingRowsGrow.frag
- * @brief KNITTING ROWS GROW: stocking stitch growing row by row over the
- * scene arc.  Each stitch is a V of yarn sitting in the row below, and
- * the fabric is built as a lattice of those Vs; colourwork bands take
- * their yarn from the chroma classes, the photo is the yarn's own dyed
- * shade.  The live row sits on the needle at the top of the growing
- * fabric and is a little looser than the rest.  Camera fixed on the work.
+/*****************************************************************************\
+ *                              KnittingRowsGrow.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   sceneProgress   -> the fabric grows row by row (the arc)
- *   audioChroma[12] -> the colourwork bands (light)
- *   audioSwell      -> lamp light on the wool (slow)
- *   audioKick       -> the needles click: a glint on the live row (light)
- *   audioHigh       -> the fibre halo (light)
+ *  @brief
+ *  KNITTING ROWS GROW: stocking stitch growing row by row over the scene arc.
  *
- * Per-activation variety: gaugeP, bandP, hueP.
+ *  Each stitch is a V of yarn sitting in the row below, and the fabric is built as a lattice of those Vs;
+ *  colourwork bands take their yarn from the chroma classes, the photo is the yarn's own dyed shade.  The live row
+ *  sits on the needle at the top of the growing fabric and is a little looser than the rest.  Camera fixed on the
+ *  work.
+ *
+ *  Audio Reactivity:
+ *    sceneProgress   -> the fabric grows row by row (the arc)
+ *    audioChroma[12] -> the colourwork bands (light)
+ *    audioSwell      -> lamp light on the wool (slow)
+ *    audioKick       -> the needles click: a glint on the live row (light)
+ *    audioHigh       -> the fibre halo (light)
+ *
+ *  Per-activation variety: gaugeP, bandP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

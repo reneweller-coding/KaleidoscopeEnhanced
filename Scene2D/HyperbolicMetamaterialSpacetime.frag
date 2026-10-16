@@ -1,23 +1,31 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file HyperbolicMetamaterialSpacetime.frag
- * @brief HYPERBOLIC METAMATERIAL SPACETIME: Anisotropic dielectric tensor metamaterial
- * emulating an effective (2+1)D Minkowski spacetime with hyperbolic dispersion relations.
- * Light rays trace relativistic null geodesics around artificial singularities,
- * forming nested hyperbolic resonance cones and chromatic phase-fronts.
- *   audioAdvance -> navigates through anisotropic spacetime layers
- *   audioBass    -> bends dielectric principal tensor axes
- *   audioKick    -> flashes artificial event horizon topological transitions
- *   audioSwell   -> broadens hyperbolic resonance cone width
- *   audioCentroid-> shifts extraordinary-wave dispersion slope
+/*****************************************************************************\
+ *                              HyperbolicMetamaterialSpacetime.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   coneSlopeP   float hyperbolic cone opening dispersion      (0.5..2.0)
- *   curvP        float spacetime metric curvature intensity    (0.4..1.8)
- *   densityP     float subwavelength multilayer density        (1.0..3.5)
- *   warpP        float relativistic frame-dragging warp        (0.2..1.5)
+ *  @brief
+ *  HYPERBOLIC METAMATERIAL SPACETIME: Anisotropic dielectric tensor metamaterial emulating an effective (2+1)D
+ *  Minkowski spacetime with hyperbolic dispersion relations.
+ *
+ *  Light rays trace relativistic null geodesics around artificial singularities, forming nested hyperbolic
+ *  resonance cones and chromatic phase-fronts.
+ *
+ *    audioAdvance -> navigates through anisotropic spacetime layers
+ *    audioBass    -> bends dielectric principal tensor axes
+ *    audioKick    -> flashes artificial event horizon topological transitions
+ *    audioSwell   -> broadens hyperbolic resonance cone width
+ *    audioCentroid-> shifts extraordinary-wave dispersion slope
+ *
+ *  Per-activation variety:
+ *    coneSlopeP   float hyperbolic cone opening dispersion      (0.5..2.0)
+ *    curvP        float spacetime metric curvature intensity    (0.4..1.8)
+ *    densityP     float subwavelength multilayer density        (1.0..3.5)
+ *    warpP        float relativistic frame-dragging warp        (0.2..1.5)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

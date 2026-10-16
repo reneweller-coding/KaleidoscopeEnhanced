@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file GlassblowerGather.frag
- * @brief GLASSBLOWER GATHER: a gather of molten glass on the end of the
- * blowpipe, turning steadily on the scene clock, inflating with the swell
- * (the breath), and cooling from white-orange toward the colour it will
- * keep -- the photo, which shows through the glass as its pattern once
- * the glow has gone.  The kick is the reheat in the glory hole (a flash of
- * orange), the treble the glints on the glass, the bass the furnace mouth
- * glow behind.  Camera fixed at the bench.
+/*****************************************************************************\
+ *                              GlassblowerGather.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSwell   -> inflation (slow)
- *   sceneAdvance -> rotation and the cooling cycle (continuous)
- *   audioKick    -> reheat flash (light)
- *   audioHigh    -> glints (light)
- *   audioBass    -> furnace glow (light)
- *   audioLevel   -> brightness
+ *  @brief
+ *  GLASSBLOWER GATHER: a gather of molten glass on the end of the blowpipe, turning steadily on the scene clock,
+ *  inflating with the swell (the breath), and cooling from white-orange toward the colour it will keep -- the
+ *  photo, which shows through the glass as its pattern once the glow has gone.
  *
- * Per-activation variety: sizeP, coolP, hueP.
+ *  The kick is the reheat in the glory hole (a flash of orange), the treble the glints on the glass, the bass the
+ *  furnace mouth glow behind.  Camera fixed at the bench.
+ *
+ *  Audio Reactivity:
+ *    audioSwell   -> inflation (slow)
+ *    sceneAdvance -> rotation and the cooling cycle (continuous)
+ *    audioKick    -> reheat flash (light)
+ *    audioHigh    -> glints (light)
+ *    audioBass    -> furnace glow (light)
+ *    audioLevel   -> brightness
+ *
+ *  Per-activation variety: sizeP, coolP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

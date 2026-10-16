@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file RecursiveRectSubdivision.frag
- * @brief RECURSIVE RECT SUBDIVISION: a breathing Mondrian -- the plane is
- * split into rectangles, and those again, and again, by black bars, each
- * split line sliding slowly back and forth so the rectangles swell and
- * shrink against each other; some rectangles are flat primary colours,
- * others are windows onto the photograph, each showing its own crop of
- * the picture.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              RecursiveRectSubdivision.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the split lines slide (integrated, jump-free)
- *   audioSpread     -> how far the splits swing
- *   audioKick       -> the colour fields brighten (light)
- *   audioMode       -> palette: Mondrian primaries in major, blue-grey in minor (tint)
- *   audioRoughness  -> the bars get irregular
- *   audioSwell      -> the photo windows glow (slow)
+ *  @brief
+ *  RECURSIVE RECT SUBDIVISION: a breathing Mondrian -- the plane is split into rectangles, and those again, and
+ *  again, by black bars, each split line sliding slowly back and forth so the rectangles swell and shrink against
+ *  each other; some rectangles are flat primary colours, others are windows onto the photograph, each showing its
+ *  own crop of the picture.
  *
- * Knobs: depthP (subdivision depth), barP (bar width), photoP (share of photo windows), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the split lines slide (integrated, jump-free)
+ *    audioSpread     -> how far the splits swing
+ *    audioKick       -> the colour fields brighten (light)
+ *    audioMode       -> palette: Mondrian primaries in major, blue-grey in minor (tint)
+ *    audioRoughness  -> the bars get irregular
+ *    audioSwell      -> the photo windows glow (slow)
+ *
+ *  Knobs: depthP (subdivision depth), barP (bar width), photoP (share of photo windows), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

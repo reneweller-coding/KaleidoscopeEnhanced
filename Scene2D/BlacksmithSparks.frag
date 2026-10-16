@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file BlacksmithSparks.frag
- * @brief BLACKSMITH SPARKS: a glowing bar on the anvil under the hammer.
- * The bar's heat is the swell (it is drawn from the fire and cools), the
- * kick is the hammer blow -- a flash on the bar and a burst of round
- * sparks (light only: the sparks fly on the scene clock, the blow
- * brightens them), the bass is the forge fire behind, the treble the
- * scale flaking off as glints; the photo is the smithy wall and the
- * bar's surface.  Camera fixed at the anvil.
+/*****************************************************************************\
+ *                              BlacksmithSparks.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSwell   -> bar heat (slow)
- *   audioKick    -> hammer flash and spark brightness (light)
- *   audioBass    -> forge glow (light)
- *   audioHigh    -> scale glints (light)
- *   sceneAdvance -> spark flight (continuous)
- *   audioLevel   -> brightness
+ *  @brief
+ *  BLACKSMITH SPARKS: a glowing bar on the anvil under the hammer.
  *
- * Per-activation variety: barP, sparkP, hueP.
+ *  The bar's heat is the swell (it is drawn from the fire and cools), the kick is the hammer blow -- a flash on the
+ *  bar and a burst of round sparks (light only: the sparks fly on the scene clock, the blow brightens them), the
+ *  bass is the forge fire behind, the treble the scale flaking off as glints; the photo is the smithy wall and the
+ *  bar's surface.  Camera fixed at the anvil.
+ *
+ *  Audio Reactivity:
+ *    audioSwell   -> bar heat (slow)
+ *    audioKick    -> hammer flash and spark brightness (light)
+ *    audioBass    -> forge glow (light)
+ *    audioHigh    -> scale glints (light)
+ *    sceneAdvance -> spark flight (continuous)
+ *    audioLevel   -> brightness
+ *
+ *  Per-activation variety: barP, sparkP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

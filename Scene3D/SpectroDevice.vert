@@ -1,16 +1,22 @@
 #version 330 core
-/**
- * @file SpectroDevice.vert
- * @brief Vertex stage companion to SpectroDevice.frag -- see that file's
- * header. A small prop on a showroom turntable, so unlike the station
- * families a steady single-axis spin is exactly right here (this is a
- * hi-fi unit on display, not a kilometers-long structure that would have
- * too much inertia to move).
+/*****************************************************************************\
+ *                              SpectroDevice.vert
+\*****************************************************************************/
+/*! @file
  *
- * gl_VertexID picks the vertex's own branch: below meshVertexCount it is
- * the loaded model, at or above it the enclosing sky shell
- * Scene3DShader::buildGeometry() appends -- SpectroDevice.frag paints a
- * synthwave grid horizon onto that shell.
+ *  @brief
+ *  Vertex stage companion to SpectroDevice.frag -- see that file's header.
+ *
+ *  A small prop on a showroom turntable, so unlike the station families a steady single-axis spin is exactly right
+ *  here (this is a hi-fi unit on display, not a kilometers-long structure that would have too much inertia to
+ *  move).
+ *
+ *  gl_VertexID picks the vertex's own branch: below meshVertexCount it is
+ *  the loaded model, at or above it the enclosing sky shell
+ *  Scene3DShader::buildGeometry() appends -- SpectroDevice.frag paints a
+ *  synthwave grid horizon onto that shell.
+ *
+ *  @author René Weller
  */
 
 in vec4 attrA; ///< mesh: xyz = object-space position, w = U.  shell: xyz = world-space position on the shell.

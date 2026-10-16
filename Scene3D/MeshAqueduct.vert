@@ -1,16 +1,22 @@
 #version 330 core
-/**
- * @file MeshAqueduct.vert
- * @brief Vertex stage companion to MeshAqueduct.frag -- see that file's
- * header. ONE short aqueduct segment (two tiers of arches) drawn seven
- * times end to end (instances="7"), so the bridge strides across the
- * valley; gl_InstanceID is the segment's place along it. The row stands
- * on the valley floor, turned a little off square so the arches recede in
- * perspective. Stone does not move. The shell is drawn by instance 0 only.
+/*****************************************************************************\
+ *                              MeshAqueduct.vert
+\*****************************************************************************/
+/*! @file
  *
- * Why a segment: asked for "a complete bridge from end to end", the
- * generator produced a square arcade box. A compact segment it does well,
- * and instancing makes the length.
+ *  @brief
+ *  Vertex stage companion to MeshAqueduct.frag -- see that file's header.
+ *
+ *  ONE short aqueduct segment (two tiers of arches) drawn seven times end to end (instances="7"), so the bridge
+ *  strides across the valley; gl_InstanceID is the segment's place along it. The row stands on the valley floor,
+ *  turned a little off square so the arches recede in perspective. Stone does not move. The shell is drawn by
+ *  instance 0 only.
+ *
+ *  Why a segment: asked for "a complete bridge from end to end", the
+ *  generator produced a square arcade box. A compact segment it does well,
+ *  and instancing makes the length.
+ *
+ *  @author René Weller
  */
 
 in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an

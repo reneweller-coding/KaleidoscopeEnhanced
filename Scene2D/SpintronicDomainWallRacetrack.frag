@@ -1,22 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SpintronicDomainWallRacetrack.frag
- * @brief SPINTRONIC DOMAIN WALL RACETRACK: Nanowire racetrack memory array.
- * Topologically protected chiral magnetic domain walls driven by spin-transfer torque
- * pulses race across parallel tracks with magnetoresistive fringes and spin-wave ripples.
- *   audioAdvance -> drives spin-polarized electrical current & domain wall drift
- *   audioKick    -> flashes Barkhausen depinning transitions and magnetic pulses
- *   audioSwell   -> widens magnetic track cross-section & domain wall luminescence
- *   audioCentroid-> shifts anisotropic magnetoresistance color spectra
- *   audioHigh    -> excites high-frequency magnon spin-wave ripple fringes
+/*****************************************************************************\
+ *                              SpintronicDomainWallRacetrack.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   trackPitchP float nanowire track packing density         (2.0..6.0)
- *   wallWidthP  float domain wall transition thickness       (0.4..1.8)
- *   magnonP     float spin-wave magnon ripple frequency      (8.0..24.0)
- *   torqueP     float spin-transfer torque drift velocity    (0.5..2.2)
+ *  @brief
+ *  SPINTRONIC DOMAIN WALL RACETRACK: Nanowire racetrack memory array.
+ *
+ *  Topologically protected chiral magnetic domain walls driven by spin-transfer torque pulses race across parallel
+ *  tracks with magnetoresistive fringes and spin-wave ripples.
+ *
+ *    audioAdvance -> drives spin-polarized electrical current & domain wall drift
+ *    audioKick    -> flashes Barkhausen depinning transitions and magnetic pulses
+ *    audioSwell   -> widens magnetic track cross-section & domain wall luminescence
+ *    audioCentroid-> shifts anisotropic magnetoresistance color spectra
+ *    audioHigh    -> excites high-frequency magnon spin-wave ripple fringes
+ *
+ *  Per-activation variety:
+ *    trackPitchP float nanowire track packing density         (2.0..6.0)
+ *    wallWidthP  float domain wall transition thickness       (0.4..1.8)
+ *    magnonP     float spin-wave magnon ripple frequency      (8.0..24.0)
+ *    torqueP     float spin-transfer torque drift velocity    (0.5..2.2)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

@@ -1,26 +1,31 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file DoubleMirrorWave.frag
- * @brief DOUBLE MIRROR WAVE: two wavy mirrors facing each other -- the
- * photograph sits between them and is reflected back and forth into an
- * endless corridor of copies, each copy bent by the waves in the glass, the
- * reflections growing fainter and bluer with every bounce, the mirror
- * seams glowing.  The waves in both mirrors roll slowly and out of step,
- * so the whole corridor ripples.  Endless (the reflections continue past
- * the frame) and mirrorable by construction.
+/*****************************************************************************\
+ *                              DoubleMirrorWave.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioPhase      -> the mirrors' angle drifts (integrated, jump-free)
- *   audioAdvance    -> the waves roll along the mirrors (integrated)
- *   audioSpread     -> wave amplitude
- *   audioRoughness  -> fine ripples on the glass
- *   audioMode       -> the tint of the far reflections: blue in minor, gold in major
- *   audioHigh       -> the seams glint (light)
+ *  @brief
+ *  DOUBLE MIRROR WAVE: two wavy mirrors facing each other -- the photograph sits between them and is reflected back
+ *  and forth into an endless corridor of copies, each copy bent by the waves in the glass, the reflections growing
+ *  fainter and bluer with every bounce, the mirror seams glowing.
  *
- * Knobs: gapP (distance between the mirrors), waveP (wave length), fadeP
- * (how fast reflections fade), hueP.
+ *  The waves in both mirrors roll slowly and out of step, so the whole corridor ripples.  Endless (the reflections
+ *  continue past the frame) and mirrorable by construction.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioPhase      -> the mirrors' angle drifts (integrated, jump-free)
+ *    audioAdvance    -> the waves roll along the mirrors (integrated)
+ *    audioSpread     -> wave amplitude
+ *    audioRoughness  -> fine ripples on the glass
+ *    audioMode       -> the tint of the far reflections: blue in minor, gold in major
+ *    audioHigh       -> the seams glint (light)
+ *
+ *  Knobs: gapP (distance between the mirrors), waveP (wave length), fadeP
+ *  (how fast reflections fade), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

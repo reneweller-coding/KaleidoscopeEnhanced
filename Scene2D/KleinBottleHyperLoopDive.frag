@@ -1,18 +1,25 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file KleinBottleHyperLoopDive.frag
- * @brief KLEIN BOTTLE HYPER LOOP DIVE: 3D Raymarching plunge through a self-intersecting
- * 4D Klein Bottle immersion. Seamless flight from exterior space into interior
- * space without crossing an edge, with inverting normal colors and portal flash pulses.
+/*****************************************************************************\
+ *                              KleinBottleHyperLoopDive.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance -> drives continuous forward plunge along the Klein loop
- *   audioKick    -> flashes self-intersection singularity & topology inversion
- *   audioCentroid-> modulates Klein bottle surface ribbing resolution
- *   audioSubBass -> expands bottle neck diameter breathing
- *   audioChromaHue-> steers the non-orientable surface rainbow palette
+ *  @brief
+ *  KLEIN BOTTLE HYPER LOOP DIVE: 3D Raymarching plunge through a self-intersecting 4D Klein Bottle immersion.
+ *
+ *  Seamless flight from exterior space into interior space without crossing an edge, with inverting normal colors
+ *  and portal flash pulses.
+ *
+ *  Audio Reactivity:
+ *    audioAdvance -> drives continuous forward plunge along the Klein loop
+ *    audioKick    -> flashes self-intersection singularity & topology inversion
+ *    audioCentroid-> modulates Klein bottle surface ribbing resolution
+ *    audioSubBass -> expands bottle neck diameter breathing
+ *    audioChromaHue-> steers the non-orientable surface rainbow palette
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

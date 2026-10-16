@@ -1,17 +1,21 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file BeeWaggleDance.frag
- * @brief Fragment stage for BeeWaggleDance: the comb as a hexagonal grid
- * of photo cells (some capped with wax, some open with honey glowing with
- * the bass), the bees as striped ovals with wings, the dancer glowing on
- * her waggle run, the followers dimmer; the stereo balance sweeps a warm
- * light across the comb (the sun through the hive), the treble sparkles
- * the honey, the kick flashes the dancers.
+/*****************************************************************************\
+ *                              BeeWaggleDance.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity: audioStereo -> light sweep; audioBass -> honey glow;
- *                   audioHigh -> sparkle; audioKick -> dancer flash; audioLevel.
+ *  @brief
+ *  Fragment stage for BeeWaggleDance: the comb as a hexagonal grid of photo cells (some capped with wax, some open
+ *  with honey glowing with the bass), the bees as striped ovals with wings, the dancer glowing on her waggle run,
+ *  the followers dimmer; the stereo balance sweeps a warm light across the comb (the sun through the hive), the
+ *  treble sparkles the honey, the kick flashes the dancers.
+ *
+ *  Audio Reactivity: audioStereo -> light sweep; audioBass -> honey glow;
+ *                    audioHigh -> sparkle; audioKick -> dancer flash; audioLevel.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 in vec2  vTexCoord; ///< Texture coordinate (from the vertex stage).
 in vec3  vWorld;    ///< World position (from the vertex stage).
 in float vKind;     ///< Element kind (from the vertex stage).

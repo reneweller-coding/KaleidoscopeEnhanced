@@ -1,4 +1,24 @@
 #version 330 core
+/*****************************************************************************\
+ *                              VolumetricFire.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Companion to VolumetricFire.vert: samples the live GPU fire/smoke simulation (R = temperature, G = density) at
+ *  this depth-slice billboard's atlas cell and maps it through a black -> red -> orange -> yellow -> white-hot
+ *  ramp, with a grey smoke haze wherever density outlives heat.
+ *
+ *  audioKick intensifies the procedural fallback flame used whenever the
+ *  simulation texture is absent or black (so the scene never shows an empty
+ *  frame); vHue (an audioChromaHue-derived offset baked in the vertex stage)
+ *  gives the flame a small colour wobble without breaking the fire look;
+ *  vGlow scales overall brightness. Additive blending across 20 stacked
+ *  depth-slices (see Scene3DShader::draw) sums into one soft volumetric fire
+ *  column with no depth sorting needed.
+ *
+ *  @author René Weller
+ */
 out vec4 fragColor; ///< The pixel's colour (output).
 // VolumetricFire.frag — companion to VolumetricFire.vert.  Samples the live
 // GPU fire/smoke simulation (Blend/Smoke3DSim.frag, R=temperature,
@@ -22,22 +42,6 @@ in vec2  vAtlasUV;    ///< Atlas UV (from the vertex stage).
 in float vHeightFrac; ///< Height frac (from the vertex stage).
 in float vHue;        ///< Hue (from the vertex stage).
 in float vGlow;       ///< Glow (from the vertex stage).
-
-/**
- * @file VolumetricFire.frag
- * @brief Companion to VolumetricFire.vert: samples the live GPU fire/smoke
- * simulation (R = temperature, G = density) at this depth-slice billboard's
- * atlas cell and maps it through a black -> red -> orange -> yellow ->
- * white-hot ramp, with a grey smoke haze wherever density outlives heat.
- *
- * audioKick intensifies the procedural fallback flame used whenever the
- * simulation texture is absent or black (so the scene never shows an empty
- * frame); vHue (an audioChromaHue-derived offset baked in the vertex stage)
- * gives the flame a small colour wobble without breaking the fire look;
- * vGlow scales overall brightness. Additive blending across 20 stacked
- * depth-slices (see Scene3DShader::draw) sums into one soft volumetric fire
- * column with no depth sorting needed.
- */
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

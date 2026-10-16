@@ -1,27 +1,32 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file RingStation.frag
- * @brief GEOM="MESH" STATION FAMILY: wheel/ring/torus-shaped stations (spin-
- * gravity habitats, research rings, jump-gate anchors, megastructure hubs),
- * shown against a real backdrop instead of flat black: a fake planet with
- * animated cloud cover plus a starfield, painted directly onto the sky
- * shell Scene3DShader::buildGeometry() appends after the loaded mesh (see
- * RingStation.vert) -- vBg selects which of the two this fragment belongs
- * to. The station itself keeps a plain cool starlight + warm window-glow
- * treatment (no photo-tinting): the "cool" part of this family now lives in
- * the environment, not in recoloring the hull.
- *   audioAdvance -> spin speed (vertex stage)
- *   audioSwell   -> key-light strength, window-glow brightness
- *   audioKick    -> window-glow flicker
+/*****************************************************************************\
+ *                              RingStation.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-instance (config attributes, all optional, sane defaults):
- *   sizeP   relative scale
- *   spinP   relative spin speed
- *   windowP window-glow intensity
- * Per-activation variety:
- *   hueP float palette offset (0..6.28)
+ *  @brief
+ *  GEOM="MESH" STATION FAMILY: wheel/ring/torus-shaped stations (spin- gravity habitats, research rings, jump-gate
+ *  anchors, megastructure hubs), shown against a real backdrop instead of flat black: a fake planet with animated
+ *  cloud cover plus a starfield, painted directly onto the sky shell Scene3DShader::buildGeometry() appends after
+ *  the loaded mesh (see RingStation.vert) -- vBg selects which of the two this fragment belongs to.
+ *
+ *  The station itself keeps a plain cool starlight + warm window-glow treatment (no photo-tinting): the "cool" part
+ *  of this family now lives in the environment, not in recoloring the hull.
+ *
+ *    audioAdvance -> spin speed (vertex stage)
+ *    audioSwell   -> key-light strength, window-glow brightness
+ *    audioKick    -> window-glow flicker
+ *
+ *  Per-instance (config attributes, all optional, sane defaults):
+ *    sizeP   relative scale
+ *    spinP   relative spin speed
+ *    windowP window-glow intensity
+ *  Per-activation variety:
+ *    hueP float palette offset (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform sampler2DArray texMeshMaterial;       ///< The mesh's material textures (albedo, roughness, normal ...).
 uniform int            texMeshMaterialLayers; ///< Number of layers in texMeshMaterial.

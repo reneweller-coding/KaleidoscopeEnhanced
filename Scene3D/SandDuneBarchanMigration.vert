@@ -1,19 +1,24 @@
 #version 330 core
-/**
- * @file SandDuneBarchanMigration.vert
- * @brief Vertex stage companion to SandDuneBarchanMigration.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              SandDuneBarchanMigration.vert
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (geometry; see the .frag header for the shading side):
- *   audioAdvance -> slow downwind migration of the barchan field
- *   audioBass    -> swell of the crescent dune bodies
- *   audioHigh    -> saltation-ripple amplitude
- *   audioZCR     -> SAND GRAIN: the noisiness of the signal is the wind.  A
- *                   clean tone leaves the slip faces smooth; broadband, hissy
- *                   material rakes the whole field into wind ripples -- both
- *                   in the height field AND in the normal, so the ripples
- *                   actually catch the low sun instead of only bumping the
- *                   silhouette
+ *  @brief
+ *  Vertex stage companion to SandDuneBarchanMigration.frag -- see that file's header for this scene's description.
+ *
+ *  Audio Reactivity (geometry; see the .frag header for the shading side):
+ *    audioAdvance -> slow downwind migration of the barchan field
+ *    audioBass    -> swell of the crescent dune bodies
+ *    audioHigh    -> saltation-ripple amplitude
+ *    audioZCR     -> SAND GRAIN: the noisiness of the signal is the wind.  A
+ *                    clean tone leaves the slip faces smooth; broadband, hissy
+ *                    material rakes the whole field into wind ripples -- both
+ *                    in the height field AND in the normal, so the ripples
+ *                    actually catch the low sun instead of only bumping the
+ *                    silhouette
+ *
+ *  @author René Weller
  */
 layout( location = 0 ) in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g.
                                       ///< position or u/v and an index).

@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file MeshHeliostatField.frag
- * @brief MESH HELIOSTAT FIELD: a real receiver tower (model=) in a field
- * of real heliostats (model2=, instanced), each aimed so the sun lands on
- * the receiver. The panels reflect the sky -- a true reflection, the sky
- * shell sampled along the mirrored view direction -- and track the sun as
- * it creeps on time. The receiver glows white-hot with the bass, the
- * treble runs glints across the field where a panel catches the sun, the
- * swell is the daylight and the haze of the beams. Desert noon. The mesh
- * counterpart of the procedural HeliostatSolarTower.
+/*****************************************************************************\
+ *                              MeshHeliostatField.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioBass  -> receiver glow (light)
- *   audioHigh  -> panel glints (light)
- *   audioSwell -> daylight and beam haze (slow)
- *   time       -> the sun and the tracking (continuous, vertex stage)
+ *  @brief
+ *  MESH HELIOSTAT FIELD: a real receiver tower (model=) in a field of real heliostats (model2=, instanced), each
+ *  aimed so the sun lands on the receiver.
  *
- * Per-instance: sizeP, mirrorP. Per-activation variety: hueP.
+ *  The panels reflect the sky -- a true reflection, the sky shell sampled along the mirrored view direction -- and
+ *  track the sun as it creeps on time. The receiver glows white-hot with the bass, the treble runs glints across
+ *  the field where a panel catches the sun, the swell is the daylight and the haze of the beams. Desert noon. The
+ *  mesh counterpart of the procedural HeliostatSolarTower.
+ *
+ *  Audio Reactivity:
+ *    audioBass  -> receiver glow (light)
+ *    audioHigh  -> panel glints (light)
+ *    audioSwell -> daylight and beam haze (slow)
+ *    time       -> the sun and the tracking (continuous, vertex stage)
+ *
+ *  Per-instance: sizeP, mirrorP. Per-activation variety: hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform sampler2DArray texMeshMaterial;        ///< the tower
 uniform int            texMeshMaterialLayers;  ///< Number of layers in texMeshMaterial.

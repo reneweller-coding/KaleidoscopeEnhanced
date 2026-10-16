@@ -1,30 +1,36 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file Hologram.frag
- * @brief GEOM="MESH" FAMILY: any loaded model re-read as a sci-fi holotable
- * projection -- wireframe over a see-through fill, scanlines, edge glow and
- * signal dropouts. This family deliberately ships NO assets of its own: it
- * is pointed at the ships and stations already in Models/, so every existing
- * mesh gets a second, completely different look for free (the model= config
- * attribute picks which).
+/*****************************************************************************\
+ *                              Hologram.frag
+\*****************************************************************************/
+/*! @file
  *
- * TRANSPARENCY WITHOUT BLENDING. geom="mesh" draws opaque with GL_BLEND off
- * (see Scene3DShader::draw()), so a hologram cannot simply be given a low
- * alpha. Instead the fill is DITHERED: an ordered screen-space threshold
- * discards most fill fragments and keeps the wire, scanlines and rim. That
- * gives real see-through -- discarded fragments never write depth, so the
- * backdrop behind genuinely shows through -- and it stays correct whatever
- * order the mesh and the sky shell happen to be drawn in.
- *   audioKick    -> dropout glitch (geometry stage) + a brightness surge
- *   audioSwell   -> overall projection strength
- *   audioAdvance -> scanline travel, turntable rate (geometry stage)
+ *  @brief
+ *  GEOM="MESH" FAMILY: any loaded model re-read as a sci-fi holotable projection -- wireframe over a see-through
+ *  fill, scanlines, edge glow and signal dropouts.
  *
- * Per-instance: sizeP, spinP (turntable rate), tintP (projection hue,
- *               radians -- 0 is valid, so it has no "unset" fallback),
- *               scanP (scanline density).
- * Per-activation variety: hueP float palette offset (0..6.28).
+ *  This family deliberately ships NO assets of its own: it is pointed at the ships and stations already in Models/,
+ *  so every existing mesh gets a second, completely different look for free (the model= config attribute picks
+ *  which).
+ *
+ *  TRANSPARENCY WITHOUT BLENDING. geom="mesh" draws opaque with GL_BLEND off
+ *  (see Scene3DShader::draw()), so a hologram cannot simply be given a low
+ *  alpha. Instead the fill is DITHERED: an ordered screen-space threshold
+ *  discards most fill fragments and keeps the wire, scanlines and rim. That
+ *  gives real see-through -- discarded fragments never write depth, so the
+ *  backdrop behind genuinely shows through -- and it stays correct whatever
+ *  order the mesh and the sky shell happen to be drawn in.
+ *    audioKick    -> dropout glitch (geometry stage) + a brightness surge
+ *    audioSwell   -> overall projection strength
+ *    audioAdvance -> scanline travel, turntable rate (geometry stage)
+ *
+ *  Per-instance: sizeP, spinP (turntable rate), tintP (projection hue,
+ *                radians -- 0 is valid, so it has no "unset" fallback),
+ *                scanP (scanline density).
+ *  Per-activation variety: hueP float palette offset (0..6.28).
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform float time;         ///< Seconds since the program started (never reset; see sceneTime).
 uniform float audioAdvance; ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs

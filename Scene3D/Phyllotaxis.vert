@@ -1,22 +1,27 @@
 #version 330 core
-/**
- * @file Phyllotaxis.vert
- * @brief Vertex stage companion to Phyllotaxis.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              Phyllotaxis.vert
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioBarPhase  -> ring of light rolling centre -> rim once per bar
- *   audioSwell     -> dome breath, divergence-angle drift, overall glow
- *   audioBass      -> small radius pulse of the whole head
- *   audioChromaHue -> hue wind along the spiral (musical key)
- *   audioSpread    -> how far the head OPENS: a narrow spectrum (pure tone)
- *                     keeps the florets packed, rich wide harmonics spread
- *                     the whole seed head outward.  Only ever expands, so the
- *                     60k additive points can never bunch up and blow out
- *   audioRolloff   -> dome height: bass-heavy music presses the head flat,
- *                     energy reaching into the highs lifts the crown
- *   audioMode      -> floret colour temperature: minor harmony turns the head
- *                     to a cold blue-violet, major to its warm sunflower gold
+ *  @brief
+ *  Vertex stage companion to Phyllotaxis.frag -- see that file's header for this scene's description.
+ *
+ *  Audio Reactivity:
+ *    audioBarPhase  -> ring of light rolling centre -> rim once per bar
+ *    audioSwell     -> dome breath, divergence-angle drift, overall glow
+ *    audioBass      -> small radius pulse of the whole head
+ *    audioChromaHue -> hue wind along the spiral (musical key)
+ *    audioSpread    -> how far the head OPENS: a narrow spectrum (pure tone)
+ *                      keeps the florets packed, rich wide harmonics spread
+ *                      the whole seed head outward.  Only ever expands, so the
+ *                      60k additive points can never bunch up and blow out
+ *    audioRolloff   -> dome height: bass-heavy music presses the head flat,
+ *                      energy reaching into the highs lifts the crown
+ *    audioMode      -> floret colour temperature: minor harmony turns the head
+ *                      to a cold blue-violet, major to its warm sunflower gold
+ *
+ *  @author René Weller
  */
 // Phyllotaxis.vert — the sunflower head: 60k florets placed by the golden
 // angle (137.5 deg), doming gently in 3D; soft rings of light breathe

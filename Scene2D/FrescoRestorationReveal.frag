@@ -1,26 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file FrescoRestorationReveal.frag
- * @brief FRESCO RESTORATION REVEAL: a chapel fresco black with centuries of
- * soot, and the restorer at work.  Beneath the grime: a lapis-blue vault
- * strewn with gold stars and two painted panels in red-and-cream Cosmati
- * frames, the photo rendered in them as soft tempera, with plaster cracks
- * and a few losses.  Over the scene arc the sponge works along the wall in
- * a serpentine, row after row -- its path is continuous, and the colour
- * comes up behind it with a ragged wet edge; the work lamp follows it.
- * The kick is the documentation camera's flash, the treble the gold
- * glinting where it has been uncovered.  Camera fixed on the scaffold.
+/*****************************************************************************\
+ *                              FrescoRestorationReveal.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   sceneProgress -> cleaning progress (the arc)
- *   audioSwell    -> the work lamp (slow)
- *   audioKick     -> camera flash (light)
- *   audioHigh     -> gold glints (light)
- *   audioLevel    -> brightness
+ *  @brief
+ *  FRESCO RESTORATION REVEAL: a chapel fresco black with centuries of soot, and the restorer at work.
  *
- * Per-activation variety: gridP, sootP, hueP.
+ *  Beneath the grime: a lapis-blue vault strewn with gold stars and two painted panels in red-and-cream Cosmati
+ *  frames, the photo rendered in them as soft tempera, with plaster cracks and a few losses.  Over the scene arc
+ *  the sponge works along the wall in a serpentine, row after row -- its path is continuous, and the colour comes
+ *  up behind it with a ragged wet edge; the work lamp follows it. The kick is the documentation camera's flash, the
+ *  treble the gold glinting where it has been uncovered.  Camera fixed on the scaffold.
+ *
+ *  Audio Reactivity:
+ *    sceneProgress -> cleaning progress (the arc)
+ *    audioSwell    -> the work lamp (slow)
+ *    audioKick     -> camera flash (light)
+ *    audioHigh     -> gold glints (light)
+ *    audioLevel    -> brightness
+ *
+ *  Per-activation variety: gridP, sootP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

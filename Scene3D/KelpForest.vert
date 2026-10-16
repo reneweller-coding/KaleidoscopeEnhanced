@@ -1,8 +1,13 @@
 #version 330 core
-/**
- * @file KelpForest.vert
- * @brief Vertex stage companion to KelpForest.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              KelpForest.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to KelpForest.frag -- see that file's header for this scene's description.
+ *
+ *  @author René Weller
  */
 // KelpForest.vert — an underwater kelp forest swaying in the surge: each
 // ribbon is one kelp frond anchored on the sea floor; the swell IS the

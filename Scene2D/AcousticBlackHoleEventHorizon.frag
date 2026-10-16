@@ -1,22 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file AcousticBlackHoleEventHorizon.frag
- * @brief ACOUSTIC BLACK HOLE EVENT HORIZON: Sonic black hole (Dumb Hole) in a transsonic superfluid
- * Laval nozzle. Inflowing fluid accelerates past the local speed of sound (Mach > 1), trapping
- * acoustic phonons behind the acoustic event horizon and radiating analog Hawking radiation.
- *   audioAdvance -> accelerates fluid inflow velocity across transsonic Laval nozzle
- *   audioKick    -> flashes spontaneous quantum phonon pair emission (Hawking bursts)
- *   audioBass    -> deepens supersonic acoustic horizon gravitational shadow & ergoregion
- *   audioSwell   -> widens transsonic sonic horizon radius & analog Hawking temperature glow
- *   audioCentroid-> shifts acoustic Bogoliubov dispersion emission spectra
+/*****************************************************************************\
+ *                              AcousticBlackHoleEventHorizon.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   machGradP    float fluid acceleration Mach gradient dM/dr    (0.8..2.5)
- *   horizonRadP  float acoustic event horizon sonic radius        (0.2..0.6)
- *   hawkingTempP float analog Hawking radiation brightness gain  (0.8..2.5)
- *   phononWaveP  float trapped sound wave ripple frequency       (8.0..24.0)
+ *  @brief
+ *  ACOUSTIC BLACK HOLE EVENT HORIZON: Sonic black hole (Dumb Hole) in a transsonic superfluid Laval nozzle.
+ *
+ *  Inflowing fluid accelerates past the local speed of sound (Mach > 1), trapping acoustic phonons behind the
+ *  acoustic event horizon and radiating analog Hawking radiation.
+ *
+ *    audioAdvance -> accelerates fluid inflow velocity across transsonic Laval nozzle
+ *    audioKick    -> flashes spontaneous quantum phonon pair emission (Hawking bursts)
+ *    audioBass    -> deepens supersonic acoustic horizon gravitational shadow & ergoregion
+ *    audioSwell   -> widens transsonic sonic horizon radius & analog Hawking temperature glow
+ *    audioCentroid-> shifts acoustic Bogoliubov dispersion emission spectra
+ *
+ *  Per-activation variety:
+ *    machGradP    float fluid acceleration Mach gradient dM/dr    (0.8..2.5)
+ *    horizonRadP  float acoustic event horizon sonic radius        (0.2..0.6)
+ *    hawkingTempP float analog Hawking radiation brightness gain  (0.8..2.5)
+ *    phononWaveP  float trapped sound wave ripple frequency       (8.0..24.0)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

@@ -1,25 +1,33 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file CosmicRayCherenkovAirShowerCascade.frag
- * @brief COSMIC RAY CHERENKOV AIR SHOWER CASCADE: a SKY FULL of ultra-high-energy cosmic ray
- * extensive air showers (EAS) -- 24 independent cascades laid out across the frustum at every
- * depth, over a faint upper-atmosphere airglow speck field. Relativistic secondary
- * electron/positron avalanche, nitrogen fluorescence tracks, Cherenkov light cones, and
- * atmospheric photo texturing.
- *   audioAdvance -> drives relativistic particle cascade propagation down atmospheric depth,
- *                   including the ionisation front that runs down each shower, and the slow
- *                   drift of the airglow field
- *   audioKick    -> flashes shower maximum (X_max) catastrophic ionization burst, and twinkles
- *                   the airglow
- *   audioSwell   -> widens secondary particle lateral distribution function (NKG profile) and
- *                   brightens the airglow
- *   audioCentroid-> shifts nitrogen UV fluorescence / Cherenkov blue emission spectra
+/*****************************************************************************\
+ *                              CosmicRayCherenkovAirShowerCascade.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   cherenkovGlowP float relativistic Cherenkov light cone luminance (0.8..2.5)
- *   fluorP         float nitrogen molecular fluorescence brightness (0.6..2.2)
+ *  @brief
+ *  COSMIC RAY CHERENKOV AIR SHOWER CASCADE: a SKY FULL of ultra-high-energy cosmic ray extensive air showers (EAS)
+ *  -- 24 independent cascades laid out across the frustum at every depth, over a faint upper-atmosphere airglow
+ *  speck field.
+ *
+ *  Relativistic secondary electron/positron avalanche, nitrogen fluorescence tracks, Cherenkov light cones, and
+ *  atmospheric photo texturing.
+ *
+ *    audioAdvance -> drives relativistic particle cascade propagation down atmospheric depth,
+ *                    including the ionisation front that runs down each shower, and the slow
+ *                    drift of the airglow field
+ *    audioKick    -> flashes shower maximum (X_max) catastrophic ionization burst, and twinkles
+ *                    the airglow
+ *    audioSwell   -> widens secondary particle lateral distribution function (NKG profile) and
+ *                    brightens the airglow
+ *    audioCentroid-> shifts nitrogen UV fluorescence / Cherenkov blue emission spectra
+ *
+ *  Per-activation variety:
+ *    cherenkovGlowP float relativistic Cherenkov light cone luminance (0.8..2.5)
+ *    fluorP         float nitrogen molecular fluorescence brightness (0.6..2.2)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec3  vPos;   ///< Position (from the vertex stage).
 in float vDepth; ///< Depth (from the vertex stage).

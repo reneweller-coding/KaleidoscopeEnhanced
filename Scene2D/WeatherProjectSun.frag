@@ -1,27 +1,32 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file WeatherProjectSun.frag
- * @brief WEATHER PROJECT SUN: after Olafur Eliasson's installation in a
- * turbine hall -- a vast dark hall filled with haze, at its far end a
- * glowing half-disc of a sun hung just under the ceiling, and the whole
- * ceiling one mirror, so the half-disc becomes a full sun and the hall
- * doubles upward.  The mono-frequency light turns everything into shades
- * of amber and black; people stand and lie on the floor as silhouettes,
- * looking up at their own tiny reflections.  The camera is still; the
- * haze drifts and the people move about slowly.
+/*****************************************************************************\
+ *                              WeatherProjectSun.frag
+\*****************************************************************************/
+/*! @file
  *
- * The hall is traced analytically (a box with a mirror lid), the haze's
- * in-scattering of the sun integrated in closed form along each ray.
+ *  @brief
+ *  WEATHER PROJECT SUN: after Olafur Eliasson's installation in a turbine hall -- a vast dark hall filled with
+ *  haze, at its far end a glowing half-disc of a sun hung just under the ceiling, and the whole ceiling one mirror,
+ *  so the half-disc becomes a full sun and the hall doubles upward.
  *
- * Audio Reactivity:
- *   audioSwell  -> the density of the haze (slow)
- *   audioBass   -> the glow of the sun (light)
- *   audioLevel  -> brightness
- *   sceneTime / sceneAdvance -> the drifting haze and the people walking
+ *  The mono-frequency light turns everything into shades of amber and black; people stand and lie on the floor as
+ *  silhouettes, looking up at their own tiny reflections.  The camera is still; the haze drifts and the people move
+ *  about slowly.
  *
- * Per-activation variety: crowdP (how many people), hueP.
+ *  The hall is traced analytically (a box with a mirror lid), the haze's
+ *  in-scattering of the sun integrated in closed form along each ray.
+ *
+ *  Audio Reactivity:
+ *    audioSwell  -> the density of the haze (slow)
+ *    audioBass   -> the glow of the sun (light)
+ *    audioLevel  -> brightness
+ *    sceneTime / sceneAdvance -> the drifting haze and the people walking
+ *
+ *  Per-activation variety: crowdP (how many people), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureGoboWash.frag
- * @brief TEXTURE GOBO WASH: a theatre stage wall washed by moving-head
- * lights -- several soft spots glide over a dark textured wall (the
- * photograph as the wall's surface), each projecting a rotating gobo
- * pattern (breakup leaves, star, spiral, dots) in its own colour, the
- * patterns overlapping and mixing additively, the edges soft with
- * defocus; the wall's relief catches the light.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              TextureGoboWash.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the lights glide (integrated, jump-free)
- *   audioPhase      -> the gobos rotate (integrated)
- *   audioBass       -> the lights brighten (light)
- *   audioSpread     -> the spots grow
- *   audioMode       -> palette: cool in minor, warm in major
- *   audioSwell      -> the haze glow around the spots (slow)
+ *  @brief
+ *  TEXTURE GOBO WASH: a theatre stage wall washed by moving-head lights -- several soft spots glide over a dark
+ *  textured wall (the photograph as the wall's surface), each projecting a rotating gobo pattern (breakup leaves,
+ *  star, spiral, dots) in its own colour, the patterns overlapping and mixing additively, the edges soft with
+ *  defocus; the wall's relief catches the light.
  *
- * Knobs: spotP (number of lights), focusP (gobo sharpness), wallP (wall relief), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the lights glide (integrated, jump-free)
+ *    audioPhase      -> the gobos rotate (integrated)
+ *    audioBass       -> the lights brighten (light)
+ *    audioSpread     -> the spots grow
+ *    audioMode       -> palette: cool in minor, warm in major
+ *    audioSwell      -> the haze glow around the spots (slow)
+ *
+ *  Knobs: spotP (number of lights), focusP (gobo sharpness), wallP (wall relief), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

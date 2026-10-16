@@ -1,22 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file KleinQuarticHyperbolicCurve.frag
- * @brief KLEIN QUARTIC HYPERBOLIC CURVE: Riemann surface of genus 3 with maximal
- * symmetry (168 automorphisms, PSL(2,7)). Tiled by 24 regular heptagons in
- * the hyperbolic Poincaré disk with conformal circle inversions, sacred
- * geometry kaleidoscopic rosettes, and multi-angle photo reflections.
- *   audioAdvance -> translates hyperbolic isometry group PSL(2,7)
- *   audioKick    -> flashes 168 automorphism reflection lines & facet edges
- *   audioBass    -> undulates Poincaré metric curvature & heptagon inflation
- *   audioChromaHue-> shifts hyperbolic rosette color spectrum
+/*****************************************************************************\
+ *                              KleinQuarticHyperbolicCurve.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   genusP    float hyperbolic Poincaré curvature scale    (0.5..2.2)
- *   heptagonP float {7,3} heptagonal symmetry fold depth    (0.5..2.0)
- *   speedP    float hyperbolic rotation velocity            (0.5..2.0)
- *   hueP      float sacred geometry chromatic hue offset    (0..6.28)
+ *  @brief
+ *  KLEIN QUARTIC HYPERBOLIC CURVE: Riemann surface of genus 3 with maximal symmetry (168 automorphisms, PSL(2,7)).
+ *
+ *  Tiled by 24 regular heptagons in the hyperbolic Poincaré disk with conformal circle inversions, sacred geometry
+ *  kaleidoscopic rosettes, and multi-angle photo reflections.
+ *
+ *    audioAdvance -> translates hyperbolic isometry group PSL(2,7)
+ *    audioKick    -> flashes 168 automorphism reflection lines & facet edges
+ *    audioBass    -> undulates Poincaré metric curvature & heptagon inflation
+ *    audioChromaHue-> shifts hyperbolic rosette color spectrum
+ *
+ *  Per-activation variety:
+ *    genusP    float hyperbolic Poincaré curvature scale    (0.5..2.2)
+ *    heptagonP float {7,3} heptagonal symmetry fold depth    (0.5..2.0)
+ *    speedP    float hyperbolic rotation velocity            (0.5..2.0)
+ *    hueP      float sacred geometry chromatic hue offset    (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

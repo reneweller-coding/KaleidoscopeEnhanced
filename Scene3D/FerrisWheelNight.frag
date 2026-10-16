@@ -1,17 +1,21 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file FerrisWheelNight.frag
- * @brief Fragment stage for FerrisWheelNight: a night sky with round stars,
- * the fairground below as the photo lit by stalls (the swell), the wheel's
- * spokes and rim strung with round lamps whose patterns run with the
- * spectrum bands (spoke i = band i, lamps along the spoke light up to the
- * band's level; the rim lamps chase on the clock), the cabins as photo
- * boxes with lit windows, the kick a flash of the hub star.
+/*****************************************************************************\
+ *                              FerrisWheelNight.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity: audioSpectrum[32] -> spoke lamps; audioKick -> hub flash;
- *                   audioSwell -> fair light; audioLevel -> brightness.
+ *  @brief
+ *  Fragment stage for FerrisWheelNight: a night sky with round stars, the fairground below as the photo lit by
+ *  stalls (the swell), the wheel's spokes and rim strung with round lamps whose patterns run with the spectrum
+ *  bands (spoke i = band i, lamps along the spoke light up to the band's level; the rim lamps chase on the clock),
+ *  the cabins as photo boxes with lit windows, the kick a flash of the hub star.
+ *
+ *  Audio Reactivity: audioSpectrum[32] -> spoke lamps; audioKick -> hub flash;
+ *                    audioSwell -> fair light; audioLevel -> brightness.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 in vec2  vTexCoord; ///< Texture coordinate (from the vertex stage).
 in vec3  vWorld;    ///< World position (from the vertex stage).
 in float vKind;     ///< Element kind (from the vertex stage).

@@ -1,16 +1,26 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file FerroSpikes.frag
- * @brief Black ferrofluid standing up into the Rosensweig spike lattice under a magnet, rendered as reflective liquid
- * metal rather than a colour ramp.
+/*****************************************************************************\
+ *                              FerroSpikes.frag
+\*****************************************************************************/
+/*! @file
  *
- * texFerro (from the CfxFerro Swift-Hohenberg compute pass) supplies a height field; its gradient gives the surface
- * normal used for specular highlights and a photo reflection sampled along that normal, so the fluid mirrors the room
- * it sits in. audioKick and audioHigh punch up the specular glints on the spike tips, audioSubBass and audioBeat make
- * the spike peaks themselves glow, and the highlight/glow tint comes from an imgPalette arc sampled from the photo,
- * rotated by audioChromaHue and audioAdvance with audioValence shaping its saturation.
+ *  @brief
+ *  Black ferrofluid standing up into the Rosensweig spike lattice under a magnet, rendered as reflective liquid
+ *  metal rather than a colour ramp.
+ *
+ *  texFerro (from the CfxFerro Swift-Hohenberg compute pass) supplies a height field; its gradient gives the
+ *  surface
+ *  normal used for specular highlights and a photo reflection sampled along that normal, so the fluid mirrors the
+ *  room
+ *  it sits in. audioKick and audioHigh punch up the specular glints on the spike tips, audioSubBass and audioBeat
+ *  make
+ *  the spike peaks themselves glow, and the highlight/glow tint comes from an imgPalette arc sampled from the
+ *  photo,
+ *  rotated by audioChromaHue and audioAdvance with audioValence shaping its saturation.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 // FerroSpikes.frag — ferrofluid under a magnet.  Blend/CfxFerro.comp runs a
 // Swift-Hohenberg field whose peaks form the Rosensweig spike lattice; this
 // pass shades it as black liquid metal, which means specular highlights and

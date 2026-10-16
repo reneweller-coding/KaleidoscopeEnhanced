@@ -1,20 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TerraformingColony.frag
- * @brief TERRAFORMING COLONY: A flight over a harsh, barren planet being transformed.
- * Massive glowing biodomes and towering atmospheric processors dominate the
- * landscape. Smoke and terraforming gases glow intensely to the beat.
- *   audioAdvance -> camera flight speed over the colony
- *   audioKick    -> flashes from atmospheric processors and vent stacks
- *   audioSwell   -> brightness of the biodomes and artificial daylight
- *   audioChromaHue-> palette offset for the terraforming gases
+/*****************************************************************************\
+ *                              TerraformingColony.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   domeP float density of biodomes (0.5..1.5)
- *   gasP float density of atmospheric gases (0.5..1.5)
- *   hueP float palette offset (0..6.28)
+ *  @brief
+ *  TERRAFORMING COLONY: A flight over a harsh, barren planet being transformed.
+ *
+ *  Massive glowing biodomes and towering atmospheric processors dominate the landscape. Smoke and terraforming
+ *  gases glow intensely to the beat.
+ *
+ *    audioAdvance -> camera flight speed over the colony
+ *    audioKick    -> flashes from atmospheric processors and vent stacks
+ *    audioSwell   -> brightness of the biodomes and artificial daylight
+ *    audioChromaHue-> palette offset for the terraforming gases
+ *
+ *  Per-activation variety:
+ *    domeP float density of biodomes (0.5..1.5)
+ *    gasP float density of atmospheric gases (0.5..1.5)
+ *    hueP float palette offset (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

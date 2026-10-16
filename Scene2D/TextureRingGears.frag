@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureRingGears.frag
- * @brief TEXTURE RING GEARS: an endless clockwork of meshing gears -- gear
- * wheels of many sizes, cut from the photograph like enamelled brass
- * plates, interlock across the whole view, each turning at the speed its
- * tooth count demands (big ones slow, small ones fast, neighbours in
- * opposite directions), with spokes, hubs and a polished rim; the
- * mechanism never stops.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              TextureRingGears.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the gears turn (integrated, jump-free)
- *   audioSpread     -> the gear scale
- *   audioKick       -> the rims flash (light)
- *   audioMode       -> metal: steel in minor, brass in major
- *   audioSwell      -> the enamel colour (slow)
- *   audioHigh       -> glints on the teeth (light)
+ *  @brief
+ *  TEXTURE RING GEARS: an endless clockwork of meshing gears -- gear wheels of many sizes, cut from the photograph
+ *  like enamelled brass plates, interlock across the whole view, each turning at the speed its tooth count demands
+ *  (big ones slow, small ones fast, neighbours in opposite directions), with spokes, hubs and a polished rim; the
+ *  mechanism never stops.
  *
- * Knobs: toothP (tooth count), spokeP (spoke count), enamelP (photo enamel), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the gears turn (integrated, jump-free)
+ *    audioSpread     -> the gear scale
+ *    audioKick       -> the rims flash (light)
+ *    audioMode       -> metal: steel in minor, brass in major
+ *    audioSwell      -> the enamel colour (slow)
+ *    audioHigh       -> glints on the teeth (light)
+ *
+ *  Knobs: toothP (tooth count), spokeP (spoke count), enamelP (photo enamel), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

@@ -1,30 +1,36 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file CavitationBubbleCollapse.frag
- * @brief TRANSITION CAVITATION BUBBLE COLLAPSE: bubbles grow in the outgoing
- * scene and collapse.  Each collapse leaves the incoming scene where the bubble
- * stood and sends a shock ring out through the liquid.
+/*****************************************************************************\
+ *                              CavitationBubbleCollapse.frag
+\*****************************************************************************/
+/*! @file
  *
- * A cavitation bubble is not a bubble that pops.  It grows while the pressure
- * is low and then collapses violently -- the collapse is far faster than the
- * growth, and it is the collapse, not the growth, that does the work.  So the
- * radius here rises slowly and comes down steeply, and the light and the shock
- * ring are tied to the last moment of that fall.  A symmetric grow-and-shrink
- * would look like breathing, which is the one thing cavitation is not.
+ *  @brief
+ *  TRANSITION CAVITATION BUBBLE COLLAPSE: bubbles grow in the outgoing scene and collapse.
  *
- * What the collapse leaves behind is permanent: the liquid does not go back.
- * That is what carries the transition, and it is why the frame is fully the
- * incoming scene by the end without any extra fade.
+ *  Each collapse leaves the incoming scene where the bubble stood and sends a shock ring out through the liquid.
  *
- * Audio Reactivity:
- *   audioKick  -> the light of a collapse (light, local)
- *   audioSwell -> how fast bubbles grow (slow)
- *   audioHigh  -> the shock ring's edge (light)
- *   audioSwell -> the bubble size (slow)
+ *  A cavitation bubble is not a bubble that pops.  It grows while the pressure
+ *  is low and then collapses violently -- the collapse is far faster than the
+ *  growth, and it is the collapse, not the growth, that does the work.  So the
+ *  radius here rises slowly and comes down steeply, and the light and the shock
+ *  ring are tied to the last moment of that fall.  A symmetric grow-and-shrink
+ *  would look like breathing, which is the one thing cavitation is not.
  *
- * Per-activation variety: sitesP, sizeP, hueP.
+ *  What the collapse leaves behind is permanent: the liquid does not go back.
+ *  That is what carries the transition, and it is why the frame is fully the
+ *  incoming scene by the end without any extra fade.
+ *
+ *  Audio Reactivity:
+ *    audioKick  -> the light of a collapse (light, local)
+ *    audioSwell -> how fast bubbles grow (slow)
+ *    audioHigh  -> the shock ring's edge (light)
+ *    audioSwell -> the bubble size (slow)
+ *
+ *  Per-activation variety: sitesP, sizeP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

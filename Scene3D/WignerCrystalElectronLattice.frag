@@ -1,19 +1,27 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file WignerCrystalElectronLattice.frag
- * @brief WIGNER CRYSTAL ELECTRON LATTICE: Triangular 2D/3D quantum electron crystal
- * formed by pure Coulomb repulsion at ultralow temperatures. Zero-point quantum fluctuations,
- * propagating acoustic phonon waves, and photo-palette dispersion halos.
- *   audioAdvance -> propagates phonon acoustic wave modes across the crystal
- *   audioKick    -> excites quantum melting fluctuation bursts
- *   audioSwell   -> widens electron wavepacket cloud halo
- *   audioCentroid-> shifts phonon dispersion branch colors
+/*****************************************************************************\
+ *                              WignerCrystalElectronLattice.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   pointGainP float electron point brightness             (0.5..1.8)
- *   haloP      float quantum wavepacket halo brightness     (0.6..2.2)
+ *  @brief
+ *  WIGNER CRYSTAL ELECTRON LATTICE: Triangular 2D/3D quantum electron crystal formed by pure Coulomb repulsion at
+ *  ultralow temperatures.
+ *
+ *  Zero-point quantum fluctuations, propagating acoustic phonon waves, and photo-palette dispersion halos.
+ *
+ *    audioAdvance -> propagates phonon acoustic wave modes across the crystal
+ *    audioKick    -> excites quantum melting fluctuation bursts
+ *    audioSwell   -> widens electron wavepacket cloud halo
+ *    audioCentroid-> shifts phonon dispersion branch colors
+ *
+ *  Per-activation variety:
+ *    pointGainP float electron point brightness             (0.5..1.8)
+ *    haloP      float quantum wavepacket halo brightness     (0.6..2.2)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec3  vCol;       ///< Colour (from the vertex stage).
 in float vPhononAmp; ///< Phonon amp (from the vertex stage).

@@ -1,28 +1,36 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file MantleConvectionPlume.frag
- * @brief MANTLE CONVECTION PLUME: Deep Earth core-mantle boundary (D'' layer)
- * thermal plumes rising through Rayleigh-Bénard viscous convection cells.
- * Mushrooming basaltic magma diapir heads, subducting tectonic slabs,
- * 3000°C thermal upwelling, and molten rock photo texture distortion.
- *   audioAdvance -> drives viscous mantle convection vorticity flow
- *   audioKick    -> triggers explosive magma diapir eruptions at the lithosphere
- *   audioBass    -> undulates thermal plume stem thickness & buoyancy, and the
- *                   glow of the hot D'' core-mantle boundary layer
- *   audioCentroid-> shifts magma temperature (deep basaltic red to incandescent gold)
+/*****************************************************************************\
+ *                              MantleConvectionPlume.frag
+\*****************************************************************************/
+/*! @file
  *
- * A whole MANTLE SECTION is shown, not one plume: five diapirs rise from the
- * core-mantle boundary at staggered heights, cold subducting slabs sink between
- * them, and the Rayleigh-Benard roll field carries visible cell structure right
- * out to the frame edges.
+ *  @brief
+ *  MANTLE CONVECTION PLUME: Deep Earth core-mantle boundary (D'' layer) thermal plumes rising through
+ *  Rayleigh-Bénard viscous convection cells.
  *
- * Per-activation variety:
- *   plumeP   float mantle thermal plume buoyancy & height  (0.5..2.2)
- *   convectP float Rayleigh-Bénard convection cell density  (0.5..2.0)
- *   speedP   float viscous mantle flow velocity            (0.5..2.0)
- *   hueP     float thermal radiation hue offset            (0..6.28)
+ *  Mushrooming basaltic magma diapir heads, subducting tectonic slabs, 3000°C thermal upwelling, and molten rock
+ *  photo texture distortion.
+ *
+ *    audioAdvance -> drives viscous mantle convection vorticity flow
+ *    audioKick    -> triggers explosive magma diapir eruptions at the lithosphere
+ *    audioBass    -> undulates thermal plume stem thickness & buoyancy, and the
+ *                    glow of the hot D'' core-mantle boundary layer
+ *    audioCentroid-> shifts magma temperature (deep basaltic red to incandescent gold)
+ *
+ *  A whole MANTLE SECTION is shown, not one plume: five diapirs rise from the
+ *  core-mantle boundary at staggered heights, cold subducting slabs sink between
+ *  them, and the Rayleigh-Benard roll field carries visible cell structure right
+ *  out to the frame edges.
+ *
+ *  Per-activation variety:
+ *    plumeP   float mantle thermal plume buoyancy & height  (0.5..2.2)
+ *    convectP float Rayleigh-Bénard convection cell density  (0.5..2.0)
+ *    speedP   float viscous mantle flow velocity            (0.5..2.0)
+ *    hueP     float thermal radiation hue offset            (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

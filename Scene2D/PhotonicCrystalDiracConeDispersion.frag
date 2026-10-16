@@ -1,22 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file PhotonicCrystalDiracConeDispersion.frag
- * @brief PHOTONIC CRYSTAL DIRAC CONE DISPERSION: Zero-refractive-index (n = 0) photonic crystal.
- * Accidental degeneracy of electric and magnetic dipole modes at the Brillouin zone center (Gamma)
- * forms a linear Dirac cone dispersion, creating infinite phase velocity and spatially uniform fields.
- *   audioAdvance -> navigates zero-index tunneling & Bloch phase dispersion
- *   audioKick    -> flashes accidental degeneracy Dirac point resonance bursts
- *   audioSwell   -> widens photonic bandgap depth & zero-index field coherence
- *   audioCentroid-> shifts Dirac point optical transmission wavelength spectra
- *   audioHigh    -> excites high-order Bloch harmonic diffraction wavelets
+/*****************************************************************************\
+ *                              PhotonicCrystalDiracConeDispersion.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   latticePitchP float dielectric cylinder lattice constant    (3.0..8.0)
- *   diracPurityP  float accidental degeneracy zero-index purity  (0.6..2.2)
- *   tunnelGlowP   float zero-index phase tunneling luminance gain(0.8..2.5)
- *   cylinderRadP  float dielectric pillar radius scale          (0.15..0.45)
+ *  @brief
+ *  PHOTONIC CRYSTAL DIRAC CONE DISPERSION: Zero-refractive-index (n = 0) photonic crystal.
+ *
+ *  Accidental degeneracy of electric and magnetic dipole modes at the Brillouin zone center (Gamma) forms a linear
+ *  Dirac cone dispersion, creating infinite phase velocity and spatially uniform fields.
+ *
+ *    audioAdvance -> navigates zero-index tunneling & Bloch phase dispersion
+ *    audioKick    -> flashes accidental degeneracy Dirac point resonance bursts
+ *    audioSwell   -> widens photonic bandgap depth & zero-index field coherence
+ *    audioCentroid-> shifts Dirac point optical transmission wavelength spectra
+ *    audioHigh    -> excites high-order Bloch harmonic diffraction wavelets
+ *
+ *  Per-activation variety:
+ *    latticePitchP float dielectric cylinder lattice constant    (3.0..8.0)
+ *    diracPurityP  float accidental degeneracy zero-index purity  (0.6..2.2)
+ *    tunnelGlowP   float zero-index phase tunneling luminance gain(0.8..2.5)
+ *    cylinderRadP  float dielectric pillar radius scale          (0.15..0.45)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

@@ -1,28 +1,34 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-
-/**
- * @file Fleet.frag
- * @brief A formation of one craft drawn many times (the placement is in the
- * vertex stage, via instances="N" and gl_InstanceID). The subject is the ORDER,
- * not the ship: the formation tightens on the beat, breathes between, and a
- * drop blows it apart.
+/*****************************************************************************\
+ *                              Fleet.frag
+\*****************************************************************************/
+/*! @file
  *
- * Shading is deliberately simple and mostly the same for every craft. Detail
- * per ship would be wasted -- at formation scale each is a few dozen pixels --
- * and worse, it would compete with the pattern. What DOES vary per craft is a
- * running light whose colour walks along the formation, because a travelling
- * signal is what makes a hundred identical objects read as a fleet under one
- * command rather than as a swarm.
+ *  @brief
+ *  A formation of one craft drawn many times (the placement is in the vertex stage, via instances="N" and
+ *  gl_InstanceID).
  *
- *   audioKick  -> the formation tightens; engines flare
- *   audioDrop  -> the formation scatters (vertex stage)
- *   audioSwell -> engine glow
- *   audioAdvance -> the running light travels
+ *  The subject is the ORDER, not the ship: the formation tightens on the beat, breathes between, and a drop blows
+ *  it apart.
  *
- * Per-instance: sizeP, formP (0 wedge / 1 column / 2 shell), spreadP, tintP.
- * Per-activation variety: hueP float palette offset (0..6.28).
+ *  Shading is deliberately simple and mostly the same for every craft. Detail
+ *  per ship would be wasted -- at formation scale each is a few dozen pixels --
+ *  and worse, it would compete with the pattern. What DOES vary per craft is a
+ *  running light whose colour walks along the formation, because a travelling
+ *  signal is what makes a hundred identical objects read as a fleet under one
+ *  command rather than as a swarm.
+ *
+ *    audioKick  -> the formation tightens; engines flare
+ *    audioDrop  -> the formation scatters (vertex stage)
+ *    audioSwell -> engine glow
+ *    audioAdvance -> the running light travels
+ *
+ *  Per-instance: sizeP, formP (0 wedge / 1 column / 2 shell), spreadP, tintP.
+ *  Per-activation variety: hueP float palette offset (0..6.28).
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform sampler2DArray texMeshMaterial;       ///< The mesh's material textures (albedo, roughness, normal ...).
 uniform int            texMeshMaterialLayers; ///< Number of layers in texMeshMaterial.

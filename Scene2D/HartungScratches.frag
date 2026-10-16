@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file HartungScratches.frag
- * @brief HARTUNG SCRATCHES: Hans Hartung's late scratched paintings -- a
- * field of luminous colour (from the photograph) covered by a dark layer
- * into which sheaves of fine lines have been scratched, fanning out like
- * grass or thrown straws, each scratch revealing the bright colour
- * beneath; new sheaves are scratched while old ones slowly close over.
- * Endless, mirrorable.
+/*****************************************************************************\
+ *                              HartungScratches.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the scratching (integrated, jump-free)
- *   audioSpread     -> how wide the sheaves fan out
- *   audioKick       -> the revealed colour flares (light)
- *   audioMode       -> the top layer: blue-black in minor, brown-black in major
- *   audioRoughness  -> the scratches get wilder
- *   audioSwell      -> the colour beneath glows (slow)
+ *  @brief
+ *  HARTUNG SCRATCHES: Hans Hartung's late scratched paintings -- a field of luminous colour (from the photograph)
+ *  covered by a dark layer into which sheaves of fine lines have been scratched, fanning out like grass or thrown
+ *  straws, each scratch revealing the bright colour beneath; new sheaves are scratched while old ones slowly close
+ *  over.
  *
- * Knobs: sheafP (sheaves), lineP (lines per sheaf), lengthP (scratch length), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the scratching (integrated, jump-free)
+ *    audioSpread     -> how wide the sheaves fan out
+ *    audioKick       -> the revealed colour flares (light)
+ *    audioMode       -> the top layer: blue-black in minor, brown-black in major
+ *    audioRoughness  -> the scratches get wilder
+ *    audioSwell      -> the colour beneath glows (slow)
+ *
+ *  Knobs: sheafP (sheaves), lineP (lines per sheaf), lengthP (scratch length), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

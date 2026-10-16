@@ -1,17 +1,23 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file FluidChladniKaleidoResonance.frag
- * @brief FLUID CHLADNI KALEIDO RESONANCE: Acoustic standing wave modal nodal lines
- * coupled with viscous iridescent fluid marbling and kaleidoscopic rotational symmetry.
+/*****************************************************************************\
+ *                              FluidChladniKaleidoResonance.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance -> drives continuous fluid curl advection & modal transitions
- *   audioKick    -> excites higher-order vibration harmonics & nodal line shockwaves
- *   audioCentroid-> selects Chladni modal quantum numbers (m, n)
- *   audioSubBass -> drives viscous fluid ripple turbulence & amplitude
- *   audioChromaHue-> rotates the iridescent thin-film fluid palette
+ *  @brief
+ *  FLUID CHLADNI KALEIDO RESONANCE: Acoustic standing wave modal nodal lines coupled with viscous iridescent fluid
+ *  marbling and kaleidoscopic rotational symmetry.
+ *
+ *  Audio Reactivity:
+ *    audioAdvance -> drives continuous fluid curl advection & modal transitions
+ *    audioKick    -> excites higher-order vibration harmonics & nodal line shockwaves
+ *    audioCentroid-> selects Chladni modal quantum numbers (m, n)
+ *    audioSubBass -> drives viscous fluid ripple turbulence & amplitude
+ *    audioChromaHue-> rotates the iridescent thin-film fluid palette
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

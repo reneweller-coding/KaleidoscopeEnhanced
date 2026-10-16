@@ -1,21 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file CosmicStringCuspKinkGravitationalRadiation.frag
- * @brief COSMIC STRING CUSP KINK GRAVITATIONAL RADIATION: Relativistic cosmic string loops
- * formed in early universe phase transitions. Sub-luminal loop oscillations periodically form
- * light-speed cusps and kinks, emitting beamed gravitational wave bursts and spacetime lensing halos.
- * A NETWORK of 160 loops scattered through the whole view volume (frustum-spread, so a far loop is
- * drawn as large as a near one) rather than the single central tangle it used to be.
- *   audioAdvance -> navigates relativistic string loop oscillation & cusp formation
- *   audioKick    -> flashes light-speed cusp gravitational radiation burst beams
- *   audioSwell   -> widens string tension energy density & gravitational lensing halo
- *   audioCentroid-> shifts primordial topological defect emission color spectra
+/*****************************************************************************\
+ *                              CosmicStringCuspKinkGravitationalRadiation.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   cuspGlowP   float light-speed cusp peak luminance gain  (0.8..2.5)
- *   lensingP    float gravitational lensing halo intensity   (0.6..2.2)
+ *  @brief
+ *  COSMIC STRING CUSP KINK GRAVITATIONAL RADIATION: Relativistic cosmic string loops formed in early universe phase
+ *  transitions.
+ *
+ *  Sub-luminal loop oscillations periodically form light-speed cusps and kinks, emitting beamed gravitational wave
+ *  bursts and spacetime lensing halos. A NETWORK of 160 loops scattered through the whole view volume
+ *  (frustum-spread, so a far loop is drawn as large as a near one) rather than the single central tangle it used to
+ *  be.
+ *
+ *    audioAdvance -> navigates relativistic string loop oscillation & cusp formation
+ *    audioKick    -> flashes light-speed cusp gravitational radiation burst beams
+ *    audioSwell   -> widens string tension energy density & gravitational lensing halo
+ *    audioCentroid-> shifts primordial topological defect emission color spectra
+ *
+ *  Per-activation variety:
+ *    cuspGlowP   float light-speed cusp peak luminance gain  (0.8..2.5)
+ *    lensingP    float gravitational lensing halo intensity   (0.6..2.2)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec3  vPos;   ///< Position (from the vertex stage).
 in float vDepth; ///< Depth (from the vertex stage).

@@ -1,17 +1,26 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file Bubble.frag
- * @brief Soap bubbles rise and pop over a dimmed backdrop of the current photo, each one refracting the picture like a
- * tiny lens with an iridescent rim.
+/*****************************************************************************\
+ *                              Bubble.frag
+\*****************************************************************************/
+/*! @file
  *
- * audioAdvance integrates travel so the bubbles climb faster with the music without ever jump-cutting; audioFlux (plus
- * audioLevel and audioBeat) sets how many of the 32 bubble slots are alive at once, audioKick puffs each bubble's
- * radius and slams the pop-ring flash, and audioLevel brightens and saturates the backdrop and refracted highlights.
- * Colour comes from an imgPalette-style arc sampled from the photo itself, rotated by audioChromaHue and driven by
- * audioAdvance, with audioValence controlling how saturated versus grey the iridescent tint reads. Optional negative
- * and vigneting toggles invert the image or darken the corners.
+ *  @brief
+ *  Soap bubbles rise and pop over a dimmed backdrop of the current photo, each one refracting the picture like a
+ *  tiny lens with an iridescent rim.
+ *
+ *  audioAdvance integrates travel so the bubbles climb faster with the music without ever jump-cutting; audioFlux
+ *  (plus
+ *  audioLevel and audioBeat) sets how many of the 32 bubble slots are alive at once, audioKick puffs each bubble's
+ *  radius and slams the pop-ring flash, and audioLevel brightens and saturates the backdrop and refracted
+ *  highlights.
+ *  Colour comes from an imgPalette-style arc sampled from the photo itself, rotated by audioChromaHue and driven by
+ *  audioAdvance, with audioValence controlling how saturated versus grey the iridescent tint reads. Optional
+ *  negative
+ *  and vigneting toggles invert the image or darken the corners.
+ *
+ *  @author René Weller; contains code by Inigo Quilez (iq, 2013, CC BY-NC-SA 3.0)
  */
+out vec4          fragColor;      ///< The pixel's colour (output).
 uniform vec2      resolution;     ///< Size of the render target in pixels.
 uniform float     time;           ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;           ///< The current photo.

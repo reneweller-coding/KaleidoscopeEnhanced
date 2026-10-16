@@ -1,18 +1,24 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file FluidChromaMarangoniConvection.frag
- * @brief FLUID CHROMA MARANGONI CONVECTION: Bénard-Marangoni thermal convection cells
- * (hexagonal thermal upwelling honeycomb) with surface-tension gradient driven
- * droplet bursting, toroidal fluid vortex rings, and psychedelic Chroma diffusion.
+/*****************************************************************************\
+ *                              FluidChromaMarangoniConvection.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance -> drives continuous thermal advection & Marangoni droplet spread
- *   audioKick    -> flashes thermal upwelling plume cores & surface tension shockwave
- *   audioCentroid-> modulates hexagonal cell boundary ripple frequency
- *   audioSubBass -> expands thermal convection cell diameter
- *   audioChromaHue-> rotates the luminous fluid marbling spectrum
+ *  @brief
+ *  FLUID CHROMA MARANGONI CONVECTION: Bénard-Marangoni thermal convection cells (hexagonal thermal upwelling
+ *  honeycomb) with surface-tension gradient driven droplet bursting, toroidal fluid vortex rings, and psychedelic
+ *  Chroma diffusion.
+ *
+ *  Audio Reactivity:
+ *    audioAdvance -> drives continuous thermal advection & Marangoni droplet spread
+ *    audioKick    -> flashes thermal upwelling plume cores & surface tension shockwave
+ *    audioCentroid-> modulates hexagonal cell boundary ripple frequency
+ *    audioSubBass -> expands thermal convection cell diameter
+ *    audioChromaHue-> rotates the luminous fluid marbling spectrum
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

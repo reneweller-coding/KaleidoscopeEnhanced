@@ -1,21 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TimeDilation.frag
- * @brief TIME DILATION: Falling into a supermassive black hole, experiencing
- * extreme time dilation. The universe outside speeds up to infinity, turning
- * into blurred streaks of light, while the event horizon below stretches forever.
- * Audio kicks violently distort the space-time fabric.
- *   audioAdvance -> descent speed into the gravity well
- *   audioKick    -> violent space-time tearing/glitches
- *   audioSwell   -> blinding brightness of the infinitely accelerated outer universe
- *   audioChromaHue-> palette offset for the relativistic shifting
+/*****************************************************************************\
+ *                              TimeDilation.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   warpP float intensity of the space-time distortion (0.5..1.5)
- *   streakP float length and brightness of the star streaks (0.5..2.0)
- *   hueP float palette offset (0..6.28)
+ *  @brief
+ *  TIME DILATION: Falling into a supermassive black hole, experiencing extreme time dilation.
+ *
+ *  The universe outside speeds up to infinity, turning into blurred streaks of light, while the event horizon below
+ *  stretches forever. Audio kicks violently distort the space-time fabric.
+ *
+ *    audioAdvance -> descent speed into the gravity well
+ *    audioKick    -> violent space-time tearing/glitches
+ *    audioSwell   -> blinding brightness of the infinitely accelerated outer universe
+ *    audioChromaHue-> palette offset for the relativistic shifting
+ *
+ *  Per-activation variety:
+ *    warpP float intensity of the space-time distortion (0.5..1.5)
+ *    streakP float length and brightness of the star streaks (0.5..2.0)
+ *    hueP float palette offset (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

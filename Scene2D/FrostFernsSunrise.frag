@@ -1,24 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file FrostFernsSunrise.frag
- * @brief FROST FERNS SUNRISE: ice flowers on a window pane at dawn.  Feathery
- * frost ferns branch across the glass from its edges -- main stems, side
- * barbs, finer barbs again, each crystal catching the low sun -- and
- * through the clear patches between them glows the sunrise outside:
- * orange at the horizon, rose, then pale blue, a blurred row of snowy
- * roofs.  Where the sun stands behind the glass the frost lights up gold
- * and sparkles.  The frost grows almost imperceptibly; the music is the
- * light in the ice.
+/*****************************************************************************\
+ *                              FrostFernsSunrise.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSwell  -> the sun's glow through the glass (slow)
- *   audioHigh   -> glints on the crystal edges (light)
- *   audioLevel  -> brightness
- *   sceneTime / sceneAdvance -> the slow growth and the sun's rise (continuous)
+ *  @brief
+ *  FROST FERNS SUNRISE: ice flowers on a window pane at dawn.
  *
- * Per-activation variety: frostP (how much of the pane is frozen), hueP.
+ *  Feathery frost ferns branch across the glass from its edges -- main stems, side barbs, finer barbs again, each
+ *  crystal catching the low sun -- and through the clear patches between them glows the sunrise outside: orange at
+ *  the horizon, rose, then pale blue, a blurred row of snowy roofs.  Where the sun stands behind the glass the
+ *  frost lights up gold and sparkles.  The frost grows almost imperceptibly; the music is the light in the ice.
+ *
+ *  Audio Reactivity:
+ *    audioSwell  -> the sun's glow through the glass (slow)
+ *    audioHigh   -> glints on the crystal edges (light)
+ *    audioLevel  -> brightness
+ *    sceneTime / sceneAdvance -> the slow growth and the sun's rise (continuous)
+ *
+ *  Per-activation variety: frostP (how much of the pane is frozen), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

@@ -1,19 +1,25 @@
 #version 430
-/**
- * @file CfxParticleStep.comp
- * @brief Advects the particle swarm through a divergence-free curl-noise field and splats each particle's photo colour
- * into the accumulator.
+/*****************************************************************************\
+ *                              CfxParticleStep.comp
+\*****************************************************************************/
+/*! @file
  *
- * Reads and updates the Parts buffer (binding 1, xy = position, zw =
- * velocity) seeded by CfxParticleInit.comp. Velocity is the curl of a
- * layered value-noise potential (curl guarantees zero divergence, so
- * particles swirl without bunching into sinks), nudged by audio level and
- * blown outward on a kick. A small fraction of particles is re-seeded to a
- * random position each frame so the field keeps drawing fresh colour from
- * texPhoto instead of draining into the vortices. Each particle samples its
- * own colour from texPhoto, brightens with speed, and additively splats
- * (atomicAdd) into the uint accumulator at binding 0, which CfxResolve.comp
- * later tonemaps into the display texture.
+ *  @brief
+ *  Advects the particle swarm through a divergence-free curl-noise field and splats each particle's photo colour
+ *  into the accumulator.
+ *
+ *  Reads and updates the Parts buffer (binding 1, xy = position, zw =
+ *  velocity) seeded by CfxParticleInit.comp. Velocity is the curl of a
+ *  layered value-noise potential (curl guarantees zero divergence, so
+ *  particles swirl without bunching into sinks), nudged by audio level and
+ *  blown outward on a kick. A small fraction of particles is re-seeded to a
+ *  random position each frame so the field keeps drawing fresh colour from
+ *  texPhoto instead of draining into the vortices. Each particle samples its
+ *  own colour from texPhoto, brightens with speed, and additively splats
+ *  (atomicAdd) into the uint accumulator at binding 0, which CfxResolve.comp
+ *  later tonemaps into the display texture.
+ *
+ *  @author René Weller
  */
 // -----------------------------------------------------------------------
 // Velocity comes from the CURL of a scalar noise potential, so the field is

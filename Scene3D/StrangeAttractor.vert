@@ -1,8 +1,13 @@
 #version 330 core
-/**
- * @file StrangeAttractor.vert
- * @brief Vertex stage companion to StrangeAttractor.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              StrangeAttractor.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to StrangeAttractor.frag -- see that file's header for this scene's description.
+ *
+ *  @author René Weller
  */
 // StrangeAttractor.vert — 600 trajectories x 100 steps on a CHAOTIC
 // ATTRACTOR, drawn as two nested counter-rotating shells (a core body and a

@@ -1,22 +1,26 @@
 #version 330 core
+/*****************************************************************************\
+ *                              CyberRibbonHighway.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Lighting for the neon multi-lane highway ribbons: an additive glow that brightens toward each ribbon's outer
+ *  edge, plus a dashed, glowing lane-divider stripe running down the centre.
+ *
+ *  The ribbons' colour and pulse packets (vCol) are computed upstream in
+ *  CyberRibbonHighway.vert from audioAdvance (lane speed), audioKick (radius
+ *  pulses and pulse-packet brightness), audioSwell (highway radius) and
+ *  audioChromaHue/hueP (hue); this fragment stage only shapes that colour
+ *  into the glowing ribbon-edge and lane-marking look via vSide/vLength.
+ *
+ *  @author René Weller
+ */
 out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec4  vCol;    ///< Colour (from the vertex stage).
 in float vSide;   ///< Which side of a strip (from the vertex stage).
 in float vLength; ///< Length (from the vertex stage).
-
-/**
- * @file CyberRibbonHighway.frag
- * @brief Lighting for the neon multi-lane highway ribbons: an additive glow
- * that brightens toward each ribbon's outer edge, plus a dashed, glowing
- * lane-divider stripe running down the centre.
- *
- * The ribbons' colour and pulse packets (vCol) are computed upstream in
- * CyberRibbonHighway.vert from audioAdvance (lane speed), audioKick (radius
- * pulses and pulse-packet brightness), audioSwell (highway radius) and
- * audioChromaHue/hueP (hue); this fragment stage only shapes that colour
- * into the glowing ribbon-edge and lane-marking look via vSide/vLength.
- */
 
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()

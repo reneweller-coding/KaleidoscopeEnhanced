@@ -1,18 +1,23 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file KaleidoscopicBismuthLattice.frag
- * @brief KALEIDOSCOPIC BISMUTH LATTICE: Right-angled stepped hopper crystal Bismuth
- * labyrinth (L1-norm Manhattan KIFS) with iridescent thin-film rainbow interference,
- * 12-fold rotational symmetry, and glowing metallic hopper steps.
+/*****************************************************************************\
+ *                              KaleidoscopicBismuthLattice.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance -> drives continuous Bismuth hopper step growth & rotation
- *   audioKick    -> flashes iridescent rainbow oxide films & expands step edges
- *   audioCentroid-> sharpens right-angled staircase step density
- *   audioSubBass -> expands hopper cavity depth breathing
- *   audioChromaHue-> rotates the metallic thin-film interference spectrum
+ *  @brief
+ *  KALEIDOSCOPIC BISMUTH LATTICE: Right-angled stepped hopper crystal Bismuth labyrinth (L1-norm Manhattan KIFS)
+ *  with iridescent thin-film rainbow interference, 12-fold rotational symmetry, and glowing metallic hopper steps.
+ *
+ *  Audio Reactivity:
+ *    audioAdvance -> drives continuous Bismuth hopper step growth & rotation
+ *    audioKick    -> flashes iridescent rainbow oxide films & expands step edges
+ *    audioCentroid-> sharpens right-angled staircase step density
+ *    audioSubBass -> expands hopper cavity depth breathing
+ *    audioChromaHue-> rotates the metallic thin-film interference spectrum
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

@@ -1,8 +1,13 @@
 #version 330 core
-/**
- * @file Swarm.vert
- * @brief Vertex stage companion to Swarm.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              Swarm.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to Swarm.frag -- see that file's header for this scene's description.
+ *
+ *  @author René Weller
  */
 // Swarm.vert — a murmuration: 60k points trail a swooping Lissajous leader
 // path through space; onsets scatter the flock, calm passages pull it tight.

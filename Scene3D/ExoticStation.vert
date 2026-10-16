@@ -1,18 +1,22 @@
 #version 330 core
-/**
- * @file ExoticStation.vert
- * @brief Vertex stage companion to ExoticStation.frag -- see that file's
- * header. Shared by the five one-of-a-kind stations (biosphere, diplomatic
- * seat, solar collector, luxury border post, smuggler hideout): these are
- * kilometers-long megastructures, not debris -- they hold a FIXED
- * orientation (a one-time angle, chosen only so the hull isn't seen
- * flat-on) and float stably; they are distinguished by lighting/color and
- * backdrop in the fragment stage, not by how they move. The camera's own
- * sweep (this scene's rig* formulas in Presets/Komplett.xml) supplies
- * the actual motion. gl_VertexID picks the vertex's own branch: below
- * meshVertexCount it is the loaded model, at or above it the enclosing sky
- * shell Scene3DShader::buildGeometry() appends -- ExoticStation.frag paints
- * one of several backdrops onto it, chosen per-instance via bgTypeP.
+/*****************************************************************************\
+ *                              ExoticStation.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to ExoticStation.frag -- see that file's header.
+ *
+ *  Shared by the five one-of-a-kind stations (biosphere, diplomatic seat, solar collector, luxury border post,
+ *  smuggler hideout): these are kilometers-long megastructures, not debris -- they hold a FIXED orientation (a
+ *  one-time angle, chosen only so the hull isn't seen flat-on) and float stably; they are distinguished by
+ *  lighting/color and backdrop in the fragment stage, not by how they move. The camera's own sweep (this scene's
+ *  rig* formulas in Presets/Komplett.xml) supplies the actual motion. gl_VertexID picks the vertex's own branch:
+ *  below meshVertexCount it is the loaded model, at or above it the enclosing sky shell
+ *  Scene3DShader::buildGeometry() appends -- ExoticStation.frag paints one of several backdrops onto it, chosen
+ *  per-instance via bgTypeP.
+ *
+ *  @author René Weller
  */
 
 in vec4 attrA; ///< mesh: xyz = object-space position, w = U.  shell: xyz = world-space position on the shell.

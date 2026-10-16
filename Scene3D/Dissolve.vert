@@ -1,9 +1,16 @@
 #version 330 core
-/**
- * @file Dissolve.vert
- * @brief Pass-through into Dissolve.geom, which turns each triangle into a
- * particle. Nothing is placed here: a particle is one per TRIANGLE, and the
- * geometry stage is the first place a whole triangle exists.
+/*****************************************************************************\
+ *                              Dissolve.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Pass-through into Dissolve.geom, which turns each triangle into a particle.
+ *
+ *  Nothing is placed here: a particle is one per TRIANGLE, and the geometry stage is the first place a whole
+ *  triangle exists.
+ *
+ *  @author René Weller
  */
 
 in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an

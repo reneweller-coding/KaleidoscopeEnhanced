@@ -1,25 +1,30 @@
 #version 430
+/*****************************************************************************\
+ *                              CosmicRayCherenkovAirShowerCascade.comp
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Compute generator companion to CosmicRayCherenkovAirShowerCascade.frag -- generates 3D relativistic cosmic ray
+ *  extensive air shower (EAS) cascade tracks.
+ *
+ *  A SINGLE shower stood as one narrow vertical spray in the middle of a black
+ *  frame (occ 0.16) -- and even that spray was invisible, because emitSegment
+ *  widened every ribbon along the VIEW AXIS (see there), so a track running
+ *  down the frame came out as a zero-width sliver whatever thickness was asked
+ *  for.  It is now a SKY FULL of showers: 24 independent cascades
+ *  laid out on a jittered 6 x 4 lattice in FRUSTUM coordinates -- both the
+ *  lateral offset and the shower's own extent scale with its depth -- so a
+ *  cascade 30 units back covers as much of the picture as one at 5, and the
+ *  remaining branch budget draws a faint airglow speck field behind them all.
+ *
+ *  The generator has no `resolution`; it lays the field out for 16:9 and the
+ *  vertex stage stretches x for the actual aspect.
+ *
+ *  @author René Weller
+ */
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( local_size_x = 4, local_size_y = 4, local_size_z = 4 ) in;
-
-/**
- * @file CosmicRayCherenkovAirShowerCascade.comp
- * @brief Compute generator companion to CosmicRayCherenkovAirShowerCascade.frag --
- * generates 3D relativistic cosmic ray extensive air shower (EAS) cascade tracks.
- *
- * A SINGLE shower stood as one narrow vertical spray in the middle of a black
- * frame (occ 0.16) -- and even that spray was invisible, because emitSegment
- * widened every ribbon along the VIEW AXIS (see there), so a track running
- * down the frame came out as a zero-width sliver whatever thickness was asked
- * for.  It is now a SKY FULL of showers: 24 independent cascades
- * laid out on a jittered 6 x 4 lattice in FRUSTUM coordinates -- both the
- * lateral offset and the shower's own extent scale with its depth -- so a
- * cascade 30 units back covers as much of the picture as one at 5, and the
- * remaining branch budget draws a faint airglow speck field behind them all.
- *
- * The generator has no `resolution`; it lays the field out for 16:9 and the
- * vertex stage stretches x for the actual aspect.
- */
 
 /// The output vertex buffer: eight floats per vertex (attribute A, attribute B) that the scene draws.
 layout( std430, binding = 0 ) buffer Verts

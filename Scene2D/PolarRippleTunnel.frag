@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file PolarRippleTunnel.frag
- * @brief POLAR RIPPLE TUNNEL: a tunnel whose wall is a rippling liquid
- * surface -- concentric waves run along it toward us, the photograph
- * lining it bent and magnified by every wave, bright caustic rings
- * focusing where the waves crest, the wall shimmering like the inside of
- * a water pipe lit from outside.  Endless, mirrorable; the wall continues
- * beyond the frame.
+/*****************************************************************************\
+ *                              PolarRippleTunnel.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the flight (integrated, jump-free)
- *   audioPhase      -> the ripples travel (integrated)
- *   audioSpread     -> ripple height
- *   audioKick       -> the caustic rings flare (light)
- *   audioMode       -> the light: cool in minor, warm in major
- *   audioSwell      -> depth glow (slow)
+ *  @brief
+ *  POLAR RIPPLE TUNNEL: a tunnel whose wall is a rippling liquid surface -- concentric waves run along it toward
+ *  us, the photograph lining it bent and magnified by every wave, bright caustic rings focusing where the waves
+ *  crest, the wall shimmering like the inside of a water pipe lit from outside.
  *
- * Knobs: rippleP (ripple wavelength), lobeP (lobes around the tunnel), wallZoomP, hueP.
+ *  Endless, mirrorable; the wall continues beyond the frame.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the flight (integrated, jump-free)
+ *    audioPhase      -> the ripples travel (integrated)
+ *    audioSpread     -> ripple height
+ *    audioKick       -> the caustic rings flare (light)
+ *    audioMode       -> the light: cool in minor, warm in major
+ *    audioSwell      -> depth glow (slow)
+ *
+ *  Knobs: rippleP (ripple wavelength), lobeP (lobes around the tunnel), wallZoomP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

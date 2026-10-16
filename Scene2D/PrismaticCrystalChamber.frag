@@ -1,12 +1,19 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file PrismaticCrystalChamber.frag
- * @brief PRISMATIC CRYSTAL CHAMBER: 100% viewport-filling infinity mirror room
- * of faceted quartz crystals and dichroic glass prisms. The loaded photo
- * is reflected across multiple internal total-reflection bounces with
- * chromatic dispersion, diamond facet sparkling, and kaleidoscopic symmetry.
+/*****************************************************************************\
+ *                              PrismaticCrystalChamber.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  PRISMATIC CRYSTAL CHAMBER: 100% viewport-filling infinity mirror room of faceted quartz crystals and dichroic
+ *  glass prisms.
+ *
+ *  The loaded photo is reflected across multiple internal total-reflection bounces with chromatic dispersion,
+ *  diamond facet sparkling, and kaleidoscopic symmetry.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

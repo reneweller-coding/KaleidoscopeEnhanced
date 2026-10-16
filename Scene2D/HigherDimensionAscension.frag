@@ -1,21 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file HigherDimensionAscension.frag
- * @brief HIGHER DIMENSION ASCENSION: Breaking through the veil of 3D space
- * into a mind-bending 4D reality. Geometry folds into itself in impossible ways,
- * constantly shifting and morphing. Audio kicks cause sudden dimensional shifts
- * and structural reconfigurations.
- *   audioAdvance -> continuous folding of the higher-dimensional geometry
- *   audioKick    -> intense structural shifts and color inversions
- *   audioSwell   -> blinding, divine glow of the higher plane
- *   audioChromaHue-> palette offset for the impossible colors
+/*****************************************************************************\
+ *                              HigherDimensionAscension.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   foldP float complexity of the dimensional folds (0.5..1.5)
- *   glowP float intensity of the divine light (0.5..2.0)
- *   hueP float palette offset (0..6.28)
+ *  @brief
+ *  HIGHER DIMENSION ASCENSION: Breaking through the veil of 3D space into a mind-bending 4D reality.
+ *
+ *  Geometry folds into itself in impossible ways, constantly shifting and morphing. Audio kicks cause sudden
+ *  dimensional shifts and structural reconfigurations.
+ *
+ *    audioAdvance -> continuous folding of the higher-dimensional geometry
+ *    audioKick    -> intense structural shifts and color inversions
+ *    audioSwell   -> blinding, divine glow of the higher plane
+ *    audioChromaHue-> palette offset for the impossible colors
+ *
+ *  Per-activation variety:
+ *    foldP float complexity of the dimensional folds (0.5..1.5)
+ *    glowP float intensity of the divine light (0.5..2.0)
+ *    hueP float palette offset (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

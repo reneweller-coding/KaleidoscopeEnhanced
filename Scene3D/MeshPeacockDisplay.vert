@@ -1,16 +1,22 @@
 #version 330 core
-/**
- * @file MeshPeacockDisplay.vert
- * @brief Vertex stage companion to MeshPeacockDisplay.frag -- see that
- * file's header. gl_VertexID picks the loaded bird (below meshVertexCount)
- * or the enclosing sky shell.
+/*****************************************************************************\
+ *                              MeshPeacockDisplay.vert
+\*****************************************************************************/
+/*! @file
  *
- * The bird stands on the ground and turns slowly, as a displaying peacock
- * does, presenting the train; the train itself quivers -- a small
- * displacement along the vertex normal, on the train only, at a fixed rate,
- * with its AMPLITUDE on the slow swell. The train is picked out in the
- * model's own normalised frame: the ring of the fan away from the body,
- * excluding the rock it stands on.
+ *  @brief
+ *  Vertex stage companion to MeshPeacockDisplay.frag -- see that file's header.
+ *
+ *  gl_VertexID picks the loaded bird (below meshVertexCount) or the enclosing sky shell.
+ *
+ *  The bird stands on the ground and turns slowly, as a displaying peacock
+ *  does, presenting the train; the train itself quivers -- a small
+ *  displacement along the vertex normal, on the train only, at a fixed rate,
+ *  with its AMPLITUDE on the slow swell. The train is picked out in the
+ *  model's own normalised frame: the ring of the fan away from the body,
+ *  excluding the rock it stands on.
+ *
+ *  @author René Weller
  */
 
 in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an

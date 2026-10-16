@@ -1,20 +1,24 @@
 #version 430
-/**
- * @file QuaternionicJulia4DFlight.comp
- * @brief Bakes QuaternionicJulia4DFlight.frag's distance field into a 96^3
- * RG32F 3D texture (R = distance estimate, G = orbit-trap value), so the
- * fragment shader's per-pixel march samples a texture instead of
- * re-evaluating 9 quaternion-squaring iterations at every one of its 48
- * steps. Re-baked every EffectShader::kBakeIntervalFrames frames (see
- * EffectShader::stepBake), not every frame -- the SHAPE (the C constant and
- * the 4D hyper-rotation) still keeps morphing with the music, just in small
- * per-interval steps rather than continuously; at the ~6-frame interval this
- * engine reuses everywhere the step is far below what a beat-driven visual
- * needs to read as smooth.
+/*****************************************************************************\
+ *                              QuaternionicJulia4DFlight.comp
+\*****************************************************************************/
+/*! @file
  *
- * Must stay byte-for-byte in step with the C/w_coord/hyper-rotation formulas
- * in QuaternionicJulia4DFlight.frag's main() -- this is the SAME field,
- * just computed once per voxel instead of once per ray step.
+ *  @brief
+ *  Bakes QuaternionicJulia4DFlight.frag's distance field into a 96^3 RG32F 3D texture (R = distance estimate, G =
+ *  orbit-trap value), so the fragment shader's per-pixel march samples a texture instead of re-evaluating 9
+ *  quaternion-squaring iterations at every one of its 48 steps.
+ *
+ *  Re-baked every EffectShader::kBakeIntervalFrames frames (see EffectShader::stepBake), not every frame -- the
+ *  SHAPE (the C constant and the 4D hyper-rotation) still keeps morphing with the music, just in small per-interval
+ *  steps rather than continuously; at the ~6-frame interval this engine reuses everywhere the step is far below
+ *  what a beat-driven visual needs to read as smooth.
+ *
+ *  Must stay byte-for-byte in step with the C/w_coord/hyper-rotation formulas
+ *  in QuaternionicJulia4DFlight.frag's main() -- this is the SAME field,
+ *  just computed once per voxel instead of once per ray step.
+ *
+ *  @author René Weller
  */
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( local_size_x = 4, local_size_y = 4, local_size_z = 4 ) in;

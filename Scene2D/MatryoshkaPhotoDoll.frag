@@ -1,25 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file MatryoshkaPhotoDoll.frag
- * @brief MATRYOSHKA PHOTO DOLL: a Droste zoom whose recursion point comes
- * from the photo itself.  The brightest region of the picture (found by
- * comparing a coarse grid of mip samples) becomes the doll inside the doll:
- * a smaller copy of the whole photo is placed there, and a smaller one
- * inside that, so every photo gets its own zoom path instead of a fixed
- * centre.  The zoom is log-periodic in the copy ratio -- when one level has
- * grown to the size of the last, the picture is identical -- so the fall is
- * endless and seamless.  The recursion point itself is slewed by sampling
- * the same coarse grid for both photos of the crossfade.  Music is light.
+/*****************************************************************************\
+ *                              MatryoshkaPhotoDoll.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   sceneAdvance -> the zoom (music-paced, periodic)
- *   audioKick    -> the copy frames flash (light)
- *   audioSwell   -> copy tint (slow)
- *   audioLevel   -> brightness
+ *  @brief
+ *  MATRYOSHKA PHOTO DOLL: a Droste zoom whose recursion point comes from the photo itself.
  *
- * Per-activation variety: ratioP (copy ratio), zoomP (rate), hueP.
+ *  The brightest region of the picture (found by comparing a coarse grid of mip samples) becomes the doll inside
+ *  the doll: a smaller copy of the whole photo is placed there, and a smaller one inside that, so every photo gets
+ *  its own zoom path instead of a fixed centre.  The zoom is log-periodic in the copy ratio -- when one level has
+ *  grown to the size of the last, the picture is identical -- so the fall is endless and seamless.  The recursion
+ *  point itself is slewed by sampling the same coarse grid for both photos of the crossfade.  Music is light.
+ *
+ *  Audio Reactivity:
+ *    sceneAdvance -> the zoom (music-paced, periodic)
+ *    audioKick    -> the copy frames flash (light)
+ *    audioSwell   -> copy tint (slow)
+ *    audioLevel   -> brightness
+ *
+ *  Per-activation variety: ratioP (copy ratio), zoomP (rate), hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

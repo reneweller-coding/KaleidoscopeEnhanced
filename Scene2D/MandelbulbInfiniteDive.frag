@@ -1,18 +1,23 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file MandelbulbInfiniteDive.frag
- * @brief MANDELBULB INFINITE DIVE: 3D Raymarching continuous dive into the
- * fractal canyons of the 3D Mandelbulb with dynamic morphing power N,
- * orbit-trap crystal colors, and deep ambient occlusion.
+/*****************************************************************************\
+ *                              MandelbulbInfiniteDive.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance -> drives continuous forward flight into fractal canyons
- *   audioKick    -> flashes interior fractal core & expands orbit trap highlights
- *   audioCentroid-> modulates power N harmonic morphing
- *   audioSubBass -> expands fractal bulb breathing
- *   audioChromaHue-> steers the orbit trap rainbow palette
+ *  @brief
+ *  MANDELBULB INFINITE DIVE: 3D Raymarching continuous dive into the fractal canyons of the 3D Mandelbulb with
+ *  dynamic morphing power N, orbit-trap crystal colors, and deep ambient occlusion.
+ *
+ *  Audio Reactivity:
+ *    audioAdvance -> drives continuous forward flight into fractal canyons
+ *    audioKick    -> flashes interior fractal core & expands orbit trap highlights
+ *    audioCentroid-> modulates power N harmonic morphing
+ *    audioSubBass -> expands fractal bulb breathing
+ *    audioChromaHue-> steers the orbit trap rainbow palette
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

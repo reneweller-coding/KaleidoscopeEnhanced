@@ -1,22 +1,31 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file CosmicRayTransitionRadiation.frag
- * @brief COSMIC RAY TRANSITION RADIATION: Ultra-relativistic charged particles traversing periodic
- * multilayer foil stacks (mylar/polypropylene radiator). Sudden dielectric boundary crossings emit
- * highly collimated forward X-ray transition radiation cones with photo-derived interference fringes.
- *   audioAdvance -> accelerates relativistic particle beam traversing radiator stack
- *   audioKick    -> flashes boundary crossing X-ray photon emission bursts
- *   audioSwell   -> widens foil stack cross-section & forward X-ray cone brightness
- *   audioCentroid-> shifts X-ray transition radiation spectral interference peaks
- *   audioHigh    -> modulates high-frequency formation zone interference ripples
+/*****************************************************************************\
+ *                              CosmicRayTransitionRadiation.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   foilDensityP float multilayer radiator foil stack density    (4.0..14.0)
- *   coneAngleP   float transition radiation cone opening angle   (0.3..1.2)
- *   xrayGlowP    float X-ray emission peak luminance gain        (0.8..2.5)
- *   gammaLorentzP float particle Lorentz factor gamma parameter   (0.6..2.2)
+ *  @brief
+ *  COSMIC RAY TRANSITION RADIATION: Ultra-relativistic charged particles traversing periodic multilayer foil stacks
+ *  (mylar/polypropylene radiator).
+ *
+ *  Sudden dielectric boundary crossings emit highly collimated forward X-ray transition radiation cones with
+ *  photo-derived interference fringes.
+ *
+ *    audioAdvance -> accelerates relativistic particle beam traversing radiator stack
+ *    audioKick    -> flashes boundary crossing X-ray photon emission bursts
+ *    audioSwell   -> widens foil stack cross-section & forward X-ray cone brightness
+ *    audioCentroid-> shifts X-ray transition radiation spectral interference peaks
+ *    audioHigh    -> modulates high-frequency formation zone interference ripples
+ *
+ *  Per-activation variety:
+ *    foilDensityP float multilayer radiator foil stack density    (4.0..14.0)
+ *    coneAngleP   float transition radiation cone opening angle   (0.3..1.2)
+ *    xrayGlowP    float X-ray emission peak luminance gain        (0.8..2.5)
+ *    gammaLorentzP float particle Lorentz factor gamma parameter   (0.6..2.2)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

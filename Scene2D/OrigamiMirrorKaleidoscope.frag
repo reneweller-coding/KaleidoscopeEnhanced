@@ -1,12 +1,17 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file OrigamiMirrorKaleidoscope.frag
- * @brief ORIGAMI MIRROR KALEIDOSCOPE: 100% viewport-filling 3D kinetic Miura-ori
- * origami tessellation where every triangular mirror facet reflects dynamic
- * sections of the photo with angle-dependent chromatic dispersion and
- * audio-reactive mechanical folding kinematics.
+/*****************************************************************************\
+ *                              OrigamiMirrorKaleidoscope.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  ORIGAMI MIRROR KALEIDOSCOPE: 100% viewport-filling 3D kinetic Miura-ori origami tessellation where every
+ *  triangular mirror facet reflects dynamic sections of the photo with angle-dependent chromatic dispersion and
+ *  audio-reactive mechanical folding kinematics.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

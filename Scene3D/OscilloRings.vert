@@ -1,8 +1,13 @@
 #version 330 core
-/**
- * @file OscilloRings.vert
- * @brief Vertex stage companion to OscilloRings.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              OscilloRings.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to OscilloRings.frag -- see that file's header for this scene's description.
+ *
+ *  @author René Weller
  */
 // OscilloRings.vert — 20 nested oscilloscope rings floating on a tilted
 // plane; every ring undulates radially with its own spectrum band and its

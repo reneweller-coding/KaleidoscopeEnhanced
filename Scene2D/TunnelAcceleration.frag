@@ -1,28 +1,35 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TunnelAcceleration.frag
- * @brief A variant of the mirrored-segment kaleidoscope tunnel with its own,
- *        independently tunable forward scroll speed (`speedTunnelAccel`),
- *        used to make the tunnel appear to accelerate relative to the plain
- *        Tunnel.frag pass.
+/*****************************************************************************\
+ *                              TunnelAcceleration.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *  - audioPhase     -> adds to the wedge rotation on top of the base time*speed spin
- *                      (integrated, jump-free)
- *  - audioAdvance   -> adds to the forward scroll (integrated, jump-free)
- *  - audioKick      -> subtle brightness pulse on kicks
- *  - audioBuildUp   -> THROAT TIGHTENING: as an EDM build-up climbs, the radial term's
- *                      weight grows and perspective compresses the tunnel into a
- *                      steep, deep throat -- the punch-in that answers rising tension.
- *                      It scales only the radial term, which is ADDED to the scroll;
- *                      'time' keeps its own untouched coefficient
- *  - audioDownbeat  -> BAR ACCENT: a musically placed brightness accent on the bar's
- *                      "1", stronger and rarer than the per-kick pulse
- *  - audioUpperMid  -> METALLIC FRINGE: 2-6 kHz industrial edge splits the red and
- *                      blue channels apart along the scroll axis, giving the walls a
- *                      chromatic-aberration sheen on scraping, metallic material
+ *  @brief
+ *  A variant of the mirrored-segment kaleidoscope tunnel with its own,
+ *
+ *         independently tunable forward scroll speed (`speedTunnelAccel`),
+ *         used to make the tunnel appear to accelerate relative to the plain
+ *         Tunnel.frag pass.
+ *
+ *  Audio Reactivity:
+ *   - audioPhase     -> adds to the wedge rotation on top of the base time*speed spin
+ *                       (integrated, jump-free)
+ *   - audioAdvance   -> adds to the forward scroll (integrated, jump-free)
+ *   - audioKick      -> subtle brightness pulse on kicks
+ *   - audioBuildUp   -> THROAT TIGHTENING: as an EDM build-up climbs, the radial term's
+ *                       weight grows and perspective compresses the tunnel into a
+ *                       steep, deep throat -- the punch-in that answers rising tension.
+ *                       It scales only the radial term, which is ADDED to the scroll;
+ *                       'time' keeps its own untouched coefficient
+ *   - audioDownbeat  -> BAR ACCENT: a musically placed brightness accent on the bar's
+ *                       "1", stronger and rarer than the per-kick pulse
+ *   - audioUpperMid  -> METALLIC FRINGE: 2-6 kHz industrial edge splits the red and
+ *                       blue channels apart along the scroll axis, giving the walls a
+ *                       chromatic-aberration sheen on scraping, metallic material
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;             ///< The pixel's colour (output).
 uniform vec2      resolution;            ///< Size of the render target in pixels.
 uniform float     time;                  ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;                  ///< The current photo.

@@ -1,14 +1,19 @@
 #version 330 core
-/**
- * @file ShipShadowPlay.vert
- * @brief SHIP SHADOW PLAY: a ship between two lamps, and what you see is its
- * two shadows on a wall.  No shadow map is needed: the model is drawn three
- * times (instances="3") -- instance 0 is the ship itself, dim, and instances
- * 1 and 2 are the SAME mesh projected from each lamp onto the wall plane
- * (a planar projection), flattened into silhouettes.  Two lamps in two
- * colours give two coloured shadows that overlap to dark.  The lamps glide
- * on the scene clock, so the shadows stretch and swing slowly; the music
- * is the lamps' brightness.  No camera motion.
+/*****************************************************************************\
+ *                              ShipShadowPlay.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  SHIP SHADOW PLAY: a ship between two lamps, and what you see is its two shadows on a wall.
+ *
+ *  No shadow map is needed: the model is drawn three times (instances="3") -- instance 0 is the ship itself, dim,
+ *  and instances 1 and 2 are the SAME mesh projected from each lamp onto the wall plane (a planar projection),
+ *  flattened into silhouettes.  Two lamps in two colours give two coloured shadows that overlap to dark.  The lamps
+ *  glide on the scene clock, so the shadows stretch and swing slowly; the music is the lamps' brightness.  No
+ *  camera motion.
+ *
+ *  @author René Weller
  */
 in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an
                ///< index).

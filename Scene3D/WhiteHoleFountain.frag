@@ -1,15 +1,20 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file WhiteHoleFountain.frag
- * @brief Fragment stage for WhiteHoleFountain: photo tiles that are bright
- * and white-hot at birth and cool to the photo's own colours as they climb,
- * fading out near the end of their life; the horizon is a blinding disc
- * that flashes on the kick; the sky is deep space with round stars.
+/*****************************************************************************\
+ *                              WhiteHoleFountain.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity: audioKick flashes the horizon and the newborn tiles;
- *                   audioLevel is the tile brightness.
+ *  @brief
+ *  Fragment stage for WhiteHoleFountain: photo tiles that are bright and white-hot at birth and cool to the photo's
+ *  own colours as they climb, fading out near the end of their life; the horizon is a blinding disc that flashes on
+ *  the kick; the sky is deep space with round stars.
+ *
+ *  Audio Reactivity: audioKick flashes the horizon and the newborn tiles;
+ *                    audioLevel is the tile brightness.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 in vec2  vTexCoord; ///< Texture coordinate (from the vertex stage).
 in float vDepth;    ///< Depth (from the vertex stage).
 in float vKind;     ///< Element kind (from the vertex stage).

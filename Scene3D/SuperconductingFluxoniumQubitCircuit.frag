@@ -1,21 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SuperconductingFluxoniumQubitCircuit.frag
- * @brief SUPERCONDUCTING FLUXONIUM QUBIT CIRCUIT: Fluxonium superconducting quantum circuit.
- * Small Josephson junction shunted by a high-inductance array of larger Josephson junctions
- * (superinductance). Quantum phase slips, microwave gate pulses, and niobium metallic photo texturing.
- * A whole DIE of them: five qubit loops spread across the chip in frustum coordinates, wired
- * together by twenty meandering coplanar-waveguide readout traces that cross the full frame.
- *   audioAdvance -> navigates external magnetic flux bias evolution & qubit rotation
- *   audioKick    -> flashes microwave quantum gate transitions & phase-slip bursts
- *   audioSwell   -> widens microstrip waveguide ribbon width & persistent current glow
- *   audioCentroid-> shifts Fluxonium 0-1 transition energy color spectra
+/*****************************************************************************\
+ *                              SuperconductingFluxoniumQubitCircuit.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   ribbonWidthP float coplanar waveguide ribbon width       (0.02..0.1)
- *   qubitGlowP   float microwave quantum pulse luminance     (0.8..2.5)
+ *  @brief
+ *  SUPERCONDUCTING FLUXONIUM QUBIT CIRCUIT: Fluxonium superconducting quantum circuit.
+ *
+ *  Small Josephson junction shunted by a high-inductance array of larger Josephson junctions (superinductance).
+ *  Quantum phase slips, microwave gate pulses, and niobium metallic photo texturing. A whole DIE of them: five
+ *  qubit loops spread across the chip in frustum coordinates, wired together by twenty meandering
+ *  coplanar-waveguide readout traces that cross the full frame.
+ *
+ *    audioAdvance -> navigates external magnetic flux bias evolution & qubit rotation
+ *    audioKick    -> flashes microwave quantum gate transitions & phase-slip bursts
+ *    audioSwell   -> widens microstrip waveguide ribbon width & persistent current glow
+ *    audioCentroid-> shifts Fluxonium 0-1 transition energy color spectra
+ *
+ *  Per-activation variety:
+ *    ribbonWidthP float coplanar waveguide ribbon width       (0.02..0.1)
+ *    qubitGlowP   float microwave quantum pulse luminance     (0.8..2.5)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec2  vUV;         ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 in float vSide;       ///< Which side of a strip (from the vertex stage).

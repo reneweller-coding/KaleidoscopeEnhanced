@@ -1,18 +1,23 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file FxPlain.frag
- * @brief The plain (pass-through) overlay: shows the finished scene
- * unchanged.
+/*****************************************************************************\
+ *                              FxPlain.frag
+\*****************************************************************************/
+/*! @file
  *
- * Since the Transitions/ split, scene cross-fading is the transition
- * pass's job and overlays receive the already-blended scene on tex0 with
- * interpolation pinned to 1.0 - so this shader reduces to a copy.  It is
- * the resident default overlay (~90% of the time in the presets); the
- * 28-style transition library it used to carry lives on as the individual
- * shaders in Transitions/.
- * interpolation: kept for interface compatibility (1 = tex0 fully visible).
+ *  @brief
+ *  The plain (pass-through) overlay: shows the finished scene unchanged.
+ *
+ *  Since the Transitions/ split, scene cross-fading is the transition
+ *  pass's job and overlays receive the already-blended scene on tex0 with
+ *  interpolation pinned to 1.0 - so this shader reduces to a copy.  It is
+ *  the resident default overlay (~90% of the time in the presets); the
+ *  28-style transition library it used to carry lives on as the individual
+ *  shaders in Transitions/.
+ *  interpolation: kept for interface compatibility (1 = tex0 fully visible).
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform sampler2D tex0;          ///< The current photo.
 uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).

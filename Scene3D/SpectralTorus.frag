@@ -1,4 +1,21 @@
 #version 330 core
+/*****************************************************************************\
+ *                              SpectralTorus.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Companion to SpectralTorus.vert.
+ *
+ *  Uses the same physical-body lighting language as SpectralOrb.frag (dark nodal lines, radiant antinodes) but in a
+ *  warmer key, so the two manifold-harmonics scenes read as siblings rather than twins.
+ *
+ *  audioSwell and audioDrop scale the antinode glow driven by the absolute
+ *  displacement vDefo; vHue (from SpectralTorus.vert) keys the body metal
+ *  tint, the glow colour and the rim colour to the current musical hue.
+ *
+ *  @author René Weller
+ */
 out vec4 fragColor; ///< The pixel's colour (output).
 // SpectralTorus.frag — companion to SpectralTorus.vert.  Same physical-body
 // language as SpectralOrb (nodal lines dark, antinodes radiant) but in a
@@ -12,18 +29,6 @@ in vec3  vNorm; ///< Norm (from the vertex stage).
 in vec3  vView; ///< View vector (from the vertex stage).
 in float vDefo; ///< Defo (from the vertex stage).
 in float vHue;  ///< Hue (from the vertex stage).
-
-/**
- * @file SpectralTorus.frag
- * @brief Companion to SpectralTorus.vert. Uses the same physical-body
- * lighting language as SpectralOrb.frag (dark nodal lines, radiant
- * antinodes) but in a warmer key, so the two manifold-harmonics scenes read
- * as siblings rather than twins.
- *
- * audioSwell and audioDrop scale the antinode glow driven by the absolute
- * displacement vDefo; vHue (from SpectralTorus.vert) keys the body metal
- * tint, the glow colour and the rim colour to the current musical hue.
- */
 
 /**  Rotates a colour's hue by an angle (about the grey axis).
  *

@@ -1,20 +1,27 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file CrystalAsteroidField.frag
- * @brief CRYSTAL ASTEROID FIELD: An asteroid field made entirely of giant,
- * floating crystals. The crystals refract and scatter distant starlight,
- * lighting up like prisms in sync with the music.
- *   audioAdvance -> flight speed through the crystal field
- *   audioKick    -> flashes from light hitting the crystal facets
- *   audioSwell   -> overall ambient brightness and glow
- *   audioChromaHue-> palette offset for the refracted light
+/*****************************************************************************\
+ *                              CrystalAsteroidField.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   densityP float density of the asteroid field (0.5..1.5)
- *   glowP float intensity of the crystal refraction (0.5..2.0)
- *   hueP float palette offset (0..6.28)
+ *  @brief
+ *  CRYSTAL ASTEROID FIELD: An asteroid field made entirely of giant, floating crystals.
+ *
+ *  The crystals refract and scatter distant starlight, lighting up like prisms in sync with the music.
+ *
+ *    audioAdvance -> flight speed through the crystal field
+ *    audioKick    -> flashes from light hitting the crystal facets
+ *    audioSwell   -> overall ambient brightness and glow
+ *    audioChromaHue-> palette offset for the refracted light
+ *
+ *  Per-activation variety:
+ *    densityP float density of the asteroid field (0.5..1.5)
+ *    glowP float intensity of the crystal refraction (0.5..2.0)
+ *    hueP float palette offset (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

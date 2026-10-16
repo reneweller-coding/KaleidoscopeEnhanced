@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureIceFloes.frag
- * @brief TEXTURE ICE FLOES: pack ice seen from above -- white and pale-blue
- * floes of every size drift on the dark sea, slowly turning and jostling,
- * their edges rounded by the waves, pressure ridges running across them,
- * snow drifts textured by the photograph, meltwater ponds glowing turquoise
- * on some; between them black water with rafts of brash ice and a low sun
- * glinting on the leads.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              TextureIceFloes.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the pack drifts (integrated, jump-free)
- *   audioSpread     -> the leads widen (floes spread apart)
- *   audioKick       -> sun glints on the water (light)
- *   audioMode       -> light: blue polar night in minor, pink midnight sun in major
- *   audioRoughness  -> more pressure ridges
- *   audioSwell      -> meltwater ponds (slow)
+ *  @brief
+ *  TEXTURE ICE FLOES: pack ice seen from above -- white and pale-blue floes of every size drift on the dark sea,
+ *  slowly turning and jostling, their edges rounded by the waves, pressure ridges running across them, snow drifts
+ *  textured by the photograph, meltwater ponds glowing turquoise on some; between them black water with rafts of
+ *  brash ice and a low sun glinting on the leads.
  *
- * Knobs: floeP (floe size), pondP (ponds), snowP (photo texture on the snow), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the pack drifts (integrated, jump-free)
+ *    audioSpread     -> the leads widen (floes spread apart)
+ *    audioKick       -> sun glints on the water (light)
+ *    audioMode       -> light: blue polar night in minor, pink midnight sun in major
+ *    audioRoughness  -> more pressure ridges
+ *    audioSwell      -> meltwater ponds (slow)
+ *
+ *  Knobs: floeP (floe size), pondP (ponds), snowP (photo texture on the snow), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

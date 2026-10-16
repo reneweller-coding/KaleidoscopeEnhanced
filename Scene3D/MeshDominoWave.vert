@@ -1,12 +1,17 @@
 #version 330 core
-/**
- * @file MeshDominoWave.vert
- * @brief Vertex stage companion to MeshDominoWave.frag -- see that file's
- * header. ONE domino drawn 224 times (instances="224") in eight serpentine
- * lanes on a table, seen from a low angle, and the wave of toppling runs
- * along the serpentine on sceneProgress: each tile rotates about its
- * bottom edge in its lane's direction, on its own smooth curve, as the
- * front reaches it. The shell is drawn by instance 0 only.
+/*****************************************************************************\
+ *                              MeshDominoWave.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to MeshDominoWave.frag -- see that file's header.
+ *
+ *  ONE domino drawn 224 times (instances="224") in eight serpentine lanes on a table, seen from a low angle, and
+ *  the wave of toppling runs along the serpentine on sceneProgress: each tile rotates about its bottom edge in its
+ *  lane's direction, on its own smooth curve, as the front reaches it. The shell is drawn by instance 0 only.
+ *
+ *  @author René Weller
  */
 
 in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an

@@ -1,28 +1,34 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TessellatedLavaLake.frag
- * @brief TESSELLATED LAVA LAKE: dark crust plates drifting on a lake of
- * melt; between the plates the lava glows, and the glow is the music --
- * the bass pushes the orange-white up through the seams, the kick flares
- * them, the swell heaves the whole surface (evaluation stage).  The crust
- * carries the photo as its scorched texture; the sky above is night with
- * the lake's own glow on the smoke.  Camera height fixed on the shore.
+/*****************************************************************************\
+ *                              TessellatedLavaLake.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioBass  -> seam glow (light)
- *   audioKick  -> seam flare (light)
- *   audioSwell -> heave (evaluation stage, slow)
- *   audioLevel -> brightness
+ *  @brief
+ *  TESSELLATED LAVA LAKE: dark crust plates drifting on a lake of melt; between the plates the lava glows, and the
+ *  glow is the music -- the bass pushes the orange-white up through the seams, the kick flares them, the swell
+ *  heaves the whole surface (evaluation stage).
  *
- * Per-activation variety: camHP, detailP, plateP, hueP.
+ *  The crust carries the photo as its scorched texture; the sky above is night with the lake's own glow on the
+ *  smoke.  Camera height fixed on the shore.
+ *
+ *  Audio Reactivity:
+ *    audioBass  -> seam glow (light)
+ *    audioKick  -> seam flare (light)
+ *    audioSwell -> heave (evaluation stage, slow)
+ *    audioLevel -> brightness
+ *
+ *  Per-activation variety: camHP, detailP, plateP, hueP.
+ *
+ *  @author René Weller
  */
-in vec3  vWorld;  ///< World position (from the vertex stage).
-in vec2  vSurfUV; ///< Surf UV (from the vertex stage).
-in vec3  vNormal; ///< Surface normal (from the vertex stage).
-in float vSeam;   ///< Seam (from the vertex stage).
-in float vPlate;  ///< Plate (from the vertex stage).
-in float vDist;   ///< Distance (from the vertex stage).
+out vec4 fragColor; ///< The pixel's colour (output).
+in vec3  vWorld;    ///< World position (from the vertex stage).
+in vec2  vSurfUV;   ///< Surf UV (from the vertex stage).
+in vec3  vNormal;   ///< Surface normal (from the vertex stage).
+in float vSeam;     ///< Seam (from the vertex stage).
+in float vPlate;    ///< Plate (from the vertex stage).
+in float vDist;     ///< Distance (from the vertex stage).
 
 uniform sampler2D tex0;          ///< The current photo.
 uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).

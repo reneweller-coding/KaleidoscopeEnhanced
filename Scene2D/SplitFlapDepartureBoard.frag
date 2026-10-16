@@ -1,23 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SplitFlapDepartureBoard.frag
- * @brief SPLIT FLAP DEPARTURE BOARD: the old mechanical board of an
- * airport hall.  Each character is a stack of hinged flaps; when a cell
- * changes it riffles through the alphabet, the top half falling over the
- * bottom in a smooth rotation, then settles.  Rows change one after
- * another on the scene clock, and a whole column riffles on the kick.
- * The photo shows through the glass as the hall behind.  Camera fixed.
+/*****************************************************************************\
+ *                              SplitFlapDepartureBoard.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   sceneAdvance -> rows update, flaps turn (continuous)
- *   audioKick    -> one column riffles (light -- the flap motion is smooth)
- *   audioChroma[12] -> the colour of the lit rows (light)
- *   audioSwell   -> hall light (slow)
- *   audioLevel   -> brightness
+ *  @brief
+ *  SPLIT FLAP DEPARTURE BOARD: the old mechanical board of an airport hall.
  *
- * Per-activation variety: colsP, rowsP, hueP.
+ *  Each character is a stack of hinged flaps; when a cell changes it riffles through the alphabet, the top half
+ *  falling over the bottom in a smooth rotation, then settles.  Rows change one after another on the scene clock,
+ *  and a whole column riffles on the kick. The photo shows through the glass as the hall behind.  Camera fixed.
+ *
+ *  Audio Reactivity:
+ *    sceneAdvance -> rows update, flaps turn (continuous)
+ *    audioKick    -> one column riffles (light -- the flap motion is smooth)
+ *    audioChroma[12] -> the colour of the lit rows (light)
+ *    audioSwell   -> hall light (slow)
+ *    audioLevel   -> brightness
+ *
+ *  Per-activation variety: colsP, rowsP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

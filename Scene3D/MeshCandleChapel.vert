@@ -1,12 +1,17 @@
 #version 330 core
-/**
- * @file MeshCandleChapel.vert
- * @brief Vertex stage companion to MeshCandleChapel.frag -- see that file's
- * header. ONE candle drawn three hundred times (instances="300") on the
- * tiered stand of a dark chapel: ten rows of thirty, rising toward the back,
- * each candle its own height and a little off its grid point. Nothing here
- * moves -- the flames live in the fragment stage as light. The shell is
- * drawn by instance 0 only.
+/*****************************************************************************\
+ *                              MeshCandleChapel.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to MeshCandleChapel.frag -- see that file's header.
+ *
+ *  ONE candle drawn three hundred times (instances="300") on the tiered stand of a dark chapel: ten rows of thirty,
+ *  rising toward the back, each candle its own height and a little off its grid point. Nothing here moves -- the
+ *  flames live in the fragment stage as light. The shell is drawn by instance 0 only.
+ *
+ *  @author René Weller
  */
 
 in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an

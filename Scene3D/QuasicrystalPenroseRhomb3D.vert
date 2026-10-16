@@ -1,8 +1,14 @@
 #version 330 core
-/**
- * @file QuasicrystalPenroseRhomb3D.vert
- * @brief Vertex stage companion to QuasicrystalPenroseRhomb3D.frag -- see that file's
- * header for this scene's description.
+/*****************************************************************************\
+ *                              QuasicrystalPenroseRhomb3D.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to QuasicrystalPenroseRhomb3D.frag -- see that file's header for this scene's
+ *  description.
+ *
+ *  @author René Weller
  */
 
 in vec4 attrA; ///< xyz = cube corner (-0.5..0.5), w = cube index

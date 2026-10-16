@@ -1,26 +1,30 @@
 #version 330 core
+/*****************************************************************************\
+ *                              GyroRings.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Shades a gyroscopic ring segment as a dark face with luminous, machined edges: distance from each cube corner
+ *  (vCorner) picks out the beveled edge lines and brightens them against a dim body.
+ *
+ *  Audio Reactivity:
+ *    audioSharpness -> MACHINED-EDGE CRISPNESS: dull, dark material leaves the
+ *                      bevels a wide soft sheen; bright harsh material
+ *                      (cymbals, metallic transients) hones them down to a
+ *                      hairline brighter highlight, so the clockwork reads as
+ *                      freshly machined.  The edge gain rises as the band
+ *                      narrows, keeping the integrated energy near the
+ *                      original 0.21-wide / 1.6-gain bevel
+ *    audioBarPhase / audioBass / audioSwell / audioChromaHue / audioSpread /
+ *    audioDownbeat  -> baked into vCol by GyroRings.vert; see that file.
+ *
+ *  @author René Weller
+ */
 out vec4 fragColor; ///< The pixel's colour (output).
 // GyroRings.frag — dark faces, luminous edges (depth-tested).
 in vec4 vCol;    ///< Colour (from the vertex stage).
 in vec3 vCorner; ///< Corner (from the vertex stage).
-
-/**
- * @file GyroRings.frag
- * @brief Shades a gyroscopic ring segment as a dark face with luminous,
- * machined edges: distance from each cube corner (vCorner) picks out the
- * beveled edge lines and brightens them against a dim body.
- *
- * Audio Reactivity:
- *   audioSharpness -> MACHINED-EDGE CRISPNESS: dull, dark material leaves the
- *                     bevels a wide soft sheen; bright harsh material
- *                     (cymbals, metallic transients) hones them down to a
- *                     hairline brighter highlight, so the clockwork reads as
- *                     freshly machined.  The edge gain rises as the band
- *                     narrows, keeping the integrated energy near the
- *                     original 0.21-wide / 1.6-gain bevel
- *   audioBarPhase / audioBass / audioSwell / audioChromaHue / audioSpread /
- *   audioDownbeat  -> baked into vCol by GyroRings.vert; see that file.
- */
 
 uniform float audioSharpness; ///< Sharpness of the sound: 0 dull and dark .. 1 bright and harsh.
 

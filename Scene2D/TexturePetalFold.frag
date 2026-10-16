@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TexturePetalFold.frag
- * @brief TEXTURE PETAL FOLD: origami blossoms opening and closing -- a field
- * of paper flowers, each folded from a square of the photograph into
- * pleated petals that radiate from the centre, their valley and mountain
- * folds shaded by a soft light; the blossoms slowly open (petals flatten)
- * and close (petals rise and narrow) in waves across the field.
- * Endless, mirrorable.
+/*****************************************************************************\
+ *                              TexturePetalFold.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the opening waves travel (integrated, jump-free)
- *   audioSpread     -> how far the blossoms open
- *   audioKick       -> the fold ridges catch light (light)
- *   audioMode       -> the light: cool in minor, warm in major
- *   audioPhase      -> the blossoms turn (integrated)
- *   audioSwell      -> the shadows deepen (slow)
+ *  @brief
+ *  TEXTURE PETAL FOLD: origami blossoms opening and closing -- a field of paper flowers, each folded from a square
+ *  of the photograph into pleated petals that radiate from the centre, their valley and mountain folds shaded by a
+ *  soft light; the blossoms slowly open (petals flatten) and close (petals rise and narrow) in waves across the
+ *  field.
  *
- * Knobs: petalP (petal count), sizeP (blossom size), paperP (paper grain), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the opening waves travel (integrated, jump-free)
+ *    audioSpread     -> how far the blossoms open
+ *    audioKick       -> the fold ridges catch light (light)
+ *    audioMode       -> the light: cool in minor, warm in major
+ *    audioPhase      -> the blossoms turn (integrated)
+ *    audioSwell      -> the shadows deepen (slow)
+ *
+ *  Knobs: petalP (petal count), sizeP (blossom size), paperP (paper grain), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

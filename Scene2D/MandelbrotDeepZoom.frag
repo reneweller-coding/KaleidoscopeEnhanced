@@ -1,17 +1,23 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file MandelbrotDeepZoom.frag
- * @brief Displays the deep-zoom Mandelbrot fractal computed by Engine/CfxMandelbrot.comp
- * (`texMandelbrot`): a real infinite mathematical zoom (double-single emulated precision, roughly
- * 10,000x deeper than plain float32 before banding) rather than the photo-based Droste dive
- * already in the catalogue. R holds the smooth escape-time (negative = never escaped, an interior
- * point), G an orbit-trap distance used to shade interior detail. Colour comes from imgPalette
- * (the photo's own arc, key-locked) cycling with escape time, so every dive still carries the
- * picture's colour family even though the STRUCTURE is pure mathematics. audioBeat pulses the rim
- * brightness, audioCentroid tilts the palette's cycling speed. If the compute sim is unavailable,
- * texMandelbrot reads 0 -> a flat dark field remains (R=0 reads as freshly-escaped, not garbage).
+/*****************************************************************************\
+ *                              MandelbrotDeepZoom.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Displays the deep-zoom Mandelbrot fractal computed by Engine/CfxMandelbrot.comp (`texMandelbrot`): a real
+ *  infinite mathematical zoom (double-single emulated precision, roughly 10,000x deeper than plain float32 before
+ *  banding) rather than the photo-based Droste dive already in the catalogue.
+ *
+ *  R holds the smooth escape-time (negative = never escaped, an interior point), G an orbit-trap distance used to
+ *  shade interior detail. Colour comes from imgPalette (the photo's own arc, key-locked) cycling with escape time,
+ *  so every dive still carries the picture's colour family even though the STRUCTURE is pure mathematics. audioBeat
+ *  pulses the rim brightness, audioCentroid tilts the palette's cycling speed. If the compute sim is unavailable,
+ *  texMandelbrot reads 0 -> a flat dark field remains (R=0 reads as freshly-escaped, not garbage).
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

@@ -1,12 +1,18 @@
 #version 330 core
-/**
- * @file Assembly.vert
- * @brief Vertex stage for Assembly.geom/.frag: pass-through into the geometry
- * stage, which is where the pieces are placed.
+/*****************************************************************************\
+ *                              Assembly.vert
+\*****************************************************************************/
+/*! @file
  *
- * Nothing is transformed here on purpose. Assembly works on CHUNKS, and a chunk
- * only exists once three vertices are visible together -- the geometry stage is
- * the first place that is true.
+ *  @brief
+ *  Vertex stage for Assembly.geom/.frag: pass-through into the geometry stage, which is where the pieces are
+ *  placed.
+ *
+ *  Nothing is transformed here on purpose. Assembly works on CHUNKS, and a chunk
+ *  only exists once three vertices are visible together -- the geometry stage is
+ *  the first place that is true.
+ *
+ *  @author René Weller
  */
 
 in vec4 attrA; ///< mesh: xyz = object-space position, w = U.  shell: xyz = world-space position on the shell.

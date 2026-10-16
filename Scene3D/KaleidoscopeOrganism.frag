@@ -1,4 +1,21 @@
 #version 330 core
+/*****************************************************************************\
+ *                              KaleidoscopeOrganism.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Lighting for the growing, mirror-replicated DLA organism from KaleidoscopeOrganism.comp:
+ *  crystalline/bioluminescent rather than coral-organic, with hue shifted per angular wedge (derived from vObj's
+ *  own azimuth) so the mirror-kaleidoscope symmetry the generator built into the geometry is reinforced by colour,
+ *  not left for the silhouette alone to carry.
+ *
+ *  Colour is imgPalette-driven (photo-arc, key-locked via audioChromaHue), tip glow pumped by
+ *  audioKick/audioLevel, a tight specular highlight from audioHigh, and a cool ambient fill from
+ *  audioAmbient. audioBeat/audioSubBass give the whole image a soft overall pulse.
+ *
+ *  @author René Weller
+ */
 out vec4 fragColor; ///< The pixel's colour (output).
 // KaleidoscopeOrganism.frag — crystalline bioluminescence, coloured by which
 // mirror-wedge a fragment belongs to so the kaleidoscope's own symmetry is
@@ -9,18 +26,6 @@ in vec3  vNormal; ///< Surface normal (from the vertex stage).
 in vec3  vView;   ///< View vector (from the vertex stage).
 in float vAge;    ///< 1 = oldest branches, 0 = newest tips
 in float vDepth;  ///< Depth (from the vertex stage).
-
-/**
- * @file KaleidoscopeOrganism.frag
- * @brief Lighting for the growing, mirror-replicated DLA organism from KaleidoscopeOrganism.comp:
- * crystalline/bioluminescent rather than coral-organic, with hue shifted per angular wedge
- * (derived from vObj's own azimuth) so the mirror-kaleidoscope symmetry the generator built into
- * the geometry is reinforced by colour, not left for the silhouette alone to carry.
- *
- * Colour is imgPalette-driven (photo-arc, key-locked via audioChromaHue), tip glow pumped by
- * audioKick/audioLevel, a tight specular highlight from audioHigh, and a cool ambient fill from
- * audioAmbient. audioBeat/audioSubBass give the whole image a soft overall pulse.
- */
 
 uniform sampler2D tex0;          ///< The current photo.
 uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).

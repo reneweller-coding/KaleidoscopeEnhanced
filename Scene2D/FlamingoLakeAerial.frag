@@ -1,23 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file FlamingoLakeAerial.frag
- * @brief FLAMINGO LAKE AERIAL: an East African soda lake seen from high above
- * -- water stained blood red and orange by algae, rimmed and veined with
- * white salt crust, and on it tens of thousands of flamingos: pink specks
- * packed into flowing bands and swirls along the shallows, each bird a
- * tiny pink body with its shadow; here and there a group takes off, wings
- * open showing the black flight feathers.  The flocks drift slowly as the
- * birds wade; the camera hangs still.
+/*****************************************************************************\
+ *                              FlamingoLakeAerial.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSwell  -> the glow of the red water (slow)
- *   audioHigh   -> the shimmer on the water (light)
- *   audioLevel  -> brightness
- *   sceneTime / sceneAdvance -> the flocks drifting, birds wading
+ *  @brief
+ *  FLAMINGO LAKE AERIAL: an East African soda lake seen from high above -- water stained blood red and orange by
+ *  algae, rimmed and veined with white salt crust, and on it tens of thousands of flamingos: pink specks packed
+ *  into flowing bands and swirls along the shallows, each bird a tiny pink body with its shadow; here and there a
+ *  group takes off, wings open showing the black flight feathers.
  *
- * Per-activation variety: flockP (how dense the flocks), hueP.
+ *  The flocks drift slowly as the birds wade; the camera hangs still.
+ *
+ *  Audio Reactivity:
+ *    audioSwell  -> the glow of the red water (slow)
+ *    audioHigh   -> the shimmer on the water (light)
+ *    audioLevel  -> brightness
+ *    sceneTime / sceneAdvance -> the flocks drifting, birds wading
+ *
+ *  Per-activation variety: flockP (how dense the flocks), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

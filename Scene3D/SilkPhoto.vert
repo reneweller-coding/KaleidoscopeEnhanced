@@ -1,8 +1,13 @@
 #version 330 core
-/**
- * @file SilkPhoto.vert
- * @brief Vertex stage companion to SilkPhoto.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              SilkPhoto.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to SilkPhoto.frag -- see that file's header for this scene's description.
+ *
+ *  @author René Weller
  */
 // SilkPhoto.vert — the current image on a huge silk banner rippling in an
 // audio-driven wind.  The cloth hangs from its top edge; the music is the

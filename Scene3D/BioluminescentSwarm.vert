@@ -1,8 +1,13 @@
 #version 330 core
-/**
- * @file BioluminescentSwarm.vert
- * @brief Vertex stage companion to BioluminescentSwarm.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              BioluminescentSwarm.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to BioluminescentSwarm.frag -- see that file's header for this scene's description.
+ *
+ *  @author René Weller
  */
 // BioluminescentSwarm.vert — Indirect render pass for compute boids
 //

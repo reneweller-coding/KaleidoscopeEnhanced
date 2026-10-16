@@ -1,18 +1,23 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file OctagrammicMirrorVault.frag
- * @brief OCTAGRAMMIC MIRROR VAULT: 8-pointed star ({8/3}-octagram) kinetic origami
- * mirror dome with opening/closing facet petals, central infinite light funnel,
- * and high-velocity kaleidoscopic ray reflections.
+/*****************************************************************************\
+ *                              OctagrammicMirrorVault.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance -> drives continuous star facet folding & vault rotation
- *   audioKick    -> explodes star facet apertures & flashes central light funnel
- *   audioCentroid-> modulates star point sharpness & facet ribbing
- *   audioSubBass -> expands origami dome breathing aperture
- *   audioChromaHue-> rotates the luminous star polygon palette
+ *  @brief
+ *  OCTAGRAMMIC MIRROR VAULT: 8-pointed star ({8/3}-octagram) kinetic origami mirror dome with opening/closing facet
+ *  petals, central infinite light funnel, and high-velocity kaleidoscopic ray reflections.
+ *
+ *  Audio Reactivity:
+ *    audioAdvance -> drives continuous star facet folding & vault rotation
+ *    audioKick    -> explodes star facet apertures & flashes central light funnel
+ *    audioCentroid-> modulates star point sharpness & facet ribbing
+ *    audioSubBass -> expands origami dome breathing aperture
+ *    audioChromaHue-> rotates the luminous star polygon palette
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

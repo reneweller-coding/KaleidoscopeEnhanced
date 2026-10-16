@@ -1,18 +1,24 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file GalacticAccretionStreamFlight.frag
- * @brief GALACTIC ACCRETION STREAM FLIGHT: Relativistic helical flight along magnetic
- * flux tubes directly into a supermassive black hole quasar accretion disk with
- * synchrotron radiation jets, Doppler-boosted plasma streams, and event horizon plunges.
+/*****************************************************************************\
+ *                              GalacticAccretionStreamFlight.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance -> drives continuous high-velocity helical plunge trajectory
- *   audioKick    -> flashes accretion disk reconnection bursts & jet shockwaves
- *   audioCentroid-> modulates synchrotron radiation frequency & plasma filament density
- *   audioSubBass -> expands accretion disk magnetic coil breathing
- *   audioChromaHue-> steers the relativistic plasma spectrum
+ *  @brief
+ *  GALACTIC ACCRETION STREAM FLIGHT: Relativistic helical flight along magnetic flux tubes directly into a
+ *  supermassive black hole quasar accretion disk with synchrotron radiation jets, Doppler-boosted plasma streams,
+ *  and event horizon plunges.
+ *
+ *  Audio Reactivity:
+ *    audioAdvance -> drives continuous high-velocity helical plunge trajectory
+ *    audioKick    -> flashes accretion disk reconnection bursts & jet shockwaves
+ *    audioCentroid-> modulates synchrotron radiation frequency & plasma filament density
+ *    audioSubBass -> expands accretion disk magnetic coil breathing
+ *    audioChromaHue-> steers the relativistic plasma spectrum
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

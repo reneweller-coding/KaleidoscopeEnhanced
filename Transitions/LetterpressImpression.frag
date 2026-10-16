@@ -1,32 +1,38 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file LetterpressImpression.frag
- * @brief TRANSITION LETTERPRESS IMPRESSION: the incoming scene is a relief
- * plate pressed into the sheet the outgoing scene is printed on.
+/*****************************************************************************\
+ *                              LetterpressImpression.frag
+\*****************************************************************************/
+/*! @file
  *
- * The plate's height field is the incoming scene's own luminance, so the
- * emboss is derived from the picture rather than drawn on top of it: the
- * lighting comes from the gradient of that field, which puts the bright edge on
- * the side facing the light and the shadow opposite, and turns the relief the
- * moment the picture does.
+ *  @brief
+ *  TRANSITION LETTERPRESS IMPRESSION: the incoming scene is a relief plate pressed into the sheet the outgoing
+ *  scene is printed on.
  *
- * The give-away detail of real letterpress is the bite: ink squeezed to the rim
- * of every stroke leaves a darker margin exactly where the plate's edges are
- * steepest.  That comes from the gradient's magnitude, free.
+ *  The plate's height field is the incoming scene's own luminance, so the
+ *  emboss is derived from the picture rather than drawn on top of it: the
+ *  lighting comes from the gradient of that field, which puts the bright edge on
+ *  the side facing the light and the shadow opposite, and turns the relief the
+ *  moment the picture does.
  *
- * The impression deepens as the press closes and the ink coverage grows past
- * every part of the plate, so the last frame is the incoming scene flat and
- * fully inked, with no relief left.
+ *  The give-away detail of real letterpress is the bite: ink squeezed to the rim
+ *  of every stroke leaves a darker margin exactly where the plate's edges are
+ *  steepest.  That comes from the gradient's magnitude, free.
  *
- * Audio Reactivity:
- *   audioKick  -> the light on the impression as the platen closes (light)
- *   audioHigh  -> the paper's tooth (light)
- *   audioMid   -> the ink's temperature (colour)
- *   audioSwell -> how deep the bite runs (slow)
+ *  The impression deepens as the press closes and the ink coverage grows past
+ *  every part of the plate, so the last frame is the incoming scene flat and
+ *  fully inked, with no relief left.
  *
- * Per-activation variety: biteP, reliefP, hueP.
+ *  Audio Reactivity:
+ *    audioKick  -> the light on the impression as the platen closes (light)
+ *    audioHigh  -> the paper's tooth (light)
+ *    audioMid   -> the ink's temperature (colour)
+ *    audioSwell -> how deep the bite runs (slow)
+ *
+ *  Per-activation variety: biteP, reliefP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

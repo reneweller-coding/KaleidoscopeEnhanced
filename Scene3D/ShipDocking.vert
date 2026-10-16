@@ -1,23 +1,30 @@
 #version 330 core
-/**
- * @file ShipDocking.vert
- * @brief Vertex stage companion to ShipDocking.frag -- see that file's
- * header. The first scene to use TWO loaded meshes, so the buffer has three
- * runs and gl_VertexID picks between them:
- *   [0, meshVertexCount)             the station (model=),  held still
- *   [meshVertexCount, mesh2VertexCount) the ship (model2=), flying the approach
- *   [mesh2VertexCount, ...)          the sky shell
+/*****************************************************************************\
+ *                              ShipDocking.vert
+\*****************************************************************************/
+/*! @file
  *
- * The ship is scaled to a FRACTION of the station (shipScaleP, ~0.1), which
- * is the whole point: both meshes arrive normalised to a unit box by the
- * generator, so drawn at equal scale a shuttle and a kilometres-wide station
- * come out the same size and the shot says nothing. The size difference IS
- * the story here.
+ *  @brief
+ *  Vertex stage companion to ShipDocking.frag -- see that file's header.
  *
- * The approach is staged on `sceneProgress` and eased out (1-(1-t)^3), so
- * the ship closes fast from a distance and settles gently into the dock in
- * the last moments -- and it does that across whatever screen time the
- * scheduler gave the scene, not a fixed wall-clock duration.
+ *  The first scene to use TWO loaded meshes, so the buffer has three runs and gl_VertexID picks between them:
+ *
+ *    [0, meshVertexCount)             the station (model=),  held still
+ *    [meshVertexCount, mesh2VertexCount) the ship (model2=), flying the approach
+ *    [mesh2VertexCount, ...)          the sky shell
+ *
+ *  The ship is scaled to a FRACTION of the station (shipScaleP, ~0.1), which
+ *  is the whole point: both meshes arrive normalised to a unit box by the
+ *  generator, so drawn at equal scale a shuttle and a kilometres-wide station
+ *  come out the same size and the shot says nothing. The size difference IS
+ *  the story here.
+ *
+ *  The approach is staged on `sceneProgress` and eased out (1-(1-t)^3), so
+ *  the ship closes fast from a distance and settles gently into the dock in
+ *  the last moments -- and it does that across whatever screen time the
+ *  scheduler gave the scene, not a fixed wall-clock duration.
+ *
+ *  @author René Weller
  */
 
 in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an

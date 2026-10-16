@@ -1,22 +1,27 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file AccretionDiskToroidVortex.frag
- * @brief ACCRETION DISK TOROID VORTEX: a glowing accretion torus seen from ABOVE,
- * the camera slowly orbiting the central hole while spiral density waves
- * wind around the ISCO rim (the golden ring where matter takes its last
- * stable lap before plunging in).
+/*****************************************************************************\
+ *                              AccretionDiskToroidVortex.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance  -> orbit + spiral wind-up (pre-integrated, jump-free)
- *   audioKick     -> ISCO rim flare
- *   audioBass     -> disk thickness / undulation
- *   audioHigh     -> extra rim incandescence
- *   audioBassRel  -> mix-independent low-end punch on the torus thickness
- *   audioRoughness-> dissonance churns the spiral density waves into turbulence
- *   audioRolloff  -> Doppler colour temperature (bass-heavy = ruby, bright = blue)
- *   audioSharpness-> crispness/tightness of the ISCO rim edge
+ *  @brief
+ *  ACCRETION DISK TOROID VORTEX: a glowing accretion torus seen from ABOVE, the camera slowly orbiting the central
+ *  hole while spiral density waves wind around the ISCO rim (the golden ring where matter takes its last stable lap
+ *  before plunging in).
+ *
+ *  Audio Reactivity:
+ *    audioAdvance  -> orbit + spiral wind-up (pre-integrated, jump-free)
+ *    audioKick     -> ISCO rim flare
+ *    audioBass     -> disk thickness / undulation
+ *    audioHigh     -> extra rim incandescence
+ *    audioBassRel  -> mix-independent low-end punch on the torus thickness
+ *    audioRoughness-> dissonance churns the spiral density waves into turbulence
+ *    audioRolloff  -> Doppler colour temperature (bass-heavy = ruby, bright = blue)
+ *    audioSharpness-> crispness/tightness of the ISCO rim edge
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec3  vWorldPos; ///< World position (from the vertex stage).
 in vec3  vNormal;   ///< Surface normal (from the vertex stage).

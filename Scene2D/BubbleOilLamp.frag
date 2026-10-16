@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file BubbleOilLamp.frag
- * @brief BUBBLE OIL LAMP: a wall of glowing bubble-tube lamps -- tall
- * columns of coloured liquid, lit from below, through which strings of
- * bubbles rise, wobbling, speeding up and slowing, each bubble a little
- * lens flashing with the light and bending the colours behind it; the
- * liquids take their colours from the photograph and glow softly into
- * each other, the photo faintly visible as the room reflected in the
- * glass.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              BubbleOilLamp.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the bubbles rise (integrated, jump-free)
- *   audioSpread     -> bubble size
- *   audioBass       -> the lamps glow brighter (light)
- *   audioHigh       -> the bubbles flash (light)
- *   audioMode       -> liquid colours: cool in minor, warm in major
- *   audioSwell      -> the glass reflection (slow)
+ *  @brief
+ *  BUBBLE OIL LAMP: a wall of glowing bubble-tube lamps -- tall columns of coloured liquid, lit from below, through
+ *  which strings of bubbles rise, wobbling, speeding up and slowing, each bubble a little lens flashing with the
+ *  light and bending the colours behind it; the liquids take their colours from the photograph and glow softly into
+ *  each other, the photo faintly visible as the room reflected in the glass.
  *
- * Knobs: tubeP (tube width), bubbleP (bubble density), glowP, hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the bubbles rise (integrated, jump-free)
+ *    audioSpread     -> bubble size
+ *    audioBass       -> the lamps glow brighter (light)
+ *    audioHigh       -> the bubbles flash (light)
+ *    audioMode       -> liquid colours: cool in minor, warm in major
+ *    audioSwell      -> the glass reflection (slow)
+ *
+ *  Knobs: tubeP (tube width), bubbleP (bubble density), glowP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

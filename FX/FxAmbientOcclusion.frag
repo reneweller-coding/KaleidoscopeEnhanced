@@ -1,20 +1,25 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file FxAmbientOcclusion.frag
- * @brief FX AMBIENT OCCLUSION: screen-space ambient occlusion reconstructed
- * from the scene's real depth buffer, darkening and cooling creases where
- * nearby geometry blocks the ambient light.
+/*****************************************************************************\
+ *                              FxAmbientOcclusion.frag
+\*****************************************************************************/
+/*! @file
  *
- * Rebuilds view-space position and normal per pixel from depth, samples a
- * dithered hemisphere kernel with a range check that avoids silhouette
- * haloing, and blends the occlusion of both incoming scene layers.
- *   interpolation -> cross-fades the two scene layers and their occlusion terms
- *   audioAmbient  -> raises/lowers the overall occlusion strength (breathing)
- *   audioSubBass  -> adds extra occlusion darkening
- *   audioKick     -> briefly lightens the occlusion on a hit
- *   audioBeat     -> subtle overall brightness pulse
+ *  @brief
+ *  FX AMBIENT OCCLUSION: screen-space ambient occlusion reconstructed from the scene's real depth buffer, darkening
+ *  and cooling creases where nearby geometry blocks the ambient light.
+ *
+ *  Rebuilds view-space position and normal per pixel from depth, samples a
+ *  dithered hemisphere kernel with a range check that avoids silhouette
+ *  haloing, and blends the occlusion of both incoming scene layers.
+ *    interpolation -> cross-fades the two scene layers and their occlusion terms
+ *    audioAmbient  -> raises/lowers the overall occlusion strength (breathing)
+ *    audioSubBass  -> adds extra occlusion darkening
+ *    audioKick     -> briefly lightens the occlusion on a hit
+ *    audioBeat     -> subtle overall brightness pulse
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 // FxAmbientOcclusion.frag — screen-space ambient occlusion from depth.
 // -----------------------------------------------------------------------
 // SSAO asks, for every pixel, how much of the hemisphere above its surface is

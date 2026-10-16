@@ -1,4 +1,22 @@
 #version 330 core
+/*****************************************************************************\
+ *                              Wormhole.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Flies through a repeating chain of gravitational-lensing wormhole throats: bends the slideshow image (tex0)
+ *  around each throat with growing angular smear near its horizon and per-channel chromatic aberration, and traces
+ *  a bright photon ring at the horizon itself.
+ *
+ *  audioAdvance drives the flight speed and the image's scroll along the
+ *  tube; audioKick and audioDrop flare the photon ring's brightness;
+ *  audioChromaHue tints the ring's colour. vLensAmt (the current throat's
+ *  lensing strength, from the vertex stage) controls both the bend amount
+ *  and how brightly that stretch of tube is lit; vDist applies depth fog.
+ *
+ *  @author René Weller
+ */
 out vec4 fragColor; ///< The pixel's colour (output).
 // Wormhole.frag — the wall image is bent around each throat: near the
 // horizon the angular coordinate smears (extra rotation growing with
@@ -17,20 +35,6 @@ in vec2  vUV;      ///< Texture coordinate 0..1 over the screen (from the vertex
 in float vDist;    ///< Distance (from the vertex stage).
 in float vAng;     ///< Ang (from the vertex stage).
 in float vLensAmt; ///< Lens amt (from the vertex stage).
-
-/**
- * @file Wormhole.frag
- * @brief Flies through a repeating chain of gravitational-lensing wormhole
- * throats: bends the slideshow image (tex0) around each throat with growing
- * angular smear near its horizon and per-channel chromatic aberration, and
- * traces a bright photon ring at the horizon itself.
- *
- * audioAdvance drives the flight speed and the image's scroll along the
- * tube; audioKick and audioDrop flare the photon ring's brightness;
- * audioChromaHue tints the ring's colour. vLensAmt (the current throat's
- * lensing strength, from the vertex stage) controls both the bend amount
- * and how brightly that stretch of tube is lit; vDist applies depth fog.
- */
 
 /**  Rotates a colour's hue by an angle (about the grey axis).
  *

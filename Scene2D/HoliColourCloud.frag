@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file HoliColourCloud.frag
- * @brief HOLI COLOUR CLOUD: clouds of coloured powder thrown into low sun,
- * billowing in slow motion and lit from behind so their edges burn and
- * their cores glow.  Several plumes in different colours roll into each
- * other and mix where they meet; fine grains glitter in the back light.
- * The plumes keep their own slow billow; the music lights them: each plume
- * glows with its band, and the kick sends a warm surge through the back
- * light.
+/*****************************************************************************\
+ *                              HoliColourCloud.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSpectrum[32] -> glow of each plume (its band)
- *   audioKick         -> a surge of the back light (light only)
- *   audioSwell        -> how dense and wide the plumes are (slow)
- *   audioHigh         -> the glitter of the grains (light)
- *   sceneTime         -> the slow billow (continuous)
+ *  @brief
+ *  HOLI COLOUR CLOUD: clouds of coloured powder thrown into low sun, billowing in slow motion and lit from behind
+ *  so their edges burn and their cores glow.
  *
- * Per-activation variety: plumesP (number of plumes), hueP.
+ *  Several plumes in different colours roll into each other and mix where they meet; fine grains glitter in the
+ *  back light. The plumes keep their own slow billow; the music lights them: each plume glows with its band, and
+ *  the kick sends a warm surge through the back light.
+ *
+ *  Audio Reactivity:
+ *    audioSpectrum[32] -> glow of each plume (its band)
+ *    audioKick         -> a surge of the back light (light only)
+ *    audioSwell        -> how dense and wide the plumes are (slow)
+ *    audioHigh         -> the glitter of the grains (light)
+ *    sceneTime         -> the slow billow (continuous)
+ *
+ *  Per-activation variety: plumesP (number of plumes), hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

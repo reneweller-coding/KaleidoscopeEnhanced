@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SolarProminenceLoops.frag
- * @brief SOLAR PROMINENCE LOOPS: the camera stands on the Sun.  Below, the
- * granulated photosphere boils; above, magnetic loops arch from footpoint
- * to footpoint, each a glowing tube of plasma streaming along the field on
- * the music's pace.  Builds raise the loops (slowly, on the swell); the
- * bass is the plasma's brightness; a drop lights the biggest loop end to
- * end as if it had just reconnected -- light, never a jolt.  The camera
- * never moves.
+/*****************************************************************************\
+ *                              SolarProminenceLoops.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   sceneAdvance -> plasma streams along the loops (continuous)
- *   audioSwell   -> loop height (slow)
- *   audioBass    -> plasma brightness (light)
- *   audioDrop    -> reconnection flash on the main loop (light)
- *   audioKick    -> footpoint flares (light)
- *   audioLevel   -> photosphere brightness
+ *  @brief
+ *  SOLAR PROMINENCE LOOPS: the camera stands on the Sun.
  *
- * Per-activation variety: loopsP (loop count 4..8), heightP, hueP.
+ *  Below, the granulated photosphere boils; above, magnetic loops arch from footpoint to footpoint, each a glowing
+ *  tube of plasma streaming along the field on the music's pace.  Builds raise the loops (slowly, on the swell);
+ *  the bass is the plasma's brightness; a drop lights the biggest loop end to end as if it had just reconnected --
+ *  light, never a jolt.  The camera never moves.
+ *
+ *  Audio Reactivity:
+ *    sceneAdvance -> plasma streams along the loops (continuous)
+ *    audioSwell   -> loop height (slow)
+ *    audioBass    -> plasma brightness (light)
+ *    audioDrop    -> reconnection flash on the main loop (light)
+ *    audioKick    -> footpoint flares (light)
+ *    audioLevel   -> photosphere brightness
+ *
+ *  Per-activation variety: loopsP (loop count 4..8), heightP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

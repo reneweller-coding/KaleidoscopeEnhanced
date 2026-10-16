@@ -1,20 +1,26 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file WindTurbineFieldDusk.frag
- * @brief WIND TURBINE FIELD DUSK (fragment): a field of turbines at dusk.
- * The blades are pale against a photo sky, each turbine turning at its own
- * steady rate; the nav lights breathe with the kick (light only, never
- * motion); the swell is the last daylight; the spectrum tints the sky
- * band by band along the horizon.  Distance haze stacks the rows.
+/*****************************************************************************\
+ *                              WindTurbineFieldDusk.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSwell        -> daylight and haze (slow)
- *   audioKick         -> nav lights (light)
- *   audioSpectrum[32] -> the horizon band colours (light)
- *   audioHigh         -> blade edge glints (light)
- *   audioLevel        -> brightness
+ *  @brief
+ *  WIND TURBINE FIELD DUSK (fragment): a field of turbines at dusk.
+ *
+ *  The blades are pale against a photo sky, each turbine turning at its own steady rate; the nav lights breathe
+ *  with the kick (light only, never motion); the swell is the last daylight; the spectrum tints the sky band by
+ *  band along the horizon.  Distance haze stacks the rows.
+ *
+ *  Audio Reactivity:
+ *    audioSwell        -> daylight and haze (slow)
+ *    audioKick         -> nav lights (light)
+ *    audioSpectrum[32] -> the horizon band colours (light)
+ *    audioHigh         -> blade edge glints (light)
+ *    audioLevel        -> brightness
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

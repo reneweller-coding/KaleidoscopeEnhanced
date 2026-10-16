@@ -1,30 +1,36 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file FxChain.frag
- * @brief FX CHAIN: the chain laboratory as an overlay -- the finished frame of
- * whatever scene is playing flows through a rolled chain of four continuous
- * transforms (the 2D chain lab's classes: global map, symmetry, second map,
- * warp), so every scene becomes the input of a new chain.  The frame has no
- * mip chain of its own; the engine builds one while this FX is on screen
- * (EffectShader::usesSceneLod), which keeps the squeezed parts from shimmering.
- * Rendered as the frame itself, a lit relief or glowing edges (the preset keeps
- * styleP low), optionally tinted by a colour field that follows the chain.
+/*****************************************************************************\
+ *                              FxChain.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the flow through the chain (integrated, jump-free)
- *   sceneAdvance    -> the chain morphs on to the next transform (integrated)
- *   audioPhase      -> the kaleidoscopes turn, the colour field wanders (integrated)
- *   audioSpread     -> the strength of the distorting stages
- *   audioKick       -> the edges flare (light)
- *   audioMode       -> the tint: cool in minor, warm in major
- *   audioSwell      -> the relief light (slow)
+ *  @brief
+ *  FX CHAIN: the chain laboratory as an overlay -- the finished frame of whatever scene is playing flows through a
+ *  rolled chain of four continuous transforms (the 2D chain lab's classes: global map, symmetry, second map, warp),
+ *  so every scene becomes the input of a new chain.
  *
- * Knobs: chainAP / chainBP / chainCP / chainDP (the chain, rolled per start),
- * morphP (which stage, if any, morphs on with the music), styleP (frame /
- * relief / edges / contours / flow), speedP (flow speed), detailP (sharpness),
- * paletteP (the frame's own colours / colour field), hueP.
+ *  The frame has no mip chain of its own; the engine builds one while this FX is on screen
+ *  (EffectShader::usesSceneLod), which keeps the squeezed parts from shimmering. Rendered as the frame itself, a
+ *  lit relief or glowing edges (the preset keeps styleP low), optionally tinted by a colour field that follows the
+ *  chain.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the flow through the chain (integrated, jump-free)
+ *    sceneAdvance    -> the chain morphs on to the next transform (integrated)
+ *    audioPhase      -> the kaleidoscopes turn, the colour field wanders (integrated)
+ *    audioSpread     -> the strength of the distorting stages
+ *    audioKick       -> the edges flare (light)
+ *    audioMode       -> the tint: cool in minor, warm in major
+ *    audioSwell      -> the relief light (slow)
+ *
+ *  Knobs: chainAP / chainBP / chainCP / chainDP (the chain, rolled per start),
+ *  morphP (which stage, if any, morphs on with the music), styleP (frame /
+ *  relief / edges / contours / flow), speedP (flow speed), detailP (sharpness),
+ *  paletteP (the frame's own colours / colour field), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

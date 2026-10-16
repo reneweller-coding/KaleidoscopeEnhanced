@@ -1,19 +1,27 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file LogarithmicSpiral.frag
- * @brief TRANSITION LOGARITHMIC SPIRAL: Equiangular logarithmic spiral vortex
- * (r = a * exp(b * theta)). The outgoing scene winds inward along spiral
- * streamlines while the incoming scene unwinds outwards from the center.
- *   interpolation -> controls spiral vortex winding angle & depth
- *   audioKick     -> flashes spiral arm streamline highlights
+/*****************************************************************************\
+ *                              LogarithmicSpiral.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   spiralP float spiral winding tightness (0.5..2.2)
- *   armsP   float spiral arm count         (0.5..2.0)
- *   speedP  float animation speed          (0.5..2.0)
- *   hueP    float spiral hue offset        (0..6.28)
+ *  @brief
+ *  TRANSITION LOGARITHMIC SPIRAL: Equiangular logarithmic spiral vortex (r = a * exp(b * theta)).
+ *
+ *  The outgoing scene winds inward along spiral streamlines while the incoming scene unwinds outwards from the
+ *  center.
+ *
+ *    interpolation -> controls spiral vortex winding angle & depth
+ *    audioKick     -> flashes spiral arm streamline highlights
+ *
+ *  Per-activation variety:
+ *    spiralP float spiral winding tightness (0.5..2.2)
+ *    armsP   float spiral arm count         (0.5..2.0)
+ *    speedP  float animation speed          (0.5..2.0)
+ *    hueP    float spiral hue offset        (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

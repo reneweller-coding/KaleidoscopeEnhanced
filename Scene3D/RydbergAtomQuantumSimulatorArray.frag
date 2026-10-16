@@ -1,21 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file RydbergAtomQuantumSimulatorArray.frag
- * @brief RYDBERG ATOM QUANTUM SIMULATOR ARRAY: 59,319 neutral alkali atoms trapped in a 3D optical
- * tweezer array -- a WIDE SLAB of tweezer planes that overflows both frame edges. Laser driving to
- * high principal quantum number Rydberg states (n ~ 70) creates
- * strong Van der Waals Rydberg blockade interactions, crystalline quantum states, and photo texturing.
- *   audioAdvance -> navigates Rabi frequency detuning & quantum simulator adiabatic sweeps
- *   audioKick    -> flashes collective Rydberg excitation & quantum Zeno blockade avalanches
- *   audioSwell   -> widens Rydberg blockade radius sphere & atom cloud fluorescence
- *   audioCentroid-> shifts atomic D2 line / Rydberg laser transition color spectra (damped, so a
- *                   transient tints the array rather than lurching every atom's hue at once)
+/*****************************************************************************\
+ *                              RydbergAtomQuantumSimulatorArray.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   pointGainP float point sprite base luminance gain (0.5..1.8)
- *   haloP      float gaussian atom core halo profile  (0.6..2.2)
+ *  @brief
+ *  RYDBERG ATOM QUANTUM SIMULATOR ARRAY: 59,319 neutral alkali atoms trapped in a 3D optical tweezer array -- a
+ *  WIDE SLAB of tweezer planes that overflows both frame edges.
+ *
+ *  Laser driving to high principal quantum number Rydberg states (n ~ 70) creates strong Van der Waals Rydberg
+ *  blockade interactions, crystalline quantum states, and photo texturing.
+ *
+ *    audioAdvance -> navigates Rabi frequency detuning & quantum simulator adiabatic sweeps
+ *    audioKick    -> flashes collective Rydberg excitation & quantum Zeno blockade avalanches
+ *    audioSwell   -> widens Rydberg blockade radius sphere & atom cloud fluorescence
+ *    audioCentroid-> shifts atomic D2 line / Rydberg laser transition color spectra (damped, so a
+ *                    transient tints the array rather than lurching every atom's hue at once)
+ *
+ *  Per-activation variety:
+ *    pointGainP float point sprite base luminance gain (0.5..1.8)
+ *    haloP      float gaussian atom core halo profile  (0.6..2.2)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec3  vCol;       ///< Colour (from the vertex stage).
 in float vBlockade;  ///< Blockade (from the vertex stage).

@@ -1,8 +1,13 @@
 #version 330 core
-/**
- * @file GrassField.vert
- * @brief Vertex stage companion to GrassField.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              GrassField.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to GrassField.frag -- see that file's header for this scene's description.
+ *
+ *  @author René Weller
  */
 // GrassField.vert — one vertex per blade: place its root, nothing more.
 // The blade itself is grown in the geometry shader.

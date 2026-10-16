@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file OpalStructuralColour.frag
- * @brief OPAL STRUCTURAL COLOUR: the play of colour of a precious opal.
- * The stone is a lattice of silica spheres in domains; each domain
- * reflects the Bragg wavelength for its orientation and the viewing
- * angle, so as the viewing angle sweeps slowly the domains flash through
- * the spectrum.  The photo is the milky body of the stone; band energy
- * lights the domains whose colour matches; the treble sparkles the
- * sphere lattice.  Camera still; only the light angle moves.
+/*****************************************************************************\
+ *                              OpalStructuralColour.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   sceneAdvance      -> viewing-angle sweep (continuous, slow)
- *   audioSpectrum[32] -> domain brightness by colour (light)
- *   audioHigh         -> lattice sparkle (light)
- *   audioSwell        -> light strength (slow)
- *   audioLevel        -> brightness
+ *  @brief
+ *  OPAL STRUCTURAL COLOUR: the play of colour of a precious opal.
  *
- * Per-activation variety: domainP (domain size), milkP, hueP.
+ *  The stone is a lattice of silica spheres in domains; each domain reflects the Bragg wavelength for its
+ *  orientation and the viewing angle, so as the viewing angle sweeps slowly the domains flash through the spectrum.
+ *  The photo is the milky body of the stone; band energy lights the domains whose colour matches; the treble
+ *  sparkles the sphere lattice.  Camera still; only the light angle moves.
+ *
+ *  Audio Reactivity:
+ *    sceneAdvance      -> viewing-angle sweep (continuous, slow)
+ *    audioSpectrum[32] -> domain brightness by colour (light)
+ *    audioHigh         -> lattice sparkle (light)
+ *    audioSwell        -> light strength (slow)
+ *    audioLevel        -> brightness
+ *
+ *  Per-activation variety: domainP (domain size), milkP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

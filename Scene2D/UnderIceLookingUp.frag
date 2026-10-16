@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file UnderIceLookingUp.frag
- * @brief UNDER ICE LOOKING UP: beneath the ice of a frozen lake, looking up
- * at its underside -- a ceiling of clear black ice lit from above by a
- * pale winter sun, shot through with white cracks that branch and meet,
- * and frozen into it, column above column, the flat round bubbles of
- * methane caught as the ice grew, white discs stacked in towers fading
- * upward into the ice.  Where snow lies on top the light is dim and blue;
- * where the ice is bare, shafts of light fall into the dark green water.
- * Suspended particles drift slowly.  The camera is still.
+/*****************************************************************************\
+ *                              UnderIceLookingUp.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSwell  -> the daylight through the ice (slow)
- *   audioHigh   -> glints on the bubbles (light)
- *   audioLevel  -> brightness
- *   sceneTime / sceneAdvance -> drifting particles, the light shifting
+ *  @brief
+ *  UNDER ICE LOOKING UP: beneath the ice of a frozen lake, looking up at its underside -- a ceiling of clear black
+ *  ice lit from above by a pale winter sun, shot through with white cracks that branch and meet, and frozen into
+ *  it, column above column, the flat round bubbles of methane caught as the ice grew, white discs stacked in towers
+ *  fading upward into the ice.
  *
- * Per-activation variety: bubblesP (how many bubble towers), hueP.
+ *  Where snow lies on top the light is dim and blue; where the ice is bare, shafts of light fall into the dark
+ *  green water. Suspended particles drift slowly.  The camera is still.
+ *
+ *  Audio Reactivity:
+ *    audioSwell  -> the daylight through the ice (slow)
+ *    audioHigh   -> glints on the bubbles (light)
+ *    audioLevel  -> brightness
+ *    sceneTime / sceneAdvance -> drifting particles, the light shifting
+ *
+ *  Per-activation variety: bubblesP (how many bubble towers), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

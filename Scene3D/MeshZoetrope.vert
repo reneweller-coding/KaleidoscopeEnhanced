@@ -1,11 +1,17 @@
 #version 330 core
-/**
- * @file MeshZoetrope.vert
- * @brief Vertex stage companion to MeshZoetrope.frag -- see that file's
- * header. One model: the drum spins about its spindle on time, the base
- * does not. The split is a height in the model's own frame (splitP), tuned
- * once against the model: everything above it turns, everything below
- * stands still. A steady rate, never the beat integrator.
+/*****************************************************************************\
+ *                              MeshZoetrope.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to MeshZoetrope.frag -- see that file's header.
+ *
+ *  One model: the drum spins about its spindle on time, the base does not. The split is a height in the model's own
+ *  frame (splitP), tuned once against the model: everything above it turns, everything below stands still. A steady
+ *  rate, never the beat integrator.
+ *
+ *  @author René Weller
  */
 
 in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an

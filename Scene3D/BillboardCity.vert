@@ -1,8 +1,13 @@
 #version 330 core
-/**
- * @file BillboardCity.vert
- * @brief Vertex stage companion to BillboardCity.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              BillboardCity.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to BillboardCity.frag -- see that file's header for this scene's description.
+ *
+ *  @author René Weller
  */
 // BillboardCity.vert — a night flight down an avenue of glowing photo
 // billboards; each screen shows a seeded kaleido-crop of the current image

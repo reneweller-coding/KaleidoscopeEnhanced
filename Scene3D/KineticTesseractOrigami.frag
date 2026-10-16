@@ -1,23 +1,27 @@
 #version 330 core
+/*****************************************************************************\
+ *                              KineticTesseractOrigami.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Shades one facet of the Miura-ori origami sheet folded by KineticTesseractOrigami.vert: the stored photo blended
+ *  with an iridescent paper sheen, plus neon crease lines at each facet's border.
+ *
+ *  vFoldAngle (the current fold amount from the vertex stage, itself
+ *  driven by audioAdvance/audioBass/audioKick) selects the sheen's hue
+ *  from the house photo palette; audioKick brightens the glowing crease
+ *  lines and audioSwell lifts overall brightness; audioChromaHue/hueP and
+ *  audioValence shape the palette's hue drift and saturation via the
+ *  shared imgPalette helper. glowP scales final output.
+ *
+ *  @author René Weller
+ */
 in vec3  vPos;       ///< Position (from the vertex stage).
 in vec2  vUV;        ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 in float vFoldAngle; ///< Fold angle (from the vertex stage).
 
 out vec4 fragColor; ///< The pixel's colour (output).
-
-/**
- * @file KineticTesseractOrigami.frag
- * @brief Shades one facet of the Miura-ori origami sheet folded by
- * KineticTesseractOrigami.vert: the stored photo blended with an
- * iridescent paper sheen, plus neon crease lines at each facet's border.
- *
- * vFoldAngle (the current fold amount from the vertex stage, itself
- * driven by audioAdvance/audioBass/audioKick) selects the sheen's hue
- * from the house photo palette; audioKick brightens the glowing crease
- * lines and audioSwell lifts overall brightness; audioChromaHue/hueP and
- * audioValence shape the palette's hue drift and saturation via the
- * shared imgPalette helper. glowP scales final output.
- */
 
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

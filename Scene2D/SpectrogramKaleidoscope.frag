@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SpectrogramKaleidoscope.frag
- * @brief SPECTROGRAM KALEIDOSCOPE: the mirrored motif is not a photo but
- * the last twenty seconds of the music itself (texSpectro: 32 bands by a
- * 20-second history ring).  The centre is now, the rim is twenty seconds
- * ago; bands run around the wedge, so every note becomes an ornament that
- * drifts outward through the fold as it ages.  The fold count is fixed per
- * activation, the mirror turns on the music's pace, and the only thing that
- * changes fast is what the music itself paints.
+/*****************************************************************************\
+ *                              SpectrogramKaleidoscope.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   texSpectro    -> the motif (the whole point)
- *   sceneAdvance  -> mirror rotation (continuous)
- *   audioKick     -> the centre flashes (light)
- *   audioSwell    -> rim glow (slow)
- *   audioLevel    -> brightness
+ *  @brief
+ *  SPECTROGRAM KALEIDOSCOPE: the mirrored motif is not a photo but the last twenty seconds of the music itself
+ *  (texSpectro: 32 bands by a 20-second history ring).
  *
- * Per-activation variety: sidesP (fold count), spanP (seconds shown), hueP.
+ *  The centre is now, the rim is twenty seconds ago; bands run around the wedge, so every note becomes an ornament
+ *  that drifts outward through the fold as it ages.  The fold count is fixed per activation, the mirror turns on
+ *  the music's pace, and the only thing that changes fast is what the music itself paints.
+ *
+ *  Audio Reactivity:
+ *    texSpectro    -> the motif (the whole point)
+ *    sceneAdvance  -> mirror rotation (continuous)
+ *    audioKick     -> the centre flashes (light)
+ *    audioSwell    -> rim glow (slow)
+ *    audioLevel    -> brightness
+ *
+ *  Per-activation variety: sidesP (fold count), spanP (seconds shown), hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

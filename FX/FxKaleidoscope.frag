@@ -1,10 +1,16 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file FxKaleidoscope.frag
- * @brief FX KALEIDOSCOPE: classic radial mirror-fold -- the polar angle is
- * wrapped and mirrored into "sides" repeating wedges, slowly rotating.
+/*****************************************************************************\
+ *                              FxKaleidoscope.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  FX KALEIDOSCOPE: classic radial mirror-fold -- the polar angle is wrapped and mirrored into "sides" repeating
+ *  wedges, slowly rotating.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

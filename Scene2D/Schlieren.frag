@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file Schlieren.frag
- * @brief KNIFE-EDGE SCHLIEREN OPTICS over the live GPU fluid: the classic
- * wind-tunnel photography technique, synthesised.  Real schlieren imaging
- * makes invisible density gradients visible — a knife edge in the focal
- * plane converts refraction-angle into brightness, so pressure waves and
- * convection plumes appear as dramatic light/dark streaks.
+/*****************************************************************************\
+ *                              Schlieren.frag
+\*****************************************************************************/
+/*! @file
  *
- * Here the "medium" is the engine's curl-noise fluid simulation (texFluid,
- * unit 8 — declaring it makes the host step the sim automatically).  The
- * dye field's luminance acts as the density field:
- *   * brightness = 0.5 + k * (gradient · knife-edge direction)  — the
- *     authentic monochrome schlieren look, edge direction slowly turning;
- *   * a RAINBOW-FILTER variant (real labs use a colour filter instead of
- *     the knife edge) tints by gradient DIRECTION;
- *   * the source image is refracted through the flow like looking through
- *     moving hot air.
- * The photo is continuously injected as dye by the sim, so the flow itself
- * carries the picture's colours through the optics.
+ *  @brief
+ *  KNIFE-EDGE SCHLIEREN OPTICS over the live GPU fluid: the classic wind-tunnel photography technique, synthesised.
+ *
+ *  Real schlieren imaging makes invisible density gradients visible — a knife edge in the focal plane converts
+ *  refraction-angle into brightness, so pressure waves and convection plumes appear as dramatic light/dark streaks.
+ *
+ *  Here the "medium" is the engine's curl-noise fluid simulation (texFluid,
+ *  unit 8 — declaring it makes the host step the sim automatically).  The
+ *  dye field's luminance acts as the density field:
+ *    * brightness = 0.5 + k * (gradient · knife-edge direction)  — the
+ *      authentic monochrome schlieren look, edge direction slowly turning;
+ *    * a RAINBOW-FILTER variant (real labs use a colour filter instead of
+ *      the knife edge) tints by gradient DIRECTION;
+ *    * the source image is refracted through the flow like looking through
+ *      moving hot air.
+ *  The photo is continuously injected as dye by the sim, so the flow itself
+ *  carries the picture's colours through the optics.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

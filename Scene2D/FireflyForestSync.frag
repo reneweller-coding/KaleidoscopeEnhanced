@@ -1,23 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file FireflyForestSync.frag
- * @brief FIREFLY FOREST SYNC: a forest on a June night where the fireflies
- * flash in synchrony -- among the dark trunks and ferns thousands of
- * small yellow-green lights, and their flashes run through the woods in
- * waves: a burst sweeps across from one side, the whole forest lights up
- * in a ripple of points, then darkness, then the next wave.  The trunks
- * stand in layers receding into blue night mist, the ferns catch the
- * glow.  The camera is still; the fireflies drift slowly.
+/*****************************************************************************\
+ *                              FireflyForestSync.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioKick   -> the strength of the flash waves (light)
- *   audioSwell  -> the night mist (slow)
- *   audioLevel  -> brightness
- *   sceneTime / sceneAdvance -> the waves running, the fireflies drifting
+ *  @brief
+ *  FIREFLY FOREST SYNC: a forest on a June night where the fireflies flash in synchrony -- among the dark trunks
+ *  and ferns thousands of small yellow-green lights, and their flashes run through the woods in waves: a burst
+ *  sweeps across from one side, the whole forest lights up in a ripple of points, then darkness, then the next
+ *  wave.
  *
- * Per-activation variety: swarmP (how many fireflies), hueP.
+ *  The trunks stand in layers receding into blue night mist, the ferns catch the glow.  The camera is still; the
+ *  fireflies drift slowly.
+ *
+ *  Audio Reactivity:
+ *    audioKick   -> the strength of the flash waves (light)
+ *    audioSwell  -> the night mist (slow)
+ *    audioLevel  -> brightness
+ *    sceneTime / sceneAdvance -> the waves running, the fireflies drifting
+ *
+ *  Per-activation variety: swarmP (how many fireflies), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

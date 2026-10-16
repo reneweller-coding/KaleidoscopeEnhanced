@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureConformalMorph.frag
- * @brief TEXTURE CONFORMAL MORPH: the photograph streams in a double spiral
- * between two wandering poles -- out of one point it unrolls, spirals
- * around, and winds down into the other, endlessly repeated and ever
- * smaller toward both poles, like an Escher double spiral; the map is
- * conformal (every tiny piece of the photo keeps its true shape), the
- * poles drift across the screen and the spiral's pitch slowly changes.
- * Continues beyond the frame; mirrorable.
+/*****************************************************************************\
+ *                              TextureConformalMorph.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the stream from pole to pole (integrated, jump-free)
- *   audioPhase      -> the stream turns around the poles (integrated)
- *   audioSpread     -> the poles move apart
- *   audioKick       -> the pole glow flares (light)
- *   audioMode       -> colour temperature: cool in minor, warm in major
- *   audioHigh       -> the seams between repeats glint (light)
+ *  @brief
+ *  TEXTURE CONFORMAL MORPH: the photograph streams in a double spiral between two wandering poles -- out of one
+ *  point it unrolls, spirals around, and winds down into the other, endlessly repeated and ever smaller toward both
+ *  poles, like an Escher double spiral; the map is conformal (every tiny piece of the photo keeps its true shape),
+ *  the poles drift across the screen and the spiral's pitch slowly changes.
  *
- * Knobs: twistP (spiral pitch: 1 or 2 turns per repeat, blended), repeatP (photo size), glowP (pole glow), hueP.
+ *  Continues beyond the frame; mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the stream from pole to pole (integrated, jump-free)
+ *    audioPhase      -> the stream turns around the poles (integrated)
+ *    audioSpread     -> the poles move apart
+ *    audioKick       -> the pole glow flares (light)
+ *    audioMode       -> colour temperature: cool in minor, warm in major
+ *    audioHigh       -> the seams between repeats glint (light)
+ *
+ *  Knobs: twistP (spiral pitch: 1 or 2 turns per repeat, blended), repeatP (photo size), glowP (pole glow), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

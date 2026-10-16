@@ -1,22 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file DichroicInfinityPrismVault.frag
- * @brief DICHROIC INFINITY PRISM VAULT: Raymarched infinite mirror chamber of
- * dichroic glass prisms and cubic beam-splitters. RGB spectral dispersion,
- * total internal reflection (TIR), multi-bounce optical caustics, and
- * continuous kaleidoscopic photo refraction.
- *   audioAdvance -> navigates camera through the infinite prism vault
- *   audioKick    -> flashes total internal reflection facet edges & glints
- *   audioBass    -> pulses dichroic thin-film transmission wavelength
- *   audioChromaHue-> shifts spectral dispersion prism angles
+/*****************************************************************************\
+ *                              DichroicInfinityPrismVault.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   prismP      float prism lattice density & facet scale (0.5..2.2)
- *   dispersionP float chromatic RGB separation spread     (0.5..2.2)
- *   speedP      float camera traversal velocity           (0.5..2.0)
- *   hueP        float dichroic filter base hue offset     (0..6.28)
+ *  @brief
+ *  DICHROIC INFINITY PRISM VAULT: Raymarched infinite mirror chamber of dichroic glass prisms and cubic
+ *  beam-splitters.
+ *
+ *  RGB spectral dispersion, total internal reflection (TIR), multi-bounce optical caustics, and continuous
+ *  kaleidoscopic photo refraction.
+ *
+ *    audioAdvance -> navigates camera through the infinite prism vault
+ *    audioKick    -> flashes total internal reflection facet edges & glints
+ *    audioBass    -> pulses dichroic thin-film transmission wavelength
+ *    audioChromaHue-> shifts spectral dispersion prism angles
+ *
+ *  Per-activation variety:
+ *    prismP      float prism lattice density & facet scale (0.5..2.2)
+ *    dispersionP float chromatic RGB separation spread     (0.5..2.2)
+ *    speedP      float camera traversal velocity           (0.5..2.0)
+ *    hueP        float dichroic filter base hue offset     (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

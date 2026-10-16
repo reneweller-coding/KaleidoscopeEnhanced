@@ -1,15 +1,20 @@
 #version 430 core
-/**
- * @file GlacierCalvingFront.comp
- * @brief GLACIER CALVING FRONT: the ice cliff where a glacier meets the
- * sea.  Along the face, slabs of ice break away on continuous phases --
- * each slab (a photo-textured block) tilts out, falls, hits the water in
- * a burst of round spray and floats off as a growler -- while the cliff
- * itself stands.  No state: every slab and spray drop is a function of
- * its seed and the scene clock.  The swell sets how many slabs are in
- * flight (the calving rate as a smooth fraction).  Camera on the water.
+/*****************************************************************************\
+ *                              GlacierCalvingFront.comp
+\*****************************************************************************/
+/*! @file
  *
- * Per-instance: rateP, sizeP, hueP.
+ *  @brief
+ *  GLACIER CALVING FRONT: the ice cliff where a glacier meets the sea.
+ *
+ *  Along the face, slabs of ice break away on continuous phases -- each slab (a photo-textured block) tilts out,
+ *  falls, hits the water in a burst of round spray and floats off as a growler -- while the cliff itself stands.
+ *  No state: every slab and spray drop is a function of its seed and the scene clock.  The swell sets how many
+ *  slabs are in flight (the calving rate as a smooth fraction).  Camera on the water.
+ *
+ *  Per-instance: rateP, sizeP, hueP.
+ *
+ *  @author René Weller
  */
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( local_size_x = 4, local_size_y = 4, local_size_z = 4 ) in;

@@ -1,19 +1,27 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file FullereneC60BuckyballCrystalLattice.frag
- * @brief FULLERENE C60 BUCKYBALL CRYSTAL LATTICE: Buckminsterfullerene C60 crystal lattice (fullerite).
- * Truncated icosahedral carbon cages arranged in a 3D FCC crystal structure. Pentagonal/hexagonal
- * ring vibrations, metallic carbon luster, and fullerene photo texturing.
- *   audioAdvance -> rotates fullerite crystal orientation & intramolecular cage tumbling
- *   audioKick    -> flashes C60 intramolecular vibrational mode resonance bursts
- *   audioSwell   -> widens fullerite unit cell constant & carbon atom cluster size
- *   audioCentroid-> shifts fullerene electronic absorption / luminescence spectra
+/*****************************************************************************\
+ *                              FullereneC60BuckyballCrystalLattice.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   buckySizeP float individual C60 cage cluster diameter   (0.04..0.14)
- *   specularP  float carbon cage facet specular gain        (0.8..2.5)
+ *  @brief
+ *  FULLERENE C60 BUCKYBALL CRYSTAL LATTICE: Buckminsterfullerene C60 crystal lattice (fullerite).
+ *
+ *  Truncated icosahedral carbon cages arranged in a 3D FCC crystal structure. Pentagonal/hexagonal ring vibrations,
+ *  metallic carbon luster, and fullerene photo texturing.
+ *
+ *    audioAdvance -> rotates fullerite crystal orientation & intramolecular cage tumbling
+ *    audioKick    -> flashes C60 intramolecular vibrational mode resonance bursts
+ *    audioSwell   -> widens fullerite unit cell constant & carbon atom cluster size
+ *    audioCentroid-> shifts fullerene electronic absorption / luminescence spectra
+ *
+ *  Per-activation variety:
+ *    buckySizeP float individual C60 cage cluster diameter   (0.04..0.14)
+ *    specularP  float carbon cage facet specular gain        (0.8..2.5)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec3  vNormal;     ///< Surface normal (from the vertex stage).
 in vec3  vCol;        ///< Colour (from the vertex stage).

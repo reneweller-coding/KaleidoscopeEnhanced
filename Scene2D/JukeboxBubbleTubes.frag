@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file JukeboxBubbleTubes.frag
- * @brief JUKEBOX BUBBLE TUBES: the front of a period jukebox.  Bubble
- * tubes arch over the case, each a glass column of coloured liquid with
- * round bubbles rising through it on the scene clock; behind them the
- * record carousel turns steadily, the selection board carries the photo
- * as its title strips, and the neon trim glows.  The chroma classes drive
- * the tube colours, the swell the neon, the kick a flicker in one tube.
- * Camera fixed on the cabinet.
+/*****************************************************************************\
+ *                              JukeboxBubbleTubes.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioChroma[12] -> the tube colours (light)
- *   sceneAdvance    -> bubbles rise, the carousel turns (continuous)
- *   audioSwell      -> the neon trim (slow)
- *   audioKick       -> one tube flickers (light)
- *   audioHigh       -> the chrome sparkle (light)
+ *  @brief
+ *  JUKEBOX BUBBLE TUBES: the front of a period jukebox.
  *
- * Per-activation variety: tubesP, bubbleP, hueP.
+ *  Bubble tubes arch over the case, each a glass column of coloured liquid with round bubbles rising through it on
+ *  the scene clock; behind them the record carousel turns steadily, the selection board carries the photo as its
+ *  title strips, and the neon trim glows.  The chroma classes drive the tube colours, the swell the neon, the kick
+ *  a flicker in one tube. Camera fixed on the cabinet.
+ *
+ *  Audio Reactivity:
+ *    audioChroma[12] -> the tube colours (light)
+ *    sceneAdvance    -> bubbles rise, the carousel turns (continuous)
+ *    audioSwell      -> the neon trim (slow)
+ *    audioKick       -> one tube flickers (light)
+ *    audioHigh       -> the chrome sparkle (light)
+ *
+ *  Per-activation variety: tubesP, bubbleP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

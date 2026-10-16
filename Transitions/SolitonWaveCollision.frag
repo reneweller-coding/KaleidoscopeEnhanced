@@ -1,20 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SolitonWaveCollision.frag
- * @brief TRANSITION SOLITON WAVE COLLISION: Non-linear Korteweg-de Vries (KdV) soliton transition.
- * Two non-linear solitary waves (sech^2 solitons) propagate toward each other,
- * collide with non-linear phase shifts without dispersing, and leave the incoming scene behind.
- *   interpolation -> sweeps soliton wave collision trajectory across viewport
- *   audioKick     -> flashes maximum non-linear wave crest superposition peak
- *   audioSwell    -> drives soliton wave amplitude & non-linear steepness
+/*****************************************************************************\
+ *                              SolitonWaveCollision.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   solitonP float soliton amplitude & velocity ratio    (0.5..2.2)
- *   widthP   float solitary wave sech^2 spatial width   (0.5..2.0)
- *   speedP   float animation speed multiplier           (0.5..2.0)
- *   hueP     float soliton wave crest hue offset        (0..6.28)
+ *  @brief
+ *  TRANSITION SOLITON WAVE COLLISION: Non-linear Korteweg-de Vries (KdV) soliton transition.
+ *
+ *  Two non-linear solitary waves (sech^2 solitons) propagate toward each other, collide with non-linear phase
+ *  shifts without dispersing, and leave the incoming scene behind.
+ *
+ *    interpolation -> sweeps soliton wave collision trajectory across viewport
+ *    audioKick     -> flashes maximum non-linear wave crest superposition peak
+ *    audioSwell    -> drives soliton wave amplitude & non-linear steepness
+ *
+ *  Per-activation variety:
+ *    solitonP float soliton amplitude & velocity ratio    (0.5..2.2)
+ *    widthP   float solitary wave sech^2 spatial width   (0.5..2.0)
+ *    speedP   float animation speed multiplier           (0.5..2.0)
+ *    hueP     float soliton wave crest hue offset        (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

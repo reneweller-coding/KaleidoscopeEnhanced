@@ -1,26 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureCloudInterior.frag
- * @brief TEXTURE CLOUD INTERIOR: flying through the inside of towering
- * clouds -- soft white and grey masses loom up out of the haze and slide
- * past, the sun behind them turning their edges into silver and gold
- * linings, shafts of light breaking through the gaps, darker cores glowing
- * warm where the light scatters deep inside.  The clouds are built from
- * the photograph: its bright regions become the dense cloud, so every
- * photo gives its own cloudscape; its colours tint the light.  The flight
- * never ends; no horizon, the view is into the clouds.
+/*****************************************************************************\
+ *                              TextureCloudInterior.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the flight speed (integrated, jump-free)
- *   audioSpread     -> how deep the view reaches into the haze
- *   audioRoughness  -> the cloud edges fray into wisps
- *   audioMode       -> the sun warms from silver toward gold in major (slow blend)
- *   audioBass       -> the light breaking through the gaps (light)
- *   audioSwell      -> the density of the clouds (slow)
+ *  @brief
+ *  TEXTURE CLOUD INTERIOR: flying through the inside of towering clouds -- soft white and grey masses loom up out
+ *  of the haze and slide past, the sun behind them turning their edges into silver and gold linings, shafts of
+ *  light breaking through the gaps, darker cores glowing warm where the light scatters deep inside.
  *
- * Knobs: densityP (cloud cover), sunP (sun strength), tintP (photo tint), hueP.
+ *  The clouds are built from the photograph: its bright regions become the dense cloud, so every photo gives its
+ *  own cloudscape; its colours tint the light.  The flight never ends; no horizon, the view is into the clouds.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the flight speed (integrated, jump-free)
+ *    audioSpread     -> how deep the view reaches into the haze
+ *    audioRoughness  -> the cloud edges fray into wisps
+ *    audioMode       -> the sun warms from silver toward gold in major (slow blend)
+ *    audioBass       -> the light breaking through the gaps (light)
+ *    audioSwell      -> the density of the clouds (slow)
+ *
+ *  Knobs: densityP (cloud cover), sunP (sun strength), tintP (photo tint), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

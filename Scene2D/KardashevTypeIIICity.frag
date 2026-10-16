@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file KardashevTypeIIICity.frag
- * @brief KARDASHEV TYPE III CITY: a whole spiral galaxy turned into one
- * machine.  The galaxy lies tilted in the frame -- golden bulge, blue arms
- * with pink star-forming knots and dark dust lanes -- and over its disc a
- * luminous network is woven from star to star, densest along the arms,
- * packets of light running along its links from node to node.  The galaxy
- * turns with slow, rigid majesty; the network hums with the music's light.
+/*****************************************************************************\
+ *                              KardashevTypeIIICity.frag
+\*****************************************************************************/
+/*! @file
  *
- *   sceneTime/sceneAdvance -> the galaxy's turn, packets on the links
- *   audioSwell    -> brightness of the network (slow)
- *   audioKick     -> the nodes flare (light only)
- *   audioChromaHue-> photo tint of the network
+ *  @brief
+ *  KARDASHEV TYPE III CITY: a whole spiral galaxy turned into one machine.
  *
- * Per-activation variety:
- *   techP float density of the network (0.85..1.5)
- *   glowP float brightness of the packets (0.5..2.0)
- *   hueP float palette offset (0..6.28)
+ *  The galaxy lies tilted in the frame -- golden bulge, blue arms with pink star-forming knots and dark dust lanes
+ *  -- and over its disc a luminous network is woven from star to star, densest along the arms, packets of light
+ *  running along its links from node to node.  The galaxy turns with slow, rigid majesty; the network hums with the
+ *  music's light.
+ *
+ *    sceneTime/sceneAdvance -> the galaxy's turn, packets on the links
+ *    audioSwell    -> brightness of the network (slow)
+ *    audioKick     -> the nodes flare (light only)
+ *    audioChromaHue-> photo tint of the network
+ *
+ *  Per-activation variety:
+ *    techP float density of the network (0.85..1.5)
+ *    glowP float brightness of the packets (0.5..2.0)
+ *    hueP float palette offset (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

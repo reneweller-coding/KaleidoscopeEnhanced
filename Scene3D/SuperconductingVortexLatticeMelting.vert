@@ -1,8 +1,14 @@
 #version 330 core
-/**
- * @file SuperconductingVortexLatticeMelting.vert
- * @brief Vertex stage companion to SuperconductingVortexLatticeMelting.frag -- see that file's
- * header for this scene's description.
+/*****************************************************************************\
+ *                              SuperconductingVortexLatticeMelting.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to SuperconductingVortexLatticeMelting.frag -- see that file's header for this scene's
+ *  description.
+ *
+ *  @author René Weller
  */
 
 in vec4 attrA; ///< xyz = base coord, w = point index

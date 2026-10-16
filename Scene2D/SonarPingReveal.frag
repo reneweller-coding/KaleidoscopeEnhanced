@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SonarPingReveal.frag
- * @brief SONAR PING REVEAL: a bat's cave, or a submarine's sea -- the
- * scene (the photo) exists only where an echo has returned.  Pings leave
- * the centre on the scene clock as expanding rings; where a ring passes,
- * the photo lights up along the ring and fades behind it, so the world is
- * painted in sweeps of returning sound.  The kick fires a bright extra
- * ping, the treble is the echo detail, the bass the hum of the emitter.
- * Camera still.
+/*****************************************************************************\
+ *                              SonarPingReveal.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   sceneAdvance -> ping launches and expansion (continuous)
- *   audioKick    -> a bright ping (light)
- *   audioHigh    -> echo detail (light)
- *   audioBass    -> emitter hum (light)
- *   audioLevel   -> brightness
+ *  @brief
+ *  SONAR PING REVEAL: a bat's cave, or a submarine's sea -- the scene (the photo) exists only where an echo has
+ *  returned.
  *
- * Per-activation variety: rateP, fadeP, hueP.
+ *  Pings leave the centre on the scene clock as expanding rings; where a ring passes, the photo lights up along the
+ *  ring and fades behind it, so the world is painted in sweeps of returning sound.  The kick fires a bright extra
+ *  ping, the treble is the echo detail, the bass the hum of the emitter. Camera still.
+ *
+ *  Audio Reactivity:
+ *    sceneAdvance -> ping launches and expansion (continuous)
+ *    audioKick    -> a bright ping (light)
+ *    audioHigh    -> echo detail (light)
+ *    audioBass    -> emitter hum (light)
+ *    audioLevel   -> brightness
+ *
+ *  Per-activation variety: rateP, fadeP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

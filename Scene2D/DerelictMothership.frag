@@ -1,26 +1,31 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file DerelictMothership.frag
- * @brief DERELICT MOTHERSHIP: an enormous dead ship hangs across the sky
- * above a blue-limbed planet.  Its hull runs out of frame on both sides,
- * plated and greebled, lit along its upper edge by the planet's glow; great
- * breaches have torn the plating open, and inside the exposed ribs a few
- * emergency lights still burn orange.  Running lights along the keel pulse
- * slowly, debris tumbles in the foreground.  The ship drifts with glacial
- * slowness; the music is the dying light inside it.
+/*****************************************************************************\
+ *                              DerelictMothership.frag
+\*****************************************************************************/
+/*! @file
  *
- *   sceneTime/sceneAdvance -> the drift of ship and debris (continuous)
- *   audioKick     -> the surviving lights pulse (light only, smooth)
- *   audioSwell    -> planet glow and haze (slow)
- *   audioChromaHue-> photo tint of the lighting
+ *  @brief
+ *  DERELICT MOTHERSHIP: an enormous dead ship hangs across the sky above a blue-limbed planet.
  *
- * Per-activation variety:
- *   hullP float ship size (0.98..1.5)
- *   glowP float brightness of the lights (0.6..1.38)
- *   debrisP float amount of debris (0.5..1.5)
- *   hueP float palette offset (0..6.28)
+ *  Its hull runs out of frame on both sides, plated and greebled, lit along its upper edge by the planet's glow;
+ *  great breaches have torn the plating open, and inside the exposed ribs a few emergency lights still burn orange.
+ *  Running lights along the keel pulse slowly, debris tumbles in the foreground.  The ship drifts with glacial
+ *  slowness; the music is the dying light inside it.
+ *
+ *    sceneTime/sceneAdvance -> the drift of ship and debris (continuous)
+ *    audioKick     -> the surviving lights pulse (light only, smooth)
+ *    audioSwell    -> planet glow and haze (slow)
+ *    audioChromaHue-> photo tint of the lighting
+ *
+ *  Per-activation variety:
+ *    hullP float ship size (0.98..1.5)
+ *    glowP float brightness of the lights (0.6..1.38)
+ *    debrisP float amount of debris (0.5..1.5)
+ *    hueP float palette offset (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

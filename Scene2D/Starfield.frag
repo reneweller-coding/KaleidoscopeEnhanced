@@ -1,18 +1,27 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file Starfield.frag
- * @brief Flying INTO the source image: the picture rushes past in looping nebula
- * layers while a star warp-field sparkles on top.  Now with:
- *   * WARP STREAKS: on each beat the stars stretch into radial light trails
- *     (classic warp-jump), longer for nearer stars;
- *   * image-coloured, twinkling stars (imgPal tint);
- *   * THREE nebula layers with differential roll (parallax) and per-depth
- *     hue rotation, swept gently once per bar;
- *   * a soft core glow breathing with the slow swell.
- * Accelerates with the music (audioAdvance), rolls with the audio phase
- * (jump-free); per-activation star density / speed / roll variety.
+/*****************************************************************************\
+ *                              Starfield.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Flying INTO the source image: the picture rushes past in looping nebula layers while a star warp-field sparkles
+ *  on top.
+ *
+ *  Now with:
+ *
+ *    * WARP STREAKS: on each beat the stars stretch into radial light trails
+ *      (classic warp-jump), longer for nearer stars;
+ *    * image-coloured, twinkling stars (imgPal tint);
+ *    * THREE nebula layers with differential roll (parallax) and per-depth
+ *      hue rotation, swept gently once per bar;
+ *    * a soft core glow breathing with the slow swell.
+ *  Accelerates with the music (audioAdvance), rolls with the audio phase
+ *  (jump-free); per-activation star density / speed / roll variety.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

@@ -1,8 +1,14 @@
 #version 330 core
-/**
- * @file LorenzAttractorTurbulence.vert
- * @brief attrA.x = t (0..1 along ribbon), attrA.y = side (-1..+1 across ribbon),
- * attrA.w = ribbon ID (0..19), attrB = seeds (Scene3DShader.cpp GEOM_RIBBON).
+/*****************************************************************************\
+ *                              LorenzAttractorTurbulence.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  attrA.x = t (0..1 along ribbon), attrA.y = side (-1..+1 across ribbon), attrA.w = ribbon ID (0..19), attrB =
+ *  seeds (Scene3DShader.cpp GEOM_RIBBON).
+ *
+ *  @author René Weller
  */
 in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an
                ///< index).

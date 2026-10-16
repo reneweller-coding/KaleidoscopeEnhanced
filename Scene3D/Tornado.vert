@@ -1,8 +1,13 @@
 #version 330 core
-/**
- * @file Tornado.vert
- * @brief Vertex stage companion to Tornado.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              Tornado.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to Tornado.frag -- see that file's header for this scene's description.
+ *
+ *  @author René Weller
  */
 // Tornado.vert — a debris vortex under a storm sky: 60k particles spiral in
 // a funnel whose spin rate follows the music's energy; kicks cinch the

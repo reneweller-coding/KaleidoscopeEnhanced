@@ -1,18 +1,25 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SierpinskiOctahedronAbyss.frag
- * @brief SIERPINSKI OCTAHEDRON ABYSS: 3D Raymarching continuous dive into the heart
- * of a Sierpinski Octahedron (IFS) fractal. Endless nested pyramid canyons,
- * sharp triangular facet reflections, and high-voltage glowing vertex sparks.
+/*****************************************************************************\
+ *                              SierpinskiOctahedronAbyss.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance -> drives continuous forward plunge into recursive pyramid voids
- *   audioKick    -> flashes octahedron vertex nodes & triggers lattice expansion burst
- *   audioCentroid-> sharpens triangular facet edge resolution
- *   audioSubBass -> expands octahedron breathing scale
- *   audioChromaHue-> rotates the luminous geometric crystal palette
+ *  @brief
+ *  SIERPINSKI OCTAHEDRON ABYSS: 3D Raymarching continuous dive into the heart of a Sierpinski Octahedron (IFS)
+ *  fractal.
+ *
+ *  Endless nested pyramid canyons, sharp triangular facet reflections, and high-voltage glowing vertex sparks.
+ *
+ *  Audio Reactivity:
+ *    audioAdvance -> drives continuous forward plunge into recursive pyramid voids
+ *    audioKick    -> flashes octahedron vertex nodes & triggers lattice expansion burst
+ *    audioCentroid-> sharpens triangular facet edge resolution
+ *    audioSubBass -> expands octahedron breathing scale
+ *    audioChromaHue-> rotates the luminous geometric crystal palette
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

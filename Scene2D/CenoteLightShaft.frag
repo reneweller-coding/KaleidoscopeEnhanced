@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file CenoteLightShaft.frag
- * @brief CENOTE LIGHT SHAFT: below the surface of a flooded sinkhole,
- * looking up at the opening.  One shaft of sunlight comes through the
- * hole and stands in the water as a solid cone, thick with drifting
- * round motes; tree roots hang down through it, the cavern wall is the
- * photo, and the halocline lies across the middle as a shimmering layer.
- * The sun crosses the opening over the scene arc, so the shaft sweeps.
- * Camera fixed, looking up and forward.
+/*****************************************************************************\
+ *                              CenoteLightShaft.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   sceneProgress -> the sun crosses the opening (the arc)
- *   sceneAdvance  -> motes drift, the halocline shimmers (continuous)
- *   audioSwell    -> how bright the shaft is (slow)
- *   audioHigh     -> mote sparkle (light)
- *   audioKick     -> a fish darts through the shaft (light and its own smooth path)
+ *  @brief
+ *  CENOTE LIGHT SHAFT: below the surface of a flooded sinkhole, looking up at the opening.
  *
- * Per-activation variety: rootsP, moteP, hueP.
+ *  One shaft of sunlight comes through the hole and stands in the water as a solid cone, thick with drifting round
+ *  motes; tree roots hang down through it, the cavern wall is the photo, and the halocline lies across the middle
+ *  as a shimmering layer. The sun crosses the opening over the scene arc, so the shaft sweeps. Camera fixed,
+ *  looking up and forward.
+ *
+ *  Audio Reactivity:
+ *    sceneProgress -> the sun crosses the opening (the arc)
+ *    sceneAdvance  -> motes drift, the halocline shimmers (continuous)
+ *    audioSwell    -> how bright the shaft is (slow)
+ *    audioHigh     -> mote sparkle (light)
+ *    audioKick     -> a fish darts through the shaft (light and its own smooth path)
+ *
+ *  Per-activation variety: rootsP, moteP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

@@ -1,18 +1,23 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file BioLuminescentTendrilTunnel.frag
- * @brief BIO LUMINESCENT TENDRIL TUNNEL: 3D Raymarching dive through an organic
- * deep-sea tunnel lined with swaying bioluminescent siphonophore tentacles,
- * luminous synaptic nerve pulses, and glowing volumetric plankton clouds.
+/*****************************************************************************\
+ *                              BioLuminescentTendrilTunnel.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance -> drives continuous forward swim trajectory through the abyss
- *   audioKick    -> flashes intense cyan/magenta tentacle bioluminescence pulses
- *   audioCentroid-> modulates tendril harmonic wave frequency & fine cilia
- *   audioSubBass -> expands tunnel respiration breathing
- *   audioChromaHue-> steers the deep-sea fluorescent spectrum
+ *  @brief
+ *  BIO LUMINESCENT TENDRIL TUNNEL: 3D Raymarching dive through an organic deep-sea tunnel lined with swaying
+ *  bioluminescent siphonophore tentacles, luminous synaptic nerve pulses, and glowing volumetric plankton clouds.
+ *
+ *  Audio Reactivity:
+ *    audioAdvance -> drives continuous forward swim trajectory through the abyss
+ *    audioKick    -> flashes intense cyan/magenta tentacle bioluminescence pulses
+ *    audioCentroid-> modulates tendril harmonic wave frequency & fine cilia
+ *    audioSubBass -> expands tunnel respiration breathing
+ *    audioChromaHue-> steers the deep-sea fluorescent spectrum
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

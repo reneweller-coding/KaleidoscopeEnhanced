@@ -1,11 +1,16 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file FxOilPaint.frag
- * @brief FX OIL PAINT: Kuwahara-style edge-preserving smoothing -- each pixel
- * picks the least-variance quadrant of its neighbourhood, giving a
- * painterly, brushstroke-flattened look.
+/*****************************************************************************\
+ *                              FxOilPaint.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  FX OIL PAINT: Kuwahara-style edge-preserving smoothing -- each pixel picks the least-variance quadrant of its
+ *  neighbourhood, giving a painterly, brushstroke-flattened look.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

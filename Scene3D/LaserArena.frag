@@ -1,30 +1,34 @@
 #version 330 core
+/*****************************************************************************\
+ *                              LaserArena.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Shades one laser-beam ribbon of the club-style laser show built in LaserArena.vert: a razor-thin bright core
+ *  wrapped in a broad, dim fog glow across the beam width.
+ *
+ *  All colour (per-beam hue cycling, the audioBeatPhase strobe,
+ *  audioKick punch, and the DROP-triggered vertical snap) is computed
+ *  upstream in the vertex stage and arrives baked in vCol; this stage
+ *  only shapes the cross-beam falloff from vSide into core+halo
+ *  intensity.
+ *
+ *  The halo now spans the FULL ribbon width instead of dying out a third of
+ *  the way across it: that is what makes a beam read as a shaft of light
+ *  hanging in the room's haze rather than as a bare hairline, and it is most
+ *  of what fills the picture between the beams.
+ *
+ *  Core and halo are shaded at DIFFERENT saturations, which is both what a
+ *  laser photograph looks like and what keeps the rig off the garish end of
+ *  the catalogue -- see the comment in main().
+ *
+ *  @author René Weller
+ */
 out vec4 fragColor; ///< The pixel's colour (output).
 // LaserArena.frag — razor core inside a wide fog halo across the beam.
 in vec4  vCol;  ///< Colour (from the vertex stage).
 in float vSide; ///< Which side of a strip (from the vertex stage).
-
-/**
- * @file LaserArena.frag
- * @brief Shades one laser-beam ribbon of the club-style laser show built
- * in LaserArena.vert: a razor-thin bright core wrapped in a broad, dim
- * fog glow across the beam width.
- *
- * All colour (per-beam hue cycling, the audioBeatPhase strobe,
- * audioKick punch, and the DROP-triggered vertical snap) is computed
- * upstream in the vertex stage and arrives baked in vCol; this stage
- * only shapes the cross-beam falloff from vSide into core+halo
- * intensity.
- *
- * The halo now spans the FULL ribbon width instead of dying out a third of
- * the way across it: that is what makes a beam read as a shaft of light
- * hanging in the room's haze rather than as a bare hairline, and it is most
- * of what fills the picture between the beams.
- *
- * Core and halo are shaded at DIFFERENT saturations, which is both what a
- * laser photograph looks like and what keeps the rig off the garish end of
- * the catalogue -- see the comment in main().
- */
 
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()

@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SuperbloomOpening.frag
- * @brief SUPERBLOOM OPENING: a desert valley carpeted in wildflowers that
- * open with the light.  Each flower is a ring of round petals about a
- * centre of the photo; the petals unfold smoothly with the swell (the sun),
- * colours from the chroma classes (a class per patch of ground), bees
- * (round) visit on the scene clock, the kick is a gust that ripples the
- * carpet as light, the treble the pollen glitter.  Camera fixed low over
- * the field.
+/*****************************************************************************\
+ *                              SuperbloomOpening.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSwell      -> petals opening (slow)
- *   audioChroma[12] -> flower colour brightness by patch (light)
- *   sceneAdvance    -> bees, sway (continuous)
- *   audioKick       -> gust ripple (light)
- *   audioHigh       -> pollen glitter (light)
- *   audioLevel      -> brightness
+ *  @brief
+ *  SUPERBLOOM OPENING: a desert valley carpeted in wildflowers that open with the light.
  *
- * Per-activation variety: densP, sizeP, hueP.
+ *  Each flower is a ring of round petals about a centre of the photo; the petals unfold smoothly with the swell
+ *  (the sun), colours from the chroma classes (a class per patch of ground), bees (round) visit on the scene clock,
+ *  the kick is a gust that ripples the carpet as light, the treble the pollen glitter.  Camera fixed low over the
+ *  field.
+ *
+ *  Audio Reactivity:
+ *    audioSwell      -> petals opening (slow)
+ *    audioChroma[12] -> flower colour brightness by patch (light)
+ *    sceneAdvance    -> bees, sway (continuous)
+ *    audioKick       -> gust ripple (light)
+ *    audioHigh       -> pollen glitter (light)
+ *    audioLevel      -> brightness
+ *
+ *  Per-activation variety: densP, sizeP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

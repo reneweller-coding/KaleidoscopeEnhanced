@@ -1,16 +1,24 @@
 #version 330 core
-/**
- * @file WormholeMirrorWeave.vert
- * @brief A first-person flight through a wormhole made of 20 glowing ribbons -- unlike the
- * existing RibbonTunnel (ribbons simply distributed evenly around a steady tube), these ribbons
- * are placed with REAL mirror-kaleidoscope symmetry (index-picked wedge + alternating mirror,
- * same construction as ParticleTunnelFlight.vert) and the tube's own radius pulses through
- * periodic pinch points along its length -- a true wormhole throat silhouette, not a steady pipe.
- * Camera flies straight down the tube axis, riding the same weave the ribbons follow.
- *   audioAdvance -> forward flight speed (integrated, jump-free)
- *   audioBass    -> throat pinch depth
- *   audioKick    -> brief radius shockwave near the camera
- *   audioPhase   -> ribbon twist / kaleidoscope spin
+/*****************************************************************************\
+ *                              WormholeMirrorWeave.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  A first-person flight through a wormhole made of 20 glowing ribbons -- unlike the existing RibbonTunnel (ribbons
+ *  simply distributed evenly around a steady tube), these ribbons are placed with REAL mirror-kaleidoscope symmetry
+ *  (index-picked wedge + alternating mirror, same construction as ParticleTunnelFlight.vert) and the tube's own
+ *  radius pulses through periodic pinch points along its length -- a true wormhole throat silhouette, not a steady
+ *  pipe.
+ *
+ *  Camera flies straight down the tube axis, riding the same weave the ribbons follow.
+ *
+ *    audioAdvance -> forward flight speed (integrated, jump-free)
+ *    audioBass    -> throat pinch depth
+ *    audioKick    -> brief radius shockwave near the camera
+ *    audioPhase   -> ribbon twist / kaleidoscope spin
+ *
+ *  @author René Weller
  */
 
 in vec4 attrA; ///< x = t [0,1] along the tube, y = side (-1/+1), w = ribbon index (0..19)

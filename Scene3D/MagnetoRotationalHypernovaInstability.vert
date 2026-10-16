@@ -1,8 +1,14 @@
 #version 330 core
-/**
- * @file MagnetoRotationalHypernovaInstability.vert
- * @brief Vertex stage companion to MagnetoRotationalHypernovaInstability.frag -- see that file's
- * header for this scene's description.
+/*****************************************************************************\
+ *                              MagnetoRotationalHypernovaInstability.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to MagnetoRotationalHypernovaInstability.frag -- see that file's header for this scene's
+ *  description.
+ *
+ *  @author René Weller
  */
 
 // attrA.xyz = world pos, attrA.w = fluxIdx

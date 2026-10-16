@@ -1,21 +1,27 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SolarFlareCorona.frag
- * @brief SOLAR FLARE CORONA: Extreme close-up of a turbulent stellar photosphere,
- * incandescent plasma convection cells, magnetic coronal loops, and explosive
- * coronal mass ejections erupting across the screen.
- *   audioSubBass -> expands radial solar flare shockwaves
- *   audioKick    -> flashes incandescent core nuclear ignition
- *   audioMid     -> ripples magnetic flux loops & plasma convection
- *   audioHigh    -> excites fine coronal filaments & solar sparks
+/*****************************************************************************\
+ *                              SolarFlareCorona.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   turbulenceP  float plasma vortex turbulence multiplier (0.5..2.0)
- *   heatP        float thermal color intensity             (0.6..1.8)
- *   flareP       float coronal prominence reach            (0.5..2.2)
- *   hueP         float stellar color grading               (0..6.28)
+ *  @brief
+ *  SOLAR FLARE CORONA: Extreme close-up of a turbulent stellar photosphere, incandescent plasma convection cells,
+ *  magnetic coronal loops, and explosive coronal mass ejections erupting across the screen.
+ *
+ *    audioSubBass -> expands radial solar flare shockwaves
+ *    audioKick    -> flashes incandescent core nuclear ignition
+ *    audioMid     -> ripples magnetic flux loops & plasma convection
+ *    audioHigh    -> excites fine coronal filaments & solar sparks
+ *
+ *  Per-activation variety:
+ *    turbulenceP  float plasma vortex turbulence multiplier (0.5..2.0)
+ *    heatP        float thermal color intensity             (0.6..1.8)
+ *    flareP       float coronal prominence reach            (0.5..2.2)
+ *    hueP         float stellar color grading               (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

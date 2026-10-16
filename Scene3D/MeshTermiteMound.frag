@@ -1,23 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file MeshTermiteMound.frag
- * @brief MESH TERMITE MOUND: a real cathedral mound (model=) on the savanna
- * at dusk, and the heat it breathes out -- columns of warm haze rising
- * from its chimneys into the evening sky on the scene clock, their
- * strength the bass (the mound's warmth), their fine flicker the treble,
- * the dusk light the swell. Acacias on the horizon, the first stars. The
- * mesh counterpart of the procedural TermiteMoundPlumes (whose refracting
- * plumes have no place to refract here: the haze is painted light).
+/*****************************************************************************\
+ *                              MeshTermiteMound.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioBass  -> plume strength and the chimney warmth (light)
- *   audioHigh  -> fine shimmer in the haze (light)
- *   audioSwell -> dusk light (slow)
- *   sceneTime  -> the plumes rise (continuous)
+ *  @brief
+ *  MESH TERMITE MOUND: a real cathedral mound (model=) on the savanna at dusk, and the heat it breathes out --
+ *  columns of warm haze rising from its chimneys into the evening sky on the scene clock, their strength the bass
+ *  (the mound's warmth), their fine flicker the treble, the dusk light the swell.
  *
- * Per-instance: sizeP, yawP. Per-activation variety: hueP.
+ *  Acacias on the horizon, the first stars. The mesh counterpart of the procedural TermiteMoundPlumes (whose
+ *  refracting plumes have no place to refract here: the haze is painted light).
+ *
+ *  Audio Reactivity:
+ *    audioBass  -> plume strength and the chimney warmth (light)
+ *    audioHigh  -> fine shimmer in the haze (light)
+ *    audioSwell -> dusk light (slow)
+ *    sceneTime  -> the plumes rise (continuous)
+ *
+ *  Per-instance: sizeP, yawP. Per-activation variety: hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform sampler2DArray texMeshMaterial;       ///< The mesh's material textures (albedo, roughness, normal ...).
 uniform int            texMeshMaterialLayers; ///< Number of layers in texMeshMaterial.

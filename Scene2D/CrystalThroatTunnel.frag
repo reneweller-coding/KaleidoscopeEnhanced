@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file CrystalThroatTunnel.frag
- * @brief CRYSTAL THROAT TUNNEL: flying down a throat of crystal -- the tunnel
- * wall is lined with prismatic crystal facets (hexagonal columns seen end
- * on, their faces tilted), each facet showing the photograph refracted
- * and split into its spectral colours at the facet edges, the facets
- * glinting as we pass, the whole throat slowly turning; a white light
- * burns at the far end.  Endless, mirrorable; the wall continues beyond
- * the frame.
+/*****************************************************************************\
+ *                              CrystalThroatTunnel.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the flight (integrated, jump-free)
- *   audioPhase      -> the throat turns (integrated)
- *   audioSpread     -> the dispersion (spectral fringes)
- *   audioKick       -> the facets glint (light)
- *   audioMode       -> the crystal: cool quartz in minor, citrine in major
- *   audioSwell      -> the light at the end (slow)
+ *  @brief
+ *  CRYSTAL THROAT TUNNEL: flying down a throat of crystal -- the tunnel wall is lined with prismatic crystal facets
+ *  (hexagonal columns seen end on, their faces tilted), each facet showing the photograph refracted and split into
+ *  its spectral colours at the facet edges, the facets glinting as we pass, the whole throat slowly turning; a
+ *  white light burns at the far end.
  *
- * Knobs: facetP (facet size), tiltP (facet tilt), wallZoomP, hueP.
+ *  Endless, mirrorable; the wall continues beyond the frame.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the flight (integrated, jump-free)
+ *    audioPhase      -> the throat turns (integrated)
+ *    audioSpread     -> the dispersion (spectral fringes)
+ *    audioKick       -> the facets glint (light)
+ *    audioMode       -> the crystal: cool quartz in minor, citrine in major
+ *    audioSwell      -> the light at the end (slow)
+ *
+ *  Knobs: facetP (facet size), tiltP (facet tilt), wallZoomP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

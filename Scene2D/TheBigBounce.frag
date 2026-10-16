@@ -1,20 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TheBigBounce.frag
- * @brief THE BIG BOUNCE: The end and the beginning. The entire universe
- * collapses rapidly into an infinitely dense, blinding singularity, only to
- * violently explode outward again in a new Big Bang, driven by the audio kicks.
- *   audioAdvance -> chaotic movement of the primordial plasma
- *   audioKick    -> triggers the catastrophic collapse and subsequent explosion
- *   audioSwell   -> blinding brightness of the singularity
- *   audioChromaHue-> palette offset for the newborn universe
+/*****************************************************************************\
+ *                              TheBigBounce.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   bounceP float intensity and speed of the collapse/expansion (0.5..1.5)
- *   plasmaP float density of the primordial plasma (0.5..2.0)
- *   hueP float palette offset (0..6.28)
+ *  @brief
+ *  THE BIG BOUNCE: The end and the beginning.
+ *
+ *  The entire universe collapses rapidly into an infinitely dense, blinding singularity, only to violently explode
+ *  outward again in a new Big Bang, driven by the audio kicks.
+ *
+ *    audioAdvance -> chaotic movement of the primordial plasma
+ *    audioKick    -> triggers the catastrophic collapse and subsequent explosion
+ *    audioSwell   -> blinding brightness of the singularity
+ *    audioChromaHue-> palette offset for the newborn universe
+ *
+ *  Per-activation variety:
+ *    bounceP float intensity and speed of the collapse/expansion (0.5..1.5)
+ *    plasmaP float density of the primordial plasma (0.5..2.0)
+ *    hueP float palette offset (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

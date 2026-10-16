@@ -1,4 +1,25 @@
 #version 330 core
+/*****************************************************************************\
+ *                              SciFiHUD.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Shades the 20 ribbons of the diegetic sci-fi cockpit HUD (bezel rings, radar sweep, live oscilloscope trace,
+ *  spectrum arc, compass ticks, target reticle with corner brackets, onset lock-on rings) as crisp glowing lines: a
+ *  bright core plus a soft halo, using vSide as the distance from the ribbon's centreline.
+ *
+ *  vCol already carries the vertex shader's fade (crosshair gaps, sweep trail, lock-ring pulses) baked in.
+ *
+ *  audioLevel and audioKick give this fragment stage its own extra pulse on
+ *  top of vCol — added after a reactivity pass found the vertex-side coupling
+ *  alone barely moved any pixels. The HUD's real audio response (the live
+ *  waveform trace from audioWave, the spectrum arc from audioSpectrum, lock-on
+ *  pulses from audioOnset, sweep/hue drift from audioAdvance/audioChromaHue)
+ *  is computed in SciFiHUD.vert.
+ *
+ *  @author René Weller
+ */
 out vec4 fragColor; ///< The pixel's colour (output).
 // Frag-side music pulse (added by the deaf-scene pass: reactivity
 // measured ~0 -- the vert-side coupling barely moved any pixels).
@@ -9,23 +30,6 @@ uniform float audioKick;  ///< Kick-drum envelope, 0..1 (fast attack, short deca
 // lock-ring pulses) baked in.
 in vec4  vCol;  ///< Colour (from the vertex stage).
 in float vSide; ///< Which side of a strip (from the vertex stage).
-
-/**
- * @file SciFiHUD.frag
- * @brief Shades the 20 ribbons of the diegetic sci-fi cockpit HUD (bezel
- * rings, radar sweep, live oscilloscope trace, spectrum arc, compass ticks,
- * target reticle with corner brackets, onset lock-on rings) as crisp glowing
- * lines: a bright core plus a soft halo, using vSide as the distance from
- * the ribbon's centreline. vCol already carries the vertex shader's fade
- * (crosshair gaps, sweep trail, lock-ring pulses) baked in.
- *
- * audioLevel and audioKick give this fragment stage its own extra pulse on
- * top of vCol — added after a reactivity pass found the vertex-side coupling
- * alone barely moved any pixels. The HUD's real audio response (the live
- * waveform trace from audioWave, the spectrum arc from audioSpectrum, lock-on
- * pulses from audioOnset, sweep/hue drift from audioAdvance/audioChromaHue)
- * is computed in SciFiHUD.vert.
- */
 
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()

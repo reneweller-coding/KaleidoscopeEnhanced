@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file EclipseLeafCrescents.frag
- * @brief ECLIPSE LEAF CRESCENTS: the ground under a canopy during a
- * partial eclipse.  Every gap between the leaves is a pinhole, so the
- * dapples on the ground stop being round and become crescents, all
- * pointing the same way, thinning as the eclipse deepens over the scene
- * arc and filling again.  The canopy sways gently on the clock, which
- * moves the dapples; the swell is the daylight, the treble the sparkle on
- * their rims.  The photo is the forest floor.  Camera fixed on the ground.
+/*****************************************************************************\
+ *                              EclipseLeafCrescents.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   sceneProgress -> the eclipse: crescents thin toward maximum and fill again
- *   sceneAdvance  -> canopy sway, the dapples drift (continuous)
- *   audioSwell    -> daylight level (slow)
- *   audioHigh     -> rim sparkle (light)
- *   audioLevel    -> brightness
+ *  @brief
+ *  ECLIPSE LEAF CRESCENTS: the ground under a canopy during a partial eclipse.
  *
- * Per-activation variety: gapsP, sizeP, hueP.
+ *  Every gap between the leaves is a pinhole, so the dapples on the ground stop being round and become crescents,
+ *  all pointing the same way, thinning as the eclipse deepens over the scene arc and filling again.  The canopy
+ *  sways gently on the clock, which moves the dapples; the swell is the daylight, the treble the sparkle on their
+ *  rims.  The photo is the forest floor.  Camera fixed on the ground.
+ *
+ *  Audio Reactivity:
+ *    sceneProgress -> the eclipse: crescents thin toward maximum and fill again
+ *    sceneAdvance  -> canopy sway, the dapples drift (continuous)
+ *    audioSwell    -> daylight level (slow)
+ *    audioHigh     -> rim sparkle (light)
+ *    audioLevel    -> brightness
+ *
+ *  Per-activation variety: gapsP, sizeP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

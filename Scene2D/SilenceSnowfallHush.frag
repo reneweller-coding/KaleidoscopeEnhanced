@@ -1,22 +1,27 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SilenceSnowfallHush.frag
- * @brief SILENCE SNOWFALL HUSH: a quiet street at night (the photo), snow
- * falling as round flakes on the scene clock.  When the music is quiet
- * the snow settles: the cover grows, the picture whitens and cools, the
- * street lamps get their halos; loud passages melt it again -- all of it
- * on the swell, slow, never on a beat.  The kick is only a faint flicker
- * of the lamps.  Camera fixed on the street.
+/*****************************************************************************\
+ *                              SilenceSnowfallHush.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSwell   -> snow cover and flake density (slow, inverted: quiet = snow)
- *   sceneAdvance -> the flakes fall (continuous)
- *   audioKick    -> lamp flicker (light, faint)
- *   audioLevel   -> brightness
+ *  @brief
+ *  SILENCE SNOWFALL HUSH: a quiet street at night (the photo), snow falling as round flakes on the scene clock.
  *
- * Per-activation variety: flakeP, lampsP, hueP.
+ *  When the music is quiet the snow settles: the cover grows, the picture whitens and cools, the street lamps get
+ *  their halos; loud passages melt it again -- all of it on the swell, slow, never on a beat.  The kick is only a
+ *  faint flicker of the lamps.  Camera fixed on the street.
+ *
+ *  Audio Reactivity:
+ *    audioSwell   -> snow cover and flake density (slow, inverted: quiet = snow)
+ *    sceneAdvance -> the flakes fall (continuous)
+ *    audioKick    -> lamp flicker (light, faint)
+ *    audioLevel   -> brightness
+ *
+ *  Per-activation variety: flakeP, lampsP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

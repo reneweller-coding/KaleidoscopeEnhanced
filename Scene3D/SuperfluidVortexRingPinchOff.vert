@@ -1,8 +1,14 @@
 #version 330 core
-/**
- * @file SuperfluidVortexRingPinchOff.vert
- * @brief Vertex stage companion to SuperfluidVortexRingPinchOff.frag -- see that file's
- * header for this scene's description.
+/*****************************************************************************\
+ *                              SuperfluidVortexRingPinchOff.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to SuperfluidVortexRingPinchOff.frag -- see that file's header for this scene's
+ *  description.
+ *
+ *  @author René Weller
  */
 
 // attrA.xyz = world pos, attrA.w = depthNorm

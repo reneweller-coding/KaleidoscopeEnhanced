@@ -1,19 +1,27 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file JuliaAudioMorph.frag
- * @brief A living Julia set: unlike a Mandelbrot deep-zoom dive (MandelbrotDeepZoom.frag), the
- * view stays at a fixed, moderate depth and instead the escape-time formula's constant `c` moves
- * continuously along a circle in the complex plane, driven by the musical key (audioChromaHue,
- * jump-free) and a slow audioAdvance drift -- the FRACTAL'S OWN SHAPE breathes, blooms and
- * reorganises with the harmony rather than the camera diving into unchanging detail. The classic
- * `c = 0.7885*exp(i*t)` circle is the source of well-known interesting Julia morphs; t here is the
- * audio-driven angle, so the shape is always somewhere on that circle but never idles or snaps.
- *   audioChromaHue -> which point on the "interesting Julia" circle (jump-free, key-locked)
- *   audioAdvance    -> slow additional drift so the same key doesn't freeze the shape
- *   audioBeat/audioKick -> brief zoom pulse
- *   audioSwell      -> gentle overall zoom breathing
+/*****************************************************************************\
+ *                              JuliaAudioMorph.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  A living Julia set: unlike a Mandelbrot deep-zoom dive (MandelbrotDeepZoom.frag), the view stays at a fixed,
+ *  moderate depth and instead the escape-time formula's constant `c` moves continuously along a circle in the
+ *  complex plane, driven by the musical key (audioChromaHue, jump-free) and a slow audioAdvance drift -- the
+ *  FRACTAL'S OWN SHAPE breathes, blooms and reorganises with the harmony rather than the camera diving into
+ *  unchanging detail.
+ *
+ *  The classic `c = 0.7885*exp(i*t)` circle is the source of well-known interesting Julia morphs; t here is the
+ *  audio-driven angle, so the shape is always somewhere on that circle but never idles or snaps.
+ *
+ *    audioChromaHue -> which point on the "interesting Julia" circle (jump-free, key-locked)
+ *    audioAdvance    -> slow additional drift so the same key doesn't freeze the shape
+ *    audioBeat/audioKick -> brief zoom pulse
+ *    audioSwell      -> gentle overall zoom breathing
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

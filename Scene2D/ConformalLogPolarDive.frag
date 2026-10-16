@@ -1,18 +1,24 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file ConformalLogPolarDive.frag
- * @brief CONFORMAL LOG POLAR DIVE: Complex exponential mapping w = exp(z) transforming
- * the Cartesian image plane into infinite swirling twin galactic spiral arms with
- * seamless multi-octave zoom blending and high-energy chromatic distortion.
+/*****************************************************************************\
+ *                              ConformalLogPolarDive.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance -> drives continuous exponential spiral plunge trajectory
- *   audioKick    -> flashes spiral galaxy core & shoots centrifugal ripple waves
- *   audioCentroid-> modulates logarithmic spiral twist angle
- *   audioSubBass -> expands spiral arm width breathing
- *   audioChromaHue-> rotates the conformal galaxy rainbow palette
+ *  @brief
+ *  CONFORMAL LOG POLAR DIVE: Complex exponential mapping w = exp(z) transforming the Cartesian image plane into
+ *  infinite swirling twin galactic spiral arms with seamless multi-octave zoom blending and high-energy chromatic
+ *  distortion.
+ *
+ *  Audio Reactivity:
+ *    audioAdvance -> drives continuous exponential spiral plunge trajectory
+ *    audioKick    -> flashes spiral galaxy core & shoots centrifugal ripple waves
+ *    audioCentroid-> modulates logarithmic spiral twist angle
+ *    audioSubBass -> expands spiral arm width breathing
+ *    audioChromaHue-> rotates the conformal galaxy rainbow palette
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

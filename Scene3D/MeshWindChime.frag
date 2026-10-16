@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file MeshWindChime.frag
- * @brief MESH WIND CHIME: a real wind chime (model=) hanging under a porch
- * roof, the afternoon garden beyond. It sways in the breeze on time; a tube
- * does not move when its note sounds, it RINGS: it brightens in its class
- * colour and throws a halo of rings across the garden behind it. Which
- * tube is which class comes from its place round the disc. The kick is
- * the clapper's glint, the treble the sheen on the metal, the swell the
- * afternoon light. The mesh counterpart of the procedural WindChimeTubes.
+/*****************************************************************************\
+ *                              MeshWindChime.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioChroma[12] -> which tubes ring, and their halos (light)
- *   audioKick       -> the clapper's glint (light)
- *   audioHigh       -> the metal sheen (light)
- *   audioSwell      -> afternoon light, sway amplitude (slow)
- *   time            -> the sway (continuous, vertex stage)
+ *  @brief
+ *  MESH WIND CHIME: a real wind chime (model=) hanging under a porch roof, the afternoon garden beyond.
  *
- * Per-instance: sizeP, swayP. Per-activation variety: hueP.
+ *  It sways in the breeze on time; a tube does not move when its note sounds, it RINGS: it brightens in its class
+ *  colour and throws a halo of rings across the garden behind it. Which tube is which class comes from its place
+ *  round the disc. The kick is the clapper's glint, the treble the sheen on the metal, the swell the afternoon
+ *  light. The mesh counterpart of the procedural WindChimeTubes.
+ *
+ *  Audio Reactivity:
+ *    audioChroma[12] -> which tubes ring, and their halos (light)
+ *    audioKick       -> the clapper's glint (light)
+ *    audioHigh       -> the metal sheen (light)
+ *    audioSwell      -> afternoon light, sway amplitude (slow)
+ *    time            -> the sway (continuous, vertex stage)
+ *
+ *  Per-instance: sizeP, swayP. Per-activation variety: hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform sampler2DArray texMeshMaterial;       ///< The mesh's material textures (albedo, roughness, normal ...).
 uniform int            texMeshMaterialLayers; ///< Number of layers in texMeshMaterial.

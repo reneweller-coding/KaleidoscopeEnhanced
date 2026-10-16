@@ -1,20 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file EnneperMinimalSurfaceHyperfold.frag
- * @brief ENNEPER MINIMAL SURFACE HYPERFOLD: 220x120 parametric grid of a higher-order
- * self-intersecting Enneper minimal surface. Gaussian curvature shading, double-sided
- * specular glints, and photo texturing mapped along isothermal coordinate patches.
- *   audioAdvance -> rotates isometric parameter domain through 3D space
- *   audioKick    -> flashes Gaussian curvature focal point highlights
- *   audioSwell   -> widens self-intersecting hyperfold blade amplitude
- *   audioCentroid-> shifts minimal surface harmonic color spectra
+/*****************************************************************************\
+ *                              EnneperMinimalSurfaceHyperfold.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   enneperScaleP float parameter domain scale              (0.8..2.2)
- *   hyperfoldP    float higher-order harmonic folding       (0.5..2.0)
- *   specularP     float double-sided metallic specular gain (0.8..2.5)
+ *  @brief
+ *  ENNEPER MINIMAL SURFACE HYPERFOLD: 220x120 parametric grid of a higher-order self-intersecting Enneper minimal
+ *  surface.
+ *
+ *  Gaussian curvature shading, double-sided specular glints, and photo texturing mapped along isothermal coordinate
+ *  patches.
+ *
+ *    audioAdvance -> rotates isometric parameter domain through 3D space
+ *    audioKick    -> flashes Gaussian curvature focal point highlights
+ *    audioSwell   -> widens self-intersecting hyperfold blade amplitude
+ *    audioCentroid-> shifts minimal surface harmonic color spectra
+ *
+ *  Per-activation variety:
+ *    enneperScaleP float parameter domain scale              (0.8..2.2)
+ *    hyperfoldP    float higher-order harmonic folding       (0.5..2.0)
+ *    specularP     float double-sided metallic specular gain (0.8..2.5)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec2  vUV;        ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 in vec3  vNormal;    ///< Surface normal (from the vertex stage).

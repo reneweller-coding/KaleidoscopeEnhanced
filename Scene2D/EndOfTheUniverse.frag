@@ -1,23 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file EndOfTheUniverse.frag
- * @brief END OF THE UNIVERSE: the heat death of the cosmos, and the last
- * thing left in it -- a black hole with a dim, ember-red accretion disk seen
- * nearly edge-on.  Its gravity bends the few remaining red dwarfs around
- * it; the far side of the disk is lensed into a loop over and under the
- * shadow, the photon ring a thin thread of light.  The disk turns slowly,
- * the dying stars drift past; the music is how brightly the embers glow.
- *   sceneTime/sceneAdvance -> the disk turning, the stars drifting (continuous)
- *   audioKick    -> the photon ring brightens a little (light only)
- *   audioSwell   -> disk and halo brightness (slow)
- *   audioChromaHue-> photo tint of the embers
+/*****************************************************************************\
+ *                              EndOfTheUniverse.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   starP float density of the remaining stars (0.1..1.0)
- *   glowP float intensity of the embers (0.5..1.5)
- *   hueP float palette offset (0..6.28)
+ *  @brief
+ *  END OF THE UNIVERSE: the heat death of the cosmos, and the last thing left in it -- a black hole with a dim,
+ *  ember-red accretion disk seen nearly edge-on.
+ *
+ *  Its gravity bends the few remaining red dwarfs around it; the far side of the disk is lensed into a loop over
+ *  and under the shadow, the photon ring a thin thread of light.  The disk turns slowly, the dying stars drift
+ *  past; the music is how brightly the embers glow.
+ *
+ *    sceneTime/sceneAdvance -> the disk turning, the stars drifting (continuous)
+ *    audioKick    -> the photon ring brightens a little (light only)
+ *    audioSwell   -> disk and halo brightness (slow)
+ *    audioChromaHue-> photo tint of the embers
+ *
+ *  Per-activation variety:
+ *    starP float density of the remaining stars (0.1..1.0)
+ *    glowP float intensity of the embers (0.5..1.5)
+ *    hueP float palette offset (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

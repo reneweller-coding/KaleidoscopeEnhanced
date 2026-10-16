@@ -1,11 +1,17 @@
 #version 400 core
-/**
- * @file TessellatedOcean.tese
- * @brief Tessellation evaluation for TessellatedOcean: Gerstner swell on the
- * scene clock (no beat-integrated phase, so the sea never lurches), the
- * wave height on the slow swell envelope only, and a phosphorescence
- * measure on the steepest crests for the fragment stage.  Projection after
- * displacement.
+/*****************************************************************************\
+ *                              TessellatedOcean.tese
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Tessellation evaluation for TessellatedOcean: Gerstner swell on the scene clock (no beat-integrated phase, so
+ *  the sea never lurches), the wave height on the slow swell envelope only, and a phosphorescence measure on the
+ *  steepest crests for the fragment stage.
+ *
+ *  Projection after displacement.
+ *
+ *  @author René Weller
  */
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( quads, fractional_odd_spacing, ccw ) in;

@@ -1,17 +1,22 @@
 #version 430
-/**
- * @file FeatherStorm.comp
- * @brief Builds a vortex of wind-tumbled feather quads: procedurally spawns
- * up to 1100 flat feather billboards whose shafts follow their own fall
- * direction, arranged in a rotating column with a 1/r circulation profile.
+/*****************************************************************************\
+ *                              FeatherStorm.comp
+\*****************************************************************************/
+/*! @file
  *
- * audioAdvance carries the phase for both the swirl angle and the upward
- * rise, so a change in audio level alters speed smoothly instead of
- * teleporting the feathers; audioLevel speeds up the rise, audioSubBass
- * widens the column's radius (a breathing effect), and audioKick lengthens
- * each feather. Each thread writes one feather's 12 triangle vertices
- * (position, normal, quill-to-tip / across-vane UV) into the shared Verts
- * buffer that the paired FeatherStorm.frag reads back as its draw geometry.
+ *  @brief
+ *  Builds a vortex of wind-tumbled feather quads: procedurally spawns up to 1100 flat feather billboards whose
+ *  shafts follow their own fall direction, arranged in a rotating column with a 1/r circulation profile.
+ *
+ *  audioAdvance carries the phase for both the swirl angle and the upward
+ *  rise, so a change in audio level alters speed smoothly instead of
+ *  teleporting the feathers; audioLevel speeds up the rise, audioSubBass
+ *  widens the column's radius (a breathing effect), and audioKick lengthens
+ *  each feather. Each thread writes one feather's 12 triangle vertices
+ *  (position, normal, quill-to-tip / across-vane UV) into the shared Verts
+ *  buffer that the paired FeatherStorm.frag reads back as its draw geometry.
+ *
+ *  @author René Weller
  */
 // FeatherStorm.comp — a vortex full of feathers.
 // -----------------------------------------------------------------------

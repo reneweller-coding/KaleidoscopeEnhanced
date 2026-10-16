@@ -1,4 +1,21 @@
 #version 330 core
+/*****************************************************************************\
+ *                              PhotoTunnel.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Shades the tunnel wall as the current slideshow image (tex0), kaleidoscope-folded into 6/8/10/12 mirrored
+ *  sectors and scrolled toward the camera.
+ *
+ *  sceneSeed picks the sector count per activation. audioAdvance drives
+ *  both the slow sector rotation and the image's inward scroll speed;
+ *  audioKick and audioDrop flash the walls brighter; a luminous ring keyed
+ *  to audioBarPhase sweeps down the tunnel once per bar, coloured by
+ *  audioChromaHue.
+ *
+ *  @author René Weller
+ */
 out vec4 fragColor; ///< The pixel's colour (output).
 // PhotoTunnel.frag — the wall texture is the CURRENT IMAGE, folded into
 // kaleidoscope sectors around the tube and scrolling toward the camera.
@@ -15,19 +32,6 @@ uniform float audioBarPhase;    ///< Position within the current bar, 0..1.
 in vec2  vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 in float vDist; ///< Distance (from the vertex stage).
 in float vAng;  ///< Ang (from the vertex stage).
-
-/**
- * @file PhotoTunnel.frag
- * @brief Shades the tunnel wall as the current slideshow image (tex0),
- * kaleidoscope-folded into 6/8/10/12 mirrored sectors and scrolled toward
- * the camera.
- *
- * sceneSeed picks the sector count per activation. audioAdvance drives
- * both the slow sector rotation and the image's inward scroll speed;
- * audioKick and audioDrop flash the walls brighter; a luminous ring keyed
- * to audioBarPhase sweeps down the tunnel once per bar, coloured by
- * audioChromaHue.
- */
 
 /**  Rotates a colour's hue by an angle (about the grey axis).
  *

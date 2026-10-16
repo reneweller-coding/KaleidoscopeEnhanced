@@ -1,31 +1,37 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SplitFlapDeparture.frag
- * @brief TRANSITION SPLIT FLAP DEPARTURE: a departure board flips through to
- * the incoming scene, one cell at a time, in rows that run at their own rates.
+/*****************************************************************************\
+ *                              SplitFlapDeparture.frag
+\*****************************************************************************/
+/*! @file
  *
- * A split-flap does not cut between two states.  A leaf hinged across the
- * middle falls, and while it falls the top half of the cell shows the leaf's
- * back edge-on -- so the cell is briefly a squashed version of what it is
- * leaving, then a squashed version of what it is arriving at.  That squash is
- * the whole illusion: a cell that simply changed picture would be a cut, and a
- * board of cuts is not a board.
+ *  @brief
+ *  TRANSITION SPLIT FLAP DEPARTURE: a departure board flips through to the incoming scene, one cell at a time, in
+ *  rows that run at their own rates.
  *
- * The leaf turns at a STEADY rate.  What advances is which flap is showing, so
- * the cell passes through intermediate leaves on its way to its destination,
- * and it never snaps: nothing here is a step function of an audio envelope.
- * Rows run at slightly different rates, which is what makes a real board ripple
- * rather than settle in a block.
+ *  A split-flap does not cut between two states.  A leaf hinged across the
+ *  middle falls, and while it falls the top half of the cell shows the leaf's
+ *  back edge-on -- so the cell is briefly a squashed version of what it is
+ *  leaving, then a squashed version of what it is arriving at.  That squash is
+ *  the whole illusion: a cell that simply changed picture would be a cut, and a
+ *  board of cuts is not a board.
  *
- * Audio Reactivity:
- *   audioAdvance -> the flapping rate (continuous)
- *   audioKick    -> the board's lamps (light)
- *   audioHigh    -> the gloss on a turning leaf (light)
- *   audioMid     -> the warmth of the board's light (colour)
+ *  The leaf turns at a STEADY rate.  What advances is which flap is showing, so
+ *  the cell passes through intermediate leaves on its way to its destination,
+ *  and it never snaps: nothing here is a step function of an audio envelope.
+ *  Rows run at slightly different rates, which is what makes a real board ripple
+ *  rather than settle in a block.
  *
- * Per-activation variety: colsP, flapsP, hueP.
+ *  Audio Reactivity:
+ *    audioAdvance -> the flapping rate (continuous)
+ *    audioKick    -> the board's lamps (light)
+ *    audioHigh    -> the gloss on a turning leaf (light)
+ *    audioMid     -> the warmth of the board's light (colour)
+ *
+ *  Per-activation variety: colsP, flapsP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SelfSimilarityMandala.frag
- * @brief SELF-SIMILARITY MANDALA: the song's memory of itself as a mandala.
- * The self-similarity matrix (texSSM) holds how much every moment of the
- * last stretch resembles every other.  Here the row "now against the past"
- * is wrapped into rings -- the centre is now, each ring further out a
- * moment further back -- and folded n-way into a mandala, so a returning
- * chorus lights whole rings at once and a new section darkens them.  A
- * second layer draws the full matrix's diagonal bands as petals.  The
- * mandala turns on the scene clock; everything else is light.
+/*****************************************************************************\
+ *                              SelfSimilarityMandala.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   texSSM        -> the whole picture (the point)
- *   audioSectionKnown -> a returning section warms the mandala (light)
- *   sceneAdvance  -> rotation (continuous)
- *   audioKick     -> the centre flashes (light)
- *   audioLevel    -> brightness
+ *  @brief
+ *  SELF-SIMILARITY MANDALA: the song's memory of itself as a mandala.
  *
- * Per-activation variety: sidesP (fold count), spanP (how much history), hueP.
+ *  The self-similarity matrix (texSSM) holds how much every moment of the last stretch resembles every other.  Here
+ *  the row "now against the past" is wrapped into rings -- the centre is now, each ring further out a moment
+ *  further back -- and folded n-way into a mandala, so a returning chorus lights whole rings at once and a new
+ *  section darkens them.  A second layer draws the full matrix's diagonal bands as petals.  The mandala turns on
+ *  the scene clock; everything else is light.
+ *
+ *  Audio Reactivity:
+ *    texSSM        -> the whole picture (the point)
+ *    audioSectionKnown -> a returning section warms the mandala (light)
+ *    sceneAdvance  -> rotation (continuous)
+ *    audioKick     -> the centre flashes (light)
+ *    audioLevel    -> brightness
+ *
+ *  Per-activation variety: sidesP (fold count), spanP (how much history), hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

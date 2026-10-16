@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureWeaveSymmetry.frag
- * @brief TEXTURE WEAVE SYMMETRY: a kaleidoscope woven from ribbons -- the
- * photograph is folded into a square mirror symmetry (p4m), and the
- * folded image is then cut into ribbons that weave over and under each
- * other in a basket weave, each ribbon shaded round and dipping at the
- * crossings; the weave slowly slides along its ribbons and the fold
- * window drifts through the picture.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              TextureWeaveSymmetry.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the ribbons slide and the window drifts (integrated, jump-free)
- *   audioSpread     -> ribbon width (gaps between ribbons)
- *   audioKick       -> the ribbon crowns flash (light)
- *   audioMode       -> warp and weft tinted apart (cool vs. warm)
- *   audioPhase      -> the weave turns (integrated)
- *   audioSwell      -> the gap glow (slow)
+ *  @brief
+ *  TEXTURE WEAVE SYMMETRY: a kaleidoscope woven from ribbons -- the photograph is folded into a square mirror
+ *  symmetry (p4m), and the folded image is then cut into ribbons that weave over and under each other in a basket
+ *  weave, each ribbon shaded round and dipping at the crossings; the weave slowly slides along its ribbons and the
+ *  fold window drifts through the picture.
  *
- * Knobs: ribbonP (ribbon count), foldP (fold cell size), photoZoomP, hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the ribbons slide and the window drifts (integrated, jump-free)
+ *    audioSpread     -> ribbon width (gaps between ribbons)
+ *    audioKick       -> the ribbon crowns flash (light)
+ *    audioMode       -> warp and weft tinted apart (cool vs. warm)
+ *    audioPhase      -> the weave turns (integrated)
+ *    audioSwell      -> the gap glow (slow)
+ *
+ *  Knobs: ribbonP (ribbon count), foldP (fold cell size), photoZoomP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

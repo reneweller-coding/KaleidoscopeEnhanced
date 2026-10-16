@@ -1,25 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file FourierEpicycleDraw.frag
- * @brief FOURIER EPICYCLE DRAW: a chain of rotating circles -- each turning
- * at its own harmonic, its radius the energy of a spectrum band -- whose
- * last point draws a closed curve, the way a Fourier series traces a
- * shape.  The pen runs on the scene clock; the trace it leaves is the
- * curve of the last cycle, fading; the circles' radii are the bands
- * (smoothed by the drawing itself), the kick lights the pen, the treble
- * sparkles the circles, the photo shows through the drawn shape.  Camera
- * still.
+/*****************************************************************************\
+ *                              FourierEpicycleDraw.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSpectrum[32] -> epicycle radii (light-sized, low harmonics dominate)
- *   sceneAdvance      -> the rotation and the pen (continuous)
- *   audioKick         -> pen light (light)
- *   audioHigh         -> circle sparkle (light)
- *   audioLevel        -> brightness
+ *  @brief
+ *  FOURIER EPICYCLE DRAW: a chain of rotating circles -- each turning at its own harmonic, its radius the energy of
+ *  a spectrum band -- whose last point draws a closed curve, the way a Fourier series traces a shape.
  *
- * Per-activation variety: termsP, traceP, hueP.
+ *  The pen runs on the scene clock; the trace it leaves is the curve of the last cycle, fading; the circles' radii
+ *  are the bands (smoothed by the drawing itself), the kick lights the pen, the treble sparkles the circles, the
+ *  photo shows through the drawn shape.  Camera still.
+ *
+ *  Audio Reactivity:
+ *    audioSpectrum[32] -> epicycle radii (light-sized, low harmonics dominate)
+ *    sceneAdvance      -> the rotation and the pen (continuous)
+ *    audioKick         -> pen light (light)
+ *    audioHigh         -> circle sparkle (light)
+ *    audioLevel        -> brightness
+ *
+ *  Per-activation variety: termsP, traceP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

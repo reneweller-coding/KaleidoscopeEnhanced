@@ -1,22 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file MeshSandSculpture.frag
- * @brief MESH SAND SCULPTURE: wet sand -- warm, grainy, with round glints of
- * shell and quartz -- under a beach sky that is the photo.  Where the wind
- * has eroded the surface (vErode) the sand is drier and paler; the treble
- * makes the grains glint, the swell is the sun, the kick a gust of blown
- * sand as round grains streaming off the sculpture (light).
+/*****************************************************************************\
+ *                              MeshSandSculpture.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioRoughness -> erosion (vertex stage, slow)
- *   audioHigh      -> grain glint (light)
- *   audioSwell     -> sunlight (slow)
- *   audioKick      -> blown sand (light)
- *   audioLevel     -> brightness
+ *  @brief
+ *  MESH SAND SCULPTURE: wet sand -- warm, grainy, with round glints of shell and quartz -- under a beach sky that
+ *  is the photo.
  *
- * Per-activation variety: sizeP, erodeP, hueP.
+ *  Where the wind has eroded the surface (vErode) the sand is drier and paler; the treble makes the grains glint,
+ *  the swell is the sun, the kick a gust of blown sand as round grains streaming off the sculpture (light).
+ *
+ *  Audio Reactivity:
+ *    audioRoughness -> erosion (vertex stage, slow)
+ *    audioHigh      -> grain glint (light)
+ *    audioSwell     -> sunlight (slow)
+ *    audioKick      -> blown sand (light)
+ *    audioLevel     -> brightness
+ *
+ *  Per-activation variety: sizeP, erodeP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4               fragColor;       ///< The pixel's colour (output).
 uniform sampler2DArray texMeshMaterial; ///< The mesh's material textures (albedo, roughness, normal ...).
 uniform sampler2D      tex0;            ///< The current photo.
 uniform sampler2D      tex1;            ///< The next photo (cross-faded in by interpolation).

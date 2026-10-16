@@ -1,25 +1,31 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file KusamaDotInfinity.frag
- * @brief KUSAMA DOT INFINITY: an endless polka-dot regress -- dots of all
- * sizes cover everything and spiral inward into an infinite centre, each
- * ring of dots smaller than the last, forever drawing the eye in, as in an
- * infinity mirror room; the dots' sizes follow the photograph (bright
- * parts make large dots, dark parts small), their colours alternate
- * between the photo's colours and a bold two-tone, and the whole field
- * turns slowly and flows inward.  Mirrorable; continues beyond the frame.
+/*****************************************************************************\
+ *                              KusamaDotInfinity.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the inward flow (integrated, jump-free)
- *   audioPhase      -> the spiral turns (integrated)
- *   audioSpread     -> the dots swell
- *   audioKick       -> the dots flash (light)
- *   audioMode       -> two-tone: black on yellow in major, white on red in minor
- *   audioSwell      -> the glow halo around the dots (slow)
+ *  @brief
+ *  KUSAMA DOT INFINITY: an endless polka-dot regress -- dots of all sizes cover everything and spiral inward into
+ *  an infinite centre, each ring of dots smaller than the last, forever drawing the eye in, as in an infinity
+ *  mirror room; the dots' sizes follow the photograph (bright parts make large dots, dark parts small), their
+ *  colours alternate between the photo's colours and a bold two-tone, and the whole field turns slowly and flows
+ *  inward.
  *
- * Knobs: ringsP (dots per ring), spiralP (spiral pitch), photoP (photo colours), hueP.
+ *  Mirrorable; continues beyond the frame.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the inward flow (integrated, jump-free)
+ *    audioPhase      -> the spiral turns (integrated)
+ *    audioSpread     -> the dots swell
+ *    audioKick       -> the dots flash (light)
+ *    audioMode       -> two-tone: black on yellow in major, white on red in minor
+ *    audioSwell      -> the glow halo around the dots (slow)
+ *
+ *  Knobs: ringsP (dots per ring), spiralP (spiral pitch), photoP (photo colours), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

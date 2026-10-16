@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file InfinityMirrorRoom.frag
- * @brief INFINITY MIRROR ROOM: a mirrored box with real depth.  Instead of a
- * depth buffer the regress is built the way mirrors build it: space is
- * folded (mod + mirror), so a ray that leaves the room through a wall
- * re-enters a reflected copy, and every copy carries the same lamps and
- * the same photo panel.  The copies recede to infinity with a fog that
- * thickens on the sub-bass, so the room breathes deeper and shallower with
- * the low end.  Lamps pulse on the kick (light); the camera drifts slowly
- * on the scene clock, never on the beat.
+/*****************************************************************************\
+ *                              InfinityMirrorRoom.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSubBass  -> fog between the reflections (light)
- *   audioKick     -> the lamps flash (light)
- *   audioSwell    -> lamp warmth (slow)
- *   sceneAdvance  -> the slow drift and the turn of the view
- *   audioLevel    -> brightness
+ *  @brief
+ *  INFINITY MIRROR ROOM: a mirrored box with real depth.
  *
- * Per-activation variety: roomP (room size), lampsP (lamp count), hueP.
+ *  Instead of a depth buffer the regress is built the way mirrors build it: space is folded (mod + mirror), so a
+ *  ray that leaves the room through a wall re-enters a reflected copy, and every copy carries the same lamps and
+ *  the same photo panel.  The copies recede to infinity with a fog that thickens on the sub-bass, so the room
+ *  breathes deeper and shallower with the low end.  Lamps pulse on the kick (light); the camera drifts slowly on
+ *  the scene clock, never on the beat.
+ *
+ *  Audio Reactivity:
+ *    audioSubBass  -> fog between the reflections (light)
+ *    audioKick     -> the lamps flash (light)
+ *    audioSwell    -> lamp warmth (slow)
+ *    sceneAdvance  -> the slow drift and the turn of the view
+ *    audioLevel    -> brightness
+ *
+ *  Per-activation variety: roomP (room size), lampsP (lamp count), hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

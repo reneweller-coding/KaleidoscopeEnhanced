@@ -1,25 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file MeshSeismograph.frag
- * @brief MESH SEISMOGRAPH: a real drum seismograph -- the cast-iron base
- * with its pen arm (model=) and the paper drum (model2=) turning under the
- * pen on time. The trace on the paper is REAL: the last revolution of the
- * drum carries the bass energy of the last eighteen seconds, read from the
- * engine's spectrogram ring (texSpectro) at the age each point on the
- * paper passed under the pen, drawn as a wandering ink line; older
- * revolutions are the faint helix of earlier traces. A desk lamp with the
- * swell; the kick makes the pen's ink bloom. The mesh counterpart of the
- * procedural SeismographDrum.
+/*****************************************************************************\
+ *                              MeshSeismograph.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   texSpectro (bass band history) -> the trace (light: ink on paper)
- *   audioKick  -> ink bloom at the pen (light)
- *   audioSwell -> lamp (slow)
- *   time       -> the drum turns (continuous, vertex stage)
+ *  @brief
+ *  MESH SEISMOGRAPH: a real drum seismograph -- the cast-iron base with its pen arm (model=) and the paper drum
+ *  (model2=) turning under the pen on time.
  *
- * Per-instance: sizeP, drumP, drumXP/YP/ZP. Per-activation variety: hueP.
+ *  The trace on the paper is REAL: the last revolution of the drum carries the bass energy of the last eighteen
+ *  seconds, read from the engine's spectrogram ring (texSpectro) at the age each point on the paper passed under
+ *  the pen, drawn as a wandering ink line; older revolutions are the faint helix of earlier traces. A desk lamp
+ *  with the swell; the kick makes the pen's ink bloom. The mesh counterpart of the procedural SeismographDrum.
+ *
+ *  Audio Reactivity:
+ *    texSpectro (bass band history) -> the trace (light: ink on paper)
+ *    audioKick  -> ink bloom at the pen (light)
+ *    audioSwell -> lamp (slow)
+ *    time       -> the drum turns (continuous, vertex stage)
+ *
+ *  Per-instance: sizeP, drumP, drumXP/YP/ZP. Per-activation variety: hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform sampler2DArray texMeshMaterial;        ///< the base
 uniform int            texMeshMaterialLayers;  ///< Number of layers in texMeshMaterial.

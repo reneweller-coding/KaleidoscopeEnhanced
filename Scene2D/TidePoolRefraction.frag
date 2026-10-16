@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TidePoolRefraction.frag
- * @brief TIDE POOL REFRACTION: a rock pool from directly above.  The
- * floor of the pool -- anemones, urchins, weed, the photo as its rock --
- * is seen through a rippling surface that refracts it, so everything
- * below sways while the rim stays still.  The tide breathes with the
- * swell (the water level rises and the pool widens), sun caustics move
- * across the floor on the scene clock, and the treble is the glitter on
- * the surface.  Camera fixed above the pool.
+/*****************************************************************************\
+ *                              TidePoolRefraction.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSwell   -> tide level: pool size and depth (slow)
- *   sceneAdvance -> ripples and caustics (continuous)
- *   audioHigh    -> surface glitter (light)
- *   audioChroma[12] -> the anemone colours (light)
- *   audioKick    -> an anemone contracts (light and a gentle pull, smooth)
+ *  @brief
+ *  TIDE POOL REFRACTION: a rock pool from directly above.
  *
- * Per-activation variety: lifeP, rippleP, hueP.
+ *  The floor of the pool -- anemones, urchins, weed, the photo as its rock -- is seen through a rippling surface
+ *  that refracts it, so everything below sways while the rim stays still.  The tide breathes with the swell (the
+ *  water level rises and the pool widens), sun caustics move across the floor on the scene clock, and the treble is
+ *  the glitter on the surface.  Camera fixed above the pool.
+ *
+ *  Audio Reactivity:
+ *    audioSwell   -> tide level: pool size and depth (slow)
+ *    sceneAdvance -> ripples and caustics (continuous)
+ *    audioHigh    -> surface glitter (light)
+ *    audioChroma[12] -> the anemone colours (light)
+ *    audioKick    -> an anemone contracts (light and a gentle pull, smooth)
+ *
+ *  Per-activation variety: lifeP, rippleP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

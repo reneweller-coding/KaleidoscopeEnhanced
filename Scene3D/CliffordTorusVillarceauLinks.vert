@@ -1,15 +1,21 @@
 #version 330 core
-/**
- * @file CliffordTorusVillarceauLinks.vert
- * @brief Vertex stage companion to CliffordTorusVillarceauLinks.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              CliffordTorusVillarceauLinks.vert
+\*****************************************************************************/
+/*! @file
  *
- * The 4900 units used to be 0.05-wide cubes on a 2.8-radius torus, i.e. ~6 px
- * specks scattered over a mostly black frame (occ 0.21).  They are now large
- * enough to close into a SOLID stereographic surface, the torus reaches past
- * the top and bottom edges, and one unit in seven is pulled off the surface to
- * become a far-field dust mote placed in FRUSTUM coordinates, so the corners
- * the donut can never reach still carry something.
+ *  @brief
+ *  Vertex stage companion to CliffordTorusVillarceauLinks.frag -- see that file's header for this scene's
+ *  description.
+ *
+ *  The 4900 units used to be 0.05-wide cubes on a 2.8-radius torus, i.e. ~6 px
+ *  specks scattered over a mostly black frame (occ 0.21).  They are now large
+ *  enough to close into a SOLID stereographic surface, the torus reaches past
+ *  the top and bottom edges, and one unit in seven is pulled off the surface to
+ *  become a far-field dust mote placed in FRUSTUM coordinates, so the corners
+ *  the donut can never reach still carry something.
+ *
+ *  @author René Weller
  */
 layout( location = 0 ) in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g.
                                       ///< position or u/v and an index).

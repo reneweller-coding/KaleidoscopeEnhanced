@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file PollockDripField.frag
- * @brief POLLOCK DRIP FIELD: an all-over drip painting building itself --
- * long looping skeins of paint in several colours are poured across the
- * canvas, each skein a thin wandering line that thickens into pools where
- * the hand slowed and thins into threads where it flew, splatters beside
- * it; layer on layer the web grows dense, older layers slowly fade back
- * so it never clogs.  The colours come from the photograph, the canvas is
- * raw linen.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              PollockDripField.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the pouring (integrated, jump-free)
- *   audioSpread     -> the skeins loop wider
- *   audioRoughness  -> more splatter
- *   audioKick       -> the paint gleams (light)
- *   audioMode       -> palette: black-white-grey in minor, the photo's colours in major (blend)
- *   audioSwell      -> the web gets denser (slow)
+ *  @brief
+ *  POLLOCK DRIP FIELD: an all-over drip painting building itself -- long looping skeins of paint in several colours
+ *  are poured across the canvas, each skein a thin wandering line that thickens into pools where the hand slowed
+ *  and thins into threads where it flew, splatters beside it; layer on layer the web grows dense, older layers
+ *  slowly fade back so it never clogs.
  *
- * Knobs: layerP (layers), lineP (line weight), canvasP (canvas tone), hueP.
+ *  The colours come from the photograph, the canvas is raw linen.  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the pouring (integrated, jump-free)
+ *    audioSpread     -> the skeins loop wider
+ *    audioRoughness  -> more splatter
+ *    audioKick       -> the paint gleams (light)
+ *    audioMode       -> palette: black-white-grey in minor, the photo's colours in major (blend)
+ *    audioSwell      -> the web gets denser (slow)
+ *
+ *  Knobs: layerP (layers), lineP (line weight), canvasP (canvas tone), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

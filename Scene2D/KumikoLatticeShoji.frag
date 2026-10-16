@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file KumikoLatticeShoji.frag
- * @brief KUMIKO LATTICE SHOJI: a shoji screen with a kumiko lattice, lit
- * from behind.  The frame is a grid of mortised bars; inside each opening
- * a hemp-leaf pattern is assembled from six thin slats meeting at the
- * centre.  The pieces are fitted one after another over the scene arc, so
- * the pattern builds; the paper behind carries the photo as the garden
- * outside, and its light moves with the swell.  The treble is the sheen
- * along a freshly fitted slat.  Camera fixed in front of the screen.
+/*****************************************************************************\
+ *                              KumikoLatticeShoji.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   sceneProgress -> the lattice is assembled piece by piece (the arc)
- *   audioSwell    -> the daylight behind the paper (slow)
- *   audioHigh     -> the sheen on the wood (light)
- *   audioChroma[12] -> the tint of the light through each pane (light)
- *   audioKick     -> a shadow passes outside (light, local)
+ *  @brief
+ *  KUMIKO LATTICE SHOJI: a shoji screen with a kumiko lattice, lit from behind.
  *
- * Per-activation variety: cellsP, leafP, hueP.
+ *  The frame is a grid of mortised bars; inside each opening a hemp-leaf pattern is assembled from six thin slats
+ *  meeting at the centre.  The pieces are fitted one after another over the scene arc, so the pattern builds; the
+ *  paper behind carries the photo as the garden outside, and its light moves with the swell.  The treble is the
+ *  sheen along a freshly fitted slat.  Camera fixed in front of the screen.
+ *
+ *  Audio Reactivity:
+ *    sceneProgress -> the lattice is assembled piece by piece (the arc)
+ *    audioSwell    -> the daylight behind the paper (slow)
+ *    audioHigh     -> the sheen on the wood (light)
+ *    audioChroma[12] -> the tint of the light through each pane (light)
+ *    audioKick     -> a shadow passes outside (light, local)
+ *
+ *  Per-activation variety: cellsP, leafP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

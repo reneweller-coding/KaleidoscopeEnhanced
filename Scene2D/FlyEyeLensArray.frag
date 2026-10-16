@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file FlyEyeLensArray.frag
- * @brief FLY EYE LENS ARRAY: seeing the photograph through a compound eye --
- * a honeycomb of hundreds of tiny domed lenses, each showing its own
- * small, slightly shifted and flipped image of the scene, so the picture
- * repeats in a mosaic of little worlds; the whole eye slowly scans across
- * the picture, the lenses glinting with highlights and a thin dark rim
- * between them.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              FlyEyeLensArray.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the eye scans (integrated, jump-free)
- *   audioSpread     -> how far each lens looks (field of view)
- *   audioKick       -> the lens highlights flash (light)
- *   audioMode       -> the tint: cool in minor, warm in major
- *   audioPhase      -> the array turns (integrated)
- *   audioSwell      -> the lenses' own glow (slow)
+ *  @brief
+ *  FLY EYE LENS ARRAY: seeing the photograph through a compound eye -- a honeycomb of hundreds of tiny domed
+ *  lenses, each showing its own small, slightly shifted and flipped image of the scene, so the picture repeats in a
+ *  mosaic of little worlds; the whole eye slowly scans across the picture, the lenses glinting with highlights and
+ *  a thin dark rim between them.
  *
- * Knobs: lensP (lens size), flipP (image flip in each lens), rimP (rim width), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the eye scans (integrated, jump-free)
+ *    audioSpread     -> how far each lens looks (field of view)
+ *    audioKick       -> the lens highlights flash (light)
+ *    audioMode       -> the tint: cool in minor, warm in major
+ *    audioPhase      -> the array turns (integrated)
+ *    audioSwell      -> the lenses' own glow (slow)
+ *
+ *  Knobs: lensP (lens size), flipP (image flip in each lens), rimP (rim width), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

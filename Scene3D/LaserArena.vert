@@ -1,15 +1,20 @@
 #version 330 core
-/**
- * @file LaserArena.vert
- * @brief Vertex stage companion to LaserArena.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              LaserArena.vert
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioBarPhase  -> the fan sweep of every beam (pre-integrated phase)
- *   audioBeatPhase -> the strobe on the beams' brightness
- *   audioKick      -> punch on every hit
- *   audioDrop      -> snaps the whole rig vertical and floods it
- *   audioChromaHue -> tint wobble of the laser family (musical key)
+ *  @brief
+ *  Vertex stage companion to LaserArena.frag -- see that file's header for this scene's description.
+ *
+ *  Audio Reactivity:
+ *    audioBarPhase  -> the fan sweep of every beam (pre-integrated phase)
+ *    audioBeatPhase -> the strobe on the beams' brightness
+ *    audioKick      -> punch on every hit
+ *    audioDrop      -> snaps the whole rig vertical and floods it
+ *    audioChromaHue -> tint wobble of the laser family (musical key)
+ *
+ *  @author René Weller
  */
 // LaserArena.vert — a club laser show: 80 beams from four stage towers fan
 // and sweep with the bar phase, kicks strobe them, a DROP snaps every beam

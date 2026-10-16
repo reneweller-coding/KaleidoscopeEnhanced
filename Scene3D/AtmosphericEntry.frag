@@ -1,26 +1,32 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file AtmosphericEntry.frag
- * @brief GEOM="MESH" FAMILY: a ship commits to a descent and burns its way
- * into a planet's atmosphere. Staged on `sceneProgress` (see the .vert): a
- * beat of vacuum, then the planet swelling to fill the frame while the hull
- * heats from the leading edges back and drags an ionised wake.
+/*****************************************************************************\
+ *                              AtmosphericEntry.frag
+\*****************************************************************************/
+/*! @file
  *
- * The planet lives on the SKY SHELL, not as geometry. Its apparent size is
- * driven by growing the angular radius the shell tests against, which is
- * what approaching actually looks like -- and it sidesteps having to model a
- * body whose real scale would swamp the depth range for the sake of the one
- * arc that is ever on screen. The atmosphere is a rim term on that disc, so
- * the limb glows and the terminator stays soft.
- *   sceneProgress -> descent, planet size, heating, wake (mostly vertex stage)
- *   audioKick     -> airframe judder + plasma flare
- *   audioSwell    -> daylight side brightness
+ *  @brief
+ *  GEOM="MESH" FAMILY: a ship commits to a descent and burns its way into a planet's atmosphere.
  *
- * Per-instance: sizeP, shakeP (judder), tintP (planet hue), atmoP (how thick
- *               the atmosphere reads).
- * Per-activation variety: hueP float palette offset (0..6.28).
+ *  Staged on `sceneProgress` (see the .vert): a beat of vacuum, then the planet swelling to fill the frame while
+ *  the hull heats from the leading edges back and drags an ionised wake.
+ *
+ *  The planet lives on the SKY SHELL, not as geometry. Its apparent size is
+ *  driven by growing the angular radius the shell tests against, which is
+ *  what approaching actually looks like -- and it sidesteps having to model a
+ *  body whose real scale would swamp the depth range for the sake of the one
+ *  arc that is ever on screen. The atmosphere is a rim term on that disc, so
+ *  the limb glows and the terminator stays soft.
+ *    sceneProgress -> descent, planet size, heating, wake (mostly vertex stage)
+ *    audioKick     -> airframe judder + plasma flare
+ *    audioSwell    -> daylight side brightness
+ *
+ *  Per-instance: sizeP, shakeP (judder), tintP (planet hue), atmoP (how thick
+ *                the atmosphere reads).
+ *  Per-activation variety: hueP float palette offset (0..6.28).
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform sampler2DArray texMeshMaterial;       ///< The mesh's material textures (albedo, roughness, normal ...).
 uniform int            texMeshMaterialLayers; ///< Number of layers in texMeshMaterial.

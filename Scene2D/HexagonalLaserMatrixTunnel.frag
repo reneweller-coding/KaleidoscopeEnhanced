@@ -1,18 +1,23 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file HexagonalLaserMatrixTunnel.frag
- * @brief HEXAGONAL LASER MATRIX TUNNEL: High-speed flight through a 6-sided mirror tunnel
- * laced with intersecting 3D laser projector beams, opening geometric light portals,
- * and high-voltage laser matrix scanning grids.
+/*****************************************************************************\
+ *                              HexagonalLaserMatrixTunnel.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance -> drives continuous forward flight speed through the laser tunnel
- *   audioKick    -> flashes laser portal gates & triggers radial matrix beam bursts
- *   audioCentroid-> modulates laser grid frequency & beam sharpness
- *   audioSubBass -> expands hexagonal tunnel lumen diameter
- *   audioChromaHue-> rotates the glowing RGB laser matrix spectrum
+ *  @brief
+ *  HEXAGONAL LASER MATRIX TUNNEL: High-speed flight through a 6-sided mirror tunnel laced with intersecting 3D
+ *  laser projector beams, opening geometric light portals, and high-voltage laser matrix scanning grids.
+ *
+ *  Audio Reactivity:
+ *    audioAdvance -> drives continuous forward flight speed through the laser tunnel
+ *    audioKick    -> flashes laser portal gates & triggers radial matrix beam bursts
+ *    audioCentroid-> modulates laser grid frequency & beam sharpness
+ *    audioSubBass -> expands hexagonal tunnel lumen diameter
+ *    audioChromaHue-> rotates the glowing RGB laser matrix spectrum
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

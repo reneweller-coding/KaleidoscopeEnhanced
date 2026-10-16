@@ -1,29 +1,35 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file RisographDrumOffset.frag
- * @brief TRANSITION RISOGRAPH DRUM OFFSET: the scene is printed as a two-colour
- * risograph, and the two drums are out of register.
+/*****************************************************************************\
+ *                              RisographDrumOffset.frag
+\*****************************************************************************/
+/*! @file
  *
- * A riso does not mix colours, it lays one spot ink on top of another, so the
- * separation is a real one: each ink's density is its absorption in the
- * complementary channel, and the sheet is built multiplicatively -- paper times
- * ink times ink.  That is why the midtones go muddy-warm the way a real riso
- * does instead of staying neutral like a screen blend.
+ *  @brief
+ *  TRANSITION RISOGRAPH DRUM OFFSET: the scene is printed as a two-colour risograph, and the two drums are out of
+ *  register.
  *
- * The two drums drift apart over the first half of the turn and the incoming
- * image's drums come down converging, so the misregistration halo opens and
- * closes.  Both the separation and the offset are zero at the two ends of the
- * transition, so the first and last frame are the untouched scenes.
+ *  A riso does not mix colours, it lays one spot ink on top of another, so the
+ *  separation is a real one: each ink's density is its absorption in the
+ *  complementary channel, and the sheet is built multiplicatively -- paper times
+ *  ink times ink.  That is why the midtones go muddy-warm the way a real riso
+ *  does instead of staying neutral like a screen blend.
  *
- * Audio Reactivity:
- *   audioFlux      -> the paper fibre's contrast (light)
- *   audioSwell    -> how far the drums run out of register (slow)
- *   audioChromaHue -> which two spot inks are on the drums (colour)
- *   audioHigh      -> the roller streaks (light)
+ *  The two drums drift apart over the first half of the turn and the incoming
+ *  image's drums come down converging, so the misregistration halo opens and
+ *  closes.  Both the separation and the offset are zero at the two ends of the
+ *  transition, so the first and last frame are the untouched scenes.
  *
- * Per-activation variety: inkP, misregP, hueP.
+ *  Audio Reactivity:
+ *    audioFlux      -> the paper fibre's contrast (light)
+ *    audioSwell    -> how far the drums run out of register (slow)
+ *    audioChromaHue -> which two spot inks are on the drums (colour)
+ *    audioHigh      -> the roller streaks (light)
+ *
+ *  Per-activation variety: inkP, misregP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

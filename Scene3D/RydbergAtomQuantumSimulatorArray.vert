@@ -1,16 +1,22 @@
 #version 330 core
-/**
- * @file RydbergAtomQuantumSimulatorArray.vert
- * @brief Vertex stage companion to RydbergAtomQuantumSimulatorArray.frag -- see that file's
- * header for this scene's description.
+/*****************************************************************************\
+ *                              RydbergAtomQuantumSimulatorArray.vert
+\*****************************************************************************/
+/*! @file
  *
- * SCREEN FILL: the tweezer array used to be a tiny cube -- 39^3 sites at a
- * 0.015..0.04 pitch, i.e. barely +-0.6..1.7 world units, seen from 4.5 units
- * away -- so 60000 atoms all piled into one small central disc and 83% of the
- * frame was black (occ 0.17) while that disc stacked ~20 sprites deep.  It is
- * now a WIDE SLAB of tweezer planes, +-5.6 across but only +-1.6 deep, which
- * overflows both frame edges at every depth it occupies; the fragment stage
- * carries the matching exposure rebalance.
+ *  @brief
+ *  Vertex stage companion to RydbergAtomQuantumSimulatorArray.frag -- see that file's header for this scene's
+ *  description.
+ *
+ *  SCREEN FILL: the tweezer array used to be a tiny cube -- 39^3 sites at a
+ *  0.015..0.04 pitch, i.e. barely +-0.6..1.7 world units, seen from 4.5 units
+ *  away -- so 60000 atoms all piled into one small central disc and 83% of the
+ *  frame was black (occ 0.17) while that disc stacked ~20 sprites deep.  It is
+ *  now a WIDE SLAB of tweezer planes, +-5.6 across but only +-1.6 deep, which
+ *  overflows both frame edges at every depth it occupies; the fragment stage
+ *  carries the matching exposure rebalance.
+ *
+ *  @author René Weller
  */
 
 in vec4 attrA; ///< xyz = position seed, w = pointID

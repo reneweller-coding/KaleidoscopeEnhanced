@@ -1,26 +1,31 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file HyperbolicEscherFish.frag
- * @brief HYPERBOLIC ESCHER FISH: Escher's Circle Limit with the fish
- * actually swimming.  The Poincare disc is tiled by a {p,q} polygon; in
- * every chamber a fish (body, tail, eye) is drawn from the same
- * fundamental-domain coordinates, alternating light and dark by chamber
- * parity.  The shoal swims toward the rim: a hyperbolic translation by one
- * polygon step is a symmetry of the tiling, so the swim is periodic and
- * its wrap invisible, and the fish shrink into the infinite edge as they
- * go.  Tails wag on the scene clock; the melody tints the shoal.
+/*****************************************************************************\
+ *                              HyperbolicEscherFish.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   sceneAdvance     -> the swim (music-paced, periodic, seamless)
- *   sceneTime        -> tail wag (object motion, continuous)
- *   audioMelodyPitch -> shoal tint (light)
- *   audioKick        -> the eyes flash (light)
- *   audioSwell       -> disc breath (slow)
- *   audioLevel       -> brightness
+ *  @brief
+ *  HYPERBOLIC ESCHER FISH: Escher's Circle Limit with the fish actually swimming.
  *
- * Per-activation variety: sidesP (p = 4, 6 or 8), qP, dirP (swim sense), hueP.
+ *  The Poincare disc is tiled by a {p,q} polygon; in every chamber a fish (body, tail, eye) is drawn from the same
+ *  fundamental-domain coordinates, alternating light and dark by chamber parity.  The shoal swims toward the rim: a
+ *  hyperbolic translation by one polygon step is a symmetry of the tiling, so the swim is periodic and its wrap
+ *  invisible, and the fish shrink into the infinite edge as they go.  Tails wag on the scene clock; the melody
+ *  tints the shoal.
+ *
+ *  Audio Reactivity:
+ *    sceneAdvance     -> the swim (music-paced, periodic, seamless)
+ *    sceneTime        -> tail wag (object motion, continuous)
+ *    audioMelodyPitch -> shoal tint (light)
+ *    audioKick        -> the eyes flash (light)
+ *    audioSwell       -> disc breath (slow)
+ *    audioLevel       -> brightness
+ *
+ *  Per-activation variety: sidesP (p = 4, 6 or 8), qP, dirP (swim sense), hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

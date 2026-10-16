@@ -1,17 +1,22 @@
 #version 330 core
-/**
- * @file LaserSpireArray.geom
- * @brief Geometry stage companion to LaserSpireArray.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              LaserSpireArray.geom
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSpectrum -> per-spire height (each spire reads its own FFT band)
- *   audioKick     -> height punch on a subset of spires + gold tint
- *   audioAdvance  -> ring rotation + camera orbit (pre-integrated, jump-free)
- *   audioBuildUp  -> rising EDM tension stretches the sky beams upward, the
- *                    classic riser, and they fall back after the drop
- *   audioTrebRel  -> mix-independent treble punch thickens the laser columns
- *   audioUpperMid -> (fragment stage) metallic chrome glint on the facets
+ *  @brief
+ *  Geometry stage companion to LaserSpireArray.frag -- see that file's header for this scene's description.
+ *
+ *  Audio Reactivity:
+ *    audioSpectrum -> per-spire height (each spire reads its own FFT band)
+ *    audioKick     -> height punch on a subset of spires + gold tint
+ *    audioAdvance  -> ring rotation + camera orbit (pre-integrated, jump-free)
+ *    audioBuildUp  -> rising EDM tension stretches the sky beams upward, the
+ *                     classic riser, and they fall back after the drop
+ *    audioTrebRel  -> mix-independent treble punch thickens the laser columns
+ *    audioUpperMid -> (fragment stage) metallic chrome glint on the facets
+ *
+ *  @author René Weller
  */
 /// LaserSpireArray.geom — Extrude point seeds into 3D hexagonal crystalline spires
 /// with skyward laser beams and pulsating energy rings.

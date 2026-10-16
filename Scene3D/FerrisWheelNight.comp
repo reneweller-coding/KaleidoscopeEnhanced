@@ -1,13 +1,19 @@
 #version 430 core
-/**
- * @file FerrisWheelNight.comp
- * @brief FERRIS WHEEL NIGHT: a great wheel at the fair, turning steadily
- * on the scene clock, its cabins (photo-textured) hanging level as the
- * wheel turns, its spokes strung with lamps that run patterns with the
- * spectrum bands (fragment).  No state; the wheel's angle is the clock.
- * The camera stands on the fairground.
+/*****************************************************************************\
+ *                              FerrisWheelNight.comp
+\*****************************************************************************/
+/*! @file
  *
- * Per-instance: cabinsP, sizeP, hueP.
+ *  @brief
+ *  FERRIS WHEEL NIGHT: a great wheel at the fair, turning steadily on the scene clock, its cabins (photo-textured)
+ *  hanging level as the wheel turns, its spokes strung with lamps that run patterns with the spectrum bands
+ *  (fragment).
+ *
+ *  No state; the wheel's angle is the clock. The camera stands on the fairground.
+ *
+ *  Per-instance: cabinsP, sizeP, hueP.
+ *
+ *  @author René Weller
  */
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( local_size_x = 4, local_size_y = 4, local_size_z = 4 ) in;

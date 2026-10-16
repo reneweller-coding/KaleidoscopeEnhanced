@@ -1,18 +1,24 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file ChiralNematicLiquidCrystal.frag
- * @brief CHIRAL NEMATIC LIQUID CRYSTAL: Cholesteric liquid crystal texture with helical
- * molecular director field twisting, Bragg diffraction selective color reflection,
- * fingerprint texture disclinations, and thermo-chromatic audio waves.
+/*****************************************************************************\
+ *                              ChiralNematicLiquidCrystal.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance -> drives continuous helical director pitch rotation & domain advection
- *   audioKick    -> flashes Bragg reflection selective wavelength peaks & defect lines
- *   audioCentroid-> modulates helical pitch length & fingerprint fringe spacing
- *   audioSubBass -> expands liquid crystal domain texture elasticity
- *   audioChromaHue-> steers the iridescent Bragg diffraction rainbow spectrum
+ *  @brief
+ *  CHIRAL NEMATIC LIQUID CRYSTAL: Cholesteric liquid crystal texture with helical molecular director field
+ *  twisting, Bragg diffraction selective color reflection, fingerprint texture disclinations, and thermo-chromatic
+ *  audio waves.
+ *
+ *  Audio Reactivity:
+ *    audioAdvance -> drives continuous helical director pitch rotation & domain advection
+ *    audioKick    -> flashes Bragg reflection selective wavelength peaks & defect lines
+ *    audioCentroid-> modulates helical pitch length & fingerprint fringe spacing
+ *    audioSubBass -> expands liquid crystal domain texture elasticity
+ *    audioChromaHue-> steers the iridescent Bragg diffraction rainbow spectrum
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

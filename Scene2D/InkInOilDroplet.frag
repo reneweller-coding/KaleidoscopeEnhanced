@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file InkInOilDroplet.frag
- * @brief INK IN OIL DROPLET: drops of coloured water suspended in clear oil
- * -- round and oval droplets of every size float in a golden oil,
- * drifting slowly, wobbling, and when two meet they merge into one with a
- * little shiver; inside each drop the colour swirls (from the photograph)
- * and a bright rim and highlight show its lens; small satellite droplets
- * trail around the big ones.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              InkInOilDroplet.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the drift (integrated, jump-free)
- *   audioSpread     -> drop size
- *   audioKick       -> the rims flash (light)
- *   audioMode       -> the oil: pale gold in minor, deep amber in major
- *   audioRoughness  -> the drops wobble
- *   audioSwell      -> the swirl inside the drops (slow)
+ *  @brief
+ *  INK IN OIL DROPLET: drops of coloured water suspended in clear oil -- round and oval droplets of every size
+ *  float in a golden oil, drifting slowly, wobbling, and when two meet they merge into one with a little shiver;
+ *  inside each drop the colour swirls (from the photograph) and a bright rim and highlight show its lens; small
+ *  satellite droplets trail around the big ones.
  *
- * Knobs: dropP (drop density), swirlP (inner swirl), photoP (photo colours), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the drift (integrated, jump-free)
+ *    audioSpread     -> drop size
+ *    audioKick       -> the rims flash (light)
+ *    audioMode       -> the oil: pale gold in minor, deep amber in major
+ *    audioRoughness  -> the drops wobble
+ *    audioSwell      -> the swirl inside the drops (slow)
+ *
+ *  Knobs: dropP (drop density), swirlP (inner swirl), photoP (photo colours), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

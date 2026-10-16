@@ -1,21 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SuperfluidHe4Fountain.frag
- * @brief TRANSITION SUPERFLUID HE4 FOUNTAIN: Cryogenic Helium-II thermomechanical fountain.
- * Below the Lambda point (2.17 K), zero-viscosity superfluid Helium-4 surges
- * through a porous plug in a towering fountain geyser, wetting surfaces with
- * quantum creep films and transitioning cleanly between scenes.
- *   interpolation -> sweeps thermomechanical fountain geyser pressure & height
- *   audioKick     -> flashes cryogenic quantum vortex cavitation bubbles
- *   audioSwell    -> drives fountain geyser upward surge velocity
+/*****************************************************************************\
+ *                              SuperfluidHe4Fountain.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   fountP float fountain geyser jet width & force    (0.5..2.2)
- *   creepP float Rollin film creeping thickness       (0.5..2.0)
- *   speedP float animation speed multiplier           (0.5..2.0)
- *   hueP   float cryogenic superfluid hue offset      (0..6.28)
+ *  @brief
+ *  TRANSITION SUPERFLUID HE4 FOUNTAIN: Cryogenic Helium-II thermomechanical fountain.
+ *
+ *  Below the Lambda point (2.17 K), zero-viscosity superfluid Helium-4 surges through a porous plug in a towering
+ *  fountain geyser, wetting surfaces with quantum creep films and transitioning cleanly between scenes.
+ *
+ *    interpolation -> sweeps thermomechanical fountain geyser pressure & height
+ *    audioKick     -> flashes cryogenic quantum vortex cavitation bubbles
+ *    audioSwell    -> drives fountain geyser upward surge velocity
+ *
+ *  Per-activation variety:
+ *    fountP float fountain geyser jet width & force    (0.5..2.2)
+ *    creepP float Rollin film creeping thickness       (0.5..2.0)
+ *    speedP float animation speed multiplier           (0.5..2.0)
+ *    hueP   float cryogenic superfluid hue offset      (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

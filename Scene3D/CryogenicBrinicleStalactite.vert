@@ -1,8 +1,14 @@
 #version 330 core
-/**
- * @file CryogenicBrinicleStalactite.vert
- * @brief Vertex stage companion to CryogenicBrinicleStalactite.frag -- see that file's
- * header for this scene's description.
+/*****************************************************************************\
+ *                              CryogenicBrinicleStalactite.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to CryogenicBrinicleStalactite.frag -- see that file's header for this scene's
+ *  description.
+ *
+ *  @author René Weller
  */
 
 // attrA.xyz = view-space pos (the generator lays the curtain out for 16:9),

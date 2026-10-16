@@ -1,4 +1,31 @@
 #version 330 core
+/*****************************************************************************\
+ *                              SolarSailArmada.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Shades a fleet of reflective solar-sail panels (gold and titanium foil, picked per quad by vQuadID) with the
+ *  live slideshow photo projected onto each membrane, a framed carbon-strut border, specular solar-flare glints,
+ *  and a laser-mesh glow linking the sails.
+ *
+ *  vGlint (a per-vertex specular term from SolarSailArmada.vert) drives the
+ *  glint highlight, and vQuadID both selects the foil material and offsets the
+ *  projected photo UV per sail.
+ *
+ *  Audio Reactivity:
+ *    audioKick      -> solar-flare glint flash + inter-sail laser pulse
+ *    audioChromaHue -> hue rotation of the finished frame (musical key)
+ *    audioSwell     -> base amplitude of the sails' tacking (see .vert)
+ *    audioAdvance   -> orbital phase of the fleet (see .vert)
+ *    audioSpread    -> fleet dispersion: tight formation on a narrow spectrum,
+ *                      scattered to the far orbits on rich harmonics (.vert)
+ *    audioBuildUp   -> the sails tack harder as an EDM build climbs (.vert)
+ *    audioSharpness -> glint lobe, broad soft sheen vs hard narrow star, with
+ *                      the gain scaled inversely to the width (see .vert)
+ *
+ *  @author René Weller
+ */
 out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec3  vPos;    ///< Position (from the vertex stage).
@@ -6,29 +33,6 @@ in vec3  vNormal; ///< Surface normal (from the vertex stage).
 in vec2  vUV;     ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 in float vQuadID; ///< Quad ID (from the vertex stage).
 in float vGlint;  ///< Glint (from the vertex stage).
-
-/**
- * @file SolarSailArmada.frag
- * @brief Shades a fleet of reflective solar-sail panels (gold and titanium
- * foil, picked per quad by vQuadID) with the live slideshow photo projected
- * onto each membrane, a framed carbon-strut border, specular solar-flare
- * glints, and a laser-mesh glow linking the sails.
- *
- * vGlint (a per-vertex specular term from SolarSailArmada.vert) drives the
- * glint highlight, and vQuadID both selects the foil material and offsets the
- * projected photo UV per sail.
- *
- * Audio Reactivity:
- *   audioKick      -> solar-flare glint flash + inter-sail laser pulse
- *   audioChromaHue -> hue rotation of the finished frame (musical key)
- *   audioSwell     -> base amplitude of the sails' tacking (see .vert)
- *   audioAdvance   -> orbital phase of the fleet (see .vert)
- *   audioSpread    -> fleet dispersion: tight formation on a narrow spectrum,
- *                     scattered to the far orbits on rich harmonics (.vert)
- *   audioBuildUp   -> the sails tack harder as an EDM build climbs (.vert)
- *   audioSharpness -> glint lobe, broad soft sheen vs hard narrow star, with
- *                     the gain scaled inversely to the width (see .vert)
- */
 
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

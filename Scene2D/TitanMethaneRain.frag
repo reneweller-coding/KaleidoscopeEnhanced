@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TitanMethaneRain.frag
- * @brief TITAN METHANE RAIN: the shore of a hydrocarbon lake on Titan
- * under the orange haze.  Methane rain -- round drops falling slowly in
- * the low gravity -- pocks the black lake with rings; Saturn hangs pale
- * and huge behind the haze; the dunes of the far shore are the photo.
- * The rain strength follows the swell, the haze glows with distant
- * lightning in the bass, the drops catch the light on the treble.  Camera
- * fixed on the shore.
+/*****************************************************************************\
+ *                              TitanMethaneRain.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSwell   -> rain amount (slow)
- *   sceneAdvance -> rain fall and lake ripples (continuous)
- *   audioBass    -> haze lightning glow (light)
- *   audioHigh    -> drop glints (light)
- *   audioLevel   -> brightness
+ *  @brief
+ *  TITAN METHANE RAIN: the shore of a hydrocarbon lake on Titan under the orange haze.
  *
- * Per-activation variety: hazeP, lakeP, hueP.
+ *  Methane rain -- round drops falling slowly in the low gravity -- pocks the black lake with rings; Saturn hangs
+ *  pale and huge behind the haze; the dunes of the far shore are the photo. The rain strength follows the swell,
+ *  the haze glows with distant lightning in the bass, the drops catch the light on the treble.  Camera fixed on the
+ *  shore.
+ *
+ *  Audio Reactivity:
+ *    audioSwell   -> rain amount (slow)
+ *    sceneAdvance -> rain fall and lake ripples (continuous)
+ *    audioBass    -> haze lightning glow (light)
+ *    audioHigh    -> drop glints (light)
+ *    audioLevel   -> brightness
+ *
+ *  Per-activation variety: hazeP, lakeP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

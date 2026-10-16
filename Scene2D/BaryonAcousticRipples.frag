@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file BaryonAcousticRipples.frag
- * @brief BARYON ACOUSTIC RIPPLES: the sound waves of the early universe,
- * frozen into the galaxy distribution as faint rings of one fixed scale
- * around every overdensity.  Galaxies are round dots of the photo, denser
- * on the shells; the whole pattern expands steadily over the scene arc
- * (the universe growing), the shells light with their spectrum band, and
- * the bass breathes the cosmic web between them.  Literally acoustic: the
- * ring scale is the sound horizon.  Camera still.
+/*****************************************************************************\
+ *                              BaryonAcousticRipples.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   sceneProgress     -> expansion (the arc, continuous)
- *   sceneAdvance      -> slow drift (continuous)
- *   audioSpectrum[32] -> shell glow per ring (light)
- *   audioBass         -> web glow (light)
- *   audioLevel        -> brightness
+ *  @brief
+ *  BARYON ACOUSTIC RIPPLES: the sound waves of the early universe, frozen into the galaxy distribution as faint
+ *  rings of one fixed scale around every overdensity.
  *
- * Per-activation variety: seedsP (number of overdensities), scaleP, hueP.
+ *  Galaxies are round dots of the photo, denser on the shells; the whole pattern expands steadily over the scene
+ *  arc (the universe growing), the shells light with their spectrum band, and the bass breathes the cosmic web
+ *  between them.  Literally acoustic: the ring scale is the sound horizon.  Camera still.
+ *
+ *  Audio Reactivity:
+ *    sceneProgress     -> expansion (the arc, continuous)
+ *    sceneAdvance      -> slow drift (continuous)
+ *    audioSpectrum[32] -> shell glow per ring (light)
+ *    audioBass         -> web glow (light)
+ *    audioLevel        -> brightness
+ *
+ *  Per-activation variety: seedsP (number of overdensities), scaleP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

@@ -1,12 +1,19 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file IridescentChitinMorpho.frag
- * @brief IRIDESCENT CHITIN MORPHO: 100% viewport-filling bio-photonic dielectric
- * nanostructure grating simulation (Morpho butterfly wings & jewel beetle
- * iridescent chitin). Multi-layer Bragg interference producing pure
- * structural color shifting from peacock cyan to electric cobalt and violet.
+/*****************************************************************************\
+ *                              IridescentChitinMorpho.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  IRIDESCENT CHITIN MORPHO: 100% viewport-filling bio-photonic dielectric nanostructure grating simulation (Morpho
+ *  butterfly wings & jewel beetle iridescent chitin).
+ *
+ *  Multi-layer Bragg interference producing pure structural color shifting from peacock cyan to electric cobalt and
+ *  violet.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

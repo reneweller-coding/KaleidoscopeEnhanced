@@ -1,8 +1,13 @@
 #version 330 core
-/**
- * @file SupernovaRemnantNebula.vert
- * @brief Vertex stage companion to SupernovaRemnantNebula.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              SupernovaRemnantNebula.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to SupernovaRemnantNebula.frag -- see that file's header for this scene's description.
+ *
+ *  @author René Weller
  */
 // SupernovaRemnantNebula.vert
 

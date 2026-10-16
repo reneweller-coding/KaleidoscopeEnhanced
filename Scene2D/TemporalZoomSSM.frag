@@ -1,26 +1,31 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TemporalZoomSSM.frag
- * @brief TEMPORAL ZOOM: the song zooms into itself.  The self-similarity
- * matrix (texSSM) is drawn as a square field, and the picture is a nest of
- * that field at time scales that shrink by four -- the whole ring, a
- * quarter of it, a sixteenth -- so the block structure of sections, the
- * lattice of phrases and the fine grid of beats are all the same picture
- * at different depths.  The zoom runs through those scales on the scene
- * clock; because the matrix's structure repeats across scales (music is
- * self-similar in time), the nest is what keeps the zoom from ever ending.
- * A returning section warms the field; the kick lights the diagonal.
+/*****************************************************************************\
+ *                              TemporalZoomSSM.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   texSSM            -> the picture (the whole point)
- *   sceneAdvance      -> the zoom (continuous, periodic in one scale step)
- *   audioSectionKnown -> warmth (light)
- *   audioKick         -> the diagonal (now) flashes (light)
- *   audioLevel        -> brightness
+ *  @brief
+ *  TEMPORAL ZOOM: the song zooms into itself.
  *
- * Per-activation variety: zoomP (rate), tiltP (view angle), hueP.
+ *  The self-similarity matrix (texSSM) is drawn as a square field, and the picture is a nest of that field at time
+ *  scales that shrink by four -- the whole ring, a quarter of it, a sixteenth -- so the block structure of
+ *  sections, the lattice of phrases and the fine grid of beats are all the same picture at different depths.  The
+ *  zoom runs through those scales on the scene clock; because the matrix's structure repeats across scales (music
+ *  is self-similar in time), the nest is what keeps the zoom from ever ending. A returning section warms the field;
+ *  the kick lights the diagonal.
+ *
+ *  Audio Reactivity:
+ *    texSSM            -> the picture (the whole point)
+ *    sceneAdvance      -> the zoom (continuous, periodic in one scale step)
+ *    audioSectionKnown -> warmth (light)
+ *    audioKick         -> the diagonal (now) flashes (light)
+ *    audioLevel        -> brightness
+ *
+ *  Per-activation variety: zoomP (rate), tiltP (view angle), hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

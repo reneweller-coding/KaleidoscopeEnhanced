@@ -1,20 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file MagmaCrustFracture.frag
- * @brief TRANSITION MAGMA CRUST FRACTURE: Tectonic basalt magma crust transition.
- * The outgoing scene solidifies into black obsidian crust plates that fracture
- * apart, revealing glowing 1500°C molten magma rivers that solidify into the new scene.
- *   interpolation -> controls crust fracture opening & magma cooling progress
- *   audioKick     -> flashes incandescent magma crack eruptions
- *   audioSwell    -> widens tectonic fault lines
+/*****************************************************************************\
+ *                              MagmaCrustFracture.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   crustP float crust tectonic plate density    (0.5..2.2)
- *   heatP  float magma thermal glow intensity    (0.5..2.0)
- *   speedP float animation speed multiplier      (0.5..2.0)
- *   hueP   float magma thermal hue offset        (0..6.28)
+ *  @brief
+ *  TRANSITION MAGMA CRUST FRACTURE: Tectonic basalt magma crust transition.
+ *
+ *  The outgoing scene solidifies into black obsidian crust plates that fracture apart, revealing glowing 1500°C
+ *  molten magma rivers that solidify into the new scene.
+ *
+ *    interpolation -> controls crust fracture opening & magma cooling progress
+ *    audioKick     -> flashes incandescent magma crack eruptions
+ *    audioSwell    -> widens tectonic fault lines
+ *
+ *  Per-activation variety:
+ *    crustP float crust tectonic plate density    (0.5..2.2)
+ *    heatP  float magma thermal glow intensity    (0.5..2.0)
+ *    speedP float animation speed multiplier      (0.5..2.0)
+ *    hueP   float magma thermal hue offset        (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

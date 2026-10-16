@@ -1,9 +1,16 @@
 #version 330 core
-/**
- * @file CavitationCloudPropeller.vert
- * @brief Vertex stage for CavitationCloudPropeller: world positions pass
- * through (camera at the origin, +z ahead); kind, life and uv go to the
- * fragment stage.  No camera motion.
+/*****************************************************************************\
+ *                              CavitationCloudPropeller.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage for CavitationCloudPropeller: world positions pass through (camera at the origin, +z ahead); kind,
+ *  life and uv go to the fragment stage.
+ *
+ *  No camera motion.
+ *
+ *  @author René Weller
  */
 layout( location = 0 ) in vec4 attrA; ///< xyz = position, w = id
 layout( location = 1 ) in vec4 attrB; ///< x = life / shade, y = kind, zw = uv

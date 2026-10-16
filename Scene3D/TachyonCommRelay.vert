@@ -1,7 +1,13 @@
 #version 330 core
-/**
- * @file TachyonCommRelay.vert
- * @brief Vertex stage companion to TachyonCommRelay.frag
+/*****************************************************************************\
+ *                              TachyonCommRelay.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to TachyonCommRelay.frag
+ *
+ *  @author René Weller
  */
 
 in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an

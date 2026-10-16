@@ -1,22 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SuperconductingLevitationMeissnerPinch.frag
- * @brief SUPERCONDUCTING LEVITATION MEISSNER PINCH: an ARRAY of eight levitation cells -- stable
- * magnetic levitation via the Meissner-Ochsenfeld effect and flux pinning over high-Tc YBCO discs,
- * each on a wide cryostat cold plate whose rim meets its neighbours', so the bed spans the frame.
- * Expelled magnetic flux lines, fluxon vortex pinning channels, metallic mirror sheen, and cryogenic
- * photo texturing.
- *   audioAdvance -> navigates magnetic flux pinning creep & levitating magnet precession
- *   audioKick    -> flashes magnetic flux expulsion compression & quantum pinning bursts
- *   audioSwell   -> widens magnetic levitation gap distance & superconducting diamagnetic glow
- *   audioCentroid-> shifts YBCO superconducting transition & diamagnetic color spectra
+/*****************************************************************************\
+ *                              SuperconductingLevitationMeissnerPinch.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   diskScaleP float superconductor disk scale, remapped to a narrow band now
- *              that eight assemblies share the frame       (0.8..2.2)
- *   specularP  float permanent magnet facet specular gain  (0.8..2.5)
+ *  @brief
+ *  SUPERCONDUCTING LEVITATION MEISSNER PINCH: an ARRAY of eight levitation cells -- stable magnetic levitation via
+ *  the Meissner-Ochsenfeld effect and flux pinning over high-Tc YBCO discs, each on a wide cryostat cold plate
+ *  whose rim meets its neighbours', so the bed spans the frame.
+ *
+ *  Expelled magnetic flux lines, fluxon vortex pinning channels, metallic mirror sheen, and cryogenic photo
+ *  texturing.
+ *
+ *    audioAdvance -> navigates magnetic flux pinning creep & levitating magnet precession
+ *    audioKick    -> flashes magnetic flux expulsion compression & quantum pinning bursts
+ *    audioSwell   -> widens magnetic levitation gap distance & superconducting diamagnetic glow
+ *    audioCentroid-> shifts YBCO superconducting transition & diamagnetic color spectra
+ *
+ *  Per-activation variety:
+ *    diskScaleP float superconductor disk scale, remapped to a narrow band now
+ *               that eight assemblies share the frame       (0.8..2.2)
+ *    specularP  float permanent magnet facet specular gain  (0.8..2.5)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec2  vUV;           ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 in vec3  vNormal;       ///< Surface normal (from the vertex stage).

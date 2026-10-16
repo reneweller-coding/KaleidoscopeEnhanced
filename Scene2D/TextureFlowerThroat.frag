@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureFlowerThroat.frag
- * @brief TEXTURE FLOWER THROAT: diving into the throat of an endless flower
- * -- ring after ring of petals opens toward us, each whorl turned half a
- * petal against the one before, the petals cut from the photograph and
- * veined, cupped (bright at their tips, shadowed at their bases), glowing
- * translucent where the light shines through; deep inside, a glowing
- * heart of stamens.  The whorls slowly turn in alternating directions.
- * Endless, mirrorable.
+/*****************************************************************************\
+ *                              TextureFlowerThroat.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the dive (integrated, jump-free)
- *   audioPhase      -> the whorls turn (integrated)
- *   audioSpread     -> the petals open wider
- *   audioKick       -> the heart glows (light)
- *   audioMode       -> petal light: cool in minor, warm in major
- *   audioSwell      -> translucency (slow)
+ *  @brief
+ *  TEXTURE FLOWER THROAT: diving into the throat of an endless flower -- ring after ring of petals opens toward us,
+ *  each whorl turned half a petal against the one before, the petals cut from the photograph and veined, cupped
+ *  (bright at their tips, shadowed at their bases), glowing translucent where the light shines through; deep
+ *  inside, a glowing heart of stamens.
  *
- * Knobs: petalsP (petals per whorl), shapeP (petal shape), veinP, hueP.
+ *  The whorls slowly turn in alternating directions. Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the dive (integrated, jump-free)
+ *    audioPhase      -> the whorls turn (integrated)
+ *    audioSpread     -> the petals open wider
+ *    audioKick       -> the heart glows (light)
+ *    audioMode       -> petal light: cool in minor, warm in major
+ *    audioSwell      -> translucency (slow)
+ *
+ *  Knobs: petalsP (petals per whorl), shapeP (petal shape), veinP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

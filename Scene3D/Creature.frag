@@ -1,23 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file Creature.frag
- * @brief GEOM="MESH" FAMILY: a sea creature (jellyfish, manta, humpback,
- * squid, seahorse, anglerfish) swimming in an open water column. The
- * swimming itself is vertex-stage deformation -- see Creature.vert, which
- * is where the four movement modes live. This stage lights it the way water
- * does: a hard sunlit top, a dim blue-green bounce from below, caustic
- * light webs crawling over the upward-facing surfaces, and enough
- * translucency at the silhouette that thin parts (a bell, a fin) glow
- * rather than going solid black.
- *   audioSwell   -> sunlight strength, caustic brightness
- *   audioKick    -> bioluminescent pulse along the body
- *   audioAdvance -> caustic drift, drift rotation (vertex stage)
+/*****************************************************************************\
+ *                              Creature.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-instance: sizeP, deformP (movement mode, see Creature.vert),
- *               ampP/freqP (stroke depth and rate), glowP (biolume amount).
- * Per-activation variety: hueP float palette offset (0..6.28).
+ *  @brief
+ *  GEOM="MESH" FAMILY: a sea creature (jellyfish, manta, humpback, squid, seahorse, anglerfish) swimming in an open
+ *  water column.
+ *
+ *  The swimming itself is vertex-stage deformation -- see Creature.vert, which is where the four movement modes
+ *  live. This stage lights it the way water does: a hard sunlit top, a dim blue-green bounce from below, caustic
+ *  light webs crawling over the upward-facing surfaces, and enough translucency at the silhouette that thin parts
+ *  (a bell, a fin) glow rather than going solid black.
+ *
+ *    audioSwell   -> sunlight strength, caustic brightness
+ *    audioKick    -> bioluminescent pulse along the body
+ *    audioAdvance -> caustic drift, drift rotation (vertex stage)
+ *
+ *  Per-instance: sizeP, deformP (movement mode, see Creature.vert),
+ *                ampP/freqP (stroke depth and rate), glowP (biolume amount).
+ *  Per-activation variety: hueP float palette offset (0..6.28).
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform sampler2DArray texMeshMaterial;       ///< The mesh's material textures (albedo, roughness, normal ...).
 uniform int            texMeshMaterialLayers; ///< Number of layers in texMeshMaterial.

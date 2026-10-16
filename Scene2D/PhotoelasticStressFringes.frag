@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file PhotoelasticStressFringes.frag
- * @brief PHOTOELASTIC STRESS FRINGES: a transparent part between crossed
- * polarisers.  Where the material is stressed it turns the light, and the
- * difference of the principal stresses paints closed rainbow contours --
- * one full colour cycle per fringe order.  Two loads press on the part
- * and are driven by the swell (slow), so the fringe pattern breathes and
- * grows; the bass raises the fringe order (more rings), the treble is the
- * isoclinic dark brushes sharpening.  The whole part turns slowly on the
- * scene clock.  Camera fixed on the polariscope.
+/*****************************************************************************\
+ *                              PhotoelasticStressFringes.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSwell -> load magnitude: how tightly the fringes crowd (slow)
- *   audioBass  -> fringe order (slow)
- *   audioHigh  -> the dark isoclinic brushes (light)
- *   sceneAdvance -> the part rotates steadily (continuous)
- *   audioLevel -> brightness
+ *  @brief
+ *  PHOTOELASTIC STRESS FRINGES: a transparent part between crossed polarisers.
  *
- * Per-activation variety: loadsP, orderP, hueP.
+ *  Where the material is stressed it turns the light, and the difference of the principal stresses paints closed
+ *  rainbow contours -- one full colour cycle per fringe order.  Two loads press on the part and are driven by the
+ *  swell (slow), so the fringe pattern breathes and grows; the bass raises the fringe order (more rings), the
+ *  treble is the isoclinic dark brushes sharpening.  The whole part turns slowly on the scene clock.  Camera fixed
+ *  on the polariscope.
+ *
+ *  Audio Reactivity:
+ *    audioSwell -> load magnitude: how tightly the fringes crowd (slow)
+ *    audioBass  -> fringe order (slow)
+ *    audioHigh  -> the dark isoclinic brushes (light)
+ *    sceneAdvance -> the part rotates steadily (continuous)
+ *    audioLevel -> brightness
+ *
+ *  Per-activation variety: loadsP, orderP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

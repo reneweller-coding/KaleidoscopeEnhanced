@@ -1,23 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file StarTrailsPolaris.frag
- * @brief STAR TRAILS POLARIS: a long-exposure night photograph come alive --
- * above a dark landscape, hundreds of stars drawn into concentric arcs
- * around the pole star, white, blue and amber, each trail the same length
- * of the night, the whole sky turning about Polaris at a steady pace.  On
- * the ground a rock arch stands in silhouette against the faint glow of a
- * distant town, and a small tent glows orange under it.  The rings of
- * trails brighten with the bands of the music.  The camera is still.
+/*****************************************************************************\
+ *                              StarTrailsPolaris.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSpectrum[32] -> the brightness of the trails, ring by ring (light)
- *   audioSwell        -> the glow of the tent and the horizon (slow)
- *   audioLevel        -> brightness
- *   sceneTime / sceneAdvance -> the sky turning (constant speed)
+ *  @brief
+ *  STAR TRAILS POLARIS: a long-exposure night photograph come alive -- above a dark landscape, hundreds of stars
+ *  drawn into concentric arcs around the pole star, white, blue and amber, each trail the same length of the night,
+ *  the whole sky turning about Polaris at a steady pace.
  *
- * Per-activation variety: trailP (how long the trails), hueP.
+ *  On the ground a rock arch stands in silhouette against the faint glow of a distant town, and a small tent glows
+ *  orange under it.  The rings of trails brighten with the bands of the music.  The camera is still.
+ *
+ *  Audio Reactivity:
+ *    audioSpectrum[32] -> the brightness of the trails, ring by ring (light)
+ *    audioSwell        -> the glow of the tent and the horizon (slow)
+ *    audioLevel        -> brightness
+ *    sceneTime / sceneAdvance -> the sky turning (constant speed)
+ *
+ *  Per-activation variety: trailP (how long the trails), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

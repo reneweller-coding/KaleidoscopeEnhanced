@@ -1,8 +1,13 @@
 #version 330 core
-/**
- * @file Blueprint.geom
- * @brief Geometry stage companion to Blueprint.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              Blueprint.geom
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Geometry stage companion to Blueprint.frag -- see that file's header for this scene's description.
+ *
+ *  @author René Weller
  */
 // Blueprint.geom — hand every triangle its own barycentric coordinates.
 // -----------------------------------------------------------------------

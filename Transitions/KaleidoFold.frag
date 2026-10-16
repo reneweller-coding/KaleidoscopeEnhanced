@@ -1,15 +1,21 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file KaleidoFold.frag
- * @brief Kaleidoscope fold-through: both scenes fold into a 6-mirror
- * rosette mid-transition and unfold into the new scene.
+/*****************************************************************************\
+ *                              KaleidoFold.frag
+\*****************************************************************************/
+/*! @file
  *
- * Scene TRANSITION shader (Transitions/): blends the outgoing scene
- * (tex0) into the incoming one (tex1) over one cross-fade.
- * interpolation: 1 = old scene fully visible .. 0 = new scene.
- * Extracted from the former FxPlain.frag 28-style library.
+ *  @brief
+ *  Kaleidoscope fold-through: both scenes fold into a 6-mirror rosette mid-transition and unfold into the new
+ *  scene.
+ *
+ *  Scene TRANSITION shader (Transitions/): blends the outgoing scene
+ *  (tex0) into the incoming one (tex1) over one cross-fade.
+ *  interpolation: 1 = old scene fully visible .. 0 = new scene.
+ *  Extracted from the former FxPlain.frag 28-style library.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform sampler2D tex0;          ///< The current photo.
 uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).

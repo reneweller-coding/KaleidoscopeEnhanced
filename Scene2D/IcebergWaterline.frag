@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file IcebergWaterline.frag
- * @brief ICEBERG WATERLINE: the split view of an over-under photograph --
- * the camera half in the water.  Above the waterline a white berg under a
- * pale polar sky, its faces lit by a low sun, blue in the crevasses; below
- * it the nine tenths, vast and glowing turquoise, fading into the deep
- * blue, sun rays slanting down through the water, round bubbles rising
- * along the ice.  The waterline itself wobbles as a bright meniscus with
- * the slow swell.  Camera fixed; the sea and the light move.
+/*****************************************************************************\
+ *                              IcebergWaterline.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSwell   -> sunlight and rays (slow)
- *   sceneAdvance -> bubbles, waves, rays (continuous)
- *   audioKick    -> light in the ice's cracks (light)
- *   audioBass    -> deep-water glow (light)
- *   audioLevel   -> brightness
+ *  @brief
+ *  ICEBERG WATERLINE: the split view of an over-under photograph -- the camera half in the water.
  *
- * Per-activation variety: massP (underwater size), tiltP (berg shape), hueP.
+ *  Above the waterline a white berg under a pale polar sky, its faces lit by a low sun, blue in the crevasses;
+ *  below it the nine tenths, vast and glowing turquoise, fading into the deep blue, sun rays slanting down through
+ *  the water, round bubbles rising along the ice.  The waterline itself wobbles as a bright meniscus with the slow
+ *  swell.  Camera fixed; the sea and the light move.
+ *
+ *  Audio Reactivity:
+ *    audioSwell   -> sunlight and rays (slow)
+ *    sceneAdvance -> bubbles, waves, rays (continuous)
+ *    audioKick    -> light in the ice's cracks (light)
+ *    audioBass    -> deep-water glow (light)
+ *    audioLevel   -> brightness
+ *
+ *  Per-activation variety: massP (underwater size), tiltP (berg shape), hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

@@ -1,22 +1,27 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file EscalatorHallCrossing.frag
- * @brief ESCALATOR HALL CROSSING (fragment): a station hall with crossing
- * escalators.  Steps are ribbed metal treads catching the hall light, the
- * balustrades are glass with the photo behind them, riders are dark
- * silhouettes with a rim, and the advertising panels on the far wall
- * carry the photo lit by chroma classes.  The swell is the hall light,
- * the spectrum runs along the step edges as a comb of colour, the kick
- * lifts the panel backlights (light only).
+/*****************************************************************************\
+ *                              EscalatorHallCrossing.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSpectrum[32] -> the lit step edges (light)
- *   audioChroma[12]   -> the advertising panels (light)
- *   audioSwell        -> hall light (slow)
- *   audioKick         -> panel backlight (light)
- *   audioLevel        -> brightness
+ *  @brief
+ *  ESCALATOR HALL CROSSING (fragment): a station hall with crossing escalators.
+ *
+ *  Steps are ribbed metal treads catching the hall light, the balustrades are glass with the photo behind them,
+ *  riders are dark silhouettes with a rim, and the advertising panels on the far wall carry the photo lit by chroma
+ *  classes.  The swell is the hall light, the spectrum runs along the step edges as a comb of colour, the kick
+ *  lifts the panel backlights (light only).
+ *
+ *  Audio Reactivity:
+ *    audioSpectrum[32] -> the lit step edges (light)
+ *    audioChroma[12]   -> the advertising panels (light)
+ *    audioSwell        -> hall light (slow)
+ *    audioKick         -> panel backlight (light)
+ *    audioLevel        -> brightness
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

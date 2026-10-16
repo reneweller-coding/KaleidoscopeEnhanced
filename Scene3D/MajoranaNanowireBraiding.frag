@@ -1,23 +1,31 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file MajoranaNanowireBraiding.frag
- * @brief MAJORANA NANOWIRE BRAIDING: Topological quantum computing braid worldlines.
- * 1D topological superconductor nanowires undergo non-Abelian braiding permutations in 3D spacetime,
- * carrying localized Majorana zero modes at wire endpoints with photo texturing.  THREE braided
- * bundles stand side by side across the frame, over the superconducting vacuum (see the .vert).
- *   audioAdvance -> drives non-Abelian braiding worldline evolution velocity
- *   audioKick    -> flashes Majorana zero mode quantum gate operation bursts, and the
- *                   Andreev fringe in the vacuum behind them
- *   audioSwell   -> thickens topological superconducting gap & ribbon width, and opens
- *                   the braid radius
- *   audioCentroid-> shifts non-Abelian quantum state phase spectra
+/*****************************************************************************\
+ *                              MajoranaNanowireBraiding.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   ribbonWidthP float nanowire ribbon thickness             (0.02..0.1)
- *   braidSpeedP  float non-Abelian braiding worldline speed  (0.6..2.5)
- *   zeroModeGlowP float Majorana zero mode endpoint brightness(0.8..2.5)
+ *  @brief
+ *  MAJORANA NANOWIRE BRAIDING: Topological quantum computing braid worldlines.
+ *
+ *  1D topological superconductor nanowires undergo non-Abelian braiding permutations in 3D spacetime, carrying
+ *  localized Majorana zero modes at wire endpoints with photo texturing.  THREE braided bundles stand side by side
+ *  across the frame, over the superconducting vacuum (see the .vert).
+ *
+ *    audioAdvance -> drives non-Abelian braiding worldline evolution velocity
+ *    audioKick    -> flashes Majorana zero mode quantum gate operation bursts, and the
+ *                    Andreev fringe in the vacuum behind them
+ *    audioSwell   -> thickens topological superconducting gap & ribbon width, and opens
+ *                    the braid radius
+ *    audioCentroid-> shifts non-Abelian quantum state phase spectra
+ *
+ *  Per-activation variety:
+ *    ribbonWidthP float nanowire ribbon thickness             (0.02..0.1)
+ *    braidSpeedP  float non-Abelian braiding worldline speed  (0.6..2.5)
+ *    zeroModeGlowP float Majorana zero mode endpoint brightness(0.8..2.5)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec2  vUV;               ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 in float vSide;             ///< Which side of a strip (from the vertex stage).

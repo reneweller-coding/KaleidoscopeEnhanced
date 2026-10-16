@@ -1,18 +1,23 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file CyberpunkSynthGridHighwayFly.frag
- * @brief CYBERPUNK SYNTH GRID HIGHWAY FLY: High-velocity 3D flight across an
- * endless neon wireframe synthesizer highway with audio-reactive mountain equalizers,
- * a giant segmented laser horizon sun, and gleaming digital data streams.
+/*****************************************************************************\
+ *                              CyberpunkSynthGridHighwayFly.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance -> drives high-speed highway flight progression
- *   audioKick    -> flashes sun horizon flares & highway laser pulse
- *   audioBass/SubBass -> elevates mountain equalizer peaks
- *   audioCentroid-> sharpens wireframe neon grid anti-aliasing
- *   audioChromaHue-> rotates the retrowave magenta/cyan/sunset palette
+ *  @brief
+ *  CYBERPUNK SYNTH GRID HIGHWAY FLY: High-velocity 3D flight across an endless neon wireframe synthesizer highway
+ *  with audio-reactive mountain equalizers, a giant segmented laser horizon sun, and gleaming digital data streams.
+ *
+ *  Audio Reactivity:
+ *    audioAdvance -> drives high-speed highway flight progression
+ *    audioKick    -> flashes sun horizon flares & highway laser pulse
+ *    audioBass/SubBass -> elevates mountain equalizer peaks
+ *    audioCentroid-> sharpens wireframe neon grid anti-aliasing
+ *    audioChromaHue-> rotates the retrowave magenta/cyan/sunset palette
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

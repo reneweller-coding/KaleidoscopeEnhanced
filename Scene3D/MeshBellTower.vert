@@ -1,12 +1,17 @@
 #version 330 core
-/**
- * @file MeshBellTower.vert
- * @brief Vertex stage companion to MeshBellTower.frag -- see that file's
- * header. ONE bronze bell drawn four times (instances="4") in a row under
- * the belfry roof, each a different size, each swinging about its own yoke
- * axle with its own period -- the big bell slowest -- on time, with the
- * amplitude eased by the swell. Bells swing; that is what they are for.
- * The shell (the belfry) is drawn by instance 0 only.
+/*****************************************************************************\
+ *                              MeshBellTower.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to MeshBellTower.frag -- see that file's header.
+ *
+ *  ONE bronze bell drawn four times (instances="4") in a row under the belfry roof, each a different size, each
+ *  swinging about its own yoke axle with its own period -- the big bell slowest -- on time, with the amplitude
+ *  eased by the swell. Bells swing; that is what they are for. The shell (the belfry) is drawn by instance 0 only.
+ *
+ *  @author René Weller
  */
 
 in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an

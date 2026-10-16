@@ -1,27 +1,31 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file DielectricMetasurfaceHologram.frag
- * @brief DIELECTRIC METASURFACE HOLOGRAM: a laser lights a metasurface --
- * a chip covered in nanopillars whose diameters follow a Fresnel-zone
- * pattern, so the surface shimmers in concentric rainbow rings like a CD
- * seen close -- and the chip throws a hologram into the air above it: the
- * photo, rendered in laser light as a floating field of glowing points with
- * the grain of speckle, inside a faint cone of light.  The hologram hangs
- * still and breathes a little; the chip's rainbow slides as the light
- * wanders over it.
+/*****************************************************************************\
+ *                              DielectricMetasurfaceHologram.frag
+\*****************************************************************************/
+/*! @file
  *
- * Replaces a Scene3D quad-grid version (a field of faint dots).
+ *  @brief
+ *  DIELECTRIC METASURFACE HOLOGRAM: a laser lights a metasurface -- a chip covered in nanopillars whose diameters
+ *  follow a Fresnel-zone pattern, so the surface shimmers in concentric rainbow rings like a CD seen close -- and
+ *  the chip throws a hologram into the air above it: the photo, rendered in laser light as a floating field of
+ *  glowing points with the grain of speckle, inside a faint cone of light.
  *
- * Audio Reactivity:
- *   audioSwell  -> hologram brightness (slow)
- *   audioKick   -> the laser flares (light only)
- *   audioChromaHue / hueP -> laser colour
- *   sceneTime / sceneAdvance -> speckle, the light's slow wander (continuous)
+ *  The hologram hangs still and breathes a little; the chip's rainbow slides as the light wanders over it.
  *
- * Per-activation variety: metaP (pillar density), phaseP (zone count),
- * speedP (speckle rate), hueP.
+ *  Replaces a Scene3D quad-grid version (a field of faint dots).
+ *
+ *  Audio Reactivity:
+ *    audioSwell  -> hologram brightness (slow)
+ *    audioKick   -> the laser flares (light only)
+ *    audioChromaHue / hueP -> laser colour
+ *    sceneTime / sceneAdvance -> speckle, the light's slow wander (continuous)
+ *
+ *  Per-activation variety: metaP (pillar density), phaseP (zone count),
+ *  speedP (speckle rate), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

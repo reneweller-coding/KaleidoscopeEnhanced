@@ -1,25 +1,31 @@
 #version 330 core
-/**
- * @file QuantumSpinLiquidKagomeSpinonLattice.vert
- * @brief Vertex stage companion to QuantumSpinLiquidKagomeSpinonLattice.frag -- see that file's
- * header for this scene's description.
+/*****************************************************************************\
+ *                              QuantumSpinLiquidKagomeSpinonLattice.vert
+\*****************************************************************************/
+/*! @file
  *
- * SCREEN FILL: the lattice used to be a small cube (39^3 cells at a 0.015..0.04
- * pitch = barely +-1.1 world units) stranded in the middle of a black frame at
- * a camera distance of 4.5, so it covered ~17% of the picture.  It is now a
- * WIDE SLAB of stacked kagome planes -- +-5.6 across, only +-1.6 deep -- that
- * overflows both frame edges at every depth it occupies, and it spins in-plane
- * (roll) instead of about the vertical, so the silhouette can never turn
- * edge-on and go narrow again.
+ *  @brief
+ *  Vertex stage companion to QuantumSpinLiquidKagomeSpinonLattice.frag -- see that file's header for this scene's
+ *  description.
  *
- * STRUCTURE: covering the frame is not the same as filling it.  Every sprite
- * used to be the same size and the same brightness whatever its depth, and the
- * one spatially varying term -- the spinon wave -- carried a per-point RANDOM
- * phase (seeds.x * 3.0, half a period), so neighbouring sites were uncorrelated
- * and the slab measured as an even dither with no light and no dark in it.  The
- * spinon field is now a COHERENT three-wave interference pattern, sites outside
- * its fronts fade out so the picture keeps real voids, and both size and
- * luminance now fall off with depth.
+ *  SCREEN FILL: the lattice used to be a small cube (39^3 cells at a 0.015..0.04
+ *  pitch = barely +-1.1 world units) stranded in the middle of a black frame at
+ *  a camera distance of 4.5, so it covered ~17% of the picture.  It is now a
+ *  WIDE SLAB of stacked kagome planes -- +-5.6 across, only +-1.6 deep -- that
+ *  overflows both frame edges at every depth it occupies, and it spins in-plane
+ *  (roll) instead of about the vertical, so the silhouette can never turn
+ *  edge-on and go narrow again.
+ *
+ *  STRUCTURE: covering the frame is not the same as filling it.  Every sprite
+ *  used to be the same size and the same brightness whatever its depth, and the
+ *  one spatially varying term -- the spinon wave -- carried a per-point RANDOM
+ *  phase (seeds.x * 3.0, half a period), so neighbouring sites were uncorrelated
+ *  and the slab measured as an even dither with no light and no dark in it.  The
+ *  spinon field is now a COHERENT three-wave interference pattern, sites outside
+ *  its fronts fade out so the picture keeps real voids, and both size and
+ *  luminance now fall off with depth.
+ *
+ *  @author René Weller
  */
 
 in vec4 attrA; ///< xyz = position seed, w = pointID

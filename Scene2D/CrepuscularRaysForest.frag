@@ -1,23 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file CrepuscularRaysForest.frag
- * @brief CREPUSCULAR RAYS FOREST: sun shafts through mist between tall
- * trunks.  The rays fan from a sun low behind the wood; each ray carries
- * one spectrum band, so the fan reads the music across its width.  The
- * mist drifts on the scene clock and the sun sinks over the scene arc,
- * swinging the fan and warming its colour.  Pollen floats as round motes
- * where the light is.  The photo is the wood.  Camera fixed on the path.
+/*****************************************************************************\
+ *                              CrepuscularRaysForest.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSpectrum[32] -> brightness of each ray across the fan (light)
- *   sceneAdvance      -> mist drift and pollen (continuous)
- *   sceneProgress     -> the sun sinks, the fan swings (the arc)
- *   audioSwell        -> mist density (slow)
- *   audioHigh         -> pollen sparkle (light)
+ *  @brief
+ *  CREPUSCULAR RAYS FOREST: sun shafts through mist between tall trunks.
  *
- * Per-activation variety: raysP, mistP, hueP.
+ *  The rays fan from a sun low behind the wood; each ray carries one spectrum band, so the fan reads the music
+ *  across its width.  The mist drifts on the scene clock and the sun sinks over the scene arc, swinging the fan and
+ *  warming its colour.  Pollen floats as round motes where the light is.  The photo is the wood.  Camera fixed on
+ *  the path.
+ *
+ *  Audio Reactivity:
+ *    audioSpectrum[32] -> brightness of each ray across the fan (light)
+ *    sceneAdvance      -> mist drift and pollen (continuous)
+ *    sceneProgress     -> the sun sinks, the fan swings (the arc)
+ *    audioSwell        -> mist density (slow)
+ *    audioHigh         -> pollen sparkle (light)
+ *
+ *  Per-activation variety: raysP, mistP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

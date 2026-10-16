@@ -1,25 +1,32 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file QuantumSpinLiquidKagomeSpinonLattice.frag
- * @brief QUANTUM SPIN LIQUID KAGOME SPINON LATTICE: 59,319 geometrically frustrated quantum spins
- * in a Kagome-pyrochlore lattice (Herbertsmithite), stacked into a WIDE SLAB of kagome planes that
- * overflows both frame edges. Long-range quantum entanglement prevents magnetic
- * ordering down to absolute zero, hosting fractionalized spinon excitations and emergent gauge fields:
- * three interfering spinon plane waves light whole cells of the lattice while the sites between
- * them fade into voids, and both sprite size and luminance fall off with depth.
- *   audioAdvance -> navigates spinon continuum dispersion & emergent gauge field fluctuations,
- *                   and slowly drifts the S(q,omega) colour index
- *   audioPhase   -> walks the spinon interference fronts across the lattice
- *   audioKick    -> flashes fractionalized spinon pair creation & topological entanglement bursts
- *   audioSwell   -> widens quantum spin liquid correlation length & spinon halo luminance
- *   audioCentroid-> nudges dynamic spin structure factor S(q,omega) color spectra (damped: the
- *                   colour index is now mostly spatial, so a transient no longer lurches the frame)
+/*****************************************************************************\
+ *                              QuantumSpinLiquidKagomeSpinonLattice.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   pointGainP float point sprite base luminance gain (0.5..1.8)
- *   haloP      float gaussian spin core halo profile  (0.6..2.2)
+ *  @brief
+ *  QUANTUM SPIN LIQUID KAGOME SPINON LATTICE: 59,319 geometrically frustrated quantum spins in a Kagome-pyrochlore
+ *  lattice (Herbertsmithite), stacked into a WIDE SLAB of kagome planes that overflows both frame edges.
+ *
+ *  Long-range quantum entanglement prevents magnetic ordering down to absolute zero, hosting fractionalized spinon
+ *  excitations and emergent gauge fields: three interfering spinon plane waves light whole cells of the lattice
+ *  while the sites between them fade into voids, and both sprite size and luminance fall off with depth.
+ *
+ *    audioAdvance -> navigates spinon continuum dispersion & emergent gauge field fluctuations,
+ *                    and slowly drifts the S(q,omega) colour index
+ *    audioPhase   -> walks the spinon interference fronts across the lattice
+ *    audioKick    -> flashes fractionalized spinon pair creation & topological entanglement bursts
+ *    audioSwell   -> widens quantum spin liquid correlation length & spinon halo luminance
+ *    audioCentroid-> nudges dynamic spin structure factor S(q,omega) color spectra (damped: the
+ *                    colour index is now mostly spatial, so a transient no longer lurches the frame)
+ *
+ *  Per-activation variety:
+ *    pointGainP float point sprite base luminance gain (0.5..1.8)
+ *    haloP      float gaussian spin core halo profile  (0.6..2.2)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec3  vCol;       ///< Colour (from the vertex stage).
 in float vSpinon;    ///< Spinon (from the vertex stage).

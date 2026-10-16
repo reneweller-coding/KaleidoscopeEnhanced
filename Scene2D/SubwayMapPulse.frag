@@ -1,22 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SubwayMapPulse.frag
- * @brief SUBWAY MAP PULSE: a transit diagram in the style of a network
- * map -- straight runs, forty-five degree bends, interchange circles.
- * Twelve lines, one per chroma class; a train runs each line as a pulse
- * of light on the scene clock, and a station lights as its line sounds.
- * The photo is the printed paper the map sits on.  Camera fixed on the map.
+/*****************************************************************************\
+ *                              SubwayMapPulse.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioChroma[12] -> line brightness and its stations (light)
- *   sceneAdvance    -> the trains run (continuous)
- *   audioSwell      -> the paper light (slow)
- *   audioKick       -> interchange rings flash (light)
- *   audioLevel      -> brightness
+ *  @brief
+ *  SUBWAY MAP PULSE: a transit diagram in the style of a network map -- straight runs, forty-five degree bends,
+ *  interchange circles.
  *
- * Per-activation variety: linesP, benchP (layout), hueP.
+ *  Twelve lines, one per chroma class; a train runs each line as a pulse of light on the scene clock, and a station
+ *  lights as its line sounds. The photo is the printed paper the map sits on.  Camera fixed on the map.
+ *
+ *  Audio Reactivity:
+ *    audioChroma[12] -> line brightness and its stations (light)
+ *    sceneAdvance    -> the trains run (continuous)
+ *    audioSwell      -> the paper light (slow)
+ *    audioKick       -> interchange rings flash (light)
+ *    audioLevel      -> brightness
+ *
+ *  Per-activation variety: linesP, benchP (layout), hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

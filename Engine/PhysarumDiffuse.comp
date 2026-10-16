@@ -1,12 +1,18 @@
 #version 430
-/**
- * @file PhysarumDiffuse.comp
- * @brief Compute-shader port of PhysarumDiffuse.frag (the migration's proof of
- * the GL 4.3 compute path): 3x3 mean blur (pheromone diffusion) x decay
- * (evaporation), one invocation per trail texel, result written via image
- * store instead of an FBO pass.  The math mirrors the fragment version
- * exactly — texture() at texel centers with fract() wrap — so both paths
- * produce identical trails and the host can fall back transparently.
+/*****************************************************************************\
+ *                              PhysarumDiffuse.comp
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Compute-shader port of PhysarumDiffuse.frag (the migration's proof of the GL 4.3 compute path): 3x3 mean blur
+ *  (pheromone diffusion) x decay (evaporation), one invocation per trail texel, result written via image store
+ *  instead of an FBO pass.
+ *
+ *  The math mirrors the fragment version exactly — texture() at texel centers with fract() wrap — so both paths
+ *  produce identical trails and the host can fall back transparently.
+ *
+ *  @author René Weller
  */
 
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).

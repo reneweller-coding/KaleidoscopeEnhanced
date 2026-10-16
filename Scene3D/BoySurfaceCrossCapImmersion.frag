@@ -1,26 +1,35 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file BoySurfaceCrossCapImmersion.frag
- * @brief BOY SURFACE CROSS-CAP IMMERSION: 3D non-orientable immersion of the real projective
- * plane RP^2 without singular points. Displays three-fold rotational symmetry, self-intersecting
- * triple-point core, double-sided Fresnel glow, and continuous photo-palette texturing.
- *   audioAdvance -> rotates non-orientable surface sheets through 3D space
- *   audioKick    -> flashes triple-point self-intersection contact core
- *   audioSwell   -> enriches projective surface volume & translucency
- *   audioCentroid-> shifts three-fold symmetry harmonic colors
- *   audioKick    -> also swells the far-field dust motes
+/*****************************************************************************\
+ *                              BoySurfaceCrossCapImmersion.frag
+\*****************************************************************************/
+/*! @file
  *
- * The frame is filled by three NESTED counter-rotating shells of the same
- * immersion (hero / mid / outer) plus a frustum-spread dust field; the vertex
- * stage splits the host grid into those four sub-meshes and hands each one its
- * own brightness in vDim.
+ *  @brief
+ *  BOY SURFACE CROSS-CAP IMMERSION: 3D non-orientable immersion of the real projective plane RP^2 without singular
+ *  points.
  *
- * Per-activation variety:
- *   boyScaleP float projective surface scale                (0.8..2.2)
- *   symmetryP float 3-fold symmetry warping factor          (0.6..1.8)
- *   fresnelP  float double-sided edge rim glow              (0.8..2.5)
+ *  Displays three-fold rotational symmetry, self-intersecting triple-point core, double-sided Fresnel glow, and
+ *  continuous photo-palette texturing.
+ *
+ *    audioAdvance -> rotates non-orientable surface sheets through 3D space
+ *    audioKick    -> flashes triple-point self-intersection contact core
+ *    audioSwell   -> enriches projective surface volume & translucency
+ *    audioCentroid-> shifts three-fold symmetry harmonic colors
+ *    audioKick    -> also swells the far-field dust motes
+ *
+ *  The frame is filled by three NESTED counter-rotating shells of the same
+ *  immersion (hero / mid / outer) plus a frustum-spread dust field; the vertex
+ *  stage splits the host grid into those four sub-meshes and hands each one its
+ *  own brightness in vDim.
+ *
+ *  Per-activation variety:
+ *    boyScaleP float projective surface scale                (0.8..2.2)
+ *    symmetryP float 3-fold symmetry warping factor          (0.6..1.8)
+ *    fresnelP  float double-sided edge rim glow              (0.8..2.5)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec2  vUV;          ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 in vec3  vNormal;      ///< Surface normal (from the vertex stage).

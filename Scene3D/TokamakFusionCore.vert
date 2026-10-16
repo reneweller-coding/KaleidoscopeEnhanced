@@ -1,8 +1,13 @@
 #version 330 core
-/**
- * @file TokamakFusionCore.vert
- * @brief Vertex stage companion to TokamakFusionCore.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              TokamakFusionCore.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to TokamakFusionCore.frag -- see that file's header for this scene's description.
+ *
+ *  @author René Weller
  */
 // attrA.xyz = world pos (baked by the compute generator), attrA.w = heat
 // attrB.w   = specBand (Scene3DShader.cpp GEOM_INDIRECT, 8-float layout)

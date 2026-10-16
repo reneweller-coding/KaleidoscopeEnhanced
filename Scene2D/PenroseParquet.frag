@@ -1,27 +1,33 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file PenroseParquet.frag
- * @brief PENROSE PARQUET: an endless quasi-periodic rhombus tiling built from de
- * Bruijn's multigrid (Penrose, Ammann-Beenker, 12- and 14-fold) -- thick and thin rhombi that never repeat, the whole
- * floor drifting and slowly turning.  Every rhombus is a pane of its own
- * showing the kaleidoscoped photograph in its own turning frame, set in thin
- * grout; light runs along the de Bruijn ribbons (the endless chains of tiles
- * sharing one edge direction) in waves carried by the music, and the panes
- * stand out as a relief.  Five-fold, no up or down: endless, mirrorable.
+/*****************************************************************************\
+ *                              PenroseParquet.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the ribbon waves travel, the floor drifts (integrated, jump-free)
- *   audioPhase      -> the photo frames in the panes turn (integrated)
- *   audioSwell      -> the panes rise into relief, the grout widens (slow)
- *   audioKick       -> the wave crests flash (light)
- *   audioMode       -> the palette: thick and thin tiles cool in minor, warm in major
+ *  @brief
+ *  PENROSE PARQUET: an endless quasi-periodic rhombus tiling built from de Bruijn's multigrid (Penrose,
+ *  Ammann-Beenker, 12- and 14-fold) -- thick and thin rhombi that never repeat, the whole floor drifting and slowly
+ *  turning.
  *
- * Knobs: tileP (tile size), styleP (photo panes / stained glass / ribbon light),
- * ribbonP (how strongly the ribbons glow), groutP (grout width), gridP (the
- * symmetry, rolled per start: 8-fold Ammann-Beenker, 10-fold Penrose, 12-fold,
- * 14-fold -- de Bruijn's multigrid with 4, 5, 6 or 7 line families), hueP.
+ *  Every rhombus is a pane of its own showing the kaleidoscoped photograph in its own turning frame, set in thin
+ *  grout; light runs along the de Bruijn ribbons (the endless chains of tiles sharing one edge direction) in waves
+ *  carried by the music, and the panes stand out as a relief.  Five-fold, no up or down: endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the ribbon waves travel, the floor drifts (integrated, jump-free)
+ *    audioPhase      -> the photo frames in the panes turn (integrated)
+ *    audioSwell      -> the panes rise into relief, the grout widens (slow)
+ *    audioKick       -> the wave crests flash (light)
+ *    audioMode       -> the palette: thick and thin tiles cool in minor, warm in major
+ *
+ *  Knobs: tileP (tile size), styleP (photo panes / stained glass / ribbon light),
+ *  ribbonP (how strongly the ribbons glow), groutP (grout width), gridP (the
+ *  symmetry, rolled per start: 8-fold Ammann-Beenker, 10-fold Penrose, 12-fold,
+ *  14-fold -- de Bruijn's multigrid with 4, 5, 6 or 7 line families), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

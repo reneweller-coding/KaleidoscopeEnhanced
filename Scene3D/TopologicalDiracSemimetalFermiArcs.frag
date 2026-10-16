@@ -1,22 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TopologicalDiracSemimetalFermiArcs.frag
- * @brief TOPOLOGICAL DIRAC SEMIMETAL FERMI ARCS: Open disjoint Fermi surface arcs in Dirac and
- * Weyl semimetals (TaAs / Cd3As2). Non-closed contours on opposite crystal surfaces connect
- * projections of bulk Weyl nodes of opposite chirality with chiral anomaly current texturing.
- * The twenty ribbons are dealt out as ten nested arcs per crystal surface -- even indices bowing
- * up out of the top face, odd ones mirroring them out of the bottom face -- so the fan opens
- * across the whole frame instead of bundling into one small knot at its centre.
- *   audioAdvance -> navigates Fermi arc surface state dispersion & Weyl node pumping
- *   audioKick    -> flashes chiral anomaly quantum Adler-Bell-Jackiw charge pumping bursts
- *   audioSwell   -> widens Fermi arc ribbon width & topological surface state glow
- *   audioCentroid-> shifts Berry curvature monopole emission spectra
+/*****************************************************************************\
+ *                              TopologicalDiracSemimetalFermiArcs.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   ribbonWidthP float Fermi arc surface state ribbon width  (0.02..0.1)
- *   weylGlowP    float Weyl node chiral current luminance    (0.8..2.5)
+ *  @brief
+ *  TOPOLOGICAL DIRAC SEMIMETAL FERMI ARCS: Open disjoint Fermi surface arcs in Dirac and Weyl semimetals (TaAs /
+ *  Cd3As2).
+ *
+ *  Non-closed contours on opposite crystal surfaces connect projections of bulk Weyl nodes of opposite chirality
+ *  with chiral anomaly current texturing. The twenty ribbons are dealt out as ten nested arcs per crystal surface
+ *  -- even indices bowing up out of the top face, odd ones mirroring them out of the bottom face -- so the fan
+ *  opens across the whole frame instead of bundling into one small knot at its centre.
+ *
+ *    audioAdvance -> navigates Fermi arc surface state dispersion & Weyl node pumping
+ *    audioKick    -> flashes chiral anomaly quantum Adler-Bell-Jackiw charge pumping bursts
+ *    audioSwell   -> widens Fermi arc ribbon width & topological surface state glow
+ *    audioCentroid-> shifts Berry curvature monopole emission spectra
+ *
+ *  Per-activation variety:
+ *    ribbonWidthP float Fermi arc surface state ribbon width  (0.02..0.1)
+ *    weylGlowP    float Weyl node chiral current luminance    (0.8..2.5)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec2  vUV;        ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 in float vSide;      ///< Which side of a strip (from the vertex stage).

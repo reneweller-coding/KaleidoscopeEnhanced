@@ -1,31 +1,35 @@
 #version 430 core
+/*****************************************************************************\
+ *                              CrystallineCavernTessellation.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Lighting for a tessellated amethyst/quartz cavern: a point light at the cavern's centre lights the rock, a
+ *  projected photo textures the stone substrate, and a per-vertex crystal mask (teCrystal) blooms into emissive,
+ *  specular-highlighted facets.
+ *
+ *  Audio Reactivity:
+ *   - audioKick      -> brightness of the crystal facet emission
+ *   - audioChromaHue -> MUSICAL KEY: rotates the final colour, and sets the arc
+ *                       imgPalette() reads the gem hue from in the photo
+ *   - audioAdvance   -> slow drift of that palette arc (integrated, never jumps)
+ *   - audioValence   -> GEM SATURATION: a bleak mix gives near-grey stone, a
+ *                       bright one lets the photo's full colour into the crystal
+ *
+ *  Distance from the eye fades everything into cavern fog. This shader
+ *  follows a tessellation control/evaluation pair
+ *  (CrystallineCavernTessellation.tesc, CrystallineCavernTessellation.tese)
+ *  that subdivides the cavern mesh before this stage shades it.
+ *
+ *  @author René Weller
+ */
 out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec3  tePos;     ///< Pos (from the tessellation evaluation stage).
 in vec3  teNormal;  ///< Normal (from the tessellation evaluation stage).
 in vec2  teUV;      ///< UV (from the tessellation evaluation stage).
 in float teCrystal; ///< Crystal (from the tessellation evaluation stage).
-
-/**
- * @file CrystallineCavernTessellation.frag
- * @brief Lighting for a tessellated amethyst/quartz cavern: a point light at
- * the cavern's centre lights the rock, a projected photo textures the stone
- * substrate, and a per-vertex crystal mask (teCrystal) blooms into emissive,
- * specular-highlighted facets.
- *
- * Audio Reactivity:
- *  - audioKick      -> brightness of the crystal facet emission
- *  - audioChromaHue -> MUSICAL KEY: rotates the final colour, and sets the arc
- *                      imgPalette() reads the gem hue from in the photo
- *  - audioAdvance   -> slow drift of that palette arc (integrated, never jumps)
- *  - audioValence   -> GEM SATURATION: a bleak mix gives near-grey stone, a
- *                      bright one lets the photo's full colour into the crystal
- *
- * Distance from the eye fades everything into cavern fog. This shader
- * follows a tessellation control/evaluation pair
- * (CrystallineCavernTessellation.tesc, CrystallineCavernTessellation.tese)
- * that subdivides the cavern mesh before this stage shades it.
- */
 
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

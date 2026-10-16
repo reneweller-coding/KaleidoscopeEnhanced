@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TapeReelEcho.frag
- * @brief TAPE REEL ECHO: a reel-to-reel machine, the tape running from
- * the supply reel over the heads to the take-up reel on the scene clock
- * (the reels turn at the speeds their radii give them), the tape carrying
- * the photo as its oxide; along the tape path the spectrum is printed as
- * a bar graph at the record head and repeats, dimmer, at each playback
- * head -- the echo.  The VU needles follow the level (slow-damped as a
- * needle would), the kick lights the record lamp, the treble the head
- * gap glint.  Camera fixed on the deck.
+/*****************************************************************************\
+ *                              TapeReelEcho.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   sceneAdvance      -> reels and tape (continuous)
- *   audioSpectrum[32] -> the printed bars and their echoes (light)
- *   audioLevel        -> VU needles (smooth)
- *   audioKick         -> record lamp (light)
- *   audioHigh         -> head glint (light)
+ *  @brief
+ *  TAPE REEL ECHO: a reel-to-reel machine, the tape running from the supply reel over the heads to the take-up reel
+ *  on the scene clock (the reels turn at the speeds their radii give them), the tape carrying the photo as its
+ *  oxide; along the tape path the spectrum is printed as a bar graph at the record head and repeats, dimmer, at
+ *  each playback head -- the echo.
  *
- * Per-activation variety: speedP, echoP, hueP.
+ *  The VU needles follow the level (slow-damped as a needle would), the kick lights the record lamp, the treble the
+ *  head gap glint.  Camera fixed on the deck.
+ *
+ *  Audio Reactivity:
+ *    sceneAdvance      -> reels and tape (continuous)
+ *    audioSpectrum[32] -> the printed bars and their echoes (light)
+ *    audioLevel        -> VU needles (smooth)
+ *    audioKick         -> record lamp (light)
+ *    audioHigh         -> head glint (light)
+ *
+ *  Per-activation variety: speedP, echoP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

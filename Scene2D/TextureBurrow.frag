@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureBurrow.frag
- * @brief TEXTURE BURROW: crawling through an organic burrow -- a tunnel with
- * soft, irregular, breathing walls, its cross-section a wobbling blob
- * rather than a circle, the walls ribbed with rings like a gullet and
- * lined with the photograph, glistening wet in a light that we carry
- * with us; the passage winds and narrows and widens as we move.
- * Endless, mirrorable.
+/*****************************************************************************\
+ *                              TextureBurrow.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the crawl (integrated, jump-free)
- *   audioSpread     -> the walls breathe wider
- *   audioBass       -> the wet glisten (light)
- *   audioMode       -> the light: cold blue in minor, warm red in major
- *   audioRoughness  -> the ribs deepen
- *   audioSwell      -> depth darkness (slow)
+ *  @brief
+ *  TEXTURE BURROW: crawling through an organic burrow -- a tunnel with soft, irregular, breathing walls, its
+ *  cross-section a wobbling blob rather than a circle, the walls ribbed with rings like a gullet and lined with the
+ *  photograph, glistening wet in a light that we carry with us; the passage winds and narrows and widens as we
+ *  move.
  *
- * Knobs: ribP (rib spacing), wobbleP (cross-section wobble), wallZoomP, hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the crawl (integrated, jump-free)
+ *    audioSpread     -> the walls breathe wider
+ *    audioBass       -> the wet glisten (light)
+ *    audioMode       -> the light: cold blue in minor, warm red in major
+ *    audioRoughness  -> the ribs deepen
+ *    audioSwell      -> depth darkness (slow)
+ *
+ *  Knobs: ribP (rib spacing), wobbleP (cross-section wobble), wallZoomP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

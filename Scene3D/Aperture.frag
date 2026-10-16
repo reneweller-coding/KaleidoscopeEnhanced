@@ -1,32 +1,37 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-
-/**
- * @file Aperture.frag
- * @brief The model is used as a hole, not as an object. Its silhouette is a
- * window: inside it a flat scene plays, outside there is almost nothing. The
- * shape turns, so the window keeps changing form while what shows through it
- * carries on undisturbed.
+/*****************************************************************************\
+ *                              Aperture.frag
+\*****************************************************************************/
+/*! @file
  *
- * This is the one mesh family that composes with the REST of the catalogue
- * rather than adding to it -- what shows through is built from the same
- * material every 2D scene uses, the current photographs (tex0/tex1), so the
- * models and the photo library finally meet. Four interiors, chosen per
- * instance: a kaleidoscope of the photo, a tunnel receding through the hole,
- * a spectrum standing in the opening, and a liquid warp of the photo.
+ *  @brief
+ *  The model is used as a hole, not as an object.
  *
- * Nothing here lights the model or samples its material. The surface detail of
- * a 150k-triangle hull is invisible by construction; only its outline matters.
- * That also makes this the cheapest family in the set.
+ *  Its silhouette is a window: inside it a flat scene plays, outside there is almost nothing. The shape turns, so
+ *  the window keeps changing form while what shows through it carries on undisturbed.
  *
- *   audioAdvance -> interior travel (tunnel depth, kaleidoscope rotation)
- *   audioKick    -> rim flare
- *   audioSwell   -> interior brightness
- *   audioBass/audioHigh -> spectrum interior
+ *  This is the one mesh family that composes with the REST of the catalogue
+ *  rather than adding to it -- what shows through is built from the same
+ *  material every 2D scene uses, the current photographs (tex0/tex1), so the
+ *  models and the photo library finally meet. Four interiors, chosen per
+ *  instance: a kaleidoscope of the photo, a tunnel receding through the hole,
+ *  a spectrum standing in the opening, and a liquid warp of the photo.
  *
- * Per-instance: sizeP, spinP, patternP (0..3 interior), tintP (rim hue).
- * Per-activation variety: hueP float palette offset (0..6.28).
+ *  Nothing here lights the model or samples its material. The surface detail of
+ *  a 150k-triangle hull is invisible by construction; only its outline matters.
+ *  That also makes this the cheapest family in the set.
+ *
+ *    audioAdvance -> interior travel (tunnel depth, kaleidoscope rotation)
+ *    audioKick    -> rim flare
+ *    audioSwell   -> interior brightness
+ *    audioBass/audioHigh -> spectrum interior
+ *
+ *  Per-instance: sizeP, spinP, patternP (0..3 interior), tintP (rim hue).
+ *  Per-activation variety: hueP float palette offset (0..6.28).
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform sampler2D tex0; ///< The current photo.
 uniform sampler2D tex1; ///< The next photo (cross-faded in by interpolation).

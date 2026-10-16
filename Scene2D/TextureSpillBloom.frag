@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureSpillBloom.frag
- * @brief TEXTURE SPILL BLOOM: watercolour spilled on wet paper, blooming --
- * the photograph's colours flow into the wet sheet as soft cauliflower
- * blooms ("backruns"), each bloom pushing pigment to its edge where it dries
- * into a dark, crisp, lacy line, paler pigment left inside; blooms keep
- * opening into each other, and granulating pigment settles into the paper's
- * grain.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              TextureSpillBloom.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the blooms spread (integrated, jump-free)
- *   audioHarmChange -> new blooms open (smoothed)
- *   audioSpread     -> bloom size
- *   audioRoughness  -> the bloom edges get more cauliflower-like
- *   audioSwell      -> pigment strength (slow)
- *   audioMode       -> the pigment set warms in major
+ *  @brief
+ *  TEXTURE SPILL BLOOM: watercolour spilled on wet paper, blooming -- the photograph's colours flow into the wet
+ *  sheet as soft cauliflower blooms ("backruns"), each bloom pushing pigment to its edge where it dries into a
+ *  dark, crisp, lacy line, paler pigment left inside; blooms keep opening into each other, and granulating pigment
+ *  settles into the paper's grain.
  *
- * Knobs: bloomsP, granP (granulation), edgeP (edge darkness), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the blooms spread (integrated, jump-free)
+ *    audioHarmChange -> new blooms open (smoothed)
+ *    audioSpread     -> bloom size
+ *    audioRoughness  -> the bloom edges get more cauliflower-like
+ *    audioSwell      -> pigment strength (slow)
+ *    audioMode       -> the pigment set warms in major
+ *
+ *  Knobs: bloomsP, granP (granulation), edgeP (edge darkness), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

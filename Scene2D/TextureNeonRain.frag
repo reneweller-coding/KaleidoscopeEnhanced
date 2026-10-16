@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureNeonRain.frag
- * @brief TEXTURE NEON RAIN: rain falling through neon light at night -- long
- * thin streaks of rain slant down in several depth layers, each drop lit
- * by the coloured signs of the photograph behind (which glows blurred
- * through the wet air), near streaks long and soft, far ones short and
- * sharp; wet reflections shimmer across the whole plane as a faint
- * mirrored copy.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              TextureNeonRain.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the rain falls (integrated, jump-free)
- *   audioSpread     -> the rain gets heavier
- *   audioKick       -> a flash of the signs (light)
- *   audioMode       -> palette: cyan-magenta in minor, the photo's warm colours in major
- *   audioHigh       -> the near drops sparkle (light)
- *   audioSwell      -> the glow of the signs through the air (slow)
+ *  @brief
+ *  TEXTURE NEON RAIN: rain falling through neon light at night -- long thin streaks of rain slant down in several
+ *  depth layers, each drop lit by the coloured signs of the photograph behind (which glows blurred through the wet
+ *  air), near streaks long and soft, far ones short and sharp; wet reflections shimmer across the whole plane as a
+ *  faint mirrored copy.
  *
- * Knobs: slantP (wind slant), layerP (depth layers), glowP, hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the rain falls (integrated, jump-free)
+ *    audioSpread     -> the rain gets heavier
+ *    audioKick       -> a flash of the signs (light)
+ *    audioMode       -> palette: cyan-magenta in minor, the photo's warm colours in major
+ *    audioHigh       -> the near drops sparkle (light)
+ *    audioSwell      -> the glow of the signs through the air (slow)
+ *
+ *  Knobs: slantP (wind slant), layerP (depth layers), glowP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

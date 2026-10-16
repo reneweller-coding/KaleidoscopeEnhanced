@@ -1,20 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file HyperspaceStreak.frag
- * @brief TRANSITION HYPERSPACE STREAK: Relativistic warp speed streak transition.
- * As the warp drive engages, the outgoing scene stretches into radial light
- * streaks with intense Lorentz contraction, arriving cleanly into the incoming scene.
- *   interpolation -> sweeps sub-light to warp factor 9.9 and decelerates
- *   audioKick     -> flashes warp drive entry/exit relativistic burst
- *   audioSwell    -> sharpens the streak lines (slow)
+/*****************************************************************************\
+ *                              HyperspaceStreak.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   warpP   float warp speed stretch magnitude   (0.5..2.2)
- *   streakP float radial star streak ray density (0.5..2.0)
- *   speedP  float animation speed multiplier     (0.5..2.0)
- *   hueP    float Cherenkov warp hue offset      (0..6.28)
+ *  @brief
+ *  TRANSITION HYPERSPACE STREAK: Relativistic warp speed streak transition.
+ *
+ *  As the warp drive engages, the outgoing scene stretches into radial light streaks with intense Lorentz
+ *  contraction, arriving cleanly into the incoming scene.
+ *
+ *    interpolation -> sweeps sub-light to warp factor 9.9 and decelerates
+ *    audioKick     -> flashes warp drive entry/exit relativistic burst
+ *    audioSwell    -> sharpens the streak lines (slow)
+ *
+ *  Per-activation variety:
+ *    warpP   float warp speed stretch magnitude   (0.5..2.2)
+ *    streakP float radial star streak ray density (0.5..2.0)
+ *    speedP  float animation speed multiplier     (0.5..2.0)
+ *    hueP    float Cherenkov warp hue offset      (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

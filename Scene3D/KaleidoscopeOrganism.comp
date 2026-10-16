@@ -1,20 +1,25 @@
 #version 430
-
-/**
- * @file KaleidoscopeOrganism.comp
- * @brief A branching organism grown by diffusion-limited aggregation (the same proven walker-
- * freezes-on-contact rule as CoralGrowth.comp, adapted to grow radially outward from a central
- * seed cluster instead of upward from a floor), then meshed with a REAL n-fold mirror-kaleidoscope
- * replication: every generated branch tube is emitted NFOLD times, rotated around the vertical
- * axis with alternating copies mirrored, so the living, still-growing structure reads as a mandala
- * built from its own biology rather than a static procedural fold. No existing scene in this
- * catalogue applies symmetric replication to compute-GENERATED (geom="indirect") geometry -- every
- * other kaleidoscope here folds a texture sample or a fragment-domain coordinate instead.
+/*****************************************************************************\
+ *                              KaleidoscopeOrganism.comp
+\*****************************************************************************/
+/*! @file
  *
- * audioLevel widens each walker's random step size; audioKick/audioSubBass raise the immediate-
- * stick probability so the organism visibly surges on the beat (audioKick also thickens the
- * meshed branch radius); nfoldP sets the mirror-copy count. Two passes per frame: genPass 0
- * advances the DLA simulation, genPass 1 meshes frozen nodes into NFOLD mirrored tube copies.
+ *  @brief
+ *  A branching organism grown by diffusion-limited aggregation (the same proven walker- freezes-on-contact rule as
+ *  CoralGrowth.comp, adapted to grow radially outward from a central seed cluster instead of upward from a floor),
+ *  then meshed with a REAL n-fold mirror-kaleidoscope replication: every generated branch tube is emitted NFOLD
+ *  times, rotated around the vertical axis with alternating copies mirrored, so the living, still-growing structure
+ *  reads as a mandala built from its own biology rather than a static procedural fold.
+ *
+ *  No existing scene in this catalogue applies symmetric replication to compute-GENERATED (geom="indirect")
+ *  geometry -- every other kaleidoscope here folds a texture sample or a fragment-domain coordinate instead.
+ *
+ *  audioLevel widens each walker's random step size; audioKick/audioSubBass raise the immediate-
+ *  stick probability so the organism visibly surges on the beat (audioKick also thickens the
+ *  meshed branch radius); nfoldP sets the mirror-copy count. Two passes per frame: genPass 0
+ *  advances the DLA simulation, genPass 1 meshes frozen nodes into NFOLD mirrored tube copies.
+ *
+ *  @author René Weller
  */
 
 /// KaleidoscopeOrganism.comp -- see CoralGrowth.comp for the full derivation of WHY this exact DLA

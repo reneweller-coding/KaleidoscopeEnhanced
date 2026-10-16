@@ -1,28 +1,32 @@
 #version 330 core
+/*****************************************************************************\
+ *                              TorusKnot.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Additive glow-sprite shader for the two streaming (p,q) torus-knot particle curves and the ember field around
+ *  them: renders each of the 60k flowing points as a bright round point of light.
+ *
+ *  No audio uniforms are read here; every mapping is computed in the companion
+ *  vertex shader (TorusKnot.vert) and arrives pre-baked in vCol.
+ *
+ *  Audio Reactivity (all applied in TorusKnot.vert):
+ *    audioAdvance   -> flow of the particles along both closed curves + the
+ *                      drift of the ember haze
+ *    audioBass      -> tube breath
+ *    audioSwell     -> overall glow of the knots and the embers
+ *    audioChromaHue -> hue sweep along the knot (musical key)
+ *    audioMidRel    -> tube punch, self-normalising to any mix
+ *    audioSpread    -> dispersion off the curve (clean line vs haze) and how
+ *                      wide the ember field opens
+ *    audioMode      -> colour temperature (minor = blue, major = ember orange)
+ *
+ *  @author René Weller
+ */
 out vec4 fragColor; ///< The pixel's colour (output).
 // TorusKnot.frag — soft glowing point (additive blending).
 in vec4 vCol; ///< Colour (from the vertex stage).
-
-/**
- * @file TorusKnot.frag
- * @brief Additive glow-sprite shader for the two streaming (p,q) torus-knot
- * particle curves and the ember field around them: renders each of the 60k
- * flowing points as a bright round point of light.
- *
- * No audio uniforms are read here; every mapping is computed in the companion
- * vertex shader (TorusKnot.vert) and arrives pre-baked in vCol.
- *
- * Audio Reactivity (all applied in TorusKnot.vert):
- *   audioAdvance   -> flow of the particles along both closed curves + the
- *                     drift of the ember haze
- *   audioBass      -> tube breath
- *   audioSwell     -> overall glow of the knots and the embers
- *   audioChromaHue -> hue sweep along the knot (musical key)
- *   audioMidRel    -> tube punch, self-normalising to any mix
- *   audioSpread    -> dispersion off the curve (clean line vs haze) and how
- *                     wide the ember field opens
- *   audioMode      -> colour temperature (minor = blue, major = ember orange)
- */
 
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()

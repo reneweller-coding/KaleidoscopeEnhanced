@@ -1,23 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file BatExodusSunset.frag
- * @brief BAT EXODUS SUNSET: the evening emergence of a bat colony -- out of a
- * cave mouth in a rocky hillside millions of bats pour into the red dusk
- * sky, rising in a dense spiralling column that bends away and streams off
- * across the sky as a long, rippling ribbon, thinning at its far end into
- * scattered specks.  Close to the camera single bats flutter past, wings
- * beating.  The sky burns red and orange behind; a few thin clouds glow.
- * The camera is still; the stream flows on and on.
+/*****************************************************************************\
+ *                              BatExodusSunset.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSwell  -> the glow of the sunset (slow)
- *   audioBass   -> the sun's rim light on the hill (light)
- *   audioLevel  -> brightness
- *   sceneTime / sceneAdvance -> the stream flowing, wings beating
+ *  @brief
+ *  BAT EXODUS SUNSET: the evening emergence of a bat colony -- out of a cave mouth in a rocky hillside millions of
+ *  bats pour into the red dusk sky, rising in a dense spiralling column that bends away and streams off across the
+ *  sky as a long, rippling ribbon, thinning at its far end into scattered specks.
  *
- * Per-activation variety: streamP (the shape of the stream), hueP.
+ *  Close to the camera single bats flutter past, wings beating.  The sky burns red and orange behind; a few thin
+ *  clouds glow. The camera is still; the stream flows on and on.
+ *
+ *  Audio Reactivity:
+ *    audioSwell  -> the glow of the sunset (slow)
+ *    audioBass   -> the sun's rim light on the hill (light)
+ *    audioLevel  -> brightness
+ *    sceneTime / sceneAdvance -> the stream flowing, wings beating
+ *
+ *  Per-activation variety: streamP (the shape of the stream), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

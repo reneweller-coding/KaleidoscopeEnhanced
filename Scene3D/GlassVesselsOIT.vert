@@ -1,10 +1,17 @@
 #version 330 core
-/**
- * @file GlassVesselsOIT.vert
- * @brief Vertex stage for GlassVesselsOIT: positions pass through (camera
- * at the origin, +z ahead); the vessel normal is rebuilt from its packed
- * xy and z sign.  Opaque pass draws the wall and shelf, the OIT pass the
- * glass; the other half collapses behind the near plane.  No camera motion.
+/*****************************************************************************\
+ *                              GlassVesselsOIT.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage for GlassVesselsOIT: positions pass through (camera at the origin, +z ahead); the vessel normal is
+ *  rebuilt from its packed xy and z sign.
+ *
+ *  Opaque pass draws the wall and shelf, the OIT pass the glass; the other half collapses behind the near plane.
+ *  No camera motion.
+ *
+ *  @author René Weller
  */
 layout( location = 0 ) in vec4 attrA; ///< xyz = position, w = vessel id
 layout( location = 1 ) in vec4 attrB; ///< x = height t, y = kind (-1 wall, -2 shelf, 0/1 glass by nz sign), zw = normal

@@ -1,25 +1,30 @@
 #version 430
+/*****************************************************************************\
+ *                              CosmicStringCuspKinkGravitationalRadiation.comp
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Compute generator companion to CosmicStringCuspKinkGravitationalRadiation.frag -- generates 3D oscillating
+ *  relativistic cosmic string loops with relativistic cusps reaching light speed and emitting beamed gravitational
+ *  radiation bursts.
+ *
+ *  Every loop used to be centred on the ORIGIN, so all sixty-four of them piled
+ *  up into one tangle the size of a fist in the middle of a black frame.  A
+ *  cosmic string NETWORK fills space, so the loops now number 160 and are
+ *  scattered over the whole view volume in FRUSTUM coordinates (x, y scaled by
+ *  depth, radius and cord thickness scaled by depth too), which spreads them
+ *  evenly across the picture instead of piling them up in the centre and lets a
+ *  far loop read just as large as a near one.
+ *
+ *  Emitted vertex layout: attrA.xyz = VIEW-space position (the vertex stage is
+ *  a pass-through), attrA.w = parameter along the loop, attrB.x = transverse
+ *  coordinate across the cord (-1..+1), attrB.w = cusp glow.
+ *
+ *  @author René Weller
+ */
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( local_size_x = 4, local_size_y = 4, local_size_z = 4 ) in;
-
-/**
- * @file CosmicStringCuspKinkGravitationalRadiation.comp
- * @brief Compute generator companion to CosmicStringCuspKinkGravitationalRadiation.frag --
- * generates 3D oscillating relativistic cosmic string loops with relativistic cusps reaching
- * light speed and emitting beamed gravitational radiation bursts.
- *
- * Every loop used to be centred on the ORIGIN, so all sixty-four of them piled
- * up into one tangle the size of a fist in the middle of a black frame.  A
- * cosmic string NETWORK fills space, so the loops now number 160 and are
- * scattered over the whole view volume in FRUSTUM coordinates (x, y scaled by
- * depth, radius and cord thickness scaled by depth too), which spreads them
- * evenly across the picture instead of piling them up in the centre and lets a
- * far loop read just as large as a near one.
- *
- * Emitted vertex layout: attrA.xyz = VIEW-space position (the vertex stage is
- * a pass-through), attrA.w = parameter along the loop, attrB.x = transverse
- * coordinate across the cord (-1..+1), attrB.w = cusp glow.
- */
 
 /// The output vertex buffer: eight floats per vertex (attribute A, attribute B) that the scene draws.
 layout( std430, binding = 0 ) buffer Verts

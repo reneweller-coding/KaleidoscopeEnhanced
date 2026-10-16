@@ -1,22 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file PyroclasticDensityCurrentSurge.frag
- * @brief PYROCLASTIC DENSITY CURRENT SURGE: Supersonic fluidized volcanic ash-gas avalanche.
- * Billowing turbulent shear lobes, internal incandescent pumice blocks, triboelectric
- * friction lightning sparks, and thick ash-cloud photo obscuration across the screen.
- *   audioAdvance -> drives turbulent ash surge avalanche roll & vortex cascades
- *   audioKick    -> ignites internal triboelectric ash lightning & explosive gas expansions
- *   audioBass    -> undulates ground shockwaves & rolling pumice density
- *   audioSwell   -> thickens incandescent thermal glow from internal volcanic gas
- *   audioCentroid-> shifts magma incandescent heat spectra (amber to white-hot)
+/*****************************************************************************\
+ *                              PyroclasticDensityCurrentSurge.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   vortexP  float turbulent lobe vortex complexity         (0.6..2.2)
- *   glowP    float incandescent interior lava glow          (0.8..2.5)
- *   sparkP   float triboelectric lightning spark density    (1.0..3.5)
- *   ashP     float ash opacity & billowing cloud density    (0.8..2.2)
+ *  @brief
+ *  PYROCLASTIC DENSITY CURRENT SURGE: Supersonic fluidized volcanic ash-gas avalanche.
+ *
+ *  Billowing turbulent shear lobes, internal incandescent pumice blocks, triboelectric friction lightning sparks,
+ *  and thick ash-cloud photo obscuration across the screen.
+ *
+ *    audioAdvance -> drives turbulent ash surge avalanche roll & vortex cascades
+ *    audioKick    -> ignites internal triboelectric ash lightning & explosive gas expansions
+ *    audioBass    -> undulates ground shockwaves & rolling pumice density
+ *    audioSwell   -> thickens incandescent thermal glow from internal volcanic gas
+ *    audioCentroid-> shifts magma incandescent heat spectra (amber to white-hot)
+ *
+ *  Per-activation variety:
+ *    vortexP  float turbulent lobe vortex complexity         (0.6..2.2)
+ *    glowP    float incandescent interior lava glow          (0.8..2.5)
+ *    sparkP   float triboelectric lightning spark density    (1.0..3.5)
+ *    ashP     float ash opacity & billowing cloud density    (0.8..2.2)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

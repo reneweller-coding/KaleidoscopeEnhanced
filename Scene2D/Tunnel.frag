@@ -1,32 +1,39 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file Tunnel.frag
- * @brief The classic forward-scrolling mirrored-segment kaleidoscope tunnel:
- *        polar coordinates from the frame centre are folded into `sides`
- *        mirrored wedges, then mapped to a UV that scrolls inward over time.
+/*****************************************************************************\
+ *                              Tunnel.frag
+\*****************************************************************************/
+/*! @file
  *
- * Several audio uniforms (audioLevel, audioCentroid, audioFlux, audioValence,
- * audioFlip) are still declared here but are no longer read in main() -- the
- * mood-tint/brightness logic they once drove was moved to the global present
- * pass so every effect reacts consistently.
+ *  @brief
+ *  The classic forward-scrolling mirrored-segment kaleidoscope tunnel:
  *
- * Audio Reactivity:
- *  - audioPhase     -> adds to the wedge rotation on top of the base time*speed spin
- *                      (integrated, jump-free)
- *  - audioAdvance   -> adds to the forward scroll (integrated, jump-free)
- *  - audioBeat      -> a very subtle radial zoom/breath toward a zoomed resample
- *  - audioSpread    -> THROAT DEPTH: the radial term's weight, i.e. how strongly
- *                      perspective compresses the wall toward the vanishing point.
- *                      A narrow spectrum stretches the tunnel long and shallow, a
- *                      wide one compresses it into a deep, steep throat. Added
- *                      alongside the scroll term, never multiplied into it
- *  - audioRoughness -> WALL RIPPLE: dissonance ripples the wall's angular coordinate
- *                      along the radius, so consonant passages give clean straight
- *                      wedges and rough clusters buckle them
- *  - audioRolloff   -> WALL COLOUR TEMPERATURE: bass-bound music tints the tunnel
- *                      cold blue, energy reaching into the highs warms it amber
+ *         polar coordinates from the frame centre are folded into `sides`
+ *         mirrored wedges, then mapped to a UV that scrolls inward over time.
+ *
+ *  Several audio uniforms (audioLevel, audioCentroid, audioFlux, audioValence,
+ *  audioFlip) are still declared here but are no longer read in main() -- the
+ *  mood-tint/brightness logic they once drove was moved to the global present
+ *  pass so every effect reacts consistently.
+ *
+ *  Audio Reactivity:
+ *   - audioPhase     -> adds to the wedge rotation on top of the base time*speed spin
+ *                       (integrated, jump-free)
+ *   - audioAdvance   -> adds to the forward scroll (integrated, jump-free)
+ *   - audioBeat      -> a very subtle radial zoom/breath toward a zoomed resample
+ *   - audioSpread    -> THROAT DEPTH: the radial term's weight, i.e. how strongly
+ *                       perspective compresses the wall toward the vanishing point.
+ *                       A narrow spectrum stretches the tunnel long and shallow, a
+ *                       wide one compresses it into a deep, steep throat. Added
+ *                       alongside the scroll term, never multiplied into it
+ *   - audioRoughness -> WALL RIPPLE: dissonance ripples the wall's angular coordinate
+ *                       along the radius, so consonant passages give clean straight
+ *                       wedges and rough clusters buckle them
+ *   - audioRolloff   -> WALL COLOUR TEMPERATURE: bass-bound music tints the tunnel
+ *                       cold blue, energy reaching into the highs warms it amber
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;             ///< The pixel's colour (output).
 uniform vec2      resolution;            ///< Size of the render target in pixels.
 uniform float     time;                  ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;                  ///< The current photo.

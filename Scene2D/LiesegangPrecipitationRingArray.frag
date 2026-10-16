@@ -1,22 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file LiesegangPrecipitationRingArray.frag
- * @brief LIESEGANG PRECIPITATION RING ARRAY: Self-organized periodic mineral precipitation rings
- * in porous gel media. Non-linear reaction-diffusion supersaturation nucleation creates geometric
- * ring bands obeying the Jablczynski spacing law with colloidal turbidity and photo texturing.
- *   audioAdvance -> drives chemical precursor ion diffusion front velocity
- *   audioKick    -> flashes supersaturation nucleation threshold precipitate bursts
- *   audioSwell   -> widens colloidal precipitation band thickness & opacity
- *   audioCentroid-> shifts colloidal mineral precipitate absorption spectra
- *   audioPhase   -> modulates concentric ring eccentricities & branching defects
+/*****************************************************************************\
+ *                              LiesegangPrecipitationRingArray.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   spacingRatioP float Liesegang Jablczynski geometric ratio     (1.05..1.35)
- *   ringDensityP  float precipitation band count parameter       (4.0..14.0)
- *   colloidGlowP  float colloidal precipitate luminance gain     (0.8..2.5)
- *   diffusionP    float ion concentration diffusion steepness    (0.6..2.2)
+ *  @brief
+ *  LIESEGANG PRECIPITATION RING ARRAY: Self-organized periodic mineral precipitation rings in porous gel media.
+ *
+ *  Non-linear reaction-diffusion supersaturation nucleation creates geometric ring bands obeying the Jablczynski
+ *  spacing law with colloidal turbidity and photo texturing.
+ *
+ *    audioAdvance -> drives chemical precursor ion diffusion front velocity
+ *    audioKick    -> flashes supersaturation nucleation threshold precipitate bursts
+ *    audioSwell   -> widens colloidal precipitation band thickness & opacity
+ *    audioCentroid-> shifts colloidal mineral precipitate absorption spectra
+ *    audioPhase   -> modulates concentric ring eccentricities & branching defects
+ *
+ *  Per-activation variety:
+ *    spacingRatioP float Liesegang Jablczynski geometric ratio     (1.05..1.35)
+ *    ringDensityP  float precipitation band count parameter       (4.0..14.0)
+ *    colloidGlowP  float colloidal precipitate luminance gain     (0.8..2.5)
+ *    diffusionP    float ion concentration diffusion steepness    (0.6..2.2)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

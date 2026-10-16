@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file ZCRNoiseStorm.frag
- * @brief ZCR NOISE STORM: a sandstorm tunnel whose grain IS the noise in
- * the music.  The zero-crossing rate and the spectral flatness -- how much
- * of the sound is hiss, breath, cymbal wash -- set the density and
- * contrast of the sand streaming past, so a clean tone flies through
- * clear air and a noisy passage through a wall of grit.  Streaks run down
- * the tunnel on the music's pace; a light burns ahead.  The camera never
- * moves.
+/*****************************************************************************\
+ *                              ZCRNoiseStorm.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioZCR       -> grain density (light/texture)
- *   audioFlatness  -> grain contrast (light/texture)
- *   sceneAdvance   -> streaks fly past (continuous)
- *   audioSwell     -> the light ahead brightens (slow)
- *   audioKick      -> a gust of brightness (light)
- *   audioLevel     -> overall
+ *  @brief
+ *  ZCR NOISE STORM: a sandstorm tunnel whose grain IS the noise in the music.
  *
- * Per-activation variety: grainP (base grain), speedP, hueP.
+ *  The zero-crossing rate and the spectral flatness -- how much of the sound is hiss, breath, cymbal wash -- set
+ *  the density and contrast of the sand streaming past, so a clean tone flies through clear air and a noisy passage
+ *  through a wall of grit.  Streaks run down the tunnel on the music's pace; a light burns ahead.  The camera never
+ *  moves.
+ *
+ *  Audio Reactivity:
+ *    audioZCR       -> grain density (light/texture)
+ *    audioFlatness  -> grain contrast (light/texture)
+ *    sceneAdvance   -> streaks fly past (continuous)
+ *    audioSwell     -> the light ahead brightens (slow)
+ *    audioKick      -> a gust of brightness (light)
+ *    audioLevel     -> overall
+ *
+ *  Per-activation variety: grainP (base grain), speedP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

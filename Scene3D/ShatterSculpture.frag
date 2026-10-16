@@ -1,23 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file ShatterSculpture.frag
- * @brief GEOM="MESH" FAMILY: a museum piece (marble bust, gargoyle, bronze
- * dancer, terracotta warrior, stone lion) lit like a gallery at night, which
- * bursts into its own triangles with the music and reassembles. The shatter
- * itself is done in ShatterSculpture.geom -- see that file for why it needs
- * the geometry stage. This stage shades the result and lights the fracture:
- * vShard says how far a given shard has flown, and the further out it is the
- * more it glows from inside, as if the stone were only a shell over
- * something molten.
- *   audioAdvance -> burst cycle (geometry stage)
- *   audioKick    -> extra burst + fracture flash
- *   audioSwell   -> spotlight strength
+/*****************************************************************************\
+ *                              ShatterSculpture.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-instance: sizeP (relative scale), burstP (how far it flies),
- *               spinP (shard tumble rate).
- * Per-activation variety: hueP float palette offset (0..6.28).
+ *  @brief
+ *  GEOM="MESH" FAMILY: a museum piece (marble bust, gargoyle, bronze dancer, terracotta warrior, stone lion) lit
+ *  like a gallery at night, which bursts into its own triangles with the music and reassembles.
+ *
+ *  The shatter itself is done in ShatterSculpture.geom -- see that file for why it needs the geometry stage. This
+ *  stage shades the result and lights the fracture: vShard says how far a given shard has flown, and the further
+ *  out it is the more it glows from inside, as if the stone were only a shell over something molten.
+ *
+ *    audioAdvance -> burst cycle (geometry stage)
+ *    audioKick    -> extra burst + fracture flash
+ *    audioSwell   -> spotlight strength
+ *
+ *  Per-instance: sizeP (relative scale), burstP (how far it flies),
+ *                spinP (shard tumble rate).
+ *  Per-activation variety: hueP float palette offset (0..6.28).
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform sampler2DArray texMeshMaterial;       ///< The mesh's material textures (albedo, roughness, normal ...).
 uniform int            texMeshMaterialLayers; ///< Number of layers in texMeshMaterial.

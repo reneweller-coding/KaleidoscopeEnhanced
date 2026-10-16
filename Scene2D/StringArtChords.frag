@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file StringArtChords.frag
- * @brief STRING ART CHORDS: twelve pins on a circle, one per pitch class;
- * strings run between the classes that sound together -- a chord is
- * literally a chord across the circle.  Each string fades in and out with
- * the product of its two pins' chroma (continuous), the wheel turns
- * steadily on the scene clock, the pins glow with their class, and the
- * strings shimmer with the treble.  Behind the wheel, the photo as the
- * board.  Camera still.
+/*****************************************************************************\
+ *                              StringArtChords.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioChroma[12] -> string presence and pin glow (continuous)
- *   sceneAdvance    -> wheel rotation (continuous)
- *   audioKick       -> the strings brighten (light)
- *   audioHigh       -> string shimmer (light)
- *   audioLevel      -> brightness
+ *  @brief
+ *  STRING ART CHORDS: twelve pins on a circle, one per pitch class; strings run between the classes that sound
+ *  together -- a chord is literally a chord across the circle.
  *
- * Per-activation variety: radiusP, threadP, hueP.
+ *  Each string fades in and out with the product of its two pins' chroma (continuous), the wheel turns steadily on
+ *  the scene clock, the pins glow with their class, and the strings shimmer with the treble.  Behind the wheel, the
+ *  photo as the board.  Camera still.
+ *
+ *  Audio Reactivity:
+ *    audioChroma[12] -> string presence and pin glow (continuous)
+ *    sceneAdvance    -> wheel rotation (continuous)
+ *    audioKick       -> the strings brighten (light)
+ *    audioHigh       -> string shimmer (light)
+ *    audioLevel      -> brightness
+ *
+ *  Per-activation variety: radiusP, threadP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

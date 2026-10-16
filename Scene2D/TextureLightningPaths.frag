@@ -1,25 +1,31 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureLightningPaths.frag
- * @brief TEXTURE LIGHTNING PATHS: electricity crawling through the photograph
- * -- branching bolts of blue-white lightning run along the dark cracks and
- * valleys of the texture, as if the photo were a slab of stone charged
- * from within: the bolts flicker along their paths, fork into finer
- * branches, and light up the surrounding stone in cold violet, then fade
- * and strike again elsewhere.  The surface itself is dark, only lit by the
- * discharges and a faint afterglow along the paths.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              TextureLightningPaths.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioKick       -> a discharge (light only)
- *   audioAdvance    -> the discharges wander to new paths (integrated)
- *   audioSpread     -> how many of the fine branches carry current
- *   audioRoughness  -> the bolts jitter along their paths
- *   audioMode       -> the colour: violet in minor, cyan-white in major
- *   audioSwell      -> the afterglow along the paths (slow)
+ *  @brief
+ *  TEXTURE LIGHTNING PATHS: electricity crawling through the photograph -- branching bolts of blue-white lightning
+ *  run along the dark cracks and valleys of the texture, as if the photo were a slab of stone charged from within:
+ *  the bolts flicker along their paths, fork into finer branches, and light up the surrounding stone in cold
+ *  violet, then fade and strike again elsewhere.
  *
- * Knobs: scaleP, branchP (branch density), stoneP (how much stone is lit), hueP.
+ *  The surface itself is dark, only lit by the discharges and a faint afterglow along the paths.  Endless,
+ *  mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioKick       -> a discharge (light only)
+ *    audioAdvance    -> the discharges wander to new paths (integrated)
+ *    audioSpread     -> how many of the fine branches carry current
+ *    audioRoughness  -> the bolts jitter along their paths
+ *    audioMode       -> the colour: violet in minor, cyan-white in major
+ *    audioSwell      -> the afterglow along the paths (slow)
+ *
+ *  Knobs: scaleP, branchP (branch density), stoneP (how much stone is lit), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file LightPaintingTrails.frag
- * @brief LIGHT PAINTING TRAILS: a long exposure in a dark room.  A dancer
- * swings light wands and the shutter keeps everything: the trails hang in
- * the air as continuous ribbons, brightest where the wand is now and
- * fading along their age.  Each wand owns a chroma class and brightens
- * with it; the trail geometry runs on the scene clock, so nothing jumps.
- * The kick is the flash that freezes a silhouette of the dancer for an
- * instant.  The photo is the dark room behind.  Camera fixed on the tripod.
+/*****************************************************************************\
+ *                              LightPaintingTrails.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   sceneAdvance    -> the wands travel, trails age (continuous)
- *   audioChroma[12] -> per-wand brightness (light)
- *   audioKick       -> the flash and the frozen silhouette (light)
- *   audioSwell      -> exposure length: how far back the trails reach (slow)
- *   audioHigh       -> sparkle along the newest part (light)
+ *  @brief
+ *  LIGHT PAINTING TRAILS: a long exposure in a dark room.
  *
- * Per-activation variety: wandsP, lobesP, hueP.
+ *  A dancer swings light wands and the shutter keeps everything: the trails hang in the air as continuous ribbons,
+ *  brightest where the wand is now and fading along their age.  Each wand owns a chroma class and brightens with
+ *  it; the trail geometry runs on the scene clock, so nothing jumps. The kick is the flash that freezes a
+ *  silhouette of the dancer for an instant.  The photo is the dark room behind.  Camera fixed on the tripod.
+ *
+ *  Audio Reactivity:
+ *    sceneAdvance    -> the wands travel, trails age (continuous)
+ *    audioChroma[12] -> per-wand brightness (light)
+ *    audioKick       -> the flash and the frozen silhouette (light)
+ *    audioSwell      -> exposure length: how far back the trails reach (slow)
+ *    audioHigh       -> sparkle along the newest part (light)
+ *
+ *  Per-activation variety: wandsP, lobesP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

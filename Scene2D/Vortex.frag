@@ -1,15 +1,22 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file Vortex.frag
- * @brief Adapted from "Vortex" by \@kishimisu (2024) — https://www.shadertoy.com/view/MX33Dr
- * Original licensed CC BY-NC-SA 4.0 (attribution kept per the licence).
+/*****************************************************************************\
+ *                              Vortex.frag
+\*****************************************************************************/
+/*! @file
  *
- * A kaleidoscopic raymarched vortex/tunnel.  Reconstructed from the code-golfed
- * original and adapted to our engine: image-forward (the picture colours the
- * vortex + drifts as a faint nebula), audio-reactive & jump-free (forward travel
- * via audioAdvance, spin via audioPhase; beats brighten; centroid/valence grade).
+ *  @brief
+ *  Adapted from "Vortex" by \@kishimisu (2024) — https://www.shadertoy.com/view/MX33Dr
+ *
+ *  Original licensed CC BY-NC-SA 4.0 (attribution kept per the licence).
+ *
+ *  A kaleidoscopic raymarched vortex/tunnel.  Reconstructed from the code-golfed
+ *  original and adapted to our engine: image-forward (the picture colours the
+ *  vortex + drifts as a faint nebula), audio-reactive & jump-free (forward travel
+ *  via audioAdvance, spin via audioPhase; beats brighten; centroid/valence grade).
+ *
+ *  @author kishimisu (the original shader, CC BY-NC-SA 4.0), René Weller (adaptation)
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

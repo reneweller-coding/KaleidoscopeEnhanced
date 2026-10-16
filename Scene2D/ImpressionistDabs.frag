@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file ImpressionistDabs.frag
- * @brief IMPRESSIONIST DABS: the photograph repainted in short broken
- * brushstrokes, Monet-style -- every stroke a small comma of paint laid
- * along the picture's forms, its colour taken from the photo but split
- * into pure touches (a warm and a cool neighbour hue side by side), with
- * thick impasto edges catching the light; the strokes slowly shimmer and
- * re-lay as the light of the day changes, the picture drifting beneath.
- * Endless, mirrorable.
+/*****************************************************************************\
+ *                              ImpressionistDabs.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the picture drifts and the strokes re-lay (integrated)
- *   audioSpread     -> stroke length
- *   audioKick       -> the impasto highlights flare (light)
- *   audioMode       -> the light of the day: blue morning in minor, golden afternoon in major
- *   audioRoughness  -> the colour splitting (more broken colour)
- *   audioSwell      -> the canvas showing between strokes (slow)
+ *  @brief
+ *  IMPRESSIONIST DABS: the photograph repainted in short broken brushstrokes, Monet-style -- every stroke a small
+ *  comma of paint laid along the picture's forms, its colour taken from the photo but split into pure touches (a
+ *  warm and a cool neighbour hue side by side), with thick impasto edges catching the light; the strokes slowly
+ *  shimmer and re-lay as the light of the day changes, the picture drifting beneath.
  *
- * Knobs: dabP (stroke size), flowP (strokes follow forms), vividP (colour intensity), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the picture drifts and the strokes re-lay (integrated)
+ *    audioSpread     -> stroke length
+ *    audioKick       -> the impasto highlights flare (light)
+ *    audioMode       -> the light of the day: blue morning in minor, golden afternoon in major
+ *    audioRoughness  -> the colour splitting (more broken colour)
+ *    audioSwell      -> the canvas showing between strokes (slow)
+ *
+ *  Knobs: dabP (stroke size), flowP (strokes follow forms), vividP (colour intensity), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

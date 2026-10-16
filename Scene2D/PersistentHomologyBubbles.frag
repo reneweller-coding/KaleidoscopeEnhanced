@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file PersistentHomologyBubbles.frag
- * @brief PERSISTENT HOMOLOGY BUBBLES: topological data analysis made
- * visible.  A point cloud sampled from the photo (points where it is
- * bright); around every point a ball grows with the swell (the filtration
- * radius); where two balls touch an edge lights, where three close a
- * triangle fills -- the Vietoris-Rips complex -- and the holes that survive
- * a long range of radii (persistent features) glow.  The kick lights the
- * newest edges, the treble sparkles the points.  Camera still.
+/*****************************************************************************\
+ *                              PersistentHomologyBubbles.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSwell   -> filtration radius (slow)
- *   sceneAdvance -> the point cloud breathes (continuous)
- *   audioKick    -> edge light (light)
- *   audioHigh    -> point sparkle (light)
- *   audioLevel   -> brightness
+ *  @brief
+ *  PERSISTENT HOMOLOGY BUBBLES: topological data analysis made visible.
  *
- * Per-activation variety: pointsP, spreadP, hueP.
+ *  A point cloud sampled from the photo (points where it is bright); around every point a ball grows with the swell
+ *  (the filtration radius); where two balls touch an edge lights, where three close a triangle fills -- the
+ *  Vietoris-Rips complex -- and the holes that survive a long range of radii (persistent features) glow.  The kick
+ *  lights the newest edges, the treble sparkles the points.  Camera still.
+ *
+ *  Audio Reactivity:
+ *    audioSwell   -> filtration radius (slow)
+ *    sceneAdvance -> the point cloud breathes (continuous)
+ *    audioKick    -> edge light (light)
+ *    audioHigh    -> point sparkle (light)
+ *    audioLevel   -> brightness
+ *
+ *  Per-activation variety: pointsP, spreadP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

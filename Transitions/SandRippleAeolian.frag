@@ -1,20 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SandRippleAeolian.frag
- * @brief TRANSITION SAND RIPPLE AEOLIAN: Desert sand ripple saltation & wind shear transition.
- * Aeolian wind gusts blow golden sand ripples across the desert dunes,
- * carrying fine grain saltation waves that wipe between the scenes.
- *   interpolation -> sweeps sandstorm wind front across the frame
- *   audioKick     -> flashes golden mineral glints in the blowing sand
- *   audioSwell    -> undulates sand dune ripple frequency & wave height
+/*****************************************************************************\
+ *                              SandRippleAeolian.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   rippleP float sand ripple spatial frequency (0.5..2.2)
- *   windP   float wind shear velocity multiplier (0.5..2.0)
- *   speedP  float animation speed multiplier    (0.5..2.0)
- *   hueP    float desert sand mineral hue offset (0..6.28)
+ *  @brief
+ *  TRANSITION SAND RIPPLE AEOLIAN: Desert sand ripple saltation & wind shear transition.
+ *
+ *  Aeolian wind gusts blow golden sand ripples across the desert dunes, carrying fine grain saltation waves that
+ *  wipe between the scenes.
+ *
+ *    interpolation -> sweeps sandstorm wind front across the frame
+ *    audioKick     -> flashes golden mineral glints in the blowing sand
+ *    audioSwell    -> undulates sand dune ripple frequency & wave height
+ *
+ *  Per-activation variety:
+ *    rippleP float sand ripple spatial frequency (0.5..2.2)
+ *    windP   float wind shear velocity multiplier (0.5..2.0)
+ *    speedP  float animation speed multiplier    (0.5..2.0)
+ *    hueP    float desert sand mineral hue offset (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

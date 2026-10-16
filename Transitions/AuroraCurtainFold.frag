@@ -1,20 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file AuroraCurtainFold.frag
- * @brief TRANSITION AURORA CURTAIN FOLD: Geomagnetic auroral curtain fold wipe transition.
- * Luminous curtains of emerald-green and violet polar light ripple across
- * geomagnetic field lines, folding and weaving the dual scenes together.
- *   interpolation -> sweeps auroral curtain wave front across the sky
- *   audioKick     -> flashes intense substorm auroral rays
- *   audioSwell    -> undulates geomagnetic curtain folding frequency
+/*****************************************************************************\
+ *                              AuroraCurtainFold.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   curtainP float auroral curtain fold depth & width (0.5..2.2)
- *   rayP     float vertical ray emission density     (0.5..2.0)
- *   speedP   float animation speed multiplier        (0.5..2.0)
- *   hueP     float auroral emission hue offset       (0..6.28)
+ *  @brief
+ *  TRANSITION AURORA CURTAIN FOLD: Geomagnetic auroral curtain fold wipe transition.
+ *
+ *  Luminous curtains of emerald-green and violet polar light ripple across geomagnetic field lines, folding and
+ *  weaving the dual scenes together.
+ *
+ *    interpolation -> sweeps auroral curtain wave front across the sky
+ *    audioKick     -> flashes intense substorm auroral rays
+ *    audioSwell    -> undulates geomagnetic curtain folding frequency
+ *
+ *  Per-activation variety:
+ *    curtainP float auroral curtain fold depth & width (0.5..2.2)
+ *    rayP     float vertical ray emission density     (0.5..2.0)
+ *    speedP   float animation speed multiplier        (0.5..2.0)
+ *    hueP     float auroral emission hue offset       (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

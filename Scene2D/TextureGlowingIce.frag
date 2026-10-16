@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureGlowingIce.frag
- * @brief TEXTURE GLOWING ICE: looking into a block of glacier ice lit from
- * within -- deep blue and cyan light glowing through the ice, brighter in
- * the clear parts, the frozen-in structure of the photograph showing as
- * pale veils, bubbles and pressure bands at different depths (parallax
- * layers), and a network of fracture planes that flash white where the
- * light catches them.  The light inside wanders slowly.  Endless,
- * mirrorable.
+/*****************************************************************************\
+ *                              TextureGlowingIce.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioPhase      -> the inner light wanders (integrated, jump-free)
- *   audioAdvance    -> the view drifts through the depth layers (integrated)
- *   audioSpread     -> how deep the ice looks (layer spread)
- *   audioMode       -> the ice tint: deep blue in minor, turquoise-green in major
- *   audioBass       -> the inner glow (light)
- *   audioHigh       -> the fractures flash (light)
+ *  @brief
+ *  TEXTURE GLOWING ICE: looking into a block of glacier ice lit from within -- deep blue and cyan light glowing
+ *  through the ice, brighter in the clear parts, the frozen-in structure of the photograph showing as pale veils,
+ *  bubbles and pressure bands at different depths (parallax layers), and a network of fracture planes that flash
+ *  white where the light catches them.
  *
- * Knobs: clarityP (clear vs. milky), fractureP (fracture density), layersP, hueP.
+ *  The light inside wanders slowly.  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioPhase      -> the inner light wanders (integrated, jump-free)
+ *    audioAdvance    -> the view drifts through the depth layers (integrated)
+ *    audioSpread     -> how deep the ice looks (layer spread)
+ *    audioMode       -> the ice tint: deep blue in minor, turquoise-green in major
+ *    audioBass       -> the inner glow (light)
+ *    audioHigh       -> the fractures flash (light)
+ *
+ *  Knobs: clarityP (clear vs. milky), fractureP (fracture density), layersP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

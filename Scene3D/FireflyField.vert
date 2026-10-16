@@ -1,26 +1,31 @@
 #version 330 core
-/**
- * @file FireflyField.vert
- * @brief Vertex stage companion to FireflyField.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              FireflyField.vert
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioBeatPhase -> the synchrony wave sweeping across the meadow
- *   audioSwell     -> overall glow of the field
- *   audioLevel     -> glow
- *   audioChromaHue -> gentle hue drift with the musical key
- *   audioArousal   -> how strongly the swarm LOCKS together: calm music lets
- *                     every firefly keep its own rhythm, intense music pulls
- *                     the whole meadow into one synchronous wave
- *   audioSpread    -> DEPTH dispersion of the swarm: a narrow, pure spectrum
- *                     draws the fireflies into a close shallow cloud, a rich
- *                     broadband one lets the meadow run far back into the
- *                     night -- and opens the field a little wider than the
- *                     frame at the same time.  The extent only ever GROWS
- *                     from an already frame-filling base, so a thin mix can
- *                     never bunch the additive sprites up in the middle
- *   audioMode      -> minor keys cool the glow to blue-green, major keys warm
- *                     it back to green-gold
+ *  @brief
+ *  Vertex stage companion to FireflyField.frag -- see that file's header for this scene's description.
+ *
+ *  Audio Reactivity:
+ *    audioBeatPhase -> the synchrony wave sweeping across the meadow
+ *    audioSwell     -> overall glow of the field
+ *    audioLevel     -> glow
+ *    audioChromaHue -> gentle hue drift with the musical key
+ *    audioArousal   -> how strongly the swarm LOCKS together: calm music lets
+ *                      every firefly keep its own rhythm, intense music pulls
+ *                      the whole meadow into one synchronous wave
+ *    audioSpread    -> DEPTH dispersion of the swarm: a narrow, pure spectrum
+ *                      draws the fireflies into a close shallow cloud, a rich
+ *                      broadband one lets the meadow run far back into the
+ *                      night -- and opens the field a little wider than the
+ *                      frame at the same time.  The extent only ever GROWS
+ *                      from an already frame-filling base, so a thin mix can
+ *                      never bunch the additive sprites up in the middle
+ *    audioMode      -> minor keys cool the glow to blue-green, major keys warm
+ *                      it back to green-gold
+ *
+ *  @author René Weller
  */
 // FireflyField.vert — a summer night meadow: thousands of fireflies drift
 // on lazy paths and blink softly; a slow wave of synchrony sweeps the

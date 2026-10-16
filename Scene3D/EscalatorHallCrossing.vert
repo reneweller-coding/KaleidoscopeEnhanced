@@ -1,10 +1,16 @@
 #version 330 core
-/**
- * @file EscalatorHallCrossing.vert
- * @brief Vertex stage for EscalatorHallCrossing: world positions pass
- * through (camera at the origin, +z ahead); the flight id, the position
- * along the flight, kind and uv go to the fragment stage.  No camera
- * motion -- the escalators move, the hall does not.
+/*****************************************************************************\
+ *                              EscalatorHallCrossing.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage for EscalatorHallCrossing: world positions pass through (camera at the origin, +z ahead); the
+ *  flight id, the position along the flight, kind and uv go to the fragment stage.
+ *
+ *  No camera motion -- the escalators move, the hall does not.
+ *
+ *  @author René Weller
  */
 layout( location = 0 ) in vec4 attrA; ///< xyz = position, w = flight/rider id
 layout( location = 1 ) in vec4 attrB; ///< x = position along the flight, y = kind, zw = uv

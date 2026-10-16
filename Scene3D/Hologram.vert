@@ -1,12 +1,17 @@
 #version 330 core
-/**
- * @file Hologram.vert
- * @brief Vertex stage companion to Hologram.geom/.frag -- see the .frag
- * header for this scene's description. A PASS-THROUGH stage: the wireframe
- * needs each vertex to know which CORNER of its triangle it is, and that is
- * not a vertex property (a vertex is shared between triangles) -- it only
- * exists once the whole triangle is in view. Placement and projection
- * therefore happen in Hologram.geom.
+/*****************************************************************************\
+ *                              Hologram.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to Hologram.geom/.frag -- see the .frag header for this scene's description.
+ *
+ *  A PASS-THROUGH stage: the wireframe needs each vertex to know which CORNER of its triangle it is, and that is
+ *  not a vertex property (a vertex is shared between triangles) -- it only exists once the whole triangle is in
+ *  view. Placement and projection therefore happen in Hologram.geom.
+ *
+ *  @author René Weller
  */
 
 in vec4 attrA; ///< mesh: xyz = object-space position, w = U.  shell: xyz = world-space position on the shell.

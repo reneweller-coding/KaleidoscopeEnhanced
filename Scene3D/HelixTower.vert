@@ -1,8 +1,13 @@
 #version 330 core
-/**
- * @file HelixTower.vert
- * @brief Vertex stage companion to HelixTower.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              HelixTower.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to HelixTower.frag -- see that file's header for this scene's description.
+ *
+ *  @author René Weller
  */
 // HelixTower.vert — a 100-unit DNA double helix of glowing points; the base
 // pair "rungs" light up with their spectrum band, a kick wave climbs the

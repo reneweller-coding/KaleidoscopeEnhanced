@@ -1,9 +1,16 @@
 #version 330 core
-/**
- * @file KaleidocycleFold.vert
- * @brief Vertex stage for KaleidocycleFold: world positions pass through
- * (camera at the origin, +z ahead); tetrahedron id, face index, kind and
- * uv go to the fragment stage.  No camera motion.
+/*****************************************************************************\
+ *                              KaleidocycleFold.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage for KaleidocycleFold: world positions pass through (camera at the origin, +z ahead); tetrahedron
+ *  id, face index, kind and uv go to the fragment stage.
+ *
+ *  No camera motion.
+ *
+ *  @author René Weller
  */
 layout( location = 0 ) in vec4 attrA; ///< xyz = position, w = tetrahedron id
 layout( location = 1 ) in vec4 attrB; ///< x = face index, y = kind, zw = uv

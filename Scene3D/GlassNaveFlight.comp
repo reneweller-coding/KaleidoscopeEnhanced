@@ -1,23 +1,28 @@
 #version 430 core
-/**
- * @file GlassNaveFlight.comp
- * @brief GLASS NAVE FLIGHT: a flight down the nave of a cathedral built of
- * glass.  The pillars and the floor are stone (opaque pass); between the
- * pillars stand tall glass panes and over the aisles a clerestory of tilted
- * panes (transparent pass, weighted-blended OIT), every pane tuned to a
- * spectrum band and backlit by a sun whose height is the host's day clock.
- * The nave is emitted RELATIVE to the camera with the bay pattern phased on
- * the flight distance, so the bays stream past forever without a pop.
- * The camera flies at constant pace on the scene clock; the music is light.
+/*****************************************************************************\
+ *                              GlassNaveFlight.comp
+\*****************************************************************************/
+/*! @file
  *
- * Vertex layout (8 floats): pos xyz, band (which spectrum band this pane
- * shows), face code (0 +x, 1 -x, 2 floor, 3 ceiling, 4 sky), kind (0 stone,
- * 1 glass, 2 sky), uv.
+ *  @brief
+ *  GLASS NAVE FLIGHT: a flight down the nave of a cathedral built of glass.
  *
- * Audio Reactivity: audioSpectrum[32] -> pane glow (fragment); dayPhase ->
- *   sun height and colour; audioKick -> stone rim; sceneAdvance -> flight.
+ *  The pillars and the floor are stone (opaque pass); between the pillars stand tall glass panes and over the
+ *  aisles a clerestory of tilted panes (transparent pass, weighted-blended OIT), every pane tuned to a spectrum
+ *  band and backlit by a sun whose height is the host's day clock. The nave is emitted RELATIVE to the camera with
+ *  the bay pattern phased on the flight distance, so the bays stream past forever without a pop. The camera flies
+ *  at constant pace on the scene clock; the music is light.
  *
- * Per-instance: bayP (bay spacing), heightP (nave height), hueP.
+ *  Vertex layout (8 floats): pos xyz, band (which spectrum band this pane
+ *  shows), face code (0 +x, 1 -x, 2 floor, 3 ceiling, 4 sky), kind (0 stone,
+ *  1 glass, 2 sky), uv.
+ *
+ *  Audio Reactivity: audioSpectrum[32] -> pane glow (fragment); dayPhase ->
+ *    sun height and colour; audioKick -> stone rim; sceneAdvance -> flight.
+ *
+ *  Per-instance: bayP (bay spacing), heightP (nave height), hueP.
+ *
+ *  @author René Weller
  */
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( local_size_x = 4, local_size_y = 4, local_size_z = 4 ) in;

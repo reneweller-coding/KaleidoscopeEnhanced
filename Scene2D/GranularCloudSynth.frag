@@ -1,26 +1,31 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file GranularCloudSynth.frag
- * @brief GRANULAR CLOUD SYNTH: a cloud of grains scattered over the
- * scrolling spectrogram -- each grain a round snippet of the photo at its
- * pitch height (the band on the y axis), drifting left with the history on
- * the scene clock, its brightness the energy of its band; the density of
- * the cloud rises with the swell (grains fade in by a smooth threshold),
- * the treble is the grain sparkle, the kick a pulse of the grain rims.
- * Camera fixed on the cloud.
+/*****************************************************************************\
+ *                              GranularCloudSynth.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   texSpectro        -> the waterfall behind the grains (history)
- *   audioSpectrum[32] -> grain brightness by band (light)
- *   audioSwell        -> grain density (slow, smooth threshold)
- *   audioHigh         -> sparkle (light)
- *   audioKick         -> rim pulse (light)
- *   sceneAdvance      -> drift (continuous)
- *   audioLevel        -> brightness
+ *  @brief
+ *  GRANULAR CLOUD SYNTH: a cloud of grains scattered over the scrolling spectrogram -- each grain a round snippet
+ *  of the photo at its pitch height (the band on the y axis), drifting left with the history on the scene clock,
+ *  its brightness the energy of its band; the density of the cloud rises with the swell (grains fade in by a smooth
+ *  threshold), the treble is the grain sparkle, the kick a pulse of the grain rims.
  *
- * Per-activation variety: grainP (size), spreadP, hueP.
+ *  Camera fixed on the cloud.
+ *
+ *  Audio Reactivity:
+ *    texSpectro        -> the waterfall behind the grains (history)
+ *    audioSpectrum[32] -> grain brightness by band (light)
+ *    audioSwell        -> grain density (slow, smooth threshold)
+ *    audioHigh         -> sparkle (light)
+ *    audioKick         -> rim pulse (light)
+ *    sceneAdvance      -> drift (continuous)
+ *    audioLevel        -> brightness
+ *
+ *  Per-activation variety: grainP (size), spreadP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

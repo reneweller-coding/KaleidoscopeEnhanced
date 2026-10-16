@@ -1,26 +1,31 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SmokeColourCollide.frag
- * @brief SMOKE COLOUR COLLIDE: two streams of coloured smoke blown into each
- * other against black -- one magenta from the left, one cyan-teal from
- * the right, lit hard from the side like a studio smoke photograph.
- * Where they meet they curl up into billowing vortices and fine filaments,
- * rolling over one another, their colours mixing to violet and white at
- * the seam, wisps tearing off and fading into the dark.  The streams flow
- * steadily; the camera is still.
+/*****************************************************************************\
+ *                              SmokeColourCollide.frag
+\*****************************************************************************/
+/*! @file
  *
- * The smoke is advected by a curl-noise velocity field (divergence-free),
- * so the filaments roll and stretch like real smoke.
+ *  @brief
+ *  SMOKE COLOUR COLLIDE: two streams of coloured smoke blown into each other against black -- one magenta from the
+ *  left, one cyan-teal from the right, lit hard from the side like a studio smoke photograph.
  *
- * Audio Reactivity:
- *   audioSwell  -> the density of the smoke (slow)
- *   audioBass   -> the glow where the colours meet (light)
- *   audioLevel  -> brightness
- *   sceneTime / sceneAdvance -> the streams flowing (continuous)
+ *  Where they meet they curl up into billowing vortices and fine filaments, rolling over one another, their colours
+ *  mixing to violet and white at the seam, wisps tearing off and fading into the dark.  The streams flow steadily;
+ *  the camera is still.
  *
- * Per-activation variety: turbP (how turbulent), hueP (the pair of colours).
+ *  The smoke is advected by a curl-noise velocity field (divergence-free),
+ *  so the filaments roll and stretch like real smoke.
+ *
+ *  Audio Reactivity:
+ *    audioSwell  -> the density of the smoke (slow)
+ *    audioBass   -> the glow where the colours meet (light)
+ *    audioLevel  -> brightness
+ *    sceneTime / sceneAdvance -> the streams flowing (continuous)
+ *
+ *  Per-activation variety: turbP (how turbulent), hueP (the pair of colours).
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

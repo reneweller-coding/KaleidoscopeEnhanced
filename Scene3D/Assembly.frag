@@ -1,28 +1,34 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-
-/**
- * @file Assembly.frag
- * @brief Pieces flying in from nowhere and settling into an object that was not
- * there a moment ago (the flight itself is in the geometry stage). A piece
- * still in the air is hot and half-transparent; a seated one is cold, solid and
- * lit. The transition between those two states is what the eye follows.
+/*****************************************************************************\
+ *                              Assembly.frag
+\*****************************************************************************/
+/*! @file
  *
- * A shatter can be watched passively -- it is over in a second and the eye just
- * catches the debris. An assembly has to be READ, because for most of its
- * length the object is an ambiguous cloud, and every arriving piece narrows
- * down what it will turn out to be. Keeping unseated pieces hot and vague is
- * what protects that ambiguity; drawing them fully lit from the start would
- * give the answer away in the first frame.
+ *  @brief
+ *  Pieces flying in from nowhere and settling into an object that was not there a moment ago (the flight itself is
+ *  in the geometry stage).
  *
- *   sceneProgress -> the arrival (geometry stage)
- *   audioKick     -> seated pieces jolt; arrivals flare
- *   audioSwell    -> heat on the pieces still in flight
+ *  A piece still in the air is hot and half-transparent; a seated one is cold, solid and lit. The transition
+ *  between those two states is what the eye follows.
  *
- * Per-instance: sizeP, chunkP (grid density), spreadP (how far out they start),
- *               tintP (heat hue).
- * Per-activation variety: hueP float palette offset (0..6.28).
+ *  A shatter can be watched passively -- it is over in a second and the eye just
+ *  catches the debris. An assembly has to be READ, because for most of its
+ *  length the object is an ambiguous cloud, and every arriving piece narrows
+ *  down what it will turn out to be. Keeping unseated pieces hot and vague is
+ *  what protects that ambiguity; drawing them fully lit from the start would
+ *  give the answer away in the first frame.
+ *
+ *    sceneProgress -> the arrival (geometry stage)
+ *    audioKick     -> seated pieces jolt; arrivals flare
+ *    audioSwell    -> heat on the pieces still in flight
+ *
+ *  Per-instance: sizeP, chunkP (grid density), spreadP (how far out they start),
+ *                tintP (heat hue).
+ *  Per-activation variety: hueP float palette offset (0..6.28).
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform sampler2DArray texMeshMaterial;       ///< The mesh's material textures (albedo, roughness, normal ...).
 uniform int            texMeshMaterialLayers; ///< Number of layers in texMeshMaterial.

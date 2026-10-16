@@ -1,21 +1,25 @@
 #version 330 core
+/*****************************************************************************\
+ *                              BioluminescentMyceliumCave.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Shades a glowing fungal-thread filament in a mycelium cave: blends a per-vertex bioluminescent colour with the
+ *  slideshow photo, then adds a brightened seam of light running along the filament's own axis.
+ *
+ *  This fragment stage reads no audio uniforms directly -- vColor arrives
+ *  already audio-modulated per vertex by the companion vertex shader (the
+ *  filament network's pulse/growth reactivity lives there), and vTexCoord
+ *  both maps the photo texture and drives the exponential edge glow along the
+ *  strand via filament_edge.
+ *
+ *  @author René Weller
+ */
 out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec4 vColor;    ///< Color (from the vertex stage).
 in vec2 vTexCoord; ///< Texture coordinate (from the vertex stage).
-
-/**
- * @file BioluminescentMyceliumCave.frag
- * @brief Shades a glowing fungal-thread filament in a mycelium cave: blends
- * a per-vertex bioluminescent colour with the slideshow photo, then adds a
- * brightened seam of light running along the filament's own axis.
- *
- * This fragment stage reads no audio uniforms directly -- vColor arrives
- * already audio-modulated per vertex by the companion vertex shader (the
- * filament network's pulse/growth reactivity lives there), and vTexCoord
- * both maps the photo texture and drives the exponential edge glow along the
- * strand via filament_edge.
- */
 
 uniform sampler2D tex0;          ///< The current photo.
 uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).

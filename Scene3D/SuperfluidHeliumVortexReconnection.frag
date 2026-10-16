@@ -1,19 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SuperfluidHeliumVortexReconnection.frag
- * @brief SUPERFLUID HELIUM VORTEX RECONNECTION: Quantized vortex filament reconnection events
- * in superfluid liquid Helium-4 (He-II). Singular vortex line crossing, topological reconnection
- * cusps, Kelvin-wave phonon sound radiation, and superfluid photo texturing.
- *   audioAdvance -> drives vortex line hydrodynamic Biot-Savart velocity
- *   audioKick    -> flashes singular reconnection cusp energy dissipation bursts
- *   audioSwell   -> widens vortex healing length & Kelvin-wave wavepacket envelope
- *   audioCentroid-> shifts superfluid roton / phonon dispersion color spectra
+/*****************************************************************************\
+ *                              SuperfluidHeliumVortexReconnection.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   reconnGlowP float reconnection cusp flash luminance       (0.8..2.5)
- *   kelvinP     float Kelvin-wave phonon acoustic brightness   (0.6..2.2)
+ *  @brief
+ *  SUPERFLUID HELIUM VORTEX RECONNECTION: Quantized vortex filament reconnection events in superfluid liquid
+ *  Helium-4 (He-II).
+ *
+ *  Singular vortex line crossing, topological reconnection cusps, Kelvin-wave phonon sound radiation, and
+ *  superfluid photo texturing.
+ *
+ *    audioAdvance -> drives vortex line hydrodynamic Biot-Savart velocity
+ *    audioKick    -> flashes singular reconnection cusp energy dissipation bursts
+ *    audioSwell   -> widens vortex healing length & Kelvin-wave wavepacket envelope
+ *    audioCentroid-> shifts superfluid roton / phonon dispersion color spectra
+ *
+ *  Per-activation variety:
+ *    reconnGlowP float reconnection cusp flash luminance       (0.8..2.5)
+ *    kelvinP     float Kelvin-wave phonon acoustic brightness   (0.6..2.2)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec3  vPos;   ///< Position (from the vertex stage).
 in float vDepth; ///< Depth (from the vertex stage).

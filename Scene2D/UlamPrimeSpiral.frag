@@ -1,23 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file UlamPrimeSpiral.frag
- * @brief ULAM PRIME SPIRAL: the integers wound into a square spiral, the
- * primes lit -- and the diagonals they mysteriously favour.  The spiral
- * zooms out steadily on the scene clock (log-periodic, so it never
- * wraps), the primes are round dots coloured by their residue class mod
- * 12 (a chroma class each), the diagonals glow with the bass, the kick
- * lights the newest ring, the photo is the paper.  Camera still.
+/*****************************************************************************\
+ *                              UlamPrimeSpiral.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   sceneAdvance    -> zoom (continuous, periodic)
- *   audioChroma[12] -> prime colour by residue class (light)
- *   audioBass       -> diagonal glow (light)
- *   audioKick       -> outer-ring flash (light)
- *   audioLevel      -> brightness
+ *  @brief
+ *  ULAM PRIME SPIRAL: the integers wound into a square spiral, the primes lit -- and the diagonals they
+ *  mysteriously favour.
  *
- * Per-activation variety: zoomP, sizeP, hueP.
+ *  The spiral zooms out steadily on the scene clock (log-periodic, so it never wraps), the primes are round dots
+ *  coloured by their residue class mod 12 (a chroma class each), the diagonals glow with the bass, the kick lights
+ *  the newest ring, the photo is the paper.  Camera still.
+ *
+ *  Audio Reactivity:
+ *    sceneAdvance    -> zoom (continuous, periodic)
+ *    audioChroma[12] -> prime colour by residue class (light)
+ *    audioBass       -> diagonal glow (light)
+ *    audioKick       -> outer-ring flash (light)
+ *    audioLevel      -> brightness
+ *
+ *  Per-activation variety: zoomP, sizeP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

@@ -1,32 +1,38 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-
-/**
- * @file ShadowTheatre.frag
- * @brief A shadow play. A lamp behind a lit screen, a real 3D model turning in
- * front of it, and the only thing the audience is given is the outline. The
- * shape is unrecognisable and then suddenly obvious as it turns through a
- * profile that reads, which is the whole pleasure of the form.
+/*****************************************************************************\
+ *                              ShadowTheatre.frag
+\*****************************************************************************/
+/*! @file
  *
- * The caster is near-black with a soft warm edge rather than a hard cut-out: a
- * lamp has size, so every real shadow has a penumbra, and it is the softness
- * that makes it read as light rather than as a sticker. The penumbra widens
- * with nearP -- a caster close to the lamp throws a large blurred shadow, one
- * near the screen a small sharp one -- and holding those two together is what
- * makes the depth believable.
+ *  @brief
+ *  A shadow play.
  *
- * The screen is the sky shell's far face, lit from behind by a drifting lamp.
- * No shadow map is involved (see the .vert for why the engine's could not be
- * used here), so the family costs a single pass.
+ *  A lamp behind a lit screen, a real 3D model turning in front of it, and the only thing the audience is given is
+ *  the outline. The shape is unrecognisable and then suddenly obvious as it turns through a profile that reads,
+ *  which is the whole pleasure of the form.
  *
- *   audioAdvance -> the lamp drifts behind the screen
- *   audioKick    -> the lamp flares and the caster jolts
- *   audioSwell   -> screen brightness
- *   audioHigh    -> grain and flicker, like a real projector
+ *  The caster is near-black with a soft warm edge rather than a hard cut-out: a
+ *  lamp has size, so every real shadow has a penumbra, and it is the softness
+ *  that makes it read as light rather than as a sticker. The penumbra widens
+ *  with nearP -- a caster close to the lamp throws a large blurred shadow, one
+ *  near the screen a small sharp one -- and holding those two together is what
+ *  makes the depth believable.
  *
- * Per-instance: sizeP, spinP, nearP (distance to the lamp), tintP (lamp hue).
- * Per-activation variety: hueP float palette offset (0..6.28).
+ *  The screen is the sky shell's far face, lit from behind by a drifting lamp.
+ *  No shadow map is involved (see the .vert for why the engine's could not be
+ *  used here), so the family costs a single pass.
+ *
+ *    audioAdvance -> the lamp drifts behind the screen
+ *    audioKick    -> the lamp flares and the caster jolts
+ *    audioSwell   -> screen brightness
+ *    audioHigh    -> grain and flicker, like a real projector
+ *
+ *  Per-instance: sizeP, spinP, nearP (distance to the lamp), tintP (lamp hue).
+ *  Per-activation variety: hueP float palette offset (0..6.28).
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform sampler2D tex0; ///< The current photo.
 uniform sampler2D tex1; ///< The next photo (cross-faded in by interpolation).

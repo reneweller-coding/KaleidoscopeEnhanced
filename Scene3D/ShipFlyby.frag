@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file ShipFlyby.frag
- * @brief GEOM="MESH" FAMILY: a capital ship makes one slow, majestic pass
- * across the frame -- entering off one side, coming close enough at mid-pass
- * that a large one no longer fits on screen, and leaving off the other. The
- * pass is staged on `sceneProgress`, so it always fills exactly the screen
- * time the scheduler gave the scene; see ShipFlyby.vert for the path.
+/*****************************************************************************\
+ *                              ShipFlyby.frag
+\*****************************************************************************/
+/*! @file
  *
- * bgTypeP picks what it passes IN FRONT OF, which changes the whole read of
- * the shot: a nebula (lit hull against colour), or a huge star right behind
- * the flight path, which throws the hull into near-silhouette with light
- * spilling around its edges as it crosses.
- *   audioSwell   -> key light, engine glow, nebula brightness
- *   audioKick    -> engine flare + a small hull jolt (vertex stage)
+ *  @brief
+ *  GEOM="MESH" FAMILY: a capital ship makes one slow, majestic pass across the frame -- entering off one side,
+ *  coming close enough at mid-pass that a large one no longer fits on screen, and leaving off the other.
  *
- * Per-instance: sizeP (>1 overflows the frame), travelP, approachP, bankP,
- *               bgTypeP (0 = nebula, 1 = backlit star), tintP (nebula hue).
- * Per-activation variety: hueP float palette offset (0..6.28).
+ *  The pass is staged on `sceneProgress`, so it always fills exactly the screen time the scheduler gave the scene;
+ *  see ShipFlyby.vert for the path.
+ *
+ *  bgTypeP picks what it passes IN FRONT OF, which changes the whole read of
+ *  the shot: a nebula (lit hull against colour), or a huge star right behind
+ *  the flight path, which throws the hull into near-silhouette with light
+ *  spilling around its edges as it crosses.
+ *    audioSwell   -> key light, engine glow, nebula brightness
+ *    audioKick    -> engine flare + a small hull jolt (vertex stage)
+ *
+ *  Per-instance: sizeP (>1 overflows the frame), travelP, approachP, bankP,
+ *                bgTypeP (0 = nebula, 1 = backlit star), tintP (nebula hue).
+ *  Per-activation variety: hueP float palette offset (0..6.28).
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform sampler2DArray texMeshMaterial;       ///< The mesh's material textures (albedo, roughness, normal ...).
 uniform int            texMeshMaterialLayers; ///< Number of layers in texMeshMaterial.

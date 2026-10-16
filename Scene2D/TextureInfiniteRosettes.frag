@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureInfiniteRosettes.frag
- * @brief TEXTURE INFINITE ROSETTES: kaleidoscope rosettes nested without end
- * -- a large rosette of the photograph (mirrored into 2n petals) fills the
- * view, and at its centre another rosette opens, turned and with a
- * different petal count, and inside that another, forever; we sink
- * slowly into them while each rosette turns its own way, the borders
- * between them glowing rings.  Endless, mirrorable; the outermost rosette
- * continues beyond the frame.
+/*****************************************************************************\
+ *                              TextureInfiniteRosettes.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the descent into the rosettes (integrated, jump-free)
- *   audioPhase      -> the rosettes turn (integrated)
- *   audioSpread     -> the photo window inside the petals wanders further
- *   audioKick       -> the border rings flash (light)
- *   audioMode       -> petal counts lean higher in major, lower in minor
- *   audioSwell      -> the rosettes' centres glow (slow)
+ *  @brief
+ *  TEXTURE INFINITE ROSETTES: kaleidoscope rosettes nested without end -- a large rosette of the photograph
+ *  (mirrored into 2n petals) fills the view, and at its centre another rosette opens, turned and with a different
+ *  petal count, and inside that another, forever; we sink slowly into them while each rosette turns its own way,
+ *  the borders between them glowing rings.
  *
- * Knobs: petalP (base petal count), ratioP (size ratio between rosettes), zoomP (photo scale), hueP.
+ *  Endless, mirrorable; the outermost rosette continues beyond the frame.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the descent into the rosettes (integrated, jump-free)
+ *    audioPhase      -> the rosettes turn (integrated)
+ *    audioSpread     -> the photo window inside the petals wanders further
+ *    audioKick       -> the border rings flash (light)
+ *    audioMode       -> petal counts lean higher in major, lower in minor
+ *    audioSwell      -> the rosettes' centres glow (slow)
+ *
+ *  Knobs: petalP (base petal count), ratioP (size ratio between rosettes), zoomP (photo scale), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

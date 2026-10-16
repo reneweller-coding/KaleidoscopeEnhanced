@@ -1,22 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file WormholeTransit.frag
- * @brief WORMHOLE TRANSIT: High-speed passage through a spacetime conduit.
- * The walls of the wormhole are formed by intense gravitational lensing of
- * background galaxies and exotic energy phenomena.
- *   audioAdvance -> speed of travel through the wormhole
- *   audioKick    -> flashes of exotic matter and energy pulses
- *   audioSwell   -> tunnel expansion and contraction
- *   audioPhase   -> rotation of the tunnel
- *   audioChromaHue-> energy colors follow the musical key
+/*****************************************************************************\
+ *                              WormholeTransit.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   warpP float intensity of the spacetime distortion (0.7..1.5)
- *   glowP float energy pulse brightness (0.6..1.8)
- *   speedP float base travel speed (0.5..1.5)
- *   hueP float palette offset (0..6.28)
+ *  @brief
+ *  WORMHOLE TRANSIT: High-speed passage through a spacetime conduit.
+ *
+ *  The walls of the wormhole are formed by intense gravitational lensing of background galaxies and exotic energy
+ *  phenomena.
+ *
+ *    audioAdvance -> speed of travel through the wormhole
+ *    audioKick    -> flashes of exotic matter and energy pulses
+ *    audioSwell   -> tunnel expansion and contraction
+ *    audioPhase   -> rotation of the tunnel
+ *    audioChromaHue-> energy colors follow the musical key
+ *
+ *  Per-activation variety:
+ *    warpP float intensity of the spacetime distortion (0.7..1.5)
+ *    glowP float energy pulse brightness (0.6..1.8)
+ *    speedP float base travel speed (0.5..1.5)
+ *    hueP float palette offset (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

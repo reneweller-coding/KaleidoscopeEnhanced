@@ -1,36 +1,42 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file ChainLab3D.frag
- * @brief CHAIN LAB 3D: the 3D chain laboratory -- every start rolls a new
- * raymarched world from three classes of continuous space transforms: a space
- * (mirrored lattice, polar ring tunnel, twisted lattice, octahedral lattice,
- * turning lattice, helix, hexagonal lattice, a lattice turned in 4D), a fold core (none, tetrahedral KIFS, octahedral
- * KIFS, a sphere-inversion box fold, plane folds, Menger sponge, Kleinian fold, icosahedral KIFS, polyhedral
- * kaleidoscope) and an end body (block, ball, torus, gyroid membrane, cross, Schwarz P and D minimal surfaces).  The
- * surfaces are coloured by a rolled 2D chain of the 2D chain lab (global map, symmetry, second map, warp) projected
- * triplanarly, with a colour field that follows the chain and wanders with the
- * music.  The camera flies a winding path through a soft tube carved out of
- * every body, so it never collides.  Endless.
+/*****************************************************************************\
+ *                              ChainLab3D.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the flight and the flow through the colour chain (integrated, jump-free)
- *   audioPhase      -> the folds turn, the colours wander (integrated)
- *   audioSpread     -> the bodies thicken, the colour chain distorts more
- *   audioKick       -> the rims flare (light)
- *   audioMode       -> the light and the palette: cool in minor, warm in major
- *   audioSwell      -> the fog glow, the colour saturation and the width of the flight tube (slow)
+ *  @brief
+ *  CHAIN LAB 3D: the 3D chain laboratory -- every start rolls a new raymarched world from three classes of
+ *  continuous space transforms: a space (mirrored lattice, polar ring tunnel, twisted lattice, octahedral lattice,
+ *  turning lattice, helix, hexagonal lattice, a lattice turned in 4D), a fold core (none, tetrahedral KIFS,
+ *  octahedral KIFS, a sphere-inversion box fold, plane folds, Menger sponge, Kleinian fold, icosahedral KIFS,
+ *  polyhedral kaleidoscope) and an end body (block, ball, torus, gyroid membrane, cross, Schwarz P and D minimal
+ *  surfaces).
  *
- * Knobs: spaceP / coreP / bodyP (the 3D chain, rolled per start), solidP (the colour
- * chain projected on three planes, or as a solid texture with the depth as its
- * time axis), reliefP (the surfaces bulge with the colour chain's brightness),
- * chainAP..chainDP
- * (the 2D colour chain, rolled per start), morphP (which colour stage morphs on
- * with the music), styleP (lit surface / glowing rims),
- * speedP (flight speed), detailP (texture sharpness), paletteP (photo colours /
- * colour field), camP (the first gaze: ahead, out of a side window, slanted down or up,
- * floating, an orthographic side view -- the scene pans on every few minutes), hueP.
+ *  The surfaces are coloured by a rolled 2D chain of the 2D chain lab (global map, symmetry, second map, warp)
+ *  projected triplanarly, with a colour field that follows the chain and wanders with the music.  The camera flies
+ *  a winding path through a soft tube carved out of every body, so it never collides.  Endless.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the flight and the flow through the colour chain (integrated, jump-free)
+ *    audioPhase      -> the folds turn, the colours wander (integrated)
+ *    audioSpread     -> the bodies thicken, the colour chain distorts more
+ *    audioKick       -> the rims flare (light)
+ *    audioMode       -> the light and the palette: cool in minor, warm in major
+ *    audioSwell      -> the fog glow, the colour saturation and the width of the flight tube (slow)
+ *
+ *  Knobs: spaceP / coreP / bodyP (the 3D chain, rolled per start), solidP (the colour
+ *  chain projected on three planes, or as a solid texture with the depth as its
+ *  time axis), reliefP (the surfaces bulge with the colour chain's brightness),
+ *  chainAP..chainDP
+ *  (the 2D colour chain, rolled per start), morphP (which colour stage morphs on
+ *  with the music), styleP (lit surface / glowing rims),
+ *  speedP (flight speed), detailP (texture sharpness), paletteP (photo colours /
+ *  colour field), camP (the first gaze: ahead, out of a side window, slanted down or up,
+ *  floating, an orthographic side view -- the scene pans on every few minutes), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

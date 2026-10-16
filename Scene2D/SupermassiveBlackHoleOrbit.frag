@@ -1,20 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SupermassiveBlackHoleOrbit.frag
- * @brief SUPERMASSIVE BLACK HOLE: A terrifying orbit around the event horizon of
- * a supermassive black hole. Intense gravitational lensing distorts the background
- * starfield, while the searing accretion disk pulses with the beat.
- *   audioAdvance -> camera orbit speed
- *   audioKick    -> intense energy flares in the accretion disk
- *   audioSwell   -> brightness and width of the photon ring
- *   audioChromaHue-> palette offset for the accretion disk
+/*****************************************************************************\
+ *                              SupermassiveBlackHoleOrbit.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   massP float mass/size of the black hole (0.5..1.5)
- *   diskP float density of the accretion disk (0.5..1.5)
- *   hueP float palette offset (0..6.28)
+ *  @brief
+ *  SUPERMASSIVE BLACK HOLE: A terrifying orbit around the event horizon of a supermassive black hole.
+ *
+ *  Intense gravitational lensing distorts the background starfield, while the searing accretion disk pulses with
+ *  the beat.
+ *
+ *    audioAdvance -> camera orbit speed
+ *    audioKick    -> intense energy flares in the accretion disk
+ *    audioSwell   -> brightness and width of the photon ring
+ *    audioChromaHue-> palette offset for the accretion disk
+ *
+ *  Per-activation variety:
+ *    massP float mass/size of the black hole (0.5..1.5)
+ *    diskP float density of the accretion disk (0.5..1.5)
+ *    hueP float palette offset (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

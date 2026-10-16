@@ -1,23 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file NoctilucentClouds.frag
- * @brief NOCTILUCENT CLOUDS: the highest clouds there are, lit by a sun
- * already far below the horizon -- electric blue-white sheets rippled by
- * gravity waves, drifting slowly over a landscape in full night.  The
- * ripples run on the scene clock, their fine structure is the treble, the
- * twilight glow at the horizon is the swell, the bass is the deep
- * afterglow; the photo is the dark land and the far water.  Camera fixed.
+/*****************************************************************************\
+ *                              NoctilucentClouds.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   sceneAdvance -> ripple drift (continuous)
- *   audioHigh    -> fine ripple detail (light)
- *   audioSwell   -> twilight strength (slow)
- *   audioBass    -> horizon afterglow (light)
- *   audioLevel   -> brightness
+ *  @brief
+ *  NOCTILUCENT CLOUDS: the highest clouds there are, lit by a sun already far below the horizon -- electric
+ *  blue-white sheets rippled by gravity waves, drifting slowly over a landscape in full night.
  *
- * Per-activation variety: sheetsP, rippleP, hueP.
+ *  The ripples run on the scene clock, their fine structure is the treble, the twilight glow at the horizon is the
+ *  swell, the bass is the deep afterglow; the photo is the dark land and the far water.  Camera fixed.
+ *
+ *  Audio Reactivity:
+ *    sceneAdvance -> ripple drift (continuous)
+ *    audioHigh    -> fine ripple detail (light)
+ *    audioSwell   -> twilight strength (slow)
+ *    audioBass    -> horizon afterglow (light)
+ *    audioLevel   -> brightness
+ *
+ *  Per-activation variety: sheetsP, rippleP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

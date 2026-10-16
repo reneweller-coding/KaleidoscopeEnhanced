@@ -1,24 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file NighthawksDiner.frag
- * @brief NIGHTHAWKS DINER: a corner diner late at night in the manner of
- * Edward Hopper -- a wedge of glass wall pouring green-yellow fluorescent
- * light onto an empty street, the long counter inside, a few still
- * figures on stools, the coffee urns, and across the street the dark
- * shopfronts and windows above, one of them faintly lit.  The light is
- * hard and flat, the shadows cut clean, the colours those of the painting:
- * sickly green, cherry wood, deep teal night.  Nothing moves but light;
- * the neon sign on the roof hums with the music.
+/*****************************************************************************\
+ *                              NighthawksDiner.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSwell  -> the fluorescent light (slow)
- *   audioKick   -> the neon sign flickers brighter (light only)
- *   audioLevel  -> brightness
- *   sceneTime / sceneAdvance -> a slow flicker of one tube, steam from the urns
+ *  @brief
+ *  NIGHTHAWKS DINER: a corner diner late at night in the manner of Edward Hopper -- a wedge of glass wall pouring
+ *  green-yellow fluorescent light onto an empty street, the long counter inside, a few still figures on stools, the
+ *  coffee urns, and across the street the dark shopfronts and windows above, one of them faintly lit.
  *
- * Per-activation variety: figuresP (how many sit at the counter), hueP.
+ *  The light is hard and flat, the shadows cut clean, the colours those of the painting: sickly green, cherry wood,
+ *  deep teal night.  Nothing moves but light; the neon sign on the roof hums with the music.
+ *
+ *  Audio Reactivity:
+ *    audioSwell  -> the fluorescent light (slow)
+ *    audioKick   -> the neon sign flickers brighter (light only)
+ *    audioLevel  -> brightness
+ *    sceneTime / sceneAdvance -> a slow flicker of one tube, steam from the urns
+ *
+ *  Per-activation variety: figuresP (how many sit at the counter), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

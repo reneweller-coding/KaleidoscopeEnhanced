@@ -1,21 +1,26 @@
 #version 430 core
-/**
- * @file WhiteHoleFountain.comp
- * @brief WHITE HOLE FOUNTAIN: the time-reverse of a black hole -- nothing
- * can enter, everything pours out.  Thirty thousand photo tiles well up out
- * of a blinding horizon at the centre and fly outward on radial paths,
- * decelerating as they climb the gravity well the wrong way, fading as they
- * go.  No state: each tile lives on a continuous phase of the scene clock
- * (its "birth" repeats every cycle at the same seed), so the fountain runs
- * forever without a jump.  The swell is the fountain's speed (slow); the
- * kick flashes the horizon (fragment).  The camera never moves.
+/*****************************************************************************\
+ *                              WhiteHoleFountain.comp
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (generator stage):
- *   sceneAdvance -> the flow (continuous)
- *   audioSwell   -> speed of the flow (slow)
- *   audioKick    -> horizon flash (fragment stage)
+ *  @brief
+ *  WHITE HOLE FOUNTAIN: the time-reverse of a black hole -- nothing can enter, everything pours out.
  *
- * Per-instance: densP (fraction of tiles), spreadP (cone width), hueP.
+ *  Thirty thousand photo tiles well up out of a blinding horizon at the centre and fly outward on radial paths,
+ *  decelerating as they climb the gravity well the wrong way, fading as they go.  No state: each tile lives on a
+ *  continuous phase of the scene clock (its "birth" repeats every cycle at the same seed), so the fountain runs
+ *  forever without a jump.  The swell is the fountain's speed (slow); the kick flashes the horizon (fragment).  The
+ *  camera never moves.
+ *
+ *  Audio Reactivity (generator stage):
+ *    sceneAdvance -> the flow (continuous)
+ *    audioSwell   -> speed of the flow (slow)
+ *    audioKick    -> horizon flash (fragment stage)
+ *
+ *  Per-instance: densP (fraction of tiles), spreadP (cone width), hueP.
+ *
+ *  @author René Weller
  */
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( local_size_x = 4, local_size_y = 4, local_size_z = 4 ) in;

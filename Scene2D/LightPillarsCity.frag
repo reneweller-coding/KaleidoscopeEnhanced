@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file LightPillarsCity.frag
- * @brief LIGHT PILLARS CITY: a winter night so cold that ice crystals hang
- * flat in the air, and every streetlight, sign and floodlight of a small
- * northern city throws a tall column of light straight up into the dark
- * sky -- sodium orange, white, green, the odd magenta -- dozens of pillars
- * of different heights and strengths standing over the snowy rooftops.
- * Snow lies on the roofs and the ground; a few flakes glitter in the air.
- * Each pillar belongs to one pitch class: the harmony lights them.
+/*****************************************************************************\
+ *                              LightPillarsCity.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioChroma[12] -> the pillars' brightness, each by its pitch class (light)
- *   audioSwell      -> the crystal haze (slow)
- *   audioHigh       -> glitter of the crystals in the air (light)
- *   audioLevel      -> brightness
- *   sceneTime / sceneAdvance -> the slow shimmer of the pillars (continuous)
+ *  @brief
+ *  LIGHT PILLARS CITY: a winter night so cold that ice crystals hang flat in the air, and every streetlight, sign
+ *  and floodlight of a small northern city throws a tall column of light straight up into the dark sky -- sodium
+ *  orange, white, green, the odd magenta -- dozens of pillars of different heights and strengths standing over the
+ *  snowy rooftops.
  *
- * Per-activation variety: pillarsP (how many), hueP.
+ *  Snow lies on the roofs and the ground; a few flakes glitter in the air. Each pillar belongs to one pitch class:
+ *  the harmony lights them.
+ *
+ *  Audio Reactivity:
+ *    audioChroma[12] -> the pillars' brightness, each by its pitch class (light)
+ *    audioSwell      -> the crystal haze (slow)
+ *    audioHigh       -> glitter of the crystals in the air (light)
+ *    audioLevel      -> brightness
+ *    sceneTime / sceneAdvance -> the slow shimmer of the pillars (continuous)
+ *
+ *  Per-activation variety: pillarsP (how many), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

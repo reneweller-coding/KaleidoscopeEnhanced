@@ -1,8 +1,14 @@
 #version 330 core
-/**
- * @file CalabiYauSixDimensionalManifoldCrossSection.vert
- * @brief Vertex stage companion to CalabiYauSixDimensionalManifoldCrossSection.frag -- see that file's
- * header for this scene's description.
+/*****************************************************************************\
+ *                              CalabiYauSixDimensionalManifoldCrossSection.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to CalabiYauSixDimensionalManifoldCrossSection.frag -- see that file's header for this
+ *  scene's description.
+ *
+ *  @author René Weller
  */
 
 in vec4 attrA; ///< xy = Cell UV [0,1], z = 0, w = Cell index

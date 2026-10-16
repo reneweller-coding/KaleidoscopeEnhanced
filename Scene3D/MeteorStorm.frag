@@ -1,4 +1,22 @@
 #version 330 core
+/*****************************************************************************\
+ *                              MeteorStorm.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Additive point-sprite shader for the meteor shower / static star dome, rendering each point (a meteor's head,
+ *  one of its trail particles, or a background star) as a soft radial glow.
+ *
+ *  Colour, including the per-meteor cycle timing and the
+ *  audioOnset/audioSwell/audioChromaHue/audioDrop response that shapes
+ *  flight and brightness, is computed upstream in MeteorStorm.vert and
+ *  arrives baked in vCol; this stage's own audioLevel/audioKick uniforms
+ *  were added afterward to give every point a small extra pulse, since the
+ *  vert-side coupling alone barely moved any pixels.
+ *
+ *  @author René Weller
+ */
 out vec4 fragColor; ///< The pixel's colour (output).
 // Frag-side music pulse (added by the deaf-scene pass: reactivity
 // measured ~0 -- the vert-side coupling barely moved any pixels).
@@ -6,20 +24,6 @@ uniform float audioLevel; ///< Overall loudness, 0..1.
 uniform float audioKick;  ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 // MeteorStorm.frag — soft glowing point (additive blending).
 in vec4 vCol; ///< Colour (from the vertex stage).
-
-/**
- * @file MeteorStorm.frag
- * @brief Additive point-sprite shader for the meteor shower / static star
- * dome, rendering each point (a meteor's head, one of its trail
- * particles, or a background star) as a soft radial glow.
- *
- * Colour, including the per-meteor cycle timing and the
- * audioOnset/audioSwell/audioChromaHue/audioDrop response that shapes
- * flight and brightness, is computed upstream in MeteorStorm.vert and
- * arrives baked in vCol; this stage's own audioLevel/audioKick uniforms
- * were added afterward to give every point a small extra pulse, since the
- * vert-side coupling alone barely moved any pixels.
- */
 
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()

@@ -1,19 +1,27 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file GlitchPixelSort.frag
- * @brief TRANSITION GLITCH PIXEL SORT: Directional luminance pixel-sorting transition.
- * Pixels stretch and sort into horizontal crystalline streaks based on
- * luminance thresholds, glitching and resolving seamlessly into the incoming scene.
- *   interpolation -> sweeps pixel-sort threshold & glitch severity
- *   audioSwell    -> intensifies the glitch slices (slow)
+/*****************************************************************************\
+ *                              GlitchPixelSort.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   glitchP float glitch slice frequency & chaos (0.5..2.2)
- *   streakP float pixel sort streak length        (0.5..2.0)
- *   speedP  float animation speed multiplier     (0.5..2.0)
- *   hueP    float glitch chromatic hue offset     (0..6.28)
+ *  @brief
+ *  TRANSITION GLITCH PIXEL SORT: Directional luminance pixel-sorting transition.
+ *
+ *  Pixels stretch and sort into horizontal crystalline streaks based on luminance thresholds, glitching and
+ *  resolving seamlessly into the incoming scene.
+ *
+ *    interpolation -> sweeps pixel-sort threshold & glitch severity
+ *    audioSwell    -> intensifies the glitch slices (slow)
+ *
+ *  Per-activation variety:
+ *    glitchP float glitch slice frequency & chaos (0.5..2.2)
+ *    streakP float pixel sort streak length        (0.5..2.0)
+ *    speedP  float animation speed multiplier     (0.5..2.0)
+ *    hueP    float glitch chromatic hue offset     (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

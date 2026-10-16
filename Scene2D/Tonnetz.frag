@@ -1,22 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file Tonnetz.frag
- * @brief The music-theory Tonnetz: a triangular lattice of pitch classes
- *        (perfect-fifth and major-third axes) drawn so that triads literally
- *        form triangles, floating over a very dark ground of the photo.
+/*****************************************************************************\
+ *                              Tonnetz.frag
+\*****************************************************************************/
+/*! @file
  *
- * Each of the 12 pitch classes' current strength comes straight from the
- * audioChroma[12] array; a node/edge/triad-face lights up only when the
- * pitch classes at its corners are actually sounding, so a held chord lights
- * one triangle and a modulation visibly walks the lattice. audioLevel sets a
- * floor brightness so the lattice stays faintly visible in quiet passages,
- * audioAdvance slowly drifts/rotates the viewed plane, audioHarmChange and
- * audioKick flare a lit triad face, audioBeat and audioHigh give the whole
- * frame a final pulse, and audioAmbient brightens the background photo
- * ground. Node/edge/face colours come from imgPalette, a rotating sample arc
- * over the live photo driven by audioChromaHue/audioAdvance/audioValence.
+ *  @brief
+ *  The music-theory Tonnetz: a triangular lattice of pitch classes
+ *
+ *         (perfect-fifth and major-third axes) drawn so that triads literally
+ *         form triangles, floating over a very dark ground of the photo.
+ *
+ *  Each of the 12 pitch classes' current strength comes straight from the
+ *  audioChroma[12] array; a node/edge/triad-face lights up only when the
+ *  pitch classes at its corners are actually sounding, so a held chord lights
+ *  one triangle and a modulation visibly walks the lattice. audioLevel sets a
+ *  floor brightness so the lattice stays faintly visible in quiet passages,
+ *  audioAdvance slowly drifts/rotates the viewed plane, audioHarmChange and
+ *  audioKick flare a lit triad face, audioBeat and audioHigh give the whole
+ *  frame a final pulse, and audioAmbient brightens the background photo
+ *  ground. Node/edge/face colours come from imgPalette, a rotating sample arc
+ *  over the live photo driven by audioChromaHue/audioAdvance/audioValence.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 // -----------------------------------------------------------------------
 // The Tonnetz is a map of pitch classes on a triangular grid, laid out so that
 // the three axes are the three consonant intervals: a perfect fifth one way, a

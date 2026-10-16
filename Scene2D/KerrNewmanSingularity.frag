@@ -1,35 +1,39 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file KerrNewmanSingularity.frag
- * @brief KERR-NEWMAN SINGULARITY: a spinning black hole seen from a slow
- * orbit -- the black shadow in the middle, a thin bright accretion disk bent
- * up and over it by the lensing, the Doppler-brightened approaching side,
- * the Einstein ring where light from behind wraps round, and twin jets on
- * the spin axis.
+/*****************************************************************************\
+ *                              KerrNewmanSingularity.frag
+\*****************************************************************************/
+/*! @file
  *
- * REBUILT compositing.  The geodesics were right and what they showed was
- * wrong (reported: "a giant sphere"): the background photo was ADDED to every
- * ray, including the rays that had already fallen through the horizon, so
- * the shadow was never black -- and at 0.35 of a full-frame photo it buried
- * the disk under an orange wash.  Now a captured ray is black, full stop;
- * the background is a starfield with the photo only faintly behind it, so
- * the lensing shows as stars smearing into arcs; the disk is thin, hot and
- * bright enough to be the picture; and the Einstein ring sits at the ray's
- * CLOSEST approach, which is where light actually wraps -- not at the ray's
- * end point, which for an escaping ray is fifteen units away.
+ *  @brief
+ *  KERR-NEWMAN SINGULARITY: a spinning black hole seen from a slow orbit -- the black shadow in the middle, a thin
+ *  bright accretion disk bent up and over it by the lensing, the Doppler-brightened approaching side, the Einstein
+ *  ring where light from behind wraps round, and twin jets on the spin axis.
  *
- * Rules: the horizon and the frame dragging used to breathe with the bass
- * and the mids -- geometry on fast envelopes.  Both are steady now; the
- * music is in the disk's light and the jets.
+ *  REBUILT compositing.  The geodesics were right and what they showed was
+ *  wrong (reported: "a giant sphere"): the background photo was ADDED to every
+ *  ray, including the rays that had already fallen through the horizon, so
+ *  the shadow was never black -- and at 0.35 of a full-frame photo it buried
+ *  the disk under an orange wash.  Now a captured ray is black, full stop;
+ *  the background is a starfield with the photo only faintly behind it, so
+ *  the lensing shows as stars smearing into arcs; the disk is thin, hot and
+ *  bright enough to be the picture; and the Einstein ring sits at the ray's
+ *  CLOSEST approach, which is where light actually wraps -- not at the ray's
+ *  end point, which for an escaping ray is fifteen units away.
  *
- * Audio Reactivity:
- *   audioAdvance -> the orbit (slow, integrated)
- *   audioLevel   -> the disk's brightness (light)
- *   audioKick    -> the jets flare (light)
- *   audioHigh    -> the Einstein ring and the stars (light)
- *   audioSwell   -> how far the frame dragging twists the view (slow)
+ *  Rules: the horizon and the frame dragging used to breathe with the bass
+ *  and the mids -- geometry on fast envelopes.  Both are steady now; the
+ *  music is in the disk's light and the jets.
+ *
+ *  Audio Reactivity:
+ *    audioAdvance -> the orbit (slow, integrated)
+ *    audioLevel   -> the disk's brightness (light)
+ *    audioKick    -> the jets flare (light)
+ *    audioHigh    -> the Einstein ring and the stars (light)
+ *    audioSwell   -> how far the frame dragging twists the view (slow)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

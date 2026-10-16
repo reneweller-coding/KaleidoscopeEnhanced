@@ -1,18 +1,25 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file RecursiveTesseractZoomAbyss.frag
- * @brief RECURSIVE TESSERACT ZOOM ABYSS: Infinite recursive 4D hypercube dive.
- * Successive nested tesseract cell portals unfold, collapse past the camera,
- * and unleash glowing multidimensional laser wireframes with dimensional flashes.
+/*****************************************************************************\
+ *                              RecursiveTesseractZoomAbyss.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance -> drives continuous forward plunge through 4D hypercube cells
- *   audioKick    -> triggers dimension-crossing portal flashes & edge burst
- *   audioCentroid-> modulates 4D rotation hyper-plane speed
- *   audioSubBass -> expands tesseract frame breathing
- *   audioChromaHue-> steers the recursive hypercube spectrum
+ *  @brief
+ *  RECURSIVE TESSERACT ZOOM ABYSS: Infinite recursive 4D hypercube dive.
+ *
+ *  Successive nested tesseract cell portals unfold, collapse past the camera, and unleash glowing multidimensional
+ *  laser wireframes with dimensional flashes.
+ *
+ *  Audio Reactivity:
+ *    audioAdvance -> drives continuous forward plunge through 4D hypercube cells
+ *    audioKick    -> triggers dimension-crossing portal flashes & edge burst
+ *    audioCentroid-> modulates 4D rotation hyper-plane speed
+ *    audioSubBass -> expands tesseract frame breathing
+ *    audioChromaHue-> steers the recursive hypercube spectrum
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

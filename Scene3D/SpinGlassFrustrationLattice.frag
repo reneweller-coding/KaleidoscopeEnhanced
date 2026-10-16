@@ -1,19 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SpinGlassFrustrationLattice.frag
- * @brief SPIN GLASS FRUSTRATION LATTICE: 60,000 geometrically frustrated electron spins on a
- * 3D Kagome/pyrochlore lattice. Complex energy landscapes, non-ergodic aging dynamics, Barkhausen
- * spin-flip avalanches, and photo-derived magnetic order texturing.
- *   audioAdvance -> navigates non-ergodic spin-glass energy landscape valley transitions
- *   audioKick    -> flashes macroscopic Barkhausen spin-flip avalanche avalanches
- *   audioSwell   -> enriches spin-correlation length & frustrated domain glow
- *   audioCentroid-> shifts magnetic susceptibility & spin orientation color spectra
+/*****************************************************************************\
+ *                              SpinGlassFrustrationLattice.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   pointGainP float point sprite base luminance gain (0.5..1.8)
- *   haloP      float gaussian spin core halo profile  (0.6..2.2)
+ *  @brief
+ *  SPIN GLASS FRUSTRATION LATTICE: 60,000 geometrically frustrated electron spins on a 3D Kagome/pyrochlore
+ *  lattice.
+ *
+ *  Complex energy landscapes, non-ergodic aging dynamics, Barkhausen spin-flip avalanches, and photo-derived
+ *  magnetic order texturing.
+ *
+ *    audioAdvance -> navigates non-ergodic spin-glass energy landscape valley transitions
+ *    audioKick    -> flashes macroscopic Barkhausen spin-flip avalanche avalanches
+ *    audioSwell   -> enriches spin-correlation length & frustrated domain glow
+ *    audioCentroid-> shifts magnetic susceptibility & spin orientation color spectra
+ *
+ *  Per-activation variety:
+ *    pointGainP float point sprite base luminance gain (0.5..1.8)
+ *    haloP      float gaussian spin core halo profile  (0.6..2.2)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec3  vCol;         ///< Colour (from the vertex stage).
 in float vFrustration; ///< Frustration (from the vertex stage).

@@ -1,8 +1,13 @@
 #version 330 core
-/**
- * @file SpiralArray.vert
- * @brief Vertex stage companion to SpiralArray.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              SpiralArray.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to SpiralArray.frag -- see that file's header for this scene's description.
+ *
+ *  @author René Weller
  */
 // SpiralArray.vert — a DNA DOUBLE HELIX of light (the recognisable motif
 // the abstract tonality helix never managed to be): two glowing strands

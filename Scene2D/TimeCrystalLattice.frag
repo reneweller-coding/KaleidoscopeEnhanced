@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TimeCrystalLattice.frag
- * @brief TIME CRYSTAL LATTICE: a discrete time crystal -- a lattice of
- * spins driven by a periodic kick that responds at half the drive
- * frequency, the hallmark of the phase.  The spins are round discs of the
- * photo; a phase gradient across the lattice makes the flips travel as a
- * wave; the flips themselves are light (colour A to colour B, crossfaded,
- * never a hard switch), the drive pulses are a flash on the kick, and the
- * swell is the lattice depth (contrast).  Camera still.
+/*****************************************************************************\
+ *                              TimeCrystalLattice.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   sceneAdvance -> the drive clock (continuous)
- *   audioKick    -> drive pulse flash (light)
- *   audioSwell   -> lattice depth / contrast (slow)
- *   audioBass    -> coupling glow between spins (light)
- *   audioLevel   -> brightness
+ *  @brief
+ *  TIME CRYSTAL LATTICE: a discrete time crystal -- a lattice of spins driven by a periodic kick that responds at
+ *  half the drive frequency, the hallmark of the phase.
  *
- * Per-activation variety: pitchP (lattice pitch), gradP (phase gradient), hueP.
+ *  The spins are round discs of the photo; a phase gradient across the lattice makes the flips travel as a wave;
+ *  the flips themselves are light (colour A to colour B, crossfaded, never a hard switch), the drive pulses are a
+ *  flash on the kick, and the swell is the lattice depth (contrast).  Camera still.
+ *
+ *  Audio Reactivity:
+ *    sceneAdvance -> the drive clock (continuous)
+ *    audioKick    -> drive pulse flash (light)
+ *    audioSwell   -> lattice depth / contrast (slow)
+ *    audioBass    -> coupling glow between spins (light)
+ *    audioLevel   -> brightness
+ *
+ *  Per-activation variety: pitchP (lattice pitch), gradP (phase gradient), hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

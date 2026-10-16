@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TexturePineConeSpirals.frag
- * @brief TEXTURE PINE CONE SPIRALS: looking down onto an endless pine cone
- * (or the heart of a sunflower) -- scales arranged in the golden
- * Fibonacci spirals, 8 winding one way and 13 the other, growing from
- * the tiny centre outward forever; each scale is a small cushion cut from
- * the photograph, lit at its tip and shadowed at its base where the next
- * scale overlaps it; the cone grows slowly toward us and turns.  Endless,
- * mirrorable.
+/*****************************************************************************\
+ *                              TexturePineConeSpirals.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the cone grows outward (integrated, jump-free)
- *   audioPhase      -> the cone turns (integrated)
- *   audioSpread     -> the scales swell (gaps close)
- *   audioKick       -> the scale tips glint (light)
- *   audioMode       -> light: cool in minor, warm in major
- *   audioSwell      -> the glow at the centre (slow)
+ *  @brief
+ *  TEXTURE PINE CONE SPIRALS: looking down onto an endless pine cone (or the heart of a sunflower) -- scales
+ *  arranged in the golden Fibonacci spirals, 8 winding one way and 13 the other, growing from the tiny centre
+ *  outward forever; each scale is a small cushion cut from the photograph, lit at its tip and shadowed at its base
+ *  where the next scale overlaps it; the cone grows slowly toward us and turns.
  *
- * Knobs: gapP (gap between scales), photoP (photo inside each scale), bulgeP (scale relief), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the cone grows outward (integrated, jump-free)
+ *    audioPhase      -> the cone turns (integrated)
+ *    audioSpread     -> the scales swell (gaps close)
+ *    audioKick       -> the scale tips glint (light)
+ *    audioMode       -> light: cool in minor, warm in major
+ *    audioSwell      -> the glow at the centre (slow)
+ *
+ *  Knobs: gapP (gap between scales), photoP (photo inside each scale), bulgeP (scale relief), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

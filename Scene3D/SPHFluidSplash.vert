@@ -1,8 +1,14 @@
 #version 330 core
-/**
- * @file SPHFluidSplash.vert
- * @brief Vertex stage companion to SPHFluidSplash.frag -- see that file's
- * header and SPHFluidSplash.comp for this scene's description.
+/*****************************************************************************\
+ *                              SPHFluidSplash.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to SPHFluidSplash.frag -- see that file's header and SPHFluidSplash.comp for this scene's
+ *  description.
+ *
+ *  @author René Weller
  */
 in vec4 attrA; ///< xyz = world position, w = particle index
 in vec4 attrB; ///< xyz = per-particle hash seed, w = density/REST_DENS

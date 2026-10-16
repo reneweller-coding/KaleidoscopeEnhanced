@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file ThermochromicSheet.frag
- * @brief THERMOCHROMIC SHEET: a sheet of heat-sensitive liquid-crystal foil
- * being warmed by invisible hands -- where warmth spreads the black foil
- * blooms into its rainbow sequence (deep red, gold, green, turquoise,
- * blue, violet) in concentric rings around each warm spot, the rings
- * drifting and spreading, cooling back to black at the edges; the heat
- * pattern follows the photograph's warm (bright) areas.  Endless,
- * mirrorable.
+/*****************************************************************************\
+ *                              ThermochromicSheet.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the warm spots wander (integrated, jump-free)
- *   audioSpread     -> the warmth spreads wider
- *   audioBass       -> a pulse of heat (light-level warmth, smoothed)
- *   audioMode       -> the foil's range: cool (green-blue) in minor, warm (red-gold) in major
- *   audioRoughness  -> the foil's crinkled texture
- *   audioSwell      -> the overall temperature (slow)
+ *  @brief
+ *  THERMOCHROMIC SHEET: a sheet of heat-sensitive liquid-crystal foil being warmed by invisible hands -- where
+ *  warmth spreads the black foil blooms into its rainbow sequence (deep red, gold, green, turquoise, blue, violet)
+ *  in concentric rings around each warm spot, the rings drifting and spreading, cooling back to black at the edges;
+ *  the heat pattern follows the photograph's warm (bright) areas.
  *
- * Knobs: spotP (warm spots), ringP (colour band width), photoP (the photo's heat), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the warm spots wander (integrated, jump-free)
+ *    audioSpread     -> the warmth spreads wider
+ *    audioBass       -> a pulse of heat (light-level warmth, smoothed)
+ *    audioMode       -> the foil's range: cool (green-blue) in minor, warm (red-gold) in major
+ *    audioRoughness  -> the foil's crinkled texture
+ *    audioSwell      -> the overall temperature (slow)
+ *
+ *  Knobs: spotP (warm spots), ringP (colour band width), photoP (the photo's heat), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

@@ -1,18 +1,24 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file BioluminescentDeepSeaCombJelly.frag
- * @brief BIOLUMINESCENT DEEP SEA COMB JELLY: Macro-scale 3D visualization of a
- * transparent deep-sea comb jelly (Ctenophore) with cascading rainbow diffraction
- * ctene rows, pulsating gelatinous body walls, and luminous internal bio-lanterns.
+/*****************************************************************************\
+ *                              BioluminescentDeepSeaCombJelly.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance -> drives continuous ctene row diffraction wave progression
- *   audioKick    -> flashes internal bioluminescent lantern organs & pulse burst
- *   audioCentroid-> sharpens rainbow diffraction grating fringe resolution
- *   audioSubBass -> expands gelatinous jelly bell respiration breathing
- *   audioChromaHue-> steers the deep-sea rainbow diffraction spectrum
+ *  @brief
+ *  BIOLUMINESCENT DEEP SEA COMB JELLY: Macro-scale 3D visualization of a transparent deep-sea comb jelly
+ *  (Ctenophore) with cascading rainbow diffraction ctene rows, pulsating gelatinous body walls, and luminous
+ *  internal bio-lanterns.
+ *
+ *  Audio Reactivity:
+ *    audioAdvance -> drives continuous ctene row diffraction wave progression
+ *    audioKick    -> flashes internal bioluminescent lantern organs & pulse burst
+ *    audioCentroid-> sharpens rainbow diffraction grating fringe resolution
+ *    audioSubBass -> expands gelatinous jelly bell respiration breathing
+ *    audioChromaHue-> steers the deep-sea rainbow diffraction spectrum
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

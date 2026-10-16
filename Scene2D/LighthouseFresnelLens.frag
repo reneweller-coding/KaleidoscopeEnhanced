@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file LighthouseFresnelLens.frag
- * @brief LIGHTHOUSE FRESNEL LENS: inside the lantern room, looking out
- * through the great Fresnel lens.  Concentric prism rings -- each a stepped
- * refracting band -- bend the world outside (the photo as the night sea and
- * sky) into a fan of stretched, dispersed images; the lens assembly turns
- * steadily on the scene clock as a lighthouse lens does, and where the
- * bull's-eye passes the lamp the beam floods the frame.  Dispersion splits
- * the light into colour at every prism edge.  The camera never moves.
+/*****************************************************************************\
+ *                              LighthouseFresnelLens.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   sceneAdvance -> lens rotation (continuous)
- *   audioSwell   -> lamp brightness (slow)
- *   audioKick    -> the prism edges flash (light)
- *   audioLevel   -> brightness
- *   audioHigh    -> dispersion strength (light/colour)
+ *  @brief
+ *  LIGHTHOUSE FRESNEL LENS: inside the lantern room, looking out through the great Fresnel lens.
  *
- * Per-activation variety: ringsP (prism count), dispP, hueP.
+ *  Concentric prism rings -- each a stepped refracting band -- bend the world outside (the photo as the night sea
+ *  and sky) into a fan of stretched, dispersed images; the lens assembly turns steadily on the scene clock as a
+ *  lighthouse lens does, and where the bull's-eye passes the lamp the beam floods the frame.  Dispersion splits the
+ *  light into colour at every prism edge.  The camera never moves.
+ *
+ *  Audio Reactivity:
+ *    sceneAdvance -> lens rotation (continuous)
+ *    audioSwell   -> lamp brightness (slow)
+ *    audioKick    -> the prism edges flash (light)
+ *    audioLevel   -> brightness
+ *    audioHigh    -> dispersion strength (light/colour)
+ *
+ *  Per-activation variety: ringsP (prism count), dispP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

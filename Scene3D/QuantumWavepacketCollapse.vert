@@ -1,8 +1,13 @@
 #version 330 core
-/**
- * @file QuantumWavepacketCollapse.vert
- * @brief Vertex stage companion to QuantumWavepacketCollapse.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              QuantumWavepacketCollapse.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to QuantumWavepacketCollapse.frag -- see that file's header for this scene's description.
+ *
+ *  @author René Weller
  */
 // GEOM_POINTS supplies no meaningful position (attrA.xyz is always zero;
 // only attrA.w = point id and attrB = 4 per-point hash seeds are real —

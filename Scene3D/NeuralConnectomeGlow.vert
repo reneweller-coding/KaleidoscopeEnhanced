@@ -1,9 +1,16 @@
 #version 330 core
-/**
- * @file NeuralConnectomeGlow.vert
- * @brief Vertex stage for NeuralConnectomeGlow: world positions pass
- * through (camera at the origin, +z ahead); id, band, kind and the
- * along-fibre coordinate (uv.x) go to the fragment stage.  No camera motion.
+/*****************************************************************************\
+ *                              NeuralConnectomeGlow.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage for NeuralConnectomeGlow: world positions pass through (camera at the origin, +z ahead); id, band,
+ *  kind and the along-fibre coordinate (uv.x) go to the fragment stage.
+ *
+ *  No camera motion.
+ *
+ *  @author René Weller
  */
 layout( location = 0 ) in vec4 attrA; ///< xyz = position, w = id
 layout( location = 1 ) in vec4 attrB; ///< x = band, y = kind, zw = uv (x along the fibre)

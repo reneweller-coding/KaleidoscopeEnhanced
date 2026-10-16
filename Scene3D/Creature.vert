@@ -1,26 +1,33 @@
 #version 330 core
-/**
- * @file Creature.vert
- * @brief Vertex stage companion to Creature.frag -- see that file's header.
- * This is where the animation actually lives: the loaded mesh is a STATIC
- * pose with no skeleton, so the swimming is done by deforming object space
- * per vertex. Four modes, picked per-instance by deformP, because a
- * jellyfish, a manta, a whale and a squid move in genuinely different ways
- * and one generic wobble would make all four read as the same animal:
- *   0 = bell pulse      (jellyfish: bell contracts, tentacles trail behind)
- *   1 = wing flap       (manta: amplitude grows toward the wingtips)
- *   2 = body undulation (whale/seahorse/anglerfish: wave travelling tailward)
- *   3 = tentacle writhe (squid: twist about the long axis + per-strand wave)
+/*****************************************************************************\
+ *                              Creature.vert
+\*****************************************************************************/
+/*! @file
  *
- * All phases are built from `time` plus audioAdvance (the host-INTEGRATED
- * musical phase), never from `time` multiplied by a live audio value -- a
- * rate that jumps would make the whole body snap to a new pose on every
- * beat instead of swimming faster.
+ *  @brief
+ *  Vertex stage companion to Creature.frag -- see that file's header.
  *
- * gl_VertexID picks the vertex's own branch: below meshVertexCount it is
- * the loaded model, at or above it the enclosing sky shell
- * Scene3DShader::buildGeometry() appends -- Creature.frag paints the
- * underwater column onto that shell.
+ *  This is where the animation actually lives: the loaded mesh is a STATIC pose with no skeleton, so the swimming
+ *  is done by deforming object space per vertex. Four modes, picked per-instance by deformP, because a jellyfish, a
+ *  manta, a whale and a squid move in genuinely different ways and one generic wobble would make all four read as
+ *  the same animal:
+ *
+ *    0 = bell pulse      (jellyfish: bell contracts, tentacles trail behind)
+ *    1 = wing flap       (manta: amplitude grows toward the wingtips)
+ *    2 = body undulation (whale/seahorse/anglerfish: wave travelling tailward)
+ *    3 = tentacle writhe (squid: twist about the long axis + per-strand wave)
+ *
+ *  All phases are built from `time` plus audioAdvance (the host-INTEGRATED
+ *  musical phase), never from `time` multiplied by a live audio value -- a
+ *  rate that jumps would make the whole body snap to a new pose on every
+ *  beat instead of swimming faster.
+ *
+ *  gl_VertexID picks the vertex's own branch: below meshVertexCount it is
+ *  the loaded model, at or above it the enclosing sky shell
+ *  Scene3DShader::buildGeometry() appends -- Creature.frag paints the
+ *  underwater column onto that shell.
+ *
+ *  @author René Weller
  */
 
 in vec4 attrA; ///< mesh: xyz = object-space position, w = U.  shell: xyz = world-space position on the shell.

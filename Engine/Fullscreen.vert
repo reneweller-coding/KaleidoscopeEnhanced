@@ -1,13 +1,18 @@
 #version 330 core
-/**
- * @file Fullscreen.vert
- * @brief The one vertex shader behind every fullscreen pass in the
- * core-profile pipeline: emits a single clip-space triangle generated
- * purely from `gl_VertexID` (no VBO -- an empty VAO plus
- * `glDrawArrays(GL_TRIANGLES, 0, 3)` covers the whole screen).
+/*****************************************************************************\
+ *                              Fullscreen.vert
+\*****************************************************************************/
+/*! @file
  *
- * Fragment shaders derive their coordinates from `gl_FragCoord` as before;
- * `vUV` (0..1 over the screen) is provided for the few passes that want it.
+ *  @brief
+ *  The one vertex shader behind every fullscreen pass in the core-profile pipeline: emits a single clip-space
+ *  triangle generated purely from `gl_VertexID` (no VBO -- an empty VAO plus `glDrawArrays(GL_TRIANGLES, 0, 3)`
+ *  covers the whole screen).
+ *
+ *  Fragment shaders derive their coordinates from `gl_FragCoord` as before;
+ *  `vUV` (0..1 over the screen) is provided for the few passes that want it.
+ *
+ *  @author René Weller
  */
 
 out vec2 vUV; ///< Texture coordinate 0..1 over the screen (from the vertex stage).

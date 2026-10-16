@@ -1,29 +1,34 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SpectroDevice.frag
- * @brief GEOM="MESH" FAMILY: a real hi-fi prop (boombox, turntable, modular
- * synth, jukebox, tube radio, tape deck) turning on a showroom turntable in
- * front of a synthwave grid horizon -- and the device's own front panel is a
- * LIVE display of the music, read straight out of the engine's spectrogram
- * ring (texSpectro, unit 28; declaring the sampler is the whole opt-in, see
- * EffectShader::usesSpectro()). The visualizer's own signal ends up rendered
- * on an object inside the visualizer.
+/*****************************************************************************\
+ *                              SpectroDevice.frag
+\*****************************************************************************/
+/*! @file
  *
- * The bars are built in OBJECT space (vLocalPos), not screen or world space,
- * so they stay painted on the device as it turns instead of sliding across
- * it like a projection. vObjNormal picks out the flat front panel: TRELLIS
- * builds every mesh from a front-on concept image, so the panel facing the
- * original camera is reliably the mesh's own +Z.
- *   texSpectro   -> the bars themselves (x = frequency, y = time/history)
- *   audioKick    -> bar flash + a bob (vertex stage)
- *   audioSwell   -> key light, grid brightness
- *   audioAdvance -> turntable rate (vertex stage), horizon scroll
+ *  @brief
+ *  GEOM="MESH" FAMILY: a real hi-fi prop (boombox, turntable, modular synth, jukebox, tube radio, tape deck)
+ *  turning on a showroom turntable in front of a synthwave grid horizon -- and the device's own front panel is a
+ *  LIVE display of the music, read straight out of the engine's spectrogram ring (texSpectro, unit 28; declaring
+ *  the sampler is the whole opt-in, see EffectShader::usesSpectro()).
  *
- * Per-instance: sizeP (relative scale), spinP (turntable rate),
- *               barP (display brightness).
- * Per-activation variety: hueP float palette offset (0..6.28).
+ *  The visualizer's own signal ends up rendered on an object inside the visualizer.
+ *
+ *  The bars are built in OBJECT space (vLocalPos), not screen or world space,
+ *  so they stay painted on the device as it turns instead of sliding across
+ *  it like a projection. vObjNormal picks out the flat front panel: TRELLIS
+ *  builds every mesh from a front-on concept image, so the panel facing the
+ *  original camera is reliably the mesh's own +Z.
+ *    texSpectro   -> the bars themselves (x = frequency, y = time/history)
+ *    audioKick    -> bar flash + a bob (vertex stage)
+ *    audioSwell   -> key light, grid brightness
+ *    audioAdvance -> turntable rate (vertex stage), horizon scroll
+ *
+ *  Per-instance: sizeP (relative scale), spinP (turntable rate),
+ *                barP (display brightness).
+ *  Per-activation variety: hueP float palette offset (0..6.28).
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform sampler2DArray texMeshMaterial;       ///< The mesh's material textures (albedo, roughness, normal ...).
 uniform int            texMeshMaterialLayers; ///< Number of layers in texMeshMaterial.

@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file KlimtGoldMosaic.frag
- * @brief KLIMT GOLD MOSAIC: a golden-period panel.  A field of beaten gold
- * leaf carries tendrils that coil into spirals, scattered eyes of
- * concentric rings and little black-and-white squares; down the middle a
- * gown of glass tesserae is set from the photo, sprinkled with ornamental
- * discs.  A slow light moves across the panel and the gold answers it --
- * the leaf flares where the light passes, each spiral glows with its own
- * band, and the treble strikes glints off the flakes.  Nothing moves but
- * the light.
+/*****************************************************************************\
+ *                              KlimtGoldMosaic.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSpectrum[32] -> glow of the spirals and eyes (their bands)
- *   audioSwell        -> the passing light's strength (slow)
- *   audioHigh         -> glints on the gold flakes (light)
- *   sceneTime         -> the light moving across the panel (continuous)
+ *  @brief
+ *  KLIMT GOLD MOSAIC: a golden-period panel.
  *
- * Per-activation variety: gownP (width of the gown), hueP.
+ *  A field of beaten gold leaf carries tendrils that coil into spirals, scattered eyes of concentric rings and
+ *  little black-and-white squares; down the middle a gown of glass tesserae is set from the photo, sprinkled with
+ *  ornamental discs.  A slow light moves across the panel and the gold answers it -- the leaf flares where the
+ *  light passes, each spiral glows with its own band, and the treble strikes glints off the flakes.  Nothing moves
+ *  but the light.
+ *
+ *  Audio Reactivity:
+ *    audioSpectrum[32] -> glow of the spirals and eyes (their bands)
+ *    audioSwell        -> the passing light's strength (slow)
+ *    audioHigh         -> glints on the gold flakes (light)
+ *    sceneTime         -> the light moving across the panel (continuous)
+ *
+ *  Per-activation variety: gownP (width of the gown), hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

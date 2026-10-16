@@ -1,18 +1,24 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file NeonCyberVoxelFlight.frag
- * @brief NEON CYBER VOXEL FLIGHT: High-speed 3D low-altitude flight through an
- * endless cyberpunk voxel megalopolis with audio-reactive skyscraper heights,
- * glowing matrix window grids, holographic sky billboards, and laser searchlights.
+/*****************************************************************************\
+ *                              NeonCyberVoxelFlight.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance -> drives continuous forward flight between voxel towers
- *   audioKick    -> flashes skyscraper neon roof beacons & billboard shockwaves
- *   audioBass    -> elevates skyscraper equalizer heights
- *   audioCentroid-> sharpens window voxel grid anti-aliasing
- *   audioChromaHue-> rotates the cyberpunk neon cyan/magenta/amber palette
+ *  @brief
+ *  NEON CYBER VOXEL FLIGHT: High-speed 3D low-altitude flight through an endless cyberpunk voxel megalopolis with
+ *  audio-reactive skyscraper heights, glowing matrix window grids, holographic sky billboards, and laser
+ *  searchlights.
+ *
+ *  Audio Reactivity:
+ *    audioAdvance -> drives continuous forward flight between voxel towers
+ *    audioKick    -> flashes skyscraper neon roof beacons & billboard shockwaves
+ *    audioBass    -> elevates skyscraper equalizer heights
+ *    audioCentroid-> sharpens window voxel grid anti-aliasing
+ *    audioChromaHue-> rotates the cyberpunk neon cyan/magenta/amber palette
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

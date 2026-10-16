@@ -1,28 +1,33 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file ParticleLifeClusters.frag
- * @brief PARTICLE LIFE CLUSTERS: the look of "particle life" -- swarms of
- * glowing particles of several species that attract and repel each other by
- * simple asymmetric rules, so they organise into living forms: cells with
- * membranes of one colour around a nucleus of another, chains that crawl,
- * rings that spin, hunters chasing prey, all drifting and re-forming
- * without end.  Rendered here as a field: every cell of a jittered grid
- * holds an organism whose layered rings of particles orbit, pulse and
- * split; neighbouring organisms merge where they touch.  Colours come from
- * the photograph.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              ParticleLifeClusters.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the organisms crawl (integrated, jump-free)
- *   audioPhase      -> the rings spin (integrated)
- *   audioSpread     -> organism size
- *   audioRoughness  -> the membranes wobble
- *   audioHigh       -> the particles sparkle (light)
- *   audioSwell      -> the glow (slow)
+ *  @brief
+ *  PARTICLE LIFE CLUSTERS: the look of "particle life" -- swarms of glowing particles of several species that
+ *  attract and repel each other by simple asymmetric rules, so they organise into living forms: cells with
+ *  membranes of one colour around a nucleus of another, chains that crawl, rings that spin, hunters chasing prey,
+ *  all drifting and re-forming without end.
  *
- * Knobs: speciesP (how many species/rings), densityP (particles per ring),
- * sizeP, hueP.
+ *  Rendered here as a field: every cell of a jittered grid holds an organism whose layered rings of particles
+ *  orbit, pulse and split; neighbouring organisms merge where they touch.  Colours come from the photograph.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the organisms crawl (integrated, jump-free)
+ *    audioPhase      -> the rings spin (integrated)
+ *    audioSpread     -> organism size
+ *    audioRoughness  -> the membranes wobble
+ *    audioHigh       -> the particles sparkle (light)
+ *    audioSwell      -> the glow (slow)
+ *
+ *  Knobs: speciesP (how many species/rings), densityP (particles per ring),
+ *  sizeP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

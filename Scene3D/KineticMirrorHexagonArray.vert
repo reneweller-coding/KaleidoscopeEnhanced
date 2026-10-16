@@ -1,9 +1,16 @@
 #version 330 core
-/**
- * @file KineticMirrorHexagonArray.vert
- * @brief 3,000 quads (geom="quads") forming a suspended kinetic mirror sculpture.
- * Mirror plates ripple and tilt in 3D space, reflecting photo textures
- * with specular glints and audio wave kinematics.
+/*****************************************************************************\
+ *                              KineticMirrorHexagonArray.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  3,000 quads (geom="quads") forming a suspended kinetic mirror sculpture.
+ *
+ *  Mirror plates ripple and tilt in 3D space, reflecting photo textures with specular glints and audio wave
+ *  kinematics.
+ *
+ *  @author René Weller
  */
 
 layout( location = 0 ) in vec4 attrA; ///< xy = quad UV [0,1], w = quad ID [0..2999]

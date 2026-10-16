@@ -1,19 +1,23 @@
 #version 330 core
+/*****************************************************************************\
+ *                              BlackHole.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Shades a single soft point sprite (accretion-disk particle or infalling matter around a black hole) as a
+ *  Gaussian glow, additively blended into the frame.
+ *
+ *  This fragment stage carries no audio uniforms of its own -- vCol (the
+ *  per-particle colour, already audio-modulated per vertex, e.g. by orbital
+ *  speed or beat-driven brightness) is the only input, so the scene's
+ *  reactivity to the music lives entirely in the companion vertex shader.
+ *
+ *  @author René Weller
+ */
 out vec4 fragColor; ///< The pixel's colour (output).
 // BlackHole.frag — soft glowing point (additive blending).
 in vec4 vCol; ///< Colour (from the vertex stage).
-
-/**
- * @file BlackHole.frag
- * @brief Shades a single soft point sprite (accretion-disk particle or
- * infalling matter around a black hole) as a Gaussian glow, additively
- * blended into the frame.
- *
- * This fragment stage carries no audio uniforms of its own -- vCol (the
- * per-particle colour, already audio-modulated per vertex, e.g. by orbital
- * speed or beat-driven brightness) is the only input, so the scene's
- * reactivity to the music lives entirely in the companion vertex shader.
- */
 
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()

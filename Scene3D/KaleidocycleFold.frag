@@ -1,17 +1,21 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file KaleidocycleFold.frag
- * @brief Fragment stage for KaleidocycleFold: a paper-craft desk (the
- * photo as the cutting mat), the ring's faces as photo triangles -- each
- * tetrahedron its own tint, each face lit by a spectrum band (24 faces,
- * bands cycling) -- with paper-fold creases at the edges and a shading
- * from a screen-space normal; the kick a flash on the topmost faces, the
- * treble the paper sheen.
+/*****************************************************************************\
+ *                              KaleidocycleFold.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity: audioSpectrum[32] -> face light; audioKick -> top flash;
- *                   audioHigh -> sheen; audioSwell -> desk lamp; audioLevel.
+ *  @brief
+ *  Fragment stage for KaleidocycleFold: a paper-craft desk (the photo as the cutting mat), the ring's faces as
+ *  photo triangles -- each tetrahedron its own tint, each face lit by a spectrum band (24 faces, bands cycling) --
+ *  with paper-fold creases at the edges and a shading from a screen-space normal; the kick a flash on the topmost
+ *  faces, the treble the paper sheen.
+ *
+ *  Audio Reactivity: audioSpectrum[32] -> face light; audioKick -> top flash;
+ *                    audioHigh -> sheen; audioSwell -> desk lamp; audioLevel.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 in vec2  vTexCoord; ///< Texture coordinate (from the vertex stage).
 in vec3  vWorld;    ///< World position (from the vertex stage).
 in float vKind;     ///< Element kind (from the vertex stage).

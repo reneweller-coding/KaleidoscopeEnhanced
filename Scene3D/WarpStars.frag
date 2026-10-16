@@ -1,18 +1,23 @@
 #version 330 core
+/*****************************************************************************\
+ *                              WarpStars.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Additive glow-sprite shader for the warp-speed starfield: renders each streaking star point as a soft,
+ *  tightly-focused point of light.
+ *
+ *  No audio uniforms are read here; audioAdvance acting as the flight
+ *  throttle, the audioDrop/audioKick-triggered hyperjump flash, and the
+ *  key-following star tint are all computed in the companion vertex shader
+ *  (WarpStars.vert) and arrive pre-baked in vCol.
+ *
+ *  @author René Weller
+ */
 out vec4 fragColor; ///< The pixel's colour (output).
 // WarpStars.frag — soft star sprite (additive blending).
 in vec4 vCol; ///< Colour (from the vertex stage).
-
-/**
- * @file WarpStars.frag
- * @brief Additive glow-sprite shader for the warp-speed starfield: renders
- * each streaking star point as a soft, tightly-focused point of light.
- *
- * No audio uniforms are read here; audioAdvance acting as the flight
- * throttle, the audioDrop/audioKick-triggered hyperjump flash, and the
- * key-following star tint are all computed in the companion vertex shader
- * (WarpStars.vert) and arrive pre-baked in vCol.
- */
 
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()

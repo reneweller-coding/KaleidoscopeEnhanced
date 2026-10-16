@@ -1,8 +1,13 @@
 #version 330 core
-/**
- * @file PhotoTunnel.vert
- * @brief Vertex stage companion to PhotoTunnel.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              PhotoTunnel.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to PhotoTunnel.frag -- see that file's header for this scene's description.
+ *
+ *  @author René Weller
  */
 // PhotoTunnel.vert — flying through a curving tunnel whose walls ARE the
 // current image, kaleidoscope-folded and scrolling with the music.  The

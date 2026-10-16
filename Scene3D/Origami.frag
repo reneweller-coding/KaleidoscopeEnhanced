@@ -1,4 +1,25 @@
 #version 330 core
+/*****************************************************************************\
+ *                              Origami.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Shades the folded Miura-ori sheet as tight-specular metallic foil, so each flat panel reads as a distinct
+ *  brightness against its neighbours.
+ *
+ *  audioLevel lifts the diffuse response, audioHigh sharpens the tight
+ *  specular highlight, audioKick brightens the rim light along crease
+ *  silhouettes, audioSubBass and audioBeat add a final overall pulse, and
+ *  audioChromaHue nudges the foil's hue. The hue itself is drawn from the
+ *  house imgPalette (a rotating sample arc over the current slideshow
+ *  photo, tex0/tex1 crossfaded by interpolation) driven by audioAdvance
+ *  and audioValence; vFold and vAcross (fed from Origami.comp by way of
+ *  Origami.vert) shift the hue and drive the travelling colour shift along
+ *  the fold, and audioAmbient lifts the unshadowed base light.
+ *
+ *  @author René Weller
+ */
 out vec4 fragColor; ///< The pixel's colour (output).
 // Origami.frag — metallic foil paper.  Flat panels with a hard crease between
 // them are the whole subject, so the shading has to reward facing: a material
@@ -12,23 +33,6 @@ in vec3  vView;   ///< View vector (from the vertex stage).
 in vec3  vWorld;  ///< World position (from the vertex stage).
 in float vFold;   ///< 0 = flat here, 1 = deeply folded here
 in float vAcross; ///< 0..1 across the sheet
-
-/**
- * @file Origami.frag
- * @brief Shades the folded Miura-ori sheet as tight-specular metallic
- * foil, so each flat panel reads as a distinct brightness against its
- * neighbours.
- *
- * audioLevel lifts the diffuse response, audioHigh sharpens the tight
- * specular highlight, audioKick brightens the rim light along crease
- * silhouettes, audioSubBass and audioBeat add a final overall pulse, and
- * audioChromaHue nudges the foil's hue. The hue itself is drawn from the
- * house imgPalette (a rotating sample arc over the current slideshow
- * photo, tex0/tex1 crossfaded by interpolation) driven by audioAdvance
- * and audioValence; vFold and vAcross (fed from Origami.comp by way of
- * Origami.vert) shift the hue and drive the travelling colour shift along
- * the fold, and audioAmbient lifts the unshadowed base light.
- */
 
 uniform sampler2D       tex0;          ///< The current photo.
 uniform sampler2DShadow texShadow;     ///< Shadow map of the key light (depth comparison).

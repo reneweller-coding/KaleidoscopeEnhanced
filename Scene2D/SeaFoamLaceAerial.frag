@@ -1,23 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SeaFoamLaceAerial.frag
- * @brief SEA FOAM LACE AERIAL: a tropical shore from straight above -- the
- * water shading from white sand through turquoise and aquamarine to deep
- * blue with dark coral heads, and over it the spent waves spread out as
- * fine white lace, foam unravelling into a net of threads and holes that
- * drifts back as each wave retreats, while the next rolls in behind.  The
- * sun glitters on the ripples and dapples the sandy bottom with caustic
- * light.  The camera hangs still; the waves come in endlessly.
+/*****************************************************************************\
+ *                              SeaFoamLaceAerial.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSwell  -> the brightness of the foam (slow)
- *   audioHigh   -> the glitter on the water (light)
- *   audioLevel  -> brightness
- *   sceneTime / sceneAdvance -> the waves coming in, the lace drifting
+ *  @brief
+ *  SEA FOAM LACE AERIAL: a tropical shore from straight above -- the water shading from white sand through
+ *  turquoise and aquamarine to deep blue with dark coral heads, and over it the spent waves spread out as fine
+ *  white lace, foam unravelling into a net of threads and holes that drifts back as each wave retreats, while the
+ *  next rolls in behind.
  *
- * Per-activation variety: waveP (the wave spacing), hueP.
+ *  The sun glitters on the ripples and dapples the sandy bottom with caustic light.  The camera hangs still; the
+ *  waves come in endlessly.
+ *
+ *  Audio Reactivity:
+ *    audioSwell  -> the brightness of the foam (slow)
+ *    audioHigh   -> the glitter on the water (light)
+ *    audioLevel  -> brightness
+ *    sceneTime / sceneAdvance -> the waves coming in, the lace drifting
+ *
+ *  Per-activation variety: waveP (the wave spacing), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

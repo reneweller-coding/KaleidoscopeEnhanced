@@ -1,4 +1,23 @@
 #version 330 core
+/*****************************************************************************\
+ *                              SynthTerrain.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Shades a synthwave valley flythrough: a dark ground plane crossed by a glowing grid whose lines are coloured
+ *  from the rotating photo-arc palette, with a bright horizon-bound scan pulse sweeping the grid once per bar.
+ *
+ *  audioKick and audioDrop punch the grid-line brightness; audioBarPhase
+ *  times the recurring scan sweep down the valley; audioCentroid tilts the
+ *  ground's colour balance warm or cool; audioChromaHue/audioAdvance/
+ *  audioValence drive the rotating photo-palette used for the line colour.
+ *  Distance fog (vDist) dims the grid toward the horizon; the terrain's
+ *  spectrum-band-driven ridge heights are computed in the companion vertex
+ *  shader (SynthTerrain.vert).
+ *
+ *  @author René Weller
+ */
 out vec4 fragColor; ///< The pixel's colour (output).
 // SynthTerrain.frag — dark ground, glowing synthwave grid lines.
 uniform float     time;           ///< Seconds since the program started (never reset; see sceneTime).
@@ -16,22 +35,6 @@ uniform float audioValence;       ///< Mood valence: 0 dark .. 1 bright.
 
 in vec3  vWorld; ///< World position (from the vertex stage).
 in float vDist;  ///< Distance (from the vertex stage).
-
-/**
- * @file SynthTerrain.frag
- * @brief Shades a synthwave valley flythrough: a dark ground plane crossed
- * by a glowing grid whose lines are coloured from the rotating photo-arc
- * palette, with a bright horizon-bound scan pulse sweeping the grid once per
- * bar.
- *
- * audioKick and audioDrop punch the grid-line brightness; audioBarPhase
- * times the recurring scan sweep down the valley; audioCentroid tilts the
- * ground's colour balance warm or cool; audioChromaHue/audioAdvance/
- * audioValence drive the rotating photo-palette used for the line colour.
- * Distance fog (vDist) dims the grid toward the horizon; the terrain's
- * spectrum-band-driven ridge heights are computed in the companion vertex
- * shader (SynthTerrain.vert).
- */
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

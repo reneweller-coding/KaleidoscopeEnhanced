@@ -1,28 +1,32 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file LiquidLightShow.frag
- * @brief LIQUID LIGHT SHOW: the 1960s overhead-projector light show -- two
- * clock glasses with coloured water, oil and dyes pressed together on a
- * projector, the light artist rocking and squeezing them, so on the wall
- * the colours bloom, burst and chase each other: dye blossoms swelling
- * outward in rings, oil cells pushing through them, drops of one colour
- * blooming inside another, everything magnified, glowing, with dark
- * outlines where the liquids meet.  The colours come from the photograph
- * where it has colour.  The projected disc fills the wall edge to edge and
- * the pressing never stops.
+/*****************************************************************************\
+ *                              LiquidLightShow.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the pressing and rocking (integrated, jump-free)
- *   audioHarmChange -> a fresh bloom opens on chord changes (smoothed, never a cut)
- *   audioSpread     -> bloom size (wide spectrum = many small blossoms)
- *   audioRoughness  -> the outlines wobble
- *   audioBass       -> the lamp's brightness (light)
- *   audioSwell      -> saturation of the dyes (slow)
+ *  @brief
+ *  LIQUID LIGHT SHOW: the 1960s overhead-projector light show -- two clock glasses with coloured water, oil and
+ *  dyes pressed together on a projector, the light artist rocking and squeezing them, so on the wall the colours
+ *  bloom, burst and chase each other: dye blossoms swelling outward in rings, oil cells pushing through them, drops
+ *  of one colour blooming inside another, everything magnified, glowing, with dark outlines where the liquids meet.
  *
- * Knobs: bloomsP (how many blossoms), oilP (share of oil cells), ringP
- * (ring structure inside the blooms), hueP.
+ *  The colours come from the photograph where it has colour.  The projected disc fills the wall edge to edge and
+ *  the pressing never stops.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the pressing and rocking (integrated, jump-free)
+ *    audioHarmChange -> a fresh bloom opens on chord changes (smoothed, never a cut)
+ *    audioSpread     -> bloom size (wide spectrum = many small blossoms)
+ *    audioRoughness  -> the outlines wobble
+ *    audioBass       -> the lamp's brightness (light)
+ *    audioSwell      -> saturation of the dyes (slow)
+ *
+ *  Knobs: bloomsP (how many blossoms), oilP (share of oil cells), ringP
+ *  (ring structure inside the blooms), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

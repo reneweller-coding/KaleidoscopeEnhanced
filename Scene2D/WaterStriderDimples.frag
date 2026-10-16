@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file WaterStriderDimples.frag
- * @brief WATER STRIDER DIMPLES: a pond surface from just above.  The
- * striders themselves are thin dark lines, but what you actually see are
- * their six leg dimples: each foot presses the surface into a little lens
- * that gathers the light into a bright ring with a dark centre on the
- * bed below (the photo).  They glide on the scene clock and push out
- * rings on continuous phases.  The bass is the pond's own colour, the
- * treble the surface glitter, the kick a fish rising far off.
+/*****************************************************************************\
+ *                              WaterStriderDimples.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   sceneAdvance -> the striders glide, rings expand (continuous)
- *   audioBass    -> pond colour and depth (slow)
- *   audioHigh    -> surface glitter (light)
- *   audioKick    -> a distant rise: one wider ring (light)
- *   audioSwell   -> daylight through the canopy (slow)
+ *  @brief
+ *  WATER STRIDER DIMPLES: a pond surface from just above.
  *
- * Per-activation variety: bugsP, litterP, hueP.
+ *  The striders themselves are thin dark lines, but what you actually see are their six leg dimples: each foot
+ *  presses the surface into a little lens that gathers the light into a bright ring with a dark centre on the bed
+ *  below (the photo).  They glide on the scene clock and push out rings on continuous phases.  The bass is the
+ *  pond's own colour, the treble the surface glitter, the kick a fish rising far off.
+ *
+ *  Audio Reactivity:
+ *    sceneAdvance -> the striders glide, rings expand (continuous)
+ *    audioBass    -> pond colour and depth (slow)
+ *    audioHigh    -> surface glitter (light)
+ *    audioKick    -> a distant rise: one wider ring (light)
+ *    audioSwell   -> daylight through the canopy (slow)
+ *
+ *  Per-activation variety: bugsP, litterP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

@@ -1,23 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file EpoxyWaves.frag
- * @brief EPOXY WAVES: resin-art ocean -- the classic poured-epoxy seascape
- * seen from above: bands of deep blue, teal and turquoise resin with
- * white lacy "foam" cells along the wave fronts, the waves slowly
- * washing in over a sandy shore made of the photograph, retreating and
- * washing in again, the lacing reforming each time.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              EpoxyWaves.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the waves wash in and out (integrated, jump-free)
- *   audioSpread     -> how far the waves reach
- *   audioKick       -> the foam brightens (light)
- *   audioMode       -> the sea: deep blue in minor, tropical turquoise in major
- *   audioRoughness  -> the lacing gets finer
- *   audioSwell      -> the glossy sheen (slow)
+ *  @brief
+ *  EPOXY WAVES: resin-art ocean -- the classic poured-epoxy seascape seen from above: bands of deep blue, teal and
+ *  turquoise resin with white lacy "foam" cells along the wave fronts, the waves slowly washing in over a sandy
+ *  shore made of the photograph, retreating and washing in again, the lacing reforming each time.
  *
- * Knobs: bandP (wave bands), laceP (lacing density), shoreP (photo shore), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the waves wash in and out (integrated, jump-free)
+ *    audioSpread     -> how far the waves reach
+ *    audioKick       -> the foam brightens (light)
+ *    audioMode       -> the sea: deep blue in minor, tropical turquoise in major
+ *    audioRoughness  -> the lacing gets finer
+ *    audioSwell      -> the glossy sheen (slow)
+ *
+ *  Knobs: bandP (wave bands), laceP (lacing density), shoreP (photo shore), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file NeutronStarSurfaceSprint.frag
- * @brief NEUTRON STAR SURFACE SPRINT: a racing flight over the crust of a
- * neutron star.  The ground is a height field of cooled iron plates split
- * by glowing cracks; the camera skims it at a fixed height on the music's
- * pace, so the crust streams under us and the horizon stays put.  The
- * sharpness of the sound is the heat in the cracks; a starquake is a kick,
- * and it is LIGHT: a flash runs through the crack network, the ground never
- * heaves.  Builds raise a faint magnetospheric glow over the horizon.
+/*****************************************************************************\
+ *                              NeutronStarSurfaceSprint.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   sceneAdvance    -> the sprint (music-paced, continuous)
- *   audioSharpness  -> crack glow (light)
- *   audioKick       -> starquake flash through the cracks (light)
- *   audioSwell      -> magnetosphere glow over the horizon (slow)
- *   audioSubBass    -> deep red glow of the plates (light)
+ *  @brief
+ *  NEUTRON STAR SURFACE SPRINT: a racing flight over the crust of a neutron star.
  *
- * Per-activation variety: speedP, crackP (crack density), hueP.
+ *  The ground is a height field of cooled iron plates split by glowing cracks; the camera skims it at a fixed
+ *  height on the music's pace, so the crust streams under us and the horizon stays put.  The sharpness of the sound
+ *  is the heat in the cracks; a starquake is a kick, and it is LIGHT: a flash runs through the crack network, the
+ *  ground never heaves.  Builds raise a faint magnetospheric glow over the horizon.
+ *
+ *  Audio Reactivity:
+ *    sceneAdvance    -> the sprint (music-paced, continuous)
+ *    audioSharpness  -> crack glow (light)
+ *    audioKick       -> starquake flash through the cracks (light)
+ *    audioSwell      -> magnetosphere glow over the horizon (slow)
+ *    audioSubBass    -> deep red glow of the plates (light)
+ *
+ *  Per-activation variety: speedP, crackP (crack density), hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

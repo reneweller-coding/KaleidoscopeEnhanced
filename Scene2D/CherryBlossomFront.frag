@@ -1,27 +1,31 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file CherryBlossomFront.frag
- * @brief CHERRY BLOSSOM FRONT: looking down a narrow canal lined with
- * cherry trees whose canopies arch over the water -- stone banks, a path
- * with lanterns, the sky pale with spring.  During the scene arc the
- * blossom front travels toward the camera: far trees burst into pink first,
- * then nearer and nearer ones, until the whole avenue is in flower and the
- * petals come down and gather on the water as drifting pink rafts.  Petals
- * (round) fall on the scene clock; the swell is the spring light, the
- * treble the glitter on the water, the kick a gust that lifts the petals.
- * Camera fixed.
+/*****************************************************************************\
+ *                              CherryBlossomFront.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   sceneProgress -> the front's advance toward the camera (the arc)
- *   sceneAdvance  -> falling petals, drifting rafts (continuous)
- *   audioSwell    -> spring light (slow)
- *   audioHigh     -> glitter on the water (light)
- *   audioKick     -> a gust brightens the falling petals (light)
- *   audioLevel    -> brightness
+ *  @brief
+ *  CHERRY BLOSSOM FRONT: looking down a narrow canal lined with cherry trees whose canopies arch over the water --
+ *  stone banks, a path with lanterns, the sky pale with spring.
  *
- * Per-activation variety: hillsP (canal width), petalP (petal density), hueP.
+ *  During the scene arc the blossom front travels toward the camera: far trees burst into pink first, then nearer
+ *  and nearer ones, until the whole avenue is in flower and the petals come down and gather on the water as
+ *  drifting pink rafts.  Petals (round) fall on the scene clock; the swell is the spring light, the treble the
+ *  glitter on the water, the kick a gust that lifts the petals. Camera fixed.
+ *
+ *  Audio Reactivity:
+ *    sceneProgress -> the front's advance toward the camera (the arc)
+ *    sceneAdvance  -> falling petals, drifting rafts (continuous)
+ *    audioSwell    -> spring light (slow)
+ *    audioHigh     -> glitter on the water (light)
+ *    audioKick     -> a gust brightens the falling petals (light)
+ *    audioLevel    -> brightness
+ *
+ *  Per-activation variety: hillsP (canal width), petalP (petal density), hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

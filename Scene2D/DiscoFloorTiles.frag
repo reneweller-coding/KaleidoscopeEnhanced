@@ -1,23 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file DiscoFloorTiles.frag
- * @brief DISCO FLOOR TILES: a lit dance floor seen from a low angle, glass
- * tiles glowing from beneath, running away into a dark club with a mirror
- * ceiling that repeats the floor overhead.  Every tile column is a
- * spectrum band and each tile lights by how high that band reaches -- the
- * floor is an equaliser you could dance on -- and the kick pulses the
- * whole grid.  Haze hangs over it and catches the glow.  Nothing moves but
- * the light; the camera drifts very slowly along the floor.
+/*****************************************************************************\
+ *                              DiscoFloorTiles.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSpectrum[32] -> tile columns light up to the band's level (light)
- *   audioKick         -> a pulse through the whole floor (light)
- *   audioSwell        -> haze over the floor (slow)
- *   sceneAdvance      -> the slow drift along the floor (continuous)
+ *  @brief
+ *  DISCO FLOOR TILES: a lit dance floor seen from a low angle, glass tiles glowing from beneath, running away into
+ *  a dark club with a mirror ceiling that repeats the floor overhead.
  *
- * Per-activation variety: patternP (equaliser or checker mix), hueP.
+ *  Every tile column is a spectrum band and each tile lights by how high that band reaches -- the floor is an
+ *  equaliser you could dance on -- and the kick pulses the whole grid.  Haze hangs over it and catches the glow.
+ *  Nothing moves but the light; the camera drifts very slowly along the floor.
+ *
+ *  Audio Reactivity:
+ *    audioSpectrum[32] -> tile columns light up to the band's level (light)
+ *    audioKick         -> a pulse through the whole floor (light)
+ *    audioSwell        -> haze over the floor (slow)
+ *    sceneAdvance      -> the slow drift along the floor (continuous)
+ *
+ *  Per-activation variety: patternP (equaliser or checker mix), hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

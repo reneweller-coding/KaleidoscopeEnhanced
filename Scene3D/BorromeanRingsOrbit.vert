@@ -1,10 +1,17 @@
 #version 330 core
-/**
- * @file BorromeanRingsOrbit.vert
- * @brief Vertex stage for BorromeanRingsOrbit: positions pass through
- * (camera at the origin, +z ahead); the torus normal is rebuilt from its
- * packed xy and z sign.  The opaque pass draws the wall, the OIT pass the
- * rings; the other half collapses behind the near plane.  No camera motion.
+/*****************************************************************************\
+ *                              BorromeanRingsOrbit.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage for BorromeanRingsOrbit: positions pass through (camera at the origin, +z ahead); the torus normal
+ *  is rebuilt from its packed xy and z sign.
+ *
+ *  The opaque pass draws the wall, the OIT pass the rings; the other half collapses behind the near plane.  No
+ *  camera motion.
+ *
+ *  @author René Weller
  */
 layout( location = 0 ) in vec4 attrA; ///< xyz = position, w = ring id
 layout( location = 1 ) in vec4 attrB; ///< x = along (0..1), y = kind (-1 wall, 0/1 ring by nz sign), zw = normal xy /

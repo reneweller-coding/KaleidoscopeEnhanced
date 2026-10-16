@@ -1,29 +1,34 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file ExoticStation.frag
- * @brief GEOM="MESH" STATION FAMILY: the five one-off stations that don't
- * fit the other families (agri-biosphere, neutral diplomatic seat, solar
- * collector, luxury border post, smuggler hideout), each shown against its
- * own backdrop painted onto the sky shell Scene3DShader::buildGeometry()
- * appends after the loaded mesh (see ExoticStation.vert) -- vBg selects
- * shell vs. hull. Unlike the other families, these five are meant to look
- * DELIBERATELY different from each other -- tintP is a fixed per-instance
- * accent hue (independent of the per-activation hueP drift below) that
- * colors BOTH the hull's own small accent glow and the backdrop, bgTypeP
- * picks which of three backdrop styles (0=nebula, 1=asteroid field,
- * 2=starfield with a bright nearby star/sun), and glowP is each instance's
- * own accent brightness, so one shader covers a glowing green greenhouse, a
- * gold pagoda and a barely-lit smuggler's den without five separate files.
- *   audioSwell   -> key-light + accent-glow strength
- *   audioKick    -> accent-glow flicker
- *   audioAdvance -> tumble speed (vertex stage)
+/*****************************************************************************\
+ *                              ExoticStation.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-instance: sizeP (relative scale), tintP (fixed accent hue, radians),
- *               glowP (accent brightness -- turn this low for something
- *               meant to look dim/covert), bgTypeP (0/1/2, see above).
- * Per-activation variety: hueP float palette offset (0..6.28).
+ *  @brief
+ *  GEOM="MESH" STATION FAMILY: the five one-off stations that don't fit the other families (agri-biosphere, neutral
+ *  diplomatic seat, solar collector, luxury border post, smuggler hideout), each shown against its own backdrop
+ *  painted onto the sky shell Scene3DShader::buildGeometry() appends after the loaded mesh (see ExoticStation.vert)
+ *  -- vBg selects shell vs. hull.
+ *
+ *  Unlike the other families, these five are meant to look DELIBERATELY different from each other -- tintP is a
+ *  fixed per-instance accent hue (independent of the per-activation hueP drift below) that colors BOTH the hull's
+ *  own small accent glow and the backdrop, bgTypeP picks which of three backdrop styles (0=nebula, 1=asteroid
+ *  field, 2=starfield with a bright nearby star/sun), and glowP is each instance's own accent brightness, so one
+ *  shader covers a glowing green greenhouse, a gold pagoda and a barely-lit smuggler's den without five separate
+ *  files.
+ *
+ *    audioSwell   -> key-light + accent-glow strength
+ *    audioKick    -> accent-glow flicker
+ *    audioAdvance -> tumble speed (vertex stage)
+ *
+ *  Per-instance: sizeP (relative scale), tintP (fixed accent hue, radians),
+ *                glowP (accent brightness -- turn this low for something
+ *                meant to look dim/covert), bgTypeP (0/1/2, see above).
+ *  Per-activation variety: hueP float palette offset (0..6.28).
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform sampler2DArray texMeshMaterial;       ///< The mesh's material textures (albedo, roughness, normal ...).
 uniform int            texMeshMaterialLayers; ///< Number of layers in texMeshMaterial.

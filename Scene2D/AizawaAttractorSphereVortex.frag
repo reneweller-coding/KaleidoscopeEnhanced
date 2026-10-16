@@ -1,18 +1,25 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file AizawaAttractorSphereVortex.frag
- * @brief AIZAWA ATTRACTOR SPHERE VORTEX: 3D Aizawa attractor forming a rotating spherical
- * shell with a penetrating central plasma vortex tube and celestial Saturn rings.
- * High-velocity chaotic flow, glowing orbital particle swarms, and phase flares.
+/*****************************************************************************\
+ *                              AizawaAttractorSphereVortex.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance -> drives continuous integration of Aizawa attractor vortex
- *   audioKick    -> flashes central axial vortex funnel & triggers ring pulse
- *   audioCentroid-> sharpens orbital trajectory lines & sphere shell resolution
- *   audioSubBass -> expands spherical attractor breathing radius
- *   audioChromaHue-> rotates the luminous celestial sphere spectrum
+ *  @brief
+ *  AIZAWA ATTRACTOR SPHERE VORTEX: 3D Aizawa attractor forming a rotating spherical shell with a penetrating
+ *  central plasma vortex tube and celestial Saturn rings.
+ *
+ *  High-velocity chaotic flow, glowing orbital particle swarms, and phase flares.
+ *
+ *  Audio Reactivity:
+ *    audioAdvance -> drives continuous integration of Aizawa attractor vortex
+ *    audioKick    -> flashes central axial vortex funnel & triggers ring pulse
+ *    audioCentroid-> sharpens orbital trajectory lines & sphere shell resolution
+ *    audioSubBass -> expands spherical attractor breathing radius
+ *    audioChromaHue-> rotates the luminous celestial sphere spectrum
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

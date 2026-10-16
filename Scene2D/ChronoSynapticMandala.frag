@@ -1,18 +1,23 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file ChronoSynapticMandala.frag
- * @brief CHRONO SYNAPTIC MANDALA: Multi-ring temporal echo kaleidoscope with
- * staggered time-delay rings, synaptic neural energy conduits, and high-frequency
- * harmonic mandala folding.
+/*****************************************************************************\
+ *                              ChronoSynapticMandala.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioAdvance -> continuous rotation & temporal phase wave progression
- *   audioKick    -> inward-to-outward radial synaptic pulse & flash
- *   audioCentroid-> modulates neural conduit branching frequency
- *   audioSubBass -> expands temporal ring displacement amplitude
- *   audioChromaHue-> rotates the synaptic color palette
+ *  @brief
+ *  CHRONO SYNAPTIC MANDALA: Multi-ring temporal echo kaleidoscope with staggered time-delay rings, synaptic neural
+ *  energy conduits, and high-frequency harmonic mandala folding.
+ *
+ *  Audio Reactivity:
+ *    audioAdvance -> continuous rotation & temporal phase wave progression
+ *    audioKick    -> inward-to-outward radial synaptic pulse & flash
+ *    audioCentroid-> modulates neural conduit branching frequency
+ *    audioSubBass -> expands temporal ring displacement amplitude
+ *    audioChromaHue-> rotates the synaptic color palette
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

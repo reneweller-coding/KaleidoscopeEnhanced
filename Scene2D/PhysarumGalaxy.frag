@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file PhysarumGalaxy.frag
- * @brief PHYSARUM GALAXY: the slime-mould simulation's trail map, wrapped
- * onto a slowly turning globe and lit like a galaxy seen from above.  A
- * million agents (texPhysarum, two species in R and G) grow, merge and
- * abandon vein networks; projected onto a sphere the veins become star
- * streams and the abandoned trails dark dust lanes.  The second species is
- * drawn as a colder, thinner web behind the first.
+/*****************************************************************************\
+ *                              PhysarumGalaxy.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   texPhysarum    -> the picture (star streams = trails)
- *   audioCentroid  -> which species dominates the light (bright mixes favour G)
- *   audioKick      -> a shockwave of light runs out along the veins
- *   audioSwell     -> globe radius breathes; halo brightens
- *   sceneAdvance   -> the globe turns; continuous, no jumps
- *   audioBass      -> core glow
+ *  @brief
+ *  PHYSARUM GALAXY: the slime-mould simulation's trail map, wrapped onto a slowly turning globe and lit like a
+ *  galaxy seen from above.
  *
- * Per-activation variety: tiltP (globe tilt), gainP (trail light), hueP.
+ *  A million agents (texPhysarum, two species in R and G) grow, merge and abandon vein networks; projected onto a
+ *  sphere the veins become star streams and the abandoned trails dark dust lanes.  The second species is drawn as a
+ *  colder, thinner web behind the first.
+ *
+ *  Audio Reactivity:
+ *    texPhysarum    -> the picture (star streams = trails)
+ *    audioCentroid  -> which species dominates the light (bright mixes favour G)
+ *    audioKick      -> a shockwave of light runs out along the veins
+ *    audioSwell     -> globe radius breathes; halo brightens
+ *    sceneAdvance   -> the globe turns; continuous, no jumps
+ *    audioBass      -> core glow
+ *
+ *  Per-activation variety: tiltP (globe tilt), gainP (trail light), hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

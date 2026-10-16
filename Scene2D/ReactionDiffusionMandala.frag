@@ -1,18 +1,25 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file ReactionDiffusionMandala.frag
- * @brief The living Gray-Scott reaction-diffusion field (`texSim`), sampled through TWO nested
- * kaleidoscopic mirror-folds at different radii and blended -- a mandala-within-a-mandala, always
- * on (unlike ReactionDiffusion.frag, where the fold is an occasional per-activation option and the
- * field mostly reads as liquid metal draped over the photo). Colour comes from imgPalette (the
- * house-standard photo-arc palette, key-locked via audioChromaHue) modulated by the field's own
- * concentration, not from the photo directly -- the picture supplies the colour family, the
- * simulation supplies the structure. audioPhase spins the outer fold, audioBeat pulses the segment
- * count's apparent sharpness, audioSwell breathes the inner-layer zoom, audioOnset flashes the
- * mandala's rim. If the simulation is unavailable, texSim reads 0 and a dim, still symmetric
- * mandala outline remains (the fold itself needs no simulation state to look intentional).
+/*****************************************************************************\
+ *                              ReactionDiffusionMandala.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  The living Gray-Scott reaction-diffusion field (`texSim`), sampled through TWO nested kaleidoscopic mirror-folds
+ *  at different radii and blended -- a mandala-within-a-mandala, always on (unlike ReactionDiffusion.frag, where
+ *  the fold is an occasional per-activation option and the field mostly reads as liquid metal draped over the
+ *  photo).
+ *
+ *  Colour comes from imgPalette (the house-standard photo-arc palette, key-locked via audioChromaHue) modulated by
+ *  the field's own concentration, not from the photo directly -- the picture supplies the colour family, the
+ *  simulation supplies the structure. audioPhase spins the outer fold, audioBeat pulses the segment count's
+ *  apparent sharpness, audioSwell breathes the inner-layer zoom, audioOnset flashes the mandala's rim. If the
+ *  simulation is unavailable, texSim reads 0 and a dim, still symmetric mandala outline remains (the fold itself
+ *  needs no simulation state to look intentional).
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

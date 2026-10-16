@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file GuillocheEngraving.frag
- * @brief GUILLOCHE ENGRAVING: the banknote rosette.  Nested guilloche
- * curves -- r(theta) = sum of cosines whose amplitudes come from the twelve
- * chroma classes -- engraved as fine ink lines over the photo, so the
- * harmony of the moment literally draws the rosette.  The rosette turns
- * steadily on the scene clock; the chroma shapes it (smoothly, as the
- * chroma itself is smooth); the kick brightens the ink; the treble adds
- * the micro-hatching.  Camera still.
+/*****************************************************************************\
+ *                              GuillocheEngraving.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioChroma[12] -> curve amplitudes (shape, continuous)
- *   sceneAdvance    -> rotation (continuous)
- *   audioKick       -> ink brightness (light)
- *   audioHigh       -> hatching (light)
- *   audioLevel      -> brightness
+ *  @brief
+ *  GUILLOCHE ENGRAVING: the banknote rosette.
  *
- * Per-activation variety: layersP, inkP, hueP.
+ *  Nested guilloche curves -- r(theta) = sum of cosines whose amplitudes come from the twelve chroma classes --
+ *  engraved as fine ink lines over the photo, so the harmony of the moment literally draws the rosette.  The
+ *  rosette turns steadily on the scene clock; the chroma shapes it (smoothly, as the chroma itself is smooth); the
+ *  kick brightens the ink; the treble adds the micro-hatching.  Camera still.
+ *
+ *  Audio Reactivity:
+ *    audioChroma[12] -> curve amplitudes (shape, continuous)
+ *    sceneAdvance    -> rotation (continuous)
+ *    audioKick       -> ink brightness (light)
+ *    audioHigh       -> hatching (light)
+ *    audioLevel      -> brightness
+ *
+ *  Per-activation variety: layersP, inkP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

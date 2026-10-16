@@ -1,10 +1,16 @@
 #version 330 core
-/**
- * @file DysonSwarmConstruction.vert
- * @brief Vertex stage for DysonSwarmConstruction.comp/.frag: places the swarm
- * around its star and colours each panel by how squarely it faces the star
- * (attrB.x) and whether it is docked (attrB.y = arc fraction).  sceneProgress
- * is read here so the host sees the scene as staged (drop regie).
+/*****************************************************************************\
+ *                              DysonSwarmConstruction.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage for DysonSwarmConstruction.comp/.frag: places the swarm around its star and colours each panel by
+ *  how squarely it faces the star (attrB.x) and whether it is docked (attrB.y = arc fraction).
+ *
+ *  sceneProgress is read here so the host sees the scene as staged (drop regie).
+ *
+ *  @author René Weller
  */
 layout( location = 0 ) in vec4 attrA; ///< xyz = position, w = panel id
 layout( location = 1 ) in vec4 attrB; ///< x = lit, y = kind (-1 sky, 2 star, else docked fraction), zw = uv

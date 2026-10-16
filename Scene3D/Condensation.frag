@@ -1,32 +1,37 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-
-/**
- * @file Condensation.frag
- * @brief Gas resolving into an object. For most of the scene there is only a
- * slowly stirring volume; then a shape starts to be implied by where the fog is
- * thicker, and by the end the thing is simply there. The migration itself is in
- * the geometry stage.
+/*****************************************************************************\
+ *                              Condensation.frag
+\*****************************************************************************/
+/*! @file
  *
- * Density without blending: the mesh path draws opaque, so a real volume cannot
- * be accumulated by alpha. Instead each puff DISCARDS most of its fragments on
- * an ordered threshold, and where puffs overlap more of them survive -- the
- * accumulation is the density. Discarded fragments write no depth either, so
- * the volume stays correct whatever order the puffs happen to be drawn in,
- * which for 150k unsorted primitives is the only workable answer.
+ *  @brief
+ *  Gas resolving into an object.
  *
- * The colour comes from the model's own material even while it is gas, so the
- * cloud is already faintly the colour the object will turn out to be. That
- * quiet foreshadowing is what makes the resolve feel earned rather than
- * arbitrary.
+ *  For most of the scene there is only a slowly stirring volume; then a shape starts to be implied by where the fog
+ *  is thicker, and by the end the thing is simply there. The migration itself is in the geometry stage.
  *
- *   sceneProgress -> the resolve (geometry stage)
- *   audioSwell    -> how brightly the gas glows
- *   audioKick     -> a pulse through the volume
+ *  Density without blending: the mesh path draws opaque, so a real volume cannot
+ *  be accumulated by alpha. Instead each puff DISCARDS most of its fragments on
+ *  an ordered threshold, and where puffs overlap more of them survive -- the
+ *  accumulation is the density. Discarded fragments write no depth either, so
+ *  the volume stays correct whatever order the puffs happen to be drawn in,
+ *  which for 150k unsorted primitives is the only workable answer.
  *
- * Per-instance: sizeP, cloudP (initial cloud size), puffP (puff size), tintP.
- * Per-activation variety: hueP float palette offset (0..6.28).
+ *  The colour comes from the model's own material even while it is gas, so the
+ *  cloud is already faintly the colour the object will turn out to be. That
+ *  quiet foreshadowing is what makes the resolve feel earned rather than
+ *  arbitrary.
+ *
+ *    sceneProgress -> the resolve (geometry stage)
+ *    audioSwell    -> how brightly the gas glows
+ *    audioKick     -> a pulse through the volume
+ *
+ *  Per-instance: sizeP, cloudP (initial cloud size), puffP (puff size), tintP.
+ *  Per-activation variety: hueP float palette offset (0..6.28).
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform sampler2DArray texMeshMaterial;       ///< The mesh's material textures (albedo, roughness, normal ...).
 uniform int            texMeshMaterialLayers; ///< Number of layers in texMeshMaterial.

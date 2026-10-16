@@ -1,13 +1,20 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SpectrumRadial.frag
- * @brief Radial spectrum analyzer with 32 frequency bands (mirrored into 64 wedges)
- * radiating around a central disc that shows the source image.  Each wedge is a
- * bar whose length tracks that band's live level, filled with the image and
- * tinted across the rainbow by frequency; the whole ring pulses on the beat.
- * Far more bands and far more movement than the old 6-band version.
+/*****************************************************************************\
+ *                              SpectrumRadial.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Radial spectrum analyzer with 32 frequency bands (mirrored into 64 wedges) radiating around a central disc that
+ *  shows the source image.
+ *
+ *  Each wedge is a bar whose length tracks that band's live level, filled with the image and tinted across the
+ *  rainbow by frequency; the whole ring pulses on the beat. Far more bands and far more movement than the old
+ *  6-band version.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

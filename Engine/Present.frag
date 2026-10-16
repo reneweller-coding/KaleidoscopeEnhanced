@@ -1,4 +1,28 @@
 #version 330 core
+/*****************************************************************************\
+ *                              Present.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Final present pass.
+ *
+ *  Two jobs:
+ *
+ *   1) A GLOBAL MOOD GRADE applied once to the finished frame, so EVERY effect
+ *      (not just Tunnel/Kaleidoscope) reacts to the music's mood:
+ *        audioValence  -> colour temperature + brightness (happy=warm/bright,
+ *                         sad=bluish/darker; Palmer 2013 mapping canon)
+ *        audioArousal  -> saturation (energetic=vivid, still=muted)
+ *        audioCentroid -> minority share of the temperature (bright timbre)
+ *        audioLevel    -> brightness (loudness)
+ *        audioFlux     -> shimmer on spectral change
+ *      The host feeds GATED values, so in non-music mode they sit at neutral
+ *      (centroid/valence 0.5, level/flux 0) and the grade is a no-op.
+ *   2) The photosensitivity brightness limit (uniform `scale`), applied last.
+ *
+ *  @author René Weller
+ */
 // Shader-storage blocks are a 4.3 feature; requesting the extension keeps this
 // shader at 330 so it still links against the shared 330 fullscreen vertex
 // shader that every other 2D pass uses.
@@ -17,21 +41,6 @@ layout( std430, binding = 3 ) readonly buffer AutoExp
     float lumaP98;
     float autoPad;
 };
-/**
- * @file Present.frag
- * @brief Final present pass.  Two jobs:
- *  1) A GLOBAL MOOD GRADE applied once to the finished frame, so EVERY effect
- *     (not just Tunnel/Kaleidoscope) reacts to the music's mood:
- *       audioValence  -> colour temperature + brightness (happy=warm/bright,
- *                        sad=bluish/darker; Palmer 2013 mapping canon)
- *       audioArousal  -> saturation (energetic=vivid, still=muted)
- *       audioCentroid -> minority share of the temperature (bright timbre)
- *       audioLevel    -> brightness (loudness)
- *       audioFlux     -> shimmer on spectral change
- *     The host feeds GATED values, so in non-music mode they sit at neutral
- *     (centroid/valence 0.5, level/flux 0) and the grade is a no-op.
- *  2) The photosensitivity brightness limit (uniform `scale`), applied last.
- */
 uniform sampler2D tex;        ///< The input picture.
 uniform vec2      resolution; ///< Size of the render target in pixels.
 uniform float     scale;      ///< Brightness limit for photosensitivity, applied last.

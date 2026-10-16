@@ -1,8 +1,13 @@
 #version 400 core
-/**
- * @file BloomSculpt.tesc
- * @brief Tessellation-control stage companion to BloomSculpt.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              BloomSculpt.tesc
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Tessellation-control stage companion to BloomSculpt.frag -- see that file's header for this scene's description.
+ *
+ *  @author René Weller
  */
 // BloomSculpt.tesc — uniform-ish subdivision with a polar taper.
 // -----------------------------------------------------------------------

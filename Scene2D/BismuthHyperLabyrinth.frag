@@ -1,12 +1,17 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file BismuthHyperLabyrinth.frag
- * @brief BISMUTH HYPER LABYRINTH: Raymarched infinite 3D/4D hopper crystal maze
- * of elemental bismuth with stepped 90-degree concentric square terraces,
- * thin-film optical interference oxidation iridescence, metallic specular
- * reflections, holographic audio equalizer pulses, and photo texturing.
+/*****************************************************************************\
+ *                              BismuthHyperLabyrinth.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  BISMUTH HYPER LABYRINTH: Raymarched infinite 3D/4D hopper crystal maze of elemental bismuth with stepped
+ *  90-degree concentric square terraces, thin-film optical interference oxidation iridescence, metallic specular
+ *  reflections, holographic audio equalizer pulses, and photo texturing.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

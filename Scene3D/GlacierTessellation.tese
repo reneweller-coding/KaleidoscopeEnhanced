@@ -1,8 +1,14 @@
 #version 400 core
-/**
- * @file GlacierTessellation.tese
- * @brief Tessellation-evaluation stage companion to GlacierTessellation.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              GlacierTessellation.tese
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Tessellation-evaluation stage companion to GlacierTessellation.frag -- see that file's header for this scene's
+ *  description.
+ *
+ *  @author René Weller
  */
 /// GlacierTessellation.tese — Tessellation Evaluation Stage
 layout( quads, fractional_odd_spacing, ccw ) in;

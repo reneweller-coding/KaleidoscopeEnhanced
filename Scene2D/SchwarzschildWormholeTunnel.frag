@@ -1,22 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SchwarzschildWormholeTunnel.frag
- * @brief SCHWARZSCHILD WORMHOLE TUNNEL: Raymarched flight through a traversable
- * Morris-Thorne wormhole connecting two distinct universes (tex0 and tex1).
- * Relativistic spacetime throat curvature, gravitational lensing arcs,
- * chromatic dispersion, and seamless topological universe transitions.
- *   audioAdvance -> navigates camera through the wormhole throat
- *   audioKick    -> pulses gravitational metric contraction shockwaves
- *   audioSubBass -> expands throat diameter and event horizon clearance
- *   audioChromaHue-> shifts relativistic Doppler blueshift/redshift
+/*****************************************************************************\
+ *                              SchwarzschildWormholeTunnel.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   throatP    float wormhole throat radius & length   (0.5..2.2)
- *   curvatureP float spacetime bending strength        (0.5..2.0)
- *   speedP     float hyperspace flight velocity        (0.5..2.0)
- *   hueP       float chromatic dispersion hue offset   (0..6.28)
+ *  @brief
+ *  SCHWARZSCHILD WORMHOLE TUNNEL: Raymarched flight through a traversable Morris-Thorne wormhole connecting two
+ *  distinct universes (tex0 and tex1).
+ *
+ *  Relativistic spacetime throat curvature, gravitational lensing arcs, chromatic dispersion, and seamless
+ *  topological universe transitions.
+ *
+ *    audioAdvance -> navigates camera through the wormhole throat
+ *    audioKick    -> pulses gravitational metric contraction shockwaves
+ *    audioSubBass -> expands throat diameter and event horizon clearance
+ *    audioChromaHue-> shifts relativistic Doppler blueshift/redshift
+ *
+ *  Per-activation variety:
+ *    throatP    float wormhole throat radius & length   (0.5..2.2)
+ *    curvatureP float spacetime bending strength        (0.5..2.0)
+ *    speedP     float hyperspace flight velocity        (0.5..2.0)
+ *    hueP       float chromatic dispersion hue offset   (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

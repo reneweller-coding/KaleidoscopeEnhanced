@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file PowersOfTenZoom.frag
- * @brief POWERS OF TEN ZOOM: the scale ladder as one endless zoom.  A moon
- * circles a planet, the planet circles a star, the star sits in a cluster,
- * the cluster in a galaxy, the galaxy in a group -- every level is a ring
- * of bodies around a centre, and the levels are self-similar in log-scale,
- * so the zoom out (or in) is periodic and never wraps visibly.  Each level
- * turns at its own rate on the scene clock; the bodies glow with the bands
- * of their level; the centre body is the photo.  The camera never jolts.
+/*****************************************************************************\
+ *                              PowersOfTenZoom.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   sceneAdvance      -> the zoom and the orbits (continuous, periodic)
- *   audioSpectrum[32] -> body glow per level (light)
- *   audioKick         -> the centre body flashes (light)
- *   audioSwell        -> haze (slow)
- *   audioLevel        -> brightness
+ *  @brief
+ *  POWERS OF TEN ZOOM: the scale ladder as one endless zoom.
  *
- * Per-activation variety: zoomP (rate), bodiesP (bodies per level), hueP.
+ *  A moon circles a planet, the planet circles a star, the star sits in a cluster, the cluster in a galaxy, the
+ *  galaxy in a group -- every level is a ring of bodies around a centre, and the levels are self-similar in
+ *  log-scale, so the zoom out (or in) is periodic and never wraps visibly.  Each level turns at its own rate on the
+ *  scene clock; the bodies glow with the bands of their level; the centre body is the photo.  The camera never
+ *  jolts.
+ *
+ *  Audio Reactivity:
+ *    sceneAdvance      -> the zoom and the orbits (continuous, periodic)
+ *    audioSpectrum[32] -> body glow per level (light)
+ *    audioKick         -> the centre body flashes (light)
+ *    audioSwell        -> haze (slow)
+ *    audioLevel        -> brightness
+ *
+ *  Per-activation variety: zoomP (rate), bodiesP (bodies per level), hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

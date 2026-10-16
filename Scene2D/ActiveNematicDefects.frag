@@ -1,31 +1,36 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file ActiveNematicDefects.frag
- * @brief ACTIVE NEMATIC DEFECTS: a living liquid crystal -- a dense carpet of
- * rod-like filaments that align with their neighbours and push, so the
- * whole field churns in never-ending turbulence: the rods bend into bands
- * and swirls, and topological defects wander through them, comet-shaped
- * +1/2 defects that swim head-first and three-armed -1/2 defects that
- * drift, pairs born and annihilating.  Seen between crossed polarisers the
- * rods glow in interference colours by their orientation; the photo tints
- * the colour wheel.  Endless and mirrorable, every frame different.
+/*****************************************************************************\
+ *                              ActiveNematicDefects.frag
+\*****************************************************************************/
+/*! @file
  *
- * The director field is built from moving +/-1/2 defects (the angle of a
- * nematic around a defect of charge k is k times the polar angle), plus a
- * slow bend field; it is drawn by line-integral streaks along the director.
+ *  @brief
+ *  ACTIVE NEMATIC DEFECTS: a living liquid crystal -- a dense carpet of rod-like filaments that align with their
+ *  neighbours and push, so the whole field churns in never-ending turbulence: the rods bend into bands and swirls,
+ *  and topological defects wander through them, comet-shaped +1/2 defects that swim head-first and three-armed -1/2
+ *  defects that drift, pairs born and annihilating.
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the defects swim (integrated, jump-free)
- *   audioSpread     -> how many defect pairs are active (blended in and out)
- *   audioRoughness  -> the rods buckle into finer bends
- *   audioMode       -> the interference palette shifts warm in major
- *   audioHigh       -> the defect cores sparkle (light)
- *   audioSwell      -> brightness of the polarised glow (slow)
+ *  Seen between crossed polarisers the rods glow in interference colours by their orientation; the photo tints the
+ *  colour wheel.  Endless and mirrorable, every frame different.
  *
- * Knobs: defectsP (base number of defects), streakP (rod length), paletteP
- * (polariser palette vs. photo colours), hueP.
+ *  The director field is built from moving +/-1/2 defects (the angle of a
+ *  nematic around a defect of charge k is k times the polar angle), plus a
+ *  slow bend field; it is drawn by line-integral streaks along the director.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the defects swim (integrated, jump-free)
+ *    audioSpread     -> how many defect pairs are active (blended in and out)
+ *    audioRoughness  -> the rods buckle into finer bends
+ *    audioMode       -> the interference palette shifts warm in major
+ *    audioHigh       -> the defect cores sparkle (light)
+ *    audioSwell      -> brightness of the polarised glow (slow)
+ *
+ *  Knobs: defectsP (base number of defects), streakP (rod length), paletteP
+ *  (polariser palette vs. photo colours), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

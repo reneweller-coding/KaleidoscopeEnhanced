@@ -1,19 +1,23 @@
 #version 330 core
+/*****************************************************************************\
+ *                              HarmonicStrings.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Shades a vibrating string as a thin bright core line with a soft halo: distance from the string's center (vSide)
+ *  drives two Gaussian falloffs, a tight one for the core and a wider, dimmer one for the glow.
+ *
+ *  This fragment shader declares no audio uniforms directly; its color
+ *  (vCol) is computed per-vertex by the companion vertex shader, so any
+ *  audio reactivity arrives already baked into that per-vertex color.
+ *
+ *  @author René Weller
+ */
 out vec4 fragColor; ///< The pixel's colour (output).
 // HarmonicStrings.frag — thin bright string with a soft glow.
 in vec4  vCol;  ///< Colour (from the vertex stage).
 in float vSide; ///< Which side of a strip (from the vertex stage).
-
-/**
- * @file HarmonicStrings.frag
- * @brief Shades a vibrating string as a thin bright core line with a soft
- * halo: distance from the string's center (vSide) drives two Gaussian
- * falloffs, a tight one for the core and a wider, dimmer one for the glow.
- *
- * This fragment shader declares no audio uniforms directly; its color
- * (vCol) is computed per-vertex by the companion vertex shader, so any
- * audio reactivity arrives already baked into that per-vertex color.
- */
 
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()

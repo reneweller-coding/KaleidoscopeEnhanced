@@ -1,30 +1,35 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file ZonePlateFocusPull.frag
- * @brief TRANSITION ZONE PLATE FOCUS PULL: a Fresnel zone plate takes the
- * outgoing scene apart into its rings and pulls the incoming one into focus
- * through the same rings.
+/*****************************************************************************\
+ *                              ZonePlateFocusPull.frag
+\*****************************************************************************/
+/*! @file
  *
- * A zone plate's rings sit at radii proportional to the square root of their
- * index, which means the pattern is a CHIRP in radius squared -- widely spaced
- * at the centre, crowding toward the rim.  Evenly spaced rings would be a
- * target, not a lens, and would not do the one thing that makes this read: as
- * the focal length is pulled, the whole chirp breathes through itself, rings
- * appearing at the centre and running outward without any of them jumping.
+ *  @brief
+ *  TRANSITION ZONE PLATE FOCUS PULL: a Fresnel zone plate takes the outgoing scene apart into its rings and pulls
+ *  the incoming one into focus through the same rings.
  *
- * Focus is done the way a lens loses it: the picture is sampled at several
- * radii around each point, spread by how far off focus that image is.  The
- * outgoing scene starts sharp and goes soft, the incoming does the reverse, and
- * the rings decide which of the two is being let through at each radius.
+ *  A zone plate's rings sit at radii proportional to the square root of their
+ *  index, which means the pattern is a CHIRP in radius squared -- widely spaced
+ *  at the centre, crowding toward the rim.  Evenly spaced rings would be a
+ *  target, not a lens, and would not do the one thing that makes this read: as
+ *  the focal length is pulled, the whole chirp breathes through itself, rings
+ *  appearing at the centre and running outward without any of them jumping.
  *
- * Audio Reactivity:
- *   audioHigh    -> the rings' contrast (light)
- *   audioSwell  -> how far out of focus the far image goes (slow)
- *   audioKick    -> the light on the ring crests (light)
+ *  Focus is done the way a lens loses it: the picture is sampled at several
+ *  radii around each point, spread by how far off focus that image is.  The
+ *  outgoing scene starts sharp and goes soft, the incoming does the reverse, and
+ *  the rings decide which of the two is being let through at each radius.
  *
- * Per-activation variety: zonesP, blurP, hueP.
+ *  Audio Reactivity:
+ *    audioHigh    -> the rings' contrast (light)
+ *    audioSwell  -> how far out of focus the far image goes (slow)
+ *    audioKick    -> the light on the ring crests (light)
+ *
+ *  Per-activation variety: zonesP, blurP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

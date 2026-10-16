@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file SeismicWavefronts.frag
- * @brief SEISMIC WAVEFRONTS: a seismograph's view of the underground --
- * wavefronts from several quakes spread as rings through layered rock
- * (the photograph's structure sets the layers' speeds), bending where they
- * cross into faster or slower strata, reflecting, and interfering; the
- * wave amplitude is shown in a red-blue diverging colour scale over the
- * grey rock layers, fading as the waves weaken.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              SeismicWavefronts.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the waves travel (integrated, jump-free)
- *   audioSpread     -> the wave packets widen
- *   audioKick       -> a new quake flares (light)
- *   audioMode       -> the scale: blue-red in minor, green-magenta in major
- *   audioRoughness  -> the layers bend the waves more
- *   audioSwell      -> the rock layers show (slow)
+ *  @brief
+ *  SEISMIC WAVEFRONTS: a seismograph's view of the underground -- wavefronts from several quakes spread as rings
+ *  through layered rock (the photograph's structure sets the layers' speeds), bending where they cross into faster
+ *  or slower strata, reflecting, and interfering; the wave amplitude is shown in a red-blue diverging colour scale
+ *  over the grey rock layers, fading as the waves weaken.
  *
- * Knobs: quakeP (quake sources), freqP (wave frequency), layerP (layer contrast), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the waves travel (integrated, jump-free)
+ *    audioSpread     -> the wave packets widen
+ *    audioKick       -> a new quake flares (light)
+ *    audioMode       -> the scale: blue-red in minor, green-magenta in major
+ *    audioRoughness  -> the layers bend the waves more
+ *    audioSwell      -> the rock layers show (slow)
+ *
+ *  Knobs: quakeP (quake sources), freqP (wave frequency), layerP (layer contrast), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

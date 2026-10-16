@@ -1,23 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file BlackSandBeachWaves.frag
- * @brief BLACK SAND BEACH WAVES: an Icelandic black sand beach seen straight
- * down from high above -- the dark ocean rolling in from the top, line
- * after line of white breakers crossing it, each one leaving behind a
- * lace of foam that stretches and tears into a fine white net as it
- * drifts, and at the bottom the black volcanic sand, wet and shining
- * where the last film of each wave slides up and drains back.  The
- * camera hangs still; the waves roll in continuously.
+/*****************************************************************************\
+ *                              BlackSandBeachWaves.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSwell  -> the whiteness of the surf (slow)
- *   audioHigh   -> the glitter on the wet sand (light)
- *   audioLevel  -> brightness
- *   sceneTime / sceneAdvance -> the waves rolling in, the foam drifting
+ *  @brief
+ *  BLACK SAND BEACH WAVES: an Icelandic black sand beach seen straight down from high above -- the dark ocean
+ *  rolling in from the top, line after line of white breakers crossing it, each one leaving behind a lace of foam
+ *  that stretches and tears into a fine white net as it drifts, and at the bottom the black volcanic sand, wet and
+ *  shining where the last film of each wave slides up and drains back.
  *
- * Per-activation variety: surfP (how wide the surf zone), hueP.
+ *  The camera hangs still; the waves roll in continuously.
+ *
+ *  Audio Reactivity:
+ *    audioSwell  -> the whiteness of the surf (slow)
+ *    audioHigh   -> the glitter on the wet sand (light)
+ *    audioLevel  -> brightness
+ *    sceneTime / sceneAdvance -> the waves rolling in, the foam drifting
+ *
+ *  Per-activation variety: surfP (how wide the surf zone), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

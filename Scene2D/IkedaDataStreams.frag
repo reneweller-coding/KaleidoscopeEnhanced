@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file IkedaDataStreams.frag
- * @brief IKEDA DATA STREAMS: a data-art cascade in the spirit of Ryoji Ikeda
- * -- the whole view is ruled into horizontal lanes of racing barcodes,
- * binary strips and thin bars flickering at different speeds and
- * resolutions, black and white with rare accents of colour; the lanes'
- * density and brightness are driven by the photograph scanned line by
- * line, so its picture emerges ghostlike from the data flood.  Endless,
- * mirrorable.
+/*****************************************************************************\
+ *                              IkedaDataStreams.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the data streams (integrated, jump-free)
- *   audioSpread     -> the lane count
- *   audioKick       -> the whole field flashes inverse (light)
- *   audioMode       -> white on black in minor, black on white in major (blend)
- *   audioHigh       -> the fine bars sparkle (light)
- *   audioRoughness  -> the lanes jitter in speed
+ *  @brief
+ *  IKEDA DATA STREAMS: a data-art cascade in the spirit of Ryoji Ikeda -- the whole view is ruled into horizontal
+ *  lanes of racing barcodes, binary strips and thin bars flickering at different speeds and resolutions, black and
+ *  white with rare accents of colour; the lanes' density and brightness are driven by the photograph scanned line
+ *  by line, so its picture emerges ghostlike from the data flood.
  *
- * Knobs: laneP (lane height variety), photoP (how much the photo shapes the data), accentP (colour accents), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the data streams (integrated, jump-free)
+ *    audioSpread     -> the lane count
+ *    audioKick       -> the whole field flashes inverse (light)
+ *    audioMode       -> white on black in minor, black on white in major (blend)
+ *    audioHigh       -> the fine bars sparkle (light)
+ *    audioRoughness  -> the lanes jitter in speed
+ *
+ *  Knobs: laneP (lane height variety), photoP (how much the photo shapes the data), accentP (colour accents), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

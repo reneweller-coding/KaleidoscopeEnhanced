@@ -1,19 +1,27 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file HelicoidMinimalSurfaceTunnel.frag
- * @brief HELICOID MINIMAL SURFACE TUNNEL: 220x120 heightfield grid of an infinite double-helical
- * minimal surface (the only ruled minimal surface besides the plane). Ruled spiral ramps,
- * zero mean curvature lighting, specular sheen, and photo texturing.
- *   audioAdvance -> drives continuous helical winding & camera spiral advance
- *   audioKick    -> flashes ruled line reflection glints & caustic highlights
- *   audioSwell   -> widens minimal surface tunnel radius & ramp breadth
- *   audioCentroid-> shifts ruled spiral minimal surface color spectra
+/*****************************************************************************\
+ *                              HelicoidMinimalSurfaceTunnel.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   helicoidPitchP float helical ramp screw pitch           (0.3..1.2)
- *   specularP      float minimal surface specular reflection (0.8..2.5)
+ *  @brief
+ *  HELICOID MINIMAL SURFACE TUNNEL: 220x120 heightfield grid of an infinite double-helical minimal surface (the
+ *  only ruled minimal surface besides the plane).
+ *
+ *  Ruled spiral ramps, zero mean curvature lighting, specular sheen, and photo texturing.
+ *
+ *    audioAdvance -> drives continuous helical winding & camera spiral advance
+ *    audioKick    -> flashes ruled line reflection glints & caustic highlights
+ *    audioSwell   -> widens minimal surface tunnel radius & ramp breadth
+ *    audioCentroid-> shifts ruled spiral minimal surface color spectra
+ *
+ *  Per-activation variety:
+ *    helicoidPitchP float helical ramp screw pitch           (0.3..1.2)
+ *    specularP      float minimal surface specular reflection (0.8..2.5)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec2  vUV;            ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 in vec3  vNormal;        ///< Surface normal (from the vertex stage).

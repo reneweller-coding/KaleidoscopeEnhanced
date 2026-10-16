@@ -1,21 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file CosmicWebFilamentAnisotropy.frag
- * @brief COSMIC WEB FILAMENT ANISOTROPY: 60,000-particle large-scale dark matter structure
- * spanning the whole frustum. Intersecting cosmic web filaments connect massive galaxy cluster
- * nodes with soft halo glow, over a far-field void glow that carries the empty corners,
- * gravitational lens distortions, and photo-derived cosmological spectra.
- *   audioAdvance -> drives cosmic expansion & large-scale structure flow, and the drift of the
- *                   void glow
- *   audioKick    -> flashes gravitational cluster merger shockwaves
- *   audioSwell   -> enriches cosmic void background illumination
- *   audioCentroid-> shifts dark matter halo potential well colors
+/*****************************************************************************\
+ *                              CosmicWebFilamentAnisotropy.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   pointGainP float particle luminosity gain              (0.5..1.8)
- *   haloP      float cluster node halo brightness           (0.6..2.2)
+ *  @brief
+ *  COSMIC WEB FILAMENT ANISOTROPY: 60,000-particle large-scale dark matter structure spanning the whole frustum.
+ *
+ *  Intersecting cosmic web filaments connect massive galaxy cluster nodes with soft halo glow, over a far-field
+ *  void glow that carries the empty corners, gravitational lens distortions, and photo-derived cosmological
+ *  spectra.
+ *
+ *    audioAdvance -> drives cosmic expansion & large-scale structure flow, and the drift of the
+ *                    void glow
+ *    audioKick    -> flashes gravitational cluster merger shockwaves
+ *    audioSwell   -> enriches cosmic void background illumination
+ *    audioCentroid-> shifts dark matter halo potential well colors
+ *
+ *  Per-activation variety:
+ *    pointGainP float particle luminosity gain              (0.5..1.8)
+ *    haloP      float cluster node halo brightness           (0.6..2.2)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec3  vCol;     ///< Colour (from the vertex stage).
 in float vDensity; ///< Density (from the vertex stage).

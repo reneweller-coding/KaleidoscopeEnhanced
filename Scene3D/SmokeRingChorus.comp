@@ -1,19 +1,25 @@
 #version 430 core
-/**
- * @file SmokeRingChorus.comp
- * @brief SMOKE RING CHORUS: smoke rings blown from a ring of mouths toward
- * the camera, expanding and thinning as they travel.  Each mouth blows on
- * its own continuous phase of the scene clock (no ring is born on an
- * onset -- that would be a cut -- the onsets only light the rings), so the
- * chorus is a steady round.  A ring is a torus of quads; its transparency
- * is resolved by the OIT pass (the fragment stage declares oitPass), the
- * dark room behind is drawn opaque.  The camera never moves.
+/*****************************************************************************\
+ *                              SmokeRingChorus.comp
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (generator stage):
- *   sceneAdvance -> ring travel and expansion (continuous)
- *   audioSwell   -> ring size (slow)
+ *  @brief
+ *  SMOKE RING CHORUS: smoke rings blown from a ring of mouths toward the camera, expanding and thinning as they
+ *  travel.
  *
- * Per-instance: mouthsP, thickP, hueP.
+ *  Each mouth blows on its own continuous phase of the scene clock (no ring is born on an onset -- that would be a
+ *  cut -- the onsets only light the rings), so the chorus is a steady round.  A ring is a torus of quads; its
+ *  transparency is resolved by the OIT pass (the fragment stage declares oitPass), the dark room behind is drawn
+ *  opaque.  The camera never moves.
+ *
+ *  Audio Reactivity (generator stage):
+ *    sceneAdvance -> ring travel and expansion (continuous)
+ *    audioSwell   -> ring size (slow)
+ *
+ *  Per-instance: mouthsP, thickP, hueP.
+ *
+ *  @author René Weller
  */
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( local_size_x = 4, local_size_y = 4, local_size_z = 4 ) in;

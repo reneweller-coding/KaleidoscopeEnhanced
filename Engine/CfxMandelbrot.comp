@@ -1,19 +1,25 @@
 #version 430
-/**
- * @file CfxMandelbrot.comp
- * @brief Per-pixel Mandelbrot escape-time iteration using DOUBLE-SINGLE (Dekker/Knuth error-free-
- * transformation) emulated precision for the complex coordinate, so the deep-zoom dive driven by
- * ComputeFX::stepMandelbrot() can go roughly 10,000x deeper than plain float32 before the classic
- * "blocky/banded" precision breakdown sets in. Each pixel's offset from the (double-single) zoom
- * centre is computed in plain float32 -- always small and fully representable -- and combined with
- * the precise centre via dsAdd(), which is the step that actually needs the extra precision: a
- * naive `centerHi + offset` in plain float32 would round the offset away entirely once zoomScale
- * gets small, since the centre coordinate's own float32 mantissa can't resolve anything that far
- * below its own magnitude.
+/*****************************************************************************\
+ *                              CfxMandelbrot.comp
+\*****************************************************************************/
+/*! @file
  *
- * Outputs smooth (fractional) escape-time in R, a normalised interior/orbit-trap hint in G (for
- * extra shading detail on points that never escape), for the consuming Scene2D/MandelbrotDeepZoom.frag
- * to colour via imgPalette rather than a raw HSV rainbow.
+ *  @brief
+ *  Per-pixel Mandelbrot escape-time iteration using DOUBLE-SINGLE (Dekker/Knuth error-free- transformation)
+ *  emulated precision for the complex coordinate, so the deep-zoom dive driven by ComputeFX::stepMandelbrot() can
+ *  go roughly 10,000x deeper than plain float32 before the classic "blocky/banded" precision breakdown sets in.
+ *
+ *  Each pixel's offset from the (double-single) zoom centre is computed in plain float32 -- always small and fully
+ *  representable -- and combined with the precise centre via dsAdd(), which is the step that actually needs the
+ *  extra precision: a naive `centerHi + offset` in plain float32 would round the offset away entirely once
+ *  zoomScale gets small, since the centre coordinate's own float32 mantissa can't resolve anything that far below
+ *  its own magnitude.
+ *
+ *  Outputs smooth (fractional) escape-time in R, a normalised interior/orbit-trap hint in G (for
+ *  extra shading detail on points that never escape), for the consuming Scene2D/MandelbrotDeepZoom.frag
+ *  to colour via imgPalette rather than a raw HSV rainbow.
+ *
+ *  @author René Weller
  */
 
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).

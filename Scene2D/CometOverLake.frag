@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file CometOverLake.frag
- * @brief COMET OVER LAKE: a great comet low over a mountain lake after
- * dusk, the way Hale-Bopp and NEOWISE were photographed -- a bright head,
- * a broad curved dust tail in pale gold fanning away from the sun below
- * the horizon, and a thin straight blue ion tail beside it; the last blue
- * of twilight along the ridge, stars coming out, dark pines on the shore,
- * and the lake holding the whole sky upside down in its still, faintly
- * rippling mirror.  The sky turns with glacial slowness; the music is the
- * light: the comet's glow and the shimmer on the water.
+/*****************************************************************************\
+ *                              CometOverLake.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioSwell  -> brightness of the tails (slow)
- *   audioHigh   -> twinkle of the stars (light)
- *   audioLevel  -> brightness
- *   sceneTime / sceneAdvance -> the sky's turn, the ripples (continuous)
+ *  @brief
+ *  COMET OVER LAKE: a great comet low over a mountain lake after dusk, the way Hale-Bopp and NEOWISE were
+ *  photographed -- a bright head, a broad curved dust tail in pale gold fanning away from the sun below the
+ *  horizon, and a thin straight blue ion tail beside it; the last blue of twilight along the ridge, stars coming
+ *  out, dark pines on the shore, and the lake holding the whole sky upside down in its still, faintly rippling
+ *  mirror.
  *
- * Per-activation variety: tailP (tail length and spread), hueP.
+ *  The sky turns with glacial slowness; the music is the light: the comet's glow and the shimmer on the water.
+ *
+ *  Audio Reactivity:
+ *    audioSwell  -> brightness of the tails (slow)
+ *    audioHigh   -> twinkle of the stars (light)
+ *    audioLevel  -> brightness
+ *    sceneTime / sceneAdvance -> the sky's turn, the ripples (continuous)
+ *
+ *  Per-activation variety: tailP (tail length and spread), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

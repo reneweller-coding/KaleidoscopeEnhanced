@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file ChainmailRingRipple.frag
- * @brief CHAINMAIL RING RIPPLE: a sheet of European 4-in-1 mail filling
- * the frame.  Every ring is a torus seen at an angle, threaded through
- * four of its neighbours, so the sheet reads as interlocking metal rather
- * than a pattern of circles.  A ripple travels across it on the scene
- * clock, tilting the rings it passes and running a band of highlight with
- * it; each ring's polish takes the colour of one spectrum band, and the
- * kick sends a glint wave from the centre.  Camera fixed on the mail.
+/*****************************************************************************\
+ *                              ChainmailRingRipple.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   sceneAdvance      -> the ripple travels (continuous)
- *   audioSpectrum[32] -> ring colour by column (light)
- *   audioKick         -> a glint wave from the centre (light)
- *   audioHigh         -> the polish (light)
- *   audioSwell        -> the lamp (slow)
+ *  @brief
+ *  CHAINMAIL RING RIPPLE: a sheet of European 4-in-1 mail filling the frame.
  *
- * Per-activation variety: gaugeP, weaveP, hueP.
+ *  Every ring is a torus seen at an angle, threaded through four of its neighbours, so the sheet reads as
+ *  interlocking metal rather than a pattern of circles.  A ripple travels across it on the scene clock, tilting the
+ *  rings it passes and running a band of highlight with it; each ring's polish takes the colour of one spectrum
+ *  band, and the kick sends a glint wave from the centre.  Camera fixed on the mail.
+ *
+ *  Audio Reactivity:
+ *    sceneAdvance      -> the ripple travels (continuous)
+ *    audioSpectrum[32] -> ring colour by column (light)
+ *    audioKick         -> a glint wave from the centre (light)
+ *    audioHigh         -> the polish (light)
+ *    audioSwell        -> the lamp (slow)
+ *
+ *  Per-activation variety: gaugeP, weaveP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

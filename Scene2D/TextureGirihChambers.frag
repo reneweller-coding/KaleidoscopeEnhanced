@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureGirihChambers.frag
- * @brief TEXTURE GIRIH CHAMBERS: an Islamic star lattice of gilded
- * strapwork -- eight-pointed stars and the crosses between them, outlined
- * by raised bands of gold that interlace over and under each other, and
- * every chamber of the pattern filled with the photograph, folded so each
- * star holds a kaleidoscopic eight-fold image; the picture flows through
- * the chambers, the gold catches a moving light.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              TextureGirihChambers.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the photo flows through the chambers (integrated)
- *   audioPhase      -> the lattice turns (integrated)
- *   audioSpread     -> the star size within the lattice
- *   audioKick       -> the gold bands flash (light)
- *   audioMode       -> the chambers: cool tint in minor, warm in major
- *   audioHigh       -> sparkles on the gold (light)
+ *  @brief
+ *  TEXTURE GIRIH CHAMBERS: an Islamic star lattice of gilded strapwork -- eight-pointed stars and the crosses
+ *  between them, outlined by raised bands of gold that interlace over and under each other, and every chamber of
+ *  the pattern filled with the photograph, folded so each star holds a kaleidoscopic eight-fold image; the picture
+ *  flows through the chambers, the gold catches a moving light.
  *
- * Knobs: cellP (lattice size), bandP (band width), photoZoomP, hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the photo flows through the chambers (integrated)
+ *    audioPhase      -> the lattice turns (integrated)
+ *    audioSpread     -> the star size within the lattice
+ *    audioKick       -> the gold bands flash (light)
+ *    audioMode       -> the chambers: cool tint in minor, warm in major
+ *    audioHigh       -> sparkles on the gold (light)
+ *
+ *  Knobs: cellP (lattice size), bandP (band width), photoZoomP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

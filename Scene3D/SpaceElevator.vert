@@ -1,19 +1,25 @@
 #version 330 core
-/**
- * @file SpaceElevator.vert
- * @brief SPACE ELEVATOR: A towering structure extending from a planet's surface
- * into orbit. Elevators travel along the massive tether, with structural rings
- * and orbital tethers surrounding it.
+/*****************************************************************************\
+ *                              SpaceElevator.vert
+\*****************************************************************************/
+/*! @file
  *
- * REBUILT V3. The placement/camera mathematics below is copied VERBATIM from
- * TachyonCommRelay.vert -- the geom=cubes travel-axis scene whose rendering is
- * proven (verified frames in the catalogue) -- with only the ROLES remapped:
- * the central spire becomes the tether, the rings stay support rings, and a
- * slice of the ring population becomes elevator cars hugging the tether with
- * their own, faster climb so they visibly overtake the camera. Two previous
- * from-scratch layouts for this scene each rendered (near-)nothing; copying
- * the one formula that demonstrably works ends that guessing game.
- * vCol.w carries the ROLE (0.2 tether / 0.6 ring / 0.9 car) for the frag.
+ *  @brief
+ *  SPACE ELEVATOR: A towering structure extending from a planet's surface into orbit.
+ *
+ *  Elevators travel along the massive tether, with structural rings and orbital tethers surrounding it.
+ *
+ *  REBUILT V3. The placement/camera mathematics below is copied VERBATIM from
+ *  TachyonCommRelay.vert -- the geom=cubes travel-axis scene whose rendering is
+ *  proven (verified frames in the catalogue) -- with only the ROLES remapped:
+ *  the central spire becomes the tether, the rings stay support rings, and a
+ *  slice of the ring population becomes elevator cars hugging the tether with
+ *  their own, faster climb so they visibly overtake the camera. Two previous
+ *  from-scratch layouts for this scene each rendered (near-)nothing; copying
+ *  the one formula that demonstrably works ends that guessing game.
+ *  vCol.w carries the ROLE (0.2 tether / 0.6 ring / 0.9 car) for the frag.
+ *
+ *  @author René Weller
  */
 
 in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an

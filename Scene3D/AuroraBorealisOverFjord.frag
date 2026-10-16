@@ -1,4 +1,21 @@
 #version 430 core
+/*****************************************************************************\
+ *                              AuroraBorealisOverFjord.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  AURORA BOREALIS OVER FJORD: night flight down a fjord - mountains on both sides, a mirror-water canal below, and
+ *  a full-height AURORA CURTAIN WALL with vertical rays at the far end (arctic-green identity, tinted by the photo
+ *  palette).
+ *
+ *  The water reflects the curtain in drifting bands.
+ *
+ *    audioAdvance -> flight down the fjord       audioKick  -> curtain surge
+ *    audioSwell   -> aurora brightness           audioBass  -> water ripples
+ *
+ *  @author René Weller
+ */
 in vec3  tePos;    ///< Pos (from the tessellation evaluation stage).
 in vec3  teNormal; ///< Normal (from the tessellation evaluation stage).
 in vec2  teUV;     ///< UV (from the tessellation evaluation stage).
@@ -6,15 +23,6 @@ in float teAurora; ///< Aurora (from the tessellation evaluation stage).
 in float teSky;    ///< Sky (from the tessellation evaluation stage).
 
 out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file AuroraBorealisOverFjord.frag
- * @brief AURORA BOREALIS OVER FJORD: night flight down a fjord - mountains on both
- * sides, a mirror-water canal below, and a full-height AURORA CURTAIN WALL
- * with vertical rays at the far end (arctic-green identity, tinted by the
- * photo palette).  The water reflects the curtain in drifting bands.
- *   audioAdvance -> flight down the fjord       audioKick  -> curtain surge
- *   audioSwell   -> aurora brightness           audioBass  -> water ripples
- */
 
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

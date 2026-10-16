@@ -1,20 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file WhiteDwarfAccretion.frag
- * @brief WHITE DWARF ACCRETION: An extremely dense, hot white dwarf siphoning
- * glowing plasma from a bloated red giant companion. A swirling accretion disk
- * forms and violently pulses to the beat.
- *   audioAdvance -> rotation speed of the binary system and accretion disk
- *   audioKick    -> flares and matter striking the white dwarf
- *   audioSwell   -> brightness of the accretion disk and the red giant
- *   audioChromaHue-> palette offset for the plasma
+/*****************************************************************************\
+ *                              WhiteDwarfAccretion.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   flowP float rate of the plasma flow (0.5..1.5)
- *   diskP float intensity and turbulence of the accretion disk (0.5..2.0)
- *   hueP float palette offset (0..6.28)
+ *  @brief
+ *  WHITE DWARF ACCRETION: An extremely dense, hot white dwarf siphoning glowing plasma from a bloated red giant
+ *  companion.
+ *
+ *  A swirling accretion disk forms and violently pulses to the beat.
+ *
+ *    audioAdvance -> rotation speed of the binary system and accretion disk
+ *    audioKick    -> flares and matter striking the white dwarf
+ *    audioSwell   -> brightness of the accretion disk and the red giant
+ *    audioChromaHue-> palette offset for the plasma
+ *
+ *  Per-activation variety:
+ *    flowP float rate of the plasma flow (0.5..1.5)
+ *    diskP float intensity and turbulence of the accretion disk (0.5..2.0)
+ *    hueP float palette offset (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

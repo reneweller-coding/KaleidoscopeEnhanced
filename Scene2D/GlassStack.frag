@@ -1,32 +1,37 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file GlassStack.frag
- * @brief GLASS STACK: a sculpture of coloured glass slabs on a white light
- * table -- thick panes of cobalt, amber, ruby, emerald and violet glass
- * stacked and leaning at angles, turning very slowly on a turntable.  Where
- * the panes overlap their colours multiply into deeper ones; their edges
- * glow bright where light travels inside them; and the light from a lamp
- * above passes through them and throws coloured shadows across the white
- * table.  The turntable is steady; the music is the light.
+/*****************************************************************************\
+ *                              GlassStack.frag
+\*****************************************************************************/
+/*! @file
  *
- * Each pane is intersected analytically (ray-box in its own frame), so the
- * absorption through every slab along a ray -- and along the shadow ray to
- * the lamp -- is exact and cheap.
+ *  @brief
+ *  GLASS STACK: a sculpture of coloured glass slabs on a white light table -- thick panes of cobalt, amber, ruby,
+ *  emerald and violet glass stacked and leaning at angles, turning very slowly on a turntable.
  *
- * Replaces a Scene3D order-independent-transparency version (a dark block
- * in the catalogue).
+ *  Where the panes overlap their colours multiply into deeper ones; their edges glow bright where light travels
+ *  inside them; and the light from a lamp above passes through them and throws coloured shadows across the white
+ *  table.  The turntable is steady; the music is the light.
  *
- * Audio Reactivity:
- *   audioSwell -> the lamp (slow)
- *   audioKick  -> the glowing edges flare (light only)
- *   audioHigh  -> the highlights sparkle (light)
- *   audioChromaHue -> photo tint of the glass
- *   sceneTime / sceneAdvance -> the turntable (continuous)
+ *  Each pane is intersected analytically (ray-box in its own frame), so the
+ *  absorption through every slab along a ray -- and along the shadow ray to
+ *  the lamp -- is exact and cheap.
  *
- * Per-activation variety: camDistP, spreadP (how the panes lean),
- * shellsP (how many panes), glassP (glass density), glowP (edge glow).
+ *  Replaces a Scene3D order-independent-transparency version (a dark block
+ *  in the catalogue).
+ *
+ *  Audio Reactivity:
+ *    audioSwell -> the lamp (slow)
+ *    audioKick  -> the glowing edges flare (light only)
+ *    audioHigh  -> the highlights sparkle (light)
+ *    audioChromaHue -> photo tint of the glass
+ *    sceneTime / sceneAdvance -> the turntable (continuous)
+ *
+ *  Per-activation variety: camDistP, spreadP (how the panes lean),
+ *  shellsP (how many panes), glassP (glass density), glowP (edge glow).
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

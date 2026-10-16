@@ -1,16 +1,23 @@
 #version 330 core
-/**
- * @file MirrorShardKaleidoscope.vert
- * @brief 4,900 thin mirror-facet plates arranged as a real 3D kaleidoscope disc -- concentric
- * rings, each split into sidesP wedges with alternating copies mirrored (true 3D mirror symmetry,
- * not a fragment-shader fold), gently domed so outer rings recede from the camera. Each shard
- * tilts individually to the beat, so which facets catch the photo's reflection changes moment to
- * moment -- genuine parallax and specular response, unlike the flat 2D kaleidoscope folds already
- * in the catalogue.
- *   audioBeatPhase -> per-shard tilt oscillation (phase-offset per shard via its own seed)
- *   audioKick      -> tilt amplitude flare + brief metallic flash
- *   audioPhase     -> whole-disc spin (integrated, jump-free)
- *   audioSwell     -> camera distance breathes
+/*****************************************************************************\
+ *                              MirrorShardKaleidoscope.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  4,900 thin mirror-facet plates arranged as a real 3D kaleidoscope disc -- concentric rings, each split into
+ *  sidesP wedges with alternating copies mirrored (true 3D mirror symmetry, not a fragment-shader fold), gently
+ *  domed so outer rings recede from the camera.
+ *
+ *  Each shard tilts individually to the beat, so which facets catch the photo's reflection changes moment to moment
+ *  -- genuine parallax and specular response, unlike the flat 2D kaleidoscope folds already in the catalogue.
+ *
+ *    audioBeatPhase -> per-shard tilt oscillation (phase-offset per shard via its own seed)
+ *    audioKick      -> tilt amplitude flare + brief metallic flash
+ *    audioPhase     -> whole-disc spin (integrated, jump-free)
+ *    audioSwell     -> camera distance breathes
+ *
+ *  @author René Weller
  */
 
 in vec4 attrA; ///< .xyz = unit-cube corner (-0.5..0.5), .w = cube index

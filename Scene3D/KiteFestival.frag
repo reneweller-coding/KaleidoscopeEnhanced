@@ -1,15 +1,20 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file KiteFestival.frag
- * @brief Fragment stage for KiteFestival: a bright windy sky with cloud
- * streaks, a green hillside carrying the photo as its patchwork of fields,
- * kites as photo diamonds with bright spars, tails in palette colours that
- * sparkle with the treble, and the kick lighting the kite edges.
+/*****************************************************************************\
+ *                              KiteFestival.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity: audioHigh -> tail sparkle; audioKick -> kite edges;
- *                   audioSwell -> sunlight; audioLevel -> brightness.
+ *  @brief
+ *  Fragment stage for KiteFestival: a bright windy sky with cloud streaks, a green hillside carrying the photo as
+ *  its patchwork of fields, kites as photo diamonds with bright spars, tails in palette colours that sparkle with
+ *  the treble, and the kick lighting the kite edges.
+ *
+ *  Audio Reactivity: audioHigh -> tail sparkle; audioKick -> kite edges;
+ *                    audioSwell -> sunlight; audioLevel -> brightness.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 in vec2  vTexCoord; ///< Texture coordinate (from the vertex stage).
 in vec3  vWorld;    ///< World position (from the vertex stage).
 in float vKind;     ///< Element kind (from the vertex stage).

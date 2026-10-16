@@ -1,8 +1,14 @@
 #version 330 core
-/**
- * @file QuantumQubitArray.vert
- * @brief attrA.xyz = unit-cube corner (-0.5..0.5), attrA.w = cube ID, attrB = seeds
- * (Scene3DShader.cpp GEOM_CUBES) — normal looked up from gl_VertexID % 36 / 6.
+/*****************************************************************************\
+ *                              QuantumQubitArray.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  attrA.xyz = unit-cube corner (-0.5..0.5), attrA.w = cube ID, attrB = seeds (Scene3DShader.cpp GEOM_CUBES) —
+ *  normal looked up from gl_VertexID % 36 / 6.
+ *
+ *  @author René Weller
  */
 in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an
                ///< index).

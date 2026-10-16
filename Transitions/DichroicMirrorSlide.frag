@@ -1,19 +1,27 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file DichroicMirrorSlide.frag
- * @brief TRANSITION DICHROIC MIRROR SLIDE: Dichroic glass beam-splitter transition.
- * Angled optical dichroic mirror planes slide across the screen, transmitting
- * complementary wavelengths and reflecting the outgoing scene into the incoming one.
- *   interpolation -> slides dichroic mirror boundary across the diagonal
- *   audioKick     -> flashes dichroic spectral transmission spikes
+/*****************************************************************************\
+ *                              DichroicMirrorSlide.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   dichroP float dichroic spectral split intensity (0.5..2.2)
- *   slideP  float slide angle tilt                  (0.5..2.0)
- *   speedP  float animation speed multiplier        (0.5..2.0)
- *   hueP    float dichroic coating hue offset       (0..6.28)
+ *  @brief
+ *  TRANSITION DICHROIC MIRROR SLIDE: Dichroic glass beam-splitter transition.
+ *
+ *  Angled optical dichroic mirror planes slide across the screen, transmitting complementary wavelengths and
+ *  reflecting the outgoing scene into the incoming one.
+ *
+ *    interpolation -> slides dichroic mirror boundary across the diagonal
+ *    audioKick     -> flashes dichroic spectral transmission spikes
+ *
+ *  Per-activation variety:
+ *    dichroP float dichroic spectral split intensity (0.5..2.2)
+ *    slideP  float slide angle tilt                  (0.5..2.0)
+ *    speedP  float animation speed multiplier        (0.5..2.0)
+ *    hueP    float dichroic coating hue offset       (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

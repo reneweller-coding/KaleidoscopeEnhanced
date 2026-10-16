@@ -1,22 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file RelativisticSynchrotronPulsarWind.frag
- * @brief RELATIVISTIC SYNCHROTRON PULSAR WIND: Pulsar wind nebula (Crab Nebula PWN). Magnetized
- * electron-positron relativistic plasma wind undergoes termination shock, forming equatorial
- * synchrotron torus rings, polar collimated plasma jets, and magnetic wisps.
- *   audioAdvance -> accelerates pulsar rotational frequency & relativistic wind outflow
- *   audioKick    -> flashes central pulsar lighthouse beam & magnetic reconnection flares
- *   audioBass    -> expands equatorial termination shock torus radius & synchrotron brightness
- *   audioSwell   -> enriches nebula magnetic filamentation density & optical polarization glow
- *   audioCentroid-> shifts non-thermal synchrotron continuum emission spectra
+/*****************************************************************************\
+ *                              RelativisticSynchrotronPulsarWind.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   torusRadiusP float equatorial termination shock radius       (0.3..0.9)
- *   jetCollimP   float polar relativistic jet collimation width  (0.08..0.35)
- *   wispCountP   float dynamic magnetic wisp ripple density      (4.0..14.0)
- *   synchGlowP   float synchrotron torus luminance gain          (0.8..2.5)
+ *  @brief
+ *  RELATIVISTIC SYNCHROTRON PULSAR WIND: Pulsar wind nebula (Crab Nebula PWN).
+ *
+ *  Magnetized electron-positron relativistic plasma wind undergoes termination shock, forming equatorial
+ *  synchrotron torus rings, polar collimated plasma jets, and magnetic wisps.
+ *
+ *    audioAdvance -> accelerates pulsar rotational frequency & relativistic wind outflow
+ *    audioKick    -> flashes central pulsar lighthouse beam & magnetic reconnection flares
+ *    audioBass    -> expands equatorial termination shock torus radius & synchrotron brightness
+ *    audioSwell   -> enriches nebula magnetic filamentation density & optical polarization glow
+ *    audioCentroid-> shifts non-thermal synchrotron continuum emission spectra
+ *
+ *  Per-activation variety:
+ *    torusRadiusP float equatorial termination shock radius       (0.3..0.9)
+ *    jetCollimP   float polar relativistic jet collimation width  (0.08..0.35)
+ *    wispCountP   float dynamic magnetic wisp ripple density      (4.0..14.0)
+ *    synchGlowP   float synchrotron torus luminance gain          (0.8..2.5)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

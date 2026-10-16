@@ -1,26 +1,31 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file KeyChangeSeasons.frag
- * @brief KEY CHANGE SEASONS: a forest whose season is the key of the
- * music.  The chroma hue (the tonal centre) is the time of year: the
- * foliage colour, the light, the ground (snow, leaf litter, grass) all
- * follow it, and because the hue is a slow, smoothed value the seasons
- * turn as seasons do, over a modulation, never with a beat.  Major/minor
- * (audioMode) is fair or overcast weather.  Round particles -- pollen,
- * falling leaves, snow -- drift on the scene clock, each season its own.
- * The photo is the forest floor and the trunks.  Camera fixed.
+/*****************************************************************************\
+ *                              KeyChangeSeasons.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioChromaHue -> season (slow)
- *   audioMode      -> fair / overcast (slow)
- *   sceneAdvance   -> particle drift and light sway (continuous)
- *   audioSwell     -> sunlight (slow)
- *   audioKick      -> light through the canopy (light)
- *   audioLevel     -> brightness
+ *  @brief
+ *  KEY CHANGE SEASONS: a forest whose season is the key of the music.
  *
- * Per-activation variety: treesP, mistP, hueP.
+ *  The chroma hue (the tonal centre) is the time of year: the foliage colour, the light, the ground (snow, leaf
+ *  litter, grass) all follow it, and because the hue is a slow, smoothed value the seasons turn as seasons do, over
+ *  a modulation, never with a beat.  Major/minor (audioMode) is fair or overcast weather.  Round particles --
+ *  pollen, falling leaves, snow -- drift on the scene clock, each season its own. The photo is the forest floor and
+ *  the trunks.  Camera fixed.
+ *
+ *  Audio Reactivity:
+ *    audioChromaHue -> season (slow)
+ *    audioMode      -> fair / overcast (slow)
+ *    sceneAdvance   -> particle drift and light sway (continuous)
+ *    audioSwell     -> sunlight (slow)
+ *    audioKick      -> light through the canopy (light)
+ *    audioLevel     -> brightness
+ *
+ *  Per-activation variety: treesP, mistP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

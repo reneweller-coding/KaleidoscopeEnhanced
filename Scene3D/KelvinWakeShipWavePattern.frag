@@ -1,20 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file KelvinWakeShipWavePattern.frag
- * @brief KELVIN WAKE SHIP WAVE PATTERN: 220x120 heightfield grid of the classical hydrodynamic
- * Kelvin ship wake pattern. Divergent and transverse wave systems bounded by the universal
- * 19.47-degree Mach wedge, foamy crest highlights, specular ocean sheen, and photo texturing.
- *   audioAdvance -> propels ship wake propagation & hydrodynamic phase velocity
- *   audioKick    -> flashes wave crest foam cavitation & whitecap glints
- *   audioSwell   -> enriches wave amplitude & ocean surface caustic depth
- *   audioCentroid-> shifts water transmission & atmospheric reflection spectra
+/*****************************************************************************\
+ *                              KelvinWakeShipWavePattern.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   waveScaleP float Kelvin wave train spatial frequency     (0.6..2.2)
- *   foamGlowP  float wave crest whitecap foam luminance     (0.8..2.5)
- *   specularP  float water surface specular highlight gain   (0.8..2.5)
+ *  @brief
+ *  KELVIN WAKE SHIP WAVE PATTERN: 220x120 heightfield grid of the classical hydrodynamic Kelvin ship wake pattern.
+ *
+ *  Divergent and transverse wave systems bounded by the universal 19.47-degree Mach wedge, foamy crest highlights,
+ *  specular ocean sheen, and photo texturing.
+ *
+ *    audioAdvance -> propels ship wake propagation & hydrodynamic phase velocity
+ *    audioKick    -> flashes wave crest foam cavitation & whitecap glints
+ *    audioSwell   -> enriches wave amplitude & ocean surface caustic depth
+ *    audioCentroid-> shifts water transmission & atmospheric reflection spectra
+ *
+ *  Per-activation variety:
+ *    waveScaleP float Kelvin wave train spatial frequency     (0.6..2.2)
+ *    foamGlowP  float wave crest whitecap foam luminance     (0.8..2.5)
+ *    specularP  float water surface specular highlight gain   (0.8..2.5)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec2  vUV;        ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 in vec3  vNormal;    ///< Surface normal (from the vertex stage).

@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file StageRigMovingHeads.frag
- * @brief STAGE RIG MOVING HEADS: a truss of moving-head lamps over a hazy
- * stage.  Each lamp owns a chroma class and sweeps its beam on the scene
- * clock -- steadily, never on a beat -- and brightens when its class
- * sounds.  The beams are volumetric wedges in the haze with a gobo
- * pattern from the photo; where they land they paint a pool on the deck.
- * The kick lights the backline strip, not the whole frame.  Camera fixed
- * in the audience.
+/*****************************************************************************\
+ *                              StageRigMovingHeads.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioChroma[12] -> which lamps are lit and how hard (light)
- *   sceneAdvance    -> the sweep of every head (continuous)
- *   audioSwell      -> haze density (slow)
- *   audioKick       -> the backline strip (light, local)
- *   audioHigh       -> beam edge shimmer (light)
+ *  @brief
+ *  STAGE RIG MOVING HEADS: a truss of moving-head lamps over a hazy stage.
  *
- * Per-activation variety: headsP, sweepP, hueP.
+ *  Each lamp owns a chroma class and sweeps its beam on the scene clock -- steadily, never on a beat -- and
+ *  brightens when its class sounds.  The beams are volumetric wedges in the haze with a gobo pattern from the
+ *  photo; where they land they paint a pool on the deck. The kick lights the backline strip, not the whole frame.
+ *  Camera fixed in the audience.
+ *
+ *  Audio Reactivity:
+ *    audioChroma[12] -> which lamps are lit and how hard (light)
+ *    sceneAdvance    -> the sweep of every head (continuous)
+ *    audioSwell      -> haze density (slow)
+ *    audioKick       -> the backline strip (light, local)
+ *    audioHigh       -> beam edge shimmer (light)
+ *
+ *  Per-activation variety: headsP, sweepP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

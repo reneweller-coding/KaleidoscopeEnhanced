@@ -1,30 +1,35 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file WaveFunctionCollapseTiles.frag
- * @brief TRANSITION WAVE FUNCTION COLLAPSE TILES: the frame is a grid of tiles
- * held in superposition -- every candidate at once, which reads as a blur --
- * and the certainty spreads outward from a few seeds until every tile has
- * settled on the incoming scene.
+/*****************************************************************************\
+ *                              WaveFunctionCollapseTiles.frag
+\*****************************************************************************/
+/*! @file
  *
- * Two things make this the algorithm rather than a checkerboard fade.  First,
- * a tile in superposition is the AVERAGE of its candidates, not a faded
- * version of the answer: it looks like several pictures at once, and it gets
- * sharper as candidates are eliminated.  Second, collapse PROPAGATES -- a tile
- * settles because its neighbours have, so certainty grows outward from seeds as
- * a front, and tiles far from every seed stay uncertain the longest.
+ *  @brief
+ *  TRANSITION WAVE FUNCTION COLLAPSE TILES: the frame is a grid of tiles held in superposition -- every candidate
+ *  at once, which reads as a blur -- and the certainty spreads outward from a few seeds until every tile has
+ *  settled on the incoming scene.
  *
- * The candidates a tile is choosing between agree with its neighbours', because
- * the offset they are drawn from varies smoothly across the grid.  Independent
- * random candidates would make the uncertain region noise instead of a picture
- * that has not decided yet.
+ *  Two things make this the algorithm rather than a checkerboard fade.  First,
+ *  a tile in superposition is the AVERAGE of its candidates, not a faded
+ *  version of the answer: it looks like several pictures at once, and it gets
+ *  sharper as candidates are eliminated.  Second, collapse PROPAGATES -- a tile
+ *  settles because its neighbours have, so certainty grows outward from seeds as
+ *  a front, and tiles far from every seed stay uncertain the longest.
  *
- * Audio Reactivity:
- *   audioHigh  -> the light on a tile as it settles (light)
- *   audioKick  -> the light across the uncertain field (light)
+ *  The candidates a tile is choosing between agree with its neighbours', because
+ *  the offset they are drawn from varies smoothly across the grid.  Independent
+ *  random candidates would make the uncertain region noise instead of a picture
+ *  that has not decided yet.
  *
- * Per-activation variety: tilesP, seedsP, hueP.
+ *  Audio Reactivity:
+ *    audioHigh  -> the light on a tile as it settles (light)
+ *    audioKick  -> the light across the uncertain field (light)
+ *
+ *  Per-activation variety: tilesP, seedsP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

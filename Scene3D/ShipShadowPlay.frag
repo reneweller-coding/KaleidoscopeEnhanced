@@ -1,16 +1,20 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file ShipShadowPlay.frag
- * @brief Fragment stage for ShipShadowPlay: the wall (sky shell's back face)
- * is lit by the two coloured lamps; the ship itself is a dim silhouette; the
- * two projected copies are flat shadows in the complementary colour of the
- * lamp that casts them (where a red lamp's shadow falls, only the blue lamp
- * lights the wall), overlapping to dark.
+/*****************************************************************************\
+ *                              ShipShadowPlay.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity: audioKick brightens lamp A, audioSnare lamp B (light);
- *                   audioSwell warms both; audioLevel is the wall level.
+ *  @brief
+ *  Fragment stage for ShipShadowPlay: the wall (sky shell's back face) is lit by the two coloured lamps; the ship
+ *  itself is a dim silhouette; the two projected copies are flat shadows in the complementary colour of the lamp
+ *  that casts them (where a red lamp's shadow falls, only the blue lamp lights the wall), overlapping to dark.
+ *
+ *  Audio Reactivity: audioKick brightens lamp A, audioSnare lamp B (light);
+ *                    audioSwell warms both; audioLevel is the wall level.
+ *
+ *  @author René Weller
  */
+out vec4               fragColor;             ///< The pixel's colour (output).
 uniform sampler2DArray texMeshMaterial;       ///< The mesh's material textures (albedo, roughness, normal ...).
 uniform int            texMeshMaterialLayers; ///< Number of layers in texMeshMaterial.
 uniform sampler2D      tex0;                  ///< The current photo.

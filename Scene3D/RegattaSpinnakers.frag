@@ -1,16 +1,20 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file RegattaSpinnakers.frag
- * @brief Fragment stage for RegattaSpinnakers: a bright sea sky, the sea
- * as the photo in blue-green with whitecaps on the bass, the spinnakers as
- * photo panels tinted per boat and lit by the sun (brighter on the belly),
- * dark hulls, masts, white wakes; the kick a gust flash on the sails,
- * the treble the spray sparkle.
+/*****************************************************************************\
+ *                              RegattaSpinnakers.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity: audioBass -> whitecaps; audioKick -> gust flash;
- *                   audioHigh -> spray sparkle; audioSwell -> wind (generator) and sun; audioLevel.
+ *  @brief
+ *  Fragment stage for RegattaSpinnakers: a bright sea sky, the sea as the photo in blue-green with whitecaps on the
+ *  bass, the spinnakers as photo panels tinted per boat and lit by the sun (brighter on the belly), dark hulls,
+ *  masts, white wakes; the kick a gust flash on the sails, the treble the spray sparkle.
+ *
+ *  Audio Reactivity: audioBass -> whitecaps; audioKick -> gust flash;
+ *                    audioHigh -> spray sparkle; audioSwell -> wind (generator) and sun; audioLevel.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 in vec2  vTexCoord; ///< Texture coordinate (from the vertex stage).
 in vec3  vWorld;    ///< World position (from the vertex stage).
 in float vKind;     ///< Element kind (from the vertex stage).

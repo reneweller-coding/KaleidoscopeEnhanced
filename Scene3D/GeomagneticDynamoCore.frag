@@ -1,15 +1,21 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file GeomagneticDynamoCore.frag
- * @brief GEOMAGNETIC DYNAMO CORE: the flux-tube strings of a planetary dynamo -
- * gold and teal filament ropes coiling in four concentric shells around the
- * core's vertical rotation axis, camera orbiting close with a slow pitch, the
- * whole thing suspended in a faint fog of dissolved field.
- *   audioKick -> field-line surge    audioAdvance -> orbit + convection + fog drift
- *   audioBass/audioHigh -> flux-blob girth   audioSwell -> fog brightness
- *   (opaque sprite strings, source-level gains)
+/*****************************************************************************\
+ *                              GeomagneticDynamoCore.frag
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  GEOMAGNETIC DYNAMO CORE: the flux-tube strings of a planetary dynamo - gold and teal filament ropes coiling in
+ *  four concentric shells around the core's vertical rotation axis, camera orbiting close with a slow pitch, the
+ *  whole thing suspended in a faint fog of dissolved field.
+ *
+ *    audioKick -> field-line surge    audioAdvance -> orbit + convection + fog drift
+ *    audioBass/audioHigh -> flux-blob girth   audioSwell -> fog brightness
+ *    (opaque sprite strings, source-level gains)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec3  vWorldPos;    ///< World position (from the vertex stage).
 in float vDynamoPhase; ///< Dynamo phase (from the vertex stage).

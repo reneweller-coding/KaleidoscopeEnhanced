@@ -1,21 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file PlanetaryCollision.frag
- * @brief PLANETARY COLLISION: The apocalyptic moment two massive planets collide.
- * Crusts shatter, oceans boil into space, and glowing magma is exposed in the
- * catastrophic impact zone. Huge shockwaves of debris violently explode outward
- * with every audio kick.
- *   audioAdvance -> intense chaotic movement of the colliding crusts
- *   audioKick    -> massive explosive shockwaves and magma bursts
- *   audioSwell   -> blinding heat and brightness of the impact zone
- *   audioChromaHue-> palette offset for the molten rock and plasma
+/*****************************************************************************\
+ *                              PlanetaryCollision.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   impactP float intensity of the shatter and debris (0.5..1.5)
- *   heatP float temperature/brightness of the collision (0.5..2.0)
- *   hueP float palette offset (0..6.28)
+ *  @brief
+ *  PLANETARY COLLISION: The apocalyptic moment two massive planets collide.
+ *
+ *  Crusts shatter, oceans boil into space, and glowing magma is exposed in the catastrophic impact zone. Huge
+ *  shockwaves of debris violently explode outward with every audio kick.
+ *
+ *    audioAdvance -> intense chaotic movement of the colliding crusts
+ *    audioKick    -> massive explosive shockwaves and magma bursts
+ *    audioSwell   -> blinding heat and brightness of the impact zone
+ *    audioChromaHue-> palette offset for the molten rock and plasma
+ *
+ *  Per-activation variety:
+ *    impactP float intensity of the shatter and debris (0.5..1.5)
+ *    heatP float temperature/brightness of the collision (0.5..2.0)
+ *    hueP float palette offset (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

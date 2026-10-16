@@ -1,24 +1,29 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file PuddleNeonReflections.frag
- * @brief PUDDLE NEON REFLECTIONS: a wet street at night, seen low.  The
- * upper half is the shopfront signs (the photo, in chroma-class colours);
- * the lower half is their reflection in the puddles, broken by rings from
- * falling drops and by the wind ruffling the surface.  Rings expand on
- * continuous phases, so no ring ever pops into being; the kick is a
- * heavier drop with a wider ring.  The swell is how hard it rains.
- * Camera fixed at kerb height.
+/*****************************************************************************\
+ *                              PuddleNeonReflections.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioChroma[12] -> sign colours (light)
- *   audioSwell      -> rain density (slow)
- *   sceneAdvance    -> rings expand, rain falls (continuous)
- *   audioKick       -> a heavier drop (light and one wider ring)
- *   audioHigh       -> the wet sparkle on the asphalt (light)
+ *  @brief
+ *  PUDDLE NEON REFLECTIONS: a wet street at night, seen low.
  *
- * Per-activation variety: signsP, rainP, hueP.
+ *  The upper half is the shopfront signs (the photo, in chroma-class colours); the lower half is their reflection
+ *  in the puddles, broken by rings from falling drops and by the wind ruffling the surface.  Rings expand on
+ *  continuous phases, so no ring ever pops into being; the kick is a heavier drop with a wider ring.  The swell is
+ *  how hard it rains. Camera fixed at kerb height.
+ *
+ *  Audio Reactivity:
+ *    audioChroma[12] -> sign colours (light)
+ *    audioSwell      -> rain density (slow)
+ *    sceneAdvance    -> rings expand, rain falls (continuous)
+ *    audioKick       -> a heavier drop (light and one wider ring)
+ *    audioHigh       -> the wet sparkle on the asphalt (light)
+ *
+ *  Per-activation variety: signsP, rainP, hueP.
+ *
+ *  @author René Weller
  */
+out vec4          fragColor;     ///< The pixel's colour (output).
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.

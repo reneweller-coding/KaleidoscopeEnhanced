@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file CirclePackingBloom.frag
- * @brief CIRCLE PACKING BLOOM: a breathing circle packing -- large discs
- * swell and shrink slowly, and in the gaps between them smaller discs
- * grow to fill every space they can, and still smaller ones in the gaps
- * between those, never overlapping, so the whole plane stays densely
- * packed while its sizes keep shifting.  Each disc holds a piece of the
- * photograph, magnified and ringed with concentric bands, with a bright
- * rim.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              CirclePackingBloom.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the discs breathe (integrated, jump-free)
- *   audioSpread     -> the big discs grow, pushing the small ones out
- *   audioKick       -> the rims flash (light)
- *   audioMode       -> fill: cool photo tint in minor, warm in major
- *   audioRoughness  -> the concentric bands
- *   audioSwell      -> the discs' inner glow (slow)
+ *  @brief
+ *  CIRCLE PACKING BLOOM: a breathing circle packing -- large discs swell and shrink slowly, and in the gaps between
+ *  them smaller discs grow to fill every space they can, and still smaller ones in the gaps between those, never
+ *  overlapping, so the whole plane stays densely packed while its sizes keep shifting.
  *
- * Knobs: sizeP (scale), gapP (gap between discs), bandP (band count), hueP.
+ *  Each disc holds a piece of the photograph, magnified and ringed with concentric bands, with a bright rim.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the discs breathe (integrated, jump-free)
+ *    audioSpread     -> the big discs grow, pushing the small ones out
+ *    audioKick       -> the rims flash (light)
+ *    audioMode       -> fill: cool photo tint in minor, warm in major
+ *    audioRoughness  -> the concentric bands
+ *    audioSwell      -> the discs' inner glow (slow)
+ *
+ *  Knobs: sizeP (scale), gapP (gap between discs), bandP (band count), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

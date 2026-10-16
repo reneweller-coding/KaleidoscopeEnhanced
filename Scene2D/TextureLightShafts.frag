@@ -1,25 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureLightShafts.frag
- * @brief TEXTURE LIGHT SHAFTS: sunlight breaking through a dark canopy --
- * the photograph's bright gaps become openings in a black screen of
- * leaves (or a cathedral's tracery), and from them shafts of light fan
- * out through hazy air, crossing and merging, dust motes drifting and
- * sparkling inside the beams; the light source wanders slowly, so the
- * rays sweep and turn, and the canopy itself sways.  Endless,
- * mirrorable.
+/*****************************************************************************\
+ *                              TextureLightShafts.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the canopy sways and drifts (integrated)
- *   audioPhase      -> the light source wanders (integrated)
- *   audioBass       -> the shafts brighten (light)
- *   audioSpread     -> the openings widen
- *   audioMode       -> the light: cool morning in minor, golden in major
- *   audioHigh       -> the dust motes sparkle (light)
+ *  @brief
+ *  TEXTURE LIGHT SHAFTS: sunlight breaking through a dark canopy -- the photograph's bright gaps become openings in
+ *  a black screen of leaves (or a cathedral's tracery), and from them shafts of light fan out through hazy air,
+ *  crossing and merging, dust motes drifting and sparkling inside the beams; the light source wanders slowly, so
+ *  the rays sweep and turn, and the canopy itself sways.
  *
- * Knobs: rayP (ray length), hazeP (air haze), dustP (dust motes), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the canopy sways and drifts (integrated)
+ *    audioPhase      -> the light source wanders (integrated)
+ *    audioBass       -> the shafts brighten (light)
+ *    audioSpread     -> the openings widen
+ *    audioMode       -> the light: cool morning in minor, golden in major
+ *    audioHigh       -> the dust motes sparkle (light)
+ *
+ *  Knobs: rayP (ray length), hazeP (air haze), dustP (dust motes), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

@@ -1,28 +1,34 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file OrbitalRingStation.frag
- * @brief ORBITAL RING STATION: a rotating habitat ring turning slowly above a
- * gas-giant-sized world. The station is a raymarched torus with a hub, four
- * spokes, docking modules along its rim and a lit window band; it turns on
- * its own axis so the whole structure reads as a rotating machine. Below it
- * the planet carries a banded, domain-warped cloud deck that is advected and
- * sheared every frame -- weather that DEFORMS rather than scrolling -- plus a
- * ring system casting the shadow of its own gap, a soft terminator, and an
- * atmospheric limb that brightens toward the day/night line.
- *   audioAdvance -> station rotation and cloud advection
- *   audioSwell   -> hab-ring window brightness and limb scattering
- *   audioKick    -> docking-beacon flash on the rim modules
- *   audioBass    -> storm scale in the cloud deck (the belts breathe)
- *   audioBeatPhase-> the hub's rotating beacon
- *   audioChromaHue-> atmosphere and ring hue follow the musical key
+/*****************************************************************************\
+ *                              OrbitalRingStation.frag
+\*****************************************************************************/
+/*! @file
  *
- * Per-activation variety:
- *   ringP   float station size in frame          (0.6..1.7)
- *   cloudP  float cloud deck contrast            (0.4..1.6)
- *   glowP   float window / beacon intensity      (0.6..1.8)
- *   hueP    float palette offset                 (0..6.28)
+ *  @brief
+ *  ORBITAL RING STATION: a rotating habitat ring turning slowly above a gas-giant-sized world.
+ *
+ *  The station is a raymarched torus with a hub, four spokes, docking modules along its rim and a lit window band;
+ *  it turns on its own axis so the whole structure reads as a rotating machine. Below it the planet carries a
+ *  banded, domain-warped cloud deck that is advected and sheared every frame -- weather that DEFORMS rather than
+ *  scrolling -- plus a ring system casting the shadow of its own gap, a soft terminator, and an atmospheric limb
+ *  that brightens toward the day/night line.
+ *
+ *    audioAdvance -> station rotation and cloud advection
+ *    audioSwell   -> hab-ring window brightness and limb scattering
+ *    audioKick    -> docking-beacon flash on the rim modules
+ *    audioBass    -> storm scale in the cloud deck (the belts breathe)
+ *    audioBeatPhase-> the hub's rotating beacon
+ *    audioChromaHue-> atmosphere and ring hue follow the musical key
+ *
+ *  Per-activation variety:
+ *    ringP   float station size in frame          (0.6..1.7)
+ *    cloudP  float cloud deck contrast            (0.4..1.6)
+ *    glowP   float window / beacon intensity      (0.6..1.8)
+ *    hueP    float palette offset                 (0..6.28)
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

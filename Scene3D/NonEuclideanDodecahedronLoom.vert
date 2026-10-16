@@ -1,17 +1,23 @@
 #version 330 core
-/**
- * @file NonEuclideanDodecahedronLoom.vert
- * @brief Vertex stage companion to NonEuclideanDodecahedronLoom.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              NonEuclideanDodecahedronLoom.vert
+\*****************************************************************************/
+/*! @file
  *
- * SCREEN FILL: all 20 strands used to weave the SAME small Lissajous knot at
- * the origin -- radius 1.5*dodecaP (as little as 0.75) seen from 6.5 units
- * away, i.e. 12..25% of the frame width, in an otherwise black picture
- * (occ 0.17, luma 0.011).  Each strand now has its own home: one of the 20
- * genuine dodecahedron vertex axes, so the loom is a SHELL of twenty woven
- * knots that spans the frame, each strand takes several non-retracing windings
- * instead of one, and the whole shell is stretched horizontally in view space
- * to match a 16:9 frame.
+ *  @brief
+ *  Vertex stage companion to NonEuclideanDodecahedronLoom.frag -- see that file's header for this scene's
+ *  description.
+ *
+ *  SCREEN FILL: all 20 strands used to weave the SAME small Lissajous knot at
+ *  the origin -- radius 1.5*dodecaP (as little as 0.75) seen from 6.5 units
+ *  away, i.e. 12..25% of the frame width, in an otherwise black picture
+ *  (occ 0.17, luma 0.011).  Each strand now has its own home: one of the 20
+ *  genuine dodecahedron vertex axes, so the loom is a SHELL of twenty woven
+ *  knots that spans the frame, each strand takes several non-retracing windings
+ *  instead of one, and the whole shell is stretched horizontally in view space
+ *  to match a 16:9 frame.
+ *
+ *  @author René Weller
  */
 layout( location = 0 ) in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g.
                                       ///< position or u/v and an index).

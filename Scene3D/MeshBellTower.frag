@@ -1,22 +1,28 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file MeshBellTower.frag
- * @brief MESH BELL TOWER: four real bronze bells (one model, instances="4")
- * of falling size swinging in a belfry, the dusk sky through the arcade
- * behind them. Each bell answers a band -- the big one the bass, then the
- * low mids, the mids, the treble -- glowing warm in the bronze; the kick is
- * the clapper's strike, a flash on the bell and on the stone; the swell is
- * the lamp and the swing. The mesh counterpart of BellTowerDownbeat.
+/*****************************************************************************\
+ *                              MeshBellTower.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity:
- *   audioBass / audioLowMid / audioMid / audioHigh -> one bell each (light)
- *   audioKick  -> the strike (light)
- *   audioSwell -> lamp, swing amplitude (slow)
- *   time       -> the swings (continuous, vertex stage)
+ *  @brief
+ *  MESH BELL TOWER: four real bronze bells (one model, instances="4") of falling size swinging in a belfry, the
+ *  dusk sky through the arcade behind them.
  *
- * Per-instance: sizeP. Per-activation variety: hueP.
+ *  Each bell answers a band -- the big one the bass, then the low mids, the mids, the treble -- glowing warm in the
+ *  bronze; the kick is the clapper's strike, a flash on the bell and on the stone; the swell is the lamp and the
+ *  swing. The mesh counterpart of BellTowerDownbeat.
+ *
+ *  Audio Reactivity:
+ *    audioBass / audioLowMid / audioMid / audioHigh -> one bell each (light)
+ *    audioKick  -> the strike (light)
+ *    audioSwell -> lamp, swing amplitude (slow)
+ *    time       -> the swings (continuous, vertex stage)
+ *
+ *  Per-instance: sizeP. Per-activation variety: hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform sampler2DArray texMeshMaterial;       ///< The mesh's material textures (albedo, roughness, normal ...).
 uniform int            texMeshMaterialLayers; ///< Number of layers in texMeshMaterial.

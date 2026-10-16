@@ -1,8 +1,13 @@
 #version 330 core
-/**
- * @file CrystalGrowth.vert
- * @brief Vertex stage companion to CrystalGrowth.frag -- see that file's header for
- * this scene's description.
+/*****************************************************************************\
+ *                              CrystalGrowth.vert
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Vertex stage companion to CrystalGrowth.frag -- see that file's header for this scene's description.
+ *
+ *  @author René Weller
  */
 // CrystalGrowth.vert — a cluster of crystal branches grows outward from a
 // central hub; each branch is only as long as the music's BUILD-UP tension

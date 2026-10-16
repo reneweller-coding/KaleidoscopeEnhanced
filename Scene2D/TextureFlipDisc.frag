@@ -1,24 +1,30 @@
 #version 330 core
-out vec4 fragColor; ///< The pixel's colour (output).
-/**
- * @file TextureFlipDisc.frag
- * @brief TEXTURE FLIP DISC: a giant flip-disc display, the kind once used on
- * buses and stations -- thousands of round discs, dark on one side and
- * fluorescent on the other, show the photograph; as the picture drifts
- * and a threshold sweeps through it, waves of discs flip over on their
- * axles, glinting edge-on for a moment as they turn; the fluorescent
- * faces glow softly in the dark housing.  Endless, mirrorable.
+/*****************************************************************************\
+ *                              TextureFlipDisc.frag
+\*****************************************************************************/
+/*! @file
  *
- * Audio Reactivity (structure, not only light):
- *   audioAdvance    -> the picture drifts and the flip waves travel (integrated)
- *   audioSpread     -> how soft the flip wave is (how many discs are mid-turn)
- *   audioKick       -> the faces flare (light)
- *   audioMode       -> face colour: cyan-green in minor, yellow-orange in major
- *   audioHigh       -> the turning discs glint (light)
- *   audioSwell      -> the threshold sways (more or less of the picture lit)
+ *  @brief
+ *  TEXTURE FLIP DISC: a giant flip-disc display, the kind once used on buses and stations -- thousands of round
+ *  discs, dark on one side and fluorescent on the other, show the photograph; as the picture drifts and a threshold
+ *  sweeps through it, waves of discs flip over on their axles, glinting edge-on for a moment as they turn; the
+ *  fluorescent faces glow softly in the dark housing.
  *
- * Knobs: discP (disc size), waveP (flip wave strength), colourP (photo colour on the faces), hueP.
+ *  Endless, mirrorable.
+ *
+ *  Audio Reactivity (structure, not only light):
+ *    audioAdvance    -> the picture drifts and the flip waves travel (integrated)
+ *    audioSpread     -> how soft the flip wave is (how many discs are mid-turn)
+ *    audioKick       -> the faces flare (light)
+ *    audioMode       -> face colour: cyan-green in minor, yellow-orange in major
+ *    audioHigh       -> the turning discs glint (light)
+ *    audioSwell      -> the threshold sways (more or less of the picture lit)
+ *
+ *  Knobs: discP (disc size), waveP (flip wave strength), colourP (photo colour on the faces), hueP.
+ *
+ *  @author René Weller
  */
+out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

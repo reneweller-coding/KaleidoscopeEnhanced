@@ -1,14 +1,20 @@
 #version 330 core
-/**
- * @file MeshPipeOrgan.vert
- * @brief Vertex stage companion to MeshPipeOrgan.frag -- see that file's
- * header. gl_VertexID picks the loaded organ (below meshVertexCount) or the
- * enclosing sky shell.
+/*****************************************************************************\
+ *                              MeshPipeOrgan.vert
+\*****************************************************************************/
+/*! @file
  *
- * The organ stands on the floor of the church and does not move: an organ
- * case is furniture, the camera's own rig sweep is all the motion the shot
- * needs, and the music lives entirely in its light. A fixed yaw (yawP)
- * turns the case a little off dead-on so the towers read in depth.
+ *  @brief
+ *  Vertex stage companion to MeshPipeOrgan.frag -- see that file's header.
+ *
+ *  gl_VertexID picks the loaded organ (below meshVertexCount) or the enclosing sky shell.
+ *
+ *  The organ stands on the floor of the church and does not move: an organ
+ *  case is furniture, the camera's own rig sweep is all the motion the shot
+ *  needs, and the music lives entirely in its light. A fixed yaw (yawP)
+ *  turns the case a little off dead-on so the towers read in depth.
+ *
+ *  @author René Weller
  */
 
 in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an

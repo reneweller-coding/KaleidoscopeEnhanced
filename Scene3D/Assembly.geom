@@ -1,26 +1,31 @@
 #version 330 core
-/**
- * @file Assembly.geom
- * @brief The reverse of a shatter: the object arrives in pieces from far out
- * and assembles itself, timed so the last chunk seats near the end of the
- * scene's own screen time.
+/*****************************************************************************\
+ *                              Assembly.geom
+\*****************************************************************************/
+/*! @file
  *
- * The emotional shape is the opposite of ShatterSculpture's and that is the
- * point of having both. A shatter is a release -- everything happens at once
- * and then disperses. An assembly is an ANTICIPATION: for most of its length
- * the object is not there yet, and the eye spends the whole time working out
- * what it is going to be.
+ *  @brief
+ *  The reverse of a shatter: the object arrives in pieces from far out and assembles itself, timed so the last
+ *  chunk seats near the end of the scene's own screen time.
  *
- * Chunking follows ShatterSculpture's lesson exactly: fracture identity has to
- * be SPATIAL, not per-primitive. These meshes carry 150k triangles, so giving
- * each its own flight turns the object into a dust cloud with no silhouette.
- * The triangle's centre is quantised onto a grid and the whole cell flies as
- * one rigid slab.
+ *  The emotional shape is the opposite of ShatterSculpture's and that is the
+ *  point of having both. A shatter is a release -- everything happens at once
+ *  and then disperses. An assembly is an ANTICIPATION: for most of its length
+ *  the object is not there yet, and the eye spends the whole time working out
+ *  what it is going to be.
  *
- * Chunks do NOT all arrive together. Each cell gets its own arrival time from
- * its hash, spread over the first half of the scene, so the object accretes
- * rather than snapping into place -- and finishes early enough to be seen
- * standing complete, which is the payoff the whole family builds toward.
+ *  Chunking follows ShatterSculpture's lesson exactly: fracture identity has to
+ *  be SPATIAL, not per-primitive. These meshes carry 150k triangles, so giving
+ *  each its own flight turns the object into a dust cloud with no silhouette.
+ *  The triangle's centre is quantised onto a grid and the whole cell flies as
+ *  one rigid slab.
+ *
+ *  Chunks do NOT all arrive together. Each cell gets its own arrival time from
+ *  its hash, spread over the first half of the scene, so the object accretes
+ *  rather than snapping into place -- and finishes early enough to be seen
+ *  standing complete, which is the payoff the whole family builds toward.
+ *
+ *  @author René Weller
  */
 
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
