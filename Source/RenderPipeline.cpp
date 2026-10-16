@@ -584,6 +584,12 @@ void RenderPipeline::start( int width, int height )
     { return tasteFor( f ); } );
     m_scheduler.setBannedCallback( [this]( const char *f )
     { return isBanned( f ); } );
+    // Ready to be cut to: the program is built, or waits in the cache (a drop picks only those).
+    m_scheduler.setReadyCallback( [this]( unsigned int i )
+    {
+        return i < m_effectTextures.size()
+               && ( m_effectTextures[i]->isCompiled() || shaderPrebuildReady( m_effectTextures[i]->fragmentName() ) );
+    } );
     if ( !scriptedRun() )
     {
         QSettings                s( SettingsFile::path(), QSettings::IniFormat );
@@ -655,6 +661,10 @@ void RenderPipeline::simulateBegin()
     EffectShader::M_Headless = true;
     addFallbackEntries();
     m_scheduler.attach( &m_effectTextures, &m_effectFx, &m_effectTransitions );
+    // Without GL "ready" is what a show would have built by then: the scenes already on screen (simulateFrame()).
+    m_simSeen.assign( m_effectTextures.size(), 0 );
+    m_scheduler.setReadyCallback( [this]( unsigned int i )
+    { return i < m_simSeen.size() && m_simSeen[i] != 0; } );
     m_scheduler.reset();
 }
 
@@ -667,8 +677,12 @@ SceneScheduler::Tick RenderPipeline::simulateFrame( const AudioFeatures &audio, 
     // The scene passes: a chain lab decides at its first frame on screen whether this activation walks -- the scene
     // on screen, and during a fade the incoming one.
     m_effectTextures[m_scheduler.actTexture()]->simulateWalk();
+    m_simSeen[m_scheduler.actTexture()] = 1;
     if ( m_scheduler.texState() != 0 )
+    {
         m_effectTextures[m_scheduler.nextTexture()]->simulateWalk();
+        m_simSeen[m_scheduler.nextTexture()] = 1;
+    }
     m_globaltime += dt;
     m_scheduler.tickFx( tick, false );
     return tick;

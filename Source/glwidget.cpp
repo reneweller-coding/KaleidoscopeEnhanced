@@ -2715,12 +2715,19 @@ void GLwidget::updateAdaptiveScale()
             next = m_autoScaleMax;
             if ( nx >= 0 && nx < nm.size() )
             {
-                const auto it = m_sceneGpuAt1.constFind( nm[nx] );
-                if ( it != m_sceneGpuAt1.constEnd() )
+                // Not seen yet this session: the preset's measured GPU time (gpuMs, at 1920 x 1080, from the
+                // screening), scaled to this window -- a heavy scene no longer comes in at full scale and stutters
+                // until the step below catches it.
+                const auto  it = m_sceneGpuAt1.constFind( nm[nx] );
+                const float gpu_ms = rp->sceneGpuMs( nx );
+                const float at1 = it != m_sceneGpuAt1.constEnd()
+                                      ? it.value()
+                                      : gpu_ms * static_cast<float>( m_width ) * m_height / ( 1920.f * 1080.f );
+                if ( at1 > 0.f )
                 {
                     next = min_scale;
                     for ( float sc = m_autoScaleMax; sc >= min_scale - 1e-4f; sc -= 0.05f )
-                        if ( it.value() * sc * sc <= 0.8f * budget )
+                        if ( at1 * sc * sc <= 0.8f * budget )
                         {
                             next = sc;
                             break;

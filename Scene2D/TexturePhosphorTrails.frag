@@ -404,8 +404,8 @@ void main()
     float T = 0.05 * sceneTime + 0.3 * audioAdvance;
     float fx = 2.0 + floor( 3.0 * clamp( freqP, 0.0, 1.0 ) ) + hash21( tile );
     float fy = 3.0 + floor( 3.0 * clamp( freqP, 0.0, 1.0 ) ) + hash21( tile + 1.0 );
-    float pers = 0.6 + 1.2 * swell; // how far back along the path the glow reaches
-    float bw = 0.004 + 0.006 * clamp( beamP, 0.0, 1.0 );
+    float pers = 0.6 + 1.2 * swell;                      // how far back along the path the glow reaches
+    float bw = 0.006 + 0.008 * clamp( beamP, 0.0, 1.0 ); // (0.004 + 0.006: a hair on black, mean 1..2 of 255)
     float glow = 0.0, core = 0.0, head = 0.0;
     float skew_max = 0.6 * clamp( photoP, 0.0, 1.0 );
     float size = ( 0.26 + 0.1 * clamp( audioSpread, 0.0, 1.0 ) ) / ( 1.0 + abs( skew_max ) );
@@ -437,7 +437,9 @@ void main()
     glow = core + glow * 0.3;
     vec3 ph = mix( vec3( 0.3, 1.0, 0.45 ), vec3( 1.0, 0.7, 0.2 ), mode );
     ph = mix( ph, glowColour( imgLod( vec2( 0.5 ) + tile * 0.1, 5.0 ), tile, hueP * 0.159 ), 0.15 );
-    vec3 col = ph * glow * 0.6 + mix( ph, vec3( 1.0 ), 0.6 ) * head * ( 0.8 + 1.5 * kick );
+    vec3 col = ph * glow * 1.4 + mix( ph, vec3( 1.0 ), 0.6 ) * head * ( 0.8 + 1.5 * kick );
+    // The tube's face keeps a faint afterglow of everything the beam drew (a real scope's phosphor does).
+    col += ph * 0.07;
     // Scan grain and tube vignette per tile.
     col *= 0.93 + 0.07 * sin( gl_FragCoord.y * 1.5 );
     col *= smoothstep( 0.62, 0.45, length( l ) );

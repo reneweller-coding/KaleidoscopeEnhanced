@@ -1287,6 +1287,57 @@ void runUpChecks()
     check( before == 2 && after >= 1, "the spectacle reserve rests after two predicted drops that did not come, until "
                                       "a drop comes",
            std::to_string( before ) + " before the drop, " + std::to_string( after ) + " after" );
+
+    // The drop's own pick: two plain scenes (interest 3) and two spectacles (9), of which only #3 is built.  Short
+    // solos; the drop comes the first time the next scene is a plain roll.  Then the fade goes to #3 -- or, with
+    // nothing built, stays on the plain one.
+    static std::vector<EffectShader *> mix;
+    if ( mix.empty() )
+        for ( int i = 0; i < 4; ++i )
+        {
+            mix.push_back( new EffectShader( 3, 4, 1, 2 ) );
+            mix.back()->setInterest( i < 2 ? 3 : 9 );
+        }
+    auto drop_to = [&]( bool any_ready, double t0 )
+    {
+        SceneScheduler s;
+        s.attach( &mix, &fx, &trans );
+        s.setReadyCallback( [any_ready]( unsigned int i )
+        { return any_ready && i == 3; } );
+        EngineClock::setVirtualSeconds( t0 );
+        s.reset();
+        int  drops = 0, prev = s.texState();
+        bool armed = false;
+        for ( int f = 1; f < 60 * 120; ++f )
+        {
+            const double sec = f / 60.0;
+            EngineClock::setVirtualSeconds( t0 + sec );
+            SceneScheduler::Tick t{};
+            t.dt = 1.f / 60.f;
+            t.gateSmooth = 1.f;
+            t.timingScale = 1.f;
+            t.musicPresence = 1.f;
+            t.rhythmStrength = 0.8f;
+            t.estimatedBPM = 0.5f;
+            // the drop lands once the next scene is a plain roll -- and the built spectacle is not the one on screen
+            // (a scene is never cut to itself)
+            if ( !armed && s.texState() == 0 && std::strcmp( s.nextHow(), "roll" ) == 0 && s.nextTexture() < 2
+                 && s.actTexture() != 3 )
+                armed = true, drops = 1;
+            t.dropCount = drops;
+            s.tick( t );
+            s.tickFx( t, false );
+            if ( armed && prev == 0 && s.texState() == 1 )
+                return std::strcmp( s.changeWhy(), "drop" ) == 0 ? static_cast<int>( s.nextTexture() ) : -2;
+            prev = s.texState();
+        }
+        return -1;
+    };
+    const int built = drop_to( true, 460000.0 ), none = drop_to( false, 470000.0 );
+    check(
+        built == 3 && none >= 0 && none < 2,
+        "a drop whose next scene is a plain roll cuts to a built spectacle instead; with none built it keeps the roll",
+        "to #" + std::to_string( built ) + " / #" + std::to_string( none ) );
 }
 
 } // namespace

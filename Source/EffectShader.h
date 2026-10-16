@@ -365,20 +365,20 @@ public:
      **/
     unsigned int getTimeInterpolation() const;
 
-    /**  Sets the visual-complexity weight used by preset selection.
+    /**  Sets the scene's restlessness, the busyness the scheduler matches against the music's arousal.
      *
-     * @param complexity  Unitless weight (parsed from the config's complexity attribute). (in)
-     *
-     * Sets the visual-complexity weight used by preset selection.
+     * @param complexity  1..10 from the preset's complexity attribute -- measured since 17.10.2026 (motion on
+     *                    coarse blocks and edge strength, Tools/sync_scene_measures.py), not the GPU cost, which is
+     *                    gpuMs. (in)
      **/
     void setComplexity( unsigned int complexity )
     {
         m_complexity = complexity;
     };
-    /**  Returns the visual-complexity weight used by preset selection.
+    /**  The scene's restlessness (setComplexity()).
      *
      * @return
-     *   The visual-complexity weight used by preset selection.
+     *   1..10: calm .. busy.
      **/
     unsigned int getComplexity() const
     {
@@ -403,6 +403,17 @@ public:
      *   The interest from the preset entry.
      **/
     int interest() const { return m_interest; }
+    /**  Sets the scene's measured GPU time (the preset's gpuMs, written by Tools/sync_scene_measures.py).
+     *
+     * @param ms  Milliseconds a frame at 1920 x 1080 (the whole pipeline, measured in the screening); 0 = unknown. (in)
+     **/
+    void setGpuMs( float ms ) { m_gpuMs = ms > 0.f ? ms : 0.f; }
+    /**  The scene's measured GPU time, the start value of the adaptive resolution before the scene was seen live.
+     *
+     * @return
+     *   Milliseconds a frame at 1920 x 1080; 0 when the preset does not say.
+     **/
+    float gpuMs() const { return m_gpuMs; }
     /**  True with probability m_probability (Bernoulli draw); used to decide whether this effect activates.
      *
      * @return
@@ -1023,6 +1034,7 @@ protected:
 
     float m_probability;  ///< Threshold used by useShader() to decide whether this effect activates.
     int   m_interest = 0; ///< Show value from the preset entry (interest="..."), 0..10; 0 when not given.
+    float m_gpuMs = 0.f;  ///< Measured GPU time a frame at 1080p (gpuMs="..."); 0 when not given.
 
     int m_usesSim = -1;      ///< Cached usesSim() result: -1 = not yet queried, 0/1 = the compiled program does (not)
                              ///< declare `texSim`.

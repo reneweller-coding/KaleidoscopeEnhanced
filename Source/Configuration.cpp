@@ -494,6 +494,7 @@ void Configuration::readConfiguration( const QString &filenameIn )
             shader->setComplexity( complexity );
             shader->setProbability( probability );
             shader->setInterest( el.attribute( "interest" ).toInt() );
+            shader->setGpuMs( el.attribute( "gpuMs" ).toFloat() );
             shader->setMoodFlags( mood_flags );
             shader->setGradeModes( el.attribute( "grade" ).toStdString() ); // grade="fade,grey,sepia": rolled per
                                                                             // activation, applied by Present.frag
@@ -510,6 +511,7 @@ void Configuration::readConfiguration( const QString &filenameIn )
             shader->setComplexity( complexity );
             shader->setProbability( probability );
             shader->setInterest( el.attribute( "interest" ).toInt() );
+            shader->setGpuMs( el.attribute( "gpuMs" ).toFloat() );
             shader->setMoodFlags( mood_flags );
             shader->setGradeModes( el.attribute( "grade" ).toStdString() ); // grade="fade,grey,sepia": rolled per
                                                                             // activation, applied by Present.frag
@@ -557,6 +559,7 @@ void Configuration::readConfiguration( const QString &filenameIn )
             shader->setComplexity( complexity );
             shader->setProbability( probability );
             shader->setInterest( el.attribute( "interest" ).toInt() );
+            shader->setGpuMs( el.attribute( "gpuMs" ).toFloat() );
             shader->setMoodFlags( mood_flags );
             shader->setGradeModes( el.attribute( "grade" ).toStdString() ); // grade="fade,grey,sepia": rolled per
                                                                             // activation, applied by Present.frag

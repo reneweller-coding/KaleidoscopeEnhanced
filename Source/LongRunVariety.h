@@ -82,6 +82,22 @@ public:
         auto it = m_count.find( name );
         return it != m_count.end() && it->second > 0;
     }
+    /**  Whether a scene is among the last few shown.
+     *
+     * @param name  Shader file name. (in)
+     * @param last  How many of the most recent entries count. (in)
+     *
+     * @return
+     *   True if it is one of the last @p last names.
+     **/
+    bool containsLast( const std::string &name, size_t last ) const
+    {
+        size_t n = 0;
+        for ( auto it = m_names.rbegin(); it != m_names.rend() && n < last; ++it, ++n )
+            if ( *it == name )
+                return true;
+        return false;
+    }
     /**  Notes a scene that has just come on screen.
      *
      * @param name  Shader file name. (in)

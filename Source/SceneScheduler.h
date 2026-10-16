@@ -156,6 +156,13 @@ public:
      * @param f  Callback mapping a fragment path to "banned"; without one nothing is. (in)
      **/
     void setBannedCallback( std::function<bool( const char * )> f ) { m_bannedFor = std::move( f ); }
+    /**  Who says a scene can be cut to at once: its program is built (no compile at the cut).
+     *
+     * @param f  Callback mapping a scene index to "ready"; without one every scene counts as ready. (in)
+     *
+     * A drop picks its scene at the moment it lands (tick()); only a ready scene keeps the cut on the beat.
+     **/
+    void setReadyCallback( std::function<bool( unsigned int )> f ) { m_readyFor = std::move( f ); }
     /**  The walking chain labs' share of the screen time the preset asks for (attribute labShare).
      *
      * @param share  0..1; 0 (the default) leaves the labs ordinary entries of the random pick. (in)
@@ -660,14 +667,18 @@ private:
     /**  Rolls a scene for a predicted drop to cut to: a hand-made 2D scene of interest >= #SpectacleInterest, outside
      * the no-repeat memory, within the complexity budget, through useShader() and moodAccept().
      *
-     * @param act  The scene on screen. (in)
+     * @param act        The scene on screen. (in)
+     * @param readyOnly  Only scenes whose program is built (setReadyCallback()): a drop's cut cannot wait. (in)
      *
      * @return
      *   The texture index, or -1 when the preset has none (no interest in its entries) or none passed.
      **/
-    int pickSpectacle( int act );
+    int pickSpectacle( int act, bool readyOnly = false );
     /** The show value a scene needs to be a drop's target (pickSpectacle()). */
     static const int SpectacleInterest = 8;
+    /** A drop's own pick (built scenes only) may bring back a spectacle shown more than this many scenes ago: a built
+     * scene is one shown before, and the no-repeat memory holds three quarters of the preset (about 11 hours). */
+    static const int DropRepeatSpan = 30;
 
     // The walking chain labs' share of the screen time (setLabShare()).
     LabShareClock     m_labClock;              ///< Lab time against all time, and the share the preset asks for.
@@ -710,6 +721,7 @@ private:
     float m_lastAmbient = 0.f;  ///< Last mood ambient-level snapshot (0..1) from setMood().
 
     std::function<bool( const char * )>  m_bannedFor; ///< setBannedCallback()
+    std::function<bool( unsigned int )>  m_readyFor;  ///< setReadyCallback()
     std::function<float( const char * )> m_tasteFor;  ///< Learned-taste callback (fragment path -> multiplier); unset
                                                       ///< means neutral 1.0 for everything.
 public:

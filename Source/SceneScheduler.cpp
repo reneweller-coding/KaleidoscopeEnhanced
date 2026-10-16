@@ -437,7 +437,7 @@ unsigned int SceneScheduler::pickScene( int act, bool initial )
 /**  Rolls a scene for a predicted drop (see SceneScheduler.h).  Only hand-made 2D scenes: a 3D or mesh scene is not
  * prebuilt (RenderPipeline compiles the next 2D scene ahead), and a walking lab walks instead of being cut to.
  **/
-int SceneScheduler::pickSpectacle( int act )
+int SceneScheduler::pickSpectacle( int act, bool readyOnly )
 {
     const std::vector<EffectShader *> &tex = *m_textures;
     const std::vector<EffectShader *> &comb = *m_fxShaders;
@@ -446,7 +446,9 @@ int SceneScheduler::pickSpectacle( int act )
         if ( tex[i]->interest() >= SpectacleInterest && !tex[i]->is3D() && !tex[i]->isMeshScene()
              && !tex[i]->walksWithMusic() && static_cast<int>( i ) != act && !( i < m_isLab.size() && m_isLab[i] )
              && !( m_bannedFor && m_bannedFor( tex[i]->fragmentName() ) )
-             && !isRecentTexture( i ) )
+             && !( readyOnly ? m_recent.containsLast( fragBase( tex[i]->fragmentName() ), DropRepeatSpan )
+                             : isRecentTexture( i ) )
+             && !( readyOnly && m_readyFor && !m_readyFor( i ) ) )
             pool.push_back( i );
     if ( pool.empty() )
         return -1;
@@ -465,7 +467,8 @@ int SceneScheduler::pickSpectacle( int act )
 }
 
 // Mood-based selection bias - two components:
-//   1. Busyness: the shader's complexity should roughly match the arousal.
+//   1. Busyness: the shader's complexity -- its measured restlessness (Tools/sync_scene_measures.py) -- should
+//      roughly match the arousal.
 //   2. Mood TAGS (config mood="dark,bright,calm,aggressive"): bonus on a
 //      match, malus on a clear contradiction; untagged shaders stay
 //      neutral.  Probabilistic - a bias, not a hard filter.
@@ -799,6 +802,27 @@ void SceneScheduler::tick( const Tick &t )
         {
             m_forceEffectChange = true;
             m_dropCutPending = true;
+            // THE DROP'S SCENE (17.10.2026): the reserve rolls a spectacle on the build-up edge, a phrase grid's
+            // prediction ahead -- in long build-ups a phrase too early, and a section cut there took the reserved
+            // scene: of 65 drops in Astrix, Daft Punk and DMT none landed on a spectacle (the scene plan run on
+            // .screen/music).  A drop whose next scene is a plain roll now picks one itself, among the scenes whose
+            // program is built (setReadyCallback()) -- a cut that waited for a compile would miss the beat.  Not over
+            // a section replay, a remote jump or a lab (a walking lab takes the drop itself); not in a calm preset.
+            const bool rolled = std::strcmp( m_nextHow, "roll" ) == 0 || std::strcmp( m_nextHow, "step" ) == 0
+                                || std::strcmp( m_nextHow, "start" ) == 0;
+            if ( rolled && m_sceneFadeMin <= 0.f && m_actTexture < tex.size() && m_nextTexture < tex.size()
+                 && !tex[m_actTexture]->walksWithMusic() && tex[m_nextTexture]->interest() < SpectacleInterest
+                 && !isLab( m_nextTexture ) && m_pendingSectionRestore < 0 && m_forcedNextTexture < 0 )
+            {
+                const int pick = pickSpectacle( static_cast<int>( m_actTexture ), true );
+                if ( pick >= 0 )
+                {
+                    m_nextTexture = static_cast<unsigned int>( pick );
+                    m_nextHow = "drop";
+                    fprintf( stderr, "REGIE: Drop -> Spektakel %s (interest %d)\n", tex[m_nextTexture]->fragmentName(),
+                             tex[m_nextTexture]->interest() );
+                }
+            }
         }
         m_noveltyCooldown = 8.0f;
     }

@@ -431,12 +431,22 @@ def measure(vid, log_path, hold, cycle=8.0):
         path = float(np.abs(np.diff(L, axis=0)).mean()) * max(1, len(L) - 1)
         net  = float(np.abs(L[-1] - L[0]).mean())
         arc  = net / path if path > 1e-6 else 0.0
+        # RESTLESSNESS (17.10.2026, Tools/sync_scene_measures.py): motion on 5 x 5 blocks (32 x 18) -- a snowfall or a
+        # starfield sparkles in every pixel and averages to a still surface there, a strobe or a fast flight does
+        # not -- and the edge strength of the 160 x 90 frame, where single flakes and stars are gone too.
+        nb, hb, wb = L.shape[0], L.shape[1] // 5, L.shape[2] // 5
+        C = L[:, :hb * 5, :wb * 5].reshape(nb, hb, 5, wb, 5).mean(axis=(2, 4))
+        cdif = np.abs(np.diff(C, axis=0)).mean(axis=(1, 2))
+        csafe = cdif[~edge] if (~edge).any() else cdif
+        grad = (np.abs(np.diff(L, axis=2)).mean(axis=(1, 2)) + np.abs(np.diff(L, axis=1)).mean(axis=(1, 2)))
         rows.append(dict(
             name=name, t0=float(t0), arc=round(arc, 4),
             luma_med=float(np.median(L)),
             luma_min=float(L.mean(axis=(1, 2)).min()),
             luma_max=float(L.mean(axis=(1, 2)).max()),
             motion_med=float(np.median(safe)),
+            motion_coarse=float(np.median(csafe)),
+            detail_mid=float(np.median(grad)),
             strobe=float(safe.max() / max(np.median(safe), 1e-4)),
             spatial_std=float(np.median(L.std(axis=(1, 2)))),
             clip_hi=float((L > 0.97).mean()),

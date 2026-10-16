@@ -186,10 +186,12 @@ def check(path):
         bad["share"].append("labs %.1f %% of the screen time, asked %.0f %%" % (100 * share, 100 * share_want))
     on_phrase = sum(1 for r in scene_rows if r["phrase"] == "1")
     drops = [r for r in scene_rows if r["why"] == "drop"]
+    # a drop "on a spectacle": the scene it cut to has a show value >= 8 (reserved ahead or picked by the drop itself)
+    best = {e["file"]: max(x["interest"] for x in by_file[e["file"]]) for e in entries}
     summary = "%-12s %-17s %5.1f h %5d changes (%s)  labs %4.1f %% of %2.0f %%  phrase %d  drop cuts %d (%d on a " \
               "spectacle)" % (head["preset"], head["audio"], hours, len(scene_rows),
                               " ".join("%s %d" % kv for kv in sorted(whys.items())), 100 * share, 100 * share_want,
-                              on_phrase, len(drops), sum(1 for r in drops if r["how"] == "spectacle"))
+                              on_phrase, len(drops), sum(1 for r in drops if best.get(r["next"], 0) >= 8))
     return summary, bad
 
 

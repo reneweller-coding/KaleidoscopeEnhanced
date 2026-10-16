@@ -49,12 +49,12 @@ void main()
     vec3 reliefC = photo * (0.3 + 1.2 * relief) + vec3(1.0) * pow(relief, 6.0) * (0.1 + 0.3 * swell);
     // Glowing edges: gradient magnitude as neon in the photo's colour.
     float edge = smoothstep(0.02, 0.25, length(grad));
-    vec3 neon = glowColour(ph, p, hueP * 0.159) * edge * (1.2 + 1.2 * kick) + photo * 0.06;
+    vec3 neon = glowColour(ph, p, hueP * 0.159) * edge * (1.2 + 1.2 * kick) + photo * 0.16;
     // Isolines of the chain's luma: glowing contour lines.
     float xi = m * 12.0 - gT * 6.0;                          // the contour lines flow uphill (integrated, jump-free)
     float pxi = fwidth(xi) + 1e-4;
     float iso = smoothstep(pxi * 1.5, 0.0, abs(fract(xi) - 0.5) - 0.5 + pxi * 1.5);
-    vec3 isoC = glowColour(ph, p, hueP * 0.159) * iso * (1.0 + kick) + photo * 0.08;
+    vec3 isoC = glowColour(ph, p, hueP * 0.159) * iso * (1.0 + kick) + photo * 0.16;
     float st = clamp(styleP, 0.0, 1.0) * 3.0;               // 0 photo, 1 relief, 2 edges, 3 isolines
     vec3 col = mix(photo, reliefC, smoothstep(0.0, 1.0, st));
     col = mix(col, neon, smoothstep(1.0, 2.0, st));

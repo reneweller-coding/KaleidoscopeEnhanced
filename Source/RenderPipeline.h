@@ -1035,6 +1035,18 @@ public:
      *   The entries (read only).
      **/
     const std::vector<EffectShader *> &transitionEntries() const { return m_effectTransitions; }
+    /**  A scene entry's measured GPU time (the preset's gpuMs), the adaptive resolution's start value.
+     *
+     * @param idx  Scene entry index. (in)
+     *
+     * @return
+     *   Milliseconds a frame at 1920 x 1080; 0 when unknown or out of range.
+     **/
+    float sceneGpuMs( int idx ) const
+    {
+        return ( idx >= 0 && idx < static_cast<int>( m_effectTextures.size() ) ) ? m_effectTextures[idx]->gpuMs()
+                                                                                 : 0.f;
+    }
     /**  Tears down this instance's GL resources and background thread: terminates and deletes the ImageLoader, then
      * releases textures and shader programs.
      *
@@ -1647,7 +1659,8 @@ private:
     /**  A preset without scenes, combines or transitions gets one plain entry for each (start(), simulateBegin()):
      * every pick below divides by the list's size.
      **/
-    void addFallbackEntries();
+    void              addFallbackEntries();
+    std::vector<char> m_simSeen; ///< The scene plan run: scenes already on screen (built, in a show). simulateBegin()
     /**  Steps only the simulations a visible effect actually samples (GpuSims, ComputeFX, Mandelbrot) and binds their
      * outputs, plus last frame's composited image.
      *

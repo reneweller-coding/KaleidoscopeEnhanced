@@ -5251,3 +5251,41 @@ measuring the batch tools before running them showed: most of their hours were w
   22 min for the screening.
 
 `Kaleidoscope.exe -q`: 121 checks. Linux (WSL, Qt 6.2.4): built, 121 of 121.
+
+## 17.10.2026 (15): drops on their spectacle, the GPU time as its own value, restlessness measured
+
+- **The drop picks its scene.** The spectacle reserve rolls a scene of interest >= 8 on the build-up edge, a phrase
+  grid's prediction ahead; in long build-ups the grid predicts a phrase early, a section cut there took the reserved
+  scene, and the drop got a rolled one -- 0 of 65 drops of Astrix, Daft Punk and DMT on a spectacle. A drop whose next
+  scene is a plain roll now picks a spectacle itself (`SceneScheduler`, "REGIE: Drop -> Spektakel"), among the scenes
+  whose program is built (`setReadyCallback()`: `isCompiled()` or the prebuild cache -- a cut waiting for a compile
+  would miss the beat; in the scene plan run without GL: the scenes already shown), not over a section replay, a remote
+  jump or a lab, not in a calm preset. A built scene is one shown before, and the no-repeat memory holds three quarters
+  of the preset (some 11 hours), so the drop's pick may bring back a spectacle shown more than 30 scenes ago
+  (`DropRepeatSpan`). Club, three hours of each real track: Astrix 0 -> 23 of 26, Daft Punk 0 -> 22 of 26, DMT 0 -> 13
+  of 16, Infected Mushroom 11 -> 19 of 19, Prodigy 25 -> 38 of 38; every rule green. A check in `-q` (seen failing with
+  the pick off).
+- **The GPU time is its own value.** `gpuMs` on every scene entry: the measured GPU time a frame at 1920 x 1080 (the
+  screening's export run; median 0.43 ms, the most expensive 6.05). The adaptive resolution knew a scene only after it
+  had stood once -- an unknown heavy scene came in at full scale and stuttered until the emergency step; it now starts
+  from `gpuMs` scaled to the window.
+- **Restlessness measured.** `complexity` is what the mood match weighs against the arousal and the stacking budget
+  sums; until now hand-set (and, for a few, the GPU cost). It is measured now (`Tools/sync_scene_measures.py`, which
+  replaces sync_complexity.py): the screening's frame change on 32 x 18 blocks (60 %) and the edge strength of its
+  160 x 90 frames (40 %), each relative to the brightness (+ 0.10), ranked, mapped onto the distribution the hand
+  values had -- so the scheduler's thresholds keep their meaning. The first try, per-pixel change and the frozen
+  frame's edges, ranked every sparkle field busiest; on 32 x 18 blocks single specks average out. Checked against the
+  eye on 18 scenes: a dense snowfall and a sparkle field are busy (hard white specks everywhere), a slowly turning
+  tile ball, a disco floor and soft colour clouds calm. Against the hand values: Spearman 0.02 -- they measured
+  nothing in particular; 763 scenes changed (LaserArena 1 -> 10, MirrorShatterExplosion 4 -> 10, Rorschach and
+  GasGiantAtmosphere 10 -> 2, BioluminescentNebula 10 -> 3, which was 10 for its cost). `screen.py` writes
+  `motion_coarse` and `detail_mid` per window.
+- **SeifertSurfaceBraidKnot** was not a regression: it was rebuilt from 3D to 2D on 29.09., after the screening baseline
+  of 03.09. (616 scenes, live recordings) -- that baseline is out of date as a whole.
+- **Brighter:** TexturePhosphorTrails (a wider beam, a faint afterglow on the tube face: mean 1..2.5 of 255 -> 10..13);
+  the chain scenes' neon and isoline styles hold the photo at 16 % under their lines instead of 6 / 8 % (36 scenes;
+  ChainHexTunnel was near black, 3 of 255, in a roll of those styles). `gen.py` today writes the chain scenes with
+  some 2400 lines of library the committed shaders do not carry, so the change went into the shaders and their
+  sources directly, not through a regeneration.
+
+`Kaleidoscope.exe -q`: 122 checks.
