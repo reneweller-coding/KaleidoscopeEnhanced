@@ -5,7 +5,8 @@
  *
  *  @brief
  *  `Kaleidoscope.exe -q`: the score-cue receiver checked without a window, a sound card or a generator -- and the
- *  building blocks of a show that runs for days (LongRunVariety.h: scene memory, lab clock, class novelty).
+ *  building blocks of a show that runs for days (LongRunVariety.h: scene memory, lab clock, class novelty) and the
+ *  harmonic change end to end (a synthetic chord change through the analyzer and the app's conditioning).
  *
  *  The datagrams below are written out byte by byte from the OSC 1.0 specification -- address string
  *  terminated and padded with nulls to a multiple of four, then the type tag string beginning with a
@@ -20,6 +21,8 @@
 
 #include "CueReceiver.h"
 #include "LongRunVariety.h"
+#include "AudioAnalyzer.h"
+#include "AudioConditioner.h"
 
 #include <QtCore/QCoreApplication>
 #include <QtCore/QDir>
@@ -28,6 +31,8 @@
 #include <QtNetwork/QHostAddress>
 #include <QtNetwork/QUdpSocket>
 
+#include <algorithm>
+#include <cmath>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -362,6 +367,69 @@ void longRunChecks()
            "a walk target lands in the entry's range, never past the last class" );
 }
 
+/**  The harmonic change, end to end: a held chord must stay quiet, a chord change must swell and advance the harmony.
+ *
+ * From 16.10.2026 until it was found, the detector measured 10-ms steps of a smoothed chroma and never passed 0.17,
+ * so no scene and no lab reacted to harmony -- silently.  A synthetic pad (C major held for 12 s, then F# major) goes
+ * through the analyzer and the app's conditioning; the numbers are the ones Tools/make_chord_wav.py calibrated.
+ **/
+void harmonyChecks()
+{
+    printf( "\nharmony (AudioAnalyzer HCDF, AudioConditioner)\n" );
+    const int          rate = 48000;
+    const int          frames = rate * 18;
+    std::vector<float> pcm( static_cast<size_t>( frames ), 0.f );
+    const int          am[5] = { 48, 52, 55, 60, 64 }; // C major: C3 E3 G3 C4 E4
+    const int          fm[5] = { 42, 49, 54, 58, 61 }; // F# major, not one tone shared: F#2 C#3 F#3 A#3 C#4
+    for ( int i = 0; i < frames; ++i )
+    {
+        const double t = static_cast<double>( i ) / rate;
+        const int   *ch = t < 12.0 ? am : fm;
+        double       v = 0.0;
+        for ( int k = 0; k < 5; ++k )
+        {
+            const double f = 440.0 * std::pow( 2.0, ( ch[k] - 69 ) / 12.0 );
+            for ( int h = 1; h <= 3; ++h )
+                v += 0.05 / h * std::sin( 6.283185307 * f * h * t );
+        }
+        pcm[static_cast<size_t>( i )] = static_cast<float>( v );
+    }
+    const std::vector<AudioFeatures> tl = AudioAnalyzer::analyzeSamples( pcm.data(), frames, 1, rate );
+    AudioConditioner                 cond;
+    AudioConditioner::Context        ctx;
+    float held_raw = 0.f, change_raw = 0.f, change_env = 0.f, adv_held = 0.f, adv_change = 0.f;
+    float                            adv_at_held = 0.f, adv_at_change = 0.f;
+    for ( size_t i = 0; i < tl.size(); ++i )
+    {
+        const float         t = static_cast<float>( i ) * 0.01f;
+        const AudioFeatures c = cond.update( tl[i], 0.01f, ctx );
+        if ( t > 3.f && t < 11.8f )
+            held_raw = std::max( held_raw, tl[i].harmonicChange );
+        if ( t > 12.f && t < 14.f )
+        {
+            change_raw = std::max( change_raw, tl[i].harmonicChange );
+            change_env = std::max( change_env, c.harmonicChange );
+        }
+        if ( t <= 3.f )
+            adv_at_held = c.harmAdvance;
+        if ( t <= 11.8f )
+        {
+            adv_held = c.harmAdvance - adv_at_held;
+            adv_at_change = c.harmAdvance;
+        }
+        if ( t <= 16.f )
+            adv_change = c.harmAdvance - adv_at_change;
+    }
+    check( held_raw < 0.3f, "a held chord stays under the floor of the harmonic change",
+           "peak " + std::to_string( held_raw ).substr( 0, 5 ) );
+    check( change_raw > 0.5f && change_env > 0.4f, "a chord change (C -> F#) swells the harmonic change",
+           "raw " + std::to_string( change_raw ).substr( 0, 5 ) + ", envelope "
+               + std::to_string( change_env ).substr( 0, 5 ) );
+    check( adv_held < 0.1f && adv_change > 0.5f && adv_change < 2.f,
+           "the harmony's advance stands while the chord holds and steps on by about 1 at the change",
+           std::to_string( adv_held ).substr( 0, 5 ) + " / " + std::to_string( adv_change ).substr( 0, 5 ) );
+}
+
 } // namespace
 
 int runCueSelfTest()
@@ -655,6 +723,7 @@ int runCueSelfTest()
     }
 
     longRunChecks();
+    harmonyChecks();
 
     printf( "\n%d passed, %d failed\n", g_passed, g_failed );
     return g_failed == 0 ? 0 : 1;

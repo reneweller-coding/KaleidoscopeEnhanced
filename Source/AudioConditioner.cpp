@@ -248,13 +248,32 @@ AudioFeatures AudioConditioner::update( const AudioFeatures &audio, float rawDt,
                          + 0.10f * motion * beat_breath ); // gentle in-tempo breathing
     m_audioRotPhase += dt * rot_rate;
 
-    // Tunnel forward advance: also transient-dominated (flux / harmonic change),
-    // with only a whisper of steady loudness, so busy passages surge briefly.
+    // Tunnel forward advance: also transient-dominated (flux), with only a
+    // whisper of steady loudness, so busy passages surge briefly.  (The
+    // harmonic change left it on 16.10.2026: since it measures chord changes
+    // at all, it would have pushed the 3D labs' flight -- 1187 shaders ride
+    // audioAdvance -- forward on every chord; harmAdvance below carries it.)
     float adv_rate = Reactivity * gate
                      * ( 0.015f + 0.08f * audio.spectralFlux + 0.02f * motion
-                         + 0.10f * audio.harmonicChange
                          + 0.03f * swell ); // ambient builds surge gently
     m_audioAdvance += dt * adv_rate;
+
+    // Harmonic change: the analyzer's spike above its floor (0.3: a held
+    // drone reads ~0.02, the noise of real music up to ~0.4), held at its
+    // peak and released over ~1.2 s, rising over ~0.4 s: a chord change is a
+    // soft swell of a second or two, never a flicker (a typical one peaks at
+    // ~0.6; a melody moving over a held chord counts about half as much).
+    // Integrated, it is the harmony's advance (~1 per typical chord change,
+    // Tools/make_chord_wav.py) -- what a scene adds to a phase, which the
+    // envelope itself must never be: a pulse added to a phase moves the
+    // picture forward and snaps it back.
+    {
+        float h = ( audio.harmonicChange - 0.3f ) / 0.5f;
+        h = h < 0.f ? 0.f : ( h > 1.f ? 1.f : h );
+        m_harmEnv = fmaxf( m_harmEnv * expf( -dt / 1.2f ), h );
+        m_harmSmooth = slewToward( m_harmSmooth, m_harmEnv, 2.5f, dt );
+        m_harmAdvance += dt * m_harmSmooth * gate / HarmPerChord;
+    }
 
     // Peak-hold + exponential-release envelopes for the transient pulses.
     // The analyzer's raw pulses decay at audio-block rate (gone in ~60 ms):
@@ -588,7 +607,8 @@ AudioFeatures AudioConditioner::update( const AudioFeatures &audio, float rawDt,
         m_chromaHueSlew += d;
     }
     audio_fx.chromaHue = m_chromaHueSlew;
-    audio_fx.harmonicChange = audio.harmonicChange * gate;
+    audio_fx.harmonicChange = m_harmSmooth * gate;
+    audio_fx.harmAdvance = m_harmAdvance;
     audio_fx.roughness = audio.roughness * gate;
     audio_fx.sharpness = audio.sharpness * gate;
     audio_fx.deltaPitch = audio.deltaPitch * gate;

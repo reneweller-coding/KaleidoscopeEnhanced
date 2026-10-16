@@ -146,6 +146,7 @@ teilt eine gemeinsame, kulturübergreifende Dynamikstruktur [Sievers et al.
 | Arousal ↑ → Sättigung | Sättigungsterm des Grades | `Engine/Present.frag` |
 | Arousal ↑ → Bewegungstempo, Ereignisrate | `timingScale`, Busyness-Ziel 1–10 der Szenenwahl; seit 16.10. auch die Drehrate `audioPhase` (der AGC-normierte Pegel zählt mit `0,55 + 0,45 × Arousal`: ein Drone dreht ~40 % langsamer, ein Tanzstück ~5 %) und die Ruhe der Kettenlabore zwischen zwei Wechseln | `AudioAnalyzer`, `AudioConditioner`, `SceneScheduler`, `EffectShader` |
 | Dissonanz → Kantenschärfe | Roughness-Zuschlag auf den CAS-Sharpen (nur additiv) | `PresentPass` |
+| Harmoniewechsel → Formwandel | seit 16.10.: weiche Hüllkurve `audioHarmChange` für Licht und Material, `audioHarmAdvance` (~1 je Akkordwechsel, nur vorwärts) für Phasen, Walk der Kettenlabore (Stufe B oder C); Szenenschnitt nur bei starken Sprüngen, höchstens alle 45 s | `AudioAnalyzer`, `AudioConditioner`, `EffectShader`, Shader |
 | Beats/Onsets → diskrete Ereignisse | Bloom-Akzente, Puls-Uniforms, Lightshow; die Schlagzeug-Onsets (`audioKick`/`Snare`/`Hat`) ohne stabilen Rhythmus seit 16.10. nur zu 35 % (der Kick-Detektor meldete bei Ambient jede Bass-Schwellung) | `Present.frag`, `AudioConditioner`, Shader |
 | Mood-Kategorie → Szenenwahl | Tag-Bonus/Malus in `moodAccept` (probabilistisch, nie hart) | `SceneScheduler` |
 

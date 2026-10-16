@@ -163,6 +163,18 @@ public:
      * synthetic profile.
      **/
     static std::vector<AudioFeatures> analyzeWavToTimeline( const QString &path );
+    /**  Offline analysis of samples in memory: the same pipeline as analyzeWavToTimeline(), for checks that build
+     * their own signal (`Kaleidoscope.exe -q`).
+     *
+     * @param data        Interleaved float samples, -1..1. (in)
+     * @param frames      Number of sample frames. (in)
+     * @param channels    Channels per frame (1 or 2). (in)
+     * @param sampleRate  Sample rate in Hz. (in)
+     *
+     * @return
+     *   One AudioFeatures snapshot per 480-frame block (10 ms at 48 kHz).
+     **/
+    static std::vector<AudioFeatures> analyzeSamples( const float *data, int frames, int channels, int sampleRate );
 
     /** Offline analysis mode (CLI -w <file.wav>): path to a WAV to feed through processBlock() instead of capturing
      * WASAPI loopback.
@@ -259,17 +271,24 @@ private:
     float m_smoothedBPM = 0.f; ///< Smoothed BPM estimate (from inter-beat intervals, refined by autocorrelation).
 
     // ---- Log attack time state ----
-    float m_prevLevel = 0.f;       ///< Previous overall level (for rise-rate / attack detection).
-    float m_attackAccum = 0.f;     ///< Smoothed attack sharpness; see AudioFeatures::logAttackTime.
-    float m_sZCR = 0.f;            ///< Smoothed zero-crossing rate; see AudioFeatures::zeroCrossingRate.
-    float m_sSFM = 0.f;            ///< Smoothed spectral flatness; see AudioFeatures::spectralFlatness.
-    float m_sSharpness = 0.f;      ///< Smoothed Zwicker-style sharpness; see AudioFeatures::sharpness.
-    float m_sKeyClarity = 0.f;     ///< Smoothed key clarity (Krumhansl-Kessler best-vs-mean); see
-                                   ///< AudioFeatures::keyClarity.
-    float m_tonalCentroid[6] = {}; ///< Previous-frame Harte 6-D tonal centroid (for HCDF).
-    float m_sHCDF = 0.f;           ///< Smoothed harmonic change detection function; see AudioFeatures::harmonicChange.
-    float m_sRoughness = 0.f;      ///< Smoothed sensory dissonance (Sethares); see AudioFeatures::roughness.
-    float m_loudnessRef = 0.10f;   ///< Slow loudness reference for AGC (keeps visuals volume-independent).
+    float m_prevLevel = 0.f;                ///< Previous overall level (for rise-rate / attack detection).
+    float m_attackAccum = 0.f;              ///< Smoothed attack sharpness; see AudioFeatures::logAttackTime.
+    float m_sZCR = 0.f;                     ///< Smoothed zero-crossing rate; see AudioFeatures::zeroCrossingRate.
+    float m_sSFM = 0.f;                     ///< Smoothed spectral flatness; see AudioFeatures::spectralFlatness.
+    float m_sSharpness = 0.f;               ///< Smoothed Zwicker-style sharpness; see AudioFeatures::sharpness.
+    float m_sKeyClarity = 0.f;              ///< Smoothed key clarity (Krumhansl-Kessler best-vs-mean); see
+                                            ///< AudioFeatures::keyClarity.
+    static const int HcdfSpan = 40; ///< HCDF compares the tonal centroid with the one this many blocks ago (400 ms).
+    float m_hcdfChroma[12] = {};    ///< The chroma behind HCDF: L1-normalised, smoothed over ~0.4 s (a kick or a
+                                    ///< passing note averages out, a chord stays).
+    static constexpr float HcdfGain = 3.3f; ///< Scale of the HCDF distance to ~0..1 (calibrated on
+                                            ///< Tools/make_chord_wav.py).
+    float m_tonalRing[HcdfSpan][6] = {};    ///< The last HcdfSpan Harte 6-D tonal centroids (ring, for HCDF).
+    int   m_tonalPos = 0;                   ///< Next write slot of m_tonalRing (its oldest entry).
+    int   m_tonalFill = 0;                  ///< Entries of m_tonalRing written so far (up to HcdfSpan).
+    float m_sHCDF = 0.f; ///< Smoothed harmonic change detection function; see AudioFeatures::harmonicChange.
+    float m_sRoughness = 0.f;               ///< Smoothed sensory dissonance (Sethares); see AudioFeatures::roughness.
+    float m_loudnessRef = 0.10f;            ///< Slow loudness reference for AGC (keeps visuals volume-independent).
 
     // ---- Full-spectrum onset detection + downbeat ----
     float m_onsetAvg = 0.f;      ///< Recent average of the onset detection function (m_odfFFT).

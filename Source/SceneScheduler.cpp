@@ -475,7 +475,9 @@ bool SceneScheduler::moodAccept( EffectShader *s ) const
  * actual Solo/Fade transition logic follows and is symmetric with
  * tickFx()'s combine version. Key subtleties:
  *  - Novelty and section triggers are rate-limited by m_noveltyCooldown
- *    (~8 s) so they don't fight the beat-quantised pending mechanism.
+ *    (~8 s) so they don't fight the beat-quantised pending mechanism; a
+ *    harmonic cut needs a strong jump (> 0.95) and comes at most every 45 s
+ *    (the chord changes themselves move the scenes and the labs' walk).
  *  - A recognised, already-known section whose stored shader is already on
  *    screen deliberately does NOT re-apply its stored parameters immediately
  *    (that used to cause a hard mid-shot jump); it only replays them the
@@ -516,12 +518,20 @@ void SceneScheduler::tick( const Tick &t )
     if ( t.dt > 0.f )
         m_shownSecs += t.dt < 1.f ? t.dt : 1.f;
 
+    // Only a strong harmonic jump (a key change, an abrupt new harmony) cuts,
+    // and at most every 45 s: since the harmonic change measures chord changes
+    // (16.10.2026) a song's every chord crossed the old 0.5, which would have
+    // cut its scene every 8 s.  The chord changes themselves go to the scenes
+    // and the chain labs' walk.
     m_noveltyCooldown -= t.dt;
-    if ( !m_reviewMode && m_noveltyCooldown <= 0.f && t.harmonicChange * t.musicPresence > 0.5f )
+    m_harmCutCooldown -= t.dt;
+    if ( !m_reviewMode && m_noveltyCooldown <= 0.f && m_harmCutCooldown <= 0.f
+         && t.harmonicChange * t.musicPresence > 0.95f )
     {
         if ( !mid_fade )
             m_forceEffectChange = true;
         m_noveltyCooldown = 8.0f; // at most one musical cut every ~8 s
+        m_harmCutCooldown = 45.f;
     }
     // DIRECTION: lay the arc onto the drop.  When the tension rises (buildUp
     // above 0.45, rising edge) and a STAGED scene is running (sceneProgress /

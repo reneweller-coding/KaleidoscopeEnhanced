@@ -582,6 +582,22 @@ bool AudioAnalyzer::dumpReplayWav( const QString &path, float seconds )
  * and returns an empty timeline if it cannot be read (parameters and return
  * value documented on the declaration in AudioAnalyzer.h).
  **/
+std::vector<AudioFeatures> AudioAnalyzer::analyzeSamples( const float *data, int frames, int channels, int sampleRate )
+{
+    std::vector<AudioFeatures> timeline;
+    AudioAnalyzer              az; // never start()ed: pure DSP state
+    az.m_running = true;           // processBlock guards check this
+    const int chunk = 480;
+    timeline.reserve( static_cast<size_t>( frames / chunk + 1 ) );
+    for ( int at = 0; at < frames; at += chunk )
+    {
+        const int n = frames - at < chunk ? frames - at : chunk;
+        az.processBlock( data + static_cast<size_t>( at ) * channels, n, channels, sampleRate );
+        timeline.push_back( az.getFeatures() );
+    }
+    return timeline;
+}
+
 std::vector<AudioFeatures> AudioAnalyzer::analyzeWavToTimeline( const QString &path )
 {
     std::vector<AudioFeatures> timeline;
@@ -2330,6 +2346,7 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
         {
             chroma[i] /= c_sum;
             m_smoothedChroma[i] = 0.92f * m_smoothedChroma[i] + 0.08f * chroma[i];
+            m_hcdfChroma[i] = 0.975f * m_hcdfChroma[i] + 0.025f * chroma[i];
         }
 
         // Krumhansl-Kessler key profiles (original 1982 tonal hierarchy ratings)
@@ -2435,13 +2452,17 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
 
         // ---- Harmonic Change (HCDF, Harte 2006) ----
         // Project the 12-bin chroma onto the 6-D tonal centroid (three circles:
-        // fifths, minor thirds, major thirds), then measure how fast that point
-        // moves frame-to-frame.  Spikes on chord/key changes, ~0 on held harmony.
+        // fifths, minor thirds, major thirds), then measure how far that point
+        // moved in the last 400 ms, on its own slower chroma (~0.4 s).  Spikes on chord/key changes, ~0 on held
+        // harmony.  (Until 16.10.2026 it measured the step from the previous
+        // block: the chroma is smoothed over ~0.12 s and the blocks are 10 ms,
+        // so a chord change was spread over thirty small steps and the value
+        // never passed 0.17 -- no scene and no lab ever reacted to harmony.)
         const float P = 3.14159265358979f;
         float       tc[6] = { 0, 0, 0, 0, 0, 0 };
         for ( int n = 0; n < 12; ++n )
         {
-            float c = m_smoothedChroma[n];
+            float c = m_hcdfChroma[n];
             tc[0] += c * std::sin( static_cast<float>( n ) * 7.f * P / 6.f );
             tc[1] += c * std::cos( static_cast<float>( n ) * 7.f * P / 6.f );
             tc[2] += c * std::sin( static_cast<float>( n ) * 3.f * P / 2.f );
@@ -2449,14 +2470,19 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
             tc[4] += 0.5f * c * std::sin( static_cast<float>( n ) * 2.f * P / 3.f );
             tc[5] += 0.5f * c * std::cos( static_cast<float>( n ) * 2.f * P / 3.f );
         }
-        float hcdf = 0.f;
+        float        hcdf = 0.f;
+        const float *then = m_tonalRing[m_tonalPos]; // the oldest centroid: 400 ms ago once the ring is full
         for ( int i = 0; i < 6; ++i )
         {
-            float d = tc[i] - m_tonalCentroid[i];
+            const float d = m_tonalFill < HcdfSpan ? 0.f : tc[i] - then[i];
             hcdf += d * d;
-            m_tonalCentroid[i] = tc[i];
         }
-        hcdf = std::min( std::sqrt( hcdf ) * 4.f, 1.f ); // normalise to ~[0,1]
+        for ( int i = 0; i < 6; ++i )
+            m_tonalRing[m_tonalPos][i] = tc[i];
+        m_tonalPos = ( m_tonalPos + 1 ) % HcdfSpan;
+        if ( m_tonalFill < HcdfSpan )
+            ++m_tonalFill;
+        hcdf = std::min( std::sqrt( hcdf ) * HcdfGain, 1.f ); // normalise to ~[0,1]
         m_sHCDF = 0.85f * m_sHCDF + 0.15f * hcdf;
     }
 

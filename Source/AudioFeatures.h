@@ -208,9 +208,11 @@ struct AudioFeatures
 
     /** Harmonic Change Detection Function (Harte 2006).
      *
-     * The rate of movement of the 6-D tonal centroid. Spikes on chord/key
-     * changes, near zero on a sustained harmony. A natural trigger for visual
-     * change.
+     * How far the 6-D tonal centroid moved in the last 400 ms. Spikes on
+     * chord/key changes (a typical chord change ~0.6, a strong one 1), near
+     * zero on a sustained harmony. A natural trigger for visual change. The
+     * shaders and the chain walk get it as a soft envelope (AudioConditioner:
+     * the noise floor cut, ~0.4 s rise, ~1.2 s fall).
      **/
     float harmonicChange = 0.f;
 
@@ -528,4 +530,6 @@ struct AudioFeatures
      **/
     float audioRotPhase = 0.f; ///< Accumulated rotation angle (radians).
     float audioAdvance = 0.f;  ///< Accumulated tunnel forward offset (uv units).
+    float harmAdvance = 0.f;   ///< The harmony's advance: the harmonic-change envelope integrated, ~1 per chord change
+                               ///< (never jumps, never runs backwards) -- what a phase may add (audioHarmAdvance).
 };

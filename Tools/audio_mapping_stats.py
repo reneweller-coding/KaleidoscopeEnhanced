@@ -9,9 +9,11 @@ Per track it prints
   * light: audioKick mean and share of time above 0.3 (1050 shaders flash with it)
   * colour: the 2D chain lab's colour-field hue rate (0.12 audioPhase + 0.3 audioMode + 0.004 sceneTime, deg/s)
   * geometry: the 1-s wobble of the spectral spread (the scale of five global maps of the 2D lab)
-  * a model of EffectShader::stepChainWalk (energy, music speed, section/drop/phrase/hold walks, the rest after
-    a fade, the target region): walks per minute, share of time a fade runs, target quantiles -- whole class list
-    and inside an entry range (--range, default the Ambient variants' 0..0.6)
+  * harmony: the harmonic-change envelope (mean, swells over 0.55 a minute) and the harmony's advance a minute
+    (audioHarmAdvance: ~1 per chord change)
+  * a model of EffectShader::stepChainWalk (energy, music speed, section/drop/harmony/phrase/hold walks, the rest
+    after a fade, the target region): walks per minute, share of time a fade runs, target quantiles -- whole class
+    list and inside an entry range (--range, default the Ambient variants' 0..0.6)
 
 The walk model follows EffectShader.cpp as of 16.10.2026; keep the two in step when the walk changes.
 
@@ -34,7 +36,8 @@ def walk_model( d, dt, lo, hi, seed=1 ):
     fading = np.zeros( n, bool )
     f = np.zeros( n )
     fdur = np.ones( n )
-    energy, energy_fast, flux_s, rest = 0.5, 0.5, 0.0, 0.0
+    energy, energy_fast, flux_s, rest, harm_cool = 0.5, 0.5, 0.0, 0.0, 8.0
+    has_harm = hasattr( d, "harm_c" )
     last_sec = last_drop = None
     last_phr, phrase_n = -1.0, 0
     walks, fade_time, targets = 0, 0.0, []
@@ -78,6 +81,10 @@ def walk_model( d, dt, lo, hi, seed=1 ):
             start( 4, 1.5, eb )
         rest -= dt
         resting = rest > 0.0
+        harm_cool -= dt
+        if has_harm and not fading.any() and not resting and harm_cool <= 0.0 and r.harm_c > 0.55:
+            start( 1 + int( rng.integers( 2 ) ), lerp( 8, 4, energy ), eb )
+            harm_cool = 12.0
         steady = r.bpm > 0.0 and r.rhythm > 0.35
         turn = steady and last_phr >= 0.0 and r.phrase_pos + 0.5 < last_phr
         last_phr = r.phrase_pos
@@ -135,6 +142,11 @@ def main():
                % ( np.median( np.abs( rot ) ), np.median( adv ), live.kick_c.mean(), 100 * ( live.kick_c > 0.3 ).mean() ) )
         print( "  colour: lab colour-field hue median %.1f deg/s, p90 %.1f | geometry: spread 1-s wobble %.4f"
                % ( np.median( hue ), np.percentile( hue, 90 ), wobble ) )
+        if "harm_c" in live:
+            env = live.harm_c.values
+            swells = np.sum( ( env[ 1: ] > 0.55 ) & ( env[ :-1 ] <= 0.55 ) ) / minutes
+            print( "  harmony: envelope mean %.3f, swells over 0.55 %.1f/min, advance %.1f/min"
+                   % ( env.mean(), swells, ( live.harm_adv.iloc[ -1 ] - live.harm_adv.iloc[ 0 ] ) / minutes ) )
         print( "  walk: %.2f walks/min, a fade running %.0f %% of the time, targets p10/50/90 %.2f/%.2f/%.2f"
                " (in %.2f..%.2f: %.2f/%.2f/%.2f)"
                % ( wpm, 100 * fade, tq[ 0 ], tq[ 1 ], tq[ 2 ], a.range[ 0 ], a.range[ 1 ], tr[ 0 ], tr[ 1 ], tr[ 2 ] ) )

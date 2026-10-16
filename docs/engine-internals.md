@@ -4422,15 +4422,78 @@ Ambient with a drone the walk keeps to the calmer part of its range (targets
 0.05..0.29 of the class lists inside the variants' 0..0.6) -- calm music,
 calm classes; the novelty memory turns them over the days.
 
-### Not changed: the harmonic change is dead
+### Not changed here: the harmonic change was dead
 
-harmonicChange (HCDF) is the frame-to-frame step of the tonal centroid of an
-already smoothed chroma, and the frames became 10-ms blocks: it peaks at 0.055
-on the ambient pieces and 0.17 on the psytrance track, against thresholds of
-0.5 (scheduler cut) and 0.55 (lab walk of B or C).  Neither has ever fired on
-this material.  Measuring it over ~250 ms would revive it, but 17 scenes add
-audioHarmChange to a time or phase (`T = 0.05 sceneTime + 0.08
-audioHarmChange`): a working value would make them jump at every chord.  A
-round of its own: those offsets become rates, the thresholds are set from
-measurements, and the 3D flight's speed (audioAdvance takes 0.10 hcdf) is
-decoupled first.
+harmonicChange (HCDF) was the frame-to-frame step of the tonal centroid of an
+already smoothed chroma, and the frames became 10-ms blocks: it peaked at
+0.055 on the ambient pieces and 0.17 on the psytrance track, against
+thresholds of 0.5 (scheduler cut) and 0.55 (lab walk of B or C).  Neither had
+ever fired on this material.  Revived in the round below, once the scenes
+that would have jumped were rebuilt.
+
+## 16.10.2026 (3): the harmonic change revived
+
+The user's go-ahead for the round the review above left open.
+
+### Measuring it
+
+`Tools/make_chord_wav.py` (new) writes a track with KNOWN chord changes: a
+drone (no change), ambient chords every 8 s with 1.5-s crossfades, pop chords
+every 2 s under kick and hats, a held chord with a melody over it, and a key
+change; the change times go to a `.changes.txt`.  Through
+`PresetEditor --features` the analyzer's numbers were matched against that
+truth and against the ambient, Berlin-school and psytrance tracks.
+
+- The HCDF now measures how far the tonal centroid moved in the last 400 ms,
+  on its own chroma averaged over ~0.4 s (a kick or a passing note averages
+  out, a chord stays), scaled by 3.3: a typical chord change peaks at ~0.6, a
+  strong one at 1; the drone reads ~0.02.  A melody moving over a held chord
+  reads about half a chord change -- harmonic movement too; this simple
+  measure cannot tell the two apart.
+- AudioConditioner turns it into a soft envelope for the shaders and the
+  labs' walk (`audioHarmChange`): the floor 0.3 cut, peak-hold with a ~1.2-s
+  release, a ~0.4-s rise.  Integrated (÷0.83) it is the harmony's advance,
+  `audioHarmAdvance` (new uniform): ~1 per typical chord change, monotonic.
+- audioAdvance no longer takes the harmonic change (it would have pushed the
+  3D labs' flight forward on every chord).
+- The scheduler cuts on harmony only above 0.95 and at most every 45 s; the
+  chord changes themselves go to the scenes and the walk.
+- `Kaleidoscope.exe -q` checks it end to end: a held C major stays under the
+  floor (peak 0.07), the change to F# major swells to 1 and advances the
+  harmony by 1.6.
+
+| Track | walk-level swells | harmony's advance | harmonic scene cuts |
+|---|---|---|---|
+| ambient (4 pieces) | 0..1.1 a minute | 1.0..4.4 a minute | none |
+| Berlin school | 1.5 a minute | 4.7 a minute | none |
+| psytrance | 2.3 a minute | 6.4 a minute | one in six minutes |
+| chord test track | 25 of 38 changes | 0.8 per change (median) | 3 of 38 changes |
+
+### The scenes
+
+A pulse added to a time or a phase moves the picture forward on the chord
+and snaps it back as the pulse decays.  Fourteen scenes did that (or worse):
+they now add the harmony's advance with half their old coefficient, so each
+chord change pushes the picture on and it stays -- AfKlintSpirals,
+AlcoholInkBlooms, DelaunayDiscs, DroneDepths, FidenzaStrokes,
+LiquidLightShow, LouisVeilPours, SymmetryBreathing, TextureCelticKnotwork,
+TextureOpWaves (the direction sways on, still within its +-0.3 rad),
+TextureSpillBloom and TruchetFlowWeave; CurvedMirrorKaleido scaled the whole
+frame with the pulse -- a zoom pump on every chord (rule V7d) -- and turns on
+by 0.12 rad per chord instead; TextureSuminagashiDrops doubled a swirl angle
+(the ink twisted and untwisted) and now advances the swirl's sway.  The
+generator sources (Tools/scenegen/src) carry the same change.  The scenes
+that use the envelope for light, material or an object inside the scene
+keep it: HarmonicChangeLightning, Kaleidoscope, RichterSqueegee,
+RustBloomRoughness, Tonnetz, WallpaperGroupCycle, the Chladni sand and the
+DNA helix (they now react at all).
+
+Checked: the 14 scenes compile with the driver; shake_scan finds nothing;
+temporal_budget knows audioHarmAdvance (ceiling 1.25/s) and puts the fastest
+new term at 0.12 Hz; a probe recording of TextureCelticKnotwork on the chord
+track (KALEIDO_SEED, `-r`) shows the frame change rising to 1.3..2.2 grey
+levels after a chord change -- the size of a photo crossfade, part of it the
+key colour following the new chord -- against 0.25 in between, and no jump.
+(The probe's only two jumps were a single-scene preset changing to itself on a
+section and a harmonic cut: the scene re-rolls its knobs at the end of such a
+fade.  A real preset always changes to another scene.)

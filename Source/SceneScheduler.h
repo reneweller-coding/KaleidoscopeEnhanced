@@ -492,6 +492,8 @@ private:
     // Trigger bookkeeping
     float m_noveltyCooldown = 0.f; ///< Seconds until another harmonic-novelty/section trigger is allowed to fire (rate
                                    ///< limit).
+    float m_harmCutCooldown = 0.f; ///< Seconds until another harmonic cut is allowed (45 s apart: chord changes are
+                                   ///< frequent, a cut on each would be restless).
     int m_lastSectionCount = 0;    ///< Last seen Tick::sectionCount, to detect the rising edge of a new section.
     int m_lastDropCount = 0;       ///< Last seen Tick::dropCount, to detect the rising edge of a new drop.
     // A drop triggered the change: when it fires, it becomes a HARD cut
