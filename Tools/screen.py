@@ -32,9 +32,25 @@ WHY IT LOOKS LIKE THIS -- every rule below cost a wasted run to find:
   0.0, so darkness alone is useless as a criterion -- what matters is whether
   there is any STRUCTURE (spatial_std) and any MOTION.
 """
-import argparse, io, json, math, os, re, struct, subprocess, sys, time, wave
+import argparse, atexit, io, json, math, os, re, struct, subprocess, sys, time, wave
 
 import numpy as np
+
+from private_settings import PrivateSettings
+
+# The windows a screening starts run on a private copy of the settings (KALEIDO_SETTINGS): the adaptive resolution
+# writes its result into the file, and the user's own file must stay exactly as it is.
+_PS = None
+
+
+def settings_env(env):
+    """env plus KALEIDO_SETTINGS on a fresh copy of the user's settings (removed when the run ends)."""
+    global _PS
+    if _PS is None:
+        _PS = PrivateSettings("screen")
+        atexit.register(_PS.close)
+    env["KALEIDO_SETTINGS"] = _PS.path()
+    return env
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 WORK = os.path.join(ROOT, ".screen")
@@ -294,6 +310,7 @@ def render(cfg, wav, log_path, hold, seed, kind="scene", time_start=0, extra_env
     if extra_env:
         env.update(extra_env)
     env[var] = str(int(round(hold)))
+    settings_env(env)
     with io.open(log_path, "w", encoding="utf-8", errors="replace") as fh:
         # BELOW_NORMAL_PRIORITY_CLASS (0x4000): a screening run is a batch job
         # on a machine someone is using, so it yields to the foreground.

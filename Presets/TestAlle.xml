@@ -3507,7 +3507,7 @@
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <TextureShader interest="7" file="..\\Scene2D\\NoirBlindsLight.frag" type="normal" mood="dark,calm" probability="0.45" complexity="4">
+  <TextureShader interest="6" file="..\\Scene2D\\NoirBlindsLight.frag" type="normal" mood="dark,calm" probability="0.45" complexity="4">
     <rig preset="flat"/>
     <float name="slatsP" minValue="0" maxValue="1"></float>
     <float name="smokeP" minValue="0" maxValue="1"></float>
@@ -3525,7 +3525,7 @@
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <TextureShader interest="7" file="..\\Scene2D\\NoirSearchlights.frag" type="normal" mood="dark" probability="0.45" complexity="4">
+  <TextureShader interest="6" file="..\\Scene2D\\NoirSearchlights.frag" type="normal" mood="dark" probability="0.45" complexity="4">
     <rig preset="flat"/>
     <float name="beamsP" minValue="0" maxValue="1"></float>
     <float name="hazeP" minValue="0" maxValue="1"></float>
@@ -3543,7 +3543,7 @@
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <TextureShader interest="7" file="..\\Scene2D\\NoirSmokeBacklight.frag" type="normal" mood="dark,calm" probability="0.45" complexity="4">
+  <TextureShader interest="5" file="..\\Scene2D\\NoirSmokeBacklight.frag" type="normal" mood="dark,calm" probability="0.45" complexity="4">
     <rig preset="flat"/>
     <float name="densP" minValue="0" maxValue="1"></float>
     <float name="shaftP" minValue="0" maxValue="1"></float>

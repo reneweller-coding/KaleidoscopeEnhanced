@@ -545,9 +545,11 @@ void main()
     vec3  ph = imgLod( p * 0.6 + 0.5 + 0.06 * warp, 3.0 );
     float silver = mix( 0.6, smoothstep( 0.08, 0.92, luma( ph ) ), clamp( silverP, 0.0, 1.0 ) );
     // The light falls in broad pools that wander (the window's patch on the smoke), the rest stays dark.
-    float pool = smoothstep( 0.30, 0.62,
+    // (Deep between the pools: the app's exposure evens the mean out, and at a floor of 0.35 it lit the bars from
+    // edge to edge -- stripes everywhere, the pools gone.)
+    float pool = smoothstep( 0.26, 0.56,
                              fbm3( p * 0.55 + vec2( 0.011 * sceneTime, -0.017 * sceneTime ) + 0.2 * audioPhase ) );
-    float lit = 2.3 * bar * ( 0.22 + 0.78 * smoke ) * ( 0.45 + 1.1 * silver ) * ( 0.35 + 0.65 * pool );
+    float lit = 2.3 * bar * ( 0.22 + 0.78 * smoke ) * ( 0.45 + 1.1 * silver ) * ( 0.10 + 0.90 * pool * pool );
     vec3  col = light_c * lit * ( 0.9 + 0.5 * bass );
     // Between the bars the smoke catches a trace of scattered light -- black, but not dead.
     col += light_c * 0.05 * smoke * pool;

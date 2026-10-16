@@ -37,7 +37,8 @@ float smokeAt(vec2 p, float rough)
     float d = mix(fbm3(q + 1.6 * w), photo, 0.5 * clamp(photoP, 0.0, 1.0)) + 0.35 * (fbm3(q * 2.7 + 2.0 * w) - 0.5);
     return smoothstep(0.34 - 0.14 * clamp(densP, 0.0, 1.0), 0.50, d);
 }
-/**  The lamp's own light at an offset from it: a compact core and a short halo.
+/**  The lamp's own light at an offset from it: a compact core, a short halo and the wide glow of the lit haze (the
+ * app render was black a frame away from the lamp without it: mean 3..6 of 255).
  *
  * @param d  The offset from the lamp. (in)
  *
@@ -46,7 +47,8 @@ float smokeAt(vec2 p, float rough)
  **/
 float lampLight(vec2 d)
 {
-    return 0.012 / (dot(d, d) + 0.004) + 0.9 * exp(-length(d) * 3.2);
+    float r = length(d);
+    return 0.012 / (dot(d, d) + 0.004) + 0.9 * exp(-r * 3.2) + 0.45 * exp(-r * 1.1);
 }
 void main()
 {
@@ -77,7 +79,10 @@ void main()
     vec3 lightC = mix(mix(cold, warm, clamp(audioMode, 0.0, 1.0)), hsv2rgb(vec3(hueP, 0.4, 1.0)), 0.12);
     float direct = g0 * (1.0 - here);                       // the lamp seen through a gap here
     float rim = here * (1.0 - here) * 4.0 * g0 * 0.7;       // the smoke's thin edge burns
-    vec3 col = lightC * (0.6 * direct + rays * (1.6 + 2.4 * clamp(shaftP, 0.0, 1.0)) * (1.0 - 0.8 * here) + rim)
+    // A faint backdrop of lit air everywhere: the smoke reads as a silhouette across the whole frame, not only near
+    // the lamp.
+    float back = 0.10 * (1.0 - here);
+    vec3 col = lightC * (0.6 * direct + rays * (1.6 + 2.4 * clamp(shaftP, 0.0, 1.0)) * (1.0 - 0.8 * here) + rim + back)
                * (0.7 + 0.6 * bass);
     finish(col);
 }

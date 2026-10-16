@@ -27,6 +27,14 @@ $wav   = Join-Path $PSScriptRoot "catalog_scan.wav"
 $hotWav = Join-Path $PSScriptRoot "broadband120.wav"   ; # FX/transitions only need ONE audio-hot frame -- reuse the always-energetic tone instead of waiting for catalog_scan.wav's t=17 hot section
 $out   = Join-Path $root "Docs\Catalog\rendered\$OutDir"
 New-Item -ItemType Directory -Force -Path $out | Out-Null
+# A private copy of the settings for the windows this run starts (KALEIDO_SETTINGS, as Tools/private_settings.py
+# does for the Python tools): the user's file stays exactly as it is, whatever a render writes or wherever the run
+# is stopped.
+$privDir = Join-Path ([IO.Path]::GetTempPath()) ("kaleido_catalog_" + [Guid]::NewGuid().ToString("N").Substring(0, 8))
+New-Item -ItemType Directory -Force -Path $privDir | Out-Null
+$userIni = Join-Path $root "kaleidoscope_settings.ini"
+$env:KALEIDO_SETTINGS = Join-Path $privDir "settings.ini"
+if (Test-Path $userIni) { Copy-Item $userIni $env:KALEIDO_SETTINGS } else { New-Item -ItemType File $env:KALEIDO_SETTINGS | Out-Null }
 
 if (-not (Test-Path (Join-Path $rel "Kaleidoscope.exe"))) {
     Write-Host "Release\Kaleidoscope.exe fehlt - erst bauen."; exit 1
@@ -273,4 +281,5 @@ foreach ($name in $Names) {
 }
 
 Remove-Item $cfg -Force -ErrorAction SilentlyContinue
+Remove-Item $privDir -Recurse -Force -ErrorAction SilentlyContinue
 Write-Host "done."
