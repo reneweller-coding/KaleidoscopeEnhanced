@@ -95,6 +95,8 @@
     <ClCompile Include="..\Source\AudioAnalyzer.cpp" />
     <!-- AudioAnalyzer feeds ScoreCueFile the WAV's clock; ScoreCues.cpp holds it without the socket. -->
     <ClCompile Include="..\Source\ScoreCues.cpp" />
+    <!-- The feature dump (main.cpp, dumpFeatures) runs the analyzer's timeline through the app's own conditioning (Qt-free). -->
+    <ClCompile Include="..\Source\AudioConditioner.cpp" />
     <!-- The Qt-free rendering core (a119fe8), shared verbatim with the main
          app so the editor's preview is the SAME code path, not a second one
          that drifts.  None of these include any Qt module. -->

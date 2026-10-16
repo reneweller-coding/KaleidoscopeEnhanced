@@ -42,6 +42,13 @@
  *    PresetEditor.exe --cfxcheck              verify the GL 4.3 compute-FX
  *                                             2D shaders don't render solid
  *                                             black (regression guard)
+ *    PresetEditor.exe --features in.wav out.csv [--every N]
+ *                                             analyse a WAV at full speed and write what
+ *                                             the shaders and the chain walk see, every
+ *                                             N-th 10 ms block (default 5): the raw
+ *                                             analyzer values and the app's conditioning
+ *                                             (AudioConditioner: gate, slews, the
+ *                                             integrated audioAdvance / audioPhase)
  *
  *  @author René Weller
  */
@@ -73,6 +80,8 @@
 #include "ShaderForgeMain.h"
 #include "PreviewWidget.h"
 #include "Preset.h"
+#include "../Source/AudioAnalyzer.h"
+#include "../Source/AudioConditioner.h"
 
 /**  Locate the visualizer project root directory.
  *
@@ -108,6 +117,83 @@ static QString findRoot()
     return QDir::currentPath();
 }
 
+/**  Analyses a WAV file at full speed and writes, per row, what the shaders and the chain walk see.
+ *
+ * @param wav    16-bit PCM WAV file. (in)
+ * @param csv    Output file (CSV with a header line). (in)
+ * @param every  Write every N-th 10 ms analysis block (the conditioning runs on all of them). (in)
+ *
+ * @return
+ *   0 on success, 1 if the WAV could not be read or the CSV not written.
+ *
+ * Each analysis block goes through the app's own AudioConditioner (calm motion, reactivity 1), so the columns are
+ * the raw analyzer values and the conditioned ones a shader receives: the music gate, the slewed level, flux, kick
+ * and key hue, and the integrated audioAdvance and audioPhase.  For judging how the music moves the picture --
+ * a drone against a dance track -- without a window or a real-time run.
+ **/
+static int dumpFeatures( const QString &wav, const QString &csv, int every )
+{
+    const std::vector<AudioFeatures> tl = AudioAnalyzer::analyzeWavToTimeline( wav );
+    if ( tl.empty() )
+        return 1;
+    FILE *out = fopen( csv.toLocal8Bit().constData(), "w" );
+    if ( !out )
+    {
+        fprintf( stderr, "features: cannot write %s\n", qPrintable( csv ) );
+        return 1;
+    }
+    fputs( "t,presence,gate,level,level_c,arousal,arousal_c,valence,rhythm,bpm,flux,flux_c,spread,centroid,mode,"
+           "chroma,chroma_c,hcdf,kick_c,onset_c,beat_c,buildup,swell_c,sections,section_id,known,drops,advance,"
+           "rotphase,flip,ambient,phrase_pos,keyclarity,roughness,sharpness,novelty,valence_raw,sec_thr,spread_c\n",
+           out );
+    // One analysis block is 480 samples (analyzeWavToTimeline): its length follows the file's sample rate.
+    unsigned int rate = 48000;
+    if ( FILE *f = fopen( wav.toLocal8Bit().constData(), "rb" ) )
+    {
+        char         id[5] = { 0 };
+        unsigned int sz = 0;
+        fseek( f, 12, SEEK_SET );
+        while ( fread( id, 1, 4, f ) == 4 && fread( &sz, 4, 1, f ) == 1 )
+        {
+            if ( strncmp( id, "fmt ", 4 ) == 0 )
+            {
+                unsigned char buf[8];
+                if ( fread( buf, 1, 8, f ) == 8 )
+                    rate = static_cast<unsigned int>( buf[4] | ( buf[5] << 8 ) | ( buf[6] << 16 ) | ( buf[7] << 24 ) );
+                break;
+            }
+            fseek( f, static_cast<long>( sz ), SEEK_CUR );
+        }
+        fclose( f );
+    }
+    AudioConditioner          cond;
+    AudioConditioner::Context ctx;
+    const float               dt = 480.f / static_cast<float>( rate > 0 ? rate : 48000 );
+    for ( size_t i = 0; i < tl.size(); ++i )
+    {
+        const AudioFeatures &a = tl[i];
+        ctx.globalTime = static_cast<float>( i ) * dt;
+        const AudioFeatures c = cond.update( a, dt, ctx );
+        if ( every > 1 && i % static_cast<size_t>( every ) != 0 )
+            continue;
+        fprintf(
+            out,
+            "%.2f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.1f,%.4f,%.4f,%.4f,%.4f,%.3f,%.4f,%.4f,%.3f,%.3f,%.3f,%.3f,"
+            "%.3f,%.3f,%d,%d,%d,%d,%.4f,%.4f,%.0f,%.3f,%.3f,%.3f,%.3f,%.3f,%.4f,%.3f,%.3f,%.4f\n",
+            ctx.globalTime, a.musicPresence, cond.gate(), a.overallLevel, c.overallLevel, a.arousal, c.arousal,
+            c.valence, a.rhythmStrength, a.estimatedBPM > 0.004f ? 40.f + 160.f * a.estimatedBPM : 0.f, a.spectralFlux,
+            c.spectralFlux, a.spectralSpread, a.spectralCentroid, a.musicalMode, a.chromaHue, c.chromaHue,
+            a.harmonicChange, c.onsetKick, c.onsetStrength, c.beatDecay, c.buildUp, c.swell, a.sectionCount,
+            a.sectionId, a.sectionKnown ? 1 : 0, a.dropCount, c.audioAdvance, c.audioRotPhase, a.audioFlip,
+            a.ambientFactor, c.phrasePos, a.keyClarity, a.roughness, a.sharpness, a.sectionNovelty, a.valence,
+            a.sectionThreshold, c.spectralSpread );
+    }
+    fclose( out );
+    fprintf( stderr, "features: %d rows -> %s\n", static_cast<int>( ( tl.size() + every - 1 ) / every ),
+             qPrintable( csv ) );
+    return 0;
+}
+
 /**  Program entry point: dispatches to a headless CLI probe mode, or launches the windowed editor.
  *
  * @param argc  Argument count (as passed by the OS). (in)
@@ -128,6 +214,15 @@ int main( int argc, char *argv[] )
     QStringList args;
     for ( int i = 1; i < argc; ++i )
         args << QString::fromLocal8Bit( argv[i] );
+
+    // Headless feature dump: what the music hands the shaders (see dumpFeatures()).
+    if ( args.value( 0 ) == "--features" && args.size() >= 3 )
+    {
+        QCoreApplication app( argc, argv );
+        const int        at = static_cast<int>( args.indexOf( "--every" ) );
+        const int        every = at > 0 && at + 1 < args.size() ? std::max( 1, args[at + 1].toInt() ) : 5;
+        return dumpFeatures( args[1], args[2], every );
+    }
 
     // Headless self-test: load a preset and write it back out (no GUI / GL).
     if ( args.value( 0 ) == "--roundtrip" && args.size() >= 3 )
