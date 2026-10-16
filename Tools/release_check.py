@@ -68,7 +68,7 @@ def step_doxygen():
     t = time.time()
     subprocess.run([DOXYGEN, os.path.join(tmp, "Doxyfile")], cwd=ROOT, capture_output=True, timeout=1800)
     warn = io.open(os.path.join(tmp, "warn.txt"), encoding="utf-8", errors="replace").read().splitlines()
-    cpp = [w for w in warn if re.search(r"/(Source|PresetEditor|SetupTool)/", w.replace("\\", "/"))]
+    cpp = [w for w in warn if re.search(r"/(Source|PresetEditor|SetupTool|ExportTool)/", w.replace("\\", "/"))]
     shader = [w for w in warn if w not in cpp and ": warning:" in w]
     return len(cpp) == 0 and len(shader) == 0, "C++: %d warning(s); shaders: %d warning(s)" % (len(cpp), len(shader)), \
         time.time() - t

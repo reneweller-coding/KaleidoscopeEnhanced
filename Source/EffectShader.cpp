@@ -17,6 +17,7 @@
 #include "EffectShader.h"
 #include "ComputeFX.h"
 #include "LongRunVariety.h"
+#include "coreclock.h"
 #include "textfile.h"
 #include <string>
 #include <cstring>
@@ -175,14 +176,14 @@ void EffectShader::retireIdleChains()
     // A lab keeps its coordinate textures between frames (75-525 MB at
     // 2880x1620); a preset with four labs held them all for its whole life.
     // The textures of a lab not run for 25 s go (as ComputeFX::retireIdle).
-    m_chainUsed = std::chrono::steady_clock::now();
+    m_chainUsed = EngineClock::now();
     s_chainHolders.insert( this );
     retireIdleChainTextures();
 }
 
 void EffectShader::retireIdleChainTextures()
 {
-    const auto now = std::chrono::steady_clock::now();
+    const auto now = EngineClock::now();
     for ( auto it = s_chainHolders.begin(); it != s_chainHolders.end(); )
     {
         EffectShader *e = *it++;
@@ -1063,7 +1064,7 @@ void EffectShader::applyAudioFeatures( const AudioFeatures &f )
     // ahead of the camera.  The first sight after an activation is not a
     // change (age starts large), so no door opens on scene start.
     {
-        const double now = std::chrono::duration<double>( std::chrono::steady_clock::now().time_since_epoch() ).count();
+        const double now = std::chrono::duration<double>( EngineClock::now().time_since_epoch() ).count();
         if ( f.sectionCount != m_secCount )
         {
             const bool first = ( m_secCount < 0 );
@@ -1395,13 +1396,13 @@ static bool                                  s_noCarrySet = false; ///< s_noCarr
 
 void EffectShader::noCarryOver()
 {
-    s_noCarryAt = std::chrono::steady_clock::now();
+    s_noCarryAt = EngineClock::now();
     s_noCarrySet = true;
 }
 
 void EffectShader::carryChainOver()
 {
-    const auto now = std::chrono::steady_clock::now();
+    const auto now = EngineClock::now();
     if ( !s_lastChain.who || s_lastChain.who == this || now - s_lastChain.when > std::chrono::milliseconds( 1500 ) )
         return; // no other lab on screen right now
     if ( s_noCarrySet && now - s_noCarryAt < std::chrono::seconds( 5 ) )
@@ -1599,16 +1600,15 @@ void EffectShader::stepChainWalk( const AudioFeatures &audio )
     // what is on screen now, for a lab coming in after this one (carryChainOver)
     s_lastChain.who = this;
     s_lastChain.frag = fragmentName();
-    s_lastChain.when = std::chrono::steady_clock::now();
+    s_lastChain.when = EngineClock::now();
     s_lastChain.cls.clear();
     // The viewer's memory of the classes (M_ClassSeen, read by classNoveltyAt()):
     // every class on screen is stamped with the wall clock, one that has just
     // come at once and the others every 30 s while they stay.  Only where the
     // host knows what is shown: a walking lab or a fixed chain (the shader's
     // own one-stage walk, morphP 0.15 .. 0.5, shows a class the host does not know).
-    const auto   steady_now = std::chrono::steady_clock::now();
-    const double wall_now = std::chrono::duration<double>( std::chrono::system_clock::now().time_since_epoch() )
-                                .count();
+    const auto   steady_now = EngineClock::now();
+    const double wall_now = EngineClock::epochSeconds();
     const bool   seen_known = m_walk.active || m_walkMorph < 0.15f;
     const bool   seen_all = !m_seenValid || steady_now - m_seenAt > std::chrono::seconds( 30 );
     for ( int s = 0; s < WalkN; ++s )
@@ -1645,7 +1645,7 @@ void EffectShader::stepChainWalk( const AudioFeatures &audio )
     if ( !m_walk.active )
         return;
 
-    const auto now = std::chrono::steady_clock::now();
+    const auto now = EngineClock::now();
     float      dt = m_walk.hasLast ? std::chrono::duration<float>( now - m_walk.last ).count() : 0.f;
     if ( M_Frozen )
         dt = 0.f; // VJ freeze / comparison run: no walk either
@@ -3312,7 +3312,7 @@ void EffectShader::stepChainCam( const AudioFeatures &f )
         if ( u->getName() == "camP" )
             cam_p = u->snapshotValue();
     }
-    const auto now = std::chrono::steady_clock::now();
+    const auto now = EngineClock::now();
     if ( m_cam.pending )
     {
         m_cam.pending = false;

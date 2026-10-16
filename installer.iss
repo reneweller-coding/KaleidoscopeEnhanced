@@ -15,9 +15,10 @@
 ; The app loads its shaders/configs from "..\" relative to the exe, so the
 ; exe lives in {app}\bin and the assets in {app}; the shortcut's working
 ; directory is therefore {app}\bin.  The staged package also contains the
-; PresetEditor (bin\PresetEditor.exe + the PresetEditor\ CWD-anchor folder)
-; and the SetupTool (bin\KaleidoscopeSetup.exe); the recursive [Files] entry
-; picks all of that up, and [Icons] adds a start-menu shortcut for each.
+; PresetEditor (bin\PresetEditor.exe + the PresetEditor\ CWD-anchor folder),
+; the SetupTool (bin\KaleidoscopeSetup.exe) and the video export tool
+; (bin\KaleidoscopeExport.exe); the recursive [Files] entry picks all of that
+; up, and [Icons] adds a start-menu shortcut for each.
 ; ---------------------------------------------------------------------------
 
 #define MyAppName "Kaleidoscope Enhanced"
@@ -112,6 +113,8 @@ Name: "{group}\{#MyAppName} Preset-Editor"; Filename: "{app}\bin\PresetEditor.ex
 ; Settings tool (bundled since the deploy.ps1 3c step): edits kaleidoscope_settings.ini
 ; offline (lyrics/artist images/video/language/...); needs no CWD anchor of its own.
 Name: "{group}\{#MyAppName} Setup"; Filename: "{app}\bin\KaleidoscopeSetup.exe"; WorkingDir: "{app}\bin"
+; Video export (bundled since the deploy.ps1 3d step): an audio file in, an mp4 of the show out.
+Name: "{group}\{#MyAppName} Video-Export"; Filename: "{app}\bin\KaleidoscopeExport.exe"; WorkingDir: "{app}\bin"
 Name: "{autodesktop}\{#MyAppName}";      Filename: "{app}\bin\{#MyAppExeName}"; WorkingDir: "{app}\bin"; Tasks: desktopicon
 
 [Run]

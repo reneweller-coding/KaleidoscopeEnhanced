@@ -49,6 +49,7 @@
 #include "VideoIn.h"
 #include "VideoPiP.h"
 #include "Strings.h"
+#include "coreclock.h"
 
 #ifndef GL_MULTISAMPLE
 #define GL_MULTISAMPLE \
@@ -442,6 +443,21 @@ GLwidget::GLwidget( QWidget *parent )
     // active config as the default start config) before we pick the start config.
     loadUiSettings();
 
+    // Video export (-e): everything that needs no GL happens now, before a window
+    // exists -- the audio decode can take a while, and an error (no ffmpeg, an
+    // unreadable file) ends the run here with its "[export] error" line.  The
+    // engine renders at the video's own size: no render scale below 1.
+    if ( VideoExport::requested() )
+    {
+        m_export = new VideoExport();
+        if ( !m_export->prepare() )
+        {
+            delete m_export; // removes the decoded audio again
+            exit( 2 );
+        }
+        RenderPipeline::setRenderScale( 1.f );
+    }
+
     m_configurationList.clear();
     traverseConfigurations( Platform::presetsDir( ".." ) /*directory*/,
                             m_configurationList );
@@ -454,13 +470,13 @@ GLwidget::GLwidget( QWidget *parent )
     // Score cues from a generator (CueReceiver.h): OFF unless cuePort says otherwise.  Same
     // arrangement as the web remote -- a child QObject with a socket on the main thread, so a
     // datagram becomes state that the very next frame reads without any synchronisation.
-    if ( m_cuePort > 0 )
+    if ( m_cuePort > 0 && !m_export )
         new CueReceiver( this, m_cueBind, m_cuePort );
 
     // Optional update check -- OFF unless switched on in the setup tool, and
     // even then it only ASKS GitHub and reports; downloading and running the
     // installer needs a separate, explicit action (see UpdateCheck.h).
-    if ( m_updateCheck )
+    if ( m_updateCheck && !m_export )
     {
         m_update = new UpdateCheck( this );
         m_update->start();
@@ -475,7 +491,7 @@ GLwidget::GLwidget( QWidget *parent )
                                    QString( "..\\Transitions" ) } )
             for ( const QFileInfo &fi : QDir( Platform::assetPath( d ) ).entryInfoList( { "*.frag" }, QDir::Files ) )
                 watch << fi.absoluteFilePath();
-        if ( !watch.isEmpty() )
+        if ( !watch.isEmpty() && !m_export )
         {
             m_shaderWatcher = new QFileSystemWatcher( this );
             m_shaderWatcher->addPaths( watch );
@@ -623,13 +639,31 @@ GLwidget::~GLwidget()
     // Take the measurement along before everything is torn down (no-op
     // without KALEIDO_COST_LOG).
     dumpSceneCost();
+
+    // A video export still running (the process is ending some other way):
+    // finish the file with the frames so far.
+    const bool exported = ( m_export != nullptr );
+    if ( m_export )
+    {
+        if ( !m_exportEnded )
+        {
+            makeCurrent();
+            m_export->endGL( true );
+            doneCurrent();
+        }
+        delete m_export;
+        m_export = nullptr;
+    }
+
     // Save the last chosen state - covers the GRACEFUL quit path (window X,
     // menu "Exit": app.quit() -> app.exec() returns -> this destructor runs).
     // The hard exit(0) spots (Escape/Q/double click) additionally call
     // saveAllSettings() themselves BEFORE exit() - exit() stops execution at
     // once and runs NO C++ destructors, so this one would never get its turn
-    // for them.
-    saveAllSettings();
+    // for them.  An export saves nothing: it must not become the live show's
+    // start preset.
+    if ( !exported )
+        saveAllSettings();
 
     // Closing mid-recording: finalise cleanly (drains + joins the encoder
     // worker) WHILE the audio analyzer is still alive — the recorder closes
@@ -710,7 +744,12 @@ void GLwidget::initializeGL()
     shaderForgeInit();
     applyQualityProfile();
 
-    m_actConfiguration->start( 100, 100 );
+    // An export renders at the video's size from the first frame on; resizeGL()
+    // leaves it there whatever the preview window measures.
+    if ( m_export )
+        m_actConfiguration->start( m_export->width(), m_export->height() );
+    else
+        m_actConfiguration->start( 100, 100 );
 
     const char *version = reinterpret_cast<const char *>( glGetString( GL_VERSION ) );
     fprintf( stderr, "VERSION %s (core profile)\n", version );
@@ -759,6 +798,14 @@ void GLwidget::initializeGL()
             m_actConfiguration->renderPipeline()->compileAllShaders();
         fflush( stderr );
         exit( 0 );
+    }
+
+    // Video export: no capture, no now-playing, no MIDI, no frame timer -- the
+    // export drives the frames itself (exportStep()).
+    if ( m_export )
+    {
+        beginExport();
+        return;
     }
 
     // A preset may bring its own audio (AudioFile="..."), which the review
@@ -967,6 +1014,12 @@ void GLwidget::dumpSceneCost()
 
 void GLwidget::paintGL()
 {
+    if ( m_export )
+    {
+        paintExportPreview();
+        return;
+    }
+
     // KALEIDO_COST_LOG=1: how expensive is each scene REALLY.  The complexity
     // attribute the scheduler's selection budget depends on is hand-made to
     // this day -- an estimate nobody ever measured.  Here the truth comes for
@@ -1125,8 +1178,9 @@ void GLwidget::draw()
     // Track-change: a fresh track (after a silent gap) gets a clean transition.
     // Suppressed under KALEIDO_SCENE_SWEEP, where the sweep decides what is on
     // screen and a surprise cut would land in the middle of a scene under review.
+    // Not a skip: the music changed, nobody judged the scene.
     if ( audio.trackChange && !sweepActive() && m_actConfiguration && m_actConfiguration->renderPipeline() )
-        m_actConfiguration->renderPipeline()->requestSceneChange();
+        m_actConfiguration->renderPipeline()->requestSceneChange( false );
 
     // KALEIDO_FX_SWEEP=<seconds>: the same walk, but over the OVERLAYS.
     // The scene stays put (review mode holds it) and the combine shader steps
@@ -1875,6 +1929,106 @@ void GLwidget::timerEvent( QTimerEvent * )
 }
 
 
+bool GLwidget::eventFilter( QObject *obj, QEvent *ev )
+{
+    if ( m_export && !m_exportEnded && ev->type() == QEvent::Close )
+    {
+        VideoExport::requestCancel();
+        ev->ignore();
+        return true;
+    }
+    return QOpenGLWidget::eventFilter( obj, ev );
+}
+
+void GLwidget::beginExport()
+{
+    // What the export renders is the show as the ini has it -- reactivity, trails,
+    // mood, the light show -- minus what only means something live: the
+    // latency lead compensates loopback and display delays the file does not
+    // have, stereo packing would halve the picture, and the adaptive scale and
+    // auto-config are for a live audience.  Nothing of it is saved.
+    RenderPipeline::setLatency( 0.f );
+    RenderPipeline::M_StereoMode = 0;
+    m_autoScale = false;
+    m_autoConfig = false;
+    window()->installEventFilter( this ); // the close button stops the export properly
+
+    if ( !m_export->beginGL() )
+    {
+        m_exportEnded = true;
+        QTimer::singleShot( 0, qApp, []
+        { QCoreApplication::exit( 2 ); } );
+        return;
+    }
+    EngineClock::startVirtual(); // from here on, every engine timer runs on the frames
+    VideoExport::watchStdin();   // the export tool's cancel button
+#ifdef WIN32
+    // A long export must not be cut off by standby; the display may sleep.
+    SetThreadExecutionState( ES_CONTINUOUS | ES_SYSTEM_REQUIRED );
+#endif
+    QTimer::singleShot( 0, this, [this]
+    { exportStep(); } );
+}
+
+void GLwidget::exportStep()
+{
+    if ( !m_export || m_exportEnded )
+        return;
+    makeCurrent();
+    RenderPipeline *rp = m_actConfiguration->renderPipeline();
+    QElapsedTimer   slice;
+    slice.start();
+    bool stop = false;
+    // A slice of about 50 ms, then the event loop: the preview repaints and the
+    // window stays responsive (Esc, the close button) however long the video is.
+    for ( ;; )
+    {
+        stop = VideoExport::cancelRequested() || m_export->failed() || m_export->finished();
+        if ( stop || slice.elapsed() >= 50 )
+            break;
+        const long long k = m_export->nextSubFrame();
+        // A fade waiting for its model waits here, in render time -- live it is
+        // held in show time instead (RenderPipeline::paint()).
+        rp->awaitIncomingMesh( 15000 );
+        EngineClock::setVirtualSeconds( m_export->engineSeconds( k ) );
+        const AudioFeatures audio = m_export->featuresFor( k );
+        if ( audio.trackChange )
+            rp->requestSceneChange( false );
+        if ( m_export->titleDue( k ) )
+            rp->showTitle( m_export->title(), m_export->artist() );
+        rp->setDefaultFBO( m_export->renderFbo() );
+        rp->paint( m_rotationMatrix, m_xTrans, m_yTrans, m_zTrans, audio );
+        m_export->subFrameDone( k );
+    }
+    int code = -1;
+    if ( stop )
+    {
+        code = m_export->endGL( VideoExport::cancelRequested() && !m_export->finished() );
+        m_exportEnded = true;
+    }
+    doneCurrent();
+    update();
+    if ( code >= 0 )
+        QTimer::singleShot( 300, qApp, [code]
+        { QCoreApplication::exit( code ); } );
+    else
+        QTimer::singleShot( 0, this, [this]
+        { exportStep(); } );
+}
+
+void GLwidget::paintExportPreview()
+{
+    m_export->drawPreview( defaultFramebufferObject(), m_width, m_height );
+    QPainter painter( this );
+    painter.setFont( QFont( "Segoe UI", 11 ) );
+    const QString line = m_exportEnded ? QStringLiteral( "Video-Export" ) : m_export->statusLine();
+    const int     tw = painter.fontMetrics().horizontalAdvance( line ) + 24;
+    painter.fillRect( 12, height() - 44, tw, 32, QColor( 0, 0, 0, 170 ) );
+    painter.setPen( QColor( 235, 235, 235 ) );
+    painter.drawText( 24, height() - 22, line );
+    painter.end();
+}
+
 void GLwidget::resizeGL( int /*wLogical*/, int /*hLogical*/ )
 {
     // QOpenGLWidget calls resizeGL() with LOGICAL (device-independent) pixels,
@@ -1884,6 +2038,8 @@ void GLwidget::resizeGL( int /*wLogical*/, int /*hLogical*/ )
     const qreal dpr = devicePixelRatioF();
     m_width = static_cast<int>( this->width() * dpr + 0.5 );
     m_height = static_cast<int>( this->height() * dpr + 0.5 );
+    if ( m_export )
+        return; // the pipeline renders at the video's size; the window is only the preview
 
     // Lightweight resize: keeps the loaded image textures + shader programs and
     // only re-sizes the off-screen buffers (no reload, no GL-object leak).
@@ -3467,6 +3623,15 @@ std::vector<OsdItem> GLwidget::osdRootItems()
 
 void GLwidget::keyPressEvent( QKeyEvent *event )
 {
+    // Video export: Esc or q finish the file with the frames so far; the show's
+    // keys have nothing to steer here.
+    if ( m_export )
+    {
+        if ( event->key() == Qt::Key_Escape || event->key() == Qt::Key_Q )
+            VideoExport::requestCancel();
+        return;
+    }
+
     // The remote-control menu is modal while it is open: every key belongs
     // to it (arrows, OK, Back, Esc), nothing reaches the shortcuts below.
     if ( m_osd.isOpen() )

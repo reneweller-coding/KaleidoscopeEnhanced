@@ -22,7 +22,7 @@ import xml.etree.ElementTree as ET
 
 ROOT = os.path.dirname( os.path.dirname( os.path.abspath( __file__ ) ) )
 DOXYGEN = r"C:\Program Files\doxygen\bin\doxygen.exe"
-CPP = re.compile( r"(^|[\\/])(Source|PresetEditor|SetupTool)[\\/]" )
+CPP = re.compile( r"(^|[\\/])(Source|PresetEditor|SetupTool|ExportTool)[\\/]" )
 
 
 def run( out_dir=None ):

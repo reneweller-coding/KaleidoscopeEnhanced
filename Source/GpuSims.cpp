@@ -110,7 +110,7 @@ void GpuSims::run( const AudioFeatures &audio, float dt, const Demand &need, con
     {
         // Several PDE sub-steps per frame so the pattern develops quickly and
         // fills the whole field with lively, evolving structure.
-        for ( int s = 0; s < 6 && !f.hold; ++s )
+        for ( int s = 0; s < 6 * f.steps && !f.hold; ++s )
             stepReactionDiffusion( audio );
         glActiveTexture( GL_TEXTURE7 );
         glBindTexture( GL_TEXTURE_2D, m_texRD[1 - m_rdIdx] ); // newest state
@@ -118,7 +118,7 @@ void GpuSims::run( const AudioFeatures &audio, float dt, const Demand &need, con
 
     if ( need.fluid && m_fluidReady )
     {
-        if ( !f.hold )
+        for ( int s = 0; s < f.steps && !f.hold; ++s )
             stepFluid( audio, f );
         glActiveTexture( GL_TEXTURE8 );
         glBindTexture( GL_TEXTURE_2D, m_texFluid[1 - m_fluidIdx] );
@@ -126,7 +126,7 @@ void GpuSims::run( const AudioFeatures &audio, float dt, const Demand &need, con
 
     if ( need.smoke3D && m_smoke3DReady )
     {
-        if ( !f.hold )
+        for ( int s = 0; s < f.steps && !f.hold; ++s )
             stepSmoke3D( audio, f );
         glActiveTexture( GL_TEXTURE9 );
         glBindTexture( GL_TEXTURE_2D, m_texSmoke3D[1 - m_smoke3DIdx] );
@@ -134,7 +134,7 @@ void GpuSims::run( const AudioFeatures &audio, float dt, const Demand &need, con
 
     if ( need.physarum && m_physReady )
     {
-        if ( !f.hold )
+        for ( int s = 0; s < f.steps && !f.hold; ++s )
         {
             stepPhysarum( audio, f );
             stepPhysarum( audio, f ); // 2 sub-steps: the net develops faster

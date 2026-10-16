@@ -34,7 +34,7 @@ LIMIT = 120
 # @chainopening, @chainbake; gen.py's "// @expr"): one line each, never wrapped or reflowed.
 DIRECTIVE = re.compile( r"^[ \t]*//[ \t]*@\w" )
 
-CPP_DIRS = ( "Source", "PresetEditor", "SetupTool" )
+CPP_DIRS = ( "Source", "PresetEditor", "SetupTool", "ExportTool" )
 GLSL_DIRS = ( "Scene2D", "Scene3D", "FX", "Transitions", "Engine" )
 CPP_EXT = ( ".cpp", ".h", ".c", ".hh" )
 GLSL_EXT = ( ".frag", ".vert", ".comp", ".geom", ".tesc", ".tese", ".glsl" )

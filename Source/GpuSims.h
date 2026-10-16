@@ -91,6 +91,8 @@ public:
                             ///< none.
         float dyeInterp = 1.f;    ///< Cross-fade factor between dyeTexA and dyeTexB (0 = pure A, 1 = pure B).
         bool  hold = false;       ///< Freeze (VJ or comparison run): no step, the newest states stay bound.
+        int   steps = 1; ///< Simulation steps this frame: above 1 in a video export below the live rate, which makes
+                         ///< the steps the live show makes in the same time (RenderPipeline::frameStepScale()).
     };
 
     /**  Creates/validates all GPU simulation resources (FBOs, textures, shader programs).

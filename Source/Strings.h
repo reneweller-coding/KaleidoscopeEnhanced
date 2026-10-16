@@ -291,6 +291,61 @@ enum StrIdE
     S_HELP_MENU,
     S_HELP_MEDIA,
 
+    // ---- ExportTool ----
+    S_EXPORT_WINDOW_TITLE,
+    S_EXPORT_HINT,
+    S_EXPORT_GROUP_SOURCE,
+    S_EXPORT_PRESET,
+    S_EXPORT_AUDIO,
+    S_EXPORT_AUDIO_PICK,
+    S_EXPORT_AUDIO_FILTER,
+    S_EXPORT_AUDIO_INFO_FMT, // %1 length, %2 codec, %3 sample rate, %4 channels, %5 frames, %6 size limit
+    S_EXPORT_AUDIO_BAD,
+    S_EXPORT_GROUP_VIDEO,
+    S_EXPORT_RESOLUTION,
+    S_EXPORT_RES_FHD,
+    S_EXPORT_RES_4K,
+    S_EXPORT_FPS,
+    S_EXPORT_FPS_FMT, // %1 frames per second
+    S_EXPORT_CODEC,
+    S_EXPORT_CODEC_AUTO,
+    S_EXPORT_CODEC_H264,
+    S_EXPORT_CODEC_HEVC,
+    S_EXPORT_CODEC_AV1,
+    S_EXPORT_QUALITY,
+    S_EXPORT_Q_MAX,
+    S_EXPORT_Q_HIGH,
+    S_EXPORT_Q_COMPACT,
+    S_EXPORT_FADE,
+    S_EXPORT_TITLE,
+    S_EXPORT_BLUR,
+    S_EXPORT_OUTPUT,
+    S_EXPORT_OUTPUT_PICK,
+    S_EXPORT_OUTPUT_FILTER,
+    S_EXPORT_FFMPEG,
+    S_EXPORT_FFMPEG_PICK,
+    S_EXPORT_FFMPEG_FILTER,
+    S_EXPORT_FFMPEG_MISSING,
+    S_EXPORT_START,
+    S_EXPORT_CANCEL,
+    S_EXPORT_PLAY,
+    S_EXPORT_SHOW,
+    S_EXPORT_CLOSE,
+    S_EXPORT_DETAILS,
+    S_EXPORT_PH_DECODE,
+    S_EXPORT_PH_ENCODER,
+    S_EXPORT_PH_START,
+    S_EXPORT_PH_FINISH,
+    S_EXPORT_PROGRESS_FMT,  // %1 percent, %2 speed, %3 time left
+    S_EXPORT_DONE_FMT,      // %1 file name, %2 size, %3 time taken, %4 speed
+    S_EXPORT_CANCELLED_FMT, // %1 file name
+    S_EXPORT_FAILED_FMT,    // %1 message
+    S_EXPORT_CRASHED_FMT,   // %1 exit code
+    S_EXPORT_NOAPP,
+    S_EXPORT_NEED_AUDIO,
+    S_EXPORT_OVERWRITE_FMT, // %1 file name
+    S_EXPORT_QUIT_RUNNING,
+
     S_COUNT
 };
 

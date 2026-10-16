@@ -199,7 +199,7 @@ def main():
     ap.add_argument( "--apply", action="store_true" )
     a = ap.parse_args()
     files = subprocess.run( [ "git", "ls-files", "Source/*.h", "Source/*.cpp", "PresetEditor/*.h", "PresetEditor/*.cpp",
-                              "SetupTool/*.h", "SetupTool/*.cpp" ], cwd=ROOT, capture_output=True, text=True ).stdout.split()
+                              "SetupTool/*.h", "SetupTool/*.cpp", "ExportTool/*.h", "ExportTool/*.cpp" ], cwd=ROOT, capture_output=True, text=True ).stdout.split()
     report, total, nfiles = [], 0, 0
     for rel in files:
         if rel in SKIP:

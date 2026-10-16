@@ -30,8 +30,9 @@ VS = r"C:\Program Files\Microsoft Visual Studio\18\Community"
 CLANG_TIDY = os.path.join( VS, r"VC\Tools\Llvm\x64\bin\clang-tidy.exe" )
 VCVARS = os.path.join( VS, r"VC\Auxiliary\Build\vcvars64.bat" )
 DB_DIR = os.path.join( ROOT, "cache", "clang-tidy" )
-PROJECTS = ( "Kaleidoscope.vcxproj", r"PresetEditor\PresetEditor.vcxproj", r"SetupTool\SetupTool.vcxproj" )
-OURS = re.compile( r"[\\/](Source|PresetEditor|SetupTool)[\\/][^\\/]+\.(cpp|h|c|hh)$", re.I )
+PROJECTS = ( "Kaleidoscope.vcxproj", r"PresetEditor\PresetEditor.vcxproj", r"SetupTool\SetupTool.vcxproj",
+             r"ExportTool\ExportTool.vcxproj" )
+OURS = re.compile( r"[\\/](Source|PresetEditor|SetupTool|ExportTool)[\\/][^\\/]+\.(cpp|h|c|hh)$", re.I )
 
 
 def msvc_env():
@@ -104,7 +105,7 @@ def run_unit( unit, env, fixes_dir, checks ):
     """clang-tidy on one unit; returns (unit, diagnostics text, path of the exported fixes or None)."""
     out = os.path.join( fixes_dir, "%08x.yaml" % ( hash( unit ) & 0xffffffff ) )
     cmd = [ CLANG_TIDY, "-p", DB_DIR, "--config-file=" + os.path.join( ROOT, ".clang-tidy" ),
-            "--header-filter=.*[\\\\/](Source|PresetEditor|SetupTool)[\\\\/].*", "--export-fixes=" + out, "--quiet" ]
+            "--header-filter=.*[\\\\/](Source|PresetEditor|SetupTool|ExportTool)[\\\\/].*", "--export-fixes=" + out, "--quiet" ]
     if checks:
         cmd.append( "--checks=-*," + checks )
     cmd.append( unit )

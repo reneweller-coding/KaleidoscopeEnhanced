@@ -35,8 +35,9 @@
 //  - transition choice: one shader from Transitions/ per fade (weighted by
 //    probability and mood; the cross-fade stays the most frequent)
 //
-// Clocks: std::chrono::steady_clock - exactly the wall-time semantics of
-// the old QElapsedTimer (freeze/pin re-arm the clocks every held frame).
+// Clocks: EngineClock (coreclock.h) - the wall-time semantics of the old
+// QElapsedTimer in a live show (freeze/pin re-arm the clocks every held
+// frame), the frame clock in a video export.
 // Qt-free (a RendererCore building block); PERSISTING the taste (QSettings)
 // stays with the caller and comes in as the tasteFor callback.
 
@@ -47,6 +48,7 @@
 #include <vector>
 
 #include "LongRunVariety.h"
+#include "coreclock.h"
 
 class EffectShader;
 
@@ -370,15 +372,15 @@ public:
     }
 
 private:
-    using ClockT = std::chrono::steady_clock; ///< Monotonic wall clock behind every Solo/Fade timer -- the same
-                                              ///< semantics as the QElapsedTimer this class replaced (never affected by
-                                              ///< system-time changes).
+    using ClockT = EngineClock; ///< The engine clock behind every Solo/Fade timer: monotonic wall time like the
+                                ///< QElapsedTimer this class replaced (never affected by system-time changes), frame
+                                ///< time in a video export.
     /**  Reset a clock's reference point to now.
      *
      * @param tp  The clock's reference point; receives the current time. (out)
      **/
     static void restart( ClockT::time_point &tp ) { tp = ClockT::now(); }
-    /**  Elapsed wall time since a clock's reference point.
+    /**  Elapsed engine time since a clock's reference point.
      *
      * @param tp  Reference time point captured by restart(). (in)
      *

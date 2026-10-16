@@ -68,6 +68,7 @@ bool  RenderPipeline::M_RenderScaleFromCli = false;
 float RenderPipeline::M_LightShow = 0.0f;     // corner lamps / light-show OFF by default
 bool  RenderPipeline::M_SpoutEnabled = false; // Spout sender (CLI -o)
 float RenderPipeline::M_LatencyLead = 0.05f;  // display-phase lead vs. heard audio
+float RenderPipeline::M_FrameStep = 0.f;      // video export: fixed frame step (0 = live, wall clock)
 int   RenderPipeline::M_StereoMode = 0;       // stereoscopic output (CLI -3 / 'z')
 float RenderPipeline::M_StereoDepth = 1.0f;   // disparity strength
 bool  RenderPipeline::M_Blackout = false;     // VJ blackout ('b')
@@ -104,13 +105,15 @@ static QString settingsFilePath()
 }
 
 /**  Whether this is a scripted run (a test tool driving the app): KALEIDO_SEED, KALEIDO_FREEZE_TIME,
- * KALEIDO_SCENE_SWEEP or KALEIDO_FX_SWEEP is set.
+ * KALEIDO_SCENE_SWEEP or KALEIDO_FX_SWEEP is set -- or a video export (M_FrameStep).
  *
  * @return
  *   True for a scripted run.
  *
  * Such a run must come out the same every time and must not change what the viewer's show remembers: it neither
- * reads nor writes the scene memory ([history]) and the class memory ([classSeen]).
+ * reads nor writes the scene memory ([history]) and the class memory ([classSeen]).  A video export counts from
+ * the moment the command line set it up: after that the scene memory is neither read nor written, while the class
+ * memory read before (loadSettings() runs first) only steers the export's choices.
  **/
 static bool scriptedRun()
 {
@@ -118,7 +121,7 @@ static bool scriptedRun()
                                  || qEnvironmentVariableIsSet( "KALEIDO_FREEZE_TIME" )
                                  || qEnvironmentVariableIsSet( "KALEIDO_SCENE_SWEEP" )
                                  || qEnvironmentVariableIsSet( "KALEIDO_FX_SWEEP" );
-    return Scripted;
+    return Scripted || RenderPipeline::M_FrameStep > 0.f;
 }
 
 /**  The settings key of a preset's scene memory.
@@ -953,6 +956,7 @@ void RenderPipeline::setupSafety()
         m_trailPrevUni = glGetUniformLocation( m_trailProgId, "texPrev" );
         m_trailResUni = glGetUniformLocation( m_trailProgId, "resolution" );
         m_trailDecayUni = glGetUniformLocation( m_trailProgId, "decay" );
+        m_trailStepsUni = glGetUniformLocation( m_trailProgId, "decaySteps" );
         m_trailZoomUni = glGetUniformLocation( m_trailProgId, "warpZoom" );
         m_trailRotUni = glGetUniformLocation( m_trailProgId, "warpRot" );
         m_trailHueUni = glGetUniformLocation( m_trailProgId, "hueDrift" );
@@ -1066,7 +1070,9 @@ void RenderPipeline::showTitle( const QString &title, const QString &artist )
 
 // Manual "next" (key 'n', MIDI pad, web remote): skipping an effect that has
 // only just come on screen reads as a dislike — remember it (soft, decaying).
-void RenderPipeline::requestSceneChange()
+// A track change asks for the same cut but is no verdict on the scene: it used
+// to teach a malus to whatever had come on screen in the ten seconds before.
+void RenderPipeline::requestSceneChange( bool userSkip )
 {
     // Tell the user WHY nothing will happen instead of silently ignoring
     // the key (a pinned/frozen show swallowing 'n' looks like a bug).
@@ -1080,14 +1086,30 @@ void RenderPipeline::requestSceneChange()
         fprintf( stderr, "n: ignored - FREEZE is active (press 'e' to unfreeze)\n" );
         return;
     }
-    if ( m_scheduler.actTexture() < m_effectTextures.size() && m_scheduler.actElapsedSec() < 10.f )
+    if ( userSkip && m_scheduler.actTexture() < m_effectTextures.size() && m_scheduler.actElapsedSec() < 10.f )
         bumpTaste( m_effectTextures[m_scheduler.actTexture()]->fragmentName(), 0.8f );
     // a chain lab skipped: the classes on screen a little less (a quick skip more)
-    if ( m_scheduler.actTexture() < m_effectTextures.size() )
+    if ( userSkip && m_scheduler.actTexture() < m_effectTextures.size() )
         bumpClassTaste( m_effectTextures[m_scheduler.actTexture()],
                         m_scheduler.actElapsedSec() < 10.f ? 0.92f : 0.96f );
     EffectShader::noCarryOver(); // skipped: the next lab must not take this chain over
     m_scheduler.requestChange( true );
+}
+
+void RenderPipeline::awaitIncomingMesh( int maxMs )
+{
+    if ( m_scheduler.texState() == 0 || m_scheduler.nextTexture() >= m_effectTextures.size() )
+        return;
+    EffectShader *nx = m_effectTextures[m_scheduler.nextTexture()];
+    if ( !nx->meshWarmupPending() )
+        return;
+    QElapsedTimer waited;
+    waited.start();
+    while ( nx->meshWarmupPending() && waited.elapsed() < maxMs )
+    {
+        nx->requestMeshWarmup(); // repeated: to the front of the worker's queue
+        QThread::msleep( 2 );
+    }
 }
 
 // Validation aid: compile EVERYTHING now (lazy compilation would otherwise
@@ -1675,6 +1697,11 @@ void RenderPipeline::updateTimingScale( const AudioFeatures &audio )
 
 RenderPipeline::FrameTiming RenderPipeline::readFrameClock()
 {
+    // A video export: every frame is exactly one frame period, whatever it cost to render.  The fps budget below
+    // must not see it either -- it would read a 24 fps export as a struggling GPU and halve the cubes for good.
+    if ( M_FrameStep > 0.f )
+        return { M_FrameStep, M_FrameStep };
+
     float time_since_last_frame = m_nanotimer.elapsed();
     // if( time_since_last_frame > 20.0 )
     // printf( "%f\n", time_since_last_frame );
@@ -1973,6 +2000,8 @@ void RenderPipeline::stepSimulations( const AudioFeatures &audio, float timeSinc
         sim_frame.dyeTexB = m_liveTex ? m_liveTex : m_nextTex;
         sim_frame.dyeInterp = m_interpolationTexture;
         sim_frame.hold = M_Freeze; // a frozen picture: the sims stand too
+        // The sims step per frame: an export below LiveRefHz makes the steps the live show makes in the same time.
+        sim_frame.steps = std::max( 1, static_cast<int>( std::lround( frameStepScale() ) ) );
 
         m_sims.run( audio, timeSinceLastFrameSec, need, sim_frame );
     }
@@ -2520,6 +2549,10 @@ GLuint RenderPipeline::renderTrailsPass( const AudioFeatures &audio, const Audio
             glUniform2f( m_trailResUni, static_cast<float>( m_width ), static_cast<float>( m_height ) );
         if ( m_trailDecayUni >= 0 )
             glUniform1f( m_trailDecayUni, decay );
+        // The decay is per frame: a video export below LiveRefHz applies it once per live frame it stands for, or a
+        // 24 fps export would trail five times as long as the show.
+        if ( m_trailStepsUni >= 0 )
+            glUniform1f( m_trailStepsUni, frameStepScale() );
         // Echo-warp: the beat pumps the outward zoom, the rotation direction
         // swings slowly (sin of slow time -> smooth reversals, no snapping)
         // and echoes drift gently in hue.  All rates scaled by frame time.

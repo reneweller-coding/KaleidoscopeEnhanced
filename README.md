@@ -56,6 +56,7 @@ lights.*
 - [Presets](#presets)
   - [Reviewing the shader library](#reviewing-the-shader-library)
 - [Recording](#recording)
+- [Video export](#video-export)
 - [Setup tool](#setup-tool)
 - [Remote control](#remote-control)
 - [Optional online features](#optional-online-features)
@@ -430,6 +431,56 @@ encoder (still verified before use).
 
 ---
 
+## Video export
+
+`KaleidoscopeExport.exe` (Start-menu shortcut **Video-Export**, or
+`Video-Export-starten.bat` in the portable build) turns an audio file into a
+video of the show: pick a preset and a file — WAV, MP3, OGG, FLAC or anything
+else ffmpeg reads — choose **Full HD or 4K** and **24, 30, 60 or 120 frames
+per second**, and it writes an MP4 with the audio in it.
+
+An export is not a recording of the screen. The engine runs on a **frame
+clock**: frame *n* shows the show at exactly *n / fps* seconds however long it
+took to render, so the frame rate is constant by construction — a shader
+compile or a model load costs render time, never picture — and it runs as
+fast as the GPU and the encoder allow. On an RTX 5090, Full HD at 60 fps
+renders at about 4× real time, 4K at 60 fps at about 2×. The music is analysed
+block by block exactly as far as each frame, by the same analyser the live
+show uses, and the look is the one `kaleidoscope_settings.ini` describes
+(reactivity, trails, mood, …). An export writes nothing back to it.
+
+| Option | |
+|---|---|
+| Codec | *Automatic* takes H.264 up to Full HD (plays everywhere) and H.265 above (half the size at 4K); AV1 for newer devices |
+| Quality | *Highest*, *High*, *Compact* — constant-quality levels of the encoder |
+| Fade | in from black over the first second, out over the last two (on by default) |
+| Title | weaves the file's title and artist tags in at the start — the live show's title reveal |
+| Motion blur | renders at 120 Hz and averages the sub-frames of each frame, like a camera shutter: smoother at 24 or 30 fps, but 120 frames to render per second of video |
+
+ffmpeg is required and not bundled: the tool looks on the `PATH` and in the
+usual package-manager folders (winget, scoop, chocolatey), takes the newest
+and shows which; `winget install Gyan.FFmpeg` installs one. The export also
+runs from the command line:
+
+```
+Kaleidoscope.exe -c Psychedelic -e track.flac -g 3840x2160 -p 60 -j hevc,title -d video.mp4
+```
+
+`-e <audio>` exports that file, `-g <WxH>` sets the size (`fullhd` and `4k`
+work too), `-p <fps>` the frame rate, `-d <file>` the output (default:
+`<audio name>_kaleidoscope.mp4` beside the audio), and `-j` takes a comma list
+of `h264`, `hevc`, `av1`, `blur`, `nofade`, `title`, `q=max|high|compact` and
+`cq=N`. A score-cue file (`-k`) works as in a batch render. The window shows a
+preview; Esc, closing it, or `quit` on stdin finishes the file with the frames
+so far. Exit code 0 done, 1 cancelled, 2 error; the progress comes as
+`[export] progress <done> <total> <seconds> <speed>` lines on stderr.
+
+Build it with `msbuild ExportTool\ExportTool.vcxproj /p:Configuration=Release /p:Platform=x64`.
+How the frame clock works, and what the encoder settings are based on:
+[docs/engine-internals.md](docs/engine-internals.md#16102026-4-video-export-on-a-frame-clock).
+
+---
+
 ## Setup tool
 
 `KaleidoscopeSetup.exe` (Start-menu shortcut **Setup**, or
@@ -648,8 +699,9 @@ This produces `dist\KaleidoscopeVisualizer\` (verified to run with Qt
 removed from `PATH`) and `dist\KaleidoscopeVisualizer-portable.zip`. If
 [Inno Setup](https://jrsoftware.org/isdl.php) is installed, it also compiles
 `installer.iss` into `dist\KaleidoscopeVisualizer-Setup.exe`; otherwise build
-that later with `ISCC.exe installer.iss`. Both the Preset editor and the
-Setup tool are bundled automatically when their own Release builds exist.
+that later with `ISCC.exe installer.iss`. The Preset editor, the Setup tool
+and the video export tool are bundled automatically when their own Release
+builds exist.
 
 ---
 
@@ -670,8 +722,9 @@ Top-level folders:
   scene change.
 - **`Engine\`** — internal pipeline passes (mood grade, feedback trails,
   bloom, the GPU fluid/reaction-diffusion/smoke simulations, compute kernels).
-- **`PresetEditor\`** and **`SetupTool\`** — the two standalone companion
-  tools (see [above](#presets), [above](#setup-tool)).
+- **`PresetEditor\`**, **`SetupTool\`** and **`ExportTool\`** — the
+  standalone companion tools (see [above](#presets), [above](#setup-tool),
+  [above](#video-export)).
 - **`AndroidRemote\`** — the Android remote app (no Gradle; plain SDK tools).
 - **`Presets\*.xml`** — presets; **`ThirdParty\SpoutGL\`** — vendored
   Spout2 SDK; **`docs\`** — this repo's documentation and the scene catalogue;

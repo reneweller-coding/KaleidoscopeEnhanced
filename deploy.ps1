@@ -17,12 +17,15 @@
                                          "..\Scene3D\..." asset paths resolve
                                          against this, mirroring the dev layout)
             Setup-starten.bat         <- settings tool launcher (optional extras)
+            Video-Export-starten.bat  <- video export launcher (audio file -> mp4)
             bin\
                 Kaleidoscope.exe      <- the app
                 PresetEditor.exe      <- preset authoring GUI (live preview,
                                          ranges, formula/audio mappings)
                 KaleidoscopeSetup.exe <- offline kaleidoscope_settings.ini editor
                                          (lyrics/artist images/video/language/...)
+                KaleidoscopeExport.exe <- video export: preset + audio file ->
+                                         mp4 at a fixed size and frame rate
                 Qt6*.dll, platforms\, ...  <- Qt runtime (via windeployqt)
                 vcruntime140*.dll, msvcp140.dll  <- MSVC runtime
                 icon.ico                  <- window icon (multi-res); also
@@ -78,6 +81,9 @@ if ($Build) {
     Info "Building SetupTool Release|x64 ..."
     cmd /c "`"$vcvars`" && msbuild SetupTool\SetupTool.vcxproj /p:Configuration=Release /p:Platform=x64 /p:QTDIR=$QtDir /m /nologo /v:minimal"
     if ($LASTEXITCODE -ne 0) { throw "SetupTool build failed." }
+    Info "Building ExportTool Release|x64 ..."
+    cmd /c "`"$vcvars`" && msbuild ExportTool\ExportTool.vcxproj /p:Configuration=Release /p:Platform=x64 /p:QTDIR=$QtDir /m /nologo /v:minimal"
+    if ($LASTEXITCODE -ne 0) { throw "ExportTool build failed." }
 }
 
 if (-not (Test-Path $exeSrc))    { throw "Release\Kaleidoscope.exe not found - build first (use -Build)." }
@@ -287,6 +293,23 @@ if (Test-Path $setupSrc) {
     Info "SetupTool\build\Release\KaleidoscopeSetup.exe not found - packaging WITHOUT the setup tool"
 }
 
+# --- 3d. bundle the ExportTool (video export front end) ---------------------
+# It runs bin\Kaleidoscope.exe in export mode (-e), so it belongs beside it;
+# ffmpeg is NOT bundled -- the tool finds the user's (PATH, winget, scoop, ...)
+# and says so plainly if there is none.
+$exportSrc = Join-Path $root "ExportTool\build\Release\KaleidoscopeExport.exe"
+if (Test-Path $exportSrc) {
+    Copy-Item $exportSrc $binDir
+    $ErrorActionPreference = "Continue"
+    & $windeploy --release --no-translations --no-opengl-sw --no-system-d3d-compiler (Join-Path $binDir "KaleidoscopeExport.exe") | Out-Null
+    $deployExit = $LASTEXITCODE
+    $ErrorActionPreference = $prevEap
+    if ($deployExit -ne 0) { throw "windeployqt (ExportTool) failed with exit code $deployExit" }
+    Info "Bundled KaleidoscopeExport.exe"
+} else {
+    Info "ExportTool\build\Release\KaleidoscopeExport.exe not found - packaging WITHOUT the video export tool"
+}
+
 # --- 4. bundle the FULL C++ runtime so the package is standalone everywhere ---
 # Just shipping vcruntime140/msvcp140 is not enough: they depend on the Universal
 # CRT (ucrtbase.dll + api-ms-win-crt-*.dll).  On a target whose UCRT is missing or
@@ -410,6 +433,16 @@ start "" /D "%~dp0bin" "%~dp0bin\KaleidoscopeSetup.exe" %*
 '@
     Set-Content -Path (Join-Path $pkgDir "Setup-starten.bat") -Value $batSetup -Encoding Ascii
 }
+if (Test-Path (Join-Path $binDir "KaleidoscopeExport.exe")) {
+    $batExport = @'
+@echo off
+rem Startet den Video-Export: Preset und Audiodatei (wav/mp3/ogg/flac) waehlen,
+rem Full HD oder 4K, 24/30/60/120 Bilder pro Sekunde -> MP4 mit dem Ton.
+rem Braucht ffmpeg (z. B. "winget install Gyan.FFmpeg").
+start "" /D "%~dp0bin" "%~dp0bin\KaleidoscopeExport.exe" %*
+'@
+    Set-Content -Path (Join-Path $pkgDir "Video-Export-starten.bat") -Value $batExport -Encoding Ascii
+}
 
 $readme = @'
 Kaleidoscope Enhanced - Music Visualizer (portable / standalone)
@@ -448,6 +481,13 @@ Setup tool:
     (lyrics, artist images, music video, language DE/EN, web-remote port, ...)
     on or off without starting the visualizer itself. Takes effect the next
     time Kaleidoscope.exe starts.
+
+Video export:
+  - Double-click  Video-Export-starten.bat  to turn an audio file (wav, mp3,
+    ogg, flac) into a video of the show: pick a preset, Full HD or 4K and
+    24/30/60/120 frames per second; the mp4 carries the audio. It renders
+    frame by frame at a constant frame rate, usually faster than real time.
+    Needs ffmpeg (for example: winget install Gyan.FFmpeg).
 
 It captures whatever is playing on the system (WASAPI loopback) and reacts to
 the music. Requires a GPU with OpenGL 2.0+ (FBO); RGBA16F for the reaction-

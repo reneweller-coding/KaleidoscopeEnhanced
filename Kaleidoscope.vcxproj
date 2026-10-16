@@ -263,6 +263,7 @@ if errorlevel 1 exit /b 1
     <ClCompile Include="Source\MidiInput.cpp" />
     <ClCompile Include="Source\NowPlaying.cpp" />
     <ClCompile Include="Source\Recorder.cpp" />
+    <ClCompile Include="Source\VideoExport.cpp" />
     <ClCompile Include="Source\OscSender.cpp" />
     <ClCompile Include="moc\moc_AudioAnalyzer.cpp" />
     <ClCompile Include="moc\moc_glwidget.cpp" />
@@ -304,6 +305,7 @@ if errorlevel 1 exit /b 1
   <ItemGroup>
     <ClInclude Include="Source\Configuration.h" />
     <ClInclude Include="Source\Recorder.h" />
+    <ClInclude Include="Source\VideoExport.h" />
     <ClInclude Include="Source\OscSender.h" />
     <ClInclude Include="Source\CueReceiver.h" />
     <ClInclude Include="Source\ScoreCues.h" />

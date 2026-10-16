@@ -78,6 +78,9 @@
     <ClCompile Include="Source\Recorder.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Source\VideoExport.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="Source\GpuSims.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

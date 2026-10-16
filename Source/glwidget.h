@@ -39,6 +39,7 @@
 #include "OscSender.h"
 #include "TrackMedia.h"
 #include "OsdMenu.h"
+#include "VideoExport.h"
 
 class UpdateCheck;
 
@@ -487,6 +488,30 @@ protected:
      * a repaint via update().
      **/
     virtual void timerEvent( QTimerEvent * );
+    /**  Video export: the top-level window's close button asks the export to stop (the file is finished) instead of
+     * killing it half-written.
+     *
+     * @param obj  The watched object (the top-level window). (in)
+     * @param ev   The event. (in)
+     *
+     * @return
+     *   true if the event was taken (a close during an export).
+     **/
+    bool eventFilter( QObject *obj, QEvent *ev ) override;
+
+    /**  Video export (VideoExport.h): renders a slice of frames (about 50 ms of work) into the export target, then
+     * gives the event loop a turn and schedules itself again; at the end it finishes the file and quits.
+     *
+     * Runs from a zero-time timer, not from paintGL(): Qt does not paint a minimised or hidden window, and the
+     * export must not stop because the preview is out of sight.
+     **/
+    void exportStep();
+    /** Video export: the preview -- the latest frame letterboxed into the window, with the progress line. */
+    void paintExportPreview();
+    /** Video export: GL setup at the end of initializeGL() instead of the live services (audio capture, now
+     * playing, MIDI, the frame timer).
+     **/
+    void beginExport();
 
     /**  Renders one frame: audio features, MIDI, batch-render exit check, shader hot-reload, auto-config, the
      * RenderPipeline pipeline, recording capture, web-remote snapshot, config cross-fade, now-playing reveal,
@@ -696,7 +721,9 @@ protected:
     // (PBO readback, encoder workers, replay ring, ffmpeg mux).  GLwidget only
     // calls toggle()/captureIfDue()/saveReplay() etc.
     Recorder m_recorder; ///< Screen recording + instant-replay ring buffer (PBO readback, encoder worker, ffmpeg mux).
-    std::vector<unsigned char> m_snapBuf;  ///< glReadPixels scratch (Web-Snapshot)
+    VideoExport               *m_export = nullptr; ///< The video export of this run (CLI -e), or null in a live show.
+    bool                       m_exportEnded = false; ///< The export has been finished (endGL() ran).
+    std::vector<unsigned char> m_snapBuf;             ///< glReadPixels scratch (Web-Snapshot)
 
     /**  Recursively scans a directory tree for *.xml preset files and constructs a Configuration for each one found.
      *

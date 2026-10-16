@@ -213,13 +213,24 @@ public:
      **/
     void setArtistExternalTexture( GLuint texId ) { m_present.setArtistExternalTexture( texId ); }
 
-    /**  Requests an early manual cross-fade to the next texture effect (key 'n', MIDI pad, web remote).
+    /**  Requests an early cross-fade to the next texture effect (key 'n', MIDI pad, web remote, a track change).
+     *
+     * @param userSkip  The viewer skipped the scene (true) rather than the music changing (false, no learning). (in)
      *
      * Honoured at the next opportunity; ignored while PIN or FREEZE is active (a message explains why on stderr).
-     * TASTE LEARNING: if the current effect has been on screen less than 10 s, skipping it counts as "don't like
-     * it" and its persistent taste weight is multiplied down (see bumpTaste()) -- a slowly decaying malus.
+     * TASTE LEARNING, for a skip only: if the current effect has been on screen less than 10 s, skipping it counts
+     * as "don't like it" and its persistent taste weight is multiplied down (see bumpTaste()) -- a slowly decaying
+     * malus. A track change is no verdict on the scene and learns nothing.
      **/
-    void requestSceneChange();
+    void requestSceneChange( bool userSkip = true );
+    /**  Video export: waits, in real time and at most @p maxMs, until the model of a fade's incoming scene is loaded.
+     *
+     * @param maxMs  Longest wait in milliseconds. (in)
+     *
+     * Live, a fade waiting for its model is held in show time (paint()); an export waits in render time instead, so
+     * the fade runs as it would on a machine that loads instantly.
+     **/
+    void awaitIncomingMesh( int maxMs );
 
     /**  Lists the preset's texture-effect shader names (bare file names, no path/extension), for a remote scene
      * browser.
@@ -625,6 +636,24 @@ public:
 
     // Spout output (CLI -o): publish the displayed frame as sender "Kaleidoscope".
     static bool M_SpoutEnabled; ///< Whether the Spout output sender ("Kaleidoscope") is enabled (CLI -o).
+
+    /** Video export (VideoExport.h): every frame is exactly this long, in seconds; 0 = a live show on the wall clock.
+     *
+     * Set once, before the first frame. Besides fixing the frame step it switches off what only makes sense live
+     * (the fps-driven cube budget, writing the scene memory) and scales the per-frame trail decay and simulation
+     * steps by frameStepScale(), so a 24 or 60 fps export moves like the live show at LiveRefHz.
+     **/
+    static float M_FrameStep;
+    /** The display rate the look was tuned on (Hz): a per-frame trail decay or simulation step means what it means at
+     * this rate.
+     **/
+    static constexpr float LiveRefHz = 120.f;
+    /**  How many live frames at LiveRefHz one frame stands for.
+     *
+     * @return
+     *   M_FrameStep * LiveRefHz in a video export (5 at 24 fps, 2 at 60 fps), 1 in a live show.
+     **/
+    static float frameStepScale() { return M_FrameStep > 0.f ? M_FrameStep * LiveRefHz : 1.f; }
 
     /** Spout INPUT (CLI -i <sender|any>): a Spout sender's live texture (OBS, Resolume, a webcam through OBS, ...)
      * replaces the photo as the source image of the whole pipeline — the audience becomes the mandala.
@@ -1100,11 +1129,13 @@ private:
     GLint  m_trailPrevUni = -1;  ///< Uniform location of "texPrev" (previous trail buffer) in m_trailProgId.
     GLint  m_trailResUni = -1;   ///< Uniform location of "resolution" in m_trailProgId.
     GLint  m_trailDecayUni = -1; ///< Uniform location of "decay" (trail persistence) in m_trailProgId.
-    GLint  m_trailZoomUni = -1;  ///< echo-warp: per-frame zoom — uniform location of "warpZoom" in m_trailProgId.
+    GLint  m_trailStepsUni = -1; ///< Uniform location of "decaySteps" (live frames per frame, frameStepScale()) in
+                                 ///< m_trailProgId.
+    GLint m_trailZoomUni = -1;   ///< echo-warp: per-frame zoom — uniform location of "warpZoom" in m_trailProgId.
     GLint m_trailRotUni = -1; ///< echo-warp: rotation (radians/frame) — uniform location of "warpRot" in m_trailProgId.
     GLint m_trailHueUni = -1; ///< echo-warp: hue drift of the echoes — uniform location of "hueDrift" in m_trailProgId.
-    GLint  m_trailDepthUni = -1; ///< depth-aware trails (3D scenes) — uniform location of "depth3D" in m_trailProgId.
-    float  m_trailDepth3D = 0.f; ///< slewed 0..1 "a 3D scene is up" — drives depth-aware trails and camera zoom
+    GLint m_trailDepthUni = -1;  ///< depth-aware trails (3D scenes) — uniform location of "depth3D" in m_trailProgId.
+    float m_trailDepth3D = 0.f;  ///< slewed 0..1 "a 3D scene is up" — drives depth-aware trails and camera zoom
                                  ///< headroom.
     float m_meshUp = 0.f; ///< slewed 0..1 "a loaded-model scene is up" — damps the time echo, whose scaled ghost reads
                           ///< as a fault on a solid object.
@@ -1292,13 +1323,14 @@ private:
      **/
     void updateTimingScale( const AudioFeatures &audio );
 
-    /** One frame's two time bases, both MEASURED (never a fixed step). */
+    /** One frame's two time bases, both MEASURED in a live show; a video export fixes both at M_FrameStep. */
     struct FrameTiming
     {
         float dt;     ///< Scene time step, later scaled by freeze/DJ-stop.
         float dtWall; ///< Wall-clock step, immune to freeze -- overlays and fades keep moving over a frozen picture.
     };
-    /**  Reads the frame timer and updates the fps-driven cube detail budget.
+    /**  Reads the frame timer and updates the fps-driven cube detail budget (a video export: the fixed frame step,
+     * budget untouched).
      *
      * @return
      *   This frame's scene and wall-clock time steps.
@@ -1707,9 +1739,9 @@ private:
                              ///< m_scheduler.fxInterp() is used instead.
 
 
-    QElapsedTimer m_timeTexture; ///< Timer driving the background-photo solo/cross-fade state machine (see
-                                 ///< m_stateTexture).
-    float m_timeTextureSolo;     ///< Rolled duration (seconds) an image stays solo before a cross-fade becomes pending.
+    WallClock m_timeTexture; ///< Engine-clock timer driving the background-photo solo/cross-fade state machine (see
+                             ///< m_stateTexture).
+    float m_timeTextureSolo; ///< Rolled duration (seconds) an image stays solo before a cross-fade becomes pending.
     float m_timeTextureInterpolation;           ///< Rolled duration (seconds) an image cross-fade takes.
     float m_interpolationTexture; ///< Current image cross-fade weight, 1.0 = fully on m_actTex, decreasing toward 0 as
                                   ///< m_nextTex fades in.

@@ -175,6 +175,18 @@ public:
      *   One AudioFeatures snapshot per 480-frame block (10 ms at 48 kHz).
      **/
     static std::vector<AudioFeatures> analyzeSamples( const float *data, int frames, int channels, int sampleRate );
+    /**  Caller-driven analysis on a never-started analyzer (the video export): one block through processBlock(), on
+     * the caller's thread; getFeatures() then reads the result.
+     *
+     * @param data        Interleaved float samples, -1..1. (in)
+     * @param frames      Sample frames in the block (480 = 10 ms at 48 kHz, the live capture block). (in)
+     * @param channels    Channels per frame (1 or 2). (in)
+     * @param sampleRate  Sample rate in Hz. (in)
+     *
+     * The export feeds the track block by block up to each frame's time, so the analysis is exactly as far as the
+     * picture -- the same pipeline as live capture, without a capture thread or a wall clock.
+     **/
+    void feedBlock( const float *data, int frames, int channels, int sampleRate );
 
     /** Offline analysis mode (CLI -w <file.wav>): path to a WAV to feed through processBlock() instead of capturing
      * WASAPI loopback.

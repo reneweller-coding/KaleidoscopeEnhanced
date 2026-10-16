@@ -47,6 +47,12 @@
  *   - `-k <file>`     score cues from a file (CueReceiver.h, ScoreCueFile): a generator's bars,
  *                     sections, drops and key, timed by the `-w`/`-x` WAV -- a batch render follows
  *                     the score instead of guessing it.
+ *   - `-e <audio>`    VIDEO EXPORT (VideoExport.h): render the preset (-c) to this audio file (any
+ *                     format ffmpeg reads) as an mp4 with the audio muxed in, on a frame clock --
+ *                     constant frame rate, as fast as the GPU allows -- then exit (0 done, 1
+ *                     cancelled, 2 error). Steered by `-g <WxH>` (size, default 1920x1080), `-p
+ *                     <fps>` (default 60), `-d <file>` (output) and `-j <options>` (comma list:
+ *                     h264/hevc/av1, blur, nofade, title, cq=N). The window is only a preview.
  *   - `-h`            print the help/usage text and exit.
  *
  *  There is only one runtime path after parsing: the normal windowed Qt application
@@ -69,6 +75,7 @@
 #include "EffectShader.h"
 #include "CueReceiver.h"
 #include "ShaderForgeMain.h"
+#include "VideoExport.h"
 
 #include <QtWidgets/QApplication>
 #include <QtGui/QIcon>
@@ -126,6 +133,15 @@ void commandlineerror( char *cmd, char *parm )
                      "              (recordings\\rec_*), then exit automatically\n"
                      "-k <file>     score cues for the -w/-x WAV: one line per OSC cue,\n"
                      "              tab-separated: seconds, /phos/bar|beat|section|key|drop, args\n"
+                     "-e <audio>    video export: render the preset (-c) to this audio file\n"
+                     "              (wav/mp3/ogg/flac/...) as an mp4 with the audio, constant\n"
+                     "              frame rate, as fast as the GPU allows; then exit\n"
+                     "-g <WxH>      export size: 1920x1080 (default), 3840x2160, fullhd, 4k\n"
+                     "-p <fps>      export frame rate: 24, 30, 60 (default) or 120\n"
+                     "-d <file>     export output (default: <audio name>_kaleidoscope.mp4)\n"
+                     "-j <options>  export options, comma-separated: h264, hevc, av1 (codec;\n"
+                     "              default h264 up to FullHD, hevc above), blur (motion blur),\n"
+                     "              nofade (no fade in/out), title (title reveal), cq=<n>\n"
                      "-i <sender>   Spout INPUT: the sender's live video (OBS, Resolume, a\n"
                      "              webcam via OBS, ...) replaces the photos as source image\n"
                      "              ('any' = whichever sender is active; photos while none runs)\n"
@@ -193,8 +209,9 @@ void parsecommandline( int argc, char *argv[] )
     // A switch must be listed HERE as well as handled in the switch below —
     // the table is what makes it valid at all, and a case with no entry here is
     // rejected before it is ever reached.
-    char optionchar[] = { 'h', 'b', 's', 'c', 'm', 'l', 'r', 'w', 'o', 't', 'x', 'i', '3', 'v', 'f', 'q', 'k', 0 };
-    int  musthaveparam[] = { 0, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0 };
+    char optionchar[] = { 'h', 'b', 's', 'c', 'm', 'l', 'r', 'w', 'o', 't', 'x', 'i', '3', 'v', 'f', 'q', 'k',
+                          'e', 'g', 'p', 'd', 'j', 0 };
+    int  musthaveparam[] = { 0, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 0 };
 
     int  nopts;
     int  mhp[256];
@@ -308,6 +325,22 @@ void parsecommandline( int argc, char *argv[] )
                     AudioAnalyzer::M_OfflineWav = QString::fromLocal8Bit( argv[1] );
                     GLwidget::M_AutoRecord = true;
                     GLwidget::M_BatchRender = true;
+                    break;
+                // Video export (VideoExport.h): the audio file, and its size, rate,
+                // output and options.  The export itself is set up after parsing.
+                case 'e': VideoExport::M_Settings.audio = QString::fromLocal8Bit( argv[1] ); break;
+                case 'g':
+                    if ( !VideoExport::parseSize( QString::fromLocal8Bit( argv[1] ) ) )
+                    {
+                        fprintf( stderr, "\n-g wants an even size like 1920x1080 or 3840x2160\n" );
+                        commandlineerror( argv[0], argv[1] );
+                    }
+                    break;
+                case 'p': VideoExport::M_Settings.fps = atoi( argv[1] ); break;
+                case 'd': VideoExport::M_Settings.output = QString::fromLocal8Bit( argv[1] ); break;
+                case 'j':
+                    if ( !VideoExport::parseOptions( QString::fromLocal8Bit( argv[1] ) ) )
+                        commandlineerror( argv[0], argv[1] );
                     break;
                 // Spout INPUT: a live sender replaces the photos as source image.
                 case 'i':
@@ -423,6 +456,22 @@ int main( int argc, char *argv[] )
     // commandlineerror()/parsecommandline() above) for -h or invalid input.
     parsecommandline( argc, argv );
 
+    // A video export renders the file it was given and nothing else: no live
+    // capture or WAV replay, no recording, no web remote, no Spout, a window
+    // rather than fullscreen.
+    if ( VideoExport::requested() )
+    {
+        AudioAnalyzer::M_OfflineWav.clear();
+        GLwidget::M_AutoRecord = false;
+        GLwidget::M_BatchRender = false;
+        GLwidget::M_RemotePort = 0;
+        GLwidget::M_RemotePortFromCli = true;
+        RenderPipeline::M_SpoutEnabled = false;
+        RenderPipeline::M_SpoutInEnabled = false;
+        RenderPipeline::M_VideoPath.clear();
+        fullscreen = false;
+    }
+
     // Kiosk logging: send stderr (shader status, device reconnects, errors) to a
     // file so an unattended installation stays diagnosable.  Keep one previous
     // session as kaleidoscope.log.1 so the file can't grow without bound.
@@ -456,7 +505,8 @@ int main( int argc, char *argv[] )
     fmt.setSwapBehavior( QSurfaceFormat::DoubleBuffer );
     fmt.setDepthBufferSize( 24 );
     // KALEIDO_NO_VSYNC=1: measure without the panel's frame cap (see KALEIDO_GPU_TIMING).
-    if ( qEnvironmentVariableIsSet( "KALEIDO_NO_VSYNC" ) )
+    // A video export never waits for the panel: its window is only a preview.
+    if ( qEnvironmentVariableIsSet( "KALEIDO_NO_VSYNC" ) || VideoExport::requested() )
         fmt.setSwapInterval( 0 );
     QSurfaceFormat::setDefaultFormat( fmt );
     EffectShader::M_ChainRunner = true; // chain labs as passes (Engine/ChainPass); the editor keeps the uber-shaders
@@ -497,7 +547,8 @@ int main( int argc, char *argv[] )
             QTimer::singleShot( max_secs * 1000, &app, &QCoreApplication::quit );
         }
     }
-    app.setOverrideCursor( Qt::BlankCursor );
+    if ( !VideoExport::requested() )
+        app.setOverrideCursor( Qt::BlankCursor );
     // Stack instead of new-without-delete: this way ~QMyWindow/~GLwidget
     // (recorder finalisation, GL cleanup with a current context) runs
     // GUARANTEED BEFORE ~QApplication.  The former leak let the widgets die
@@ -506,7 +557,16 @@ int main( int argc, char *argv[] )
     QMyWindow window( NULL );
     QObject::connect( &window, SIGNAL( signalQuitApp() ), &app, SLOT( quit() ) );
     app.setWindowIcon( QIcon( QString( "icon.ico" ) ) ); // multi-res: Qt picks the best size per context
-    if ( !fullscreen )
+    if ( VideoExport::requested() )
+    {
+        // The export's preview: a small window that does not take the focus from
+        // whatever the user is doing while it renders.
+        window.setWindowTitle( QStringLiteral( "Kaleidoscope - Video-Export" ) );
+        window.resize( 960, 540 );
+        window.setAttribute( Qt::WA_ShowWithoutActivating );
+        window.show();
+    }
+    else if ( !fullscreen )
     {
         window.resize( 1920, 1080 );
         // A batch run must not steal the machine from the person using it.

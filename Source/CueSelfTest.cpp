@@ -5,8 +5,9 @@
  *
  *  @brief
  *  `Kaleidoscope.exe -q`: the score-cue receiver checked without a window, a sound card or a generator -- and the
- *  building blocks of a show that runs for days (LongRunVariety.h: scene memory, lab clock, class novelty) and the
- *  harmonic change end to end (a synthetic chord change through the analyzer and the app's conditioning).
+ *  building blocks of a show that runs for days (LongRunVariety.h: scene memory, lab clock, class novelty), the
+ *  harmonic change end to end (a synthetic chord change through the analyzer and the app's conditioning) and the
+ *  video export's frame clock and command line (coreclock.h, VideoExport.h).
  *
  *  The datagrams below are written out byte by byte from the OSC 1.0 specification -- address string
  *  terminated and padded with nulls to a multiple of four, then the type tag string beginning with a
@@ -23,6 +24,8 @@
 #include "LongRunVariety.h"
 #include "AudioAnalyzer.h"
 #include "AudioConditioner.h"
+#include "VideoExport.h"
+#include "coreclock.h"
 
 #include <QtCore/QCoreApplication>
 #include <QtCore/QDir>
@@ -32,11 +35,13 @@
 #include <QtNetwork/QUdpSocket>
 
 #include <algorithm>
+#include <chrono>
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <string>
+#include <thread>
 #include <vector>
 
 namespace
@@ -430,6 +435,46 @@ void harmonyChecks()
            std::to_string( adv_held ).substr( 0, 5 ) + " / " + std::to_string( adv_change ).substr( 0, 5 ) );
 }
 
+/**  The video export's frame clock (EngineClock, WallClock) and its command line (-g, -j).
+ *
+ * Runs last: it switches this process's engine clock to virtual time for good.
+ **/
+void exportChecks()
+{
+    printf( "\nvideo export (coreclock.h, VideoExport.h)\n" );
+    const auto before = EngineClock::now();
+    EngineClock::startVirtual();
+    const auto origin = EngineClock::now();
+    check( EngineClock::isVirtual() && origin >= before, "virtual time starts at the wall-clock moment of the switch" );
+    WallClock stopwatch; // started at the origin
+    std::this_thread::sleep_for( std::chrono::milliseconds( 20 ) );
+    check( EngineClock::now() == origin && stopwatch.elapsed() == 0,
+           "between two frames the engine clock stands still" );
+    EngineClock::setVirtualSeconds( 90.0 / 60.0 );
+    const double frame90 = std::chrono::duration<double>( EngineClock::now() - origin ).count();
+    check( std::fabs( frame90 - 1.5 ) < 1e-9, "frame 90 at 60 fps is 1.5 s of engine time", std::to_string( frame90 ) );
+    check( stopwatch.elapsed() == 1500, "a stopwatch on the engine clock measures frames, not the wall",
+           std::to_string( stopwatch.elapsed() ) + " ms" );
+    const double epoch0 = EngineClock::epochSeconds();
+    EngineClock::setVirtualSeconds( 3600.0 * 24.0 / 24.0 ); // frame 86400 at 24 fps
+    const double hour = std::chrono::duration<double>( EngineClock::now() - origin ).count();
+    check( std::fabs( hour - 3600.0 ) < 1e-6, "an hour of 24 fps frames lands on the hour: set per frame, no drift" );
+    check( std::fabs( EngineClock::epochSeconds() - epoch0 - 3598.5 ) < 1e-3,
+           "the calendar time the class memory stamps moves with the frames" );
+
+    VideoExport::Settings &st = VideoExport::M_Settings;
+    check( VideoExport::parseSize( "4k" ) && st.width == 3840 && st.height == 2160, "-g 4k is 3840x2160" );
+    check( VideoExport::parseSize( "1920x1080" ) && st.width == 1920 && st.height == 1080, "-g 1920x1080" );
+    check( !VideoExport::parseSize( "1921x1080" ) && !VideoExport::parseSize( "8x8" ) && !VideoExport::parseSize( "x" )
+               && st.width == 1920,
+           "odd, tiny and garbled sizes are refused and change nothing" );
+    check( VideoExport::parseOptions( "hevc,blur,nofade,title,q=compact,cq=20" ) && st.codec == "hevc" && st.motionBlur
+               && !st.fade && st.title && st.qualityStep == 4 && st.quality == 20,
+           "-j hevc,blur,nofade,title,q=compact,cq=20" );
+    check( !VideoExport::parseOptions( "sharpen" ), "an unknown -j option is reported" );
+    st = VideoExport::Settings(); // nothing left behind: this run is no export
+}
+
 } // namespace
 
 int runCueSelfTest()
@@ -724,6 +769,7 @@ int runCueSelfTest()
 
     longRunChecks();
     harmonyChecks();
+    exportChecks();
 
     printf( "\n%d passed, %d failed\n", g_passed, g_failed );
     return g_failed == 0 ? 0 : 1;

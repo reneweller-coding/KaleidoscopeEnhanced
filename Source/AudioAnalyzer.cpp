@@ -598,6 +598,12 @@ std::vector<AudioFeatures> AudioAnalyzer::analyzeSamples( const float *data, int
     return timeline;
 }
 
+void AudioAnalyzer::feedBlock( const float *data, int frames, int channels, int sampleRate )
+{
+    m_running = true; // processBlock guards check this; a never-started analyzer has no thread to stop
+    processBlock( data, frames, channels, sampleRate );
+}
+
 std::vector<AudioFeatures> AudioAnalyzer::analyzeWavToTimeline( const QString &path )
 {
     std::vector<AudioFeatures> timeline;

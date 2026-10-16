@@ -4497,3 +4497,168 @@ key colour following the new chord -- against 0.25 in between, and no jump.
 (The probe's only two jumps were a single-scene preset changing to itself on a
 section and a harmonic cut: the scene re-rolls its knobs at the end of such a
 fade.  A real preset always changes to another scene.)
+
+## 16.10.2026 (4): video export on a frame clock
+
+The user's request: pick a preset and an audio file (wav, mp3, ogg, flac),
+Full HD or 4K, 24/30/60/120 fps, and get a video of the show with the audio
+in it -- as fast as possible, faster than real time where it can be, and with
+a frame rate that never wavers.  `Kaleidoscope.exe -e` does it
+(`Source/VideoExport.{h,cpp}`); `KaleidoscopeExport.exe` (`ExportTool/`) is
+the small window around it.
+
+### Why the recorder could not do it
+
+The recorder captures what the screen shows.  It runs in real time, and a
+slow frame -- a shader compile, a model upload, the NVIDIA link stall -- is a
+frame the show really lost; the recorder turns measured durations into a
+constant-rate file by holding frames.  That is right for a capture and wrong
+for an export, which should neither stutter nor wait for real time.
+
+### The frame clock
+
+Every timer that decides what is SHOWN now reads `EngineClock`
+(`coreclock.h`) instead of `std::chrono::steady_clock`: the scheduler's
+solo/fade clocks, the photo cross-fade (`m_timeTexture`, was a
+QElapsedTimer), the parameter interpolators and the kaleidoscope's power
+state machine (both via `WallClock`), the lab walk and the 3D lab's flight,
+the section age, the chain carry-over between labs, idle-lab retirement and
+the class memory's stamps (`EngineClock::epochSeconds()`).  Live it IS the
+steady clock.  The export switches it to virtual time once
+(`startVirtual()`: the time point type is steady_clock's own, and virtual
+time starts at the wall-clock moment of the switch, so earlier time points
+stay comparable) and sets it per frame from the frame index
+(`setVirtualSeconds( k / rate )`, never by adding a rounded period: an hour at
+24 fps lands on the hour to the microsecond -- a self-test checks it).  The
+pipeline's frame step is fixed the same way (`RenderPipeline::M_FrameStep`;
+`readFrameClock()` returns it and leaves the fps-driven cube budget alone,
+which would have read a 24 fps export as a struggling GPU).  What measures
+real cost stays on the steady clock: compile and upload times in the logs,
+the 150-ms pacing of background builds.
+
+So frame n shows the show at exactly n / fps.  A frame that takes long costs
+render time only; nothing is dropped, nothing held.  A fade waiting for its
+model, held in SHOW time live, waits in RENDER time in the export
+(`RenderPipeline::awaitIncomingMesh()`).
+
+The analyzer runs on the render thread, never started: `AudioAnalyzer::feedBlock()`
+takes one 480-frame block at a time, and the export feeds the track (decoded
+once by ffmpeg to 48 kHz stereo PCM, so a block is exactly 10 ms) up to each
+frame's time plus 25 ms -- the analysis lag, half the 2048-sample Hann window
+plus half a block.  The live latency lead (`latencyLead`, loopback and
+display delays) is 0: a file has neither.
+
+### Per-frame things that were not per-second
+
+The engine claimed motion was wall-clock based at any frame rate.  Two places
+were not, and an export at 24 fps would have shown it: the feedback trail
+decays per FRAME (`Feedback.frag`: `prv * decay`), and the GPU simulations
+step per frame (reaction-diffusion 6 sub-steps, fluid and smoke 1, Physarum
+2).  At 24 fps trails lasted five times as long and the simulations ran at a
+fifth of the speed of the 120 Hz show.  Live nothing changes; in an export
+`RenderPipeline::frameStepScale()` -- live frames per frame, `M_FrameStep *
+LiveRefHz` with LiveRefHz = 120, the panel the look was tuned on -- raises the
+decay to that power (`decaySteps` uniform) and multiplies the simulation steps.
+Shaders that feed their own previous frame back (`texPrevFrame`) cannot be
+corrected from outside; the motion-blur option renders at 120 Hz anyway.
+
+**Motion blur** runs the engine at LiveRefHz and sums the sub-frames of each
+output frame into an RGBA16F target (`Engine/Accumulate.frag`) -- a 360-degree
+shutter.  The audio for sub-frame k is shifted back by half the exposure, so
+the mean of a frame is centred on the frame's own time.
+
+### Getting the frames out
+
+- The pipeline renders into an RGBA16F target of the video size (its
+  "default FBO" for the export), not the window: a minimised preview must not
+  stop the export, and Qt does not paint a hidden widget.  The frames are
+  driven from a zero-time timer in slices of ~50 ms; the window repaints a
+  letterboxed preview in between.
+- `Engine/ExportYuv.frag` converts on the GPU into NV12 -- BT.709, limited
+  range, one R8 image of width x 1.5 height laid out exactly as the bytes
+  leave `glReadPixels` (luma rows, then interleaved chroma rows, top line
+  first).  1.5 bytes per pixel cross the bus instead of 4, and the hardware
+  encoders take NV12 as it is.  Before the 8-bit store, triangular dither of
+  one code value (pcg3d hash): the engine renders in float, and a dark glow
+  bands into rings otherwise.  It costs 6 % file size on dark ambient
+  material (71.9 against 67.7 MB).
+- Three pixel-pack buffers in a ring: frame n is read back at n+2; the map
+  waited 0.03-0.1 ms per frame in every run.
+- A writer thread owns the ffmpeg process (QProcess is not thread-safe) and
+  flushes each frame before taking the next; a bounded queue of four makes
+  the render loop wait for the encoder instead of dropping a frame.  ffmpeg
+  muxes the ORIGINAL audio file as AAC 320k, `-shortest`, `+faststart`,
+  colour tags bt709/tv.
+- Cancel (Esc, the window's close button, or `quit` on stdin -- the tool's
+  button) closes the pipe: a playable file with the frames so far, exit code
+  1.  stdin is read with the Win32 handle, not the C runtime's `fgets`: a
+  thread blocked in it holds the stream lock that the runtime takes again at
+  exit.
+
+### The encoder: three traps, measured
+
+Measured on export material (psychedelic presets at 1080p and 4K) with
+`preset_bench.py`-style runs: raw NV12 from a real export, encoded, SSIM
+against the source.
+
+1. **NVENC's constant quality was not constant.**  Without a VBV ceiling
+   (`-maxrate`) it caps the bitrate at what it picks for the level: at 1080p60
+   41.5 Mbit/s for h264 and 16.6 for hevc.  Material below that is unaffected
+   (a calm 5-s clip: cq 19 and 25 gave 20.8 and 9.9 MB), but on the busy
+   psychedelic scenes every cq landed on the same size -- h264 at cq 19 and
+   21 both 103.7 MB, hevc at cq 14, 16 and 18 all 41.5 MB at SSIM 0.941.
+   With a ceiling cq works: hevc cq 18 is 79.7 MB at SSIM 0.988.  The
+   recorder's NVENC settings have no ceiling either and were left alone here.
+2. **The ceiling sets the level.**  400 Mbit/s made a Full HD file level 6.1,
+   which televisions and phones refuse; 60 Mbit/s at 1080p60 gives level 4.2,
+   which everything plays.  The ceiling scales with the pixel rate to the 3/4
+   power (1080p60 60M, 4K30 101M, 4K60 169M, 4K120 285M).
+3. **Spatial AQ cost 30 % of the encoder's speed** (228 against 321 fps at
+   1080p) for 0.002 SSIM, and p5 another 12 % over p4 for 0.001.  The
+   encoder is what limits an export, so: p4, no AQ, cq 21 (h264) / 23 (hevc)
+   / 30 (av1), steps of -3 / +4 for "highest" / "compact".
+
+**Split-frame encoding** (`-split_encode_mode`, ffmpeg 7.1+, HEVC/AV1 across
+several NVENC units) took 4K from 115 to 149 fps when a separate process fed
+the encoder, but made the export itself SLOWER (1.8x instead of 2.1x real
+time at 4K60, twice each): the GPU is rendering the next frames at the same
+time.  Not used.  HEVC's size advantage is small on this material at high
+quality (65 against 68 MB at the same SSIM at 1080p) -- busy, noise-like
+pictures leave little to predict -- so Full HD stays on h264, which plays
+everywhere; "auto" switches to hevc above Full HD, where it halves the file.
+
+### Speed
+
+RTX 5090, the GPU shared with another compute job (~50 % SM) throughout:
+
+| export | real time |
+|---|---|
+| 1080p30, Ambient | 5.3x |
+| 1080p60, Psychedelic | 4.3x |
+| 1080p120, Club | 1.6x (old encoder settings) |
+| 4K30, SpaceAmbient | 2.7x (old encoder settings) |
+| 4K60, Club | 2.1-2.2x |
+| 1080p24 with motion blur (5 sub-frames) | 1.7x |
+| 4K24 with motion blur, Kettenlabor | 0.9x |
+
+The breakdown is printed with every export ("per frame: engine, GPU wait,
+encoder wait, writer busy"): at 1080p the engine itself is the limit now
+(~2.9 ms a frame), at 4K the encoder.  Start-up to the first frame is ~2 s
+(decode 0.1, encoder probe 0.5, all presets 0.8, the pipeline 0.7).
+
+### Nothing written back
+
+An export counts as a scripted run (`scriptedRun()`): the scene memory is
+neither read nor written, the settings are not saved on exit, the ini stays
+byte-identical (checked by hash).  It renders the look the ini describes --
+reactivity, trails, mood, light show -- minus what only means something live:
+no stereo packing, no adaptive render scale, no auto-config, no now-playing,
+lyrics, MIDI, remote, cue port or update check.
+
+### Found on the way
+
+A track change in the live show called `requestSceneChange()`, which is the
+viewer's "next" -- and taught the scene on screen a taste malus (and its lab
+classes one) when it had been up for less than ten seconds.  Every song
+change in an evening punished whatever had just come on.  A track change now
+asks for the cut without the verdict (`requestSceneChange( false )`).
