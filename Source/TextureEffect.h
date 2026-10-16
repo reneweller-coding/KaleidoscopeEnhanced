@@ -26,55 +26,61 @@
 class TextureEffect
 {
 public:
-    /// Constructor. Implementation not present in this header-only interface class.
+    /**  Constructor.
+     *
+     * Implementation not present in this header-only interface class.
+     **/
     TextureEffect();
-    /// Destructor. Implementation not present in this header-only interface class.
+    /**  Destructor.
+     *
+     * Implementation not present in this header-only interface class.
+     **/
     ~TextureEffect();
 
 
-    /**
-     * @brief Initializes the GLSL shader program and resolves its uniform locations.
-     * @param width Render target width in pixels.
-     * @param height Render target height in pixels.
-     */
+    /**  Initializes the GLSL shader program and resolves its uniform locations.
+     *
+     * @param width   Render target width in pixels. (in)
+     * @param height  Render target height in pixels. (in)
+     **/
     virtual void initUniforms( int width, int height ) = 0; // initialize GLSL - shader programs
-    /**
-     * @brief Uploads this frame's uniform values to the active shader program.
-     * @param time Absolute animation time in seconds.
-     * @param interpolation Current cross-fade weight.
-     */
+    /**  Uploads this frame's uniform values to the active shader program.
+     *
+     * @param time           Absolute animation time in seconds. (in)
+     * @param interpolation  Current cross-fade weight. (in)
+     **/
     virtual void setUniforms( float time, float interpolation ) = 0; // setting uniforms
-    /// Re-rolls this effect's randomised parameters for its next activation.
+    /** Re-rolls this effect's randomised parameters for its next activation. */
     virtual void resetParameters() = 0;
-    /// Draws the effect (expected to call drawWindow() in an implementation).
+    /** Draws the effect (expected to call drawWindow() in an implementation). */
     void draw(); // draw scene
-    /// Activates this effect's shader program for rendering.
+    /** Activates this effect's shader program for rendering. */
     void enableShader(); // draw scene
 
-    /// Deletes the compiled shader program.
+    /** Deletes the compiled shader program. */
     void cleanShaderPrograms(); // delete shaders
 
 
-    /**
-     * @brief Shared helper for resolving the common (tex0/tex1/resolution/time/interpolation) uniform locations.
-     * @param width Render target width in pixels.
-     * @param height Render target height in pixels.
-     */
+    /**  Shared helper for resolving the common (tex0/tex1/resolution/time/interpolation) uniform locations.
+     *
+     * @param width   Render target width in pixels. (in)
+     * @param height  Render target height in pixels. (in)
+     **/
     void initUniformsCommon( int width, int height ); // initialize GLSL - shader programs
-    /**
-     * @brief Shared helper for uploading the common per-frame uniform values.
-     * @param time Absolute animation time in seconds.
-     * @param interpolation Current cross-fade weight.
-     */
+    /**  Shared helper for uploading the common per-frame uniform values.
+     *
+     * @param time           Absolute animation time in seconds. (in)
+     * @param interpolation  Current cross-fade weight. (in)
+     **/
     void setUniformsCommon( float time, float interpolation ); // setting uniforms
-    /**
-     * @brief Checks and prints any pending OpenGL error to stderr.
-     * @param label Short tag identifying the call site.
-     */
+    /**  Checks and prints any pending OpenGL error to stderr.
+     *
+     * @param label  Short tag identifying the call site. (in)
+     **/
     void checkGLErrors( const char *label ); // check and print gl errors to stderr
 
 protected:
-    /// Clears the framebuffer and draws the effect's fullscreen quad.
+    /** Clears the framebuffer and draws the effect's fullscreen quad. */
     void drawWindow();
 
     unsigned int m_width;  ///< Texture width in pixels.

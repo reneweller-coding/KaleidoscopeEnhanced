@@ -42,13 +42,15 @@
 #include <windows.h>
 #include <mmsystem.h>
 
-/**
- * @brief Convenience constructor for a QSpinBox with a given range and initial value.
- * @param lo Minimum value.
- * @param hi Maximum value.
- * @param val Initial value.
- * @return The newly-constructed (unparented) QSpinBox.
- */
+/**  Convenience constructor for a QSpinBox with a given range and initial value.
+ *
+ * @param lo   Minimum value. (in)
+ * @param hi   Maximum value. (in)
+ * @param val  Initial value. (in)
+ *
+ * @return
+ *   The newly-constructed (unparented) QSpinBox.
+ **/
 static QSpinBox *mkSpin( int lo, int hi, int val )
 {
     QSpinBox *s = new QSpinBox();
@@ -57,14 +59,15 @@ static QSpinBox *mkSpin( int lo, int hi, int val )
     return s;
 }
 
-/**
- * @brief Placeholder text for the range/mapping box while no table row is selected.
- * @return The how-to-use hint text.
+/**  Placeholder text for the range/mapping box while no table row is selected.
+ *
+ * @return
+ *   The how-to-use hint text.
  *
  * Placeholder for the range/mapping box while no table row is selected --
  * shared between the constructor and rebuildRangeEditor()'s no-selection
  * branch (which must RESTORE it after the parameter-less-entry message).
- */
+ **/
 static QString rangeHowToText()
 {
     return EditorWindow::tr(
@@ -414,16 +417,19 @@ struct KomplettParam
     /// Declared minValue: the slider's lower end.
     float minV, maxV; ///< Declared maxValue: the slider's upper end.
 };
-/**
- * @brief Parse a shader's per-activation parameter ranges out of Komplett.xml.
- * @param root Project root directory (Komplett.xml is under root/Presets/).
- * @param frag Bare shader filename to look up (matched against Komplett.xml's file= attribute, folder-agnostic).
- * @return Every `<int>`/`<float>` param's (kind, name, min, max) found in that shader's entry; empty if the shader
- * isn't registered or the file can't be read.
+/**  Parse a shader's per-activation parameter ranges out of Komplett.xml.
+ *
+ * @param root  Project root directory (Komplett.xml is under root/Presets/). (in)
+ * @param frag  Bare shader filename to look up (matched against Komplett.xml's file= attribute, folder-agnostic).
+ *              (in)
+ *
+ * @return
+ *   Every `<int>`/`<float>` param's (kind, name, min, max) found in that shader's entry; empty if the shader isn't
+ *   registered or the file can't be read.
  *
  * Parse a shader's per-activation parameter ranges out of Komplett.xml (the
  * preset that registers EVERY shader with sensible min/max values).
- */
+ **/
 static QVector<KomplettParam> komplettParamsFor( const QString &root, const QString &frag )
 {
     QVector<KomplettParam> out;
@@ -674,16 +680,18 @@ void EditorWindow::onTableSelectionChanged()
         pushPreviewTexture();
 }
 
-/**
- * @brief Find the ExprVars formula variable that corresponds 1:1 to an audio* uniform.
- * @param uniform Uniform name, e.g. "audioKick" or "audioZCR".
- * @return The matching ExprVars variable name (e.g. "kick"), or empty if the formula layer has no equivalent.
+/**  Find the ExprVars formula variable that corresponds 1:1 to an audio* uniform.
+ *
+ * @param uniform  Uniform name, e.g. "audioKick" or "audioZCR". (in)
+ *
+ * @return
+ *   The matching ExprVars variable name (e.g. "kick"), or empty if the formula layer has no equivalent.
  *
  * The ExprVars identity variable for an audio uniform ("audioKick" -> "kick"),
  * or empty if the formula layer has no equivalent.  Shown as the placeholder
  * of an unmapped audio row, so authoring an override starts from the variable
  * that carries (almost) the same value the raw upload would.
- */
+ **/
 static QString identityVarFor( const QString &uniform )
 {
     QString v = uniform.mid( 5 ); // strip the "audio" prefix
@@ -700,13 +708,15 @@ static QString identityVarFor( const QString &uniform )
     return {};
 }
 
-/**
- * @brief Resolve the shader source file(s) that make up a preset entry.
- * @param root Project root directory.
- * @param e Entry whose shader source file path(s) to resolve.
- * @return Absolute path(s) of the entry's shader source: one .frag for a 2D scene/combine, or every
- * Scene3D/&lt;stem&gt;.{frag,vert,comp,tesc,tese,geom} candidate for a scene3d entry (used by usedAudioUniforms() and
- * dormantFloatUniforms() to scan for uniform declarations).
+/**  Resolve the shader source file(s) that make up a preset entry.
+ *
+ * @param root  Project root directory. (in)
+ * @param e     Entry whose shader source file path(s) to resolve. (in)
+ *
+ * @return
+ *   Absolute path(s) of the entry's shader source: one .frag for a 2D scene/combine, or every
+ *   Scene3D/&lt;stem&gt;.{frag,vert,comp,tesc,tese,geom} candidate for a scene3d entry (used by usedAudioUniforms()
+ *   and dormantFloatUniforms() to scan for uniform declarations).
  *
  * Every SCALAR audio uniform the entry's shader stages actually read -- these
  * are the mapping targets the panel offers.  Reading the sources (rather than
@@ -717,7 +727,7 @@ static QString identityVarFor( const QString &uniform )
  * PresetEntry.file is the BARE name; the folder comes from e.folder (parsed
  * from the file= attribute at load), with the isFX/type inference as the
  * fallback for entries created in the GUI before their first save.
- */
+ **/
 static QStringList shaderSourceFiles( const QString &root, const PresetEntry &e )
 {
     QString folder = e.folder;
@@ -736,20 +746,22 @@ static QStringList shaderSourceFiles( const QString &root, const PresetEntry &e 
     return files;
 }
 
-/**
- * @brief Find float uniforms a shader declares that neither the engine nor any existing param row supplies.
- * @param root Project root directory.
- * @param e Entry whose shader source(s) to scan.
- * @param covered Parameter names already covered by an existing row in the range editor (skipped even if otherwise
- * dormant).
- * @return Sorted list of declared `uniform float` names that are not in the host-supplied set (Host), not already
- * covered, and not an audio* uniform.
+/**  Find float uniforms a shader declares that neither the engine nor any existing param row supplies.
+ *
+ * @param root     Project root directory. (in)
+ * @param e        Entry whose shader source(s) to scan. (in)
+ * @param covered  Parameter names already covered by an existing row in the range editor (skipped even if otherwise
+ *                 dormant). (in)
+ *
+ * @return
+ *   Sorted list of declared `uniform float` names that are not in the host-supplied set (Host), not already
+ *   covered, and not an audio* uniform.
  *
  * All scalar float uniforms the entry's shaders DECLARE that the host never
  * supplies and no param row covers: dormant knobs, sitting at GLSL's 0.0
  * default in the shipped app.  Each becomes a formula-mapping row, so music
  * can drive them per preset without any shader edit.
- */
+ **/
 static QStringList dormantFloatUniforms( const QString &root, const PresetEntry &e,
                                          const QSet<QString> &covered )
 {
@@ -802,13 +814,15 @@ static QStringList dormantFloatUniforms( const QString &root, const PresetEntry 
     return out;
 }
 
-/**
- * @brief Every scalar audio* uniform the entry's shader source(s) actually reference.
- * @param root Project root directory.
- * @param e Entry whose shader source(s) to scan.
- * @return Sorted, de-duplicated list of `audio*` identifiers found by regex-scanning the shader source (see
- * shaderSourceFiles()), excluding known non-scalar (array/vector) uniforms such as audioSpectrum.
- */
+/**  Every scalar audio* uniform the entry's shader source(s) actually reference.
+ *
+ * @param root  Project root directory. (in)
+ * @param e     Entry whose shader source(s) to scan. (in)
+ *
+ * @return
+ *   Sorted, de-duplicated list of `audio*` identifiers found by regex-scanning the shader source (see
+ *   shaderSourceFiles()), excluding known non-scalar (array/vector) uniforms such as audioSpectrum.
+ **/
 static QStringList usedAudioUniforms( const QString &root, const PresetEntry &e )
 {
     static const QSet<QString> NonScalar = {

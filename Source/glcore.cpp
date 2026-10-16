@@ -234,18 +234,18 @@ void glcoreDebugMark( const char *station )
     s_debugMark = station ? station : "?";
 }
 
-/**
- * @brief KHR_debug callback: prints every non-notification driver message to stderr with severity, station, message id
- * and the bound program's shader file.
+/**  KHR_debug callback: prints every non-notification driver message to stderr with severity, station, message id and
+ * the bound program's shader file.
+ *
+ * @param type      Message type; GL_DEBUG_TYPE_ERROR is prefixed "ERROR/". (in)
+ * @param id        Driver-assigned message id. (in)
+ * @param severity  GL_DEBUG_SEVERITY_HIGH/MEDIUM/LOW/NOTIFICATION (the last is ignored). (in)
+ * @param message   Driver-supplied text (may be null). (in)
  *
  * Runs synchronously inside the offending GL call (GL_DEBUG_OUTPUT_SYNCHRONOUS),
  * so a breakpoint here lands on the culprit. Notifications are dropped; the
  * source, length and user-pointer arguments are unused.
- * @param type Message type; GL_DEBUG_TYPE_ERROR is prefixed "ERROR/".
- * @param id Driver-assigned message id.
- * @param severity GL_DEBUG_SEVERITY_HIGH/MEDIUM/LOW/NOTIFICATION (the last is ignored).
- * @param message Driver-supplied text (may be null).
- */
+ **/
 static void APIENTRY glcDebugCb( GLenum /*source*/, GLenum type, GLuint id,
                                  GLenum        severity, GLsizei /*length*/,
                                  const GLchar *message, const void * /*user*/ )
@@ -323,8 +323,7 @@ static void *glcGet( const char *name )
  * @brief Local to glcoreInit(): resolves the OPTIONAL entry point @p name (compute, tessellation, OIT blending, history
  * ring); a miss only logs "not available" and leaves the pointer null for the feature flags to test.
  */
-/**
- * @brief Resolves every declared GL function pointer, with the GL context current.
+/**  Resolves every declared GL function pointer, with the GL context current.
  *
  * Uses the local GLC_LOAD/GLC_LOAD_OPT macros: GLC_LOAD resolves a required entry
  * point and clears the overall success flag (and logs to stderr) if missing;
@@ -333,8 +332,7 @@ static void *glcGet( const char *name )
  * Finishes by deriving glcoreHasCompute (all five core compute entry points present)
  * and glcoreHasTess (glPatchParameteri present), and logging a one-line summary of
  * which optional subsystems are available.
- * @return Non-zero (true) if every required entry point resolved, zero otherwise.
- */
+ **/
 int glcoreInit( void )
 {
     int ok = 1;

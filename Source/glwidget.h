@@ -72,20 +72,17 @@ class GLwidget : public QOpenGLWidget
     Q_OBJECT
 
 public:
-    /**
-     * @brief Constructs the widget: restores persisted UI settings, loads every
-     *        Configuration (*.xml) under ../Presets, sets up shader
-     *        hot-reload watching and (if requested) the web remote, and picks
-     *        the initial active configuration (default, -c name, or persisted).
-     * @param parent Parent widget, forwarded to QOpenGLWidget.
-     */
+    /**  Constructs the widget: restores persisted UI settings, loads every Configuration (*.xml) under ../Presets,
+     * sets up shader hot-reload watching and (if requested) the web remote, and picks the initial active
+     * configuration (default, -c name, or persisted).
+     *
+     * @param parent  Parent widget, forwarded to QOpenGLWidget. (in)
+     **/
     explicit GLwidget( QWidget *parent = 0 );
-    /**
-     * @brief Persists settings, shuts down the recorder/audio/now-playing/MIDI
-     *        subsystems in dependency order, releases the global Spout/VideoIn
-     *        facades, and deletes every loaded Configuration while the GL
-     *        context is still current (so their GL object cleanup isn't dropped).
-     */
+    /**  Persists settings, shuts down the recorder/audio/now-playing/MIDI subsystems in dependency order, releases
+     * the global Spout/VideoIn facades, and deletes every loaded Configuration while the GL context is still
+     * current (so their GL object cleanup isn't dropped).
+     **/
     ~GLwidget();
 
     /// Start configuration name (CLI -c \<name\>); empty = first config. Set from
@@ -109,169 +106,311 @@ public:
     static bool M_BatchRender;
 
     // ---- Web-remote hooks (same harmless controls as the keyboard) ----
-    /**
-     * @brief Lists the display names of every user-facing (non-hidden) configuration.
-     * @return Configuration names in selection order, for the web remote's picker.
-     */
+    /**  Lists the display names of every user-facing (non-hidden) configuration.
+     *
+     * @return
+     *   Configuration names in selection order, for the web remote's picker.
+     **/
     QStringList remoteConfigNames() const;
-    /**
-     * @brief Finds the index of the currently active configuration.
-     * @return Index into the user-facing configuration list, or -1 if not found.
-     */
+    /**  Finds the index of the currently active configuration.
+     *
+     * @return
+     *   Index into the user-facing configuration list, or -1 if not found.
+     **/
     int remoteActiveConfig() const;
-    /// Live frame rate, as shown in the overlay.  Exposed for the web remote:
-    /// the auto render-scale hides a struggling scene by quietly getting
-    /// coarser, so the frame rate is the only way to see it happening.
+    /**  Live frame rate, as shown in the overlay.
+     *
+     * @return
+     *   Frames per second, rounded.
+     *
+     * Exposed for the web remote: the auto render-scale hides a struggling scene by quietly getting coarser, so the
+     * frame rate is the only way to see it happening.
+     **/
     int fpsValue() const { return m_fpsValue; }
-    /**
-     * @brief Requests a switch to the configuration at the given index (web remote).
-     * @param idx Index into the user-facing configuration list.
-     */
+    /**  Requests a switch to the configuration at the given index (web remote).
+     *
+     * @param idx  Index into the user-facing configuration list. (in)
+     **/
     void remoteSelectConfig( int idx );
-    /// Requests the next effect (scene/combine change) on the active configuration.
+    /** Requests the next effect (scene/combine change) on the active configuration. */
     void remoteNextEffect();
-    /**
-     * @brief Lists the scene names available in the active configuration's pipeline.
-     * @return Scene names, or an empty list if there is no active filter shader.
-     */
+    /**  Lists the scene names available in the active configuration's pipeline.
+     *
+     * @return
+     *   Scene names, or an empty list if there is no active filter shader.
+     **/
     QStringList remoteSceneNames();
-    /**
-     * @brief Forces the active configuration's pipeline to a specific scene.
-     * @param idx Index into the list returned by remoteSceneNames().
-     */
+    /**  Forces the active configuration's pipeline to a specific scene.
+     *
+     * @param idx  Index into the list returned by remoteSceneNames(). (in)
+     **/
     void remoteForceScene( int idx );
-    /**
-     * @brief Cached JPEG thumbnail for one scene in the remote's browser grid, if one has been captured yet.
-     * @param idx Index into the list returned by remoteSceneNames().
-     * @return A small JPEG, or an empty QByteArray if that scene hasn't been on screen (with the remote open) yet this
-     * session.
-     */
+    /**  Cached JPEG thumbnail for one scene in the remote's browser grid, if one has been captured yet.
+     *
+     * @param idx  Index into the list returned by remoteSceneNames(). (in)
+     *
+     * @return
+     *   A small JPEG, or an empty QByteArray if that scene hasn't been on screen (with the remote open) yet this
+     *   session.
+     **/
     QByteArray remoteThumb( int idx ) const;
-    bool       autoConfigEnabled() const { return m_autoConfig; } ///< Whether auto-config-by-mood is currently on.
-    void       setAutoConfigEnabled( bool on )
+    /**  Whether auto-config-by-mood is currently on.
+     *
+     * @return
+     *   True if auto-config-by-mood is currently on.
+     **/
+    bool autoConfigEnabled() const { return m_autoConfig; }
+    /**  Toggles auto-config-by-mood and resets the mood bucket so it re-evaluates from scratch.
+     *
+     * @param on  True switches auto-config-by-mood on, false off. (in)
+     **/
+    void setAutoConfigEnabled( bool on )
     {
         m_autoConfig = on;
         m_moodBucket = -1;
-    } ///< Toggles auto-config-by-mood and resets the mood bucket so it re-evaluates from scratch.
+    }
 
     // ---- Remote-/Setup-Tool-Schalter für die optionalen Online-Extras ----
     // (Web-Remote /api/toggle + /api/set; the keyboard shortcuts 'w'/'o'/'g'/
     // 'p' set the same members directly, these just add a remote-safe API.)
-    bool autoScaleEnabled() const { return m_autoScale; } ///< Whether adaptive render-scale (key 'g') is currently on.
+    /**  Whether adaptive render-scale (key 'g') is currently on.
+     *
+     * @return
+     *   True if adaptive render-scale (key 'g') is currently on.
+     **/
+    bool autoScaleEnabled() const { return m_autoScale; }
+    /**  Switches adaptive render-scale on/off (same state as key 'g'); the current scale is left where it is until
+     * updateAdaptiveScale() moves it.
+     *
+     * @param on  New state. (in)
+     **/
     void setAutoScaleEnabled( bool on )
     {
         m_autoScale = on;
         m_autoScaleByProfile = false;
-    } ///< Switches adaptive render-scale on/off (same state as key 'g'); the current scale is left where it is until
-    ///< updateAdaptiveScale() moves it. @param on New state.
+    }
+    /**  Whether the now-playing title reveal (key 'p') is currently on.
+     *
+     * @return
+     *   True if the now-playing title reveal (key 'p') is currently on.
+     **/
     bool nowPlayingEnabled() const
     {
         return m_showNowPlaying;
-    } ///< Whether the now-playing title reveal (key 'p') is currently on.
+    }
+    /**  Switches the now-playing title reveal on/off (same state as key 'p').
+     *
+     * @param on  New state. (in)
+     **/
     void setNowPlayingEnabled( bool on )
     {
         m_showNowPlaying = on;
-    } ///< Switches the now-playing title reveal on/off (same state as key 'p'). @param on New state.
+    }
+    /**  Whether the artist-image corner (key 'o') is currently on.
+     *
+     * @return
+     *   True if the artist-image corner (key 'o') is currently on.
+     **/
     bool artistImagesEnabled() const
     {
         return m_artistShow;
-    } ///< Whether the artist-image corner (key 'o') is currently on.
-    /** @brief Switches the artist-image corner on/off (same state as key 'o'); switching on immediately requests media
-     * for the current track. @param on New state. */
+    }
+    /**  Switches the artist-image corner on/off (same state as key 'o'); switching on immediately requests media for
+     * the current track.
+     *
+     * @param on  New state. (in)
+     **/
     void setArtistImagesEnabled( bool on );
+    /**  Whether the music-video search/download (independent of, but gated by, artistImagesEnabled()) is currently
+     * on.
+     *
+     * @return
+     *   True if the music-video picture-in-picture is switched on.
+     **/
     bool videoPipEnabled() const
     {
         return m_videoEnabled;
-    } ///< Whether the music-video search/download (independent of, but gated by, artistImagesEnabled()) is currently
-    ///< on.
-    /** @brief Switches the music-video PiP search/download on/off; switching on immediately requests media for the
-     * current track. @param on New state. */
+    }
+    /**  Switches the music-video PiP search/download on/off; switching on immediately requests media for the current
+     * track.
+     *
+     * @param on  New state. (in)
+     **/
     void setVideoPipEnabled( bool on );
-    int  lyricsModeValue() const { return m_lyricsMode; } ///< 0 = off, 1 = scroll, 2 = karaoke (key 'w' cycles).
-    /** @brief Sets the lyrics mode directly (remote/setup tool; key 'w' cycles the same value); any non-zero mode
-     * immediately requests media for the current track. @param mode 0 = off, 1 = scroll, 2 = karaoke; clamped to that
-     * range. */
+    /**  0 = off, 1 = scroll, 2 = karaoke (key 'w' cycles).
+     *
+     * @return
+     *   0 = off, 1 = scroll, 2 = karaoke (key 'w' cycles).
+     **/
+    int lyricsModeValue() const { return m_lyricsMode; }
+    /**  Sets the lyrics mode directly (remote/setup tool; key 'w' cycles the same value); any non-zero mode
+     * immediately requests media for the current track.
+     *
+     * @param mode  0 = off, 1 = scroll, 2 = karaoke; clamped to that range. (in)
+     **/
     void setLyricsModeValue( int mode );
-    /// Live preview: returns the cached small JPEG of the output and keeps the
-    /// ~1 Hz refresh in paintGL alive for the next few seconds.  All on the
-    /// GUI thread (QTcpServer + paintGL), so no locking is needed.
+    /**  Live preview: returns the cached small JPEG of the output and keeps the ~1 Hz refresh in paintGL alive for
+     * the next few seconds.
+     *
+     * @return
+     *   The last JPEG of the output; empty until the first refresh.
+     *
+     * All on the GUI thread (QTcpServer + paintGL), so no locking is needed.
+     **/
     QByteArray remoteSnapshot();
-    /// Favorites the currently active effect (same as key 'f').
+    /** Favorites the currently active effect (same as key 'f'). */
     void remoteFavorite();
-    /** @brief Cue memory: the identified track as "artist|title" (or KALEIDO_FAKE_TRACK for offline tests); empty when
-     * nothing is identified. */
+    /**  Cue memory: the identified track as "artist|title" (or KALEIDO_FAKE_TRACK for offline tests); empty when
+     * nothing is identified.
+     *
+     * @return
+     *   Cue memory: the identified track as "artist|title" (or KALEIDO_FAKE_TRACK for offline tests); empty when
+     *   nothing is identified.
+     **/
     QString cueTrackKey() const;
-    /** @brief Cue memory: playback position in seconds (extrapolated), or the run clock under KALEIDO_FAKE_TRACK; <0
-     * when unknown. */
+    /**  Cue memory: playback position in seconds (extrapolated), or the run clock under KALEIDO_FAKE_TRACK; <0 when
+     * unknown.
+     *
+     * @return
+     *   Cue memory: playback position in seconds (extrapolated), or the run clock under KALEIDO_FAKE_TRACK; <0 when
+     *   unknown.
+     **/
     double cuePosSec() const;
-    /** @brief Web remote: mark or unmark the scene on screen (same as SPACE). */
+    /** Web remote: mark or unmark the scene on screen (same as SPACE). */
     void remoteToggleMark();
-    /** @brief Web remote: write every marked scene to Presets/Marked.xml (same as SHIFT+SPACE). */
+    /** Web remote: write every marked scene to Presets/Marked.xml (same as SHIFT+SPACE). */
     void remoteSaveMarked();
+    /** Saves the instant-replay ring buffer to disk (same as key 'x'). */
     void remoteSaveReplay()
     {
         m_recorder.saveReplay();
-    } ///< Saves the instant-replay ring buffer to disk (same as key 'x').
+    }
+    /**  Whether the instant-replay ring buffer is currently armed.
+     *
+     * @return
+     *   True if the instant-replay ring buffer is currently armed.
+     **/
     bool remoteReplayArmed() const
     {
         return m_recorder.replayArmed();
-    } ///< Whether the instant-replay ring buffer is currently armed.
+    }
+    /** Arms/disarms the instant-replay ring buffer (same as key 'y'). */
     void remoteToggleReplayArm()
     {
         m_recorder.toggleReplayArm();
-    } ///< Arms/disarms the instant-replay ring buffer (same as key 'y').
+    }
 
     // ---- Web-remote hooks, second wave: the remaining keyboard functions ----
     // Everything here mirrors exactly one key handler in keyPressEvent(), so
     // the phone and the keyboard stay two views of the same state rather than
     // two code paths that can drift apart.
+    /** Starts/stops the mp4 video+music recording (same as key 'r'). */
     void remoteToggleRecord()
     {
         m_recorder.toggle();
-    } ///< Starts/stops the mp4 video+music recording (same as key 'r').
-    bool remoteRecording() const { return m_recorder.recording(); } ///< Whether an mp4 recording is currently running.
-    /** @brief Saves a PNG screenshot of the current frame (same as key 's'). @return The file name written, or an empty
-     * string on failure. */
+    }
+    /**  Whether an mp4 recording is currently running.
+     *
+     * @return
+     *   True if an mp4 recording is currently running.
+     **/
+    bool remoteRecording() const { return m_recorder.recording(); }
+    /**  Saves a PNG screenshot of the current frame (same as key 's').
+     *
+     * @return
+     *   The file name written, or an empty string on failure.
+     **/
     QString remoteScreenshot();
-    void    remoteTapTempo(); ///< Feeds one tap into the tap-tempo estimator (same as key 't').
-    /** @brief The active shader names/transition overlay text (same content as key 'v'). @return Multi-line text, or
-     * empty without an active pipeline. */
+    /** Feeds one tap into the tap-tempo estimator (same as key 't'). */
+    void remoteTapTempo();
+    /**  The active shader names/transition overlay text (same content as key 'v').
+     *
+     * @return
+     *   Multi-line text, or empty without an active pipeline.
+     **/
     QString remoteShaderInfo() const;
-    bool    shaderInfoVisible() const
+    /**  Whether the on-screen active-shader-names overlay (key 'v') is shown.
+     *
+     * @return
+     *   True if the on-screen active-shader-names overlay (key 'v') is shown.
+     **/
+    bool shaderInfoVisible() const
     {
         return m_showShaderInfo;
-    } ///< Whether the on-screen active-shader-names overlay (key 'v') is shown.
+    }
+    /**  Shows/hides the active-shader-names overlay (same state as key 'v').
+     *
+     * @param on  New state. (in)
+     **/
     void setShaderInfoVisible( bool on )
     {
         m_showShaderInfo = on;
-    } ///< Shows/hides the active-shader-names overlay (same state as key 'v'). @param on New state.
+    }
+    /**  Whether the on-screen audio-feature/FPS overlay (key 'i') is shown.
+     *
+     * @return
+     *   True if the on-screen audio-feature/FPS overlay (key 'i') is shown.
+     **/
     bool featureOverlayVisible() const
     {
         return m_showFeatureOverlay;
-    } ///< Whether the on-screen audio-feature/FPS overlay (key 'i') is shown.
+    }
+    /**  Shows/hides the audio-feature/FPS overlay (same state as key 'i').
+     *
+     * @param on  New state. (in)
+     **/
     void setFeatureOverlayVisible( bool on )
     {
         m_showFeatureOverlay = on;
-    } ///< Shows/hides the audio-feature/FPS overlay (same state as key 'i'). @param on New state.
+    }
+    /** Persists the current look + state as the startup default (same as key 'k'). */
     void remoteSaveDefaults()
     {
         saveAllSettings();
-    } ///< Persists the current look + state as the startup default (same as key 'k').
-    /** @brief Name of the active configuration, even when it is hidden and therefore absent from remoteConfigNames().
-     */
+    }
+    /**  Name of the active configuration, even when it is hidden and therefore absent from remoteConfigNames().
+     *
+     * @return
+     *   Name of the active configuration, even when it is hidden and therefore absent from remoteConfigNames().
+     **/
     QString remoteActiveConfigName() const;
 
     // ---- Optional update check (see UpdateCheck.h for the safety rules) ----
+    /**  Whether the optional GitHub release check is switched on ("updateCheck" setting).
+     *
+     * @return
+     *   True if the optional GitHub release check is switched on ("updateCheck" setting).
+     **/
     bool updateCheckEnabled() const
     {
         return m_updateCheck;
-    } ///< Whether the optional GitHub release check is switched on ("updateCheck" setting).
-    QString appVersion() const;      ///< @brief This build's version string (KALEIDOSCOPE_VERSION).
-    bool    updateAvailable() const; ///< @brief Whether a newer release was found by the last check.
-    QString updateVersion() const;   ///< @brief Version of the newest release, empty if none/not checked.
-    QString updateStatus() const;    ///< @brief Human-readable check/download status for the UI.
-    void    remoteInstallUpdate();   ///< @brief Downloads the newer release's installer and launches it (explicit user
-                                     ///< action only).
+    }
+    /**  This build's version string (KALEIDOSCOPE_VERSION).
+     *
+     * @return
+     *   This build's version string (KALEIDOSCOPE_VERSION).
+     **/
+    QString appVersion() const;
+    /**  Whether a newer release was found by the last check.
+     *
+     * @return
+     *   True if a newer release was found by the last check.
+     **/
+    bool updateAvailable() const;
+    /**  Version of the newest release, empty if none/not checked.
+     *
+     * @return
+     *   Version of the newest release, empty if none/not checked.
+     **/
+    QString updateVersion() const;
+    /**  Human-readable check/download status for the UI.
+     *
+     * @return
+     *   Human-readable check/download status for the UI.
+     **/
+    QString updateStatus() const;
+    /** Downloads the newer release's installer and launches it (explicit user action only). */
+    void remoteInstallUpdate();
 
 public slots:
     /**
@@ -283,91 +422,117 @@ public slots:
     bool slotSetDirectory( const QString &filename );
 
 protected:
-    /// Per-frame render entry point (QOpenGLWidget override): draws the scene via
-    /// draw(), then updates the FPS counter and the adaptive render scale.
+    /**  Per-frame render entry point (QOpenGLWidget override): draws the scene via draw(), then updates the FPS
+     * counter and the adaptive render scale.
+     **/
     virtual void paintGL();
-    /// One-time GL setup (QOpenGLWidget override): loads core GL entry points,
-    /// starts the active configuration's pipeline, and starts the audio analyzer,
-    /// now-playing poller, track-media fetcher, MIDI input and the frame timer.
+    /**  One-time GL setup (QOpenGLWidget override): loads core GL entry points, starts the active configuration's
+     * pipeline, and starts the audio analyzer, now-playing poller, track-media fetcher, MIDI input and the frame
+     * timer.
+     *
+     * @sideeffects
+     *   Changes AudioAnalyzer::M_OfflineWav.
+     **/
     virtual void initializeGL();
-    /**
-     * @brief Resizes the viewport/FBOs to the physical (DPI-scaled) framebuffer size
-     *        (QOpenGLWidget override).
-     * @param width Logical width passed by Qt (unused; physical size is recomputed).
-     * @param height Logical height passed by Qt (unused; physical size is recomputed).
-     */
+    /**  Resizes the viewport/FBOs to the physical (DPI-scaled) framebuffer size (QOpenGLWidget override).
+     *
+     * @param width   Logical width passed by Qt (unused; physical size is recomputed). (in)
+     * @param height  Logical height passed by Qt (unused; physical size is recomputed). (in)
+     **/
     virtual void resizeGL( int width, int height );
-    /**
-     * @brief Mouse-press handler: a click inside an open overlay menu picks a row, a click outside closes it (see the
+    /**  Mouse-press handler: a click inside an open overlay menu picks a row, a click outside closes it (see the
      * definition for details).
-     * @param e The mouse press event (named `e` in the definition).
-     */
-    virtual void mousePressEvent( QMouseEvent *event );
-    virtual void wheelEvent( QWheelEvent *event ); ///< Scrolls whichever overlay menu is open; inert otherwise.
-    /**
-     * @brief Mouse-move handler (currently a no-op stub; trackball code is commented out).
-     * @param event The mouse move event.
-     */
-    virtual void mouseMoveEvent( QMouseEvent *event );
-    /**
-     * @brief Double-click handler: persists settings and hard-exits the process.
-     * @param e The mouse double-click event.
-     */
+     *
+     * @param e  The mouse press event. (in)
+     **/
+    virtual void mousePressEvent( QMouseEvent *e );
+    /**  Scrolls whichever overlay menu is open; inert otherwise.
+     *
+     * @param e  The wheel turn; one notch of 120 units moves the menu by one row. (in)
+     **/
+    virtual void wheelEvent( QWheelEvent *e );
+    /**  Mouse-move handler (currently a no-op stub; trackball code is commented out).
+     *
+     * @param e  The mouse move event. (in)
+     **/
+    virtual void mouseMoveEvent( QMouseEvent *e );
+    /**  Double-click handler: persists settings and hard-exits the process.
+     *
+     * @param e  The mouse double-click event. (in)
+     **/
     virtual void mouseDoubleClickEvent( QMouseEvent *e );
-    /**
-     * @brief Main keyboard shortcut dispatcher: configuration switching, look
-     *        knobs (reactivity/trails/mood/latency), recording, MIDI learn,
-     *        overlays, stereo mode and quit.
-     * @param event The key press event.
-     */
+    /**  Main keyboard shortcut dispatcher: configuration switching, look knobs (reactivity/trails/mood/latency),
+     * recording, MIDI learn, overlays, stereo mode and quit.
+     *
+     * @param event  The key press event. (in)
+     **/
     virtual void keyPressEvent( QKeyEvent *event );
-    /**
-     * @brief Periodic ~60 Hz tick (16.667 ms): applies any pending configuration
-     *        switch outside paintGL(), then schedules a repaint via update().
-     */
+    /**  Periodic ~60 Hz tick (16.667 ms): applies any pending configuration switch outside paintGL(), then schedules
+     * a repaint via update().
+     **/
     virtual void timerEvent( QTimerEvent * );
 
-    /// Renders one frame: audio features, MIDI, batch-render exit check, shader
-    /// hot-reload, auto-config, the RenderPipeline pipeline, recording capture,
-    /// web-remote snapshot, config cross-fade, now-playing reveal, lyrics/
-    /// artist-image overlays, and any QPainter overlays (menus, help, REC dot).
+    /**  Renders one frame: audio features, MIDI, batch-render exit check, shader hot-reload, auto-config, the
+     * RenderPipeline pipeline, recording capture, web-remote snapshot, config cross-fade, now-playing reveal,
+     * lyrics/ artist-image overlays, and any QPainter overlays (menus, help, REC dot).
+     **/
     void draw();
 
-    /**
-     * @brief Draws the numbered configuration-selection overlay (key '0').
-     * @param painter Active QPainter for this frame.
-     */
+    /**  Draws the numbered configuration-selection overlay (key '0').
+     *
+     * @param painter  Active QPainter for this frame. (in)
+     **/
     void showSelectConfigurationsMenu( QPainter *painter );
-    /**
-     * @brief Draws the live audio-feature panel with value bars and look knobs (key 'i').
-     * @param painter Active QPainter for this frame.
-     * @param f Current per-frame audio features to display.
-     */
+    /**  Draws the live audio-feature panel with value bars and look knobs (key 'i').
+     *
+     * @param painter  Active QPainter for this frame. (in)
+     * @param f        Current per-frame audio features to display. (in)
+     **/
     void drawFeatureOverlay( QPainter *painter, const AudioFeatures &f );
-    /**
-     * @brief Draws the keyboard-shortcut help box (key 'h').
-     * @param painter Active QPainter for this frame.
-     */
+    /**  Draws the keyboard-shortcut help box (key 'h').
+     *
+     * @param painter  Active QPainter for this frame. (in)
+     **/
     void drawHelpOverlay( QPainter *painter );
-    void drawAudioMenu( QPainter *painter ); ///< Draws the runtime audio-source picker overlay (key 'd').
-    int  audioMenuCount() const;             ///< Rows in that overlay: the default entry plus every enumerated device.
-    /** @brief Indices into #m_configurationList matching #m_configMenuFilter (all of them when it is empty). */
+    /**  Draws the runtime audio-source picker overlay (key 'd').
+     *
+     * @param painter  Painter on the widget, active for this frame's overlay. (in)
+     **/
+    void drawAudioMenu( QPainter *painter );
+    /**  Rows in that overlay: the default entry plus every enumerated device.
+     *
+     * @return
+     *   1 plus the number of devices the analyser enumerated.
+     **/
+    int audioMenuCount() const;
+    /**  Indices into #m_configurationList matching #m_configMenuFilter (all of them when it is empty).
+     *
+     * @return
+     *   Indices into #m_configurationList matching #m_configMenuFilter (all of them when it is empty).
+     **/
     QVector<int> configMenuMatches() const;
-    /** @brief Audio rows matching #m_audioMenuFilter: 0 = default output, 1..N = the device at N-1. */
+    /**  Audio rows matching #m_audioMenuFilter: 0 = default output, 1..N = the device at N-1.
+     *
+     * @return
+     *   The matching rows, in list order.
+     **/
     QVector<int> audioMenuMatches() const;
-    void selectAudioDevice( int index ); ///< Selects an audio input by menu index: 0 = default loopback, 1..N = the Nth
-                                         ///< listed device.
+    /**  Selects an audio input by menu index: 0 = default loopback, 1..N = the Nth listed device.
+     *
+     * @param index  Menu index: 0 = default loopback, N = the Nth listed device. (in)
+     **/
+    void selectAudioDevice( int index );
 
-    /**
-     * @brief Draws the "now playing" lower-third box (title/artist), shown
-     *        briefly when the track changes (key 'p'). Currently unused in
-     *        draw() — the title reveal was moved into the shader pipeline —
-     *        but kept as a QPainter-based fallback renderer.
-     * @param painter Active QPainter for this frame.
-     * @param title Track title to display.
-     * @param artist Track artist to display.
-     * @param alpha Fade-in/out opacity, 0..1.
-     */
+    /**  Draws the "now playing" lower-third box (title/artist), shown briefly when the track changes (key 'p').
+     *
+     * @param painter  Active QPainter for this frame. (in)
+     * @param title    Track title to display. (in)
+     * @param artist   Track artist to display. (in)
+     * @param alpha    Fade-in/out opacity, 0..1. (in)
+     *
+     * Currently unused in draw() — the title reveal was moved into the shader pipeline — but kept as a QPainter-based
+     * fallback renderer.
+     **/
     void        drawNowPlaying( QPainter *painter, const QString &title,
                                 const QString &artist, float alpha );
     NowPlaying *m_nowPlaying = nullptr; ///< SMTC "now playing" title/artist/position poller; started in initializeGL().
@@ -380,23 +545,21 @@ protected:
     // 'o' die Künstlerbilder.  updateTrackOverlays() berechnet pro Frame den
     // Overlay-Zustand (Playback-Sync, Blenden, Bildrotation) und reicht ihn
     // samt Texturen an den RenderPipeline/PresentPass durch.
-    /**
-     * @brief Computes this frame's lyrics/artist-image overlay state (sync
-     *        position via a consumer PLL, karaoke line, fades, palette) and
-     *        uploads any changed textures, then hands the result to the given
-     *        RenderPipeline's present pass.
-     * @param fs RenderPipeline (present pass) to upload overlay textures/state to.
-     */
+    /**  Computes this frame's lyrics/artist-image overlay state (sync position via a consumer PLL, karaoke line,
+     * fades, palette) and uploads any changed textures, then hands the result to the given RenderPipeline's present
+     * pass.
+     *
+     * @param fs  RenderPipeline (present pass) to upload overlay textures/state to. (in)
+     **/
     void updateTrackOverlays( RenderPipeline *fs );
-    /// Re-requests lyrics/artist-images/video for whatever NowPlaying reports
-    /// right now (same m_key-dedup as a real track change, so this is a
-    /// harmless no-op if nothing actually needs (re)fetching) -- shared by
-    /// the 'w'/'o' key handlers and the new setArtistImagesEnabled()/
-    /// setVideoPipEnabled()/setLyricsModeValue() so turning an extra ON from
-    /// ANY live control surface (keyboard, web remote) picks it up for the
-    /// currently-playing track immediately, not just on the next track
-    /// change. (The standalone setup tool only edits the settings file for
-    /// the NEXT app start, so it never needs this.)
+    /**  Re-requests lyrics/artist-images/video for whatever NowPlaying reports right now (same m_key-dedup as a real
+     * track change, so this is a harmless no-op if nothing actually needs (re)fetching) -- shared by the 'w'/'o'
+     * key handlers and the new setArtistImagesEnabled()/ setVideoPipEnabled()/setLyricsModeValue() so turning an
+     * extra ON from ANY live control surface (keyboard, web remote) picks it up for the currently-playing track
+     * immediately, not just on the next track change.
+     *
+     * (The standalone setup tool only edits the settings file for the NEXT app start, so it never needs this.)
+     **/
     void        requestCurrentTrackMedia();
     TrackMedia *m_trackMedia = nullptr; ///< Fetches synced lyrics + artist images (LRCLIB/Deezer) for the current
                                         ///< track.
@@ -481,10 +644,10 @@ protected:
     // MIDI LEARN (key 'j'): cycles through the targets below; the next CC
     // (targets 0-3) or note (target 4) that arrives is bound to it and the
     // learn advances to the next target.  Mappings persist in the settings.
-    /// Drains and applies queued MIDI events: in MIDI-learn mode binds the next
-    /// event to the target being learned, otherwise routes mapped CCs to look
-    /// knobs (reactivity/trails/mood/latency) and mapped notes to tap-tempo,
-    /// blackout, or next-effect.
+    /**  Drains and applies queued MIDI events: in MIDI-learn mode binds the next event to the target being learned,
+     * otherwise routes mapped CCs to look knobs (reactivity/trails/mood/latency) and mapped notes to tap-tempo,
+     * blackout, or next-effect.
+     **/
     void       applyMidi();
     MidiInput *m_midi = nullptr; ///< Optional MIDI controller input; taken over from M_MidiOpened once its start thread
                                  ///< opened a device.
@@ -518,12 +681,11 @@ protected:
     Recorder m_recorder; ///< Screen recording + instant-replay ring buffer (PBO readback, encoder worker, ffmpeg mux).
     std::vector<unsigned char> m_snapBuf;  ///< glReadPixels scratch (Web-Snapshot)
 
-    /**
-     * @brief Recursively scans a directory tree for *.xml preset files and
-     *        constructs a Configuration for each one found.
-     * @param dirname Directory to scan (recurses into subdirectories).
-     * @param configurationList Output list; each found preset is appended here.
-     */
+    /**  Recursively scans a directory tree for *.xml preset files and constructs a Configuration for each one found.
+     *
+     * @param dirname            Directory to scan (recurses into subdirectories). (in)
+     * @param configurationList  Output list; each found preset is appended here. (out)
+     **/
     void traverseConfigurations( const QString &dirname, std::vector<Configuration *> &configurationList );
     // hidden="true" presets: kept out of every index-based selection path
     // (menu, digit keys, web remote), reachable only by name (-c / auto-config).
@@ -532,15 +694,16 @@ protected:
 
     // Request a configuration switch (applied in timerEvent, OUTSIDE paintGL, so
     // the cross-fade grab can't re-enter paintGL).  Cross-fades from the old frame.
-    /**
-     * @brief Requests a switch to the given configuration. Only records the
-     *        request (applied later in timerEvent()); no-op if cfg is null or
-     *        already active.
-     * @param cfg Configuration to switch to.
-     */
+    /**  Requests a switch to the given configuration.
+     *
+     * @param cfg  Configuration to switch to. (in)
+     *
+     * Only records the request (applied later in timerEvent()); no-op if cfg is null or already active.
+     **/
     void switchConfig( Configuration *cfg );
-    /// Grabs the current framebuffer into m_fadePixmap and starts the fade timer,
-    /// so the outgoing configuration's last frame can be cross-faded out.
+    /**  Grabs the current framebuffer into m_fadePixmap and starts the fade timer, so the outgoing configuration's
+     * last frame can be cross-faded out.
+     **/
     void           beginConfigFade();
     Configuration *m_pendingConfig = nullptr; ///< Requested switch, applied next timerEvent() tick.
     QPixmap        m_fadePixmap; ///< Last frame of the previous config, drawn fading out during a cross-fade.
@@ -548,23 +711,23 @@ protected:
 
     // Switch to the configuration with the given name (case-insensitive).
     // Returns true if it switched to a *different* configuration.
-    /**
-     * @brief Looks up a configuration by name (case-insensitive, searches both
-     *        the visible and hidden lists) and requests a switch to it.
-     * @param name Configuration name to match.
-     * @return True if it switched to a *different* configuration; false if not
-     *         found or already active.
-     */
+    /**  Looks up a configuration by name (case-insensitive, searches both the visible and hidden lists) and requests
+     * a switch to it.
+     *
+     * @param name  Configuration name to match. (in)
+     *
+     * @return
+     *   True if it switched to a *different* configuration; false if not found or already active.
+     **/
     bool selectConfigByName( const QString &name );
 
     // Auto-config-by-mood: when enabled, pick a configuration that matches the
     // sustained musical mood (ambient/energy), with hysteresis + a dwell time.
-    /**
-     * @brief When auto-config is enabled, maps the sustained mood (ambient
-     *        factor / arousal) to a preset bucket and switches to it once the
-     *        mood has held steady for a dwell time (hysteresis against flapping).
-     * @param f Current per-frame audio features.
-     */
+    /**  When auto-config is enabled, maps the sustained mood (ambient factor / arousal) to a preset bucket and
+     * switches to it once the mood has held steady for a dwell time (hysteresis against flapping).
+     *
+     * @param f  Current per-frame audio features. (in)
+     **/
     void updateAutoConfig( const AudioFeatures &f );
 
     bool   m_autoConfig = false;  ///< toggled with key 'a'
@@ -598,37 +761,62 @@ protected:
 
     // Persist / restore UI state (active config, auto-config, auto-scale) in the
     // same settings file RenderPipeline uses.  Saved with 'k', loaded at startup.
-    /// Restores persisted UI state (active config name, auto-config, auto-scale,
-    /// now-playing/lyrics/artist toggles, MIDI mapping) from the shared settings
-    /// INI, called once from the constructor.
+    /**  Restores persisted UI state (active config name, auto-config, auto-scale, now-playing/lyrics/artist toggles,
+     * MIDI mapping) from the shared settings INI, called once from the constructor.
+     *
+     * @sideeffects
+     *   Changes M_RemotePort, M_StartConfig.
+     **/
     void loadUiSettings();
-    /// Writes the current UI state to the shared settings INI (key 'k' and every
-    /// quit path).
+    /** Writes the current UI state to the shared settings INI (key 'k' and every quit path). */
     void saveUiSettings();
-    /// @brief Persists everything: RenderPipeline::saveSettings() (look knobs) plus saveUiSettings() (UI state).
-    ///
-    /// Bündelt saveUiSettings() + RenderPipeline::saveSettings() - ruft die
-    /// Taste 'k' auf UND jeder Quit-Pfad (auch die harten exit(0)-Stellen,
-    /// die keine C++-Destruktoren mehr durchlaufen), damit der zuletzt
-    /// gewählte Zustand wirklich immer übersteht.
-    void                 saveAllSettings();
-    void                 openOsdMenu();         ///< Opens the remote-control menu at its root.
-    void                 openQuitConfirm();     ///< Asks "quit?" in the menu (Esc outside any menu).
-    std::vector<OsdItem> osdRootItems();        ///< Rows of the menu's root level.
-    std::vector<OsdItem> osdPresetItems();      ///< One row per preset in #m_configurationList.
-    std::vector<OsdItem> osdAudioSourceItems(); ///< Default output plus one row per audio device.
+    /**  Persists everything: RenderPipeline::saveSettings() (look knobs) plus saveUiSettings() (UI state).
+     *
+     * Bündelt saveUiSettings() + RenderPipeline::saveSettings() - ruft die
+     * Taste 'k' auf UND jeder Quit-Pfad (auch die harten exit(0)-Stellen,
+     * die keine C++-Destruktoren mehr durchlaufen), damit der zuletzt
+     * gewählte Zustand wirklich immer übersteht.
+     **/
+    void saveAllSettings();
+    /** Opens the remote-control menu at its root. */
+    void openOsdMenu();
+    /** Asks "quit?" in the menu (Esc outside any menu). */
+    void openQuitConfirm();
+    /**  Rows of the menu's root level.
+     *
+     * @return
+     *   Rows of the menu's root level.
+     **/
+    std::vector<OsdItem> osdRootItems();
+    /**  One row per preset in #m_configurationList.
+     *
+     * @return
+     *   One row per preset in #m_configurationList.
+     **/
+    std::vector<OsdItem> osdPresetItems();
+    /**  Default output plus one row per audio device.
+     *
+     * @return
+     *   Default output plus one row per audio device.
+     **/
+    std::vector<OsdItem> osdAudioSourceItems();
 
     // Adaptive render scale: nudge RenderPipeline's internal render scale to keep
     // the frame rate near target, never exceeding the launch -s value.
-    /// Nudges RenderPipeline's render scale down when the frame rate is struggling
-    /// (< 45 FPS) and back up when there's headroom (> 57 FPS), clamped between
-    /// a fixed floor and the launch -s ceiling, with a settle delay between steps.
+    /**  Nudges RenderPipeline's render scale down when the frame rate is struggling (< 45 FPS) and back up when
+     * there's headroom (> 57 FPS), clamped between a fixed floor and the launch -s ceiling, with a settle delay
+     * between steps.
+     **/
     void updateAdaptiveScale();
     bool m_autoScale = true;           ///< toggled with key 'g'
     bool m_autoScaleByProfile = false; ///< m_autoScale was switched on by the quality profile for this session only
                                        ///< (not saved)
-    /// @brief The quality profile (ini "qualityProfile": auto | high | low): light settings for a weak GPU (GL context
-    /// current).
+    /**  The quality profile (ini "qualityProfile": auto | high | low): light settings for a weak GPU (GL context
+     * current).
+     *
+     * @sideeffects
+     *   Changes EffectShader::M_ChainScale.
+     **/
     void   applyQualityProfile();
     float  m_autoScaleMax = 1.f;  ///< ceiling: an explicit -s, else 1.0 (never the persisted working value)
     float  m_displayHz = 60.f;    ///< refresh rate the render timer was paced to; adaptation targets a fraction of it
@@ -643,13 +831,21 @@ protected:
 
     // KALEIDO_SCENE_SWEEP=<seconds>: walk EVERY scene of the loaded config in
     // order, holding each for that many seconds (see draw()).
-    /** @return The sweep interval in seconds, 0 when KALEIDO_SCENE_SWEEP is unset. */
+    /**  The sweep interval in seconds, 0 when KALEIDO_SCENE_SWEEP is unset.
+     *
+     * @return
+     *   The sweep interval in seconds, 0 when KALEIDO_SCENE_SWEEP is unset.
+     **/
     static int sweepSeconds()
     {
         static const int Sweep = qEnvironmentVariableIntValue( "KALEIDO_SCENE_SWEEP" );
         return Sweep;
     }
-    /** @return Whether a catalogue sweep is running (review mode, not normal playback). */
+    /**  Whether a catalogue sweep is running (review mode, not normal playback).
+     *
+     * @return
+     *   Whether a catalogue sweep is running (review mode, not normal playback).
+     **/
     static bool sweepActive() { return sweepSeconds() > 0; }
     /** @brief Accumulated render time of one scene (KALEIDO_COST_LOG). */
     struct SceneCost
@@ -662,14 +858,18 @@ protected:
         int coverN = 0; /**< Number of frames that contributed to cover; 0 = no coverage measured (not a mesh scene). */
     };
     QHash<QString, SceneCost> m_sceneCost; ///< Per-scene render cost; empty unless KALEIDO_COST_LOG is set.
-    /** @brief Write the measured per-scene cost to scene-cost.json and clear it. */
+    /** Write the measured per-scene cost to scene-cost.json and clear it. */
     void dumpSceneCost();
-    /** @return FX sweep interval in seconds, 0 when KALEIDO_FX_SWEEP is unset.
+    /**  FX sweep interval in seconds, 0 when KALEIDO_FX_SWEEP is unset.
+     *
+     * @return
+     *   FX sweep interval in seconds, 0 when KALEIDO_FX_SWEEP is unset.
      *
      * The scene sweep's counterpart for overlays.  An FX that does nothing is
      * a real failure class -- 43 silent FX and transitions were once found at
      * one go -- and the picker is random, so no overlay is reliably on screen
-     * at a known moment.  Holds the scene still and walks the FX instead. */
+     * at a known moment.  Holds the scene still and walks the FX instead.
+     **/
     static int fxSweepSeconds()
     {
         static const int Sweep = qEnvironmentVariableIntValue( "KALEIDO_FX_SWEEP" );
@@ -686,7 +886,8 @@ protected:
     bool   m_sweepRetried = false; ///< One retry per window: enough to undo a stolen cut, not enough to fight the
                                    ///< scheduler.
 
-    void resetRotation(); ///< Sets the rotation matrix to identity (currently a no-op stub; body is commented out).
+    /** Sets the rotation matrix to identity (currently a no-op stub; body is commented out). */
+    void resetRotation();
 
     RenderPipeline *m_renderPipeline; ///< Unused legacy member (the active pipeline is Configuration::m_renderPipeline
                                       ///< instead).
@@ -729,9 +930,13 @@ protected:
     int m_width;  ///< Physical (DPI-scaled) framebuffer width, set in resizeGL().
     int m_height; ///< Physical (DPI-scaled) framebuffer height, set in resizeGL().
 private:
-    /// @brief Not copyable (CGVR template: copy constructor and assignment are always declared).
+    /** Not copyable (CGVR template: copy constructor and assignment are always declared). */
     GLwidget( const GLwidget & ) = delete;
-    /// @brief Not assignable; see the copy constructor.
+    /**  Not assignable; see the copy constructor.
+     *
+     * @return
+     *   Nothing: the operator is deleted, so no call compiles.
+     **/
     GLwidget &operator=( const GLwidget & ) = delete;
 };
 

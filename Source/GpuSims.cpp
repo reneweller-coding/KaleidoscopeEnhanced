@@ -13,8 +13,13 @@
 #include "shader_setup.h"
 
 // Gemeinsames Fullscreen-Dreieck (gl_VertexID-VAO), definiert in RenderPipeline.cpp.
-extern GLuint fullscreenVAO(); ///< Shared gl_VertexID-based fullscreen-triangle VAO, defined in RenderPipeline.cpp and
-                               ///< reused by every sim pass via drawFullscreen().
+/**  Shared gl_VertexID-based fullscreen-triangle VAO, defined in RenderPipeline.cpp and reused by every sim pass via
+ * drawFullscreen().
+ *
+ * @return
+ *   The vertex array object, created on first use (context current).
+ **/
+extern GLuint fullscreenVAO();
 
 #ifndef GL_VERTEX_PROGRAM_POINT_SIZE
 /** @brief Fallback definition of the GL enable token (0x8642) for GL headers that omit it; the Physarum deposit pass
@@ -24,22 +29,31 @@ extern GLuint fullscreenVAO(); ///< Shared gl_VertexID-based fullscreen-triangle
 
 // Lokale Pendants der (aus Performance-Gründen ohnehin stillgelegten)
 // RenderPipeline-Prüfhelfer - identisches Verhalten, keine Abhängigkeit.
-/** @brief Local stand-in for RenderPipeline's framebuffer-completeness check; always returns true (the real check is
- * disabled for profiling reasons, see RenderPipeline::checkFramebufferStatus). @return Always true. */
+/**  Local stand-in for RenderPipeline's framebuffer-completeness check; always returns true (the real check is
+ * disabled for profiling reasons, see RenderPipeline::checkFramebufferStatus).
+ *
+ * @return
+ *   Always true.
+ **/
 static bool fbStatusOk()
 {
     return true; // wie RenderPipeline::checkFramebufferStatus (rwrwtest profiling)
 }
 
-/** @brief Local stand-in for RenderPipeline's glGetError polling; intentionally a no-op (disabled for profiling
- * reasons, see RenderPipeline::checkGLErrors). Its unnamed call-site-label parameter is unused. */
+/**  Local stand-in for RenderPipeline's glGetError polling; intentionally a no-op (disabled for profiling reasons,
+ * see RenderPipeline::checkGLErrors).
+ *
+ * Its unnamed call-site-label parameter is unused.
+ **/
 static void glErrCheck( const char * /*label*/ )
 {
     // wie RenderPipeline::checkGLErrors: deaktiviert (rwrwtest profiling)
 }
 
-/** @brief Clears the currently-bound FBO and draws the shared fullscreen triangle. Common draw call issued by every
- * simulation's fragment-shader step. */
+/**  Clears the currently-bound FBO and draws the shared fullscreen triangle.
+ *
+ * Common draw call issued by every simulation's fragment-shader step.
+ **/
 void GpuSims::drawFullscreen()
 {
     glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
@@ -48,8 +62,10 @@ void GpuSims::drawFullscreen()
     glBindVertexArray( 0 );
 }
 
-/** @brief Creates/validates all four GPU simulations' resources (FBOs, textures, shader programs). Idempotent; requires
- * a current GL context. */
+/**  Creates/validates all four GPU simulations' resources (FBOs, textures, shader programs).
+ *
+ * Idempotent; requires a current GL context.
+ **/
 void GpuSims::setupAll()
 {
     // GPU reaction-diffusion simulation buffers + shader.
@@ -65,8 +81,7 @@ void GpuSims::setupAll()
     setupPhysarum();
 }
 
-/**
- * @brief Advances one frame: always updates the host histories, steps only the demanded GPU sims, and (re)binds their
+/**  Advances one frame: always updates the host histories, steps only the demanded GPU sims, and (re)binds their
  * newest textures to the fixed global sampler units.
  *
  * Parameters are documented in GpuSims.h. Order, sub-step counts and unit
@@ -76,7 +91,7 @@ void GpuSims::setupAll()
  * (unit 11); each is skipped unless both demanded (`need`) and ready. The
  * SSM and spectrogram histories accumulate from `audio`/`dt` every frame
  * regardless, and only their texture upload waits for demand.
- */
+ **/
 void GpuSims::run( const AudioFeatures &audio, float dt, const Demand &need, const Frame &f )
 {
     // Reihenfolge, Sub-Step-Zahlen und Unit-Bindings exakt wie der alte
@@ -131,14 +146,13 @@ void GpuSims::run( const AudioFeatures &audio, float dt, const Demand &need, con
         bindSpectroTexture();
 }
 
-/**
- * @brief Creates the reaction-diffusion ping-pong FBOs/textures and compiles the Gray-Scott step shader.
+/**  Creates the reaction-diffusion ping-pong FBOs/textures and compiles the Gray-Scott step shader.
  *
  * Create the two RGBA16F ping-pong buffers and the Gray-Scott step shader.  The
  * grid is a fixed, modest size (independent of the window) so it stays cheap even
  * on a weak iGPU.  On any failure m_rdReady stays false and effects that sample
  * the simulation fall back to the source image.
- */
+ **/
 void GpuSims::setupReactionDiffusion()
 {
     if ( m_rdProgId == 0 )
@@ -180,13 +194,12 @@ void GpuSims::setupReactionDiffusion()
     glErrCheck( "setupReactionDiffusion()" );
 }
 
-/**
- * @brief Creates the fluid-dye ping-pong FBOs/textures and compiles the curl-noise advection shader.
+/**  Creates the fluid-dye ping-pong FBOs/textures and compiles the curl-noise advection shader.
  *
  * Create the fluid dye ping-pong buffers and the advection shader.  Same
  * fail-safe pattern as the RD sim: on any failure m_fluidReady stays false and
  * Fluid.frag degrades to its image fallback.
- */
+ **/
 void GpuSims::setupFluid()
 {
     if ( m_fluidProgId == 0 )
@@ -231,13 +244,12 @@ void GpuSims::setupFluid()
     glErrCheck( "setupFluid()" );
 }
 
-/**
- * @brief Advances the curl-noise dye advection by one step into the next ping-pong buffer.
+/**  Advances the curl-noise dye advection by one step into the next ping-pong buffer.
  *
  * Parameters are documented in GpuSims.h: `audio` drives the swirl impulse
  * and the dye-injection amount, `f` supplies the integrated flow phase and
  * the two dye source textures (blended by Frame::dyeInterp).
- */
+ **/
 void GpuSims::stepFluid( const AudioFeatures &audio, const Frame &f )
 {
     if ( !m_fluidReady )
@@ -296,13 +308,12 @@ void GpuSims::stepFluid( const AudioFeatures &audio, const Frame &f )
     m_fluidIdx = prev; // newest state is now m_texFluid[1 - m_fluidIdx]
 }
 
-/**
- * @brief Creates the smoke/fire tiled-atlas ping-pong FBOs/textures and compiles the sim shader.
+/**  Creates the smoke/fire tiled-atlas ping-pong FBOs/textures and compiles the sim shader.
  *
  * Create the smoke/fire ping-pong buffers and the sim shader.  Same fail-safe
  * pattern as RD/Fluid: on any failure m_smoke3DReady stays false and
  * VolumetricFire.frag degrades to an empty (black) field.
- */
+ **/
 void GpuSims::setupSmoke3D()
 {
     if ( m_smoke3DProgId == 0 )
@@ -346,8 +357,7 @@ void GpuSims::setupSmoke3D()
     glErrCheck( "setupSmoke3D()" );
 }
 
-/**
- * @brief Runs one sub-step of the smoke/fire PDE (horizontal or vertical half) into the next ping-pong buffer.
+/**  Runs one sub-step of the smoke/fire PDE (horizontal or vertical half) into the next ping-pong buffer.
  *
  * Parameters are documented in GpuSims.h: `audio` drives per-cell turbulence
  * (treble/onset) and base-cell fuel injection (bass/kick/drop), `f` supplies
@@ -356,7 +366,7 @@ void GpuSims::setupSmoke3D()
  * buoyancy), forwarded to the shader as-is. Calling this twice per frame
  * (see stepSmoke3D) with the two different subStep values advances both
  * halves of the PDE.
- */
+ **/
 void GpuSims::stepSmoke3DPass( const AudioFeatures &audio, const Frame &f, float subStep )
 {
     const int cur = m_smoke3DIdx;
@@ -399,14 +409,13 @@ void GpuSims::stepSmoke3DPass( const AudioFeatures &audio, const Frame &f, float
     m_smoke3DIdx = prev;
 }
 
-/**
- * @brief Advances the smoke/fire volume by one full frame: a horizontal pass followed by a vertical pass, each its own
+/**  Advances the smoke/fire volume by one full frame: a horizontal pass followed by a vertical pass, each its own
  * ping-pong swap.
  *
  * Parameters are documented in GpuSims.h; both `audio` and `f` are forwarded
  * unchanged to the two stepSmoke3DPass() calls. The two-pass split mirrors
  * the RD sim's multi-substep-per-frame pattern so structure develops quickly.
- */
+ **/
 void GpuSims::stepSmoke3D( const AudioFeatures &audio, const Frame &f )
 {
     if ( !m_smoke3DReady )
@@ -416,13 +425,12 @@ void GpuSims::stepSmoke3D( const AudioFeatures &audio, const Frame &f )
     stepSmoke3DPass( audio, f, 1.f ); // vertical: buoyant rise + cross-cell softening
 }
 
-/**
- * @brief Creates the Physarum agent/trail buffers and the three programs (agent update, deposit, diffuse).
+/**  Creates the Physarum agent/trail buffers and the three programs (agent update, deposit, diffuse).
  *
  * Create the Physarum buffers + the three programs.  Same fail-safe pattern
  * as RD/Fluid/Smoke3D: any failure leaves m_physReady false and the display
  * effect degrades to a dark field.
- */
+ **/
 void GpuSims::setupPhysarum()
 {
     if ( m_physAgentProgId == 0 )
@@ -550,8 +558,7 @@ void GpuSims::setupPhysarum()
     glErrCheck( "setupPhysarum()" );
 }
 
-/**
- * @brief Advances the Physarum slime-mould sim by one frame: agent update, pheromone deposit, then trail
+/**  Advances the Physarum slime-mould sim by one frame: agent update, pheromone deposit, then trail
  * diffuse+evaporate.
  *
  * Parameters are documented in GpuSims.h: `audio` drives agent speed, sensor
@@ -559,7 +566,7 @@ void GpuSims::setupPhysarum()
  * the agent-update shader. One full frame means: agents sense/turn/move
  * (ping-pong), deposit their pheromone points, then the trail map diffuses
  * and evaporates (ping-pong; compute path when available, else fragment).
- */
+ **/
 void GpuSims::stepPhysarum( const AudioFeatures &audio, const Frame &f )
 {
     if ( !m_physReady )
@@ -669,8 +676,7 @@ void GpuSims::stepPhysarum( const AudioFeatures &audio, const Frame &f )
     m_physTrailIdx = t_prev;
 }
 
-/**
- * @brief Accumulates one row/column of the self-similarity matrix roughly every SSMStride seconds.
+/**  Accumulates one row/column of the self-similarity matrix roughly every SSMStride seconds.
  *
  * Parameters are documented in GpuSims.h (`a` sources the chroma/spectrum
  * feature vector, `dt` paces the accumulation).
@@ -680,7 +686,7 @@ void GpuSims::stepPhysarum( const AudioFeatures &audio, const Frame &f )
  * similarity.  CPU-only and cheap, so it runs EVERY frame regardless of what
  * is on screen — the history must exist BEFORE the SelfSimilarity effect
  * appears, not start from black.
- */
+ **/
 void GpuSims::stepSSM( const AudioFeatures &a, float dt )
 {
     m_ssmAccum += dt;
@@ -728,15 +734,14 @@ void GpuSims::stepSSM( const AudioFeatures &a, float dt )
     m_ssmDirty = true;
 }
 
-/**
- * @brief Pushes newly-due rows of the scrolling spectrogram history from the current spectrum.
+/**  Pushes newly-due rows of the scrolling spectrogram history from the current spectrum.
  *
  * Parameters are documented in GpuSims.h (`a` supplies the normalized
  * spectrum bands for each new row, `dt` paces row emission).
  * Push one row of the spectrogram history.  Several rows can fall due in a
  * single frame after a hitch, hence the while loop — dropping them instead
  * would make the scroll speed depend on the frame rate.
- */
+ **/
 void GpuSims::stepSpectro( const AudioFeatures &a, float dt )
 {
     m_spectroAccum += dt;
@@ -767,12 +772,11 @@ void GpuSims::stepSpectro( const AudioFeatures &a, float dt )
         m_spectroAccum = 0.f; // a long stall: resync rather than catch up
 }
 
-/**
- * @brief Advances the Gray-Scott reaction-diffusion sim by one step into the next ping-pong buffer.
+/**  Advances the Gray-Scott reaction-diffusion sim by one step into the next ping-pong buffer.
  *
  * The parameter is documented in GpuSims.h: `audio` drives the feed/kill
  * parameter wander and the reagent-injection trigger.
- */
+ **/
 void GpuSims::stepReactionDiffusion( const AudioFeatures &audio )
 {
     if ( !m_rdReady )
@@ -822,7 +826,7 @@ void GpuSims::stepReactionDiffusion( const AudioFeatures &audio )
 }
 
 // SSM-Textur (Unit 10): lazy anlegen, bei Änderung komplett hochladen.
-/** @brief Lazily creates the SSM texture (unit 10) and re-uploads it whole whenever the matrix data is dirty. */
+/** Lazily creates the SSM texture (unit 10) and re-uploads it whole whenever the matrix data is dirty. */
 void GpuSims::bindSSMTexture()
 {
     if ( m_texSSM == 0 )
@@ -851,15 +855,14 @@ void GpuSims::bindSSMTexture()
 
 // Spektrogramm-Textur (Unit 28): lazy anlegen, nur die seit dem letzten
 // Upload geschriebenen Zeilen hochladen (ggf. am Ring-Wrap gesplittet).
-/**
- * @brief Lazily creates the spectrogram texture (unit 28) and uploads only the rows written since the last upload.
+/**  Lazily creates the spectrogram texture (unit 28) and uploads only the rows written since the last upload.
  *
  * A freshly-created texture uploads the whole ring (m_spectroPend forced to
  * SpectroH). Otherwise only the pending run of rows is uploaded, split
  * into two glTexSubImage2D calls when that run straddles the ring's wrap
  * (i.e. the newest rows are physically split between the end and the
  * start of m_spectroData).
- */
+ **/
 void GpuSims::bindSpectroTexture()
 {
     if ( m_texSpectro == 0 )

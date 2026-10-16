@@ -43,32 +43,42 @@
 class ComputeFX
 {
 public:
-    /// Default-constructs with no GL resources allocated; call init() once a context is current.
+    /** Default-constructs with no GL resources allocated; call init() once a context is current. */
     ComputeFX() {}
-    /// Frees every GL object (canvases, fields, buffers, programs) owned by any kind.
+    /** Frees every GL object (canvases, fields, buffers, programs) owned by any kind. */
     ~ComputeFX();
 
     // Query the GL limits + compute availability once (context must be current).
-    /**
-     * @brief Detects compute-shader availability and GL texture-unit limits.
+    /**  Detects compute-shader availability and GL texture-unit limits.
      *
      * Must be called once with a current GL context, before any step() call.
      * Sets m_ok from glcoreHasCompute and queries GL_MAX_TEXTURE_IMAGE_UNITS;
      * any CfxKindE whose published unit (CfxInfoTable) does not fit under that
      * limit is immediately marked dead so it is never attempted.
-     */
+     **/
     void init();
-    /**
-     * @brief Whether compute-shader support was detected by init().
-     * @return true if GL 4.3 compute is usable, false if every kind will fail soft.
-     */
+    /**  Whether compute-shader support was detected by init().
+     *
+     * @return
+     *   true if GL 4.3 compute is usable, false if every kind will fail soft.
+     **/
     bool available() const { return m_ok; }
 
     // Advance sim `k` by one frame and return the texture to bind on its unit.
     // `srcImage` is the current slideshow photo (some sims consume it).
     // Returns 0 when the sim is unavailable — caller then binds nothing.
-    /**
-     * @brief Advances one simulation kind by a frame and returns its output texture.
+    /**  Advances one simulation kind by a frame and returns its output texture.
+     *
+     * @param k         Which simulation to advance (a CfxKindE index). (in)
+     * @param a         Current audio-reactive features driving the sim's parameters. (in)
+     * @param dt        Frame delta time in seconds. (in)
+     * @param t         Elapsed time in seconds (used to integrate host-side phases). (in)
+     * @param srcImage  The current slideshow photo texture; consumed by sims that use it as input. (in)
+     * @param outW      Current output/display width, used to size some sims' canvases to the display aspect. (in)
+     * @param outH      Current output/display height, used to size some sims' canvases to the display aspect. (in)
+     *
+     * @return
+     *   The GL texture name to bind for this kind, or 0 if unavailable.
      *
      * Dispatches the compute shader(s) for kind `k`, driven by the current
      * audio features and elapsed time, and returns the GL texture name the
@@ -77,20 +87,20 @@ public:
      * stall or hitch never destabilises an integrator. If the kind is
      * unavailable, disabled, or its step fails, it is marked dead and 0 is
      * returned; the caller then simply binds nothing on that unit.
-     * @param k Which simulation to advance (a CfxKindE index).
-     * @param a Current audio-reactive features driving the sim's parameters.
-     * @param dt Frame delta time in seconds.
-     * @param time Elapsed time in seconds (used to integrate host-side phases).
-     * @param srcImage The current slideshow photo texture; consumed by sims that use it as input.
-     * @param outW Current output/display width, used to size some sims' canvases to the display aspect.
-     * @param outH Current output/display height, used to size some sims' canvases to the display aspect.
-     * @return The GL texture name to bind for this kind, or 0 if unavailable.
-     */
-    GLuint step( int k, const AudioFeatures &a, float dt, float time,
+     **/
+    GLuint step( int k, const AudioFeatures &a, float dt, float t,
                  GLuint srcImage, int outW, int outH );
 
-    /**
-     * @brief Advances the deep-zoom Mandelbrot fractal by one frame.
+    /**  Advances the deep-zoom Mandelbrot fractal by one frame.
+     *
+     * @param a     Current audio features driving zoom rate and iteration count. (in)
+     * @param dt    Frame delta time in seconds. (in)
+     * @param t     Elapsed time in seconds (unused directly; zoom depth is its own integrator). (in)
+     * @param outW  Output width, used to size the field to the display aspect. (in)
+     * @param outH  Output height, used to size the field to the display aspect. (in)
+     *
+     * @return
+     *   The resolved Mandelbrot field texture, or 0 on failure.
      *
      * Called DIRECTLY (not through step()/CfxKindE) -- see the definition's
      * comment for why: units 0-31 are already fully claimed on a 32-unit
@@ -105,25 +115,19 @@ public:
      * Tools/SHADER_AUTHORING.md V7); once it reaches the double-single
      * precision ceiling, it resets to a shallow zoom and advances to the
      * next of a small set of hand-picked interesting boundary coordinates.
-     * @param a Current audio features driving zoom rate and iteration count.
-     * @param dt Frame delta time in seconds.
-     * @param t Elapsed time in seconds (unused directly; zoom depth is its own integrator).
-     * @param outW Output width, used to size the field to the display aspect.
-     * @param outH Output height, used to size the field to the display aspect.
-     * @return The resolved Mandelbrot field texture, or 0 on failure.
-     */
+     **/
     GLuint stepMandelbrot( const AudioFeatures &a, float dt, float t, int outW, int outH );
 
     // Free a sim's GPU memory when it has not been on screen for a while.
-    /**
-     * @brief Frees GPU memory for any kind that has been idle too long.
+    /**  Frees GPU memory for any kind that has been idle too long.
+     *
+     * @param now  Current elapsed time in seconds, compared against each resource's last-use time. (in)
      *
      * Called once per frame with the current time; any kind whose canvas or
      * field has not been touched by step() for more than the idle threshold
      * has its textures/buffers deleted, so resident GPU memory only reflects
      * kinds actually in recent use.
-     * @param now Current elapsed time in seconds, compared against each resource's last-use time.
-     */
+     **/
     void retireIdle( float now );
 
 private:
@@ -150,43 +154,46 @@ private:
         float lastUse = 0.f;  ///< last step() time this canvas was touched; drives retireIdle()
         bool  seeded = false; ///< whether this canvas's sim state has been initialised at least once
     };
-    /**
-     * @brief Lazily (re)allocates a Canvas's texture and accumulator SSBO for the given size.
+    /**  Lazily (re)allocates a Canvas's texture and accumulator SSBO for the given size.
+     *
+     * @param c  Canvas to allocate or validate. (in,out)
+     * @param w  Requested width in texels. (in)
+     * @param h  Requested height in texels. (in)
+     *
+     * @return
+     *   true if the canvas's texture and SSBO are both valid.
      *
      * A no-op if the canvas already exists at this size. On a size change the
      * old GL objects are freed first. The texture is zero-filled immediately
      * so the first frame never shows uninitialised GPU memory.
-     * @param c Canvas to allocate or validate.
-     * @param w Requested width in texels.
-     * @param h Requested height in texels.
-     * @return true if the canvas's texture and SSBO are both valid.
-     */
+     **/
     bool ensureCanvas( Canvas &c, int w, int h );
-    /**
-     * @brief Zeroes a canvas's uint accumulator SSBO ahead of this frame's scatter pass.
-     * @param c Canvas whose accumulator is cleared.
-     */
+    /**  Zeroes a canvas's uint accumulator SSBO ahead of this frame's scatter pass.
+     *
+     * @param c  Canvas whose accumulator is cleared. (in)
+     **/
     void clearAccum( const Canvas &c );
-    /**
-     * @brief Tonemaps a canvas's uint accumulator into its RGBA16F result texture.
+    /**  Tonemaps a canvas's uint accumulator into its RGBA16F result texture.
+     *
+     * @param c         Canvas to resolve. (in)
+     * @param mode      Tonemap mode: 0 = linear exposure, 1 = fractal-flame log-density (average colour x
+     *                  log(1+density)). (in)
+     * @param exposure  Linear brightness multiplier applied before gamma. (in)
+     * @param gammaInv  Inverse-gamma exponent applied to the resolved colour. (in)
+     * @param decay     How much of the previous frame's texture content is retained (0 = no trail, closer to 1 =
+     *                  long trail). (in)
      *
      * Runs the CfxResolve compute shader, blending the newly scattered
      * accumulator into the previous frame's texture content by `decay` so
      * splat sims can show motion trails rather than a single frame's sparse
      * scatter.
-     * @param c Canvas to resolve.
-     * @param mode Tonemap mode: 0 = linear exposure, 1 = fractal-flame log-density (average colour x log(1+density)).
-     * @param exposure Linear brightness multiplier applied before gamma.
-     * @param gamma Inverse-gamma exponent applied to the resolved colour.
-     * @param decay How much of the previous frame's texture content is retained (0 = no trail, closer to 1 = long
-     * trail).
-     */
-    void resolve( const Canvas &c, int mode, float exposure, float gamma,
+     **/
+    void resolve( const Canvas &c, int mode, float exposure, float gammaInv,
                   float decay );
-    /**
-     * @brief Deletes a Canvas's GL texture and SSBO and resets it to empty.
-     * @param c Canvas to free.
-     */
+    /**  Deletes a Canvas's GL texture and SSBO and resets it to empty.
+     *
+     * @param c  Canvas to free. (in,out)
+     **/
     void freeCanvas( Canvas &c );
 
     // Generic ping-pong field (RGBA16F) for the grid-based sims.
@@ -213,134 +220,160 @@ private:
     };
     /** @var ComputeFX::Field::h
      *  @brief Field height in texels (0 until allocated). */
-    /**
-     * @brief Lazily (re)allocates both ping-pong textures of a Field for the given size/format.
+    /**  Lazily (re)allocates both ping-pong textures of a Field for the given size/format.
+     *
+     * @param f    Field to allocate or validate. (in,out)
+     * @param w    Requested width in texels. (in)
+     * @param h    Requested height in texels. (in)
+     * @param fmt  GL internal format for both textures (e.g. GL_RGBA16F). (in)
+     *
+     * @return
+     *   true if both textures are valid.
      *
      * A no-op if the field already exists at this size. On a size change the
      * old textures are freed first. Both textures are zero-filled immediately.
-     * @param f Field to allocate or validate.
-     * @param w Requested width in texels.
-     * @param h Requested height in texels.
-     * @param fmt GL internal format for both textures (e.g. GL_RGBA16F).
-     * @return true if both textures are valid.
-     */
+     **/
     bool ensureField( Field &f, int w, int h, GLenum fmt );
-    /**
-     * @brief Deletes both of a Field's GL textures and resets it to empty.
-     * @param f Field to free.
-     */
+    /**  Deletes both of a Field's GL textures and resets it to empty.
+     *
+     * @param f  Field to free. (in,out)
+     **/
     void freeField( Field &f );
 
     // Storage buffer helper (agent/particle state).
-    /**
-     * @brief Lazily allocates a shader-storage buffer of the given size if not already allocated.
+    /**  Lazily allocates a shader-storage buffer of the given size if not already allocated.
+     *
+     * @param b      Buffer name to allocate into; left unchanged if already valid. (in,out)
+     * @param bytes  Size in bytes to allocate for the buffer's storage. (in)
+     *
+     * @return
+     *   true if the buffer is a valid, non-zero name.
      *
      * A no-op (returns true) if `b` is already a non-zero buffer name; this
      * function never resizes an existing buffer, only creates one the first
      * time it is needed.
-     * @param b Buffer name to allocate into; left unchanged if already valid.
-     * @param bytes Size in bytes to allocate for the buffer's storage.
-     * @return true if the buffer is a valid, non-zero name.
-     */
+     **/
     bool ensureBuffer( GLuint &b, size_t bytes );
 
-    /**
-     * @brief Returns the cached compute program for a slot, compiling it on first use.
+    /**  Returns the cached compute program for a slot, compiling it on first use.
+     *
+     * @param slot  Index into the program cache (one of the anonymous P_* enum values in ComputeFX.cpp). (in)
+     * @param file  Path to the .comp shader source to compile if not already cached. (in)
+     *
+     * @return
+     *   The cached/compiled GL program name, or 0 if compilation failed.
      *
      * Each slot is only ever compiled once: on the first call m_progTried[slot]
      * is latched so a failed compile is never retried on subsequent frames
      * (it would just fail again and spam stderr).
-     * @param slot Index into the program cache (one of the anonymous P_* enum values in ComputeFX.cpp).
-     * @param file Path to the .comp shader source to compile if not already cached.
-     * @return The cached/compiled GL program name, or 0 if compilation failed.
-     */
+     **/
     GLuint prog( int slot, const char *file ); // cached compute program
 
     // ---- per-kind steps ----
-    /**
-     * @brief Advances the fractal-flame chaos-game simulation by one frame.
+    /**  Advances the fractal-flame chaos-game simulation by one frame.
+     *
+     * @param a   Current audio features driving transform phase and colour. (in)
+     * @param dt  Frame delta time in seconds. (in)
+     * @param t   Elapsed time in seconds. (in)
+     *
+     * @return
+     *   The resolved flame canvas texture, or 0 on failure.
      *
      * 256x256 walkers iterate IFS transforms whose phase/warp/spin are
      * host-integrated from dt and audio features (never time multiplied
      * directly by an audio value, to avoid jitter), scattering an atomic
      * density histogram that is resolved with the log-density tonemap and a
      * long decay for a smooth, silky flame.
-     * @param a Current audio features driving transform phase and colour.
-     * @param dt Frame delta time in seconds.
-     * @param t Elapsed time in seconds.
-     * @return The resolved flame canvas texture, or 0 on failure.
-     */
+     **/
     GLuint stepFlame( const AudioFeatures &a, float dt, float t );
-    /**
-     * @brief Advances ~1.3M particles through a curl-noise flow field.
+    /**  Advances ~1.3M particles through a curl-noise flow field.
+     *
+     * @param a         Current audio features driving flow speed and colour. (in)
+     * @param dt        Frame delta time in seconds. (in)
+     * @param t         Elapsed time in seconds. (in)
+     * @param srcImage  The current slideshow photo texture sampled by the flow/advection shader. (in)
+     *
+     * @return
+     *   The resolved particle canvas texture, or 0 on failure.
      *
      * Particle state is seeded once into an SSBO on first use, then advected
      * each frame by a curl-noise field whose phase integrates from audio
      * level/flux; particles are scattered onto the splat canvas and resolved
      * with a moderate decay.
-     * @param a Current audio features driving flow speed and colour.
-     * @param dt Frame delta time in seconds.
-     * @param t Elapsed time in seconds.
-     * @param src The current slideshow photo texture sampled by the flow/advection shader.
-     * @return The resolved particle canvas texture, or 0 on failure.
-     */
-    GLuint stepParticles( const AudioFeatures &a, float dt, float t, GLuint src );
-    /**
-     * @brief Advances a 65,536-body N-body galaxy simulation by one frame.
+     **/
+    GLuint stepParticles( const AudioFeatures &a, float dt, float t, GLuint srcImage );
+    /**  Advances a 65,536-body N-body galaxy simulation by one frame.
+     *
+     * @param a   Current audio features driving gravity/kick response and colour. (in)
+     * @param dt  Frame delta time in seconds. (in)
+     * @param t   Elapsed time in seconds. (in)
+     *
+     * @return
+     *   The resolved N-body canvas texture, or 0 on failure.
      *
      * Forces are evaluated with shared-memory tiling against a 2048-body
      * sample so the full star count can be quadrupled at no extra cost. Two
      * colliding galaxies are (re)seeded at most every 45s, triggered by a
      * strong drop pulse, so a merger's full arc (approach, tidal tails,
      * starburst) can play out instead of being cut short.
-     * @param a Current audio features driving gravity/kick response and colour.
-     * @param dt Frame delta time in seconds.
-     * @param t Elapsed time in seconds.
-     * @return The resolved N-body canvas texture, or 0 on failure.
-     */
+     **/
     GLuint stepNBody( const AudioFeatures &a, float dt, float t );
-    /**
-     * @brief Advances a 131,072-boid flocking simulation with a real spatial-hash neighbourhood.
+    /**  Advances a 131,072-boid flocking simulation with a real spatial-hash neighbourhood.
+     *
+     * @param a   Current audio features driving goal-seeking speed and colour. (in)
+     * @param dt  Frame delta time in seconds. (in)
+     * @param t   Elapsed time in seconds. (in)
+     *
+     * @return
+     *   The resolved boids canvas texture, or 0 on failure.
      *
      * Each frame rebuilds a 128x128 spatial-hash grid (via atomics) that the
      * flocking step then queries for neighbours, giving genuine local
      * cohesion/alignment/separation. Resolved with a short decay so the
      * flock stays visually crisp rather than smearing into two clouds.
-     * @param a Current audio features driving goal-seeking speed and colour.
-     * @param dt Frame delta time in seconds.
-     * @param t Elapsed time in seconds.
-     * @return The resolved boids canvas texture, or 0 on failure.
-     */
+     **/
     GLuint stepBoids( const AudioFeatures &a, float dt, float t );
-    /**
-     * @brief Advances a diffusion-limited-aggregation (frost/coral) growth field.
+    /**  Advances a diffusion-limited-aggregation (frost/coral) growth field.
+     *
+     * @param a   Current audio features driving stickiness/drift and colour. (in)
+     * @param dt  Frame delta time in seconds. (in)
+     * @param t   Elapsed time in seconds. (in)
+     *
+     * @return
+     *   The crystal field texture, or 0 on failure.
      *
      * Random walkers stick to the existing structure with a deliberately low
      * probability so growth stays dendritic instead of collapsing into a
      * compact Eden-growth blob; the structure is re-seeded at most every 30s,
      * triggered by a big drop pulse. Unlike the splat sims, the field texture
      * itself is the published result — there is no separate canvas resolve.
-     * @param a Current audio features driving stickiness/drift and colour.
-     * @param dt Frame delta time in seconds.
-     * @param t Elapsed time in seconds.
-     * @return The crystal field texture, or 0 on failure.
-     */
+     **/
     GLuint stepCrystal( const AudioFeatures &a, float dt, float t );
-    /**
-     * @brief Advances a dielectric-breakdown lightning bolt that grows itself on the GPU.
+    /**  Advances a dielectric-breakdown lightning bolt that grows itself on the GPU.
+     *
+     * @param a   Current audio features driving strike triggers and branching. (in)
+     * @param dt  Frame delta time in seconds. (in)
+     * @param t   Elapsed time in seconds. (in)
+     *
+     * @return
+     *   The resolved lightning canvas texture, or 0 on failure.
      *
      * A new bolt is (re)seeded on a strong onset/drop (at least 0.5s apart)
      * or, as a fallback, every 2.2s so the storm stays visibly alive through
      * quiet passages. Growth is resolved with high exposure and a long decay
      * so a bolt's afterglow lingers well past its actual lifetime.
-     * @param a Current audio features driving strike triggers and branching.
-     * @param dt Frame delta time in seconds.
-     * @param t Elapsed time in seconds.
-     * @return The resolved lightning canvas texture, or 0 on failure.
-     */
+     **/
     GLuint stepLightning( const AudioFeatures &a, float dt, float t );
-    /**
-     * @brief Advances a wave-surface simulation and splats caustic photons from it.
+    /**  Advances a wave-surface simulation and splats caustic photons from it.
+     *
+     * @param a         Current audio features driving ripple triggers and colour. (in)
+     * @param dt        Frame delta time in seconds. (in)
+     * @param t         Elapsed time in seconds. (in)
+     * @param srcImage  The current slideshow photo texture (currently unused by the wave/photon shaders themselves,
+     *                  kept for interface symmetry). (in)
+     *
+     * @return
+     *   The resolved caustics canvas texture, or 0 on failure.
      *
      * Runs two wave sub-steps per frame for stable propagation at a
      * believable speed, dropping a "stone" ripple on kicks and/or snares at
@@ -348,47 +381,51 @@ private:
      * splats photons refracted through the resulting wave field onto the
      * canvas. Resolved with low exposure/decay since this reads as a surface,
      * not as trails.
-     * @param a Current audio features driving ripple triggers and colour.
-     * @param dt Frame delta time in seconds.
-     * @param t Elapsed time in seconds.
-     * @param src The current slideshow photo texture (currently unused by the wave/photon shaders themselves, kept for
-     * interface symmetry).
-     * @return The resolved caustics canvas texture, or 0 on failure.
-     */
-    GLuint stepCaustics( const AudioFeatures &a, float dt, float t, GLuint src );
-    /**
-     * @brief Advances the per-row luminance pixel-sort ("glitch melt") effect.
+     **/
+    GLuint stepCaustics( const AudioFeatures &a, float dt, float t, GLuint srcImage );
+    /**  Advances the per-row luminance pixel-sort ("glitch melt") effect.
+     *
+     * @param a         Current audio features driving the bias rate and sort direction. (in)
+     * @param dt        Frame delta time in seconds. (in)
+     * @param t         Elapsed time in seconds. (in)
+     * @param srcImage  The current slideshow photo texture being sorted. (in)
+     * @param outW      Output width, used to size the field to the display resolution. (in)
+     * @param outH      Output height, used to size the field to the display resolution. (in)
+     *
+     * @return
+     *   The sorted field texture, or 0 on failure.
      *
      * One compute workgroup sorts each row of the source photo by luminance
      * around a slowly rotating bias key, so the melt appears to flow instead
      * of settling into a fixed arrangement; sort direction flips with the
      * beat phase. Writes directly into the field's tex[0] (no ping-pong).
-     * @param a Current audio features driving the bias rate and sort direction.
-     * @param dt Frame delta time in seconds.
-     * @param t Elapsed time in seconds.
-     * @param src The current slideshow photo texture being sorted.
-     * @param outW Output width, used to size the field to the display resolution.
-     * @param outH Output height, used to size the field to the display resolution.
-     * @return The sorted field texture, or 0 on failure.
-     */
-    GLuint stepPixelSort( const AudioFeatures &a, float dt, float t, GLuint src,
+     **/
+    GLuint stepPixelSort( const AudioFeatures &a, float dt, float t, GLuint srcImage,
                           int outW, int outH );
-    /**
-     * @brief Advances the 2D-FFT audio-spectrum image filter.
+    /**  Advances the 2D-FFT audio-spectrum image filter.
+     *
+     * @param a         Current audio features supplying the 32-band spectrum used as the frequency mask. (in)
+     * @param dt        Frame delta time in seconds (unused by this kind's shaders). (in)
+     * @param t         Elapsed time in seconds, used to slowly rotate the mask. (in)
+     * @param srcImage  The current slideshow photo texture whose luminance is transformed. (in)
+     *
+     * @return
+     *   The filtered field texture, or 0 on failure.
      *
      * Loads the photo's luminance as a complex field, runs a forward 2D FFT
      * (row pass then column pass), multiplies by a radial mask built from the
      * 32-band audio spectrum (so spatial frequency maps to audio frequency),
      * runs the inverse FFT, and stores the result back into a texture.
-     * @param a Current audio features supplying the 32-band spectrum used as the frequency mask.
-     * @param dt Frame delta time in seconds (unused by this kind's shaders).
-     * @param t Elapsed time in seconds, used to slowly rotate the mask.
-     * @param src The current slideshow photo texture whose luminance is transformed.
-     * @return The filtered field texture, or 0 on failure.
-     */
-    GLuint stepFFT( const AudioFeatures &a, float dt, float t, GLuint src );
-    /**
-     * @brief Advances a Swift-Hohenberg ferrofluid spike-pattern simulation.
+     **/
+    GLuint stepFFT( const AudioFeatures &a, float dt, float t, GLuint srcImage );
+    /**  Advances a Swift-Hohenberg ferrofluid spike-pattern simulation.
+     *
+     * @param a   Current audio features driving the magnetic-field control parameter. (in)
+     * @param dt  Frame delta time in seconds (unused; the shader uses a fixed internal dt for stability). (in)
+     * @param t   Elapsed time in seconds, used to vary the per-substep RNG seed. (in)
+     *
+     * @return
+     *   The ferrofluid field texture, or 0 on failure.
      *
      * Runs 8 sub-steps per frame on a deliberately coarse grid sized so the
      * pattern's selected wavenumber lands well under Nyquist (see the inline
@@ -396,57 +433,67 @@ private:
      * level drives the field's control parameter, capped so the hexagonal
      * spike phase is favoured over the stripe/labyrinth phase; a small
      * continual noise seed keeps breaking the flat field's fixed point.
-     * @param a Current audio features driving the magnetic-field control parameter.
-     * @param dt Frame delta time in seconds (unused; the shader uses a fixed internal dt for stability).
-     * @param t Elapsed time in seconds, used to vary the per-substep RNG seed.
-     * @return The ferrofluid field texture, or 0 on failure.
-     */
+     **/
     GLuint stepFerro( const AudioFeatures &a, float dt, float t );
-    /**
-     * @brief Advances a hydraulic-erosion heightfield simulation.
+    /**  Advances a hydraulic-erosion heightfield simulation.
+     *
+     * @param a   Current audio features driving rainfall rate and droplet capacity. (in)
+     * @param dt  Frame delta time in seconds (unused by this kind's shaders). (in)
+     * @param t   Elapsed time in seconds. (in)
+     *
+     * @return
+     *   The eroded heightfield texture, or 0 on failure.
      *
      * 2,048 rain droplets per frame carve the heightfield; since erosion
      * alone has no counterbalance and would grind the terrain flat, the
      * landscape is re-raised (re-seeded) roughly every 14s, or sooner on a
      * big drop, turning the flattening into a repeating cycle of peaks and
      * drainage networks appearing and eroding away.
-     * @param a Current audio features driving rainfall rate and droplet capacity.
-     * @param dt Frame delta time in seconds (unused by this kind's shaders).
-     * @param t Elapsed time in seconds.
-     * @return The eroded heightfield texture, or 0 on failure.
-     */
+     **/
     GLuint stepErosion( const AudioFeatures &a, float dt, float t );
-    /**
-     * @brief Advances a screen-space "liquid metal" fluid rendered from cohesive particles.
+    /**  Advances a screen-space "liquid metal" fluid rendered from cohesive particles.
+     *
+     * @param a    Current audio features driving swirl/cohesion response. (in)
+     * @param dt   Frame delta time in seconds (unused; the shader uses a fixed internal dt). (in)
+     * @param t    Elapsed time in seconds. (in)
+     * @param src  Unused by this kind (kept for interface symmetry with the other photo-consuming steps). (in)
+     *
+     * @return
+     *   The resolved metal canvas texture, or 0 on failure.
      *
      * 65,536 particles are binned each frame into a spatial-hash grid (via
      * atomics) and simulated/splatted onto a deliberately small 640x360
      * canvas so the particle discs overlap into a continuous surface instead
      * of reading as speckle. Resolved with no temporal decay, since the
      * effect is meant to read as a surface, not as accumulating trails.
-     * @param a Current audio features driving swirl/cohesion response.
-     * @param dt Frame delta time in seconds (unused; the shader uses a fixed internal dt).
-     * @param t Elapsed time in seconds.
-     * @param src Unused by this kind (kept for interface symmetry with the other photo-consuming steps).
-     * @return The resolved metal canvas texture, or 0 on failure.
-     */
+     **/
     GLuint stepMetal( const AudioFeatures &a, float dt, float t, GLuint src );
-    /**
-     * @brief Advances the shatter-and-reassemble effect.
+    /**  Advances the shatter-and-reassemble effect.
+     *
+     * @param a         Current audio features driving burst triggers and spring response. (in)
+     * @param dt        Frame delta time in seconds (unused; the shader uses a fixed internal dt). (in)
+     * @param t         Elapsed time in seconds. (in)
+     * @param srcImage  The current slideshow photo texture the shards are cut from. (in)
+     *
+     * @return
+     *   The resolved shards canvas texture, or 0 on failure.
      *
      * The photo is divided into a 48x27 grid of spring-mass shards; a strong
      * onset or drop (at least 3.2s apart) blows the picture apart again,
      * and between bursts each shard's spring pulls it back to its home
      * position so the image re-assembles.
-     * @param a Current audio features driving burst triggers and spring response.
-     * @param dt Frame delta time in seconds (unused; the shader uses a fixed internal dt).
-     * @param t Elapsed time in seconds.
-     * @param src The current slideshow photo texture the shards are cut from.
-     * @return The resolved shards canvas texture, or 0 on failure.
-     */
-    GLuint stepShards( const AudioFeatures &a, float dt, float t, GLuint src );
-    /**
-     * @brief Advances a full incompressible Navier-Stokes fluid (advect, project, publish).
+     **/
+    GLuint stepShards( const AudioFeatures &a, float dt, float t, GLuint srcImage );
+    /**  Advances a full incompressible Navier-Stokes fluid (advect, project, publish).
+     *
+     * @param a         Current audio features driving the jet's strength and colour. (in)
+     * @param dt        Frame delta time in seconds (unused; the shader uses a fixed internal dt for stability).
+     *                  (in)
+     * @param t         Elapsed time in seconds, used to orbit the jet position/direction. (in)
+     * @param srcImage  The current slideshow photo texture the dye/jet colour is sampled from. (in)
+     *
+     * @return
+     *   The published fluid output texture, or 0 on failure.
      *
      * Runs the classic stable-fluids pipeline: advect velocity and dye
      * (injecting a photo-sampled, audio-driven orbiting jet), compute
@@ -454,37 +501,36 @@ private:
      * iterations, then subtract the pressure gradient and write the final
      * velocity/dye composite into its own output Canvas texture (distinct
      * from the internal ping-pong velocity/dye/pressure fields).
-     * @param a Current audio features driving the jet's strength and colour.
-     * @param dt Frame delta time in seconds (unused; the shader uses a fixed internal dt for stability).
-     * @param t Elapsed time in seconds, used to orbit the jet position/direction.
-     * @param src The current slideshow photo texture the dye/jet colour is sampled from.
-     * @return The published fluid output texture, or 0 on failure.
-     */
-    GLuint stepNSFluid( const AudioFeatures &a, float dt, float t, GLuint src );
-    /**
-     * @brief Advances a Verlet mass-spring cloth sheet stored as a displacement field.
+     **/
+    GLuint stepNSFluid( const AudioFeatures &a, float dt, float t, GLuint srcImage );
+    /**  Advances a Verlet mass-spring cloth sheet stored as a displacement field.
+     *
+     * @param a   Current audio features driving wind phase and kick impulses. (in)
+     * @param dt  Frame delta time in seconds, integrated into the wind phase. (in)
+     * @param t   Elapsed time in seconds, passed through to the shader. (in)
+     *
+     * @return
+     *   The cloth displacement field texture, or 0 on failure.
      *
      * Runs 4 relaxation sub-steps per frame (a single Jacobi pass on a
      * 256-wide sheet only propagates a disturbance by one texel, which would
      * look like treacle). Needs only two texture slots because the previous
      * state is dead as soon as the next state exists — the new state is
      * written straight into the slot the old one occupied.
-     * @param a Current audio features driving wind phase and kick impulses.
-     * @param dt Frame delta time in seconds, integrated into the wind phase.
-     * @param t Elapsed time in seconds, passed through to the shader.
-     * @return The cloth displacement field texture, or 0 on failure.
-     */
+     **/
     GLuint stepCloth( const AudioFeatures &a, float dt, float t );
-    /**
-     * @brief 3D raymarched-isosurface sculpt simulation — not implemented.
+    /**  3D raymarched-isosurface sculpt simulation — not implemented.
+     *
+     * @param a   Unused. (in)
+     * @param dt  Unused. (in)
+     * @param t   Unused. (in)
+     *
+     * @return
+     *   Always 0.
      *
      * Always returns 0; step() then marks CFX_SCULPT dead on the first call
      * so it is never retried. Present as a placeholder slot in CfxKindE.
-     * @param a Unused.
-     * @param dt Unused.
-     * @param t Unused.
-     * @return Always 0.
-     */
+     **/
     GLuint stepSculpt( const AudioFeatures &a, float dt, float t );
 
     // Extra ping-pong slot for sims that need a second field (velocity vs dye).
@@ -518,8 +564,12 @@ private:
                                       ///< depending on the kind)
     bool m_dead[CFX_COUNT] = { false }; ///< per-kind: setup or step failed once -> never retried again
 private:
-    /// @brief Not copyable (CGVR template: copy constructor and assignment are always declared).
+    /** Not copyable (CGVR template: copy constructor and assignment are always declared). */
     ComputeFX( const ComputeFX & ) = delete;
-    /// @brief Not assignable; see the copy constructor.
+    /**  Not assignable; see the copy constructor.
+     *
+     * @return
+     *   Nothing: the operator is deleted, so no call compiles.
+     **/
     ComputeFX &operator=( const ComputeFX & ) = delete;
 };

@@ -31,8 +31,12 @@
 namespace Platform
 {
 
-/**
- * @brief Normalises an asset path's separators for the host filesystem.
+/**  Normalises an asset path's separators for the host filesystem.
+ *
+ * @param p  Path as written in the source or the preset. (in)
+ *
+ * @return
+ *   The same path with separators the host understands.
  *
  * Shader paths are written "..\\Engine\\CfxFlame.comp" in the C++ call sites and
  * "..\\Scene2D\\X.frag" in every preset entry -- 831 of them, plus the model=
@@ -41,10 +45,7 @@ namespace Platform
  * filename character, so "..\\Scene2D\\X.frag" is one absurd filename that
  * cannot be opened; the separators are rewritten instead of rewriting the
  * catalogue, because the catalogue is generated and shared between platforms.
- *
- * @param p Path as written in the source or the preset.
- * @return The same path with separators the host understands.
- */
+ **/
 inline std::string assetPath( const std::string &p )
 {
 #ifdef _WIN32
@@ -58,8 +59,13 @@ inline std::string assetPath( const std::string &p )
 #endif
 }
 
-/**
- * @brief ASCII case-insensitive string compare -- MSVC's _stricmp elsewhere.
+/**  ASCII case-insensitive string compare -- MSVC's _stricmp elsewhere.
+ *
+ * @param a  First string. (in)
+ * @param b  Second string. (in)
+ *
+ * @return
+ *   Negative, 0 or positive as a sorts before, equal to or after b, ignoring ASCII case.
  *
  * Written out rather than delegating to POSIX strcasecmp, because reaching it
  * means including <strings.h>, and Source/ is on the include path: on a
@@ -69,7 +75,7 @@ inline std::string assetPath( const std::string &p )
  *
  * ASCII-only is sufficient and intended: the one caller compares a two-letter
  * language code.
- */
+ **/
 inline int iCaseCmp( const char *a, const char *b )
 {
     for ( ;; ++a, ++b )

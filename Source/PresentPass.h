@@ -50,106 +50,132 @@
 class PresentPass
 {
 public:
-    /** @return Spatial spread of the last measured frame (0 = flat surface).
+    /**  Spatial spread of the last measured frame (0 = flat surface).
+     *
+     * @return
+     *   Spatial spread of the last measured frame (0 = flat surface).
      *
      * Falls out of the exposure's existing 64-pixel readback, so it costs
      * nothing.  A live number for the one question a rendered scan takes
-     * four minutes to answer: is this scene showing anything at all? */
+     * four minutes to answer: is this scene showing anything at all?
+     **/
     float liveStructure() const { return m_liveStd; }
-    /** @return Mean absolute change against the previous measured frame. */
+    /**  Mean absolute change against the previous measured frame.
+     *
+     * @return
+     *   Mean absolute change against the previous measured frame.
+     **/
     float liveMotion() const { return m_liveMotion; }
 
     /** Alles anlegen (GL-Kontext aktuell); idempotent. Formate = die der
      *  übrigen Offscreen-Texturen der Pipeline. */
-    /**
-     * @brief Create the final FBO, the present/bloom shader programs, and the bloom FBOs. Idempotent, safe to call
-     * every frame during startup.
-     * @param renderW Render-resolution width (source resolution, before display upscale).
-     * @param renderH Render-resolution height.
-     * @param internalFmt GL internal format matching the rest of the pipeline's offscreen textures.
-     * @param fmt GL pixel format matching the rest of the pipeline's offscreen textures.
-     * @param type GL pixel data type matching the rest of the pipeline's offscreen textures.
-     */
+    /**  Create the final FBO, the present/bloom shader programs, and the bloom FBOs.
+     *
+     * @param renderW      Render-resolution width (source resolution, before display upscale). (in)
+     * @param renderH      Render-resolution height. (in)
+     * @param internalFmt  GL internal format matching the rest of the pipeline's offscreen textures. (in)
+     * @param fmt          GL pixel format matching the rest of the pipeline's offscreen textures. (in)
+     * @param type         GL pixel data type matching the rest of the pipeline's offscreen textures. (in)
+     *
+     * Idempotent, safe to call every frame during startup.
+     **/
     void setup( int renderW, int renderH,
                 GLenum internalFmt, GLenum fmt, GLenum type );
 
     /** Leichter Resize: final + Bloom-Texturen auf neue Render-Auflösung
      *  nachziehen (nur wenn bereits angelegt - Verhalten wie zuvor). */
-    /**
-     * @brief Resize the final and bloom textures to a new render resolution, without recreating programs. Only touches
-     * textures already allocated by setup().
-     * @param renderW New render-resolution width.
-     * @param renderH New render-resolution height.
-     * @param internalFmt GL internal format (as passed to setup()).
-     * @param fmt GL pixel format (as passed to setup()).
-     * @param type GL pixel data type (as passed to setup()).
-     */
+    /**  Resize the final and bloom textures to a new render resolution, without recreating programs.
+     *
+     * @param renderW      New render-resolution width. (in)
+     * @param renderH      New render-resolution height. (in)
+     * @param internalFmt  GL internal format (as passed to setup()). (in)
+     * @param fmt          GL pixel format (as passed to setup()). (in)
+     * @param type         GL pixel data type (as passed to setup()). (in)
+     *
+     * Only touches textures already allocated by setup().
+     **/
     void resize( int renderW, int renderH,
                  GLenum internalFmt, GLenum fmt, GLenum type );
 
-    bool ready() const { return m_safetyReady; } ///< True once setup() succeeded; run() is a no-op otherwise.
-    /** Combine-Ziel: der finale FBO (wenn ready), sonst muss der Aufrufer
-     *  direkt in seinen Default-FBO rendern. */
+    /**  True once setup() succeeded; run() is a no-op otherwise.
+     *
+     * @return
+     *   True once setup() succeeded; run() is a no-op otherwise.
+     **/
+    bool ready() const { return m_safetyReady; }
+    /**  Combine-Ziel: der finale FBO (wenn ready), sonst muss der Aufrufer direkt in seinen Default-FBO rendern.
+     *
+     * @return
+     *   The intermediate framebuffer object.
+     *
+     * The intermediate FBO the combine pass should render into when ready() (else render straight to the default
+     * FBO).
+     **/
     GLuint targetFbo() const
     {
         return m_fboFinal;
-    } ///< The intermediate FBO the combine pass should render into when ready() (else render straight to the default
-    ///< FBO).
-    GLuint finalTex() const { return m_texFinal; } ///< The mipmapped final-frame texture backing targetFbo().
+    }
+    /**  The mipmapped final-frame texture backing targetFbo().
+     *
+     * @return
+     *   The mipmapped final-frame texture backing targetFbo().
+     **/
+    GLuint finalTex() const { return m_texFinal; }
 
     // ---- Titel-Reveal ----
     /** Fertig gerendertes RGBA8-Bild hochladen; startet die Reveal-Uhr neu. */
-    /**
-     * @brief Upload a finished RGBA8 title image and restart the reveal clock.
-     * @param rgba Pointer to tightly packed RGBA8 pixel data.
-     * @param w Image width in pixels.
-     * @param h Image height in pixels.
-     */
+    /**  Upload a finished RGBA8 title image and restart the reveal clock.
+     *
+     * @param rgba  Pointer to tightly packed RGBA8 pixel data. (in)
+     * @param w     Image width in pixels. (in)
+     * @param h     Image height in pixels. (in)
+     **/
     void setTitleImage( const void *rgba, int w, int h );
-    /**
-     * @brief Set the title reveal animation style and its per-reveal random seed.
-     * @param style Style index consumed by Present.frag's title-reveal branch.
-     * @param seed Per-reveal random seed forwarded to the shader.
-     */
+    /**  Set the title reveal animation style and its per-reveal random seed.
+     *
+     * @param style  Style index consumed by Present.frag's title-reveal branch. (in)
+     * @param seed   Per-reveal random seed forwarded to the shader. (in)
+     **/
     void setTitleStyle( int style, float seed )
     {
         m_titleStyle = style;
         m_titleSeed = seed;
     }
     /** Reveal-Uhr läuft auf der WANDzeit weiter (spielt über Freeze/Stop). */
-    /**
-     * @brief Advance the title reveal clock by wall-clock time (keeps playing through freeze/stop).
-     * @param dtWall Wall-clock seconds elapsed since the last call.
-     */
+    /**  Advance the title reveal clock by wall-clock time (keeps playing through freeze/stop).
+     *
+     * @param dtWall  Wall-clock seconds elapsed since the last call. (in)
+     **/
     void advanceTitle( float dtWall ) { m_titleAge += dtWall; }
 
     // ---- Lyrics-/Künstlerbild-Overlay (Qt-Seite liefert fertige Pixel) ----
-    /**
-     * @brief Upload/replace the lyrics overlay image (RGBA8, caller-rendered).
-     * @param rgba Pointer to tightly packed RGBA8 pixel data.
-     * @param w Image width in pixels.
-     * @param h Image height in pixels.
-     */
+    /**  Upload/replace the lyrics overlay image (RGBA8, caller-rendered).
+     *
+     * @param rgba  Pointer to tightly packed RGBA8 pixel data. (in)
+     * @param w     Image width in pixels. (in)
+     * @param h     Image height in pixels. (in)
+     **/
     void setLyricsImage( const void *rgba, int w, int h );
-    /**
-     * @brief Upload/replace the artist-image overlay (RGBA8, caller-rendered).
-     * @param rgba Pointer to tightly packed RGBA8 pixel data.
-     * @param w Image width in pixels.
-     * @param h Image height in pixels.
-     */
+    /**  Upload/replace the artist-image overlay (RGBA8, caller-rendered).
+     *
+     * @param rgba  Pointer to tightly packed RGBA8 pixel data. (in)
+     * @param w     Image width in pixels. (in)
+     * @param h     Image height in pixels. (in)
+     **/
     void setArtistImage( const void *rgba, int w, int h );
-    /**
-     * @brief Overrides the artist-image corner slot with an EXTERNALLY-owned GL texture (a video frame) instead of the
+    /**  Overrides the artist-image corner slot with an EXTERNALLY-owned GL texture (a video frame) instead of the
      * CPU-uploaded m_artistTex, for the music-video PiP feature.
-     * @param texId GL texture id to bind for this and subsequent frames (owned by the caller, e.g. VideoPiP -- NOT
-     * deleted by PresentPass), or 0 to clear the override and fall back to the normal artist-image texture.
+     *
+     * @param texId  GL texture id to bind for this and subsequent frames (owned by the caller, e.g. VideoPiP -- NOT
+     *               deleted by PresentPass), or 0 to clear the override and fall back to the normal artist-image
+     *               texture. (in)
      *
      * Call every frame while a video is active (the id can change frame to frame as the video
      * decoder produces new frames) and with 0 once it stops, so the corner reverts to the
      * ordinary artist-image rotation. Reuses the exact same corner position/blend GLSL in
      * Present.frag (artistTex/artistAlpha/artistAspect) -- from the shader's point of view this
      * is just a different texture, so no shader change was needed.
-     */
+     **/
     void setArtistExternalTexture( GLuint texId );
 
     /** Frame-Eingaben für run() - alles Werte, die weiterhin der Pipeline/
@@ -284,26 +310,26 @@ public:
 
     /** Den kompletten Present ausführen (Limiter, AutoExposure, Bloom,
      *  Present.frag in Display-Auflösung).  Nur rufen wenn ready(). */
-    /**
-     * @brief Run the full present sequence: history capture, brightness limiter, auto-exposure, bloom, then
-     * Present.frag at display resolution.
-     * @param in Frame inputs; no-op if !ready() or in.fx is null.
-     */
+    /**  Run the full present sequence: history capture, brightness limiter, auto-exposure, bloom, then Present.frag
+     * at display resolution.
+     *
+     * @param in  Frame inputs; no-op if !ready() or in.fx is null. (in)
+     **/
     void run( const Inputs &in );
 
 private:
-    /**
-     * @brief (Re)allocate the mipmapped final-frame texture at the given size.
+    /**  (Re)allocate the mipmapped final-frame texture at the given size.
+     *
+     * @param w            Texture width. (in)
+     * @param h            Texture height. (in)
+     * @param internalFmt  GL internal format. (in)
+     * @param fmt          GL pixel format. (in)
+     * @param type         GL pixel data type. (in)
      *
      * Mipmaps give the brightness limiter a cheap whole-frame average
      * luminance to sample (via a small mip level) without a full-resolution
      * readback.
-     * @param w Texture width.
-     * @param h Texture height.
-     * @param internalFmt GL internal format.
-     * @param fmt GL pixel format.
-     * @param type GL pixel data type.
-     */
+     **/
     void updateFinalTexture( int w, int h, GLenum internalFmt, GLenum fmt, GLenum type );
 
     static const GLenum Attach = GL_COLOR_ATTACHMENT0; ///< Color attachment point used by every FBO in this class.
@@ -388,26 +414,29 @@ private:
     // fertigen Bilds, ~30 Aufnahmen/s per FBO-Blit.  Fällt SOFT aus: ohne
     // die GL-Einstiegspunkte bleibt m_histReady false und Echo/Rewind sind
     // einfach unsichtbar.
-    /**
-     * @brief Blit the current source frame into the next slot of the frame-history ring, at a fixed ~1/30 s wall-clock
+    /**  Blit the current source frame into the next slot of the frame-history ring, at a fixed ~1/30 s wall-clock
      * cadence.
+     *
+     * @param sourceTex  Freshly rendered frame texture to capture. (in)
+     * @param renderW    Render width (used to derive the ring's one-third resolution). (in)
+     * @param renderH    Render height (used to derive the ring's one-third resolution). (in)
+     * @param dtWall     Wall-clock seconds since the last call; accumulated against the fixed ~30 Hz capture
+     *                   cadence. (in)
      *
      * Soft-fails: if the required GL entry points (glTexImage3D,
      * glFramebufferTextureLayer, glBlitFramebuffer) are missing, m_histReady
      * stays false and every caller of the ring (rewind/echo) becomes a no-op.
      * Lazily (re)allocates the GL_TEXTURE_2D_ARRAY when the derived
      * one-third resolution changes.
-     * @param sourceTex Freshly rendered frame texture to capture.
-     * @param renderW Render width (used to derive the ring's one-third resolution).
-     * @param renderH Render height (used to derive the ring's one-third resolution).
-     * @param dtWall Wall-clock seconds since the last call; accumulated against the fixed ~30 Hz capture cadence.
-     */
+     **/
     void captureHistory( GLuint sourceTex, int renderW, int renderH, float dtWall );
-    /**
-     * @brief Convert a "seconds back" offset into a ring layer index, clamped to what the ring currently holds.
-     * @param secs Seconds back in time to look up.
-     * @return Layer index into the history-ring array texture.
-     */
+    /**  Convert a "seconds back" offset into a ring layer index, clamped to what the ring currently holds.
+     *
+     * @param secs  Seconds back in time to look up. (in)
+     *
+     * @return
+     *   Layer index into the history-ring array texture.
+     **/
     float            historyLayerBack( float secs ) const; // Sek. zurück -> Layer-Index
     static const int HistLayers = 96; ///< Number of ring layers: ~3.2 s of history at the fixed 30 Hz capture cadence.
     GLuint           m_histTex = 0;                        ///< GL_TEXTURE_2D_ARRAY holding the ring's frames.
@@ -459,13 +488,17 @@ private:
     GLint m_presentArtistAlphaUni = -1;   ///< Uniform location: artist-image opacity ("artistAlpha").
     GLint m_presentArtistAspectUni = -1;  ///< Uniform location: artist-image aspect ratio ("artistAspect").
 public:
-    /// @brief Default construction, which the declared copy operations would otherwise suppress.
+    /** Default construction, which the declared copy operations would otherwise suppress. */
     PresentPass() = default;
 
 private:
-    /// @brief Not copyable (CGVR template: copy constructor and assignment are always declared).
+    /** Not copyable (CGVR template: copy constructor and assignment are always declared). */
     PresentPass( const PresentPass & ) = delete;
-    /// @brief Not assignable; see the copy constructor.
+    /**  Not assignable; see the copy constructor.
+     *
+     * @return
+     *   Nothing: the operator is deleted, so no call compiles.
+     **/
     PresentPass &operator=( const PresentPass & ) = delete;
 };
 

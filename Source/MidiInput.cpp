@@ -11,13 +11,15 @@
 #include <windows.h>
 #include <mmsystem.h>
 
-/**
- * @brief winmm callback (runs on a system thread). Forwards MIM_DATA short messages to the owning MidiInput instance
- * passed as dwInstance.
- * @param wMsg The winmm callback reason; only MIM_DATA (an incoming short message) is handled.
- * @param dwInstance The `this` pointer of the owning MidiInput, as passed to midiInOpen()'s dwCallbackInstance.
- * @param dwParam1 The packed MIDI short message for MIM_DATA.
- */
+/**  winmm callback (runs on a system thread).
+ *
+ * @param wMsg        The winmm callback reason; only MIM_DATA (an incoming short message) is handled. (in)
+ * @param dwInstance  The `this` pointer of the owning MidiInput, as passed to midiInOpen()'s dwCallbackInstance.
+ *                    (in)
+ * @param dwParam1    The packed MIDI short message for MIM_DATA. (in)
+ *
+ * Forwards MIM_DATA short messages to the owning MidiInput instance passed as dwInstance.
+ **/
 static void CALLBACK midiProc( HMIDIIN, UINT wMsg, DWORD_PTR dwInstance,
                                DWORD_PTR dwParam1, DWORD_PTR /*dwParam2*/ )
 {

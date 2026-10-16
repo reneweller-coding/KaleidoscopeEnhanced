@@ -56,29 +56,33 @@ struct ScoreCue
     bool  drop = false;          ///< a section that lands as a drop as well (a dialect's Return, Drop or PEAK)
 };
 
-/**
- * @brief Decodes one OSC 1.0 datagram into a ScoreCue.
+/**  Decodes one OSC 1.0 datagram into a ScoreCue.
+ *
+ * @param data  Datagram bytes. (in)
+ * @param size  Their number. (in)
+ * @param out   Receives the decoded cue. (out)
+ *
+ * @return
+ *   true when @p out is one of the five messages.
  *
  * Strict on purpose: a message whose padding, type tag string or length is not what the
  * specification says is rejected rather than half-read. Anything arriving on this port that is not
  * one of the five addresses is not an error either -- it is simply not ours.
- * @param data Datagram bytes.
- * @param size Their number.
- * @param out  Receives the decoded cue.
- * @return true when @p out is one of the five messages.
- */
+ **/
 bool decodeScoreCue( const char *data, int size, ScoreCue &out );
 
-/**
- * @brief Reads one line of a cue file (see the file comment): the seconds, the address, the arguments.
+/**  Reads one line of a cue file (see the file comment): the seconds, the address, the arguments.
+ *
+ * @param line     The line, without its line break (a trailing carriage return is allowed). (in)
+ * @param seconds  Receives the time of the cue, in seconds from the start of the WAV. (out)
+ * @param out      Receives the cue. (out)
+ *
+ * @return
+ *   1 for a cue, 0 for a blank line or a comment (`#`), -1 for a line that is neither.
  *
  * The same five messages with the same arguments as on the wire, and as strict: a line whose
  * address is not one of them, or whose arguments do not fit it, is refused.
- * @param line    The line, without its line break (a trailing carriage return is allowed).
- * @param seconds Receives the time of the cue, in seconds from the start of the WAV.
- * @param out     Receives the cue.
- * @return 1 for a cue, 0 for a blank line or a comment (`#`), -1 for a line that is neither.
- */
+ **/
 int parseScoreCueLine( const char *line, double &seconds, ScoreCue &out );
 
 /**
@@ -106,26 +110,43 @@ public:
     /** @brief How long after the last datagram the cues are still taken as live. */
     static const float LiveSecs;
 
-    /** @brief The one instance. */
+    /**  The one instance.
+     *
+     * @return
+     *   The instance, created on first use.
+     **/
     static ScoreCues &instance();
 
-    /** @brief Takes one decoded message (main thread). @param c The cue. */
+    /**  Takes one decoded message (main thread).
+     *
+     * @param c  The cue. (in)
+     **/
     void apply( const ScoreCue &c );
 
-    /**
-     * @brief Reads and clears one frame's worth of events, and ages the live flag.
-     * @param dtSec Wall-clock seconds since the previous call.
-     * @return What the scheduler should be told this frame.
-     */
+    /**  Reads and clears one frame's worth of events, and ages the live flag.
+     *
+     * @param dtSec  Wall-clock seconds since the previous call. (in)
+     *
+     * @return
+     *   What the scheduler should be told this frame.
+     **/
     Frame drain( float dtSec );
 
-    /** @brief Datagrams accepted since the program started (for the remote's status page). */
+    /**  Datagrams accepted since the program started (for the remote's status page).
+     *
+     * @return
+     *   The number of accepted datagrams.
+     **/
     int accepted() const { return m_accepted; }
-    /** @brief Datagrams that arrived on the port but were not one of the five messages. */
+    /**  Datagrams that arrived on the port but were not one of the five messages.
+     *
+     * @return
+     *   The number of rejected datagrams.
+     **/
     int rejected() const { return m_rejected; }
-    /** @brief Counts a datagram that did not decode; it changes no state and is not an error. */
+    /** Counts a datagram that did not decode; it changes no state and is not an error. */
     void noteRejected() { ++m_rejected; }
-    /** @brief Forgets everything (used by the self test, so one check cannot leak into the next). */
+    /** Forgets everything (used by the self test, so one check cannot leak into the next). */
     void reset();
 
 private:
@@ -142,13 +163,21 @@ private:
     int   m_accepted = 0;     ///< @copydoc accepted
     int   m_rejected = 0;     ///< @copydoc rejected
 private:
-    /// @brief Move assignment: reset() assigns a fresh instance.
+    /**  Move assignment: reset() assigns a fresh instance.
+     *
+     * @return
+     *   This object, as assigned member by member.
+     **/
     ScoreCues &operator=( ScoreCues && ) = default;
 
 private:
-    /// @brief Not copyable (CGVR template: copy constructor and assignment are always declared).
+    /** Not copyable (CGVR template: copy constructor and assignment are always declared). */
     ScoreCues( const ScoreCues & ) = delete;
-    /// @brief Not assignable; see the copy constructor.
+    /**  Not assignable; see the copy constructor.
+     *
+     * @return
+     *   Nothing: the operator is deleted, so no call compiles.
+     **/
     ScoreCues &operator=( const ScoreCues & ) = delete;
 };
 
@@ -163,30 +192,44 @@ private:
 class ScoreCueFile
 {
 public:
-    /** @brief The one instance. */
+    /**  The one instance.
+     *
+     * @return
+     *   The instance, created on first use.
+     **/
     static ScoreCueFile &instance();
 
-    /**
-     * @brief Reads a cue file and replaces whatever was loaded.
-     * @param path The file.
-     * @return The number of cues read, or -1 when the file cannot be opened or has a line that is
-     *         not a cue (it names the line on stderr).
-     */
+    /**  Reads a cue file and replaces whatever was loaded.
+     *
+     * @param path  The file. (in)
+     *
+     * @return
+     *   The number of cues read, or -1 when the file cannot be opened or has a line that is not a cue (it names the
+     *   line on stderr).
+     **/
     int load( const QString &path );
 
-    /** @brief Whether a file with at least one cue is loaded. */
+    /**  Whether a file with at least one cue is loaded.
+     *
+     * @return
+     *   True if at least one cue is loaded.
+     **/
     bool active() const { return !m_cues.empty(); }
 
-    /** @brief The WAV's position, in seconds (any thread). @param seconds Played so far. */
+    /**  The WAV's position, in seconds (any thread).
+     *
+     * @param seconds  Played so far. (in)
+     **/
     void setClock( double seconds ) { m_clock.store( seconds, std::memory_order_relaxed ); }
 
-    /**
-     * @brief Hands every cue up to the clock to ScoreCues (main thread).
-     * @return How many went in this time.
-     */
+    /**  Hands every cue up to the clock to ScoreCues (main thread).
+     *
+     * @return
+     *   How many went in this time.
+     **/
     int feed();
 
-    /** @brief Forgets the file and the clock (used by the self test). */
+    /** Forgets the file and the clock (used by the self test). */
     void reset();
 
 private:
@@ -202,9 +245,13 @@ private:
     size_t              m_next = 0;      ///< the first cue not yet handed over
     std::atomic<double> m_clock{ -1.0 }; ///< the WAV's position; below zero until it plays
 private:
-    /// @brief Not copyable (CGVR template: copy constructor and assignment are always declared).
+    /** Not copyable (CGVR template: copy constructor and assignment are always declared). */
     ScoreCueFile( const ScoreCueFile & ) = delete;
-    /// @brief Not assignable; see the copy constructor.
+    /**  Not assignable; see the copy constructor.
+     *
+     * @return
+     *   Nothing: the operator is deleted, so no call compiles.
+     **/
     ScoreCueFile &operator=( const ScoreCueFile & ) = delete;
 };
 

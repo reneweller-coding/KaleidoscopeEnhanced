@@ -372,8 +372,14 @@ GLuint ComputeFX::step( int k, const AudioFeatures &a, float dt, float t,
 }
 
 // Canvas geometry for the splat sims: fixed short side, display aspect kept.
-/// @brief Computes a splat Canvas's texel size: fixed CanvasW short side, display aspect, clamped and rounded to whole
-/// 16-texel workgroups.
+/**  Computes a splat Canvas's texel size: fixed CanvasW short side, display aspect, clamped and rounded to whole
+ * 16-texel workgroups.
+ *
+ * @param outW  Output width in pixels (its aspect is kept). (in)
+ * @param outH  Output height in pixels. (in)
+ * @param w     Receives the canvas width (always CanvasW). (out)
+ * @param h     Receives the canvas height, 360..1024 and a multiple of 16. (out)
+ **/
 static void canvasSize( int outW, int outH, int &w, int &h )
 {
     w = CanvasW;

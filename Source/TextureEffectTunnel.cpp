@@ -33,7 +33,7 @@ TextureEffectTunnel::~TextureEffectTunnel()
 {
 }
 
-/// Uploads `speedTunnel` after chaining to TextureEffectKaleidoscopeBase::setUniforms().
+/** Uploads `speedTunnel` after chaining to TextureEffectKaleidoscopeBase::setUniforms(). */
 void TextureEffectTunnel::setUniforms( float time, float interpolation, GLint texLoc1, GLint texLoc2 )
 {
     TextureEffectKaleidoscopeBase::setUniforms( time, interpolation, texLoc1, texLoc2 );
@@ -41,11 +41,10 @@ void TextureEffectTunnel::setUniforms( float time, float interpolation, GLint te
 }
 
 
-/**
- * @brief Sets up the GLSL runtime and creates shader.
+/**  Sets up the GLSL runtime and creates shader.
  *
  * Chains to TextureEffectKaleidoscopeBase::initUniforms() then resolves `speedTunnel`.
- */
+ **/
 void TextureEffectTunnel::initUniforms( int width, int height )
 {
     TextureEffectKaleidoscopeBase::initUniforms( width, height );
@@ -55,15 +54,14 @@ void TextureEffectTunnel::initUniforms( int width, int height )
 }
 
 
-/**
- * @brief Re-rolls the tunnel scroll speed and forces power-driven rotation off.
+/**  Re-rolls the tunnel scroll speed and forces power-driven rotation off.
  *
  * Chains to TextureEffectKaleidoscopeBase::resetParameters() first, then clamps the
  * freshly rolled m_speedTunnel away from zero (a near-zero scroll speed would make
  * the tunnel look frozen) and unconditionally disables m_powerRotationAllowed so
  * this effect's kaleidoscope power never gets nudged by the (largely dormant)
  * rotation state machine.
- */
+ **/
 void TextureEffectTunnel::resetParameters()
 {
     TextureEffectKaleidoscopeBase::resetParameters();

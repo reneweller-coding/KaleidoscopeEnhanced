@@ -86,16 +86,16 @@ bool cueSelfTest = false; ///< -q: run the score-cue self test and exit instead 
 
 
 
-/**
- * @brief Prints command-line usage/help text and exits the process.
+/**  Prints command-line usage/help text and exits the process.
+ *
+ * @param cmd   Offending option string (e.g. "-x"), or NULL when invoked for `-h`. (in)
+ * @param parm  First parameter of the offending option, or NULL if not applicable. (in)
  *
  * Reports the offending option/parameter (if any) first, then always prints the full
  * usage text (options and in-app keyboard shortcuts). Exits with status -1 if @p cmd
  * is non-NULL (an actual parse error), or 0 if it was called for `-h` (a clean,
  * user-requested help exit).
- * @param cmd Offending option string (e.g. "-x"), or NULL when invoked for `-h`.
- * @param parm First parameter of the offending option, or NULL if not applicable.
- */
+ **/
 void commandlineerror( char *cmd, char *parm )
 {
     if ( cmd )
@@ -164,18 +164,23 @@ void commandlineerror( char *cmd, char *parm )
 }
 
 
-/**
- * @brief Parses the process's command-line arguments and applies each recognized
- *        option's effect immediately (mostly by setting static fields on
- *        RenderPipeline / GLwidget / AudioAnalyzer, plus the globals above).
+/**  Parses the process's command-line arguments and applies each recognized option's effect immediately (mostly by
+ * setting static fields on RenderPipeline / GLwidget / AudioAnalyzer, plus the globals above).
+ *
+ * @param argc  Argument count, as passed to main(). (in)
+ * @param argv  Argument vector, as passed to main() (argv[0] is skipped/ignored). (in)
  *
  * Builds a lookup table (optionchar[] / musthaveparam[]) of the valid single-letter
  * options and whether each needs a parameter, then walks argv applying the table:
  * an unknown option, a missing required parameter, or a non-option argument all call
  * commandlineerror() and exit the process. `-h` always exits via commandlineerror().
- * @param argc Argument count, as passed to main().
- * @param argv Argument vector, as passed to main() (argv[0] is skipped/ignored).
- */
+ *
+ * @sideeffects
+ *   Changes AudioAnalyzer::M_OfflineWav, GLwidget::M_AutoRecord, GLwidget::M_BatchRender, GLwidget::M_RemotePort,
+ *   GLwidget::M_RemotePortFromCli, GLwidget::M_StartConfig, RenderPipeline::M_ImageDirCli,
+ *   RenderPipeline::M_RenderScaleFromCli, RenderPipeline::M_SpoutEnabled, RenderPipeline::M_SpoutInEnabled,
+ *   RenderPipeline::M_SpoutInSender, RenderPipeline::M_StereoMode, RenderPipeline::M_VideoPath.
+ **/
 void parsecommandline( int argc, char *argv[] )
 {
     /* valid option characters; last char MUST be 0 ! */
@@ -342,8 +347,15 @@ void parsecommandline( int argc, char *argv[] )
 
 
 
-/**
- * @brief Application entry point.
+/**  Application entry point.
+ *
+ * @param argc  Argument count. (in)
+ * @param argv  Argument vector. (in)
+ *
+ * @return
+ *   Qt event-loop exit code (from QApplication::exec()).
+ *
+ * for the flag list).
  *
  * Sequence: load persisted look
  * settings, parse the command line (which may override those settings and/or exit
@@ -352,11 +364,11 @@ void parsecommandline( int argc, char *argv[] )
  * surface format Qt will use for every GL context, then construct and show the main
  * window (windowed or fullscreen) and hand control to Qt's event loop. There is a
  * single application path here; the various CLI flags configure it rather than
- * selecting between alternate modes (see the file-level @brief for the flag list).
- * @param argc Argument count.
- * @param argv Argument vector.
- * @return Qt event-loop exit code (from QApplication::exec()).
- */
+ * selecting between alternate modes (see the file-level
+ *
+ * @sideeffects
+ *   Changes EffectShader::M_ChainRunner.
+ **/
 int main( int argc, char *argv[] )
 {
     // A ShaderForge helper run (this executable started by itself, ShaderForge.h): build one program and end.

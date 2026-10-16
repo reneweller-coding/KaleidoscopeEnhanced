@@ -14,14 +14,13 @@
 
 #include <GL/GLU.h>
 
-/**
- * @brief Constructs the effect and rolls its initial `sides` value.
+/**  Constructs the effect and rolls its initial `sides` value.
  *
  * Note: `EffectShader();` in the body constructs and immediately destroys an
  * unrelated TEMPORARY EffectShader object - it does not call this object's base
  * subobject constructor (that already ran implicitly via the member-init list,
  * which names no base constructor). Harmless but misleading; left as-is.
- */
+ **/
 FxEffectKaleidoscope::FxEffectKaleidoscope()
     : m_minSides( 2 ),
       m_maxSides( 14 ),
@@ -45,7 +44,7 @@ FxEffectKaleidoscope::~FxEffectKaleidoscope()
 {
 }
 
-/// Uploads `speed` and `sides` after chaining to EffectShader::setUniforms().
+/** Uploads `speed` and `sides` after chaining to EffectShader::setUniforms(). */
 void FxEffectKaleidoscope::setUniforms( float time, float interpolation, GLint texLoc1, GLint texLoc2 )
 {
     EffectShader::setUniforms( time, interpolation, texLoc1, texLoc2 );
@@ -55,11 +54,10 @@ void FxEffectKaleidoscope::setUniforms( float time, float interpolation, GLint t
 }
 
 
-/**
- * @brief Sets up the GLSL runtime and creates shader.
+/**  Sets up the GLSL runtime and creates shader.
  *
  * Chains to EffectShader::initUniforms() then resolves `sides` and `speed`.
- */
+ **/
 void FxEffectKaleidoscope::initUniforms( int width, int height )
 {
     EffectShader::initUniforms( width, height );
@@ -69,8 +67,7 @@ void FxEffectKaleidoscope::initUniforms( int width, int height )
     checkGLErrors( "loadShader 2" );
 }
 
-/**
- * @brief Re-rolls `speed` (clamped away from zero) and `sides`.
+/**  Re-rolls `speed` (clamped away from zero) and `sides`.
  *
  * Unlike TextureEffectKaleidoscopeBase::resetParameters(), this does NOT call
  * EffectShader::resetParameters() first, so this effect's m_timeSolo/
@@ -78,7 +75,7 @@ void FxEffectKaleidoscope::initUniforms( int width, int height )
  * construction (harmless in practice since this class registers no Uniforms
  * via addUniform/addExpression, but worth noting as an inconsistency with its
  * sibling classes).
- */
+ **/
 void FxEffectKaleidoscope::resetParameters()
 {
 

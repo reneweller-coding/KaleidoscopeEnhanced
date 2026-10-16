@@ -31,50 +31,51 @@
 class TextureEffectKaleidoscopeBase : public EffectShader
 {
 public:
-    /**
-     * @brief Construct with an explicit fragment shader file and timing ranges.
-     * @param filename Path to the fragment shader source this effect compiles.
-     * @param minTimeSolo Minimum seconds this effect stays solo once activated.
-     * @param maxTimeSolo Maximum seconds this effect stays solo once activated.
-     * @param minTimeInterpolation Minimum seconds spent cross-fading into/out of this effect.
-     * @param maxTimeInterpolation Maximum seconds spent cross-fading into/out of this effect.
-     */
+    /**  Construct with an explicit fragment shader file and timing ranges.
+     *
+     * @param filename              Path to the fragment shader source this effect compiles. (in)
+     * @param minTimeSolo           Minimum seconds this effect stays solo once activated. (in)
+     * @param maxTimeSolo           Maximum seconds this effect stays solo once activated. (in)
+     * @param minTimeInterpolation  Minimum seconds spent cross-fading into/out of this effect. (in)
+     * @param maxTimeInterpolation  Maximum seconds spent cross-fading into/out of this effect. (in)
+     **/
     TextureEffectKaleidoscopeBase( const std::string &filename, unsigned int minTimeSolo, unsigned int maxTimeSolo,
                                    unsigned int minTimeInterpolation, unsigned int maxTimeInterpolation );
-    /**
-     * @brief Construct with timing ranges only; uses the fixed default fragment shader
-     * "..\\Scene2D\\Kaleidoscope.frag".
-     * @param minTimeSolo Minimum seconds this effect stays solo once activated.
-     * @param maxTimeSolo Maximum seconds this effect stays solo once activated.
-     * @param minTimeInterpolation Minimum seconds spent cross-fading into/out of this effect.
-     * @param maxTimeInterpolation Maximum seconds spent cross-fading into/out of this effect.
-     */
+    /**  Construct with timing ranges only; uses the fixed default fragment shader "..\\Scene2D\\Kaleidoscope.frag".
+     *
+     * @param minTimeSolo           Minimum seconds this effect stays solo once activated. (in)
+     * @param maxTimeSolo           Maximum seconds this effect stays solo once activated. (in)
+     * @param minTimeInterpolation  Minimum seconds spent cross-fading into/out of this effect. (in)
+     * @param maxTimeInterpolation  Maximum seconds spent cross-fading into/out of this effect. (in)
+     **/
     TextureEffectKaleidoscopeBase( unsigned int minTimeSolo, unsigned int maxTimeSolo,
                                    unsigned int minTimeInterpolation, unsigned int maxTimeInterpolation );
-    /// Destructor. No extra cleanup beyond the EffectShader base.
+    /**  Destructor.
+     *
+     * No extra cleanup beyond the EffectShader base.
+     **/
     ~TextureEffectKaleidoscopeBase();
 
 
-    /**
-     * @brief Resolves this class's extra uniform locations (interpolationRotation, power) after chaining to
+    /**  Resolves this class's extra uniform locations (interpolationRotation, power) after chaining to
      * EffectShader::initUniforms().
-     * @param width Render target width in pixels.
-     * @param height Render target height in pixels.
-     */
+     *
+     * @param width   Render target width in pixels. (in)
+     * @param height  Render target height in pixels. (in)
+     **/
     virtual void initUniforms( int width, int height ); // initialize GLSL - shader programs
-    /**
-     * @brief Advances the power state machine and uploads interpolationRotation/power, after chaining to
+    /**  Advances the power state machine and uploads interpolationRotation/power, after chaining to
      * EffectShader::setUniforms().
-     * @param time Absolute animation time in seconds.
-     * @param interpolation Current cross-fade weight.
-     * @param texLoc1 Texture unit bound to the `tex0` sampler.
-     * @param texLoc2 Texture unit bound to the `tex1` sampler.
-     */
+     *
+     * @param time           Absolute animation time in seconds. (in)
+     * @param interpolation  Current cross-fade weight. (in)
+     * @param texLoc1        Texture unit bound to the `tex0` sampler. (in)
+     * @param texLoc2        Texture unit bound to the `tex1` sampler. (in)
+     **/
     virtual void setUniforms( float time, float interpolation, GLint texLoc1, GLint texLoc2 ); // setting uniforms
-    /**
-     * @brief Re-rolls speed and sides, and flips m_interpolationRotation between 0 and pi/4, after chaining to
+    /**  Re-rolls speed and sides, and flips m_interpolationRotation between 0 and pi/4, after chaining to
      * EffectShader::resetParameters().
-     */
+     **/
     virtual void resetParameters();
 
 protected:

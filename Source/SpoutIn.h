@@ -16,29 +16,40 @@
 // ---------------------------------------------------------------------------
 #pragma once
 
-/**
- * @brief Creates the Spout receiver, optionally pinned to one sender name.
+/**  Creates the Spout receiver, optionally pinned to one sender name.
+ *
+ * @param senderName  The Spout sender to bind to, or "any"/"" to receive from the currently active sender. (in)
+ *
+ * @return
+ *   true once a Spout receiver object exists (construction itself has no failure path here).
  *
  * Safe to call again once already initialized; it is then a no-op.
- * @param senderName The Spout sender to bind to, or "any"/"" to receive from the currently active sender.
- * @return true once a Spout receiver object exists (construction itself has no failure path here).
- */
+ *
+ * @sideeffects
+ *   Changes s_rx.
+ **/
 bool spoutInInit( const char *senderName ); // "any"/"" = the active sender
 
-/**
- * @brief Polls the bound sender for a new frame into an internally-owned GL texture.
+/**  Polls the bound sender for a new frame into an internally-owned GL texture.
+ *
+ * @param width   Receives the sender's current width in pixels (only written when a nonzero texture id is
+ *                returned). (out)
+ * @param height  Receives the sender's current height in pixels (only written when a nonzero texture id is
+ *                returned). (out)
+ *
+ * @return
+ *   The GL texture id holding the latest received frame, or 0 if there is no active sender, or the sender just
+ *   (re)connected/resized (the texture becomes valid again from the next frame on).
  *
  * Call once per frame with the app's GL context current.  Returns the GL
  * texture id holding the received frame (0 = no sender / size just changed);
  * width/height receive the sender size.
- * @param width Receives the sender's current width in pixels (only written when a nonzero texture id is returned).
- * @param height Receives the sender's current height in pixels (only written when a nonzero texture id is returned).
- * @return The GL texture id holding the latest received frame, or 0 if there is no active sender, or the sender just
- * (re)connected/resized (the texture becomes valid again from the next frame on).
- */
+ **/
 unsigned int spoutInReceive( unsigned int *width, unsigned int *height );
 
-/**
- * @brief Releases the Spout receiver and deletes the internally-owned GL texture.
- */
+/**  Releases the Spout receiver and deletes the internally-owned GL texture.
+ *
+ * @sideeffects
+ *   Changes s_h, s_rx, s_tex, s_w.
+ **/
 void spoutInRelease();

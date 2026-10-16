@@ -150,6 +150,48 @@ this is not written. Generated shaders get their names when they are written (`g
 | Every `if`-`else if` chain ends in `else` | Only where a "can't happen" case exists | Most chains choose among cases where doing nothing is the right default |
 | Avoid abrupt `exit` | `shader_setup.cpp` still exits when `Engine/Fullscreen.vert` or a program's own source cannot be read | Without them no frame can be drawn; the message names the missing file |
 
+## Comments (C++)
+
+Every function is commented in the layout of `template-comments.cpp`:
+
+```cpp
+/**  One line: what the function does.
+ *
+ * @param name     what it is (in)
+ * @param result   what it receives (out)
+ *
+ * @return
+ *   What comes back.
+ *
+ * The detailed description ...
+ *
+ * @sideeffects
+ *   Changes M_Count.
+ **/
+```
+
+| What | How |
+|---|---|
+| Rewriting the comment blocks | `python Tools/cgvr_comments.py --apply`: reads Doxygen's XML (names, parameters, types), parses the block above the declaration and the one above the definition, and writes them back in the template's order |
+| Parameter directions | From the type: by value and through `const &`/`const *` it is `(in)`; a non-const reference `(in,out)`, or `(out)` where the text says the parameter receives or is filled; a non-const pointer `(in)` unless the text says so |
+| `@sideeffects` | The class variables (`M_...`) and file-static variables (`s_...`) the body assigns; `@sideeffects` is an alias in the `Doxyfile` |
+| Descriptions that were missing | `Tools/cgvr_comment_supplement.py`, keyed by the function's qualified name |
+| Check | `Tools/cgvr_doxygen.py` runs Doxygen with `WARN_NO_PARAMDOC`: 0 warnings in `Source/`, `PresetEditor/`, `SetupTool/` |
+
+The rewrite changes no code token except parameter names: 24 declarations took the names of their definitions
+(`GpuSims::stepFluid( a, f )` was defined as `( audio, f )`), because a block can only document one set of names. A
+parameter documented above the declaration and above the definition is kept once, above the declaration. A comment
+that trailed a function (`int numV() { ... } ///< ...`) now stands above it.
+
+### Deviations
+
+| Rule | Here | Why |
+|---|---|---|
+| Function comment over several lines | A function without parameters, return value or details gets its line as `/** ... */` | Three lines around one sentence would bury the interface |
+| — | A getter whose only text was its one line repeats it under `@return` (`Whether X` becomes `True if X`) | The template asks for `@return`, and there was nothing else to say |
+| — | Member variables and enumerators keep their trailing `///<` comment | One line per member keeps a class declaration readable; Doxygen attaches the comment to the member before it |
+| — | Parameters a definition leaves unnamed (`resizeGL( int, int )`, unused `src` in `ComputeFX::stepMetal`) stay unnamed there | Naming them would bring back the unused-parameter warning; the declaration names and documents them |
+
 ## Known state outside the guidelines
 
 - 223 of the 264 scenes that `gen.py` builds from `Tools/scenegen/src` differ from what `gen.py` produces today: the

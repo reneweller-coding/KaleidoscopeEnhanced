@@ -39,89 +39,95 @@
 class EffectShader
 {
 public:
-    /**
-     * @brief Minimal default constructor.
+    /**  Minimal default constructor.
      *
      * Only sets the vertex shader filename; the timing ranges (solo/interpolation),
      * fragment shader filename and rolled m_timeSolo/m_timeInterpolation are left
      * untouched (m_shProgId is still zeroed via its in-class initializer). Rarely
      * used directly - most call sites go through one of the parameterized
      * constructors below.
-     */
+     **/
     EffectShader();
-    /**
-     * @brief Construct with solo/interpolation timing ranges but no fragment shader path.
+    /**  Construct with solo/interpolation timing ranges but no fragment shader path.
+     *
+     * @param minTimeSolo           Minimum seconds this effect stays solo (no interpolation) once activated. (in)
+     * @param maxTimeSolo           Maximum seconds this effect stays solo once activated. (in)
+     * @param minTimeInterpolation  Minimum seconds spent cross-fading into/out of this effect. (in)
+     * @param maxTimeInterpolation  Maximum seconds spent cross-fading into/out of this effect. (in)
      *
      * Used by subclasses that set m_fragmentShaderFilename themselves after the base
      * constructor runs. Rolls the initial m_timeSolo/m_timeInterpolation via
      * getInterpolatedTime() and sets m_complexity = 1, m_probability = 1.0.
-     * @param minTimeSolo Minimum seconds this effect stays solo (no interpolation) once activated.
-     * @param maxTimeSolo Maximum seconds this effect stays solo once activated.
-     * @param minTimeInterpolation Minimum seconds spent cross-fading into/out of this effect.
-     * @param maxTimeInterpolation Maximum seconds spent cross-fading into/out of this effect.
-     */
+     **/
     EffectShader( unsigned int minTimeSolo, unsigned int maxTimeSolo, unsigned int minTimeInterpolation,
                   unsigned int maxTimeInterpolation );
-    /**
-     * @brief Construct with an explicit fragment shader file and timing ranges.
+    /**  Construct with an explicit fragment shader file and timing ranges.
+     *
+     * @param filenameFragmentShader  Path to the fragment shader source this effect compiles. (in)
+     * @param minTimeSolo             Minimum seconds this effect stays solo once activated. (in)
+     * @param maxTimeSolo             Maximum seconds this effect stays solo once activated. (in)
+     * @param minTimeInterpolation    Minimum seconds spent cross-fading into/out of this effect. (in)
+     * @param maxTimeInterpolation    Maximum seconds spent cross-fading into/out of this effect. (in)
      *
      * Heap-allocates and copies @p filenameFragmentShader into m_fragmentShaderFilename
      * (owned for the lifetime of the object; never freed, matching the other raw
      * char* filename members in this class). Clears m_uniforms and rolls the initial
      * m_timeSolo/m_timeInterpolation via getInterpolatedTime().
-     * @param filenameFragmentShader Path to the fragment shader source this effect compiles.
-     * @param minTimeSolo Minimum seconds this effect stays solo once activated.
-     * @param maxTimeSolo Maximum seconds this effect stays solo once activated.
-     * @param minTimeInterpolation Minimum seconds spent cross-fading into/out of this effect.
-     * @param maxTimeInterpolation Maximum seconds spent cross-fading into/out of this effect.
-     */
+     **/
     EffectShader( const std::string &filenameFragmentShader, unsigned int minTimeSolo, unsigned int maxTimeSolo,
                   unsigned int minTimeInterpolation, unsigned int maxTimeInterpolation );
-    /// Destructor. Deletes the compiled shader program via cleanShaderPrograms().
+    /**  Destructor.
+     *
+     * Deletes the compiled shader program via cleanShaderPrograms().
+     **/
     virtual ~EffectShader();
 
 
     // virtual void initUniforms(int width, int height) = 0; // initialize GLSL - shader programs
     // virtual void setUniforms( float time, float interpolation, GLint texPointUni1, GLint m_texPointUni2 ) = 0; //
     // setting uniforms
-    /**
-     * @brief Re-roll this effect's randomised parameters for its next activation.
+    /**  Re-roll this effect's randomised parameters for its next activation.
      *
      * Re-rolls m_timeSolo/m_timeInterpolation, tells every registered Uniform to
      * reset itself against a "life" budget of (solo + 2*interpolation) seconds, and
      * draws fresh per-activation formula-layer seeds (m_exprSeeds). Subclasses
      * override this to additionally re-roll their own extra parameters (speed,
      * sides, power, ...), always chaining to EffectShader::resetParameters() first.
-     */
+     **/
     virtual void resetParameters();
-    /// Draws the effect's fullscreen quad. Base implementation just calls drawWindow().
+    /**  Draws the effect's fullscreen quad.
+     *
+     * Base implementation just calls drawWindow().
+     **/
     virtual void draw(); // draw scene
-    /**
-     * @brief Activates this effect's shader program for rendering.
+    /**  Activates this effect's shader program for rendering.
      *
      * Lazily compiles the program on first call via ensureCompiled(), then makes it
      * current with glUseProgram().
-     */
+     **/
     virtual void enableShader(); // draw scene
 
-    /// Tells every registered Uniform to (re)start its interpolation timer/state.
+    /** Tells every registered Uniform to (re)start its interpolation timer/state. */
     void startInterpolators();
 
-    /// Deletes the compiled GL shader program (glDeleteProgram). Does not zero m_shProgId.
+    /**  Deletes the compiled GL shader program (glDeleteProgram).
+     *
+     * Does not zero m_shProgId.
+     **/
     void cleanShaderPrograms(); // delete shaders
 
 
-    /**
-     * @brief Compiles the vertex+fragment shader and resolves all common uniform locations.
+    /**  Compiles the vertex+fragment shader and resolves all common uniform locations.
+     *
+     * @param width   Render target width in pixels, stored in m_width. (in)
+     * @param height  Render target height in pixels, stored in m_height. (in)
      *
      * The expensive step of the lazy-compile scheme: loads/compiles the program via
      * setShaders(), resolves the shared uniforms (tex0, tex1, resolution, time,
      * interpolation), then lets every registered Uniform resolve its own location.
      * Subclasses override this to chain to the base implementation and then resolve
      * their own extra uniform locations.
-     * @param width Render target width in pixels, stored in m_width.
-     * @param height Render target height in pixels, stored in m_height.
-     */
+     **/
     virtual void initUniforms( int width, int height ); // initialize GLSL - shader programs
 
     // ---- Lazy compilation ----
@@ -129,23 +135,22 @@ public:
     // runs on first use (ensureCompiled, called from enableShader) or during
     // the host's per-frame warm-up.  A 70-shader preset therefore starts
     // instantly instead of blocking for seconds.
-    /**
-     * @brief Records the render target size without touching GL (front half of lazy compile).
-     * @param width Render target width in pixels.
-     * @param height Render target height in pixels.
-     */
+    /**  Records the render target size without touching GL (front half of lazy compile).
+     *
+     * @param width   Render target width in pixels. (in)
+     * @param height  Render target height in pixels. (in)
+     **/
     void prepare( int width, int height )
     {
         m_width = width;
         m_height = height;
     }
-    /**
-     * @brief Compiles the shader program on first use; no-op if already compiled.
+    /**  Compiles the shader program on first use; no-op if already compiled.
      *
      * Calls the (possibly overridden) initUniforms(), marks the program ready, and
      * invalidates every "usesXxx" capability cache (m_usesSim, m_usesFluid, ...) so
      * they get freshly re-queried against the newly compiled program.
-     */
+     **/
     void ensureCompiled()
     {
         if ( m_glReady )
@@ -157,29 +162,40 @@ public:
         m_usesMandelbrot = -1;
         m_usesSceneLod = -1;
     }
-    /// @return The fragment shader file (for background builds).
+    /**  The fragment shader file (for background builds).
+     *
+     * @return
+     *   The fragment shader file (for background builds).
+     **/
     const char *fragmentFile() const
     {
         return !m_compileFile.empty()             ? m_compileFile.c_str()
                : m_fragmentShaderFilename.empty() ? nullptr
                                                   : m_fragmentShaderFilename.c_str();
     }
-    /// @brief True if this effect builds with plain setShaders() (fullscreen fragment only); background builds apply
-    /// only to those.
+    /**  True if this effect builds with plain setShaders() (fullscreen fragment only); background builds apply only
+     * to those.
+     *
+     * @return
+     *   True for EffectShader itself; subclasses with their own program setup return false.
+     **/
     virtual bool plainFragment() const { return true; }
-    /// @return True once ensureCompiled() has successfully built the GL program.
+    /**  True once ensureCompiled() has successfully built the GL program.
+     *
+     * @return
+     *   True once ensureCompiled() has successfully built the GL program.
+     **/
     bool isCompiled() const { return m_glReady; }
 
     // Hot-reload (dev aid): recompile this effect's fragment shader from disk.
     // Not-yet-compiled (lazy) programs are left alone — their eventual compile
     // reads the new source anyway.
-    /**
-     * @brief Development aid: recompiles this effect's fragment shader from disk.
+    /**  Development aid: recompiles this effect's fragment shader from disk.
      *
      * Deletes the current program and forces ensureCompiled() to rebuild it. If the
      * effect was never compiled yet (lazy), this is a no-op - its eventual first
      * compile will read the updated source anyway.
-     */
+     **/
     void reloadShader()
     {
         if ( !m_glReady )
@@ -192,55 +208,55 @@ public:
 
     // Update the reported render-target resolution without recompiling the shader
     // or touching any GL objects.  Used on window resize.
-    /**
-     * @brief Updates the reported render-target resolution without recompiling or touching GL.
-     * @param width New render target width in pixels.
-     * @param height New render target height in pixels.
-     */
+    /**  Updates the reported render-target resolution without recompiling or touching GL.
+     *
+     * @param width   New render target width in pixels. (in)
+     * @param height  New render target height in pixels. (in)
+     **/
     void setSize( int width, int height )
     {
         m_width = width;
         m_height = height;
     }
 
-    /**
-     * @brief Uploads the common per-frame uniforms (textures, resolution, time, interpolation)
-     *        and every registered randomised Uniform's current value.
+    /**  Uploads the common per-frame uniforms (textures, resolution, time, interpolation) and every registered
+     * randomised Uniform's current value.
+     *
+     * @param time           Absolute animation time in seconds, uploaded as the `time` uniform. (in)
+     * @param interpolation  Current cross-fade weight, uploaded as the `interpolation` uniform. (in)
+     * @param texLoc1        Texture unit bound to the `tex0` sampler. (in)
+     * @param texLoc2        Texture unit bound to the `tex1` sampler. (in)
      *
      * Also stores @p time into m_exprTime for the formula layer, and re-rolls
      * m_timeSolo/m_timeInterpolation at the end of the call. Subclasses override this
      * to chain to the base implementation and then upload their own extra uniforms.
-     * @param time Absolute animation time in seconds, uploaded as the `time` uniform.
-     * @param interpolation Current cross-fade weight, uploaded as the `interpolation` uniform.
-     * @param texLoc1 Texture unit bound to the `tex0` sampler.
-     * @param texLoc2 Texture unit bound to the `tex1` sampler.
-     */
+     **/
     virtual void setUniforms( float time, float interpolation, GLint texLoc1, GLint texLoc2 ); // setting uniforms
-    /**
-     * @brief Checks glGetError() and prints any pending OpenGL error to stderr.
-     * @param label Short tag identifying the call site, included in the printed message.
-     */
+    /**  Checks glGetError() and prints any pending OpenGL error to stderr.
+     *
+     * @param label  Short tag identifying the call site, included in the printed message. (in)
+     **/
     virtual void checkGLErrors( const char *label ); // check and print gl errors to stderr
 
-    /**
-     * @brief Registers a randomised float Uniform with the given value range.
-     * @param name GLSL uniform name to bind once the program is compiled.
-     * @param minf Lower bound of the range the Uniform will roll values from.
-     * @param maxf Upper bound of the range the Uniform will roll values from.
-     */
+    /**  Registers a randomised float Uniform with the given value range.
+     *
+     * @param name  GLSL uniform name to bind once the program is compiled. (in)
+     * @param minf  Lower bound of the range the Uniform will roll values from. (in)
+     * @param maxf  Upper bound of the range the Uniform will roll values from. (in)
+     **/
     void addUniform( const std::string &name, float minf, float maxf );
-    /**
-     * @brief Registers a randomised int Uniform with the given value range.
-     * @param name GLSL uniform name to bind once the program is compiled.
-     * @param minf Lower bound of the range the Uniform will roll values from.
-     * @param maxf Upper bound of the range the Uniform will roll values from.
-     */
+    /**  Registers a randomised int Uniform with the given value range.
+     *
+     * @param name  GLSL uniform name to bind once the program is compiled. (in)
+     * @param minf  Lower bound of the range the Uniform will roll values from. (in)
+     * @param maxf  Upper bound of the range the Uniform will roll values from. (in)
+     **/
     void addUniform( const std::string &name, int minf, int maxf );
-    /**
-     * @brief Registers a randomised boolean Uniform activated with a given probability.
-     * @param name GLSL uniform name to bind once the program is compiled.
-     * @param pro Probability (0..1) that the Uniform rolls "true" on each reset.
-     */
+    /**  Registers a randomised boolean Uniform activated with a given probability.
+     *
+     * @param name  GLSL uniform name to bind once the program is compiled. (in)
+     * @param pro   Probability (0..1) that the Uniform rolls "true" on each reset. (in)
+     **/
     void addUniform( const std::string &name, float pro );
 
     // FORMULA LAYER (the MilkDrop lesson): attach a per-frame expression that
@@ -248,23 +264,23 @@ public:
     // uniform `name` — presets can script mappings without shader edits.
     // Evaluated in applyAudioFeatures AFTER the random params, so a formula
     // deliberately overrides a <float> of the same name.
-    /**
-     * @brief Attaches a per-frame scripted expression that drives a float uniform.
+    /**  Attaches a per-frame scripted expression that drives a float uniform.
+     *
+     * @param name     GLSL uniform name the compiled expression's result is uploaded to. (in)
+     * @param formula  Expression source text, evaluated against the ExprVars variable set. (in)
      *
      * Compiles @p formula into an ExprProgram and, if it compiles successfully,
      * appends it to m_exprs; evaluated every frame in applyAudioFeatures() AFTER the
      * random Uniform params, so a formula on the same uniform name deliberately
      * overrides the corresponding `<float>` entry. Also re-rolls the three
      * m_exprSeeds values available to formulas as seed1/seed2/seed3.
-     * @param name GLSL uniform name the compiled expression's result is uploaded to.
-     * @param formula Expression source text, evaluated against the ExprVars variable set.
-     */
+     **/
     void addExpression( const std::string &name, const std::string &formula );
 
-    /**
-     * @brief Uploads all audio-reactive uniforms (levels, onsets, spectrum, sim
-     *        samplers, shadow/OIT/depth state, formula-layer results, 2D camera rig)
-     *        that this shader's program declares.
+    /**  Uploads all audio-reactive uniforms (levels, onsets, spectrum, sim samplers, shadow/OIT/depth state,
+     * formula-layer results, 2D camera rig) that this shader's program declares.
+     *
+     * @param f  Current frame's audio analysis snapshot. (in)
      *
      * Called AFTER setUniforms() has run, while the shader program is still active.
      *
@@ -276,10 +292,8 @@ public:
      *
      * Shaders that don't declare a given audio uniform get location -1, so the
      * corresponding upload is silently skipped.
-     *
-     * @param features Current frame's audio analysis snapshot.
-     */
-    virtual void applyAudioFeatures( const AudioFeatures &features );
+     **/
+    virtual void applyAudioFeatures( const AudioFeatures &f );
 
     // Fill the ExprVars variable array (ExprVars::V_COUNT floats) from an
     // AudioFeatures snapshot.  Shared by the formula layer in
@@ -288,102 +302,172 @@ public:
     // copies of this mapping would drift, and a mapping that behaves
     // differently in the compute stage than in the fragment stage is the
     // kind of bug a screenshot can't explain.
-    /**
-     * @brief Fills the ExprVars variable array from an AudioFeatures snapshot.
+    /**  Fills the ExprVars variable array from an AudioFeatures snapshot.
+     *
+     * @param f        Audio analysis snapshot to read features from. (in)
+     * @param timeVal  Current animation time, written into ExprVars::V_TIME. (in)
+     * @param seeds    Three per-activation random seeds, written into V_SEED1..V_SEED3. (in)
+     * @param v        Destination array of at least ExprVars::V_COUNT floats. (in)
      *
      * Shared by the formula layer (applyAudioFeatures) and Scene3DShader's generator
      * audio-override pass, so a formula sees IDENTICAL variable semantics in both -
      * duplicating this mapping would risk the two paths silently drifting apart.
-     * @param f Audio analysis snapshot to read features from.
-     * @param timeVal Current animation time, written into ExprVars::V_TIME.
-     * @param seeds Three per-activation random seeds, written into V_SEED1..V_SEED3.
-     * @param out Destination array of at least ExprVars::V_COUNT floats.
-     */
+     **/
     static void fillExprVars( const AudioFeatures &f, float timeVal,
-                              const float seeds[3], float *out );
+                              const float seeds[3], float *v );
 
-    /**
-     * @brief Registers a randomised float Uniform whose min/max bounds themselves
-     *        interpolate between two ranges over time (BASE_TYPE_INTERPOLATOR_FLOAT).
-     * @param name GLSL uniform name to bind once the program is compiled.
-     * @param interpolatorMinMinf Lower bound of the range the interpolated minimum is drawn from.
-     * @param interpolatorMinMaxf Upper bound of the range the interpolated minimum is drawn from.
-     * @param interpolatorMaxMinf Lower bound of the range the interpolated maximum is drawn from.
-     * @param interpolatorMaxMaxf Upper bound of the range the interpolated maximum is drawn from.
-     */
+    /**  Registers a randomised float Uniform whose min/max bounds themselves interpolate between two ranges over time
+     * (BASE_TYPE_INTERPOLATOR_FLOAT).
+     *
+     * @param name                 GLSL uniform name to bind once the program is compiled. (in)
+     * @param interpolatorMinMinf  Lower bound of the range the interpolated minimum is drawn from. (in)
+     * @param interpolatorMinMaxf  Upper bound of the range the interpolated minimum is drawn from. (in)
+     * @param interpolatorMaxMinf  Lower bound of the range the interpolated maximum is drawn from. (in)
+     * @param interpolatorMaxMaxf  Upper bound of the range the interpolated maximum is drawn from. (in)
+     **/
     void addUniformInterpolator( const std::string &name, float interpolatorMinMinf,
                                  float interpolatorMinMaxf,
                                  float interpolatorMaxMinf,
                                  float interpolatorMaxMaxf );
 
-    /// @return The currently rolled solo duration (seconds) for this effect.
+    /**  The currently rolled solo duration (seconds) for this effect.
+     *
+     * @return
+     *   The currently rolled solo duration (seconds) for this effect.
+     **/
     unsigned int getTimeSolo() const;
-    /// @return The currently rolled interpolation (cross-fade) duration (seconds) for this effect.
+    /**  The currently rolled interpolation (cross-fade) duration (seconds) for this effect.
+     *
+     * @return
+     *   The currently rolled interpolation (cross-fade) duration (seconds) for this effect.
+     **/
     unsigned int getTimeInterpolation() const;
 
-    /** @brief Sets the visual-complexity weight used by preset selection. @param complexity Unitless weight (parsed
-     * from the config's complexity attribute). */
+    /**  Sets the visual-complexity weight used by preset selection.
+     *
+     * @param complexity  Unitless weight (parsed from the config's complexity attribute). (in)
+     *
+     * Sets the visual-complexity weight used by preset selection.
+     **/
     void setComplexity( unsigned int complexity )
     {
         m_complexity = complexity;
-    }; ///< Sets the visual-complexity weight used by preset selection.
+    };
+    /**  Returns the visual-complexity weight used by preset selection.
+     *
+     * @return
+     *   The visual-complexity weight used by preset selection.
+     **/
     unsigned int getComplexity() const
     {
         return m_complexity;
-    }; ///< Returns the visual-complexity weight used by preset selection.
+    };
+    /**  Sets the probability threshold used by useShader().
+     *
+     * @param probability  The new threshold. (in)
+     **/
     void setProbability( float probability )
     {
         m_probability = probability;
-    }; ///< Sets the probability threshold used by useShader().
-    /// @return True with probability m_probability (Bernoulli draw); used to decide whether this effect activates.
+    };
+    /**  True with probability m_probability (Bernoulli draw); used to decide whether this effect activates.
+     *
+     * @return
+     *   True with probability m_probability (Bernoulli draw); used to decide whether this effect activates.
+     **/
     bool useShader() const;
 
     // True if this effect's fragment shader samples the reaction-diffusion field
     // (declares the "texSim" uniform).  Cached on first query.  Lets the host run
     // the GPU simulation only while an effect that displays it is on screen.
-    /// @return True if this effect's compiled fragment shader declares the "texSim" (reaction-diffusion) sampler.
-    /// Cached after first query; false if not yet compiled.
+    /**  True if this effect's compiled fragment shader declares the "texSim" (reaction-diffusion) sampler.
+     *
+     * @return
+     *   True if this effect's compiled fragment shader declares the "texSim" (reaction-diffusion) sampler. Cached
+     *   after first query; false if not yet compiled.
+     **/
     bool usesSim();
-    /** @brief True if this scene is STAGED: it reads `sceneProgress` or its rig formulas use `progress`. Before the
-     * first compile the answer comes from the source text (sourceUsesProgress()), after it from the program; both are
-     * cached. */
+    /**  True if this scene is STAGED: it reads `sceneProgress` or its rig formulas use `progress`.
+     *
+     * @return
+     *   True if the scene is staged, false otherwise.
+     *
+     * Before the first compile the answer comes from the source text (sourceUsesProgress()), after it from the program;
+     * both are cached.
+     **/
     bool usesProgress();
     bool sourceUsesProgress() const;
-    /** @brief Re-time the progress ramp so progress reaches 0.95 in @p secs from now, continuously (no jump in the
-     * current value). The origin used is #m_progressT0, NOT #m_activationTime, so `sceneTime` is untouched -- the 19
-     * scenes that fly on it would cut otherwise. */
+    /**  Re-time the progress ramp so progress reaches 0.95 in @p secs from now, continuously (no jump in the current
+     * value).
+     *
+     * @param secs  Seconds from now at which progress should reach 0.95; below 1 s nothing changes. (in)
+     *
+     * The origin used is #m_progressT0, NOT #m_activationTime, so `sceneTime` is untouched -- the 19 scenes that fly on
+     * it would cut otherwise.
+     **/
     void setClimaxIn( float secs );
 
     // Same for the fluid simulation ("texFluid" uniform, unit 8).
-    /// @return True if this effect's compiled fragment shader declares the "texFluid" sampler (fluid simulation, unit
-    /// 8). Cached after first query.
+    /**  True if this effect's compiled fragment shader declares the "texFluid" sampler (fluid simulation, unit 8).
+     *
+     * @return
+     *   True if this effect's compiled fragment shader declares the "texFluid" sampler (fluid simulation, unit 8).
+     *   Cached after first query.
+     **/
     bool usesFluid();
 
     // Same for the volumetric smoke/fire simulation ("texSmoke3D" uniform, unit 9).
-    /// @return True if this effect's compiled fragment shader declares the "texSmoke3D" sampler (volumetric smoke/fire,
-    /// unit 9). Cached after first query.
+    /**  True if this effect's compiled fragment shader declares the "texSmoke3D" sampler (volumetric smoke/fire, unit
+     * 9).
+     *
+     * @return
+     *   True if this effect's compiled fragment shader declares the "texSmoke3D" sampler (volumetric smoke/fire,
+     *   unit 9). Cached after first query.
+     **/
     bool usesSmoke3D();
 
     // Same for the self-similarity matrix ("texSSM" uniform, unit 10).
-    /// @return True if this effect's compiled fragment shader declares the "texSSM" sampler (self-similarity matrix,
-    /// unit 10). Cached after first query.
+    /**  True if this effect's compiled fragment shader declares the "texSSM" sampler (self-similarity matrix, unit
+     * 10).
+     *
+     * @return
+     *   True if this effect's compiled fragment shader declares the "texSSM" sampler (self-similarity matrix, unit
+     *   10). Cached after first query.
+     **/
     bool usesSSM();
-    /// @return True if this effect's compiled fragment shader declares the "texSpectro" sampler (scrolling spectrogram
-    /// history). Cached after first query. Virtual so subclasses may special-case it.
+    /**  True if this effect's compiled fragment shader declares the "texSpectro" sampler (scrolling spectrogram
+     * history).
+     *
+     * @return
+     *   True if this effect's compiled fragment shader declares the "texSpectro" sampler (scrolling spectrogram
+     *   history). Cached after first query. Virtual so subclasses may special-case it.
+     **/
     virtual bool usesSpectro();
 
     // Same for the Physarum trail map ("texPhysarum" uniform, unit 11).
-    /// @return True if this effect's compiled fragment shader declares the "texPhysarum" sampler (Physarum trail map,
-    /// unit 11). Cached after first query.
+    /**  True if this effect's compiled fragment shader declares the "texPhysarum" sampler (Physarum trail map, unit
+     * 11).
+     *
+     * @return
+     *   True if this effect's compiled fragment shader declares the "texPhysarum" sampler (Physarum trail map, unit
+     *   11). Cached after first query.
+     **/
     bool usesPhysarum();
     // Bit k set = this shader declares CfxInfoTable[k].sampler (compute-FX sims).
-    /// @return Bitmask over CfxKindE; bit k is set when this shader declares CfxInfoTable[k]'s sampler uniform.
-    /// Resolved (and each found sampler's texture unit bound) once per compiled program.
+    /**  Bitmask over CfxKindE; bit k is set when this shader declares CfxInfoTable[k]'s sampler uniform.
+     *
+     * @return
+     *   Bitmask over CfxKindE; bit k is set when this shader declares CfxInfoTable[k]'s sampler uniform. Resolved
+     *   (and each found sampler's texture unit bound) once per compiled program.
+     **/
     unsigned int cfxMask();
 
     // The fragment-shader file this effect uses (for the debug overlay).
-    /// @return The fragment shader filename this effect compiles from, or "?" if none is set. Used by the debug
-    /// overlay.
+    /**  The fragment shader filename this effect compiles from, or "?" if none is set.
+     *
+     * @return
+     *   The fragment shader filename this effect compiles from, or "?" if none is set. Used by the debug overlay.
+     **/
     const char *fragmentName() const
     {
         return m_fragmentShaderFilename.empty() ? "?" : m_fragmentShaderFilename.c_str();
@@ -391,18 +475,25 @@ public:
 
     // True for REAL 3D scenes (Scene3DShader): geometry + perspective camera.
     // The host uses this for the true-stereo path (per-eye rendering).
-    /// @return False for this base class / all 2D effects; overridden to return true only by real 3D scenes
-    /// (Scene3DShader) so the host can select the per-eye stereo render path.
+    /**  False for this base class / all 2D effects; overridden to return true only by real 3D scenes (Scene3DShader)
+     * so the host can select the per-eye stereo render path.
+     *
+     * @return
+     *   False for this base class / all 2D effects; overridden to return true only by real 3D scenes
+     *   (Scene3DShader) so the host can select the per-eye stereo render path.
+     **/
     virtual bool is3D() const { return false; }
-    /** @brief Whether this scene shows a loaded model -- a single recognisable
-     *  solid object rather than an abstract field.
+    /**  Whether this scene shows a loaded model -- a single recognisable solid object rather than an abstract field.
+     *
+     * @return
+     *   false for everything except a GEOM_MESH Scene3DShader.
      *
      *  The host damps the time echo for these. That echo screen-blends the
      *  frame from ~1.4 s ago at 4.5 % larger scale, which on an abstract scene
      *  reads as a dreamy after-image and on a solid object reads as a
      *  rendering fault: a chrome torus does not have a bigger, half-transparent
      *  twin, so the eye files it as a defect rather than an effect.
-     *  @return false for everything except a GEOM_MESH Scene3DShader. */
+     **/
     virtual bool isMeshScene() const { return false; }
 
     /** @name Asynchronous mesh warm-up
@@ -415,29 +506,36 @@ public:
      *  start, so the outgoing scene simply keeps playing until the model is
      *  ready and the fade then runs in full. Non-mesh shaders never pend.
      *  @{ */
-    /** @brief Whether this scene still needs its model loaded before it can be faded in.
-     *  @return Always false here; a GEOM_MESH Scene3DShader returns true until the worker has published its assets. */
+    /**  Whether this scene still needs its model loaded before it can be faded in.
+     *
+     * @return
+     *   Always false here; a GEOM_MESH Scene3DShader returns true until the worker has published its assets.
+     **/
     virtual bool meshWarmupPending() const { return false; }
-    /** @brief Kicks off the asynchronous model load (file read/decode on a worker thread). No-op here; idempotent for
-     * mesh scenes, so the host may call it every frame while meshWarmupPending() holds. */
+    /**  Kicks off the asynchronous model load (file read/decode on a worker thread).
+     *
+     * No-op here; idempotent for mesh scenes, so the host may call it every frame while meshWarmupPending() holds.
+     **/
     virtual void requestMeshWarmup() {}
-    /** @brief GL half of a finished warm-up: if the worker has published this
-     *  scene's assets and the VBO is still unbuilt, upload now (a few ms).
-     *  @return True if an upload happened -- the caller counts it as this
-     *  frame's one warm-up step. */
+    /**  GL half of a finished warm-up: if the worker has published this scene's assets and the VBO is still unbuilt,
+     * upload now (a few ms).
+     *
+     * @return
+     *   True if an upload happened -- the caller counts it as this frame's one warm-up step.
+     **/
     virtual bool finishMeshWarmup() { return false; }
 
-    /**
-     * @brief Does this effect currently hold an uploaded mesh (vertex buffer plus material textures)?
-     * @return True only for a mesh scene whose GL residency can be given back; false for every other kind.
-     */
+    /**  Does this effect currently hold an uploaded mesh (vertex buffer plus material textures)?
+     *
+     * @return
+     *   True only for a mesh scene whose GL residency can be given back; false for every other kind.
+     **/
     virtual bool meshResident() const { return false; }
-    /**
-     * @brief Frees this effect's uploaded mesh so the memory goes back to the driver.
+    /**  Frees this effect's uploaded mesh so the memory goes back to the driver.
      *
      * The scene reloads asynchronously the next time it is drawn. The caller must
      * make sure the scene is neither on screen nor fading in.
-     */
+     **/
     virtual void releaseMesh() {}
     /** @} */
 
@@ -476,8 +574,13 @@ public:
     // shadowExtent attribute when its own scale differs.
     static constexpr float ShadowExtent = 60.f; ///< Default half-width of the light's shadow box (a scene may override
                                                 ///< via shadowExtent()).
-    /// @return The half-width of the shadow light's box for this scene; default is ShadowExtent, overridden by scenes
-    /// whose own scale differs.
+    /**  The half-width of the shadow light's box for this scene; default is ShadowExtent, overridden by scenes whose
+     * own scale differs.
+     *
+     * @return
+     *   The half-width of the shadow light's box for this scene; default is ShadowExtent, overridden by scenes
+     *   whose own scale differs.
+     **/
     virtual float shadowExtent() const { return ShadowExtent; }
     /// Review span in seconds while a Test* preset is loaded, 0 outside it.
     /// sceneProgress normalises over the ROLLED solo span, which review mode
@@ -507,17 +610,36 @@ public:
     /// of a chain lab weight the classes it showed; among three targets in the music's region the
     /// walk takes one with odds after these weights.  Shared by every lab; RenderPipeline loads and saves it.
     static std::map<std::string, float> M_ClassTaste;
-    /// @brief The taste key of a chain class: "<stage knob>/<class name>" ('/' in the name made '_').
-    /// @param knob Stage knob ("chainAP", "coreP", ...). @param cls Class name from "// @chainclasses".
+    /**  The taste key of a chain class: "<stage knob>/<class name>" ('/' in the name made '_').
+     *
+     * @param knob  Stage knob ("chainAP", "coreP", ...). (in)
+     * @param cls   Class name from "// @chainclasses". (in)
+     *
+     * @return
+     *   The key, e.g. "chainAP/kaleidoscope".
+     **/
     static std::string classTasteKey( const char *knob, const std::string &cls );
-    /// @brief The next chain lab starts on its own roll, not on the chain of the lab going out
-    /// (a skip or a scene picked by hand: the viewer wants something else).  Holds for 5 s.
+    /**  The next chain lab starts on its own roll, not on the chain of the lab going out (a skip or a scene picked by
+     * hand: the viewer wants something else).
+     *
+     * Holds for 5 s.
+     *
+     * @sideeffects
+     *   Changes s_noCarryAt, s_noCarrySet.
+     **/
     static void noCarryOver();
-    /// @brief Multiplies the taste of every class this lab shows now (walking stages; 'none' left out), clamped to
-    /// [0.6, 1.6].
-    /// @param mul Factor (a like > 1, a skip < 1).
-    /// @return The changed entries (key, new weight), for the caller to persist; empty for anything but a chain lab
-    /// that walks or shows a fixed chain.
+    /**  Multiplies the taste of every class this lab shows now (walking stages; 'none' left out), clamped to [0.6,
+     * 1.6].
+     *
+     * @param mul  Factor (a like > 1, a skip < 1). (in)
+     *
+     * @return
+     *   The changed entries (key, new weight), for the caller to persist; empty for anything but a chain lab that
+     *   walks or shows a fixed chain.
+     *
+     * @sideeffects
+     *   Changes M_ClassTaste.
+     **/
     std::vector<std::pair<std::string, float>> bumpClassTaste( float mul );
     static float M_ShadowExtent; ///< The ACTIVE scene's shadowExtent() (world units, half-width of the light box),
                                  ///< published by RenderPipeline so the shadow receivers and the light matrix use the
@@ -527,8 +649,12 @@ public:
     static float M_LightM[16]; ///< Light 1's view-projection matrix, column-major; uploaded as `lightM`, recomputed per
                                ///< frame by RenderPipeline::updateLightMatrix().
     static float M_LightDir[3]; ///< Light 1's direction (unit vector towards the light); uploaded as `lightDir`.
-    /// @return True if this effect's compiled fragment shader declares the "texShadow" sampler (shadow map). Cached
-    /// after first query.
+    /**  True if this effect's compiled fragment shader declares the "texShadow" sampler (shadow map).
+     *
+     * @return
+     *   True if this effect's compiled fragment shader declares the "texShadow" sampler (shadow map). Cached after
+     *   first query.
+     **/
     bool usesShadow();
 
     // ---- second, independent shadow-casting light ("studio" two-light setup) ----
@@ -543,8 +669,12 @@ public:
                                  ///< .vert can tell which matrix to project with).
     static float M_LightM2[16];  ///< Light 2's view-projection, column-major.
     static float M_LightDir2[3]; ///< Light 2's direction.
-    /// @return True if this effect's compiled fragment shader declares the "texShadow2" sampler (second shadow map).
-    /// Cached after first query.
+    /**  True if this effect's compiled fragment shader declares the "texShadow2" sampler (second shadow map).
+     *
+     * @return
+     *   True if this effect's compiled fragment shader declares the "texShadow2" sampler (second shadow map).
+     *   Cached after first query.
+     **/
     bool usesShadow2();
 
     // ---- order-independent transparency ----
@@ -553,8 +683,13 @@ public:
     // an accumulation target instead of the frame.
     static float M_OitPass; ///< 0 while rendering opaque geometry, 1 while rendering transparent geometry into the OIT
                             ///< accumulation target.
-    /// @return True if this effect's compiled fragment shader declares the "oitPass" uniform (order-independent
-    /// transparency). Cached after first query.
+    /**  True if this effect's compiled fragment shader declares the "oitPass" uniform (order-independent
+     * transparency).
+     *
+     * @return
+     *   True if this effect's compiled fragment shader declares the "oitPass" uniform (order-independent
+     *   transparency). Cached after first query.
+     **/
     bool usesOit();
 
     // ---- per-scene baked field (X.comp companion, opt-in) ----
@@ -568,42 +703,60 @@ public:
     // (not every frame, see BakeIntervalFrames) rather than once, so slowly
     // audio-morphing parameters stay visibly reactive without paying the bake
     // cost 60 times a second.
-    /// @return True if this effect's compiled fragment shader declares the "texBake" sampler. Cached after first query.
+    /**  True if this effect's compiled fragment shader declares the "texBake" sampler.
+     *
+     * @return
+     *   True if this effect's compiled fragment shader declares the "texBake" sampler. Cached after first query.
+     **/
     bool usesBake();
-    /// @return True if this effect's compiled fragment shader declares the "texMandelbrot" sampler. Cached after first
-    /// query; see ComputeFX::stepMandelbrot() for why this bypasses the generic cfxMask() system.
+    /**  True if this effect's compiled fragment shader declares the "texMandelbrot" sampler.
+     *
+     * @return
+     *   True if this effect's compiled fragment shader declares the "texMandelbrot" sampler. Cached after first
+     *   query; see ComputeFX::stepMandelbrot() for why this bypasses the generic cfxMask() system.
+     **/
     bool usesMandelbrot();
-    /**
-     * @brief True if this effect samples its input image at explicit mip levels (`textureLod(tex0` in its source).
+    /**  True if this effect samples its input image at explicit mip levels (`textureLod(tex0` in its source).
+     *
+     * @return
+     *   True if the source calls textureLod on tex0 (read once, then cached).
      *
      * For an overlay/FX shader the input is the finished scene frame, which has no
      * mip chain of its own; RenderPipeline::renderOverlayPass() builds one only
      * while an FX that asks for it is on screen (FxChain: a rolled transform chain
      * squeezes the frame and shimmers without mips).  Read from the source file
      * once and cached; reset on recompile.
-     */
+     **/
     bool usesSceneLod();
-    /**
-     * @brief Sets the colour grades this entry may wear: the preset attribute grade="fade,grey,sepia".
+    /**  Sets the colour grades this entry may wear: the preset attribute grade="fade,grey,sepia".
+     *
+     * @param list  Comma-separated grade names (fade, grey, sepia). (in)
      *
      * One of them is rolled per activation (resetParameters()) and applied to the
      * finished frame by Present.frag -- how a colourful scene takes its place in a
      * dark preset such as Noir.  Unknown words are ignored; an empty list means no grade.
-     * @param list Comma-separated grade names (fade, grey, sepia).
-     */
+     **/
     void setGradeModes( const std::string &list );
-    /// @return The grade rolled for the current activation: 0 none, 1 faded, 2 grey, 3 sepia.
+    /**  The grade rolled for the current activation: 0 none, 1 faded, 2 grey, 3 sepia.
+     *
+     * @return
+     *   The grade rolled for the current activation: 0 none, 1 faded, 2 grey, 3 sepia.
+     **/
     int gradeMode() const { return m_gradeMode; }
-    /**
-     * @brief True while this effect is a chain lab walking with the music (see stepChainWalk()).
+    /**  True while this effect is a chain lab walking with the music (see stepChainWalk()).
+     *
+     * @return
+     *   True while the walk is active.
      *
      * The scheduler then leaves the music's cues to the effect: a section change
      * or a drop walks the chain on instead of cutting to another scene, so one lab
      * can carry a whole set.
-     */
+     **/
     bool walksWithMusic() const { return m_walk.active; }
-    /**
-     * @brief The chain lab's current chain in words, one line per stage, for the shader-info overlay (key v).
+    /**  The chain lab's current chain in words, one line per stage, for the shader-info overlay (key v).
+     *
+     * @return
+     *   Lines separated by '\n', or an empty string.
      *
      * Reads the "// @chainclasses <knob> name|name|..." lines the generator writes
      * into every chain lab (Tools/scenegen/chain_classes.py -- the classes in the
@@ -611,20 +764,20 @@ public:
      * or, while the lab walks, the shown class and the one it fades to with the
      * fade's progress.  Frozen likes (ChainLike*) have constants instead of knobs;
      * those are read from the source.  Empty for every other shader.
-     * @return Lines separated by '\n', or an empty string.
-     */
+     **/
     std::string chainInfo();
 
     // ---- Song-structure memory ----
     // Snapshot / restore of all rolled per-activation parameter values, so a
     // recognised section (chorus #2 = chorus #1) replays the exact same look.
-    /**
-     * @brief Captures the current value of every registered Uniform.
+    /**  Captures the current value of every registered Uniform.
+     *
+     * @return
+     *   One float per Uniform in m_uniforms, in registration order.
      *
      * Used for song-structure memory: snapshotting a recognised section (e.g. chorus
      * #1) lets a later matching section (chorus #2) restore the exact same rolled look.
-     * @return One float per Uniform in m_uniforms, in registration order.
-     */
+     **/
     std::vector<float> snapshotParameters() const
     {
         std::vector<float> v;
@@ -633,23 +786,24 @@ public:
             v.push_back( u->snapshotValue() );
         return v;
     }
-    /**
-     * @brief Restores every registered Uniform's value from a prior snapshotParameters() call.
-     * @param v Snapshot values, applied in registration order; extra/missing entries are ignored.
-     */
+    /**  Restores every registered Uniform's value from a prior snapshotParameters() call.
+     *
+     * @param v  Snapshot values, applied in registration order; extra/missing entries are ignored. (in)
+     **/
     void restoreParameters( const std::vector<float> &v )
     {
         for ( size_t i = 0; i < m_uniforms.size() && i < v.size(); ++i )
             m_uniforms[i]->restoreValue( v[i] );
     }
-    /**
-     * @brief The rolled value of every registered Uniform together with its name.
+    /**  The rolled value of every registered Uniform together with its name.
+     *
+     * @return
+     *   (name, value) per Uniform in m_uniforms, in registration order.
      *
      * Used to remember a liked roll (key 'f'): for the chain-lab scenes the rolled
      * knobs ARE the scene -- which transforms make up the chain -- so writing them
      * down is what lets a good roll become a fixed, named entry later.
-     * @return (name, value) per Uniform in m_uniforms, in registration order.
-     */
+     **/
     std::vector<std::pair<std::string, float>> namedParameters() const
     {
         std::vector<std::pair<std::string, float>> v;
@@ -668,16 +822,26 @@ public:
         MOOD_CALM = 4,
         MOOD_AGGRESSIVE = 8
     };
+    /**  Sets the MoodFlagsE bitmask parsed from this effect's config.
+     *
+     * @param f  MoodFlagsE bits (MOOD_DARK, MOOD_BRIGHT, MOOD_CALM, MOOD_AGGRESSIVE), or-ed together. (in)
+     **/
     void setMoodFlags( unsigned int f )
     {
         m_moodFlags = f;
-    } ///< Sets the MoodFlagsE bitmask parsed from this effect's config.
+    }
+    /**  The MoodFlagsE bitmask parsed from this effect's config (0 = untagged/neutral).
+     *
+     * @return
+     *   The MoodFlagsE bitmask parsed from this effect's config (0 = untagged/neutral).
+     **/
     unsigned int moodFlags() const
     {
         return m_moodFlags;
-    } ///< @return The MoodFlagsE bitmask parsed from this effect's config (0 = untagged/neutral).
-    /**
-     * @brief Transitions only: the shortest scene fade this transition may run in (seconds, 0 = no floor).
+    }
+    /**  Transitions only: the shortest scene fade this transition may run in (seconds, 0 = no floor).
+     *
+     * @param s  Shortest fade in seconds; negative values count as 0. (in)
      *
      * With a confident rhythm the scheduler clamps every fade to four beats
      * (2 s at 120 BPM). A cross-fade is fine at that; a transition that
@@ -686,22 +850,29 @@ public:
      * that reads as frantic. The floor is measured per transition
      * (PresetEditor --transprofile, total variation) and written into the
      * catalogue as minFade="...".
-     */
-    void  setMinFade( float s ) { m_minFade = s > 0.f ? s : 0.f; }
-    float minFade() const { return m_minFade; } ///< @return The fade floor in seconds (0 = none).
+     **/
+    void setMinFade( float s ) { m_minFade = s > 0.f ? s : 0.f; }
+    /**  The fade floor in seconds (0 = none).
+     *
+     * @return
+     *   The fade floor in seconds (0 = none).
+     **/
+    float minFade() const { return m_minFade; }
 
 protected:
-    /**
-     * @brief Rolls a random duration uniformly between two bounds.
+    /**  Rolls a random duration uniformly between two bounds.
+     *
+     * @param minTime  Lower bound (inclusive). (in)
+     * @param maxTime  Upper bound (exclusive unless equal to minTime). (in)
+     *
+     * @return
+     *   minTime when minTime == maxTime, otherwise a value in [minTime, maxTime).
      *
      * Guards against the case minTime == maxTime, which would otherwise make
      * `rand() % (maxTime - minTime)` divide by zero.
-     * @param minTime Lower bound (inclusive).
-     * @param maxTime Upper bound (exclusive unless equal to minTime).
-     * @return minTime when minTime == maxTime, otherwise a value in [minTime, maxTime).
-     */
+     **/
     unsigned int getInterpolatedTime( unsigned int minTime, unsigned int maxTime );
-    /// Clears the framebuffer and draws the shared fullscreen triangle (core-profile VAO from RenderPipeline.cpp).
+    /** Clears the framebuffer and draws the shared fullscreen triangle (core-profile VAO from RenderPipeline.cpp). */
     void drawWindow();
 
     unsigned int m_width;  ///< Combine width: render target width in pixels, as last set by
@@ -739,17 +910,19 @@ protected:
     static const int BakeIntervalFrames = 6; ///< Re-bake every N frames: amortizes the compute cost while keeping slow
                                              ///< parameter drift (e.g. an audio-morphed fractal constant) visibly
                                              ///< continuous rather than frozen.
-    /** @brief Lazily compiles the companion X.comp (if present) and allocates the 3D texture backing "texBake".
+    /**  Lazily compiles the companion X.comp (if present) and allocates the 3D texture backing "texBake".
+     *
      * Attempted once; soft-fails (usesBake() draws will silently see an all-zero field) if there is no companion file
-     * or it fails to compile. */
+     * or it fails to compile.
+     **/
     void ensureBakeProg();
-    /**
-     * @brief Dispatches the bake compute program on the BakeIntervalFrames cadence and binds the result to texture
-     * unit 33.
-     * @param time Global shader time, passed through to the compute shader as "time".
-     * @param audio This frame's audio features (see m_lastAudioForBake), for whatever audio-driven parameters the
-     * specific bake shader reads.
-     */
+    /**  Dispatches the bake compute program on the BakeIntervalFrames cadence and binds the result to texture unit
+     * 33.
+     *
+     * @param time   Global shader time, passed through to the compute shader as "time". (in)
+     * @param audio  This frame's audio features (see m_lastAudioForBake), for whatever audio-driven parameters the
+     *               specific bake shader reads. (in)
+     **/
     void stepBake( float time, const AudioFeatures &audio );
 
     std::string m_vertexShaderFilename; ///< Path to the vertex shader source (always "..\\standard.vert" in practice).
@@ -871,7 +1044,10 @@ protected:
     GLint  m_camHostLoc = -1;                                  ///< camHost (-1: no camera host).
     GLint  m_camZLoc = -1;                                     ///< camZ, the flight position.
     GLint  m_camGazeLoc = -1;                                  ///< camGaze (shown, panned to, pan).
-    /// @brief Advances the 3D chains' camera (flight and gaze) and uploads it (program must be bound).
+    /**  Advances the 3D chains' camera (flight and gaze) and uploads it (program must be bound).
+     *
+     * @param f  This frame's audio features (the flight speed and gaze follow them). (in)
+     **/
     void stepChainCam( const AudioFeatures &f );
     // ---- Specialised variants of the chain labs ----
     // One lab shader holds every class; the GPU reserves registers for the
@@ -889,11 +1065,26 @@ protected:
     float m_walkMorph = 0.f;      ///< morphP of this activation (the shader walks on its own at 0.15..0.5).
     bool  m_walkProgSwap = false; ///< The last program change was a variant switch: the walk keeps its state.
     bool  m_specRevert = false;   ///< Back to the generic program at the start of the next frame.
-    /// @brief The defines of the variant for a walk state (stage classes shown and faded to); "" if not specialisable.
+    /**  The defines of the variant for a walk state (stage classes shown and faded to); "" if not specialisable.
+     *
+     * @param x0      Knob value shown per walk stage (indexed like kWalkKnob). (in)
+     * @param x1      Knob value each fading stage fades to. (in)
+     * @param fading  Whether each stage is fading. (in)
+     *
+     * @return
+     *   "#define SPEC_<stage>0 <branch>" lines for both ends of every stage, or "" if the lab has no "// @chainord"
+     *   table.
+     **/
     std::string specDefines( const float *x0, const float *x1, const bool *fading ) const;
-    /// @brief Makes `prog` this effect's program and re-resolves the base uniform locations (program must be usable).
+    /**  Makes `prog` this effect's program and re-resolves the base uniform locations (program must be usable).
+     *
+     * @param prog  The GL program to use from now on. (in)
+     **/
     void bindProgram( GLuint prog );
-    /// @brief Drops every variant (back to the generic program); with release, also frees them.
+    /**  Drops every variant (back to the generic program); with release, also frees them.
+     *
+     * @param release  Also delete the variant programs (true), or only stop using them (false). (in)
+     **/
     void dropVariants( bool release );
     // ---- Chain runner: the lab's chain as one small pass per transform ----
     std::string m_compileFile; ///< Engine/ChainPass/Final_NAME.frag when this lab runs its chain as passes (else
@@ -911,28 +1102,40 @@ protected:
     GLuint m_stFbo = 0;     ///< The 3D lab's start target (a plane's chain input and time offset).
     std::chrono::steady_clock::time_point m_chainUsed;       ///< When this lab last ran its chain (idle labs free their
                                                              ///< textures).
-    /// @brief Frees the chain runner's textures and framebuffers (GL context current); the next run allocates them
-    /// again.
+    /** Frees the chain runner's textures and framebuffers (GL context current); the next run allocates them again. */
     void freeChainTextures();
-    /// @brief Marks this lab's chain textures as used now and frees those of labs idle for 25 s (GL context current).
+    /** Marks this lab's chain textures as used now and frees those of labs idle for 25 s (GL context current). */
     void retireIdleChains();
 
 public:
-    /// @brief Frees the chain textures of every lab idle for 25 s (once per frame, GL context current).
+    /** Frees the chain textures of every lab idle for 25 s (once per frame, GL context current). */
     static void retireIdleChainTextures();
 
 protected:
     GLuint m_stTex = 0;      ///< Its texture (RGBA32F; the chain textures are RG32F).
     float  m_geomWait = 0.f; ///< Seconds a structure fade has waited for its geometry variant.
-    /// @brief The geometry program for a walk state (world 0 = shown, world 1 = faded to); 0 while the helper builds
-    /// it.
+    /**  The geometry program for a walk state (world 0 = shown, world 1 = faded to); 0 while the helper builds it.
+     *
+     * @param x0      Knob value shown per walk stage (indexed like kWalkKnob). (in)
+     * @param x1      Knob value each fading stage fades to. (in)
+     * @param fading  Whether each stage is fading. (in)
+     *
+     * @return
+     *   The program, or 0 while it is being built or if the lab has no world stages.
+     **/
     GLuint geomProgram( const float *x0, const float *x1, const bool *fading );
-    /// @brief The 3D lab's passes (see runChainPasses).
+    /**  The 3D lab's passes (see runChainPasses).
+     *
+     * @param f  This frame's audio features (the walk and the camera follow them). (in)
+     **/
     void             runChain3D( const AudioFeatures &f );
     std::vector<int> m_permCodes;           ///< The 24 stage orders (base-4 digits), from "int permCode(int i)".
     float            m_lastSceneTime = 0.f; ///< sceneTime as uploaded this frame (the passes need the same value).
-    /// @brief Runs this frame's chain as passes and binds the result as texChain (program must be bound; restores the
-    /// GL state it touches).
+    /**  Runs this frame's chain as passes and binds the result as texChain (program must be bound; restores the GL
+     * state it touches).
+     *
+     * @param f  This frame's audio features (the walk follows them). (in)
+     **/
     void                                            runChainPasses( const AudioFeatures &f );
     int m_chainParsed = -1; ///< chainInfo(): -1 = source not read yet, 0 = no chain classes, 1 = parsed.
     std::map<std::string, std::vector<std::string>> m_chainClasses; ///< Stage knob -> class names (energy order), from
@@ -942,17 +1145,41 @@ protected:
                                                             ///< an opening, from "// @chainopening".
     std::map<std::string, std::vector<int>> m_chainSS; ///< Stage knob -> positions of its classes that sparkle most
                                                        ///< (supersampled), from "// @chainss".
-    /// @brief Whether a stage A..D shows, or fades to, a class of m_chainSS (the runner then supersamples).
+    /**  Whether a stage A..D shows, or fades to, a class of m_chainSS (the runner then supersamples).
+     *
+     * @return
+     *   True if such a class is on screen or fading in.
+     **/
     bool chainWantsSS() const;
-    /// @brief Reads the chain lab's "// @chainclasses" / "// @chainopening" lines and frozen knobs once
-    /// (m_chainParsed).
+    /** Reads the chain lab's "// @chainclasses" / "// @chainopening" lines and frozen knobs once (m_chainParsed). */
     void parseChainSource();
-    /// @brief Whether knob value x of stage s (0..3 = A..D) picks a class streaming into an opening
-    /// (chain_classes.OPENING).
+    /**  Whether knob value x of stage s (0..3 = A..D) picks a class streaming into an opening
+     * (chain_classes.OPENING).
+     *
+     * @param s  Walk stage, 0..3 for A..D. (in)
+     * @param x  Knob value 0..1. (in)
+     *
+     * @return
+     *   True if the class at x has an opening, false otherwise or without an opening table.
+     **/
     bool opensAt( int s, float x ) const;
-    /// @brief The nearest class of stage s without an opening (energy order), same sub-variant; x if there is none.
+    /**  The nearest class of stage s without an opening (energy order), same sub-variant; x if there is none.
+     *
+     * @param s  Walk stage, 0..3 for A..D. (in)
+     * @param x  Knob value 0..1. (in)
+     *
+     * @return
+     *   A knob value for the nearest closed class, keeping x's sub-variant; x itself if there is none.
+     **/
     float closedClass( int s, float x ) const;
-    /// @brief The taste weight (M_ClassTaste) of the class knob value x picks on walk stage s; 1 without one.
+    /**  The taste weight (M_ClassTaste) of the class knob value x picks on walk stage s; 1 without one.
+     *
+     * @param s  Walk stage, 0..3 for A..D. (in)
+     * @param x  Knob value 0..1. (in)
+     *
+     * @return
+     *   The weight, 1 if the class has none or the lab has no class table.
+     **/
     float  classTaste( int s, float x ) const;
     GLuint m_walkProg = 0; ///< Program the walk locations belong to.
     GLint  m_walkLoc[9] = { -1, -1, -1, -1, -1,
@@ -960,16 +1187,29 @@ protected:
                                               ///< stage absent).
     GLint m_walkHostLoc = -1;                 ///< Location of walkHost (-1: not a chain lab).
     GLint m_tiltALoc = -1;                    ///< Location of tiltA (the time tilt's direction).
-    /// @brief Re-reads the rolled knobs into the walk state (called lazily after an activation).
+    /** Re-reads the rolled knobs into the walk state (called lazily after an activation). */
     void resetChainWalk();
-    /// @brief Sets the stage knobs to the classes the chain lab fading out shows (by class name; see s_lastChain in
-    /// EffectShader.cpp).
+    /**  Sets the stage knobs to the classes the chain lab fading out shows (by class name; see s_lastChain in
+     * EffectShader.cpp).
+     *
+     * @sideeffects
+     *   Changes s_noCarrySet.
+     **/
     void carryChainOver();
     bool m_walkCarried[9] = {}; ///< Stage knob taken over from the lab fading out at this activation.
-    /// @brief Advances the walk by one frame from the music and uploads the walk uniforms (program must be bound).
+    /**  Advances the walk by one frame from the music and uploads the walk uniforms (program must be bound).
+     *
+     * @param audio  This frame's audio features; with live score cues their section and drop counts replace the
+     *               analyser's. (in)
+     **/
     void stepChainWalk( const AudioFeatures &audio );
-    /// @brief Starts stage @p s fading to knob value @p target over @p dur seconds (no-op while that stage already
-    /// fades: a fade never changes its destination).
+    /**  Starts stage @p s fading to knob value @p target over @p dur seconds (no-op while that stage already fades: a
+     * fade never changes its destination).
+     *
+     * @param s       Walk stage index (as kWalkKnob). (in)
+     * @param target  Knob value to fade to, clamped to 0..0.999. (in)
+     * @param dur     Fade duration in seconds. (in)
+     **/
     void startWalk( int s, float target, float dur );
     int  m_usesMandelbrot = -1; ///< Cached usesMandelbrot() result (-1 = not yet queried): the deep-zoom Mandelbrot
                                 ///< field texture, `texMandelbrot`.
@@ -1071,11 +1311,13 @@ protected:
                                  ///< against re-integrating within the same frame.
 
 public:
-    /**
-     * @brief Reads the current 2D camera rig transform, if active.
-     * @param out Destination for {roll, zoom, panX, panY}; left untouched when the rig is inactive.
-     * @return False if the 2D rig pass is off (no rig2* formulas registered); true if @p out was filled.
-     */
+    /**  Reads the current 2D camera rig transform, if active.
+     *
+     * @param out  Destination for {roll, zoom, panX, panY}; left untouched when the rig is inactive. (in)
+     *
+     * @return
+     *   False if the 2D rig pass is off (no rig2* formulas registered); true if @p out was filled.
+     **/
     bool rig2( float out[4] ) const
     {
         if ( !m_rig2Active )
@@ -1094,9 +1336,13 @@ protected:
                                        ///< addUniform()/addUniformInterpolator(), owned for the lifetime of this effect
                                        ///< (never explicitly deleted).
 private:
-    /// @brief Not copyable (CGVR template: copy constructor and assignment are always declared).
+    /** Not copyable (CGVR template: copy constructor and assignment are always declared). */
     EffectShader( const EffectShader & ) = delete;
-    /// @brief Not assignable; see the copy constructor.
+    /**  Not assignable; see the copy constructor.
+     *
+     * @return
+     *   Nothing: the operator is deleted, so no call compiles.
+     **/
     EffectShader &operator=( const EffectShader & ) = delete;
 };
 

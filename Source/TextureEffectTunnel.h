@@ -25,36 +25,36 @@
 class TextureEffectTunnel : public TextureEffectKaleidoscopeBase
 {
 public:
-    /**
-     * @brief Construct with solo/interpolation timing ranges; fragment shader is fixed to Tunnel.frag.
-     * @param minTimeSolo Minimum seconds this effect stays solo once activated.
-     * @param maxTimeSolo Maximum seconds this effect stays solo once activated.
-     * @param minTimeInterpolation Minimum seconds spent cross-fading into/out of this effect.
-     * @param maxTimeInterpolation Maximum seconds spent cross-fading into/out of this effect.
-     */
+    /**  Construct with solo/interpolation timing ranges; fragment shader is fixed to Tunnel.frag.
+     *
+     * @param minTimeSolo           Minimum seconds this effect stays solo once activated. (in)
+     * @param maxTimeSolo           Maximum seconds this effect stays solo once activated. (in)
+     * @param minTimeInterpolation  Minimum seconds spent cross-fading into/out of this effect. (in)
+     * @param maxTimeInterpolation  Maximum seconds spent cross-fading into/out of this effect. (in)
+     **/
     TextureEffectTunnel( unsigned int minTimeSolo, unsigned int maxTimeSolo, unsigned int minTimeInterpolation,
                          unsigned int maxTimeInterpolation );
-    /// Destructor. No extra cleanup beyond the base class.
+    /**  Destructor.
+     *
+     * No extra cleanup beyond the base class.
+     **/
     ~TextureEffectTunnel();
 
-    /**
-     * @brief Resolves the `speedTunnel` uniform location after chaining to
-     * TextureEffectKaleidoscopeBase::initUniforms().
-     * @param width Render target width in pixels.
-     * @param height Render target height in pixels.
-     */
+    /**  Resolves the `speedTunnel` uniform location after chaining to TextureEffectKaleidoscopeBase::initUniforms().
+     *
+     * @param width   Render target width in pixels. (in)
+     * @param height  Render target height in pixels. (in)
+     **/
     virtual void initUniforms( int width, int height ); // initialize GLSL - shader programs
-    /**
-     * @brief Uploads `speedTunnel` after chaining to TextureEffectKaleidoscopeBase::setUniforms().
-     * @param time Absolute animation time in seconds.
-     * @param interpolation Current cross-fade weight.
-     * @param texLoc1 Texture unit bound to the `tex0` sampler.
-     * @param texLoc2 Texture unit bound to the `tex1` sampler.
-     */
+    /**  Uploads `speedTunnel` after chaining to TextureEffectKaleidoscopeBase::setUniforms().
+     *
+     * @param time           Absolute animation time in seconds. (in)
+     * @param interpolation  Current cross-fade weight. (in)
+     * @param texLoc1        Texture unit bound to the `tex0` sampler. (in)
+     * @param texLoc2        Texture unit bound to the `tex1` sampler. (in)
+     **/
     virtual void setUniforms( float time, float interpolation, GLint texLoc1, GLint texLoc2 ); // setting uniforms
-    /**
-     * @brief Re-rolls the tunnel scroll speed and forces m_powerRotationAllowed off, after chaining to the base class.
-     */
+    /** Re-rolls the tunnel scroll speed and forces m_powerRotationAllowed off, after chaining to the base class. */
     virtual void resetParameters();
 
 protected:

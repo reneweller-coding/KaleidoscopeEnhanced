@@ -21,29 +21,30 @@
 class NanoTimer
 {
 public:
-    NanoTimer(); ///< Constructs the timer, lazily checking the counter frequency once, and calls start().
+    /** Constructs the timer, lazily checking the counter frequency once, and calls start(). */
+    NanoTimer();
 
-    /**
-     * @brief Resets the timer's reference point to the current time.
-     */
+    /** Resets the timer's reference point to the current time. */
     void start( void );
-    /**
-     * @brief Returns the time elapsed since the last start() call.
-     * @return Elapsed time in nanoseconds (scaled by the measured counter frequency
-     *         when a high-frequency counter is in use, otherwise raw counter ticks).
-     */
+    /**  Returns the time elapsed since the last start() call.
+     *
+     * @return
+     *   Elapsed time in nanoseconds (scaled by the measured counter frequency when a high-frequency counter is in
+     *   use, otherwise raw counter ticks).
+     **/
     double elapsed( void ) const;
 
-    /**
-     * @brief Reports whether the high-frequency hardware counter is being used.
-     * @return True if QueryPerformanceFrequency succeeded; valid only after the first
-     *         NanoTimer has been constructed.
-     */
+    /**  Reports whether the high-frequency hardware counter is being used.
+     *
+     * @return
+     *   True if QueryPerformanceFrequency succeeded; valid only after the first NanoTimer has been constructed.
+     **/
     static bool usesHighFrequ( void );
-    /**
-     * @brief Returns the measured counter frequency.
-     * @return Frequency in GHz; valid only when usesHighFrequ() is true.
-     */
+    /**  Returns the measured counter frequency.
+     *
+     * @return
+     *   Frequency in GHz; valid only when usesHighFrequ() is true.
+     **/
     static double frequ( void );
 
 private:
@@ -53,31 +54,40 @@ private:
     static double M_GHz;              ///< Measured counter frequency in GHz (or a fallback of 0.001 if unavailable).
     static bool   M_FrequencyChecked; ///< Guards checkFrequency() so it only runs once, on first construction.
 
-    /**
-     * @brief Reads the raw hardware counter value.
-     * @return Current QueryPerformanceCounter tick count. Meaning depends on M_UseHighFrequ.
-     */
+    /**  Reads the raw hardware counter value.
+     *
+     * @return
+     *   Current QueryPerformanceCounter tick count. Meaning depends on M_UseHighFrequ.
+     **/
     static long long unsigned int getTimeStamp( void );
-    /**
-     * @brief Determines the CPU/counter frequency once and caches it in M_GHz / M_UseHighFrequ.
-     */
+    /**  Determines the CPU/counter frequency once and caches it in M_GHz / M_UseHighFrequ.
+     *
+     * @sideeffects
+     *   Changes M_FrequencyChecked, M_GHz, M_UseHighFrequ.
+     **/
     static void checkFrequency( void );
 
 private:
-    /// @brief Not copyable (CGVR template: copy constructor and assignment are always declared).
+    /** Not copyable (CGVR template: copy constructor and assignment are always declared). */
     NanoTimer( const NanoTimer & ) = delete;
-    /// @brief Not assignable; see the copy constructor.
+    /**  Not assignable; see the copy constructor.
+     *
+     * @return
+     *   Nothing: the operator is deleted, so no call compiles.
+     **/
     NanoTimer &operator=( const NanoTimer & ) = delete;
 };
 
-/**
- * @brief Converts an arbitrary QImage into the format used for OpenGL textures.
+/**  Converts an arbitrary QImage into the format used for OpenGL textures.
+ *
+ * @param image  Source image to convert. (in)
+ *
+ * @return
+ *   A new QImage ready to be uploaded as a texture.
  *
  * Converts to Format_ARGB32, swaps the byte order (rgbSwapped) to match GL's expected
  * channel layout, and scales it down to at most 1024x1024.
- * @param image Source image to convert.
- * @return A new QImage ready to be uploaded as a texture.
- */
+ **/
 QImage prepareImage( const QImage &image );
 
 #endif

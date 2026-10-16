@@ -67,77 +67,168 @@ public:
         float spectroFill = 0.f;  ///< GpuSims::spectroFillNorm() -- spectrogram ring fill.
     };
 
-    /**
-     * @brief Advances every envelope/slew/integrator by @p dt and returns the processed AudioFeatures copy.
-     * @param audio Raw per-frame audio-analysis snapshot (unmodified; a working copy is returned).
-     * @param dt Frame time in seconds, already scaled by the caller for freeze/pin/break-hold; internally clamped to
-     * [0, 0.1] to ignore stalls.
-     * @param ctx The frame's non-audio inputs (see Context).
-     * @return A copy of @p audio with motion integrated into continuous phases, brightness/onset signals slew-limited,
-     * and every field the master music gate should mute already gated.
-     */
-    AudioFeatures update( const AudioFeatures &audio, float dt, const Context &ctx );
+    /**  Advances every envelope/slew/integrator by @p rawDt and returns the processed AudioFeatures copy.
+     *
+     * @param audio  Raw per-frame audio-analysis snapshot (unmodified; a working copy is returned). (in)
+     * @param rawDt  Frame time in seconds, already scaled by the caller for freeze/pin/break-hold; internally
+     *               clamped to [0, 0.1] to ignore stalls. (in)
+     * @param ctx    The frame's non-audio inputs (see Context). (in)
+     *
+     * @return
+     *   A copy of @p audio with motion integrated into continuous phases, brightness/onset signals slew-limited,
+     *   and every field the master music gate should mute already gated.
+     **/
+    AudioFeatures update( const AudioFeatures &audio, float rawDt, const Context &ctx );
 
+    /**  True for the one frame a downbeat just landed (beat-quantised scene/image cuts).
+     *
+     * @return
+     *   True for the one frame a downbeat just landed (beat-quantised scene/image cuts).
+     **/
     bool downbeatTick() const
     {
         return m_downbeatTick;
-    } ///< @return True for the one frame a downbeat just landed (beat-quantised scene/image cuts).
+    }
+    /**  The slewed music-presence gate (0 = speech/silence, 1 = full music) that scales every audio-reactive signal.
+     *
+     * @return
+     *   The slewed music-presence gate (0 = speech/silence, 1 = full music) that scales every audio-reactive
+     *   signal.
+     **/
     float gate() const
     {
         return m_gateSmooth;
-    } ///< @return The slewed music-presence gate (0 = speech/silence, 1 = full music) that scales every audio-reactive
-    ///< signal.
+    }
+    /**  0..1 corner-cone colour-chase phase, advances 1/4 turn per onset.
+     *
+     * @return
+     *   0..1 corner-cone colour-chase phase, advances 1/4 turn per onset.
+     **/
     float chasePhase() const
     {
         return m_chasePhase;
-    } ///< @return 0..1 corner-cone colour-chase phase, advances 1/4 turn per onset.
+    }
+    /**  Synthetic drops injected so far by the KALEIDO_FORCE_DROP dev hook; added to audio.dropCount by every
+     * consumer so a forced drop feeds the same drop-count-rising-edge logic as a real one.
+     *
+     * @return
+     *   Synthetic drops injected so far by the KALEIDO_FORCE_DROP dev hook; added to audio.dropCount by every
+     *   consumer so a forced drop feeds the same drop-count-rising-edge logic as a real one.
+     **/
     int fakeDropCount() const
     {
         return m_fakeDrops;
-    } ///< @return Synthetic drops injected so far by the KALEIDO_FORCE_DROP dev hook; added to audio.dropCount by every
-    ///< consumer so a forced drop feeds the same drop-count-rising-edge logic as a real one.
+    }
+    /**  The slew-limited beat strength BEFORE the music gate (unlike AudioFeatures::beatDecay, which is `this *
+     * gate`) -- the trail echo-warp reads this ungated value.
+     *
+     * @return
+     *   The slew-limited beat strength BEFORE the music gate (unlike AudioFeatures::beatDecay, which is `this *
+     *   gate`) -- the trail echo-warp reads this ungated value.
+     **/
     float beatSmooth() const
     {
         return m_audioBeatSmooth;
-    } ///< @return The slew-limited beat strength BEFORE the music gate (unlike AudioFeatures::beatDecay, which is `this
-    ///< * gate`) -- the trail echo-warp reads this ungated value.
+    }
 
-    float camZoom() const { return m_camZoom; } ///< @return Current virtual-camera zoom factor, for PresentPass.
-    float camRot() const { return m_camRot; } ///< @return Current virtual-camera roll (per-bar sway), for PresentPass.
+    /**  Current virtual-camera zoom factor, for PresentPass.
+     *
+     * @return
+     *   Current virtual-camera zoom factor, for PresentPass.
+     **/
+    float camZoom() const { return m_camZoom; }
+    /**  Current virtual-camera roll (per-bar sway), for PresentPass.
+     *
+     * @return
+     *   Current virtual-camera roll (per-bar sway), for PresentPass.
+     **/
+    float camRot() const { return m_camRot; }
+    /**  Current virtual-camera horizontal offset in UV units, i.e. a fraction of the frame (drift + shake +
+     * gate-weave), for PresentPass's `camOff` uniform.
+     *
+     * @return
+     *   Current virtual-camera horizontal offset in UV units, i.e. a fraction of the frame (drift + shake +
+     *   gate-weave), for PresentPass's `camOff` uniform.
+     **/
     float camOffX() const
     {
         return m_camOffX;
-    } ///< @return Current virtual-camera horizontal offset in UV units, i.e. a fraction of the frame (drift + shake +
-    ///< gate-weave), for PresentPass's `camOff` uniform.
+    }
+    /**  Current virtual-camera vertical offset in UV units, i.e. a fraction of the frame (drift + shake +
+     * gate-weave), for PresentPass's `camOff` uniform.
+     *
+     * @return
+     *   Current virtual-camera vertical offset in UV units, i.e. a fraction of the frame (drift + shake +
+     *   gate-weave), for PresentPass's `camOff` uniform.
+     **/
     float camOffY() const
     {
         return m_camOffY;
-    } ///< @return Current virtual-camera vertical offset in UV units, i.e. a fraction of the frame (drift + shake +
-    ///< gate-weave), for PresentPass's `camOff` uniform.
+    }
 
+    /**  Seconds behind live the display should read from the PresentPass history ring (0 = live).
+     *
+     * @return
+     *   Seconds behind live the display should read from the PresentPass history ring (0 = live).
+     **/
     float rewindBack() const
     {
         return m_rewindBack;
-    } ///< @return Seconds behind live the display should read from the PresentPass history ring (0 = live).
-    float rewindMix() const { return m_rewindMixSm; } ///< @return Slewed visibility (0..1) of the rewind effect.
+    }
+    /**  Slewed visibility (0..1) of the rewind effect.
+     *
+     * @return
+     *   Slewed visibility (0..1) of the rewind effect.
+     **/
+    float rewindMix() const { return m_rewindMixSm; }
+    /**  KALEIDO_REGIE_TEST forced time-echo amount, or -1 for "no override".
+     *
+     * @return
+     *   KALEIDO_REGIE_TEST forced time-echo amount, or -1 for "no override".
+     **/
     float echoOverride() const
     {
         return m_echoOverride;
-    } ///< @return KALEIDO_REGIE_TEST forced time-echo amount, or -1 for "no override".
+    }
+    /**  Slewed "breath-hold" amount (0..1), driven by the upper half of build-up.
+     *
+     * @return
+     *   Slewed "breath-hold" amount (0..1), driven by the upper half of build-up.
+     **/
     float breath() const
     {
         return m_breathSm;
-    } ///< @return Slewed "breath-hold" amount (0..1), driven by the upper half of build-up.
-    float letterbox() const { return m_letterSm; } ///< @return Slewed letterbox-bar amount (0..1).
+    }
+    /**  Slewed letterbox-bar amount (0..1).
+     *
+     * @return
+     *   Slewed letterbox-bar amount (0..1).
+     **/
+    float letterbox() const { return m_letterSm; }
+    /**  Current radius of the expanding bass-shockwave distortion ring.
+     *
+     * @return
+     *   Current radius of the expanding bass-shockwave distortion ring.
+     **/
     float shockR() const
     {
         return m_shockR;
-    } ///< @return Current radius of the expanding bass-shockwave distortion ring.
-    float shockAmp() const { return m_shockAmp; } ///< @return Current amplitude of the bass-shockwave distortion ring.
+    }
+    /**  Current amplitude of the bass-shockwave distortion ring.
+     *
+     * @return
+     *   Current amplitude of the bass-shockwave distortion ring.
+     **/
+    float shockAmp() const { return m_shockAmp; }
+    /**  Seconds until the next 8-bar boundary; 0 when the tempo is unknown.
+     *
+     * @return
+     *   Seconds until the next 8-bar boundary; 0 when the tempo is unknown.
+     **/
     float phraseSecsLeft() const
     {
         return m_phraseSecsLeft;
-    } ///< @return Seconds until the next 8-bar boundary; 0 when the tempo is unknown.
+    }
 
 private:
     // ---- envelopes / slews on the raw signal set ----
@@ -246,13 +337,17 @@ private:
     float m_forceDropAt = -2.f; ///< Global time to inject the next forced drop; < -1 = not yet read from the
                                 ///< environment.
 public:
-    /// @brief Default construction, which the declared copy operations would otherwise suppress.
+    /** Default construction, which the declared copy operations would otherwise suppress. */
     AudioConditioner() = default;
 
 private:
-    /// @brief Not copyable (CGVR template: copy constructor and assignment are always declared).
+    /** Not copyable (CGVR template: copy constructor and assignment are always declared). */
     AudioConditioner( const AudioConditioner & ) = delete;
-    /// @brief Not assignable; see the copy constructor.
+    /**  Not assignable; see the copy constructor.
+     *
+     * @return
+     *   Nothing: the operator is deleted, so no call compiles.
+     **/
     AudioConditioner &operator=( const AudioConditioner & ) = delete;
 };
 

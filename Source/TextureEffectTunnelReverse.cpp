@@ -34,7 +34,7 @@ TextureEffectTunnelReverse::~TextureEffectTunnelReverse()
 {
 }
 
-/// Uploads `speedTunnelReverse` after chaining to TextureEffectTunnel::setUniforms().
+/** Uploads `speedTunnelReverse` after chaining to TextureEffectTunnel::setUniforms(). */
 void TextureEffectTunnelReverse::setUniforms( float time, float interpolation, GLint texLoc1, GLint texLoc2 )
 {
     TextureEffectTunnel::setUniforms( time, interpolation, texLoc1, texLoc2 );
@@ -42,11 +42,10 @@ void TextureEffectTunnelReverse::setUniforms( float time, float interpolation, G
 }
 
 
-/**
- * @brief Sets up the GLSL runtime and creates shader.
+/**  Sets up the GLSL runtime and creates shader.
  *
  * Chains to TextureEffectTunnel::initUniforms() then resolves `speedTunnelReverse`.
- */
+ **/
 void TextureEffectTunnelReverse::initUniforms( int width, int height )
 {
     TextureEffectTunnel::initUniforms( width, height );
@@ -56,8 +55,7 @@ void TextureEffectTunnelReverse::initUniforms( int width, int height )
 }
 
 
-/**
- * @brief Re-rolls the reverse tunnel scroll speed.
+/**  Re-rolls the reverse tunnel scroll speed.
  *
  * Chains to TextureEffectTunnel::resetParameters() first. m_speedTunnelReverseMin/Max
  * are declared with min(-0.001) NUMERICALLY GREATER than max(-0.08) - unlike every
@@ -67,7 +65,7 @@ void TextureEffectTunnelReverse::initUniforms( int width, int height )
  * direction flips along with the flipped bounds and the result stays in [-0.08,
  * -0.001] as intended - just via a less obvious route than TextureEffectTunnel's.
  * Unlike the base class, there is no near-zero clamp here.
- */
+ **/
 void TextureEffectTunnelReverse::resetParameters()
 {
     TextureEffectTunnel::resetParameters();

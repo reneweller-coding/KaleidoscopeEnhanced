@@ -24,16 +24,20 @@
 class WallClock
 {
 public:
+    /** Constructs the clock, starting it immediately. */
     WallClock()
         : m_t0( std::chrono::steady_clock::now() )
     {
-    } ///< Constructs the clock, starting it immediately.
-    void start() { m_t0 = std::chrono::steady_clock::now(); } ///< Resets the reference point to now.
-    void restart() { start(); }                               ///< Alias for start(), matching QElapsedTimer's API.
-    /**
-     * @brief Milliseconds since start() - wie QElapsedTimer::elapsed().
-     * @return Elapsed time in milliseconds since the last start()/restart().
-     */
+    }
+    /** Resets the reference point to now. */
+    void start() { m_t0 = std::chrono::steady_clock::now(); }
+    /** Alias for start(), matching QElapsedTimer's API. */
+    void restart() { start(); }
+    /**  Milliseconds since start() - wie QElapsedTimer::elapsed().
+     *
+     * @return
+     *   Elapsed time in milliseconds since the last start()/restart().
+     **/
     long long elapsed() const
     {
         return std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -44,9 +48,13 @@ public:
 private:
     std::chrono::steady_clock::time_point m_t0; ///< Reference time point set by the constructor / start() / restart().
 private:
-    /// @brief Not copyable (CGVR template: copy constructor and assignment are always declared).
+    /** Not copyable (CGVR template: copy constructor and assignment are always declared). */
     WallClock( const WallClock & ) = delete;
-    /// @brief Not assignable; see the copy constructor.
+    /**  Not assignable; see the copy constructor.
+     *
+     * @return
+     *   Nothing: the operator is deleted, so no call compiles.
+     **/
     WallClock &operator=( const WallClock & ) = delete;
 };
 

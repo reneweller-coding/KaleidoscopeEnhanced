@@ -33,47 +33,68 @@
 class Configuration
 {
 public:
-    /**
-     * @brief Loads and parses a preset XML file, building the full shader/uniform graph.
-     * @param configurationFile Path to the Presets/ *.xml preset file to load.
-     */
+    /**  Loads and parses a preset XML file, building the full shader/uniform graph.
+     *
+     * @param configurationFile  Path to the Presets/ *.xml preset file to load. (in)
+     **/
     explicit Configuration( const QString &configurationFile );
-    /** @brief Destroys the owned RenderPipeline (and, transitively, everything it built). */
+    /** Destroys the owned RenderPipeline (and, transitively, everything it built). */
     ~Configuration();
 
-    /** @brief The preset's display name, as shown in the menu / matched by `-c <name>`.
-     * @return The root element's ConfigurationName attribute (empty if the preset had none). */
+    /**  The preset's display name, as shown in the menu / matched by `-c <name>`.
+     *
+     * @return
+     *   The root element's ConfigurationName attribute (empty if the preset had none).
+     **/
     QString getConfigurationName() { return m_configurationName; };
     // hidden="true" on the root element: a master/reference or test-bench
     // preset that must not appear in the user-facing selection (menu, digit
     // keys, web remote, auto-config).  Still loadable via -c <name>.
-    /** @brief Whether this preset is hidden from user-facing selection (still loadable explicitly via `-c <name>`).
-     * @return True if the root element had `hidden="true"`. */
+    /**  Whether this preset is hidden from user-facing selection (still loadable explicitly via `-c <name>`).
+     *
+     * @return
+     *   True if the root element had `hidden="true"`.
+     **/
     bool isHidden() const { return m_hidden; }
 
-    /** @brief Audio file this preset wants analysed instead of the live input.
+    /**  Audio file this preset wants analysed instead of the live input.
+     *
+     * @return
+     *   Path as written in the XML, or empty.
      *
      *  Empty for every normal preset -- the point of the program is to react to
      *  whatever is playing. A REVIEW preset is the exception: it has to show the
      *  same scene the same way twice, which live audio cannot do, so it names a
      *  fixed WAV and the engine analyses that silently instead of listening.
      *  A -w or -x on the command line outranks it.
-     *  @return Path as written in the XML, or empty. */
+     **/
     QString audioFile() const { return m_audioFile; }
-    /**
-     * @brief Starts the owned RenderPipeline's GL resources/scheduler for the given viewport size.
-     * @param width Viewport width in pixels.
-     * @param height Viewport height in pixels.
-     */
+    /**  Starts the owned RenderPipeline's GL resources/scheduler for the given viewport size.
+     *
+     * @param width   Viewport width in pixels. (in)
+     * @param height  Viewport height in pixels. (in)
+     **/
     void start( int width, int height ) const;
-    /** @brief Stops the owned RenderPipeline (releases its running state). */
+    /** Stops the owned RenderPipeline (releases its running state). */
     void stop() const;
 
-    /** @brief The shader/scene pipeline built by readConfiguration(). @return It; owned by this configuration. */
+    /**  The shader/scene pipeline built by readConfiguration().
+     *
+     * @return
+     *   It; owned by this configuration.
+     **/
     RenderPipeline *renderPipeline() const { return m_renderPipeline; }
-    /** @brief Mesh scenes skipped for a missing model file. @return Their number (see m_skippedMeshScenes). */
+    /**  Mesh scenes skipped for a missing model file.
+     *
+     * @return
+     *   Their number (see m_skippedMeshScenes).
+     **/
     int skippedMeshScenes() const { return m_skippedMeshScenes; }
-    /** @brief Scenes this preset actually built. @return Their number (see m_loadedScenes). */
+    /**  Scenes this preset actually built.
+     *
+     * @return
+     *   Their number (see m_loadedScenes).
+     **/
     int loadedScenes() const { return m_loadedScenes; }
 
 private:
@@ -95,20 +116,18 @@ private:
     /// today, but the guard is what makes adding one safe.
     int m_loadedScenes = 0;
 
-    /**
-     * @brief Parses the preset XML document and populates m_renderPipeline with its TextureShader/CombineShader
-     * entries.
+    /**  Parses the preset XML document and populates m_renderPipeline with its TextureShader/CombineShader entries.
      *
      * Takes the path of the Presets/ *.xml preset file; the parameter is
      * documented on the definition in Configuration.cpp.
-     */
-    void readConfiguration( const QString &filename );
-    /**
-     * @brief Reads a shader element's child uniform-declaration tags (interpolator/bool/float/int/expr) and registers
-     * them on the shader.
-     * @param shader The EffectShader (or subclass) to register the parsed uniforms/expressions on.
-     * @param el The `<TextureShader>` or `<CombineShader>` XML element whose children to walk.
-     */
+     **/
+    void readConfiguration( const QString &filenameIn );
+    /**  Reads a shader element's child uniform-declaration tags (interpolator/bool/float/int/expr) and registers them
+     * on the shader.
+     *
+     * @param shader  The EffectShader (or subclass) to register the parsed uniforms/expressions on. (in)
+     * @param el      The `<TextureShader>` or `<CombineShader>` XML element whose children to walk. (in,out)
+     **/
     void addUniforms( EffectShader *shader, QDomElement &el );
 
     QString m_imageDirectory;    ///< Root image directory for this preset (root element's ImageDirectory attribute),
@@ -128,9 +147,13 @@ private:
     unsigned int m_timeTextureSoloMax; ///< Preset-wide maximum time an image is held solo (seconds); falls back to a
                                        ///< baseline when absent/invalid in the XML.
 private:
-    /// @brief Not copyable (CGVR template: copy constructor and assignment are always declared).
+    /** Not copyable (CGVR template: copy constructor and assignment are always declared). */
     Configuration( const Configuration & ) = delete;
-    /// @brief Not assignable; see the copy constructor.
+    /**  Not assignable; see the copy constructor.
+     *
+     * @return
+     *   Nothing: the operator is deleted, so no call compiles.
+     **/
     Configuration &operator=( const Configuration & ) = delete;
 };
 

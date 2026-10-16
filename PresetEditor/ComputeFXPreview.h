@@ -29,40 +29,46 @@ class ComputeFX;
 class ComputeFXPreview
 {
 public:
-    /// Constructs the wrapped ComputeFX instance (no GL calls yet; see init()).
+    /** Constructs the wrapped ComputeFX instance (no GL calls yet; see init()). */
     ComputeFXPreview();
-    /// Destroys the wrapped ComputeFX instance.
+    /** Destroys the wrapped ComputeFX instance. */
     ~ComputeFXPreview();
 
-    /// Query GL limits + compute availability once (context must be current).
+    /** Query GL limits + compute availability once (context must be current). */
     void init();
 
-    /**
-     * @brief Advance sim @p k by one frame and return the texture to bind on CfxInfoTable[k].unit.
-     * @param k A CfxKindE (see Source/CfxTypes.h) identifying which sim to step.
-     * @param a Current audio feature snapshot driving the sim's reactive parameters.
-     * @param dt Elapsed wall-clock time in seconds since the sim's last step.
-     * @param time Current wall-clock time in seconds (absolute, for phase accumulation).
-     * @param srcImage Source colour texture the sim may sample/seed from.
-     * @param outW Output texture width in pixels.
-     * @param outH Output texture height in pixels.
-     * @return The result texture to bind, or 0 when the sim is unavailable or failed -- caller then binds nothing, same
-     * contract as ComputeFX::step().
-     */
+    /**  Advance sim @p k by one frame and return the texture to bind on CfxInfoTable[k].unit.
+     *
+     * @param k         A CfxKindE (see Source/CfxTypes.h) identifying which sim to step. (in)
+     * @param a         Current audio feature snapshot driving the sim's reactive parameters. (in)
+     * @param dt        Elapsed wall-clock time in seconds since the sim's last step. (in)
+     * @param time      Current wall-clock time in seconds (absolute, for phase accumulation). (in)
+     * @param srcImage  Source colour texture the sim may sample/seed from. (in)
+     * @param outW      Output texture width in pixels. (in)
+     * @param outH      Output texture height in pixels. (in)
+     *
+     * @return
+     *   The result texture to bind, or 0 when the sim is unavailable or failed -- caller then binds nothing, same
+     *   contract as ComputeFX::step().
+     **/
     unsigned int step( int k, const AudioFeatures &a, float dt, float time,
                        unsigned int srcImage, int outW, int outH );
 
-    /**
-     * @brief Free a sim's GPU memory when it has not been on screen for a while.
-     * @param now Current wall-clock time in seconds, compared against each sim's last-used timestamp.
-     */
+    /**  Free a sim's GPU memory when it has not been on screen for a while.
+     *
+     * @param now  Current wall-clock time in seconds, compared against each sim's last-used timestamp. (in)
+     **/
     void retireIdle( float now );
 
 private:
     ComputeFX *m_impl; ///< Owned ComputeFX instance; all calls above forward to it.
 private:
-    /// @brief Not copyable (CGVR template: copy constructor and assignment are always declared).
+    /** Not copyable (CGVR template: copy constructor and assignment are always declared). */
     ComputeFXPreview( const ComputeFXPreview & ) = delete;
-    /// @brief Not assignable; see the copy constructor.
+    /**  Not assignable; see the copy constructor.
+     *
+     * @return
+     *   Nothing: the operator is deleted, so no call compiles.
+     **/
     ComputeFXPreview &operator=( const ComputeFXPreview & ) = delete;
 };

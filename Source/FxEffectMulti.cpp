@@ -13,14 +13,13 @@
 
 #include <GL/GLU.h>
 
-/**
- * @brief Constructs the effect and rolls its initial `copies` value.
+/**  Constructs the effect and rolls its initial `copies` value.
  *
  * Note: `EffectShader();` in the body constructs and immediately destroys an
  * unrelated TEMPORARY EffectShader object (same pattern as FxEffectKaleidoscope's
  * constructor) - it does not call this object's base subobject constructor,
  * which already ran implicitly. Harmless but misleading; left as-is.
- */
+ **/
 FxEffectMulti::FxEffectMulti()
     : m_minCopies( 3 ),
       m_maxCopies( 12 ),
@@ -39,7 +38,7 @@ FxEffectMulti::~FxEffectMulti()
 {
 }
 
-/// Uploads `copies` after chaining to EffectShader::setUniforms().
+/** Uploads `copies` after chaining to EffectShader::setUniforms(). */
 void FxEffectMulti::setUniforms( float time, float interpolation, GLint texLoc1, GLint texLoc2 )
 {
     EffectShader::setUniforms( time, interpolation, texLoc1, texLoc2 );
@@ -47,11 +46,10 @@ void FxEffectMulti::setUniforms( float time, float interpolation, GLint texLoc1,
 }
 
 
-/**
- * @brief Sets up the GLSL runtime and creates shader.
+/**  Sets up the GLSL runtime and creates shader.
  *
  * Chains to EffectShader::initUniforms() then resolves `copies`.
- */
+ **/
 void FxEffectMulti::initUniforms( int width, int height )
 {
     EffectShader::initUniforms( width, height );
@@ -60,13 +58,12 @@ void FxEffectMulti::initUniforms( int width, int height )
     checkGLErrors( "loadShader 2" );
 }
 
-/**
- * @brief Re-rolls `copies`.
+/**  Re-rolls `copies`.
  *
  * Does NOT chain to EffectShader::resetParameters() (same omission as
  * FxEffectKaleidoscope::resetParameters(); harmless here too since this class
  * registers no Uniforms/expressions of its own).
- */
+ **/
 void FxEffectMulti::resetParameters()
 {
     m_copies = (float)( ( qrand() % m_maxCopies ) + m_minCopies );

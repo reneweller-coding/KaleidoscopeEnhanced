@@ -48,44 +48,44 @@ class QUdpSocket;
 class WebRemote : public QObject
 {
 public:
-    /**
-     * @brief Creates the QTcpServer, listens on @p port (or the next few free ports if that one's taken), and starts
-     * the UDP discovery responder alongside it.
-     * @param widget The GLwidget this remote controls and queries; also used as the QObject parent for lifetime
-     * management.
-     * @param port Preferred TCP port to listen on (all interfaces), typically from the CLI -t flag (default 8080).
-     */
+    /**  Creates the QTcpServer, listens on @p port (or the next few free ports if that one's taken), and starts the
+     * UDP discovery responder alongside it.
+     *
+     * @param widget  The GLwidget this remote controls and queries; also used as the QObject parent for lifetime
+     *                management. (in)
+     * @param port    Preferred TCP port to listen on (all interfaces), typically from the CLI -t flag (default
+     *                8080). (in)
+     **/
     WebRemote( GLwidget *widget, int port );
 
 private:
-    /**
-     * @brief Accepts pending TCP connections and wires up one-shot request handling for each.
+    /**  Accepts pending TCP connections and wires up one-shot request handling for each.
      *
      * For every new connection, reads the request on the first readyRead, parses the request
      * line, dispatches "/" and the GET /api/ routes by calling into GLwidget / RenderPipeline,
      * writes a single HTTP/1.1 response, and closes the connection (no keep-alive, no chunked
      * request bodies).
-     */
+     **/
     void handleConnection();
 
-    /**
-     * @brief Answers pending LAN discovery broadcasts on m_discoverySocket with this instance's
-     * host/port/active-preset.
+    /**  Answers pending LAN discovery broadcasts on m_discoverySocket with this instance's host/port/active-preset.
      *
      * Ignores any datagram that isn't exactly the expected magic request (stray traffic on the
      * discovery port). Replies are sent unicast straight back to the sender's address/port, so
      * the requester needs no separate listening socket beyond the one it broadcast from.
-     */
+     **/
     void handleDiscovery();
 
-    /**
-     * @brief Binds m_server to the first free TCP port starting at @p preferred.
+    /**  Binds m_server to the first free TCP port starting at @p preferred.
+     *
+     * @param preferred  The requested port; tried first. (in)
+     *
+     * @return
+     *   The port actually bound, or 0 if none of the attempted ports were free.
      *
      * Tries preferred..preferred+19; if those are refused as protected (Windows
      * excluded port ranges), preferred+10000..+10019, then any OS-chosen port.
-     * @param preferred The requested port; tried first.
-     * @return The port actually bound, or 0 if none of the attempted ports were free.
-     */
+     **/
     int bindFreePort( int preferred );
 
     GLwidget   *m_widget = nullptr;          ///< The visualizer widget this remote controls and queries; not owned.
@@ -95,8 +95,12 @@ private:
                                              ///< this.
     int m_httpPort = 0; ///< The port m_server actually ended up listening on (may differ from the requested one).
 private:
-    /// @brief Not copyable (CGVR template: copy constructor and assignment are always declared).
+    /** Not copyable (CGVR template: copy constructor and assignment are always declared). */
     WebRemote( const WebRemote & ) = delete;
-    /// @brief Not assignable; see the copy constructor.
+    /**  Not assignable; see the copy constructor.
+     *
+     * @return
+     *   Nothing: the operator is deleted, so no call compiles.
+     **/
     WebRemote &operator=( const WebRemote & ) = delete;
 };

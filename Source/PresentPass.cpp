@@ -12,9 +12,14 @@
 #include "shader_setup.h"
 
 // Gemeinsames Fullscreen-Dreieck (gl_VertexID-VAO), definiert in RenderPipeline.cpp.
-extern GLuint fullscreenVAO(); ///< Shared fullscreen-triangle VAO (gl_VertexID trick), defined in RenderPipeline.cpp.
+/**  Shared fullscreen-triangle VAO (gl_VertexID trick), defined in RenderPipeline.cpp.
+ *
+ * @return
+ *   The vertex array object, created on first use (context current).
+ **/
+extern GLuint fullscreenVAO();
 
-/** @brief Clear and draw the shared fullscreen triangle (gl_VertexID-based, no vertex buffer). */
+/** Clear and draw the shared fullscreen triangle (gl_VertexID-based, no vertex buffer). */
 static void drawFullscreen()
 {
     glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
@@ -23,21 +28,26 @@ static void drawFullscreen()
     glBindVertexArray( 0 );
 }
 
-/** @brief Placeholder framebuffer-completeness check (kept as a stub, matching RenderPipeline::checkFramebufferStatus's
+/**  Placeholder framebuffer-completeness check (kept as a stub, matching RenderPipeline::checkFramebufferStatus's
  * profiling behaviour).
- * @return Always true.
- */
+ *
+ * @return
+ *   Always true.
+ **/
 static bool fbStatusOk()
 {
     return true; // wie RenderPipeline::checkFramebufferStatus (rwrwtest profiling)
 }
 
-/** @brief Clamp a value to [lo, hi].
- * @param v Value to clamp.
- * @param lo Lower bound.
- * @param hi Upper bound.
- * @return The clamped value.
- */
+/**  Clamp a value to [lo, hi].
+ *
+ * @param v   Value to clamp. (in)
+ * @param lo  Lower bound. (in)
+ * @param hi  Upper bound. (in)
+ *
+ * @return
+ *   The clamped value.
+ **/
 static float clampf( float v, float lo, float hi )
 {
     return v < lo ? lo : ( v > hi ? hi : v );
@@ -59,8 +69,7 @@ void PresentPass::updateFinalTexture( int w, int h, GLenum internalFmt, GLenum f
     glBindTexture( GL_TEXTURE_2D, 0 );
 }
 
-/**
- * @brief Create (idempotently) the final FBO/texture, the Present.frag program and all its uniform locations, and the
+/**  Create (idempotently) the final FBO/texture, the Present.frag program and all its uniform locations, and the
  * two-pass bloom FBOs/program.
  *
  * ready() (m_safetyReady) only becomes true if the final FBO is complete AND
@@ -69,7 +78,7 @@ void PresentPass::updateFinalTexture( int w, int h, GLenum internalFmt, GLenum f
  * the combine result directly. Bloom failure is tracked independently via
  * m_bloomReady: Present.frag falls back to its mip-based glow path when
  * bloom isn't available, so a bloom failure alone does not disable ready().
- */
+ **/
 void PresentPass::setup( int renderW, int renderH,
                          GLenum internalFmt, GLenum fmt, GLenum type )
 {
@@ -187,13 +196,12 @@ void PresentPass::setup( int renderW, int renderH,
     m_bloomReady = bloom_ok && ( m_bloomProgId != 0 ) && ( m_bloomTexUni >= 0 );
 }
 
-/**
- * @brief Resize the final and bloom textures in place; does nothing for a texture that setup() never created.
+/**  Resize the final and bloom textures in place; does nothing for a texture that setup() never created.
  *
  * Mirrors the old resize() behaviour exactly: this only re-targets textures
  * that already exist (checked via the m_texFinal/m_texBloom handles being
  * non-zero) and never (re)creates FBOs or programs.
- */
+ **/
 void PresentPass::resize( int renderW, int renderH,
                           GLenum internalFmt, GLenum fmt, GLenum type )
 {
@@ -219,13 +227,15 @@ void PresentPass::resize( int renderW, int renderH,
 
 // RGBA8-Bild in eine (ggf. neue) Textur laden - gemeinsames Muster für
 // Lyrics- und Künstlerbild-Overlay.
-/** @brief Upload an RGBA8 image into a texture, creating it on first use. Shared by the lyrics and artist-image
- * overlays.
- * @param tex Texture handle to (re)use or create (updated in place).
- * @param rgba Tightly packed RGBA8 pixel data.
- * @param w Image width in pixels.
- * @param h Image height in pixels.
- */
+/**  Upload an RGBA8 image into a texture, creating it on first use.
+ *
+ * @param tex   Texture handle to (re)use or create (updated in place). (in,out)
+ * @param rgba  Tightly packed RGBA8 pixel data. (in)
+ * @param w     Image width in pixels. (in)
+ * @param h     Image height in pixels. (in)
+ *
+ * Shared by the lyrics and artist-image overlays.
+ **/
 static void uploadRGBA( GLuint &tex, const void *rgba, int w, int h )
 {
     if ( tex == 0 )
@@ -375,8 +385,7 @@ void PresentPass::setTitleImage( const void *rgba, int w, int h )
     m_titleAge = 0.f;
 }
 
-/**
- * @brief Run the full present sequence for one frame.
+/**  Run the full present sequence for one frame.
  *
  * Order of operations, and why it's this order:
  *  1. captureHistory() runs FIRST, before anything is presented, so the
@@ -408,7 +417,7 @@ void PresentPass::setTitleImage( const void *rgba, int w, int h )
  *
  * @p in is documented on the declaration in PresentPass.h; the call is a
  * no-op unless ready() and in.fx is non-null.
- */
+ **/
 void PresentPass::run( const Inputs &in )
 {
     if ( !m_safetyReady || !in.fx )

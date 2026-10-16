@@ -84,13 +84,14 @@ QString               RenderPipeline::M_WarmLabel;    // what the lazy warm-up d
 QString               RenderPipeline::M_ImageDirCli;  // photo source override (CLI -f)
 QString               RenderPipeline::M_ImageDirUser; // photo source override (ini)
 
-/**
- * @brief Path of the shared settings INI (kaleidoscope_settings.ini).
+/**  Path of the shared settings INI (kaleidoscope_settings.ini).
+ *
+ * @return
+ *   Absolute path resolved through Platform::assetPath(); the file need not exist yet.
  *
  * Settings file lives next to the Presets folder (parent of Debug/Release),
  * matching how shaders and configs are loaded ("..\\...").
- * @return Absolute path resolved through Platform::assetPath(); the file need not exist yet.
- */
+ **/
 static QString settingsFilePath()
 {
     return Platform::assetPath( QString( "..\\kaleidoscope_settings.ini" ) );
@@ -179,12 +180,14 @@ void RenderPipeline::loadSettings()
     s.endGroup();
 }
 
-/**
- * @brief Basename of a fragment path ("..\\Scene2D\\Voyager.frag" -> "Voyager.frag"), the per-scene part of a taste/cue
+/**  Basename of a fragment path ("..\\Scene2D\\Voyager.frag" -> "Voyager.frag"), the per-scene part of a taste/cue
  * key.
- * @param fragPath Fragment shader path with either slash kind; nullptr yields "?".
- * @return Everything after the last path separator (the whole string if there is none).
- */
+ *
+ * @param fragPath  Fragment shader path with either slash kind; nullptr yields "?". (in)
+ *
+ * @return
+ *   Everything after the last path separator (the whole string if there is none).
+ **/
 static QString tasteBase( const char *fragPath )
 {
     QString f = QString::fromLocal8Bit( fragPath ? fragPath : "?" );
@@ -211,11 +214,11 @@ void RenderPipeline::bumpTaste( const char *fragPath, float mul )
     fprintf( stderr, "Taste: %s -> %.2f\n", key.toLocal8Bit().constData(), v );
 }
 
-/**
- * @brief Weights the classes a walking chain lab shows now (EffectShader::bumpClassTaste) and persists them at once.
- * @param e The effect on screen (anything but a walking chain lab: nothing happens).
- * @param mul Factor per class (a like > 1, a skip < 1).
- */
+/**  Weights the classes a walking chain lab shows now (EffectShader::bumpClassTaste) and persists them at once.
+ *
+ * @param e    The effect on screen (anything but a walking chain lab: nothing happens). (in)
+ * @param mul  Factor per class (a like > 1, a skip < 1). (in)
+ **/
 static void bumpClassTaste( EffectShader *e, float mul )
 {
     const auto changed = e->bumpClassTaste( mul );
@@ -251,11 +254,13 @@ void RenderPipeline::saveSettings()
 }
 
 
-/**
- * @brief Rounds to the nearest integer, halves up (used for the power-of-two texture-size check in resize()).
- * @param f Value to round.
- * @return floor(f) if the fractional part is below 0.5, else ceil(f).
- */
+/**  Rounds to the nearest integer, halves up (used for the power-of-two texture-size check in resize()).
+ *
+ * @param f  Value to round. (in)
+ *
+ * @return
+ *   floor(f) if the fractional part is below 0.5, else ceil(f).
+ **/
 float roundHalfUp( float f )
 {
     if ( f - floor( f ) < 0.5 )
@@ -265,16 +270,18 @@ float roundHalfUp( float f )
 }
 
 
-/**
- * @brief Slew-rate limiter: moves @p cur toward @p target by at most rate*dt this frame.
+/**  Slew-rate limiter: moves @p cur toward @p target by at most rate*dt this frame.
+ *
+ * @param cur     Current value. (in)
+ * @param target  Value being approached. (in)
+ * @param rate    Maximum change per second (units of the value per second). (in)
+ * @param dt      Frame time in seconds. (in)
+ *
+ * @return
+ *   The new value: @p target if it is within reach, else @p cur stepped by rate*dt toward it.
  *
  * Used to keep audio-driven brightness from changing fast enough to strobe.
- * @param cur Current value.
- * @param target Value being approached.
- * @param rate Maximum change per second (units of the value per second).
- * @param dt Frame time in seconds.
- * @return The new value: @p target if it is within reach, else @p cur stepped by rate*dt toward it.
- */
+ **/
 static float slewToward( float cur, float target, float rate, float dt )
 {
     float max_step = rate * dt;
@@ -1116,13 +1123,17 @@ void RenderPipeline::forceScene( int idx )
 QSet<QString>                                 RenderPipeline::M_Marked;
 QHash<QString, QList<QPair<double, QString>>> RenderPipeline::M_Cues;
 
-/**
- * @brief The settings-ini key for one marked scene.
+/**  The settings-ini key for one marked scene.
+ *
+ * @param fragPath  The scene's fragment shader path. (in)
+ *
+ * @return
+ *   "marked/<file name>".
  *
  * Deliberately the bare filename, NOT the preset-qualified key taste uses: a
  * mark says "this SHADER needs another look", which is true no matter which
  * preset it happened to appear in.
- */
+ **/
 static QString markKey( const char *fragPath )
 {
     return QString( "marked/" ) + tasteBase( fragPath );
@@ -1254,16 +1265,16 @@ bool RenderPipeline::saveMarkedPreset( QString *outPath )
     return true;
 }
 
-/**
- * @brief Appends the current scene's rolled parameter values to liked_rolls.tsv (next to the settings ini).
+/**  Appends the current scene's rolled parameter values to liked_rolls.tsv (next to the settings ini).
+ *
+ * @param e  The effect on screen; its values are read, not changed. (in)
  *
  * One line per like: local time, the scene's file base, then name=value for
  * every rolled Uniform.  For the chain-lab scenes (ChainLab2D/3D) the rolled
  * knobs select the transforms themselves, so a liked roll is a whole new
  * scene; Tools/scenegen/promote_likes.py freezes each such line into a named
  * scene of its own (the lab's source with those knobs made constants).
- * @param e The effect on screen; its values are read, not changed.
- */
+ **/
 static void logLikedRoll( const EffectShader *e )
 {
     const QString base = tasteBase( e->fragmentName() );
@@ -1290,15 +1301,17 @@ void RenderPipeline::favoriteCurrentEffect()
     }
 }
 
-/**
- * @brief Reduces a track key ("artist|title") to a QSettings-safe key for the [cues] group.
+/**  Reduces a track key ("artist|title") to a QSettings-safe key for the [cues] group.
+ *
+ * @param trackKey  The identified track as "artist|title" (see GLwidget::cueTrackKey()). (in)
+ *
+ * @return
+ *   Lower-cased key with every non-alphanumeric character replaced by '_', truncated to 96 characters.
  *
  * Settings-Schluessel duerfen keine beliebigen Zeichen tragen: "artist|title"
  * wird auf [a-z0-9_] reduziert.  Kollisionen zweier Titel sind damit denkbar,
  * aber ein Cue am falschen Song ist ein falsches Bild, kein Absturz.
- * @param trackKey The identified track as "artist|title" (see GLwidget::cueTrackKey()).
- * @return Lower-cased key with every non-alphanumeric character replaced by '_', truncated to 96 characters.
- */
+ **/
 static QString cueKey( const QString &trackKey )
 {
     QString k = trackKey.toLower();
@@ -2802,13 +2815,14 @@ void RenderPipeline::drawScene( const float *rotMatrix, float tx, float ty, floa
     }
 }
 
-/**
- * @brief Shared empty VAO for every fullscreen-triangle draw.
+/**  Shared empty VAO for every fullscreen-triangle draw.
+ *
+ * @return
+ *   The VAO name, generated on first call (a GL context must be current); never deleted.
  *
  * Core profile needs a VAO bound even without vertex attributes; the shared
  * Fullscreen.vert generates the triangle from gl_VertexID.
- * @return The VAO name, generated on first call (a GL context must be current); never deleted.
- */
+ **/
 GLuint fullscreenVAO()
 {
     static GLuint vao = 0;
@@ -3448,8 +3462,12 @@ QImage RenderPipeline::fallbackImage()
     return img;
 }
 
-/**
- * @brief Loads a photo, substituting the procedural fallback image when the file is unreadable.
+/**  Loads a photo, substituting the procedural fallback image when the file is unreadable.
+ *
+ * @param path  Image file to load. (in)
+ *
+ * @return
+ *   The loaded image, or RenderPipeline::fallbackImage() (with a stderr warning) if it is null.
  *
  * Robustness: a corrupt/unreadable photo (bad JPEG, a file caught mid-copy,
  * a dropped network share) makes QImage's load fail and return a null 0x0
@@ -3460,9 +3478,7 @@ QImage RenderPipeline::fallbackImage()
  * permanently breaks the photo texture (0x0 storage, GL_INVALID_VALUE from
  * then on). Load through here instead of a bare QImage(path) wherever the
  * result feeds setupTexture()/prepareImage().
- * @param path Image file to load.
- * @return The loaded image, or RenderPipeline::fallbackImage() (with a stderr warning) if it is null.
- */
+ **/
 static QImage loadImageOrFallback( const QString &path )
 {
     QImage img( path );
@@ -3670,9 +3686,7 @@ void RenderPipeline::setupTexture( const GLuint texID, const QImage &image )
 }
 
 
-/**
- * Sets up the GLSL runtime and creates shader.
- */
+/** Sets up the GLSL runtime and creates shader. */
 void RenderPipeline::initGLSL()
 {
     // ---- texture-unit budget diagnostic -------------------------------------
@@ -3721,11 +3735,10 @@ void RenderPipeline::initGLSL()
 }
 
 
-/**
- * Checks for OpenGL errors.
- * Extremely useful debugging function: When developing,
- * make sure to call this after almost every GL call.
- */
+/**  Checks for OpenGL errors.
+ *
+ * Extremely useful debugging function: When developing, make sure to call this after almost every GL call.
+ **/
 void RenderPipeline::checkGLErrors( const char *label )
 {
     // glGetError() can force a GPU/driver sync, and this is called from
@@ -3748,10 +3761,10 @@ void RenderPipeline::checkGLErrors( const char *label )
     fputs( ")\n", stderr );
 }
 
-/**
- * Checks framebuffer status.
+/**  Checks framebuffer status.
+ *
  * Copied directly out of the spec, modified to deliver a return value.
- */
+ **/
 bool RenderPipeline::checkFramebufferStatus( void )
 {
     // Same KALEIDO_GL_DEBUG gate as checkGLErrors() -- see there for why.

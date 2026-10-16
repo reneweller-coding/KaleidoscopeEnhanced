@@ -51,41 +51,41 @@ class PreviewWidget : public QOpenGLWidget, protected QOpenGLFunctions
 {
     Q_OBJECT
 public:
-    /**
-     * @brief Construct the preview widget for one project.
-     * @param projectRoot Filesystem root every shader/config path is resolved against.
-     * @param parent Optional Qt parent widget.
-     */
+    /**  Construct the preview widget for one project.
+     *
+     * @param projectRoot  Filesystem root every shader/config path is resolved against. (in)
+     * @param parent       Optional Qt parent widget. (in)
+     **/
     explicit PreviewWidget( const QString &projectRoot, QWidget *parent = nullptr );
-    /// Destroys GL resources (shader programs, FBOs, sample textures, VBO/VAO) with the context current.
+    /** Destroys GL resources (shader programs, FBOs, sample textures, VBO/VAO) with the context current. */
     ~PreviewWidget() override;
 
-    /**
-     * @brief Select the texture (pass-1) shader to preview.
+    /**  Select the texture (pass-1) shader to preview.
+     *
+     * @param fileName      Bare .frag filename, resolved against the project root. (in)
+     * @param type          "normal" (original 2D texture-shader path) or "scene3d". (in)
+     * @param geom          scene3d geometry kind (points/cubes/ribbon/grid/quads/patches/scatter/...); unused for
+     *                      type="normal". (in)
+     * @param stateBytes    scene3d persistent-state buffer size in bytes, for compute-driven generators; unused for
+     *                      type="normal". (in)
+     * @param shadowExtent  scene3d shadow-map world-space half-extent; unused for type="normal". (in)
      *
      * type/geom/stateBytes/shadowExtent only matter for type="scene3d"; the
      * defaults keep every existing call site (self-tests, --render) on the
      * original type="normal" path unchanged.
-     *
-     * @param fileName Bare .frag filename, resolved against the project root.
-     * @param type "normal" (original 2D texture-shader path) or "scene3d".
-     * @param geom scene3d geometry kind (points/cubes/ribbon/grid/quads/patches/scatter/...); unused for type="normal".
-     * @param stateBytes scene3d persistent-state buffer size in bytes, for compute-driven generators; unused for
-     * type="normal".
-     * @param shadowExtent scene3d shadow-map world-space half-extent; unused for type="normal".
-     */
+     **/
     void setTextureShader( const QString &fileName, const QString &type = "normal",
                            const QString &geom = QString(), int stateBytes = 0,
                            double shadowExtent = 0.0 );
-    /**
-     * @brief Select the combine (pass-2) shader to preview.
-     * @param fileName Bare .frag filename, resolved against the project root.
-     */
+    /**  Select the combine (pass-2) shader to preview.
+     *
+     * @param fileName  Bare .frag filename, resolved against the project root. (in)
+     **/
     void setCombineShader( const QString &fileName );
-    /**
-     * @brief Reload the two sample images used as tex0/tex1 from a directory.
-     * @param dir Directory to scan for images; empty selects the procedural gradient fallback.
-     */
+    /**  Reload the two sample images used as tex0/tex1 from a directory.
+     *
+     * @param dir  Directory to scan for images; empty selects the procedural gradient fallback. (in)
+     **/
     void setImageDirectory( const QString &dir );
 
     /**
@@ -100,30 +100,40 @@ public:
         BEAT = 0,
         DRONE = 1
     };
-    /**
-     * @brief Switch the synthetic audio profile and repaint.
-     * @param m New profile (Beat or Drone).
-     */
+    /**  Switch the synthetic audio profile and repaint.
+     *
+     * @param m  New profile (Beat or Drone). (in)
+     **/
     void setMusicMode( MusicModeE m )
     {
         m_mode = m;
         update();
     }
-    MusicModeE musicMode() const { return m_mode; } ///< @return The currently selected synthetic audio profile.
+    /**  The currently selected synthetic audio profile.
+     *
+     * @return
+     *   The currently selected synthetic audio profile.
+     **/
+    MusicModeE musicMode() const { return m_mode; }
 
-    /**
-     * @brief Install a REAL audio preview: a feature timeline precomputed by the actual AudioAnalyzer from a WAV.
+    /**  Install a REAL audio preview: a feature timeline precomputed by the actual AudioAnalyzer from a WAV.
+     *
+     * @param tl  Feature snapshots in playback order. (in)
      *
      * One snapshot per 10 ms. While set, it replaces the synthetic music
      * profile; playback loops. An empty vector switches back to the
      * synthetic profile.
-     * @param tl Feature snapshots in playback order.
-     */
+     **/
     void setAudioTimeline( std::vector<AudioFeatures> tl );
+    /**  True while a WAV timeline installed via setAudioTimeline() is active.
+     *
+     * @return
+     *   True while a WAV timeline installed via setAudioTimeline() is active.
+     **/
     bool hasAudioTimeline() const
     {
         return !m_timeline.empty();
-    } ///< @return True while a WAV timeline installed via setAudioTimeline() is active.
+    }
 
     /// Live per-activation parameter override (editor slider): uniform #name pinned to #value (uploaded as an int when
     /// #isInt).
@@ -141,33 +151,37 @@ public:
     /** @var bool PreviewWidget::ParamOverride::isInt
      *  True if the parameter is declared `<int>`: #value is rounded and uploaded via setUniformValue(int) instead of as
      * a float. */
-    /**
-     * @brief Install live per-activation parameter overrides (editor sliders).
+    /**  Install live per-activation parameter overrides (editor sliders).
+     *
+     * @param ov  Overrides to apply; replaces any previously installed set. (in)
      *
      * Applied after the built-in defaults each frame, so the sliders tune the actual look.
-     * @param ov Overrides to apply; replaces any previously installed set.
-     */
+     **/
     void setParamOverrides( QVector<ParamOverride> ov )
     {
         m_overrides = std::move( ov );
         update();
     }
 
-    /**
-     * @brief Install the formula-layer entries of the SELECTED preset entry.
+    /**  Install the formula-layer entries of the SELECTED preset entry.
+     *
+     * @param exprs  (uniform name, formula source text) pairs. (in)
      *
      * Uniform name -> formula pairs, incl. audio-mapping overrides
      * (`<expr name="audioKick">`). The 2D path applies them after the
      * synthetic audio uniforms; the scene3d path forwards them into the real
      * Scene3DShader, so the preview follows the same override-by-name order
      * as the shipped engine.
-     * @param exprs (uniform name, formula source text) pairs.
-     */
+     **/
     void setSceneExprs( QVector<QPair<QString, QString>> exprs );
 
-    /**
-     * @brief Evaluate a compiled formula-layer program against the synthesized Beat/Drone audio profile at the CURRENT
+    /**  Evaluate a compiled formula-layer program against the synthesized Beat/Drone audio profile at the CURRENT
      * preview time.
+     *
+     * @param prog  Compiled formula program to evaluate. (in)
+     *
+     * @return
+     *   The formula's result at the current preview time.
      *
      * Uses the same variable mapping EffectShader.cpp uses at runtime, so
      * the editor's live formula readout matches what the shipped app would
@@ -179,32 +193,30 @@ public:
      * (EffectShader rolls them once per scene ACTIVATION); fixed constants
      * are used here, since the editor preview has no activation concept to
      * roll them from.
-     * @param prog Compiled formula program to evaluate.
-     * @return The formula's result at the current preview time.
-     */
+     **/
     float evalExpr( const ExprProgram &prog ) const;
 
     // ---- Transition TEST BENCH ----
-    /**
-     * @brief Configure the transition test bench.
+    /**  Configure the transition test bench.
+     *
+     * @param style   Transition style index to exercise, or < 0 to disable the test bench. (in)
+     * @param fixedD  Pinned progress in [0,1], or < 0 to sweep automatically. (in)
      *
      * style >= 0: the combine gets transStyle=style and the interpolation is
      * SWEPT slowly (triangle, ~10 s round trip) instead of the fixed 1.0 —
      * slow-motion inspection of one transition.  fixedD in [0,1] pins the
      * progress instead (headless --transcheck). style < 0 = normal preview.
-     * @param style Transition style index to exercise, or < 0 to disable the test bench.
-     * @param fixedD Pinned progress in [0,1], or < 0 to sweep automatically.
-     */
+     **/
     void setTransTest( int style, float fixedD = -1.f )
     {
         m_transStyle = style;
         m_transFixedD = fixedD;
         update();
     }
-    /**
-     * @brief Pin the preview clock (deterministic frames for --transcheck / --render --time).
-     * @param t Fixed time in seconds, or < 0 to use the live wall clock.
-     */
+    /**  Pin the preview clock (deterministic frames for --transcheck / --render --time).
+     *
+     * @param t  Fixed time in seconds, or < 0 to use the live wall clock. (in)
+     **/
     void setFixedTime( float t )
     {
         m_fixedTime = t;
@@ -219,82 +231,87 @@ signals:
     void statusChanged( const QString &text ); // compile logs / current selection
 
 protected:
-    /// One-time GL setup: functions, clear colour, fullscreen quad VAO/VBO, initial sample images, and Scene3DPreview's
-    /// glcore function pointers.
+    /**  One-time GL setup: functions, clear colour, fullscreen quad VAO/VBO, initial sample images, and
+     * Scene3DPreview's glcore function pointers.
+     **/
     void initializeGL() override;
-    /// Renders one frame: (re)compiles any dirty shader, runs the texture pass (2D or scene3d), the 2D camera rig, then
-    /// the combine pass into the widget's own framebuffer.
+    /**  Renders one frame: (re)compiles any dirty shader, runs the texture pass (2D or scene3d), the 2D camera rig,
+     * then the combine pass into the widget's own framebuffer.
+     **/
     void paintGL() override;
-    /**
-     * @brief Qt resize notification.
-     * @param w New widget width (unused: the render FBO is instead resized lazily in paintGL()).
-     * @param h New widget height (unused, see @p w).
-     */
+    /**  Qt resize notification.
+     *
+     * @param w  New widget width (unused: the render FBO is instead resized lazily in paintGL()). (in)
+     * @param h  New widget height (unused, see @p w). (in)
+     **/
     void resizeGL( int w, int h ) override;
 
 private:
-    /**
-     * @brief Compile and link a fullscreen-quad fragment shader against the fixed vertex shader.
+    /**  Compile and link a fullscreen-quad fragment shader against the fixed vertex shader.
+     *
+     * @param fileName  Bare .frag filename; searched under Scene2D/, FX/, Engine/, then the project root. (in)
+     * @param log       Receives the compiler/linker error log on failure (left untouched on success). (out)
+     *
+     * @return
+     *   The newly linked program, or nullptr on failure (in which case @p log is set).
      *
      * Shaders live in subfolders since the 2026-07 reorg (Scene / Combine /
      * Blend); bare filenames are resolved by searching them (root last, for
      * throwaway probe shaders).
-     * @param fileName Bare .frag filename; searched under Scene2D/, FX/, Engine/, then the project root.
-     * @param log Receives the compiler/linker error log on failure (left untouched on success).
-     * @return The newly linked program, or nullptr on failure (in which case @p log is set).
-     */
+     **/
     QOpenGLShaderProgram *compile( const QString &fileName, QString &log );
-    /**
-     * @brief Test-bench interpolation value for the current mode.
-     * @return 1.0 in normal preview (texture pass fully visible); otherwise the swept or pinned transition progress.
-     */
+    /**  Test-bench interpolation value for the current mode.
+     *
+     * @return
+     *   1.0 in normal preview (texture pass fully visible); otherwise the swept or pinned transition progress.
+     **/
     float testInterpolation() const; // test-bench interpolation (1.0 = normal)
-    /**
-     * @brief Set every uniform any of the effect shaders might declare.
+    /**  Set every uniform any of the effect shaders might declare.
+     *
+     * @param p  Program to upload uniforms into; must already be bound. (in)
      *
      * Unused ones resolve to location -1 and are silently ignored, so one
      * call works for all shaders. Editor slider values override the
      * per-activation params (after defaults), and the scene's formula layer
      * is applied last.
-     * @param p Program to upload uniforms into; must already be bound.
-     */
+     **/
     void applyCommonUniforms( QOpenGLShaderProgram *p );
-    /**
-     * @brief Apply the editor's per-activation slider overrides (see setParamOverrides()) on top of the built-in
-     * defaults.
-     * @param p Program to upload uniforms into; must already be bound.
-     */
+    /**  Apply the editor's per-activation slider overrides (see setParamOverrides()) on top of the built-in defaults.
+     *
+     * @param p  Program to upload uniforms into; must already be bound. (in)
+     **/
     void applyParamOverrides( QOpenGLShaderProgram *p );
-    /**
-     * @brief Apply the selected entry's formula layer on top of the synthetic audio uniforms.
+    /**  Apply the selected entry's formula layer on top of the synthetic audio uniforms.
+     *
+     * @param p  Program to upload uniforms into; must already be bound. (in)
      *
      * Mirrors the engine's override-by-name order in
      * EffectShader::applyAudioFeatures, so an `<expr name="audioKick">` shows
      * the same takeover here that it performs in the shipped host.
-     * @param p Program to upload uniforms into; must already be bound.
-     */
+     **/
     void applySceneExprs( QOpenGLShaderProgram *p );
-    /**
-     * @brief Draw the baked fullscreen NDC quad as a triangle strip.
-     * @param p Bound program whose uniforms are assumed already set (unused otherwise — the quad's VAO carries its own
-     * attribs).
-     */
+    /**  Draw the baked fullscreen NDC quad as a triangle strip.
+     *
+     * @param p  Bound program whose uniforms are assumed already set (unused otherwise — the quad's VAO carries its
+     *           own attribs). (in)
+     **/
     void drawFullscreenQuad( QOpenGLShaderProgram *p );
-    /**
-     * @brief (Re)create the tex0/tex1 sample textures #m_img0/#m_img1 from #m_imageDir.
+    /**  (Re)create the tex0/tex1 sample textures #m_img0/#m_img1 from #m_imageDir.
      *
      * Deletes any previous textures, then takes the first two image files
      * (\*.jpg, \*.jpeg, \*.png, \*.bmp; sorted by name) of the directory; a single
      * file is used for both, an empty directory (or none) yields the
      * procedural gradient of makeTexture(). Must run with the GL context
      * current (called from paintGL() while #m_imagesDirty); clears the flag.
-     */
+     **/
     void loadImages(); // (re)create m_img0/m_img1 (GL thread)
-    /**
-     * @brief Load an image file into a GL texture, or synthesize a colourful gradient if it can't be loaded.
-     * @param path Image file path; empty or unloadable falls back to the procedural gradient.
-     * @return The newly created texture's GL object name.
-     */
+    /**  Load an image file into a GL texture, or synthesize a colourful gradient if it can't be loaded.
+     *
+     * @param path  Image file path; empty or unloadable falls back to the procedural gradient. (in)
+     *
+     * @return
+     *   The newly created texture's GL object name.
+     **/
     GLuint makeTexture( const QString &path ); // from file, or gradient fallback
     // A synthetic AudioFeatures snapshot at time t, matching the same Beat/
     // Drone math applyCommonUniforms already uses for the 2D path -- kept as
@@ -302,18 +319,21 @@ private:
     // 2D uniform code (see Scene3DPreview.h's design note).  Only the fields
     // that matter for a typical 3D scene are filled; the rest keep the
     // struct's own neutral defaults (valence/arousal/musicPresence, ...).
-    /**
-     * @brief Build a synthetic AudioFeatures snapshot at time @p t for the scene3d path.
-     * @param t Preview time in seconds.
-     * @return A pure, side-effect-free feature snapshot suitable for a single frame at time @p t.
-     */
+    /**  Build a synthetic AudioFeatures snapshot at time @p t for the scene3d path.
+     *
+     * @param t  Preview time in seconds. (in)
+     *
+     * @return
+     *   A pure, side-effect-free feature snapshot suitable for a single frame at time @p t.
+     **/
     AudioFeatures synthFeatures( float t ) const;
     // WAV-timeline counterpart; advances the m_tl* envelope members (not const).
-    /**
-     * @brief WAV-timeline counterpart of synthFeatures(): advances the m_tl* envelope/phase members.
-     * @return The current smoothed, host-integrated feature snapshot (falls back to synthFeatures() when no timeline is
-     * loaded).
-     */
+    /**  WAV-timeline counterpart of synthFeatures(): advances the m_tl* envelope/phase members.
+     *
+     * @return
+     *   The current smoothed, host-integrated feature snapshot (falls back to synthFeatures() when no timeline is
+     *   loaded).
+     **/
     AudioFeatures timelineFeatures();
 
     QString m_root;    ///< Project root every shader/config path is resolved against.
@@ -396,17 +416,19 @@ private:
     // the 2D path -- rig2* formulas rotate/zoom/pan the pass-1 frame before
     // the combine samples it.  Returns srcTex unchanged when no rig2 formula
     // is active.
-    /**
-     * @brief 2D CAMERA RIG preview parity: mirrors RenderPipeline::rig2Transform for the 2D path.
+    /**  2D CAMERA RIG preview parity: mirrors RenderPipeline::rig2Transform for the 2D path.
+     *
+     * @param srcTex  Pass-1 colour texture to transform. (in)
+     * @param w       Framebuffer width in pixels. (in)
+     * @param h       Framebuffer height in pixels. (in)
+     *
+     * @return
+     *   @p srcTex unchanged when no rig2 formula is active; otherwise the transformed texture (m_fboRig's colour
+     *   attachment).
      *
      * rig2* formulas of the selected entry rotate/zoom/pan the pass-1 frame
      * before the combine samples it.
-     * @param srcTex Pass-1 colour texture to transform.
-     * @param w Framebuffer width in pixels.
-     * @param h Framebuffer height in pixels.
-     * @return @p srcTex unchanged when no rig2 formula is active; otherwise the transformed texture (m_fboRig's colour
-     * attachment).
-     */
+     **/
     GLuint                    rig2Apply( GLuint srcTex, int w, int h );
     QOpenGLFramebufferObject *m_fboRig = nullptr;  ///< Render target for rig2Apply()'s transform pass.
     QOpenGLShaderProgram     *m_rigProg = nullptr; ///< Compiled Rig2D.frag program, lazily compiled on first use (see
@@ -451,8 +473,12 @@ private:
                                                 ///< reference level, see #m_tlLvlFast).
     float m_tlBeatPhase = 0.f;                  ///< integrated beat phase (0..1, wraps once per beat)
 private:
-    /// @brief Not copyable (CGVR template: copy constructor and assignment are always declared).
+    /** Not copyable (CGVR template: copy constructor and assignment are always declared). */
     PreviewWidget( const PreviewWidget & ) = delete;
-    /// @brief Not assignable; see the copy constructor.
+    /**  Not assignable; see the copy constructor.
+     *
+     * @return
+     *   Nothing: the operator is deleted, so no call compiles.
+     **/
     PreviewWidget &operator=( const PreviewWidget & ) = delete;
 };

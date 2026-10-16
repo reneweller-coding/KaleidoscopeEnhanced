@@ -14,26 +14,33 @@
 // ---------------------------------------------------------------------------
 #pragma once
 
-/**
- * @brief Creates the Spout sender under the given name.
+/**  Creates the Spout sender under the given name.
+ *
+ * @param senderName  The Spout sender name other applications will see and connect to (e.g. "Kaleidoscope"). (in)
+ *
+ * @return
+ *   true once a Spout sender object exists (construction itself has no failure path here).
  *
  * Safe to call again once already initialized; it is then a no-op.
- * @param senderName The Spout sender name other applications will see and connect to (e.g. "Kaleidoscope").
- * @return true once a Spout sender object exists (construction itself has no failure path here).
- */
+ *
+ * @sideeffects
+ *   Changes s_spout.
+ **/
 bool spoutOutInit( const char *senderName );
 
-/**
- * @brief Publishes one GL texture as this frame's Spout output.
+/**  Publishes one GL texture as this frame's Spout output.
+ *
+ * @param glTexture  The GL_TEXTURE_2D id of the frame to publish; the call is skipped if 0. (in)
+ * @param width      Width of glTexture in pixels; the call is skipped if 0. (in)
+ * @param height     Height of glTexture in pixels; the call is skipped if 0. (in)
  *
  * Must be called with the app's GL context current (i.e. from paint()).
- * @param glTexture The GL_TEXTURE_2D id of the frame to publish; the call is skipped if 0.
- * @param width Width of glTexture in pixels; the call is skipped if 0.
- * @param height Height of glTexture in pixels; the call is skipped if 0.
- */
+ **/
 void spoutOutSend( unsigned int glTexture, unsigned int width, unsigned int height );
 
-/**
- * @brief Releases the Spout sender.
- */
+/**  Releases the Spout sender.
+ *
+ * @sideeffects
+ *   Changes s_spout.
+ **/
 void spoutOutRelease();

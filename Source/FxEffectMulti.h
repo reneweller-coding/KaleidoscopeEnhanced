@@ -22,32 +22,37 @@
 class FxEffectMulti : public EffectShader
 {
 public:
-    /// Constructs the effect and rolls its initial `copies` value; fragment shader is fixed to FxMulti.frag.
+    /** Constructs the effect and rolls its initial `copies` value; fragment shader is fixed to FxMulti.frag. */
     FxEffectMulti();
-    /// Destructor. No extra cleanup beyond the EffectShader base.
+    /**  Destructor.
+     *
+     * No extra cleanup beyond the EffectShader base.
+     **/
     ~FxEffectMulti();
 
 
-    /**
-     * @brief Resolves the `copies` uniform location after chaining to EffectShader::initUniforms(). Overrides the
-     * (implicitly still virtual) base signature even though `virtual` is not repeated here.
-     * @param width Render target width in pixels.
-     * @param height Render target height in pixels.
-     */
+    /**  Resolves the `copies` uniform location after chaining to EffectShader::initUniforms().
+     *
+     * @param width   Render target width in pixels. (in)
+     * @param height  Render target height in pixels. (in)
+     *
+     * Overrides the (implicitly still virtual) base signature even though `virtual` is not repeated here.
+     **/
     void initUniforms( int width, int height ); // initialize GLSL - shader programs
-    /**
-     * @brief Uploads `copies` after chaining to EffectShader::setUniforms(). Overrides the (implicitly still virtual)
-     * base signature.
-     * @param time Absolute animation time in seconds.
-     * @param interpolation Current cross-fade weight.
-     * @param texLoc1 Texture unit bound to the `tex0` sampler.
-     * @param texLoc2 Texture unit bound to the `tex1` sampler.
-     */
+    /**  Uploads `copies` after chaining to EffectShader::setUniforms().
+     *
+     * @param time           Absolute animation time in seconds. (in)
+     * @param interpolation  Current cross-fade weight. (in)
+     * @param texLoc1        Texture unit bound to the `tex0` sampler. (in)
+     * @param texLoc2        Texture unit bound to the `tex1` sampler. (in)
+     *
+     * Overrides the (implicitly still virtual) base signature.
+     **/
     void setUniforms( float time, float interpolation, GLint texLoc1, GLint texLoc2 ); // setting uniforms
-    /**
-     * @brief Re-rolls `copies`. Overrides the (implicitly still virtual) base signature. Does NOT chain to
-     * EffectShader::resetParameters().
-     */
+    /**  Re-rolls `copies`.
+     *
+     * Overrides the (implicitly still virtual) base signature. Does NOT chain to EffectShader::resetParameters().
+     **/
     void resetParameters();
 
 protected:

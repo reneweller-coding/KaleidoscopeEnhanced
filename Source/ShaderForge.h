@@ -26,30 +26,43 @@
 #include <string>
 #include "glcore.h"
 
-/// @brief Finds the helper and the cache (GL context current). @return True if programs can be forged.
+/**  Finds the helper and the cache (GL context current).
+ *
+ * @return
+ *   True if programs can be forged.
+ *
+ * @sideeffects
+ *   Changes s_dir, s_helper, s_init, s_ok, s_salt, s_vert.
+ **/
 bool shaderForgeInit();
-/// @return True once shaderForgeInit() found a helper and a cache directory.
+/**  Whether shaderForgeInit() found a helper and a cache directory.
+ *
+ * @return
+ *   True once shaderForgeInit() found a helper and a cache directory.
+ **/
 bool shaderForgeAvailable();
-/**
- * @brief Starts the helper process now (no-op if it runs or the forge is off).
+/**  Starts the helper process now (no-op if it runs or the forge is off).
  *
  * Called when a preset with a forging lab (the 3D chain labs) is loaded, so
  * the helper's start -- a GL context of its own, a short stutter -- falls
  * into the preset load, not into the lab's first frames, and apps whose
  * presets never forge do not start it at all.
- */
+ **/
 void shaderForgeStartHelper();
-/**
- * @brief The program for this fragment source (with the shared fullscreen vertex shader).
+/**  The program for this fragment source (with the shared fullscreen vertex shader).
+ *
+ * @param fragSource  Complete fragment shader text. (in)
+ * @param failed      Set to true if the build failed (the helper's log is printed once). (out)
+ * @param targets     RGBA32F colour targets of the helper's warm draw, as the program's real target (the 3D lab's
+ *                    G-buffer: 2) -- the GPU code the driver caches for later sessions is the one for that target.
+ *                    (in)
+ *
+ * @return
+ *   The linked program, or 0 while it is being built (or on failure).
  *
  * From the disk cache if it is there (loaded now, a few ms), else the build
  * is queued on the helper and 0 is returned until it is
  * done -- poll again on a later frame.  The returned program belongs to the
  * forge (cached for the session); callers must not delete it.
- * @param fragSource Complete fragment shader text.
- * @param failed Set to true if the build failed (the helper's log is printed once).
- * @param targets RGBA32F colour targets of the helper's warm draw, as the program's real target (the 3D lab's
- *        G-buffer: 2) -- the GPU code the driver caches for later sessions is the one for that target.
- * @return The linked program, or 0 while it is being built (or on failure).
- */
+ **/
 GLuint shaderForgeGet( const std::string &fragSource, bool *failed = nullptr, int targets = 1 );

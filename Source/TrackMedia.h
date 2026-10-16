@@ -74,31 +74,32 @@ class QProcess;
 class TrackMedia
 {
 public:
-    /** @brief Constructs the network manager and ensures the lyrics/artist cache directories exist. */
+    /** Constructs the network manager and ensures the lyrics/artist cache directories exist. */
     TrackMedia();
-    /** @brief Destroys the owned network manager (any in-flight QNetworkReply objects are children of it and are
-     * cleaned up via deleteLater() in their own finished() handlers). */
+    /**  Destroys the owned network manager (any in-flight QNetworkReply objects are children of it and are cleaned up
+     * via deleteLater() in their own finished() handlers).
+     **/
     ~TrackMedia();
 
     /** Neuen Track anfordern (bei Trackwechsel rufen).  Identische
      *  Wiederholungen werden ignoriert; ein neuer Track verwirft die
      *  alten Ergebnisse. */
-    /**
-     * @brief Requests lyrics + artist images (+ an optional music video) for a (possibly new) track; call on every
-     * track change.
-     * @param artist Artist name (trimmed/lower-cased internally for de-duplication and cache keys).
-     * @param title Track title; an empty (trimmed) title is ignored outright.
-     * @param durationSec The track's known duration in seconds, or <=0 if not (yet) known. Gates the
-     *        music-video search: only attempted for tracks under VideoMaxDurationSec, and skipped
-     *        entirely (not just deferred) when the duration is unknown at call time, since guessing
-     *        wrong here means silently downloading something the user didn't ask for.
+    /**  Requests lyrics + artist images (+ an optional music video) for a (possibly new) track; call on every track
+     * change.
+     *
+     * @param artist       Artist name (trimmed/lower-cased internally for de-duplication and cache keys). (in)
+     * @param title        Track title; an empty (trimmed) title is ignored outright. (in)
+     * @param durationSec  The track's known duration in seconds, or <=0 if not (yet) known. Gates the music-video
+     *                     search: only attempted for tracks under VideoMaxDurationSec, and skipped entirely (not
+     *                     just deferred) when the duration is unknown at call time, since guessing wrong here means
+     *                     silently downloading something the user didn't ask for. (in)
      *
      * A call whose artist+title matches the currently active request is a
      * no-op. Otherwise all pending/partial results from the previous
      * request are discarded (their revision counters bump so consumers
      * reload) and the lyrics, artist-image and (when eligible) music-video
      * fetch chains restart from cache.
-     */
+     **/
     void requestTrack( const QString &artist, const QString &title, double durationSec = -1.0 );
 
     // ---- Lyrics ----
@@ -123,169 +124,252 @@ public:
                                   ///< extends past the normally-visible window; 0 if it fits. Drives the host-side
                                   ///< horizontal marquee scroll for the currently focused line (see glwidget.cpp).
     };
-    /** @brief The nominal (normally-visible, pre-marquee) width of lyricsImage() in pixels -- the actual image can be
-     * wider to hold overflowing lines' full text; callers use this fixed value (not img.width()) to keep the on-screen
-     * text SIZE stable regardless of how wide any one line's overflow makes the texture. */
+    /**  The nominal (normally-visible, pre-marquee) width of lyricsImage() in pixels -- the actual image can be wider
+     * to hold overflowing lines' full text; callers use this fixed value (not img.width()) to keep the on-screen
+     * text SIZE stable regardless of how wide any one line's overflow makes the texture.
+     *
+     * @return
+     *   The width in pixels.
+     **/
     static int lyricsNominalTexWidth();
-    bool       lyricsPending() const
+    /**  True while the lyrics fetch chain (cache/network) for the current track is still in flight.
+     *
+     * @return
+     *   True while the lyrics fetch chain (cache/network) for the current track is still in flight.
+     **/
+    bool lyricsPending() const
     {
         return m_lyricsPending;
-    } ///< True while the lyrics fetch chain (cache/network) for the current track is still in flight.
+    }
+    /**  True once at least one lyric line (synced or plain) has been found and parsed.
+     *
+     * @return
+     *   True once at least one lyric line (synced or plain) has been found and parsed.
+     **/
     bool hasLyrics() const
     {
         return !m_lines.empty();
-    } ///< True once at least one lyric line (synced or plain) has been found and parsed.
+    }
+    /**  True if the found lyrics carry real timestamps (vs. plain unsynced text).
+     *
+     * @return
+     *   True if the found lyrics carry real timestamps (vs. plain unsynced text).
+     **/
     bool syncedLyrics() const
     {
         return hasLyrics() && m_lines[0].t0 >= 0.0;
-    } ///< True if the found lyrics carry real timestamps (vs. plain unsynced text).
+    }
+    /**  The single tall transparent texture holding every rendered lyric line (see renderLyricsImage()).
+     *
+     * @return
+     *   The single tall transparent texture holding every rendered lyric line (see renderLyricsImage()).
+     **/
     const QImage &lyricsImage() const
     {
         return m_lyricsImage;
-    } ///< The single tall transparent texture holding every rendered lyric line (see renderLyricsImage()).
+    }
+    /**  All parsed lyric lines (including gap markers), time-sorted for synced lyrics.
+     *
+     * @return
+     *   All parsed lyric lines (including gap markers), time-sorted for synced lyrics.
+     **/
     const std::vector<LyricLine> &lines() const
     {
         return m_lines;
-    } ///< All parsed lyric lines (including gap markers), time-sorted for synced lyrics.
+    }
     /** Zählt hoch, wenn neue Lyrics fertig gerendert sind (Upload-Trigger). */
-    /** @brief Increments whenever a fresh lyricsImage() has finished rendering. @return Monotonically increasing
-     * revision counter; consumers re-upload the texture when it changes. */
+    /**  Increments whenever a fresh lyricsImage() has finished rendering.
+     *
+     * @return
+     *   Monotonically increasing revision counter; consumers re-upload the texture when it changes.
+     **/
     int lyricsRevision() const { return m_lyricsRevision; }
 
     // ---- Künstlerbilder ----
+    /**  Number of artist images currently available on disk for the active track's artist.
+     *
+     * @return
+     *   Number of artist images currently available on disk for the active track's artist.
+     **/
     int imageCount() const
     {
         return static_cast<int>( m_imagePaths.size() );
-    } ///< Number of artist images currently available on disk for the active track's artist.
+    }
     /** Lazy: dekodiert bei Bedarf von der Platte (LRU-Cache: 1 Bild). */
-    /**
-     * @brief Returns one artist image, decoding it from disk on demand.
-     * @param i Index into the available images, [0, imageCount()).
-     * @return The decoded, size-capped (max width 640) RGBA8888 image, or a null QImage if i is out of range or the
-     * file failed to decode/load.
+    /**  Returns one artist image, decoding it from disk on demand.
+     *
+     * @param i  Index into the available images, [0, imageCount()). (in)
+     *
+     * @return
+     *   The decoded, size-capped (max width 640) RGBA8888 image, or a null QImage if i is out of range or the file
+     *   failed to decode/load.
      *
      * Single-slot LRU: repeated calls for the same index reuse the last
      * decode; a different index re-decodes from disk (this class does not
      * keep all images resident in memory).
-     */
+     **/
     QImage imageAt( int i ) const;
-    int    imagesRevision() const
+    /**  Increments each time a new artist image finishes downloading and is added to m_imagePaths.
+     *
+     * @return
+     *   Increments each time a new artist image finishes downloading and is added to m_imagePaths.
+     **/
+    int imagesRevision() const
     {
         return m_imagesRevision;
-    } ///< Increments each time a new artist image finishes downloading and is added to m_imagePaths.
+    }
 
     // ---- Musikvideo (optional, via yt-dlp) ----
     /** Tracks longer than this are never searched for a video -- picked
      *  because the request explicitly framed it as "songs, not DJ sets". */
     static const int VideoMaxDurationSec = 20 * 60;
-    bool             videoReady() const
+    /**  True once a cached music video is ready to play for the CURRENT track (from disk cache or a finished
+     * download).
+     *
+     * @return
+     *   True once a cached music video is ready to play for the CURRENT track (from disk cache or a finished
+     *   download).
+     **/
+    bool videoReady() const
     {
         return !m_videoPath.isEmpty();
-    } ///< True once a cached music video is ready to play for the CURRENT track (from disk cache or a finished
-    ///< download).
-    QString videoPath() const { return m_videoPath; } ///< Absolute path to the cached mp4, or empty if none is ready.
-    int     videoRevision() const
+    }
+    /**  Absolute path to the cached mp4, or empty if none is ready.
+     *
+     * @return
+     *   Absolute path to the cached mp4, or empty if none is ready.
+     **/
+    QString videoPath() const { return m_videoPath; }
+    /**  Increments whenever videoPath() changes for the current track (cache hit, or a background download just
+     * finished); consumers use it to notice new content the same way as lyricsRevision()/imagesRevision().
+     *
+     * @return
+     *   Increments whenever videoPath() changes for the current track (cache hit, or a background download just
+     *   finished); consumers use it to notice new content the same way as lyricsRevision()/imagesRevision().
+     **/
+    int videoRevision() const
     {
         return m_videoRevision;
-    } ///< Increments whenever videoPath() changes for the current track (cache hit, or a background download just
-    ///< finished); consumers use it to notice new content the same way as lyricsRevision()/imagesRevision().
+    }
 
 private:
     // Lyrics-Quellen-Kette
-    /** @brief Entry point of the lyrics chain: checks the on-disk cache (positive or still-valid negative) before
-     * falling through to the network chain (tryLrclibGet()). */
+    /**  Entry point of the lyrics chain: checks the on-disk cache (positive or still-valid negative) before falling
+     * through to the network chain (tryLrclibGet()).
+     **/
     void lyricsFromCacheOrNet();
-    /** @brief First network attempt: LRCLIB's exact get-by-artist/title endpoint; falls through to tryLrclibSearch() on
-     * a miss or error. */
+    /**  First network attempt: LRCLIB's exact get-by-artist/title endpoint; falls through to tryLrclibSearch() on a
+     * miss or error.
+     **/
     void tryLrclibGet();
-    /** @brief Second network attempt: LRCLIB's fuzzy search endpoint, preferring a result with synced lyrics over the
-     * first one with any plain lyrics; falls through to tryNetease() on a miss. */
+    /**  Second network attempt: LRCLIB's fuzzy search endpoint, preferring a result with synced lyrics over the first
+     * one with any plain lyrics; falls through to tryNetease() on a miss.
+     **/
     void tryLrclibSearch();
-    /** @brief Third network attempt: NetEase Cloud Music song search (title-matched to avoid cover versions) followed
-     * by its lyric endpoint; falls through to tryLyricsOvh() on a miss. */
+    /**  Third network attempt: NetEase Cloud Music song search (title-matched to avoid cover versions) followed by
+     * its lyric endpoint; falls through to tryLyricsOvh() on a miss.
+     **/
     void tryNetease();
-    /** @brief Last-resort network attempt: lyrics.ovh plain-text lookup; calls lyricsGiveUp() if this also fails. */
+    /** Last-resort network attempt: lyrics.ovh plain-text lookup; calls lyricsGiveUp() if this also fails. */
     void tryLyricsOvh();
-    /**
-     * @brief Common success path once any source (cache or network) returns lyric text: parses it, renders the texture,
+    /**  Common success path once any source (cache or network) returns lyric text: parses it, renders the texture,
      * and updates the cache.
-     * @param synced Synced (LRC-format) lyrics text, or empty if none.
-     * @param plain Plain-text lyrics, used only if synced is empty.
-     * @param quelle Human-readable source name for logging (e.g. "LRCLIB", "Cache"); the literal "Cache" suppresses
-     * re-writing the cache file.
-     */
+     *
+     * @param synced  Synced (LRC-format) lyrics text, or empty if none. (in)
+     * @param plain   Plain-text lyrics, used only if synced is empty. (in)
+     * @param quelle  Human-readable source name for logging (e.g. "LRCLIB", "Cache"); the literal "Cache"
+     *                suppresses re-writing the cache file. (in)
+     **/
     void lyricsFound( const QString &synced, const QString &plain, const char *quelle );
-    /** @brief Common failure path once every lyrics source has been exhausted: clears the pending flag and writes a
-     * negative cache entry so the chain is skipped next time (until the TTL expires). */
+    /**  Common failure path once every lyrics source has been exhausted: clears the pending flag and writes a
+     * negative cache entry so the chain is skipped next time (until the TTL expires).
+     **/
     void lyricsGiveUp();
-    /**
-     * @brief Parses LRC-format synced lyrics ("[mm:ss.xx]text", possibly multiple timestamps per line) into time-sorted
+    /**  Parses LRC-format synced lyrics ("[mm:ss.xx]text", possibly multiple timestamps per line) into time-sorted
      * LyricLine entries.
-     * @param lrc Raw LRC lyric text (one entry per '\\n'-separated line).
+     *
+     * @param lrc  Raw LRC lyric text (one entry per '\\n'-separated line). (in)
      *
      * An empty text after a timestamp is kept as a GAP MARKER (t0 only)
      * rather than dropped: without it, the preceding line's t1 would be
      * set to the next entry's t0, collapsing any mid-song silence to zero
      * and leaving the long-pause fade-out logic in glwidget.cpp with
      * nothing to detect except intro/outro silence.
-     */
+     **/
     void parseSynced( const QString &lrc );
-    /**
-     * @brief Parses plain (unsynchronised) lyric text into LyricLine entries, one per non-empty source line.
-     * @param plain Raw plain-text lyrics.
-     */
+    /**  Parses plain (unsynchronised) lyric text into LyricLine entries, one per non-empty source line.
+     *
+     * @param plain  Raw plain-text lyrics. (in)
+     **/
     void parsePlain( const QString &plain );
-    /** @brief Renders every parsed lyric line into one tall transparent QImage (white text with a dark halo),
-     * truncating if the real-line budget would exceed LyrMaxH, and fills in each line's v0/v1 texture-V band. */
+    /**  Renders every parsed lyric line into one tall transparent QImage (white text with a dark halo), truncating if
+     * the real-line budget would exceed LyrMaxH, and fills in each line's v0/v1 texture-V band.
+     **/
     void renderLyricsImage();
 
     // Bilder
-    /** @brief Entry point of the artist-image chain: loads any already-cached images from disk, then (unless already >=
-     * 8 cached) kicks off all three network sources in parallel. */
+    /**  Entry point of the artist-image chain: loads any already-cached images from disk, then (unless already >= 8
+     * cached) kicks off all three network sources in parallel.
+     **/
     void imagesFromCacheOrNet();
-    /** @brief Queries Deezer for the best-matching artist (preferring one with a real, non-placeholder photo and the
-     * most fans) and enqueues its XL photo plus up to 25 album covers. */
+    /**  Queries Deezer for the best-matching artist (preferring one with a real, non-placeholder photo and the most
+     * fans) and enqueues its XL photo plus up to 25 album covers.
+     **/
     void fetchDeezer();
-    /** @brief Queries TheAudioDB (public test key) for the first matching artist and enqueues its thumbnail plus up to
-     * 4 fanart images. */
+    /**  Queries TheAudioDB (public test key) for the first matching artist and enqueues its thumbnail plus up to 4
+     * fanart images.
+     **/
     void fetchAudioDb();
-    /** @brief Queries iTunes Search for albums by the artist (name-matched) and enqueues each cover art URL upscaled
-     * from 100px to 600px. */
+    /**  Queries iTunes Search for albums by the artist (name-matched) and enqueues each cover art URL upscaled from
+     * 100px to 600px.
+     **/
     void fetchITunes();
-    /**
-     * @brief Adds an image URL to the download queue unless it is empty, already seen, or the combined cached+queued
-     * count has reached MaxImages.
-     * @param url Image URL to enqueue.
-     */
+    /**  Adds an image URL to the download queue unless it is empty, already seen, or the combined cached+queued count
+     * has reached MaxImages.
+     *
+     * @param url  Image URL to enqueue. (in)
+     **/
     void enqueueImageUrl( const QString &url );
-    /** @brief Starts additional downloads from m_downloadQueue until ParallelDownloads are in flight; each completion
-     * decodes/validates (min width 200px), writes the JPEG to the artist cache dir, and recurses to keep the pipeline
-     * full. */
+    /**  Starts additional downloads from m_downloadQueue until ParallelDownloads are in flight; each completion
+     * decodes/validates (min width 200px), writes the JPEG to the artist cache dir, and recurses to keep the
+     * pipeline full.
+     **/
     void startNextDownloads();
 
-    /**
-     * @brief Issues a GET request with the project's identifying User-Agent and a 15s transfer timeout.
-     * @param url Request URL.
-     * @return The in-flight QNetworkReply (caller connects to its finished() signal and must deleteLater() it).
-     */
+    /**  Issues a GET request with the project's identifying User-Agent and a 15s transfer timeout.
+     *
+     * @param url  Request URL. (in)
+     *
+     * @return
+     *   The in-flight QNetworkReply (caller connects to its finished() signal and must deleteLater() it).
+     **/
     QNetworkReply *get( const QString &url );
-    /** @brief Path to this track's lyrics cache JSON, keyed by the MD5 of m_key. @return Cache file path under
-     * "..\\cache\\lyrics\\". */
+    /**  Path to this track's lyrics cache JSON, keyed by the MD5 of m_key.
+     *
+     * @return
+     *   Cache file path under "..\\cache\\lyrics\\".
+     **/
     QString lyricsCachePath() const;
-    /** @brief Path to this artist's image cache directory, keyed by the MD5 of the lower-cased artist name. @return
-     * Cache directory path under "..\\cache\\artist\\". */
+    /**  Path to this artist's image cache directory, keyed by the MD5 of the lower-cased artist name.
+     *
+     * @return
+     *   Cache directory path under "..\\cache\\artist\\".
+     **/
     QString artistCacheDir() const;
 
     // Musikvideo
-    /** @brief Path to this track's video cache directory, keyed by the MD5 of m_key. @return Cache directory path under
-     * "..\\cache\\video\\". */
+    /**  Path to this track's video cache directory, keyed by the MD5 of m_key.
+     *
+     * @return
+     *   Cache directory path under "..\\cache\\video\\".
+     **/
     QString videoCacheDir() const;
-    /**
-     * @brief Entry point of the video search: checks the on-disk cache (a ready video, or a still-valid negative
-     * marker) before shelling out to yt-dlp.
-     * @param durationSec The requesting call's known track duration, already gated (>0 and <= VideoMaxDurationSec) by
-     * the caller.
-     */
+    /**  Entry point of the video search: checks the on-disk cache (a ready video, or a still-valid negative marker)
+     * before shelling out to yt-dlp.
+     *
+     * @param durationSec  The requesting call's known track duration, already gated (>0 and <= VideoMaxDurationSec)
+     *                     by the caller. (in)
+     **/
     void videoFromCacheOrNet( double durationSec );
     /** @brief One candidate returned by the yt-dlp search step, before scoring (parsed from one
      * "id|||title|||channel|||duration" --print line). */
@@ -304,27 +388,40 @@ private:
     /** @var TrackMedia::VideoCandidate::duration
      *  @brief Video length in seconds (%(duration)s); 0 if yt-dlp gave none. Must lie within max(20 s, 15 %) of the
      * track's real duration or the candidate is rejected outright. */
-    /** @brief Shells out to `yt-dlp ytsearchN:...` (no download, just metadata) for up to VideoSearchCount candidates;
-     * parses its stdout on completion and picks a candidate via scoreCandidate(), then either starts the download or
-     * gives up (writing a negative cache entry). */
+    /**  Shells out to `yt-dlp ytsearchN:...` (no download, just metadata) for up to VideoSearchCount candidates;
+     * parses its stdout on completion and picks a candidate via scoreCandidate(), then either starts the download
+     * or gives up (writing a negative cache entry).
+     **/
     void startVideoSearch();
-    /** @brief Scores one search candidate against the target duration and "does this look like the OFFICIAL music
-     * video" text signals in its title/channel. @return A score where higher is better; callers reject anything <= 0.
-     */
+    /**  Scores one search candidate against the target duration and "does this look like the OFFICIAL music video"
+     * text signals in its title/channel.
+     *
+     * @param c                  The candidate from the yt-dlp search. (in)
+     * @param artist             Artist of the current track; a channel of that name scores higher. (in)
+     * @param targetDurationSec  Real length of the track in seconds; candidates outside max(20 s, 15 %) of it are
+     *                           rejected. (in)
+     *
+     * @return
+     *   A score where higher is better; callers reject anything <= 0.
+     **/
     static double scoreCandidate( const VideoCandidate &c, const QString &artist, double targetDurationSec );
-    /** @brief Shells out to `yt-dlp <watch-url> -f ...` to download the chosen candidate into a temp file in
-     * videoCacheDir(), then atomically renames it to video.mp4 on success. */
+    /**  Shells out to `yt-dlp <watch-url> -f ...` to download the chosen candidate into a temp file in
+     * videoCacheDir(), then atomically renames it to video.mp4 on success.
+     *
+     * @param videoId  YouTube id of the chosen candidate (VideoCandidate::id). (in)
+     **/
     void startVideoDownload( const QString &videoId );
-    /** @brief Writes a timestamped "no acceptable video found" marker so repeated plays of the same track don't
-     * re-search every time (see VideoNegCacheTtlSec). */
+    /**  Writes a timestamped "no acceptable video found" marker so repeated plays of the same track don't re-search
+     * every time (see VideoNegCacheTtlSec).
+     **/
     void writeVideoNegativeCache();
-    /**
-     * @brief Writes (or overwrites) the lyrics cache JSON for the current track.
-     * @param synced Synced lyrics text to persist (may be empty).
-     * @param plain Plain lyrics text to persist (may be empty).
-     * @param found Whether any lyrics were actually found; false writes a timestamped negative-cache entry (see
-     * NegCacheTtlSec).
-     */
+    /**  Writes (or overwrites) the lyrics cache JSON for the current track.
+     *
+     * @param synced  Synced lyrics text to persist (may be empty). (in)
+     * @param plain   Plain lyrics text to persist (may be empty). (in)
+     * @param found   Whether any lyrics were actually found; false writes a timestamped negative-cache entry (see
+     *                NegCacheTtlSec). (in)
+     **/
     void writeLyricsCache( const QString &synced, const QString &plain, bool found );
 
     QNetworkAccessManager *m_nam = nullptr; ///< Shared network manager for every request this object issues; owned,
@@ -387,8 +484,12 @@ private:
                                      ///< yt-dlp often enough that silent staleness would otherwise slowly kill this
                                      ///< feature).
 private:
-    /// @brief Not copyable (CGVR template: copy constructor and assignment are always declared).
+    /** Not copyable (CGVR template: copy constructor and assignment are always declared). */
     TrackMedia( const TrackMedia & ) = delete;
-    /// @brief Not assignable; see the copy constructor.
+    /**  Not assignable; see the copy constructor.
+     *
+     * @return
+     *   Nothing: the operator is deleted, so no call compiles.
+     **/
     TrackMedia &operator=( const TrackMedia & ) = delete;
 };

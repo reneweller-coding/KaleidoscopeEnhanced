@@ -33,11 +33,13 @@
 #include <QtCore/QFile>
 #include <QtCore/QTimer>
 
-/**
- * @brief Translated UI string for the current language (Strings::language()) as a QString.
- * @param id String table entry to look up.
- * @return The UTF-8 text of @p id in the current language.
- */
+/**  Translated UI string for the current language (Strings::language()) as a QString.
+ *
+ * @param id  String table entry to look up. (in)
+ *
+ * @return
+ *   The UTF-8 text of @p id in the current language.
+ **/
 static QString uiString( StrIdE id )
 {
     return QString::fromUtf8( Strings::uiText( id ) );

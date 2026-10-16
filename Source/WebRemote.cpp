@@ -33,13 +33,19 @@ static const char *kDiscoveryMagic = "KALEIDO_DISCOVER_V1";
 /// enough that a phone that walked out of the room doesn't hold a socket.
 static const int KeepAliveIdleMs = 30000;
 
-/// Escapes a string for embedding inside a JSON double-quoted string literal
-/// (backslash, quote, and control characters). Every JSON string this file
-/// builds carries user-authored text at some remove (a preset's
-/// ConfigurationName, a scene's bare filename) via plain QString::arg()
-/// interpolation with no escaping of its own -- a name containing a `"`
-/// would otherwise break the whole response for every client (fetch()'s
-/// .json() throws, the Android app's JSONObject parse throws).
+/**  Escapes a string for embedding inside a JSON double-quoted string literal (backslash, quote, and control
+ * characters).
+ *
+ * @param s  The text. (in)
+ *
+ * @return
+ *   The escaped text, without quotes.
+ *
+ * Every JSON string this file builds carries user-authored text at some remove (a preset's ConfigurationName, a scene's
+ * bare filename) via plain QString::arg() interpolation with no escaping of its own -- a name containing a `"` would
+ * otherwise break the whole response for every client (fetch()'s .json() throws, the Android app's JSONObject parse
+ * throws).
+ **/
 static QString jsonEscape( const QString &s )
 {
     QString out;
@@ -358,11 +364,13 @@ try{const t=localStorage.getItem('krTab');
     showTab(t&&document.getElementById('p-'+t)?t:'live');}catch(e){showTab('live');}
 </script></body></html>)HTML";
 
-/**
- * @brief Fills in kPageTemplate's @@TOKEN@@ placeholders from Strings::T() in the CURRENT
- *        language, rebuilt fresh on every GET "/" so a language change in the setup tool takes
- *        effect on the phone the next time it (re)loads the page -- no server restart needed.
- */
+/**  Fills in kPageTemplate's @@TOKEN@@ placeholders from Strings::T() in the CURRENT language, rebuilt fresh on every
+ * GET "/" so a language change in the setup tool takes effect on the phone the next time it (re)loads the page --
+ * no server restart needed.
+ *
+ * @return
+ *   The page, UTF-8.
+ **/
 static QByteArray buildPage()
 {
     QString page = QString::fromUtf8( kPageTemplate );

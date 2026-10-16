@@ -52,25 +52,40 @@ class ImageLoader; ///< Forward declaration; background image-loading thread, de
 class RenderPipeline
 {
 public:
-    /** @brief Constructs a RenderPipeline with all GL object ids zeroed ("not yet created"); call init() then start()
-     * before painting. */
+    /**  Constructs a RenderPipeline with all GL object ids zeroed ("not yet created"); call init() then start()
+     * before painting.
+     **/
     RenderPipeline();
-    /** @brief Releases every GL texture/program owned by this instance and deletes the legacy mesh. */
+    /** Releases every GL texture/program owned by this instance and deletes the legacy mesh. */
     ~RenderPipeline();
-    /** @brief Loads/links the GLSL runtime programs needed up front (currently just the legacy outer combine program
-     * via initGLSL()); the per-effect and per-combine programs themselves compile lazily on first use. */
+    /**  Loads/links the GLSL runtime programs needed up front (currently just the legacy outer combine program via
+     * initGLSL()); the per-effect and per-combine programs themselves compile lazily on first use.
+     **/
     void loadShader(); // load shader from file, compile and link them to programs, get variable locations
-    /**
-     * @brief Loads a legacy Wavefront OBJ mesh for the fixed-function drawScene() preview path.
-     * @note drawScene()/loadObj() are legacy: in the current build drawScene() is only referenced
-     *       from a fully commented-out block inside paint(), and loadObj() has no active caller
-     *       (glwidget.cpp keeps only a commented-out call) — kept for reference / possible reuse.
-     * @param filename Path to the .obj file to load.
-     * @return true on success; false (with a stderr message) if the mesh failed to load.
-     */
+    /**  Loads a legacy Wavefront OBJ mesh for the fixed-function drawScene() preview path.
+     *
+     * @param filename  Path to the .obj file to load. (in)
+     *
+     * @return
+     *   true on success; false (with a stderr message) if the mesh failed to load.
+     *
+     * @note
+     *   drawScene()/loadObj() are legacy: in the current build drawScene() is only referenced from a fully
+     *   commented-out block inside paint(), and loadObj() has no active caller (glwidget.cpp keeps only a
+     *   commented-out call) — kept for reference / possible reuse.
+     **/
     bool loadObj( const char *filename );
-    /**
-     * @brief Renders and presents exactly one frame of the visualizer.
+    /**  Renders and presents exactly one frame of the visualizer.
+     *
+     * @param rotMatrix  Column-major 4x4 (or 3x3-in-16, see drawScene()) rotation matrix for the legacy mesh
+     *                   preview path. (in)
+     * @param tx         X translation for the legacy mesh preview path. (in)
+     * @param ty         Y translation for the legacy mesh preview path. (in)
+     * @param tz         Z translation for the legacy mesh preview path. (in)
+     * @param audio      Optional audio analysis result.  Pass a default-constructed AudioFeatures{} (all zero) to
+     *                   disable audio reactivity. Audio-driven motion is integrated into continuous phase offsets
+     *                   here (see m_audioRotPhase / m_audioAdvance) so that changing the audio never jumps the
+     *                   visual. (in)
      *
      * This is the whole pipeline: it (1) picks up live Spout/video input if configured,
      * (2) smooths the adaptive timing scale and applies the VJ freeze/pin/DJ-stop
@@ -87,52 +102,43 @@ public:
      * between the two combine outputs, (9) accumulates the phosphor feedback/trails
      * pass, and (10) hands the result to PresentPass::run() for tone-mapping, bloom,
      * camera transform, stereo packing, overlays and final display.
-     *  @param rotMatrix Column-major 4x4 (or 3x3-in-16, see drawScene()) rotation matrix for the legacy mesh preview
-     * path.
-     *  @param tx X translation for the legacy mesh preview path.
-     *  @param ty Y translation for the legacy mesh preview path.
-     *  @param tz Z translation for the legacy mesh preview path.
-     *  @param audio  Optional audio analysis result.  Pass a default-constructed
-     *                AudioFeatures{} (all zero) to disable audio reactivity.
-     *                Audio-driven motion is integrated into continuous phase
-     *                offsets here (see m_audioRotPhase / m_audioAdvance) so that
-     *                changing the audio never jumps the visual.
-     */
+     **/
     void paint( const float *rotMatrix, float tx, float ty, float tz,
                 const AudioFeatures &audio = AudioFeatures{} );
 
     /** The framebuffer the final image must be drawn into.  Under QOpenGLWidget
      *  the visible buffer is NOT 0 but QOpenGLWidget::defaultFramebufferObject();
      *  the widget passes it here every frame before paint().  Defaults to 0. */
-    /**
-     * @brief Sets the framebuffer the final image must be drawn into.
-     * @param fbo Target FBO id (QOpenGLWidget::defaultFramebufferObject() under QOpenGLWidget; 0 for a plain default
-     * framebuffer).
-     */
+    /**  Sets the framebuffer the final image must be drawn into.
+     *
+     * @param fbo  Target FBO id (QOpenGLWidget::defaultFramebufferObject() under QOpenGLWidget; 0 for a plain
+     *             default framebuffer). (in)
+     **/
     void setDefaultFBO( GLuint fbo ) { m_defaultFBO = fbo; }
 
     /** Preset name (set by Configuration after loading the XML) — namespaces
      *  the persistent taste-learning factors, so likes/dislikes are learned
      *  PER PRESET. */
-    /**
-     * @brief Sets the preset name that namespaces the persistent taste-learning factors.
-     * @param n Preset name (used as the "<PresetName>/<file>" key prefix in tasteFor()/bumpTaste()).
-     */
+    /**  Sets the preset name that namespaces the persistent taste-learning factors.
+     *
+     * @param n  Preset name (used as the "<PresetName>/<file>" key prefix in tasteFor()/bumpTaste()). (in)
+     **/
     void setPresetName( const QString &n ) { m_presetName = n; }
 
     /** Track-title REVEAL: renders "title / artist" into a texture that the
      *  present pass unfolds out of a kaleidoscopic swirl, holds readable and
      *  dissolves toward the viewer (~8 s).  Called by the widget on a track
      *  change (replaces the old QPainter lower third). */
-    /**
-     * @brief Renders "title / artist" text into a texture for the present pass's kaleidoscopic reveal.
+    /**  Renders "title / artist" text into a texture for the present pass's kaleidoscopic reveal.
+     *
+     * @param title   Track title (font auto-shrinks to fit, falling back to eliding only if even the smallest size
+     *                doesn't; drawn large and bold). (in)
+     * @param artist  Track artist (same auto-shrink/elide fallback; drawn smaller below the title, omitted if
+     *                empty). (in)
      *
      * Only rasterises the text with QPainter into m_titlePending here; the actual GL upload and
      * mood-matched reveal-style pick happen at the next paint() call, where a GL context is current.
-     * @param title Track title (font auto-shrinks to fit, falling back to eliding only if even the smallest size
-     * doesn't; drawn large and bold).
-     * @param artist Track artist (same auto-shrink/elide fallback; drawn smaller below the title, omitted if empty).
-     */
+     **/
     void showTitle( const QString &title, const QString &artist );
 
     /** Lyrics-/Künstlerbild-Overlay: GLwidget berechnet den Frame-Zustand
@@ -168,21 +174,42 @@ public:
         float artistAlpha = 0.f;               ///< Artist-image overlay opacity, 0 (hidden) .. 1 (fully visible).
         float artistAspect = 1.f;              ///< Aspect ratio of the artist-image texture.
     };
-    /** @brief Stores this frame's lyrics/artist overlay state (read back by paint()/PresentPass). @param o Overlay
-     * state computed by the caller (GLwidget). */
+    /**  Stores this frame's lyrics/artist overlay state (read back by paint()/PresentPass).
+     *
+     * @param o  Overlay state computed by the caller (GLwidget). (in)
+     **/
     void setOverlayFrame( const OverlayFrame &o ) { m_overlay = o; }
-    /** @return Spatial spread of the last measured frame -- 0 means a flat surface. */
+    /**  Spatial spread of the last measured frame -- 0 means a flat surface.
+     *
+     * @return
+     *   Spatial spread of the last measured frame -- 0 means a flat surface.
+     **/
     float liveStructure() const { return m_present.liveStructure(); }
-    /** @return Mean absolute change against the previously measured frame. */
+    /**  Mean absolute change against the previously measured frame.
+     *
+     * @return
+     *   Mean absolute change against the previously measured frame.
+     **/
     float liveMotion() const { return m_present.liveMotion(); }
-    /** @brief Uploads the current lyrics-line texture to the present pass. @param rgba Packed RGBA8 pixel data. @param
-     * w Image width in pixels. @param h Image height in pixels. */
+    /**  Uploads the current lyrics-line texture to the present pass.
+     *
+     * @param rgba  Packed RGBA8 pixel data. (in)
+     * @param w     Image width in pixels. (in)
+     * @param h     Image height in pixels. (in)
+     **/
     void setLyricsTexture( const void *rgba, int w, int h ) { m_present.setLyricsImage( rgba, w, h ); }
-    /** @brief Uploads the current artist-image texture to the present pass. @param rgba Packed RGBA8 pixel data. @param
-     * w Image width in pixels. @param h Image height in pixels. */
+    /**  Uploads the current artist-image texture to the present pass.
+     *
+     * @param rgba  Packed RGBA8 pixel data. (in)
+     * @param w     Image width in pixels. (in)
+     * @param h     Image height in pixels. (in)
+     **/
     void setArtistTexture( const void *rgba, int w, int h ) { m_present.setArtistImage( rgba, w, h ); }
-    /** @brief Overrides the artist-image corner slot with an externally-owned GL texture (a music-video PiP frame); 0
-     * clears the override. @param texId GL texture id, owned by the caller. */
+    /**  Overrides the artist-image corner slot with an externally-owned GL texture (a music-video PiP frame); 0
+     * clears the override.
+     *
+     * @param texId  GL texture id, owned by the caller. (in)
+     **/
     void setArtistExternalTexture( GLuint texId ) { m_present.setArtistExternalTexture( texId ); }
 
     /** Request an early cross-fade to the next texture effect (manual 'n' key,
@@ -190,63 +217,93 @@ public:
      *  LEARNING: skipping an effect that has only just appeared counts as
      *  "gefaellt mir nicht" — its selection weight gets a persistent, slowly
      *  decaying malus. */
-    /**
-     * @brief Requests an early manual cross-fade to the next texture effect (key 'n', MIDI pad, web remote).
+    /**  Requests an early manual cross-fade to the next texture effect (key 'n', MIDI pad, web remote).
      *
      * Ignored while PIN or FREEZE is active (a message explains why on stderr). If the current
      * effect has been on screen less than 10 s, skipping it is treated as a dislike and its
      * persistent taste weight is multiplied down (see bumpTaste()).
-     */
+     **/
     void requestSceneChange();
 
     /** Remote scene browser: names of the preset's texture shaders, and a
      *  DIRECT jump to one of them (instant, unquantised, respects pin/freeze). */
-    /** @brief Lists the preset's texture-effect shader names (bare file names, no path/extension), for a remote scene
-     * browser. @return One name per configured texture effect, in registration order. */
+    /**  Lists the preset's texture-effect shader names (bare file names, no path/extension), for a remote scene
+     * browser.
+     *
+     * @return
+     *   One name per configured texture effect, in registration order.
+     **/
     QStringList sceneNames() const;
-    /** @brief Jumps directly to texture effect @p idx (instant, unquantised cut). Ignored while PIN or FREEZE is
-     * active, or if @p idx is out of range. @param idx Index into the texture-effect list, as returned by sceneNames().
-     */
+    /**  Jumps directly to texture effect @p idx (instant, unquantised cut).
+     *
+     * @param idx  Index into the texture-effect list, as returned by sceneNames(). (in)
+     *
+     * Ignored while PIN or FREEZE is active, or if @p idx is out of range.
+     **/
     void forceScene( int idx );
-    /** @return Fraction of the frame the active scene's model covered, or -1
-     *          when it is not a mesh scene or nothing was measured.
+    /**  Fraction of the frame the active scene's model covered, or -1 when it is not a mesh scene or nothing was
+     * measured.
+     *
+     * @return
+     *   Fraction of the frame the active scene's model covered, or -1 when it is not a mesh scene or nothing was
+     *   measured.
      *
      * Counted with an occlusion query around the mesh draw (KALEIDO_COVER_LOG).
      * The contact sheets suggested the stations fill about a tenth of the
-     * frame; this replaces the impression with a number. */
+     * frame; this replaces the impression with a number.
+     **/
     float activeCoverage() const;
-    /** @brief Names of the configured combine-effect (overlay) shaders, in list order. @return One basename per FX,
-     * without the .frag suffix. */
+    /**  Names of the configured combine-effect (overlay) shaders, in list order.
+     *
+     * @return
+     *   One basename per FX, without the .frag suffix.
+     **/
     QStringList fxNames() const;
-    /** @brief Force the next overlay to @p idx, bypassing budget/mood/mesh filters (FX sweep). @param idx Index into
-     * fxNames(). */
+    /**  Force the next overlay to @p idx, bypassing budget/mood/mesh filters (FX sweep).
+     *
+     * @param idx  Index into fxNames(). (in)
+     **/
     void forceFx( int idx );
-    /** @brief Index of the currently active texture effect, into the same list as sceneNames(). @return An index into
-     * sceneNames(), or -1 if none is active yet. */
+    /**  Index of the currently active texture effect, into the same list as sceneNames().
+     *
+     * @return
+     *   An index into sceneNames(), or -1 if none is active yet.
+     **/
     int activeSceneIndex() const
     {
         return m_effectTextures.empty() ? -1 : static_cast<int>( m_scheduler.actTexture() );
     }
-    /** @brief Whether a scene cross-fade is currently in flight (mid-transition frames blend two scenes, so callers
-     * wanting a clean single-scene snapshot should skip them). */
+    /**  Whether a scene cross-fade is currently in flight (mid-transition frames blend two scenes, so callers wanting
+     * a clean single-scene snapshot should skip them).
+     *
+     * @return
+     *   True while two scenes are blended.
+     **/
     bool sceneTransitioning() const { return m_scheduler.texState() != 0; }
 
     /** Review mode (Test* presets): scenes run alphabetically, 25 s each,
      *  'n' steps to the next in order.  No mood/taste filtering, no beat
      *  quantisation — a systematic viewing bench. */
-    /** @brief Enables/disables review mode (alphabetical fixed-length walk through every scene, for systematic
-     * viewing). @param on true to enable review mode, false to return to normal mood/taste-driven selection. */
+    /**  Enables/disables review mode (alphabetical fixed-length walk through every scene, for systematic viewing).
+     *
+     * @param on  true to enable review mode, false to return to normal mood/taste-driven selection. (in)
+     **/
     void setReviewMode( bool on ) { m_scheduler.setReviewMode( on ); }
+    /**  Preset-wide floor on scene fades (seconds); see SceneScheduler::setSceneFadeMin().
+     *
+     * @param secs  Shortest scene fade in seconds. (in)
+     **/
     void setSceneFadeMin( float secs )
     {
         m_scheduler.setSceneFadeMin( secs );
-    } ///< Preset-wide floor on scene fades (seconds); see SceneScheduler::setSceneFadeMin().
+    }
 
     /** Validation aid (KALEIDO_COMPILE_ALL=1): eagerly compile every effect
      *  and combine shader of this configuration — the log then holds one
      *  Compilation/Linking verdict per shader.  GL context must be current. */
-    /** @brief Eagerly compiles every texture-effect and combine-effect shader of this configuration (validation aid; GL
-     * context must be current). */
+    /**  Eagerly compiles every texture-effect and combine-effect shader of this configuration (validation aid; GL
+     * context must be current).
+     **/
     void compileAllShaders();
 
     /** Taste learning, positive side (key 'f'): boost the CURRENT effect's
@@ -257,90 +314,193 @@ public:
     // whereas a mark is a binary "look at this one again later" that must
     // survive across sessions unchanged. Kept in kaleidoscope_settings.ini
     // under [marked] so an inspection pass can span several runs.
-    /** @brief Marks or unmarks the scene currently on screen. @return true if it is marked afterwards. */
+    /**  Marks or unmarks the scene currently on screen.
+     *
+     * @return
+     *   true if it is marked afterwards.
+     **/
     bool toggleMarkCurrentScene();
-    /** @brief Whether the scene currently on screen is marked (drives the on-screen indicator). */
+    /**  Whether the scene currently on screen is marked (drives the on-screen indicator).
+     *
+     * @return
+     *   True if it is marked.
+     **/
     bool currentSceneMarked() const;
-    /** @brief How many scenes are marked in total. */
+    /**  How many scenes are marked in total.
+     *
+     * @return
+     *   The number of marked scenes.
+     **/
     int markedCount() const { return M_Marked.size(); }
-    /**
-     * @brief Writes every marked scene to Presets/Marked.xml as a playable preset.
+    /**  Writes every marked scene to Presets/Marked.xml as a playable preset.
+     *
+     * @param outPath  Receives the written path (may be null). (out)
+     *
+     * @return
+     *   false if nothing is marked or the file could not be written.
      *
      * Copies each scene's REAL `<TextureShader>` node out of Komplett.xml rather
      * than synthesising a tag, so geom kind and preset parameters survive --
      * a synthesised tag silently drops both and renders the scene wrongly.
-     * @param outPath Receives the written path (may be null).
-     * @return false if nothing is marked or the file could not be written.
-     */
+     **/
     bool saveMarkedPreset( QString *outPath = nullptr );
 
-    /** @brief Boosts the currently active texture effect's persistent taste weight ("favourite", key 'f'). */
+    /** Boosts the currently active texture effect's persistent taste weight ("favourite", key 'f'). */
     void favoriteCurrentEffect();
-    /** @brief Cue memory: remember "THIS scene, at THIS point of THIS track" (favourite while a track is identified).
-     * Persisted under [cues] in the settings ini. */
+    /**  Cue memory: remember "THIS scene, at THIS point of THIS track" (favourite while a track is identified).
+     *
+     * @param trackKey  Identity of the playing track (artist and title). (in)
+     * @param posSec    Playback position in seconds; negative means unknown, and nothing is stored. (in)
+     *
+     * Persisted under [cues] in the settings ini.
+     **/
     void rememberCue( const QString &trackKey, double posSec );
-    /** @brief Cue memory: per frame -- when the identified track reaches a remembered point (within 2.5 s), force that
-     * scene once per playback. */
+    /**  Cue memory: per frame -- when the identified track reaches a remembered point (within 2.5 s), force that
+     * scene once per playback.
+     *
+     * @param trackKey  Identity of the playing track (artist and title). (in)
+     * @param posSec    Playback position in seconds; negative means unknown. (in)
+     **/
     void tickCues( const QString &trackKey, double posSec );
-    /** @brief Index in m_effectTextures of the scene whose base filename is @p base, or -1. */
+    /**  Index in m_effectTextures of the scene whose base filename is @p base, or -1.
+     *
+     * @param base  File name without directory and extension, as tasteBase() gives it. (in)
+     *
+     * @return
+     *   The index, or -1 if no scene has that name.
+     **/
     int sceneIndexByBase( const QString &base ) const;
 
     /** Hot-reload (dev aid): recompile every effect/combine whose fragment file
      *  matches the given bare name.  GL context must be current. */
-    /** @brief Recompiles every texture-effect/combine-effect program whose fragment file matches @p bareName (dev
-     * hot-reload aid; GL context must be current). @param bareName Bare fragment file name to match (case-insensitive),
-     * e.g. "Voyager.frag". */
+    /**  Recompiles every texture-effect/combine-effect program whose fragment file matches @p bareName (dev
+     * hot-reload aid; GL context must be current).
+     *
+     * @param bareName  Bare fragment file name to match (case-insensitive), e.g. "Voyager.frag". (in)
+     **/
     void reloadFragment( const QString &bareName );
 
     // ---- Live-tunable look parameters (shared across all configs; set by hotkeys) ----
+    /**  Adjusts the global audio-reactivity gain by @p d (clamped to [0, 3]).
+     *
+     * @param d  Signed step added to the current gain. (in)
+     *
+     * @sideeffects
+     *   Changes M_Reactivity.
+     **/
     static void adjustReactivity( float d )
     {
         M_Reactivity = clampParam( M_Reactivity + d, 0.f, 3.0f );
-    } ///< @brief Adjusts the global audio-reactivity gain by @p d (clamped to [0, 3]).
+    }
+    /**  Adjusts the feedback-trail-length knob by @p d (clamped to [0, 0.95]).
+     *
+     * @param d  Signed step added to the current trail amount. (in)
+     *
+     * @sideeffects
+     *   Changes M_TrailAmount.
+     **/
     static void adjustTrails( float d )
     {
         M_TrailAmount = clampParam( M_TrailAmount + d, 0.f, 0.95f );
-    } ///< @brief Adjusts the feedback-trail-length knob by @p d (clamped to [0, 0.95]).
+    }
+    /**  Adjusts the global mood-grade strength by @p d (clamped to [0, 2.5]).
+     *
+     * @param d  Signed step added to the current strength. (in)
+     *
+     * @sideeffects
+     *   Changes M_MoodStrength.
+     **/
     static void adjustMood( float d )
     {
         M_MoodStrength = clampParam( M_MoodStrength + d, 0.f, 2.5f );
-    } ///< @brief Adjusts the global mood-grade strength by @p d (clamped to [0, 2.5]).
-    static float reactivity() { return M_Reactivity; } ///< @brief Returns the current global audio-reactivity gain.
-    static float trails() { return M_TrailAmount; }    ///< @brief Returns the current feedback-trail-length knob.
-    static float mood() { return M_MoodStrength; }     ///< @brief Returns the current global mood-grade strength.
+    }
+    /**  Returns the current global audio-reactivity gain.
+     *
+     * @return
+     *   The current global audio-reactivity gain.
+     **/
+    static float reactivity() { return M_Reactivity; }
+    /**  Returns the current feedback-trail-length knob.
+     *
+     * @return
+     *   The current feedback-trail-length knob.
+     **/
+    static float trails() { return M_TrailAmount; }
+    /**  Returns the current global mood-grade strength.
+     *
+     * @return
+     *   The current global mood-grade strength.
+     **/
+    static float mood() { return M_MoodStrength; }
 
     // Latency compensation: loopback capture + analysis + render + display add
     // up to ~40-80 ms, so phase-locked visuals land slightly AFTER the heard
     // beat.  This leads the DISPLAY phase (tempo pulse, beat/bar phase) by the
     // given seconds; detection envelopes can't be led, but the phase-driven
     // rhythm feel dominates.  Keys ; and ' adjust it in 10 ms steps.
+    /**  Adjusts the display-phase latency-compensation lead by @p d seconds (clamped to [0, 0.25]).
+     *
+     * @param d  Signed step in seconds added to the current lead. (in)
+     *
+     * @sideeffects
+     *   Changes M_LatencyLead.
+     **/
     static void adjustLatency( float d )
     {
         M_LatencyLead = clampParam( M_LatencyLead + d, 0.f, 0.25f );
-    } ///< @brief Adjusts the display-phase latency-compensation lead by @p d seconds (clamped to [0, 0.25]).
+    }
+    /**  Sets the display-phase latency-compensation lead to @p v seconds (clamped to [0, 0.25]).
+     *
+     * @param v  New lead in seconds. (in)
+     *
+     * @sideeffects
+     *   Changes M_LatencyLead.
+     **/
     static void setLatency( float v )
     {
         M_LatencyLead = clampParam( v, 0.f, 0.25f );
-    } ///< @brief Sets the display-phase latency-compensation lead to @p v seconds (clamped to [0, 0.25]).
+    }
+    /**  Returns the current display-phase latency-compensation lead, in seconds.
+     *
+     * @return
+     *   The current display-phase latency-compensation lead, in seconds.
+     **/
     static float latency()
     {
         return M_LatencyLead;
-    } ///< @brief Returns the current display-phase latency-compensation lead, in seconds.
+    }
 
     // Stage "lamps" (corner spotlight cones + haze/mirror-ball/gobo light show).
     // Off by default; toggled with key 'l' and persisted.
+    /**  Toggles the stage-lamps light show on/off (key 'l').
+     *
+     * @sideeffects
+     *   Changes M_LightShow.
+     **/
     static void toggleLightShow()
     {
         M_LightShow = ( M_LightShow > 0.5f ) ? 0.f : 1.f;
-    } ///< @brief Toggles the stage-lamps light show on/off (key 'l').
+    }
+    /**  Sets the stage-lamps light show on/off.
+     *
+     * @param on  true to enable the corner-lamp light show. (in)
+     *
+     * @sideeffects
+     *   Changes M_LightShow.
+     **/
     static void setLightShow( bool on )
     {
         M_LightShow = on ? 1.f : 0.f;
-    } ///< @brief Sets the stage-lamps light show on/off. @param on true to enable the corner-lamp light show.
+    }
+    /**  Returns whether the stage-lamps light show is currently on.
+     *
+     * @return
+     *   True if the stage-lamps light show is currently on.
+     **/
     static bool lightShow()
     {
         return M_LightShow > 0.5f;
-    } ///< @brief Returns whether the stage-lamps light show is currently on.
+    }
 
     // ---- Stereoscopic output (CLI -3 sbs|tb|ana; key 'z' cycles, c/m depth) --
     // The mono frame is DEPTH-REPROJECTED in the present pass: a pseudo-depth
@@ -351,54 +511,118 @@ public:
     // screen.  No native OpenXR — deliberately a display-format feature.
     static int   M_StereoMode;  ///< Stereoscopic output mode: 0 off, 1 SBS, 2 top-bottom, 3 anaglyph.
     static float M_StereoDepth; ///< Stereo disparity strength, 0..2 (default 1).
-    static void  cycleStereo()
+    /**  Cycles to the next stereoscopic output mode (key 'z').
+     *
+     * @sideeffects
+     *   Changes M_StereoMode.
+     **/
+    static void cycleStereo()
     {
         M_StereoMode = ( M_StereoMode + 1 ) & 3;
-    } ///< @brief Cycles to the next stereoscopic output mode (key 'z').
-    static int  stereoMode() { return M_StereoMode; } ///< @brief Returns the current stereoscopic output mode.
+    }
+    /**  Returns the current stereoscopic output mode.
+     *
+     * @return
+     *   The current stereoscopic output mode.
+     **/
+    static int stereoMode() { return M_StereoMode; }
+    /**  Adjusts the stereo disparity strength by @p d (clamped to [0, 2]).
+     *
+     * @param d  Signed step added to the current strength. (in)
+     *
+     * @sideeffects
+     *   Changes M_StereoDepth.
+     **/
     static void adjustStereoDepth( float d )
     {
         M_StereoDepth = clampParam( M_StereoDepth + d, 0.f, 2.f );
-    } ///< @brief Adjusts the stereo disparity strength by @p d (clamped to [0, 2]).
-    static float stereoDepth() { return M_StereoDepth; } ///< @brief Returns the current stereo disparity strength.
-    /// @brief Sets the stereo disparity strength to an absolute value (clamped to [0, 2]) -- the web remote's slider,
-    /// next to the keyboard's relative 'c'/'m'.
+    }
+    /**  Returns the current stereo disparity strength.
+     *
+     * @return
+     *   The current stereo disparity strength.
+     **/
+    static float stereoDepth() { return M_StereoDepth; }
+    /**  Sets the stereo disparity strength to an absolute value (clamped to [0, 2]) -- the web remote's slider, next
+     * to the keyboard's relative 'c'/'m'.
+     *
+     * @param v  Disparity strength, clamped to 0..2. (in)
+     *
+     * @sideeffects
+     *   Changes M_StereoDepth.
+     **/
     static void setStereoDepth( float v ) { M_StereoDepth = clampParam( v, 0.f, 2.f ); }
-    /// @brief Selects a stereoscopic output mode directly (0 off, 1 SBS, 2 top-bottom, 3 anaglyph) -- the web remote
-    /// picks one, the keyboard's 'z' cycles.
+    /**  Selects a stereoscopic output mode directly (0 off, 1 SBS, 2 top-bottom, 3 anaglyph) -- the web remote picks
+     * one, the keyboard's 'z' cycles.
+     *
+     * @param m  0 off, 1 side by side, 2 top-bottom, 3 anaglyph; negative values count as 0. (in)
+     *
+     * @sideeffects
+     *   Changes M_StereoMode.
+     **/
     static void setStereoMode( int m ) { M_StereoMode = ( m < 0 ) ? 0 : ( m & 3 ); }
 
     // ---- VJ handbrakes ----
     // Blackout (key 'b'): fade the OUTPUT to black (window, Spout, recording —
     // it multiplies the present pass's brightness scale) and back.
+    /**  Toggles VJ blackout (fades the final output to/from black; key 'b').
+     *
+     * @sideeffects
+     *   Changes M_Blackout.
+     **/
     static void toggleBlackout()
     {
         M_Blackout = !M_Blackout;
-    } ///< @brief Toggles VJ blackout (fades the final output to/from black; key 'b').
-    static bool blackout() { return M_Blackout; } ///< @brief Returns whether VJ blackout is currently engaged.
+    }
+    /**  Returns whether VJ blackout is currently engaged.
+     *
+     * @return
+     *   True if VJ blackout is currently engaged.
+     **/
+    static bool blackout() { return M_Blackout; }
     // Freeze (key 'e'): hold the picture — the frame time is forced to 0 (all
     // phase integration and envelope motion stops) and the activation clocks
     // are re-armed so no scheduled switch fires behind the frozen image.
+    /**  Toggles VJ freeze (holds the picture by forcing frame time to 0; key 'e').
+     *
+     * @sideeffects
+     *   Changes M_Freeze.
+     **/
     static void toggleFreeze()
     {
         M_Freeze = !M_Freeze;
-    } ///< @brief Toggles VJ freeze (holds the picture by forcing frame time to 0; key 'e').
-    static bool frozen() { return M_Freeze; } ///< @brief Returns whether VJ freeze is currently engaged.
-    /**
-     * @brief KALEIDO_FREEZE_TIME=SECONDS (comparison runs): the scene at that time, with silent audio,
-     *        frozen once it has faded in (5 s) -- two runs with KALEIDO_SEED and KALEIDO_FIXED_PHOTO
-     *        then give the same frame, pixel for pixel, from the moment
-     *        it freezes (600 fixed steps of 1/120 s; the log says "FREEZE engaged").
-     * @return The frozen scene time, or a negative value when unset.
-     */
+    }
+    /**  Returns whether VJ freeze is currently engaged.
+     *
+     * @return
+     *   True if VJ freeze is currently engaged.
+     **/
+    static bool frozen() { return M_Freeze; }
+    /**  KALEIDO_FREEZE_TIME=SECONDS (comparison runs): the scene at that time, with silent audio, frozen once it has
+     * faded in (5 s) -- two runs with KALEIDO_SEED and KALEIDO_FIXED_PHOTO then give the same frame, pixel for
+     * pixel, from the moment it freezes (600 fixed steps of 1/120 s; the log says "FREEZE engaged").
+     *
+     * @return
+     *   The frozen scene time, or a negative value when unset.
+     **/
     static float freezeTime();
     // Pin (key 'u'): keep the CURRENT effect/combine on screen — scheduled and
     // forced switches (section/drop/novelty) are suppressed until unpinned.
+    /**  Toggles VJ pin (suppresses scheduled/forced effect and combine switches; key 'u').
+     *
+     * @sideeffects
+     *   Changes M_Pinned.
+     **/
     static void togglePin()
     {
         M_Pinned = !M_Pinned;
-    } ///< @brief Toggles VJ pin (suppresses scheduled/forced effect and combine switches; key 'u').
-    static bool pinned() { return M_Pinned; } ///< @brief Returns whether VJ pin is currently engaged.
+    }
+    /**  Returns whether VJ pin is currently engaged.
+     *
+     * @return
+     *   True if VJ pin is currently engaged.
+     **/
+    static bool pinned() { return M_Pinned; }
 
     // Spout output (CLI -o): publish the displayed frame as sender "Kaleidoscope".
     static bool M_SpoutEnabled; ///< Whether the Spout output sender ("Kaleidoscope") is enabled (CLI -o).
@@ -419,13 +643,12 @@ public:
     static QString M_WarmLabel; ///< What the per-frame lazy warm-up did last frame; diagnostics only
                                 ///< (KALEIDO_FRAME_LOG).
 
-    /**
-     * @brief Keeps only a small working set of mesh scenes resident in GL memory.
+    /**  Keeps only a small working set of mesh scenes resident in GL memory.
      *
      * Called once per frame from beginFrame(). Stamps the active and incoming
      * scenes as used and gives back the vertex buffers of the least recently
      * seen mesh scenes beyond the budget (KALEIDO_MESH_BUDGET, default 16).
-     */
+     **/
     void trimMeshResidency();
 
 private:
@@ -433,7 +656,11 @@ private:
     qint64                        m_meshUseClock = 0; ///< Monotonic frame counter behind m_meshLastUse.
 
 public:
-    /// @return Label of the last warm-up step ("glsl <file>", "mesh <file>", "fx <file>" or empty). Diagnostics only.
+    /**  Label of the last warm-up step ("glsl <file>", "mesh <file>", "fx <file>" or empty).
+     *
+     * @return
+     *   Label of the last warm-up step ("glsl <file>", "mesh <file>", "fx <file>" or empty). Diagnostics only.
+     **/
     static const QString &lastWarmLabel() { return M_WarmLabel; }
 
     /** @name Photo-source directory
@@ -452,100 +679,154 @@ public:
     /** @} */
 
     // Human-readable names of the currently active / cross-fading effects (debug overlay).
-    /** @brief Builds a human-readable multi-line summary of the currently active/cross-fading texture effect and
-     * combine (debug overlay). @return "TEX ...\nCOMB ..." text, including the incoming shader name and cross-fade
-     * percentage while a fade is in progress. */
+    /**  Builds a human-readable multi-line summary of the currently active/cross-fading texture effect and combine
+     * (debug overlay).
+     *
+     * @return
+     *   "TEX ...\nCOMB ..." text, including the incoming shader name and cross-fade percentage while a fade is in
+     *   progress.
+     **/
     QString activeShaderInfo() const;
     // Absolute setters (e.g. MIDI knobs map a 0..1 value to the full range).
+    /**  Sets the global audio-reactivity gain to an absolute value @p v (clamped to [0, 3]; e.g. from a MIDI knob).
+     *
+     * @param v  New gain. (in)
+     *
+     * @sideeffects
+     *   Changes M_Reactivity.
+     **/
     static void setReactivity( float v )
     {
         M_Reactivity = clampParam( v, 0.f, 3.0f );
-    } ///< @brief Sets the global audio-reactivity gain to an absolute value @p v (clamped to [0, 3]; e.g. from a MIDI
-    ///< knob).
+    }
+    /**  Sets the feedback-trail-length knob to an absolute value @p v (clamped to [0, 0.95]).
+     *
+     * @param v  New trail amount. (in)
+     *
+     * @sideeffects
+     *   Changes M_TrailAmount.
+     **/
     static void setTrails( float v )
     {
         M_TrailAmount = clampParam( v, 0.f, 0.95f );
-    } ///< @brief Sets the feedback-trail-length knob to an absolute value @p v (clamped to [0, 0.95]).
+    }
+    /**  Sets the global mood-grade strength to an absolute value @p v (clamped to [0, 2.5]).
+     *
+     * @param v  New strength. (in)
+     *
+     * @sideeffects
+     *   Changes M_MoodStrength, M_RenderScale, M_RenderScaleMax.
+     **/
     static void setMood( float v )
     {
         M_MoodStrength = clampParam( v, 0.f, 2.5f );
-    } ///< @brief Sets the global mood-grade strength to an absolute value @p v (clamped to [0, 2.5]).
+    }
 
     // Persist / restore the look parameters above (+ render scale) across runs.
     // loadSettings() is called at startup BEFORE the command line is parsed, so
     // explicit flags (e.g. -s) still override the saved values.
-    /** @brief Restores the live-tunable look parameters, render scale and per-shader taste weights from the settings
-     * INI. Must be called before the command line is parsed so explicit CLI flags can still override. */
+    /**  Restores the live-tunable look parameters, render scale and per-shader taste weights from the settings INI.
+     *
+     * Must be called before the command line is parsed so explicit CLI flags can still override.
+     *
+     * @sideeffects
+     *   Changes EffectShader::M_ChainSS, EffectShader::M_ChainScale, EffectShader::M_ClassTaste, M_CalmMotion,
+     *   M_ChainScaleIni, M_ImageDirUser, M_LatencyLead, M_MoodStrength, M_Reactivity, M_StereoDepth, M_StereoMode,
+     *   M_Taste, M_TrailAmount.
+     **/
     static void loadSettings();
-    /** @brief Persists the live-tunable look parameters and render scale to the settings INI. */
+    /** Persists the live-tunable look parameters and render scale to the settings INI. */
     static void saveSettings();
-    /** @brief Performs a full (re)build of this instance's GL state: shader programs, image and FBO textures, and all
-     * framebuffers, sized for the given display resolution. @param width Display width in pixels. @param height Display
-     * height in pixels. */
+    /**  Performs a full (re)build of this instance's GL state: shader programs, image and FBO textures, and all
+     * framebuffers, sized for the given display resolution.
+     *
+     * @param width   Display width in pixels. (in)
+     * @param height  Display height in pixels. (in)
+     **/
     void reinit( int width, int height ); // full (re)build: shaders, image + FBO textures, FBOs
 
     // Lightweight resize: re-allocate ONLY the off-screen FBO colour textures to
     // the new size, reusing their texture IDs and FBOs.  Keeps the loaded image
     // textures and shader programs untouched and allocates no new GL objects, so
     // it can be called on every window resize without leaking or reloading images.
-    /**
-     * @brief Re-allocates only the off-screen FBO colour/depth textures for a new display size.
+    /**  Re-allocates only the off-screen FBO colour/depth textures for a new display size.
+     *
+     * @param width   New display width in pixels. (in)
+     * @param height  New display height in pixels. (in)
      *
      * Reuses existing texture ids and FBOs (no glGen()/glCreate() calls, hence no leak), so it is
      * safe to call on every window resize without reloading images or shader programs.
-     * @param width New display width in pixels.
-     * @param height New display height in pixels.
-     */
+     **/
     void resize( int width, int height );
 
     // Baut Trails/StereoMix + delegiert Present/Bloom an den PresentPass.
-    /** @brief Builds the feedback/trail ping-pong buffers and the stereo cross-mix shader, and sets up the PresentPass
-     * (final tone-mapping/bloom/present target). Called once from reinit(). */
+    /**  Builds the feedback/trail ping-pong buffers and the stereo cross-mix shader, and sets up the PresentPass
+     * (final tone-mapping/bloom/present target).
+     *
+     * Called once from reinit().
+     **/
     void setupSafety();
 
 
     // Mood-based selection bias: accept a candidate effect with a probability that
     // depends on how well its complexity matches the current arousal (calm music →
     // simple effects, energetic → busy).  Safe: callers retry, then fall back.
-    /**
-     * @brief Queries and prints any pending OpenGL error, tagged with a call-site label.
-     * @note Currently short-circuited (unconditional early `return;` at the top of the
-     *       definition in RenderPipeline.cpp) — GL error checking is disabled for normal
-     *       runs; the check code below the early return is dead unless that guard is removed.
-     * @param label Short tag identifying the call site, printed together with the error.
-     */
+    /**  Queries and prints any pending OpenGL error, tagged with a call-site label.
+     *
+     * @param label  Short tag identifying the call site, printed together with the error. (in)
+     *
+     * @note
+     *   Currently short-circuited (unconditional early `return;` at the top of the definition in
+     *   RenderPipeline.cpp) — GL error checking is disabled for normal runs; the check code below the early return
+     *   is dead unless that guard is removed.
+     **/
     void checkGLErrors( const char *label ); // check and print gl errors to stderr
 
 
-    /** @brief Stores the configuration for this instance ahead of start(): the image directory to scan and the min/max
-     * solo/cross-fade durations for the background photo cycle. @param filename Root directory to recursively scan for
-     * .png/.jpg images. @param timeTextureSoloMin Minimum seconds an image stays solo before starting to cross-fade.
-     * @param timeTextureSoloMax Maximum seconds an image stays solo before starting to cross-fade. @param
-     * timeTextureInterpolationMin Minimum seconds an image cross-fade takes. @param timeTextureInterpolationMax Maximum
-     * seconds an image cross-fade takes. */
-    void init( const QString &filename, unsigned int timeTextureSoloMin, unsigned int timeTextureSoloMax,
+    /**  Stores the configuration for this instance ahead of start(): the image directory to scan and the min/max
+     * solo/cross-fade durations for the background photo cycle.
+     *
+     * @param directory                    Root directory to recursively scan for .png/.jpg images. (in)
+     * @param timeTextureSoloMin           Minimum seconds an image stays solo before starting to cross-fade. (in)
+     * @param timeTextureSoloMax           Maximum seconds an image stays solo before starting to cross-fade. (in)
+     * @param timeTextureInterpolationMin  Minimum seconds an image cross-fade takes. (in)
+     * @param timeTextureInterpolationMax  Maximum seconds an image cross-fade takes. (in)
+     **/
+    void init( const QString &directory, unsigned int timeTextureSoloMin, unsigned int timeTextureSoloMax,
                unsigned int timeTextureInterpolationMin, unsigned int timeTextureInterpolationMax );
 
 
-    /** @brief Builds (first call) or resizes (subsequent calls) the GL state for this instance. First call: scans the
-     * image directory, installs fallback shaders if the configuration had none, attaches the SceneScheduler, spawns the
-     * ImageLoader thread and calls reinit(). Later calls (revisiting a configuration) just delegate to resize(), which
-     * avoids leaking GL objects and spawning a duplicate loader thread. @param width Display width in pixels. @param
-     * height Display height in pixels. */
+    /**  Builds (first call) or resizes (subsequent calls) the GL state for this instance.
+     *
+     * @param width   Display width in pixels. (in)
+     * @param height  Display height in pixels. (in)
+     *
+     * First call: scans the image directory, installs fallback shaders if the configuration had none, attaches the
+     * SceneScheduler, spawns the ImageLoader thread and calls reinit(). Later calls (revisiting a configuration) just
+     * delegate to resize(), which avoids leaking GL objects and spawning a duplicate loader thread.
+     **/
     void start( int width, int height );
-    /** @brief Tears down this instance's GL resources and background thread: terminates and deletes the ImageLoader,
-     * then releases textures and shader programs. Deliberately does NOT release the global Spout sender/receiver (see
-     * the definition for why). */
+    /**  Tears down this instance's GL resources and background thread: terminates and deletes the ImageLoader, then
+     * releases textures and shader programs.
+     *
+     * Deliberately does NOT release the global Spout sender/receiver (see the definition for why).
+     **/
     void stop();
 
-    /** @brief Registers a combine-effect (overlay) shader with this instance (ownership passes to RenderPipeline).
-     * @param shader Combine-effect shader to add. */
+    /**  Registers a combine-effect (overlay) shader with this instance (ownership passes to RenderPipeline).
+     *
+     * @param shader  Combine-effect shader to add. (in)
+     **/
     void addFxShader( EffectShader *shader );
-    /** @brief Registers a texture-effect shader with this instance (ownership passes to RenderPipeline). @param shader
-     * Texture-effect shader to add. */
+    /**  Registers a texture-effect shader with this instance (ownership passes to RenderPipeline).
+     *
+     * @param shader  Texture-effect shader to add. (in)
+     **/
     void addTextureShader( EffectShader *shader );
-    /** @brief Registers a scene-transition shader (Transitions/) with this instance (ownership passes to
-     * RenderPipeline). @param shader Transition shader to add. */
+    /**  Registers a scene-transition shader (Transitions/) with this instance (ownership passes to RenderPipeline).
+     *
+     * @param shader  Transition shader to add. (in)
+     **/
     void addTransitionShader( EffectShader *shader );
 
 
@@ -576,18 +857,20 @@ private:
 private:
     // Initialise a framebuffer object; depthRb != nullptr additionally creates
     // and attaches a depth renderbuffer (needed by the 3D scene effects).
-    /**
-     * @brief Creates (or re-attaches, on re-entry) a framebuffer object with a colour texture attachment.
-     * @param fboEffect FBO id, reused if already non-zero, otherwise created here.
-     * @param texIDEffect Colour texture to attach at m_attachmentpoint.
-     * @param depthRb If non-null, also (re)creates and attaches a depth TEXTURE (not a renderbuffer, despite the
-     * parameter name — the combine stage needs to read it) at the id it points to; needed by the 3D scene effects. Null
-     * for plain 2D effects.
-     */
-    void initFBO( GLuint &fboEffect, GLuint &texIDEffect, GLuint *depthRb = nullptr );
-    /**
-     * @brief (Re)creates the shared multisample scratch FBO used to anti-alias 3D scene draws, at the given render
+    /**  Creates (or re-attaches, on re-entry) a framebuffer object with a colour texture attachment.
+     *
+     * @param fboEffect           FBO id, reused if already non-zero, otherwise created here. (in,out)
+     * @param texIDEffectTexture  Colour texture to attach at m_attachmentpoint. (in,out)
+     * @param depthRb             If non-null, also (re)creates and attaches a depth TEXTURE (not a renderbuffer,
+     *                            despite the parameter name — the combine stage needs to read it) at the id it
+     *                            points to; needed by the 3D scene effects. Null for plain 2D effects. (in)
+     **/
+    void initFBO( GLuint &fboEffect, GLuint &texIDEffectTexture, GLuint *depthRb = nullptr );
+    /**  (Re)creates the shared multisample scratch FBO used to anti-alias 3D scene draws, at the given render
      * resolution.
+     *
+     * @param w  Render-resolution width. (in)
+     * @param h  Render-resolution height. (in)
      *
      * One shared MS colour+depth target, reused for whichever 3D scene is
      * currently drawing (texture1's pass, then texture2's, sequentially --
@@ -596,66 +879,96 @@ private:
      * loaded or GL_MAX_SAMPLES is 0; every 3D draw call site checks
      * m_msaaReady and falls back to drawing straight into the regular
      * (unaliased) FBO exactly as before this existed.
-     * @param w Render-resolution width.
-     * @param h Render-resolution height.
-     */
+     **/
     void ensureMsaaTargets( int w, int h );
-    /**
-     * @brief Resolves the shared multisample scratch FBO (colour + depth) into a destination FBO of the same size via
+    /**  Resolves the shared multisample scratch FBO (colour + depth) into a destination FBO of the same size via
      * glBlitFramebuffer.
-     * @param dstFbo Destination FBO, already sized and attached to match (w, h) exactly.
-     * @param w Width shared by both FBOs.
-     * @param h Height shared by both FBOs.
-     */
+     *
+     * @param dstFbo  Destination FBO, already sized and attached to match (w, h) exactly. (in)
+     * @param w       Width shared by both FBOs. (in)
+     * @param h       Height shared by both FBOs. (in)
+     **/
     void resolveMsaa( GLuint dstFbo, int w, int h ) const;
-    /** @brief Generates (if needed) and configures an FBO colour texture via setupFBOTexture(). @param texID Texture
-     * id, reused if already non-zero, otherwise created here. */
+    /**  Generates (if needed) and configures an FBO colour texture via setupFBOTexture().
+     *
+     * @param texID  Texture id, reused if already non-zero, otherwise created here. (in,out)
+     **/
     void createFBOTexture( GLuint &texID );
-    /** @brief Configures an existing texture id as an FBO colour target: linear filtering, mirrored-repeat wrap,
-     * storage sized to m_width x m_height. @param texID Texture id to configure. */
+    /**  Configures an existing texture id as an FBO colour target: linear filtering, mirrored-repeat wrap, storage
+     * sized to m_width x m_height.
+     *
+     * @param texID  Texture id to configure. (in)
+     **/
     void setupFBOTexture( const GLuint texID ) const;
-    /** @brief Creates the two background "photo" textures (m_actTex/m_nextTex) and uploads their initial images (or the
-     * procedural fallback if the image list is empty). */
+    /**  Creates the two background "photo" textures (m_actTex/m_nextTex) and uploads their initial images (or the
+     * procedural fallback if the image list is empty).
+     **/
     void createTexture(); // create and setup textures
-    /** @brief Uploads a prepared QImage into an existing texture id, with mipmaps. @param texID Destination texture id.
-     * @param image Source image; must already be GL-ready (see prepareImage()) — every RenderPipeline caller passes a
-     * 1024x1024 ARGB32 image, which is why later uploads can reuse glTexSubImage2D (see the definition). */
+    /**  Uploads a prepared QImage into an existing texture id, with mipmaps.
+     *
+     * @param texID  Destination texture id. (in)
+     * @param image  Source image; must already be GL-ready (see prepareImage()) — every RenderPipeline caller
+     *               passes a 1024x1024 ARGB32 image, which is why later uploads can reuse glTexSubImage2D (see the
+     *               definition). (in)
+     **/
     void setupTexture( const GLuint texID, const QImage &image ); // needed by createTextures()
 public:
     // Procedural texture used when the image directory is missing/empty (robustness).
-    /** @brief Generates a procedural colourful fallback image, used when the configured image directory is missing or
-     * empty. @return A 256x256 ARGB32 image with a sinusoidal colour pattern. */
+    /**  Generates a procedural colourful fallback image, used when the configured image directory is missing or
+     * empty.
+     *
+     * @return
+     *   A 256x256 ARGB32 image with a sinusoidal colour pattern.
+     **/
     static QImage fallbackImage();
 
 private:
-    /** @brief Loads and links the legacy outer combine shader program (FxPlain.frag) and resolves its uniform
-     * locations. */
+    /** Loads and links the legacy outer combine shader program (FxPlain.frag) and resolves its uniform locations. */
     void initGLSL(); // initialize GLSL - shader programs
-    /** @brief Legacy fixed-function 3D mesh preview (perspective projection + m_mesh->draw()); see loadObj(). Not
-     * called from the active render path in the current build (see paint()'s commented-out "render pass 1" block).
-     * @param rotMatrix Column-major rotation matrix for the mesh. @param tx X translation. @param ty Y translation.
-     * @param tz Z translation. */
+    /**  Legacy fixed-function 3D mesh preview (perspective projection + m_mesh->draw()); see loadObj().
+     *
+     * @param rotMatrix  Column-major rotation matrix for the mesh. (in)
+     * @param tx         X translation. (in)
+     * @param ty         Y translation. (in)
+     * @param tz         Z translation. (in)
+     *
+     * Not called from the active render path in the current build (see paint()'s commented-out "render pass 1" block).
+     **/
     void drawScene( const float *rotMatrix, float tx, float ty, float tz );
-    /** @brief Clears the currently bound framebuffer and draws the shared fullscreen triangle (core-profile-safe: binds
-     * the shared empty VAO first). Used by every fullscreen shader pass in this file. */
+    /**  Clears the currently bound framebuffer and draws the shared fullscreen triangle (core-profile-safe: binds the
+     * shared empty VAO first).
+     *
+     * Used by every fullscreen shader pass in this file.
+     **/
     void drawWindow();
-    /** @brief Deletes the outer combine shader program and asks every registered texture/combine EffectShader to delete
-     * its own programs. */
+    /**  Deletes the outer combine shader program and asks every registered texture/combine EffectShader to delete its
+     * own programs.
+     **/
     void cleanShaderPrograms();
-    /** @brief Deletes the four effect/combine FBOs and the two background "photo" textures. */
+    /** Deletes the four effect/combine FBOs and the two background "photo" textures. */
     void cleanTextures();
 
-    /** @brief Checks the currently bound framebuffer's completeness status and prints a diagnostic on failure. @note
-     * Currently short-circuited (unconditional early `return true;`) — the check below is dead unless that guard is
-     * removed. @return true if complete (always, while short-circuited); false otherwise. */
+    /**  Checks the currently bound framebuffer's completeness status and prints a diagnostic on failure.
+     *
+     * @return
+     *   true if complete (always, while short-circuited); false otherwise.
+     *
+     * @note
+     *   Currently short-circuited (unconditional early `return true;`) — the check below is dead unless that guard
+     *   is removed.
+     **/
     bool checkFramebufferStatus(); // framebuffer status to stdout
 
-    /** @brief Recursively scans a directory for .png/.jpg files and appends their paths to @p imageList. @param dirname
-     * Directory to scan (recurses into subdirectories). @param imageList Output list; matching file paths are appended.
-     */
+    /**  Recursively scans a directory for .png/.jpg files and appends their paths to @p imageList.
+     *
+     * @param dirname    Directory to scan (recurses into subdirectories). (in)
+     * @param imageList  Output list; matching file paths are appended. (out)
+     **/
     void traverse( const QString &dirname, QStringList &imageList );
-    /** @brief Uploads the pending next photo (m_nextImage, filled by ImageLoader) into @p texID. @param texID
-     * Destination texture id (m_actTex or m_nextTex after a swap). */
+    /**  Uploads the pending next photo (m_nextImage, filled by ImageLoader) into @p texID.
+     *
+     * @param texID  Destination texture id (m_actTex or m_nextTex after a swap). (in,out)
+     **/
     void loadNewTexture( GLuint &texID );
 
 
@@ -766,17 +1079,19 @@ private:
                                  = not yet created. */
         m_rig2H = 0;          ///< Size the m_rig2Fbo/m_rig2Tex scratch targets were last (re)allocated at;
                               ///< re-checked on every rig2Transform() call.
-    /**
-     * @brief Applies a scene's 2D camera-rig transform (roll/zoom/pan) to a finished effect frame, if it declares one.
+    /**  Applies a scene's 2D camera-rig transform (roll/zoom/pan) to a finished effect frame, if it declares one.
+     *
+     * @param fx      Effect shader whose rig2() formulas (if any) drive the transform. (in)
+     * @param srcTex  Source colour texture (the effect's rendered output). (in)
+     * @param slot    Which scratch target to use (0 = active effect slot, 1 = incoming effect slot). (in)
+     *
+     * @return
+     *   The transformed texture id, or @p srcTex unchanged if no rig2 transform applies.
      *
      * Renders @p srcTex through Engine/Rig2D.frag into a per-slot scratch texture and returns
      * that texture id; @p srcTex itself is left untouched. Returns @p srcTex unchanged (zero
      * extra cost) when @p fx has no active rig2 formulas.
-     * @param fx Effect shader whose rig2() formulas (if any) drive the transform.
-     * @param srcTex Source colour texture (the effect's rendered output).
-     * @param slot Which scratch target to use (0 = active effect slot, 1 = incoming effect slot).
-     * @return The transformed texture id, or @p srcTex unchanged if no rig2 transform applies.
-     */
+     **/
     GLuint rig2Transform( EffectShader *fx, GLuint srcTex, int slot );
     int m_trailIdx = 0; ///< Ping-pong index (0/1) of the trail buffer written this frame; the other holds the previous
                         ///< frame.
@@ -864,24 +1179,27 @@ private:
     AudioFeatures m_lastAudioFx;    ///< this frame's features, for the shadow pass — cached so
                                     ///< renderShadowPass()/renderOitPass() can re-apply them outside the main
                                     ///< uniform-setting flow.
-    /**
-     * @brief Lazily creates a shadow map's depth-only FBO/texture on first use (shared implementation for both lights).
-     * @param fbo In/out FBO id (created here if 0).
-     * @param tex In/out depth-texture id (created here if 0).
-     * @return true if the shadow map is ready (already existed or was just created successfully); false if creation
-     * failed (shadows disabled for this light).
-     */
+    /**  Lazily creates a shadow map's depth-only FBO/texture on first use (shared implementation for both lights).
+     *
+     * @param fbo  In/out FBO id (created here if 0). (in,out)
+     * @param tex  In/out depth-texture id (created here if 0). (in,out)
+     *
+     * @return
+     *   true if the shadow map is ready (already existed or was just created successfully); false if creation
+     *   failed (shadows disabled for this light).
+     **/
     bool ensureShadowMapGeneric( GLuint &fbo, GLuint &tex );
-    /**
-     * @brief Recomputes an orthographic light's view-projection matrix and direction for the current time (shared
+    /**  Recomputes an orthographic light's view-projection matrix and direction for the current time (shared
      * implementation for both lights).
-     * @param t Current global time in seconds, driving the slow light-direction orbit.
-     * @param angleOffset Radians added to the orbit phase, so a second light doesn't move in lockstep with the first.
-     * @param tiltY Base upward tilt of the light direction (>0 = from above); lets the second light read as a cooler,
-     * lower fill/rim instead of a second overhead sun.
-     * @param outM Column-major 4x4 view-projection matrix to write (16 floats).
-     * @param outDir Light direction to write (3 floats).
-     */
+     *
+     * @param t            Current global time in seconds, driving the slow light-direction orbit. (in)
+     * @param angleOffset  Radians added to the orbit phase, so a second light doesn't move in lockstep with the
+     *                     first. (in)
+     * @param tiltY        Base upward tilt of the light direction (>0 = from above); lets the second light read as
+     *                     a cooler, lower fill/rim instead of a second overhead sun. (in)
+     * @param outM         Column-major 4x4 view-projection matrix to write (16 floats). (in)
+     * @param outDir       Light direction to write (3 floats). (in)
+     **/
     void updateLightMatrixGeneric( float t, float angleOffset, float tiltY, float *outM, float *outDir );
     /**
      * @brief Renders one 3D scene's geometry into a shadow map, depth only (shared implementation for both lights).
@@ -900,28 +1218,47 @@ private:
     // scenes therefore sampled an unbound unit: thousands of driver warnings,
     // and no working shadows at all past frame one.
     void renderShadowPassGeneric( EffectShader *fx, GLuint &fbo, GLuint &tex, int texUnit, float &passFlag );
-    /** @brief Light 1 (the "sun"): lazily creates its shadow map. @return See ensureShadowMapGeneric(). */
+    /**  Light 1 (the "sun"): lazily creates its shadow map.
+     *
+     * @return
+     *   See ensureShadowMapGeneric().
+     **/
     bool ensureShadowMap() { return ensureShadowMapGeneric( m_shadowFbo, m_shadowTex ); }
-    /** @brief Light 1 (the "sun"): recomputes EffectShader::M_LightM/M_LightDir. @param t Current global time in
-     * seconds. */
+    /**  Light 1 (the "sun"): recomputes EffectShader::M_LightM/M_LightDir.
+     *
+     * @param t  Current global time in seconds. (in)
+     **/
     void updateLightMatrix( float t )
     {
         updateLightMatrixGeneric( t, 0.f, 0.f, EffectShader::M_LightM, EffectShader::M_LightDir );
     }
-    /** @brief Light 1 (the "sun"): renders @p fx into the shadow map. @param fx Scene to render. */
+    /**  Light 1 (the "sun"): renders @p fx into the shadow map.
+     *
+     * @param fx  Scene to render. (in)
+     **/
     void renderShadowPass( EffectShader *fx )
     {
         renderShadowPassGeneric( fx, m_shadowFbo, m_shadowTex, 31, EffectShader::M_ShadowPass );
     }
-    /** @brief Light 2 (cool rim/fill): lazily creates its shadow map. @return See ensureShadowMapGeneric(). */
+    /**  Light 2 (cool rim/fill): lazily creates its shadow map.
+     *
+     * @return
+     *   See ensureShadowMapGeneric().
+     **/
     bool ensureShadowMap2() { return ensureShadowMapGeneric( m_shadowFbo2, m_shadowTex2 ); }
-    /** @brief Light 2 (cool rim/fill): recomputes EffectShader::M_LightM2/M_LightDir2, offset in phase and tilted
-     * lower/cooler than light 1. @param t Current global time in seconds. */
+    /**  Light 2 (cool rim/fill): recomputes EffectShader::M_LightM2/M_LightDir2, offset in phase and tilted
+     * lower/cooler than light 1.
+     *
+     * @param t  Current global time in seconds. (in)
+     **/
     void updateLightMatrix2( float t )
     {
         updateLightMatrixGeneric( t, 2.4f, 0.35f, EffectShader::M_LightM2, EffectShader::M_LightDir2 );
     }
-    /** @brief Light 2 (cool rim/fill): renders @p fx into its shadow map. @param fx Scene to render. */
+    /**  Light 2 (cool rim/fill): renders @p fx into its shadow map.
+     *
+     * @param fx  Scene to render. (in)
+     **/
     void renderShadowPass2( EffectShader *fx )
     {
         renderShadowPassGeneric( fx, m_shadowFbo2, m_shadowTex2, 32, EffectShader::M_ShadowPass2 );
@@ -936,14 +1273,23 @@ private:
     // almost every stage integrates state or leaves GL bindings the next one
     // relies on, so they are not independently reorderable.
 
-    /** @brief Per-frame prologue: publishes the mood snapshot the ImageLoader thread reads, and compiles ONE
-     * not-yet-compiled shader (lazy warm-up). @param audio This frame's raw features. */
+    /**  Per-frame prologue: publishes the mood snapshot the ImageLoader thread reads, and compiles ONE
+     * not-yet-compiled shader (lazy warm-up).
+     *
+     * @param audio  This frame's raw features. (in)
+     *
+     * @sideeffects
+     *   Changes M_WarmLabel.
+     **/
     void beginFrame( const AudioFeatures &audio );
-    /** @brief Receives a Spout (-i) or video (-v) frame into m_liveTex, which then replaces BOTH photo slots for this
-     * frame. */
+    /**  Receives a Spout (-i) or video (-v) frame into m_liveTex, which then replaces BOTH photo slots for this
+     * frame.
+     **/
     void updateLiveInput();
-    /** @brief Slews m_timingScale toward the audio's suggested scene-duration multiplier (gated by musicPresence).
-     * @param audio This frame's raw features. */
+    /**  Slews m_timingScale toward the audio's suggested scene-duration multiplier (gated by musicPresence).
+     *
+     * @param audio  This frame's raw features. (in)
+     **/
     void updateTimingScale( const AudioFeatures &audio );
 
     /** @brief One frame's two time bases, both MEASURED (never a fixed step). */
@@ -952,76 +1298,159 @@ private:
         float dt;     ///< Scene time step, later scaled by freeze/DJ-stop.
         float dtWall; ///< Wall-clock step, immune to freeze -- overlays and fades keep moving over a frozen picture.
     };
-    /** @brief Reads the frame timer and updates the fps-driven cube detail budget. @return This frame's scene and
-     * wall-clock time steps. */
+    /**  Reads the frame timer and updates the fps-driven cube detail budget.
+     *
+     * @return
+     *   This frame's scene and wall-clock time steps.
+     *
+     * @sideeffects
+     *   Changes Scene3DShader::M_CubeBudget.
+     **/
     FrameTiming readFrameClock();
-    /** @brief Applies VJ freeze ('e'), VJ pin ('u') and the DJ-stop break-hold to the scene time step. @param audio
-     * This frame's raw features. @param timeSinceLastFrameSec Scene time step, modified in place. @param dtWall
-     * Wall-clock step (drives the break slew, which must run even while frozen). */
+    /**  Applies VJ freeze ('e'), VJ pin ('u') and the DJ-stop break-hold to the scene time step.
+     *
+     * @param audio                  This frame's raw features. (in)
+     * @param timeSinceLastFrameSec  Scene time step, modified in place. (in,out)
+     * @param dtWall                 Wall-clock step (drives the break slew, which must run even while frozen). (in)
+     *
+     * @sideeffects
+     *   Changes EffectShader::M_FreezeTime, EffectShader::M_Frozen, M_Freeze.
+     **/
     void applyTransportModifiers( const AudioFeatures &audio, float &timeSinceLastFrameSec, float dtWall );
-    /** @brief Uploads a pending track-title image (GL context is current here), rolls a mood-matched reveal style, and
-     * otherwise advances the reveal clock. @param audio This frame's raw features (picks the style pool). @param dtWall
-     * Wall-clock step. */
+    /**  Uploads a pending track-title image (GL context is current here), rolls a mood-matched reveal style, and
+     * otherwise advances the reveal clock.
+     *
+     * @param audio   This frame's raw features (picks the style pool). (in)
+     * @param dtWall  Wall-clock step. (in)
+     **/
     void updateTitleReveal( const AudioFeatures &audio, float dtWall );
-    /** @brief Runs AudioConditioner exactly once per frame, in frame order (every signal in it is an integrator or slew
-     * limiter). @param audio This frame's raw features. @param timeSinceLastFrameSec Scene time step. @return The
-     * anti-flicker feature copy the shaders receive. */
+    /**  Runs AudioConditioner exactly once per frame, in frame order (every signal in it is an integrator or slew
+     * limiter).
+     *
+     * @param audio                  This frame's raw features. (in)
+     * @param timeSinceLastFrameSec  Scene time step. (in)
+     *
+     * @return
+     *   The anti-flicker feature copy the shaders receive.
+     **/
     AudioFeatures conditionAudio( const AudioFeatures &audio, float timeSinceLastFrameSec );
-    /** @brief Drives the photo cross-fade state machine and requests the next image load. @param timeSinceLastFrameSec
-     * Scene time step. */
+    /**  Drives the photo cross-fade state machine and requests the next image load.
+     *
+     * @param timeSinceLastFrameSec  Scene time step. (in)
+     **/
     void updateImageState( float timeSinceLastFrameSec );
-    /** @brief Fills the scheduler tick and runs the scene half of it (the combine half, tickFx(), must stay after the
-     * effect passes -- it needs m_trueStereoHold). @param audio This frame's raw features. @param timeSinceLastFrameSec
-     * Scene time step. @return The tick, reused for tickFx() later in the frame. */
+    /**  Fills the scheduler tick and runs the scene half of it (the combine half, tickFx(), must stay after the
+     * effect passes -- it needs m_trueStereoHold).
+     *
+     * @param audio                  This frame's raw features. (in)
+     * @param timeSinceLastFrameSec  Scene time step. (in)
+     *
+     * @return
+     *   The tick, reused for tickFx() later in the frame.
+     *
+     * @sideeffects
+     *   Changes EffectShader::M_CueDrops, EffectShader::M_CueLive, EffectShader::M_CueSections.
+     **/
     SceneScheduler::Tick buildSchedulerTick( const AudioFeatures &audio, float timeSinceLastFrameSec );
-    /** @brief Steps only the simulations a visible effect actually samples (GpuSims, ComputeFX, Mandelbrot) and binds
-     * their outputs, plus last frame's composited image. @param audio This frame's raw features. @param
-     * timeSinceLastFrameSec Scene time step. @param audioFx The conditioned features. */
+    /**  Steps only the simulations a visible effect actually samples (GpuSims, ComputeFX, Mandelbrot) and binds their
+     * outputs, plus last frame's composited image.
+     *
+     * @param audio                  This frame's raw features. (in)
+     * @param timeSinceLastFrameSec  Scene time step. (in)
+     * @param audioFx                The conditioned features. (in)
+     **/
     void stepSimulations( const AudioFeatures &audio, float timeSinceLastFrameSec, const AudioFeatures &audioFx );
-    /** @brief Restores the viewport and binds the two photo slots (or the live frame) to units 0 and 1. */
+    /** Restores the viewport and binds the two photo slots (or the live frame) to units 0 and 1. */
     void bindSceneInputs();
-    /** @brief Recomputes m_trueStereoHold / m_trueStereoPacked / m_trueStereoNow for this frame. */
+    /** Recomputes m_trueStereoHold / m_trueStereoPacked / m_trueStereoNow for this frame. */
     void updateTrueStereoState();
-    /** @brief Renders one 3D scene twice into the SBS/TB halves of the bound FBO, scissored so each eye's clear stays
-     * inside its half. @param fx The 3D scene to render per eye. */
+    /**  Renders one 3D scene twice into the SBS/TB halves of the bound FBO, scissored so each eye's clear stays
+     * inside its half.
+     *
+     * @param fx  The 3D scene to render per eye. (in)
+     **/
     void renderSceneStereo( EffectShader *fx ) const;
-    /** @brief Renders the ACTIVE scene: shadow maps, optional MSAA target, the scene itself, MSAA resolve and the OIT
-     * pass. @param audioFx The conditioned features. */
+    /**  Renders the ACTIVE scene: shadow maps, optional MSAA target, the scene itself, MSAA resolve and the OIT pass.
+     *
+     * @param audioFx  The conditioned features. (in)
+     *
+     * @sideeffects
+     *   Changes EffectShader::M_DepthValid, EffectShader::M_ShadowExtent.
+     **/
     void renderActiveScenePass( const AudioFeatures &audioFx );
-    /** @brief Renders the INCOMING scene, but only while a cross-fade is running (its output is weighted by
-     * (1-interpolation), so it is invisible otherwise). @param audioFx The conditioned features. */
+    /**  Renders the INCOMING scene, but only while a cross-fade is running (its output is weighted by
+     * (1-interpolation), so it is invisible otherwise).
+     *
+     * @param audioFx  The conditioned features. (in)
+     *
+     * @sideeffects
+     *   Changes EffectShader::M_DepthValid.
+     **/
     void renderNextScenePass( const AudioFeatures &audioFx );
-    /** @brief The 2D camera rig, the transition pass and both combine/overlay passes. @param audioFx The conditioned
-     * features. */
+    /**  The 2D camera rig, the transition pass and both combine/overlay passes.
+     *
+     * @param audioFx  The conditioned features. (in)
+     **/
     void renderFxStage( const AudioFeatures &audioFx );
-    /** @brief Applies the 2D camera rig (rig2*) to both scene slots and binds them, plus their depth buffers, to units
-     * 3/4 and 29/30. @return The texture the transition pass must treat as the outgoing scene. */
+    /**  Applies the 2D camera rig (rig2*) to both scene slots and binds them, plus their depth buffers, to units 3/4
+     * and 29/30.
+     *
+     * @return
+     *   The texture the transition pass must treat as the outgoing scene.
+     **/
     GLuint prepareFxInputs();
-    /** @brief Packed 3D<->3D cross-fade: a plain per-pixel mix of the two eye-packed frames, guaranteed warp-free (any
-     * warp would fold content across the eye boundary). */
+    /**  Packed 3D<->3D cross-fade: a plain per-pixel mix of the two eye-packed frames, guaranteed warp-free (any warp
+     * would fold content across the eye boundary).
+     **/
     void renderStereoMixPass();
-    /** @brief Blends the outgoing and incoming scene with the rolled Transitions/ shader, but only while a scene fade
-     * is running. @param audioFx The conditioned features. @param fxTex1 The outgoing scene, used unchanged when no
-     * fade is running. @return The FINISHED scene the overlay pass must read. */
+    /**  Blends the outgoing and incoming scene with the rolled Transitions/ shader, but only while a scene fade is
+     * running.
+     *
+     * @param audioFx  The conditioned features. (in)
+     * @param fxTex1   The outgoing scene, used unchanged when no fade is running. (in)
+     *
+     * @return
+     *   The FINISHED scene the overlay pass must read.
+     **/
     GLuint renderTransitionPass( const AudioFeatures &audioFx, GLuint fxTex1 );
-    /** @brief Draws the active combine/overlay shader over the finished scene (both units carry it and interpolation is
-     * pinned to 1.0, so overlays never see a half-blended pair). @param audioFx The conditioned features. @param
-     * sceneTex The finished scene from renderTransitionPass(). */
+    /**  Draws the active combine/overlay shader over the finished scene (both units carry it and interpolation is
+     * pinned to 1.0, so overlays never see a half-blended pair).
+     *
+     * @param audioFx   The conditioned features. (in)
+     * @param sceneTex  The finished scene from renderTransitionPass(). (in)
+     **/
     void renderOverlayPass( const AudioFeatures &audioFx, GLuint sceneTex );
-    /** @brief Draws the INCOMING combine, but only while combines are cross-fading (the final blend weights it by
-     * (1-interpolation), so it is invisible otherwise). @param audioFx The conditioned features. */
+    /**  Draws the INCOMING combine, but only while combines are cross-fading (the final blend weights it by
+     * (1-interpolation), so it is invisible otherwise).
+     *
+     * @param audioFx  The conditioned features. (in)
+     **/
     void renderNextOverlayPass( const AudioFeatures &audioFx );
-    /** @brief Blends the two combine outputs into the safety FBO (or straight to screen). */
+    /** Blends the two combine outputs into the safety FBO (or straight to screen). */
     void renderFinalBlend();
-    /** @brief The feedback/trails ping-pong with its MilkDrop-style warp field. @param audio This frame's raw features.
-     * @param audioFx The conditioned features. @param timeSinceLastFrameSec Scene time step. @param dtWall Wall-clock
-     * step. @return The texture the present pass must display. */
+    /**  The feedback/trails ping-pong with its MilkDrop-style warp field.
+     *
+     * @param audio                  This frame's raw features. (in)
+     * @param audioFx                The conditioned features. (in)
+     * @param timeSinceLastFrameSec  Scene time step. (in)
+     * @param dtWall                 Wall-clock step. (in)
+     *
+     * @return
+     *   The texture the present pass must display.
+     *
+     * @sideeffects
+     *   Changes s_calm.
+     **/
     GLuint renderTrailsPass( const AudioFeatures &audio, const AudioFeatures &audioFx, float timeSinceLastFrameSec,
                              float dtWall );
-    /** @brief Fills PresentPass::Inputs (photosensitivity safety, Zeit-Regie, lyrics/artist overlays, stereo) and runs
-     * it. @param presentSource The texture renderTrailsPass() selected for display. @param audio This frame's raw
-     * features. @param audioFx The conditioned features. @param timeSinceLastFrameSec Scene time step. @param dtWall
-     * Wall-clock step. */
+    /**  Fills PresentPass::Inputs (photosensitivity safety, Zeit-Regie, lyrics/artist overlays, stereo) and runs it.
+     *
+     * @param presentSource          The texture renderTrailsPass() selected for display. (in)
+     * @param audio                  This frame's raw features. (in)
+     * @param audioFx                The conditioned features. (in)
+     * @param timeSinceLastFrameSec  Scene time step. (in)
+     * @param dtWall                 Wall-clock step. (in)
+     **/
     void runPresentPass( GLuint presentSource, const AudioFeatures &audio, const AudioFeatures &audioFx,
                          float timeSinceLastFrameSec, float dtWall );
 
@@ -1036,13 +1465,23 @@ private:
     GLuint m_oitReveal = 0; ///< R16F: how much background still shows — revealage target after all transparent layers.
     GLuint m_oitResolveProg = 0; ///< Shader program (Engine/OitResolve.frag) that composites m_oitAccum/m_oitReveal
                                  ///< back over the opaque frame.
-    /** @brief Lazily creates the OIT accumulation/revealage targets and resolve shader on first use. @return true if
-     * the OIT targets are ready; false if creation failed (transparent pass disabled). */
+    /**  Lazily creates the OIT accumulation/revealage targets and resolve shader on first use.
+     *
+     * @return
+     *   true if the OIT targets are ready; false if creation failed (transparent pass disabled).
+     **/
     bool ensureOitTargets();
-    /** @brief Draws a scene's transparent geometry into the OIT accumulation targets (sharing @p depthTex for occlusion
-     * by opaque solids), then resolves/composites the result back over @p targetFbo. @param fx Scene whose transparent
-     * geometry to render. @param depthTex Depth texture from the scene's opaque pass, reused so transparency is still
-     * occluded correctly. @param targetFbo Framebuffer to composite the resolved transparency back onto. */
+    /**  Draws a scene's transparent geometry into the OIT accumulation targets (sharing @p depthTex for occlusion by
+     * opaque solids), then resolves/composites the result back over @p targetFbo.
+     *
+     * @param fx         Scene whose transparent geometry to render. (in)
+     * @param depthTex   Depth texture from the scene's opaque pass, reused so transparency is still occluded
+     *                   correctly. (in)
+     * @param targetFbo  Framebuffer to composite the resolved transparency back onto. (in)
+     *
+     * @sideeffects
+     *   Changes EffectShader::M_OitPass.
+     **/
     void renderOitPass( EffectShader *fx, GLuint depthTex, GLuint targetFbo );
     // FPS EMA for the cube-scene detail budget (see paint()).
     float m_cubeFpsEma = 60.f; ///< Exponential moving average of the frame rate, driving Scene3DShader::M_CubeBudget
@@ -1069,9 +1508,13 @@ private:
     GLint m_stereoMixResUni = -1;  ///< Uniform location of "resolution" in m_stereoMixProgId.
     GLint m_stereoMixWUni = -1;    ///< Uniform location of "interpolation" (cross-fade weight) in m_stereoMixProgId.
     // Fixed-function copy of a texture into the bound FBO (combine bypass).
-    /** @brief Draws @p tex into the currently bound framebuffer unchanged (fixed-function-style blit via a tiny
-     * dedicated shader). Used by the true-stereo path to pass an eye-packed 3D frame straight through the combine
-     * stage. @param tex Source texture to copy. */
+    /**  Draws @p tex into the currently bound framebuffer unchanged (fixed-function-style blit via a tiny dedicated
+     * shader).
+     *
+     * @param tex  Source texture to copy. (in)
+     *
+     * Used by the true-stereo path to pass an eye-packed 3D frame straight through the combine stage.
+     **/
     void blitTexture( GLuint tex );
 
 
@@ -1131,16 +1574,33 @@ private:
     QSet<int> m_cuesFired;  ///< Cues (indices into M_Cues[m_cueTrack]) already fired during this playback.
     QString   m_presetName; ///< set by Configuration after load — this instance's preset name, namespacing its
                             ///< taste-learning keys; see setPresetName().
-    /** @brief Looks up the persistent taste weight for a fragment file, namespaced by m_presetName. @param fragPath
-     * Fragment shader path (only the basename is used as the key). @return The learned weight (default 1.0 if never
-     * adjusted). */
+    /**  Looks up the persistent taste weight for a fragment file, namespaced by m_presetName.
+     *
+     * @param fragPath  Fragment shader path (only the basename is used as the key). (in)
+     *
+     * @return
+     *   The learned weight (default 1.0 if never adjusted).
+     **/
     float tasteFor( const char *fragPath ) const;
-    /** @brief Multiplies and persists the taste weight for a fragment file (clamped to [0.3, 2.5]) and writes it to the
-     * settings INI immediately. @param fragPath Fragment shader path (only the basename is used as the key). @param mul
-     * Multiplier applied to the current weight (e.g. 0.8 for a skip, 1.25 for a favourite). */
+    /**  Multiplies and persists the taste weight for a fragment file (clamped to [0.3, 2.5]) and writes it to the
+     * settings INI immediately.
+     *
+     * @param fragPath  Fragment shader path (only the basename is used as the key). (in)
+     * @param mul       Multiplier applied to the current weight (e.g. 0.8 for a skip, 1.25 for a favourite). (in)
+     *
+     * @sideeffects
+     *   Changes M_Taste.
+     **/
     void bumpTaste( const char *fragPath, float mul );
-    /** @brief Clamps @p v to the inclusive range [@p lo, @p hi]. @param v Value to clamp. @param lo Lower bound. @param
-     * hi Upper bound. @return The clamped value. */
+    /**  Clamps @p v to the inclusive range [@p lo, @p hi].
+     *
+     * @param v   Value to clamp. (in)
+     * @param lo  Lower bound. (in)
+     * @param hi  Upper bound. (in)
+     *
+     * @return
+     *   The clamped value.
+     **/
     static float clampParam( float v, float lo, float hi )
     {
         return v < lo ? lo : ( v > hi ? hi : v );
@@ -1166,8 +1626,13 @@ public:
     static bool  M_RenderScaleFromCli;
     static float M_RenderScaleMax; ///< Ceiling the adaptive scaler may raise to (ini key renderScaleMax); >1.0
                                    ///< supersamples.
-    /** @brief Sets the internal render scale (clamped to [0.25, 2.0]) used by every subsequent reinit()/resize().
-     * @param s Desired render scale (1.0 = native display resolution). */
+    /**  Sets the internal render scale (clamped to [0.25, 2.0]) used by every subsequent reinit()/resize().
+     *
+     * @param s  Desired render scale (1.0 = native display resolution). (in)
+     *
+     * @sideeffects
+     *   Changes M_RenderScale.
+     **/
     static void setRenderScale( float s )
     {
         M_RenderScale = ( s < 0.25f ) ? 0.25f : ( s > 2.0f ? 2.0f : s );
@@ -1179,15 +1644,28 @@ public:
     // pixel, and in a catalogue of 528 procedural shaders most aliasing comes
     // from shader-computed detail, not from polygon edges. It also covers the
     // 292 Scene2D shaders, which get no MSAA at all.
-    /** @brief Sets the upper bound the adaptive scaler may raise the render scale to (1.0 = off, 2.0 = 4x the pixels).
-     * @param s Ceiling, clamped to 0.5..2.0. */
+    /**  Sets the upper bound the adaptive scaler may raise the render scale to (1.0 = off, 2.0 = 4x the pixels).
+     *
+     * @param s  Ceiling, clamped to 0.5..2.0. (in)
+     *
+     * @sideeffects
+     *   Changes M_RenderScaleMax.
+     **/
     static void setRenderScaleMax( float s )
     {
         M_RenderScaleMax = ( s < 0.5f ) ? 0.5f : ( s > 2.0f ? 2.0f : s );
     }
-    /** @brief The supersampling ceiling. @return Ceiling in 0.5..2.0; 1.0 means no supersampling. */
+    /**  The supersampling ceiling.
+     *
+     * @return
+     *   Ceiling in 0.5..2.0; 1.0 means no supersampling.
+     **/
     static float renderScaleMax() { return M_RenderScaleMax; }
-    /** @brief Returns the current internal render scale. @return Render scale, 0.25..2.0. */
+    /**  Returns the current internal render scale.
+     *
+     * @return
+     *   Render scale, 0.25..2.0.
+     **/
     static float renderScale() { return M_RenderScale; }
 
 private:
@@ -1275,9 +1753,13 @@ private:
                                           ///< thread; see ImageLoader. Null while stopped -- start() recreates it, and
                                           ///< it was previously left uninitialised AND dangling after stop().
 private:
-    /// @brief Not copyable (CGVR template: copy constructor and assignment are always declared).
+    /** Not copyable (CGVR template: copy constructor and assignment are always declared). */
     RenderPipeline( const RenderPipeline & ) = delete;
-    /// @brief Not assignable; see the copy constructor.
+    /**  Not assignable; see the copy constructor.
+     *
+     * @return
+     *   Nothing: the operator is deleted, so no call compiles.
+     **/
     RenderPipeline &operator=( const RenderPipeline & ) = delete;
 };
 
@@ -1294,15 +1776,20 @@ private:
 class ImageLoader : public QThread
 {
 public:
-    /** @brief Constructs an ImageLoader bound to its owning RenderPipeline (not yet running; call start()). @param
-     * shader Owning RenderPipeline whose m_triggerImageload/m_nextImage/m_imageList/mood snapshot fields this thread
-     * reads and writes. */
+    /**  Constructs an ImageLoader bound to its owning RenderPipeline (not yet running; call start()).
+     *
+     * @param shader  Owning RenderPipeline whose m_triggerImageload/m_nextImage/m_imageList/mood snapshot fields
+     *                this thread reads and writes. (in)
+     **/
     explicit ImageLoader( RenderPipeline *shader );
     // explicit Writer(const QString& mark) : mark_(mark) {}
 
-    /** @brief Thread entry point: polls m_shader->m_triggerImageload and, when set, mood-matches and loads the next
-     * background photo into m_shader->m_nextImage. Loops forever until the thread is terminated (see
-     * RenderPipeline::stop(), which calls QThread::terminate() — a hard kill, not a cooperative exit request). */
+    /**  Thread entry point: polls m_shader->m_triggerImageload and, when set, mood-matches and loads the next
+     * background photo into m_shader->m_nextImage.
+     *
+     * Loops forever until the thread is terminated (see RenderPipeline::stop(), which calls QThread::terminate() — a
+     * hard kill, not a cooperative exit request).
+     **/
     void run();
 
 private:
@@ -1310,16 +1797,25 @@ private:
 
     // Mood-matched image choice: cached tiny-thumbnail stats per image path
     // (brightness, colourfulness) — loader-thread only, no locking needed.
-    /** @brief Computes mean brightness and mean colourfulness (saturation x value) from a fast 32x32-scaled decode of
-     * an image. @param path Image file path. @return {meanBrightness, meanColourfulness}, or {0.5, 0.5} if the image
-     * could not be decoded. */
+    /**  Computes mean brightness and mean colourfulness (saturation x value) from a fast 32x32-scaled decode of an
+     * image.
+     *
+     * @param path  Image file path. (in)
+     *
+     * @return
+     *   {meanBrightness, meanColourfulness}, or {0.5, 0.5} if the image could not be decoded.
+     **/
     static QPair<float, float>          imageStats( const QString &path );
     QHash<QString, QPair<float, float>> m_stats; ///< Per-path cache of imageStats() results; loader-thread-only, so no
                                                  ///< locking is needed.
 private:
-    /// @brief Not copyable (CGVR template: copy constructor and assignment are always declared).
+    /** Not copyable (CGVR template: copy constructor and assignment are always declared). */
     ImageLoader( const ImageLoader & ) = delete;
-    /// @brief Not assignable; see the copy constructor.
+    /**  Not assignable; see the copy constructor.
+     *
+     * @return
+     *   Nothing: the operator is deleted, so no call compiles.
+     **/
     ImageLoader &operator=( const ImageLoader & ) = delete;
 };
 

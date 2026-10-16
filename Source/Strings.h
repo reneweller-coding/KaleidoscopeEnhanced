@@ -286,14 +286,39 @@ enum StrIdE
 
 namespace Strings
 {
-/** @brief Sets the process-wide current language; callers own reading it from the "language" ini key. */
+/**  Sets the process-wide current language; callers own reading it from the "language" ini key.
+ *
+ * @param lang  The language of every later lookup. (in)
+ **/
 void setLanguage( LangE lang );
-/** @brief The current language (Lang::DE until setLanguage() is called). */
+/**  The current language (Lang::DE until setLanguage() is called).
+ *
+ * @return
+ *   The current language.
+ **/
 LangE language();
-/** @brief Parses "de"/"en" (case-insensitive; anything else -> DE) as stored in kaleidoscope_settings.ini. */
+/**  Parses "de"/"en" (case-insensitive; anything else -> DE) as stored in kaleidoscope_settings.ini.
+ *
+ * @param code  The ini value; NULL counts as "de". (in)
+ *
+ * @return
+ *   LangE::EN for "en", else LangE::DE.
+ **/
 LangE fromCode( const char *code );
-/** @brief The ini-stored code for a language ("de"/"en"). */
+/**  The ini-stored code for a language ("de"/"en").
+ *
+ * @param lang  The language. (in)
+ *
+ * @return
+ *   "en" or "de".
+ **/
 const char *toCode( LangE lang );
-/** @brief Looks up @p id in the CURRENT language's table. @return A UTF-8 string literal; never null. */
+/**  Looks up @p id in the CURRENT language's table.
+ *
+ * @param id  The string's id. (in)
+ *
+ * @return
+ *   A UTF-8 string literal; never null.
+ **/
 const char *uiText( StrIdE id );
 }

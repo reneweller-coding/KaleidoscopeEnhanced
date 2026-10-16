@@ -17,13 +17,13 @@
 // IMPLEMENTATION of Vector3D
 // *****************************
 
-/// @brief Default-constructs the zero vector (0,0,0).
+/** Default-constructs the zero vector (0,0,0). */
 Vector3D::Vector3D()
 {
     x = y = z = 0;
 }
 
-/// @brief Copy-constructs from another Vector3D.
+/** Copy-constructs from another Vector3D. */
 Vector3D::Vector3D( const Vector3D &b )
 {
     x = b.x;
@@ -31,7 +31,7 @@ Vector3D::Vector3D( const Vector3D &b )
     z = b.z;
 }
 
-/// @brief Projects a homogeneous Vector4D into 3D space (divides x,y,z by w).
+/** Projects a homogeneous Vector4D into 3D space (divides x,y,z by w). */
 Vector3D::Vector3D( const Vector4D &b )
 {
     x = b.x / b.w;
@@ -39,7 +39,7 @@ Vector3D::Vector3D( const Vector4D &b )
     z = b.z / b.w;
 }
 
-/// @brief Constructs a vector from explicit x, y, z coordinates.
+/** Constructs a vector from explicit x, y, z coordinates. */
 Vector3D::Vector3D( float X, float Y, float Z )
 {
     x = X;
@@ -47,7 +47,7 @@ Vector3D::Vector3D( float X, float Y, float Z )
     z = Z;
 }
 
-/// @brief Constructs a vector from a pointer to 3 consecutive floats.
+/** Constructs a vector from a pointer to 3 consecutive floats. */
 Vector3D::Vector3D( float *xyz )
 {
     x = xyz[0];
@@ -55,13 +55,12 @@ Vector3D::Vector3D( float *xyz )
     z = xyz[2];
 }
 
-/// @brief Destructor (no-op; the class owns no dynamic resources).
+/** Destructor (no-op; the class owns no dynamic resources). */
 Vector3D::~Vector3D()
 {
 }
 
-/**
- * @brief Computes the reflection of this vector about normal @p n.
+/**  Computes the reflection of this vector about normal @p n.
  *
  * Standard mirror-reflection formula `2*(this . n)*n - this`. The CG_EXERCISE_10_3
  * branch is a teaching-exercise stub left over from the code's origin (a computer
@@ -69,7 +68,7 @@ Vector3D::~Vector3D()
  * students to fill in; it is not defined in this codebase's builds. The
  * normal is assumed normalized; the calling vector is left unmodified (the
  * parameter and return value are documented on the declaration in Vector3D.h).
- */
+ **/
 Vector3D Vector3D::reflected( const Vector3D &n ) const
 {
 #ifndef CG_EXERCISE_10_3
@@ -79,8 +78,7 @@ Vector3D Vector3D::reflected( const Vector3D &n ) const
 #endif
 }
 
-/**
- * @brief Computes the refraction of this vector through an interface with normal @p n.
+/**  Computes the refraction of this vector through an interface with normal @p n.
  *
  * Flips the normal to face the incident vector, then applies Snell's law with ratio
  * @p eta; if the term under the square root goes negative the interface exhibits total
@@ -89,7 +87,7 @@ Vector3D Vector3D::reflected( const Vector3D &n ) const
  * reflected() above. The normal is assumed normalized and @p eta is the ratio
  * of indices of refraction (incident / transmitted medium); the parameters and
  * return value are documented on the declaration in Vector3D.h.
- */
+ **/
 Vector3D Vector3D::refracted( const Vector3D &n, float eta, bool &totalInternalReflection ) const
 {
 #ifndef CG_EXERCISE_10_3

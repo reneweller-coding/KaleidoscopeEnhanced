@@ -46,13 +46,15 @@ struct MeshAsset
     std::vector<unsigned char> materialRGBA;  ///< materialLayers * materialW * materialH * 4 bytes, layer 0 first.
 };
 
-/**
- * @brief Loads a mesh file into host memory.
- * @param path Filesystem path to a .glb/.gltf or .obj file, resolved exactly like every other asset path this codebase
- * already opens directly (no extra base-directory logic).
- * @param out Filled with flattened vertex data and, if the source had one, a packed material texture. Left empty on
- * failure.
- * @return true if at least one triangle was loaded; false leaves `out` empty so the caller can fail soft (an empty-VBO
- * scene simply draws nothing, matching every other geom kind's convention).
- */
-bool loadMeshAsset( const std::string &path, MeshAsset &out );
+/**  Loads a mesh file into host memory.
+ *
+ * @param pathIn  Filesystem path to a .glb/.gltf or .obj file, resolved exactly like every other asset path this
+ *                codebase already opens directly (no extra base-directory logic). (in)
+ * @param out     Filled with flattened vertex data and, if the source had one, a packed material texture. Left
+ *                empty on failure. (out)
+ *
+ * @return
+ *   true if at least one triangle was loaded; false leaves `out` empty so the caller can fail soft (an empty-VBO
+ *   scene simply draws nothing, matching every other geom kind's convention).
+ **/
+bool loadMeshAsset( const std::string &pathIn, MeshAsset &out );

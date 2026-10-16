@@ -99,25 +99,26 @@ enum BaseTypeE
 class Uniform
 {
 public:
-    /**
-     * @brief Constructs a named, typed uniform with no data yet assigned.
-     * @param name GLSL uniform variable name; looked up in the shader program by initUniform().
-     * @param type Which scalar kind (and, for BASE_TYPE_INTERPOLATOR_FLOAT, which rolling behaviour) this uniform has.
-     */
+    /**  Constructs a named, typed uniform with no data yet assigned.
+     *
+     * @param name  GLSL uniform variable name; looked up in the shader program by initUniform(). (in)
+     * @param type  Which scalar kind (and, for BASE_TYPE_INTERPOLATOR_FLOAT, which rolling behaviour) this uniform
+     *              has. (in)
+     **/
     Uniform( const std::string &name, BaseTypeE type );
-    /** @brief Virtual no-op destructor (no owned resources to release). */
+    /** Virtual no-op destructor (no owned resources to release). */
     virtual ~Uniform( void );
 
 
-    /**
-     * @brief Sets the four outer bounds and ramp duration for a BASE_TYPE_INTERPOLATOR_FLOAT uniform.
-     * @param interpolatorMinMinf Lower bound for the randomised ramp-start value.
-     * @param interpolatorMinMaxf Upper bound for the randomised ramp-start value.
-     * @param interpolatorMaxMinf Lower bound for the randomised ramp-end value.
-     * @param interpolatorMaxMaxf Upper bound for the randomised ramp-end value.
-     * @param interpolatorTime Ramp duration in seconds (used as m_totalTime; see resetParameters()'s
-     * delta-per-millisecond computation).
-     */
+    /**  Sets the four outer bounds and ramp duration for a BASE_TYPE_INTERPOLATOR_FLOAT uniform.
+     *
+     * @param interpolatorMinMinf  Lower bound for the randomised ramp-start value. (in)
+     * @param interpolatorMinMaxf  Upper bound for the randomised ramp-start value. (in)
+     * @param interpolatorMaxMinf  Lower bound for the randomised ramp-end value. (in)
+     * @param interpolatorMaxMaxf  Upper bound for the randomised ramp-end value. (in)
+     * @param interpolatorTime     Ramp duration in seconds (used as m_totalTime; see resetParameters()'s
+     *                             delta-per-millisecond computation). (in)
+     **/
     void setInterpolator( float interpolatorMinMinf,
                           float interpolatorMinMaxf,
                           float interpolatorMaxMinf,
@@ -133,9 +134,11 @@ public:
     }
 
 
-    /** @brief Sets the randomisation range for a BASE_TYPE_FLOAT uniform.
-     * @param minf Lower bound rolled by resetParameters().
-     * @param maxf Upper bound rolled by resetParameters(). */
+    /**  Sets the randomisation range for a BASE_TYPE_FLOAT uniform.
+     *
+     * @param minf  Lower bound rolled by resetParameters(). (in)
+     * @param maxf  Upper bound rolled by resetParameters(). (in)
+     **/
     void setMinMax( float minf, float maxf )
     {
         m_dataMin.vf = minf;
@@ -143,9 +146,11 @@ public:
     }
 
 
-    /** @brief Sets the randomisation range for a BASE_TYPE_INT uniform.
-     * @param minf Lower bound (inclusive) rolled by resetParameters().
-     * @param maxf Upper bound (exclusive) rolled by resetParameters(). */
+    /**  Sets the randomisation range for a BASE_TYPE_INT uniform.
+     *
+     * @param minf  Lower bound (inclusive) rolled by resetParameters(). (in)
+     * @param maxf  Upper bound (exclusive) rolled by resetParameters(). (in)
+     **/
     void setMinMax( int minf, int maxf )
     {
         m_dataMin.vi = minf;
@@ -153,10 +158,11 @@ public:
     }
 
 
-    /** @brief Sets the randomisation range for a BASE_TYPE_UNSIGNED_INT uniform (stored the same way as the int
-     * overload).
-     * @param minf Lower bound (inclusive) rolled by resetParameters().
-     * @param maxf Upper bound (exclusive) rolled by resetParameters(). */
+    /**  Sets the randomisation range for a BASE_TYPE_UNSIGNED_INT uniform (stored the same way as the int overload).
+     *
+     * @param minf  Lower bound (inclusive) rolled by resetParameters(). (in)
+     * @param maxf  Upper bound (exclusive) rolled by resetParameters(). (in)
+     **/
     void setMinMax( unsigned int minf, unsigned int maxf )
     {
         m_dataMin.vi = minf;
@@ -164,59 +170,76 @@ public:
     }
 
 
-    /** @brief Sets the "true" probability for a BASE_TYPE_BOOL uniform.
-     * @param pro Probability in [0,1] that resetParameters() rolls the value true (stored in m_dataMin.vf, reused as
-     * the threshold). */
+    /**  Sets the "true" probability for a BASE_TYPE_BOOL uniform.
+     *
+     * @param pro  Probability in [0,1] that resetParameters() rolls the value true (stored in m_dataMin.vf, reused
+     *             as the threshold). (in)
+     **/
     void setProbability( float pro )
     {
         m_dataMin.vf = pro;
     }
 
-    /** @brief Uploads the current value to the bound GL program via the appropriate glUniform* call; for
-     * BASE_TYPE_INTERPOLATOR_FLOAT this also advances the ramp based on elapsed wall-clock time. */
+    /**  Uploads the current value to the bound GL program via the appropriate glUniform* call; for
+     * BASE_TYPE_INTERPOLATOR_FLOAT this also advances the ramp based on elapsed wall-clock time.
+     **/
     void setUniform();
-    /**
-     * @brief Resolves and caches this uniform's location in a linked GL shader program.
-     * @param sh_prog_id GL program object id to query via glGetUniformLocation().
-     */
+    /**  Resolves and caches this uniform's location in a linked GL shader program.
+     *
+     * @param sh_prog_id  GL program object id to query via glGetUniformLocation(). (in)
+     **/
     void initUniform( unsigned int sh_prog_id );
-    /** @brief Rolls a fresh random value (or, for INTERPOLATOR_FLOAT, fresh min/max bounds and ramp delta) using the
-     * current m_totalTime. */
+    /**  Rolls a fresh random value (or, for INTERPOLATOR_FLOAT, fresh min/max bounds and ramp delta) using the
+     * current m_totalTime.
+     **/
     void resetParameters();
-    /**
-     * @brief Rolls a fresh random value like resetParameters(), but for BASE_TYPE_INTERPOLATOR_FLOAT overrides the ramp
+    /**  Rolls a fresh random value like resetParameters(), but for BASE_TYPE_INTERPOLATOR_FLOAT overrides the ramp
      * duration with @p time instead of reusing the previously-set one.
-     * @param time New ramp duration in seconds (BASE_TYPE_INTERPOLATOR_FLOAT only; ignored by the other types).
-     */
+     *
+     * @param time  New ramp duration in seconds (BASE_TYPE_INTERPOLATOR_FLOAT only; ignored by the other types).
+     *              (in)
+     **/
     void resetParameters( float time );
-    /** @brief Arms a BASE_TYPE_INTERPOLATOR_FLOAT uniform so its next setUniform() call (re-)starts the ramp timer from
-     * the current rolled min. No-op for other types. */
+    /**  Arms a BASE_TYPE_INTERPOLATOR_FLOAT uniform so its next setUniform() call (re-)starts the ramp timer from the
+     * current rolled min. No-op for other types.
+     **/
     void startInterpolator();
 
-    /** Re-upload the current float value scaled by 'scale'.
-     *  Call this AFTER setUniform() to override the value for audio reactivity.
-     *  Has no effect on int/bool uniforms.
-     *  @param scale Multiplier applied to the current float value before re-upload. */
+    /**  Re-upload the current float value scaled by 'scale'.
+     *
+     * @param scale  Multiplier applied to the current float value before re-upload. (in)
+     *
+     * Call this AFTER setUniform() to override the value for audio reactivity. Has no effect on int/bool uniforms.
+     **/
     void setGLValueScaled( float scale ) const;
 
-    /** Name of the uniform variable (for lookup by EffectShader). */
+    /**  Name of the uniform variable (for lookup by EffectShader).
+     *
+     * @return
+     *   The name as declared in the shader.
+     **/
     const std::string &getName() const { return m_name; }
 
-    /** Snapshot / restore of the rolled per-activation value, for the song-
-     *  structure memory: a recognised section replays its exact look instead of
-     *  re-rolling.  Ints/bools round-trip through float losslessly here (they
-     *  are small).
-     *  @return The current value as a float (m_data.vf for float types, m_data.vi widened to float otherwise). */
+    /**  Snapshot / restore of the rolled per-activation value, for the song- structure memory: a recognised section
+     * replays its exact look instead of re-rolling.
+     *
+     * @return
+     *   The current value as a float (m_data.vf for float types, m_data.vi widened to float otherwise).
+     *
+     * Ints/bools round-trip through float losslessly here (they are small).
+     **/
     float snapshotValue() const
     {
         return ( m_type == BASE_TYPE_FLOAT || m_type == BASE_TYPE_INTERPOLATOR_FLOAT )
                    ? m_data.vf
                    : static_cast<float>( m_data.vi );
     }
-    /** @brief Restores a value previously captured by snapshotValue(), replacing whatever resetParameters() would
-     * otherwise have rolled.
-     * @param v The value to restore; for non-float types it is rounded to the nearest int (symmetric rounding for
-     * negatives) rather than truncated. */
+    /**  Restores a value previously captured by snapshotValue(), replacing whatever resetParameters() would otherwise
+     * have rolled.
+     *
+     * @param v  The value to restore; for non-float types it is rounded to the nearest int (symmetric rounding for
+     *           negatives) rather than truncated. (in)
+     **/
     void restoreValue( float v )
     {
         if ( m_type == BASE_TYPE_FLOAT || m_type == BASE_TYPE_INTERPOLATOR_FLOAT )
@@ -277,9 +300,13 @@ private:
     WallClock m_time; ///< Wall-clock timer used to measure elapsed milliseconds between setUniform() calls while
                       ///< ramping (BASE_TYPE_INTERPOLATOR_FLOAT only).
 private:
-    /// @brief Not copyable (CGVR template: copy constructor and assignment are always declared).
+    /** Not copyable (CGVR template: copy constructor and assignment are always declared). */
     Uniform( const Uniform & ) = delete;
-    /// @brief Not assignable; see the copy constructor.
+    /**  Not assignable; see the copy constructor.
+     *
+     * @return
+     *   Nothing: the operator is deleted, so no call compiles.
+     **/
     Uniform &operator=( const Uniform & ) = delete;
 };
 

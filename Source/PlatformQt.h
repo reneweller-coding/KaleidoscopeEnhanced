@@ -27,11 +27,13 @@
 namespace Platform
 {
 
-/**
- * @brief Normalises a QString path's separators for the host filesystem.
- * @param p Path as written in the source or in a preset.
- * @return The same path, with separators the host understands.
- */
+/**  Normalises a QString path's separators for the host filesystem.
+ *
+ * @param p  Path as written in the source or in a preset. (in)
+ *
+ * @return
+ *   The same path, with separators the host understands.
+ **/
 inline QString assetPath( const QString &p )
 {
 #ifdef _WIN32
@@ -43,17 +45,19 @@ inline QString assetPath( const QString &p )
 #endif
 }
 
-/**
- * @brief The folder holding the preset *.xml files, relative to @p root.
+/**  The folder holding the preset *.xml files, relative to @p root.
+ *
+ * @param root  Directory the folder sits in (the project/install root). (in)
+ *
+ * @return
+ *   Path to the presets folder, separators normalised for the host.
  *
  * The folder was called "Configurations" until 04.09.2026 and is called
  * "Presets" now -- the name the rest of the program, the editor and the
  * documentation already used for the same thing.  An installation that still
  * carries the old folder keeps working: a half-updated copy must not fail to
  * start over a rename.
- * @param root Directory the folder sits in (the project/install root).
- * @return Path to the presets folder, separators normalised for the host.
- */
+ **/
 inline QString presetsDir( const QString &root )
 {
     const QString cur = assetPath( root + "/Presets" );

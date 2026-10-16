@@ -136,8 +136,7 @@ bool rightAssoc( int opChar )
 
 } // namespace
 
-/**
- * @brief Compiles @p formula into m_prog via tokenising then shunting-yard, with a final stack-depth sanity pass.
+/**  Compiles @p formula into m_prog via tokenising then shunting-yard, with a final stack-depth sanity pass.
  *
  * Returns true on success (m_ok is also set true); false on any lexical or
  * structural error, leaving m_ok false so eval() safely returns 0. The
@@ -165,7 +164,7 @@ bool rightAssoc( int opChar )
  *     malformed programs (e.g. a function invoked with the wrong argument
  *     count) that the shunting-yard pass alone wouldn't reject; a compiled
  *     program must reduce to exactly one value on the stack.
- */
+ **/
 bool ExprProgram::compile( const std::string &formula, const std::string &context, std::string *outError )
 {
     m_prog.clear();
@@ -412,8 +411,7 @@ bool ExprProgram::compile( const std::string &formula, const std::string &contex
     return true;
 }
 
-/**
- * @brief Runs the compiled RPN program (m_prog) against @p vars on a small fixed-size stack.
+/**  Runs the compiled RPN program (m_prog) against @p vars on a small fixed-size stack.
  *
  * @p vars is the ExprVars::V_COUNT-element array indexed by ExprVars::Index
  * that supplies the live audio/time feature values; the result is the single
@@ -429,7 +427,7 @@ bool ExprProgram::compile( const std::string &formula, const std::string &contex
  * a near-zero divisor (returns 0 instead of Inf/NaN) and log()/sqrt() clamp
  * their argument into a domain-safe range, so a pathological live feature
  * value can't poison the uniform with a NaN.
- */
+ **/
 float ExprProgram::eval( const float *vars ) const
 {
     if ( !m_ok )

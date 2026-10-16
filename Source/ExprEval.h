@@ -98,27 +98,37 @@ const char *const *names();
 class ExprProgram
 {
 public:
-    /**
-     * @brief Parses and compiles @p formula into the internal RPN program.
-     * @param formula The expression source, e.g. "0.5 + 0.3*bassRel*sin(6.28*barPhase)".
-     * @param context A label identifying the formula's origin (e.g. uniform/shader name), used only to prefix stderr
-     * error messages.
-     * @param outError Optional: on failure, receives the same message logged to stderr (without the "Expr [context]: "
-     * prefix) — e.g. for surfacing in a UI tooltip. Left untouched on success or when null.
-     * @return True on success; false on a parse error (unknown identifier, unexpected character, unbalanced parens,
-     * misplaced comma, or a malformed/unbalanced RPN stack) — the program then evaluates to 0 via eval().
-     */
+    /**  Parses and compiles @p formula into the internal RPN program.
+     *
+     * @param formula   The expression source, e.g. "0.5 + 0.3*bassRel*sin(6.28*barPhase)". (in)
+     * @param context   A label identifying the formula's origin (e.g. uniform/shader name), used only to prefix
+     *                  stderr error messages. (in)
+     * @param outError  Optional: on failure, receives the same message logged to stderr (without the "Expr
+     *                  [context]: " prefix) — e.g. for surfacing in a UI tooltip. Left untouched on success or when
+     *                  null. (out)
+     *
+     * @return
+     *   True on success; false on a parse error (unknown identifier, unexpected character, unbalanced parens,
+     *   misplaced comma, or a malformed/unbalanced RPN stack) — the program then evaluates to 0 via eval().
+     **/
     bool compile( const std::string &formula, const std::string &context, std::string *outError = nullptr );
 
-    /**
-     * @brief Runs the compiled RPN program against a filled variable array.
-     * @param vars Array of ExprVars::V_COUNT floats, indexed by ExprVars::Index, holding the current audio/time feature
-     * values.
-     * @return The formula's result, or 0 if compile() had failed (or the stack didn't reduce to exactly one value).
-     */
+    /**  Runs the compiled RPN program against a filled variable array.
+     *
+     * @param vars  Array of ExprVars::V_COUNT floats, indexed by ExprVars::Index, holding the current audio/time
+     *              feature values. (in)
+     *
+     * @return
+     *   The formula's result, or 0 if compile() had failed (or the stack didn't reduce to exactly one value).
+     **/
     float eval( const float *vars ) const;
 
-    bool valid() const { return m_ok; } ///< @return True if the last compile() call succeeded.
+    /**  True if the last compile() call succeeded.
+     *
+     * @return
+     *   True if the last compile() call succeeded.
+     **/
+    bool valid() const { return m_ok; }
 
 private:
     /// One RPN instruction: code<0 means push const (OpConst, value=the constant) or push var (OpVar, value=the
@@ -132,16 +142,23 @@ private:
                             ///< pass.
     bool m_ok = false;      ///< Whether m_prog is a valid, safely-evaluable program (set by compile()).
 public:
-    /// @brief Default construction, which the declared copy operations would otherwise suppress.
+    /** Default construction, which the declared copy operations would otherwise suppress. */
     ExprProgram() = default;
 
-    /// @brief Member-wise copy; programs live by value in EffectShader's expression list (CGVR template: always
-    ///        declared).
+    /** Member-wise copy; programs live by value in EffectShader's expression list (CGVR template: always declared). */
     ExprProgram( const ExprProgram & ) = default;
-    /// @brief Member-wise copy assignment.
+    /**  Member-wise copy assignment.
+     *
+     * @return
+     *   This object, as assigned member by member.
+     **/
     ExprProgram &operator=( const ExprProgram & ) = default;
-    /// @brief Member-wise move; declared because a declared copy would suppress it.
+    /** Member-wise move; declared because a declared copy would suppress it. */
     ExprProgram( ExprProgram && ) = default;
-    /// @brief Member-wise move assignment.
+    /**  Member-wise move assignment.
+     *
+     * @return
+     *   This object, as assigned member by member.
+     **/
     ExprProgram &operator=( ExprProgram && ) = default;
 };

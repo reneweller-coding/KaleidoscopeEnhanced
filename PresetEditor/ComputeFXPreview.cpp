@@ -7,12 +7,12 @@
 #include "ComputeFXPreview.h"
 #include "../Source/ComputeFX.h"
 
-/// Allocates the wrapped ComputeFX; no GL calls happen until init().
+/** Allocates the wrapped ComputeFX; no GL calls happen until init(). */
 ComputeFXPreview::ComputeFXPreview()
     : m_impl( new ComputeFX() )
 {
 }
-/// Deletes the wrapped ComputeFX (frees its GPU resources).
+/** Deletes the wrapped ComputeFX (frees its GPU resources). */
 ComputeFXPreview::~ComputeFXPreview()
 {
     delete m_impl;

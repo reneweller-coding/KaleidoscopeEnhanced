@@ -76,79 +76,109 @@ class Recorder
 {
 public:
     Recorder();
-    ~Recorder(); ///< Only joins the worker thread now; call shutdown() beforehand to finalise a live recording (joint
-                 ///< nur noch den Worker; shutdown() vorher rufen!).
+    /**  Only joins the worker thread now; call shutdown() beforehand to finalise a live recording (joint nur noch den
+     * Worker; shutdown() vorher rufen!).
+     **/
+    ~Recorder();
 
     /** Der Analyzer liefert das Audio (WAV-Mitschnitt bzw. Replay-PCM-Ring).
      *  nullptr ist erlaubt — dann entstehen stumme Videos. */
-    /**
-     * @brief Set the audio source used for the recording WAV and the replay PCM ring.
-     * @param a Analyzer to pull audio from; nullptr is allowed and yields silent videos.
-     */
+    /**  Set the audio source used for the recording WAV and the replay PCM ring.
+     *
+     * @param a  Analyzer to pull audio from; nullptr is allowed and yields silent videos. (in)
+     **/
     void setAudioAnalyzer( AudioAnalyzer *a ) { m_audio = a; }
 
     /** VOR dem Löschen des AudioAnalyzers rufen (z.B. im ~GLwidget-Rumpf):
      *  finalisiert eine laufende Aufnahme (Drain + Mux) und vergisst den
      *  Analyzer — der Destruktor fasst ihn danach nicht mehr an. */
-    /**
-     * @brief Finalise any in-progress recording (drain the worker + start the ffmpeg mux) and forget the audio
-     * analyzer.
+    /**  Finalise any in-progress recording (drain the worker + start the ffmpeg mux) and forget the audio analyzer.
      *
      * Must be called before the AudioAnalyzer is destroyed (e.g. in the body
      * of ~GLwidget); afterwards the destructor no longer touches it.
-     */
+     **/
     void shutdown();
 
     // ---- Recording (Taste 'r' / CLI -r / Batch-Ende) ----
-    /** @brief Toggle recording on/off: starts a new timestamped recordings/rec_* directory and worker, or stops and
-     * finalises the current one. */
+    /**  Toggle recording on/off: starts a new timestamped recordings/rec_* directory and worker, or stops and
+     * finalises the current one.
+     **/
     void toggle();
-    bool recording() const { return m_recording; } ///< True while a recording is in progress.
-    int  frameCount() const { return m_recFrame; } ///< Number of frames written to the current/last recording.
+    /**  True while a recording is in progress.
+     *
+     * @return
+     *   True while a recording is in progress.
+     **/
+    bool recording() const { return m_recording; }
+    /**  Number of frames written to the current/last recording.
+     *
+     * @return
+     *   Number of frames written to the current/last recording.
+     **/
+    int frameCount() const { return m_recFrame; }
 
     // ---- Instant Replay (Tasten 'y' / 'x', Web-Remote) ----
-    /** @brief Arm or disarm the rolling instant-replay ring buffer (starts/keeps the worker running while armed). */
+    /** Arm or disarm the rolling instant-replay ring buffer (starts/keeps the worker running while armed). */
     void toggleReplayArm();
-    bool replayArmed() const { return m_replayArmed; } ///< True while the instant-replay ring is actively capturing.
-    /** @brief Save the current instant-replay ring to disk as replays/replay_TIMESTAMP/replay.mp4 (drops the request if
-     * fewer than 15 frames are buffered). */
+    /**  True while the instant-replay ring is actively capturing.
+     *
+     * @return
+     *   True while the instant-replay ring is actively capturing.
+     **/
+    bool replayArmed() const { return m_replayArmed; }
+    /**  Save the current instant-replay ring to disk as replays/replay_TIMESTAMP/replay.mp4 (drops the request if
+     * fewer than 15 frames are buffered).
+     **/
     void saveReplay();
 
     /** Pro Frame rufen (GL-Kontext aktuell, Bild fertig gerendert, noch ohne
      *  Overlays). Erfasst je nach Modus mit ~30 bzw. ~15 fps; w/h = physische
      *  Framebuffer-Größe. */
-    /**
-     * @brief Capture the current framebuffer if the active mode's frame interval has elapsed.
+    /**  Capture the current framebuffer if the active mode's frame interval has elapsed.
+     *
+     * @param w  Physical framebuffer width in pixels. (in)
+     * @param h  Physical framebuffer height in pixels. (in)
      *
      * Call once per frame with a current GL context, after the picture is
      * fully rendered but before any overlays. Captures at ~30 fps while
      * recording() or ~15 fps while replayArmed() (mutually exclusive).
-     * @param w Physical framebuffer width in pixels.
-     * @param h Physical framebuffer height in pixels.
-     */
+     **/
     void captureIfDue( int w, int h );
 
 private:
-    void captureFrame( int w, int h );       ///< Recording-path capture (~30 fps): paces against a fixed deadline and
-                                             ///< dispatches asyncCapture(); see the definition.
-    void captureReplayFrame( int w, int h ); ///< Replay-ring capture (~15 fps): rate-limits and dispatches
-                                             ///< asyncCapture() with toReplay=true; see the definition.
-    /**
-     * @brief Kick off the PBO double-buffered async readback for one frame and hand the previous frame's finished
-     * transfer to the encoder queue.
-     * @param dur Duration in seconds this frame should occupy in the output timeline.
-     * @param toReplay True to route the frame into the replay ring instead of a numbered recording frame file.
-     * @param w Framebuffer width in pixels.
-     * @param h Framebuffer height in pixels.
-     */
+    /**  Recording-path capture (~30 fps): paces against a fixed deadline and dispatches asyncCapture(); see the
+     * definition.
+     *
+     * @param w  Width of the read framebuffer in pixels. (in)
+     * @param h  Its height in pixels. (in)
+     **/
+    void captureFrame( int w, int h );
+    /**  Replay-ring capture (~15 fps): rate-limits and dispatches asyncCapture() with toReplay=true; see the
+     * definition.
+     *
+     * @param w  Width of the read framebuffer in pixels. (in)
+     * @param h  Its height in pixels. (in)
+     **/
+    void captureReplayFrame( int w, int h );
+    /**  Kick off the PBO double-buffered async readback for one frame and hand the previous frame's finished transfer
+     * to the encoder queue.
+     *
+     * @param dur       Duration in seconds this frame should occupy in the output timeline. (in)
+     * @param toReplay  True to route the frame into the replay ring instead of a numbered recording frame file.
+     *                  (in)
+     * @param w         Framebuffer width in pixels. (in)
+     * @param h         Framebuffer height in pixels. (in)
+     **/
     void asyncCapture( float dur, bool toReplay, int w, int h );
-    /** @brief Drain and stop the encoder worker, close the audio WAV, write the concat list + fallback batch file, and
-     * launch a detached ffmpeg mux to kaleidoscope.mp4. */
+    /**  Drain and stop the encoder worker, close the audio WAV, write the concat list + fallback batch file, and
+     * launch a detached ffmpeg mux to kaleidoscope.mp4.
+     **/
     void finishRecording();
-    /** @brief Start the encoder worker thread if it isn't already running. */
+    /** Start the encoder worker thread if it isn't already running. */
     void ensureWorker();
-    /** @brief Encoder worker thread body: pulls jobs off the queue and mirrors/scales/JPEG-encodes them (to disk for
-     * recording jobs, into RAM for replay jobs) until told to quit. */
+    /**  Encoder worker thread body: pulls jobs off the queue and mirrors/scales/JPEG-encodes them (to disk for
+     * recording jobs, into RAM for replay jobs) until told to quit.
+     **/
     void worker();
 
     // ---- raw video pipe (the recording path) ----
@@ -158,18 +188,31 @@ private:
     // decoding all of them again to make the h264 -- and threw away everything
     // above 720 px on the way. See startVideoPipe() for why this needs its own
     // single thread rather than the pool.
-    /** @brief Launch the ffmpeg process this recording pipes raw frames into, locking the video size to @p w x @p h.
-     * @return false if ffmpeg could not be started, which puts the recording on the JPEG fallback path. */
+    /**  Launch the ffmpeg process this recording pipes raw frames into, locking the video size to @p w x @p h.
+     *
+     * @param w  Video width in pixels, fixed for this recording. (in)
+     * @param h  Video height in pixels. (in)
+     *
+     * @return
+     *   false if ffmpeg could not be started, which puts the recording on the JPEG fallback path.
+     **/
     bool startVideoPipe( int w, int h );
-    /** @brief Raw-pipe writer thread body: flips each recording frame, converts the measured frame durations into
-     * constant-rate output, and writes to ffmpeg's stdin in strict order. Finalises the ffmpeg process before
-     * returning. */
+    /**  Raw-pipe writer thread body: flips each recording frame, converts the measured frame durations into
+     * constant-rate output, and writes to ffmpeg's stdin in strict order.
+     *
+     * Finalises the ffmpeg process before returning.
+     **/
     void pipeWriter();
 
+    /**  Milliseconds elapsed on the recorder's own clock since construction.
+     *
+     * @return
+     *   Milliseconds elapsed on the recorder's own clock since construction.
+     **/
     qint64 nowMs() const
     {
         return m_clock.elapsed();
-    } ///< Milliseconds elapsed on the recorder's own clock since construction.
+    }
 
     AudioAnalyzer *m_audio = nullptr; ///< Audio source for the recording WAV / replay PCM ring; may be null (silent
                                       ///< video).
@@ -245,13 +288,27 @@ private:
     // them into the captured frame is a temporal box filter over the capture
     // interval -- what a shutter does -- and costs no extra rendering, because
     // those frames exist either way.
-    /** @brief Creates or resizes the accumulation targets. @return false if they could not be created, which disables
-     * motion blur for the run. */
+    /**  Creates or resizes the accumulation targets.
+     *
+     * @param w  Frame width in pixels. (in)
+     * @param h  Frame height in pixels. (in)
+     *
+     * @return
+     *   false if they could not be created, which disables motion blur for the run.
+     **/
     bool ensureBlurTargets( int w, int h );
-    /** @brief Adds the frame currently in the read framebuffer to the accumulator. */
+    /**  Adds the frame currently in the read framebuffer to the accumulator.
+     *
+     * @param w  Frame width in pixels. (in)
+     * @param h  Frame height in pixels. (in)
+     **/
     void accumulateFrame( int w, int h );
-    /** @brief Divides the accumulator by the frames that went in and leaves the result in m_mbResolveFbo, ready for
-     * readback. */
+    /**  Divides the accumulator by the frames that went in and leaves the result in m_mbResolveFbo, ready for
+     * readback.
+     *
+     * @param w  Frame width in pixels. (in)
+     * @param h  Frame height in pixels. (in)
+     **/
     void resolveBlur( int w, int h );
 
     bool   m_mbWanted = false; ///< Setting: motion blur requested for this run (ini key motionBlur).
@@ -302,9 +359,13 @@ private:
     float m_repCarryDur = 0.f; ///< Duration of replay frames dropped by the bounded queue, carried into the next queued
                                ///< replay frame's duration.
 private:
-    /// @brief Not copyable (CGVR template: copy constructor and assignment are always declared).
+    /** Not copyable (CGVR template: copy constructor and assignment are always declared). */
     Recorder( const Recorder & ) = delete;
-    /// @brief Not assignable; see the copy constructor.
+    /**  Not assignable; see the copy constructor.
+     *
+     * @return
+     *   Nothing: the operator is deleted, so no call compiles.
+     **/
     Recorder &operator=( const Recorder & ) = delete;
 };
 

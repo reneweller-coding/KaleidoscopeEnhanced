@@ -60,70 +60,100 @@
 class Scene3DShader : public EffectShader
 {
 public:
-    /// Built with its own vertex shader (setShadersVF), not the fullscreen one: no background prebuild.
+    /**  Built with its own vertex shader (setShadersVF), not the fullscreen one: no background prebuild.
+     *
+     * @return
+     *   Always false.
+     **/
     bool plainFragment() const override { return false; }
-    /**
-     * @brief Constructs a 3D scene bound to one fragment shader and geometry kind, and rolls its first per-activation
+    /**  Constructs a 3D scene bound to one fragment shader and geometry kind, and rolls its first per-activation
      * variation.
-     * @param filenameFragmentShader Path to the scene's X.frag; sibling X.vert/.tesc/.tese/.geom/.comp filenames are
-     * derived from it by replacing the extension.
-     * @param geom Geometry kind from the preset's geom= attribute
-     * ("points","cubes","ribbon","grid","quads","patches","scatter","indirect","mesh"); unrecognised values fall back
-     * to "points".
-     * @param minTimeSolo Minimum time (ms) this effect stays solo before crossfading; forwarded to EffectShader.
-     * @param maxTimeSolo Maximum time (ms) this effect stays solo; forwarded to EffectShader.
-     * @param minTimeInterpolation Minimum crossfade duration (ms); forwarded to EffectShader.
-     * @param maxTimeInterpolation Maximum crossfade duration (ms); forwarded to EffectShader.
-     */
+     *
+     * @param filenameFragmentShader  Path to the scene's X.frag; sibling X.vert/.tesc/.tese/.geom/.comp filenames
+     *                                are derived from it by replacing the extension. (in)
+     * @param geom                    Geometry kind from the preset's geom= attribute
+     *                                ("points","cubes","ribbon","grid","quads","patches","scatter","indirect","mesh");
+     *                                unrecognised values fall back to "points". (in)
+     * @param minTimeSolo             Minimum time (ms) this effect stays solo before crossfading; forwarded to
+     *                                EffectShader. (in)
+     * @param maxTimeSolo             Maximum time (ms) this effect stays solo; forwarded to EffectShader. (in)
+     * @param minTimeInterpolation    Minimum crossfade duration (ms); forwarded to EffectShader. (in)
+     * @param maxTimeInterpolation    Maximum crossfade duration (ms); forwarded to EffectShader. (in)
+     **/
     Scene3DShader( const std::string &filenameFragmentShader, const std::string &geom,
                    unsigned int minTimeSolo, unsigned int maxTimeSolo,
                    unsigned int minTimeInterpolation, unsigned int maxTimeInterpolation );
-    /** @brief Releases this scene's GL objects: geometry VBO, indirect command buffer, persistent generator-state
-     * buffer and compute generator program. */
+    /**  Releases this scene's GL objects: geometry VBO, indirect command buffer, persistent generator-state buffer
+     * and compute generator program.
+     **/
     virtual ~Scene3DShader();
 
-    /**
-     * @brief Compiles the full shader pipeline (vertex + optional tess/geom stages + fragment), resolves
-     * uniform/attribute locations, and builds/uploads the geometry and VAO.
-     * @param width Render-target width in pixels.
-     * @param height Render-target height in pixels.
-     */
+    /**  Compiles the full shader pipeline (vertex + optional tess/geom stages + fragment), resolves uniform/attribute
+     * locations, and builds/uploads the geometry and VAO.
+     *
+     * @param width   Render-target width in pixels. (in)
+     * @param height  Render-target height in pixels. (in)
+     **/
     void initUniforms( int width, int height ) override;
-    /** @brief Renders one frame: builds the projection/camera matrix (applying any rig* formulas), sets the depth/blend
-     * state appropriate to this scene's geometry kind, and issues its draw call(s). */
+    /**  Renders one frame: builds the projection/camera matrix (applying any rig* formulas), sets the depth/blend
+     * state appropriate to this scene's geometry kind, and issues its draw call(s).
+     **/
     void draw() override;
+    /**  true — this is a real 3D scene, so the host uses the true-stereo per-eye render path.
+     *
+     * @return
+     *   true — this is a real 3D scene, so the host uses the true-stereo per-eye render path.
+     **/
     bool is3D() const override
     {
         return true;
-    } ///< @return true — this is a real 3D scene, so the host uses the true-stereo per-eye render path.
+    }
+    /**  true for a loaded-model scene; the host damps the time echo on these (see EffectShader::isMeshScene).
+     *
+     * @return
+     *   true for a loaded-model scene; the host damps the time echo on these (see EffectShader::isMeshScene).
+     **/
     bool isMeshScene() const override
     {
         return m_geomKind == GEOM_MESH;
-    } ///< @return true for a loaded-model scene; the host damps the time echo on these (see EffectShader::isMeshScene).
+    }
 
     // ---- asynchronous mesh warm-up (see EffectShader::meshWarmupPending) ----
-    /** @brief Whether this scene still needs its model loaded before it can be shown.
-     *  @return true only for a GEOM_MESH scene with a model= path whose VBO is not built yet and whose
-     *          warm-up has not reached WARM_READY (i.e. nothing started, queued, or the worker is still loading). */
+    /**  Whether this scene still needs its model loaded before it can be shown.
+     *
+     * @return
+     *   true only for a GEOM_MESH scene with a model= path whose VBO is not built yet and whose warm-up has not
+     *   reached WARM_READY (i.e. nothing started, queued, or the worker is still loading).
+     **/
     bool meshWarmupPending() const override;
-    /** @brief Queue this scene on the shared warm-up worker thread (starting the thread on first use).
+    /**  Queue this scene on the shared warm-up worker thread (starting the thread on first use).
      *
      *  A no-op unless meshWarmupPending() conditions hold. A REPEATED request while still queued moves the
      *  scene to the queue front: the fade-hold path asks every frame, and an active fade must not wait
-     *  behind the background crawl through the whole preset. */
+     *  behind the background crawl through the whole preset.
+     **/
     void requestMeshWarmup() override;
-    /** @brief Worker-thread entry: runs loadMeshAsset() for this scene's model
-     *  path(s) into the m_warm* slots, then publishes WARM_READY. Called ONLY by
-     *  the warm-up worker; everything GL stays out of it. */
+    /**  Worker-thread entry: runs loadMeshAsset() for this scene's model path(s) into the m_warm* slots, then
+     * publishes WARM_READY.
+     *
+     * Called ONLY by the warm-up worker; everything GL stays out of it.
+     **/
     void warmupLoadNow();
-    /** @brief GL half of the warm-up: once the worker has published WARM_READY, builds the VBO from the prefetched
-     * assets and bakes the VAO.
-     *  @return true if the upload happened this call (the host counts it as the frame's one warm-up step); false if
-     * nothing was ready or the VBO already exists. */
+    /**  GL half of the warm-up: once the worker has published WARM_READY, builds the VBO from the prefetched assets
+     * and bakes the VAO.
+     *
+     * @return
+     *   true if the upload happened this call (the host counts it as the frame's one warm-up step); false if
+     *   nothing was ready or the VBO already exists.
+     **/
     bool finishMeshWarmup() override;
-    /// @return True while this mesh scene holds its uploaded vertex buffer (and material textures).
+    /**  True while this mesh scene holds its uploaded vertex buffer (and material textures).
+     *
+     * @return
+     *   True while this mesh scene holds its uploaded vertex buffer (and material textures).
+     **/
     bool meshResident() const override { return m_geomKind == GEOM_MESH && m_vbo != 0; }
-    /// @brief Frees the uploaded mesh (VBO, VAO, material textures) and rearms the warm-up; see the definition for why.
+    /** Frees the uploaded mesh (VBO, VAO, material textures) and rearms the warm-up; see the definition for why. */
     void releaseMesh() override;
 
     // PER-ACTIVATION VARIETY: every time the scene is (re)activated it rolls
@@ -132,69 +162,110 @@ public:
     // flickers), a hue rotation and a generic `sceneSeed` uniform some scenes
     // use structurally (sector counts, knot type).  The same scene becomes a
     // whole family of variations.
-    /** @brief Rolls a fresh per-activation variation epoch (time offset, speed factor, hue offset, scene seed) on top
-     * of the base class's own parameter reset. */
+    /**  Rolls a fresh per-activation variation epoch (time offset, speed factor, hue offset, scene seed) on top of
+     * the base class's own parameter reset.
+     **/
     void resetParameters() override;
     // Also true when only the compute generator reads the spectrogram — the
     // base class can only see the render program.
-    /** @brief Whether this scene reads the spectrogram history texture. @return true if the render program (base class
-     * check) OR, for geom="indirect" scenes, the compute generator declares `texSpectro`. */
+    /**  Whether this scene reads the spectrogram history texture.
+     *
+     * @return
+     *   true if the render program (base class check) OR, for geom="indirect" scenes, the compute generator
+     *   declares `texSpectro`.
+     **/
     bool usesSpectro() override;
+    /**  Sets the size of the persistent state buffer of a geom="indirect" generator.
+     *
+     * @param b  Size in bytes of the persistent SSBO a geom="indirect" generator keeps across frames (0 = none);
+     *           allocated and zeroed once in setupIndirect(). (in)
+     **/
     void setStateBytes( int b )
     {
         m_stateBytes = b;
-    } ///< @param b Size in bytes of the persistent SSBO a geom="indirect" generator keeps across frames (0 = none);
-    ///< allocated and zeroed once in setupIndirect().
+    }
+    /**  Sets how many compute passes the generator runs per frame.
+     *
+     * @param n  Number of compute passes (genPass = 0..n-1, barrier between each) runGenerator() dispatches this
+     *           generator through per frame; 0 (default) keeps the original "1 pass, or 2 if stateful" behaviour.
+     *           For pipelines needing more than "advance, then mesh" (e.g. a multi-stage grid-based fluid sim).
+     *           (in)
+     **/
     void setGenPassCount( int n )
     {
         m_genPassCount = n;
-    } ///< @param n Number of compute passes (genPass = 0..n-1, barrier between each) runGenerator() dispatches this
-    ///< generator through per frame; 0 (default) keeps the original "1 pass, or 2 if stateful" behaviour. For
-    ///< pipelines needing more than "advance, then mesh" (e.g. a multi-stage grid-based fluid sim).
+    }
+    /**  Sets the half-width of this scene's shadow-map light box.
+     *
+     * @param e  Half-width of the shadow-map light box for this scene (overrides EffectShader::ShadowExtent). (in)
+     **/
     void setShadowExtent( float e )
     {
         m_shadowExtent = e;
-    } ///< @param e Half-width of the shadow-map light box for this scene (overrides EffectShader::ShadowExtent).
+    }
+    /**  Sets the mesh file a geom="mesh" scene loads.
+     *
+     * @param path  Filesystem path (config attribute model=) to the .glb/.gltf/.obj this geom="mesh" scene loads;
+     *              ignored by every other geom kind. (in)
+     **/
     void setModelPath( const std::string &path )
     {
         m_modelPath = path;
-    } ///< @param path Filesystem path (config attribute model=) to the .glb/.gltf/.obj this geom="mesh" scene loads;
-    ///< ignored by every other geom kind.
+    }
+    /**  Sets the optional second mesh of a geom="mesh" scene.
+     *
+     * @param path  Optional SECOND mesh (config attribute model2=), loaded into the same VBO after the first; lets
+     *              one scene stage two objects against each other (a ship alongside a station). Ignored by every
+     *              other geom kind. (in)
+     **/
     void setModelPath2( const std::string &path )
     {
         m_modelPath2 = path;
-    } ///< @param path Optional SECOND mesh (config attribute model2=), loaded into the same VBO after the first; lets
-    ///< one scene stage two objects against each other (a ship alongside a station). Ignored by every other geom
-    ///< kind.
+    }
+    /**  Sets how many copies of the mesh one draw call renders.
+     *
+     * @param n  Draw the loaded mesh this many times in one call (config attribute instances=); the shader places
+     *           the copies from gl_InstanceID. Values below 2 mean the ordinary single draw. (in)
+     **/
     void setMeshInstances( int n )
     {
         m_meshInstances = ( n > 1 ) ? n : 1;
-    } ///< @param n Draw the loaded mesh this many times in one call (config attribute instances=); the shader places
-    ///< the copies from gl_InstanceID. Values below 2 mean the ordinary single draw.
+    }
+    /**  This scene's shadow-map light box half-width.
+     *
+     * @return
+     *   This scene's shadow-map light box half-width.
+     **/
     float shadowExtent() const override
     {
         return m_shadowExtent;
-    } ///< @return This scene's shadow-map light box half-width.
-    /**
-     * @brief Forwards to EffectShader::setUniforms(), first folding in this activation's time offset/speed factor.
-     * @param time Raw host time in seconds.
-     * @param interpolation Crossfade interpolation factor (0..1) between the outgoing and incoming effect.
-     * @param texLoc1 Texture unit bound as `tex0` (current image).
-     * @param texLoc2 Texture unit bound as `tex1` (incoming crossfade image).
-     */
+    }
+    /**  Forwards to EffectShader::setUniforms(), first folding in this activation's time offset/speed factor.
+     *
+     * @param time           Raw host time in seconds. (in)
+     * @param interpolation  Crossfade interpolation factor (0..1) between the outgoing and incoming effect. (in)
+     * @param texLoc1        Texture unit bound as `tex0` (current image). (in)
+     * @param texLoc2        Texture unit bound as `tex1` (incoming crossfade image). (in)
+     **/
     void setUniforms( float time, float interpolation,
                       GLint texLoc1, GLint texLoc2 ) override;
-    /** @brief Applies this activation's hue offset to the chroma hue and audio rotation/advance phases before
-     * forwarding the features to EffectShader, and caches the adjusted snapshot for the (separate-program) indirect
-     * generator. @param f Live audio-analysis snapshot for the current frame. */
+    /**  Applies this activation's hue offset to the chroma hue and audio rotation/advance phases before forwarding
+     * the features to EffectShader, and caches the adjusted snapshot for the (separate-program) indirect generator.
+     *
+     * @param f  Live audio-analysis snapshot for the current frame. (in)
+     **/
     void applyAudioFeatures( const AudioFeatures &f );
 
     // True-stereo eye offset in world units (0 = mono).  Set by the host
     // between the two per-eye draw() calls.
+    /**  Sets the stereo eye offset for the next draw.
+     *
+     * @param e  Stereo eye offset in world units (0 = mono) to use for the next draw() call. (in)
+     **/
     void setEyeOffset( float e )
     {
         m_eyeOffset = e;
-    } ///< @param e Stereo eye offset in world units (0 = mono) to use for the next draw() call.
+    }
 
     // FPS-driven detail budget (1.0 = full detail, 0.5 = half), maintained by
     // RenderPipeline from the frame rate. Two consumers: GEOM_CUBES scenes
@@ -206,15 +277,20 @@ public:
                                ///< GEOM_CUBES reads it as the `cubeBudget` uniform, geom="indirect" scenes get it via
                                ///< IndirectClamp.comp's `budget` uniform instead.
 
-    /** @return Mean fraction of the frame the loaded model covered, or -1 if
-     *          nothing was measured (KALEIDO_COVER_LOG unset, or not a mesh).
+    /**  Mean fraction of the frame the loaded model covered, or -1 if nothing was measured (KALEIDO_COVER_LOG unset,
+     * or not a mesh).
+     *
+     * @return
+     *   Mean fraction of the frame the loaded model covered, or -1 if nothing was measured (KALEIDO_COVER_LOG
+     *   unset, or not a mesh).
      *
      * An occlusion query counts the fragments the mesh draw actually wrote.
      * The framing is built in each scene's own .vert (camera distance, scale),
      * so it cannot be derived from meshExtent -- but it can be COUNTED.  This
      * answers what the contact sheets raised: the stations fill about a tenth
      * of the frame, which is why even a correct camera move measures as almost
-     * no motion. */
+     * no motion.
+     **/
     float coverage() const { return m_coverN ? static_cast<float>( m_coverSum / m_coverN ) : -1.f; }
 
 private:
@@ -252,8 +328,9 @@ private:
         GEOM_INDIRECT = 7,
         GEOM_MESH = 8
     };
-    /** @brief Builds and uploads this scene's static geometry into m_vbo according to m_geomKind (or, for
-     * GEOM_INDIRECT, allocates the empty capacity buffer a compute generator will fill every frame). */
+    /**  Builds and uploads this scene's static geometry into m_vbo according to m_geomKind (or, for GEOM_INDIRECT,
+     * allocates the empty capacity buffer a compute generator will fill every frame).
+     **/
     void buildGeometry();
 
     // ---- compute -> indirect draw ----
@@ -269,23 +346,27 @@ private:
                                 ///< outcome cached in m_genProg.
     int m_meshCapacity = 0;     ///< Vertices the GEOM_INDIRECT VBO can hold (600000, 8 floats each); uploaded to the
                                 ///< generator and the clamp pass as `maxVertices`.
-    /**
-     * @brief Compiles this scene's compute generator (and the process-shared clamp pass), and allocates the indirect
+    /**  Compiles this scene's compute generator (and the process-shared clamp pass), and allocates the indirect
      * command buffer plus, if requested, the persistent-state SSBO.
+     *
+     * @return
+     *   true if the generator program is ready to be dispatched by runGenerator().
      *
      * Idempotent (guarded by m_genTried) and fails soft in every direction — missing compute
      * support, no .comp file, or a compile error all simply leave the scene drawing nothing
      * rather than aborting the app.
-     * @return true if the generator program is ready to be dispatched by runGenerator().
-     */
+     *
+     * @sideeffects
+     *   Changes M_ClampProg.
+     **/
     bool setupIndirect();
-    /**
-     * @brief Dispatches this frame's compute generator run (one or two passes if it declares `genPass`), then clamps
-     * its vertex counter and inserts the memory barriers the vertex fetch / indirect draw / later readback all depend
+    /**  Dispatches this frame's compute generator run (one or two passes if it declares `genPass`), then clamps its
+     * vertex counter and inserts the memory barriers the vertex fetch / indirect draw / later readback all depend
      * on.
-     * @param time Raw host time in seconds; the activation's time offset and speed factor are applied internally before
-     * upload.
-     */
+     *
+     * @param time  Raw host time in seconds; the activation's time offset and speed factor are applied internally
+     *              before upload. (in)
+     **/
     void runGenerator( float time );
     int  m_genSpectro = -1; ///< Cached answer to "does the generator declare `texSpectro`?": -1 = not yet checked, 0 =
                             ///< no, 1 = yes (see usesSpectro()).
@@ -403,8 +484,9 @@ private:
                                 ///< exists on disk.
     std::string m_geomFilename; ///< Sibling X.geom filename (geometry-shader stage); used only if the file exists
                                 ///< on disk.
-    /** @brief Rolls a fresh per-activation epoch: scene seed, large time offset, mild (±20%) speed factor and hue
-     * offset, all held constant for the whole activation so nothing flickers. */
+    /**  Rolls a fresh per-activation epoch: scene seed, large time offset, mild (±20%) speed factor and hue offset,
+     * all held constant for the whole activation so nothing flickers.
+     **/
     void rollVariation();
 
     int m_geomKind = GEOM_POINTS; ///< This instance's GeomKindE, fixed at construction from the preset's geom=
@@ -469,9 +551,11 @@ private:
     bool             m_warmOk = false;         ///< loadMeshAsset() result for model=.
     bool             m_warmOk2 = false;        ///< loadMeshAsset() result for model2=.
 
-    /** @brief (Re)bakes the VAO against the current VBO. Split out of
-     *  initUniforms() because a deferred mesh build creates the VBO later, on
-     *  the frame the warm-up finishes -- the VAO bake has to be repeatable. */
+    /**  (Re)bakes the VAO against the current VBO.
+     *
+     * Split out of initUniforms() because a deferred mesh build creates the VBO later, on the frame the warm-up
+     * finishes -- the VAO bake has to be repeatable.
+     **/
     void             bakeVao();
     int m_mesh2VertexCount = 0; ///< First vertex of the sky shell; equals m_meshOwnVertexCount when there is no model2.
     GLuint           m_meshMaterialTex2 = 0;        ///< sampler2DArray for model 2's material (0 = none).
@@ -560,8 +644,12 @@ private:
     float m_speedFactor = 1.f; ///< Per-activation speed multiplier (~0.82..1.18), constant for the whole activation.
     float m_hueOffset = 0.f;   ///< Per-activation hue rotation applied to chroma hue and audio rotation/advance phases.
 private:
-    /// @brief Not copyable (CGVR template: copy constructor and assignment are always declared).
+    /** Not copyable (CGVR template: copy constructor and assignment are always declared). */
     Scene3DShader( const Scene3DShader & ) = delete;
-    /// @brief Not assignable; see the copy constructor.
+    /**  Not assignable; see the copy constructor.
+     *
+     * @return
+     *   Nothing: the operator is deleted, so no call compiles.
+     **/
     Scene3DShader &operator=( const Scene3DShader & ) = delete;
 };

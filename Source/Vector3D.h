@@ -40,127 +40,283 @@ public:
     //! z coordinate of the vector
     float z;
 
-    //! default-constructor generates a zero-vector
+    /** default-constructor generates a zero-vector */
     Vector3D();
-    //! copy-constructor
+    /**  copy-constructor
+     *
+     * @param b  The vector to copy. (in)
+     **/
     Vector3D( const Vector3D &b );
-    //! project a homogenous vector to 3D-space
+    /**  project a homogenous vector to 3D-space
+     *
+     * @param b  The homogeneous vector; w must not be 0. (in)
+     **/
     explicit Vector3D( const Vector4D &b );
-    //! initialize vector with explicit coordinates
+    /**  initialize vector with explicit coordinates
+     *
+     * @param X  The x coordinate. (in)
+     * @param Y  The y coordinate. (in)
+     * @param Z  The z coordinate. (in)
+     **/
     Vector3D( float X, float Y, float Z );
-    //! initialize vector with a pointer to 3 float values
+    /**  initialize vector with a pointer to 3 float values
+     *
+     * @param xyz  Points to x, y and z. (in)
+     **/
     explicit Vector3D( float *xyz );
 
-    //! destructor
+    /** destructor */
     ~Vector3D();
 
-    //! access to vector-elements with []-operator for a constant object
+    /**  access to vector-elements with []-operator for a constant object
+     *
+     * @param i  0, 1 or 2 for x, y, z. (in)
+     *
+     * @return
+     *   The component.
+     **/
     inline float operator[]( int i ) const;
-    //! access to vector-elements with []-operator for manipulation
+    /**  access to vector-elements with []-operator for manipulation
+     *
+     * @param i  0, 1 or 2 for x, y, z. (in)
+     *
+     * @return
+     *   A reference to the component.
+     **/
     inline float &operator[]( int i );
 
-    //! Assign the vector the value (t,t,t)
+    /**  Assign the vector the value (t,t,t)
+     *
+     * @param t  The value of all three components. (in)
+     **/
     inline void operator=( float t );
-    //! Assigns the value of a vector to another
+    /**  Assigns the value of a vector to another
+     *
+     * @param b  The vector to copy. (in)
+     **/
     inline void operator=( const Vector3D &b );
-    //! Project a 4D-homogenous vector into 3D-space
+    /**  Project a 4D-homogenous vector into 3D-space
+     *
+     * @param b  The homogeneous vector; w must not be 0. (in)
+     **/
     inline void operator=( const Vector4D &b );
 
-    //! check for equality
+    /**  check for equality
+     *
+     * @param b  The other vector. (in)
+     *
+     * @return
+     *   True if all three components are equal.
+     **/
     inline bool operator==( const Vector3D &b ) const;
-    //! check for inequality
+    /**  check for inequality
+     *
+     * @param b  The other vector. (in)
+     *
+     * @return
+     *   True if any component differs.
+     **/
     inline bool operator!=( const Vector3D &b ) const;
 
-    //! Addition of 2 vectors
+    /**  Addition of 2 vectors
+     *
+     * @param b  The vector to add. (in)
+     *
+     * @return
+     *   The sum.
+     **/
     inline Vector3D operator+( const Vector3D &b ) const;
-    //! Subtraction of 2 vectors
+    /**  Subtraction of 2 vectors
+     *
+     * @param b  The vector to subtract. (in)
+     *
+     * @return
+     *   The difference.
+     **/
     inline Vector3D operator-( const Vector3D &b ) const;
-    //! Negate the vector
+    /**  Negate the vector
+     *
+     * @return
+     *   The negated vector.
+     **/
     inline Vector3D operator-() const;
-    //! Adds vector b to the operand
+    /**  Adds vector b to the operand
+     *
+     * @param b  The vector to add. (in)
+     **/
     inline void operator+=( const Vector3D &b );
-    //! Subtracts vector b from the operand
+    /**  Subtracts vector b from the operand
+     *
+     * @param b  The vector to subtract. (in)
+     **/
     inline void operator-=( const Vector3D &b );
 
-    //! multiply a vector by a scalar
+    /**  multiply a vector by a scalar
+     *
+     * @param r  The scale factor. (in)
+     *
+     * @return
+     *   The scaled vector.
+     **/
     inline Vector3D operator*( float r ) const;
-    //! multiply the operand by a scalar
+    /**  multiply the operand by a scalar
+     *
+     * @param r  The scale factor. (in)
+     **/
     inline void operator*=( float r );
-    //! divide a vector by a scalar
+    /**  divide a vector by a scalar
+     *
+     * @param r  The divisor; must not be 0. (in)
+     *
+     * @return
+     *   The divided vector.
+     **/
     inline Vector3D operator/( float r ) const;
-    //! divide the operand by a scalar
+    /**  divide the operand by a scalar
+     *
+     * @param r  The divisor; must not be 0. (in)
+     **/
     inline void operator/=( float r );
 
-    //! calculate the cross-product
+    /**  calculate the cross-product
+     *
+     * @param b  The right-hand vector. (in)
+     *
+     * @return
+     *   This vector cross b.
+     **/
     inline Vector3D operator^( const Vector3D &b ) const;
-    //! calculate the cross-product
+    /**  calculate the cross-product
+     *
+     * @param b  The right-hand vector. (in)
+     *
+     * @return
+     *   This vector cross b.
+     **/
     inline Vector3D crossProd( const Vector3D &b ) const;
-    //! calculate the cross-product and assign it immediately to the operand
+    /**  calculate the cross-product and assign it immediately to the operand
+     *
+     * @param b  The right-hand vector. (in)
+     **/
     inline void operator^=( const Vector3D &b );
-    //! calculate the scalar-product
+    /**  calculate the scalar-product
+     *
+     * @param b  The other vector. (in)
+     *
+     * @return
+     *   The dot product.
+     **/
     inline float operator*( const Vector3D &b ) const;
-    //! calculate the scalar-product
+    /**  calculate the scalar-product
+     *
+     * @param b  The other vector. (in)
+     *
+     * @return
+     *   The dot product.
+     **/
     inline float scalarProd( const Vector3D &b ) const;
 
     //! return the angle between the vector and b in radians
-    /*! for speed-purposes, this routine assumes, that the two vectors are normalized */
+    /**  for speed-purposes, this routine assumes, that the two vectors are normalized
+     *
+     * @param b  The other vector; both must have unit length. (in)
+     *
+     * @return
+     *   The angle in radians, 0..pi.
+     **/
     inline float angleRad( const Vector3D &b ) const;
     //! return the angle between the vector and b in degrees
-    /*! for speed-purposes, this routine assumes, that the two vectors are normalized */
+    /**  for speed-purposes, this routine assumes, that the two vectors are normalized
+     *
+     * @param b  The other vector; both must have unit length. (in)
+     *
+     * @return
+     *   The angle in degrees, 0..180.
+     **/
     inline float angleDeg( const Vector3D &b ) const;
 
-    //! returns the squared length of the vector
+    /**  returns the squared length of the vector
+     *
+     * @return
+     *   x*x + y*y + z*z.
+     **/
     inline float sqrLength() const;
-    //! returns the length of the vector
+    /**  returns the length of the vector
+     *
+     * @return
+     *   The Euclidean length.
+     **/
     inline float length() const;
-    //! returns the L1-Norm of the vector (city-block-metric)
+    /**  returns the L1-Norm of the vector (city-block-metric)
+     *
+     * @return
+     *   |x| + |y| + |z|.
+     **/
     inline float l1Norm() const;
-    //! return the index of the biggest element of the vector
+    /**  return the index of the biggest element of the vector
+     *
+     * @return
+     *   0, 1 or 2: the component with the largest magnitude.
+     **/
     inline int indexOfGreatestElement() const;
-    //! return the value of the biggest element of the vector
+    /**  return the value of the biggest element of the vector
+     *
+     * @return
+     *   The component with the largest magnitude, with its sign.
+     **/
     inline float greatestElement() const;
-    //! Sets the length of the vector to 1, but the orientation stays the same
+    /** Sets the length of the vector to 1, but the orientation stays the same */
     inline void normalize();
-    //! return the normalized vector as a copy
+    /**  return the normalized vector as a copy
+     *
+     * @return
+     *   The unit vector, or (0, 0, 1) for the zero vector.
+     **/
     inline Vector3D normalized() const;
 
     //! if the angle between the two vectors is greater than 90� flip the calling one
-    /*! for speed-purposes, this routine assumes, that the two vectors are normalized */
+    /**  for speed-purposes, this routine assumes, that the two vectors are normalized
+     *
+     * @param b  The reference direction. (in)
+     **/
     inline void faceForward( const Vector3D &b );
 
-    /**
-     * @brief Reflect the vector in place using the given normal.
-     * @param n Reflection normal (assumed normalized).
-     */
+    /**  Reflect the vector in place using the given normal.
+     *
+     * @param n  Reflection normal (assumed normalized). (in)
+     **/
     inline void reflect( const Vector3D &n );
-    /**
-     * @brief Return the reflected vector using the given normal.
-     * @param n Reflection normal (assumed normalized).
-     * @return The reflected vector; the calling vector is left unmodified.
-     */
+    /**  Return the reflected vector using the given normal.
+     *
+     * @param n  Reflection normal (assumed normalized). (in)
+     *
+     * @return
+     *   The reflected vector; the calling vector is left unmodified.
+     **/
     Vector3D reflected( const Vector3D &n ) const;
 
-    /**
-     * @brief Refract the vector in place using the given normal and index of refraction.
-     * @param n Interface normal (assumed normalized).
-     * @param eta Ratio of indices of refraction (incident / transmitted medium).
-     * @param totalInternalReflection Set to true if the refraction produced total
-     *        internal reflection (no transmitted ray); in that case the vector is left
-     *        unmodified.
-     */
+    /**  Refract the vector in place using the given normal and index of refraction.
+     *
+     * @param n                        Interface normal (assumed normalized). (in)
+     * @param eta                      Ratio of indices of refraction (incident / transmitted medium). (in)
+     * @param totalInternalReflection  Set to true if the refraction produced total internal reflection (no
+     *                                 transmitted ray); in that case the vector is left unmodified. (out)
+     **/
     inline void refract( const Vector3D &n, float eta, bool &totalInternalReflection );
-    /**
-     * @brief Return the refracted vector using the given normal and index of refraction.
-     * @param n Interface normal (assumed normalized).
-     * @param eta Ratio of indices of refraction (incident / transmitted medium).
-     * @param totalInternalReflection Set to true if the refraction produced total
-     *        internal reflection (no transmitted ray); in that case the original vector
-     *        is returned unchanged.
-     * @return The refracted vector, or the original vector on total internal reflection.
-     */
+    /**  Return the refracted vector using the given normal and index of refraction.
+     *
+     * @param n                        Interface normal (assumed normalized). (in)
+     * @param eta                      Ratio of indices of refraction (incident / transmitted medium). (in)
+     * @param totalInternalReflection  Set to true if the refraction produced total internal reflection (no
+     *                                 transmitted ray); in that case the original vector is returned unchanged.
+     *                                 (out)
+     *
+     * @return
+     *   The refracted vector, or the original vector on total internal reflection.
+     **/
     Vector3D refracted( const Vector3D &n, float eta, bool &totalInternalReflection ) const;
 
-    //! cast the vector to a pointer of floats (used to load the vector to OpenGL)
+    /** cast the vector to a pointer of floats (used to load the vector to OpenGL) */
     inline explicit operator float *();
 };
 
@@ -170,37 +326,78 @@ public:
 // INLINE-functions for general use
 // ********************************
 
-//! cot of angle between two vectors
+/**  cot of angle between two vectors
+ *
+ * @param a  First vector. (in)
+ * @param b  Second vector; not parallel to a. (in)
+ *
+ * @return
+ *   (a . b) / |a x b|.
+ **/
 inline float angleCot( const Vector3D &a, const Vector3D &b )
 {
     return ( ( a * b ) / ( a ^ b ).length() );
 }
 
-//! the absolute-value of a 3D-vector is its length
+/**  the absolute-value of a 3D-vector is its length
+ *
+ * @param v  The vector. (in)
+ *
+ * @return
+ *   |v|.
+ **/
 inline float abs( const Vector3D &v )
 {
     return v.length();
 }
 
-//! The multiplication operator that allows the scalar value to preceed the vector.
+/**  The multiplication operator that allows the scalar value to preceed the vector.
+ *
+ * @param r  The scale factor. (in)
+ * @param v  The vector. (in)
+ *
+ * @return
+ *   The scaled vector.
+ **/
 inline Vector3D operator*( float r, const Vector3D &v )
 {
     return v * r;
 }
 
-//! write a 3D-vector to a stream
+/**  write a 3D-vector to a stream
+ *
+ * @param s  The stream. (in,out)
+ * @param v  The vector. (in)
+ *
+ * @return
+ *   The stream.
+ **/
 inline std::ostream &operator<<( std::ostream &s, const Vector3D &v )
 {
     return ( s << v.x << " " << v.y << " " << v.z );
 }
 
-//! read a 3D-vector from a stream
+/**  read a 3D-vector from a stream
+ *
+ * @param s  The stream. (in,out)
+ * @param v  Receives the vector. (out)
+ *
+ * @return
+ *   The stream.
+ **/
 inline std::istream &operator>>( std::istream &s, Vector3D &v )
 {
     return ( s >> v.x >> v.y >> v.z );
 }
 
-//! return the component wise minimum of a and b
+/**  return the component wise minimum of a and b
+ *
+ * @param a  First vector. (in)
+ * @param b  Second vector. (in)
+ *
+ * @return
+ *   The minimum.
+ **/
 inline Vector3D componentMin( const Vector3D &a, const Vector3D &b )
 {
     Vector3D result;
@@ -210,7 +407,14 @@ inline Vector3D componentMin( const Vector3D &a, const Vector3D &b )
     return result;
 }
 
-//! return the component wise maximum of a and b
+/**  return the component wise maximum of a and b
+ *
+ * @param a  First vector. (in)
+ * @param b  Second vector. (in)
+ *
+ * @return
+ *   The maximum.
+ **/
 inline Vector3D componentMax( const Vector3D &a, const Vector3D &b )
 {
     Vector3D result;
@@ -220,7 +424,14 @@ inline Vector3D componentMax( const Vector3D &a, const Vector3D &b )
     return result;
 }
 
-//! return the component wise multiplication of a and b
+/**  return the component wise multiplication of a and b
+ *
+ * @param a  First vector. (in)
+ * @param b  Second vector. (in)
+ *
+ * @return
+ *   The product.
+ **/
 inline Vector3D componentMult( const Vector3D &a, const Vector3D &b )
 {
     Vector3D result;
@@ -230,7 +441,13 @@ inline Vector3D componentMult( const Vector3D &a, const Vector3D &b )
     return result;
 }
 
-//! return the component wise sqrt of a and b
+/**  return the component wise sqrt of a and b
+ *
+ * @param a  The vector; no component may be negative. (in)
+ *
+ * @return
+ *   The square roots.
+ **/
 inline Vector3D componentSqrt( const Vector3D &a )
 {
     Vector3D result;

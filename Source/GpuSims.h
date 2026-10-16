@@ -91,54 +91,62 @@ public:
 
     /** Alle Sim-Ressourcen anlegen (GL-Kontext aktuell); idempotent, wird aus
      *  RenderPipeline::setupSafety()/reinit gerufen. */
-    /**
-     * @brief Creates/validates all GPU simulation resources (FBOs, textures, shader programs).
+    /**  Creates/validates all GPU simulation resources (FBOs, textures, shader programs).
      *
      * Idempotent: existing GL objects are reused rather than recreated on a
      * repeated call. Requires a current GL context. Called from
      * RenderPipeline::setupSafety() and whenever the GL context is
      * reinitialised.
-     */
+     **/
     void setupAll();
 
     /** Ein Frame: Historien fortschreiben (immer), benötigte Sims steppen und
      *  ihre neuesten Felder auf die globalen Units 7-11/28 binden.
      *  Lässt GL_TEXTURE0 als aktive Unit zurück (wie der alte Inline-Code:
      *  die Folge-Pässe setzen ihre Units selbst). */
-    /**
-     * @brief Advances one frame: always updates the host histories, steps only the demanded GPU sims, and (re)binds
-     * their newest textures to the fixed global sampler units.
-     * @param audio Current audio-reactive feature snapshot driving every sim's parameters.
-     * @param dt Frame delta time in seconds; paces the host histories (SSM/spectrogram).
-     * @param need Which simulations this frame actually requires.
-     * @param f Per-frame pipeline context (integrated phases, dye source images).
+    /**  Advances one frame: always updates the host histories, steps only the demanded GPU sims, and (re)binds their
+     * newest textures to the fixed global sampler units.
+     *
+     * @param audio  Current audio-reactive feature snapshot driving every sim's parameters. (in)
+     * @param dt     Frame delta time in seconds; paces the host histories (SSM/spectrogram). (in)
+     * @param need   Which simulations this frame actually requires. (in)
+     * @param f      Per-frame pipeline context (integrated phases, dye source images). (in)
      *
      * Leaves GL_TEXTURE0 as the active unit on return, matching the old
      * inline RenderPipeline::paint() code -- the caller's follow-up passes
      * set their own units.
-     */
+     **/
     void run( const AudioFeatures &audio, float dt, const Demand &need, const Frame &f );
 
     // ---- Ring-Buchhaltung für die audioFx-Uniforms (Export VOR run()!) ----
-    /** @brief Normalized [0,1) write-head position in the self-similarity ring, for the audioFx uniform. Must be read
-     * BEFORE run() advances the ring. @return Head position as a fraction of SSMSize. */
+    /**  Normalized [0,1) write-head position in the self-similarity ring, for the audioFx uniform.
+     *
+     * @return
+     *   Head position as a fraction of SSMSize.
+     *
+     * Must be read BEFORE run() advances the ring.
+     **/
     float ssmHeadNorm() const { return static_cast<float>( m_ssmHead ) / static_cast<float>( SSMSize ); }
-    /** @brief Normalized [0,1] fraction of the self-similarity ring populated so far. @return Fill fraction of
-     * SSMSize. */
+    /**  Normalized [0,1] fraction of the self-similarity ring populated so far.
+     *
+     * @return
+     *   Fill fraction of SSMSize.
+     **/
     float ssmFillNorm() const { return static_cast<float>( m_ssmCount ) / static_cast<float>( SSMSize ); }
     /** Kontinuierliche "Jetzt"-T-Koordinate des Spektrogramm-Rings: hinkt dem
      *  Schreibkopf bewusst 2 Zeilen hinterher und faltet den Sub-Zeilen-Anteil
      *  ein, damit das Terrain nicht alle 80 ms vorwärts ruckt (Details siehe
      *  alte paint()-Kommentare). */
-    /**
-     * @brief Continuous "now" T-coordinate of the spectrogram ring, for the audioFx uniform.
+    /**  Continuous "now" T-coordinate of the spectrogram ring, for the audioFx uniform.
+     *
+     * @return
+     *   Normalized [0,1) time coordinate into the spectrogram ring texture.
      *
      * Deliberately lags the write head by 2 rows and folds in the
      * sub-row fraction so the terrain does not visibly jump forward every
      * SpectroStride (~80ms) tick (see the old paint() comments for the
      * original derivation).
-     * @return Normalized [0,1) time coordinate into the spectrogram ring texture.
-     */
+     **/
     float spectroHeadNorm() const
     {
         float frac = m_spectroAccum / SpectroStride;
@@ -148,88 +156,103 @@ public:
             frac = 1.f;
         return ( static_cast<float>( m_spectroHead ) - 1.5f + frac ) / static_cast<float>( SpectroH );
     }
-    /** @brief Normalized [0,1] fraction of the spectrogram ring's history populated so far. @return Fill fraction of
-     * SpectroH. */
+    /**  Normalized [0,1] fraction of the spectrogram ring's history populated so far.
+     *
+     * @return
+     *   Fill fraction of SpectroH.
+     **/
     float spectroFillNorm() const { return static_cast<float>( m_spectroCount ) / static_cast<float>( SpectroH ); }
 
 private:
-    /** @brief Creates the reaction-diffusion ping-pong FBOs/textures and compiles the Gray-Scott step shader.
-     * Idempotent and fail-safe: on any failure m_rdReady stays false. */
+    /**  Creates the reaction-diffusion ping-pong FBOs/textures and compiles the Gray-Scott step shader.
+     *
+     * Idempotent and fail-safe: on any failure m_rdReady stays false.
+     **/
     void setupReactionDiffusion();
-    /**
-     * @brief Advances the Gray-Scott reaction-diffusion sim by one PDE step into the next ping-pong buffer.
-     * @param audio Current audio features; drives the feed/kill parameter wander and the reagent-injection trigger.
-     */
-    void stepReactionDiffusion( const AudioFeatures &a );
-    /** @brief Creates the fluid-dye ping-pong FBOs/textures and compiles the curl-noise advection shader. Idempotent
-     * and fail-safe: on any failure m_fluidReady stays false. */
+    /**  Advances the Gray-Scott reaction-diffusion sim by one PDE step into the next ping-pong buffer.
+     *
+     * @param audio  Current audio features; drives the feed/kill parameter wander and the reagent-injection
+     *               trigger. (in)
+     **/
+    void stepReactionDiffusion( const AudioFeatures &audio );
+    /**  Creates the fluid-dye ping-pong FBOs/textures and compiles the curl-noise advection shader.
+     *
+     * Idempotent and fail-safe: on any failure m_fluidReady stays false.
+     **/
     void setupFluid();
-    /**
-     * @brief Advances the curl-noise dye advection by one step, blending the current/next source image in as dye.
-     * @param audio Current audio features; drives the swirl impulse and dye-injection amount.
-     * @param f Per-frame context supplying the integrated flow phase and the two dye source textures.
-     */
-    void stepFluid( const AudioFeatures &a, const Frame &f );
-    /** @brief Creates the smoke/fire tiled-atlas ping-pong FBOs/textures and compiles the sim shader. Idempotent and
-     * fail-safe: on any failure m_smoke3DReady stays false. */
+    /**  Advances the curl-noise dye advection by one step, blending the current/next source image in as dye.
+     *
+     * @param audio  Current audio features; drives the swirl impulse and dye-injection amount. (in)
+     * @param f      Per-frame context supplying the integrated flow phase and the two dye source textures. (in)
+     **/
+    void stepFluid( const AudioFeatures &audio, const Frame &f );
+    /**  Creates the smoke/fire tiled-atlas ping-pong FBOs/textures and compiles the sim shader.
+     *
+     * Idempotent and fail-safe: on any failure m_smoke3DReady stays false.
+     **/
     void setupSmoke3D();
-    /**
-     * @brief Advances the smoke/fire volume by one full frame: a horizontal pass (turbulence/injection) followed by a
+    /**  Advances the smoke/fire volume by one full frame: a horizontal pass (turbulence/injection) followed by a
      * vertical pass (buoyancy), each its own ping-pong swap.
-     * @param audio Current audio features; drives turbulence and fuel-injection strength.
-     * @param f Per-frame context supplying time and the integrated emitter-wander phase.
-     */
-    void stepSmoke3D( const AudioFeatures &a, const Frame &f );
-    /**
-     * @brief Runs one sub-step of the smoke/fire PDE (horizontal or vertical half) into the next ping-pong buffer.
-     * @param audio Current audio features; drives per-cell turbulence and base-cell fuel injection.
-     * @param f Per-frame context (time, integrated emitter-wander phase).
-     * @param subStep Which half of the PDE this pass computes (0 = horizontal turbulence/injection/decay, 1 = vertical
-     * buoyant rise/cross-cell softening); forwarded to the shader as-is.
-     */
-    void stepSmoke3DPass( const AudioFeatures &a, const Frame &f, float subStep );
-    /** @brief Creates the Physarum agent/trail ping-pong buffers and the three programs (agent update, point-deposit,
-     * diffuse -- with an optional GL4.3 compute-shader fast path for diffuse). Idempotent and fail-safe: on any failure
-     * m_physReady stays false. */
+     *
+     * @param audio  Current audio features; drives turbulence and fuel-injection strength. (in)
+     * @param f      Per-frame context supplying time and the integrated emitter-wander phase. (in)
+     **/
+    void stepSmoke3D( const AudioFeatures &audio, const Frame &f );
+    /**  Runs one sub-step of the smoke/fire PDE (horizontal or vertical half) into the next ping-pong buffer.
+     *
+     * @param audio    Current audio features; drives per-cell turbulence and base-cell fuel injection. (in)
+     * @param f        Per-frame context (time, integrated emitter-wander phase). (in)
+     * @param subStep  Which half of the PDE this pass computes (0 = horizontal turbulence/injection/decay, 1 =
+     *                 vertical buoyant rise/cross-cell softening); forwarded to the shader as-is. (in)
+     **/
+    void stepSmoke3DPass( const AudioFeatures &audio, const Frame &f, float subStep );
+    /**  Creates the Physarum agent/trail ping-pong buffers and the three programs (agent update, point-deposit,
+     * diffuse -- with an optional GL4.3 compute-shader fast path for diffuse).
+     *
+     * Idempotent and fail-safe: on any failure m_physReady stays false.
+     **/
     void setupPhysarum();
-    /**
-     * @brief Advances the Physarum slime-mould sim by one frame: agents sense/turn/move, deposit pheromone points, then
+    /**  Advances the Physarum slime-mould sim by one frame: agents sense/turn/move, deposit pheromone points, then
      * the trail map diffuses and evaporates.
-     * @param audio Current audio features; drives agent speed/sensor angle/turn rate/scatter and deposit amount.
-     * @param f Per-frame context; supplies time to the agent-update shader.
-     */
-    void stepPhysarum( const AudioFeatures &a, const Frame &f );
-    /**
-     * @brief Accumulates one row/column of the self-similarity matrix roughly every SSMStride seconds, from a
-     * normalized chroma + coarse spectral-shape feature vector.
-     * @param a Current audio features (chroma bins and spectrum) that source the feature vector.
-     * @param dt Frame delta time in seconds; paces the accumulation.
+     *
+     * @param audio  Current audio features; drives agent speed/sensor angle/turn rate/scatter and deposit amount.
+     *               (in)
+     * @param f      Per-frame context; supplies time to the agent-update shader. (in)
+     **/
+    void stepPhysarum( const AudioFeatures &audio, const Frame &f );
+    /**  Accumulates one row/column of the self-similarity matrix roughly every SSMStride seconds, from a normalized
+     * chroma + coarse spectral-shape feature vector.
+     *
+     * @param a   Current audio features (chroma bins and spectrum) that source the feature vector. (in)
+     * @param dt  Frame delta time in seconds; paces the accumulation. (in)
      *
      * Runs unconditionally every frame (cheap, CPU-only) regardless of
      * whether the SelfSimilarity effect is currently visible, so its
      * history already exists (not starting from black) the moment the
      * effect appears.
-     */
+     **/
     void stepSSM( const AudioFeatures &a, float dt );
-    /**
-     * @brief Pushes newly-due rows of the scrolling spectrogram history from the current spectrum.
-     * @param a Current audio features (normalized spectrum bands) that source each new row.
-     * @param dt Frame delta time in seconds; paces row emission.
+    /**  Pushes newly-due rows of the scrolling spectrogram history from the current spectrum.
+     *
+     * @param a   Current audio features (normalized spectrum bands) that source each new row. (in)
+     * @param dt  Frame delta time in seconds; paces row emission. (in)
      *
      * Emits multiple rows in one call (capped at 8) if more than
      * SpectroStride seconds have accumulated (e.g. after a hitch), so
      * scroll speed stays independent of frame rate; a very long stall
      * resyncs instead of catching up.
-     */
+     **/
     void stepSpectro( const AudioFeatures &a, float dt );
-    /** @brief Lazily creates the SSM texture (unit 10) and re-uploads it whole whenever the matrix data is dirty. */
+    /** Lazily creates the SSM texture (unit 10) and re-uploads it whole whenever the matrix data is dirty. */
     void bindSSMTexture(); // Unit 10: Textur (lazy) anlegen + Upload bei dirty
-    /** @brief Lazily creates the spectrogram texture (unit 28) and uploads only the rows written since the last upload
-     * (split into two uploads if the pending run straddles the ring wrap). */
+    /**  Lazily creates the spectrogram texture (unit 28) and uploads only the rows written since the last upload
+     * (split into two uploads if the pending run straddles the ring wrap).
+     **/
     void bindSpectroTexture(); // Unit 28: dito, mit Teil-Upload der neuen Zeilen
 
-    /** @brief Clears the currently-bound FBO and draws the shared fullscreen triangle; the common draw call used by
-     * every simulation's fragment-shader step. */
+    /**  Clears the currently-bound FBO and draws the shared fullscreen triangle; the common draw call used by every
+     * simulation's fragment-shader step.
+     **/
     static void         drawFullscreen();
     static const GLenum Attach = GL_COLOR_ATTACHMENT0; ///< Color attachment point used by every simulation's ping-pong
                                                        ///< FBOs.
@@ -382,13 +405,17 @@ private:
                                 ///< SpectroH).
     GLuint m_texSpectro = 0;    ///< Lazily-created R8 texture (unit 28) holding m_spectroData.
 public:
-    /// @brief Default construction, which the declared copy operations would otherwise suppress.
+    /** Default construction, which the declared copy operations would otherwise suppress. */
     GpuSims() = default;
 
 private:
-    /// @brief Not copyable (CGVR template: copy constructor and assignment are always declared).
+    /** Not copyable (CGVR template: copy constructor and assignment are always declared). */
     GpuSims( const GpuSims & ) = delete;
-    /// @brief Not assignable; see the copy constructor.
+    /**  Not assignable; see the copy constructor.
+     *
+     * @return
+     *   Nothing: the operator is deleted, so no call compiles.
+     **/
     GpuSims &operator=( const GpuSims & ) = delete;
 };
 

@@ -232,16 +232,17 @@ void EffectShader::cleanShaderPrograms()
 }
 
 
-/**
- * @brief The solo span (seconds) that sceneProgress is normalised over in review/measurement runs.
+/**  The solo span (seconds) that sceneProgress is normalised over in review/measurement runs.
+ *
+ * @return
+ *   KALEIDO_SOLO_SECS if set to a positive value (read once), else EffectShader::M_ReviewSolo (0 outside review
+ *   mode = no cap).
  *
  * Die Solo-Spanne, ueber die sceneProgress normiert wird.  KALEIDO_SOLO_SECS
  * pinnt sie fuer Messlaeufe, deren Fenster kuerzer ist als die Review-Spanne
  * von 25 s: mit 8 s Haltezeit sah das Screening von einer inszenierten Szene
  * nie das Ende ihres Bogens -- Assembly stand in jedem Fenster als Wolke.
- * @return KALEIDO_SOLO_SECS if set to a positive value (read once), else EffectShader::M_ReviewSolo (0 outside review
- * mode = no cap).
- */
+ **/
 static float soloCap()
 {
     static const int Env = []
@@ -479,13 +480,12 @@ void EffectShader::drawWindow()
 }
 
 
-/**
- * @brief Sets up the GLSL runtime and creates shader.
+/**  Sets up the GLSL runtime and creates shader.
  *
  * Compiles the vertex+fragment program (setShaders), resolves the common
  * uniform locations, and lets every already-registered Uniform resolve its
  * own location.
- */
+ **/
 void EffectShader::initUniforms( int width, int height )
 {
     m_width = width;
@@ -521,12 +521,11 @@ void EffectShader::initUniforms( int width, int height )
 }
 
 
-/**
- * Extremely useful debugging function: when developing,
- * make sure to call this after almost every GL call. The label (see the
- * declaration in EffectShader.h for the parameter list) is a short tag for the
- * checkpoint, printed with the error message.
- */
+/**  Extremely useful debugging function: when developing, make sure to call this after almost every GL call.
+ *
+ * The label (see the declaration in EffectShader.h for the parameter list) is a short tag for the checkpoint, printed
+ * with the error message.
+ **/
 void EffectShader::checkGLErrors( const char *label )
 {
     GLenum err_code = glGetError();
@@ -1213,15 +1212,16 @@ bool EffectShader::usesProgress()
     return m_usesProgress == 1;
 }
 
-/**
- * @brief Tells from the shader SOURCE (no GL) whether this scene reads `sceneProgress`.
+/**  Tells from the shader SOURCE (no GL) whether this scene reads `sceneProgress`.
+ *
+ * @return
+ *   True if any stage uses `sceneProgress` in code.
  *
  * Reads the fragment file and its Scene3D siblings (.vert/.geom/.tesc/.tese,
  * same stem; missing files are skipped), strips comments, and looks for the
  * name outside its `uniform` declaration -- the text-side twin of the
  * active-uniform test usesProgress() makes once the program is compiled.
- * @return True if any stage uses `sceneProgress` in code.
- */
+ **/
 bool EffectShader::sourceUsesProgress() const
 {
     if ( m_fragmentShaderFilename.empty() )
@@ -1344,7 +1344,13 @@ static const char *kWalkUni[9] = { "walkA", "walkB", "walkC", "walkD", "walkS",
                                    "walkSpace", "walkCore", "walkBody", "walkO" };
 /// Short stage names for the log.
 static const char *kWalkName[9] = { "A", "B", "C", "D", "look", "space", "core", "body", "order" };
-/// @return True for the 3D lab's structure stages (space, fold core, body).
+/**  Whether walk stage s is a structure stage (space, core, body) of the 3D labs.
+ *
+ * @param s  Walk stage index (as kWalkKnob). (in)
+ *
+ * @return
+ *   True for the 3D lab's structure stages (space, fold core, body).
+ **/
 static bool isStructure( int s )
 {
     return s >= 5 && s <= 7;
@@ -2788,17 +2794,19 @@ std::string EffectShader::specDefines( const float *x0, const float *x1, const b
     return out;
 }
 
-/**
- * @brief Whether a shader source calls a function whose first argument starts with the given text.
+/**  Whether a shader source calls a function whose first argument starts with the given text.
+ *
+ * @param text  The shader source. (in)
+ * @param fn    Function name, e.g. "textureLod". (in)
+ * @param arg   Start of the first argument, e.g. "tex0". (in)
+ *
+ * @return
+ *   True if such a call occurs anywhere in @p text (comments included, as before).
  *
  * Spaces between the name, the parenthesis and the argument do not matter: the shaders are laid out after
  * the CGVR guidelines (`textureLod( tex0, uv, lod )`), and a search for the characters "textureLod(tex0"
  * would depend on that layout.
- * @param text The shader source.
- * @param fn   Function name, e.g. "textureLod".
- * @param arg  Start of the first argument, e.g. "tex0".
- * @return True if such a call occurs anywhere in @p text (comments included, as before).
- */
+ **/
 static bool callsWithFirstArg( const std::string &text, const char *fn, const char *arg )
 {
     const size_t fn_len = strlen( fn );
@@ -2819,14 +2827,16 @@ static bool callsWithFirstArg( const std::string &text, const char *fn, const ch
     return false;
 }
 
-/**
- * @brief The values of every `return N` in the body of a shader function, in source order.
+/**  The values of every `return N` in the body of a shader function, in source order.
+ *
+ * @param text  The shader source. (in)
+ * @param fn    Function name, e.g. "permCode". (in)
+ *
+ * @return
+ *   The returned integers; empty if @p text defines no such function.
  *
  * Reads "int permCode( int i ) { if ( i == 0 ) return 228; ... }" however the definition is wrapped.
- * @param text The shader source.
- * @param fn   Function name, e.g. "permCode".
- * @return The returned integers; empty if @p text defines no such function.
- */
+ **/
 static std::vector<int> returnedValues( const std::string &text, const char *fn )
 {
     std::vector<int> values;
@@ -2963,12 +2973,14 @@ void EffectShader::parseChainSource()
     }
 }
 
-/**
- * @brief Class position of a knob value, exactly as the shader's pickStage().
- * @param x Knob value 0..1.
- * @param n Number of classes of the stage.
- * @return Position 0..n-1.
- */
+/**  Class position of a knob value, exactly as the shader's pickStage().
+ *
+ * @param x  Knob value 0..1. (in)
+ * @param n  Number of classes of the stage. (in)
+ *
+ * @return
+ *   Position 0..n-1.
+ **/
 static int classPos( float x, int n )
 {
     int k = static_cast<int>( ( x < 0.f ? 0.f : ( x > 1.f ? 1.f : x ) ) * n );

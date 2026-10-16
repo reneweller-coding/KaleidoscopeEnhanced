@@ -70,43 +70,53 @@ struct OsdItem
 class OsdMenu
 {
 public:
-    /**
-     * @brief Opens the menu on a fresh level.
-     * @param title Heading of the level (the breadcrumb root).
-     * @param build Builds its rows.
-     */
+    /**  Opens the menu on a fresh level.
+     *
+     * @param title  Heading of the level (the breadcrumb root). (in)
+     * @param build  Builds its rows. (in)
+     **/
     void open( const QString &title, std::function<std::vector<OsdItem>()> build );
-    void close();                                    ///< @brief Closes every level.
-    bool isOpen() const { return !m_stack.empty(); } ///< @brief Whether any level is shown.
+    /** Closes every level. */
+    void close();
+    /**  Whether any level is shown.
+     *
+     * @return
+     *   True if any level is shown.
+     **/
+    bool isOpen() const { return !m_stack.empty(); }
 
-    /**
-     * @brief Feeds one key into the menu.
-     * @param key Qt key code.
-     * @return true if consumed -- while open the menu is modal and consumes every key.
-     */
+    /**  Feeds one key into the menu.
+     *
+     * @param key  Qt key code. (in)
+     *
+     * @return
+     *   true if consumed -- while open the menu is modal and consumes every key.
+     **/
     bool handleKey( int key );
 
-    /** @brief Rebuilds every open level and its heading (after a language change), keeping the cursors. */
+    /** Rebuilds every open level and its heading (after a language change), keeping the cursors. */
     void rebuildAll();
 
-    /**
-     * @brief Asks for rebuildAll() at the next draw.
+    /**  Asks for rebuildAll() at the next draw.
      *
      * For callbacks that change what the rows say (the language switch): they
      * run inside a row of the level they would rebuild, so rebuilding right
      * there would destroy the callback while it executes.
-     */
+     **/
     void requestRebuild() { m_rebuildPending = true; }
 
-    /** @brief Sets how the root heading is produced, so it follows a language change. */
+    /**  Sets how the root heading is produced, so it follows a language change.
+     *
+     * @param fn  Returns the heading in the current language; called on every draw. (in)
+     **/
     void setRootTitle( std::function<QString()> fn ) { m_rootTitle = std::move( fn ); }
 
-    /**
-     * @brief Draws the open menu; also closes it after the idle timeout.
-     * @param p Painter on the output widget.
-     * @param w Widget width in pixels.
-     * @param h Widget height in pixels.
-     */
+    /**  Draws the open menu; also closes it after the idle timeout.
+     *
+     * @param p  Painter on the output widget. (out)
+     * @param w  Widget width in pixels. (in)
+     * @param h  Widget height in pixels. (in)
+     **/
     void draw( QPainter *p, int w, int h );
 
     /** @brief Seconds without input after which the menu closes by itself. */
@@ -123,24 +133,43 @@ private:
         int                                   top = 0;    ///< First visible row.
     };
 
-    /// @brief Opens a sub-level. @param title Its heading. @param build Builds its rows (called again on every
-    /// refresh).
+    /**  Opens a sub-level.
+     *
+     * @param title  Its heading. (in)
+     * @param build  Builds its rows (called again on every refresh). (in)
+     **/
     void push( const QString &title, std::function<std::vector<OsdItem>()> build );
-    /// @brief Closes the current level (the root closes the menu).
+    /** Closes the current level (the root closes the menu). */
     void back();
-    /// @brief Runs a row: an action, a sub-menu or the next choice. @param it The row.
+    /**  Runs a row: an action, a sub-menu or the next choice.
+     *
+     * @param it  The row. (in,out)
+     **/
     void activate( OsdItem &it );
-    /// @brief Steps a choice or slider row. @param it The row. @param dir -1 or +1.
+    /**  Steps a choice or slider row.
+     *
+     * @param it   The row. (in,out)
+     * @param dir  -1 or +1. (in)
+     **/
     void adjust( OsdItem &it, int dir );
-    /// @brief Restarts the idle timer (the menu closes itself after a while without input).
+    /** Restarts the idle timer (the menu closes itself after a while without input). */
     void touch() { m_idle.restart(); }
-    /// @brief Shows a short confirmation line. @param text The line.
+    /**  Shows a short confirmation line.
+     *
+     * @param text  The line. (in)
+     **/
     void flash( const QString &text )
     {
         m_flashText = text;
         m_flash.restart();
     }
-    /// @return The value column of a row (choice label, slider value, toggle state).
+    /**  The value an item shows on the right of its row: on/off, the current choice, the slider value.
+     *
+     * @param it  The item. (in)
+     *
+     * @return
+     *   The value column of a row (choice label, slider value, toggle state).
+     **/
     QString valueText( const OsdItem &it ) const;
 
     std::vector<Level>       m_stack;                  ///< Open levels, root first.
@@ -150,12 +179,16 @@ private:
     bool                     m_rebuildPending = false; ///< rebuildAll() due at the next draw.
     std::function<QString()> m_rootTitle;              ///< Root heading, re-read on rebuild.
 public:
-    /// @brief Default construction, which the declared copy operations would otherwise suppress.
+    /** Default construction, which the declared copy operations would otherwise suppress. */
     OsdMenu() = default;
 
 private:
-    /// @brief Not copyable (CGVR template: copy constructor and assignment are always declared).
+    /** Not copyable (CGVR template: copy constructor and assignment are always declared). */
     OsdMenu( const OsdMenu & ) = delete;
-    /// @brief Not assignable; see the copy constructor.
+    /**  Not assignable; see the copy constructor.
+     *
+     * @return
+     *   Nothing: the operator is deleted, so no call compiles.
+     **/
     OsdMenu &operator=( const OsdMenu & ) = delete;
 };

@@ -67,15 +67,16 @@
 #include "PreviewWidget.h"
 #include "Preset.h"
 
-/**
- * @brief Locate the visualizer project root directory.
- * @return Absolute path of the first ancestor of the exe dir or the current dir that contains both standard.vert and a
- * presets folder; falls back to the current working directory if none is found.
+/**  Locate the visualizer project root directory.
+ *
+ * @return
+ *   Absolute path of the first ancestor of the exe dir or the current dir that contains both standard.vert and a
+ *   presets folder; falls back to the current working directory if none is found.
  *
  * Find the project root (the folder holding standard.vert + Presets) by
  * searching up from the exe dir and the current dir.  Keeps the editor working
  * whether it's run from its own out-dir, the project root, or Release\.
- */
+ **/
 static QString findRoot()
 {
     QStringList cands;
@@ -100,19 +101,21 @@ static QString findRoot()
     return QDir::currentPath();
 }
 
-/**
- * @brief Program entry point: dispatches to a headless CLI probe mode, or launches the windowed editor.
- * @param argc Argument count (as passed by the OS).
- * @param argv Argument values (as passed by the OS); argv[0] is the exe path.
- * @return Process exit code: 0 on success, non-zero (or a probe's own failure count) on failure; for the GUI/probe
- * modes that run a Qt event loop this is QApplication::exec()'s return value.
+/**  Program entry point: dispatches to a headless CLI probe mode, or launches the windowed editor.
+ *
+ * @param argc  Argument count (as passed by the OS). (in)
+ * @param argv  Argument values (as passed by the OS); argv[0] is the exe path. (in)
+ *
+ * @return
+ *   Process exit code: 0 on success, non-zero (or a probe's own failure count) on failure; for the GUI/probe modes
+ *   that run a Qt event loop this is QApplication::exec()'s return value.
  *
  * See the file-level comment above for the CLI contract. Every headless
  * branch below returns before a QApplication with a full GUI is ever shown
  * (the --render/--cfxcheck/--transcheck probes still run a QApplication
  * event loop to drive an offscreen-ish GL widget, but never construct the
  * EditorWindow).
- */
+ **/
 int main( int argc, char *argv[] )
 {
     QStringList args;

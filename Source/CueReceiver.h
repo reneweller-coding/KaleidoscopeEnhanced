@@ -82,8 +82,11 @@ struct ScoreCueBridge
     bool wasLive = false;  ///< whether the previous frame was cue-driven
 };
 
-/**
- * @brief Overlays a frame of score cues on a scheduler tick that was built from the audio.
+/**  Overlays a frame of score cues on a scheduler tick that was built from the audio.
+ *
+ * @param cue     This frame's cues. (in)
+ * @param bridge  The counters, kept across frames by the caller. (in,out)
+ * @param t       The tick, modified in place. (in,out)
  *
  * With ScoreCues::Frame::live false this does nothing at all -- @p t comes out byte for byte as it
  * went in, which is the property that makes the whole feature safe to ship switched off.
@@ -98,10 +101,7 @@ struct ScoreCueBridge
  *    TYPE instead would make every drop in a set replay the same scene, which is precisely the
  *    "always the same scenes" failure that index has caused before. A cue-driven section therefore
  *    always rolls fresh.
- * @param cue    This frame's cues.
- * @param bridge The counters, kept across frames by the caller.
- * @param t      The tick, modified in place.
- */
+ **/
 void applyScoreCues( const ScoreCues::Frame &cue, ScoreCueBridge &bridge, SceneScheduler::Tick &t );
 
 /**
@@ -115,32 +115,42 @@ void applyScoreCues( const ScoreCues::Frame &cue, ScoreCueBridge &bridge, SceneS
 class CueReceiver : public QObject
 {
 public:
-    /**
-     * @brief Binds `<bindAddress>:<port>` and starts listening.
-     * @param parent      Owner (the GL widget), for Qt's parent/child destruction.
-     * @param bindAddress Interface to listen on; "0.0.0.0" for any, "127.0.0.1" for this machine only.
-     * @param port        UDP port; nothing is bound when it is 0 or out of range.
-     */
+    /**  Binds `<bindAddress>:<port>` and starts listening.
+     *
+     * @param parent       Owner (the GL widget), for Qt's parent/child destruction. (in)
+     * @param bindAddress  Interface to listen on; "0.0.0.0" for any, "127.0.0.1" for this machine only. (in)
+     * @param port         UDP port; nothing is bound when it is 0 or out of range. (in)
+     **/
     CueReceiver( QObject *parent, const QString &bindAddress, int port );
 
-    /** @brief Whether the socket is bound and listening. */
+    /**  Whether the socket is bound and listening.
+     *
+     * @return
+     *   True if the socket is bound, false if binding failed or the port was 0.
+     **/
     bool listening() const { return m_listening; }
 
 private:
-    /** @brief Reads every pending datagram and hands what decodes to ScoreCues. */
+    /** Reads every pending datagram and hands what decodes to ScoreCues. */
     void handleDatagrams();
 
     QUdpSocket *m_socket = nullptr;  ///< the bound socket, a child of this object
     bool        m_listening = false; ///< @copydoc listening
 private:
-    /// @brief Not copyable (CGVR template: copy constructor and assignment are always declared).
+    /** Not copyable (CGVR template: copy constructor and assignment are always declared). */
     CueReceiver( const CueReceiver & ) = delete;
-    /// @brief Not assignable; see the copy constructor.
+    /**  Not assignable; see the copy constructor.
+     *
+     * @return
+     *   Nothing: the operator is deleted, so no call compiles.
+     **/
     CueReceiver &operator=( const CueReceiver & ) = delete;
 };
 
-/**
- * @brief `Kaleidoscope.exe -q`: the score-cue self test, run instead of opening a window.
+/**  `Kaleidoscope.exe -q`: the score-cue self test, run instead of opening a window.
+ *
+ * @return
+ *   0 when every check held, 1 otherwise (the process exit code).
  *
  * Five things, none of which needs a GL context, a sound card or a generator: the cue file's lines
  * and its clock (02.10.2026); the decoder against
@@ -148,8 +158,7 @@ private:
  * be refused); the accumulator's live/expire behaviour; a real socket, fed by a real QUdpSocket;
  * and the one property everything else rests on -- with no cues live, a scheduler tick comes out of
  * applyScoreCues() byte for byte as it went in.
- * @return 0 when every check held, 1 otherwise (the process exit code).
- */
+ **/
 int runCueSelfTest();
 
 #endif // CUERECEIVER_H

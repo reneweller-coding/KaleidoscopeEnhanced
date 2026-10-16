@@ -24,16 +24,16 @@ class QMyWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    /**
-     * @brief Constructs the window: builds the UI from Ui::MainWindow, sets the
-     *        window title, and connects the Exit action to slotQuitApp().
-     * @param parent Parent widget, forwarded to QMainWindow.
-     */
+    /**  Constructs the window: builds the UI from Ui::MainWindow, sets the window title, and connects the Exit action
+     * to slotQuitApp().
+     *
+     * @param parent  Parent widget, forwarded to QMainWindow. (in)
+     **/
     explicit QMyWindow( QWidget *parent );
-    /**
-     * @brief Stores the working directory for later use.
-     * @param directory Directory path to remember.
-     */
+    /**  Stores the working directory for later use.
+     *
+     * @param directory  Directory path to remember. (in)
+     **/
     void setDirectory( QString directory );
 
 public slots:
@@ -49,9 +49,13 @@ private:
 
     QString m_directory; ///< Working directory set via setDirectory().
 private:
-    /// @brief Not copyable (CGVR template: copy constructor and assignment are always declared).
+    /** Not copyable (CGVR template: copy constructor and assignment are always declared). */
     QMyWindow( const QMyWindow & ) = delete;
-    /// @brief Not assignable; see the copy constructor.
+    /**  Not assignable; see the copy constructor.
+     *
+     * @return
+     *   Nothing: the operator is deleted, so no call compiles.
+     **/
     QMyWindow &operator=( const QMyWindow & ) = delete;
 };
 

@@ -59,12 +59,13 @@ class EffectShader;
 class SceneScheduler
 {
 public:
-    /** @brief Bind the effect/FX/transition lists to iterate (ownership stays with the caller).
-     * @param textures Pointer to the pipeline's effect-shader list (the "texture" slot).
-     * @param fxShaders Pointer to the pipeline's FX/overlay-shader list.
-     * @param transitions Pointer to the pipeline's scene-transition shader list
-     *        (Transitions/ — one shader per blend style, rolled per fade).
-     */
+    /**  Bind the effect/FX/transition lists to iterate (ownership stays with the caller).
+     *
+     * @param textures     Pointer to the pipeline's effect-shader list (the "texture" slot). (in)
+     * @param fxShaders    Pointer to the pipeline's FX/overlay-shader list. (in)
+     * @param transitions  Pointer to the pipeline's scene-transition shader list (Transitions/ — one shader per
+     *                     blend style, rolled per fade). (in)
+     **/
     void attach( std::vector<EffectShader *> *textures,
                  std::vector<EffectShader *> *fxShaders,
                  std::vector<EffectShader *> *transitions )
@@ -74,7 +75,7 @@ public:
         m_transitions = transitions;
     }
 
-    /** @brief Roll the initial act/next scene and combine picks and (re)start both clocks (the old start() block). */
+    /** Roll the initial act/next scene and combine picks and (re)start both clocks (the old start() block). */
     void reset();
 
     // ---- Konfiguration / Zustand von außen ----
@@ -85,25 +86,37 @@ public:
      */
     static constexpr float ReviewSoloSecs = 25.f;
 
-    /** @brief Enable/disable review mode (alphabetical walk, fixed ReviewSoloSecs per scene).
-     * @param on True to enter review mode, false to return to normal random selection.
-     */
+    /**  Enable/disable review mode (alphabetical walk, fixed ReviewSoloSecs per scene).
+     *
+     * @param on  True to enter review mode, false to return to normal random selection. (in)
+     *
+     * @sideeffects
+     *   Changes EffectShader::M_ReviewSolo.
+     **/
     void setReviewMode( bool on );
-    /** @brief Preset-wide floor on every natural scene fade (seconds, 0 = none).
-     * A preset that sets it (Ambient, SpaceAmbient) also never hard-cuts on a
-     * detected drop: the whole point of such a preset is that nothing snaps.
-     * @param secs Floor in seconds; values <= 0 disable it.
-     */
+    /**  Preset-wide floor on every natural scene fade (seconds, 0 = none).
+     *
+     * @param secs  Floor in seconds; values <= 0 disable it. (in)
+     *
+     * A preset that sets it (Ambient, SpaceAmbient) also never hard-cuts on a detected drop: the whole point of such a
+     * preset is that nothing snaps.
+     **/
     void setSceneFadeMin( float secs ) { m_sceneFadeMin = secs > 0.f ? secs : 0.f; }
+    /**  True while stepping the alphabetical Test*-preset review order.
+     *
+     * @return
+     *   True while stepping the alphabetical Test*-preset review order.
+     **/
     bool reviewMode() const
     {
         return m_reviewMode;
-    } ///< True while stepping the alphabetical Test*-preset review order.
-    /** @brief Snapshot the current mood values used by moodAccept()'s busyness/tag bias.
-     * @param arousal Arousal 0..1 (drives the target shader-complexity/busyness).
-     * @param valence Valence 0..1 (drives the bright/dark mood-tag bonus).
-     * @param ambient Ambient level 0..1 (drives the calm/aggressive mood-tag bonus).
-     */
+    }
+    /**  Snapshot the current mood values used by moodAccept()'s busyness/tag bias.
+     *
+     * @param arousal  Arousal 0..1 (drives the target shader-complexity/busyness). (in)
+     * @param valence  Valence 0..1 (drives the bright/dark mood-tag bonus). (in)
+     * @param ambient  Ambient level 0..1 (drives the calm/aggressive mood-tag bonus). (in)
+     **/
     void setMood( float arousal, float valence, float ambient )
     {
         m_lastArousal = arousal;
@@ -112,16 +125,18 @@ public:
     }
     /** Gelerntes Taste (Skip-Malus/Favoriten-Bonus): Faktor je Fragment-Pfad.
      *  Persistenz macht der Aufrufer; ohne Callback zählt alles als 1.0. */
-    /** @brief Install the learned-taste callback (skip-malus / favourite-bonus per fragment path).
-     * @param f Callback mapping a fragment path to a taste multiplier; persistence is the caller's job. Without a
-     * callback every shader counts as 1.0.
-     */
+    /**  Install the learned-taste callback (skip-malus / favourite-bonus per fragment path).
+     *
+     * @param f  Callback mapping a fragment path to a taste multiplier; persistence is the caller's job. Without a
+     *           callback every shader counts as 1.0. (in)
+     **/
     void setTasteCallback( std::function<float( const char * )> f ) { m_tasteFor = std::move( f ); }
 
     // ---- VJ / Remote ----
-    /** @brief Request an early cut on the next tick (manual 'n' or remote request).
-     * @param alsoFx If true, also force the FX slot to change (not just the effect).
-     */
+    /**  Request an early cut on the next tick (manual 'n' or remote request).
+     *
+     * @param alsoFx  If true, also force the FX slot to change (not just the effect). (in)
+     **/
     void requestChange( bool alsoFx )
     {
         m_forceEffectChange = true;
@@ -129,34 +144,45 @@ public:
         if ( alsoFx )
             m_forceFxChange = true;
     }
-    /** @brief Jump directly to a given effect index, pre-empting the normal selection (remote scene browser).
-     * @param idx Index into the attached texture/effect list to jump to; out-of-range or a missing attach() is silently
-     * ignored.
-     */
+    /**  Jump directly to a given effect index, pre-empting the normal selection (remote scene browser).
+     *
+     * @param idx  Index into the attached texture/effect list to jump to; out-of-range or a missing attach() is
+     *             silently ignored. (in)
+     **/
     void forceScene( int idx );
-    /** @brief Force the next combine-effect (overlay) to @p idx, bypassing the
-     *         complexity budget, mood and mesh-calm filters.
-     * @param idx Index into fxNames(); ignored if out of range.
+    /**  Force the next combine-effect (overlay) to @p idx, bypassing the complexity budget, mood and mesh-calm
+     * filters.
+     *
+     * @param idx  Index into fxNames(); ignored if out of range. (in)
      *
      * For measuring FX the way KALEIDO_SCENE_SWEEP measures scenes: an
      * overlay that does nothing is a real failure class (43 silent FX and
      * transitions were once found at one go), and the random picker cannot
-     * be relied on to show a given one at a known moment. */
+     * be relied on to show a given one at a known moment.
+     **/
     void forceFx( int idx );
-    /** Solo-Alter des aktuellen Effekts (Skip-Malus-Fenster, !status etc.). */
+    /**  Solo-Alter des aktuellen Effekts (Skip-Malus-Fenster, !status etc.).
+     *
+     * @return
+     *   Seconds since it went solo.
+     *
+     * Seconds since the current effect went solo (used for the skip-malus window, !status, etc.).
+     **/
     float actElapsedSec() const
     {
         return secsSince( m_clockEffectTexture );
-    } ///< Seconds since the current effect went solo (used for the skip-malus window, !status, etc.).
+    }
     /** Freeze/Pin: Effekt-/Combine-Uhren re-armen, damit hinter dem
      *  gehaltenen Bild kein Wechsel "fällig" wird. */
-    /** @brief Re-arm both effect/combine clocks so no change is "due" the moment a freeze/pin lifts. */
+    /** Re-arm both effect/combine clocks so no change is "due" the moment a freeze/pin lifts. */
     void rearmEffectClocks()
     {
         restart( m_clockEffectTexture );
         restart( m_clockEffectFx );
     }
-    /** @brief Subtract a frame hitch from the running Solo/Fade clocks.
+    /**  Subtract a frame hitch from the running Solo/Fade clocks.
+     *
+     * @param secs  Length of the hitch in seconds. (in)
      *
      *  Both slots time themselves on wall clocks, which is right for music but
      *  wrong across a STALL: a mesh scene's first activation compiles its
@@ -167,7 +193,8 @@ public:
      *  trigger cuts away a scene the viewer saw for well under a second --
      *  both reported, both worst in the first minutes while the working set
      *  is cold. Shifting the reference points forward by the stall removes
-     *  exactly that time from the books. */
+     *  exactly that time from the books.
+     **/
     void absorbHitch( float secs )
     {
         const auto d = std::chrono::duration_cast<ClockT::duration>(
@@ -207,79 +234,146 @@ public:
                                     ///< unknown.
     };
 
-    /** @brief Evaluate musical triggers and advance the effect (texture) Solo/Fade state machine. Runs before the
-     * effect passes.
-     * @param t Frame inputs (timing, triggers, gate).
-     */
+    /**  Evaluate musical triggers and advance the effect (texture) Solo/Fade state machine.
+     *
+     * @param t  Frame inputs (timing, triggers, gate). (in)
+     *
+     * Runs before the effect passes.
+     **/
     void tick( const Tick &t );
-    /** @brief Advance the combine Solo/Fade state machine. Runs after the effect passes, at the point trueStereoHold is
-     * known.
-     * @param t Frame inputs (timing, triggers, gate).
-     * @param trueStereoHold True while an eye-packed true-stereo 3D frame must not enter a combine cross-fade; freezes
-     * combine switching until it lifts.
-     */
+    /**  Advance the combine Solo/Fade state machine.
+     *
+     * @param t               Frame inputs (timing, triggers, gate). (in)
+     * @param trueStereoHold  True while an eye-packed true-stereo 3D frame must not enter a combine cross-fade;
+     *                        freezes combine switching until it lifts. (in)
+     *
+     * Runs after the effect passes, at the point trueStereoHold is known.
+     **/
     void tickFx( const Tick &t, bool trueStereoHold );
 
     // ---- Abfragen der Pipeline ----
+    /**  Index of the currently active (solo or fade-from) effect/texture shader.
+     *
+     * @return
+     *   Index of the currently active (solo or fade-from) effect/texture shader.
+     **/
     unsigned int actTexture() const
     {
         return m_actTexture;
-    } ///< Index of the currently active (solo or fade-from) effect/texture shader.
+    }
+    /**  Index of the effect/texture shader being faded to (or picked for next).
+     *
+     * @return
+     *   Index of the effect/texture shader being faded to (or picked for next).
+     **/
     unsigned int nextTexture() const
     {
         return m_nextTexture;
-    } ///< Index of the effect/texture shader being faded to (or picked for next).
-    unsigned int actFx() const { return m_actFx; } ///< Index of the currently active combine shader.
+    }
+    /**  Index of the currently active combine shader.
+     *
+     * @return
+     *   Index of the currently active combine shader.
+     **/
+    unsigned int actFx() const { return m_actFx; }
+    /**  Index of the combine shader being faded to (or picked for next).
+     *
+     * @return
+     *   Index of the combine shader being faded to (or picked for next).
+     **/
     unsigned int nextFx() const
     {
         return m_nextFx;
-    } ///< Index of the combine shader being faded to (or picked for next).
+    }
+    /**  Effect state machine phase: 0 = Solo (one scene on screen), 1 = Fade (cross-fading actTexture() ->
+     * nextTexture()).
+     *
+     * @return
+     *   Effect state machine phase: 0 = Solo (one scene on screen), 1 = Fade (cross-fading actTexture() ->
+     *   nextTexture()).
+     **/
     int texState() const
     {
         return m_texState;
-    } ///< Effect state machine phase: 0 = Solo (one scene on screen), 1 = Fade (cross-fading actTexture() ->
-    ///< nextTexture()).
-    int   fxState() const { return m_fxState; } ///< Combine state machine phase: 0 = Solo, 1 = Fade.
+    }
+    /**  Combine state machine phase: 0 = Solo, 1 = Fade.
+     *
+     * @return
+     *   Combine state machine phase: 0 = Solo, 1 = Fade.
+     **/
+    int fxState() const { return m_fxState; }
+    /**  Effect cross-fade blend factor: 1 while solo, then runs 1 -> 0 over the fade (weight of the outgoing
+     * actTexture()); the transition shaders receive it as their progress uniform.
+     *
+     * @return
+     *   Effect cross-fade blend factor: 1 while solo, then runs 1 -> 0 over the fade (weight of the outgoing
+     *   actTexture()); the transition shaders receive it as their progress uniform.
+     **/
     float texInterp() const
     {
         return m_texInterp;
-    } ///< Effect cross-fade blend factor: 1 while solo, then runs 1 -> 0 over the fade (weight of the outgoing
-    ///< actTexture()); the transition shaders receive it as their progress uniform.
-    float        fxInterp() const { return m_fxInterp; } ///< Combine cross-fade blend factor, 1 -> 0 over the fade.
+    }
+    /**  Combine cross-fade blend factor, 1 -> 0 over the fade.
+     *
+     * @return
+     *   Combine cross-fade blend factor, 1 -> 0 over the fade.
+     **/
+    float fxInterp() const { return m_fxInterp; }
+    /**  Index of the transition shader rolled for the current/last scene fade.
+     *
+     * @return
+     *   Index of the transition shader rolled for the current/last scene fade.
+     **/
     unsigned int actTransition() const
     {
         return m_actTransition;
-    } ///< Index of the transition shader rolled for the current/last scene fade.
+    }
 
 private:
     using ClockT = std::chrono::steady_clock; ///< Monotonic wall clock behind every Solo/Fade timer -- the same
                                               ///< semantics as the QElapsedTimer this class replaced (never affected by
                                               ///< system-time changes).
-    static void restart( ClockT::time_point &tp ) { tp = ClockT::now(); } ///< Reset a clock's reference point to now.
-    /** @brief Elapsed wall time since a clock's reference point.
-     * @param tp Reference time point captured by restart().
-     * @return Seconds elapsed since @p tp.
-     */
+    /**  Reset a clock's reference point to now.
+     *
+     * @param tp  The clock's reference point; receives the current time. (out)
+     **/
+    static void restart( ClockT::time_point &tp ) { tp = ClockT::now(); }
+    /**  Elapsed wall time since a clock's reference point.
+     *
+     * @param tp  Reference time point captured by restart(). (in)
+     *
+     * @return
+     *   Seconds elapsed since @p tp.
+     **/
     static float secsSince( const ClockT::time_point &tp )
     {
         return std::chrono::duration<float>( ClockT::now() - tp ).count();
     }
 
-    /** @brief Probabilistic mood-based accept/reject test used by the rejection-sampling selection loops.
-     * @param s Candidate effect or combine shader to evaluate.
-     * @return True if the candidate is accepted (weighted random roll), false to keep searching.
-     */
+    /**  Probabilistic mood-based accept/reject test used by the rejection-sampling selection loops.
+     *
+     * @param s  Candidate effect or combine shader to evaluate. (in)
+     *
+     * @return
+     *   True if the candidate is accepted (weighted random roll), false to keep searching.
+     **/
     bool moodAccept( EffectShader *s ) const;
-    /** @brief Look up the learned-taste multiplier for a fragment path via the taste callback.
-     * @param frag Fragment shader path to look up.
-     * @return Taste multiplier (1.0 if no callback is installed).
-     */
+    /**  Look up the learned-taste multiplier for a fragment path via the taste callback.
+     *
+     * @param frag  Fragment shader path to look up. (in)
+     *
+     * @return
+     *   Taste multiplier (1.0 if no callback is installed).
+     **/
     float tasteOf( const char *frag ) const { return m_tasteFor ? m_tasteFor( frag ) : 1.f; }
 
-    /** @brief Find a registered transition by fragment basename (e.g. "Shatter.frag").
-     * @param basename File name without path to look for.
-     * @return Index into the transition list, or -1 if absent/empty.
-     */
+    /**  Find a registered transition by fragment basename (e.g. "Shatter.frag").
+     *
+     * @param basename  File name without path to look for. (in)
+     *
+     * @return
+     *   Index into the transition list, or -1 if absent/empty.
+     **/
     int findTransition( const char *basename ) const;
 
     std::vector<EffectShader *> *m_textures = nullptr;    ///< Effect/texture shader list (not owned).
@@ -391,9 +485,9 @@ private:
     static const unsigned int RecentMax = 40; ///< Upper bound of the no-repeat window, in scenes (~15-40 min at the
                                               ///< usual solo times).
     std::vector<unsigned int> m_recentTex;    ///< Texture indices shown most recently, oldest first (see RecentMax).
-    /** @brief True if texture @p idx is inside the current no-repeat window. */
+    /** True if texture @p idx is inside the current no-repeat window. */
     bool isRecentTexture( unsigned int idx ) const;
-    /** @brief Append texture @p idx to the no-repeat window and trim it to its size. */
+    /** Append texture @p idx to the no-repeat window and trim it to its size. */
     void             noteTextureShown( unsigned int idx );
     static const int SectionMemorySpan = 24; ///< Max sectionCount distance for a replay (sections are >= ~12 s apart,
                                              ///< so ~5+ min -- within one song, not across the set).
@@ -431,13 +525,17 @@ private:
     std::function<float( const char * )> m_tasteFor; ///< Learned-taste callback (fragment path -> multiplier); unset
                                                      ///< means neutral 1.0 for everything.
 public:
-    /// @brief Default construction, which the declared copy operations would otherwise suppress.
+    /** Default construction, which the declared copy operations would otherwise suppress. */
     SceneScheduler() = default;
 
 private:
-    /// @brief Not copyable (CGVR template: copy constructor and assignment are always declared).
+    /** Not copyable (CGVR template: copy constructor and assignment are always declared). */
     SceneScheduler( const SceneScheduler & ) = delete;
-    /// @brief Not assignable; see the copy constructor.
+    /**  Not assignable; see the copy constructor.
+     *
+     * @return
+     *   Nothing: the operator is deleted, so no call compiles.
+     **/
     SceneScheduler &operator=( const SceneScheduler & ) = delete;
 };
 

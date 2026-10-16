@@ -13,11 +13,13 @@
 #include <QtXml/QDomAttr>
 #include <QtCore/QStringList>
 
-/**
- * @brief Strip a leading "..\" or "../" (and any deeper path) from a file= attribute.
- * @param f Raw file= attribute value, e.g. "..\\Scene2D\\Kaleidoscope.frag".
- * @return The bare filename only, e.g. "Kaleidoscope.frag".
- */
+/**  Strip a leading "..\" or "../" (and any deeper path) from a file= attribute.
+ *
+ * @param f  Raw file= attribute value, e.g. "..\\Scene2D\\Kaleidoscope.frag". (in)
+ *
+ * @return
+ *   The bare filename only, e.g. "Kaleidoscope.frag".
+ **/
 static QString bareFile( QString f )
 {
     f.replace( '\\', '/' );
@@ -25,15 +27,17 @@ static QString bareFile( QString f )
     return ( slash >= 0 ) ? f.mid( slash + 1 ) : f;
 }
 
-/**
- * @brief Extract the folder segment of a file= attribute ("..\Scene3D\X.frag" -> "Scene3D").
- * @param f Raw file= attribute value.
- * @return The immediate parent folder name, or an empty string if it can't be determined.
+/**  Extract the folder segment of a file= attribute ("..\Scene3D\X.frag" -> "Scene3D").
+ *
+ * @param f  Raw file= attribute value. (in)
+ *
+ * @return
+ *   The immediate parent folder name, or an empty string if it can't be determined.
  *
  * The configs write DOUBLE backslashes ("..\\Scene3D\\X.frag"), the editor's
  * own save single ones -- splitting on separators and skipping the empty
  * segments handles both spellings.
- */
+ **/
 static QString folderOf( QString f )
 {
     f.replace( '\\', '/' );
@@ -43,11 +47,11 @@ static QString folderOf( QString f )
     return QString();
 }
 
-/**
- * @brief Read every `<bool>`/`<int>`/`<float>`/`<interpolator>`/`<expr>` child of a shader element into @p e.params.
- * @param el The `<TextureShader>` or `<CombineShader>` DOM element to scan.
- * @param e Entry whose @c params vector child elements are appended to, in document order.
- */
+/**  Read every `<bool>`/`<int>`/`<float>`/`<interpolator>`/`<expr>` child of a shader element into @p e.params.
+ *
+ * @param el  The `<TextureShader>` or `<CombineShader>` DOM element to scan. (in)
+ * @param e   Entry whose @c params vector child elements are appended to, in document order. (in,out)
+ **/
 static void readParams( const QDomElement &el, PresetEntry &e )
 {
     for ( QDomNode n = el.firstChild(); !n.isNull(); n = n.nextSibling() )

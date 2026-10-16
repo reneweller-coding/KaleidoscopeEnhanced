@@ -50,8 +50,14 @@ struct KomplettRange
  *  Declared minValue: lower bound of the per-activation roll. */
 /** @var float KomplettRange::maxV
  *  Declared maxValue: upper bound of the per-activation roll. */
-/**
- * @brief Look up the `<int>`/`<float>` ranges Komplett.xml registers for one fragment file.
+/**  Look up the `<int>`/`<float>` ranges Komplett.xml registers for one fragment file.
+ *
+ * @param root  Project root Presets/Komplett.xml is resolved against. (in)
+ * @param frag  Bare shader filename to look up (matched against the file="..\\...\\<frag>" attribute). (in)
+ *
+ * @return
+ *   The `<int>`/`<float>` ranges declared for @p frag's `<TextureShader>`/`<CombineShader>` entry, or empty if none
+ *   were found.
  *
  * Komplett.xml registers every shader with sensible min/max values. An
  * independent copy of EditorWindow.cpp's komplettParamsFor(), which only
@@ -59,11 +65,7 @@ struct KomplettRange
  * directly so a scene3d shader gets a real per-activation roll instead of
  * GLSL's zero default, in BOTH the GUI and the headless --render/self-test
  * paths that never touch EditorWindow at all.
- * @param root Project root Presets/Komplett.xml is resolved against.
- * @param frag Bare shader filename to look up (matched against the file="..\\...\\<frag>" attribute).
- * @return The `<int>`/`<float>` ranges declared for @p frag's `<TextureShader>`/`<CombineShader>` entry, or empty if
- * none were found.
- */
+ **/
 static QVector<KomplettRange> komplettRangesFor( const QString &root, const QString &frag )
 {
     QVector<KomplettRange> out;

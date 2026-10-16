@@ -21,8 +21,7 @@
 #include "Platform.h"
 
 
-/**
- * @brief Reads an entire text file.
+/**  Reads an entire text file.
  *
  * Opens @p fn in text mode ("rt"), seeks to the end to determine its size, rewinds and
  * reads the whole file in one fread(); the result keeps what fread() delivered (text mode
@@ -30,7 +29,7 @@
  * file could not be opened, or its size was 0. On non-Windows hosts @p fn is first mapped
  * through Platform::assetPath() (see the comment in the body). Parameter and return value
  * are documented on the declaration in textfile.h.
- */
+ **/
 std::string textFileRead( const char *fn )
 {
     FILE       *fp;
@@ -68,14 +67,13 @@ std::string textFileRead( const char *fn )
 }
 
 
-/**
- * @brief Writes a NUL-terminated string out to a text file, overwriting it.
+/**  Writes a NUL-terminated string out to a text file, overwriting it.
  *
  * Opens @p fn in write mode ("w"), writes @p s with a single fwrite(), and reports
  * success only if the full string (by strlen()) was written: 1 on success,
  * 0 on failure (including a NULL @p fn or a file that could not be opened).
  * Parameters and return value are documented on the declaration in textfile.h.
- */
+ **/
 int textFileWrite( const char *fn, const char *s )
 {
     FILE *fp;

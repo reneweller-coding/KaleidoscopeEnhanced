@@ -24,40 +24,44 @@
 class TextureEffectTunnelReverse : public TextureEffectTunnel
 {
 public:
-    /**
-     * @brief Construct with solo/interpolation timing ranges; fragment shader is fixed to TunnelReverse.frag.
-     * @param minTimeSolo Minimum seconds this effect stays solo once activated.
-     * @param maxTimeSolo Maximum seconds this effect stays solo once activated.
-     * @param minTimeInterpolation Minimum seconds spent cross-fading into/out of this effect.
-     * @param maxTimeInterpolation Maximum seconds spent cross-fading into/out of this effect.
-     */
+    /**  Construct with solo/interpolation timing ranges; fragment shader is fixed to TunnelReverse.frag.
+     *
+     * @param minTimeSolo           Minimum seconds this effect stays solo once activated. (in)
+     * @param maxTimeSolo           Maximum seconds this effect stays solo once activated. (in)
+     * @param minTimeInterpolation  Minimum seconds spent cross-fading into/out of this effect. (in)
+     * @param maxTimeInterpolation  Maximum seconds spent cross-fading into/out of this effect. (in)
+     **/
     TextureEffectTunnelReverse( unsigned int minTimeSolo, unsigned int maxTimeSolo, unsigned int minTimeInterpolation,
                                 unsigned int maxTimeInterpolation );
-    /// Destructor. No extra cleanup beyond the base class.
+    /**  Destructor.
+     *
+     * No extra cleanup beyond the base class.
+     **/
     ~TextureEffectTunnelReverse();
 
-    /**
-     * @brief Resolves the `speedTunnelReverse` uniform location after chaining to TextureEffectTunnel::initUniforms().
+    /**  Resolves the `speedTunnelReverse` uniform location after chaining to TextureEffectTunnel::initUniforms().
+     *
+     * @param width   Render target width in pixels. (in)
+     * @param height  Render target height in pixels. (in)
      *
      * The `virtual` keyword is not repeated here, but the base class chain already
      * declared this signature virtual, so this is still a genuine polymorphic override.
-     * @param width Render target width in pixels.
-     * @param height Render target height in pixels.
-     */
+     **/
     void initUniforms( int width, int height ); // initialize GLSL - shader programs
-    /**
-     * @brief Uploads `speedTunnelReverse` after chaining to TextureEffectTunnel::setUniforms(). Overrides the
-     * (implicitly still virtual) base signature.
-     * @param time Absolute animation time in seconds.
-     * @param interpolation Current cross-fade weight.
-     * @param texLoc1 Texture unit bound to the `tex0` sampler.
-     * @param texLoc2 Texture unit bound to the `tex1` sampler.
-     */
-    void setUniforms( float time, float interpolation, GLint texLoc1, GLint texLoc2 ); // setting uniforms
-    /**
-     * @brief Re-rolls the reverse tunnel scroll speed, after chaining to TextureEffectTunnel::resetParameters().
+    /**  Uploads `speedTunnelReverse` after chaining to TextureEffectTunnel::setUniforms().
+     *
+     * @param time           Absolute animation time in seconds. (in)
+     * @param interpolation  Current cross-fade weight. (in)
+     * @param texLoc1        Texture unit bound to the `tex0` sampler. (in)
+     * @param texLoc2        Texture unit bound to the `tex1` sampler. (in)
+     *
      * Overrides the (implicitly still virtual) base signature.
-     */
+     **/
+    void setUniforms( float time, float interpolation, GLint texLoc1, GLint texLoc2 ); // setting uniforms
+    /**  Re-rolls the reverse tunnel scroll speed, after chaining to TextureEffectTunnel::resetParameters().
+     *
+     * Overrides the (implicitly still virtual) base signature.
+     **/
     void resetParameters();
 
 protected:

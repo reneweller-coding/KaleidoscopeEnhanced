@@ -24,30 +24,34 @@
 class FxEffectKaleidoscope : public EffectShader
 {
 public:
-    /// Constructs the effect and rolls its initial `sides` value; fragment shader is fixed to FxKaleidoscope.frag.
+    /** Constructs the effect and rolls its initial `sides` value; fragment shader is fixed to FxKaleidoscope.frag. */
     FxEffectKaleidoscope();
-    /// Destructor. No extra cleanup beyond the EffectShader base.
+    /**  Destructor.
+     *
+     * No extra cleanup beyond the EffectShader base.
+     **/
     ~FxEffectKaleidoscope();
 
 
-    /**
-     * @brief Resolves the `sides` and `speed` uniform locations after chaining to EffectShader::initUniforms().
-     * @param width Render target width in pixels.
-     * @param height Render target height in pixels.
-     */
+    /**  Resolves the `sides` and `speed` uniform locations after chaining to EffectShader::initUniforms().
+     *
+     * @param width   Render target width in pixels. (in)
+     * @param height  Render target height in pixels. (in)
+     **/
     virtual void initUniforms( int width, int height ); // initialize GLSL - shader programs
-    /**
-     * @brief Uploads `speed` and `sides` after chaining to EffectShader::setUniforms().
-     * @param time Absolute animation time in seconds.
-     * @param interpolation Current cross-fade weight.
-     * @param texLoc1 Texture unit bound to the `tex0` sampler.
-     * @param texLoc2 Texture unit bound to the `tex1` sampler.
-     */
+    /**  Uploads `speed` and `sides` after chaining to EffectShader::setUniforms().
+     *
+     * @param time           Absolute animation time in seconds. (in)
+     * @param interpolation  Current cross-fade weight. (in)
+     * @param texLoc1        Texture unit bound to the `tex0` sampler. (in)
+     * @param texLoc2        Texture unit bound to the `tex1` sampler. (in)
+     **/
     virtual void setUniforms( float time, float interpolation, GLint texLoc1, GLint texLoc2 ); // setting uniforms
-    /**
-     * @brief Re-rolls `speed` (clamped away from zero) and `sides`. Does NOT chain to EffectShader::resetParameters()
-     * (base has nothing to re-roll for this class's own state; no registered Uniforms/timing to reset here).
-     */
+    /**  Re-rolls `speed` (clamped away from zero) and `sides`.
+     *
+     * Does NOT chain to EffectShader::resetParameters() (base has nothing to re-roll for this class's own state; no
+     * registered Uniforms/timing to reset here).
+     **/
     virtual void resetParameters();
 
 protected:

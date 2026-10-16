@@ -24,25 +24,27 @@
 class NowPlaying
 {
 public:
-    /** @brief Constructs the object without starting the polling thread; call start() to begin polling. */
+    /** Constructs the object without starting the polling thread; call start() to begin polling. */
     NowPlaying();
-    /** @brief Stops the polling thread and joins it. */
+    /** Stops the polling thread and joins it. */
     ~NowPlaying();
 
-    /** @brief Starts the background polling thread, if not already running. */
+    /** Starts the background polling thread, if not already running. */
     void start();
-    /** @brief Signals the background polling thread to exit (asynchronous; does not join — see the destructor). */
+    /** Signals the background polling thread to exit (asynchronous; does not join — see the destructor). */
     void stop();
 
-    /**
-     * @brief The most recently published track title.
-     * @return The title, thread-safely copied; empty if unknown or no session/fallback matched.
-     */
+    /**  The most recently published track title.
+     *
+     * @return
+     *   The title, thread-safely copied; empty if unknown or no session/fallback matched.
+     **/
     QString title() const;
-    /**
-     * @brief The most recently published track artist.
-     * @return The artist, thread-safely copied; empty if unknown.
-     */
+    /**  The most recently published track artist.
+     *
+     * @return
+     *   The artist, thread-safely copied; empty if unknown.
+     **/
     QString artist() const;
 
     /**
@@ -68,20 +70,23 @@ public:
          */
         double rate = 1.0;
     };
-    /**
-     * @brief The most recently published playback timeline snapshot.
-     * @return A thread-safe copy of the current Timeline.
-     */
+    /**  The most recently published playback timeline snapshot.
+     *
+     * @return
+     *   A thread-safe copy of the current Timeline.
+     **/
     Timeline timeline() const;
-    /**
-     * @brief The current playback position extrapolated to "now" via the local clock and Timeline::rate.
-     * @return Seconds into the track (clamped to durationSec when known), or <0 if the position is unknown/unconfirmed.
-     */
+    /**  The current playback position extrapolated to "now" via the local clock and Timeline::rate.
+     *
+     * @return
+     *   Seconds into the track (clamped to durationSec when known), or <0 if the position is unknown/unconfirmed.
+     **/
     double positionNowSec() const;
 
 private:
-    /** @brief Body of the background polling thread: SMTC query, VLC-window-title fallback, and
-     * position-settling/smoothing logic. */
+    /**  Body of the background polling thread: SMTC query, VLC-window-title fallback, and position-settling/smoothing
+     * logic.
+     **/
     void threadFunc();
 
     mutable QMutex m_mutex; ///< Guards all published state below against concurrent access from threadFunc() and the
@@ -93,8 +98,12 @@ private:
                                           ///< condition.
     std::thread m_thread; ///< The background polling thread started by start() and joined by the destructor.
 private:
-    /// @brief Not copyable (CGVR template: copy constructor and assignment are always declared).
+    /** Not copyable (CGVR template: copy constructor and assignment are always declared). */
     NowPlaying( const NowPlaying & ) = delete;
-    /// @brief Not assignable; see the copy constructor.
+    /**  Not assignable; see the copy constructor.
+     *
+     * @return
+     *   Nothing: the operator is deleted, so no call compiles.
+     **/
     NowPlaying &operator=( const NowPlaying & ) = delete;
 };

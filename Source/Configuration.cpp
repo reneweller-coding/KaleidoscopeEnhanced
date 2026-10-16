@@ -31,15 +31,14 @@
 
 #include <GL/GLU.h>
 
-/**
- * @brief Constructs a Configuration by parsing @p configurationFile and initializing its RenderPipeline.
+/**  Constructs a Configuration by parsing @p configurationFile and initializing its RenderPipeline.
  *
  * Allocates m_renderPipeline, delegates the XML parsing to readConfiguration()
  * (which populates it with TextureShader/CombineShader entries and the
  * preset-wide timing fields), then names the RenderPipeline after the parsed
  * preset (used as the taste-learning namespace) and calls
  * RenderPipeline::init() with the parsed image directory and timing ranges.
- */
+ **/
 Configuration::Configuration( const QString &configurationFile )
 {
     m_renderPipeline = new RenderPipeline();
@@ -51,24 +50,20 @@ Configuration::Configuration( const QString &configurationFile )
 }
 
 
-/** @brief Deletes the owned RenderPipeline. */
+/** Deletes the owned RenderPipeline. */
 Configuration::~Configuration()
 {
     delete m_renderPipeline;
 }
 
-/**
- * @brief Forwards to RenderPipeline::start() to (re)size and start the render pipeline.
- * @param width Viewport width in pixels.
- * @param height Viewport height in pixels.
- */
+/** Forwards to RenderPipeline::start() to (re)size and start the render pipeline. */
 void Configuration::start( int width, int height ) const
 {
     m_renderPipeline->start( width, height );
 }
 
 
-/** @brief Forwards to RenderPipeline::stop(). */
+/** Forwards to RenderPipeline::stop(). */
 void Configuration::stop() const
 {
     m_renderPipeline->stop();
@@ -94,15 +89,18 @@ static QMap<QString, QList<QPair<QString, QString>>> s_rigTable; ///< Rig name -
 static bool s_rigLoaded = false; ///< Guards loadRigTable() so the table is read at most once per process (also set when
                                  ///< rigs.xml is missing, so a missing table is reported once, not per scene).
 
-/**
- * @brief Loads Presets/rigs.xml into #s_rigTable on the first call; every later call is a no-op.
+/**  Loads Presets/rigs.xml into #s_rigTable on the first call; every later call is a no-op.
+ *
+ * @param cfgDir  Directory that holds the preset XML files (and rigs.xml beside them). (in)
  *
  * Parses each `<rig name="...">` element and its `<expr name="..." formula="..."/>`
  * children. A missing or unparsable file leaves the table empty, so a
  * `<rig>` reference in a scene then warns in addUniforms() instead of
  * failing here.
- * @param cfgDir Directory that holds the preset XML files (and rigs.xml beside them).
- */
+ *
+ * @sideeffects
+ *   Changes s_rigLoaded.
+ **/
 static void loadRigTable( const QString &cfgDir )
 {
     if ( s_rigLoaded )
@@ -135,9 +133,8 @@ static void loadRigTable( const QString &cfgDir )
     fprintf( stderr, "Rig-Vorlagen geladen: %d\n", static_cast<int>( s_rigTable.size() ) );
 }
 
-/**
- * @brief Walks the direct child elements of a TextureShader/CombineShader XML node and registers each declared uniform
- * (or expression) on @p shader.
+/**  Walks the direct child elements of a TextureShader/CombineShader XML node and registers each declared uniform (or
+ * expression) on @p shader.
  *
  * Recognised child tags: `<interpolator>` (min/max-of-min/max ramping range,
  * see Uniform's BASE_TYPE_INTERPOLATOR_FLOAT), `<bool>` (probability of being
@@ -148,7 +145,7 @@ static void loadRigTable( const QString &cfgDir )
  * that overrides a same-named `<float>` uniform with a live audio-reactive
  * value; see EffectShader::addExpression). Every tag shares a `name`
  * attribute identifying the target GLSL uniform.
- */
+ **/
 void Configuration::addUniforms( EffectShader *shader, QDomElement &el )
 {
     // get all data for the element, by looping through all child elements
@@ -222,11 +219,13 @@ void Configuration::addUniforms( EffectShader *shader, QDomElement &el )
 }
 
 
-/**
- * @brief Rewrites a shader `file` path from the pre-2026-08 folder layout to the current one, if needed.
- * @param p Shader file path as read from a preset's `file` attribute (either legacy or current layout).
- * @return The path with legacy `Scene/`, `Combine/CombineX` and `Blend/` segments remapped to `Scene2D/`, `FX/FxX` and
- * `Engine/` respectively; unchanged (idempotent) if already in the new layout.
+/**  Rewrites a shader `file` path from the pre-2026-08 folder layout to the current one, if needed.
+ *
+ * @param p  Shader file path as read from a preset's `file` attribute (either legacy or current layout). (in)
+ *
+ * @return
+ *   The path with legacy `Scene/`, `Combine/CombineX` and `Blend/` segments remapped to `Scene2D/`, `FX/FxX` and
+ *   `Engine/` respectively; unchanged (idempotent) if already in the new layout.
  *
  * Pre-2026-08 layout fallback: old presets on disk may still reference
  * Scene/, Combine/CombineX and Blend/ paths; map them to the new layout
@@ -236,7 +235,7 @@ void Configuration::addUniforms( EffectShader *shader, QDomElement &el )
  * The literal separators are split across string-literal concatenation
  * (e.g. "\\Scen" "e\\") purely to dodge naive text-search tooling that
  * greps for the old folder names verbatim.
- */
+ **/
 static QString mapLegacyShaderPath( QString p )
 {
     p.replace( "\\Scen"
@@ -268,11 +267,11 @@ static QString mapLegacyShaderPath( QString p )
     return p;
 }
 
-/**
- * @brief Parses the preset XML file into m_renderPipeline: root-level metadata/timing, then every TextureShader and
+/**  Parses the preset XML file into m_renderPipeline: root-level metadata/timing, then every TextureShader and
  * CombineShader entry.
- * @param filenameIn Path to the Presets/ *.xml preset file to parse, as written in Windows style; mapped through
- * Platform::assetPath() (identity on Windows) before opening.
+ *
+ * @param filenameIn  Path to the Presets/ *.xml preset file to parse, as written in Windows style; mapped through
+ *                    Platform::assetPath() (identity on Windows) before opening. (in)
  *
  * Loads @p filenameIn into a QDomDocument and reads the root element's
  * attributes (ImageDirectory, ConfigurationName, hidden, and the preset-wide
@@ -289,7 +288,7 @@ static QString mapLegacyShaderPath( QString p )
  * On a missing/unreadable file this logs an error and calls exit(0) (not a
  * recoverable failure path); on a document that fails to parse it returns
  * early, leaving the Configuration in a partially/un-initialised state.
- */
+ **/
 void Configuration::readConfiguration( const QString &filenameIn )
 {
     // Same reason as loadMeshAsset(): the paths are written Windows-style and

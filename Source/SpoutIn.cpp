@@ -10,9 +10,10 @@
 
 #include <cstring>
 
-static Spout   *s_rx = nullptr;   ///< The Spout2 SDK receiver object; nullptr until spoutInInit() creates it.
-static GLuint   s_tex = 0; ///< GL texture id that receives the sender's frame; 0 until allocTexture() first runs.
-static unsigned s_w = 0, s_h = 0; ///< Current size of s_tex, as of the last allocTexture() call.
+static Spout   *s_rx = nullptr; ///< The Spout2 SDK receiver object; nullptr until spoutInInit() creates it.
+static GLuint   s_tex = 0;      ///< GL texture id that receives the sender's frame; 0 until allocTexture() first runs.
+static unsigned s_w = 0;        ///< Current width of s_tex, as of the last allocTexture() call.
+static unsigned s_h = 0;        ///< Current height of s_tex, as of the last allocTexture() call.
 
 bool spoutInInit( const char *senderName )
 {
@@ -26,11 +27,14 @@ bool spoutInInit( const char *senderName )
     return true;
 }
 
-/**
- * @brief (Re)allocates s_tex at the given size, GL_RGBA8, and sets its sampling/wrap parameters.
- * @param w New texture width in pixels.
- * @param h New texture height in pixels.
- */
+/**  (Re)allocates s_tex at the given size, GL_RGBA8, and sets its sampling/wrap parameters.
+ *
+ * @param w  New texture width in pixels. (in)
+ * @param h  New texture height in pixels. (in)
+ *
+ * @sideeffects
+ *   Changes s_h, s_w.
+ **/
 static void allocTexture( unsigned w, unsigned h )
 {
     if ( !s_tex )

@@ -43,11 +43,12 @@
 
 #ifdef _WIN32
 #ifndef WIN32_LEAN_AND_MEAN
+/// Keeps <windows.h> to its core declarations (leaves out e.g. Winsock, RPC and OLE).
 #define WIN32_LEAN_AND_MEAN
 #endif
-// Without this, <windows.h> defines min/max as MACROS and every later
-// std::min( a, b ) fails with a bewildering "invalid token on the right of ::".
 #ifndef NOMINMAX
+/// Without this, <windows.h> defines min/max as MACROS and every later
+/// std::min( a, b ) fails with a bewildering "invalid token on the right of ::".
 #define NOMINMAX
 #endif
 #include <windows.h>
@@ -454,19 +455,41 @@ extern "C"
     /// Non-zero once KHR_debug's entry points resolved (core since GL 4.3).
     extern int glcoreHasDebug;
 
-    /// @brief Installs a debug callback that logs GL errors with the API call that
-    ///        raised them. Called by the engine only when KALEIDO_GL_DEBUG is set.
+    /**  Installs a debug callback that logs GL errors with the API call that raised them.
+     *
+     * Called by the engine only when KALEIDO_GL_DEBUG is set.
+     **/
     void glcoreEnableDebugOutput();
 
-    /// @brief Records which shader file a program was built from, so the debug
-    ///        callback can name it. No-op cost when debug output is off.
+    /**  Records which shader file a program was built from, so the debug callback can name it.
+     *
+     * @param prog  The GL program; 0 is ignored. (in)
+     * @param name  Its shader file or cache key; NULL is ignored. (in)
+     *
+     * No-op cost when debug output is off.
+     *
+     * @sideeffects
+     *   Changes s_progNames.
+     **/
     void glcoreNameProgram( unsigned prog, const char *name );
-    /// @brief Name recorded for @p prog, or "?" if none.
+    /**  Name recorded for @p prog, or "?" if none.
+     *
+     * @param prog  The GL program. (in)
+     *
+     * @return
+     *   The recorded name, or "?".
+     **/
     const char *glcoreDebugProgramName( unsigned prog );
-    /// @brief Names the pipeline STATION for the debug callback ("scene:act",
-    ///        "shadowPass1", ...). The program name says which shader; this says
-    ///        which of the several draws of that shader per frame. Pass a string
-    ///        literal -- only the pointer is stored.
+    /**  Names the pipeline STATION for the debug callback ("scene:act", "shadowPass1", ...).
+     *
+     * @param station  A string literal the caller keeps alive; NULL resets to "?". (in)
+     *
+     * The program name says which shader; this says which of the several draws of that shader per frame. Pass a string
+     * literal -- only the pointer is stored.
+     *
+     * @sideeffects
+     *   Changes s_debugMark.
+     **/
     void glcoreDebugMark( const char *station );
 
     // ---------------------------------------------------------------------------
@@ -484,28 +507,46 @@ extern "C"
     // owned by glcore for the life of the context.
     // ---------------------------------------------------------------------------
 
-    /// @brief 1x1 opaque-black GL_TEXTURE_2D. @return Texture name.
+    /**  1x1 opaque-black GL_TEXTURE_2D.
+     *
+     * @return
+     *   Texture name.
+     **/
     GLuint glcoreDummyTex2D();
-    /// @brief 1x1x1 opaque-black GL_TEXTURE_2D_ARRAY. @return Texture name (0 if glTexImage3D is missing).
+    /**  1x1x1 opaque-black GL_TEXTURE_2D_ARRAY.
+     *
+     * @return
+     *   Texture name (0 if glTexImage3D is missing).
+     **/
     GLuint glcoreDummyTex2DArray();
-    /// @brief 1x1 depth texture, COMPARE_REF_TO_TEXTURE, depth 1.0 -- reads as
-    ///        'nothing occludes', so a shadow sampler bound to it renders fully lit.
-    /// @return Texture name.
+    /**  1x1 depth texture, COMPARE_REF_TO_TEXTURE, depth 1.0 -- reads as 'nothing occludes', so a shadow sampler
+     * bound to it renders fully lit.
+     *
+     * @return
+     *   Texture name.
+     **/
     GLuint glcoreDummyShadow();
-    /// Resolves any GL entry point by name (context current); null if the driver lacks it.
+    /**  Resolves any GL entry point by name (context current); null if the driver lacks it.
+     *
+     * @param name  Entry point name, e.g. "glMaxShaderCompilerThreadsKHR". (in)
+     *
+     * @return
+     *   The function pointer, or NULL if the driver lacks it.
+     **/
     void *glcoreProc( const char *name );
 
-    /**
-     * @brief Resolves every GL function pointer declared above.
+    /**  Resolves every GL function pointer declared above.
+     *
+     * @return
+     *   Non-zero (true) if every required (non-optional) entry point resolved, zero if any is missing. Non-zero
+     *   (true) if every required entry point resolved, zero otherwise.
      *
      * Must be called once with a GL context current (e.g. from initializeGL), before any
      * of the remapped GL calls are used. Required entry points that fail to resolve are
      * logged by name; optional (compute/tessellation/frame-history) ones are logged but
      * don't fail the call. Also sets glcoreHasCompute / glcoreHasTess based on which
      * optional pointers resolved.
-     * @return Non-zero (true) if every required (non-optional) entry point resolved,
-     *         zero if any is missing.
-     */
+     **/
     int glcoreInit( void );
 
 #ifdef __cplusplus

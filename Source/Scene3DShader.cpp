@@ -33,15 +33,17 @@
            ///< it.
 #endif
 
-/**
- * @brief Deterministic integer hash producing a pseudo-random float in [0,1).
+/**  Deterministic integer hash producing a pseudo-random float in [0,1).
+ *
+ * @param n  Input key (typically a vertex/primitive index combined with a small seed slot). (in)
+ *
+ * @return
+ *   Pseudo-random value in [0,1).
  *
  * The geometry must be identical every run (the vertex shader animates it; re-rolled variety
  * comes from the per-activation params), so this is a fixed bit-mixing hash rather than a PRNG
  * with hidden state.
- * @param n Input key (typically a vertex/primitive index combined with a small seed slot).
- * @return Pseudo-random value in [0,1).
- */
+ **/
 static float hash01( unsigned int n )
 {
     n = ( n ^ 61u ) ^ ( n >> 16 );
@@ -58,8 +60,12 @@ float Scene3DShader::M_CubeBudget = 1.f;
 // Shared by all geom="indirect" scenes (see setupIndirect()).
 GLuint Scene3DShader::M_ClampProg = 0;
 
-/** @brief Basic uniform random float in [0,1) using the C standard library RNG (used only for one-shot per-activation
- * rolls, not per-vertex geometry). @return Pseudo-random value in [0,1). */
+/**  Basic uniform random float in [0,1) using the C standard library RNG (used only for one-shot per-activation
+ * rolls, not per-vertex geometry).
+ *
+ * @return
+ *   Pseudo-random value in [0,1).
+ **/
 static float rand01()
 {
     return static_cast<float>( rand() ) / static_cast<float>( RAND_MAX );

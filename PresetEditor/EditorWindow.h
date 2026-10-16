@@ -39,19 +39,21 @@ class EditorWindow : public QMainWindow
 {
     Q_OBJECT
 public:
-    /**
-     * @brief Construct the editor window and build its entire UI.
-     * @param projectRoot Root folder of the visualizer project (holds standard.vert, Presets/, Scene2D/, Scene3D/,
-     * Combine/); resolved by main.cpp's findRoot().
-     * @param parent Optional Qt parent widget.
-     */
+    /**  Construct the editor window and build its entire UI.
+     *
+     * @param projectRoot  Root folder of the visualizer project (holds standard.vert, Presets/, Scene2D/, Scene3D/,
+     *                     Combine/); resolved by main.cpp's findRoot(). (in)
+     * @param parent       Optional Qt parent widget. (in)
+     **/
     explicit EditorWindow( const QString &projectRoot, QWidget *parent = nullptr );
 
-    /**
-     * @brief Look up a shader's default parameter set from the loaded Komplett.xml reference.
-     * @param fileName Bare shader filename (e.g. "Kaleidoscope.frag") to look up.
-     * @return A copy of that shader's Komplett.xml `<TextureShader>`/`<CombineShader>` params, or an empty vector if it
-     * has no Komplett.xml entry.
+    /**  Look up a shader's default parameter set from the loaded Komplett.xml reference.
+     *
+     * @param f  Bare shader filename (e.g. "Kaleidoscope.frag") to look up. (in)
+     *
+     * @return
+     *   A copy of that shader's Komplett.xml `<TextureShader>`/`<CombineShader>` params, or an empty vector if it
+     *   has no Komplett.xml entry.
      *
      * Default `<bool>`/`<int>`/`<float>`/`<expr>` params for a shader, copied from its
      * Komplett.xml entry (the exhaustive reference the whole engine tunes
@@ -59,15 +61,15 @@ public:
      * an empty or partial param list -- a missing param silently rolls its
      * uniform to GLSL's zero default at runtime, which degrades scenes.
      * Empty if the shader has no Komplett.xml entry.
-     */
-    QVector<ShaderParam> defaultParamsFor( const QString &fileName ) const;
+     **/
+    QVector<ShaderParam> defaultParamsFor( const QString &f ) const;
 
 protected:
-    /**
-     * @brief Keyboard-shortcut dispatcher for the window (texture/combine stepping, add/remove entry, music toggle,
+    /**  Keyboard-shortcut dispatcher for the window (texture/combine stepping, add/remove entry, music toggle,
      * audio-WAV load).
-     * @param e The key event.
-     */
+     *
+     * @param e  The key event. (in)
+     **/
     void keyPressEvent( QKeyEvent *e ) override;
 
 private slots:
@@ -102,44 +104,50 @@ private slots:
     void freezeParamsIntoEntry(); ///< write slider values as min=max params
 
 private:
-    /**
-     * @brief Populate the texture/combine shader combos by scanning Scene/, Scene3D/ and Combine/ for *.frag files.
+    /**  Populate the texture/combine shader combos by scanning Scene/, Scene3D/ and Combine/ for *.frag files.
      *
      * Records which files came from Scene3D/ into #m_scene3DFiles (so
      * onTextureChanged()/isScene3D() can tell 3D scenes apart from 2D ones
      * without relying on any naming convention), and defaults the combine
      * selection to "FxPlain.frag" when present.
-     */
+     **/
     void scanShaders();
-    /// @brief Repopulates #m_table's rows from m_preset's entries and rebuilds the range editor for the (possibly
-    /// now-stale) selection.
+    /**  Repopulates #m_table's rows from m_preset's entries and rebuilds the range editor for the (possibly
+     * now-stale) selection.
+     **/
     void refreshTable();
-    /// @brief Pushes #m_preset's metadata fields (name, hidden, image dir, timing) into their UI widgets and refreshes
-    /// the table.
+    /**  Pushes #m_preset's metadata fields (name, hidden, image dir, timing) into their UI widgets and refreshes the
+     * table.
+     **/
     void metaToUi();
-    /// @brief Reads the metadata UI widgets back into #m_preset (called before saving).
+    /** Reads the metadata UI widgets back into #m_preset (called before saving). */
     void uiToMeta();
-    /**
-     * @brief Advance a combo box's current index by @p delta, wrapping around.
-     * @param c Combo box to change.
-     * @param delta Signed step, typically +1 or -1 (used by the [ ] and , . keyboard shortcuts).
-     */
+    /**  Advance a combo box's current index by @p delta, wrapping around.
+     *
+     * @param c      Combo box to change. (in)
+     * @param delta  Signed step, typically +1 or -1 (used by the [ ] and , . keyboard shortcuts). (in)
+     **/
     void stepCombo( QComboBox *c, int delta );
+    /**  True if fileName was found under Scene3D/ (not Scene2D/) by scanShaders().
+     *
+     * @param fileName  Bare file name of a scene shader, as listed in the texture combo. (in)
+     *
+     * @return
+     *   True if fileName was found under Scene3D/ (not Scene2D/) by scanShaders().
+     **/
     bool isScene3D( const QString &fileName ) const
     {
         return m_scene3DFiles.contains( fileName );
-    } ///< True if fileName was found under Scene3D/ (not Scene2D/) by scanShaders().
-    /**
-     * @brief Send the "Add to preset" panel's current type/geom/stateBytes/shadowExtent settings to the live preview.
+    }
+    /**  Send the "Add to preset" panel's current type/geom/stateBytes/shadowExtent settings to the live preview.
      *
      * Split out of onTextureChanged() so the geom/stateBytes/shadowExtent
      * fields can push an update on their own, without re-deriving which
      * file is selected.
-     */
+     **/
     void pushPreviewTexture(); // send the full type/geom/stateBytes/shadowExtent to m_preview
 
-    /**
-     * @brief Rebuild the live parameter-slider panel for the currently previewed texture/combine shader.
+    /**  Rebuild the live parameter-slider panel for the currently previewed texture/combine shader.
      *
      * Live parameter sliders: per-activation params of the previewed shaders,
      * with slider ranges taken from Komplett.xml (which registers every shader
@@ -147,10 +155,11 @@ private:
      * selected entry, ranges are taken from that entry's own saved range
      * instead, so panel edits are visible immediately.  Slider values
      * override the preview defaults.
-     */
+     **/
     void rebuildParamSliders();
-    /// @brief Maps every slider's current [0,1000] position into its parameter's [minV,maxV] range and sends the
-    /// resulting overrides to the preview.
+    /**  Maps every slider's current [0,1000] position into its parameter's [minV,maxV] range and sends the resulting
+     * overrides to the preview.
+     **/
     void pushParamOverrides();
     /**
      * @brief One live parameter slider's binding: which uniform it drives, its value range, and which shader stage it
@@ -173,9 +182,7 @@ private:
                                               ///< rebuildParamSliders() call).
     class QCheckBox *m_transCheck = nullptr;  ///< transition slow-motion bench
 
-    /**
-     * @brief Rebuild the "Selected entry: parameter ranges / formula / audio mapping" panel for the table-selected
-     * entry.
+    /**  Rebuild the "Selected entry: parameter ranges / formula / audio mapping" panel for the table-selected entry.
      *
      * Per-preset-entry parameter RANGE editor (as opposed to the single-value
      * preview sliders above): lets a preset deliberately diverge from
@@ -186,7 +193,7 @@ private:
      * declared set; editing a row that only exists in Komplett (i.e. is
      * currently missing from the entry) ADDS it -- the same action doubles
      * as the fix for an accidentally-absent param.
-     */
+     **/
     void         rebuildRangeEditor();
     QGroupBox   *m_rangeBox = nullptr;  ///< Group box hosting the per-entry range/formula/audio-mapping editor.
     QFormLayout *m_rangeForm = nullptr; ///< Form layout the range-editor rows are added to (cleared/rebuilt by
@@ -213,8 +220,9 @@ private:
                                  ///< tick by tickExprValues().
     QTimer *m_exprTimer = nullptr; ///< Fires tickExprValues() periodically so expr readouts track the animated audio
                                    ///< state.
-    /// @brief Re-evaluates every currently-valid expr row's compiled program against the animated audio state and
-    /// updates its value label.
+    /**  Re-evaluates every currently-valid expr row's compiled program against the animated audio state and updates
+     * its value label.
+     **/
     void tickExprValues();
 
     QString m_root;     ///< Project root directory (holds standard.vert, Presets/, Scene2D/, Scene3D/, Combine/).
@@ -263,8 +271,12 @@ private:
 
     QString m_wavPath; ///< current real-audio preview WAV (empty = synthetic)
 private:
-    /// @brief Not copyable (CGVR template: copy constructor and assignment are always declared).
+    /** Not copyable (CGVR template: copy constructor and assignment are always declared). */
     EditorWindow( const EditorWindow & ) = delete;
-    /// @brief Not assignable; see the copy constructor.
+    /**  Not assignable; see the copy constructor.
+     *
+     * @return
+     *   Nothing: the operator is deleted, so no call compiles.
+     **/
     EditorWindow &operator=( const EditorWindow & ) = delete;
 };

@@ -20,8 +20,10 @@
 #include <functional>
 #include <io.h>
 
-/**
- * @brief Link-time-only stand-in for RenderPipeline.cpp's `fullscreenVAO()`.
+/**  Link-time-only stand-in for RenderPipeline.cpp's `fullscreenVAO()`.
+ *
+ * @return
+ *   A lazily-created, process-lifetime empty VAO name.
  *
  * EffectShader is a CONCRETE class (draw()/checkGLErrors() are virtual but not
  * pure), so its own vtable -- emitted once, in EffectShader.obj -- keeps
@@ -32,8 +34,7 @@
  * linked here (it is almost entirely Qt-widget code).  A second definition in
  * any linked translation unit satisfies the linker; it is never actually
  * invoked.
- * @return A lazily-created, process-lifetime empty VAO name.
- */
+ **/
 GLuint fullscreenVAO()
 {
     static GLuint vao = 0;
@@ -103,17 +104,19 @@ void Scene3DPreview::addExpr( const QString &name, const QString &formula )
         m_scene->addExpression( name.toStdString(), formula.toStdString() );
 }
 
-/**
- * @brief Redirect stderr to a temp file for the duration of one call, then read it back as a log string.
+/**  Redirect stderr to a temp file for the duration of one call, then read it back as a log string.
+ *
+ * @param body  Callable to run with stderr redirected (typically a shader compile/link call). (in)
+ *
+ * @return
+ *   Everything @p body wrote to stderr while redirected, trimmed; empty on a clean run or if the redirect/restore
+ *   failed.
  *
  * Every compiler/linker message in this codebase goes straight to stderr
  * (printShaderInfoLog / printProgramInfoLog in shader_setup.cpp) with no
  * string-returning alternative -- this is the least invasive way to surface
  * it in the editor's UI without changing that shared, shipped code path.
- * @param body Callable to run with stderr redirected (typically a shader compile/link call).
- * @return Everything @p body wrote to stderr while redirected, trimmed; empty on a clean run or if the redirect/restore
- * failed.
- */
+ **/
 static QString captureStderr( const std::function<void()> &body )
 {
     fflush( stderr );
@@ -181,11 +184,13 @@ bool Scene3DPreview::setShader( const QString &fragPathRelative, const QString &
 
 // ---- geometry: a single empty VAO, matching Engine/Fullscreen.vert's
 // gl_VertexID-driven big triangle (no vertex attributes at all) ----
-/**
- * @brief Lazily create (and return) an empty VAO for a gl_VertexID-driven fullscreen triangle.
- * @param vao In/out GL object name; created on first call (when 0), reused afterwards.
- * @return The VAO's GL object name.
- */
+/**  Lazily create (and return) an empty VAO for a gl_VertexID-driven fullscreen triangle.
+ *
+ * @param vao  In/out GL object name; created on first call (when 0), reused afterwards. (in,out)
+ *
+ * @return
+ *   The VAO's GL object name.
+ **/
 static unsigned ensureQuadVao( unsigned &vao )
 {
     if ( vao == 0 )
@@ -193,10 +198,11 @@ static unsigned ensureQuadVao( unsigned &vao )
     return vao;
 }
 
-/**
- * @brief Check the currently bound FBO's completeness, logging a diagnostic on failure.
- * @return True if GL_FRAMEBUFFER_COMPLETE; false otherwise (status is printed to stderr).
- */
+/**  Check the currently bound FBO's completeness, logging a diagnostic on failure.
+ *
+ * @return
+ *   True if GL_FRAMEBUFFER_COMPLETE; false otherwise (status is printed to stderr).
+ **/
 static bool checkFbo()
 {
     GLenum s = glCheckFramebufferStatus( GL_FRAMEBUFFER );

@@ -74,78 +74,85 @@ class AudioAnalyzer : public QThread
     Q_OBJECT
 
 public:
-    /**
-     * @brief Constructs the analyzer (does not start capture — call start()).
-     * @param parent Optional Qt parent object.
-     */
+    /**  Constructs the analyzer (does not start capture — call start()).
+     *
+     * @param parent  Optional Qt parent object. (in)
+     **/
     explicit AudioAnalyzer( QObject *parent = nullptr );
-    /** @brief Stops capture (if running) and waits for the thread to finish. */
+    /** Stops capture (if running) and waits for the thread to finish. */
     ~AudioAnalyzer() override;
 
-    /**
-     * @brief Thread-safe snapshot of the latest analysis result.
-     * @return A copy of the current AudioFeatures (safe to call from any thread).
-     */
+    /**  Thread-safe snapshot of the latest analysis result.
+     *
+     * @return
+     *   A copy of the current AudioFeatures (safe to call from any thread).
+     **/
     AudioFeatures getFeatures() const;
 
-    /**
-     * @brief Selectable audio sources (outputs + inputs), refreshed by the capture thread.
-     * @return The current device list (thread-safe copy).
-     */
+    /**  Selectable audio sources (outputs + inputs), refreshed by the capture thread.
+     *
+     * @return
+     *   The current device list (thread-safe copy).
+     **/
     QList<AudioDevice> devices() const;
 
-    /**
-     * @brief Friendly name of the source currently being captured.
-     * @return The device name, or the default-loopback label.
-     */
+    /**  Friendly name of the source currently being captured.
+     *
+     * @return
+     *   The device name, or the default-loopback label.
+     **/
     QString currentDeviceName() const;
 
-    /**
-     * @brief Switch the captured source at runtime.
-     * @param id Endpoint id to capture; empty string reverts to the default loopback device.
-     * @param isCapture true if `id` names an input (capture) endpoint, false for an output (loopback) endpoint.
-     */
+    /**  Switch the captured source at runtime.
+     *
+     * @param id         Endpoint id to capture; empty string reverts to the default loopback device. (in)
+     * @param isCapture  true if `id` names an input (capture) endpoint, false for an output (loopback) endpoint.
+     *                   (in)
+     **/
     void requestDevice( const QString &id, bool isCapture );
 
-    /**
-     * @brief Start recording the captured audio (the music) to a 16-bit stereo WAV file.
-     * @param wavPath Destination path; the file is opened lazily by the capture thread.
-     */
+    /**  Start recording the captured audio (the music) to a 16-bit stereo WAV file.
+     *
+     * @param wavPath  Destination path; the file is opened lazily by the capture thread. (in)
+     **/
     void startRecording( const QString &wavPath );
-    /** @brief Stop recording and wait briefly for the capture thread to flush + close the file. */
+    /** Stop recording and wait briefly for the capture thread to flush + close the file. */
     void stopRecording();
 
-    /**
-     * @brief Instant replay: dump the last `seconds` of captured audio (kept in a rolling ring, always on) as a 16-bit
+    /**  Instant replay: dump the last `seconds` of captured audio (kept in a rolling ring, always on) as a 16-bit
      * WAV.
-     * @param path Destination WAV path.
-     * @param seconds How many trailing seconds to dump (clamped to what has actually been captured).
-     * @return false if nothing has been captured yet or the file could not be opened, true on success.
-     */
+     *
+     * @param path     Destination WAV path. (in)
+     * @param seconds  How many trailing seconds to dump (clamped to what has actually been captured). (in)
+     *
+     * @return
+     *   false if nothing has been captured yet or the file could not be opened, true on success.
+     **/
     bool dumpReplayWav( const QString &path, float seconds );
 
-    /** @brief Graceful shutdown flag – call before wait(). */
+    /** Graceful shutdown flag – call before wait(). */
     void stop();
 
-    /**
-     * @brief TAP TEMPO (key 't', GUI thread): register one tap.
+    /**  TAP TEMPO (key 't', GUI thread): register one tap.
      *
      * The median of the last taps overrides the estimated tempo + beat phase
      * for ~45 s after the last tap — for material where automatic detection
      * struggles. A pause > 2.5 s starts a fresh series.
-     */
+     **/
     void tapTempo();
 
-    /**
-     * @brief Offline (Preset-Editor) analysis: run a 16-bit PCM WAV through the FULL analysis pipeline at full speed.
+    /**  Offline (Preset-Editor) analysis: run a 16-bit PCM WAV through the FULL analysis pipeline at full speed.
+     *
+     * @param path  Path to a 16-bit PCM WAV file. (in)
+     *
+     * @return
+     *   One AudioFeatures snapshot per 10 ms block of audio (empty if the file could not be read).
      *
      * No capture thread, no WASAPI — returns one AudioFeatures snapshot per
      * 10 ms block. The editor plays these back in sync with the sound so
      * presets can be tuned against real music with the real analyzer, not the
      * synthetic profile.
-     * @param path Path to a 16-bit PCM WAV file.
-     * @return One AudioFeatures snapshot per 10 ms block of audio (empty if the file could not be read).
-     */
+     **/
     static std::vector<AudioFeatures> analyzeWavToTimeline( const QString &path );
 
     /**
@@ -160,13 +167,14 @@ public:
     static QString M_OfflineWav;
 
 protected:
-    /** @brief QThread entry point: runs the WASAPI loopback capture loop (or, if M_OfflineWav is set, the offline
-     * analysis pass). */
+    /**  QThread entry point: runs the WASAPI loopback capture loop (or, if M_OfflineWav is set, the offline analysis
+     * pass).
+     **/
     void run() override;
-    /**
-     * @brief Feeds a WAV file through processBlock() in capture-sized chunks, paced to real time.
-     * @param path Path to a 16-bit PCM WAV file.
-     */
+    /**  Feeds a WAV file through processBlock() in capture-sized chunks, paced to real time.
+     *
+     * @param path  Path to a 16-bit PCM WAV file. (in)
+     **/
     void analyzeWavOffline( const QString &path );
 
 private:
@@ -499,20 +507,21 @@ private:
     float m_sMelody = 0.f; ///< Smoothed MELODY pitch: the same HPS restricted to >= 150 Hz, so a loud bass line cannot
                            ///< claim it; see AudioFeatures::melodyPitch.
 
-    /**
-     * @brief In-place Radix-2 DIT complex FFT.
-     * @param re Real-part array, length N: input windowed samples, output real part of the DFT coefficients X[0..N-1].
-     * @param im Imaginary-part array, length N: input all-zero for real-valued audio, output imaginary part of
-     * X[0..N-1].
-     * @param N Transform size; MUST be a power of two (e.g. 2048).
-     */
+    /**  In-place Radix-2 DIT complex FFT.
+     *
+     * @param re  Real-part array, length N: input windowed samples, output real part of the DFT coefficients
+     *            X[0..N-1]. (out)
+     * @param im  Imaginary-part array, length N: input all-zero for real-valued audio, output imaginary part of
+     *            X[0..N-1]. (out)
+     * @param N   Transform size; MUST be a power of two (e.g. 2048). (in)
+     **/
     static void radix2fft( float *re, float *im, int N );
 
     // ---- Audio source selection (runtime device switching) ----
-    /**
-     * @brief (Re)populates #m_devices with the current output (loopback) and input endpoints.
-     * @param pEnum WASAPI device enumerator to query.
-     */
+    /**  (Re)populates #m_devices with the current output (loopback) and input endpoints.
+     *
+     * @param pEnum  WASAPI device enumerator to query. (in)
+     **/
     void               enumerateDevices( IMMDeviceEnumerator *pEnum );
     QList<AudioDevice> m_devices;                 ///< Available audio sources (mutex-protected; see devices()).
     QString            m_curDeviceName;           ///< Name of the source currently being captured (mutex-protected; see
@@ -528,19 +537,20 @@ private:
     QString           m_recWavPath;        ///< Requested recording path (set under #m_mutex).
     void             *m_wavFile = nullptr; ///< Recording file handle (FILE*, run thread only).
     unsigned int      m_wavDataBytes = 0;  ///< Bytes written to the WAV data chunk so far.
-    /**
-     * @brief Opens #m_wavFile at #m_recWavPath and writes a placeholder 44-byte WAV header.
-     * @param sampleRate Sample rate to record at (written into the header, fixed up on close).
-     */
+    /**  Opens #m_wavFile at #m_recWavPath and writes a placeholder 44-byte WAV header.
+     *
+     * @param sampleRate  Sample rate to record at (written into the header, fixed up on close). (in)
+     **/
     void recOpen( int sampleRate );
-    /**
-     * @brief Appends captured samples to the open recording, converting to 16-bit stereo.
-     * @param src Interleaved float samples, range roughly [-1, 1] (clipped to 16-bit on conversion).
-     * @param numFrames Number of frames in `src`.
-     * @param numChannels Number of interleaved channels in `src` (channel 2+ is ignored; mono is duplicated to stereo).
-     */
+    /**  Appends captured samples to the open recording, converting to 16-bit stereo.
+     *
+     * @param src          Interleaved float samples, range roughly [-1, 1] (clipped to 16-bit on conversion). (in)
+     * @param numFrames    Number of frames in `src`. (in)
+     * @param numChannels  Number of interleaved channels in `src` (channel 2+ is ignored; mono is duplicated to
+     *                     stereo). (in)
+     **/
     void recWrite( const float *src, int numFrames, int numChannels );
-    /** @brief Finalises the WAV header (chunk sizes) and closes #m_wavFile. */
+    /** Finalises the WAV header (chunk sizes) and closes #m_wavFile. */
     void recClose();
 
     // ---- Tap tempo (manual override; see tapTempo()) ----
@@ -560,27 +570,36 @@ private:
                                           ///< capture/analysis loop.
 
     // ---- Helpers ----
-    /**
-     * @brief Core per-block DSP pipeline: 6-band IIR analysis, beat detection, ambient classification, FFT features,
+    /**  Core per-block DSP pipeline: 6-band IIR analysis, beat detection, ambient classification, FFT features,
      * publishes AudioFeatures.
-     * @param data Interleaved float PCM samples for this block.
-     * @param numFrames Number of frames in `data`.
-     * @param numChannels Number of interleaved channels in `data` (1 or 2).
-     * @param sampleRate Sample rate of `data`, in Hz.
-     */
+     *
+     * @param data         Interleaved float PCM samples for this block. (in)
+     * @param numFrames    Number of frames in `data`. (in)
+     * @param numChannels  Number of interleaved channels in `data` (1 or 2). (in)
+     * @param sampleRate   Sample rate of `data`, in Hz. (in)
+     *
+     * @sideeffects
+     *   Changes s_maj_dev, s_maj_var, s_min_dev, s_min_var, s_profiles_ready.
+     **/
     void processBlock( const float *data, int numFrames, int numChannels,
                        int sampleRate );
-    /**
-     * @brief One-pole IIR low-pass filter coefficient for a given cutoff and sample rate.
-     * @param cutoffHz Filter cutoff frequency, in Hz.
-     * @param sampleRate Sample rate, in Hz.
-     * @return Coefficient `a` such that `y[n] = a*y[n-1] + (1-a)*x[n]`; larger `a` = slower response (lower cutoff).
-     */
+    /**  One-pole IIR low-pass filter coefficient for a given cutoff and sample rate.
+     *
+     * @param cutoffHz    Filter cutoff frequency, in Hz. (in)
+     * @param sampleRate  Sample rate, in Hz. (in)
+     *
+     * @return
+     *   Coefficient `a` such that `y[n] = a*y[n-1] + (1-a)*x[n]`; larger `a` = slower response (lower cutoff).
+     **/
     static float coeff( float cutoffHz, int sampleRate );
 
 private:
-    /// @brief Not copyable (CGVR template: copy constructor and assignment are always declared).
+    /** Not copyable (CGVR template: copy constructor and assignment are always declared). */
     AudioAnalyzer( const AudioAnalyzer & ) = delete;
-    /// @brief Not assignable; see the copy constructor.
+    /**  Not assignable; see the copy constructor.
+     *
+     * @return
+     *   Nothing: the operator is deleted, so no call compiles.
+     **/
     AudioAnalyzer &operator=( const AudioAnalyzer & ) = delete;
 };

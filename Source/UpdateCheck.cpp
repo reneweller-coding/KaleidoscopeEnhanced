@@ -27,13 +27,18 @@
 static const char *kReleaseApi =
     "https://api.github.com/repos/reneweller-coding/KaleidoscopeEnhanced/releases/latest";
 
-/// Hosts a release asset may be downloaded from. The API hands out a
-/// github.com URL that REDIRECTS to a *.githubusercontent.com CDN host
-/// (release-assets.githubusercontent.com as of 2026-08; it has been
-/// objects./github-releases. before, hence matching the suffix rather than a
-/// fixed name). Verified against the real v1.6.0 asset. Anything outside
-/// GitHub is refused -- both for the URL the API returns and, again, for
-/// wherever the redirect actually lands.
+/**  Hosts a release asset may be downloaded from.
+ *
+ * @param url  The download URL. (in)
+ *
+ * @return
+ *   True for https on github.com, api.github.com or *.githubusercontent.com.
+ *
+ * The API hands out a github.com URL that REDIRECTS to a *.githubusercontent.com CDN host
+ * (release-assets.githubusercontent.com as of 2026-08; it has been objects./github-releases. before, hence matching the
+ * suffix rather than a fixed name). Verified against the real v1.6.0 asset. Anything outside GitHub is refused -- both
+ * for the URL the API returns and, again, for wherever the redirect actually lands.
+ **/
 static bool isTrustedDownloadHost( const QUrl &url )
 {
     if ( url.scheme() != "https" )

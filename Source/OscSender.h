@@ -36,35 +36,65 @@
 class OscSender
 {
 public:
-    /**
-     * @brief Configure the target; port 0 disables sending.
-     * @param host Destination host (name or dotted quad).
-     * @param port Destination UDP port; 0 = off.
-     */
+    /**  Configure the target; port 0 disables sending.
+     *
+     * @param host  Destination host (name or dotted quad). (in)
+     * @param port  Destination UDP port; 0 = off. (in)
+     **/
     void configure( const QString &host, int port );
 
-    /** @brief True when a non-zero port has been configured. */
+    /**  True when a non-zero port has been configured.
+     *
+     * @return
+     *   True if a port above 0 is set.
+     **/
     bool enabled() const { return m_port > 0; }
 
-    /**
-     * @brief Feed one frame's features; sends whatever is due this frame.
-     * @param f      The features snapshot the render loop already fetched.
-     * @param dtSec  Wall-clock seconds since the previous tick.
-     */
+    /**  Feed one frame's features; sends whatever is due this frame.
+     *
+     * @param f      The features snapshot the render loop already fetched. (in)
+     * @param dtSec  Wall-clock seconds since the previous tick. (in)
+     **/
     void tick( const AudioFeatures &f, float dtSec );
 
 private:
-    /** @brief One OSC message: address + float arguments, 4-byte aligned throughout. */
+    /**  One OSC message: address + float arguments, 4-byte aligned throughout.
+     *
+     * @param address  OSC address, e.g. "/kaleido/beat". (in)
+     * @param args     The float arguments. (in)
+     * @param n        Their number. (in)
+     *
+     * @return
+     *   The encoded message.
+     **/
     static QByteArray message( const char *address, const float *args, int n );
-    /** @brief One OSC message with a single string argument. */
+    /**  One OSC message with a single string argument.
+     *
+     * @param address  OSC address. (in)
+     * @param value    The string argument (UTF-8). (in)
+     *
+     * @return
+     *   The encoded message.
+     **/
     static QByteArray messageStr( const char *address, const QByteArray &value );
-    /** @brief Wrap already-encoded messages into an OSC bundle (immediate timetag). */
+    /**  Wrap already-encoded messages into an OSC bundle (immediate timetag).
+     *
+     * @param messages  Encoded messages, as message() and messageStr() build them. (in)
+     *
+     * @return
+     *   The encoded bundle.
+     **/
     static QByteArray bundle( const QList<QByteArray> &messages );
-    /** @brief Pad a blob to the next 4-byte boundary with zeros (OSC alignment rule). */
+    /**  Pad a blob to the next 4-byte boundary with zeros (OSC alignment rule).
+     *
+     * @param b  The blob, padded in place. (in,out)
+     **/
     static void pad4( QByteArray &b );
 
-    /** @brief Fire-and-forget: writes one already-framed message or bundle as a single UDP datagram to m_addr:m_port.
-     */
+    /**  Fire-and-forget: writes one already-framed message or bundle as a single UDP datagram to m_addr:m_port.
+     *
+     * @param datagram  One encoded message or bundle, sent as it is. (in)
+     **/
     void send( const QByteArray &datagram );
 
     QUdpSocket   m_socket;             ///< Unbound UDP socket every datagram goes out of; never receives.
@@ -74,12 +104,16 @@ private:
     float        m_moodAcc = 999.f;    ///< Time since the last ~5 Hz /mood bundle (999 = fire immediately).
     float        m_prevDownbeat = 0.f; ///< Previous downbeat pulse, for edge detection.
 public:
-    /// @brief Default construction, which the declared copy operations would otherwise suppress.
+    /** Default construction, which the declared copy operations would otherwise suppress. */
     OscSender() = default;
 
 private:
-    /// @brief Not copyable (CGVR template: copy constructor and assignment are always declared).
+    /** Not copyable (CGVR template: copy constructor and assignment are always declared). */
     OscSender( const OscSender & ) = delete;
-    /// @brief Not assignable; see the copy constructor.
+    /**  Not assignable; see the copy constructor.
+     *
+     * @return
+     *   Nothing: the operator is deleted, so no call compiles.
+     **/
     OscSender &operator=( const OscSender & ) = delete;
 };

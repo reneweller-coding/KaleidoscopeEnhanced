@@ -314,16 +314,18 @@ void GLwidget::remoteForceScene( int idx )
         m_actConfiguration->renderPipeline()->forceScene( idx );
 }
 
-/**
- * @brief On-disk thumbnail cache path for one (config, scene) pair.
+/**  On-disk thumbnail cache path for one (config, scene) pair.
+ *
+ * @param config  Configuration (preset) name, used as the sub-folder. (in)
+ * @param scene   Scene name, used as the file stem. (in)
+ *
+ * @return
+ *   Absolute path of the form ..\\ThumbCache\\CONFIG\\SCENE.jpg (the file need not exist).
  *
  * Sibling of Presets\/kaleidoscope_settings.ini (relative to the Release/Debug
  * CWD), keyed by NAME rather than index since indices aren't stable across
  * restarts (a config edit reorders/adds entries) but names are.
- * @param config Configuration (preset) name, used as the sub-folder.
- * @param scene Scene name, used as the file stem.
- * @return Absolute path of the form ..\\ThumbCache\\CONFIG\\SCENE.jpg (the file need not exist).
- */
+ **/
 static QString thumbCachePath( const QString &config, const QString &scene )
 {
     return Platform::assetPath( "..\\ThumbCache\\" + config + "\\" + scene + ".jpg" );
@@ -898,8 +900,7 @@ void GLwidget::initializeGL()
     setAutoFillBackground( false ); // rwrwforeground
 }
 
-/**
- * @brief Write the measured per-scene render cost to scene-cost.json.
+/**  Write the measured per-scene render cost to scene-cost.json.
  *
  * The scheduler's selection budget runs on a hand-set `complexity`
  * attribute -- an estimate nobody ever checked against a clock.  This
@@ -907,7 +908,7 @@ void GLwidget::initializeGL()
  * a measurement.  Milliseconds per frame, averaged over the frames the
  * scene was on screen; scenes seen for under 30 frames are left out
  * because a handful of frames is dominated by shader compilation.
- */
+ **/
 void GLwidget::dumpSceneCost()
 {
     if ( m_sceneCost.isEmpty() )
@@ -1470,8 +1471,7 @@ void GLwidget::draw()
 }
 
 
-/**
- * @brief Draw the configuration picker (key '0').
+/**  Draw the configuration picker (key '0').
  *
  * The list scrolls and filters: the digit keys only ever reached nine presets,
  * so anything past the ninth -- which the hidden-preset debug switch and a
@@ -1482,7 +1482,7 @@ void GLwidget::draw()
  * Two things are marked, and they mean different things: the cursor bar is
  * where Enter would take you, the dot marks the preset that is actually
  * running. They coincide when the menu opens.
- */
+ **/
 void GLwidget::showSelectConfigurationsMenu( QPainter *painter )
 {
     const QVector<int> hits = configMenuMatches();
@@ -1813,14 +1813,13 @@ void GLwidget::updateAdaptiveScale()
     }
 }
 
-/**
- * @brief Double-click toggles fullscreen.
+/**  Double-click toggles fullscreen.
  *
  * It used to call exit(0) instead, with this toggle sitting unreachable
  * underneath it -- a stray double-click on the window ended the show, which is
  * a brutal answer to a slip of the hand. Quitting already has two deliberate
  * keys ('Esc' and 'q'); a mouse gesture should not be a third.
- */
+ **/
 void GLwidget::mouseDoubleClickEvent( QMouseEvent *e )
 {
     QWidget::mouseDoubleClickEvent( e );
@@ -1880,13 +1879,12 @@ void GLwidget::resetRotation()
     m_rotationMatrix[0] = m_rotationMatrix[5] = m_rotationMatrix[10] = m_rotationMatrix[15] = 1.0;*/
 }
 
-/**
- * @brief Click inside an open overlay menu picks a row; click outside closes it.
+/**  Click inside an open overlay menu picks a row; click outside closes it.
  *
  * The row geometry comes from MenuHit, filled while drawing, so this never has
  * to reproduce the layout arithmetic -- and cannot drift out of step with it.
  * The event's position is tested against the open menu's rows.
- */
+ **/
 void GLwidget::mousePressEvent( QMouseEvent *e )
 {
     const QPoint p = e->position().toPoint();
@@ -1923,12 +1921,11 @@ void GLwidget::mousePressEvent( QMouseEvent *e )
     }
 }
 
-/**
- * @brief The wheel scrolls whichever overlay menu is open.
+/**  The wheel scrolls whichever overlay menu is open.
  *
  * Without a menu open it does nothing, rather than falling through to some
  * other meaning -- the wheel has no job in the visualiser itself.
- */
+ **/
 void GLwidget::wheelEvent( QWheelEvent *e )
 {
     const int steps = e->angleDelta().y() / 120;
@@ -2247,8 +2244,16 @@ void GLwidget::applyMidi()
     }
 }
 
-/**
- * @brief Extracts a two-color dominant palette from an artist/cover image.
+/**  Extracts a two-color dominant palette from an artist/cover image.
+ *
+ * @param src   Source image (any format/size; downscaled internally to 24x24). (in)
+ * @param palA  Output: dominant color as RGB in 0..1. (out)
+ * @param palB  Output: secondary color as RGB in 0..1 (or a darkened shade of palA when no sufficiently distinct
+ *              second hue bucket exists). (out)
+ *
+ * @return
+ *   True if a usable (sufficiently colorful) palette was found; false for near-greyscale images, in which case
+ *   palA/palB are unmodified.
  *
  * Cover-Palette: die zwei dominanten Farben eines Kuenstlerbilds.  12 Hue-
  * Eimer, gewichtet mit Saettigung*Helligkeit (Grau/Schwarz zaehlt nicht);
@@ -2256,14 +2261,7 @@ void GLwidget::applyMidi()
  * mit Kreis-Abstand >= 2 (sonst dunkle Schattierung der Ersten).  Liefert
  * false fuer praktisch farblose Cover (S/W-Fotos) - dann bleibt das Grading
  * neutral statt einen Zufallston zu erfinden.
- *
- * @param src Source image (any format/size; downscaled internally to 24x24).
- * @param palA Output: dominant color as RGB in 0..1.
- * @param palB Output: secondary color as RGB in 0..1 (or a darkened shade of
- *             palA when no sufficiently distinct second hue bucket exists).
- * @return True if a usable (sufficiently colorful) palette was found; false
- *         for near-greyscale images, in which case palA/palB are unmodified.
- */
+ **/
 static bool extractPalette( const QImage &src, float *palA, float *palB )
 {
     if ( src.isNull() )
@@ -2887,8 +2885,7 @@ int GLwidget::audioMenuCount() const
     return 1 + ( m_audioAnalyzer ? m_audioAnalyzer->devices().size() : 0 );
 }
 
-/**
- * @brief Draw the audio-source picker (key 'd').
+/**  Draw the audio-source picker (key 'd').
  *
  * Scrolls and filters, for the same reason the preset menu does: selection used
  * to be bound to the digit keys, so the list was truncated at nine entries
@@ -2898,7 +2895,7 @@ int GLwidget::audioMenuCount() const
  *
  * The highlight bar is where Enter would take you; the arrow marks the source
  * that is actually feeding the analyzer.
- */
+ **/
 void GLwidget::drawAudioMenu( QPainter *painter )
 {
     QList<AudioDevice> devs;

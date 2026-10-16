@@ -36,17 +36,21 @@
 // h264_nvenc while the driver or GPU refuses it at runtime. So this actually
 // ENCODES a tiny throwaway clip once and keeps the result. Probed lazily on
 // first use, never on the render thread's critical path.
-/**
- * @brief Does this encoder actually work HERE? Encodes a throwaway clip and checks the exit code.
+/**  Does this encoder actually work HERE?
+ *
+ * @param enc      Encoder name, used only for the "unavailable" log line. (in)
+ * @param encArgs  The candidate's ffmpeg arguments ("-c:v" ... plus rate-control flags) to test. (in)
+ *
+ * @return
+ *   true if ffmpeg exited normally with code 0.
+ *
+ * Encodes a throwaway clip and checks the exit code.
  *
  * 256x256 on purpose: NVENC, AMF and QSV all impose minimum dimensions and
  * alignment, and a 64x64 probe can be rejected by a perfectly working encoder
  * -- which would silently demote the machine to software. A probe that has
  * not finished after 15 s is killed and counted as unavailable.
- * @param enc Encoder name, used only for the "unavailable" log line.
- * @param encArgs The candidate's ffmpeg arguments ("-c:v" ... plus rate-control flags) to test.
- * @return true if ffmpeg exited normally with code 0.
- */
+ **/
 static bool probeEncoder( const QString &enc, const QStringList &encArgs )
 {
     QProcess    p;
@@ -75,8 +79,12 @@ struct Candidate
     QStringList args; /**< "-c:v" plus the vendor-specific preset and rate-control flags for this encoder. */
 };
 
-/**
- * @brief The ordered list of encoder candidates for one output codec family.
+/**  The ordered list of encoder candidates for one output codec family.
+ *
+ * @param fam  Codec family: "hevc", "av1", or anything else for h264. (in)
+ *
+ * @return
+ *   Candidates in probe order (hardware first, software last).
  *
  * One family per output codec. Within a family: discrete-GPU encoder first
  * (on a machine that has one it is also the card doing the rendering, so its
@@ -88,9 +96,7 @@ struct Candidate
  * x264/x265 want -crf. Passing the wrong one is ignored without a warning and
  * you get whatever default bitrate the encoder felt like. SVT-AV1's -crf is a
  * different scale again -- 30 there is roughly x264's 20, not a quality drop.
- * @param fam Codec family: "hevc", "av1", or anything else for h264.
- * @return Candidates in probe order (hardware first, software last).
- */
+ **/
 static QList<Candidate> codecFamily( const QString &fam )
 {
     if ( fam == "hevc" )
@@ -127,16 +133,17 @@ static QList<Candidate> codecFamily( const QString &fam )
     };
 }
 
-/**
- * @brief Which output codec family to aim for: KALEIDO_VIDEO_CODEC, else the ini key videoCodec, else h264.
+/**  Which output codec family to aim for: KALEIDO_VIDEO_CODEC, else the ini key videoCodec, else h264.
+ *
+ * @return
+ *   "h264", "hevc" or "av1" (normalised: "h265" becomes "hevc", unknown values become "h264").
  *
  * h264 stays the DEFAULT because it is the one every player, editor and phone
  * opens without thinking. hevc roughly halves the file at the same quality,
  * which matters now that recordings run at the full render resolution rather
  * than 720p; av1 is smaller still but slower to encode and younger in
  * playback support.
- * @return "h264", "hevc" or "av1" (normalised: "h265" becomes "hevc", unknown values become "h264").
- */
+ **/
 static QString wantedCodecFamily()
 {
     QString fam = qEnvironmentVariable( "KALEIDO_VIDEO_CODEC" ).trimmed().toLower();
@@ -155,16 +162,17 @@ static QString wantedCodecFamily()
     return fam;
 }
 
-/**
- * @brief Find the first working encoder for the wanted codec family by probing the candidates in order.
+/**  Find the first working encoder for the wanted codec family by probing the candidates in order.
+ *
+ * @return
+ *   The complete "-c:v ... -pix_fmt yuv420p" argument list to splice into a mux or pipe command.
  *
  * Honours the KALEIDO_VIDEO_ENCODER escape hatch first, then walks the family
  * from codecFamily(); libx264 is assumed present rather than probed. If the
  * wanted family has no usable encoder at all, it falls back to the h264 family
  * so a recording still happens. Spawns up to three short ffmpeg processes, so
  * it is only ever called through videoCodecArgs()'s once-per-process cache.
- * @return The complete "-c:v ... -pix_fmt yuv420p" argument list to splice into a mux or pipe command.
- */
+ **/
 static QStringList computeVideoCodecArgs()
 {
     QStringList            cached;
@@ -275,13 +283,14 @@ struct ProbeThread
 };
 static ProbeThread g_codecProbe; ///< The single process-wide warm probe thread (see ProbeThread).
 
-/**
- * @brief The video-codec arguments for this process, probing on first call and cached thereafter.
+/**  The video-codec arguments for this process, probing on first call and cached thereafter.
+ *
+ * @return
+ *   The cached result of computeVideoCodecArgs().
  *
  * Blocks while a probe started by warmVideoEncoderProbe() is still running on
  * another thread, rather than starting a second one.
- * @return The cached result of computeVideoCodecArgs().
- */
+ **/
 static QStringList videoCodecArgs()
 {
     std::call_once( g_codecOnce, []
@@ -289,12 +298,11 @@ static QStringList videoCodecArgs()
     return g_codecArgs;
 }
 
-/**
- * @brief Start the encoder probe on a throwaway thread now, so its answer is ready long before the mux needs it.
+/**  Start the encoder probe on a throwaway thread now, so its answer is ready long before the mux needs it.
  *
  * Called when a recording starts or the replay ring is armed; a no-op if a
  * probe thread is already running.
- */
+ **/
 static void warmVideoEncoderProbe()
 {
     if ( g_codecProbe.t.joinable() )
@@ -303,14 +311,13 @@ static void warmVideoEncoderProbe()
     { videoCodecArgs(); } );
 }
 
-/**
- * @brief Join the warm probe thread, if one was started.
+/**  Join the warm probe thread, if one was started.
  *
  * Must run before the process can exit: a detached probe still inside QProcess
  * while QCoreApplication tears down is a crash at shutdown. By the time this is
  * called videoCodecArgs() has already returned, so call_once is satisfied and
  * the join only waits for the thread to unwind.
- */
+ **/
 static void joinVideoEncoderProbe()
 {
     if ( g_codecProbe.t.joinable() )
@@ -338,8 +345,7 @@ Recorder::~Recorder()
     shutdown();
 }
 
-/**
- * @brief Finalise any in-progress recording, or otherwise just stop the worker thread, and forget the audio analyzer.
+/**  Finalise any in-progress recording, or otherwise just stop the worker thread, and forget the audio analyzer.
  *
  * If a recording is in progress it goes through the normal
  * finishRecording() path (drain + mux) so it ends up complete even if the
@@ -348,7 +354,7 @@ Recorder::~Recorder()
  * replay ring), it is asked to quit and joined directly. Either way,
  * m_audio is cleared last so nothing after this call can dereference a
  * soon-to-be-destroyed analyzer.
- */
+ **/
 void Recorder::shutdown()
 {
     if ( m_recording )
@@ -383,8 +389,7 @@ void Recorder::shutdown()
     m_audio = nullptr;
 }
 
-/**
- * @brief Start or stop a full recording.
+/**  Start or stop a full recording.
  *
  * On start: creates a fresh timestamped recordings/rec_* directory, resets
  * the frame counter/concat list/carry duration, starts the audio WAV
@@ -392,7 +397,7 @@ void Recorder::shutdown()
  * running. On stop: hands off to finishRecording() to drain and mux, then
  * restarts the worker if the replay ring is still armed (the worker was
  * shared and finishRecording() joins it).
- */
+ **/
 void Recorder::toggle()
 {
     if ( !m_recording )
@@ -444,13 +449,12 @@ void Recorder::toggle()
     }
 }
 
-/**
- * @brief Arm/disarm the instant-replay ring.
+/**  Arm/disarm the instant-replay ring.
  *
  * Arming starts the shared encoder worker (if not already running) and
  * resets the replay pacing clock so the first captured frame doesn't get a
  * bogus huge duration.
- */
+ **/
 void Recorder::toggleReplayArm()
 {
     m_replayArmed = !m_replayArmed;
@@ -630,8 +634,7 @@ void Recorder::resolveBlur( int w, int h )
 
 // Encoder-Worker: spiegelt, skaliert und JPEG-encodiert die Frames abseits
 // des GL-Threads, damit die Aufnahme das Rendern nicht mehr ausbremst.
-/**
- * @brief Encoder worker thread loop.
+/**  Encoder worker thread loop.
  *
  * Waits on m_cv for either a queued job or a quit request; on quit it still
  * drains the queue completely before returning, so every frame that was
@@ -642,7 +645,7 @@ void Recorder::resolveBlur( int w, int h )
  * memory and appended to m_replayFrames, after which the ring is trimmed
  * from the front to stay under ~31 s of total duration. A job with a path
  * is a recording frame and is saved to disk as a JPEG at that path.
- */
+ **/
 void Recorder::worker()
 {
     for ( ;; )
@@ -706,8 +709,10 @@ void Recorder::worker()
     }
 }
 
-/**
- * @brief Nominal output frame rate of the raw pipe (30 or 60), read once per process.
+/**  Nominal output frame rate of the raw pipe (30 or 60), read once per process.
+ *
+ * @return
+ *   60.0 if the configured value is 45 or more, otherwise 30.0.
  *
  * It matches the capture deadline in captureFrame(); the writer converts each
  * frame's MEASURED duration into a whole number of output frames at this rate,
@@ -720,8 +725,7 @@ void Recorder::worker()
  * where 30 visibly steps. Not a per-recording knob on purpose -- changing it
  * mid-recording would break the constant-rate contract the pipe writer relies
  * on.
- * @return 60.0 if the configured value is 45 or more, otherwise 30.0.
- */
+ **/
 static double recordFps()
 {
     static double fps = 0.0;
@@ -738,8 +742,7 @@ static double recordFps()
     return fps;
 }
 
-/**
- * @brief Start the ffmpeg that this recording pipes raw frames into.
+/**  Start the ffmpeg that this recording pipes raw frames into.
  *
  * The size is locked here, on the first captured frame, because rawvideo has
  * no per-frame headers -- the decoder is told the geometry once and every
@@ -750,7 +753,7 @@ static double recordFps()
  * conversion, no intermediate image. The encoder flags come from the same
  * probe the mux uses, so a recording is hardware-encoded wherever a mux
  * would have been.
- */
+ **/
 bool Recorder::startVideoPipe( int w, int h )
 {
     m_pipeW = w;
@@ -783,8 +786,7 @@ bool Recorder::startVideoPipe( int w, int h )
     return true;
 }
 
-/**
- * @brief Raw-pipe writer thread.
+/**  Raw-pipe writer thread.
  *
  * Single-threaded on purpose. The pool exists because JPEG-encoding a frame
  * was expensive; writing raw bytes is not, and a pipe carries no frame index,
@@ -795,7 +797,7 @@ bool Recorder::startVideoPipe( int w, int h )
  * On quit it drains whatever is still queued, closes ffmpeg's stdin -- which
  * is how ffmpeg learns the stream ended -- and waits for it to finish writing
  * the file, so finishRecording() can mux immediately afterwards.
- */
+ **/
 void Recorder::pipeWriter()
 {
     bool tried = false;
@@ -920,14 +922,13 @@ void Recorder::ensureWorker()
 
 // Instant Replay: ~15 fps in den rollenden Ring, solange scharf (und nicht
 // ohnehin aufgenommen wird — der Recording-Pfad erfasst mit 30 fps).
-/**
- * @brief Rate-limit and dispatch one replay-ring capture (~15 fps).
+/**  Rate-limit and dispatch one replay-ring capture (~15 fps).
  *
  * Skips the frame if less than ~66 ms (1/15 s) has elapsed since the last
  * replay capture. The measured inter-frame duration is clamped to 0.5 s so
  * a pause or the very first frame doesn't inject a huge gap into the replay
  * timeline.
- */
+ **/
 void Recorder::captureReplayFrame( int w, int h )
 {
     qint64 now = nowMs();
@@ -944,9 +945,7 @@ void Recorder::captureReplayFrame( int w, int h )
 // PBO-doppelt-gepufferter Async-Readback — siehe Header-Kommentar. Stellt den
 // glReadPixels DIESES Frames in PBO[cur] ein (kehrt sofort zurück) und
 // konsumiert den fertigen Transfer des VORHERIGEN Frames aus PBO[prev].
-/**
- * @brief Issue this frame's async PBO readback and consume the previous frame's completed transfer into the encoder
- * queue.
+/**  Issue this frame's async PBO readback and consume the previous frame's completed transfer into the encoder queue.
  *
  * This is the core of the "one frame of latency, zero GPU->CPU stall"
  * design: glReadPixels into PBO[cur] with a NULL client pointer queues a
@@ -967,7 +966,7 @@ void Recorder::captureReplayFrame( int w, int h )
  * toReplay routes the frame into the replay ring instead of the recording
  * pipe, and @p w / @p h give the readback size in pixels (frames smaller than
  * 2x2 are ignored).
- */
+ **/
 void Recorder::asyncCapture( float dur, bool toReplay, int w, int h )
 {
     if ( w < 2 || h < 2 )
@@ -1067,8 +1066,7 @@ void Recorder::asyncCapture( float dur, bool toReplay, int w, int h )
 }
 
 // Replay-Ring (Frames + rollendes Audio) speichern und wie eine Aufnahme muxen.
-/**
- * @brief Save the current replay ring to disk and mux it (with trimmed audio) into replays/replay_TIMESTAMP/replay.mp4.
+/**  Save the current replay ring to disk and mux it (with trimmed audio) into replays/replay_TIMESTAMP/replay.mp4.
  *
  * Bails out (with a stderr hint) if fewer than 15 frames are buffered.
  * Otherwise snapshots the ring under its mutex, writes every frame as a
@@ -1078,7 +1076,7 @@ void Recorder::asyncCapture( float dur, bool toReplay, int w, int h )
  * video ring, the WAV input is trimmed from the front via ffmpeg's -ss so
  * both streams end bündig (flush) together at the end. The mux itself runs
  * as a detached ffmpeg process, exactly like finishRecording()'s.
- */
+ **/
 void Recorder::saveReplay()
 {
     std::deque<ReplayFrame> frames;
@@ -1145,15 +1143,14 @@ void Recorder::saveReplay()
 // Das frisch gerenderte Bild (sauber, vor jedem Overlay) mit ~30 fps erfassen
 // und dem Encoder-Worker übergeben; auf dem GL-Thread bleiben nur glReadPixels
 // + ein memcpy. Die ffmpeg-concat-Liste entsteht hier mit den echten Dauern.
-/**
- * @brief Rate-limit and dispatch one recording capture (~30 fps).
+/**  Rate-limit and dispatch one recording capture (~30 fps).
  *
  * Skips the frame if less than ~33 ms (1/30 s) has elapsed since the last
  * recording capture. Duration for the very first frame is assumed to be
  * exactly 1/30 s; every subsequent frame uses the real measured delta so
  * the concat-list durations (built in asyncCapture()) reflect actual
  * pacing, not a nominal frame rate.
- */
+ **/
 void Recorder::captureFrame( int w, int h )
 {
     qint64 now = nowMs();
@@ -1200,8 +1197,7 @@ void Recorder::captureFrame( int w, int h )
 
 // Finalisieren: WAV schließen, concat-Liste + make_video.bat schreiben und
 // ffmpeg detacht die Frames + Audio zu kaleidoscope.mp4 muxen lassen.
-/**
- * @brief Finalise a recording: drop any in-flight PBO frame, drain and stop the worker, close the audio WAV, write the
+/**  Finalise a recording: drop any in-flight PBO frame, drain and stop the worker, close the audio WAV, write the
  * concat list and a fallback batch file, and launch a detached ffmpeg mux.
  *
  * Order matters here:
@@ -1219,7 +1215,7 @@ void Recorder::captureFrame( int w, int h )
  *     make_video.bat is also written as a manual fallback in case the
  *     immediately-launched detached ffmpeg mux doesn't run (e.g. not on
  *     PATH in some environment).
- */
+ **/
 void Recorder::finishRecording()
 {
     // Zuerst jeden In-Flight-PBO-Frame verwerfen: er darf nicht als

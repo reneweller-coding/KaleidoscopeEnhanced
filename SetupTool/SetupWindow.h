@@ -33,38 +33,56 @@ class QVBoxLayout;
 class SetupWindow : public QWidget
 {
 public:
-    /** @brief Builds the window: reads the persisted language first (so the very first form build is already in it),
-     * creates the fixed chrome (scroll area, status line, Save/Close row), then buildContent(), retranslateChrome() and
-     * loadFromIni(). */
+    /**  Builds the window: reads the persisted language first (so the very first form build is already in it),
+     * creates the fixed chrome (scroll area, status line, Save/Close row), then buildContent(), retranslateChrome()
+     * and loadFromIni().
+     **/
     SetupWindow();
 
 private:
-    /** @brief Locates kaleidoscope_settings.ini and Presets\ by walking up from the exe's own directory until a folder
-     * containing "Presets" (or the pre-04.09.2026 "Configurations") is found (robust regardless of exact build/deploy
-     * nesting). @return Absolute path to the repo/install root, or the exe's own directory if no landmark was found. */
+    /**  Locates kaleidoscope_settings.ini and Presets\ by walking up from the exe's own directory until a folder
+     * containing "Presets" (or the pre-04.09.2026 "Configurations") is found (robust regardless of exact
+     * build/deploy nesting).
+     *
+     * @return
+     *   Absolute path to the repo/install root, or the exe's own directory if no landmark was found.
+     **/
     static QString findRootDir();
-    /** @brief Full path to kaleidoscope_settings.ini under findRootDir(). */
+    /**  Full path to kaleidoscope_settings.ini under findRootDir().
+     *
+     * @return
+     *   The path.
+     **/
     static QString settingsPath();
-    /** @brief Scans findRootDir()/Presets/\*.xml for ConfigurationName values, skipping hidden="true" presets
-     * (dev/review builds), for the start-configuration dropdown. @return The visible preset names, sorted
-     * case-insensitively. */
+    /**  Scans findRootDir()/Presets/\*.xml for ConfigurationName values, skipping hidden="true" presets (dev/review
+     * builds), for the start-configuration dropdown.
+     *
+     * @return
+     *   The visible preset names, sorted case-insensitively.
+     **/
     static QStringList discoverConfigNames();
 
-    /** @brief (Re)builds the scrollable form (every group except the fixed Save/Close row) in the CURRENT language,
-     * preserving whichever field values are already set. Called once from the constructor and again whenever the
-     * language dropdown changes. */
+    /**  (Re)builds the scrollable form (every group except the fixed Save/Close row) in the CURRENT language,
+     * preserving whichever field values are already set.
+     *
+     * Called once from the constructor and again whenever the language dropdown changes.
+     **/
     void buildContent();
-    /** @brief Updates the window title and the two fixed action-button labels to the current language (the parts NOT
-     * inside the rebuildable content). */
+    /**  Updates the window title and the two fixed action-button labels to the current language (the parts NOT inside
+     * the rebuildable content).
+     **/
     void retranslateChrome();
-    /** @brief Fills every field from kaleidoscope_settings.ini, using the same defaults the main app falls back to when
-     * a key is missing (so a fresh machine shows what it will actually run with). The language combo is synced to
-     * Strings::language() with its signal blocked, so this never re-triggers the rebuild. Shows a "no settings file
-     * yet" note in the status line if the ini does not exist. */
+    /**  Fills every field from kaleidoscope_settings.ini, using the same defaults the main app falls back to when a
+     * key is missing (so a fresh machine shows what it will actually run with).
+     *
+     * The language combo is synced to Strings::language() with its signal blocked, so this never re-triggers the
+     * rebuild. Shows a "no settings file yet" note in the status line if the ini does not exist.
+     **/
     void loadFromIni();
-    /** @brief Writes every field back to kaleidoscope_settings.ini (activeConfig is removed rather than written for
-     * "last used"; an empty OSC host is stored as 127.0.0.1), then reports success or the failing path in the status
-     * line for four seconds. */
+    /**  Writes every field back to kaleidoscope_settings.ini (activeConfig is removed rather than written for "last
+     * used"; an empty OSC host is stored as 127.0.0.1), then reports success or the failing path in the status line
+     * for four seconds.
+     **/
     void saveToIni();
 
     QVBoxLayout *m_outerLayout = nullptr; ///< Persistent top-level layout (this widget's only layout).
@@ -114,9 +132,12 @@ private:
     bool m_packCancel = false;      ///< Cancel requested; checked between packs and inside the reply loop.
     /** @} */
 
-    void refreshPackStates();  ///< Re-derive "installed" from disk and re-tick the boxes accordingly.
-    void startPackDownloads(); ///< Fetch every ticked pack in turn, then unpack it.
-    void updatePackButton();   ///< Put the selected total onto the button label.
+    /** Re-derive "installed" from disk and re-tick the boxes accordingly. */
+    void refreshPackStates();
+    /** Fetch every ticked pack in turn, then unpack it. */
+    void startPackDownloads();
+    /** Put the selected total onto the button label. */
+    void updatePackButton();
 
     QComboBox *m_lyricsMode = nullptr;    ///< Lyrics display (ini key lyricsMode, stored as the index 0..2: off /
                                           ///< scrolling / karaoke); default karaoke.
@@ -157,8 +178,12 @@ private:
                                 ///< "save failed: path" from saveToIni(), cleared after four seconds; also the "no
                                 ///< settings file yet" note.
 private:
-    /// @brief Not copyable (CGVR template: copy constructor and assignment are always declared).
+    /** Not copyable (CGVR template: copy constructor and assignment are always declared). */
     SetupWindow( const SetupWindow & ) = delete;
-    /// @brief Not assignable; see the copy constructor.
+    /**  Not assignable; see the copy constructor.
+     *
+     * @return
+     *   Nothing: the operator is deleted, so no call compiles.
+     **/
     SetupWindow &operator=( const SetupWindow & ) = delete;
 };

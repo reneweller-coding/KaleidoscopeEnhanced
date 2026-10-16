@@ -15,19 +15,23 @@
 
 #include <string>
 
-/**
- * @brief Reads an entire text file.
- * @param fn Path of the file to read (Windows separators; mapped on other platforms).
- * @return The file's contents; empty if @p fn is NULL, the file could not be opened, or it was empty.
- */
+/**  Reads an entire text file.
+ *
+ * @param fn  Path of the file to read (Windows separators; mapped on other platforms). (in)
+ *
+ * @return
+ *   The file's contents; empty if @p fn is NULL, the file could not be opened, or it was empty.
+ **/
 std::string textFileRead( const char *fn );
-/**
- * @brief Writes a NUL-terminated string out to a text file, overwriting it.
- * @param fn Path of the file to write.
- * @param s String to write (written as-is, without an added terminator).
- * @return 1 on success (the full string was written), 0 on failure (including a NULL
- *         @p fn or a file that could not be opened).
- */
+/**  Writes a NUL-terminated string out to a text file, overwriting it.
+ *
+ * @param fn  Path of the file to write. (in)
+ * @param s   String to write (written as-is, without an added terminator). (in)
+ *
+ * @return
+ *   1 on success (the full string was written), 0 on failure (including a NULL @p fn or a file that could not be
+ *   opened).
+ **/
 int textFileWrite( const char *fn, const char *s );
 
 #endif // TEXTFILE_H

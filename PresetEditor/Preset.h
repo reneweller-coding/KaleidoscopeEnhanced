@@ -27,15 +27,17 @@
 #include <QtCore/QPair>
 #include <QtCore/QDir>
 
-/**
- * @brief The folder holding the preset *.xml files, under @p root.
+/**  The folder holding the preset *.xml files, under @p root.
+ *
+ * @param root  Project root (the folder holding standard.vert). (in)
+ *
+ * @return
+ *   Path to the presets folder.
  *
  * Called "Configurations" until 04.09.2026, "Presets" since.  A tree that
  * still carries the old folder keeps working, so the editor does not lose its
  * presets over a rename.
- * @param root Project root (the folder holding standard.vert).
- * @return Path to the presets folder.
- */
+ **/
 inline QString presetsDir( const QString &root )
 {
     const QString cur = root + "/Presets";
@@ -161,19 +163,23 @@ struct Preset
     QVector<QPair<QString, QString>> extraAttrs; ///< Root attributes not modelled above (AudioFile=, timeSceneFadeMin=,
                                                  ///< ...), written back verbatim.
 
-    /**
-     * @brief Load a preset from an XML file.
-     * @param path Filesystem path of the preset XML to read.
-     * @param out Destination; reset to a fresh Preset() and then filled from the parsed document.
-     * @param err Optional; filled with a human-readable message on failure.
-     * @return true on success; false if the file couldn't be opened or failed to parse (see @p err).
-     */
+    /**  Load a preset from an XML file.
+     *
+     * @param path  Filesystem path of the preset XML to read. (in)
+     * @param out   Destination; reset to a fresh Preset() and then filled from the parsed document. (out)
+     * @param err   Optional; filled with a human-readable message on failure. (out)
+     *
+     * @return
+     *   true on success; false if the file couldn't be opened or failed to parse (see @p err).
+     **/
     static bool load( const QString &path, Preset &out, QString *err = nullptr );
-    /**
-     * @brief Save this preset to an XML file.
-     * @param path Filesystem path to write.
-     * @param err Optional; filled with a human-readable message on failure.
-     * @return true on success; false if the file couldn't be opened for writing.
-     */
+    /**  Save this preset to an XML file.
+     *
+     * @param path  Filesystem path to write. (in)
+     * @param err   Optional; filled with a human-readable message on failure. (out)
+     *
+     * @return
+     *   true on success; false if the file couldn't be opened for writing.
+     **/
     bool save( const QString &path, QString *err = nullptr ) const;
 };

@@ -19,10 +19,10 @@
 
 // Opengl feedback about shaders
 
-/**
- * @brief Prints a shader's compile status and info log (if any) to stderr.
- * @param sh_id The GL shader object to query (must already have glCompileShader called on it).
- */
+/**  Prints a shader's compile status and info log (if any) to stderr.
+ *
+ * @param sh_id  The GL shader object to query (must already have glCompileShader called on it). (in)
+ **/
 void printShaderInfoLog( GLuint sh_id )
 {
     GLint   infolog_length = 0, status;
@@ -43,10 +43,10 @@ void printShaderInfoLog( GLuint sh_id )
     }
 }
 
-/**
- * @brief Prints a program's link status and info log (if any) to stderr.
- * @param prog_id The GL program object to query (must already have glLinkProgram called on it).
- */
+/**  Prints a program's link status and info log (if any) to stderr.
+ *
+ * @param prog_id  The GL program object to query (must already have glLinkProgram called on it). (in)
+ **/
 void printProgramInfoLog( GLuint prog_id )
 {
     GLint   infolog_length = 0, status;
@@ -71,18 +71,18 @@ void printProgramInfoLog( GLuint prog_id )
 
 // load & use shaders
 
-/**
- * @brief Loads a shader source file into an already-created shader object, compiles it, logs the result, and attaches
- * it to a program.
+/**  Loads a shader source file into an already-created shader object, compiles it, logs the result, and attaches it
+ * to a program.
+ *
+ * @param program_id  The GL program to attach the compiled shader to. (in)
+ * @param shader_id   An already-created (glCreateShader) shader object to fill and compile. (in)
+ * @param filename    Path to the GLSL source file to load. (in)
  *
  * Fails hard: a missing source file is treated as a broken installation, not a recoverable
  * condition, so this prints an error and calls exit(1) rather than returning an error code. A
  * compile failure, by contrast, is only logged (via printShaderInfoLog) — the shader is attached
  * regardless, and it is up to the caller to check the program's link status.
- * @param program_id The GL program to attach the compiled shader to.
- * @param shader_id An already-created (glCreateShader) shader object to fill and compile.
- * @param filename Path to the GLSL source file to load.
- */
+ **/
 void loadAttachShader( GLuint program_id, GLuint shader_id, const char *filename )
 {
     const std::string shadersource = textFileRead( filename );
@@ -102,14 +102,15 @@ void loadAttachShader( GLuint program_id, GLuint shader_id, const char *filename
 
 // The ONE shared vertex shader for every fullscreen pass (core profile has
 // no fixed-function vertex path): compiled once, attached to each program.
-/**
- * @brief Returns the process-wide shared fullscreen-quad vertex shader, compiling it from Engine\\Fullscreen.vert on
- * first call.
+/**  Returns the process-wide shared fullscreen-quad vertex shader, compiling it from Engine\\Fullscreen.vert on first
+ * call.
+ *
+ * @return
+ *   The GL vertex shader object id (same value on every call after the first).
  *
  * Exits the process if the file is missing (see loadAttachShader()'s rationale — a missing engine
  * asset is a broken install).
- * @return The GL vertex shader object id (same value on every call after the first).
- */
+ **/
 static GLuint fullscreenVertShader()
 {
     static GLuint vs = 0;
@@ -130,8 +131,13 @@ static GLuint fullscreenVertShader()
     return vs;
 }
 
-/**
- * @brief Links a program with its shaders attached; on link failure deletes it and returns 0.
+/**  Links a program with its shaders attached; on link failure deletes it and returns 0.
+ *
+ * @param prog  Program object with all stages attached, not yet linked. (in)
+ *
+ * @return
+ *   @p prog (now linked and bound via glUseProgram) on success; 0 after deleting it on failure (the info log is
+ *   printed either way).
  *
  * A program that fails to LINK (as opposed to a missing FILE, which
  * loadAttachShader() already treats as fatal) used to be returned anyway:
@@ -144,10 +150,7 @@ static GLuint fullscreenVertShader()
  * (mirroring setShadersPipeline()'s existing convention below) turns that
  * into a clean glUseProgram(0) at draw time -- the broken scene just draws
  * nothing, which is what Scene3DShader's pipeline path already does today.
- * @param prog Program object with all stages attached, not yet linked.
- * @return @p prog (now linked and bound via glUseProgram) on success; 0 after deleting it on failure (the info log is
- * printed either way).
- */
+ **/
 static GLuint linkOrFail( GLuint prog )
 {
     glLinkProgram( prog );
@@ -180,7 +183,11 @@ static std::map<GLuint, int>         s_progRefs;          ///< program -> how ma
 static int                           s_progReuses = 0;    ///< How often a build was answered from the cache.
 static double                        s_progBuildMs = 0.0; ///< Wall-clock ms spent in real compiles/links.
 
-/** @brief Monotonic milliseconds; only ever used as a difference. */
+/**  Monotonic milliseconds; only ever used as a difference.
+ *
+ * @return
+ *   Milliseconds of a steady clock.
+ **/
 static double nowMs()
 {
     using namespace std::chrono;
@@ -189,9 +196,21 @@ static double nowMs()
         .count();
 }
 
-/** @brief Builds the cache key. The tag matters: setShaders() ignores its vert
- *         argument and always uses the shared fullscreen vertex shader, so its
- *         programs are NOT interchangeable with setShadersVF()'s. */
+/**  Builds the cache key.
+ *
+ * @param tag  Which builder: "FS", "FSV", "VF", "PL" or "CS". (in)
+ * @param a    First source file (or NULL). (in)
+ * @param b    Second source file or the variant's defines (or NULL). (in)
+ * @param c    Third source file (or NULL). (in)
+ * @param d    Fourth source file (or NULL). (in)
+ * @param e    Fifth source file (or NULL). (in)
+ *
+ * @return
+ *   The tag and the five parts joined by '|'.
+ *
+ * The tag matters: setShaders() ignores its vert argument and always uses the shared fullscreen vertex shader, so its
+ * programs are NOT interchangeable with setShadersVF()'s.
+ **/
 static std::string progKey( const char *tag, const char *a, const char *b,
                             const char *c, const char *d, const char *e )
 {
@@ -206,21 +225,35 @@ static std::string progKey( const char *tag, const char *a, const char *b,
     return k;
 }
 
-/** @brief KALEIDO_NO_SHADER_CACHE=1 turns the cache off without a rebuild.
+/**  KALEIDO_NO_SHADER_CACHE=1 turns the cache off without a rebuild.
+ *
+ * @return
+ *   True if KALEIDO_NO_SHADER_CACHE is set.
  *
  *  Kept because the cache changes object LIFETIMES, and lifetime bugs are
  *  exactly the kind that get blamed on whatever changed last. Being able to
  *  A/B it inside one binary is the difference between attributing a fault
- *  and guessing at it. */
+ *  and guessing at it.
+ **/
 static bool cacheOff()
 {
     static const bool Off = ( getenv( "KALEIDO_NO_SHADER_CACHE" ) != 0 );
     return Off;
 }
 
-/** @brief Cache lookup. Also re-binds, because the builders leave the program
- *         bound (linkOrFail does) and a hit must be indistinguishable from a
- *         build -- otherwise the GL state after the call depends on cache luck. */
+/**  Cache lookup.
+ *
+ * @param key  The cache key (progKey()). (in)
+ *
+ * @return
+ *   The cached program, now bound and with one more reference; 0 if absent or the cache is off.
+ *
+ * Also re-binds, because the builders leave the program bound (linkOrFail does) and a hit must be indistinguishable
+ * from a build -- otherwise the GL state after the call depends on cache luck.
+ *
+ * @sideeffects
+ *   Changes s_progRefs, s_progReuses.
+ **/
 static GLuint progLookup( const std::string &key )
 {
     if ( cacheOff() )
@@ -234,8 +267,19 @@ static GLuint progLookup( const std::string &key )
     return it->second;
 }
 
-/** @brief Records a freshly built program. A failed build (0) is not cached --
- *         a later attempt should get the chance to fail loudly again. */
+/**  Records a freshly built program.
+ *
+ * @param key   The cache key (progKey()). (in)
+ * @param prog  The program just built; 0 is not stored. (in)
+ *
+ * @return
+ *   prog.
+ *
+ * A failed build (0) is not cached -- a later attempt should get the chance to fail loudly again.
+ *
+ * @sideeffects
+ *   Changes s_progByKey, s_progRefs.
+ **/
 static GLuint progStore( const std::string &key, GLuint prog )
 {
     // Name it for the debug callback while we still know which files went in.
@@ -328,7 +372,15 @@ struct PrebuildJob
 };
 static std::map<std::string, PrebuildJob> s_prebuild;      ///< Builds still running, by key.
 static int                                s_parallel = -1; ///< -1 unknown, 0 no, 1 yes
-/// @return True if the driver compiles in the background (GL_KHR/ARB_parallel_shader_compile; asked once).
+/**  Whether the driver compiles in the background (GL_KHR_parallel_shader_compile, or the ARB variant), unless
+ * KALEIDO_NO_PARALLEL_COMPILE is set.
+ *
+ * @return
+ *   True if the driver compiles in the background (GL_KHR/ARB_parallel_shader_compile; asked once).
+ *
+ * @sideeffects
+ *   Changes s_parallel.
+ **/
 static bool parallelCompile()
 {
     if ( s_parallel >= 0 )
@@ -391,7 +443,16 @@ bool shaderPrebuildStart( const char *frag_source )
 
 static std::map<std::string, int> s_variantFailed; ///< variant keys whose build failed (no retry)
 
-/// @brief Hands one finished background build to the program cache (its link-status query may block).
+/**  Hands one finished background build to the program cache (its link-status query may block).
+ *
+ * @param j  The finished build. (in)
+ *
+ * @return
+ *   The program if it linked, else 0 (logged).
+ *
+ * @sideeffects
+ *   Changes s_variantFailed.
+ **/
 static GLuint collectPrebuild( const PrebuildJob &j )
 {
     GLint        linked = 0;
@@ -582,18 +643,20 @@ GLuint setShadersVF( const char *vert_source, const char *frag_source )
 
 // Attach one OPTIONAL stage.  Returns 1 = attached, 0 = file absent (fine),
 // -1 = present but failed to compile (the caller must abandon the program).
-/**
- * @brief Compiles and attaches one optional pipeline stage (tess control/eval or geometry) to a program, if its source
+/**  Compiles and attaches one optional pipeline stage (tess control/eval or geometry) to a program, if its source
  * file exists.
+ *
+ * @param prog  The GL program to attach the stage to. (in)
+ * @param type  The shader stage type (e.g. GL_TESS_CONTROL_SHADER, GL_GEOMETRY_SHADER). (in)
+ * @param file  Path to the stage's source file, or NULL to skip it outright. (in)
+ *
+ * @return
+ *   1 if the stage was compiled and attached; 0 if @p file is NULL or does not exist (stage simply omitted); -1 if
+ *   the file exists but failed to compile (caller must abandon the whole program).
  *
  * Unlike loadAttachShader(), a missing file here is a normal "this scene doesn't use the stage"
  * outcome, not a fatal error — only an existing-but-broken file is treated as a failure.
- * @param prog The GL program to attach the stage to.
- * @param type The shader stage type (e.g. GL_TESS_CONTROL_SHADER, GL_GEOMETRY_SHADER).
- * @param file Path to the stage's source file, or NULL to skip it outright.
- * @return 1 if the stage was compiled and attached; 0 if @p file is NULL or does not exist (stage simply omitted); -1
- * if the file exists but failed to compile (caller must abandon the whole program).
- */
+ **/
 static int attachOptionalStage( GLuint prog, GLenum type, const char *file )
 {
     if ( file == NULL )

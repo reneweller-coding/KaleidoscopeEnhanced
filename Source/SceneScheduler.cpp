@@ -13,14 +13,14 @@
 #include "SceneScheduler.h"
 #include "EffectShader.h"
 
-/** @brief Enable/disable review mode (alphabetical walk, fixed ReviewSoloSecs per scene).
+/**  Enable/disable review mode (alphabetical walk, fixed ReviewSoloSecs per scene).
  *
  * The parameter is documented in SceneScheduler.h. Besides flipping the
  * mode, this publishes the span to EffectShader (ReviewSoloSecs while on,
  * 0 when off) so `sceneProgress` normalises over the time a scene is
  * actually SHOWN here rather than over its rolled solo span -- otherwise a
  * staged scene never finishes its arc on the bench.
- */
+ **/
 void SceneScheduler::setReviewMode( bool on )
 {
     m_reviewMode = on;
@@ -28,10 +28,13 @@ void SceneScheduler::setReviewMode( bool on )
 }
 
 // Basename eines Fragment-Pfads, case-insensitiver Vergleich (Review-Sortierung).
-/** @brief Return the basename (after the last slash/backslash) of a fragment path.
- * @param p Path string (may be null).
- * @return Pointer into @p p at the basename, or "?" if @p p is null.
- */
+/**  Return the basename (after the last slash/backslash) of a fragment path.
+ *
+ * @param p  Path string (may be null). (in)
+ *
+ * @return
+ *   Pointer into @p p at the basename, or "?" if @p p is null.
+ **/
 static const char *fragBase( const char *p )
 {
     if ( !p )
@@ -43,26 +46,31 @@ static const char *fragBase( const char *p )
     return b;
 }
 
-/** @brief Which review BLOCK a scene belongs to: the flat scenes first, the
- *         3D ones after.
+/**  Which review BLOCK a scene belongs to: the flat scenes first, the 3D ones after.
+ *
+ * @param p  Fragment path. (in)
+ *
+ * @return
+ *   0 for Scene2D (and anything else), 1 for Scene3D.
  *
  *  A review pass compares like with like. Walking one alphabetical list across
  *  both folders interleaves a fullscreen fractal with a lit 3D model every
  *  couple of scenes, and the eye spends its time re-adjusting instead of
  *  judging. Two blocks, each alphabetical inside, keeps the comparison honest.
- * @param p Fragment path.
- * @return 0 for Scene2D (and anything else), 1 for Scene3D.
- */
+ **/
 static int reviewBlock( const char *p )
 {
     return ( p && ( strstr( p, "Scene3D" ) || strstr( p, "scene3d" ) ) ) ? 1 : 0;
 }
 
-/** @brief Case-insensitive "basename of a < basename of b" comparator for the review-mode sort.
- * @param a First fragment path.
- * @param b Second fragment path.
- * @return True if basename(a) sorts before basename(b).
- */
+/**  Case-insensitive "basename of a < basename of b" comparator for the review-mode sort.
+ *
+ * @param a  First fragment path. (in)
+ * @param b  Second fragment path. (in)
+ *
+ * @return
+ *   True if basename(a) sorts before basename(b).
+ **/
 static bool baseLess( const char *a, const char *b )
 {
     const int ba = reviewBlock( a ), bb = reviewBlock( b );
@@ -81,8 +89,7 @@ static bool baseLess( const char *a, const char *b )
     return *y != 0;
 }
 
-/**
- * @brief Roll the initial act/next effect and combine picks and start both clocks.
+/**  Roll the initial act/next effect and combine picks and start both clocks.
  *
  * Mirrors the old inline start() block exactly, including its slightly
  * different (looser) complexity budgets for the very first pick: 12 for the
@@ -91,7 +98,7 @@ static bool baseLess( const char *a, const char *b )
  * useShader() and, for "next", a distinct index from "act" within the
  * complexity budget; if the loop still lands on the same index as "act" it
  * is nudged forward by one (wrapping) rather than retried further.
- */
+ **/
 void SceneScheduler::reset()
 {
     // Initiale Zufallswahl - exakt der alte start()-Block (inkl. der etwas
@@ -166,8 +173,7 @@ void SceneScheduler::reset()
 
 // Remote-Szenen-Browser: DIREKT zu Szene idx springen (gleicher Sofort-Pfad
 // wie ein manueller 'n'-Cut, aber mit gewähltem Ziel statt Zufalls-Roll).
-/**
- * @brief Jump directly to effect index @p idx (remote scene browser).
+/**  Jump directly to effect index @p idx (remote scene browser).
  *
  * Takes the same immediate path as a manual 'n' cut (forceEffectChange).
  * m_nextTexture is decided one fade cycle in advance (rolled/forced at the
@@ -180,7 +186,7 @@ void SceneScheduler::reset()
  * that fade finishes, exactly as before. The parameter is documented in
  * SceneScheduler.h (an out-of-range @p idx or a missing attach() is
  * silently ignored).
- */
+ **/
 void SceneScheduler::forceScene( int idx )
 {
     if ( !m_textures || idx < 0 || idx >= static_cast<int>( m_textures->size() ) )
@@ -196,15 +202,14 @@ void SceneScheduler::forceScene( int idx )
     m_forceIsManual = true;
 }
 
-/**
- * @brief Force the next combine-effect (overlay) to @p idx.
+/**  Force the next combine-effect (overlay) to @p idx.
  *
  * The parameter is documented in SceneScheduler.h (an out-of-range @p idx
  * or a missing attach() is ignored).
  * Bypasses the complexity budget, the mood filter and the mesh-calm rule:
  * an FX sweep exists to SEE the one that was asked for, including the ones
  * those filters would normally veto.
- */
+ **/
 void SceneScheduler::forceFx( int idx )
 {
     if ( !m_fxShaders || idx < 0 || idx >= static_cast<int>( m_fxShaders->size() ) )
@@ -213,8 +218,13 @@ void SceneScheduler::forceFx( int idx )
     m_forceFxChange = true;
 }
 
-/**
- * @brief Tells whether a combine/FX shader is "calm" enough to run over a loaded mesh model.
+/**  Tells whether a combine/FX shader is "calm" enough to run over a loaded mesh model.
+ *
+ * @param fragPath  Fragment-shader path of the FX candidate (EffectShader::fragmentName(); any directory prefix,
+ *                  either separator) -- only its basename is compared. nullptr yields false. (in)
+ *
+ * @return
+ *   True if the basename is on the calm allow-list, false for every other or unknown FX.
  *
  * FX that are welcome over a loaded model. The first cut of this rule forced
  * FxPlain outright, which threw away every harmless overlay along with the
@@ -228,10 +238,7 @@ void SceneScheduler::forceFx( int idx )
  * calm until someone reads it and adds it here -- the safe direction.
  * Deliberately absent: FxLens (displaces even if statically) and
  * FxOilPaintFlow (its brush field flows over time).
- * @param fragPath Fragment-shader path of the FX candidate (EffectShader::fragmentName(); any directory prefix, either
- * separator) -- only its basename is compared. nullptr yields false.
- * @return True if the basename is on the calm allow-list, false for every other or unknown FX.
- */
+ **/
 static bool isMeshCalmFx( const char *fragPath )
 {
     if ( !fragPath )
@@ -260,15 +267,14 @@ static bool isMeshCalmFx( const char *fragPath )
     return false;
 }
 
-/**
- * @brief Find a registered transition shader by fragment basename.
+/**  Find a registered transition shader by fragment basename.
  *
  * Parameter and return value are documented in SceneScheduler.h (e.g.
  * "Crossfade.frag"; -1 if not registered). Compares only the basename
  * (text after the last path separator, either '\\' or '/') so the
  * dramaturgy hooks ("Shatter.frag" on a drop, the Portal depth gate) stay
  * independent of how the preset spelled the path.
- */
+ **/
 int SceneScheduler::findTransition( const char *basename ) const
 {
     if ( !m_transitions || !basename )
@@ -288,14 +294,16 @@ int SceneScheduler::findTransition( const char *basename ) const
     return -1;
 }
 
-/**
- * @brief Tells whether texture @p idx was shown within the no-repeat window.
+/**  Tells whether texture @p idx was shown within the no-repeat window.
+ *
+ * @param idx  Texture index into the attached texture list. (in)
+ *
+ * @return
+ *   True if @p idx is in the window.
  *
  * The window holds the last min(RecentMax, a third of the preset) scenes, so
  * a small preset still has two thirds of its scenes to choose from.
- * @param idx Texture index into the attached texture list.
- * @return True if @p idx is in the window.
- */
+ **/
 bool SceneScheduler::isRecentTexture( unsigned int idx ) const
 {
     // By SHADER, not by entry: a mesh family registers one entry per model
@@ -312,10 +320,10 @@ bool SceneScheduler::isRecentTexture( unsigned int idx ) const
     return false;
 }
 
-/**
- * @brief Records that texture @p idx is on screen and trims the no-repeat window.
- * @param idx Texture index that has just become the active scene.
- */
+/**  Records that texture @p idx is on screen and trims the no-repeat window.
+ *
+ * @param idx  Texture index that has just become the active scene. (in)
+ **/
 void SceneScheduler::noteTextureShown( unsigned int idx )
 {
     m_recentTex.push_back( idx );
@@ -331,8 +339,7 @@ void SceneScheduler::noteTextureShown( unsigned int idx )
 //   2. Mood-TAGS (config mood="dark,bright,calm,aggressive"): Bonus bei
 //      Übereinstimmung, Malus bei klarem Widerspruch; ungetaggte bleiben
 //      neutral.  Probabilistisch - ein Bias, kein harter Filter.
-/**
- * @brief Probabilistic mood-based accept test for a selection candidate.
+/**  Probabilistic mood-based accept test for a selection candidate.
  *
  * Combines three signals into an acceptance probability, then rolls a
  * uniform random draw against it: (1) busyness match, how close the
@@ -344,7 +351,7 @@ void SceneScheduler::noteTextureShown( unsigned int idx )
  * Parameter and return value are documented in SceneScheduler.h: @p s is
  * the candidate effect or combine shader, and the result is true when the
  * uniform random draw falls below the computed acceptance probability.
- */
+ **/
 bool SceneScheduler::moodAccept( EffectShader *s ) const
 {
     float target = 1.f + m_lastArousal * 9.f; // desired busyness 1..10
@@ -378,8 +385,7 @@ bool SceneScheduler::moodAccept( EffectShader *s ) const
     return ( static_cast<float>( rand() ) / static_cast<float>( RAND_MAX ) ) < accept;
 }
 
-/**
- * @brief Evaluate musical triggers, then advance the effect (texture) Solo/Fade state machine.
+/**  Evaluate musical triggers, then advance the effect (texture) Solo/Fade state machine.
  *
  * Trigger handling (novelty, section change with song-structure memory,
  * drop, pin) runs first and only sets/clears the forced-change flags; the
@@ -403,7 +409,7 @@ bool SceneScheduler::moodAccept( EffectShader *s ) const
  *  - Section-memory parameter restore happens at FADE START (not fade end)
  *    so the incoming shader blends in already showing the stored look,
  *    instead of snapping to it the instant the fade completes.
- */
+ **/
 void SceneScheduler::tick( const Tick &t )
 {
     std::vector<EffectShader *> &tex = *m_textures;
@@ -903,8 +909,7 @@ void SceneScheduler::tick( const Tick &t )
     }
 }
 
-/**
- * @brief Advance the combine Solo/Fade state machine.
+/**  Advance the combine Solo/Fade state machine.
  *
  * Structurally the same two-phase machine as the effect side in tick(),
  * with one addition: @p trueStereoHold freezes the combine machine outright
@@ -916,7 +921,7 @@ void SceneScheduler::tick( const Tick &t )
  * own (its "which combine replays with a section" wiring lives in tick()).
  * Both parameters (@p t, the per-frame inputs; @p trueStereoHold, the
  * stereo freeze) are documented in SceneScheduler.h.
- */
+ **/
 void SceneScheduler::tickFx( const Tick &t, bool trueStereoHold )
 {
     std::vector<EffectShader *> &tex = *m_textures;
