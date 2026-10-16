@@ -629,10 +629,11 @@ void SceneScheduler::tick( const Tick &t )
     // remote jump; not while a walking lab is on screen (it walks on instead of cutting).  2D only: a 3D or mesh
     // scene is not prebuilt, and its warm-up would hold the drop's cut back by seconds.  Once per prediction.
     //
-    // Two limits (16.10.2026, the scene plan run on a long recording with build-ups and no drop): a lab waiting as
-    // the next scene keeps its turn -- a walking lab takes a drop itself, and overwriting it starved the labs to 0 %
-    // of their 40 %; and after two predictions without a drop the reserve rests until a drop comes -- otherwise every
-    // fade end in such music rolled a spectacle, and the show was nothing else.
+    // Two limits (16.10.2026, the scene plan run on the screening track, a groove that turns loud every eight seconds
+    // -- a build-up each time, never a drop): a lab waiting as the next scene keeps its turn -- a walking lab takes a
+    // drop itself, and overwriting it starved the labs to 0 % of their 40 %; and after two predictions without a drop
+    // the reserve rests until a drop comes -- otherwise every fade end in such music rolled a spectacle, and the show
+    // was nothing else.
     if ( drop_ahead && m_texState == 0 && m_sceneFadeMin <= 0.f && m_pendingSectionRestore < 0
          && m_pendingSectionNext < 0 && m_forcedNextTexture < 0 && !m_forceIsManual && m_actTexture < tex.size()
          && !tex[m_actTexture]->walksWithMusic() && !isLab( m_nextTexture ) && m_missedDrops < 2 )

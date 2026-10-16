@@ -5160,7 +5160,9 @@ plan of a long run computed by the scheduler itself instead of a Python model of
     after a fade ended was answered by that fade, as one during a fade already was. Music cuts in the structure
     track: 177 before, 33 after, none sooner than 4 s; drop cuts on a spectacle: 1 of 144 before, 41 of 120 after
     (the build-up edge comes too late for the reserve before most of that track's drops).
-  - *Build-ups without drops.* On a 15-minute recording with build-ups and no drop (`.screen/screen.wav`) every
+  - *Build-ups without drops.* On the screening track (`.screen/screen.wav` from `Tools/screen.py`: a 128-BPM
+    groove that turns loud for four seconds out of eight -- a build-up each time, never a drop; there is no real
+    music on this machine to try) every
     change in Club went to a spectacle and the labs got 0 % of their 40 %: the reserve was re-armed on every
     build-up edge, and its re-roll at a fade end overwrote the lab the clock had called. A lab waiting as the next
     scene now keeps its turn (a walking lab takes a drop itself), and after two predictions without a drop the
