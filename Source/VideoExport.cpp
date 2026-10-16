@@ -352,8 +352,13 @@ bool VideoExport::prepare()
     s.audio = in.absoluteFilePath();
     if ( s.fps < 1 || s.fps > 240 )
         return fail( QString( "frame rate %1 is out of range (1..240)" ).arg( s.fps ) );
+    // Named like the audio file, beside it -- unless that IS the audio file (the sound of an mp4).
     if ( s.output.isEmpty() )
-        s.output = in.absolutePath() + "/" + in.completeBaseName() + "_kaleidoscope.mp4";
+    {
+        s.output = in.absolutePath() + "/" + in.completeBaseName() + ".mp4";
+        if ( QFileInfo( s.output ).absoluteFilePath().compare( in.absoluteFilePath(), Qt::CaseInsensitive ) == 0 )
+            s.output = in.absolutePath() + "/" + in.completeBaseName() + " (Kaleidoscope).mp4";
+    }
     s.output = QFileInfo( s.output ).absoluteFilePath();
     if ( QFileInfo( s.output ) == in )
         return fail( "the output file would overwrite the audio file" );

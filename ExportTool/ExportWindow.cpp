@@ -20,6 +20,7 @@
 #include <QtCore/QFile>
 #include <QtCore/QFileInfo>
 #include <QtCore/QLocale>
+#include <QtCore/QMimeData>
 #include <QtCore/QPointer>
 #include <QtCore/QProcessEnvironment>
 #include <QtCore/QRegularExpression>
@@ -31,6 +32,10 @@
 #include <QtCore/QXmlStreamReader>
 #include <QtGui/QCloseEvent>
 #include <QtGui/QDesktopServices>
+#include <QtGui/QDragEnterEvent>
+#include <QtGui/QDragLeaveEvent>
+#include <QtGui/QDragMoveEvent>
+#include <QtGui/QDropEvent>
 #include <QtGui/QIcon>
 #include <QtWidgets/QCheckBox>
 #include <QtWidgets/QComboBox>
@@ -88,6 +93,63 @@ static QString sizeText( double bytes )
     if ( bytes >= 1e9 )
         return QLocale().toString( bytes / 1e9, 'f', 1 ) + " GB";
     return QLocale().toString( bytes / 1e6, 'f', 0 ) + " MB";
+}
+
+/** File endings a drop is taken for: the audio formats, and the containers music often comes in (ffmpeg reads the
+ * sound of all of them). Anything else is refused while it is still being dragged, so the cursor says so at once.
+ **/
+static const QStringList AudioSuffixes = { "wav", "wave", "mp3", "ogg", "oga", "opus", "flac", "m4a", "aac", "wma",
+                                           "aif", "aiff", "aifc", "alac", "ape", "wv", "mka", "mp2", "ac3", "mp4",
+                                           "mkv", "mov", "webm" };
+
+/**  A path as typed or pasted, without the quotes Explorer's "Copy as path" puts around it.
+ *
+ * @param p  The text. (in)
+ *
+ * @return
+ *   The path, trimmed and unquoted.
+ **/
+static QString cleanPath( QString p )
+{
+    p = p.trimmed();
+    if ( p.size() >= 2 && p.startsWith( '"' ) && p.endsWith( '"' ) )
+        p = p.mid( 1, p.size() - 2 ).trimmed();
+    return p;
+}
+
+/**  Whether two paths name the same file or folder (Windows: regardless of case and separators).
+ *
+ * @param a  One path. (in)
+ * @param b  The other. (in)
+ *
+ * @return
+ *   true if they are the same.
+ **/
+static bool samePath( const QString &a, const QString &b )
+{
+    return QDir::cleanPath( QFileInfo( a ).absoluteFilePath() )
+               .compare( QDir::cleanPath( QFileInfo( b ).absoluteFilePath() ), Qt::CaseInsensitive )
+           == 0;
+}
+
+/**  The first local audio file a drag carries.
+ *
+ * @param md  What is being dragged. (in)
+ *
+ * @return
+ *   Its absolute path, or empty if the drag holds none.
+ **/
+static QString droppedAudio( const QMimeData *md )
+{
+    if ( !md || !md->hasUrls() )
+        return QString();
+    for ( const QUrl &u : md->urls() )
+    {
+        const QFileInfo fi( u.toLocalFile() );
+        if ( u.isLocalFile() && fi.isFile() && AudioSuffixes.contains( fi.suffix().toLower() ) )
+            return fi.absoluteFilePath();
+    }
+    return QString();
 }
 
 /**  The encoder's bitrate ceiling the engine sets (VideoExport::pickEncoder()), for the size estimate.
@@ -240,6 +302,7 @@ ExportWindow::ExportWindow()
     m_preset->addItems( discoverPresets() );
     sf->addRow( ui( S_EXPORT_PRESET ), m_preset );
     m_audio = new QLineEdit;
+    m_audio->setPlaceholderText( ui( S_EXPORT_AUDIO_DROP ) );
     QPushButton *pick_audio = new QPushButton( ui( S_EXPORT_AUDIO_PICK ) );
     QHBoxLayout *ar = new QHBoxLayout;
     ar->addWidget( m_audio, 1 );
@@ -334,6 +397,13 @@ ExportWindow::ExportWindow()
     m_inputs = { m_preset, m_audio, pick_audio, m_res, m_fps, m_codec, m_quality, m_fade, m_title, m_blur, m_output,
                  pick_out, pick_ff };
 
+    // An audio file dropped anywhere on the window. The text fields would take it as text (a "file:///" line in the
+    // field); with drops off they pass it on to the window.
+    setAcceptDrops( true );
+    m_audio->setAcceptDrops( false );
+    m_output->setAcceptDrops( false );
+    m_log->setAcceptDrops( false );
+
     connect( pick_audio, &QPushButton::clicked, this, [this]
     {
         QSettings     s( settingsPath(), QSettings::IniFormat );
@@ -341,16 +411,14 @@ ExportWindow::ExportWindow()
                                                         : QFileInfo( m_audio->text() ).absolutePath();
         const QString f = QFileDialog::getOpenFileName( this, ui( S_EXPORT_AUDIO ), start,
                                                         ui( S_EXPORT_AUDIO_FILTER ) );
-        if ( f.isEmpty() )
-            return;
-        m_audio->setText( QDir::toNativeSeparators( f ) );
-        probeAudio();
-        updateDefaultOutput();
+        if ( !f.isEmpty() )
+            setAudio( f );
     } );
     connect( m_audio, &QLineEdit::editingFinished, this, [this]
     {
-        probeAudio();
-        updateDefaultOutput();
+        // only a different file: leaving the field must not undo an output name typed meanwhile
+        if ( cleanPath( m_audio->text() ) != cleanPath( m_audioSet ) )
+            setAudio( m_audio->text() );
     } );
     connect( pick_out, &QPushButton::clicked, this, [this]
     {
@@ -359,10 +427,10 @@ ExportWindow::ExportWindow()
         if ( f.isEmpty() )
             return;
         m_output->setText( QDir::toNativeSeparators( f ) );
-        m_outputEdited = true;
+        noteOutputDir();
     } );
-    connect( m_output, &QLineEdit::textEdited, this, [this]
-    { m_outputEdited = !m_output->text().trimmed().isEmpty(); } );
+    connect( m_output, &QLineEdit::editingFinished, this, [this]
+    { noteOutputDir(); } );
     connect( pick_ff, &QPushButton::clicked, this, [this]
     {
         const QString f = QFileDialog::getOpenFileName(
@@ -409,22 +477,103 @@ ExportWindow::ExportWindow()
     } );
 }
 
-void ExportWindow::scripted( const QString &audio, const QString &out, const QString &shots )
+void ExportWindow::scripted( const QString &audio, const QString &out, const QString &shots, bool viaDrop )
 {
     m_shots = shots;
-    m_audio->setText( QDir::toNativeSeparators( audio ) );
-    m_output->setText( QDir::toNativeSeparators( out ) );
-    m_outputEdited = true;
+    if ( viaDrop )
+    {
+        // What a drop from Explorer delivers: a URL list, first in a drag-enter, then -- if that was taken -- in the
+        // drop. Sent to the window directly: nothing touches the real mouse.
+        QMimeData md;
+        md.setUrls( { QUrl::fromLocalFile( audio ) } );
+        QDragEnterEvent enter( QPoint( 40, 40 ), Qt::CopyAction, &md, Qt::LeftButton, Qt::NoModifier );
+        QCoreApplication::sendEvent( this, &enter );
+        if ( enter.isAccepted() )
+        {
+            QDropEvent drop( QPointF( 40, 40 ), Qt::CopyAction, &md, Qt::LeftButton, Qt::NoModifier );
+            QCoreApplication::sendEvent( this, &drop );
+        }
+    }
+    else
+        setAudio( audio );
+    if ( !out.isEmpty() )
+    {
+        m_output->setText( QDir::toNativeSeparators( out ) );
+        noteOutputDir();
+    }
     // after the constructor's deferred ffmpeg search (queued first, so it runs first)
     QTimer::singleShot( 0, this, [this]
     {
         probeAudio();
         grab().save( m_shots + "_ready.png" );
-        QFile::remove( m_output->text() ); // no overwrite question in a scripted run
+        if ( cleanPath( m_audio->text() ).isEmpty() )
+        {
+            QCoreApplication::exit( 5 ); // the drop was refused
+            return;
+        }
+        QFile::remove( cleanPath( m_output->text() ) ); // no overwrite question in a scripted run
         startExport();
         if ( !m_proc )
             QCoreApplication::exit( 3 );
     } );
+}
+
+void ExportWindow::dragEnterEvent( QDragEnterEvent *e )
+{
+    if ( m_proc || droppedAudio( e->mimeData() ).isEmpty() )
+    {
+        e->ignore();
+        return;
+    }
+    e->acceptProposedAction();
+    m_audio->setStyleSheet( "border: 2px solid palette(highlight); border-radius: 3px;" );
+}
+
+void ExportWindow::dragMoveEvent( QDragMoveEvent *e )
+{
+    if ( m_proc || droppedAudio( e->mimeData() ).isEmpty() )
+        e->ignore();
+    else
+        e->acceptProposedAction();
+}
+
+void ExportWindow::dragLeaveEvent( QDragLeaveEvent *e )
+{
+    m_audio->setStyleSheet( QString() );
+    e->accept();
+}
+
+void ExportWindow::dropEvent( QDropEvent *e )
+{
+    m_audio->setStyleSheet( QString() );
+    const QString f = droppedAudio( e->mimeData() );
+    if ( m_proc || f.isEmpty() )
+    {
+        e->ignore();
+        return;
+    }
+    e->acceptProposedAction();
+    setAudio( f );
+}
+
+void ExportWindow::setAudio( const QString &path )
+{
+    const QString p = cleanPath( path );
+    m_audio->setText( p.isEmpty() ? QString() : QDir::toNativeSeparators( QFileInfo( p ).absoluteFilePath() ) );
+    m_audioSet = m_audio->text();
+    probeAudio();
+    updateDefaultOutput();
+}
+
+void ExportWindow::noteOutputDir()
+{
+    const QString out = cleanPath( m_output->text() );
+    if ( out.isEmpty() || QFileInfo( out ).isRelative() )
+        return;
+    const QString dir = QFileInfo( out ).absolutePath();
+    const QString audio = cleanPath( m_audio->text() );
+    // A folder chosen on purpose is kept for the next files; the audio's own folder is merely the default.
+    m_outDir = ( !audio.isEmpty() && samePath( dir, QFileInfo( audio ).absolutePath() ) ) ? QString() : dir;
 }
 
 void ExportWindow::showFfmpeg()
@@ -459,7 +608,7 @@ int ExportWindow::videoFps() const
 void ExportWindow::probeAudio()
 {
     m_audioSecs = 0.0;
-    const QString f = m_audio->text().trimmed();
+    const QString f = cleanPath( m_audio->text() );
     if ( f.isEmpty() || !QFileInfo( f ).isFile() )
     {
         m_audioInfo->setText( " " );
@@ -494,13 +643,15 @@ void ExportWindow::probeAudio()
 
 void ExportWindow::updateDefaultOutput()
 {
-    if ( m_outputEdited )
+    const QString audio = cleanPath( m_audio->text() );
+    if ( audio.isEmpty() )
         return;
-    const QFileInfo a( m_audio->text().trimmed() );
-    if ( m_audio->text().trimmed().isEmpty() )
-        return;
-    m_output->setText(
-        QDir::toNativeSeparators( a.absolutePath() + "/" + a.completeBaseName() + "_kaleidoscope.mp4" ) );
+    const QFileInfo a( audio );
+    const QDir      dir( m_outDir.isEmpty() ? a.absolutePath() : m_outDir );
+    QString         out = dir.filePath( a.completeBaseName() + ".mp4" );
+    if ( samePath( out, audio ) ) // the sound of an mp4 (a music video): never propose writing over it
+        out = dir.filePath( a.completeBaseName() + " (Kaleidoscope).mp4" );
+    m_output->setText( QDir::toNativeSeparators( out ) );
 }
 
 void ExportWindow::setStatus( const QString &text, bool error )
@@ -528,12 +679,12 @@ void ExportWindow::startExport()
         return setStatus( ui( S_EXPORT_NOAPP ), true );
     if ( m_ffmpeg.isEmpty() )
         return setStatus( ui( S_EXPORT_FFMPEG_MISSING ), true );
-    const QString audio = m_audio->text().trimmed();
+    const QString audio = cleanPath( m_audio->text() );
     if ( audio.isEmpty() || !QFileInfo( audio ).isFile() )
         return setStatus( ui( S_EXPORT_NEED_AUDIO ), true );
-    if ( m_output->text().trimmed().isEmpty() )
+    if ( cleanPath( m_output->text() ).isEmpty() )
         updateDefaultOutput();
-    QString out = m_output->text().trimmed();
+    QString out = cleanPath( m_output->text() );
     if ( !out.endsWith( ".mp4", Qt::CaseInsensitive ) )
         out += ".mp4";
     m_output->setText( out );
@@ -782,8 +933,8 @@ void ExportWindow::saveSettings()
     s.setValue( "fade", m_fade->isChecked() );
     s.setValue( "title", m_title->isChecked() );
     s.setValue( "motionBlur", m_blur->isChecked() );
-    if ( !m_audio->text().trimmed().isEmpty() )
-        s.setValue( "audioDir", QFileInfo( m_audio->text().trimmed() ).absolutePath() );
+    if ( !cleanPath( m_audio->text() ).isEmpty() )
+        s.setValue( "audioDir", QFileInfo( cleanPath( m_audio->text() ) ).absolutePath() );
     // only a choice the user made is remembered; a found one is looked for again next time (it may be updated)
     if ( m_ffmpegPicked )
         s.setValue( "ffmpeg", m_ffmpeg );

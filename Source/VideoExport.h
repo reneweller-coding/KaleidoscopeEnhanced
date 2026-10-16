@@ -65,7 +65,8 @@ public:
     struct Settings
     {
         QString audio;              ///< Input audio file: anything ffmpeg decodes (wav, mp3, ogg, flac, m4a, ...).
-        QString output;             ///< Output .mp4; empty = "<audio folder>/<audio name>_kaleidoscope.mp4".
+        QString output;             ///< Output .mp4; empty = "<audio folder>/<audio name>.mp4" (" (Kaleidoscope)"
+                                    ///< added if that would be the audio file itself).
         int     width = 1920;       ///< Video width in pixels (even).
         int     height = 1080;      ///< Video height in pixels (even).
         int     fps = 60;           ///< Frame rate (24, 30, 60 and 120 are offered; 1..240 accepted).

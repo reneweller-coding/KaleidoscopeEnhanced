@@ -24,6 +24,10 @@
 class QCheckBox;
 class QCloseEvent;
 class QComboBox;
+class QDragEnterEvent;
+class QDragLeaveEvent;
+class QDragMoveEvent;
+class QDropEvent;
 class QLabel;
 class QLineEdit;
 class QPlainTextEdit;
@@ -38,9 +42,9 @@ class QPushButton;
  * the live show, on a frame clock. This window only assembles the command line, finds the programs (the engine
  * next to it or in the development tree, the newest ffmpeg on the machine), shows the "[export]" lines the engine
  * prints as a progress bar and status text, and stops it on request -- "quit" on its stdin, which makes the engine
- * finish a playable file with the frames so far. Its choices are remembered in kaleidoscope_settings.ini (group
- * videoExport), the language follows the app's (key language). No moc: lambda connections only, like the
- * SetupTool.
+ * finish a playable file with the frames so far. The audio file can be dropped onto the window; the video is named
+ * after it. Its choices are remembered in kaleidoscope_settings.ini (group videoExport), the language follows the
+ * app's (key language). No moc: lambda connections only, like the SetupTool.
  **/
 class ExportWindow : public QWidget
 {
@@ -48,16 +52,18 @@ public:
     /** Builds the form, finds Kaleidoscope.exe and ffmpeg, and restores the last choices. */
     ExportWindow();
 
-    /**  A scripted run, for testing the tool without anybody clicking: fills in the audio file and the output,
-     * starts the export as soon as ffmpeg is found, saves pictures of the window, and quits with the engine's exit
-     * code (main.cpp: --script-audio, --script-out, --script-shots).
+    /**  A scripted run, for testing the tool without anybody clicking: hands it the audio file (typed in, or as a
+     * drop -- the events a drop from Explorer delivers, sent to the window), starts the export as soon as ffmpeg is
+     * found, saves pictures of the window, and quits with the engine's exit code; 5 if the drop was refused
+     * (main.cpp: --script-audio or --script-drop, --script-out, --script-shots).
      *
-     * @param audio  The audio file. (in)
-     * @param out    The output .mp4. (in)
-     * @param shots  Path prefix of the window pictures, which get _ready.png, _running.png (past 40 %) and _done.png
-     *               appended. (in)
+     * @param audio    The audio file. (in)
+     * @param out      The output .mp4; empty keeps the one the tool proposes. (in)
+     * @param shots    Path prefix of the window pictures, which get _ready.png, _running.png (past 40 %) and
+     *                 _done.png appended. (in)
+     * @param viaDrop  Deliver the file as a drag and drop instead of typing it in. (in)
      **/
-    void scripted( const QString &audio, const QString &out, const QString &shots );
+    void scripted( const QString &audio, const QString &out, const QString &shots, bool viaDrop );
 
 protected:
     /**  A close during an export asks first; yes cancels the export and waits for the file to be finished.
@@ -65,6 +71,26 @@ protected:
      * @param e  The close event. (in)
      **/
     void closeEvent( QCloseEvent *e ) override;
+    /**  A file dragged over the window: taken if it is an audio file and no export runs (the audio field lights up).
+     *
+     * @param e  The drag-enter event. (in)
+     **/
+    void dragEnterEvent( QDragEnterEvent *e ) override;
+    /**  Keeps accepting the drag while it moves over the window's other widgets.
+     *
+     * @param e  The drag-move event. (in)
+     **/
+    void dragMoveEvent( QDragMoveEvent *e ) override;
+    /**  The drag left the window: the audio field goes back to normal.
+     *
+     * @param e  The drag-leave event. (in)
+     **/
+    void dragLeaveEvent( QDragLeaveEvent *e ) override;
+    /**  The dropped audio file becomes the source, as if picked with "Choose ...".
+     *
+     * @param e  The drop event. (in)
+     **/
+    void dropEvent( QDropEvent *e ) override;
 
 private:
     /** One ffmpeg found on the machine. */
@@ -116,8 +142,17 @@ private:
 
     /** Reads the chosen audio file with ffprobe and shows its length, format, frame count and size limit. */
     void probeAudio();
-    /** The default output next to the audio file, unless the user has typed or picked one. */
+    /**  Makes a file the audio source -- picked, dropped or typed -- reads it and names the output after it.
+     *
+     * @param path  The audio file (quotes around it, as Explorer's "Copy as path" puts them, are dropped). (in)
+     **/
+    void setAudio( const QString &path );
+    /** The output named after the audio file -- "Song.flac" becomes "Song.mp4" -- in the folder chosen for videos,
+     * else beside the audio. An mp4 whose sound is exported gets " (Kaleidoscope)" added, never its own name.
+     **/
     void updateDefaultOutput();
+    /** After the output path was picked or typed: a folder other than the audio's is kept for the next files. */
+    void noteOutputDir();
     /** Shows the chosen ffmpeg (or that none was found) in its label. */
     void showFfmpeg();
     /** Checks the inputs and starts Kaleidoscope.exe in export mode. */
@@ -187,7 +222,8 @@ private:
     QString       m_engine;               ///< findEngine().
     QString       m_ffmpeg;               ///< The ffmpeg to use (a path; empty if none was found).
     bool          m_ffmpegPicked = false; ///< The user chose m_ffmpeg (remembered); otherwise the newest found.
-    bool          m_outputEdited = false; ///< The output path was typed or picked: no longer follows the audio file.
+    QString       m_audioSet;             ///< The audio path last made the source (setAudio()).
+    QString       m_outDir;               ///< A folder picked for the videos; empty = beside each audio file.
     double        m_audioSecs = 0.0;      ///< Length of the audio file (ffprobe), 0 if unknown.
     QProcess     *m_proc = nullptr;       ///< The running Kaleidoscope.exe, or null.
     QByteArray    m_pending;              ///< Unterminated tail of its stderr.

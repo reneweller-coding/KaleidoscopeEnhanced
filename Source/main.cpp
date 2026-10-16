@@ -85,6 +85,15 @@
 #include <QtCore/QTimer>
 #include "QMyWindow.h"
 
+#ifdef _WIN32
+#ifndef NOMINMAX
+#define NOMINMAX ///< windows.h without its min/max macros, which would break std::min and std::max.
+#endif
+#include <windows.h>
+#include <shellapi.h> // CommandLineToArgvW
+#pragma comment( lib, "shell32.lib" )
+#endif
+
 // NOTE: keep this AFTER any Windows headers.  With C++17 std::byte and a
 // `using namespace std;` active, the Windows SDK's unqualified `byte` in
 // objidl.h becomes ambiguous (C2872) -- shlobj.h used to be included above for
@@ -96,6 +105,26 @@ bool fullscreen = false;  ///< Whether to start the window in fullscreen mode (`
 int  monitorIndex = -1;   ///< `-m <n>`: target monitor for fullscreen (-1 = auto).
 bool logToFile = false;   ///< -l: redirect stderr to a rotating log file (kiosk).
 bool cueSelfTest = false; ///< -q: run the score-cue self test and exit instead of opening a window.
+
+static char      **g_argvBase = nullptr; ///< argv as main() received it; argText() finds an argument's index with it.
+static QStringList g_wargs; ///< The arguments as Unicode text (Windows: from the wide command line); empty elsewhere.
+
+/**  A command-line argument as text, without losing what the ANSI code page cannot hold.
+ *
+ * @param at  Pointer into argv at the argument. (in)
+ *
+ * @return
+ *   The argument from the wide command line on Windows, where main()'s argv is in the ANSI code page: a file named
+ *   in Polish, Greek or Japanese -- which the video export tool passes as it is -- would arrive as question marks.
+ *   Elsewhere, and if the wide command line does not line up with argv, the argument in the local 8-bit encoding.
+ **/
+static QString argText( char **at )
+{
+    const qsizetype i = at - g_argvBase;
+    if ( g_argvBase && i >= 0 && i < g_wargs.size() )
+        return g_wargs[i];
+    return QString::fromLocal8Bit( *at );
+}
 
 
 
@@ -138,7 +167,7 @@ void commandlineerror( char *cmd, char *parm )
                      "              frame rate, as fast as the GPU allows; then exit\n"
                      "-g <WxH>      export size: 1920x1080 (default), 3840x2160, fullhd, 4k\n"
                      "-p <fps>      export frame rate: 24, 30, 60 (default) or 120\n"
-                     "-d <file>     export output (default: <audio name>_kaleidoscope.mp4)\n"
+                     "-d <file>     export output (default: <audio name>.mp4 beside the audio)\n"
                      "-j <options>  export options, comma-separated: h264, hevc, av1 (codec;\n"
                      "              default h264 up to FullHD, hevc above), blur (motion blur),\n"
                      "              nofade (no fade in/out), title (title reveal), cq=<n>\n"
@@ -280,14 +309,14 @@ void parsecommandline( int argc, char *argv[] )
                 // setting and the preset's own ImageDirectory attribute.
                 case 'f':
                     RenderPipeline::M_ImageDirCli =
-                        QString::fromLocal8Bit( argv[1] );
+                        argText( argv + 1 );
                     break;
                 case 'b': fullscreen = !fullscreen; break;
                 case 's':
                     RenderPipeline::setRenderScale( static_cast<float>( atof( argv[1] ) ) );
                     RenderPipeline::M_RenderScaleFromCli = true;
                     break;
-                case 'c': GLwidget::M_StartConfig = QString::fromLocal8Bit( argv[1] ); break;
+                case 'c': GLwidget::M_StartConfig = argText( argv + 1 ); break;
                 case 'm':
                     monitorIndex = atoi( argv[1] );
                     fullscreen = true;
@@ -298,13 +327,13 @@ void parsecommandline( int argc, char *argv[] )
                 case 'r': GLwidget::M_AutoRecord = true; break;
                 // Score cues from a file, timed by the offline WAV (-w / -x).
                 case 'k':
-                    if ( ScoreCueFile::instance().load( QString::fromLocal8Bit( argv[1] ) ) < 0 )
+                    if ( ScoreCueFile::instance().load( argText( argv + 1 ) ) < 0 )
                         exit( -1 );
                     break;
                 // Offline analysis: feed this WAV through the analyzer instead of
                 // capturing live audio (deterministic classifier testing).
                 case 'w':
-                    AudioAnalyzer::M_OfflineWav = QString::fromLocal8Bit( argv[1] );
+                    AudioAnalyzer::M_OfflineWav = argText( argv + 1 );
                     // KALEIDO_OFFLINE_FAST drops the real-time pacing, which only makes
                     // sense for a measurement run -- nobody watches a WAV played at
                     // 100x. So it also means "quit when the file ends", which lets a
@@ -322,41 +351,41 @@ void parsecommandline( int argc, char *argv[] )
                     break;
                 // Batch render: offline WAV + auto-record + auto-quit at the end.
                 case 'x':
-                    AudioAnalyzer::M_OfflineWav = QString::fromLocal8Bit( argv[1] );
+                    AudioAnalyzer::M_OfflineWav = argText( argv + 1 );
                     GLwidget::M_AutoRecord = true;
                     GLwidget::M_BatchRender = true;
                     break;
                 // Video export (VideoExport.h): the audio file, and its size, rate,
                 // output and options.  The export itself is set up after parsing.
-                case 'e': VideoExport::M_Settings.audio = QString::fromLocal8Bit( argv[1] ); break;
+                case 'e': VideoExport::M_Settings.audio = argText( argv + 1 ); break;
                 case 'g':
-                    if ( !VideoExport::parseSize( QString::fromLocal8Bit( argv[1] ) ) )
+                    if ( !VideoExport::parseSize( argText( argv + 1 ) ) )
                     {
                         fprintf( stderr, "\n-g wants an even size like 1920x1080 or 3840x2160\n" );
                         commandlineerror( argv[0], argv[1] );
                     }
                     break;
                 case 'p': VideoExport::M_Settings.fps = atoi( argv[1] ); break;
-                case 'd': VideoExport::M_Settings.output = QString::fromLocal8Bit( argv[1] ); break;
+                case 'd': VideoExport::M_Settings.output = argText( argv + 1 ); break;
                 case 'j':
-                    if ( !VideoExport::parseOptions( QString::fromLocal8Bit( argv[1] ) ) )
+                    if ( !VideoExport::parseOptions( argText( argv + 1 ) ) )
                         commandlineerror( argv[0], argv[1] );
                     break;
                 // Spout INPUT: a live sender replaces the photos as source image.
                 case 'i':
                     RenderPipeline::M_SpoutInEnabled = true;
-                    RenderPipeline::M_SpoutInSender = QString::fromLocal8Bit( argv[1] );
+                    RenderPipeline::M_SpoutInSender = argText( argv + 1 );
                     break;
                 // Native VIDEO input: a file, or a directory played in turn.
                 // Same slot as -i; Spout wins if both are given.
                 case 'v':
-                    RenderPipeline::M_VideoPath = QString::fromLocal8Bit( argv[1] );
+                    RenderPipeline::M_VideoPath = argText( argv + 1 );
                     break;
                 // Stereoscopic output: sbs (side-by-side), tb (top-bottom),
                 // ana (red-cyan anaglyph); anything else = off.
                 case '3':
                 {
-                    QString m3 = QString::fromLocal8Bit( argv[1] ).toLower();
+                    QString m3 = argText( argv + 1 ).toLower();
                     RenderPipeline::M_StereoMode = ( m3 == "sbs" )              ? 1
                                                    : ( m3 == "tb" )             ? 2
                                                    : ( m3.startsWith( "ana" ) ) ? 3
@@ -452,8 +481,20 @@ int main( int argc, char *argv[] )
     // still take precedence over the persisted values.
     RenderPipeline::loadSettings();
 
-    // Parse command line options; may itself exit() the process (see
-    // commandlineerror()/parsecommandline() above) for -h or invalid input.
+    // The arguments as Unicode (see argText()), then the options; parsing may itself
+    // exit() the process (see commandlineerror()/parsecommandline() above) for -h
+    // or invalid input.
+    g_argvBase = argv;
+#ifdef _WIN32
+    {
+        int     wn = 0;
+        LPWSTR *wv = CommandLineToArgvW( GetCommandLineW(), &wn );
+        if ( wv && wn == argc )
+            for ( int i = 0; i < wn; ++i )
+                g_wargs << QString::fromWCharArray( wv[i] );
+        LocalFree( wv );
+    }
+#endif
     parsecommandline( argc, argv );
 
     // A video export renders the file it was given and nothing else: no live

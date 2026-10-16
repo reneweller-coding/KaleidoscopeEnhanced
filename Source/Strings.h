@@ -299,6 +299,7 @@ enum StrIdE
     S_EXPORT_AUDIO,
     S_EXPORT_AUDIO_PICK,
     S_EXPORT_AUDIO_FILTER,
+    S_EXPORT_AUDIO_DROP,
     S_EXPORT_AUDIO_INFO_FMT, // %1 length, %2 codec, %3 sample rate, %4 channels, %5 frames, %6 size limit
     S_EXPORT_AUDIO_BAD,
     S_EXPORT_GROUP_VIDEO,

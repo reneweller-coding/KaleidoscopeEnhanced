@@ -437,7 +437,9 @@ encoder (still verified before use).
 `Video-Export-starten.bat` in the portable build) turns an audio file into a
 video of the show: pick a preset and a file — WAV, MP3, OGG, FLAC or anything
 else ffmpeg reads — choose **Full HD or 4K** and **24, 30, 60 or 120 frames
-per second**, and it writes an MP4 with the audio in it.
+per second**, and it writes an MP4 with the audio in it — named like the audio
+file and beside it unless you choose otherwise. The file can simply be dragged
+onto the window.
 
 An export is not a recording of the screen. The engine runs on a **frame
 clock**: frame *n* shows the show at exactly *n / fps* seconds however long it
@@ -468,7 +470,7 @@ Kaleidoscope.exe -c Psychedelic -e track.flac -g 3840x2160 -p 60 -j hevc,title -
 
 `-e <audio>` exports that file, `-g <WxH>` sets the size (`fullhd` and `4k`
 work too), `-p <fps>` the frame rate, `-d <file>` the output (default:
-`<audio name>_kaleidoscope.mp4` beside the audio), and `-j` takes a comma list
+`<audio name>.mp4` beside the audio), and `-j` takes a comma list
 of `h264`, `hevc`, `av1`, `blur`, `nofade`, `title`, `q=max|high|compact` and
 `cq=N`. A score-cue file (`-k`) works as in a batch render. The window shows a
 preview; Esc, closing it, or `quit` on stdin finishes the file with the frames
