@@ -43,6 +43,7 @@
 #include "VideoExport.h"
 
 class UpdateCheck;
+class WebRemote;
 
 /** Where one overlay menu drew its rows last frame, so a mouse click can be mapped back to a row without duplicating
  * the layout arithmetic.
@@ -340,6 +341,43 @@ public:
      *   The file name written, or an empty string on failure.
      **/
     QString remoteScreenshot();
+    /** "Never again" for the scene on screen (OSD, remote), with feedback. */
+    void remoteBan();
+    /**  Allows a banned scene again (OSD, remote), with feedback.
+     *
+     * @param base  Its file name ("Voyager.frag"). (in)
+     **/
+    void remoteUnban( const QString &base );
+    /**  Allows a banned scene again by its entry index (the remote's browser).
+     *
+     * @param idx  Entry index (as in remoteSceneNames()). (in)
+     **/
+    void remoteUnbanIndex( int idx );
+    /**  A scene entry's learned taste and its ban (the remote's browser).
+     *
+     * @param idx     Entry index. (in)
+     * @param banned  Whether it is banned. (out)
+     *
+     * @return
+     *   The taste factor (1 = neutral).
+     **/
+    float remoteSceneTaste( int idx, bool &banned );
+    /** Takes the favourite of the scene on screen back (OSD, remote), with feedback. */
+    void remoteUnfavorite();
+    /** Forgets the song cues of the track playing (OSD, remote), with feedback. */
+    void remoteForgetCues();
+    /**  The screenshot saved last (the remote's /api/lastshot): the PNG file's bytes.
+     *
+     * @return
+     *   The file, or empty when there is none yet.
+     **/
+    QByteArray remoteLastShot() const;
+    /**  The file name (no folder) of the screenshot saved last, for the remote to see when a new one is there.
+     *
+     * @return
+     *   The name; empty when there is none yet.
+     **/
+    QString remoteLastShotName() const;
     /** Feeds one tap into the tap-tempo estimator (same as key 't'). */
     void remoteTapTempo();
     /**  The active shader names/transition overlay text (same content as key 'v').
@@ -625,6 +663,14 @@ protected:
     // feedback ("jumps too much"), switched on with Shift+W (persisted like
     // the other overlay settings).
     bool m_lyricsKinetic = false; ///< Kinetic line-slam animation on karaoke line change, off by default (Shift+W).
+    bool        m_keyFeedback = true;    ///< feedback() on screen (ini keyFeedback); off: only in the log.
+    QString     m_shotPending; ///< A screenshot asked for: its path; taken at the next frame's clean point (paintGL).
+    WebRemote  *m_webRemote = nullptr;   ///< The web remote (a child QObject), for its port; null when it is off.
+    QStringList m_cardUrls;              ///< The remote card's addresses, taken when it opened.
+    qint64      m_cardUntil = 0;         ///< When the remote card goes (m_fpsTimer ms); 0 = not shown.
+    int         m_skippedMesh = 0;       ///< Mesh scenes left out for want of the model pack (OSD Info says so).
+    bool        m_firstStart = false;    ///< The settings file did not exist at the start: show the remote card.
+    QString     m_lastShot; ///< The screenshot saved last (set on the GUI thread once the worker has written it).
     // Optional, and off unless the user switches it on in the setup tool --
     // it is the only thing here that contacts a server on its own.
     bool m_updateCheck = false; ///< Whether to ask GitHub for a newer release at startup ("updateCheck" setting).
@@ -937,6 +983,30 @@ protected:
      * @param ms    How long it stays, in milliseconds. (in)
      **/
     void notify( const QString &text, int ms = 6000 );
+    /**  A short on-screen word for a key whose effect cannot be seen (2.5 s; keyFeedback=false in the ini: none).
+     *
+     * @param text  What happened. (in)
+     * @param ms    How long it stays; MIDI learn passes a long time and is replaced when it ends. (in)
+     **/
+    void feedback( const QString &text, int ms = 2500 );
+    /**  The addresses a phone on the LAN reaches the web remote at: private IPv4 addresses of the network adapters
+     * that are up, virtual ones (Hyper-V, WSL, VPN, VirtualBox ...) left out, with the port it listens on.
+     *
+     * @return
+     *   "http://<address>:<port>/" per adapter; empty when the remote is off.
+     **/
+    QStringList remoteUrls() const;
+    /**  Shows the card with the remote's address and its QR code (any key closes it).
+     *
+     * @param secs  How long it stays. (in)
+     **/
+    void showRemoteCard( int secs );
+    /**  Draws the remote card (overlay pass).
+     *
+     * @param painter  The overlay painter. (in)
+     * @param alpha    Its fade, 0..1. (in)
+     **/
+    void drawRemoteCard( QPainter *painter, float alpha );
     /**  The notice's opacity now: fades in and out over a quarter second.
      *
      * @return

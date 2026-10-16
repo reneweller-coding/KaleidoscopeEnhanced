@@ -24,6 +24,7 @@
 #include "RenderPipeline.h"
 #include "PlatformQt.h"
 #include "SettingsFile.h"
+#include "Strings.h"
 #include "SpoutOut.h"
 #include "SpoutIn.h"
 #include "VideoIn.h"
@@ -67,6 +68,7 @@ float RenderPipeline::M_RenderScale = 1.0f;
 float RenderPipeline::M_RenderScaleMax = 1.0f; // no supersampling unless asked for
 bool  RenderPipeline::M_RenderScaleFromCli = false;
 float RenderPipeline::M_LightShow = 0.0f;     // corner lamps / light-show OFF by default
+bool  RenderPipeline::M_StrictLight = false;  // strict light protection (ini lightProtectionStrict)
 bool  RenderPipeline::M_SpoutEnabled = false; // Spout sender (CLI -o)
 bool  RenderPipeline::M_SpoutClean = false;   // Spout sends the displayed frame, not the raw render
 float RenderPipeline::M_DisplayHz = 60.f;     // the panel rate (glwidget sets it)
@@ -89,6 +91,7 @@ float RenderPipeline::freezeTime()
 }
 bool                  RenderPipeline::M_Pinned = false;         // VJ pin ('u')
 QHash<QString, float> RenderPipeline::M_Taste;                  // taste learning (skip/favourite)
+QSet<QString>         RenderPipeline::M_Banned;                 // "never again"
 bool                  RenderPipeline::M_SpoutInEnabled = false; // Spout input (CLI -i)
 QString               RenderPipeline::M_SpoutInSender;
 QString               RenderPipeline::M_VideoPath;    // native video input (CLI -v)
@@ -189,6 +192,13 @@ void RenderPipeline::loadSettings()
             continue;
         M_Cues[k.left( slash )].append( qMakePair( k.mid( slash + 1 ).toDouble(), s.value( k ).toString() ) );
     }
+    s.endGroup();
+
+    M_Banned.clear();
+    s.beginGroup( "banned" );
+    for ( const QString &k : s.allKeys() ) // recursive: Preset/File.frag
+        if ( s.value( k ).toBool() )
+            M_Banned.insert( k );
     s.endGroup();
 
     s.beginGroup( "taste" );
@@ -580,6 +590,8 @@ void RenderPipeline::start( int width, int height )
     m_scheduler.attach( &m_effectTextures, &m_effectFx, &m_effectTransitions );
     m_scheduler.setTasteCallback( [this]( const char *f )
     { return tasteFor( f ); } );
+    m_scheduler.setBannedCallback( [this]( const char *f )
+    { return isBanned( f ); } );
     if ( !scriptedRun() )
     {
         QSettings                s( SettingsFile::path(), QSettings::IniFormat );
@@ -641,6 +653,12 @@ QString RenderPipeline::activeShaderInfo() const
     if ( !m_effectTextures.empty() )
     {
         out += "TEX   " + base( m_effectTextures[m_scheduler.actTexture()]->fragmentName() );
+        // The learned taste and this track's cues, when there are any (16.10.2026: they were nowhere to be seen).
+        const float taste = tasteFor( m_effectTextures[m_scheduler.actTexture()]->fragmentName() );
+        if ( std::fabs( taste - 1.f ) > 0.01f )
+            out += "   " + QString::fromUtf8( Strings::uiText( S_INFO_TASTE_FMT ) ).arg( taste, 0, 'f', 2 );
+        if ( songCueCount() > 0 )
+            out += "   " + QString::fromUtf8( Strings::uiText( S_INFO_CUES_FMT ) ).arg( songCueCount() );
         if ( currentSceneMarked() )
             out += QString( "   [MARKIERT %1]" ).arg( markedCount() );
         if ( m_scheduler.texState() != 0 )
@@ -1104,19 +1122,20 @@ void RenderPipeline::showTitle( const QString &title, const QString &artist )
 // only just come on screen reads as a dislike — remember it (soft, decaying).
 // A track change asks for the same cut but is no verdict on the scene: it used
 // to teach a malus to whatever had come on screen in the ten seconds before.
-void RenderPipeline::requestSceneChange( bool userSkip )
+int RenderPipeline::requestSceneChange( bool userSkip )
 {
     // Tell the user WHY nothing will happen instead of silently ignoring
-    // the key (a pinned/frozen show swallowing 'n' looks like a bug).
+    // the key (a pinned/frozen show swallowing 'n' looks like a bug) -- the
+    // caller says it on screen.
     if ( M_Pinned )
     {
         fprintf( stderr, "n: ignored - PIN is active (press 'u' to unpin)\n" );
-        return;
+        return 1;
     }
     if ( M_Freeze )
     {
         fprintf( stderr, "n: ignored - FREEZE is active (press 'e' to unfreeze)\n" );
-        return;
+        return 2;
     }
     if ( userSkip && m_scheduler.actTexture() < m_effectTextures.size() && m_scheduler.actElapsedSec() < 10.f )
         bumpTaste( m_effectTextures[m_scheduler.actTexture()]->fragmentName(), 0.8f );
@@ -1126,6 +1145,19 @@ void RenderPipeline::requestSceneChange( bool userSkip )
                         m_scheduler.actElapsedSec() < 10.f ? 0.92f : 0.96f );
     EffectShader::noCarryOver(); // skipped: the next lab must not take this chain over
     m_scheduler.requestChange( true );
+    return 0;
+}
+
+QString RenderPipeline::activeSceneTaste( float &taste ) const
+{
+    taste = 1.f;
+    if ( m_effectTextures.empty() )
+        return QString();
+    const char *frag = m_effectTextures[m_scheduler.actTexture()]->fragmentName();
+    taste = tasteFor( frag );
+    QString s = QString::fromLatin1( frag );
+    s = s.mid( std::max( s.lastIndexOf( '\\' ), s.lastIndexOf( '/' ) ) + 1 );
+    return s.endsWith( ".frag" ) ? s.left( s.size() - 5 ) : s;
 }
 
 void RenderPipeline::newSong()
@@ -1469,6 +1501,100 @@ int RenderPipeline::sceneIndexByBase( const QString &base ) const
         if ( tasteBase( m_effectTextures[i]->fragmentName() ) == base )
             return static_cast<int>( i );
     return -1;
+}
+
+bool RenderPipeline::isBanned( const char *fragPath ) const
+{
+    return !M_Banned.isEmpty() && M_Banned.contains( m_presetName + "/" + tasteBase( fragPath ) );
+}
+
+bool RenderPipeline::banCurrentScene( QString &scene )
+{
+    if ( m_effectTextures.empty() )
+        return false;
+    const QString base = tasteBase( m_effectTextures[m_scheduler.actTexture()]->fragmentName() );
+    scene = base.endsWith( ".frag" ) ? base.left( base.size() - 5 ) : base;
+    // Enough has to be left, or the no-repeat memory and the mood filter run dry.
+    QSet<QString> all, open;
+    for ( EffectShader *e : m_effectTextures )
+    {
+        const QString b = tasteBase( e->fragmentName() );
+        all.insert( b );
+        if ( b != base && !M_Banned.contains( m_presetName + "/" + b ) )
+            open.insert( b );
+    }
+    if ( open.size() < std::max( 12, static_cast<int>( all.size() ) / 20 ) )
+        return false;
+    M_Banned.insert( m_presetName + "/" + base );
+    QSettings s( SettingsFile::path(), QSettings::IniFormat );
+    s.setValue( "banned/" + m_presetName + "/" + base, true );
+    fprintf( stderr, "BANNED: %s/%s\n", qPrintable( m_presetName ), qPrintable( base ) );
+    requestSceneChange( false ); // away with it now, without the skip's taste malus
+    return true;
+}
+
+void RenderPipeline::unbanScene( const QString &base )
+{
+    M_Banned.remove( m_presetName + "/" + base );
+    QSettings s( SettingsFile::path(), QSettings::IniFormat );
+    s.remove( "banned/" + m_presetName + "/" + base );
+    fprintf( stderr, "UNBANNED: %s/%s\n", qPrintable( m_presetName ), qPrintable( base ) );
+}
+
+QStringList RenderPipeline::bannedScenes() const
+{
+    QStringList   out;
+    const QString prefix = m_presetName + "/";
+    for ( const QString &k : M_Banned )
+        if ( k.startsWith( prefix ) )
+            out << k.mid( prefix.size() );
+    out.sort();
+    return out;
+}
+
+QString RenderPipeline::resetTasteCurrent()
+{
+    if ( m_effectTextures.empty() )
+        return QString();
+    const QString base = tasteBase( m_effectTextures[m_scheduler.actTexture()]->fragmentName() );
+    M_Taste.remove( m_presetName + "/" + base );
+    QSettings s( SettingsFile::path(), QSettings::IniFormat );
+    s.remove( "taste/" + m_presetName + "/" + base );
+    return base.endsWith( ".frag" ) ? base.left( base.size() - 5 ) : base;
+}
+
+int RenderPipeline::forgetSongCues()
+{
+    if ( m_cueTrack.isEmpty() )
+        return 0;
+    const int n = M_Cues.value( m_cueTrack ).size();
+    M_Cues.remove( m_cueTrack );
+    m_cuesFired.clear();
+    QSettings s( SettingsFile::path(), QSettings::IniFormat );
+    s.remove( "cues/" + m_cueTrack );
+    fprintf( stderr, "CUES forgotten: %s (%d)\n", qPrintable( m_cueTrack ), n );
+    return n;
+}
+
+int RenderPipeline::songCueCount() const
+{
+    return m_cueTrack.isEmpty() ? 0 : M_Cues.value( m_cueTrack ).size();
+}
+
+QString RenderPipeline::sceneBase( int idx ) const
+{
+    if ( idx < 0 || idx >= static_cast<int>( m_effectTextures.size() ) )
+        return QString();
+    return tasteBase( m_effectTextures[static_cast<size_t>( idx )]->fragmentName() );
+}
+
+float RenderPipeline::sceneTaste( int idx, bool &banned ) const
+{
+    banned = false;
+    if ( idx < 0 || idx >= static_cast<int>( m_effectTextures.size() ) )
+        return 1.f;
+    banned = isBanned( m_effectTextures[static_cast<size_t>( idx )]->fragmentName() );
+    return tasteFor( m_effectTextures[static_cast<size_t>( idx )]->fragmentName() );
 }
 
 void RenderPipeline::rememberCue( const QString &trackKey, double posSec )
@@ -2781,6 +2907,7 @@ void RenderPipeline::runPresentPass( GLuint presentSource, const AudioFeatures &
         // review walk pins the mood grade to neutral.
         pin.moodStrength = m_scheduler.reviewMode() ? 0.f : M_MoodStrength;
         pin.lightShow = M_LightShow;
+        pin.strictLight = M_StrictLight;
         pin.renderScale = M_RenderScale;
         pin.lyricsAlpha = m_overlay.lyricsAlpha;
         pin.lyricsScrollV = m_overlay.lyricsScrollV;

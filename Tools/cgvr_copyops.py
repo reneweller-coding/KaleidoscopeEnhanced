@@ -19,7 +19,7 @@ sys.path.insert( 0, os.path.dirname( os.path.abspath( __file__ ) ) )
 import cgvr_format                                          # noqa: E402
 
 # Copied or moved by value somewhere (containers, return values): member-wise copies are what they had before.
-COPYABLE = { "ExprProgram" }
+COPYABLE = { "ExprProgram", "QrCode" }
 # Not ours: uic's form class.
 SKIP_FILES = re.compile( r"mainwindow\.h$", re.I )
 CLASS = re.compile( r"^([ \t]*)class[ \t]+(\w+)\b([^;{]*)\{", re.M )

@@ -716,7 +716,7 @@ void AudioAnalyzer::ingest( const float *data, int numFrames, int numChannels, i
  * A pause > 2.5 s starts a fresh series. The override is applied at publish
  * time in processBlock() (see the "Manual TAP tempo" block near the end).
  **/
-void AudioAnalyzer::tapTempo()
+float AudioAnalyzer::tapTempo()
 {
     qint64 now = m_tapClock.elapsed();
     if ( m_tapN > 0 && now - m_tapTimes[( m_tapN - 1 ) & 7] > 2500 )
@@ -728,7 +728,7 @@ void AudioAnalyzer::tapTempo()
     if ( cnt < 2 )
     {
         fprintf( stderr, "TAP: weiter tippen...\n" );
-        return;
+        return 0.f;
     }
 
     // Median of the (up to 7) intervals between the last taps.
@@ -747,6 +747,7 @@ void AudioAnalyzer::tapTempo()
     m_tapAnchorMs = now;
     m_tapUntilMs = now + 45000;
     fprintf( stderr, "TAP tempo: %.1f BPM (%d taps)\n", 60000.f / med, cnt );
+    return 60000.f / med;
 }
 
 bool  AudioAnalyzer::M_ExternalClock = true;

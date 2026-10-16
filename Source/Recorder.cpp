@@ -16,6 +16,7 @@
 #include <chrono>
 #include <thread>
 
+#include <QtCore/QStandardPaths>
 #include <QtCore/QBuffer>
 #include <QtCore/QDateTime>
 #include <QtCore/QDir>
@@ -1132,7 +1133,13 @@ void Recorder::saveReplay()
     }
 
     QString ts = QDateTime::currentDateTime().toString( "yyyyMMdd_hhmmss" );
-    QString dir = QString( "replays/replay_%1" ).arg( ts );
+    // Under Videos\Kaleidoscope (16.10.2026): a replay is the user's, and the working folder (bin\) is where
+    // nobody looks.  Beside it, as before, if that cannot be made.
+    const QString vids = QStandardPaths::writableLocation( QStandardPaths::MoviesLocation );
+    const QString base = ( !vids.isEmpty() && QDir().mkpath( vids + "/Kaleidoscope/replays" ) )
+                             ? vids + "/Kaleidoscope/replays"
+                             : QString( "replays" );
+    QString       dir = QString( "%1/replay_%2" ).arg( base, ts );
     QDir().mkpath( dir );
 
     QString concat;

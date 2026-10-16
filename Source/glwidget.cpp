@@ -22,7 +22,11 @@
 #include <QtCore/QBuffer>
 #include <QtCore/QDateTime>
 #include <QtCore/QFileSystemWatcher>
+#include <QtCore/QStandardPaths>
 #include <QtCore/QTimer>
+#include <QtNetwork/QNetworkInterface>
+#include <QtGui/QKeyEvent>
+#include <QtGui/QKeySequence>
 #include <QtCore/QCoreApplication>
 #include <QtCore/QSettings>
 #include <QtCore/QRegularExpression>
@@ -48,6 +52,7 @@
 #include "SettingsFile.h"
 #include "WebRemote.h"
 #include "CueReceiver.h"
+#include "QrCode.h"
 #include "UpdateCheck.h"
 #include "Version.h"
 #include "SpoutOut.h" // global facades, released once in ~GLwidget
@@ -199,6 +204,132 @@ int menuRowAt( const MenuHit &hit, const QPoint &p )
 } // namespace
 
 // ---- Web-remote hooks (called from WebRemote on the main thread) ----
+/**  A UI text from the string table as a QString.
+ *
+ * @param id  The text's id. (in)
+ *
+ * @return
+ *   The text in the UI language.
+ **/
+static QString ui( StrIdE id )
+{
+    return QString::fromUtf8( Strings::uiText( id ) );
+}
+
+/**  "on" or "off" in the UI language.
+ *
+ * @param on  The state. (in)
+ *
+ * @return
+ *   The word.
+ **/
+static QString onOff( bool on )
+{
+    return ui( on ? S_FB_ON : S_FB_OFF );
+}
+
+QStringList GLwidget::remoteUrls() const
+{
+    QStringList out;
+    const int   port = m_webRemote ? m_webRemote->port() : 0;
+    if ( port <= 0 )
+        return out;
+    // Real adapters only, cable before wireless: on the test machine a VPN tunnel came first,
+    // and the QR code carries the first address.  The names are a second net for drivers that report no type.
+    static const char *const Virtual[] = { "virtual", "vethernet", "vmware", "virtualbox", "hyper-v", "wsl",
+                                           "loopback", "bluetooth", "tap-", "tunnel", "vpn", "docker",
+                                           "nordlynx", "wireguard", "tailscale", "zerotier", "hamachi", "openvpn" };
+    QStringList              wired, wireless;
+    for ( const QNetworkInterface &nif : QNetworkInterface::allInterfaces() )
+    {
+        const auto flags = nif.flags();
+        const auto type = nif.type();
+        if ( !( flags & QNetworkInterface::IsUp ) || !( flags & QNetworkInterface::IsRunning )
+             || ( flags & QNetworkInterface::IsLoopBack )
+             || ( type != QNetworkInterface::Ethernet && type != QNetworkInterface::Wifi
+                  && type != QNetworkInterface::Ieee80211 ) )
+            continue;
+        const QString name = ( nif.humanReadableName() + " " + nif.name() ).toLower();
+        bool          virt = false;
+        for ( const char *v : Virtual )
+            virt |= name.contains( QLatin1String( v ) );
+        if ( virt )
+            continue;
+        for ( const QNetworkAddressEntry &e : nif.addressEntries() )
+        {
+            const QHostAddress a = e.ip();
+            if ( a.protocol() != QAbstractSocket::IPv4Protocol )
+                continue;
+            const quint32 v4 = a.toIPv4Address(); // 10/8, 172.16/12, 192.168/16
+            if ( ( v4 >> 24 ) == 10 || ( v4 >> 20 ) == 0xAC1 || ( v4 >> 16 ) == 0xC0A8 )
+                ( type == QNetworkInterface::Ethernet ? wired : wireless )
+                    << QString( "http://%1:%2/" ).arg( a.toString() ).arg( port );
+        }
+    }
+    out << wired << wireless;
+    return out;
+}
+
+void GLwidget::showRemoteCard( int secs )
+{
+    m_cardUrls = remoteUrls();
+    if ( m_cardUrls.isEmpty() )
+        return;
+    m_cardUntil = m_fpsTimer.elapsed() + secs * 1000;
+    update();
+}
+
+void GLwidget::drawRemoteCard( QPainter *painter, float alpha )
+{
+    // Sized by the window: the code has to be readable from across a room on a projector and still fit a laptop.
+    const int    u = std::max( 10, height() / 34 );
+    const QrCode qr = QrCode::encode( m_cardUrls.front().toStdString() );
+    if ( qr.size() == 0 )
+        return;
+    const int module = std::max( 3, ( height() * 40 / 100 ) / ( qr.size() + 8 ) );
+    const int qr_side = module * ( qr.size() + 8 ); // with the quiet zone of four modules a side
+    QFont     big( "Segoe UI" ), small( "Segoe UI" );
+    big.setPixelSize( u * 13 / 10 );
+    big.setBold( true );
+    small.setPixelSize( u * 9 / 10 );
+    const QFontMetrics fb( big ), fs( small );
+    int                text_w = fs.horizontalAdvance( ui( S_CARD_PHONE ) );
+    for ( const QString &url : m_cardUrls )
+        text_w = std::max( text_w, fb.horizontalAdvance( url ) );
+    text_w = std::max( text_w, fs.horizontalAdvance( ui( S_CARD_KEYS ) ) );
+    const int box_w = std::min( width() - 2 * u, std::max( text_w, qr_side ) + 2 * u );
+    const int lines = 2 + static_cast<int>( m_cardUrls.size() );
+    const int box_h = std::min( height() - 2 * u, qr_side + lines * u * 17 / 10 + 3 * u );
+    const int x0 = ( width() - box_w ) / 2, y0 = ( height() - box_h ) / 2;
+    const int a = static_cast<int>( 255.f * alpha );
+    painter->fillRect( x0, y0, box_w, box_h, QColor( 12, 14, 20, a * 225 / 255 ) );
+    painter->fillRect( x0, y0, box_w, 4, QColor( 255, 190, 80, a ) );
+    int y = y0 + u;
+    painter->setFont( small );
+    painter->setPen( QColor( 220, 226, 236, a ) );
+    painter->drawText( QRect( x0, y, box_w, u * 3 / 2 ), Qt::AlignCenter, ui( S_CARD_PHONE ) );
+    y += u * 17 / 10;
+    painter->setFont( big );
+    painter->setPen( QColor( 255, 255, 255, a ) );
+    for ( const QString &url : m_cardUrls )
+    {
+        painter->drawText( QRect( x0, y, box_w, u * 3 / 2 ), Qt::AlignCenter, url );
+        y += u * 17 / 10;
+    }
+    // The code: white field with its quiet zone, black modules -- fully opaque once faded in, or a camera
+    // reads the picture behind it.
+    const int qx = ( width() - qr_side ) / 2, qy = y + u / 2;
+    painter->fillRect( qx, qy, qr_side, qr_side, QColor( 255, 255, 255, a ) );
+    for ( int my = 0; my < qr.size(); ++my )
+        for ( int mx = 0; mx < qr.size(); ++mx )
+            if ( qr.dark( mx, my ) )
+                painter->fillRect( qx + ( mx + 4 ) * module, qy + ( my + 4 ) * module, module, module,
+                                   QColor( 0, 0, 0, a ) );
+    painter->setFont( small );
+    painter->setPen( QColor( 180, 190, 205, a ) );
+    painter->drawText( QRect( x0, qy + qr_side + u / 2, box_w, u * 3 / 2 ), Qt::AlignCenter, ui( S_CARD_KEYS ) );
+}
+
 QStringList GLwidget::remoteConfigNames() const
 {
     QStringList out;
@@ -225,15 +356,61 @@ QString GLwidget::remoteActiveConfigName() const
     return m_actConfiguration ? m_actConfiguration->getConfigurationName() : QString();
 }
 
+/**  Where screenshots go: Pictures/Kaleidoscope (beside the program's working folder if that cannot be made).
+ *
+ * @return
+ *   The folder, created.
+ **/
+static QString shotDir()
+{
+    const QString pics = QStandardPaths::writableLocation( QStandardPaths::PicturesLocation );
+    if ( !pics.isEmpty() && QDir().mkpath( pics + "/Kaleidoscope" ) )
+        return pics + "/Kaleidoscope";
+    QDir().mkpath( "screenshots" );
+    return QFileInfo( "screenshots" ).absoluteFilePath();
+}
+
 QString GLwidget::remoteScreenshot()
 {
-    QImage  img = grabFramebuffer();
-    QString fn = QString( "kaleidoscope_%1.png" )
-                     .arg( QDateTime::currentDateTime().toString( "yyyyMMdd_hhmmss" ) );
-    if ( !img.save( fn ) )
-        return QString();
-    fprintf( stderr, "Saved screenshot: %s\n", fn.toLocal8Bit().constData() );
-    return fn;
+    // The screenshot (16.10.2026) was grabFramebuffer(): it rendered the frame again WITH every overlay on it
+    // (the 'i' and 'v' panels, the help, the menu -- hence the menu's 150 ms wait), and saved it under a relative
+    // name in the working folder (bin\).  Now the next frame is read at its clean point, before any overlay
+    // (paintGL, beside the recorder's capture), and saved by a worker under Pictures\Kaleidoscope, named after
+    // the time and the scene.
+    QString scene;
+    if ( m_actConfiguration && m_actConfiguration->renderPipeline() )
+    {
+        float taste = 1.f;
+        scene = m_actConfiguration->renderPipeline()->activeSceneTaste( taste );
+    }
+    const QString path =
+        QDir( shotDir() )
+            .filePath( QString( "kaleidoscope_%1%2.png" )
+                           .arg( QDateTime::currentDateTime().toString( "yyyyMMdd_hhmmss" ) )
+                           .arg( scene.isEmpty() ? QString() : "_" + scene ) );
+    // KALEIDO_SHOT_OVERLAYS=1: the window as it is, overlays and all (the old way) -- for checking the overlays.
+    if ( qEnvironmentVariableIsSet( "KALEIDO_SHOT_OVERLAYS" ) )
+    {
+        const bool ok = grabFramebuffer().convertToFormat( QImage::Format_RGB888 ).save( path );
+        fprintf( stderr, ok ? "Saved screenshot: %s\n" : "Screenshot NOT saved: %s\n", qPrintable( path ) );
+        if ( ok )
+            m_lastShot = path;
+        return path;
+    }
+    m_shotPending = path;
+    update();
+    return m_shotPending;
+}
+
+QString GLwidget::remoteLastShotName() const
+{
+    return QFileInfo( m_lastShot ).fileName();
+}
+
+QByteArray GLwidget::remoteLastShot() const
+{
+    QFile f( m_lastShot );
+    return ( !m_lastShot.isEmpty() && f.open( QIODevice::ReadOnly ) ) ? f.readAll() : QByteArray();
 }
 
 void GLwidget::remoteTapTempo()
@@ -297,7 +474,59 @@ void GLwidget::remoteFavorite()
     {
         m_actConfiguration->renderPipeline()->favoriteCurrentEffect();
         m_actConfiguration->renderPipeline()->rememberCue( cueTrackKey(), cuePosSec() );
+        float         taste = 1.f;
+        const QString scene = m_actConfiguration->renderPipeline()->activeSceneTaste( taste );
+        feedback( ui( S_FB_FAVORITE_FMT ).arg( scene ).arg( taste, 0, 'f', 2 ) );
     }
+}
+
+void GLwidget::remoteBan()
+{
+    if ( !m_actConfiguration || !m_actConfiguration->renderPipeline() )
+        return;
+    QString scene;
+    if ( m_actConfiguration->renderPipeline()->banCurrentScene( scene ) )
+        feedback( ui( S_FB_BANNED_FMT ).arg( scene ), 5000 );
+    else
+        feedback( ui( S_FB_BAN_REFUSED ) );
+}
+
+void GLwidget::remoteUnban( const QString &base )
+{
+    if ( !m_actConfiguration || !m_actConfiguration->renderPipeline() )
+        return;
+    m_actConfiguration->renderPipeline()->unbanScene( base );
+    feedback( ui( S_FB_UNBANNED_FMT ).arg( base.endsWith( ".frag" ) ? base.left( base.size() - 5 ) : base ) );
+}
+
+void GLwidget::remoteUnbanIndex( int idx )
+{
+    if ( m_actConfiguration && m_actConfiguration->renderPipeline() )
+    {
+        const QString base = m_actConfiguration->renderPipeline()->sceneBase( idx );
+        if ( !base.isEmpty() )
+            remoteUnban( base );
+    }
+}
+
+float GLwidget::remoteSceneTaste( int idx, bool &banned )
+{
+    banned = false;
+    return ( m_actConfiguration && m_actConfiguration->renderPipeline() )
+               ? m_actConfiguration->renderPipeline()->sceneTaste( idx, banned )
+               : 1.f;
+}
+
+void GLwidget::remoteUnfavorite()
+{
+    if ( m_actConfiguration && m_actConfiguration->renderPipeline() )
+        feedback( ui( S_FB_UNFAVORITE_FMT ).arg( m_actConfiguration->renderPipeline()->resetTasteCurrent() ) );
+}
+
+void GLwidget::remoteForgetCues()
+{
+    if ( m_actConfiguration && m_actConfiguration->renderPipeline() )
+        feedback( ui( S_FB_CUES_FORGOTTEN_FMT ).arg( m_actConfiguration->renderPipeline()->forgetSongCues() ) );
 }
 
 QString GLwidget::cueTrackKey() const
@@ -660,7 +889,7 @@ GLwidget::GLwidget( QWidget *parent )
     // Embedded web remote (CLI -t <port>): phone page with the same harmless
     // controls as the keyboard.  Parented to this widget; main-thread events.
     if ( M_RemotePort > 0 )
-        new WebRemote( this, M_RemotePort );
+        m_webRemote = new WebRemote( this, M_RemotePort );
 
     // Score cues from a generator (CueReceiver.h): OFF unless cuePort says otherwise.  Same
     // arrangement as the web remote -- a child QObject with a socket on the main thread, so a
@@ -749,6 +978,11 @@ GLwidget::GLwidget( QWidget *parent )
         fprintf( stderr, "Settings: %s%s\n",
                  QFileInfo( ini_path ).absoluteFilePath().toLocal8Bit().constData(),
                  QFileInfo( ini_path ).exists() ? "" : " (missing - using defaults)" );
+        // The very first start (no settings file yet): the card with the remote's address and its QR code, once.
+        m_firstStart = !QFileInfo( ini_path ).exists();
+        if ( m_firstStart && m_webRemote && m_webRemote->port() > 0 && !M_BatchRender )
+            QTimer::singleShot( 3000, this, [this]()
+            { showRemoteCard( 45 ); } );
     }
     // A preset built entirely from geom="mesh" scenes has nothing left once
     // the optional model pack is absent, and RenderPipeline would fall back
@@ -813,6 +1047,7 @@ GLwidget::GLwidget( QWidget *parent )
             skipped += c->skippedMeshScenes();
         for ( Configuration *c : m_hiddenConfigurations )
             skipped += c->skippedMeshScenes();
+        m_skippedMesh = skipped;
         if ( skipped > 0 )
             fprintf( stderr,
                      "3D model pack not installed: %d mesh scene(s) skipped. "
@@ -1117,6 +1352,26 @@ void GLwidget::initializeGL()
             }
         }
     }
+
+    // KALEIDO_KEYS="2000:A;2600:Shift+W;3000:;" -- a key script for UI tests: each key (a QKeySequence name) is
+    // posted to this window as a Qt event that many milliseconds after the start.  Inside the app only: keys
+    // simulated through the system once went to whatever window the user was working in.
+    if ( qEnvironmentVariableIsSet( "KALEIDO_KEYS" ) )
+        for ( const QString &step : qEnvironmentVariable( "KALEIDO_KEYS" ).split( ';', Qt::SkipEmptyParts ) )
+        {
+            const int colon = step.indexOf( ':' );
+            if ( colon <= 0 )
+                continue;
+            const QKeySequence seq( step.mid( colon + 1 ) );
+            if ( seq.isEmpty() )
+                continue;
+            const QKeyCombination key = seq[0];
+            QTimer::singleShot( step.left( colon ).toInt(), this, [this, key]()
+            {
+                QCoreApplication::postEvent( this,
+                                             new QKeyEvent( QEvent::KeyPress, key.key(), key.keyboardModifiers() ) );
+            } );
+        }
 
     // Optional MIDI control: opens the first controller if one is connected.
     // MIDI opens on a thread of its own and is taken over by applyMidi() once it
@@ -1599,6 +1854,7 @@ void GLwidget::draw()
             m_actConfiguration->renderPipeline()->showState( st.scene, st.fading, st.transition, st.fadeSecs,
                                                              st.blackout, st.rgb );
             st.preset = m_actConfiguration->getConfigurationName().toUtf8();
+            st.riseRate = RenderPipeline::strictLight() ? 1.f : 2.f;
             m_osc.show( st, dt );
         }
     }
@@ -1658,6 +1914,29 @@ void GLwidget::draw()
 
     // Web-remote live preview, refreshed ~1x per second while the phone page polls /api/snapshot.
     updateRemotePreview();
+
+    // A screenshot asked for (remoteScreenshot()): the clean frame, read once (a sync read, but once per press),
+    // opaque -- the default framebuffer's alpha is not the picture's -- and saved by a worker.
+    if ( !m_shotPending.isEmpty() )
+    {
+        QImage img( m_width, m_height, QImage::Format_RGBA8888 );
+        glBindFramebuffer( GL_READ_FRAMEBUFFER, defaultFramebufferObject() );
+        glReadPixels( 0, 0, m_width, m_height, GL_RGBA, GL_UNSIGNED_BYTE, img.bits() );
+        const QString            path = m_shotPending;
+        const QPointer<GLwidget> self( this );
+        m_shotPending.clear();
+        QThreadPool::globalInstance()->start( [self, img, path]
+        {
+            const bool ok = img.mirrored().convertToFormat( QImage::Format_RGB888 ).save( path );
+            fprintf( stderr, ok ? "Saved screenshot: %s\n" : "Screenshot NOT saved: %s\n", qPrintable( path ) );
+            if ( ok )
+                QMetaObject::invokeMethod( qApp, [self, path]
+                {
+                    if ( self )
+                        self->m_lastShot = path;
+                } );
+        } );
+    }
 
     // Config cross-fade: draw the captured previous frame on top, fading out.
     float fade_alpha = 0.f;
@@ -1733,9 +2012,15 @@ void GLwidget::draw()
     // Only spin up a QPainter when an overlay or the cross-fade needs it, so the
     // normal render path is pure GL (no QPainter/GL state interaction).
     const float notice_alpha = noticeAlpha();
+    const float card_alpha = m_cardUntil > 0
+                                 ? std::clamp( static_cast<float>( m_cardUntil - m_fpsTimer.elapsed() ) / 400.f, 0.f,
+                                               1.f )
+                                 : 0.f;
+    if ( m_cardUntil > 0 && card_alpha <= 0.f )
+        m_cardUntil = 0;
     if ( m_showSelectConfigurationMenu || m_showFeatureOverlay || m_showHelp
          || m_showAudioMenu || m_showShaderInfo || m_recorder.recording()
-         || fade_alpha > 0.f || np_alpha > 0.f || m_osd.isOpen() || notice_alpha > 0.f )
+         || fade_alpha > 0.f || np_alpha > 0.f || m_osd.isOpen() || notice_alpha > 0.f || card_alpha > 0.f )
     {
         QPainter painter( this );
         // painter.setRenderHint(QPainter::Antialiasing);
@@ -1779,6 +2064,8 @@ void GLwidget::draw()
             painter.drawText( width() - 126, 39,
                               QString::fromUtf8( Strings::uiText( S_REC_FMT ) ).arg( m_recorder.frameCount() ) );
         }
+        if ( card_alpha > 0.f )
+            drawRemoteCard( &painter, card_alpha );
         if ( notice_alpha > 0.f )
             drawNotice( &painter, notice_alpha );
         m_osd.draw( &painter, width(), height() ); // last: on top of everything
@@ -1966,6 +2253,7 @@ void GLwidget::loadUiSettings()
     m_artistShow = s.value( "artistImages", m_artistShow ).toBool();
     m_videoEnabled = s.value( "videoEnabled", m_videoEnabled ).toBool();
     m_lyricsKinetic = s.value( "lyricsKinetic", m_lyricsKinetic ).toBool();
+    m_keyFeedback = s.value( "keyFeedback", m_keyFeedback ).toBool();
     m_updateCheck = s.value( "updateCheck", m_updateCheck ).toBool();
     m_idleMinutes = qBound( 0, s.value( "idleMinutes", 0 ).toInt(), 1440 );
     m_idleDisplayOff = s.value( "idleDisplayOff", false ).toBool();
@@ -1975,6 +2263,7 @@ void GLwidget::loadUiSettings()
     for ( int i = 0; i < MIDI_TARGETS; ++i )
         m_midiMap[i] = m_midiLearned ? s.value( QString( "midiMap%1" ).arg( i ), -1 ).toInt() : -1;
     RenderPipeline::setLightShow( s.value( "lightShow", RenderPipeline::lightShow() ).toBool() );
+    RenderPipeline::setStrictLight( s.value( "lightProtectionStrict", RenderPipeline::strictLight() ).toBool() );
     // A persisted active config is the default start config, unless -c overrode it.
     if ( M_StartConfig.isEmpty() )
         M_StartConfig = s.value( "activeConfig", QString() ).toString();
@@ -2012,6 +2301,7 @@ QList<QPair<QString, QVariant>> GLwidget::uiSettings() const
     for ( int i = 0; i < MIDI_TARGETS; ++i )
         v.append( { QString( "midiMap%1" ).arg( i ), m_midiMap[i] } );
     v.append( { "lightShow", RenderPipeline::lightShow() } );
+    v.append( { "lightProtectionStrict", RenderPipeline::strictLight() } );
     v.append( { "remotePort", M_RemotePort } );
     v.append( { "cuePort", m_cuePort } );
     v.append( { "cueBind", m_cueBind } );
@@ -2198,6 +2488,14 @@ void GLwidget::notify( const QString &text, int ms )
     m_noticeAt = -1; // starts with the next frame (the frame timer may not run yet)
     m_noticeMs = ms;
     update();
+}
+
+void GLwidget::feedback( const QString &text, int ms )
+{
+    if ( m_keyFeedback )
+        notify( text, ms );
+    else
+        fprintf( stderr, "FEEDBACK: %s\n", qPrintable( text ) );
 }
 
 float GLwidget::noticeAlpha()
@@ -2876,28 +3174,72 @@ void GLwidget::drawHelpOverlay( QPainter *painter )
         { "Esc / q", S_HELP_ESC },
     };
     const int n = static_cast<int>( sizeof( Lines ) / sizeof( Lines[0] ) );
+    // Three entries more (16.10.2026): Shift+W, the double-click and the menus' type-to-filter were in the README
+    // only.  Their key column is a word, so it comes from the string table too.
+    struct Extra
+    {
+        StrIdE key;
+        StrIdE desc;
+    };
+    static const Extra Extras[] = { { S_HELP_KEY_DBLCLICK, S_HELP_DBLCLICK }, { S_HELP_KEY_TYPE, S_HELP_TYPE } };
+    QStringList        keys, descs;
+    for ( int i = 0; i < n; ++i )
+    {
+        keys << QString::fromUtf8( Lines[i].key );
+        descs << QString::fromUtf8( Strings::uiText( Lines[i].desc ) );
+        if ( Lines[i].desc == S_HELP_W )
+        {
+            keys << "Shift+W";
+            descs << QString::fromUtf8( Strings::uiText( S_HELP_SHIFT_W ) );
+        }
+    }
+    for ( const Extra &e : Extras )
+    {
+        keys << QString::fromUtf8( Strings::uiText( e.key ) );
+        descs << QString::fromUtf8( Strings::uiText( e.desc ) );
+    }
+    const int rows = static_cast<int>( keys.size() );
 
-    // A bit wider than the English text alone would need -- several German
-    // descriptions run noticeably longer (e.g. "aktuellen Look + Zustand
-    // als Standard speichern").
-    const int box_w = 480, lh = 26;
-    const int box_h = lh * ( n + 1 ) + 24;
+    // Sized by the window like the on-screen menu: a fixed 480 x 908 px box ran off a 720-pixel-high window (a
+    // 1080p laptop at 150 %) and was tiny on a large output.  When one column does not fit the height, two.
+    const int lh = std::max( 16, height() / 40 );
+    QFont     body( "Consolas" );
+    body.setPixelSize( std::max( 11, lh * 62 / 100 ) );
+    QFont title( body );
+    title.setBold( true );
+    title.setPixelSize( body.pixelSize() + 2 );
+    const QFontMetrics fm( body );
+    int                key_w = 0, desc_w = 0;
+    for ( int i = 0; i < rows; ++i )
+    {
+        key_w = std::max( key_w, fm.horizontalAdvance( keys[i] ) );
+        desc_w = std::max( desc_w, fm.horizontalAdvance( descs[i] ) );
+    }
+    const int pad = lh;
+    const int cols = ( rows + 1 ) * lh + 2 * pad > height() * 92 / 100 ? 2 : 1;
+    const int per_col = ( rows + cols - 1 ) / cols;
+    const int col_w = key_w + lh + desc_w;
+    const int box_w = std::min( width() - 2 * lh, cols * col_w + ( cols - 1 ) * 2 * lh + 2 * pad );
+    const int box_h = std::min( height() - lh, ( per_col + 1 ) * lh + 2 * pad );
     const int x0 = ( width() - box_w ) / 2;
     const int y0 = ( height() - box_h ) / 2;
+    // A column too wide for the window gives its descriptions what is left, elided.
+    const int desc_room = ( box_w - 2 * pad - ( cols - 1 ) * 2 * lh ) / cols - key_w - lh;
 
     painter->fillRect( x0, y0, box_w, box_h, QColor( 0, 0, 0, 190 ) );
     painter->setPen( QColor( 120, 200, 255 ) );
-    painter->setFont( QFont( "Consolas", 14, QFont::Bold ) );
-    painter->drawText( x0 + 20, y0 + 32, QString::fromUtf8( Strings::uiText( S_HELP_TITLE ) ) );
-
-    painter->setFont( QFont( "Consolas", 12 ) );
-    for ( int i = 0; i < n; ++i )
+    painter->setFont( title );
+    painter->drawText( x0 + pad, y0 + pad + fm.ascent(), QString::fromUtf8( Strings::uiText( S_HELP_TITLE ) ) );
+    painter->setFont( body );
+    for ( int i = 0; i < rows; ++i )
     {
-        int ry = y0 + 32 + ( i + 1 ) * lh;
+        const int col = i / per_col, row = i % per_col;
+        const int cx = x0 + pad + col * ( col_w + 2 * lh );
+        const int ry = y0 + pad + fm.ascent() + ( row + 1 ) * lh;
         painter->setPen( QColor( 150, 230, 150 ) );
-        painter->drawText( x0 + 24, ry, QString( Lines[i].key ) );
+        painter->drawText( cx, ry, keys[i] );
         painter->setPen( QColor( 210, 218, 232 ) );
-        painter->drawText( x0 + 150, ry, QString::fromUtf8( Strings::uiText( Lines[i].desc ) ) );
+        painter->drawText( cx + key_w + lh, ry, fm.elidedText( descs[i], Qt::ElideRight, std::max( 20, desc_room ) ) );
     }
 }
 
@@ -2930,17 +3272,20 @@ void GLwidget::applyMidi()
             if ( ( wants_note && e.type == 0x90 ) || ( !wants_note && e.type == 0xB0 ) )
             {
                 m_midiMap[m_midiLearn] = e.data1;
-                fprintf( stderr, "MIDI learn: %s -> %s %d\n",
-                         kMidiTargetNames[m_midiLearn],
-                         wants_note ? "note" : "CC", e.data1 );
+                const QString learned = ui( S_FB_MIDI_LEARNED_FMT )
+                                            .arg( kMidiTargetNames[m_midiLearn] )
+                                            .arg( QString( "%1 %2" ).arg( wants_note ? "Note" : "CC" ).arg( e.data1 ) );
                 ++m_midiLearn; // advance to next target
                 if ( m_midiLearn >= MIDI_TARGETS )
                 {
                     m_midiLearn = -1;
                     m_midiLearned = true;
                     saveUiSettings( false ); // persist the new mapping
-                    fprintf( stderr, "MIDI learn: done (gespeichert)\n" );
+                    feedback( learned + " -- " + ui( S_FB_MIDI_OFF ) );
                 }
+                else // the next target, on screen until it is learned too
+                    feedback( learned + " -- " + ui( S_FB_MIDI_LEARN_FMT ).arg( kMidiTargetNames[m_midiLearn] ),
+                              24 * 3600 * 1000 );
             }
             continue; // learn consumes the event
         }
@@ -3983,7 +4328,7 @@ std::vector<OsdItem> GLwidget::osdRootItems()
 
     root.push_back( osdSub( S_OSD_SCENE, [this]
     {
-        return std::vector<OsdItem>{
+        std::vector<OsdItem> v{
             osdAct( osdT( S_OSD_NEXT ), [this]
         { remoteNextEffect(); }, false, true ),
             osdToggle( S_OSD_PIN, []
@@ -3997,6 +4342,27 @@ std::vector<OsdItem> GLwidget::osdRootItems()
             osdAct( osdT( S_OSD_SAVEMARKED ), [this]
         { remoteSaveMarked(); }, false, true ),
         };
+        // The taste, correctable: never again, the favourite taken back, this song's cues forgotten, and the
+        // banned scenes, each one allowed again with a press.
+        v.push_back( osdAct( osdT( S_OSD_BAN ), [this]
+        { remoteBan(); }, true, true ) );
+        v.push_back( osdAct( osdT( S_OSD_UNFAVORITE ), [this]
+        { remoteUnfavorite(); }, false, true ) );
+        RenderPipeline *rp = m_actConfiguration ? m_actConfiguration->renderPipeline() : nullptr;
+        if ( rp && rp->songCueCount() > 0 )
+            v.push_back( osdAct( osdT( S_OSD_FORGETCUES_FMT ).arg( rp->songCueCount() ), [this]
+            { remoteForgetCues(); }, false, true ) );
+        if ( rp && !rp->bannedScenes().isEmpty() )
+            v.push_back( osdSub( S_OSD_BANNED, [this]
+            {
+                std::vector<OsdItem> b;
+                RenderPipeline      *p = m_actConfiguration ? m_actConfiguration->renderPipeline() : nullptr;
+                for ( const QString &base : p ? p->bannedScenes() : QStringList() )
+                    b.push_back( osdAct( base, [this, base]
+                    { remoteUnban( base ); m_osd.requestRebuild(); } ) );
+                return b;
+            } ) );
+        return v;
     } ) );
 
     root.push_back( osdSub( S_OSD_PICTURE, [this]
@@ -4020,6 +4386,10 @@ std::vector<OsdItem> GLwidget::osdRootItems()
         { return RenderPipeline::lightShow(); },
                        []( bool b )
         { RenderPipeline::setLightShow( b ); } ),
+            osdToggle( S_OSD_STRICTLIGHT, []
+        { return RenderPipeline::strictLight(); },
+                       []( bool b )
+        { RenderPipeline::setStrictLight( b ); } ),
             osdToggle( S_OSD_NOWPLAYING, [this]
         { return nowPlayingEnabled(); },
                        [this]( bool b )
@@ -4157,15 +4527,15 @@ std::vector<OsdItem> GLwidget::osdRootItems()
         { remoteSaveReplay(); }, false, true ),
             // The menu closes first and the grab follows a moment later, or the
             // screenshot would show the menu over the picture.
+            // Taken at the next frame's clean point, before any overlay: the menu is never in it.
             osdAct( osdT( S_OSD_SCREENSHOT ), [this]
-        { QTimer::singleShot( 150, this, [this]
-          { remoteScreenshot(); } ); }, true ),
+        { feedback( ui( S_FB_SCREENSHOT_FMT ).arg( remoteScreenshot() ) ); }, true ),
         };
     } ) );
 
     root.push_back( osdSub( S_OSD_INFO, [this]
     {
-        return std::vector<OsdItem>{
+        std::vector<OsdItem> v{
             osdToggle( S_OSD_SHADERNAMES, [this]
         { return shaderInfoVisible(); },
                        [this]( bool b )
@@ -4178,6 +4548,17 @@ std::vector<OsdItem> GLwidget::osdRootItems()
         { return m_showHelp; }, [this]( bool b )
         { m_showHelp = b; } ),
         };
+        // Where a phone finds the remote (it was in the log only, and the port may have moved), each address
+        // opening the card with its QR code; and how many scenes the missing model pack costs.
+        const QStringList urls = remoteUrls();
+        if ( urls.isEmpty() )
+            v.push_back( osdAct( osdT( S_OSD_REMOTE_OFF ), [] {} ) );
+        for ( const QString &u : urls )
+            v.push_back( osdAct( osdT( S_OSD_REMOTE_FMT ).arg( u ), [this]
+            { showRemoteCard( 60 ); }, true ) );
+        if ( m_skippedMesh > 0 )
+            v.push_back( osdAct( osdT( S_OSD_MESH_SKIPPED_FMT ).arg( m_skippedMesh ), [] {} ) );
+        return v;
     } ) );
 
     root.push_back( osdSub( S_OSD_SYSTEM, [this]
@@ -4211,6 +4592,8 @@ std::vector<OsdItem> GLwidget::osdRootItems()
 
 void GLwidget::keyPressEvent( QKeyEvent *event )
 {
+    m_cardUntil = 0; // any key closes the remote card, and still does what it does
+
     // Video export: Esc or q finish the file with the frames so far; the show's
     // keys have nothing to steer here.
     if ( m_export )
@@ -4407,7 +4790,7 @@ void GLwidget::keyPressEvent( QKeyEvent *event )
             break;
         case Qt::Key_P:
             setNowPlayingEnabled( !m_showNowPlaying );
-            fprintf( stderr, "Now-playing display: %s\n", m_showNowPlaying ? "ON" : "OFF" );
+            feedback( ui( S_FB_NOWPLAYING_FMT ).arg( onOff( m_showNowPlaying ) ) );
             break;
 
         // ---- Lyrics mode, cyclic: off -> scroll -> karaoke ----
@@ -4418,34 +4801,36 @@ void GLwidget::keyPressEvent( QKeyEvent *event )
             if ( event->modifiers() & Qt::ShiftModifier )
             {
                 m_lyricsKinetic = !m_lyricsKinetic;
-                fprintf( stderr, "Lyrics-Kinetik (Zeilen-Slam): %s\n",
-                         m_lyricsKinetic ? "AN" : "AUS" );
+                feedback( ui( S_FB_KINETIC_FMT ).arg( onOff( m_lyricsKinetic ) ) );
                 break;
             }
             setLyricsModeValue( ( m_lyricsMode + 1 ) % 3 );
-            static const char *LyricsNames[] = { "AUS", "Scroll", "Karaoke" };
-            fprintf( stderr, "Lyrics: %s\n", LyricsNames[m_lyricsMode] );
+            const StrIdE lyrics_names[] = { S_FB_OFF, S_FB_LYRICS_SCROLL, S_FB_LYRICS_KARAOKE };
+            feedback( ui( S_FB_LYRICS_FMT ).arg( ui( lyrics_names[m_lyricsMode % 3] ) ) );
             break;
         }
 
         // ---- Artist images on/off ----
         case Qt::Key_O:
             setArtistImagesEnabled( !m_artistShow );
-            fprintf( stderr, "Kuenstlerbilder: %s\n", m_artistShow ? "AN" : "AUS" );
+            feedback( ui( S_FB_ARTIST_FMT ).arg( onOff( m_artistShow ) ) );
             break;
         case Qt::Key_R:
             m_recorder.toggle(); // record visuals + music to an mp4
             break;
         case Qt::Key_L:
             RenderPipeline::toggleLightShow(); // corner lamps / light-show on/off
-            fprintf( stderr, "Stage lamps: %s\n", RenderPipeline::lightShow() ? "ON" : "OFF" );
+            feedback( ui( S_FB_LAMPS_FMT ).arg( onOff( RenderPipeline::lightShow() ) ) );
             break;
         case Qt::Key_N:
             // Manually advance to the next effect (texture + combine), snappy cut.
             if ( m_actConfiguration && m_actConfiguration->renderPipeline() )
             {
-                m_actConfiguration->renderPipeline()->requestSceneChange();
-                fprintf( stderr, "n: next effect requested\n" );
+                const int held = m_actConfiguration->renderPipeline()->requestSceneChange();
+                if ( held )
+                    feedback( ui( held == 1 ? S_FB_NEXT_PINNED : S_FB_NEXT_FROZEN ) );
+                else
+                    fprintf( stderr, "n: next effect requested\n" );
             }
             break;
 
@@ -4457,17 +4842,15 @@ void GLwidget::keyPressEvent( QKeyEvent *event )
         case Qt::Key_Minus: RenderPipeline::adjustMood( -0.10f ); break;              // -  less mood colour
         case Qt::Key_Equal: RenderPipeline::adjustMood( +0.10f ); break;              // =  more mood colour
         case Qt::Key_Semicolon:                                                       // ;  less latency lead
-            RenderPipeline::adjustLatency( -0.01f );
-            fprintf( stderr, "Latency lead: %.0f ms\n", RenderPipeline::latency() * 1000.f );
-            break;
-        case Qt::Key_Apostrophe: // '  more latency lead
-            RenderPipeline::adjustLatency( +0.01f );
-            fprintf( stderr, "Latency lead: %.0f ms\n", RenderPipeline::latency() * 1000.f );
+        case Qt::Key_Apostrophe:                                                      // '  more latency lead
+            RenderPipeline::adjustLatency( event->key() == Qt::Key_Apostrophe ? +0.01f : -0.01f );
+            feedback( ui( S_FB_LATENCY_FMT ).arg( qRound( RenderPipeline::latency() * 1000.f ) ) );
             break;
 
         // ---- Persist the current look + UI state as the startup default ----
         case Qt::Key_K:
             saveAllSettings( true );
+            feedback( ui( S_FB_SAVED_DEFAULTS ) );
             break;
 
         // ---- Instant replay: 'y' arms the rolling buffer, 'x' saves it ----
@@ -4489,21 +4872,19 @@ void GLwidget::keyPressEvent( QKeyEvent *event )
             break;
         case Qt::Key_T:
             if ( m_audioAnalyzer )
-                m_audioAnalyzer->tapTempo();
+            {
+                const float bpm = m_audioAnalyzer->tapTempo();
+                feedback( bpm > 0.f ? ui( S_FB_TAP_FMT ).arg( bpm, 0, 'f', 1 ) : ui( S_FB_TAP_MORE ) );
+            }
             break;
         case Qt::Key_U:
             RenderPipeline::togglePin();
-            fprintf( stderr, "Effekt-Pin: %s\n",
-                     RenderPipeline::pinned() ? "AN (haelt den aktuellen Effekt)" : "AUS" );
+            feedback( ui( S_FB_PIN_FMT ).arg( onOff( RenderPipeline::pinned() ) ) );
             break;
 
         // ---- Taste learning: favourite the current effect ----
         case Qt::Key_F:
-            if ( m_actConfiguration && m_actConfiguration->renderPipeline() )
-            {
-                m_actConfiguration->renderPipeline()->favoriteCurrentEffect();
-                m_actConfiguration->renderPipeline()->rememberCue( cueTrackKey(), cuePosSec() );
-            }
+            remoteFavorite();
             break;
 
         // ---- Scene marking (build a shortlist while watching) ----
@@ -4529,55 +4910,51 @@ void GLwidget::keyPressEvent( QKeyEvent *event )
         case Qt::Key_Z:
         {
             RenderPipeline::cycleStereo();
-            static const char *StereoNames[] =
-                { "AUS", "Side-by-Side", "Top-Bottom", "Anaglyph (rot/cyan)" };
-            fprintf( stderr, "Stereo: %s\n", StereoNames[RenderPipeline::stereoMode() & 3] );
+            const int mode = RenderPipeline::stereoMode() & 3;
+            feedback( ui( S_FB_STEREO_FMT )
+                          .arg( mode == 0 ? onOff( false )
+                                          : QString( mode == 1 ? "Side-by-Side" : mode == 2 ? "Top-Bottom"
+                                                                                            : "Anaglyph" ) ) );
             break;
         }
         case Qt::Key_C:
             RenderPipeline::adjustStereoDepth( -0.2f );
-            fprintf( stderr, "Stereo-Tiefe: %.1f\n", RenderPipeline::stereoDepth() );
+            feedback( ui( S_FB_STEREO_DEPTH_FMT ).arg( RenderPipeline::stereoDepth(), 0, 'f', 1 ) );
             break;
         case Qt::Key_M:
             RenderPipeline::adjustStereoDepth( +0.2f );
-            fprintf( stderr, "Stereo-Tiefe: %.1f\n", RenderPipeline::stereoDepth() );
+            feedback( ui( S_FB_STEREO_DEPTH_FMT ).arg( RenderPipeline::stereoDepth(), 0, 'f', 1 ) );
             break;
 
         // ---- MIDI learn: cycle through the assignable targets ----
         case Qt::Key_J:
             m_midiLearn = ( m_midiLearn < 0 ) ? 0
                                               : ( m_midiLearn + 1 >= MIDI_TARGETS ? -1 : m_midiLearn + 1 );
+            // On screen for as long as it waits: the target used to be named on stderr only, which a windowed
+            // build without -l has nowhere.
             if ( m_midiLearn >= 0 )
-                fprintf( stderr, "MIDI learn: bewege einen Regler fuer '%s' "
-                                 "(j = weiter/beenden)\n",
-                         kMidiTargetNames[m_midiLearn] );
+                feedback( ui( S_FB_MIDI_LEARN_FMT ).arg( kMidiTargetNames[m_midiLearn] ), 24 * 3600 * 1000 );
             else
-                fprintf( stderr, "MIDI learn: aus\n" );
+                feedback( ui( S_FB_MIDI_OFF ) );
             break;
 
         // ---- Auto-config-by-mood toggle ----
         case Qt::Key_A:
             m_autoConfig = !m_autoConfig;
             m_moodBucket = -1; // re-evaluate from scratch
-            fprintf( stderr, "Auto-config-by-mood: %s\n", m_autoConfig ? "ON" : "OFF" );
+            feedback( ui( S_FB_AUTOPRESET_FMT ).arg( onOff( m_autoConfig ) ) );
             break;
 
         // ---- Adaptive render-scale toggle ----
         case Qt::Key_G:
             setAutoScaleEnabled( !m_autoScale );
-            fprintf( stderr, "Adaptive render scale: %s\n", m_autoScale ? "ON" : "OFF" );
+            feedback( ui( S_FB_AUTOSCALE_FMT ).arg( onOff( m_autoScale ) ) );
             break;
 
         // ---- Screenshot (this window only) ----
         case Qt::Key_S:
-        {
-            QImage  img = grabFramebuffer();
-            QString fn = QString( "kaleidoscope_%1.png" )
-                             .arg( QDateTime::currentDateTime().toString( "yyyyMMdd_hhmmss" ) );
-            if ( img.save( fn ) )
-                fprintf( stderr, "Saved screenshot: %s\n", fn.toLocal8Bit().constData() );
+            feedback( ui( S_FB_SCREENSHOT_FMT ).arg( QDir::toNativeSeparators( remoteScreenshot() ) ) );
             break;
-        }
             // '1'-'9' used to jump straight to a preset. The scrolling menu on '0'
             // reaches every preset, including the ones those keys never could, so
             // the digits are free again -- nine keys is a lot to spend on a

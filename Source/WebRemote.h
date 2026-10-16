@@ -65,6 +65,12 @@ public:
      *                8080). (in)
      **/
     WebRemote( GLwidget *widget, int port );
+    /**  The port the remote listens on (it may have had to move from the one asked for).
+     *
+     * @return
+     *   The port; 0 when none could be bound.
+     **/
+    int port() const { return m_httpPort; }
 
 private:
     /**  Accepts pending TCP connections and wires up one-shot request handling for each.

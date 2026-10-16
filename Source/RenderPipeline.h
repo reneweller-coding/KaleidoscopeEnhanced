@@ -237,8 +237,19 @@ public:
      * TASTE LEARNING, for a skip only: if the current effect has been on screen less than 10 s, skipping it counts
      * as "don't like it" and its persistent taste weight is multiplied down (see bumpTaste()) -- a slowly decaying
      * malus. A track change is no verdict on the scene and learns nothing.
+     *
+     * @return
+     *   0 when the change was asked for, 1 when a pin held it, 2 when a freeze held it.
      **/
-    void requestSceneChange( bool userSkip = true );
+    int requestSceneChange( bool userSkip = true );
+    /**  The scene on screen and its learned taste (the 'f' feedback).
+     *
+     * @param taste  The taste factor, 0.3..2.5 (1 = neutral). (out)
+     *
+     * @return
+     *   The scene's file name without the extension.
+     **/
+    QString activeSceneTaste( float &taste ) const;
     /**  A new song began (the media session's title, or the silence between tracks): the section memory and the
      * labs' section looks start empty, and the scene changes -- naturally, not as a cut (a calm preset fades with
      * its fade floor).
@@ -389,6 +400,68 @@ public:
 
     /** Boosts the currently active texture effect's persistent taste weight ("favourite", key 'f'). */
     void favoriteCurrentEffect();
+    /**  Never shows the scene on screen again in this preset ("never again", ini [banned]) and moves on.
+     *
+     * @param scene  The scene's file name without the extension. (out)
+     *
+     * @return
+     *   False (and nothing banned) when fewer than max(12, a twentieth) of the preset's scenes would be left.
+     **/
+    bool banCurrentScene( QString &scene );
+    /**  Allows a banned scene again.
+     *
+     * @param base  Its file name ("Voyager.frag"). (in)
+     **/
+    void unbanScene( const QString &base );
+    /**  The scenes banned in this preset.
+     *
+     * @return
+     *   Their file names.
+     **/
+    QStringList bannedScenes() const;
+    /**  Whether a scene is banned in this preset.
+     *
+     * @param fragPath  The scene's fragment path. (in)
+     *
+     * @return
+     *   True when "never again" was asked for it.
+     **/
+    bool isBanned( const char *fragPath ) const;
+    /**  Takes the favourite back: the scene on screen is neutral again (taste 1).
+     *
+     * @return
+     *   The scene's file name without the extension.
+     **/
+    QString resetTasteCurrent();
+    /**  Forgets the song cues of the track playing (see rememberCue()).
+     *
+     * @return
+     *   How many there were.
+     **/
+    int forgetSongCues();
+    /**  The song cues of the track playing.
+     *
+     * @return
+     *   Their number.
+     **/
+    int songCueCount() const;
+    /**  The learned taste and the ban of a scene entry, for the remote's browser.
+     *
+     * @param idx     Entry index (as in sceneNames()). (in)
+     * @param banned  Whether it is banned. (out)
+     *
+     * @return
+     *   The taste factor.
+     **/
+    float sceneTaste( int idx, bool &banned ) const;
+    /**  A scene entry's file name (the key of its taste and its ban).
+     *
+     * @param idx  Entry index (as in sceneNames()). (in)
+     *
+     * @return
+     *   The file name, empty for an index out of range.
+     **/
+    QString sceneBase( int idx ) const;
     /**  Cue memory: remember "THIS scene, at THIS point of THIS track" (favourite while a track is identified).
      *
      * @param trackKey  Identity of the playing track (artist and title). (in)
@@ -541,6 +614,18 @@ public:
     {
         return M_LightShow > 0.5f;
     }
+    /**  Whether the strict light protection is on: the brightness may rise half as fast (1.0 instead of 2.0 a
+     * second), the stage lamps and the title keep no beat or onset pulse.
+     *
+     * @return
+     *   True when it is on.
+     **/
+    static bool strictLight() { return M_StrictLight; }
+    /**  Switches the strict light protection.
+     *
+     * @param on  On or off. (in)
+     **/
+    static void setStrictLight( bool on ) { M_StrictLight = on; }
 
     // ---- Stereoscopic output (CLI -3 sbs|tb|ana; key 'z' cycles, c/m depth) --
     // The mono frame is DEPTH-REPROJECTED in the present pass: a pseudo-depth
@@ -1710,6 +1795,7 @@ private:
                               ///< gaming sickness.
     static float M_MoodStrength;     ///< global mood-grade strength (default 1.0).
     static float M_LightShow;        ///< 0 = corner lamps/light-show off (default), 1 = on.
+    static bool  M_StrictLight;      ///< Strict light protection (ini lightProtectionStrict).
     static float M_LatencyLead;      ///< display-phase lead in seconds (default 0.05).
     static bool  M_Blackout; ///< VJ blackout target (smoothed per instance) — actual fade is smoothed in PresentPass.
     static bool  M_RestDim;          ///< The rest mode's blackout target (setRestDim()).
@@ -1730,6 +1816,7 @@ private:
     // instances; the keys carry the preset namespace.
     static QSet<QString> M_Marked; ///< Base filenames ("Ocean.frag") of scenes marked for review; persisted under
                                    ///< [marked] in the settings ini.
+    static QSet<QString>         M_Banned; ///< "<Preset>/<file>" never rolled again (ini [banned], "never again").
     static QHash<QString, float> M_Taste; ///< Persistent per-"<Preset>/<file>" selection-weight factors, in [0.3, 2.5],
                                           ///< default 1.0; shared (static) across all instances, loaded/saved via
                                           ///< loadSettings()/bumpTaste().

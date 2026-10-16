@@ -150,6 +150,12 @@ public:
      *           callback every shader counts as 1.0. (in)
      **/
     void setTasteCallback( std::function<float( const char * )> f ) { m_tasteFor = std::move( f ); }
+    /**  Who says a scene must not come again (the viewer's "never again"): such a scene is never rolled -- a cue,
+     * a remote jump or a section replay may still show it, they ask for it by name.
+     *
+     * @param f  Callback mapping a fragment path to "banned"; without one nothing is. (in)
+     **/
+    void setBannedCallback( std::function<bool( const char * )> f ) { m_bannedFor = std::move( f ); }
     /**  The walking chain labs' share of the screen time the preset asks for (attribute labShare).
      *
      * @param share  0..1; 0 (the default) leaves the labs ordinary entries of the random pick. (in)
@@ -641,8 +647,9 @@ private:
     float m_lastValence = 0.5f; ///< Last mood valence snapshot (0..1) from setMood().
     float m_lastAmbient = 0.f;  ///< Last mood ambient-level snapshot (0..1) from setMood().
 
-    std::function<float( const char * )> m_tasteFor; ///< Learned-taste callback (fragment path -> multiplier); unset
-                                                     ///< means neutral 1.0 for everything.
+    std::function<bool( const char * )>  m_bannedFor; ///< setBannedCallback()
+    std::function<float( const char * )> m_tasteFor;  ///< Learned-taste callback (fragment path -> multiplier); unset
+                                                      ///< means neutral 1.0 for everything.
 public:
     /** Default construction, which the declared copy operations would otherwise suppress. */
     SceneScheduler() = default;

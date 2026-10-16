@@ -57,6 +57,7 @@ uniform float     audioOnset;     ///< full-spectrum onset (snares/claps/melodic
 uniform float     time;           ///< for the slow moving-head beam sweep
 uniform float     audioChase;     ///< 0..1, glides 1/4 per onset (~200 ms) → corner-cone colour chase
 uniform float     lightShow;      ///< 1 = stage lamps (cones/haze/mirror-ball/gobo) on, 0 = off
+uniform float     strictLight;    ///< 1 = strict light protection: lamps and titles without beat pulses
 uniform float     audioSwell;     ///< slow loudness build (ambient dynamics) → glow breathing
 uniform float     audioBarPhase;  ///< 0..1 position within the 4-beat bar → per-bar lamp sweep
 uniform sampler2D bloomTex;       ///< 2-pass Gaussian bloom (quarter res), when useBloom = 1
@@ -547,9 +548,10 @@ void main()
         mood_col = mix( vec3( sl ), mood_col, 0.75 + 0.5 * audioValence );
 
         // Beat/onset pulse with a modest always-on base.
-        float pulse = clamp( 0.16 + 1.0 * audioBeat + 0.6 * audioDownbeat
-                                 + 0.7 * audioOnset,
-                             0.0, 1.0 );
+        // The strict light protection keeps the lamps at a steady glow: no flash on the beat or the onset.
+        float pulse = strictLight > 0.5 ? 0.3
+                                        : clamp( 0.16 + 1.0 * audioBeat + 0.6 * audioDownbeat + 0.7 * audioOnset,
+                                                 0.0, 1.0 );
         float spread = 0.52; // cone half-width factor (thick beams)
         float reach = 0.38;  // short, so the thick cones stay in the corner regions
 
@@ -907,7 +909,7 @@ void main()
 
         float a = tt.a * fade_in * ( 1.0 - outp ) * mask_a;
         c = mix( c, tt.rgb, a * 0.92 );
-        c += tt.rgb * a * ( 0.25 + 0.30 * audioBeat ); // gentle beat glow
+        c += tt.rgb * a * ( 0.25 + 0.30 * audioBeat * ( 1.0 - strictLight ) ); // gentle beat glow (none if strict)
         c += tt.rgb * a * glow_x;                      // style-specific glint
     }
 

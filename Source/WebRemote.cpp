@@ -160,6 +160,9 @@ static const char *kPageTemplate = R"HTML(<!DOCTYPE html>
  </div>
  <div class="row">
   <button onclick="cmd('/api/fav')">&#11088; @@FAVORITE@@</button>
+  <button onclick="cmd('/api/unfav')">&#9734; @@UNFAV@@</button>
+  <button onclick="if(confirm('@@BANQ@@'))cmd('/api/ban')">&#8856; @@BAN@@</button>
+  <button onclick="cmd('/api/forgetcues')">&#9003; @@FORGETCUES@@</button>
   <button onclick="cmd('/api/mark')">&#128278; @@MARK@@</button>
   <button onclick="cmd('/api/tap')">&#128341; @@TAPTEMPO@@</button>
  </div>
@@ -188,8 +191,10 @@ static const char *kPageTemplate = R"HTML(<!DOCTYPE html>
  <button class="big rec" id="record" onclick="cmd('/api/toggle?k=record')">
   &#9210; @@RECORDSTART@@</button>
  <div class="row">
-  <button onclick="cmd('/api/screenshot')">&#128247; @@SCREENSHOT@@</button>
+  <button onclick="shot()">&#128247; @@SCREENSHOT@@</button>
  </div>
+ <a id="shotlink" href="/api/lastshot" target="_blank" style="display:none"><img id="shot" alt=""
+   style="width:100%;border-radius:8px;margin-top:6px"></a>
  <div class="row">
   <button id="replayarm" onclick="cmd('/api/toggle?k=replayarm')">@@REPLAYBUF@@</button>
   <button onclick="cmd('/api/replay')">&#128190; @@REPLAYSAVE@@</button>
@@ -249,6 +254,13 @@ static const char *kPageTemplate = R"HTML(<!DOCTYPE html>
 let hold=0;
 const H={headers:{'X-Kaleido':'1'}};
 function cmd(u){hold=Date.now()+300;fetch(u,H).then(refresh);}
+function shot(){fetch('/api/screenshot',H).then(r=>r.json()).then(j=>{
+  const want=(j.file||'').split(/[\\/]/).pop();let n=0;
+  const poll=()=>fetch('/api/state').then(r=>r.json()).then(s=>{
+   if(want&&s.lastShot==want){const i=document.getElementById('shot');
+    i.src='/api/lastshot?ts='+Date.now();i.parentNode.style.display='block';}
+   else if(++n<15)setTimeout(poll,700);});
+  poll();});}
 function setv(k,v){hold=Date.now()+800;fetch('/api/set?k='+k+'&v='+v,H);
   document.getElementById('v'+k).textContent=(k=='latency')?Math.round(v*1000):(+v).toFixed(2);}
 let tab='live';
@@ -349,10 +361,13 @@ function buildScenes(){
    im.style.cssText='width:100%;height:52px;object-fit:cover;background:#1a1a26';
    im.onerror=()=>{im.style.display='none'; im.dataset.failed='1';};
    const lbl=document.createElement('div');
-   lbl.textContent=n;
+   const t=(s.taste||[])[i]||1, ban=(s.banned||[])[i];
+   lbl.textContent=n+(Math.abs(t-1)>0.01?(' \u2665'+t.toFixed(2)):'');
+   if(ban){b.style.opacity='.35';lbl.textContent='\u2298 '+lbl.textContent;}
    lbl.style.cssText='padding:6px 4px;font-size:.78em';
    b.appendChild(im); b.appendChild(lbl);
-   b.onclick=()=>{cmd('/api/force?i='+i);};
+   b.onclick=()=>{if(ban){if(confirm('@@UNBANQ@@')){fetch('/api/unban?i='+i,H).then(buildScenes);}}
+                  else cmd('/api/force?i='+i);};
    d.appendChild(b);
    sceneObserver.observe(im);});
  });}
@@ -394,6 +409,11 @@ static QByteArray buildPage()
     sub( "@@NEXT@@", S_WR_NEXT );
     sub( "@@BLACKOUT@@", S_WR_BLACKOUT );
     sub( "@@FAVORITE@@", S_WR_FAVORITE );
+    sub( "@@UNFAV@@", S_WR_UNFAV );
+    sub( "@@BAN@@", S_WR_BAN );
+    sub( "@@BANQ@@", S_WR_BAN_Q );
+    sub( "@@UNBANQ@@", S_WR_UNBAN_Q );
+    sub( "@@FORGETCUES@@", S_WR_FORGETCUES );
     sub( "@@MARK@@", S_WR_MARK );
     sub( "@@SAVEMARKED@@", S_WR_SAVEMARKED );
     sub( "@@REPLAYBUF@@", S_WR_REPLAY_BUFFER );
@@ -665,7 +685,7 @@ void WebRemote::handleConnection()
                     const QString   path = url.path();
                     const QUrlQuery q( url );
                     const bool      reads = path == "/" || path == "/api/state" || path == "/api/snapshot"
-                                            || path == "/api/thumb" || path == "/api/scenes";
+                                            || path == "/api/thumb" || path == "/api/scenes" || path == "/api/lastshot";
                     const bool      allowed = reads || headerValue( req, "X-Kaleido" ) == "1";
 
                     // A request that does something wakes a resting show; the page's own polling does not.
@@ -728,6 +748,7 @@ void WebRemote::handleConnection()
                                  + ",\"updateAvail\":" + flag( m_widget->updateAvailable() )
                                  + ",\"updateVersion\":\"" + jsonEscape( m_widget->updateVersion() ) + "\""
                                  + ",\"updateStatus\":\"" + jsonEscape( m_widget->updateStatus() ) + "\""
+                                 + ",\"lastShot\":\"" + jsonEscape( m_widget->remoteLastShotName() ) + "\""
                                  + ",\"configs\":[" + cfgs.join( "," ) + "]}" )
                                    .toUtf8();
                     }
@@ -745,11 +766,29 @@ void WebRemote::handleConnection()
                         m_widget->remoteNextEffect();
                     else if ( path == "/api/scenes" )
                     {
-                        QStringList names;
+                        QStringList names, tastes, bans;
                         for ( const QString &n : m_widget->remoteSceneNames() )
                             names << ( "\"" + jsonEscape( n ) + "\"" );
-                        body = ( "{\"scenes\":[" + names.join( "," ) + "]}" ).toUtf8();
+                        // Each scene's learned taste and its ban, for the browser to show (and lift).
+                        for ( int i = 0; i < names.size(); ++i )
+                        {
+                            bool        banned = false;
+                            const float taste = m_widget->remoteSceneTaste( i, banned );
+                            tastes << QString::number( taste, 'f', 2 );
+                            bans << ( banned ? "1" : "0" );
+                        }
+                        body = ( "{\"scenes\":[" + names.join( "," ) + "],\"taste\":[" + tastes.join( "," )
+                                 + "],\"banned\":[" + bans.join( "," ) + "]}" )
+                                   .toUtf8();
                     }
+                    else if ( path == "/api/ban" )
+                        m_widget->remoteBan();
+                    else if ( path == "/api/unban" )
+                        m_widget->remoteUnbanIndex( q.queryItemValue( "i" ).toInt() );
+                    else if ( path == "/api/unfav" )
+                        m_widget->remoteUnfavorite();
+                    else if ( path == "/api/forgetcues" )
+                        m_widget->remoteForgetCues();
                     else if ( path == "/api/force" )
                         m_widget->remoteForceScene( q.queryItemValue( "i" ).toInt() );
                     else if ( path == "/api/thumb" )
@@ -797,6 +836,17 @@ void WebRemote::handleConnection()
                     }
                     else if ( path == "/api/tap" )
                         m_widget->remoteTapTempo();
+                    else if ( path == "/api/lastshot" )
+                    {
+                        // The screenshot saved last, and only that one: no path parameter, nothing else on disk.
+                        body = m_widget->remoteLastShot();
+                        ctype = "image/png";
+                        if ( body.isEmpty() )
+                        {
+                            body = "{}";
+                            ctype = "application/json";
+                        }
+                    }
                     else if ( path == "/api/screenshot" )
                     {
                         const QString fn = m_widget->remoteScreenshot();

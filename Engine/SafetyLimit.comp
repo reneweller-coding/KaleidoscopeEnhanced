@@ -36,12 +36,20 @@ layout( std430, binding = 3 ) buffer Exposure
     float liveMotion;     ///< This pass: mean change against the sample 3 frames ago (is anything moving).
     float frameCount;     ///< This pass: frames counted, for the every-3rd-frame statistics.
     float prevSample[64]; ///< This pass: the sample of the statistics' last frame.
+    float cellRef[64];    ///< Flashing areas: each cell's last luminance extreme.
+    float cellDir[64];    ///< Flashing areas: the direction it travels since (+1 up, -1 down, 0 not started).
+    float cellRate[64];   ///< Flashing areas: its reversals per second (decaying over a second).
+    float hazardDim;      ///< Flashing areas: the extra dimming while they cover a quarter of the frame (1 = none).
+    float hazardOn;       ///< Flashing areas: 1 while they do (with hysteresis).
 };
 uniform sampler2D texFrame; ///< The finished frame, mipmapped.
 uniform int       lvl;      ///< The mip level to read (long side at most 4 texels).
 uniform ivec2     lsize;    ///< Its size in texels.
 uniform float     dt;       ///< This frame's time step in seconds.
-uniform float     riseRate; ///< How fast the mean luminance may rise, per second (2.0).
+uniform float     riseRate; ///< How fast the mean luminance may rise, per second (2.0; 1.0 in the strict mode).
+uniform int       lvl2;     ///< The finer mip level for the flashing areas (long side at most 8 texels).
+uniform ivec2     lsize2;   ///< Its size in texels (at most 64 cells).
+uniform int       fading;   ///< 1 while a scene fade runs: its one change is no flash.
 
 /** Entry point of this shader stage (the file description says what it computes). */
 void main()
@@ -57,11 +65,65 @@ void main()
     }
     mean /= float( n );
 
+    // Flashing AREAS (16.10.2026): the mean misses two halves flashing against each other.  Per cell of a finer
+    // mip, a reversal is a turn of at least 0.1 in luminance against the way it went; at three flashes a second
+    // (six reversals) in a quarter of the frame or more -- the guideline's threshold (Harding, ITU-R BT.1702) --
+    // the picture is dimmed to 60 % (fast) and the mean may rise at a quarter of the rate, until the share falls
+    // under 15 % (released slowly).  A scene fade is one change, not a flash, and is not counted.
+    const int m = min( lsize2.x * lsize2.y, 64 );
+    const float keep = exp( -dt );
+    int         hot = 0;
+    for ( int i = 0; i < m; ++i )
+    {
+        const vec3  c = texelFetch( texFrame, ivec2( i % lsize2.x, i / lsize2.x ), lvl2 ).rgb;
+        const float l = dot( c, vec3( 0.299, 0.587, 0.114 ) );
+        cellRate[i] *= keep;
+        if ( cellDir[i] == 0.0 )
+        {
+            cellRef[i] = l;
+            cellDir[i] = 1.0;
+        }
+        else if ( cellDir[i] > 0.0 )
+        {
+            if ( l > cellRef[i] )
+                cellRef[i] = l;
+            else if ( cellRef[i] - l >= 0.1 )
+            {
+                cellDir[i] = -1.0;
+                cellRef[i] = l;
+                if ( fading == 0 )
+                    cellRate[i] += 1.0;
+            }
+        }
+        else
+        {
+            if ( l < cellRef[i] )
+                cellRef[i] = l;
+            else if ( l - cellRef[i] >= 0.1 )
+            {
+                cellDir[i] = 1.0;
+                cellRef[i] = l;
+                if ( fading == 0 )
+                    cellRate[i] += 1.0;
+            }
+        }
+        if ( cellRate[i] >= 6.0 )
+            ++hot;
+    }
+    const float share = m > 0 ? float( hot ) / float( m ) : 0.0;
+    if ( share >= 0.25 )
+        hazardOn = 1.0;
+    else if ( share < 0.15 )
+        hazardOn = 0.0;
+    const float dimTarget = hazardOn > 0.5 ? 0.6 : 1.0;
+    hazardDim += ( dimTarget - hazardDim ) * ( 1.0 - exp( -dt / ( dimTarget < hazardDim ? 0.25 : 3.0 ) ) );
+
     if ( prevMean < 0.0 )
         prevMean = mean;
-    const float hi = prevMean + riseRate * dt; // <= riseRate (2.0) luma per second
+    const float rate = hazardOn > 0.5 ? 0.25 * riseRate : riseRate;
+    const float hi = prevMean + rate * dt;     // <= riseRate (2.0) luma per second
     const float clamped = min( mean, hi );     // only a RISE is limited
-    limScale = mean > 1e-4 ? min( clamped / mean, 1.0 ) : 1.0;
+    limScale = ( mean > 1e-4 ? min( clamped / mean, 1.0 ) : 1.0 ) * hazardDim;
     prevMean = mean < prevMean ? mean : clamped;
 
     frameCount += 1.0;

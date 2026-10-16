@@ -67,15 +67,15 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 [CustomMessages]
 german.PacksGroup=Zusatzinhalte (werden aus dem Internet geladen)
 german.PackImages=Bilder: 977 lizenzfreie Texturen (593 MB)
-german.PackShips=3D-Modelle: Raumschiffe, 79 Stück (715 MB)
-german.PackStations=3D-Modelle: Stationen, 30 Stück (259 MB)
-german.PackObjects=3D-Modelle: Objekte, 48 Stück (384 MB)
+german.PackShips=3D-Modelle: Raumschiffe, 77 Stück (733 MB)
+german.PackStations=3D-Modelle: Stationen, 30 Stück (272 MB)
+german.PackObjects=3D-Modelle: Objekte, 62 Stück (542 MB)
 german.PackFailed=Der Download der Zusatzinhalte ist fehlgeschlagen:%n%n%1%n%nDie Installation wird ohne sie fortgesetzt. Sie lassen sich jederzeit im Kaleidoscope-Setup nachladen.
 english.PacksGroup=Extra content (downloaded from the internet)
 english.PackImages=Photos: 977 licence-free textures (593 MB)
-english.PackShips=3D models: ships, 79 of them (715 MB)
-english.PackStations=3D models: stations, 30 of them (259 MB)
-english.PackObjects=3D models: objects, 48 of them (384 MB)
+english.PackShips=3D models: ships, 77 of them (733 MB)
+english.PackStations=3D models: stations, 30 of them (272 MB)
+english.PackObjects=3D models: objects, 62 of them (542 MB)
 english.PackFailed=Downloading the extra content failed:%n%n%1%n%nInstallation continues without it. You can fetch it any time from Kaleidoscope Setup.
 german.OldInstall=Eine ältere Installation für alle Benutzer liegt in%n%n%1%n%nDort kann das Programm seine Einstellungen nicht speichern; die neue Version installiert sich deshalb in Ihr Benutzerprofil.%n%nDie alte Installation jetzt entfernen?%n%nJa: entfernen (fragt nach Administratorrechten). Nein: beide behalten. Abbrechen: Setup beenden.
 german.OldUninstFailed=Die alte Installation wurde nicht entfernt. Sie lässt sich später unter Einstellungen > Apps deinstallieren.

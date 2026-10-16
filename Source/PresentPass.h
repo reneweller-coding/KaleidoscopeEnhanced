@@ -287,9 +287,10 @@ public:
         float breakSmooth = 0.f; ///< Smoothed "break" dim amount (music breakdown).
         float fadeOutEnv = 0.f;  ///< Detected song fade-out envelope; dims the picture slightly.
         // Look knobs
-        float moodStrength = 1.f; ///< Scales how far the mood-grade uniforms deviate from neutral.
-        float lightShow = 0.f;    ///< Lightshow/chase-lamp intensity uniform.
-        float renderScale = 1.f;  ///< Render-to-display scale factor; drives the CAS sharpening amount when < 1.
+        float moodStrength = 1.f;  ///< Scales how far the mood-grade uniforms deviate from neutral.
+        float lightShow = 0.f;     ///< Lightshow/chase-lamp intensity uniform.
+        bool  strictLight = false; ///< Strict light protection: half the rise rate, lamps and titles without pulses.
+        float renderScale = 1.f;   ///< Render-to-display scale factor; drives the CAS sharpening amount when < 1.
         // Lyrics overlay (alpha 0 = off; HlV0 < 0 = no karaoke highlight)
         float lyricsAlpha = 0.f;    ///< Lyrics overlay opacity (0 = off).
         float lyricsScrollV = 0.f;  ///< Lyrics vertical scroll position.
@@ -386,6 +387,7 @@ private:
     GLint m_presentTimeUni = -1;        ///< Uniform location: global shader time ("time").
     GLint m_presentChaseUni = -1;       ///< Uniform location: chase-light phase ("audioChase").
     GLint m_presentLampsUni = -1;       ///< Uniform location: lightshow intensity ("lightShow").
+    GLint m_presentStrictUni = -1;      ///< Uniform location: strict light protection ("strictLight").
     GLint m_presentSwellUni = -1;       ///< Uniform location: audio swell ("audioSwell").
     GLint m_presentBarPhaseUni = -1;    ///< Uniform location: bar phase ("audioBarPhase").
     GLint m_presentBloomTexUni = -1;    ///< Uniform location: bloom texture ("bloomTex").

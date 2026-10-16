@@ -166,8 +166,11 @@ public:
      * The median of the last taps overrides the estimated tempo + beat phase
      * for ~45 s after the last tap — for material where automatic detection
      * struggles. A pause > 2.5 s starts a fresh series.
+     *
+     * @return
+     *   The tapped tempo in BPM, or 0 while the series is too short to tell.
      **/
-    void tapTempo();
+    float tapTempo();
 
     /**  An external beat (GUI thread): a /phos/beat cue, a quarter note of MIDI clock.
      *

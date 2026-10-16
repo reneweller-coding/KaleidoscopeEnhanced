@@ -58,6 +58,7 @@ set(KALEIDO_SOURCES
 	Source/MidiInput.cpp
 	Source/NowPlaying.cpp
 	Source/OscSender.cpp
+	Source/QrCode.cpp
 	Source/OsdMenu.cpp
 	Source/Platform.cpp
 	Source/PresentPass.cpp

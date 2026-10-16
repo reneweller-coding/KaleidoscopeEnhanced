@@ -77,10 +77,12 @@ public:
         float      fadeSecs = 0.f; ///< Its length.
         float      blackout = 0.f; ///< Slewed blackout, 0 lit .. 1 black.
         float      rgb[3] = {};    ///< The picture's mean colour, 0..1.
+        float      riseRate = 2.f; ///< How fast the colour may rise a second: the limiter's 2.0, 1.0 when strict.
     };
     /**  The show's state (16.10.2026): /scene/name, /preset and /transition/start when they change, /blackout and
-     * /color/mean at up to 10 Hz -- the colour times the blackout and held to the brightness limiter's rule (it may
-     * rise 2 of 255 a second), so a light that follows the picture never flashes where the picture may not.
+     * /color/mean at up to 10 Hz -- the colour times the blackout and held to the brightness limiter's rule (it rises
+     * no faster than the picture's mean may: ShowState::riseRate), so a light that follows the picture never
+     * flashes where the picture may not.
      *
      * @param s      The state. (in)
      * @param dtSec  Wall-clock seconds since the previous call. (in)

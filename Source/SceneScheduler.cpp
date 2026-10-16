@@ -377,6 +377,8 @@ unsigned int SceneScheduler::pickScene( int act, bool initial )
     for ( unsigned int i = 0; i < MaxSearch; ++i )
     {
         pick = pool.empty() ? rand() % n : pool[rand() % pool.size()];
+        if ( m_bannedFor && m_bannedFor( tex[pick]->fragmentName() ) )
+            continue; // "never again", for the whole search
         // Nothing from the memory (a lab: not the last lab's file), unless the
         // search is running dry (a small preset, a narrow filter).
         if ( i < MaxSearch * 2 / 3
@@ -429,6 +431,7 @@ int SceneScheduler::pickSpectacle( int act )
     for ( unsigned int i = 0; i < tex.size(); ++i )
         if ( tex[i]->interest() >= SpectacleInterest && !tex[i]->is3D() && !tex[i]->isMeshScene()
              && !tex[i]->walksWithMusic() && static_cast<int>( i ) != act && !( i < m_isLab.size() && m_isLab[i] )
+             && !( m_bannedFor && m_bannedFor( tex[i]->fragmentName() ) )
              && !isRecentTexture( i ) )
             pool.push_back( i );
     if ( pool.empty() )

@@ -183,7 +183,7 @@ Building the packs yourself, from folders you have filled:
 | `r`        | Toggle **recording** (full render resolution → mp4)           |
 | `y` / `x`  | Arm the **instant replay** ring / save it as an mp4           |
 | `k`        | Save the current look **and** UI state as the startup default |
-| `s`        | Save a PNG screenshot of the window                           |
+| `s`        | Save a PNG screenshot of the picture (no overlays) to `Pictures\Kaleidoscope` |
 | mouse drag | (when not fullscreen) trackball / interaction                 |
 
 ### Remote control (HTPC)
@@ -201,14 +201,14 @@ submenus), **Back** goes one level up, **Esc** closes it. It hides itself after
 | Menu | Contains |
 |---|---|
 | Presets | every preset; the running one is marked, OK switches to it |
-| Scene | next scene, hold scene, favourite, mark, save marked |
-| Picture & overlays | blackout, freeze, stage lamps, now-playing title, lyrics mode, line slam, artist images, music videos |
+| Scene | next scene, hold scene, favourite, mark, save marked, never show again, undo favourite, forget this song's cues, banned scenes (each one allowed again with OK) |
+| Picture & overlays | blackout, freeze, stage lamps, strict light protection, now-playing title, lyrics mode, line slam, artist images, music videos |
 | Fine tuning | reactivity, trails, mood colour, latency lead (sliders) |
 | Audio | audio source, tap tempo |
 | Stereo 3D | mode, depth |
 | Automation | pick preset by mood, adapt resolution, rest after silence (off/5/15/30/60 min), sleep timer (off/15/30/60/90 min) |
 | Capture | record, instant replay armed / save, screenshot |
-| Info & diagnostics | shader names, audio analysis + FPS, keyboard shortcuts |
+| Info & diagnostics | shader names, audio analysis + FPS, keyboard shortcuts, the remote's address (OK shows its QR code), mesh scenes skipped for missing models |
 | System | language, save settings as default, install update (when one is found), quit |
 
 The menu works on the same state as the keys and the web remote, so all three
@@ -216,6 +216,30 @@ always agree. `Esc` outside the menu asks before quitting, because on a remote
 it sits right next to Back; `Q` on a keyboard still quits at once. The keyboard
 shortcuts all stay as they were -- the menu is for the remote, the letters are
 for debugging and live work.
+
+A key whose effect cannot be seen says what it did in a short line at the
+bottom of the picture: preset by mood, adaptive resolution, hold scene,
+latency, saved as default, favourite (with the taste it has now), tap tempo,
+stereo, the overlays' switches, the screenshot's file -- and why `n` did
+nothing when the scene is held or frozen. MIDI learn shows its target until it
+is learned. `keyFeedback=false` in the ini keeps them in the log only. The key
+help (`h`) is sized by the window and breaks into two columns when it has to.
+
+**Never again.** A scene you do not want in a preset is banned from the menu
+(Scene) or the remote (it stays out of the rolls for good; a song cue, a jump
+from the browser or a section replay can still show it). The banned scenes are
+listed in the menu and dimmed in the remote's browser, and one press allows a
+scene again. Enough stays in: a ban that would leave fewer than twelve scenes
+(or a twentieth of the preset) is refused. The favourite can be taken back,
+and the cues a favourite pressed during a song set can be forgotten.
+
+**Light protection.** The brightness limiter holds how fast the picture's mean
+may rise; since 16.10.2026 it also watches the picture in cells: when a quarter
+of the frame flashes three times a second or more -- the threshold of the
+photosensitivity guidelines, which a steady mean of two halves flashing against
+each other never showed -- the picture dims to 60 % until it stops. The strict
+mode (menu, Setup tool, `lightProtectionStrict=true`) halves the rise and takes
+the beat flashes out of the stage lamps and the title.
 
 **Both overlay menus** — the preset picker (`0`) and the audio-source picker
 (`d`) — scroll, so they reach entries the digit keys cannot. Anything past
@@ -573,6 +597,12 @@ to the internet. Other web pages cannot drive it: an action needs the header
 `X-Kaleido: 1` (the page and the app send it; a script calling `/api/...` must
 too), reading the state and the preview does not, and a request has to name
 this PC — an IP address, `localhost` or its own name — as its host.
+
+**Finding it:** the menu's Info page names the address(es) a phone reaches it
+at -- the PC's real network adapters, cable first, never a VPN tunnel or a
+virtual switch -- and OK on one shows a card with its QR code: point the
+phone's camera at it. The very first start shows the card by itself. The
+remote's screenshot button saves the picture and shows it on the phone.
 
 **Zero-touch pairing:** the running instance broadcasts itself on the LAN
 (UDP discovery), so a client never needs the PC's IP typed in by hand.

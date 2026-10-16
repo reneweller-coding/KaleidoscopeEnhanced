@@ -195,7 +195,7 @@ Parser):
 | `/preset` | s | Ereignis | das Preset |
 | `/transition/start` | sf | Ereignis | eine Szenenblende beginnt: Übergang und Dauer in s |
 | `/blackout` | f | ≤ 10 Hz | geslewter Blackout 0 (hell) .. 1 (schwarz), bei Änderung |
-| `/color/mean` | fff | ~10 Hz | mittlere Bildfarbe 0..1 (aus der obersten Mip-Stufe), mal Blackout; steigt höchstens um 2/255 je Sekunde wie das Bild selbst, fällt in einer halben Sekunde |
+| `/color/mean` | fff | ~10 Hz | mittlere Bildfarbe 0..1 (aus der obersten Mip-Stufe), mal Blackout; steigt höchstens so schnell wie das Bildmittel (2,0 des vollen Bereichs je Sekunde, im strengen Lichtschutz 1,0), fällt in einer halben Sekunde |
 
 Beat-Ereignisse verlassen das Programm außerhalb der Bundles, sofort bei
 Erkennung — die zusätzliche Latenz ist ein Render-Frame (~7–16 ms), deutlich

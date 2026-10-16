@@ -23,6 +23,7 @@
 #include "CueReceiver.h"
 #include "LongRunVariety.h"
 #include "MidiInput.h"
+#include "QrCode.h"
 #include "AudioAnalyzer.h"
 #include "AudioConditioner.h"
 #include "RenderPipeline.h"
@@ -31,6 +32,7 @@
 #include "coreclock.h"
 
 #include <QtCore/QCoreApplication>
+#include <QtGui/QImage>
 #include <QtCore/QDir>
 #include <QtCore/QElapsedTimer>
 #include <QtCore/QFile>
@@ -1011,6 +1013,76 @@ void clockChecks()
     }
 }
 
+/**  The QR code encoder (16.10.2026): versions, the fixed patterns, and a pinned matrix.  KALEIDO_QR_DUMP=(a folder)
+ * writes the codes as PNG files for an independent decoder -- OpenCV's read all of them back when this was written.
+ **/
+void qrChecks()
+{
+    printf( "\nQR code (QrCode)\n" );
+    const std::string texts[] = { "http://192.168.178.20:18091/", "HELLO",
+                                  std::string( 100, 'x' ) + "-" + std::string( 60, 'y' ),
+                                  "http://[fe80::1]:18091/ " + std::string( 150, 'z' ) };
+    const int         versions[] = { 3, 1, 9, 9 };
+    const QString     dump = qEnvironmentVariable( "KALEIDO_QR_DUMP" );
+    bool              sizes_ok = true, finders_ok = true;
+    std::string       hashes;
+    for ( int t = 0; t < 4; ++t )
+    {
+        const QrCode q = QrCode::encode( texts[t] );
+        sizes_ok &= q.version() == versions[t] && q.size() == 17 + 4 * versions[t];
+        // The three finders: dark centre, light ring at distance 2, dark ring at 3.
+        for ( const auto &c : { std::pair<int, int>( 3, 3 ), std::pair<int, int>( q.size() - 4, 3 ),
+                                std::pair<int, int>( 3, q.size() - 4 ) } )
+            finders_ok &= q.dark( c.first, c.second ) && !q.dark( c.first + 2, c.second )
+                          && q.dark( c.first + 3, c.second ) && !q.dark( c.first, c.second - 2 );
+        unsigned h = 2166136261u; // FNV-1a over the modules
+        for ( int y = 0; y < q.size(); ++y )
+            for ( int x = 0; x < q.size(); ++x )
+                h = ( h ^ ( q.dark( x, y ) ? 1u : 0u ) ) * 16777619u;
+        char hex[16];
+        snprintf( hex, sizeof( hex ), "%08x ", h );
+        hashes += hex;
+        if ( !dump.isEmpty() )
+        {
+            printf( "  qr_%d: version %d, mask %d\n", t, q.version(), q.mask() );
+            const int scale = 8, quiet = 4, side = ( q.size() + 2 * quiet ) * scale;
+            QImage    img( side, side, QImage::Format_RGB32 );
+            img.fill( Qt::white );
+            for ( int y = 0; y < q.size(); ++y )
+                for ( int x = 0; x < q.size(); ++x )
+                    if ( q.dark( x, y ) )
+                        for ( int dy = 0; dy < scale; ++dy )
+                            for ( int dx = 0; dx < scale; ++dx )
+                                img.setPixel( ( x + quiet ) * scale + dx, ( y + quiet ) * scale + dy, 0xFF000000u );
+            img.save( QDir( dump ).filePath( QString( "qr_%1.png" ).arg( t ) ) );
+        }
+    }
+    if ( !dump.isEmpty() ) // a sweep over the lengths, for the decoder
+        for ( int len = 5; len <= 210; len += 5 )
+        {
+            std::string s;
+            for ( int i = 0; i < len; ++i )
+                s += "http://[fe80::1]:18091/ abcXYZ-_.~"[i % 34];
+            const QrCode q = QrCode::encode( s );
+            const int    scale = 8, quiet = 4, side = ( q.size() + 2 * quiet ) * scale;
+            QImage       img( side, side, QImage::Format_RGB32 );
+            img.fill( Qt::white );
+            for ( int y = 0; y < q.size(); ++y )
+                for ( int x = 0; x < q.size(); ++x )
+                    if ( q.dark( x, y ) )
+                        for ( int dy = 0; dy < scale; ++dy )
+                            for ( int dx = 0; dx < scale; ++dx )
+                                img.setPixel( ( x + quiet ) * scale + dx, ( y + quiet ) * scale + dy, 0xFF000000u );
+            img.save( QDir( dump ).filePath(
+                QString( "sweep_%1_v%2_m%3.png" ).arg( len ).arg( q.version() ).arg( q.mask() ) ) );
+        }
+    check( sizes_ok, "each text in the smallest version that holds it (3, 1, 9, 9), 17 + 4 v modules a side" );
+    check( finders_ok, "the three finder patterns where they belong" );
+    check( QrCode::encode( std::string( 300, 'x' ) ).size() == 0, "a text too long for version 10 gives no code" );
+    check( hashes == "aae90744 0547cb39 885af438 0c437ae2 ",
+           "the matrices are the ones an independent decoder (OpenCV) read back", hashes );
+}
+
 /**  The video export's frame clock (EngineClock, WallClock) and its command line (-g, -j).
  *
  * Runs last: it switches this process's engine clock to virtual time for good.
@@ -1415,6 +1487,7 @@ int runCueSelfTest()
     rhythmChecks();
     melodyChecks();
     clockChecks();
+    qrChecks();
     exportChecks();
     phraseChecks(); // after exportChecks(): it needs the virtual engine clock
 

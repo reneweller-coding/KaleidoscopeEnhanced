@@ -355,6 +355,64 @@ enum StrIdE
     S_OSD_OFF,
     S_SETUP_IDLE,
     S_SETUP_IDLE_DISPLAY,
+    // Short on-screen feedback for keys whose effect cannot be seen (GLwidget::feedback()).
+    S_FB_ON,
+    S_FB_OFF,
+    S_FB_NOWPLAYING_FMT, // %1 on/off
+    S_FB_LYRICS_FMT,     // %1 off/scroll/karaoke
+    S_FB_LYRICS_SCROLL,
+    S_FB_LYRICS_KARAOKE,
+    S_FB_KINETIC_FMT, // %1 on/off
+    S_FB_ARTIST_FMT,  // %1 on/off
+    S_FB_LAMPS_FMT,   // %1 on/off
+    S_FB_LATENCY_FMT, // %1 milliseconds
+    S_FB_SAVED_DEFAULTS,
+    S_FB_PIN_FMT,          // %1 on/off
+    S_FB_FAVORITE_FMT,     // %1 scene, %2 taste factor
+    S_FB_STEREO_FMT,       // %1 the mode
+    S_FB_STEREO_DEPTH_FMT, // %1 the depth
+    S_FB_MIDI_LEARN_FMT,   // %1 the target
+    S_FB_MIDI_LEARNED_FMT, // %1 the target, %2 the controller
+    S_FB_MIDI_OFF,
+    S_FB_AUTOPRESET_FMT, // %1 on/off
+    S_FB_AUTOSCALE_FMT,  // %1 on/off
+    S_FB_SCREENSHOT_FMT, // %1 the file
+    S_FB_TAP_FMT,        // %1 BPM
+    S_FB_TAP_MORE,
+    S_FB_NEXT_PINNED,
+    S_FB_NEXT_FROZEN,
+    // The key help's entries added 16.10.2026.
+    S_HELP_SHIFT_W,
+    S_HELP_KEY_DBLCLICK,
+    S_HELP_DBLCLICK,
+    S_HELP_KEY_TYPE,
+    S_HELP_TYPE,
+    // The web remote's address (OSD Info, the start card) and the missing models.
+    S_OSD_REMOTE_FMT,
+    S_OSD_REMOTE_OFF,
+    S_OSD_MESH_SKIPPED_FMT,
+    S_CARD_PHONE,
+    S_CARD_KEYS,
+    // The taste, visible and correctable (16.10.2026).
+    S_OSD_BAN,
+    S_OSD_UNFAVORITE,
+    S_OSD_FORGETCUES_FMT,
+    S_OSD_BANNED,
+    S_FB_BANNED_FMT,
+    S_FB_BAN_REFUSED,
+    S_FB_UNBANNED_FMT,
+    S_FB_UNFAVORITE_FMT,
+    S_FB_CUES_FORGOTTEN_FMT,
+    S_INFO_TASTE_FMT,
+    S_INFO_CUES_FMT,
+    S_WR_BAN,
+    S_WR_UNFAV,
+    S_WR_FORGETCUES,
+    S_WR_BAN_Q,
+    S_WR_UNBAN_Q,
+    // Strict photosensitivity protection (16.10.2026).
+    S_OSD_STRICTLIGHT,
+    S_SETUP_STRICTLIGHT,
 
     S_COUNT
 };

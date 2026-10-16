@@ -5044,3 +5044,64 @@ time.
   and the sent one rising at 2/255 a second.
 
 `Kaleidoscope.exe -q`: 114 checks. Linux (WSL, Qt 6.2.4): built, 114 of 114.
+
+## 16.10.2026 (12): what the viewer sees of the machine
+
+The eighth round of the idea list: the user's side -- what a key did, where the remote is, what the taste has
+learned, where a screenshot went, how the eyes are protected.
+
+- **A word for every key that cannot be seen.** The windowed build has no console and `-l` is for kiosks, so
+  `a`, `g`, `u`, `;`/`'`, `k`, `f`, `t`, `z`/`c`/`m`, `p`, `w`, `Shift+W`, `o`, `l` and `s` answered nowhere, and
+  `n` said only in the log why it did nothing under a pin or a freeze. `GLwidget::feedback()` puts a short line at
+  the bottom (the notice of round 3, 2.5 s, German and English from the string table; `keyFeedback=false` keeps
+  it in the log). MIDI learn shows its target until it is learned or ended, then what it learned. Tried with a new
+  test hook, `KALEIDO_KEYS="6000:A;6500:G;..."`, which posts the keys to the window as Qt events at the given
+  milliseconds -- inside the app only; keys simulated through the system once went to the window the user was
+  working in. Every notice came, and a screenshot showed the learn target standing.
+- **The key help** was a fixed 480 x 908 px box in 12 pt Consolas: off the top and bottom of a 720-pixel-high
+  window (a 1080p laptop at 150 %), small on a large output. It is now sized by the window like the on-screen
+  menu, measures its columns, breaks into two when one does not fit the height, and elides what is still too
+  wide. Shift+W, the double-click and the menus' type-to-filter were only in the README; they are in it now.
+- **Where the remote is.** Its address was in the log only, and the port may have moved away from the one asked
+  for. OSD Info now lists the addresses a phone reaches it at; OK on one shows a card with the address and its QR
+  code, and the first start (no settings file) shows the card by itself. The QR encoder is our own
+  (`Source/QrCode.cpp`: byte mode, level M, versions 1-10, Reed-Solomon, the eight masks with the standard's
+  penalty) -- no library to take in for one function. OpenCV's ArUco decoder read back all 42 codes of a sweep over
+  5..210 characters and every version; its classic decoder missed one (len 165) that the other read exactly, a
+  detector's weakness, not the code's. Four matrices are pinned by hash in `-q`. On this machine the first address
+  was a VPN tunnel's, and the QR code carries the first: only Ethernet and Wi-Fi adapters
+  count now (`QNetworkInterface::type()`, plus a list of VPN and virtual-switch names), cable first. A screenshot
+  of the card decoded to the cable adapter's address with the remote's own port. The pack counts in the installer
+  and the Setup tool were an older cut (79 ships, 48 objects, 715/384 MB): 77, 30 and 62 models, 733/272/542 MB.
+- **The taste, visible and correctable.** `v` shows the scene's learned taste and this song's cues; the remote's
+  browser shows each scene's taste and its ban (`/api/scenes` carries both). New actions in the menu (Scene) and on
+  the remote: never show again (`[banned]` in the ini, per preset; the scheduler's `setBannedCallback()` keeps it
+  out of every roll, while a cue, a remote jump or a section replay may still show it -- they ask by name), undo the
+  favourite (taste back to 1), forget this song's cues; the banned scenes are listed in the menu and dimmed in the
+  browser, and one press allows a scene again. A ban that would leave fewer than max(12, a twentieth) of the
+  preset's scenes is refused. Tried through the remote: favourite, the "taste x1.25" line, undo, ban (the scene
+  went away at once), unban.
+- **The screenshot** was `grabFramebuffer()`: the frame rendered again with every overlay on it (the menu waited
+  150 ms to get itself out of the picture), saved under a relative name in `bin\`. Now the next frame is read at
+  its clean point, before any overlay, opaque, and a worker saves it as
+  `Pictures\Kaleidoscope\kaleidoscope_<time>_<scene>.png`; the log line chain_regress.py reads stays.
+  `/api/lastshot` serves the last one and only that one, and the remote's button waits until `/api/state` names
+  the new file (the PNG takes some 2.4 s at 2880 x 1620) before it shows it. Replays go to
+  `Videos\Kaleidoscope\replays`; recordings stay where the tools expect them. `KALEIDO_SHOT_OVERLAYS=1` takes the
+  window as it is, for checking overlays.
+- **Flashing areas.** The limiter held the frame's MEAN to its rise rate -- two halves of the picture flashing
+  against each other keep the mean where it is. `SafetyLimit.comp` now also reads a finer mip (long side at most
+  8: 7 x 4 cells at 1080p, 5 x 3 here at 2880 x 1620) and counts, per cell, turns of at least 0.1 in luminance
+  against the way it went (a rate decaying over a second); when a quarter of the cells or more turn six times a
+  second -- three flashes, the guideline's threshold -- the picture dims to 60 % (in a quarter second) and the
+  mean may rise at a quarter of the rate, until the share is under 15 % (released over three seconds). A scene
+  fade is one change and is not counted. Tested with a temporary 4 x 4 checkerboard swapping at 5 Hz against
+  itself (removed afterwards): the mean stayed at 0.498 and the old limiter at 1.0; after a second the dimming
+  ran down to 0.60. Thirty seconds of Club: 1124 measurements, never on.
+- **Strict light protection** (`lightProtectionStrict`, menu and Setup tool): the mean may rise at 1.0 a second
+  instead of 2.0, the stage lamps keep a steady glow instead of a beat and onset pulse, the title has no beat glow.
+- **A correction to round 7.** The OSC colour was rate-limited to 2 of 255 a second, believing the limiter's 2.0
+  to be on a 0..255 scale; it is 2.0 of the full range a second. A light took two minutes to come up from black.
+  It now rises exactly as fast as the picture's mean may (1.0 in the strict mode).
+
+`Kaleidoscope.exe -q`: 118 checks. Linux (WSL, Qt 6.2.4): built, 118 of 118.

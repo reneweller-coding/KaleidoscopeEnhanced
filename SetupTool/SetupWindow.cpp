@@ -81,9 +81,10 @@ struct PackDef
  **/
 const PackDef Packs[4] = {
     { S_SETUP_PACK_IMAGES, "images-v2", "KaleidoscopeImages.zip", "Images", ".jpg", 593LL * 1024 * 1024 },
-    { S_SETUP_PACK_SHIPS, "models-v2", "KaleidoscopeModels-ships.zip", "Models", ".glb", 715LL * 1024 * 1024 },
-    { S_SETUP_PACK_STATIONS, "models-v2", "KaleidoscopeModels-stations.zip", "Models", ".glb", 259LL * 1024 * 1024 },
-    { S_SETUP_PACK_OBJECTS, "models-v2", "KaleidoscopeModels-objects.zip", "Models", ".glb", 384LL * 1024 * 1024 },
+    // The real archive sizes (16.10.2026: the counts and sizes still named an older cut of the packs).
+    { S_SETUP_PACK_SHIPS, "models-v2", "KaleidoscopeModels-ships.zip", "Models", ".glb", 733073310LL },
+    { S_SETUP_PACK_STATIONS, "models-v2", "KaleidoscopeModels-stations.zip", "Models", ".glb", 271629879LL },
+    { S_SETUP_PACK_OBJECTS, "models-v2", "KaleidoscopeModels-objects.zip", "Models", ".glb", 542120951LL },
 };
 
 /**  Release-asset download URL of a pack.
@@ -345,6 +346,8 @@ void SetupWindow::buildContent()
     f_start->addRow( uiString( S_SETUP_IDLE ), m_idleMinutes );
     m_idleDisplayOff = new QCheckBox( uiString( S_SETUP_IDLE_DISPLAY ) );
     f_start->addRow( QString(), m_idleDisplayOff );
+    m_strictLight = new QCheckBox( uiString( S_SETUP_STRICTLIGHT ) );
+    f_start->addRow( QString(), m_strictLight );
 
     // Photo source. Empty means "whatever the preset says", which is the
     // bundled Images folder -- deliberately NOT a path written into the presets,
@@ -577,6 +580,7 @@ void SetupWindow::loadFromIni()
     m_remotePort->setValue( s.value( "remotePort", 8080 ).toInt() );
     m_idleMinutes->setValue( s.value( "idleMinutes", 0 ).toInt() );
     m_idleDisplayOff->setChecked( s.value( "idleDisplayOff", false ).toBool() );
+    m_strictLight->setChecked( s.value( "lightProtectionStrict", false ).toBool() );
     m_imageDir->setText( s.value( "imageDirectory", QString() ).toString() );
 
     m_lyricsMode->setCurrentIndex( qBound( 0, s.value( "lyricsMode", 2 ).toInt(), 2 ) );
@@ -636,6 +640,7 @@ void SetupWindow::saveToIni()
     s.setValue( "remotePort", m_remotePort->value() );
     s.setValue( "idleMinutes", m_idleMinutes->value() );
     s.setValue( "idleDisplayOff", m_idleDisplayOff->isChecked() );
+    s.setValue( "lightProtectionStrict", m_strictLight->isChecked() );
     s.setValue( "imageDirectory", m_imageDir->text().trimmed() );
 
     s.setValue( "lyricsMode", m_lyricsMode->currentIndex() );

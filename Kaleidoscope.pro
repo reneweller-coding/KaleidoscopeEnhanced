@@ -42,6 +42,7 @@ SOURCES += \
     Source/MidiInput.cpp \
     Source/NowPlaying.cpp \
     Source/OscSender.cpp \
+    Source/QrCode.cpp \
     Source/OsdMenu.cpp \
     Source/PresentPass.cpp \
     Source/QMyWindow.cpp \
@@ -99,6 +100,7 @@ HEADERS += \
     Source/MidiInput.h \
     Source/NowPlaying.h \
     Source/OscSender.h \
+    Source/QrCode.h \
     Source/OsdMenu.h \
     Source/Platform.h \
     Source/PlatformQt.h \

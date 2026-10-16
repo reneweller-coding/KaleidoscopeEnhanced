@@ -153,12 +153,12 @@ void OscSender::show( const ShowState &s, float dtSec )
         msgs << message( "/blackout", &s.blackout, 1 );
         m_lastBlack = s.blackout;
     }
-    // The colour: times the blackout, rising at most 2 of 255 a second (the limiter's rule), falling freely but
-    // smoothly (half a second for the whole range).
+    // The colour: times the blackout, rising no faster than the picture's mean may (the limiter's rule, 2.0 of the
+    // range a second; it was 2 of 255, a light took two minutes to come up), falling in half a second at most.
     for ( int i = 0; i < 3; ++i )
     {
         const float want = s.rgb[i] * ( 1.f - s.blackout );
-        m_rgb[i] = std::min( std::max( want, m_rgb[i] - 2.f * dt ), m_rgb[i] + 2.f / 255.f * dt );
+        m_rgb[i] = std::min( std::max( want, m_rgb[i] - 2.f * dt ), m_rgb[i] + s.riseRate * dt );
     }
     msgs << message( "/color/mean", m_rgb, 3 );
     send( bundle( msgs ) );
