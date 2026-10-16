@@ -26,10 +26,10 @@ out vec4 fragColor; ///< The pixel's colour (output).
  * Per-activation variety: liftP (when the liftoff falls), hueP.
  */
 
-uniform sampler2DArray texMeshMaterial;       ///< the pad
-uniform int            texMeshMaterialLayers; ///< Number of layers in texMeshMaterial.
-uniform sampler2DArray texMeshMaterial2;      ///< the rocket
-uniform int            texMeshMaterialLayers2;
+uniform sampler2DArray texMeshMaterial;        ///< the pad
+uniform int            texMeshMaterialLayers;  ///< Number of layers in texMeshMaterial.
+uniform sampler2DArray texMeshMaterial2;       ///< the rocket
+uniform int            texMeshMaterialLayers2; ///< Number of layers in the second mesh's material textures.
 
 uniform float time;         ///< Seconds since the program started (never reset; see sceneTime).
 uniform float audioBuildUp; ///< Build-up toward a drop, 0..1.
@@ -44,12 +44,12 @@ in vec3  vNormal; ///< Surface normal (from the vertex stage).
 in vec3  vPos;    ///< Position (from the vertex stage).
 in vec3  vLocal;  ///< Object-space position (from the vertex stage).
 in float vBg;     ///< Background flag (from the vertex stage).
-in float vRocket;
-in vec4  vFlame;
-in float vClimb;
+in float vRocket; ///< Rocket (from the vertex stage).
+in vec4  vFlame;  ///< Flame (from the vertex stage).
+in float vClimb;  ///< Climb (from the vertex stage).
 
-const float Dist = 84.0;
-const float Ground = -16.0;
+const float Dist = 84.0;    ///< Distance of the main object from the camera (world units).
+const float Ground = -16.0; ///< Height of the ground (world units).
 
 /**  Rotates a colour's hue by an angle (about the grey axis).
  *
@@ -213,8 +213,8 @@ vec3 lightAt( vec3 P, vec3 n, vec3 lp, vec3 lc, float range )
     return lc * max( dot( n, d ), 0.0 ) * att;
 }
 
-const vec3 FloodA = vec3( -34.0, Ground + 2.0, Dist - 30.0 );
-const vec3 FloodB = vec3( 36.0, Ground + 2.0, Dist - 26.0 );
+const vec3 FloodA = vec3( -34.0, Ground + 2.0, Dist - 30.0 ); ///< Position of the first flood light.
+const vec3 FloodB = vec3( 36.0, Ground + 2.0, Dist - 26.0 );  ///< Position of the second flood light.
 
 /**  The sky colour for a direction.
  *

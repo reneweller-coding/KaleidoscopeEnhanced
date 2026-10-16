@@ -40,8 +40,8 @@ uniform float audioMode;       ///< Mode of the music: 0 minor .. 1 major.
 uniform float audioHarmChange; ///< Harmonic change (chord change) envelope, 0..1.
 uniform float audioSwell;      ///< Slow loudness envelope, 0..1 (seconds).
 
-uniform float cellP; ///< Cell size knob, 0..1.
-uniform float breakP;
+uniform float cellP;  ///< Cell size knob, 0..1.
+uniform float breakP; ///< Break knob: open crossings, 0..1.
 uniform float photoP; ///< Photo knob: how much of the photo shows, 0..1.
 uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 

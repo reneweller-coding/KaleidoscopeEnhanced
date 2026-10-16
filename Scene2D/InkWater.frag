@@ -35,10 +35,10 @@ uniform float audioOnset;    ///< Onset envelope (any instrument), 0..1.
 uniform float audioCentroid; ///< Spectral centroid (brightness of the sound), 0..1.
 uniform float audioValence;  ///< Mood valence: 0 dark .. 1 bright.
 
-uniform int   plumesP;
-uniform float inkHueP;
-uniform float swirlP; ///< Swirl knob, 0..1.
-uniform float speedP; ///< Speed knob, 0..1.
+uniform int   plumesP; ///< Plumes knob: number of ink plumes.
+uniform float inkHueP; ///< Ink hue knob: ink hue rotation, 0..6.28.
+uniform float swirlP;  ///< Swirl knob, 0..1.
+uniform float speedP;  ///< Speed knob, 0..1.
 
 /**  2D rotation matrix.
  *

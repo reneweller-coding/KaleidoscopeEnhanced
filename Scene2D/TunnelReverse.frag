@@ -25,26 +25,26 @@ out vec4 fragColor; ///< The pixel's colour (output).
  *                      coordinate along the radius (the forward layer stays
  *                      straight), so the two tunnels visibly grate against each other
  */
-uniform vec2      resolution;    ///< Size of the render target in pixels.
-uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;          ///< The current photo.
-uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
-uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
-uniform float     interpolationRotation;
-uniform float     speedTunnel;
-uniform float     speed;
-uniform int       sides;
-uniform float     power;
-uniform float     speedTunnelReverse;
-uniform int       rotate;         ///< a bool in the config -> uploaded with glUniform1i
-uniform float     audioPhase;     ///< integrated audio rotation phase (radians, jump-free)
-uniform float     audioAdvance;   ///< integrated audio tunnel advance (jump-free)
-uniform float     audioKick;      ///< subtle brightness pulse on kicks
-uniform float     audioBuildUp;   ///< 0..1 EDM tension -> blend tips toward the receding layer
-uniform float     audioSpread;    ///< 0=narrow spectrum .. 1=wide -> depth mismatch between the layers
-uniform float     audioRoughness; ///< 0=consonant .. 1=dissonant -> the reverse layer grinds
+uniform vec2      resolution;            ///< Size of the render target in pixels.
+uniform float     time;                  ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;                  ///< The current photo.
+uniform sampler2D tex1;                  ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation;         ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform float     interpolationRotation; ///< Rotation of the picture during the cross-fade (radians).
+uniform float     speedTunnel;           ///< Speed of the flight through the tunnel.
+uniform float     speed;                 ///< Speed of the motion.
+uniform int       sides;                 ///< Number of mirror sides.
+uniform float     power;                 ///< Exponent of the distortion (the host scales it with the music).
+uniform float     speedTunnelReverse;    ///< Speed of the flight out of the tunnel.
+uniform int       rotate;                ///< a bool in the config -> uploaded with glUniform1i
+uniform float     audioPhase;            ///< integrated audio rotation phase (radians, jump-free)
+uniform float     audioAdvance;          ///< integrated audio tunnel advance (jump-free)
+uniform float     audioKick;             ///< subtle brightness pulse on kicks
+uniform float     audioBuildUp;          ///< 0..1 EDM tension -> blend tips toward the receding layer
+uniform float     audioSpread;           ///< 0=narrow spectrum .. 1=wide -> depth mismatch between the layers
+uniform float     audioRoughness;        ///< 0=consonant .. 1=dissonant -> the reverse layer grinds
 
-const float Pi = 3.141592653589793;
+const float Pi = 3.141592653589793; ///< Pi.
 
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()

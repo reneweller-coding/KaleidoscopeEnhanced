@@ -16,7 +16,7 @@ out vec3  vNormal; ///< Surface normal (from the vertex stage).
 out vec3  vView;   ///< View vector (from the vertex stage).
 out vec3  vWorld;  ///< World position (from the vertex stage).
 out float vKind;   ///< Element kind (from the vertex stage).
-out float vVar;
+out float vVar;    ///< Var (from the vertex stage).
 
 uniform mat4  projM;      ///< Projection matrix.
 uniform mat4  lightM;     ///< Light view-projection matrix (shadow map).

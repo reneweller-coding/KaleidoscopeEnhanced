@@ -8,8 +8,8 @@ uniform float     audioChromaHue; ///< Hue of the dominant pitch class (radians,
 uniform float     audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 uniform float     audioDrop;      ///< Drop envelope: high after a detected drop, decaying.
 
-in vec2  vUV; ///< Texture coordinate 0..1 over the screen (from the vertex stage).
-in float vShade;
+in vec2  vUV;    ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+in float vShade; ///< Shade (from the vertex stage).
 
 /**
  * @file SilkPhoto.frag

@@ -41,8 +41,8 @@ uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 
 uniform float densityP; ///< Density knob, 0..1.
 uniform float widthP;   ///< Width knob, 0..1.
-uniform float tunnelP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float tunnelP;  ///< Tunnel knob: tunnel brightness, 0..1.
+uniform float hueP;     ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 // ---- shared building blocks (texture pool, noise, shapes) ----
 /**  Pseudo-random number 0..1 from a float.

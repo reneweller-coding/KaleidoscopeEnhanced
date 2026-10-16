@@ -39,10 +39,10 @@ uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 uniform float audioBarPhase;  ///< Position within the current bar, 0..1.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioSpread;    ///< Spectral spread, 0..1.
-uniform float audioDownbeat;
+uniform float audioDownbeat;  ///< Downbeat accent: a decaying pulse on the bar's 1, 0..1.
 
-out vec4 vCol; ///< Colour (from the vertex stage).
-out vec3 vCorner;
+out vec4 vCol;    ///< Colour (from the vertex stage).
+out vec3 vCorner; ///< Corner (from the vertex stage).
 
 /**  Rotates a colour's hue by an angle (about the grey axis).
  *

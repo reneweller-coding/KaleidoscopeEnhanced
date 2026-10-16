@@ -25,7 +25,7 @@ uniform float audioLevel;    ///< Overall loudness, 0..1.
 uniform float audioBeat;     ///< Beat envelope, 0..1.
 uniform float audioCentroid; ///< Spectral centroid (brightness of the sound), 0..1.
 uniform float audioValence;  ///< Mood valence: 0 dark .. 1 bright.
-uniform float audioStereo;
+uniform float audioStereo;   ///< Stereo width of the music, 0..1.
 uniform float audioPhase;    ///< Rotation phase driven by the music (integrated, never jumps).
 uniform float audioSwell;    ///< slow loudness swell -> vein scale breathes
 uniform float audioBarPhase; ///< 0..1 per bar -> gentle per-bar hue sweep

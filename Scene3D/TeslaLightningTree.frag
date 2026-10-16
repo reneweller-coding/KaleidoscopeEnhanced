@@ -29,10 +29,10 @@ out vec4 fragColor; ///< The pixel's colour (output).
  *                     existing tonemap below is untouched
  */
 
-in vec3  vPos; ///< Position (from the vertex stage).
-in float vHeat;
-in float vBoltID;
-in float vGain;
+in vec3  vPos;    ///< Position (from the vertex stage).
+in float vHeat;   ///< Heat (from the vertex stage).
+in float vBoltID; ///< Bolt ID (from the vertex stage).
+in float vGain;   ///< Gain (from the vertex stage).
 
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.
@@ -42,11 +42,11 @@ uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0
 uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioSharpness;
+uniform float audioSharpness; ///< Sharpness of the sound: 0 dull and dark .. 1 bright and harsh.
 
 uniform float glowP; ///< Glow / afterglow knob, 0..1.
-uniform float arcP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float arcP;  ///< Arc knob, 0.5..2.2.
+uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

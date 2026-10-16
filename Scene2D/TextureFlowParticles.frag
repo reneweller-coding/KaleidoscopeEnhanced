@@ -44,8 +44,8 @@ uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 
 uniform float scaleP;   ///< Scale knob.
 uniform float densityP; ///< Density knob, 0..1.
-uniform float curlP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float curlP;    ///< Curl knob: share of free turbulence against the photo's own contours, 0..1.
+uniform float hueP;     ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 // @expr densityP = clamp(0.4 + 0.4*swell + 0.2*seed2, 0.0, 1.0)
 
 // ---- shared building blocks (texture pool, noise, shapes) ----
@@ -388,7 +388,9 @@ void finish( vec3 col )
     fragColor = vec4( clamp( t, 0.0, 1.0 ), 1.0 );
 }
 
-float gCurl, gSc;
+/** @{ */
+float gCurl, gSc; ///< gCurl: Strength of the curl this frame; gSc: Scale of the pattern this frame.
+/** @} */
 
 /**  The flow direction at uv: along the texture's contours (perpendicular to its luma gradient), blended with a slow
  * curl-noise swirl.

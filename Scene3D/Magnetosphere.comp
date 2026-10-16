@@ -12,6 +12,7 @@
 // from the inside out: bass in the tight inner shells, treble streaming far
 // out along the outer ones.
 // -----------------------------------------------------------------------
+/// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( local_size_x = 4, local_size_y = 4, local_size_z = 4 ) in;
 
 /**
@@ -33,10 +34,12 @@ layout( local_size_x = 4, local_size_y = 4, local_size_z = 4 ) in;
  * id).
  */
 
+/// The output vertex buffer: eight floats per vertex (attribute A, attribute B) that the scene draws.
 layout( std430, binding = 0 ) buffer Verts
 {
     float verts[];
 };
+/// The indirect draw command: [0] the vertex count (counted up atomically), then the other draw arguments.
 layout( std430, binding = 1 ) buffer Cmd
 {
     uint cmd[];
@@ -57,15 +60,15 @@ uniform float shellsP; ///< preset: how far the outer shells reach
 uniform float tubeP;   ///< preset: field-line thickness
 uniform float tiltP;   ///< preset: dipole tilt against the view
 
-const int   Shells = 18; ///< distinct L values
-const int   Longs = 16;  ///< lines per shell
-const int   Segs = 34;   ///< segments along one line
-const int   Sides = 4;   ///< cross-section of a tube
-const float PlanetR = 1.0;
-const int   Lines = Shells * Longs;
+const int   Shells = 18;            ///< distinct L values
+const int   Longs = 16;             ///< lines per shell
+const int   Segs = 34;              ///< segments along one line
+const int   Sides = 4;              ///< cross-section of a tube
+const float PlanetR = 1.0;          ///< Radius of the planet.
+const int   Lines = Shells * Longs; ///< Number of field lines.
 
 const int SphereU = 40; ///< planet mesh
-const int SphereV = 20;
+const int SphereV = 20; ///< Rows of the planet sphere's mesh.
 
 const float Pi = 3.14159265; ///< Pi.
 

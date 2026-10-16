@@ -41,10 +41,10 @@ uniform float audioRoughness; ///< Roughness (dissonance) of the sound, 0..1.
 uniform float audioBass;      ///< Bass band level, 0..1.
 uniform float audioMode;      ///< Mode of the music: 0 minor .. 1 major.
 
-uniform float windP;
-uniform float sunP;
-uniform float smokeP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float windP;  ///< Wind knob: base winding, 0..1.
+uniform float sunP;   ///< Sun knob: sun strength, 0..1.
+uniform float smokeP; ///< Smoke knob: smoke/spray amount, 0..1.
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 // ---- shared building blocks (texture pool, noise, shapes) ----
 /**  Pseudo-random number 0..1 from a float.

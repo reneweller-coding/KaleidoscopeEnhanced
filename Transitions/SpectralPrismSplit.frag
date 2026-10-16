@@ -37,8 +37,8 @@ uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-uniform float prismP;
-uniform float splitP;
+uniform float prismP; ///< Prism knob: dispersion intensity & separation width (0.5..2.2).
+uniform float splitP; ///< Split knob: split angle direction multiplier, 0.5..2.
 uniform float speedP; ///< Speed knob, 0..1.
 uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 

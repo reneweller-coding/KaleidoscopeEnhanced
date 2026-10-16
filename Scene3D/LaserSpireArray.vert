@@ -10,9 +10,9 @@ in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage
                ///< index).
 in vec4 attrB; ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
 
-out vec3  vObjPos;
-out vec4  vSeeds;
-out float vSpireIndex;
+out vec3  vObjPos;     ///< Obj pos (from the vertex stage).
+out vec4  vSeeds;      ///< Seeds (from the vertex stage).
+out float vSpireIndex; ///< Spire index (from the vertex stage).
 
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()

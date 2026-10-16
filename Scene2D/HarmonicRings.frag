@@ -33,9 +33,9 @@ uniform float     time;          ///< Seconds since the program started (never r
 uniform sampler2D tex0;          ///< The current photo.
 uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
 uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
-uniform float     speed;
-uniform float     power;
-uniform int       rotate;
+uniform float     speed;         ///< Speed of the motion.
+uniform float     power;         ///< Exponent of the distortion (the host scales it with the music).
+uniform int       rotate;        ///< 1: the picture turns.
 
 // Core audio uniforms
 uniform float audioBeat;      ///< Beat envelope, 0..1.
@@ -43,9 +43,9 @@ uniform float audioBeatPhase; ///< Position within the current beat, 0..1.
 uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 uniform float audioDrop;      ///< Drop envelope: high after a detected drop, decaying.
 uniform float audioLevel;     ///< Overall loudness, 0..1.
-uniform float audioFlip;
-uniform float audioCentroid; ///< Spectral centroid (brightness of the sound), 0..1.
-uniform float audioFlux;     ///< Spectral flux (how fast the spectrum changes), 0..1.
+uniform float audioFlip;      ///< Rotation direction, +1 or -1 (flips on strong beats).
+uniform float audioCentroid;  ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
 
 // 6-band extras
 uniform float audioSubBass;  ///< 20-60 Hz

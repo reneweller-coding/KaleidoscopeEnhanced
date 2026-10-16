@@ -35,15 +35,15 @@ out vec4 fragColor; ///< The pixel's colour (output).
 // The channels are sampled at slightly different offsets.  Dispersion is real —
 // the bending depends on wavelength — and it is what stops the shimmer from
 // reading as a plain wobble.
-uniform vec2      resolution; ///< Size of the render target in pixels.
-uniform float     time;       ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;       ///< The current photo.
-uniform sampler2D tex1;       ///< The next photo (cross-faded in by interpolation).
-uniform sampler2D texDepth0;
-uniform sampler2D texDepth1;
-uniform vec2      depthValid;
-uniform vec2      nearFar; ///< Near and far clip distances.
-uniform float     tanHalfFov;
+uniform vec2      resolution;    ///< Size of the render target in pixels.
+uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform sampler2D texDepth0;     ///< Depth buffer of the current 3D scene (the source of tex0).
+uniform sampler2D texDepth1;     ///< Depth buffer of the next 3D scene (the source of tex1).
+uniform vec2      depthValid;    ///< 1 where texDepth0 (x) and texDepth1 (y) hold a 3D scene's depth, else 0.
+uniform vec2      nearFar;       ///< Near and far clip distances.
+uniform float     tanHalfFov;    ///< Tangent of half the vertical field of view of the 3D scene.
 uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
 uniform float audioLevel;     ///< Overall loudness, 0..1.

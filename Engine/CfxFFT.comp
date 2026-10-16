@@ -30,16 +30,17 @@
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( local_size_x = 128 ) in;
 
+/// The complex field being transformed (N x N points).
 layout( std430, binding = 0 ) buffer Data
 {
     vec2 z[];
 }; // complex, N*N
 
-uniform int N;
+uniform int N;       ///< Size of the transform (points per line).
 uniform int axis;    ///< 0 = rows, 1 = columns
 uniform int inverse; ///< 0 = forward, 1 = inverse (conjugate twiddles + 1/N)
 
-shared vec2 s[256];
+shared vec2 s[256]; ///< The line being transformed, in shared memory.
 
 /**  Buffer index of element k of a line along the current axis.
  *

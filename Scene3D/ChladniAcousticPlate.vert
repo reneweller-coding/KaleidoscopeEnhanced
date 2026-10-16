@@ -16,8 +16,8 @@
  *   audioHarmChange-> a chord change re-tunes the plate; the sand is thrown
  *                     off the lines and has to settle all over again
  */
-layout( location = 0 ) in vec3 inPos;
-layout( location = 1 ) in vec3 inNormal;
+layout( location = 0 ) in vec3 inPos;    ///< Pos (vertex attribute).
+layout( location = 1 ) in vec3 inNormal; ///< Normal (vertex attribute).
 
 uniform mat4  projM;           ///< Projection matrix.
 uniform float eyeOff;          ///< Stereo eye offset (0 in mono).
@@ -34,9 +34,9 @@ uniform float audioSpread;     ///< narrow (pure tone) .. wide (rich/noisy)
 uniform float audioZCR;        ///< signal noisiness -> grain scatter
 uniform float audioHarmChange; ///< spikes on chord / key changes
 
-out vec3  vPos; ///< Position (from the vertex stage).
-out float vNodalDist;
-out float vPlateEnergy;
+out vec3  vPos;         ///< Position (from the vertex stage).
+out float vNodalDist;   ///< Nodal dist (from the vertex stage).
+out float vPlateEnergy; ///< Plate energy (from the vertex stage).
 
 /**  Pseudo-random number 0..1 from a float.
  *

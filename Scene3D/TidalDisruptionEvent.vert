@@ -18,11 +18,11 @@ uniform float audioLevel;     ///< Overall loudness, 0..1.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float hueP;           ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-out vec4  vColor;
+out vec4  vColor;    ///< Color (from the vertex stage).
 out vec2  vTexCoord; ///< Texture coordinate (from the vertex stage).
 out float vDepth;    ///< Depth (from the vertex stage).
 out float vKind;     ///< Element kind (from the vertex stage).
-out float vSpeed;
+out float vSpeed;    ///< Speed (from the vertex stage).
 
 /**  Rotates a colour's hue by an angle (about the grey axis).
  *

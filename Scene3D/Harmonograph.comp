@@ -31,12 +31,15 @@
 // be irrational for every interval and NOTHING would ever close, which is
 // exactly the wrong lesson to draw.
 // -----------------------------------------------------------------------
+/// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( local_size_x = 4, local_size_y = 4, local_size_z = 4 ) in;
 
+/// The output vertex buffer: eight floats per vertex (attribute A, attribute B) that the scene draws.
 layout( std430, binding = 0 ) buffer Verts
 {
     float verts[];
 };
+/// The indirect draw command: [0] the vertex count (counted up atomically), then the other draw arguments.
 layout( std430, binding = 1 ) buffer Cmd
 {
     uint cmd[];
@@ -56,10 +59,10 @@ uniform float sizeP; ///< preset: figure size
 uniform float dampP; ///< preset: how fast the pendulum decays
 uniform float wireP; ///< preset: wire thickness
 
-const int Steps = 3600;
-const int Sides = 5;
+const int Steps = 3600; ///< Points along the curve.
+const int Sides = 5;    ///< Sides of the tube around each segment.
 
-// Just ratios for each semitone distance.  Index = semitones apart.
+/// Just ratios for each semitone distance.  Index = semitones apart.
 const vec2 Just[12] = vec2[12](
     vec2( 1.0, 1.0 ),   // unison
     vec2( 16.0, 15.0 ), // minor second

@@ -40,8 +40,8 @@ uniform float audioKick;       ///< Kick-drum envelope, 0..1 (fast attack, short
 uniform float audioHarmChange; ///< Harmonic change (chord change) envelope, 0..1.
 uniform float audioSwell;      ///< Slow loudness envelope, 0..1 (seconds).
 
-uniform float turnsP;
-uniform float formP;
+uniform float turnsP; ///< Turns knob: spiral turns, 0..1.
+uniform float formP;  ///< Form knob: form density, 0..1.
 uniform float photoP; ///< Photo knob: how much of the photo shows, 0..1.
 uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 

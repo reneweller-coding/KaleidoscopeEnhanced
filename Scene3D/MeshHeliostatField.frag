@@ -20,10 +20,10 @@ out vec4 fragColor; ///< The pixel's colour (output).
  * Per-instance: sizeP, mirrorP. Per-activation variety: hueP.
  */
 
-uniform sampler2DArray texMeshMaterial;       ///< the tower
-uniform int            texMeshMaterialLayers; ///< Number of layers in texMeshMaterial.
-uniform sampler2DArray texMeshMaterial2;      ///< the heliostat
-uniform int            texMeshMaterialLayers2;
+uniform sampler2DArray texMeshMaterial;        ///< the tower
+uniform int            texMeshMaterialLayers;  ///< Number of layers in texMeshMaterial.
+uniform sampler2DArray texMeshMaterial2;       ///< the heliostat
+uniform int            texMeshMaterialLayers2; ///< Number of layers in the second mesh's material textures.
 
 uniform float time;       ///< Seconds since the program started (never reset; see sceneTime).
 uniform float audioBass;  ///< Bass band level, 0..1.
@@ -37,12 +37,12 @@ in vec3  vNormal; ///< Surface normal (from the vertex stage).
 in vec3  vPos;    ///< Position (from the vertex stage).
 in vec3  vLocal;  ///< Object-space position (from the vertex stage).
 in float vBg;     ///< Background flag (from the vertex stage).
-in float vMirror;
-in vec3  vAim;
+in float vMirror; ///< Mirror (from the vertex stage).
+in vec3  vAim;    ///< Aim (from the vertex stage).
 
-const float Ground = -6.0;
-const vec3  TowerFoot = vec3( 0.0, Ground, 170.0 );
-const float TowerH = 70.0;
+const float Ground = -6.0;                          ///< Height of the ground (world units).
+const vec3  TowerFoot = vec3( 0.0, Ground, 170.0 ); ///< Foot of the receiver tower.
+const float TowerH = 70.0;                          ///< Height of the towers (world units).
 
 /**  Direction to the sun, drifting slowly.
  *

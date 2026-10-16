@@ -39,10 +39,10 @@ uniform float audioMid;       ///< Mid band level, 0..1.
 uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
 
-uniform float spacingRatioP;
-uniform float ringDensityP;
-uniform float colloidGlowP;
-uniform float diffusionP;
+uniform float spacingRatioP; ///< Spacing ratio knob: Liesegang Jablczynski geometric ratio, 1.05..1.35.
+uniform float ringDensityP;  ///< Ring density knob: precipitation band count parameter, 4..14.
+uniform float colloidGlowP;  ///< Colloid glow knob: colloidal precipitate luminance gain, 0.8..2.5.
+uniform float diffusionP;    ///< Diffusion knob: ion concentration diffusion steepness, 0.6..2.2.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

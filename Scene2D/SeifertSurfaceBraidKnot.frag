@@ -38,9 +38,9 @@ uniform float audioLevel;     ///< Overall loudness, 0..1.
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-uniform float knotP;
-uniform float ribbonWidthP;
-uniform float sheenP;
+uniform float knotP;        ///< Knot knob: which knot, 0.6..2.
+uniform float ribbonWidthP; ///< Ribbon width knob: tube thickness, 0.03..0.12.
+uniform float sheenP;       ///< Sheen knob: gloss, 0.8..2.5.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *
@@ -70,8 +70,11 @@ vec3 imgPalette( float t )
     return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
-float g_P = 3.0, g_Q = 5.0, g_th = 0.14;
-mat3  g_rot;
+/** @{ */
+float g_P = 3.0, g_Q = 5.0, g_th = 0.14; ///< g_P: The knot's p: windings around the axis; g_Q: The knot's q: windings
+                                         ///< through the hole; g_th: Thickness of the ribbon this frame.
+/** @} */
+mat3  g_rot;     ///< Rotation of the knot this frame.
 float g_s = 0.0; ///< knot parameter at the hit (for colour)
 
 /**  Torus knot (P around the tube, Q around the axis): in the cross-section at azimuth phi the Q strands sit at

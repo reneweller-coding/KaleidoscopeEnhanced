@@ -1,10 +1,10 @@
 #version 330 core
 out vec4 fragColor; ///< The pixel's colour (output).
 
-in vec3  vPos; ///< Position (from the vertex stage).
-in float vTemp;
-in float vSeed; ///< Per-instance random seed (from the vertex stage).
-in float vRadius;
+in vec3  vPos;    ///< Position (from the vertex stage).
+in float vTemp;   ///< Temp (from the vertex stage).
+in float vSeed;   ///< Per-instance random seed (from the vertex stage).
+in float vRadius; ///< Radius (from the vertex stage).
 
 /**
  * @file StellarNurseryCollapse.frag
@@ -32,8 +32,8 @@ uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unw
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 
 uniform float glowP; ///< Glow / afterglow knob, 0..1.
-uniform float heatP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float heatP; ///< Heat knob, 0.5..2.2.
+uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

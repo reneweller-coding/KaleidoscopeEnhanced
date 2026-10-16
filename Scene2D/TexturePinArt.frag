@@ -40,7 +40,7 @@ uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short 
 uniform float audioMode;      ///< Mode of the music: 0 minor .. 1 major.
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 
-uniform float pinP;
+uniform float pinP;  ///< Pin knob: pin density, 0..1.
 uniform float waveP; ///< Wave knob.
 uniform float tintP; ///< Tint knob, 0..1.
 uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.

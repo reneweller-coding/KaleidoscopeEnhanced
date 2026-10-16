@@ -118,8 +118,8 @@ float materialExposure( sampler2DArray tex )
     return clamp( 0.20 / max( l, 0.02 ), 0.30, 2.0 );
 }
 
-// The sun sits just above the horizon, which is both the light and the reason
-// the haze glows brightest toward it.
+/// The sun sits just above the horizon, which is both the light and the reason
+/// the haze glows brightest toward it.
 const vec3 SunDir = vec3( -0.36, 0.11, 0.93 );
 
 /**  The sky colour for a direction.

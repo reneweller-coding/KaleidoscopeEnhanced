@@ -35,8 +35,8 @@ uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unw
 uniform float zoomP;  ///< hex-lattice scale        (0 -> 1.0; 0.7 = coarser, 1.6 = finer)
 uniform float swirlP; ///< radius-coupled swirl amt (0 -> none; curves the lattice)
 
-const float Pi = 3.14159265358979; ///< Pi.
-const float Root3 = 1.7320508075688772;
+const float Pi = 3.14159265358979;      ///< Pi.
+const float Root3 = 1.7320508075688772; ///< The square root of 3.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

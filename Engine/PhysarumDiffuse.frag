@@ -7,9 +7,9 @@ out vec4 fragColor; ///< The pixel's colour (output).
  * the vein network grows; decay is audio-nudged host-side.
  */
 
-uniform sampler2D texTrail;
+uniform sampler2D texTrail;   ///< The trail map.
 uniform vec2      resolution; ///< trail-map size
-uniform float     decay;
+uniform float     decay;      ///< Decay of the trail per step.
 
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()

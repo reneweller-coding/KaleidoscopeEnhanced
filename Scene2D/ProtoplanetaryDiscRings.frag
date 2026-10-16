@@ -37,8 +37,8 @@ uniform float audioChromaHue;    ///< Hue of the dominant pitch class (radians, 
 uniform float audioValence;      ///< Mood valence: 0 dark .. 1 bright.
 
 uniform float tiltP; ///< Tilt knob, 0..1.
-uniform float gapP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float gapP;  ///< Gap knob: planet gap width, 0..1.
+uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

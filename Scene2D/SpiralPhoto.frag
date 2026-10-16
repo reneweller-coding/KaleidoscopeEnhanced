@@ -40,10 +40,10 @@ uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short 
 uniform float audioMode;      ///< Mode of the music: 0 minor .. 1 major.
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 
-uniform float pitchP; ///< Pitch knob, 0..1.
-uniform float zoomP;  ///< Zoom knob, 0..1.
-uniform float wobbleP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float pitchP;  ///< Pitch knob, 0..1.
+uniform float zoomP;   ///< Zoom knob, 0..1.
+uniform float wobbleP; ///< Wobble knob: the line wavers, 0..1.
+uniform float hueP;    ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 // ---- shared building blocks (texture pool, noise, shapes) ----
 /**  Pseudo-random number 0..1 from a float.

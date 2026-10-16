@@ -6,9 +6,9 @@ out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec3  vWorld;  ///< World position (from the vertex stage).
 in vec3  vNormal; ///< Surface normal (from the vertex stage).
-in float vEnergy;
-in float vFreq;
-in float vDist; ///< Distance (from the vertex stage).
+in float vEnergy; ///< Energy (from the vertex stage).
+in float vFreq;   ///< Freq (from the vertex stage).
+in float vDist;   ///< Distance (from the vertex stage).
 
 /**
  * @file SpectroCanyon.frag

@@ -13,11 +13,11 @@
 in vec4 attrA; ///< xy = Patch UV [0,1], z = 0, w = Cell index
 in vec4 attrB; ///< 4 seeds in [0,1)
 
-out vec2  vUV;     ///< Texture coordinate 0..1 over the screen (from the vertex stage).
-out vec3  vNormal; ///< Surface normal (from the vertex stage).
-out vec3  vCol;    ///< Colour (from the vertex stage).
-out float vTriplePoint;
-out float vDim;
+out vec2  vUV;          ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+out vec3  vNormal;      ///< Surface normal (from the vertex stage).
+out vec3  vCol;         ///< Colour (from the vertex stage).
+out float vTriplePoint; ///< Triple point (from the vertex stage).
+out float vDim;         ///< Dim (from the vertex stage).
 
 uniform mat4  projM;  ///< Projection matrix.
 uniform float eyeOff; ///< Stereo eye offset (0 in mono).
@@ -36,13 +36,16 @@ uniform sampler2D tex0;          ///< The current photo.
 uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
 uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float boyScaleP;
-uniform float symmetryP;
+uniform float boyScaleP; ///< Boy scale knob, 0.8..2.2.
+uniform float symmetryP; ///< Symmetry knob, 0.6..1.8.
 
 // Host grid dimensions (Scene3DShader GEOM_GRID) and the shared 55-degree frustum.
-const float Gw = 220.0, GH = 120.0;
-const float TanHalfFov = 0.52056705;
-const float AspectGuess = 1.7777778;
+/** @{ */
+const float Gw = 220.0, GH = 120.0; ///< Gw: Columns of the host's vertex grid; GH: Rows of the host's vertex grid.
+/** @} */
+const float TanHalfFov = 0.52056705; ///< Tangent of half the vertical field of view (the scene projection's 55
+                                     ///< degrees).
+const float AspectGuess = 1.7777778; ///< Assumed screen aspect (16:9; this stage does not know the real one).
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

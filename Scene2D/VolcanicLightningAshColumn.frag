@@ -39,10 +39,10 @@ uniform float audioMid;       ///< Mid band level, 0..1.
 uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
 
-uniform float ashTurbP;
-uniform float boltBranchP;
-uniform float magmaGlowP;
-uniform float smokeDensP;
+uniform float ashTurbP;    ///< Ash turb knob: ash plume turbulent vortex frequency, 3..8.
+uniform float boltBranchP; ///< Bolt branch knob: lightning fractal branching density, 1..3.5.
+uniform float magmaGlowP;  ///< Magma glow knob: crater incandescent magma glow luminance (0.8..2.5).
+uniform float smokeDensP;  ///< Smoke dens knob: tephra cloud opacity & billow thickness, 0.6..2.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

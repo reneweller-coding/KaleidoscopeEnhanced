@@ -38,11 +38,11 @@ uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes)
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
 // Per-activation variety
-uniform float speedP;  ///< Speed knob, 0..1.
-uniform float branchP; ///< Branching knob, 0..1.
-uniform float pulseSpeedP;
-uniform float glowP; ///< Glow / afterglow knob, 0..1.
-uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float speedP;      ///< Speed knob, 0..1.
+uniform float branchP;     ///< Branching knob, 0..1.
+uniform float pulseSpeedP; ///< Pulse speed knob, 0.7..1.5.
+uniform float glowP;       ///< Glow / afterglow knob, 0..1.
+uniform float hueP;        ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *
@@ -89,14 +89,14 @@ float photoLevel()
     return dot( s * 0.2, vec3( 0.299, 0.587, 0.114 ) );
 }
 
-// World scale of the arborization. At 1.0 the tube lattice sat so close to
-// the flight path that the median ray landed 0.14 units from the camera --
-// one unlit tube wall filling the whole frame, which is exactly why the
-// picture read as a single flat bright field. Building the lattice in a
-// half-scale coordinate (and converting the distance back with the same
-// factor, so the estimator stays correct) doubles the tube spacing AND the
-// tube radius: the median hit now sits at 0.62 with a p95 of 2.5, so there is
-// a real depth range for the light to fall off across.
+/// World scale of the arborization. At 1.0 the tube lattice sat so close to
+/// the flight path that the median ray landed 0.14 units from the camera --
+/// one unlit tube wall filling the whole frame, which is exactly why the
+/// picture read as a single flat bright field. Building the lattice in a
+/// half-scale coordinate (and converting the distance back with the same
+/// factor, so the estimator stays correct) doubles the tube spacing AND the
+/// tube radius: the median hit now sits at 0.62 with a p95 of 2.5, so there is
+/// a real depth range for the light to fall off across.
 const float NeuralWs = 0.5;
 
 /**  Distance estimator for neural dendrite branching

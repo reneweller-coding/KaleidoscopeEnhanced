@@ -7,11 +7,11 @@
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( vertices = 4 ) out;
 
-in vec3 vControlPos[];
-in vec2 vControlUV[];
+in vec3 vControlPos[]; ///< Control pos (from the vertex stage).
+in vec2 vControlUV[];  ///< Control UV (from the vertex stage).
 
-out vec3 tcPos[];
-out vec2 tcUV[];
+out vec3 tcPos[]; ///< Pos (from the tessellation control stage).
+out vec2 tcUV[];  ///< UV (from the tessellation control stage).
 
 uniform float audioSwell; ///< Slow loudness envelope, 0..1 (seconds).
 

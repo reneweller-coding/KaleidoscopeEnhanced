@@ -28,8 +28,8 @@ uniform float audioSwell;        ///< Slow loudness envelope, 0..1 (seconds).
 uniform float audioDrop;         ///< Drop envelope: high after a detected drop, decaying.
 uniform float audioSpectrum[32]; ///< Spectrum bands, 0..1.
 
-uniform float     depthP; ///< Depth knob, 0..1.
-uniform float     rippleP;
+uniform float     depthP;         ///< Depth knob, 0..1.
+uniform float     rippleP;        ///< Ripple knob, 0.5..2.2.
 uniform float     glowP;          ///< Glow / afterglow knob, 0..1.
 uniform float     hueP;           ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 uniform sampler2D tex0;           ///< The current photo.

@@ -8,10 +8,10 @@ out vec4 fragColor; ///< The pixel's colour (output).
 uniform float audioSwell; ///< Slow loudness envelope, 0..1 (seconds).
 uniform float audioDrop;  ///< Drop envelope: high after a detected drop, decaying.
 
-in vec3  vNorm;
+in vec3  vNorm; ///< Norm (from the vertex stage).
 in vec3  vView; ///< View vector (from the vertex stage).
-in float vDefo;
-in float vHue;
+in float vDefo; ///< Defo (from the vertex stage).
+in float vHue;  ///< Hue (from the vertex stage).
 
 /**
  * @file JellyBody.frag

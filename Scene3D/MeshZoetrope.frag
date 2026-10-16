@@ -32,10 +32,10 @@ in vec3  vNormal; ///< Surface normal (from the vertex stage).
 in vec3  vPos;    ///< Position (from the vertex stage).
 in vec3  vLocal;  ///< Object-space position (from the vertex stage).
 in float vBg;     ///< Background flag (from the vertex stage).
-in float vDrum;
+in float vDrum;   ///< Drum (from the vertex stage).
 
-const float Dist = 50.0;
-const float Ground = -20.0;
+const float Dist = 50.0;    ///< Distance of the main object from the camera (world units).
+const float Ground = -20.0; ///< Height of the ground (world units).
 
 /**  Rotates a colour's hue by an angle (about the grey axis).
  *

@@ -13,20 +13,20 @@
  *   audioTrebRel  -> mix-independent treble punch thickens the laser columns
  *   audioUpperMid -> (fragment stage) metallic chrome glint on the facets
  */
-// LaserSpireArray.geom — Extrude point seeds into 3D hexagonal crystalline spires
-// with skyward laser beams and pulsating energy rings.
+/// LaserSpireArray.geom — Extrude point seeds into 3D hexagonal crystalline spires
+/// with skyward laser beams and pulsating energy rings.
 layout( points ) in;
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( triangle_strip, max_vertices = 24 ) out;
 
-in vec3  vObjPos[];
-in vec4  vSeeds[];
-in float vSpireIndex[];
+in vec3  vObjPos[];     ///< Obj pos (from the vertex stage).
+in vec4  vSeeds[];      ///< Seeds (from the vertex stage).
+in float vSpireIndex[]; ///< Spire index (from the vertex stage).
 
-out vec3  gNormal;
-out vec3  gWorld;
-out vec4  gCol;
-out float gBeam;
+out vec3  gNormal; ///< Normal (from the geometry stage).
+out vec3  gWorld;  ///< World (from the geometry stage).
+out vec4  gCol;    ///< The colour gathered so far for this pixel.
+out float gBeam;   ///< Beam (from the geometry stage).
 
 uniform mat4  projM;  ///< Projection matrix.
 uniform float eyeOff; ///< Stereo eye offset (0 in mono).
@@ -41,8 +41,8 @@ uniform float audioSpectrum[32]; ///< Spectrum bands, 0..1.
 uniform float audioBuildUp;      ///< EDM tension rising toward the drop
 uniform float audioTrebRel;      ///< 0..2.5, treble "as loud as usual right now"
 
-uniform float heightP; ///< Height knob, 0..1.
-uniform float beamP;
+uniform float heightP;  ///< Height knob, 0..1.
+uniform float beamP;    ///< Beam knob, 0.5..2.
 uniform float camDistP; ///< Camera distance knob, 0..1.
 uniform float hueP;     ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 

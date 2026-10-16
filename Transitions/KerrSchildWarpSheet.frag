@@ -35,8 +35,8 @@ uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-uniform float warpP;
-uniform float nullP;
+uniform float warpP;  ///< Warp knob: Kerr-Schild metric scalar scale, 0.5..2.2.
+uniform float nullP;  ///< Null knob: null vector k_a shear direction, 0.5..2.
 uniform float speedP; ///< Speed knob, 0..1.
 uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 

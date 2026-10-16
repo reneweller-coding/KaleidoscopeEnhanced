@@ -45,7 +45,7 @@ uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unw
 uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
                               ///< backwards).
 uniform float audioDrop;      ///< Drop envelope: high after a detected drop, decaying.
-uniform float audioMusic;
+uniform float audioMusic;     ///< Music presence, 0..1 (low when there is no music, e.g. speech in the background).
 
 uniform float massP; ///< preset: how strongly it lenses
 uniform float diskP; ///< preset: disk brightness

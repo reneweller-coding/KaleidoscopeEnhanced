@@ -19,7 +19,7 @@ out vec4 fragColor; ///< The pixel's colour (output).
 in vec2  vUV;     ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 in vec3  vNormal; ///< Surface normal (from the vertex stage).
 in vec3  vCol;    ///< Colour (from the vertex stage).
-in float vShock;
+in float vShock;  ///< Shock (from the vertex stage).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
@@ -30,7 +30,7 @@ uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0
 uniform float audioKick;  ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 uniform float audioSwell; ///< Slow loudness envelope, 0..1 (seconds).
 
-uniform float nebulaP;
+uniform float nebulaP; ///< Nebula knob: interstellar gas opacity & luminance, 0.8..2.5.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

@@ -85,11 +85,14 @@ float hash21( vec2 p )
     return fract( ( p3.x + p3.y ) * p3.z );
 }
 
-const float Grid = 13.0; ///< cells from the centre to the edge
-const float Ballr = 0.27;
-const float Ceil = 11.0;
+const float Grid = 13.0;  ///< cells from the centre to the edge
+const float Ballr = 0.27; ///< Radius of a ball.
+const float Ceil = 11.0;  ///< Height of the ceiling (world units).
 
-float gT, gW;
+/** @{ */
+float gT, gW; ///< gT: The chain's (or scene's) time this frame; gW: Strength of the photo's influence on the waves this
+              ///< frame, 0..1.
+/** @} */
 
 /**  Height of the ball hanging in cell c: a slow superposition of waves.
  *

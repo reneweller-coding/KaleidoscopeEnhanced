@@ -27,21 +27,22 @@
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( local_size_x = 256 ) in;
 
+/// The random walkers: position (xy) per walker.
 layout( std430, binding = 1 ) buffer Walkers
 {
     vec4 walker[];
 }; // xy = pos
-layout( rgba16f, binding = 0 ) uniform image2D imgField;
+layout( rgba16f, binding = 0 ) uniform image2D imgField; ///< The crystal field (occupied texels).
 
-uniform ivec2 size; ///< Size of the simulation grid in cells.
-uniform uint  count;
-uniform uint  frame;
-uniform float now; ///< normalised clock, stored as the freeze time
-uniform float hue;
+uniform ivec2 size;       ///< Size of the simulation grid in cells.
+uniform uint  count;      ///< Number of elements (boids, particles, walkers ...).
+uniform uint  frame;      ///< Frame counter (seeds the random numbers).
+uniform float now;        ///< normalised clock, stored as the freeze time
+uniform float hue;        ///< Hue offset of the palette.
 uniform float stickiness; ///< 0..1, chance of actually freezing on contact
 uniform float drift;      ///< downward/upward bias (music driven)
 
-const int Steps = 9;
+const int Steps = 9; ///< Steps each walker takes per frame.
 
 /**  PCG random step: advances the state, returns 32 random bits.
  *

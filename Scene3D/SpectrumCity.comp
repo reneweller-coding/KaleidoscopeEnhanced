@@ -35,12 +35,15 @@
 // normal is reconstructed in the vertex shader.  Box faces are axis-aligned, so
 // that costs nothing in accuracy.
 // -----------------------------------------------------------------------
+/// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( local_size_x = 4, local_size_y = 4, local_size_z = 4 ) in;
 
+/// The output vertex buffer: eight floats per vertex (attribute A, attribute B) that the scene draws.
 layout( std430, binding = 0 ) buffer Verts
 {
     float verts[];
 };
+/// The indirect draw command: [0] the vertex count (counted up atomically), then the other draw arguments.
 layout( std430, binding = 1 ) buffer Cmd
 {
     uint cmd[];
@@ -55,17 +58,17 @@ uniform float audioLevel;   ///< Overall loudness, 0..1.
 uniform float audioKick;    ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 uniform float audioSubBass; ///< Sub-bass band level, 0..1.
 
-uniform sampler2D texSpectro;
+uniform sampler2D texSpectro;  ///< Spectrogram ring: band energies (x) over time (y).
 uniform float     spectroHead; ///< T coordinate of "now", continuous
-uniform float     spectroFill;
+uniform float     spectroFill; ///< How full the spectrogram ring texSpectro is, 0..1 (after a scene start).
 
 uniform float heightP;  ///< preset: tower height
 uniform float densityP; ///< preset: how many lots are actually built on
 uniform float avenueP;  ///< preset: width of the central avenue
 
-const int   Cols = 40; ///< lots across
-const int   Rows = 46; ///< lots into the distance
-const float Spacing = 7.0;
+const int   Cols = 40;      ///< lots across
+const int   Rows = 46;      ///< lots into the distance
+const float Spacing = 7.0;  ///< Spacing between neighbouring objects (world units).
 const float Foot = 4.6;     ///< building footprint (the rest is street)
 const float AgeSpan = 0.82; ///< how much of the ring the city spans
 

@@ -33,8 +33,8 @@ out vec2  vUV;     ///< Texture coordinate 0..1 over the screen (from the vertex
 out vec3  vNormal; ///< Surface normal (from the vertex stage).
 out vec3  vPos;    ///< Position (from the vertex stage).
 out float vBg;     ///< Background flag (from the vertex stage).
-out float vJump;
-out float vAlong;
+out float vJump;   ///< Jump (from the vertex stage).
+out float vAlong;  ///< Along (from the vertex stage).
 
 /**  Pseudo-random number 0..1 from a float.
  *

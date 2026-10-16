@@ -13,14 +13,14 @@ out vec4 fragColor; ///< The pixel's colour (output).
 in vec2  vTexCoord; ///< Texture coordinate (from the vertex stage).
 in float vDepth;    ///< Depth (from the vertex stage).
 in float vKind;     ///< Element kind (from the vertex stage).
-in float vFree;
+in float vFree;     ///< Free (from the vertex stage).
 
-uniform sampler2D tex0;          ///< The current photo.
-uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
-uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
-uniform float     audioKick;     ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float     audioLevel;    ///< Overall loudness, 0..1.
-uniform float     audioFadeOut;
+uniform sampler2D tex0;           ///< The current photo.
+uniform sampler2D tex1;           ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation;  ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform float     audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float     audioLevel;     ///< Overall loudness, 0..1.
+uniform float     audioFadeOut;   ///< Fade-out of the song, 0..1 (rises while the track fades out).
 uniform float     audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float     audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
                                   ///< backwards).

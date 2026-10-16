@@ -36,11 +36,11 @@ uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes)
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
 // Per-activation variety
-uniform float speedP; ///< Speed knob, 0..1.
-uniform float warpP;
-uniform float streaksP;
-uniform float glowP; ///< Glow / afterglow knob, 0..1.
-uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float speedP;   ///< Speed knob, 0..1.
+uniform float warpP;    ///< Warp knob, 0.8..1.6.
+uniform float streaksP; ///< Streaks knob, 0.7..1.5.
+uniform float glowP;    ///< Glow / afterglow knob, 0..1.
+uniform float hueP;     ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

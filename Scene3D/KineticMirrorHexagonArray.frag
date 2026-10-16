@@ -27,7 +27,7 @@ uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus
 
 in vec3 vNormal;   ///< Surface normal (from the vertex stage).
 in vec2 vTexCoord; ///< Texture coordinate (from the vertex stage).
-in vec4 vColor;
+in vec4 vColor;    ///< Color (from the vertex stage).
 
 /**
  * @file KineticMirrorHexagonArray.frag

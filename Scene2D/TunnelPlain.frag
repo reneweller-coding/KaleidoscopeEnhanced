@@ -29,12 +29,12 @@ uniform float     time;          ///< Seconds since the program started (never r
 uniform sampler2D tex0;          ///< The current photo.
 uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
 uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
-uniform float     speed;
-uniform int       sides;
-uniform float     power;
-uniform float     audioBeat;  ///< Beat envelope, 0..1.
-uniform float     audioLevel; ///< Overall loudness, 0..1.
-uniform float     audioFlip;
+uniform float     speed;         ///< Speed of the motion.
+uniform int       sides;         ///< Number of mirror sides.
+uniform float     power;         ///< Exponent of the distortion (the host scales it with the music).
+uniform float     audioBeat;     ///< Beat envelope, 0..1.
+uniform float     audioLevel;    ///< Overall loudness, 0..1.
+uniform float     audioFlip;     ///< Rotation direction, +1 or -1 (flips on strong beats).
 uniform float     audioAdvance;  ///< integrated, jump-free audio tunnel advance
 uniform float     audioFlatness; ///< 0=tonal .. 1=noise-like -> superellipse wedge shape
 uniform float     audioHat;      ///< hi-hat/cymbal onset envelope -> rim shimmer

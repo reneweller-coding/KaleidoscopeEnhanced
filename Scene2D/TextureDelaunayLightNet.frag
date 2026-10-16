@@ -40,10 +40,10 @@ uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioMode;      ///< Mode of the music: 0 minor .. 1 major.
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 
-uniform float nodeP;
-uniform float threadP;
-uniform float photoP; ///< Photo knob: how much of the photo shows, 0..1.
-uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float nodeP;   ///< Node knob: node spacing, 0..1.
+uniform float threadP; ///< Thread knob: thread brightness, 0..1.
+uniform float photoP;  ///< Photo knob: how much of the photo shows, 0..1.
+uniform float hueP;    ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 // ---- shared building blocks (texture pool, noise, shapes) ----
 /**  Pseudo-random number 0..1 from a float.
@@ -385,7 +385,7 @@ void finish( vec3 col )
     fragColor = vec4( clamp( t, 0.0, 1.0 ), 1.0 );
 }
 
-float gS;
+float gS; ///< Scale of the pattern this frame (from its knob).
 /**  Position of the node of cell id, wandering slowly.
  *
  * @param id  The cell. (in)

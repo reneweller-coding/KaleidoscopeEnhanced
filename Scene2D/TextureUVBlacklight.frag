@@ -40,10 +40,10 @@ uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioMode;      ///< Mode of the music: 0 minor .. 1 major.
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 
-uniform float lineP;
+uniform float lineP;   ///< Line knob: line width, 0..1.
 uniform float detailP; ///< Detail knob, 0..1.
-uniform float lintP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float lintP;   ///< Lint knob, 0..1.
+uniform float hueP;    ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 // ---- shared building blocks (texture pool, noise, shapes) ----
 /**  Pseudo-random number 0..1 from a float.

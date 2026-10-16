@@ -70,7 +70,7 @@ vec3 imgPalette( float t )
     return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
-float gTw;
+float gTw; ///< Twist of the pavilion this frame.
 
 /**  The cross-section's centre drifts and the section twists along z.
  *

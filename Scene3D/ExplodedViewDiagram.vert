@@ -30,7 +30,7 @@ out vec3  vNormal; ///< Surface normal (from the vertex stage).
 out vec3  vObj;    ///< Object-space position (from the vertex stage).
 out vec3  vPos;    ///< Position (from the vertex stage).
 out float vBg;     ///< Background flag (from the vertex stage).
-out float vSpread;
+out float vSpread; ///< Spread (from the vertex stage).
 
 /**  Pseudo-random number 0..1 from a 3D point.
  *

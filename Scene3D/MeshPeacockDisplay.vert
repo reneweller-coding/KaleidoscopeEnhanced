@@ -36,8 +36,8 @@ out vec3  vLocal;  ///< object space, normalised to -1..1 per axis
 out float vTrain;  ///< 1 on the fanned train, 0 on the body and the rock
 out float vBg;     ///< Background flag (from the vertex stage).
 
-const float Dist = 54.0;
-const float Ground = -21.0;
+const float Dist = 54.0;    ///< Distance of the main object from the camera (world units).
+const float Ground = -21.0; ///< Height of the ground (world units).
 
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()

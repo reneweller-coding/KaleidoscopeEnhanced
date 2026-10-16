@@ -34,12 +34,12 @@ uniform float audioAdvance; ///< The music's advance: integrated tempo-weighted 
 uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 uniform float tintP; ///< Tint knob, 0..1.
 
-in vec2  vUV; ///< Texture coordinate 0..1 over the screen (from the vertex stage).
-in vec2  vQuad;
+in vec2  vUV;     ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+in vec2  vQuad;   ///< Quad (from the vertex stage).
 in vec3  vNormal; ///< Surface normal (from the vertex stage).
 in vec3  vPos;    ///< Position (from the vertex stage).
 in float vBg;     ///< Background flag (from the vertex stage).
-in float vLoose;
+in float vLoose;  ///< Loose (from the vertex stage).
 
 /**  Rotates a colour's hue by an angle (about the grey axis).
  *

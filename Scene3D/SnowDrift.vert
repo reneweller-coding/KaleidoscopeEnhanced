@@ -37,9 +37,9 @@ uniform vec2  resolution; ///< Size of the render target in pixels.
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 uniform float audioLevel;     ///< Overall loudness, 0..1.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
-uniform float audioFlatness;
-uniform float audioSharpness;
-uniform float audioMode; ///< Mode of the music: 0 minor .. 1 major.
+uniform float audioFlatness;  ///< Spectral flatness: 0 tonal .. 1 noise-like.
+uniform float audioSharpness; ///< Sharpness of the sound: 0 dull and dark .. 1 bright and harsh.
+uniform float audioMode;      ///< Mode of the music: 0 minor .. 1 major.
 
 out vec4 vCol; ///< Colour (from the vertex stage).
 

@@ -8,9 +8,9 @@
 in vec4 attrA; ///< xyz = cube corner (-0.5..0.5), w = cube index
 in vec4 attrB; ///< 4 seeds in [0,1)
 
-out vec3  vNormal; ///< Surface normal (from the vertex stage).
-out vec3  vCol;    ///< Colour (from the vertex stage).
-out float vWeight;
+out vec3  vNormal;   ///< Surface normal (from the vertex stage).
+out vec3  vCol;      ///< Colour (from the vertex stage).
+out float vWeight;   ///< Weight (from the vertex stage).
 out vec3  vLocalPos; ///< Object-space position (from the vertex stage).
 
 uniform mat4  projM;  ///< Projection matrix.
@@ -30,8 +30,8 @@ uniform sampler2D tex0;          ///< The current photo.
 uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
 uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float rootScaleP;
-uniform float cubeSizeP;
+uniform float rootScaleP; ///< Root scale knob, 0.8..2.2.
+uniform float cubeSizeP;  ///< Cube size knob, 0.04..0.16.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

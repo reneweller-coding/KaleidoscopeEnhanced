@@ -20,9 +20,9 @@ uniform mat4  projM;  ///< Projection matrix.
 uniform float eyeOff; ///< Stereo eye offset (0 in mono).
 uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
 
-uniform float audioAdvance; ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
-                            ///< backwards).
-uniform float audioWave[64];
+uniform float audioAdvance;      ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                                 ///< backwards).
+uniform float audioWave[64];     ///< The waveform: 64 points of the time signal, -1..1.
 uniform float audioSpectrum[32]; ///< Spectrum bands, 0..1.
 uniform float audioOnset;        ///< Onset envelope (any instrument), 0..1.
 uniform float audioKick;         ///< Kick-drum envelope, 0..1 (fast attack, short decay).
@@ -31,7 +31,7 @@ uniform float audioSwell;        ///< Slow loudness envelope, 0..1 (seconds).
 
 out vec4  vCol;  ///< Colour (from the vertex stage).
 out float vSide; ///< Which side of a strip (from the vertex stage).
-out float vFade;
+out float vFade; ///< Fade (from the vertex stage).
 
 /**  Rotates a colour's hue by an angle (about the grey axis).
  *

@@ -37,10 +37,10 @@ uniform float audioMid;      ///< Mid band level, 0..1.
 uniform float audioHigh;     ///< High band level, 0..1.
 uniform float audioFlux;     ///< Spectral flux (how fast the spectrum changes), 0..1.
 
-uniform float genusP;
-uniform float zoomP; ///< Zoom knob, 0..1.
-uniform float glowP; ///< Glow / afterglow knob, 0..1.
-uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float genusP; ///< Genus knob: topological complexity parameter, 0.5..2.
+uniform float zoomP;  ///< Zoom knob, 0..1.
+uniform float glowP;  ///< Glow / afterglow knob, 0..1.
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).

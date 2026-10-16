@@ -19,18 +19,20 @@
 // that radius means bass literally softens the picture into broad shapes
 // while hi-hats cut its edges back in.
 // -----------------------------------------------------------------------
+/// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( local_size_x = 16, local_size_y = 16 ) in;
 
+/// The complex field being transformed (N x N points).
 layout( std430, binding = 0 ) buffer Data
 {
     vec2 z[];
 };
 
-uniform int   N;
-uniform float spec[32];
-uniform float gain;
-uniform float tilt;  ///< extra emphasis on fine detail
-uniform float swirl; ///< rotates the anisotropy so the filter is not static
+uniform int   N;        ///< Size of the transform (points per line).
+uniform float spec[32]; ///< The spectrum: 32 band levels, 0..1.
+uniform float gain;     ///< Gain.
+uniform float tilt;     ///< extra emphasis on fine detail
+uniform float swirl;    ///< rotates the anisotropy so the filter is not static
 
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()

@@ -24,7 +24,7 @@ uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioHigh;      ///< High band level, 0..1.
 
-uniform float freqP;
+uniform float freqP;      ///< Freq knob, 0.5..2.
 uniform float depthP;     ///< Depth knob, 0..1.
 uniform float speedP;     ///< Speed knob, 0..1.
 uniform float hueP;       ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
@@ -37,7 +37,7 @@ uniform float     audioValence;  ///< Mood valence: 0 dark .. 1 bright.
 out vec4          vCol;          ///< Colour (from the vertex stage).
 out vec2          vUV;           ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 out vec3          vNormal;       ///< Surface normal (from the vertex stage).
-out float         vInterference;
+out float         vInterference; ///< Interference (from the vertex stage).
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

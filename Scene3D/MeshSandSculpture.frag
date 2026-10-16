@@ -39,7 +39,7 @@ in vec3  vNormal; ///< Surface normal (from the vertex stage).
 in vec3  vObj;    ///< Object-space position (from the vertex stage).
 in vec3  vPos;    ///< Position (from the vertex stage).
 in float vBg;     ///< Background flag (from the vertex stage).
-in float vErode;
+in float vErode;  ///< Erode (from the vertex stage).
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

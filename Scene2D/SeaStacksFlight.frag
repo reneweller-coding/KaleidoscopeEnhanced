@@ -37,9 +37,9 @@ uniform float audioLevel;     ///< Overall loudness, 0..1.
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-uniform float stacksP;
-uniform float hazeP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float stacksP; ///< Stacks knob: density of the pillars, 0..1.
+uniform float hazeP;   ///< Haze knob, 0..1.
+uniform float hueP;    ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *
@@ -114,7 +114,7 @@ float noise3( vec3 p )
                 mix( mix( h2.x, h2.y, f.x ), mix( h2.z, h2.w, f.x ), f.y ), f.z );
 }
 
-float g_dens = 1.0;
+float g_dens = 1.0; ///< Density of the sea stacks this frame (from stacksP).
 
 /**  The stacks: one per cell on a jittered grid in the sea plane, avoiding a clear lane down the flight path.
  *

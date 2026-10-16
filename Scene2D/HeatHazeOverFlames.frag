@@ -40,8 +40,8 @@ uniform float audioMode;      ///< Mode of the music: 0 minor .. 1 major.
 uniform float audioRoughness; ///< Roughness (dissonance) of the sound, 0..1.
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 
-uniform float bandP; ///< Band knob, 0..1.
-uniform float flameP;
+uniform float bandP;  ///< Band knob, 0..1.
+uniform float flameP; ///< Flame knob: flame height, 0..1.
 uniform float photoP; ///< Photo knob: how much of the photo shows, 0..1.
 uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 

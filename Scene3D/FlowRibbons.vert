@@ -12,9 +12,9 @@ in vec4 attrB; ///< xyz = normal, w = per-ribbon random
 out vec3  vObj;    ///< Object-space position (from the vertex stage).
 out vec3  vNormal; ///< Surface normal (from the vertex stage).
 out vec3  vView;   ///< View vector (from the vertex stage).
-out float vAlong;
-out float vRnd;
-out float vDist; ///< Distance (from the vertex stage).
+out float vAlong;  ///< Along (from the vertex stage).
+out float vRnd;    ///< Rnd (from the vertex stage).
+out float vDist;   ///< Distance (from the vertex stage).
 
 uniform mat4  projM;        ///< Projection matrix.
 uniform float eyeOff;       ///< Stereo eye offset (0 in mono).

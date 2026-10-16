@@ -9,9 +9,9 @@ out vec4 fragColor; ///< The pixel's colour (output).
  *   audioAdvance  -> orbit
  */
 
-in vec3  vWorldPos; ///< World position (from the vertex stage).
-in vec2  vTexCoord; ///< Texture coordinate (from the vertex stage).
-in float vQubitIndex;
+in vec3  vWorldPos;   ///< World position (from the vertex stage).
+in vec2  vTexCoord;   ///< Texture coordinate (from the vertex stage).
+in float vQubitIndex; ///< Qubit index (from the vertex stage).
 
 uniform sampler2D tex0;          ///< The current photo.
 uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
@@ -32,11 +32,11 @@ uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-uniform float qubitP;
-uniform float meanderP;
-uniform float widthP; ///< Width knob, 0..1.
-uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform float qubitP;   ///< Qubit knob, 0.5..2.
+uniform float meanderP; ///< Meander knob, 0.5..2.
+uniform float widthP;   ///< Width knob, 0..1.
+uniform float hueP;     ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float time;     ///< Seconds since the program started (never reset; see sceneTime).
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

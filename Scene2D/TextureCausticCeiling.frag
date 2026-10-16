@@ -46,10 +46,10 @@ uniform float audioMode;      ///< Mode of the music: 0 minor .. 1 major.
 uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 
-uniform float waveP;  ///< Wave knob.
-uniform float scaleP; ///< Scale knob.
-uniform float fringeP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float waveP;   ///< Wave knob.
+uniform float scaleP;  ///< Scale knob.
+uniform float fringeP; ///< Fringe knob: colour fringes, 0..1.
+uniform float hueP;    ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 // ---- shared building blocks (texture pool, noise, shapes) ----
 /**  Pseudo-random number 0..1 from a float.
@@ -391,7 +391,10 @@ void finish( vec3 col )
     fragColor = vec4( clamp( t, 0.0, 1.0 ), 1.0 );
 }
 
-float gT, gW, gRough;
+/** @{ */
+float gT, gW, gRough; ///< gT: The chain's (or scene's) time this frame; gW: Strength of the photo's influence on the
+                      ///< waves this frame, 0..1; gRough: The music's roughness this frame, 0..1.
+/** @} */
 
 /**  Water surface: a sum of smooth travelling plane waves, with its slope and curvature computed analytically (finite
  * differences of finite differences drown the caustic in float noise).

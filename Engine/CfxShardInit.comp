@@ -10,22 +10,24 @@
  * trigger; the spring-and-gravity integration and photo splatting that follow
  * live entirely in CfxShardStep.comp.
  */
-// vec4 A: xy = current offset from home, z = rotation, w = spin
-// vec4 B: xy = velocity, z = angular velocity, w = seed
+/// vec4 A: xy = current offset from home, z = rotation, w = spin
+/// vec4 B: xy = velocity, z = angular velocity, w = seed
 layout( local_size_x = 256 ) in;
 
+/// The shards' positions and turns (one vec4 per shard).
 layout( std430, binding = 1 ) buffer ShardA
 {
     vec4 sa[];
 };
+/// The shards' velocities and spins (one vec4 per shard).
 layout( std430, binding = 2 ) buffer ShardB
 {
     vec4 sb[];
 };
 
-uniform uint  count;
-uniform uint  seed;
-uniform float burst;
+uniform uint  count; ///< Number of elements (boids, particles, walkers ...).
+uniform uint  seed;  ///< Random seed of the run.
+uniform float burst; ///< Strength of the burst.
 
 /**  PCG random step: advances the state, returns 32 random bits.
  *

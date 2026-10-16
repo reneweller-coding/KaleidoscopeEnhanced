@@ -19,7 +19,7 @@ out vec4 fragColor; ///< The pixel's colour (output).
 in vec2  vUV;     ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 in vec3  vNormal; ///< Surface normal (from the vertex stage).
 in vec3  vCol;    ///< Colour (from the vertex stage).
-in float vHeat;
+in float vHeat;   ///< Heat (from the vertex stage).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
@@ -35,8 +35,8 @@ uniform float audioCentroid;  ///< Spectral centroid (brightness of the sound), 
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-uniform float lavaHeatP;
-uniform float crustGlowP;
+uniform float lavaHeatP;  ///< Lava heat knob: incandescent fissure magma luminance (0.8..2.5).
+uniform float crustGlowP; ///< Crust glow knob: glassy basalt crust specular sheen, 0.6..2.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

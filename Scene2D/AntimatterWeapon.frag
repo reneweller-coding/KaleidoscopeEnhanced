@@ -32,9 +32,9 @@ uniform float audioCentroid;  ///< Spectral centroid (brightness of the sound), 
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-uniform float beamP;
-uniform float blastP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float beamP;  ///< Beam knob: width and instability of the weapon beam (0.5..1.5).
+uniform float blastP; ///< Blast knob: intensity of the impact annihilation (0.5..2.0).
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

@@ -18,23 +18,24 @@
 // barycentric coordinate, and its smallest component is the distance to the
 // nearest edge.  The fragment shader draws a line where that distance is small.
 // -----------------------------------------------------------------------
+/// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( triangles ) in;
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( triangle_strip, max_vertices = 3 ) out;
 
-in vec3  gObj[];
-in vec2  gUV[];
-in float gCell[];
-in float gMorph[];
+in vec3  gObj[];   ///< Obj (from the geometry stage).
+in vec2  gUV[];    ///< UV (from the geometry stage).
+in float gCell[];  ///< Cell (from the geometry stage).
+in float gMorph[]; ///< Morph (from the geometry stage).
 
 flat out vec3 vEdgeMask; ///< 1 = a real quad edge, 0 = the mesh's diagonal
 out float     vKind;     ///< 0 = paper backdrop, 1 = the body
-out vec3      vBary;
-out vec3      vObj;    ///< Object-space position (from the vertex stage).
-out vec3      vNormal; ///< Surface normal (from the vertex stage).
-out vec3      vView;   ///< View vector (from the vertex stage).
-out vec2      vUV;     ///< Texture coordinate 0..1 over the screen (from the vertex stage).
-out float     vMorph;
+out vec3      vBary;     ///< Bary (from the vertex stage).
+out vec3      vObj;      ///< Object-space position (from the vertex stage).
+out vec3      vNormal;   ///< Surface normal (from the vertex stage).
+out vec3      vView;     ///< View vector (from the vertex stage).
+out vec2      vUV;       ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+out float     vMorph;    ///< Morph (from the vertex stage).
 
 uniform mat4  projM;        ///< Projection matrix.
 uniform float eyeOff;       ///< Stereo eye offset (0 in mono).

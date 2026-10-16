@@ -4,8 +4,8 @@
  * @brief Vertex stage companion to LargeHadronCollision.frag -- see that file's header for
  * this scene's description.
  */
-layout( location = 0 ) in vec3 inPos;
-layout( location = 1 ) in vec3 inNormal;
+layout( location = 0 ) in vec3 inPos;    ///< Pos (vertex attribute).
+layout( location = 1 ) in vec3 inNormal; ///< Normal (vertex attribute).
 
 uniform mat4  projM;        ///< Projection matrix.
 uniform float eyeOff;       ///< Stereo eye offset (0 in mono).
@@ -19,9 +19,9 @@ uniform float audioMid;     ///< Mid band level, 0..1.
 uniform float audioHigh;    ///< High band level, 0..1.
 uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
 
-out vec3  vPos; ///< Position (from the vertex stage).
-out float vEnergy;
-out float vSpecies;
+out vec3  vPos;     ///< Position (from the vertex stage).
+out float vEnergy;  ///< Energy (from the vertex stage).
+out float vSpecies; ///< Species (from the vertex stage).
 
 /**  Pseudo-random number 0..1 from a float.
  *

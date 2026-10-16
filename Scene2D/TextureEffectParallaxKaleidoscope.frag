@@ -25,28 +25,28 @@ out vec4 fragColor; ///< The pixel's colour (output).
  *  - audioMode     -> HAZE COLOUR: the depth fog the deep layers fade into is a cold
  *                     blue-grey in minor keys and a warm sand-grey in major ones
  */
-uniform vec2      resolution;    ///< Size of the render target in pixels.
-uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;          ///< The current photo.
-uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
-uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
-uniform float     interpolationRotation;
-uniform float     speed;
-uniform int       sides;
-uniform float     power;
-uniform int       rotate;
-uniform float     speedMovement; ///< = 5.0;
-uniform float     extend;        ///< = 4000;
-uniform int       direction;
-uniform float     audioPhase;    ///< integrated audio rotation phase (radians, jump-free)
-uniform float     audioAdvance;  ///< integrated parallax-orbit drift (jump-free)
-uniform float     audioSwell;    ///< slow energy envelope widens the orbit
-uniform float     audioZCR;      ///< 0=pure tone .. 1=broadband noise -> retro pixel grain
-uniform float     audioFlatness; ///< 0=tonal .. 1=noise-like -> how deep the parallax stack reads
-uniform float     audioMode;     ///< 0=minor/cold .. 1=major/warm -> depth-haze colour
+uniform vec2      resolution;            ///< Size of the render target in pixels.
+uniform float     time;                  ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;                  ///< The current photo.
+uniform sampler2D tex1;                  ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation;         ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform float     interpolationRotation; ///< Rotation of the picture during the cross-fade (radians).
+uniform float     speed;                 ///< Speed of the motion.
+uniform int       sides;                 ///< Number of mirror sides.
+uniform float     power;                 ///< Exponent of the distortion (the host scales it with the music).
+uniform int       rotate;                ///< 1: the picture turns.
+uniform float     speedMovement;         ///< = 5.0;
+uniform float     extend;                ///< = 4000;
+uniform int       direction;             ///< Direction of the turn: 1 one way, else the other.
+uniform float     audioPhase;            ///< integrated audio rotation phase (radians, jump-free)
+uniform float     audioAdvance;          ///< integrated parallax-orbit drift (jump-free)
+uniform float     audioSwell;            ///< slow energy envelope widens the orbit
+uniform float     audioZCR;              ///< 0=pure tone .. 1=broadband noise -> retro pixel grain
+uniform float     audioFlatness;         ///< 0=tonal .. 1=noise-like -> how deep the parallax stack reads
+uniform float     audioMode;             ///< 0=minor/cold .. 1=major/warm -> depth-haze colour
 
 
-const float Pi = 3.141592653589793;
+const float Pi = 3.141592653589793; ///< Pi.
 
 /**  The photo through the kaleidoscope at a coordinate.
  *

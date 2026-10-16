@@ -1,8 +1,8 @@
 #version 330 core
 out vec4 fragColor; ///< The pixel's colour (output).
 // GyroRings.frag — dark faces, luminous edges (depth-tested).
-in vec4 vCol; ///< Colour (from the vertex stage).
-in vec3 vCorner;
+in vec4 vCol;    ///< Colour (from the vertex stage).
+in vec3 vCorner; ///< Corner (from the vertex stage).
 
 /**
  * @file GyroRings.frag
@@ -22,7 +22,7 @@ in vec3 vCorner;
  *   audioDownbeat  -> baked into vCol by GyroRings.vert; see that file.
  */
 
-uniform float audioSharpness;
+uniform float audioSharpness; ///< Sharpness of the sound: 0 dull and dark .. 1 bright and harsh.
 
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()

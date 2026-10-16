@@ -7,14 +7,14 @@
 // stands for.  Getting this the usual way round — key light, specular, a bit of
 // ambient — produces coloured plastic.
 // -----------------------------------------------------------------------
-layout( location = 0 ) out vec4 outAccum;
-layout( location = 1 ) out vec4 outReveal;
+layout( location = 0 ) out vec4 outAccum;  ///< Accum (output).
+layout( location = 1 ) out vec4 outReveal; ///< Reveal (output).
 
 in vec3  vObj;    ///< Object-space position (from the vertex stage).
 in vec3  vNormal; ///< Surface normal (from the vertex stage).
 in vec3  vView;   ///< View vector (from the vertex stage).
 in float vKind;   ///< Element kind (from the vertex stage).
-in float vLevel;
+in float vLevel;  ///< Level (from the vertex stage).
 
 /**
  * @file CathedralGlass.frag

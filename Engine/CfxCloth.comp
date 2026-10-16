@@ -23,21 +23,22 @@
 // that needs the neighbours' CURRENT positions, which is why it lives in a
 // ping-pong pair rather than in place.
 // -----------------------------------------------------------------------
+/// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( local_size_x = 16, local_size_y = 16 ) in;
 
-layout( rgba16f, binding = 0 ) readonly uniform image2D imgCur;
-layout( rgba16f, binding = 1 ) readonly uniform image2D imgPrev;
-layout( rgba16f, binding = 2 ) writeonly uniform image2D imgOut;
+layout( rgba16f, binding = 0 ) readonly uniform image2D imgCur;  ///< The current state.
+layout( rgba16f, binding = 1 ) readonly uniform image2D imgPrev; ///< The previous state.
+layout( rgba16f, binding = 2 ) writeonly uniform image2D imgOut; ///< The output.
 
-uniform ivec2 size; ///< Size of the simulation grid in cells.
-uniform float damp;
-uniform float stiff;
-uniform float gravity;
-uniform float windPhase;
-uniform float windAmp;
-uniform float kick;
-uniform float level;
-uniform float time; ///< Seconds since the program started (never reset; see sceneTime).
+uniform ivec2 size;      ///< Size of the simulation grid in cells.
+uniform float damp;      ///< Damping per step.
+uniform float stiff;     ///< Stiffness of the springs.
+uniform float gravity;   ///< Gravity.
+uniform float windPhase; ///< Phase of the wind wave (integrated).
+uniform float windAmp;   ///< Strength of the wind.
+uniform float kick;      ///< Kick envelope, 0..1.
+uniform float level;     ///< The music's level, 0..1.
+uniform float time;      ///< Seconds since the program started (never reset; see sceneTime).
 
 /**  Displacement of grid node p (clamped to the grid).
  *

@@ -34,7 +34,7 @@ uniform float audioCentroid;  ///< Spectral centroid (brightness of the sound), 
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-uniform float warpP;
+uniform float warpP;  ///< Warp knob: intensity of the spacetime distortion (0.7..1.5).
 uniform float glowP;  ///< Glow / afterglow knob, 0..1.
 uniform float speedP; ///< Speed knob, 0..1.
 uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.

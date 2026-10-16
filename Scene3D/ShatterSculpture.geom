@@ -24,14 +24,15 @@
 // sky shell (see Scene3DShader::buildGeometry()); gBg marks those, and they
 // pass through untouched -- shattering the backdrop would tear the sky open.
 // -----------------------------------------------------------------------
+/// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( triangles ) in;
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( triangle_strip, max_vertices = 3 ) out;
 
-in vec3  gPos[];
-in vec3  gNormal[];
-in vec2  gUV[];
-in float gBg[];
+in vec3  gPos[];    ///< Positions of the four magnets.
+in vec3  gNormal[]; ///< Normal (from the geometry stage).
+in vec2  gUV[];     ///< UV (from the geometry stage).
+in float gBg[];     ///< Bg (from the geometry stage).
 
 out vec2  vUV;     ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 out vec3  vNormal; ///< Surface normal (from the vertex stage).
@@ -47,8 +48,8 @@ uniform float audioAdvance; ///< The music's advance: integrated tempo-weighted 
                             ///< backwards).
 uniform float audioKick;    ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 
-uniform float sizeP; ///< Size knob, 0..1.
-uniform float burstP;
+uniform float sizeP;  ///< Size knob, 0..1.
+uniform float burstP; ///< Burst knob, 0.8..1.2.
 uniform float spinP;  ///< Spin knob, 0..1.
 uniform float chunkP; ///< fracture grid resolution: SMALL = few big slabs, LARGE = fine gravel
 

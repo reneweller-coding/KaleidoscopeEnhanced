@@ -10,15 +10,15 @@
 // through, and they bend correctly around the pillars because the shadow map
 // already knows about the pillars.
 // -----------------------------------------------------------------------
-layout( location = 0 ) out vec4 outAccum;
-layout( location = 1 ) out vec4 outReveal;
+layout( location = 0 ) out vec4 outAccum;  ///< Accum (output).
+layout( location = 1 ) out vec4 outReveal; ///< Reveal (output).
 
 in vec3  vObj;    ///< Object-space position (from the vertex stage).
 in vec3  vNormal; ///< Surface normal (from the vertex stage).
 in vec3  vView;   ///< View vector (from the vertex stage).
 in vec3  vWorld;  ///< World position (from the vertex stage).
 in float vKind;   ///< Element kind (from the vertex stage).
-in float vExtra;
+in float vExtra;  ///< Extra (from the vertex stage).
 
 /**
  * @file SmokeHall.frag
@@ -40,13 +40,13 @@ in float vExtra;
  * slice's shadow pattern.
  */
 
-uniform sampler2D       tex0; ///< The current photo.
-uniform sampler2DShadow texShadow;
-uniform mat4            lightM; ///< Light view-projection matrix (shadow map).
-uniform vec3            lightDir;
-uniform float           shadowPass; ///< 1 during the shadow map's depth-only pass.
-uniform float           shadowTexel;
-uniform float           shadowExtent;
+uniform sampler2D       tex0;          ///< The current photo.
+uniform sampler2DShadow texShadow;     ///< Shadow map of the key light (depth comparison).
+uniform mat4            lightM;        ///< Light view-projection matrix (shadow map).
+uniform vec3            lightDir;      ///< Direction to the key light (unit length).
+uniform float           shadowPass;    ///< 1 during the shadow map's depth-only pass.
+uniform float           shadowTexel;   ///< Size of a shadow-map texel in world units.
+uniform float           shadowExtent;  ///< Half size of the area the shadow map covers (world units).
 uniform float           oitPass;       ///< Order-independent transparency pass flag.
 uniform float           interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 uniform float           time;          ///< Seconds since the program started (never reset; see sceneTime).

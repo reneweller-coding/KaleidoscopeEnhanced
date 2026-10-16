@@ -33,8 +33,8 @@ uniform float ringP; ///< Ring knob, 0..1.
 uniform float glowP; ///< Glow / afterglow knob, 0..1.
 uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-in vec4 vCol; ///< Colour (from the vertex stage).
-in vec3 vCorner;
+in vec4 vCol;    ///< Colour (from the vertex stage).
+in vec3 vCorner; ///< Corner (from the vertex stage).
 in vec3 vPos;    ///< Position (from the vertex stage).
 in vec3 vNormal; ///< Surface normal (from the vertex stage).
 

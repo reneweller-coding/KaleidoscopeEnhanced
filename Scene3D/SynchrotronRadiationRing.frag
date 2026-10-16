@@ -1,8 +1,8 @@
 #version 330 core
-in vec3  vPos; ///< Position (from the vertex stage).
-in vec2  vUV;  ///< Texture coordinate 0..1 over the screen (from the vertex stage).
-in float vRadiation;
-in float vBeamID;
+in vec3  vPos;       ///< Position (from the vertex stage).
+in vec2  vUV;        ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+in float vRadiation; ///< Radiation (from the vertex stage).
+in float vBeamID;    ///< Beam ID (from the vertex stage).
 
 out vec4 fragColor; ///< The pixel's colour (output).
 /**
@@ -29,8 +29,8 @@ uniform float audioMid;     ///< Mid band level, 0..1.
 uniform float audioHigh;    ///< High band level, 0..1.
 uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
 
-uniform float glowP; ///< Glow / afterglow knob, 0..1.
-uniform float radP;
+uniform float glowP;          ///< Glow / afterglow knob, 0..1.
+uniform float radP;           ///< Rad knob, 0.5..2.
 uniform float hueP;           ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.

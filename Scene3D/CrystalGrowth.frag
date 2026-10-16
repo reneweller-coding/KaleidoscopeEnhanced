@@ -8,7 +8,7 @@ uniform float audioKick;  ///< Kick-drum envelope, 0..1 (fast attack, short deca
 // a drop blows the edges out into a blinding sparkle.
 uniform float audioDrop; ///< Drop envelope: high after a detected drop, decaying.
 in vec4       vCol;      ///< Colour (from the vertex stage).
-in vec3       vCorner;
+in vec3       vCorner;   ///< Corner (from the vertex stage).
 
 /**
  * @file CrystalGrowth.frag

@@ -40,10 +40,10 @@ uniform float audioMode;      ///< Mode of the music: 0 minor .. 1 major.
 uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 
-uniform float gridP; ///< Grid knob, 0..1.
-uniform float padP;
-uniform float boardP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float gridP;  ///< Grid knob, 0..1.
+uniform float padP;   ///< Pad knob: pad density, 0..1.
+uniform float boardP; ///< Board knob: board colour, 0..1.
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 // ---- shared building blocks (texture pool, noise, shapes) ----
 /**  Pseudo-random number 0..1 from a float.
@@ -385,7 +385,7 @@ void finish( vec3 col )
     fragColor = vec4( clamp( t, 0.0, 1.0 ), 1.0 );
 }
 
-float gPitch;
+float gPitch; ///< Spacing of the circuit grid this frame (pixels).
 /**  Does the edge from cell c in direction k (0 E, 1 NE, 2 N, 3 NW) carry a trace?
  *
  * @param c     The cell. (in)

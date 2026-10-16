@@ -18,10 +18,10 @@ out vec4 fragColor; ///< The pixel's colour (output).
  * Per-instance: sizeP, armP, pivotP, frontP. Per-activation variety: hueP.
  */
 
-uniform sampler2DArray texMeshMaterial;       ///< the body
-uniform int            texMeshMaterialLayers; ///< Number of layers in texMeshMaterial.
-uniform sampler2DArray texMeshMaterial2;      ///< the rod
-uniform int            texMeshMaterialLayers2;
+uniform sampler2DArray texMeshMaterial;        ///< the body
+uniform int            texMeshMaterialLayers;  ///< Number of layers in texMeshMaterial.
+uniform sampler2DArray texMeshMaterial2;       ///< the rod
+uniform int            texMeshMaterialLayers2; ///< Number of layers in the second mesh's material textures.
 
 uniform float time;              ///< Seconds since the program started (never reset; see sceneTime).
 uniform float audioSpectrum[32]; ///< Spectrum bands, 0..1.
@@ -35,11 +35,11 @@ in vec3  vNormal; ///< Surface normal (from the vertex stage).
 in vec3  vPos;    ///< Position (from the vertex stage).
 in vec3  vLocal;  ///< Object-space position (from the vertex stage).
 in float vBg;     ///< Background flag (from the vertex stage).
-in float vInst;
-in float vArm;
-in float vSwing;
+in float vInst;   ///< Inst (from the vertex stage).
+in float vArm;    ///< Arm (from the vertex stage).
+in float vSwing;  ///< Swing (from the vertex stage).
 
-const float Ground = -14.0;
+const float Ground = -14.0; ///< Height of the ground (world units).
 
 /**  Rotates a colour's hue by an angle (about the grey axis).
  *

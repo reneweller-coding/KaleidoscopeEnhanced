@@ -15,9 +15,9 @@ out vec4 fragColor; ///< The pixel's colour (output).
 in vec3  vNormal; ///< Surface normal (from the vertex stage).
 in vec3  vView;   ///< View vector (from the vertex stage).
 in vec3  vWorld;  ///< World position (from the vertex stage).
-in float vShard;
-in float vEdge;
-in vec2  vUV; ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+in float vShard;  ///< Shard (from the vertex stage).
+in float vEdge;   ///< Edge (from the vertex stage).
+in vec2  vUV;     ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 
 /**
  * @file Detonation.frag
@@ -39,12 +39,12 @@ in vec2  vUV; ///< Texture coordinate 0..1 over the screen (from the vertex stag
 
 uniform sampler2D tex0; ///< The current photo.
 // Declaring this is what asks the engine for the extra depth pass.
-uniform sampler2DShadow texShadow;
-uniform mat4            lightM; ///< Light view-projection matrix (shadow map).
-uniform vec3            lightDir;
-uniform float           shadowPass; ///< 1 during the shadow map's depth-only pass.
-uniform float           shadowTexel;
-uniform float           shadowExtent;
+uniform sampler2DShadow texShadow;     ///< Shadow map of the key light (depth comparison).
+uniform mat4            lightM;        ///< Light view-projection matrix (shadow map).
+uniform vec3            lightDir;      ///< Direction to the key light (unit length).
+uniform float           shadowPass;    ///< 1 during the shadow map's depth-only pass.
+uniform float           shadowTexel;   ///< Size of a shadow-map texel in world units.
+uniform float           shadowExtent;  ///< Half size of the area the shadow map covers (world units).
 uniform float           interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 uniform float           time;          ///< Seconds since the program started (never reset; see sceneTime).
 
@@ -56,8 +56,8 @@ uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioAmbient;   ///< How ambient (sustained, beatless) the music is, 0..1.
 
-uniform float     glowP; ///< Glow / afterglow knob, 0..1.
-uniform float     blastP;
+uniform float     glowP;        ///< Glow / afterglow knob, 0..1.
+uniform float     blastP;       ///< Blast knob, 0.6..1.15.
 uniform sampler2D tex1;         ///< The next photo (cross-faded in by interpolation).
 uniform float     audioAdvance; ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
                                 ///< backwards).

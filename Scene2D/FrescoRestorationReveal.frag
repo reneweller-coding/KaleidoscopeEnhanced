@@ -40,8 +40,8 @@ uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unw
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 
 uniform float gridP; ///< Grid knob, 0..1.
-uniform float sootP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float sootP; ///< Soot knob, 0..1.
+uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

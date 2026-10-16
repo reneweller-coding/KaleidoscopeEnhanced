@@ -18,10 +18,10 @@ out vec4 fragColor; ///< The pixel's colour (output).
  *                     sheen, cymbal-bright = tight hard sparkles)
  */
 
-in vec4  vCol;    ///< Colour (from the vertex stage).
-in vec2  vUV;     ///< Texture coordinate 0..1 over the screen (from the vertex stage).
-in vec3  vNormal; ///< Surface normal (from the vertex stage).
-in float vBioGlow;
+in vec4  vCol;     ///< Colour (from the vertex stage).
+in vec2  vUV;      ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+in vec3  vNormal;  ///< Surface normal (from the vertex stage).
+in float vBioGlow; ///< Bio glow (from the vertex stage).
 
 uniform sampler2D tex0;          ///< The current photo.
 uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).

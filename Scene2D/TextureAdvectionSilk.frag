@@ -39,10 +39,10 @@ uniform float audioMode;      ///< Mode of the music: 0 minor .. 1 major.
 uniform float audioRoughness; ///< Roughness (dissonance) of the sound, 0..1.
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 
-uniform float fibreP;
-uniform float vortexP;
-uniform float sheenP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float fibreP;  ///< Fibre knob: fibre length, 0..1.
+uniform float vortexP; ///< Vortex knob: vortex size, 0..1.
+uniform float sheenP;  ///< Sheen knob, 0..1.
+uniform float hueP;    ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 // ---- shared building blocks (texture pool, noise, shapes) ----
 /**  Pseudo-random number 0..1 from a float.
@@ -384,7 +384,10 @@ void finish( vec3 col )
     fragColor = vec4( clamp( t, 0.0, 1.0 ), 1.0 );
 }
 
-float gT, gVS, gSw;
+/** @{ */
+float gT, gVS, gSw; ///< gT: The chain's (or scene's) time this frame; gVS: Scale of the vortex field this frame; gSw:
+                    ///< Strength of the swirl this frame.
+/** @} */
 /**  The flow at a point: the curl of a noise potential.
  *
  * @param x  The point. (in)

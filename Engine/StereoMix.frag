@@ -8,8 +8,8 @@ out vec4 fragColor; ///< The pixel's colour (output).
  * interpolation = 1 -> texA (the active scene), 0 -> texB (the incoming one)
  * — the same weighting every combine style honours at its endpoints.
  */
-uniform sampler2D texA;
-uniform sampler2D texB;
+uniform sampler2D texA;          ///< The first input of a fade.
+uniform sampler2D texB;          ///< The second input of a fade.
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 

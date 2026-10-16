@@ -36,8 +36,8 @@ uniform float audioValence;  ///< Mood valence: 0 dark .. 1 bright.
 
 uniform float densityP; ///< Density knob, 0..1.
 uniform float sizeP;    ///< Size knob, 0..1.
-uniform float driftP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float driftP;   ///< Drift knob: drift speed multiplier, 0.5..1.5.
+uniform float hueP;     ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

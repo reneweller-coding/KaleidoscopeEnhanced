@@ -46,9 +46,9 @@ uniform float audioBass;      ///< Bass band level, 0..1.
 uniform float audioHigh;      ///< High band level, 0..1.
 
 uniform float scaleP; ///< Scale knob.
-uniform float crustP;
-uniform float flowP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float crustP; ///< Crust knob: how much crust vs. open lava, 0..1.
+uniform float flowP;  ///< Flow knob: the pattern of the heat pulse, 0..1.
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 // ---- shared building blocks (texture pool, noise, shapes) ----
 /**  Pseudo-random number 0..1 from a float.

@@ -14,17 +14,19 @@
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( local_size_x = 256 ) in;
 
+/// The bodies' positions (xyz) and masses (w).
 layout( std430, binding = 1 ) buffer Pos
 {
     vec4 pos[];
 }; // xyz + mass
+/// The bodies' velocities (xyz) and colour indices (w).
 layout( std430, binding = 2 ) buffer Vel
 {
     vec4 vel[];
 }; // xyz + colour index
 
-uniform uint count;
-uniform uint seed;
+uniform uint count; ///< Number of elements (boids, particles, walkers ...).
+uniform uint seed;  ///< Random seed of the run.
 
 /**  PCG random step: advances the state, returns 32 random bits.
  *

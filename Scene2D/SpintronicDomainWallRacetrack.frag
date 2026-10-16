@@ -39,10 +39,10 @@ uniform float audioMid;       ///< Mid band level, 0..1.
 uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
 
-uniform float trackPitchP;
-uniform float wallWidthP;
-uniform float magnonP;
-uniform float torqueP;
+uniform float trackPitchP; ///< Track pitch knob: nanowire track packing density, 2..6.
+uniform float wallWidthP;  ///< Wall width knob: domain wall transition thickness, 0.4..1.8.
+uniform float magnonP;     ///< Magnon knob: spin-wave magnon ripple frequency, 8..24.
+uniform float torqueP;     ///< Torque knob: spin-transfer torque drift velocity, 0.5..2.2.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

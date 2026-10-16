@@ -8,10 +8,10 @@
 in vec4 attrA; ///< xy = Cell UV [0,1], z = 0, w = Cell index
 in vec4 attrB; ///< 4 seeds in [0,1)
 
-out vec2  vUV;     ///< Texture coordinate 0..1 over the screen (from the vertex stage).
-out vec3  vNormal; ///< Surface normal (from the vertex stage).
-out vec3  vCol;    ///< Colour (from the vertex stage).
-out float vGravWavePhase;
+out vec2  vUV;            ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+out vec3  vNormal;        ///< Surface normal (from the vertex stage).
+out vec3  vCol;           ///< Colour (from the vertex stage).
+out float vGravWavePhase; ///< Grav wave phase (from the vertex stage).
 
 uniform mat4  projM;  ///< Projection matrix.
 uniform float eyeOff; ///< Stereo eye offset (0 in mono).
@@ -30,8 +30,8 @@ uniform sampler2D tex0;          ///< The current photo.
 uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
 uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float tensorScaleP;
-uniform float gwFreqP;
+uniform float tensorScaleP; ///< Tensor scale knob, 0.6..2.2.
+uniform float gwFreqP;      ///< Gw freq knob, 4..16.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

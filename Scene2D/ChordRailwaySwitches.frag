@@ -37,9 +37,9 @@ uniform float audioLevel;      ///< Overall loudness, 0..1.
 uniform float audioChromaHue;  ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioValence;    ///< Mood valence: 0 dark .. 1 bright.
 
-uniform float trainsP;
-uniform float routeP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float trainsP; ///< Trains knob, 0..1.
+uniform float routeP;  ///< Route knob, 0..1.
+uniform float hueP;    ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *
@@ -81,8 +81,8 @@ float hash11( float n )
     return fract( sin( n * 127.1 ) * 43758.5453 );
 }
 
-const float TrackGap = 0.13;
-const float YardLen = 2.6; ///< yard length along the track axis
+const float TrackGap = 0.13; ///< Gap between neighbouring tracks.
+const float YardLen = 2.6;   ///< yard length along the track axis
 
 /**  The track a train is on at yard position s: its route is a list of track indices, changing at the crossovers
  * (every 0.2 along s) with an S-curve; the lateral coordinate is continuous.

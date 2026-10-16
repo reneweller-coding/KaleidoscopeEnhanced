@@ -42,10 +42,10 @@ uniform float audioRoughness;  ///< Roughness (dissonance) of the sound, 0..1.
 uniform float audioMode;       ///< Mode of the music: 0 minor .. 1 major.
 uniform float audioSwell;      ///< Slow loudness envelope, 0..1 (seconds).
 
-uniform float layersP;
-uniform float angleP;
-uniform float scaleP; ///< Scale knob.
-uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float layersP; ///< Layers knob: how many layers show, 0..1.
+uniform float angleP;  ///< Angle knob: pull direction, 0..1.
+uniform float scaleP;  ///< Scale knob.
+uniform float hueP;    ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 // ---- shared building blocks (texture pool, noise, shapes) ----
 /**  Pseudo-random number 0..1 from a float.

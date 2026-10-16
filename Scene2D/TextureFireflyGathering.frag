@@ -39,10 +39,10 @@ uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 uniform float audioMode;      ///< Mode of the music: 0 minor .. 1 major.
 
-uniform float countP;
-uniform float photoP; ///< Photo knob: how much of the photo shows, 0..1.
-uniform float colourP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float countP;  ///< Count knob: fireflies, 0..1.
+uniform float photoP;  ///< Photo knob: how much of the photo shows, 0..1.
+uniform float colourP; ///< Colour knob: photo colours vs. firefly green, 0..1.
+uniform float hueP;    ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 // ---- shared building blocks (texture pool, noise, shapes) ----
 /**  Pseudo-random number 0..1 from a float.

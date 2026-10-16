@@ -12,19 +12,19 @@
  * alpha so downstream display shaders can shade the fluid without a second
  * sampler.
  */
-// The output texture carries the dye (RGB) plus the speed (A) so the display
-// can shade the flow without a second sampler.
-//
-// NOTE: no vorticity confinement here.  It needs the neighbours' PRE-update
-// velocities, and this pass writes velocity in place — a confinement term
-// added here would read a mixture of old and new values depending on
-// scheduling.  It belongs in its own pass; the solve is correct without it.
+/// The output texture carries the dye (RGB) plus the speed (A) so the display
+/// can shade the flow without a second sampler.
+///
+/// NOTE: no vorticity confinement here.  It needs the neighbours' PRE-update
+/// velocities, and this pass writes velocity in place — a confinement term
+/// added here would read a mixture of old and new values depending on
+/// scheduling.  It belongs in its own pass; the solve is correct without it.
 layout( local_size_x = 16, local_size_y = 16 ) in;
 
-layout( rgba16f, binding = 0 ) uniform image2D velIO;
-layout( rgba16f, binding = 1 ) readonly uniform image2D prsSrc;
-layout( rgba16f, binding = 2 ) readonly uniform image2D dyeSrc;
-layout( rgba16f, binding = 3 ) writeonly uniform image2D imgOut;
+layout( rgba16f, binding = 0 ) uniform image2D velIO;            ///< The velocity field (read and written).
+layout( rgba16f, binding = 1 ) readonly uniform image2D prsSrc;  ///< Divergence (r) and pressure (g), read.
+layout( rgba16f, binding = 2 ) readonly uniform image2D dyeSrc;  ///< The dye (read).
+layout( rgba16f, binding = 3 ) writeonly uniform image2D imgOut; ///< The output.
 
 uniform ivec2 size; ///< Size of the simulation grid in cells.
 

@@ -22,8 +22,8 @@ uniform float audioDrop;    ///< Drop envelope: high after a detected drop, deca
 uniform float audioBuildUp; ///< Build-up toward a drop, 0..1.
 uniform float audioOnset;   ///< Onset envelope (any instrument), 0..1.
 
-out vec2  vUV; ///< Texture coordinate 0..1 over the screen (from the vertex stage).
-out float vLight;
+out vec2  vUV;    ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+out float vLight; ///< Light (from the vertex stage).
 
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()

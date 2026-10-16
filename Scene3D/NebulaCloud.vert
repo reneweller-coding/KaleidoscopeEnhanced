@@ -36,9 +36,9 @@ uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 uniform float audioLevel;     ///< Overall loudness, 0..1.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioCentroid;  ///< Spectral centroid (brightness of the sound), 0..1.
-uniform float audioFlatness;
-uniform float audioRolloff;
-uniform float audioMode; ///< Mode of the music: 0 minor .. 1 major.
+uniform float audioFlatness;  ///< Spectral flatness: 0 tonal .. 1 noise-like.
+uniform float audioRolloff;   ///< Spectral rolloff: how far the energy reaches into the highs, 0..1.
+uniform float audioMode;      ///< Mode of the music: 0 minor .. 1 major.
 
 out vec4 vCol; ///< Colour (from the vertex stage).
 

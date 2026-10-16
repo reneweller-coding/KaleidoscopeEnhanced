@@ -32,9 +32,9 @@ uniform float audioCentroid;  ///< Spectral centroid (brightness of the sound), 
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-uniform float iceP;
-uniform float magmaP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float iceP;   ///< Ice knob: roughness of the icy surface (0.5..1.5).
+uniform float magmaP; ///< Magma knob: intensity of the glowing fissures (0.5..2.0).
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

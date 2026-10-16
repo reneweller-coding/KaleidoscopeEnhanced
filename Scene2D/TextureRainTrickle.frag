@@ -40,10 +40,10 @@ uniform float audioMode;      ///< Mode of the music: 0 minor .. 1 major.
 uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 
-uniform float rivuletP;
-uniform float beadP;
-uniform float clarityP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float rivuletP; ///< Rivulet knob: rivulet count, 0..1.
+uniform float beadP;    ///< Bead knob: bead density, 0..1.
+uniform float clarityP; ///< Clarity knob: sharpness in the channels, 0..1.
+uniform float hueP;     ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 // ---- shared building blocks (texture pool, noise, shapes) ----
 /**  Pseudo-random number 0..1 from a float.

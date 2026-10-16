@@ -37,17 +37,17 @@ uniform float audioAdvance; ///< The music's advance: integrated tempo-weighted 
 uniform float sceneSeed;    ///< A random number fixed per activation.
 
 uniform float audioSpectrum[32]; ///< Spectrum bands, 0..1.
-uniform vec3  audioStereoL;
-uniform vec3  audioStereoR;
-uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
-uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioDrop;      ///< Drop envelope: high after a detected drop, decaying.
+uniform vec3  audioStereoL;      ///< Energy of the left channel, 0..1.
+uniform vec3  audioStereoR;      ///< Energy of the right channel, 0..1.
+uniform float audioChromaHue;    ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioKick;         ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioSwell;        ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioDrop;         ///< Drop envelope: high after a detected drop, decaying.
 
-out vec3  vNorm;
+out vec3  vNorm; ///< Norm (from the vertex stage).
 out vec3  vView; ///< View vector (from the vertex stage).
 out float vDefo; ///< |displacement| -> antinode glow
-out float vHue;
+out float vHue;  ///< Hue (from the vertex stage).
 
 /**  Sum of excited eigenmodes at unit direction d (θ,φ passed alongside to avoid re-deriving them).
  *

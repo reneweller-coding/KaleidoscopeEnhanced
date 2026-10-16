@@ -39,10 +39,10 @@ uniform float audioMid;       ///< Mid band level, 0..1.
 uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
 
-uniform float antidotCountP;
-uniform float anyonOrbitP;
-uniform float berryGlowP;
-uniform float fractionalP;
+uniform float antidotCountP; ///< Antidot count knob: number of antidot island braiding centers, 2..6.
+uniform float anyonOrbitP;   ///< Anyon orbit knob: anyon orbital radius scale, 0.4..1.8.
+uniform float berryGlowP;    ///< Berry glow knob: Berry phase interference fringe luminance(0.8..2.5).
+uniform float fractionalP;   ///< Fractional knob: fractional quasiparticle charge parameter (0.5..2.2).
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

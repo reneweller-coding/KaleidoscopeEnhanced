@@ -46,8 +46,8 @@ uniform float audioMode;      ///< Mode of the music: 0 minor .. 1 major.
 uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 
-uniform float defectsP;
-uniform float streakP;
+uniform float defectsP; ///< Defects knob: base number of defects, 0..1.
+uniform float streakP;  ///< Streak knob: rod length, 0..1.
 uniform float paletteP; ///< Palette knob: photo colours .. colour field, 0..1.
 uniform float hueP;     ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
@@ -391,7 +391,10 @@ void finish( vec3 col )
     fragColor = vec4( clamp( t, 0.0, 1.0 ), 1.0 );
 }
 
-float gT, gN, gRough;
+/** @{ */
+float gT, gN, gRough; ///< gT: The chain's (or scene's) time this frame; gN: Number of active defect pairs this frame
+                      ///< (with a soft edge); gRough: The music's roughness this frame, 0..1.
+/** @} */
 
 /**  Defects come in +1/2 / -1/2 pairs (as they do physically): a pair is born and annihilates by its two members
  * meeting.

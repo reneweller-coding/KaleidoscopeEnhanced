@@ -37,7 +37,7 @@ uniform float audioLevel;     ///< Overall loudness, 0..1.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 
-uniform float loadsP;
+uniform float loadsP; ///< Loads knob, 0..1.
 uniform float orderP; ///< Order of the chain's four stages (one of 24), 0..1.
 uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 

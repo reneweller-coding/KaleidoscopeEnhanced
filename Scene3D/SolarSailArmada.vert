@@ -26,26 +26,26 @@ in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage
                ///< index).
 in vec4 attrB; ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
 
-uniform mat4  projM;        ///< Projection matrix.
-uniform float eyeOff;       ///< Stereo eye offset (0 in mono).
-uniform float time;         ///< Seconds since the program started (never reset; see sceneTime).
-uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
-uniform float audioAdvance; ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
-                            ///< backwards).
-uniform float audioKick;    ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioBass;    ///< Bass band level, 0..1.
-uniform float audioMid;     ///< Mid band level, 0..1.
-uniform float audioHigh;    ///< High band level, 0..1.
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioSpread;  ///< Spectral spread, 0..1.
-uniform float audioBuildUp; ///< Build-up toward a drop, 0..1.
-uniform float audioSharpness;
+uniform mat4  projM;          ///< Projection matrix.
+uniform float eyeOff;         ///< Stereo eye offset (0 in mono).
+uniform float time;           ///< Seconds since the program started (never reset; see sceneTime).
+uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                              ///< backwards).
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioBass;      ///< Bass band level, 0..1.
+uniform float audioMid;       ///< Mid band level, 0..1.
+uniform float audioHigh;      ///< High band level, 0..1.
+uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioSpread;    ///< Spectral spread, 0..1.
+uniform float audioBuildUp;   ///< Build-up toward a drop, 0..1.
+uniform float audioSharpness; ///< Sharpness of the sound: 0 dull and dark .. 1 bright and harsh.
 
 out vec3  vPos;    ///< Position (from the vertex stage).
 out vec3  vNormal; ///< Surface normal (from the vertex stage).
 out vec2  vUV;     ///< Texture coordinate 0..1 over the screen (from the vertex stage).
-out float vQuadID;
-out float vGlint;
+out float vQuadID; ///< Quad ID (from the vertex stage).
+out float vGlint;  ///< Glint (from the vertex stage).
 
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()

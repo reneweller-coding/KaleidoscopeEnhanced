@@ -39,10 +39,10 @@ uniform float audioMid;       ///< Mid band level, 0..1.
 uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
 
-uniform float vortexPitchP;
-uniform float polarStrP;
-uniform float piezoP;
-uniform float coreDipP;
+uniform float vortexPitchP; ///< Vortex pitch knob: ferroelectric vortex cell pitch scale, 2.5..7.
+uniform float polarStrP;    ///< Polar str knob: spontaneous electric polarization strength (0.6..2.2).
+uniform float piezoP;       ///< Piezo knob: piezoelectric shear birefringence contrast (0.8..2.5).
+uniform float coreDipP;     ///< Core dip knob: vortex core electric field singularity, 0.4..1.8.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

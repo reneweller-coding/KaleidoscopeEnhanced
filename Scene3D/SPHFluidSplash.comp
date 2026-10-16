@@ -26,46 +26,48 @@
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( local_size_x = 4, local_size_y = 4, local_size_z = 4 ) in;
 
-const int   N = 3000; ///< particles
-const int   GridRes = 16;
-const int   CellCap = 12;  ///< max particles tracked per cell
-const float Domain = 3.2;  ///< box half-width: [-DOMAIN, DOMAIN]^3
-const float FloorY = -3.0; ///< particles rest on this plane
-const float CellSize = ( 2.0 * Domain ) / float( GridRes );
-const float H = CellSize;    ///< SPH smoothing radius
-const float RestDens = 6.0;  ///< target rest density
-const float Stiffness = 2.4; ///< pressure = STIFFNESS*(density-RestDens)
-const float ParticleM = 1.0;
-const float Viscosity = 0.8;
-const float Grav = -9.0;
+const int   N = 3000;                                       ///< particles
+const int   GridRes = 16;                                   ///< Cells per side of the particle grid.
+const int   CellCap = 12;                                   ///< max particles tracked per cell
+const float Domain = 3.2;                                   ///< box half-width: [-DOMAIN, DOMAIN]^3
+const float FloorY = -3.0;                                  ///< particles rest on this plane
+const float CellSize = ( 2.0 * Domain ) / float( GridRes ); ///< Size of a grid cell.
+const float H = CellSize;                                   ///< SPH smoothing radius
+const float RestDens = 6.0;                                 ///< target rest density
+const float Stiffness = 2.4;                                ///< pressure = STIFFNESS*(density-RestDens)
+const float ParticleM = 1.0;                                ///< Mass of a particle.
+const float Viscosity = 0.8;                                ///< Viscosity of the fluid.
+const float Grav = -9.0;                                    ///< Gravity (downward acceleration).
 
-// std430: particles first (N*8 floats: pos.xyz, density, vel.xyz, pressure),
-// then the grid (GridRes^3 cells * (1 count + CellCap indices) uints).
+/// std430: particles first (N*8 floats: pos.xyz, density, vel.xyz, pressure),
+/// then the grid (GridRes^3 cells * (1 count + CellCap indices) uints).
 layout( std430, binding = 2 ) buffer StateBuf
 {
     float particles[N * 8];
     uint  grid[GridRes * GridRes * GridRes * ( 1 + CellCap )];
 };
 
-// Output: the shared indirect vertex/command contract every geom="indirect"
-// generator writes (see Scene3DShader.h) -- attrA.xyz = vertex position,
-// attrA.w = particle index (for per-particle colour/seed lookups in the
-// fragment stage via imgPalette-style hashing); attrB unused here.
+/// Output: the shared indirect vertex/command contract every geom="indirect"
+/// generator writes (see Scene3DShader.h) -- attrA.xyz = vertex position,
+/// attrA.w = particle index (for per-particle colour/seed lookups in the
+/// fragment stage via imgPalette-style hashing); attrB unused here.
 struct Vertex
 {
-    vec4 attrA;
-    vec4 attrB;
+    vec4 attrA; ///< Attribute A (position, or u/v and an index, by the scene's kind).
+    vec4 attrB; ///< Attribute B (normal, or per-element values).
 };
+/// The output vertex buffer: one Vertex (attribute A, attribute B) per vertex that the scene draws.
 layout( std430, binding = 0 ) buffer VBO
 {
     Vertex verts[];
 };
+/// The indirect draw command: [0] the vertex count, [4] the raw count before clamping (atomic).
 layout( std430, binding = 1 ) buffer CmdBuf
 {
     uint cmd[];
 }; // [0]=count [4]=rawCount (atomic)
 
-uniform float genPass;
+uniform float genPass; ///< 1 while the generation pass runs (it fills the state buffer once), 0 in the frames after.
 uniform float time;         ///< Seconds since the program started (never reset; see sceneTime).
 uniform float sceneSeed;    ///< A random number fixed per activation.
 uniform float audioKick;    ///< Kick-drum envelope, 0..1 (fast attack, short decay).

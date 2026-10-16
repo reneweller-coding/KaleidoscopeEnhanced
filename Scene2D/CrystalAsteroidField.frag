@@ -135,8 +135,8 @@ float sdOctahedron( vec3 p, float s )
 }
 
 // Global variables for raymarching
-float hitGlow = 0.0;
-vec3  hitColor = vec3( 0.0 );
+float hitGlow = 0.0;          ///< Glow of the last surface the ray hit (set by the distance field).
+vec3  hitColor = vec3( 0.0 ); ///< Colour of the last surface the ray hit (set by the distance field).
 
 /**  The scene's distance field: distance from p to the nearest surface.
  *

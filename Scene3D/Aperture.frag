@@ -43,9 +43,9 @@ uniform float audioSwell;    ///< Slow loudness envelope, 0..1 (seconds).
 uniform float audioBass;     ///< Bass band level, 0..1.
 uniform float audioHigh;     ///< High band level, 0..1.
 
-uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
-uniform float tintP; ///< Tint knob, 0..1.
-uniform float patternP;
+uniform float hueP;     ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float tintP;    ///< Tint knob, 0..1.
+uniform float patternP; ///< Pattern knob: 0..3 interior.
 
 in vec3  vNormal;   ///< Surface normal (from the vertex stage).
 in vec3  vPos;      ///< Position (from the vertex stage).

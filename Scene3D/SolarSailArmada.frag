@@ -4,8 +4,8 @@ out vec4 fragColor; ///< The pixel's colour (output).
 in vec3  vPos;    ///< Position (from the vertex stage).
 in vec3  vNormal; ///< Surface normal (from the vertex stage).
 in vec2  vUV;     ///< Texture coordinate 0..1 over the screen (from the vertex stage).
-in float vQuadID;
-in float vGlint;
+in float vQuadID; ///< Quad ID (from the vertex stage).
+in float vGlint;  ///< Glint (from the vertex stage).
 
 /**
  * @file SolarSailArmada.frag
@@ -40,8 +40,8 @@ uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unw
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 
 uniform float glowP; ///< Glow / afterglow knob, 0..1.
-uniform float sailP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float sailP; ///< Sail knob, 0.5..2.
+uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

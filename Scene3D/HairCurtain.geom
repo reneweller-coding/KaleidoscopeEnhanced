@@ -17,20 +17,21 @@
 // directions perpendicular to the fibre rather than a point.  That is why the
 // strand carries its own direction down the pipeline.
 // -----------------------------------------------------------------------
+/// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( points ) in;
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( triangle_strip, max_vertices = 18 ) out;
 
-in vec3  gRoot[];
-in vec3  gLean[];
-in vec4  gRnd[];
-in float gIndex[];
+in vec3  gRoot[];  ///< Root (from the geometry stage).
+in vec3  gLean[];  ///< Lean (from the geometry stage).
+in vec4  gRnd[];   ///< Rnd (from the geometry stage).
+in float gIndex[]; ///< Index (from the geometry stage).
 
-out vec3  vWorld; ///< World position (from the vertex stage).
-out vec3  vTangent;
-out float vAlong; ///< 0 at the root, 1 at the tip
-out float vTint;
-out float vKind; ///< 0 = backdrop, 1 = strand
+out vec3  vWorld;   ///< World position (from the vertex stage).
+out vec3  vTangent; ///< Tangent (from the vertex stage).
+out float vAlong;   ///< 0 at the root, 1 at the tip
+out float vTint;    ///< Tint (from the vertex stage).
+out float vKind;    ///< 0 = backdrop, 1 = strand
 
 uniform mat4  projM;        ///< Projection matrix.
 uniform float eyeOff;       ///< Stereo eye offset (0 in mono).
@@ -46,7 +47,7 @@ uniform float lengthP; ///< preset: strand length
 uniform float swayP;   ///< preset: how far the wave throws them
 uniform float camHP;   ///< Camera height knob, 0..1.
 
-const int Seg = 8;
+const int Seg = 8; ///< Segments per strand.
 
 /**  Projects a world position into the eye's clip space.
  *

@@ -10,25 +10,25 @@
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( quads, fractional_odd_spacing, ccw ) in;
 
-in vec2 tcUV[];
-in vec4 tcSeed[];
+in vec2 tcUV[];   ///< UV (from the tessellation control stage).
+in vec4 tcSeed[]; ///< Seed (from the tessellation control stage).
 
-out vec3  vWorld; ///< World position (from the vertex stage).
-out vec2  vSurfUV;
-out float vCrest;
+out vec3  vWorld;  ///< World position (from the vertex stage).
+out vec2  vSurfUV; ///< Surf UV (from the vertex stage).
+out float vCrest;  ///< Crest (from the vertex stage).
 out vec3  vNormal; ///< Surface normal (from the vertex stage).
 out float vDist;   ///< Distance (from the vertex stage).
 
-uniform mat4  projM;  ///< Projection matrix.
-uniform float eyeOff; ///< Stereo eye offset (0 in mono).
-const vec2    Extent = vec2( 220.0, 320.0 );
+uniform mat4  projM;                         ///< Projection matrix.
+uniform float eyeOff;                        ///< Stereo eye offset (0 in mono).
+const vec2    Extent = vec2( 220.0, 320.0 ); ///< Size of the tessellated ground patch (x, z in world units).
 
 uniform float sceneAdvance; ///< The music's advance since this scene was activated (integrated, never jumps).
 uniform float sceneTime;    ///< Seconds since this scene was activated.
 uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
 uniform float camHP;        ///< Camera height knob, 0..1.
-uniform float swellP;
-uniform float choppyP;
+uniform float swellP;       ///< Swell knob, 0.8..1.5.
+uniform float choppyP;      ///< Choppy knob, 0.4..0.8.
 
 /**  One Gerstner wave.
  *

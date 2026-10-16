@@ -7,13 +7,14 @@ layout( local_size_x = 4, local_size_y = 4, local_size_z = 4 ) in;
  * @brief Compute shader generating 3D quantum vortex tangle filaments in superfluid Helium-II
  */
 
+/// The output vertex buffer: eight floats per vertex (attribute A, attribute B) that the scene draws.
 layout( std430, binding = 0 ) buffer Verts
 {
     float verts[]; // 8 floats per vertex: attrA.xyzw (pos, kelvin_amp), attrB.xyzw (pad, circulation)
 };
 
-// DrawArraysIndirectCommand + our own counter:
-//   [0] count  [1] instanceCount  [2] first  [3] baseInstance  [4] rawCount
+/// DrawArraysIndirectCommand + our own counter:
+///   [0] count  [1] instanceCount  [2] first  [3] baseInstance  [4] rawCount
 layout( std430, binding = 1 ) buffer Cmd
 {
     uint cmd[];
@@ -65,8 +66,8 @@ void writeVertex( uint slot, vec3 p, float e1, float e2 )
     verts[o + 7u] = e2;
 }
 
-// Where the eye sits in this scene's world space: the vertex stage pushes the
-// tangle away with vp.z += 5.5, which puts the camera at z = -5.5.
+/// Where the eye sits in this scene's world space: the vertex stage pushes the
+/// tangle away with vp.z += 5.5, which puts the camera at z = -5.5.
 const vec3 Camera = vec3( 0.0, 0.0, -5.5 );
 
 /**  A vortex-ring segment is a line from p1 to p2; GL_TRIANGLES needs a real triangle, so it is emitted as a thin

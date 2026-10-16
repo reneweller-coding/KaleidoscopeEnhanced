@@ -36,10 +36,10 @@ uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-uniform float curtainP;
-uniform float rayP;
-uniform float speedP; ///< Speed knob, 0..1.
-uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float curtainP; ///< Curtain knob: auroral curtain fold depth & width (0.5..2.2).
+uniform float rayP;     ///< Ray knob: vertical ray emission density, 0.5..2.
+uniform float speedP;   ///< Speed knob, 0..1.
+uniform float hueP;     ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /**  Rotates a colour's hue by an angle (about the grey axis).
  *

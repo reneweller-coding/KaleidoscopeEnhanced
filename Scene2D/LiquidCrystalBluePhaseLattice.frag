@@ -39,10 +39,10 @@ uniform float audioMid;       ///< Mid band level, 0..1.
 uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
 
-uniform float unitCellPitchP;
-uniform float chiralTwistP;
-uniform float disclinationP;
-uniform float blueReflectP;
+uniform float unitCellPitchP; ///< Unit cell pitch knob: cubic Blue Phase unit cell pitch scale, 2.5..7.
+uniform float chiralTwistP;   ///< Chiral twist knob: double-twist cylinder helical pitch, 0.6..2.2.
+uniform float disclinationP;  ///< Disclination knob: defect disclination line core sharpness (0.8..2.5).
+uniform float blueReflectP;   ///< Blue reflect knob: selective Bragg reflection brightness, 0.8..2.5.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

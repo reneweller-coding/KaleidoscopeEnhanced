@@ -38,7 +38,7 @@ uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short 
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-uniform float dustP;
+uniform float dustP; ///< Dust knob: height and density of the cliffs (0.5..1.5).
 uniform float glowP; ///< Glow / afterglow knob, 0..1.
 uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 

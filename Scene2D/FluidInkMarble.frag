@@ -37,9 +37,9 @@ uniform float audioMid;      ///< Mid band level, 0..1.
 uniform float audioHigh;     ///< High band level, 0..1.
 uniform float audioFlux;     ///< Spectral flux (how fast the spectrum changes), 0..1.
 
-uniform float viscosityP;
-uniform float swirlP; ///< Swirl knob, 0..1.
-uniform float flowP;
+uniform float viscosityP;     ///< Viscosity knob: liquid viscosity multiplier (0 -> 1.0; 0.5..1.8).
+uniform float swirlP;         ///< Swirl knob, 0..1.
+uniform float flowP;          ///< Flow knob: fluid flow speed multiplier (0 -> 1.0; 0.4..1.6).
 uniform float hueP;           ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 

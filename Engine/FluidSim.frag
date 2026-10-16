@@ -21,10 +21,10 @@ uniform sampler2D tex0;          ///< source images
 uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
 uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 uniform vec2      resolution;    ///< sim grid size
-uniform float     seedMode;
-uniform float     flowPhase;
-uniform float     impulse;
-uniform float     injectAmt;
+uniform float     seedMode;      ///< How the simulation is seeded (pattern of the start state).
+uniform float     flowPhase;     ///< Phase of the flow field (integrated).
+uniform float     impulse;       ///< Strength of the injected impulse.
+uniform float     injectAmt;     ///< How much dye is injected.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

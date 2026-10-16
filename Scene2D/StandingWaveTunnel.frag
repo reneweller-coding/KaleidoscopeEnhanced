@@ -40,10 +40,10 @@ uniform float audioMode;      ///< Mode of the music: 0 minor .. 1 major.
 uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 
-uniform float waveP; ///< Wave knob.
-uniform float ampP;
-uniform float wallZoomP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float waveP;     ///< Wave knob.
+uniform float ampP;      ///< Amp knob: base amplitude, 0..1.
+uniform float wallZoomP; ///< Wall zoom knob, 0..1.
+uniform float hueP;      ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 // ---- shared building blocks (texture pool, noise, shapes) ----
 /**  Pseudo-random number 0..1 from a float.
@@ -385,7 +385,11 @@ void finish( vec3 col )
     fragColor = vec4( clamp( t, 0.0, 1.0 ), 1.0 );
 }
 
-float gK, gA, gPh, gMix;
+/** @{ */
+float gK, gA, gPh, gMix; ///< gK: Wave number of the standing waves this frame; gA: Amplitude of the standing waves this
+                         ///< frame; gPh: Phase of the standing waves this frame; gMix: Mix toward the minor-mode lobes
+                         ///< this frame, 0..1.
+/** @} */
 /**  Radius of the tunnel at depth z and angle a: standing waves and lobes.
  *
  * @param z  Depth. (in)

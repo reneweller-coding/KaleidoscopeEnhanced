@@ -39,10 +39,10 @@ uniform float audioMid;       ///< Mid band level, 0..1.
 uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
 
-uniform float spikePitchP;
-uniform float sharpnessP;
-uniform float sheenP;
-uniform float magneticAmpP;
+uniform float spikePitchP;  ///< Spike pitch knob: hexagonal Rosensweig spike packing density (2.5..7.0).
+uniform float sharpnessP;   ///< Sharpness knob: ferrofluid spike needle tip sharpness, 1..4.
+uniform float sheenP;       ///< Sheen knob: oily surfactant specular reflection gain, 0.8..2.5.
+uniform float magneticAmpP; ///< Magnetic amp knob: vertical magnetic field induction strength(0.6..2.2).
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

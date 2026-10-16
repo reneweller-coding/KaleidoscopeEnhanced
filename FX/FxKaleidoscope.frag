@@ -10,10 +10,10 @@ uniform float     time;          ///< Seconds since the program started (never r
 uniform sampler2D tex0;          ///< The current photo.
 uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
 uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
-uniform float     speed;
-uniform int       sides;
-uniform float     audioPhase; ///< music advances the fold rotation
-uniform float     audioSwell; ///< Slow loudness envelope, 0..1 (seconds).
+uniform float     speed;         ///< Speed of the motion.
+uniform int       sides;         ///< Number of mirror sides.
+uniform float     audioPhase;    ///< music advances the fold rotation
+uniform float     audioSwell;    ///< Slow loudness envelope, 0..1 (seconds).
 
 
 /** Entry point of this shader stage (the file description says what it draws). */

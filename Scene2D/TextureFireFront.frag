@@ -40,10 +40,10 @@ uniform float audioMode;      ///< Mode of the music: 0 minor .. 1 major.
 uniform float audioRoughness; ///< Roughness (dissonance) of the sound, 0..1.
 uniform float audioHigh;      ///< High band level, 0..1.
 
-uniform float burnP;
-uniform float charP;
-uniform float ashP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float burnP; ///< Burn knob: burnt share of the picture, 0..1.
+uniform float charP; ///< Char knob: browning ahead, 0..1.
+uniform float ashP;  ///< Ash knob: image in the ash, 0..1.
+uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 // ---- shared building blocks (texture pool, noise, shapes) ----
 /**  Pseudo-random number 0..1 from a float.

@@ -41,10 +41,10 @@ uniform float audioMode;       ///< Mode of the music: 0 minor .. 1 major.
 uniform float audioKick;       ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 uniform float audioHarmChange; ///< Harmonic change (chord change) envelope, 0..1.
 
-uniform float curlP;
-uniform float strokeP;
-uniform float gapP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float curlP;   ///< Curl knob: how much the field curls, 0..1.
+uniform float strokeP; ///< Stroke knob: stroke length, 0..1.
+uniform float gapP;    ///< Gap knob: gap width, 0..1.
+uniform float hueP;    ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 // ---- shared building blocks (texture pool, noise, shapes) ----
 /**  Pseudo-random number 0..1 from a float.

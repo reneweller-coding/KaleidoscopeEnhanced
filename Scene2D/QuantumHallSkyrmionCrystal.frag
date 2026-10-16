@@ -39,10 +39,10 @@ uniform float audioMid;       ///< Mid band level, 0..1.
 uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
 
-uniform float crystalPitchP;
-uniform float spinRadiusP;
-uniform float hallCurrentP;
-uniform float cyclotronP;
+uniform float crystalPitchP; ///< Crystal pitch knob: triangular skyrmion lattice density, 2..6.
+uniform float spinRadiusP;   ///< Spin radius knob: skyrmion spin-texture transition width, 0.4..1.8.
+uniform float hallCurrentP;  ///< Hall current knob: fractional Hall edge current brightness, 0.8..2.5.
+uniform float cyclotronP;    ///< Cyclotron knob: electron cyclotron orbit ripple frequency (8.0..24.0).
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

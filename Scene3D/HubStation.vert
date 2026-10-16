@@ -27,9 +27,9 @@ uniform float audioAdvance; ///< The music's advance: integrated tempo-weighted 
                             ///< backwards).
 uniform float audioKick;    ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 
-uniform float sizeP; ///< Size knob, 0..1.
-uniform float spinP; ///< Spin knob, 0..1.
-uniform float spinAxisP;
+uniform float sizeP;     ///< Size knob, 0..1.
+uniform float spinP;     ///< Spin knob, 0..1.
+uniform float spinAxisP; ///< Spin axis knob, 0..1.
 
 out vec2  vUV;     ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 out vec3  vNormal; ///< Surface normal (from the vertex stage).

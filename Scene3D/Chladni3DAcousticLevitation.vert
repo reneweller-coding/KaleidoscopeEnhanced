@@ -8,10 +8,10 @@
 in vec4 attrA; ///< xyz = cube corner (-0.5..0.5), w = cube index
 in vec4 attrB; ///< 4 seeds in [0,1)
 
-out vec3  vNormal; ///< Surface normal (from the vertex stage).
-out vec3  vCol;    ///< Colour (from the vertex stage).
-out float vAcousticNode;
-out vec3  vLocalPos; ///< Object-space position (from the vertex stage).
+out vec3  vNormal;       ///< Surface normal (from the vertex stage).
+out vec3  vCol;          ///< Colour (from the vertex stage).
+out float vAcousticNode; ///< Acoustic node (from the vertex stage).
+out vec3  vLocalPos;     ///< Object-space position (from the vertex stage).
 
 uniform mat4  projM;      ///< Projection matrix.
 uniform float eyeOff;     ///< Stereo eye offset (0 in mono).
@@ -31,8 +31,8 @@ uniform sampler2D tex0;          ///< The current photo.
 uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
 uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float nodeDensityP;
-uniform float particleSizeP;
+uniform float nodeDensityP;  ///< Node density knob, 2..5.
+uniform float particleSizeP; ///< Particle size knob, 0.03..0.1.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

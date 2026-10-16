@@ -15,13 +15,14 @@
 // ground plane, index 1 a sky quad emitted straight in clip space.  Without
 // them the gaps between blades would be pure black.
 // -----------------------------------------------------------------------
+/// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( points ) in;
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( triangle_strip, max_vertices = 10 ) out;
 
-in vec3  gRoot[];
-in vec4  gRnd[];
-in float gIndex[];
+in vec3  gRoot[];  ///< Root (from the geometry stage).
+in vec4  gRnd[];   ///< Rnd (from the geometry stage).
+in float gIndex[]; ///< Index (from the geometry stage).
 
 out vec3  vWorld;  ///< World position (from the vertex stage).
 out vec3  vNormal; ///< Surface normal (from the vertex stage).
@@ -41,13 +42,13 @@ uniform float camHP;  ///< preset: eye height
 uniform float bladeP; ///< preset: blade height
 uniform float windP;  ///< preset: wind strength
 
-const float FieldW = 26.0;
-const float FieldD = 55.0;
+const float FieldW = 26.0; ///< Width of the grass field (world units).
+const float FieldD = 55.0; ///< Depth of the grass field (world units).
 
-// The engine's projection looks dead level, which shows the sward edge-on as a
-// narrow band with the horizon across the middle.  Tilting the view down here
-// — a rotation in view space, nothing the engine needs to know about — lifts
-// the horizon into the upper third and lets the field open out into the frame.
+/// The engine's projection looks dead level, which shows the sward edge-on as a
+/// narrow band with the horizon across the middle.  Tilting the view down here
+/// — a rotation in view space, nothing the engine needs to know about — lifts
+/// the horizon into the upper third and lets the field open out into the frame.
 const float Pitch = 0.30;
 
 /**  Projects a world position into the eye's clip space.

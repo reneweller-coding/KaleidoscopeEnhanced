@@ -16,8 +16,8 @@ out vec3  vObj;    ///< Object-space position (from the vertex stage).
 out vec3  vNormal; ///< Surface normal (from the vertex stage).
 out vec3  vView;   ///< View vector (from the vertex stage).
 out vec3  vWorld;  ///< World position (from the vertex stage).
-out float vFold;
-out float vAcross;
+out float vFold;   ///< Fold (from the vertex stage).
+out float vAcross; ///< Across (from the vertex stage).
 
 uniform mat4  projM;        ///< Projection matrix.
 uniform mat4  lightM;       ///< Light view-projection matrix (shadow map).

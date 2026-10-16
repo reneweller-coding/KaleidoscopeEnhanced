@@ -39,10 +39,10 @@ uniform float audioMode;      ///< Mode of the music: 0 minor .. 1 major.
 uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 
-uniform float lightP;
-uniform float haloP;
-uniform float fogP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float lightP; ///< Light knob: number of lights, 0..1.
+uniform float haloP;  ///< Halo knob: halo size, 0..1.
+uniform float fogP;   ///< Fog knob: base fog, 0..1.
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 // ---- shared building blocks (texture pool, noise, shapes) ----
 /**  Pseudo-random number 0..1 from a float.

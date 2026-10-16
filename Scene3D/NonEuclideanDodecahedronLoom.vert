@@ -37,14 +37,14 @@ uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-uniform float dodecaP;
-uniform float loomP;
-uniform float widthP; ///< Width knob, 0..1.
-uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float dodecaP; ///< Dodeca knob: as little as 0.75, 0.5..2.
+uniform float loomP;   ///< Loom knob, 0.5..2.
+uniform float widthP;  ///< Width knob, 0..1.
+uniform float hueP;    ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-out vec3  vWorldPos; ///< World position (from the vertex stage).
-out vec2  vTexCoord; ///< Texture coordinate (from the vertex stage).
-out float vRibbonIndex;
+out vec3  vWorldPos;    ///< World position (from the vertex stage).
+out vec2  vTexCoord;    ///< Texture coordinate (from the vertex stage).
+out float vRibbonIndex; ///< Ribbon index (from the vertex stage).
 
 /**  The 20 vertices of a regular dodecahedron: the cube (+-1,+-1,+-1) plus the three cyclic rectangle families (0,
  * +-1/phi, +-phi).

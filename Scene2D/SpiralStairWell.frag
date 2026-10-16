@@ -40,7 +40,7 @@ uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short 
 uniform float audioMode;      ///< Mode of the music: 0 minor .. 1 major.
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 
-uniform float stepsP;
+uniform float stepsP; ///< Steps knob: steps per turn, 0..1.
 uniform float pitchP; ///< Pitch knob, 0..1.
 uniform float photoP; ///< Photo knob: how much of the photo shows, 0..1.
 uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.

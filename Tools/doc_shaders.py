@@ -7,16 +7,23 @@ almost all the same few names in every file (time, audioSwell, tex0, main,
 hash21, imgLod ...).  This tool documents them mechanically, without touching
 any code:
 
-  1. A plain // comment block directly above a top-level function becomes ///
-     (Doxygen ignores //, but the explanation was there).
-  2. A trailing // comment after a single top-level declaration becomes ///<.
-  3. A top-level declaration without a comment, of a name in VARS, gets ///<.
-  4. A top-level function without a comment above, of a name in FUNCS (and
-     main), gets a /// @brief line.
-  5. A top-level layout(...) in/out; line gets a /// line (Doxygen reads it as a function).
+  1. A top-level function gets the CGVR function block (Tools/glsl_docs.py): the
+     comment above it -- also a plain // one -- in the template's order, with
+     what it lacks from Tools/glsl_doc_table.py and FUNCS.
+  2. A trailing // comment after a top-level declaration becomes ///<.
+  3. A top-level declaration without a comment gets ///< from VARS or
+     Tools/glsl_doc_vars.py (knobs from the file header and the presets,
+     varyings from their names); a plain // comment above a declaration that
+     stands alone becomes ///.  A line with several names gets a member group.
+  4. A top-level layout(...) in/out; line, a buffer block, a struct (and its
+     members), a #define and a declaration whose initialiser runs over several
+     lines get a /// line (Doxygen reads the layout lines as functions).
+  5. A forward declaration (vec2 chain( vec2 p );) is put between /// @cond and
+     /// @endcond: its definition carries the documentation, and Doxygen, which
+     reads all shaders as one program, would merge it with another file's.
 
 Only comments are added or turned into doc comments; the GLSL is unchanged.
-Idempotent.  gen.py runs annotate() on every scene it builds.
+Idempotent.  gen.py and make_chainpass.py run annotate() on what they build.
 
   python Tools/doc_shaders.py            # every shader under Scene2D, Scene3D, FX, Transitions, Engine
   python Tools/doc_shaders.py --check    # only count what would change
@@ -25,6 +32,7 @@ import argparse, io, os, re, sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import glsl_docs                                            # noqa: E402
+import glsl_doc_vars as V                                   # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DIRS = ["Scene2D", "Scene3D", "FX", "Transitions", "Engine"]
@@ -312,22 +320,92 @@ FUNCS = {
     "levelFor": "Brightness level between two coordinates.",
 }
 
-TOP_DECL = re.compile(r"^((?:layout\s*\([^)]*\)\s*)?(?:(?:uniform|in|out|flat|smooth|noperspective|const|highp|mediump|lowp)\s+)*"
-                      r"[A-Za-z_]\w*\s+([A-Za-z_]\w*)\s*(?:\[[^\]]*\])?\s*(?:=\s*[^;,]+)?;)(\s*)(//(?!/)\s?(.*))?\s*$")
 TOP_FUNC = re.compile(r"^(?:[A-Za-z_]\w*\s+)+([A-Za-z_]\w*)\s*\(")
 SECTION = re.compile(r"^//\s*(-{3,}|={3,}|@)")
+LAYOUT_STAGE = "Layout qualifiers of this stage (work-group size, or the primitive in or out)."
+COND = "/// @cond"
+ENDCOND = "/// @endcond"
+
+
+def doc_above(out):
+    """True if the line above (the end of out) is a doc comment for the next declaration."""
+    found = glsl_docs.doc_block_above(out)
+    if not found:
+        return False
+    k, text = found
+    first = out[k].strip()
+    if first.startswith("/*"):
+        return not any("@file" in t for t in text)
+    return all(x.strip().startswith(("///", "//!")) for x in out[k:])
+
+
+def plain_above(out):
+    """The index where a plain // comment run directly above starts (not a heading or a directive), or None."""
+    found = glsl_docs.doc_block_above(out)
+    if not found or out[found[0]].strip().startswith("/*"):
+        return None
+    if any(x.strip().startswith(("///", "//!")) for x in out[found[0]:]):
+        return None
+    return found[0]
+
+
+def to_doc(out, k):
+    """The plain // comment lines out[k:] become /// lines."""
+    for j in range(k, len(out)):
+        out[j] = re.sub(r"^(\s*)//(?![/!])\s?", r"\1/// ", out[j]).rstrip()
+
+
+def declaration(out, lines, i, l, d, path, head):
+    """Rules 2 and 3 for the declaration d on line l: returns the line with its doc; may turn the comment above (in
+    out) into a doc comment and open a member group there.  The caller closes the group after the line."""
+    code = l.split("//", 1)[0].rstrip()
+    multi = len(d["names"]) > 1
+    com = d["comment"]
+    documented = False
+    if com and re.match(r"^//[/!]<", com):                       # ///< already there
+        documented = True
+    elif com:                                                    # rule 2: a trailing // becomes ///<
+        spaces = re.match(r"^(.*?;)(\s*)//", l).group(2) or " "
+        l = code + spaces + "///< " + re.sub(r"^//\s?", "", com).strip()
+        documented = True
+    elif not multi and doc_above(out):
+        return l
+    else:
+        k = plain_above(out)
+        alone = i + 1 >= len(lines) or not V.declaration(lines[i + 1].strip()) or lines[i + 1].startswith((" ", "\t"))
+        if k is not None and not multi and alone:                # rule 3: the explanation above becomes the doc
+            to_doc(out, k)
+            return l
+        text = V.describe(d, path, head, VARS)                   # rule 3: the tables
+        if text:
+            l = code + "   ///< " + text
+            documented = True
+    if multi and documented and not (out and out[-1].strip() == V.GROUP_OPEN):
+        out.append(V.GROUP_OPEN)
+    return l
 
 
 def annotate(text, path=""):
     """Doc comments for one shader's text (see the module description); returns the new text."""
     nl = "\r\n" if "\r\n" in text else "\n"
     lines = text.replace("\r\n", "\n").split("\n")
+    head = V.header_text(text)
     out = []
     in_block = False
     depth = 0
+    close_group = close_cond = False
+    struct = None                 # the top-level struct whose members come next
     stage_main = "Entry point of this shader stage (the file description says what it draws)."
     for i, l in enumerate(lines):
         s = l.strip()
+        if struct and depth == 1 and not in_block:
+            d = V.declaration(s)                                 # rule 4: a struct's members
+            if d and not d["comment"] and not doc_above(out) and len(d["names"]) == 1:
+                t = V.member_doc(struct, d["names"][0], path)
+                if t:
+                    l = l.rstrip() + "   ///< " + t
+            elif d and d["comment"] and not re.match(r"^//[/!]<", d["comment"]):
+                l = re.sub(r"//(?![/!])\s?", "///< ", l, count=1)
         # block comments and the braces of functions: only top-level lines count
         if in_block:
             out.append(l)
@@ -340,30 +418,89 @@ def annotate(text, path=""):
             continue
         code = l.split("//", 1)[0]
         if depth == 0 and re.match(r"^layout\s*\([^)]*\)\s*(in|out)\s*;", l):
-            above = out[-1].strip() if out else ""
-            if not above.startswith("//"):                       # rule 5: the stage's layout qualifiers
-                out.append("/// Layout qualifiers of this stage (work-group size, or the primitive in or out).")
+            if not glsl_docs.doc_block_above(out) and not doc_above(out):   # rule 4: the stage's layout qualifiers
+                out.append("/// " + LAYOUT_STAGE)
+            elif plain_above(out) is not None:
+                to_doc(out, plain_above(out))
             out.append(l)
             continue
-        if depth == 0 and not l.startswith((" ", "\t", "#")):
-            m = TOP_DECL.match(l)
-            if m and "," not in m.group(1):
-                name, comment = m.group(2), m.group(5)
-                if m.group(4) is not None:                       # rule 2: a trailing // becomes ///<
-                    l = m.group(1) + m.group(3) + "///< " + (comment or "").strip()
-                elif name in VARS:                               # rule 3
-                    l = m.group(1) + "   ///< " + VARS[name]
+        if depth == 0 and (V.BUFFER.match(l) or V.STRUCT.match(l)) and ";" not in code:
+            m = V.BUFFER.match(l) or V.STRUCT.match(l)
+            if plain_above(out) is not None:                     # rule 4: buffer blocks and structs
+                to_doc(out, plain_above(out))
+            elif not doc_above(out):
+                t = V.block_doc(m.group(1), "buffer" if V.BUFFER.match(l) else "struct", path)
+                if t:
+                    out.append("/// " + t)
+            if V.STRUCT.match(l):
+                struct = m.group(1)
+        elif depth == 0 and V.MACRO.match(l):
+            macro(out, l, path)
+        elif depth == 0 and not l.startswith((" ", "\t", "#")):
+            d = V.declaration(l)
+            if not d and V.DECL_START.match(l) and ";" not in code:
+                multiline_declaration(out, lines, i, path, head)
+            elif d:
+                l = declaration(out, lines, i, l, d, path, head)
+                close_group = len(d["names"]) > 1 and out and out[-1].strip() == V.GROUP_OPEN \
+                    and not (i + 1 < len(lines) and lines[i + 1].strip() == V.GROUP_CLOSE)
             else:
                 f = TOP_FUNC.match(l)
                 prototype = code.rstrip().endswith(";") and "{" not in code   # a one-liner body has ';' too
                 if f and not re.match(r"^(return|else|if|for|while|layout)\b", s) and not prototype:
-                    # rules 1 and 4: the block above (or FUNCS) in the CGVR layout, with parameters and return value
+                    # rule 1: the block above (or FUNCS) in the CGVR layout, with parameters and return value
                     glsl_docs.function_block(out, lines, i, path, stage_main, FUNCS)
+                elif f and prototype and not (out and out[-1].strip() == COND):
+                    # A forward declaration is hidden from Doxygen: the definition carries the documentation, and
+                    # Doxygen, reading all shaders as one program, would merge chain(vec2 p) with another file's.
+                    out.append(COND)
+                    close_cond = not (i + 1 < len(lines) and lines[i + 1].strip() == ENDCOND)
         depth += code.count("{") - code.count("}")
         if depth < 0:
             depth = 0
+        if struct and depth == 0 and "}" in code:                # the struct's closing brace
+            struct = None
         out.append(l)
+        if close_group:
+            out.append(V.GROUP_CLOSE)
+            close_group = False
+        if close_cond:
+            out.append(ENDCOND)
+            close_cond = False
     return nl.join(out)
+
+
+def multiline_declaration(out, lines, i, path, head):
+    """Rule 3 for a declaration whose initialiser runs over several lines (const float ModeK[12] = float[12]( ...):
+    its description goes on a /// line above it."""
+    text, k = lines[i].split("//", 1)[0], i
+    while ";" not in text and k + 1 < len(lines) and k - i < 60:
+        k += 1
+        text += " " + lines[k].split("//", 1)[0].strip()
+    d = V.declaration(text.strip())
+    if not d or len(d["names"]) != 1 or doc_above(out):
+        return
+    start = plain_above(out)
+    after = k + 1 < len(lines) and V.declaration(lines[k + 1].strip()) and not lines[k + 1].startswith((" ", "\t"))
+    if start is not None and not after:
+        to_doc(out, start)                                       # the explanation above becomes the doc
+        return
+    t = V.describe(d, path, head, VARS)
+    if t:
+        out.append("/// " + t)
+
+
+def macro(out, l, path):
+    """Rule 3 for a #define: the plain comment directly above becomes its doc, else the table's text above it."""
+    if doc_above(out):
+        return
+    start = plain_above(out)
+    if start is not None:
+        to_doc(out, start)
+        return
+    t = V.macro_doc(V.MACRO.match(l).group(1), path)
+    if t:
+        out.append("/// " + t)
 
 
 def files():

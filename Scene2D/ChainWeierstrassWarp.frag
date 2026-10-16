@@ -3227,7 +3227,9 @@ vec2 tJoukowski( vec2 uv, vec2 c, float R, float scale )
     return c + ( z + R * R * iz ) * 0.5;
 }
 
+/// @cond
 vec2 chain( vec2 p );
+/// @endcond
 /**  A loop count the compiler cannot see through (it depends on a uniform), so the loop is NOT unrolled and its body
  * -- a whole chain -- is inlined once.
  *
@@ -3240,7 +3242,9 @@ int loopN( int n )
 {
     return n + int( min( interpolation, 0.0 ) );
 }
-vec2 gChainM, gChainDx, gChainDy; // mirrored chain coordinate of this pixel and its derivatives per pixel
+/** @{ */
+vec2 gChainM, gChainDx, gChainDy; ///< mirrored chain coordinate of this pixel and its derivatives per pixel
+/** @} */
 /**  The chain's photo read with a seam-proof footprint (per axis the smaller of the two one-sided differences) and
  * the screen-space luma gradient.
  *
@@ -3269,7 +3273,9 @@ vec3 imgChain( vec2 p, float bias, out vec2 grad )
     return col;
 }
 
-float gT, gSpread;
+/** @{ */
+float gT, gSpread; ///< gT: The chain's (or scene's) time this frame; gSpread: The spectral spread this frame, 0..1.
+/** @} */
 /**  The scene's chain of transforms: a coordinate in, the transformed coordinate out.
  *
  * @param p  The coordinate. (in)

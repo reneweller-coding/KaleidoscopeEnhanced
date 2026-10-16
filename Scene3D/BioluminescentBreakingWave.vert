@@ -26,15 +26,15 @@ uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioZCR;       ///< 0 = pure tone, 1 = broadband hiss
 uniform float audioLowMid;    ///< 150-500 Hz harmonic warmth / pad body
 
-uniform float waveHeightP;
-uniform float steepnessP;
-uniform float speedP; ///< Speed knob, 0..1.
-uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float waveHeightP; ///< Wave height knob, 0.5..2.
+uniform float steepnessP;  ///< Steepness knob, 0.5..2.
+uniform float speedP;      ///< Speed knob, 0..1.
+uniform float hueP;        ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-out vec4  vCol;    ///< Colour (from the vertex stage).
-out vec2  vUV;     ///< Texture coordinate 0..1 over the screen (from the vertex stage).
-out vec3  vNormal; ///< Surface normal (from the vertex stage).
-out float vBioGlow;
+out vec4  vCol;     ///< Colour (from the vertex stage).
+out vec2  vUV;      ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+out vec3  vNormal;  ///< Surface normal (from the vertex stage).
+out float vBioGlow; ///< Bio glow (from the vertex stage).
 
 /**  Rotates a colour's hue by an angle (about the grey axis).
  *

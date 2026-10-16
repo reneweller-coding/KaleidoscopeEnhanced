@@ -38,9 +38,9 @@ uniform float audioMelodyPitch; ///< Pitch of the melody, 0..1 over the tracked 
 uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioValence;     ///< Mood valence: 0 dark .. 1 bright.
 
-uniform float sidesP;
-uniform float zoomP; ///< Zoom knob, 0..1.
-uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float sidesP; ///< Sides knob: fold count 4..10.
+uniform float zoomP;  ///< Zoom knob, 0..1.
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

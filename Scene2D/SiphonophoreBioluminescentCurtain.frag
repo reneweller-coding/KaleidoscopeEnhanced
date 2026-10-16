@@ -39,10 +39,10 @@ uniform float audioMid;       ///< Mid band level, 0..1.
 uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
 
-uniform float nectoCountP;
-uniform float tentillaP;
-uniform float bioGlowP;
-uniform float waveScaleP;
+uniform float nectoCountP; ///< Necto count knob: nectophore swimming bell density, 3..8.
+uniform float tentillaP;   ///< Tentilla knob: tentacle curtain strand density, 8..24.
+uniform float bioGlowP;    ///< Bio glow knob: bioluminescence emission brightness, 0.8..2.5.
+uniform float waveScaleP;  ///< Wave scale knob: hydrodynamic tentacle wave amplitude, 0.5..2.2.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

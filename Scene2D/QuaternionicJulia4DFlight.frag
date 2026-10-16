@@ -46,11 +46,11 @@ uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-uniform float     iterP;
-uniform float     sliceP;
-uniform float     speedP; ///< Speed knob, 0..1.
-uniform float     hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
-uniform sampler3D texBake;
+uniform float     iterP;   ///< Iter knob: raymarching & fractal iteration depth (0.5..2.0).
+uniform float     sliceP;  ///< Slice knob: 4D hyperspace slice offset, 0.5..2.2.
+uniform float     speedP;  ///< Speed knob, 0..1.
+uniform float     hueP;    ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform sampler3D texBake; ///< The baked distance field (distance and orbit trap per voxel).
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *
@@ -111,8 +111,8 @@ mat2 rot2D( float a )
     return mat2( c, -s, s, c );
 }
 
-// The bake cube spans [-BakeExtent, BakeExtent] on every axis -- MUST match
-// QuaternionicJulia4DFlight.comp's EXTENT constant.
+/// The bake cube spans [-BakeExtent, BakeExtent] on every axis -- MUST match
+/// QuaternionicJulia4DFlight.comp's EXTENT constant.
 const float BakeExtent = 2.2;
 /**  World position to the baked volume's texture coordinate.
  *

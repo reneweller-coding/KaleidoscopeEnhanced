@@ -36,8 +36,8 @@ uniform float audioLevel;     ///< Overall loudness, 0..1.
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-uniform float spiresP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float spiresP; ///< Spires knob: how jagged the towers, 0..1.
+uniform float hueP;    ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *
@@ -124,7 +124,7 @@ float fbm( vec2 p )
     return v;
 }
 
-float gJag;
+float gJag; ///< How jagged the spires are this frame, 0..1.
 
 /**  The skyline of the towers: a massif with a jagged crest, sharp spires crowded on it in groups.
  *

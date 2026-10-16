@@ -8,10 +8,10 @@
 in vec4 attrA; ///< xy = Quad UV [0,1], z = 0, w = Quad index
 in vec4 attrB; ///< 4 seeds in [0,1)
 
-out vec2  vUV;     ///< Texture coordinate 0..1 over the screen (from the vertex stage).
-out vec3  vNormal; ///< Surface normal (from the vertex stage).
-out vec3  vCol;    ///< Colour (from the vertex stage).
-out float vIceGlow;
+out vec2  vUV;      ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+out vec3  vNormal;  ///< Surface normal (from the vertex stage).
+out vec3  vCol;     ///< Colour (from the vertex stage).
+out float vIceGlow; ///< Ice glow (from the vertex stage).
 
 uniform mat4  projM;  ///< Projection matrix.
 uniform float eyeOff; ///< Stereo eye offset (0 in mono).
@@ -30,8 +30,8 @@ uniform sampler2D tex0;          ///< The current photo.
 uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
 uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float flakeScaleP;
-uniform float dendriteBranchP;
+uniform float flakeScaleP;     ///< Flake scale knob, 0.8..2.2.
+uniform float dendriteBranchP; ///< Dendrite branch knob, 3..8.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *
@@ -61,7 +61,7 @@ vec3 imgPalette( float t )
     return mix( vec3( g ), col, 0.55 + 0.45 * audioValence );
 }
 
-out float vGrow;
+out float vGrow; ///< Grow (from the vertex stage).
 
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()

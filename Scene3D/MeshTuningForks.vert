@@ -26,11 +26,11 @@ out vec3  vNormal; ///< Surface normal (from the vertex stage).
 out vec3  vPos;    ///< Position (from the vertex stage).
 out vec3  vLocal;  ///< Object-space position (from the vertex stage).
 out float vBg;     ///< Background flag (from the vertex stage).
-out float vInst;
+out float vInst;   ///< Inst (from the vertex stage).
 
-const float Dist = 42.0;
-const float Ground = -10.0;
-const float Spacing = 4.6;
+const float Dist = 42.0;    ///< Distance of the main object from the camera (world units).
+const float Ground = -10.0; ///< Height of the ground (world units).
+const float Spacing = 4.6;  ///< Spacing between neighbouring objects (world units).
 
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()

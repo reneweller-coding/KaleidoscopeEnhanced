@@ -11,23 +11,25 @@
  * uses this grid to test each boid against only its 3x3 neighbouring cells
  * instead of the full population.
  */
-// CfxBoidsGrid.comp — bin every boid into a uniform grid with atomics.
-// This is what buys the flock a REAL neighbourhood: without a spatial index
-// each boid would have to test all 131k others (1.7e10 pairs per frame).
+/// CfxBoidsGrid.comp — bin every boid into a uniform grid with atomics.
+/// This is what buys the flock a REAL neighbourhood: without a spatial index
+/// each boid would have to test all 131k others (1.7e10 pairs per frame).
 layout( local_size_x = 256 ) in;
 
+/// The boids: position (xy) and velocity (zw) per boid.
 layout( std430, binding = 1 ) buffer Boids
 {
     vec4 boid[];
 };
+/// The spatial hash grid: the elements of each cell.
 layout( std430, binding = 2 ) buffer Grid
 {
     uint cell[];
 };
 
-uniform uint count;
-uniform int  gridN;
-uniform int  perCell;
+uniform uint count;   ///< Number of elements (boids, particles, walkers ...).
+uniform int  gridN;   ///< Cells per side of the spatial hash grid.
+uniform int  perCell; ///< Capacity of a grid cell (elements per cell).
 
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()

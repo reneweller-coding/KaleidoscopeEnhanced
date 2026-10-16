@@ -38,9 +38,9 @@ uniform float audioCentroid;  ///< Spectral centroid (brightness of the sound), 
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-uniform float distP;
-uniform float jetP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float distP; ///< Dist knob: distance between the stars (0.5..1.5).
+uniform float jetP;  ///< Jet knob: intensity of the radiation jets (0.5..2.0).
+uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

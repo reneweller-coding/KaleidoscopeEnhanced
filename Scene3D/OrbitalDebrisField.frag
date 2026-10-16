@@ -9,11 +9,11 @@ out vec4 fragColor; ///< The pixel's colour (output).
  * Audio Reactivity: audioRoughness sharpens the glint; audioKick flashes the
  *                   station lights; audioSwell warms the atmosphere.
  */
-in vec4  vColor;
+in vec4  vColor;    ///< Color (from the vertex stage).
 in vec2  vTexCoord; ///< Texture coordinate (from the vertex stage).
 in float vDepth;    ///< Depth (from the vertex stage).
 in float vKind;     ///< Element kind (from the vertex stage).
-in float vLit;
+in float vLit;      ///< Lit (from the vertex stage).
 
 uniform sampler2D tex0;           ///< The current photo.
 uniform sampler2D tex1;           ///< The next photo (cross-faded in by interpolation).

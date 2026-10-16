@@ -18,7 +18,7 @@ uniform vec3  meshExtent;      ///< Half size of the scene's mesh bounding box.
 uniform vec3  meshCenter;      ///< Centre of the scene's mesh bounding box.
 
 uniform float sizeP; ///< Size knob, 0..1.
-uniform float yawP;
+uniform float yawP;  ///< Yaw knob, 0..0.
 
 out vec2  vUV;     ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 out vec3  vNormal; ///< Surface normal (from the vertex stage).
@@ -26,8 +26,8 @@ out vec3  vPos;    ///< Position (from the vertex stage).
 out vec3  vLocal;  ///< Object-space position (from the vertex stage).
 out float vBg;     ///< Background flag (from the vertex stage).
 
-const float Dist = 62.0;
-const float Ground = -22.0;
+const float Dist = 62.0;    ///< Distance of the main object from the camera (world units).
+const float Ground = -22.0; ///< Height of the ground (world units).
 
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()

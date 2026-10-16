@@ -29,12 +29,12 @@ uniform sampler2D tex0;          ///< The current photo.
 uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
 uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float panelP;
-uniform float energyP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float panelP;  ///< Panel knob: panel density/size (0.7..1.5).
+uniform float energyP; ///< Energy knob: brightness of energy lines (0.6..1.8).
+uniform float hueP;    ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-in vec4 vCol; ///< Colour (from the vertex stage).
-in vec3 vCorner;
+in vec4 vCol;    ///< Colour (from the vertex stage).
+in vec3 vCorner; ///< Corner (from the vertex stage).
 in vec3 vPos;    ///< Position (from the vertex stage).
 in vec3 vNormal; ///< Surface normal (from the vertex stage).
 

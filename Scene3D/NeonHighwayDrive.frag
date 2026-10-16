@@ -1,11 +1,11 @@
 #version 330 core
 out vec4 fragColor; ///< The pixel's colour (output).
 
-in vec3  vWorldPos; ///< World position (from the vertex stage).
-in vec3  vNormal;   ///< Surface normal (from the vertex stage).
-in float vRoadMask;
-in float vPylonGlow;
-in vec3  vTint;
+in vec3  vWorldPos;  ///< World position (from the vertex stage).
+in vec3  vNormal;    ///< Surface normal (from the vertex stage).
+in float vRoadMask;  ///< Road mask (from the vertex stage).
+in float vPylonGlow; ///< Pylon glow (from the vertex stage).
+in vec3  vTint;      ///< Tint (from the vertex stage).
 
 /**
  * @file NeonHighwayDrive.frag

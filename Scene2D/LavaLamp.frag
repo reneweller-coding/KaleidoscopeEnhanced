@@ -44,7 +44,7 @@ uniform float audioMode;      ///< Mode of the music: 0 minor .. 1 major.
 uniform float audioBass;      ///< Bass band level, 0..1.
 uniform float audioRoughness; ///< Roughness (dissonance) of the sound, 0..1.
 
-uniform float waxP;
+uniform float waxP;  ///< Wax knob: wax amount, 0..1.
 uniform float sizeP; ///< Size knob, 0..1.
 uniform float glowP; ///< Glow / afterglow knob, 0..1.
 uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
@@ -390,7 +390,9 @@ void finish( vec3 col )
     fragColor = vec4( clamp( t, 0.0, 1.0 ), 1.0 );
 }
 
-float gHeat, gVisc;
+/** @{ */
+float gHeat, gVisc; ///< gHeat: Phase of the heating (integrated); gVisc: Viscosity this frame (scale of the noise).
+/** @} */
 
 /**  Metaball field of the wax: blobs on lanes that rise and fall slowly, stretched vertically while they move
  * (elongation from their speed).

@@ -8,13 +8,14 @@ layout( local_size_x = 4, local_size_y = 4, local_size_z = 4 ) in;
  * and high-energy return-stroke channels inside a dielectric field.
  */
 
+/// The output vertex buffer: eight floats per vertex (attribute A, attribute B) that the scene draws.
 layout( std430, binding = 0 ) buffer Verts
 {
     float verts[]; // 8 floats per vertex: attrA.xyzw (pos, heat), attrB.xyzw (pad, branchID)
 };
 
-// DrawArraysIndirectCommand + counter:
-//   [0] count  [1] instanceCount  [2] first  [3] baseInstance  [4] rawCount
+/// DrawArraysIndirectCommand + counter:
+///   [0] count  [1] instanceCount  [2] first  [3] baseInstance  [4] rawCount
 layout( std430, binding = 1 ) buffer Cmd
 {
     uint cmd[];
@@ -60,12 +61,12 @@ vec3 hash31( float p )
     return fract( ( p3.xxy + p3.yzz ) * p3.zyx );
 }
 
-// The camera's own axis, expressed in WORLD space.  The companion .vert orbits
-// everything (yaw about y, then a shallow pitch) before pushing it out to 6.5,
-// so this is that orbit's inverse applied to the view direction (0,0,1).  Set
-// once at the top of main(); the generator is handed the very same `time` and
-// `audioAdvance` the render program gets (Scene3DShader uploads
-// m_timeOffset + time*m_speedFactor to both), so the two agree exactly.
+/// The camera's own axis, expressed in WORLD space.  The companion .vert orbits
+/// everything (yaw about y, then a shallow pitch) before pushing it out to 6.5,
+/// so this is that orbit's inverse applied to the view direction (0,0,1).  Set
+/// once at the top of main(); the generator is handed the very same `time` and
+/// `audioAdvance` the render program gets (Scene3DShader uploads
+/// m_timeOffset + time*m_speedFactor to both), so the two agree exactly.
 vec3 gViewAxis = vec3( 0.0, 0.0, 1.0 );
 
 /**  attrB.x carries a per-segment GAIN.
@@ -153,14 +154,14 @@ vec2 strikePoint( float b )
 // the tiles carrying anything): the bolts now strike a ground DISC that
 // crosses the whole picture, surface creep runs outward from each strike, and
 // a sparse corona fills the dielectric volume around the tree.
-const uint  BoltCount = 128u;
-const uint  BoltSteps = 64u;
-const uint  BoltSegs = BoltCount * BoltSteps; ///< 8192
-const uint  CreepArms = 192u;
-const uint  CreepSteps = 24u;
+const uint  BoltCount = 128u;                   ///< Number of lightning bolts.
+const uint  BoltSteps = 64u;                    ///< Segments per bolt.
+const uint  BoltSegs = BoltCount * BoltSteps;   ///< 8192
+const uint  CreepArms = 192u;                   ///< Number of surface-creep arms.
+const uint  CreepSteps = 24u;                   ///< Segments per creep arm.
 const uint  CreepSegs = CreepArms * CreepSteps; ///< 4608
-const uint  SparkSegs = 3072u;
-const float GroundY = -2.7;
+const uint  SparkSegs = 3072u;                  ///< Number of corona spark segments.
+const float GroundY = -2.7;                     ///< Height of the ground (world units).
 
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()

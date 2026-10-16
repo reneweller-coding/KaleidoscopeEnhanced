@@ -23,15 +23,15 @@ uniform int   meshVertexCount; ///< Vertices of the scene's mesh.
 uniform vec3  meshExtent;      ///< Half size of the scene's mesh bounding box.
 uniform vec3  meshCenter;      ///< Centre of the scene's mesh bounding box.
 
-uniform float sizeP; ///< Size knob, 0..1.
-uniform float erodeP;
+uniform float sizeP;  ///< Size knob, 0..1.
+uniform float erodeP; ///< Erode knob, 0..1.
 
 out vec2  vUV;     ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 out vec3  vNormal; ///< Surface normal (from the vertex stage).
 out vec3  vObj;    ///< Object-space position (from the vertex stage).
 out vec3  vPos;    ///< Position (from the vertex stage).
 out float vBg;     ///< Background flag (from the vertex stage).
-out float vErode;
+out float vErode;  ///< Erode (from the vertex stage).
 
 /**  Pseudo-random number 0..1 from a 3D point.
  *

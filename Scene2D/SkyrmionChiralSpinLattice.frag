@@ -40,10 +40,10 @@ uniform float audioMid;       ///< Mid band level, 0..1.
 uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
 
-uniform float latticeP;
-uniform float coreP; ///< Fold core class knob of the 3D chain, 0..1.
-uniform float chiralP;
-uniform float driftP;
+uniform float latticeP; ///< Lattice knob: hexagonal skyrmion packing density, 2..6.
+uniform float coreP;    ///< Fold core class knob of the 3D chain, 0..1.
+uniform float chiralP;  ///< Chiral knob: Dzyaloshinskii-Moriya twisting chirality, 0.5..2.2.
+uniform float driftP;   ///< Drift knob: gyrotropic Hall current velocity, 0.3..1.5.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

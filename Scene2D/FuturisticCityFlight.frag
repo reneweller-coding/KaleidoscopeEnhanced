@@ -55,10 +55,10 @@ uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioHigh;      ///< High band level, 0..1.
 
-uniform float buildP;
-uniform float glowP; ///< Glow / afterglow knob, 0..1.
-uniform float fogP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float buildP; ///< Build knob: tower height, 0.98..1.5.
+uniform float glowP;  ///< Glow / afterglow knob, 0..1.
+uniform float fogP;   ///< Fog knob, 0.5..1.15.
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *
@@ -169,8 +169,13 @@ float sdBox( vec3 p, vec3 c, vec3 h )
 }
 
 // Distance to the city, and which box was nearest (for the analytic normal).
-vec3  gC, gH; // the nearest box, handed back to the shader
-float gSide, gBlock;
+/** @{ */
+vec3 gC, gH; ///< the nearest box, handed back to the shader
+/** @} */
+/** @{ */
+float gSide, gBlock; ///< gSide: Which side of the corridor the ray left by (set while marching); gBlock: Which block
+                     ///< the ray hit (set while marching).
+/** @} */
 /**  Distance to the city: the road and the buildings of the nearby blocks.
  *
  * @param p   The point. (in)

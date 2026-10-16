@@ -9,8 +9,8 @@ uniform float     audioDrop;      ///< Drop envelope: high after a detected drop
 
 in vec2  vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 in vec4  vSeed; ///< Per-instance random seed (from the vertex stage).
-in float vBand;
-in float vFade;
+in float vBand; ///< Band (from the vertex stage).
+in float vFade; ///< Fade (from the vertex stage).
 
 /**
  * @file BillboardCity.frag

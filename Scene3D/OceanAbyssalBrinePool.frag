@@ -32,11 +32,11 @@ uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-uniform float brineP;
-uniform float haloclineP;
-uniform float speedP; ///< Speed knob, 0..1.
-uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform float brineP;     ///< Brine knob, 0.5..2.
+uniform float haloclineP; ///< Halocline knob, 0.5..2.
+uniform float speedP;     ///< Speed knob, 0..1.
+uniform float hueP;       ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float time;       ///< Seconds since the program started (never reset; see sceneTime).
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

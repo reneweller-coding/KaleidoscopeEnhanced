@@ -30,9 +30,9 @@ uniform float audioAdvance;  ///< The music's advance: integrated tempo-weighted
 uniform float audioKick;     ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 uniform float audioSwell;    ///< Slow loudness envelope, 0..1 (seconds).
 
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
-uniform float bgTypeP;
-uniform float tintP; ///< Tint knob, 0..1.
+uniform float hueP;    ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float bgTypeP; ///< Bg type knob: 0 = nebula, 1 = backlit star, 0..1.
+uniform float tintP;   ///< Tint knob, 0..1.
 
 in vec2  vUV;       ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 in vec3  vNormal;   ///< Surface normal (from the vertex stage).
@@ -129,7 +129,7 @@ float starsField( vec3 dir, float density )
     return smoothstep( 1.0 - density, 1.0, hash13( floor( dir * 500.0 ) ) );
 }
 
-// The star sits BEHIND the flight path (+Z), so the ship crosses it.
+/// The star sits BEHIND the flight path (+Z), so the ship crosses it.
 const vec3 StarDir = vec3( 0.06, -0.05, 1.0 );
 
 /**  The sky colour for a direction.

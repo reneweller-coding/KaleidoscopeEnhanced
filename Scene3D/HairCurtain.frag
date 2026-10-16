@@ -14,11 +14,11 @@ out vec4 fragColor; ///< The pixel's colour (output).
 // strand and tinted by the pigment.  Without it hair looks like nylon.
 // -----------------------------------------------------------------------
 
-in vec3  vWorld; ///< World position (from the vertex stage).
-in vec3  vTangent;
-in float vAlong;
-in float vTint;
-in float vKind; ///< Element kind (from the vertex stage).
+in vec3  vWorld;   ///< World position (from the vertex stage).
+in vec3  vTangent; ///< Tangent (from the vertex stage).
+in float vAlong;   ///< Along (from the vertex stage).
+in float vTint;    ///< Tint (from the vertex stage).
+in float vKind;    ///< Element kind (from the vertex stage).
 
 /**
  * @file HairCurtain.frag
@@ -49,8 +49,8 @@ uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioAmbient;   ///< How ambient (sustained, beatless) the music is, 0..1.
 
-uniform float     camHP; ///< Camera height knob, 0..1.
-uniform float     sheenP;
+uniform float     camHP;        ///< Camera height knob, 0..1.
+uniform float     sheenP;       ///< Sheen knob, 0.4..1.
 uniform float     hueP;         ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 uniform sampler2D tex1;         ///< The next photo (cross-faded in by interpolation).
 uniform float     audioAdvance; ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs

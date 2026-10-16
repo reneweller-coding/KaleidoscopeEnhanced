@@ -8,10 +8,10 @@
 in vec4 attrA; ///< xy = Quad local UV [0,1], z = 0, w = Quad index
 in vec4 attrB; ///< 4 seeds in [0,1)
 
-out vec2  vUV;     ///< Texture coordinate 0..1 over the screen (from the vertex stage).
-out vec3  vNormal; ///< Surface normal (from the vertex stage).
-out vec3  vCol;    ///< Colour (from the vertex stage).
-out float vMieResonance;
+out vec2  vUV;           ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+out vec3  vNormal;       ///< Surface normal (from the vertex stage).
+out vec3  vCol;          ///< Colour (from the vertex stage).
+out float vMieResonance; ///< Mie resonance (from the vertex stage).
 
 uniform mat4  projM;  ///< Projection matrix.
 uniform float eyeOff; ///< Stereo eye offset (0 in mono).
@@ -30,8 +30,8 @@ uniform sampler2D tex0;          ///< The current photo.
 uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
 uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float gratingPitchP;
-uniform float pillarHeightP;
+uniform float gratingPitchP; ///< Grating pitch knob, 0.1..0.3.
+uniform float pillarHeightP; ///< Pillar height knob, 0.1..0.4.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

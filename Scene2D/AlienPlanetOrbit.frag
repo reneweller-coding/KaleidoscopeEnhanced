@@ -40,10 +40,10 @@ uniform float audioCentroid;  ///< Spectral centroid (brightness of the sound), 
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-uniform float planetP;
-uniform float stationP;
-uniform float glowP; ///< Glow / afterglow knob, 0..1.
-uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float planetP;  ///< Planet knob: planet size / curvature (0.7..1.5).
+uniform float stationP; ///< Station knob: station density (0.5..1.8).
+uniform float glowP;    ///< Glow / afterglow knob, 0..1.
+uniform float hueP;     ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *
@@ -151,7 +151,7 @@ float sdBox( vec3 p, vec3 b )
 }
 
 // Global variables for shading
-float hitMat = 0.0;
+float hitMat = 0.0; ///< Material of the last surface the ray hit (set by the distance field).
 float g_camZ = 0.0; ///< the planet travels with the camera (see map)
 
 /**  Scene SDF

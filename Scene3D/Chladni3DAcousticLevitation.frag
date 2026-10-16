@@ -16,10 +16,10 @@ out vec4 fragColor; ///< The pixel's colour (output).
  *   specularP     float particle facet specular highlight    (0.8..2.5)
  */
 
-in vec3  vNormal; ///< Surface normal (from the vertex stage).
-in vec3  vCol;    ///< Colour (from the vertex stage).
-in float vAcousticNode;
-in vec3  vLocalPos; ///< Object-space position (from the vertex stage).
+in vec3  vNormal;       ///< Surface normal (from the vertex stage).
+in vec3  vCol;          ///< Colour (from the vertex stage).
+in float vAcousticNode; ///< Acoustic node (from the vertex stage).
+in vec3  vLocalPos;     ///< Object-space position (from the vertex stage).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

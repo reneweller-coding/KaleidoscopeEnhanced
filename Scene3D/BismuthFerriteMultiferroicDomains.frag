@@ -16,10 +16,10 @@ out vec4 fragColor; ///< The pixel's colour (output).
  *   specularP    float perovskite ceramic specular sheen     (0.8..2.2)
  */
 
-in vec2  vUV;     ///< Texture coordinate 0..1 over the screen (from the vertex stage).
-in vec3  vNormal; ///< Surface normal (from the vertex stage).
-in vec3  vCol;    ///< Colour (from the vertex stage).
-in float vDomainType;
+in vec2  vUV;         ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+in vec3  vNormal;     ///< Surface normal (from the vertex stage).
+in vec3  vCol;        ///< Colour (from the vertex stage).
+in float vDomainType; ///< Domain type (from the vertex stage).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
@@ -30,8 +30,8 @@ uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0
 uniform float audioKick;  ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 uniform float audioSwell; ///< Slow loudness envelope, 0..1 (seconds).
 
-uniform float channelGlowP;
-uniform float specularP; ///< Specular knob, 0..1.
+uniform float channelGlowP; ///< Channel glow knob: conductive domain wall edge luminance (0.8..2.5).
+uniform float specularP;    ///< Specular knob, 0..1.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

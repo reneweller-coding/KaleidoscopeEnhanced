@@ -30,7 +30,7 @@ uniform int            texMeshMaterialLayers; ///< Number of layers in texMeshMa
 
 uniform sampler2D texSpectro;  ///< 32 log-spaced bands across, ~20 s of history down (ring)
 uniform float     spectroHead; ///< T coordinate of "now", continuous
-uniform float     spectroFill;
+uniform float     spectroFill; ///< How full the spectrogram ring texSpectro is, 0..1 (after a scene start).
 
 uniform float time;         ///< Seconds since the program started (never reset; see sceneTime).
 uniform float audioAdvance; ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
@@ -39,14 +39,14 @@ uniform float audioKick;    ///< Kick-drum envelope, 0..1 (fast attack, short de
 uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
 
 uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
-uniform float barP;
+uniform float barP; ///< Bar knob: display brightness, 0.8..1.4.
 
-in vec2  vUV;       ///< Texture coordinate 0..1 over the screen (from the vertex stage).
-in vec3  vNormal;   ///< Surface normal (from the vertex stage).
-in vec3  vPos;      ///< Position (from the vertex stage).
-in vec3  vLocalPos; ///< Object-space position (from the vertex stage).
-in vec3  vObjNormal;
-in float vBg; ///< Background flag (from the vertex stage).
+in vec2  vUV;        ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+in vec3  vNormal;    ///< Surface normal (from the vertex stage).
+in vec3  vPos;       ///< Position (from the vertex stage).
+in vec3  vLocalPos;  ///< Object-space position (from the vertex stage).
+in vec3  vObjNormal; ///< Obj normal (from the vertex stage).
+in float vBg;        ///< Background flag (from the vertex stage).
 
 /**  Rotates a colour's hue by an angle (about the grey axis).
  *

@@ -33,10 +33,10 @@ uniform float audioCentroid;  ///< Spectral centroid (brightness of the sound), 
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-uniform float yardP;
-uniform float sparkP;
-uniform float nebP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float yardP;  ///< Yard knob: shipyard size/complexity (0.7..1.5).
+uniform float sparkP; ///< Spark knob: intensity of welding sparks (0.6..1.8).
+uniform float nebP;   ///< Neb knob: nebula density (0.5..1.5).
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *
@@ -158,8 +158,8 @@ float sdBox( vec3 p, vec3 b )
     return length( max( q, 0.0 ) ) + min( max( q.x, max( q.y, q.z ) ), 0.0 );
 }
 
-float hitMat = 0.0;
-vec3  sparkPos = vec3( 0.0 );
+float hitMat = 0.0;           ///< Material of the last surface the ray hit (set by the distance field).
+vec3  sparkPos = vec3( 0.0 ); ///< Where the welding sparks are (the last weld point the field met).
 
 /**  The scene's distance field: distance from p to the nearest surface.
  *

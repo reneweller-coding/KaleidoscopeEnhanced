@@ -21,8 +21,8 @@
  * what a camera shutter does -- and it costs no extra rendering, because those
  * frames were being drawn and thrown away already.
  */
-uniform sampler2D tex;
-uniform float     scale;
+uniform sampler2D tex;   ///< The input picture.
+uniform float     scale; ///< Weight of the frame (1 while accumulating, 1/n when resolving).
 
 in vec2  vUV;       ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 out vec4 fragColor; ///< The pixel's colour (output).

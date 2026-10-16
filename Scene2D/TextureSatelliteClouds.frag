@@ -40,10 +40,10 @@ uniform float audioMode;      ///< Mode of the music: 0 minor .. 1 major.
 uniform float audioRoughness; ///< Roughness (dissonance) of the sound, 0..1.
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 
-uniform float cycloneP;
-uniform float streetP;
-uniform float groundP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float cycloneP; ///< Cyclone knob: cyclones, 0..1.
+uniform float streetP;  ///< Street knob: cloud streets, 0..1.
+uniform float groundP;  ///< Ground knob: the photo as ground, 0..1.
+uniform float hueP;     ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 // ---- shared building blocks (texture pool, noise, shapes) ----
 /**  Pseudo-random number 0..1 from a float.
@@ -500,7 +500,9 @@ void finish( vec3 col )
     fragColor = vec4( clamp( t, 0.0, 1.0 ), 1.0 );
 }
 
-float gT, gRough;
+/** @{ */
+float gT, gRough; ///< gT: The chain's (or scene's) time this frame; gRough: The music's roughness this frame, 0..1.
+/** @} */
 /**  Cloud cover at a point, swirled around drifting cyclones.
  *
  * @param x      The point. (in)

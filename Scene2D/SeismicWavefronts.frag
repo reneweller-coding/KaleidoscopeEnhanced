@@ -40,8 +40,8 @@ uniform float audioMode;      ///< Mode of the music: 0 minor .. 1 major.
 uniform float audioRoughness; ///< Roughness (dissonance) of the sound, 0..1.
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 
-uniform float quakeP;
-uniform float freqP;
+uniform float quakeP; ///< Quake knob: quake sources, 0..1.
+uniform float freqP;  ///< Freq knob: wave frequency, 0..1.
 uniform float layerP; ///< Layer knob, 0..1.
 uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 

@@ -29,32 +29,35 @@
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( local_size_x = 256 ) in;
 
+/// The accumulation buffer: colour and coverage per pixel, added atomically; the present pass resolves it.
 layout( std430, binding = 0 ) buffer Accum
 {
     uint acc[];
 };
+/// The boids: position (xy) and velocity (zw) per boid.
 layout( std430, binding = 1 ) buffer Boids
 {
     vec4 boid[];
 };
+/// The spatial hash grid: the elements of each cell.
 layout( std430, binding = 2 ) buffer Grid
 {
     uint cell[];
 };
 
-uniform ivec2 size; ///< Size of the simulation grid in cells.
-uniform uint  count;
-uniform int   gridN;
-uniform int   perCell;
-uniform float dt;
-uniform float goalPhase;
-uniform float kick;
-uniform float level;
-uniform float drop;
-uniform float hue;
-uniform float bright;
+uniform ivec2 size;      ///< Size of the simulation grid in cells.
+uniform uint  count;     ///< Number of elements (boids, particles, walkers ...).
+uniform int   gridN;     ///< Cells per side of the spatial hash grid.
+uniform int   perCell;   ///< Capacity of a grid cell (elements per cell).
+uniform float dt;        ///< Time step of the simulation (seconds).
+uniform float goalPhase; ///< Phase of the attractors' orbits (integrated).
+uniform float kick;      ///< Kick envelope, 0..1.
+uniform float level;     ///< The music's level, 0..1.
+uniform float drop;      ///< Drop envelope, 0..1.
+uniform float hue;       ///< Hue offset of the palette.
+uniform float bright;    ///< Brightness.
 
-const float Scale = 256.0;
+const float Scale = 256.0; ///< Fixed-point scale of the accumulation buffer (colour times Scale, added as integers).
 
 /**  Adds a weighted colour to the accumulation buffer at a pixel (skipped off the image).
  *

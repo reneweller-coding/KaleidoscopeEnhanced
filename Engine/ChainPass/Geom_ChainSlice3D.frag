@@ -18,10 +18,10 @@ uniform float spaceP;       ///< Space class knob of the 3D chain, 0..1.
 uniform float coreP;        ///< Fold core class knob of the 3D chain, 0..1.
 uniform float bodyP;        ///< Body class knob of the 3D chain, 0..1.
 uniform float layerP;       ///< Layer knob, 0..1.
-uniform float hyperP;
-uniform float morphP; ///< Morph knob: how the scene changes over time, 0..1.
-uniform float speedP; ///< Speed knob, 0..1.
-uniform float camP;   ///< Camera knob, 0..1.
+uniform float hyperP;       ///< Hyper knob.
+uniform float morphP;       ///< Morph knob: how the scene changes over time, 0..1.
+uniform float speedP;       ///< Speed knob, 0..1.
+uniform float camP;         ///< Camera knob, 0..1.
 /**  Pseudo-random number 0..1 from a 2D point.
  *
  * @param p  The point. (in)
@@ -70,8 +70,8 @@ vec2 screenP()
 {
     return ( gl_FragCoord.xy / resolution - 0.5 ) * vec2( resolution.x / resolution.y, 1.0 );
 }
-float gDR = 1.0;
-vec3  gP = vec3( 0.0 );
+float gDR = 1.0;        ///< Running scale factor of the folds (divides the distance estimate).
+vec3  gP = vec3( 0.0 ); ///< The point the distance field was last evaluated at (scaled; textures the surface).
 /**  Rotation of p about an axis.
  *
  * @param p     The point. (in)
@@ -562,11 +562,13 @@ float sdGyroid3( vec3 p, float thick )
 {
     return ( abs( dot( sin( p ), cos( p.yzx ) ) ) - thick ) / 1.8;
 }
-float         field3( vec3 p );
-vec3          gCam = vec3( 0.0 );
-uniform float camHost; ///< 1 when the app drives the camera (camZ, camGaze).
-uniform float camZ;    ///< Flight position along the camera path (integrated by the app).
-uniform vec3  camGaze; ///< Gaze shown, gaze panned to, pan progress.
+/// @cond
+float field3( vec3 p );
+/// @endcond
+vec3          gCam = vec3( 0.0 ); ///< The camera position this frame.
+uniform float camHost;            ///< 1 when the app drives the camera (camZ, camGaze).
+uniform float camZ;               ///< Flight position along the camera path (integrated by the app).
+uniform vec3  camGaze;            ///< Gaze shown, gaze panned to, pan progress.
 /**  The camera's flight position (the app's integrated one, or gT).
  *
  * @param gt  The scene's own time (used without a host camera). (in)
@@ -578,8 +580,16 @@ float camFlight( float gt )
 {
     return camHost > 0.5 ? camZ : gt;
 }
-float gT, gTC, gSpread, gRot, gMw;
-vec2  gCw, gCt;
+/** @{ */
+float gT, gTC, gSpread, gRot, gMw; ///< gT: The chain's (or scene's) time this frame; gTC: The chain's time for this
+                                   ///< pixel (gT plus the tilt across the picture); gSpread: The spectral spread this
+                                   ///< frame, 0..1; gRot: The rotation phase this frame; gMw: The chain's morph
+                                   ///< position this frame (integrated).
+/** @} */
+/** @{ */
+vec2 gCw, gCt; ///< gCw: Centre of the wandering transforms this frame (drifts slowly); gCt: Second centre of the
+               ///< wandering transforms this frame.
+/** @} */
 /**  Class position of a knob value (n classes).
  *
  * @param x  The knob value, 0..1. (in)
@@ -802,7 +812,12 @@ int ordbo( int i )
         return 3;
     return 8;
 }
-uniform vec3 walkSpace, walkCore, walkBody;
+/** @{ */
+uniform vec3 walkSpace, walkCore, walkBody; ///< walkSpace: The 3D lab's space as the app walks it: (shown, target,
+                                            ///< fade); walkCore: The 3D lab's core as the app walks it: (shown, target,
+                                            ///< fade); walkBody: The 3D lab's body as the app walks it: (shown, target,
+                                            ///< fade).
+/** @} */
 /**  fieldK() with the world fixed at compile time (the shown end of a specialised pass).
  *
  * @param p      The point. (in)

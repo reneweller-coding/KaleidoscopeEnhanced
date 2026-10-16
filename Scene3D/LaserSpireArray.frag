@@ -24,10 +24,10 @@ out vec4 fragColor; ///< The pixel's colour (output).
  *    all act upstream in LaserSpireArray.geom -- see that file.)
  */
 
-in vec3  gNormal;
-in vec3  gWorld;
-in vec4  gCol;
-in float gBeam;
+in vec3  gNormal; ///< Normal (from the geometry stage).
+in vec3  gWorld;  ///< World (from the geometry stage).
+in vec4  gCol;    ///< The colour gathered so far for this pixel.
+in float gBeam;   ///< Beam (from the geometry stage).
 
 uniform float audioUpperMid; ///< 2-6 kHz metallic / industrial edge
 

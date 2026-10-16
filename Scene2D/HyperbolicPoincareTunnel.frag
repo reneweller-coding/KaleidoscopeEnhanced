@@ -31,8 +31,8 @@ uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unw
 
 uniform float speedP;  ///< Speed knob, 0..1.
 uniform float branchP; ///< Branching knob, 0..1.
-uniform float curveP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float curveP;  ///< Curve knob, 0.5..2.
+uniform float hueP;    ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

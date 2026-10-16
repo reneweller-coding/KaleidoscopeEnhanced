@@ -16,10 +16,10 @@
 in vec4 attrA; ///< .xyz = unit-cube corner (-0.5..0.5), .w = cube index
 in vec4 attrB; ///< 4 random seeds in [0,1)
 
-uniform mat4  projM;  ///< Projection matrix.
-uniform float eyeOff; ///< Stereo eye offset (0 in mono).
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform float cubeBudget;
+uniform mat4  projM;      ///< Projection matrix.
+uniform float eyeOff;     ///< Stereo eye offset (0 in mono).
+uniform float time;       ///< Seconds since the program started (never reset; see sceneTime).
+uniform float cubeBudget; ///< Number of cubes the scene may draw (the host's instance budget).
 
 uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
                               ///< backwards).
@@ -40,12 +40,12 @@ uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0
 
 out vec3  vNormal;   ///< Surface normal (from the vertex stage).
 out vec3  vWorldPos; ///< World position (from the vertex stage).
-out vec3  vTint;
-out float vFlash;
+out vec3  vTint;     ///< Tint (from the vertex stage).
+out float vFlash;    ///< Flash (from the vertex stage).
 
-const float NumCubes = 4900.0;
-const float NumRings = 8.0;
-const float PerRing = NumCubes / NumRings;
+const float NumCubes = 4900.0;             ///< Number of cubes.
+const float NumRings = 8.0;                ///< Number of rings.
+const float PerRing = NumCubes / NumRings; ///< Cubes per ring.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

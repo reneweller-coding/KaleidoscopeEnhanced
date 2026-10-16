@@ -3251,7 +3251,9 @@ vec2 tJoukowski( vec2 uv, vec2 c, float R, float scale )
     return c + ( z + R * R * iz ) * 0.5;
 }
 
+/// @cond
 vec2 chain( vec2 p );
+/// @endcond
 /**  A loop count the compiler cannot see through (it depends on a uniform), so the loop is NOT unrolled and its body
  * -- a whole chain -- is inlined once.
  *
@@ -3264,7 +3266,9 @@ int loopN( int n )
 {
     return n + int( min( interpolation, 0.0 ) );
 }
-vec2 gChainM, gChainDx, gChainDy; // mirrored chain coordinate of this pixel and its derivatives per pixel
+/** @{ */
+vec2 gChainM, gChainDx, gChainDy; ///< mirrored chain coordinate of this pixel and its derivatives per pixel
+/** @} */
 /**  The chain's photo read with a seam-proof footprint (per axis the smaller of the two one-sided differences) and
  * the screen-space luma gradient.
  *
@@ -3312,8 +3316,15 @@ vec3 imgChain( vec2 p, float bias, out vec2 grad )
 // @chainopening chainDP
 // @chainss chainAP 3|28|35|37|44|47|54
 // @chainss chainBP 18|21
-float gT, gSpread, gRot, gMw;
-vec2  gCw, gCt;
+/** @{ */
+float gT, gSpread, gRot, gMw; ///< gT: The chain's (or scene's) time this frame; gSpread: The spectral spread this
+                              ///< frame, 0..1; gRot: The rotation phase this frame; gMw: The chain's morph position
+                              ///< this frame (integrated).
+/** @} */
+/** @{ */
+vec2 gCw, gCt; ///< gCw: Centre of the wandering transforms this frame (drifts slowly); gCt: Second centre of the
+               ///< wandering transforms this frame.
+/** @} */
 // The stage index and a sub-variant 0..1 from one rolled knob.
 float gIdW = 1.0; ///< how much of the chain is 'none' or too weak to carry it (product over the stages)
 /**  Class position of a knob value (n classes).
@@ -3659,7 +3670,14 @@ int ords( int i )
 } // photo, relief, contours, flow, glowing edges
 // The app's walk: per stage (shown knob value, target, fade 0..1); walkHost = 1
 // when the app steers (otherwise the hash walk below runs, e.g. in the editor).
-uniform vec3  walkA, walkB, walkC, walkD, walkS;
+/** @{ */
+uniform vec3 walkA, walkB, walkC, walkD, walkS; ///< walkA: Stage A of the app's walk: (shown class, target class,
+                                                ///< fade); walkB: Stage B of the app's walk: (shown class, target
+                                                ///< class, fade); walkC: Stage C of the app's walk: (shown class,
+                                                ///< target class, fade); walkD: Stage D of the app's walk: (shown
+                                                ///< class, target class, fade); walkS: The style of the app's walk:
+                                                ///< (shown class, target class, fade).
+/** @} */
 uniform float walkHost; ///< 1 when the app walks this lab's stages (walk uniforms valid).
 
 // Stage A: a global map.
@@ -5025,7 +5043,7 @@ int permCode( int i )
         return 75;
     return 27;
 } // base-4 digits: the stage at each position
-uniform vec3 walkO;
+uniform vec3 walkO; ///< The stage order of the app's walk: (shown order, target order, fade).
 /**  Applies stage k (0 = A .. 3 = D) to a coordinate.
  *
  * @param k   The stage, 0..3. (in)

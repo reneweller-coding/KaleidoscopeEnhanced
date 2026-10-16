@@ -33,9 +33,9 @@ in vec3  vNormal; ///< Surface normal (from the vertex stage).
 in vec3  vPos;    ///< Position (from the vertex stage).
 in vec3  vLocal;  ///< Object-space position (from the vertex stage).
 in float vBg;     ///< Background flag (from the vertex stage).
-in float vInst;
+in float vInst;   ///< Inst (from the vertex stage).
 
-const float Ground = -16.0;
+const float Ground = -16.0; ///< Height of the ground (world units).
 
 /**  Rotates a colour's hue by an angle (about the grey axis).
  *

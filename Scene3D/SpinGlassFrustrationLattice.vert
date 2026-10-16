@@ -8,9 +8,9 @@
 in vec4 attrA; ///< xyz = base coord, w = point index
 in vec4 attrB; ///< 4 hash seeds in [0,1)
 
-out vec3  vCol; ///< Colour (from the vertex stage).
-out float vFrustration;
-out float vPointSize;
+out vec3  vCol;         ///< Colour (from the vertex stage).
+out float vFrustration; ///< Frustration (from the vertex stage).
+out float vPointSize;   ///< Point size (from the vertex stage).
 
 uniform mat4  projM;  ///< Projection matrix.
 uniform float eyeOff; ///< Stereo eye offset (0 in mono).
@@ -29,9 +29,9 @@ uniform sampler2D tex0;          ///< The current photo.
 uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
 uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float kagomePitchP;
-uniform float pointSizeP;
-uniform float pointGainP;
+uniform float kagomePitchP; ///< Kagome pitch knob, 0.015..0.031.
+uniform float pointSizeP;   ///< Point size knob, 12..16.
+uniform float pointGainP;   ///< Point gain knob, 0.8..1.8.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

@@ -36,16 +36,16 @@ uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-uniform float torusP;
-uniform float linkP;
+uniform float torusP; ///< Torus knob, 0.5..2.
+uniform float linkP;  ///< Link knob, 0.5..2.
 uniform float speedP; ///< Speed knob, 0..1.
 uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 out vec3  vWorldPos; ///< World position (from the vertex stage).
 out vec3  vNormal;   ///< Surface normal (from the vertex stage).
 out vec2  vTexCoord; ///< Texture coordinate (from the vertex stage).
-out float vIndex;
-out float vDust;
+out float vIndex;    ///< Index (from the vertex stage).
+out float vDust;     ///< Dust (from the vertex stage).
 
 /**  Pseudo-random number 0..1 from two values.
  *

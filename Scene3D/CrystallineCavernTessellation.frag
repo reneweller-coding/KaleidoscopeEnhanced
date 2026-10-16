@@ -1,10 +1,10 @@
 #version 430 core
 out vec4 fragColor; ///< The pixel's colour (output).
 
-in vec3  tePos;
-in vec3  teNormal;
-in vec2  teUV;
-in float teCrystal;
+in vec3  tePos;     ///< Pos (from the tessellation evaluation stage).
+in vec3  teNormal;  ///< Normal (from the tessellation evaluation stage).
+in vec2  teUV;      ///< UV (from the tessellation evaluation stage).
+in float teCrystal; ///< Crystal (from the tessellation evaluation stage).
 
 /**
  * @file CrystallineCavernTessellation.frag
@@ -39,9 +39,9 @@ uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighte
                               ///< backwards).
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 
-uniform float glowP; ///< Glow / afterglow knob, 0..1.
-uniform float crystalP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float glowP;    ///< Glow / afterglow knob, 0..1.
+uniform float crystalP; ///< Crystal knob, 0.5..2.2.
+uniform float hueP;     ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

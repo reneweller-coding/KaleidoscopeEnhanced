@@ -28,7 +28,7 @@ uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short 
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
                               ///< backwards).
-uniform float audioMusic;
+uniform float audioMusic;     ///< Music presence, 0..1 (low when there is no music, e.g. speech in the background).
 
 uniform float glowP;  ///< preset: bloom strength
 uniform float photoP; ///< preset: how much photo shows through

@@ -40,10 +40,10 @@ uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioSnare;     ///< Snare envelope, 0..1.
 uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
 
-uniform float junctionAngleP;
-uniform float focalDistP;
-uniform float kleinFringeP;
-uniform float causticGlowP;
+uniform float junctionAngleP; ///< Junction angle knob: p-n interface tilt & curvature, 0.4..1.8.
+uniform float focalDistP;     ///< Focal dist knob: Veselago electron focal length, 0.3..1.2.
+uniform float kleinFringeP;   ///< Klein fringe knob: Klein tunneling interference density, 8..24.
+uniform float causticGlowP;   ///< Caustic glow knob: caustic cusp focal luminance, 0.8..2.5.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

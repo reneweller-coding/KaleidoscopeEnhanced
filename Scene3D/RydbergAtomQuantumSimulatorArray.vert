@@ -16,9 +16,9 @@
 in vec4 attrA; ///< xyz = position seed, w = pointID
 in vec4 attrB; ///< 4 seeds in [0,1)
 
-out vec3  vCol; ///< Colour (from the vertex stage).
-out float vBlockade;
-out float vPointSize;
+out vec3  vCol;       ///< Colour (from the vertex stage).
+out float vBlockade;  ///< Blockade (from the vertex stage).
+out float vPointSize; ///< Point size (from the vertex stage).
 
 uniform mat4  projM;  ///< Projection matrix.
 uniform float eyeOff; ///< Stereo eye offset (0 in mono).
@@ -37,9 +37,9 @@ uniform sampler2D tex0;          ///< The current photo.
 uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
 uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float arrayPitchP;
-uniform float pointSizeP;
-uniform float blockadeRadP;
+uniform float arrayPitchP;  ///< Array pitch knob, 0.015..0.04.
+uniform float pointSizeP;   ///< Point size knob, 8..16.
+uniform float blockadeRadP; ///< Blockade rad knob, 0.2..0.8.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

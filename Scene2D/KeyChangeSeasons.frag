@@ -38,9 +38,9 @@ uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short 
 uniform float audioLevel;     ///< Overall loudness, 0..1.
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 
-uniform float treesP;
-uniform float mistP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float treesP; ///< Trees knob, 0..1.
+uniform float mistP;  ///< Mist knob, 0..1.
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

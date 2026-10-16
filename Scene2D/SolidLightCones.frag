@@ -37,8 +37,8 @@ uniform float audioLevel;     ///< Overall loudness, 0..1.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 
-uniform float shapeP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float shapeP; ///< Shape knob: which drawings, 0..1.
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *
@@ -108,21 +108,22 @@ float noise3( vec3 p )
     return mix( a, b, f.z );
 }
 
-float g_clock;
-float g_shape;
+float g_clock; ///< The scene's clock this frame (integrated).
+float g_shape; ///< The shape knob this frame, 0..1.
 
-// Each projector draws one shape on the wall plane x = XW.  Shapes are
-// ellipses (whose cone of light is a quadric) or straight lines (whose sheet
-// is a plane), so the view ray meets them ANALYTICALLY -- a thin glowing
-// sheet cannot be found by stepping through fog.
+/// Each projector draws one shape on the wall plane x = XW.  Shapes are
+/// ellipses (whose cone of light is a quadric) or straight lines (whose sheet
+/// is a plane), so the view ray meets them ANALYTICALLY -- a thin glowing
+/// sheet cannot be found by stepping through fog.
 const float Xw = 5.5;
 
+/// A projector's shape: its kind, centre, size and angle.
 struct Shape
 {
-    int   kind;
-    vec2  c;
-    vec2  r;
-    float ang;
+    int   kind; ///< The shape: 0 an ellipse, 1 a line.
+    vec2  c;    ///< Centre (on the wall).
+    vec2  r;    ///< Radii of the ellipse (a line: x is its half length).
+    float ang;  ///< Angle (radians).
 };
 
 /**  The shape projector j draws now (kind, centre, size, angle).

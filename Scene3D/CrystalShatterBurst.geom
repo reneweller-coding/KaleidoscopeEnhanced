@@ -13,20 +13,20 @@
  *                    jolt their tumble
  *   audioBuildUp  -> rising EDM tension clenches the geode shut before the drop
  */
-// CrystalShatterBurst.geom — Geometry Shader intercepts triangles and violently
-// fractures them into floating tetrahedral crystal shards along explosion vectors on beats.
+/// CrystalShatterBurst.geom — Geometry Shader intercepts triangles and violently
+/// fractures them into floating tetrahedral crystal shards along explosion vectors on beats.
 layout( triangles ) in;
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( triangle_strip, max_vertices = 3 ) out;
 
-in vec3  vObjPos[];
-in vec4  vSeeds[];
-in float vCubeIndex[];
+in vec3  vObjPos[];    ///< Obj pos (from the vertex stage).
+in vec4  vSeeds[];     ///< Seeds (from the vertex stage).
+in float vCubeIndex[]; ///< Cube index (from the vertex stage).
 
-out vec3 gNormal;
-out vec3 gWorld;
-out vec4 gCol;
-out vec3 gBary;
+out vec3 gNormal; ///< Normal (from the geometry stage).
+out vec3 gWorld;  ///< World (from the geometry stage).
+out vec4 gCol;    ///< The colour gathered so far for this pixel.
+out vec3 gBary;   ///< Bary (from the geometry stage).
 
 uniform mat4  projM;  ///< Projection matrix.
 uniform float eyeOff; ///< Stereo eye offset (0 in mono).
@@ -41,7 +41,7 @@ uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
 uniform float audioSnare;   ///< snare / clap onset envelope
 uniform float audioBuildUp; ///< EDM tension rising toward the drop
 
-uniform float burstP;
+uniform float burstP;   ///< Burst knob, 0.5..2.2.
 uniform float spinP;    ///< Spin knob, 0..1.
 uniform float camDistP; ///< Camera distance knob, 0..1.
 uniform float hueP;     ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.

@@ -15,8 +15,8 @@ out vec4 fragColor; ///< The pixel's colour (output).
  *   haloP      float quantum wavepacket halo brightness     (0.6..2.2)
  */
 
-in vec3  vCol; ///< Colour (from the vertex stage).
-in float vPhononAmp;
+in vec3  vCol;       ///< Colour (from the vertex stage).
+in float vPhononAmp; ///< Phonon amp (from the vertex stage).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
@@ -27,8 +27,8 @@ uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0
 uniform float audioKick;  ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 uniform float audioSwell; ///< Slow loudness envelope, 0..1 (seconds).
 
-uniform float pointGainP;
-uniform float haloP;
+uniform float pointGainP; ///< Point gain knob: electron point brightness, 0.5..1.8.
+uniform float haloP;      ///< Halo knob: quantum wavepacket halo brightness, 0.6..2.2.
 
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()

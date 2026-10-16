@@ -25,18 +25,18 @@ in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage
                ///< index).
 in vec4 attrB; ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
 
-uniform mat4  projM;        ///< Projection matrix.
-uniform float eyeOff;       ///< Stereo eye offset (0 in mono).
-uniform float audioAdvance; ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
-                            ///< backwards).
-uniform float time;         ///< Seconds since the program started (never reset; see sceneTime).
-uniform float audioKick;    ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioLowMid;
+uniform mat4  projM;          ///< Projection matrix.
+uniform float eyeOff;         ///< Stereo eye offset (0 in mono).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                              ///< backwards).
+uniform float time;           ///< Seconds since the program started (never reset; see sceneTime).
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioLowMid;    ///< Low-mid band level (150-500 Hz), 0..1.
 uniform float audioRoughness; ///< Roughness (dissonance) of the sound, 0..1.
 
-out vec3  vPos; ///< Position (from the vertex stage).
-out float vPulse;
-out float vLevel;
+out vec3  vPos;   ///< Position (from the vertex stage).
+out float vPulse; ///< Pulse (from the vertex stage).
+out float vLevel; ///< Level (from the vertex stage).
 
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()

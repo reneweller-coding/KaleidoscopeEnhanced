@@ -24,9 +24,9 @@ uniform float audioMid;     ///< Mid band level, 0..1.
 uniform float audioHigh;    ///< High band level, 0..1.
 uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
 
-out vec3  vPos; ///< Position (from the vertex stage).
-out float vProb;
-out float vPhase;
+out vec3  vPos;   ///< Position (from the vertex stage).
+out float vProb;  ///< Prob (from the vertex stage).
+out float vPhase; ///< Phase (from the vertex stage).
 
 /**  Pseudo-random number 0..1 from a float.
  *

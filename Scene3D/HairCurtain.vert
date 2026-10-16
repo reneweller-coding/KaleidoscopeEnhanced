@@ -10,10 +10,10 @@
 in vec4 attrA; ///< w = strand index
 in vec4 attrB; ///< four hashes
 
-out vec3  gRoot;
-out vec3  gLean; ///< the direction the strand leaves its root in
-out vec4  gRnd;
-out float gIndex;
+out vec3  gRoot;  ///< Root (from the geometry stage).
+out vec3  gLean;  ///< the direction the strand leaves its root in
+out vec4  gRnd;   ///< Rnd (from the geometry stage).
+out float gIndex; ///< Index (from the geometry stage).
 
 uniform float sceneSeed; ///< A random number fixed per activation.
 

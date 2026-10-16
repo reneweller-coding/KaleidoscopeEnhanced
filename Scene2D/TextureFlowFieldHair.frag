@@ -38,10 +38,10 @@ uniform float audioMode;      ///< Mode of the music: 0 minor .. 1 major.
 uniform float audioRoughness; ///< Roughness (dissonance) of the sound, 0..1.
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 
-uniform float strandP;
-uniform float curlP;
-uniform float sheenP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float strandP; ///< Strand knob: strand density, 0..1.
+uniform float curlP;   ///< Curl knob: curl scale, 0..1.
+uniform float sheenP;  ///< Sheen knob, 0..1.
+uniform float hueP;    ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 // ---- shared building blocks (texture pool, noise, shapes) ----
 /**  Pseudo-random number 0..1 from a float.
@@ -383,7 +383,10 @@ void finish( vec3 col )
     fragColor = vec4( clamp( t, 0.0, 1.0 ), 1.0 );
 }
 
-float gT, gC, gS;
+/** @{ */
+float gT, gC, gS; ///< gT: The chain's (or scene's) time this frame; gC: Strength of the curl this frame; gS: Scale of
+                  ///< the hair's flow field (from curlP).
+/** @} */
 /**  The hair's direction field at a point (from noise).
  *
  * @param x  The point. (in)

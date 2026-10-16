@@ -15,21 +15,21 @@
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( local_size_x = 16, local_size_y = 16 ) in;
 
-layout( rgba16f, binding = 0 ) readonly uniform image2D velSrc;
-layout( rgba16f, binding = 1 ) writeonly uniform image2D velDst;
-layout( rgba16f, binding = 2 ) readonly uniform image2D dyeSrc;
-layout( rgba16f, binding = 3 ) writeonly uniform image2D dyeDst;
+layout( rgba16f, binding = 0 ) readonly uniform image2D velSrc;  ///< The velocity field (read).
+layout( rgba16f, binding = 1 ) writeonly uniform image2D velDst; ///< The velocity field (written).
+layout( rgba16f, binding = 2 ) readonly uniform image2D dyeSrc;  ///< The dye (read).
+layout( rgba16f, binding = 3 ) writeonly uniform image2D dyeDst; ///< The dye (written).
 
-uniform sampler2D texPhoto;
-uniform ivec2     size; ///< Size of the simulation grid in cells.
-uniform float     dt;
-uniform float     dissipation;
-uniform float     kick;
-uniform float     level;
-uniform float     hue;
-uniform vec2      jetPos;
-uniform vec2      jetDir;
-uniform float     jetAmp;
+uniform sampler2D texPhoto;    ///< The photo.
+uniform ivec2     size;        ///< Size of the simulation grid in cells.
+uniform float     dt;          ///< Time step of the simulation (seconds).
+uniform float     dissipation; ///< Dissipation of velocity and dye per step.
+uniform float     kick;        ///< Kick envelope, 0..1.
+uniform float     level;       ///< The music's level, 0..1.
+uniform float     hue;         ///< Hue offset of the palette.
+uniform vec2      jetPos;      ///< Position of the jet.
+uniform vec2      jetDir;      ///< Direction of the jet.
+uniform float     jetAmp;      ///< Strength of the jet.
 
 /**  Velocity at a coordinate (bilinear).
  *

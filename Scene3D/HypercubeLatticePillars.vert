@@ -35,9 +35,10 @@ uniform float hueP;    ///< Hue knob (radians), usually the music's chroma hue p
 
 out vec3  vNormal;   ///< Surface normal (from the vertex stage).
 out vec2  vTexCoord; ///< Texture coordinate (from the vertex stage).
-out vec4  vColor;
-out float vHeight;
+out vec4  vColor;    ///< Color (from the vertex stage).
+out float vHeight;   ///< Height (from the vertex stage).
 
+/// Normals of the six cube faces.
 const vec3 CubeNormals[6] = vec3[6](
     vec3( 0.0, 0.0, 1.0 ),
     vec3( 0.0, 0.0, -1.0 ),

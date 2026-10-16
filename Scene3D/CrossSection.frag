@@ -44,7 +44,7 @@ uniform float audioHigh;    ///< High band level, 0..1.
 
 uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 uniform float tintP; ///< Tint knob, 0..1.
-uniform float axisP;
+uniform float axisP; ///< Axis knob: which object axis the plane travels along, 0/1/2, 0..2.
 
 uniform vec3 meshExtent; ///< half-extents of THIS model, object space
 uniform vec3 meshCenter; ///< Centre of the scene's mesh bounding box.

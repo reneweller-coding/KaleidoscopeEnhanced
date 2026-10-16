@@ -39,10 +39,10 @@ uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short 
 uniform float audioRoughness; ///< Roughness (dissonance) of the sound, 0..1.
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 
-uniform float poolP;
-uniform float edgeP;
-uniform float canvasP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float poolP;   ///< Pool knob: pool count, 0..1.
+uniform float edgeP;   ///< Edge knob: dark drying edges, 0..1.
+uniform float canvasP; ///< Canvas knob: canvas showing, 0..1.
+uniform float hueP;    ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 // ---- shared building blocks (texture pool, noise, shapes) ----
 /**  Pseudo-random number 0..1 from a float.

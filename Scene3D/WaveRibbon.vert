@@ -19,11 +19,11 @@ uniform float eyeOff; ///< Stereo eye offset (0 in mono).
 uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
 
 uniform float audioSpectrum[32]; ///< Spectrum bands, 0..1.
-uniform float audioWave[64];
-uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
-                              ///< backwards).
+uniform float audioWave[64];     ///< The waveform: 64 points of the time signal, -1..1.
+uniform float audioSwell;        ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioChromaHue;    ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioAdvance;      ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                                 ///< backwards).
 
 out vec4  vCol;  ///< Colour (from the vertex stage).
 out float vSide; ///< Which side of a strip (from the vertex stage).

@@ -37,9 +37,9 @@ uniform float audioMid;      ///< Mid band level, 0..1.
 uniform float audioHigh;     ///< High band level, 0..1.
 uniform float audioFlux;     ///< Spectral flux (how fast the spectrum changes), 0..1.
 
-uniform float turbulenceP;
-uniform float heatP;
-uniform float flareP;
+uniform float turbulenceP;    ///< Turbulence knob: plasma vortex turbulence multiplier (0.5..2.0).
+uniform float heatP;          ///< Heat knob: thermal color intensity, 0.6..1.8.
+uniform float flareP;         ///< Flare knob: coronal prominence reach, 0.5..2.2.
 uniform float hueP;           ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 

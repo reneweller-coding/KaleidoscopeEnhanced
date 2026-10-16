@@ -15,9 +15,9 @@ out vec4 fragColor; ///< The pixel's colour (output).
  *   specularP  float carbon cage facet specular gain        (0.8..2.5)
  */
 
-in vec3  vNormal; ///< Surface normal (from the vertex stage).
-in vec3  vCol;    ///< Colour (from the vertex stage).
-in float vBuckyPulse;
+in vec3  vNormal;     ///< Surface normal (from the vertex stage).
+in vec3  vCol;        ///< Colour (from the vertex stage).
+in float vBuckyPulse; ///< Bucky pulse (from the vertex stage).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

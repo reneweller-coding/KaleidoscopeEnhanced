@@ -29,15 +29,16 @@
 // frame per histogram would cost a full GPU sync; here it stays on the GPU
 // and the result lands in a 4-float buffer the present pass reads.
 // -----------------------------------------------------------------------
+/// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( local_size_x = 16, local_size_y = 16 ) in;
 
-// Binding 3, matching what PresentPass binds and what Present.frag reads.
-// This said 0 for as long as the pass existed, so every frame's exposure went
-// to whatever SSBO happened to be bound at slot 0 -- a ComputeFX canvas or a
-// Scene3D vertex buffer -- while Present.frag kept reading the four initial
-// values the C++ side uploads once. The startup line said "Auto-exposure:
-// histogram (GPU)" throughout and the gain never left 1.0: the pass was a
-// no-op that also scribbled 16 bytes into a stranger's buffer every frame.
+/// Binding 3, matching what PresentPass binds and what Present.frag reads.
+/// This said 0 for as long as the pass existed, so every frame's exposure went
+/// to whatever SSBO happened to be bound at slot 0 -- a ComputeFX canvas or a
+/// Scene3D vertex buffer -- while Present.frag kept reading the four initial
+/// values the C++ side uploads once. The startup line said "Auto-exposure:
+/// histogram (GPU)" throughout and the gain never left 1.0: the pass was a
+/// no-op that also scribbled 16 bytes into a stranger's buffer every frame.
 layout( std430, binding = 3 ) buffer Result
 {
     float exposureOut;
@@ -45,15 +46,15 @@ layout( std430, binding = 3 ) buffer Result
     float p98;
     float pad;
 };
-uniform sampler2D texFrame;
-uniform ivec2     size;   ///< Size of the simulation grid in cells.
-uniform float     target; ///< where the median should sit
-uniform float     maxGain;
+uniform sampler2D texFrame; ///< The finished frame.
+uniform ivec2     size;     ///< Size of the simulation grid in cells.
+uniform float     target;   ///< where the median should sit
+uniform float     maxGain;  ///< Largest gain the auto exposure may apply.
 uniform float     slew;     ///< how fast the exposure may move (per frame)
 uniform float     smoothK;  ///< EMA weight for the percentiles this frame (dt/tau)
 uniform float     slewDown; ///< like slew, but for DARKENING -- may be faster
 
-shared uint hist[256];
+shared uint hist[256]; ///< Histogram of the work group (256 bins).
 
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()

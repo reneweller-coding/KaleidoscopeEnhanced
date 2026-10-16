@@ -33,12 +33,12 @@ out vec3  vNormal; ///< Surface normal (from the vertex stage).
 out vec3  vPos;    ///< Position (from the vertex stage).
 out vec3  vLocal;  ///< Object-space position (from the vertex stage).
 out float vBg;     ///< Background flag (from the vertex stage).
-out float vInst;
-out float vSwing; ///< -1..1: where in its swing this pendulum is
+out float vInst;   ///< Inst (from the vertex stage).
+out float vSwing;  ///< -1..1: where in its swing this pendulum is
 
-const float Dist = 70.0;
-const float PivotY = 22.0;
-const float Spacing = 10.5;
+const float Dist = 70.0;    ///< Distance of the main object from the camera (world units).
+const float PivotY = 22.0;  ///< Height of the pivots (world units).
+const float Spacing = 10.5; ///< Spacing between neighbouring objects (world units).
 
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()

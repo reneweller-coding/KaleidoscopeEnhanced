@@ -28,13 +28,13 @@ uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpol
 uniform sampler2D texFluid;      ///< dye field of the Navier-Stokes sim, unit 8
 uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float sceneAdvance; ///< The music's advance since this scene was activated (integrated, never jumps).
-uniform float sceneTime;    ///< Seconds since this scene was activated.
-uniform float audioAdvance; ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
-                            ///< backwards).
-uniform float audioOnset;   ///< Onset envelope (any instrument), 0..1.
-uniform float audioStereoL;
-uniform float audioStereoR;
+uniform float sceneAdvance;   ///< The music's advance since this scene was activated (integrated, never jumps).
+uniform float sceneTime;      ///< Seconds since this scene was activated.
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                              ///< backwards).
+uniform float audioOnset;     ///< Onset envelope (any instrument), 0..1.
+uniform float audioStereoL;   ///< Energy of the left channel, 0..1.
+uniform float audioStereoR;   ///< Energy of the right channel, 0..1.
 uniform float audioBeat;      ///< Beat envelope, 0..1.
 uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 uniform float audioLevel;     ///< Overall loudness, 0..1.
@@ -42,9 +42,9 @@ uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 
-uniform float ringsP;
-uniform float sidesP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float ringsP; ///< Rings knob: ring count, 3..5.
+uniform float sidesP; ///< Sides knob: fold count, 6..10.
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

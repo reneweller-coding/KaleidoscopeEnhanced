@@ -11,7 +11,7 @@
  */
 // Blit.frag — 1:1 texture copy for the core pipeline (replaces the old
 // fixed-function textured quad in FilterShader::blitTexture).
-uniform sampler2D tex;
+uniform sampler2D tex;       ///< The input picture.
 in vec2           vUV;       ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 out vec4          fragColor; ///< The pixel's colour (output).
 

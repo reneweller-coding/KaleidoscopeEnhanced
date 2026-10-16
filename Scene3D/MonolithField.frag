@@ -6,9 +6,9 @@ uniform float audioLevel; ///< Overall loudness, 0..1.
 uniform float audioKick;  ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 // MonolithField.frag — near-black slab faces; the EDGES are the glyphs:
 // segmented luminous runes running up the corners.
-in vec4  vCol; ///< Colour (from the vertex stage).
-in vec3  vCorner;
-in float vFlat;
+in vec4  vCol;    ///< Colour (from the vertex stage).
+in vec3  vCorner; ///< Corner (from the vertex stage).
+in float vFlat;   ///< Flat (from the vertex stage).
 
 /**
  * @file MonolithField.frag

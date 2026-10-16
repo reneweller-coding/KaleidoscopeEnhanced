@@ -38,8 +38,8 @@ uniform float audioLevel;     ///< Overall loudness, 0..1.
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-uniform float viewP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float viewP; ///< View knob: where the camera looks, 0..1.
+uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *
@@ -101,7 +101,7 @@ const float Rs = 4.2;   ///< apothem of the shaft
 const float Rw = 6.2;   ///< apothem of the gallery walls
 const float Lh = 2.8;   ///< level height
 const float Slab = 0.3; ///< floor thickness
-float       gLamp;
+float       gLamp;      ///< Brightness of the lamps this frame.
 
 /**  Exit of a ray (from inside) through a hexagonal prism of apothem R.
  *

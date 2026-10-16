@@ -42,11 +42,11 @@ uniform float sceneSeed;  ///< A random number fixed per activation.
 
 uniform float audioChroma[12]; ///< Pitch-class energies (12 values).
 uniform float audioChromaHue;  ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
-uniform float audioDownbeat;
-uniform float audioSwell; ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioKick;  ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioDrop;  ///< Drop envelope: high after a detected drop, decaying.
-uniform float audioRotPhase;
+uniform float audioDownbeat;   ///< Downbeat accent: a decaying pulse on the bar's 1, 0..1.
+uniform float audioSwell;      ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioKick;       ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioDrop;       ///< Drop envelope: high after a detected drop, decaying.
+uniform float audioRotPhase;   ///< Accumulated rotation angle (radians), driven by the music.
 
 out vec4 vCol; ///< Colour (from the vertex stage).
 

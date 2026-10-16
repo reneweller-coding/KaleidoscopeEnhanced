@@ -12,8 +12,8 @@ uniform float     time;          ///< Seconds since the program started (never r
 uniform sampler2D tex0;          ///< The current photo.
 uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
 uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
-uniform float     copies;
-uniform int       rot;
+uniform float     copies;        ///< Copies per side of the tile grid.
+uniform int       rot;           ///< 1: the tiles are turned by 45 degrees.
 
 uniform float audioPhase; ///< slow jump-free rotation of the tile grid
 uniform float audioSwell; ///< slow loudness swell -> the grid looms closer

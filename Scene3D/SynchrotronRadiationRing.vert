@@ -22,10 +22,10 @@ uniform float audioMid;     ///< Mid band level, 0..1.
 uniform float audioHigh;    ///< High band level, 0..1.
 uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
 
-out vec3  vPos; ///< Position (from the vertex stage).
-out vec2  vUV;  ///< Texture coordinate 0..1 over the screen (from the vertex stage).
-out float vRadiation;
-out float vBeamID;
+out vec3  vPos;       ///< Position (from the vertex stage).
+out vec2  vUV;        ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+out float vRadiation; ///< Radiation (from the vertex stage).
+out float vBeamID;    ///< Beam ID (from the vertex stage).
 
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()

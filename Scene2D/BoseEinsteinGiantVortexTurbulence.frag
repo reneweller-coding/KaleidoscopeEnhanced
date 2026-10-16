@@ -39,10 +39,10 @@ uniform float audioMid;       ///< Mid band level, 0..1.
 uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
 
-uniform float vortexCountP;
-uniform float cascadeP;
-uniform float coreRadiusP;
-uniform float soundSpeedP;
+uniform float vortexCountP; ///< Vortex count knob: number of active quantized vortex cores, 4..16.
+uniform float cascadeP;     ///< Cascade knob: inverse energy cascade clustering strength (0.5..2.2).
+uniform float coreRadiusP;  ///< Core radius knob: healing length vortex core radius, 0.02..0.12.
+uniform float soundSpeedP;  ///< Sound speed knob: Bogoliubov acoustic speed of sound, 0.6..2.2.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

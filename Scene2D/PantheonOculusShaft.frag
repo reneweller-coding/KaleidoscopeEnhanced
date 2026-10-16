@@ -41,7 +41,7 @@ uniform float audioLevel;     ///< Overall loudness, 0..1.
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-uniform float sunP;
+uniform float sunP; ///< Sun knob: the sun's height, 0..1.
 uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
@@ -100,8 +100,8 @@ float noise2( vec2 p )
                 mix( hash21( i + vec2( 0.0, 1.0 ) ), hash21( i + vec2( 1.0, 1.0 ) ), f.x ), f.y );
 }
 
-const float Ocr = 0.16; ///< oculus radius (sine of its angle)
-const vec3  Oc = vec3( 0.0, 0.987, 0.0 );
+const float Ocr = 0.16;                   ///< oculus radius (sine of its angle)
+const vec3  Oc = vec3( 0.0, 0.987, 0.0 ); ///< Centre of the oculus.
 
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()

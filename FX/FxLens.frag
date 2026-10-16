@@ -29,6 +29,7 @@ uniform float     audioSwell;    ///< Slow loudness envelope, 0..1 (seconds).
 //	return actualUV + (mag * vecToPoint);
 //}
 
+/// Pi.
 #define PI 3.141592653589793238462643383279
 
 /**  Four-quadrant arc tangent.

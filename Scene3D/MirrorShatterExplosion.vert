@@ -11,9 +11,9 @@
 in vec4 attrA; ///< .w = point index
 in vec4 attrB; ///< 4 random seeds in [0,1)
 
-out vec3  vObjPos;
-out vec4  vSeeds;
-out float vIndex;
+out vec3  vObjPos; ///< Obj pos (from the vertex stage).
+out vec4  vSeeds;  ///< Seeds (from the vertex stage).
+out float vIndex;  ///< Index (from the vertex stage).
 
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()

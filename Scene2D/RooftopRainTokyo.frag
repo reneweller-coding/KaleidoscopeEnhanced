@@ -35,8 +35,8 @@ uniform float audioLevel;        ///< Overall loudness, 0..1.
 uniform float audioValence;      ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioChromaHue;    ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-uniform float rainP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float rainP; ///< Rain knob: how hard it rains, 0..1.
+uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *
@@ -136,8 +136,8 @@ float fbm( vec2 p )
     return v;
 }
 
-float gBand[8];
-float gT; ///< The chain's (or scene's) time this frame.
+float gBand[8]; ///< Eight band levels of the music this frame, 0..1.
+float gT;       ///< The chain's (or scene's) time this frame.
 
 /**  One of three neon colours (pink, cyan, amber) by a random value.
  *

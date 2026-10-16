@@ -40,10 +40,10 @@ uniform float audioSpread;    ///< Spectral spread, 0..1.
 uniform float audioMode;      ///< Mode of the music: 0 minor .. 1 major.
 uniform float audioHigh;      ///< High band level, 0..1.
 
-uniform float rayP;
-uniform float hazeP;
-uniform float dustP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float rayP;  ///< Ray knob: ray length, 0..1.
+uniform float hazeP; ///< Haze knob: air haze, 0..1.
+uniform float dustP; ///< Dust knob: dust motes, 0..1.
+uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 // ---- shared building blocks (texture pool, noise, shapes) ----
 /**  Pseudo-random number 0..1 from a float.

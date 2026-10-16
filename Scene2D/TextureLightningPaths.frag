@@ -42,8 +42,8 @@ uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 
 uniform float scaleP;  ///< Scale knob.
 uniform float branchP; ///< Branching knob, 0..1.
-uniform float stoneP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float stoneP;  ///< Stone knob: how much stone is lit, 0..1.
+uniform float hueP;    ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 // ---- shared building blocks (texture pool, noise, shapes) ----
 /**  Pseudo-random number 0..1 from a float.

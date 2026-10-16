@@ -18,12 +18,12 @@ uniform sampler2D tex0;          ///< The current photo.
 uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
 uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioBeat;     ///< Beat envelope, 0..1.
-uniform float audioLevel;    ///< Overall loudness, 0..1.
-uniform float audioCentroid; ///< Spectral centroid (brightness of the sound), 0..1.
-uniform float audioFlux;     ///< Spectral flux (how fast the spectrum changes), 0..1.
-uniform float audioSubBass;  ///< Sub-bass band level, 0..1.
-uniform float audioArousal;
+uniform float audioBeat;      ///< Beat envelope, 0..1.
+uniform float audioLevel;     ///< Overall loudness, 0..1.
+uniform float audioCentroid;  ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
+uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
+uniform float audioArousal;   ///< Arousal of the music (energy, rhythm, brightness), 0..1.
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
 uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs

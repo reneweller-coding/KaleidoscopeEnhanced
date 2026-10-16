@@ -16,8 +16,8 @@
 in vec4 attrA; ///< w = point index
 in vec4 attrB; ///< 4 seeds in [0,1)
 
-out vec3  vCol; ///< Colour (from the vertex stage).
-out float vDensity;
+out vec3  vCol;     ///< Colour (from the vertex stage).
+out float vDensity; ///< Density (from the vertex stage).
 
 uniform mat4  projM;      ///< Projection matrix.
 uniform float eyeOff;     ///< Stereo eye offset (0 in mono).
@@ -37,8 +37,8 @@ uniform sampler2D tex0;          ///< The current photo.
 uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
 uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float webScaleP;
-uniform float pointSizeP;
+uniform float webScaleP;  ///< Web scale knob, 0.6..2.
+uniform float pointSizeP; ///< Point size knob, 8..18.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

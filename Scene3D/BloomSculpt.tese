@@ -22,17 +22,18 @@
 // Ocean: with the tessellation level varying across the surface, finite
 // differences would alias along every level boundary.
 // -----------------------------------------------------------------------
+/// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( quads, fractional_odd_spacing, ccw ) in;
 
-in vec2 tcUV[];
-in vec4 tcSeed[];
+in vec2 tcUV[];   ///< UV (from the tessellation control stage).
+in vec4 tcSeed[]; ///< Seed (from the tessellation control stage).
 
 out vec3  vObj;    ///< object-space point (drives the body colour)
 out vec3  vNormal; ///< Surface normal (from the vertex stage).
 out vec3  vView;   ///< view direction at the surface
 out vec3  vWorld;  ///< for the shadow lookup
 out float vSwell;  ///< total displacement, for the emissive seams
-out vec2  vSurfUV;
+out vec2  vSurfUV; ///< Surf UV (from the vertex stage).
 
 uniform mat4  projM;           ///< Projection matrix.
 uniform mat4  lightM;          ///< Light view-projection matrix (shadow map).
@@ -50,17 +51,18 @@ uniform float twistP;   ///< preset: how fast the modes rotate
 
 const float Pi = 3.14159265; ///< Pi.
 
-// Twelve (k, m) pairs, one per pitch class: k sets how many rings run from
-// pole to pole, m how many lobes run around the equator.  Low pitch classes
-// get the big slow shapes, high ones the fine ruffles.
+/// Twelve (k, m) pairs, one per pitch class: k sets how many rings run from
+/// pole to pole, m how many lobes run around the equator.  Low pitch classes
+/// get the big slow shapes, high ones the fine ruffles.
 const float ModeK[12] = float[12]( 1.0, 2.0, 2.0, 3.0, 3.0, 3.0,
                                    4.0, 4.0, 5.0, 5.0, 6.0, 6.0 );
+/// Lobes around the equator of each pitch class's mode (m).
 const float ModeM[12] = float[12]( 0.0, 1.0, 2.0, 1.0, 2.0, 3.0,
                                    2.0, 3.0, 2.0, 4.0, 3.0, 5.0 );
-// Standing weight per mode, so the sculpture has a strong silhouette even in
-// silence — the music then swells individual lobes on top of it.  Alternating
-// signs make neighbouring modes carve INTO each other instead of piling up
-// into one smooth bulge.
+/// Standing weight per mode, so the sculpture has a strong silhouette even in
+/// silence — the music then swells individual lobes on top of it.  Alternating
+/// signs make neighbouring modes carve INTO each other instead of piling up
+/// into one smooth bulge.
 const float ModeW[12] = float[12]( 0.34, -0.26, 0.30, -0.22, 0.25, -0.28,
                                    0.20, -0.17, 0.15, -0.19, 0.12, -0.14 );
 

@@ -21,8 +21,8 @@ uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
 uniform float audioAdvance; ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
                             ///< backwards).
 
-out vec2 vUV; ///< Texture coordinate 0..1 over the screen (from the vertex stage).
-out vec3 vN;
+out vec2 vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+out vec3 vN;    ///< N (from the vertex stage).
 out vec3 vView; ///< View vector (from the vertex stage).
 
 /** Entry point of this shader stage (the file description says what it draws). */

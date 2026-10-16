@@ -41,7 +41,7 @@ uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighte
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 
 uniform float glowP; ///< Glow / afterglow knob, 0..1.
-uniform float inkP;
+uniform float inkP;  ///< Ink knob: ink strength, 0.4..0.9.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

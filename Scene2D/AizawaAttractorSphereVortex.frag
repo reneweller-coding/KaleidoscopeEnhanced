@@ -36,11 +36,11 @@ uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes)
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
 // Per-activation variety
-uniform float speedP; ///< Speed knob, 0..1.
-uniform float sphereRadP;
-uniform float vortexP;
-uniform float glowP; ///< Glow / afterglow knob, 0..1.
-uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float speedP;     ///< Speed knob, 0..1.
+uniform float sphereRadP; ///< Sphere rad knob, 0.8..1.4.
+uniform float vortexP;    ///< Vortex knob, 0.7..1.4.
+uniform float glowP;      ///< Glow / afterglow knob, 0..1.
+uniform float hueP;       ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *
@@ -88,7 +88,12 @@ float photoLevel()
 }
 
 // Aizawa system parameters: a=0.95, b=0.7, c=0.6, d=3.5, e=0.25, f=0.1
-const float AizA = 0.95, AIZ_B = 0.7, AIZ_C = 0.6, AIZ_D = 3.5, AIZ_E = 0.25, AIZ_F = 0.1;
+/** @{ */
+const float AizA = 0.95, AIZ_B = 0.7, AIZ_C = 0.6, AIZ_D = 3.5, AIZ_E = 0.25,
+            AIZ_F = 0.1; ///< AizA: The Aizawa system's parameter a; AIZ_B: The Aizawa system's parameter b; AIZ_C: The
+                         ///< Aizawa system's parameter c; AIZ_D: The Aizawa system's parameter d; AIZ_E: The Aizawa
+                         ///< system's parameter e; AIZ_F: The Aizawa system's parameter f.
+/** @} */
 
 /**  The Aizawa attractor's velocity at a point.
  *

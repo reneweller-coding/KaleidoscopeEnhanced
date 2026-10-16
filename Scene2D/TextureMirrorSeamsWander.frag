@@ -44,10 +44,10 @@ uniform float audioRoughness; ///< Roughness (dissonance) of the sound, 0..1.
 uniform float audioMode;      ///< Mode of the music: 0 minor .. 1 major.
 uniform float audioHigh;      ///< High band level, 0..1.
 
-uniform float seamsP;
+uniform float seamsP; ///< Seams knob: base seam count, 0..1.
 uniform float scaleP; ///< Scale knob.
-uniform float curveP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float curveP; ///< Curve knob: how curved, 0..1.
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 // ---- shared building blocks (texture pool, noise, shapes) ----
 /**  Pseudo-random number 0..1 from a float.
@@ -389,7 +389,10 @@ void finish( vec3 col )
     fragColor = vec4( clamp( t, 0.0, 1.0 ), 1.0 );
 }
 
-float gT, gCurve, gRough;
+/** @{ */
+float gT, gCurve, gRough; ///< gT: The chain's (or scene's) time this frame; gCurve: How strongly the seams bend this
+                          ///< frame; gRough: The music's roughness this frame, 0..1.
+/** @} */
 
 /**  Seam k: a smooth curve line field f_k(p) = dot(p - c, n) + curve * noise.
  *

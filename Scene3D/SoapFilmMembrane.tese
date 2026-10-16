@@ -12,24 +12,24 @@
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( quads, fractional_odd_spacing, ccw ) in;
 
-in vec2 tcUV[];
-in vec4 tcSeed[];
+in vec2 tcUV[];   ///< UV (from the tessellation control stage).
+in vec4 tcSeed[]; ///< Seed (from the tessellation control stage).
 
-out vec3  vWorld; ///< World position (from the vertex stage).
-out vec2  vSurfUV;
+out vec3  vWorld;  ///< World position (from the vertex stage).
+out vec2  vSurfUV; ///< Surf UV (from the vertex stage).
 out vec3  vNormal; ///< Surface normal (from the vertex stage).
-out float vThick;
+out float vThick;  ///< Thick (from the vertex stage).
 
-uniform mat4  projM;  ///< Projection matrix.
-uniform float eyeOff; ///< Stereo eye offset (0 in mono).
-const vec2    Extent = vec2( 14.0, 9.0 );
+uniform mat4  projM;                      ///< Projection matrix.
+uniform float eyeOff;                     ///< Stereo eye offset (0 in mono).
+const vec2    Extent = vec2( 14.0, 9.0 ); ///< Size of the tessellated ground patch (x, z in world units).
 
 uniform float sceneAdvance;  ///< The music's advance since this scene was activated (integrated, never jumps).
 uniform float sceneTime;     ///< Seconds since this scene was activated.
 uniform float sceneProgress; ///< Progress through this scene's solo time, 0..1.
 uniform float audioSwell;    ///< Slow loudness envelope, 0..1 (seconds).
-uniform float modesP;
-uniform float drainP;
+uniform float modesP;        ///< Modes knob, 0..1.
+uniform float drainP;        ///< Drain knob, 0..1.
 
 /**  Height of the membrane: standing modes of a rectangle pinned at its edges.
  *

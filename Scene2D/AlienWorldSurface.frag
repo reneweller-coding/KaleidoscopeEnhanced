@@ -45,9 +45,9 @@ uniform float audioBeatPhase; ///< Position within the current beat, 0..1.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
 uniform float reliefP; ///< Relief knob, 0..1.
-uniform float skyP;
-uniform float glowP; ///< Glow / afterglow knob, 0..1.
-uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float skyP;    ///< Sky knob: gas giant size in the sky, 0.5..1.7.
+uniform float glowP;   ///< Glow / afterglow knob, 0..1.
+uniform float hueP;    ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

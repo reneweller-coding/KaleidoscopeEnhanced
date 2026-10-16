@@ -6,18 +6,18 @@ out vec4 fragColor; ///< The pixel's colour (output).
  * polar coordinates around a moving point pair and scrolls it, tiled into
  * "copies" mirrored repeats; an optional grid overlay shows the seams.
  */
-uniform vec2      resolution;    ///< Size of the render target in pixels.
-uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;          ///< The current photo.
-uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
-uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
-uniform float     audioAdvance;  ///< music advances the flow
-uniform float     audioBeat;     ///< Beat envelope, 0..1.
-uniform float     copies;
-uniform int       displayGrid;
-uniform float     speed;
-uniform int       directionPositive;
-uniform int       leftRight;
+uniform vec2      resolution;        ///< Size of the render target in pixels.
+uniform float     time;              ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;              ///< The current photo.
+uniform sampler2D tex1;              ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation;     ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform float     audioAdvance;      ///< music advances the flow
+uniform float     audioBeat;         ///< Beat envelope, 0..1.
+uniform float     copies;            ///< Copies per side of the tile grid.
+uniform int       displayGrid;       ///< 1: show the deformation grid.
+uniform float     speed;             ///< Speed of the motion.
+uniform int       directionPositive; ///< 1: the flow runs the positive way.
+uniform int       leftRight;         ///< 1: the flow runs left-right instead of up-down.
 
 // void main() {
 

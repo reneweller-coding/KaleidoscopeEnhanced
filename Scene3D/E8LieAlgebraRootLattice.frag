@@ -16,9 +16,9 @@ out vec4 fragColor; ///< The pixel's colour (output).
  *   specularP  float faceted cube specular reflection gain  (0.8..2.5)
  */
 
-in vec3  vNormal; ///< Surface normal (from the vertex stage).
-in vec3  vCol;    ///< Colour (from the vertex stage).
-in float vWeight;
+in vec3  vNormal;   ///< Surface normal (from the vertex stage).
+in vec3  vCol;      ///< Colour (from the vertex stage).
+in float vWeight;   ///< Weight (from the vertex stage).
 in vec3  vLocalPos; ///< Object-space position (from the vertex stage).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.

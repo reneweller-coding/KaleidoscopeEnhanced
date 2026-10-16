@@ -27,8 +27,8 @@ uniform float audioHigh;         ///< High band level, 0..1.
 uniform float audioSwell;        ///< Slow loudness envelope, 0..1 (seconds).
 uniform float audioSpectrum[32]; ///< Spectrum bands, 0..1.
 
-uniform float     densityP; ///< Density knob, 0..1.
-uniform float     sparkP;
+uniform float     densityP;       ///< Density knob, 0..1.
+uniform float     sparkP;         ///< Spark knob, 0.5..2.2.
 uniform float     camDistP;       ///< Camera distance knob, 0..1.
 uniform float     hueP;           ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 uniform sampler2D tex0;           ///< The current photo.
@@ -37,8 +37,8 @@ uniform float     interpolation;  ///< Cross-fade between the photos: 1 = tex0, 
 uniform float     audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float     audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 
-out vec4  vCol; ///< Colour (from the vertex stage).
-out float vLife;
+out vec4  vCol;  ///< Colour (from the vertex stage).
+out float vLife; ///< Life (from the vertex stage).
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

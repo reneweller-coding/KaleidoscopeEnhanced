@@ -117,7 +117,7 @@ float fbm3( vec2 p )
     return v;
 }
 
-float gDepth;
+float gDepth; ///< Depth of the canyon this frame.
 
 /**  The river's x position at depth z.
  *

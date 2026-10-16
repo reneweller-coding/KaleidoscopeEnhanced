@@ -1,7 +1,7 @@
 #version 330 core
-in vec3  vPos; ///< Position (from the vertex stage).
-in vec2  vUV;  ///< Texture coordinate 0..1 over the screen (from the vertex stage).
-in float vFoldAngle;
+in vec3  vPos;       ///< Position (from the vertex stage).
+in vec2  vUV;        ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+in float vFoldAngle; ///< Fold angle (from the vertex stage).
 
 out vec4 fragColor; ///< The pixel's colour (output).
 

@@ -22,10 +22,10 @@ uniform float audioMid;     ///< Mid band level, 0..1.
 uniform float audioHigh;    ///< High band level, 0..1.
 uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
 
-out vec3  vPos; ///< Position (from the vertex stage).
-out vec2  vUV;  ///< Texture coordinate 0..1 over the screen (from the vertex stage).
-out float vTier;
-out float vReadLaser;
+out vec3  vPos;       ///< Position (from the vertex stage).
+out vec2  vUV;        ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+out float vTier;      ///< Tier (from the vertex stage).
+out float vReadLaser; ///< Read laser (from the vertex stage).
 
 /**  Pseudo-random number 0..1 from a float.
  *

@@ -39,10 +39,10 @@ uniform float audioMid;       ///< Mid band level, 0..1.
 uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
 
-uniform float vortexTrainP;
-uniform float shearThickP;
-uniform float synchGlowP;
-uniform float jetSpeedP;
+uniform float vortexTrainP; ///< Vortex train knob: number of Kelvin-Helmholtz cat's-eye vortices (3.0..8.0).
+uniform float shearThickP;  ///< Shear thick knob: shear layer transition thickness, 0.4..1.8.
+uniform float synchGlowP;   ///< Synch glow knob: synchrotron magnetic shockwave luminance, 0.8..2.5.
+uniform float jetSpeedP;    ///< Jet speed knob: relativistic bulk Lorentz factor gamma, 0.6..2.2.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

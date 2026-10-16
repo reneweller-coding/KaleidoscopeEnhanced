@@ -16,10 +16,10 @@ uniform float eyeOff;     ///< Stereo eye offset (0 in mono).
 uniform float time;       ///< Seconds since the program started (never reset; see sceneTime).
 uniform vec2  resolution; ///< Size of the render target in pixels.
 
-out vec3  vPos; ///< Position (from the vertex stage).
-out float vFluxIdx;
-out float vEnergy;
-out float vHaze;
+out vec3  vPos;     ///< Position (from the vertex stage).
+out float vFluxIdx; ///< Flux idx (from the vertex stage).
+out float vEnergy;  ///< Energy (from the vertex stage).
+out float vHaze;    ///< Haze (from the vertex stage).
 
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()

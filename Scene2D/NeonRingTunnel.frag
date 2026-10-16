@@ -40,10 +40,10 @@ uniform float audioRoughness; ///< Roughness (dissonance) of the sound, 0..1.
 uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 
-uniform float ringsP;
-uniform float bendP;
-uniform float thickP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float ringsP; ///< Rings knob: ring spacing, 0..1.
+uniform float bendP;  ///< Bend knob: how much the photo bends the rings, 0..1.
+uniform float thickP; ///< Thick knob: tube thickness, 0..1.
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 // ---- shared building blocks (texture pool, noise, shapes) ----
 /**  Pseudo-random number 0..1 from a float.

@@ -36,8 +36,8 @@ uniform float audioLevel;     ///< Overall loudness, 0..1.
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-uniform float tailP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float tailP; ///< Tail knob: tail length and spread, 0..1.
+uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *
@@ -113,7 +113,11 @@ float fbm( vec2 p )
     return v;
 }
 
-float g_T = 0.0, g_tail = 0.5, g_swell = 0.0, g_hi = 0.0;
+/** @{ */
+float g_T = 0.0, g_tail = 0.5, g_swell = 0.0, g_hi = 0.0; ///< g_T: The scene's clock this frame; g_tail: Length of the
+                                                          ///< comet's tail this frame, 0..1; g_swell: The swell this
+                                                          ///< frame, 0..1; g_hi: Treble level this frame, 0..1.
+/** @} */
 
 /**  The night sky (above the horizon line h) at point q.
  *

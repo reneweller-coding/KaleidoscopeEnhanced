@@ -36,8 +36,8 @@ uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-uniform float smokeP;
-uniform float driftP;
+uniform float smokeP; ///< Smoke knob: smoke density & curl turbulence scale (0.5..2.2).
+uniform float driftP; ///< Drift knob: upward buoyancy drift speed, 0.5..2.
 uniform float speedP; ///< Speed knob, 0..1.
 uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 

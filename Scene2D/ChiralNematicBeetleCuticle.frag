@@ -40,9 +40,9 @@ uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
 
 uniform float pitchP; ///< Pitch knob, 0..1.
-uniform float hexP;
-uniform float iridP;
-uniform float metalP;
+uniform float hexP;   ///< Hex knob: hexagonal cellular micro-facet scale, 2..8.
+uniform float iridP;  ///< Irid knob: Bragg structural interference intensity, 0.8..2.5.
+uniform float metalP; ///< Metal knob: specular metallic sheen reflection, 0.5..2.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

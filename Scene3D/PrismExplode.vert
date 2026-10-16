@@ -12,8 +12,8 @@ in vec4 attrB; ///< xyz = facet normal, w = per-shard seed
 out vec3  vNormal; ///< Surface normal (from the vertex stage).
 out vec3  vView;   ///< View vector (from the vertex stage).
 out vec3  vObj;    ///< Object-space position (from the vertex stage).
-out float vWedge;
-out float vSeed; ///< Per-instance random seed (from the vertex stage).
+out float vWedge;  ///< Wedge (from the vertex stage).
+out float vSeed;   ///< Per-instance random seed (from the vertex stage).
 
 uniform mat4  projM;        ///< Projection matrix.
 uniform float eyeOff;       ///< Stereo eye offset (0 in mono).

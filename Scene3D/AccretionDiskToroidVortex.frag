@@ -21,7 +21,7 @@ out vec4 fragColor; ///< The pixel's colour (output).
 in vec3  vWorldPos; ///< World position (from the vertex stage).
 in vec3  vNormal;   ///< Surface normal (from the vertex stage).
 in vec2  vTexCoord; ///< Texture coordinate (from the vertex stage).
-in float vDoppler;
+in float vDoppler;  ///< Doppler (from the vertex stage).
 
 uniform sampler2D tex0;          ///< The current photo.
 uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
@@ -41,13 +41,13 @@ uniform float audioMid;       ///< Mid band level, 0..1.
 uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
-uniform float audioRolloff;
-uniform float audioSharpness;
+uniform float audioRolloff;   ///< Spectral rolloff: how far the energy reaches into the highs, 0..1.
+uniform float audioSharpness; ///< Sharpness of the sound: 0 dull and dark .. 1 bright and harsh.
 
-uniform float toroidP;
-uniform float iscoP;
-uniform float speedP; ///< Speed knob, 0..1.
-uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float toroidP; ///< Toroid knob, 0.5..2.
+uniform float iscoP;   ///< Isco knob, 0.5..2.
+uniform float speedP;  ///< Speed knob, 0..1.
+uniform float hueP;    ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

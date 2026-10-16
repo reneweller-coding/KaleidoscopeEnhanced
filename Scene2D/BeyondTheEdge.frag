@@ -33,9 +33,9 @@ uniform float audioCentroid;  ///< Spectral centroid (brightness of the sound), 
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-uniform float cmbP;
-uniform float anomalyP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float cmbP;     ///< Cmb knob: contrast and detail of the cosmic microwave background (0.5..1.5).
+uniform float anomalyP; ///< Anomaly knob: intensity of the unknown anomalies (0.5..2.0).
+uniform float hueP;     ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

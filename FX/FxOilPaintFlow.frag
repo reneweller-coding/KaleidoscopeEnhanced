@@ -19,7 +19,7 @@ uniform float     audioAdvance;  ///< The music's advance: integrated tempo-weig
 precision highp float;
 #endif
 
-const int Radius = 10;
+const int Radius = 10; ///< Radius of the filter (pixels).
 
 /**  Pseudo-random value of a 2D point.
  *
@@ -113,10 +113,10 @@ float pattern( vec2 p, out vec2 q, out vec2 r )
     return fbm( p + 1.0 * r + 0.0 * time );
 }
 
-const vec3 Color1 = vec3( 0.101961, 0.619608, 0.666667 );
-const vec3 Color2 = vec3( 0.666667, 0.666667, 0.498039 );
-const vec3 Color3 = vec3( 0, 0, 0.164706 );
-const vec3 Color4 = vec3( 0.666667, 1, 1 );
+const vec3 Color1 = vec3( 0.101961, 0.619608, 0.666667 ); ///< First colour of the paint flow.
+const vec3 Color2 = vec3( 0.666667, 0.666667, 0.498039 ); ///< Second colour of the paint flow.
+const vec3 Color3 = vec3( 0, 0, 0.164706 );               ///< Third colour of the paint flow (the deep shade).
+const vec3 Color4 = vec3( 0.666667, 1, 1 );               ///< Fourth colour of the paint flow (the highlight).
 
 /**  Blend mode darken: s over d.
  *

@@ -10,9 +10,9 @@
 in vec4 attrA; ///< w = blade index
 in vec4 attrB; ///< four hashes
 
-out vec3  gRoot;
-out vec4  gRnd;
-out float gIndex;
+out vec3  gRoot;  ///< Root (from the geometry stage).
+out vec4  gRnd;   ///< Rnd (from the geometry stage).
+out float gIndex; ///< Index (from the geometry stage).
 
 uniform float audioAdvance; ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
                             ///< backwards).
@@ -20,8 +20,8 @@ uniform float sceneSeed;    ///< A random number fixed per activation.
 uniform float time;         ///< Seconds since the program started (never reset; see sceneTime).
 
 // Field size.  z runs ahead of the camera (the engine projects with -z).
-const float FieldW = 26.0;
-const float FieldD = 55.0;
+const float FieldW = 26.0; ///< Width of the grass field (world units).
+const float FieldD = 55.0; ///< Depth of the grass field (world units).
 
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()

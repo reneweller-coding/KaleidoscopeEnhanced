@@ -44,10 +44,10 @@ uniform float audioRoughness; ///< Roughness (dissonance) of the sound, 0..1.
 uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 
-uniform float crinkleP;
-uniform float photoP; ///< Photo knob: how much of the photo shows, 0..1.
-uniform float gratingP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float crinkleP; ///< Crinkle knob: crease depth, 0..1.
+uniform float photoP;   ///< Photo knob: how much of the photo shows, 0..1.
+uniform float gratingP; ///< Grating knob: rainbow spacing, 0..1.
+uniform float hueP;     ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 // ---- shared building blocks (texture pool, noise, shapes) ----
 /**  Pseudo-random number 0..1 from a float.
@@ -389,7 +389,10 @@ void finish( vec3 col )
     fragColor = vec4( clamp( t, 0.0, 1.0 ), 1.0 );
 }
 
-float gT, gSc, gRough;
+/** @{ */
+float gT, gSc, gRough; ///< gT: The chain's (or scene's) time this frame; gSc: Scale of the pattern this frame; gRough:
+                       ///< The music's roughness this frame, 0..1.
+/** @} */
 
 /**  Crumpled foil height: ridged noise (sharp creases, smooth slopes between).
  *

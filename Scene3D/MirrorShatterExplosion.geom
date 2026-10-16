@@ -20,13 +20,13 @@ layout( points ) in;
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( triangle_strip, max_vertices = 3 ) out;
 
-in vec3  vObjPos[];
-in vec4  vSeeds[];
-in float vIndex[];
+in vec3  vObjPos[]; ///< Obj pos (from the vertex stage).
+in vec4  vSeeds[];  ///< Seeds (from the vertex stage).
+in float vIndex[];  ///< Index (from the vertex stage).
 
-out vec3 gNormal;
-out vec3 gWorld;
-out vec3 gCol;
+out vec3 gNormal; ///< Normal (from the geometry stage).
+out vec3 gWorld;  ///< World (from the geometry stage).
+out vec3 gCol;    ///< The colour gathered so far for this pixel.
 
 uniform mat4  projM;  ///< Projection matrix.
 uniform float eyeOff; ///< Stereo eye offset (0 in mono).
@@ -49,7 +49,7 @@ uniform sampler2D tex0;          ///< The current photo.
 uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
 uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-const float NumPoints = 2500.0;
+const float NumPoints = 2500.0; ///< Number of points.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

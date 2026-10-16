@@ -38,10 +38,10 @@ uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-uniform float loopP;
-uniform float granuleP;
-uniform float flareP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float loopP;    ///< Loop knob: coronal loop density & arch height, 0.5..2.2.
+uniform float granuleP; ///< Granule knob: photospheric convection cell size, 0.5..2.
+uniform float flareP;   ///< Flare knob: magnetic reconnection flare brightness, 0.5..2.2.
+uniform float hueP;     ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

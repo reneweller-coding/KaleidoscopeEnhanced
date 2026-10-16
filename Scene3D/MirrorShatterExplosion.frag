@@ -1,9 +1,9 @@
 #version 330 core
 out vec4 fragColor; ///< The pixel's colour (output).
 
-in vec3 gNormal;
-in vec3 gWorld;
-in vec3 gCol;
+in vec3 gNormal; ///< Normal (from the geometry stage).
+in vec3 gWorld;  ///< World (from the geometry stage).
+in vec3 gCol;    ///< The colour gathered so far for this pixel.
 
 /**
  * @file MirrorShatterExplosion.frag

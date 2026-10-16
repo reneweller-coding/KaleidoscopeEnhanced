@@ -1,7 +1,7 @@
 #version 330 core
-in vec3  vPos; ///< Position (from the vertex stage).
-in float vFloraType;
-in float vBioGlow;
+in vec3  vPos;       ///< Position (from the vertex stage).
+in float vFloraType; ///< Flora type (from the vertex stage).
+in float vBioGlow;   ///< Bio glow (from the vertex stage).
 
 out vec4 fragColor; ///< The pixel's colour (output).
 

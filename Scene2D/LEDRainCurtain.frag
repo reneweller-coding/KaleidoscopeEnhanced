@@ -107,8 +107,11 @@ float noise2( vec2 p )
                 mix( hash21( i + vec2( 0.0, 1.0 ) ), hash21( i + vec2( 1.0, 1.0 ) ), f.x ), f.y );
 }
 
-const float Floory = -0.42;
-float       gT, gPx, gDens;
+const float Floory = -0.42; ///< Height of the floor line (screen units).
+/** @{ */
+float gT, gPx, gDens; ///< gT: The chain's (or scene's) time this frame; gPx: Size of a pixel (1 / screen height);
+                      ///< gDens: Spacing factor of the LED columns this frame (smaller: denser).
+/** @} */
 
 /**  The colour of a pitch class: a wheel of hues, softened toward white.
  *

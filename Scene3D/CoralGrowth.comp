@@ -53,24 +53,27 @@
 // turns the frozen nodes into geometry — separated by a barrier, because
 // invocations within one dispatch have no ordering.
 // -----------------------------------------------------------------------
+/// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( local_size_x = 4, local_size_y = 4, local_size_z = 4 ) in;
 
+/// The output vertex buffer: eight floats per vertex (attribute A, attribute B) that the scene draws.
 layout( std430, binding = 0 ) buffer Verts
 {
     float verts[];
 };
+/// The indirect draw command: [0] the vertex count (counted up atomically), then the other draw arguments.
 layout( std430, binding = 1 ) buffer Cmd
 {
     uint cmd[];
 };
 
-// The persistent state.  Claiming a node slot is an atomicAdd and GLSL core has
-// no float atomics, so the whole payload is a uint array and the floats travel
-// through bit casts.  One array, because std430 only lets the LAST member be
-// unsized.
-//   st[OffNodes ..] nodes,   4 words each: xyz as float + parent index
-//   st[OffWalk  ..] walkers, 4 words each: xyz as float + seed
-//   st[OffGrid  ..] hash grid, one word per cell: node index + 1, 0 = empty
+/// The persistent state.  Claiming a node slot is an atomicAdd and GLSL core has
+/// no float atomics, so the whole payload is a uint array and the floats travel
+/// through bit casts.  One array, because std430 only lets the LAST member be
+/// unsized.
+///   st[OffNodes ..] nodes,   4 words each: xyz as float + parent index
+///   st[OffWalk  ..] walkers, 4 words each: xyz as float + seed
+///   st[OffGrid  ..] hash grid, one word per cell: node index + 1, 0 = empty
 layout( std430, binding = 2 ) buffer State
 {
     uint nodeCount;
@@ -79,9 +82,9 @@ layout( std430, binding = 2 ) buffer State
     uint st[];
 };
 
-uniform uint  maxVertices; ///< Capacity of the vertex buffer (compute stage).
-uniform uint  frameIndex;
-uniform float genPass;
+uniform uint  maxVertices;  ///< Capacity of the vertex buffer (compute stage).
+uniform uint  frameIndex;   ///< Frame counter since the scene started.
+uniform float genPass; ///< 1 while the generation pass runs (it fills the state buffer once), 0 in the frames after.
 uniform float time;         ///< Seconds since the program started (never reset; see sceneTime).
 uniform float sceneSeed;    ///< A random number fixed per activation.
 uniform float audioAdvance; ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
@@ -95,17 +98,17 @@ uniform float stickP; ///< preset: contact radius, so bond length
 uniform float thickP; ///< preset: branch thickness
 uniform float reachP; ///< preset: how far the colony is allowed to spread
 
-const int   Nodes = 12000;
-const int   Walkers = 512;
-const int   Seeds = 32;
-const int   Sides = 6;
-const int   Grid = 38;
+const int   Nodes = 12000;                  ///< Capacity of the node list.
+const int   Walkers = 512;                  ///< Number of random walkers.
+const int   Seeds = 32;                     ///< Number of seed nodes.
+const int   Sides = 6;                      ///< Sides of the tube around each segment.
+const int   Grid = 38;                      ///< Cells per side of the spatial hash grid.
 const float Gh = 3.2;                       ///< half extent of the hash grid
-const vec3  Base = vec3( 0.0, -1.55, 0.0 ); // the floor the colony sits on
+const vec3  Base = vec3( 0.0, -1.55, 0.0 ); ///< the floor the colony sits on
 
-const int OffNodes = 0;
-const int OffWalk = 4 * Nodes;
-const int OffGrid = 4 * Nodes + 4 * Walkers;
+const int OffNodes = 0;                      ///< Offset of the node list in the state buffer.
+const int OffWalk = 4 * Nodes;               ///< Offset of the walkers in the state buffer.
+const int OffGrid = 4 * Nodes + 4 * Walkers; ///< Offset of the spatial grid in the state buffer.
 
 /**  Pseudo-random number 0..1 from a float.
  *

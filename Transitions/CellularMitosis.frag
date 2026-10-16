@@ -36,10 +36,10 @@ uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-uniform float mitosisP;
-uniform float cleaveP;
-uniform float speedP; ///< Speed knob, 0..1.
-uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float mitosisP; ///< Mitosis knob: cell membrane curvature & size, 0.5..2.2.
+uniform float cleaveP;  ///< Cleave knob: cytokinesis cleavage furrow depth (0.5..2.0).
+uniform float speedP;   ///< Speed knob, 0..1.
+uniform float hueP;     ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /**  Rotates a colour's hue by an angle (about the grey axis).
  *

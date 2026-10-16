@@ -8,15 +8,15 @@
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( vertices = 4 ) out;
 
-in vec2  vUV[];   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
-in vec4  vSeed[]; ///< Per-instance random seed (from the vertex stage).
-out vec2 tcUV[];
-out vec4 tcSeed[];
+in vec2  vUV[];    ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+in vec4  vSeed[];  ///< Per-instance random seed (from the vertex stage).
+out vec2 tcUV[];   ///< UV (from the tessellation control stage).
+out vec4 tcSeed[]; ///< Seed (from the tessellation control stage).
 
-const vec2    Extent = vec2( 160.0, 220.0 );
-uniform float camHP;      ///< Camera height knob, 0..1.
-uniform float detailP;    ///< Detail knob, 0..1.
-uniform float audioSwell; ///< Slow loudness envelope, 0..1 (seconds).
+const vec2    Extent = vec2( 160.0, 220.0 ); ///< Size of the tessellated ground patch (x, z in world units).
+uniform float camHP;                         ///< Camera height knob, 0..1.
+uniform float detailP;                       ///< Detail knob, 0..1.
+uniform float audioSwell;                    ///< Slow loudness envelope, 0..1 (seconds).
 
 /**  The flat ground position of a patch coordinate (before the displacement).
  *

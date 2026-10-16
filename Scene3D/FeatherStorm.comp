@@ -32,12 +32,15 @@
 // so a feather is sometimes seen edge-on and nearly vanishes.  That flicker of
 // presence and absence is most of what makes a swarm of thin things look real.
 // -----------------------------------------------------------------------
+/// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( local_size_x = 4, local_size_y = 4, local_size_z = 4 ) in;
 
+/// The output vertex buffer: eight floats per vertex (attribute A, attribute B) that the scene draws.
 layout( std430, binding = 0 ) buffer Verts
 {
     float verts[];
 };
+/// The indirect draw command: [0] the vertex count (counted up atomically), then the other draw arguments.
 layout( std430, binding = 1 ) buffer Cmd
 {
     uint cmd[];
@@ -57,7 +60,7 @@ uniform float countP; ///< preset: how many feathers
 uniform float swirlP; ///< preset: strength of the vortex
 uniform float sizeP;  ///< preset: feather length
 
-const int Feathers = 1100;
+const int Feathers = 1100; ///< Most feathers.
 
 /**  Pseudo-random number 0..1 from a float.
  *

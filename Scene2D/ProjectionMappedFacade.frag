@@ -39,7 +39,7 @@ uniform float audioLevel;     ///< Overall loudness, 0..1.
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-uniform float bayP;
+uniform float bayP; ///< Bay knob: how many window bays, 0..1.
 uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
@@ -111,11 +111,11 @@ float sdBox( vec2 p, vec2 b )
     return length( max( d, 0.0 ) ) + min( max( d.x, d.y ), 0.0 );
 }
 
-const float Ground = -0.36;
-const float Entab = 0.2; ///< the main entablature
-const float Top = 0.37;  ///< tip of the pediment
-float       gBay;        ///< bay width
-float       gHalfW;      ///< half width of the facade
+const float Ground = -0.36; ///< Height of the ground (world units).
+const float Entab = 0.2;    ///< the main entablature
+const float Top = 0.37;     ///< tip of the pediment
+float       gBay;           ///< bay width
+float       gHalfW;         ///< half width of the facade
 
 /**  A soft raised band (a cornice or a moulding) of height a and half width w.
  *

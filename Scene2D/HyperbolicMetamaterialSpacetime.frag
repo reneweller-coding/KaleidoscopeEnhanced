@@ -40,10 +40,10 @@ uniform float audioMid;       ///< Mid band level, 0..1.
 uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
 
-uniform float coneSlopeP;
-uniform float curvP;
-uniform float densityP; ///< Density knob, 0..1.
-uniform float warpP;
+uniform float coneSlopeP; ///< Cone slope knob: hyperbolic cone opening dispersion, 0.5..2.
+uniform float curvP;      ///< Curv knob: spacetime metric curvature intensity, 0.4..1.8.
+uniform float densityP;   ///< Density knob, 0..1.
+uniform float warpP;      ///< Warp knob: relativistic frame-dragging warp, 0.2..1.5.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

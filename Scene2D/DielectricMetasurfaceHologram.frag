@@ -39,8 +39,8 @@ uniform float audioLevel;     ///< Overall loudness, 0..1.
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-uniform float metaP;
-uniform float phaseP;
+uniform float metaP;  ///< Meta knob: pillar density, 0.5..2.
+uniform float phaseP; ///< Phase knob: zone count, 0.5..2.
 uniform float speedP; ///< Speed knob, 0..1.
 uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 

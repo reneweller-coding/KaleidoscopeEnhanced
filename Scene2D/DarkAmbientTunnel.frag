@@ -19,11 +19,11 @@ uniform float     time;          ///< Seconds since the program started (never r
 uniform sampler2D tex0;          ///< The current photo.
 uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
 uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
-uniform float     speedTunnel;
-uniform float     speed;
-uniform int       sides;
-uniform float     power;
-uniform int       rotate;
+uniform float     speedTunnel;   ///< Speed of the flight through the tunnel.
+uniform float     speed;         ///< Speed of the motion.
+uniform int       sides;         ///< Number of mirror sides.
+uniform float     power;         ///< Exponent of the distortion (the host scales it with the music).
+uniform int       rotate;        ///< 1: the picture turns.
 
 // Core audio uniforms (uploaded by EffectShader::applyAudioFeatures)
 uniform float audioBeat;     ///< decaying beat pulse 0..1

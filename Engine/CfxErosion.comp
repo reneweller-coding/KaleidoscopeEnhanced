@@ -26,17 +26,18 @@
 // small increments on a smooth field) and are the standard trade-off in GPU
 // erosion; the alternative would be an atomic per texel per step.
 // -----------------------------------------------------------------------
+/// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( local_size_x = 256 ) in;
 
-layout( rgba16f, binding = 0 ) uniform image2D imgLand; // R=height, G=water, B=sediment
+layout( rgba16f, binding = 0 ) uniform image2D imgLand; ///< R=height, G=water, B=sediment
 
-uniform ivec2 size; ///< Size of the simulation grid in cells.
-uniform uint  count;
-uniform uint  frame;
+uniform ivec2 size;      ///< Size of the simulation grid in cells.
+uniform uint  count;     ///< Number of elements (boids, particles, walkers ...).
+uniform uint  frame;     ///< Frame counter (seeds the random numbers).
 uniform float rain;      ///< erosion strength
 uniform float capacityK; ///< how much sediment the water can carry
 
-const int Steps = 64;
+const int Steps = 64; ///< Steps of a droplet's life.
 
 /**  PCG random step: advances the state, returns 32 random bits.
  *

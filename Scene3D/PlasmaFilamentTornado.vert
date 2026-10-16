@@ -28,7 +28,7 @@ uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-out vec4 vColor;
+out vec4 vColor;    ///< Color (from the vertex stage).
 out vec2 vTexCoord; ///< Texture coordinate (from the vertex stage).
 
 /** Entry point of this shader stage (the file description says what it draws). */

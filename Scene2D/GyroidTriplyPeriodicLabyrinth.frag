@@ -43,7 +43,7 @@ uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes)
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
 uniform float scaleP; ///< Scale knob.
-uniform float wallP;
+uniform float wallP;  ///< Wall knob: gyroid corridor wall thickness, 0.5..2.
 uniform float speedP; ///< Speed knob, 0..1.
 uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 

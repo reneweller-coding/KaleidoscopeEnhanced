@@ -4,17 +4,17 @@
  * @brief Tessellation-control stage companion to GlacierTessellation.frag -- see that file's header for
  * this scene's description.
  */
-// GlacierTessellation.tesc — Distance-adaptive GPU Hardware Tessellation
+/// GlacierTessellation.tesc — Distance-adaptive GPU Hardware Tessellation
 layout( vertices = 4 ) out;
 
-in vec2  vUV[];   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
-in vec4  vSeed[]; ///< Per-instance random seed (from the vertex stage).
-out vec2 tcUV[];
-out vec4 tcSeed[];
+in vec2  vUV[];    ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+in vec4  vSeed[];  ///< Per-instance random seed (from the vertex stage).
+out vec2 tcUV[];   ///< UV (from the tessellation control stage).
+out vec4 tcSeed[]; ///< Seed (from the tessellation control stage).
 
-const vec2    Extent = vec2( 240.0, 320.0 );
-uniform float camHP;   ///< Camera height knob, 0..1.
-uniform float detailP; ///< Detail knob, 0..1.
+const vec2    Extent = vec2( 240.0, 320.0 ); ///< Size of the tessellated ground patch (x, z in world units).
+uniform float camHP;                         ///< Camera height knob, 0..1.
+uniform float detailP;                       ///< Detail knob, 0..1.
 
 /**  The flat ground position of a patch coordinate (before the displacement).
  *

@@ -12,15 +12,15 @@ out vec4 fragColor; ///< The pixel's colour (output).
  * audioAdvance, with audioValence controlling how saturated versus grey the iridescent tint reads. Optional negative
  * and vigneting toggles invert the image or darken the corners.
  */
-uniform vec2      resolution;    ///< Size of the render target in pixels.
-uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;          ///< The current photo.
-uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
-uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
-uniform float     speed;         ///< = 2.0; //1.0
-uniform float     speedColor;    ///< = 1.0; //1.0
-uniform int       negative;
-uniform int       vigneting;
+uniform vec2      resolution;     ///< Size of the render target in pixels.
+uniform float     time;           ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;           ///< The current photo.
+uniform sampler2D tex1;           ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation;  ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform float     speed;          ///< = 2.0; //1.0
+uniform float     speedColor;     ///< = 1.0; //1.0
+uniform int       negative;       ///< 1: the picture is inverted.
+uniform int       vigneting;      ///< 1: the corners are darkened.
 uniform float     audioAdvance;   ///< integrated travel: bubbles rise faster with the music (jump-free)
 uniform float     audioKick;      ///< kick puff on the bubble radius
 uniform float     audioLevel;     ///< louder music = more saturated bubbles
@@ -77,7 +77,7 @@ vec3 imgPalette( float t )
 // License Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
 // Messed up by Weyland
 
-const int NrBubbles = 32;
+const int NrBubbles = 32; ///< Number of bubbles.
 
 // USER-FEEDBACK-REDESIGN: soap bubbles with a real LIFE CYCLE over the photo.
 // - how many are alive follows the music's complexity (flux/level/beat)

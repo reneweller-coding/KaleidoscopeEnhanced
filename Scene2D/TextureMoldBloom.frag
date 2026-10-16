@@ -40,10 +40,10 @@ uniform float audioRoughness; ///< Roughness (dissonance) of the sound, 0..1.
 uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 
-uniform float colonyP;
-uniform float ringP; ///< Ring knob, 0..1.
-uniform float fuzzP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float colonyP; ///< Colony knob: colony density, 0..1.
+uniform float ringP;   ///< Ring knob, 0..1.
+uniform float fuzzP;   ///< Fuzz knob: margin fuzz, 0..1.
+uniform float hueP;    ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 // ---- shared building blocks (texture pool, noise, shapes) ----
 /**  Pseudo-random number 0..1 from a float.

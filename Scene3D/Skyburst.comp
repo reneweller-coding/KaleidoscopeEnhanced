@@ -10,6 +10,7 @@
 // The phase comes from audioAdvance, the host-integrated clock, so shells fire
 // on a musical grid without needing any event history to react to.
 // -----------------------------------------------------------------------
+/// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( local_size_x = 4, local_size_y = 4, local_size_z = 4 ) in;
 
 /**
@@ -36,10 +37,12 @@ layout( local_size_x = 4, local_size_y = 4, local_size_z = 4 ) in;
  * stage turns into the gradient, town glow, star field and ground.
  */
 
+/// The output vertex buffer: eight floats per vertex (attribute A, attribute B) that the scene draws.
 layout( std430, binding = 0 ) buffer Verts
 {
     float verts[];
 };
+/// The indirect draw command: [0] the vertex count (counted up atomically), then the other draw arguments.
 layout( std430, binding = 1 ) buffer Cmd
 {
     uint cmd[];
@@ -60,38 +63,38 @@ uniform float burstP; ///< preset: burst size
 uniform float trailP; ///< preset: trail length
 uniform float rateP;  ///< preset: how often shells go up
 
-const int Shells = 24; ///< was 14: the sky has room for more
-const int Sparks = 480;
-const int Trail = 6; ///< points per trail -> TRAIL-1 segments
+const int Shells = 24;  ///< was 14: the sky has room for more
+const int Sparks = 480; ///< Sparks per shell.
+const int Trail = 6;    ///< points per trail -> TRAIL-1 segments
 // The night sky itself, as real geometry.  Everything the old scene called
 // "sky" was only ever added ON TOP of spark fragments, so the actual
 // background stayed pure black and three quarters of the frame was empty.
 // A 48 x 24 lat-long dome costs 1,152 quads and fills every one of them.
-const uint SkyAz = 48u;
-const uint SkyEl = 24u;
-const uint SkyBase = uint( Shells * Sparks );
-// THE DOME HAS TO FIT INSIDE THE FAR PLANE.  Scene3DShader::draw builds the
-// projection with far = 220 (EffectShader::kSceneFar), and the dome is centred
-// on the camera, so every one of its vertices sits at exactly SkyR units of
-// forward distance times cos(angle-off-axis).  At the 300 it was written with,
-// 94.6 % of the frame's directions came out past 220 and the far clip threw the
-// whole sky away again -- the scene measured luma 0.023 with a pure black
-// background even after this dome was added.  190 leaves ~30 units of margin
-// and still sits behind every spark (the furthest a shell's sparks reach from
-// the camera is about 170).
+const uint SkyAz = 48u;                       ///< Columns (azimuth) of the sky dome's mesh.
+const uint SkyEl = 24u;                       ///< Rows (elevation) of the sky dome's mesh.
+const uint SkyBase = uint( Shells * Sparks ); ///< Index of the first sky-dome quad (after the sparks).
+/// THE DOME HAS TO FIT INSIDE THE FAR PLANE.  Scene3DShader::draw builds the
+/// projection with far = 220 (EffectShader::kSceneFar), and the dome is centred
+/// on the camera, so every one of its vertices sits at exactly SkyR units of
+/// forward distance times cos(angle-off-axis).  At the 300 it was written with,
+/// 94.6 % of the frame's directions came out past 220 and the far clip threw the
+/// whole sky away again -- the scene measured luma 0.023 with a pure black
+/// background even after this dome was added.  190 leaves ~30 units of margin
+/// and still sits behind every spark (the furthest a shell's sparks reach from
+/// the camera is about 170).
 const float SkyR = 190.0;
-// How far below the horizon the dome reaches.  The view is pitched up by
-// 0.13 rad and the frustum's half-height is 0.52 rad, so the bottom edge of
-// the frame looks 0.39 rad BELOW horizontal; the dome has to reach past that
-// (sin 0.39 = 0.38) or a black band opens along the bottom of the picture.
+/// How far below the horizon the dome reaches.  The view is pitched up by
+/// 0.13 rad and the frustum's half-height is 0.52 rad, so the bottom edge of
+/// the frame looks 0.39 rad BELOW horizontal; the dome has to reach past that
+/// (sin 0.39 = 0.38) or a black band opens along the bottom of the picture.
 const float SkyLow = -0.55;
 // Deliberately far below 9.81.  A firework is watched over a couple of
 // seconds, and at real gravity the fall (0.5*g*t^2) swamps the burst's own
 // spread (v/k, about 8 units) — the sphere never opens, the sparks just rain
 // downward.  Slowing gravity is what buys the bloom its moment.
-const float Grav = 3.4;
+const float Grav = 3.4;     ///< Gravity (downward acceleration).
 const float BurstAt = 0.30; ///< fraction of the shell's life
-const float Drag = 1.15;
+const float Drag = 1.15;    ///< Air drag of the sparks.
 
 /**  Pseudo-random number 0..1 from a float.
  *

@@ -39,10 +39,10 @@ uniform float audioMid;       ///< Mid band level, 0..1.
 uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
 
-uniform float foilDensityP;
-uniform float coneAngleP;
-uniform float xrayGlowP;
-uniform float gammaLorentzP;
+uniform float foilDensityP;  ///< Foil density knob: multilayer radiator foil stack density, 4..14.
+uniform float coneAngleP;    ///< Cone angle knob: transition radiation cone opening angle, 0.3..1.2.
+uniform float xrayGlowP;     ///< Xray glow knob: X-ray emission peak luminance gain, 0.8..2.5.
+uniform float gammaLorentzP; ///< Gamma lorentz knob: particle Lorentz factor gamma parameter, 0.6..2.2.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

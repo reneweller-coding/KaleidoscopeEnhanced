@@ -29,28 +29,30 @@
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( local_size_x = 256 ) in;
 
+/// The accumulation buffer: colour and coverage per pixel, added atomically; the present pass resolves it.
 layout( std430, binding = 0 ) buffer Accum
 {
     uint acc[];
 };
+/// The particles: position (xy) and velocity (zw).
 layout( std430, binding = 1 ) buffer Parts
 {
     vec4 part[];
 };
 
-uniform sampler2D texPhoto;
-uniform ivec2     size; ///< Size of the simulation grid in cells.
-uniform uint      count;
-uniform float     dt;
+uniform sampler2D texPhoto;  ///< The photo.
+uniform ivec2     size;      ///< Size of the simulation grid in cells.
+uniform uint      count;     ///< Number of elements (boids, particles, walkers ...).
+uniform float     dt;        ///< Time step of the simulation (seconds).
 uniform float     flow;      ///< integrated travel phase
 uniform float     curlPhase; ///< integrated field-morph phase
-uniform float     kick;
-uniform float     level;
-uniform float     hue;
-uniform float     drop;
-uniform uint      frame;
+uniform float     kick;      ///< Kick envelope, 0..1.
+uniform float     level;     ///< The music's level, 0..1.
+uniform float     hue;       ///< Hue offset of the palette.
+uniform float     drop;      ///< Drop envelope, 0..1.
+uniform uint      frame;     ///< Frame counter (seeds the random numbers).
 
-const float Scale = 256.0;
+const float Scale = 256.0; ///< Fixed-point scale of the accumulation buffer (colour times Scale, added as integers).
 
 /**  PCG random step: advances the state, returns 32 random bits.
  *

@@ -41,8 +41,8 @@ uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0
 out vec3  vCol;  ///< Colour (from the vertex stage).
 out float vSide; ///< Which side of a strip (from the vertex stage).
 
-const float TubeLen = 40.0;
-const float NumRibbons = 20.0;
+const float TubeLen = 40.0;    ///< Length of the tube (world units).
+const float NumRibbons = 20.0; ///< Number of ribbons.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

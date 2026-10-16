@@ -40,8 +40,8 @@ in vec3  vPos;    ///< Position (from the vertex stage).
 in vec3  vLocal;  ///< Object-space position (from the vertex stage).
 in float vBg;     ///< Background flag (from the vertex stage).
 
-const float Dist = 64.0;
-const float Ground = -23.0;
+const float Dist = 64.0;    ///< Distance of the main object from the camera (world units).
+const float Ground = -23.0; ///< Height of the ground (world units).
 
 /**  Rotates a colour's hue by an angle (about the grey axis).
  *
@@ -197,8 +197,8 @@ vec3 lightAt( vec3 P, vec3 n, vec3 lp, vec3 lc, float range )
 }
 
 // Candles: two warm point lights low in front of the case.
-const vec3 CandleA = vec3( -16.0, Ground + 3.0, Dist - 22.0 );
-const vec3 CandleB = vec3( 14.0, Ground + 2.0, Dist - 26.0 );
+const vec3 CandleA = vec3( -16.0, Ground + 3.0, Dist - 22.0 ); ///< Position of the first candle light.
+const vec3 CandleB = vec3( 14.0, Ground + 2.0, Dist - 26.0 );  ///< Position of the second candle light.
 
 /**  The sky colour for a direction.
  *

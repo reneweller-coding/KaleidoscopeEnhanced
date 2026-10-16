@@ -28,7 +28,7 @@ uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-uniform float pcfP;
+uniform float pcfP;   ///< Pcf knob, 0.5..2.
 uniform float coreP;  ///< Fold core class knob of the 3D chain, 0..1.
 uniform float speedP; ///< Speed knob, 0..1.
 uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
@@ -36,8 +36,8 @@ uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue pl
 out vec3  vWorldPos; ///< World position (from the vertex stage).
 out vec3  vNormal;   ///< Surface normal (from the vertex stage).
 out vec2  vTexCoord; ///< Texture coordinate (from the vertex stage).
-out float vCoreDist;
-out float vKind; ///< 0 = capillary, 1 = the glass slab behind the lattice
+out float vCoreDist; ///< Core dist (from the vertex stage).
+out float vKind;     ///< 0 = capillary, 1 = the glass slab behind the lattice
 
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()

@@ -20,12 +20,12 @@ uniform float     time;          ///< Seconds since the program started (never r
 uniform sampler2D tex0;          ///< The current photo.
 uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
 uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
-uniform float     radius;
-uniform float     nrCopies;
-uniform float     speed;
-uniform int       rot;
-uniform float     audioAdvance; ///< music drives the radial drift
-uniform float     audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
+uniform float     radius;        ///< Radius of the sphere.
+uniform float     nrCopies;      ///< Copies of the picture on the sphere.
+uniform float     speed;         ///< Speed of the motion.
+uniform int       rot;           ///< 1: the sphere turns.
+uniform float     audioAdvance;  ///< music drives the radial drift
+uniform float     audioSwell;    ///< Slow loudness envelope, 0..1 (seconds).
 
 // Created by inigo quilez - iq/2013
 // License Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.

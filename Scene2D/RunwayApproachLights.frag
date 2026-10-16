@@ -38,8 +38,8 @@ uniform float audioLevel;     ///< Overall loudness, 0..1.
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-uniform float mistP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float mistP; ///< Mist knob: how misty, 0..1.
+uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *
@@ -108,10 +108,14 @@ float noise2( vec2 p )
                 mix( hash21( i + vec2( 0.0, 1.0 ) ), hash21( i + vec2( 1.0, 1.0 ) ), f.x ), f.y );
 }
 
-vec3  gCol;
-float gMist, gPx;
-vec3  gRo;
-vec3  gFw, gRt, gUp;
+vec3 gCol; ///< The colour gathered so far for this pixel.
+/** @{ */
+float gMist, gPx; ///< gMist: Thickness of the mist this frame; gPx: Size of a pixel (1 / screen height).
+/** @} */
+vec3 gRo; ///< The camera position this frame.
+/** @{ */
+vec3 gFw, gRt, gUp; ///< gFw: The camera's forward axis; gRt: The camera's right axis; gUp: The camera's up axis.
+/** @} */
 
 /**  Add one light at world position P with colour c and intensity I.
  *

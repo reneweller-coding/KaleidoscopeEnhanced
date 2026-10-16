@@ -15,9 +15,9 @@ uniform mat4  projM;  ///< Projection matrix.
 uniform float eyeOff; ///< Stereo eye offset (0 in mono).
 uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
 
-out vec3  vPos; ///< Position (from the vertex stage).
-out float vRadius;
-out float vGlow;
+out vec3  vPos;    ///< Position (from the vertex stage).
+out float vRadius; ///< Radius (from the vertex stage).
+out float vGlow;   ///< Glow (from the vertex stage).
 
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()

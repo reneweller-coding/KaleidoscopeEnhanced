@@ -38,10 +38,10 @@ uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-uniform float defectP;
-uniform float brushP;
-uniform float speedP; ///< Speed knob, 0..1.
-uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float defectP; ///< Defect knob: topological defect density & core scale (0.5..2.2).
+uniform float brushP;  ///< Brush knob: cross-polarizer Schlieren brush width, 0.5..2.
+uniform float speedP;  ///< Speed knob, 0..1.
+uniform float hueP;    ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /**  Rotates a colour's hue by an angle (about the grey axis).
  *

@@ -6,10 +6,10 @@ out vec4 fragColor; ///< The pixel's colour (output).
 // the relief reads as the picture standing up rather than as a landscape that
 // happens to be coloured.
 
-in vec2  vUv;
+in vec2  vUv;     ///< Uv (from the vertex stage).
 in vec3  vNormal; ///< Surface normal (from the vertex stage).
 in vec3  vView;   ///< View vector (from the vertex stage).
-in float vHeight;
+in float vHeight; ///< Height (from the vertex stage).
 
 /**
  * @file VideoRelief.frag
@@ -38,8 +38,8 @@ uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioAmbient;   ///< How ambient (sustained, beatless) the music is, 0..1.
 
-uniform float     glowP; ///< Glow / afterglow knob, 0..1.
-uniform float     inkP;
+uniform float     glowP;        ///< Glow / afterglow knob, 0..1.
+uniform float     inkP;         ///< Ink knob: a preset, 0.4..1.2.
 uniform sampler2D tex1;         ///< The next photo (cross-faded in by interpolation).
 uniform float     audioAdvance; ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
                                 ///< backwards).

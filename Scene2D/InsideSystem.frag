@@ -34,12 +34,16 @@ uniform float attenP;   ///< neon attenuation      (0 -> 22; 14 = fat glow, 30 =
 uniform int   kSides;   ///< >=2: weave a spinning n-fold image rosette in (0 = off)
 uniform float rosetteP; ///< rosette strength      (0 -> 0.22)
 
-#define TT            ( time * 0.7 )
-#define SPACING       ( ( spacingP <= 0.01 ) ? 7.0 : spacingP )
+/// The scene's clock (time, slowed).
+#define TT ( time * 0.7 )
+/// Spacing of the torus lattice (spacingP, else 7).
+#define SPACING ( ( spacingP <= 0.01 ) ? 7.0 : spacingP )
+/// Spacing of the torus lights in lattice cells.
 #define LIGHT_SPACING 2.0
-// Neon glow fattens with the slow swell (loudness -> size, slew-limited upstream).
+/// Neon glow fattens with the slow swell (loudness -> size, slew-limited upstream).
 #define ATTENUATION ( ( ( attenP <= 0.01 ) ? 22.0 : attenP ) * ( 1.0 - 0.15 * audioSwell ) )
-#define EPSILON     0.005
+/// Surface distance at which the march stops.
+#define EPSILON 0.005
 
 /**  2D rotation matrix.
  *
@@ -128,8 +132,10 @@ float hash12( vec2 p )
     return fract( ( p3.x + p3.y ) * p3.z );
 }
 
+/// Domain repetition: p repeated with period r, centred on 0.
 #define REP( p, r ) ( mod( ( p ) + ( r ) / 2.0, ( r ) ) - ( r ) / 2.0 )
-#define TORUS( p )  ( length( vec2( length( ( p ).xz ) - 0.6, ( p ).y ) ) - 0.06 )
+/// Distance to the small torus around the y axis.
+#define TORUS( p ) ( length( vec2( length( ( p ).xz ) - 0.6, ( p ).y ) ) - 0.06 )
 
 /**  Glow of the torus light at a point, falling off with its distance.
  *

@@ -16,8 +16,8 @@ out vec4 fragColor; ///< The pixel's colour (output).
 in vec3  vWorld;  ///< World position (from the vertex stage).
 in vec3  vNormal; ///< Surface normal (from the vertex stage).
 in float vKind;   ///< Element kind (from the vertex stage).
-in float vTint;
-in float vHeight;
+in float vTint;   ///< Tint (from the vertex stage).
+in float vHeight; ///< Height (from the vertex stage).
 
 /**
  * @file PillarHall.frag
@@ -40,18 +40,18 @@ in float vHeight;
  * shadow's softness (shared by both lights' maps).
  */
 
-uniform sampler2D       tex0; ///< The current photo.
-uniform sampler2DShadow texShadow;
-uniform mat4            lightM; ///< Light view-projection matrix (shadow map).
-uniform vec3            lightDir;
+uniform sampler2D       tex0;       ///< The current photo.
+uniform sampler2DShadow texShadow;  ///< Shadow map of the key light (depth comparison).
+uniform mat4            lightM;     ///< Light view-projection matrix (shadow map).
+uniform vec3            lightDir;   ///< Direction to the key light (unit length).
 uniform float           shadowPass; ///< 1 during the shadow map's depth-only pass.
 // Second, independent shadow-casting light: a cool, lower rim/fill opposite
 // the warm sun, its own map so it casts real (not painted-on) shadows too.
-uniform sampler2DShadow texShadow2;
-uniform mat4            lightM2;
-uniform vec3            lightDir2;
-uniform float           shadowPass2;
-uniform float           shadowTexel;
+uniform sampler2DShadow texShadow2;    ///< Shadow map of the second light.
+uniform mat4            lightM2;       ///< View-projection matrix of the second light's shadow map.
+uniform vec3            lightDir2;     ///< Direction to the second light (unit length).
+uniform float           shadowPass2;   ///< 1 during the second light's depth-only shadow pass.
+uniform float           shadowTexel;   ///< Size of a shadow-map texel in world units.
 uniform float           interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 uniform float           time;          ///< Seconds since the program started (never reset; see sceneTime).
 
@@ -63,8 +63,8 @@ uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioAmbient;   ///< How ambient (sustained, beatless) the music is, 0..1.
 
-uniform float     camHP; ///< Camera height knob, 0..1.
-uniform float     softP;
+uniform float     camHP;        ///< Camera height knob, 0..1.
+uniform float     softP;        ///< Soft knob, 0.3..1.
 uniform float     hueP;         ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 uniform sampler2D tex1;         ///< The next photo (cross-faded in by interpolation).
 uniform float     audioAdvance; ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
@@ -114,10 +114,10 @@ vec3 hue2rgb( float h )
     return imgPalette( h ) * 1.35; // photo-arc palette (house standard), was HSV rainbow
 }
 
-// One shadow texel, in world units.  Derived rather than hardcoded, because
-// the light's box is sized per scene now — a constant here would silently
-// under- or over-bias every scene whose scale differs from this one's.
-uniform float shadowExtent;
+uniform float shadowExtent; ///< Half size of the area the shadow map covers (world units).
+/// One shadow texel, in world units.  Derived rather than hardcoded, because
+/// the light's box is sized per scene now — a constant here would silently
+/// under- or over-bias every scene whose scale differs from this one's.
 #define SHADOW_WORLD_TEXEL ( 2.0 * shadowExtent * shadowTexel )
 
 /**  Generalised over WHICH light's map/matrix to sample -- lights 1 and 2 are otherwise shaded identically, just from

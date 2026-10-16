@@ -12,6 +12,7 @@
 // reports "lit" and a whole region of ground comes back flat.  A short, dense
 // stand entirely inside the box beats a deep one half outside it.
 // -----------------------------------------------------------------------
+/// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( local_size_x = 4, local_size_y = 4, local_size_z = 4 ) in;
 
 /**
@@ -29,10 +30,12 @@ layout( local_size_x = 4, local_size_y = 4, local_size_z = 4 ) in;
  * ground and trunks wherever another trunk blocks the light.
  */
 
+/// The output vertex buffer: eight floats per vertex (attribute A, attribute B) that the scene draws.
 layout( std430, binding = 0 ) buffer Verts
 {
     float verts[];
 };
+/// The indirect draw command: [0] the vertex count (counted up atomically), then the other draw arguments.
 layout( std430, binding = 1 ) buffer Cmd
 {
     uint cmd[];
@@ -51,12 +54,12 @@ uniform float densityP; ///< preset: how thick the stand is
 uniform float heightP;  ///< preset: trunk height
 uniform float swayP;    ///< preset: how much the trunks lean with the music
 
-const int   Trees = 64;
-const int   Sides = 4;
-const float Spanx = 15.0;
-const float Spanz = 26.0;
+const int   Trees = 64;   ///< Number of trees.
+const int   Sides = 4;    ///< Sides of a tree trunk.
+const float Spanx = 15.0; ///< Half width of the ground (world units).
+const float Spanz = 26.0; ///< Depth of the ground (world units).
 
-const int Nquads = 1 + Trees * Sides;
+const int Nquads = 1 + Trees * Sides; ///< Number of quads the scene emits.
 
 /**  Pseudo-random number 0..1 from a float.
  *

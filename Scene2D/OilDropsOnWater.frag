@@ -40,10 +40,10 @@ uniform float audioRoughness; ///< Roughness (dissonance) of the sound, 0..1.
 uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioMode;      ///< Mode of the music: 0 minor .. 1 major.
 
-uniform float dropsP;
-uniform float sizeP; ///< Size knob, 0..1.
-uniform float blurP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float dropsP; ///< Drops knob: how many, 0..1.
+uniform float sizeP;  ///< Size knob, 0..1.
+uniform float blurP;  ///< Blur knob: background blur, 0..1.
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 // ---- shared building blocks (texture pool, noise, shapes) ----
 /**  Pseudo-random number 0..1 from a float.

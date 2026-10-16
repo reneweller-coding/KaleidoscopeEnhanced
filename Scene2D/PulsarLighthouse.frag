@@ -33,7 +33,7 @@ uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighte
 uniform float audioBeatPhase; ///< Position within the current beat, 0..1.
 uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 uniform float audioSnare;     ///< Snare envelope, 0..1.
-uniform float audioHat;
+uniform float audioHat;       ///< Hi-hat / cymbal onset envelope, 0..1.
 uniform float audioLevel;     ///< Overall loudness, 0..1.
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).

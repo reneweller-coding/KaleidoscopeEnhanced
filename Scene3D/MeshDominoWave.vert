@@ -28,13 +28,13 @@ out vec3  vNormal; ///< Surface normal (from the vertex stage).
 out vec3  vPos;    ///< Position (from the vertex stage).
 out vec3  vLocal;  ///< Object-space position (from the vertex stage).
 out float vBg;     ///< Background flag (from the vertex stage).
-out float vInst;
-out float vFall;
-out vec3  vFront; ///< world position of the wave front, for the spotlight that follows it
+out float vInst;   ///< Inst (from the vertex stage).
+out float vFall;   ///< Fall (from the vertex stage).
+out vec3  vFront;  ///< world position of the wave front, for the spotlight that follows it
 
-const float Ground = -8.0;
-const int   PerLane = 28;
-const float Pitch = 2.4;
+const float Ground = -8.0; ///< Height of the ground (world units).
+const int   PerLane = 28;  ///< Dominoes per lane.
+const float Pitch = 2.4;   ///< Spacing between neighbouring dominoes (world units).
 
 /**  Resting position of tile k (lanes of tiles, alternating direction).
  *

@@ -35,10 +35,10 @@ uniform float audioBass;    ///< Bass band level, 0..1.
 uniform float audioKick;    ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
 
-uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
-uniform float tintP; ///< Tint knob, 0..1.
-uniform float glowP; ///< Glow / afterglow knob, 0..1.
-uniform float bgTypeP;
+uniform float hueP;    ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float tintP;   ///< Tint knob, 0..1.
+uniform float glowP;   ///< Glow / afterglow knob, 0..1.
+uniform float bgTypeP; ///< Bg type knob: 0/1/2, see above, 0..2.
 
 in vec2  vUV;     ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 in vec3  vNormal; ///< Surface normal (from the vertex stage).

@@ -19,12 +19,12 @@ out vec4 fragColor; ///< The pixel's colour (output).
  *
  * Per-activation variety: camHP, detailP, stepsP, hueP.
  */
-in vec3  vWorld; ///< World position (from the vertex stage).
-in vec2  vSurfUV;
-in vec3  vNormal; ///< Surface normal (from the vertex stage).
-in float vPool;
-in float vTerrace;
-in float vDist; ///< Distance (from the vertex stage).
+in vec3  vWorld;   ///< World position (from the vertex stage).
+in vec2  vSurfUV;  ///< Surf UV (from the vertex stage).
+in vec3  vNormal;  ///< Surface normal (from the vertex stage).
+in float vPool;    ///< Pool (from the vertex stage).
+in float vTerrace; ///< Terrace (from the vertex stage).
+in float vDist;    ///< Distance (from the vertex stage).
 
 uniform sampler2D tex0;          ///< The current photo.
 uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
@@ -42,8 +42,8 @@ uniform float audioSwell;        ///< Slow loudness envelope, 0..1 (seconds).
 uniform float audioChromaHue;    ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioValence;      ///< Mood valence: 0 dark .. 1 bright.
 uniform float camHP;             ///< Camera height knob, 0..1.
-uniform float stepsP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float stepsP;            ///< Steps knob, 0..1.
+uniform float hueP;              ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

@@ -4,11 +4,11 @@
  * @brief Tessellation-evaluation stage companion to GlacierTessellation.frag -- see that file's header for
  * this scene's description.
  */
-// GlacierTessellation.tese — Tessellation Evaluation Stage
+/// GlacierTessellation.tese — Tessellation Evaluation Stage
 layout( quads, fractional_odd_spacing, ccw ) in;
 
-in vec2 tcUV[];
-in vec4 tcSeed[];
+in vec2 tcUV[];   ///< UV (from the tessellation control stage).
+in vec4 tcSeed[]; ///< Seed (from the tessellation control stage).
 
 uniform mat4  projM;  ///< Projection matrix.
 uniform float eyeOff; ///< Stereo eye offset (0 in mono).
@@ -22,16 +22,16 @@ uniform float audioSwell;        ///< Slow loudness envelope, 0..1 (seconds).
 uniform float audioDrop;         ///< Drop envelope: high after a detected drop, decaying.
 uniform float audioSpectrum[32]; ///< Spectrum bands, 0..1.
 
-uniform float waveHP;
-uniform float camHP; ///< Camera height knob, 0..1.
-uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float waveHP; ///< Wave height knob.
+uniform float camHP;  ///< Camera height knob, 0..1.
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-out vec3  vNormal; ///< Surface normal (from the vertex stage).
-out vec3  vWorld;  ///< World position (from the vertex stage).
-out vec2  vUV;     ///< Texture coordinate 0..1 over the screen (from the vertex stage).
-out float vCrevasse;
+out vec3  vNormal;   ///< Surface normal (from the vertex stage).
+out vec3  vWorld;    ///< World position (from the vertex stage).
+out vec2  vUV;       ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+out float vCrevasse; ///< Crevasse (from the vertex stage).
 
-const vec2 Extent = vec2( 240.0, 320.0 );
+const vec2 Extent = vec2( 240.0, 320.0 ); ///< Size of the tessellated ground patch (x, z in world units).
 
 /**  Height of the glacier: cliffs, wave ripples and crevasses.
  *

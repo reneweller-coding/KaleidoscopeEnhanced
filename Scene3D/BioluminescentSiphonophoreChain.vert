@@ -13,10 +13,10 @@ uniform mat4  projM;     ///< Projection matrix.
 uniform float eyeOff;    ///< Stereo eye offset (0 in mono).
 uniform float audioKick; ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 
-out vec3  vWorldPos; ///< World position (from the vertex stage).
-out vec3  vNormal;   ///< Surface normal (from the vertex stage).
-out float vChainPhase;
-out vec2  vQuadUV;
+out vec3  vWorldPos;   ///< World position (from the vertex stage).
+out vec3  vNormal;     ///< Surface normal (from the vertex stage).
+out float vChainPhase; ///< Chain phase (from the vertex stage).
+out vec2  vQuadUV;     ///< Quad UV (from the vertex stage).
 
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()

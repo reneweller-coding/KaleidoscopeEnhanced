@@ -21,14 +21,14 @@ out vec4 fragColor; ///< The pixel's colour (output).
  * Per-instance: sizeP, drumP, drumXP/YP/ZP. Per-activation variety: hueP.
  */
 
-uniform sampler2DArray texMeshMaterial;       ///< the base
-uniform int            texMeshMaterialLayers; ///< Number of layers in texMeshMaterial.
-uniform sampler2DArray texMeshMaterial2;      ///< the drum
-uniform int            texMeshMaterialLayers2;
+uniform sampler2DArray texMeshMaterial;        ///< the base
+uniform int            texMeshMaterialLayers;  ///< Number of layers in texMeshMaterial.
+uniform sampler2DArray texMeshMaterial2;       ///< the drum
+uniform int            texMeshMaterialLayers2; ///< Number of layers in the second mesh's material textures.
 
 uniform sampler2D texSpectro;  ///< 32 log-spaced bands across, ~20 s of history down (ring)
 uniform float     spectroHead; ///< T coordinate of "now"
-uniform float     spectroFill;
+uniform float     spectroFill; ///< How full the spectrogram ring texSpectro is, 0..1 (after a scene start).
 
 uniform float time;       ///< Seconds since the program started (never reset; see sceneTime).
 uniform float audioKick;  ///< Kick-drum envelope, 0..1 (fast attack, short decay).
@@ -42,12 +42,12 @@ in vec3  vNormal; ///< Surface normal (from the vertex stage).
 in vec3  vPos;    ///< Position (from the vertex stage).
 in vec3  vLocal;  ///< Object-space position (from the vertex stage).
 in float vBg;     ///< Background flag (from the vertex stage).
-in float vDrum;
-in float vTurn;
+in float vDrum;   ///< Drum (from the vertex stage).
+in float vTurn;   ///< Turn (from the vertex stage).
 
-const float Dist = 46.0;
-const float Ground = -16.0;
-const float Rate = 0.35;
+const float Dist = 46.0;       ///< Distance of the main object from the camera (world units).
+const float Ground = -16.0;    ///< Height of the ground (world units).
+const float Rate = 0.35;       ///< Turning speed of the drum (radians per second).
 const float PenAngle = 1.5708; ///< the pen touches the top of the drum (+Y in the drum's frame at turn 0)
 
 /**  Rotates a colour's hue by an angle (about the grey axis).

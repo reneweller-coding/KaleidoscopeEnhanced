@@ -53,14 +53,14 @@ uniform float audioMid;       ///< Mid band level, 0..1.
 uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
-uniform float audioZCR;
-uniform float audioSharpness;
-uniform float audioMode; ///< Mode of the music: 0 minor .. 1 major.
+uniform float audioZCR;       ///< Zero-crossing rate: 0 pure tone .. 1 broadband noise.
+uniform float audioSharpness; ///< Sharpness of the sound: 0 dull and dark .. 1 bright and harsh.
+uniform float audioMode;      ///< Mode of the music: 0 minor .. 1 major.
 
-uniform float duneP;
-uniform float rippleP;
-uniform float speedP; ///< Speed knob, 0..1.
-uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float duneP;   ///< Dune knob, 0.5..2.
+uniform float rippleP; ///< Ripple knob, 0.5..2.
+uniform float speedP;  ///< Speed knob, 0..1.
+uniform float hueP;    ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

@@ -11,18 +11,18 @@
  * single edge-aligned seed line which would grow a flat Eden-growth wall
  * instead of DLA branching.
  */
-// CfxCrystalSeed.comp — clear the crystal field and drop the seed nuclei.
-// R = solid, G = unused, B = hue index.
-//
-// Radial nuclei rather than a seed LINE along one edge: a line grows into a
-// flat advancing wall (Eden growth), which fills the frame with uniform noise
-// and has none of the branching that makes DLA worth the compute.
+/// CfxCrystalSeed.comp — clear the crystal field and drop the seed nuclei.
+/// R = solid, G = unused, B = hue index.
+///
+/// Radial nuclei rather than a seed LINE along one edge: a line grows into a
+/// flat advancing wall (Eden growth), which fills the frame with uniform noise
+/// and has none of the branching that makes DLA worth the compute.
 layout( local_size_x = 16, local_size_y = 16 ) in;
-layout( rgba16f, binding = 0 ) uniform image2D imgField;
+layout( rgba16f, binding = 0 ) uniform image2D imgField; ///< The crystal field (occupied texels).
 
 uniform ivec2 size; ///< Size of the simulation grid in cells.
-uniform uint  seed;
-uniform float hue;
+uniform uint  seed; ///< Random seed of the run.
+uniform float hue;  ///< Hue offset of the palette.
 
 /**  PCG random step: advances the state, returns 32 random bits.
  *

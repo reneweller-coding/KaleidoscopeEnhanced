@@ -22,7 +22,7 @@ uniform float audioAdvance;   ///< integrated travel into the tunnel (beat-lurch
 uniform float audioBeat;      ///< Beat envelope, 0..1.
 uniform float audioBeatPhase; ///< Position within the current beat, 0..1.
 uniform float audioOnset;     ///< Onset envelope (any instrument), 0..1.
-uniform float audioDownbeat;
+uniform float audioDownbeat;  ///< Downbeat accent: a decaying pulse on the bar's 1, 0..1.
 uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
 uniform float audioBass;      ///< Bass band level, 0..1.
 uniform float audioLevel;     ///< Overall loudness, 0..1.

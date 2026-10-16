@@ -39,10 +39,10 @@ uniform float audioMid;       ///< Mid band level, 0..1.
 uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
 
-uniform float mirrorRadiusP;
-uniform float growthRateP;
-uniform float modeL_P;
-uniform float bombGlowP;
+uniform float mirrorRadiusP; ///< Mirror radius knob: spherical reflecting cavity boundary radius (0.6..1.6).
+uniform float growthRateP;   ///< Growth rate knob: superradiant instability exponential growth (0.5..2.2).
+uniform float modeL_P;       ///< Angular mode number knob of the superradiant field.
+uniform float bombGlowP;     ///< Bomb glow knob: runaway explosion luminance gain, 0.8..2.5.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

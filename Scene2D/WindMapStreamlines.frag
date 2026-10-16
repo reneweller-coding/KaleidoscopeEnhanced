@@ -43,8 +43,8 @@ uniform float audioMode;      ///< Mode of the music: 0 minor .. 1 major.
 
 uniform float densityP; ///< Density knob, 0..1.
 uniform float scaleP;   ///< Scale knob.
-uniform float landP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float landP;    ///< Land knob: how much the land shows, 0..1.
+uniform float hueP;     ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 // ---- shared building blocks (texture pool, noise, shapes) ----
 /**  Pseudo-random number 0..1 from a float.
@@ -386,7 +386,9 @@ void finish( vec3 col )
     fragColor = vec4( clamp( t, 0.0, 1.0 ), 1.0 );
 }
 
-float gSc, gRough;
+/** @{ */
+float gSc, gRough; ///< gSc: Scale of the pattern this frame; gRough: Turbulence of the wind from the music's roughness.
+/** @} */
 
 /**  The wind at a point: along the photo's isobars, plus some turbulence.
  *

@@ -13,8 +13,8 @@ in vec4 attrB; ///< xyz = normal, w = 0 field line / 1 planet
 out vec3  vObj;    ///< Object-space position (from the vertex stage).
 out vec3  vNormal; ///< Surface normal (from the vertex stage).
 out vec3  vView;   ///< View vector (from the vertex stage).
-out float vEnergy;
-out float vKind; ///< Element kind (from the vertex stage).
+out float vEnergy; ///< Energy (from the vertex stage).
+out float vKind;   ///< Element kind (from the vertex stage).
 
 uniform mat4  projM;        ///< Projection matrix.
 uniform float eyeOff;       ///< Stereo eye offset (0 in mono).

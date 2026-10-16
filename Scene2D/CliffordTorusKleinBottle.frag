@@ -38,9 +38,9 @@ uniform float audioHigh;     ///< High band level, 0..1.
 uniform float audioFlux;     ///< Spectral flux (how fast the spectrum changes), 0..1.
 
 uniform float radiusP; ///< Radius knob, 0..1.
-uniform float glassP;
-uniform float rotSpdP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float glassP;  ///< Glass knob: glass transparency & refraction index, 0.5..2.
+uniform float rotSpdP; ///< Rot spd knob: 4D plane rotation speed, 0.5..2.2.
+uniform float hueP;    ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).

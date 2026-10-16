@@ -10,10 +10,10 @@ uniform sampler2D tex0;           ///< The current photo.
 uniform float     audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float     audioDrop;      ///< Drop envelope: high after a detected drop, decaying.
 
-in vec2  vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
-in vec4  vSeed; ///< Per-instance random seed (from the vertex stage).
-in float vLight;
-in float vKind; ///< Element kind (from the vertex stage).
+in vec2  vUV;    ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+in vec4  vSeed;  ///< Per-instance random seed (from the vertex stage).
+in float vLight; ///< Light (from the vertex stage).
+in float vKind;  ///< Element kind (from the vertex stage).
 
 /**
  * @file GalleryHall.frag

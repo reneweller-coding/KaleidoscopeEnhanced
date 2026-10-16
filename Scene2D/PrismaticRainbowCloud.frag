@@ -40,8 +40,8 @@ uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes)
 
 uniform float densityP; ///< Density knob, 0..1.
 uniform float waveP;    ///< Wave knob.
-uniform float rayP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float rayP;     ///< Ray knob: crepuscular sun ray intensity, 0.5..2.2.
+uniform float hueP;     ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

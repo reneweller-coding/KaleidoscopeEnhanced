@@ -16,14 +16,16 @@
  * reads back and lights with a simple directional diffuse + specular term.
  */
 
-// BioluminescentSwarm.comp — GPU Compute Simulation of 12,000 bioluminescent
-// creatures exhibiting emergent flocking and murmuration vortices in 3D.
+/// BioluminescentSwarm.comp — GPU Compute Simulation of 12,000 bioluminescent
+/// creatures exhibiting emergent flocking and murmuration vortices in 3D.
 layout( local_size_x = 4, local_size_y = 4, local_size_z = 4 ) in;
 
+/// The output vertex buffer: eight floats per vertex (attribute A, attribute B) that the scene draws.
 layout( std430, binding = 0 ) buffer Verts
 {
     float verts[];
 };
+/// The indirect draw command: [0] the vertex count (counted up atomically), then the other draw arguments.
 layout( std430, binding = 1 ) buffer Cmd
 {
     uint cmd[];
@@ -40,7 +42,7 @@ uniform float audioSubBass;      ///< Sub-bass band level, 0..1.
 uniform float audioHigh;         ///< High band level, 0..1.
 uniform float audioSpectrum[32]; ///< Spectrum bands, 0..1.
 
-uniform float swarmP;
+uniform float swarmP; ///< Swarm knob, 0.5..1.8.
 uniform float speedP; ///< Speed knob, 0..1.
 uniform float glowP;  ///< Glow / afterglow knob, 0..1.
 
@@ -51,8 +53,8 @@ const int Creatures = 64 * 64; ///< 4096 boid creatures, each emitted as a 3D fa
 // left the top and bottom of the picture black.  Only the seeds are made
 // here; BioluminescentSwarm.vert places them across the frustum, because it
 // is the stage that knows the aspect ratio.  glow = -1 is the marker.
-const uint Snow = 1600u;
-const uint SnowBase = uint( Creatures );
+const uint Snow = 1600u;                 ///< Number of marine-snow specks.
+const uint SnowBase = uint( Creatures ); ///< Index of the first marine-snow speck (after the creatures).
 
 /**  Pseudo-random number 0..1 from a float.
  *

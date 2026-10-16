@@ -42,8 +42,8 @@ uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioBass;      ///< Bass band level, 0..1.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-uniform float cloudP;
-uniform float stormP;
+uniform float cloudP; ///< Cloud knob: tiers and bulk of the storm (0.5..2.2).
+uniform float stormP; ///< Storm knob: strength of the lightning (0.5..2.0).
 uniform float speedP; ///< Speed knob, 0..1.
 uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 

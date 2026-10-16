@@ -3241,7 +3241,9 @@ vec2 tJoukowski( vec2 uv, vec2 c, float R, float scale )
     return c + ( z + R * R * iz ) * 0.5;
 }
 
+/// @cond
 vec2 chain( vec2 p );
+/// @endcond
 /**  A loop count the compiler cannot see through (it depends on a uniform), so the loop is NOT unrolled and its body
  * -- a whole chain -- is inlined once.
  *
@@ -3254,7 +3256,9 @@ int loopN( int n )
 {
     return n + int( min( interpolation, 0.0 ) );
 }
-vec2 gChainM, gChainDx, gChainDy; // mirrored chain coordinate of this pixel and its derivatives per pixel
+/** @{ */
+vec2 gChainM, gChainDx, gChainDy; ///< mirrored chain coordinate of this pixel and its derivatives per pixel
+/** @} */
 /**  The chain's photo read with a seam-proof footprint (per axis the smaller of the two one-sided differences) and
  * the screen-space luma gradient.
  *
@@ -3295,8 +3299,17 @@ vec3 imgChain( vec2 p, float bias, out vec2 grad )
 // @chainord chainBP 0|5|20|10|3|2|19|21|1|22|4|18
 // @chainord chainCP 0|5|17|9|12|13|14|15|8|3|7|6|16|11|10|4|1|2
 // @chainord chainDP 0|5|8|18|10|11|1|14|12|13|3|19|15|2
-float gT, gTC, gSpread, gRot, gMw, gH;
-vec2  gCw, gCt;
+/** @{ */
+float gT, gTC, gSpread, gRot, gMw, gH; ///< gT: The chain's (or scene's) time this frame; gTC: The chain's time for this
+                                       ///< pixel (gT plus the tilt across the picture); gSpread: The spectral spread
+                                       ///< this frame, 0..1; gRot: The rotation phase this frame; gMw: The chain's
+                                       ///< morph position this frame (integrated); gH: Depth of the wall relief this
+                                       ///< frame (at most 0.59: the axis stays free).
+/** @} */
+/** @{ */
+vec2 gCw, gCt; ///< gCw: Centre of the wandering transforms this frame (drifts slowly); gCt: Second centre of the
+               ///< wandering transforms this frame.
+/** @} */
 // The stage index and a sub-variant 0..1 from one rolled knob.
 float gIdW = 1.0; ///< how much of the chain is 'none' or too weak to carry it (product over the stages)
 /**  Class position of a knob value (n classes).
@@ -3550,7 +3563,14 @@ int ords( int i )
 } // photo, relief, contours, flow, glowing edges
 // The app's walk: per stage (shown knob value, target, fade 0..1); walkHost = 1
 // when the app steers (otherwise the hash walk below runs, e.g. in the editor).
-uniform vec3  walkA, walkB, walkC, walkD, walkS;
+/** @{ */
+uniform vec3 walkA, walkB, walkC, walkD, walkS; ///< walkA: Stage A of the app's walk: (shown class, target class,
+                                                ///< fade); walkB: Stage B of the app's walk: (shown class, target
+                                                ///< class, fade); walkC: Stage C of the app's walk: (shown class,
+                                                ///< target class, fade); walkD: Stage D of the app's walk: (shown
+                                                ///< class, target class, fade); walkS: The style of the app's walk:
+                                                ///< (shown class, target class, fade).
+/** @} */
 uniform float walkHost; ///< 1 when the app walks this lab's stages (walk uniforms valid).
 
 // Stage A: a global map.

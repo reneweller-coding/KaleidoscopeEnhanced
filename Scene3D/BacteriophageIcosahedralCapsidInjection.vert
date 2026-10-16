@@ -16,12 +16,12 @@
 in vec4 attrA; ///< xy = global grid UV [0,1], z = 0, w = cell index
 in vec4 attrB; ///< 4 per-cell seeds in [0,1)
 
-out vec2  vUV;     ///< Texture coordinate 0..1 over the screen (from the vertex stage).
-out vec3  vNormal; ///< Surface normal (from the vertex stage).
-out vec3  vCol;    ///< Colour (from the vertex stage).
-out float vInjectGlow;
-out float vBack; ///< 1.0 on the host-cytoplasm curtain, 0.0 on the phages
-out float vFog;  ///< 0..1 distance haze weight
+out vec2  vUV;         ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+out vec3  vNormal;     ///< Surface normal (from the vertex stage).
+out vec3  vCol;        ///< Colour (from the vertex stage).
+out float vInjectGlow; ///< Inject glow (from the vertex stage).
+out float vBack;       ///< 1.0 on the host-cytoplasm curtain, 0.0 on the phages
+out float vFog;        ///< 0..1 distance haze weight
 
 uniform mat4  projM;      ///< Projection matrix.
 uniform float eyeOff;     ///< Stereo eye offset (0 in mono).
@@ -41,8 +41,8 @@ uniform sampler2D tex0;          ///< The current photo.
 uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
 uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float phageScaleP;
-uniform float tailContractP;
+uniform float phageScaleP;   ///< Phage scale knob, 0.8..2.2.
+uniform float tailContractP; ///< Tail contract knob, 0.6..2.2.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

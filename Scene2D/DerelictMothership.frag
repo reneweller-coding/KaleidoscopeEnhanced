@@ -38,10 +38,10 @@ uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short 
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-uniform float hullP;
-uniform float glowP; ///< Glow / afterglow knob, 0..1.
-uniform float debrisP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float hullP;   ///< Hull knob: ship size (0.98..1.5).
+uniform float glowP;   ///< Glow / afterglow knob, 0..1.
+uniform float debrisP; ///< Debris knob: amount of debris (0.5..1.5).
+uniform float hueP;    ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

@@ -39,10 +39,10 @@ uniform float audioSpread;    ///< Spectral spread, 0..1.
 uniform float audioMode;      ///< Mode of the music: 0 minor .. 1 major.
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 
-uniform float spotP;
-uniform float focusP;
-uniform float wallP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float spotP;  ///< Spot knob: number of lights, 0..1.
+uniform float focusP; ///< Focus knob: gobo sharpness, 0..1.
+uniform float wallP;  ///< Wall knob: wall relief, 0..1.
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 // ---- shared building blocks (texture pool, noise, shapes) ----
 /**  Pseudo-random number 0..1 from a float.

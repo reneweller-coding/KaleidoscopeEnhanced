@@ -23,8 +23,8 @@ out vec4 fragColor; ///< The pixel's colour (output).
 in vec3  vNormal; ///< Surface normal (from the vertex stage).
 in vec3  vView;   ///< View vector (from the vertex stage).
 in vec3  vObj;    ///< Object-space position (from the vertex stage).
-in float vWedge;
-in float vSeed; ///< Per-instance random seed (from the vertex stage).
+in float vWedge;  ///< Wedge (from the vertex stage).
+in float vSeed;   ///< Per-instance random seed (from the vertex stage).
 
 /**
  * @file PrismExplode.frag
@@ -55,9 +55,9 @@ uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioAmbient;   ///< How ambient (sustained, beatless) the music is, 0..1.
 
-uniform float     glowP; ///< Glow / afterglow knob, 0..1.
-uniform float     hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
-uniform float     dispP;
+uniform float     glowP;        ///< Glow / afterglow knob, 0..1.
+uniform float     hueP;         ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float     dispP;        ///< Disp knob, 0.4..1.8.
 uniform sampler2D tex1;         ///< The next photo (cross-faded in by interpolation).
 uniform float     audioAdvance; ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
                                 ///< backwards).

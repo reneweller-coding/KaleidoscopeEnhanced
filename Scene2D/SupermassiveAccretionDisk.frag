@@ -37,9 +37,9 @@ uniform float audioMid;      ///< Mid band level, 0..1.
 uniform float audioHigh;     ///< High band level, 0..1.
 uniform float audioFlux;     ///< Spectral flux (how fast the spectrum changes), 0..1.
 
-uniform float spinP; ///< Spin knob, 0..1.
-uniform float diskP;
-uniform float jetP;
+uniform float spinP;          ///< Spin knob, 0..1.
+uniform float diskP;          ///< Disk knob: accretion disk radius / density, 0.6..1.8.
+uniform float jetP;           ///< Jet knob: relativistic polar jet intensity, 0.5..2.2.
 uniform float hueP;           ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 

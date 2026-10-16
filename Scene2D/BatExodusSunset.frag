@@ -35,8 +35,8 @@ uniform float audioLevel;     ///< Overall loudness, 0..1.
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-uniform float streamP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float streamP; ///< Stream knob: the shape of the stream, 0..1.
+uniform float hueP;    ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *
@@ -136,7 +136,10 @@ float fbm( vec2 p )
     return v;
 }
 
-float gT, gS;
+/** @{ */
+float gT, gS; ///< gT: The chain's (or scene's) time this frame; gS: How strongly the stream bends this frame (from
+              ///< streamP).
+/** @} */
 
 /**  The stream's centre line: a column rising from the cave, bending right and streaming away across the sky.
  *

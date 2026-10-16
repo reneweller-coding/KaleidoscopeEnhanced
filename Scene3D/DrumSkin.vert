@@ -15,8 +15,8 @@ in vec4 attrB; ///< xyz = normal, w = normalised radius
 out vec3  vObj;    ///< Object-space position (from the vertex stage).
 out vec3  vNormal; ///< Surface normal (from the vertex stage).
 out vec3  vView;   ///< View vector (from the vertex stage).
-out float vDisp;
-out float vRad;
+out float vDisp;   ///< Disp (from the vertex stage).
+out float vRad;    ///< Rad (from the vertex stage).
 
 uniform mat4  projM;        ///< Projection matrix.
 uniform float eyeOff;       ///< Stereo eye offset (0 in mono).

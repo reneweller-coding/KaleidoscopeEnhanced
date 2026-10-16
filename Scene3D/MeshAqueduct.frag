@@ -33,10 +33,10 @@ in vec3  vNormal; ///< Surface normal (from the vertex stage).
 in vec3  vPos;    ///< Position (from the vertex stage).
 in vec3  vLocal;  ///< Object-space position (from the vertex stage).
 in float vBg;     ///< Background flag (from the vertex stage).
-in float vInst;
+in float vInst;   ///< Inst (from the vertex stage).
 
-const float Dist = 92.0;
-const float Ground = -14.0;
+const float Dist = 92.0;    ///< Distance of the main object from the camera (world units).
+const float Ground = -14.0; ///< Height of the ground (world units).
 
 /**  Rotates a colour's hue by an angle (about the grey axis).
  *
@@ -189,7 +189,7 @@ vec3 perturbNormal( sampler2DArray tex, int layers, vec2 uv, vec3 n, vec3 wpos, 
     return normalize( cotangentFrame( n, wpos, uv ) * normalize( m ) );
 }
 
-const vec3 KeyDir = vec3( 0.5, 0.55, -0.65 ); // the sun, behind the camera's right shoulder
+const vec3 KeyDir = vec3( 0.5, 0.55, -0.65 ); ///< the sun, behind the camera's right shoulder
 
 /**  The sky colour for a direction.
  *

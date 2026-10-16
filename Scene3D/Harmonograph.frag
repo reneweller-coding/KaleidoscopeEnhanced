@@ -9,7 +9,7 @@ in vec3  vObj;    ///< Object-space position (from the vertex stage).
 in vec3  vNormal; ///< Surface normal (from the vertex stage).
 in vec3  vView;   ///< View vector (from the vertex stage).
 in float vAlong;  ///< 0 at the start of the trace, 1 at the end
-in float vEnergy;
+in float vEnergy; ///< Energy (from the vertex stage).
 
 /**
  * @file Harmonograph.frag

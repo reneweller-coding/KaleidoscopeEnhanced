@@ -14,7 +14,7 @@ uniform float audioDrop;        ///< Drop envelope: high after a detected drop, 
 uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
 in vec2 vPolar; ///< angle, radius 0..1
-in vec2 vXY;
+in vec2 vXY;    ///< XY (from the vertex stage).
 
 /**
  * @file StainedGlassRosette.frag

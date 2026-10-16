@@ -32,7 +32,7 @@ uniform float audioCentroid;  ///< Spectral centroid (brightness of the sound), 
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-uniform float techP;
+uniform float techP; ///< Tech knob: complexity of the greebles and structures (0.5..1.5).
 uniform float glowP; ///< Glow / afterglow knob, 0..1.
 uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
@@ -140,8 +140,8 @@ mat2 rot( float a )
     return mat2( c, -s, s, c );
 }
 
-float hitMat = 0.0;
-float hitGlow = 0.0;
+float hitMat = 0.0;  ///< Material of the last surface the ray hit (set by the distance field).
+float hitGlow = 0.0; ///< Glow of the last surface the ray hit (set by the distance field).
 
 /**  The scene's distance field: distance from p to the nearest surface.
  *

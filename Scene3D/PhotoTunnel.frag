@@ -14,7 +14,7 @@ uniform float audioBarPhase;    ///< Position within the current bar, 0..1.
 
 in vec2  vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 in float vDist; ///< Distance (from the vertex stage).
-in float vAng;
+in float vAng;  ///< Ang (from the vertex stage).
 
 /**
  * @file PhotoTunnel.frag

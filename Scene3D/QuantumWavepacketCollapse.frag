@@ -1,7 +1,7 @@
 #version 330 core
-in vec3  vPos; ///< Position (from the vertex stage).
-in float vProb;
-in float vPhase;
+in vec3  vPos;   ///< Position (from the vertex stage).
+in float vProb;  ///< Prob (from the vertex stage).
+in float vPhase; ///< Phase (from the vertex stage).
 
 out vec4 fragColor; ///< The pixel's colour (output).
 
@@ -38,9 +38,9 @@ uniform float audioMid;     ///< Mid band level, 0..1.
 uniform float audioHigh;    ///< High band level, 0..1.
 uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
 
-uniform float glowP; ///< Glow / afterglow knob, 0..1.
-uniform float collapseP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float glowP;     ///< Glow / afterglow knob, 0..1.
+uniform float collapseP; ///< Collapse knob, 0.5..2.
+uniform float hueP;      ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).

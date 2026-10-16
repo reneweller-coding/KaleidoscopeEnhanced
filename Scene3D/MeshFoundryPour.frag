@@ -21,10 +21,10 @@ out vec4 fragColor; ///< The pixel's colour (output).
  * Per-instance: sizeP, ladleP, lipP. Per-activation variety: hueP.
  */
 
-uniform sampler2DArray texMeshMaterial;       ///< the mould
-uniform int            texMeshMaterialLayers; ///< Number of layers in texMeshMaterial.
-uniform sampler2DArray texMeshMaterial2;      ///< the ladle
-uniform int            texMeshMaterialLayers2;
+uniform sampler2DArray texMeshMaterial;        ///< the mould
+uniform int            texMeshMaterialLayers;  ///< Number of layers in texMeshMaterial.
+uniform sampler2DArray texMeshMaterial2;       ///< the ladle
+uniform int            texMeshMaterialLayers2; ///< Number of layers in the second mesh's material textures.
 
 uniform float time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform float sceneTime;     ///< Seconds since this scene was activated.
@@ -40,13 +40,13 @@ in vec3  vNormal; ///< Surface normal (from the vertex stage).
 in vec3  vPos;    ///< Position (from the vertex stage).
 in vec3  vLocal;  ///< Object-space position (from the vertex stage).
 in float vBg;     ///< Background flag (from the vertex stage).
-in float vLadle;
-in float vPour;
-in vec3  vLip;
-in vec3  vCup;
+in float vLadle;  ///< Ladle (from the vertex stage).
+in float vPour;   ///< Pour (from the vertex stage).
+in vec3  vLip;    ///< Lip (from the vertex stage).
+in vec3  vCup;    ///< Cup (from the vertex stage).
 
-const float Dist = 48.0;
-const float Ground = -18.0;
+const float Dist = 48.0;    ///< Distance of the main object from the camera (world units).
+const float Ground = -18.0; ///< Height of the ground (world units).
 
 /**  Rotates a colour's hue by an angle (about the grey axis).
  *

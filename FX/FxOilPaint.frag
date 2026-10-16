@@ -13,7 +13,7 @@ uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpol
 uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 uniform float     audioBeat;     ///< beats sharpen the painting toward the raw scene
 
-const int Radius = 7;
+const int Radius = 7; ///< Radius of the filter (pixels).
 
 /** Entry point of this shader stage (the file description says what it draws). */
 void main( void )

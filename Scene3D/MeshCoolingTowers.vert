@@ -27,9 +27,9 @@ out vec3  vNormal; ///< Surface normal (from the vertex stage).
 out vec3  vPos;    ///< Position (from the vertex stage).
 out vec3  vLocal;  ///< Object-space position (from the vertex stage).
 out float vBg;     ///< Background flag (from the vertex stage).
-out float vInst;
+out float vInst;   ///< Inst (from the vertex stage).
 
-const float Ground = -22.0;
+const float Ground = -22.0; ///< Height of the ground (world units).
 
 /**  The three towers' feet, shared with the fragment stage.
  *

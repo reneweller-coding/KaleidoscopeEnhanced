@@ -25,23 +25,23 @@ uniform sampler2D tex0;          ///< The current photo.
 uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
 uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float sceneAdvance; ///< The music's advance since this scene was activated (integrated, never jumps).
-uniform float audioAdvance; ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
-                            ///< backwards).
-uniform float audioPhraseLeft;
-uniform float audioPhrasePos;
-uniform float audioBuildUp;   ///< Build-up toward a drop, 0..1.
-uniform float audioDrop;      ///< Drop envelope: high after a detected drop, decaying.
-uniform float audioBeatPhase; ///< Position within the current beat, 0..1.
-uniform float audioBass;      ///< Bass band level, 0..1.
-uniform float audioLevel;     ///< Overall loudness, 0..1.
-uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
-uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
+uniform float sceneAdvance;    ///< The music's advance since this scene was activated (integrated, never jumps).
+uniform float audioAdvance;    ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                               ///< backwards).
+uniform float audioPhraseLeft; ///< Seconds left to the next 8-bar phrase boundary.
+uniform float audioPhrasePos;  ///< Position within the current 8-bar phrase, 0..1.
+uniform float audioBuildUp;    ///< Build-up toward a drop, 0..1.
+uniform float audioDrop;       ///< Drop envelope: high after a detected drop, decaying.
+uniform float audioBeatPhase;  ///< Position within the current beat, 0..1.
+uniform float audioBass;       ///< Bass band level, 0..1.
+uniform float audioLevel;      ///< Overall loudness, 0..1.
+uniform float audioSwell;      ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioChromaHue;  ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioValence;    ///< Mood valence: 0 dark .. 1 bright.
 
-uniform float twistP; ///< Twist knob, 0..1.
-uniform float throatP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float twistP;  ///< Twist knob, 0..1.
+uniform float throatP; ///< Throat knob: throat size, 0.8..1.3.
+uniform float hueP;    ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

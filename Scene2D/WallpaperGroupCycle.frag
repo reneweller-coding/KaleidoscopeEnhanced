@@ -43,8 +43,8 @@ uniform float audioHarmChange; ///< Harmonic change (chord change) envelope, 0..
 uniform float audioMode;       ///< Mode of the music: 0 minor .. 1 major.
 uniform float audioHigh;       ///< High band level, 0..1.
 
-uniform float cellP; ///< Cell size knob, 0..1.
-uniform float groupP;
+uniform float cellP;  ///< Cell size knob, 0..1.
+uniform float groupP; ///< Group knob: which groups the cycle favours, 0..1.
 uniform float speedP; ///< Speed knob, 0..1.
 uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 

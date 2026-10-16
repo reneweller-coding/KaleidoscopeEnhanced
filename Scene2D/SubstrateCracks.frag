@@ -41,7 +41,7 @@ uniform float audioRoughness; ///< Roughness (dissonance) of the sound, 0..1.
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 
 uniform float scaleP; ///< Scale knob.
-uniform float trailP;
+uniform float trailP; ///< Trail knob: colour trail width, 0..1.
 uniform float photoP; ///< Photo knob: how much of the photo shows, 0..1.
 uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 

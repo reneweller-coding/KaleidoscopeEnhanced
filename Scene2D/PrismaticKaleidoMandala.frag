@@ -37,9 +37,9 @@ uniform float audioMid;      ///< Mid band level, 0..1.
 uniform float audioHigh;     ///< High band level, 0..1.
 uniform float audioFlux;     ///< Spectral flux (how fast the spectrum changes), 0..1.
 
-uniform float symmetryP;
-uniform float zoomP; ///< Zoom knob, 0..1.
-uniform float facetP;
+uniform float symmetryP;      ///< Symmetry knob: kaleidoscope sector count multiplier (0.6..2.0).
+uniform float zoomP;          ///< Zoom knob, 0..1.
+uniform float facetP;         ///< Facet knob: faceted crystal bevel intensity, 0.5..2.2.
 uniform float hueP;           ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 

@@ -18,17 +18,17 @@ uniform mat4  projM;  ///< Projection matrix.
 uniform float eyeOff; ///< Stereo eye offset (0 in mono).
 uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
 
-uniform float audioBass;    ///< Bass band level, 0..1.
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioAdvance; ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
-                            ///< backwards).
-uniform float audioKick;    ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioDrop;    ///< Drop envelope: high after a detected drop, decaying.
-uniform float audioRotPhase;
+uniform float audioBass;     ///< Bass band level, 0..1.
+uniform float audioSwell;    ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioAdvance;  ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                             ///< backwards).
+uniform float audioKick;     ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioDrop;     ///< Drop envelope: high after a detected drop, decaying.
+uniform float audioRotPhase; ///< Accumulated rotation angle (radians), driven by the music.
 
 out vec2  vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 out float vDist; ///< Distance (from the vertex stage).
-out float vAng;
+out float vAng;  ///< Ang (from the vertex stage).
 
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()

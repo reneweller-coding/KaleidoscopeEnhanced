@@ -39,10 +39,10 @@ uniform float audioMid;       ///< Mid band level, 0..1.
 uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
 
-uniform float torusRadiusP;
-uniform float jetCollimP;
-uniform float wispCountP;
-uniform float synchGlowP;
+uniform float torusRadiusP; ///< Torus radius knob: equatorial termination shock radius, 0.3..0.9.
+uniform float jetCollimP;   ///< Jet collim knob: polar relativistic jet collimation width, 0.08..0.35.
+uniform float wispCountP;   ///< Wisp count knob: dynamic magnetic wisp ripple density, 4..14.
+uniform float synchGlowP;   ///< Synch glow knob: synchrotron torus luminance gain, 0.8..2.5.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

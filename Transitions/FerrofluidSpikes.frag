@@ -36,8 +36,8 @@ uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-uniform float spikeP;
-uniform float magP;
+uniform float spikeP; ///< Spike knob: Rosensweig spike hexagonal density (0.5..2.2).
+uniform float magP;   ///< Mag knob: magnetic pull displacement scale, 0.5..2.
 uniform float speedP; ///< Speed knob, 0..1.
 uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 

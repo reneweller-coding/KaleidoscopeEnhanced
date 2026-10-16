@@ -39,7 +39,7 @@ uniform float audioLevel;        ///< Overall loudness, 0..1.
 uniform float audioValence;      ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioChromaHue;    ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-uniform float ribP;
+uniform float ribP; ///< Rib knob: rib spacing, 0..1.
 uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
@@ -98,13 +98,15 @@ float noise2( vec2 p )
                 mix( hash21( i + vec2( 0.0, 1.0 ) ), hash21( i + vec2( 1.0, 1.0 ) ), f.x ), f.y );
 }
 
-const float Hw = 3.2, HH = 5.5; // the hall's half width at the floor and its height
-const float Inner = 0.86;       ///< the ribs' inner edge (scale of the shell)
-const float Ribw = 0.22;        ///< rib thickness along the hall
-const float Spine = 0.55;       ///< half width of the skylight spine
-float       gSp;                ///< rib spacing
-float       gSwell;
-float       gBand[8];
+/** @{ */
+const float Hw = 3.2, HH = 5.5; ///< the hall's half width at the floor and its height
+/** @} */
+const float Inner = 0.86; ///< the ribs' inner edge (scale of the shell)
+const float Ribw = 0.22;  ///< rib thickness along the hall
+const float Spine = 0.55; ///< half width of the skylight spine
+float       gSp;          ///< rib spacing
+float       gSwell;       ///< The swell this frame, 0..1.
+float       gBand[8];     ///< Eight band levels of the music this frame, 0..1.
 
 /**  Far root of the ray with an elliptic cylinder of the given scale.
  *

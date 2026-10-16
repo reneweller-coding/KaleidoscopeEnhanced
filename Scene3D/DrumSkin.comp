@@ -40,12 +40,15 @@
 // x with a phase shift of n*pi/2 + pi/4, which is why the ripples on a drumhead
 // look like waves that lose height toward the rim rather than like a sine.
 // -----------------------------------------------------------------------
+/// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( local_size_x = 4, local_size_y = 4, local_size_z = 4 ) in;
 
+/// The output vertex buffer: eight floats per vertex (attribute A, attribute B) that the scene draws.
 layout( std430, binding = 0 ) buffer Verts
 {
     float verts[];
 };
+/// The indirect draw command: [0] the vertex count (counted up atomically), then the other draw arguments.
 layout( std430, binding = 1 ) buffer Cmd
 {
     uint cmd[];
@@ -67,17 +70,19 @@ uniform float ampP;     ///< preset: how far the skin moves
 uniform float modeP;    ///< preset: how many modes are allowed to speak
 uniform float tensionP; ///< preset: overall mode speed
 
-const int   Rings = 44;
-const int   Sect = 72;
-const int   Nquads = Rings * Sect;
-const float R = 3.05;
+const int   Rings = 44;            ///< Number of rings.
+const int   Sect = 72;             ///< Number of sectors per ring.
+const int   Nquads = Rings * Sect; ///< Number of quads the scene emits.
+const float R = 3.05;              ///< Radius of the drum skin.
 
-// The first zeros of J_n, which set both the shape and the frequency of a mode.
-const int   Nmodes = 8;
+/// The first zeros of J_n, which set both the shape and the frequency of a mode.
+const int Nmodes = 8;
+/// The first zeros of the Bessel functions J_n, one per mode: they set its shape and its frequency.
 const float Alpha[8] = float[8]( 2.4048, 3.8317, 5.1356, 5.5201,
                                  6.3802, 7.0156, 7.5883, 8.4172 );
-const int   Order[8] = int[8]( 0, 1, 2, 0,
-                               3, 1, 4, 2 );
+/// The Bessel order n of each mode (the J_n whose zero Alpha holds).
+const int Order[8] = int[8]( 0, 1, 2, 0,
+                             3, 1, 4, 2 );
 
 /**  Bessel function J_n of the first kind.
  *

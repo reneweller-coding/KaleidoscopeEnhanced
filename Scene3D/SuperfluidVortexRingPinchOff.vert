@@ -17,7 +17,7 @@ uniform float time;   ///< Seconds since the program started (never reset; see s
 
 out vec3  vPos;   ///< Position (from the vertex stage).
 out float vDepth; ///< Depth (from the vertex stage).
-out float vGlow;
+out float vGlow;  ///< Glow (from the vertex stage).
 
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()

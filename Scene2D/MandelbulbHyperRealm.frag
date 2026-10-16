@@ -38,10 +38,10 @@ uniform float audioMid;       ///< Mid band level, 0..1.
 uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
 
-uniform float powerP;
-uniform float zoomP; ///< Zoom knob, 0..1.
-uniform float glowP; ///< Glow / afterglow knob, 0..1.
-uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float powerP; ///< Power knob: base Mandelbulb power N, 4..8.
+uniform float zoomP;  ///< Zoom knob, 0..1.
+uniform float glowP;  ///< Glow / afterglow knob, 0..1.
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

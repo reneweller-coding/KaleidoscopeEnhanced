@@ -24,8 +24,8 @@ uniform int   meshInstances;   ///< Number of mesh instances.
 uniform vec3  meshExtent;      ///< Half size of the scene's mesh bounding box.
 uniform vec3  meshCenter;      ///< Centre of the scene's mesh bounding box.
 
-uniform float sizeP; ///< Size knob, 0..1.
-uniform float swingP;
+uniform float sizeP;  ///< Size knob, 0..1.
+uniform float swingP; ///< Swing knob, 0..1.
 
 out vec2  vUV;     ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 out vec3  vNormal; ///< Surface normal (from the vertex stage).
@@ -33,7 +33,7 @@ out vec3  vPos;    ///< Position (from the vertex stage).
 out float vBg;     ///< Background flag (from the vertex stage).
 out float vKind;   ///< 0 ship, 1 shadow of lamp A, 2 shadow of lamp B
 
-const float WallZ = 60.0;
+const float WallZ = 60.0; ///< Depth of the wall the shadows fall on.
 
 /**  Position of lamp k, swinging slowly behind the ship.
  *

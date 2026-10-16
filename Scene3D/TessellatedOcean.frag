@@ -19,9 +19,9 @@ out vec4 fragColor; ///< The pixel's colour (output).
  *
  * Per-activation variety: camHP (eye height), detailP, swellP, choppyP, hueP.
  */
-in vec3  vWorld; ///< World position (from the vertex stage).
-in vec2  vSurfUV;
-in float vCrest;
+in vec3  vWorld;  ///< World position (from the vertex stage).
+in vec2  vSurfUV; ///< Surf UV (from the vertex stage).
+in float vCrest;  ///< Crest (from the vertex stage).
 in vec3  vNormal; ///< Surface normal (from the vertex stage).
 in float vDist;   ///< Distance (from the vertex stage).
 

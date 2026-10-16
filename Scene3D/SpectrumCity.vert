@@ -13,11 +13,11 @@ in vec4 attrB; ///< x = face index, y = height above ground, z = lot hash, w = b
 
 out vec3  vWorld;  ///< World position (from the vertex stage).
 out vec3  vNormal; ///< Surface normal (from the vertex stage).
-out float vFaceU;
-out float vUp;
-out float vLot;
-out float vEnergy;
-out float vDist; ///< Distance (from the vertex stage).
+out float vFaceU;  ///< Face u (from the vertex stage).
+out float vUp;     ///< Up (from the vertex stage).
+out float vLot;    ///< Lot (from the vertex stage).
+out float vEnergy; ///< Energy (from the vertex stage).
+out float vDist;   ///< Distance (from the vertex stage).
 
 uniform mat4  projM;        ///< Projection matrix.
 uniform float eyeOff;       ///< Stereo eye offset (0 in mono).

@@ -44,10 +44,10 @@ uniform float audioRoughness;  ///< Roughness (dissonance) of the sound, 0..1.
 uniform float audioSpread;     ///< Spectral spread, 0..1.
 uniform float audioHigh;       ///< High band level, 0..1.
 
-uniform float sidesP;
-uniform float bowP;
-uniform float innerP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float sidesP; ///< Sides knob: number of mirrors, 0..1.
+uniform float bowP;   ///< Bow knob: base curvature, 0..1.
+uniform float innerP; ///< Inner knob: inner stage strength, 0..1.
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 // ---- shared building blocks (texture pool, noise, shapes) ----
 /**  Pseudo-random number 0..1 from a float.

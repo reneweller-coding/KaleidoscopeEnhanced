@@ -12,6 +12,7 @@
 // the better split whenever the curve has a formula: 4096 threads doing one
 // step each beats 32 threads doing 128.
 // -----------------------------------------------------------------------
+/// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( local_size_x = 4, local_size_y = 4, local_size_z = 4 ) in;
 
 /**
@@ -31,10 +32,12 @@ layout( local_size_x = 4, local_size_y = 4, local_size_z = 4 ) in;
  * back to shade the woven bundle.
  */
 
+/// The output vertex buffer: eight floats per vertex (attribute A, attribute B) that the scene draws.
 layout( std430, binding = 0 ) buffer Verts
 {
     float verts[];
 };
+/// The indirect draw command: [0] the vertex count (counted up atomically), then the other draw arguments.
 layout( std430, binding = 1 ) buffer Cmd
 {
     uint cmd[];
@@ -49,22 +52,22 @@ uniform float audioLevel;   ///< Overall loudness, 0..1.
 uniform float audioKick;    ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 uniform float audioSubBass; ///< Sub-bass band level, 0..1.
 
-uniform sampler2D texSpectro;
-uniform float     spectroHead;
-uniform float     spectroFill;
+uniform sampler2D texSpectro;  ///< Spectrogram ring: band energies (x) over time (y).
+uniform float     spectroHead; ///< Write position of the spectrogram ring texSpectro, 0..1.
+uniform float     spectroFill; ///< How full the spectrogram ring texSpectro is, 0..1 (after a scene start).
 
 uniform float twistP;  ///< preset: how hard the bundle braids
 uniform float spreadP; ///< preset: bundle radius
 uniform float thickP;  ///< preset: strand thickness
 
-const int   Bands = 32;
-const int   Segs = 112; ///< 32 x 112 = 3584 of the 4096 threads
-const int   Sides = 5;
-const float Depth = 170.0;
-const float AgeSpan = 0.84;
-// The remaining 512 threads become the dust the cable hangs in.  A bundle,
-// however wide, is a CONE on screen -- it converges on the vanishing point and
-// leaves the corners of the frame black.  The dust is what fills them.
+const int   Bands = 32;     ///< Number of spectrum bands.
+const int   Segs = 112;     ///< 32 x 112 = 3584 of the 4096 threads
+const int   Sides = 5;      ///< Sides of the tube around each segment.
+const float Depth = 170.0;  ///< Depth of the weave (world units).
+const float AgeSpan = 0.84; ///< How far back in the spectrogram the weave reaches (share of the ring).
+/// The remaining 512 threads become the dust the cable hangs in.  A bundle,
+/// however wide, is a CONE on screen -- it converges on the vanishing point and
+/// leaves the corners of the frame black.  The dust is what fills them.
 const uint DustBase = uint( Bands * Segs );
 
 /**  Energy of band b at the given age, straight from the ring.

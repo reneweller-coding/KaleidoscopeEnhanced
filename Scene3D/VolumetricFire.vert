@@ -37,15 +37,15 @@ uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 uniform float audioDrop;      ///< Drop envelope: high after a detected drop, decaying.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-out vec2  vAtlasUV;
-out float vHeightFrac;
-out float vHue;
-out float vGlow;
+out vec2  vAtlasUV;    ///< Atlas UV (from the vertex stage).
+out float vHeightFrac; ///< Height frac (from the vertex stage).
+out float vHue;        ///< Hue (from the vertex stage).
+out float vGlow;       ///< Glow (from the vertex stage).
 
-const float Cols = 5.0;
-const float Rows = 4.0;
-const float Fires = 5.0;
-// The scene projection: 55 deg vertical FOV (see Scene3DShader::draw).
+const float Cols = 5.0;  ///< Columns of depth slices in the smoke atlas.
+const float Rows = 4.0;  ///< Rows of depth slices in the smoke atlas.
+const float Fires = 5.0; ///< Number of fires.
+/// The scene projection: 55 deg vertical FOV (see Scene3DShader::draw).
 const float TanY = 0.5206;
 
 /** Entry point of this shader stage (the file description says what it draws). */

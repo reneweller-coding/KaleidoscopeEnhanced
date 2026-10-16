@@ -89,9 +89,12 @@ vec2 hash22( vec2 p )
     return vec2( hash21( p ), hash21( p + 17.3 ) );
 }
 
-const vec3  Ball = vec3( 0.0, 3.2, 6.0 );
-const float Br = 0.45;
-float       g_rot, g_hue, g_tint;
+const vec3  Ball = vec3( 0.0, 3.2, 6.0 ); ///< Centre of the mirror ball.
+const float Br = 0.45;                    ///< Radius of the mirror ball.
+/** @{ */
+float g_rot, g_hue, g_tint; ///< g_rot: Turn of the mirror ball this frame (radians); g_hue: Hue of the palette this
+                            ///< frame (from hueP); g_tint: Strength of the tint this frame (from tintP).
+/** @} */
 
 /**  The pattern of reflections on a surface point: the ball throws its facet reflections in all directions; seen from
  * BALL, the direction to the point picks a facet cell on a rotating sphere grid.

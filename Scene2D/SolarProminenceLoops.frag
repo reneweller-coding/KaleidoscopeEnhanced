@@ -38,7 +38,7 @@ uniform float audioLevel;     ///< Overall loudness, 0..1.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 
-uniform float loopsP;
+uniform float loopsP;  ///< Loops knob: loop count 4..8.
 uniform float heightP; ///< Height knob, 0..1.
 uniform float hueP;    ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 

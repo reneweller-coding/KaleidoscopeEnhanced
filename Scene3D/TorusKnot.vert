@@ -53,9 +53,9 @@ uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighte
 uniform float audioBass;      ///< Bass band level, 0..1.
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
-uniform float audioMidRel;
-uniform float audioSpread; ///< Spectral spread, 0..1.
-uniform float audioMode;   ///< Mode of the music: 0 minor .. 1 major.
+uniform float audioMidRel;    ///< Mids now relative to their slow average (1 = as usual).
+uniform float audioSpread;    ///< Spectral spread, 0..1.
+uniform float audioMode;      ///< Mode of the music: 0 minor .. 1 major.
 
 out vec4 vCol; ///< Colour (from the vertex stage).
 

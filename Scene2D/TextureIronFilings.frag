@@ -41,9 +41,9 @@ uniform float audioMode;      ///< Mode of the music: 0 minor .. 1 major.
 uniform float audioRoughness; ///< Roughness (dissonance) of the sound, 0..1.
 
 uniform float densityP; ///< Density knob, 0..1.
-uniform float lengthP;
-uniform float photoP; ///< Photo knob: how much of the photo shows, 0..1.
-uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float lengthP;  ///< Length knob: needle length, 0..1.
+uniform float photoP;   ///< Photo knob: how much of the photo shows, 0..1.
+uniform float hueP;     ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 // ---- shared building blocks (texture pool, noise, shapes) ----
 /**  Pseudo-random number 0..1 from a float.
@@ -385,8 +385,8 @@ void finish( vec3 col )
     fragColor = vec4( clamp( t, 0.0, 1.0 ), 1.0 );
 }
 
-vec2 gPos[4];
-vec2 gDir[4];
+vec2 gPos[4]; ///< Positions of the four magnets.
+vec2 gDir[4]; ///< Directions of the four magnets.
 /**  2D dipole field (line poles), and its stream function: the field lines are its isolines, so filings can gather
  * along them.
  *

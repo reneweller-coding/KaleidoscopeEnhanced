@@ -28,33 +28,36 @@
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( local_size_x = 256 ) in;
 
+/// The accumulation buffer: colour and coverage per pixel, added atomically; the present pass resolves it.
 layout( std430, binding = 0 ) buffer Accum
 {
     uint acc[];
 };
+/// The bodies' positions (xyz) and masses (w).
 layout( std430, binding = 1 ) buffer Pos
 {
     vec4 pos[];
 };
+/// The bodies' velocities (xyz) and colour indices (w).
 layout( std430, binding = 2 ) buffer Vel
 {
     vec4 vel[];
 };
 
-uniform ivec2 size; ///< Size of the simulation grid in cells.
-uniform uint  count;
-uniform float dt;
-uniform float bass;
-uniform float kick;
-uniform float hue;
-uniform float level;
+uniform ivec2 size;  ///< Size of the simulation grid in cells.
+uniform uint  count; ///< Number of elements (boids, particles, walkers ...).
+uniform float dt;    ///< Time step of the simulation (seconds).
+uniform float bass;  ///< Bass level, 0..1.
+uniform float kick;  ///< Kick envelope, 0..1.
+uniform float hue;   ///< Hue offset of the palette.
+uniform float level; ///< The music's level, 0..1.
 
-const float Scale = 256.0;
+const float Scale = 256.0; ///< Fixed-point scale of the accumulation buffer (colour times Scale, added as integers).
 const uint  Stride = 32u;  ///< force sample: every 32nd body
 const float Soften = 0.11; ///< generous: hard close encounters slingshot
                            // stars out as straight radial spikes
 
-shared vec4 tile[256];
+shared vec4 tile[256]; ///< The bodies of the current tile, shared by the work group.
 
 /**  A bird gets a small CROSS footprint, not a single texel.
  *

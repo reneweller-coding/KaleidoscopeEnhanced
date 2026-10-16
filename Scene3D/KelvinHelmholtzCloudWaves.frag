@@ -4,7 +4,7 @@ out vec4 fragColor; ///< The pixel's colour (output).
 in vec4  vCol;    ///< Colour (from the vertex stage).
 in vec2  vUV;     ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 in vec3  vNormal; ///< Surface normal (from the vertex stage).
-in float vBillow;
+in float vBillow; ///< Billow (from the vertex stage).
 
 /**
  * @file KelvinHelmholtzCloudWaves.frag

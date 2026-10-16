@@ -16,9 +16,9 @@ uniform float oitPass; ///< Order-independent transparency pass flag.
 out vec3  vPos;      ///< Position (from the vertex stage).
 out vec3  vNormal;   ///< Surface normal (from the vertex stage).
 out vec2  vTexCoord; ///< Texture coordinate (from the vertex stage).
-out float vBand;
-out float vKind; ///< Element kind (from the vertex stage).
-out float vFace;
+out float vBand;     ///< Band (from the vertex stage).
+out float vKind;     ///< Element kind (from the vertex stage).
+out float vFace;     ///< Face (from the vertex stage).
 
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()

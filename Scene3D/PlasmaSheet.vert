@@ -22,7 +22,7 @@ uniform float audioAdvance; ///< The music's advance: integrated tempo-weighted 
                             ///< backwards).
 
 out vec2  vUV; ///< Texture coordinate 0..1 over the screen (from the vertex stage).
-out float vH;
+out float vH;  ///< H (from the vertex stage).
 
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()

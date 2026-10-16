@@ -24,8 +24,8 @@ uniform float audioAdvance; ///< The music's advance: integrated tempo-weighted 
                             ///< backwards).
 
 out vec3  vWorld; ///< World position (from the vertex stage).
-out float vSpec;
-out float vDist; ///< Distance (from the vertex stage).
+out float vSpec;  ///< Spec (from the vertex stage).
+out float vDist;  ///< Distance (from the vertex stage).
 
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()

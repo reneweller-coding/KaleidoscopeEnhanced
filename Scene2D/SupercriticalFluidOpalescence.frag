@@ -39,10 +39,10 @@ uniform float audioMid;       ///< Mid band level, 0..1.
 uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
 
-uniform float fractalScaleP;
-uniform float opalescenceP;
-uniform float turbSpeedP;
-uniform float clusterDensP;
+uniform float fractalScaleP; ///< Fractal scale knob: multi-scale density fluctuation depth, 2..6.
+uniform float opalescenceP;  ///< Opalescence knob: milky iridescent scattering brightness, 0.8..2.5.
+uniform float turbSpeedP;    ///< Turb speed knob: critical thermal diffusion drift speed, 0.5..2.2.
+uniform float clusterDensP;  ///< Cluster dens knob: supercritical droplet cluster density, 3..8.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

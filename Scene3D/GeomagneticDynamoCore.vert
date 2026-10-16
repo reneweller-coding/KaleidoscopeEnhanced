@@ -15,10 +15,10 @@ uniform float audioAdvance; ///< The music's advance: integrated tempo-weighted 
                             ///< backwards).
 uniform vec2 resolution;    ///< Size of the render target in pixels.
 
-out vec3  vWorldPos; ///< World position (from the vertex stage).
-out float vDynamoPhase;
-out float vHaze;
-out vec2  vQuadUV;
+out vec3  vWorldPos;    ///< World position (from the vertex stage).
+out float vDynamoPhase; ///< Dynamo phase (from the vertex stage).
+out float vHaze;        ///< Haze (from the vertex stage).
+out vec2  vQuadUV;      ///< Quad UV (from the vertex stage).
 
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()

@@ -38,9 +38,9 @@ uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
 uniform float audioBeatPhase; ///< Position within the current beat, 0..1.
 
-uniform float glitchP;
-uniform float rotSpdP;
-uniform float facetP;
+uniform float glitchP;        ///< Glitch knob: digital glitch slice intensity, 0.4..2.
+uniform float rotSpdP;        ///< Rot spd knob: 4D hyper-rotation speed, 0.5..1.8.
+uniform float facetP;         ///< Facet knob: hypercube wireframe thickness, 0.5..2.2.
 uniform float hueP;           ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 

@@ -13,15 +13,15 @@
  * Audio Reactivity: audioChroma[12] -> vessel glow; audioKick -> highlights;
  *                   audioHigh -> shimmer; audioSwell -> wall light; audioLevel.
  */
-layout( location = 0 ) out vec4 outAccum;
-layout( location = 1 ) out vec4 outReveal;
+layout( location = 0 ) out vec4 outAccum;  ///< Accum (output).
+layout( location = 1 ) out vec4 outReveal; ///< Reveal (output).
 
 in vec2  vTexCoord; ///< Texture coordinate (from the vertex stage).
 in vec3  vWorld;    ///< World position (from the vertex stage).
 in vec3  vNormal;   ///< Surface normal (from the vertex stage).
 in float vKind;     ///< Element kind (from the vertex stage).
-in float vT;
-in float vId; ///< Instance or element id (from the vertex stage).
+in float vT;        ///< T (from the vertex stage).
+in float vId;       ///< Instance or element id (from the vertex stage).
 
 uniform sampler2D tex0;            ///< The current photo.
 uniform sampler2D tex1;            ///< The next photo (cross-faded in by interpolation).

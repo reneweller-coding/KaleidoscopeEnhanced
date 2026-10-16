@@ -9,13 +9,13 @@
  * blended with a ridged-noise term (so there are proper mountain crests to
  * carve), and clears the G (water) and B (sediment) channels to zero.
  */
-// CfxErosionSeed.comp — a fresh fractal landscape.
-// R = terrain height, G = water, B = sediment.
+/// CfxErosionSeed.comp — a fresh fractal landscape.
+/// R = terrain height, G = water, B = sediment.
 layout( local_size_x = 16, local_size_y = 16 ) in;
-layout( rgba16f, binding = 0 ) uniform image2D imgLand;
+layout( rgba16f, binding = 0 ) uniform image2D imgLand; ///< The terrain: height (r), water (g), sediment (b).
 
 uniform ivec2 size; ///< Size of the simulation grid in cells.
-uniform uint  seed;
+uniform uint  seed; ///< Random seed of the run.
 
 /**  Pseudo-random number 0..1 from a 2D point.
  *

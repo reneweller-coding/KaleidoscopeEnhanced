@@ -21,7 +21,7 @@ uniform float audioBass;  ///< Bass band level, 0..1.
 uniform float audioSwell; ///< Slow loudness envelope, 0..1 (seconds).
 
 out vec2  vUV; ///< Texture coordinate 0..1 over the screen (from the vertex stage).
-out float vR;
+out float vR;  ///< R (from the vertex stage).
 
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()

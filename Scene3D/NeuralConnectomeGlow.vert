@@ -15,8 +15,8 @@ uniform float time;   ///< Seconds since the program started (never reset; see s
 out vec2  vTexCoord; ///< Texture coordinate (from the vertex stage).
 out vec3  vWorld;    ///< World position (from the vertex stage).
 out float vKind;     ///< Element kind (from the vertex stage).
-out float vBand;
-out float vId; ///< Instance or element id (from the vertex stage).
+out float vBand;     ///< Band (from the vertex stage).
+out float vId;       ///< Instance or element id (from the vertex stage).
 
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()

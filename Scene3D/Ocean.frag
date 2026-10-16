@@ -5,9 +5,9 @@ out vec4 fragColor; ///< The pixel's colour (output).
 // toward the horizon it turns into a mirror.  That single term is what makes
 // a water shader read as water rather than as blue plastic.
 
-in vec3  vWorld; ///< World position (from the vertex stage).
-in vec2  vSurfUV;
-in float vFoam;
+in vec3  vWorld;  ///< World position (from the vertex stage).
+in vec2  vSurfUV; ///< Surf UV (from the vertex stage).
+in float vFoam;   ///< Foam (from the vertex stage).
 in vec3  vNormal; ///< Surface normal (from the vertex stage).
 in float vDist;   ///< Distance (from the vertex stage).
 
@@ -39,9 +39,9 @@ uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioAmbient;   ///< How ambient (sustained, beatless) the music is, 0..1.
 
-uniform float camHP; ///< Camera height knob, 0..1.
-uniform float foamP;
-uniform float glitterP;
+uniform float camHP;    ///< Camera height knob, 0..1.
+uniform float foamP;    ///< Foam knob, 0.4..0.9.
+uniform float glitterP; ///< Glitter knob, 0.35..0.85.
 
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()

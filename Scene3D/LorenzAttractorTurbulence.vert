@@ -20,11 +20,11 @@ uniform float audioMid;     ///< Mid band level, 0..1.
 uniform float audioHigh;    ///< High band level, 0..1.
 uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
 
-out vec3  vPos; ///< Position (from the vertex stage).
-out float vT;
-out float vRibbonID;
-out float vVelocity;
-out float vSide; ///< Which side of a strip (from the vertex stage).
+out vec3  vPos;      ///< Position (from the vertex stage).
+out float vT;        ///< T (from the vertex stage).
+out float vRibbonID; ///< Ribbon ID (from the vertex stage).
+out float vVelocity; ///< Velocity (from the vertex stage).
+out float vSide;     ///< Which side of a strip (from the vertex stage).
 
 /**  Integrated strange attractor parametric path
  *

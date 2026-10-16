@@ -19,10 +19,10 @@ uniform float audioMid;     ///< Mid band level, 0..1.
 uniform float audioHigh;    ///< High band level, 0..1.
 uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
 
-out vec3  vPos; ///< Position (from the vertex stage).
-out float vTemp;
-out float vSeed; ///< Per-instance random seed (from the vertex stage).
-out float vRadius;
+out vec3  vPos;    ///< Position (from the vertex stage).
+out float vTemp;   ///< Temp (from the vertex stage).
+out float vSeed;   ///< Per-instance random seed (from the vertex stage).
+out float vRadius; ///< Radius (from the vertex stage).
 
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()

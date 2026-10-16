@@ -103,11 +103,11 @@ float noise2( vec2 p )
                 mix( hash21( i + vec2( 0.0, 1.0 ) ), hash21( i + vec2( 1.0, 1.0 ) ), f.x ), f.y );
 }
 
-float g_aspect;
-int   g_nv;
-vec2  g_vc[4];
-float g_vs[4];
-float g_wind;
+float g_aspect; ///< Aspect of the screen (width / height).
+int   g_nv;     ///< Number of vortices this frame.
+vec2  g_vc[4];  ///< Centres of the vortices this frame.
+float g_vs[4];  ///< Strength and turn of each vortex.
+float g_wind;   ///< Strength of the wind this frame.
 
 /**  The flow: a gentle drift plus a rotational field around each vortex.
  *

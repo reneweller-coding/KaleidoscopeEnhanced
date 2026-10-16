@@ -13,8 +13,8 @@ out vec4 fragColor; ///< The pixel's colour (output).
 in vec3  vPos;    ///< Position (from the vertex stage).
 in vec3  vNormal; ///< Surface normal (from the vertex stage).
 in vec2  vUV;     ///< Texture coordinate 0..1 over the screen (from the vertex stage).
-in float vCrest;
-in float vHeight;
+in float vCrest;  ///< Crest (from the vertex stage).
+in float vHeight; ///< Height (from the vertex stage).
 
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.
@@ -25,8 +25,8 @@ uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short 
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 
-uniform float glowP; ///< Glow / afterglow knob, 0..1.
-uniform float bioP;
+uniform float glowP;        ///< Glow / afterglow knob, 0..1.
+uniform float bioP;         ///< Bio knob, 0.5..2.2.
 uniform float hueP;         ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 uniform float audioAdvance; ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
                             ///< backwards).

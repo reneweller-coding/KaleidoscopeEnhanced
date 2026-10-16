@@ -15,8 +15,8 @@ uniform float     audioAdvance;   ///< The music's advance: integrated tempo-wei
                                   ///< backwards).
 uniform float audioValence;       ///< Mood valence: 0 dark .. 1 bright.
 
-in vec2  vUV; ///< Texture coordinate 0..1 over the screen (from the vertex stage).
-in vec3  vNrm;
+in vec2  vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+in vec3  vNrm;  ///< Nrm (from the vertex stage).
 in float vDist; ///< Distance (from the vertex stage).
 
 /**

@@ -16,22 +16,23 @@
 // would project the flat patch corners and the tessellator would then
 // interpolate in clip space — the waves would be invisible.
 // -----------------------------------------------------------------------
+/// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( quads, fractional_odd_spacing, ccw ) in;
 
-in vec2 tcUV[];
-in vec4 tcSeed[];
+in vec2 tcUV[];   ///< UV (from the tessellation control stage).
+in vec4 tcSeed[]; ///< Seed (from the tessellation control stage).
 
-out vec3  vWorld; ///< World position (from the vertex stage).
-out vec2  vSurfUV;
-out float vFoam;
+out vec3  vWorld;  ///< World position (from the vertex stage).
+out vec2  vSurfUV; ///< Surf UV (from the vertex stage).
+out float vFoam;   ///< Foam (from the vertex stage).
 out vec3  vNormal; ///< Surface normal (from the vertex stage).
 out float vDist;   ///< Distance (from the vertex stage).
 
 uniform mat4  projM;  ///< Projection matrix.
 uniform float eyeOff; ///< Stereo eye offset (0 in mono).
-// The sheet's world size.  Shared by the control and evaluation stages —
-// if these ever disagree, the two stages place the same patch in different
-// spots and the surface tears along every seam.
+/// The sheet's world size.  Shared by the control and evaluation stages —
+/// if these ever disagree, the two stages place the same patch in different
+/// spots and the surface tears along every seam.
 const vec2 Extent = vec2( 220.0, 320.0 );
 
 // audioAdvance is the engine's HOST-INTEGRATED travel phase, and uniforms are

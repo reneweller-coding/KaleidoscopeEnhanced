@@ -38,10 +38,10 @@ uniform float audioMid;      ///< Mid band level, 0..1.
 uniform float audioHigh;     ///< High band level, 0..1.
 uniform float audioFlux;     ///< Spectral flux (how fast the spectrum changes), 0..1.
 
-uniform float waveFreqP;
-uniform float phaseRotP;
-uniform float glowP; ///< Glow / afterglow knob, 0..1.
-uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float waveFreqP; ///< Wave freq knob: nodal wave frequency multiplier, 0.5..2.2.
+uniform float phaseRotP; ///< Phase rot knob: quantum phase spin speed, 0.4..1.8.
+uniform float glowP;     ///< Glow / afterglow knob, 0..1.
+uniform float hueP;      ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

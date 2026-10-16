@@ -27,18 +27,18 @@ const float SpeedX = 0.01; ///< 0.3;
 const float SpeedY = 0.01; ///< 0.3;
 
 // refraction
-const float Emboss = 0.50;
-const float Intensity = 2.4;
-const int   Steps = 4; ///< 8;
-const float Frequency = 6.0;
-const int   Angle = 7; ///< better when a prime
+const float Emboss = 0.50;   ///< Strength of the emboss (refraction).
+const float Intensity = 2.4; ///< Strength of the waves.
+const int   Steps = 4;       ///< 8;
+const float Frequency = 6.0; ///< Frequency of the waves.
+const int   Angle = 7;       ///< better when a prime
 
 // reflection
 const float Delta = 120.0;   ///< 60.;
 const float Intence = 120.0; ///< 700.;
 
-const float ReflectionCutOff = 0.012;
-const float ReflectionIntence = 200000.;
+const float ReflectionCutOff = 0.012;    ///< Slope below which there is no reflection.
+const float ReflectionIntence = 200000.; ///< Sharpness of the reflections.
 
 // ===================================================
 

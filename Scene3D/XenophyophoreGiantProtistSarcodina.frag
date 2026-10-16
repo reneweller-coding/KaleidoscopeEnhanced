@@ -16,11 +16,11 @@ out vec4 fragColor; ///< The pixel's colour (output).
  *   glowP        float bioelectric plasma tube luminance     (0.8..2.5)
  */
 
-in vec2  vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
-in float vSide; ///< Which side of a strip (from the vertex stage).
-in float vRibbonID;
-in vec3  vCol; ///< Colour (from the vertex stage).
-in float vBioPulse;
+in vec2  vUV;       ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+in float vSide;     ///< Which side of a strip (from the vertex stage).
+in float vRibbonID; ///< Ribbon ID (from the vertex stage).
+in vec3  vCol;      ///< Colour (from the vertex stage).
+in float vBioPulse; ///< Bio pulse (from the vertex stage).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).

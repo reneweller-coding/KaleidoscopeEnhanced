@@ -21,13 +21,13 @@ out vec4 fragColor; ///< The pixel's colour (output).
 uniform sampler2DArray texMeshMaterial;       ///< The mesh's material textures (albedo, roughness, normal ...).
 uniform int            texMeshMaterialLayers; ///< Number of layers in texMeshMaterial.
 
-uniform float time;      ///< Seconds since the program started (never reset; see sceneTime).
-uniform float audioBass; ///< Bass band level, 0..1.
-uniform float audioLowMid;
-uniform float audioMid;   ///< Mid band level, 0..1.
-uniform float audioHigh;  ///< High band level, 0..1.
-uniform float audioKick;  ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioSwell; ///< Slow loudness envelope, 0..1 (seconds).
+uniform float time;        ///< Seconds since the program started (never reset; see sceneTime).
+uniform float audioBass;   ///< Bass band level, 0..1.
+uniform float audioLowMid; ///< Low-mid band level (150-500 Hz), 0..1.
+uniform float audioMid;    ///< Mid band level, 0..1.
+uniform float audioHigh;   ///< High band level, 0..1.
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioSwell;  ///< Slow loudness envelope, 0..1 (seconds).
 
 uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
@@ -36,10 +36,10 @@ in vec3  vNormal; ///< Surface normal (from the vertex stage).
 in vec3  vPos;    ///< Position (from the vertex stage).
 in vec3  vLocal;  ///< Object-space position (from the vertex stage).
 in float vBg;     ///< Background flag (from the vertex stage).
-in float vInst;
-in float vSwing;
+in float vInst;   ///< Inst (from the vertex stage).
+in float vSwing;  ///< Swing (from the vertex stage).
 
-const float Ground = -20.0;
+const float Ground = -20.0; ///< Height of the ground (world units).
 
 /**  Rotates a colour's hue by an angle (about the grey axis).
  *

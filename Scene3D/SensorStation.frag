@@ -28,8 +28,8 @@ uniform float audioAdvance; ///< The music's advance: integrated tempo-weighted 
 uniform float audioKick;    ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
 
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
-uniform float scanP;
+uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float scanP; ///< Scan knob: scan speed, 0.7..1.3.
 
 in vec2  vUV;       ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 in vec3  vNormal;   ///< Surface normal (from the vertex stage).

@@ -39,10 +39,10 @@ uniform float audioMid;       ///< Mid band level, 0..1.
 uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
 
-uniform float ejectaP;
-uniform float coreP; ///< Fold core class knob of the 3D chain, 0..1.
-uniform float lanthP;
-uniform float shockP;
+uniform float ejectaP; ///< Ejecta knob: merger ejecta velocity & turbulence scale (0.6..2.0).
+uniform float coreP;   ///< Fold core class knob of the 3D chain, 0..1.
+uniform float lanthP;  ///< Lanth knob: lanthanide opacity absorption strength, 0.5..2.2.
+uniform float shockP;  ///< Shock knob: shock break-out ray intensity, 0.4..1.8.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

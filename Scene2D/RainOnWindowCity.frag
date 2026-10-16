@@ -34,8 +34,8 @@ uniform float audioLevel;        ///< Overall loudness, 0..1.
 uniform float audioChromaHue;    ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioValence;      ///< Mood valence: 0 dark .. 1 bright.
 
-uniform float rainP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float rainP; ///< Rain knob: drop density, 0..1.
+uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *
@@ -88,8 +88,8 @@ vec2 hash22( vec2 p )
     return vec2( hash21( p ), hash21( p + 17.3 ) );
 }
 
-float g_hue;
-float g_aspect;
+float g_hue;    ///< Hue of the palette this frame (from hueP).
+float g_aspect; ///< Aspect of the screen (width / height).
 
 /**  The city beyond the glass, sharp: photo as the lit facades, darkened toward the top (night sky), plus the bokeh
  * lights at the given blur.

@@ -24,14 +24,14 @@ in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage
                ///< index).
 in vec4 attrB; ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
 
-uniform mat4  projM;           ///< Projection matrix.
-uniform float eyeOff;          ///< Stereo eye offset (0 in mono).
-uniform float time;            ///< Seconds since the program started (never reset; see sceneTime).
-uniform int   meshVertexCount; ///< Vertices of the scene's mesh.
-uniform vec3  meshExtent;      ///< half-extents of model 1 (the station)
-uniform vec3  meshExtent2;     ///< half-extents of model 2 (the ship)
-uniform int   mesh2VertexCount;
-uniform float sceneProgress; ///< Progress through this scene's solo time, 0..1.
+uniform mat4  projM;            ///< Projection matrix.
+uniform float eyeOff;           ///< Stereo eye offset (0 in mono).
+uniform float time;             ///< Seconds since the program started (never reset; see sceneTime).
+uniform int   meshVertexCount;  ///< Vertices of the scene's mesh.
+uniform vec3  meshExtent;       ///< half-extents of model 1 (the station)
+uniform vec3  meshExtent2;      ///< half-extents of model 2 (the ship)
+uniform int   mesh2VertexCount; ///< Vertices of the scene's second mesh.
+uniform float sceneProgress;    ///< Progress through this scene's solo time, 0..1.
 
 uniform float audioAdvance; ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
                             ///< backwards).

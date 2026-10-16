@@ -41,10 +41,10 @@ uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioRoughness; ///< Roughness (dissonance) of the sound, 0..1.
 
-uniform float sizeP; ///< Size knob, 0..1.
-uniform float splitP;
-uniform float zoomP; ///< Zoom knob, 0..1.
-uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float sizeP;  ///< Size knob, 0..1.
+uniform float splitP; ///< Split knob: colour splitting, 0..1.
+uniform float zoomP;  ///< Zoom knob, 0..1.
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 // ---- shared building blocks (texture pool, noise, shapes) ----
 /**  Pseudo-random number 0..1 from a float.

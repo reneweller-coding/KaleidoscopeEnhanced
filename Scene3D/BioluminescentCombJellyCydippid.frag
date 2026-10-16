@@ -17,11 +17,11 @@ out vec4 fragColor; ///< The pixel's colour (output).
  *   cteneGlowP   float metachronal ciliary wave luminance    (0.8..2.5)
  */
 
-in vec2  vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
-in float vSide; ///< Which side of a strip (from the vertex stage).
-in float vRibbonID;
-in vec3  vCol; ///< Colour (from the vertex stage).
-in float vCiliaWave;
+in vec2  vUV;        ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+in float vSide;      ///< Which side of a strip (from the vertex stage).
+in float vRibbonID;  ///< Ribbon ID (from the vertex stage).
+in vec3  vCol;       ///< Colour (from the vertex stage).
+in float vCiliaWave; ///< Cilia wave (from the vertex stage).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
@@ -34,7 +34,7 @@ uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
 uniform float audioAdvance; ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
                             ///< backwards).
 
-uniform float cteneGlowP;
+uniform float cteneGlowP; ///< Ctene glow knob: metachronal ciliary wave luminance, 0.8..2.5.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

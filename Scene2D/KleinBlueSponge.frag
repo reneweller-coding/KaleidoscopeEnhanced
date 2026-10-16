@@ -40,10 +40,10 @@ uniform float audioMode;      ///< Mode of the music: 0 minor .. 1 major.
 uniform float audioRoughness; ///< Roughness (dissonance) of the sound, 0..1.
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 
-uniform float spongeP;
-uniform float poreP;
-uniform float undertoneP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float spongeP;    ///< Sponge knob: sponge density, 0..1.
+uniform float poreP;      ///< Pore knob: pore size, 0..1.
+uniform float undertoneP; ///< Undertone knob: photo undertone, 0..1.
+uniform float hueP;       ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 // ---- shared building blocks (texture pool, noise, shapes) ----
 /**  Pseudo-random number 0..1 from a float.
@@ -385,7 +385,9 @@ void finish( vec3 col )
     fragColor = vec4( clamp( t, 0.0, 1.0 ), 1.0 );
 }
 
-float gS, gGrow;
+/** @{ */
+float gS, gGrow; ///< gS: Scale of the pattern this frame (from its knob); gGrow: Growth of the sponge cells this frame.
+/** @} */
 /**  Height of the sponge relief (0 wall .. 1 top), with pores.
  *
  * @param p          The point. (in)

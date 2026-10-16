@@ -1,10 +1,10 @@
 #version 330 core
 out vec4 fragColor; ///< The pixel's colour (output).
 
-in vec3  vWorldPos; ///< World position (from the vertex stage).
-in vec3  vNormal;   ///< Surface normal (from the vertex stage).
-in float vChainPhase;
-in vec2  vQuadUV;
+in vec3  vWorldPos;   ///< World position (from the vertex stage).
+in vec3  vNormal;     ///< Surface normal (from the vertex stage).
+in float vChainPhase; ///< Chain phase (from the vertex stage).
+in vec2  vQuadUV;     ///< Quad UV (from the vertex stage).
 
 /**
  * @file BioluminescentSiphonophoreChain.frag
@@ -45,8 +45,8 @@ uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-uniform float chainP;
-uniform float pulseP;
+uniform float chainP; ///< Chain knob, 0.5..2.
+uniform float pulseP; ///< Pulse knob, 0.5..2.
 uniform float speedP; ///< Speed knob, 0..1.
 uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).

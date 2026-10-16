@@ -37,7 +37,7 @@ uniform float audioValence;  ///< Mood valence: 0 dark .. 1 bright.
 uniform int   gridP;    ///< Grid knob, 0..1.
 uniform float paletteP; ///< Palette knob: photo colours .. colour field, 0..1.
 uniform float spinP;    ///< Spin knob, 0..1.
-uniform float accentP;
+uniform float accentP;  ///< Accent knob: accent flash strength, 0.5..1.6.
 
 /**  2D rotation matrix.
  *

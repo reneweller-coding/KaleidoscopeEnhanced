@@ -16,11 +16,11 @@ uniform float time;         ///< Seconds since the program started (never reset;
 uniform float audioAdvance; ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
                             ///< backwards).
 
-out vec3  vWorldPos; ///< World position (from the vertex stage).
-out vec3  vNormal;   ///< Surface normal (from the vertex stage).
-out float vVortexPhase;
-out vec2  vQuadUV;
-out float vViewZ;
+out vec3  vWorldPos;    ///< World position (from the vertex stage).
+out vec3  vNormal;      ///< Surface normal (from the vertex stage).
+out float vVortexPhase; ///< Vortex phase (from the vertex stage).
+out vec2  vQuadUV;      ///< Quad UV (from the vertex stage).
+out float vViewZ;       ///< View z (from the vertex stage).
 
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()

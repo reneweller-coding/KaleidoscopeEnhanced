@@ -40,9 +40,9 @@ uniform float audioPhase;     ///< Rotation phase driven by the music (integrate
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 
 uniform float lensP; ///< Lens knob, 0..1.
-uniform float flipP;
-uniform float rimP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float flipP; ///< Flip knob: image flip in each lens, 0..1.
+uniform float rimP;  ///< Rim knob: rim width, 0..1.
+uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 // ---- shared building blocks (texture pool, noise, shapes) ----
 /**  Pseudo-random number 0..1 from a float.

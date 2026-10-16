@@ -40,10 +40,10 @@ uniform float audioMid;       ///< Mid band level, 0..1.
 uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
 
-uniform float machP;
-uniform float bubbleP;
-uniform float fringeP;
-uniform float glowP; ///< Glow / afterglow knob, 0..1.
+uniform float machP;   ///< Mach knob: Cherenkov Mach angle & dispersion, 0.6..1.8.
+uniform float bubbleP; ///< Bubble knob: plasma wakefield cavity scale, 0.5..2.
+uniform float fringeP; ///< Fringe knob: optical interference fringe density, 1..3.5.
+uniform float glowP;   ///< Glow / afterglow knob, 0..1.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

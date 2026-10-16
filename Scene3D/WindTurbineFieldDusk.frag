@@ -33,15 +33,15 @@ uniform float audioLevel;        ///< Overall loudness, 0..1.
 uniform float audioChromaHue;    ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioValence;      ///< Mood valence: 0 dark .. 1 bright.
 
-uniform float rowsP;
+uniform float rowsP;  ///< Rows knob, 0..1.
 uniform float speedP; ///< Speed knob, 0..1.
 uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 in vec2  vTexCoord; ///< Texture coordinate (from the vertex stage).
 in vec3  vWorld;    ///< World position (from the vertex stage).
 in float vKind;     ///< Element kind (from the vertex stage).
-in float vAux;
-in float vId; ///< Instance or element id (from the vertex stage).
+in float vAux;      ///< Aux (from the vertex stage).
+in float vId;       ///< Instance or element id (from the vertex stage).
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

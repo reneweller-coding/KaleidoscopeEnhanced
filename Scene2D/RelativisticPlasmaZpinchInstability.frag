@@ -39,10 +39,10 @@ uniform float audioMid;       ///< Mid band level, 0..1.
 uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
 
-uniform float kinkAmpP;
-uniform float sausageP;
-uniform float pinchRadiusP;
-uniform float xrayGlowP;
+uniform float kinkAmpP;     ///< Kink amp knob: m=1 helical kink instability amplitude, 0.5..2.2.
+uniform float sausageP;     ///< Sausage knob: m=0 necking sausage mode wavelength, 4..16.
+uniform float pinchRadiusP; ///< Pinch radius knob: central dense plasma pinch radius, 0.08..0.35.
+uniform float xrayGlowP;    ///< Xray glow knob: thermonuclear hot-spot X-ray brightness, 0.8..2.5.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

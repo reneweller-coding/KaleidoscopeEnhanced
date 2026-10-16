@@ -37,7 +37,7 @@ uniform float audioMelodyPitch; ///< Pitch of the melody, 0..1 over the tracked 
 uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioValence;     ///< Mood valence: 0 dark .. 1 bright.
 
-uniform float neckP;
+uniform float neckP;  ///< Neck knob: neck radius, 0..1.
 uniform float speedP; ///< Speed knob, 0..1.
 uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 

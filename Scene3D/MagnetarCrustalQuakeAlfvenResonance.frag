@@ -23,8 +23,8 @@ out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec3  vPos;   ///< Position (from the vertex stage).
 in float vDepth; ///< Depth (from the vertex stage).
-in float vGlow;
-in float vKind; ///< 0 = field line, 1 = far X-ray speck, 2 = plasma haze panel
+in float vGlow;  ///< Glow (from the vertex stage).
+in float vKind;  ///< 0 = field line, 1 = far X-ray speck, 2 = plasma haze panel
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
@@ -40,8 +40,8 @@ uniform float audioCentroid;  ///< Spectral centroid (brightness of the sound), 
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-uniform float quakeGlowP;
-uniform float fireballP;
+uniform float quakeGlowP; ///< Quake glow knob: crustal fracture flare peak luminance (0.8..2.5).
+uniform float fireballP;  ///< Fireball knob: trapped pair plasma fireball / far-haze intensity (0.6..2.2).
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

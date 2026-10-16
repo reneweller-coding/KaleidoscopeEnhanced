@@ -39,10 +39,10 @@ uniform float audioMode;      ///< Mode of the music: 0 minor .. 1 major.
 uniform float audioRoughness; ///< Roughness (dissonance) of the sound, 0..1.
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 
-uniform float sheafP;
-uniform float lineP;
-uniform float lengthP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float sheafP;  ///< Sheaf knob: sheaves, 0..1.
+uniform float lineP;   ///< Line knob: lines per sheaf, 0..1.
+uniform float lengthP; ///< Length knob: scratch length, 0..1.
+uniform float hueP;    ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 // ---- shared building blocks (texture pool, noise, shapes) ----
 /**  Pseudo-random number 0..1 from a float.

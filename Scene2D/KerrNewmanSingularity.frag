@@ -53,9 +53,9 @@ uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes)
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
 uniform float spinP; ///< Spin knob, 0..1.
-uniform float diskP;
-uniform float jetP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float diskP; ///< Disk knob, 0.5..2.2.
+uniform float jetP;  ///< Jet knob, 0.5..2.
+uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

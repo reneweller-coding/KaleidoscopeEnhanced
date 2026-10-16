@@ -34,8 +34,8 @@ uniform float audioLevel;        ///< Overall loudness, 0..1.
 uniform float audioChromaHue;    ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioValence;      ///< Mood valence: 0 dark .. 1 bright.
 
-uniform float lightP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float lightP; ///< Light knob: warm/cool uplights, 0..1.
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *
@@ -106,7 +106,10 @@ const float Sp = 3.0;  ///< column spacing
 const float H = 4.2;   ///< springing of the vaults
 const float Cr = 0.34; ///< column radius
 
-float g_hue, g_light;
+/** @{ */
+float g_hue, g_light; ///< g_hue: Hue of the palette this frame (from hueP); g_light: Strength of the lights this frame
+                      ///< (from lightP).
+/** @} */
 
 /**  Scene distance: repeated columns with capitals, cross vaults above.
  *

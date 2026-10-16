@@ -28,10 +28,10 @@ layout( triangles ) in;
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( triangle_strip, max_vertices = 3 ) out;
 
-in vec3  gPos[];
-in vec3  gNormal[];
-in vec2  gUV[];
-in float gBg[];
+in vec3  gPos[];    ///< Positions of the four magnets.
+in vec3  gNormal[]; ///< Normal (from the geometry stage).
+in vec2  gUV[];     ///< UV (from the geometry stage).
+in float gBg[];     ///< Bg (from the geometry stage).
 
 out vec2  vUV;     ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 out vec3  vNormal; ///< Surface normal (from the vertex stage).

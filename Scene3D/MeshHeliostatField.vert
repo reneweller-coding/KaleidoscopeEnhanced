@@ -21,16 +21,16 @@ in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage
                ///< index).
 in vec4 attrB; ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
 
-uniform mat4  projM;           ///< Projection matrix.
-uniform float eyeOff;          ///< Stereo eye offset (0 in mono).
-uniform float time;            ///< Seconds since the program started (never reset; see sceneTime).
-uniform int   meshVertexCount; ///< Vertices of the scene's mesh.
-uniform int   mesh2VertexCount;
-uniform int   meshInstances; ///< Number of mesh instances.
-uniform vec3  meshExtent;    ///< Half size of the scene's mesh bounding box.
-uniform vec3  meshCenter;    ///< Centre of the scene's mesh bounding box.
-uniform vec3  meshExtent2;
-uniform vec3  meshCenter2;
+uniform mat4  projM;            ///< Projection matrix.
+uniform float eyeOff;           ///< Stereo eye offset (0 in mono).
+uniform float time;             ///< Seconds since the program started (never reset; see sceneTime).
+uniform int   meshVertexCount;  ///< Vertices of the scene's mesh.
+uniform int   mesh2VertexCount; ///< Vertices of the scene's second mesh.
+uniform int   meshInstances;    ///< Number of mesh instances.
+uniform vec3  meshExtent;       ///< Half size of the scene's mesh bounding box.
+uniform vec3  meshCenter;       ///< Centre of the scene's mesh bounding box.
+uniform vec3  meshExtent2;      ///< Half size of the second mesh's bounding box.
+uniform vec3  meshCenter2;      ///< Centre of the second mesh's bounding box.
 
 uniform float sizeP;   ///< Size knob, 0..1.
 uniform float mirrorP; ///< heliostat size relative to the tower (default 1)
@@ -40,12 +40,12 @@ out vec3  vNormal; ///< Surface normal (from the vertex stage).
 out vec3  vPos;    ///< Position (from the vertex stage).
 out vec3  vLocal;  ///< Object-space position (from the vertex stage).
 out float vBg;     ///< Background flag (from the vertex stage).
-out float vMirror;
-out vec3  vAim; ///< the heliostat's aiming normal (world): its glass is the face that points this way
+out float vMirror; ///< Mirror (from the vertex stage).
+out vec3  vAim;    ///< the heliostat's aiming normal (world): its glass is the face that points this way
 
-const float Ground = -6.0;
-const vec3  TowerFoot = vec3( 0.0, Ground, 170.0 );
-const float TowerH = 70.0;
+const float Ground = -6.0;                          ///< Height of the ground (world units).
+const vec3  TowerFoot = vec3( 0.0, Ground, 170.0 ); ///< Foot of the receiver tower.
+const float TowerH = 70.0;                          ///< Height of the towers (world units).
 
 /**  Direction to the sun, drifting slowly.
  *

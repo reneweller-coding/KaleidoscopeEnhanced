@@ -19,8 +19,8 @@ out vec2  vTexCoord; ///< Texture coordinate (from the vertex stage).
 out vec3  vWorld;    ///< World position (from the vertex stage).
 out vec3  vNormal;   ///< Surface normal (from the vertex stage).
 out float vKind;     ///< Element kind (from the vertex stage).
-out float vAlong;
-out float vId; ///< Instance or element id (from the vertex stage).
+out float vAlong;    ///< Along (from the vertex stage).
+out float vId;       ///< Instance or element id (from the vertex stage).
 
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()

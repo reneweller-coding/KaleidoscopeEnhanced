@@ -21,10 +21,10 @@ out vec4 fragColor; ///< The pixel's colour (output).
  * Per-activation variety: hueP float palette offset (0..6.28).
  */
 
-uniform sampler2DArray texMeshMaterial;       ///< station
-uniform int            texMeshMaterialLayers; ///< Number of layers in texMeshMaterial.
-uniform sampler2DArray texMeshMaterial2;      ///< ship
-uniform int            texMeshMaterialLayers2;
+uniform sampler2DArray texMeshMaterial;        ///< station
+uniform int            texMeshMaterialLayers;  ///< Number of layers in texMeshMaterial.
+uniform sampler2DArray texMeshMaterial2;       ///< ship
+uniform int            texMeshMaterialLayers2; ///< Number of layers in the second mesh's material textures.
 
 uniform float time;          ///< Seconds since the program started (never reset; see sceneTime).
 uniform float sceneProgress; ///< Progress through this scene's solo time, 0..1.
@@ -41,8 +41,8 @@ in vec3  vNormal;   ///< Surface normal (from the vertex stage).
 in vec3  vPos;      ///< Position (from the vertex stage).
 in vec3  vLocalPos; ///< Object-space position (from the vertex stage).
 in float vBg;       ///< Background flag (from the vertex stage).
-in float vShip;
-in float vApproach;
+in float vShip;     ///< Ship (from the vertex stage).
+in float vApproach; ///< Approach (from the vertex stage).
 
 /**  Rotates a colour's hue by an angle (about the grey axis).
  *

@@ -1,9 +1,9 @@
 #version 330 core
 out vec4 fragColor; ///< The pixel's colour (output).
 
-in vec4  vCol;  ///< Colour (from the vertex stage).
-in float vSide; ///< Which side of a strip (from the vertex stage).
-in float vLength;
+in vec4  vCol;    ///< Colour (from the vertex stage).
+in float vSide;   ///< Which side of a strip (from the vertex stage).
+in float vLength; ///< Length (from the vertex stage).
 
 /**
  * @file CosmicStringHyperspaceWeb.frag

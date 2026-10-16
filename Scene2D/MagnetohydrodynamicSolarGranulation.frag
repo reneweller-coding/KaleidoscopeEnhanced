@@ -39,10 +39,10 @@ uniform float audioMid;       ///< Mid band level, 0..1.
 uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
 
-uniform float granuleScaleP;
-uniform float laneWidthP;
-uniform float flareP;
-uniform float pmodeP;
+uniform float granuleScaleP; ///< Granule scale knob: Voronoi convection cell packing density (2.0..6.0).
+uniform float laneWidthP;    ///< Lane width knob: intergranular magnetic lane width, 0.6..2.2.
+uniform float flareP;        ///< Flare knob: magnetic micro-flare burst brightness, 0.8..2.5.
+uniform float pmodeP;        ///< Pmode knob: acoustic p-mode oscillation amplitude, 0.4..1.8.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

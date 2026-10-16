@@ -82,7 +82,10 @@ const float Ls = 0.8; ///< lantern spacing
 const float Hw = 4.0; ///< half width of the hall
 const float Ch = 5.0; ///< ceiling height
 
-float g_hue, g_tint;
+/** @{ */
+float g_hue, g_tint; ///< g_hue: Hue of the palette this frame (from hueP); g_tint: Strength of the tint this frame
+                     ///< (from tintP).
+/** @} */
 
 /**  The paper colour of a lantern: warm, slightly tinted by the palette.
  *

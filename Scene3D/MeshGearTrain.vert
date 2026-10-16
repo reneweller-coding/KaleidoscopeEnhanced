@@ -23,18 +23,18 @@ uniform vec3  meshExtent;      ///< Half size of the scene's mesh bounding box.
 uniform vec3  meshCenter;      ///< Centre of the scene's mesh bounding box.
 
 uniform float sizeP; ///< Size knob, 0..1.
-uniform float rateP;
+uniform float rateP; ///< Rate knob, 1..1.
 
 out vec2  vUV;     ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 out vec3  vNormal; ///< Surface normal (from the vertex stage).
 out vec3  vPos;    ///< Position (from the vertex stage).
 out vec3  vLocal;  ///< Object-space position (from the vertex stage).
 out float vBg;     ///< Background flag (from the vertex stage).
-out float vInst;
+out float vInst;   ///< Inst (from the vertex stage).
 out vec2  vCentre; ///< the gear's centre in world xy, for the meshing-point sparks
 
-const float Dist = 58.0;
-const float R = 9.0;
+const float Dist = 58.0; ///< Distance of the main object from the camera (world units).
+const float R = 9.0;     ///< Radius of a gear.
 
 /**  Centre of gear i of the train.
  *

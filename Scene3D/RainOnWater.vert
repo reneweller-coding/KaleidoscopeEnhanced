@@ -40,13 +40,13 @@ uniform vec2  resolution; ///< Size of the render target in pixels.
 
 uniform float audioLevel; ///< Overall loudness, 0..1.
 uniform float audioSwell; ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioZCR;
-uniform float audioHat;
+uniform float audioZCR;   ///< Zero-crossing rate: 0 pure tone .. 1 broadband noise.
+uniform float audioHat;   ///< Hi-hat / cymbal onset envelope, 0..1.
 
 out vec3  vWorld; ///< World position (from the vertex stage).
-out float vSlope;
-out float vDist; ///< Distance (from the vertex stage).
-out float vSky;
+out float vSlope; ///< Slope (from the vertex stage).
+out float vDist;  ///< Distance (from the vertex stage).
+out float vSky;   ///< Sky (from the vertex stage).
 
 /**  Pseudo-random number 0..1 from a float.
  *

@@ -39,10 +39,10 @@ uniform float audioMid;       ///< Mid band level, 0..1.
 uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
 
-uniform float waveP; ///< Wave knob.
-uniform float shearP;
-uniform float foamP;
-uniform float sparkP;
+uniform float waveP;  ///< Wave knob.
+uniform float shearP; ///< Shear knob: hydrodynamic shear activation threshold (0.5..2.0).
+uniform float foamP;  ///< Foam knob: bioluminescent foam persistence scale, 0.8..2.5.
+uniform float sparkP; ///< Spark knob: plankton micro-scintillation density, 1..3.5.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

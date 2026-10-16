@@ -114,12 +114,21 @@ float sdSeg( vec2 p, vec2 a, vec2 b )
 }
 
 // The nave (metres, eye at the origin): floor, vault, side walls, columns.
-const float Fl = -1.6, VAULT = 5.0, HALFW = 2.4, COLX = 1.5, ZEND = 16.0;
-const float Z0 = 2.2, DZ = 1.7; // column depths
-const float F = 0.95;           ///< focal length
-const float Vy = -0.16;         ///< horizon on screen (looking up)
-float       gE[4];              ///< band energies of the window families
-vec3        gSun;               ///< direction the sunlight travels
+/** @{ */
+const float Fl = -1.6, VAULT = 5.0, HALFW = 2.4, COLX = 1.5, ZEND = 16.0; ///< Fl: Height of the floor (metres); VAULT:
+                                                                          ///< Height of the vault (metres); HALFW: Half
+                                                                          ///< width of the nave (metres); COLX:
+                                                                          ///< Distance of the columns from the axis
+                                                                          ///< (metres); ZEND: Depth of the nave's end
+                                                                          ///< (metres).
+/** @} */
+/** @{ */
+const float Z0 = 2.2, DZ = 1.7; ///< column depths
+/** @} */
+const float F = 0.95;   ///< focal length
+const float Vy = -0.16; ///< horizon on screen (looking up)
+float       gE[4];      ///< band energies of the window families
+vec3        gSun;       ///< direction the sunlight travels
 
 /**  A window family's glass colour (0 blue, 1 green, 2 yellow-orange, 3 red).
  *

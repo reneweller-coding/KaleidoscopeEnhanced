@@ -30,15 +30,15 @@ uniform float cubeBudget; ///< FPS detail budget: <1 -> drop every 2nd cube
 uniform float audioAdvance;      ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
                                  ///< backwards).
 uniform float audioSpectrum[32]; ///< Spectrum bands, 0..1.
-uniform float audioDownbeat;
-uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
-uniform float audioDrop;      ///< Drop envelope: high after a detected drop, decaying.
-uniform float dayPhase;       ///< slow host day/night cycle, 0..1 -> ambient light angle
+uniform float audioDownbeat;     ///< Downbeat accent: a decaying pulse on the bar's 1, 0..1.
+uniform float audioSwell;        ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioChromaHue;    ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioDrop;         ///< Drop envelope: high after a detected drop, decaying.
+uniform float dayPhase;          ///< slow host day/night cycle, 0..1 -> ambient light angle
 
-out vec4  vCol; ///< Colour (from the vertex stage).
-out vec3  vCorner;
-out float vFlat; ///< 1 = shade as a plain solid (ground / sky dust), no glyph edges
+out vec4  vCol;    ///< Colour (from the vertex stage).
+out vec3  vCorner; ///< Corner (from the vertex stage).
+out float vFlat;   ///< 1 = shade as a plain solid (ground / sky dust), no glyph edges
 
 /**  Rotates a colour's hue by an angle (about the grey axis).
  *

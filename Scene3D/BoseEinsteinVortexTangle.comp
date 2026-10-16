@@ -16,12 +16,15 @@
 // with min(cmd[4], maxVertices), so a generator that writes cmd[0] itself has
 // its count zeroed and draws nothing.
 // -----------------------------------------------------------------------
+/// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( local_size_x = 4, local_size_y = 4, local_size_z = 4 ) in;
 
+/// The output vertex buffer: eight floats per vertex (attribute A, attribute B) that the scene draws.
 layout( std430, binding = 0 ) buffer Verts
 {
     float verts[];
 };
+/// The indirect draw command: [0] the vertex count (counted up atomically), then the other draw arguments.
 layout( std430, binding = 1 ) buffer Cmd
 {
     uint cmd[];
@@ -34,26 +37,26 @@ uniform float audioAdvance; ///< The music's advance: integrated tempo-weighted 
 uniform float audioKick;    ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 uniform float audioBass;    ///< Bass band level, 0..1.
 uniform float audioHigh;    ///< High band level, 0..1.
-uniform float becP;
-uniform float vortexP;
-uniform float speedP; ///< Speed knob, 0..1.
+uniform float becP;         ///< Bec knob, 0.5..2.
+uniform float vortexP;      ///< Vortex knob, 0.5..2.
+uniform float speedP;       ///< Speed knob, 0..1.
 
 // The scene projection: 55 deg vertical FOV (see Scene3DShader::draw), and the
 // camera distance the companion .vert applies.  A generator program gets no
 // `resolution` uniform, so the layout assumes 16:9 -- the house fallback.
-const float TanY = 0.5206;
-const float Aspect = 1.7778;
-const float Cam = 6.4;
+const float TanY = 0.5206;   ///< Tangent of half the vertical field of view (the scene projection's 55 degrees).
+const float Aspect = 1.7778; ///< Assumed screen aspect (16:9; this stage does not know the real one).
+const float Cam = 6.4;       ///< Distance the vertex stage pushes the scene back from the camera.
 
 // The tangle used to be a cylinder barely 2 units across at 4.6 units out --
 // a small knot floating in the middle of a frustum three times its size
 // (measured occ 0.22).  More strands, over a far wider volume, plus a
 // condensate speckle spread across the frustum to carry the corners.
-const uint Strands = 96u;
-const uint PerStr = 128u;
+const uint Strands = 96u;             ///< Number of vortex strands.
+const uint PerStr = 128u;             ///< Points per strand.
 const uint Tangle = Strands * PerStr; ///< 12288
-const uint Haze = 6000u;
-const uint Points = Tangle + Haze; ///< 18288 quads = 109728 vertices
+const uint Haze = 6000u;              ///< Number of haze points.
+const uint Points = Tangle + Haze;    ///< 18288 quads = 109728 vertices
 
 /**  Pseudo-random number 0..1 from a float.
  *

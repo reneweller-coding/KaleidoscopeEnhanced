@@ -107,8 +107,8 @@ const float W = 1.0;    ///< half width of the alley
 const float H = 3.4;    ///< eaves height
 const int   Nsign = 16; ///< slots looked at ahead (two blades per slot)
 
-float g_sp; ///< slot spacing along the alley
-float g_hue;
+float g_sp;  ///< slot spacing along the alley
+float g_hue; ///< Hue of the palette this frame (from hueP).
 
 /**  Rotates a colour's hue by an angle (about the grey axis).
  *

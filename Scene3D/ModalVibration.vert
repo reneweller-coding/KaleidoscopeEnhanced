@@ -27,15 +27,15 @@ uniform int   meshVertexCount; ///< Vertices of the scene's mesh.
 uniform vec3  meshExtent;      ///< Half size of the scene's mesh bounding box.
 uniform vec3  meshCenter;      ///< Centre of the scene's mesh bounding box.
 
-uniform float audioSubBass; ///< Sub-bass band level, 0..1.
-uniform float audioBass;    ///< Bass band level, 0..1.
-uniform float audioLowMid;
-uniform float audioMid; ///< Mid band level, 0..1.
-uniform float audioUpperMid;
-uniform float audioHigh;    ///< High band level, 0..1.
-uniform float audioAdvance; ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
-                            ///< backwards).
-uniform float audioKick;    ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioSubBass;  ///< Sub-bass band level, 0..1.
+uniform float audioBass;     ///< Bass band level, 0..1.
+uniform float audioLowMid;   ///< Low-mid band level (150-500 Hz), 0..1.
+uniform float audioMid;      ///< Mid band level, 0..1.
+uniform float audioUpperMid; ///< Upper-mid band level (2-6 kHz), 0..1.
+uniform float audioHigh;     ///< High band level, 0..1.
+uniform float audioAdvance;  ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                             ///< backwards).
+uniform float audioKick;     ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 
 uniform float sizeP; ///< Size knob, 0..1.
 uniform float spinP; ///< Spin knob, 0..1.

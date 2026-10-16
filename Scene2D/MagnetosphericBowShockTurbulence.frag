@@ -39,10 +39,10 @@ uniform float audioMid;       ///< Mid band level, 0..1.
 uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
 
-uniform float shockCurvP;
-uniform float windSpeedP;
-uniform float whistlerP;
-uniform float auroraGlowP;
+uniform float shockCurvP;  ///< Shock curv knob: hyperbolic bow shock curvature parameter (0.4..1.8).
+uniform float windSpeedP;  ///< Wind speed knob: solar wind supersonic drift velocity, 0.6..2.2.
+uniform float whistlerP;   ///< Whistler knob: ion cyclotron whistler wave frequency, 8..24.
+uniform float auroraGlowP; ///< Aurora glow knob: auroral particle curtain luminance gain, 0.8..2.5.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

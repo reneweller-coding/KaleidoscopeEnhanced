@@ -39,8 +39,8 @@ uniform float audioLevel;     ///< Overall loudness, 0..1.
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-uniform float crowdP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float crowdP; ///< Crowd knob: how many people, 0..1.
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *
@@ -128,15 +128,15 @@ float fbm( vec2 p )
 }
 
 // The hall (metres): floor, mirror ceiling, side walls, the end wall with the sun.
-const float Floor = -1.6;
-const float Ceil = 18.0;
-const float Halfw = 11.0;
-const float Endz = 55.0;
-const vec3  Sunc = vec3( 0.0, 17.6, 55.0 );
-const float Sunr = 8.0;
+const float Floor = -1.6;                   ///< Height of the floor (metres).
+const float Ceil = 18.0;                    ///< Height of the ceiling (world units).
+const float Halfw = 11.0;                   ///< Half width of the hall (metres).
+const float Endz = 55.0;                    ///< Depth of the end wall (metres).
+const vec3  Sunc = vec3( 0.0, 17.6, 55.0 ); ///< Centre of the sun disc.
+const float Sunr = 8.0;                     ///< Radius of the sun disc.
 
-float gT; ///< The chain's (or scene's) time this frame.
-int   gCrowd;
+float gT;     ///< The chain's (or scene's) time this frame.
+int   gCrowd; ///< Number of people this frame.
 
 /**  Nearest hit of a ray inside the box: 0 floor, 1 ceiling, 2 wall, 3 end wall.
  *

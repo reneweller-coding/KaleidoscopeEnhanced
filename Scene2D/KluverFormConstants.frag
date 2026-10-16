@@ -25,11 +25,11 @@ uniform sampler2D tex0;          ///< The current photo.
 uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
 uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float sceneAdvance; ///< The music's advance since this scene was activated (integrated, never jumps).
-uniform float sceneTime;    ///< Seconds since this scene was activated.
-uniform float audioAdvance; ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
-                            ///< backwards).
-uniform float audioArousal;
+uniform float sceneAdvance;   ///< The music's advance since this scene was activated (integrated, never jumps).
+uniform float sceneTime;      ///< Seconds since this scene was activated.
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                              ///< backwards).
+uniform float audioArousal;   ///< Arousal of the music (energy, rhythm, brightness), 0..1.
 uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 uniform float audioLevel;     ///< Overall loudness, 0..1.

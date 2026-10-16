@@ -32,8 +32,8 @@ uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short 
 uniform float audioLevel;     ///< Overall loudness, 0..1.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
-uniform float resP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float resP;           ///< Res knob: base resolution, 0..1.
+uniform float hueP;           ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 in vec2  vUV;     ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 in vec3  vNormal; ///< Surface normal (from the vertex stage).

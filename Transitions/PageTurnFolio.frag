@@ -47,9 +47,9 @@ uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-uniform float tiltP; ///< Tilt knob, 0..1.
-uniform float stiffP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float tiltP;  ///< Tilt knob, 0..1.
+uniform float stiffP; ///< Stiff knob, 0.6..1.6.
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 const float Pi = 3.14159265358979; ///< Pi.
 

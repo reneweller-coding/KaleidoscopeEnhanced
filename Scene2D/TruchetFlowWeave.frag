@@ -41,9 +41,9 @@ uniform float audioKick;       ///< Kick-drum envelope, 0..1 (fast attack, short
 uniform float audioSwell;      ///< Slow loudness envelope, 0..1 (seconds).
 
 uniform float scaleP; ///< Scale knob.
-uniform float weaveP;
-uniform float flipP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float weaveP; ///< Weave knob: ribbon relief, 0..1.
+uniform float flipP;  ///< Flip knob: how often tiles turn, 0..1.
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 // ---- shared building blocks (texture pool, noise, shapes) ----
 /**  Pseudo-random number 0..1 from a float.

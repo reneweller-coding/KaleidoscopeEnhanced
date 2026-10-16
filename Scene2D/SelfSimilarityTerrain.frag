@@ -30,9 +30,9 @@ uniform float     time;          ///< Seconds since the program started (never r
 uniform sampler2D tex0;          ///< The current photo.
 uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
 uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
-uniform sampler2D texSSM;
-uniform float     ssmHead;
-uniform float     ssmFill;
+uniform sampler2D texSSM;        ///< Self-similarity matrix of the recent music (how alike two moments are).
+uniform float     ssmHead;       ///< Write position of the self-similarity ring texSSM, 0..1.
+uniform float     ssmFill;       ///< How full the self-similarity ring texSSM is, 0..1.
 
 uniform float sceneTime;      ///< Seconds since this scene was activated.
 uniform float sceneAdvance;   ///< The music's advance since this scene was activated (integrated, never jumps).
@@ -106,7 +106,10 @@ float noise2( vec2 p )
                 mix( hash21( i + vec2( 0.0, 1.0 ) ), hash21( i + vec2( 1.0, 1.0 ) ), f.x ), f.y );
 }
 
-float g_hs = 1.0, g_det = 1.0;
+/** @{ */
+float g_hs = 1.0, g_det = 1.0; ///< g_hs: Height scale of the terrain this frame; g_det: Detail scale of the terrain
+                               ///< this frame.
+/** @} */
 
 /**  Similarity at terrain position (x across, z away): both axes read back from the ring head, so the land flows
  * toward the viewer as time runs.

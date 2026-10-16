@@ -37,9 +37,9 @@ uniform float     audioChromaHue; ///< Hue of the dominant pitch class (radians,
 uniform float     audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
                                   ///< backwards).
 uniform float audioValence;       ///< Mood valence: 0 dark .. 1 bright.
-uniform float colonyP;
-uniform float packP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float colonyP;            ///< Colony knob: huddle size, 0..1.
+uniform float packP;              ///< Pack knob: how tight, 0..1.
+uniform float hueP;               ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

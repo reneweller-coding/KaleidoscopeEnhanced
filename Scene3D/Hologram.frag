@@ -34,14 +34,14 @@ uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
 
 uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 uniform float tintP; ///< Tint knob, 0..1.
-uniform float scanP;
+uniform float scanP; ///< Scan knob: scanline density, 0.8..1.9.
 
 in vec2  vUV;       ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 in vec3  vNormal;   ///< Surface normal (from the vertex stage).
 in vec3  vPos;      ///< Position (from the vertex stage).
 in vec3  vLocalPos; ///< Object-space position (from the vertex stage).
-in vec3  vBary;
-in float vBg; ///< Background flag (from the vertex stage).
+in vec3  vBary;     ///< Bary (from the vertex stage).
+in float vBg;       ///< Background flag (from the vertex stage).
 
 /**  Rotates a colour's hue by an angle (about the grey axis).
  *

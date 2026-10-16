@@ -9,9 +9,9 @@ out vec4 fragColor; ///< The pixel's colour (output).
 in vec3  vObj;    ///< Object-space position (from the vertex stage).
 in vec3  vNormal; ///< Surface normal (from the vertex stage).
 in vec3  vView;   ///< View vector (from the vertex stage).
-in float vAlong;
-in float vRnd;
-in float vDist; ///< Distance (from the vertex stage).
+in float vAlong;  ///< Along (from the vertex stage).
+in float vRnd;    ///< Rnd (from the vertex stage).
+in float vDist;   ///< Distance (from the vertex stage).
 
 /**
  * @file FlowRibbons.frag

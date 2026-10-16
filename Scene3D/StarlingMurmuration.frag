@@ -11,7 +11,7 @@ out vec4 fragColor; ///< The pixel's colour (output).
  * Audio Reactivity: audioKick brightens the wing edges for a beat;
  *                   audioSwell warms the sky.
  */
-in vec4  vColor;
+in vec4  vColor;    ///< Color (from the vertex stage).
 in vec2  vTexCoord; ///< Texture coordinate (from the vertex stage).
 in float vDepth;    ///< Depth (from the vertex stage).
 in float vKind;     ///< Element kind (from the vertex stage).

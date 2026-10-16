@@ -7,9 +7,9 @@
 in vec4 attrA; ///< xyz = world position, w = particle index
 in vec4 attrB; ///< xyz = per-particle hash seed, w = density/REST_DENS
 
-out vec3  vWorld; ///< World position (from the vertex stage).
-out vec3  vSeed;  ///< Per-instance random seed (from the vertex stage).
-out float vDensRatio;
+out vec3  vWorld;     ///< World position (from the vertex stage).
+out vec3  vSeed;      ///< Per-instance random seed (from the vertex stage).
+out float vDensRatio; ///< Dens ratio (from the vertex stage).
 
 uniform mat4  projM;        ///< Projection matrix.
 uniform float eyeOff;       ///< Stereo eye offset (0 in mono).

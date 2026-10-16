@@ -27,17 +27,17 @@ out vec4 fragColor; ///< The pixel's colour (output).
  *  - audioRolloff   -> WALL COLOUR TEMPERATURE: bass-bound music tints the tunnel
  *                      cold blue, energy reaching into the highs warms it amber
  */
-uniform vec2      resolution;    ///< Size of the render target in pixels.
-uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;          ///< The current photo.
-uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
-uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
-uniform float     interpolationRotation;
-uniform float     speedTunnel;
-uniform float     speed;
-uniform int       sides;
-uniform float     power;
-uniform int       rotate;
+uniform vec2      resolution;            ///< Size of the render target in pixels.
+uniform float     time;                  ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;                  ///< The current photo.
+uniform sampler2D tex1;                  ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation;         ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform float     interpolationRotation; ///< Rotation of the picture during the cross-fade (radians).
+uniform float     speedTunnel;           ///< Speed of the flight through the tunnel.
+uniform float     speed;                 ///< Speed of the motion.
+uniform int       sides;                 ///< Number of mirror sides.
+uniform float     power;                 ///< Exponent of the distortion (the host scales it with the music).
+uniform int       rotate;                ///< 1: the picture turns.
 // Audio reactivity: 0=silence, 1=loud beat.  Decays between beats.
 uniform float audioBeat;      ///< beat pulse decay 0..1
 uniform float audioSwell;     ///< slow envelope, the calm replacement for the fast one (V7d)
@@ -52,7 +52,7 @@ uniform float audioSpread;    ///< 0=narrow spectrum .. 1=wide -> throat depth c
 uniform float audioRoughness; ///< 0=consonant .. 1=dissonant -> wall ripple
 uniform float audioRolloff;   ///< 0=bass-bound .. 1=reaching into the highs -> wall colour
 
-const float Pi = 3.141592653589793;
+const float Pi = 3.141592653589793; ///< Pi.
 
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()

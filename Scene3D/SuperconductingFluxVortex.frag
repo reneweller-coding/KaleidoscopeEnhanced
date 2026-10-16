@@ -7,9 +7,9 @@ uniform float time;           ///< Seconds since the program started (never rese
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float hueP;           ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-in vec4  vColor;
+in vec4  vColor;    ///< Color (from the vertex stage).
 in vec2  vTexCoord; ///< Texture coordinate (from the vertex stage).
-in float vHaze;
+in float vHaze;     ///< Haze (from the vertex stage).
 
 /**
  * @file SuperconductingFluxVortex.frag

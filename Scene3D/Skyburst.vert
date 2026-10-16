@@ -9,12 +9,12 @@
 in vec4 attrA; ///< xyz = world position, w = age along the trail / sky elevation
 in vec4 attrB; ///< x = shell hue / sky azimuth, y = brightness, z = kind
 
-out vec3  vWorld; ///< World position (from the vertex stage).
-out float vAge;
-out float vHue;
-out float vBright;
-out float vDist; ///< Distance (from the vertex stage).
-out float vKind; ///< 0 = spark trail, 1 = sky dome
+out vec3  vWorld;  ///< World position (from the vertex stage).
+out float vAge;    ///< Age (from the vertex stage).
+out float vHue;    ///< Hue (from the vertex stage).
+out float vBright; ///< Bright (from the vertex stage).
+out float vDist;   ///< Distance (from the vertex stage).
+out float vKind;   ///< 0 = spark trail, 1 = sky dome
 
 uniform mat4  projM;        ///< Projection matrix.
 uniform float eyeOff;       ///< Stereo eye offset (0 in mono).

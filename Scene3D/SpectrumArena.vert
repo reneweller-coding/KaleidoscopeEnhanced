@@ -25,11 +25,11 @@ uniform float audioAdvance;      ///< The music's advance: integrated tempo-weig
 uniform float audioChromaHue;    ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioDrop;         ///< Drop envelope: high after a detected drop, decaying.
 uniform float audioKick;         ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioDownbeat;
-uniform float audioBeatPhase; ///< Position within the current beat, 0..1.
+uniform float audioDownbeat;     ///< Downbeat accent: a decaying pulse on the bar's 1, 0..1.
+uniform float audioBeatPhase;    ///< Position within the current beat, 0..1.
 
-out vec4 vCol; ///< Colour (from the vertex stage).
-out vec3 vCorner;
+out vec4 vCol;    ///< Colour (from the vertex stage).
+out vec3 vCorner; ///< Corner (from the vertex stage).
 
 /**  Rotates a colour's hue by an angle (about the grey axis).
  *

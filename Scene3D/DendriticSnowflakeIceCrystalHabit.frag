@@ -15,10 +15,10 @@ out vec4 fragColor; ///< The pixel's colour (output).
  *   specularP   float hexagonal facet specular shine gain (0.8..2.5)
  */
 
-in vec2  vUV;     ///< Texture coordinate 0..1 over the screen (from the vertex stage).
-in vec3  vNormal; ///< Surface normal (from the vertex stage).
-in vec3  vCol;    ///< Colour (from the vertex stage).
-in float vIceGlow;
+in vec2  vUV;      ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+in vec3  vNormal;  ///< Surface normal (from the vertex stage).
+in vec3  vCol;     ///< Colour (from the vertex stage).
+in float vIceGlow; ///< Ice glow (from the vertex stage).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
@@ -43,7 +43,7 @@ vec3 img( vec2 uv )
     return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
-in float vGrow;
+in float vGrow; ///< Grow (from the vertex stage).
 
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()

@@ -15,8 +15,8 @@ uniform sampler2D tex1;           ///< The next photo (cross-faded in by interpo
 uniform float     interpolation;  ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 uniform float     audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 
-in vec2  vPolar;
-in float vLift;
+in vec2  vPolar; ///< Polar (from the vertex stage).
+in float vLift;  ///< Lift (from the vertex stage).
 
 /**
  * @file MandalaGrid.frag

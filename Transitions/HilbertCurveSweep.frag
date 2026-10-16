@@ -46,8 +46,8 @@ uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes)
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
 uniform float orderP; ///< Order of the chain's four stages (one of 24), 0..1.
-uniform float edgeP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float edgeP;  ///< Edge knob, 0.6..1.6.
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 const float Pi = 3.14159265358979; ///< Pi.
 

@@ -8,6 +8,7 @@ in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage
                ///< index).
 in vec4 attrB; ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
 
+/// Normals of the six cube faces.
 const vec3 CubeFaceNormals[6] = vec3[6](
     vec3( 0.0, 0.0, -1.0 ), vec3( 0.0, 0.0, 1.0 ),
     vec3( -1.0, 0.0, 0.0 ), vec3( 1.0, 0.0, 0.0 ),
@@ -26,11 +27,11 @@ uniform float audioHigh;         ///< High band level, 0..1.
 uniform float audioSwell;        ///< Slow loudness envelope, 0..1 (seconds).
 uniform float audioSpectrum[32]; ///< Spectrum bands, 0..1.
 
-out vec3  vPos;    ///< Position (from the vertex stage).
-out vec3  vNormal; ///< Surface normal (from the vertex stage).
-out vec2  vUV;     ///< Texture coordinate 0..1 over the screen (from the vertex stage).
-out float vQubitState;
-out float vEnergy;
+out vec3  vPos;        ///< Position (from the vertex stage).
+out vec3  vNormal;     ///< Surface normal (from the vertex stage).
+out vec2  vUV;         ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+out float vQubitState; ///< Qubit state (from the vertex stage).
+out float vEnergy;     ///< Energy (from the vertex stage).
 
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()

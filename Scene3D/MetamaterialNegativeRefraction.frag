@@ -9,10 +9,10 @@ out vec4 fragColor; ///< The pixel's colour (output).
  *   audioKick -> focal spot    audioBass -> wave amplitude
  */
 
-in vec3  vWorldPos; ///< World position (from the vertex stage).
-in vec3  vNormal;   ///< Surface normal (from the vertex stage).
-in vec2  vTexCoord; ///< Texture coordinate (from the vertex stage).
-in float vPhaseVelocity;
+in vec3  vWorldPos;      ///< World position (from the vertex stage).
+in vec3  vNormal;        ///< Surface normal (from the vertex stage).
+in vec2  vTexCoord;      ///< Texture coordinate (from the vertex stage).
+in float vPhaseVelocity; ///< Phase velocity (from the vertex stage).
 
 uniform sampler2D tex0;          ///< The current photo.
 uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
@@ -33,7 +33,7 @@ uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-uniform float nP;
+uniform float nP;     ///< Refractive index knob (negative refraction).
 uniform float lensP;  ///< Lens knob, 0..1.
 uniform float speedP; ///< Speed knob, 0..1.
 uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.

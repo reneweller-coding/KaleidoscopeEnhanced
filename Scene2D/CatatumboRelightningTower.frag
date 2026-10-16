@@ -40,10 +40,10 @@ uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioSnare;     ///< Snare envelope, 0..1.
 uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
 
-uniform float branchP; ///< Branching knob, 0..1.
-uniform float cloudP;
-uniform float flashP;
-uniform float methaneP;
+uniform float branchP;  ///< Branching knob, 0..1.
+uniform float cloudP;   ///< Cloud knob: volumetric anvil cloud turbulence, 0.6..2.
+uniform float flashP;   ///< Flash knob: stepped leader arc flash brightness, 0.8..2.5.
+uniform float methaneP; ///< Methane knob: methane ionization blue/violet tint, 0.2..1.5.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

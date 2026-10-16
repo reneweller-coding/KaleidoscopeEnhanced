@@ -34,14 +34,14 @@ uniform float audioSwell;    ///< Slow loudness envelope, 0..1 (seconds).
 
 uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 uniform float tintP; ///< Tint knob, 0..1.
-uniform float atmoP;
+uniform float atmoP; ///< Atmo knob: how thick the atmosphere reads, 0.8..1.2.
 
 in vec2  vUV;       ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 in vec3  vNormal;   ///< Surface normal (from the vertex stage).
 in vec3  vPos;      ///< Position (from the vertex stage).
 in vec3  vLocalPos; ///< Object-space position (from the vertex stage).
 in float vBg;       ///< Background flag (from the vertex stage).
-in float vEntry;
+in float vEntry;    ///< Entry (from the vertex stage).
 
 /**  Rotates a colour's hue by an angle (about the grey axis).
  *
@@ -132,7 +132,7 @@ float starsField( vec3 dir, float density )
     return smoothstep( 1.0 - density, 1.0, hash13( floor( dir * 500.0 ) ) );
 }
 
-const vec3 SunDir = vec3( 0.55, 0.42, -0.72 );
+const vec3 SunDir = vec3( 0.55, 0.42, -0.72 ); ///< Direction to the sun (normalised where it is used).
 
 /**  The sky colour for a direction.
  *

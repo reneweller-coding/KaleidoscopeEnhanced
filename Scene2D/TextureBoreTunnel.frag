@@ -42,12 +42,12 @@ uniform float audioPhase;     ///< Rotation phase driven by the music (integrate
 uniform float audioSpread;    ///< Spectral spread, 0..1.
 uniform float audioMode;      ///< Mode of the music: 0 minor .. 1 major.
 uniform float audioRoughness; ///< Roughness (dissonance) of the sound, 0..1.
-uniform float audioRolloff;
-uniform float audioBass;  ///< Bass band level, 0..1.
-uniform float audioHigh;  ///< High band level, 0..1.
-uniform float audioSwell; ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioRolloff;   ///< Spectral rolloff: how far the energy reaches into the highs, 0..1.
+uniform float audioBass;      ///< Bass band level, 0..1.
+uniform float audioHigh;      ///< High band level, 0..1.
+uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 
-uniform float sidesP;
+uniform float sidesP;  ///< Sides knob: texture repeats around the wall, 0..1.
 uniform float twistP;  ///< Twist knob, 0..1.
 uniform float reliefP; ///< Relief knob, 0..1.
 uniform float hueP;    ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.

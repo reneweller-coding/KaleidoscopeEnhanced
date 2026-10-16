@@ -1,8 +1,8 @@
 #version 330 core
 out vec4 fragColor; ///< The pixel's colour (output).
 
-in vec4  vCol; ///< Colour (from the vertex stage).
-in float vLife;
+in vec4  vCol;  ///< Colour (from the vertex stage).
+in float vLife; ///< Life (from the vertex stage).
 
 /**
  * @file NeuroSynapseNetwork.frag

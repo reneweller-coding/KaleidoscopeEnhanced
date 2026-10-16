@@ -25,7 +25,7 @@ uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioHigh;      ///< High band level, 0..1.
 
-uniform float fiberP;
+uniform float fiberP;  ///< Fiber knob, 0.5..2.
 uniform float radiusP; ///< Radius knob, 0..1.
 uniform float widthP;  ///< Width knob, 0..1.
 uniform float hueP;    ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
@@ -36,7 +36,7 @@ uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0
 uniform float     audioValence;  ///< Mood valence: 0 dark .. 1 bright.
 out vec4          vCol;          ///< Colour (from the vertex stage).
 out float         vSide;         ///< Which side of a strip (from the vertex stage).
-out float         vLength;
+out float         vLength;       ///< Length (from the vertex stage).
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

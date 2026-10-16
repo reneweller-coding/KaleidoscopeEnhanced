@@ -37,10 +37,10 @@ uniform float audioSpread;    ///< narrow spectrum = collimated, wide = fanned o
 uniform float audioRoughness; ///< sensory dissonance -> track scatter
 uniform float audioHat;       ///< hi-hat / cymbal onset envelope
 
-uniform float cascadeP;
-uniform float fieldP;
-uniform float speedP; ///< Speed knob, 0..1.
-uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float cascadeP; ///< Cascade knob, 0.5..2.
+uniform float fieldP;   ///< Field knob, 0.5..2.
+uniform float speedP;   ///< Speed knob, 0..1.
+uniform float hueP;     ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 out vec4 vCol; ///< Colour (from the vertex stage).
 out vec2 vUV;  ///< Texture coordinate 0..1 over the screen (from the vertex stage).

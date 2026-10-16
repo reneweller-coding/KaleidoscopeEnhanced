@@ -30,13 +30,13 @@ in float vKind;     ///< 0 = isosurface, 1 = far-field backdrop panel
  * audioAmbient sets its brightness and audioAdvance drifts its bands.
  */
 
-uniform sampler2D       tex0; ///< The current photo.
-uniform sampler2DShadow texShadow;
-uniform mat4            lightM; ///< Light view-projection matrix (shadow map).
-uniform vec3            lightDir;
-uniform float           shadowPass; ///< 1 during the shadow map's depth-only pass.
-uniform float           shadowTexel;
-uniform float           shadowExtent;
+uniform sampler2D       tex0;          ///< The current photo.
+uniform sampler2DShadow texShadow;     ///< Shadow map of the key light (depth comparison).
+uniform mat4            lightM;        ///< Light view-projection matrix (shadow map).
+uniform vec3            lightDir;      ///< Direction to the key light (unit length).
+uniform float           shadowPass;    ///< 1 during the shadow map's depth-only pass.
+uniform float           shadowTexel;   ///< Size of a shadow-map texel in world units.
+uniform float           shadowExtent;  ///< Half size of the area the shadow map covers (world units).
 uniform float           interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 uniform float           time;          ///< Seconds since the program started (never reset; see sceneTime).
 
@@ -48,8 +48,8 @@ uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioAmbient;   ///< How ambient (sustained, beatless) the music is, 0..1.
 
-uniform float     glossP;
-uniform float     isoP;
+uniform float     glossP;       ///< Gloss knob, 0.4..0.9.
+uniform float     isoP;         ///< Iso knob, 0.8..1.25.
 uniform sampler2D tex1;         ///< The next photo (cross-faded in by interpolation).
 uniform float     audioAdvance; ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
                                 ///< backwards).

@@ -41,8 +41,8 @@ in vec2  vUV;     ///< Texture coordinate 0..1 over the screen (from the vertex 
 in vec3  vNormal; ///< Surface normal (from the vertex stage).
 in vec3  vPos;    ///< Position (from the vertex stage).
 in float vBg;     ///< Background flag (from the vertex stage).
-in float vSeat;
-in float vLand;
+in float vSeat;   ///< Seat (from the vertex stage).
+in float vLand;   ///< Land (from the vertex stage).
 
 /**  Rotates a colour's hue by an angle (about the grey axis).
  *

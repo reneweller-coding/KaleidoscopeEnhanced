@@ -41,8 +41,8 @@ uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 
 uniform float cellP; ///< Cell size knob, 0..1.
 uniform float glowP; ///< Glow / afterglow knob, 0..1.
-uniform float fogP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float fogP;  ///< Fog knob: base fog, 0..1.
+uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 // ---- shared building blocks (texture pool, noise, shapes) ----
 /**  Pseudo-random number 0..1 from a float.

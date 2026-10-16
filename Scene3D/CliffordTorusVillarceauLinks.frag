@@ -4,8 +4,8 @@ out vec4 fragColor; ///< The pixel's colour (output).
 in vec3  vWorldPos; ///< World position (from the vertex stage).
 in vec3  vNormal;   ///< Surface normal (from the vertex stage).
 in vec2  vTexCoord; ///< Texture coordinate (from the vertex stage).
-in float vIndex;
-in float vDust;
+in float vIndex;    ///< Index (from the vertex stage).
+in float vDust;     ///< Dust (from the vertex stage).
 
 /**
  * @file CliffordTorusVillarceauLinks.frag
@@ -43,8 +43,8 @@ uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-uniform float torusP;
-uniform float linkP;
+uniform float torusP; ///< Torus knob, 0.5..2.
+uniform float linkP;  ///< Link knob, 0.5..2.
 uniform float speedP; ///< Speed knob, 0..1.
 uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 

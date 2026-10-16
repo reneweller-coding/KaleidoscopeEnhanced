@@ -4,19 +4,19 @@
  * @brief Tessellation-control stage companion to SpectroCanyon.frag -- see that file's header for
  * this scene's description.
  */
-// SpectroCanyon.tesc — spend triangles where the canyon is close.
-// Each edge takes its level from its OWN midpoint, so two patches sharing an
-// edge always agree and the walls do not split along the seams.
+/// SpectroCanyon.tesc — spend triangles where the canyon is close.
+/// Each edge takes its level from its OWN midpoint, so two patches sharing an
+/// edge always agree and the walls do not split along the seams.
 layout( vertices = 4 ) out;
 
-in vec2  vUV[];   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
-in vec4  vSeed[]; ///< Per-instance random seed (from the vertex stage).
-out vec2 tcUV[];
-out vec4 tcSeed[];
+in vec2  vUV[];    ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+in vec4  vSeed[];  ///< Per-instance random seed (from the vertex stage).
+out vec2 tcUV[];   ///< UV (from the tessellation control stage).
+out vec4 tcSeed[]; ///< Seed (from the tessellation control stage).
 
 uniform float detailP; ///< Detail knob, 0..1.
 
-const vec2 Extent = vec2( 78.0, 260.0 );
+const vec2 Extent = vec2( 78.0, 260.0 ); ///< Size of the tessellated ground patch (x, z in world units).
 
 /**  Brightness level between two coordinates.
  *

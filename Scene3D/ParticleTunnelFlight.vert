@@ -40,12 +40,12 @@ uniform float     interpolation;  ///< Cross-fade between the photos: 1 = tex0, 
 uniform float     audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float     audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 
-out vec4  vCol; ///< Colour (from the vertex stage).
-out float vLife;
+out vec4  vCol;  ///< Colour (from the vertex stage).
+out float vLife; ///< Life (from the vertex stage).
 
-const float N = 60000.0;
-const float TunnelLen = 40.0;
-const float NumRings = 48.0;
+const float N = 60000.0;      ///< Number of particles.
+const float TunnelLen = 40.0; ///< Length of the tunnel (world units).
+const float NumRings = 48.0;  ///< Number of rings.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

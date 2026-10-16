@@ -37,9 +37,9 @@ uniform float audioLevel;      ///< Overall loudness, 0..1.
 uniform float audioChromaHue;  ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioValence;    ///< Mood valence: 0 dark .. 1 bright.
 
-uniform float wandsP;
-uniform float lobesP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float wandsP; ///< Wands knob, 0..1.
+uniform float lobesP; ///< Lobes knob, 0..1.
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

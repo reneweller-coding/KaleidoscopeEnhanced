@@ -21,6 +21,7 @@
 // baked into the shader, and it cannot produce the ambiguous-face holes that
 // make a naive marching-cubes implementation leak.
 // -----------------------------------------------------------------------
+/// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( local_size_x = 4, local_size_y = 4, local_size_z = 4 ) in;
 
 /**
@@ -42,13 +43,13 @@ layout( local_size_x = 4, local_size_y = 4, local_size_z = 4 ) in;
  * MetaSculpt.frag via the shared vertex buffer.
  */
 
-// Vertex layout must match Scene3DShader's interleaved attrA/attrB:
-// 8 floats = attrA.xyzw (position + field strength), attrB.xyzw (normal + id).
+/// Vertex layout must match Scene3DShader's interleaved attrA/attrB:
+/// 8 floats = attrA.xyzw (position + field strength), attrB.xyzw (normal + id).
 layout( std430, binding = 0 ) buffer Verts
 {
     float verts[];
 };
-//   [0] count  [1] instanceCount  [2] first  [3] baseInstance  [4] rawCount
+///   [0] count  [1] instanceCount  [2] first  [3] baseInstance  [4] rawCount
 layout( std430, binding = 1 ) buffer Cmd
 {
     uint cmd[];
@@ -69,7 +70,7 @@ uniform float blobP;   ///< preset: blob size
 uniform float spreadP; ///< preset: how far they orbit
 uniform float isoP;    ///< preset: surface threshold
 
-const int Grid = 64;
+const int Grid = 64; ///< Cells per side of the marching grid.
 // SCREEN FILL: the field used to span only [-1.65, 1.65]^3 AND the blobs kept a
 // floor weight of just 0.13*blobP -- a blob radius of about 0.09 world units.
 // On anything but a very loud bar the "sculpture" was therefore twelve specks

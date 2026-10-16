@@ -40,10 +40,10 @@ uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short 
 uniform float audioMode;      ///< Mode of the music: 0 minor .. 1 major.
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 
-uniform float blobP;
-uniform float burstP;
-uniform float milkP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float blobP;  ///< Blob knob: dye blob size, 0..1.
+uniform float burstP; ///< Burst knob: burst reach, 0..1.
+uniform float milkP;  ///< Milk knob: milk whiteness, 0..1.
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 // ---- shared building blocks (texture pool, noise, shapes) ----
 /**  Pseudo-random number 0..1 from a float.

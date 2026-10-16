@@ -113,7 +113,7 @@ float fbm( vec2 p )
     return v;
 }
 
-float gBand[8];
+float gBand[8]; ///< Eight band levels of the music this frame, 0..1.
 
 /**  Antialiased mask of an axis-aligned box.
  *

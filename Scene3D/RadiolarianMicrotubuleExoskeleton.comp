@@ -14,12 +14,13 @@ layout( local_size_x = 4, local_size_y = 4, local_size_z = 4 ) in;
  * adrift in black (measured occ 0.34, luma 0.013).
  */
 
+/// The output vertex buffer: eight floats per vertex (attribute A, attribute B) that the scene draws.
 layout( std430, binding = 0 ) buffer Verts
 {
     float verts[]; // 8 floats per vertex: attrA.xyzw (pos, radius), attrB.xyzw (pad, silicaGlow)
 };
 
-// DrawArraysIndirectCommand: [0] count, [1] instanceCount, [2] first, [3] baseInstance, [4] rawCount
+/// DrawArraysIndirectCommand: [0] count, [1] instanceCount, [2] first, [3] baseInstance, [4] rawCount
 layout( std430, binding = 1 ) buffer Cmd
 {
     uint cmd[];
@@ -39,11 +40,11 @@ uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
 // The scene projection: 55 deg vertical FOV (see Scene3DShader::draw), and the
 // camera distance the companion .vert applies.  A generator program gets no
 // `resolution` uniform, so the layout assumes 16:9 -- the house fallback.
-const float TanY = 0.5206;
-const float Aspect = 1.7778;
-const float Cam = 4.8;
+const float TanY = 0.5206;   ///< Tangent of half the vertical field of view (the scene projection's 55 degrees).
+const float Aspect = 1.7778; ///< Assumed screen aspect (16:9; this stage does not know the real one).
+const float Cam = 4.8;       ///< Distance the vertex stage pushes the scene back from the camera.
 
-const uint Orgs = 7u;
+const uint Orgs = 7u;                 ///< Number of skeletons.
 const uint SpicN = 48u;               ///< radial axopodia per skeleton
 const uint SpicS = 32u;               ///< segments per spicule
 const uint SpicTot = SpicN * SpicS;   ///< 1536

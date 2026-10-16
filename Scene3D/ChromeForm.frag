@@ -36,9 +36,9 @@ uniform float audioKick;     ///< Kick-drum envelope, 0..1 (fast attack, short d
 uniform float audioSwell;    ///< Slow loudness envelope, 0..1 (seconds).
 uniform float audioHigh;     ///< High band level, 0..1.
 
-uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
-uniform float tintP; ///< Tint knob, 0..1.
-uniform float brushP;
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float tintP;  ///< Tint knob, 0..1.
+uniform float brushP; ///< Brush knob: 0 = mirror, 1 = brushed, 0..0.8.
 
 in vec2  vUV;     ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 in vec3  vNormal; ///< Surface normal (from the vertex stage).

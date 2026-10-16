@@ -14,7 +14,7 @@ uniform float audioSwell;       ///< Slow loudness envelope, 0..1 (seconds).
 uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
 in vec2  vUV; ///< Texture coordinate 0..1 over the screen (from the vertex stage).
-in float vR;
+in float vR;  ///< R (from the vertex stage).
 
 /**
  * @file KaleidoDome.frag

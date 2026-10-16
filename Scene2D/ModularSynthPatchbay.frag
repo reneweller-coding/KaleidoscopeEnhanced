@@ -27,11 +27,11 @@ uniform sampler2D tex0;          ///< The current photo.
 uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
 uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float sceneAdvance; ///< The music's advance since this scene was activated (integrated, never jumps).
-uniform float sceneTime;    ///< Seconds since this scene was activated.
-uniform float audioAdvance; ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
-                            ///< backwards).
-uniform float audioWave[64];
+uniform float sceneAdvance;      ///< The music's advance since this scene was activated (integrated, never jumps).
+uniform float sceneTime;         ///< Seconds since this scene was activated.
+uniform float audioAdvance;      ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                                 ///< backwards).
+uniform float audioWave[64];     ///< The waveform: 64 points of the time signal, -1..1.
 uniform float audioSpectrum[32]; ///< Spectrum bands, 0..1.
 uniform float audioChroma[12];   ///< Pitch-class energies (12 values).
 uniform float audioKick;         ///< Kick-drum envelope, 0..1 (fast attack, short decay).
@@ -40,9 +40,9 @@ uniform float audioLevel;        ///< Overall loudness, 0..1.
 uniform float audioChromaHue;    ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioValence;      ///< Mood valence: 0 dark .. 1 bright.
 
-uniform float cablesP;
-uniform float colsP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float cablesP; ///< Cables knob, 0..1.
+uniform float colsP;   ///< Cols knob, 0..1.
+uniform float hueP;    ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

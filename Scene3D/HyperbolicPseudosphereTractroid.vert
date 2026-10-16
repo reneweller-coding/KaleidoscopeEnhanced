@@ -16,10 +16,10 @@
 in vec4 attrA; ///< xy = Patch UV [0,1], z = 0, w = Patch index
 in vec4 attrB; ///< 4 seeds in [0,1)
 
-out vec2  vUV;     ///< Texture coordinate 0..1 over the screen (from the vertex stage).
-out vec3  vNormal; ///< Surface normal (from the vertex stage).
-out vec3  vCol;    ///< Colour (from the vertex stage).
-out float vTractrixU;
+out vec2  vUV;        ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+out vec3  vNormal;    ///< Surface normal (from the vertex stage).
+out vec3  vCol;       ///< Colour (from the vertex stage).
+out float vTractrixU; ///< Tractrix u (from the vertex stage).
 
 uniform mat4  projM;      ///< Projection matrix.
 uniform float eyeOff;     ///< Stereo eye offset (0 in mono).
@@ -39,13 +39,17 @@ uniform sampler2D tex0;          ///< The current photo.
 uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
 uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float pseudoScaleP;
-uniform float tractrixCuspP;
+uniform float pseudoScaleP;  ///< Pseudo scale knob, 0.8..2.2.
+uniform float tractrixCuspP; ///< Tractrix cusp knob, 0.5..2.
 
 // Engine grid: 220 x 120 cells (see Scene3DShader::buildGeometry, GEOM_GRID).
-const float Gw = 220.0, GH = 120.0;
-const float Nx = 5.0, NY = 4.0; // lattice: 5 across, 4 down
-// The scene projection: 55 deg vertical FOV (see Scene3DShader::draw).
+/** @{ */
+const float Gw = 220.0, GH = 120.0; ///< Gw: Columns of the host's vertex grid; GH: Rows of the host's vertex grid.
+/** @} */
+/** @{ */
+const float Nx = 5.0, NY = 4.0; ///< lattice: 5 across, 4 down
+/** @} */
+/// The scene projection: 55 deg vertical FOV (see Scene3DShader::draw).
 const float TanY = 0.5206;
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.

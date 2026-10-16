@@ -39,10 +39,10 @@ uniform float audioMode;      ///< Mode of the music: 0 minor .. 1 major.
 uniform float audioRoughness; ///< Roughness (dissonance) of the sound, 0..1.
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 
-uniform float ribP;
-uniform float wobbleP;
-uniform float wallZoomP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float ribP;      ///< Rib knob: rib spacing, 0..1.
+uniform float wobbleP;   ///< Wobble knob: cross-section wobble, 0..1.
+uniform float wallZoomP; ///< Wall zoom knob, 0..1.
+uniform float hueP;      ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 // ---- shared building blocks (texture pool, noise, shapes) ----
 /**  Pseudo-random number 0..1 from a float.

@@ -29,7 +29,7 @@ uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioAmbient;   ///< How ambient (sustained, beatless) the music is, 0..1.
 
-uniform float     shineP;
+uniform float     shineP;       ///< Shine knob, 0.3..0.8.
 uniform float     printP;       ///< how much of the photo shows in the fabric
 uniform sampler2D tex1;         ///< The next photo (cross-faded in by interpolation).
 uniform float     audioAdvance; ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs

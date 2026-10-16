@@ -25,7 +25,7 @@ uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 
 out vec2  vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 out vec4  vSeed; ///< Per-instance random seed (from the vertex stage).
-out float vGlow;
+out float vGlow; ///< Glow (from the vertex stage).
 
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()

@@ -23,7 +23,7 @@ out vec4 fragColor; ///< The pixel's colour (output).
  * (smoke, persists and cools longer than the flame itself).
  */
 
-uniform sampler2D texPrev;
+uniform sampler2D texPrev;      ///< The simulation's previous state.
 uniform vec2      resolution;   ///< full atlas size in pixels
 uniform float     seedMode;     ///< 1 on the very first frame -> clear to black
 uniform float     subStep;      ///< 0 = horizontal pass, 1 = vertical pass
@@ -32,9 +32,9 @@ uniform float     turbulence;   ///< audio treble/onset -> per-cell swirl streng
 uniform float     injectAmt;    ///< audio kick/bass/drop -> base injection strength
 uniform float     emitterPhase; ///< integrated (jump-free) wander phase for emitters
 
-const float Tile = 64.0;
-const float Cols = 5.0;
-const float Rows = 4.0;
+const float Tile = 64.0;           ///< Size of a depth slice's tile in the atlas (pixels).
+const float Cols = 5.0;            ///< Columns of depth slices in the atlas.
+const float Rows = 4.0;            ///< Rows of depth slices in the atlas.
 const float Nslices = Cols * Rows; ///< 20
 
 /**  Pixel origin of a depth slice's tile in the atlas.

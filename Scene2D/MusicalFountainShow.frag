@@ -36,8 +36,8 @@ uniform float audioLevel;        ///< Overall loudness, 0..1.
 uniform float audioChromaHue;    ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioValence;      ///< Mood valence: 0 dark .. 1 bright.
 
-uniform float jetsP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float jetsP; ///< Jets knob: number of jets, 0..1.
+uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *
@@ -104,9 +104,9 @@ float noise2( vec2 p )
                 mix( hash21( i + vec2( 0.0, 1.0 ) ), hash21( i + vec2( 1.0, 1.0 ) ), f.x ), f.y );
 }
 
-float g_hue;
-float g_aspect;
-float g_n;
+float g_hue;    ///< Hue of the palette this frame (from hueP).
+float g_aspect; ///< Aspect of the screen (width / height).
+float g_n;      ///< Number of fountain jets this frame.
 
 /**  Colour of jet i: the photo arc, saturated like a coloured gel.
  *

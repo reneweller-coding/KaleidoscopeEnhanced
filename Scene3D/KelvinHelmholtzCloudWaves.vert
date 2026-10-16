@@ -24,8 +24,8 @@ uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioHigh;      ///< High band level, 0..1.
 
-uniform float billowP;
-uniform float shearP;
+uniform float billowP;    ///< Billow knob, 0.5..2.
+uniform float shearP;     ///< Shear knob, 0.5..2.
 uniform float speedP;     ///< Speed knob, 0..1.
 uniform float hueP;       ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 uniform float audioLevel; ///< Overall loudness, 0..1.
@@ -33,7 +33,7 @@ uniform float audioLevel; ///< Overall loudness, 0..1.
 out vec4  vCol;    ///< Colour (from the vertex stage).
 out vec2  vUV;     ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 out vec3  vNormal; ///< Surface normal (from the vertex stage).
-out float vBillow;
+out float vBillow; ///< Billow (from the vertex stage).
 
 /**  Rotates a colour's hue by an angle (about the grey axis).
  *

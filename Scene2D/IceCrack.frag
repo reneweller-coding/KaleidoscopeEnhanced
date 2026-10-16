@@ -49,9 +49,9 @@ uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighte
 uniform float audioAmbient;   ///< How ambient (sustained, beatless) the music is, 0..1.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-uniform float     shardP; ///< preset: shard size
-uniform float     crackP; ///< preset: crack width and brightness
-uniform float     refractP;
+uniform float     shardP;       ///< preset: shard size
+uniform float     crackP;       ///< preset: crack width and brightness
+uniform float     refractP;     ///< Refract knob, 0.3..1.6.
 uniform sampler2D tex1;         ///< The next photo (cross-faded in by interpolation).
 uniform float     audioValence; ///< preset: how much each shard bends the image
 

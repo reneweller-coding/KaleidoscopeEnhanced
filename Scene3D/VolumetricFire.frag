@@ -9,7 +9,7 @@ out vec4 fragColor; ///< The pixel's colour (output).
 // stacked depth-slices sum into one soft volumetric column — no alpha
 // blending or depth sorting needed, so slice draw order never matters.
 
-uniform sampler2D texSmoke3D;
+uniform sampler2D texSmoke3D;    ///< The 3D smoke simulation: depth slices tiled in a 2D atlas.
 uniform sampler2D tex0;          ///< The current photo.
 uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
 uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
@@ -18,10 +18,10 @@ uniform float     audioAdvance;  ///< The music's advance: integrated tempo-weig
 uniform float audioValence;      ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioChromaHue;    ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-in vec2  vAtlasUV;
-in float vHeightFrac;
-in float vHue;
-in float vGlow;
+in vec2  vAtlasUV;    ///< Atlas UV (from the vertex stage).
+in float vHeightFrac; ///< Height frac (from the vertex stage).
+in float vHue;        ///< Hue (from the vertex stage).
+in float vGlow;       ///< Glow (from the vertex stage).
 
 /**
  * @file VolumetricFire.frag

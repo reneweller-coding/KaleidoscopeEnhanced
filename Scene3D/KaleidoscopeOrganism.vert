@@ -15,8 +15,8 @@ in vec4 attrB; ///< xyz = normal, w = radial depth 0..1
 out vec3  vObj;    ///< Object-space position (from the vertex stage).
 out vec3  vNormal; ///< Surface normal (from the vertex stage).
 out vec3  vView;   ///< View vector (from the vertex stage).
-out float vAge;
-out float vDepth; ///< Depth (from the vertex stage).
+out float vAge;    ///< Age (from the vertex stage).
+out float vDepth;  ///< Depth (from the vertex stage).
 
 uniform mat4  projM;        ///< Projection matrix.
 uniform float eyeOff;       ///< Stereo eye offset (0 in mono).

@@ -5,12 +5,12 @@ out vec4 fragColor; ///< The pixel's colour (output).
 // from white-hot through yellow to red as it loses heat, and reproducing that
 // gradient along each streak is what separates a firework from confetti.
 
-in vec3  vWorld; ///< World position (from the vertex stage).
-in float vAge;   ///< 0 at the spark's head, 1 at the tail / sky elevation
-in float vHue;   ///< shell hue / sky azimuth
-in float vBright;
-in float vDist; ///< Distance (from the vertex stage).
-in float vKind; ///< 0 = spark trail, 1 = sky dome
+in vec3  vWorld;  ///< World position (from the vertex stage).
+in float vAge;    ///< 0 at the spark's head, 1 at the tail / sky elevation
+in float vHue;    ///< shell hue / sky azimuth
+in float vBright; ///< Bright (from the vertex stage).
+in float vDist;   ///< Distance (from the vertex stage).
+in float vKind;   ///< 0 = spark trail, 1 = sky dome
 
 /**
  * @file Skyburst.frag
@@ -47,8 +47,8 @@ uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioAmbient;   ///< How ambient (sustained, beatless) the music is, 0..1.
 
-uniform float     glowP; ///< Glow / afterglow knob, 0..1.
-uniform float     skyP;
+uniform float     glowP;        ///< Glow / afterglow knob, 0..1.
+uniform float     skyP;         ///< Sky knob, 0.3..0.9.
 uniform sampler2D tex1;         ///< The next photo (cross-faded in by interpolation).
 uniform float     audioAdvance; ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
                                 ///< backwards).

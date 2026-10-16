@@ -8,15 +8,15 @@
  * (bindings 0/1) so the first simulated frame starts with zero velocity
  * (current equals previous) and every grid node at its rest position.
  */
-// CfxClothInit.comp — a flat sheet at rest.
-// Each texel is one cloth particle: RGB = displacement from its rest
-// position, A unused.  Keeping the cloth on a GRID means the display can
-// shade it directly as a surface — no scatter needed for rendering, only
-// for the physics.
+/// CfxClothInit.comp — a flat sheet at rest.
+/// Each texel is one cloth particle: RGB = displacement from its rest
+/// position, A unused.  Keeping the cloth on a GRID means the display can
+/// shade it directly as a surface — no scatter needed for rendering, only
+/// for the physics.
 layout( local_size_x = 16, local_size_y = 16 ) in;
 
-layout( rgba16f, binding = 0 ) writeonly uniform image2D imgCur;
-layout( rgba16f, binding = 1 ) writeonly uniform image2D imgPrev;
+layout( rgba16f, binding = 0 ) writeonly uniform image2D imgCur;  ///< The current state.
+layout( rgba16f, binding = 1 ) writeonly uniform image2D imgPrev; ///< The previous state.
 
 uniform ivec2 size; ///< Size of the simulation grid in cells.
 

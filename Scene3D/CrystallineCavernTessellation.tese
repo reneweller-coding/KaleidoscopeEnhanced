@@ -7,8 +7,8 @@
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( quads, fractional_odd_spacing, ccw ) in;
 
-in vec3 tcPos[];
-in vec2 tcUV[];
+in vec3 tcPos[]; ///< Pos (from the tessellation control stage).
+in vec2 tcUV[];  ///< UV (from the tessellation control stage).
 
 uniform mat4  projM;        ///< Projection matrix.
 uniform float eyeOff;       ///< Stereo eye offset (0 in mono).
@@ -22,10 +22,10 @@ uniform float audioMid;     ///< Mid band level, 0..1.
 uniform float audioHigh;    ///< High band level, 0..1.
 uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
 
-out vec3  tePos;
-out vec3  teNormal;
-out vec2  teUV;
-out float teCrystal;
+out vec3  tePos;     ///< Pos (from the tessellation evaluation stage).
+out vec3  teNormal;  ///< Normal (from the tessellation evaluation stage).
+out vec2  teUV;      ///< UV (from the tessellation evaluation stage).
+out float teCrystal; ///< Crystal (from the tessellation evaluation stage).
 
 /**  Pseudo-random number 0..1 from a 2D point.
  *

@@ -43,10 +43,10 @@ uniform float audioRoughness;  ///< Roughness (dissonance) of the sound, 0..1.
 uniform float audioBass;       ///< Bass band level, 0..1.
 uniform float audioSwell;      ///< Slow loudness envelope, 0..1 (seconds).
 
-uniform float bloomsP;
-uniform float oilP;
-uniform float ringP; ///< Ring knob, 0..1.
-uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float bloomsP; ///< Blooms knob: how many blossoms, 0..1.
+uniform float oilP;    ///< Oil knob: share of oil cells, 0..1.
+uniform float ringP;   ///< Ring knob, 0..1.
+uniform float hueP;    ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 // ---- shared building blocks (texture pool, noise, shapes) ----
 /**  Pseudo-random number 0..1 from a float.

@@ -20,10 +20,10 @@ out vec4 fragColor; ///< The pixel's colour (output).
  *   coreRadP  float stellar core accretion torus brightness (0.6..2.0)
  */
 
-in vec3  vPos; ///< Position (from the vertex stage).
-in float vFluxIdx;
-in float vEnergy;
-in float vHaze;
+in vec3  vPos;     ///< Position (from the vertex stage).
+in float vFluxIdx; ///< Flux idx (from the vertex stage).
+in float vEnergy;  ///< Energy (from the vertex stage).
+in float vHaze;    ///< Haze (from the vertex stage).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
@@ -39,8 +39,8 @@ uniform float audioCentroid;  ///< Spectral centroid (brightness of the sound), 
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-uniform float jetGlowP;
-uniform float reconnP;
+uniform float jetGlowP; ///< Jet glow knob: plasma jet filament luminance, 0.8..2.5.
+uniform float reconnP;  ///< Reconn knob: magnetic reconnection burst intensity, 0.5..2.2.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

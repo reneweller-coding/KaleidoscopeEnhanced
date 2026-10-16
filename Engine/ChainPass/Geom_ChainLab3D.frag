@@ -68,8 +68,8 @@ vec2 screenP()
 {
     return ( gl_FragCoord.xy / resolution - 0.5 ) * vec2( resolution.x / resolution.y, 1.0 );
 }
-float gDR = 1.0;
-vec3  gP = vec3( 0.0 );
+float gDR = 1.0;        ///< Running scale factor of the folds (divides the distance estimate).
+vec3  gP = vec3( 0.0 ); ///< The point the distance field was last evaluated at (scaled; textures the surface).
 /**  Rotation of p about an axis.
  *
  * @param p     The point. (in)
@@ -560,13 +560,15 @@ float sdGyroid3( vec3 p, float thick )
 {
     return ( abs( dot( sin( p ), cos( p.yzx ) ) ) - thick ) / 1.8;
 }
+/// @cond
 float field3( vec3 p );
-vec3  gCam = vec3( 0.0 );
-float gPathAmp = 1.0;
-float gTube = 0.45;
-float gSide = 0.0;
-float gOrtho = 0.0;
-vec3  gAxis = vec3( 0.0, 0.0, 1.0 );
+/// @endcond
+vec3  gCam = vec3( 0.0 );            ///< The camera position this frame.
+float gPathAmp = 1.0;                ///< Amplitude of the camera path's wander.
+float gTube = 0.45;                  ///< Radius of the flight tube this frame.
+float gSide = 0.0;                   ///< Share of the side walls this frame (from the walk).
+float gOrtho = 0.0;                  ///< Share of the orthographic look, 0..1 (from the gaze).
+vec3  gAxis = vec3( 0.0, 0.0, 1.0 ); ///< The flight axis (x, y) this frame.
 /**  The camera path's x/y offset at depth z.
  *
  * @param z  Depth along the flight. (in)
@@ -734,8 +736,16 @@ vec3 gazeDir( vec2 p, float cam, float time, mat3 cf, inout vec3 ro )
     ro += cf * gazeTurn( vec3( p, 0.0 ), a.xy ) * ( 2.2 * gOrtho );
     return cf * normalize( mix( gazeTurn( normalize( vec3( p, 1.1 ) ), a.xy ), ax, gOrtho ) );
 }
-float gT, gTC, gSpread, gRot, gMw;
-vec2  gCw, gCt;
+/** @{ */
+float gT, gTC, gSpread, gRot, gMw; ///< gT: The chain's (or scene's) time this frame; gTC: The chain's time for this
+                                   ///< pixel (gT plus the tilt across the picture); gSpread: The spectral spread this
+                                   ///< frame, 0..1; gRot: The rotation phase this frame; gMw: The chain's morph
+                                   ///< position this frame (integrated).
+/** @} */
+/** @{ */
+vec2 gCw, gCt; ///< gCw: Centre of the wandering transforms this frame (drifts slowly); gCt: Second centre of the
+               ///< wandering transforms this frame.
+/** @} */
 /**  Class position of a knob value (n classes).
  *
  * @param x  The knob value, 0..1. (in)
@@ -958,7 +968,12 @@ int ordbo( int i )
         return 3;
     return 8;
 }
-uniform vec3 walkSpace, walkCore, walkBody;
+/** @{ */
+uniform vec3 walkSpace, walkCore, walkBody; ///< walkSpace: The 3D lab's space as the app walks it: (shown, target,
+                                            ///< fade); walkCore: The 3D lab's core as the app walks it: (shown, target,
+                                            ///< fade); walkBody: The 3D lab's body as the app walks it: (shown, target,
+                                            ///< fade).
+/** @} */
 /**  fieldK() with the world fixed at compile time (the shown end of a specialised pass).
  *
  * @param p      The point. (in)

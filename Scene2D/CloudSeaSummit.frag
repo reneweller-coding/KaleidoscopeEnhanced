@@ -35,7 +35,7 @@ uniform float audioLevel;        ///< Overall loudness, 0..1.
 uniform float audioChromaHue;    ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioValence;      ///< Mood valence: 0 dark .. 1 bright.
 
-uniform float sunP;
+uniform float sunP; ///< Sun knob: sun position, 0..1.
 uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
@@ -140,7 +140,7 @@ float ridgeN( float x, float seed )
     return v;
 }
 
-float g_flow;
+float g_flow; ///< Phase of the cloud flow this frame (integrated).
 
 /**  Cloud-top height over the ground plane (world x, z).
  *

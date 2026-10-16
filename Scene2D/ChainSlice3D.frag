@@ -51,12 +51,12 @@ uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short 
 uniform float audioMode;      ///< Mode of the music: 0 minor .. 1 major.
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 
-uniform float spaceP; ///< Space class knob of the 3D chain, 0..1.
-uniform float coreP;  ///< Fold core class knob of the 3D chain, 0..1.
-uniform float bodyP;  ///< Body class knob of the 3D chain, 0..1.
-uniform float layerP; ///< Layer knob, 0..1.
-uniform float hyperP;
-uniform float isoP;
+uniform float spaceP;   ///< Space class knob of the 3D chain, 0..1.
+uniform float coreP;    ///< Fold core class knob of the 3D chain, 0..1.
+uniform float bodyP;    ///< Body class knob of the 3D chain, 0..1.
+uniform float layerP;   ///< Layer knob, 0..1.
+uniform float hyperP;   ///< Hyper knob: the plane at rest, the world's own time running: a cut through 4D, -0.4..1.
+uniform float isoP;     ///< Iso knob, 0..1.
 uniform float solidP;   ///< Solid-texture knob, 0..1.
 uniform float reliefP;  ///< Relief knob, 0..1.
 uniform float chainAP;  ///< Stage A class knob of the chain (global map), 0..1.
@@ -3255,7 +3255,9 @@ vec2 tJoukowski( vec2 uv, vec2 c, float R, float scale )
     return c + ( z + R * R * iz ) * 0.5;
 }
 
+/// @cond
 vec2 chain( vec2 p );
+/// @endcond
 /**  A loop count the compiler cannot see through (it depends on a uniform), so the loop is NOT unrolled and its body
  * -- a whole chain -- is inlined once.
  *
@@ -3268,7 +3270,9 @@ int loopN( int n )
 {
     return n + int( min( interpolation, 0.0 ) );
 }
-vec2 gChainM, gChainDx, gChainDy; // mirrored chain coordinate of this pixel and its derivatives per pixel
+/** @{ */
+vec2 gChainM, gChainDx, gChainDy; ///< mirrored chain coordinate of this pixel and its derivatives per pixel
+/** @} */
 /**  The chain's photo read with a seam-proof footprint (per axis the smaller of the two one-sided differences) and
  * the screen-space luma gradient.
  *
@@ -3302,8 +3306,8 @@ vec3 imgChain( vec2 p, float bias, out vec2 grad )
 // Each stage is continuous; stages that scale space multiply gDR so the
 // distance estimate stays conservative.  gP keeps the final folded point
 // (used to texture the surface with the kaleidoscoped photo).
-float gDR = 1.0;
-vec3  gP = vec3( 0.0 );
+float gDR = 1.0;        ///< Running scale factor of the folds (divides the distance estimate).
+vec3  gP = vec3( 0.0 ); ///< The point the distance field was last evaluated at (scaled; textures the surface).
 /**  Rotation of p about an axis.
  *
  * @param p     The point. (in)
@@ -3818,8 +3822,10 @@ float sdGyroid3( vec3 p, float thick )
     return ( abs( dot( sin( p ), cos( p.yzx ) ) ) - thick ) / 1.8;
 }
 
+/// @cond
 float field3( vec3 p );
-vec3  gCam = vec3( 0.0 );
+/// @endcond
+vec3 gCam = vec3( 0.0 ); ///< The camera position this frame.
 // Collision-free flight: the camera follows a winding path through the field, and a
 // tube around that path is carved out of every body (soft edges, so the cut faces
 // read as sculpted walls).  The path depends only on z, so the carve is stateless.
@@ -3827,7 +3833,7 @@ float gPathAmp = 1.0;                ///< how far the path winds (a scene may sh
 float gTube = 0.45;                  ///< tube radius
 float gSide = 0.0;                   ///< how far the gaze looks out of a side window (0 ahead .. 1): see gazeDir
 float gOrtho = 0.0;                  ///< orthographic share of the gaze (6)
-vec3  gAxis = vec3( 0.0, 0.0, 1.0 ); // the view axis (world): the ortho slab is cut across it
+vec3  gAxis = vec3( 0.0, 0.0, 1.0 ); ///< the view axis (world): the ortho slab is cut across it
 /**  The camera path's x/y offset at depth z.
  *
  * @param z  Depth along the flight. (in)
@@ -4054,8 +4060,16 @@ vec3 photo3( vec3 q, vec3 n, float lod )
 // @chainord spaceP 0|9|17|15|14|1|18|7|16|11|3|4|10|12|19|6|2|13|5|8
 // @chainord coreP 0|2|14|21|8|16|1|7|4|13|18|3|15|11|5|12|17|10|20|9|19|6
 // @chainord bodyP 21|20|16|15|1|11|9|7|0|12|19|18|10|17|5|14|6|2|13|4|3|8
-float gT, gTC, gSpread, gRot, gMw;
-vec2  gCw, gCt;
+/** @{ */
+float gT, gTC, gSpread, gRot, gMw; ///< gT: The chain's (or scene's) time this frame; gTC: The chain's time for this
+                                   ///< pixel (gT plus the tilt across the picture); gSpread: The spectral spread this
+                                   ///< frame, 0..1; gRot: The rotation phase this frame; gMw: The chain's morph
+                                   ///< position this frame (integrated).
+/** @} */
+/** @{ */
+vec2 gCw, gCt; ///< gCw: Centre of the wandering transforms this frame (drifts slowly); gCt: Second centre of the
+               ///< wandering transforms this frame.
+/** @} */
 // The stage index and a sub-variant 0..1 from one rolled knob.
 float gIdW = 1.0; ///< how much of the chain is 'none' or too weak to carry it (product over the stages)
 /**  Class position of a knob value (n classes).
@@ -4395,7 +4409,14 @@ int ords( int i )
 } // photo, relief, contours, flow, glowing edges
 // The app's walk: per stage (shown knob value, target, fade 0..1); walkHost = 1
 // when the app steers (otherwise the hash walk below runs, e.g. in the editor).
-uniform vec3  walkA, walkB, walkC, walkD, walkS;
+/** @{ */
+uniform vec3 walkA, walkB, walkC, walkD, walkS; ///< walkA: Stage A of the app's walk: (shown class, target class,
+                                                ///< fade); walkB: Stage B of the app's walk: (shown class, target
+                                                ///< class, fade); walkC: Stage C of the app's walk: (shown class,
+                                                ///< target class, fade); walkD: Stage D of the app's walk: (shown
+                                                ///< class, target class, fade); walkS: The style of the app's walk:
+                                                ///< (shown class, target class, fade).
+/** @} */
 uniform float walkHost; ///< 1 when the app walks this lab's stages (walk uniforms valid).
 
 // Stage A: a global map.
@@ -6037,7 +6058,12 @@ int ordbo( int i )
     return 8;
 } // energy order, 22 classes
 // The app walks the structure too (EffectShader::stepChainWalk): (shown, target, fade).
-uniform vec3 walkSpace, walkCore, walkBody;
+/** @{ */
+uniform vec3 walkSpace, walkCore, walkBody; ///< walkSpace: The 3D lab's space as the app walks it: (shown, target,
+                                            ///< fade); walkCore: The 3D lab's core as the app walks it: (shown, target,
+                                            ///< fade); walkBody: The 3D lab's body as the app walks it: (shown, target,
+                                            ///< fade).
+/** @} */
 
 // One world: a space, a fold core and a body, each a knob value on its energy scale.
 #ifndef SPEC_SP0

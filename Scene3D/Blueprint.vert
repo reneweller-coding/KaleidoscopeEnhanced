@@ -10,10 +10,10 @@
 in vec4 attrA; ///< xy = grid (u,v)
 in vec4 attrB; ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
 
-out vec3  gObj;
-out vec2  gUV;
-out float gCell;
-out float gMorph;
+out vec3  gObj;   ///< Obj (from the geometry stage).
+out vec2  gUV;    ///< UV (from the geometry stage).
+out float gCell;  ///< Cell (from the geometry stage).
+out float gMorph; ///< Morph (from the geometry stage).
 
 uniform float audioAdvance; ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
                             ///< backwards).

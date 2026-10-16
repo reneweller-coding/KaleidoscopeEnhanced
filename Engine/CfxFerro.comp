@@ -26,19 +26,20 @@
 //
 // Expanding (1 + lap)^2 needs the BIHARMONIC, so this is a 13-point stencil.
 // -----------------------------------------------------------------------
+/// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( local_size_x = 16, local_size_y = 16 ) in;
 
-layout( rgba16f, binding = 0 ) readonly uniform image2D imgSrc;
-layout( rgba16f, binding = 1 ) writeonly uniform image2D imgDst;
+layout( rgba16f, binding = 0 ) readonly uniform image2D imgSrc;  ///< The input field.
+layout( rgba16f, binding = 1 ) writeonly uniform image2D imgDst; ///< The output field.
 
-uniform ivec2 size;   ///< Size of the simulation grid in cells.
-uniform float rParam; ///< control parameter: < 0 flat, > 0 patterned
-uniform float qScale; ///< 1/spacing^2: sets the selected WAVELENGTH
-uniform float gQuad;  ///< quadratic term: stripes (0) -> hexagonal spikes
-uniform float dt;
-uniform float kick;
-uniform float seedAmp;
-uniform uint  frame;
+uniform ivec2 size;    ///< Size of the simulation grid in cells.
+uniform float rParam;  ///< control parameter: < 0 flat, > 0 patterned
+uniform float qScale;  ///< 1/spacing^2: sets the selected WAVELENGTH
+uniform float gQuad;   ///< quadratic term: stripes (0) -> hexagonal spikes
+uniform float dt;      ///< Time step of the simulation (seconds).
+uniform float kick;    ///< Kick envelope, 0..1.
+uniform float seedAmp; ///< Strength of the start pattern.
+uniform uint  frame;   ///< Frame counter (seeds the random numbers).
 
 /**  Height at a texel (clamped to the image).
  *

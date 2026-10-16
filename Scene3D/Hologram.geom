@@ -20,21 +20,22 @@
 // shading and leave the silhouette intact, which reads as a texture
 // artefact instead of a broken projection.
 // -----------------------------------------------------------------------
+/// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( triangles ) in;
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( triangle_strip, max_vertices = 3 ) out;
 
-in vec3  gPos[];
-in vec3  gNormal[];
-in vec2  gUV[];
-in float gBg[];
+in vec3  gPos[];    ///< Positions of the four magnets.
+in vec3  gNormal[]; ///< Normal (from the geometry stage).
+in vec2  gUV[];     ///< UV (from the geometry stage).
+in float gBg[];     ///< Bg (from the geometry stage).
 
 out vec2  vUV;       ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 out vec3  vNormal;   ///< Surface normal (from the vertex stage).
 out vec3  vPos;      ///< Position (from the vertex stage).
 out vec3  vLocalPos; ///< Object-space position (from the vertex stage).
-out vec3  vBary;
-out float vBg; ///< Background flag (from the vertex stage).
+out vec3  vBary;     ///< Bary (from the vertex stage).
+out float vBg;       ///< Background flag (from the vertex stage).
 
 uniform mat4  projM;  ///< Projection matrix.
 uniform float eyeOff; ///< Stereo eye offset (0 in mono).

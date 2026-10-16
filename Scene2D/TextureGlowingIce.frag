@@ -40,10 +40,10 @@ uniform float audioMode;      ///< Mode of the music: 0 minor .. 1 major.
 uniform float audioBass;      ///< Bass band level, 0..1.
 uniform float audioHigh;      ///< High band level, 0..1.
 
-uniform float clarityP;
-uniform float fractureP;
-uniform float layersP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float clarityP;  ///< Clarity knob: clear vs. milky, 0..1.
+uniform float fractureP; ///< Fracture knob: fracture density, 0..1.
+uniform float layersP;   ///< Layers knob, 0..1.
+uniform float hueP;      ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 // ---- shared building blocks (texture pool, noise, shapes) ----
 /**  Pseudo-random number 0..1 from a float.

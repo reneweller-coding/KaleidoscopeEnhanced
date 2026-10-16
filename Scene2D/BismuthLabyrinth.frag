@@ -39,10 +39,10 @@ uniform float audioMid;      ///< Mid band level, 0..1.
 uniform float audioHigh;     ///< High band level, 0..1.
 uniform float audioFlux;     ///< Spectral flux (how fast the spectrum changes), 0..1.
 
-uniform float iterP;
-uniform float stepP;
-uniform float iridescenceP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float iterP;        ///< Iter knob: fractal iteration / step scale, 0.6..1.8.
+uniform float stepP;        ///< Step knob: terrace hopper step depth, 0.5..1.6.
+uniform float iridescenceP; ///< Iridescence knob: rainbow oxidation glow intensity, 0.5..2.2.
+uniform float hueP;         ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *
@@ -106,8 +106,8 @@ float sdBox( vec3 p, vec3 b )
 // Flight corridor, set once per frame in main().  The labyrinth is carved away
 // around this axis so the camera can never end up embedded inside solid
 // crystal -- and so every ray that leaves the corridor meets a terrace wall.
-vec2  gAxis = vec2( 0.0 );
-float gCorrR = 0.78;
+vec2  gAxis = vec2( 0.0 ); ///< The corridor's axis (x, y): the camera's track.
+float gCorrR = 0.78;       ///< Radius of the corridor this frame (breathes with the sub-bass).
 
 /**  The scene's distance field: distance from p to the nearest surface.
  *

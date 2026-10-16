@@ -18,12 +18,12 @@ out vec4 fragColor; ///< The pixel's colour (output).
  *
  * Per-activation variety: camHP, detailP, cellP, hueP.
  */
-in vec3  vWorld; ///< World position (from the vertex stage).
-in vec2  vSurfUV;
+in vec3  vWorld;  ///< World position (from the vertex stage).
+in vec2  vSurfUV; ///< Surf UV (from the vertex stage).
 in vec3  vNormal; ///< Surface normal (from the vertex stage).
-in float vTrough;
-in float vCell;
-in float vDist; ///< Distance (from the vertex stage).
+in float vTrough; ///< Trough (from the vertex stage).
+in float vCell;   ///< Cell (from the vertex stage).
+in float vDist;   ///< Distance (from the vertex stage).
 
 uniform sampler2D tex0;          ///< The current photo.
 uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).

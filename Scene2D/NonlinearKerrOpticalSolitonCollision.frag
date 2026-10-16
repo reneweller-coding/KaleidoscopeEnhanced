@@ -39,10 +39,10 @@ uniform float audioMid;       ///< Mid band level, 0..1.
 uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
 
-uniform float solitonCountP;
-uniform float kerrNonlinP;
-uniform float shockP;
-uniform float crossPhaseP;
+uniform float solitonCountP; ///< Soliton count knob: number of converging optical solitons, 2..6.
+uniform float kerrNonlinP;   ///< Kerr nonlin knob: nonlinear self-focusing intensity, 0.6..2.2.
+uniform float shockP;        ///< Shock knob: dispersive shockwave ripple frequency, 8..24.
+uniform float crossPhaseP;   ///< Cross phase knob: cross-phase modulation interaction scale (0.5..2.0).
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

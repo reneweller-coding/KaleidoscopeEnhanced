@@ -37,11 +37,11 @@ uniform sampler2D tex0;          ///< The current photo.
 uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
 uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-out vec3  vWorldPos; ///< World position (from the vertex stage).
-out vec3  vNormal;   ///< Surface normal (from the vertex stage).
-out float vRoadMask;
-out float vPylonGlow;
-out vec3  vTint;
+out vec3  vWorldPos;  ///< World position (from the vertex stage).
+out vec3  vNormal;    ///< Surface normal (from the vertex stage).
+out float vRoadMask;  ///< Road mask (from the vertex stage).
+out float vPylonGlow; ///< Pylon glow (from the vertex stage).
+out vec3  vTint;      ///< Tint (from the vertex stage).
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

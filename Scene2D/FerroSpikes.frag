@@ -29,8 +29,8 @@ uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioHigh;      ///< High band level, 0..1.
 
-uniform float     shineP;
-uniform float     reflectP;
+uniform float     shineP;       ///< Shine knob, 0.3..0.9.
+uniform float     reflectP;     ///< Reflect knob, 0.3..0.8.
 uniform sampler2D tex1;         ///< The next photo (cross-faded in by interpolation).
 uniform float     audioAdvance; ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
                                 ///< backwards).

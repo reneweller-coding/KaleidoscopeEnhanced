@@ -14,8 +14,8 @@ uniform float     audioAdvance;   ///< The music's advance: integrated tempo-wei
 uniform float audioValence;       ///< Mood valence: 0 dark .. 1 bright.
 
 in vec3  vWorld; ///< World position (from the vertex stage).
-in float vSpec;
-in float vDist; ///< Distance (from the vertex stage).
+in float vSpec;  ///< Spec (from the vertex stage).
+in float vDist;  ///< Distance (from the vertex stage).
 
 /**
  * @file OceanNight.frag

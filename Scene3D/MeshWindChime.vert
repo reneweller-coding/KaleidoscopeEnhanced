@@ -23,7 +23,7 @@ uniform vec3  meshCenter;      ///< Centre of the scene's mesh bounding box.
 uniform float audioSwell; ///< Slow loudness envelope, 0..1 (seconds).
 
 uniform float sizeP; ///< Size knob, 0..1.
-uniform float swayP;
+uniform float swayP; ///< Sway knob, 1..1.
 
 out vec2  vUV;     ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 out vec3  vNormal; ///< Surface normal (from the vertex stage).
@@ -31,8 +31,8 @@ out vec3  vPos;    ///< Position (from the vertex stage).
 out vec3  vLocal;  ///< Object-space position (from the vertex stage).
 out float vBg;     ///< Background flag (from the vertex stage).
 
-const float Dist = 52.0;
-const float Top = 24.0;
+const float Dist = 52.0; ///< Distance of the main object from the camera (world units).
+const float Top = 24.0;  ///< Height of the chime's suspension point.
 
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()

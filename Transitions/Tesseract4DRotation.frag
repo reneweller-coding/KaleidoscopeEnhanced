@@ -36,8 +36,8 @@ uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-uniform float rot4DP;
-uniform float sliceP;
+uniform float rot4DP; ///< 4D rotation knob (speed of the rotation in four dimensions).
+uniform float sliceP; ///< Slice knob: W-axis slicing plane displacement (0.5..2.0).
 uniform float speedP; ///< Speed knob, 0..1.
 uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 

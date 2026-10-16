@@ -12,17 +12,18 @@
  * can filter by a plain radial distance test instead of wrapping around the
  * corners.
  */
-// CfxFFTLoad.comp — photo luminance -> complex field, ready for the FFT.
-// The checkerboard sign flip centres the zero frequency in the middle of the
-// spectrum, so the radial mask in CfxFFTMask can be a plain distance test.
+/// CfxFFTLoad.comp — photo luminance -> complex field, ready for the FFT.
+/// The checkerboard sign flip centres the zero frequency in the middle of the
+/// spectrum, so the radial mask in CfxFFTMask can be a plain distance test.
 layout( local_size_x = 16, local_size_y = 16 ) in;
 
+/// The complex field being transformed (N x N points).
 layout( std430, binding = 0 ) buffer Data
 {
     vec2 z[];
 };
-uniform sampler2D texSrc;
-uniform int       N;
+uniform sampler2D texSrc; ///< The input picture.
+uniform int       N;      ///< Size of the transform (points per line).
 
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()

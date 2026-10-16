@@ -166,7 +166,7 @@ mat2 rot( float a )
     return mat2( c, -s, s, c );
 }
 
-float hitMat = 0.0;
+float hitMat = 0.0; ///< Material of the last surface the ray hit (set by the distance field).
 
 /**  Repetition domain with random offset and rotation
  *

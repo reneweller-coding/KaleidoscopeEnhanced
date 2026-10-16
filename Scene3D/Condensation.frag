@@ -41,12 +41,12 @@ uniform float sceneProgress; ///< Progress through this scene's solo time, 0..1.
 uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 uniform float tintP; ///< Tint knob, 0..1.
 
-in vec2  vUV; ///< Texture coordinate 0..1 over the screen (from the vertex stage).
-in vec2  vQuad;
+in vec2  vUV;     ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+in vec2  vQuad;   ///< Quad (from the vertex stage).
 in vec3  vNormal; ///< Surface normal (from the vertex stage).
 in vec3  vPos;    ///< Position (from the vertex stage).
 in float vBg;     ///< Background flag (from the vertex stage).
-in float vFormed;
+in float vFormed; ///< Formed (from the vertex stage).
 
 /**  Rotates a colour's hue by an angle (about the grey axis).
  *

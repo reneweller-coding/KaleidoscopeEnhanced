@@ -899,7 +899,9 @@ vec2 tJoukowski( vec2 uv, vec2 c, float R, float scale )
     return c + ( z + R * R * iz ) * 0.5;
 }
 
+/// @cond
 vec2 chain( vec2 p );
+/// @endcond
 /**  The chain's photo read with a seam-proof footprint (per axis the smaller of the two one-sided differences) and
  * the screen-space luma gradient.
  *
@@ -927,7 +929,9 @@ vec3 imgChain( vec2 p, float bias, out vec2 grad )
     return col;
 }
 
-float gT, gSpread;
+/** @{ */
+float gT, gSpread; ///< gT: The chain's (or scene's) time this frame; gSpread: The spectral spread this frame, 0..1.
+/** @} */
 /**  The scene's chain of transforms: a coordinate in, the transformed coordinate out.
  *
  * @param p  The coordinate. (in)

@@ -5,11 +5,11 @@
 #extension GL_ARB_shader_storage_buffer_object : require
 out vec4 fragColor; ///< The pixel's colour (output).
 
-// GPU auto-exposure.  Blend/CfxHistogram.comp builds a luminance histogram of
-// the finished frame and writes the exposure its percentiles justify into this
-// buffer; reading it straight from the fragment shader avoids the GPU->CPU
-// readback the old mean-luminance path needed.  autoExposure <= 0 means the
-// compute path is unavailable, and the pass falls back to 1.0.
+/// GPU auto-exposure.  Blend/CfxHistogram.comp builds a luminance histogram of
+/// the finished frame and writes the exposure its percentiles justify into this
+/// buffer; reading it straight from the fragment shader avoids the GPU->CPU
+/// readback the old mean-luminance path needed.  autoExposure <= 0 means the
+/// compute path is unavailable, and the pass falls back to 1.0.
 layout( std430, binding = 3 ) readonly buffer AutoExp
 {
     float autoExposure;
@@ -32,9 +32,9 @@ layout( std430, binding = 3 ) readonly buffer AutoExp
  *     (centroid/valence 0.5, level/flux 0) and the grade is a no-op.
  *  2) The photosensitivity brightness limit (uniform `scale`), applied last.
  */
-uniform sampler2D tex;
+uniform sampler2D tex;        ///< The input picture.
 uniform vec2      resolution; ///< Size of the render target in pixels.
-uniform float     scale;
+uniform float     scale;      ///< Brightness limit for photosensitivity, applied last.
 
 uniform float     audioCentroid;  ///< Spectral centroid (brightness of the sound), 0..1.
 uniform float     audioValence;   ///< Mood valence: 0 dark .. 1 bright.
@@ -77,7 +77,7 @@ uniform vec2      lyricsFocusV;  ///< V-Band der gerade gelesenen Zeile (x<0 = k
 uniform float     lyricsScrollU; ///< Marquee-Versatz (Textur-U) fuer die fokussierte Zeile
 
 // ---- Kuenstlerbild-Overlay (Deezer; Taste 'o') ----
-uniform sampler2D artistTex;
+uniform sampler2D artistTex;    ///< Picture of the playing artist (overlay).
 uniform float     artistAlpha;  ///< 0 = aus (Host blendet weich + rotiert Bilder)
 uniform float     artistAspect; ///< Bildbreite / -hoehe
 

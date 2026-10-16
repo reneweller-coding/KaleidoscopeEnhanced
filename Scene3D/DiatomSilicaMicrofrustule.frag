@@ -1,9 +1,9 @@
 #version 330 core
 out vec4 fragColor; ///< The pixel's colour (output).
 
-in vec3  vWorldPos; ///< World position (from the vertex stage).
-in vec2  vTexCoord; ///< Texture coordinate (from the vertex stage).
-in float vDiatomIndex;
+in vec3  vWorldPos;    ///< World position (from the vertex stage).
+in vec2  vTexCoord;    ///< Texture coordinate (from the vertex stage).
+in float vDiatomIndex; ///< Diatom index (from the vertex stage).
 
 /**
  * @file DiatomSilicaMicrofrustule.frag
@@ -37,10 +37,10 @@ uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-uniform float diatomP;
-uniform float poreP;
-uniform float speedP; ///< Speed knob, 0..1.
-uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float diatomP; ///< Diatom knob, 0.5..2.
+uniform float poreP;   ///< Pore knob, 0.5..2.
+uniform float speedP;  ///< Speed knob, 0..1.
+uniform float hueP;    ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

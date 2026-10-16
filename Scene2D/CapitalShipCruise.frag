@@ -45,10 +45,10 @@ uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioBeatPhase; ///< Position within the current beat, 0..1.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-uniform float hullP;
-uniform float glowP; ///< Glow / afterglow knob, 0..1.
-uniform float nebulaP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float hullP;   ///< Hull knob: ship length / how much frame the hull takes, 0.7..1.6.
+uniform float glowP;   ///< Glow / afterglow knob, 0..1.
+uniform float nebulaP; ///< Nebula knob: nebula density behind the ship, 0.3..1.6.
+uniform float hueP;    ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

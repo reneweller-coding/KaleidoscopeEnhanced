@@ -24,9 +24,9 @@ uniform float audioPhase;        ///< Rotation phase driven by the music (integr
 uniform float audioBarPhase;     ///< 0..1 per bar -> gentle rainbow sweep
 
 // Per-activation variety (re-rolled each activation; 0 = default):
-uniform int   wedgesP;   ///< wedge count       (0 -> 64; 44..96)
-uniform float petalLenP; ///< petal max length  (0 -> 0.72; 0.5..0.95)
-uniform float rotP;
+uniform int   wedgesP;        ///< wedge count       (0 -> 64; 44..96)
+uniform float petalLenP;      ///< petal max length  (0 -> 0.72; 0.5..0.95)
+uniform float rotP;           ///< Rot knob, 0.5..2.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioAdvance;   ///< ring rotation speed multiplier (0 -> 1.0)
 

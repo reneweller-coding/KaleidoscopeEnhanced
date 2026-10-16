@@ -32,9 +32,9 @@ uniform float audioCentroid;  ///< Spectral centroid (brightness of the sound), 
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-uniform float fleshP;
-uniform float veinP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float fleshP; ///< Flesh knob: complexity of the fleshy structures (0.5..1.5).
+uniform float veinP;  ///< Vein knob: intensity of the glowing veins (0.5..2.0).
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *
@@ -164,7 +164,7 @@ float voronoi( vec3 p )
     return min_dist;
 }
 
-float hitGlow = 0.0;
+float hitGlow = 0.0; ///< Glow of the last surface the ray hit (set by the distance field).
 
 /**  The scene's distance field: distance from p to the nearest surface.
  *

@@ -34,13 +34,13 @@ uniform float eyeOff;     ///< Stereo eye offset (0 in mono).
 uniform float time;       ///< Seconds since the program started (never reset; see sceneTime).
 uniform vec2  resolution; ///< Size of the render target in pixels.
 
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
-                              ///< backwards).
-uniform float     audioKick;  ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float     audioBass;  ///< Bass band level, 0..1.
-uniform float     audioSwell; ///< Slow loudness envelope, 0..1 (seconds).
-uniform float     audioDrop;  ///< Drop envelope: high after a detected drop, decaying.
-uniform float     dayPhase;
+uniform float audioAdvance;       ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                                  ///< backwards).
+uniform float     audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float     audioBass;      ///< Bass band level, 0..1.
+uniform float     audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
+uniform float     audioDrop;      ///< Drop envelope: high after a detected drop, decaying.
+uniform float     dayPhase;       ///< Phase of the slow day cycle, 0..1.
 uniform sampler2D tex0;           ///< The current photo.
 uniform sampler2D tex1;           ///< The next photo (cross-faded in by interpolation).
 uniform float     interpolation;  ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.

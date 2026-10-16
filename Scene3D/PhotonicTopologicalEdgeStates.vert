@@ -8,11 +8,11 @@
 in vec4 attrA; ///< x = t in [0,1], y = side (-1/+1), z = 0, w = ribbon index
 in vec4 attrB; ///< 4 hash seeds in [0,1)
 
-out vec2  vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
-out float vSide; ///< Which side of a strip (from the vertex stage).
-out float vRibbonID;
-out vec3  vCol; ///< Colour (from the vertex stage).
-out float vPulse;
+out vec2  vUV;       ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+out float vSide;     ///< Which side of a strip (from the vertex stage).
+out float vRibbonID; ///< Ribbon ID (from the vertex stage).
+out vec3  vCol;      ///< Colour (from the vertex stage).
+out float vPulse;    ///< Pulse (from the vertex stage).
 
 uniform mat4  projM;  ///< Projection matrix.
 uniform float eyeOff; ///< Stereo eye offset (0 in mono).
@@ -31,8 +31,8 @@ uniform sampler2D tex0;          ///< The current photo.
 uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
 uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float ribbonWidthP;
-uniform float edgeSpeedP;
+uniform float ribbonWidthP; ///< Ribbon width knob, 0.02..0.1.
+uniform float edgeSpeedP;   ///< Edge speed knob, 0.8..3.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

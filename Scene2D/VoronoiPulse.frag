@@ -30,9 +30,9 @@ uniform float audioPhase;    ///< Rotation phase driven by the music (integrated
 uniform float audioSwell;    ///< slow loudness swell -> shard field breathes
 
 // Per-activation variety (re-rolled each activation; 0 = default):
-uniform int   sidesP; ///< mirror fold count (0 -> 4; 3..8)
-uniform float scaleP; ///< shard density     (0 -> 3.0; 2.2 = big shards, 4.5 = fine)
-uniform float driftP;
+uniform int   sidesP;         ///< mirror fold count (0 -> 4; 3..8)
+uniform float scaleP;         ///< shard density     (0 -> 3.0; 2.2 = big shards, 4.5 = fine)
+uniform float driftP;         ///< Drift knob, 0.6..1.5.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioAdvance;   ///< shard drift speed multiplier (0 -> 1.0)
 

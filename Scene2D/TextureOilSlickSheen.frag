@@ -41,9 +41,9 @@ uniform float audioRoughness; ///< Roughness (dissonance) of the sound, 0..1.
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 
 uniform float swirlP; ///< Swirl knob, 0..1.
-uniform float filmP;
-uniform float roadP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float filmP;  ///< Film knob: film coverage, 0..1.
+uniform float roadP;  ///< Road knob: road texture, 0..1.
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 // ---- shared building blocks (texture pool, noise, shapes) ----
 /**  Pseudo-random number 0..1 from a float.

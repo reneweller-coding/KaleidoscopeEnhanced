@@ -39,10 +39,10 @@ uniform float audioMid;       ///< Mid band level, 0..1.
 uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
 
-uniform float cloakRadiusP;
-uniform float transScaleP;
-uniform float causticP;
-uniform float waveDensityP;
+uniform float cloakRadiusP; ///< Cloak radius knob: invisibility cloak core radius, 0.3..1.2.
+uniform float transScaleP;  ///< Trans scale knob: coordinate transformation warp factor, 0.8..2.5.
+uniform float causticP;     ///< Caustic knob: compressed boundary caustic brightness (0.8..2.2).
+uniform float waveDensityP; ///< Wave density knob: optical wavefront fringe frequency, 6..20.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

@@ -18,7 +18,7 @@
  */
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( local_size_x = 4, local_size_y = 4, local_size_z = 4 ) in;
-layout( rg32f, binding = 0 ) uniform image3D bakeField;
+layout( rg32f, binding = 0 ) uniform image3D bakeField; ///< The baked distance field (written).
 
 uniform float time;         ///< Seconds since the program started (never reset; see sceneTime).
 uniform float audioKick;    ///< Kick-drum envelope, 0..1 (fast attack, short decay).
@@ -29,7 +29,7 @@ uniform float speedP;       ///< per-activation param the .frag also reads; MUST
                             // drifts out of sync with the live camera rotation
 uniform float sliceP;       ///< 4D hyperspace slice offset (feeds w_coord below)
 
-const int   Res = 96;
+const int   Res = 96;     ///< Voxels per side of the baked field.
 const float Extent = 2.2; ///< bake cube spans [-EXTENT, EXTENT] on every axis
 
 /**  2D rotation matrix.

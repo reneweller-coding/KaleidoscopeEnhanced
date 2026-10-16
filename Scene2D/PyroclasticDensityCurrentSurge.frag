@@ -39,10 +39,10 @@ uniform float audioMid;       ///< Mid band level, 0..1.
 uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
 
-uniform float vortexP;
-uniform float glowP; ///< Glow / afterglow knob, 0..1.
-uniform float sparkP;
-uniform float ashP;
+uniform float vortexP; ///< Vortex knob: turbulent lobe vortex complexity, 0.6..2.2.
+uniform float glowP;   ///< Glow / afterglow knob, 0..1.
+uniform float sparkP;  ///< Spark knob: triboelectric lightning spark density, 1..3.5.
+uniform float ashP;    ///< Ash knob: ash opacity & billowing cloud density, 0.8..2.2.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

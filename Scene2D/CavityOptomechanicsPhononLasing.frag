@@ -39,10 +39,10 @@ uniform float audioMid;       ///< Mid band level, 0..1.
 uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
 
-uniform float cavityQ_P;
-uniform float phononFreqP;
-uniform float combP;
-uniform float pressureP;
+uniform float cavityQ_P;   ///< Quality factor knob of the optical cavity.
+uniform float phononFreqP; ///< Phonon freq knob: mechanical membrane resonance frequency, 6..20.
+uniform float combP;       ///< Comb knob: optical frequency comb fringe density, 8..24.
+uniform float pressureP;   ///< Pressure knob: radiation pressure coupling strength, 0.5..2.2.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

@@ -34,10 +34,10 @@ uniform float audioSwell;      ///< Slow loudness envelope, 0..1 (seconds).
 uniform float audioHarmChange; ///< spikes on chord / key changes
 uniform float audioUpperMid;   ///< 2-6 kHz metallic / industrial edge
 
-out vec3  vPos; ///< Position (from the vertex stage).
-out vec2  vUV;  ///< Texture coordinate 0..1 over the screen (from the vertex stage).
-out float vStrandID;
-out float vTranscription;
+out vec3  vPos;           ///< Position (from the vertex stage).
+out vec2  vUV;            ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+out float vStrandID;      ///< Strand ID (from the vertex stage).
+out float vTranscription; ///< Transcription (from the vertex stage).
 
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()

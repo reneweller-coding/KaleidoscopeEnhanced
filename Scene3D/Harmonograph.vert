@@ -13,8 +13,8 @@ in vec4 attrB; ///< xyz = normal, w = interval energy
 out vec3  vObj;    ///< Object-space position (from the vertex stage).
 out vec3  vNormal; ///< Surface normal (from the vertex stage).
 out vec3  vView;   ///< View vector (from the vertex stage).
-out float vAlong;
-out float vEnergy;
+out float vAlong;  ///< Along (from the vertex stage).
+out float vEnergy; ///< Energy (from the vertex stage).
 
 uniform mat4  projM;        ///< Projection matrix.
 uniform float eyeOff;       ///< Stereo eye offset (0 in mono).

@@ -20,10 +20,10 @@ uniform sampler2D tex0;          ///< The current photo.
 uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
 uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioPhase; ///< Rotation phase driven by the music (integrated, never jumps).
-uniform float audioBeat;  ///< Beat envelope, 0..1.
-uniform float audioOnset; ///< Onset envelope (any instrument), 0..1.
-uniform float audioDownbeat;
+uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioBeat;      ///< Beat envelope, 0..1.
+uniform float audioOnset;     ///< Onset envelope (any instrument), 0..1.
+uniform float audioDownbeat;  ///< Downbeat accent: a decaying pulse on the bar's 1, 0..1.
 uniform float audioBeatPhase; ///< Position within the current beat, 0..1.
 uniform float audioBarPhase;  ///< Position within the current bar, 0..1.
 uniform float audioLevel;     ///< Overall loudness, 0..1.

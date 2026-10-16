@@ -37,9 +37,9 @@ uniform float audioLevel;     ///< Overall loudness, 0..1.
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-uniform float scallopP;
-uniform float dustP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float scallopP; ///< Scallop knob: scallop size, 0..1.
+uniform float dustP;    ///< Dust knob: dust bands, 0..1.
+uniform float hueP;     ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *
@@ -113,7 +113,7 @@ float noise3( vec3 p )
     return mix( mix( mix( a, b, f.x ), mix( c, d, f.x ), f.y ), mix( mix( e, f1, f.x ), mix( g, h, f.x ), f.y ), f.z );
 }
 
-float g_sc = 1.0;
+float g_sc = 1.0; ///< Size of the ice scallops this frame.
 
 /**  Scallops: Voronoi cells on the wall; each cell a shallow cup.
  *

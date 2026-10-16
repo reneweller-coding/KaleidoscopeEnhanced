@@ -4,14 +4,14 @@ out vec4 fragColor; ///< The pixel's colour (output).
 // Almost nothing here is shading: the surface is a dark wash and everything
 // legible is line work, which is what makes the look read as a print.
 
-flat in vec3 vEdgeMask;
-in float     vKind; ///< Element kind (from the vertex stage).
-in vec3      vBary;
-in vec3      vObj;    ///< Object-space position (from the vertex stage).
-in vec3      vNormal; ///< Surface normal (from the vertex stage).
-in vec3      vView;   ///< View vector (from the vertex stage).
-in vec2      vUV;     ///< Texture coordinate 0..1 over the screen (from the vertex stage).
-in float     vMorph;
+flat in vec3 vEdgeMask; ///< Edge mask (from the vertex stage).
+in float     vKind;     ///< Element kind (from the vertex stage).
+in vec3      vBary;     ///< Bary (from the vertex stage).
+in vec3      vObj;      ///< Object-space position (from the vertex stage).
+in vec3      vNormal;   ///< Surface normal (from the vertex stage).
+in vec3      vView;     ///< View vector (from the vertex stage).
+in vec2      vUV;       ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+in float     vMorph;    ///< Morph (from the vertex stage).
 
 /**
  * @file Blueprint.frag
@@ -44,7 +44,7 @@ uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioAmbient;   ///< How ambient (sustained, beatless) the music is, 0..1.
 
-uniform float lineP;
+uniform float lineP; ///< Line knob, 0.3..0.9.
 uniform float glowP; ///< Glow / afterglow knob, 0..1.
 
 /** Entry point of this shader stage (the file description says what it draws). */

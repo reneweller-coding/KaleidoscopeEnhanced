@@ -33,9 +33,9 @@ uniform float twistP; ///< Twist knob, 0..1.
 uniform float widthP; ///< Width knob, 0..1.
 uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-out vec3  vWorldPos; ///< World position (from the vertex stage).
-out vec2  vTexCoord; ///< Texture coordinate (from the vertex stage).
-out float vHelixPhase;
+out vec3  vWorldPos;   ///< World position (from the vertex stage).
+out vec2  vTexCoord;   ///< Texture coordinate (from the vertex stage).
+out float vHelixPhase; ///< Helix phase (from the vertex stage).
 
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()

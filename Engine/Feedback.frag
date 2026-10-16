@@ -14,12 +14,12 @@ out vec4 fragColor; ///< The pixel's colour (output).
 uniform sampler2D texCur;     ///< current combined frame
 uniform sampler2D texPrev;    ///< previous trail frame
 uniform vec2      resolution; ///< Size of the render target in pixels.
-uniform float     decay;
-uniform float     warpZoom; ///< per-frame echo expansion (1.0 = none)
-uniform float     warpRot;  ///< per-frame echo rotation (radians)
-uniform float     hueDrift; ///< per-frame hue rotation of the echoes
-uniform float     depth3D;  ///< 0..1: a 3D scene is on screen -> depth-aware
-                            // trails (bright=near fades fast, dim=far lingers)
+uniform float     decay;      ///< Decay of the trail per step.
+uniform float     warpZoom;   ///< per-frame echo expansion (1.0 = none)
+uniform float     warpRot;    ///< per-frame echo rotation (radians)
+uniform float     hueDrift;   ///< per-frame hue rotation of the echoes
+uniform float     depth3D;    ///< 0..1: a 3D scene is on screen -> depth-aware
+                              // trails (bright=near fades fast, dim=far lingers)
 
 // ---- MilkDrop-style SPATIALLY VARYING warp field ----
 // The signature "liquid" feedback look: the previous frame is displaced by

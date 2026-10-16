@@ -33,8 +33,8 @@ uniform float audioCentroid; ///< Spectral centroid (brightness of the sound), 0
 uniform float audioSwell;    ///< Slow loudness envelope, 0..1 (seconds).
 uniform float audioHigh;     ///< High band level, 0..1.
 
-uniform float     nodeP;
-uniform float     liftP;
+uniform float     nodeP;          ///< Node knob, 0.5..2.
+uniform float     liftP;          ///< Lift knob, 0.5..2.
 uniform float     speedP;         ///< Speed knob, 0..1.
 uniform float     hueP;           ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 uniform sampler2D tex0;           ///< The current photo.
@@ -48,8 +48,9 @@ out vec2 vUV;     ///< Texture coordinate 0..1 over the screen (from the vertex 
 out vec3 vNormal; ///< Surface normal (from the vertex stage).
 
 // Shared 55-degree frustum (see Scene3DShader::render).
-const float TanHalfFov = 0.52056705;
-const float AspectGuess = 1.7777778;
+const float TanHalfFov = 0.52056705; ///< Tangent of half the vertical field of view (the scene projection's 55
+                                     ///< degrees).
+const float AspectGuess = 1.7777778; ///< Assumed screen aspect (16:9; this stage does not know the real one).
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

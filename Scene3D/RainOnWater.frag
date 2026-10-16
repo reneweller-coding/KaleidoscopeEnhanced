@@ -6,12 +6,12 @@ uniform float time;           ///< Seconds since the program started (never rese
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 uniform float audioMode;      ///< Mode of the music: 0 minor .. 1 major.
-uniform float audioHat;
+uniform float audioHat;       ///< Hi-hat / cymbal onset envelope, 0..1.
 
 in vec3  vWorld; ///< World position (from the vertex stage).
-in float vSlope;
-in float vDist; ///< Distance (from the vertex stage).
-in float vSky;
+in float vSlope; ///< Slope (from the vertex stage).
+in float vDist;  ///< Distance (from the vertex stage).
+in float vSky;   ///< Sky (from the vertex stage).
 
 /**
  * @file RainOnWater.frag
@@ -107,8 +107,8 @@ float fbm( vec2 p )
 }
 
 // Where the moon hangs, in angular coordinates (radians off the view axis).
-const float MoonX = 0.031;
-const float MoonY = 0.055;
+const float MoonX = 0.031; ///< Where the moon hangs: angle off the view axis in x (radians).
+const float MoonY = 0.055; ///< Where the moon hangs: angle off the view axis in y (radians).
 const float TanY = 0.5206; ///< tan(55 deg / 2) -- the scene projection
 
 /** Entry point of this shader stage (the file description says what it draws). */

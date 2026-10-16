@@ -40,8 +40,8 @@ uniform float audioLevel;        ///< Overall loudness, 0..1.
 uniform float audioValence;      ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioChromaHue;    ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-uniform float ribsP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float ribsP; ///< Ribs knob: how many ribs per fan, 0..1.
+uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *
@@ -115,7 +115,7 @@ const float Bay = 6.4; ///< bay length
 const float Rf = 3.3;  ///< fan radius
 const float Ys = 7.5;  ///< springing height
 const float Yt = 11.0; ///< crown of the vault
-float       gRing[5];
+float       gRing[5];  ///< Brightness of each of the five rib rings this frame, 0..1.
 
 /**  Height of the vault's underside over (x, z), and the fan coordinates.
  *

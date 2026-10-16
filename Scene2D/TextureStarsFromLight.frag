@@ -40,9 +40,9 @@ uniform float audioMode;      ///< Mode of the music: 0 minor .. 1 major.
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 
 uniform float densityP; ///< Density knob, 0..1.
-uniform float spikeP;
-uniform float milkyP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float spikeP;   ///< Spike knob: diffraction spikes, 0..1.
+uniform float milkyP;   ///< Milky knob, 0..1.
+uniform float hueP;     ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 // ---- shared building blocks (texture pool, noise, shapes) ----
 /**  Pseudo-random number 0..1 from a float.

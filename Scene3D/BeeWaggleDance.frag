@@ -15,13 +15,13 @@ out vec4 fragColor; ///< The pixel's colour (output).
 in vec2  vTexCoord; ///< Texture coordinate (from the vertex stage).
 in vec3  vWorld;    ///< World position (from the vertex stage).
 in float vKind;     ///< Element kind (from the vertex stage).
-in float vRun;
-in float vId; ///< Instance or element id (from the vertex stage).
+in float vRun;      ///< Run (from the vertex stage).
+in float vId;       ///< Instance or element id (from the vertex stage).
 
-uniform sampler2D tex0;          ///< The current photo.
-uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
-uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
-uniform float     audioStereo;
+uniform sampler2D tex0;           ///< The current photo.
+uniform sampler2D tex1;           ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation;  ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform float     audioStereo;    ///< Stereo width of the music, 0..1.
 uniform float     audioBass;      ///< Bass band level, 0..1.
 uniform float     audioHigh;      ///< High band level, 0..1.
 uniform float     audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).

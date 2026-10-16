@@ -20,10 +20,10 @@ in vec4 attrB; ///< xyz = normal (or quad corner), w = band 0..1, -1 = dust
 out vec3  vWorld;  ///< World position (from the vertex stage).
 out vec3  vNormal; ///< Surface normal (from the vertex stage).
 out vec3  vView;   ///< View vector (from the vertex stage).
-out float vEnergy;
-out float vBand;
-out float vDist; ///< Distance (from the vertex stage).
-out vec2  vQuad;
+out float vEnergy; ///< Energy (from the vertex stage).
+out float vBand;   ///< Band (from the vertex stage).
+out float vDist;   ///< Distance (from the vertex stage).
+out vec2  vQuad;   ///< Quad (from the vertex stage).
 
 uniform mat4  projM;        ///< Projection matrix.
 uniform float eyeOff;       ///< Stereo eye offset (0 in mono).

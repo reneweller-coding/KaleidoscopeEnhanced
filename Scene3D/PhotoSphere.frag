@@ -12,8 +12,8 @@ uniform float     audioDrop;      ///< Drop envelope: high after a detected drop
 uniform float     audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float     audioCentroid;  ///< Spectral centroid (brightness of the sound), 0..1.
 
-in vec2 vUV; ///< Texture coordinate 0..1 over the screen (from the vertex stage).
-in vec3 vN;
+in vec2 vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+in vec3 vN;    ///< N (from the vertex stage).
 in vec3 vView; ///< View vector (from the vertex stage).
 
 /**

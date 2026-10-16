@@ -37,10 +37,10 @@ uniform float audioMid;      ///< Mid band level, 0..1.
 uniform float audioHigh;     ///< High band level, 0..1.
 uniform float audioFlux;     ///< Spectral flux (how fast the spectrum changes), 0..1.
 
-uniform float viscosityP;
-uniform float swirlP; ///< Swirl knob, 0..1.
-uniform float flowP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float viscosityP; ///< Viscosity knob: fluid drag / viscosity modifier, 0.5..1.8.
+uniform float swirlP;     ///< Swirl knob, 0..1.
+uniform float flowP;      ///< Flow knob: overall advection velocity, 0.4..1.8.
+uniform float hueP;       ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

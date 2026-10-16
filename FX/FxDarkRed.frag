@@ -11,10 +11,10 @@ uniform float     time;          ///< Seconds since the program started (never r
 uniform sampler2D tex0;          ///< The current photo.
 uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
 uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
-uniform int       red;
-uniform float     audioBeat;  ///< beat lifts the wash brightness
-uniform float     audioSwell; ///< slow builds let the real colour bleed through
-uniform int       blue;
+uniform int       red;           ///< 1: recolour into red.
+uniform float     audioBeat;     ///< beat lifts the wash brightness
+uniform float     audioSwell;    ///< slow builds let the real colour bleed through
+uniform int       blue;          ///< 1: recolour into blue.
 
 
 /** Entry point of this shader stage (the file description says what it draws). */

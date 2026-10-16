@@ -49,6 +49,7 @@
 // instead of turning it: a slab set that rotates with the scene stops facing the
 // viewer, and view-aligned slicing is the whole basis of the technique.
 // -----------------------------------------------------------------------
+/// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( local_size_x = 4, local_size_y = 4, local_size_z = 4 ) in;
 
 /**
@@ -70,10 +71,12 @@ layout( local_size_x = 4, local_size_y = 4, local_size_z = 4 ) in;
  * medium.
  */
 
+/// The output vertex buffer: eight floats per vertex (attribute A, attribute B) that the scene draws.
 layout( std430, binding = 0 ) buffer Verts
 {
     float verts[];
 };
+/// The indirect draw command: [0] the vertex count (counted up atomically), then the other draw arguments.
 layout( std430, binding = 1 ) buffer Cmd
 {
     uint cmd[];
@@ -101,21 +104,21 @@ const int Rows = 6; ///< pillar rows along the hall
 // fifths of the volume lit, and a volume that is mostly lit is a pale wash with
 // no beams in it.  Mostly dark with a few bright slots is the cathedral, and it
 // is also what makes the dark ceiling correct rather than a fault.
-const int   Beams = 10;
-const float BeamPitch = 3.40;
-const float SlotW = 0.70;
-const int   Slabs = 56; ///< smoke slices
+const int   Beams = 10;       ///< Number of roof beams.
+const float BeamPitch = 3.40; ///< Spacing between the roof beams.
+const float SlotW = 0.70;     ///< Width of the gaps between the beams.
+const int   Slabs = 56;       ///< smoke slices
 // The hall is deliberately SHORT.  The shadow box is centred on the origin and
 // sized once, so anything past its edge gets "lit" for free — and a stretch of
 // unshadowed smoke at the far end is a grey wash with no beams in it, sitting
 // right in the middle of the frame where the corridor recedes.  Better a short
 // hall entirely inside the box than a long one half outside it.
-const float Span = 26.0;
+const float Span = 26.0;  ///< Depth of the hall (world units).
 const float Nearz = -4.8; ///< first smoke slab (object z; eye is at -6)
 const float Farz = 21.0;  ///< last smoke slab
 
-const int Npillq = Cols * Rows * 4; ///< 160 pillar sides
-const int Nquads = 1 + Npillq + Beams + Slabs;
+const int Npillq = Cols * Rows * 4;            ///< 160 pillar sides
+const int Nquads = 1 + Npillq + Beams + Slabs; ///< Number of quads the scene emits.
 
 /**  Writes one vertex into the output buffer (compute stage).
  *

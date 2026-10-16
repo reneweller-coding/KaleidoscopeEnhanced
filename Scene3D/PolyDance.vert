@@ -23,8 +23,8 @@ uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-out vec4 vCol; ///< Colour (from the vertex stage).
-out vec3 vCorner;
+out vec4 vCol;    ///< Colour (from the vertex stage).
+out vec3 vCorner; ///< Corner (from the vertex stage).
 
 /**  Rotates a colour's hue by an angle (about the grey axis).
  *

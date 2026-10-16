@@ -39,10 +39,10 @@ uniform float audioMid;       ///< Mid band level, 0..1.
 uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
 
-uniform float gradSlopeP;
-uniform float oamChargeP;
-uniform float antennaP;
-uniform float anomalousP;
+uniform float gradSlopeP; ///< Grad slope knob: phase gradient steepness dPhi/dx, 1..4.
+uniform float oamChargeP; ///< Oam charge knob: orbital angular momentum topological charge l (1.0..5.0).
+uniform float antennaP;   ///< Antenna knob: nanoantenna array cell density, 6..20.
+uniform float anomalousP; ///< Anomalous knob: anomalous refracted beam luminance gain, 0.8..2.5.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

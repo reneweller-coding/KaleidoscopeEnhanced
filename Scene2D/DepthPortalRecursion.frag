@@ -42,10 +42,10 @@ uniform float audioMelodyPitch; ///< Pitch of the melody, 0..1 over the tracked 
 uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioValence;     ///< Mood valence: 0 dark .. 1 bright.
 
-uniform float portalP;
-uniform float twistP; ///< Twist knob, 0..1.
-uniform float decayP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float portalP; ///< Portal knob: portal radius, 0.55..0.8.
+uniform float twistP;  ///< Twist knob, 0..1.
+uniform float decayP;  ///< Decay knob: how many levels survive, 0.9..0.96.
+uniform float hueP;    ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

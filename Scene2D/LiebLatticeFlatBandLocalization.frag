@@ -39,10 +39,10 @@ uniform float audioMid;       ///< Mid band level, 0..1.
 uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
 
-uniform float gridPitchP;
-uniform float abFluxP;
-uniform float cageGlowP;
-uniform float sublatticeP;
+uniform float gridPitchP;  ///< Grid pitch knob: Lieb lattice unit cell packing density, 2.5..7.
+uniform float abFluxP;     ///< Ab flux knob: Aharonov-Bohm synthetic magnetic flux, 0.5..2.2.
+uniform float cageGlowP;   ///< Cage glow knob: compact localized loop state luminance, 0.8..2.5.
+uniform float sublatticeP; ///< Sublattice knob: A/B/C sublattice energy offset contrast, 0.4..1.8.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

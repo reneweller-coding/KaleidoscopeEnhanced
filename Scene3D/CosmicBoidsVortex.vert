@@ -20,8 +20,8 @@ uniform float eyeOff;     ///< Stereo eye offset (0 in mono).
 uniform float time;       ///< Seconds since the program started (never reset; see sceneTime).
 uniform vec2  resolution; ///< Size of the render target in pixels.
 
-uniform float audioBeatPhase; ///< Position within the current beat, 0..1.
-uniform float audioBeatDecay;
+uniform float audioBeatPhase;     ///< Position within the current beat, 0..1.
+uniform float audioBeatDecay;     ///< Beat pulse with a slow decay, 0..1.
 uniform float audioKick;          ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 uniform float audioSwell;         ///< Slow loudness envelope, 0..1 (seconds).
 uniform float audioLevel;         ///< Overall loudness, 0..1.

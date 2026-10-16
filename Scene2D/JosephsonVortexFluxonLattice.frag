@@ -39,10 +39,10 @@ uniform float audioMid;       ///< Mid band level, 0..1.
 uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
 
-uniform float junctionCountP;
-uniform float fluxonDensityP;
-uniform float thzGlowP;
-uniform float swihartSpeedP;
+uniform float junctionCountP; ///< Junction count knob: number of stacked Josephson barriers, 3..8.
+uniform float fluxonDensityP; ///< Fluxon density knob: magnetic fluxon soliton packing density, 2..6.
+uniform float thzGlowP;       ///< Thz glow knob: terahertz Cherenkov radiation brightness (0.8..2.5).
+uniform float swihartSpeedP;  ///< Swihart speed knob: Swihart velocity limit parameter, 0.6..2.2.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

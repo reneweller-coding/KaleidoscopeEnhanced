@@ -10,7 +10,7 @@ out vec4 fragColor; ///< The pixel's colour (output).
  * instead of the old single-tap mip hack (which showed blocky artefacts).
  */
 
-uniform sampler2D tex;
+uniform sampler2D tex;        ///< The input picture.
 uniform vec2      resolution; ///< TARGET (bloom buffer) resolution
 uniform vec2      dir;        ///< blur direction in target pixels
 uniform float     threshold;  ///< >0 -> bright-pass extract (first pass only)

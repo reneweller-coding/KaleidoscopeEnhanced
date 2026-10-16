@@ -41,12 +41,12 @@ uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short 
 uniform float audioMode;      ///< Mode of the music: 0 minor .. 1 major.
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 
-uniform float tileP;
-uniform float styleP; ///< Look knob, 0..1.
-uniform float ribbonP;
-uniform float groutP;
-uniform float gridP; ///< Grid knob, 0..1.
-uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float tileP;   ///< Tile knob: tile size, 0..1.
+uniform float styleP;  ///< Look knob, 0..1.
+uniform float ribbonP; ///< Ribbon knob: how strongly the ribbons glow, 0..1.
+uniform float groutP;  ///< Grout knob: grout width, 0..1.
+uniform float gridP;   ///< Grid knob, 0..1.
+uniform float hueP;    ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 // ---- shared building blocks (texture pool, noise, shapes) ----
 /**  Pseudo-random number 0..1 from a float.
@@ -2494,7 +2494,9 @@ vec2 tJoukowski( vec2 uv, vec2 c, float R, float scale )
     return c + ( z + R * R * iz ) * 0.5;
 }
 
+/// @cond
 vec2 chain( vec2 p );
+/// @endcond
 /**  The chain's photo read with a seam-proof footprint (per axis the smaller of the two one-sided differences) and
  * the screen-space luma gradient.
  *

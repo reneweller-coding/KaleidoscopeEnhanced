@@ -37,10 +37,10 @@ uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unw
 
 // Per-activation variety
 uniform float speedP; ///< Speed knob, 0..1.
-uniform float ringsP;
-uniform float foldP; ///< Fold knob, 0..1.
-uniform float glowP; ///< Glow / afterglow knob, 0..1.
-uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float ringsP; ///< Rings knob, 6..10.
+uniform float foldP;  ///< Fold knob, 0..1.
+uniform float glowP;  ///< Glow / afterglow knob, 0..1.
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

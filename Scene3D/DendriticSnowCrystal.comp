@@ -13,11 +13,13 @@ layout( local_size_x = 4, local_size_y = 4, local_size_z = 4 ) in;
  * the view axis, which made them invisible however thick they were set.
  */
 
+/// The output vertex buffer: eight floats per vertex (attribute A, attribute B) that the scene draws.
 layout( std430, binding = 0 ) buffer Verts
 {
     float verts[]; // 8 floats per vertex: attrA.xyzw (pos, ice_refract), attrB.xyzw (pad, armID)
 };
 
+/// The indirect draw command: [0] the vertex count (counted up atomically), then the other draw arguments.
 layout( std430, binding = 1 ) buffer Cmd
 {
     uint cmd[];
@@ -109,15 +111,15 @@ void emitSegment( vec3 pA, vec3 pB, float ice, float armID, float thickness )
 // The scene projection: 55 deg vertical FOV (see Scene3DShader::draw).  The
 // compute stage gets no `resolution` uniform, so the house 16:9 fallback stands
 // in for the aspect -- the same value TorusKnot.vert falls back to.
-const float TanY = 0.5206;
-const float Aspect = 1.7778;
-const float CamZ = 6.5; ///< the vert stage adds this back on
+const float TanY = 0.5206;   ///< Tangent of half the vertical field of view (the scene projection's 55 degrees).
+const float Aspect = 1.7778; ///< Assumed screen aspect (16:9; this stage does not know the real one).
+const float CamZ = 6.5;      ///< the vert stage adds this back on
 
-const uint SegSect = 682u;
-const uint SegFlake = SegSect * 6u; ///< 4092
-const uint Flakes = 14u;
-const uint FlakeTotal = SegFlake * Flakes; ///< 57288
-const uint Dust = 4000u;
+const uint SegSect = 682u;                    ///< Segments per sector of a flake.
+const uint SegFlake = SegSect * 6u;           ///< 4092
+const uint Flakes = 14u;                      ///< Number of snow flakes.
+const uint FlakeTotal = SegFlake * Flakes;    ///< 57288
+const uint Dust = 4000u;                      ///< Number of dust specks.
 const uint TotalSegments = FlakeTotal + Dust; ///< 61288 segs, 367728 verts
 
 /** Entry point of this shader stage (the file description says what it draws). */

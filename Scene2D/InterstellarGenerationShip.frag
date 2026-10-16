@@ -33,7 +33,7 @@ uniform float audioCentroid;  ///< Spectral centroid (brightness of the sound), 
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-uniform float hullP;
+uniform float hullP; ///< Hull knob: complexity of the hull (0.7..1.5).
 uniform float glowP; ///< Glow / afterglow knob, 0..1.
 uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
@@ -116,7 +116,7 @@ float sdCylinder( vec3 p, vec3 c )
     return length( p.xy - c.xy ) - c.z;
 }
 
-float hitMat = 0.0;
+float hitMat = 0.0; ///< Material of the last surface the ray hit (set by the distance field).
 
 /**  The scene's distance field: distance from p to the nearest surface.
  *

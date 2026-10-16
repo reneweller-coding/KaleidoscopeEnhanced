@@ -15,36 +15,39 @@
  * splats a small density disc per particle atomically into the `Accum` SSBO
  * (binding 0) for the display to threshold into a smooth metal surface.
  */
-// CfxMetalStep.comp — SPH-flavoured blobs of liquid metal.
-// Particles attract into cohesive drops and repel at short range, so the
-// population behaves like a fluid with surface tension rather than a gas.
-// The neighbourhood comes from the same uniform-grid trick as the boids.
+/// CfxMetalStep.comp — SPH-flavoured blobs of liquid metal.
+/// Particles attract into cohesive drops and repel at short range, so the
+/// population behaves like a fluid with surface tension rather than a gas.
+/// The neighbourhood comes from the same uniform-grid trick as the boids.
 layout( local_size_x = 256 ) in;
 
+/// The accumulation buffer: colour and coverage per pixel, added atomically; the present pass resolves it.
 layout( std430, binding = 0 ) buffer Accum
 {
     uint acc[];
 };
+/// The particles: position (xy) and velocity (zw).
 layout( std430, binding = 1 ) buffer Parts
 {
     vec4 part[];
 }; // xy pos, zw vel
+/// The spatial hash grid: the elements of each cell.
 layout( std430, binding = 2 ) buffer Grid
 {
     uint cell[];
 };
 
-uniform ivec2 size; ///< Size of the simulation grid in cells.
-uniform uint  count;
-uniform int   gridN;
-uniform int   perCell;
-uniform float dt;
-uniform float kick;
-uniform float level;
-uniform float swirl;
+uniform ivec2 size;      ///< Size of the simulation grid in cells.
+uniform uint  count;     ///< Number of elements (boids, particles, walkers ...).
+uniform int   gridN;     ///< Cells per side of the spatial hash grid.
+uniform int   perCell;   ///< Capacity of a grid cell (elements per cell).
+uniform float dt;        ///< Time step of the simulation (seconds).
+uniform float kick;      ///< Kick envelope, 0..1.
+uniform float level;     ///< The music's level, 0..1.
+uniform float swirl;     ///< Strength of the swirl.
 uniform int   buildGrid; ///< 1 = only bin into the grid, 0 = simulate + splat
 
-const float Scale = 256.0;
+const float Scale = 256.0; ///< Fixed-point scale of the accumulation buffer (colour times Scale, added as integers).
 
 /**  Adds a weight to the density at a pixel (skipped off the image).
  *

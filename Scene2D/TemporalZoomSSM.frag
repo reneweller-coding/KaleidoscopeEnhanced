@@ -21,25 +21,25 @@ out vec4 fragColor; ///< The pixel's colour (output).
  *
  * Per-activation variety: zoomP (rate), tiltP (view angle), hueP.
  */
-uniform vec2      resolution; ///< Size of the render target in pixels.
-uniform float     time;       ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;       ///< The current photo.
-uniform sampler2D tex1;       ///< The next photo (cross-faded in by interpolation).
-uniform sampler2D texSSM;
-uniform float     ssmHead;
-uniform float     ssmFill;
+uniform vec2      resolution;    ///< Size of the render target in pixels.
+uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform sampler2D texSSM;        ///< Self-similarity matrix of the recent music (how alike two moments are).
+uniform float     ssmHead;       ///< Write position of the self-similarity ring texSSM, 0..1.
+uniform float     ssmFill;       ///< How full the self-similarity ring texSSM is, 0..1.
 uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float sceneAdvance; ///< The music's advance since this scene was activated (integrated, never jumps).
-uniform float sceneTime;    ///< Seconds since this scene was activated.
-uniform float audioAdvance; ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
-                            ///< backwards).
-uniform float audioSectionKnown;
-uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioLevel;     ///< Overall loudness, 0..1.
-uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
-uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
+uniform float sceneAdvance;      ///< The music's advance since this scene was activated (integrated, never jumps).
+uniform float sceneTime;         ///< Seconds since this scene was activated.
+uniform float audioAdvance;      ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                                 ///< backwards).
+uniform float audioSectionKnown; ///< 1 if the current section was recognised (it came back), 0 if it is new.
+uniform float audioKick;         ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioLevel;        ///< Overall loudness, 0..1.
+uniform float audioSwell;        ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioChromaHue;    ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioValence;      ///< Mood valence: 0 dark .. 1 bright.
 
 uniform float zoomP; ///< Zoom knob, 0..1.
 uniform float tiltP; ///< Tilt knob, 0..1.

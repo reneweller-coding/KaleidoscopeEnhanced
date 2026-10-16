@@ -40,10 +40,10 @@ uniform float audioMid;       ///< Mid band level, 0..1.
 uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
 
-uniform float deformP;
-uniform float orbitP;
-uniform float fringeP;
-uniform float tunnelP;
+uniform float deformP; ///< Deform knob: cavity boundary deformation parameter, 0.05..0.35.
+uniform float orbitP;  ///< Orbit knob: ray-orbit chaos & bounce density, 1..3.
+uniform float fringeP; ///< Fringe knob: azimuthal mode wavenumber fringe density (8.0..24.0).
+uniform float tunnelP; ///< Tunnel knob: evanescent tunneling radiation gain, 0.5..2.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

@@ -13,11 +13,11 @@ out vec4 fragColor; ///< The pixel's colour (output).
  * texMandelbrot reads 0 -> a flat dark field remains (R=0 reads as freshly-escaped, not garbage).
  */
 
-uniform vec2      resolution; ///< Size of the render target in pixels.
-uniform float     time;       ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;       ///< The current photo.
-uniform sampler2D tex1;       ///< The next photo (cross-faded in by interpolation).
-uniform sampler2D texMandelbrot;
+uniform vec2      resolution;    ///< Size of the render target in pixels.
+uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform sampler2D texMandelbrot; ///< The deep-zoom iteration image (from the compute pass).
 uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.

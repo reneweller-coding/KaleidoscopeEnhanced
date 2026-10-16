@@ -45,9 +45,9 @@ uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 uniform float audioBass;      ///< Bass band level, 0..1.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioSpread;    ///< Spectral spread, 0..1.
-uniform float audioRolloff;
-uniform float audioMode; ///< Mode of the music: 0 minor .. 1 major.
-uniform float sceneSeed; ///< A random number fixed per activation.
+uniform float audioRolloff;   ///< Spectral rolloff: how far the energy reaches into the highs, 0..1.
+uniform float audioMode;      ///< Mode of the music: 0 minor .. 1 major.
+uniform float sceneSeed;      ///< A random number fixed per activation.
 
 out vec4 vCol; ///< Colour (from the vertex stage).
 

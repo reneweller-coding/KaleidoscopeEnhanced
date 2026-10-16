@@ -14,7 +14,7 @@ out vec3  vObj;    ///< Object-space position (from the vertex stage).
 out vec3  vNormal; ///< Surface normal (from the vertex stage).
 out vec3  vView;   ///< View vector (from the vertex stage).
 out float vKind;   ///< Element kind (from the vertex stage).
-out float vLevel;
+out float vLevel;  ///< Level (from the vertex stage).
 
 uniform mat4  projM;        ///< Projection matrix.
 uniform float oitPass;      ///< Order-independent transparency pass flag.

@@ -10,23 +10,23 @@
  * Audio Reactivity: audioSpectrum[32] -> pane glow (light); audioKick ->
  *   stone rim flash; audioLevel -> overall; dayPhase -> sun.
  */
-layout( location = 0 ) out vec4 outAccum;
-layout( location = 1 ) out vec4 outReveal;
+layout( location = 0 ) out vec4 outAccum;  ///< Accum (output).
+layout( location = 1 ) out vec4 outReveal; ///< Reveal (output).
 
 in vec3  vPos;      ///< Position (from the vertex stage).
 in vec3  vNormal;   ///< Surface normal (from the vertex stage).
 in vec2  vTexCoord; ///< Texture coordinate (from the vertex stage).
-in float vBand;
-in float vKind; ///< Element kind (from the vertex stage).
-in float vFace;
+in float vBand;     ///< Band (from the vertex stage).
+in float vKind;     ///< Element kind (from the vertex stage).
+in float vFace;     ///< Face (from the vertex stage).
 
-uniform sampler2D tex0;          ///< The current photo.
-uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
-uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
-uniform float     oitPass;       ///< Order-independent transparency pass flag.
-uniform vec2      nearFar;       ///< Near and far clip distances.
-uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
-uniform float     dayPhase;
+uniform sampler2D tex0;              ///< The current photo.
+uniform sampler2D tex1;              ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation;     ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform float     oitPass;           ///< Order-independent transparency pass flag.
+uniform vec2      nearFar;           ///< Near and far clip distances.
+uniform float     time;              ///< Seconds since the program started (never reset; see sceneTime).
+uniform float     dayPhase;          ///< Phase of the slow day cycle, 0..1.
 uniform float     audioSpectrum[32]; ///< Spectrum bands, 0..1.
 uniform float     audioKick;         ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 uniform float     audioLevel;        ///< Overall loudness, 0..1.

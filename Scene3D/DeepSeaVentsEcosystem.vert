@@ -29,9 +29,9 @@ uniform float audioPhase;     ///< pre-integrated motion accumulator
 uniform float audioLowMid;    ///< 150-500 Hz harmonic warmth = vent heat
 uniform float audioRoughness; ///< sensory dissonance = plume turbulence
 
-out vec3  vPos; ///< Position (from the vertex stage).
-out float vSpecies;
-out float vBioGlow;
+out vec3  vPos;     ///< Position (from the vertex stage).
+out float vSpecies; ///< Species (from the vertex stage).
+out float vBioGlow; ///< Bio glow (from the vertex stage).
 
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()

@@ -25,10 +25,10 @@ uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighte
 uniform float audioBeatPhase; ///< Position within the current beat, 0..1.
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 
-out vec2  vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
-out vec4  vSeed; ///< Per-instance random seed (from the vertex stage).
-out float vLight;
-out float vKind; ///< 0 = picture, 1 = light strip
+out vec2  vUV;    ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+out vec4  vSeed;  ///< Per-instance random seed (from the vertex stage).
+out float vLight; ///< Light (from the vertex stage).
+out float vKind;  ///< 0 = picture, 1 = light strip
 
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()

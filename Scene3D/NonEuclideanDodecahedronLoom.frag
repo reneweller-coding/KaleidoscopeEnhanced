@@ -11,9 +11,9 @@ out vec4 fragColor; ///< The pixel's colour (output).
  *   (additive threads, source-level gains, final colour capped)
  */
 
-in vec3  vWorldPos; ///< World position (from the vertex stage).
-in vec2  vTexCoord; ///< Texture coordinate (from the vertex stage).
-in float vRibbonIndex;
+in vec3  vWorldPos;    ///< World position (from the vertex stage).
+in vec2  vTexCoord;    ///< Texture coordinate (from the vertex stage).
+in float vRibbonIndex; ///< Ribbon index (from the vertex stage).
 
 uniform sampler2D tex0;          ///< The current photo.
 uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
@@ -34,10 +34,10 @@ uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-uniform float dodecaP;
-uniform float loomP;
-uniform float widthP; ///< Width knob, 0..1.
-uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float dodecaP; ///< Dodeca knob, 0.5..2.
+uniform float loomP;   ///< Loom knob, 0.5..2.
+uniform float widthP;  ///< Width knob, 0..1.
+uniform float hueP;    ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

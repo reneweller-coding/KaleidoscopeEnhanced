@@ -23,12 +23,12 @@
 // UV from gl_FragCoord, NOT from a vUV varying: the editor preview's
 // fullscreen vert provides no texcoords, the engine's Fullscreen.vert does —
 // gl_FragCoord works identically under both.
-uniform sampler2D tex;
+uniform sampler2D tex;        ///< The input picture.
 uniform vec2      resolution; ///< Size of the render target in pixels.
-uniform float     rigRoll;
-uniform float     rigZoom;
-uniform vec2      rigPan;
-out vec4          fragColor; ///< The pixel's colour (output).
+uniform float     rigRoll;    ///< Roll of the 2D camera rig (radians).
+uniform float     rigZoom;    ///< Zoom of the 2D camera rig.
+uniform vec2      rigPan;     ///< Pan of the 2D camera rig.
+out vec4          fragColor;  ///< The pixel's colour (output).
 
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()

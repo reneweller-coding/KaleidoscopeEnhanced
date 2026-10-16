@@ -37,9 +37,9 @@ uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpol
 uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 uniform float     audioValence;  ///< Mood valence: 0 dark .. 1 bright.
 
-out vec4  vCol;  ///< Colour (from the vertex stage).
-out float vSide; ///< Which side of a strip (from the vertex stage).
-out float vLength;
+out vec4  vCol;    ///< Colour (from the vertex stage).
+out float vSide;   ///< Which side of a strip (from the vertex stage).
+out float vLength; ///< Length (from the vertex stage).
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

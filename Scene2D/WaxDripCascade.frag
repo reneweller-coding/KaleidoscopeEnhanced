@@ -41,7 +41,7 @@ uniform float audioRoughness; ///< Roughness (dissonance) of the sound, 0..1.
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 
 uniform float layerP; ///< Layer knob, 0..1.
-uniform float dripP;
+uniform float dripP;  ///< Drip knob: drip density, 0..1.
 uniform float photoP; ///< Photo knob: how much of the photo shows, 0..1.
 uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 

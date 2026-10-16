@@ -12,23 +12,25 @@
  * invocation 0's writes to slots 0..2 and a naive "everyone clears
  * everything" pattern.
  */
-// CfxLightningSeed.comp — clear the tip buffer and start a fresh bolt.
+/// CfxLightningSeed.comp — clear the tip buffer and start a fresh bolt.
 layout( local_size_x = 128 ) in;
 
+/// The lightning tips: position and heading per tip.
 layout( std430, binding = 1 ) buffer Tips
 {
     vec4 tip[];
 };
+/// Control block: the number of live tips and the counters of the strike.
 layout( std430, binding = 2 ) buffer Ctrl
 {
     uint tipCount;
     uint pad[3];
 };
 
-uniform uint  capacity;
-uniform uint  seed;
-uniform float startX;
-uniform float life;
+uniform uint  capacity; ///< Capacity of the buffer (elements).
+uniform uint  seed;     ///< Random seed of the run.
+uniform float startX;   ///< Where the strike starts (x, 0..1).
+uniform float life;     ///< Lifetime of a bolt (seconds).
 
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()

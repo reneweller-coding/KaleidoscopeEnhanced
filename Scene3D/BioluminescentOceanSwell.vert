@@ -22,8 +22,8 @@ uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
 out vec3  vPos;    ///< Position (from the vertex stage).
 out vec3  vNormal; ///< Surface normal (from the vertex stage).
 out vec2  vUV;     ///< Texture coordinate 0..1 over the screen (from the vertex stage).
-out float vCrest;
-out float vHeight;
+out float vCrest;  ///< Crest (from the vertex stage).
+out float vHeight; ///< Height (from the vertex stage).
 
 /**  Gerstner wave function
  *

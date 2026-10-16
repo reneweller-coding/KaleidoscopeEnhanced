@@ -3,8 +3,8 @@ out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec3  vNormal;   ///< Surface normal (from the vertex stage).
 in vec3  vWorldPos; ///< World position (from the vertex stage).
-in vec3  vTint;
-in float vFlash;
+in vec3  vTint;     ///< Tint (from the vertex stage).
+in float vFlash;    ///< Flash (from the vertex stage).
 
 /**
  * @file MirrorShardKaleidoscope.frag

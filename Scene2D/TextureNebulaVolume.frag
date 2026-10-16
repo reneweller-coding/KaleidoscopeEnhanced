@@ -43,9 +43,9 @@ uniform float audioBass;      ///< Bass band level, 0..1.
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 
 uniform float densityP; ///< Density knob, 0..1.
-uniform float colourP;
-uniform float turbP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float colourP;  ///< Colour knob: photo colour vs. emission colours, 0..1.
+uniform float turbP;    ///< Turb knob: turbulence, 0..1.
+uniform float hueP;     ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 // @expr densityP = clamp(0.4 + 0.4*swell + 0.2*seed2, 0.0, 1.0)
 
 // ---- shared building blocks (texture pool, noise, shapes) ----

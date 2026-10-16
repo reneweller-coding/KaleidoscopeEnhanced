@@ -40,8 +40,8 @@ uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioMode;      ///< Mode of the music: 0 minor .. 1 major.
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 
-uniform float vineP;
-uniform float leafP;
+uniform float vineP;  ///< Vine knob: vine density, 0..1.
+uniform float leafP;  ///< Leaf knob: leaves, 0..1.
 uniform float photoP; ///< Photo knob: how much of the photo shows, 0..1.
 uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 

@@ -29,11 +29,11 @@ uniform float audioSwell;    ///< slow loudness swell -> ring thickness breathes
 uniform float audioBarPhase; ///< 0..1 per bar -> gentle per-bar hue sweep
 
 // Per-activation variety (re-rolled each activation; 0 = default):
-uniform float stripeP; ///< colour stripe frequency (0 -> 8.0; 5 = broad bands, 12 = fine)
-uniform float ringP;   ///< ring size multiplier    (0 -> 1.0; 0.7 = slim, 1.3 = chunky)
-uniform float travP;   ///< scroll speed multiplier (0 -> 1.0)
-uniform int   kSides;  ///< >=2: weave a spinning n-fold image rosette in (0 = off)
-uniform float rosetteP;
+uniform float stripeP;        ///< colour stripe frequency (0 -> 8.0; 5 = broad bands, 12 = fine)
+uniform float ringP;          ///< ring size multiplier    (0 -> 1.0; 0.7 = slim, 1.3 = chunky)
+uniform float travP;          ///< scroll speed multiplier (0 -> 1.0)
+uniform int   kSides;         ///< >=2: weave a spinning n-fold image rosette in (0 = off)
+uniform float rosetteP;       ///< Rosette knob, 0.15..0.35.
 uniform float audioChromaHue; ///< rosette strength        (0 -> 0.22)
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.

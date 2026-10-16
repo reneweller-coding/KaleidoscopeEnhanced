@@ -40,8 +40,8 @@ uniform float audioLevel;     ///< Overall loudness, 0..1.
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-uniform float turnP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float turnP; ///< Turn knob: how far the figure turns, 0..1.
+uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *
@@ -146,10 +146,13 @@ float fbm( vec2 p )
     return v;
 }
 
-const vec2  Hc = vec2( 0.0, 0.07 ); // centre of the apparition
-const vec2  Hs = vec2( 0.3, 0.3 );  // its half size
+const vec2  Hc = vec2( 0.0, 0.07 ); ///< centre of the apparition
+const vec2  Hs = vec2( 0.3, 0.3 );  ///< its half size
 const float Stagey = -0.2;          ///< stage floor line
-float       gT, gAng, gHi;
+/** @{ */
+float gT, gAng, gHi; ///< gT: The chain's (or scene's) time this frame; gAng: Turn of the gauze this frame (radians);
+                     ///< gHi: Treble level this frame, 0..1.
+/** @} */
 
 /**  The apparition at a screen point: glow colour (rgb) and coverage (a).
  *

@@ -38,7 +38,7 @@ uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpol
 uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 out vec3          vNormal;       ///< Surface normal (from the vertex stage).
 out vec2          vTexCoord;     ///< Texture coordinate (from the vertex stage).
-out vec4          vColor;
+out vec4          vColor;        ///< Color (from the vertex stage).
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

@@ -22,10 +22,10 @@
 in vec4 attrA; ///< xy = u/v across the sheet, w = cell index
 in vec4 attrB; ///< per-cell hashes
 
-out vec2  vUv;
+out vec2  vUv;     ///< Uv (from the vertex stage).
 out vec3  vNormal; ///< Surface normal (from the vertex stage).
 out vec3  vView;   ///< View vector (from the vertex stage).
-out float vHeight;
+out float vHeight; ///< Height (from the vertex stage).
 
 uniform sampler2D tex0;         ///< The current photo.
 uniform mat4      projM;        ///< Projection matrix.

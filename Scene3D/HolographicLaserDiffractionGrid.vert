@@ -25,7 +25,7 @@ uniform float audioCentroid; ///< Spectral centroid (brightness of the sound), 0
 uniform float audioSwell;    ///< Slow loudness envelope, 0..1 (seconds).
 uniform float audioHigh;     ///< High band level, 0..1.
 
-uniform float gratingP;
+uniform float gratingP;       ///< Grating knob, 0.5..2.
 uniform float depthP;         ///< Depth knob, 0..1.
 uniform float speedP;         ///< Speed knob, 0..1.
 uniform float hueP;           ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.

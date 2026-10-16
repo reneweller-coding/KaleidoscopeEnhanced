@@ -15,9 +15,9 @@ out vec4 fragColor; ///< The pixel's colour (output).
  * pulse; audioChromaHue nudges the water's hue via the house imgPalette.
  */
 
-in vec3  vWorld; ///< World position (from the vertex stage).
-in vec3  vSeed;  ///< Per-instance random seed (from the vertex stage).
-in float vDensRatio;
+in vec3  vWorld;     ///< World position (from the vertex stage).
+in vec3  vSeed;      ///< Per-instance random seed (from the vertex stage).
+in float vDensRatio; ///< Dens ratio (from the vertex stage).
 
 uniform sampler2D tex0;           ///< The current photo.
 uniform sampler2D tex1;           ///< The next photo (cross-faded in by interpolation).

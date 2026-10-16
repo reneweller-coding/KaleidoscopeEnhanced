@@ -118,6 +118,8 @@ def doc_block_above( out ):
         return None
     j = len( out ) - 1
     s = out[ j ].strip()
+    if re.match( r"^/\*\*\s*@[{}]\s*\*/$", s ) or re.match( r"^///\s*@(end)?cond\b", s ):
+        return None                                        # a member group's end or a hidden forward declaration's
     if s.endswith( "*/" ) and not s.startswith( "//" ):
         k = j
         while k >= 0 and "/*" not in out[ k ]:
@@ -128,7 +130,8 @@ def doc_block_above( out ):
     if s.startswith( "//" ) and not s.startswith( ( "///<", "//!<" ) ) and not re.match( r"^//\s*(-{3,}|={3,}|@)", s ):
         k = j
         while k - 1 >= 0 and out[ k - 1 ].strip().startswith( "//" ) and not out[ k - 1 ].strip().startswith( ( "///<", "//!<" ) ) \
-                and not re.match( r"^//\s*(-{3,}|={3,}|@)", out[ k - 1 ].strip() ):
+                and not re.match( r"^//\s*(-{3,}|={3,}|@)", out[ k - 1 ].strip() ) \
+                and not re.match( r"^///\s*@(end)?cond\b", out[ k - 1 ].strip() ):
             k -= 1
         # the rest of a section heading that runs over several lines ("// ---- Sky shell: ... ----") is no description
         if re.search( r"\s-{3,}\s*$", s ) or ( k > 0 and re.match( r"^//\s*-{3,}\s+\S", out[ k - 1 ].strip() )

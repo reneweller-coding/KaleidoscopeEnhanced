@@ -36,8 +36,8 @@ uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-uniform float crustP;
-uniform float heatP;
+uniform float crustP; ///< Crust knob: crust tectonic plate density, 0.5..2.2.
+uniform float heatP;  ///< Heat knob: magma thermal glow intensity, 0.5..2.
 uniform float speedP; ///< Speed knob, 0..1.
 uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 

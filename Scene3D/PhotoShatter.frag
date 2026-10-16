@@ -5,8 +5,8 @@ uniform sampler2D tex0;           ///< The current photo.
 uniform float     audioDrop;      ///< Drop envelope: high after a detected drop, decaying.
 uniform float     audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-in vec2  vUV; ///< Texture coordinate 0..1 over the screen (from the vertex stage).
-in float vLight;
+in vec2  vUV;    ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+in float vLight; ///< Light (from the vertex stage).
 
 /**
  * @file PhotoShatter.frag

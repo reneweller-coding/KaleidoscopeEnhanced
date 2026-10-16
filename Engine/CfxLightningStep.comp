@@ -29,30 +29,32 @@
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( local_size_x = 128 ) in;
 
+/// The accumulation buffer: colour and coverage per pixel, added atomically; the present pass resolves it.
 layout( std430, binding = 0 ) buffer Accum
 {
     uint acc[];
 };
-// x, y, angle, life   (life <= 0 = slot free)
+/// x, y, angle, life   (life <= 0 = slot free)
 layout( std430, binding = 1 ) buffer Tips
 {
     vec4 tip[];
 };
+/// Control block: the number of live tips and the counters of the strike.
 layout( std430, binding = 2 ) buffer Ctrl
 {
     uint tipCount;
     uint pad[3];
 };
 
-uniform ivec2 size; ///< Size of the simulation grid in cells.
-uniform uint  capacity;
-uniform uint  frame;
-uniform float hue;
-uniform float level;
-uniform float branchP; ///< split probability per tip per frame
-uniform float charge;  ///< 0..1, how hot the bolt burns
+uniform ivec2 size;     ///< Size of the simulation grid in cells.
+uniform uint  capacity; ///< Capacity of the buffer (elements).
+uniform uint  frame;    ///< Frame counter (seeds the random numbers).
+uniform float hue;      ///< Hue offset of the palette.
+uniform float level;    ///< The music's level, 0..1.
+uniform float branchP;  ///< split probability per tip per frame
+uniform float charge;   ///< 0..1, how hot the bolt burns
 
-const float Scale = 256.0;
+const float Scale = 256.0; ///< Fixed-point scale of the accumulation buffer (colour times Scale, added as integers).
 
 /**  PCG random step: advances the state, returns 32 random bits.
  *

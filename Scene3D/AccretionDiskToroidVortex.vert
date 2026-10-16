@@ -28,17 +28,17 @@ uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioRoughness; ///< Roughness (dissonance) of the sound, 0..1.
-uniform float audioBassRel;
+uniform float audioBassRel;   ///< Bass now relative to its slow average (1 = as usual).
 
-uniform float toroidP;
-uniform float iscoP;
-uniform float speedP; ///< Speed knob, 0..1.
-uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float toroidP; ///< Toroid knob, 0.5..2.
+uniform float iscoP;   ///< Isco knob, 0.5..2.
+uniform float speedP;  ///< Speed knob, 0..1.
+uniform float hueP;    ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 out vec3  vWorldPos; ///< World position (from the vertex stage).
 out vec3  vNormal;   ///< Surface normal (from the vertex stage).
 out vec2  vTexCoord; ///< Texture coordinate (from the vertex stage).
-out float vDoppler;
+out float vDoppler;  ///< Doppler (from the vertex stage).
 
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()

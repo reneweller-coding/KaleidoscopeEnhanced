@@ -30,25 +30,26 @@
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( local_size_x = 256 ) in;
 
+/// The accumulation buffer: colour and coverage per pixel, added atomically; the present pass resolves it.
 layout( std430, binding = 0 ) buffer Accum
 {
     uint acc[];
 };
 
-uniform ivec2 size;  ///< Size of the simulation grid in cells.
-uniform float phase; ///< integrated: overall morph
-uniform float warp;  ///< integrated: variation blend
-uniform float spin;  ///< integrated: rotation
-uniform uint  frame; ///< RNG decorrelation between frames
-uniform float hue;
-uniform float level;
-uniform float kick;
-uniform float bright;
-uniform float drop;
+uniform ivec2 size;   ///< Size of the simulation grid in cells.
+uniform float phase;  ///< integrated: overall morph
+uniform float warp;   ///< integrated: variation blend
+uniform float spin;   ///< integrated: rotation
+uniform uint  frame;  ///< RNG decorrelation between frames
+uniform float hue;    ///< Hue offset of the palette.
+uniform float level;  ///< The music's level, 0..1.
+uniform float kick;   ///< Kick envelope, 0..1.
+uniform float bright; ///< Brightness.
+uniform float drop;   ///< Drop envelope, 0..1.
 
-const float Scale = 256.0;
-const int   Iters = 32;
-const int   Warmup = 12;
+const float Scale = 256.0; ///< Fixed-point scale of the accumulation buffer (colour times Scale, added as integers).
+const int   Iters = 32;    ///< Iterations per walker and frame.
+const int   Warmup = 12;   ///< Iterations before a walker starts to plot.
 
 /**  PCG random step: advances the state, returns 32 random bits.
  *

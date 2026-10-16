@@ -3231,7 +3231,9 @@ vec2 tJoukowski( vec2 uv, vec2 c, float R, float scale )
     return c + ( z + R * R * iz ) * 0.5;
 }
 
+/// @cond
 vec2 chain( vec2 p );
+/// @endcond
 /**  A loop count the compiler cannot see through (it depends on a uniform), so the loop is NOT unrolled and its body
  * -- a whole chain -- is inlined once.
  *
@@ -3244,7 +3246,9 @@ int loopN( int n )
 {
     return n + int( min( interpolation, 0.0 ) );
 }
-vec2 gChainM, gChainDx, gChainDy; // mirrored chain coordinate of this pixel and its derivatives per pixel
+/** @{ */
+vec2 gChainM, gChainDx, gChainDy; ///< mirrored chain coordinate of this pixel and its derivatives per pixel
+/** @} */
 /**  The chain's photo read with a seam-proof footprint (per axis the smaller of the two one-sided differences) and
  * the screen-space luma gradient.
  *
@@ -3278,8 +3282,8 @@ vec3 imgChain( vec2 p, float bias, out vec2 grad )
 // Each stage is continuous; stages that scale space multiply gDR so the
 // distance estimate stays conservative.  gP keeps the final folded point
 // (used to texture the surface with the kaleidoscoped photo).
-float gDR = 1.0;
-vec3  gP = vec3( 0.0 );
+float gDR = 1.0;        ///< Running scale factor of the folds (divides the distance estimate).
+vec3  gP = vec3( 0.0 ); ///< The point the distance field was last evaluated at (scaled; textures the surface).
 /**  Rotation of p about an axis.
  *
  * @param p     The point. (in)
@@ -3794,8 +3798,10 @@ float sdGyroid3( vec3 p, float thick )
     return ( abs( dot( sin( p ), cos( p.yzx ) ) ) - thick ) / 1.8;
 }
 
+/// @cond
 float field3( vec3 p );
-vec3  gCam = vec3( 0.0 );
+/// @endcond
+vec3 gCam = vec3( 0.0 ); ///< The camera position this frame.
 // Collision-free flight: the camera follows a winding path through the field, and a
 // tube around that path is carved out of every body (soft edges, so the cut faces
 // read as sculpted walls).  The path depends only on z, so the carve is stateless.
@@ -3803,7 +3809,7 @@ float gPathAmp = 1.0;                ///< how far the path winds (a scene may sh
 float gTube = 0.45;                  ///< tube radius
 float gSide = 0.0;                   ///< how far the gaze looks out of a side window (0 ahead .. 1): see gazeDir
 float gOrtho = 0.0;                  ///< orthographic share of the gaze (6)
-vec3  gAxis = vec3( 0.0, 0.0, 1.0 ); // the view axis (world): the ortho slab is cut across it
+vec3  gAxis = vec3( 0.0, 0.0, 1.0 ); ///< the view axis (world): the ortho slab is cut across it
 /**  The camera path's x/y offset at depth z.
  *
  * @param z  Depth along the flight. (in)
@@ -4014,7 +4020,10 @@ vec3 photo3( vec3 q, vec3 n, float lod )
            + imgK( q.xy * 0.35 + 0.5, lod ) * w.z;
 }
 
-float gT, gSpread, gRot;
+/** @{ */
+float gT, gSpread, gRot; ///< gT: The chain's (or scene's) time this frame; gSpread: The spectral spread this frame,
+                         ///< 0..1; gRot: The rotation phase this frame.
+/** @} */
 /**  The world's distance field (folded lattice of bodies).
  *
  * @param p  The point. (in)

@@ -41,7 +41,7 @@ uniform float audioRoughness; ///< Roughness (dissonance) of the sound, 0..1.
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 
 uniform float sizeP; ///< Size knob, 0..1.
-uniform float gapP;
+uniform float gapP;  ///< Gap knob: gap between discs, 0..1.
 uniform float bandP; ///< Band knob, 0..1.
 uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
@@ -385,7 +385,10 @@ void finish( vec3 col )
     fragColor = vec4( clamp( t, 0.0, 1.0 ), 1.0 );
 }
 
-float gGap, gT, gSpread;
+/** @{ */
+float gGap, gT, gSpread; ///< gGap: Gap between the circles this frame; gT: The chain's (or scene's) time this frame;
+                         ///< gSpread: The spectral spread this frame, 0..1.
+/** @} */
 /**  Level-0 disc of cell c (units: level-0 cells).
  *
  * @param c  The cell. (in)

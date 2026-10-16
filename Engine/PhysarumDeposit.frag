@@ -13,9 +13,9 @@
  */
 out vec4 fragColor; ///< The pixel's colour (output).
 
-uniform float depositAmt;
+uniform float depositAmt; ///< How much each agent deposits on the trail.
 
-in float vSpecies;
+in float vSpecies; ///< Species (from the vertex stage).
 
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()

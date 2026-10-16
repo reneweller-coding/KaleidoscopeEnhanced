@@ -18,7 +18,7 @@ uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unw
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float hueP;           ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-out vec4  vColor;
+out vec4  vColor;    ///< Color (from the vertex stage).
 out vec2  vTexCoord; ///< Texture coordinate (from the vertex stage).
 out float vDepth;    ///< Depth (from the vertex stage).
 out float vKind;     ///< Element kind (from the vertex stage).

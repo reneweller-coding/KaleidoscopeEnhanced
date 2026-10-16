@@ -30,17 +30,17 @@ uniform float audioAdvance; ///< The music's advance: integrated tempo-weighted 
                             ///< backwards).
 uniform float sceneSeed;    ///< A random number fixed per activation.
 
-uniform float audioKick;  ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioSnare; ///< Snare envelope, 0..1.
-uniform float audioHat;
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioSnare;     ///< Snare envelope, 0..1.
+uniform float audioHat;       ///< Hi-hat / cymbal onset envelope, 0..1.
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioDrop;      ///< Drop envelope: high after a detected drop, decaying.
 
-out vec3  vNorm;
+out vec3  vNorm; ///< Norm (from the vertex stage).
 out vec3  vView; ///< View vector (from the vertex stage).
-out float vDefo;
-out float vHue;
+out float vDefo; ///< Defo (from the vertex stage).
+out float vHue;  ///< Hue (from the vertex stage).
 
 /**  Damped modal displacement at direction d.
  *

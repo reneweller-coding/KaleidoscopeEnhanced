@@ -40,9 +40,9 @@ uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 
 uniform float densityP; ///< Density knob, 0..1.
-uniform float angleP;
-uniform float skyP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float angleP;   ///< Angle knob: flight direction, 0..1.
+uniform float skyP;     ///< Sky knob: photo in the sky, 0..1.
+uniform float hueP;     ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 // ---- shared building blocks (texture pool, noise, shapes) ----
 /**  Pseudo-random number 0..1 from a float.

@@ -39,9 +39,9 @@ uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short 
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-uniform float dustP;
-uniform float laserP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float dustP;  ///< Dust knob: density of the dust haze (0.5..1.5).
+uniform float laserP; ///< Laser knob: laser intensity (0.6..1.8).
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *
@@ -115,8 +115,8 @@ float noise3( vec3 p )
                 f.z );
 }
 
-const float Br = 12.0; ///< base asteroid radius
-float       g_T = 0.0;
+const float Br = 12.0;   ///< base asteroid radius
+float       g_T = 0.0;   ///< The scene's clock this frame.
 float       g_mat = 0.0; ///< 1 base rock, 2 dome, 3 small rock
 
 /**  Lumps: cheap low-frequency displacement for rock silhouettes.

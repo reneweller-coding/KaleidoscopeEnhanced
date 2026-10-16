@@ -1,9 +1,9 @@
 #version 330 core
 out vec4 fragColor; ///< The pixel's colour (output).
 
-in vec3  vPos; ///< Position (from the vertex stage).
-in float vRefract;
-in float vSector;
+in vec3  vPos;     ///< Position (from the vertex stage).
+in float vRefract; ///< Refract (from the vertex stage).
+in float vSector;  ///< Sector (from the vertex stage).
 
 /**
  * @file DendriticSnowCrystal.frag
@@ -27,8 +27,8 @@ uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unw
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 
 uniform float glowP; ///< Glow / afterglow knob, 0..1.
-uniform float iceP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float iceP;  ///< Ice knob, 0.5..2.2.
+uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 
 uniform float audioAdvance; ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs

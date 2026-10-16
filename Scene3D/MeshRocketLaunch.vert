@@ -19,16 +19,16 @@
 in vec4 attrA; ///< mesh: xyz = object-space position, w = U.  shell: xyz = world-space position on the shell.
 in vec4 attrB; ///< mesh: xyz = object-space normal,   w = V.  shell: xyz = outward direction.
 
-uniform mat4  projM;           ///< Projection matrix.
-uniform float eyeOff;          ///< Stereo eye offset (0 in mono).
-uniform float time;            ///< Seconds since the program started (never reset; see sceneTime).
-uniform int   meshVertexCount; ///< Vertices of the scene's mesh.
-uniform int   mesh2VertexCount;
-uniform vec3  meshExtent;  ///< half-extents of the pad, object space
-uniform vec3  meshCenter;  ///< Centre of the scene's mesh bounding box.
-uniform vec3  meshExtent2; ///< half-extents of the rocket
-uniform vec3  meshCenter2;
-uniform float sceneProgress; ///< Progress through this scene's solo time, 0..1.
+uniform mat4  projM;            ///< Projection matrix.
+uniform float eyeOff;           ///< Stereo eye offset (0 in mono).
+uniform float time;             ///< Seconds since the program started (never reset; see sceneTime).
+uniform int   meshVertexCount;  ///< Vertices of the scene's mesh.
+uniform int   mesh2VertexCount; ///< Vertices of the scene's second mesh.
+uniform vec3  meshExtent;       ///< half-extents of the pad, object space
+uniform vec3  meshCenter;       ///< Centre of the scene's mesh bounding box.
+uniform vec3  meshExtent2;      ///< half-extents of the rocket
+uniform vec3  meshCenter2;      ///< Centre of the second mesh's bounding box.
+uniform float sceneProgress;    ///< Progress through this scene's solo time, 0..1.
 
 uniform float sizeP;  ///< Size knob, 0..1.
 uniform float platP;  ///< the pad's platform height as a fraction of the pad's full height
@@ -41,9 +41,9 @@ out vec3  vNormal; ///< Surface normal (from the vertex stage).
 out vec3  vPos;    ///< Position (from the vertex stage).
 out vec3  vLocal;  ///< object space, normalised to -1..1 per axis
 out float vBg;     ///< Background flag (from the vertex stage).
-out float vRocket;
-out vec4  vFlame; ///< xyz = the engines' world position, w = burn 0..1
-out float vClimb; ///< 0 on the pad, 1 at the top of the climb
+out float vRocket; ///< Rocket (from the vertex stage).
+out vec4  vFlame;  ///< xyz = the engines' world position, w = burn 0..1
+out float vClimb;  ///< 0 on the pad, 1 at the top of the climb
 
 const float Dist = 84.0;    ///< the pad's distance from the camera
 const float Ground = -16.0; ///< ground height: the pad sits low so the sky above has room for the climb

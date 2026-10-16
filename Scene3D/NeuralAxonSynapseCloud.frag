@@ -7,8 +7,8 @@ uniform float time;           ///< Seconds since the program started (never rese
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float hueP;           ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-in vec4  vColor;
-in float vSize;
+in vec4  vColor; ///< Color (from the vertex stage).
+in float vSize;  ///< Size (from the vertex stage).
 
 /**
  * @file NeuralAxonSynapseCloud.frag

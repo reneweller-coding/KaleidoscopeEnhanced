@@ -7,9 +7,9 @@ out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec3  vWorld;  ///< World position (from the vertex stage).
 in vec3  vNormal; ///< Surface normal (from the vertex stage).
-in float vAlong;
-in float vTint;
-in float vKind; ///< Element kind (from the vertex stage).
+in float vAlong;  ///< Along (from the vertex stage).
+in float vTint;   ///< Tint (from the vertex stage).
+in float vKind;   ///< Element kind (from the vertex stage).
 
 /**
  * @file GrassField.frag
@@ -40,7 +40,7 @@ uniform float audioAmbient;   ///< How ambient (sustained, beatless) the music i
 
 uniform float camHP; ///< Camera height knob, 0..1.
 uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
-uniform float skyP;
+uniform float skyP;  ///< Sky knob, 0.4..1.
 
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()

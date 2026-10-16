@@ -14,7 +14,7 @@ uniform float     interpolation;  ///< Cross-fade between the photos: 1 = tex0, 
 uniform float     audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 
 in vec2  vUV; ///< Texture coordinate 0..1 over the screen (from the vertex stage).
-in float vH;
+in float vH;  ///< H (from the vertex stage).
 
 /**
  * @file PlasmaSheet.frag

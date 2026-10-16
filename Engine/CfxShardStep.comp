@@ -21,31 +21,35 @@
 // the shard's state at runtime.  Between bursts a spring pulls every shard
 // home, so the picture visibly re-assembles itself.
 // -----------------------------------------------------------------------
+/// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( local_size_x = 256 ) in;
 
+/// The accumulation buffer: colour and coverage per pixel, added atomically; the present pass resolves it.
 layout( std430, binding = 0 ) buffer Accum
 {
     uint acc[];
 };
+/// The shards' positions and turns (one vec4 per shard).
 layout( std430, binding = 1 ) buffer ShardA
 {
     vec4 sa[];
 };
+/// The shards' velocities and spins (one vec4 per shard).
 layout( std430, binding = 2 ) buffer ShardB
 {
     vec4 sb[];
 };
 
-uniform sampler2D texPhoto;
-uniform ivec2     size; ///< Size of the simulation grid in cells.
-uniform ivec2     grid; ///< shards across x and y
-uniform float     dt;
-uniform float     springK; ///< pull back home
-uniform float     damp;
-uniform float     gravity;
-uniform float     level;
+uniform sampler2D texPhoto; ///< The photo.
+uniform ivec2     size;     ///< Size of the simulation grid in cells.
+uniform ivec2     grid;     ///< shards across x and y
+uniform float     dt;       ///< Time step of the simulation (seconds).
+uniform float     springK;  ///< pull back home
+uniform float     damp;     ///< Damping per step.
+uniform float     gravity;  ///< Gravity.
+uniform float     level;    ///< The music's level, 0..1.
 
-const float Scale = 256.0;
+const float Scale = 256.0; ///< Fixed-point scale of the accumulation buffer (colour times Scale, added as integers).
 
 /**  Adds a weighted colour to the accumulation buffer at a pixel (skipped off the image).
  *

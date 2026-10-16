@@ -39,10 +39,10 @@ uniform float audioMid;       ///< Mid band level, 0..1.
 uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
 
-uniform float trapRadiusP;
-uniform float spiralCurlP;
-uniform float absorberP;
-uniform float poyntingP;
+uniform float trapRadiusP; ///< Trap radius knob: graded-index metamaterial outer trap radius (0.6..1.6).
+uniform float spiralCurlP; ///< Spiral curl knob: logarithmic ray-bending curvature, 2..6.
+uniform float absorberP;   ///< Absorber knob: central plasmonic core absorption gain, 0.8..2.5.
+uniform float poyntingP;   ///< Poynting knob: Poynting vector streamline ripple density, 8..24.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

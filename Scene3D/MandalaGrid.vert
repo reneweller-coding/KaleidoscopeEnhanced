@@ -23,7 +23,7 @@ uniform float audioAdvance; ///< The music's advance: integrated tempo-weighted 
                             ///< backwards).
 
 out vec2  vPolar; ///< angle, radius 0..1
-out float vLift;
+out float vLift;  ///< Lift (from the vertex stage).
 
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()

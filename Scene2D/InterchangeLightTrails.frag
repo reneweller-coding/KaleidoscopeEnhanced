@@ -36,8 +36,8 @@ uniform float audioLevel;        ///< Overall loudness, 0..1.
 uniform float audioValence;      ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioChromaHue;    ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-uniform float loopsP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float loopsP; ///< Loops knob: how many loops, 0..1.
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *
@@ -95,9 +95,11 @@ float noise2( vec2 p )
                 mix( hash21( i + vec2( 0.0, 1.0 ) ), hash21( i + vec2( 1.0, 1.0 ) ), f.x ), f.y );
 }
 
-float gT, gPx;
-float gBand[8];
-vec3  gCol;
+/** @{ */
+float gT, gPx; ///< gT: The chain's (or scene's) time this frame; gPx: Size of a pixel (1 / screen height).
+/** @} */
+float gBand[8]; ///< Eight band levels of the music this frame, 0..1.
+vec3  gCol;     ///< The colour gathered so far for this pixel.
 
 /**  One carriageway with two directions, given as a signed distance d across it and an arc length s along it.
  *

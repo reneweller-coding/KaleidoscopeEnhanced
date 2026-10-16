@@ -10,10 +10,10 @@ uniform float     time;          ///< Seconds since the program started (never r
 uniform sampler2D tex0;          ///< The current photo.
 uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
 uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
-uniform float     speed;
-uniform int       direction;
-uniform float     audioPhase; ///< integrated music phase: modulates spin RATE, never jitters
-uniform float     audioSwell; ///< Slow loudness envelope, 0..1 (seconds).
+uniform float     speed;         ///< Speed of the motion.
+uniform int       direction;     ///< Direction of the turn: 1 one way, else the other.
+uniform float     audioPhase;    ///< integrated music phase: modulates spin RATE, never jitters
+uniform float     audioSwell;    ///< Slow loudness envelope, 0..1 (seconds).
 
 /**  Folds a coordinate's x mirror-wise per whole unit (keeps the texture seamless).
  *

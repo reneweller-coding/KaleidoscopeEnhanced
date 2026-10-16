@@ -27,12 +27,15 @@
 // thread per segment would redo the same walk for every segment and cost O(S^2)
 // where this costs O(S).
 // -----------------------------------------------------------------------
+/// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( local_size_x = 4, local_size_y = 4, local_size_z = 4 ) in;
 
+/// The output vertex buffer: eight floats per vertex (attribute A, attribute B) that the scene draws.
 layout( std430, binding = 0 ) buffer Verts
 {
     float verts[];
 };
+/// The indirect draw command: [0] the vertex count (counted up atomically), then the other draw arguments.
 layout( std430, binding = 1 ) buffer Cmd
 {
     uint cmd[];
@@ -52,9 +55,9 @@ uniform float widthP; ///< preset: ribbon width
 uniform float twistP; ///< preset: how fast a ribbon twists along itself
 uniform float scaleP; ///< preset: size of the flow structures
 
-const int   Ribbons = 2400;
-const int   Segs = 32;    ///< segments per ribbon
-const float Step = 0.085; ///< integration step, world units
+const int   Ribbons = 2400; ///< Number of ribbons.
+const int   Segs = 32;      ///< segments per ribbon
+const float Step = 0.085;   ///< integration step, world units
 
 /**  Pseudo-random number 0..1 from a 3D point.
  *

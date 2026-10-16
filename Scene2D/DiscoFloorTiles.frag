@@ -35,8 +35,8 @@ uniform float audioLevel;        ///< Overall loudness, 0..1.
 uniform float audioChromaHue;    ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioValence;      ///< Mood valence: 0 dark .. 1 bright.
 
-uniform float patternP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float patternP; ///< Pattern knob: equaliser or checker mix, 0..1.
+uniform float hueP;     ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *
@@ -122,7 +122,10 @@ float noise2( vec2 p )
                 mix( hash21( i + vec2( 0.0, 1.0 ) ), hash21( i + vec2( 1.0, 1.0 ) ), f.x ), f.y );
 }
 
-float g_hue, g_pat, g_drift;
+/** @{ */
+float g_hue, g_pat, g_drift; ///< g_hue: Hue of the palette this frame (from hueP); g_pat: Pattern mix of the floor this
+                             ///< frame, 0..1; g_drift: Drift of the floor pattern this frame.
+/** @} */
 
 /**  Emission of the floor at world (x, z): tiles 1 m, grout between.
  *

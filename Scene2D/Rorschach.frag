@@ -29,11 +29,11 @@ uniform sampler2D tex0;          ///< The current photo.
 uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
 uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 uniform int       positive;      ///< = 0; //positive or negative display
-uniform float     posX;
-uniform float     posY;
-uniform float     posZ;
-uniform float     divisor;
-uniform float     fiOffset; ///< original = 0.1
+uniform float     posX;          ///< Seed of the blot (x).
+uniform float     posY;          ///< Seed of the blot (y).
+uniform float     posZ;          ///< Size of the blot.
+uniform float     divisor;       ///< Detail of the blot.
+uniform float     fiOffset;      ///< original = 0.1
 // uniform float timefactor;
 uniform float audioAdvance;   ///< integrated drift: the inkblot morphs with the music (jump-free)
 uniform float audioKick;      ///< kick throb on the blot intensity

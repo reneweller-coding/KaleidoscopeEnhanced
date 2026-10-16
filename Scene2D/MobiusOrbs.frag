@@ -43,14 +43,14 @@ uniform float stretchP; ///< 0 -> 1.2    max extra ellipse aspect (length varian
 uniform float shapeP;   ///< 0 -> 0.6    circle -> superellipse shape variance
 
 const float Pi = 3.141592; ///< Pi.
-const float Orbs = 20.0;
+const float Orbs = 20.0;   ///< Number of orbs.
 
-const float Contrast = 0.13;
-const float Colorshift = 10.32;
-const float CosMul = 2.38;
-const float XMul = 0.28;
-const float YDivide = 4.99;
-const float XDivide = 6.27;
+const float Contrast = 0.13;    ///< Contrast of the orbs.
+const float Colorshift = 10.32; ///< Colour shift between the orbs.
+const float CosMul = 2.38;      ///< Amplitude of the cosine warp.
+const float XMul = 0.28;        ///< Frequency of the cosine warp in x.
+const float YDivide = 4.99;     ///< Wavelength of the warp in y.
+const float XDivide = 6.27;     ///< Wavelength of the sine warp in x.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

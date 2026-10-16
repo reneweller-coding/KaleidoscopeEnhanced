@@ -26,8 +26,8 @@ uniform float audioCentroid; ///< Spectral centroid (brightness of the sound), 0
 uniform float audioSwell;    ///< Slow loudness envelope, 0..1 (seconds).
 uniform float audioHigh;     ///< High band level, 0..1.
 
-uniform float     orbitP;
-uniform float     scatterP;
+uniform float     orbitP;         ///< Orbit knob, 0.5..1.8.
+uniform float     scatterP;       ///< Scatter knob, 0.4..1.8.
 uniform float     glowP;          ///< Glow / afterglow knob, 0..1.
 uniform float     hueP;           ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 uniform sampler2D tex0;           ///< The current photo.

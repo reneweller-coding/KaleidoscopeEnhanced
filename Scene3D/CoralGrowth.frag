@@ -10,7 +10,7 @@ in vec3  vObj;    ///< Object-space position (from the vertex stage).
 in vec3  vNormal; ///< Surface normal (from the vertex stage).
 in vec3  vView;   ///< View vector (from the vertex stage).
 in float vAge;    ///< 1 = oldest branches, 0 = newest tips
-in float vHeight;
+in float vHeight; ///< Height (from the vertex stage).
 
 /**
  * @file CoralGrowth.frag

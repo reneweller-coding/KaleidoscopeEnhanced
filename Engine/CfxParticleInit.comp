@@ -12,12 +12,13 @@
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( local_size_x = 256 ) in;
 
+/// The particles: position (xy) and velocity (zw).
 layout( std430, binding = 1 ) buffer Parts
 {
     vec4 part[];
 }; // xy = pos, zw = vel
 
-uniform uint count;
+uniform uint count; ///< Number of elements (boids, particles, walkers ...).
 
 /**  PCG random step: advances the state, returns 32 random bits.
  *

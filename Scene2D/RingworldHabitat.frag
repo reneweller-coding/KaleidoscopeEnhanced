@@ -37,9 +37,9 @@ uniform float audioCentroid;  ///< Spectral centroid (brightness of the sound), 
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-uniform float cityP;
-uniform float cloudP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float cityP;  ///< City knob: density of city clusters (0.5..1.5).
+uniform float cloudP; ///< Cloud knob: cloud density (0.5..1.5).
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *
@@ -147,9 +147,9 @@ float fbm( vec3 p )
     return f;
 }
 
-float hitMat = 0.0;
-float cityGlow = 0.0;
-float g_rot = 0.0; ///< how far the ring has turned under us
+float hitMat = 0.0;   ///< Material of the last surface the ray hit (set by the distance field).
+float cityGlow = 0.0; ///< Glow of the city lights at the last hit (set by the distance field).
+float g_rot = 0.0;    ///< how far the ring has turned under us
 
 const float Rad = 100.0; ///< ring radius (the sun sits on the axis)
 const float W = 38.0;    ///< half width of the band

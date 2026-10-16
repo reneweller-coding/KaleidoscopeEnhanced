@@ -44,13 +44,13 @@ uniform float audioMid;      ///< Mid band level, 0..1.
 uniform float audioHigh;     ///< High band level, 0..1.
 uniform float audioFlux;     ///< Spectral flux (how fast the spectrum changes), 0..1.
 
-uniform float speedP; ///< Speed knob, 0..1.
-uniform float warpP;
+uniform float speedP;         ///< Speed knob, 0..1.
+uniform float warpP;          ///< Warp knob: FBM warp intensity multiplier (0 -> 1.0; 0.5..2.0).
 uniform float twistP;         ///< Twist knob, 0..1.
 uniform float hueP;           ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-const vec3 Lw = vec3( 0.2126, 0.7152, 0.0722 );
+const vec3 Lw = vec3( 0.2126, 0.7152, 0.0722 ); ///< Luminance weights (Rec. 709).
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

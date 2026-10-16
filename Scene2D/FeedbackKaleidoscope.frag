@@ -57,8 +57,8 @@ uniform float decayP;  ///< feedback persistence (0 -> 0.997; 0.994..0.999)
 uniform float injectP; ///< fresh-photo injection strength (0 -> 0.05; 0.05..0.13)
 uniform float hueP;    ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-const float Pi = 3.14159265358979; ///< Pi.
-const vec3  Lw = vec3( 0.2126, 0.7152, 0.0722 );
+const float Pi = 3.14159265358979;               ///< Pi.
+const vec3  Lw = vec3( 0.2126, 0.7152, 0.0722 ); ///< Luminance weights (Rec. 709).
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

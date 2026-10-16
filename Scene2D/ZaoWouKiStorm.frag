@@ -40,10 +40,10 @@ uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short 
 uniform float audioMode;      ///< Mode of the music: 0 minor .. 1 major.
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 
-uniform float churnP;
-uniform float strokeP;
-uniform float photoP; ///< Photo knob: how much of the photo shows, 0..1.
-uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float churnP;  ///< Churn knob: warp strength, 0..1.
+uniform float strokeP; ///< Stroke knob: stroke density, 0..1.
+uniform float photoP;  ///< Photo knob: how much of the photo shows, 0..1.
+uniform float hueP;    ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 // ---- shared building blocks (texture pool, noise, shapes) ----
 /**  Pseudo-random number 0..1 from a float.

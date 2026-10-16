@@ -12,9 +12,9 @@
 
 in vec2 aTexel; ///< this agent's texel coordinate (0..1)
 
-uniform sampler2D texAgents;
+uniform sampler2D texAgents; ///< The agents' state (position and heading per texel).
 
-out float vSpecies;
+out float vSpecies; ///< Species (from the vertex stage).
 
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()

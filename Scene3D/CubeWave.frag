@@ -1,8 +1,8 @@
 #version 330 core
 out vec4 fragColor; ///< The pixel's colour (output).
 // CubeWave.frag — dark faces, neon edges (Tron look).  Depth-tested opaque.
-in vec4 vCol; ///< Colour (from the vertex stage).
-in vec3 vCorner;
+in vec4 vCol;    ///< Colour (from the vertex stage).
+in vec3 vCorner; ///< Corner (from the vertex stage).
 
 /**
  * @file CubeWave.frag

@@ -40,10 +40,10 @@ uniform float audioMid;       ///< Mid band level, 0..1.
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-uniform float packetCountP;
-uniform float pycnoclineP;
-uniform float glitterP;
-uniform float roughnessP;
+uniform float packetCountP; ///< Packet count knob: solitons per packet (3.0..8.0).
+uniform float pycnoclineP;  ///< Pycnocline knob: packet contrast (0.6..2.2).
+uniform float glitterP;     ///< Glitter knob: glint strength (0.8..2.5).
+uniform float roughnessP;   ///< Roughness knob: wind roughness texture (0.5..2.0).
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

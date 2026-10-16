@@ -9,10 +9,10 @@ out vec4 fragColor; ///< The pixel's colour (output).
  *   audioBass    -> ice-wave heave
  */
 
-in vec3  vNormal; ///< Surface normal (from the vertex stage).
-in vec3  vWorld;  ///< World position (from the vertex stage).
-in vec2  vUV;     ///< Texture coordinate 0..1 over the screen (from the vertex stage).
-in float vCrevasse;
+in vec3  vNormal;   ///< Surface normal (from the vertex stage).
+in vec3  vWorld;    ///< World position (from the vertex stage).
+in vec2  vUV;       ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+in float vCrevasse; ///< Crevasse (from the vertex stage).
 
 uniform sampler2D tex0;           ///< The current photo.
 uniform sampler2D tex1;           ///< The next photo (cross-faded in by interpolation).

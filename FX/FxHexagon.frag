@@ -21,7 +21,7 @@ uniform float sizeP; ///< hex density (0 -> 320; 160 = chunky mosaic, 480 = fine
 
 float PI = 3.14159265359; ///< Pi.
 float TAU = 2.0 * PI;     ///< Two pi.
-float deg30 = TAU / 12.0;
+float deg30 = TAU / 12.0; ///< Thirty degrees in radians.
 
 // http://www.gamedev.net/page/resources/_/technical/game-programming/coordinates-in-hexagon-based-tile-maps-r1800
 // nearest hexagon sampling, not quite sure if it's correct

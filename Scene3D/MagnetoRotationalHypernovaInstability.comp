@@ -14,12 +14,13 @@ layout( local_size_x = 4, local_size_y = 4, local_size_z = 4 ) in;
  * in the VERTEX stage, not here -- see that file.
  */
 
+/// The output vertex buffer: eight floats per vertex (attribute A, attribute B) that the scene draws.
 layout( std430, binding = 0 ) buffer Verts
 {
     float verts[]; // 8 floats per vertex: attrA.xyzw (pos, fluxIdx), attrB.xyzw (isHaze, -, -, fieldEnergy)
 };
 
-// DrawArraysIndirectCommand: [0] count, [1] instanceCount, [2] first, [3] baseInstance, [4] rawCount
+/// DrawArraysIndirectCommand: [0] count, [1] instanceCount, [2] first, [3] baseInstance, [4] rawCount
 layout( std430, binding = 1 ) buffer Cmd
 {
     uint cmd[];
@@ -39,8 +40,8 @@ uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
 // The scene projection: 55 deg vertical FOV (see Scene3DShader::draw).  The
 // generator has no `resolution`; the ejecta haze is laid out for 16:9 and the
 // vertex stage stretches x for the actual aspect.
-const float TanY = 0.5206;
-const float Asp = 1.7778;
+const float TanY = 0.5206; ///< Tangent of half the vertical field of view (the scene projection's 55 degrees).
+const float Asp = 1.7778;  ///< Assumed screen aspect (16:9; this stage does not know the real one).
 
 const uint Strands = 192u;  ///< jet + torus strands
 const uint Branches = 288u; ///< + 96 ejecta-haze branches; x 64 x 6 = 110592 verts
@@ -81,8 +82,8 @@ void writeVertex( uint slot, vec3 p, float e1, float e2, float isHaze )
     verts[o + 7u] = e2;
 }
 
-// The vert stage tilts the world by 0.55 rad about X before projecting, so the
-// camera looks along this world-space axis.
+/// The vert stage tilts the world by 0.55 rad about X before projecting, so the
+/// camera looks along this world-space axis.
 const vec3 ViewAxis = vec3( 0.0, 0.52269, 0.85252 );
 
 /**  Appends a thick line segment (two triangles) to the output buffer (compute stage).

@@ -40,10 +40,10 @@ uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short 
 uniform float audioMode;      ///< Mode of the music: 0 minor .. 1 major.
 uniform float audioHigh;      ///< High band level, 0..1.
 
-uniform float cellP;  ///< Cell size knob, 0..1.
-uniform float twistP; ///< Twist knob, 0..1.
-uniform float photoZoomP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float cellP;      ///< Cell size knob, 0..1.
+uniform float twistP;     ///< Twist knob, 0..1.
+uniform float photoZoomP; ///< Photo zoom knob, 0..1.
+uniform float hueP;       ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 // ---- shared building blocks (texture pool, noise, shapes) ----
 /**  Pseudo-random number 0..1 from a float.

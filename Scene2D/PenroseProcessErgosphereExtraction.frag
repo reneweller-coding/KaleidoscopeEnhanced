@@ -40,8 +40,8 @@ uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
 
 uniform float spinP; ///< Spin knob, 0..1.
-uniform float ergoP;
-uniform float jetP;
+uniform float ergoP; ///< Ergo knob: ergosphere oblate deformation scale, 0.5..1.8.
+uniform float jetP;  ///< Jet knob: escaping energy beam intensity, 0.6..2.2.
 uniform float lensP; ///< Lens knob, 0..1.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.

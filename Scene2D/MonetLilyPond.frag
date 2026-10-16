@@ -36,9 +36,9 @@ uniform float audioLevel;        ///< Overall loudness, 0..1.
 uniform float audioValence;      ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioChromaHue;    ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-uniform float padsP;
-uniform float strokeP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float padsP;   ///< Pads knob: how many pads, 0..1.
+uniform float strokeP; ///< Stroke knob: stroke size, 0..1.
+uniform float hueP;    ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *
@@ -127,7 +127,10 @@ float fbm( vec2 p )
     return v;
 }
 
-float g_T = 0.0, g_pads = 0.5, g_swell = 0.0;
+/** @{ */
+float g_T = 0.0, g_pads = 0.5, g_swell = 0.0; ///< g_T: The scene's clock this frame; g_pads: Share of lily pads this
+                                              ///< frame, 0..1; g_swell: The swell this frame, 0..1.
+/** @} */
 
 /**  The pads: clusters on a jittered lattice drifting with the current.
  *

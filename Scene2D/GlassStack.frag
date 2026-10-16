@@ -47,9 +47,9 @@ uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unw
 
 uniform float camDistP; ///< Camera distance knob, 0..1.
 uniform float spreadP;  ///< Spread knob, 0..1.
-uniform float shellsP;
-uniform float glassP;
-uniform float glowP; ///< Glow / afterglow knob, 0..1.
+uniform float shellsP;  ///< Shells knob: how many panes, 0.45..1.
+uniform float glassP;   ///< Glass knob: glass density, 0.4..1.
+uniform float glowP;    ///< Glow / afterglow knob, 0..1.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *
@@ -91,12 +91,12 @@ float hash11( float n )
     return fract( sin( n * 127.1 ) * 43758.5453 );
 }
 
-const int Np = 7;
-mat3      g_R[Np];
-vec3      g_C[Np];
-vec3      g_H[Np];
-vec3      g_col[Np];
-int       g_n = 7;
+const int Np = 7;    ///< Number of glass panes.
+mat3      g_R[Np];   ///< Rotation of each glass pane this frame.
+vec3      g_C[Np];   ///< Centre of each glass pane this frame.
+vec3      g_H[Np];   ///< Half size of each glass pane.
+vec3      g_col[Np]; ///< Colour of each glass pane.
+int       g_n = 7;   ///< Number of panes this frame.
 
 /**  Rotation matrix about y.
  *

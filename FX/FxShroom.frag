@@ -13,11 +13,11 @@ uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpol
 uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 uniform float     audioAdvance;  ///< music advances the smear flow
 uniform float     audioSwell;    ///< Slow loudness envelope, 0..1 (seconds).
-uniform float     scale;
-uniform float     speed;
-uniform int       negativeU;
-uniform int       negativeV;
-uniform float     scaleFactor;
+uniform float     scale;         ///< Scale of the wobble offset.
+uniform float     speed;         ///< Speed of the motion.
+uniform int       negativeU;     ///< 1: the u offset is inverted.
+uniform int       negativeV;     ///< 1: the v offset is inverted.
+uniform float     scaleFactor;   ///< Strength of the offset.
 // const float scale = 0.02;
 
 

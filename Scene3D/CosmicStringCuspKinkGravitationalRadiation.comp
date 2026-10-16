@@ -21,12 +21,13 @@ layout( local_size_x = 4, local_size_y = 4, local_size_z = 4 ) in;
  * coordinate across the cord (-1..+1), attrB.w = cusp glow.
  */
 
+/// The output vertex buffer: eight floats per vertex (attribute A, attribute B) that the scene draws.
 layout( std430, binding = 0 ) buffer Verts
 {
     float verts[]; // 8 floats per vertex: attrA.xyzw, attrB.xyzw
 };
 
-// DrawArraysIndirectCommand: [0] count, [1] instanceCount, [2] first, [3] baseInstance, [4] rawCount
+/// DrawArraysIndirectCommand: [0] count, [1] instanceCount, [2] first, [3] baseInstance, [4] rawCount
 layout( std430, binding = 1 ) buffer Cmd
 {
     uint cmd[];
@@ -43,17 +44,17 @@ uniform float audioMid;     ///< Mid band level, 0..1.
 uniform float audioHigh;    ///< High band level, 0..1.
 uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
 
-// Preset params (the generator gets the scene's <float> uniforms by name).
+/// Preset params (the generator gets the scene's `<float>` uniforms by name).
 uniform float lensingP;
 
 // The scene projection: 55 deg vertical FOV (see Scene3DShader::draw).  The
 // layout aspect is a shade wider than 16:9 so the outer column of loops still
 // reaches the edge of a wider display.
-const float TanY = 0.5206;
-const float Aspect = 1.85;
+const float TanY = 0.5206; ///< Tangent of half the vertical field of view (the scene projection's 55 degrees).
+const float Aspect = 1.85; ///< Assumed screen aspect (16:9; this stage does not know the real one).
 
-const uint Loops = 160u;
-const uint Segs = 64u;
+const uint Loops = 160u; ///< Number of string loops.
+const uint Segs = 64u;   ///< Segments per loop.
 
 /**  Pseudo-random number 0..1 from a float.
  *

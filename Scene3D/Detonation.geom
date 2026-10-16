@@ -16,13 +16,14 @@
 // epicentre across the surface of the sphere, so shards lift in a travelling
 // wave and settle back behind it, instead of the whole shell pulsing at once.
 // -----------------------------------------------------------------------
+/// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( triangles ) in;
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( triangle_strip, max_vertices = 3 ) out;
 
-in vec3 gObj[];
-in vec4 gRnd[];
-in vec2 gUV[];
+in vec3 gObj[]; ///< Obj (from the geometry stage).
+in vec4 gRnd[]; ///< Rnd (from the geometry stage).
+in vec2 gUV[];  ///< UV (from the geometry stage).
 
 out vec3  vNormal; ///< Surface normal (from the vertex stage).
 out vec3  vView;   ///< View vector (from the vertex stage).
@@ -53,8 +54,8 @@ const float Pi = 3.14159265; ///< Pi.
 // dust, not as a breaking shell.  So the shards are PLATES: a coarse grid laid
 // over the surface, with every triangle inside a plate sharing one centre, one
 // axis and one throw, which makes them fly as a single rigid chip.
-const float PlateW = 28.0;
-const float PlateH = 15.0;
+const float PlateW = 28.0; ///< Plates across the picture.
+const float PlateH = 15.0; ///< Plates down the picture.
 
 /**  Rotate v around a unit axis by angle a (Rodrigues).
  *

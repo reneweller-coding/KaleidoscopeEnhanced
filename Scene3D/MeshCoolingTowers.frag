@@ -38,10 +38,10 @@ in vec3  vNormal; ///< Surface normal (from the vertex stage).
 in vec3  vPos;    ///< Position (from the vertex stage).
 in vec3  vLocal;  ///< Object-space position (from the vertex stage).
 in float vBg;     ///< Background flag (from the vertex stage).
-in float vInst;
+in float vInst;   ///< Inst (from the vertex stage).
 
-const float Ground = -22.0;
-const float TowerH = 60.0;
+const float Ground = -22.0; ///< Height of the ground (world units).
+const float TowerH = 60.0;  ///< Height of the towers (world units).
 
 /**  The three towers' feet, shared with the fragment stage.
  *
@@ -247,7 +247,7 @@ vec3 lightAt( vec3 P, vec3 n, vec3 lp, vec3 lc, float range )
     return lc * max( dot( n, d ), 0.0 ) * att;
 }
 
-const vec3 SunDir = vec3( 0.75, 0.10, -0.55 ); // the last sun, low, right, behind the camera
+const vec3 SunDir = vec3( 0.75, 0.10, -0.55 ); ///< the last sun, low, right, behind the camera
 
 /**  The sky colour for a direction.
  *

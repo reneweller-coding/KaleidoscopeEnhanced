@@ -1,9 +1,9 @@
 #version 330 core
 out vec4 fragColor; ///< The pixel's colour (output).
 
-in vec3  vPos; ///< Position (from the vertex stage).
-in float vCirc;
-in float vRingID;
+in vec3  vPos;    ///< Position (from the vertex stage).
+in float vCirc;   ///< Circ (from the vertex stage).
+in float vRingID; ///< Ring ID (from the vertex stage).
 
 /**
  * @file SuperfluidVortexTangle.frag
@@ -27,9 +27,9 @@ uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short 
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 
-uniform float glowP; ///< Glow / afterglow knob, 0..1.
-uniform float vortexP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float glowP;   ///< Glow / afterglow knob, 0..1.
+uniform float vortexP; ///< Vortex knob, 0.5..2.
+uniform float hueP;    ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

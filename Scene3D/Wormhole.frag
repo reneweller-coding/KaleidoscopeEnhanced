@@ -13,10 +13,10 @@ uniform float audioKick;        ///< Kick-drum envelope, 0..1 (fast attack, shor
 uniform float audioDrop;        ///< Drop envelope: high after a detected drop, decaying.
 uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-in vec2  vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
-in float vDist; ///< Distance (from the vertex stage).
-in float vAng;
-in float vLensAmt;
+in vec2  vUV;      ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+in float vDist;    ///< Distance (from the vertex stage).
+in float vAng;     ///< Ang (from the vertex stage).
+in float vLensAmt; ///< Lens amt (from the vertex stage).
 
 /**
  * @file Wormhole.frag

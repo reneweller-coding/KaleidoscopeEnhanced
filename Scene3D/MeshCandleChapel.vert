@@ -27,9 +27,9 @@ out vec3  vNormal; ///< Surface normal (from the vertex stage).
 out vec3  vPos;    ///< Position (from the vertex stage).
 out vec3  vLocal;  ///< Object-space position (from the vertex stage).
 out float vBg;     ///< Background flag (from the vertex stage).
-out float vHash;
+out float vHash;   ///< Hash (from the vertex stage).
 
-const float Ground = -13.0;
+const float Ground = -13.0; ///< Height of the ground (world units).
 
 /**  Pseudo-random number 0..1 from a float.
  *

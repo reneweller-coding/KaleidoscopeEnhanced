@@ -11,10 +11,10 @@ in vec4 attrB; ///< Vertex attribute B (meaning per geometry kind; e.g. normal o
 
 uniform int meshVertexCount; ///< Vertices of the scene's mesh.
 
-out vec3  gPos;
-out vec3  gNormal;
-out vec2  gUV;
-out float gBg;
+out vec3  gPos;    ///< Positions of the four magnets.
+out vec3  gNormal; ///< Normal (from the geometry stage).
+out vec2  gUV;     ///< UV (from the geometry stage).
+out float gBg;     ///< Bg (from the geometry stage).
 
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()

@@ -13,9 +13,9 @@ uniform float eyeOff;    ///< Stereo eye offset (0 in mono).
 uniform float time;      ///< Seconds since the program started (never reset; see sceneTime).
 uniform float audioKick; ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 
-out vec3  vPos; ///< Position (from the vertex stage).
-out float vRefract;
-out float vSector;
+out vec3  vPos;     ///< Position (from the vertex stage).
+out float vRefract; ///< Refract (from the vertex stage).
+out float vSector;  ///< Sector (from the vertex stage).
 
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()

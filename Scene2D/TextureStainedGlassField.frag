@@ -41,10 +41,10 @@ uniform float audioMode;      ///< Mode of the music: 0 minor .. 1 major.
 uniform float audioBass;      ///< Bass band level, 0..1.
 uniform float audioHigh;      ///< High band level, 0..1.
 
-uniform float sizeP; ///< Size knob, 0..1.
-uniform float leadP;
-uniform float saturateP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float sizeP;     ///< Size knob, 0..1.
+uniform float leadP;     ///< Lead knob: lead width, 0..1.
+uniform float saturateP; ///< Saturate knob: colour depth, 0..1.
+uniform float hueP;      ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 // ---- shared building blocks (texture pool, noise, shapes) ----
 /**  Pseudo-random number 0..1 from a float.

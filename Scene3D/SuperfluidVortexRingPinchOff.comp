@@ -22,12 +22,13 @@ layout( local_size_x = 4, local_size_y = 4, local_size_z = 4 ) in;
  * distance.  The width vector is billboarded against the view direction.
  */
 
+/// The output vertex buffer: eight floats per vertex (attribute A, attribute B) that the scene draws.
 layout( std430, binding = 0 ) buffer Verts
 {
     float verts[]; // 8 floats per vertex: attrA.xyzw (pos, depth), attrB.xyzw (pad, pinchGlow)
 };
 
-// DrawArraysIndirectCommand: [0] count, [1] instanceCount, [2] first, [3] baseInstance, [4] rawCount
+/// DrawArraysIndirectCommand: [0] count, [1] instanceCount, [2] first, [3] baseInstance, [4] rawCount
 layout( std430, binding = 1 ) buffer Cmd
 {
     uint cmd[];
@@ -43,22 +44,22 @@ uniform float audioBass;    ///< Bass band level, 0..1.
 uniform float audioMid;     ///< Mid band level, 0..1.
 uniform float audioHigh;    ///< High band level, 0..1.
 uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-// Documented in the .frag's per-activation block but read by nobody until now:
-// the Kelvin-wave cascade is a property of the FILAMENT, so it belongs here.
+/// Documented in the .frag's per-activation block but read by nobody until now:
+/// the Kelvin-wave cascade is a property of the FILAMENT, so it belongs here.
 uniform float kelvinP;
 
 // The scene projection: 55 deg vertical FOV, and the camera distance the
 // companion .vert applies (vp.z += Cam).  No `resolution` uniform reaches a
 // generator program, so the layout assumes a 16:9 frame; a narrower frame simply
 // pushes the outermost lattice column past the edge.
-const float TanY = 0.5206;
-const float Aspect = 1.7778;
-const float Cam = 4.5;
+const float TanY = 0.5206;   ///< Tangent of half the vertical field of view (the scene projection's 55 degrees).
+const float Aspect = 1.7778; ///< Assumed screen aspect (16:9; this stage does not know the real one).
+const float Cam = 4.5;       ///< Distance the vertex stage pushes the scene back from the camera.
 
-const uint Cols = 14u;
-const uint Rows = 12u;
+const uint Cols = 14u;          ///< Columns of the vortex-ring grid.
+const uint Rows = 12u;          ///< Rows of the vortex-ring grid.
 const uint Rings = Cols * Rows; ///< 168 rings
-const uint Segs = 64u;
+const uint Segs = 64u;          ///< Segments per loop.
 
 /**  Pseudo-random number 0..1 from a float.
  *

@@ -17,19 +17,20 @@
 // EDGE's midpoint alone — never from the patch centre, which differs on the
 // two sides of a shared edge.
 // -----------------------------------------------------------------------
+/// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( vertices = 4 ) out;
 
-in vec2  vUV[];   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
-in vec4  vSeed[]; ///< Per-instance random seed (from the vertex stage).
-out vec2 tcUV[];
-out vec4 tcSeed[];
+in vec2  vUV[];    ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+in vec4  vSeed[];  ///< Per-instance random seed (from the vertex stage).
+out vec2 tcUV[];   ///< UV (from the tessellation control stage).
+out vec4 tcSeed[]; ///< Seed (from the tessellation control stage).
 
 // The sheet's world size.  Shared by the control and evaluation stages —
 // if these ever disagree, the two stages place the same patch in different
 // spots and the surface tears along every seam.
-const vec2    Extent = vec2( 220.0, 320.0 );
-uniform float camHP;   ///< preset: camera height above the water
-uniform float detailP; ///< preset: tessellation quality
+const vec2    Extent = vec2( 220.0, 320.0 ); ///< Size of the tessellated ground patch (x, z in world units).
+uniform float camHP;                         ///< preset: camera height above the water
+uniform float detailP;                       ///< preset: tessellation quality
 
 /**  Same flat mapping the evaluation shader starts from: z runs AHEAD of the camera, matching the engine's -z
  * projection convention.

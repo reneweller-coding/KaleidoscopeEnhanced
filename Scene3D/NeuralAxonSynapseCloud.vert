@@ -36,13 +36,13 @@ uniform float audioFlux;         ///< Spectral flux (how fast the spectrum chang
 uniform float audioChromaHue;    ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioSpectrum[32]; ///< Spectrum bands, 0..1.
 
-uniform float neuralP;
-uniform float pulseP;
-uniform float speedP; ///< Speed knob, 0..1.
-uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float neuralP; ///< Neural knob, 0.5..2.
+uniform float pulseP;  ///< Pulse knob, 0.5..2.2.
+uniform float speedP;  ///< Speed knob, 0..1.
+uniform float hueP;    ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-out vec4  vColor;
-out float vSize;
+out vec4  vColor; ///< Color (from the vertex stage).
+out float vSize;  ///< Size (from the vertex stage).
 
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()

@@ -17,10 +17,11 @@
 // spectroHead advances continuously, and that sliding is what the eye reads as
 // flying forward.
 // -----------------------------------------------------------------------
+/// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout( quads, fractional_odd_spacing, ccw ) in;
 
-in vec2 tcUV[];
-in vec4 tcSeed[];
+in vec2 tcUV[];   ///< UV (from the tessellation control stage).
+in vec4 tcSeed[]; ///< Seed (from the tessellation control stage).
 
 out vec3  vWorld;  ///< World position (from the vertex stage).
 out vec3  vNormal; ///< Surface normal (from the vertex stage).
@@ -36,21 +37,21 @@ uniform float audioSwell;   ///< slow envelope, the calm replacement for the fas
 uniform float audioSubBass; ///< Sub-bass band level, 0..1.
 uniform float audioLevel;   ///< Overall loudness, 0..1.
 
-uniform sampler2D texSpectro;
+uniform sampler2D texSpectro;  ///< Spectrogram ring: band energies (x) over time (y).
 uniform float     spectroHead; ///< T coordinate of "now", continuous
-uniform float     spectroFill;
+uniform float     spectroFill; ///< How full the spectrogram ring texSpectro is, 0..1 (after a scene start).
 
 uniform float camHP;   ///< preset: eye height above the floor
 uniform float time;    ///< Seconds since the program started (never reset; see sceneTime).
 uniform float heightP; ///< preset: how tall the music builds
 uniform float wallP;   ///< preset: the canyon's own V profile
 
-// Must match SpectroCanyon.tesc exactly, or the two stages place the same
-// patch in different spots and the walls tear along every seam.
+/// Must match SpectroCanyon.tesc exactly, or the two stages place the same
+/// patch in different spots and the walls tear along every seam.
 const vec2 Extent = vec2( 78.0, 260.0 );
 
-// How much of the ring the canyon's depth spans.  Below 1 so the far end never
-// wraps into the newest row.
+/// How much of the ring the canyon's depth spans.  Below 1 so the far end never
+/// wraps into the newest row.
 const float AgeSpan = 0.86;
 
 /**  Height of the canyon: the spectrogram mirrored across the centre line.

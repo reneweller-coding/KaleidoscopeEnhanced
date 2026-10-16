@@ -154,8 +154,8 @@ float ridged( vec3 p )
     return f;
 }
 
-float hitMat = 0.0;
-float fissureGlow = 0.0;
+float hitMat = 0.0;      ///< Material of the last surface the ray hit (set by the distance field).
+float fissureGlow = 0.0; ///< Glow of the fissures at the last hit (set by the distance field).
 
 /**  The scene's distance field: distance from p to the nearest surface.
  *

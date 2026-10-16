@@ -43,7 +43,7 @@ uniform float audioRoughness; ///< Roughness (dissonance) of the sound, 0..1.
 uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 
-uniform float speciesP;
+uniform float speciesP; ///< Species knob: how many species/rings, 0..1.
 uniform float densityP; ///< Density knob, 0..1.
 uniform float sizeP;    ///< Size knob, 0..1.
 uniform float hueP;     ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.

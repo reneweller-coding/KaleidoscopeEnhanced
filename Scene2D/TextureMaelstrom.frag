@@ -44,10 +44,10 @@ uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioBass;      ///< Bass band level, 0..1.
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 
-uniform float armsP;
-uniform float windP;
-uniform float foamP;
-uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float armsP; ///< Arms knob: base arm count, 0..1.
+uniform float windP; ///< Wind knob: base winding, 0..1.
+uniform float foamP; ///< Foam knob: foam amount, 0..1.
+uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 // @expr foamP = clamp(0.3 + 0.5*swell + 0.2*seed2, 0.0, 1.0)
 
 // ---- shared building blocks (texture pool, noise, shapes) ----

@@ -39,10 +39,10 @@ uniform float audioMid;       ///< Mid band level, 0..1.
 uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
 
-uniform float spiralDensityP;
-uniform float waveSpeedP;
-uniform float curvP;
-uniform float redoxContrastP;
+uniform float spiralDensityP; ///< Spiral density knob: number of active chemical spiral centers (2.0..8.0).
+uniform float waveSpeedP;     ///< Wave speed knob: chemical wavefront propagation velocity (0.6..2.2).
+uniform float curvP;          ///< Curv knob: Archimedean spiral wave curvature, 4..16.
+uniform float redoxContrastP; ///< Redox contrast knob: chemical oxidation contrast, 0.8..2.5.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

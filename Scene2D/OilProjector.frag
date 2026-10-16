@@ -48,11 +48,11 @@ uniform float audioBass;      ///< Bass band level, 0..1.
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 uniform float audioHigh;      ///< High band level, 0..1.
 
-uniform float projP;
-uniform float focusP;
-uniform float bubbleP;
-uniform float scaleP; ///< Scale knob.
-uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float projP;   ///< Proj knob: how many projectors, 0..1.
+uniform float focusP;  ///< Focus knob: sharp or dreamy focus, 0..1.
+uniform float bubbleP; ///< Bubble knob: amount of air bubbles, 0..1.
+uniform float scaleP;  ///< Scale knob.
+uniform float hueP;    ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 // @expr focusP = clamp(0.55 + 0.25*seed2, 0.0, 1.0)
 
 // ---- shared building blocks (texture pool, noise, shapes) ----
@@ -395,7 +395,12 @@ void finish( vec3 col )
     fragColor = vec4( clamp( t, 0.0, 1.0 ), 1.0 );
 }
 
-float gHeat, gVisc, gBlob, gRough, gSharp;
+/** @{ */
+float gHeat, gVisc, gBlob, gRough, gSharp; ///< gHeat: Phase of the heating (integrated); gVisc: Viscosity this frame
+                                           ///< (scale of the noise); gBlob: Size of the oil blobs this frame (the
+                                           ///< swell); gRough: The music's roughness this frame, 0..1; gSharp: Width of
+                                           ///< the oil edges this frame (smaller: sharper; from focusP).
+/** @} */
 
 /**  One oil phase: a warped, smooth field thresholded into round blobs.
  *

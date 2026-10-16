@@ -10,9 +10,9 @@
 in vec4 attrA; ///< xy = grid (u,v)
 in vec4 attrB; ///< per-cell hashes
 
-out vec3 gObj;
-out vec4 gRnd;
-out vec2 gUV;
+out vec3 gObj; ///< Obj (from the geometry stage).
+out vec4 gRnd; ///< Rnd (from the geometry stage).
+out vec2 gUV;  ///< UV (from the geometry stage).
 
 const float Pi = 3.14159265; ///< Pi.
 

@@ -45,9 +45,9 @@ uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-uniform float cellsP; ///< preset: shard count
-uniform float flyP;   ///< preset: how far shards travel
-uniform float edgeP;
+uniform float cellsP;       ///< preset: shard count
+uniform float flyP;         ///< preset: how far shards travel
+uniform float edgeP;        ///< Edge knob, 0.4..1.
 uniform float audioValence; ///< preset: crack brightness
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.

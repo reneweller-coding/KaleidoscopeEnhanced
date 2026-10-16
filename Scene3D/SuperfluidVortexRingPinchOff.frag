@@ -19,7 +19,7 @@ out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec3  vPos;   ///< Position (from the vertex stage).
 in float vDepth; ///< Depth (from the vertex stage).
-in float vGlow;
+in float vGlow;  ///< Glow (from the vertex stage).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
@@ -35,8 +35,8 @@ uniform float audioCentroid;  ///< Spectral centroid (brightness of the sound), 
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-uniform float pinchGlowP;
-uniform float kelvinP;
+uniform float pinchGlowP; ///< Pinch glow knob: reconnection pinch-off luminance gain, 0.8..2.5.
+uniform float kelvinP;    ///< Kelvin knob: Kelvin wave cascade ripple intensity, 0.6..2.2.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

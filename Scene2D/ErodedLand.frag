@@ -44,8 +44,8 @@ uniform float audioRoughness; ///< 0=consonant .. 1=dissonant -> relief steepnes
 uniform float audioSharpness; ///< 0=dull .. 1=bright/harsh -> sun-glint tightness
 uniform float audioMode;      ///< 0=minor/cold .. 1=major/warm -> sunlight colour
 
-uniform float sunP;
-uniform float waterP;
+uniform float sunP;   ///< Sun knob, 0.3..0.9.
+uniform float waterP; ///< Water knob, 0.3..0.8.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *
@@ -108,9 +108,9 @@ vec3 noised( vec2 p )
                  du * ( vec2( b - a, c - a ) + ( a - b - c + d ) * u.yx ) );
 }
 
-const mat2  M2 = mat2( 1.6, -1.2, 1.2, 1.6 );
-const float Hs = 60.0;   ///< height scale (world units)
-const float Xs = 0.0085; ///< horizontal frequency of the broadest octave
+const mat2  M2 = mat2( 1.6, -1.2, 1.2, 1.6 ); ///< Rotation and scale between two noise octaves.
+const float Hs = 60.0;                        ///< height scale (world units)
+const float Xs = 0.0085;                      ///< horizontal frequency of the broadest octave
 
 /**  Terrain height: each octave is damped by the slope accumulated so far (1 / (1 + |grad|^2)) -- steep flanks stay
  * smooth, flats get detail, crests come out sharp.

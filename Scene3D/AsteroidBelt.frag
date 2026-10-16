@@ -2,8 +2,8 @@
 out vec4 fragColor; ///< The pixel's colour (output).
 // AsteroidBelt.frag — matte rock faces; a faint cool rim keeps silhouettes
 // readable against black space.
-in vec4 vCol; ///< Colour (from the vertex stage).
-in vec3 vCorner;
+in vec4 vCol;    ///< Colour (from the vertex stage).
+in vec3 vCorner; ///< Corner (from the vertex stage).
 
 /**
  * @file AsteroidBelt.frag

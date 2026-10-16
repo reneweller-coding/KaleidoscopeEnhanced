@@ -39,10 +39,10 @@ uniform float audioMid;       ///< Mid band level, 0..1.
 uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
 
-uniform float iterP;
-uniform float sliceP;
-uniform float trapP;
-uniform float hopfP;
+uniform float iterP;  ///< Iter knob: fractal iteration depth & detail, 6..14.
+uniform float sliceP; ///< Slice knob: 4D quaternion hyper-rotation speed, 0.3..1.5.
+uniform float trapP;  ///< Trap knob: orbit trap geometry scale & sharpness, 0.5..2.2.
+uniform float hopfP;  ///< Hopf knob: Hopf fibration fiber winding density, 1..3.5.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

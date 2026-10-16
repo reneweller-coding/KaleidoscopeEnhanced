@@ -39,10 +39,10 @@ uniform float audioMid;       ///< Mid band level, 0..1.
 uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
 
-uniform float latticePitchP;
-uniform float diracPurityP;
-uniform float tunnelGlowP;
-uniform float cylinderRadP;
+uniform float latticePitchP; ///< Lattice pitch knob: dielectric cylinder lattice constant, 3..8.
+uniform float diracPurityP;  ///< Dirac purity knob: accidental degeneracy zero-index purity, 0.6..2.2.
+uniform float tunnelGlowP;   ///< Tunnel glow knob: zero-index phase tunneling luminance gain(0.8..2.5).
+uniform float cylinderRadP;  ///< Cylinder rad knob: dielectric pillar radius scale, 0.15..0.45.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

@@ -39,10 +39,10 @@ uniform float audioMid;       ///< Mid band level, 0..1.
 uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
 
-uniform float machGradP;
-uniform float horizonRadP;
-uniform float hawkingTempP;
-uniform float phononWaveP;
+uniform float machGradP;    ///< Mach grad knob: fluid acceleration Mach gradient dM/dr, 0.8..2.5.
+uniform float horizonRadP;  ///< Horizon rad knob: acoustic event horizon sonic radius, 0.2..0.6.
+uniform float hawkingTempP; ///< Hawking temp knob: analog Hawking radiation brightness gain, 0.8..2.5.
+uniform float phononWaveP;  ///< Phonon wave knob: trapped sound wave ripple frequency, 8..24.
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *
