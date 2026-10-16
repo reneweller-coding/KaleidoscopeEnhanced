@@ -4285,3 +4285,99 @@ any single preset well (fit >= 6: Ambient 177, SpaceAmbient 175, Club 238,
 Noir 153, Psychedelic 260, Galerie 138), so the last hundred or two of every
 preset are acceptable rather than ideal -- in SpaceAmbient down to scenes
 that are merely dark and calm, not cosmic.
+
+## 16.10.2026: shows that run for days
+
+The brief: visualisations that run for hours, better days, without the same
+scenes coming back -- with the 2D and 3D chain labs, in the genre presets.
+
+### What a long run looked like
+
+`Tools/long_run_sim.py` simulates the scheduler over days (no music: no
+section or drop cuts, mood acceptance about 0.6, the complexity budget left
+out). Before: about 41 scene changes an hour, every scene two or three times
+a day, the first scene back after an hour or so, a tenth of all returns
+within 100 minutes. The no-repeat window held min(40, a third of the preset)
+scenes and was lost on every restart. The labs never run out -- millions of
+2D chains, thousands of 3D worlds -- but each was one entry among 400 and
+got under one percent of the time, and walked only when its morphP roll
+came out at 0.5 or more.
+
+### What changed
+
+All four parts sit in `Source/LongRunVariety.h` (Qt- and GL-free, checked by
+`Kaleidoscope.exe -q`) and the places that use it.
+
+- **Lab share** (`labShare="0.35"` in the preset head; SceneScheduler
+  `setLabShare`). The walking labs (EffectShader::isWalkingLab: the shader
+  declares `uniform float walkHost` and lists its classes, the entry's
+  morphP range starts at 0.5) leave the random pick. The lab clock
+  (LabShareClock) books every scene's screen time -- lab time against all
+  time, both decaying with a time constant of three hours -- and calls a lab
+  when the labs are behind their share: never two labs in a row, never the
+  same lab file twice in succession. Shares chosen by the user: Psychedelic
+  50 %, SpaceAmbient and Club 40 %, Allround and Ambient 35 %, Noir 25 %,
+  Galerie 20 % (generator: `LAB_SHARE`). Without the attribute nothing
+  changes (Kettenlabor, Transformationen, the Test benches).
+- **Genre variants of the labs** (generator: `LAB_FLAVOURS`, `LAB_STAY`).
+  The plain lab entries are replaced by variants with the genre's knob
+  ranges, each walking (morphP 0.5..1) and staying 4..18 minutes. The walk
+  now keeps to the entry's ranges (EffectShader::resetChainWalk reads them,
+  `walkTarget()` maps the music's target into them) -- before, a walk could
+  leave the rolled range at its first step. The classes are sorted
+  calm .. wild, so a range is a character:
+
+  | variant | used in | ranges |
+  |---|---|---|
+  | calm | Ambient, SpaceAmbient (2D, tunnel) | chain stages the calmer 60..65 %, worlds 65..70 %, no glowing edges, speed below 0.4, always an afterglow |
+  | wild | Club, Psychedelic (one 2D variant) | chain stages from 30..35 %, look from contour lines on, speed from 0.5, colour field |
+  | colour | Psychedelic | full class ranges, palette from 0.35 toward the colour field, afterglow up to full |
+  | space | SpaceAmbient (3D, slice) | full worlds, chain A to 75 %, slow (speed below 0.35) |
+  | noir | Noir | photo/relief/contour looks, photo colours, grade fade/grey/sepia |
+  | photo | Galerie (2D, 3D; no tunnel) | photo and relief look only, photo colours, sharp texture, the classes before the openings |
+  | full | Allround | the master ranges |
+
+- **Scene memory** (RecentScenes). Three quarters of the preset's hand-made
+  scenes by shader file (at least two left free), refused during the first
+  two thirds of the search as before. It survives a restart: RenderPipeline
+  stores it under `[history]` in kaleidoscope_settings.ini, per preset,
+  whenever a scene has come on screen, and hands it back before the first
+  pick. Labs under a lab share stay out of it.
+- **Class novelty** (`classNovelty()`). The walk draws three targets in the
+  music's region and takes one with odds after the class's learnt taste
+  times its novelty: 0.2 for a class on screen right now, rising linearly to
+  1 after six hours (and for a class never seen). The classes on screen are
+  stamped with the wall clock -- a new one at once, the others every 30 s --
+  into `[classSeen]`, written with the scene memory. Shared by all labs
+  (a class seen in the flat lab counts for the tunnel too).
+
+A scripted run (`KALEIDO_SEED`, `KALEIDO_FREEZE_TIME`, `KALEIDO_SCENE_SWEEP`,
+`KALEIDO_FX_SWEEP`) neither reads nor writes `[history]` and `[classSeen]` and
+weighs no novelty: it must come out the same every time and must not change
+what the viewer's show remembers.
+
+### Result
+
+`python Tools/long_run_sim.py` (72 h, seed 1; "first" is the first return of
+any hand-made scene, "10 %" the gap below which a tenth of the returns fall):
+
+| preset | first return before | after | 10 % before | after | median before | after | labs after |
+|---|---|---|---|---|---|---|---|
+| Ambient | 75 min | 709 min | 98 min | 698 min | 338 min | 811 min | 36.4 % |
+| Club | 79 | 741 | 103 | 756 | 360 | 878 | 40.8 % |
+| Noir | 61 | 604 | 93 | 609 | 318 | 709 | 26.4 % |
+| Psychedelic | 83 | 1031 | 112 | 1020 | 415 | 1187 | 50.7 % |
+| Galerie | 61 | 619 | 104 | 605 | 358 | 708 | 21.4 % |
+| SpaceAmbient | 65 | 760 | 98 | 764 | 335 | 892 | 41.5 % |
+| Allround | 129 | 2128 | 121 | 2083 | 625 | 2336 | 36.4 % |
+
+A hand-made scene now returns after ten to seventeen hours instead of one
+or two (Allround: a day and a half); the labs fill their share within one or
+two points. The longest stretch without a lab is 16..39 minutes.
+
+Checked in the app (Release, offline WAV, scene changes requested through
+the web remote's /api/next, the settings file saved before and restored
+after): Psychedelic alternated hand-made scene and lab with every lab file
+different from the one before and the walk on in every activation; the
+memory was written and came back on the next start ("9 stored"); in Ambient
+all 12 lab walk targets stayed inside the calm ranges.

@@ -392,6 +392,68 @@ PROB_FACTOR = {"Transformationen": (0.4, OPENING_SCENES)}
 # are only the PHOTO pacing).
 LAB_SOLO = {"Kettenlabor": (600, 1800), "Transformationen": (180, 480)}
 
+# ---- Long walking lab stays (16.10.2026) ------------------------------------
+# "Visualisations that run for hours, better days, without the same scenes
+# coming back" (user, 16.10.2026).  The hand-made scenes run out -- some 400 per
+# preset, each back two or three times a day -- the chain labs never do, but
+# they were one entry among 400 and got about one percent of the time.  Each
+# genre preset therefore gives its walking labs a share of the screen time
+# (LAB_SHARE, written as labShare: the scheduler's lab clock calls a lab when
+# the labs are behind, never two in a row -- values chosen by the user) and
+# replaces its lab entries by genre variants (LAB_FLAVOURS): the lab files with
+# the genre's knob ranges.  The walk keeps to an entry's ranges
+# (EffectShader::resetChainWalk), and the classes are sorted calm .. wild, so a
+# range is a character: Ambient walks the calm three fifths, Club the wild
+# half, Galerie stays with the photo and the relief look.  Every variant walks
+# (morphP 0.5..1) and stays LAB_STAY seconds; their probabilities only weigh
+# the variants against each other (which lab, when the clock calls one).
+LAB_SHARE = {"Psychedelic": 0.50, "SpaceAmbient": 0.40, "Club": 0.40, "Allround": 0.35, "Ambient": 0.35,
+             "Noir": 0.25, "Galerie": 0.20}
+LAB_STAY = {"Ambient": (360, 900), "SpaceAmbient": (420, 1080), "Club": (240, 600), "Psychedelic": (300, 900),
+            "Noir": (300, 720), "Galerie": (240, 600), "Allround": (300, 900)}
+# The characters: knob ranges as fractions of the energy-sorted class lists
+# (chainAP..chainDP the 2D chain, spaceP/coreP/bodyP the 3D world, styleP the
+# look: photo | relief | contour lines | flow | glowing edges) and of the plain
+# knobs (speedP flow speed, paletteP photo colours .. colour field, glowP the
+# afterglow from 0.15 up, detailP texture sharpness).  A knob an entry does not
+# have is skipped.
+CALM = {"chainAP": ("0", "0.6"), "chainBP": ("0", "0.65"), "chainCP": ("0", "0.6"), "chainDP": ("0", "0.6"),
+        "spaceP": ("0", "0.7"), "coreP": ("0", "0.65"), "bodyP": ("0", "0.7"),
+        "styleP": ("0", "0.8"), "speedP": ("0", "0.4"), "glowP": ("0.2", "1")}
+WILD = {"chainAP": ("0.35", "1"), "chainBP": ("0.3", "1"), "chainCP": ("0.3", "1"), "chainDP": ("0.35", "1"),
+        "spaceP": ("0.3", "1"), "coreP": ("0.35", "1"),
+        "styleP": ("0.4", "1"), "speedP": ("0.5", "1"), "glowP": ("-0.6", "0.5"), "paletteP": ("0.3", "1")}
+FULL = {}
+COLOUR = {"paletteP": ("0.35", "1"), "glowP": ("0", "1")}
+SPACE = {"chainAP": ("0", "0.75"), "chainDP": ("0", "0.7"), "styleP": ("0", "0.8"), "speedP": ("0", "0.35"),
+         "glowP": ("0", "1")}
+NOIR = {"styleP": ("0", "0.6"), "paletteP": ("0", "0.35"), "speedP": ("0", "0.6"), "glowP": ("-0.6", "0.6")}
+# The gallery: the photograph stays recognisable -- photo and relief look,
+# photo colours, sharp texture, and the classes before the openings (the
+# tunnel-like chainAP classes sit in its upper third, chainCP spiral and
+# tunnel at its end); no tunnel lab.
+PHOTO = {"chainAP": ("0", "0.7"), "chainCP": ("0", "0.85"), "chainDP": ("0", "0.7"), "styleP": ("0", "0.4"),
+         "paletteP": ("0", "0.35"), "detailP": ("0.5", "1"), "speedP": ("0", "0.5"), "glowP": ("-0.6", "0.4")}
+# (lab, probability, ranges, extra mood tag, colour grade)
+LAB_FLAVOURS = {
+    "Ambient": [("ChainLab2D", 0.5, CALM, "calm", ""), ("ChainLabTunnel", 0.35, CALM, "calm", ""),
+                ("ChainLab3D", 0.4, CALM, "calm", ""), ("ChainSlice3D", 0.25, CALM, "calm", "")],
+    "SpaceAmbient": [("ChainLab3D", 0.6, SPACE, "calm", ""), ("ChainSlice3D", 0.45, SPACE, "calm", ""),
+                     ("ChainLabTunnel", 0.3, dict(CALM, speedP=("0", "0.35")), "calm", ""),
+                     ("ChainLab2D", 0.2, dict(CALM, speedP=("0", "0.35")), "calm", "")],
+    "Club": [("ChainLab2D", 0.5, WILD, "aggressive", ""), ("ChainLabTunnel", 0.45, WILD, "aggressive", ""),
+             ("ChainLab3D", 0.4, WILD, "aggressive", ""), ("ChainSlice3D", 0.25, WILD, "aggressive", "")],
+    "Psychedelic": [("ChainLab2D", 0.5, COLOUR, "", ""), ("ChainLab2D", 0.3, WILD, "aggressive", ""),
+                    ("ChainLabTunnel", 0.4, COLOUR, "", ""), ("ChainLab3D", 0.4, COLOUR, "", ""),
+                    ("ChainSlice3D", 0.35, COLOUR, "", "")],
+    "Noir": [("ChainLab2D", 0.5, NOIR, "dark", "fade,grey,sepia"),
+             ("ChainLabTunnel", 0.35, NOIR, "dark", "fade,grey,sepia"),
+             ("ChainLab3D", 0.4, NOIR, "dark", "fade,grey,sepia")],
+    "Galerie": [("ChainLab2D", 0.6, PHOTO, "calm", ""), ("ChainLab3D", 0.35, PHOTO, "calm", "")],
+    "Allround": [("ChainLab2D", 0.45, FULL, "", ""), ("ChainLabTunnel", 0.4, FULL, "", ""),
+                 ("ChainLab3D", 0.4, FULL, "", ""), ("ChainSlice3D", 0.35, FULL, "", "")],
+}
+
 GENRES = [
     ("Ambient",     rule_ambient,     False),
     ("Club",        rule_club,        False),
@@ -430,6 +492,34 @@ scenes = [b for b in blocks if b[0] == "TextureShader"]
 fx     = [b for b in blocks if b[0] == "CombineShader"]
 trans  = [b for b in blocks if b[0] == "TransitionShader"]
 print("master: %d scenes, %d fx, %d transitions" % (len(scenes), len(fx), len(trans)))
+
+def lab_flavour(genre, lab, prob, ranges, mood_tag, grade):
+    """One genre variant of a chain lab (LAB_FLAVOURS): the master entry with the variant's knob ranges, always
+    walking, staying LAB_STAY[genre] seconds -- as a block tuple like the parsed ones."""
+    base = [b for b in scenes if b[1] == lab]
+    if not base:
+        sys.exit("make_genre_configs: %s is not in %s" % (lab, SRC))
+    blk = base[0][3].rstrip("\n")
+    for knob, (lo, hi) in dict(ranges, morphP=("0.5", "1")).items():
+        blk = re.sub(r'(<float name="%s") minValue="[^"]*" maxValue="[^"]*"' % knob,
+                     r'\1 minValue="%s" maxValue="%s"' % (lo, hi), blk)
+    head = blk.split(">", 1)[0]
+    new_head = re.sub(r'probability="[^"]*"', 'probability="%.3g"' % prob, head, count=1)
+    moods = set(base[0][2])
+    if mood_tag and mood_tag not in moods:
+        new_head = re.sub(r'mood="', 'mood="%s,' % mood_tag, new_head, count=1)
+        moods.add(mood_tag)
+    attrs = ('grade="%s" ' % grade if grade else "") + 'minTimeSolo="%d" maxTimeSolo="%d" ' % LAB_STAY[genre]
+    new_head = new_head.replace("<TextureShader ", "<TextureShader " + attrs, 1)
+    return ("TextureShader", lab, moods, new_head + blk[len(head):] + "\n", new_head)
+
+# A knob named in a variant must exist on some lab (a typo would silently leave the range open).
+_lab_knobs = set(re.findall(r'<float name="(\w+)"', "".join(b[3] for b in scenes if b[1] in CHAIN_LABS)))
+for _genre, _variants in LAB_FLAVOURS.items():
+    for _v in _variants:
+        _bad = set(_v[2]) - _lab_knobs
+        if _bad or _v[0] not in CHAIN_LABS:
+            sys.exit("make_genre_configs: LAB_FLAVOURS[%s] names %s" % (_genre, sorted(_bad) or _v[0]))
 
 # The two untagged workhorses must survive every mood filter: FxPlain is the
 # resident pass-through overlay, Crossfade the fallback transition — a genre
@@ -522,9 +612,14 @@ for entry in GENRES:
     fxRule = entry[3] if len(entry) > 3 else rule
     if name in FIT_COLUMN and fit:
         sel_s = select_by_fit(name, rule)
-        GENRE_CHOSEN.update(b[1] for b in sel_s)
     else:
         sel_s = [b for b in scenes if rule(b[2], b[4])]
+    # The genre's lab variants take the place of the plain lab entries.
+    labs = [lab_flavour(name, *v) for v in LAB_FLAVOURS.get(name, [])]
+    if labs:
+        sel_s = [b for b in sel_s if b[1] not in CHAIN_LABS] + labs
+    if name in FIT_COLUMN and fit:
+        GENRE_CHOSEN.update(b[1] for b in sel_s)
     sel_f = [b for b in fx    if fxRule(b[2], b[4]) or b[1] in ALWAYS]
     sel_t = [b for b in trans if fxRule(b[2], b[4]) or b[1] in ALWAYS]
     review = name.startswith("Test")
@@ -545,6 +640,8 @@ for entry in GENRES:
                % (a, bb, c, d))
     if name in SCENE_FADE_MIN:
         tim += ' timeSceneFadeMin="%d"' % SCENE_FADE_MIN[name]
+    if name in LAB_SHARE:
+        tim += ' labShare="%.2f"' % LAB_SHARE[name]
     aud = ' AudioFile="%s"' % REVIEW_AUDIO if review else ""
     out = ['<?xml version="1.0" encoding="utf-8" ?>',
            '<configuration ImageDirectory="%s" ConfigurationName="%s"%s%s%s >'
@@ -556,6 +653,9 @@ for entry in GENRES:
             "  <!-- %d scenes + %d FX overlays + %d transitions, filtered by mood tags -->")
            % ((len(sel_s),) if review else (len(sel_s), len(sel_f), len(sel_t))),
            ""]
+    if labs:
+        out[-1:-1] = ["  <!-- %d walking chain lab variants (LAB_FLAVOURS), %d %% of the screen time (labShare) -->"
+                      % (len(labs), round(100 * LAB_SHARE.get(name, 0)))]
     graded = 0
     for b in sel_s + sel_f + sel_t:
         blk = b[3].rstrip("\n")
@@ -578,5 +678,6 @@ for entry in GENRES:
     out.append("")
     path = "Presets/%s.xml" % name
     open(path, "w", encoding="utf-8", newline="\n").write("\n".join(out))
-    print("%-12s %3d scenes  %2d fx  %2d trans -> %s"
-          % (name, len(sel_s), len(sel_f), len(sel_t), path))
+    print("%-12s %3d scenes  %2d fx  %2d trans%s -> %s"
+          % (name, len(sel_s), len(sel_f), len(sel_t),
+             "  (%d lab variants, %d %% labs)" % (len(labs), round(100 * LAB_SHARE[name])) if labs else "", path))

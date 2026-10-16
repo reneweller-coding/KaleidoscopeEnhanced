@@ -1,6 +1,6 @@
 # Kettenlabor und Transformationen – wie es funktioniert
 
-Stand 01.10.2026 (Branch `phos-cues`). Dieses Dokument erklärt, was die
+Stand 16.10.2026 (Branch `phos-cues`). Dieses Dokument erklärt, was die
 Kettenlabore und die Transformationsketten sind, wie eine Kette aufgebaut ist,
 was die Stufen A, B, C und D enthalten und warum, was „morphP“ und „Wandern“
 bedeuten, wie die Musik eingreift und was die beiden Presets „Kettenlabor“ und
@@ -22,8 +22,11 @@ bedeuten, wie die Musik eingreift und was die beiden Presets „Kettenlabor“ u
 * **morphP** ist der Knopf, der festlegt, *ob und wie stark* gewandert wird.
   In beiden Presets steht er auf 0,5–1, also: alles wandert, gesteuert von der
   App nach der Musik.
-* Gespeichert wird nichts. Fest sind nur der Baukasten (die Klassenlisten im
-  Shader) und die 41 von mir zusammengestellten **benannten Ketten**.
+* Gespeichert werden keine Würfe. Fest sind nur der Baukasten (die
+  Klassenlisten im Shader) und die 41 von mir zusammengestellten **benannten
+  Ketten**. Seit 16.10. merkt sich die App aber, *welche* Szenen und Klassen
+  zuletzt liefen, damit eine Show tagelang laufen kann, ohne sich zu
+  wiederholen (Abschnitte 12 und 13).
 
 ---
 
@@ -624,6 +627,30 @@ bei 3D auch `paletteP` und `camP`).
 | Laufzeit eines Labors | 10–30 min | 3–8 min (benannte Ketten: 20–90 s) |
 | Gedacht als | ein Generator, der stundenlang läuft | Querschnitt durch alle Transformationen |
 
+### Die Labore in den Genre-Presets (seit 16.10.)
+
+Damit die Genre-Presets tagelang laufen können, ohne dass dieselben Szenen
+wiederkommen, bekommen die wandernden Labore dort einen festen **Anteil an der
+Bildzeit** (Preset-Kopf `labShare`): Psychedelic 50 %, SpaceAmbient und Club
+40 %, Allround und Ambient 35 %, Noir 25 %, Galerie 20 %. Der Planer bucht die
+Bildzeit jeder Szene (Zeitkonstante drei Stunden) und ruft ein Labor, sobald
+die Labore hinter ihrem Anteil liegen – nie zwei Labore hintereinander, nie
+zweimal dieselbe Labor-Datei nacheinander. Dazwischen laufen die
+handgemachten Szenen.
+
+Statt der einen Kopie je Labor hat jedes Genre eigene **Varianten** mit
+eigenen Knopf-Bereichen (alle wandern, `morphP` 0,5–1, und bleiben je nach
+Genre 4–18 min). Weil die Klassen nach Energie geordnet sind (Abschnitt 4), ist
+ein Bereich ein Charakter: Ambient wandert nur durch die ruhigeren 60–65 %
+jeder Stufe, Club durch die wilde Hälfte, Galerie bleibt bei Foto- und
+Relief-Look mit Fotofarben und ohne Tunnel-Labor, Noir trägt die
+Fade/Grau/Sepia-Tönung, SpaceAmbient fliegt langsam durch die vollen
+3D-Welten. **Das Wandern hält die Bereiche jetzt ein**: Die App bildet das Ziel
+der Musik in den Bereich des Eintrags ab (vorher konnte schon der erste Schritt
+den gewürfelten Bereich verlassen). Die Tabellen stehen in
+`Tools/make_genre_configs.py` (`LAB_SHARE`, `LAB_FLAVOURS`, `LAB_STAY`), die
+Messung in `docs/engine-internals.md` (16.10.2026).
+
 ---
 
 ## 13. Was gespeichert ist und was neu entsteht
@@ -635,6 +662,15 @@ bei 3D auch `paletteP` und `camP`).
   (`Tools/scenegen`). Auf dem Zielrechner wird nichts generiert, und Python ist
   dort nicht nötig. Die Klassenlisten sind also ein fester Vorrat; das Labor
   kombiniert aus ihm, erfindet aber keine neuen Transformationen.
+* **Gedächtnis (seit 16.10.)**: In `kaleidoscope_settings.ini` stehen unter
+  `[history]` je Preset die zuletzt gezeigten handgemachten Szenen (drei
+  Viertel des Presets; sie kommen erst wieder, wenn sie herausgefallen sind,
+  auch über einen Neustart hinweg) und unter `[classSeen]` für jede Klasse,
+  wann sie zuletzt zu sehen war. Beim Wandern zieht die App drei Ziele im
+  Bereich der Musik und nimmt eines mit Gewichten aus Geschmack mal Neuheit:
+  eine eben gesehene Klasse zählt 0,2, eine sechs Stunden (oder nie) gesehene 1.
+  So kommen über Tage alle Klassen an die Reihe statt immer der Lieblinge der
+  Musik. Testläufe mit `KALEIDO_SEED` lesen und schreiben beides nicht.
 * **Merken (optional)**: Die Taste `f` (oder das Herz der Fernbedienung)
   schreibt den aktuellen Wurf nach `liked_rolls.tsv`.
   `Tools/scenegen/promote_likes.py` friert solche Würfe zu eigenen Szenen
@@ -648,8 +684,10 @@ bei 3D auch `paletteP` und `camP`).
 * ~~Szenendauer 20–90 s~~ – behoben 01.10.: Labore laufen 10–30 min
   (Kettenlabor) bzw. 3–8 min (Transformationen). Der Musik-Tempofaktor des
   Planers verkürzt ein wanderndes Labor nicht mehr.
-* **Einstufiges Wandern** (`morphP` 0,15–0,5, nur in Genre-Presets): Dort wählt
-  der Shader selbst und kennt die Öffnungs-Regel nicht.
+* ~~Einstufiges Wandern in den Genre-Presets~~ – seit 16.10. wandern die
+  Labor-Varianten dort immer (`morphP` 0,5–1). Wer einem Eintrag `morphP`
+  0,15–0,5 gibt, bekommt weiter das einstufige Wandern des Shaders, das die
+  Öffnungs-Regel nicht kennt.
 * ~~Energie-Ordnung ist Handarbeit~~ – seit 02.10. gemessen (Abschnitt 4); die
   Welt-Stufen des 3D-Labors (Raum, Kern, Körper) sind weiter von Hand geordnet.
 * **3D-Leistung**: Seit 01.10. rechnet die App das 3D-Labor in Durchgängen
@@ -675,4 +713,6 @@ bei 3D auch `paletteP` und `camP`).
 | Durchgänge (ein Shader je Transformation), 3D-G-Buffer | `Tools/scenegen/make_chainpass.py` → `Engine/ChainPass/`; `EffectShader.cpp` (`runChainPasses`, `runChain3D`, `geomProgram`) |
 | Programme im Helferprozess, Binär-Cache | `Source/ShaderForge.{h,cpp}`, `Source/ShaderForgeMain.{h,cpp}` |
 | Messlauf über alle Labore | `Tools/perf_labs.py` (`--wav` für Musik) |
-| Presets | `Tools/make_genre_configs.py` → `Presets/Kettenlabor.xml`, `Presets/Transformationen.xml` |
+| Presets | `Tools/make_genre_configs.py` → `Presets/Kettenlabor.xml`, `Presets/Transformationen.xml`, die Labor-Varianten der Genre-Presets (`LAB_FLAVOURS`) |
+| Bildzeit-Anteil, Szenengedächtnis, Klassen-Neuheit | `Source/LongRunVariety.h`; `SceneScheduler.cpp` (`pickScene`); `RenderPipeline.cpp` (`saveHistory`) |
+| Langlauf-Simulation (wann kommt eine Szene wieder?) | `Tools/long_run_sim.py` |
