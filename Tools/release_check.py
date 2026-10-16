@@ -4,7 +4,9 @@
 Steps (each with its own threshold; --skip leaves steps out):
   shaders    Tools/shadercheck.py -- every shader compiles and links with the real driver
   shaderdoc  Tools/doc_shaders.py --check -- the shader Doxygen comments are current
-  doxygen    Doxygen with EXTRACT_ALL=NO -- no undocumented C++ (if doxygen is installed)
+  layout     Tools/cgvr_format.py --check -- C++ and GLSL in the CGVR layout (docs/cgvr-guidelines.md)
+  doxygen    Doxygen with EXTRACT_ALL=NO and WARN_NO_PARAMDOC -- no undocumented member, parameter or
+             return value in C++ or GLSL (if doxygen is installed)
   chain      Tools/chain_regress.py --every 6 -- chain runner and uber shader identical
   perf       Tools/perf_labs.py with music -- fps median >= 100, GPU p90 within budget
   snapshots  Tools/scene_snapshots.py render --jobs 3 + compare against the
@@ -46,6 +48,13 @@ def step_shaderdoc():
     return ok, out.strip().splitlines()[-1] if out.strip() else "?", dt
 
 
+def step_layout():
+    rc, out, dt = run([PY, "Tools/cgvr_format.py", "--check"], 1800)
+    last = [l for l in out.splitlines() if l.startswith("files:")]
+    msg = last[-1] if last else out[-300:]
+    return rc == 0 and "changed" not in msg and "refused" not in msg, msg, dt
+
+
 def step_doxygen():
     if not os.path.exists(DOXYGEN):
         return None, "doxygen not installed -- skipped", 0.0
@@ -53,14 +62,16 @@ def step_doxygen():
     os.makedirs(tmp, exist_ok=True)
     cfg = io.open(os.path.join(ROOT, "Doxyfile"), encoding="utf-8", errors="replace").read()
     cfg += ("\nOUTPUT_DIRECTORY = %s\nGENERATE_HTML = NO\nGENERATE_LATEX = NO\nQUIET = YES\nEXTRACT_ALL = NO\n"
-            "EXTRACT_PRIVATE = YES\nEXTRACT_STATIC = YES\nWARN_LOGFILE = %s/warn.txt\n" % (tmp.replace("\\", "/"), tmp.replace("\\", "/")))
+            "EXTRACT_PRIVATE = YES\nEXTRACT_STATIC = YES\nWARN_NO_PARAMDOC = YES\nWARN_LOGFILE = %s/warn.txt\n"
+            % (tmp.replace("\\", "/"), tmp.replace("\\", "/")))
     io.open(os.path.join(tmp, "Doxyfile"), "w", encoding="utf-8").write(cfg)
     t = time.time()
     subprocess.run([DOXYGEN, os.path.join(tmp, "Doxyfile")], cwd=ROOT, capture_output=True, timeout=1800)
     warn = io.open(os.path.join(tmp, "warn.txt"), encoding="utf-8", errors="replace").read().splitlines()
     cpp = [w for w in warn if re.search(r"/(Source|PresetEditor|SetupTool)/", w.replace("\\", "/"))]
-    shader = [w for w in warn if "not documented" in w and w not in cpp]
-    return len(cpp) == 0, "C++: %d warning(s); shaders: %d undocumented (informational)" % (len(cpp), len(shader)), time.time() - t
+    shader = [w for w in warn if w not in cpp and ": warning:" in w]
+    return len(cpp) == 0 and len(shader) == 0, "C++: %d warning(s); shaders: %d warning(s)" % (len(cpp), len(shader)), \
+        time.time() - t
 
 
 def step_chain():
@@ -105,7 +116,7 @@ def main():
     ap.add_argument("--label", default=datetime.date.today().isoformat(), help="name of this snapshot set")
     a = ap.parse_args()
     sys.stdout.reconfigure(encoding="utf-8")
-    steps = [("shaders", step_shaders), ("shaderdoc", step_shaderdoc), ("doxygen", step_doxygen),
+    steps = [("shaders", step_shaders), ("shaderdoc", step_shaderdoc), ("layout", step_layout), ("doxygen", step_doxygen),
              ("chain", step_chain), ("perf", step_perf), ("snapshots", lambda: step_snapshots(a.label))]
     rows, red = [], 0
     for name, fn in steps:

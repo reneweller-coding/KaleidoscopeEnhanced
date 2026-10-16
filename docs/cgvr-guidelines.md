@@ -12,7 +12,7 @@ readable, robust or maintainable; every such case is listed below with its reaso
 |---|---|
 | Layout | `python Tools/cgvr_format.py` (clang-format with `.clang-format`, then `Tools/clang-format-wrap120.yaml` on long lines only) |
 | Proof that a reformat changed layout only | `python Tools/cgvr_format.py --verify <git ref>`: same tokens, same comment words, same run-time comment directives |
-| Generated shaders | `Tools/scenegen/gen.py` and `make_chainpass.py` write their output through `cgvr_format.format_text()` |
+| Generated shaders | `Tools/scenegen/gen.py` and `make_chainpass.py` write their output through `doc_shaders.annotate()` (comments) and `cgvr_format.format_text()` (layout) |
 
 ## Layout
 
@@ -46,6 +46,8 @@ Same tokens are not enough where a program searches the shader *text*. These con
 | `EffectShader::parseChainSource()` | `const float chainAP = 0.4752;` (frozen likes) | lines starting with `const float `; these names mirror the knob uniforms and are not renamed |
 | `EffectShader::usesSceneLod()` | a `textureLod( tex0, ... )` call | `callsWithFirstArg()`: spaces between name, parenthesis and argument do not matter |
 | `EffectShader` constructor | `// @chainbake`, `// @chain3d` | substring of a comment line |
+| `shaderVariantStart()` (`shader_setup.cpp`) | the `#version` line | a variant's `#define`s go in after the first line, so `#version` stays first and the file header follows it |
+| `Tools/make_catalog.py` | the file header's `@brief` and description | `header_comment()`: the banner skipped, `@author` dropped |
 | `Tools/scenegen/register_new.py` | `uniform float <knob>P;` | `uniform\s+float\s+(\w+P)\s*;` |
 | `Tools/scenegen/make_chainpass.py` | the chain labs' functions and statements | reads the labs from `gen.assemble()`, i.e. before formatting |
 
@@ -209,6 +211,45 @@ underscores are reserved).
 | Every file has the template header | `Source/mainwindow.h` keeps uic's header | It is generated from `mainwindow.ui`; uic overwrites it |
 | One author line | Files with someone else's code name both: the original author and the adaptation | Credit belongs to both |
 | — | Parameters a definition leaves unnamed (`resizeGL( int, int )`, unused `src` in `ComputeFX::stepMetal`) stay unnamed there | Naming them would bring back the unused-parameter warning; the declaration names and documents them |
+
+## Comments (GLSL)
+
+Every shader starts like a C++ source: the `#version` line, then the banner of `template.cpp` with the file's name
+and the `/*! @file` block -- a one-line `@brief`, the description as its author wrote it, and `@author`. Shaders
+built on someone else's work name the original author next to the adaptation: kishimisu (CC BY-NC-SA 4.0) for the
+eleven scenes adapted from their Shadertoy pieces, Inigo Quilez (CC BY-NC-SA 3.0) where his code is contained, "an
+unknown Shadertoy author" where the original was pasted without a name.
+
+Every top-level function carries the block of `template-comments.cpp` (as in C++), every top-level declaration a
+description:
+
+| What | How |
+|---|---|
+| Functions | The comment above the function -- also a plain `//` paragraph -- in the template's order; a parameter's direction is its GLSL qualifier: `out` is `(out)`, `inout` `(in,out)`, everything else `(in)` |
+| Uniforms, varyings, constants, globals | A trailing `///<`; a plain `//` comment above a declaration that stands alone becomes its `///` |
+| Knob uniforms (`...P`) | The file header's description of the knob ("bandP (band count)") and the knob's range in the presets: `Tension knob: string tension, 0.5..2.2.` |
+| Varyings | The name and the stage that writes it: `vRibbonID` -> `Ribbon ID (from the vertex stage).` |
+| Buffer blocks, structs, `#define`s, `layout(...) in;` lines, constants whose initialiser runs over several lines | A `///` line above; struct members a trailing `///<` |
+| Tool | `python Tools/doc_shaders.py` (all shaders; `--check` counts what would change), then `python Tools/cgvr_format.py` |
+| Where the texts come from | `Tools/glsl_fileheader.py` (headers), `Tools/glsl_docs.py` with `glsl_doc_table.py`, `glsl_doc_scenes.py` and `glsl_doc_briefs.py` (functions; `FIXES` corrects texts written for another overload of the same name), `Tools/glsl_doc_vars.py` (declarations) |
+| Generated shaders | `gen.py` and `make_chainpass.py` run `doc_shaders.annotate()` on what they write, before the names and the layout; the tables also know the names before `Tools/cgvr_glsl_names.py` renames them (`stageAk_0` -> `stageAk0`). Regenerating gives the committed files byte for byte |
+| Check | `Tools/cgvr_doxygen.py`: 0 warnings for C++ and GLSL together (`WARN_NO_PARAMDOC`); `Tools/shadercheck.py` compiles every shader with the driver |
+
+The conversion changes no code token: every shader's token sequence is the one before, and no `// @...` directive
+moved. Two plain comments that were headings of a group of helpers became section headings, and a comment in
+`PillarHall.frag` that explained the `#define` below a uniform now stands between the two.
+
+### Deviations
+
+| Rule | Here | Why |
+|---|---|---|
+| The file starts with the template header | `#version` stays the first line; the banner and the `@file` block follow it | GLSL wants `#version` first, and `shaderVariantStart()` (`shader_setup.cpp`) inserts a variant's `#define`s right after the first line |
+| One declaration per line (as in C++) | A line that declares several names (`float gT, gSpread;`) stays and sits in a Doxygen member group (`/** @{ */` ... `/** @} */`) whose one `///<` text names each of them | Splitting would change the shaders' tokens and the generators' library text; with `DISTRIBUTE_GROUP_DOC` every name gets the text |
+| Every function is documented where it is declared | Forward declarations (`vec2 chain( vec2 p );`, `float field3( vec3 p );`) sit between `/// @cond` and `/// @endcond` | Doxygen reads all shaders as one program and merged one file's `chain()` with another's; the definition carries the documentation |
+| Member variables keep their trailing `///<` | Uniforms, varyings and constants too | As in C++: one line per declaration keeps the interface readable |
+| Function comment over several lines | `main()` and other functions without parameters or return value get their line as `/** ... */` | As in C++ |
+| Descriptions written by hand | Knob uniforms whose header only lists them read `Name knob, a..b.` (the preset's range) | The scene's knobs are its presets' parameters; the header and the presets are where their meaning is kept |
+| Every comment in English | Quoted user feedback keeps its sense, not its German words ("looks like a still picture") | The comments explain why a fix was made; the reports they quote were German |
 
 ## Known state outside the guidelines
 
