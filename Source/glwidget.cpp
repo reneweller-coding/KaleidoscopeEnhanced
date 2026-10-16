@@ -17,6 +17,8 @@
 #include <QtCore/QTextStream>
 #include <QtCore/QFileInfo>
 #include <QtCore/QTemporaryFile>
+#include <QtCore/QPointer>
+#include <QtCore/QThreadPool>
 #include <QtCore/QBuffer>
 #include <QtCore/QDateTime>
 #include <QtCore/QFileSystemWatcher>
@@ -28,6 +30,7 @@
 #include <QtCore/QDir>
 #include <QtGui/QMouseEvent>
 #include <QtGui/QScreen>
+#include <QtGui/QWindow>
 #include <QtGui/QPainter>
 #include <QtWidgets/QMessageBox>
 #include <QtGui/QImage>
@@ -62,6 +65,7 @@
 
 // Start configuration requested on the command line (-c <name>); empty = default.
 QString GLwidget::M_StartConfig;
+int     GLwidget::M_FrameDivisor = 1;  // ini frameDivisor (main())
 int     GLwidget::M_RemotePort = 8080; // on by default (LAN-only, auto-discovered); -t 0 disables
 bool    GLwidget::M_RemotePortFromCli = false;
 bool    GLwidget::M_BatchRender = false;
@@ -386,6 +390,185 @@ QByteArray GLwidget::remoteThumb( int idx ) const
     return QByteArray();
 }
 
+/**  A picture as JPEG.
+ *
+ * @param img      The picture. (in)
+ * @param quality  JPEG quality, 0..100. (in)
+ *
+ * @return
+ *   The encoded bytes.
+ **/
+static QByteArray jpegOf( const QImage &img, int quality )
+{
+    QByteArray jpg;
+    QBuffer    buf( &jpg );
+    buf.open( QIODevice::WriteOnly );
+    img.save( &buf, "JPG", quality );
+    return jpg;
+}
+
+void GLwidget::updateRemotePreview()
+{
+    // Until 16.10.2026 this read the whole frame synchronously (glReadPixels, 18.7 MB at 2880x1620), mirrored and
+    // smooth-scaled it twice and encoded two JPEGs, all in the render thread: 31-45 ms (median 35) every 0.9 s
+    // while the phone page was open -- four frames lost at 120 Hz, once a second.  Now the GPU shrinks the frame
+    // (halving blits, each an exact 2x2 box filter, then one last linear step to 360 px, flipped upright on the
+    // way), the small picture goes into a pixel-pack buffer, is mapped two frames later when the GPU is long done
+    // with it, and a worker encodes it.
+
+    // 1. The read issued two frames ago: map it (no stall) and hand the picture to a worker.
+    if ( m_snapReadAgo >= 0 && ++m_snapReadAgo >= 2 )
+    {
+        m_snapReadAgo = -1;
+        glBindBuffer( GL_PIXEL_PACK_BUFFER, m_snapPbo );
+        if ( const void *px = glMapBuffer( GL_PIXEL_PACK_BUFFER, GL_READ_ONLY ) )
+        {
+            const QImage img = QImage( static_cast<const uchar *>( px ), m_snapOutW, m_snapOutH,
+                                       QImage::Format_RGBA8888 )
+                                   .copy();
+            glUnmapBuffer( GL_PIXEL_PACK_BUFFER );
+            m_snapEncoding = true;
+            const QPointer<GLwidget> self( this );
+            const int                scene = m_snapScene;
+            const QString            config = m_snapConfig, scene_name = m_snapSceneName;
+            QThreadPool::globalInstance()->start(
+                [self, img, scene, config, scene_name]
+            {
+                const QByteArray jpg = jpegOf( img, 70 );
+                QByteArray       tjpg;
+                if ( scene >= 0 )
+                {
+                    tjpg = jpegOf( img.scaledToHeight( 120, Qt::SmoothTransformation ), 65 );
+                    // Persisted too, so a scene browsed in a PAST session already has a thumbnail on the very
+                    // first /api/thumb request of this one (remoteThumb()'s disk fallback). Keyed by config+scene
+                    // NAME (stable across restarts), not index (isn't).
+                    if ( !scene_name.isEmpty() )
+                    {
+                        const QString path = thumbCachePath( config, scene_name );
+                        QDir().mkpath( QFileInfo( path ).absolutePath() );
+                        QFile f( path );
+                        if ( f.open( QIODevice::WriteOnly ) )
+                            f.write( tjpg );
+                    }
+                }
+                // Back on the GUI thread, where WebRemote reads them; through qApp, because this widget may be
+                // gone by then (the QPointer says so there, safely, on the thread that deletes it).
+                QMetaObject::invokeMethod(
+                    qApp,
+                    [self, jpg, tjpg, scene, config]
+                {
+                    if ( !self )
+                        return;
+                    self->m_snapEncoding = false;
+                    self->m_snapJpg = jpg;
+                    // Scene indices name the scenes of one preset: a thumbnail of another goes nowhere.
+                    if ( scene >= 0 && self->m_actConfiguration
+                         && self->m_actConfiguration->getConfigurationName() == config )
+                    {
+                        if ( scene >= static_cast<int>( self->m_sceneThumbs.size() ) )
+                            self->m_sceneThumbs.resize( scene + 1 );
+                        self->m_sceneThumbs[scene] = tjpg;
+                    }
+                },
+                    Qt::QueuedConnection );
+            } );
+        }
+        glBindBuffer( GL_PIXEL_PACK_BUFFER, 0 );
+    }
+
+    // 2. Due: shrink the frame on the GPU and start reading the small picture back.
+    const qint64 now = m_fpsTimer.elapsed();
+    if ( m_snapReadAgo >= 0 || m_snapEncoding || M_RemotePort <= 0 || now >= m_snapWantedUntil
+         || now - m_snapLast <= 900 || m_width <= 1 || m_height <= 1 )
+        return;
+    m_snapLast = now;
+    if ( m_snapSrcW != m_width || m_snapSrcH != m_height )
+    {
+        freeRemotePreview();
+        // Halve while the next half still has 360 rows, then one step to 360 (or the frame's own height).
+        int w = m_width, h = m_height;
+        while ( h / 2 >= 360 && m_snapLevels < SnapMaxLevels - 1 )
+        {
+            w = std::max( 1, w / 2 );
+            h /= 2;
+            m_snapW[m_snapLevels] = w;
+            m_snapH[m_snapLevels++] = h;
+        }
+        m_snapOutH = std::min( 360, m_height );
+        m_snapOutW = std::max(
+            2, static_cast<int>( std::lround( m_snapOutH * static_cast<double>( m_width ) / m_height ) ) );
+        m_snapW[m_snapLevels] = m_snapOutW;
+        m_snapH[m_snapLevels++] = m_snapOutH;
+        glGenTextures( m_snapLevels, m_snapTex );
+        glGenFramebuffers( m_snapLevels, m_snapFbo );
+        for ( int i = 0; i < m_snapLevels; ++i )
+        {
+            glBindTexture( GL_TEXTURE_2D, m_snapTex[i] );
+            glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA8, m_snapW[i], m_snapH[i], 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr );
+            glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+            glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+            glBindFramebuffer( GL_FRAMEBUFFER, m_snapFbo[i] );
+            glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_snapTex[i], 0 );
+        }
+        glBindTexture( GL_TEXTURE_2D, 0 );
+        glGenBuffers( 1, &m_snapPbo );
+        glBindBuffer( GL_PIXEL_PACK_BUFFER, m_snapPbo );
+        glBufferData( GL_PIXEL_PACK_BUFFER, static_cast<GLsizeiptr>( m_snapOutW ) * m_snapOutH * 4, nullptr,
+                      GL_STREAM_READ );
+        glBindBuffer( GL_PIXEL_PACK_BUFFER, 0 );
+        m_snapSrcW = m_width;
+        m_snapSrcH = m_height;
+    }
+    glBindFramebuffer( GL_READ_FRAMEBUFFER, defaultFramebufferObject() );
+    int sw = m_width, sh = m_height;
+    for ( int i = 0; i < m_snapLevels; ++i )
+    {
+        const bool last = i == m_snapLevels - 1;
+        glBindFramebuffer( GL_DRAW_FRAMEBUFFER, m_snapFbo[i] );
+        glBlitFramebuffer( 0, 0, sw, sh, 0, last ? m_snapH[i] : 0, m_snapW[i], last ? 0 : m_snapH[i],
+                           GL_COLOR_BUFFER_BIT, GL_LINEAR ); // the last step flips the rows upright
+        glBindFramebuffer( GL_READ_FRAMEBUFFER, m_snapFbo[i] );
+        sw = m_snapW[i];
+        sh = m_snapH[i];
+    }
+    glBindBuffer( GL_PIXEL_PACK_BUFFER, m_snapPbo );
+    glPixelStorei( GL_PACK_ALIGNMENT, 1 );
+    glReadPixels( 0, 0, m_snapOutW, m_snapOutH, GL_RGBA, GL_UNSIGNED_BYTE, nullptr );
+    glBindBuffer( GL_PIXEL_PACK_BUFFER, 0 );
+    glBindFramebuffer( GL_FRAMEBUFFER, defaultFramebufferObject() );
+    m_snapReadAgo = 0;
+
+    // A per-scene thumbnail rides along: not from a crossfade (a blend is no shot of either scene) nor from the
+    // blackout. It only grows the cache while the remote page is open -- the scene browser shows no image yet for
+    // scenes nobody has landed on this session.
+    RenderPipeline *rp = m_actConfiguration ? m_actConfiguration->renderPipeline() : nullptr;
+    m_snapScene = -1;
+    m_snapSceneName.clear();
+    if ( rp && !rp->sceneTransitioning() && !RenderPipeline::blackout() && rp->activeSceneIndex() >= 0 )
+    {
+        m_snapScene = rp->activeSceneIndex();
+        m_snapConfig = m_actConfiguration->getConfigurationName();
+        const QStringList names = rp->sceneNames();
+        if ( m_snapScene < names.size() )
+            m_snapSceneName = names[m_snapScene];
+    }
+}
+
+void GLwidget::freeRemotePreview()
+{
+    if ( m_snapLevels > 0 )
+    {
+        glDeleteFramebuffers( m_snapLevels, m_snapFbo );
+        glDeleteTextures( m_snapLevels, m_snapTex );
+    }
+    if ( m_snapPbo )
+        glDeleteBuffers( 1, &m_snapPbo );
+    m_snapPbo = 0;
+    m_snapLevels = 0;
+    m_snapSrcW = m_snapSrcH = 0;
+    m_snapReadAgo = -1;
+}
+
 QByteArray GLwidget::remoteSnapshot()
 {
     m_snapWantedUntil = m_fpsTimer.elapsed() + 10000;
@@ -685,6 +868,16 @@ GLwidget::~GLwidget()
     // once and runs NO C++ destructors, so this one would never get its turn
     // for them.  An export saves nothing: it must not become the live show's
     // start preset.
+    // The remote preview: a worker still encoding one finishes first (its result goes to qApp, where a QPointer
+    // finds this widget gone), then the GL objects go.
+    QThreadPool::globalInstance()->waitForDone( 2000 );
+    if ( m_snapLevels > 0 || m_snapPbo )
+    {
+        makeCurrent();
+        freeRemotePreview();
+        doneCurrent();
+    }
+
     if ( !exported )
         saveAllSettings( false );
 
@@ -982,23 +1175,12 @@ void GLwidget::initializeGL()
     // m_globaltime, and AudioConditioner::update takes the same dt for the
     // audioPhase/audioAdvance accumulators), so motion speed is wall-clock based
     // and identical at any frame rate.
-    int refresh_ms = 16;
-    if ( QScreen *sc = screen() )
-    {
-        const qreal hz = sc->refreshRate();
-        if ( hz > 20.0 )                                  // ignore bogus/unknown values
-            refresh_ms = static_cast<int>( 1000.0 / hz ); // 60 Hz -> 16, 144 Hz -> 6, 240 Hz -> 4
-    }
-    if ( refresh_ms < 1 )
-        refresh_ms = 1;
-    m_displayHz = ( refresh_ms > 0 ) ? 1000.0f / static_cast<float>( refresh_ms ) : 60.0f;
-    // The cube detail budget weighs the frame rate against what the panel shows (RenderPipeline::stepCubeBudget()).
-    RenderPipeline::M_DisplayHz = ( screen() && screen()->refreshRate() > 20.0 )
-                                      ? static_cast<float>( screen()->refreshRate() )
-                                      : m_displayHz;
-    fprintf( stderr, "Render timer: %d ms (%.1f Hz display)\n",
-             refresh_ms, screen() ? screen()->refreshRate() : 0.0 );
-    startTimer( refresh_ms );
+    applyDisplayRate();
+    // The window moved to another screen (a projector, a TV at 50 Hz): the rate follows -- it used to be fixed at
+    // the start, so the adaptive resolution and the cube budget kept judging by the first screen's rate.
+    if ( QWindow *w = window()->windowHandle() )
+        connect( w, &QWindow::screenChanged, this, [this]( QScreen * )
+        { applyDisplayRate(); } );
 
     // CLI -r: begin recording straight away (for testing / debugging).
     if ( M_AutoRecord )
@@ -1039,6 +1221,8 @@ void GLwidget::dumpSceneCost()
         if ( it.value().coverN )
             o << ", \"cover\": "
               << QString::number( it.value().cover / it.value().coverN, 'f', 4 );
+        if ( it.value().gpuFrames >= 30 )
+            o << ", \"ms_gpu\": " << QString::number( it.value().gpuMs / it.value().gpuFrames, 'f', 3 );
         o << " }";
     }
     o << "\n}\n";
@@ -1079,13 +1263,21 @@ void GLwidget::paintGL()
     // stop at the panel's rate (120 here) and hide how much headroom a scene
     // has -- or how far a slower GPU is from it.  A ring of four queries is
     // read three frames late, so the readback never waits for the GPU.
+    // KALEIDO_COST_LOG uses the same ring: the GPU time of a frame is charged to the scene that stood when it was
+    // queued -- the CPU wall clock around draw() only approached it where a sync (the recorder's map) happened to
+    // wait for the GPU.
     static const bool GpuTiming = qEnvironmentVariableIsSet( "KALEIDO_GPU_TIMING" );
     static GLuint     gpu_q[4] = { 0, 0, 0, 0 };
+    static QString    gpu_scene[4]; // the scene each query is charged to (empty: a fade or a switch, not charged)
+    static float      gpu_scale[4] = { 1.f, 1.f, 1.f, 1.f }; // the render scale it ran at
+    static QString    gpu_last_scene;
     static int        gpu_frame = 0;
     static double     gpu_sum = 0.0, gpu_max = 0.0;
     static int        gpu_n = 0;
     static qint64     gpu_last = 0;
-    const bool        gpu_on = GpuTiming && glGenQueries && glBeginQuery && glEndQuery && glGetQueryObjectuiv;
+    const bool        gpu_on = ( GpuTiming || CostLog || m_autoScale ) && glGenQueries && glBeginQuery && glEndQuery
+                               && glGetQueryObjectuiv;
+    m_gpuQueries = gpu_on;
     if ( gpu_on )
     {
         if ( !gpu_q[0] )
@@ -1104,8 +1296,51 @@ void GLwidget::paintGL()
                 ++gpu_n;
                 if ( ms > gpu_max )
                     gpu_max = ms;
+                // The adaptive resolution's measure (updateAdaptiveScale()).
+                m_gpuMs[m_gpuMsHead] = static_cast<float>( ms );
+                m_gpuMsHead = ( m_gpuMsHead + 1 ) % static_cast<int>( m_gpuMs.size() );
+                ++m_gpuMsCount;
+                QString &charged = gpu_scene[( gpu_frame + 1 ) & 3];
+                if ( CostLog && !charged.isEmpty() )
+                {
+                    SceneCost &c = m_sceneCost[charged];
+                    c.gpuMs += ms;
+                    ++c.gpuFrames;
+                }
+                // The adaptive resolution remembers each scene's cost per pixel (at scale 1), to pick the scale the
+                // next time the scene comes in.
+                if ( m_autoScale && !charged.isEmpty() )
+                {
+                    const float sc = std::max( 0.1f, gpu_scale[( gpu_frame + 1 ) & 3] );
+                    const float at1 = static_cast<float>( ms ) / ( sc * sc );
+                    auto        it = m_sceneGpuAt1.find( charged );
+                    if ( it == m_sceneGpuAt1.end() )
+                        m_sceneGpuAt1.insert( charged, at1 );
+                    else
+                        it.value() += 0.1f * ( at1 - it.value() );
+                }
+                charged.clear();
             }
         }
+        // Charged only while a scene stands: not in a fade (two scenes and their blend), not on the first frame
+        // after a switch (a program's first draw makes the driver build its machine code).
+        QString scene;
+        if ( ( CostLog || m_autoScale ) && m_actConfiguration && m_actConfiguration->renderPipeline() )
+        {
+            RenderPipeline   *rp = m_actConfiguration->renderPipeline();
+            const QStringList nm = rp->sceneNames();
+            const int         idx = rp->activeSceneIndex();
+            if ( idx >= 0 && idx < nm.size() && !rp->sceneTransitioning() )
+            {
+                if ( nm[idx] == gpu_last_scene )
+                    scene = nm[idx];
+                gpu_last_scene = nm[idx];
+            }
+            else
+                gpu_last_scene.clear();
+        }
+        gpu_scene[gpu_frame & 3] = scene;
+        gpu_scale[gpu_frame & 3] = RenderPipeline::renderScale();
         glBeginQuery( 0x88BF /* GL_TIME_ELAPSED */, gpu_q[gpu_frame & 3] );
     }
 
@@ -1116,7 +1351,7 @@ void GLwidget::paintGL()
         glEndQuery( 0x88BF );
         ++gpu_frame;
         const qint64 t = m_fpsTimer.elapsed();
-        if ( t - gpu_last >= 1000 && gpu_n > 0 )
+        if ( GpuTiming && t - gpu_last >= 1000 && gpu_n > 0 )
         {
             fprintf( stderr, "[gpu] %.2f ms avg  %.2f ms max  %dx%d  renderScale %.2f\n",
                      gpu_sum / gpu_n, gpu_max, m_width, m_height, RenderPipeline::renderScale() );
@@ -1211,6 +1446,7 @@ void GLwidget::draw()
     if ( RenderPipeline::freezeTime() >= 0.f ) // a comparison run: silence, whatever is playing
         audio = AudioFeatures();
     m_eventLatch.apply( audio ); // the beats, onsets and track changes since the last frame, none lost
+    updateRest( audio );
 
     // Track-change: a fresh track (after a silent gap) gets a clean transition.
     // Suppressed under KALEIDO_SCENE_SWEEP, where the sweep decides what is on
@@ -1382,73 +1618,27 @@ void GLwidget::draw()
     // pipeline where the final image must land, otherwise it draws off-screen.
     m_actConfiguration->renderPipeline()->setDefaultFBO( defaultFramebufferObject() );
 
-    m_actConfiguration->renderPipeline()->tickCues( cueTrackKey(), cuePosSec() );
-    m_actConfiguration->renderPipeline()->paint( m_rotationMatrix, m_xTrans, m_yTrans, m_zTrans, audio );
+    if ( m_restState == RestE::RESTING )
+    {
+        // At rest no scene runs: the window stays black, a few frames a second (timerEvent()); the menu and the
+        // notices still draw on top, so the show can be woken from them.
+        glBindFramebuffer( GL_FRAMEBUFFER, defaultFramebufferObject() );
+        glViewport( 0, 0, m_width, m_height );
+        glClearColor( 0.f, 0.f, 0.f, 1.f );
+        glClear( GL_COLOR_BUFFER_BIT );
+    }
+    else
+    {
+        m_actConfiguration->renderPipeline()->tickCues( cueTrackKey(), cuePosSec() );
+        m_actConfiguration->renderPipeline()->paint( m_rotationMatrix, m_xTrans, m_yTrans, m_zTrans, audio );
+    }
 
     // Capture the clean frame (before any overlay is drawn) while recording
     // or while the instant-replay ring is armed.
     m_recorder.captureIfDue( m_width, m_height );
 
-    // Web-remote live preview: while the phone page polls /api/snapshot,
-    // refresh a small JPEG of the output ~1x per second (sync read, but rare
-    // and only while someone is actually looking at the page).
-    if ( M_RemotePort > 0 && m_fpsTimer.elapsed() < m_snapWantedUntil
-         && m_fpsTimer.elapsed() - m_snapLast > 900 && m_width > 1 && m_height > 1 )
-    {
-        m_snapLast = m_fpsTimer.elapsed();
-        m_snapBuf.resize( static_cast<size_t>( m_width ) * m_height * 4 );
-        glPixelStorei( GL_PACK_ALIGNMENT, 1 );
-        glReadPixels( 0, 0, m_width, m_height, GL_RGBA, GL_UNSIGNED_BYTE, m_snapBuf.data() );
-        QImage     img( m_snapBuf.data(), m_width, m_height, QImage::Format_RGBA8888 );
-        QImage     out = img.mirrored( false, true )
-                             .scaledToHeight( 360, Qt::SmoothTransformation );
-        QByteArray jpg;
-        QBuffer    buf( &jpg );
-        buf.open( QIODevice::WriteOnly );
-        out.save( &buf, "JPG", 70 );
-        m_snapJpg = jpg;
-
-        // Piggy-back a per-scene thumbnail off the same readback (no extra
-        // glReadPixels): skip mid-transition frames (a crossfade blend isn't a
-        // representative shot of either scene) and blackout. This only ever
-        // grows the cache while the remote page is open, which is fine — the
-        // scene browser just shows no image yet for scenes nobody has landed
-        // on this session.
-        RenderPipeline *rp = m_actConfiguration ? m_actConfiguration->renderPipeline() : nullptr;
-        if ( rp && !rp->sceneTransitioning() && !RenderPipeline::blackout() )
-        {
-            const int scene_idx = rp->activeSceneIndex();
-            if ( scene_idx >= 0 )
-            {
-                QImage     thumb = img.mirrored( false, true )
-                                       .scaledToHeight( 120, Qt::SmoothTransformation );
-                QByteArray tjpg;
-                QBuffer    tbuf( &tjpg );
-                tbuf.open( QIODevice::WriteOnly );
-                thumb.save( &tbuf, "JPG", 65 );
-                if ( scene_idx >= static_cast<int>( m_sceneThumbs.size() ) )
-                    m_sceneThumbs.resize( scene_idx + 1 );
-                m_sceneThumbs[scene_idx] = tjpg;
-
-                // Persist to disk too, so a scene browsed in a PAST session
-                // already has a thumbnail on the very first /api/thumb
-                // request of this one (see remoteThumb()'s disk fallback)
-                // instead of showing blank until the scheduler happens to
-                // land on it again. Keyed by config+scene NAME (stable
-                // across restarts), not index (isn't).
-                const QStringList names = rp->sceneNames();
-                if ( scene_idx < names.size() )
-                {
-                    const QString path = thumbCachePath(
-                        m_actConfiguration->getConfigurationName(), names[scene_idx] );
-                    QDir().mkpath( QFileInfo( path ).absolutePath() );
-                    QFile f( path );
-                    if ( f.open( QIODevice::WriteOnly ) )
-                        f.write( tjpg );
-                }
-            }
-        }
-    }
+    // Web-remote live preview, refreshed ~1x per second while the phone page polls /api/snapshot.
+    updateRemotePreview();
 
     // Config cross-fade: draw the captured previous frame on top, fading out.
     float fade_alpha = 0.f;
@@ -1758,6 +1948,8 @@ void GLwidget::loadUiSettings()
     m_videoEnabled = s.value( "videoEnabled", m_videoEnabled ).toBool();
     m_lyricsKinetic = s.value( "lyricsKinetic", m_lyricsKinetic ).toBool();
     m_updateCheck = s.value( "updateCheck", m_updateCheck ).toBool();
+    m_idleMinutes = qBound( 0, s.value( "idleMinutes", 0 ).toInt(), 1440 );
+    m_idleDisplayOff = s.value( "idleDisplayOff", false ).toBool();
     // Only a LEARNED map counts. The ini of older versions holds the old default CC 1-3 for the knobs, written back
     // on every exit -- they were never chosen, and a keyboard's modulation wheel (CC 1) turned the reactivity.
     m_midiLearned = s.value( "midiLearned", false ).toBool();
@@ -1795,6 +1987,8 @@ QList<QPair<QString, QVariant>> GLwidget::uiSettings() const
     v.append( { "videoEnabled", m_videoEnabled } );
     v.append( { "lyricsKinetic", m_lyricsKinetic } );
     v.append( { "updateCheck", m_updateCheck } );
+    v.append( { "idleMinutes", m_idleMinutes } );
+    v.append( { "idleDisplayOff", m_idleDisplayOff } );
     v.append( { "midiLearned", m_midiLearned } );
     for ( int i = 0; i < MIDI_TARGETS; ++i )
         v.append( { QString( "midiMap%1" ).arg( i ), m_midiMap[i] } );
@@ -1849,6 +2043,81 @@ void GLwidget::checkSettingsWritable()
     notify( QString::fromUtf8( Strings::uiText( S_NOTICE_SETTINGS_READONLY_FMT ) )
                 .arg( QDir::toNativeSeparators( ini.absoluteFilePath() ) ),
             15000 );
+}
+
+void GLwidget::updateRest( const AudioFeatures &audio )
+{
+    const qint64 now = m_fpsTimer.elapsed();
+    const qint64 dt = m_restLast > 0 ? std::min<qint64>( now - m_restLast, 1000 ) : 0;
+    m_restLast = now;
+    // Digital silence: every band at about -60 dB or below before the automatic gain -- not merely quiet, so a
+    // drone or an ambient passage never counts, and neither does speech.
+    const bool silent = audio.rawLevel < 0.02f;
+    m_restSilentMs = silent ? m_restSilentMs + dt : 0;
+    m_restSoundMs = silent ? 0 : m_restSoundMs + dt;
+
+    // The sleep timer: its last two minutes dim the picture steadily, then it rests like after silence.
+    if ( m_sleepAt > 0 && m_restState == RestE::AWAKE )
+        RenderPipeline::setDim( static_cast<float>( m_sleepAt - now ) / 120000.f );
+
+    if ( m_restState == RestE::AWAKE )
+    {
+        // KALEIDO_IDLE_SECS: the same in seconds, for a test run.
+        static const int IdleSecs = qEnvironmentVariableIntValue( "KALEIDO_IDLE_SECS" );
+        const qint64     idle_ms = IdleSecs > 0 ? IdleSecs * 1000LL : m_idleMinutes * 60000LL;
+        const bool       idle = idle_ms > 0 && m_restSilentMs >= idle_ms;
+        const bool       sleep = m_sleepAt > 0 && now >= m_sleepAt;
+        if ( idle || sleep )
+        {
+            m_restState = RestE::FADING;
+            m_restSince = now;
+            m_restBySleep = sleep;
+            RenderPipeline::setRestDim( true ); // the blackout's slew: ~0.35 s to black
+            fprintf( stderr, "REST: %s - fading out\n", sleep ? "sleep timer ended" : "silence" );
+            notify( sleep ? QString::fromUtf8( Strings::uiText( S_NOTICE_SLEEP ) )
+                          : QString::fromUtf8( Strings::uiText( S_NOTICE_REST_FMT ) ).arg( m_idleMinutes ),
+                    4000 );
+        }
+    }
+    else if ( m_restState == RestE::FADING && now - m_restSince > 1500 )
+    {
+        m_restState = RestE::RESTING;
+        m_restLastPaint = now;
+#ifdef WIN32
+        // Off by default: many projectors fall into standby without a signal and do not wake without their remote.
+        // System standby stays blocked either way.
+        if ( m_idleDisplayOff )
+        {
+            SetThreadExecutionState( ES_CONTINUOUS | ES_SYSTEM_REQUIRED );
+            m_displayReleased = true;
+        }
+#endif
+        fprintf( stderr, "REST: resting%s\n", m_displayReleased ? " (display may sleep)" : "" );
+    }
+    if ( m_restState != RestE::AWAKE && !m_restBySleep && m_restSoundMs >= 1000 )
+        wakeFromRest( "music" );
+}
+
+bool GLwidget::wakeFromRest( const char *why )
+{
+    if ( m_restState == RestE::AWAKE )
+        return false;
+    m_sleepAt = 0; // the sleep timer, if it put the show to rest, is used up
+    m_sleepMinutes = 0;
+    RenderPipeline::setDim( 1.f );
+#ifdef WIN32
+    if ( m_displayReleased )
+        SetThreadExecutionState( ES_CONTINUOUS | ES_DISPLAY_REQUIRED | ES_SYSTEM_REQUIRED );
+#endif
+    m_displayReleased = false;
+    if ( m_restState == RestE::RESTING && m_actConfiguration && m_actConfiguration->renderPipeline() )
+        m_actConfiguration->renderPipeline()->restartSceneClocks();
+    m_restState = RestE::AWAKE;
+    m_restSilentMs = 0;
+    RenderPipeline::setRestDim( false ); // the blackout's slew fades the picture back in
+    fprintf( stderr, "REST: woken (%s)\n", why );
+    update();
+    return true;
 }
 
 void GLwidget::notify( const QString &text, int ms )
@@ -1966,51 +2235,122 @@ void GLwidget::updateAutoConfig( const AudioFeatures &f )
     }
 }
 
+void GLwidget::applyDisplayRate()
+{
+    int refresh_ms = 16;
+    if ( QScreen *sc = screen() )
+    {
+        const qreal hz = sc->refreshRate();
+        if ( hz > 20.0 )                                  // ignore bogus/unknown values
+            refresh_ms = static_cast<int>( 1000.0 / hz ); // 60 Hz -> 16, 144 Hz -> 6, 240 Hz -> 4
+    }
+    if ( refresh_ms < 1 )
+        refresh_ms = 1;
+    // frameDivisor (ini): every n-th refresh -- the swap interval waits for it (main()), the timer asks for it.
+    refresh_ms *= M_FrameDivisor;
+    m_displayHz = ( refresh_ms > 0 ) ? 1000.0f / static_cast<float>( refresh_ms ) : 60.0f;
+    // The cube detail budget weighs the frame rate against what the panel shows (RenderPipeline::stepCubeBudget()),
+    // and with a divisor against what it is asked to show; the adaptive resolution budgets the GPU time by it.
+    RenderPipeline::M_DisplayHz = ( screen() && screen()->refreshRate() > 20.0 )
+                                      ? static_cast<float>( screen()->refreshRate() ) / M_FrameDivisor
+                                      : m_displayHz;
+    if ( RenderPipeline::M_DisplayHz > 20.f )
+        m_displayHz = RenderPipeline::M_DisplayHz;
+    fprintf( stderr, "Render timer: %d ms (%.1f Hz display%s)\n", refresh_ms, screen() ? screen()->refreshRate() : 0.0,
+             M_FrameDivisor > 1 ? qPrintable( QString( ", every %1. refresh" ).arg( M_FrameDivisor ) ) : "" );
+    if ( m_renderTimer )
+        killTimer( m_renderTimer );
+    m_renderTimer = startTimer( refresh_ms );
+    m_gpuMsCount = 0; // a new rate, a new budget: measure afresh
+}
+
 void GLwidget::updateAdaptiveScale()
 {
     if ( !m_autoScale )
         return;
 
+    // A scene fade beginning: where a change of resolution goes unseen -- the picture changes anyway.
+    RenderPipeline *rp = m_actConfiguration ? m_actConfiguration->renderPipeline() : nullptr;
+    const bool      fading = rp && rp->sceneTransitioning();
+    const bool      fade_began = fading && !m_scaleWasFading;
+    // A fade draws two scenes: its frames say nothing about the one that stays, so the emergency below measures
+    // from the fade's end.
+    if ( !fading && m_scaleWasFading )
+        m_gpuMsCount = 0;
+    m_scaleWasFading = fading;
+
     const qint64 now = m_fpsTimer.elapsed();
-    if ( m_fpsValue <= 0 || now - m_lastScaleAdjust < 1500 ) // settle ~1.5 s between steps
-        return;
+    const float  min_scale = 0.35f;
+    const float  scale = RenderPipeline::renderScale();
+    float        next = scale;
+    bool         emergency = false;
 
-    const float min_scale = 0.35f;
-    float       scale = RenderPipeline::renderScale();
-    float       next = scale;
+    // The budget is one frame of what the panel is asked to show: its full rate, or with frameDivisor exactly the
+    // part asked for.  Until 16.10.2026 the fps decided, against a target capped at 72 and in the middle of a scene:
+    // with vsync the fps stand at the panel's rate whatever the headroom, so on a 120-Hz panel every rate between
+    // 54 and 119 left the scale where it was, at an uneven pace -- and each step rebuilt the labs' textures in view.
+    const float hz = m_displayHz > 20.f ? m_displayHz : 60.f;
+    const float budget = 1000.f / hz;
+    if ( m_gpuQueries )
+    {
+        if ( fade_began && rp )
+        {
+            // The scale for the scene coming in, from its own GPU time when it last stood (m_sceneGpuAt1, per pixel
+            // at scale 1): the largest scale whose predicted time stays under 80 % of the budget. A scene not seen
+            // yet gets the full scale; were it too heavy, the step below catches it, and next time it is known.
+            // (Judged by the recent frames instead, a heavy scene leaving made a light one coarse.)
+            const QStringList nm = rp->sceneNames();
+            const int         nx = rp->nextSceneIndex();
+            next = m_autoScaleMax;
+            if ( nx >= 0 && nx < nm.size() )
+            {
+                const auto it = m_sceneGpuAt1.constFind( nm[nx] );
+                if ( it != m_sceneGpuAt1.constEnd() )
+                {
+                    next = min_scale;
+                    for ( float sc = m_autoScaleMax; sc >= min_scale - 1e-4f; sc -= 0.05f )
+                        if ( it.value() * sc * sc <= 0.8f * budget )
+                        {
+                            next = sc;
+                            break;
+                        }
+                }
+            }
+        }
+        else if ( !fading && m_gpuMsCount >= 60 && now - m_lastScaleAdjust >= 1500 )
+        {
+            // In the middle of a scene only an emergency: the 90th percentile of the recent frames' GPU time over
+            // 1.5 times the budget, which is worse to watch than a change of resolution.
+            const int          n = std::min( m_gpuMsCount, static_cast<int>( m_gpuMs.size() ) );
+            std::vector<float> v( m_gpuMs.begin(), m_gpuMs.begin() + n );
+            std::nth_element( v.begin(), v.begin() + n * 9 / 10, v.end() );
+            if ( v[n * 9 / 10] > 1.5f * budget && scale > min_scale )
+            {
+                next = scale - 0.10f;
+                emergency = true;
+            }
+        }
+    }
+    else if ( m_fpsValue > 0 && now - m_lastScaleAdjust >= 1500 )
+    {
+        // No GPU timer queries (an old driver): the frame rate against the panel's, as before, applied at a fade.
+        if ( m_fpsValue < 0.75f * hz && scale > min_scale )
+            next = scale - 0.10f;
+        else if ( m_fpsValue > 0.95f * hz && scale < m_autoScaleMax )
+            next = scale + ( scale >= 1.0f ? 0.10f : 0.05f );
+        emergency = m_fpsValue < 0.5f * hz;
+    }
 
-    // Thresholds relative to what the DISPLAY can actually show, not the fixed
-    // 45/57 that assumed a 60 Hz panel. On a 30 Hz TV the frame rate can never
-    // exceed 57, so the scale could never climb and the app would sit at its
-    // 0.35 floor forever -- the same one-way trap the ceiling had.
-    //
-    // The target is capped at 72 on purpose: on a 144/240 Hz panel, chasing the
-    // full refresh rate would trade away resolution for frames nobody asked for.
-    // Above ~72 fps the extra smoothness is worth less than the pixels.
-    const float target = ( m_displayHz > 20.f )
-                             ? ( m_displayHz < 72.f ? m_displayHz : 72.f )
-                             : 60.f;
-    if ( m_fpsValue < 0.75f * target && scale > min_scale )
-        next = scale - 0.10f; // struggling -> coarser, recover FPS
-    else if ( m_fpsValue > 0.95f * target && scale < m_autoScaleMax )
-        next = scale + ( scale >= 1.0f ? 0.10f : 0.05f ); // headroom -> finer
-                                                          // Coarser steps in the supersampling range: below 1.0 every
-                                                          // step is visible detail the user wants back quickly, above
-                                                          // it the steps are diminishing returns and fewer resolution
-                                                          // changes read better.
-
-    if ( next < min_scale )
-        next = min_scale;
-    if ( next > m_autoScaleMax )
-        next = m_autoScaleMax;
-
-    if ( next != scale )
+    next = std::clamp( next, min_scale, m_autoScaleMax );
+    if ( std::fabs( next - scale ) > 1e-3f && ( fade_began || emergency ) )
     {
         RenderPipeline::setRenderScale( next );
-        if ( m_actConfiguration && m_actConfiguration->renderPipeline() )
-            m_actConfiguration->renderPipeline()->resize( m_width, m_height );
+        if ( rp )
+            rp->resize( m_width, m_height );
         m_lastScaleAdjust = now;
-        fprintf( stderr, "Adaptive scale: %.2f (%d FPS)\n", next, m_fpsValue );
+        m_gpuMsCount = 0; // the next decision measures the new scale
+        fprintf( stderr, "Adaptive scale: %.2f (%d FPS, %s)\n", next, m_fpsValue,
+                 emergency ? "over budget" : "for the scene coming in" );
     }
 }
 
@@ -2043,6 +2383,15 @@ void GLwidget::timerEvent( QTimerEvent * )
         m_actConfiguration->start( m_width, m_height );
         m_sceneThumbs.clear(); // indices now name a different config's scene list
         m_pendingConfig = nullptr;
+    }
+
+    // At rest: five frames a second are plenty for a black window (the GPU is shared on many machines), the full
+    // rate while the menu is open.
+    if ( m_restState == RestE::RESTING && !m_osd.isOpen() )
+    {
+        if ( m_fpsTimer.elapsed() - m_restLastPaint < 200 )
+            return;
+        m_restLastPaint = m_fpsTimer.elapsed();
     }
 
     // Schedule a repaint; the actual rendering happens in paintGL() where the
@@ -3681,6 +4030,36 @@ std::vector<OsdItem> GLwidget::osdRootItems()
         { return autoScaleEnabled(); },
                        [this]( bool b )
         { setAutoScaleEnabled( b ); } ),
+            osdChoice( S_OSD_IDLE, { osdT( S_OSD_OFF ), "5 min", "15 min", "30 min", "60 min" },
+                       [this]
+        {
+            const int m[] = { 0, 5, 15, 30, 60 };
+            for ( int i = 4; i > 0; --i )
+                if ( m_idleMinutes >= m[i] )
+                    return i;
+            return 0;
+        },
+                       [this]( int i )
+        {
+            const int m[] = { 0, 5, 15, 30, 60 };
+            m_idleMinutes = m[std::clamp( i, 0, 4 )];
+        } ),
+            osdChoice( S_OSD_SLEEPTIMER, { osdT( S_OSD_OFF ), "15 min", "30 min", "60 min", "90 min" },
+                       [this]
+        {
+            const int m[] = { 0, 15, 30, 60, 90 };
+            for ( int i = 4; i > 0; --i )
+                if ( m_sleepMinutes == m[i] )
+                    return i;
+            return 0;
+        },
+                       [this]( int i )
+        {
+            const int m[] = { 0, 15, 30, 60, 90 };
+            m_sleepMinutes = m[std::clamp( i, 0, 4 )];
+            m_sleepAt = m_sleepMinutes > 0 ? m_fpsTimer.elapsed() + m_sleepMinutes * 60000LL : 0;
+            RenderPipeline::setDim( 1.f );
+        } ),
         };
     } ) );
 
@@ -3761,6 +4140,10 @@ void GLwidget::keyPressEvent( QKeyEvent *event )
             VideoExport::requestCancel();
         return;
     }
+
+    // A resting show (silence, the sleep timer): the first key only wakes it.
+    if ( wakeFromRest( "key" ) )
+        return;
 
     // The remote-control menu is modal while it is open: every key belongs
     // to it (arrows, OK, Back, Esc), nothing reaches the shortcuts below.

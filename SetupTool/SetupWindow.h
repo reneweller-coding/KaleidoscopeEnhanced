@@ -104,15 +104,17 @@ private:
     QPushButton *m_closeBtn = nullptr;    ///< Fixed "Close" button; closes the window without saving. Label set by
                                           ///< retranslateChrome().
 
-    QComboBox *m_language = nullptr;    ///< UI language (ini key language; item data "de"/"en"). Changing it saves,
-                                        ///< rebuilds the whole form in the new language and reloads (deferred, see
-                                        ///< buildContent()).
+    QComboBox *m_language = nullptr;       ///< UI language (ini key language; item data "de"/"en"). Changing it saves,
+                                           ///< rebuilds the whole form in the new language and reloads (deferred, see
+                                           ///< buildContent()).
     QComboBox *m_startConfig = nullptr; ///< Preset to start with (ini key activeConfig; item data = ConfigurationName).
                                         ///< First item, empty data, means "last used" and removes the key on save.
-    QSpinBox *m_remotePort = nullptr;   ///< Web-remote HTTP port (ini key remotePort), 0..65535; 0 shows as "off";
-                                        ///< default 8080.
-    QLineEdit *m_imageDir = nullptr;    ///< Photo-source folder (ini key imageDirectory); empty = the bundled Images
-                                        ///< folder.
+    QSpinBox *m_remotePort = nullptr;      ///< Web-remote HTTP port (ini key remotePort), 0..65535; 0 shows as "off";
+                                           ///< default 8080.
+    QLineEdit *m_imageDir = nullptr;       ///< Photo-source folder (ini key imageDirectory); empty = the bundled Images
+                                           ///< folder.
+    QSpinBox  *m_idleMinutes = nullptr; ///< Rest after this many minutes of digital silence (ini idleMinutes), 0 = off.
+    QCheckBox *m_idleDisplayOff = nullptr; ///< Let the display sleep at rest (ini idleDisplayOff); off by default.
 
     /** @name Extra-content downloader
      *  The photo library and the 3D models are published as release assets

@@ -72,6 +72,7 @@
 
 #include "RenderPipeline.h"
 #include "glwidget.h"
+#include "SettingsFile.h"
 #include "EffectShader.h"
 #include "CueReceiver.h"
 #include "ShaderForgeMain.h"
@@ -549,8 +550,15 @@ int main( int argc, char *argv[] )
     fmt.setDepthBufferSize( 24 );
     // KALEIDO_NO_VSYNC=1: measure without the panel's frame cap (see KALEIDO_GPU_TIMING).
     // A video export never waits for the panel: its window is only a preview.
+    // frameDivisor=2 in the ini: every 2nd refresh -- a long show on a GPU shared with other work at about half the
+    // power. The trails and the simulations follow the frame time (RenderPipeline::liveFrames()), so the picture
+    // moves the same, only in fewer frames.
+    GLwidget::M_FrameDivisor = qBound(
+        1, QSettings( SettingsFile::path(), QSettings::IniFormat ).value( "frameDivisor", 1 ).toInt(), 4 );
     if ( qEnvironmentVariableIsSet( "KALEIDO_NO_VSYNC" ) || VideoExport::requested() )
         fmt.setSwapInterval( 0 );
+    else if ( GLwidget::M_FrameDivisor > 1 )
+        fmt.setSwapInterval( GLwidget::M_FrameDivisor );
     QSurfaceFormat::setDefaultFormat( fmt );
     EffectShader::M_ChainRunner = true; // chain labs as passes (Engine/ChainPass); the editor keeps the uber-shaders
 

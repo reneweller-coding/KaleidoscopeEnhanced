@@ -337,6 +337,14 @@ void SetupWindow::buildContent()
     m_remotePort->setRange( 0, 65535 );
     m_remotePort->setSpecialValueText( uiString( S_SETUP_REMOTEPORT_OFF ) );
     f_start->addRow( uiString( S_SETUP_REMOTEPORT ), m_remotePort );
+    // Rest after silence: digital silence only (a drone never counts); music or a key wakes it.
+    m_idleMinutes = new QSpinBox();
+    m_idleMinutes->setRange( 0, 240 );
+    m_idleMinutes->setSuffix( " min" );
+    m_idleMinutes->setSpecialValueText( uiString( S_SETUP_REMOTEPORT_OFF ) );
+    f_start->addRow( uiString( S_SETUP_IDLE ), m_idleMinutes );
+    m_idleDisplayOff = new QCheckBox( uiString( S_SETUP_IDLE_DISPLAY ) );
+    f_start->addRow( QString(), m_idleDisplayOff );
 
     // Photo source. Empty means "whatever the preset says", which is the
     // bundled Images folder -- deliberately NOT a path written into the presets,
@@ -567,6 +575,8 @@ void SetupWindow::loadFromIni()
     int           idx = start_cfg.isEmpty() ? 0 : m_startConfig->findData( start_cfg );
     m_startConfig->setCurrentIndex( idx >= 0 ? idx : 0 );
     m_remotePort->setValue( s.value( "remotePort", 8080 ).toInt() );
+    m_idleMinutes->setValue( s.value( "idleMinutes", 0 ).toInt() );
+    m_idleDisplayOff->setChecked( s.value( "idleDisplayOff", false ).toBool() );
     m_imageDir->setText( s.value( "imageDirectory", QString() ).toString() );
 
     m_lyricsMode->setCurrentIndex( qBound( 0, s.value( "lyricsMode", 2 ).toInt(), 2 ) );
@@ -624,6 +634,8 @@ void SetupWindow::saveToIni()
     else
         s.remove( "activeConfig" ); // "(zuletzt verwendet)" - don't pin a specific one
     s.setValue( "remotePort", m_remotePort->value() );
+    s.setValue( "idleMinutes", m_idleMinutes->value() );
+    s.setValue( "idleDisplayOff", m_idleDisplayOff->isChecked() );
     s.setValue( "imageDirectory", m_imageDir->text().trimmed() );
 
     s.setValue( "lyricsMode", m_lyricsMode->currentIndex() );

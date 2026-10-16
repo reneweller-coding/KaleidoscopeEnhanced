@@ -606,6 +606,11 @@ void WebRemote::handleConnection()
                     const QString   path = url.path();
                     const QUrlQuery q( url );
 
+                    // A request that does something wakes a resting show; the page's own polling does not.
+                    if ( path.startsWith( "/api/" ) && path != "/api/state" && path != "/api/snapshot"
+                         && path != "/api/thumb" && path != "/api/scenes" )
+                        m_widget->remoteActivity();
+
                     if ( path == "/" )
                     {
                         body = buildPage();

@@ -405,7 +405,7 @@ bool VideoExport::prepare()
         return fail( "no working video encoder (not even libx264) - is this a complete ffmpeg build?" );
 
     // Frames and sub-frames. Motion blur runs the engine at the live rate and sums the sub-frames of each output
-    // frame; without it the engine steps at the output rate and frameStepScale() keeps it moving like the show.
+    // frame; without it the engine steps at the output rate and liveFrames() keeps it moving like the show.
     m_frames = static_cast<long long>( std::ceil( m_duration * s.fps - 1e-6 ) );
     m_sub = s.motionBlur ? std::max( 1, static_cast<int>( std::lround( RenderPipeline::LiveRefHz / s.fps ) ) ) : 1;
     m_subTotal = m_frames * m_sub;

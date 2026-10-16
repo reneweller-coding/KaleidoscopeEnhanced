@@ -16,6 +16,7 @@
 #ifndef RENDERPIPELINE_H
 #define RENDERPIPELINE_H
 
+#include <algorithm>
 #include <set>
 #include <QtGui/qopengl.h>
 #include <QtCore/QElapsedTimer>
@@ -288,6 +289,15 @@ public:
      *   True while two scenes are blended.
      **/
     bool sceneTransitioning() const { return m_scheduler.texState() != 0; }
+    /**  Index of the texture effect being faded to (or picked to come next).
+     *
+     * @return
+     *   An index into sceneNames(), or -1 if there are none.
+     **/
+    int nextSceneIndex() const
+    {
+        return m_effectTextures.empty() ? -1 : static_cast<int>( m_scheduler.nextTexture() );
+    }
 
     /**  Enables/disables review mode (alphabetical fixed-length walk through every scene, for systematic viewing).
      *
@@ -591,6 +601,23 @@ public:
      *   True if VJ blackout is currently engaged.
      **/
     static bool blackout() { return M_Blackout; }
+    /**  The rest mode's own blackout (GLwidget::updateRest()), beside the VJ's: it fades the output to black the same
+     * way and does not touch 'b'.
+     *
+     * @param on  Black or not. (in)
+     **/
+    static void setRestDim( bool on ) { M_RestDim = on; }
+    /**  The sleep timer's steady dimming of the output.
+     *
+     * @param d  1 = full brightness .. 0 = black. (in)
+     **/
+    static void setDim( float d ) { M_Dim = std::clamp( d, 0.f, 1.f ); }
+    /** After a rest: the scenes' clocks start fresh, so no switch falls due the moment the picture comes back. */
+    void restartSceneClocks()
+    {
+        m_scheduler.rearmEffectClocks();
+        m_timeTexture.restart();
+    }
     // Freeze (key 'e'): hold the picture — the frame time is forced to 0 (all
     // phase integration and envelope motion stops) and the activation clocks
     // are re-armed so no scheduled switch fires behind the frozen image.
@@ -644,20 +671,27 @@ public:
     /** Video export (VideoExport.h): every frame is exactly this long, in seconds; 0 = a live show on the wall clock.
      *
      * Set once, before the first frame. Besides fixing the frame step it switches off what only makes sense live
-     * (the fps-driven cube budget, writing the scene memory) and scales the per-frame trail decay and simulation
-     * steps by frameStepScale(), so a 24 or 60 fps export moves like the live show at LiveRefHz.
+     * (the fps-driven cube budget, writing the scene memory).  The per-frame trail decay and simulation steps follow
+     * the frame time anyway (liveFrames()), so a 24 or 60 fps export moves like the show.
      **/
     static float M_FrameStep;
     /** The display rate the look was tuned on (Hz): a per-frame trail decay or simulation step means what it means at
      * this rate.
      **/
     static constexpr float LiveRefHz = 120.f;
-    /**  How many live frames at LiveRefHz one frame stands for.
+    /**  How many frames at LiveRefHz a frame of this length stands for: the per-frame trail decay and simulation
+     * steps were tuned at that rate.
+     *
+     * @param dt  The frame's time step in seconds. (in)
      *
      * @return
-     *   M_FrameStep * LiveRefHz in a video export (5 at 24 fps, 2 at 60 fps), 1 in a live show.
+     *   dt * LiveRefHz, at most 8 (a hitch): 1 at 120 Hz, 2 on a 60-Hz panel, 5/6 at 144 Hz, 5 in a 24 fps export,
+     *   0 in a freeze.
+     *
+     * Until 16.10.2026 only the video export scaled by it; live, a 60-Hz panel had trails twice as long (in seconds)
+     * and the reaction-diffusion, fluid, smoke and Physarum at half speed, a 144-Hz panel the opposite.
      **/
-    static float frameStepScale() { return M_FrameStep > 0.f ? M_FrameStep * LiveRefHz : 1.f; }
+    static float liveFrames( float dt ) { return std::clamp( dt * LiveRefHz, 0.f, 8.f ); }
 
     /** Spout INPUT (CLI -i <sender|any>): a Spout sender's live texture (OBS, Resolume, a webcam through OBS, ...)
      * replaces the photo as the source image of the whole pipeline — the audience becomes the mandala.
@@ -1148,7 +1182,7 @@ private:
     GLint  m_trailPrevUni = -1;  ///< Uniform location of "texPrev" (previous trail buffer) in m_trailProgId.
     GLint  m_trailResUni = -1;   ///< Uniform location of "resolution" in m_trailProgId.
     GLint  m_trailDecayUni = -1; ///< Uniform location of "decay" (trail persistence) in m_trailProgId.
-    GLint  m_trailStepsUni = -1; ///< Uniform location of "decaySteps" (live frames per frame, frameStepScale()) in
+    GLint  m_trailStepsUni = -1; ///< Uniform location of "decaySteps" (live frames per frame, liveFrames()) in
                                  ///< m_trailProgId.
     GLint m_trailZoomUni = -1;   ///< echo-warp: per-frame zoom — uniform location of "warpZoom" in m_trailProgId.
     GLint m_trailRotUni = -1; ///< echo-warp: rotation (radians/frame) — uniform location of "warpRot" in m_trailProgId.
@@ -1623,6 +1657,8 @@ private:
     static float M_LightShow;        ///< 0 = corner lamps/light-show off (default), 1 = on.
     static float M_LatencyLead;      ///< display-phase lead in seconds (default 0.05).
     static bool  M_Blackout; ///< VJ blackout target (smoothed per instance) — actual fade is smoothed in PresentPass.
+    static bool  M_RestDim;          ///< The rest mode's blackout target (setRestDim()).
+    static float M_Dim;              ///< The sleep timer's dimming, 1 = full (setDim()).
     static bool  M_Freeze;           ///< VJ freeze: hold the picture — forces frame time to 0.
     static float M_ChainScaleIni; ///< chainScale as the ini has it (the session's value may be lowered by the quality
                                   ///< profile).

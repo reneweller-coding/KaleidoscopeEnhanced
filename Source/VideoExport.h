@@ -48,7 +48,7 @@ class AudioAnalyzer;
  *  - the pipeline renders into an RGBA16F target of the video size (renderFbo());
  *  - with motion blur the engine runs at RenderPipeline::LiveRefHz and the sub-frames of each output frame are
  *    summed (a 360-degree shutter); without it, the engine runs at the output rate and scales its per-frame decays
- *    and simulation steps instead (RenderPipeline::frameStepScale());
+ *    and simulation steps instead (RenderPipeline::liveFrames());
  *  - Engine/ExportYuv.frag converts the frame on the GPU into NV12 (BT.709, limited range, dithered), which the
  *    hardware encoders take as it is: 1.5 bytes per pixel cross the bus instead of 4;
  *  - a ring of pixel-pack buffers reads it back a few frames late, so the GPU is never waited for;

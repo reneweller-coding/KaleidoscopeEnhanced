@@ -348,6 +348,13 @@ enum StrIdE
     S_EXPORT_QUIT_RUNNING,
     // The main program's on-screen notices (GLwidget::notify()).
     S_NOTICE_SETTINGS_READONLY_FMT, // %1 the settings file
+    S_NOTICE_REST_FMT,              // %1 minutes of silence
+    S_NOTICE_SLEEP,
+    S_OSD_IDLE,
+    S_OSD_SLEEPTIMER,
+    S_OSD_OFF,
+    S_SETUP_IDLE,
+    S_SETUP_IDLE_DISPLAY,
 
     S_COUNT
 };

@@ -75,6 +75,8 @@ float RenderPipeline::M_FrameStep = 0.f;      // video export: fixed frame step 
 int   RenderPipeline::M_StereoMode = 0;       // stereoscopic output (CLI -3 / 'z')
 float RenderPipeline::M_StereoDepth = 1.0f;   // disparity strength
 bool  RenderPipeline::M_Blackout = false;     // VJ blackout ('b')
+bool  RenderPipeline::M_RestDim = false;      // the rest mode's blackout (GLwidget)
+float RenderPipeline::M_Dim = 1.f;            // the sleep timer's dimming
 float RenderPipeline::M_ChainScaleIni = 1.f;
 bool  RenderPipeline::M_Freeze = false; // VJ freeze ('e'); a comparison run (KALEIDO_FREEZE_TIME) engages it after the
                                         // fade-in
@@ -2028,8 +2030,8 @@ void RenderPipeline::stepSimulations( const AudioFeatures &audio, float timeSinc
         sim_frame.dyeTexB = m_liveTex ? m_liveTex : m_nextTex;
         sim_frame.dyeInterp = m_interpolationTexture;
         sim_frame.hold = M_Freeze; // a frozen picture: the sims stand too
-        // The sims step per frame: an export below LiveRefHz makes the steps the live show makes in the same time.
-        sim_frame.steps = std::max( 1, static_cast<int>( std::lround( frameStepScale() ) ) );
+        // The sims were tuned per frame at LiveRefHz: they step by the frame time, live and in an export.
+        sim_frame.liveFrames = liveFrames( timeSinceLastFrameSec );
 
         m_sims.run( audio, timeSinceLastFrameSec, need, sim_frame );
     }
@@ -2577,10 +2579,12 @@ GLuint RenderPipeline::renderTrailsPass( const AudioFeatures &audio, const Audio
             glUniform2f( m_trailResUni, static_cast<float>( m_width ), static_cast<float>( m_height ) );
         if ( m_trailDecayUni >= 0 )
             glUniform1f( m_trailDecayUni, decay );
-        // The decay is per frame: a video export below LiveRefHz applies it once per live frame it stands for, or a
-        // 24 fps export would trail five times as long as the show.
+        // The decay was tuned per frame at LiveRefHz: it is applied once per such frame the frame stands for, so a
+        // trail lasts as long in seconds on a 60-Hz panel, a 144-Hz one and in a 24 fps export.  In a freeze the
+        // scene time stands, but the trails still fade onto the held picture, on the wall clock as they always did
+        // (a comparison run's final frame is that held picture, whatever the timing).
         if ( m_trailStepsUni >= 0 )
-            glUniform1f( m_trailStepsUni, frameStepScale() );
+            glUniform1f( m_trailStepsUni, liveFrames( M_Freeze ? dtWall : timeSinceLastFrameSec ) );
         // Echo-warp: the beat pumps the outward zoom, the rotation direction
         // swings slowly (sin of slow time -> smooth reversals, no snapping)
         // and echoes drift gently in hue.  All rates scaled by frame time.
@@ -2733,7 +2737,8 @@ void RenderPipeline::runPresentPass( GLuint presentSource, const AudioFeatures &
         pin.stereoPacked = m_trueStereoPacked;
         pin.stereoMode = M_StereoMode;
         pin.stereoDepth = M_StereoDepth;
-        pin.blackout = M_Blackout;
+        pin.blackout = M_Blackout || M_RestDim;
+        pin.dim = M_Dim;
         pin.breakSmooth = m_breakSmooth;
         pin.fadeOutEnv = audioFx.fadeOut;
         // REVIEW BENCH: neutral colour. The presets' key-following hue shift

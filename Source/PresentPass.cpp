@@ -10,6 +10,7 @@
  *  @author René Weller
  */
 
+#include <algorithm>
 #include <cstdio>
 #include <cstdlib>
 #include <cmath>
@@ -390,20 +391,35 @@ void PresentPass::setTitleImage( const void *rgba, int w, int h )
     m_titleAge = 0.f;
 }
 
+/**  How fast the frame's mean luminance may rise, in luma per second: the photosensitivity limit.
+ *
+ * @return
+ *   2.0, or what KALEIDO_LIMIT_RATE says (a test: a low rate makes the limiter act on ordinary content).
+ **/
+static float riseRate()
+{
+    static const float Rate = []
+    {
+        const char *e = getenv( "KALEIDO_LIMIT_RATE" );
+        const float r = e ? static_cast<float>( atof( e ) ) : 0.f;
+        return r > 0.f ? r : 2.f;
+    }();
+    return Rate;
+}
+
 /**  Run the full present sequence for one frame.
  *
  * Order of operations, and why it's this order:
  *  1. captureHistory() runs FIRST, before anything is presented, so the
  *     ring keeps recording the live frame even while a rewind is being
  *     displayed elsewhere in the pipeline.
- *  2. The brightness limiter samples a small mip of the source texture
- *     (glGetTexImage forces a GPU->CPU sync, so it only runs every 3rd
- *     frame — m_safetyAccumDt tracks the real elapsed time across the
- *     skipped frames so the ~2.0 luma/s cap stays correct either way).
- *     The computed scale can only ever darken (scale <= 1), never brighten.
- *  3. GPU percentile auto-exposure (CfxHistogram.comp) writes straight into
- *     an SSBO that Present.frag reads directly — no CPU sync at all, unlike
- *     the mip-based limiter above.
+ *  2. The brightness limiter (SafetyLimit.comp) measures a small mip of the
+ *     source texture every frame and writes its scale into the SSBO that
+ *     Present.frag reads -- no CPU sync.  The scale can only ever darken
+ *     (<= 1), never brighten.  Without a compute program the old CPU path
+ *     reads the mip back with glGetTexImage, every 3rd frame.
+ *  3. GPU percentile auto-exposure (CfxHistogram.comp) writes into the same
+ *     SSBO -- no CPU sync either.
  *  4. Two-pass quarter-res Gaussian bloom (horizontal+downsample, then
  *     vertical) if the bloom setup succeeded.
  *  5. Present.frag draws at DISPLAY resolution (the only pass that is) —
@@ -438,97 +454,151 @@ void PresentPass::run( const Inputs &in )
     glBindTexture( GL_TEXTURE_2D, in.source );
     glGenerateMipmap( GL_TEXTURE_2D ); // every frame (bloom samples a mip)
 
-    // The whole-frame mean comes from a glGetTexImage readback, which forces a
-    // GPU→CPU sync stall — costly on weak GPUs.  Do it only every 3rd frame and
-    // reuse the brightness scale in between (dt is accumulated so the per-second
-    // limit stays correct).  Photosensitivity is unaffected (slow limiter).
-    m_safetyAccumDt += in.dtFrame;
-    float scale = m_lastSafetyScale;
-    if ( ( ++m_safetyFrame % 3 ) == 0 )
-    {
-        int max_dim = ( in.renderW > in.renderH ) ? in.renderW : in.renderH;
-        int lvl = 0;
-        for ( int d = max_dim; d > 4; d >>= 1 )
-            ++lvl; // a small (<=4 px) mip level
-        int lw = 1, lh = 1;
-        glGetTexLevelParameteriv( GL_TEXTURE_2D, lvl, GL_TEXTURE_WIDTH, &lw );
-        glGetTexLevelParameteriv( GL_TEXTURE_2D, lvl, GL_TEXTURE_HEIGHT, &lh );
-        if ( lw < 1 )
-            lw = 1;
-        if ( lh < 1 )
-            lh = 1;
-        int npx = lw * lh;
-        if ( npx > 64 )
-            npx = 64;
-        float buf[4 * 64];
-        glGetTexImage( GL_TEXTURE_2D, lvl, GL_RGBA, GL_FLOAT, buf );
-        float mean = 0.f;
-        float lum[64];
-        for ( int i = 0; i < npx; ++i )
-        {
-            lum[i] = 0.299f * buf[i * 4 + 0] + 0.587f * buf[i * 4 + 1] + 0.114f * buf[i * 4 + 2];
-            mean += lum[i];
-        }
-        mean /= static_cast<float>( npx );
-
-        // The same 64 samples answer two more questions for free: is there
-        // any STRUCTURE (spread), and is anything MOVING (change against the
-        // previous sample).  Those are exactly the two numbers the offline
-        // screening spends four minutes per batch computing, and having them
-        // live turns 'edit, render, extract, look' into 'edit, look'.
-        {
-            float var = 0.f, mot = 0.f;
-            for ( int i = 0; i < npx; ++i )
-            {
-                const float d = lum[i] - mean;
-                var += d * d;
-                if ( m_havePrevSample )
-                    mot += fabsf( lum[i] - m_prevSample[i] );
-            }
-            m_liveStd = sqrtf( var / static_cast<float>( npx ) );
-            m_liveMotion = m_havePrevSample ? ( mot / static_cast<float>( npx ) ) : 0.f;
-            for ( int i = 0; i < npx; ++i )
-                m_prevSample[i] = lum[i];
-            m_havePrevSample = true;
-        }
-
-        if ( m_prevMeanLum < 0.f )
-            m_prevMeanLum = mean;
-        float max_step = 2.0f * m_safetyAccumDt; // <= 2.0 luma / second
-        float hi = m_prevMeanLum + max_step;
-        float clamped = ( mean > hi ) ? hi : mean; // only limit RISES
-        scale = ( mean > 1e-4f ) ? ( clamped / mean ) : 1.f;
-        if ( scale > 1.f )
-            scale = 1.f; // never brighten
-        m_prevMeanLum = ( mean < m_prevMeanLum ) ? mean : clamped;
-        m_lastSafetyScale = scale;
-        m_safetyAccumDt = 0.f;
-        {
-            static const bool Dbg = getenv( "KALEIDO_EXPOSURE_DEBUG" ) != 0;
-            if ( Dbg )
-                fprintf( stderr, "EXPO mean=%.4f prev=%.4f scale=%.3f\n",
-                         mean, m_prevMeanLum, scale );
-        }
-    }
-
-    // ---- GPU percentile auto-exposure (Engine/CfxHistogram.comp) ----
-    // Writes into an SSBO that Present.frag reads directly, so unlike the
-    // mean-luminance limiter above it costs no GPU->CPU sync at all.
+    // The programs and the buffer they share (binding 3), made once: the photosensitivity limiter
+    // (Engine/SafetyLimit.comp) and the percentile auto-exposure (Engine/CfxHistogram.comp).
     if ( !m_autoExpTried )
     {
         m_autoExpTried = true;
         m_autoExpProg = setComputeShader( "..\\Engine\\CfxHistogram.comp" );
-        if ( m_autoExpProg )
+        // KALEIDO_LIMITER_CPU=1 keeps the old readback path (the fallback for a driver without compute), to compare.
+        if ( !getenv( "KALEIDO_LIMITER_CPU" ) )
+            m_limitProg = setComputeShader( "..\\Engine\\SafetyLimit.comp" );
+        if ( m_autoExpProg || m_limitProg )
         {
-            const float init[4] = { 1.f, 0.5f, 1.f, 0.f };
+            // { exposure, p50, p98, limScale, prevMean, liveStd, liveMotion, frameCount, prevSample[64] }
+            const float init[8 + 64] = { 1.f, 0.5f, 1.f, 1.f, -1.f, 0.f, 0.f, 0.f };
             glGenBuffers( 1, &m_autoExpBuf );
             glBindBuffer( GL_SHADER_STORAGE_BUFFER, m_autoExpBuf );
             glBufferData( GL_SHADER_STORAGE_BUFFER, sizeof( init ), init, GL_DYNAMIC_COPY );
             glBindBuffer( GL_SHADER_STORAGE_BUFFER, 0 );
         }
-        fprintf( stderr, "Auto-exposure: %s\n",
-                 m_autoExpProg ? "histogram (GPU)" : "off" );
+        fprintf( stderr, "Auto-exposure: %s; brightness limiter: %s\n", m_autoExpProg ? "histogram (GPU)" : "off",
+                 m_limitProg && m_autoExpBuf ? "every frame (GPU)" : "every 3rd frame (CPU readback)" );
     }
+
+    // The limiter measures the mip whose long side is at most 4 texels.
+    int lvl = 0;
+    for ( int d = std::max( in.renderW, in.renderH ); d > 4; d >>= 1 )
+        ++lvl;
+    ++m_safetyFrame;
+    // The limiter's scale for the uniform: 1 when the compute pass applies it in Present.frag (limScale), the CPU
+    // path's own value otherwise.
+    float scale = 1.f;
+    if ( m_limitProg && m_autoExpBuf )
+    {
+        // The 'i' overlay's statistics, while it asks: read every 15th frame, BEFORE this frame's pass is queued,
+        // so the map waits at most for the previous frame. Nothing is read while nobody looks.
+        if ( m_liveWanted && m_safetyFrame % 15 == 0 )
+        {
+            m_liveWanted = false;
+            glBindBuffer( GL_SHADER_STORAGE_BUFFER, m_autoExpBuf );
+            if ( const float *r = static_cast<const float *>( glMapBuffer( GL_SHADER_STORAGE_BUFFER, GL_READ_ONLY ) ) )
+            {
+                m_liveStd = r[5];
+                m_liveMotion = r[6];
+                glUnmapBuffer( GL_SHADER_STORAGE_BUFFER );
+            }
+            glBindBuffer( GL_SHADER_STORAGE_BUFFER, 0 );
+        }
+        // Every frame, and no sync: until 16.10.2026 the mean came back with glGetTexImage, so only every 3rd
+        // frame -- a flash could pass two frames unlimited (33 ms at 60 Hz).
+        glUseProgram( m_limitProg );
+        glBindBufferBase( GL_SHADER_STORAGE_BUFFER, 3, m_autoExpBuf );
+        glActiveTexture( GL_TEXTURE0 );
+        glBindTexture( GL_TEXTURE_2D, in.source );
+        glUniform1i( glGetUniformLocation( m_limitProg, "texFrame" ), 0 );
+        glUniform1i( glGetUniformLocation( m_limitProg, "lvl" ), lvl );
+        glUniform2i( glGetUniformLocation( m_limitProg, "lsize" ), std::max( 1, in.renderW >> lvl ),
+                     std::max( 1, in.renderH >> lvl ) );
+        glUniform1f( glGetUniformLocation( m_limitProg, "dt" ), in.dtFrame );
+        glUniform1f( glGetUniformLocation( m_limitProg, "riseRate" ), riseRate() );
+        glDispatchCompute( 1, 1, 1 );
+        glMemoryBarrier( GL_SHADER_STORAGE_BARRIER_BIT );
+        static const bool Dbg = getenv( "KALEIDO_EXPOSURE_DEBUG" ) != 0;
+        if ( Dbg && m_safetyFrame % 3 == 0 )
+        {
+            glBindBuffer( GL_SHADER_STORAGE_BUFFER, m_autoExpBuf );
+            if ( const float *r = static_cast<const float *>( glMapBuffer( GL_SHADER_STORAGE_BUFFER, GL_READ_ONLY ) ) )
+            {
+                fprintf( stderr, "EXPO prev=%.4f scale=%.3f\n", r[4], r[3] );
+                glUnmapBuffer( GL_SHADER_STORAGE_BUFFER );
+            }
+            glBindBuffer( GL_SHADER_STORAGE_BUFFER, 0 );
+        }
+    }
+    else
+    {
+        // No compute program (an old driver): the mean comes back with a glGetTexImage readback, which forces a
+        // GPU->CPU sync -- so only every 3rd frame, the scale reused in between (dt accumulated, so the
+        // per-second limit stays right).
+        scale = m_lastSafetyScale;
+        m_safetyAccumDt += in.dtFrame;
+        if ( m_safetyFrame % 3 == 0 )
+        {
+            int lw = 1, lh = 1;
+            glGetTexLevelParameteriv( GL_TEXTURE_2D, lvl, GL_TEXTURE_WIDTH, &lw );
+            glGetTexLevelParameteriv( GL_TEXTURE_2D, lvl, GL_TEXTURE_HEIGHT, &lh );
+            if ( lw < 1 )
+                lw = 1;
+            if ( lh < 1 )
+                lh = 1;
+            int npx = lw * lh;
+            if ( npx > 64 )
+                npx = 64;
+            float buf[4 * 64];
+            glGetTexImage( GL_TEXTURE_2D, lvl, GL_RGBA, GL_FLOAT, buf );
+            float mean = 0.f;
+            float lum[64];
+            for ( int i = 0; i < npx; ++i )
+            {
+                lum[i] = 0.299f * buf[i * 4 + 0] + 0.587f * buf[i * 4 + 1] + 0.114f * buf[i * 4 + 2];
+                mean += lum[i];
+            }
+            mean /= static_cast<float>( npx );
+
+            // The same 64 samples answer two more questions for free: is there
+            // any STRUCTURE (spread), and is anything MOVING (change against the
+            // previous sample).  Those are exactly the two numbers the offline
+            // screening spends four minutes per batch computing, and having them
+            // live turns 'edit, render, extract, look' into 'edit, look'.
+            {
+                float var = 0.f, mot = 0.f;
+                for ( int i = 0; i < npx; ++i )
+                {
+                    const float d = lum[i] - mean;
+                    var += d * d;
+                    if ( m_havePrevSample )
+                        mot += fabsf( lum[i] - m_prevSample[i] );
+                }
+                m_liveStd = sqrtf( var / static_cast<float>( npx ) );
+                m_liveMotion = m_havePrevSample ? ( mot / static_cast<float>( npx ) ) : 0.f;
+                for ( int i = 0; i < npx; ++i )
+                    m_prevSample[i] = lum[i];
+                m_havePrevSample = true;
+            }
+
+            if ( m_prevMeanLum < 0.f )
+                m_prevMeanLum = mean;
+            float max_step = riseRate() * m_safetyAccumDt; // <= riseRate (2.0) luma / second
+            float hi = m_prevMeanLum + max_step;
+            float clamped = ( mean > hi ) ? hi : mean; // only limit RISES
+            scale = ( mean > 1e-4f ) ? ( clamped / mean ) : 1.f;
+            if ( scale > 1.f )
+                scale = 1.f; // never brighten
+            m_prevMeanLum = ( mean < m_prevMeanLum ) ? mean : clamped;
+            m_lastSafetyScale = scale;
+            m_safetyAccumDt = 0.f;
+            {
+                static const bool Dbg = getenv( "KALEIDO_EXPOSURE_DEBUG" ) != 0;
+                if ( Dbg )
+                    fprintf( stderr, "EXPO mean=%.4f prev=%.4f scale=%.3f\n",
+                             mean, m_prevMeanLum, scale );
+            }
+        }
+    }
+
+    // ---- GPU percentile auto-exposure (Engine/CfxHistogram.comp) ----
+    // Writes into the same SSBO, which Present.frag reads directly: no CPU sync at all.
     if ( m_autoExpProg && m_autoExpBuf )
     {
         glUseProgram( m_autoExpProg );
@@ -842,7 +912,7 @@ void PresentPass::run( const Inputs &in )
     if ( m_presentScaleUni >= 0 )
         glUniform1f( m_presentScaleUni,
                      scale * ( 1.f - m_blackSmooth ) * ( 1.f - 0.25f * in.breakSmooth )
-                         * ( 1.f - 0.20f * in.fadeOutEnv ) );
+                         * ( 1.f - 0.20f * in.fadeOutEnv ) * in.dim );
     // Global mood grade — gated values (neutral in non-music mode), scaled by the
     // live mood-strength knob (deviations from neutral × moodStrength).
     float ms = in.moodStrength;

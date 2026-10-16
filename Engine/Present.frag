@@ -39,11 +39,11 @@ layout( std430, binding = 3 ) readonly buffer AutoExp
     float autoExposure;
     float lumaP50;
     float lumaP98;
-    float autoPad;
+    float limScale; ///< The photosensitivity limit (Engine/SafetyLimit.comp), 0..1; 0 = no limiter pass.
 };
 uniform sampler2D tex;        ///< The input picture.
 uniform vec2      resolution; ///< Size of the render target in pixels.
-uniform float     scale;      ///< Brightness limit for photosensitivity, applied last.
+uniform float     scale;      ///< Blackout, DJ-stop and fade dimming (and the limiter where limScale is 0), last.
 
 uniform float     audioCentroid;  ///< Spectral centroid (brightness of the sound), 0..1.
 uniform float     audioValence;   ///< Mood valence: 0 dark .. 1 bright.
@@ -911,7 +911,9 @@ void main()
         c += tt.rgb * a * glow_x;                      // style-specific glint
     }
 
-    c *= scale; // photosensitivity brightness limit (applied last)
+    // Photosensitivity limit (applied last): the compute pass's limScale, every frame; where it does not run
+    // (limScale 0), the host folds its own limiter into `scale`.
+    c *= scale * ( limScale > 0.0 ? limScale : 1.0 );
 
     // Percentile auto-exposure ON TOP of the limiter, never instead of it: the
     // limiter is what caps how fast the frame may BRIGHTEN, and that safety

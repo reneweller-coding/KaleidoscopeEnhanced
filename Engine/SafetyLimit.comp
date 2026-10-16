@@ -1,0 +1,80 @@
+#version 430
+/*****************************************************************************\
+ *                              SafetyLimit.comp
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  The photosensitivity brightness limiter: the frame's mean luminance may rise by at most 2.0 per second, and the
+ *  scale that holds it there is written for Present.frag to apply -- every frame, without a GPU-to-CPU readback.
+ *
+ *  One invocation reads a small mip of the finished frame (its long side 4 texels at most), takes the mean
+ *  luminance and holds it to the previous mean plus 2.0 * dt: the scale is clamped / mean, never above 1 (it only
+ *  darkens), and the
+ *  reference follows the frame down at once and up only as fast as allowed.  Until 16.10.2026 PresentPass read
+ *  the mip back with glGetTexImage (a sync) and therefore only every 3rd frame -- a flash could pass two frames
+ *  unlimited (33 ms at 60 Hz).  The same sample gives the 'i' overlay's spread and motion (every 3rd frame, as
+ *  before, so their scale stays the same).
+ *
+ *  The results share the auto-exposure buffer (binding 3, see CfxHistogram.comp, which writes its first three
+ *  floats): limScale is what Present.frag multiplies the picture by.
+ *
+ *  @author René Weller
+ */
+/// One invocation: a handful of texels is all there is to read.
+layout( local_size_x = 1 ) in;
+
+/// Binding 3: the auto-exposure buffer, extended by the limiter's state (the C++ side sizes and seeds it).
+layout( std430, binding = 3 ) buffer Exposure
+{
+    float exposureOut;    ///< CfxHistogram.comp: the exposure gain.
+    float p50;            ///< CfxHistogram.comp: median luminance.
+    float p98;            ///< CfxHistogram.comp: 98th-percentile luminance.
+    float limScale;       ///< This pass: the brightness scale, 0..1, that Present.frag applies.
+    float prevMean;       ///< This pass: the mean the next rise is measured against (< 0: not yet).
+    float liveStd;        ///< This pass: spatial spread of the sample (is there anything to see).
+    float liveMotion;     ///< This pass: mean change against the sample 3 frames ago (is anything moving).
+    float frameCount;     ///< This pass: frames counted, for the every-3rd-frame statistics.
+    float prevSample[64]; ///< This pass: the sample of the statistics' last frame.
+};
+uniform sampler2D texFrame; ///< The finished frame, mipmapped.
+uniform int       lvl;      ///< The mip level to read (long side at most 4 texels).
+uniform ivec2     lsize;    ///< Its size in texels.
+uniform float     dt;       ///< This frame's time step in seconds.
+uniform float     riseRate; ///< How fast the mean luminance may rise, per second (2.0).
+
+/** Entry point of this shader stage (the file description says what it computes). */
+void main()
+{
+    const int n = lsize.x * lsize.y;
+    float     lum[64];
+    float     mean = 0.0;
+    for ( int i = 0; i < n; ++i )
+    {
+        const vec3 c = texelFetch( texFrame, ivec2( i % lsize.x, i / lsize.x ), lvl ).rgb;
+        lum[i] = dot( c, vec3( 0.299, 0.587, 0.114 ) );
+        mean += lum[i];
+    }
+    mean /= float( n );
+
+    if ( prevMean < 0.0 )
+        prevMean = mean;
+    const float hi = prevMean + riseRate * dt; // <= riseRate (2.0) luma per second
+    const float clamped = min( mean, hi );     // only a RISE is limited
+    limScale = mean > 1e-4 ? min( clamped / mean, 1.0 ) : 1.0;
+    prevMean = mean < prevMean ? mean : clamped;
+
+    frameCount += 1.0;
+    if ( mod( frameCount, 3.0 ) < 0.5 )
+    {
+        float var = 0.0, mot = 0.0;
+        for ( int i = 0; i < n; ++i )
+        {
+            var += ( lum[i] - mean ) * ( lum[i] - mean );
+            mot += abs( lum[i] - prevSample[i] );
+            prevSample[i] = lum[i];
+        }
+        liveStd = sqrt( var / float( n ) );
+        liveMotion = frameCount > 3.5 ? mot / float( n ) : 0.0;
+    }
+}

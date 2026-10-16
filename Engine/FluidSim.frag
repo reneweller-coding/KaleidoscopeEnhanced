@@ -30,6 +30,7 @@ uniform float     seedMode;      ///< How the simulation is seeded (pattern of t
 uniform float     flowPhase;     ///< Phase of the flow field (integrated).
 uniform float     impulse;       ///< Strength of the injected impulse.
 uniform float     injectAmt;     ///< How much dye is injected.
+uniform float     stepScale;     ///< The step's length in 120-Hz frames (1 at 120 Hz, 2 on a 60-Hz panel).
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *
@@ -109,13 +110,14 @@ void main()
     // (Magnitude capped so noise-gradient spikes can't teleport the ink.)
     float mag = min( length( vel ), 3.0 );
     vec2  vdir = vel / max( length( vel ), 1e-4 );
-    vec2  disp = vdir * mag * ( 0.0012 + 0.0016 * impulse );
+    vec2  disp = vdir * mag * ( 0.0012 + 0.0016 * impulse ) * stepScale;
     vec3  dye = texture( texPrev, uv - disp ).rgb;
 
     // Slow fade + continuous image injection: the picture is the ink source,
     // so the field stays recognisably image-coloured while it swirls.
-    dye *= 0.996;
-    dye = mix( dye, img( uv ), clamp( injectAmt, 0.0, 0.2 ) );
+    // Fade and injection per 120-Hz frame, compounded over the step's length.
+    dye *= pow( 0.996, stepScale );
+    dye = mix( dye, img( uv ), 1.0 - pow( 1.0 - clamp( injectAmt, 0.0, 0.2 ), stepScale ) );
 
     fragColor = vec4( dye, 1.0 );
 }

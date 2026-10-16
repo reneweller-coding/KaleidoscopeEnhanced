@@ -21,7 +21,7 @@ uniform sampler2D texCur;     ///< current combined frame
 uniform sampler2D texPrev;    ///< previous trail frame
 uniform vec2      resolution; ///< Size of the render target in pixels.
 uniform float     decay;      ///< Decay of the trail per step.
-uniform float     decaySteps; ///< Live frames this frame stands for (1 live; 5 in a 24 fps video export).
+uniform float     decaySteps; ///< Frames at 120 Hz this frame stands for (1 at 120 Hz, 2 at 60, 5 in a 24 fps export).
 uniform float     warpZoom;   ///< per-frame echo expansion (1.0 = none)
 uniform float     warpRot;    ///< per-frame echo rotation (radians)
 uniform float     hueDrift;   ///< per-frame hue rotation of the echoes
@@ -104,10 +104,10 @@ void main()
         d_scale = mix( 1.0, mix( 1.035, 0.90, nearness ), depth3D );
     }
 
-    // The decay is per live frame: an export frame standing for several applies it as often, so the trail lasts
-    // as long in seconds as in the show.  pow() only there -- a live frame keeps the exact product.
+    // The decay is per frame at 120 Hz: a frame standing for more or fewer applies it as often, so the trail lasts
+    // as long in seconds on any panel and in an export.  pow() only then -- a frame of exactly 1 keeps the product.
     float keep = min( decay * d_scale, 0.985 ) * edge;
-    if ( decaySteps > 1.0 )
+    if ( decaySteps != 1.0 )
         keep = pow( keep, decaySteps );
     fragColor = vec4( max( cur, prv * keep ), 1.0 );
 }

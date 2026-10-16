@@ -206,7 +206,7 @@ submenus), **Back** goes one level up, **Esc** closes it. It hides itself after
 | Fine tuning | reactivity, trails, mood colour, latency lead (sliders) |
 | Audio | audio source, tap tempo |
 | Stereo 3D | mode, depth |
-| Automation | pick preset by mood, adapt resolution |
+| Automation | pick preset by mood, adapt resolution, rest after silence (off/5/15/30/60 min), sleep timer (off/15/30/60/90 min) |
 | Capture | record, instant replay armed / save, screenshot |
 | Info & diagnostics | shader names, audio analysis + FPS, keyboard shortcuts |
 | System | language, save settings as default, install update (when one is found), quit |
@@ -521,6 +521,21 @@ you would rather not open the tool:
 [General]
 showHiddenPresets=true
 ```
+
+**Rest after silence** (Setup tool, or `idleMinutes` in the ini; off by
+default): after that many minutes of *digital* silence — every band below
+about −60 dB, so a quiet drone or a spoken passage never counts — the picture
+fades to black, the scenes stop and the window redraws five times a second.
+A second of sound, a key or a remote action brings it back with a fade.
+`idleDisplayOff=true` also lets the display sleep while resting; many
+projectors fall into standby without a signal and wake only with their own
+remote, hence off. The **sleep timer** in the menu dims the picture over its
+last two minutes and then rests the same way, until a key or the remote.
+
+**Half the panel's rate** for long shows on a shared GPU: `frameDivisor=2` in
+the ini renders every second refresh (60 fps on a 120-Hz panel). Trails and the
+simulations follow the frame time, so the picture moves the same, in fewer
+frames.
 
 > The settings file is resolved **relative to the working directory**, one
 > level up from the exe: `Release\Kaleidoscope.exe` reads the copy in the

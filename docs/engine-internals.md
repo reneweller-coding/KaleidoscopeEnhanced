@@ -4787,3 +4787,58 @@ The third round of the idea list: what the program writes, and where.
   6.9 KB; all 17 preset files are read in 0.47 s -- too little to be worth the risks of loading presets lazily.
 
 `Kaleidoscope.exe -q`: 101 checks (the settings round trip and a read-only file among them).
+
+## 16.10.2026 (8): the GPU's time, and what to do with it
+
+The fourth round of the idea list: what the frame costs and who pays.
+
+- **The phone's preview.** Read synchronously at full size, mirrored and smooth-scaled twice and JPEG-encoded
+  twice in the render thread, it cost 31-45 ms (median 35) every 0.9 s while the remote page was open -- four
+  frames lost at 120 Hz, once a second. Now the GPU halves the frame with blits (each an exact 2x2 box), takes one
+  last linear step to 360 rows flipped upright, the picture goes into a pixel-pack buffer mapped two frames later,
+  and a worker encodes it and the scene's thumbnail (`GLwidget::updateRemotePreview()`): 0.33 ms median in the
+  render thread, 2 ms at most. Checked against full screenshots taken at the same moments. The preview's filter
+  changed, so the scene_snapshots baseline has to be rendered anew.
+- **The brightness limiter** (photosensitivity: the mean may rise 2.0 luma per second) read a small mip back with
+  glGetTexImage, a sync, so it ran every 3rd frame and a flash could pass two frames unlimited (33 ms at 60 Hz).
+  `Engine/SafetyLimit.comp` now computes it every frame on the GPU, into the auto-exposure buffer that Present.frag
+  already read (`limScale`); the CPU path remains for a driver without compute (and `KALEIDO_LIMITER_CPU=1`).
+  With the rate lowered to 0.05 for the test (`KALEIDO_LIMIT_RATE`) both paths limited the same way (CPU 51 % of
+  samples, minimum scale 0.915; GPU 57 %, 0.912). No fps change on the RTX 5090 (the timer holds 125); the gain
+  is the frames the limiter no longer skips.
+- **Frame rate independence.** Trail decay and the GPU simulations were tuned per frame at 120 Hz: a 60-Hz panel
+  had trails twice as long in seconds and the sims at half speed (only the export corrected it).
+  `RenderPipeline::liveFrames(dt)` now drives both everywhere: the trails' `pow(keep, n)` (in a freeze on the
+  wall clock, so they still settle onto the held picture), the reaction-diffusion as whole sub-steps with the
+  remainder carried (six per 120-Hz frame), the smoke likewise (its plume rises one texel a step), the fluid and
+  Physarum as scaled steps (displacement, fade, injection, speed, turn, deposit and decay per step length).
+  Comparison runs keep their fixed 1/120 s step, so they integrate exactly as before. Left alone: the chain labs'
+  afterglow (0.78 a frame, 2.8 frames' half-life -- 23 ms against 47 ms; it would take a new uniform through the
+  generator for something barely visible).
+- **Rest after silence** (`idleMinutes`, Setup tool and menu) and the **sleep timer** (menu): after digital
+  silence (`AudioFeatures::rawLevel`, the band mix before the gain, under 0.02: about -60 dB) the output fades out
+  through the blackout slew, no scene runs and the window redraws at 5 Hz; a second of sound, a key or a remote
+  action wakes it, with the scenes' clocks restarted. `idleDisplayOff` lets the display sleep (off by default:
+  projectors). Tried with a WAV of 14 s silence and music: fade after the (test) 5 s, rest at 5 fps, awake 1 s
+  after the music began, 120 fps again.
+- **`frameDivisor=2`**: swap interval and timer at every 2nd refresh; measured 60 fps steady on the 120-Hz panel,
+  one frame over 20 ms in 25 s (the start).
+- **Scene cost as GPU time.** `KALEIDO_COST_LOG` charged the CPU clock around draw(), which read about 2.5 ms for
+  every scene; the query ring now charges each standing frame's GPU time too (`ms_gpu` in scene-cost.json, which
+  sync_complexity.py prefers). Measured (the GPU shared with another job at 93-96 %): BioluminescentNebula 24.3 ms,
+  VoidLeviathan 6.6, GasGiantAtmosphere 3.2 since its rebuild, the ordinary scenes 0.73-1.0.
+- **BioluminescentNebula** ran up to 25 five-octave noise sums per step: the slow warp field now has three octaves
+  (plus the mean of the missing two) and is renewed every 2nd step, the veins are worked out only where the gas is
+  dense enough to show them (faded in), and 46 longer steps reach the same depth as 60, each carrying 1.3 times the
+  gas. 24.3 -> 11.5 ms, the frozen comparison frame 1.4 apart, same structures, 8 % darker (the auto exposure takes
+  that). A per-scene resolution attribute was not built: one scene does not justify it.
+- **The adaptive resolution** decides by GPU time, not fps (vsync pins the fps at the panel's rate whatever the
+  headroom): it remembers each scene's GPU time per pixel and, as a scene fades in, picks the largest scale whose
+  predicted time stays under 80 % of one frame at the panel's rate (or half of it with frameDivisor; the 72-fps cap
+  is gone). In the middle of a scene only an emergency step (90th percentile over 1.5 frames, measured from the
+  fade's end -- a fade draws two scenes). The rate is taken again when the window moves to another screen. Tried:
+  the nebula unknown -> 0.9, 0.8 under load; a light scene after it -> 1.0; the nebula again -> 0.8 as it fades in,
+  120 fps; the next light scene -> 1.0. (Judged by the recent frames, as first built, a heavy scene leaving made
+  the light one coarse.)
+
+`Kaleidoscope.exe -q`: 102 checks.

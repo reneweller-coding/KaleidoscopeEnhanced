@@ -47,6 +47,9 @@ struct AudioFeatures
 
     // ---- Overall amplitude ----
     float overallLevel = 0.f; ///< Weighted mix of all 6 bands (bass-heavy weighting).
+    /// The same mix before the automatic gain: 0 = every band at -60 dB or below (digital silence), 1 = 0 dB.
+    /// Volume-dependent -- for telling silence from quiet music (the rest mode), not for the picture.
+    float rawLevel = 0.f;
 
     // ---- Fine-grained spectrum (for the analyzer effects) ----
     /** Number of log-spaced bands in #spectrum. */

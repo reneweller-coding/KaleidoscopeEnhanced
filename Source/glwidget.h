@@ -15,6 +15,7 @@
 #ifndef GLWIDGET_H
 #define GLWIDGET_H
 
+#include <array>
 #include <vector>
 #include <iostream>
 #include <thread>
@@ -109,6 +110,8 @@ public:
      * same "-c wins" precedence as M_StartConfig.
      **/
     static int M_RemotePort;
+    /// ini frameDivisor: render every n-th refresh of the panel (1 = every one; 2 = half the rate); set by main().
+    static int M_FrameDivisor;
     /** Set true by parsecommandline() when -t was actually passed, so a persisted remotePort setting doesn't
      * override an explicit CLI choice.
      **/
@@ -377,6 +380,8 @@ public:
     {
         m_showFeatureOverlay = on;
     }
+    /** The web remote did something (not just its polling): a resting show wakes. */
+    void remoteActivity() { wakeFromRest( "remote" ); }
     /** Persists the current look + state as the startup default (same as key 'k'). */
     void remoteSaveDefaults()
     {
@@ -703,8 +708,28 @@ protected:
     int     m_cuePort = 0;         ///< UDP port for the score cues; 0 = the feature is off.
     QString m_cueBind = "0.0.0.0"; ///< Interface to listen on ("127.0.0.1" = this machine only).
     QString m_notice;              ///< The message notify() shows; empty = none.
-    qint64  m_noticeAt = -1;       ///< m_fpsTimer time the notice appeared; -1 = with the next frame.
-    int     m_noticeMs = 0;        ///< How long the notice stays, in milliseconds.
+    // ---- rest mode (updateRest()) ----
+    /** Where the rest mode stands. */
+    enum class RestE
+    {
+        AWAKE,  ///< The show runs.
+        FADING, ///< Fading to black, the scenes still run.
+        RESTING ///< Black, no scene runs, a few frames a second.
+    };
+    RestE  m_restState = RestE::AWAKE; ///< Where the rest mode stands.
+    int    m_idleMinutes = 0;          ///< ini idleMinutes: rest after this much digital silence; 0 = never.
+    bool   m_idleDisplayOff = false;   ///< ini idleDisplayOff: let the display sleep at rest (projectors may not wake).
+    qint64 m_restLast = 0;             ///< m_fpsTimer time of the last updateRest().
+    qint64 m_restSilentMs = 0;         ///< Digital silence so far, in ms.
+    qint64 m_restSoundMs = 0;          ///< Sound so far, in ms (wakes after 1 s).
+    qint64 m_restSince = 0;            ///< m_fpsTimer time the fade to rest began.
+    qint64 m_restLastPaint = 0;        ///< m_fpsTimer time of the last frame drawn at rest.
+    bool   m_restBySleep = false;      ///< This rest came from the sleep timer: only a key or the remote wakes it.
+    bool   m_displayReleased = false;  ///< The display was let sleep (ES_DISPLAY_REQUIRED dropped).
+    int    m_sleepMinutes = 0;         ///< The sleep timer chosen in the menu (0 = off).
+    qint64 m_sleepAt = 0;              ///< m_fpsTimer time the sleep timer ends; 0 = none.
+    qint64 m_noticeAt = -1;            ///< m_fpsTimer time the notice appeared; -1 = with the next frame.
+    int    m_noticeMs = 0;             ///< How long the notice stays, in milliseconds.
     /** MIDI-learn targets, cycled with key 'j': controller knobs (CC-mapped) first, then note-mapped pads. */
     enum
     {
@@ -726,10 +751,9 @@ protected:
     // (PBO readback, encoder workers, replay ring, ffmpeg mux).  GLwidget only
     // calls toggle()/captureIfDue()/saveReplay() etc.
     Recorder m_recorder; ///< Screen recording + instant-replay ring buffer (PBO readback, encoder worker, ffmpeg mux).
-    VideoExport    *m_export = nullptr; ///< The video export of this run (CLI -e), or null in a live show.
+    VideoExport    *m_export = nullptr;    ///< The video export of this run (CLI -e), or null in a live show.
     AudioEventLatch m_eventLatch; ///< Turns the analyzer's event counters into this frame's beat/onset/track events.
-    bool                       m_exportEnded = false; ///< The export has been finished (endGL() ran).
-    std::vector<unsigned char> m_snapBuf;             ///< glReadPixels scratch (Web-Snapshot)
+    bool            m_exportEnded = false; ///< The export has been finished (endGL() ran).
 
     /**  Recursively scans a directory tree for *.xml preset files and constructs a Configuration for each one found.
      *
@@ -795,6 +819,23 @@ protected:
     qint64     m_snapWantedUntil = 0; ///< m_fpsTimer deadline until which the snapshot keeps refreshing (extended by
                                       ///< remoteSnapshot()).
     qint64 m_snapLast = 0;            ///< m_fpsTimer timestamp of the last snapshot refresh (throttles to ~1 Hz).
+    // ---- the preview read without stalling the render thread (updateRemotePreview()) ----
+    static constexpr int SnapMaxLevels = 8; ///< Room in the halving chain (8 halvings reach 360 rows from 92k).
+    GLuint m_snapTex[SnapMaxLevels] = {};   ///< The chain: halvings of the frame, the last one 360 rows high.
+    GLuint               m_snapFbo[SnapMaxLevels] = {}; ///< Framebuffers on m_snapTex.
+    int                  m_snapW[SnapMaxLevels] = {};   ///< Width of each level.
+    int                  m_snapH[SnapMaxLevels] = {};   ///< Height of each level.
+    int                  m_snapLevels = 0;              ///< Levels in the chain; 0 = not built.
+    int                  m_snapSrcW = 0;                ///< Frame width the chain was built for.
+    int                  m_snapSrcH = 0;                ///< Frame height the chain was built for.
+    int                  m_snapOutW = 0;                ///< Width of the preview.
+    int                  m_snapOutH = 0;                ///< Height of the preview (360 unless the frame is smaller).
+    GLuint               m_snapPbo = 0;                 ///< Pixel-pack buffer the preview is read into.
+    int                  m_snapReadAgo = -1;            ///< Frames since the read was issued; -1 = none pending.
+    bool                 m_snapEncoding = false;        ///< A worker is encoding the last preview.
+    int                  m_snapScene = -1; ///< Scene the pending preview shows, for its thumbnail (-1: none).
+    QString              m_snapConfig;                  ///< Preset of that scene.
+    QString              m_snapSceneName;               ///< Name of that scene (the thumbnail cache's key).
 
     /** Per-scene thumbnail cache for the web remote's scene browser, indexed by the active configuration's
      * texture-effect index (same order as RenderPipeline::sceneNames()).
@@ -849,6 +890,33 @@ protected:
      * settings, taste, scene memory -- failed there without a word.
      **/
     void checkSettingsWritable();
+    /**  The rest mode, once a frame: after idleMinutes of digital silence (or when the sleep timer ends) the picture
+     * fades to black and the scenes stop; a second of sound (not after the sleep timer) or a key brings it back.
+     *
+     * @param audio  This frame's features (rawLevel decides silence). (in)
+     **/
+    void updateRest( const AudioFeatures &audio );
+    /**  Ends the rest mode: the output fades in, the scenes' clocks restart, the display is kept on again.
+     *
+     * @param why  For the log ("music", "key", "remote", "menu", "MIDI"). (in)
+     *
+     * @return
+     *   True if it was resting (a key that woke it does nothing else).
+     **/
+    bool wakeFromRest( const char *why );
+    /**  The web remote's preview: while the phone page polls /api/snapshot, about once a second the frame is shrunk
+     * on the GPU to 360 rows, read back two frames later without a stall, and encoded (with the scene's thumbnail)
+     * by a worker.
+     *
+     * Called once a frame after the scene is drawn, before any overlay.
+     **/
+    void updateRemotePreview();
+    /**  Paces the render timer to the screen the window is on (and frameDivisor), and tells the cube budget and the
+     * adaptive resolution that rate; again whenever the window moves to another screen.
+     **/
+    void applyDisplayRate();
+    /** Releases the preview's GL objects (the context must be current). */
+    void freeRemotePreview();
     /**  Shows a short message on screen (bottom centre, fading) and writes it to the log.
      *
      * @param text  The message, in the UI language. (in)
@@ -906,10 +974,17 @@ protected:
      * @sideeffects
      *   Changes EffectShader::M_ChainScale.
      **/
-    void   applyQualityProfile();
-    float  m_autoScaleMax = 1.f;  ///< ceiling: an explicit -s, else 1.0 (never the persisted working value)
-    float  m_displayHz = 60.f;    ///< refresh rate the render timer was paced to; adaptation targets a fraction of it
-    qint64 m_lastScaleAdjust = 0; ///< when the scale was last changed
+    void                   applyQualityProfile();
+    float m_autoScaleMax = 1.f; ///< ceiling: an explicit -s, else 1.0 (never the persisted working value)
+    float m_displayHz = 60.f;   ///< refresh rate the render timer was paced to; adaptation targets a fraction of it
+    int                    m_renderTimer = 0;        ///< Id of the render timer (applyDisplayRate() restarts it).
+    bool m_gpuQueries = false; ///< The GPU timer queries run (KALEIDO_GPU_TIMING, KALEIDO_COST_LOG or autoScale).
+    std::array<float, 180> m_gpuMs{}; ///< Recent frames' GPU times in ms, a ring (the adaptive resolution's measure).
+    int                    m_gpuMsHead = 0;          ///< Next slot in m_gpuMs.
+    int  m_gpuMsCount = 0; ///< Results since the last scale change or rate change (the ring holds the last 180).
+    bool m_scaleWasFading = false;        ///< A scene fade ran last frame (updateAdaptiveScale() acts as one begins).
+    QHash<QString, float>  m_sceneGpuAt1; ///< Each scene's GPU time per frame at render scale 1, in ms (measured).
+    qint64                 m_lastScaleAdjust = 0;    ///< when the scale was last changed
 
 
     int           m_fpsCounter;    ///< frames counted in the current period
@@ -939,12 +1014,14 @@ protected:
     /** Accumulated render time of one scene (KALEIDO_COST_LOG). */
     struct SceneCost
     {
-        double ms = 0.0;    /**< Summed wall-clock render time of the scene's frames, in milliseconds (divided by frames
-                               for the report). */
-        int    frames = 0;  /**< Number of frames the scene was measured over. */
-        double cover = 0.0; /**< Summed RenderPipeline::activeCoverage() readings (fraction of the frame the model
-                               covered, mesh scenes only). */
+        double ms = 0.0; /**< Summed wall-clock render time of the scene's frames, in milliseconds (divided by frames
+                            for the report). */
+        int    frames = 0;    /**< Number of frames the scene was measured over. */
+        double cover = 0.0;   /**< Summed RenderPipeline::activeCoverage() readings (fraction of the frame the model
+                                 covered, mesh scenes only). */
         int coverN = 0; /**< Number of frames that contributed to cover; 0 = no coverage measured (not a mesh scene). */
+        double gpuMs = 0.0;   /**< Summed GPU time of the scene's standing frames (the query ring), in milliseconds. */
+        int    gpuFrames = 0; /**< Number of frames in gpuMs. */
     };
     QHash<QString, SceneCost> m_sceneCost; ///< Per-scene render cost; empty unless KALEIDO_COST_LOG is set.
     /** Write the measured per-scene cost to scene-cost.json and clear it. */

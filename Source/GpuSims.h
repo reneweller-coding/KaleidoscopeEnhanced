@@ -91,8 +91,8 @@ public:
                             ///< none.
         float dyeInterp = 1.f;    ///< Cross-fade factor between dyeTexA and dyeTexB (0 = pure A, 1 = pure B).
         bool  hold = false;       ///< Freeze (VJ or comparison run): no step, the newest states stay bound.
-        int   steps = 1; ///< Simulation steps this frame: above 1 in a video export below the live rate, which makes
-                         ///< the steps the live show makes in the same time (RenderPipeline::frameStepScale()).
+        float liveFrames = 1.f;   ///< Frames at 120 Hz this frame stands for (RenderPipeline::liveFrames()).
+        float stepScale = 1.f; ///< Set by run(): how many 120-Hz frames one scaled step (fluid, Physarum) stands for.
     };
 
     /**  Creates/validates all GPU simulation resources (FBOs, textures, shader programs).
@@ -288,6 +288,9 @@ private:
     GLint  m_fluidPhaseUni = -1; ///< Uniform location: integrated flow-field phase driving swirl evolution.
     GLint  m_fluidImpulseUni = -1;             ///< Uniform location: bass/beat-driven swirl impulse strength.
     GLint  m_fluidInjectUni = -1;              ///< Uniform location: onset-driven dye-injection amount.
+    GLint  m_fluidStepUni = -1;                ///< Uniform location: "stepScale", the step's length in 120-Hz frames.
+    float m_rdAcc = 0.5f; ///< Reaction-diffusion sub-steps owed (whole ones run, the rest carried; 0.5 absorbs jitter).
+    float  m_smokeAcc = 0.5f;                  ///< Smoke steps owed, the same way.
     bool   m_fluidReady = false;               ///< True once setup succeeded; gates stepping and texture binding.
     bool   m_fluidSeeded = false;              ///< False until the first step has written the seed pattern.
 

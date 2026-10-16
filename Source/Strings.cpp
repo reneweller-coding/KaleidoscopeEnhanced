@@ -317,6 +317,14 @@ const char *kDE[S_COUNT] = {
     /* S_EXPORT_OVERWRITE_FMT */ "%1 gibt es schon. Überschreiben?",
     /* S_EXPORT_QUIT_RUNNING */ "Der Export läuft noch. Abbrechen und schließen?",
     /* S_NOTICE_SETTINGS_READONLY_FMT */ "Einstellungen werden nicht gespeichert: %1 ist schreibgeschützt",
+    /* S_NOTICE_REST_FMT */ "Ruhezustand nach %1 min Stille – Musik oder eine Taste weckt",
+    /* S_NOTICE_SLEEP */ "Einschlaf-Timer abgelaufen – eine Taste weckt",
+    /* S_OSD_IDLE */ "Ruhezustand bei Stille",
+    /* S_OSD_SLEEPTIMER */ "Einschlaf-Timer",
+    /* S_OSD_OFF */ "aus",
+    /* S_SETUP_IDLE */ "Ruhezustand nach Stille:",
+    /* S_SETUP_IDLE_DISPLAY */
+    "Bildschirm im Ruhezustand schlafen lassen (Projektoren wachen danach oft nicht von selbst auf)",
 };
 
 /** The English texts, in the same order as kDE. */
@@ -614,6 +622,14 @@ const char *kEN[S_COUNT] = {
     /* S_EXPORT_OVERWRITE_FMT */ "%1 already exists. Overwrite it?",
     /* S_EXPORT_QUIT_RUNNING */ "The export is still running. Cancel it and close?",
     /* S_NOTICE_SETTINGS_READONLY_FMT */ "Settings will not be saved: %1 is read-only",
+    /* S_NOTICE_REST_FMT */ "Resting after %1 min of silence – music or a key wakes it",
+    /* S_NOTICE_SLEEP */ "Sleep timer ended – a key wakes it",
+    /* S_OSD_IDLE */ "Rest after silence",
+    /* S_OSD_SLEEPTIMER */ "Sleep timer",
+    /* S_OSD_OFF */ "off",
+    /* S_SETUP_IDLE */ "Rest after silence:",
+    /* S_SETUP_IDLE_DISPLAY */
+    "Let the display sleep at rest (projectors often do not wake up by themselves afterwards)",
 };
 
 } // namespace

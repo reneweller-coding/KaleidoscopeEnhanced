@@ -57,7 +57,11 @@ def main():
 
     if not os.path.exists(COSTS):
         sys.exit("Keine Messung: erst  python Tools/screen.py  laufen lassen.")
-    cost = json.load(io.open(COSTS, encoding="utf-8"))
+    raw = json.load(io.open(COSTS, encoding="utf-8"))
+    # The app writes {"scene": {"ms": cpu, "ms_gpu": gpu, ...}}; the GPU time is the real cost (the CPU clock
+    # around draw() only approached it where a sync waited for the GPU), older files have only "ms".
+    cost = {k: (v.get("ms_gpu", v.get("ms")) if isinstance(v, dict) else v) for k, v in raw.items()}
+    cost = {k: v for k, v in cost.items() if isinstance(v, (int, float))}
     med = statistics.median(cost.values())
     src = io.open(KOMPLETT, encoding="utf-8", errors="replace").read()
 

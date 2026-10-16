@@ -3398,6 +3398,7 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
     m_features.upperMidLevel = n_upper_mid;
     m_features.highLevel = n_high;
     m_features.overallLevel = n_level;
+    m_features.rawLevel = level;
     for ( int b = 0; b < AudioFeatures::SpectrumBands; ++b )
         m_features.spectrum[b] = m_sSpectrum[b];
     for ( int p = 0; p < AudioFeatures::WavePoints; ++p )

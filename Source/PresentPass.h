@@ -67,13 +67,21 @@ public:
      * nothing.  A live number for the one question a rendered scan takes
      * four minutes to answer: is this scene showing anything at all?
      **/
-    float liveStructure() const { return m_liveStd; }
+    float liveStructure() const
+    {
+        m_liveWanted = true;
+        return m_liveStd;
+    }
     /**  Mean absolute change against the previous measured frame.
      *
      * @return
      *   Mean absolute change against the previous measured frame.
      **/
-    float liveMotion() const { return m_liveMotion; }
+    float liveMotion() const
+    {
+        m_liveWanted = true;
+        return m_liveMotion;
+    }
 
     /**  Create the final FBO, the present/bloom shader programs, and the bloom FBOs.
      *
@@ -250,7 +258,8 @@ public:
         int   stereoMode = 0;       ///< Stereo output mode (e.g. off/SBS/TB/anaglyph) forwarded to Present.frag.
         float stereoDepth = 1.f;    ///< Stereo depth/separation strength.
         // Dimming channels
-        bool  blackout = false;  ///< VJ blackout ('b'): slewed to full black.
+        bool  blackout = false;  ///< VJ blackout ('b') or the rest mode: slewed to full black.
+        float dim = 1.f;         ///< The sleep timer's steady dimming, 1 = full brightness .. 0.
         float breakSmooth = 0.f; ///< Smoothed "break" dim amount (music breakdown).
         float fadeOutEnv = 0.f;  ///< Detected song fade-out envelope; dims the picture slightly.
         // Look knobs
@@ -370,24 +379,27 @@ private:
     GLint m_presentStereoSrcUni = -1;   ///< Uniform location: source-already-packed-stereo flag ("stereoSource").
 
     // ---- Limiter/exposure state ----
-    float m_prevMeanLum = -1.f;     ///< Mean luminance of the previous limiter sample, the reference the rise limit is
-                                    ///< measured against (< 0 = not yet initialised).
-    float m_liveStd = 0.f;          ///< Spatial spread of the same 64-pixel sample: 'is there anything to see'.
-    float m_liveMotion = 0.f;       ///< Mean |delta| against the previous sample: 'is anything moving'.
-    float m_prevSample[64] = {};    ///< Previous frame's luma sample, for m_liveMotion.
+    float m_prevMeanLum = -1.f; ///< Mean luminance of the previous limiter sample, the reference the rise limit is
+                                ///< measured against (< 0 = not yet initialised).
+    float m_liveStd = 0.f;                ///< Spatial spread of the same 64-pixel sample: 'is there anything to see'.
+    float m_liveMotion = 0.f;             ///< Mean |delta| against the previous sample: 'is anything moving'.
+    float m_prevSample[64] = {};          ///< Previous frame's luma sample, for m_liveMotion.
     bool  m_havePrevSample = false; ///< True once m_prevSample holds a real sample; until then m_liveMotion reports 0
                                     ///< instead of a bogus delta against zeros.
-    bool  m_safetyReady = false;    ///< True once setup() succeeded (gates run() and ready()).
-    int   m_safetyFrame = 0;        ///< Frame counter used to sample the mean-luminance readback every 3rd frame.
-    float m_lastSafetyScale = 1.f;  ///< Brightness scale from the last luminance sample, reused on skipped frames.
-    float m_safetyAccumDt = 0.f;    ///< Accumulated dtFrame since the last luminance sample (keeps the per-second rise
-                                    ///< limit correct).
+    bool         m_safetyReady = false;   ///< True once setup() succeeded (gates run() and ready()).
+    int          m_safetyFrame = 0;    ///< Frame counter (the CPU path's every 3rd frame, the statistics' every 15th).
+    mutable bool m_liveWanted = false; ///< The 'i' overlay asked for liveStructure()/liveMotion() (read from the GPU).
+    float m_lastSafetyScale = 1.f;     ///< Brightness scale from the last luminance sample, reused on skipped frames.
+    float m_safetyAccumDt = 0.f; ///< Accumulated dtFrame since the last luminance sample (keeps the per-second rise
+                                 ///< limit correct).
     float m_blackSmooth = 0.f; ///< Slewed blackout level 0..1 (geslewter Blackout-Pegel): follows Inputs::blackout at a
                                ///< wall-clock rate and multiplies the brightness scale by (1 - level).
-    GLuint m_autoExpBuf = 0;        ///< SSBO (bind point 3) of 4 floats { exposure, p50, p98, pad } written by
-                                    ///< CfxHistogram.comp and read directly by Present.frag.
-    GLuint m_autoExpProg = 0;       ///< CfxHistogram.comp compute program (0 if unavailable).
-    bool   m_autoExpTried = false;  ///< True once auto-exposure program creation has been attempted (tried only once).
+    GLuint m_autoExpBuf = 0;              ///< SSBO (bind point 3): { exposure, p50, p98 } from CfxHistogram.comp, then
+                                          ///< the limiter's { limScale, prevMean, liveStd, liveMotion, frameCount,
+                                          ///< prevSample[64] } from SafetyLimit.comp; read directly by Present.frag.
+    GLuint m_autoExpProg = 0;             ///< CfxHistogram.comp compute program (0 if unavailable).
+    GLuint m_limitProg = 0;               ///< SafetyLimit.comp compute program (0: the CPU readback path).
+    bool   m_autoExpTried = false; ///< True once auto-exposure program creation has been attempted (tried only once).
 
     // ---- Bloom ----
     GLuint m_texBloom[2] = { 0, 0 }; ///< Ping-pong bloom textures (quarter resolution).

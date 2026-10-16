@@ -144,6 +144,25 @@ float fbm( vec3 p )
     return f;
 }
 
+/**  The slow warp field's fractal noise: three octaves, plus the mean the other two would have added.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   About fbm( p ) without its two finest octaves (under 10 % of its swing), at three fifths of the cost.
+ **/
+float fbm3( vec3 p )
+{
+    float f = 0.0, a = 0.5;
+    for ( int i = 0; i < 3; ++i )
+    {
+        f += a * noise( p );
+        p *= 2.03;
+        a *= 0.5;
+    }
+    return f + 0.046875; // the 4th and 5th octaves' mean (0.0625 + 0.03125) * 0.5
+}
+
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
@@ -181,13 +200,19 @@ void main()
     vec3 color_base1 = max( imgPalette( 0.1 + audioCentroid * 0.2 ), vec3( 0.10, 0.14, 0.18 ) );
     vec3 color_base2 = max( imgPalette( 0.8 + audioKick * 0.1 ), vec3( 0.24, 0.34, 0.22 ) );
 
-    // Volumetric raymarching for the nebula
-    for ( int i = 0; i < 60; ++i )
+    // Volumetric raymarching for the nebula.  16.10.2026: it cost 24 ms of GPU time a frame at 2880x1620 -- thirty
+    // times the catalogue's median, three frames at 120 Hz -- with up to 25 five-octave noise sums per step.  The
+    // warp is a slow field (p * 0.1), so three octaves carry it and it is renewed every 2nd step (along the ray it
+    // moves by a few hundredths a step); the veins are only worked out where the gas is dense enough to show them;
+    // and the steps are 1.3 times as long (46 instead of 60 to the same depth), each carrying 1.3 times the gas.
+    vec3 warp = vec3( 0.5 );
+    for ( int i = 0; i < 46; ++i )
     {
         vec3 p = ro + rd * d;
 
         // Distort space slightly for organic feel
-        vec3 warp = vec3( fbm( p * 0.1 ), fbm( p * 0.1 + 10.0 ), fbm( p * 0.1 + 20.0 ) );
+        if ( ( i & 1 ) == 0 )
+            warp = vec3( fbm3( p * 0.1 ), fbm3( p * 0.1 + 10.0 ), fbm3( p * 0.1 + 20.0 ) );
         // Warp must not hang off the audio level: on quiet material the
         // clouds collapsed into structureless fog. Swell only breathes it.
         vec3 np = p * 0.5 + ( warp - 0.5 ) * ( 2.0 + 0.5 * audioSwell );
@@ -211,17 +236,22 @@ void main()
             // a barely recognisable hint (catalogue frame A/B).
             local_col *= ( 0.85 + 0.5 * audioSwell + pulse ) * gp;
 
-            // BIOLUMINESCENT VEINS: ridged filaments glowing inside the gas.
-            float ridge = 1.0 - abs( 2.0 * fbm( np * 2.3 ) - 1.0 );
-            ridge = pow( ridge, 5.0 );
-            local_col += mix( color_base2, vec3( 1.0 ), 0.3 ) * ridge * 0.9 * gp;
+            // BIOLUMINESCENT VEINS: ridged filaments glowing inside the gas -- where it is dense enough to show them
+            // (their light is weighted by the density below anyway), faded in so there is no edge.
+            float vein_w = smoothstep( 0.05, 0.15, dens );
+            if ( vein_w > 0.0 )
+            {
+                float ridge = 1.0 - abs( 2.0 * fbm( np * 2.3 ) - 1.0 );
+                ridge = pow( ridge, 5.0 );
+                local_col += mix( color_base2, vec3( 1.0 ), 0.3 ) * ridge * 0.9 * gp * vein_w;
+            }
 
             // Fade by distance
-            float alpha = dens * 0.1;
+            float alpha = dens * 0.13; // a step 1.3 times as long carries 1.3 times the gas
             col += local_col * alpha * exp( -d * 0.05 );
         }
 
-        d += 0.5 + d * 0.02;
+        d += 0.65 + d * 0.026;
         if ( d > 50.0 )
             break;
     }

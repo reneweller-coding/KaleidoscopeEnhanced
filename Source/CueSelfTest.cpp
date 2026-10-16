@@ -692,6 +692,13 @@ void outputChecks()
         check( b30 == 1.f, "a 30-Hz panel running at its 30 fps keeps all cubes (45 fps fixed halved them)" );
     }
 
+    // The trails and the simulations step by the frame time, in frames at 120 Hz (their tuning).
+    check( std::fabs( RenderPipeline::liveFrames( 1.f / 120.f ) - 1.f ) < 1e-5f
+               && std::fabs( RenderPipeline::liveFrames( 1.f / 60.f ) - 2.f ) < 1e-5f
+               && std::fabs( RenderPipeline::liveFrames( 1.f / 144.f ) - 0.8333f ) < 1e-3f
+               && RenderPipeline::liveFrames( 0.f ) == 0.f && RenderPipeline::liveFrames( 1.f ) == 8.f,
+           "trails and simulations step by the frame time: 1 at 120 Hz, 2 at 60, 5/6 at 144, none frozen, 8 at most" );
+
     // 2. The lamps' chase over a drum track: it moves on by a quarter per onset, but never by more than
     //    1.25 turns/s -- stepped, it jumped a quarter turn in one frame.
     {

@@ -106,11 +106,24 @@ void GpuSims::run( const AudioFeatures &audio, float dt, const Demand &need, con
     // block in RenderPipeline::paint().
     // f.hold (a freeze): every sim keeps its state -- the binds below still run,
     // so the scenes sample the newest one as before.
+    // The sims were tuned per frame at 120 Hz (RenderPipeline::LiveRefHz). They step by the frame time instead:
+    // until 16.10.2026 a 60-Hz panel ran them at half speed and a 144-Hz one 1.2 times too fast (the video export
+    // was already corrected).  Where a step can be scaled (fluid, Physarum) there are round(live) of them, at least
+    // one, each standing for live / n frames -- exactly one of 1 at 120 Hz, as before.  Where it cannot, whole steps
+    // run and the rest is carried: the reaction-diffusion's six PDE sub-steps per frame, and the smoke, whose plume
+    // rises one texel per step.  A freeze: none at all.
+    const float live = f.hold ? 0.f : std::clamp( f.liveFrames, 0.f, 8.f );
+    const int   scaled_n = live > 0.f ? std::max( 1, static_cast<int>( std::lround( live ) ) ) : 0;
+    Frame       g = f;
+    g.stepScale = scaled_n > 0 ? live / static_cast<float>( scaled_n ) : 0.f;
     if ( need.rd && m_rdReady )
     {
         // Several PDE sub-steps per frame so the pattern develops quickly and
         // fills the whole field with lively, evolving structure.
-        for ( int s = 0; s < 6 * f.steps && !f.hold; ++s )
+        m_rdAcc += 6.f * live;
+        const int rd_n = std::min( 48, static_cast<int>( m_rdAcc ) );
+        m_rdAcc = std::min( m_rdAcc - static_cast<float>( rd_n ), 1.f );
+        for ( int s = 0; s < rd_n; ++s )
             stepReactionDiffusion( audio );
         glActiveTexture( GL_TEXTURE7 );
         glBindTexture( GL_TEXTURE_2D, m_texRD[1 - m_rdIdx] ); // newest state
@@ -118,15 +131,18 @@ void GpuSims::run( const AudioFeatures &audio, float dt, const Demand &need, con
 
     if ( need.fluid && m_fluidReady )
     {
-        for ( int s = 0; s < f.steps && !f.hold; ++s )
-            stepFluid( audio, f );
+        for ( int s = 0; s < scaled_n; ++s )
+            stepFluid( audio, g );
         glActiveTexture( GL_TEXTURE8 );
         glBindTexture( GL_TEXTURE_2D, m_texFluid[1 - m_fluidIdx] );
     }
 
     if ( need.smoke3D && m_smoke3DReady )
     {
-        for ( int s = 0; s < f.steps && !f.hold; ++s )
+        m_smokeAcc += live;
+        const int smoke_n = std::min( 8, static_cast<int>( m_smokeAcc ) );
+        m_smokeAcc = std::min( m_smokeAcc - static_cast<float>( smoke_n ), 1.f );
+        for ( int s = 0; s < smoke_n; ++s )
             stepSmoke3D( audio, f );
         glActiveTexture( GL_TEXTURE9 );
         glBindTexture( GL_TEXTURE_2D, m_texSmoke3D[1 - m_smoke3DIdx] );
@@ -134,10 +150,10 @@ void GpuSims::run( const AudioFeatures &audio, float dt, const Demand &need, con
 
     if ( need.physarum && m_physReady )
     {
-        for ( int s = 0; s < f.steps && !f.hold; ++s )
+        for ( int s = 0; s < scaled_n; ++s )
         {
-            stepPhysarum( audio, f );
-            stepPhysarum( audio, f ); // 2 sub-steps: the net develops faster
+            stepPhysarum( audio, g );
+            stepPhysarum( audio, g ); // 2 sub-steps: the net develops faster
         }
         glActiveTexture( GL_TEXTURE11 );
         glBindTexture( GL_TEXTURE_2D, m_texPhysTrail[1 - m_physTrailIdx] );
@@ -222,6 +238,7 @@ void GpuSims::setupFluid()
         m_fluidPhaseUni = glGetUniformLocation( m_fluidProgId, "flowPhase" );
         m_fluidImpulseUni = glGetUniformLocation( m_fluidProgId, "impulse" );
         m_fluidInjectUni = glGetUniformLocation( m_fluidProgId, "injectAmt" );
+        m_fluidStepUni = glGetUniformLocation( m_fluidProgId, "stepScale" );
     }
 
     bool ok = ( m_fluidProgId != 0 ) && ( m_fluidPrevUni >= 0 );
@@ -301,6 +318,8 @@ void GpuSims::stepFluid( const AudioFeatures &audio, const Frame &f )
     if ( m_fluidInjectUni >= 0 )
         glUniform1f( m_fluidInjectUni,
                      0.012f + 0.020f * audio.onsetStrength );
+    if ( m_fluidStepUni >= 0 )
+        glUniform1f( m_fluidStepUni, f.stepScale );
 
     drawFullscreen();
 
@@ -603,21 +622,20 @@ void GpuSims::stepPhysarum( const AudioFeatures &audio, const Frame &f )
         glUniform1f( m_physAgentTimeUni, f.globalTime );
     // Audio character: bright material makes tight directed veins, loud
     // passages speed the swarm up, hard kicks scatter part of it.
+    // Speed, turn, scatter, deposit and decay are per step: a scaled step (f.stepScale 120-Hz frames) moves and
+    // lays down that much more or less.
     if ( m_physAgentSpeedUni >= 0 )
         glUniform1f( m_physAgentSpeedUni,
-                     0.0016f + 0.0022f * audio.overallLevel
-                         + 0.0018f * audio.onsetKick );
+                     ( 0.0016f + 0.0022f * audio.overallLevel + 0.0018f * audio.onsetKick ) * f.stepScale );
     if ( m_physAgentSensAUni >= 0 )
         glUniform1f( m_physAgentSensAUni,
                      0.75f - 0.35f * audio.spectralCentroid );
     if ( m_physAgentSensDUni >= 0 )
         glUniform1f( m_physAgentSensDUni, 0.014f );
     if ( m_physAgentTurnUni >= 0 )
-        glUniform1f( m_physAgentTurnUni,
-                     0.30f + 0.25f * audio.onsetStrength );
+        glUniform1f( m_physAgentTurnUni, ( 0.30f + 0.25f * audio.onsetStrength ) * f.stepScale );
     if ( m_physAgentScatUni >= 0 )
-        glUniform1f( m_physAgentScatUni,
-                     ( audio.onsetKick > 0.75f ) ? 0.10f : 0.f );
+        glUniform1f( m_physAgentScatUni, ( audio.onsetKick > 0.75f ) ? std::min( 1.f, 0.10f * f.stepScale ) : 0.f );
     drawFullscreen();
 
     // ---- 2) Deposit: 65k points into the CURRENT trail (additive) ----
@@ -629,8 +647,7 @@ void GpuSims::stepPhysarum( const AudioFeatures &audio, const Frame &f )
     if ( m_physDepAgentsUni >= 0 )
         glUniform1i( m_physDepAgentsUni, 0 );
     if ( m_physDepAmtUni >= 0 )
-        glUniform1f( m_physDepAmtUni,
-                     0.06f + 0.05f * audio.onsetStrength );
+        glUniform1f( m_physDepAmtUni, ( 0.06f + 0.05f * audio.onsetStrength ) * f.stepScale );
     glEnable( GL_BLEND );
     glBlendFunc( GL_ONE, GL_ONE );
     glEnable( GL_VERTEX_PROGRAM_POINT_SIZE );
@@ -641,7 +658,7 @@ void GpuSims::stepPhysarum( const AudioFeatures &audio, const Frame &f )
     glDisable( GL_BLEND );
 
     // ---- 3) Diffuse + evaporate into the other trail buffer ----
-    const float dif_decay = 0.94f + 0.02f * audio.ambientFactor;
+    const float dif_decay = std::pow( 0.94f + 0.02f * audio.ambientFactor, f.stepScale );
     if ( m_physDiffuseCompId )
     {
         // Compute path: identical kernel, image store instead of an FBO pass.
