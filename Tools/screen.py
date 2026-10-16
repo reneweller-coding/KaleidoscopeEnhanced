@@ -315,8 +315,16 @@ def render(cfg, wav, log_path, hold, seed, kind="scene", time_start=0, extra_env
         # BELOW_NORMAL_PRIORITY_CLASS (0x4000): a screening run is a batch job
         # on a machine someone is using, so it yields to the foreground.
         # The dead man's switch: even if THIS script is killed, the window
-        # it starts ends itself instead of rendering for ever.
-        env["KALEIDO_MAX_RUNTIME_SECS"] = "240"
+        # it starts ends itself instead of rendering for ever -- once the WAV
+        # it renders has run out, plus two minutes.  (A fixed 240 s cut every
+        # chunk of 112 scenes off after 28 of them, 16.10.2026.)
+        try:
+            w = wave.open(wav)
+            secs = w.getnframes() / float(w.getframerate())
+            w.close()
+        except (OSError, wave.Error):
+            secs = 1200.0
+        env["KALEIDO_MAX_RUNTIME_SECS"] = str(int(secs + 120))
         env["KALEIDO_NO_ACTIVATE"] = "1"
         below = 0x00004000 if os.name == "nt" else 0
         subprocess.run([os.path.join(RELEASE, "Kaleidoscope.exe"),

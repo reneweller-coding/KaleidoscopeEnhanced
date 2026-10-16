@@ -238,6 +238,18 @@ procedurally generated texture and the startup log says so.
 
 Copy-Item (Join-Path $root "*.vert") $pkgDir
 Copy-Item (Join-Path $root "Presets") $pkgDir -Recurse
+# Only the presets the repository carries.  The batch tools write scratch presets beside them while they run
+# (ZZScreen01.xml from screen.py, _catalog.xml, _snap3.xml ...), and the app writes Marked.xml there; a package built
+# during a screening took thirteen ZZScreen chunks along (16.10.2026).  Without git: the tools' name patterns.
+$tracked = @(& git -C $root ls-files -- Presets 2>$null | ForEach-Object { ($_ -split '/')[-1] })
+$pkgPresets = Join-Path $pkgDir "Presets"
+foreach ($f in @(Get-ChildItem $pkgPresets -File -Recurse)) {
+    $scratch = if ($tracked.Count) { $tracked -notcontains $f.Name } else { $f.Name -like 'ZZScreen*' -or $f.Name -like '_*' -or $f.Name -eq 'Marked.xml' }
+    if ($scratch) {
+        Info "not packaged (not in the repository): Presets\$($f.Name)"
+        Remove-Item $f.FullName -Force
+    }
+}
 # The review bench (TestAlle) analyses its own silent track instead of
 # listening; the preset names ..\Tools\review128.wav, so the package needs
 # exactly that file at exactly that spot. Without it the engine now falls
