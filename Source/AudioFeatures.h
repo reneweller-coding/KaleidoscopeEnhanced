@@ -357,7 +357,8 @@ struct AudioFeatures
     /** Fundamental frequency estimated via Harmonic Product Spectrum, log-normalised over 60..1200 Hz → 0..1.
      *
      * 0 = low bass drone (~60 Hz), 1 = high treble tone (~1200 Hz).
-     * 0 when no clear pitch is detected (noise, silence).
+     * Where no clear pitch sounds (drums, noise, silence) it holds its last value -- it is a uniform that moves
+     * pictures and must not jump (until 16.10.2026 it sank toward 0 instead, and drums gave it a pitch).
      **/
     float dominantPitch = 0.f;
     /** MELODY pitch: the HPS search restricted to 150..1200 Hz, same 0..1 scale as #dominantPitch.
@@ -365,9 +366,20 @@ struct AudioFeatures
      * On a full mix the strongest harmonic series is usually the bass line, and
      * #dominantPitch follows it (measured on a synthetic track with bass + lead:
      * 34 % of frames under 0.15, 1 % in the lead's range). The melody ring and
-     * every scene that wants the TUNE rather than the root read this one.
+     * every scene that wants the TUNE rather than the root read this one.  Held while no melody sounds
+     * (#melodyConf), like #dominantPitch.
      **/
     float melodyPitch = 0.f;
+    /** How sure the analysis is that a melody sounds, 0..1 (uniform audioMelodyConf): the harmonic product
+     * spectrum's peak against its median, smoothed over ~0.2 s.  0 for drums, noise and silence, 1 for a clear
+     * tone; measured on synthetic tracks: drums alone 0 %, tonal passages 100 %, a dense mix (bass, chords,
+     * lead, drums) 71 % of the time.
+     **/
+    float melodyConf = 0.f;
+    /** The melody's note for the melody ring: the median of the last five raw pitches while a melody sounds (a
+     * note is a step, not a glissando), 0 while none does (a pen-up for the trace).  Not a uniform: it jumps.
+     **/
+    float melodyNote = 0.f;
 
     /** Scalar passed to RenderPipeline for adaptive shader-switch / cross-fade timing.
      *

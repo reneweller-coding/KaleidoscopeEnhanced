@@ -62,6 +62,119 @@ float AudioAnalyzer::coeff( float cutoffHz, int sampleRate )
  * real-valued audio) and leaves as the imaginary part. The parameters are
  * documented on the declaration in AudioAnalyzer.h.
  **/
+void AudioAnalyzer::computeChroma( float sampleRate )
+{
+    const int N = ChromaFFT;
+    for ( int i = 0; i < N; ++i )
+    {
+        m_chromaRe[i] = m_chromaRing[( m_chromaWrite + i ) & ( N - 1 )] * m_chromaWin[i];
+        m_chromaIm[i] = 0.f;
+    }
+    radix2fft( m_chromaRe.data(), m_chromaIm.data(), N );
+
+    // Magnitudes in amplitude units: a sine of amplitude A peaks at A * N / 4 under a Hann window.
+    const int k_lo = std::max( 2, static_cast<int>( 55.f * N / sampleRate ) );
+    const int k_hi = std::min( N / 2 - 2, static_cast<int>( 5000.f * N / sampleRate ) );
+    auto      mag = [this, N]( int k )
+    { return std::sqrt( m_chromaRe[k] * m_chromaRe[k] + m_chromaIm[k] * m_chromaIm[k] ) * ( 4.f / N ); };
+    float peak_max = 0.f;
+    for ( int k = k_lo; k <= k_hi; ++k )
+        peak_max = std::max( peak_max, mag( k ) );
+
+    float chroma[12] = {};
+    if ( peak_max > 1e-5f )
+    {
+        float prev = mag( k_lo - 1 ), cur = mag( k_lo );
+        for ( int k = k_lo; k <= k_hi; ++k )
+        {
+            const float next = mag( k + 1 );
+            if ( cur > prev && cur >= next && cur > 0.01f * peak_max )
+            {
+                // The peak's true frequency and height: a parabola through the log magnitudes of its three bins.
+                const float a = std::log( prev + 1e-9f ), b = std::log( cur + 1e-9f ), c = std::log( next + 1e-9f );
+                const float den = a - 2.f * b + c;
+                const float d = den < 0.f ? std::clamp( 0.5f * ( a - c ) / den, -0.5f, 0.5f ) : 0.f;
+                const float f = ( static_cast<float>( k ) + d ) * sampleRate / static_cast<float>( N );
+                const float amp = std::exp( b - 0.25f * ( a - c ) * d );
+                const float w = std::log1p( 10.f * amp );
+                // Its pitch class as a real number; the two nearest classes share it by a cos^2 window of 4/3
+                // semitones (a partial right between two classes counts for both, a little).
+                float pc = std::fmod( 69.f + 12.f * std::log2( f / 440.f ), 12.f );
+                if ( pc < 0.f )
+                    pc += 12.f;
+                const float lo = std::floor( pc ), frac = pc - lo;
+                const int   c0 = static_cast<int>( lo ) % 12, c1 = ( c0 + 1 ) % 12;
+                auto        wgt = []( float dist )
+                {
+                    if ( dist >= 2.f / 3.f )
+                        return 0.f;
+                    const float cs = std::cos( 1.57079633f * dist * 1.5f );
+                    return cs * cs;
+                };
+                chroma[c0] += w * wgt( frac );
+                chroma[c1] += w * wgt( 1.f - frac );
+            }
+            prev = cur;
+            cur = next;
+        }
+    }
+    float sum = 1e-6f;
+    for ( float v : chroma )
+        sum += v;
+    for ( int i = 0; i < 12; ++i )
+        m_chroma[i] = chroma[i] / sum;
+}
+
+float AudioAnalyzer::ioiPeriod( float prevPeriod, float &explained ) const
+{
+    explained = 0.f;
+    if ( m_ioiCount < 3 )
+        return 0.f;
+    static const float Mult[] = { 1.f, 1.5f, 2.f, 2.5f, 3.f, 4.f };
+    const float        p_lo = 60.f / 180.f, p_hi = 60.f / 70.f;
+    float              best = 0.f, best_score = -1.f, best_share = 0.f;
+    for ( int i = 0; i < m_ioiCount; ++i )
+        for ( float n : Mult )
+        {
+            const float p = m_ioi[i] / n;
+            if ( p < p_lo || p > p_hi )
+                continue;
+            int    hits = 0;
+            float  simple = 0.f;
+            double num = 0.0, den = 0.0;
+            for ( int j = 0; j < m_ioiCount; ++j )
+            {
+                const float y = m_ioi[j];
+                float       err = 1e9f, m_best = 1.f;
+                for ( float m : Mult )
+                    if ( std::fabs( y - m * p ) < err )
+                    {
+                        err = std::fabs( y - m * p );
+                        m_best = m;
+                    }
+                if ( err < 0.03f + 0.04f * y )
+                {
+                    ++hits;
+                    simple += 1.f / m_best;
+                    num += static_cast<double>( y ) * m_best;
+                    den += static_cast<double>( m_best ) * m_best;
+                }
+            }
+            // First how many it explains, then how simply, then whether it is the tempo it was.
+            const float continuity = prevPeriod > 0.f && std::fabs( p - prevPeriod ) < 0.03f * prevPeriod ? 0.6f : 0.f;
+            const float score = static_cast<float>( hits ) + 0.3f * simple / static_cast<float>( m_ioiCount )
+                                + continuity;
+            if ( score > best_score && den > 0.0 )
+            {
+                best_score = score;
+                best = std::clamp( static_cast<float>( num / den ), p_lo, p_hi );
+                best_share = static_cast<float>( hits ) / static_cast<float>( m_ioiCount );
+            }
+        }
+    explained = best_share;
+    return best;
+}
+
 /*static*/ void AudioAnalyzer::radix2fft( float *re, float *im, int N )
 {
     // ---- Bit-reversal permutation ----
@@ -127,6 +240,14 @@ AudioAnalyzer::AudioAnalyzer( QObject *parent )
     std::memset( m_fftIm, 0, sizeof( m_fftIm ) );
     std::memset( m_prevMags, 0, sizeof( m_prevMags ) );
     std::memset( m_smoothedChroma, 0, sizeof( m_smoothedChroma ) );
+
+    // The chroma's FFT buffers and window (computeChroma()).
+    m_chromaRing.assign( ChromaFFT, 0.f );
+    m_chromaRe.assign( ChromaFFT, 0.f );
+    m_chromaIm.assign( ChromaFFT, 0.f );
+    m_chromaWin.resize( ChromaFFT );
+    for ( int i = 0; i < ChromaFFT; ++i )
+        m_chromaWin[i] = 0.5f - 0.5f * std::cos( 6.28318530718f * static_cast<float>( i ) / ( ChromaFFT - 1 ) );
 
     // Precompute Hann window for FFT:  w[i] = 0.5 · (1 - cos(2π·i/(N-1)))
     // Reduces spectral leakage from block edges.
@@ -1430,9 +1551,20 @@ void AudioAnalyzer::run()
  * is interleaved float PCM of `numFrames` frames and `numChannels` (1 or 2)
  * channels at `sampleRate` Hz.
  **/
+void AudioAnalyzer::beginSong()
+{
+    m_ioiCount = 0;
+    m_acBPM = 0.f;
+    m_acRival = 0;
+    ++m_songEpoch;
+    m_agcFastBlocks = 500;
+}
+
 void AudioAnalyzer::processBlock( const float *data, int numFrames,
                                   int numChannels, int sampleRate )
 {
+    if ( m_newSongRequested.exchange( false ) )
+        beginSong();
     // ---- 5 one-pole LP coefficients ----
     // One-pole IIR: y[n] = a*y[n-1] + (1-a)*x[n]
     // ---- Instant-replay ring: keep the last ~32 s of PCM (stereo s16) ----
@@ -1548,6 +1680,9 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
         // Feed ring buffer for FFT (circular, FFTSize = 2048 samples)
         m_ringBuf[m_ringWrite] = mono;
         m_ringWrite = ( m_ringWrite + 1 ) % FFTSize;
+        // ... and the chroma's own, longer one
+        m_chromaRing[m_chromaWrite] = mono;
+        m_chromaWrite = ( m_chromaWrite + 1 ) & ( ChromaFFT - 1 );
 
         // Feed 5 LP filters in parallel (same input, different cutoffs)
         m_lp60 = a60 * m_lp60 + ( 1.f - a60 ) * mono;
@@ -1701,10 +1836,13 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
     // quietly or loudly drives the visualisation identically.  A single gain is
     // applied to overall level + all bands, so the spectral SHAPE is preserved;
     // beat / ambient / music-speech detection keep using the raw values.
+    // ~ tens of seconds; for 5 s after a song began, ~1 s (a quiet song after a loud one is not quiet for long).
+    if ( m_agcFastBlocks > 0 )
+        --m_agcFastBlocks;
     if ( level > 0.02f )
-        m_loudnessRef = 0.9995f * m_loudnessRef + 0.0005f * level; // ~ tens of seconds
-    m_loudnessRef = std::max( m_loudnessRef, 0.04f );              // don't amplify near-silence
-    const float TargetLevel = 0.40f;                               // average music → ~0.40
+        m_loudnessRef += ( m_agcFastBlocks > 0 ? 0.01f : 0.0005f ) * ( level - m_loudnessRef );
+    m_loudnessRef = std::max( m_loudnessRef, 0.04f ); // don't amplify near-silence
+    const float TargetLevel = 0.40f;                  // average music → ~0.40
     float       agc_gain = std::max( 0.3f, std::min( TargetLevel / m_loudnessRef, 5.0f ) );
 
     float n_level = std::min( level * agc_gain, 1.f );
@@ -1898,7 +2036,10 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
             // and slam-resumes) — only an unclaimed silence means a new track.
             if ( m_wasSilent && !m_stopActive
                  && ( onset_strength > 0.25f || level > 0.05f ) )
+            {
                 track_change = true; // first real sound after the gap
+                beginSong();
+            }
             m_silenceFrames = 0.f;
             m_wasSilent = false;
         }
@@ -1917,6 +2058,7 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
             // FFT-based ODF: the old band-RMS flux rippled on sustained bass and
             // made the autocorrelation "find" a phantom tempo in pure drones.
             m_odfEnv[m_odfEnvIdx] = m_odfFFT;
+            m_sfEnv[m_odfEnvIdx] = m_odfSF;
             m_odfEnvIdx = ( m_odfEnvIdx + 1 ) % OdfEnvLen;
         }
         const int lag_lo = ( 60 * EnvRate ) / 180; // 33 samples (180 BPM)
@@ -1938,52 +2080,86 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
         m_odfEnvMean = env_mean;
         m_odfEnvStd = env_std;
 
-        // KNOWN DEAD, measured 2026-08-22 -- left in place deliberately, see
-        // docs/engine-internals.md ("Autocorrelation tempo").
-        //
-        // `env_std < 0.050f` was calibrated against the BAND-RMS onset function
-        // this block used to consume ("a kick envelope measures std ~0.14").
-        // The ODF was later swapped for the FFT-based one without re-deriving
-        // the threshold, and on that scale real music sits at 0.021..0.038 --
-        // so this gate has been closed permanently ever since and m_acConf
-        // reads exactly 0.000 on all 45 corpus clips. Since
-        // `rhythm = max(kick_rhythm, m_acConf)` and the BPM fusion below is
-        // guarded by `m_acConf > 0.35f`, the entire tempo autocorrelation
-        // currently contributes nothing.
-        //
-        // Simply lowering the threshold does NOT fix it. Measured with the gate
-        // forced open across beat-driven and beatless material, neither the
-        // autocorrelation peak nor its prominence separates the two: Kai Tracid
-        // (trance) peaks at 0.609 but The Prodigy at 0.167, BELOW Alcest
-        // (ambient) at 0.427, and prominence sits at ~1.0 for everything. The
-        // onset envelope itself does not carry the distinction, so reviving
-        // this needs a different ODF, not a different constant.
-        if ( env_mean < 0.010f || env_std < 0.050f )
+        // The tempo autocorrelation runs on the SuperFlux onset function (16.10.2026).  The FFT flux above could not
+        // tell beat from drone -- an ambient piece read a clearer period than The Prodigy (docs/engine-internals.md,
+        // "Autocorrelation tempo") -- and its gate had been closed for good.  SuperFlux can, measured on seven beat
+        // tracks against three Noctuary ambient renders and synthetic drones/pads: its peak sits at 0.36..0.62 on
+        // the beat, 0.11..0.30 on the ambient.  Three bars, all measured: the peak; the prominence (peak over the
+        // mean positive value), because the peak alone let a beating synthetic drone through (0.79); and the
+        // kurtosis of the onset function, because a tremolo is periodic too -- Harmonic Hours holds a steady 0.34 s
+        // modulation that passed peak and prominence in 27 % of its seconds.  Drum onsets are spikes (median
+        // kurtosis 8..36 on the beat tracks), a modulation is a smooth wave (2.4..5.7 on the calm material); with
+        // the third bar Harmonic Hours passes 3 % of its seconds and the beat tracks 47..100 %.  acConf is the
+        // share of the last ~4 s that passed, so a stray second does not make a rhythm.  The lag is picked under a
+        // log-Gaussian tempo prior around 120 BPM (Ellis 2007) and refined by a parabola through its neighbours; a
+        // different tempo has to hold for two seconds before it replaces the estimate.
+        if ( ++m_acBlock >= AcEvery )
         {
-            m_acConf *= 0.98f;
-        }
-        else
-        {
-            float best_ac = 0.f;
+            m_acBlock = 0;
+            float env[OdfEnvLen];
+            float mean = 0.f;
+            for ( int i = 0; i < OdfEnvLen; ++i )
+            {
+                env[i] = m_sfEnv[( m_odfEnvIdx + i ) % OdfEnvLen]; // oldest first: the ring's seam is no lag
+                mean += env[i];
+            }
+            mean /= OdfEnvLen;
+            float var = 1e-9f, m4 = 0.f;
+            for ( int i = 0; i < OdfEnvLen; ++i )
+            {
+                env[i] -= mean;
+                var += env[i] * env[i];
+                m4 += env[i] * env[i] * env[i] * env[i];
+            }
+            const float kurtosis = m4 * OdfEnvLen / ( var * var );
+            float       ac[( 60 * EnvRate ) / 70 + 2] = {};
+            for ( int lag = lag_lo - 1; lag <= lag_hi + 1; ++lag )
+            {
+                float sum = 0.f;
+                for ( int i = 0; i + lag < OdfEnvLen; ++i )
+                    sum += env[i] * env[i + lag];
+                ac[lag] = sum / var;
+            }
+            float peak = 0.f, positive = 0.f, best_score = 0.f;
             int   best_lag = 0;
             for ( int lag = lag_lo; lag <= lag_hi; ++lag )
             {
-                float ac = 0.f;
-                for ( int i = 0; i + lag < OdfEnvLen; ++i )
-                    ac += ( m_odfEnv[i] - env_mean ) * ( m_odfEnv[i + lag] - env_mean );
-                if ( ac > best_ac )
+                peak = std::max( peak, ac[lag] );
+                positive += std::max( ac[lag], 0.f );
+                const float octaves = std::log2( 60.f * EnvRate / ( 120.f * lag ) ) / AcPriorOctaves;
+                const float score = ac[lag] * std::exp( -0.5f * octaves * octaves );
+                if ( score > best_score )
                 {
-                    best_ac = ac;
+                    best_score = score;
                     best_lag = lag;
                 }
             }
-            if ( best_lag > 0 )
+            const float prominence = peak / std::max( 1e-6f, positive / ( lag_hi - lag_lo + 1 ) );
+            const bool  periodic = best_lag > 0 && peak >= 0.30f && prominence >= 5.0f && kurtosis >= 8.f;
+            m_acConf += 0.025f * ( ( periodic ? 1.f : 0.f ) - m_acConf ); // ~4 s at 10 Hz
+            float bpm = 0.f;
+            if ( periodic )
             {
-                float bpm = static_cast<float>( 60 * EnvRate ) / static_cast<float>( best_lag );
-                float conf = best_ac / ac_z;
-                m_acConf = 0.90f * m_acConf + 0.10f * std::min( conf * 2.f, 1.f );
-                m_acBPM = ( m_acBPM < 1.f ) ? bpm : 0.90f * m_acBPM + 0.10f * bpm;
+                const float a = ac[best_lag - 1], b = ac[best_lag], c = ac[best_lag + 1];
+                const float curve = a - 2.f * b + c;
+                const float shift = curve < 0.f ? std::clamp( 0.5f * ( a - c ) / curve, -0.5f, 0.5f ) : 0.f;
+                bpm = 60.f * EnvRate / ( best_lag + shift );
+                if ( m_acBPM < 1.f || std::fabs( std::log2( bpm / m_acBPM ) ) < 0.1f )
+                {
+                    m_acBPM = ( m_acBPM < 1.f ) ? bpm : 0.9f * m_acBPM + 0.1f * bpm;
+                    m_acRival = 0;
+                }
+                else if ( ++m_acRival >= 2 * AcEvery )
+                {
+                    m_acBPM = bpm;
+                    m_acRival = 0;
+                }
             }
+            // KALEIDO_AC_DEBUG=1: once a second, what the gate saw.
+            static const bool AcDebug = getenv( "KALEIDO_AC_DEBUG" ) != nullptr;
+            if ( AcDebug && ( ++m_acDebugN % 10 ) == 0 )
+                fprintf( stderr, "ACDBG peak %.3f prom %.2f kurt %.1f bpm %.1f conf %.3f acbpm %.1f\n", peak,
+                         prominence, kurtosis, bpm, m_acConf, m_acBPM );
         }
     }
 
@@ -2054,8 +2230,8 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
     }
 
     // ---- BPM estimation from inter-beat intervals ----
-    // Store the time (in samples) between the last BPMHistLen beats.
-    // Smooth the resulting BPM to avoid jitter.
+    // The last IoiLen intervals between kicks, explained as multiples of one period (ioiPeriod()); the BPM from
+    // it is smoothed to avoid jitter.
     // Octave folding: tempo estimators readily lock onto half or double the true
     // tempo (kicks on every 2nd beat, or a busy hi-hat grid).  Fold every
     // estimate into the canonical [70..180) BPM dance range — visually, pulsing
@@ -2072,29 +2248,36 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
         return bpm;
     };
     float estimated_bpm = m_smoothedBPM;
+    // A new track starts its own tempo: the old one's intervals would only argue with it.
+    if ( track_change )
+        m_ioiCount = 0;
     if ( is_beat )
     {
         float interval_frames = m_frameCounter - m_lastBeatFrame;
         m_lastBeatFrame = m_frameCounter;
-        if ( interval_frames > 0.f && interval_frames < static_cast<float>( sampleRate ) * 3.f )
+        const float interval_s = interval_frames / static_cast<float>( sampleRate );
+        if ( interval_s > 0.12f && interval_s < 3.f )
         {
-            // Convert sample interval to BPM
-            float bpm = fold_bpm( static_cast<float>( sampleRate ) * 60.f / interval_frames );
-            m_beatIntervals[m_bpmIdx] = bpm;
-            m_bpmIdx = ( m_bpmIdx + 1 ) % BPMHistLen;
-
-            float bpm_sum = 0.f;
-            for ( float v : m_beatIntervals )
-                bpm_sum += v;
-            float mean_bpm = bpm_sum / static_cast<float>( BPMHistLen );
-
-            // Smooth BPM estimate (slow — tempo should drift, not jump)
-            m_smoothedBPM = 0.85f * m_smoothedBPM + 0.15f * mean_bpm;
+            m_ioi[m_ioiIdx] = interval_s;
+            m_ioiIdx = ( m_ioiIdx + 1 ) % IoiLen;
+            m_ioiCount = std::min( m_ioiCount + 1, IoiLen );
+            // The period that explains the recent intervals as multiples (ioiPeriod()).
+            const float period = ioiPeriod( m_smoothedBPM > 1.f ? 60.f / m_smoothedBPM : 0.f, m_ioiExplained );
+            if ( period > 0.f )
+            {
+                const float bpm = 60.f / period;
+                // Smooth BPM estimate (slow — tempo should drift, not jump); the first estimate is taken as it is.
+                m_smoothedBPM = m_smoothedBPM < 1.f ? bpm : 0.85f * m_smoothedBPM + 0.15f * bpm;
+            }
         }
     }
     // Refine the tempo with the autocorrelation estimate when it is confident
-    // (robust for tracks where the kick-based inter-beat estimate is noisy).
-    if ( m_acConf > 0.35f && m_acBPM > 1.f )
+    // (robust for tracks where the kick-based inter-beat estimate is noisy) --
+    // and only then: where the kicks explain their own intervals (ioiPeriod()),
+    // their tempo stands.  On a synthetic two-step 174 the autocorrelation was
+    // "confident" of 116.6 and pulled a correct kick tempo there in a second.
+    const bool kicks_explain = m_ioiCount >= 6 && m_ioiExplained >= 0.75f;
+    if ( m_acConf > 0.35f && m_acBPM > 1.f && !kicks_explain )
     {
         float ac_folded = fold_bpm( m_acBPM );
         if ( m_smoothedBPM < 1.f )
@@ -2111,19 +2294,9 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
     // Regular, recent beats → ~1; irregular / no recent beats / speech → ~0.
     float frames_since_beat = m_frameCounter - m_lastBeatFrame;
     float recency = std::exp( -frames_since_beat / ( 2.0f * static_cast<float>( sampleRate ) ) ); // ~2 s
-    float ib_mean = 0.f;
-    for ( float v : m_beatIntervals )
-        ib_mean += v;
-    ib_mean /= static_cast<float>( BPMHistLen );
-    float ib_var = 0.f;
-    for ( float v : m_beatIntervals )
-    {
-        float d = v - ib_mean;
-        ib_var += d * d;
-    }
-    ib_var /= static_cast<float>( BPMHistLen );
-    float ib_cv = ( ib_mean > 1e-3f ) ? std::sqrt( ib_var ) / ib_mean : 1.f;
-    float kick_rhythm = std::max( 0.f, 1.f - ib_cv ) * recency;
+    // The share of the recent kick intervals the tempo explains (ioiPeriod()) -- not 1 minus their spread: a
+    // boom-bap's 1.5- and 1-beat intervals are perfectly regular, and a spread said they were not.
+    float kick_rhythm = ( m_ioiCount >= 3 ? m_ioiExplained : 0.f ) * recency;
     // A steady onset envelope (autocorrelation confidence) also means "rhythmic",
     // so genres without a strong kick still register a rhythm.
     float rhythm = std::max( kick_rhythm, m_acConf );
@@ -2185,9 +2358,12 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
     // sharpness 0.802. The old formula's biggest term was the AGC-normalised
     // level at AUC 0.557: the AGC exists to remove exactly the loudness
     // differences that term was supposed to measure, so it measured nothing.
+    // The tempo counts as far as there is a rhythm to have one (16.10.2026): the estimate is never forgotten,
+    // so an ambient piece after a beat track carried that track's tempo into its arousal -- the corpus ran each
+    // clip from a fresh start and never saw it -- and a tremolo that once looked like a beat would do the same.
     float arousal = 0.30f * nrm( spectral_flux, 0.019f, 0.086f )
                     + 0.30f * m_sRhythm
-                    + 0.22f * nrm( estimated_bpm, 0.313f, 0.578f )
+                    + 0.22f * nrm( estimated_bpm, 0.313f, 0.578f ) * std::min( 1.f, 2.f * m_sRhythm )
                     + 0.18f * nrm( m_sSharpness, 0.279f, 0.326f );
 
     // Valence: key clarity 0.753, consonance (1 - roughness) 0.753, and the
@@ -2404,6 +2580,24 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
             }
             m_odfFFT = ( frame_max > 1e-4f ) ? ( pos / ref ) : 0.f;
 
+            // SuperFlux (Boeck & Widmer 2013): the log-compressed spectrum's rise over the PREVIOUS frame widened
+            // by a maximum filter across three bins -- vibrato and beating partials stay under their neighbours'
+            // maximum, onsets do not.  30 Hz .. 16 kHz, amplitude units (a sine of amplitude A peaks at A N / 4).
+            {
+                const int   k_lo = std::max( 1, 30 * FFTSize / sampleRate );
+                const int   k_hi = std::min( FFTHalf - 2, 16000 * FFTSize / sampleRate );
+                const float to_amp = 4.f / FFTSize;
+                float       cur[FFTHalf];
+                for ( int k = k_lo - 1; k <= k_hi + 1; ++k )
+                    cur[k] = std::log1p( 100.f * mags[k] * to_amp );
+                float flux = 0.f;
+                for ( int k = k_lo; k <= k_hi; ++k )
+                    flux += std::max( 0.f,
+                                      cur[k] - std::max( m_sfPrev[k - 1], std::max( m_sfPrev[k], m_sfPrev[k + 1] ) ) );
+                std::copy( cur + k_lo - 1, cur + k_hi + 2, m_sfPrev + k_lo - 1 );
+                m_odfSF = flux / static_cast<float>( k_hi - k_lo + 1 );
+            }
+
             // Instrument-separated onsets: the same spike test as the global
             // onset, but per band group, each against its own running average.
             for ( int g = 0; g < 3; ++g )
@@ -2558,6 +2752,10 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
                         n_p += m_secPrint[b] * m_secPrint[b];
                     for ( int i = 0; i < m_secPrintN; ++i )
                     {
+                        // Only this song's sections: a chorus of the last song is no chorus of this one (until
+                        // 16.10.2026 the prints were compared across songs, with no song boundary to stop them).
+                        if ( m_secPrintEpoch[i] != m_songEpoch )
+                            continue;
                         float d = 0.f, n_q = 1e-9f;
                         for ( int b = 0; b < NB; ++b )
                         {
@@ -2591,12 +2789,19 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
                             ++m_secPrintN;
                         else
                         {
+                            // An earlier song's print goes first, then the least recently used.
                             slot = 0;
                             for ( int i = 1; i < MaxSectionPrints; ++i )
-                                if ( m_secPrintUse[i] < m_secPrintUse[slot] )
+                            {
+                                const bool old_i = m_secPrintEpoch[i] != m_songEpoch;
+                                const bool old_s = m_secPrintEpoch[slot] != m_songEpoch;
+                                if ( ( old_i && !old_s )
+                                     || ( old_i == old_s && m_secPrintUse[i] < m_secPrintUse[slot] ) )
                                     slot = i;
+                            }
                         }
                         std::memcpy( m_secPrints[slot], m_secPrint, sizeof( m_secPrint ) );
+                        m_secPrintEpoch[slot] = m_songEpoch;
                         m_secCurId = slot;
                         m_secKnown = false;
                     }
@@ -2699,26 +2904,17 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
     // Best-matching profile family (major vs. minor) across all 12 key
     // transpositions determines musicalMode (0=minor, 1=major).
     {
-        float chroma[12] = {};
-        for ( int k = 3; k < FFTHalf; ++k )
+        // The chroma comes from its own 8192-point FFT every 4th block (computeChroma()); between, its last value
+        // is held, so the smoothing below keeps its time constants per block.
+        if ( ++m_chromaBlock >= 4 )
         {
-            float f = static_cast<float>( k ) * static_cast<float>( sampleRate ) / static_cast<float>( FFTSize );
-            if ( f < 60.f || f > 5000.f )
-                continue; // musical pitch range only
-            // MIDI note: 69 + 12 * log2(f / 440)  → pitch class 0..11
-            float midi = 69.f + 12.f * std::log2( f / 440.f );
-            int   pitch_class = static_cast<int>( std::round( midi ) ) % 12;
-            if ( pitch_class < 0 )
-                pitch_class += 12;
-            chroma[pitch_class] += mags[k];
+            m_chromaBlock = 0;
+            computeChroma( static_cast<float>( sampleRate ) );
         }
-        // L1-normalise then blend into slow-moving smoothed chroma
-        float c_sum = 1e-6f;
-        for ( int i = 0; i < 12; ++i )
-            c_sum += chroma[i];
+        float chroma[12];
         for ( int i = 0; i < 12; ++i )
         {
-            chroma[i] /= c_sum;
+            chroma[i] = m_chroma[i];
             m_smoothedChroma[i] = 0.92f * m_smoothedChroma[i] + 0.08f * chroma[i];
             m_hcdfChroma[i] = 0.975f * m_hcdfChroma[i] + 0.025f * chroma[i];
         }
@@ -2899,6 +3095,20 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
         const int bin_hi = std::min(
             FFTHalf / 4 - 1,
             static_cast<int>( 1200.f * static_cast<float>( FFTSize ) / static_cast<float>( sampleRate ) ) + 1 );
+        // Voicing: the product spectrum's peak against its median over the search range, in log units -- a clear
+        // harmonic series stands 18-26 above it, a dense mix about 8, drums about 2 with transients to 14.
+        // Smoothed over ~0.2 s (the transients go) and held by hysteresis (on above 10, off below 7).
+        auto voicing = [&mags]( int lo, int hi, float best )
+        {
+            float lg[512];
+            int   n = 0;
+            for ( int k = lo; k < hi && k * 4 < FFTHalf && n < 512; ++k )
+                lg[n++] = std::log( mags[k] * mags[k * 2] * mags[k * 3] * mags[k * 4] + 1e-30f );
+            if ( n < 3 )
+                return 0.f;
+            std::nth_element( lg, lg + n / 2, lg + n );
+            return std::max( 0.f, std::log( best + 1e-30f ) - lg[n / 2] );
+        };
         float max_hps = -1.f;
         int   pitch_bin = bin_lo;
         for ( int k = bin_lo; k < bin_hi; ++k )
@@ -2912,20 +3122,20 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
                 pitch_bin = k;
             }
         }
+        m_voiceDom += 0.05f * ( voicing( bin_lo, bin_hi, max_hps ) - m_voiceDom );
+        m_domVoiced = m_domVoiced ? m_voiceDom > 7.f : m_voiceDom > 10.f;
         float pitch_hz = static_cast<float>( pitch_bin ) * static_cast<float>( sampleRate )
                          / static_cast<float>( FFTSize );
         // Log-normalise 60..1200 Hz → 0..1
         float pitch_norm = ( std::log2( pitch_hz + 1.f ) - std::log2( 61.f ) )
                            / ( std::log2( 1201.f ) - std::log2( 61.f ) );
         pitch_norm = std::max( 0.f, std::min( pitch_norm, 1.f ) );
-        // Suppress output when there is no signal
-        float max_mag = 0.f;
-        for ( int k = 1; k < FFTHalf; ++k )
-            max_mag = std::max( max_mag, mags[k] );
-        float confidence = ( max_mag > 1e-5f ) ? 1.f : 0.f;
         // Slow smoothing — HPS can octave-jump frame to frame, and several shaders
         // use the pitch for hue/scale; this keeps those colour/size changes gradual.
-        m_sPitch = 0.97f * m_sPitch + 0.03f * pitch_norm * confidence;
+        // Without a clear pitch it holds (it used to sink toward 0 on silence and
+        // follow the drums' "pitch" otherwise).
+        if ( m_domVoiced )
+            m_sPitch = 0.97f * m_sPitch + 0.03f * pitch_norm;
 
         // MELODY: the same product spectrum, searched only from 150 Hz up.
         // Below that the bass line owns the strongest harmonic series and
@@ -2953,7 +3163,23 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
             float norm_m = ( std::log2( hz_m + 1.f ) - std::log2( 61.f ) )
                            / ( std::log2( 1201.f ) - std::log2( 61.f ) );
             norm_m = std::max( 0.f, std::min( norm_m, 1.f ) );
-            m_sMelody = 0.97f * m_sMelody + 0.03f * norm_m * confidence;
+            m_voiceMel += 0.05f * ( voicing( bin_lo2, bin_hi, best_m ) - m_voiceMel );
+            m_melVoiced = m_melVoiced ? m_voiceMel > 7.f : m_voiceMel > 10.f;
+            // The uniform follows the tune smoothly while one sounds and holds otherwise (no jump for a picture);
+            // the ring gets the note itself: the median of the last five raw pitches (a step, not a glissando),
+            // or 0 while no melody sounds (a pen-up for the trace).
+            if ( m_melVoiced )
+            {
+                m_sMelody = 0.97f * m_sMelody + 0.03f * norm_m;
+                m_melodyRaw[m_melodyRawIdx] = norm_m;
+                m_melodyRawIdx = ( m_melodyRawIdx + 1 ) % 5;
+                float sorted[5];
+                std::copy( m_melodyRaw, m_melodyRaw + 5, sorted );
+                std::nth_element( sorted, sorted + 2, sorted + 5 );
+                m_melodyNote = std::max( 0.03f, sorted[2] );
+            }
+            else
+                m_melodyNote = 0.f;
         }
     }
 
@@ -3305,7 +3531,10 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
                           && m_ambientFactor < 0.6f && m_lvlSlow > 0.02f;
         if ( !m_stopActive )
         {
-            if ( beat_music && m_lvlFast < 0.15f * m_lvlSlow )
+            // A stop is a collapse OUT OF running music: inside a silence already armed as a track end (a stop that
+            // ran past 3 s let go) a new one would claim the restart -- the tempo autocorrelation keeps rhythm up
+            // for its 4 s window, so beat_music still holds there.
+            if ( beat_music && !m_wasSilent && m_lvlFast < 0.15f * m_lvlSlow )
             {
                 if ( ++m_stopBlocks >= 8 ) // ~80 ms of collapse
                 {
@@ -3488,6 +3717,8 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
     m_features.musicalMode = m_sMode;
     m_features.dominantPitch = m_sPitch;
     m_features.melodyPitch = m_sMelody;
+    m_features.melodyConf = std::clamp( ( m_voiceMel - 7.f ) / 3.f, 0.f, 1.f );
+    m_features.melodyNote = m_melodyNote;
     m_features.chromaHue = chroma_hue;
     // Full 12-bin chroma vector (smoothed, L1-normalised) — for scenes that
     // display the harmony structurally (Planet4D pitch-class hypersphere).

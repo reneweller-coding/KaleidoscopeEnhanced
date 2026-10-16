@@ -1063,6 +1063,16 @@ protected:
         bool                                  hasLast = false;  ///< last is valid.
         std::minstd_rand rng; ///< Own random stream (keeps the scene's rand() stream untouched per frame).
     } m_walk;                                                   ///< The walk of this activation (chain labs only).
+
+public:
+    /** A new song: a walking lab forgets the looks and tilts it gave the last song's sections. */
+    void forgetSections()
+    {
+        m_walk.sectionLook.clear();
+        m_walk.sectionTilt.clear();
+    }
+
+protected:
     /** Camera host of the 3D chains (uniform camHost): the flight position and the gaze.
      *
      * The flight is integrated here -- time plus the music's advance, times a

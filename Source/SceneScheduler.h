@@ -188,6 +188,25 @@ public:
         if ( alsoFx )
             m_forceFxChange = true;
     }
+    /** A natural scene change on the next tick: the change a section or a drop asks for, not a person's cut (in a
+     * calm preset it waits for a real stay and fades with the preset's fade floor).  A new song's.
+     **/
+    void requestNaturalChange()
+    {
+        m_forceEffectChange = true;
+        m_forceIsManual = false;
+    }
+    /**  A new song: the section memory starts empty, so no look of the last song is replayed in this one. */
+    void newSong()
+    {
+        m_sectionEffect.clear();
+        m_sectionFx.clear();
+        m_sectionParams.clear();
+        m_sectionStamp.clear();
+        m_sectionTime.clear();
+        m_pendingSectionStore = -1;
+        m_pendingSectionRestore = -1;
+    }
     /**  Jump directly to a given effect index, pre-empting the normal selection (remote scene browser).
      *
      * @param idx  Index into the attached texture/effect list to jump to; out-of-range or a missing attach() is
@@ -519,6 +538,9 @@ private:
                                                        ///< replay.
     std::map<int, int> m_sectionStamp; ///< Section id -> Tick::sectionCount at store time (staleness guard: no replay
                                        ///< across songs).
+    /// Section id -> when it was stored: without a title source to say where a song ends, a look older than 8
+    /// minutes is no longer this song's (the sections alone span several songs: 2-10 per track).
+    std::map<int, ClockT::time_point> m_sectionTime;
 
     // Recently shown scenes.  The random roll only ever excluded the scene
     // on screen, so any filter that narrowed the pool (the build-up rule

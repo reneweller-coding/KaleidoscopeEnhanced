@@ -747,6 +747,9 @@ slew-limited at the source.
 
 ## Autocorrelation tempo (currently dead — measured, on purpose)
 
+**Revived on 16.10.2026** on a SuperFlux onset function with a three-bar gate -- see "16.10.2026 (9)" at the
+end. What follows is the state it was found in, kept as measured.
+
 `AudioAnalyzer` runs an onset-detection function through a 4 s envelope and
 autocorrelates it over the 70–180 BPM lag range, producing `m_acBPM` and a
 confidence `m_acConf`. **That confidence has been a constant 0.000 for a long
@@ -4842,3 +4845,81 @@ The fourth round of the idea list: what the frame costs and who pays.
   the light one coarse.)
 
 `Kaleidoscope.exe -q`: 102 checks.
+
+## 16.10.2026 (9): what the analysis hears
+
+The fifth round of the idea list: the analysis itself, each change measured before it stayed.
+
+- **A regression for the analysis.** `Tools/analyzer_regress.py` renders the chord test track (truth: the chord
+  changes), the structure track (truth: the drops) and `Tools/broadband120.wav`, runs `PresetEditor --features`
+  over them and counts what the analysis found: chord changes seen (`harm_c` over 0.5 within -0.3..+1.0 s of a
+  change), false alarms in the held stretches, drops within a bar, the tempo; and every feature's mean, 90th
+  percentile and movement against `Tools/analyzer_baseline.json` (`--update` writes it after a change has been
+  looked at). release_check runs it as the step `analyzer`.
+- **The chroma** comes from an 8192-point FFT every 4th block (5.9 Hz a bin at 48 kHz, 2048 points had 23): the
+  spectrum's peaks, each spread over its pitch class with a cos^2 window 4/3 of a semitone wide, compressed with
+  log(1 + 10 a) (HPCP). Under 262 Hz the 2048-point bins had fallen on only six of the twelve classes. A C-major
+  triad in octave 3 now reads C, E, G (a check in `-q`, as is the I-IV-V hue now played in octave 3), and the
+  broadband track reads its A major. The harmonic change was re-gained (HcdfGain 1.3, one chord a harm advance of
+  1.38): 24 of 38 changes seen with 4 false alarms, against 25 with 8 before.
+- **The kick tempo** is the period that explains the last twelve kick intervals as multiples of 1, 1.5, 2, 2.5, 3
+  or 4 beats (`AudioAnalyzer::ioiPeriod()`: hits, a small bonus for simple multiples and for staying near the
+  previous period, the period refined by least squares), not the mean of eight intervals folded one by one.
+  Boom-bap at 90 had read 110, two-step at 174 read 128; now 89.98, 173.9 and the four-to-the-floor 127.9 (three
+  checks in `-q`). rhythm's kick part is the share of intervals the period explains, times recency, not one minus
+  their spread (a boom-bap's 1- and 1.5-beat intervals are regular, the spread said they were not). The ring is
+  emptied at a song boundary.
+- **Melody voicing.** The pitch confidence was a 0/1 flag smoothed into something that moved on drums too. The
+  voicing is now the harmonic product spectrum's peak over its median (in log units, smoothed, on above 10, off
+  below 7): drum noise 0 % voiced, a tune 100 % (a check in `-q`). `audioMelodyConf` (new, 0..1) says it to the
+  shaders; the pitch holds its last voiced value instead of sinking to 0, and the melody ring the conditioner
+  publishes takes `melodyNote`, the median of the last five voiced pitches, 0 when nothing is voiced.
+- **Song boundaries from two sources.** A new title in the media session (SMTC; artist|title, stable for 3 s, not
+  the first one seen, only while music plays) or the analysis' own silence -- whichever comes first, the other
+  within 5 s is the same boundary (`GLwidget::updateSongBoundary()`, "SONG: new song (title|silence)" in the log).
+  A boundary empties the kick-interval ring, starts a new epoch for the section prints (a print of the last song
+  is never matched, and its slots are the first to be reused), lets the gain control settle ten times faster for
+  5 s, makes the scheduler forget its section-to-scene memory (`SceneScheduler::newSong()`; a remembered section
+  now also has to be younger than 8 minutes) and the scenes their per-section looks, and asks for a natural scene
+  change. Crossfading DJ mixes have no silence, so the title was the only boundary they could have.
+  `KALEIDO_NP_FAKE="Artist|Title@0;Artist 2|Title 2@15"` scripts a media session for the test: the change came 3 s
+  after the title, the scene followed.
+- **The tempo autocorrelation lives again** (the section "Autocorrelation tempo" above explains why it was dead).
+  The idea list's rule: a new onset function first, and only if it separates beat from drone. SuperFlux
+  (Boeck & Widmer 2013: the log spectrum's rise over the previous frame widened by a maximum over three bins)
+  measured with the gate forced open, once a second, medians per piece:
+
+  | material | old flux, peak | SuperFlux peak | prominence | kurtosis |
+  |---|---|---|---|---|
+  | seven beat tracks, the structure and broadband tracks | 0.139 (The Prodigy) and up | 0.36-0.62 | 6.0-9.3 | 8-36 |
+  | three Noctuary ambient renders | 0.13, **0.63, 0.72** | 0.11-0.30 | 5.1-5.8 | 3.3-4.6 |
+  | synthetic drone with beating partials | 0.67 | **0.79** | 4.1 | 2.4 |
+  | synthetic pad / held chord | 0.13 / 0.12 | 0.13 / 0.11 | 5.9 / 7.7 | 5.7 / 7.8 |
+
+  The old function read a clearer period in two ambient pieces than in most beat tracks. SuperFlux's peak
+  separates real ambient from beat; the beating drone needs the prominence. Then Harmonic Hours showed what the
+  medians hid: a steady 0.34 s modulation (176.4 BPM, minutes long) that passed peak and prominence in 27 % of its
+  seconds, and on the first try lifted its arousal from 0.01 to 0.28. A tremolo is periodic too; what it is not is
+  impulsive -- drum onsets are spikes, a modulation is a smooth wave -- so the kurtosis of the onset function is
+  the third bar. The gate (peak >= 0.30, prominence >= 5.0, kurtosis >= 8) passes the beat tracks in 47-100 % of
+  their seconds, Harmonic Hours in 3 %, the other calm material in 0-7 % (the held chord's changes are spikes).
+  acConf is the share of the last ~4 s that passed, evaluated ten times a second; the lag is picked under a
+  log-Gaussian prior around 120 BPM (Ellis 2007), refined by a parabola, and a different tempo has to hold for
+  2 s. Where the kicks explain their own intervals their tempo stands (the two-step 174 had been pulled to 116.6).
+  Tempo medians before -> after: Around the World 176.0 -> 123.3, Breathe 160.1 -> 133.2, Thunderstruck
+  136.1 -> 133.9, Kadafi 156.8 -> 129.3, Ironic 170.8 -> 164.6 (still the 1.5-fold), Astrix and DMT unchanged.
+  rhythm rises on the beat tracks (0.40-0.74 -> 0.75-1.0), the ambient factor falls there, the three ambient
+  renders stay where they were (rhythm 0.00-0.03, ambient 0.97-1.0). `KALEIDO_AC_DEBUG=1` prints the gate's view
+  once a second. Stage 3 of the idea (a predictor carrying the phase over missing beats) was not built.
+- **Two things the revival brought up.** The tempo estimate is never forgotten, and its arousal term counted it
+  unweighted: an ambient piece after a beat track carried that track's tempo into its arousal (the corpus ran
+  each clip from a fresh start and never saw it). The term now counts as far as there is a rhythm
+  (`min(1, 2 rhythm)`; Harmonic Hours ends at 0.03). And rhythm now outlives a pause by its 4 s window, so the DJ
+  stop, let go after 3 s as a track end, armed again in the same silence and claimed the restart (`-q` caught it):
+  a stop now needs a collapse out of running music, not out of a silence already armed.
+- **Not done: the valence anchors.** The key-clarity anchors (0.652/0.805) were measured on the 80-track mood
+  corpus with the old chroma; the new one reads more clarity (valence +0.07..0.15 on the synthetic tracks). The
+  corpus is not scripted and not on this machine, so they stay until it is measured again -- as does arousal,
+  which now reads 0.01-0.15 higher on beat music (mostly about 0.1) through the rhythm term.
+
+`Kaleidoscope.exe -q`: 108 checks. Linux (WSL, Qt 6.2.4): built, 108 of 108.

@@ -136,13 +136,46 @@ void NowPlaying::stop()
     m_running = false;
 }
 
+/**  A scripted media session for tests: KALEIDO_NP_FAKE="Artist|Title@0;Artist 2|Title 2@15" plays the first
+ * title from the start and the second from second 15 on.
+ *
+ * @param artist  The scripted artist now. (out)
+ * @param title   The scripted title now. (out)
+ *
+ * @return
+ *   True while the hook is set (the real session is then not asked).
+ **/
+static bool fakeSession( QString &artist, QString &title )
+{
+    static const QString Spec = qEnvironmentVariable( "KALEIDO_NP_FAKE" );
+    static const qint64  Start = QDateTime::currentMSecsSinceEpoch();
+    if ( Spec.isEmpty() )
+        return false;
+    const double secs = ( QDateTime::currentMSecsSinceEpoch() - Start ) * 0.001;
+    for ( const QString &e : Spec.split( ';', Qt::SkipEmptyParts ) )
+    {
+        const int at = e.lastIndexOf( '@' ), bar = e.indexOf( '|' );
+        if ( at < 0 || bar < 0 || e.mid( at + 1 ).toDouble() > secs )
+            continue;
+        artist = e.left( bar );
+        title = e.mid( bar + 1, at - bar - 1 );
+    }
+    return true;
+}
+
 QString NowPlaying::title() const
 {
+    QString a, t;
+    if ( fakeSession( a, t ) )
+        return t;
     QMutexLocker l( &m_mutex );
     return m_title;
 }
 QString NowPlaying::artist() const
 {
+    QString a, t;
+    if ( fakeSession( a, t ) )
+        return a;
     QMutexLocker l( &m_mutex );
     return m_artist;
 }

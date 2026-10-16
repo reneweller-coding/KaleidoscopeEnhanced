@@ -723,15 +723,15 @@ void outputChecks()
                    + std::to_string( max_step ).substr( 0, 6 ) + " per 10 ms" );
     }
 
-    // 3. I-IV-V (C, F, G major in octave 5, three harmonics each): on the circle of fifths the three hues lie close; on
+    // 3. I-IV-V (C, F, G major in octave 3, three harmonics each): on the circle of fifths the three hues lie close; on
     // the
     //    chromatic circle (the old mapping, worked out from the same chroma) they spread over half the wheel.
     {
         const int          rate = 48000, frames = rate * 12;
         std::vector<float> pcm( static_cast<size_t>( frames ), 0.f );
-        // Octave 5: below ~400 Hz a 2048-point FFT's bin (23 Hz) is wider than a semitone, and the chroma there
-        // still files a tone under a neighbouring pitch class (a C major triad in octave 3 came out as C#, F#, A#).
-        const int chords[3][3] = { { 72, 76, 79 }, { 77, 81, 84 }, { 79, 83, 86 } }; // C, F, G
+        // Octave 3, the bass: there a 2048-point FFT's bin (23 Hz) is wider than a semitone, and the chroma filed
+        // the C major triad as C#, F#, A# -- until it got its own 8192-point FFT with interpolated peaks.
+        const int chords[3][3] = { { 48, 52, 55 }, { 53, 57, 60 }, { 55, 59, 62 } }; // C, F, G
         for ( int i = 0; i < frames; ++i )
         {
             const double t = static_cast<double>( i ) / rate;
@@ -771,6 +771,20 @@ void outputChecks()
         check( spread < 0.21f && old_spread > 0.33f, "I-IV-V keeps the key's hue together (circle of fifths)",
                "C/F/G at " + deg( hue[0] ) + "/" + deg( hue[1] ) + "/" + deg( hue[2] ) + " degrees, spread "
                    + deg( spread ) + "; on the chromatic circle " + deg( old_spread ) );
+
+        // The C major triad in octave 3: its three strongest pitch classes are C, E and G.
+        const AudioFeatures &fc = tl[std::min( tl.size() - 1, static_cast<size_t>( 390 ) )];
+        int                  top[3] = { -1, -1, -1 };
+        for ( int r = 0; r < 3; ++r )
+            for ( int i = 0; i < 12; ++i )
+                if ( ( r == 0 || i != top[0] ) && ( r < 2 || i != top[1] )
+                     && ( top[r] < 0 || fc.chroma[i] > fc.chroma[top[r]] ) )
+                    top[r] = i;
+        const char      *names[12] = { "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B" };
+        std::vector<int> got( top, top + 3 );
+        std::sort( got.begin(), got.end() );
+        check( got == std::vector<int>{ 0, 4, 7 }, "a C major triad in octave 3 reads C, E, G (was C#, F#, A#)",
+               std::string( names[top[0]] ) + ", " + names[top[1]] + ", " + names[top[2]] );
     }
 }
 
@@ -819,6 +833,118 @@ void settingsChecks()
     const QString why = SettingsFile::failure( ro );
     QFile::setPermissions( path, QFileDevice::ReadOwner | QFileDevice::WriteOwner );
     check( !why.isEmpty(), "a settings file that cannot be written is noticed", why.toStdString() );
+}
+
+/**  A kick pattern: kicks (the drum track's thump) at the given beat positions of every 4-beat bar, over a tone.
+ *
+ * @param rate     Sample rate in Hz. (in)
+ * @param bpm      Tempo. (in)
+ * @param beats    Kick positions in beats within the bar. (in)
+ * @param seconds  Length in seconds. (in)
+ *
+ * @return
+ *   Mono samples.
+ **/
+std::vector<float> kickPattern( int rate, double bpm, const std::vector<double> &beats, double seconds )
+{
+    std::vector<float> pcm( static_cast<size_t>( rate * seconds ), 0.f );
+    const double       spb = 60.0 / bpm;
+    for ( size_t i = 0; i < pcm.size(); ++i )
+        pcm[i] = static_cast<float>( 0.12 * std::sin( 6.283185307 * 660.0 * static_cast<double>( i ) / rate ) );
+    for ( double bar = 0.0; bar * 4.0 * spb < seconds; bar += 1.0 )
+        for ( double b : beats )
+        {
+            const size_t at = static_cast<size_t>( ( bar * 4.0 + b ) * spb * rate );
+            for ( size_t k = 0; k < static_cast<size_t>( 0.25 * rate ) && at + k < pcm.size(); ++k )
+            {
+                const double t = static_cast<double>( k ) / rate;
+                double       v = 0.8 * std::exp( -t * 18.0 ) * std::sin( 6.283185307 * 55.0 * t );
+                if ( t < 0.004 )
+                    v += 0.5 * ( ( ( ( at + k ) * 2654435761u ) >> 16 ) % 2000 / 1000.0 - 1.0 );
+                pcm[at + k] += static_cast<float>( v );
+            }
+        }
+    return pcm;
+}
+
+/**  The kick tempo (16.10.2026): the period that explains the kick intervals as multiples, not the mean of
+ * per-interval BPMs folded into 70-180 -- which read a boom-bap 90 as 110 and a two-step 174 as about 128.
+ **/
+void rhythmChecks()
+{
+    printf( "\nkick tempo (AudioAnalyzer::ioiPeriod)\n" );
+    const int rate = 48000;
+    struct Case
+    {
+        const char         *name;
+        double              bpm;
+        std::vector<double> beats;
+    };
+    const Case cases[] = { { "boom-bap", 90.0, { 0.0, 1.5, 2.5 } },
+                           { "two-step", 174.0, { 0.0, 2.5 } },
+                           { "four to the floor", 128.0, { 0.0, 1.0, 2.0, 3.0 } } };
+    for ( const Case &c : cases )
+    {
+        const std::vector<float>         pcm = kickPattern( rate, c.bpm, c.beats, 20.0 );
+        const std::vector<AudioFeatures> tl =
+            AudioAnalyzer::analyzeSamples( pcm.data(), static_cast<int>( pcm.size() ), 1, rate );
+        const AudioFeatures &f = tl.back();
+        const float          bpm = 40.f + 160.f * f.estimatedBPM;
+        check( std::fabs( bpm - static_cast<float>( c.bpm ) ) < 2.f && f.rhythmStrength > 0.5f,
+               ( std::string( c.name ) + " " + std::to_string( static_cast<int>( c.bpm ) )
+                 + " BPM is read as its tempo, and as a rhythm" )
+                   .c_str(),
+               std::to_string( bpm ).substr( 0, 5 ) + " BPM, rhythm "
+                   + std::to_string( f.rhythmStrength ).substr( 0, 4 ) );
+    }
+}
+
+/**  The melody's voicing (16.10.2026): drums alone are no melody, a tone is one -- the old pitch was always
+ * "there", so the melody ring drew a glissando through every drum break.
+ **/
+void melodyChecks()
+{
+    printf( "\nmelody voicing (AudioAnalyzer: melodyConf, melodyNote)\n" );
+    const int          rate = 48000, n = rate * 8;
+    std::vector<float> drums( static_cast<size_t>( n ), 0.f ), tune( static_cast<size_t>( n ), 0.f );
+    unsigned           rng = 2463534242u; // xorshift32: noise (a multiplicative hash of i is a sawtooth -- a tone)
+    for ( int i = 0; i < n; ++i )
+    {
+        const double t = static_cast<double>( i ) / rate, k = std::fmod( t, 0.5 );
+        double       v = 0.8 * std::exp( -k * 18.0 ) * std::sin( 6.283185307 * 55.0 * k );
+        // a snare on the off-beat: noise, decaying
+        rng ^= rng << 13;
+        rng ^= rng >> 17;
+        rng ^= rng << 5;
+        const double s = std::fmod( t + 0.25, 0.5 );
+        v += 0.35 * std::exp( -s * 20.0 ) * ( ( rng >> 8 ) / 8388608.0 - 1.0 );
+        drums[static_cast<size_t>( i )] = static_cast<float>( v );
+        // a tune: a note every half second, A4 C5 E5 G5, three harmonics
+        const int    notes[4] = { 69, 72, 76, 79 };
+        const double f = 440.0 * std::pow( 2.0, ( notes[static_cast<int>( t / 0.5 ) % 4] - 69 ) / 12.0 );
+        double       u = 0.0;
+        for ( int h = 1; h <= 3; ++h )
+            u += 0.15 / h * std::sin( 6.283185307 * f * h * t );
+        tune[static_cast<size_t>( i )] = static_cast<float>( u );
+    }
+    const std::vector<AudioFeatures> td = AudioAnalyzer::analyzeSamples( drums.data(), n, 1, rate );
+    const std::vector<AudioFeatures> tt = AudioAnalyzer::analyzeSamples( tune.data(), n, 1, rate );
+    float                            d_conf = 0.f, d_note = 0.f, t_conf = 1.f;
+    int                              t_notes = 0;
+    for ( size_t i = 200; i < td.size(); ++i ) // after the first two seconds
+    {
+        d_conf = std::max( d_conf, td[i].melodyConf );
+        d_note = std::max( d_note, td[i].melodyNote );
+    }
+    for ( size_t i = 200; i < tt.size(); ++i )
+    {
+        t_conf = std::min( t_conf, tt[i].melodyConf );
+        t_notes += tt[i].melodyNote > 0.f ? 1 : 0;
+    }
+    check( d_conf < 0.2f && d_note == 0.f, "drums alone are no melody (confidence and note stay 0)",
+           "confidence at most " + std::to_string( d_conf ).substr( 0, 4 ) );
+    check( t_conf > 0.8f && t_notes > static_cast<int>( tt.size() - 200 ) * 9 / 10, "a tune is one, note by note",
+           "confidence at least " + std::to_string( t_conf ).substr( 0, 4 ) );
 }
 
 /**  The video export's frame clock (EngineClock, WallClock) and its command line (-g, -j).
@@ -1158,6 +1284,8 @@ int runCueSelfTest()
     inputChecks();
     outputChecks();
     settingsChecks();
+    rhythmChecks();
+    melodyChecks();
     exportChecks();
 
     printf( "\n%d passed, %d failed\n", g_passed, g_failed );

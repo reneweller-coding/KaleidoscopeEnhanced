@@ -728,8 +728,13 @@ protected:
     bool   m_displayReleased = false;  ///< The display was let sleep (ES_DISPLAY_REQUIRED dropped).
     int    m_sleepMinutes = 0;         ///< The sleep timer chosen in the menu (0 = off).
     qint64 m_sleepAt = 0;              ///< m_fpsTimer time the sleep timer ends; 0 = none.
-    qint64 m_noticeAt = -1;            ///< m_fpsTimer time the notice appeared; -1 = with the next frame.
-    int    m_noticeMs = 0;             ///< How long the notice stays, in milliseconds.
+    // ---- song boundaries (updateSongBoundary()) ----
+    QString m_songKey;                    ///< artist|title of the song playing (media session), lower case.
+    QString m_songCandidate;              ///< A new artist|title, waiting to stand for 3 s.
+    qint64  m_songCandidateSince = 0;     ///< m_fpsTimer time it appeared.
+    qint64  m_lastSongBoundary = -100000; ///< m_fpsTimer time of the last song boundary (either source).
+    qint64  m_noticeAt = -1;              ///< m_fpsTimer time the notice appeared; -1 = with the next frame.
+    int     m_noticeMs = 0;               ///< How long the notice stays, in milliseconds.
     /** MIDI-learn targets, cycled with key 'j': controller knobs (CC-mapped) first, then note-mapped pads. */
     enum
     {
@@ -890,6 +895,13 @@ protected:
      * settings, taste, scene memory -- failed there without a word.
      **/
     void checkSettingsWritable();
+    /**  Song boundaries, once a frame: the media session's title (debounced, whether or not the title is shown)
+     * and the analyzer's silence between tracks -- each begins a song in the analysis and in the scene memory and
+     * changes the scene naturally, once (two boundaries within 5 s are one).
+     *
+     * @param audio  This frame's features (trackChange, musicPresence). (in)
+     **/
+    void updateSongBoundary( const AudioFeatures &audio );
     /**  The rest mode, once a frame: after idleMinutes of digital silence (or when the sleep timer ends) the picture
      * fades to black and the scenes stop; a second of sound (not after the sleep timer) or a key brings it back.
      *

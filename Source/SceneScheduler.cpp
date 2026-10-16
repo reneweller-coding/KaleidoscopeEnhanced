@@ -576,8 +576,10 @@ void SceneScheduler::tick( const Tick &t )
         // we have a look stored under that id, and that look is fresh (stored
         // within this song, not inherited from a set played an hour ago).
         auto st = m_sectionStamp.find( id );
+        auto tm = m_sectionTime.find( id );
         bool fresh = st != m_sectionStamp.end()
-                     && ( t.sectionCount - st->second ) <= SectionMemorySpan;
+                     && ( t.sectionCount - st->second ) <= SectionMemorySpan
+                     && tm != m_sectionTime.end() && secsSince( tm->second ) < 480.f;
         bool known = t.sectionKnown && ( id >= 0 ) && it != m_sectionEffect.end()
                      && it->second < tex.size() && fresh;
         fprintf( stderr, "SCHED section id=%d %s%s -> %s\n", id,
@@ -931,6 +933,7 @@ void SceneScheduler::tick( const Tick &t )
                 m_sectionParams[m_pendingSectionStore] =
                     tex[m_actTexture]->snapshotParameters();
                 m_sectionStamp[m_pendingSectionStore] = t.sectionCount;
+                m_sectionTime[m_pendingSectionStore] = ClockT::now();
                 m_pendingSectionStore = -1;
             }
 

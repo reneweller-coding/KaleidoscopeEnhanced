@@ -1106,6 +1106,16 @@ void RenderPipeline::requestSceneChange( bool userSkip )
     m_scheduler.requestChange( true );
 }
 
+void RenderPipeline::newSong()
+{
+    m_scheduler.newSong();
+    for ( EffectShader *e : m_effectTextures )
+        if ( e )
+            e->forgetSections();
+    if ( !M_Freeze )
+        m_scheduler.requestNaturalChange();
+}
+
 void RenderPipeline::awaitIncomingMesh( int maxMs )
 {
     if ( m_scheduler.texState() == 0 || m_scheduler.nextTexture() >= m_effectTextures.size() )

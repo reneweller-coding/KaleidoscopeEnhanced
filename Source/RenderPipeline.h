@@ -225,6 +225,11 @@ public:
      * malus. A track change is no verdict on the scene and learns nothing.
      **/
     void requestSceneChange( bool userSkip = true );
+    /**  A new song began (the media session's title, or the silence between tracks): the section memory and the
+     * labs' section looks start empty, and the scene changes -- naturally, not as a cut (a calm preset fades with
+     * its fade floor).
+     **/
+    void newSong();
     /**  Video export: waits, in real time and at most @p maxMs, until the model of a fade's incoming scene is loaded.
      *
      * @param maxMs  Longest wait in milliseconds. (in)

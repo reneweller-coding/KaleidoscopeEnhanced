@@ -135,6 +135,7 @@ VARS = {
     "audioHarmChange": "Harmonic change (chord change) envelope, 0..1.",
     "audioHarmAdvance": "The harmony's advance: ~1 more with every chord change (integrated, never jumps back).",
     "audioMelodyPitch": "Pitch of the melody, 0..1 over the tracked range.",
+    "audioMelodyConf": "How sure the analysis is that a melody sounds, 0..1 (0 for drums, noise and silence).",
     "audioBuildUp": "Build-up toward a drop, 0..1.",
     "audioSnare": "Snare envelope, 0..1.",
     "nearFar": "Near and far clip distances.",

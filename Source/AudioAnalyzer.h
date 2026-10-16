@@ -121,6 +121,11 @@ public:
     void requestDevice( const QString &id, bool isCapture );
     /** The default output device changed (endpoint watcher, any thread): a capture on the default follows it. */
     void defaultDeviceChanged();
+    /**  A new song began (the media session's title changed): see beginSong(), applied at the next analysis block.
+     *
+     * Safe from any thread.
+     **/
+    void newSong() { m_newSongRequested.store( true ); }
     /** A device appeared, disappeared or changed state (endpoint watcher, any thread): a chosen device that was
      * missing is tried again.
      **/
@@ -288,13 +293,30 @@ private:
     int   m_beatCount = 0;    ///< Cumulative beat counter (for sub-sampling discrete changes).
 
     // ---- BPM estimation ----
-    /** Length of #m_beatIntervals: last 8 inter-beat intervals. */
-    static constexpr int BPMHistLen = 8;
-    float                m_beatIntervals[BPMHistLen] = {}; ///< Ring of the last inter-beat intervals, in BPM.
-    int                  m_bpmIdx = 0;                     ///< Next write index into #m_beatIntervals.
-    float                m_lastBeatFrame = 0.f;            ///< Frame counter value at the last detected beat.
-    float                m_frameCounter = 0.f;             ///< Total frames processed since start (monotonic).
-    float m_smoothedBPM = 0.f; ///< Smoothed BPM estimate (from inter-beat intervals, refined by autocorrelation).
+    /** Length of #m_ioi: the last 12 intervals between kicks. */
+    static constexpr int IoiLen = 12;
+    float                m_ioi[IoiLen] = {};   ///< Ring of the last intervals between kicks, in seconds.
+    int                  m_ioiIdx = 0;         ///< Next write index into #m_ioi.
+    int                  m_ioiCount = 0;       ///< Valid entries in #m_ioi (an empty slot never counts).
+    float                m_ioiExplained = 0.f; ///< Share of #m_ioi the tempo's period explains (the rhythm's strength).
+    /**  The beat period that best explains the recent kick intervals (#m_ioi) as multiples of it.
+     *
+     * @param prevPeriod  The period so far in seconds (0: none), favoured among equals. (in)
+     * @param explained   The share of the intervals it explains, 0..1. (out)
+     *
+     * @return
+     *   The period in seconds, between 60/180 and 60/70 s; 0 if fewer than three intervals are known.
+     *
+     * Every interval, divided by 1, 1.5, 2, 2.5, 3 or 4, proposes a period in the 70-180 BPM range; each proposal
+     * is scored by how many intervals it explains as one of those multiples (within 30 ms + 4 %), then by how
+     * simple the multiples are, then by its nearness to prevPeriod; the winner is refined by least squares over
+     * the intervals it explains.  Until 16.10.2026 every interval was folded into 70-180 BPM on its own and the
+     * folded BPMs averaged: a boom-bap 90 (1.5, 1, 1.5 beats) read 110, a two-step 174 about 128.
+     **/
+    float ioiPeriod( float prevPeriod, float &explained ) const;
+    float m_lastBeatFrame = 0.f; ///< Frame counter value at the last detected beat.
+    float m_frameCounter = 0.f;  ///< Total frames processed since start (monotonic).
+    float m_smoothedBPM = 0.f;   ///< Smoothed BPM estimate (from inter-beat intervals, refined by autocorrelation).
 
     // ---- Log attack time state ----
     float m_prevLevel = 0.f;                ///< Previous overall level (for rise-rate / attack detection).
@@ -307,14 +329,15 @@ private:
     static const int HcdfSpan = 40; ///< HCDF compares the tonal centroid with the one this many blocks ago (400 ms).
     float m_hcdfChroma[12] = {};    ///< The chroma behind HCDF: L1-normalised, smoothed over ~0.4 s (a kick or a
                                     ///< passing note averages out, a chord stays).
-    static constexpr float HcdfGain = 3.3f; ///< Scale of the HCDF distance to ~0..1 (calibrated on
-                                            ///< Tools/make_chord_wav.py).
-    float m_tonalRing[HcdfSpan][6] = {};    ///< The last HcdfSpan Harte 6-D tonal centroids (ring, for HCDF).
-    int   m_tonalPos = 0;                   ///< Next write slot of m_tonalRing (its oldest entry).
-    int   m_tonalFill = 0;                  ///< Entries of m_tonalRing written so far (up to HcdfSpan).
-    float m_sHCDF = 0.f; ///< Smoothed harmonic change detection function; see AudioFeatures::harmonicChange.
-    float m_sRoughness = 0.f;               ///< Smoothed sensory dissonance (Sethares); see AudioFeatures::roughness.
-    float m_loudnessRef = 0.10f;            ///< Slow loudness reference for AGC (keeps visuals volume-independent).
+    /// Scale of the HCDF distance to ~0..1, calibrated on Tools/make_chord_wav.py: 3.3 for the old all-bins
+    /// chroma; 1.3 since the peak chroma of 16.10.2026 (24 of 38 changes seen, 4 false alarms; 3.3 saturated it).
+    static constexpr float HcdfGain = 1.3f;
+    float m_tonalRing[HcdfSpan][6] = {}; ///< The last HcdfSpan Harte 6-D tonal centroids (ring, for HCDF).
+    int                    m_tonalPos = 0;                ///< Next write slot of m_tonalRing (its oldest entry).
+    int                    m_tonalFill = 0;               ///< Entries of m_tonalRing written so far (up to HcdfSpan).
+    float m_sHCDF = 0.f;         ///< Smoothed harmonic change detection function; see AudioFeatures::harmonicChange.
+    float m_sRoughness = 0.f;    ///< Smoothed sensory dissonance (Sethares); see AudioFeatures::roughness.
+    float m_loudnessRef = 0.10f; ///< Slow loudness reference for AGC (keeps visuals volume-independent).
 
     // ---- Full-spectrum onset detection + downbeat ----
     float m_onsetAvg = 0.f;      ///< Recent average of the onset detection function (m_odfFFT).
@@ -356,14 +379,25 @@ private:
     static constexpr int EnvRate = 100;
     /** Length of #m_odfEnv: ~4 s of envelope. */
     static constexpr int OdfEnvLen = 400;
-    float m_odfEnv[OdfEnvLen] = {}; ///< Fixed-rate ring of the onset detection function, fed to the tempo
-                                    ///< autocorrelation.
-    int   m_odfEnvIdx = 0;                         ///< Next write index into #m_odfEnv.
-    int   m_envFrameAcc = 0; ///< Sample-frame accumulator that paces writes into #m_odfEnv to #EnvRate.
-    float m_acBPM = 0.f;                           ///< Autocorrelation tempo estimate, in BPM.
-    float m_acConf = 0.f;                          ///< Confidence of #m_acBPM, 0..1.
-    float m_odfEnvMean = 0.f;                      ///< Last ODF-envelope mean (diagnostic for the tempo gate).
-    float m_odfEnvStd = 0.f;                       ///< Last ODF-envelope std-dev (diagnostic for the tempo gate).
+    /** The autocorrelation is evaluated every this many blocks (10 Hz): a 4 s window needs no more. */
+    static constexpr int AcEvery = 10;
+    /** Width of the log-Gaussian tempo prior around 120 BPM, in octaves (the lag pick, not the gate). */
+    static constexpr float AcPriorOctaves = 1.0f;
+    // ---- SuperFlux onset function: what the tempo autocorrelation runs on (16.10.2026) ----
+    float m_sfPrev[2048 / 2 + 1] = {}; ///< Previous frame's log-compressed magnitudes (FFTHalf bins, declared below).
+    float m_odfSF = 0.f;               ///< SuperFlux: rise of the log spectrum over the max-filtered previous frame.
+    float m_sfEnv[OdfEnvLen] = {};     ///< Fixed-rate ring of m_odfSF (same cadence and write index as m_odfEnv).
+    int   m_acBlock = 0;               ///< Blocks since the last autocorrelation (#AcEvery).
+    int   m_acRival = 0;               ///< Evaluations in a row whose tempo disagrees with #m_acBPM.
+    int   m_acDebugN = 0;              ///< Evaluations counted for the KALEIDO_AC_DEBUG line.
+    float m_odfEnv[OdfEnvLen] = {};    ///< Fixed-rate ring of the onset detection function (diagnostic only:
+                                       ///< KALEIDO_SPEECH_DEBUG's odfMean/odfStd).
+    int   m_odfEnvIdx = 0;             ///< Next write index into #m_odfEnv.
+    int   m_envFrameAcc = 0;           ///< Sample-frame accumulator that paces writes into #m_odfEnv to #EnvRate.
+    float m_acBPM = 0.f;               ///< Autocorrelation tempo estimate, in BPM.
+    float m_acConf = 0.f;              ///< Share of the last ~4 s the onset function was clearly periodic, 0..1.
+    float m_odfEnvMean = 0.f;          ///< Last ODF-envelope mean (diagnostic for the tempo gate).
+    float m_odfEnvStd = 0.f;           ///< Last ODF-envelope std-dev (diagnostic for the tempo gate).
     float m_roughRaw = 0.f; ///< Unscaled roughness ratio (diagnostic; the scale constant came from measuring this).
 
     /** Smoothed chroma-hue VECTOR (cosine component).
@@ -417,7 +451,40 @@ private:
     float m_fftIm[FFTSize] = {};  ///< Imaginary-part working buffer (zero before FFT).
     float m_fftWin[FFTSize] = {}; ///< Precomputed Hann window coefficients (filled in the constructor).
 
-    float m_prevMags[FFTHalf] = {};  ///< Magnitude spectrum from the previous frame (for FFT-based flux / harmonicity).
+    float m_prevMags[FFTHalf] = {}; ///< Magnitude spectrum from the previous frame (for FFT-based flux / harmonicity).
+    // ---- pitch voicing (the harmonic product spectrum's peak against its median, in log units) ----
+    float m_voiceMel = 0.f;    ///< Melody search's voicing, smoothed over ~0.2 s.
+    float m_voiceDom = 0.f;    ///< Full-range search's voicing, smoothed over ~0.2 s.
+    bool  m_melVoiced = false; ///< Melody voiced (hysteresis 10 / 7 on m_voiceMel).
+    bool  m_domVoiced = false; ///< Dominant pitch voiced (the same on m_voiceDom).
+    float m_melodyRaw[5] = {}; ///< The last five raw melody pitches (for the note's median).
+    int   m_melodyRawIdx = 0;  ///< Next write index in m_melodyRaw.
+    float m_melodyNote = 0.f;  ///< The published melody note (median while voiced, 0 otherwise).
+
+    // ---- the chroma's own, longer FFT (computeChroma()) ----
+    /** Window of the chroma's FFT: 8192 samples, 5.9 Hz a bin at 48 kHz (the 2048-point FFT's 23 Hz bin is wider
+     * than a semitone below ~400 Hz, and filed a C major triad in octave 3 as C#, F#, A#).
+     **/
+    static constexpr int ChromaFFT = 8192;
+    std::vector<float>   m_chromaRing;    ///< The last ChromaFFT mono samples, circular (on the heap: an analyzer may
+                                          ///< live on the stack).
+    int                m_chromaWrite = 0; ///< Next write index in m_chromaRing.
+    std::vector<float> m_chromaRe;        ///< FFT working buffer, real part.
+    std::vector<float> m_chromaIm;        ///< FFT working buffer, imaginary part.
+    std::vector<float> m_chromaWin;       ///< Hann window of ChromaFFT points.
+    int                m_chromaBlock = 0; ///< Blocks since the last chroma FFT (it runs every 4th, 40 ms).
+    float              m_chroma[12] = {}; ///< The last computed chroma, L1-normalised, held between its FFTs.
+    /**  The chroma of the last ChromaFFT samples, into m_chroma.
+     *
+     * @param sampleRate  The analysis rate in Hz. (in)
+     *
+     * Spectral peaks from 55 Hz to 5 kHz (within 40 dB of the strongest), their frequency interpolated
+     * parabolically on the log magnitude, their weight mildly compressed (log(1 + 10 * amplitude); on the chord
+     * track 1, 10, 30 and 100 measured alike), each spread over its two nearest pitch classes with a cos^2 window of
+     * 4/3 semitones (HPCP, Gomez 2006).  Peaks instead of every bin: the old sum filed every bin's leakage and noise
+     * into a class, and the number of bins per class ran from 12 (E) to 25 (C#).
+     **/
+    void  computeChroma( float sampleRate );
     float m_smoothedChroma[12] = {}; ///< Smoothed 12-bin chroma vector (C .. B), L1-normalised.
 
     // Smoothed FFT-derived outputs
@@ -481,8 +548,16 @@ private:
                                                          ///< fingerprint).
     float m_secPrints[MaxSectionPrints][AudioFeatures::SpectrumBands] = {}; ///< Stored fingerprints of
                                                                             ///< previously-seen sections.
-    int  m_secPrintUse[MaxSectionPrints] = {}; ///< Last-used stamp per stored fingerprint (LRU replacement policy).
-    int  m_secPrintN = 0;                                                   ///< Number of stored fingerprints so far.
+    int m_secPrintUse[MaxSectionPrints] = {}; ///< Last-used stamp per stored fingerprint (LRU replacement policy).
+    int               m_secPrintN = 0;                                      ///< Number of stored fingerprints so far.
+    int m_secPrintEpoch[MaxSectionPrints] = {}; ///< The song (m_songEpoch) each stored fingerprint was heard in.
+    int m_songEpoch = 0;     ///< Songs begun so far (beginSong()): a section is only recognised within its song.
+    int m_agcFastBlocks = 0; ///< Blocks the gain still adapts quickly after a song began (5 s).
+    std::atomic<bool> m_newSongRequested{ false }; ///< newSong() was called; beginSong() runs at the next block.
+    /**  The analysis side of a new song: the kick intervals start afresh, the gain adapts quickly for 5 s, and the
+     * section memory recognises only this song's sections.  Runs on the analysis thread.
+     **/
+    void beginSong();
     int  m_secCurId = -1;    ///< Current section's id (index into #m_secPrints); see AudioFeatures::sectionId.
     bool m_secKnown = false; ///< Whether the current section matched a stored print (vs. was newly stored, possibly in
                              ///< a recycled slot); see AudioFeatures::sectionKnown.

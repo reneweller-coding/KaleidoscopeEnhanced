@@ -1,0 +1,545 @@
+{
+ "counts": {
+  "bpm_120_median": 120.0,
+  "bpm_128_median": 128.0,
+  "chord_changes_seen": 24,
+  "chord_changes_total": 38,
+  "chord_false_alarms": 4,
+  "drops_false": 0,
+  "drops_seen": 3,
+  "drops_total": 3
+ },
+ "stats": {
+  "broadband120": {
+   "ambient": {
+    "mean": 0.019,
+    "moves": true,
+    "p90": 0.058
+   },
+   "arousal": {
+    "mean": 0.5527,
+    "moves": true,
+    "p90": 0.753
+   },
+   "arousal_c": {
+    "mean": 0.5527,
+    "moves": true,
+    "p90": 0.753
+   },
+   "beat_c": {
+    "mean": 0.4629,
+    "moves": true,
+    "p90": 0.718
+   },
+   "buildup": {
+    "mean": 0.2807,
+    "moves": true,
+    "p90": 0.3911
+   },
+   "centroid": {
+    "mean": 0.4195,
+    "moves": true,
+    "p90": 0.4246
+   },
+   "chroma": {
+    "mean": 0.3448,
+    "moves": true,
+    "p90": 0.3495
+   },
+   "chroma_c": {
+    "mean": 0.3448,
+    "moves": true,
+    "p90": 0.3495
+   },
+   "flux": {
+    "mean": 0.1226,
+    "moves": true,
+    "p90": 0.3956
+   },
+   "flux_c": {
+    "mean": 0.0495,
+    "moves": true,
+    "p90": 0.1441
+   },
+   "gate": {
+    "mean": 1.0,
+    "moves": false,
+    "p90": 1.0
+   },
+   "harm_c": {
+    "mean": 0.0,
+    "moves": true,
+    "p90": 0.0
+   },
+   "hcdf": {
+    "mean": 0.0546,
+    "moves": true,
+    "p90": 0.083
+   },
+   "keyclarity": {
+    "mean": 0.8889,
+    "moves": true,
+    "p90": 0.894
+   },
+   "kick_c": {
+    "mean": 0.3396,
+    "moves": true,
+    "p90": 0.5903
+   },
+   "level": {
+    "mean": 0.6074,
+    "moves": true,
+    "p90": 0.783
+   },
+   "level_c": {
+    "mean": 0.5998,
+    "moves": true,
+    "p90": 0.7681
+   },
+   "melody": {
+    "mean": 0.3275,
+    "moves": true,
+    "p90": 0.3299
+   },
+   "melody_conf": {
+    "mean": 0.835,
+    "moves": true,
+    "p90": 0.984
+   },
+   "melody_note": {
+    "mean": 0.3328,
+    "moves": true,
+    "p90": 0.334
+   },
+   "mode": {
+    "mean": 0.9489,
+    "moves": true,
+    "p90": 0.956
+   },
+   "novelty": {
+    "mean": 0.0115,
+    "moves": true,
+    "p90": 0.023
+   },
+   "onset_c": {
+    "mean": 0.3342,
+    "moves": true,
+    "p90": 0.5989
+   },
+   "phrase_pos": {
+    "mean": 0.5255,
+    "moves": true,
+    "p90": 0.8621
+   },
+   "pitch": {
+    "mean": 0.1579,
+    "moves": true,
+    "p90": 0.1973
+   },
+   "presence": {
+    "mean": 0.9995,
+    "moves": true,
+    "p90": 1.0
+   },
+   "rhythm": {
+    "mean": 0.9688,
+    "moves": true,
+    "p90": 0.998
+   },
+   "roughness": {
+    "mean": 0.3051,
+    "moves": true,
+    "p90": 0.498
+   },
+   "sec_thr": {
+    "mean": 0.2,
+    "moves": false,
+    "p90": 0.2
+   },
+   "sharpness": {
+    "mean": 0.252,
+    "moves": true,
+    "p90": 0.262
+   },
+   "spread": {
+    "mean": 1.0,
+    "moves": false,
+    "p90": 1.0
+   },
+   "spread_c": {
+    "mean": 0.9996,
+    "moves": true,
+    "p90": 1.0
+   },
+   "swell_c": {
+    "mean": 0.1559,
+    "moves": true,
+    "p90": 0.7282
+   },
+   "valence": {
+    "mean": 0.8718,
+    "moves": true,
+    "p90": 0.939
+   },
+   "valence_raw": {
+    "mean": 0.8718,
+    "moves": true,
+    "p90": 0.939
+   }
+  },
+  "chords": {
+   "ambient": {
+    "mean": 0.7828,
+    "moves": true,
+    "p90": 1.0
+   },
+   "arousal": {
+    "mean": 0.1347,
+    "moves": true,
+    "p90": 0.4891
+   },
+   "arousal_c": {
+    "mean": 0.1347,
+    "moves": true,
+    "p90": 0.4891
+   },
+   "beat_c": {
+    "mean": 0.0733,
+    "moves": true,
+    "p90": 0.334
+   },
+   "buildup": {
+    "mean": 0.1198,
+    "moves": true,
+    "p90": 0.435
+   },
+   "centroid": {
+    "mean": 0.4289,
+    "moves": true,
+    "p90": 0.4504
+   },
+   "chroma": {
+    "mean": 0.4252,
+    "moves": true,
+    "p90": 0.8519
+   },
+   "chroma_c": {
+    "mean": -0.8557,
+    "moves": true,
+    "p90": 0.275
+   },
+   "flux": {
+    "mean": 0.0307,
+    "moves": true,
+    "p90": 0.0576
+   },
+   "flux_c": {
+    "mean": 0.0197,
+    "moves": true,
+    "p90": 0.0517
+   },
+   "gate": {
+    "mean": 1.0,
+    "moves": false,
+    "p90": 1.0
+   },
+   "harm_c": {
+    "mean": 0.319,
+    "moves": true,
+    "p90": 0.676
+   },
+   "hcdf": {
+    "mean": 0.3254,
+    "moves": true,
+    "p90": 0.567
+   },
+   "keyclarity": {
+    "mean": 0.7219,
+    "moves": true,
+    "p90": 0.873
+   },
+   "kick_c": {
+    "mean": 0.0638,
+    "moves": true,
+    "p90": 0.261
+   },
+   "level": {
+    "mean": 0.4218,
+    "moves": true,
+    "p90": 0.4951
+   },
+   "level_c": {
+    "mean": 0.4217,
+    "moves": true,
+    "p90": 0.4951
+   },
+   "melody": {
+    "mean": 0.3992,
+    "moves": true,
+    "p90": 0.5032
+   },
+   "melody_conf": {
+    "mean": 1.0,
+    "moves": false,
+    "p90": 1.0
+   },
+   "melody_note": {
+    "mean": 0.3975,
+    "moves": true,
+    "p90": 0.5656
+   },
+   "mode": {
+    "mean": 0.4867,
+    "moves": true,
+    "p90": 0.712
+   },
+   "novelty": {
+    "mean": 0.0978,
+    "moves": true,
+    "p90": 0.2936
+   },
+   "onset_c": {
+    "mean": 0.0662,
+    "moves": true,
+    "p90": 0.293
+   },
+   "phrase_pos": {
+    "mean": 0.2508,
+    "moves": true,
+    "p90": 0.78
+   },
+   "pitch": {
+    "mean": 0.1906,
+    "moves": true,
+    "p90": 0.3323
+   },
+   "presence": {
+    "mean": 1.0,
+    "moves": true,
+    "p90": 1.0
+   },
+   "rhythm": {
+    "mean": 0.1964,
+    "moves": true,
+    "p90": 0.987
+   },
+   "roughness": {
+    "mean": 0.0654,
+    "moves": true,
+    "p90": 0.186
+   },
+   "sec_thr": {
+    "mean": 0.3638,
+    "moves": true,
+    "p90": 0.562
+   },
+   "sharpness": {
+    "mean": 0.2524,
+    "moves": true,
+    "p90": 0.278
+   },
+   "spread": {
+    "mean": 0.1206,
+    "moves": true,
+    "p90": 0.2064
+   },
+   "spread_c": {
+    "mean": 0.1202,
+    "moves": true,
+    "p90": 0.2312
+   },
+   "swell_c": {
+    "mean": 0.0145,
+    "moves": true,
+    "p90": 0.05
+   },
+   "valence": {
+    "mean": 0.6725,
+    "moves": true,
+    "p90": 0.897
+   },
+   "valence_raw": {
+    "mean": 0.6725,
+    "moves": true,
+    "p90": 0.897
+   }
+  },
+  "structure128": {
+   "ambient": {
+    "mean": 0.0222,
+    "moves": true,
+    "p90": 0.086
+   },
+   "arousal": {
+    "mean": 0.619,
+    "moves": true,
+    "p90": 0.821
+   },
+   "arousal_c": {
+    "mean": 0.619,
+    "moves": true,
+    "p90": 0.821
+   },
+   "beat_c": {
+    "mean": 0.3827,
+    "moves": true,
+    "p90": 0.655
+   },
+   "buildup": {
+    "mean": 0.3232,
+    "moves": true,
+    "p90": 0.4564
+   },
+   "centroid": {
+    "mean": 0.4403,
+    "moves": true,
+    "p90": 0.4922
+   },
+   "chroma": {
+    "mean": 0.121,
+    "moves": true,
+    "p90": 0.2062
+   },
+   "chroma_c": {
+    "mean": 0.1364,
+    "moves": true,
+    "p90": 0.2063
+   },
+   "flux": {
+    "mean": 0.1416,
+    "moves": true,
+    "p90": 0.5296
+   },
+   "flux_c": {
+    "mean": 0.0599,
+    "moves": true,
+    "p90": 0.1848
+   },
+   "gate": {
+    "mean": 1.0,
+    "moves": false,
+    "p90": 1.0
+   },
+   "harm_c": {
+    "mean": 0.1949,
+    "moves": true,
+    "p90": 0.374
+   },
+   "hcdf": {
+    "mean": 0.192,
+    "moves": true,
+    "p90": 0.438
+   },
+   "keyclarity": {
+    "mean": 0.8375,
+    "moves": true,
+    "p90": 0.895
+   },
+   "kick_c": {
+    "mean": 0.3312,
+    "moves": true,
+    "p90": 0.5918
+   },
+   "level": {
+    "mean": 0.4206,
+    "moves": true,
+    "p90": 0.532
+   },
+   "level_c": {
+    "mean": 0.4164,
+    "moves": true,
+    "p90": 0.525
+   },
+   "melody": {
+    "mean": 0.3715,
+    "moves": true,
+    "p90": 0.4188
+   },
+   "melody_conf": {
+    "mean": 0.4817,
+    "moves": true,
+    "p90": 0.951
+   },
+   "melody_note": {
+    "mean": 0.2643,
+    "moves": true,
+    "p90": 0.4248
+   },
+   "mode": {
+    "mean": 0.6678,
+    "moves": true,
+    "p90": 0.763
+   },
+   "novelty": {
+    "mean": 0.043,
+    "moves": true,
+    "p90": 0.0955
+   },
+   "onset_c": {
+    "mean": 0.334,
+    "moves": true,
+    "p90": 0.61
+   },
+   "phrase_pos": {
+    "mean": 0.4879,
+    "moves": true,
+    "p90": 0.891
+   },
+   "pitch": {
+    "mean": 0.1932,
+    "moves": true,
+    "p90": 0.2504
+   },
+   "presence": {
+    "mean": 0.9905,
+    "moves": true,
+    "p90": 1.0
+   },
+   "rhythm": {
+    "mean": 0.8684,
+    "moves": true,
+    "p90": 1.0
+   },
+   "roughness": {
+    "mean": 0.1087,
+    "moves": true,
+    "p90": 0.199
+   },
+   "sec_thr": {
+    "mean": 0.2058,
+    "moves": true,
+    "p90": 0.212
+   },
+   "sharpness": {
+    "mean": 0.2839,
+    "moves": true,
+    "p90": 0.352
+   },
+   "spread": {
+    "mean": 0.9313,
+    "moves": true,
+    "p90": 1.0
+   },
+   "spread_c": {
+    "mean": 0.9398,
+    "moves": true,
+    "p90": 0.9999
+   },
+   "swell_c": {
+    "mean": 0.0169,
+    "moves": true,
+    "p90": 0.073
+   },
+   "valence": {
+    "mean": 0.8431,
+    "moves": true,
+    "p90": 0.906
+   },
+   "valence_raw": {
+    "mean": 0.8431,
+    "moves": true,
+    "p90": 0.906
+   }
+  }
+ }
+}

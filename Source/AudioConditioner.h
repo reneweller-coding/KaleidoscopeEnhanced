@@ -287,11 +287,12 @@ private:
     float m_audioDir = 1.f;      ///< Eased rotation direction (-1..+1), smoothly follows audio.audioFlip's sign.
     float m_smoothedSides = 6.f; ///< Eased kaleidoscope symmetry (no snap), gradually steps toward the beat-chosen
                                  ///< target.
-    float                  m_rotEnergy = 0.f;     ///< Slowly-slewed rotation-speed envelope (no per-beat jerk).
+    float m_rotEnergy = 0.f;     ///< Slowly-slewed rotation-speed envelope (no per-beat jerk).
     float m_audioRotPhase = 0.f; ///< Accumulated rotation phase (radians), integrated from a rate each frame.
     float m_audioAdvance = 0.f;  ///< Accumulated tunnel forward offset, integrated from a rate each frame.
-    static constexpr float HarmPerChord = 0.83f;  ///< Integral of the harmonic envelope over a typical chord change
-                                                  ///< (the unit of harmAdvance).
+    /// Integral of the harmonic envelope over a typical chord change (the unit of harmAdvance): 0.83 for the old
+    /// chroma, 1.38 since its peak chroma (a slow chord change of make_chord_wav.py advances it by about 1).
+    static constexpr float HarmPerChord = 1.38f;
     float m_harmEnv = 0.f;     ///< Peak-hold envelope of the harmonic change above its noise floor (release ~1.2 s).
     float m_harmSmooth = 0.f;  ///< m_harmEnv with a limited rise (~0.4 s to full); published as harmonicChange * gate.
     float m_harmAdvance = 0.f; ///< m_harmSmooth integrated (~1 per chord change); published as harmAdvance.

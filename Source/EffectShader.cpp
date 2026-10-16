@@ -787,6 +787,8 @@ enum AudioLocE
     // The harmony's advance (AudioFeatures::harmAdvance): what a scene adds to
     // a phase where it used to add the harmonic-change pulse.
     AL_HARMADVANCE,
+    // How sure the analysis is that a melody sounds (AudioFeatures::melodyConf).
+    AL_MELODYCONF,
     AL_COUNT
 };
 /** The audio uniforms' names, indexed by AudioLocE (the order must match). */
@@ -813,7 +815,7 @@ const char *kAudioLocNames[AL_COUNT] = {
     "audioMelodyPitch",
     "audioPhrasePos", "audioPhraseLeft",
     "audioSectionId", "audioSectionPrev", "audioSectionAge", "audioSectionKnown", "audioSectionCount",
-    "audioMelodyPhase", "audioHarmAdvance" };
+    "audioMelodyPhase", "audioHarmAdvance", "audioMelodyConf" };
 }
 
 void EffectShader::applyAudioFeatures( const AudioFeatures &f )
@@ -924,6 +926,8 @@ void EffectShader::applyAudioFeatures( const AudioFeatures &f )
         glUniform1f( locs[AL_MELODYPHASE], f.melodyPhase );
     if ( locs[AL_HARMADVANCE] >= 0 )
         glUniform1f( locs[AL_HARMADVANCE], f.harmAdvance );
+    if ( locs[AL_MELODYCONF] >= 0 )
+        glUniform1f( locs[AL_MELODYCONF], f.melodyConf );
     if ( locs[AL_FLATNESS] >= 0 )
         glUniform1f( locs[AL_FLATNESS], f.spectralFlatness );
     if ( locs[AL_ZCR] >= 0 )

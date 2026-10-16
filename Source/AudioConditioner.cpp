@@ -235,8 +235,9 @@ AudioFeatures AudioConditioner::update( const AudioFeatures &audio, float rawDt,
     if ( m_melodyAccum >= 0.08f )
     {
         m_melodyAccum = fmodf( m_melodyAccum, 0.08f );
-        // The TUNE, not the root: melodyPitch searches above the bass line.
-        m_melody[m_melodyHead] = audio.melodyPitch;
+        // The TUNE, not the root: the melody's note (above the bass line), 0 while none sounds -- a step per note
+        // and a pen-up between phrases, where the smoothed melodyPitch drew a glissando through the drums.
+        m_melody[m_melodyHead] = audio.melodyNote;
         m_melodyHead = ( m_melodyHead + 1 ) % 96;
     }
     for ( int i = 0; i < 96; ++i )

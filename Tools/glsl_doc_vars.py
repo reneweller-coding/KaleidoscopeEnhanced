@@ -252,6 +252,7 @@ VAR_DOCS = {
     "audioMelody": "The melody: the dominant pitch every ~80 ms, a ring of 96 (~7.7 s); 0 = no clear pitch.",
     "audioMelodyHead": "Head of the audioMelody ring as a position 0..1 (the newest sample just behind it).",
     "audioMelodyPhase": "Progress toward the next audioMelody sample, 0..1 (lets a scrolling trace move smoothly).",
+    "audioMelodyConf": "How sure the analysis is that a melody sounds, 0..1 (0 for drums, noise and silence).",
     "audioWave": "The waveform: 64 points of the time signal, -1..1.",
     "audioPhrasePos": "Position within the current 8-bar phrase, 0..1.",
     "audioPhraseLeft": "Seconds left to the next 8-bar phrase boundary.",

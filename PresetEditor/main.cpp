@@ -146,7 +146,8 @@ static int dumpFeatures( const QString &wav, const QString &csv, int every )
     fputs(
         "t,presence,gate,level,level_c,arousal,arousal_c,valence,rhythm,bpm,flux,flux_c,spread,centroid,mode,"
         "chroma,chroma_c,hcdf,kick_c,onset_c,beat_c,buildup,swell_c,sections,section_id,known,drops,advance,"
-        "rotphase,flip,ambient,phrase_pos,keyclarity,roughness,sharpness,novelty,valence_raw,sec_thr,spread_c,harm_c,harm_adv\n",
+        "rotphase,flip,ambient,phrase_pos,keyclarity,roughness,sharpness,novelty,valence_raw,sec_thr,spread_c,harm_c,harm_adv,"
+        "pitch,melody,melody_conf,melody_note\n",
         out );
     // One analysis block is 480 samples (analyzeWavToTimeline): its length follows the file's sample rate.
     unsigned int rate = 48000;
@@ -181,14 +182,16 @@ static int dumpFeatures( const QString &wav, const QString &csv, int every )
         fprintf(
             out,
             "%.2f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.1f,%.4f,%.4f,%.4f,%.4f,%.3f,%.4f,%.4f,%.3f,%.3f,%.3f,%.3f,"
-            "%.3f,%.3f,%d,%d,%d,%d,%.4f,%.4f,%.0f,%.3f,%.3f,%.3f,%.3f,%.3f,%.4f,%.3f,%.3f,%.4f,%.3f,%.4f\n",
+            "%.3f,%.3f,%d,%d,%d,%d,%.4f,%.4f,%.0f,%.3f,%.3f,%.3f,%.3f,%.3f,%.4f,%.3f,%.3f,%.4f,%.3f,%.4f,"
+            "%.4f,%.4f,%.3f,%.4f\n",
             ctx.globalTime, a.musicPresence, cond.gate(), a.overallLevel, c.overallLevel, a.arousal, c.arousal,
             c.valence, a.rhythmStrength, a.estimatedBPM > 0.004f ? 40.f + 160.f * a.estimatedBPM : 0.f, a.spectralFlux,
             c.spectralFlux, a.spectralSpread, a.spectralCentroid, a.musicalMode, a.chromaHue, c.chromaHue,
             a.harmonicChange, c.onsetKick, c.onsetStrength, c.beatDecay, c.buildUp, c.swell, a.sectionCount,
             a.sectionId, a.sectionKnown ? 1 : 0, a.dropCount, c.audioAdvance, c.audioRotPhase, a.audioFlip,
             a.ambientFactor, c.phrasePos, a.keyClarity, a.roughness, a.sharpness, a.sectionNovelty, a.valence,
-            a.sectionThreshold, c.spectralSpread, c.harmonicChange, c.harmAdvance );
+            a.sectionThreshold, c.spectralSpread, c.harmonicChange, c.harmAdvance, a.dominantPitch, a.melodyPitch,
+            a.melodyConf, a.melodyNote );
     }
     fclose( out );
     fprintf( stderr, "features: %d rows -> %s\n", static_cast<int>( ( tl.size() + every - 1 ) / every ),

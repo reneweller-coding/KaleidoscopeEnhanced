@@ -1448,12 +1448,8 @@ void GLwidget::draw()
     m_eventLatch.apply( audio ); // the beats, onsets and track changes since the last frame, none lost
     updateRest( audio );
 
-    // Track-change: a fresh track (after a silent gap) gets a clean transition.
-    // Suppressed under KALEIDO_SCENE_SWEEP, where the sweep decides what is on
-    // screen and a surprise cut would land in the middle of a scene under review.
-    // Not a skip: the music changed, nobody judged the scene.
-    if ( audio.trackChange && !sweepActive() && m_actConfiguration && m_actConfiguration->renderPipeline() )
-        m_actConfiguration->renderPipeline()->requestSceneChange( false );
+    // Song boundaries: the silence between tracks and the media session's title (updateSongBoundary()).
+    updateSongBoundary( audio );
 
     // KALEIDO_FX_SWEEP=<seconds>: the same walk, but over the OVERLAYS.
     // The scene stays put (review mode holds it) and the combine shader steps
@@ -2118,6 +2114,58 @@ bool GLwidget::wakeFromRest( const char *why )
     fprintf( stderr, "REST: woken (%s)\n", why );
     update();
     return true;
+}
+
+void GLwidget::updateSongBoundary( const AudioFeatures &audio )
+{
+    const qint64 now = m_fpsTimer.elapsed();
+    bool         boundary = false;
+    const char  *why = "";
+
+    // The silence between tracks (the analyzer began the song itself).
+    if ( audio.trackChange )
+    {
+        boundary = true;
+        why = "silence";
+    }
+
+    // The media session's title: a title that has stood for 3 s, whether or not it is shown (until 16.10.2026 it
+    // only steered the title overlay, and only with 'p' on).  Gapless playback and crossfades have no silence --
+    // this is their boundary.  The first title of the session is no change.
+    if ( m_nowPlaying )
+    {
+        const QString key = ( m_nowPlaying->artist().trimmed() + "|" + m_nowPlaying->title().trimmed() ).toLower();
+        if ( key == "|" || key == m_songKey )
+            m_songCandidate.clear();
+        else if ( key != m_songCandidate )
+        {
+            m_songCandidate = key;
+            m_songCandidateSince = now;
+        }
+        else if ( now - m_songCandidateSince >= 3000 )
+        {
+            const bool first = m_songKey.isEmpty();
+            m_songKey = key;
+            m_songCandidate.clear();
+            if ( !first && audio.musicPresence > 0.5f )
+            {
+                boundary = true;
+                why = "title";
+                if ( m_audioAnalyzer )
+                    m_audioAnalyzer->newSong();
+            }
+        }
+    }
+
+    // One boundary, whichever source saw it first: the other one within 5 s is the same song change.
+    if ( !boundary || now - m_lastSongBoundary < 5000 )
+        return;
+    m_lastSongBoundary = now;
+    fprintf( stderr, "SONG: new song (%s)\n", why );
+    // Not under KALEIDO_SCENE_SWEEP, where the sweep decides what is on screen.  Not a skip either: the music
+    // changed, nobody judged the scene -- so no taste malus, and a calm preset fades instead of cutting.
+    if ( !sweepActive() && m_actConfiguration && m_actConfiguration->renderPipeline() )
+        m_actConfiguration->renderPipeline()->newSong();
 }
 
 void GLwidget::notify( const QString &text, int ms )
