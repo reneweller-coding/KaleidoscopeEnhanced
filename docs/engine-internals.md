@@ -4662,3 +4662,37 @@ viewer's "next" -- and taught the scene on screen a taste malus (and its lab
 classes one) when it had been up for less than ten seconds.  Every song
 change in an evening punished whatever had just come on.  A track change now
 asks for the cut without the verdict (`requestSceneChange( false )`).
+
+## 16.10.2026 (5): what never reached the analysis
+
+The first round of the vetted idea list (docs/proposals-2026-10-16-hauptprogramm.md): the analysis was missing
+things the show had long been playing.
+
+- **Paused players.** A paused player sends loopback packets flagged SILENT, and with no stream at all WASAPI sends
+  none. Both were skipped, so the features froze on the last music block: the picture kept pulsing through the
+  pause, the track-change detector (0.6 s of silence; a gap up to 3 s in beat music is a DJ stop by design) never
+  armed, and a recording lost the pause. SILENT packets now go in as zeros, and after 30 ms without any packet the
+  capture loop feeds one silent 10-ms block per 10 ms of wall time (at most 20 at once after a stall).
+- **Events of one block.** isBeat, onsetStrength and trackChange held for one 10-ms block and were overwritten by
+  the next, while the blocks arrive in bursts and the render thread reads once a frame. A self-test reading every
+  second block saw 1 of 8 onsets through the flag. The analyzer now counts them (beatCount, onsetCount with
+  onsetPeak, trackChangeCount); AudioEventLatch in the reader turns the counters back into the frame's events --
+  8 of 8. The video export reads through the same latch (several blocks per frame there).
+- **5.1 and 7.1.** The capture handed a six-channel buffer to the analysis as "two channels": it read the first
+  third of every block, three times too slow. AudioAnalyzer::ingest() now mixes down to stereo by the speaker mask
+  (centre and surrounds at -3 dB, LFE at -6 dB -- in upmixes the kick lives there), decimates 88.2..192 kHz to
+  44.1/48 kHz with a 47-tap half-band FIR (at 192 kHz the 2048-point FFT had 94-Hz bins), and makes NaN, infinity
+  and samples beyond +-4 safe (one log line a minute). Stereo at 44.1/48 kHz passes untouched, so the offline
+  analysis stays bit-identical; -w/-x, the timeline, the export and PulseAudio go through the same stage.
+- **A conditioner gone NaN** stayed NaN: every value there is an integrator. RenderPipeline checks the results that
+  integrate (AudioConditioner::firstNonFinite()) and resets the conditioner, naming the value.
+- **The default device.** A stream opened with IMMDevice::Activate does not follow a new default output: after
+  switching to the headphones the analysis kept capturing the (now silent) speakers, despite a comment promising
+  otherwise. An IMMNotificationClient (EndpointWatcher) now asks for a reconnect; a chosen source is kept in the
+  ini (audioDevice, audioDeviceInput) and, while unplugged, the default stands in until it is back.
+- **MIDI.** Unbound, "next" took ANY note, with a skip's taste malus; on this machine MIDI input 0 is a software
+  arpeggiator, so every arpeggio note cut the scene and taught it a dislike. Only learned notes act now, and the old
+  default CC 1-3 (a keyboard's modulation wheel turned the reactivity) count only once learned (midiLearned). The
+  device is chosen by name (midiDevice), and the log lists the inputs.
+
+`Kaleidoscope.exe -q` shows each old way failing beside the new one (93 checks).

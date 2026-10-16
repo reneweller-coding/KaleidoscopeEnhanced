@@ -1846,7 +1846,16 @@ AudioFeatures RenderPipeline::conditionAudio( const AudioFeatures &audio, float 
     ac_ctx.ssmFill = m_sims.ssmFillNorm();
     ac_ctx.spectroHead = m_sims.spectroHeadNorm();
     ac_ctx.spectroFill = m_sims.spectroFillNorm();
-    return m_audioConditioner.update( audio, timeSinceLastFrameSec, ac_ctx );
+    AudioFeatures out = m_audioConditioner.update( audio, timeSinceLastFrameSec, ac_ctx );
+    // A NaN in an integrator stays there for good -- and so would a frozen or black picture. Start the conditioner
+    // over instead, and say which value it was.
+    if ( const char *bad = AudioConditioner::firstNonFinite( out ) )
+    {
+        fprintf( stderr, "AUDIO: conditioned %s is not finite - conditioner reset\n", bad );
+        m_audioConditioner.reset();
+        out = m_audioConditioner.update( audio, timeSinceLastFrameSec, ac_ctx );
+    }
+    return out;
 }
 
 void RenderPipeline::updateImageState( float timeSinceLastFrameSec )

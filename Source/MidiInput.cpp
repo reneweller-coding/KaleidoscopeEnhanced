@@ -44,9 +44,10 @@ MidiInput::~MidiInput()
     stop();
 }
 
-bool MidiInput::start()
+bool MidiInput::start( const QString &want )
 {
 #ifndef _WIN32
+    (void)want;
     // No winmm outside Windows. The natural Linux counterpart is ALSA raw
     // MIDI (and CoreMIDI on macOS), but winmm hands us a CALLBACK while both
     // of those need a polling thread of their own -- that is new behaviour,
@@ -55,19 +56,33 @@ bool MidiInput::start()
     // with no controller attached, which it already handles.
     return false;
 #else
-    if ( midiInGetNumDevs() == 0 )
+    const UINT n = midiInGetNumDevs();
+    if ( n == 0 )
         return false;
 
-    // Always device index 0 ("the first available" device) — this app does not offer a device
-    // picker, so if several controllers are attached the OS-assigned first one wins.
+    // The device named in the ini (midiDevice, a part of its name) -- with a keyboard and a controller attached the
+    // OS-assigned first one was often the wrong one -- else the first. The list goes to the log, so the name to put
+    // there can be read off it.
+    UINT pick = 0;
+    for ( UINT i = 0; i < n; ++i )
+    {
+        MIDIINCAPSW c;
+        if ( midiInGetDevCapsW( i, &c, sizeof( c ) ) != MMSYSERR_NOERROR )
+            continue;
+        const QString name = QString::fromWCharArray( c.szPname );
+        fprintf( stderr, "MIDI input %u: %s\n", i, name.toLocal8Bit().constData() );
+        if ( !want.isEmpty() && pick == 0 && name.contains( want, Qt::CaseInsensitive ) )
+            pick = i;
+    }
+
     HMIDIIN  h = nullptr;
-    MMRESULT r = midiInOpen( &h, 0, reinterpret_cast<DWORD_PTR>( midiProc ), reinterpret_cast<DWORD_PTR>( this ),
+    MMRESULT r = midiInOpen( &h, pick, reinterpret_cast<DWORD_PTR>( midiProc ), reinterpret_cast<DWORD_PTR>( this ),
                              CALLBACK_FUNCTION );
     if ( r != MMSYSERR_NOERROR )
         return false;
 
     MIDIINCAPSW caps;
-    if ( midiInGetDevCapsW( 0, &caps, sizeof( caps ) ) == MMSYSERR_NOERROR )
+    if ( midiInGetDevCapsW( pick, &caps, sizeof( caps ) ) == MMSYSERR_NOERROR )
         m_name = QString::fromWCharArray( caps.szPname );
 
     m_handle = h;

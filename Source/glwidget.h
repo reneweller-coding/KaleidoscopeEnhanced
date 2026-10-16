@@ -714,14 +714,17 @@ protected:
         MIDI_BLACKOUT,
         MIDI_TARGETS
     };
-    int m_midiMap[MIDI_TARGETS] = { 1, 2, 3, -1, -1, -1, -1 }; ///< CC/note nr per MIDI_* target, -1 = frei
-    int m_midiLearn = -1;                                      ///< -1 = off, else target being learned
+    int  m_midiMap[MIDI_TARGETS] = { -1, -1, -1, -1, -1, -1, -1 }; ///< CC/note nr per MIDI_* target, -1 = unbound
+    bool m_midiLearned = false; ///< The map was learned ('j'); until then nothing is bound -- the old default CC 1-3
+                                ///< let a keyboard's modulation wheel turn the reactivity.
+    int m_midiLearn = -1;                                          ///< -1 = off, else target being learned
 
     // Recording + instant replay: fully encapsulated in Source/Recorder.{h,cpp}
     // (PBO readback, encoder workers, replay ring, ffmpeg mux).  GLwidget only
     // calls toggle()/captureIfDue()/saveReplay() etc.
     Recorder m_recorder; ///< Screen recording + instant-replay ring buffer (PBO readback, encoder worker, ffmpeg mux).
-    VideoExport               *m_export = nullptr; ///< The video export of this run (CLI -e), or null in a live show.
+    VideoExport    *m_export = nullptr; ///< The video export of this run (CLI -e), or null in a live show.
+    AudioEventLatch m_eventLatch; ///< Turns the analyzer's event counters into this frame's beat/onset/track events.
     bool                       m_exportEnded = false; ///< The export has been finished (endGL() ran).
     std::vector<unsigned char> m_snapBuf;             ///< glReadPixels scratch (Web-Snapshot)
 

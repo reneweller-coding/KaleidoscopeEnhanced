@@ -119,6 +119,20 @@ public:
      *                   (in)
      **/
     void requestDevice( const QString &id, bool isCapture );
+    /** The default output device changed (endpoint watcher, any thread): a capture on the default follows it. */
+    void defaultDeviceChanged();
+    /** A device appeared, disappeared or changed state (endpoint watcher, any thread): a chosen device that was
+     * missing is tried again.
+     **/
+    void deviceListChanged();
+    /**  The endpoint id of the source the user chose, empty for the default output (for the settings file).
+     *
+     * @param isCapture  Receives whether it is an input. (out)
+     *
+     * @return
+     *   The id, even while the device is missing and the default stands in.
+     **/
+    QString requestedDevice( bool &isCapture ) const;
 
     /**  Start recording the captured audio (the music) to a 16-bit stereo WAV file.
      *
@@ -574,6 +588,42 @@ private:
     bool              m_reqIsCapture = false;     ///< Whether the requested device (#m_reqDeviceId) is an input.
     bool              m_useReqDevice = false;     ///< Whether to use #m_reqDeviceId instead of the default device.
     std::atomic<bool> m_deviceChangeReq{ false }; ///< Set by requestDevice() to make the capture loop re-initialise.
+    std::atomic<bool> m_reqUnavailable{ false }; ///< The chosen device could not be opened: the default stands in until
+                                                 ///< the device list changes (deviceListChanged()).
+    std::atomic<bool> m_onDefault{ true };        ///< The capture runs on the default output right now.
+
+    // ---- Input stage (ingest()) ----
+    /** A 2:1 decimating half-band FIR for one interleaved stream of 1 or 2 channels, keeping its history across
+     * blocks (88.2..192 kHz devices are brought down to the rate the analysis was tuned for).
+     **/
+    struct HalfbandDecimator
+    {
+        std::vector<float> hist;      ///< The last taps.size() input frames, interleaved, oldest first.
+        int                phase = 0; ///< 0 = the next input frame produces an output frame.
+    };
+    HalfbandDecimator  m_decim[3];                    ///< One stage per halving (192 kHz -> 96 -> 48).
+    std::vector<float> m_decOut[3];                   ///< Output of each stage.
+    std::vector<float> m_mixBuf;                      ///< Stereo downmix of a multichannel block.
+    std::vector<float> m_fixBuf;   ///< Sanitised copy of a block that held NaN, infinity or wild values.
+    std::vector<float> m_mixGains; ///< Per input channel: gain into left, gain into right (2 floats each).
+    int                m_mixChannels = 0;             ///< Channel count #m_mixGains was made for.
+    unsigned           m_mixMask = 0;                 ///< Speaker mask #m_mixGains was made for (0 = the usual order).
+    long long          m_badSamples = 0;              ///< Samples sanitised since the last report.
+    int                m_blocksSinceBadLog = 1 << 30; ///< Blocks since the last report (one line a minute at most).
+    /**  Everything the device or a file hands over goes through here before the analysis: non-finite or wild samples
+     * are made safe, more than two channels mixed down to stereo, 88.2 kHz and up decimated.
+     *
+     * @param data         Interleaved float samples. (in)
+     * @param numFrames    Frames in @p data. (in)
+     * @param numChannels  Channels per frame (any count). (in)
+     * @param sampleRate   Sample rate of @p data in Hz. (in)
+     * @param record       Also append to the recording WAV if one is requested (the live and -w/-x paths). (in)
+     * @param speakerMask  WAVEFORMATEXTENSIBLE channel mask, or 0 for the usual order of that channel count. (in)
+     *
+     * Stereo at 44.1 or 48 kHz passes through untouched, so the offline analysis stays bit-identical.
+     **/
+    void ingest( const float *data, int numFrames, int numChannels, int sampleRate, bool record,
+                 unsigned speakerMask = 0 );
 
     // ---- Audio recording (loopback -> 16-bit stereo WAV), written in run() ----
     std::atomic<bool> m_recReq{ false };   ///< Recording requested (set from the GUI thread).

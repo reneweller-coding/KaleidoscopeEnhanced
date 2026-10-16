@@ -40,6 +40,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <limits>
 #include <string>
 #include <thread>
 #include <vector>
@@ -435,6 +436,199 @@ void harmonyChecks()
            std::to_string( adv_held ).substr( 0, 5 ) + " / " + std::to_string( adv_change ).substr( 0, 5 ) );
 }
 
+/**  A synthetic drum track: a kick (decaying 55 Hz thump plus a click) every half second, over a 1320-Hz tone.
+ *
+ * @param rate     Sample rate in Hz. (in)
+ * @param seconds  Length in seconds. (in)
+ *
+ * @return
+ *   Mono samples.
+ **/
+std::vector<float> drumTrack( int rate, double seconds )
+{
+    std::vector<float> pcm( static_cast<size_t>( rate * seconds ), 0.f );
+    for ( size_t i = 0; i < pcm.size(); ++i )
+    {
+        const double t = static_cast<double>( i ) / rate;
+        const double k = std::fmod( t, 0.5 );
+        double       v = 0.15 * std::sin( 6.283185307 * 1320.0 * t );
+        v += 0.8 * std::exp( -k * 18.0 ) * std::sin( 6.283185307 * 55.0 * k );
+        if ( k < 0.004 )
+            v += 0.5 * ( ( ( i * 2654435761u ) >> 16 ) % 2000 / 1000.0 - 1.0 );
+        pcm[i] = static_cast<float>( v );
+    }
+    return pcm;
+}
+
+/**  The input stage and the events (16.10.2026): one-block events that a frame reader missed, silence that never
+ * reached the analysis, 5.1 read with the stride of stereo, 96 kHz, broken samples, a conditioner gone NaN.
+ *
+ * Each check shows the old way failing beside the new one passing, where the old way can still be run.
+ **/
+void inputChecks()
+{
+    printf( "\ninput stage and events (AudioAnalyzer::ingest, AudioEventLatch)\n" );
+    const int                rate = 48000, block = 480;
+    const std::vector<float> drums = drumTrack( rate, 8.0 );
+
+    // 1. A reader that looks every second block (blocks come in bursts) against every event the analyzer saw.
+    {
+        AudioAnalyzer   az;
+        AudioEventLatch latch;
+        int             truth = 0, raw_seen = 0, latched = 0, nblocks = 0;
+        for ( size_t at = 0; at + block <= drums.size(); at += block, ++nblocks )
+        {
+            az.feedBlock( drums.data() + at, block, 1, rate );
+            AudioFeatures f = az.getFeatures();
+            if ( f.onsetStrength > 0.f && nblocks > 1 ) // after the reader's first look (the latch's start)
+                ++truth;
+            if ( nblocks % 2 == 1 ) // the reader's turn
+            {
+                if ( f.onsetStrength > 0.f )
+                    ++raw_seen;
+                latch.apply( f );
+                if ( f.onsetStrength > 0.f )
+                    ++latched;
+            }
+        }
+        check( truth >= 6 && latched == truth && raw_seen < truth,
+               "a reader every second block sees every onset through the counters (the one-block flag lost some)",
+               std::to_string( latched ) + " of " + std::to_string( truth ) + ", the flag alone "
+                   + std::to_string( raw_seen ) );
+    }
+
+    // 2. Music, a 4-s pause, music: fed as silence the pause arms the track-change detector; skipped (as the
+    //    capture loop did with SILENT packets) it never does. (Up to 3 s it is a DJ stop by design, not a new track.)
+    for ( int skip = 0; skip < 2; ++skip )
+    {
+        AudioAnalyzer            az;
+        AudioEventLatch          latch;
+        const std::vector<float> zeros( block, 0.f );
+        int                      changes = 0;
+        auto                     feed = [&]( const float *d )
+        {
+            az.feedBlock( d, block, 1, rate );
+            AudioFeatures f = az.getFeatures();
+            latch.apply( f );
+            if ( f.trackChange )
+                ++changes;
+        };
+        for ( size_t at = 0; at + block <= drums.size() / 2; at += block )
+            feed( drums.data() + at );
+        if ( !skip )
+            for ( int b = 0; b < 400; ++b ) // 4 s pause
+                feed( zeros.data() );
+        for ( size_t at = drums.size() / 2; at + block <= drums.size(); at += block )
+            feed( drums.data() + at );
+        if ( skip )
+            check( changes == 0, "a pause that never reaches the analysis is no track change (the old capture loop)",
+                   std::to_string( changes ) + " change(s)" );
+        else
+            check( changes == 1, "a pause fed as silence makes the restart a new track", std::to_string( changes ) );
+    }
+
+    // 3. 5.1: the music on front left/right, the rest silent -- the same as stereo once mixed down; read with
+    //    the stride of stereo (the old capture loop) it was the music three times slower among zeros.
+    {
+        const int          frames = block;
+        std::vector<float> st( static_cast<size_t>( frames ) * 2 ), six( static_cast<size_t>( frames ) * 6 );
+        AudioAnalyzer      a_st, a_six, a_old;
+        for ( size_t at = 0; at + frames <= drums.size(); at += frames )
+        {
+            for ( int i = 0; i < frames; ++i )
+            {
+                const float v = drums[at + i];
+                st[i * 2] = st[i * 2 + 1] = v;
+                for ( int c = 0; c < 6; ++c )
+                    six[i * 6 + c] = c < 2 ? v : 0.f;
+            }
+            a_st.feedBlock( st.data(), frames, 2, rate );
+            a_six.feedBlock( six.data(), frames, 6, rate );
+            a_old.feedBlock( six.data(), frames, 2, rate ); // what processBlock( src, frames, min( 6, 2 ) ) read
+        }
+        const AudioFeatures fr = a_st.getFeatures(), fn = a_six.getFeatures(), fo = a_old.getFeatures();
+        auto                bpm = []( const AudioFeatures &f )
+        { return 40.f + 160.f * f.estimatedBPM; };
+        check( std::fabs( fn.spectralCentroid - fr.spectralCentroid ) < 0.01f
+                   && std::fabs( bpm( fn ) - bpm( fr ) ) < 1.f
+                   && ( std::fabs( fo.spectralCentroid - fr.spectralCentroid ) > 0.02f
+                        || std::fabs( bpm( fo ) - bpm( fr ) ) > 5.f ),
+               "5.1 is mixed down to the stereo picture (read as stereo it was not)",
+               "centroid/tempo stereo " + std::to_string( fr.spectralCentroid ).substr( 0, 5 ) + "/"
+                   + std::to_string( bpm( fr ) ).substr( 0, 5 ) + ", 5.1 "
+                   + std::to_string( fn.spectralCentroid ).substr( 0, 5 ) + "/"
+                   + std::to_string( bpm( fn ) ).substr( 0, 5 ) + ", 5.1 read as stereo "
+                   + std::to_string( fo.spectralCentroid ).substr( 0, 5 ) + "/"
+                   + std::to_string( bpm( fo ) ).substr( 0, 5 ) );
+    }
+
+    // 4. 96 kHz: decimated to 48 kHz, the analysis sees what it sees at 48 kHz.
+    {
+        const std::vector<float> d96 = drumTrack( 96000, 8.0 );
+        AudioAnalyzer            a48, a96;
+        for ( size_t at = 0; at + block <= drums.size(); at += block )
+            a48.feedBlock( drums.data() + at, block, 1, rate );
+        for ( size_t at = 0; at + 2 * block <= d96.size(); at += 2 * block )
+            a96.feedBlock( d96.data() + at, 2 * block, 1, 96000 );
+        const AudioFeatures f48 = a48.getFeatures(), f96 = a96.getFeatures();
+        check( std::fabs( f48.spectralCentroid - f96.spectralCentroid ) < 0.03f
+                   && std::fabs( f48.estimatedBPM - f96.estimatedBPM ) < 0.02f,
+               "96 kHz is analysed like 48 kHz (decimated)",
+               "centroid " + std::to_string( f48.spectralCentroid ).substr( 0, 5 ) + " / "
+                   + std::to_string( f96.spectralCentroid ).substr( 0, 5 ) + ", tempo "
+                   + std::to_string( 40.f + 160.f * f48.estimatedBPM ).substr( 0, 5 ) + " / "
+                   + std::to_string( 40.f + 160.f * f96.estimatedBPM ).substr( 0, 5 ) );
+    }
+
+    // 5. Broken samples: NaN and infinity in the stream leave every feature finite.
+    {
+        AudioAnalyzer      az;
+        std::vector<float> bad( drums.begin(), drums.begin() + rate * 2 );
+        for ( size_t i = 0; i < bad.size(); i += 97 )
+            bad[i] = ( i / 97 ) % 2 ? std::numeric_limits<float>::quiet_NaN() : std::numeric_limits<float>::infinity();
+        for ( size_t at = 0; at + block <= bad.size(); at += block )
+            az.feedBlock( bad.data() + at, block, 1, rate );
+        const AudioFeatures f = az.getFeatures();
+        check( std::isfinite( f.overallLevel ) && std::isfinite( f.spectralCentroid ) && std::isfinite( f.bassLevel )
+                   && std::isfinite( f.harmonicChange ) && std::isfinite( f.spectralFlux ),
+               "NaN and infinity in the input leave the features finite" );
+    }
+
+    // 6. The conditioner: odd frame times keep it finite and its advances monotonic; a NaN fed in is noticed, and a
+    //    reset brings it back.
+    {
+        AudioConditioner          cond;
+        AudioConditioner::Context ctx;
+        AudioAnalyzer             az;
+        bool                      finite = true, monotonic = true;
+        float                     adv = -1.f, harm = -1.f;
+        const float               dts[] = { 0.f, 0.1f, 5.f, 0.0083f, 0.f, 0.042f };
+        int                       step = 0;
+        for ( size_t at = 0; at + block <= drums.size(); at += block, ++step )
+        {
+            az.feedBlock( drums.data() + at, block, 1, rate );
+            ctx.globalTime += 0.01f;
+            const AudioFeatures c = cond.update( az.getFeatures(), dts[step % 6], ctx );
+            finite = finite && !AudioConditioner::firstNonFinite( c );
+            monotonic = monotonic && c.audioAdvance >= adv && c.harmAdvance >= harm;
+            adv = c.audioAdvance;
+            harm = c.harmAdvance;
+        }
+        check( finite && monotonic,
+               "frame times of 0, 0.1 and 5 s keep the conditioner finite and its advances monotonic" );
+        AudioFeatures poison = az.getFeatures();
+        poison.overallLevel = std::numeric_limits<float>::quiet_NaN();
+        poison.harmonicChange = std::numeric_limits<float>::quiet_NaN();
+        const AudioFeatures p1 = cond.update( poison, 0.01f, ctx );
+        const char         *bad = AudioConditioner::firstNonFinite( p1 );
+        cond.reset();
+        const AudioFeatures p2 = cond.update( az.getFeatures(), 0.01f, ctx );
+        check( bad && !AudioConditioner::firstNonFinite( p2 ),
+               "a NaN that reaches the conditioner is caught, and a reset brings it back",
+               std::string( "caught in " ) + ( bad ? bad : "nothing" ) );
+    }
+}
+
 /**  The video export's frame clock (EngineClock, WallClock) and its command line (-g, -j).
  *
  * Runs last: it switches this process's engine clock to virtual time for good.
@@ -769,6 +963,7 @@ int runCueSelfTest()
 
     longRunChecks();
     harmonyChecks();
+    inputChecks();
     exportChecks();
 
     printf( "\n%d passed, %d failed\n", g_passed, g_failed );

@@ -56,6 +56,9 @@
     0x809D ///< Core GL enable token for multisampling, provided here in case the GL header set lacks it.
 #endif
 
+/** Settings file shared with RenderPipeline (next to the Presets folder, relative to the working directory). */
+static const char *kUiSettingsPath = "..\\kaleidoscope_settings.ini";
+
 // Start configuration requested on the command line (-c <name>); empty = default.
 QString GLwidget::M_StartConfig;
 int     GLwidget::M_RemotePort = 8080; // on by default (LAN-only, auto-discovered); -t 0 disables
@@ -844,6 +847,13 @@ void GLwidget::initializeGL()
 
     // Start audio analyser (WASAPI loopback – captures any playing audio)
     m_audioAnalyzer = new AudioAnalyzer( this );
+    // The source chosen last time (audio menu); missing devices fall back to the default until they come back.
+    {
+        QSettings     st( Platform::assetPath( kUiSettingsPath ), QSettings::IniFormat );
+        const QString dev = st.value( "audioDevice" ).toString();
+        if ( !dev.isEmpty() )
+            m_audioAnalyzer->requestDevice( dev, st.value( "audioDeviceInput", false ).toBool() );
+    }
     m_audioAnalyzer->start();
     m_recorder.setAudioAnalyzer( m_audioAnalyzer );
 
@@ -886,10 +896,12 @@ void GLwidget::initializeGL()
     // returned) must not keep the app from starting.  KALEIDO_NO_MIDI: none at all.
     if ( !qEnvironmentVariableIsSet( "KALEIDO_NO_MIDI" ) )
     {
-        std::thread( []
+        const QString midi_want =
+            QSettings( Platform::assetPath( kUiSettingsPath ), QSettings::IniFormat ).value( "midiDevice" ).toString();
+        std::thread( [midi_want]
         {
             MidiInput *mi = new MidiInput();
-            if ( mi->start() )
+            if ( mi->start( midi_want ) )
             {
                 fprintf( stderr, "MIDI input: %s\n", mi->deviceName().toLocal8Bit().constData() );
                 M_MidiOpened.store( mi );
@@ -1174,6 +1186,7 @@ void GLwidget::draw()
         audio = m_audioAnalyzer->getFeatures();
     if ( RenderPipeline::freezeTime() >= 0.f ) // a comparison run: silence, whatever is playing
         audio = AudioFeatures();
+    m_eventLatch.apply( audio ); // the beats, onsets and track changes since the last frame, none lost
 
     // Track-change: a fresh track (after a silent gap) gets a clean transition.
     // Suppressed under KALEIDO_SCENE_SWEEP, where the sweep decides what is on
@@ -1678,9 +1691,6 @@ void GLwidget::showSelectConfigurationsMenu( QPainter *painter )
                        box_y + box_h - pad_y - hfm.descent(), hint );
 }
 
-/** Settings file shared with RenderPipeline (next to the Presets folder). */
-static const char *kUiSettingsPath = "..\\kaleidoscope_settings.ini";
-
 void GLwidget::applyQualityProfile()
 {
     // A weak GPU (an integrated one, or a software renderer) cannot hold the
@@ -1721,8 +1731,11 @@ void GLwidget::loadUiSettings()
     m_videoEnabled = s.value( "videoEnabled", m_videoEnabled ).toBool();
     m_lyricsKinetic = s.value( "lyricsKinetic", m_lyricsKinetic ).toBool();
     m_updateCheck = s.value( "updateCheck", m_updateCheck ).toBool();
+    // Only a LEARNED map counts. The ini of older versions holds the old default CC 1-3 for the knobs, written back
+    // on every exit -- they were never chosen, and a keyboard's modulation wheel (CC 1) turned the reactivity.
+    m_midiLearned = s.value( "midiLearned", false ).toBool();
     for ( int i = 0; i < MIDI_TARGETS; ++i )
-        m_midiMap[i] = s.value( QString( "midiMap%1" ).arg( i ), m_midiMap[i] ).toInt();
+        m_midiMap[i] = m_midiLearned ? s.value( QString( "midiMap%1" ).arg( i ), -1 ).toInt() : -1;
     RenderPipeline::setLightShow( s.value( "lightShow", RenderPipeline::lightShow() ).toBool() );
     // A persisted active config is the default start config, unless -c overrode it.
     if ( M_StartConfig.isEmpty() )
@@ -1755,6 +1768,7 @@ void GLwidget::saveUiSettings()
     s.setValue( "videoEnabled", m_videoEnabled );
     s.setValue( "lyricsKinetic", m_lyricsKinetic );
     s.setValue( "updateCheck", m_updateCheck );
+    s.setValue( "midiLearned", m_midiLearned );
     for ( int i = 0; i < MIDI_TARGETS; ++i )
         s.setValue( QString( "midiMap%1" ).arg( i ), m_midiMap[i] );
     s.setValue( "lightShow", RenderPipeline::lightShow() );
@@ -1991,7 +2005,8 @@ void GLwidget::exportStep()
         // held in show time instead (RenderPipeline::paint()).
         rp->awaitIncomingMesh( 15000 );
         EngineClock::setVirtualSeconds( m_export->engineSeconds( k ) );
-        const AudioFeatures audio = m_export->featuresFor( k );
+        AudioFeatures audio = m_export->featuresFor( k );
+        m_eventLatch.apply( audio ); // several analyzer blocks per frame: no beat or onset lost between them
         if ( audio.trackChange )
             rp->requestSceneChange( false );
         if ( m_export->titleDue( k ) )
@@ -2386,6 +2401,7 @@ void GLwidget::applyMidi()
                 if ( m_midiLearn >= MIDI_TARGETS )
                 {
                     m_midiLearn = -1;
+                    m_midiLearned = true;
                     saveUiSettings(); // persist the new mapping
                     fprintf( stderr, "MIDI learn: done (gespeichert)\n" );
                 }
@@ -2407,8 +2423,9 @@ void GLwidget::applyMidi()
         }
         else if ( e.type == 0x90 ) // Note On -> mapped pads
         {
-            // Tap-tempo and blackout fire only on their LEARNED note; the
-            // next-effect pad keeps the any-note fallback when unmapped.
+            // Every pad fires only on its LEARNED note. "Next" used to take any
+            // note while unbound -- every key played on an attached keyboard
+            // cut the scene and taught it a dislike.
             if ( m_midiMap[MIDI_TAP] >= 0 && e.data1 == m_midiMap[MIDI_TAP] )
             {
                 if ( m_audioAnalyzer )
@@ -2418,7 +2435,7 @@ void GLwidget::applyMidi()
             {
                 RenderPipeline::toggleBlackout();
             }
-            else if ( m_midiMap[MIDI_NEXT] < 0 || e.data1 == m_midiMap[MIDI_NEXT] )
+            else if ( m_midiMap[MIDI_NEXT] >= 0 && e.data1 == m_midiMap[MIDI_NEXT] )
                 if ( m_actConfiguration && m_actConfiguration->renderPipeline() )
                     m_actConfiguration->renderPipeline()->requestSceneChange();
         }
@@ -3016,6 +3033,7 @@ void GLwidget::selectAudioDevice( int index )
     if ( index == 0 ) // 0 = default output (loopback)
     {
         m_audioAnalyzer->requestDevice( QString(), false );
+        QSettings( Platform::assetPath( kUiSettingsPath ), QSettings::IniFormat ).remove( "audioDevice" );
         fprintf( stderr, "Audio source: default (loopback)\n" );
         return;
     }
@@ -3024,6 +3042,10 @@ void GLwidget::selectAudioDevice( int index )
     if ( di >= 0 && di < devs.size() )
     {
         m_audioAnalyzer->requestDevice( devs[di].id, devs[di].isCapture );
+        // remembered: the next start captures the same source (or the default while it is missing)
+        QSettings st( Platform::assetPath( kUiSettingsPath ), QSettings::IniFormat );
+        st.setValue( "audioDevice", devs[di].id );
+        st.setValue( "audioDeviceInput", devs[di].isCapture );
         fprintf( stderr, "Audio source: %s\n", devs[di].name.toLocal8Bit().constData() );
     }
 }

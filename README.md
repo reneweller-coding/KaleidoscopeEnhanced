@@ -151,7 +151,7 @@ Building the packs yourself, from folders you have filled:
 | type       | Narrow an open menu to matching entries                       |
 | wheel      | Scroll an open menu; click picks, click outside closes        |
 | `i`        | Toggle the live audio-feature overlay (incl. **FPS**)         |
-| `d`        | Choose the **audio source** (output / microphone) — overlay   |
+| `d`        | Choose the **audio source** (output / microphone) — overlay; remembered for the next start, and a capture on the default follows a new default output |
 | `↑` `↓`    | Also drive the audio-source cursor while that overlay is open |
 | `p`        | Toggle the **now-playing** track title display                |
 | `w`        | **Lyrics** (Internet): off / credits scroll / karaoke — on by default |
@@ -175,7 +175,7 @@ Building the packs yourself, from folders you have filled:
 | `c` / `m`  | Stereo depth — weaker / stronger                              |
 | `a`        | Toggle **auto-config-by-mood** (auto-switch configs)          |
 | `g`        | Toggle **adaptive render scale** (auto-FPS)                   |
-| `j`        | **MIDI learn** — bind knobs/pads to the controls              |
+| `j`        | **MIDI learn** — bind knobs/pads to the controls; nothing is bound until learned. `midiDevice=<part of its name>` in the ini picks the device (the log lists them) |
 | `r`        | Toggle **recording** (full render resolution → mp4)           |
 | `y` / `x`  | Arm the **instant replay** ring / save it as an mp4           |
 | `k`        | Save the current look **and** UI state as the startup default |

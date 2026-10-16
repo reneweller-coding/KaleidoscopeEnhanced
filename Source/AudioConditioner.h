@@ -86,6 +86,18 @@ public:
      *   and every field the master music gate should mute already gated.
      **/
     AudioFeatures update( const AudioFeatures &audio, float rawDt, const Context &ctx );
+    /**  The first of the conditioned values a shader or the host integrates that is not finite.
+     *
+     * @param f  A result of update(). (in)
+     *
+     * @return
+     *   Its name, or null if all are finite.
+     *
+     * Every value here is an integrator or a slew: one NaN stays in it for good, and the picture with it.
+     **/
+    static const char *firstNonFinite( const AudioFeatures &f );
+    /** Back to the state of a freshly made conditioner (after a non-finite result: better a reset than NaN forever). */
+    void reset();
 
     /**  True for the one frame a downbeat just landed (beat-quantised scene/image cuts).
      *

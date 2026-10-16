@@ -17,6 +17,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <algorithm>
+#include <new>
 
 // Local copies of two tiny helpers also used elsewhere in RenderPipeline.cpp
 // (both file-scope `static` there too) -- duplicated rather than shared so
@@ -53,6 +54,44 @@ static float slewToward( float cur, float target, float rate, float dt )
 static float clampParam( float v, float lo, float hi )
 {
     return v < lo ? lo : ( v > hi ? hi : v );
+}
+
+const char *AudioConditioner::firstNonFinite( const AudioFeatures &f )
+{
+    const struct
+    {
+        const char *name;
+        float       v;
+    } vals[] = {
+        { "audioRotPhase", f.audioRotPhase },
+        { "audioAdvance", f.audioAdvance },
+        { "harmAdvance", f.harmAdvance },
+        { "beatPhase", f.beatPhase },
+        { "barPhase", f.barPhase },
+        { "phrasePos", f.phrasePos },
+        { "chromaHue", f.chromaHue },
+        { "overallLevel", f.overallLevel },
+        { "swell", f.swell },
+        { "spectralFlux", f.spectralFlux },
+        { "beatDecay", f.beatDecay },
+        { "onsetStrength", f.onsetStrength },
+        { "dropPulse", f.dropPulse },
+        { "harmonicChange", f.harmonicChange },
+        { "bassLevel", f.bassLevel },
+        { "midLevel", f.midLevel },
+        { "highLevel", f.highLevel },
+    };
+    for ( const auto &v : vals )
+        if ( !std::isfinite( v.v ) )
+            return v.name;
+    return nullptr;
+}
+
+void AudioConditioner::reset()
+{
+    // The members are many and all have their defaults in the class: a fresh object in this place is the reset.
+    this->~AudioConditioner();
+    new ( this ) AudioConditioner();
 }
 
 AudioFeatures AudioConditioner::update( const AudioFeatures &audio, float rawDt, const Context &ctx )

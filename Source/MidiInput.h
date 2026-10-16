@@ -46,13 +46,16 @@ public:
     /** Closes the MIDI device if still open (calls stop()). */
     ~MidiInput();
 
-    /**  Opens the first available MIDI input device and starts receiving messages from it.
+    /**  Opens a MIDI input device and starts receiving messages from it.
+     *
+     * @param want  Part of the device name to look for (ini key midiDevice, any case); empty or not found takes the
+     *              first device. (in)
      *
      * @return
      *   true if a device was found and successfully opened, false if no MIDI device is present or opening it
      *   failed.
      **/
-    bool start();
+    bool start( const QString &want = QString() );
     /**  Stops and closes the MIDI input device, if one is open.
      *
      * Safe to call when nothing is open.

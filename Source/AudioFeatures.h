@@ -118,6 +118,19 @@ struct AudioFeatures
      **/
     bool trackChange = false;
 
+    /** Event counters: one more per detected kick (#isBeat), per onset (#onsetStrength) and per new track
+     * (#trackChange).
+     *
+     * The analyzer publishes every 10-ms block, but the blocks arrive in bursts and the render thread reads once a
+     * frame: a flag that holds for one block was overwritten by the next block before anyone saw it -- about half of
+     * the onsets never reached the picture, and a missed track change meant no cut. A counter cannot be missed;
+     * AudioEventLatch turns the difference since the last read back into the one-frame flags.
+     **/
+    int   beatCount = 0;
+    int   onsetCount = 0;       ///< See #beatCount.
+    float onsetPeak = 0.f;      ///< Strength of the latest onset, held until the next one (what the latch hands out).
+    int   trackChangeCount = 0; ///< See #beatCount.
+
     /** Music-mode classifier: 0 = clearly beat-driven, 1 = pure ambient/drone.
      *
      * Transitions slowly (~10 s) so visuals blend smoothly.
@@ -532,4 +545,48 @@ struct AudioFeatures
     float audioAdvance = 0.f;  ///< Accumulated tunnel forward offset (uv units).
     float harmAdvance = 0.f;   ///< The harmony's advance: the harmonic-change envelope integrated, ~1 per chord change
                                ///< (never jumps, never runs backwards) -- what a phase may add (audioHarmAdvance).
+};
+
+/** @class AudioEventLatch
+ *
+ * Turns the analyzer's event counters into one-frame events for a reader that looks less often than the analyzer
+ * publishes (the render thread, the video export).
+ *
+ * apply() sets #AudioFeatures::isBeat, #AudioFeatures::onsetStrength and #AudioFeatures::trackChange to what
+ * happened since the previous call: true (or the latest onset's strength) if the counter moved, false otherwise.
+ * The first call only takes the counters over -- whatever happened before nobody was looking is not an event now.
+ **/
+class AudioEventLatch
+{
+public:
+    AudioEventLatch() = default;
+    /**  Replaces the one-block flags of @p f by the events since the previous call.
+     *
+     * @param f  A snapshot just read from the analyzer. (in,out)
+     **/
+    void apply( AudioFeatures &f )
+    {
+        const bool primed = m_primed;
+        f.isBeat = primed && f.beatCount != m_beats;
+        f.onsetStrength = ( primed && f.onsetCount != m_onsets ) ? f.onsetPeak : 0.f;
+        f.trackChange = primed && f.trackChangeCount != m_tracks;
+        m_beats = f.beatCount;
+        m_onsets = f.onsetCount;
+        m_tracks = f.trackChangeCount;
+        m_primed = true;
+    }
+    /** Copyable: a latch is three counters. */
+    AudioEventLatch( const AudioEventLatch & ) = default;
+    /**  Copyable: a latch is three counters.
+     *
+     * @return
+     *   This latch.
+     **/
+    AudioEventLatch &operator=( const AudioEventLatch & ) = default;
+
+private:
+    int  m_beats = 0;      ///< #AudioFeatures::beatCount at the previous call.
+    int  m_onsets = 0;     ///< #AudioFeatures::onsetCount at the previous call.
+    int  m_tracks = 0;     ///< #AudioFeatures::trackChangeCount at the previous call.
+    bool m_primed = false; ///< A previous call happened.
 };

@@ -379,7 +379,214 @@ void AudioAnalyzer::requestDevice( const QString &id, bool isCapture )
             m_reqIsCapture = isCapture;
         }
     }
+    m_reqUnavailable = false;
     m_deviceChangeReq = true; // ask the capture loop to re-initialise now
+}
+
+void AudioAnalyzer::defaultDeviceChanged()
+{
+    // A stream opened with IMMDevice::Activate does not follow the default device: after switching from the
+    // speakers to the headphones it kept capturing the speakers -- now silent -- for good.
+    if ( m_onDefault )
+        m_deviceChangeReq = true;
+}
+
+void AudioAnalyzer::deviceListChanged()
+{
+    // The device the user chose came back (headphones plugged in again, an HDMI display woke up): return to it.
+    if ( m_reqUnavailable.exchange( false ) )
+        m_deviceChangeReq = true;
+}
+
+QString AudioAnalyzer::requestedDevice( bool &isCapture ) const
+{
+    QMutexLocker lk( &m_mutex );
+    isCapture = m_useReqDevice && m_reqIsCapture;
+    return m_useReqDevice ? m_reqDeviceId : QString();
+}
+
+/**  The FIR of the half-band decimator: a Blackman-windowed sinc cut at a quarter of the input rate.
+ *
+ * @return
+ *   The 47 taps, summing to 1.
+ *
+ * 47 taps put the stop band (above 0.27 of the input rate, i.e. 26 kHz of 96) below -70 dB, far under what the
+ * analysis resolves, and the pass band flat to 20 kHz.
+ **/
+static const std::vector<float> &halfbandTaps()
+{
+    static const std::vector<float> taps = []
+    {
+        const int          n = 47, mid = n / 2;
+        std::vector<float> t( n );
+        double             sum = 0.0;
+        for ( int i = 0; i < n; ++i )
+        {
+            const int    k = i - mid;
+            const double sinc = k == 0 ? 0.5 : std::sin( 3.14159265358979 * 0.5 * k ) / ( 3.14159265358979 * k );
+            const double w = 0.42 - 0.5 * std::cos( 2.0 * 3.14159265358979 * i / ( n - 1 ) )
+                             + 0.08 * std::cos( 4.0 * 3.14159265358979 * i / ( n - 1 ) );
+            t[i] = static_cast<float>( sinc * w );
+            sum += t[i];
+        }
+        for ( float &x : t )
+            x = static_cast<float>( x / sum );
+        return t;
+    }();
+    return taps;
+}
+
+/**  Gains of one speaker into the stereo downmix (ITU-style: centre and surrounds at -3 dB, LFE at -6 dB).
+ *
+ * @param bit  The speaker's bit in a WAVEFORMATEXTENSIBLE channel mask. (in)
+ * @param l    Gain into the left channel. (out)
+ * @param r    Gain into the right channel. (out)
+ **/
+static void speakerGains( unsigned bit, float &l, float &r )
+{
+    switch ( bit )
+    {
+        case 0x1: l = 1.f, r = 0.f; break; // front left
+        case 0x2: l = 0.f, r = 1.f; break; // front right
+        case 0x4: l = r = 0.7071f; break;  // front centre
+        case 0x8: l = r = 0.5f; break;     // LFE: the kick lives there in upmixes
+        case 0x10:
+        case 0x200:
+        case 0x40: l = 0.7071f, r = 0.f; break; // back / side / front-left-of-centre
+        case 0x20:
+        case 0x400:
+        case 0x80: l = 0.f, r = 0.7071f; break; // their right partners
+        default: l = r = 0.5f; break;           // centre back, height speakers
+    }
+}
+
+void AudioAnalyzer::ingest( const float *data, int numFrames, int numChannels, int sampleRate, bool record,
+                            unsigned speakerMask )
+{
+    if ( !data || numFrames <= 0 || numChannels <= 0 )
+        return;
+    const float *p = data;
+    int          ch = numChannels;
+    int          frames = numFrames;
+    int          rate = sampleRate;
+
+    // 1. Non-finite or wild samples (a driver glitch, a broken file) would poison every smoothed feature for good:
+    //    NaN never leaves an exponential average again. Made safe in a copy, reported once a minute at most.
+    {
+        const int n = frames * ch;
+        int       bad = 0;
+        for ( int i = 0; i < n; ++i )
+            if ( !std::isfinite( p[i] ) || std::fabs( p[i] ) > 4.f )
+                ++bad;
+        if ( bad )
+        {
+            m_fixBuf.assign( p, p + n );
+            for ( float &x : m_fixBuf )
+                x = std::isfinite( x ) ? std::max( -4.f, std::min( 4.f, x ) ) : 0.f;
+            p = m_fixBuf.data();
+            m_badSamples += bad;
+        }
+        if ( m_blocksSinceBadLog < ( 1 << 30 ) )
+            ++m_blocksSinceBadLog;
+        if ( m_blocksSinceBadLog > 6000 && m_badSamples > 0 ) // ~a minute of blocks
+        {
+            fprintf( stderr, "AUDIO: %lld broken sample(s) (NaN, infinity or beyond +-4) replaced\n", m_badSamples );
+            m_badSamples = 0;
+            m_blocksSinceBadLog = 0;
+        }
+    }
+
+    // 2. More than two channels (5.1/7.1 over HDMI): mixed down to stereo. The analysis reads interleaved
+    //    stereo -- handed six channels as "two", it read them with the wrong stride, i.e. garbage.
+    if ( ch > 2 )
+    {
+        if ( m_mixChannels != ch || m_mixMask != speakerMask )
+        {
+            m_mixChannels = ch;
+            m_mixMask = speakerMask;
+            // without a mask the usual order of that count: 3 = FL FR FC, 4 = quad, 5 = FL FR FC BL BR,
+            // 6 = 5.1, 7 = 6.1, 8 = 7.1
+            unsigned mask = speakerMask;
+            if ( !mask )
+                mask = ch == 3 ? 0x7u : ch == 4 ? 0x33u
+                                    : ch == 5   ? 0x37u
+                                    : ch == 6   ? 0x3Fu
+                                    : ch == 7   ? 0x13Fu
+                                                : 0x63Fu;
+            m_mixGains.assign( static_cast<size_t>( ch ) * 2, 0.5f );
+            int c = 0;
+            for ( unsigned bit = 1; bit && c < ch; bit <<= 1 )
+                if ( mask & bit )
+                {
+                    speakerGains( bit, m_mixGains[c * 2], m_mixGains[c * 2 + 1] );
+                    ++c;
+                }
+        }
+        m_mixBuf.resize( static_cast<size_t>( frames ) * 2 );
+        for ( int i = 0; i < frames; ++i )
+        {
+            float        l = 0.f, r = 0.f;
+            const float *f = p + static_cast<size_t>( i ) * ch;
+            for ( int c = 0; c < ch; ++c )
+            {
+                l += f[c] * m_mixGains[c * 2];
+                r += f[c] * m_mixGains[c * 2 + 1];
+            }
+            m_mixBuf[i * 2] = l;
+            m_mixBuf[i * 2 + 1] = r;
+        }
+        p = m_mixBuf.data();
+        ch = 2;
+    }
+
+    // 3. 88.2 kHz and up: halved until the rate is where the analysis was tuned (44.1/48 kHz). There the 2048-point
+    //    FFT is 43 ms and 23 Hz a bin; at 192 kHz it was 11 ms and 94 Hz, too coarse for the bass and the chroma.
+    const std::vector<float> &taps = halfbandTaps();
+    const int                 nt = static_cast<int>( taps.size() );
+    for ( int stage = 0; rate >= 88200 && stage < 3; ++stage )
+    {
+        HalfbandDecimator  &d = m_decim[stage];
+        std::vector<float> &out = m_decOut[stage];
+        if ( static_cast<int>( d.hist.size() ) != nt * ch )
+        {
+            d.hist.assign( static_cast<size_t>( nt ) * ch, 0.f );
+            d.phase = 0;
+        }
+        out.clear();
+        out.reserve( static_cast<size_t>( frames / 2 + 1 ) * ch );
+        for ( int i = 0; i < frames; ++i )
+        {
+            // shift one frame in (the history is short: 47 frames)
+            std::memmove( d.hist.data(), d.hist.data() + ch, sizeof( float ) * ( nt - 1 ) * ch );
+            for ( int c = 0; c < ch; ++c )
+                d.hist[( nt - 1 ) * ch + c] = p[static_cast<size_t>( i ) * ch + c];
+            if ( d.phase == 0 )
+                for ( int c = 0; c < ch; ++c )
+                {
+                    float acc = 0.f;
+                    for ( int k = 0; k < nt; ++k )
+                        acc += taps[k] * d.hist[k * ch + c];
+                    out.push_back( acc );
+                }
+            d.phase ^= 1;
+        }
+        p = out.data();
+        frames = static_cast<int>( out.size() ) / ch;
+        rate /= 2;
+    }
+    if ( frames <= 0 )
+        return;
+
+    processBlock( p, frames, ch, rate );
+
+    if ( record )
+    {
+        // Recording: open on the first request, then append what was analysed (stereo, the analysis rate).
+        if ( m_recReq && !m_wavFile )
+            recOpen( rate );
+        if ( m_wavFile )
+            recWrite( p, frames, ch );
+    }
 }
 
 /**  TAP TEMPO (key 't', GUI thread): registers one tap; the median inter-tap interval overrides tempo + beat phase
@@ -496,14 +703,8 @@ void AudioAnalyzer::analyzeWavOffline( const QString &path )
             break;
         for ( int i = 0; i < n * channels; ++i )
             conv[i] = pcm[i] / 32768.f;
-        processBlock( conv, n, ( channels > 2 ) ? 2 : channels, sample_rate );
-
-        // Recording (-x batch render): mirror the live loop's WAV writer so
-        // the mux gets the music.
-        if ( m_recReq && !m_wavFile )
-            recOpen( sample_rate );
-        if ( m_wavFile )
-            recWrite( conv, n, channels );
+        // The live input stage, recording included (-x batch render: the mux gets the music).
+        ingest( conv, n, channels, static_cast<int>( sample_rate ), true );
 
         remain -= n;
 
@@ -592,7 +793,7 @@ std::vector<AudioFeatures> AudioAnalyzer::analyzeSamples( const float *data, int
     for ( int at = 0; at < frames; at += chunk )
     {
         const int n = frames - at < chunk ? frames - at : chunk;
-        az.processBlock( data + static_cast<size_t>( at ) * channels, n, channels, sampleRate );
+        az.ingest( data + static_cast<size_t>( at ) * channels, n, channels, sampleRate, false );
         timeline.push_back( az.getFeatures() );
     }
     return timeline;
@@ -601,7 +802,7 @@ std::vector<AudioFeatures> AudioAnalyzer::analyzeSamples( const float *data, int
 void AudioAnalyzer::feedBlock( const float *data, int frames, int channels, int sampleRate )
 {
     m_running = true; // processBlock guards check this; a never-started analyzer has no thread to stop
-    processBlock( data, frames, channels, sampleRate );
+    ingest( data, frames, channels, sampleRate, false );
 }
 
 std::vector<AudioFeatures> AudioAnalyzer::analyzeWavToTimeline( const QString &path )
@@ -667,7 +868,7 @@ std::vector<AudioFeatures> AudioAnalyzer::analyzeWavToTimeline( const QString &p
             break;
         for ( int i = 0; i < n * channels; ++i )
             conv[i] = pcm[i] / 32768.f;
-        az.processBlock( conv, n, ( channels > 2 ) ? 2 : channels, sample_rate );
+        az.ingest( conv, n, channels, static_cast<int>( sample_rate ), false );
         timeline.push_back( az.getFeatures() );
         remain -= n;
     }
@@ -678,6 +879,130 @@ std::vector<AudioFeatures> AudioAnalyzer::analyzeWavToTimeline( const QString &p
              static_cast<int>( timeline.size() ), timeline.size() * 0.01f );
     return timeline;
 }
+
+#ifdef _WIN32
+/** @class EndpointWatcher
+ *
+ * Windows' notifications about audio endpoints, passed on to the analyzer as requests.
+ *
+ * WASAPI reports a changed default device, and devices coming and going, only to a registered
+ * IMMNotificationClient. The callbacks arrive on a system thread and must return quickly, so each one only sets a
+ * request flag; the capture loop reconnects on its own thread.
+ **/
+class EndpointWatcher : public IMMNotificationClient
+{
+public:
+    /**  A watcher for one analyzer.
+     *
+     * @param owner  The analyzer told about changes (outlives the registration). (in)
+     **/
+    explicit EndpointWatcher( AudioAnalyzer *owner )
+        : m_owner( owner )
+    {
+    }
+    /**  COM reference counting.
+     *
+     * @return
+     *   The new count.
+     **/
+    ULONG STDMETHODCALLTYPE AddRef() override { return static_cast<ULONG>( InterlockedIncrement( &m_ref ) ); }
+    /**  COM reference counting: the last release deletes the watcher.
+     *
+     * @return
+     *   The new count.
+     **/
+    ULONG STDMETHODCALLTYPE Release() override
+    {
+        const LONG r = InterlockedDecrement( &m_ref );
+        if ( r == 0 )
+            delete this;
+        return static_cast<ULONG>( r );
+    }
+    /**  COM interface query: IUnknown and IMMNotificationClient.
+     *
+     * @param riid  The interface asked for. (in)
+     * @param ppv   Receives the interface or null. (out)
+     *
+     * @return
+     *   S_OK or E_NOINTERFACE.
+     **/
+    HRESULT STDMETHODCALLTYPE QueryInterface( REFIID riid, void **ppv ) override
+    {
+        if ( riid == __uuidof( IUnknown ) || riid == __uuidof( IMMNotificationClient ) )
+        {
+            *ppv = static_cast<IMMNotificationClient *>( this );
+            AddRef();
+            return S_OK;
+        }
+        *ppv = nullptr;
+        return E_NOINTERFACE;
+    }
+    /**  The default device of a flow and role changed: the console render default is what loopback captures.
+     *
+     * @param flow  Render or capture. (in)
+     * @param role  Console, multimedia or communications. (in)
+     *
+     * @return
+     *   S_OK.
+     **/
+    HRESULT STDMETHODCALLTYPE OnDefaultDeviceChanged( EDataFlow flow, ERole role, LPCWSTR ) override
+    {
+        if ( flow == eRender && role == eConsole )
+            m_owner->defaultDeviceChanged();
+        return S_OK;
+    }
+    /**  A device was added.
+     *
+     * @return
+     *   S_OK.
+     **/
+    HRESULT STDMETHODCALLTYPE OnDeviceAdded( LPCWSTR ) override
+    {
+        m_owner->deviceListChanged();
+        return S_OK;
+    }
+    /**  A device was removed.
+     *
+     * @return
+     *   S_OK.
+     **/
+    HRESULT STDMETHODCALLTYPE OnDeviceRemoved( LPCWSTR ) override
+    {
+        m_owner->deviceListChanged();
+        return S_OK;
+    }
+    /**  A device changed state (enabled, disabled, unplugged).
+     *
+     * @return
+     *   S_OK.
+     **/
+    HRESULT STDMETHODCALLTYPE OnDeviceStateChanged( LPCWSTR, DWORD ) override
+    {
+        m_owner->deviceListChanged();
+        return S_OK;
+    }
+    /**  A device property changed: of no interest here.
+     *
+     * @return
+     *   S_OK.
+     **/
+    HRESULT STDMETHODCALLTYPE OnPropertyValueChanged( LPCWSTR, const PROPERTYKEY ) override { return S_OK; }
+
+private:
+    AudioAnalyzer *m_owner;   ///< The analyzer told about changes.
+    LONG           m_ref = 1; ///< COM reference count.
+    /** Only deleted through Release(). */
+    virtual ~EndpointWatcher() = default;
+    /** Not copyable (CGVR template: copy constructor and assignment are always declared). */
+    EndpointWatcher( const EndpointWatcher & ) = delete;
+    /**  Not assignable; see the copy constructor.
+     *
+     * @return
+     *   Nothing: the operator is deleted, so no call compiles.
+     **/
+    EndpointWatcher &operator=( const EndpointWatcher & ) = delete;
+};
+#endif
 
 /**  QThread entry point: the WASAPI loopback capture loop (or, if M_OfflineWav is set, delegates to
  * analyzeWavOffline() and returns).
@@ -744,13 +1069,20 @@ void AudioAnalyzer::run()
         return;
     }
 
-    // Temporary float conversion buffer (max 4096 frames × 8 channels)
+    // Temporary float conversion buffer (max 4096 frames × 8 channels), and the
+    // silence a stopped player is fed as (see below).
     static float conv_buf[4096 * 8];
+    static float silent_buf[4096 * 8] = {};
 
-    // Outer reconnect loop.  If the capture device is invalidated (the user
-    // switches the default output, unplugs headphones, an HDMI display sleeps,
-    // …), the per-device objects are released and the default endpoint is
-    // re-acquired — so audio reactivity recovers automatically instead of dying.
+    // Told about a new default device and devices coming and going.
+    EndpointWatcher *watcher = new EndpointWatcher( this );
+    p_enum->RegisterEndpointNotificationCallback( watcher );
+
+    // Outer reconnect loop.  If the capture device is invalidated (unplugged
+    // headphones, an HDMI display going to sleep) or the default output moves
+    // elsewhere (EndpointWatcher), the per-device objects are released and the
+    // default -- or the chosen device, once it is back -- is re-acquired, so
+    // audio reactivity recovers automatically instead of dying.
     while ( m_running )
     {
         IMMDevice           *p_device = nullptr;
@@ -800,8 +1132,9 @@ void AudioAnalyzer::run()
         // The selected endpoint, or the default render endpoint (loopback) if none.
         // Loopback only applies to OUTPUT endpoints; an input device (mic/line-in)
         // is captured normally.
-        bool is_capture_endpoint = false;
-        if ( use_req && !req_id.isEmpty() )
+        bool       is_capture_endpoint = false;
+        const bool try_req = use_req && !req_id.isEmpty() && !m_reqUnavailable;
+        if ( try_req )
         {
             hr = p_enum->GetDevice( reinterpret_cast<LPCWSTR>( req_id.utf16() ), &p_device );
             is_capture_endpoint = req_cap;
@@ -811,6 +1144,7 @@ void AudioAnalyzer::run()
             hr = p_enum->GetDefaultAudioEndpoint( eRender, eConsole, &p_device );
             is_capture_endpoint = false;
         }
+        m_onDefault = !try_req;
         if ( SUCCEEDED( hr ) )
             hr = p_device->Activate( __uuidof( IAudioClient ), CLSCTX_ALL, nullptr,
                                      reinterpret_cast<void **>( &p_client ) );
@@ -830,13 +1164,14 @@ void AudioAnalyzer::run()
 
         if ( FAILED( hr ) )
         {
-            // Setup failed.  If a *selected* device failed, drop back to the
-            // default so we don't get stuck retrying a dead source.
+            // Setup failed.  If a *selected* device failed, the default stands in
+            // -- but the choice is kept: when the device list changes (it is
+            // plugged in again) deviceListChanged() tries it once more.
             device_cleanup();
-            if ( use_req )
+            if ( try_req )
             {
-                QMutexLocker lk( &m_mutex );
-                m_useReqDevice = false;
+                m_reqUnavailable = true;
+                continue; // straight to the default
             }
             msleep( 500 );
             continue;
@@ -853,7 +1188,7 @@ void AudioAnalyzer::run()
         {
             QMutexLocker lk( &m_mutex );
             m_curDeviceName.clear();
-            if ( use_req )
+            if ( try_req )
                 for ( const AudioDevice &ad : m_devices )
                     if ( ad.id == req_id )
                     {
@@ -862,8 +1197,12 @@ void AudioAnalyzer::run()
                     }
         }
 
-        const int sample_rate = pwfx->nSamplesPerSec;
-        const int num_channels = pwfx->nChannels;
+        const int      sample_rate = pwfx->nSamplesPerSec;
+        const int      num_channels = pwfx->nChannels;
+        const unsigned speaker_mask =
+            pwfx->wFormatTag == WAVE_FORMAT_EXTENSIBLE
+                ? static_cast<unsigned>( reinterpret_cast<WAVEFORMATEXTENSIBLE *>( pwfx )->dwChannelMask )
+                : 0u;
         // Detect IEEE float vs PCM16 format
         const bool is_float = ( pwfx->wFormatTag == WAVE_FORMAT_IEEE_FLOAT )
                               || ( pwfx->wFormatTag == WAVE_FORMAT_EXTENSIBLE
@@ -871,6 +1210,8 @@ void AudioAnalyzer::run()
                                           == KSDATAFORMAT_SUBTYPE_IEEE_FLOAT );
 
         bool device_lost = false;
+        // When the next block of fed silence is due (see below); real packets push it on.
+        auto silence_due = std::chrono::steady_clock::now() + std::chrono::milliseconds( 30 );
         while ( m_running && !device_lost )
         {
             if ( m_deviceChangeReq )
@@ -887,6 +1228,7 @@ void AudioAnalyzer::run()
                 break;
             } // e.g. AUDCLNT_E_DEVICE_INVALIDATED
 
+            bool got_packet = false;
             while ( packet_size > 0 && m_running )
             {
                 BYTE  *p_data = nullptr;
@@ -900,12 +1242,21 @@ void AudioAnalyzer::run()
                     break;
                 }
 
-                if ( !( flags & AUDCLNT_BUFFERFLAGS_SILENT ) && num_frames > 0 )
+                const int frames_ok = std::min( static_cast<int>( num_frames ),
+                                                4096 * 8 / std::max( 1, num_channels ) );
+                if ( frames_ok > 0 )
                 {
-                    const int    total_samples = num_frames * num_channels;
+                    got_packet = true;
+                    const int    total_samples = frames_ok * num_channels;
                     const float *src = nullptr;
 
-                    if ( is_float )
+                    // A paused player sends packets marked SILENT. They used to be skipped -- so the
+                    // analysis froze on its last music block: the picture kept pulsing through the
+                    // pause, the track-change detector (which waits for 0.6 s of silence) never armed,
+                    // and a recording lost the pause. They are silence, and silence goes in.
+                    if ( flags & AUDCLNT_BUFFERFLAGS_SILENT )
+                        src = silent_buf;
+                    else if ( is_float )
                     {
                         src = reinterpret_cast<const float *>( p_data );
                     }
@@ -913,19 +1264,13 @@ void AudioAnalyzer::run()
                     {
                         // PCM 16-bit → float
                         const int16_t *pcm = reinterpret_cast<const int16_t *>( p_data );
-                        int            count = std::min( total_samples, 4096 * 8 );
-                        for ( int i = 0; i < count; ++i )
+                        for ( int i = 0; i < total_samples; ++i )
                             conv_buf[i] = pcm[i] / 32768.f;
                         src = conv_buf;
                     }
 
-                    processBlock( src, num_frames, std::min( num_channels, 2 ), sample_rate );
-
-                    // Recording: open on first request, then append the samples.
-                    if ( m_recReq && !m_wavFile )
-                        recOpen( sample_rate );
-                    if ( m_wavFile )
-                        recWrite( src, num_frames, num_channels );
+                    // The input stage: safe samples, stereo, a sane rate -- then the analysis and the recording.
+                    ingest( src, frames_ok, num_channels, sample_rate, true, speaker_mask );
                 }
 
                 p_capture->ReleaseBuffer( num_frames );
@@ -934,6 +1279,30 @@ void AudioAnalyzer::run()
                 {
                     device_lost = true;
                     break;
+                }
+            }
+
+            // Nothing playing at all: with no render stream WASAPI delivers no
+            // packets, not even silent ones. After 30 ms without any, the silence
+            // the speakers are making is fed in, one 10-ms block per 10 ms of wall
+            // time, so the features fall to rest and a restart counts as a new
+            // track. A stall does not catch up (at most 20 blocks at once).
+            {
+                const auto now = std::chrono::steady_clock::now();
+                if ( got_packet )
+                    silence_due = now + std::chrono::milliseconds( 30 );
+                else if ( now >= silence_due )
+                {
+                    const int block = std::max( 1, sample_rate / 100 );
+                    int       fed = 0;
+                    while ( silence_due <= now && fed < 20 && block * num_channels <= 4096 * 8 )
+                    {
+                        ingest( silent_buf, block, num_channels, sample_rate, true, speaker_mask );
+                        silence_due += std::chrono::milliseconds( 10 );
+                        ++fed;
+                    }
+                    if ( silence_due <= now )
+                        silence_due = now + std::chrono::milliseconds( 10 );
                 }
             }
 
@@ -951,7 +1320,11 @@ void AudioAnalyzer::run()
     }
 
     if ( p_enum )
+    {
+        p_enum->UnregisterEndpointNotificationCallback( watcher );
         p_enum->Release();
+    }
+    watcher->Release();
     CoUninitialize();
 #elif defined( KALEIDO_HAVE_PULSE )
     // --- PulseAudio monitor capture ---------------------------------------
@@ -1004,12 +1377,7 @@ void AudioAnalyzer::run()
                 fprintf( stderr, "AUDIO: capture dropped (%s)\n", pa_strerror( err ) );
                 break; // fall out and reopen
             }
-            processBlock( pulseBuf, kFrames, kCh, kRate );
-
-            if ( m_recReq && !m_wavFile )
-                recOpen( kRate );
-            if ( m_wavFile )
-                recWrite( pulseBuf, kFrames, kCh );
+            ingest( pulseBuf, kFrames, kCh, kRate, true ); // the same input stage as WASAPI, recording included
         }
 
         if ( m_wavFile )
@@ -3031,6 +3399,16 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
     m_features.onsetStrength = onset_strength;
     m_features.downbeat = downbeat;
     m_features.trackChange = track_change;
+    // The counters a reader that looks once a frame cannot miss (AudioEventLatch).
+    if ( is_beat )
+        ++m_features.beatCount;
+    if ( onset_strength > 0.f )
+    {
+        ++m_features.onsetCount;
+        m_features.onsetPeak = onset_strength;
+    }
+    if ( track_change )
+        ++m_features.trackChangeCount;
     m_features.beatStrength = beat_str;
     m_features.beatDecay = beat_decay;
     m_features.ambientFactor = m_ambientFactor;
