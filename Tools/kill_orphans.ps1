@@ -13,7 +13,9 @@
 # measurement went that way).  Now it takes only what provably came from a batch
 # run of THIS repository:
 #   * Kaleidoscope.exe started from this repository's Release folder with a batch
-#     preset (`-c _catalog`, `_snap3`, ... -- the tools' presets start with "_");
+#     preset (`-c _catalog`, `_snap3`, ... -- the tools' presets start with "_")
+#     whose parent process is gone (a snapshot pass running beside a catalogue
+#     pass keeps its windows);
 #   * ffmpeg whose parent process is gone and whose command line names this
 #     repository (the recorder's pipe writes into it);
 #   * headless Edge whose command line names this repository (the catalogue PDF).
@@ -48,7 +50,9 @@ foreach ($p in $all) {
     $cmd = [string]$p.CommandLine
     switch -Regex ($p.Name) {
         '^Kaleidoscope\.exe$' {
-            if ($p.ExecutablePath -and ($p.ExecutablePath -ieq $exe) -and ($cmd -match '(^|\s)-c\s+"?_')) {
+            # an orphan: the script that started it is gone (a running snapshot pass's windows have their parent)
+            if ($p.ExecutablePath -and ($p.ExecutablePath -ieq $exe) -and ($cmd -match '(^|\s)-c\s+"?_') -and
+                -not $alive.ContainsKey([int]$p.ParentProcessId)) {
                 Take $p "Render-Fenster"
             }
         }
