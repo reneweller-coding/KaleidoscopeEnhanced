@@ -309,6 +309,7 @@ RECENT_SCENES = {
     "PenroseParquet",
     "TruchetMaze",
     "ChainCurlFarris", "ChainWarpQuasi", "ChainTaylorHex", "ChainGerstnerJacobi", "ChainBillowPenrose", "ChainConvectionSierpinski", "ChainGyreSquareWave", "ChainTriangleStreet", "ChainWeierstrassWarp", "ChainInterferenceKoch", "ChainCurlAmmann", "ChainSquareChirikov",
+    "NoirBlindsLight", "NoirSmokeBacklight", "NoirKaleidoscope", "NoirTunnel", "NoirSearchlights", "NoirSilverFlow",
 }
 
 def rule_recent(m, h):
@@ -564,6 +565,24 @@ SECOND_FIT = {"SpaceAmbient": ("ambient", 0.4)}
 GRADE = {"Noir": (5, "fade,grey,sepia")}
 MAX_VARIANTS = 6
 
+# ---- Screen time by show value (16.10.2026) ---------------------------------
+# With the no-repeat memory the probability roll and the taste hardly change how
+# often a scene comes (simulated: p >= 0.7 against p <= 0.25 3.2:1 without the
+# memory, 1.6:1 with it), so a rating has to act on how LONG a scene stays --
+# the one lever that turns it into screen time without bringing scenes back
+# sooner.  Each scene of a genre preset gets its solo time from its show value
+# v = interest + SOLO_FIT * (fit - 7): the mean doubles every SOLO_DOUBLING
+# points, scaled per preset so that the mean over its entries stays the old
+# default's 55 s (20..90 s) -- the same number of changes an hour; the range is
+# SOLO_SPREAD around that mean.  The labs keep LAB_STAY, an entry with its own
+# minTimeSolo keeps it; the scheduler stretches the stay by the learned taste.
+SOLO_GENRES = set(FIT_COLUMN) | {"Allround"}
+SOLO_MEAN = 55.0
+SOLO_DOUBLING = 1.6
+SOLO_FIT = 0.5
+SOLO_SPREAD = (0.55, 1.45)
+SOLO_LIMITS = (14.0, 160.0)
+
 fit = {}
 if os.path.exists(FIT_FILE):
     lines = open(FIT_FILE, encoding="utf-8").read().splitlines()
@@ -606,6 +625,25 @@ def select_by_fit(genre, rule):
             entries = [entries[round(i * (n - 1) / (MAX_VARIANTS - 1))] for i in range(MAX_VARIANTS)]
         sel.extend(entries)
     return sel
+
+def solo_times(genre, sel):
+    """Solo time (min, max) in seconds per scene name for one genre preset (SOLO_GENRES; see above)."""
+    col = FIT_COLUMN.get(genre)
+    own = [b for b in sel if b[0] == "TextureShader" and b[1] not in CHAIN_LABS and "minTimeSolo=" not in b[4]]
+    if not own:
+        return {}
+    def value(s):
+        if s not in fit:
+            return None
+        return fit[s]["interest"] + (SOLO_FIT * (fit[s][col] - 7) if col else 0.0)
+    known = sorted(v for v in (value(b[1]) for b in own) if v is not None)
+    middle = known[len(known) // 2] if known else 6.5
+    raw = [2.0 ** (((value(b[1]) if value(b[1]) is not None else middle) - 6.5) / SOLO_DOUBLING) for b in own]
+    k = SOLO_MEAN
+    for _ in range(6):  # the limits pull the mean; a few rounds bring it back to SOLO_MEAN
+        means = [min(max(k * r, SOLO_LIMITS[0]), SOLO_LIMITS[1]) for r in raw]
+        k *= SOLO_MEAN / (sum(means) / len(means))
+    return {b[1]: (round(SOLO_SPREAD[0] * m), round(SOLO_SPREAD[1] * m)) for b, m in zip(own, means)}
 
 for entry in GENRES:
     name, rule, hidden = entry[0], entry[1], entry[2]
@@ -657,6 +695,7 @@ for entry in GENRES:
         out[-1:-1] = ["  <!-- %d walking chain lab variants (LAB_FLAVOURS), %d %% of the screen time (labShare) -->"
                       % (len(labs), round(100 * LAB_SHARE.get(name, 0)))]
     graded = 0
+    solo = solo_times(name, sel_s) if name in SOLO_GENRES else {}
     for b in sel_s + sel_f + sel_t:
         blk = b[3].rstrip("\n")
         if (name in GRADE and b[0] == "TextureShader" and b[1] in fit and 'grade="' not in b[4]
@@ -666,6 +705,12 @@ for entry in GENRES:
         for knob, (lo, hi) in KNOB_RANGES.get(name, {}).items():
             blk = re.sub(r'(<float name="%s") minValue="[^"]*" maxValue="[^"]*"' % knob,
                          r'\1 minValue="%s" maxValue="%s"' % (lo, hi), blk)
+        # The show value goes along (interest="..."): the scheduler's spectacle reserve rolls a drop's target
+        # from the scenes of interest >= 8 (SceneScheduler::pickSpectacle).
+        if b[0] == "TextureShader" and b[1] in fit and 'interest="' not in b[4]:
+            blk = blk.replace("<TextureShader ", '<TextureShader interest="%d" ' % fit[b[1]]["interest"], 1)
+        if b[0] == "TextureShader" and b[1] in solo and "minTimeSolo=" not in b[4]:
+            blk = blk.replace("<TextureShader ", '<TextureShader minTimeSolo="%d" maxTimeSolo="%d" ' % solo[b[1]], 1)
         if name in LAB_SOLO and b[0] == "TextureShader" and b[1] in CHAIN_LABS and "minTimeSolo=" not in b[4]:
             blk = blk.replace("<TextureShader ", '<TextureShader minTimeSolo="%d" maxTimeSolo="%d" ' % LAB_SOLO[name], 1)
         if name in PROB_FACTOR and b[0] == "TextureShader" and b[1] in PROB_FACTOR[name][1]:

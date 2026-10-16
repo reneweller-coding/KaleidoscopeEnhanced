@@ -206,6 +206,7 @@ public:
         m_sectionTime.clear();
         m_pendingSectionStore = -1;
         m_pendingSectionRestore = -1;
+        m_dropInSong = false;
     }
     /**  Jump directly to a given effect index, pre-empting the normal selection (remote scene browser).
      *
@@ -515,8 +516,11 @@ private:
                                    ///< limit).
     float m_harmCutCooldown = 0.f; ///< Seconds until another harmonic cut is allowed (45 s apart: chord changes are
                                    ///< frequent, a cut on each would be restless).
-    int m_lastSectionCount = 0;    ///< Last seen Tick::sectionCount, to detect the rising edge of a new section.
-    int m_lastDropCount = 0;       ///< Last seen Tick::dropCount, to detect the rising edge of a new drop.
+    int   m_lastSectionCount = 0;  ///< Last seen Tick::sectionCount, to detect the rising edge of a new section.
+    int   m_lastDropCount = 0;     ///< Last seen Tick::dropCount, to detect the rising edge of a new drop.
+    bool  m_dropInSong = false;    ///< A drop has come in this song (newSong() clears it): the phrase grid is anchored.
+    float m_secsSinceDrop = 1e9f;  ///< Seconds since the last drop; the phrase grid drifts with the tempo error.
+    float m_spectacleFor = 0.f;    ///< Seconds the spectacle reserve still waits for its predicted drop (0 = none).
     // A drop triggered the change: when it fires, it becomes a HARD cut
     // (music-video look) or the shatter transition instead of the normal
     // cross-fade.
@@ -579,6 +583,17 @@ private:
      *   The texture index; never @p act while the pool holds another scene.
      **/
     unsigned int pickScene( int act, bool initial );
+    /**  Rolls a scene for a predicted drop to cut to: a hand-made 2D scene of interest >= #SpectacleInterest, outside
+     * the no-repeat memory, within the complexity budget, through useShader() and moodAccept().
+     *
+     * @param act  The scene on screen. (in)
+     *
+     * @return
+     *   The texture index, or -1 when the preset has none (no interest in its entries) or none passed.
+     **/
+    int pickSpectacle( int act );
+    /** The show value a scene needs to be a drop's target (pickSpectacle()). */
+    static const int SpectacleInterest = 8;
 
     // The walking chain labs' share of the screen time (setLabShare()).
     LabShareClock     m_labClock;              ///< Lab time against all time, and the share the preset asks for.

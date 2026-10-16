@@ -987,6 +987,70 @@ void exportChecks()
     st = VideoExport::Settings(); // nothing left behind: this run is no export
 }
 
+/**  Natural scene changes on the 8-bar phrase (16.10.2026): with a confident beat and a drop of this song anchoring
+ * the phrase grid, a natural change starts its four-beat fade four beats before the boundary.  The scheduler alone,
+ * with synthetic ticks at 120 BPM, on the engine clock's virtual time -- exportChecks() switched it, so the
+ * scheduler's timers follow the ticks.
+ **/
+void phraseChecks()
+{
+    printf( "\nscene changes on the phrase (SceneScheduler: phrase wait)\n" );
+    // Never deleted: their destructor frees GL objects, and -q has no GL context.
+    static std::vector<EffectShader *> tex, fx, trans;
+    if ( tex.empty() )
+    {
+        for ( int i = 0; i < 4; ++i )
+            tex.push_back( new EffectShader( 3, 4, 1, 2 ) );
+        fx.push_back( new EffectShader( 600, 601, 1, 2 ) );
+    }
+    // The phraseSecsLeft at every natural fade start after the first six seconds.
+    auto run = [&]( bool anchored, double t0 )
+    {
+        SceneScheduler sched;
+        sched.attach( &tex, &fx, &trans );
+        double clock = t0;
+        EngineClock::setVirtualSeconds( clock );
+        sched.reset();
+        std::vector<float> starts;
+        int                prev = sched.texState();
+        const float        dt = 1.f / 60.f;
+        for ( int f = 0; f < 60 * 120; ++f )
+        {
+            const float s = static_cast<float>( f ) * dt;
+            clock += dt;
+            EngineClock::setVirtualSeconds( clock );
+            SceneScheduler::Tick t{};
+            t.dt = dt;
+            t.gateSmooth = 1.f;
+            t.timingScale = 1.f;
+            t.musicPresence = 1.f;
+            t.rhythmStrength = 0.8f;
+            t.estimatedBPM = 0.5f; // 120 BPM: a beat is 0.5 s, a bar 2 s, a phrase 16 s
+            t.dropCount = anchored && s > 2.f ? 1 : 0;
+            const float in = std::fmod( s + 14.f, 16.f ); // the grid runs from the drop at 2 s
+            t.phraseSecsLeft = 16.f - in;
+            t.downbeatTick = std::fmod( in, 2.f ) < dt;
+            sched.tick( t );
+            if ( sched.texState() == 1 && prev == 0 && s > 6.f )
+                starts.push_back( t.phraseSecsLeft );
+            prev = sched.texState();
+        }
+        return starts;
+    };
+    const std::vector<float> on = run( true, 200000.0 ), off = run( false, 300000.0 );
+    int                      on_phrase = 0, off_phrase = 0;
+    for ( float left : on )
+        on_phrase += left > 1.45f && left <= 2.05f ? 1 : 0;
+    for ( float left : off )
+        off_phrase += left > 1.45f && left <= 2.05f ? 1 : 0;
+    check( on.size() >= 4 && on_phrase == static_cast<int>( on.size() ),
+           "with a drop as anchor every natural change starts four beats before the 8-bar boundary",
+           std::to_string( on_phrase ) + " of " + std::to_string( on.size() ) );
+    check( off.size() > on.size() && off_phrase < static_cast<int>( off.size() ),
+           "without one it waits for the next bar's one as before",
+           std::to_string( off.size() ) + " changes, " + std::to_string( off_phrase ) + " on the phrase" );
+}
+
 } // namespace
 
 int runCueSelfTest()
@@ -1287,6 +1351,7 @@ int runCueSelfTest()
     rhythmChecks();
     melodyChecks();
     exportChecks();
+    phraseChecks(); // after exportChecks(): it needs the virtual engine clock
 
     printf( "\n%d passed, %d failed\n", g_passed, g_failed );
     return g_failed == 0 ? 0 : 1;

@@ -4923,3 +4923,65 @@ The fifth round of the idea list: the analysis itself, each change measured befo
   which now reads 0.01-0.15 higher on beat music (mostly about 0.1) through the rhythm term.
 
 `Kaleidoscope.exe -q`: 108 checks. Linux (WSL, Qt 6.2.4): built, 108 of 108.
+
+## 16.10.2026 (10): what the show does with its time
+
+The sixth round of the idea list: the dramaturgy -- how long a scene stays, which photo comes, what a drop cuts to,
+where a change lands.
+
+- **Weights work again.** With the no-repeat memory the probability roll and the taste hardly changed how often a
+  scene came (simulated: probability 0.7 against 0.25 3.2:1 without the memory, 1.6:1 with it; the strongest like
+  1.26-fold, 1.08-fold), and 397 of 401 Club entries had no solo time of their own (20..90 s). The generator now
+  gives every scene of a genre preset its solo time from its show value v = interest + 0.5 (fit - 7)
+  (`solo_times()` in make_genre_configs.py): the mean doubles every 1.6 points, scaled per preset so the mean over
+  its entries stays 55 s -- the same number of changes an hour; the range is 0.55..1.45 of the mean (Club: 8..20 s
+  for the dullest, 88..232 s for the best). `Tools/long_run_sim.py` now compares the presets as committed with
+  the working tree and reports `hi/lo`, the screen time of a scene of interest >= 8 against one of interest <= 5:
+  0.95..1.04 before, 2.17..2.89 now in all seven genre presets, changes per hour and the first return unchanged
+  (within the simulation's noise). The scheduler stretches a stay by the learned taste as well (the square root
+  of 0.3..2.5, held in 0.7..1.5; not for a walking lab, whose stay is its share of the time).
+- **The photo memory.** The loader drew five photos at random and took the best fit to the mood, with no memory:
+  at about 48 photos an hour from 977, a repeat in the first hour was likely and about 30 % went unseen in a day.
+  The photos shown last (half the library, at most n - 2) are now passed over, and never two of one family in a
+  row (the file name up to its first '-'); after fifty tries any photo will do, so a small folder never stalls.
+  The start pair were directory neighbours -- one family -- and are now drawn the same way. The memory is kept in
+  the settings file (`[photoHistory]`, not in a scripted run or with KALEIDO_FIXED_PHOTO). Tried with
+  `KALEIDO_PHOTO_SECS=1` (a photo stays and fades one second each): 30 photos without a repeat or two of a family
+  in a row, and after a restart none of those 30 again.
+- **The spectacle reserve.** A drop cut to whatever the last fade's end had rolled -- on average the preset's show
+  value (Club 6.7). The generator now writes `interest` into every entry (`EffectShader::interest()`); on the
+  build-up edge that predicts a drop (the same one the arc direction uses), the next scene is rolled anew from the
+  hand-made 2D scenes of interest >= 8 (`SceneScheduler::pickSpectacle()`): in the solo only, not in a calm preset
+  (it never cuts on a drop), not over a pending section replay or a remote jump, not while a walking lab is on.
+  2D only, because a 3D or mesh scene is not prebuilt and its warm-up would hold the cut back by seconds. The
+  first live run showed the catch: a section change 2.5 s before the drop -- the rule in dance music -- took the
+  reserved scene, and the drop then cut to whatever came next. The reserve therefore holds until its drop: the
+  scene rolled after such a cut is a spectacle again ("REGIE: Spektakel bleibt ..."). A window of the predicted
+  time plus 3 s ran out first -- before a song's first drop the phrase grid is not anchored, and the drop came
+  some 10 s after "in 7.9 s" -- so it holds for the prediction plus one phrase, or until the drop. Run again: the
+  reserve passed through a natural change (TruchetFlowWeave, 8) and the section cut (ChromeDreams, 9), and the
+  drop cut to DoyleSpiralTexture (8). The price: in the stretch before a drop every change goes to a spectacle,
+  at most a phrase long. In the runs before the fix the structure track's drops cut to interest 8, 7, 8 and
+  8, 6; the build-up edge fires only before the first drop there -- the later ones come with build-up values of
+  0.34/0.37, under the arc's 0.45.
+- **Changes on the phrase.** With a confident beat (rhythm > 0.55) and a phrase grid that a drop of this song
+  anchored (at most 3 minutes ago -- it drifts with the tempo error; `newSong()` forgets the anchor), a natural
+  change waits until its four-beat fade ends on the next 8-bar boundary: it starts with four beats left. At most
+  one phrase of waiting, then as before; forced changes are not held. A check in `-q` drives the scheduler alone
+  on the virtual engine clock at 120 BPM: with the anchor 7 of 7 natural changes start four beats before the
+  boundary, without it 7 of 28 (chance). Photos are left out: a 20..80 s dissolve hides where it began.
+- **Noir.** The catalogue had 62 scenes with a Noir fit of 7 or more, and the Noir preset filled up with 198
+  colour-graded scenes. Six new ones after the origin criteria (endless and mirrorable, the whole frame moving,
+  knobs, music in the structure, fed by the photo pool), drawn in hard light and dark: NoirBlindsLight (bars of
+  light through blinds, bent over drifting smoke, in wandering pools), NoirSmokeBacklight (a lamp behind smoke
+  made of the photo's masses, shafts gathered along the way to the lamp), NoirKaleidoscope (the original
+  kaleidoscope as a silver-gelatin print, levelled to the photo's own exposure, a raking light and a sweeping
+  beam), NoirTunnel (slits of light rushing past in a black bore, a lamp at its end), NoirSearchlights (beams from
+  beyond the frame crossing in haze) and NoirSilverFlow (the photo as flowing liquid silver). Noir >= 7 in the
+  catalogue: 68; graded fillers in the preset: 192. Their ratings are provisional until the app renders at the
+  end of the idea list; SpaceAmbient got no scenes of its own this round.
+- **Test hooks:** `KALEIDO_PHOTO_SECS=<s>` (photo solo and fade), `KALEIDO_LAB_SHARE=<0..1>` (overrides the
+  preset's lab share -- a lab on screen walks on and takes the drops itself, which hid every scene change in the
+  first test run).
+
+`Kaleidoscope.exe -q`: 110 checks. Linux (WSL, Qt 6.2.4): built, 110 of 110.

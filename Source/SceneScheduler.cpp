@@ -12,6 +12,7 @@
 
 #include <algorithm>
 #include <cctype>
+#include <cmath>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -417,6 +418,35 @@ unsigned int SceneScheduler::pickScene( int act, bool initial )
     return pick;
 }
 
+/**  Rolls a scene for a predicted drop (see SceneScheduler.h).  Only hand-made 2D scenes: a 3D or mesh scene is not
+ * prebuilt (RenderPipeline compiles the next 2D scene ahead), and a walking lab walks instead of being cut to.
+ **/
+int SceneScheduler::pickSpectacle( int act )
+{
+    const std::vector<EffectShader *> &tex = *m_textures;
+    const std::vector<EffectShader *> &comb = *m_fxShaders;
+    std::vector<unsigned int>          pool;
+    for ( unsigned int i = 0; i < tex.size(); ++i )
+        if ( tex[i]->interest() >= SpectacleInterest && !tex[i]->is3D() && !tex[i]->isMeshScene()
+             && !tex[i]->walksWithMusic() && static_cast<int>( i ) != act && !( i < m_isLab.size() && m_isLab[i] )
+             && !isRecentTexture( i ) )
+            pool.push_back( i );
+    if ( pool.empty() )
+        return -1;
+    for ( unsigned int k = 0; k < MaxSearch; ++k )
+    {
+        const unsigned int pick = pool[rand() % pool.size()];
+        if ( act >= 0
+             && tex[act]->getComplexity() + tex[pick]->getComplexity() + comb[m_actFx]->getComplexity()
+                        + comb[m_nextFx]->getComplexity()
+                    >= ComplexityBudget )
+            continue;
+        if ( tex[pick]->useShader() && moodAccept( tex[pick] ) )
+            return static_cast<int>( pick );
+    }
+    return -1;
+}
+
 // Mood-based selection bias - two components:
 //   1. Busyness: the shader's complexity should roughly match the arousal.
 //   2. Mood TAGS (config mood="dark,bright,calm,aggressive"): bonus on a
@@ -552,14 +582,36 @@ void SceneScheduler::tick( const Tick &t )
     // 10 s baselines are still climbing: buildUp 0.67 in the intro, 0.43 in
     // the real build-up).  The analyzer itself spares its drop arming the
     // same way.
-    if ( !m_reviewMode && m_regieWarm > 20.f && t.buildUp > 0.45f && m_buildUpPrev <= 0.45f
-         && m_arcCooldown <= 0.f && t.phraseSecsLeft >= 4.f && t.phraseSecsLeft <= 45.f
-         && m_actTexture < tex.size() && tex[m_actTexture]->usesProgress() )
+    const bool drop_ahead = !m_reviewMode && m_regieWarm > 20.f && t.buildUp > 0.45f && m_buildUpPrev <= 0.45f
+                            && m_arcCooldown <= 0.f && t.phraseSecsLeft >= 4.f && t.phraseSecsLeft <= 45.f;
+    if ( drop_ahead && m_actTexture < tex.size() && tex[m_actTexture]->usesProgress() )
     {
         tex[m_actTexture]->setClimaxIn( t.phraseSecsLeft );
         m_arcCooldown = 20.f;
         fprintf( stderr, "REGIE: Bogen auf den Drop in %.1f s (%s)\n",
                  t.phraseSecsLeft, tex[m_actTexture]->fragmentName() );
+    }
+    // SPECTACLE RESERVE (16.10.2026): the scene a drop cuts to was whatever the last fade's end had rolled -- on
+    // average the preset's show value (Club 6.7).  On the same predicted drop the next scene is rolled anew from the
+    // 2D scenes of interest >= 8 (pickSpectacle()): in the solo only (overwriting the next scene there is safe, as
+    // in forceScene()); not in a calm preset (it never cuts on a drop); not over a pending section replay or a
+    // remote jump; not while a walking lab is on screen (it walks on instead of cutting).  2D only: a 3D or mesh
+    // scene is not prebuilt, and its warm-up would hold the drop's cut back by seconds.  Once per prediction.
+    if ( drop_ahead && m_texState == 0 && m_sceneFadeMin <= 0.f && m_pendingSectionRestore < 0
+         && m_pendingSectionNext < 0 && m_forcedNextTexture < 0 && !m_forceIsManual && m_actTexture < tex.size()
+         && !tex[m_actTexture]->walksWithMusic() )
+    {
+        const int pick = pickSpectacle( static_cast<int>( m_actTexture ) );
+        if ( pick >= 0 )
+        {
+            m_nextTexture = static_cast<unsigned int>( pick );
+            // Until the drop, or one phrase past its prediction: before a song's first drop the phrase grid is not
+            // anchored yet, and in the structure track the drop came some 10 s after "in 7.9 s".
+            m_spectacleFor = t.phraseSecsLeft + 32.f * 60.f / ( 40.f + 160.f * std::max( t.estimatedBPM, 0.5f ) );
+            fprintf( stderr, "REGIE: Spektakel fuer den Drop in %.1f s: %s (interest %d)\n", t.phraseSecsLeft,
+                     tex[m_nextTexture]->fragmentName(), tex[m_nextTexture]->interest() );
+        }
+        m_arcCooldown = std::max( m_arcCooldown, 20.f );
     }
     m_buildUpPrev = t.buildUp;
 
@@ -665,6 +717,14 @@ void SceneScheduler::tick( const Tick &t )
 
     // DROP: immediate scene cut (still beat-quantised by the pending machinery,
     // but a drop IS a downbeat-scale accent).
+    m_secsSinceDrop += t.dt;
+    m_spectacleFor = std::max( 0.f, m_spectacleFor - t.dt );
+    if ( t.dropCount != m_lastDropCount )
+    {
+        m_dropInSong = true;
+        m_secsSinceDrop = 0.f;
+        m_spectacleFor = 0.f;
+    }
     if ( !m_reviewMode && t.dropCount == m_lastDropCount + 1 )
     {
         if ( mid_fade )
@@ -754,9 +814,25 @@ void SceneScheduler::tick( const Tick &t )
         if ( m_pendingEffectChange )
         {
             m_pendingEffectAge += t.dt;
-            if ( m_pendingEffectForced || m_reviewMode || t.downbeatTick
-                 || m_pendingEffectAge > 2.5f || t.gateSmooth < 0.25f )
+            // ON THE PHRASE (16.10.2026): with a confident beat and a phrase grid a drop of this song anchored (and
+            // not more than 3 minutes ago -- the grid drifts with the tempo error), a natural change waits until its
+            // four-beat fade ends on the next 8-bar boundary, where dance music turns: it starts with four beats
+            // left.  At most one phrase of waiting, then as before.  A forced change is not held.
+            bool phrase_wait = false, phrase_due = false;
+            if ( !m_pendingEffectForced && !m_reviewMode && t.rhythmStrength > 0.55f && t.estimatedBPM > 0.004f
+                 && m_dropInSong && m_secsSinceDrop < 180.f && t.phraseSecsLeft > 0.f )
             {
+                const float beat = 60.f / ( 40.f + 160.f * t.estimatedBPM );
+                phrase_due = t.phraseSecsLeft <= 4.f * beat && t.phraseSecsLeft > 3.f * beat;
+                phrase_wait = !phrase_due && m_pendingEffectAge < 33.f * beat;
+            }
+            if ( m_pendingEffectForced || m_reviewMode || phrase_due
+                 || ( !phrase_wait && ( t.downbeatTick || m_pendingEffectAge > 2.5f ) ) || t.gateSmooth < 0.25f )
+            {
+                static const bool PhraseLog = getenv( "KALEIDO_FADE_LOG" ) != nullptr;
+                if ( PhraseLog && phrase_due )
+                    fprintf( stderr, "PHRASE: change held %.1f s, starts %.2f s before the boundary\n",
+                             m_pendingEffectAge, t.phraseSecsLeft );
                 bool forced_go = m_pendingEffectForced;
                 m_pendingEffectChange = false;
                 m_pendingEffectForced = false;
@@ -864,6 +940,8 @@ void SceneScheduler::tick( const Tick &t )
                 if ( m_dropCutPending && !m_reviewMode )
                 {
                     m_dropCutPending = false;
+                    fprintf( stderr, "DROP cut -> %s (interest %d)\n", tex[m_nextTexture]->fragmentName(),
+                             tex[m_nextTexture]->interest() );
                     int cross = findTransition( "Crossfade.frag" );
                     int shatter = findTransition( "Shatter.frag" );
                     if ( ( rand() % 2 || shatter < 0 ) && cross >= 0 )
@@ -986,7 +1064,22 @@ void SceneScheduler::tick( const Tick &t )
                 m_pendingSectionNextId = -1;
             }
             else
+            {
                 m_nextTexture = pickScene( static_cast<int>( m_actTexture ), false );
+                // The reserve holds until its drop: a section cut just before a drop (the rule in dance music)
+                // took the reserved scene, and the drop then cut to whatever came next.  While the drop is still
+                // ahead, the scene after the cut is a spectacle again.
+                if ( m_spectacleFor > 0.f && m_sceneFadeMin <= 0.f && !tex[m_actTexture]->walksWithMusic() )
+                {
+                    const int pick = pickSpectacle( static_cast<int>( m_actTexture ) );
+                    if ( pick >= 0 )
+                    {
+                        m_nextTexture = static_cast<unsigned int>( pick );
+                        fprintf( stderr, "REGIE: Spektakel bleibt fuer den Drop: %s (interest %d)\n",
+                                 tex[m_nextTexture]->fragmentName(), tex[m_nextTexture]->interest() );
+                    }
+                }
+            }
 
             if ( m_nextTexture == m_actTexture )
             {
@@ -1002,6 +1095,12 @@ void SceneScheduler::tick( const Tick &t )
             // at 2.6 a 3-minute lab would have ended after 70 s.
             m_texFadeDur = static_cast<float>( tex[m_actTexture]->getTimeSolo() )
                            / ( tex[m_actTexture]->walksWithMusic() ? 1.f : t.timingScale );
+            // A liked scene stays longer, a disliked one shorter (16.10.2026): with the no-repeat memory the taste
+            // hardly changes how often a scene comes (1.08-fold for the strongest like, simulated), so it acts on
+            // how long it stays -- the square root of the taste (0.3..2.5), held in 0.7..1.5.  Not for a walking
+            // lab: its stay is its share of the screen time.
+            if ( !tex[m_actTexture]->walksWithMusic() )
+                m_texFadeDur *= std::clamp( std::sqrt( tasteOf( tex[m_actTexture]->fragmentName() ) ), 0.7f, 1.5f );
 
             restart( m_clockEffectTexture );
         }

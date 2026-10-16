@@ -379,8 +379,11 @@ void Configuration::readConfiguration( const QString &filenameIn )
     // Optional share of the screen time for the walking chain labs (0..1; the
     // genre presets ask for 20..50 %).  With it the labs come when the
     // scheduler's lab clock calls for one -- a long walking stay, then the
-    // hand-made scenes -- instead of as one entry among four hundred.
-    m_renderPipeline->setLabShare( doc_elem.attribute( "labShare" ).toFloat() );
+    // hand-made scenes -- instead of as one entry among four hundred.  KALEIDO_LAB_SHARE=<0..1> overrides it for a
+    // test of the hand-made scenes' machinery (a lab on screen walks on and takes the drops itself).
+    m_renderPipeline->setLabShare( qEnvironmentVariableIsSet( "KALEIDO_LAB_SHARE" )
+                                       ? qEnvironmentVariable( "KALEIDO_LAB_SHARE" ).toFloat()
+                                       : doc_elem.attribute( "labShare" ).toFloat() );
 
     // Image-cycling times: optional (music steering paces the show anyway);
     // absent/0 falls back to the long-standing baseline.
@@ -403,6 +406,13 @@ void Configuration::readConfiguration( const QString &filenameIn )
     if ( m_timeTextureInterpolationMax <= m_timeTextureInterpolationMin )
         m_timeTextureInterpolationMax = ( m_timeTextureInterpolationMin == 20 ) ? 80
                                                                                 : m_timeTextureInterpolationMin + 1;
+    // KALEIDO_PHOTO_SECS=<s>: a photo stays and fades s seconds each -- for testing the photo choice in minutes.
+    if ( qEnvironmentVariableIsSet( "KALEIDO_PHOTO_SECS" ) )
+    {
+        const unsigned int secs = std::max( 1u, qEnvironmentVariable( "KALEIDO_PHOTO_SECS" ).toUInt() );
+        m_timeTextureSoloMin = m_timeTextureInterpolationMin = secs;
+        m_timeTextureSoloMax = m_timeTextureInterpolationMax = secs + 1;
+    }
 
 
     // get the node's interested in, this time only caring about person's
@@ -483,6 +493,7 @@ void Configuration::readConfiguration( const QString &filenameIn )
             addUniforms( shader, el );
             shader->setComplexity( complexity );
             shader->setProbability( probability );
+            shader->setInterest( el.attribute( "interest" ).toInt() );
             shader->setMoodFlags( mood_flags );
             shader->setGradeModes( el.attribute( "grade" ).toStdString() ); // grade="fade,grey,sepia": rolled per
                                                                             // activation, applied by Present.frag
@@ -498,6 +509,7 @@ void Configuration::readConfiguration( const QString &filenameIn )
             addUniforms( shader, el );
             shader->setComplexity( complexity );
             shader->setProbability( probability );
+            shader->setInterest( el.attribute( "interest" ).toInt() );
             shader->setMoodFlags( mood_flags );
             shader->setGradeModes( el.attribute( "grade" ).toStdString() ); // grade="fade,grey,sepia": rolled per
                                                                             // activation, applied by Present.frag
@@ -544,6 +556,7 @@ void Configuration::readConfiguration( const QString &filenameIn )
             addUniforms( shader, el );
             shader->setComplexity( complexity );
             shader->setProbability( probability );
+            shader->setInterest( el.attribute( "interest" ).toInt() );
             shader->setMoodFlags( mood_flags );
             shader->setGradeModes( el.attribute( "grade" ).toStdString() ); // grade="fade,grey,sepia": rolled per
                                                                             // activation, applied by Present.frag

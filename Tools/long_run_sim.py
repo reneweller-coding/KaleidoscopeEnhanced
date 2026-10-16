@@ -9,12 +9,15 @@ time, both decaying over three hours) calls a lab when the labs are behind their
 the last lab's file again.  A scene stays its entry's solo time (minTimeSolo..maxTimeSolo, default 20..90 s) plus a
 fade (15..50 s).
 
-  python Tools/long_run_sim.py                       # the genre presets, 72 h, the new scheduler against the old
+  python Tools/long_run_sim.py                       # the genre presets, 72 h: as committed (HEAD) against now
   python Tools/long_run_sim.py Ambient,Club 48 7     # presets, hours, seed
+  python Tools/long_run_sim.py --old-scheduler       # HEAD's presets under the scheduler before 16.10.2026
 
-"old" is the scheduler before 16.10.2026: a memory of min(40, a third of the preset) scenes, the labs ordinary
-entries; it is run on the presets as committed in HEAD.  The run is a model, not the app: no music (no section or
-drop cuts, no taste), and the complexity budget is left out.
+"HEAD" runs the presets as committed, "now" the working tree's, both under today's scheduler -- what a preset change
+does.  "old" (--old-scheduler) is the scheduler before 16.10.2026: a memory of min(40, a third of the preset) scenes,
+the labs ordinary entries.  hi/lo is the screen time a scene of interest >= 8 gets against one of interest <= 5
+(Tools/preset_fit.tsv).  The run is a model, not the app: no music (no section or drop cuts, no taste), and the
+complexity budget is left out.
 """
 import collections, io, math, os, random, re, statistics, subprocess, sys
 import xml.etree.ElementTree as ET
@@ -23,6 +26,13 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 LABS = ("ChainLab2D", "ChainLab3D", "ChainLabTunnel", "ChainSlice3D")
 GENRES = ("Ambient", "Club", "Noir", "Psychedelic", "Galerie", "SpaceAmbient", "Allround")
 TAU = 3 * 3600.0
+
+
+def interest():
+    """interest per scene name from Tools/preset_fit.tsv."""
+    lines = io.open(os.path.join(ROOT, "Tools", "preset_fit.tsv"), encoding="utf-8").read().splitlines()
+    col = lines[0].split("\t").index("interest")
+    return {v[0]: int(v[col]) for v in (ln.split("\t") for ln in lines[1:] if ln.strip())}
 
 
 def load(preset, head):
@@ -57,7 +67,7 @@ def run(entries, share, hours, seed, old):
     cap = min(40, n // 3) if old else (min(len(regular) * 3 // 4, len(regular) - 2) if len(regular) > 2 else 0)
     lab_files = len(set(e[0] for e, l in zip(entries, is_lab) if l))
     recent = collections.deque()
-    t, last_seen, gaps, shown = 0.0, {}, [], collections.Counter()
+    t, last_seen, gaps, shown, screen = 0.0, {}, [], collections.Counter(), collections.Counter()
     m_lab = m_all = 0.0
     lab_time, act, last_lab, since_lab, longest_gap = 0.0, -1, "", 0.0, 0.0
     first_repeat = None
@@ -97,6 +107,7 @@ def run(entries, share, hours, seed, old):
                     first_repeat = t / 60.0
             last_seen[base] = t
             shown[base] += 1
+            screen[base] += dur
             recent.append(base)
             while len(recent) > cap:
                 recent.popleft()
@@ -109,27 +120,36 @@ def run(entries, share, hours, seed, old):
         t += dur
     gaps.sort()
     day = shown and statistics.mean(shown.values()) * 24.0 / hours
+    rating = interest()
+    band = lambda keep: [screen.get(s, 0.0) for s in regular if s[:-5] in rating and keep(rating[s[:-5]])]
+    hi, lo = band(lambda v: v >= 8), band(lambda v: v <= 5)
+    hilo = statistics.mean(hi) / statistics.mean(lo) if hi and lo and statistics.mean(lo) > 0 else 0.0
     return {"changes": sum(shown.values()) / hours, "distinct": len(regular), "cap": cap,
             "per_day": day, "median": statistics.median(gaps) if gaps else 0, "p10": gaps[len(gaps) // 10] if gaps else 0,
-            "first": first_repeat or 0, "labs": 100.0 * lab_time / t, "nolab": longest_gap / 60.0}
+            "first": first_repeat or 0, "labs": 100.0 * lab_time / t, "nolab": longest_gap / 60.0, "hilo": hilo}
 
 
 def main():
-    presets = sys.argv[1].split(",") if len(sys.argv) > 1 else GENRES
-    hours = float(sys.argv[2]) if len(sys.argv) > 2 else 72
-    seed = int(sys.argv[3]) if len(sys.argv) > 3 else 1
-    print("%-12s %-3s %5s %4s %5s %6s %7s %7s %7s %6s %6s" % ("preset", "", "scenes", "mem", "ch/h", "x/day",
-                                                               "median", "10%", "first", "labs", "nolab"))
+    args = [a for a in sys.argv[1:] if not a.startswith("--")]
+    old_scheduler = "--old-scheduler" in sys.argv
+    presets = args[0].split(",") if args else GENRES
+    hours = float(args[1]) if len(args) > 1 else 72
+    seed = int(args[2]) if len(args) > 2 else 1
+    print("%-12s %-4s %5s %4s %5s %6s %7s %7s %7s %6s %6s %5s" % ("preset", "", "scenes", "mem", "ch/h", "x/day",
+                                                                  "median", "10%", "first", "labs", "nolab", "hi/lo"))
+    runs = (("old", True, True), ("now", False, False)) if old_scheduler else (("HEAD", True, False),
+                                                                                ("now", False, False))
     for p in presets:
-        for old in (True, False):
-            entries, share = load(p, old)
+        for label, head, old in runs:
+            entries, share = load(p, head)
             r = run(entries, share, hours, seed, old)
-            print("%-12s %-3s %5d %4d %5.1f %6.2f %5.0f m %5.0f m %5.0f m %5.1f%% %4.0f m"
-                  % (p, "old" if old else "new", r["distinct"], r["cap"], r["changes"], r["per_day"], r["median"],
-                     r["p10"], r["first"], r["labs"], r["nolab"]))
+            print("%-12s %-4s %5d %4d %5.1f %6.2f %5.0f m %5.0f m %5.0f m %5.1f%% %4.0f m %5.2f"
+                  % (p, label, r["distinct"], r["cap"], r["changes"], r["per_day"], r["median"], r["p10"], r["first"],
+                     r["labs"], r["nolab"], r["hilo"]))
     print("\nscenes = hand-made shader files; mem = no-repeat memory; ch/h = hand-made scenes per hour; x/day = how "
           "often each comes per day;\nmedian / 10% = gap until a scene returns; first = first return of any scene; "
-          "labs = share of the time; nolab = longest stretch without a lab")
+          "labs = share of the time; nolab = longest stretch without a lab;\nhi/lo = screen time of a scene of "
+          "interest >= 8 against one of interest <= 5")
 
 
 if __name__ == "__main__":

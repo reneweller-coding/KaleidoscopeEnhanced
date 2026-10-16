@@ -493,6 +493,7 @@ void RenderPipeline::start( int width, int height )
                      qPrintable( fixed ) );
     }
     m_imageListIterator = m_imageList.begin();
+    initPhotoMemory();
 
     // Name the LAYER the directory came from, not just the path: with three
     // possible sources a bare path leaves the reader guessing which one won,
@@ -3573,6 +3574,7 @@ void RenderPipeline::loadNewTexture( GLuint &texID )
 
     // set up texture
     setupTexture( texID, m_nextImage );
+    savePhotoMemory();
     // KALEIDO_FRAME_LOG: photo swaps in the same log as the long frames and gaps (is a stall a swap?)
     static const bool FrameLog = qEnvironmentVariableIsSet( "KALEIDO_FRAME_LOG" );
     if ( FrameLog )
@@ -3677,17 +3679,14 @@ void RenderPipeline::createTexture()
         return;
     }
 
-    // m_imageListIterator++;
-    if ( m_imageListIterator == m_imageList.end() )
-        m_imageListIterator = m_imageList.begin();
-    setupTexture( m_actTex, prepareImage( loadImageOrFallback( *m_imageListIterator ) ) );
-    fprintf( stderr, "PHOTO %s\n", qPrintable( ( *m_imageListIterator ) ) );
-
-    ++m_imageListIterator;
-    if ( m_imageListIterator == m_imageList.end() )
-        m_imageListIterator = m_imageList.begin();
-    setupTexture( m_nextTex, prepareImage( loadImageOrFallback( *m_imageListIterator ) ) );
-    fprintf( stderr, "PHOTO %s\n", qPrintable( ( *m_imageListIterator ) ) );
+    // The start pair: two free photos (the photo memory), not directory neighbours -- those were one family.
+    for ( GLuint tex : { m_actTex, m_nextTex } )
+    {
+        const QString path = pickFreePhoto();
+        notePhoto( path );
+        setupTexture( tex, prepareImage( loadImageOrFallback( path ) ) );
+        fprintf( stderr, "PHOTO %s\n", qPrintable( path ) );
+    }
 
     /*m_imageListIterator++;
     if(m_imageListIterator == m_imageList.end() )
@@ -4028,6 +4027,77 @@ void RenderPipeline::addTransitionShader( EffectShader *shader )
 }
 
 
+/**  A photo's family: its file name up to the first '-' ("achat-rot-2.jpg" -> "achat"), in lower case.
+ *
+ * @param path  The photo's path. (in)
+ *
+ * @return
+ *   The family (the whole base name when it has no '-').
+ **/
+static QString photoFamily( const QString &path )
+{
+    return QFileInfo( path ).completeBaseName().section( QChar( '-' ), 0, 0 ).toLower();
+}
+
+void RenderPipeline::initPhotoMemory()
+{
+    QMutexLocker lock( &m_photoMutex );
+    const int    n = static_cast<int>( m_imageList.size() );
+    m_photoMemoryOn = n > 2 && !scriptedRun() && !qEnvironmentVariableIsSet( "KALEIDO_FIXED_PHOTO" );
+    m_photoMemory.setCapacity( m_photoMemoryOn ? static_cast<size_t>( std::min( n / 2, n - 2 ) ) : 0 );
+    m_lastPhoto.clear();
+    if ( !m_photoMemoryOn )
+        return;
+    QSettings                s( SettingsFile::path(), QSettings::IniFormat );
+    std::vector<std::string> names;
+    for ( const QString &name : s.value( "photoHistory/shown" ).toString().split( QChar( '|' ), Qt::SkipEmptyParts ) )
+        names.push_back( name.toStdString() );
+    m_photoMemory.assign( names );
+}
+
+bool RenderPipeline::photoFree( const QString &path )
+{
+    QMutexLocker lock( &m_photoMutex );
+    if ( !m_photoMemoryOn )
+        return true;
+    return !m_photoMemory.contains( QFileInfo( path ).fileName().toStdString() )
+           && ( m_lastPhoto.isEmpty() || photoFamily( path ) != photoFamily( m_lastPhoto ) );
+}
+
+void RenderPipeline::notePhoto( const QString &path )
+{
+    QMutexLocker lock( &m_photoMutex );
+    m_lastPhoto = path;
+    if ( !m_photoMemoryOn )
+        return;
+    m_photoMemory.push( QFileInfo( path ).fileName().toStdString() );
+    m_photoMemoryDirty = true;
+}
+
+QString RenderPipeline::pickFreePhoto()
+{
+    const int n = static_cast<int>( m_imageList.size() );
+    QString   path = m_imageList[qrand() % n];
+    for ( int tries = 0; tries < 50 && !photoFree( path ); ++tries )
+        path = m_imageList[qrand() % n];
+    return path;
+}
+
+void RenderPipeline::savePhotoMemory()
+{
+    QStringList names;
+    {
+        QMutexLocker lock( &m_photoMutex );
+        if ( !m_photoMemoryDirty )
+            return;
+        m_photoMemoryDirty = false;
+        for ( const std::string &name : m_photoMemory.names() )
+            names << QString::fromStdString( name );
+    }
+    QSettings s( SettingsFile::path(), QSettings::IniFormat );
+    s.setValue( "photoHistory/shown", names.join( QChar( '|' ) ) );
+}
+
 ImageLoader::ImageLoader( RenderPipeline *shader )
 {
     m_shader = shader;
@@ -4087,10 +4157,15 @@ void ImageLoader::run()
 
             int   best_idx = qrand() % n;
             float best_score = -1e9f;
-            for ( int k = 0; k < 5; ++k )
+            // Five free candidates (the photo memory); the last ten of sixty tries take any, so a small folder
+            // or a memory that blocks too much never stalls the loader.
+            for ( int tries = 0, k = 0; k < 5 && tries < 60; ++tries )
             {
-                int                 idx = qrand() % n;
-                const QString      &path = m_shader->m_imageList[idx];
+                int            idx = qrand() % n;
+                const QString &path = m_shader->m_imageList[idx];
+                if ( tries < 50 && !m_shader->photoFree( path ) )
+                    continue;
+                ++k;
                 QPair<float, float> st;
                 auto                found = m_stats.find( path );
                 if ( found != m_stats.end() )
@@ -4108,6 +4183,7 @@ void ImageLoader::run()
                 }
             }
             m_shader->m_imageListIterator = m_shader->m_imageList.begin() + best_idx;
+            m_shader->notePhoto( *m_shader->m_imageListIterator );
 
             m_shader->m_nextImage = prepareImage( loadImageOrFallback( *m_shader->m_imageListIterator ) );
             fprintf( stderr, "PHOTO %s\n", qPrintable( ( *m_shader->m_imageListIterator ) ) );

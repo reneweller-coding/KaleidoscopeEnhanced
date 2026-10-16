@@ -25,6 +25,7 @@
 #include <vector>
 #include <atomic>
 #include <QtCore/QHash>
+#include <QtCore/QMutex>
 #include <QtCore/QSet>
 #include <QtCore/QPair>
 #include <QtCore/QVariant>
@@ -931,6 +932,42 @@ private:
     QStringList m_imageList; ///< Flat list of all image file paths found under the configured image directory (see
                              ///< traverse()).
     QStringList::const_iterator m_imageListIterator; ///< Current position in m_imageList for the next photo to load.
+
+    // ---- The photo memory (16.10.2026) ----
+    // The loader drew five photos at random and took the best fit to the mood -- with no memory: about 48 photos an
+    // hour from 977 make a repeat in the first hour likely (68 %) and leave about 30 % unseen in a day.  The photos
+    // shown last (half the library) are now passed over, and never two of one family (the file name up to its first
+    // '-': "achat-rot-2.jpg" is an achat) in a row; the start pair were directory neighbours, i.e. one family.
+    RecentScenes m_photoMemory;              ///< Photo file names shown last, oldest first (#m_photoMutex).
+    QString      m_lastPhoto;                ///< The photo shown last; its family is not shown next (#m_photoMutex).
+    bool         m_photoMemoryOn = false;    ///< False with one photo, a fixed photo or a scripted run.
+    bool         m_photoMemoryDirty = false; ///< A photo was noted since the memory was last saved (#m_photoMutex).
+    QMutex       m_photoMutex;               ///< Guards the photo memory: the render and the loader thread use it.
+
+    /**  Sets up the photo memory for the image list just built: its capacity, and what the settings file holds.
+     **/
+    void initPhotoMemory();
+    /**  Whether a photo may come now: not among the photos shown last, not of the last one's family.
+     *
+     * @param path  The photo's path. (in)
+     *
+     * @return
+     *   True if it is free (always, without the memory).
+     **/
+    bool photoFree( const QString &path );
+    /**  Notes a photo that has been chosen to come on screen.
+     *
+     * @param path  The photo's path. (in)
+     **/
+    void notePhoto( const QString &path );
+    /**  A random photo that is free (photoFree()), or any after fifty tries.
+     *
+     * @return
+     *   A path from #m_imageList (which must not be empty).
+     **/
+    QString pickFreePhoto();
+    /** Writes the photo memory to the settings file if a photo was noted since (render thread). */
+    void savePhotoMemory();
 
     // Live mood snapshot for the ImageLoader's mood-matched image choice
     // (written once per frame in paint(), read on the loader thread).

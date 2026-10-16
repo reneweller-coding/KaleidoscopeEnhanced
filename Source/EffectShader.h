@@ -380,6 +380,17 @@ public:
     {
         m_probability = probability;
     };
+    /**  Sets the scene's show value (Tools/preset_fit.tsv's interest, which the generator writes into the preset).
+     *
+     * @param interest  0..10; 0 when the preset does not say. (in)
+     **/
+    void setInterest( int interest ) { m_interest = interest; }
+    /**  The scene's show value: how spectacular and filmic it is, 0..10 (0 when the preset does not say).
+     *
+     * @return
+     *   The interest from the preset entry.
+     **/
+    int interest() const { return m_interest; }
     /**  True with probability m_probability (Bernoulli draw); used to decide whether this effect activates.
      *
      * @return
@@ -989,7 +1000,8 @@ protected:
 
     unsigned int m_complexity; ///< Visual-complexity weight used by preset selection.
 
-    float m_probability; ///< Threshold used by useShader() to decide whether this effect activates.
+    float m_probability;  ///< Threshold used by useShader() to decide whether this effect activates.
+    int   m_interest = 0; ///< Show value from the preset entry (interest="..."), 0..10; 0 when not given.
 
     int m_usesSim = -1;      ///< Cached usesSim() result: -1 = not yet queried, 0/1 = the compiled program does (not)
                              ///< declare `texSim`.

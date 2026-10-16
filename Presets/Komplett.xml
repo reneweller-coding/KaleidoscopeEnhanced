@@ -12877,4 +12877,64 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
 
+  <TextureShader file="..\\Scene2D\\NoirBlindsLight.frag" type="normal" mood="dark,calm" probability="0.45" complexity="4">
+    <rig preset="flat"/>
+    <float name="slatsP" minValue="0" maxValue="1"></float>
+    <float name="smokeP" minValue="0" maxValue="1"></float>
+    <float name="silverP" minValue="0" maxValue="1"></float>
+    <float name="tiltP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene2D\\NoirSmokeBacklight.frag" type="normal" mood="dark,calm" probability="0.45" complexity="4">
+    <rig preset="flat"/>
+    <float name="densP" minValue="0" maxValue="1"></float>
+    <float name="shaftP" minValue="0" maxValue="1"></float>
+    <float name="photoP" minValue="0" maxValue="1"></float>
+    <float name="sizeP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene2D\\NoirKaleidoscope.frag" type="normal" mood="dark" probability="0.45" complexity="5">
+    <rig preset="flat"/>
+    <float name="sidesP" minValue="0" maxValue="1"></float>
+    <float name="reliefP" minValue="0" maxValue="1"></float>
+    <float name="beamP" minValue="0" maxValue="1"></float>
+    <float name="zoomP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene2D\\NoirTunnel.frag" type="normal" mood="dark" probability="0.45" complexity="5">
+    <rig preset="flat"/>
+    <float name="ringsP" minValue="0" maxValue="1"></float>
+    <float name="louvreP" minValue="0" maxValue="1"></float>
+    <float name="photoP" minValue="0" maxValue="1"></float>
+    <float name="lampP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene2D\\NoirSearchlights.frag" type="normal" mood="dark" probability="0.45" complexity="4">
+    <rig preset="flat"/>
+    <float name="beamsP" minValue="0" maxValue="1"></float>
+    <float name="hazeP" minValue="0" maxValue="1"></float>
+    <float name="photoP" minValue="0" maxValue="1"></float>
+    <float name="reachP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene2D\\NoirSilverFlow.frag" type="normal" mood="dark,calm" probability="0.45" complexity="5">
+    <rig preset="flat"/>
+    <float name="flowP" minValue="0" maxValue="1"></float>
+    <float name="shineP" minValue="0" maxValue="1"></float>
+    <float name="depthP" minValue="0" maxValue="1"></float>
+    <float name="scaleP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
 </configuration>
