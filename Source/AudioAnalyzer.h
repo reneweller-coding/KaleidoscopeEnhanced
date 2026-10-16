@@ -404,16 +404,25 @@ private:
     /** Section-change detector state (see AudioFeatures::sectionCount): fast/slow EMAs of the normalised 32-band
      * shape and total band energy.
      **/
-    float m_secFast[AudioFeatures::SpectrumBands] = {}; ///< Fast (~2.5 s) EMA of the normalised 32-band spectral
-                                                        ///< shape.
+    float m_secFast[AudioFeatures::SpectrumBands] = {};     ///< Fast (~2.5 s) EMA of the normalised 32-band spectral
+                                                            ///< shape.
     float m_secSlow[AudioFeatures::SpectrumBands] = {}; ///< Slow (~18 s) EMA of the normalised 32-band spectral shape.
-    float m_secFastLvl = 0.f;                           ///< Fast (~2.5 s) EMA of total band energy.
-    float m_secSlowLvl = 0.f;                           ///< Slow (~18 s) EMA of total band energy.
+    float m_secFastLvl = 0.f;                               ///< Fast (~2.5 s) EMA of total band energy.
+    float m_secSlowLvl = 0.f;                               ///< Slow (~18 s) EMA of total band energy.
     float m_secNovelty = 0.f; ///< Current novelty score (fast-vs-slow shape/level distance); see
                               ///< AudioFeatures::sectionNovelty.
-    int m_secWarm = 0;        ///< Blocks since start (EMAs must settle before triggers are allowed).
-    int m_secCooldown = 0;                              ///< Blocks until the next section trigger is allowed.
-    int m_sectionCount = 0; ///< Cumulative section-change count; see AudioFeatures::sectionCount.
+    int   m_secWarm = 0;      ///< Blocks since start (EMAs must settle before triggers are allowed).
+    int   m_secCooldown = 0;                                ///< Blocks until the next section trigger is allowed.
+    float m_secFreeFast[AudioFeatures::SpectrumBands] = {}; ///< Like m_secFast, but never re-anchored (drift
+                                                            ///< estimate).
+    float m_secFreeSlow[AudioFeatures::SpectrumBands] = {}; ///< Like m_secSlow, but never re-anchored.
+    float m_secFreeFastLvl = 0.f;                           ///< Like m_secFastLvl, never re-anchored.
+    float m_secFreeSlowLvl = 0.f;                           ///< Like m_secSlowLvl, never re-anchored.
+    float m_secDrift = 0.f;   ///< Running median of the never re-anchored novelty: how much the music drifts on its
+                              ///< own; the trigger threshold rises with it.
+    int   m_secReanchor = 0;  ///< Blocks until the second re-anchoring after a trigger (0: none pending).
+    float m_secThr = 0.2f;    ///< The current trigger threshold (see AudioFeatures::sectionThreshold).
+    int   m_sectionCount = 0; ///< Cumulative section-change count; see AudioFeatures::sectionCount.
 
     /** Song-structure memory: spectral fingerprints of the sections heard so far.
      *

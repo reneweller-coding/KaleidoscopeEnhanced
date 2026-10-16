@@ -4381,3 +4381,56 @@ after): Psychedelic alternated hand-made scene and lab with every lab file
 different from the one before and the walk on in every activation; the
 memory was written and came back on the next start ("9 stored"); in Ambient
 all 12 lab walk targets stayed inside the calm ranges.
+
+## 16.10.2026 (2): the music's hand on the picture, measured on drone and ambient
+
+The question (user): is the mapping of the audio features onto the motion of
+the shaders -- the chain labs above all -- reasonably complete, fitting, not
+intrusive, and does it suit Ambient and SpaceAmbient with drone and ambient
+music?
+
+### How it was measured
+
+`PresetEditor --features in.wav out.csv` (new) runs a WAV through the app's
+analyzer and its AudioConditioner at ~100x real time and writes the raw and
+the conditioned values every 50 ms; `Tools/audio_mapping_stats.py` turns that
+into rotation and flow rates, the labs' colour tempo, pulse shares, sections
+per minute and a model of the labs' walk.  Material: four ambient pieces
+rendered by the AdditivAmbientSynth project (Dream, Seashore, Halo,
+Premonition), a Berlin-school track (BerlinSchoolGenerator, Drift) and a
+psytrance track (PsytranceGenerator), plus the two bench files.  The app
+itself was run with the same files (`-w`, Ambient, SpaceAmbient, Psychedelic;
+the settings file saved before and restored after).
+
+### What was wrong, and what changed
+
+| Finding | Before | After |
+|---|---|---|
+| The section detector fired on the cooldown grid with ambient music: the textures drift, the 2.5-s/18-s novelty sits at the fixed 0.20, and every re-anchoring restarts its climb.  Dance music came in echo pairs (a change that builds over bars fired twice, 12 s apart). | sections per track: Dream 25, Halo 12, Premonition 15, Seashore 2, Drift 15, psytrance 18 | 2, 1, 3, 0, 7, 10 -- every real change of the psytrance track kept, the echoes gone |
+| A musical trigger (section, drop, harmonic change) was a forced change: the 0.8-s fade of a key press, without the calm presets' fade floor -- with the detector above, Ambient cut its scene every 12-15 s on ambient music. | 0.8 s fades | in a calm preset (timeSceneFadeMin) a musical trigger ends a scene only after 20 s and fades like a natural change (Premonition in Ambient: 21.5 s crossfade) |
+| The audio rotation was level-dominated, and the level is AGC-normalised: a drone turned at 60 % of a psytrance track. | audioPhase 0.23-0.27 rad/s (drone), 0.40 (psytrance) | 0.14-0.19, 0.38 (motion = 0.25 a + 0.75 level (0.55 + 0.45 a)) |
+| musicalMode was smoothed over 0.3 s, not the ~3 s its comment said (the chroma block runs every 10-ms block): 277 shaders tint by it, the chain labs turn their colour field by up to a third of the hue circle. | lab colour field p90 31-70 deg/s | 12-23 deg/s (median 7-10 in ambient) |
+| spectralSpread (0.2 s) scaled warps and whole maps in 268 shaders, five global maps of the 2D lab among them. | 1-s wobble 0.010-0.040 | 0.003-0.005 (1.5-s average in the conditioner; the analysis keeps the fast one) |
+| The kick detector compares against its own running average: on an ambient piece every swell of the bass was a kick, and 1050 shaders flash with audioKick. | kick > 0.3 for 13-34 % of the time (ambient) | 0 %; the drum onsets count 35 % without a steady rhythm, in full with one (psytrance 53 -> 51 %) |
+| The labs' walk never rested in calm music, and a drone piled a fifth of its targets on the first class ('none'). | ambient: a fade running 68-99 % of the time | 1.6-2.4 walks a minute, a fade 40-60 % of the time (rest 24 (1 - energy)^2 after each fade; targets reflected at the ends, wider spread in calm music); psytrance 9.7 a minute |
+
+What fits and stays: the labs' flow (audioAdvance), rotation (audioPhase),
+light (kick, swell), tint (mode, valence, the key's hue), the structure that
+the walk takes from sections, drops, phrases and returning sections, the
+calm-camera rules and the 3D gaze that pans on the wall clock only.  In
+Ambient with a drone the walk keeps to the calmer part of its range (targets
+0.05..0.29 of the class lists inside the variants' 0..0.6) -- calm music,
+calm classes; the novelty memory turns them over the days.
+
+### Not changed: the harmonic change is dead
+
+harmonicChange (HCDF) is the frame-to-frame step of the tonal centroid of an
+already smoothed chroma, and the frames became 10-ms blocks: it peaks at 0.055
+on the ambient pieces and 0.17 on the psytrance track, against thresholds of
+0.5 (scheduler cut) and 0.55 (lab walk of B or C).  Neither has ever fired on
+this material.  Measuring it over ~250 ms would revive it, but 17 scenes add
+audioHarmChange to a time or phase (`T = 0.05 sceneTime + 0.08
+audioHarmChange`): a working value would make them jump at every chord.  A
+round of its own: those offsets become rates, the thresholds are set from
+measurements, and the 3D flight's speed (audioAdvance takes 0.10 hcdf) is
+decoupled first.

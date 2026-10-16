@@ -395,18 +395,24 @@ Psychedelic …) kann ein Labor auch fest oder einstufig laufen.
 
 | Ereignis in der Musik | Reaktion |
 |---|---|
-| **neuer Songabschnitt** | Stufe A (das Gerüst) wechselt, Blende ca. 4 s. Mit 50 % wechselt auch der Look (6 s), im 3D-Labor mit 60 % Raum oder Kern (8–14 s). |
+| **neuer Songabschnitt** | Stufe A (das Gerüst) wechselt, Blende ca. 4 s. Mit 50 % wechselt auch der Look (6 s), im 3D-Labor mit 60 % Raum oder Kern (8–14 s). Seit 16.10. erkennt die Analyse Abschnitte auch in Ambient richtig: vorher meldete sie bei sich langsam wandelnden Flächen alle 12 s einen „Abschnitt“. |
 | **wiederkehrender Abschnitt** (z. B. 2. Refrain) | Alle Stufen laufen zurück zu der Kette, die dieser Abschnitt beim ersten Mal hatte. Das Bild „erinnert“ sich an den Refrain. |
 | **Drop** | Stufe A (das Gerüst), Stufe D (Verzerrung) und der Look wechseln schnell, in etwa einem Takt. |
 | **jede 8-Takt-Phrase** (bei stabilem Beat) | Abwechselnd eine **neue Variante** einer Transformation (dieselbe Klasse mit anderer Spiegelzahl, Armzahl, Gittergröße – die Transformation selbst verwandelt sich) und eine **neue Transformation** für die Stufe, die am längsten steht. Blende über zwei Takte. |
 | **Build-up** | Das Wandern wird schneller, die Ziele rücken ans energische Ende der Listen. |
-| **Harmoniewechsel** (Akkord/Tonart, Schwelle 0,55) | Stufe B (Symmetrie) oder C (zweite Abbildung) wechselt, in 4–8 s. Danach 12 s Pause, und nur, wenn gerade nichts überblendet. |
+| **Harmoniewechsel** (Akkord/Tonart, Schwelle 0,55) | Stufe B (Symmetrie) oder C (zweite Abbildung) wechselt, in 4–8 s. Danach 12 s Pause, und nur, wenn gerade nichts überblendet. **Derzeit wirkungslos:** der Harmoniewechsel-Wert der Analyse erreicht höchstens 0,17 (Messung 16.10., s. `docs/engine-internals.md`). |
 | **sonst** | Die Stufe, die am längsten steht, wechselt, wenn ihre Haltezeit um ist: 70 s bei ruhiger, 30 s bei energischer Musik. Look ×1,6, 3D-Struktur ×1,4 länger. Blende 5–10 s, Struktur 8–14 s. |
+| **Ruhe** (seit 16.10.) | Nach jeder Blende steht die Kette eine Weile still: `24 × (1 − Energie)²` Sekunden, bei einem Drone gut 20 s, bei voller Energie gut eine. Haltezeit, Harmoniewechsel und Phrasen warten darauf, Abschnitte und Drops nicht. Vorher lief bei ruhiger Musik fast immer eine Blende. |
 
 Dazu kommen drei Regeln:
 
-* **Wohin**: Das Ziel liegt bei `0,08 + 0,84 × Energie ± 0,25` auf der
-  Energie-Ordnung der Stufe. Energie = Erregung (Arousal), über 8 s geglättet.
+* **Wohin**: Das Ziel liegt bei `0,08 + 0,84 × Energie ± (0,25 + 0,15 × (1 − Energie))`
+  auf der Energie-Ordnung der Stufe, abgebildet in den Bereich, den der
+  Preset-Eintrag erlaubt. Energie = Erregung (Arousal), über 8 s geglättet. Ein
+  Ziel jenseits eines Endes wird zurückgespiegelt (seit 16.10.; vorher lag bei
+  einem Drone ein Fünftel aller Ziele auf der ersten Klasse, „keine“), und bei
+  ruhiger Musik streut es weiter, damit über Tage mehr als eine Handvoll Klassen
+  drankommt.
 * **Wie schnell**: Haltezeiten und Blenden laufen in **Musik-Tempo**
   `0,35 + 0,9 × Kurzzeit-Energie + 1,2 × Spektralfluss` (0,25 … 2,5). Leise
   Passagen lassen eine Blende kriechen, ein Ausbruch treibt sie an. Bei
@@ -458,10 +464,10 @@ Fernbedienung wirken weiterhin.
 | Signal | Wirkung |
 |---|---|
 | `audioAdvance` (aufsummiert) | der Fluss durch die Kette, im 3D-Labor die Fluggeschwindigkeit |
-| `audioPhase` (aufsummiert) | Kaleidoskope drehen sich, das Farbfeld wandert |
-| `audioSpread` | Stärke der verzerrenden Stufen (D, Linsen) |
-| `audioKick` | Kanten leuchten auf (nur Licht, keine Bewegung) |
-| `audioMode` | Tönung und Palette: Moll kühl, Dur warm |
+| `audioPhase` (aufsummiert) | Kaleidoskope drehen sich, das Farbfeld wandert; seit 16.10. mit der Erregung skaliert (ein Drone dreht etwa 40 % langsamer als vorher, ein Tanzstück ~5 %) |
+| `audioSpread` | Stärke der verzerrenden Stufen (D, Linsen) und Maßstab von fünf globalen Abbildungen; seit 16.10. über 1,5 s geglättet (vorher 0,2 s: der Maßstab zitterte mit jedem Akkord) |
+| `audioKick` | Kanten leuchten auf (nur Licht, keine Bewegung); seit 16.10. ohne stabilen Rhythmus nur zu 35 % (der Kick-Detektor meldete bei Ambient jede Bass-Schwellung) |
+| `audioMode` | Tönung und Palette: Moll kühl, Dur warm; seit 16.10. wirklich über ~3 s geglättet (vorher 0,3 s: das Farbfeld drehte zeitweise mit 25–67°/s) |
 | `audioSwell` (langsam) | Relieflicht und Sättigung, im 3D die Weite der Flugröhre |
 
 Kamera, Zoom und Drehung folgen **nie** direkt der Musik (keine Erschütterungen).

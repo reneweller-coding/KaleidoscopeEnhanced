@@ -302,10 +302,14 @@ private:
     float m_snareEnv = 0.f, m_snareSmooth = 0.f; ///< Slew-limited (7/s) snare onset; published as onsetSnare * gate.
     /** Peak-hold envelope of audio.onsetHat (0..1, exponential release, tau 0.14 s -- hats snap). */
     float m_hatEnv = 0.f, m_hatSmooth = 0.f; ///< Slew-limited (8/s) hat onset; published as onsetHat * gate.
+    float m_drumGate = 1.f; ///< Share of the drum onsets (kick, snare, hat) published: 0.35 without a steady rhythm,
+                            ///< 1 with one (slewed 1/s).
     float m_audioLevelSmooth = 0.f; ///< Slew-limited (3/s) copy of audio.overallLevel (0..1); published as overallLevel
                                     ///< * gate.
     float m_audioFluxSmooth = 0.f;  ///< Slew-limited (3/s) copy of audio.spectralFlux (0..1); published as spectralFlux
                                     ///< * gate.
+    float m_spreadSmooth = -1.f; ///< ~1.5 s average of audio.spectralSpread, published as spectralSpread (-1: not yet
+                                 ///< seeded).
 
     // ---- colour-chase ----
     float m_chasePhase = 0.f;     ///< 0..1, advances 1/4 each onset -> corner-cone colour chase.

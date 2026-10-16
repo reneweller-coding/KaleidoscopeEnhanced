@@ -372,7 +372,9 @@ struct AudioFeatures
      * analyzer (at least ~12 s between triggers).
      **/
     int   sectionCount = 0;
-    float sectionNovelty = 0.f; ///< The continuous novelty score behind #sectionCount (~0 steady .. ~1 big change).
+    float sectionNovelty = 0.f;    ///< The continuous novelty score behind #sectionCount (~0 steady .. ~1 big change).
+    float sectionThreshold = 0.2f; ///< The novelty a section change must exceed now: 0.2, more for music that drifts
+                                   ///< on its own (ambient textures).
     /** Song-structure memory: id of the CURRENT section.
      *
      * Index into the analyzer's fingerprint store, assigned at each section

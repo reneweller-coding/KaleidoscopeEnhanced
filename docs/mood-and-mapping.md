@@ -144,9 +144,9 @@ teilt eine gemeinsame, kulturübergreifende Dynamikstruktur [Sievers et al.
 | Valenz ↑ → wärmer, heller | Farbtemperatur des globalen Grades (Timbre 35 % Mitsprache), ±8 % Helligkeit | `Engine/Present.frag` |
 | Valenz ↓ → bläulich, entsättigt | Kaltseite derselben Rampe | `Engine/Present.frag` |
 | Arousal ↑ → Sättigung | Sättigungsterm des Grades | `Engine/Present.frag` |
-| Arousal ↑ → Bewegungstempo, Ereignisrate | `timingScale`, Busyness-Ziel 1–10 der Szenenwahl | `AudioAnalyzer`, `SceneScheduler` |
+| Arousal ↑ → Bewegungstempo, Ereignisrate | `timingScale`, Busyness-Ziel 1–10 der Szenenwahl; seit 16.10. auch die Drehrate `audioPhase` (der AGC-normierte Pegel zählt mit `0,55 + 0,45 × Arousal`: ein Drone dreht ~40 % langsamer, ein Tanzstück ~5 %) und die Ruhe der Kettenlabore zwischen zwei Wechseln | `AudioAnalyzer`, `AudioConditioner`, `SceneScheduler`, `EffectShader` |
 | Dissonanz → Kantenschärfe | Roughness-Zuschlag auf den CAS-Sharpen (nur additiv) | `PresentPass` |
-| Beats/Onsets → diskrete Ereignisse | Bloom-Akzente, Puls-Uniforms, Lightshow | `Present.frag`, Shader |
+| Beats/Onsets → diskrete Ereignisse | Bloom-Akzente, Puls-Uniforms, Lightshow; die Schlagzeug-Onsets (`audioKick`/`Snare`/`Hat`) ohne stabilen Rhythmus seit 16.10. nur zu 35 % (der Kick-Detektor meldete bei Ambient jede Bass-Schwellung) | `Present.frag`, `AudioConditioner`, Shader |
 | Mood-Kategorie → Szenenwahl | Tag-Bonus/Malus in `moodAccept` (probabilistisch, nie hart) | `SceneScheduler` |
 
 Zwei bewusste Abweichungen, beide dokumentiert: der Helligkeitsterm wird von
@@ -248,6 +248,7 @@ so aus `applyScoreCues()` heraus, wie er hineinging.
 | `KALEIDO_SPEECH_DEBUG=1` | dasselbe für den Sprach-/Musik-Gate |
 | `KALEIDO_OFFLINE_FAST=1` | Offline-Analyse (-w) ohne Echtzeit-Taktung, Ende = Programmende |
 | `KALEIDO_CUE_DECODE=<datei>` | `-q` dekodiert nur diese Datagramm-Aufzeichnung und druckt je Nachricht eine Zeile — so laufen die Bytes, die der Generator wirklich gesendet hat, durch DIESEN Decoder |
+| `PresetEditor --features in.wav out.csv` | analysiert eine WAV in voller Geschwindigkeit (~100× Echtzeit) mit dem Analyzer UND der Aufbereitung der App (`AudioConditioner`) und schreibt alle 50 ms Roh- und Shader-Werte; `Tools/audio_mapping_stats.py` macht daraus Drehraten, Farbtempo, Puls-Anteile, Abschnitte pro Minute und ein Modell des Labor-Walks |
 
 Regel aus drei Reparaturen dieser Kette: **Zutaten loggen, nicht Urteile.**
 Ein zusammengesetzter Score kann plausibel aussehen, während die Hälfte seiner

@@ -2080,20 +2080,80 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
             if ( m_secCooldown > 0 )
                 --m_secCooldown;
 
+            // The music's own drift.  Ambient textures move all the time: their
+            // novelty sat at the fixed threshold and fired a "section" on every
+            // expiry of the cooldown -- every 12.0 s on three ambient pieces
+            // (16.10.2026), each one a scene cut and a walk of the chain labs.
+            // The novelty above cannot measure that drift itself: every trigger
+            // re-anchors it to zero, and in drifting music it climbs back over
+            // any fixed share of its own average.  So a second pair of the same
+            // averages runs free (never re-anchored), and a running lower
+            // quartile of its novelty -- untouched by the peaks of real changes
+            // -- says how far the music wanders on its own.  The threshold rises
+            // with it: drifting music needs a clear jump, music that holds still
+            // inside a section (most dance music) keeps the 0.20.
+            float free_nov = 0.f;
+            {
+                float dot_ff = 0.f, n_ff = 1e-9f, n_fs = 1e-9f;
+                for ( int b = 0; b < NB; ++b )
+                {
+                    const float sh = raw[b] / sum;
+                    m_secFreeFast[b] += a_f * ( sh - m_secFreeFast[b] );
+                    m_secFreeSlow[b] += a_s * ( sh - m_secFreeSlow[b] );
+                    dot_ff += m_secFreeFast[b] * m_secFreeSlow[b];
+                    n_ff += m_secFreeFast[b] * m_secFreeFast[b];
+                    n_fs += m_secFreeSlow[b] * m_secFreeSlow[b];
+                }
+                m_secFreeFastLvl += a_f * ( sum - m_secFreeFastLvl );
+                m_secFreeSlowLvl += a_s * ( sum - m_secFreeSlowLvl );
+                free_nov = ( 1.f - dot_ff / std::sqrt( n_ff * n_fs ) ) * 3.0f
+                           + std::fabs( std::log( ( m_secFreeFastLvl + 1e-5f ) / ( m_secFreeSlowLvl + 1e-5f ) ) )
+                                 * 0.5f;
+            }
+            // Its lower quartile, tracked step by step (up a quarter, down three
+            // quarters of the step): in dance music a section change keeps the
+            // free novelty up for ~20 s of every ~40, which pulled a median up
+            // with it; the quartile stays on the music's floor.
+            {
+                const float step = m_secWarm < 3000 ? 0.0012f : 0.0004f; // ~10 s, then ~30 s to move 0.1
+                m_secDrift += free_nov > m_secDrift ? 0.25f * step : -0.75f * step;
+                if ( m_secDrift < 0.f )
+                    m_secDrift = 0.f;
+            }
+            m_secThr = std::max( 0.20f, 2.6f * m_secDrift );
+            const float sec_thr = m_secThr;
+
+            // After a trigger the long-term average follows the short one for
+            // the whole cooldown (12 s): a change that builds over several bars
+            // (a filter sweep into the drop) is one section, not two.
+            if ( m_secReanchor > 0 )
+            {
+                --m_secReanchor;
+                for ( int b = 0; b < NB; ++b )
+                    m_secSlow[b] = m_secFast[b];
+                m_secSlowLvl = m_secFastLvl;
+            }
+
             // Trigger: enough history for the averages to mean something
             // (>= 8 s), music actually playing, not silence, novelty clearly
-            // above the steady-state floor.  The cooldown keeps sections
+            // above the music's own floor.  The cooldown keeps sections
             // >= ~12 s apart (no verse is shorter).
             if ( m_secWarm > 800 && m_secCooldown == 0 && m_sMusicPresence > 0.5f && sum > 1e-3f
-                 && m_secNovelty > 0.20f )
+                 && m_secNovelty > sec_thr )
             {
                 ++m_sectionCount;
                 m_secCooldown = 1200;
                 // Re-anchor the long-term average fully onto the new section
-                // so the novelty tail dies out (no echo triggers).
+                // so the novelty tail dies out (no echo triggers) -- and keep
+                // doing so for the cooldown (above): at the trigger the 2.5 s
+                // average is only part of the way into the new section, and
+                // finishing that move re-raised the novelty, so a real change
+                // used to come as two triggers exactly one cooldown apart (8 of
+                // the 18 sections of a psytrance track).
                 for ( int b = 0; b < NB; ++b )
                     m_secSlow[b] = m_secFast[b];
                 m_secSlowLvl = m_secFastLvl;
+                m_secReanchor = 1200;
 
                 // ---- Song-structure memory: recognise returning sections ----
                 // Match the ~1 s fingerprint against every stored section
@@ -2152,10 +2212,10 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
                     }
                     m_secPrintUse[m_secCurId] = m_sectionCount; // LRU stamp
                     fprintf( stderr, "SECTION change #%d -> id %d (%s, sim %.3f, "
-                                     "novelty %.3f, t=%.1fs)\n",
+                                     "novelty %.3f over %.3f, t=%.1fs)\n",
                              m_sectionCount, m_secCurId,
                              ( best >= 0 && best_sim > 0.988f ) ? "known" : "new",
-                             best_sim, m_secNovelty, static_cast<float>( m_secWarm ) * 0.01f );
+                             best_sim, m_secNovelty, sec_thr, static_cast<float>( m_secWarm ) * 0.01f );
                 }
             }
         }
@@ -2358,7 +2418,11 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
         const float cm3 = m_smoothedChroma[( best_t + 3 ) % 12];
         float       raw_mode = 0.5f + 0.5f * ( c_m3 - cm3 ) / ( c_m3 + cm3 + 1e-9f );
         // Very slow smoothing (~3 s) so mode reflects atmosphere, not noise.
-        m_sMode = 0.97f * m_sMode + 0.03f * raw_mode;
+        // (This block runs every 10 ms analysis block: the 0.03 it once had made
+        // ~0.3 s, and the 277 shaders that tint by mode -- the chain labs turn
+        // their colour field by up to a third of the hue circle -- wobbled with
+        // a near-chance estimate several times a second.)
+        m_sMode = 0.9967f * m_sMode + 0.0033f * raw_mode;
 
         // Key clarity: with proper Pearson correlations the best match IS the
         // measure -- +1 means the chroma matches a key profile exactly, ~0
@@ -2986,6 +3050,7 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
     m_features.timingScale = timing_scale;
     m_features.sectionCount = m_sectionCount;
     m_features.sectionNovelty = m_secNovelty;
+    m_features.sectionThreshold = m_secThr;
     m_features.sectionId = m_secCurId;
     m_features.sectionKnown = m_secKnown;
     m_features.onsetKick = m_onsetEnvGrp[0];

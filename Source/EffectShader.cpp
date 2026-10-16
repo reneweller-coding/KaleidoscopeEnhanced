@@ -1511,6 +1511,7 @@ void EffectShader::resetChainWalk()
         m_walk.hold[s] = 9.f * static_cast<float>( s ); // staggered: the stages come due one after another
     }
     m_walk.lastSection = m_walk.lastDrop = -1;
+    m_walk.rest = 0.f;
     m_walk.lastPhrase = -1.f;
     m_walk.phraseN = 0;
     m_walk.energy = 0.5f;
@@ -1662,10 +1663,18 @@ void EffectShader::stepChainWalk( const AudioFeatures &audio )
     }
     std::uniform_real_distribution<float> uni( 0.f, 1.f );
     // A target on the calm..energetic scale of the classes, with some spread.
-    // (a build-up pulls the targets toward the energetic end)
+    // (a build-up pulls the targets toward the energetic end)  The spread is
+    // wider in calm music, which otherwise kept to a handful of classes for
+    // hours, and a target past either end is reflected back: clamped, a drone
+    // put a fifth of all its targets on the first class ('none').
     const float Eb = E + 0.3f * f.buildUp < 1.f ? E + 0.3f * f.buildUp : 1.f;
+    const float spread = 0.25f + 0.15f * ( 1.f - Eb );
     auto        pick = [&]()
-    { return 0.08f + 0.84f * Eb + ( uni( m_walk.rng ) - 0.5f ) * 0.5f; };
+    {
+        float v = 0.08f + 0.84f * Eb + ( uni( m_walk.rng ) - 0.5f ) * 2.f * spread;
+        v = v < 0.f ? -v : ( v > 1.f ? 2.f - v : v );
+        return v < 0.f ? 0.f : ( v > 1.f ? 1.f : v );
+    };
     // Taste and novelty: of three such targets for stage s -- mapped into the
     // range the preset entry allows for it (walkTarget) -- one with odds after
     // its class's learnt taste (classTaste) times its novelty (classNoveltyAt:
@@ -1768,9 +1777,14 @@ void EffectShader::stepChainWalk( const AudioFeatures &audio )
         startWalk( 3, pick_for( 3 ), 1.5f );
         startWalk( 4, pick_for( 4 ), 1.5f );
     }
+    // The rest after a walk (set where the last fade ends, below): in calm
+    // music the chain stands for a while before the next change -- a drone
+    // kept a fade running nearly all the time.  Sections and drops do not wait.
+    m_walk.rest -= dt;
+    const bool resting = m_walk.rest > 0.f;
     // 3. A harmonic change: the symmetry or the second map.
     m_walk.harmCool -= dt;
-    if ( !any_fading() && m_walk.harmCool <= 0.f && f.harmonicChange > 0.55f )
+    if ( !any_fading() && !resting && m_walk.harmCool <= 0.f && f.harmonicChange > 0.55f )
     {
         const int s = 1 + static_cast<int>( m_walk.rng() % 2u );
         startWalk( s, pick_for( s ), lerp( 8.f, 4.f, E ) );
@@ -1824,12 +1838,12 @@ void EffectShader::stepChainWalk( const AudioFeatures &audio )
         fd[struct_due] = true;
         geomProgram( m_walk.x0, x1, fd ); // queued on the helper; loaded, not yet drawn
     }
-    if ( phrase_turn && !any_fading() && struct_due >= 0 )
+    if ( phrase_turn && !any_fading() && !resting && struct_due >= 0 )
     {
         startWalk( struct_due, m_walk.next[struct_due], lerp( 14.f, 8.f, E ) );
         m_walk.hasNext[struct_due] = false;
     }
-    else if ( phrase_turn && !any_fading() )
+    else if ( phrase_turn && !any_fading() && !resting )
     {
         ++m_walk.phraseN;
         if ( m_walk.phraseN % 2 == 1 )
@@ -1871,7 +1885,7 @@ void EffectShader::stepChainWalk( const AudioFeatures &audio )
     for ( int s = 0; s < WalkN; ++s )
         if ( !m_walk.fading[s] )
             m_walk.hold[s] += dt * m_walk.rate;
-    if ( !any_fading() )
+    if ( !any_fading() && !resting )
     {
         int   best = -1;
         float best_r = 1.f;
@@ -2006,6 +2020,8 @@ void EffectShader::stepChainWalk( const AudioFeatures &audio )
                 m_walk.fading[s] = false;
                 m_walk.hold[s] = 0.f;
                 m_walk.endHold = 0.f;
+                // the rest before the next walk: ~22 s in a drone, a second at full energy
+                m_walk.rest = 24.f * ( 1.f - E ) * ( 1.f - E );
             }
         }
     upload:

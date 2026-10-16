@@ -482,8 +482,11 @@ bool SceneScheduler::moodAccept( EffectShader *s ) const
  *    NEXT time that shader is faded into, via m_pendingSectionRestore.
  *  - Pending changes are held until the next downbeat (beat quantisation),
  *    but escape via a 2.5 s timeout or a low music-presence gate; a forced
- *    (manual/drop) change instead fires as soon as a short 0.6 s minimum
- *    solo time has elapsed, so cuts never come back-to-back.
+ *    change fires as soon as a short minimum solo time has elapsed (0.6 s
+ *    for a person's cut, 2 s for a musical trigger), so cuts never come
+ *    back-to-back.  In a calm preset (setSceneFadeMin) a musical trigger is
+ *    no forced change: it waits for 20 s of solo and then fades like a
+ *    natural change.
  *  - The cross-fade duration is normally the shorter of the two shaders'
  *    configured interpolation times, optionally clamped to ~4 beats when
  *    rhythm confidence is high, then shortened further for staccato
@@ -716,14 +719,22 @@ void SceneScheduler::tick( const Tick &t )
         // pressing 'n' gets 0.6 s; a musical trigger (section/novelty/drop)
         // landing right after a fade completed must let the new scene stand
         // for a real shot first -- 0.6 s read as "flashes in, gets replaced".
-        bool  forced = m_forceEffectChange;
-        float min_solo = m_forceIsManual ? 0.6f : 2.0f;
+        // In a calm preset (timeSceneFadeMin) a musical trigger may end a scene
+        // only after a real stay (20 s), and then as a natural change: on the
+        // beat, with the preset's calm fade.  As a forced change it took the
+        // 0.8 s cut of a key press and skipped the fade floor -- with the
+        // section detector firing every 12 s on ambient music (16.10.2026),
+        // Ambient cut its scenes every quarter of a minute.  A person's cut
+        // stays a cut.
+        bool       forced = m_forceEffectChange;
+        const bool calm_trigger = forced && !m_forceIsManual && m_sceneFadeMin > 0.f;
+        float      min_solo = m_forceIsManual ? 0.6f : ( m_sceneFadeMin > 0.f ? 20.f : 2.0f );
         if ( ts > m_texFadeDur || ( forced && ts > min_solo ) )
         {
             m_forceEffectChange = false;
             m_forceIsManual = false;
             m_pendingEffectChange = true;
-            m_pendingEffectForced = m_pendingEffectForced || forced;
+            m_pendingEffectForced = m_pendingEffectForced || ( forced && !calm_trigger );
         }
 
         // Beat-quantised: a due change is held PENDING until the next downbeat

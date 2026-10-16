@@ -116,8 +116,9 @@ public:
      *
      * @param secs  Floor in seconds; values <= 0 disable it. (in)
      *
-     * A preset that sets it (Ambient, SpaceAmbient) also never hard-cuts on a detected drop: the whole point of such a
-     * preset is that nothing snaps.
+     * A preset that sets it (Ambient, SpaceAmbient) also never hard-cuts on a detected drop, and a musical trigger
+     * (a section, a drop) ends a scene there only after 20 s on screen, as a natural change with the calm fade: the
+     * whole point of such a preset is that nothing snaps.
      **/
     void setSceneFadeMin( float secs ) { m_sceneFadeMin = secs > 0.f ? secs : 0.f; }
     /**  True while stepping the alphabetical Test*-preset review order.

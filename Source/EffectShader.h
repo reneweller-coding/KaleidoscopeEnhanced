@@ -1042,6 +1042,8 @@ protected:
         float fluxS = 0.f;       ///< Spectral flux smoothed over ~0.5 s: bursts hurry a fade.
         float rate = 1.f;        ///< Current music speed of the walk (fades and holds), 0.25 .. 2.5.
         float harmCool = 0.f;                                   ///< Cooldown for harmonic-change walks, seconds.
+        float rest = 0.f; ///< Seconds the chain still stands after its last fade (24 (1 - energy)^2: long in calm
+                          ///< music); hold, harmonic and phrase walks wait for it, sections and drops do not.
         float lastPhrase = -1.f; ///< AudioFeatures::phrasePos of the previous frame (-1 = not yet): its wrap is an
                                  ///< 8-bar boundary.
         int   phraseN = 0;       ///< Phrase boundaries seen: odd ones bring a new variant, even ones a new transform.

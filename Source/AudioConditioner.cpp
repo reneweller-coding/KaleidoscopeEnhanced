@@ -225,8 +225,12 @@ AudioFeatures AudioConditioner::update( const AudioFeatures &audio, float rawDt,
     // "motion" weights INSTANTANEOUS loudness over the slow arousal mood, so the
     // speed visibly rises and falls WITH the music rather than holding a constant
     // fast spin.  (Earlier this was arousal-dominated → a steady ~0.8 rad/s spin
-    // that looked fast but unreactive.)
-    float motion = 0.25f * audio.arousal + 0.75f * audio.overallLevel;
+    // that looked fast but unreactive.)  The loudness term is scaled by the
+    // arousal, though: the level is AGC-normalised, so a drone read as loud as
+    // a dance track and spun the picture at 60 % of its speed (0.24 against
+    // 0.40 rad/s, 16.10.2026).  Within a track the level still drives it; a
+    // calm track as a whole turns about 40 % slower, an energetic one ~5 %.
+    float motion = 0.25f * audio.arousal + 0.75f * audio.overallLevel * ( 0.55f + 0.45f * audio.arousal );
 
     // A gentle in-tempo "breathing" from the continuous (PLL) beat phase.
     float beat_breath = 0.5f - 0.5f * cosf( m_beatPhasePLL * 6.2831853f );
@@ -298,6 +302,14 @@ AudioFeatures AudioConditioner::update( const AudioFeatures &audio, float rawDt,
     m_hatSmooth = slewToward( m_hatSmooth, m_hatEnv, 8.0f, dt );
     m_audioLevelSmooth = slewToward( m_audioLevelSmooth, audio.overallLevel, 3.0f, dt );
     m_audioFluxSmooth = slewToward( m_audioFluxSmooth, audio.spectralFlux, 3.0f, dt );
+    // Spectral spread, the timbre's width: 268 shaders scale a warp or a whole
+    // map with it (the 2D chain lab five of its global maps), so it may only
+    // breathe -- the analyzer's own average is ~0.2 s, and the picture's scale
+    // wobbled with every chord.  ~1.5 s here; the analysis keeps the fast one.
+    if ( m_spreadSmooth < 0.f )
+        m_spreadSmooth = audio.spectralSpread;
+    m_spreadSmooth += ( audio.spectralSpread - m_spreadSmooth ) * ( 1.f - expf( -dt / 1.5f ) );
+    audio_fx.spectralSpread = m_spreadSmooth;
 
     // Colour-chase phase: advance a quarter-turn on each fresh onset (music-
     // gated), so the corner cones light up in sequence (a chase / Lauflicht).
@@ -311,9 +323,19 @@ AudioFeatures AudioConditioner::update( const AudioFeatures &audio, float rawDt,
     audio_fx.beatDecay = m_audioBeatSmooth * gate;
     audio_fx.onsetStrength = m_onsetSmooth * gate;
     audio_fx.downbeat = m_downbeatSmooth * gate;
-    audio_fx.onsetKick = m_kickSmooth * gate;
-    audio_fx.onsetSnare = m_snareSmooth * gate;
-    audio_fx.onsetHat = m_hatSmooth * gate;
+    // A drum hit is part of a beat.  Without a steady rhythm the instrument
+    // onsets still fire -- the kick detector compares against its own running
+    // average, so on an ambient piece every swell of the bass is a "kick", 13
+    // to 34 % of the time (16.10.2026) -- and 1050 shaders flash their light
+    // with audioKick.  There they count at 35 %; with a rhythm, in full.
+    {
+        float r = ( audio.rhythmStrength - 0.15f ) / 0.30f;
+        r = r < 0.f ? 0.f : ( r > 1.f ? 1.f : r );
+        m_drumGate = slewToward( m_drumGate, 0.35f + 0.65f * r * r * ( 3.f - 2.f * r ), 1.0f, dt );
+    }
+    audio_fx.onsetKick = m_kickSmooth * gate * m_drumGate;
+    audio_fx.onsetSnare = m_snareSmooth * gate * m_drumGate;
+    audio_fx.onsetHat = m_hatSmooth * gate * m_drumGate;
     audio_fx.beatPhase = phase_lead; // continuous (PLL + latency lead)
     audio_fx.swell = swell * gate;
     // Bar phase with the same lead, kept continuous across the beat wrap
