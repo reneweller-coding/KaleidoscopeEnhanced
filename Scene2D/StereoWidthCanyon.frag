@@ -36,8 +36,8 @@ uniform float sceneTime;      ///< Seconds since this scene was activated.
 uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
                               ///< backwards).
 uniform float audioStereo;    ///< Stereo width of the music, 0..1.
-uniform float audioStereoL;   ///< Energy of the left channel, 0..1.
-uniform float audioStereoR;   ///< Energy of the right channel, 0..1.
+uniform vec3  audioStereoL;   ///< Energy of the left channel per band (low, mid, high), 0..1.
+uniform vec3  audioStereoR;   ///< Energy of the right channel per band (low, mid, high), 0..1.
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 uniform float audioLevel;     ///< Overall loudness, 0..1.
@@ -135,7 +135,8 @@ void main()
     float lean = 0.15 * clamp( audioStereo, -1.0, 1.0 );
     float depth = 0.6 + 0.6 * clamp( depthP, 0.0, 1.0 );
     float sun = 0.6 + 0.7 * clamp( audioSwell, 0.0, 1.0 );
-    float l_l = clamp( audioStereoL * 1.5, 0.0, 1.0 ), l_r = clamp( audioStereoR * 1.5, 0.0, 1.0 );
+    float l_l = clamp( dot( audioStereoL, vec3( 1.0 / 3.0 ) ) * 1.5, 0.0, 1.0 ),
+          l_r = clamp( dot( audioStereoR, vec3( 1.0 / 3.0 ) ) * 1.5, 0.0, 1.0 );
 
     // The canyon: looking up-and-forward; the walls are two surfaces
     // whose gap narrows with height (perspective) and with the width; the

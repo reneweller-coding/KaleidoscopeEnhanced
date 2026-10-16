@@ -34,8 +34,8 @@ uniform float sceneTime;      ///< Seconds since this scene was activated.
 uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
                               ///< backwards).
 uniform float audioStereo;    ///< Stereo width of the music, 0..1.
-uniform float audioStereoL;   ///< Energy of the left channel, 0..1.
-uniform float audioStereoR;   ///< Energy of the right channel, 0..1.
+uniform vec3  audioStereoL;   ///< Energy of the left channel per band (low, mid, high), 0..1.
+uniform vec3  audioStereoR;   ///< Energy of the right channel per band (low, mid, high), 0..1.
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 uniform float audioLevel;     ///< Overall loudness, 0..1.
@@ -165,8 +165,8 @@ void main()
     float bal = clamp( audioStereo, -1.0, 1.0 );
     float sweep = sin( sceneAdvance * 0.25 + sceneTime * 0.05 );
     float dir = clamp( 0.55 * bal + 0.35 * sweep, -1.0, 1.0 ); // -1 left .. 1 right
-    float l_l = clamp( audioStereoL * 1.5, 0.0, 1.0 );
-    float l_r = clamp( audioStereoR * 1.5, 0.0, 1.0 );
+    float l_l = clamp( dot( audioStereoL, vec3( 1.0 / 3.0 ) ) * 1.5, 0.0, 1.0 );
+    float l_r = clamp( dot( audioStereoR, vec3( 1.0 / 3.0 ) ) * 1.5, 0.0, 1.0 );
     float cloud_lit = 0.3 + 0.9 * clamp( audioSwell, 0.0, 1.0 );
 
     // Night sky with low cloud, the photo faint as the cloud texture.

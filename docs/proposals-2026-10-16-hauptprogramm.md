@@ -34,6 +34,9 @@ Nicht oder nur teilweise:
 - Nur synthetisch geprüft: die neuen Regie-Regeln aus Runde 9 (Abschnitt im Drop-Anlauf, Abschnitt direkt nach einem
   Wechsel, Spektakel-Reserve bei Aufbauten ohne Drop) -- am Strukturtrack, am Screening-Groove und im Selbsttest.
 - Nicht live geprüft: der Installer auf einem echten Nutzerkonto und die Bildschirmwahl nach Namen.
+- **Szenenkosten als GPU-Zeit** sind gemessen (Screening vom 17.10., alle 1215 Szenen), aber nicht in `complexity`
+  übernommen: Das Attribut ist zugleich die „Unruhe“, die die Stimmungswahl gegen die Erregung abwägt. Eine ruhige,
+  aber teure Szene würde als unruhig gelten. Dafür braucht es zwei Attribute -- eine eigene Entscheidung.
 
 Der Szenenplan im echten Code hat beim ersten Lauf vier Fehler des Schedulers gezeigt (Runde 9), die Abschlussarbeiten
 drei Fehler in Werkzeugen: das Paket nahm Arbeits-Presets mit, das Screening brach jede Aufnahme nach 240 s ab,

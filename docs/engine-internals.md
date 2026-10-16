@@ -5180,3 +5180,66 @@ plan of a long run computed by the scheduler itself instead of a Python model of
 `Kaleidoscope.exe -q`: 121 checks (the run-up, the answered section and the resting reserve, each seen failing
 with its rule switched off). Linux (WSL, Qt 6.2.4): built, 121 of 121; `--schedule` runs there too (its rolls are
 glibc's).
+
+## 17.10.2026 (14): the end of the list, and batch runs that stopped waiting
+
+The closing work of the idea list -- the package, the catalogue, the snapshot baseline, the screening -- and what
+measuring the batch tools before running them showed: most of their hours were waiting.
+
+- **Package and installer.** `deploy.ps1` and ISCC 7: 2110 entries, ZIP 35.5 MB, setup 23.5 MB; the smoke test from
+  the unpacked ZIP (Club, private settings): no FATAL, no error line. A package built during a screening carried its
+  thirteen chunk presets (`ZZScreen01.xml` ...): only the presets git tracks are packaged now (without git: the tools'
+  name patterns). The hidden, gitignored TestMesh bench (`ZZMesh.xml`) is no longer packaged either.
+- **The catalogue as an export.** `render_catalog_images.ps1` starts the app once per scene and waits 28 s of real
+  time: measured 35.4 s a scene. The scene sweep (`KALEIDO_SCENE_SWEEP`) sat in `GLwidget::draw()`, the live path,
+  which a video export bypasses; it is `stepSweeps(nowMs)` now -- the wall clock live (the screening's windows are
+  unchanged), the frame clock in an export. `Tools/render_catalog_export.py` renders the scenes of a chunk in one export
+  (1280 x 720, 24 fps), one 27-s window each with the catalogue track (quiet to 17 s, loud after), the frames at 8, 16
+  and 21 s of the window, each checked against what the sweep logged on screen; two chunks side by side. 325 scenes
+  -- the 319 without images since v1.17, the six Noir scenes -- in 6.7 min, about 2 s a scene. The catalogue: 1215
+  scenes, 3923 images; the PDF 512 pages (portable Chrome). Darkest of the new: TexturePhosphorTrails (mean 1.3..2.5 of
+  255) and ChainHexTunnel (2.6..4) -- candidates for a brighter look, not changed.
+- **The snapshot baseline in a quarter of the time.** Measured, one scene took 9 s: 1.3 s to start, 5 s for the 600
+  fixed steps -- held to the panel's 120 Hz by vsync and by the render timer, whatever the scene cost --, about 3 s
+  fetching the remote preview (refreshed at most every 0.9 s) until two agreed. A comparison run now waits, standing
+  still, until every program it asked for is there (`shaderForgePending()`, the driver's background builds) and then
+  runs its steps without vsync and with the render timer at 0; `KALEIDO_FREEZE_SHOT=<file>` makes the app read its own
+  frozen frame until two reads agree, write it (640 x 360) and end. 2.5 s a scene (the 3D lab 4..6 s: its forged
+  programs), and two runs of the same scenes byte-identical. Baseline `2026-10-16-base`: 1430 scenes, 0 failed, 2
+  unstable, in about 30 min beside other work.
+- **The screening as an export.** `screen.py` recorded in real time: 1430 scenes x 8 s, over three hours. It renders
+  each chunk as an export now (1920 x 1080 at 15 fps -- the measurement looks at 160 x 90 at 5 fps), and the cost log
+  (`KALEIDO_COST_LOG`) works in the export: each frame's GPU time on a query ring, charged to the standing scene. The
+  export ran ahead of the ShaderForge's helper -- an eight-second window was over before ChainLab3D had its program,
+  and the window was empty -- so it waits for programs still being built (`shaderForgePoll()`); a real video export
+  benefits too. 1214 scenes in 21.9 min -- 13 chunks of 112 at 1.6..1.9 min -- instead of over three hours. The GPU
+  time at 1920 x 1080: median 0.41 ms a frame, 90 % under 0.60 ms, the most expensive DarkNebulaBokGlobules at 5.9 ms
+  (about 13 ms at the 2880 x 1620 here: such scenes rely on the adaptive resolution). 60 suspicions from a single seed;
+  against the September baseline three collapses, of which two (MobiusStripRollerDrive, OrbitalDrop) were rolls -- with
+  three seeds back on it -- and one, SeifertSurfaceBraidKnot, stays at a third of its structure while its frozen
+  frame is unchanged: open. `sync_complexity.py` would raise 45 scenes to complexity 8 or 10 and was **not applied**:
+  `complexity` is also the busyness the mood match weighs against the arousal (SceneScheduler::moodAccept()), and a
+  calm but expensive scene (DarkNebulaBokGlobules 3 -> 10, MonetLilyPond 3 -> 8) would read as busy. Cost and
+  busyness want two attributes; that is a decision of its own.
+- **Batch tools that leave other people's work alone.** `kill_orphans.ps1` stopped every Kaleidoscope.exe and ffmpeg on
+  the machine (a foreign measurement went that way on 26.09.); it takes only this repository's batch windows whose
+  starting script is gone, parentless ffmpeg and headless Edge naming this repository. `render_catalog_images.ps1` and
+  `screen.py` ran their windows on the user's settings file; they get a private copy now (`KALEIDO_SETTINGS`).
+  `screen.py` ended every window after a fixed 240 s -- a chunk of 112 scenes measured 28; the limit follows the WAV.
+- **The Noir scenes in the app.** NoirSmokeBacklight was black a frame away from its lamp (mean 3..6 of 255): a wide
+  glow of the lit haze and a faint backdrop. NoirBlindsLight's pools had vanished under the exposure (stripes edge to
+  edge): deep between the pools again. Ratings after the renders: BlindsLight noir 8 / interest 6, SmokeBacklight 8/5,
+  Searchlights interest 6; all six at 120 fps, full resolution.
+- **Five scenes whose stereo never moved.** The snapshot run's error lines named five scenes with
+  GL_INVALID_OPERATION before every frame; KHR_debug: "wrong component type or count". The engine sends audioStereoL/R
+  as vec3 (low, mid, high band energy of each channel), BinauralTunnel, FluidInkMandala, StereoKaleidoscope,
+  StereoSearchlights and StereoWidthCanyon declared floats -- the upload was rejected, their left/right light stood at
+  0. They take the bands' mean now (as StereoSpectrum does). `check_uniform_types.py` (release_check's rules) checked
+  only the preset's knobs; it now checks every shader file (1843) against the call the engine uses for each of its
+  91 uniforms, read from EffectShader.cpp -- red on the five, green after.
+- **What it taught.** The catalogue, the snapshots and the screening were waiting, not computing: 28 s of real time
+  per catalogue scene, the panel's 120 Hz for 600 fixed steps, a preview refreshed once a second, a three-hour
+  recording. Measured first, each took a fraction: 6.7 min for 325 catalogue scenes, half an hour for 1430 snapshots,
+  22 min for the screening.
+
+`Kaleidoscope.exe -q`: 121 checks. Linux (WSL, Qt 6.2.4): built, 121 of 121.

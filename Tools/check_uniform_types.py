@@ -18,6 +18,12 @@ count sat at 0 forever; TunnelReverse declared <bool name="rotate"> against
 error per frame (236 and 245 over a five second probe) that no normal run
 would ever show.
 
+The same holds for the uniforms the ENGINE sets (EffectShader.cpp, the audio uniforms: audioBass, audioStereoL ...):
+each is uploaded with one glUniform call, and a shader that declares it with another type gets nothing.  Five scenes
+declared audioStereoL/R as float while the engine sends a vec3 (low, mid, high) -- their stereo reaction stood at 0,
+two GL errors a frame (found 16.10.2026 by the snapshot run's error lines).  Every shader file is checked against
+the call the engine uses for each of those names, read from EffectShader.cpp itself.
+
 Exit code is 1 if any mismatch is found, so this can gate a build.
 """
 import os
@@ -49,7 +55,58 @@ def frag_path(raw):
     return os.path.join(ROOT, p)
 
 
+# The GLSL types a glUniform call of the engine can set.
+CALL_TYPES = {"glUniform1f": {"float"}, "glUniform1fv": {"float[]"}, "glUniform1i": {"int", "bool", "sampler"},
+              "glUniform2f": {"vec2"}, "glUniform3f": {"vec3"}, "glUniform4f": {"vec4"},
+              "glUniformMatrix4fv": {"mat4"}}
+DECL_ANY = re.compile(r"^\s*uniform\s+(?:(?:lowp|mediump|highp)\s+)?(\w+)\s+(\w+)\s*(\[[^\]]*\])?\s*;", re.M)
+
+
+def engine_uniforms():
+    """{uniform name: the glUniform call EffectShader.cpp sets it with}, read from the AL_ enum, its name table and the
+    calls on locs[AL_...]."""
+    src = open(os.path.join(ROOT, "Source", "EffectShader.cpp"), encoding="utf-8", errors="replace").read()
+    enum = re.search(r"enum AudioLocE\s*\{(.*?)\};", src, re.S).group(1)
+    ids = [m for m in re.findall(r"\b(AL_\w+)\b", re.sub(r"//[^\n]*", "", enum)) if m != "AL_COUNT"]
+    table = re.search(r"kAudioLocNames\[AL_COUNT\]\s*=\s*\{(.*?)\};", src, re.S).group(1)
+    names = re.findall(r"\"(\w+)\"", re.sub(r"//[^\n]*", "", table))
+    if len(ids) != len(names):
+        raise SystemExit("EffectShader.cpp: %d AL_ ids, %d names" % (len(ids), len(names)))
+    calls = {}
+    for call, al in re.findall(r"(glUniform\w+)\(\s*locs\[(AL_\w+)\]", src):
+        calls.setdefault(al, set()).add(call)
+    return {names[i]: calls[al] for i, al in enumerate(ids) if al in calls}
+
+
+def engine_checks():
+    """Every shader file's declarations of engine uniforms against the engine's calls; returns the mismatches."""
+    want = engine_uniforms()
+    bad = []
+    files = []
+    for d in ("Scene2D", "Scene3D", "FX", "Transitions", "Engine"):
+        for ext in ("frag", "vert", "geom"):
+            files += glob.glob(os.path.join(ROOT, d, "**", "*." + ext), recursive=True)
+    for path in files:
+        src = open(path, encoding="utf-8", errors="replace").read()
+        for gtype, name, arr in DECL_ANY.findall(src):
+            if name not in want:
+                continue
+            kind = "sampler" if gtype.startswith("sampler") else gtype + ("[]" if arr else "")
+            ok = set()
+            for call in want[name]:
+                ok |= CALL_TYPES.get(call, set())
+            if kind not in ok:
+                bad.append((os.path.relpath(path, ROOT), name, "/".join(sorted(want[name])), kind))
+    return len(files), len(want), bad
+
+
 def main():
+    nfiles, nnames, ebad = engine_checks()
+    print("engine uniforms: %d names, %d shader file(s)" % (nnames, nfiles))
+    for f, n, call, g in sorted(ebad):
+        print("  %-48s %-18s engine %-14s shader %s" % (f, n, call, g))
+    if ebad:
+        print("%d engine uniform(s) declared with a type the engine does not send: they stay 0." % len(ebad))
     cfgs = sys.argv[1:] or [os.path.join(ROOT, "Presets", "Komplett.xml")]
     seen, bad, missing = {}, [], []
 
@@ -91,7 +148,7 @@ def main():
         print("  (%d config entries pointed at a missing .frag)" % len(missing))
     if not bad:
         print("no uniform type mismatches")
-        return 0
+        return 1 if ebad else 0
 
     print("")
     print("%-40s %-22s %-10s %s" % ("shader", "uniform", "XML says", "GLSL says"))

@@ -37,8 +37,8 @@ uniform float sceneTime;      ///< Seconds since this scene was activated.
 uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
                               ///< backwards).
 uniform float audioOnset;     ///< Onset envelope (any instrument), 0..1.
-uniform float audioStereoL;   ///< Energy of the left channel, 0..1.
-uniform float audioStereoR;   ///< Energy of the right channel, 0..1.
+uniform vec3  audioStereoL;   ///< Energy of the left channel per band (low, mid, high), 0..1.
+uniform vec3  audioStereoR;   ///< Energy of the right channel per band (low, mid, high), 0..1.
 uniform float audioBeat;      ///< Beat envelope, 0..1.
 uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 uniform float audioLevel;     ///< Overall loudness, 0..1.
@@ -106,7 +106,8 @@ void main()
 
     // A wedge of the dye field: radius runs with v, angle with the mirror;
     // the stereo balance slides the wedge's origin across the field.
-    float e_l = clamp( audioStereoL, 0.0, 1.5 ), e_r = clamp( audioStereoR, 0.0, 1.5 );
+    float e_l = clamp( dot( audioStereoL, vec3( 1.0 / 3.0 ) ), 0.0, 1.5 ),
+          e_r = clamp( dot( audioStereoR, vec3( 1.0 / 3.0 ) ), 0.0, 1.5 );
     vec2  src = vec2( 0.5, 0.5 ); // fixed source (a per-frame shift is a shake, V7d)
     vec2  q = ( 0.12 + 0.36 * v ) * vec2( cos( mir * 2.0 ), sin( mir * 2.0 ) );
     vec2  suv = src + q;
