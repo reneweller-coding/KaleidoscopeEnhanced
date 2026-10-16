@@ -49,7 +49,7 @@ static float hash01( unsigned int n )
     n = n ^ ( n >> 4 );
     n *= 0x27d4eb2du;
     n = n ^ ( n >> 15 );
-    return float( n & 0xffffff ) / float( 0x1000000 );
+    return static_cast<float>( n & 0xffffff ) / static_cast<float>( 0x1000000 );
 }
 
 // FPS-driven cube budget (see RenderPipeline::paint's hysteresis).
@@ -62,7 +62,7 @@ GLuint Scene3DShader::M_ClampProg = 0;
  * rolls, not per-vertex geometry). @return Pseudo-random value in [0,1). */
 static float rand01()
 {
-    return float( rand() ) / float( RAND_MAX );
+    return static_cast<float>( rand() ) / static_cast<float>( RAND_MAX );
 }
 
 // Roll a fresh activation epoch: time offset, gentle speed factor, hue
@@ -115,7 +115,7 @@ Scene3DShader::Scene3DShader( const std::string &filenameFragmentShader, const s
         size_t      p = s.rfind( ".frag" );
         if ( p != std::string::npos )
             s.replace( p, 5, ext );
-        char *out = (char *)malloc( sizeof( char ) * ( s.size() + 1 ) );
+        char *out = static_cast<char *>( malloc( sizeof( char ) * ( s.size() + 1 ) ) );
         strcpy( out, s.c_str() );
         return out;
     };
@@ -386,13 +386,13 @@ void Scene3DShader::buildGeometry()
     else if ( m_geomKind == GEOM_POINTS || m_geomKind == GEOM_SCATTER )
     {
         const int N = 60000;
-        v.reserve( size_t( N ) * 8 );
+        v.reserve( static_cast<size_t>( N ) * 8 );
         for ( int i = 0; i < N; ++i )
         {
             v.push_back( 0.f );
             v.push_back( 0.f );
             v.push_back( 0.f );
-            v.push_back( float( i ) );
+            v.push_back( static_cast<float>( i ) );
             v.push_back( hash01( i * 4u + 0u ) );
             v.push_back( hash01( i * 4u + 1u ) );
             v.push_back( hash01( i * 4u + 2u ) );
@@ -412,14 +412,14 @@ void Scene3DShader::buildGeometry()
             { -.5f, -.5f, -.5f }, { .5f, -.5f, .5f },  { .5f, -.5f, -.5f },  { -.5f, -.5f, -.5f }, { -.5f, -.5f, .5f },
             { .5f, -.5f, .5f } };
         const int N = 4900;
-        v.reserve( size_t( N ) * 36 * 8 );
+        v.reserve( static_cast<size_t>( N ) * 36 * 8 );
         for ( int i = 0; i < N; ++i )
             for ( int k = 0; k < 36; ++k )
             {
                 v.push_back( C[k][0] );
                 v.push_back( C[k][1] );
                 v.push_back( C[k][2] );
-                v.push_back( float( i ) );
+                v.push_back( static_cast<float>( i ) );
                 v.push_back( hash01( i * 4u + 0u ) );
                 v.push_back( hash01( i * 4u + 1u ) );
                 v.push_back( hash01( i * 4u + 2u ) );
@@ -431,23 +431,23 @@ void Scene3DShader::buildGeometry()
         // A 220 x 120 heightfield mesh (two triangles per cell); per-vertex
         // u/v in attrA.xy, per-cell seeds in attrB — terrain-style scenes.
         const int W = 220, H = 120;
-        v.reserve( size_t( W ) * H * 6 * 8 );
+        v.reserve( static_cast<size_t>( W ) * H * 6 * 8 );
         for ( int cy = 0; cy < H; ++cy )
             for ( int cx = 0; cx < W; ++cx )
             {
-                const float u0 = float( cx ) / float( W );
-                const float u1 = float( cx + 1 ) / float( W );
-                const float w0 = float( cy ) / float( H );
-                const float w1 = float( cy + 1 ) / float( H );
+                const float u0 = static_cast<float>( cx ) / static_cast<float>( W );
+                const float u1 = static_cast<float>( cx + 1 ) / static_cast<float>( W );
+                const float w0 = static_cast<float>( cy ) / static_cast<float>( H );
+                const float w1 = static_cast<float>( cy + 1 ) / static_cast<float>( H );
                 const float q[6][2] = {
                     { u0, w0 }, { u1, w0 }, { u1, w1 }, { u0, w0 }, { u1, w1 }, { u0, w1 } };
-                const unsigned int cell = (unsigned int)( cy * W + cx );
+                const unsigned int cell = static_cast<unsigned int>( cy * W + cx );
                 for ( int k = 0; k < 6; ++k )
                 {
                     v.push_back( q[k][0] );
                     v.push_back( q[k][1] );
                     v.push_back( 0.f );
-                    v.push_back( float( cell ) );
+                    v.push_back( static_cast<float>( cell ) );
                     v.push_back( hash01( cell * 4u + 0u ) );
                     v.push_back( hash01( cell * 4u + 1u ) );
                     v.push_back( hash01( cell * 4u + 2u ) );
@@ -460,7 +460,7 @@ void Scene3DShader::buildGeometry()
         // 3000 unit quads (photo cards / shards / tiles), two triangles each;
         // corner u/v in attrA.xy, per-quad seeds in attrB.
         const int N = 3000;
-        v.reserve( size_t( N ) * 6 * 8 );
+        v.reserve( static_cast<size_t>( N ) * 6 * 8 );
         static const float Q[6][2] = {
             { 0.f, 0.f }, { 1.f, 0.f }, { 1.f, 1.f }, { 0.f, 0.f }, { 1.f, 1.f }, { 0.f, 1.f } };
         for ( int i = 0; i < N; ++i )
@@ -469,7 +469,7 @@ void Scene3DShader::buildGeometry()
                 v.push_back( Q[k][0] );
                 v.push_back( Q[k][1] );
                 v.push_back( 0.f );
-                v.push_back( float( i ) );
+                v.push_back( static_cast<float>( i ) );
                 v.push_back( hash01( i * 4u + 0u ) );
                 v.push_back( hash01( i * 4u + 1u ) );
                 v.push_back( hash01( i * 4u + 2u ) );
@@ -483,23 +483,23 @@ void Scene3DShader::buildGeometry()
         // corners carry their global (u,v) so the evaluation shader can place
         // and displace them; the actual triangle count is decided on the GPU.
         const int W = 64, H = 64;
-        v.reserve( size_t( W ) * H * 4 * 8 );
+        v.reserve( static_cast<size_t>( W ) * H * 4 * 8 );
         for ( int cy = 0; cy < H; ++cy )
             for ( int cx = 0; cx < W; ++cx )
             {
-                const float u0 = float( cx ) / float( W );
-                const float u1 = float( cx + 1 ) / float( W );
-                const float w0 = float( cy ) / float( H );
-                const float w1 = float( cy + 1 ) / float( H );
+                const float u0 = static_cast<float>( cx ) / static_cast<float>( W );
+                const float u1 = static_cast<float>( cx + 1 ) / static_cast<float>( W );
+                const float w0 = static_cast<float>( cy ) / static_cast<float>( H );
+                const float w1 = static_cast<float>( cy + 1 ) / static_cast<float>( H );
                 const float c[4][2] = {
                     { u0, w0 }, { u1, w0 }, { u1, w1 }, { u0, w1 } };
-                const unsigned int cell = (unsigned int)( cy * W + cx );
+                const unsigned int cell = static_cast<unsigned int>( cy * W + cx );
                 for ( int k = 0; k < 4; ++k )
                 {
                     v.push_back( c[k][0] );
                     v.push_back( c[k][1] );
                     v.push_back( 0.f );
-                    v.push_back( float( cell ) );
+                    v.push_back( static_cast<float>( cell ) );
                     v.push_back( hash01( cell * 4u + 0u ) );
                     v.push_back( hash01( cell * 4u + 1u ) );
                     v.push_back( hash01( cell * 4u + 2u ) );
@@ -572,7 +572,7 @@ void Scene3DShader::buildGeometry()
         const bool warmed = ( ws == WARM_READY );
         load_into( m_modelPath, ( warmed && m_warmOk ) ? &m_warmAsset : nullptr,
                    m_meshMaterialTex, m_meshMaterialLayers );
-        m_meshOwnVertexCount = int( v.size() / 8 );
+        m_meshOwnVertexCount = static_cast<int>( v.size() / 8 );
 
         // Measure the model's own bounding box, exposed as meshCenter/meshExtent.
         // The generator normalises each asset so its LONGEST axis is about 1.0,
@@ -587,7 +587,7 @@ void Scene3DShader::buildGeometry()
             for ( int i = 0; i < m_meshOwnVertexCount; ++i )
                 for ( int c = 0; c < 3; ++c )
                 {
-                    const float x = v[size_t( i ) * 8 + c];
+                    const float x = v[static_cast<size_t>( i ) * 8 + c];
                     if ( x < lo[c] )
                         lo[c] = x;
                     if ( x > hi[c] )
@@ -606,7 +606,7 @@ void Scene3DShader::buildGeometry()
         if ( !m_modelPath2.empty() )
             load_into( m_modelPath2, ( warmed && m_warmOk2 ) ? &m_warmAsset2 : nullptr,
                        m_meshMaterialTex2, m_meshMaterialLayers2 );
-        m_mesh2VertexCount = int( v.size() / 8 );
+        m_mesh2VertexCount = static_cast<int>( v.size() / 8 );
 
         // Consumed: release the prefetched CPU copies (tens of MB per model).
         if ( warmed )
@@ -624,7 +624,7 @@ void Scene3DShader::buildGeometry()
             for ( int i = m_meshOwnVertexCount; i < m_mesh2VertexCount; ++i )
                 for ( int c = 0; c < 3; ++c )
                 {
-                    const float x = v[size_t( i ) * 8 + c];
+                    const float x = v[static_cast<size_t>( i ) * 8 + c];
                     if ( x < lo[c] )
                         lo[c] = x;
                     if ( x > hi[c] )
@@ -661,7 +661,7 @@ void Scene3DShader::buildGeometry()
                 { -.5f, .5f, -.5f },  { .5f, .5f, -.5f },   { .5f, .5f, .5f },    { -.5f, .5f, -.5f },
                 { .5f, .5f, .5f },    { -.5f, .5f, .5f },   { -.5f, -.5f, -.5f }, { .5f, -.5f, .5f },
                 { .5f, -.5f, -.5f },  { -.5f, -.5f, -.5f }, { -.5f, -.5f, .5f },  { .5f, -.5f, .5f } };
-            const float Side = 2.f * float( SkyShellRadius ); // corners are +-0.5 -> +-R
+            const float Side = 2.f * static_cast<float>( SkyShellRadius ); // corners are +-0.5 -> +-R
             for ( int k = 0; k < 36; ++k )
             {
                 const float px = SC[k][0] * Side, py = SC[k][1] * Side, pz = SC[k][2] * Side;
@@ -680,12 +680,12 @@ void Scene3DShader::buildGeometry()
     else // GEOM_RIBBON: 20 ribbons x 300 segments, two triangles per segment.
     {
         const int M = 20, S = 300;
-        v.reserve( size_t( M ) * S * 6 * 8 );
+        v.reserve( static_cast<size_t>( M ) * S * 6 * 8 );
         for ( int r = 0; r < M; ++r )
             for ( int s = 0; s < S; ++s )
             {
-                const float t0 = float( s ) / float( S );
-                const float t1 = float( s + 1 ) / float( S );
+                const float t0 = static_cast<float>( s ) / static_cast<float>( S );
+                const float t1 = static_cast<float>( s + 1 ) / static_cast<float>( S );
                 // Two triangles of the (t0..t1) x (side -1..+1) quad.
                 const float quad[6][2] = {
                     { t0, -1.f }, { t1, -1.f }, { t1, 1.f }, { t0, -1.f }, { t1, 1.f }, { t0, 1.f } };
@@ -694,7 +694,7 @@ void Scene3DShader::buildGeometry()
                     v.push_back( quad[k][0] );
                     v.push_back( quad[k][1] );
                     v.push_back( 0.f );
-                    v.push_back( float( r ) );
+                    v.push_back( static_cast<float>( r ) );
                     v.push_back( hash01( r * 4u + 0u ) );
                     v.push_back( hash01( r * 4u + 1u ) );
                     v.push_back( hash01( r * 4u + 2u ) );
@@ -703,7 +703,7 @@ void Scene3DShader::buildGeometry()
             }
     }
 
-    m_vertexCount = int( v.size() / 8 );
+    m_vertexCount = static_cast<int>( v.size() / 8 );
     if ( m_vbo == 0 )
         glGenBuffers( 1, &m_vbo );
     glBindBuffer( GL_ARRAY_BUFFER, m_vbo );
@@ -721,12 +721,12 @@ void Scene3DShader::buildGeometry()
         // clamped range.  Allocated lazily, on the scene's first appearance.
         m_meshCapacity = 600000; // vertices (19.2 MB)
         glBufferData( GL_ARRAY_BUFFER,
-                      GLsizeiptr( size_t( m_meshCapacity ) * 8 * sizeof( float ) ),
+                      static_cast<GLsizeiptr>( static_cast<size_t>( m_meshCapacity ) * 8 * sizeof( float ) ),
                       NULL, GL_DYNAMIC_COPY );
     }
     else
     {
-        glBufferData( GL_ARRAY_BUFFER, GLsizeiptr( v.size() * sizeof( float ) ),
+        glBufferData( GL_ARRAY_BUFFER, static_cast<GLsizeiptr>( v.size() * sizeof( float ) ),
                       v.data(), GL_STATIC_DRAW );
         if ( m_geomKind == GEOM_MESH )
         {
@@ -790,10 +790,10 @@ bool Scene3DShader::setupIndirect()
     // on some machines and fine on others.
     if ( m_stateBytes > 0 )
     {
-        std::vector<unsigned char> zero( size_t( m_stateBytes ), 0 );
+        std::vector<unsigned char> zero( static_cast<size_t>( m_stateBytes ), 0 );
         glGenBuffers( 1, &m_stateBuf );
         glBindBuffer( GL_SHADER_STORAGE_BUFFER, m_stateBuf );
-        glBufferData( GL_SHADER_STORAGE_BUFFER, GLsizeiptr( m_stateBytes ),
+        glBufferData( GL_SHADER_STORAGE_BUFFER, static_cast<GLsizeiptr>( m_stateBytes ),
                       &zero[0], GL_DYNAMIC_COPY );
         glBindBuffer( GL_SHADER_STORAGE_BUFFER, 0 );
     }
@@ -885,7 +885,7 @@ void Scene3DShader::runGenerator( float time )
     set_f( m_genLocs.spectroHead, a.spectroHead );
     set_f( m_genLocs.spectroFill, a.spectroFill );
     if ( m_genLocs.maxVertices >= 0 )
-        glUniform1ui( m_genLocs.maxVertices, GLuint( m_meshCapacity ) );
+        glUniform1ui( m_genLocs.maxVertices, static_cast<GLuint>( m_meshCapacity ) );
     for ( size_t i = 0; i < m_uniforms.size(); ++i )
         set_f( m_genUniformLocs[i], m_uniforms[i]->snapshotValue() );
 
@@ -916,7 +916,7 @@ void Scene3DShader::runGenerator( float time )
         glBindBufferBase( GL_SHADER_STORAGE_BUFFER, 2, m_stateBuf );
 
     if ( m_genLocs.frameIndex >= 0 )
-        glUniform1ui( m_genLocs.frameIndex, GLuint( m_frameIndex ) );
+        glUniform1ui( m_genLocs.frameIndex, static_cast<GLuint>( m_frameIndex ) );
     GLint pass_loc = m_genLocs.genPass;
 
     // A fixed invocation budget: 64^3 = 262144, in 4x4x4 blocks.  What one
@@ -945,7 +945,7 @@ void Scene3DShader::runGenerator( float time )
     {
         for ( int p = 0; p < m_genPassCount; ++p )
         {
-            glUniform1f( pass_loc, float( p ) );
+            glUniform1f( pass_loc, static_cast<float>( p ) );
             glDispatchCompute( 16, 16, 16 );
             glMemoryBarrier( GL_SHADER_STORAGE_BARRIER_BIT | GL_TEXTURE_FETCH_BARRIER_BIT
                              | GL_SHADER_IMAGE_ACCESS_BARRIER_BIT );
@@ -987,7 +987,7 @@ void Scene3DShader::runGenerator( float time )
         clamp_loc_prog = M_ClampProg;
     }
     if ( clamp_loc_max_v >= 0 )
-        glUniform1ui( clamp_loc_max_v, GLuint( m_meshCapacity ) );
+        glUniform1ui( clamp_loc_max_v, static_cast<GLuint>( m_meshCapacity ) );
     // Same FPS-driven detail knob GEOM_CUBES scenes already read as
     // `cubeBudget` -- indirect generators had no way to shed triangles under
     // load before this. GLSL floats default to 0 (not 1) when never set, so
@@ -1032,7 +1032,7 @@ void Scene3DShader::initUniforms( int width, int height )
     m_interpolationUni = glGetUniformLocation( m_shProgId, "interpolation" );
     m_progressUni = glGetUniformLocation( m_shProgId, "sceneProgress" );
     m_sceneTimeUni = glGetUniformLocation( m_shProgId, "sceneTime" );
-    for ( unsigned int i = 0; i < m_uniforms.size(); i++ )
+    for ( unsigned int i = 0; i < m_uniforms.size(); ++i )
         m_uniforms[i]->initUniform( m_shProgId );
 
     m_projUni = glGetUniformLocation( m_shProgId, "projM" );
@@ -1107,15 +1107,15 @@ void Scene3DShader::bakeVao()
     glBindBuffer( GL_ARRAY_BUFFER, m_vbo );
     if ( m_attrA >= 0 )
     {
-        glEnableVertexAttribArray( GLuint( m_attrA ) );
-        glVertexAttribPointer( GLuint( m_attrA ), 4, GL_FLOAT, GL_FALSE,
-                               8 * sizeof( float ), (const void *)0 );
+        glEnableVertexAttribArray( static_cast<GLuint>( m_attrA ) );
+        glVertexAttribPointer( static_cast<GLuint>( m_attrA ), 4, GL_FLOAT, GL_FALSE,
+                               8 * sizeof( float ), nullptr );
     }
     if ( m_attrB >= 0 )
     {
-        glEnableVertexAttribArray( GLuint( m_attrB ) );
-        glVertexAttribPointer( GLuint( m_attrB ), 4, GL_FLOAT, GL_FALSE,
-                               8 * sizeof( float ), (const void *)( 4 * sizeof( float ) ) );
+        glEnableVertexAttribArray( static_cast<GLuint>( m_attrB ) );
+        glVertexAttribPointer( static_cast<GLuint>( m_attrB ), 4, GL_FLOAT, GL_FALSE,
+                               8 * sizeof( float ), reinterpret_cast<const void *>( 4 * sizeof( float ) ) );
     }
     glBindVertexArray( 0 );
     glBindBuffer( GL_ARRAY_BUFFER, 0 );
@@ -1153,7 +1153,7 @@ void Scene3DShader::draw()
     // the same ones to turn a depth sample back into a view-space position.
     // Two copies would drift, and every depth-based effect would then be
     // subtly, invisibly wrong.
-    const float aspect = ( m_height > 0 ) ? float( m_width ) / float( m_height ) : 1.f;
+    const float aspect = ( m_height > 0 ) ? static_cast<float>( m_width ) / static_cast<float>( m_height ) : 1.f;
     const float zn = SceneNear, zf = SceneFar;
     const float f = 1.f / SceneTanHalfFovY;
     float       proj[16] = {
@@ -1362,7 +1362,7 @@ void Scene3DShader::draw()
             if ( getenv( "KALEIDO_INDIRECT_LOG" ) )
             {
                 glBindBuffer( GL_DRAW_INDIRECT_BUFFER, m_cmdBuf );
-                GLuint *cmd4 = (GLuint *)glMapBuffer( GL_DRAW_INDIRECT_BUFFER, GL_READ_ONLY );
+                GLuint *cmd4 = static_cast<GLuint *>( glMapBuffer( GL_DRAW_INDIRECT_BUFFER, GL_READ_ONLY ) );
                 GLuint  count = cmd4 ? cmd4[0] : 0xffffffffu;
                 if ( cmd4 )
                     glUnmapBuffer( GL_DRAW_INDIRECT_BUFFER );
@@ -1453,7 +1453,7 @@ void Scene3DShader::draw()
             // NUR die Modell-Vertices: der Puffer enthaelt dahinter noch die
             // Hintergrundkuppel, und die bedeckt das ganze Bild.
             const GLsizei own = ( m_meshOwnVertexCount > 0 )
-                                    ? (GLsizei)m_meshOwnVertexCount
+                                    ? static_cast<GLsizei>( m_meshOwnVertexCount )
                                     : m_vertexCount;
             if ( m_meshInstances > 1 && glDrawArraysInstanced )
                 glDrawArraysInstanced( GL_TRIANGLES, 0, own, m_meshInstances );
@@ -1477,11 +1477,11 @@ void Scene3DShader::draw()
             glGetIntegerv( GL_SAMPLES, &msaa );
             if ( msaa < 1 )
                 msaa = 1;
-            const double px = double( vp[2] ) * double( vp[3] ) * double( msaa );
+            const double px = static_cast<double>( vp[2] ) * static_cast<double>( vp[3] ) * static_cast<double>( msaa );
             if ( px > 0.0 )
             {
-                m_coverSum += double( samples ) / px;
-                m_coverN++;
+                m_coverSum += static_cast<double>( samples ) / px;
+                ++m_coverN;
             }
         }
         if ( !in_oit_pass )

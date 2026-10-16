@@ -55,7 +55,7 @@ BOOL CALLBACK vlcEnumProc( HWND hwnd, LPARAM lp )
     int     n = GetWindowTextW( hwnd, buf, 512 );
     if ( n <= 0 )
         return TRUE;
-    std::wstring              s( buf, size_t( n ) );
+    std::wstring              s( buf, static_cast<size_t>( n ) );
     static const std::wstring Suffix = L" - VLC media player";
     if ( s.size() > Suffix.size()
          && _wcsicmp( s.c_str() + ( s.size() - Suffix.size() ), Suffix.c_str() ) == 0 )
@@ -87,7 +87,7 @@ void parseVlcTitle( const std::wstring &raw, QString &title, QString &artist )
     for ( const char *ext : exts )
         if ( w.endsWith( QString::fromLatin1( ext ), Qt::CaseInsensitive ) )
         {
-            w.chop( int( strlen( ext ) ) );
+            w.chop( static_cast<int>( strlen( ext ) ) );
             break;
         }
     w.replace( QChar( '_' ), QChar( ' ' ) );
@@ -155,7 +155,7 @@ double NowPlaying::positionNowSec() const
     if ( !tl.playing )
         return tl.positionSec;
     const qint64 now_ms = QDateTime::currentMSecsSinceEpoch();
-    double       p = tl.positionSec + double( now_ms - tl.stampMs ) * 0.001 * tl.rate;
+    double       p = tl.positionSec + static_cast<double>( now_ms - tl.stampMs ) * 0.001 * tl.rate;
     if ( tl.durationSec > 0.0 && p > tl.durationSec )
         p = tl.durationSec;
     return p;
@@ -236,9 +236,9 @@ void NowPlaying::threadFunc()
                     auto         tp = session.GetTimelineProperties();
                     auto         pi = session.GetPlaybackInfo();
                     const double Tick = 1e-7;
-                    double       start = double( tp.StartTime().count() ) * Tick;
-                    tl.positionSec = double( tp.Position().count() ) * Tick - start;
-                    tl.durationSec = double( tp.EndTime().count() ) * Tick - start;
+                    double       start = static_cast<double>( tp.StartTime().count() ) * Tick;
+                    tl.positionSec = static_cast<double>( tp.Position().count() ) * Tick - start;
+                    tl.durationSec = static_cast<double>( tp.EndTime().count() ) * Tick - start;
                     tl.playing = ( pi.PlaybackStatus()
                                    == GlobalSystemMediaTransportControlsSessionPlaybackStatus::Playing );
                     tl.stampMs = QDateTime::currentMSecsSinceEpoch();
@@ -293,14 +293,14 @@ void NowPlaying::threadFunc()
             // dass auch sie noch stale ist - erst zwei AUFEINANDERFOLGENDE,
             // zueinander passende Meldungen gelten als sicher).
             const double erwartet = candidate.positionSec
-                                    + double( raw.stampMs - candidate.stampMs ) * 0.001;
+                                    + static_cast<double>( raw.stampMs - candidate.stampMs ) * 0.001;
             if ( std::fabs( raw.positionSec - erwartet ) < 0.6 )
                 pos_confirmed = true;
             else
             {
                 fprintf( stderr, "[NowPlaying] Settle: Meldung (%.1fs) passt nicht zur vorherigen "
                                  "(%.1fs erwartet) - noch %.1fs seit Trackwechsel, warte weiter\n",
-                         raw.positionSec, erwartet, double( raw.stampMs - track_change_ms ) * 0.001 );
+                         raw.positionSec, erwartet, static_cast<double>( raw.stampMs - track_change_ms ) * 0.001 );
                 candidate = raw;
                 tl.positionSec = -1.0;
             }
@@ -322,7 +322,7 @@ void NowPlaying::threadFunc()
             // Zeitachse zu, statt zu springen. Nur ein echter Seek (>1.5s)
             // wird weiterhin sofort als Sprung übernommen (Rate zurück auf 1).
             const double erwartet = prev_tl.positionSec
-                                    + double( tl.stampMs - prev_tl.stampMs ) * 0.001
+                                    + static_cast<double>( tl.stampMs - prev_tl.stampMs ) * 0.001
                                           * prev_tl.rate;
             const double abweichung = tl.positionSec - erwartet;
             if ( std::fabs( abweichung ) < 1.5 )

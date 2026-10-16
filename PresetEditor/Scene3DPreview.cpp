@@ -165,7 +165,7 @@ bool Scene3DPreview::setShader( const QString &fragPathRelative, const QString &
     if ( stateBytes > 0 )
         scene->setStateBytes( stateBytes );
     if ( shadowExtent > 0 )
-        scene->setShadowExtent( float( shadowExtent ) );
+        scene->setShadowExtent( static_cast<float>( shadowExtent ) );
     // width/height are irrelevant here: Scene3DShader's initUniforms() never
     // allocates anything sized by them (that is the effect FBO's job, owned by
     // the host) - it only records them for the perspective aspect ratio, which
@@ -497,7 +497,7 @@ void Scene3DPreview::renderOitPass( float time, float interpolation, const Audio
     if ( l1 >= 0 )
         glUniform1i( l1, 1 );
     if ( lr >= 0 )
-        glUniform2f( lr, float( m_fboW ), float( m_fboH ) );
+        glUniform2f( lr, static_cast<float>( m_fboW ), static_cast<float>( m_fboH ) );
 
     glEnable( GL_BLEND );
     glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );

@@ -83,7 +83,7 @@ float mapSacred( vec3 p, float t, float rBase )
     d = min( d, sdTorus( p, vec2( ring_r, tube_r ) ) );
 
     // Hexagonal outer rings
-    for ( int i = 0; i < 6; i++ )
+    for ( int i = 0; i < 6; ++i )
     {
         float a = float( i ) * 1.04719755; // 60 degrees
         vec3  center = vec3( cos( a ), sin( a ), 0.0 ) * ring_r;
@@ -142,7 +142,7 @@ void main()
     float min_d = 1e4;
     vec3  hit_col = vec3( 0.0 );
 
-    for ( int i = 0; i < 56; i++ )
+    for ( int i = 0; i < 56; ++i )
     {
         vec3 p = ro + rd * tot_dist;
 

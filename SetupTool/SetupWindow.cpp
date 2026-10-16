@@ -98,7 +98,7 @@ QString humanSize( qint64 b )
 {
     if ( b >= 1024LL * 1024 * 1024 )
         return QString::number( b / ( 1024.0 * 1024 * 1024 ), 'f', 1 ) + " GB";
-    return QString::number( qint64( b / ( 1024 * 1024 ) ) ) + " MB";
+    return QString::number( ( b / ( 1024 * 1024 ) ) ) + " MB";
 }
 
 /**
@@ -565,7 +565,7 @@ void SetupWindow::loadFromIni()
     m_reactivity->setValue( s.value( "reactivity", 1.0 ).toDouble() );
     m_trails->setValue( s.value( "trails", 0.6 ).toDouble() );
     m_mood->setValue( s.value( "mood", 1.0 ).toDouble() );
-    m_latencyMs->setValue( int( s.value( "latencyLead", 0.0 ).toDouble() * 1000.0 + 0.5 ) );
+    m_latencyMs->setValue( static_cast<int>( s.value( "latencyLead", 0.0 ).toDouble() * 1000.0 + 0.5 ) );
     m_renderScale->setValue( s.value( "renderScale", 1.0 ).toDouble() );
     m_stereoMode->setCurrentIndex( s.value( "stereoMode", 0 ).toInt() & 3 );
     m_stereoDepth->setValue( s.value( "stereoDepth", 1.0 ).toDouble() );
@@ -772,7 +772,7 @@ void SetupWindow::startPackDownloads()
         QObject::connect( reply, &QNetworkReply::downloadProgress, &loop,
                           [this, &p, done, &todo]( qint64 got, qint64 total )
         {
-            const int pct = total > 0 ? int( got * 100 / total ) : 0;
+            const int pct = total > 0 ? static_cast<int>( got * 100 / total ) : 0;
             m_packProgress->setValue( pct );
             m_packStatus->setText( QString( "%1 %2 (%3/%4) — %5 / %6" )
                                        .arg( uiString( S_SETUP_PACK_DOWNLOADING ), uiString( p.label ) )

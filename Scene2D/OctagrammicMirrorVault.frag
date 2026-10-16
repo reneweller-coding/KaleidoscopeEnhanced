@@ -97,7 +97,7 @@ void main()
     float total_weight = 0.0;
 
     // Accumulate across 5 nested star polygon vault shells
-    for ( int k = 0; k < 5; k++ )
+    for ( int k = 0; k < 5; ++k )
     {
         float kf = float( k );
         // Sub-bass breathes the whole shell stack open: star_scale is the

@@ -91,7 +91,7 @@ void main()
     float e_adv = ( e + audioAdvance * 1.5 ) * trav_v; // forward scroll (jump-free)
 
     float c = 0.0, d = 3.0;
-    for ( int o = 0; o < 200; o++ )
+    for ( int o = 0; o < 200; ++o )
     {
         if ( d <= 0.001 )
             break;

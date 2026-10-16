@@ -102,7 +102,7 @@ void main()
     float t_ground = 0.0;
     vec3  p_ground = ro;
     bool  hit_ground = false;
-    for ( int i = 0; i < 72; i++ )
+    for ( int i = 0; i < 72; ++i )
     {
         p_ground = ro + rd * t_ground;
         float h = terrainHeight( p_ground.xz, t, h_m );

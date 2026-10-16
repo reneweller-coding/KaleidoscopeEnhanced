@@ -116,7 +116,7 @@ void main()
     float dsc = 1.0; // accumulated |Jacobian| of the folds so far
     float tn = 1e9;  // axis trap, screen-space
     float trn = 1e9; // ring trap, screen-space
-    for ( int i = 0; i < 6; i++ )
+    for ( int i = 0; i < 6; ++i )
     {
         float dd = max( dot( fp, fp ), 1e-6 );
         fp = abs( fp ) / dd - c;

@@ -75,7 +75,7 @@ float fbm2( vec2 p )
 {
     float      v = 0.0, a = 0.5;
     const mat2 R = mat2( 0.80, 0.60, -0.60, 0.80 );
-    for ( int i = 0; i < 5; i++ )
+    for ( int i = 0; i < 5; ++i )
     {
         v += a * noise2( p );
         p = R * p * 2.03 + 7.1;
@@ -160,7 +160,7 @@ vec3 renderSky( vec3 dir )
     }
     // Swifts: round silhouettes crossing the openings on their own smooth arcs.
     float dark = 0.0;
-    for ( int i = 0; i < 12; i++ )
+    for ( int i = 0; i < 12; ++i )
     {
         float fi = float( i );
         float ax = 0.55 * sin( time * ( 0.23 + 0.05 * hash11( fi ) ) + fi * 1.7 );

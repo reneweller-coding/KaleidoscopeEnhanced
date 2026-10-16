@@ -57,7 +57,7 @@ float map( vec3 p )
 float intersect( vec3 ro, vec3 rd )
 {
     float d = 0.0;
-    for ( int i = 0; i <= 100; i++ )
+    for ( int i = 0; i <= 100; ++i )
     {
         float h = map( ro + rd * d );
         if ( h < 0.1 )

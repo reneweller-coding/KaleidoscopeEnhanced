@@ -153,7 +153,7 @@ bool videoInInit( const char *path )
     g.openedPath = p;
     playCurrent();
     fprintf( stderr, "video input: %d file(s) from '%s'\n",
-             int( files.size() ), path );
+             static_cast<int>( files.size() ), path );
     return true;
 }
 
@@ -198,9 +198,9 @@ unsigned int videoInFrame( unsigned int *width, unsigned int *height )
     }
 
     if ( width )
-        *width = (unsigned int)g.texW;
+        *width = static_cast<unsigned int>( g.texW );
     if ( height )
-        *height = (unsigned int)g.texH;
+        *height = static_cast<unsigned int>( g.texH );
     return g.tex;
 }
 

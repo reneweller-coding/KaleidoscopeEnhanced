@@ -87,7 +87,7 @@ float noise( vec3 p )
 float fbm( vec3 p )
 {
     float f = 0.0, a = 0.5;
-    for ( int i = 0; i < 5; i++ )
+    for ( int i = 0; i < 5; ++i )
     {
         f += a * noise( p );
         p *= 2.0;
@@ -100,7 +100,7 @@ float fbm( vec3 p )
 float ridged( vec3 p )
 {
     float f = 0.0, a = 0.5;
-    for ( int i = 0; i < 5; i++ )
+    for ( int i = 0; i < 5; ++i )
     {
         float n = abs( noise( p ) * 2.0 - 1.0 );
         n = 1.0 - n;

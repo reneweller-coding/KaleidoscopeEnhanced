@@ -101,7 +101,7 @@ void main()
     vec2  w = vec2( 0.0 );
     float field_amp = 0.0;
 
-    for ( int k = 0; k < poles; k++ )
+    for ( int k = 0; k < poles; ++k )
     {
         float theta = float( k ) * ( 6.2831853 / float( poles ) ) + t * 0.5;
         float r = 0.9 + 0.3 * sin( t * 1.2 + float( k ) * 1.5 ) + 0.2 * audioSubBass;

@@ -92,7 +92,7 @@ void main()
     float amp = 0.6;
     vec2  q = p * vortex_scale;
 
-    for ( int i = 0; i < 4; i++ )
+    for ( int i = 0; i < 4; ++i )
     {
         vec2 curl = vec2( sin( q.y * 2.5 + t * 0.8 ), cos( q.x * 2.5 - t * 0.8 ) );
         q = q * 1.8 + curl * 0.6;

@@ -155,7 +155,7 @@ public:
     // ---- Künstlerbilder ----
     int imageCount() const
     {
-        return int( m_imagePaths.size() );
+        return static_cast<int>( m_imagePaths.size() );
     } ///< Number of artist images currently available on disk for the active track's artist.
     /** Lazy: dekodiert bei Bedarf von der Platte (LRU-Cache: 1 Bild). */
     /**

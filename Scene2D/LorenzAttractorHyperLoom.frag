@@ -94,7 +94,7 @@ void main()
 
     float dt = 0.012 * trl;
 
-    for ( int i = 0; i < 24; i++ )
+    for ( int i = 0; i < 24; ++i )
     {
         // Lorenz ODE derivatives
         float dx = sigma * ( p_lorenz.y - p_lorenz.x );

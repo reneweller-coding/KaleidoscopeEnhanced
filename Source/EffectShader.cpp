@@ -41,7 +41,7 @@ EffectShader::EffectShader( const std::string &filenameFragmentShader, unsigned 
     m_vertexShaderFilename = "..\\standard.vert";
     // m_fragmentShaderFilename = filenameFragmentShader.c_str();//filenameFragmentShader.toLocal8Bit().data();
 
-    m_fragmentShaderFilename = (char *)malloc( sizeof( char ) * ( filenameFragmentShader.size() + 1 ) );
+    m_fragmentShaderFilename = static_cast<char *>( malloc( sizeof( char ) * ( filenameFragmentShader.size() + 1 ) ) );
     // The embedded "\0" in the format string is redundant: sprintf() already NUL-terminates
     // after substituting %s, so parsing stops there regardless. Harmless, kept as-is.
     sprintf( m_fragmentShaderFilename, "%s\0", filenameFragmentShader.c_str() );
@@ -61,7 +61,7 @@ EffectShader::EffectShader( const std::string &filenameFragmentShader, unsigned 
             if ( FILE *fp = fopen( fin.c_str(), "rb" ) )
             {
                 fclose( fp );
-                m_compileFile = (char *)malloc( fin.size() + 1 );
+                m_compileFile = static_cast<char *>( malloc( fin.size() + 1 ) );
                 strcpy( m_compileFile, fin.c_str() );
                 if ( char *t = textFileRead( m_compileFile ) )
                 {
@@ -92,7 +92,7 @@ EffectShader::EffectShader( const std::string &filenameFragmentShader, unsigned 
         size_t      p = s.rfind( ".frag" );
         if ( p != std::string::npos )
             s.replace( p, 5, ".comp" );
-        m_bakeCompFilename = (char *)malloc( sizeof( char ) * ( s.size() + 1 ) );
+        m_bakeCompFilename = static_cast<char *>( malloc( sizeof( char ) * ( s.size() + 1 ) ) );
         strcpy( m_bakeCompFilename, s.c_str() );
     }
 
@@ -255,7 +255,7 @@ static float soloCap()
 {
     static const int Env = []
     { const char *e = getenv( "KALEIDO_SOLO_SECS" ); return e ? atoi( e ) : 0; }();
-    return ( Env > 0 ) ? float( Env ) : EffectShader::M_ReviewSolo;
+    return ( Env > 0 ) ? static_cast<float>( Env ) : EffectShader::M_ReviewSolo;
 }
 
 
@@ -272,9 +272,9 @@ void EffectShader::resetParameters()
     ++m_activations;
     if ( pin_env )
     {
-        unsigned h = (unsigned)strtoul( pin_env, nullptr, 10 ) ^ 2166136261u;
+        unsigned h = static_cast<unsigned>( strtoul( pin_env, nullptr, 10 ) ) ^ 2166136261u;
         for ( const char *c = m_fragmentShaderFilename; c && *c; ++c )
-            h = ( h ^ (unsigned)(unsigned char)*c ) * 16777619u; // FNV-1a
+            h = ( h ^ static_cast<unsigned>( static_cast<unsigned char>( *c ) ) ) * 16777619u; // FNV-1a
         h = ( h ^ m_activations ) * 16777619u;
         srand( h ^ ( h >> 15 ) );
     }
@@ -286,7 +286,7 @@ void EffectShader::resetParameters()
     // setUniforms() re-rolls m_timeSolo every frame; the activation time is
     // left as a sentinel because this function has no time to work from, so
     // the first setUniforms() after the reset fills it in.
-    m_soloAtReset = (float)m_timeSolo;
+    m_soloAtReset = static_cast<float>( m_timeSolo );
     // Auf dem Review-Prueftisch zeigt der Scheduler jede Szene nur
     // ReviewSoloSecs lang, sceneProgress normierte aber weiter ueber die
     // gewuerfelte Solo-Spanne -- eine inszenierte Szene lief damit genau
@@ -303,12 +303,12 @@ void EffectShader::resetParameters()
     // interpolation span to fade back OUT — so a Uniform's own randomised
     // min/max sweep can be timed to complete exactly once across the effect's
     // whole active lifetime rather than per solo/interpolation phase.
-    for ( unsigned int i = 0; i < m_uniforms.size(); i++ )
-        m_uniforms[i]->resetParameters( (float)( m_timeSolo + 2 * m_timeInterpolation ) );
+    for ( unsigned int i = 0; i < m_uniforms.size(); ++i )
+        m_uniforms[i]->resetParameters( static_cast<float>( m_timeSolo + 2 * m_timeInterpolation ) );
 
     // Fresh per-activation seeds for the formula layer (seed1..seed3).
-    for ( int i = 0; i < 3; i++ )
-        m_exprSeeds[i] = (float)rand() / (float)RAND_MAX;
+    for ( int i = 0; i < 3; ++i )
+        m_exprSeeds[i] = static_cast<float>( rand() ) / static_cast<float>( RAND_MAX );
 
     // Colour grade (preset entry grade="fade,grey,sepia"): one of the listed
     // looks per activation.  Entries without the attribute draw nothing, so
@@ -366,7 +366,7 @@ void EffectShader::bindProgram( GLuint prog )
     m_interpolationUni = glGetUniformLocation( prog, "interpolation" );
     m_progressUni = glGetUniformLocation( prog, "sceneProgress" );
     m_sceneTimeUni = glGetUniformLocation( prog, "sceneTime" );
-    for ( unsigned int i = 0; i < m_uniforms.size(); i++ )
+    for ( unsigned int i = 0; i < m_uniforms.size(); ++i )
         m_uniforms[i]->initUniform( prog );
     // every other location cache is keyed by the program id and refreshes
     // itself -- the walk's must not take the switch for a new activation
@@ -397,7 +397,7 @@ void EffectShader::setUniforms( float time, float interpolation, GLint texLoc1, 
     m_exprTime = time;                      // formula layer reads this frame's time
     glUniform1i( m_texPointUni1, texLoc1 ); // Combine Unit 0, nicht mit texId verwechseln
     glUniform1i( m_texPointUni2, texLoc2 ); // Combine Unit 0, nicht mit texId verwechseln
-    glUniform2f( m_texSizeRcpUni, (float)m_width, (float)m_height );
+    glUniform2f( m_texSizeRcpUni, static_cast<float>( m_width ), static_cast<float>( m_height ) );
     glUniform1f( m_timeUni, time );
     glUniform1f( m_interpolationUni, interpolation );
 
@@ -409,7 +409,7 @@ void EffectShader::setUniforms( float time, float interpolation, GLint texLoc1, 
     // rendering a single-scene probe and watching sceneProgress never move.
     if ( m_soloAtReset <= 0.01f )
     {
-        m_soloAtReset = (float)m_timeSolo;
+        m_soloAtReset = static_cast<float>( m_timeSolo );
         if ( soloCap() > 0.01f && m_soloAtReset > soloCap() )
             m_soloAtReset = soloCap(); // same cap as resetParameters()
     }
@@ -440,7 +440,7 @@ void EffectShader::setUniforms( float time, float interpolation, GLint texLoc1, 
         glUniform1f( m_sceneTimeUni, m_lastSceneTime );
 
 
-    for ( unsigned int i = 0; i < m_uniforms.size(); i++ )
+    for ( unsigned int i = 0; i < m_uniforms.size(); ++i )
         m_uniforms[i]->setUniform();
 
     m_timeSolo = getInterpolatedTime( m_minTimeSolo, m_maxTimeSolo );
@@ -450,7 +450,7 @@ void EffectShader::setUniforms( float time, float interpolation, GLint texLoc1, 
 
 void EffectShader::startInterpolators()
 {
-    for ( unsigned int i = 0; i < m_uniforms.size(); i++ )
+    for ( unsigned int i = 0; i < m_uniforms.size(); ++i )
         m_uniforms[i]->startInterpolator();
 }
 
@@ -521,7 +521,7 @@ void EffectShader::initUniforms( int width, int height )
 
 
 
-    for ( unsigned int i = 0; i < m_uniforms.size(); i++ )
+    for ( unsigned int i = 0; i < m_uniforms.size(); ++i )
         m_uniforms[i]->initUniform( m_shProgId );
 
     checkGLErrors( "loadShader 2" );
@@ -542,7 +542,7 @@ void EffectShader::checkGLErrors( const char *label )
 
     // gluErrorString returns NULL for codes it does not know (newer GL) —
     // fputs(NULL) crashed the app the moment such an error occurred.
-    const char *msg = (const char *)gluErrorString( err_code );
+    const char *msg = reinterpret_cast<const char *>( gluErrorString( err_code ) );
     // "noticed at", not "in": glGetError drains a GLOBAL queue, so the label
     // names the checkpoint that FOUND the error, not the call that raised it.
     // The cause lies between the previous checkpoint and this one -- and since
@@ -552,7 +552,7 @@ void EffectShader::checkGLErrors( const char *label )
     // debugging down the wrong path here more than once.
     fprintf( stderr, "OpenGL ERROR: %s (0x%04x, noticed at: %s; raised before "
                      "this checkpoint, not necessarily here)\n",
-             msg ? msg : "?", (unsigned)err_code, label ? label : "?" );
+             msg ? msg : "?", static_cast<unsigned>( err_code ), label ? label : "?" );
 }
 
 
@@ -604,7 +604,7 @@ void EffectShader::addUniformInterpolator( const std::string &name, float interp
 {
     Uniform *u = new Uniform( name, BASE_TYPE_INTERPOLATOR_FLOAT );
     u->setInterpolator( interpolatorMinMinf, interpolatorMinMaxf, interpolatorMaxMinf, interpolatorMaxMaxf,
-                        (float)( m_timeSolo + 2 * m_timeInterpolation ) );
+                        static_cast<float>( m_timeSolo + 2 * m_timeInterpolation ) );
     u->resetParameters();
     m_uniforms.push_back( u );
     if ( m_shProgId )
@@ -614,12 +614,12 @@ void EffectShader::addUniformInterpolator( const std::string &name, float interp
 
 
 
-unsigned int EffectShader::getTimeSolo()
+unsigned int EffectShader::getTimeSolo() const
 {
     return m_timeSolo; // getInterpolatedTime( m_minTimeSolo, m_maxTimeSolo );
 }
 
-unsigned int EffectShader::getTimeInterpolation()
+unsigned int EffectShader::getTimeInterpolation() const
 {
 
     return m_timeInterpolation; // getInterpolatedTime( m_minTimeInterpolation, m_maxTimeInterpolation );
@@ -1064,15 +1064,15 @@ void EffectShader::applyAudioFeatures( const AudioFeatures &f )
             m_secT0 = first ? now - 1000.0 : now;
         }
         if ( locs[AL_SECTIONID] >= 0 )
-            glUniform1f( locs[AL_SECTIONID], (float)m_secCur );
+            glUniform1f( locs[AL_SECTIONID], static_cast<float>( m_secCur ) );
         if ( locs[AL_SECTIONPREV] >= 0 )
-            glUniform1f( locs[AL_SECTIONPREV], (float)m_secPrev );
+            glUniform1f( locs[AL_SECTIONPREV], static_cast<float>( m_secPrev ) );
         if ( locs[AL_SECTIONAGE] >= 0 )
-            glUniform1f( locs[AL_SECTIONAGE], (float)( now - m_secT0 ) );
+            glUniform1f( locs[AL_SECTIONAGE], static_cast<float>( now - m_secT0 ) );
         if ( locs[AL_SECTIONKNOWN] >= 0 )
             glUniform1f( locs[AL_SECTIONKNOWN], m_secKnown );
         if ( locs[AL_SECTIONCOUNT] >= 0 )
-            glUniform1f( locs[AL_SECTIONCOUNT], (float)m_secCount );
+            glUniform1f( locs[AL_SECTIONCOUNT], static_cast<float>( m_secCount ) );
     }
     if ( locs[AL_SCENEADVANCE] >= 0 )
         glUniform1f( locs[AL_SCENEADVANCE], f.audioAdvance - m_advanceAtReset );
@@ -1081,7 +1081,7 @@ void EffectShader::applyAudioFeatures( const AudioFeatures &f )
     if ( locs[AL_LEVEL] >= 0 )
         glUniform1f( locs[AL_LEVEL], f.overallLevel );
     if ( locs[AL_SIDES] >= 0 )
-        glUniform1i( locs[AL_SIDES], int( f.smoothedSides + 0.5f ) );
+        glUniform1i( locs[AL_SIDES], static_cast<int>( f.smoothedSides + 0.5f ) );
     if ( locs[AL_FLIP] >= 0 )
         glUniform1f( locs[AL_FLIP], f.audioFlip );
     if ( locs[AL_CENTROID] >= 0 )
@@ -1173,13 +1173,13 @@ void EffectShader::addExpression( const std::string &name, const std::string &fo
                  formula.c_str() );
     }
 
-    for ( int i = 0; i < 3; i++ )
-        m_exprSeeds[i] = (float)rand() / (float)RAND_MAX;
+    for ( int i = 0; i < 3; ++i )
+        m_exprSeeds[i] = static_cast<float>( rand() ) / static_cast<float>( RAND_MAX );
 }
 
-bool EffectShader::useShader()
+bool EffectShader::useShader() const
 {
-    float prob = (float)( rand() ) / (float)RAND_MAX;
+    float prob = static_cast<float>( rand() ) / static_cast<float>( RAND_MAX );
 
     if ( prob <= m_probability )
     {
@@ -1417,7 +1417,8 @@ void EffectShader::carryChainOver()
         const auto  at = std::find( names.begin(), names.end(), last->second.first );
         if ( at == names.end() )
             continue; // this lab has not got that class
-        const float v = ( (float)( at - names.begin() ) + last->second.second ) / (float)names.size();
+        const float v = ( static_cast<float>( at - names.begin() ) + last->second.second )
+                        / static_cast<float>( names.size() );
         for ( Uniform *u : m_uniforms )
             if ( u->getName() == kWalkKnob[s] )
             {
@@ -1483,7 +1484,7 @@ void EffectShader::resetChainWalk()
         m_walk.x0[s] = m_walk.x1[s] = v;
         m_walk.f[s] = 0.f;
         m_walk.fading[s] = false;
-        m_walk.hold[s] = 9.f * (float)s; // staggered: the stages come due one after another
+        m_walk.hold[s] = 9.f * static_cast<float>( s ); // staggered: the stages come due one after another
     }
     m_walk.lastSection = m_walk.lastDrop = -1;
     m_walk.lastPhrase = -1.f;
@@ -1492,8 +1493,8 @@ void EffectShader::resetChainWalk()
     m_walk.harmCool = 8.f;
     m_walk.sectionLook.clear();
     m_walk.hasLast = false;
-    m_walk.rng.seed( (unsigned)rand() + 1u );
-    m_walk.tiltA = m_walk.tiltTarget = 6.2831853f * (float)( m_walk.rng() % 10000u ) / 10000.f;
+    m_walk.rng.seed( static_cast<unsigned>( rand() ) + 1u );
+    m_walk.tiltA = m_walk.tiltTarget = 6.2831853f * static_cast<float>( m_walk.rng() % 10000u ) / 10000.f;
     m_walk.sectionTilt.clear();
 }
 
@@ -1585,8 +1586,8 @@ void EffectShader::stepChainWalk( const AudioFeatures &audio )
         const float x = c != m_chainConsts.end()                     ? c->second
                         : ( m_walk.fading[s] && m_walk.f[s] > 0.5f ) ? m_walk.x1[s]
                                                                      : m_walk.x0[s];
-        const int   cnt = (int)n->second.size(), k = classPos( x, cnt );
-        const float sub = x * cnt - (float)k;
+        const int   cnt = static_cast<int>( n->second.size() ), k = classPos( x, cnt );
+        const float sub = x * cnt - static_cast<float>( k );
         s_lastChain.cls[kWalkKnob[s]] = { n->second[k], sub < 0.f ? 0.f : ( sub > 0.99f ? 0.99f : sub ) };
     }
     if ( !m_walk.active )
@@ -1675,7 +1676,7 @@ void EffectShader::stepChainWalk( const AudioFeatures &audio )
             // ... and in the 3D lab often a new space or fold core: the world itself turns.
             if ( uni( m_walk.rng ) < 0.6f )
             {
-                const int s = 5 + (int)( m_walk.rng() % 2u );
+                const int s = 5 + static_cast<int>( m_walk.rng() % 2u );
                 startWalk( s, pick_for( s ), lerp( 14.f, 8.f, E ) );
             }
         }
@@ -1724,7 +1725,7 @@ void EffectShader::stepChainWalk( const AudioFeatures &audio )
     m_walk.harmCool -= dt;
     if ( !any_fading() && m_walk.harmCool <= 0.f && f.harmonicChange > 0.55f )
     {
-        const int s = 1 + (int)( m_walk.rng() % 2u );
+        const int s = 1 + static_cast<int>( m_walk.rng() % 2u );
         startWalk( s, pick_for( s ), lerp( 8.f, 4.f, E ) );
         m_walk.harmCool = 12.f;
     }
@@ -1792,15 +1793,16 @@ void EffectShader::stepChainWalk( const AudioFeatures &audio )
                 auto it = m_chainClasses.find( kWalkKnob[s] );
                 if ( m_walkLoc[s] < 0 || it == m_chainClasses.end() || it->second.empty() )
                     continue;
-                if ( it->second[classPos( m_walk.x0[s], (int)it->second.size() )] != "none" )
+                if ( it->second[classPos( m_walk.x0[s], static_cast<int>( it->second.size() ) )] != "none" )
                     cand[nc++] = s;
             }
             if ( nc > 0 )
             {
-                const int s = cand[m_walk.rng() % (unsigned)nc];
-                const int n = (int)m_chainClasses[kWalkKnob[s]].size();
+                const int s = cand[m_walk.rng() % static_cast<unsigned>( nc )];
+                const int n = static_cast<int>( m_chainClasses[kWalkKnob[s]].size() );
                 const int k = classPos( m_walk.x0[s], n );
-                startWalk( s, ( (float)k + 0.05f + 0.9f * uni( m_walk.rng ) ) / (float)n, 4.f );
+                startWalk( s, ( static_cast<float>( k ) + 0.05f + 0.9f * uni( m_walk.rng ) ) / static_cast<float>( n ),
+                           4.f );
             }
         }
         else
@@ -2160,8 +2162,8 @@ void EffectShader::runChainPasses( const AudioFeatures &f )
     const float       cs = m_chainBake > 0 ? 1.f
                            : ss ? 2.f
                                 : ( M_ChainScale < 0.5f ? 0.5f : ( M_ChainScale > 1.f ? 1.f : M_ChainScale ) );
-    const int         W = m_chainBake > 0 ? m_chainBake : ( vp[2] > 0 ? (int)ceilf( vp[2] * cs ) : 1 );
-    const int         H = m_chainBake > 0 ? m_chainBake : ( vp[3] > 0 ? (int)ceilf( vp[3] * cs ) : 1 );
+    const int         W = m_chainBake > 0 ? m_chainBake : ( vp[2] > 0 ? static_cast<int>( ceilf( vp[2] * cs ) ) : 1 );
+    const int         H = m_chainBake > 0 ? m_chainBake : ( vp[3] > 0 ? static_cast<int>( ceilf( vp[3] * cs ) ) : 1 );
     if ( W != m_cpW || H != m_cpH || !m_cpTex[0] )
     {
         if ( m_cpTex[0] )
@@ -2226,11 +2228,12 @@ void EffectShader::runChainPasses( const AudioFeatures &f )
         if ( p.mixF >= 0 )
             glUniform1f( p.mixF, mixF );
         if ( p.chainOff >= 0 )
-            glUniform2f( p.chainOff, m_chainBake > 0 ? 0.f : (float)vp[0], m_chainBake > 0 ? 0.f : (float)vp[1] );
+            glUniform2f( p.chainOff, m_chainBake > 0 ? 0.f : static_cast<float>( vp[0] ),
+                         m_chainBake > 0 ? 0.f : static_cast<float>( vp[1] ) );
         if ( p.bakeSize >= 0 )
-            glUniform1f( p.bakeSize, (float)m_chainBake );
+            glUniform1f( p.bakeSize, static_cast<float>( m_chainBake ) );
         if ( p.res >= 0 )
-            glUniform2f( p.res, (float)m_width, (float)m_height );
+            glUniform2f( p.res, static_cast<float>( m_width ), static_cast<float>( m_height ) );
         if ( p.sceneTime >= 0 )
             glUniform1f( p.sceneTime, m_lastSceneTime );
         if ( p.adv >= 0 )
@@ -2265,10 +2268,10 @@ void EffectShader::runChainPasses( const AudioFeatures &f )
         {
             const int               s = ( code >> ( 2 * pos ) ) & 3;
             const std::vector<int> &ord = m_chainOrd[kWalkKnob[s]];
-            const int               n = (int)ord.size();
+            const int               n = static_cast<int>( ord.size() );
             const float             x0 = m_walk.x0[s], x1 = m_walk.x1[s];
             const int               p0 = classPos( x0, n );
-            const float             v0 = ( x0 < 0.f ? 0.f : ( x0 > 0.9999f ? 0.9999f : x0 ) ) * n - (float)p0;
+            const float v0 = ( x0 < 0.f ? 0.f : ( x0 > 0.9999f ? 0.9999f : x0 ) ) * n - static_cast<float>( p0 );
             const bool              fade = m_walk.active && m_walk.fading[s] && m_walk.f[s] > 0.f;
             const unsigned          keep = cur >= 0 ? ( 1u << cur ) : 0u;
             if ( !fade )
@@ -2281,7 +2284,7 @@ void EffectShader::runChainPasses( const AudioFeatures &f )
                 continue;
             }
             const int   p1 = classPos( x1, n );
-            const float v1 = ( x1 < 0.f ? 0.f : ( x1 > 0.9999f ? 0.9999f : x1 ) ) * n - (float)p1;
+            const float v1 = ( x1 < 0.f ? 0.f : ( x1 > 0.9999f ? 0.9999f : x1 ) ) * n - static_cast<float>( p1 );
             const int   ta = free_tex( keep );
             pass( p0 == 0 ? std::string( "..\\Engine\\ChainPass\\Id.frag" ) : passFile( Stage[s], ord[p0] ), cur, -1,
                   ta, v0, 0.f );
@@ -2318,7 +2321,7 @@ void EffectShader::runChainPasses( const AudioFeatures &f )
     float w = 1.f;
     for ( int s = 0; s < 4; ++s )
     {
-        const int n = (int)m_chainOrd[kWalkKnob[s]].size();
+        const int n = static_cast<int>( m_chainOrd[kWalkKnob[s]].size() );
         const int p0 = classPos( m_walk.x0[s], n );
         if ( m_walk.active && m_walk.fading[s] && m_walk.f[s] > 0.f )
         {
@@ -2353,7 +2356,7 @@ void EffectShader::runChainPasses( const AudioFeatures &f )
         glEnable( GL_DEPTH_TEST );
     if ( scissor )
         glEnable( GL_SCISSOR_TEST );
-    glBindVertexArray( (GLuint)vao );
+    glBindVertexArray( static_cast<GLuint>( vao ) );
     glUseProgram( m_shProgId );
     glActiveTexture( GL_TEXTURE0 + 40 );
     glBindTexture( GL_TEXTURE_2D, m_cpTex[res] );
@@ -2363,10 +2366,10 @@ void EffectShader::runChainPasses( const AudioFeatures &f )
     if ( lt >= 0 )
         glUniform1i( lt, 40 );
     if ( lo >= 0 )
-        glUniform2f( lo, (float)vp[0], (float)vp[1] );
+        glUniform2f( lo, static_cast<float>( vp[0] ), static_cast<float>( vp[1] ) );
     if ( ls >= 0 )
         glUniform1f( ls, cs );
-    glActiveTexture( (GLenum)active_tex );
+    glActiveTexture( static_cast<GLenum>( active_tex ) );
 }
 
 // ---- 3D lab ------------------------------------------------------------------
@@ -2381,7 +2384,7 @@ GLuint EffectShader::geomProgram( const float *x0, const float *x1, const bool *
         auto o = m_chainOrd.find( kWalkKnob[St[i]] );
         if ( o == m_chainOrd.end() || o->second.empty() )
             return 0;
-        const int n = (int)o->second.size();
+        const int n = static_cast<int>( o->second.size() );
         const int p0 = classPos( x0[St[i]], n );
         const int p1 = fading[St[i]] ? classPos( x1[St[i]], n ) : p0;
         snprintf( buf, sizeof buf, "#define SPEC_%s0 %d\n#define SPEC_%s1 %d\n", Name[i], o->second[p0], Name[i],
@@ -2510,43 +2513,59 @@ void EffectShader::runChain3D( const AudioFeatures &f )
                     glUniform1f( l, u->snapshotValue() );
             }
         }
-        GLint l;
-        if ( ( l = loc( "resolution" ) ) >= 0 )
-            glUniform2f( l, (float)m_width, (float)m_height );
-        if ( ( l = loc( "sceneTime" ) ) >= 0 )
+        GLint l = loc( "resolution" );
+        if ( l >= 0 )
+            glUniform2f( l, static_cast<float>( m_width ), static_cast<float>( m_height ) );
+        l = loc( "sceneTime" );
+        if ( l >= 0 )
             glUniform1f( l, m_lastSceneTime );
-        if ( ( l = loc( "sceneAdvance" ) ) >= 0 )
+        l = loc( "sceneAdvance" );
+        if ( l >= 0 )
             glUniform1f( l, f.audioAdvance - m_advanceAtReset );
-        if ( ( l = loc( "audioAdvance" ) ) >= 0 )
+        l = loc( "audioAdvance" );
+        if ( l >= 0 )
             glUniform1f( l, f.audioAdvance );
-        if ( ( l = loc( "audioPhase" ) ) >= 0 )
+        l = loc( "audioPhase" );
+        if ( l >= 0 )
             glUniform1f( l, f.audioRotPhase );
-        if ( ( l = loc( "audioSpread" ) ) >= 0 )
+        l = loc( "audioSpread" );
+        if ( l >= 0 )
             glUniform1f( l, f.spectralSpread );
-        if ( ( l = loc( "audioSwell" ) ) >= 0 )
+        l = loc( "audioSwell" );
+        if ( l >= 0 )
             glUniform1f( l, f.swell );
-        if ( ( l = loc( "audioKick" ) ) >= 0 )
+        l = loc( "audioKick" );
+        if ( l >= 0 )
             glUniform1f( l, f.onsetKick );
-        if ( ( l = loc( "audioMode" ) ) >= 0 )
+        l = loc( "audioMode" );
+        if ( l >= 0 )
             glUniform1f( l, f.musicalMode );
-        if ( ( l = loc( "audioLevel" ) ) >= 0 )
+        l = loc( "audioLevel" );
+        if ( l >= 0 )
             glUniform1f( l, f.overallLevel );
-        if ( ( l = loc( "walkHost" ) ) >= 0 )
+        l = loc( "walkHost" );
+        if ( l >= 0 )
             glUniform1f( l, m_walk.active ? 1.f : 0.f );
         static const char *WalkNames[3] = { "walkSpace", "walkCore", "walkBody" };
         for ( int i = 0; i < 3; ++i )
-            if ( ( l = loc( WalkNames[i] ) ) >= 0 )
+        {
+            l = loc( WalkNames[i] );
+            if ( l >= 0 )
             {
                 const int s = 5 + i;
                 glUniform3f( l, m_walk.x0[s], m_walk.fading[s] ? m_walk.x1[s] : m_walk.x0[s],
                              m_walk.fading[s] ? m_walk.f[s] : 0.f );
             }
-        if ( ( l = loc( "camHost" ) ) >= 0 )
+        }
+        l = loc( "camHost" );
+        if ( l >= 0 )
             glUniform1f( l, m_camHostLoc >= 0 ? 1.f : 0.f );
-        if ( ( l = loc( "camZ" ) ) >= 0 )
+        l = loc( "camZ" );
+        if ( l >= 0 )
             glUniform1f( l, m_cam.z );
-        if ( ( l = loc( "camGaze" ) ) >= 0 )
-            glUniform3f( l, (float)m_cam.g0, (float)m_cam.g1, m_cam.f );
+        l = loc( "camGaze" );
+        if ( l >= 0 )
+            glUniform3f( l, static_cast<float>( m_cam.g0 ), static_cast<float>( m_cam.g1 ), m_cam.f );
         static GLuint last_geom = 0;
         const auto    td0 = std::chrono::steady_clock::now();
         glDrawArrays( GL_TRIANGLES, 0, 3 );
@@ -2605,7 +2624,7 @@ void EffectShader::runChain3D( const AudioFeatures &f )
         if ( p.bakeSize >= 0 )
             glUniform1f( p.bakeSize, 0.f );
         if ( p.res >= 0 )
-            glUniform2f( p.res, (float)m_width, (float)m_height );
+            glUniform2f( p.res, static_cast<float>( m_width ), static_cast<float>( m_height ) );
         if ( p.sceneTime >= 0 )
             glUniform1f( p.sceneTime, m_lastSceneTime );
         if ( p.adv >= 0 )
@@ -2641,10 +2660,10 @@ void EffectShader::runChain3D( const AudioFeatures &f )
         {
             const int               s = ( code >> ( 2 * pos ) ) & 3;
             const std::vector<int> &ord = m_chainOrd[kWalkKnob[s]];
-            const int               n = (int)ord.size();
+            const int               n = static_cast<int>( ord.size() );
             const float             x0 = m_walk.x0[s], x1 = m_walk.x1[s];
             const int               p0 = classPos( x0, n );
-            const float             v0 = ( x0 < 0.f ? 0.f : ( x0 > 0.9999f ? 0.9999f : x0 ) ) * n - (float)p0;
+            const float v0 = ( x0 < 0.f ? 0.f : ( x0 > 0.9999f ? 0.9999f : x0 ) ) * n - static_cast<float>( p0 );
             const bool              fade = m_walk.active && m_walk.fading[s] && m_walk.f[s] > 0.f;
             const unsigned          keep = cur >= 0 ? ( 1u << cur ) : 0u;
             if ( !fade )
@@ -2657,7 +2676,7 @@ void EffectShader::runChain3D( const AudioFeatures &f )
                 continue;
             }
             const int   p1 = classPos( x1, n );
-            const float v1 = ( x1 < 0.f ? 0.f : ( x1 > 0.9999f ? 0.9999f : x1 ) ) * n - (float)p1;
+            const float v1 = ( x1 < 0.f ? 0.f : ( x1 > 0.9999f ? 0.9999f : x1 ) ) * n - static_cast<float>( p1 );
             const int   ta = free_tex( keep );
             pass( p0 == 0 ? std::string( "..\\Engine\\ChainPass\\Id.frag" ) : passFile( Stage[s], ord[p0] ), cur, -1,
                   ta, v0, 0.f );
@@ -2678,7 +2697,7 @@ void EffectShader::runChain3D( const AudioFeatures &f )
     float w = 1.f;
     for ( int s = 0; s < 4; ++s )
     {
-        const int n = (int)m_chainOrd[kWalkKnob[s]].size();
+        const int n = static_cast<int>( m_chainOrd[kWalkKnob[s]].size() );
         const int p0 = classPos( m_walk.x0[s], n );
         if ( m_walk.active && m_walk.fading[s] && m_walk.f[s] > 0.f )
         {
@@ -2732,7 +2751,7 @@ void EffectShader::runChain3D( const AudioFeatures &f )
         glEnable( GL_DEPTH_TEST );
     if ( scissor )
         glEnable( GL_SCISSOR_TEST );
-    glBindVertexArray( (GLuint)vao );
+    glBindVertexArray( static_cast<GLuint>( vao ) );
     glUseProgram( m_shProgId );
     static const int   Unit[5] = { 45, 46, 40, 43, 44 };
     static const char *Sam[5] = { "texGPos", "texGNrm", "texChain0", "texChain1", "texChain2" };
@@ -2747,8 +2766,8 @@ void EffectShader::runChain3D( const AudioFeatures &f )
     }
     const GLint lo = glGetUniformLocation( m_shProgId, "chainOff" );
     if ( lo >= 0 )
-        glUniform2f( lo, (float)vp[0], (float)vp[1] );
-    glActiveTexture( (GLenum)active_tex );
+        glUniform2f( lo, static_cast<float>( vp[0] ), static_cast<float>( vp[1] ) );
+    glActiveTexture( static_cast<GLenum>( active_tex ) );
     const double t_all = ms_since( tc0 );
     if ( spec_log && t_all > 15.0 )
         fprintf( stderr, "CHAIN3D slow frame: %.1f ms (select %.1f, geom %.1f, passes %.1f)%s%s\n", t_all, t_sel,
@@ -2768,7 +2787,7 @@ std::string EffectShader::specDefines( const float *x0, const float *x1, const b
         auto      o = m_chainOrd.find( kWalkKnob[s] );
         if ( o == m_chainOrd.end() || o->second.empty() )
             continue;
-        const int n = (int)o->second.size();
+        const int n = static_cast<int>( o->second.size() );
         const int p0 = classPos( x0[s], n );
         const int p1 = fading[s] ? classPos( x1[s], n ) : p0;
         snprintf( buf, sizeof buf, "#define SPEC_%s0 %d\n#define SPEC_%s1 %d\n", SpecName[i], o->second[p0],
@@ -2945,7 +2964,7 @@ void EffectShader::parseChainSource()
                         std::string name = line.substr( Ctag.size(), eq - Ctag.size() );
                         while ( !name.empty() && name.back() == ' ' )
                             name.pop_back();
-                        m_chainConsts[name] = (float)atof( line.c_str() + eq + 1 );
+                        m_chainConsts[name] = static_cast<float>( atof( line.c_str() + eq + 1 ) );
                     }
                 }
             }
@@ -2963,7 +2982,7 @@ void EffectShader::parseChainSource()
  */
 static int classPos( float x, int n )
 {
-    int k = (int)( ( x < 0.f ? 0.f : ( x > 1.f ? 1.f : x ) ) * n );
+    int k = static_cast<int>( ( x < 0.f ? 0.f : ( x > 1.f ? 1.f : x ) ) * n );
     return k > n - 1 ? n - 1 : k;
 }
 
@@ -2973,7 +2992,7 @@ bool EffectShader::opensAt( int s, float x ) const
     auto n = m_chainClasses.find( kWalkKnob[s] );
     if ( c == m_chainOpening.end() || n == m_chainClasses.end() || n->second.empty() )
         return false;
-    const int k = classPos( x, (int)n->second.size() );
+    const int k = classPos( x, static_cast<int>( n->second.size() ) );
     for ( int p : c->second )
         if ( p == k )
             return true;
@@ -2985,16 +3004,17 @@ float EffectShader::closedClass( int s, float x ) const
     auto n = m_chainClasses.find( kWalkKnob[s] );
     if ( n == m_chainClasses.end() || n->second.empty() )
         return x;
-    const int   cnt = (int)n->second.size();
+    const int   cnt = static_cast<int>( n->second.size() );
     const int   k = classPos( x, cnt );
-    const float sub = x * cnt - (float)k; // the sub-variant (arms, mirrors ...) stays
+    const float sub = x * cnt - static_cast<float>( k ); // the sub-variant (arms, mirrors ...) stays
     for ( int d = 1; d < cnt; ++d )
         for ( int sign = -1; sign <= 1; sign += 2 )
         {
             const int j = k + sign * d;
             if ( j < 0 || j >= cnt )
                 continue;
-            const float v = ( (float)j + ( sub < 0.f ? 0.f : ( sub > 0.99f ? 0.99f : sub ) ) ) / (float)cnt;
+            const float v = ( static_cast<float>( j ) + ( sub < 0.f ? 0.f : ( sub > 0.99f ? 0.99f : sub ) ) )
+                            / static_cast<float>( cnt );
             if ( !opensAt( s, v ) )
                 return v;
         }
@@ -3011,7 +3031,7 @@ bool EffectShader::chainWantsSS() const
         auto n = m_chainClasses.find( kWalkKnob[s] );
         if ( ss == m_chainSS.end() || ss->second.empty() || n == m_chainClasses.end() || n->second.empty() )
             continue;
-        const int  cnt = (int)n->second.size();
+        const int  cnt = static_cast<int>( n->second.size() );
         const auto has = [&]( float x )
         { return std::find( ss->second.begin(), ss->second.end(), classPos( x, cnt ) ) != ss->second.end(); };
         if ( has( m_walk.x0[s] ) || ( m_walk.fading[s] && has( m_walk.x1[s] ) ) )
@@ -3043,7 +3063,8 @@ float EffectShader::classTaste( int s, float x ) const
     auto n = m_chainClasses.find( kWalkKnob[s] );
     if ( n == m_chainClasses.end() || n->second.empty() )
         return 1.f;
-    auto t = M_ClassTaste.find( classTasteKey( kWalkKnob[s], n->second[classPos( x, (int)n->second.size() )] ) );
+    auto t = M_ClassTaste.find(
+        classTasteKey( kWalkKnob[s], n->second[classPos( x, static_cast<int>( n->second.size() ) )] ) );
     return t == M_ClassTaste.end() ? 1.f : t->second;
 }
 
@@ -3061,7 +3082,7 @@ std::vector<std::pair<std::string, float>> EffectShader::bumpClassTaste( float m
             continue; // stage absent in this lab
         // what is on screen: a fade past its middle shows its target
         const float        x = ( m_walk.fading[s] && m_walk.f[s] > 0.5f ) ? m_walk.x1[s] : m_walk.x0[s];
-        const std::string &cls = n->second[classPos( x, (int)n->second.size() )];
+        const std::string &cls = n->second[classPos( x, static_cast<int>( n->second.size() ) )];
         if ( cls == "none" )
             continue;
         const std::string key = classTasteKey( kWalkKnob[s], cls );
@@ -3105,10 +3126,14 @@ void EffectShader::stepChainCam( const AudioFeatures &f )
     {
         m_cam.pending = false;
         m_cam.rng.seed( M_FreezeTime >= 0.f ? 12345u // a comparison run: the same flight every time
-                                            : (unsigned)now.time_since_epoch().count() | 1u ); // not from the scene's
-                                                                                               // rand() stream
+                                            : static_cast<unsigned>( now.time_since_epoch().count() ) | 1u ); // not
+                                                                                                              // from
+                                                                                                              // the
+                                                                                                              // scene's
+                                                                                                              // rand()
+                                                                                                              // stream
         m_cam.z = std::uniform_real_distribution<float>( 0.f, 500.f )( m_cam.rng ); // a fresh stretch of the world
-        m_cam.g0 = m_cam.g1 = (int)( ( cam_p < 0.f ? 0.f : ( cam_p > 0.999f ? 0.999f : cam_p ) ) * GazeN );
+        m_cam.g0 = m_cam.g1 = static_cast<int>( ( cam_p < 0.f ? 0.f : ( cam_p > 0.999f ? 0.999f : cam_p ) ) * GazeN );
         m_cam.f = 0.f;
         m_cam.hold = 0.f;
         m_cam.holdDur = std::uniform_real_distribution<float>( 120.f, 300.f )( m_cam.rng );
@@ -3132,7 +3157,7 @@ void EffectShader::stepChainCam( const AudioFeatures &f )
         m_cam.hold += dt;
         if ( m_cam.hold >= m_cam.holdDur )
         {
-            m_cam.g1 = ( m_cam.g0 + 1 + (int)( m_cam.rng() % (unsigned)( GazeN - 1 ) ) ) % GazeN;
+            m_cam.g1 = ( m_cam.g0 + 1 + static_cast<int>( m_cam.rng() % static_cast<unsigned>( GazeN - 1 ) ) ) % GazeN;
             m_cam.f = 0.f;
             m_cam.panDur = std::uniform_real_distribution<float>( 40.f, 60.f )( m_cam.rng );
             fprintf( stderr, "CAM %s gaze %d -> %d, %.0f s pan\n", fragmentName(), m_cam.g0, m_cam.g1, m_cam.panDur );
@@ -3158,7 +3183,7 @@ void EffectShader::stepChainCam( const AudioFeatures &f )
 
     glUniform1f( m_camHostLoc, 1.f );
     glUniform1f( m_camZLoc, m_cam.z );
-    glUniform3f( m_camGazeLoc, (float)m_cam.g0, (float)m_cam.g1, m_cam.f );
+    glUniform3f( m_camGazeLoc, static_cast<float>( m_cam.g0 ), static_cast<float>( m_cam.g1 ), m_cam.f );
 }
 
 std::string EffectShader::chainInfo()
@@ -3181,8 +3206,8 @@ std::string EffectShader::chainInfo()
         auto it = m_chainClasses.find( knob );
         if ( it == m_chainClasses.end() || it->second.empty() )
             return "?";
-        const int n = (int)it->second.size();
-        int       k = (int)( ( x < 0.f ? 0.f : ( x > 1.f ? 1.f : x ) ) * n );
+        const int n = static_cast<int>( it->second.size() );
+        int       k = static_cast<int>( ( x < 0.f ? 0.f : ( x > 1.f ? 1.f : x ) ) * n );
         if ( k > n - 1 )
             k = n - 1;
         return it->second[k];
@@ -3205,7 +3230,7 @@ std::string EffectShader::chainInfo()
         line += class_name( kWalkKnob[s], x0 );
         if ( walking && m_walk.fading[s] )
         {
-            snprintf( buf, sizeof buf, "  (%d%%)", (int)( m_walk.f[s] * 100.f + 0.5f ) );
+            snprintf( buf, sizeof buf, "  (%d%%)", static_cast<int>( m_walk.f[s] * 100.f + 0.5f ) );
             const std::string to = class_name( kWalkKnob[s], m_walk.x1[s] );
             line += " -> " + ( to == class_name( kWalkKnob[s], x0 ) ? std::string( "neue Variante" ) : to ) + buf;
         }
@@ -3430,7 +3455,7 @@ unsigned int EffectShader::cfxMask()
                 glUniform1i( loc, CfxInfoTable[k].unit );
             }
         }
-        glUseProgram( GLuint( prev ) );
+        glUseProgram( static_cast<GLuint>( prev ) );
     }
     return m_cfxMask;
 }

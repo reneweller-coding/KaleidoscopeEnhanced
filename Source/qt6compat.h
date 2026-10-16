@@ -28,7 +28,7 @@
  */
 inline int qrand()
 {
-    return int( QRandomGenerator::global()->bounded( quint32( RAND_MAX ) + 1 ) );
+    return static_cast<int>( QRandomGenerator::global()->bounded( static_cast<quint32>( RAND_MAX ) + 1 ) );
 }
 
 /**

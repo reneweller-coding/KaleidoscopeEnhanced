@@ -3,6 +3,7 @@
  * @brief Implements QMyWindow: UI setup and the quit-action wiring.
  */
 #include <QtWidgets/QFileDialog>
+#include <utility>
 
 #include "QMyWindow.h"
 
@@ -25,5 +26,5 @@ void QMyWindow::slotQuitApp()
 
 void QMyWindow::setDirectory( QString directory )
 {
-    m_directory = directory;
+    m_directory = std::move( directory );
 }

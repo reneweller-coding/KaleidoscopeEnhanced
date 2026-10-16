@@ -149,7 +149,7 @@ void main( void )
                      clamp( audioMode, 0.0, 1.0 ) );
 
     vec3 col = vec3( 0.0 );
-    for ( int i = 0; i < 32; i++ )
+    for ( int i = 0; i < 32; ++i )
     {
         // parallax position, whole pixels for retro feel
         // float depth = 20.0+float(i);

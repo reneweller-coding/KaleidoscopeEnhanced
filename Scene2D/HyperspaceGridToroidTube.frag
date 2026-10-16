@@ -105,7 +105,7 @@ void main()
     vec2  hit_uv = vec2( 0.0 );
     vec3  hit_col = vec3( 0.0 );
 
-    for ( int i = 0; i < 44; i++ )
+    for ( int i = 0; i < 44; ++i )
     {
         vec3  p = ro + rd * tot_dist;
         vec2  cur_uv;

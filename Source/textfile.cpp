@@ -60,7 +60,7 @@ char *textFileRead( const char *fn )
 
             if ( count > 0 )
             {
-                content = (char *)malloc( sizeof( char ) * ( count + 1 ) );
+                content = static_cast<char *>( malloc( sizeof( char ) * ( count + 1 ) ) );
                 count = static_cast<int>( fread( content, sizeof( char ), count, fp ) );
                 content[count] = '\0';
             }

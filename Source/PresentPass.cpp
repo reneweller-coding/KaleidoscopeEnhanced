@@ -324,19 +324,19 @@ void PresentPass::captureHistory( GLuint sourceTex, int renderW, int renderH,
 
     m_histHead = ( m_histHead + 1 ) % HistLayers;
     if ( m_histCount < HistLayers )
-        m_histCount++;
+        ++m_histCount;
 }
 
 // Sekunden zurück -> Layer-Index (geklemmt auf das, was der Ring hält).
 float PresentPass::historyLayerBack( float secs ) const
 {
-    int slots = int( secs * 30.f + 0.5f );
+    int slots = static_cast<int>( secs * 30.f + 0.5f );
     if ( slots > m_histCount - 1 )
         slots = m_histCount - 1;
     if ( slots < 1 )
         slots = 1;
     int idx = ( m_histHead - slots + 2 * HistLayers ) % HistLayers;
-    return float( idx );
+    return static_cast<float>( idx );
 }
 
 void PresentPass::setLyricsImage( const void *rgba, int w, int h )
@@ -371,7 +371,7 @@ void PresentPass::setTitleImage( const void *rgba, int w, int h )
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
     glBindTexture( GL_TEXTURE_2D, 0 );
-    m_titleAspect = float( w ) / float( h );
+    m_titleAspect = static_cast<float>( w ) / static_cast<float>( h );
     m_titleAge = 0.f;
 }
 
@@ -435,7 +435,7 @@ void PresentPass::run( const Inputs &in )
         int max_dim = ( in.renderW > in.renderH ) ? in.renderW : in.renderH;
         int lvl = 0;
         for ( int d = max_dim; d > 4; d >>= 1 )
-            lvl++; // a small (<=4 px) mip level
+            ++lvl; // a small (<=4 px) mip level
         int lw = 1, lh = 1;
         glGetTexLevelParameteriv( GL_TEXTURE_2D, lvl, GL_TEXTURE_WIDTH, &lw );
         glGetTexLevelParameteriv( GL_TEXTURE_2D, lvl, GL_TEXTURE_HEIGHT, &lh );
@@ -450,12 +450,12 @@ void PresentPass::run( const Inputs &in )
         glGetTexImage( GL_TEXTURE_2D, lvl, GL_RGBA, GL_FLOAT, buf );
         float mean = 0.f;
         float lum[64];
-        for ( int i = 0; i < npx; i++ )
+        for ( int i = 0; i < npx; ++i )
         {
             lum[i] = 0.299f * buf[i * 4 + 0] + 0.587f * buf[i * 4 + 1] + 0.114f * buf[i * 4 + 2];
             mean += lum[i];
         }
-        mean /= float( npx );
+        mean /= static_cast<float>( npx );
 
         // The same 64 samples answer two more questions for free: is there
         // any STRUCTURE (spread), and is anything MOVING (change against the
@@ -464,16 +464,16 @@ void PresentPass::run( const Inputs &in )
         // live turns 'edit, render, extract, look' into 'edit, look'.
         {
             float var = 0.f, mot = 0.f;
-            for ( int i = 0; i < npx; i++ )
+            for ( int i = 0; i < npx; ++i )
             {
                 const float d = lum[i] - mean;
                 var += d * d;
                 if ( m_havePrevSample )
                     mot += fabsf( lum[i] - m_prevSample[i] );
             }
-            m_liveStd = sqrtf( var / float( npx ) );
-            m_liveMotion = m_havePrevSample ? ( mot / float( npx ) ) : 0.f;
-            for ( int i = 0; i < npx; i++ )
+            m_liveStd = sqrtf( var / static_cast<float>( npx ) );
+            m_liveMotion = m_havePrevSample ? ( mot / static_cast<float>( npx ) ) : 0.f;
+            for ( int i = 0; i < npx; ++i )
                 m_prevSample[i] = lum[i];
             m_havePrevSample = true;
         }
@@ -599,7 +599,7 @@ void PresentPass::run( const Inputs &in )
             if ( Dbg && ( ++n % 3 ) == 0 )
             {
                 glBindBuffer( GL_SHADER_STORAGE_BUFFER, m_autoExpBuf );
-                const float *r = (const float *)glMapBuffer( GL_SHADER_STORAGE_BUFFER, GL_READ_ONLY );
+                const float *r = static_cast<const float *>( glMapBuffer( GL_SHADER_STORAGE_BUFFER, GL_READ_ONLY ) );
                 float        g0 = r ? r[0] : -1.f, g1 = r ? r[1] : -1.f, g2 = r ? r[2] : -1.f;
                 if ( r )
                     glUnmapBuffer( GL_SHADER_STORAGE_BUFFER );
@@ -623,7 +623,7 @@ void PresentPass::run( const Inputs &in )
         glBindTexture( GL_TEXTURE_2D, in.source );
         glUniform1i( m_bloomTexUni, 0 );
         if ( m_bloomResUni >= 0 )
-            glUniform2f( m_bloomResUni, (float)m_bloomW, (float)m_bloomH );
+            glUniform2f( m_bloomResUni, static_cast<float>( m_bloomW ), static_cast<float>( m_bloomH ) );
         if ( m_bloomDirUni >= 0 )
             glUniform2f( m_bloomDirUni, 1.f, 0.f );
         if ( m_bloomThreshUni >= 0 )
@@ -812,7 +812,7 @@ void PresentPass::run( const Inputs &in )
     }
 
     if ( m_presentResUni >= 0 )
-        glUniform2f( m_presentResUni, (float)in.displayW, (float)in.displayH );
+        glUniform2f( m_presentResUni, static_cast<float>( in.displayW ), static_cast<float>( in.displayH ) );
     // VJ blackout ('b'): a slewed multiplier on the present brightness
     // scale — window, Spout output and recordings all fade together.
     {
@@ -866,8 +866,8 @@ void PresentPass::run( const Inputs &in )
         if ( loc_sharp >= 0 )
             glUniform1f( loc_sharp, amt );
         if ( loc_texel >= 0 )
-            glUniform2f( loc_texel, 1.f / float( in.renderW ),
-                         1.f / float( in.renderH ) );
+            glUniform2f( loc_texel, 1.f / static_cast<float>( in.renderW ),
+                         1.f / static_cast<float>( in.renderH ) );
     }
     if ( m_presentTimeUni >= 0 )
         glUniform1f( m_presentTimeUni, in.globalTime );

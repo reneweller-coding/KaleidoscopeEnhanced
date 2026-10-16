@@ -133,7 +133,7 @@ float mapApollonian( vec3 p, vec3 c, float s, out float orbitTrap )
     float scale = 1.0;
     orbitTrap = 1e5;
 
-    for ( int i = 0; i < 7; i++ )
+    for ( int i = 0; i < 7; ++i )
     {
         p = -1.0 + 2.0 * fract( 0.5 * p + 0.5 );
 
@@ -245,7 +245,7 @@ void main()
     float nebula_acc = 0.0;
     bool  hit = false;
 
-    for ( int i = 0; i < 120; i++ )
+    for ( int i = 0; i < 120; ++i )
     {
         vec3  p = ro + rd * tot_dist;
         float cur_trap;

@@ -67,7 +67,7 @@ float fbm2( vec2 p )
 {
     float      v = 0.0, a = 0.5;
     const mat2 R = mat2( 0.80, 0.60, -0.60, 0.80 );
-    for ( int i = 0; i < 4; i++ )
+    for ( int i = 0; i < 4; ++i )
     {
         v += a * noise2( p );
         p = R * p * 2.03 + 7.1;
@@ -161,7 +161,7 @@ vec3 renderSky( vec3 dir )
         stone *= 0.75 + 0.25 * block;
         col = stone * ( 0.12 + 0.45 * swell ) * ( 0.5 + 0.5 * exp( -dir.y * 3.0 ) );
         float opening = 0.0;
-        for ( int i = -1; i <= 1; i++ )
+        for ( int i = -1; i <= 1; ++i )
         {
             float a = float( i ) * 0.62;
             float dx = ( az - a ) / 0.17;

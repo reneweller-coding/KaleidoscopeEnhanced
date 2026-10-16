@@ -111,7 +111,7 @@ void main()
     vec3  col_acc = vec3( 0.0 );
     float weight_acc = 0.0;
 
-    for ( int k = -1; k <= 1; k++ )
+    for ( int k = -1; k <= 1; ++k )
     {
         float f = phase + float( k );
         float w = exp( -4.0 * ( f - 0.5 ) * ( f - 0.5 ) );

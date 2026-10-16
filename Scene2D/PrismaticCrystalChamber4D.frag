@@ -114,7 +114,7 @@ void main()
     // Multi-spectral chromatic raymarch (R, G, B channels slightly refracted)
     vec3 wavelengths = vec3( 0.97, 1.0, 1.03 ) * ( 1.0 + 0.15 * ( audioCentroid + audioFlux ) * disp );
 
-    for ( int c = 0; c < 3; c++ )
+    for ( int c = 0; c < 3; ++c )
     {
         float wl = ( c == 0 ) ? wavelengths.r : ( ( c == 1 ) ? wavelengths.g : wavelengths.b );
         vec3  rd = normalize( rd3 * vec3( wl, wl, 1.0 ) );
@@ -127,7 +127,7 @@ void main()
         float min_d = 1e4;
         vec3  col_channel = vec3( 0.0 );
 
-        for ( int i = 0; i < 48; i++ )
+        for ( int i = 0; i < 48; ++i )
         {
             vec3 pos3 = ro + rd * total_dist;
             // Embed 3D point into 4D hyperspace with oscillating 4th dimension

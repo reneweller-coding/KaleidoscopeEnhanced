@@ -64,7 +64,7 @@ float mapBismuth( vec3 p, float t, float nSteps, out float stepLevel )
     vec3 q = p;
     stepLevel = 0.0;
 
-    for ( int i = 0; i < 6; i++ )
+    for ( int i = 0; i < 6; ++i )
     {
         // Absolute cubic fold
         q = abs( q );
@@ -152,7 +152,7 @@ void main()
     float step_glow = 0.0;
     vec3  hit_col = vec3( 0.0 );
 
-    for ( int i = 0; i < 52; i++ )
+    for ( int i = 0; i < 52; ++i )
     {
         vec3 p_world = ro + rd * tot_dist;
         vec3 p = p_world;

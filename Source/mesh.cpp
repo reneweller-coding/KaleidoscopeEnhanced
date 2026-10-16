@@ -29,7 +29,7 @@ void Mesh::draw()
         glDisable( GL_LIGHTING );
     }
 
-    for ( unsigned int mesh_counter = 0; mesh_counter < m_meshPartInfo.size(); mesh_counter++ )
+    for ( unsigned int mesh_counter = 0; mesh_counter < m_meshPartInfo.size(); ++mesh_counter )
     {
         glDisable( GL_TEXTURE_2D );
         // assign material
@@ -64,10 +64,10 @@ void Mesh::draw()
         int from = m_meshPartInfo[mesh_counter]->fromFace;
         int to = m_meshPartInfo[mesh_counter]->toFace;
         glBegin( GL_TRIANGLES );
-        for ( int face_counter = from; face_counter < to; face_counter++ )
+        for ( int face_counter = from; face_counter < to; ++face_counter )
         {
             Triangle &triangle = m_triangles[face_counter];
-            for ( int j = 0; j < 3; j++ )
+            for ( int j = 0; j < 3; ++j )
             {
                 Vector3D &vertex = m_vertices[triangle.v[j]];
                 if ( texcoords_available )
@@ -96,9 +96,9 @@ void Mesh::clear()
     m_triangles.clear();
     m_textures.clear();
 
-    for ( unsigned int i = 0; i < m_meshPartInfo.size(); i++ )
+    for ( unsigned int i = 0; i < m_meshPartInfo.size(); ++i )
         delete m_meshPartInfo[i];
-    for ( unsigned int i = 0; i < m_materialList.size(); i++ )
+    for ( unsigned int i = 0; i < m_materialList.size(); ++i )
         delete m_materialList[i];
 
     m_meshPartInfo.clear();
@@ -214,7 +214,7 @@ void Mesh::loadMaterials( const char *sFilename )
 int Mesh::getTextureNode( char *filename )
 {
     int idx = -1;
-    for ( unsigned int tc = 0; tc < m_textures.size(); tc++ )
+    for ( unsigned int tc = 0; tc < m_textures.size(); ++tc )
     {
         if ( !strcmp( m_textures[tc].texname, filename ) )
         {
@@ -262,11 +262,11 @@ void Mesh::readObj( const char *sFilename )
         // vertex
         else if ( strncmp( ac_line, "v ", 2 ) == 0 )
         {
-            vertexcounter++;
+            ++vertexcounter;
         }
         else if ( strncmp( ac_line, "vt ", 2 ) == 0 )
         {
-            texcoordcounter++;
+            ++texcoordcounter;
         }
         // face
         else if ( strncmp( ac_line, "f ", 2 ) == 0 )
@@ -280,23 +280,23 @@ void Mesh::readObj( const char *sFilename )
                             &i_3n_i[0], &i_3v_i[1], &i_3t_i[1], &i_3n_i[1], &i_3v_i[2], &i_3t_i[2], &i_3n_i[2],
                             &i_3v_i[3], &i_3t_i[3], &i_3n_i[3] ) )
             {
-                facecounter++;
+                ++facecounter;
             }
             else if ( 8
                       == sscanf( ac_line, "f %d//%d %d//%d %d//%d %d//%d", &i_3v_i[0], &i_3n_i[0], &i_3v_i[1],
                                  &i_3n_i[1], &i_3v_i[2], &i_3n_i[2], &i_3v_i[3], &i_3n_i[3] ) )
             {
-                facecounter++;
+                ++facecounter;
             }
             else if ( 8
                       == sscanf( ac_line, "f %d/%d %d/%d %d/%d %d/%d", &i_3v_i[0], &i_3n_i[0], &i_3v_i[1], &i_3n_i[1],
                                  &i_3v_i[2], &i_3n_i[2], &i_3v_i[3], &i_3n_i[3] ) )
             {
-                facecounter++;
+                ++facecounter;
             }
             else if ( 4 == sscanf( ac_line, "f %d %d %d %d", &i_3v_i[0], &i_3v_i[1], &i_3v_i[2], &i_3v_i[3] ) )
             {
-                facecounter++;
+                ++facecounter;
             }
 
             // NOTE: facecounter is incremented once more here, unconditionally,
@@ -305,7 +305,7 @@ void Mesh::readObj( const char *sFilename )
             // counts once). Harmless: facecounter only sizes the reserve() calls
             // below, so over-counting merely reserves a bit more capacity than
             // is strictly needed, it never affects how many triangles get parsed.
-            facecounter++;
+            ++facecounter;
         }
     }
 
@@ -512,9 +512,9 @@ void Mesh::readObj( const char *sFilename )
                 i_3t[1] = i_3t_i[2];
                 i_3t[2] = i_3t_i[3];
                 m_triangles.push_back( Triangle( i_3v, i_3t, i_3n ) );
-                act_face++;
+                ++act_face;
             }
-            act_face++;
+            ++act_face;
         }
     }
 
@@ -532,11 +532,11 @@ void Mesh::readObj( const char *sFilename )
 
     istr2_in.close();
 
-    std::cout << "vertices:        " << int( m_vertices.size() ) << std::endl;
-    std::cout << "normals:         " << int( m_normals.size() ) << std::endl;
-    std::cout << "texcoords:       " << int( m_textcoords.size() ) << std::endl;
+    std::cout << "vertices:        " << static_cast<int>( m_vertices.size() ) << std::endl;
+    std::cout << "normals:         " << static_cast<int>( m_normals.size() ) << std::endl;
+    std::cout << "texcoords:       " << static_cast<int>( m_textcoords.size() ) << std::endl;
     std::cout << "normals created: " << ui_normals_created << std::endl;
-    std::cout << "faces:           " << int( m_triangles.size() ) << std::endl;
+    std::cout << "faces:           " << static_cast<int>( m_triangles.size() ) << std::endl;
 
     computeBoundingBox();
     // std::cout << "min:   " << "(" << bmin.x << "," << bmin.y << ","bmin.z << ")" << std::endl;
@@ -590,13 +590,13 @@ void Mesh::replaceFilename( char *tgt, const char *src, const char *newName )
             strcpy( tgt, newName );
         }
     }
-    p++;
+    ++p;
     strcpy( p, newName );
 }
 
 void Mesh::loadTextureImages()
 {
-    for ( unsigned int tc = 0; tc < m_textures.size(); tc++ )
+    for ( unsigned int tc = 0; tc < m_textures.size(); ++tc )
     {
         if ( NULL == m_textures[tc].qImageTexture )
         {
@@ -668,7 +668,7 @@ void Mesh::generateSphereTexCoords()
         // generate Texture Coordinates through Spere Mapping
         Vector3D center( ( bmin + bmax ) / 2 );
         m_textcoords.reserve( m_vertices.size() );
-        for ( unsigned int i = 0; i < m_vertices.size(); i++ )
+        for ( unsigned int i = 0; i < m_vertices.size(); ++i )
         {
             float    theta, phi;
             Vector3D delta = m_vertices[i] - center;
@@ -698,7 +698,7 @@ void Mesh::generateCylinderTexCoords()
         Vector3D center( ( bmin + bmax ) / 2 );
         float    box_height = bmax.y - bmin.y;
         m_textcoords.reserve( m_vertices.size() );
-        for ( unsigned int i = 0; i < m_vertices.size(); i++ )
+        for ( unsigned int i = 0; i < m_vertices.size(); ++i )
         {
             float    theta, h;
             Vector3D delta( m_vertices[i].x - center.x, 0, m_vertices[i].z - center.z );
@@ -725,12 +725,12 @@ void Mesh::correctTheta( float multp )
     // update triangle texture indices and
     // correct border cases, faces crossing the 0/1 texcoord border
     unsigned int texcoord_count = static_cast<unsigned int>( m_textcoords.size() );
-    for ( unsigned int t = 0; t < m_triangles.size(); t++ )
+    for ( unsigned int t = 0; t < m_triangles.size(); ++t )
     {
         memcpy( m_triangles[t].t, m_triangles[t].v, sizeof( int ) * 3 );
         Triangle &triangle = m_triangles[t];
         bool      back_vert = false, front_vert = false, left_vert = false;
-        for ( int j = 0; j < 3; j++ )
+        for ( int j = 0; j < 3; ++j )
         {
             Vector3D &vertex = m_vertices[triangle.v[j]];
             Vector3D  delta = vertex - center;
@@ -751,7 +751,7 @@ void Mesh::correctTheta( float multp )
         // 1.0 instead of tearing back across the whole texture to 0.0.
         if ( back_vert && front_vert && left_vert )
         {
-            for ( int j = 0; j < 3; j++ )
+            for ( int j = 0; j < 3; ++j )
             {
                 Vector3D &vertex = m_vertices[triangle.v[j]];
                 Vector3D  delta = vertex - center;
@@ -761,7 +761,7 @@ void Mesh::correctTheta( float multp )
                     new_coord.x += multp;
                     m_textcoords.push_back( new_coord );
                     triangle.t[j] = texcoord_count;
-                    texcoord_count++;
+                    ++texcoord_count;
                 }
             }
         }

@@ -177,7 +177,7 @@ void main()
         ink *= paper * smoothstep( 0.0, 0.06, age01 );
         // Older revolutions: the faint helix of earlier traces.
         float older = 0.0;
-        for ( int k = 1; k < 5; k++ )
+        for ( int k = 1; k < 5; ++k )
         {
             float xk = x_pen - float( k ) * ( 6.2831853 / Rate ) / 140.0 * 1.40;
             float wk = 0.08 * sin( phi * 7.0 + float( k ) * 2.0 )

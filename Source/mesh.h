@@ -54,7 +54,7 @@ class Mesh
         }
         /** @brief Constructs a material bound to a texture, with black ambient/diffuse/specular until set. @param
          * texIdx Index into the mesh's TextureNode list. */
-        MaterialNode( int texIdx )
+        explicit MaterialNode( int texIdx )
             : textureIndex( texIdx )
         {
             setAmbientColor();
@@ -131,7 +131,7 @@ class Mesh
 public:
     /** @brief Loads and parses an .obj file (and its referenced .mtl, if any) immediately. @param filename Path to the
      * .obj file to read; see success() to check whether it parsed. */
-    Mesh( const char *filename ) { readObj( filename ); }
+    explicit Mesh( const char *filename ) { readObj( filename ); }
     /** @brief Frees all parsed geometry, materials and texture nodes. */
     ~Mesh() { clear(); }
 
@@ -144,7 +144,10 @@ public:
     /** @brief Assigns a single fallback texture to the whole mesh when the .obj file itself carried no texture
      * reference. @param filename Path to the image file to load and bind as material 0's texture. */
     void assignTexture( char *filename );
-    bool success() { return m_meshRead; } ///< @return true if readObj() successfully opened and parsed the .obj file.
+    bool success() const
+    {
+        return m_meshRead;
+    } ///< @return true if readObj() successfully opened and parsed the .obj file.
     /** @brief Generates spherical (theta/phi) texture coordinates for every vertex, replacing any existing texcoords,
      * when the .obj file supplied none. */
     void generateSphereTexCoords();

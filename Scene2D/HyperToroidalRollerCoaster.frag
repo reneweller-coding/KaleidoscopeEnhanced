@@ -127,7 +127,7 @@ void main()
     vec3  hit_col = vec3( 0.0 );
     bool  hit = false;
 
-    for ( int i = 0; i < 36; i++ )
+    for ( int i = 0; i < 36; ++i )
     {
         vec3 p = ro + rd * tot_dist;
 
@@ -138,7 +138,7 @@ void main()
         float az = atan( p.y, p.x );
         float best_d = 1e4;
         float best_u = 0.0;
-        for ( int k = 0; k < 3; k++ )
+        for ( int k = 0; k < 3; ++k )
         {
             float uk = ( az + 6.2831853 * float( k ) ) / 3.0;
             vec3  pk = torusKnotPoint( uk, R, r );
@@ -194,7 +194,7 @@ void main()
     float ang = atan( uv.y, uv.x );
     float rad = length( uv );
     float streak = 0.0;
-    for ( int s = 0; s < 3; s++ )
+    for ( int s = 0; s < 3; ++s )
     {
         float fs = float( s );
         float k_ang = 17.0 + fs * 26.0;

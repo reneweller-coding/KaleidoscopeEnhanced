@@ -57,7 +57,7 @@ QByteArray OscSender::bundle( const QList<QByteArray> &messages )
     b.append( immediate, 8 );
     for ( const QByteArray &m : messages )
     {
-        quint32 len = qToBigEndian( quint32( m.size() ) );
+        quint32 len = qToBigEndian( static_cast<quint32>( m.size() ) );
         b.append( reinterpret_cast<const char *>( &len ), 4 );
         b.append( m );
     }
@@ -85,7 +85,7 @@ void OscSender::configure( const QString &host, int port )
 
 void OscSender::send( const QByteArray &datagram )
 {
-    m_socket.writeDatagram( datagram, m_addr, quint16( m_port ) );
+    m_socket.writeDatagram( datagram, m_addr, static_cast<quint16>( m_port ) );
 }
 
 void OscSender::tick( const AudioFeatures &f, float dtSec )

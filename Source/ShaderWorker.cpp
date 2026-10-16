@@ -46,7 +46,7 @@ void printLog( GLuint obj, bool program )
         glGetShaderiv( obj, GL_INFO_LOG_LENGTH, &n );
     if ( n <= 1 )
         return;
-    std::vector<char> log( (size_t)n + 1, 0 );
+    std::vector<char> log( static_cast<size_t>( n ) + 1, 0 );
     if ( program )
         glGetProgramInfoLog( obj, n, NULL, log.data() );
     else

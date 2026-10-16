@@ -117,7 +117,7 @@ void main()
     vec3 pts[Steps + 1];
     pts[0] = cur_p;
 
-    for ( int s = 0; s < Steps; s++ )
+    for ( int s = 0; s < Steps; ++s )
     {
         vec3 v = vortexField( cur_p, time );
         cur_p += v * dt;
@@ -125,7 +125,7 @@ void main()
     }
 
     // Emit triangle strip quad segments
-    for ( int s = 0; s < Steps; s++ )
+    for ( int s = 0; s < Steps; ++s )
     {
         uint base = atomicAdd( cmd[4], 6u );
         if ( base + 6u > maxVertices )

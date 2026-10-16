@@ -91,7 +91,7 @@ float mapApollonian( vec3 p, float K, out float trapLevel )
 {
     float scale = 1.0;
     trapLevel = 0.0;
-    for ( int i = 0; i < 7; i++ )
+    for ( int i = 0; i < 7; ++i )
     {
         p = -1.0 + 2.0 * fract( 0.5 * p + 0.5 );
         float r2 = max( dot( p, p ), 1e-4 );
@@ -159,7 +159,7 @@ void main()
     vec3  hit_col = vec3( 0.0 );
     bool  hit = false;
 
-    for ( int i = 0; i < 52; i++ )
+    for ( int i = 0; i < 52; ++i )
     {
         vec3  p = ro + rd * tot_dist;
         float cur_trap;

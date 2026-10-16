@@ -90,9 +90,9 @@ void main()
     // +-2 statt +-1: die +-1-Suche im GESCHERTEN Zellraum verfehlte in der
     // unteren Bildhaelfte den wahren naechsten Mittelpunkt, und die Kugeln
     // wurden an der Zellgrenze halbiert ("Kugeln unten nur halb").
-    for ( int y = -2; y <= 2; y++ )
+    for ( int y = -2; y <= 2; ++y )
     {
-        for ( int x = -2; x <= 2; x++ )
+        for ( int x = -2; x <= 2; ++x )
         {
             vec2  neighbor = vec2( float( x ), float( y ) );
             vec2  cart_pos = vec2( sqrt( 3.0 ) * ( cell.x + neighbor.x + 0.5 * ( cell.y + neighbor.y ) ),

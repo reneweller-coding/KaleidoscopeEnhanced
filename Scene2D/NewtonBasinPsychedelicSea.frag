@@ -85,7 +85,7 @@ vec2 cDiv( vec2 a, vec2 b )
 vec2 cPow( vec2 z, int n )
 {
     vec2 res = vec2( 1.0, 0.0 );
-    for ( int i = 0; i < 7; i++ )
+    for ( int i = 0; i < 7; ++i )
     {
         if ( i >= n )
             break;
@@ -123,7 +123,7 @@ void main()
     float iter_count = 0.0;
 
     // Newton-Raphson iteration: z -> z - (z^n - c) / (n * z^(n-1))
-    for ( int i = 0; i < 22; i++ )
+    for ( int i = 0; i < 22; ++i )
     {
         vec2 zn = cPow( z, n_power );
         vec2 zn_minus_1 = cPow( z, n_power - 1 );

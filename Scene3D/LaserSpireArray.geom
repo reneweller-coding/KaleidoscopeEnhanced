@@ -115,7 +115,7 @@ void main()
 
     // Generate 4-sided spire pillar triangle strip (8 vertices)
     const int Sides = 4;
-    for ( int s = 0; s <= Sides; s++ )
+    for ( int s = 0; s <= Sides; ++s )
     {
         float angle = float( s ) * ( 6.2831853 / float( Sides ) );
         vec3  offset = vec3( cos( angle ), 0.0, sin( angle ) ) * spire_radius;

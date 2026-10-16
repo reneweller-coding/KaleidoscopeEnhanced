@@ -82,7 +82,7 @@ void main()
     float weight = 1.0;
     vec2  p = uv * f_scale;
 
-    for ( int i = 0; i < 4; i++ )
+    for ( int i = 0; i < 4; ++i )
     {
         float wave = sin( p.x * 2.0 + t * v_speed ) * cos( p.y * 2.0 - t * 0.8 * v_speed );
         wave += sin( p.x * 3.0 - p.y * 2.5 + float( i ) ) * 0.5;

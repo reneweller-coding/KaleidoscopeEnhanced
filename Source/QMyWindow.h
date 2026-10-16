@@ -29,7 +29,7 @@ public:
      *        window title, and connects the Exit action to slotQuitApp().
      * @param parent Parent widget, forwarded to QMainWindow.
      */
-    QMyWindow( QWidget *parent );
+    explicit QMyWindow( QWidget *parent );
     /**
      * @brief Stores the working directory for later use.
      * @param directory Directory path to remember.

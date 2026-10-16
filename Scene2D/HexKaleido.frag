@@ -128,7 +128,7 @@ void main()
     float d0 = length( uv0 );
     vec3  color = vec3( 0.0 );
 
-    for ( int i = 0; i < 5; i++ )
+    for ( int i = 0; i < 5; ++i )
     {
         float fi = float( i );
         h = getHex( 1.1 * Root3 * h * rot ).xy;

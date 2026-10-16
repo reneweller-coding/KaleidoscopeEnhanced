@@ -87,7 +87,7 @@ void main()
     // camera, each rolled a little differently (parallax) and hue-shifted by
     // depth, swept gently once per bar (continuous at the wrap).
     vec3 col = vec3( 0.0 );
-    for ( int k = 0; k < 3; k++ )
+    for ( int k = 0; k < 3; ++k )
     {
         float fk = float( k );
         vec2  ruv = rotM( base_rot * ( 1.0 + rollP * fk ) ) * uv;
@@ -104,7 +104,7 @@ void main()
     // Star warp-field: stars stretch into radial trails on the beat (longer
     // when nearer), coloured by the image, twinkling.
     vec3 stars = vec3( 0.0 );
-    for ( int i = 0; i < 4; i++ )
+    for ( int i = 0; i < 4; ++i )
     {
         float fi = float( i );
         vec2  ruv = rotM( base_rot ) * uv;

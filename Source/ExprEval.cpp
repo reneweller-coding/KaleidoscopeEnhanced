@@ -122,6 +122,7 @@ int precedence( int opChar )
         case '/': return 3;
         case '+':
         case '-': return 2;
+        default: break; // not an operator: the lowest precedence, below
     }
     return 0;
 }
@@ -184,7 +185,7 @@ bool ExprProgram::compile( const std::string &formula, const std::string &contex
     };
 
     const char *s = formula.c_str();
-    const int   n = (int)formula.size();
+    const int   n = static_cast<int>( formula.size() );
 
     // ---- Tokenise ----
     std::vector<Token> toks;
@@ -202,12 +203,12 @@ bool ExprProgram::compile( const std::string &formula, const std::string &contex
         if ( ( ch >= '0' && ch <= '9' ) || ch == '.' )
         {
             char *end = nullptr;
-            float v = (float)strtod( s + i, &end );
+            float v = static_cast<float>( strtod( s + i, &end ) );
             Token t;
             t.kind = Token::NUM;
             t.num = v;
             toks.push_back( t );
-            i = int( end - s );
+            i = static_cast<int>( end - s );
             prev_was_value = true;
             continue;
         }
@@ -225,7 +226,7 @@ bool ExprProgram::compile( const std::string &formula, const std::string &contex
             for ( size_t f = 0; f < sizeof( Funcs ) / sizeof( Funcs[0] ); ++f )
                 if ( ident == Funcs[f].name )
                 {
-                    fidx = (int)f;
+                    fidx = static_cast<int>( f );
                     break;
                 }
             if ( fidx >= 0 )
@@ -332,7 +333,7 @@ bool ExprProgram::compile( const std::string &formula, const std::string &contex
             }
             case Token::VAR:
             {
-                Op o{ OpVar, (float)t.idx };
+                Op o{ OpVar, static_cast<float>( t.idx ) };
                 m_prog.push_back( o );
                 break;
             }
@@ -372,6 +373,9 @@ bool ExprProgram::compile( const std::string &formula, const std::string &contex
                     pop_op_to_prog( stack.back() );
                     stack.pop_back();
                 }
+                break;
+            default: // cannot happen: every Token::KindE has its case
+                fprintf( stderr, "ExprEval: unknown token kind %d\n", static_cast<int>( t.kind ) );
                 break;
         }
     }
@@ -445,7 +449,7 @@ float ExprProgram::eval( const float *vars ) const
         if ( op.code == OpVar )
         {
             if ( sp < 32 )
-                st[sp++] = vars[(int)op.value];
+                st[sp++] = vars[static_cast<int>( op.value )];
             continue;
         }
 

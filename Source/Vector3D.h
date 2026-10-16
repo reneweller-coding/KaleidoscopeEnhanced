@@ -45,11 +45,11 @@ public:
     //! copy-constructor
     Vector3D( const Vector3D &b );
     //! project a homogenous vector to 3D-space
-    Vector3D( const Vector4D &b );
+    explicit Vector3D( const Vector4D &b );
     //! initialize vector with explicit coordinates
     Vector3D( float X, float Y, float Z );
     //! initialize vector with a pointer to 3 float values
-    Vector3D( float *xyz );
+    explicit Vector3D( float *xyz );
 
     //! destructor
     ~Vector3D();
@@ -161,7 +161,7 @@ public:
     Vector3D refracted( const Vector3D &n, float eta, bool &totalInternalReflection ) const;
 
     //! cast the vector to a pointer of floats (used to load the vector to OpenGL)
-    inline operator float *();
+    inline explicit operator float *();
 };
 
 #include "Vector4D.h"

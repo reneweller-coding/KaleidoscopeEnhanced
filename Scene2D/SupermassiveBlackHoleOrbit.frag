@@ -91,7 +91,7 @@ float noise( vec3 p )
 float fbm( vec3 p )
 {
     float f = 0.0, a = 0.5;
-    for ( int i = 0; i < 5; i++ )
+    for ( int i = 0; i < 5; ++i )
     {
         f += a * noise( p );
         p *= 2.0;
@@ -168,7 +168,7 @@ void main()
     // Tilt the accretion disk
     mat2 disk_tilt = rot( 0.2 );
 
-    for ( int i = 0; i < 80; i++ )
+    for ( int i = 0; i < 80; ++i )
     {
         float r = length( p );
 

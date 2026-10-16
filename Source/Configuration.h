@@ -37,7 +37,7 @@ public:
      * @brief Loads and parses a preset XML file, building the full shader/uniform graph.
      * @param configurationFile Path to the Presets/ *.xml preset file to load.
      */
-    Configuration( const QString &configurationFile );
+    explicit Configuration( const QString &configurationFile );
     /** @brief Destroys the owned RenderPipeline (and, transitively, everything it built). */
     ~Configuration();
 
@@ -65,9 +65,9 @@ public:
      * @param width Viewport width in pixels.
      * @param height Viewport height in pixels.
      */
-    void start( int width, int height );
+    void start( int width, int height ) const;
     /** @brief Stops the owned RenderPipeline (releases its running state). */
-    void stop();
+    void stop() const;
 
     RenderPipeline *m_renderPipeline; ///< The shader/scene pipeline built by readConfiguration(); owned (deleted in the
                                       ///< destructor).

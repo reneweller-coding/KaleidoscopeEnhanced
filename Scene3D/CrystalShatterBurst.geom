@@ -132,7 +132,7 @@ void main()
     vec3 bary_coords[3] = vec3[3]( vec3( 1.0, 0.0, 0.0 ), vec3( 0.0, 1.0, 0.0 ), vec3( 0.0, 0.0, 1.0 ) );
 
     // Emit the 3 corners of the shard
-    for ( int k = 0; k < 3; k++ )
+    for ( int k = 0; k < 3; ++k )
     {
         vec3 corner_rel = vObjPos[k] - face_center;
         vec3 rot_corner = rotAxis( corner_rel, spin_axis, spin_angle );

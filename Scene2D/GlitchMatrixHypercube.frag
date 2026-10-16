@@ -158,7 +158,7 @@ void main()
     float cam_dist_4d = 2.8 + 0.5 * sin( t * 0.2 ) - audioSwell * 0.4;
 
     // Raymarch through 4D bounding hyper-planes
-    for ( int i = 0; i < 16; i++ )
+    for ( int i = 0; i < 16; ++i )
     {
         // Vertex in 4D space
         vec4 v4 = vec4(
@@ -181,7 +181,7 @@ void main()
         vec2 p2 = p3.xy * ( 1.2 / ( p3.z + 2.5 ) );
 
         // Connect edges: each vertex connects to 4 neighbors (bit flip in 1 dimension)
-        for ( int b = 0; b < 4; b++ )
+        for ( int b = 0; b < 4; ++b )
         {
             int j = i ^ ( 1 << b );
             if ( j > i )

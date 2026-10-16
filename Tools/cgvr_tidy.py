@@ -116,24 +116,34 @@ DIAG = re.compile( r"^(?P<file>[A-Za-z]:[^:]+):(?P<line>\d+):(?P<col>\d+): (?P<s
 
 
 def merge_fixes( paths ):
-    """{file: [(offset, length, text)]} from the exported yaml files; identical edits once, conflicts out."""
-    edits = collections.defaultdict( set )
+    """{file: [(offset, length, text)]} from the exported yaml files.
+
+    A diagnostic in a header arrives once from every unit that includes it: diagnostics are taken once each (by
+    check, place and message), their edits all.  Two different diagnostics may both insert at one place -- the
+    closing parentheses of nested casts -- so equal edits of different diagnostics are not merged.  Edits that
+    overlap a replaced range are conflicts and are left out.
+    """
+    diags = {}
     for p in paths:
         with open( p, encoding="utf-8" ) as fh:
             data = yaml.safe_load( fh ) or {}
         for d in data.get( "Diagnostics", [] ):
             msg = d.get( "DiagnosticMessage", {} )
-            for r in msg.get( "Replacements", [] ) or []:
-                edits[ os.path.normcase( os.path.normpath( r[ "FilePath" ] ) ) ].add(
-                    ( r[ "Offset" ], r[ "Length" ], r[ "ReplacementText" ] ) )
+            key = ( d.get( "DiagnosticName" ), os.path.normcase( os.path.normpath( msg.get( "FilePath", "" ) ) ),
+                    msg.get( "FileOffset" ), msg.get( "Message" ) )
+            diags[ key ] = [ ( os.path.normcase( os.path.normpath( r[ "FilePath" ] ) ), r[ "Offset" ], r[ "Length" ],
+                               r[ "ReplacementText" ] ) for r in msg.get( "Replacements", [] ) or [] ]
+    edits = collections.defaultdict( list )
+    for reps in diags.values():
+        for f, off, ln, txt in reps:
+            edits[ f ].append( ( off, ln, txt ) )
     merged, conflicts = {}, []
     for f, es in edits.items():
         if not OURS.search( f ):
             continue
-        es = sorted( es )
         keep = []
-        for e in es:
-            if keep and e[ 0 ] < keep[ -1 ][ 0 ] + keep[ -1 ][ 1 ] or ( keep and e[ 0 ] == keep[ -1 ][ 0 ] and e[ 1 ] == keep[ -1 ][ 1 ] == 0 ):
+        for e in sorted( es ):
+            if keep and e[ 0 ] < keep[ -1 ][ 0 ] + keep[ -1 ][ 1 ]:
                 conflicts.append( ( f, keep[ -1 ], e ) )
                 continue
             keep.append( e )

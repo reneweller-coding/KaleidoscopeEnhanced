@@ -193,7 +193,7 @@ AudioFeatures AudioConditioner::update( const AudioFeatures &audio, float rawDt,
     }
     for ( int i = 0; i < 96; ++i )
         audio_fx.melody[i] = m_melody[i];
-    audio_fx.melodyHead = float( m_melodyHead ) / 96.f;
+    audio_fx.melodyHead = static_cast<float>( m_melodyHead ) / 96.f;
     audio_fx.melodyPhase = clampParam( m_melodyAccum / 0.08f, 0.f, 1.f );
 
     // Ease rotation direction between +1/-1 so reversals never snap.  Even
@@ -210,7 +210,7 @@ AudioFeatures AudioConditioner::update( const AudioFeatures &audio, float rawDt,
     float sides_step = dt * 3.0f;
     if ( sides_step > 1.f )
         sides_step = 1.f;
-    m_smoothedSides += ( float( audio.beatSidesHint ) - m_smoothedSides ) * sides_step;
+    m_smoothedSides += ( static_cast<float>( audio.beatSidesHint ) - m_smoothedSides ) * sides_step;
     audio_fx.smoothedSides = m_smoothedSides;
 
     // "motion" weights INSTANTANEOUS loudness over the slow arousal mood, so the
@@ -310,7 +310,7 @@ AudioFeatures AudioConditioner::update( const AudioFeatures &audio, float rawDt,
     // Bar phase with the same lead, kept continuous across the beat wrap
     // by leading the raw bar position (not the wrapped phase).
     {
-        float bar_pos = float( m_barBeatHost ) + m_beatPhasePLL + ctx.latencyLead * rate_lead;
+        float bar_pos = static_cast<float>( m_barBeatHost ) + m_beatPhasePLL + ctx.latencyLead * rate_lead;
         audio_fx.barPhase = ( bar_pos - floorf( bar_pos * 0.25f ) * 4.f ) * 0.25f;
         audio_fx.phrasePos = m_phrasePos;
         audio_fx.phraseSecsLeft = m_phraseSecsLeft;
@@ -340,7 +340,7 @@ AudioFeatures AudioConditioner::update( const AudioFeatures &audio, float rawDt,
     if ( m_forceDropAt < -1.f )
     {
         const char *fd = getenv( "KALEIDO_FORCE_DROP" );
-        m_forceDropAt = fd ? (float)atof( fd ) : -1.f;
+        m_forceDropAt = fd ? static_cast<float>( atof( fd ) ) : -1.f;
     }
     if ( m_forceDropAt >= 0.f && ctx.globalTime >= m_forceDropAt )
     {

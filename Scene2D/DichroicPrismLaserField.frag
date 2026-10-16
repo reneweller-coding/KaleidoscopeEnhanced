@@ -79,7 +79,7 @@ void main()
 
     // Iterate across multiple tilted dichroic glass plates
     int num_p = int( clamp( n_plates, 3.0, 6.0 ) );
-    for ( int k = 0; k < 5; k++ )
+    for ( int k = 0; k < 5; ++k )
     {
         if ( k >= num_p )
             break;

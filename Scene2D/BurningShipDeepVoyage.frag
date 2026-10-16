@@ -92,7 +92,7 @@ void main()
     float trap = 1e5;
 
     // Burning ship iteration loop: z = (|x| + i|y|)^2 + c
-    for ( int i = 0; i < 90; i++ )
+    for ( int i = 0; i < 90; ++i )
     {
         vec2 z_abs = abs( z );
         z = vec2( z_abs.x * z_abs.x - z_abs.y * z_abs.y, 2.0 * z_abs.x * z_abs.y ) + c;

@@ -160,7 +160,7 @@ void main()
     // Grid step size
     float cell_w = 3.0 / dens;
 
-    for ( int i = 0; i < 70; i++ )
+    for ( int i = 0; i < 70; ++i )
     {
         p = ro + rd * t;
         if ( t > max_dist )

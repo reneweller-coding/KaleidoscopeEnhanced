@@ -61,7 +61,7 @@ TextureEffectKaleidoscopeBase::TextureEffectKaleidoscopeBase( unsigned int minTi
     m_vertexShaderFilename = "..\\standard.vert";
     m_fragmentShaderFilename = "..\\Scene2D\\Kaleidoscope.frag";
 
-    m_sides = (float)( ( rand() % m_maxSides ) + m_minSides );
+    m_sides = static_cast<float>( ( rand() % m_maxSides ) + m_minSides );
 
     m_interpolationPower = m_power;
 
@@ -121,12 +121,12 @@ TextureEffectKaleidoscopeBase::TextureEffectKaleidoscopeBase( const std::string 
 
     // const char* name = filename.c_str();//toAscii().constData();*/
 
-    m_fragmentShaderFilename = (char *)malloc( sizeof( char ) * ( filename.size() + 1 ) );
+    m_fragmentShaderFilename = static_cast<char *>( malloc( sizeof( char ) * ( filename.size() + 1 ) ) );
     sprintf( m_fragmentShaderFilename, "%s\0", filename.c_str() );
 
     // m_fragmentShaderFilename = filename.c_str();//filename.toLocal8Bit().data();
 
-    m_sides = (float)( ( rand() % m_maxSides ) + m_minSides );
+    m_sides = static_cast<float>( ( rand() % m_maxSides ) + m_minSides );
 
     m_interpolationPower = m_power;
 
@@ -229,20 +229,20 @@ void TextureEffectKaleidoscopeBase::setUniforms( float time, float interpolation
     // Full Power
     if ( m_statePower == 0 )
     {
-        float ts = float( m_timePower.elapsed() ) * 0.001;
+        float ts = static_cast<float>( m_timePower.elapsed() ) * 0.001;
         if ( ts > m_timeSoloPower )
         {
             m_statePower = 1;
             m_timePower.start();
 
-            m_timeSoloPower = (float)( m_timeSoloPowerNoMin
-                                       + ( rand() % ( m_timeSoloPowerNoMax - m_timeSoloPowerNoMin ) ) );
+            m_timeSoloPower = static_cast<float>( m_timeSoloPowerNoMin
+                                                  + ( rand() % ( m_timeSoloPowerNoMax - m_timeSoloPowerNoMin ) ) );
         }
     }
     // Decreasing
     else if ( m_statePower == 1 )
     {
-        float ts = float( m_timePower.elapsed() ) * 0.001;
+        float ts = static_cast<float>( m_timePower.elapsed() ) * 0.001;
         m_interpolationPower = m_powerMin + ( m_power - m_powerMin ) * ( 1.0 - ts / m_timeInterpolationPower );
 
         if ( ts > m_timeInterpolationPower )
@@ -254,18 +254,20 @@ void TextureEffectKaleidoscopeBase::setUniforms( float time, float interpolation
     // No Power
     else if ( m_statePower == 2 )
     {
-        float ts = float( m_timePower.elapsed() ) * 0.001;
+        float ts = static_cast<float>( m_timePower.elapsed() ) * 0.001;
         if ( ts > m_timeSoloPower )
         {
             m_statePower = 3;
             m_timePower.start();
 
-            m_timeSoloPower = (float)( m_timeSoloPowerFullMin
-                                       + ( rand() % ( m_timeSoloPowerFullMax - m_timeSoloPowerFullMin ) ) );
+            m_timeSoloPower = static_cast<float>( m_timeSoloPowerFullMin
+                                                  + ( rand() % ( m_timeSoloPowerFullMax - m_timeSoloPowerFullMin ) ) );
 
-            m_power = (float)( m_powerMin + ( ( (float)rand() / (float)RAND_MAX ) * ( m_powerMax - m_powerMin ) ) );
+            m_power = ( m_powerMin
+                        + ( ( static_cast<float>( rand() ) / static_cast<float>( RAND_MAX ) )
+                            * ( m_powerMax - m_powerMin ) ) );
             m_powerRotationAllowed = false;
-            float p_tp = ( (float)rand() / (float)RAND_MAX );
+            float p_tp = ( static_cast<float>( rand() ) / static_cast<float>( RAND_MAX ) );
             if ( p_tp < m_powerProbability )
             {
                 m_powerRotationAllowed = false;
@@ -280,7 +282,7 @@ void TextureEffectKaleidoscopeBase::setUniforms( float time, float interpolation
     // Inreasing
     else if ( m_statePower == 3 )
     {
-        float ts = float( m_timePower.elapsed() ) * 0.001;
+        float ts = static_cast<float>( m_timePower.elapsed() ) * 0.001;
 
         m_interpolationPower = m_powerMin + ( m_power - m_powerMin ) * ( ts / m_timeInterpolationPower );
 
@@ -289,9 +291,9 @@ void TextureEffectKaleidoscopeBase::setUniforms( float time, float interpolation
             m_statePower = 0;
             m_timePower.start();
 
-            m_timeInterpolationPower = (float)( m_timeInterpolationPowerMin
-                                                + ( rand()
-                                                    % ( m_timeInterpolationPowerMax - m_timeInterpolationPowerMin ) ) );
+            m_timeInterpolationPower = static_cast<float>(
+                m_timeInterpolationPowerMin
+                + ( rand() % ( m_timeInterpolationPowerMax - m_timeInterpolationPowerMin ) ) );
         }
     }
 
@@ -333,17 +335,18 @@ void TextureEffectKaleidoscopeBase::resetParameters()
 {
     EffectShader::resetParameters();
 
-    m_speed = (float)( m_speedMin + ( ( (float)rand() / (float)RAND_MAX ) * ( m_speedMax - m_speedMin ) ) );
+    m_speed = ( m_speedMin
+                + ( ( static_cast<float>( rand() ) / static_cast<float>( RAND_MAX ) ) * ( m_speedMax - m_speedMin ) ) );
     if ( fabs( m_speed ) < EPSILON )
-        m_speed = (float)EPSILON;
+        m_speed = static_cast<float>( EPSILON );
     m_speedAct = m_speed;
 
-    float p_r = ( (float)rand() / (float)RAND_MAX );
+    float p_r = ( static_cast<float>( rand() ) / static_cast<float>( RAND_MAX ) );
     if ( p_r > 0.4 )
         m_interpolationRotation = 0.0;
     else
-        m_interpolationRotation = (float)( M_PI / 4.0 );
+        m_interpolationRotation = static_cast<float>( M_PI / 4.0 );
 
 
-    m_sides = (float)( ( rand() % m_maxSides ) + m_minSides );
+    m_sides = static_cast<float>( ( rand() % m_maxSides ) + m_minSides );
 }

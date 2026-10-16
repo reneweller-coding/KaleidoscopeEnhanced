@@ -135,7 +135,7 @@ int main( int argc, char *argv[] )
             fprintf( stderr, "save: %s\n", qPrintable( err ) );
             return 1;
         }
-        fprintf( stderr, "roundtrip ok: %d entries\n", int( p.entries.size() ) );
+        fprintf( stderr, "roundtrip ok: %d entries\n", static_cast<int>( p.entries.size() ) );
         return 0;
     }
 
@@ -338,7 +338,7 @@ int main( int argc, char *argv[] )
         {
             GLuint      s = gl->glCreateShader( type );
             const char *p = src.constData();
-            const GLint len = GLint( src.size() );
+            const GLint len = static_cast<GLint>( src.size() );
             gl->glShaderSource( s, 1, &p, &len );
             gl->glCompileShader( s );
             GLint ok = 0;
@@ -564,7 +564,7 @@ int main( int argc, char *argv[] )
             if ( state->idx >= state->shaders.size() )
             {
                 fprintf( stderr, "CFXCHECK: %d failure(s) of %d shader(s)\n",
-                         state->fails, int( state->shaders.size() ) );
+                         state->fails, static_cast<int>( state->shaders.size() ) );
                 qApp->exit( state->fails ? 1 : 0 );
                 return;
             }
@@ -631,9 +631,9 @@ int main( int argc, char *argv[] )
                     const uchar *pa = x.constScanLine( r );
                     const uchar *pb = y.constScanLine( r );
                     for ( int c = 0; c < bytes; ++c )
-                        s += std::abs( int( pa[c] ) - int( pb[c] ) );
+                        s += std::abs( static_cast<int>( pa[c] ) - static_cast<int>( pb[c] ) );
                 }
-                return s / ( double( x.height() ) * bytes ); // mean |diff| in 0..255
+                return s / ( static_cast<double>( x.height() ) * bytes ); // mean |diff| in 0..255
             };
             const int steps = 24;
             // Endpoint truth from the linear Crossfade: exact scene A at
@@ -644,7 +644,7 @@ int main( int argc, char *argv[] )
             QImage ref_b = w->grabFramebuffer();
             int    fails = 0;
             fprintf( stderr, "TRANSCHECK  %d transition(s)  (endpoints <= 1.5/255; jump = maxStep/medianStep <= 6)\n",
-                     (int)trans_files.size() );
+                     static_cast<int>( trans_files.size() ) );
             for ( const QString &tf : trans_files )
             {
                 // Folder-qualified: a bare name would resolve through the
@@ -656,7 +656,7 @@ int main( int argc, char *argv[] )
                 double              end_a = 0.0, end_b = 0.0, max_step = 0.0;
                 for ( int i = 0; i <= steps; ++i )
                 {
-                    w->setTransTest( 0, float( i ) / steps );
+                    w->setTransTest( 0, static_cast<float>( i ) / steps );
                     QImage f = w->grabFramebuffer();
                     if ( i == 0 )
                         end_a = mean_diff( f, ref_a );
@@ -683,7 +683,7 @@ int main( int argc, char *argv[] )
             if ( fails )
                 fprintf( stderr, "TRANSCHECK: %d transition(s) FAILED\n", fails );
             else
-                fprintf( stderr, "TRANSCHECK: all %d transitions OK\n", (int)trans_files.size() );
+                fprintf( stderr, "TRANSCHECK: all %d transitions OK\n", static_cast<int>( trans_files.size() ) );
             qApp->exit( fails ? 1 : 0 );
         } );
         return app.exec();
@@ -789,9 +789,9 @@ int main( int argc, char *argv[] )
                     const uchar *pa = x.constScanLine( r );
                     const uchar *pb = y.constScanLine( r );
                     for ( int c = 0; c < bytes; ++c )
-                        s += std::abs( int( pa[c] ) - int( pb[c] ) );
+                        s += std::abs( static_cast<int>( pa[c] ) - static_cast<int>( pb[c] ) );
                 }
-                return s / ( double( x.height() ) * bytes );
+                return s / ( static_cast<double>( x.height() ) * bytes );
             };
             auto mean_luma = []( const QImage &ia ) -> double
             {
@@ -847,7 +847,7 @@ int main( int argc, char *argv[] )
                 double              luma_a = 0.0, luma_b = 0.0, luma_max = 0.0;
                 for ( int i = 0; i <= steps; ++i )
                 {
-                    w->setTransTest( 0, float( i ) / steps );
+                    w->setTransTest( 0, static_cast<float>( i ) / steps );
                     QImage       f = w->grabFramebuffer();
                     const double l = mean_luma( f );
                     if ( i == 0 )
@@ -889,14 +889,14 @@ int main( int argc, char *argv[] )
                 for ( size_t i = 0; i < st.size(); ++i )
                     list += ( i ? "," : "" ) + QString::number( st[i], 'f', 3 );
                 std::fprintf( out, "%s\t%.2f\t%.3f\t%.3f\t%.2f\t%.1f\t%s\n",
-                              qPrintable( e.file ), tv, tv > 0.05 ? double( best ) / steps : 1.0,
+                              qPrintable( e.file ), tv, tv > 0.05 ? static_cast<double>( best ) / steps : 1.0,
                               tv > 0.05 ? mx / tv : 0.0, flick,
                               luma_max - std::max( luma_a, luma_b ), qPrintable( list ) );
                 std::fflush( out );
             }
             if ( out != stdout )
                 std::fclose( out );
-            std::fprintf( stderr, "TRANSPROFILE: %d transition(s)\n", int( entries->size() ) );
+            std::fprintf( stderr, "TRANSPROFILE: %d transition(s)\n", static_cast<int>( entries->size() ) );
             qApp->exit( 0 );
         } );
         return app.exec();

@@ -116,7 +116,7 @@ void main()
     float s_count = 0.0;
 
     // Buffalo iteration loop: z = (|Re(z)| + i|Im(z)|)^2 - |Re(z)| + c
-    for ( int i = 0; i < 46; i++ )
+    for ( int i = 0; i < 46; ++i )
     {
         vec2 z_abs = abs( z );
         z = vec2( z_abs.x * z_abs.x - z_abs.y * z_abs.y - z_abs.x, 2.0 * z_abs.x * z_abs.y ) + c;

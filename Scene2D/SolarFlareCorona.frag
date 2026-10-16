@@ -113,7 +113,7 @@ float fbmPlasma( vec2 p, float turb )
     float v = 0.0;
     float a = 0.5;
     mat2  rot = mat2( 0.866, -0.5, 0.5, 0.866 );
-    for ( int i = 0; i < 5; i++ )
+    for ( int i = 0; i < 5; ++i )
     {
         vec2 c = curlNoise( p * 0.8 );
         v += a * noise2D( p + c * ( 0.4 * turb ) );
@@ -179,7 +179,7 @@ void main()
     // Coronal mass ejection / magnetic prominence arches
     int   promen_count = 6;
     float promen_glow = 0.0;
-    for ( int k = 0; k < promen_count; k++ )
+    for ( int k = 0; k < promen_count; ++k )
     {
         float p_angle = float( k ) * ( 6.2831853 / float( promen_count ) ) + t * 0.1;
         float diff_a = mod( a - p_angle + 3.14159, 6.2831853 ) - 3.14159;

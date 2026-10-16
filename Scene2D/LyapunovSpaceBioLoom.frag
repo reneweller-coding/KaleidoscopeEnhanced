@@ -67,7 +67,7 @@ float calcLyapunov( vec2 ab, float t )
     float lambda = 0.0;
 
     // 24 Iterations over 6-step repeating sequence
-    for ( int i = 0; i < 24; i++ )
+    for ( int i = 0; i < 24; ++i )
     {
         int   seq_idx = i % 6;
         float r = ( seq_idx == 0 || seq_idx == 2 || seq_idx == 5 ) ? a_param : b_param;

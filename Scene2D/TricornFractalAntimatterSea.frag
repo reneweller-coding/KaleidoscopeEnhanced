@@ -94,7 +94,7 @@ void main()
     float trap = 1e5;
 
     // Tricorn loop: z = conj(z)^2 + c = (x - iy)^2 + c = (x^2 - y^2 - 2ixy) + c
-    for ( int i = 0; i < 48; i++ )
+    for ( int i = 0; i < 48; ++i )
     {
         z = vec2( z.x * z.x - z.y * z.y, -2.0 * z.x * z.y ) + c;
 

@@ -89,7 +89,7 @@ void main()
     float plasma_acc = 0.0;
     float jet_acc = 0.0;
 
-    for ( int i = 0; i < 48; i++ )
+    for ( int i = 0; i < 48; ++i )
     {
         vec3  p = ro + rd * tot_dist;
         float r_disk = length( p.xz );

@@ -84,7 +84,7 @@ void main()
     float amp = 0.5;
     vec2  shift = vec2( cos( t * 0.4 ), sin( t * 0.3 ) ) * 0.2;
 
-    for ( int i = 0; i < 4; i++ )
+    for ( int i = 0; i < 4; ++i )
     {
         p = vec2( p.x * cos( 0.6 ) - p.y * sin( 0.6 ), p.x * sin( 0.6 ) + p.y * cos( 0.6 ) ) * 1.8 + shift;
         turb += amp * ( sin( p.x * 2.5 + t ) * cos( p.y * 2.5 - t ) );

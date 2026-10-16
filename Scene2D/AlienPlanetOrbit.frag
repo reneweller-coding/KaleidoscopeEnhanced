@@ -340,7 +340,7 @@ void main()
 
     // FOREGROUND SATELLITES: three fast crossers with blinking nav lights --
     // constant visible motion even between the big station encounters.
-    for ( int i = 0; i < 3; i++ )
+    for ( int i = 0; i < 3; ++i )
     {
         float fi = float( i );
         float x = fract( t * ( 0.5 + 0.3 * fi ) + fi * 0.37 ) * 2.6 - 1.3;

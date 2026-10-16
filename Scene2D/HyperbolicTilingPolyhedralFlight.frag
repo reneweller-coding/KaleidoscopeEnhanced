@@ -76,7 +76,7 @@ float mapHyperbolic( vec3 p, float crv, float strutWidth, float period,
     cellID = 0.0;
 
     // Repeated polyhedral mirror foldings ({5,3,4} dodecahedral honeycomb generators)
-    for ( int i = 0; i < 5; i++ )
+    for ( int i = 0; i < 5; ++i )
     {
         q = abs( q );
         // Golden ratio plane fold: x*phi + y/phi
@@ -155,7 +155,7 @@ void main()
     vec3  hit_col = vec3( 0.0 );
     bool  hit = false;
 
-    for ( int i = 0; i < 56; i++ )
+    for ( int i = 0; i < 56; ++i )
     {
         vec3  p = ro + rd * tot_dist;
         float cur_cell;

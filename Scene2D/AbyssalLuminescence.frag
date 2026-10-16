@@ -95,7 +95,7 @@ float fbm( vec2 p )
     float v = 0.0;
     float a = 0.5;
     mat2  rot = mat2( 0.8, 0.6, -0.6, 0.8 );
-    for ( int i = 0; i < 4; i++ )
+    for ( int i = 0; i < 4; ++i )
     {
         v += a * noise( p );
         p = rot * p * 2.05 + vec2( 1.2, 3.4 );
@@ -131,7 +131,7 @@ void main()
     int  arms = 8;
     vec3 tentacle_col = vec3( 0.0 );
 
-    for ( int i = 0; i < arms; i++ )
+    for ( int i = 0; i < arms; ++i )
     {
         float arm_angle = float( i ) * ( 6.2831853 / float( arms ) );
         float arm_phase = t * 0.8 + float( i ) * 0.785;

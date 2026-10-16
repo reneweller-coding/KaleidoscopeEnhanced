@@ -48,7 +48,7 @@ float col( vec2 coord )
     float delta_theta = 2.0 * Pi / float( Angle );
     float col = 0.0;
     float theta = 0.0;
-    for ( int i = 0; i < Steps; i++ )
+    for ( int i = 0; i < Steps; ++i )
     {
         vec2 adjc = coord;
         theta = delta_theta * float( i );

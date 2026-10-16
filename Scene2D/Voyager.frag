@@ -122,7 +122,7 @@ void main()
 
     vec4  O = vec4( 0.0 );
     float t = 0.0;
-    for ( int i = 0; i < 50; i++ )
+    for ( int i = 0; i < 50; ++i )
     {
         vec3 q = t * dir;
         vec3 p = q;

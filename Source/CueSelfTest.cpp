@@ -36,9 +36,9 @@ int g_failed = 0;
 void check( bool ok, const char *what, const std::string &detail = std::string() )
 {
     if ( ok )
-        g_passed++;
+        ++g_passed;
     else
-        g_failed++;
+        ++g_failed;
     printf( "  [%s] %s%s%s\n", ok ? " ok " : "FAIL", what,
             detail.empty() ? "" : "  -- ", detail.c_str() );
 }
@@ -192,10 +192,10 @@ int decodeCapture( const char *path )
         if ( !decodeScoreCue( buf.data(), size, c ) )
         {
             printf( "bad\n" );
-            bad++;
+            ++bad;
             continue;
         }
-        good++;
+        ++good;
         switch ( c.kind )
         {
             case ScoreCue::KindE::BEAT: printf( "beat %d\n", c.index ); break;

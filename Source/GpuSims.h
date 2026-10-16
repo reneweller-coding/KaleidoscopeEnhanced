@@ -122,10 +122,10 @@ public:
     // ---- Ring-Buchhaltung für die audioFx-Uniforms (Export VOR run()!) ----
     /** @brief Normalized [0,1) write-head position in the self-similarity ring, for the audioFx uniform. Must be read
      * BEFORE run() advances the ring. @return Head position as a fraction of SSMSize. */
-    float ssmHeadNorm() const { return float( m_ssmHead ) / float( SSMSize ); }
+    float ssmHeadNorm() const { return static_cast<float>( m_ssmHead ) / static_cast<float>( SSMSize ); }
     /** @brief Normalized [0,1] fraction of the self-similarity ring populated so far. @return Fill fraction of
      * SSMSize. */
-    float ssmFillNorm() const { return float( m_ssmCount ) / float( SSMSize ); }
+    float ssmFillNorm() const { return static_cast<float>( m_ssmCount ) / static_cast<float>( SSMSize ); }
     /** Kontinuierliche "Jetzt"-T-Koordinate des Spektrogramm-Rings: hinkt dem
      *  Schreibkopf bewusst 2 Zeilen hinterher und faltet den Sub-Zeilen-Anteil
      *  ein, damit das Terrain nicht alle 80 ms vorwärts ruckt (Details siehe
@@ -146,11 +146,11 @@ public:
             frac = 0.f;
         else if ( frac > 1.f )
             frac = 1.f;
-        return ( float( m_spectroHead ) - 1.5f + frac ) / float( SpectroH );
+        return ( static_cast<float>( m_spectroHead ) - 1.5f + frac ) / static_cast<float>( SpectroH );
     }
     /** @brief Normalized [0,1] fraction of the spectrogram ring's history populated so far. @return Fill fraction of
      * SpectroH. */
-    float spectroFillNorm() const { return float( m_spectroCount ) / float( SpectroH ); }
+    float spectroFillNorm() const { return static_cast<float>( m_spectroCount ) / static_cast<float>( SpectroH ); }
 
 private:
     /** @brief Creates the reaction-diffusion ping-pong FBOs/textures and compiles the Gray-Scott step shader.

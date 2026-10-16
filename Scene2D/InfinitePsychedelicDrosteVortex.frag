@@ -97,7 +97,7 @@ void main()
     // vortex breathes wider on drones while the zoom phase stays untouched.
     float vortex_scale = 0.35 * ( 1.0 + 0.32 * audioSubBass );
 
-    for ( int k = -1; k <= 1; k++ )
+    for ( int k = -1; k <= 1; ++k )
     {
         float f1 = zoom_phase1 + float( k );
         float w1 = exp( -4.0 * ( f1 - 0.5 ) * ( f1 - 0.5 ) );

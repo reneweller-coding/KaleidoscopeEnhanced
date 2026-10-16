@@ -267,7 +267,7 @@ void GpuSims::stepFluid( const AudioFeatures &audio, const Frame &f )
     if ( m_fluidInterpUni >= 0 )
         glUniform1f( m_fluidInterpUni, f.dyeInterp );
     if ( m_fluidResUni >= 0 )
-        glUniform2f( m_fluidResUni, (float)FluidSize, (float)FluidSize );
+        glUniform2f( m_fluidResUni, static_cast<float>( FluidSize ), static_cast<float>( FluidSize ) );
     if ( m_fluidSeedUni >= 0 )
         glUniform1f( m_fluidSeedUni, m_fluidSeeded ? 0.f : 1.f );
     // Flow field evolution rides the integrated phase (jump-free); the
@@ -370,7 +370,7 @@ void GpuSims::stepSmoke3DPass( const AudioFeatures &audio, const Frame &f, float
     glBindTexture( GL_TEXTURE_2D, m_texSmoke3D[prev] );
     glUniform1i( m_smoke3DPrevUni, 0 );
     if ( m_smoke3DResUni >= 0 )
-        glUniform2f( m_smoke3DResUni, (float)Smoke3DW, (float)Smoke3DH );
+        glUniform2f( m_smoke3DResUni, static_cast<float>( Smoke3DW ), static_cast<float>( Smoke3DH ) );
     if ( m_smoke3DSeedUni >= 0 )
         glUniform1f( m_smoke3DSeedUni, m_smoke3DSeeded ? 0.f : 1.f );
     if ( m_smoke3DSubUni >= 0 )
@@ -518,16 +518,16 @@ void GpuSims::setupPhysarum()
     if ( ok && m_physVBO == 0 )
     {
         std::vector<float> v;
-        v.reserve( size_t( PhysAgentsSide ) * PhysAgentsSide * 2 );
+        v.reserve( static_cast<size_t>( PhysAgentsSide ) * PhysAgentsSide * 2 );
         for ( int y = 0; y < PhysAgentsSide; ++y )
             for ( int x = 0; x < PhysAgentsSide; ++x )
             {
-                v.push_back( ( x + 0.5f ) / float( PhysAgentsSide ) );
-                v.push_back( ( y + 0.5f ) / float( PhysAgentsSide ) );
+                v.push_back( ( x + 0.5f ) / static_cast<float>( PhysAgentsSide ) );
+                v.push_back( ( y + 0.5f ) / static_cast<float>( PhysAgentsSide ) );
             }
         glGenBuffers( 1, &m_physVBO );
         glBindBuffer( GL_ARRAY_BUFFER, m_physVBO );
-        glBufferData( GL_ARRAY_BUFFER, GLsizeiptr( v.size() * sizeof( float ) ),
+        glBufferData( GL_ARRAY_BUFFER, static_cast<GLsizeiptr>( v.size() * sizeof( float ) ),
                       v.data(), GL_STATIC_DRAW );
         glBindBuffer( GL_ARRAY_BUFFER, 0 );
     }
@@ -536,9 +536,9 @@ void GpuSims::setupPhysarum()
         glGenVertexArrays( 1, &m_physDepVAO );
         glBindVertexArray( m_physDepVAO );
         glBindBuffer( GL_ARRAY_BUFFER, m_physVBO );
-        glEnableVertexAttribArray( GLuint( m_physDepAttr ) );
-        glVertexAttribPointer( GLuint( m_physDepAttr ), 2, GL_FLOAT, GL_FALSE,
-                               2 * sizeof( float ), (const void *)0 );
+        glEnableVertexAttribArray( static_cast<GLuint>( m_physDepAttr ) );
+        glVertexAttribPointer( static_cast<GLuint>( m_physDepAttr ), 2, GL_FLOAT, GL_FALSE,
+                               2 * sizeof( float ), nullptr );
         glBindVertexArray( 0 );
         glBindBuffer( GL_ARRAY_BUFFER, 0 );
     }
@@ -581,7 +581,7 @@ void GpuSims::stepPhysarum( const AudioFeatures &audio, const Frame &f )
         glUniform1i( m_physAgentTrailUni, 1 );
     if ( m_physAgentResUni >= 0 )
         glUniform2f( m_physAgentResUni,
-                     (float)PhysAgentsSide, (float)PhysAgentsSide );
+                     static_cast<float>( PhysAgentsSide ), static_cast<float>( PhysAgentsSide ) );
     if ( m_physAgentSeedUni >= 0 )
         glUniform1f( m_physAgentSeedUni, m_physSeeded ? 0.f : 1.f );
     if ( m_physAgentTimeUni >= 0 )
@@ -637,12 +637,12 @@ void GpuSims::stepPhysarum( const AudioFeatures &audio, const Frame &f )
             glUniform1i( m_physDifCTrailUni, 0 );
         if ( m_physDifCResUni >= 0 )
             glUniform2f( m_physDifCResUni,
-                         (float)PhysTrailSize, (float)PhysTrailSize );
+                         static_cast<float>( PhysTrailSize ), static_cast<float>( PhysTrailSize ) );
         if ( m_physDifCDecayUni >= 0 )
             glUniform1f( m_physDifCDecayUni, dif_decay );
         glBindImageTexture( 0, m_texPhysTrail[t_cur], 0, GL_FALSE, 0,
                             GL_WRITE_ONLY, GL_RGBA16F );
-        glDispatchCompute( GLuint( PhysTrailSize / 16 ), GLuint( PhysTrailSize / 16 ), 1 );
+        glDispatchCompute( static_cast<GLuint>( PhysTrailSize / 16 ), static_cast<GLuint>( PhysTrailSize / 16 ), 1 );
         // The written trail is next SAMPLED (agents/display) and rendered
         // INTO by the deposit pass — fence both kinds of downstream access.
         glMemoryBarrier( GL_TEXTURE_FETCH_BARRIER_BIT | GL_FRAMEBUFFER_BARRIER_BIT );
@@ -657,7 +657,7 @@ void GpuSims::stepPhysarum( const AudioFeatures &audio, const Frame &f )
             glUniform1i( m_physDifTrailUni, 0 );
         if ( m_physDifResUni >= 0 )
             glUniform2f( m_physDifResUni,
-                         (float)PhysTrailSize, (float)PhysTrailSize );
+                         static_cast<float>( PhysTrailSize ), static_cast<float>( PhysTrailSize ) );
         if ( m_physDifDecayUni >= 0 )
             glUniform1f( m_physDifDecayUni, dif_decay );
         drawFullscreen();
@@ -718,7 +718,7 @@ void GpuSims::stepSSM( const AudioFeatures &a, float dt )
             d += v[i] * m_ssmVecs[j][i];
         d = ( d < 0.f ) ? 0.f : d;
         d = d * d * d; // sharpen: only real similarity stays bright
-        unsigned char byte = (unsigned char)( d * 255.f + 0.5f );
+        unsigned char byte = static_cast<unsigned char>( d * 255.f + 0.5f );
         m_ssmData[h * SSMSize + j] = byte; // row
         m_ssmData[j * SSMSize + h] = byte; // column (symmetric)
     }
@@ -746,7 +746,7 @@ void GpuSims::stepSpectro( const AudioFeatures &a, float dt )
         m_spectroAccum -= SpectroStride;
         ++rows;
 
-        unsigned char *dst = m_spectroData + size_t( m_spectroHead ) * SpectroW;
+        unsigned char *dst = m_spectroData + static_cast<size_t>( m_spectroHead ) * SpectroW;
         for ( int i = 0; i < SpectroW; ++i )
         {
             // The bands are already self-normalised 0..1; the mild curve lifts
@@ -755,7 +755,7 @@ void GpuSims::stepSpectro( const AudioFeatures &a, float dt )
             v = ( v <= 0.f ) ? 0.f : powf( v, 0.75f );
             if ( v > 1.f )
                 v = 1.f;
-            dst[i] = (unsigned char)( v * 255.f + 0.5f );
+            dst[i] = static_cast<unsigned char>( v * 255.f + 0.5f );
         }
         m_spectroHead = ( m_spectroHead + 1 ) % SpectroH;
         if ( m_spectroCount < SpectroH )
@@ -789,7 +789,7 @@ void GpuSims::stepReactionDiffusion( const AudioFeatures &audio )
     glBindTexture( GL_TEXTURE_2D, m_texRD[prev] );
     glUniform1i( m_rdPrevUni, 0 );
     if ( m_rdResUni >= 0 )
-        glUniform2f( m_rdResUni, (float)RDSize, (float)RDSize );
+        glUniform2f( m_rdResUni, static_cast<float>( RDSize ), static_cast<float>( RDSize ) );
     if ( m_rdSeedUni >= 0 )
         glUniform1f( m_rdSeedUni, m_rdSeeded ? 0.f : 1.f );
 
@@ -896,7 +896,7 @@ void GpuSims::bindSpectroTexture()
                           : m_spectroPend;
             glTexSubImage2D( GL_TEXTURE_2D, 0, 0, first, SpectroW, run,
                              GL_RED, GL_UNSIGNED_BYTE,
-                             m_spectroData + size_t( first ) * SpectroW );
+                             m_spectroData + static_cast<size_t>( first ) * SpectroW );
             if ( run < m_spectroPend )
                 glTexSubImage2D( GL_TEXTURE_2D, 0, 0, 0, SpectroW,
                                  m_spectroPend - run, GL_RED, GL_UNSIGNED_BYTE,

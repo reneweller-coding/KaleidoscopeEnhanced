@@ -66,7 +66,7 @@ float mapMandelbulb( vec3 p, float power, out float trap )
     float r = 0.0;
     trap = 1e5;
 
-    for ( int i = 0; i < 8; i++ )
+    for ( int i = 0; i < 8; ++i )
     {
         r = length( w );
         if ( r > 4.0 )
@@ -134,7 +134,7 @@ void main()
     float rim_glow = 0.0;
     vec3  hit_col = vec3( 0.0 );
 
-    for ( int i = 0; i < 54; i++ )
+    for ( int i = 0; i < 54; ++i )
     {
         vec3  p = ro + rd * tot_dist;
         float cur_trap;

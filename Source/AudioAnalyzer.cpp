@@ -40,7 +40,7 @@
  */
 float AudioAnalyzer::coeff( float cutoffHz, int sampleRate )
 {
-    return std::exp( -2.f * 3.14159265f * cutoffHz / float( sampleRate ) );
+    return std::exp( -2.f * 3.14159265f * cutoffHz / static_cast<float>( sampleRate ) );
 }
 
 /**
@@ -80,9 +80,9 @@ float AudioAnalyzer::coeff( float cutoffHz, int sampleRate )
     // the DFT results of sub-sequences of length len/2 (Cooley-Tukey).
     for ( int len = 2; len <= N; len <<= 1 )
     {
-        const float ang = -2.f * 3.14159265358979f / float( len ); // negative: forward FFT
-        const float w_re = std::cos( ang );                        // twiddle factor increment (real)
-        const float w_im = std::sin( ang );                        // twiddle factor increment (imag)
+        const float ang = -2.f * 3.14159265358979f / static_cast<float>( len ); // negative: forward FFT
+        const float w_re = std::cos( ang );                                     // twiddle factor increment (real)
+        const float w_im = std::sin( ang );                                     // twiddle factor increment (imag)
 
         for ( int i = 0; i < N; i += len )
         {
@@ -128,7 +128,10 @@ AudioAnalyzer::AudioAnalyzer( QObject *parent )
     // Precompute Hann window for FFT:  w[i] = 0.5 · (1 - cos(2π·i/(N-1)))
     // Reduces spectral leakage from block edges.
     for ( int i = 0; i < FFTSize; ++i )
-        m_fftWin[i] = 0.5f * ( 1.f - std::cos( 2.f * 3.14159265358979f * float( i ) / float( FFTSize - 1 ) ) );
+        m_fftWin[i] = 0.5f
+                      * ( 1.f
+                          - std::cos( 2.f * 3.14159265358979f * static_cast<float>( i )
+                                      / static_cast<float>( FFTSize - 1 ) ) );
 }
 
 /** @brief Stops capture and waits for the thread to finish. */
@@ -272,8 +275,8 @@ void AudioAnalyzer::recOpen( int sampleRate )
     wr32( f, 16 );
     wr16( f, 1 );
     wr16( f, 2 );
-    wr32( f, (unsigned)sampleRate );
-    wr32( f, (unsigned)( sampleRate * 4 ) );
+    wr32( f, static_cast<unsigned>( sampleRate ) );
+    wr32( f, static_cast<unsigned>( sampleRate * 4 ) );
     wr16( f, 4 );
     wr16( f, 16 );
     fwrite( "data", 1, 4, f );
@@ -293,25 +296,25 @@ void AudioAnalyzer::recOpen( int sampleRate )
  */
 void AudioAnalyzer::recWrite( const float *src, int numFrames, int numChannels )
 {
-    FILE *f = (FILE *)m_wavFile;
+    FILE *f = static_cast<FILE *>( m_wavFile );
     if ( !f )
         return;
     for ( int i = 0; i < numFrames; ++i )
     {
         float l = src[i * numChannels + 0];
         float r = ( numChannels > 1 ) ? src[i * numChannels + 1] : l;
-        short sl = (short)std::max( -32768.f, std::min( 32767.f, l * 32767.f ) );
-        short sr = (short)std::max( -32768.f, std::min( 32767.f, r * 32767.f ) );
-        wr16( f, (unsigned short)sl );
-        wr16( f, (unsigned short)sr );
+        short sl = static_cast<short>( std::max( -32768.f, std::min( 32767.f, l * 32767.f ) ) );
+        short sr = static_cast<short>( std::max( -32768.f, std::min( 32767.f, r * 32767.f ) ) );
+        wr16( f, static_cast<unsigned short>( sl ) );
+        wr16( f, static_cast<unsigned short>( sr ) );
     }
-    m_wavDataBytes += (unsigned)( numFrames * 4 );
+    m_wavDataBytes += static_cast<unsigned>( numFrames * 4 );
 }
 
 /** @brief Finalises the WAV header's chunk sizes and closes the recording file. */
 void AudioAnalyzer::recClose()
 {
-    FILE *f = (FILE *)m_wavFile;
+    FILE *f = static_cast<FILE *>( m_wavFile );
     if ( !f )
         return;
     fseek( f, 4, SEEK_SET );
@@ -405,12 +408,12 @@ void AudioAnalyzer::tapTempo()
     {
         qint64 a = m_tapTimes[( m_tapN - i - 1 ) & 7];
         qint64 b = m_tapTimes[( m_tapN - i ) & 7];
-        iv[n++] = float( b - a );
+        iv[n++] = static_cast<float>( b - a );
     }
     std::sort( iv, iv + n );
     float med = iv[n / 2];
     med = std::max( 250.f, std::min( med, 1500.f ) ); // 40..240 BPM
-    m_tapIntervalMs = int( med + 0.5f );
+    m_tapIntervalMs = static_cast<int>( med + 0.5f );
     m_tapAnchorMs = now;
     m_tapUntilMs = now + 45000;
     fprintf( stderr, "TAP tempo: %.1f BPM (%d taps)\n", 60000.f / med, cnt );
@@ -452,10 +455,10 @@ void AudioAnalyzer::analyzeWavOffline( const QString &path )
         {
             unsigned char buf[16];
             fread( buf, 1, 16, f );
-            fmt_tag = *(unsigned short *)( buf + 0 );
-            channels = *(unsigned short *)( buf + 2 );
-            sample_rate = *(unsigned int *)( buf + 4 );
-            bits = *(unsigned short *)( buf + 14 );
+            fmt_tag = *reinterpret_cast<unsigned short *>( buf + 0 );
+            channels = *reinterpret_cast<unsigned short *>( buf + 2 );
+            sample_rate = *reinterpret_cast<unsigned int *>( buf + 4 );
+            bits = *reinterpret_cast<unsigned short *>( buf + 14 );
             if ( sz > 16 )
                 fseek( f, sz - 16, SEEK_CUR );
         }
@@ -476,7 +479,7 @@ void AudioAnalyzer::analyzeWavOffline( const QString &path )
     }
 
     fprintf( stderr, "OFFLINE: %s  %u Hz, %u ch, %.1f s\n", qPrintable( path ),
-             sample_rate, channels, data_len / float( sample_rate * channels * 2 ) );
+             sample_rate, channels, data_len / static_cast<float>( sample_rate * channels * 2 ) );
 
     const int chunk = 480; // = one live capture block
     short    *pcm = new short[chunk * channels];
@@ -488,8 +491,8 @@ void AudioAnalyzer::analyzeWavOffline( const QString &path )
     qint64 fed = 0; // frames delivered so far
     while ( remain > 0 && m_running )
     {
-        int n = ( remain < (unsigned int)chunk ) ? (int)remain : chunk;
-        if ( fread( pcm, 2 * channels, n, f ) != (size_t)n )
+        int n = ( remain < static_cast<unsigned int>( chunk ) ) ? static_cast<int>( remain ) : chunk;
+        if ( fread( pcm, 2 * channels, n, f ) != static_cast<size_t>( n ) )
             break;
         for ( int i = 0; i < n * channels; ++i )
             conv[i] = pcm[i] / 32768.f;
@@ -514,12 +517,12 @@ void AudioAnalyzer::analyzeWavOffline( const QString &path )
         static const bool Fast = qEnvironmentVariableIsSet( "KALEIDO_OFFLINE_FAST" );
         fed += n;
         // A cue file (-k) is timed by the WAV itself: this is how far it has played.
-        ScoreCueFile::instance().setClock( double( fed ) / sample_rate );
+        ScoreCueFile::instance().setClock( static_cast<double>( fed ) / sample_rate );
         if ( !Fast )
         {
             qint64 ahead = fed * 1000 / sample_rate - clock.elapsed();
             if ( ahead > 2 )
-                msleep( (unsigned long)ahead );
+                msleep( static_cast<unsigned long>( ahead ) );
         }
     }
     if ( m_wavFile )
@@ -542,7 +545,7 @@ bool AudioAnalyzer::dumpReplayWav( const QString &path, float seconds )
     if ( m_replayCount == 0 || m_replayRing.empty() )
         return false;
 
-    size_t       want_frames = (size_t)( seconds * m_replayRate );
+    size_t       want_frames = static_cast<size_t>( seconds * m_replayRate );
     size_t       have_frames = std::min( want_frames, m_replayCount );
     const size_t cap = m_replayRing.size();
 
@@ -550,10 +553,10 @@ bool AudioAnalyzer::dumpReplayWav( const QString &path, float seconds )
     if ( !f )
         return false;
 
-    unsigned int   data_len = (unsigned int)( have_frames * 2 * 2 );
+    unsigned int   data_len = static_cast<unsigned int>( have_frames * 2 * 2 );
     unsigned int   riff_len = 36 + data_len;
     unsigned short fmt = 1, ch = 2, bits = 16, align = 4;
-    unsigned int   rate = (unsigned int)m_replayRate, bytes_sec = rate * align;
+    unsigned int   rate = static_cast<unsigned int>( m_replayRate ), bytes_sec = rate * align;
     fwrite( "RIFF", 1, 4, f );
     fwrite( &riff_len, 4, 1, f );
     fwrite( "WAVEfmt ", 1, 8, f );
@@ -609,10 +612,10 @@ std::vector<AudioFeatures> AudioAnalyzer::analyzeWavToTimeline( const QString &p
         {
             unsigned char buf[16];
             fread( buf, 1, 16, f );
-            fmt_tag = *(unsigned short *)( buf + 0 );
-            channels = *(unsigned short *)( buf + 2 );
-            sample_rate = *(unsigned int *)( buf + 4 );
-            bits = *(unsigned short *)( buf + 14 );
+            fmt_tag = *reinterpret_cast<unsigned short *>( buf + 0 );
+            channels = *reinterpret_cast<unsigned short *>( buf + 2 );
+            sample_rate = *reinterpret_cast<unsigned int *>( buf + 4 );
+            bits = *reinterpret_cast<unsigned short *>( buf + 14 );
             if ( sz > 16 )
                 fseek( f, sz - 16, SEEK_CUR );
         }
@@ -643,8 +646,8 @@ std::vector<AudioFeatures> AudioAnalyzer::analyzeWavToTimeline( const QString &p
     timeline.reserve( remain / chunk + 1 );
     while ( remain > 0 )
     {
-        int n = ( remain < (unsigned int)chunk ) ? (int)remain : chunk;
-        if ( fread( pcm, 2 * channels, n, f ) != (size_t)n )
+        int n = ( remain < static_cast<unsigned int>( chunk ) ) ? static_cast<int>( remain ) : chunk;
+        if ( fread( pcm, 2 * channels, n, f ) != static_cast<size_t>( n ) )
             break;
         for ( int i = 0; i < n * channels; ++i )
             conv[i] = pcm[i] / 32768.f;
@@ -656,7 +659,7 @@ std::vector<AudioFeatures> AudioAnalyzer::analyzeWavToTimeline( const QString &p
     delete[] conv;
     fclose( f );
     fprintf( stderr, "TIMELINE: %d blocks (%.1f s)\n",
-             (int)timeline.size(), timeline.size() * 0.01f );
+             static_cast<int>( timeline.size() ), timeline.size() * 0.01f );
     return timeline;
 }
 
@@ -701,10 +704,10 @@ void AudioAnalyzer::run()
     // gesetzt und damit weiterhin uhrgeseedet.
     {
         const char *seed_env = getenv( "KALEIDO_SEED" );
-        srand( seed_env ? (unsigned)strtoul( seed_env, nullptr, 10 )
-                        : (unsigned)std::chrono::high_resolution_clock::now()
-                              .time_since_epoch()
-                              .count() );
+        srand( seed_env ? static_cast<unsigned>( strtoul( seed_env, nullptr, 10 ) )
+                        : static_cast<unsigned>( std::chrono::high_resolution_clock::now()
+                                                     .time_since_epoch()
+                                                     .count() ) );
     }
 
 #ifdef _WIN32
@@ -718,7 +721,7 @@ void AudioAnalyzer::run()
 
     IMMDeviceEnumerator *p_enum = nullptr;
     hr = CoCreateInstance( __uuidof( MMDeviceEnumerator ), nullptr, CLSCTX_ALL,
-                           __uuidof( IMMDeviceEnumerator ), (void **)&p_enum );
+                           __uuidof( IMMDeviceEnumerator ), reinterpret_cast<void **>( &p_enum ) );
     if ( FAILED( hr ) )
     {
         CoUninitialize();
@@ -785,7 +788,7 @@ void AudioAnalyzer::run()
         bool is_capture_endpoint = false;
         if ( use_req && !req_id.isEmpty() )
         {
-            hr = p_enum->GetDevice( (LPCWSTR)req_id.utf16(), &p_device );
+            hr = p_enum->GetDevice( reinterpret_cast<LPCWSTR>( req_id.utf16() ), &p_device );
             is_capture_endpoint = req_cap;
         }
         else
@@ -794,7 +797,8 @@ void AudioAnalyzer::run()
             is_capture_endpoint = false;
         }
         if ( SUCCEEDED( hr ) )
-            hr = p_device->Activate( __uuidof( IAudioClient ), CLSCTX_ALL, nullptr, (void **)&p_client );
+            hr = p_device->Activate( __uuidof( IAudioClient ), CLSCTX_ALL, nullptr,
+                                     reinterpret_cast<void **>( &p_client ) );
         if ( SUCCEEDED( hr ) )
             hr = p_client->GetMixFormat( &pwfx );
         if ( SUCCEEDED( hr ) )
@@ -805,7 +809,7 @@ void AudioAnalyzer::run()
                                        buffer_duration, 0, pwfx, nullptr );
         }
         if ( SUCCEEDED( hr ) )
-            hr = p_client->GetService( __uuidof( IAudioCaptureClient ), (void **)&p_capture );
+            hr = p_client->GetService( __uuidof( IAudioCaptureClient ), reinterpret_cast<void **>( &p_capture ) );
         if ( SUCCEEDED( hr ) )
             hr = p_client->Start();
 
@@ -1055,7 +1059,7 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
         if ( m_replayRing.empty() || m_replayRate != sampleRate )
         {
             m_replayRate = sampleRate;
-            m_replayRing.assign( (size_t)sampleRate * 2 * ReplaySeconds, 0 );
+            m_replayRing.assign( static_cast<size_t>( sampleRate ) * 2 * ReplaySeconds, 0 );
             m_replayPos = m_replayCount = 0;
         }
         const size_t cap = m_replayRing.size();
@@ -1063,12 +1067,12 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
         {
             float l = data[i * numChannels];
             float r = ( numChannels > 1 ) ? data[i * numChannels + 1] : l;
-            m_replayRing[m_replayPos] = (short)( std::max( -1.f, std::min( 1.f, l ) ) * 32000.f );
-            m_replayRing[m_replayPos + 1] = (short)( std::max( -1.f, std::min( 1.f, r ) ) * 32000.f );
+            m_replayRing[m_replayPos] = static_cast<short>( std::max( -1.f, std::min( 1.f, l ) ) * 32000.f );
+            m_replayRing[m_replayPos + 1] = static_cast<short>( std::max( -1.f, std::min( 1.f, r ) ) * 32000.f );
             m_replayPos = ( m_replayPos + 2 ) % cap;
         }
-        m_replayCount = std::min( m_replayCount + (size_t)numFrames,
-                                  (size_t)sampleRate * ReplaySeconds );
+        m_replayCount = std::min( m_replayCount + static_cast<size_t>( numFrames ),
+                                  static_cast<size_t>( sampleRate ) * ReplaySeconds );
     }
 
     // Band extraction by subtraction of adjacent LP outputs.
@@ -1121,7 +1125,7 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
         float mono = 0.f;
         for ( int c = 0; c < numChannels; ++c )
             mono += data[i * numChannels + c];
-        mono /= float( numChannels );
+        mono /= static_cast<float>( numChannels );
 
         // Waveform ring for `audioWave[64]` (oscilloscope effects).
         m_waveRing[m_waveWritePos] = mono;
@@ -1156,7 +1160,7 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
 
         // Zero-crossing rate: count sign changes (Temporal feature from paper)
         if ( ( mono > 0.f && prev_mono < 0.f ) || ( mono < 0.f && prev_mono > 0.f ) )
-            crossings++;
+            ++crossings;
         prev_mono = mono;
 
         // Feed ring buffer for FFT (circular, FFTSize = 2048 samples)
@@ -1187,10 +1191,10 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
         acc_high += v_high * v_high;
     }
 
-    m_frameCounter += float( numFrames );
+    m_frameCounter += static_cast<float>( numFrames );
 
     // ---- RMS per band ----
-    const float inv = ( numFrames > 0 ) ? 1.f / float( numFrames ) : 0.f;
+    const float inv = ( numFrames > 0 ) ? 1.f / static_cast<float>( numFrames ) : 0.f;
     float       r_sub = std::sqrt( acc_sub * inv );
     float       r_bass = std::sqrt( acc_bass * inv );
     float       r_low = std::sqrt( acc_low * inv );
@@ -1230,7 +1234,7 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
     float hist_mean = 0.f;
     for ( float v : m_bassHistory )
         hist_mean += v;
-    hist_mean /= float( HistoryLen );
+    hist_mean /= static_cast<float>( HistoryLen );
 
     bool  is_beat = false;
     float beat_str = 0.f;
@@ -1445,14 +1449,14 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
     float f_mean = 0.f;
     for ( float v : m_fluxHistory )
         f_mean += v;
-    f_mean /= float( FluxHistLen );
+    f_mean /= static_cast<float>( FluxHistLen );
     float f_var = 0.f;
     for ( float v : m_fluxHistory )
     {
         float d = v - f_mean;
         f_var += d * d;
     }
-    f_var /= float( FluxHistLen );
+    f_var /= static_cast<float>( FluxHistLen );
     m_sFluxVar = 0.90f * m_sFluxVar + 0.10f * std::min( std::sqrt( f_var ) * 4.f, 1.f );
 
     // ---- Full-spectrum onset detection (snares / claps / melodic, not just kicks) ----
@@ -1538,7 +1542,7 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
         float     env_sum = 0.f;
         for ( int i = 0; i < OdfEnvLen; ++i )
             env_sum += m_odfEnv[i];
-        float env_mean = env_sum / float( OdfEnvLen );
+        float env_mean = env_sum / static_cast<float>( OdfEnvLen );
         // MEAN-REMOVED variance: the raw ODF envelope is all-positive (DC-heavy)
         // and the normalised AC of a DC-dominated signal is ~1 at EVERY lag.
         float ac_z = 1e-6f;
@@ -1547,7 +1551,7 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
             float z = m_odfEnv[i] - env_mean;
             ac_z += z * z;
         }
-        float env_std = std::sqrt( ac_z / float( OdfEnvLen ) );
+        float env_std = std::sqrt( ac_z / static_cast<float>( OdfEnvLen ) );
         // Published for KALEIDO_SPEECH_DEBUG so the state below stays checkable.
         m_odfEnvMean = env_mean;
         m_odfEnvStd = env_std;
@@ -1593,7 +1597,7 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
             }
             if ( best_lag > 0 )
             {
-                float bpm = float( 60 * EnvRate ) / float( best_lag );
+                float bpm = static_cast<float>( 60 * EnvRate ) / static_cast<float>( best_lag );
                 float conf = best_ac / ac_z;
                 m_acConf = 0.90f * m_acConf + 0.10f * std::min( conf * 2.f, 1.f );
                 m_acBPM = ( m_acBPM < 1.f ) ? bpm : 0.90f * m_acBPM + 0.10f * bpm;
@@ -1630,7 +1634,7 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
     // ---- Zero-Crossing Rate (ZCR) ----
     // Normalise: typical tonal music sits at 0-0.10 crossings/sample,
     // noise/harsh textures reach 0.25+.  Clip to [0,1].
-    float raw_zcr = ( numFrames > 0 ) ? float( crossings ) / float( numFrames ) : 0.f;
+    float raw_zcr = ( numFrames > 0 ) ? static_cast<float>( crossings ) / static_cast<float>( numFrames ) : 0.f;
     m_sZCR = 0.92f * m_sZCR + 0.08f * std::min( raw_zcr / 0.25f, 1.f );
 
     // ---- Spectral Flatness Measure (SFM) ----
@@ -1690,17 +1694,17 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
     {
         float interval_frames = m_frameCounter - m_lastBeatFrame;
         m_lastBeatFrame = m_frameCounter;
-        if ( interval_frames > 0.f && interval_frames < float( sampleRate ) * 3.f )
+        if ( interval_frames > 0.f && interval_frames < static_cast<float>( sampleRate ) * 3.f )
         {
             // Convert sample interval to BPM
-            float bpm = fold_bpm( float( sampleRate ) * 60.f / interval_frames );
+            float bpm = fold_bpm( static_cast<float>( sampleRate ) * 60.f / interval_frames );
             m_beatIntervals[m_bpmIdx] = bpm;
             m_bpmIdx = ( m_bpmIdx + 1 ) % BPMHistLen;
 
             float bpm_sum = 0.f;
             for ( float v : m_beatIntervals )
                 bpm_sum += v;
-            float mean_bpm = bpm_sum / float( BPMHistLen );
+            float mean_bpm = bpm_sum / static_cast<float>( BPMHistLen );
 
             // Smooth BPM estimate (slow — tempo should drift, not jump)
             m_smoothedBPM = 0.85f * m_smoothedBPM + 0.15f * mean_bpm;
@@ -1724,18 +1728,18 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
     // ---- Rhythm strength: beat-interval (tempo) consistency × recency ----
     // Regular, recent beats → ~1; irregular / no recent beats / speech → ~0.
     float frames_since_beat = m_frameCounter - m_lastBeatFrame;
-    float recency = std::exp( -frames_since_beat / ( 2.0f * float( sampleRate ) ) ); // ~2 s
+    float recency = std::exp( -frames_since_beat / ( 2.0f * static_cast<float>( sampleRate ) ) ); // ~2 s
     float ib_mean = 0.f;
     for ( float v : m_beatIntervals )
         ib_mean += v;
-    ib_mean /= float( BPMHistLen );
+    ib_mean /= static_cast<float>( BPMHistLen );
     float ib_var = 0.f;
     for ( float v : m_beatIntervals )
     {
         float d = v - ib_mean;
         ib_var += d * d;
     }
-    ib_var /= float( BPMHistLen );
+    ib_var /= static_cast<float>( BPMHistLen );
     float ib_cv = ( ib_mean > 1e-3f ) ? std::sqrt( ib_var ) / ib_mean : 1.f;
     float kick_rhythm = std::max( 0.f, 1.f - ib_cv ) * recency;
     // A steady onset envelope (autocorrelation confidence) also means "rhythmic",
@@ -1747,7 +1751,7 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
     float beat_phase = 0.f;
     if ( m_smoothedBPM > 1.f )
     {
-        float beat_period_frames = float( sampleRate ) * 60.f / m_smoothedBPM;
+        float beat_period_frames = static_cast<float>( sampleRate ) * 60.f / m_smoothedBPM;
         if ( beat_period_frames > 1.f )
         {
             float ph = frames_since_beat / beat_period_frames;
@@ -1875,7 +1879,7 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
     // few seconds due to false beats.
     if ( is_beat && m_ambientFactor < 0.4f )
     {
-        m_beatCount++;
+        ++m_beatCount;
 
         // Change kaleidoscope symmetry only every 16 beats (≈ every 4 bars) so it
         // is a rare, deliberate event rather than a constant churn.
@@ -1959,15 +1963,15 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
     {
         const int   NB = AudioFeatures::SpectrumBands;
         const float f_lo = 40.f, f_hi = 16000.f;
-        const float bin_hz = float( sampleRate ) / float( FFTSize );
+        const float bin_hz = static_cast<float>( sampleRate ) / static_cast<float>( FFTSize );
         float       raw[AudioFeatures::SpectrumBands];
         float       frame_max = 1e-6f;
         for ( int b = 0; b < NB; ++b )
         {
-            float f0 = f_lo * std::pow( f_hi / f_lo, float( b ) / float( NB ) );
-            float f1 = f_lo * std::pow( f_hi / f_lo, float( b + 1 ) / float( NB ) );
-            int   k0 = std::max( 1, int( f0 / bin_hz ) );
-            int   k1 = std::min( FFTHalf - 1, std::max( k0 + 1, int( f1 / bin_hz ) ) );
+            float f0 = f_lo * std::pow( f_hi / f_lo, static_cast<float>( b ) / static_cast<float>( NB ) );
+            float f1 = f_lo * std::pow( f_hi / f_lo, static_cast<float>( b + 1 ) / static_cast<float>( NB ) );
+            int   k0 = std::max( 1, static_cast<int>( f0 / bin_hz ) );
+            int   k1 = std::min( FFTHalf - 1, std::max( k0 + 1, static_cast<int>( f1 / bin_hz ) ) );
             float acc = 0.f;
             int   cnt = 0;
             for ( int k = k0; k < k1; ++k )
@@ -1975,7 +1979,7 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
                 acc += mags[k] * mags[k];
                 ++cnt;
             }
-            raw[b] = ( cnt > 0 ) ? std::sqrt( acc / float( cnt ) ) : 0.f;
+            raw[b] = ( cnt > 0 ) ? std::sqrt( acc / static_cast<float>( cnt ) ) : 0.f;
             frame_max = std::max( frame_max, raw[b] );
         }
         m_specRef = std::max( m_specRef * 0.98f, frame_max ); // slow-decaying peak
@@ -2053,7 +2057,7 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
             // of converging up from their zero initialisation.  (Without this
             // the slow level average lags for ~1 min and the level term reads
             // as permanent "novelty" -> phantom triggers on the cooldown grid.)
-            float a_bias = 1.f / float( m_secWarm + 1 );
+            float a_bias = 1.f / static_cast<float>( m_secWarm + 1 );
             float a_f = std::max( 0.004f, a_bias );   // tau ~2.5 s at 100 blocks/s
             float a_s = std::max( 0.00056f, a_bias ); // tau ~18 s
             float a_p = std::max( 0.01f, a_bias );    // tau ~1 s (fingerprint)
@@ -2159,7 +2163,7 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
                                      "novelty %.3f, t=%.1fs)\n",
                              m_sectionCount, m_secCurId,
                              ( best >= 0 && best_sim > 0.988f ) ? "known" : "new",
-                             best_sim, m_secNovelty, float( m_secWarm ) * 0.01f );
+                             best_sim, m_secNovelty, static_cast<float>( m_secWarm ) * 0.01f );
                 }
             }
         }
@@ -2180,8 +2184,8 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
                 break;
             }
         }
-        float roll_hz = float( r_bin ) * float( sampleRate ) / float( FFTSize );
-        float roll_norm = std::min( roll_hz / ( float( sampleRate ) * 0.5f ), 1.f );
+        float roll_hz = static_cast<float>( r_bin ) * static_cast<float>( sampleRate ) / static_cast<float>( FFTSize );
+        float roll_norm = std::min( roll_hz / ( static_cast<float>( sampleRate ) * 0.5f ), 1.f );
         m_sRolloff = 0.95f * m_sRolloff + 0.05f * roll_norm;
     }
 
@@ -2191,7 +2195,7 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
         float w_sum = 0.f, m_sum = 1e-6f;
         for ( int k = 1; k < FFTHalf; ++k )
         {
-            float f = float( k ) * float( sampleRate ) / float( FFTSize );
+            float f = static_cast<float>( k ) * static_cast<float>( sampleRate ) / static_cast<float>( FFTSize );
             w_sum += f * mags[k];
             m_sum += mags[k];
         }
@@ -2200,7 +2204,7 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
         float var_sum = 0.f;
         for ( int k = 1; k < FFTHalf; ++k )
         {
-            float f = float( k ) * float( sampleRate ) / float( FFTSize );
+            float f = static_cast<float>( k ) * static_cast<float>( sampleRate ) / static_cast<float>( FFTSize );
             float d = f - cent_hz;
             var_sum += d * d * mags[k];
         }
@@ -2214,8 +2218,10 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
     // amplitude product and the Plomp-Levelt curve.  Restricted to the musical
     // band and a small window so it stays real-time.
     {
-        const int r_lo = std::max( 2, int( 50.f * float( FFTSize ) / float( sampleRate ) ) );
-        const int r_hi = std::min( FFTHalf - 1, int( 5000.f * float( FFTSize ) / float( sampleRate ) ) );
+        const int r_lo = std::max(
+            2, static_cast<int>( 50.f * static_cast<float>( FFTSize ) / static_cast<float>( sampleRate ) ) );
+        const int r_hi = std::min( FFTHalf - 1, static_cast<int>( 5000.f * static_cast<float>( FFTSize )
+                                                                  / static_cast<float>( sampleRate ) ) );
         const int r_win = 10;
         float     rough = 0.f;
         for ( int k = r_lo; k < r_hi; ++k )
@@ -2223,12 +2229,12 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
             float ak = mags[k];
             if ( ak < 1e-6f )
                 continue;
-            float fk = float( k ) * float( sampleRate ) / float( FFTSize );
+            float fk = static_cast<float>( k ) * static_cast<float>( sampleRate ) / static_cast<float>( FFTSize );
             float s = 0.24f / ( 0.0207f * fk + 18.96f ); // critical-band scaling
             int   j_hi = std::min( k + r_win, r_hi - 1 );
             for ( int j = k + 1; j <= j_hi; ++j )
             {
-                float fj = float( j ) * float( sampleRate ) / float( FFTSize );
+                float fj = static_cast<float>( j ) * static_cast<float>( sampleRate ) / static_cast<float>( FFTSize );
                 float x = s * ( fj - fk );
                 float d = std::exp( -3.5f * x ) - std::exp( -5.75f * x ); // dissonance
                 rough += ak * mags[j] * d;
@@ -2254,12 +2260,12 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
         float chroma[12] = {};
         for ( int k = 3; k < FFTHalf; ++k )
         {
-            float f = float( k ) * float( sampleRate ) / float( FFTSize );
+            float f = static_cast<float>( k ) * static_cast<float>( sampleRate ) / static_cast<float>( FFTSize );
             if ( f < 60.f || f > 5000.f )
                 continue; // musical pitch range only
             // MIDI note: 69 + 12 * log2(f / 440)  → pitch class 0..11
             float midi = 69.f + 12.f * std::log2( f / 440.f );
-            int   pitch_class = int( std::round( midi ) ) % 12;
+            int   pitch_class = static_cast<int>( std::round( midi ) ) % 12;
             if ( pitch_class < 0 )
                 pitch_class += 12;
             chroma[pitch_class] += mags[k];
@@ -2380,12 +2386,12 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
         for ( int n = 0; n < 12; ++n )
         {
             float c = m_smoothedChroma[n];
-            tc[0] += c * std::sin( float( n ) * 7.f * P / 6.f );
-            tc[1] += c * std::cos( float( n ) * 7.f * P / 6.f );
-            tc[2] += c * std::sin( float( n ) * 3.f * P / 2.f );
-            tc[3] += c * std::cos( float( n ) * 3.f * P / 2.f );
-            tc[4] += 0.5f * c * std::sin( float( n ) * 2.f * P / 3.f );
-            tc[5] += 0.5f * c * std::cos( float( n ) * 2.f * P / 3.f );
+            tc[0] += c * std::sin( static_cast<float>( n ) * 7.f * P / 6.f );
+            tc[1] += c * std::cos( static_cast<float>( n ) * 7.f * P / 6.f );
+            tc[2] += c * std::sin( static_cast<float>( n ) * 3.f * P / 2.f );
+            tc[3] += c * std::cos( static_cast<float>( n ) * 3.f * P / 2.f );
+            tc[4] += 0.5f * c * std::sin( static_cast<float>( n ) * 2.f * P / 3.f );
+            tc[5] += 0.5f * c * std::cos( static_cast<float>( n ) * 2.f * P / 3.f );
         }
         float hcdf = 0.f;
         for ( int i = 0; i < 6; ++i )
@@ -2404,7 +2410,7 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
     float ch_sin = 0.f, ch_cos = 0.f;
     for ( int i = 0; i < 12; ++i )
     {
-        float ang = 6.28318530718f * float( i ) / 12.f;
+        float ang = 6.28318530718f * static_cast<float>( i ) / 12.f;
         ch_sin += m_smoothedChroma[i] * std::sin( ang );
         ch_cos += m_smoothedChroma[i] * std::cos( ang );
     }
@@ -2422,12 +2428,13 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
     // because all its harmonics reinforce at the same point.
     // Search range: 60..1200 Hz (covers bass drone through soprano melody).
     {
-        const int bin_lo = std::max( 3,
-                                     int( 60.f * float( FFTSize ) / float( sampleRate ) ) );
-        const int bin_hi = std::min( FFTHalf / 4 - 1,
-                                     int( 1200.f * float( FFTSize ) / float( sampleRate ) ) + 1 );
-        float     max_hps = -1.f;
-        int       pitch_bin = bin_lo;
+        const int bin_lo = std::max(
+            3, static_cast<int>( 60.f * static_cast<float>( FFTSize ) / static_cast<float>( sampleRate ) ) );
+        const int bin_hi = std::min(
+            FFTHalf / 4 - 1,
+            static_cast<int>( 1200.f * static_cast<float>( FFTSize ) / static_cast<float>( sampleRate ) ) + 1 );
+        float max_hps = -1.f;
+        int   pitch_bin = bin_lo;
         for ( int k = bin_lo; k < bin_hi; ++k )
         {
             if ( k * 4 >= FFTHalf )
@@ -2439,7 +2446,8 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
                 pitch_bin = k;
             }
         }
-        float pitch_hz = float( pitch_bin ) * float( sampleRate ) / float( FFTSize );
+        float pitch_hz = static_cast<float>( pitch_bin ) * static_cast<float>( sampleRate )
+                         / static_cast<float>( FFTSize );
         // Log-normalise 60..1200 Hz → 0..1
         float pitch_norm = ( std::log2( pitch_hz + 1.f ) - std::log2( 61.f ) )
                            / ( std::log2( 1201.f ) - std::log2( 61.f ) );
@@ -2460,9 +2468,10 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
         // melody ring drew the root, not the tune.  Its own smoothed value,
         // same 0..1 scale, so a scene can pick either.
         {
-            const int bin_lo2 = std::max( bin_lo, int( 150.f * float( FFTSize ) / float( sampleRate ) ) );
-            float     best_m = -1.f;
-            int       bin_m = bin_lo2;
+            const int bin_lo2 = std::max(
+                bin_lo, static_cast<int>( 150.f * static_cast<float>( FFTSize ) / static_cast<float>( sampleRate ) ) );
+            float best_m = -1.f;
+            int   bin_m = bin_lo2;
             for ( int k = bin_lo2; k < bin_hi; ++k )
             {
                 if ( k * 4 >= FFTHalf )
@@ -2474,7 +2483,7 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
                     bin_m = k;
                 }
             }
-            float hz_m = float( bin_m ) * float( sampleRate ) / float( FFTSize );
+            float hz_m = static_cast<float>( bin_m ) * static_cast<float>( sampleRate ) / static_cast<float>( FFTSize );
             float norm_m = ( std::log2( hz_m + 1.f ) - std::log2( 61.f ) )
                            / ( std::log2( 1201.f ) - std::log2( 61.f ) );
             norm_m = std::max( 0.f, std::min( norm_m, 1.f ) );
@@ -2518,7 +2527,7 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
     float env_mean = 0.f;
     for ( float v : m_envHistory )
         env_mean += v;
-    env_mean /= float( EnvHistLen );
+    env_mean /= static_cast<float>( EnvHistLen );
 
     float low_energy = 0.f;
     if ( env_mean > 1e-4f )
@@ -2527,7 +2536,7 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
         for ( float v : m_envHistory )
             if ( v < thr )
                 low_energy += 1.f;
-        low_energy /= float( EnvHistLen );
+        low_energy /= static_cast<float>( EnvHistLen );
     }
 
     // ---- Beat periodicity: envelope autocorrelation over musical lags ----
@@ -2542,9 +2551,9 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
     if ( ++m_beatAcCount >= 8 )
     {
         m_beatAcCount = 0;
-        const float block_hz = float( sampleRate ) / float( std::max( 1, numFrames ) );
-        const int   lag_lo = std::max( 2, int( 0.25f * block_hz ) );
-        const int   lag_hi = std::min( EnvHistLen / 2, int( 1.5f * block_hz ) );
+        const float block_hz = static_cast<float>( sampleRate ) / static_cast<float>( std::max( 1, numFrames ) );
+        const int   lag_lo = std::max( 2, static_cast<int>( 0.25f * block_hz ) );
+        const int   lag_hi = std::min( EnvHistLen / 2, static_cast<int>( 1.5f * block_hz ) );
         float       denom = 0.f;
         for ( int i = 0; i < EnvHistLen; ++i )
         {
@@ -2687,7 +2696,7 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
     // bass drops far below its own average (the breakdown/gap) and then
     // slams back — that re-entry moment is the drop.
     {
-        float a_bias = 1.f / float( m_bldWarm + 1 );
+        float a_bias = 1.f / static_cast<float>( m_bldWarm + 1 );
         if ( m_bldWarm < 1000000 )
             ++m_bldWarm;
         const float a_f = std::max( 0.0067f, a_bias ); // tau ~1.5 s at 100 blocks/s
@@ -2901,7 +2910,7 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
             int   base = ( m_waveWritePos + p * grp ) & ( WaveRing - 1 );
             for ( int k = 0; k < grp; ++k )
                 acc += m_waveRing[( base + k ) & ( WaveRing - 1 )];
-            pts[p] = acc / float( grp );
+            pts[p] = acc / static_cast<float>( grp );
             peak = std::max( peak, std::fabs( pts[p] ) );
         }
         m_waveRef = std::max( m_waveRef * 0.995f, peak );
@@ -2964,11 +2973,11 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
         qint64 until = m_tapUntilMs.load();
         if ( tap_iv > 0 && m_tapClock.elapsed() < until )
         {
-            float bpm = 60000.f / float( tap_iv );
+            float bpm = 60000.f / static_cast<float>( tap_iv );
             m_features.estimatedBPM = std::max( 0.f, std::min( ( bpm - 40.f ) / 160.f, 1.f ) );
-            double ph = double( m_tapClock.elapsed() - m_tapAnchorMs.load() )
-                        / double( tap_iv );
-            m_features.beatPhase = float( ph - std::floor( ph ) );
+            double ph = static_cast<double>( m_tapClock.elapsed() - m_tapAnchorMs.load() )
+                        / static_cast<double>( tap_iv );
+            m_features.beatPhase = static_cast<float>( ph - std::floor( ph ) );
             m_features.rhythmStrength = std::max( m_features.rhythmStrength, 0.85f );
         }
     }

@@ -124,7 +124,7 @@ public:
     /** @brief Datagrams that arrived on the port but were not one of the five messages. */
     int rejected() const { return m_rejected; }
     /** @brief Counts a datagram that did not decode; it changes no state and is not an error. */
-    void noteRejected() { m_rejected++; }
+    void noteRejected() { ++m_rejected; }
     /** @brief Forgets everything (used by the self test, so one check cannot leak into the next). */
     void reset();
 

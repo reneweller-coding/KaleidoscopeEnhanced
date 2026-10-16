@@ -64,7 +64,7 @@ float liquidHeight( vec2 p, float t, float nVortices )
     float h = 0.0;
     int   num_v = int( clamp( nVortices, 2.0, 4.0 ) );
 
-    for ( int k = 0; k < 4; k++ )
+    for ( int k = 0; k < 4; ++k )
     {
         if ( k >= num_v )
             break;

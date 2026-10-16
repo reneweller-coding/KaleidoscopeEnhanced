@@ -84,9 +84,9 @@ void main()
     float min_dist = 1e5;
     vec2  closest_offset = vec2( 0.0 );
 
-    for ( int y = -1; y <= 1; y++ )
+    for ( int y = -1; y <= 1; ++y )
     {
-        for ( int x = -1; x <= 1; x++ )
+        for ( int x = -1; x <= 1; ++x )
         {
             vec2 neighbor = vec2( float( x ), float( y ) );
             vec2 center = neighbor + vec2( 0.0 );

@@ -35,7 +35,7 @@ void printShaderInfoLog( GLuint sh_id )
     glGetShaderiv( sh_id, GL_INFO_LOG_LENGTH, &infolog_length );
     if ( infolog_length > 0 )
     {
-        info_log = (char *)malloc( infolog_length );
+        info_log = static_cast<char *>( malloc( infolog_length ) );
         glGetShaderInfoLog( sh_id, infolog_length, &chars_written, info_log );
         if ( strlen( info_log ) > 0 )
             fprintf( stderr, "InfoLog: %s\n", info_log );
@@ -59,7 +59,7 @@ void printProgramInfoLog( GLuint prog_id )
     glGetProgramiv( prog_id, GL_INFO_LOG_LENGTH, &infolog_length );
     if ( infolog_length > 0 )
     {
-        info_log = (char *)malloc( infolog_length );
+        info_log = static_cast<char *>( malloc( infolog_length ) );
         glGetProgramInfoLog( prog_id, infolog_length, &chars_written, info_log );
         if ( strlen( info_log ) > 0 )
             fprintf( stderr, "InfoLog: %s\n", info_log );
@@ -240,7 +240,7 @@ static GLuint progStore( const std::string &key, GLuint prog )
 {
     // Name it for the debug callback while we still know which files went in.
     if ( prog )
-        glcoreNameProgram( (unsigned)prog, key.c_str() );
+        glcoreNameProgram( static_cast<unsigned>( prog ), key.c_str() );
     if ( prog && !cacheOff() )
     {
         s_progByKey[key] = prog;
@@ -299,7 +299,7 @@ int shaderCacheDrop( const char *bareFileName )
 void shaderCacheStats( int *programs, int *reuses, double *buildMs )
 {
     if ( programs )
-        *programs = (int)s_progByKey.size();
+        *programs = static_cast<int>( s_progByKey.size() );
     if ( reuses )
         *reuses = s_progReuses;
     if ( buildMs )
@@ -344,7 +344,7 @@ static bool parallelCompile()
     bool has = false;
     for ( GLint i = 0; i < n && !has; ++i )
     {
-        const char *ext = (const char *)glGetStringi( GL_EXTENSIONS, (GLuint)i );
+        const char *ext = reinterpret_cast<const char *>( glGetStringi( GL_EXTENSIONS, static_cast<GLuint>( i ) ) );
         if ( ext
              && ( !strcmp( ext, "GL_KHR_parallel_shader_compile" )
                   || !strcmp( ext, "GL_ARB_parallel_shader_compile" ) ) )
@@ -353,9 +353,9 @@ static bool parallelCompile()
     if ( has )
     {
         typedef void( APIENTRY * MaxThreadsFnT )( GLuint );
-        MaxThreadsFnT fn = (MaxThreadsFnT)glcoreProc( "glMaxShaderCompilerThreadsKHR" );
+        MaxThreadsFnT fn = static_cast<MaxThreadsFnT>( glcoreProc( "glMaxShaderCompilerThreadsKHR" ) );
         if ( !fn )
-            fn = (MaxThreadsFnT)glcoreProc( "glMaxShaderCompilerThreadsARB" );
+            fn = static_cast<MaxThreadsFnT>( glcoreProc( "glMaxShaderCompilerThreadsARB" ) );
         if ( fn )
             fn( 0xFFFFFFFFu ); // as many threads as the driver likes
         s_parallel = 1;
@@ -433,7 +433,7 @@ int shaderPrebuildPoll()
         collectPrebuild( it->second );
         it = s_prebuild.erase( it );
     }
-    return (int)s_prebuild.size();
+    return static_cast<int>( s_prebuild.size() );
 }
 
 static std::map<std::string, int> s_workerPending; ///< variant keys queued on the compile worker

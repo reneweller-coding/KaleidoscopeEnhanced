@@ -78,7 +78,7 @@ public:
     EffectShader( const std::string &filenameFragmentShader, unsigned int minTimeSolo, unsigned int maxTimeSolo,
                   unsigned int minTimeInterpolation, unsigned int maxTimeInterpolation );
     /// Destructor. Deletes the compiled shader program via cleanShaderPrograms().
-    ~EffectShader();
+    virtual ~EffectShader();
 
 
     // virtual void initUniforms(int width, int height) = 0; // initialize GLSL - shader programs
@@ -312,9 +312,9 @@ public:
                                  float interpolatorMaxMaxf );
 
     /// @return The currently rolled solo duration (seconds) for this effect.
-    unsigned int getTimeSolo();
+    unsigned int getTimeSolo() const;
     /// @return The currently rolled interpolation (cross-fade) duration (seconds) for this effect.
-    unsigned int getTimeInterpolation();
+    unsigned int getTimeInterpolation() const;
 
     /** @brief Sets the visual-complexity weight used by preset selection. @param complexity Unitless weight (parsed
      * from the config's complexity attribute). */
@@ -322,7 +322,7 @@ public:
     {
         m_complexity = complexity;
     }; ///< Sets the visual-complexity weight used by preset selection.
-    unsigned int getComplexity()
+    unsigned int getComplexity() const
     {
         return m_complexity;
     }; ///< Returns the visual-complexity weight used by preset selection.
@@ -331,7 +331,7 @@ public:
         m_probability = probability;
     }; ///< Sets the probability threshold used by useShader().
     /// @return True with probability m_probability (Bernoulli draw); used to decide whether this effect activates.
-    bool useShader();
+    bool useShader() const;
 
     // True if this effect's fragment shader samples the reaction-diffusion field
     // (declares the "texSim" uniform).  Cached on first query.  Lets the host run

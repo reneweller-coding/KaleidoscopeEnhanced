@@ -109,7 +109,7 @@ void main()
     // big empty field. A step of 0.62 (factor 1.86) with more layers puts four to
     // five frames across the screen at once, which is the same infinite dive, just
     // actually filling it.
-    for ( int k = 0; k < 9; k++ )
+    for ( int k = 0; k < 9; ++k )
     {
         float kf = float( k );
         float layer_scale = exp( ( kf - cell_phase ) * 0.62 ) * dpth;

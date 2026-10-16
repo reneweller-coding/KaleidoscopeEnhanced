@@ -106,7 +106,7 @@ void main()
     float min_arc_dist = 1e5;
     float plasma_energy = 0.0;
 
-    for ( int i = 0; i < 8; i++ )
+    for ( int i = 0; i < 8; ++i )
     {
         float fi = float( i );
         // Jagged electrical noise offset

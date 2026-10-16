@@ -91,7 +91,7 @@ int forgeOne( QOpenGLExtraFunctions *gl, const QString &frag, const QString &out
     {
         GLuint      sh = gl->glCreateShader( type );
         const char *ptr = src.constData();
-        const GLint len = GLint( src.size() );
+        const GLint len = static_cast<GLint>( src.size() );
         gl->glShaderSource( sh, 1, &ptr, &len );
         gl->glCompileShader( sh );
         GLint ok = 0;
@@ -216,11 +216,11 @@ int shaderForgeMain( int argc, char *argv[] )
         QElapsedTimer t;
         t.start();
         GLuint prog = gl->glCreateProgram();
-        gl->glProgramBinary( prog, format, b.constData() + 8, GLsizei( b.size() - 8 ) );
+        gl->glProgramBinary( prog, format, b.constData() + 8, static_cast<GLsizei>( b.size() - 8 ) );
         GLint ok = 0;
         gl->glGetProgramiv( prog, GL_LINK_STATUS, &ok );
         fprintf( stderr, "FORGELOAD %s: %s in %.2f ms (%d bytes)\n", qPrintable( args[1] ), ok ? "ok" : "FAILED",
-                 t.nsecsElapsed() * 1e-6, int( b.size() ) );
+                 t.nsecsElapsed() * 1e-6, static_cast<int>( b.size() ) );
         if ( !ok )
             return 5;
         // Does this executable's driver cache already hold the GPU code? (cold: 45-180 ms, warm: ~5 ms)

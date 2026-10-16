@@ -62,14 +62,14 @@ Configuration::~Configuration()
  * @param width Viewport width in pixels.
  * @param height Viewport height in pixels.
  */
-void Configuration::start( int width, int height )
+void Configuration::start( int width, int height ) const
 {
     m_renderPipeline->start( width, height );
 }
 
 
 /** @brief Forwards to RenderPipeline::stop(). */
-void Configuration::stop()
+void Configuration::stop() const
 {
     m_renderPipeline->stop();
 }
@@ -132,7 +132,7 @@ static void loadRigTable( const QString &cfgDir )
         }
         s_rigTable.insert( r.attribute( "name" ), exprs );
     }
-    fprintf( stderr, "Rig-Vorlagen geladen: %d\n", int( s_rigTable.size() ) );
+    fprintf( stderr, "Rig-Vorlagen geladen: %d\n", static_cast<int>( s_rigTable.size() ) );
 }
 
 /**
@@ -366,7 +366,7 @@ void Configuration::readConfiguration( const QString &filenameIn )
     QDomNodeList node_list = doc_elem.elementsByTagName( "TextureShader" );
 
     // Check the TextureShaders
-    for ( int i = 0; i < node_list.count(); i++ )
+    for ( int i = 0; i < node_list.count(); ++i )
     {
         // get the current one as QDomElement
         QDomElement el = node_list.at( i ).toElement();
@@ -411,7 +411,7 @@ void Configuration::readConfiguration( const QString &filenameIn )
             const QString m2 = Platform::assetPath( el.attribute( "model2" ) );
             if ( ( !m1.isEmpty() && !QFileInfo::exists( m1 ) ) || ( !m2.isEmpty() && !QFileInfo::exists( m2 ) ) )
             {
-                m_skippedMeshScenes++;
+                ++m_skippedMeshScenes;
                 continue;
             }
         }
@@ -444,7 +444,7 @@ void Configuration::readConfiguration( const QString &filenameIn )
             shader->setGradeModes( el.attribute( "grade" ).toStdString() ); // grade="fade,grey,sepia": rolled per
                                                                             // activation, applied by Present.frag
             m_renderPipeline->addTextureShader( shader );
-            m_loadedScenes++;
+            ++m_loadedScenes;
         }
         else if ( type == "KaleidoscopeBase" )
         {
@@ -459,7 +459,7 @@ void Configuration::readConfiguration( const QString &filenameIn )
             shader->setGradeModes( el.attribute( "grade" ).toStdString() ); // grade="fade,grey,sepia": rolled per
                                                                             // activation, applied by Present.frag
             m_renderPipeline->addTextureShader( shader );
-            m_loadedScenes++;
+            ++m_loadedScenes;
         }
         else if ( type == "scene3d" )
         {
@@ -505,7 +505,7 @@ void Configuration::readConfiguration( const QString &filenameIn )
             shader->setGradeModes( el.attribute( "grade" ).toStdString() ); // grade="fade,grey,sepia": rolled per
                                                                             // activation, applied by Present.frag
             m_renderPipeline->addTextureShader( shader );
-            m_loadedScenes++;
+            ++m_loadedScenes;
         }
     }
 
@@ -514,7 +514,7 @@ void Configuration::readConfiguration( const QString &filenameIn )
     node_list = doc_elem.elementsByTagName( "CombineShader" );
 
     // Check the TextureShaders
-    for ( int i = 0; i < node_list.count(); i++ )
+    for ( int i = 0; i < node_list.count(); ++i )
     {
         // get the current one as QDomElement
         QDomElement el = node_list.at( i ).toElement();
@@ -572,7 +572,7 @@ void Configuration::readConfiguration( const QString &filenameIn )
     // Crossfade inside RenderPipeline::start().
     node_list = doc_elem.elementsByTagName( "TransitionShader" );
 
-    for ( int i = 0; i < node_list.count(); i++ )
+    for ( int i = 0; i < node_list.count(); ++i )
     {
         QDomElement el = node_list.at( i ).toElement();
 

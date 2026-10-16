@@ -92,7 +92,7 @@ void main()
     vec3  hit_pos = vec3( 0.0 );
     bool  hit_building = false;
 
-    for ( int i = 0; i < 54; i++ )
+    for ( int i = 0; i < 54; ++i )
     {
         vec3 p = ro + rd * tot_dist;
         vec2 cellID = floor( p.xz * ( 0.5 * c_dens ) );

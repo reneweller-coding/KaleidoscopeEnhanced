@@ -96,7 +96,7 @@ float fbm3D( vec3 p )
 {
     float v = 0.0;
     float a = 0.5;
-    for ( int i = 0; i < 4; i++ )
+    for ( int i = 0; i < 4; ++i )
     {
         v += a * noise3D( p );
         p = p * 2.02 + vec3( 1.7, 9.2, 3.4 );
@@ -132,7 +132,7 @@ void main()
     float shockwave_radius = 0.45 + mod( time * 0.18 * spd + audioAdvance * 0.22, 2.4 )
                              + audioKick * 0.35;
 
-    for ( int i = 0; i < 28; i++ )
+    for ( int i = 0; i < 28; ++i )
     {
         float depth = 1.0 + float( i ) * step_size;
         vec3  p = ro + rd * depth;

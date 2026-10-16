@@ -259,10 +259,9 @@ static void APIENTRY glcDebugCb( GLenum /*source*/, GLenum type, GLuint id,
     // glcoreDebugProgramName() is filled in by the engine as it compiles.
     GLint prog = 0;
     glGetIntegerv( GL_CURRENT_PROGRAM, &prog );
-    fprintf( stderr, "GLDEBUG [%s%s] at=%s id=%u prog=%d(%s): %s\n",
-             ( type == GL_DEBUG_TYPE_ERROR ) ? "ERROR/" : "", sev, s_debugMark,
-             (unsigned)id, (int)prog, glcoreDebugProgramName( (unsigned)prog ),
-             message ? message : "(no message)" );
+    fprintf( stderr, "GLDEBUG [%s%s] at=%s id=%u prog=%d(%s): %s\n", ( type == GL_DEBUG_TYPE_ERROR ) ? "ERROR/" : "",
+             sev, s_debugMark, static_cast<unsigned>( id ), static_cast<int>( prog ),
+             glcoreDebugProgramName( static_cast<unsigned>( prog ) ), message ? message : "(no message)" );
 }
 
 void glcoreEnableDebugOutput()
@@ -300,14 +299,15 @@ static void *glcGet( const char *name )
     // glX / dlsym; see Platform.cpp. The wgl path below is untouched.
     return Platform::glProcAddress( name );
 #else
-    void *p = (void *)wglGetProcAddress( name );
+    void *p = reinterpret_cast<void *>( wglGetProcAddress( name ) );
     // wgl returns small sentinel values for failure on some drivers.
-    if ( p == 0 || p == (void *)1 || p == (void *)2 || p == (void *)3 || p == (void *)-1 )
+    if ( p == 0 || p == reinterpret_cast<void *>( 1 ) || p == reinterpret_cast<void *>( 2 )
+         || p == reinterpret_cast<void *>( 3 ) || p == reinterpret_cast<void *>( -1 ) )
     {
         static HMODULE gl32 = 0;
         if ( !gl32 )
             gl32 = LoadLibraryA( "opengl32.dll" );
-        p = gl32 ? (void *)GetProcAddress( gl32, name ) : 0;
+        p = gl32 ? reinterpret_cast<void *>( GetProcAddress( gl32, name ) ) : 0;
     }
     return p;
 #endif

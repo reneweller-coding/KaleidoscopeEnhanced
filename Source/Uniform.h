@@ -197,7 +197,7 @@ public:
      *  Call this AFTER setUniform() to override the value for audio reactivity.
      *  Has no effect on int/bool uniforms.
      *  @param scale Multiplier applied to the current float value before re-upload. */
-    void setGLValueScaled( float scale );
+    void setGLValueScaled( float scale ) const;
 
     /** Name of the uniform variable (for lookup by EffectShader). */
     const std::string &getName() const { return m_name; }
@@ -211,7 +211,7 @@ public:
     {
         return ( m_type == BASE_TYPE_FLOAT || m_type == BASE_TYPE_INTERPOLATOR_FLOAT )
                    ? m_data.vf
-                   : float( m_data.vi );
+                   : static_cast<float>( m_data.vi );
     }
     /** @brief Restores a value previously captured by snapshotValue(), replacing whatever resetParameters() would
      * otherwise have rolled.
@@ -222,7 +222,7 @@ public:
         if ( m_type == BASE_TYPE_FLOAT || m_type == BASE_TYPE_INTERPOLATOR_FLOAT )
             m_data.vf = v;
         else
-            m_data.vi = int( v + ( ( v >= 0.f ) ? 0.5f : -0.5f ) );
+            m_data.vi = static_cast<int>( v + ( ( v >= 0.f ) ? 0.5f : -0.5f ) );
     }
 
 private:

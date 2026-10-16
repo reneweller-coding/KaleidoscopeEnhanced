@@ -92,7 +92,7 @@ float vnoise( vec2 p )
 float fbm( vec2 p )
 {
     float s = 0.0, a = 0.5;
-    for ( int i = 0; i < 5; i++ )
+    for ( int i = 0; i < 5; ++i )
     {
         s += a * vnoise( p );
         p = p * 2.07 + vec2( 3.1, 7.7 );
@@ -141,7 +141,7 @@ void main()
     float density = 0.0;
     float head_glow = 0.0;
     vec3  tint_acc = vec3( 0.0 );
-    for ( int i = 0; i < 6; i++ )
+    for ( int i = 0; i < 6; ++i )
     {
         if ( i >= n_plume )
             break;

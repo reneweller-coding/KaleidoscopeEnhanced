@@ -253,10 +253,10 @@ GLuint PreviewWidget::makeTexture( const QString &path )
         for ( int y = 0; y < N; ++y )
             for ( int x = 0; x < N; ++x )
             {
-                float u = x / float( N ), v = y / float( N );
-                int   r = int( 127.5f * ( 1.f + std::sin( u * 12.f ) ) );
-                int   g = int( 127.5f * ( 1.f + std::sin( ( u + v ) * 9.f ) ) );
-                int   b = int( 127.5f * ( 1.f + std::cos( v * 15.f ) ) );
+                float u = x / static_cast<float>( N ), v = y / static_cast<float>( N );
+                int   r = static_cast<int>( 127.5f * ( 1.f + std::sin( u * 12.f ) ) );
+                int   g = static_cast<int>( 127.5f * ( 1.f + std::sin( ( u + v ) * 9.f ) ) );
+                int   b = static_cast<int>( 127.5f * ( 1.f + std::cos( v * 15.f ) ) );
                 img.setPixel( x, y, qRgb( r, g, b ) );
             }
     }
@@ -375,7 +375,7 @@ GLuint PreviewWidget::rig2Apply( GLuint srcTex, int w, int h )
     glBindTexture( GL_TEXTURE_2D, srcTex );
     m_rigProg->bind();
     m_rigProg->setUniformValue( "tex", 0 );
-    m_rigProg->setUniformValue( "resolution", QVector2D( float( w ), float( h ) ) );
+    m_rigProg->setUniformValue( "resolution", QVector2D( static_cast<float>( w ), static_cast<float>( h ) ) );
     m_rigProg->setUniformValue( "rigRoll", absv[0] + m_rig2Acc[0] );
     m_rigProg->setUniformValue( "rigZoom", absv[1] + m_rig2Acc[1] );
     m_rigProg->setUniformValue( "rigPan",
@@ -435,7 +435,7 @@ void PreviewWidget::applyParamOverrides( QOpenGLShaderProgram *p )
     for ( const ParamOverride &o : m_overrides )
     {
         if ( o.isInt )
-            p->setUniformValue( o.name.toLatin1().constData(), int( o.value + 0.5f ) );
+            p->setUniformValue( o.name.toLatin1().constData(), static_cast<int>( o.value + 0.5f ) );
         else
             p->setUniformValue( o.name.toLatin1().constData(), o.value );
     }
@@ -463,13 +463,13 @@ void PreviewWidget::applyCommonUniforms( QOpenGLShaderProgram *p )
     // continuous beat phase.  Loops with the (looped) sound.
     if ( !m_timeline.empty() )
     {
-        const float tp = float( m_wavClock.elapsed() ) * 0.001f;
+        const float tp = static_cast<float>( m_wavClock.elapsed() ) * 0.001f;
         float       dt = tp - m_tlPrevT;
         if ( dt < 0.f || dt > 0.25f )
             dt = 0.016f;
         m_tlPrevT = tp;
         const size_t         n = m_timeline.size();
-        const size_t         idx = size_t( tp * 100.f ) % n;
+        const size_t         idx = static_cast<size_t>( tp * 100.f ) % n;
         const AudioFeatures &f = m_timeline[idx];
 
         auto slew = [dt]( float cur, float target, float rate )
@@ -505,10 +505,10 @@ void PreviewWidget::applyCommonUniforms( QOpenGLShaderProgram *p )
         m_tlBeatPhase += ( f.estimatedBPM > 0.004f ? bpm / 60.f : 0.f ) * dt;
         m_tlBeatPhase -= std::floor( m_tlBeatPhase );
 
-        p->setUniformValue( "resolution", QVector2D( float( m_fbW ), float( m_fbH ) ) );
+        p->setUniformValue( "resolution", QVector2D( static_cast<float>( m_fbW ), static_cast<float>( m_fbH ) ) );
         p->setUniformValue( "time", m_time );
         p->setUniformValue( "interpolation", testInterpolation() );
-        p->setUniformValue( "transStyle", GLint( m_transStyle >= 0 ? m_transStyle : 0 ) );
+        p->setUniformValue( "transStyle", static_cast<GLint>( m_transStyle >= 0 ? m_transStyle : 0 ) );
         p->setUniformValue( "tex0", 0 );
         p->setUniformValue( "tex1", 1 );
         p->setUniformValue( "texSim", 7 );
@@ -580,14 +580,14 @@ void PreviewWidget::applyCommonUniforms( QOpenGLShaderProgram *p )
     const float beat = drone ? 0.f : std::exp( -beat_phase * 6.0f );
     const float onset = drone ? 0.f : std::exp( -( ( t * 3.f ) - std::floor( t * 3.f ) ) * 7.0f );
     const float bar_ph = t * 0.5f - std::floor( t * 0.5f );
-    const float downbeat = ( !drone && ( int( std::floor( t * 0.5f ) ) & 3 ) == 0 ) ? beat : 0.f;
+    const float downbeat = ( !drone && ( static_cast<int>( std::floor( t * 0.5f ) ) & 3 ) == 0 ) ? beat : 0.f;
     const float ambient = drone ? 1.f : 0.f;
     const float swell = drone ? ( 0.35f + 0.35f * std::sin( t * 0.35f ) ) : ( 0.15f + 0.15f * sw( t * 0.5f ) );
 
-    p->setUniformValue( "resolution", QVector2D( float( m_fbW ), float( m_fbH ) ) );
+    p->setUniformValue( "resolution", QVector2D( static_cast<float>( m_fbW ), static_cast<float>( m_fbH ) ) );
     p->setUniformValue( "time", t );
     p->setUniformValue( "interpolation", testInterpolation() );
-    p->setUniformValue( "transStyle", GLint( m_transStyle >= 0 ? m_transStyle : 0 ) );
+    p->setUniformValue( "transStyle", static_cast<GLint>( m_transStyle >= 0 ? m_transStyle : 0 ) );
     p->setUniformValue( "tex0", 0 );
     p->setUniformValue( "tex1", 1 );
     p->setUniformValue( "texSim", 7 );
@@ -635,7 +635,9 @@ void PreviewWidget::applyCommonUniforms( QOpenGLShaderProgram *p )
     {
         float spec[32];
         for ( int i = 0; i < 32; ++i )
-            spec[i] = 0.15f + 0.7f * sw( t * 2.0f + float( i ) * 0.6f ) * std::exp( -float( i ) / 40.f );
+            spec[i] = 0.15f
+                      + 0.7f * sw( t * 2.0f + static_cast<float>( i ) * 0.6f )
+                            * std::exp( -static_cast<float>( i ) / 40.f );
         glUniform1fv( spec_loc, 32, spec );
     }
 
@@ -670,7 +672,7 @@ AudioFeatures PreviewWidget::synthFeatures( float t ) const
     const float beat_phase = t * 2.0f - std::floor( t * 2.0f );
     const float beat = drone ? 0.f : std::exp( -beat_phase * 6.0f );
     const float onset = drone ? 0.f : std::exp( -( ( t * 3.f ) - std::floor( t * 3.f ) ) * 7.0f );
-    const float downbeat = ( !drone && ( int( std::floor( t * 0.5f ) ) & 3 ) == 0 ) ? beat : 0.f;
+    const float downbeat = ( !drone && ( static_cast<int>( std::floor( t * 0.5f ) ) & 3 ) == 0 ) ? beat : 0.f;
 
     AudioFeatures f;
     f.overallLevel = drone ? ( 0.30f + 0.20f * sw( t * 0.25f ) ) : ( 0.35f + 0.25f * sw( t * 0.7f ) );
@@ -695,7 +697,9 @@ AudioFeatures PreviewWidget::synthFeatures( float t ) const
     f.audioRotPhase = t * 0.3f;
     f.audioAdvance = t * 0.5f;
     for ( int i = 0; i < AudioFeatures::SpectrumBands; ++i )
-        f.spectrum[i] = 0.15f + 0.7f * sw( t * 2.0f + float( i ) * 0.6f ) * std::exp( -float( i ) / 40.f );
+        f.spectrum[i] = 0.15f
+                        + 0.7f * sw( t * 2.0f + static_cast<float>( i ) * 0.6f )
+                              * std::exp( -static_cast<float>( i ) / 40.f );
     return f;
 }
 
@@ -764,13 +768,13 @@ AudioFeatures PreviewWidget::timelineFeatures()
     if ( m_timeline.empty() )
         return synthFeatures( m_time );
 
-    const float tp = float( m_wavClock.elapsed() ) * 0.001f;
+    const float tp = static_cast<float>( m_wavClock.elapsed() ) * 0.001f;
     float       dt = tp - m_tlPrevT;
     if ( dt < 0.f || dt > 0.25f )
         dt = 0.016f;
     m_tlPrevT = tp;
     const size_t  n = m_timeline.size();
-    const size_t  idx = size_t( tp * 100.f ) % n;
+    const size_t  idx = static_cast<size_t>( tp * 100.f ) % n;
     AudioFeatures out = m_timeline[idx]; // the real analyzed frame ...
 
     auto slew = [dt]( float cur, float target, float rate )
@@ -840,8 +844,8 @@ void PreviewWidget::paintGL()
     m_time = ( m_fixedTime >= 0.f ) ? m_fixedTime : m_clock.elapsed() * 0.001f;
 
     const qreal dpr = devicePixelRatioF();
-    const int   w = qMax( 1, int( width() * dpr ) );
-    const int   h = qMax( 1, int( height() * dpr ) );
+    const int   w = qMax( 1, static_cast<int>( width() * dpr ) );
+    const int   h = qMax( 1, static_cast<int>( height() * dpr ) );
     if ( !m_fbo || m_fbW != w || m_fbH != h )
     {
         delete m_fbo;
@@ -885,7 +889,7 @@ void PreviewWidget::paintGL()
                 for ( const KomplettRange &r : komplettRangesFor( m_root, m_texFile ) )
                 {
                     if ( r.kind == "int" )
-                        m_scenePreview.addIntRange( r.name, int( r.minV ), int( r.maxV ) );
+                        m_scenePreview.addIntRange( r.name, static_cast<int>( r.minV ), static_cast<int>( r.maxV ) );
                     else
                         m_scenePreview.addFloatRange( r.name, r.minV, r.maxV );
                 }

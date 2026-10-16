@@ -128,7 +128,7 @@ void main()
     mat2  rot_fold = mat2( cos( fold_angle ), -sin( fold_angle ), sin( fold_angle ), cos( fold_angle ) );
 
     float branch_scale = 1.0;
-    for ( int i = 0; i < 9; i++ )
+    for ( int i = 0; i < 9; ++i )
     {
         // Absolute mirror fold
         z = abs( z ) - vec2( 0.35 + 0.1 * sin( t * 0.5 + float( i ) ), 0.25 );

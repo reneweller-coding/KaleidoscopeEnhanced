@@ -38,9 +38,9 @@ void applyScoreCues( const ScoreCues::Frame &cue, ScoreCueBridge &bridge, SceneS
         bridge.wasLive = true;
     }
     if ( cue.section )
-        bridge.sections++;
+        ++bridge.sections;
     if ( cue.drop )
-        bridge.drops++;
+        ++bridge.drops;
 
     t.sectionCount = bridge.sections;
     t.dropCount = bridge.drops;

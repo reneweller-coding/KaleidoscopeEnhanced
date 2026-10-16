@@ -81,7 +81,7 @@ void main()
 
     // Accumulate across multiple magnetic coronal loops
     int num_l = int( clamp( n_loops, 2.0, 5.0 ) );
-    for ( int k = 0; k < 4; k++ )
+    for ( int k = 0; k < 4; ++k )
     {
         if ( k >= num_l )
             break;

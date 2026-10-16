@@ -85,7 +85,7 @@ float noise( vec3 p )
 float fbm( vec3 p )
 {
     float f = 0.0, a = 0.5;
-    for ( int i = 0; i < 5; i++ )
+    for ( int i = 0; i < 5; ++i )
     {
         f += a * noise( p );
         p *= 2.0;
@@ -213,7 +213,7 @@ void main()
     float corona = 0.0;
     vec3  cp = ro;
     float step_size = 100.0 / 30.0;
-    for ( int i = 0; i < 30; i++ )
+    for ( int i = 0; i < 30; ++i )
     {
         if ( cp.y > -2.0 )
         {

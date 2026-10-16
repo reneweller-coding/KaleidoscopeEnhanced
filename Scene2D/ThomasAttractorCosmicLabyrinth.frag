@@ -94,7 +94,7 @@ void main()
 
     float dt = 0.04 * trl;
 
-    for ( int i = 0; i < 26; i++ )
+    for ( int i = 0; i < 26; ++i )
     {
         // Thomas ODE derivatives
         float dx = sin( p_thomas.y ) - b * p_thomas.x;

@@ -48,8 +48,8 @@ vec3 voronoi( vec2 p )
     vec2  ip = floor( p ), fp = fract( p );
     float f1 = 8.0, f2 = 8.0;
     vec2  best_off = vec2( 0.0 );
-    for ( int y = -1; y <= 1; y++ )
-        for ( int x = -1; x <= 1; x++ )
+    for ( int y = -1; y <= 1; ++y )
+        for ( int x = -1; x <= 1; ++x )
         {
             vec2  off = vec2( float( x ), float( y ) );
             vec2  pt = off + hash2G( ip + off ) - fp;

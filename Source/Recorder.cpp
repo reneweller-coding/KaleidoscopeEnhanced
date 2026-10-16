@@ -546,7 +546,7 @@ bool Recorder::ensureBlurTargets( int w, int h )
     glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_mbResolveTex, 0 );
     const bool ok_b = ( glCheckFramebufferStatus( GL_FRAMEBUFFER ) == GL_FRAMEBUFFER_COMPLETE );
 
-    glBindFramebuffer( GL_FRAMEBUFFER, (GLuint)prev_fbo );
+    glBindFramebuffer( GL_FRAMEBUFFER, static_cast<GLuint>( prev_fbo ) );
 
     m_mbReady = ok_a && ok_b;
     if ( !m_mbReady )
@@ -561,7 +561,7 @@ bool Recorder::ensureBlurTargets( int w, int h )
     glBindFramebuffer( GL_FRAMEBUFFER, m_mbAccumFbo );
     glClearColor( 0.f, 0.f, 0.f, 0.f );
     glClear( GL_COLOR_BUFFER_BIT );
-    glBindFramebuffer( GL_FRAMEBUFFER, (GLuint)prev_fbo );
+    glBindFramebuffer( GL_FRAMEBUFFER, static_cast<GLuint>( prev_fbo ) );
     m_mbCount = 0;
     fprintf( stderr, "[recorder] motion blur: %dx%d accumulation active\n", w, h );
     return true;
@@ -594,7 +594,7 @@ void Recorder::accumulateFrame( int w, int h )
     glBindVertexArray( 0 );
     glDisable( GL_BLEND );
 
-    glBindFramebuffer( GL_FRAMEBUFFER, (GLuint)prev_fbo );
+    glBindFramebuffer( GL_FRAMEBUFFER, static_cast<GLuint>( prev_fbo ) );
     glViewport( 0, 0, w, h );
     ++m_mbCount;
 }
@@ -613,7 +613,7 @@ void Recorder::resolveBlur( int w, int h )
     // dropped or extra render frame then changes the blur length, never the
     // exposure.
     if ( m_mbScaleUni >= 0 )
-        glUniform1f( m_mbScaleUni, 1.f / float( m_mbCount > 0 ? m_mbCount : 1 ) );
+        glUniform1f( m_mbScaleUni, 1.f / static_cast<float>( m_mbCount > 0 ? m_mbCount : 1 ) );
     extern GLuint fullscreenVAO();
     glBindVertexArray( fullscreenVAO() );
     glDrawArrays( GL_TRIANGLES, 0, 3 );
@@ -859,17 +859,17 @@ void Recorder::pipeWriter()
         // Flip bottom-up into the scratch buffer. This replaces QImage::mirrored(),
         // which allocated a whole image per frame.
         const int    stride = m_pipeW * 4;
-        const size_t bytes = size_t( stride ) * size_t( m_pipeH );
+        const size_t bytes = static_cast<size_t>( stride ) * static_cast<size_t>( m_pipeH );
         if ( m_pipeBuf.size() != bytes )
             m_pipeBuf.resize( bytes );
         for ( int y = 0; y < m_pipeH; ++y )
-            memcpy( m_pipeBuf.data() + size_t( y ) * stride,
+            memcpy( m_pipeBuf.data() + static_cast<size_t>( y ) * stride,
                     src.constScanLine( m_pipeH - 1 - y ), stride );
 
         // Measured duration -> whole output frames. The debt carries the
         // fraction forward, so rounding never accumulates into drift.
-        m_pipeOwed += double( job.dur ) * recordFps();
-        int n = int( m_pipeOwed + 0.5 );
+        m_pipeOwed += static_cast<double>( job.dur ) * recordFps();
+        int n = static_cast<int>( m_pipeOwed + 0.5 );
         if ( n < 1 )
             n = 1;
         if ( n > 8 )
@@ -878,10 +878,10 @@ void Recorder::pipeWriter()
 
         for ( int k = 0; k < n; ++k )
         {
-            m_ff->write( (const char *)m_pipeBuf.data(), qint64( bytes ) );
+            m_ff->write( reinterpret_cast<const char *>( m_pipeBuf.data() ), static_cast<qint64>( bytes ) );
             // Backpressure: without this the QProcess write buffer grows without
             // bound whenever the encoder is briefly slower than the capture.
-            while ( m_ff->bytesToWrite() > qint64( 64 ) * 1024 * 1024 )
+            while ( m_ff->bytesToWrite() > static_cast<qint64>( 64 ) * 1024 * 1024 )
                 if ( !m_ff->waitForBytesWritten( 5000 ) )
                     break;
         }
@@ -933,7 +933,7 @@ void Recorder::captureReplayFrame( int w, int h )
     qint64 now = nowMs();
     if ( now - m_repLastFrame < 66 )
         return;
-    float dur = ( m_repLastFrame == 0 ) ? ( 1.f / 15.f ) : float( now - m_repLastFrame ) / 1000.f;
+    float dur = ( m_repLastFrame == 0 ) ? ( 1.f / 15.f ) : static_cast<float>( now - m_repLastFrame ) / 1000.f;
     if ( dur > 0.5f )
         dur = 0.5f; // Lücken klemmen (Pause, 1. Frame)
     m_repLastFrame = now;
@@ -982,7 +982,7 @@ void Recorder::asyncCapture( float dur, bool toReplay, int w, int h )
     // 1. Readback dieses Frames einreihen (Orphaning passt die Größe bei
     //    Auflösungswechseln an)
     glBindBuffer( GL_PIXEL_PACK_BUFFER, m_pbo[cur] );
-    glBufferData( GL_PIXEL_PACK_BUFFER, (GLsizeiptr)w * h * 4, NULL, GL_STREAM_READ );
+    glBufferData( GL_PIXEL_PACK_BUFFER, static_cast<GLsizeiptr>( w ) * h * 4, NULL, GL_STREAM_READ );
     glReadPixels( 0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, 0 );
     m_pboMeta[cur].pending = true;
     m_pboMeta[cur].replay = toReplay;
@@ -999,7 +999,7 @@ void Recorder::asyncCapture( float dur, bool toReplay, int w, int h )
         void *ptr = glMapBuffer( GL_PIXEL_PACK_BUFFER, GL_READ_ONLY );
         if ( ptr )
         {
-            QImage  img( (const uchar *)ptr, pm.w, pm.h, QImage::Format_RGBA8888 );
+            QImage  img( static_cast<const uchar *>( ptr ), pm.w, pm.h, QImage::Format_RGBA8888 );
             bool    queued = false;
             QString fn;
             if ( !pm.replay )
@@ -1052,7 +1052,7 @@ void Recorder::asyncCapture( float dur, bool toReplay, int w, int h )
                                        .arg( m_recFrame, 6, 10, QChar( '0' ) )
                                        .arg( pm.dur + m_recCarryDur, 0, 'f', 4 );
                     m_recCarryDur = 0.f;
-                    m_recFrame++;
+                    ++m_recFrame;
                 }
             }
             else if ( pm.replay )
@@ -1098,7 +1098,7 @@ void Recorder::saveReplay()
 
     QString concat;
     float   total = 0.f;
-    for ( int i = 0; i < (int)frames.size(); ++i )
+    for ( int i = 0; i < static_cast<int>( frames.size() ); ++i )
     {
         QString fn = QString( "frame_%1.jpg" ).arg( i, 6, 10, QChar( '0' ) );
         QFile   f( dir + "/" + fn );
@@ -1110,7 +1110,7 @@ void Recorder::saveReplay()
         concat += QString( "file '%1'\nduration %2\n" ).arg( fn ).arg( frames[i].dur, 0, 'f', 4 );
         total += frames[i].dur;
     }
-    concat += QString( "file 'frame_%1.jpg'\n" ).arg( (int)frames.size() - 1, 6, 10, QChar( '0' ) );
+    concat += QString( "file 'frame_%1.jpg'\n" ).arg( static_cast<int>( frames.size() ) - 1, 6, 10, QChar( '0' ) );
     QFile lf( dir + "/frames.txt" );
     if ( lf.open( QIODevice::WriteOnly | QIODevice::Text ) )
     {
@@ -1139,7 +1139,7 @@ void Recorder::saveReplay()
     joinVideoEncoderProbe();
 
     fprintf( stderr, "REPLAY: %d Frames (%.1f s) -> %s (mux replay.mp4)\n",
-             (int)frames.size(), total, dir.toLocal8Bit().constData() );
+             static_cast<int>( frames.size() ), total, dir.toLocal8Bit().constData() );
 }
 
 // Das frisch gerenderte Bild (sauber, vor jedem Overlay) mit ~30 fps erfassen
@@ -1173,14 +1173,14 @@ void Recorder::captureFrame( int w, int h )
     // takes exactly every second frame. The resync guard keeps a long stall
     // (scene load, shader compile) from queueing a burst of catch-up frames.
     if ( m_recDue == 0.0 )
-        m_recDue = double( now );
-    if ( double( now ) < m_recDue )
+        m_recDue = static_cast<double>( now );
+    if ( static_cast<double>( now ) < m_recDue )
         return;
     m_recDue += 1000.0 / recordFps();
-    if ( m_recDue < double( now ) - 200.0 )
-        m_recDue = double( now );
+    if ( m_recDue < static_cast<double>( now ) - 200.0 )
+        m_recDue = static_cast<double>( now );
 
-    float dur = ( m_recFrame == 0 ) ? ( 1.0f / 30.0f ) : float( now - m_recLastFrame ) / 1000.f;
+    float dur = ( m_recFrame == 0 ) ? ( 1.0f / 30.0f ) : static_cast<float>( now - m_recLastFrame ) / 1000.f;
     m_recLastFrame = now;
 
     // With motion blur on, the readback must see the AVERAGE of the interval,
@@ -1195,7 +1195,7 @@ void Recorder::captureFrame( int w, int h )
     asyncCapture( dur, false, w, h ); // PBO-Pfad: kein GPU->CPU-Stall
 
     if ( blurred )
-        glBindFramebuffer( GL_READ_FRAMEBUFFER, (GLuint)prev_read );
+        glBindFramebuffer( GL_READ_FRAMEBUFFER, static_cast<GLuint>( prev_read ) );
 }
 
 // Finalisieren: WAV schließen, concat-Liste + make_video.bat schreiben und
@@ -1231,7 +1231,7 @@ void Recorder::finishRecording()
                          "up. Pacing stays correct (the dropped time is carried into the "
                          "next frame's duration), but the capture rate was below the "
                          "%.0f fps cap.\n",
-                 (unsigned long long)m_dropped, recordFps() );
+                 m_dropped, recordFps() );
     m_dropped = 0;
 
     // Raw-Pipe zuerst schließen: der Thread schreibt die Restframes, sendet

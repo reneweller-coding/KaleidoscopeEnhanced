@@ -82,7 +82,7 @@ float fbm2( vec2 p )
 {
     float      v = 0.0, a = 0.5;
     const mat2 R = mat2( 0.80, 0.60, -0.60, 0.80 );
-    for ( int i = 0; i < 4; i++ )
+    for ( int i = 0; i < 4; ++i )
     {
         v += a * noise2( p );
         p = R * p * 2.03 + 7.1;

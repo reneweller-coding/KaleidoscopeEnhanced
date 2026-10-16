@@ -98,7 +98,7 @@ void main()
 
     float dt = 0.02 * rbn;
 
-    for ( int i = 0; i < 28; i++ )
+    for ( int i = 0; i < 28; ++i )
     {
         // Rössler ODE equations
         float dx = -p_rossler.y - p_rossler.z;

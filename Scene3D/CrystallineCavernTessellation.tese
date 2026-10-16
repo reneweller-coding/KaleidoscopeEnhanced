@@ -47,9 +47,9 @@ float voronoi( vec2 x, float px )
     vec2  n = floor( x );
     vec2  f = fract( x );
     float m = 8.0;
-    for ( int j = -1; j <= 1; j++ )
+    for ( int j = -1; j <= 1; ++j )
     {
-        for ( int i = -1; i <= 1; i++ )
+        for ( int i = -1; i <= 1; ++i )
         {
             vec2 g = vec2( float( i ), float( j ) );
             vec2 c = n + g;

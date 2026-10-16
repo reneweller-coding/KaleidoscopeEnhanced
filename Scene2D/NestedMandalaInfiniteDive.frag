@@ -103,7 +103,7 @@ void main()
     float total_weight = 0.0;
 
     // Accumulate across 7 stacked mandala planes
-    for ( int k = 0; k < 7; k++ )
+    for ( int k = 0; k < 7; ++k )
     {
         float kf = float( k );
         float plane_z = ( kf * spc - gate_phase ) + 0.3;

@@ -59,7 +59,7 @@ bool readString( const char *data, int size, int &pos, char *out, int cap )
 {
     int end = pos;
     while ( end < size && data[end] != 0 )
-        end++;
+        ++end;
     if ( end >= size )
         return false; // no terminator inside the datagram
     int next = end + 1;
@@ -67,7 +67,7 @@ bool readString( const char *data, int size, int &pos, char *out, int cap )
     {
         if ( next >= size || data[next] != 0 )
             return false; // padding is missing or is not nulls
-        next++;
+        ++next;
     }
     const int len = ( end - pos < cap - 1 ) ? end - pos : cap - 1;
     memcpy( out, data + pos, static_cast<size_t>( len ) );
@@ -205,7 +205,7 @@ bool decodeDialect( const char *address, const char *data, int size, int pos, Sc
             pos += 4;
         }
         else if ( *t == 's' && ns < 1 && readString( data, size, pos, out.text, sizeof( out.text ) ) )
-            ns++;
+            ++ns;
         else
             return false;
     }
@@ -280,7 +280,7 @@ bool decodeScoreCue( const char *data, int size, ScoreCue &out )
     if ( !readString( data, size, pos, address, sizeof( address ) ) )
         return false;
     int kind = -1;
-    for ( int i = 0; i < 5; i++ )
+    for ( int i = 0; i < 5; ++i )
         if ( strcmp( address, Addresses[i] ) == 0 )
             kind = i;
     if ( kind < 0 )
@@ -306,7 +306,7 @@ bool decodeScoreCue( const char *data, int size, ScoreCue &out )
             if ( !readString( data, size, pos, out.text, sizeof( out.text ) ) || pos + 4 != size )
                 return false;
             out.energy = readFloat( data, pos );
-            for ( int i = 0; i < static_cast<int>( CueSectionE::COUNT ); i++ )
+            for ( int i = 0; i < static_cast<int>( CueSectionE::COUNT ); ++i )
                 if ( strcmp( out.text, CueSectionNames[i] ) == 0 )
                     out.section = i;
             break;
@@ -364,7 +364,7 @@ int parseScoreCueLine( const char *line, double &seconds, ScoreCue &out )
     if ( end == field[0].c_str() || *end != 0 || seconds < 0.0 )
         return -1;
     int kind = -1;
-    for ( int i = 0; i < 5; i++ )
+    for ( int i = 0; i < 5; ++i )
         if ( field[1] == Addresses[i] )
             kind = i;
     if ( kind < 0 )
@@ -392,7 +392,7 @@ int parseScoreCueLine( const char *line, double &seconds, ScoreCue &out )
             out.energy = static_cast<float>( strtod( field[3].c_str(), &end ) );
             if ( end == field[3].c_str() || *end != 0 )
                 return -1;
-            for ( int i = 0; i < static_cast<int>( CueSectionE::COUNT ); i++ )
+            for ( int i = 0; i < static_cast<int>( CueSectionE::COUNT ); ++i )
                 if ( strcmp( out.text, CueSectionNames[i] ) == 0 )
                     out.section = i;
             break;
@@ -435,7 +435,7 @@ int ScoreCueFile::load( const QString &path )
     while ( !f.atEnd() )
     {
         const QByteArray line = f.readLine();
-        line_no++;
+        ++line_no;
         Timed     t;
         const int r = parseScoreCueLine( line.constData(), t.seconds, t.cue );
         if ( r < 0 )
@@ -460,8 +460,8 @@ int ScoreCueFile::feed()
     while ( m_next < m_cues.size() && now >= 0.0 && m_cues[m_next].seconds <= now )
     {
         ScoreCues::instance().apply( m_cues[m_next].cue );
-        m_next++;
-        n++;
+        ++m_next;
+        ++n;
     }
     return n;
 }
@@ -483,7 +483,7 @@ ScoreCues &ScoreCues::instance()
 
 void ScoreCues::apply( const ScoreCue &c )
 {
-    m_accepted++;
+    ++m_accepted;
     m_silence = 0.f;
     switch ( c.kind )
     {

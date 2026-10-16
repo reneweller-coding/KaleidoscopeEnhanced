@@ -45,8 +45,8 @@ void main()
     vec4        out_c = fresh;
     float       best_t = 1e9; // most intact matching shard wins
     vec2        gcell = floor( cc * SC );
-    for ( int gy = -1; gy <= 1; gy++ )
-        for ( int gx = -1; gx <= 1; gx++ )
+    for ( int gy = -1; gy <= 1; ++gy )
+        for ( int gx = -1; gx <= 1; ++gx )
         {
             vec2  cell = gcell + vec2( float( gx ), float( gy ) );
             vec2  site = ( cell + vec2( hashT( cell ), hashT( cell + 19.7 ) ) ) / SC;
@@ -64,8 +64,8 @@ void main()
             vec2  qc = floor( q * SC );
             float bd = 1e9;
             vec2  bc = vec2( 99.0 );
-            for ( int ny = -1; ny <= 1; ny++ )
-                for ( int nx = -1; nx <= 1; nx++ )
+            for ( int ny = -1; ny <= 1; ++ny )
+                for ( int nx = -1; nx <= 1; ++nx )
                 {
                     vec2  c2 = qc + vec2( float( nx ), float( ny ) );
                     vec2  s2 = ( c2 + vec2( hashT( c2 ), hashT( c2 + 19.7 ) ) ) / SC;

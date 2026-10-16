@@ -116,7 +116,7 @@ void main()
     vec3  rd = normalize( vec3( rot * uv, 1.0 ) );
 
     float t = 0.0;
-    for ( int i = 0; i < 48; i++ )
+    for ( int i = 0; i < 48; ++i )
     {
         vec3  p = ro + rd * t;
         float d = mapTunnel( p, snake_v, widen );

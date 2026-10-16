@@ -65,7 +65,7 @@ void main()
     // gently expands as the music builds; slow signal, so no jumps).
     float sp = ( ( spacingP <= 0.01 ) ? 4.0 : spacingP ) * ( 1.0 + 0.10 * audioSwell );
     float d = 0.0, l = 1.0;
-    for ( int i = 0; i < 200; i++ )
+    for ( int i = 0; i < 200; ++i )
     {
         if ( !( d < 150.0 && l > 0.001 ) )
             break;

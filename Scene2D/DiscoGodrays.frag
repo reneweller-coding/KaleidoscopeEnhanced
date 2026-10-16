@@ -109,7 +109,7 @@ void main()
     float tube_w = ( tubeP <= 0.001 ) ? 0.05 : tubeP; // ray thickness
 
     vec4 O = vec4( 0.0 );
-    for ( int i = 0; i < 60; i++ )
+    for ( int i = 0; i < 60; ++i )
     {
         if ( d <= 0.01 )
             break;

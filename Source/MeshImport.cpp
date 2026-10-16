@@ -31,7 +31,8 @@ bool endsWithNoCase( const std::string &s, const char *suffix )
     if ( s.size() < n )
         return false;
     for ( size_t i = 0; i < n; ++i )
-        if ( tolower( (unsigned char)s[s.size() - n + i] ) != tolower( (unsigned char)suffix[i] ) )
+        if ( tolower( static_cast<unsigned char>( s[s.size() - n + i] ) )
+             != tolower( static_cast<unsigned char>( suffix[i] ) ) )
             return false;
     return true;
 }
@@ -49,7 +50,7 @@ QImage decodeGltfImage( const cgltf_image *img, const std::string &gltfPath )
         const uint8_t *data = cgltf_buffer_view_data( img->buffer_view );
         if ( !data )
             return QImage();
-        return QImage::fromData( data, int( img->buffer_view->size ) );
+        return QImage::fromData( data, static_cast<int>( img->buffer_view->size ) );
     }
     if ( img->uri )
     {
@@ -79,7 +80,7 @@ QImage decodeGltfImage( const cgltf_image *img, const std::string &gltfPath )
  * (`1 - v`) UNLESS their source format's V already runs bottom-up the way
  * OBJ's does -- see loadGlb()/loadObj()'s differing V handling for why.
  */
-void packMaterialLayers( QImage base, QImage mr, QImage nrm, MeshAsset &out )
+void packMaterialLayers( const QImage &base, const QImage &mr, const QImage &nrm, MeshAsset &out )
 {
     int w = 0, h = 0;
     if ( !base.isNull() )
@@ -127,8 +128,9 @@ void packMaterialLayers( QImage base, QImage mr, QImage nrm, MeshAsset &out )
     // the layer INDEX is fixed and a shader can test the count instead of
     // hunting for what is present.
     out.materialLayers = nrm.isNull() ? ( mr.isNull() ? 1 : 2 ) : 3;
-    out.materialRGBA.resize( size_t( out.materialLayers ) * size_t( w ) * size_t( h ) * 4 );
-    memcpy( out.materialRGBA.data(), base_img.constBits(), size_t( w ) * size_t( h ) * 4 );
+    out.materialRGBA.resize( static_cast<size_t>( out.materialLayers ) * static_cast<size_t>( w )
+                             * static_cast<size_t>( h ) * 4 );
+    memcpy( out.materialRGBA.data(), base_img.constBits(), static_cast<size_t>( w ) * static_cast<size_t>( h ) * 4 );
     if ( out.materialLayers >= 2 )
     {
         // R unused (no AO map from either source format), G = roughness,
@@ -136,8 +138,8 @@ void packMaterialLayers( QImage base, QImage mr, QImage nrm, MeshAsset &out )
         // metallicRoughnessTexture uses, so one shader convention covers both
         // loaders' output.
         const QImage mr_img = prep( mr, QColor( 255, 255, 0, 255 ) );
-        memcpy( out.materialRGBA.data() + size_t( w ) * size_t( h ) * 4,
-                mr_img.constBits(), size_t( w ) * size_t( h ) * 4 );
+        memcpy( out.materialRGBA.data() + static_cast<size_t>( w ) * static_cast<size_t>( h ) * 4,
+                mr_img.constBits(), static_cast<size_t>( w ) * static_cast<size_t>( h ) * 4 );
     }
     if ( out.materialLayers == 3 )
     {
@@ -147,11 +149,11 @@ void packMaterialLayers( QImage base, QImage mr, QImage nrm, MeshAsset &out )
         // keep the map pointing the way it did before the flip. Getting this
         // wrong lights every dent as a bump.
         QImage         n_img = prep( nrm, QColor( 128, 128, 255, 255 ) );
-        const size_t   plane = size_t( w ) * size_t( h ) * 4;
+        const size_t   plane = static_cast<size_t>( w ) * static_cast<size_t>( h ) * 4;
         unsigned char *dst = out.materialRGBA.data() + 2 * plane;
         memcpy( dst, n_img.constBits(), plane );
         for ( size_t i = 1; i < plane; i += 4 )
-            dst[i] = (unsigned char)( 255 - dst[i] );
+            dst[i] = static_cast<unsigned char>( 255 - dst[i] );
     }
 }
 
@@ -257,7 +259,7 @@ bool loadGlb( const std::string &path, MeshAsset &out )
                     {
                         float idxf = 0.f;
                         cgltf_accessor_read_float( prim.indices, t * 3 + k, &idxf, 1 );
-                        push_vertex( cgltf_size( idxf + 0.5f ) );
+                        push_vertex( static_cast<cgltf_size>( idxf + 0.5f ) );
                     }
             }
             else
@@ -311,13 +313,14 @@ bool loadGlb( const std::string &path, MeshAsset &out )
         layer0.save( "mesh_dump_layer0.png" );
         if ( out.materialLayers >= 2 )
         {
-            QImage layer1( out.materialRGBA.data() + size_t( out.materialW ) * size_t( out.materialH ) * 4,
+            QImage layer1( out.materialRGBA.data()
+                               + static_cast<size_t>( out.materialW ) * static_cast<size_t>( out.materialH ) * 4,
                            out.materialW, out.materialH, QImage::Format_RGBA8888 );
             layer1.save( "mesh_dump_layer1.png" );
         }
         fprintf( stderr, "KALEIDO_MESH_DUMP: %dx%d, %d layer(s), baseColorImg.isNull=%d metalRoughImg.isNull=%d\n",
                  out.materialW, out.materialH, out.materialLayers,
-                 (int)base_color_img.isNull(), (int)metal_rough_img.isNull() );
+                 static_cast<int>( base_color_img.isNull() ), static_cast<int>( metal_rough_img.isNull() ) );
     }
     return true;
 }

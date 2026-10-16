@@ -65,7 +65,7 @@ float mapSierpinski( vec3 p, float t, out float trapLevel )
     float scale = 1.0;
     trapLevel = 0.0;
 
-    for ( int i = 0; i < 6; i++ )
+    for ( int i = 0; i < 6; ++i )
     {
         // Octahedral plane foldings
         if ( q.x + q.y < 0.0 )
@@ -120,7 +120,7 @@ void main()
     // would overshoot the surface and punch holes in the fractal.
     float breath = 1.0 + 0.30 * audioSubBass;
 
-    for ( int i = 0; i < 54; i++ )
+    for ( int i = 0; i < 54; ++i )
     {
         vec3  p = ro + rd * tot_dist;
         float cur_trap;

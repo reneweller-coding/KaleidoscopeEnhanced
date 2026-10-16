@@ -163,7 +163,7 @@ void main()
     vec3  hit_col = vec3( 0.0 );
     bool  hit = false;
 
-    for ( int i = 0; i < 48; i++ )
+    for ( int i = 0; i < 48; ++i )
     {
         vec3 p = ro + rd * tot_dist;
 

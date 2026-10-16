@@ -69,7 +69,7 @@ void main( void )
     const int steps = 3; // rwrw 20
     float     factor = scaleFactor * ( 1.0 + 0.6 * audioSwell ) / float( steps );
 
-    for ( int i = 0; i < steps; i++ )
+    for ( int i = 0; i < steps; ++i )
     {
         color += interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv );
         uv += delta * factor;

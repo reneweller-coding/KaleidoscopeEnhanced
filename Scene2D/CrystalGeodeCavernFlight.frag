@@ -126,7 +126,7 @@ void main()
     // already sat near 1.0 with no room left for the facet glow.
     float exp_gain = clamp( 0.25 / max( 0.05, photoLevel() ), 0.25, 2.4 );
 
-    for ( int i = 0; i < 52; i++ )
+    for ( int i = 0; i < 52; ++i )
     {
         vec3  p = ro + rd * tot_dist;
         float cur_facet;

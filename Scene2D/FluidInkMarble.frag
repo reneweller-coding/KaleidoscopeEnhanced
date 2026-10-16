@@ -123,7 +123,7 @@ void main()
 
     float flow_time = time * 0.3 * flw + audioAdvance * 0.2;
 
-    for ( int i = 0; i < 4; i++ )
+    for ( int i = 0; i < 4; ++i )
     {
         vec2 curl = curlNoise( p * scale + vec2( flow_time, -flow_time * 0.5 ) );
         v += curl * weight;

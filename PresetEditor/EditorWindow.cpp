@@ -552,7 +552,7 @@ void EditorWindow::freezeParamsIntoEntry()
             continue;
         float       t = si.slider->value() / 1000.f;
         float       v = si.minV + t * ( si.maxV - si.minV );
-        QString     vs = si.isInt ? QString::number( int( v + 0.5f ) )
+        QString     vs = si.isInt ? QString::number( static_cast<int>( v + 0.5f ) )
                                   : QString::number( v, 'f', 3 );
         ShaderParam sp;
         sp.kind = si.isInt ? "int" : "float";
@@ -1145,7 +1145,7 @@ void EditorWindow::rebuildRangeEditor()
             lo->setValue( p.minValue.toDouble() );
             hi->setValue( p.maxValue.toDouble() );
             auto fmt = [is_int]( double v )
-            { return is_int ? QString::number( int( v ) )
+            { return is_int ? QString::number( static_cast<int>( v ) )
                             : QString::number( v, 'f', 4 ); };
             auto apply = [=]
             { write_param( p.name, p.kind, fmt( lo->value() ), fmt( hi->value() ), {}, {} ); };

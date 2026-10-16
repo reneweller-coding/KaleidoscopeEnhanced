@@ -79,7 +79,7 @@ public:
      *        the initial active configuration (default, -c name, or persisted).
      * @param parent Parent widget, forwarded to QOpenGLWidget.
      */
-    GLwidget( QWidget *parent = 0 );
+    explicit GLwidget( QWidget *parent = 0 );
     /**
      * @brief Persists settings, shuts down the recorder/audio/now-playing/MIDI
      *        subsystems in dependency order, releases the global Spout/VideoIn

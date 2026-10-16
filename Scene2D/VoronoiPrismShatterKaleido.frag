@@ -66,9 +66,9 @@ vec4 voronoi( vec2 p, float t )
 
     vec2  mg, mr;
     float md = 8.0;
-    for ( int j = -1; j <= 1; j++ )
+    for ( int j = -1; j <= 1; ++j )
     {
-        for ( int i = -1; i <= 1; i++ )
+        for ( int i = -1; i <= 1; ++i )
         {
             vec2  g = vec2( float( i ), float( j ) );
             vec2  o = sin( n + g + vec2( t * 0.4, t * 0.5 ) ) * 0.4 + 0.5;
@@ -86,9 +86,9 @@ vec4 voronoi( vec2 p, float t )
 
     // Border distance calculation
     float mdb = 8.0;
-    for ( int j = -2; j <= 2; j++ )
+    for ( int j = -2; j <= 2; ++j )
     {
-        for ( int i = -2; i <= 2; i++ )
+        for ( int i = -2; i <= 2; ++i )
         {
             vec2 g = mg + vec2( float( i ), float( j ) );
             vec2 o = sin( n + g + vec2( t * 0.4, t * 0.5 ) ) * 0.4 + 0.5;

@@ -82,7 +82,7 @@ void main()
 
     // Accumulate across multiple inclined Villarceau circle pairs
     int num_r = int( clamp( n_rings, 4.0, 8.0 ) );
-    for ( int k = 0; k < 6; k++ )
+    for ( int k = 0; k < 6; ++k )
     {
         if ( k >= num_r )
             break;

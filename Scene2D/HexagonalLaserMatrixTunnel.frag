@@ -95,7 +95,7 @@ void main()
     // ray reached the wall in about two units and the tunnel had no length to it.
     float r_hex = t_rad * 2.6 * ( 1.0 + 0.1 * sin( audioSubBass ) );
 
-    for ( int i = 0; i < 56; i++ )
+    for ( int i = 0; i < 56; ++i )
     {
         vec3 p = ro + rd * tot_dist;
         hit_pos = p; // always valid, even for a ray that runs the loop out

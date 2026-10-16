@@ -95,7 +95,7 @@ float map( vec3 p, out float outLayer, float stpScale, float boxScale )
     float layer_acc = 0.0;
     float d = 1e9;
 
-    for ( int i = 0; i < 4; i++ )
+    for ( int i = 0; i < 4; ++i )
     {
         // Orthogonal 90-degree fold
         q = abs( q ) - vec3( 0.65, 0.65, 0.65 ) * stpScale;
@@ -197,7 +197,7 @@ void main()
     float boxScale = clamp( 0.45 * iters, 0.40, 0.56 );
     float vol_glow = 0.0;
 
-    for ( int i = 0; i < 110; i++ )
+    for ( int i = 0; i < 110; ++i )
     {
         vec3  p = ro + rd * t;
         float lyr;

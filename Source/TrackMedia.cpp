@@ -142,9 +142,9 @@ void TrackMedia::requestTrack( const QString &artist, const QString &title, doub
     // Alte Ergebnisse verwerfen (Revision zählt hoch -> Consumer lädt neu).
     m_lines.clear();
     m_lyricsImage = QImage();
-    m_lyricsRevision++;
+    ++m_lyricsRevision;
     m_imagePaths.clear();
-    m_imagesRevision++;
+    ++m_imagesRevision;
     m_downloadQueue.clear();
     m_seenUrls.clear();
     m_activeDownloads = 0;
@@ -153,13 +153,13 @@ void TrackMedia::requestTrack( const QString &artist, const QString &title, doub
     m_decoded = QImage();
     m_lyricsPending = true;
     m_videoPath.clear();
-    m_videoRevision++;
+    ++m_videoRevision;
     m_videoDurationSec = durationSec;
 
     lyricsFromCacheOrNet();
     if ( !m_artist.isEmpty() )
         imagesFromCacheOrNet();
-    if ( durationSec > 0.0 && durationSec <= double( VideoMaxDurationSec ) )
+    if ( durationSec > 0.0 && durationSec <= static_cast<double>( VideoMaxDurationSec ) )
         videoFromCacheOrNet( durationSec );
 }
 
@@ -177,7 +177,7 @@ void TrackMedia::lyricsFromCacheOrNet()
         QJsonObject o = QJsonDocument::fromJson( f.readAll() ).object();
         bool        found = o.value( "found" ).toBool();
         qint64      age = QDateTime::currentSecsSinceEpoch()
-                          - qint64( o.value( "ts" ).toDouble() );
+                          - static_cast<qint64>( o.value( "ts" ).toDouble() );
         if ( found )
         {
             lyricsFound( o.value( "synced" ).toString(),
@@ -210,7 +210,7 @@ void TrackMedia::writeLyricsCache( const QString &synced, const QString &plain, 
     o["found"] = found;
     o["synced"] = synced;
     o["plain"] = plain;
-    o["ts"] = double( QDateTime::currentSecsSinceEpoch() );
+    o["ts"] = static_cast<double>( QDateTime::currentSecsSinceEpoch() );
     QFile f( lyricsCachePath() );
     if ( f.open( QIODevice::WriteOnly ) )
         f.write( QJsonDocument( o ).toJson( QJsonDocument::Compact ) );
@@ -238,11 +238,11 @@ void TrackMedia::lyricsFound( const QString &synced, const QString &plain, const
         return;
     }
     renderLyricsImage();
-    m_lyricsRevision++;
+    ++m_lyricsRevision;
     if ( QString::fromLatin1( quelle ) != "Cache" )
         writeLyricsCache( synced, plain, true );
     fprintf( stderr, "[Lyrics] %d Zeilen (%s, Quelle %s) fuer \"%s - %s\"\n",
-             int( m_lines.size() ), syncedLyrics() ? "synchron" : "plain", quelle,
+             static_cast<int>( m_lines.size() ), syncedLyrics() ? "synchron" : "plain", quelle,
              m_artist.toLocal8Bit().constData(), m_title.toLocal8Bit().constData() );
 }
 
@@ -365,7 +365,7 @@ void TrackMedia::tryNetease()
                 if ( name.contains( m_title, Qt::CaseInsensitive )
                      || m_title.contains( name, Qt::CaseInsensitive ) )
                 {
-                    song_id = qint64( s.value( "id" ).toDouble() );
+                    song_id = static_cast<qint64>( s.value( "id" ).toDouble() );
                     break;
                 }
             }
@@ -471,7 +471,7 @@ void TrackMedia::parseSynced( const QString &lrc )
                 frac = f.toDouble() / std::pow( 10.0, f.size() );
             times.push_back( m.captured( 1 ).toInt() * 60.0
                              + m.captured( 2 ).toInt() + frac );
-            last = int( m.capturedEnd() );
+            last = static_cast<int>( m.capturedEnd() );
         }
         QString text = line.mid( last ).trimmed();
         if ( times.empty() )
@@ -627,7 +627,7 @@ void TrackMedia::renderLyricsImage()
             // instead of eliding it.
             r = QRect( 30, y_top, text_w, LyrLineH );
             al = Qt::AlignLeft | Qt::AlignVCenter;
-            m_lines[i].overflowU = float( over ) / float( tex_w );
+            m_lines[i].overflowU = static_cast<float>( over ) / static_cast<float>( tex_w );
         }
         else if ( over > 0 )
         {
@@ -658,8 +658,8 @@ void TrackMedia::renderLyricsImage()
         p.setPen( QColor( 255, 255, 255, 235 ) );
         p.drawText( r, al, t );
 
-        m_lines[i].v0 = float( y_top ) / float( h );
-        m_lines[i].v1 = float( y_top + LyrLineH ) / float( h );
+        m_lines[i].v0 = static_cast<float>( y_top ) / static_cast<float>( h );
+        m_lines[i].v1 = static_cast<float>( y_top + LyrLineH ) / static_cast<float>( h );
         last_v0 = m_lines[i].v0;
         last_v1 = m_lines[i].v1;
         ++row;
@@ -682,7 +682,7 @@ void TrackMedia::renderLyricsImage()
  */
 QImage TrackMedia::imageAt( int i ) const
 {
-    if ( i < 0 || i >= int( m_imagePaths.size() ) )
+    if ( i < 0 || i >= static_cast<int>( m_imagePaths.size() ) )
         return QImage();
     if ( i == m_decodedIdx && !m_decoded.isNull() )
         return m_decoded;
@@ -705,12 +705,12 @@ void TrackMedia::imagesFromCacheOrNet()
                                             QDir::Files, QDir::Name );
     for ( const QString &f : vorhandene )
         m_imagePaths << dir.filePath( f );
-    m_nextImageNr = int( m_imagePaths.size() );
+    m_nextImageNr = static_cast<int>( m_imagePaths.size() );
     if ( !m_imagePaths.isEmpty() )
     {
-        m_imagesRevision++;
+        ++m_imagesRevision;
         fprintf( stderr, "[Artist] Cache: %d Bild(er) fuer \"%s\"\n",
-                 int( m_imagePaths.size() ), m_artist.toLocal8Bit().constData() );
+                 static_cast<int>( m_imagePaths.size() ), m_artist.toLocal8Bit().constData() );
     }
     // Genug im Cache? Dann kein Netz.  Sonst (auch bei wenigen Treffern
     // eines früheren Laufs) alle Quellen anwerfen - Dedupe läuft über URLs,
@@ -732,7 +732,7 @@ void TrackMedia::enqueueImageUrl( const QString &url )
 {
     if ( url.isEmpty() || m_seenUrls.contains( url ) )
         return;
-    if ( int( m_imagePaths.size() ) + m_downloadQueue.size() >= MaxImages )
+    if ( static_cast<int>( m_imagePaths.size() ) + m_downloadQueue.size() >= MaxImages )
         return;
     m_seenUrls << url;
     m_downloadQueue << url;
@@ -748,14 +748,14 @@ void TrackMedia::startNextDownloads()
     while ( m_activeDownloads < ParallelDownloads && !m_downloadQueue.isEmpty() )
     {
         QString url = m_downloadQueue.takeFirst();
-        m_activeDownloads++;
+        ++m_activeDownloads;
         QNetworkReply *r = get( url );
         QObject::connect( r, &QNetworkReply::finished, r, [this, r, key]()
         {
             r->deleteLater();
             if ( key != m_key )
                 return;
-            m_activeDownloads--;
+            --m_activeDownloads;
             if ( r->error() == QNetworkReply::NoError )
             {
                 QByteArray daten = r->readAll();
@@ -771,11 +771,11 @@ void TrackMedia::startNextDownloads()
                         f.write( daten );
                         f.close();
                         m_imagePaths << pfad;
-                        m_imagesRevision++;
+                        ++m_imagesRevision;
                         if ( m_imagePaths.size() <= 4
                              || m_imagePaths.size() % 10 == 0 )
                             fprintf( stderr, "[Artist] %d Bild(er) geladen\n",
-                                     int( m_imagePaths.size() ) );
+                                     static_cast<int>( m_imagePaths.size() ) );
                     }
                 }
             }
@@ -825,7 +825,7 @@ void TrackMedia::fetchDeezer()
             }
         }
         QString pic = artist.value( "picture_xl" ).toString();
-        qint64  id = qint64( artist.value( "id" ).toDouble() );
+        qint64  id = static_cast<qint64>( artist.value( "id" ).toDouble() );
         if ( !pic.contains( EmptyMd5 ) )
             enqueueImageUrl( pic );
         if ( id <= 0 )
@@ -944,7 +944,7 @@ void TrackMedia::videoFromCacheOrNet( double durationSec )
     if ( QFile::exists( dir + "\\video.mp4" ) )
     {
         m_videoPath = QFileInfo( dir + "\\video.mp4" ).absoluteFilePath();
-        m_videoRevision++;
+        ++m_videoRevision;
         return;
     }
 
@@ -953,7 +953,7 @@ void TrackMedia::videoFromCacheOrNet( double durationSec )
     {
         QJsonObject o = QJsonDocument::fromJson( neg.readAll() ).object();
         qint64      age = QDateTime::currentSecsSinceEpoch()
-                          - qint64( o.value( "ts" ).toDouble() );
+                          - static_cast<qint64>( o.value( "ts" ).toDouble() );
         if ( age < VideoNegCacheTtlSec )
             return; // bekannt kein Treffer, TTL laeuft noch
     }
@@ -1118,7 +1118,7 @@ void TrackMedia::startVideoDownload( const QString &videoId )
             if ( key == m_key )
             {
                 m_videoPath = QFileInfo( final_path ).absoluteFilePath();
-                m_videoRevision++;
+                ++m_videoRevision;
             }
             fprintf( stderr, "[Video] Musikvideo gespeichert fuer \"%s - %s\"\n",
                      m_artist.toLocal8Bit().constData(), m_title.toLocal8Bit().constData() );
@@ -1152,7 +1152,7 @@ void TrackMedia::writeVideoNegativeCache()
     QDir().mkpath( dir );
     QJsonObject o;
     o["found"] = false;
-    o["ts"] = double( QDateTime::currentSecsSinceEpoch() );
+    o["ts"] = static_cast<double>( QDateTime::currentSecsSinceEpoch() );
     QFile f( dir + "\\negative.json" );
     if ( f.open( QIODevice::WriteOnly ) )
         f.write( QJsonDocument( o ).toJson( QJsonDocument::Compact ) );

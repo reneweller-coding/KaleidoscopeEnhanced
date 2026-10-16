@@ -151,7 +151,7 @@ void main()
     // Raymarching distance loop
     float t = 0.0;
     float hit_dist = -1.0;
-    for ( int i = 0; i < 48; i++ )
+    for ( int i = 0; i < 48; ++i )
     {
         vec3  p = ro + rd * t;
         float d = mapLattice( p, 2.0 * f_dens, shat );

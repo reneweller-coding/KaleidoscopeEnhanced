@@ -80,13 +80,13 @@ void main()
     float tot_dist = 0.0;
 
     // Volumetric curtain raymarching loop
-    for ( int i = 0; i < 48; i++ )
+    for ( int i = 0; i < 48; ++i )
     {
         vec3 p = ro + rd * tot_dist;
 
         // Multilayered curtain wave functions along X and Z
         int num_c = int( clamp( n_curtains, 2.0, 5.0 ) );
-        for ( int k = 0; k < 4; k++ )
+        for ( int k = 0; k < 4; ++k )
         {
             if ( k >= num_c )
                 break;

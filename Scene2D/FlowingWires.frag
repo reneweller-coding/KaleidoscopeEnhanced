@@ -112,7 +112,7 @@ void main()
 
     vec4  O = vec4( 0.0 );
     float t = 0.0;
-    for ( int i = 0; i < 28; i++ )
+    for ( int i = 0; i < 28; ++i )
     {
         vec3 p = t * normalize( vec3( rot( t * 0.1 ) * F, R.y ) );
         p.zx = rot( T / 4.0 + audioPhase * 0.05 ) * p.zx; // camera spin

@@ -158,7 +158,7 @@ void main()
 
     vec3  col = vec3( 0.0 );
     float t = 2.0;
-    for ( int i = 0; i < 50; i++ )
+    for ( int i = 0; i < 50; ++i )
     {
         vec3 p = ro + t * rd;
         vec4 res = map( p );

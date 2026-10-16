@@ -101,7 +101,7 @@ void videoPipSeek( long long ms, long long toleranceMs )
     // one tolerance window.
     const qint64 cur = g.player->position();
     if ( cur < ms - toleranceMs || cur > ms + toleranceMs )
-        g.player->setPosition( qint64( ms ) );
+        g.player->setPosition( static_cast<qint64>( ms ) );
 }
 
 void videoPipSetPlaying( bool playing )
@@ -153,9 +153,9 @@ unsigned int videoPipFrame( unsigned int *width, unsigned int *height )
     }
 
     if ( width )
-        *width = (unsigned int)g.texW;
+        *width = static_cast<unsigned int>( g.texW );
     if ( height )
-        *height = (unsigned int)g.texH;
+        *height = static_cast<unsigned int>( g.texH );
     return g.tex;
 }
 

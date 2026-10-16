@@ -66,7 +66,7 @@ float causticIntensity( vec2 p, float t, float wlOffset, float wScale )
 
     // Sum over 4 directional sinusoidal wave trains
     vec2 grad = vec2( 0.0 );
-    for ( int i = 0; i < 4; i++ )
+    for ( int i = 0; i < 4; ++i )
     {
         float a = float( i ) * 0.785398 + t_warp * 0.1;
         vec2  dir = vec2( cos( a ), sin( a ) );

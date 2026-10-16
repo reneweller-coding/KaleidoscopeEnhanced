@@ -65,7 +65,7 @@ vec2 superfluidField( vec2 p, float t, float nVortices, out float minCoreDist )
     minCoreDist = 1e5;
     int num_v = int( clamp( nVortices, 4.0, 8.0 ) );
 
-    for ( int k = 0; k < 8; k++ )
+    for ( int k = 0; k < 8; ++k )
     {
         if ( k >= num_v )
             break;

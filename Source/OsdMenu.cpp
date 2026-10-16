@@ -32,7 +32,7 @@ void OsdMenu::push( const QString &title, std::function<std::vector<OsdItem>()> 
     lv.items = lv.build ? lv.build() : std::vector<OsdItem>();
     // Open on the marked row (the running preset, the current audio source),
     // so OK straight away changes nothing.
-    for ( int i = 0; i < int( lv.items.size() ); ++i )
+    for ( int i = 0; i < static_cast<int>( lv.items.size() ); ++i )
         if ( lv.items[i].checked && lv.items[i].checked() )
         {
             lv.cursor = i;
@@ -53,7 +53,7 @@ void OsdMenu::back()
         Level &lv = m_stack.back();
         if ( lv.build )
             lv.items = lv.build();
-        lv.cursor = std::min( lv.cursor, std::max( 0, int( lv.items.size() ) - 1 ) );
+        lv.cursor = std::min( lv.cursor, std::max( 0, static_cast<int>( lv.items.size() ) - 1 ) );
     }
 }
 
@@ -64,7 +64,7 @@ void OsdMenu::rebuildAll()
         Level &lv = m_stack[k];
         if ( lv.build )
             lv.items = lv.build();
-        lv.cursor = std::min( lv.cursor, std::max( 0, int( lv.items.size() ) - 1 ) );
+        lv.cursor = std::min( lv.cursor, std::max( 0, static_cast<int>( lv.items.size() ) - 1 ) );
         // Headings follow too: the root from its title function, every other
         // level from the row that opened it.
         if ( k == 0 && m_rootTitle )
@@ -72,7 +72,7 @@ void OsdMenu::rebuildAll()
         else if ( k > 0 )
         {
             const Level &up = m_stack[k - 1];
-            if ( up.cursor >= 0 && up.cursor < int( up.items.size() ) )
+            if ( up.cursor >= 0 && up.cursor < static_cast<int>( up.items.size() ) )
                 lv.title = up.items[up.cursor].label;
         }
     }
@@ -106,6 +106,9 @@ void OsdMenu::activate( OsdItem &it )
             break;
         case OsdItem::SLIDER:
             break; // sliders move with Left/Right only
+        default:   // cannot happen: every OsdItem::KindE has its case
+            fprintf( stderr, "OsdMenu: unknown item kind %d\n", static_cast<int>( it.kind ) );
+            break;
     }
 }
 
@@ -132,7 +135,7 @@ bool OsdMenu::handleKey( int key )
         return false;
     touch();
     Level    &lv = m_stack.back();
-    const int n = int( lv.items.size() );
+    const int n = static_cast<int>( lv.items.size() );
 
     switch ( key )
     {
@@ -207,7 +210,7 @@ QString OsdMenu::valueText( const OsdItem &it ) const
         case OsdItem::SLIDER:
         {
             const float v = it.getF ? it.getF() : 0.f;
-            return it.fmt ? it.fmt( v ) : QString::number( double( v ), 'f', 1 );
+            return it.fmt ? it.fmt( v ) : QString::number( static_cast<double>( v ), 'f', 1 );
         }
         case OsdItem::SUBMENU:
             return QString::fromUtf8( "›" );
@@ -231,15 +234,15 @@ void OsdMenu::draw( QPainter *p, int w, int h )
         rebuildAll();
     }
     Level    &lv = m_stack.back();
-    const int n = int( lv.items.size() );
+    const int n = static_cast<int>( lv.items.size() );
 
     // 10-foot sizing: everything scales with the output height, so the menu
     // reads from the sofa on a 4K TV as well as in a 720p window.
     const int row_h = std::max( 26, h / 18 );
-    const int font_px = std::max( 14, int( row_h * 0.52 ) );
+    const int font_px = std::max( 14, static_cast<int>( row_h * 0.52 ) );
     const int pad = row_h / 2;
-    const int box_w = std::min( w - 2 * pad, std::max( int( w * 0.42 ), row_h * 14 ) );
-    const int max_rows = std::max( 3, int( ( h * 0.78 ) / row_h ) - 3 );
+    const int box_w = std::min( w - 2 * pad, std::max( static_cast<int>( w * 0.42 ), row_h * 14 ) );
+    const int max_rows = std::max( 3, static_cast<int>( ( h * 0.78 ) / row_h ) - 3 );
     const int visible = std::min( n, max_rows );
     lv.cursor = std::clamp( lv.cursor, 0, std::max( 0, n - 1 ) );
     if ( lv.cursor < lv.top )
@@ -263,7 +266,7 @@ void OsdMenu::draw( QPainter *p, int w, int h )
     for ( const Level &l : m_stack )
         crumbs << l.title;
     QFont hf( "Segoe UI", -1, QFont::DemiBold );
-    hf.setPixelSize( int( font_px * 1.05 ) );
+    hf.setPixelSize( static_cast<int>( font_px * 1.05 ) );
     p->setFont( hf );
     p->setPen( QColor( 120, 200, 255 ) );
     const QRect head( x0 + pad, y0 + pad, box_w - 2 * pad, row_h );
@@ -319,7 +322,7 @@ void OsdMenu::draw( QPainter *p, int w, int h )
             p->setBrush( QColor( 255, 255, 255, 40 ) );
             p->drawRect( bx, by, bw, 3 );
             p->setBrush( QColor( 120, 200, 255 ) );
-            p->drawRect( bx, by, int( bw * t ), 3 );
+            p->drawRect( bx, by, static_cast<int>( bw * t ), 3 );
         }
     }
     // Scroll hints.
@@ -333,7 +336,7 @@ void OsdMenu::draw( QPainter *p, int w, int h )
 
     // Hint line, or the confirmation of the last action for a moment.
     QFont sf( "Segoe UI" );
-    sf.setPixelSize( std::max( 12, int( font_px * 0.72 ) ) );
+    sf.setPixelSize( std::max( 12, static_cast<int>( font_px * 0.72 ) ) );
     p->setFont( sf );
     const QRect hint( x0 + pad, y0 + pad + row_h * ( visible + 1 ), box_w - 2 * pad, row_h );
     const bool  flashing = !m_flashText.isEmpty() && m_flash.isValid() && m_flash.elapsed() < 2500;

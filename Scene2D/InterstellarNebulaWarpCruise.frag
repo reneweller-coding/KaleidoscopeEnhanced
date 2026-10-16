@@ -65,7 +65,7 @@ float fbm3D( vec3 p, float t )
     float amp = 0.5;
     vec3  q = p + vec3( 0.0, 0.0, t * 0.2 );
 
-    for ( int i = 0; i < 4; i++ )
+    for ( int i = 0; i < 4; ++i )
     {
         f += amp * ( sin( q.x ) * cos( q.y ) + sin( q.y ) * cos( q.z ) + sin( q.z ) * cos( q.x ) );
         q = q * 2.05 + vec3( 1.2, 3.4, 5.6 );
@@ -101,7 +101,7 @@ void main()
     float tot_dist = 0.0;
 
     // Volumetric raymarching loop
-    for ( int i = 0; i < 44; i++ )
+    for ( int i = 0; i < 44; ++i )
     {
         vec3 p = ro + rd * tot_dist;
 

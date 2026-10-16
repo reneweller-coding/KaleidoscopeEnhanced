@@ -80,7 +80,7 @@ public:
                    unsigned int minTimeInterpolation, unsigned int maxTimeInterpolation );
     /** @brief Releases this scene's GL objects: geometry VBO, indirect command buffer, persistent generator-state
      * buffer and compute generator program. */
-    ~Scene3DShader();
+    virtual ~Scene3DShader();
 
     /**
      * @brief Compiles the full shader pipeline (vertex + optional tess/geom stages + fragment), resolves
@@ -215,7 +215,7 @@ public:
      * answers what the contact sheets raised: the stations fill about a tenth
      * of the frame, which is why even a correct camera move measures as almost
      * no motion. */
-    float coverage() const { return m_coverN ? float( m_coverSum / m_coverN ) : -1.f; }
+    float coverage() const { return m_coverN ? static_cast<float>( m_coverSum / m_coverN ) : -1.f; }
 
 private:
     GLuint m_coverQuery = 0;    ///< GL_SAMPLES_PASSED query object; 0 = not created.

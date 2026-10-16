@@ -92,7 +92,7 @@ float mapNeural( vec3 p, float t, float brMod, out float synapseNode )
     synapseNode = 0.0;
 
     float dend_scale = 1.0;
-    for ( int i = 0; i < 4; i++ )
+    for ( int i = 0; i < 4; ++i )
     {
         // Absolute fold with rotation
         q = abs( q ) - vec3( 0.4, 0.4, 0.6 );
@@ -173,7 +173,7 @@ void main()
     // the background.
     float hit_mask = 0.0;
 
-    for ( int i = 0; i < 80; i++ )
+    for ( int i = 0; i < 80; ++i )
     {
         vec3  p = ro + rd * tot_dist;
         float cur_synapse;

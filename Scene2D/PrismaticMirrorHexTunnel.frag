@@ -132,7 +132,7 @@ void main()
     float missed = 0.0;
 
     // Multi-bounce mirror reflection loop (up to 4 reflections)
-    for ( int bounce = 0; bounce < 4; bounce++ )
+    for ( int bounce = 0; bounce < 4; ++bounce )
     {
         // The hexagon is a 2D section, but the ray runs mostly along Z: a
         // step of `d` in the plane costs d / |rd.xy| along the ray.  Without
@@ -142,7 +142,7 @@ void main()
         float t_hit = 0.0;
         float hit = 0.0;
 
-        for ( int i = 0; i < 40; i++ )
+        for ( int i = 0; i < 40; ++i )
         {
             vec3 p_cur = p + rd * t_hit;
             // Twist along Z

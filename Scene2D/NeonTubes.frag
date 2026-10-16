@@ -113,7 +113,7 @@ void main()
     float trav_v = ( travP <= 0.01 ) ? 1.0 : travP;
     float scroll = ( time * 0.5 + audioAdvance * 2.0 ) * trav_v; // forward travel (jump-free)
 
-    for ( int g = 0; g < 200; g++ )
+    for ( int g = 0; g < 200; ++g )
     {
         if ( f <= 0.001 )
             break;

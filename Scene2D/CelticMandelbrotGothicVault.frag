@@ -120,7 +120,7 @@ void main()
     float der = 1.0; // |dz/dc| magnitude for distance estimation
 
     // Celtic Mandelbrot loop: z = |Re(z^2)| + i*Im(z^2) + c
-    for ( int i = 0; i < 48; i++ )
+    for ( int i = 0; i < 48; ++i )
     {
         der = der * 2.0 * max( length( z ), 1e-6 ) + 1.0;
         // z^2 = (x^2 - y^2) + 2ixy

@@ -332,7 +332,7 @@ RenderPipeline::RenderPipeline()
       // time*k vorwaerts schiebt, ohne dass die Geometrie das mitmacht,
       // fliegt irgendwann aus seiner eigenen Welt heraus.
       ,
-      m_globaltime( (double)qEnvironmentVariableIntValue( "KALEIDO_TIME_START" ) ),
+      m_globaltime( static_cast<double>( qEnvironmentVariableIntValue( "KALEIDO_TIME_START" ) ) ),
       m_nanotimer(),
       m_nrTextureUploads( 0 )
 {
@@ -415,7 +415,7 @@ void RenderPipeline::start( int width, int height )
     const char *src = !M_ImageDirCli.isEmpty()    ? "command line -f"
                       : !M_ImageDirUser.isEmpty() ? "imageDirectory in kaleidoscope_settings.ini"
                                                   : "preset default";
-    printf( "Nr of images: %d\n", (int)m_imageList.size() );
+    printf( "Nr of images: %d\n", static_cast<int>( m_imageList.size() ) );
     if ( m_imageList.isEmpty() )
         fprintf( stderr, "WARNING: image directory '%s' (%s) missing or empty - "
                          "using a procedural fallback texture. The photo pack is an "
@@ -443,12 +443,12 @@ void RenderPipeline::start( int width, int height )
                     distinct.insert( e->fragmentName() );
             }
         fprintf( stderr, "Catalogue: %d scenes from %d shaders (%d entries reuse one)\n",
-                 entries, (int)distinct.size(), entries - (int)distinct.size() );
+                 entries, static_cast<int>( distinct.size() ), entries - static_cast<int>( distinct.size() ) );
     }
     qsrand( 0 ); // no-op: QRandomGenerator is auto-seeded
     unsigned int start = qrand() % ( m_imageList.size() + 1 );
-    for ( unsigned int i = 0; i < start; i++ )
-        m_imageListIterator++;
+    for ( unsigned int i = 0; i < start; ++i )
+        ++m_imageListIterator;
 
     // A malformed configuration (wrong attribute names, missing type="normal")
     // used to yield ZERO valid entries here — and every qrand() % size() below
@@ -525,7 +525,7 @@ QString RenderPipeline::activeShaderInfo() const
         if ( m_scheduler.texState() != 0 )
             out += QString( "   → %1  (%2%)" )
                        .arg( base( m_effectTextures[m_scheduler.nextTexture()]->fragmentName() ) )
-                       .arg( int( ( 1.0f - m_scheduler.texInterp() ) * 100.0f + 0.5f ) );
+                       .arg( static_cast<int>( ( 1.0f - m_scheduler.texInterp() ) * 100.0f + 0.5f ) );
         // Chain labs: the chain in words, stage by stage (to spot weak transforms).
         const std::string chain = m_effectTextures[m_scheduler.actTexture()]->chainInfo();
         if ( !chain.empty() )
@@ -538,7 +538,7 @@ QString RenderPipeline::activeShaderInfo() const
         if ( m_scheduler.fxState() != 0 )
             out += QString( "   → %1  (%2%)" )
                        .arg( base( m_effectFx[m_scheduler.nextFx()]->fragmentName() ) )
-                       .arg( int( ( 1.0f - m_scheduler.fxInterp() ) * 100.0f + 0.5f ) );
+                       .arg( static_cast<int>( ( 1.0f - m_scheduler.fxInterp() ) * 100.0f + 0.5f ) );
         const std::string chain = m_effectFx[m_scheduler.actFx()]->chainInfo(); // FxChain
         if ( !chain.empty() )
             out += "\n" + QString::fromUtf8( chain.c_str() );
@@ -634,18 +634,18 @@ void RenderPipeline::cleanShaderPrograms()
     shaderProgramRelease( m_shProgIdFx );
 
 
-    for ( unsigned int i = 0; i < m_effectTextures.size(); i++ )
+    for ( unsigned int i = 0; i < m_effectTextures.size(); ++i )
     {
         m_effectTextures[i]->cleanShaderPrograms();
     }
 
 
-    for ( unsigned int i = 0; i < m_effectFx.size(); i++ )
+    for ( unsigned int i = 0; i < m_effectFx.size(); ++i )
     {
         m_effectFx[i]->cleanShaderPrograms();
     }
 
-    for ( unsigned int i = 0; i < m_effectTransitions.size(); i++ )
+    for ( unsigned int i = 0; i < m_effectTransitions.size(); ++i )
     {
         m_effectTransitions[i]->cleanShaderPrograms();
     }
@@ -684,10 +684,10 @@ void RenderPipeline::reinit( int width, int height )
     // at M_RenderScale × that; only the final present pass upscales to the display.
     m_displayW = width;
     m_displayH = height;
-    m_width = (int)( width * M_RenderScale + 0.5f );
+    m_width = static_cast<int>( width * M_RenderScale + 0.5f );
     if ( m_width < 16 )
         m_width = 16;
-    m_height = (int)( height * M_RenderScale + 0.5f );
+    m_height = static_cast<int>( height * M_RenderScale + 0.5f );
     if ( m_height < 16 )
         m_height = 16;
 
@@ -722,18 +722,18 @@ void RenderPipeline::reinit( int width, int height )
         }*/
 
 
-    for ( unsigned int i = 0; i < m_effectTextures.size(); i++ )
+    for ( unsigned int i = 0; i < m_effectTextures.size(); ++i )
     {
         m_effectTextures[i]->prepare( m_width, m_height ); // lazy compile
     }
 
 
-    for ( unsigned int i = 0; i < m_effectFx.size(); i++ )
+    for ( unsigned int i = 0; i < m_effectFx.size(); ++i )
     {
         m_effectFx[i]->prepare( m_width, m_height ); // lazy compile
     }
 
-    for ( unsigned int i = 0; i < m_effectTransitions.size(); i++ )
+    for ( unsigned int i = 0; i < m_effectTransitions.size(); ++i )
     {
         m_effectTransitions[i]->prepare( m_width, m_height ); // lazy compile
     }
@@ -774,19 +774,19 @@ void RenderPipeline::resize( int width, int height )
     // width/height = display resolution; render at M_RenderScale × that.
     m_displayW = width;
     m_displayH = height;
-    m_width = (int)( width * M_RenderScale + 0.5f );
+    m_width = static_cast<int>( width * M_RenderScale + 0.5f );
     if ( m_width < 16 )
         m_width = 16;
-    m_height = (int)( height * M_RenderScale + 0.5f );
+    m_height = static_cast<int>( height * M_RenderScale + 0.5f );
     if ( m_height < 16 )
         m_height = 16;
 
     // Effect shaders only need their reported resolution updated (no recompile).
-    for ( unsigned int i = 0; i < m_effectTextures.size(); i++ )
+    for ( unsigned int i = 0; i < m_effectTextures.size(); ++i )
         m_effectTextures[i]->setSize( m_width, m_height );
-    for ( unsigned int i = 0; i < m_effectFx.size(); i++ )
+    for ( unsigned int i = 0; i < m_effectFx.size(); ++i )
         m_effectFx[i]->setSize( m_width, m_height );
-    for ( unsigned int i = 0; i < m_effectTransitions.size(); i++ )
+    for ( unsigned int i = 0; i < m_effectTransitions.size(); ++i )
         m_effectTransitions[i]->setSize( m_width, m_height );
 
     // Re-allocate the off-screen colour buffers to the new size, reusing IDs.
@@ -920,7 +920,7 @@ void RenderPipeline::showTitle( const QString &title, const QString &artist )
     // IMMER auch am Ende jedes Reveals). Kostet nichts an Laufzeit: wird nur
     // einmal pro Trackwechsel gerendert.
     const float S = 2.0f;
-    const int   W = int( 1024 * S ), H = int( 256 * S );
+    const int   W = static_cast<int>( 1024 * S ), H = static_cast<int>( 256 * S );
     QImage      img( W, H, QImage::Format_ARGB32 );
     img.fill( Qt::transparent );
     QPainter p( &img );
@@ -933,31 +933,33 @@ void RenderPipeline::showTitle( const QString &title, const QString &artist )
     // screen for ~8s anyway. Floors at ~55% of the nominal size (still
     // legible); eliding stays as the last resort for the rare title that
     // doesn't fit even there.
-    const int max_w = W - int( 80 * S );
+    const int max_w = W - static_cast<int>( 80 * S );
     auto      fit_font = [&]( const char *family, int nominalPt, bool bold, const QString &text ) -> QFont
     {
-        const int min_pt = int( nominalPt * 0.55f );
+        const int min_pt = static_cast<int>( nominalPt * 0.55f );
         QFont     f( family, nominalPt, bold ? QFont::Bold : QFont::Normal );
         while ( f.pointSize() > min_pt && QFontMetrics( f ).horizontalAdvance( text ) > max_w )
             f.setPointSize( f.pointSize() - 1 );
         return f;
     };
-    QFont   ft = fit_font( "Segoe UI", int( 52 * S ), true, title );
-    QFont   fa = fit_font( "Segoe UI", int( 26 * S ), false, artist );
+    QFont   ft = fit_font( "Segoe UI", static_cast<int>( 52 * S ), true, title );
+    QFont   fa = fit_font( "Segoe UI", static_cast<int>( 26 * S ), false, artist );
     QString t = title, a = artist;
     if ( QFontMetrics( ft ).horizontalAdvance( t ) > max_w )
         t = QFontMetrics( ft ).elidedText( t, Qt::ElideRight, max_w );
     if ( QFontMetrics( fa ).horizontalAdvance( a ) > max_w )
         a = QFontMetrics( fa ).elidedText( a, Qt::ElideRight, max_w );
 
-    const QRect r_t( int( 40 * S ), int( 24 * S ), W - int( 80 * S ), int( 132 * S ) );
-    const QRect r_a( int( 40 * S ), int( 156 * S ), W - int( 80 * S ), int( 68 * S ) );
+    const QRect r_t( static_cast<int>( 40 * S ), static_cast<int>( 24 * S ), W - static_cast<int>( 80 * S ),
+                     static_cast<int>( 132 * S ) );
+    const QRect r_a( static_cast<int>( 40 * S ), static_cast<int>( 156 * S ), W - static_cast<int>( 80 * S ),
+                     static_cast<int>( 68 * S ) );
     p.setFont( ft );
     p.setPen( QColor( 0, 0, 0, 150 ) );
     for ( int dy = -2; dy <= 2; ++dy )
         for ( int dx = -2; dx <= 2; ++dx )
             if ( dx != 0 || dy != 0 )
-                p.drawText( r_t.translated( int( dx * S ), int( dy * S ) ),
+                p.drawText( r_t.translated( static_cast<int>( dx * S ), static_cast<int>( dy * S ) ),
                             Qt::AlignHCenter | Qt::AlignVCenter, t );
     p.setPen( QColor( 255, 255, 255, 235 ) );
     p.drawText( r_t, Qt::AlignHCenter | Qt::AlignVCenter, t );
@@ -968,7 +970,7 @@ void RenderPipeline::showTitle( const QString &title, const QString &artist )
         for ( int dy = -1; dy <= 1; ++dy )
             for ( int dx = -1; dx <= 1; ++dx )
                 if ( dx != 0 || dy != 0 )
-                    p.drawText( r_a.translated( int( dx * S ), int( dy * S ) ),
+                    p.drawText( r_a.translated( static_cast<int>( dx * S ), static_cast<int>( dy * S ) ),
                                 Qt::AlignHCenter | Qt::AlignVCenter, a );
         p.setPen( QColor( 205, 218, 238, 225 ) );
         p.drawText( r_a, Qt::AlignHCenter | Qt::AlignVCenter, a );
@@ -1028,8 +1030,8 @@ void RenderPipeline::compileAllShaders()
         s->ensureCompiled();
     }
     fprintf( stderr, "COMPILEALL done (%d textures, %d combines, %d transitions)\n",
-             (int)m_effectTextures.size(), (int)m_effectFx.size(),
-             (int)m_effectTransitions.size() );
+             static_cast<int>( m_effectTextures.size() ), static_cast<int>( m_effectFx.size() ),
+             static_cast<int>( m_effectTransitions.size() ) );
     // The honest count: how many DISTINCT shader programs the catalogue
     // actually is, next to how many entries name one. The two differ by
     // the 3D-model families, where one shader carries up to 29 scenes.
@@ -1044,7 +1046,7 @@ void RenderPipeline::compileAllShaders()
     // The eager-build total for contrast: for a 3D-model scene it also imports
     // the .glb, which is the larger half. Naming it compile time would be wrong.
     fprintf( stderr, "SHADERS: eager build incl. mesh import took %lld ms\n",
-             (long long)compile_clock.elapsed() );
+             static_cast<long long>( compile_clock.elapsed() ) );
 }
 
 // Remote scene browser: list the preset's texture shaders (file basenames).
@@ -1093,7 +1095,7 @@ QStringList RenderPipeline::fxNames() const
 
 void RenderPipeline::forceFx( int idx )
 {
-    if ( idx < 0 || idx >= (int)m_effectFx.size() )
+    if ( idx < 0 || idx >= static_cast<int>( m_effectFx.size() ) )
         return;
     if ( M_Pinned || M_Freeze )
         return; // same handbrakes as forceScene
@@ -1102,7 +1104,7 @@ void RenderPipeline::forceFx( int idx )
 
 void RenderPipeline::forceScene( int idx )
 {
-    if ( idx < 0 || idx >= (int)m_effectTextures.size() )
+    if ( idx < 0 || idx >= static_cast<int>( m_effectTextures.size() ) )
         return;
     if ( M_Pinned || M_Freeze )
         return;                  // same handbrakes as requestSceneChange
@@ -1157,7 +1159,7 @@ bool RenderPipeline::toggleMarkCurrentScene()
     s.sync();
     fprintf( stderr, "Mark: %s %s (%d marked)\n",
              base.toLocal8Bit().constData(),
-             now_marked ? "SET" : "cleared", (int)M_Marked.size() );
+             now_marked ? "SET" : "cleared", static_cast<int>( M_Marked.size() ) );
     return now_marked;
 }
 
@@ -1215,7 +1217,7 @@ bool RenderPipeline::saveMarkedPreset( QString *outPath )
     if ( written.isEmpty() )
     {
         fprintf( stderr, "Marked preset: none of the %d marked scenes are in Komplett.xml\n",
-                 (int)M_Marked.size() );
+                 static_cast<int>( M_Marked.size() ) );
         return false;
     }
 
@@ -1247,7 +1249,7 @@ bool RenderPipeline::saveMarkedPreset( QString *outPath )
 
     if ( outPath )
         *outPath = path;
-    fprintf( stderr, "Marked preset: %d scene(s) -> %s\n", (int)written.size(),
+    fprintf( stderr, "Marked preset: %d scene(s) -> %s\n", static_cast<int>( written.size() ),
              path.toLocal8Bit().constData() );
     return true;
 }
@@ -1310,7 +1312,7 @@ int RenderPipeline::sceneIndexByBase( const QString &base ) const
 {
     for ( size_t i = 0; i < m_effectTextures.size(); ++i )
         if ( tasteBase( m_effectTextures[i]->fragmentName() ) == base )
-            return (int)i;
+            return static_cast<int>( i );
     return -1;
 }
 
@@ -1322,7 +1324,7 @@ void RenderPipeline::rememberCue( const QString &trackKey, double posSec )
     const QString base = tasteBase( m_effectTextures[m_scheduler.actTexture()]->fragmentName() );
     M_Cues[key].append( qMakePair( posSec, base ) );
     QSettings s( Platform::assetPath( "..\\kaleidoscope_settings.ini" ), QSettings::IniFormat );
-    s.setValue( QString( "cues/%1/%2" ).arg( key ).arg( (int)posSec ), base );
+    s.setValue( QString( "cues/%1/%2" ).arg( key ).arg( static_cast<int>( posSec ) ), base );
     fprintf( stderr, "CUE gemerkt: %s @ %.0f s -> %s\n", key.toUtf8().constData(), posSec, base.toUtf8().constData() );
 }
 
@@ -1508,9 +1510,9 @@ void RenderPipeline::trimMeshResidency()
     ++m_meshUseClock;
     const unsigned act = m_scheduler.actTexture();
     const unsigned nxt = m_scheduler.nextTexture();
-    if ( size_t( act ) < m_effectTextures.size() )
+    if ( static_cast<size_t>( act ) < m_effectTextures.size() )
         m_meshLastUse[m_effectTextures[act]] = m_meshUseClock;
-    if ( size_t( nxt ) < m_effectTextures.size() )
+    if ( static_cast<size_t>( nxt ) < m_effectTextures.size() )
         m_meshLastUse[m_effectTextures[nxt]] = m_meshUseClock;
 
     // Cheap common case: nothing to do until the working set is actually full.
@@ -1525,7 +1527,7 @@ void RenderPipeline::trimMeshResidency()
         for ( size_t i = 0; i < m_effectTextures.size(); ++i )
         {
             EffectShader *s = m_effectTextures[i];
-            if ( !s->meshResident() || i == size_t( act ) || i == size_t( nxt ) )
+            if ( !s->meshResident() || i == static_cast<size_t>( act ) || i == static_cast<size_t>( nxt ) )
                 continue;
             const qint64 used = m_meshLastUse.value( s, 0 );
             if ( used < oldest )
@@ -1700,7 +1702,7 @@ void RenderPipeline::updateTitleReveal( const AudioFeatures &audio, float dtWall
             QByteArray forced = qgetenv( "KALEIDO_TITLE_STYLE" );
             if ( !forced.isEmpty() )
                 style = forced.toInt();
-            m_present.setTitleStyle( style, float( qrand() ) / float( RAND_MAX ) );
+            m_present.setTitleStyle( style, static_cast<float>( qrand() ) / static_cast<float>( RAND_MAX ) );
             fprintf( stderr, "Title reveal: style %d\n", style );
         }
     }
@@ -1758,7 +1760,7 @@ void RenderPipeline::updateImageState( float timeSinceLastFrameSec )
         // time is up => switch to modus blending.  Like the shader changes, the
         // IMAGE cross-fade start is quantised onto the next downbeat (with the
         // same timeout / no-music escape), so picture changes land on the "1".
-        float ts = float( m_timeTexture.elapsed() ) * 0.001;
+        float ts = static_cast<float>( m_timeTexture.elapsed() ) * 0.001;
         if ( ts > m_timeTextureSolo )
             m_pendingImgChange = true;
         if ( m_pendingImgChange )
@@ -1771,17 +1773,18 @@ void RenderPipeline::updateImageState( float timeSinceLastFrameSec )
                 m_stateTexture = 0;
                 m_timeTexture.start();
 
-                m_timeTextureSolo = (float)( ( m_timeTextureSoloMax > m_timeTextureSoloMin )
-                                                 ? m_timeTextureSoloMin
-                                                       + ( qrand() % ( m_timeTextureSoloMax - m_timeTextureSoloMin ) )
-                                                 : m_timeTextureSoloMin )
+                m_timeTextureSolo = static_cast<float>(
+                                        ( m_timeTextureSoloMax > m_timeTextureSoloMin )
+                                            ? m_timeTextureSoloMin
+                                                  + ( qrand() % ( m_timeTextureSoloMax - m_timeTextureSoloMin ) )
+                                            : m_timeTextureSoloMin )
                                     / m_timingScale; // min==max would be % 0
             }
         }
     }
     else
     {
-        float ts = float( m_timeTexture.elapsed() ) * 0.001;
+        float ts = static_cast<float>( m_timeTexture.elapsed() ) * 0.001;
 
         m_interpolationTexture = 1.0 - ts / m_timeTextureInterpolation; // 0.5*(cos( ts/m_timeInterpolation * M_PI )
                                                                         // + 1.0);
@@ -1801,12 +1804,13 @@ void RenderPipeline::updateImageState( float timeSinceLastFrameSec )
 
             m_interpolationTexture = 1.0;
 
-            m_timeTextureInterpolation = (float)( ( m_timeTextureInterpolationMax > m_timeTextureInterpolationMin )
-                                                      ? m_timeTextureInterpolationMin
-                                                            + ( qrand()
-                                                                % ( m_timeTextureInterpolationMax
-                                                                    - m_timeTextureInterpolationMin ) )
-                                                      : m_timeTextureInterpolationMin )
+            m_timeTextureInterpolation = static_cast<float>(
+                                             ( m_timeTextureInterpolationMax > m_timeTextureInterpolationMin )
+                                                 ? m_timeTextureInterpolationMin
+                                                       + ( qrand()
+                                                           % ( m_timeTextureInterpolationMax
+                                                               - m_timeTextureInterpolationMin ) )
+                                                 : m_timeTextureInterpolationMin )
                                          / m_timingScale; // min==max would be % 0
         }
     }
@@ -2010,7 +2014,7 @@ void RenderPipeline::updateTrueStereoState()
 // (scissored, so each eye's clear stays inside its half).  Eye
 // separation scales with the stereo-depth knob (keys c/m).
 
-void RenderPipeline::renderSceneStereo( EffectShader *fx )
+void RenderPipeline::renderSceneStereo( EffectShader *fx ) const
 {
     Scene3DShader *s3 = static_cast<Scene3DShader *>( fx );
     glEnable( GL_SCISSOR_TEST );
@@ -2224,7 +2228,7 @@ void RenderPipeline::renderStereoMixPass()
         glUniform1i( m_stereoMixTexBUni, 4 );
     if ( m_stereoMixResUni >= 0 )
         glUniform2f( m_stereoMixResUni,
-                     (float)m_width, (float)m_height );
+                     static_cast<float>( m_width ), static_cast<float>( m_height ) );
     if ( m_stereoMixWUni >= 0 )
         glUniform1f( m_stereoMixWUni,
                      m_scheduler.texInterp() );
@@ -2361,7 +2365,7 @@ void RenderPipeline::renderFinalBlend()
 
     glUniform1i( m_texPointFxUni1, 5 ); // texture Unit 0, nicht mit texId verwechseln
     glUniform1i( m_texPointFxUni2, 6 ); // texture Unit 0, nicht mit texId verwechseln
-    glUniform2f( m_texSizeRcpFxUni, (float)m_width, (float)m_height );
+    glUniform2f( m_texSizeRcpFxUni, static_cast<float>( m_width ), static_cast<float>( m_height ) );
     glUniform1f( m_interpolationFxUni, m_scheduler.fxInterp() );
     glUniform1f( m_timeFxUni, m_globaltime );
 
@@ -2422,7 +2426,7 @@ GLuint RenderPipeline::renderTrailsPass( const AudioFeatures &audio, const Audio
         glUniform1i( m_trailCurUni, 0 );
         glUniform1i( m_trailPrevUni, 1 );
         if ( m_trailResUni >= 0 )
-            glUniform2f( m_trailResUni, (float)m_width, (float)m_height );
+            glUniform2f( m_trailResUni, static_cast<float>( m_width ), static_cast<float>( m_height ) );
         if ( m_trailDecayUni >= 0 )
             glUniform1f( m_trailDecayUni, decay );
         // Echo-warp: the beat pumps the outward zoom, the rotation direction
@@ -2626,11 +2630,11 @@ void RenderPipeline::runPresentPass( GLuint presentSource, const AudioFeatures &
         if ( m_scheduler.actTexture() < m_effectTextures.size() )
         {
             const float w = m_scheduler.texState() != 0 ? m_scheduler.texInterp() : 1.f;
-            pin.gradeModeA = (float)m_effectTextures[m_scheduler.actTexture()]->gradeMode();
+            pin.gradeModeA = static_cast<float>( m_effectTextures[m_scheduler.actTexture()]->gradeMode() );
             pin.gradeAmtA = pin.gradeModeA > 0.f ? w : 0.f;
             if ( m_scheduler.texState() != 0 && m_scheduler.nextTexture() < m_effectTextures.size() )
             {
-                pin.gradeModeB = (float)m_effectTextures[m_scheduler.nextTexture()]->gradeMode();
+                pin.gradeModeB = static_cast<float>( m_effectTextures[m_scheduler.nextTexture()]->gradeMode() );
                 pin.gradeAmtB = pin.gradeModeB > 0.f ? 1.f - w : 0.f;
             }
         }
@@ -2891,7 +2895,7 @@ GLuint RenderPipeline::rig2Transform( EffectShader *fx, GLuint srcTex, int slot 
     if ( u_tex >= 0 )
         glUniform1i( u_tex, 0 );
     if ( u_res >= 0 )
-        glUniform2f( u_res, float( m_width ), float( m_height ) );
+        glUniform2f( u_res, static_cast<float>( m_width ), static_cast<float>( m_height ) );
     if ( u_roll >= 0 )
         glUniform1f( u_roll, rig[0] );
     if ( u_zoom >= 0 )
@@ -3230,7 +3234,7 @@ void RenderPipeline::renderOitPass( EffectShader *fx, GLuint depthTex, GLuint ta
     if ( l1 >= 0 )
         glUniform1i( l1, 1 );
     if ( lr >= 0 )
-        glUniform2f( lr, float( m_width ), float( m_height ) );
+        glUniform2f( lr, static_cast<float>( m_width ), static_cast<float>( m_height ) );
 
     // Standard "over" compositing of the resolved layer onto the opaque frame.
     glEnable( GL_BLEND );
@@ -3358,7 +3362,7 @@ void RenderPipeline::ensureMsaaTargets( int w, int h )
 }
 
 
-void RenderPipeline::resolveMsaa( GLuint dstFbo, int w, int h )
+void RenderPipeline::resolveMsaa( GLuint dstFbo, int w, int h ) const
 {
     glBindFramebuffer( GL_READ_FRAMEBUFFER, m_msaaFbo );
     glBindFramebuffer( GL_DRAW_FRAMEBUFFER, dstFbo );
@@ -3429,15 +3433,15 @@ QImage RenderPipeline::fallbackImage()
 {
     const int N = 256;
     QImage    img( N, N, QImage::Format_ARGB32 );
-    for ( int y = 0; y < N; y++ )
+    for ( int y = 0; y < N; ++y )
     {
-        const float v = y / float( N );
-        for ( int x = 0; x < N; x++ )
+        const float v = y / static_cast<float>( N );
+        for ( int x = 0; x < N; ++x )
         {
-            const float u = x / float( N );
-            const int   r = int( 127.5f * ( 1.0f + sinf( u * 12.0f ) ) );
-            const int   g = int( 127.5f * ( 1.0f + sinf( ( u + v ) * 9.0f ) ) );
-            const int   b = int( 127.5f * ( 1.0f + cosf( v * 15.0f ) ) );
+            const float u = x / static_cast<float>( N );
+            const int   r = static_cast<int>( 127.5f * ( 1.0f + sinf( u * 12.0f ) ) );
+            const int   g = static_cast<int>( 127.5f * ( 1.0f + sinf( ( u + v ) * 9.0f ) ) );
+            const int   b = static_cast<int>( 127.5f * ( 1.0f + cosf( v * 15.0f ) ) );
             img.setPixel( x, y, qRgb( r, g, b ) );
         }
     }
@@ -3498,7 +3502,7 @@ void RenderPipeline::createTexture()
     setupTexture( m_actTex, prepareImage( loadImageOrFallback( *m_imageListIterator ) ) );
     fprintf( stderr, "PHOTO %s\n", qPrintable( ( *m_imageListIterator ) ) );
 
-    m_imageListIterator++;
+    ++m_imageListIterator;
     if ( m_imageListIterator == m_imageList.end() )
         m_imageListIterator = m_imageList.begin();
     setupTexture( m_nextTex, prepareImage( loadImageOrFallback( *m_imageListIterator ) ) );
@@ -3558,7 +3562,7 @@ void RenderPipeline::traverse( const QString &dirname, QStringList &imageList )
 }
 
 
-void RenderPipeline::setupFBOTexture( const GLuint texID )
+void RenderPipeline::setupFBOTexture( const GLuint texID ) const
 {
 
     // make active and bind
@@ -3646,7 +3650,7 @@ void RenderPipeline::setupTexture( const GLuint texID, const QImage &image )
         glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA8,
                       image.width(), image.height(), 0,
                       GL_RGBA, GL_UNSIGNED_BYTE, image.bits() );
-        m_nrTextureUploads++;
+        ++m_nrTextureUploads;
     }
     else
     {
@@ -3738,7 +3742,7 @@ void RenderPipeline::checkGLErrors( const char *label )
         return;
 
     fputs( "OpenGL ERROR: ", stderr );
-    fputs( (char *)gluErrorString( err_code ), stderr );
+    fputs( reinterpret_cast<const char *>( gluErrorString( err_code ) ), stderr );
     fputs( " (label: ", stderr );
     fputs( label, stderr );
     fputs( ")\n", stderr );
@@ -3756,7 +3760,7 @@ bool RenderPipeline::checkFramebufferStatus( void )
         return true;
 
     GLenum status;
-    status = (GLenum)glCheckFramebufferStatus( GL_FRAMEBUFFER );
+    status = glCheckFramebufferStatus( GL_FRAMEBUFFER );
     switch ( status )
     {
         case GL_FRAMEBUFFER_COMPLETE:
@@ -3781,6 +3785,9 @@ bool RenderPipeline::checkFramebufferStatus( void )
             return false;
         case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:
             printf( "Framebuffer incomplete, missing read buffer\n" );
+            return false;
+        default:
+            printf( "Framebuffer incomplete, status 0x%x\n", status );
             return false;
     }
     return false;
@@ -3864,7 +3871,7 @@ QPair<float, float> ImageLoader::imageStats( const QString &path )
         }
     if ( n == 0 )
         return qMakePair( 0.5f, 0.5f );
-    return qMakePair( float( b / n ), float( c / n ) );
+    return qMakePair( static_cast<float>( b / n ), static_cast<float>( c / n ) );
 }
 
 void ImageLoader::run()

@@ -79,7 +79,7 @@ float turingField( vec2 p, float t, float freq )
     float amp = 1.0;
     float cur_freq = freq;
 
-    for ( int i = 0; i < 4; i++ )
+    for ( int i = 0; i < 4; ++i )
     {
         // Rotated sinusoidal standing waves
         float ang = float( i ) * 0.785398 + t * 0.15;

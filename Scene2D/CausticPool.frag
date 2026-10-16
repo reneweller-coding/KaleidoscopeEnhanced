@@ -91,7 +91,7 @@ void main()
         vec2        ii = p2;
         float       c = 1.0;
         const float inten = 0.005;
-        for ( int n = 0; n < 4; n++ )
+        for ( int n = 0; n < 4; ++n )
         {
             float tt = time * 0.4 * ( 1.0 - ( 3.5 / float( n + 1 ) ) );
             ii = p2 + vec2( cos( tt - ii.x ) + sin( tt + ii.y ), sin( tt - ii.y ) + cos( tt + ii.x ) );

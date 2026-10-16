@@ -120,7 +120,7 @@ void main()
     // where the d=3.5 rotation term stops integrating cleanly.
     float dt = clamp( 0.07 * vrtx, 0.04, 0.095 );
 
-    for ( int i = 0; i < 72; i++ )
+    for ( int i = 0; i < 72; ++i )
     {
         // Midpoint RK2. The loop previously ran plain Euler over 28 steps of
         // dt=0.018 -- 0.5 time units total, far short of the transient, so the
@@ -168,7 +168,7 @@ void main()
     // pack follows the music (audioPhase), and a depth cue dims/blurs a light
     // on the far side of its orbit so the circling reads as 3D.
     vec3 beacon_col = vec3( 0.0 );
-    for ( int j = 0; j < 5; j++ )
+    for ( int j = 0; j < 5; ++j )
     {
         float fj = float( j );
         float ang = t * ( 1.1 + 0.23 * fj ) + fj * 2.51 + audioPhase * 0.3;

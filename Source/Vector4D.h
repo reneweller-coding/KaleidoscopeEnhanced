@@ -46,11 +46,11 @@ public:
     //! copy-constructor
     Vector4D( const Vector4D &b );
     //! project a 3D-vector to homogenous-space
-    Vector4D( const Vector3D &b );
+    explicit Vector4D( const Vector3D &b );
     //! initialize vector with explicit coordinates
     Vector4D( double X, double Y, double Z, double W );
     //! initialize vector with a pointer to 4 double values
-    Vector4D( double *xyzw );
+    explicit Vector4D( double *xyzw );
 
     //! destructor
     ~Vector4D();
@@ -103,7 +103,7 @@ public:
     inline bool operator!=( const Vector4D &b ) const;
 
     //! cast the vector to a pointer of doubles (used to load the vector to OpenGL)
-    inline operator double *();
+    inline explicit operator double *();
 };
 
 #include "Vector3D.h"

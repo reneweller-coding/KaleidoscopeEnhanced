@@ -85,7 +85,7 @@ float noise( vec3 p )
 float fbm( vec3 p )
 {
     float f = 0.0, a = 0.5;
-    for ( int i = 0; i < 4; i++ )
+    for ( int i = 0; i < 4; ++i )
     {
         f += a * noise( p );
         p *= 2.0;
@@ -100,11 +100,11 @@ float voronoi( vec3 p )
     vec3  i = floor( p );
     vec3  f = fract( p );
     float min_dist = 1.0;
-    for ( int z = -1; z <= 1; z++ )
+    for ( int z = -1; z <= 1; ++z )
     {
-        for ( int y = -1; y <= 1; y++ )
+        for ( int y = -1; y <= 1; ++y )
         {
-            for ( int x = -1; x <= 1; x++ )
+            for ( int x = -1; x <= 1; ++x )
             {
                 vec3 neighbor = vec3( float( x ), float( y ), float( z ) );
                 vec3 point = vec3(

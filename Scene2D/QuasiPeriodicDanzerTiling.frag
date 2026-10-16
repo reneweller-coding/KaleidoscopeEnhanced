@@ -98,7 +98,7 @@ void main()
     float min_dist = 1e4;
 
     // Project 6 symmetric directions (2pi / 6 * k + golden shift)
-    for ( int i = 0; i < 6; i++ )
+    for ( int i = 0; i < 6; ++i )
     {
         float angle = float( i ) * ( 3.14159265 / 3.0 ) + t * 0.15;
         vec2  dir = vec2( cos( angle ), sin( angle ) );

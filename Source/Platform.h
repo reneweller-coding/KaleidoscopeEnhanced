@@ -74,10 +74,10 @@ inline int iCaseCmp( const char *a, const char *b )
 {
     for ( ;; ++a, ++b )
     {
-        const unsigned char ca = (unsigned char)( *a >= 'A' && *a <= 'Z' ? *a + 32 : *a );
-        const unsigned char cb = (unsigned char)( *b >= 'A' && *b <= 'Z' ? *b + 32 : *b );
+        const unsigned char ca = static_cast<unsigned char>( *a >= 'A' && *a <= 'Z' ? *a + 32 : *a );
+        const unsigned char cb = static_cast<unsigned char>( *b >= 'A' && *b <= 'Z' ? *b + 32 : *b );
         if ( ca != cb )
-            return int( ca ) - int( cb );
+            return static_cast<int>( ca ) - static_cast<int>( cb );
         if ( !ca )
             return 0;
     }

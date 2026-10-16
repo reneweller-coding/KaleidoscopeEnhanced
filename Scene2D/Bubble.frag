@@ -91,7 +91,7 @@ void main( void )
     // one rise, re-rolled at respawn when the bubble is invisibly small).
     float act = clamp( 0.40 + 0.45 * audioSwell + 0.25 * audioLevel, 0.0, 1.0 );
 
-    for ( int i = 0; i < NrBubbles; i++ )
+    for ( int i = 0; i < NrBubbles; ++i )
     {
         // bubble seeds
         float pha = sin( float( i ) * 546.13 + 1.0 ) * 0.5 + 0.5;

@@ -80,9 +80,9 @@ vec3 cellularNoise( vec2 p, float t )
     float min_dist = 1e4;
     vec2  min_pt = vec2( 0.0 );
 
-    for ( int y = -1; y <= 1; y++ )
+    for ( int y = -1; y <= 1; ++y )
     {
-        for ( int x = -1; x <= 1; x++ )
+        for ( int x = -1; x <= 1; ++x )
         {
             vec2  neighbor = vec2( float( x ), float( y ) );
             vec2  rand_pt = sin( ip + neighbor + vec2( t * 0.3, t * 0.4 ) ) * 0.4 + 0.5;
@@ -128,7 +128,7 @@ void main()
     // the whole dive to a milky wash.
     float exp_gain = clamp( 0.26 / max( 0.05, photoLevel() ), 0.26, 2.4 );
 
-    for ( int s = 0; s < 3; s++ )
+    for ( int s = 0; s < 3; ++s )
     {
         float sf = float( s );
         float rel_scale = mod( sf - log_scale + 3.0, 3.0 );

@@ -85,9 +85,9 @@ float voronoiPlates( vec2 p, out vec2 center )
     vec2  f = fract( p );
     float m = 8.0;
     vec2  m_center = vec2( 0.0 );
-    for ( int j = -1; j <= 1; j++ )
+    for ( int j = -1; j <= 1; ++j )
     {
-        for ( int i = -1; i <= 1; i++ )
+        for ( int i = -1; i <= 1; ++i )
         {
             vec2  g = vec2( float( i ), float( j ) );
             vec2  o = vec2( hash21( n + g ), hash21( n + g + vec2( 11.2, 37.8 ) ) );

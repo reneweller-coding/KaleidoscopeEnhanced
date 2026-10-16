@@ -86,7 +86,7 @@ void main()
     float min_throat_dist = 1e4;
     float ring_glow = 0.0;
 
-    for ( int i = 0; i < 48; i++ )
+    for ( int i = 0; i < 48; ++i )
     {
         float l = p.z; // Coordinate along throat
         float r_sq = dot( p.xy, p.xy );

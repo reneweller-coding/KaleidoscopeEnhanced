@@ -93,7 +93,7 @@ void main()
 
     vec4  O = vec4( 0.0 );
     float t = 0.0, d;
-    for ( int e = 0; e < 100; e++ )
+    for ( int e = 0; e < 100; ++e )
     {
         vec3 r = t * normalize( vec3( abs( o / c.y ), 1.0 ) ); // mirrored ray
         d = length( r - vec3( 0.0, 0.0, 15.0 ) ) - core_r;     // the core sphere

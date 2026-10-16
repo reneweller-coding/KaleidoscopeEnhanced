@@ -150,7 +150,7 @@ GLuint loadBinary( const QString &path )
     GLenum format = 0;
     memcpy( &format, b.constData() + 4, 4 );
     GLuint prog = glCreateProgram();
-    glProgramBinary( prog, format, b.constData() + 8, (GLsizei)( b.size() - 8 ) );
+    glProgramBinary( prog, format, b.constData() + 8, static_cast<GLsizei>( b.size() - 8 ) );
     GLint ok = 0;
     glGetProgramiv( prog, GL_LINK_STATUS, &ok );
     if ( !ok )
@@ -186,8 +186,8 @@ bool shaderForgeInit()
     s_dir = QString::fromLocal8Bit( la ) + "/KaleidoscopeVisualizer/ShaderCache";
     if ( !QDir().mkpath( s_dir ) )
         return false;
-    const char *r = (const char *)glGetString( GL_RENDERER );
-    const char *v = (const char *)glGetString( GL_VERSION );
+    const char *r = reinterpret_cast<const char *>( glGetString( GL_RENDERER ) );
+    const char *v = reinterpret_cast<const char *>( glGetString( GL_VERSION ) );
     s_salt = std::string( r ? r : "?" ) + "|" + ( v ? v : "?" ) + "|";
     if ( char *vs = textFileRead( "..\\Engine\\Fullscreen.vert" ) )
     {
@@ -279,7 +279,7 @@ GLuint shaderForgeGet( const std::string &fragSource, bool *failed, int targets 
             e.failed = true;
             return 0;
         }
-        src.write( fragSource.data(), (qint64)fragSource.size() );
+        src.write( fragSource.data(), static_cast<qint64>( fragSource.size() ) );
         src.close();
         const QString job = QDir::toNativeSeparators( base + ".frag" ) + "\t"
                             + QDir::toNativeSeparators( base + ".bin" ) + "\t" + QString::number( targets ) + "\t"

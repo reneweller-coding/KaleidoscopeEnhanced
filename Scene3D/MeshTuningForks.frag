@@ -73,7 +73,7 @@ float fbm2( vec2 p )
 {
     float      v = 0.0, a = 0.5;
     const mat2 R = mat2( 0.80, 0.60, -0.60, 0.80 );
-    for ( int i = 0; i < 4; i++ )
+    for ( int i = 0; i < 4; ++i )
     {
         v += a * noise2( p );
         p = R * p * 2.03 + 7.1;
@@ -116,7 +116,7 @@ int loudest()
 {
     int   best = 0;
     float bv = -1.0;
-    for ( int i = 0; i < 12; i++ )
+    for ( int i = 0; i < 12; ++i )
     {
         if ( audioChroma[i] > bv )
         {
@@ -153,7 +153,7 @@ vec3 renderSky( vec3 dir )
                * ( 0.5 + 0.5 * swell );
     }
     // Halos: each ringing fork throws rings across the wall behind it.
-    for ( int i = 0; i < 12; i++ )
+    for ( int i = 0; i < 12; ++i )
     {
         float ci = clamp( audioChroma[i] * 1.3, 0.0, 1.0 );
         if ( ci < 0.03 )

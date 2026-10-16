@@ -81,7 +81,7 @@ void main()
     vec3 orbit_density = vec3( 0.0 );
 
     vec2 z = c;
-    for ( int i = 0; i < 32; i++ )
+    for ( int i = 0; i < 32; ++i )
     {
         z = vec2( z.x * z.x - z.y * z.y, 2.0 * z.x * z.y ) + c;
         float r2 = dot( z, z );

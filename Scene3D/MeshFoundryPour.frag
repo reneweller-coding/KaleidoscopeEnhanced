@@ -149,7 +149,7 @@ vec3 renderSky( vec3 dir )
     }
     // Sparks from the cup: round points on their own arcs, the kick a burst.
     vec3 c = normalize( vCup );
-    for ( int i = 0; i < 24; i++ )
+    for ( int i = 0; i < 24; ++i )
     {
         float fi = float( i );
         float life = fract( sceneTime * ( 0.5 + 0.4 * hash11( fi ) ) + hash11( fi + 7.0 ) );

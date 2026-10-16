@@ -22,7 +22,7 @@ static void CALLBACK midiProc( HMIDIIN, UINT wMsg, DWORD_PTR dwInstance,
                                DWORD_PTR dwParam1, DWORD_PTR /*dwParam2*/ )
 {
     if ( wMsg == MIM_DATA && dwInstance )
-        reinterpret_cast<MidiInput *>( dwInstance )->handleMessage( (unsigned long)dwParam1 );
+        reinterpret_cast<MidiInput *>( dwInstance )->handleMessage( static_cast<unsigned long>( dwParam1 ) );
 }
 #endif // _WIN32
 
@@ -52,7 +52,8 @@ bool MidiInput::start()
     // Always device index 0 ("the first available" device) — this app does not offer a device
     // picker, so if several controllers are attached the OS-assigned first one wins.
     HMIDIIN  h = nullptr;
-    MMRESULT r = midiInOpen( &h, 0, (DWORD_PTR)midiProc, (DWORD_PTR)this, CALLBACK_FUNCTION );
+    MMRESULT r = midiInOpen( &h, 0, reinterpret_cast<DWORD_PTR>( midiProc ), reinterpret_cast<DWORD_PTR>( this ),
+                             CALLBACK_FUNCTION );
     if ( r != MMSYSERR_NOERROR )
         return false;
 

@@ -84,7 +84,7 @@ void main()
     float ring_freq = ( ringFreqP <= 0.01 ) ? 8.0 : ringFreqP;
 
     vec3 col = vec3( 0.0 );
-    for ( int i = 0; i < 4; i++ )
+    for ( int i = 0; i < 4; ++i )
     {
         uv = fract( uv * iter_zoom ) - 0.5;
         float d = length( uv ) * exp( -length( uv0 ) );

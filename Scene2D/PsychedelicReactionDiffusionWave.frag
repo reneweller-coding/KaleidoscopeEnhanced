@@ -88,7 +88,7 @@ void main()
     float wave_acc = 0.0;
     int   num_s = int( clamp( n_spirals, 2.0, 6.0 ) );
 
-    for ( int k = 0; k < 4; k++ )
+    for ( int k = 0; k < 4; ++k )
     {
         if ( k >= num_s )
             break;

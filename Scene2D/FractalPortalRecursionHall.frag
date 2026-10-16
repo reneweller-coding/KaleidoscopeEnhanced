@@ -81,7 +81,7 @@ void main()
     float weight_acc = 0.0;
 
     // Iterated affine portal transformations across 8 nested levels
-    for ( int k = 0; k < 8; k++ )
+    for ( int k = 0; k < 8; ++k )
     {
         float kf = float( k );
         float layer_fade = smoothstep( 0.0, 0.4, kf ) * smoothstep( 7.5, 5.0, kf );

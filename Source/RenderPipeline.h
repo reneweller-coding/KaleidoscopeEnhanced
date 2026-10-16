@@ -223,7 +223,10 @@ public:
     void forceFx( int idx );
     /** @brief Index of the currently active texture effect, into the same list as sceneNames(). @return An index into
      * sceneNames(), or -1 if none is active yet. */
-    int activeSceneIndex() const { return m_effectTextures.empty() ? -1 : int( m_scheduler.actTexture() ); }
+    int activeSceneIndex() const
+    {
+        return m_effectTextures.empty() ? -1 : static_cast<int>( m_scheduler.actTexture() );
+    }
     /** @brief Whether a scene cross-fade is currently in flight (mid-transition frames blend two scenes, so callers
      * wanting a clean single-scene snapshot should skip them). */
     bool sceneTransitioning() const { return m_scheduler.texState() != 0; }
@@ -597,13 +600,13 @@ private:
      * @param w Width shared by both FBOs.
      * @param h Height shared by both FBOs.
      */
-    void resolveMsaa( GLuint dstFbo, int w, int h );
+    void resolveMsaa( GLuint dstFbo, int w, int h ) const;
     /** @brief Generates (if needed) and configures an FBO colour texture via setupFBOTexture(). @param texID Texture
      * id, reused if already non-zero, otherwise created here. */
     void createFBOTexture( GLuint &texID );
     /** @brief Configures an existing texture id as an FBO colour target: linear filtering, mirrored-repeat wrap,
      * storage sized to m_width x m_height. @param texID Texture id to configure. */
-    void setupFBOTexture( const GLuint texID );
+    void setupFBOTexture( const GLuint texID ) const;
     /** @brief Creates the two background "photo" textures (m_actTex/m_nextTex) and uploads their initial images (or the
      * procedural fallback if the image list is empty). */
     void createTexture(); // create and setup textures
@@ -974,7 +977,7 @@ private:
     void updateTrueStereoState();
     /** @brief Renders one 3D scene twice into the SBS/TB halves of the bound FBO, scissored so each eye's clear stays
      * inside its half. @param fx The 3D scene to render per eye. */
-    void renderSceneStereo( EffectShader *fx );
+    void renderSceneStereo( EffectShader *fx ) const;
     /** @brief Renders the ACTIVE scene: shadow maps, optional MSAA target, the scene itself, MSAA resolve and the OIT
      * pass. @param audioFx The conditioned features. */
     void renderActiveScenePass( const AudioFeatures &audioFx );

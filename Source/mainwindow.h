@@ -74,7 +74,7 @@ public:
         QMetaObject::connectSlotsByName( MainWindow );
     } // setupUi
 
-    void retranslateUi( QMainWindow *MainWindow )
+    void retranslateUi( QMainWindow *MainWindow ) const
     {
         MainWindow->setWindowTitle( QCoreApplication::translate( "MainWindow", "MainWindow", nullptr ) );
         actionExit->setText( QCoreApplication::translate( "MainWindow", "Exit", nullptr ) );

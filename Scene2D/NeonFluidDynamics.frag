@@ -116,7 +116,7 @@ void main()
     float dt = 0.12 / visc;
 
     // Advect across 4 time steps
-    for ( int step = 0; step < 4; step++ )
+    for ( int step = 0; step < 4; ++step )
     {
         vec2 v1 = getVelocity( advected_p, t - float( step ) * dt, swrl );
         vec2 mid_p = advected_p - 0.5 * dt * v1;

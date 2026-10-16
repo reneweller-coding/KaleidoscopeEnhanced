@@ -91,7 +91,7 @@ void main()
     vec4  O = vec4( 0.0 );
     float t = 0.1, x = 0.0;
 
-    for ( int e = 0; e < 40; e++ )
+    for ( int e = 0; e < 40; ++e )
     {
         // Ray position (screen coord rotated over time + gentle audio spin).
         vec3 o = t * normalize( vec3( ( 2.0 * gl_FragCoord.xy - res ) * rotv( r * 0.15 + audioPhase * 0.08 ), res.y ) );

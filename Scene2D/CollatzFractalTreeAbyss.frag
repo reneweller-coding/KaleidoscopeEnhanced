@@ -115,7 +115,7 @@ void main()
     float iter_count = 0.0;
     float trap = 1e5;
 
-    for ( int i = 0; i < 24; i++ )
+    for ( int i = 0; i < 24; ++i )
     {
         z = collatzMap( z );
 

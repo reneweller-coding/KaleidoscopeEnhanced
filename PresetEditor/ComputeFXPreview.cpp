@@ -29,7 +29,7 @@ void ComputeFXPreview::init()
 unsigned int ComputeFXPreview::step( int k, const AudioFeatures &a, float dt, float time,
                                      unsigned int srcImage, int outW, int outH )
 {
-    return m_impl->step( k, a, dt, time, GLuint( srcImage ), outW, outH );
+    return m_impl->step( k, a, dt, time, static_cast<GLuint>( srcImage ), outW, outH );
 }
 
 void ComputeFXPreview::retireIdle( float now )

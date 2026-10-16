@@ -80,7 +80,7 @@ float noise3( vec3 x )
 float fbm( vec3 p )
 {
     float v = 0.0, a = 0.5;
-    for ( int i = 0; i < 5; i++ )
+    for ( int i = 0; i < 5; ++i )
     {
         v += a * noise3( p );
         p = p * 2.03 + 7.1;

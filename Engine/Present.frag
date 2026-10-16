@@ -406,7 +406,7 @@ void main()
     {
         vec3  streak = vec3( 0.0 );
         float wsum = 0.0;
-        for ( int i = 1; i <= 6; i++ )
+        for ( int i = 1; i <= 6; ++i )
         {
             float o = float( i ) * 0.020;
             float w = exp( -float( i ) * 0.55 );

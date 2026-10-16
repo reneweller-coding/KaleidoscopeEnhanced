@@ -55,7 +55,7 @@ static QString jsonEscape( const QString &s )
             case '\t': out += "\\t"; break;
             default:
                 if ( c.unicode() < 0x20 )
-                    out += QString( "\\u%1" ).arg( int( c.unicode() ), 4, 16, QChar( '0' ) );
+                    out += QString( "\\u%1" ).arg( static_cast<int>( c.unicode() ), 4, 16, QChar( '0' ) );
                 else
                     out += c;
         }
@@ -474,7 +474,7 @@ int WebRemote::bindFreePort( int preferred )
     // something else is wrong and failing loudly (port 0 => the log message
     // above) is more useful than silently trying dozens of ports.
     for ( int p = preferred; p < preferred + 20; ++p )
-        if ( m_server->listen( QHostAddress::Any, quint16( p ) ) )
+        if ( m_server->listen( QHostAddress::Any, static_cast<quint16>( p ) ) )
             return p;
     // Windows can reserve whole port blocks (Hyper-V / WinNAT "excluded port
     // ranges", e.g. 7498-8665 on the dev machine), and then EVERY port near
@@ -485,10 +485,10 @@ int WebRemote::bindFreePort( int preferred )
     if ( m_server->serverError() == QAbstractSocket::SocketAccessError )
     {
         for ( int p = preferred + 10000; p < preferred + 10020 && p < 65536; ++p )
-            if ( m_server->listen( QHostAddress::Any, quint16( p ) ) )
+            if ( m_server->listen( QHostAddress::Any, static_cast<quint16>( p ) ) )
                 return p;
         if ( m_server->listen( QHostAddress::Any, 0 ) )
-            return int( m_server->serverPort() );
+            return static_cast<int>( m_server->serverPort() );
     }
     return 0;
 }
@@ -498,7 +498,7 @@ void WebRemote::handleDiscovery()
     while ( m_discoverySocket->hasPendingDatagrams() )
     {
         QByteArray buf;
-        buf.resize( int( m_discoverySocket->pendingDatagramSize() ) );
+        buf.resize( static_cast<int>( m_discoverySocket->pendingDatagramSize() ) );
         QHostAddress sender;
         quint16      sender_port;
         m_discoverySocket->readDatagram( buf.data(), buf.size(), &sender, &sender_port );
@@ -703,9 +703,9 @@ void WebRemote::handleConnection()
                         else if ( k == "renderscale" )
                             RenderPipeline::setRenderScale( v );
                         else if ( k == "stereomode" )
-                            RenderPipeline::setStereoMode( int( v ) );
+                            RenderPipeline::setStereoMode( static_cast<int>( v ) );
                         else if ( k == "lyricsmode" )
-                            m_widget->setLyricsModeValue( int( v ) );
+                            m_widget->setLyricsModeValue( static_cast<int>( v ) );
                     }
                     else if ( path == "/api/tap" )
                         m_widget->remoteTapTempo();

@@ -190,7 +190,7 @@ void parsecommandline( int argc, char *argv[] )
     int  isopt[256];
     char optchar;
 
-    nopts = (int)strlen( optionchar );
+    nopts = static_cast<int>( strlen( optionchar ) );
     if ( nopts > 50 )
     {
         fprintf( stderr, "\n\nparsecommandline: the option-chars string "
@@ -201,7 +201,7 @@ void parsecommandline( int argc, char *argv[] )
 
     fill_n( isopt, 256, 0 );
     fill_n( mhp, 256, 0 );
-    for ( int i = 0; i < nopts; i++ )
+    for ( int i = 0; i < nopts; ++i )
     {
         if ( isopt[static_cast<int>( optionchar[i] )] )
         {
@@ -228,7 +228,7 @@ void parsecommandline( int argc, char *argv[] )
                 fprintf( stderr, "\nIs not a valid command line option\n" );
                 commandlineerror( argv[0], NULL );
             }
-            for ( int i = 0; i < mhp[static_cast<int>( optchar )]; i++ )
+            for ( int i = 0; i < mhp[static_cast<int>( optchar )]; ++i )
                 if ( !argv[1 + i] || argv[1 + i][0] == '-' )
                 {
                     fprintf( stderr, "\nCommand line option -%c must "
@@ -256,7 +256,7 @@ void parsecommandline( int argc, char *argv[] )
                     break;
                 case 'b': fullscreen = !fullscreen; break;
                 case 's':
-                    RenderPipeline::setRenderScale( (float)atof( argv[1] ) );
+                    RenderPipeline::setRenderScale( static_cast<float>( atof( argv[1] ) ) );
                     RenderPipeline::M_RenderScaleFromCli = true;
                     break;
                 case 'c': GLwidget::M_StartConfig = QString::fromLocal8Bit( argv[1] ); break;
@@ -381,10 +381,10 @@ int main( int argc, char *argv[] )
     // gesetzt und damit weiterhin uhrgeseedet.
     {
         const char *seed_env = getenv( "KALEIDO_SEED" );
-        srand( seed_env ? (unsigned)strtoul( seed_env, nullptr, 10 )
-                        : (unsigned)std::chrono::high_resolution_clock::now()
-                              .time_since_epoch()
-                              .count() );
+        srand( seed_env ? static_cast<unsigned>( strtoul( seed_env, nullptr, 10 ) )
+                        : static_cast<unsigned>( std::chrono::high_resolution_clock::now()
+                                                     .time_since_epoch()
+                                                     .count() ) );
     }
 
     // The photo source used to be resolved here, from the Windows "My Pictures"

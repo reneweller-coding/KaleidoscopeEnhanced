@@ -115,7 +115,7 @@ void main()
     // Iterated Kleinian group generator transformations:
     // a: z -> z + 2
     // b: z -> -1/z + mu
-    for ( int i = 0; i < 28; i++ )
+    for ( int i = 0; i < 28; ++i )
     {
         // Translation fold (generator a)
         z.x = mod( z.x + 1.0, 2.0 ) - 1.0;

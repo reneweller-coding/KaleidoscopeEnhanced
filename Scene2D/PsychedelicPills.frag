@@ -106,7 +106,7 @@ void main()
     float spin_v = ( spinP <= 0.01 ) ? 1.0 : spinP;
 
     float p = 0.0, h = 3.0, c, y;
-    for ( int s = 0; s < 200; s++ )
+    for ( int s = 0; s < 200; ++s )
     {
         if ( !( abs( h ) > 0.001 && p < 40.0 ) )
             break;

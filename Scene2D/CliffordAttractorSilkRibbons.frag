@@ -93,7 +93,7 @@ void main()
     float density_acc = 0.0;
 
     vec2 p_iter = p;
-    for ( int i = 0; i < 28; i++ )
+    for ( int i = 0; i < 28; ++i )
     {
         // Clifford map equation
         float x_next = sin( a * p_iter.y ) + c * cos( a * p_iter.x );

@@ -89,7 +89,7 @@ float fbm2( vec2 p )
 {
     float      v = 0.0, a = 0.5;
     const mat2 R = mat2( 0.80, 0.60, -0.60, 0.80 );
-    for ( int i = 0; i < 5; i++ )
+    for ( int i = 0; i < 5; ++i )
     {
         v += a * noise2( p );
         p = R * p * 2.03 + 7.1;
@@ -171,7 +171,7 @@ vec3 renderSky( vec3 dir )
         float g = fbm2( P.xz * 0.05 );
         col = vec3( 0.06, 0.06, 0.07 ) * ( 0.6 + 0.8 * g );
         // Floodlight pools at the towers' feet.
-        for ( int i = 0; i < 3; i++ )
+        for ( int i = 0; i < 3; ++i )
         {
             vec3 f = towerFoot( i );
             col += vec3( 0.45, 0.40, 0.30 ) * exp( -length( P.xz - f.xz ) * 0.03 ) * 0.6;
@@ -195,7 +195,7 @@ vec3 renderSky( vec3 dir )
         // The plumes: one column of steam above each tower, rising on the
         // scene clock, leaning with the wind, coloured by the spectrum band
         // of its height, lit warm from below and orange from the sun's side.
-        for ( int i = 0; i < 3; i++ )
+        for ( int i = 0; i < 3; ++i )
         {
             vec3  top = towerFoot( i ) + vec3( 0.0, TowerH, 0.0 );
             vec3  td = normalize( top );

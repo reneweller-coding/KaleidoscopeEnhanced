@@ -97,7 +97,7 @@ void main()
 
     // Viscous fluid advection over 3 iterative passes
     vec2 p_fluid = p_sym;
-    for ( int k = 0; k < 3; k++ )
+    for ( int k = 0; k < 3; ++k )
     {
         vec2 curl = curlNoise( p_fluid * 2.5, t + float( k ) * 1.5 );
         p_fluid += curl * ( 0.18 * visc + 0.12 * audioSubBass );

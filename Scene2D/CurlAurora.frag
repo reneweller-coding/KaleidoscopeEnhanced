@@ -76,7 +76,7 @@ float fbm( vec2 p )
 {
     float s = 0.0;
     float a = 0.5;
-    for ( int i = 0; i < 5; i++ )
+    for ( int i = 0; i < 5; ++i )
     {
         s += a * vnoise( p );
         p *= 2.02;

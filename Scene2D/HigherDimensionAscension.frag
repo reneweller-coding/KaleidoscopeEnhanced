@@ -121,7 +121,7 @@ void main()
         p_fold = rotate4D( p_fold, t * 0.5 + shift );
 
         // Space folding (absolute value folding)
-        for ( int j = 0; j < 4; j++ )
+        for ( int j = 0; j < 4; ++j )
         {
             p_fold = abs( p_fold ) - vec3( 0.5, 0.5, 0.5 ) * fp;
             p_fold = rotate4D( p_fold, t * 0.2 * float( j + 1 ) );

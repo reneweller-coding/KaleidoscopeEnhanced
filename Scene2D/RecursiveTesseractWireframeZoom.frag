@@ -105,7 +105,7 @@ void main()
     float rot_a1 = t * 0.25 * r_4d + audioPhase * 0.1;
     float rot_a2 = t * 0.18 * r_4d + audioSwell * 0.4;
 
-    for ( int i = 0; i < 16; i++ )
+    for ( int i = 0; i < 16; ++i )
     {
         vec4 v4 = vec4(
             ( i & 1 ) != 0 ? 1.0 : -1.0,
@@ -128,11 +128,11 @@ void main()
     float min_edge_dist = 1e4;
     float min_vertex_dist = 1e4;
 
-    for ( int i = 0; i < 16; i++ )
+    for ( int i = 0; i < 16; ++i )
     {
         min_vertex_dist = min( min_vertex_dist, length( uv - proj_v[i] ) );
 
-        for ( int bit = 0; bit < 4; bit++ )
+        for ( int bit = 0; bit < 4; ++bit )
         {
             int j = i ^ ( 1 << bit );
             if ( j > i )

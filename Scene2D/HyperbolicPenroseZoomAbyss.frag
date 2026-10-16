@@ -62,7 +62,7 @@ vec3 imgPalette( float t )
 float penrosePotential( vec2 p, float t )
 {
     float sum = 0.0;
-    for ( int i = 0; i < 5; i++ )
+    for ( int i = 0; i < 5; ++i )
     {
         float angle = float( i ) * ( 6.2831853 / 5.0 ) + t * 0.1;
         vec2  dir = vec2( cos( angle ), sin( angle ) );
@@ -92,7 +92,7 @@ void main()
     float weight_acc = 0.0;
 
     // Accumulate across 4 nested Penrose scale octaves
-    for ( int k = 0; k < 4; k++ )
+    for ( int k = 0; k < 4; ++k )
     {
         float kf = float( k );
         // Sub-bass dilates every octave's star cluster: a smaller layer scale fits

@@ -85,7 +85,7 @@ void main()
     int   n_waves = int( clamp( sym_n, 5.0, 10.0 ) );
     float d_angle = 3.14159265 / float( n_waves );
 
-    for ( int i = 0; i < 10; i++ )
+    for ( int i = 0; i < 10; ++i )
     {
         if ( i >= n_waves )
             break;

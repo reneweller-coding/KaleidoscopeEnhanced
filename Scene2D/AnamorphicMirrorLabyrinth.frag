@@ -79,7 +79,7 @@ void main()
 
     int num_pillars = int( clamp( m_count, 1.0, 5.0 ) );
 
-    for ( int k = 0; k < 4; k++ )
+    for ( int k = 0; k < 4; ++k )
     {
         if ( k >= num_pillars )
             break;

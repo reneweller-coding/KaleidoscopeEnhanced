@@ -107,7 +107,7 @@ void main()
     float min_edge_dist = 1e5;
     float seg_angle = 3.14159265 / sides;
 
-    for ( int i = 0; i < 9; i++ )
+    for ( int i = 0; i < 9; ++i )
     {
         // Fold across radial mirror planes
         float ang = atan( z.y, z.x );

@@ -76,7 +76,7 @@ static float roll01( const std::string &name )
                                                    : 0;
     }
     if ( mode == 0 )
-        return (float)rand() / (float)RAND_MAX;
+        return static_cast<float>( rand() ) / static_cast<float>( RAND_MAX );
     if ( !names.empty() && names.find( "," + name + "," ) == std::string::npos )
         return 0.5f; // nicht ausgewaehlt: Mitte
     static unsigned k = 0;
@@ -93,11 +93,11 @@ void Uniform::resetParameters()
 {
     if ( m_type == BASE_TYPE_FLOAT )
     {
-        m_data.vf = (float)( m_dataMin.vf + roll01( m_name ) * ( m_dataMax.vf - m_dataMin.vf ) );
+        m_data.vf = ( m_dataMin.vf + roll01( m_name ) * ( m_dataMax.vf - m_dataMin.vf ) );
     }
     else if ( m_type == BASE_TYPE_BOOL )
     {
-        float des = (float)( rand() ) / (float)RAND_MAX;
+        float des = static_cast<float>( rand() ) / static_cast<float>( RAND_MAX );
 
         if ( des > m_dataMin.vf )
             m_data.vi = 1;
@@ -109,13 +109,13 @@ void Uniform::resetParameters()
         // Guard: an <int> with minValue == maxValue used to crash with an
         // integer division by zero (rand() % 0).
         int range = m_dataMax.vi - m_dataMin.vi;
-        m_data.vi = ( range > 0 ) ? m_dataMin.vi + (int)( roll01( m_name ) * 0.999f * range ) : m_dataMin.vi;
+        m_data.vi = ( range > 0 ) ? m_dataMin.vi + static_cast<int>( roll01( m_name ) * 0.999f * range ) : m_dataMin.vi;
     }
     else if ( m_type == BASE_TYPE_INTERPOLATOR_FLOAT )
     {
         // Warning double use of m_dataMax/Min.vf
-        m_dataMin.vf = (float)( m_dataMinMin.vf + roll01( m_name ) * ( m_dataMinMax.vf - m_dataMinMin.vf ) );
-        m_dataMax.vf = (float)( m_dataMaxMin.vf + roll01( m_name ) * ( m_dataMaxMax.vf - m_dataMaxMin.vf ) );
+        m_dataMin.vf = ( m_dataMinMin.vf + roll01( m_name ) * ( m_dataMinMax.vf - m_dataMinMin.vf ) );
+        m_dataMax.vf = ( m_dataMaxMin.vf + roll01( m_name ) * ( m_dataMaxMax.vf - m_dataMaxMin.vf ) );
 
         m_delta.vf = ( m_dataMax.vf - m_dataMin.vf ) / m_totalTime.vf * 0.001f; // time in sec delta in msec
 
@@ -144,11 +144,11 @@ void Uniform::resetParameters( float time )
 {
     if ( m_type == BASE_TYPE_FLOAT )
     {
-        m_data.vf = (float)( m_dataMin.vf + roll01( m_name ) * ( m_dataMax.vf - m_dataMin.vf ) );
+        m_data.vf = ( m_dataMin.vf + roll01( m_name ) * ( m_dataMax.vf - m_dataMin.vf ) );
     }
     else if ( m_type == BASE_TYPE_BOOL )
     {
-        float des = (float)( rand() ) / (float)RAND_MAX;
+        float des = static_cast<float>( rand() ) / static_cast<float>( RAND_MAX );
 
         if ( des > m_dataMin.vf )
             m_data.vi = 1;
@@ -160,13 +160,13 @@ void Uniform::resetParameters( float time )
         // Guard: an <int> with minValue == maxValue used to crash with an
         // integer division by zero (rand() % 0).
         int range = m_dataMax.vi - m_dataMin.vi;
-        m_data.vi = ( range > 0 ) ? m_dataMin.vi + (int)( roll01( m_name ) * 0.999f * range ) : m_dataMin.vi;
+        m_data.vi = ( range > 0 ) ? m_dataMin.vi + static_cast<int>( roll01( m_name ) * 0.999f * range ) : m_dataMin.vi;
     }
     else if ( m_type == BASE_TYPE_INTERPOLATOR_FLOAT )
     {
         // Warning double use of m_dataMax/Min.vf
-        m_dataMin.vf = (float)( m_dataMinMin.vf + roll01( m_name ) * ( m_dataMinMax.vf - m_dataMinMin.vf ) );
-        m_dataMax.vf = (float)( m_dataMaxMin.vf + roll01( m_name ) * ( m_dataMaxMax.vf - m_dataMaxMin.vf ) );
+        m_dataMin.vf = ( m_dataMinMin.vf + roll01( m_name ) * ( m_dataMinMax.vf - m_dataMinMin.vf ) );
+        m_dataMax.vf = ( m_dataMaxMin.vf + roll01( m_name ) * ( m_dataMaxMax.vf - m_dataMaxMin.vf ) );
 
         m_totalTime.vf = time;
 
@@ -239,7 +239,7 @@ void Uniform::setUniform()
         }
         if ( m_increasing )
         {
-            m_data.vf += m_delta.vf * ( (float)m_time.elapsed() );
+            m_data.vf += m_delta.vf * ( static_cast<float>( m_time.elapsed() ) );
 
             // decrease value after half of the time
             /*if( m_increasing && ( m_data.vf > m_dataMax.vf ) )
@@ -273,7 +273,7 @@ void Uniform::setUniform()
  * uniforms are affected, int/bool uniforms are left alone (the parameter is
  * documented on the declaration in Uniform.h).
  */
-void Uniform::setGLValueScaled( float scale )
+void Uniform::setGLValueScaled( float scale ) const
 {
     if ( m_location < 0 )
         return;
@@ -583,7 +583,7 @@ CUniform CUniform::getColumnVector( int column ) const
 	CUniform u( m_name + "[" + std::to_string( column ) + "]", type );
 
 	// copy components
-	for( int i = 0 ; i < components ; i++ )
+	for( int i = 0 ; i < components ; ++i )
 	{
 		u.m_data._float[ i ] = m_data._float[ components * column + i ];
 	}
@@ -620,7 +620,7 @@ void CUniform::setColumnVector( int column, const CUniform & u )
 	}
 
 	// copy values
-	for( int i = 0 ; i < components ; i++ )
+	for( int i = 0 ; i < components ; ++i )
 	{
 		m_data._float[ components * column + i ] = u.m_data._float[ i ];
 	}

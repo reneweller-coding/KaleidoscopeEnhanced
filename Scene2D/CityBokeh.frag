@@ -68,8 +68,8 @@ vec3 bokehLayer( vec2 p, float scale, float drift, float size, float layerSeed )
     vec2 q = p * scale + vec2( drift, 0.0 );
     vec2 base = floor( q );
     // 3x3 neighbourhood so big discs cross cell borders seamlessly.
-    for ( int yy = -1; yy <= 1; yy++ )
-        for ( int xx = -1; xx <= 1; xx++ )
+    for ( int yy = -1; yy <= 1; ++yy )
+        for ( int xx = -1; xx <= 1; ++xx )
         {
             vec2  cell = base + vec2( float( xx ), float( yy ) );
             float h = hash21( cell + layerSeed );
@@ -109,7 +109,7 @@ void main()
     // Background: the image heavily defocused (mip-ish via tiny offsets),
     // darkened to a night ambience with a horizon gradient.
     vec3 bg = vec3( 0.0 );
-    for ( int i = 0; i < 4; i++ )
+    for ( int i = 0; i < 4; ++i )
     {
         vec2 o = vec2( hash21( vec2( float( i ), 1.0 ) ) - 0.5,
                        hash21( vec2( float( i ), 2.0 ) ) - 0.5 )

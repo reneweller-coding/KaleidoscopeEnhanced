@@ -84,7 +84,7 @@ float noise( vec3 p )
 float fbm( vec3 p )
 {
     float f = 0.0, a = 0.5;
-    for ( int i = 0; i < 5; i++ )
+    for ( int i = 0; i < 5; ++i )
     {
         f += a * noise( p );
         p *= 2.0;
@@ -139,7 +139,7 @@ void main()
     // Fast rotation of the pulsar
     float fast_spin = time * 10.0 * sp + audioPhase * 5.0;
 
-    for ( int i = 0; i < 60; i++ )
+    for ( int i = 0; i < 60; ++i )
     {
         p = ro + rd * d;
 

@@ -114,7 +114,7 @@ void main()
     vec3  hit_col = vec3( 0.0 );
     float bio_plankton = 0.0;
 
-    for ( int i = 0; i < 52; i++ )
+    for ( int i = 0; i < 52; ++i )
     {
         vec3  p = ro + rd * tot_dist;
         float cur_pulse;

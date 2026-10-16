@@ -85,7 +85,7 @@ float noise( vec3 p )
 float fbm( vec3 p )
 {
     float f = 0.0, a = 0.5;
-    for ( int i = 0; i < 5; i++ )
+    for ( int i = 0; i < 5; ++i )
     {
         f += a * noise( p );
         p *= 2.0;
@@ -117,7 +117,7 @@ float noise3( vec3 q )
 float fbm3( vec3 q )
 {
     float v = 0.0, a2 = 0.5;
-    for ( int i = 0; i < 3; i++ )
+    for ( int i = 0; i < 3; ++i )
     {
         v += a2 * noise3( q );
         q *= 2.1;
@@ -172,7 +172,7 @@ void main()
     vec3 c2 = imgPalette( 0.8 + audioKick * 0.1 );     // Red/orange dwarf
 
     // Volumetric raymarching for the stars and plasma
-    for ( int i = 0; i < 70; i++ )
+    for ( int i = 0; i < 70; ++i )
     {
         vec3 p = ro + rd * d;
 
