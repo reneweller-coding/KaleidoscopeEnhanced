@@ -65,12 +65,13 @@ protected:
             return;
         }
         // The shared fullscreen vertex shader, compiled once in this context.
-        GLuint vs = 0;
-        if ( GLchar *v = textFileRead( "..\\Engine\\Fullscreen.vert" ) )
+        GLuint            vs = 0;
+        const std::string v = textFileRead( "..\\Engine\\Fullscreen.vert" );
+        if ( !v.empty() )
         {
             vs = glCreateShader( GL_VERTEX_SHADER );
-            glShaderSource( vs, 1, const_cast<const GLchar **>( &v ), NULL );
-            free( v );
+            const GLchar *text = v.c_str();
+            glShaderSource( vs, 1, &text, NULL );
             glCompileShader( vs );
         }
         for ( ;; )

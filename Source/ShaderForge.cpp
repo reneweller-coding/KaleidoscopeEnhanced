@@ -189,11 +189,7 @@ bool shaderForgeInit()
     const char *r = reinterpret_cast<const char *>( glGetString( GL_RENDERER ) );
     const char *v = reinterpret_cast<const char *>( glGetString( GL_VERSION ) );
     s_salt = std::string( r ? r : "?" ) + "|" + ( v ? v : "?" ) + "|";
-    if ( char *vs = textFileRead( "..\\Engine\\Fullscreen.vert" ) )
-    {
-        s_salt += vs;
-        free( vs );
-    }
+    s_salt += textFileRead( "..\\Engine\\Fullscreen.vert" );
     // At most 300 MB of binaries: a session can forge hundreds of 3D-lab worlds
     // (40-180 KB each), and months of them would pile up without bound.
     trimCache( s_dir, 300LL * 1048576 );

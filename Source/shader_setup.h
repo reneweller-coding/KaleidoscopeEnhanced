@@ -3,6 +3,9 @@
  * @brief Low-level GLSL shader compile/link helpers shared across the engine: builds fragment-only, vertex+fragment,
  * full-pipeline (with optional tessellation/geometry stages) and compute programs from source files.
  */
+#ifndef SHADER_SETUP_H
+#define SHADER_SETUP_H
+
 #if defined( __linux__ ) || defined( __APPLE__ )
 // glcore.h already selects the platform's GL header and defines APIENTRY,
 // the same service it performs for the WIN32 arm below. What stood here was
@@ -139,3 +142,5 @@ void shaderCacheStats( int *programs, int *reuses, double *buildMs );
  * than treat 0 as fatal.
  */
 GLuint setComputeShader( const char *comp_source );
+
+#endif // SHADER_SETUP_H

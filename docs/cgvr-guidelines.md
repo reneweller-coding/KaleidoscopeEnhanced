@@ -129,6 +129,8 @@ this is not written. Generated shaders get their names when they are written (`g
 | No assignment inside a condition | The uniform upload in `EffectShader` assigns, then tests |
 | Every `switch` has a `default` | A "can't happen" default prints what it got and goes on |
 | `++i`, not `i++` | Where the value is unused: `for` increments and statements of their own, C++ and GLSL (`Tools/cgvr_preincrement.py`) |
+| `new`, not `malloc`; no leaks | `textFileRead()` returns a `std::string`; the shader file names of `EffectShader`/`Scene3DShader` are `std::string` members (they were malloc'd and never freed) |
+| Headers guarded against double inclusion | All headers (`shader_setup.h` and `textfile.h` had no guard) |
 
 ### Deviations
 
@@ -140,6 +142,7 @@ this is not written. Generated shaders get their names when they are written (`g
 | Avoid nested classes | Records nested in the class they serve stay (`Mesh::Triangle`, `ScoreCues::Frame`) | They have no meaning outside it |
 | Assignment operators return `void` | Defaulted ones (`ExprProgram`) return a reference | That is what `= default` declares; the containers holding them require it |
 | — | `IMMDeviceEnumerator`'s destructor | A Windows COM interface, not ours |
+| Avoid abrupt `exit` | `shader_setup.cpp` still exits when `Engine/Fullscreen.vert` or a program's own source cannot be read | Without them no frame can be drawn; the message names the missing file |
 
 ## Known state outside the guidelines
 

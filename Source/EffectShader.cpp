@@ -41,10 +41,7 @@ EffectShader::EffectShader( const std::string &filenameFragmentShader, unsigned 
     m_vertexShaderFilename = "..\\standard.vert";
     // m_fragmentShaderFilename = filenameFragmentShader.c_str();//filenameFragmentShader.toLocal8Bit().data();
 
-    m_fragmentShaderFilename = static_cast<char *>( malloc( sizeof( char ) * ( filenameFragmentShader.size() + 1 ) ) );
-    // The embedded "\0" in the format string is redundant: sprintf() already NUL-terminates
-    // after substituting %s, so parsing stops there regardless. Harmless, kept as-is.
-    sprintf( m_fragmentShaderFilename, "%s\0", filenameFragmentShader.c_str() );
+    m_fragmentShaderFilename = filenameFragmentShader;
 
     // A chain lab with a generated pass shader set runs its chain as passes
     // (runChainPasses) and compiles the small final shader instead of its
@@ -61,24 +58,19 @@ EffectShader::EffectShader( const std::string &filenameFragmentShader, unsigned 
             if ( FILE *fp = fopen( fin.c_str(), "rb" ) )
             {
                 fclose( fp );
-                m_compileFile = static_cast<char *>( malloc( fin.size() + 1 ) );
-                strcpy( m_compileFile, fin.c_str() );
-                if ( char *t = textFileRead( m_compileFile ) )
+                m_compileFile = fin;
+                const std::string t = textFileRead( m_compileFile.c_str() );
+                if ( !t.empty() )
                 {
-                    if ( const char *b = strstr( t, "// @chainbake " ) )
+                    if ( const char *b = strstr( t.c_str(), "// @chainbake " ) )
                         m_chainBake = atoi( b + 14 );
-                    m_chain3D = strstr( t, "// @chain3d" ) != nullptr;
-                    free( t );
+                    m_chain3D = strstr( t.c_str(), "// @chain3d" ) != nullptr;
                 }
                 if ( m_chain3D )
                 {
                     const std::string g = "..\\Engine\\ChainPass\\Geom_" + base + ".frag";
-                    if ( char *t = textFileRead( g.c_str() ) )
-                    {
-                        m_geomSrc = t;
-                        free( t );
-                    }
-                    else
+                    m_geomSrc = textFileRead( g.c_str() );
+                    if ( m_geomSrc.empty() )
                         m_chain3D = false;
                 }
             }
@@ -92,8 +84,7 @@ EffectShader::EffectShader( const std::string &filenameFragmentShader, unsigned 
         size_t      p = s.rfind( ".frag" );
         if ( p != std::string::npos )
             s.replace( p, 5, ".comp" );
-        m_bakeCompFilename = static_cast<char *>( malloc( sizeof( char ) * ( s.size() + 1 ) ) );
-        strcpy( m_bakeCompFilename, s.c_str() );
+        m_bakeCompFilename = s;
     }
 
 
@@ -273,7 +264,7 @@ void EffectShader::resetParameters()
     if ( pin_env )
     {
         unsigned h = static_cast<unsigned>( strtoul( pin_env, nullptr, 10 ) ) ^ 2166136261u;
-        for ( const char *c = m_fragmentShaderFilename; c && *c; ++c )
+        for ( const char *c = m_fragmentShaderFilename.c_str(); *c; ++c )
             h = ( h ^ static_cast<unsigned>( static_cast<unsigned char>( *c ) ) ) * 16777619u; // FNV-1a
         h = ( h ^ m_activations ) * 16777619u;
         srand( h ^ ( h >> 15 ) );
@@ -324,9 +315,11 @@ void EffectShader::resetParameters()
     // ein Diff dieser Zeilen -- nicht ein Bildvergleich, den die Ueberblendung
     // vom Nachbarn verfaelscht.
     if ( pin_env )
-        fprintf( stderr, "SEEDED %s act=%u seeds=%.4f %.4f %.4f solo=%u"
-                         "\n",
-                 m_fragmentShaderFilename, m_activations, m_exprSeeds[0], m_exprSeeds[1], m_exprSeeds[2], m_timeSolo );
+        fprintf( stderr,
+                 "SEEDED %s act=%u seeds=%.4f %.4f %.4f solo=%u"
+                 "\n",
+                 m_fragmentShaderFilename.c_str(), m_activations, m_exprSeeds[0], m_exprSeeds[1], m_exprSeeds[2],
+                 m_timeSolo );
 }
 
 
@@ -510,7 +503,7 @@ void EffectShader::initUniforms( int width, int height )
     checkGLErrors( "entry of initUniforms" );
 
     // load and compile shader
-    m_shProgId = setShaders( m_vertexShaderFilename, m_compileFile ? m_compileFile : m_fragmentShaderFilename );
+    m_shProgId = setShaders( m_vertexShaderFilename.c_str(), fragmentFile() );
     m_texPointUni1 = glGetUniformLocation( m_shProgId, "tex0" );
     m_texPointUni2 = glGetUniformLocation( m_shProgId, "tex1" );
     m_texSizeRcpUni = glGetUniformLocation( m_shProgId, "resolution" );
@@ -791,7 +784,7 @@ void EffectShader::applyAudioFeatures( const AudioFeatures &f )
     // Chain labs: the music steers the walk (no-op for every other shader).
     stepChainWalk( f );
     stepChainCam( f );
-    if ( m_compileFile && m_glReady )
+    if ( !m_compileFile.empty() && m_glReady )
     {
         if ( m_chain3D )
             runChain3D( f );
@@ -1163,7 +1156,7 @@ void EffectShader::addExpression( const std::string &name, const std::string &fo
 {
     ExprEntry e;
     e.name = name;
-    std::string ctx = std::string( m_fragmentShaderFilename ? m_fragmentShaderFilename : "?" ) + ":" + name;
+    std::string ctx = std::string( fragmentName() ) + ":" + name;
     if ( e.prog.compile( formula, ctx ) )
     {
         m_exprs.push_back( e );
@@ -1231,7 +1224,7 @@ bool EffectShader::usesProgress()
  */
 bool EffectShader::sourceUsesProgress() const
 {
-    if ( !m_fragmentShaderFilename )
+    if ( m_fragmentShaderFilename.empty() )
         return false;
     std::string stem = m_fragmentShaderFilename;
     size_t      dot = stem.rfind( ".frag" );
@@ -1241,11 +1234,9 @@ bool EffectShader::sourceUsesProgress() const
     static const char *exts[] = { ".frag", ".vert", ".geom", ".tesc", ".tese" };
     for ( const char *ext : exts )
     {
-        char *raw = textFileRead( ( stem + ext ).c_str() );
-        if ( !raw )
+        const std::string src = textFileRead( ( stem + ext ).c_str() );
+        if ( src.empty() )
             continue;
-        std::string src( raw );
-        free( raw );
         // Strip /* */ and // comments: the headers name every uniform they
         // read, which would make every documented scene look staged.
         std::string code;
@@ -1470,7 +1461,7 @@ void EffectShader::resetChainWalk()
     for ( const Uniform *u : m_uniforms )
         if ( u->getName() == "morphP" )
             morph = u->snapshotValue();
-    m_walk.active = ( m_walkHostLoc >= 0 && morph >= ( m_compileFile ? 0.15f : 0.5f ) );
+    m_walk.active = ( m_walkHostLoc >= 0 && morph >= ( !m_compileFile.empty() ? 0.15f : 0.5f ) );
     m_walkMorph = morph;
     m_specOff = false;
     m_specWait = 0.f;
@@ -1938,9 +1929,9 @@ void EffectShader::stepChainWalk( const AudioFeatures &audio )
                     held = true;
                     auto   it = m_specProgs.find( after );
                     GLuint prog = it != m_specProgs.end() ? it->second : 0;
-                    if ( !prog && shaderVariantStart( m_fragmentShaderFilename, after ) )
+                    if ( !prog && shaderVariantStart( m_fragmentShaderFilename.c_str(), after ) )
                     {
-                        prog = shaderVariantTake( m_fragmentShaderFilename, after );
+                        prog = shaderVariantTake( m_fragmentShaderFilename.c_str(), after );
                         if ( prog )
                             m_specProgs[after] = prog;
                     }
@@ -1979,11 +1970,11 @@ void EffectShader::stepChainWalk( const AudioFeatures &audio )
             if ( !prog && SpecLog && m_specProgs.find( cur ) == m_specProgs.end() )
                 fprintf( stderr, "SPEC want %zu bytes\n", cur.size() );
             const auto t_s0 = std::chrono::steady_clock::now();
-            const bool started = !prog && shaderVariantStart( m_fragmentShaderFilename, cur );
+            const bool started = !prog && shaderVariantStart( m_fragmentShaderFilename.c_str(), cur );
             const auto t_s1 = std::chrono::steady_clock::now();
             if ( started )
             {
-                prog = shaderVariantTake( m_fragmentShaderFilename, cur );
+                prog = shaderVariantTake( m_fragmentShaderFilename.c_str(), cur );
                 if ( SpecLog )
                 {
                     const auto   t_s2 = std::chrono::steady_clock::now();
@@ -1994,7 +1985,7 @@ void EffectShader::stepChainWalk( const AudioFeatures &audio )
                 }
                 if ( prog )
                     m_specProgs[cur] = prog;
-                else if ( shaderVariantFailed( m_fragmentShaderFilename, cur ) )
+                else if ( shaderVariantFailed( m_fragmentShaderFilename.c_str(), cur ) )
                 {
                     m_specOff = true;
                     m_specRevert = true;
@@ -2879,11 +2870,9 @@ void EffectShader::parseChainSource()
     if ( m_chainParsed < 0 )
     {
         m_chainParsed = 0;
-        char *src = m_fragmentShaderFilename ? textFileRead( m_fragmentShaderFilename ) : nullptr;
-        if ( src )
+        const std::string text = textFileRead( m_fragmentShaderFilename.c_str() );
+        if ( !text.empty() )
         {
-            const std::string text( src );
-            free( src );
             size_t a = 0;
             while ( a < text.size() )
             {
@@ -3278,12 +3267,11 @@ bool EffectShader::usesSceneLod()
     if ( m_usesSceneLod < 0 )
     {
         m_usesSceneLod = 0;
-        if ( m_fragmentShaderFilename )
-            if ( char *src = textFileRead( m_fragmentShaderFilename ) )
-            {
-                m_usesSceneLod = callsWithFirstArg( src, "textureLod", "tex0" ) ? 1 : 0;
-                free( src );
-            }
+        if ( !m_fragmentShaderFilename.empty() )
+        {
+            const std::string src = textFileRead( m_fragmentShaderFilename.c_str() );
+            m_usesSceneLod = callsWithFirstArg( src, "textureLod", "tex0" ) ? 1 : 0;
+        }
     }
     return m_usesSceneLod == 1;
 }
@@ -3303,10 +3291,10 @@ void EffectShader::ensureBakeProg()
         return;
     m_bakeTried = true;
 
-    if ( !glcoreHasCompute || !glTexImage3D || !m_bakeCompFilename )
+    if ( !glcoreHasCompute || !glTexImage3D || m_bakeCompFilename.empty() )
         return;
 
-    m_bakeProg = setComputeShader( m_bakeCompFilename ); // 0 on any failure (incl. missing file)
+    m_bakeProg = setComputeShader( m_bakeCompFilename.c_str() ); // 0 on any failure (incl. missing file)
     if ( m_bakeProg == 0 )
         return;
 

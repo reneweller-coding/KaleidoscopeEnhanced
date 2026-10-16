@@ -259,16 +259,16 @@ private:
     // ---- compute -> indirect draw ----
     // The generator is the scene's own "X.comp", opted into the same way as the
     // tessellation and geometry stages: by the file being there.
-    char *m_compFilename = 0; ///< Path to this scene's optional X.comp generator shader (sibling of the fragment file);
-                              ///< the file need not exist.
-    GLuint m_genProg = 0;     ///< The scene's generator compute program built from m_compFilename (0 = none / compile
-                              ///< failed); dispatched by runGenerator().
+    std::string m_compFilename; ///< Path to this scene's optional X.comp generator shader (sibling of the fragment
+                                ///< file); the file need not exist.
+    GLuint m_genProg = 0;       ///< The scene's generator compute program built from m_compFilename (0 = none / compile
+                                ///< failed); dispatched by runGenerator().
     GLuint m_cmdBuf = 0; ///< GL_DRAW_INDIRECT_BUFFER holding one DrawArraysIndirectCommand; its vertex count is written
                          ///< on the GPU by the generator and clamped by M_ClampProg, and never read back by the CPU.
-    bool m_genTried = false;  ///< True once setupIndirect() has run; compilation is attempted exactly once and the
-                              ///< outcome cached in m_genProg.
-    int m_meshCapacity = 0;   ///< Vertices the GEOM_INDIRECT VBO can hold (600000, 8 floats each); uploaded to the
-                              ///< generator and the clamp pass as `maxVertices`.
+    bool m_genTried = false;    ///< True once setupIndirect() has run; compilation is attempted exactly once and the
+                                ///< outcome cached in m_genProg.
+    int m_meshCapacity = 0;     ///< Vertices the GEOM_INDIRECT VBO can hold (600000, 8 floats each); uploaded to the
+                                ///< generator and the clamp pass as `maxVertices`.
     /**
      * @brief Compiles this scene's compute generator (and the process-shared clamp pass), and allocates the indirect
      * command buffer plus, if requested, the persistent-state SSBO.
@@ -397,12 +397,12 @@ private:
     // Optional pipeline stages, named after the fragment shader
     // (X.frag -> X.tesc / X.tese / X.geom).  A scene opts in by the file
     // simply EXISTING; absent files leave the stage out of the program.
-    char *m_tescFilename = nullptr; ///< Sibling X.tesc filename (tessellation control stage); used only if the file
-                                    ///< exists on disk.
-    char *m_teseFilename = nullptr; ///< Sibling X.tese filename (tessellation evaluation stage); used only if the file
-                                    ///< exists on disk.
-    char *m_geomFilename = nullptr; ///< Sibling X.geom filename (geometry-shader stage); used only if the file exists
-                                    ///< on disk.
+    std::string m_tescFilename; ///< Sibling X.tesc filename (tessellation control stage); used only if the file
+                                ///< exists on disk.
+    std::string m_teseFilename; ///< Sibling X.tese filename (tessellation evaluation stage); used only if the file
+                                ///< exists on disk.
+    std::string m_geomFilename; ///< Sibling X.geom filename (geometry-shader stage); used only if the file exists
+                                ///< on disk.
     /** @brief Rolls a fresh per-activation epoch: scene seed, large time offset, mild (±20%) speed factor and hue
      * offset, all held constant for the whole activation so nothing flickers. */
     void rollVariation();

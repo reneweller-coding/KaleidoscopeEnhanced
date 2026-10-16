@@ -22,21 +22,19 @@
 
 
 /**
- * @brief Reads an entire text file into a newly malloc'd, NUL-terminated buffer.
+ * @brief Reads an entire text file.
  *
- * Opens @p fn in text mode ("rt"), seeks to the end to determine its size, rewinds,
- * reads the whole file in one fread(), and NUL-terminates the result. Returns
- * NULL if @p fn is NULL, the file could not be opened, or its size was 0; the
- * caller must free() the buffer. On non-Windows hosts @p fn is first mapped
- * through Platform::assetPath() (see the comment in the body). Parameter and
- * return value are documented on the declaration in textfile.h.
+ * Opens @p fn in text mode ("rt"), seeks to the end to determine its size, rewinds and
+ * reads the whole file in one fread(); the result keeps what fread() delivered (text mode
+ * turns CR LF into LF, so it can be shorter than the file). Empty if @p fn is NULL, the
+ * file could not be opened, or its size was 0. On non-Windows hosts @p fn is first mapped
+ * through Platform::assetPath() (see the comment in the body). Parameter and return value
+ * are documented on the declaration in textfile.h.
  */
-char *textFileRead( const char *fn )
+std::string textFileRead( const char *fn )
 {
-    FILE *fp;
-    char *content = NULL;
-
-    int count = 0;
+    FILE       *fp;
+    std::string content;
 
     if ( fn != NULL )
     {
@@ -55,14 +53,13 @@ char *textFileRead( const char *fn )
         if ( fp != NULL )
         {
             fseek( fp, 0, SEEK_END );
-            count = ftell( fp );
+            const long count = ftell( fp );
             rewind( fp );
 
             if ( count > 0 )
             {
-                content = static_cast<char *>( malloc( sizeof( char ) * ( count + 1 ) ) );
-                count = static_cast<int>( fread( content, sizeof( char ), count, fp ) );
-                content[count] = '\0';
+                content.resize( static_cast<size_t>( count ) );
+                content.resize( fread( &content[0], sizeof( char ), content.size(), fp ) );
             }
             fclose( fp );
         }

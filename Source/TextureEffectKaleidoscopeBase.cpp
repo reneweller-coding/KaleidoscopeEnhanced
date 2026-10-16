@@ -121,8 +121,7 @@ TextureEffectKaleidoscopeBase::TextureEffectKaleidoscopeBase( const std::string 
 
     // const char* name = filename.c_str();//toAscii().constData();*/
 
-    m_fragmentShaderFilename = static_cast<char *>( malloc( sizeof( char ) * ( filename.size() + 1 ) ) );
-    sprintf( m_fragmentShaderFilename, "%s\0", filename.c_str() );
+    m_fragmentShaderFilename = filename;
 
     // m_fragmentShaderFilename = filename.c_str();//filename.toLocal8Bit().data();
 

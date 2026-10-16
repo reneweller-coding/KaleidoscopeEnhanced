@@ -158,7 +158,12 @@ public:
         m_usesSceneLod = -1;
     }
     /// @return The fragment shader file (for background builds).
-    const char *fragmentFile() const { return m_compileFile ? m_compileFile : m_fragmentShaderFilename; }
+    const char *fragmentFile() const
+    {
+        return !m_compileFile.empty()             ? m_compileFile.c_str()
+               : m_fragmentShaderFilename.empty() ? nullptr
+                                                  : m_fragmentShaderFilename.c_str();
+    }
     /// @brief True if this effect builds with plain setShaders() (fullscreen fragment only); background builds apply
     /// only to those.
     virtual bool plainFragment() const { return true; }
@@ -379,7 +384,10 @@ public:
     // The fragment-shader file this effect uses (for the debug overlay).
     /// @return The fragment shader filename this effect compiles from, or "?" if none is set. Used by the debug
     /// overlay.
-    const char *fragmentName() const { return m_fragmentShaderFilename ? m_fragmentShaderFilename : "?"; }
+    const char *fragmentName() const
+    {
+        return m_fragmentShaderFilename.empty() ? "?" : m_fragmentShaderFilename.c_str();
+    }
 
     // True for REAL 3D scenes (Scene3DShader): geometry + perspective camera.
     // The host uses this for the true-stereo path (per-eye rendering).
@@ -717,8 +725,8 @@ protected:
                               ///< (cross-fade weight).
 
     // ---- per-scene baked field (see usesBake() above) ----
-    char *m_bakeCompFilename = 0; ///< Path to this scene's optional X.comp bake shader (sibling of the fragment file,
-                                  ///< derived in the constructor); the file need not exist.
+    std::string m_bakeCompFilename; ///< Path to this scene's optional X.comp bake shader (sibling of the fragment file,
+                                    ///< derived in the constructor); the file need not exist.
     GLuint m_bakeProg = 0; ///< Compiled companion compute program (0 = none, or compilation failed/not yet attempted).
     bool   m_bakeTried = false; ///< True once compilation has been attempted (attempted only once; a missing/broken
                                 ///< X.comp is a permanent soft-fail, not retried every frame).
@@ -744,8 +752,8 @@ protected:
      */
     void stepBake( float time, const AudioFeatures &audio );
 
-    char *m_vertexShaderFilename;   ///< Path to the vertex shader source (always "..\\standard.vert" in practice).
-    char *m_fragmentShaderFilename; ///< Path to this effect's fragment shader source.
+    std::string m_vertexShaderFilename; ///< Path to the vertex shader source (always "..\\standard.vert" in practice).
+    std::string m_fragmentShaderFilename; ///< Path to this effect's fragment shader source.
 
 
 
@@ -888,8 +896,8 @@ protected:
     /// @brief Drops every variant (back to the generic program); with release, also frees them.
     void dropVariants( bool release );
     // ---- Chain runner: the lab's chain as one small pass per transform ----
-    char *m_compileFile = nullptr; ///< Engine/ChainPass/Final_NAME.frag when this lab runs its chain as passes (else
-                                   ///< null: the fragment file itself).
+    std::string m_compileFile; ///< Engine/ChainPass/Final_NAME.frag when this lab runs its chain as passes (else
+                               ///< null: the fragment file itself).
     GLuint m_cpFbo[8] = {};                                  ///< Framebuffers of the coordinate textures.
     GLuint m_cpTex[8] = {}; ///< Coordinate textures (ping-pong plus fade temporaries; 5 for the flat labs, 8 RGBA32F
                             ///< for the 3D lab).

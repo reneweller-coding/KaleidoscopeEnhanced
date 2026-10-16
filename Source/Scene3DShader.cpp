@@ -109,15 +109,13 @@ Scene3DShader::Scene3DShader( const std::string &filenameFragmentShader, const s
     // returns a malloc'd C string, matching the ownership convention of
     // EffectShader::m_vertexShaderFilename / m_fragmentShaderFilename (plain
     // char* rather than std::string) so this class can be freed the same way.
-    auto sibling = []( const std::string &frag, const char *ext ) -> char *
+    auto sibling = []( const std::string &frag, const char *ext ) -> std::string
     {
         std::string s = frag;
         size_t      p = s.rfind( ".frag" );
         if ( p != std::string::npos )
             s.replace( p, 5, ext );
-        char *out = static_cast<char *>( malloc( sizeof( char ) * ( s.size() + 1 ) ) );
-        strcpy( out, s.c_str() );
-        return out;
+        return s;
     };
 
     m_vertexShaderFilename = sibling( filenameFragmentShader, ".vert" );
@@ -749,10 +747,10 @@ bool Scene3DShader::setupIndirect()
         return m_genProg != 0;
     m_genTried = true;
 
-    if ( !glcoreHasCompute || !glDrawArraysIndirect || !m_compFilename )
+    if ( !glcoreHasCompute || !glDrawArraysIndirect || m_compFilename.empty() )
         return false;
 
-    m_genProg = setComputeShader( m_compFilename ); // 0 on any failure
+    m_genProg = setComputeShader( m_compFilename.c_str() ); // 0 on any failure
     if ( m_genProg == 0 )
         return false;
 
@@ -1022,9 +1020,9 @@ void Scene3DShader::initUniforms( int width, int height )
     // 3D scene needs its vertex shader actually attached.
     // Tessellation / geometry stages join in automatically when their file is
     // present next to the .vert/.frag — no engine change per scene.
-    m_shProgId = setShadersPipeline( m_vertexShaderFilename,
-                                     m_tescFilename, m_teseFilename,
-                                     m_geomFilename, m_fragmentShaderFilename );
+    m_shProgId = setShadersPipeline( m_vertexShaderFilename.c_str(),
+                                     m_tescFilename.c_str(), m_teseFilename.c_str(),
+                                     m_geomFilename.c_str(), m_fragmentShaderFilename.c_str() );
     m_texPointUni1 = glGetUniformLocation( m_shProgId, "tex0" );
     m_texPointUni2 = glGetUniformLocation( m_shProgId, "tex1" );
     m_texSizeRcpUni = glGetUniformLocation( m_shProgId, "resolution" );

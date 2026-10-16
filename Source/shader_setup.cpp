@@ -85,15 +85,15 @@ void printProgramInfoLog( GLuint prog_id )
  */
 void loadAttachShader( GLuint program_id, GLuint shader_id, const char *filename )
 {
-    GLchar *shadersource = textFileRead( filename );
+    const std::string shadersource = textFileRead( filename );
 
-    if ( shadersource == NULL )
+    if ( shadersource.empty() )
     {
         fprintf( stderr, "Couldn't load shader source '%s' !\n", filename );
         exit( 1 );
     }
-    glShaderSource( shader_id, 1, const_cast<const GLchar **>( &shadersource ), NULL );
-    free( shadersource );
+    const GLchar *text = shadersource.c_str();
+    glShaderSource( shader_id, 1, &text, NULL );
     glCompileShader( shader_id );
     printShaderInfoLog( shader_id );
     glAttachShader( program_id, shader_id );
@@ -116,14 +116,14 @@ static GLuint fullscreenVertShader()
     if ( vs == 0 )
     {
         vs = glCreateShader( GL_VERTEX_SHADER );
-        GLchar *src = textFileRead( "..\\Engine\\Fullscreen.vert" );
-        if ( src == NULL )
+        const std::string src = textFileRead( "..\\Engine\\Fullscreen.vert" );
+        if ( src.empty() )
         {
             fprintf( stderr, "FATAL: Engine\\Fullscreen.vert missing!\n" );
             exit( 1 );
         }
-        glShaderSource( vs, 1, const_cast<const GLchar **>( &src ), NULL );
-        free( src );
+        const GLchar *text = src.c_str();
+        glShaderSource( vs, 1, &text, NULL );
         glCompileShader( vs );
         printShaderInfoLog( vs );
     }
@@ -372,16 +372,16 @@ bool shaderPrebuildStart( const char *frag_source )
     const std::string key = progKey( "FS", frag_source, 0, 0, 0, 0 );
     if ( s_progByKey.count( key ) || s_prebuild.count( key ) )
         return true;
-    GLchar *src = textFileRead( frag_source );
-    if ( !src )
+    const std::string src = textFileRead( frag_source );
+    if ( src.empty() )
         return false;
     PrebuildJob j;
     j.key = key;
     j.prog = glCreateProgram();
     glAttachShader( j.prog, fullscreenVertShader() );
     j.fs = glCreateShader( GL_FRAGMENT_SHADER );
-    glShaderSource( j.fs, 1, const_cast<const GLchar **>( &src ), NULL );
-    free( src );
+    const GLchar *text = src.c_str();
+    glShaderSource( j.fs, 1, &text, NULL );
     glCompileShader( j.fs ); // no status query: that would block
     glAttachShader( j.prog, j.fs );
     glLinkProgram( j.prog );
@@ -447,11 +447,9 @@ bool shaderVariantStart( const char *frag_source, const std::string &defines )
     const bool worker = shaderWorkerUsable();
     if ( !worker && !parallelCompile() )
         return false;
-    GLchar *src = textFileRead( frag_source );
-    if ( !src )
+    std::string text = textFileRead( frag_source );
+    if ( text.empty() )
         return false;
-    std::string text( src );
-    free( src );
     const size_t nl = text.find( '\n' ); // after "#version ..."
     text.insert( nl == std::string::npos ? text.size() : nl + 1, defines );
     // The worker thread builds it start to finish: the driver's own background
@@ -600,13 +598,13 @@ static int attachOptionalStage( GLuint prog, GLenum type, const char *file )
 {
     if ( file == NULL )
         return 0;
-    GLchar *src = textFileRead( file );
-    if ( src == NULL )
+    const std::string src = textFileRead( file );
+    if ( src.empty() )
         return 0; // scene simply does not use this stage
 
-    GLuint sh = glCreateShader( type );
-    glShaderSource( sh, 1, const_cast<const GLchar **>( &src ), NULL );
-    free( src );
+    GLuint        sh = glCreateShader( type );
+    const GLchar *text = src.c_str();
+    glShaderSource( sh, 1, &text, NULL );
     glCompileShader( sh );
     printShaderInfoLog( sh );
     GLint ok = 0;
@@ -668,15 +666,15 @@ GLuint setComputeShader( const char *comp_source )
     if ( glDispatchCompute == NULL )
         return 0;
 
-    GLchar *src = textFileRead( comp_source );
-    if ( src == NULL )
+    const std::string src = textFileRead( comp_source );
+    if ( src.empty() )
     {
         fprintf( stderr, "Couldn't load compute shader '%s'!\n", comp_source );
         return 0;
     }
-    GLuint cs = glCreateShader( GL_COMPUTE_SHADER );
-    glShaderSource( cs, 1, const_cast<const GLchar **>( &src ), NULL );
-    free( src );
+    GLuint        cs = glCreateShader( GL_COMPUTE_SHADER );
+    const GLchar *text = src.c_str();
+    glShaderSource( cs, 1, &text, NULL );
     glCompileShader( cs );
     printShaderInfoLog( cs );
     GLint ok = 0;
