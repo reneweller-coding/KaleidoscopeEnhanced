@@ -1,9 +1,17 @@
-/**
- * @file FxEffectKaleidoscope.h
- * @brief FX-overlay EffectShader subclass wrapping FxKaleidoscope.frag: a standalone
- *        kaleidoscope combine effect (distinct from the TextureEffectKaleidoscopeBase
- *        family - no power/rotation state, just sides + speed).
+//---------------------------------------------------------------------------
+//                              FxEffectKaleidoscope
+//---------------------------------------------------------------------------
+//  Copyright (C): 2026 reneweller, MIT License (see LICENSE)
+//---------------------------------------------------------------------------
+/*! @file
+ *
+ *  @brief
+ *  FX-overlay EffectShader subclass wrapping FxKaleidoscope.frag: a standalone kaleidoscope combine effect
+ *  (distinct from the TextureEffectKaleidoscopeBase family - no power/rotation state, just sides + speed).
+ *
+ *  @author René Weller
  */
+
 #ifndef FX_EFFECT_KALEIDOSCOPE_H
 #define FX_EFFECT_KALEIDOSCOPE_H
 
@@ -12,15 +20,16 @@
 #include <QtCore/QThread>
 #include "EffectShader.h"
 
-/**
- * @brief EffectShader subclass driving FxKaleidoscope.frag's mirrored-segment combine effect.
+/** @class FxEffectKaleidoscope
+ *
+ * EffectShader subclass driving FxKaleidoscope.frag's mirrored-segment combine effect.
  *
  * Directly derives from EffectShader (not from TextureEffectKaleidoscopeBase), so it
  * has none of that class's power/rotation state machinery - just two extra
  * uniforms, `sides` (mirror segment count) and `speed`, both re-rolled on
  * resetParameters(). Used as an "FX" (combine-stage) effect rather than a
  * standalone scene, per the ".." path to "FX\\FxKaleidoscope.frag".
- */
+ **/
 class FxEffectKaleidoscope : public EffectShader
 {
 public:

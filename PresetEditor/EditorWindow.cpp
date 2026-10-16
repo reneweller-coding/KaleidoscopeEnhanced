@@ -1,8 +1,15 @@
-/**
- * @file EditorWindow.cpp
- * @brief Implements EditorWindow: builds the editor UI and drives the live preview, preset table, and per-entry
- * parameter/formula/audio-mapping editor.
+/*****************************************************************************\
+ *                              EditorWindow
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Implements EditorWindow: builds the editor UI and drives the live preview, preset table, and per-entry
+ *  parameter/formula/audio-mapping editor.
+ *
+ *  @author René Weller
  */
+
 #include "EditorWindow.h"
 #include "PreviewWidget.h"
 
@@ -409,12 +416,12 @@ void EditorWindow::onCombineChanged()
     rebuildParamSliders();
 }
 
-/// @brief One `<int>`/`<float>` parameter's range as declared for a shader in Komplett.xml.
+/** One `<int>`/`<float>` parameter's range as declared for a shader in Komplett.xml. */
 struct KomplettParam
 {
-    /// "int" or "float" (the element's tag), deciding whether the slider rounds to whole numbers.
+    /** "int" or "float" (the element's tag), deciding whether the slider rounds to whole numbers. */
     QString kind, name; ///< Parameter/uniform name (the element's name= attribute).
-    /// Declared minValue: the slider's lower end.
+    /** Declared minValue: the slider's lower end. */
     float minV, maxV; ///< Declared maxValue: the slider's upper end.
 };
 /**  Parse a shader's per-activation parameter ranges out of Komplett.xml.

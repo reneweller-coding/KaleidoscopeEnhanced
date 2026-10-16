@@ -1,8 +1,14 @@
-/**
- * @file FxEffectKaleidoscope.cpp
- * @brief Implementation of FxEffectKaleidoscope: the `sides`/`speed` uniforms driving
- *        FxKaleidoscope.frag.
+/*****************************************************************************\
+ *                              FxEffectKaleidoscope
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Implementation of FxEffectKaleidoscope: the `sides`/`speed` uniforms driving FxKaleidoscope.frag.
+ *
+ *  @author René Weller
  */
+
 #include <float.h>
 
 #include "shader_setup.h"

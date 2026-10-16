@@ -1,9 +1,15 @@
-/**
- * @file glwidget.cpp
- * @brief Implements GLwidget: the timer-driven render loop, configuration
- *        loading/switching, keyboard/mouse input, the MIDI/audio-menu/lyrics
- *        overlays, and persisted UI settings.
+/*****************************************************************************\
+ *                              GLwidget
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Implements GLwidget: the timer-driven render loop, configuration loading/switching, keyboard/mouse input, the
+ *  MIDI/audio-menu/lyrics overlays, and persisted UI settings.
+ *
+ *  @author René Weller
  */
+
 #include <math.h>
 
 #include <QtCore/QFile>
@@ -58,7 +64,7 @@ bool    GLwidget::M_BatchRender = false;
 namespace
 {
 
-/// What a key press meant to a scrolling overlay menu.
+/** What a key press meant to a scrolling overlay menu. */
 enum class MenuKeyE
 {
     NONE,
@@ -67,8 +73,14 @@ enum class MenuKeyE
     CANCEL
 };
 
-/**
- * @brief Common key handling for the scrolling overlay menus.
+/**  Common key handling for the scrolling overlay menus.
+ *
+ * @param key     The Qt key code. (in)
+ * @param cursor  The menu's selected row; moved by the navigation keys. (in,out)
+ * @param count   Number of rows in the menu. (in)
+ *
+ * @return
+ *   MOVED if the cursor moved, ACCEPT for Return/Enter, CANCEL for Escape/Back, NONE if the key is not the menu's.
  *
  * Shared by the preset picker and the audio-source picker so the two cannot
  * drift apart: both had a nine-entry ceiling because selection was bound to
@@ -76,7 +88,7 @@ enum class MenuKeyE
  *
  * Returns MenuKeyE::None for anything it does not consume, so the caller falls
  * through to the normal handler and the digit shortcuts keep working.
- */
+ **/
 MenuKeyE menuNavKey( int key, int &cursor, int count )
 {
     if ( count <= 0 )
@@ -99,12 +111,16 @@ MenuKeyE menuNavKey( int key, int &cursor, int count )
     }
 }
 
-/**
- * @brief Clamp a menu cursor and derive the first visible row.
+/**  Clamp a menu cursor and derive the first visible row.
+ *
+ * @param cursor   The selected row; clamped to the list. (in,out)
+ * @param top      The first visible row; receives the new one. (out)
+ * @param count    Number of rows in the list. (in)
+ * @param visible  Number of rows the menu shows at once. (in)
  *
  * Scrolls by as little as possible, so the list does not jump around under the
  * user when the cursor merely steps past the edge.
- */
+ **/
 void menuScroll( int &cursor, int &top, int count, int visible )
 {
     cursor = std::max( 0, std::min( cursor, count - 1 ) );
@@ -115,13 +131,19 @@ void menuScroll( int &cursor, int &top, int count, int visible )
     top = std::max( 0, std::min( top, count - visible ) );
 }
 
-/**
- * @brief Feeds one key into a menu's type-to-filter string.
+/**  Feeds one key into a menu's type-to-filter string.
+ *
+ * @param e       The key event. (in)
+ * @param filter  The menu's filter text; edited by the key. (in,out)
+ * @param cursor  The selected row; set back to 0 when the filter changes. (in,out)
+ *
+ * @return
+ *   True if the key belonged to the filter (consumed), false otherwise.
  *
  * Backspace removes a character, printable characters append. Any change puts
  * the cursor back on the first match, since the row it pointed at is usually
  * not in the new result set.
- */
+ **/
 bool menuFilterKey( QKeyEvent *e, QString &filter, int &cursor )
 {
     if ( e->key() == Qt::Key_Backspace )
@@ -145,11 +167,14 @@ bool menuFilterKey( QKeyEvent *e, QString &filter, int &cursor )
     return true;
 }
 
-/**
- * @brief Which row of a menu a point falls on, or -1 for none.
- * @param hit Geometry recorded by that menu's last draw.
- * @param p   Point in widget coordinates.
- */
+/**  Which row of a menu a point falls on, or -1 for none.
+ *
+ * @param hit  Geometry recorded by that menu's last draw. (in)
+ * @param p    Point in widget coordinates. (in)
+ *
+ * @return
+ *   The row index under the point, or -1.
+ **/
 int menuRowAt( const MenuHit &hit, const QPoint &p )
 {
     if ( hit.rowH <= 0 || hit.rows <= 0 || !hit.box.contains( p ) )
@@ -1599,7 +1624,7 @@ void GLwidget::showSelectConfigurationsMenu( QPainter *painter )
                        box_y + box_h - pad_y - hfm.descent(), hint );
 }
 
-/// Settings file shared with RenderPipeline (next to the Presets folder).
+/** Settings file shared with RenderPipeline (next to the Presets folder). */
 static const char *kUiSettingsPath = "..\\kaleidoscope_settings.ini";
 
 void GLwidget::applyQualityProfile()
@@ -2175,8 +2200,7 @@ void GLwidget::drawHelpOverlay( QPainter *painter )
     }
 }
 
-/// Display names for the MIDI_* learn targets (GLwidget::MIDI_REACT etc.), used
-/// in the "MIDI learn" stderr prompts.
+/** Display names for the MIDI_* learn targets (GLwidget::MIDI_REACT etc.), used in the "MIDI learn" stderr prompts. */
 static const char *kMidiTargetNames[] =
     { "Reactivity", "Trails", "Mood", "Latenz-Vorlauf", "Naechster Effekt",
       "Tap-Tempo", "Blackout" };
@@ -3049,11 +3073,26 @@ void GLwidget::drawNowPlaying( QPainter *painter, const QString &title,
 namespace
 {
 
+/**  A menu text in the current UI language.
+ *
+ * @param id  The string's id. (in)
+ *
+ * @return
+ *   The text.
+ **/
 QString osdT( StrIdE id )
 {
     return QString::fromUtf8( Strings::uiText( id ) );
 }
 
+/**  A row that opens a submenu.
+ *
+ * @param id    The row's label. (in)
+ * @param kids  Builds the submenu's rows when it opens. (in)
+ *
+ * @return
+ *   The row.
+ **/
 OsdItem osdSub( StrIdE id, std::function<std::vector<OsdItem>()> kids )
 {
     OsdItem it;
@@ -3062,6 +3101,16 @@ OsdItem osdSub( StrIdE id, std::function<std::vector<OsdItem>()> kids )
     it.children = std::move( kids );
     return it;
 }
+/**  A row that runs an action.
+ *
+ * @param label       The row's text. (in)
+ * @param fn          The action. (in)
+ * @param closeAfter  Whether the menu closes after the action. (in)
+ * @param confirm     Whether the hint line confirms the action afterwards ("done"). (in)
+ *
+ * @return
+ *   The row.
+ **/
 OsdItem osdAct( const QString &label, std::function<void()> fn, bool closeAfter = false, bool confirm = false )
 {
     OsdItem it;
@@ -3073,6 +3122,15 @@ OsdItem osdAct( const QString &label, std::function<void()> fn, bool closeAfter 
         it.doneText = osdT( S_OSD_DONE );
     return it;
 }
+/**  A row that switches something on and off.
+ *
+ * @param id   The row's label. (in)
+ * @param get  Reads the current state. (in)
+ * @param set  Sets the new state. (in)
+ *
+ * @return
+ *   The row.
+ **/
 OsdItem osdToggle( StrIdE id, std::function<bool()> get, std::function<void( bool )> set )
 {
     OsdItem it;
@@ -3082,6 +3140,16 @@ OsdItem osdToggle( StrIdE id, std::function<bool()> get, std::function<void( boo
     it.setB = std::move( set );
     return it;
 }
+/**  A row that picks one of several options.
+ *
+ * @param id    The row's label. (in)
+ * @param opts  The options' texts. (in)
+ * @param get   Reads the index of the current option. (in)
+ * @param set   Selects an option by index. (in)
+ *
+ * @return
+ *   The row.
+ **/
 OsdItem osdChoice( StrIdE id, const QStringList &opts, std::function<int()> get, std::function<void( int )> set )
 {
     OsdItem it;
@@ -3092,6 +3160,19 @@ OsdItem osdChoice( StrIdE id, const QStringList &opts, std::function<int()> get,
     it.setI = std::move( set );
     return it;
 }
+/**  A row that sets a value with left and right.
+ *
+ * @param id    The row's label. (in)
+ * @param lo    Smallest value. (in)
+ * @param hi    Largest value. (in)
+ * @param step  Change per key press. (in)
+ * @param get   Reads the current value. (in)
+ * @param set   Sets the new value. (in)
+ * @param fmt   Formats the value for display; empty for the default format. (in)
+ *
+ * @return
+ *   The row.
+ **/
 OsdItem osdSlider( StrIdE id, float lo, float hi, float step, std::function<float()> get,
                    std::function<void( float )> set, std::function<QString( float )> fmt = {} )
 {

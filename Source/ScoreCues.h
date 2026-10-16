@@ -1,13 +1,22 @@
-/**
- * @file ScoreCues.h
- * @brief Score cues without the socket: the decoder for the generators' OSC messages, the cue file
- *        (`-k`) and ScoreCues, the accumulator the render loop reads.
+//---------------------------------------------------------------------------
+//                              ScoreCues
+//---------------------------------------------------------------------------
+//  Copyright (C): 2026 reneweller, MIT License (see LICENSE)
+//---------------------------------------------------------------------------
+/*! @file
  *
- * The messages, the generators' dialects and the cue file's format are described in CueReceiver.h,
- * which adds the UDP socket and the bridge to the scheduler. This part needs neither the network
- * nor the scheduler, so the PresetEditor, which compiles AudioAnalyzer.cpp (it feeds ScoreCueFile
- * the WAV's clock), links it on its own.
+ *  @brief
+ *  Score cues without the socket: the decoder for the generators' OSC messages, the cue file (`-k`) and ScoreCues,
+ *  the accumulator the render loop reads.
+ *
+ *  The messages, the generators' dialects and the cue file's format are described in CueReceiver.h,
+ *  which adds the UDP socket and the bridge to the scheduler. This part needs neither the network
+ *  nor the scheduler, so the PresetEditor, which compiles AudioAnalyzer.cpp (it feeds ScoreCueFile
+ *  the WAV's clock), links it on its own.
+ *
+ *  @author René Weller
  */
+
 #ifndef SCORECUES_H
 #define SCORECUES_H
 
@@ -17,7 +26,7 @@
 #include <cstddef>
 #include <vector>
 
-/** @brief The section categories `/phos/section` can name, in the generator's own order. */
+/** The section categories `/phos/section` can name, in the generator's own order. */
 enum class CueSectionE : int
 {
     INTRO = 0, ///< the opening atmosphere
@@ -30,13 +39,13 @@ enum class CueSectionE : int
     CUT,       ///< the first beats of a breakdown, everything but the reverb tail gone
     COUNT
 };
-/** @brief Display names, indexed by CueSectionE; also what arrives on the wire. */
+/** Display names, indexed by CueSectionE; also what arrives on the wire. */
 extern const char *const CueSectionNames[static_cast<int>( CueSectionE::COUNT )];
 
-/** @brief One decoded OSC message. */
+/** One decoded OSC message. */
 struct ScoreCue
 {
-    /** @brief Which of the five messages this is. */
+    /** Which of the five messages this is. */
     enum class KindE : int
     {
         BEAT = 0,
@@ -85,16 +94,17 @@ bool decodeScoreCue( const char *data, int size, ScoreCue &out );
  **/
 int parseScoreCueLine( const char *line, double &seconds, ScoreCue &out );
 
-/**
- * @brief What the generator has said, as the render loop needs it: counters, not messages.
+/** @class ScoreCues
+ *
+ * What the generator has said, as the render loop needs it: counters, not messages.
  *
  * One per process (the scheduler that reads it is per configuration, but the socket is not), the
  * same shape RenderPipeline::setLightShow() and M_Pinned already use for global state.
- */
+ **/
 class ScoreCues
 {
 public:
-    /** @brief One frame's worth of cue state, taken off the accumulator. */
+    /** One frame's worth of cue state, taken off the accumulator. */
     struct Frame
     {
         bool  live = false;     ///< a cue arrived recently enough to steer the scheduler
@@ -107,7 +117,7 @@ public:
         int   bar = -1;         ///< the last bar number that arrived
     };
 
-    /** @brief How long after the last datagram the cues are still taken as live. */
+    /** How long after the last datagram the cues are still taken as live. */
     static const float LiveSecs;
 
     /**  The one instance.
@@ -181,14 +191,15 @@ private:
     ScoreCues &operator=( const ScoreCues & ) = delete;
 };
 
-/**
- * @brief A cue file (`-k`): the generator's cues, handed to ScoreCues as the offline WAV reaches them.
+/** @class ScoreCueFile
+ *
+ * A cue file (`-k`): the generator's cues, handed to ScoreCues as the offline WAV reaches them.
  *
  * The clock is the WAV's own position (AudioAnalyzer::analyzeWavOffline() sets it after every block
  * on its thread; hence the atomic), so the cues land on the music the analyser is hearing, whatever
  * the frame rate. feed() runs on the main thread before the scheduler drains the cues; a cue whose
  * time has passed goes in once, in file order. Without a file nothing here does anything.
- */
+ **/
 class ScoreCueFile
 {
 public:
@@ -235,7 +246,7 @@ public:
 private:
     ScoreCueFile() {}
 
-    /** @brief One line of the file. */
+    /** One line of the file. */
     struct Timed
     {
         double   seconds = 0.0; ///< when, from the start of the WAV

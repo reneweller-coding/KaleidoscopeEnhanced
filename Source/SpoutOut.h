@@ -1,17 +1,24 @@
-/**
- * @file SpoutOut.h
- * @brief Facade for sending the rendered frame out via Spout for other apps (e.g. OBS) to consume.
+//---------------------------------------------------------------------------
+//                              SpoutOut
+//---------------------------------------------------------------------------
+//  Copyright (C): 2026 reneweller, MIT License (see LICENSE)
+//---------------------------------------------------------------------------
+/*! @file
+ *
+ *  @brief
+ *  Facade for sending the rendered frame out via Spout for other apps (e.g. OBS) to consume.
+ *
+ *  Minimal facade around the Spout2 SDK (ThirdParty/SpoutGL, BSD-2 licence):
+ *  publishes the displayed frame as a Spout sender so OBS / Resolume / any
+ *  Spout receiver can pick it up ("Kaleidoscope" sender, CLI flag -o).
+ *
+ *  Deliberately a separate translation unit: the Spout sources load their own
+ *  OpenGL extension pointers, which must never be mixed into the GLee-based
+ *  translation units of the main app.  Only plain ints cross this interface.
+ *
+ *  @author René Weller
  */
-// SpoutOut.h
-// ---------------------------------------------------------------------------
-// Minimal facade around the Spout2 SDK (ThirdParty/SpoutGL, BSD-2 licence):
-// publishes the displayed frame as a Spout sender so OBS / Resolume / any
-// Spout receiver can pick it up ("Kaleidoscope" sender, CLI flag -o).
-//
-// Deliberately a separate translation unit: the Spout sources load their own
-// OpenGL extension pointers, which must never be mixed into the GLee-based
-// translation units of the main app.  Only plain ints cross this interface.
-// ---------------------------------------------------------------------------
+
 #pragma once
 
 /**  Creates the Spout sender under the given name.

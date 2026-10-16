@@ -1,54 +1,60 @@
-/**
- * @file main.cpp
- * @brief Application entry point: command-line parsing and Qt/GL application bootstrap.
+/*****************************************************************************\
+ *                              main
+\*****************************************************************************/
+/*! @file
  *
- * @par CLI contract
- * All options are parsed by parsecommandline() (single-character flags, some taking
- * one parameter) before any GL/Qt objects exist, so their effects are just setting
- * static fields on RenderPipeline / GLwidget / AudioAnalyzer that those classes read
- * once the app actually starts:
- *  - `-b`            toggle fullscreen at startup (2nd monitor if present).
- *  - `-s <factor>`   internal render scale 0.25..2.0 (lower = faster on weak GPUs).
- *  - `-c <name>`     start with a named configuration (e.g. "darkambient", "normal";
- *                    also used ad hoc as a probe/test configuration name during
- *                    development, e.g. "-c probe" -- there is no separate probe code
- *                    path, it is just a configuration name).
- *  - `-m <index>`    fullscreen on monitor `<index>` (0-based); implies `-b`.
- *  - `-l`            redirect stderr to kaleidoscope.log instead of the console
- *                    (kiosk/unattended logging, with one rotated backup).
- *  - `-r`            start recording (visuals + music -> mp4) immediately.
- *  - `-w <wav>`      offline mode: analyze this WAV file instead of live audio
- *                    (deterministic testing).
- *  - `-o`            enable Spout output: publish the frame as sender "Kaleidoscope".
- *  - `-t <port>`     web remote (phone control page) port; ON BY DEFAULT at 8080 even
- *                    without this flag (LAN-only, unauthenticated by design, and
- *                    auto-discoverable — see WebRemote's UDP responder). `-t 0` disables
- *                    it; `-t <port>` picks a different port. If the chosen port is busy
- *                    (e.g. a second instance on the same PC), WebRemote quietly retries
- *                    the next few ports so multiple instances each still get one.
- *  - `-x <wav>`      batch render: combines `-w` + auto-record + auto-quit, used to
- *                    deterministically render a WAV to an mp4 and exit (no separate
- *                    "batch mode" branch here -- GLwidget itself drives the auto-quit
- *                    once M_BatchRender is set).
- *  - `-i <sender>`   Spout INPUT: use a live Spout sender's video as the source image
- *                    instead of photos ("any" = whichever sender is active).
- *  - `-v <path>`     native VIDEO source image (a file or a folder of videos); `-i`
- *                    wins if both are given.
- *  - `-3 <mode>`     stereoscopic output mode: "sbs", "tb", or an "ana*" prefix for
- *                    anaglyph; anything else disables it.
- *  - `-f <dir>`      photo-source folder for this run, outranking both the ini
- *                    setting and the preset's ImageDirectory attribute.
- *  - `-q`            score-cue self test (CueReceiver.h): decode, accumulate and receive on a real
- *                    socket, print the result and exit with 0 or 1. No window, no audio device.
- *  - `-k <file>`     score cues from a file (CueReceiver.h, ScoreCueFile): a generator's bars,
- *                    sections, drops and key, timed by the `-w`/`-x` WAV -- a batch render follows
- *                    the score instead of guessing it.
- *  - `-h`            print the help/usage text and exit.
+ *  @brief
+ *  Application entry point: command-line parsing and Qt/GL application bootstrap.
  *
- * There is only one runtime path after parsing: the normal windowed Qt application
- * (QApplication + QMyWindow, shown either windowed or fullscreen). The various flags
- * above configure that single path (e.g. `-x` makes it record-and-quit) rather than
- * branching into distinct offline/probe/check modes.
+ *  @par CLI contract
+ *  All options are parsed by parsecommandline() (single-character flags, some taking
+ *  one parameter) before any GL/Qt objects exist, so their effects are just setting
+ *  static fields on RenderPipeline / GLwidget / AudioAnalyzer that those classes read
+ *  once the app actually starts:
+ *   - `-b`            toggle fullscreen at startup (2nd monitor if present).
+ *   - `-s <factor>`   internal render scale 0.25..2.0 (lower = faster on weak GPUs).
+ *   - `-c <name>`     start with a named configuration (e.g. "darkambient", "normal";
+ *                     also used ad hoc as a probe/test configuration name during
+ *                     development, e.g. "-c probe" -- there is no separate probe code
+ *                     path, it is just a configuration name).
+ *   - `-m <index>`    fullscreen on monitor `<index>` (0-based); implies `-b`.
+ *   - `-l`            redirect stderr to kaleidoscope.log instead of the console
+ *                     (kiosk/unattended logging, with one rotated backup).
+ *   - `-r`            start recording (visuals + music -> mp4) immediately.
+ *   - `-w <wav>`      offline mode: analyze this WAV file instead of live audio
+ *                     (deterministic testing).
+ *   - `-o`            enable Spout output: publish the frame as sender "Kaleidoscope".
+ *   - `-t <port>`     web remote (phone control page) port; ON BY DEFAULT at 8080 even
+ *                     without this flag (LAN-only, unauthenticated by design, and
+ *                     auto-discoverable — see WebRemote's UDP responder). `-t 0` disables
+ *                     it; `-t <port>` picks a different port. If the chosen port is busy
+ *                     (e.g. a second instance on the same PC), WebRemote quietly retries
+ *                     the next few ports so multiple instances each still get one.
+ *   - `-x <wav>`      batch render: combines `-w` + auto-record + auto-quit, used to
+ *                     deterministically render a WAV to an mp4 and exit (no separate
+ *                     "batch mode" branch here -- GLwidget itself drives the auto-quit
+ *                     once M_BatchRender is set).
+ *   - `-i <sender>`   Spout INPUT: use a live Spout sender's video as the source image
+ *                     instead of photos ("any" = whichever sender is active).
+ *   - `-v <path>`     native VIDEO source image (a file or a folder of videos); `-i`
+ *                     wins if both are given.
+ *   - `-3 <mode>`     stereoscopic output mode: "sbs", "tb", or an "ana*" prefix for
+ *                     anaglyph; anything else disables it.
+ *   - `-f <dir>`      photo-source folder for this run, outranking both the ini
+ *                     setting and the preset's ImageDirectory attribute.
+ *   - `-q`            score-cue self test (CueReceiver.h): decode, accumulate and receive on a real
+ *                     socket, print the result and exit with 0 or 1. No window, no audio device.
+ *   - `-k <file>`     score cues from a file (CueReceiver.h, ScoreCueFile): a generator's bars,
+ *                     sections, drops and key, timed by the `-w`/`-x` WAV -- a batch render follows
+ *                     the score instead of guessing it.
+ *   - `-h`            print the help/usage text and exit.
+ *
+ *  There is only one runtime path after parsing: the normal windowed Qt application
+ *  (QApplication + QMyWindow, shown either windowed or fullscreen). The various flags
+ *  above configure that single path (e.g. `-x` makes it record-and-quit) rather than
+ *  branching into distinct offline/probe/check modes.
+ *
+ *  @author René Weller
  */
 
 #include <iostream>

@@ -1,16 +1,22 @@
-/**
- * @file CueSelfTest.cpp
- * @brief `Kaleidoscope.exe -q`: the score-cue receiver checked without a window, a sound card or a
- *        generator.
+/*****************************************************************************\
+ *                              CueSelfTest
+\*****************************************************************************/
+/*! @file
  *
- * The datagrams below are written out byte by byte from the OSC 1.0 specification -- address string
- * terminated and padded with nulls to a multiple of four, then the type tag string beginning with a
- * comma, then big-endian arguments -- and not copied from anything Phosphene produced. That is what
- * makes them an oracle: if the decoder agrees with a hand-built message, the two programs agree
- * about the format, whereas a round trip through one encoder and its own decoder would prove only
- * that they are consistently wrong. The malformed cases matter just as much: a receiver that
- * shrugs at bad padding is how two programs drift apart for a year without noticing.
+ *  @brief
+ *  `Kaleidoscope.exe -q`: the score-cue receiver checked without a window, a sound card or a generator.
+ *
+ *  The datagrams below are written out byte by byte from the OSC 1.0 specification -- address string
+ *  terminated and padded with nulls to a multiple of four, then the type tag string beginning with a
+ *  comma, then big-endian arguments -- and not copied from anything Phosphene produced. That is what
+ *  makes them an oracle: if the decoder agrees with a hand-built message, the two programs agree
+ *  about the format, whereas a round trip through one encoder and its own decoder would prove only
+ *  that they are consistently wrong. The malformed cases matter just as much: a receiver that
+ *  shrugs at bad padding is how two programs drift apart for a year without noticing.
+ *
+ *  @author René Weller
  */
+
 #include "CueReceiver.h"
 
 #include <QtCore/QCoreApplication>
@@ -29,10 +35,15 @@
 namespace
 {
 
-int g_passed = 0;
-int g_failed = 0;
+int g_passed = 0; ///< Checks that passed.
+int g_failed = 0; ///< Checks that failed.
 
-/// Records one check; failures always print, passes print too (there are few of them).
+/**  Records one check; failures always print, passes print too (there are few of them).
+ *
+ * @param ok      Whether the check passed. (in)
+ * @param what    What was checked, as printed. (in)
+ * @param detail  Optional extra text printed after the description. (in)
+ **/
 void check( bool ok, const char *what, const std::string &detail = std::string() )
 {
     if ( ok )
@@ -43,7 +54,11 @@ void check( bool ok, const char *what, const std::string &detail = std::string()
             detail.empty() ? "" : "  -- ", detail.c_str() );
 }
 
-/// An OSC string: the text, its terminator, then nulls up to the next multiple of four.
+/**  An OSC string: the text, its terminator, then nulls up to the next multiple of four.
+ *
+ * @param b  The message being built; receives the string. (out)
+ * @param s  The text. (in)
+ **/
 void putString( std::vector<char> &b, const char *s )
 {
     const size_t n = strlen( s ) + 1;
@@ -52,7 +67,11 @@ void putString( std::vector<char> &b, const char *s )
         b.push_back( 0 );
 }
 
-/// A big-endian int32.
+/**  A big-endian int32.
+ *
+ * @param b  The message being built; receives the four bytes. (out)
+ * @param v  The value. (in)
+ **/
 void putInt( std::vector<char> &b, int v )
 {
     const unsigned u = static_cast<unsigned>( v );
@@ -62,7 +81,11 @@ void putInt( std::vector<char> &b, int v )
     b.push_back( static_cast<char>( u & 0xFF ) );
 }
 
-/// A big-endian float32.
+/**  A big-endian float32.
+ *
+ * @param b  The message being built; receives the four bytes. (out)
+ * @param v  The value. (in)
+ **/
 void putFloat( std::vector<char> &b, float v )
 {
     int bits;
@@ -70,7 +93,14 @@ void putFloat( std::vector<char> &b, float v )
     putInt( b, bits );
 }
 
-/// `/phos/bar i` and `/phos/beat i`.
+/**  `/phos/bar i` and `/phos/beat i`.
+ *
+ * @param address  The OSC address, e.g. "/phos/bar". (in)
+ * @param value    The integer argument. (in)
+ *
+ * @return
+ *   The encoded datagram.
+ **/
 std::vector<char> intMessage( const char *address, int value )
 {
     std::vector<char> b;
@@ -80,7 +110,14 @@ std::vector<char> intMessage( const char *address, int value )
     return b;
 }
 
-/// `/phos/section s f`.
+/**  `/phos/section s f`.
+ *
+ * @param type    The section name. (in)
+ * @param energy  The section's energy, 0..1. (in)
+ *
+ * @return
+ *   The encoded datagram.
+ **/
 std::vector<char> sectionMessage( const char *type, float energy )
 {
     std::vector<char> b;
@@ -91,7 +128,13 @@ std::vector<char> sectionMessage( const char *type, float energy )
     return b;
 }
 
-/// `/phos/key s`.
+/**  `/phos/key s`.
+ *
+ * @param key  The key name, e.g. "F# Phrygian". (in)
+ *
+ * @return
+ *   The encoded datagram.
+ **/
 std::vector<char> keyMessage( const char *key )
 {
     std::vector<char> b;
@@ -101,7 +144,11 @@ std::vector<char> keyMessage( const char *key )
     return b;
 }
 
-/// `/phos/drop` -- no arguments, but still a type tag string.
+/**  `/phos/drop` -- no arguments, but still a type tag string.
+ *
+ * @return
+ *   `/phos/drop` -- no arguments, but still a type tag string.
+ **/
 std::vector<char> dropMessage()
 {
     std::vector<char> b;
@@ -110,7 +157,18 @@ std::vector<char> dropMessage()
     return b;
 }
 
-/// A message of any shape the dialects use: the tags, then one string (if 's' is among them) and the numbers in order.
+/**  A message of any shape the dialects use: the tags, then one string (if 's' is among them) and the numbers in
+ * order.
+ *
+ * @param address  The OSC address. (in)
+ * @param tags     The type tag string, starting with ','. (in)
+ * @param text     The string argument, used for every 's'. (in)
+ * @param i        The integer argument, used for every 'i'. (in)
+ * @param f        The float argument, used for every 'f'. (in)
+ *
+ * @return
+ *   The encoded datagram.
+ **/
 std::vector<char> dialectMessage( const char *address, const char *tags, const char *text, int i, float f )
 {
     std::vector<char> b;
@@ -128,12 +186,24 @@ std::vector<char> dialectMessage( const char *address, const char *tags, const c
     return b;
 }
 
+/**  Runs a built datagram through the real decoder.
+ *
+ * @param b    The datagram. (in)
+ * @param out  Receives the decoded cue. (out)
+ *
+ * @return
+ *   What decodeScoreCue() returns.
+ **/
 bool decodes( const std::vector<char> &b, ScoreCue &out )
 {
     return decodeScoreCue( b.data(), static_cast<int>( b.size() ), out );
 }
 
-/// A tick with values that are all distinct, so a field that is silently overwritten shows up.
+/**  A tick with values that are all distinct, so a field that is silently overwritten shows up.
+ *
+ * @return
+ *   A tick with values that are all distinct, so a field that is silently overwritten shows up.
+ **/
 SceneScheduler::Tick sampleTick()
 {
     SceneScheduler::Tick t{};
@@ -156,18 +226,20 @@ SceneScheduler::Tick sampleTick()
     return t;
 }
 
-/**
- * @brief Decodes a capture file and prints one line per message, then stops.
+/**  Decodes a capture file and prints one line per message, then stops.
  *
- * KALEIDO_CUE_DECODE=<file> turns `-q` into exactly that and nothing else. The file is a sequence
+ * @param path  The capture file. (in)
+ *
+ * @return
+ *   0 when every record decoded, 1 otherwise.
+ *
+ * `KALEIDO_CUE_DECODE=<file>` turns `-q` into exactly that and nothing else. The file is a sequence
  * of records, each a big-endian 32-bit length followed by that many bytes -- datagrams as they came
  * off the wire. It exists so that THE BYTES THE GENERATOR REALLY SENT can be put through THIS
  * decoder, rather than through a hand-built imitation of them: the checker on the Phosphene side
  * (Tools/cue_check.py) captures a run, decodes it with its own Python decoder, and compares that
  * with what this prints. Three decoders, one set of bytes, no shared code between any of them.
- * @param path The capture file.
- * @return 0 when every record decoded, 1 otherwise.
- */
+ **/
 int decodeCapture( const char *path )
 {
     FILE *f = fopen( path, "rb" );

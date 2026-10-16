@@ -1,8 +1,15 @@
-/**
- * @file shader_setup.cpp
- * @brief Implementation of shader_setup.h: file-based GLSL source loading, per-stage compile/link diagnostics, and the
- * fragment-only / vertex+fragment / full-pipeline / compute program builders.
+/*****************************************************************************\
+ *                              shader_setup
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Implementation of shader_setup.h: file-based GLSL source loading, per-stage compile/link diagnostics, and the
+ *  fragment-only / vertex+fragment / full-pipeline / compute program builders.
+ *
+ *  @author René Weller
  */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -360,10 +367,10 @@ void shaderCacheStats( int *programs, int *reuses, double *buildMs )
 // GL_COMPLETION_STATUS until it is done; then the program goes into the cache.
 // ---------------------------------------------------------------------------
 #ifndef GL_COMPLETION_STATUS_KHR
-/// GL_KHR_parallel_shader_compile's non-blocking 'done' query (where the headers lack it).
+/** GL_KHR_parallel_shader_compile's non-blocking 'done' query (where the headers lack it). */
 #define GL_COMPLETION_STATUS_KHR 0x91B1
 #endif
-/// @brief One background build: its cache key, its program and its fragment shader (deleted when collected).
+/** One background build: its cache key, its program and its fragment shader (deleted when collected). */
 struct PrebuildJob
 {
     std::string key;  ///< Program cache key.

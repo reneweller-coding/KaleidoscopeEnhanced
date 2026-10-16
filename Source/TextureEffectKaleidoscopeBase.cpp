@@ -1,9 +1,15 @@
-/**
- * @file TextureEffectKaleidoscopeBase.cpp
- * @brief Implementation of TextureEffectKaleidoscopeBase: the power ramp state machine
- *        and the (currently disabled) continuous-rotation state machine that drive
- *        Kaleidoscope.frag's `power` and `interpolationRotation` uniforms.
+/*****************************************************************************\
+ *                              TextureEffectKaleidoscopeBase
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Implementation of TextureEffectKaleidoscopeBase: the power ramp state machine and the (currently disabled)
+ *  continuous-rotation state machine that drive Kaleidoscope.frag's `power` and `interpolationRotation` uniforms.
+ *
+ *  @author René Weller
  */
+
 #include <float.h>
 
 #include "shader_setup.h"

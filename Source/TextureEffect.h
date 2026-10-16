@@ -1,8 +1,17 @@
-/**
- * @file TextureEffect.h
- * @brief Header-only abstract interface for a texture effect shader (pre-EffectShader
- *        design: initUniforms/setUniforms are pure virtual, no lazy compilation).
+//---------------------------------------------------------------------------
+//                              TextureEffect
+//---------------------------------------------------------------------------
+//  Copyright (C): 2026 reneweller, MIT License (see LICENSE)
+//---------------------------------------------------------------------------
+/*! @file
+ *
+ *  @brief
+ *  Header-only abstract interface for a texture effect shader (pre-EffectShader design: initUniforms/setUniforms
+ *  are pure virtual, no lazy compilation).
+ *
+ *  @author René Weller
  */
+
 #ifndef TEXTURE_EFFECT_H
 #define TEXTURE_EFFECT_H
 
@@ -11,8 +20,9 @@
 #include <QtCore/QThread>
 #include "stdinc.h"
 
-/**
- * @brief Minimal abstract base for a single-GLSL-program texture effect.
+/** @class TextureEffect
+ *
+ * Minimal abstract base for a single-GLSL-program texture effect.
  *
  * An earlier, simpler sibling of EffectShader: it wraps the same idea (one
  * compiled vertex/fragment program plus the common tex0/tex1/resolution/time/
@@ -22,7 +32,7 @@
  * supply its own GL setup and per-frame uniform upload. Kept for reference /
  * potential reuse; the active class hierarchy (TextureEffectKaleidoscopeBase
  * and its descendants) derives from EffectShader instead.
- */
+ **/
 class TextureEffect
 {
 public:

@@ -1,8 +1,17 @@
-/**
- * @file glwidget.h
- * @brief Declares GLwidget, the QOpenGLWidget subclass that owns the render loop,
- *        input handling and the audio/MIDI/track-media wiring for the visualizer.
+//---------------------------------------------------------------------------
+//                              GLwidget
+//---------------------------------------------------------------------------
+//  Copyright (C): 2026 reneweller, MIT License (see LICENSE)
+//---------------------------------------------------------------------------
+/*! @file
+ *
+ *  @brief
+ *  Declares GLwidget, the QOpenGLWidget subclass that owns the render loop, input handling and the
+ *  audio/MIDI/track-media wiring for the visualizer.
+ *
+ *  @author René Weller
  */
+
 #ifndef GLWIDGET_H
 #define GLWIDGET_H
 
@@ -33,10 +42,9 @@
 
 class UpdateCheck;
 
-/**
- * @brief Where one overlay menu drew its rows last frame, so a mouse click can
- *        be mapped back to a row without duplicating the layout arithmetic.
- */
+/** Where one overlay menu drew its rows last frame, so a mouse click can be mapped back to a row without duplicating
+ * the layout arithmetic.
+ **/
 struct MenuHit
 {
     QRect box;       ///< The menu panel; a click outside it closes the menu.
@@ -47,9 +55,9 @@ struct MenuHit
 };
 
 
-/**
- * @brief The QOpenGLWidget that drives the whole visualizer: render loop, input,
- *        and the audio/MIDI/track-media wiring.
+/** @class GLwidget
+ *
+ * The QOpenGLWidget that drives the whole visualizer: render loop, input, and the audio/MIDI/track-media wiring.
  *
  * GLwidget owns the timer-driven render loop (paintGL()/timerEvent()), the active
  * Configuration (a loaded preset made of a RenderPipeline pipeline), and the
@@ -63,7 +71,7 @@ struct MenuHit
  * Configuration switches are requested via switchConfig() but only actually
  * applied in timerEvent(), outside paintGL(), so the cross-fade frame grab
  * cannot re-enter paintGL().
- */
+ **/
 class GLwidget : public QOpenGLWidget
 {
     static const GLdouble StartViewTransZ; ///< Unused legacy trackball constant (start view translation-Z).
@@ -85,24 +93,29 @@ public:
      **/
     ~GLwidget();
 
-    /// Start configuration name (CLI -c \<name\>); empty = first config. Set from
-    /// main() before the widget is constructed, so it must be public.
+    /** Start configuration name (CLI -c \<name\>); empty = first config.
+     *
+     * Set from main() before the widget is constructed, so it must be public.
+     **/
     static QString M_StartConfig;
 
-    /// CLI -r: start recording immediately on launch (used for testing/debugging).
+    /** CLI -r: start recording immediately on launch (used for testing/debugging). */
     static bool M_AutoRecord;
 
-    /// CLI -t \<port\>: start the embedded web remote on this port (0 = off).
-    /// Defaults to 8080 (on); a PERSISTED port (see loadUiSettings()) only
-    /// applies if M_RemotePortFromCli stays false, same "-c wins" precedence
-    /// as M_StartConfig.
+    /** CLI -t \<port\>: start the embedded web remote on this port (0 = off).
+     *
+     * Defaults to 8080 (on); a PERSISTED port (see loadUiSettings()) only applies if M_RemotePortFromCli stays false,
+     * same "-c wins" precedence as M_StartConfig.
+     **/
     static int M_RemotePort;
-    /// Set true by parsecommandline() when -t was actually passed, so a
-    /// persisted remotePort setting doesn't override an explicit CLI choice.
+    /** Set true by parsecommandline() when -t was actually passed, so a persisted remotePort setting doesn't
+     * override an explicit CLI choice.
+     **/
     static bool M_RemotePortFromCli;
 
-    /// CLI -x \<wav\>: batch render — record the offline WAV deterministically,
-    /// then auto-quit once it ends (the mp4 mux continues detached).
+    /** CLI -x \<wav\>: batch render — record the offline WAV deterministically, then auto-quit once it ends (the mp4
+     * mux continues detached).
+     **/
     static bool M_BatchRender;
 
     // ---- Web-remote hooks (same harmless controls as the keyboard) ----
@@ -413,12 +426,15 @@ public:
     void remoteInstallUpdate();
 
 public slots:
-    /**
-     * @brief Stores the working directory for media lookups. Legacy hook, currently
-     *        only records the path; does not itself load anything.
-     * @param filename Directory (or file) path to remember.
-     * @return Always true.
-     */
+    /**  Stores the working directory for media lookups.
+     *
+     * @param filename  Directory (or file) path to remember. (in)
+     *
+     * @return
+     *   Always true.
+     *
+     * Legacy hook, currently only records the path; does not itself load anything.
+     **/
     bool slotSetDirectory( const QString &filename );
 
 protected:
@@ -655,12 +671,13 @@ protected:
                                                   ///< is open.
     OscSender     m_osc; ///< OSC/UDP output of the analysis (mood, beats, bands); off unless oscPort is set.
     QElapsedTimer m_oscClock;                     ///< Wall clock for OscSender's rate limiting.
-    /// Score cues IN (CueReceiver.h): a generator that wrote the music says where the bars,
-    /// sections and drops are.  Off unless cuePort is set in the ini; nothing else changes then.
+    /** Score cues IN (CueReceiver.h): a generator that wrote the music says where the bars, sections and drops are.
+     *
+     * Off unless cuePort is set in the ini; nothing else changes then.
+     **/
     int     m_cuePort = 0;         ///< UDP port for the score cues; 0 = the feature is off.
     QString m_cueBind = "0.0.0.0"; ///< Interface to listen on ("127.0.0.1" = this machine only).
-    /// MIDI-learn targets, cycled with key 'j': controller knobs (CC-mapped) first,
-    /// then note-mapped pads.
+    /** MIDI-learn targets, cycled with key 'j': controller knobs (CC-mapped) first, then note-mapped pads. */
     enum
     {
         MIDI_REACT = 0,
@@ -746,14 +763,13 @@ protected:
                                       ///< remoteSnapshot()).
     qint64 m_snapLast = 0;            ///< m_fpsTimer timestamp of the last snapshot refresh (throttles to ~1 Hz).
 
-    /// Per-scene thumbnail cache for the web remote's scene browser, indexed by
-    /// the active configuration's texture-effect index (same order as
-    /// RenderPipeline::sceneNames()). Filled opportunistically off the SAME
-    /// downscaled readback as m_snapJpg — no extra glReadPixels — so it only
-    /// grows while someone has the remote page open; entries for scenes not
-    /// visited yet in this session stay empty (the remote page just shows no
-    /// image for those). Reset on every config switch, since the indices mean
-    /// a different scene list.
+    /** Per-scene thumbnail cache for the web remote's scene browser, indexed by the active configuration's
+     * texture-effect index (same order as RenderPipeline::sceneNames()).
+     *
+     * Filled opportunistically off the SAME downscaled readback as m_snapJpg — no extra glReadPixels — so it only grows
+     * while someone has the remote page open; entries for scenes not visited yet in this session stay empty (the remote
+     * page just shows no image for those). Reset on every config switch, since the indices mean a different scene list.
+     **/
     std::vector<QByteArray> m_sceneThumbs;
 
     bool   m_batchStopping = false; ///< batch render: shutdown initiated
@@ -847,7 +863,7 @@ protected:
      *   Whether a catalogue sweep is running (review mode, not normal playback).
      **/
     static bool sweepActive() { return sweepSeconds() > 0; }
-    /** @brief Accumulated render time of one scene (KALEIDO_COST_LOG). */
+    /** Accumulated render time of one scene (KALEIDO_COST_LOG). */
     struct SceneCost
     {
         double ms = 0.0;    /**< Summed wall-clock render time of the scene's frames, in milliseconds (divided by frames

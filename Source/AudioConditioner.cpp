@@ -1,11 +1,16 @@
-/**
- * @file AudioConditioner.cpp
- * @brief Implements AudioConditioner — see AudioConditioner.h. Verbatim port of
- *        the audio-conditioning block that used to live inline in
- *        RenderPipeline::paint(); only the storage (now member variables) and
- *        the external inputs (now Context fields) changed, never the maths
- *        or the order of operations.
+/*****************************************************************************\
+ *                              AudioConditioner
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Implements AudioConditioner — see AudioConditioner.h. Verbatim port of the audio-conditioning block that used to
+ *  live inline in RenderPipeline::paint(); only the storage (now member variables) and the external inputs (now
+ *  Context fields) changed, never the maths or the order of operations.
+ *
+ *  @author René Weller
  */
+
 #include "AudioConditioner.h"
 
 #include <cmath>

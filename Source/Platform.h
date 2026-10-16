@@ -1,27 +1,36 @@
-/**
- * @file Platform.h
- * @brief The thin seam between this codebase and the operating system.
+//---------------------------------------------------------------------------
+//                              Platform
+//---------------------------------------------------------------------------
+//  Copyright (C): 2026 reneweller, MIT License (see LICENSE)
+//---------------------------------------------------------------------------
+/*! @file
  *
- * Kaleidoscope grew up on Windows, and the Windows build is the reference: every
- * function here is a PASS-THROUGH under _WIN32, compiled to nothing, so the
- * Windows translation units see exactly the code they always saw. Everything
- * with a body only exists on the other platforms.
+ *  @brief
+ *  The thin seam between this codebase and the operating system.
  *
- * That asymmetry is deliberate and load-bearing. The audio analyser's feedback
- * loops amplify a 1e-6 seed to 35 % within seconds (see the project notes on
- * processBlock's FP sensitivity), so even a harmless-looking reformulation of
- * Windows code can move the picture. The rule for this file, and for the
- * platform work generally: never edit a line the Windows compiler reads --
- * only wrap it.
+ *  Kaleidoscope grew up on Windows, and the Windows build is the reference: every
+ *  function here is a PASS-THROUGH under _WIN32, compiled to nothing, so the
+ *  Windows translation units see exactly the code they always saw. Everything
+ *  with a body only exists on the other platforms.
  *
- * What lives here:
- *   - assetPath()  : separator normalisation for the asset paths baked into the
- *                    shaders' C++ call sites and the preset XML (both use "\").
- *   - glProcAddress(): the GL entry-point resolver, wgl/glX/dlsym.
- * Optional Windows-only subsystems (Spout, WinRT now-playing, winmm MIDI) are
- * not abstracted -- they are compiled out entirely and their callers already
- * handle "not available", which is the honest model: a Linux box has no Spout.
+ *  That asymmetry is deliberate and load-bearing. The audio analyser's feedback
+ *  loops amplify a 1e-6 seed to 35 % within seconds (see the project notes on
+ *  processBlock's FP sensitivity), so even a harmless-looking reformulation of
+ *  Windows code can move the picture. The rule for this file, and for the
+ *  platform work generally: never edit a line the Windows compiler reads --
+ *  only wrap it.
+ *
+ *  What lives here:
+ *    - assetPath()  : separator normalisation for the asset paths baked into the
+ *                     shaders' C++ call sites and the preset XML (both use "\").
+ *    - glProcAddress(): the GL entry-point resolver, wgl/glX/dlsym.
+ *  Optional Windows-only subsystems (Spout, WinRT now-playing, winmm MIDI) are
+ *  not abstracted -- they are compiled out entirely and their callers already
+ *  handle "not available", which is the honest model: a Linux box has no Spout.
+ *
+ *  @author René Weller
  */
+
 #ifndef KALEIDOSCOPE_PLATFORM_H
 #define KALEIDOSCOPE_PLATFORM_H
 
@@ -88,16 +97,17 @@ inline int iCaseCmp( const char *a, const char *b )
             return 0;
     }
 }
-/**
- * @brief Resolves an OpenGL entry point by name.
+/**  Resolves an OpenGL entry point by name.
+ *
+ * @param name  Entry-point name, e.g. "glDrawArraysInstanced".
+ *
+ * @return
+ *   Function pointer, or nullptr if this GL implementation lacks it.
  *
  * Only used on non-Windows: glcore.cpp keeps its original wglGetProcAddress
  * path (with the small-sentinel workaround it needs for certain drivers)
  * untouched under _WIN32.
- *
- * @param name Entry-point name, e.g. "glDrawArraysInstanced".
- * @return Function pointer, or nullptr if this GL implementation lacks it.
- */
+ **/
 #ifndef _WIN32
 void *glProcAddress( const char *name );
 #endif
@@ -105,7 +115,7 @@ void *glProcAddress( const char *name );
 } // namespace Platform
 
 #ifndef _WIN32
-/// POSIX has no _stricmp; the call sites keep the MSVC name and get Platform::iCaseCmp.
+/** POSIX has no _stricmp; the call sites keep the MSVC name and get Platform::iCaseCmp. */
 #define _stricmp ::Platform::iCaseCmp
 #endif
 

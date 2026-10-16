@@ -1,10 +1,15 @@
-/**
- * @file Scene3DPreview.cpp
- * @brief Implementation of Scene3DPreview: shader (re)compilation with
- *        captured stderr, FBO/shadow-map/OIT target setup, and the
- *        shadow -> main -> OIT render sequence. See Scene3DPreview.h for why
- *        this file stands alone.
+/*****************************************************************************\
+ *                              Scene3DPreview
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Implementation of Scene3DPreview: shader (re)compilation with captured stderr, FBO/shadow-map/OIT target setup,
+ *  and the shadow -> main -> OIT render sequence. See Scene3DPreview.h for why this file stands alone.
+ *
+ *  @author René Weller
  */
+
 #include "../Source/glcore.h" // MUST be the first GL-touching include (see .h)
 #include "Scene3DPreview.h"
 

@@ -1,8 +1,17 @@
-/**
- * @file NowPlaying.h
- * @brief Reads the currently-playing track title/artist from the OS media session (with a VLC fallback) for the
- * title-reveal overlay.
+//---------------------------------------------------------------------------
+//                              NowPlaying
+//---------------------------------------------------------------------------
+//  Copyright (C): 2026 reneweller, MIT License (see LICENSE)
+//---------------------------------------------------------------------------
+/*! @file
+ *
+ *  @brief
+ *  Reads the currently-playing track title/artist from the OS media session (with a VLC fallback) for the
+ *  title-reveal overlay.
+ *
+ *  @author René Weller
  */
+
 #pragma once
 
 #include <QtCore/QMutex>
@@ -10,8 +19,9 @@
 #include <thread>
 #include <atomic>
 
-/**
- * @brief Background poller that publishes the OS-wide "now playing" track title/artist and timeline.
+/** @class NowPlaying
+ *
+ * Background poller that publishes the OS-wide "now playing" track title/artist and timeline.
  *
  * Polls the Windows "now playing" media session (System Media Transport Controls) for the
  * currently playing track's title / artist from ANY app (Spotify, browser, foobar2000, …) and
@@ -20,7 +30,7 @@
  * Uses C++/WinRT (GlobalSystemMediaTransportControlsSessionManager). Runs in its own std::thread
  * and degrades silently to empty strings if the API or a session is unavailable, so it never
  * affects the visualizer otherwise.
- */
+ **/
 class NowPlaying
 {
 public:
@@ -47,12 +57,11 @@ public:
      **/
     QString artist() const;
 
-    /**
-     * @brief Playback-Zeitachse der SMTC-Session (für Lyrics-Sync).
+    /** Playback-Zeitachse der SMTC-Session (für Lyrics-Sync).
      *
      * Viele Player melden die Position nur alle paar Sekunden - positionNowSec()
      * extrapoliert deshalb mit der lokalen Uhr, solange playing gilt.
-     */
+     **/
     struct Timeline
     {
         double positionSec = -1.0; ///< Sekunden in den Track; <0 = unbekannt (noch nicht bestätigt, siehe
@@ -60,14 +69,13 @@ public:
         double durationSec = 0.0;  ///< Gesamtlänge des Tracks in Sekunden; 0 = unbekannt.
         bool   playing = false;    ///< true, wenn die Session "Playing" meldet (nicht pausiert/gestoppt).
         qint64 stampMs = 0; ///< Lokale Uhr (QDateTime::currentMSecsSinceEpoch) beim Erfassen dieser Momentaufnahme.
-        /**
-         * @brief Extrapolations-RATE statt Positions-Sprüngen.
+        /** Extrapolations-RATE statt Positions-Sprüngen.
          *
          * Abweichungen zwischen SMTC und eigener Hochrechnung werden als leicht veränderte
          * Laufgeschwindigkeit ausgeglichen (Gleiten). Die veröffentlichte Position ist dadurch
          * MONOTON - sie läuft nie rückwärts, was vorher Karaoke kurz in die Vorzeile flippen und
          * den Scroll hüpfen ließ.
-         */
+         **/
         double rate = 1.0;
     };
     /**  The most recently published playback timeline snapshot.

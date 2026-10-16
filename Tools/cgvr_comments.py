@@ -69,6 +69,11 @@ def block_above( lines, decl ):
     i = decl - 1
     while i >= 0 and re.match( r"^\s*(template\s*<.*>|Q_INVOKABLE|\[\[[^\]]*\]\])\s*$", lines[ i ] ):
         i -= 1
+    # Doxygen attaches a block across blank lines too
+    blank = 0
+    while i >= 0 and not lines[ i ].strip() and blank < 2:
+        i -= 1
+        blank += 1
     if i < 0:
         return None
     s = lines[ i ].strip()
@@ -86,7 +91,7 @@ def block_above( lines, decl ):
     return None
 
 
-def find_decl( lines, line, m ):
+def find_decl( lines, line, m, span=60 ):
     """0-based index of the line that declares member m, searched from Doxygen's (1-based) line on.
 
     Doxygen's line numbers fall behind by one for every continuation line of a trailing `///<` comment, so the
@@ -94,8 +99,9 @@ def find_decl( lines, line, m ):
     name = m[ "name" ].split( "::" )[ -1 ]
     pat = re.compile( r"\boperator\b" if name.startswith( "operator" ) else r"(^|[^\w~])" + re.escape( name ) + r"\s*(\(|$)" )
     names = [ n for t, n in m[ "params" ] if n ]
-    for i in range( max( 0, line - 1 ), min( len( lines ), line + 60 ) ):
-        if pat.search( lines[ i ] ) and not lines[ i ].strip().startswith( ( "//", "*", "/*" ) ):
+    for i in range( max( 0, line - 1 ), min( len( lines ), line + span ) ):
+        code = re.sub( r"//.*$|/\*.*?(\*/|$)", "", lines[ i ] )      # a name in a comment declares nothing
+        if pat.search( code ) and not lines[ i ].strip().startswith( ( "//", "*", "/*" ) ):
             head = " ".join( lines[ i:i + 6 ] )
             if all( re.search( r"\b" + re.escape( n ) + r"\b", head ) for n in names ):
                 return i
@@ -103,8 +109,8 @@ def find_decl( lines, line, m ):
     cls = m[ "qualified" ].rsplit( "::", 1 )[ 0 ] if "::" in m[ "qualified" ] else ""
     if cls:
         qual = re.compile( re.escape( cls.split( "::" )[ -1 ] ) + r"::" + re.escape( name ) + r"\s*\(" )
-        for i in range( max( 0, line - 1 ), min( len( lines ), line + 60 ) ):
-            if qual.search( lines[ i ] ):
+        for i in range( max( 0, line - 1 ), min( len( lines ), line + span ) ):
+            if qual.search( re.sub( r"//.*$|/\*.*?(\*/|$)", "", lines[ i ] ) ):
                 return i
     return None
 
@@ -411,6 +417,33 @@ def render( model, indent ):
 #  Driver
 # ---------------------------------------------------------------------------------------------------------------
 
+def forward_declarations( m, texts ):
+    """[(file, 1-based line)] of declarations (ending in ';') of a function Doxygen only reported the definition of:
+    in the header of the same name and earlier in the defining file."""
+    body = m[ "bodyfile" ] if os.path.isabs( m[ "bodyfile" ] ) else os.path.join( ROOT, m[ "bodyfile" ] )
+    out = []
+    if not body.endswith( ".cpp" ):
+        return out          # an inline function in a header: another class may declare one of the same name
+    for path in ( os.path.splitext( body )[ 0 ] + ".h", body ):
+        if not os.path.exists( path ):
+            continue
+        if path not in texts:
+            texts[ path ] = cgvr_format.read( path ).replace( "\r", "" ).split( "\n" )
+        lines = texts[ path ]
+        limit = m[ "bodystart" ] - 1 if path == body else len( lines )
+        i = 0
+        while i < limit:
+            i = find_decl( lines, i + 1, m, limit - i )
+            if i is None or i >= limit:
+                break
+            end = decl_end( lines, i )
+            if end is not None and lines[ end ].split( "//" )[ 0 ].rstrip().endswith( ";" ):
+                out.append( ( path, i + 1 ) )
+                break
+            i += 1
+    return out
+
+
 def plan( out_dir ):
     """{file: {(first, last): (model, member)}} for every function's doc block(s), plus the list of gaps."""
     members = cgvr_doxygen.members( out_dir )
@@ -424,6 +457,9 @@ def plan( out_dir ):
         locations = [ ( m[ "file" ], m[ "line" ] ) ]
         if m[ "bodyfile" ] and ( m[ "bodyfile" ], m[ "bodystart" ] ) != ( m[ "file" ], m[ "line" ] ):
             locations.append( ( m[ "bodyfile" ], m[ "bodystart" ] ) )
+        elif m[ "bodyfile" ]:
+            # Doxygen may report only the definition of a function that a header or a forward declaration declares
+            locations = forward_declarations( m, texts ) + locations
         found = []
         for f, line in locations:
             path = os.path.join( ROOT, f ) if not os.path.isabs( f ) else f
@@ -503,7 +539,10 @@ def plan( out_dir ):
         needs_return = m[ "type" ] not in ( "", "void" ) and not re.search( r"\bvoid(\s+(CALLBACK|APIENTRY|WINAPI))?$", m[ "type" ] ) \
             and not m[ "name" ].startswith( "~" ) and not ( "::" in m[ "qualified" ] and m[ "name" ] == m[ "qualified" ].split( "::" )[ -2 ] )
         if needs_return and not any( x[ 2 ][ "return" ] or x[ 2 ][ "retvals" ] for x in models ):
-            r = sup.get( "return" ) or return_from_brief( next( ( x[ 2 ][ "brief" ] for x in models if x[ 2 ][ "brief" ] ), "" ) )
+            brief = next( ( x[ 2 ][ "brief" ] for x in models if x[ 2 ][ "brief" ] ), "" )
+            # a getter's one line names what it returns; another function's line says what it does
+            getter = not m[ "params" ] or re.match( r"^(Returns\b|Whether\b|True\b)", brief )
+            r = sup.get( "return" ) or ( return_from_brief( brief ) if getter else "" )
             if r:
                 target[ 2 ][ "return" ] = r
             else:

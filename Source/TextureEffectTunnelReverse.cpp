@@ -1,8 +1,15 @@
-/**
- * @file TextureEffectTunnelReverse.cpp
- * @brief Implementation of TextureEffectTunnelReverse: the counter-scrolling
- *        `speedTunnelReverse` uniform layered on top of TextureEffectTunnel.
+/*****************************************************************************\
+ *                              TextureEffectTunnelReverse
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Implementation of TextureEffectTunnelReverse: the counter-scrolling `speedTunnelReverse` uniform layered on top
+ *  of TextureEffectTunnel.
+ *
+ *  @author René Weller
  */
+
 #include <float.h>
 
 #include "shader_setup.h"

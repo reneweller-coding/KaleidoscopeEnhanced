@@ -1,7 +1,13 @@
-/**
- * @file Utils.cpp
- * @brief Implements NanoTimer (a Windows QueryPerformanceCounter-based nanosecond
- *        timer) and prepareImage() (QImage -> GL-texture-ready conversion).
+/*****************************************************************************\
+ *                              Utils
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Implements NanoTimer (a Windows QueryPerformanceCounter-based nanosecond timer) and prepareImage() (QImage ->
+ *  GL-texture-ready conversion).
+ *
+ *  @author René Weller
  */
 
 #include <stdlib.h>
@@ -52,13 +58,12 @@
  **/
 
 
-/**
- * @brief Create a new timer with nanoseconds resolution.
+/**  Create a new timer with nanoseconds resolution.
  *
  * Saves the current time stamp, too.
  *
- * @note Side effects: see @a checkFrequency().
- *
+ * @note
+ *   Side effects: see @a checkFrequency().
  **/
 
 NanoTimer::NanoTimer( void )
@@ -70,10 +75,7 @@ NanoTimer::NanoTimer( void )
 
 
 
-/**
- * @brief Save the current time (stamp) in the timer.
- *
- **/
+/** Save the current time (stamp) in the timer. */
 
 void NanoTimer::start( void )
 {
@@ -82,11 +84,7 @@ void NanoTimer::start( void )
 
 
 
-/**
- * @brief Return the time elapsed since the last @a start() in nanoseconds.
- * @return Elapsed nanoseconds (or raw counter ticks if no high-frequency counter).
- *
- **/
+/** Return the time elapsed since the last @a start() in nanoseconds. */
 
 double NanoTimer::elapsed( void ) const
 {
@@ -102,19 +100,15 @@ double NanoTimer::elapsed( void ) const
 
 
 
-/**
- * @brief Return current time stamp.
+/**  Return current time stamp.
  *
  * Should be used only internally by this class,
  * because the meaning of the return value is different depending on whether
  * @a M_UseHighFrequ is true or not.
  *
- * @return Raw QueryPerformanceCounter tick count.
- *
  * @warning
- *   We don't check whether checkFrequency succeded!
- *   If it failed, the times will be bogus, or, in the worst case, the program
- *   might even crash.
+ *   We don't check whether checkFrequency succeded! If it failed, the times will be bogus, or, in the worst case,
+ *   the program might even crash.
  **/
 
 long long unsigned int NanoTimer::getTimeStamp( void )
@@ -136,8 +130,7 @@ long long unsigned int NanoTimer::getTimeStamp( void )
 }
 
 
-/**
- * @brief Determine the clock frequency of the CPU.
+/**  Determine the clock frequency of the CPU.
  *
  * Try to determine the speed at which the CPUs time-stamp counter is running
  * (on those plastforms where NanoTimer uses this counter),
@@ -146,18 +139,18 @@ long long unsigned int NanoTimer::getTimeStamp( void )
  * @pre
  *   Assumes that all CPUs in one system run with the same clock frequency!
  *
- * @note Side effects: sets the class variable M_GHz.
- *
  * @todo
- * - SGI
+ *   - SGI
  *
- * @par Implementation
- *   Under Linux, we parse /proc/cpuinfo (if __pentiumpro was defined at compile
- *   time); under Windoze, we use QueryPerformanceFrequency.
+ * @note
+ *   Side effects: sets the class variable M_GHz.
  *
  * @see
  *   getTimeStamp(). The ifdefs must match!
  *
+ * @par
+ *   Implementation Under Linux, we parse /proc/cpuinfo (if __pentiumpro was defined at compile time); under
+ *   Windoze, we use QueryPerformanceFrequency.
  **/
 
 void NanoTimer::checkFrequency( void )
@@ -196,9 +189,7 @@ void NanoTimer::checkFrequency( void )
 
 
 
-/**
- * @brief Tells whether or not the NanoTimer use the high frequency counter.
- * @return True if the high-frequency counter path is active.
+/**  Tells whether or not the NanoTimer use the high frequency counter.
  *
  * @warning
  *   Valid only after the first NanoTimer has been created!
@@ -211,9 +202,7 @@ bool NanoTimer::usesHighFrequ( void )
 
 
 
-/**
- * @brief Returns the frequency (resolution) of the counter in GHz.
- * @return Counter frequency in GHz.
+/**  Returns the frequency (resolution) of the counter in GHz.
  *
  * @warning
  *   Valid only if @a NanoTimer::usesHighFrequ() = @a true !

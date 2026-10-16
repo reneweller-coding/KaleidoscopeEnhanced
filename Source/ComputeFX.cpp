@@ -1,9 +1,17 @@
-/**
- * @file ComputeFX.cpp
- * @brief Implements ComputeFX: per-kind GPU resource management and the
- *        compute-shader dispatch sequence for every simulation kind.
+/*****************************************************************************\
+ *                              ComputeFX
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Implements ComputeFX: per-kind GPU resource management and the compute-shader dispatch sequence for every
+ *  simulation kind.
+ *
+ *  See ComputeFX.h.
+ *
+ *  @author René Weller
  */
-// ComputeFX.cpp — see ComputeFX.h.
+
 #include "ComputeFX.h"
 #include "shader_setup.h"
 
@@ -15,7 +23,7 @@
 
 // Global sampler units.  Units 0..11 are taken by the slideshow images and the
 // older sims (texSim 7, texFluid 8, texSmoke3D 9, texSSM 10, texPhysarum 11).
-/// Per-kind sampler name + texture unit table, indexed by CfxKindE (see CfxTypes.h).
+/** Per-kind sampler name + texture unit table, indexed by CfxKindE (see CfxTypes.h). */
 const CfxInfo CfxInfoTable[CFX_COUNT] = {
     { "texFlame", 12 },
     { "texParticles", 13 },
@@ -41,18 +49,20 @@ namespace
 // Fixed-point scale for the uint accumulator: atomicAdd on floats needs an
 // optional extension, uint atomics are core.  256 keeps ~2 decimal digits of
 // colour precision and still allows ~16M accumulated units per pixel.
-/// @brief Fixed-point multiplier the splat shaders use before atomicAdd into a Canvas::ssbo.
+/** Fixed-point multiplier the splat shaders use before atomicAdd into a Canvas::ssbo. */
 const float SplatScale = 256.f;
 
 // Splat canvases run at a fixed short side; they are smooth density fields, so
 // rendering them at display resolution buys nothing and costs a lot.
-/// @brief Fixed short-side width (texels) used for every splat Canvas, regardless of display resolution.
+/** Fixed short-side width (texels) used for every splat Canvas, regardless of display resolution. */
 const int CanvasW = 1280;
 
 // Compute-program slots (index into ComputeFX::m_prog).
-/// @brief Indices into ComputeFX::m_prog / m_progTried, one per distinct .comp shader file.
-/// Not every slot is used by a shipped kind: P_METAL_SPLAT and P_SCULPT are
-/// reserved but currently unreferenced (stepSculpt is a stub).
+/** Indices into ComputeFX::m_prog / m_progTried, one per distinct .comp shader file.
+ *
+ * Not every slot is used by a shipped kind: P_METAL_SPLAT and P_SCULPT are reserved but currently unreferenced
+ * (stepSculpt is a stub).
+ **/
 enum
 {
     P_RESOLVE = 0,
@@ -92,7 +102,14 @@ enum
     P_MANDELBROT
 };
 
-/// @brief Ceiling-divides `n` by `local` to get the compute-dispatch group count for a given workgroup size.
+/**  Ceiling-divides `n` by `local` to get the compute-dispatch group count for a given workgroup size.
+ *
+ * @param n      Number of items (texels, particles) to cover. (in)
+ * @param local  Workgroup size. (in)
+ *
+ * @return
+ *   The number of workgroups, rounded up.
+ **/
 inline int groups( int n, int local )
 {
     return ( n + local - 1 ) / local;
@@ -1382,18 +1399,27 @@ GLuint ComputeFX::stepSculpt( const AudioFeatures &, float, float )
 // double-single GLSL representation can use anyway.
 namespace
 {
+/** One dive target of the Mandelbrot zoom, a point of the complex plane. */
 struct MbTarget
 {
-    double re, im;
+    double re; ///< Real part.
+    double im; ///< Imaginary part.
 };
+/** The dive targets, cycled through on each zoom-depth reset (see the comment above). */
 const MbTarget MbTargets[] = {
     { -0.7453983606667815, 0.1125046349959942 }, // "seahorse valley" spiral
     { -0.235125, 0.827215 },                     // mini-Mandelbrot approach
     { -1.7490597277748394, 0.0000005996817 },    // deep filament off the main cusp
     { -0.16070135, -1.0375665 },                 // dendrite cluster
 };
-const int MbTargetCount = static_cast<int>( sizeof( MbTargets ) / sizeof( MbTargets[0] ) );
+const int MbTargetCount = static_cast<int>( sizeof( MbTargets ) / sizeof( MbTargets[0] ) ); ///< Number of MbTargets.
 
+/**  Splits a double into the (hi, lo) float pair of the shaders' double-single arithmetic.
+ *
+ * @param v   The value. (in)
+ * @param hi  Receives v rounded to float. (out)
+ * @param lo  Receives the rest, v - hi, rounded to float. (out)
+ **/
 inline void dsSplit( double v, float &hi, float &lo )
 {
     hi = static_cast<float>( v );

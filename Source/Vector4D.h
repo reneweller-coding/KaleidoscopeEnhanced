@@ -1,13 +1,17 @@
-/*! \file Vector4d.h
-  implements the classes Vector4D
-  \author Frank Firsching
-  \date 17.03.2001
- */
-/**
- * @file Vector4D.h
- * @brief Small header-only 4D (homogeneous) vector math type (double xyzw), used
- *        together with Vector3D for homogeneous-coordinate math (e.g. projecting
- *        3D points to/from clip/homogeneous space).
+//---------------------------------------------------------------------------
+//                              Vector4D
+//---------------------------------------------------------------------------
+//  Copyright (C): 2001 Frank Firsching; changes 2026 reneweller, MIT License (see LICENSE)
+//---------------------------------------------------------------------------
+/*! @file
+ *
+ *  @brief
+ *  Small header-only 4D (homogeneous) vector math type (double xyzw), used together with Vector3D for
+ *  homogeneous-coordinate math (e.g. projecting 3D points to/from clip/homogeneous space).
+ *
+ *  Implements the classes Vector4D.
+ *
+ *  @author Frank Firsching (17.03.2001); adapted by René Weller
  */
 
 #ifndef VECTOR4D_H
@@ -18,8 +22,9 @@
 
 class Vector3D;
 
-/**
- * @brief A 4-dimensional homogeneous vector of doubles (x, y, z, w).
+/** @class Vector4D
+ *
+ * A 4-dimensional homogeneous vector of doubles (x, y, z, w).
  *
  * Provides the usual arithmetic operators plus conversions to/from Vector3D
  * (constructing/assigning from a Vector3D sets w=1; converting the other way is done
@@ -27,18 +32,18 @@ class Vector3D;
  * cartesianize() perform the perspective divide, normalizing w back to 1. Coordinates
  * are public data members for direct access, and the class exposes a `double*` cast
  * for interop with APIs expecting a raw `double[4]`.
- */
+ **/
 class Vector4D
 {
 public:
     // public data-members for efficient access and manipulation
-    //! x coordinate of the vector
+    /** x coordinate of the vector */
     double x;
-    //! y coordinate of the vector
+    /** y coordinate of the vector */
     double y;
-    //! z coordinate of the vector
+    /** z coordinate of the vector */
     double z;
-    //! w coordinate of the vector
+    /** w coordinate of the vector */
     double w;
 
     /** default-constructor generates a zero-vector (with w=1) */

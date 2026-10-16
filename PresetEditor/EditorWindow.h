@@ -1,9 +1,18 @@
-/**
- * @file EditorWindow.h
- * @brief The standalone preset editor's main window.
+//---------------------------------------------------------------------------
+//                              EditorWindow
+//---------------------------------------------------------------------------
+//  Copyright (C): 2026 reneweller, MIT License (see LICENSE)
+//---------------------------------------------------------------------------
+/*! @file
  *
- * EditorWindow.h — the standalone preset editor's main window.
+ *  @brief
+ *  The standalone preset editor's main window.
+ *
+ *  EditorWindow.h — the standalone preset editor's main window.
+ *
+ *  @author René Weller
  */
+
 #pragma once
 
 #include <QtWidgets/QMainWindow>
@@ -22,8 +31,9 @@ class QLabel;
 class QTimer;
 class ExprProgram;
 
-/**
- * @brief Main window of the standalone Preset Editor application.
+/** @class EditorWindow
+ *
+ * Main window of the standalone Preset Editor application.
  *
  * Hosts the live GL preview (PreviewWidget) alongside the full authoring UI:
  * texture/combine shader selection, an "add to preset" panel for new
@@ -34,7 +44,7 @@ class ExprProgram;
  * (#m_komplett) used as the default/complete parameter set for any shader.
  * All GUI state is kept in sync with #m_preset through metaToUi()/uiToMeta()
  * and refreshTable()/rebuildRangeEditor()/rebuildParamSliders().
- */
+ **/
 class EditorWindow : public QMainWindow
 {
     Q_OBJECT
@@ -73,35 +83,42 @@ protected:
     void keyPressEvent( QKeyEvent *e ) override;
 
 private slots:
-    /// @brief Reacts to a texture-shader combo change: infers the entry type from the shader's folder/filename, pushes
-    /// it to the preview, and rebuilds the parameter sliders.
+    /**  Reacts to a texture-shader combo change: infers the entry type from the shader's folder/filename, pushes it
+     * to the preview, and rebuilds the parameter sliders.
+     **/
     void onTextureChanged();
-    /// @brief Reacts to a combine-shader combo change: pushes it to the preview and rebuilds the parameter sliders.
+    /** Reacts to a combine-shader combo change: pushes it to the preview and rebuilds the parameter sliders. */
     void onCombineChanged();
-    /// @brief Appends a new TextureShader PresetEntry built from the "Add current shader to preset" panel (with
-    /// defaultParamsFor() params) and refreshes the table.
+    /**  Appends a new TextureShader PresetEntry built from the "Add current shader to preset" panel (with
+     * defaultParamsFor() params) and refreshes the table.
+     **/
     void addTextureEntry();
-    /// @brief Appends a new CombineShader PresetEntry built from the "Add current shader to preset" panel (with
-    /// defaultParamsFor() params) and refreshes the table.
+    /**  Appends a new CombineShader PresetEntry built from the "Add current shader to preset" panel (with
+     * defaultParamsFor() params) and refreshes the table.
+     **/
     void addCombineEntry();
-    /// @brief Removes the currently table-selected preset entry, if any, and refreshes the table.
+    /** Removes the currently table-selected preset entry, if any, and refreshes the table. */
     void removeSelectedEntry();
-    /// @brief Rebuilds the range editor for the newly selected row and mirrors that entry's fields back into the shader
-    /// combos and add-controls.
+    /**  Rebuilds the range editor for the newly selected row and mirrors that entry's fields back into the shader
+     * combos and add-controls.
+     **/
     void onTableSelectionChanged();
-    /// @brief Replaces #m_preset with a blank Preset (keeping the current ImageDirectory) and refreshes the UI.
+    /** Replaces #m_preset with a blank Preset (keeping the current ImageDirectory) and refreshes the UI. */
     void newPreset();
-    /// @brief Prompts for a preset XML file under Presets/, loads it via Preset::load(), and refreshes the UI on
-    /// success (shows a warning dialog on failure).
+    /**  Prompts for a preset XML file under Presets/, loads it via Preset::load(), and refreshes the UI on success
+     * (shows a warning dialog on failure).
+     **/
     void openPreset();
-    /// @brief Writes #m_preset to Presets/&lt;name&gt;.xml, confirming before overwrite and reporting errors via a
-    /// dialog.
+    /** Writes #m_preset to Presets/&lt;name&gt;.xml, confirming before overwrite and reporting errors via a dialog. */
     void savePreset();
-    /// @brief Prompts for a directory and applies it as both the ImageDirectory field and the preview's image source.
+    /** Prompts for a directory and applies it as both the ImageDirectory field and the preview's image source. */
     void browseImageDir();
-    void loadAudioWav();          ///< real-analyzer WAV preview (looped)
-    void randomizeParams();       ///< dice: random values on every slider
-    void freezeParamsIntoEntry(); ///< write slider values as min=max params
+    /** real-analyzer WAV preview (looped) */
+    void loadAudioWav();
+    /** dice: random values on every slider */
+    void randomizeParams();
+    /** write slider values as min=max params */
+    void freezeParamsIntoEntry();
 
 private:
     /**  Populate the texture/combine shader combos by scanning Scene/, Scene3D/ and Combine/ for *.frag files.
@@ -161,14 +178,13 @@ private:
      * overrides to the preview.
      **/
     void pushParamOverrides();
-    /**
-     * @brief One live parameter slider's binding: which uniform it drives, its value range, and which shader stage it
+    /** One live parameter slider's binding: which uniform it drives, its value range, and which shader stage it
      * belongs to.
-     */
+     **/
     struct SliderInfo
     {
         QString name; ///< Parameter/uniform name.
-        /// Lower end of the range the slider's [0,1000] position is linearly mapped into (position 0).
+        /** Lower end of the range the slider's [0,1000] position is linearly mapped into (position 0). */
         float minV, maxV; ///< Upper end of the range the slider's [0,1000] position is linearly mapped into (position
                           ///< 1000).
         bool           isInt;       ///< True if the underlying param is declared int (affects rounding/formatting).
@@ -200,8 +216,7 @@ private:
                                         ///< rebuildRangeEditor()).
     QLabel *m_rangeHint = nullptr;      ///< "select an entry" placeholder
 
-    /**
-     * @brief One `<expr>` formula row's live-evaluation state in the range editor.
+    /** One `<expr>` formula row's live-evaluation state in the range editor.
      *
      * `<expr>` rows in the range editor get a live "current value" readout and
      * a red/invalid state instead of the formula silently evaluating to 0 on
@@ -209,7 +224,7 @@ private:
      * on every keystroke (see rebuildRangeEditor()); re-evaluated on a timer
      * since the result depends on the animated synthetic audio state, not
      * just the formula text.
-     */
+     **/
     struct ExprRow
     {
         QLineEdit                   *edit;     ///< The formula's text-edit widget.
@@ -235,11 +250,14 @@ private:
     QComboBox     *m_musicCombo = nullptr; ///< Synthetic preview music profile selector (Beat / Drone).
     QComboBox     *m_typeCombo = nullptr;  ///< "Add to preset" panel: texture entry type (normal / KaleidoscopeBase /
                                            ///< scene3d).
-    /// "Add to preset" panel: minTimeSolo (seconds) for the next entry; also mirrors the table-selected entry's value.
+    /** "Add to preset" panel: minTimeSolo (seconds) for the next entry; also mirrors the table-selected entry's
+     * value.
+     **/
     QSpinBox *m_minSolo = nullptr, *m_maxSolo = nullptr; ///< "Add to preset" panel: maxTimeSolo (seconds) for the next
                                                          ///< entry; also mirrors the table-selected entry's value.
-    /// "Add to preset" panel: minTimeInterpolation (seconds) for the next entry; also mirrors the table-selected
-    /// entry's value.
+    /** "Add to preset" panel: minTimeInterpolation (seconds) for the next entry; also mirrors the table-selected
+     * entry's value.
+     **/
     QSpinBox *m_minInterp = nullptr, *m_maxInterp = nullptr; ///< "Add to preset" panel: maxTimeInterpolation (seconds)
                                                              ///< for the next entry; also mirrors the table-selected
                                                              ///< entry's value.
@@ -258,12 +276,14 @@ private:
     QLineEdit *m_nameEdit = nullptr;    ///< Preset name field (ConfigurationName / on-disk filename stem).
     QCheckBox *m_hiddenCheck = nullptr; ///< hidden="true" root attribute
     QLineEdit *m_imgDirEdit = nullptr;  ///< ImageDirectory field.
-    /// Preset-level (root attribute) timeTextureSoloMin field, in seconds; synced with #m_preset by
-    /// metaToUi()/uiToMeta().
+    /** Preset-level (root attribute) timeTextureSoloMin field, in seconds; synced with #m_preset by
+     * metaToUi()/uiToMeta().
+     **/
     QSpinBox *m_gSoloMin = nullptr, *m_gSoloMax = nullptr; ///< Preset-level (root attribute) timeTextureSoloMax field,
                                                            ///< in seconds.
-    /// Preset-level (root attribute) timeTextureInterpolationMin field, in seconds; synced with #m_preset by
-    /// metaToUi()/uiToMeta().
+    /** Preset-level (root attribute) timeTextureInterpolationMin field, in seconds; synced with #m_preset by
+     * metaToUi()/uiToMeta().
+     **/
     QSpinBox *m_gInterpMin = nullptr, *m_gInterpMax = nullptr; ///< Preset-level (root attribute)
                                                                ///< timeTextureInterpolationMax field, in seconds.
 

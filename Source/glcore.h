@@ -1,54 +1,62 @@
-// glcore.h — self-contained OpenGL core loader (replaces GLee).
-// ---------------------------------------------------------------------------
-// Windows' <GL/gl.h> only exports GL 1.1; every newer entry point must be
-// resolved at runtime.  GLee did that for the compatibility era but chokes on
-// a CORE context (it reads the removed GL_EXTENSIONS string) and predates
-// GL 4.3 compute.  This header declares exactly what THIS codebase uses:
-// the call sites keep their standard names via #define remaps onto loaded
-// pointers.  Call glcoreInit() once with the context current (initializeGL).
-//
-// MUST be included before any other gl.h path (same rule as GLee before it).
-/**
- * @file glcore.h
- * @brief Hand-rolled OpenGL 4.3 core-profile function-pointer loader that replaces
- *        GLEW/GLee.
+//---------------------------------------------------------------------------
+//                              glcore
+//---------------------------------------------------------------------------
+//  Copyright (C): 2026 reneweller, MIT License (see LICENSE)
+//---------------------------------------------------------------------------
+/*! @file
  *
- * @par The problem this solves
- * On Windows, `<GL/gl.h>` only exports the fixed-function GL 1.1 API; every entry
- * point added since then (buffers, shaders, framebuffers, compute, ...) must be
- * resolved at runtime via wglGetProcAddress. The codebase used to rely on GLee for
- * that, but GLee predates GL 4.3 compute shaders and actively breaks on a CORE
- * profile context: it probes the (compatibility-only) `GL_EXTENSIONS` string, which
- * a core context no longer exposes. Since a core profile also has no fixed-function
- * pipeline (no glBegin/glEnd, no matrix stack, everything goes through shaders and
- * buffers), this loader only ever needs to resolve the "modern" entry points this
- * codebase actually calls.
+ *  @brief
+ *  Hand-rolled OpenGL 4.3 core-profile function-pointer loader that replaces GLEW/GLee.
  *
- * @par How it works
- * This header declares exactly the GL entry points the codebase uses as function
- * pointers named `glcore_<name>` (via the GLC_FN macro), plus the GL tokens/typedefs
- * missing from the GL 1.1 headers. `#define`s then remap the standard GL call-site
- * names (e.g. `glActiveTexture`) onto the loaded pointers (`glcore_glActiveTexture`),
- * so callers elsewhere in the codebase keep writing ordinary-looking GL calls.
- * glcoreInit() (see glcore.cpp) resolves every pointer once, with a GL context
- * current (called from initializeGL); glcoreHasCompute / glcoreHasTess then report
- * whether the optional compute/tessellation entry points were actually available, so
- * callers can gate those code paths and fall back gracefully.
+ *  @par The problem this solves
+ *  On Windows, `<GL/gl.h>` only exports the fixed-function GL 1.1 API; every entry
+ *  point added since then (buffers, shaders, framebuffers, compute, ...) must be
+ *  resolved at runtime via wglGetProcAddress. The codebase used to rely on GLee for
+ *  that, but GLee predates GL 4.3 compute shaders and actively breaks on a CORE
+ *  profile context: it probes the (compatibility-only) `GL_EXTENSIONS` string, which
+ *  a core context no longer exposes. Since a core profile also has no fixed-function
+ *  pipeline (no glBegin/glEnd, no matrix stack, everything goes through shaders and
+ *  buffers), this loader only ever needs to resolve the "modern" entry points this
+ *  codebase actually calls.
  *
- * This header must be included before any other path that pulls in `<GL/gl.h>`,
- * the same rule that applied to GLee before it.
+ *  @par How it works
+ *  This header declares exactly the GL entry points the codebase uses as function
+ *  pointers named `glcore_<name>` (via the GLC_FN macro), plus the GL tokens/typedefs
+ *  missing from the GL 1.1 headers. `#define`s then remap the standard GL call-site
+ *  names (e.g. `glActiveTexture`) onto the loaded pointers (`glcore_glActiveTexture`),
+ *  so callers elsewhere in the codebase keep writing ordinary-looking GL calls.
+ *  glcoreInit() (see glcore.cpp) resolves every pointer once, with a GL context
+ *  current (called from initializeGL); glcoreHasCompute / glcoreHasTess then report
+ *  whether the optional compute/tessellation entry points were actually available, so
+ *  callers can gate those code paths and fall back gracefully.
+ *
+ *  This header must be included before any other path that pulls in `<GL/gl.h>`,
+ *  the same rule that applied to GLee before it.
+ *
+ *  Self-contained OpenGL core loader (replaces GLee).
+ *  Windows' <GL/gl.h> only exports GL 1.1; every newer entry point must be
+ *  resolved at runtime.  GLee did that for the compatibility era but chokes on
+ *  a CORE context (it reads the removed GL_EXTENSIONS string) and predates
+ *  GL 4.3 compute.  This header declares exactly what THIS codebase uses:
+ *  the call sites keep their standard names via `#define` remaps onto loaded
+ *  pointers.  Call glcoreInit() once with the context current (initializeGL).
+ *
+ *  MUST be included before any other gl.h path (same rule as GLee before it).
+ *
+ *  @author René Weller
  */
 
 #pragma once
 
 #ifdef _WIN32
 #ifndef WIN32_LEAN_AND_MEAN
-/// Keeps <windows.h> to its core declarations (leaves out e.g. Winsock, RPC and OLE).
+/** Keeps <windows.h> to its core declarations (leaves out e.g. Winsock, RPC and OLE). */
 #define WIN32_LEAN_AND_MEAN
 #endif
 #ifndef NOMINMAX
-/// Without this, <windows.h> defines min/max as MACROS and every later
-/// std::min( a, b ) fails with a bewildering "invalid token on the right of ::".
+/** Without this, <windows.h> defines min/max as MACROS and every later std::min( a, b ) fails with a bewildering
+ * "invalid token on the right of ::".
+ **/
 #define NOMINMAX
 #endif
 #include <windows.h>
@@ -217,17 +225,17 @@ extern "C"
 {
 #endif
 
-/**
- * @brief Declares one loadable GL entry point.
+/**  Declares one loadable GL entry point.
+ *
+ * @param ret   Return type of the GL function.
+ * @param name  Name of the GL function (e.g. glActiveTexture).
+ * @param args  Parenthesized parameter-type list of the GL function.
  *
  * For entry point @p name, defines its function-pointer typedef `PFN_<name>` (with
  * signature `ret args`) and declares the global pointer variable `glcore_<name>` that
  * glcoreInit() (see glcore.cpp) resolves via wglGetProcAddress/GetProcAddress. Used
  * only for the duration of the declaration list below; undef'd immediately after.
- * @param ret Return type of the GL function.
- * @param name Name of the GL function (e.g. glActiveTexture).
- * @param args Parenthesized parameter-type list of the GL function.
- */
+ **/
 #define GLC_FN( ret, name, args )             \
     typedef ret( APIENTRY *PFN_##name ) args; \
     extern PFN_##name glcore_##name;
@@ -298,8 +306,9 @@ extern "C"
     GLC_FN( void, glFramebufferRenderbuffer, ( GLenum, GLenum, GLenum, GLuint ) )
     GLC_FN( void, glGenerateMipmap, ( GLenum ) )
     GLC_FN( const GLubyte *, glGetStringi, ( GLenum, GLuint ) )
-    /// Callback signature of KHR_debug: glDebugMessageCallback hands every driver message
-    /// (source, type, id, severity, text) to this, with the userParam registered alongside.
+    /** Callback signature of KHR_debug: glDebugMessageCallback hands every driver message (source, type, id,
+     * severity, text) to this, with the userParam registered alongside.
+     **/
     typedef void( APIENTRY *GLDEBUGPROCKC )( GLenum source, GLenum type, GLuint id,
                                              GLenum severity, GLsizei length,
                                              const GLchar *message, const void *userParam );
@@ -349,7 +358,7 @@ extern "C"
     // resolve (blit) down to the regular render targets before anything
     // downstream (combine, depth-based post) ever samples them.
     GLC_FN( void, glTexImage2DMultisample, ( GLenum, GLsizei, GLenum, GLsizei, GLsizei, GLboolean ) )
-    ///@}
+    /** @} */
 
 #undef GLC_FN
 
@@ -441,18 +450,18 @@ extern "C"
     /// @endcond
     ///@}
 
-    /**
-     * @brief True when every entry point the compute pipeline needs resolved (set by
-     *        glcoreInit()). Callers gate their compute path on this and keep a fallback.
-     */
+    /** True when every entry point the compute pipeline needs resolved (set by glcoreInit()).
+     *
+     * Callers gate their compute path on this and keep a fallback.
+     **/
     extern int glcoreHasCompute;
-    /**
-     * @brief True when tessellation is usable (glPatchParameteri resolved). Geometry
-     *        shaders need no extra entry point, so they ride on the core 3.2 context.
-     */
+    /** True when tessellation is usable (glPatchParameteri resolved).
+     *
+     * Geometry shaders need no extra entry point, so they ride on the core 3.2 context.
+     **/
     extern int glcoreHasTess;
 
-    /// Non-zero once KHR_debug's entry points resolved (core since GL 4.3).
+    /** Non-zero once KHR_debug's entry points resolved (core since GL 4.3). */
     extern int glcoreHasDebug;
 
     /**  Installs a debug callback that logs GL errors with the API call that raised them.

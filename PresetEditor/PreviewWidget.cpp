@@ -1,9 +1,15 @@
-/**
- * @file PreviewWidget.cpp
- * @brief Implementation of PreviewWidget: shader (re)compilation, the
- *        synthetic and WAV-timeline audio-uniform pipelines, the 2D camera
- *        rig, and the combined 2D/scene3d two-pass render in paintGL().
+/*****************************************************************************\
+ *                              PreviewWidget
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Implementation of PreviewWidget: shader (re)compilation, the synthetic and WAV-timeline audio-uniform pipelines,
+ *  the 2D camera rig, and the combined 2D/scene3d two-pass render in paintGL().
+ *
+ *  @author René Weller
  */
+
 #include "PreviewWidget.h"
 #include "Preset.h" // presetsDir()
 
@@ -26,17 +32,16 @@
 #include "../Source/EffectShader.h"
 #include "../Source/ExprEval.h"
 
-/**
- * @brief Trivial fullscreen-quad vertex shader (330 core, matching the migrated .frag files).
+/** Trivial fullscreen-quad vertex shader (330 core, matching the migrated .frag files).
  *
  * They use gl_FragCoord, so no texcoords / matrices are needed here.
- */
+ **/
 static const char *kVert =
     "#version 330 core\n"
     "in vec2 aPos;\n"
     "void main() { gl_Position = vec4(aPos, 0.0, 1.0); }\n";
 
-/// One `<int>`/`<float>` range entry parsed out of Komplett.xml for a single shader file; see komplettRangesFor().
+/** One `<int>`/`<float>` range entry parsed out of Komplett.xml for a single shader file; see komplettRangesFor(). */
 struct KomplettRange
 {
     QString kind, name;

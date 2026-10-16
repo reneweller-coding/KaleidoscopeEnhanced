@@ -1,41 +1,48 @@
-/**
- * @file Scene3DShader.h
- * @brief EffectShader subclass rendering a real 3D scene: procedural geometry animated by a scene-specific vertex
- * shader, drawn through a perspective camera into the shared effect FBO.
+//---------------------------------------------------------------------------
+//                              Scene3DShader
+//---------------------------------------------------------------------------
+//  Copyright (C): 2026 reneweller, MIT License (see LICENSE)
+//---------------------------------------------------------------------------
+/*! @file
+ *
+ *  @brief
+ *  EffectShader subclass rendering a real 3D scene: procedural geometry animated by a scene-specific vertex shader,
+ *  drawn through a perspective camera into the shared effect FBO.
+ *
+ *  A REAL 3D scene effect: procedural geometry in a static VBO, animated
+ *  entirely in a scene-specific VERTEX shader (Scene3D\<Name>.vert+.frag),
+ *  rendered with a perspective camera into the same effect FBO every other
+ *  effect uses — so combines, trails and presets keep working unchanged.
+ *
+ *  Generic vertex layout (one layout serves every scene):
+ *    attribute vec4 attrA;  // xyz = local corner / strip params, w = index
+ *    attribute vec4 attrB;  // four random seeds in [0,1)
+ *  The vertex shader builds the world from index+seeds+audio uniforms; the
+ *  C++ side only supplies the projection matrix and the stereo eye offset.
+ *
+ *  Geometry kinds (config attribute geom="points|cubes|ribbon|grid|quads"):
+ *    points  60000 point sprites   additive blending, no depth test
+ *    cubes    4900 unit cubes      opaque, depth-tested
+ *    ribbon  20x300 quad strips    additive blending, no depth test
+ *    grid    220x120 cell sheet    opaque, depth-tested (u/v in attrA.xy)
+ *    quads    3000 unit quads      opaque, depth-tested (corner in attrA.xy)
+ *    mesh    real .glb/.obj model  opaque, depth-tested (attrA.xyz=pos/.w=U,
+ *                                  attrB.xyz=normal/.w=V -- see MeshImport.h);
+ *                                  its material, if any, samples "texMeshMaterial"
+ *                                  (sampler2DArray, unit MeshMaterialTexUnit)
+ *
+ *  The CURRENT IMAGE is available to every scene: the host binds it on unit 0
+ *  before the effect pass and setUniforms() points "tex0" at it — a fragment
+ *  shader only has to declare `uniform sampler2D tex0;` (unit 1 / "tex1" holds
+ *  the incoming cross-fade image).
+ *
+ *  TRUE STEREO: the host calls setEyeOffset(+-e) and renders twice into the
+ *  side-by-side / top-bottom halves (scissored); the vertex shaders shift the
+ *  view by eyeOff and re-converge after projection.
+ *
+ *  @author René Weller
  */
-// Scene3DShader.h
-// ---------------------------------------------------------------------------
-// A REAL 3D scene effect: procedural geometry in a static VBO, animated
-// entirely in a scene-specific VERTEX shader (Scene3D\<Name>.vert+.frag),
-// rendered with a perspective camera into the same effect FBO every other
-// effect uses — so combines, trails and presets keep working unchanged.
-//
-// Generic vertex layout (one layout serves every scene):
-//   attribute vec4 attrA;  // xyz = local corner / strip params, w = index
-//   attribute vec4 attrB;  // four random seeds in [0,1)
-// The vertex shader builds the world from index+seeds+audio uniforms; the
-// C++ side only supplies the projection matrix and the stereo eye offset.
-//
-// Geometry kinds (config attribute geom="points|cubes|ribbon|grid|quads"):
-//   points  60000 point sprites   additive blending, no depth test
-//   cubes    4900 unit cubes      opaque, depth-tested
-//   ribbon  20x300 quad strips    additive blending, no depth test
-//   grid    220x120 cell sheet    opaque, depth-tested (u/v in attrA.xy)
-//   quads    3000 unit quads      opaque, depth-tested (corner in attrA.xy)
-//   mesh    real .glb/.obj model  opaque, depth-tested (attrA.xyz=pos/.w=U,
-//                                 attrB.xyz=normal/.w=V -- see MeshImport.h);
-//                                 its material, if any, samples "texMeshMaterial"
-//                                 (sampler2DArray, unit MeshMaterialTexUnit)
-//
-// The CURRENT IMAGE is available to every scene: the host binds it on unit 0
-// before the effect pass and setUniforms() points "tex0" at it — a fragment
-// shader only has to declare `uniform sampler2D tex0;` (unit 1 / "tex1" holds
-// the incoming cross-fade image).
-//
-// TRUE STEREO: the host calls setEyeOffset(+-e) and renders twice into the
-// side-by-side / top-bottom halves (scissored); the vertex shaders shift the
-// view by eyeOff and re-converge after projection.
-// ---------------------------------------------------------------------------
+
 #pragma once
 
 #include <atomic>
@@ -43,9 +50,10 @@
 #include "EffectShader.h"
 #include <string>
 
-/**
- * @brief EffectShader specialization that renders a real 3D scene: procedural geometry driven entirely by a
- * scene-specific vertex shader.
+/** @class Scene3DShader
+ *
+ * EffectShader specialization that renders a real 3D scene: procedural geometry driven entirely by a scene-specific
+ * vertex shader.
  *
  * Each instance owns one VBO/VAO of host-built (or, for geom="indirect", compute-generated)
  * geometry, a perspective camera it assembles itself in draw() (including an optional
@@ -56,7 +64,7 @@
  * same scene reads as a whole family of variations rather than always looking identical. Used by
  * the preset/effect system like any other EffectShader; is3D() is the only extra signal the host
  * needs, to route true-stereo per-eye rendering.
- */
+ **/
 class Scene3DShader : public EffectShader
 {
 public:
@@ -310,12 +318,11 @@ private:
     // loads a real .glb/.gltf/.obj file (see MeshImport.h) instead of generating
     // a pattern, and its material (if the source had one) is bound as a
     // sampler2DArray -- see m_meshMaterialTex.
-    /**
-     * @brief Which procedural geometry buildGeometry() produces and how draw() renders it.
+    /** Which procedural geometry buildGeometry() produces and how draw() renders it.
      *
      * Selected from the preset's geom= string in the constructor; see the file-level comment
      * and buildGeometry()'s per-branch comments for the exact vertex counts and layout.
-     */
+     **/
     enum GeomKindE
     {
         GEOM_POINTS = 0,
@@ -371,11 +378,9 @@ private:
     int  m_genSpectro = -1; ///< Cached answer to "does the generator declare `texSpectro`?": -1 = not yet checked, 0 =
                             ///< no, 1 = yes (see usesSpectro()).
 
-    /**
-     * @brief Cached uniform locations for m_genProg, so runGenerator() doesn't repeat ~18
-     *        glGetUniformLocation string lookups (plus one per registered Uniform/expr) every
-     *        frame -- the exact anti-pattern EffectShader::applyAudioFeatures's m_audioLocs
-     *        cache already exists to avoid for the fragment-stage program.
+    /** Cached uniform locations for m_genProg, so runGenerator() doesn't repeat ~18 glGetUniformLocation string
+     * lookups (plus one per registered Uniform/expr) every frame -- the exact anti-pattern
+     * EffectShader::applyAudioFeatures's m_audioLocs cache already exists to avoid for the fragment-stage program.
      *
      * A SEPARATE cache from that one is required (not a reuse of m_exprs' own
      * ExprEntry::loc/progId fields): m_uniforms/m_exprs are inherited from EffectShader and are
@@ -383,7 +388,7 @@ private:
      * stage of this very scene, so a single shared progId-tagged cache slot per entry would
      * thrash between the two programs every frame (m_shProgId, then m_genProg, then back) and
      * never actually hit.
-     */
+     **/
     struct GenLocCache
     {
         GLuint progId = 0; ///< Program the cached locations belong to; a mismatch with m_genProg triggers a re-resolve.
@@ -572,19 +577,20 @@ private:
     // depth testing puts the (much closer) object in front of the shell
     // automatically. m_meshOwnVertexCount is where the split falls; the
     // vertex shader reads it via gl_VertexID to pick which branch applies.
-    /// Half-extents and centre of model 1 in its OWN object space, measured at
-    /// load. Published as meshExtent/meshCenter so a mesh shader can size a
-    /// sweep, a formation or an emission volume to the model it actually got
-    /// rather than to a constant that only suits one asset. The generator
-    /// normalises each asset so its LONGEST axis is about 1.0, which says
-    /// nothing about the other two.
+    /** Half-extents and centre of model 1 in its OWN object space, measured at load.
+     *
+     * Published as meshExtent/meshCenter so a mesh shader can size a sweep, a formation or an emission volume to the
+     * model it actually got rather than to a constant that only suits one asset. The generator normalises each asset so
+     * its LONGEST axis is about 1.0, which says nothing about the other two.
+     **/
     float m_meshExtent[3] = { 0.5f, 0.5f, 0.5f };
     float m_meshCenter[3] = { 0.0f, 0.0f, 0.0f }; ///< Bounding-box centre of model 1 in its own object space, measured
                                                   ///< at load; uploaded as `meshCenter` (see m_meshExtent).
-    /// The same for model2 (meshExtent2/meshCenter2). A two-object scene
-    /// orients each from its OWN geometry: ShipDocking aligns the SHIP,
-    /// which is model2, and using model1's extents there would point the
-    /// ship along the station's longest axis.
+    /** The same for model2 (meshExtent2/meshCenter2).
+     *
+     * A two-object scene orients each from its OWN geometry: ShipDocking aligns the SHIP, which is model2, and using
+     * model1's extents there would point the ship along the station's longest axis.
+     **/
     float m_meshExtent2[3] = { 0.5f, 0.5f, 0.5f };
     float m_meshCenter2[3] = { 0.0f, 0.0f, 0.0f }; ///< Bounding-box centre of model 2 in its own object space; uploaded
                                                    ///< as `meshCenter2` (see m_meshExtent2).
@@ -592,12 +598,13 @@ private:
     GLint m_meshCenter2Uni = -1; ///< Location of the `meshCenter2` (vec3) uniform; -1 if the shader doesn't declare it.
     GLint m_meshExtentUni = -1;  ///< Location of the `meshExtent` (vec3) uniform; -1 if the shader doesn't declare it.
     GLint m_meshCenterUni = -1;  ///< Location of the `meshCenter` (vec3) uniform; -1 if the shader doesn't declare it.
-    /// How many copies of the loaded mesh to draw (instances="N" on the scene
-    /// entry; 1 = the ordinary single-object case). One upload, N draws, and
-    /// the shader places each copy from gl_InstanceID. The sky shell lives in
-    /// the SAME buffer, so a shader that asks for instances must skip the
-    /// shell on every instance but the first, or it draws N backdrops over
-    /// each other.
+    /** How many copies of the loaded mesh to draw (instances="N" on the scene entry; 1 = the ordinary single-object
+     * case).
+     *
+     * One upload, N draws, and the shader places each copy from gl_InstanceID. The sky shell lives in the SAME buffer,
+     * so a shader that asks for instances must skip the shell on every instance but the first, or it draws N backdrops
+     * over each other.
+     **/
     int   m_meshInstances = 1;
     GLint m_meshInstancesUni = -1; ///< Location of the `meshInstances` uniform (the instance count, so the shader can
                                    ///< lay the copies out); -1 if not declared.

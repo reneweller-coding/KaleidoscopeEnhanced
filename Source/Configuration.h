@@ -1,7 +1,16 @@
-/**
- * @file Configuration.h
- * @brief Loader for a single preset/config XML file (Presets/ *.xml) into the runtime shader/uniform object graph.
+//---------------------------------------------------------------------------
+//                              Configuration
+//---------------------------------------------------------------------------
+//  Copyright (C): 2026 reneweller, MIT License (see LICENSE)
+//---------------------------------------------------------------------------
+/*! @file
+ *
+ *  @brief
+ *  Loader for a single preset/config XML file (Presets/ *.xml) into the runtime shader/uniform object graph.
+ *
+ *  @author René Weller
  */
+
 #ifndef CONFIGURATION_H
 #define CONFIGURATION_H
 
@@ -17,8 +26,9 @@
 #include "Uniform.h"
 #include "RenderPipeline.h"
 
-/**
- * @brief Parses one preset XML file and builds the RenderPipeline/EffectShader object graph it describes.
+/** @class Configuration
+ *
+ * Parses one preset XML file and builds the RenderPipeline/EffectShader object graph it describes.
  *
  * A Configuration corresponds 1:1 to a Presets/ *.xml preset file: its
  * constructor parses the document (readConfiguration()) into a freshly
@@ -29,7 +39,7 @@
  * stop() just forward to the owned RenderPipeline; isHidden() exposes whether
  * this preset is a reference/test-bench build that should be excluded from
  * user-facing selection.
- */
+ **/
 class Configuration
 {
 public:
@@ -101,19 +111,21 @@ private:
     RenderPipeline *m_renderPipeline; ///< The shader/scene pipeline built by readConfiguration(); owned (deleted in the
                                       ///< destructor).
 
-    /// How many geom="mesh" scenes readConfiguration() skipped because their
-    /// model file was not installed. The 3D models are an OPTIONAL separate
-    /// download (they dwarf the rest of the program), so a plain install
-    /// legitimately has none of them -- this is reported once at startup so
-    /// the smaller scene count is explained rather than mysterious.
+    /** How many geom="mesh" scenes readConfiguration() skipped because their model file was not installed.
+     *
+     * The 3D models are an OPTIONAL separate download (they dwarf the rest of the program), so a plain install
+     * legitimately has none of them -- this is reported once at startup so the smaller scene count is explained rather
+     * than mysterious.
+     **/
     int m_skippedMeshScenes = 0;
 
-    /// How many scenes this preset actually built. A preset made ENTIRELY of
-    /// geom="mesh" scenes comes to nothing without the optional model pack,
-    /// and RenderPipeline would then quietly substitute a pass-through -- a
-    /// menu entry that shows the photos and nothing else. glwidget hides such
-    /// a preset instead; see the hidden-list pass. No shipped preset is that
-    /// today, but the guard is what makes adding one safe.
+    /** How many scenes this preset actually built.
+     *
+     * A preset made ENTIRELY of geom="mesh" scenes comes to nothing without the optional model pack, and RenderPipeline
+     * would then quietly substitute a pass-through -- a menu entry that shows the photos and nothing else. glwidget
+     * hides such a preset instead; see the hidden-list pass. No shipped preset is that today, but the guard is what
+     * makes adding one safe.
+     **/
     int m_loadedScenes = 0;
 
     /**  Parses the preset XML document and populates m_renderPipeline with its TextureShader/CombineShader entries.

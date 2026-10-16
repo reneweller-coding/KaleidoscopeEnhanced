@@ -1,21 +1,29 @@
-/**
- * @file ComputeFX.h
- * @brief Declares ComputeFX, the GL 4.3 compute-shader subsystem that runs
- *        ~26 audio-reactive simulations (fractal flames, particle flow,
- *        N-body, fluids, etc.) and publishes each as a texture.
+//---------------------------------------------------------------------------
+//                              ComputeFX
+//---------------------------------------------------------------------------
+//  Copyright (C): 2026 reneweller, MIT License (see LICENSE)
+//---------------------------------------------------------------------------
+/*! @file
+ *
+ *  @brief
+ *  Declares ComputeFX, the GL 4.3 compute-shader subsystem that runs ~26 audio-reactive simulations (fractal
+ *  flames, particle flow, N-body, fluids, etc.) and publishes each as a texture.
+ *
+ *  GL 4.3 compute-shader visual subsystems.
+ *  Everything in here needs capabilities a fragment shader does not have:
+ *  scattered writes (a thread decides WHERE it writes), atomics, workgroup
+ *  shared memory or shader-storage buffers.  Each "kind" is an independent
+ *  simulation that publishes ONE texture on its own global sampler unit; an
+ *  effect shader opts in simply by declaring that sampler (same convention as
+ *  the older texSim / texFluid / texPhysarum fields).
+ *
+ *  Every kind fails SOFT: if compute is unavailable, a program fails to build
+ *  or an allocation fails, step() returns 0 and the display effect just sees
+ *  an empty field instead of the app dying.
+ *
+ *  @author René Weller
  */
-// ComputeFX.h — GL 4.3 compute-shader visual subsystems.
-// ---------------------------------------------------------------------------
-// Everything in here needs capabilities a fragment shader does not have:
-// scattered writes (a thread decides WHERE it writes), atomics, workgroup
-// shared memory or shader-storage buffers.  Each "kind" is an independent
-// simulation that publishes ONE texture on its own global sampler unit; an
-// effect shader opts in simply by declaring that sampler (same convention as
-// the older texSim / texFluid / texPhysarum fields).
-//
-// Every kind fails SOFT: if compute is unavailable, a program fails to build
-// or an allocation fails, step() returns 0 and the display effect just sees
-// an empty field instead of the app dying.
+
 #pragma once
 
 #include "glcore.h"
@@ -23,8 +31,9 @@
 #include "CfxTypes.h" // CfxKindE / CfxInfo / CfxInfoTable -- split out so code that
                       // only needs to name a kind doesn't need glcore.h too.
 
-/**
- * @brief Owns and drives every GL 4.3 compute-shader simulation ("kind").
+/** @class ComputeFX
+ *
+ * Owns and drives every GL 4.3 compute-shader simulation ("kind").
  *
  * ComputeFX is a grab-bag of independent GPU simulations — fractal flames,
  * particle flow, N-body gravity, boids, DLA crystal growth, lightning,
@@ -39,7 +48,7 @@
  * allocation fails, the corresponding step function returns 0, step() marks
  * the kind dead so it is never retried, and the caller just sees an empty
  * texture instead of the application crashing.
- */
+ **/
 class ComputeFX
 {
 public:
@@ -135,8 +144,7 @@ private:
     // Used by every sim that scatters colour into the frame.  The accumulator
     // is fixed-point (SplatScale) because atomicAdd on floats is an optional
     // GL extension, while uint atomics are core.
-    /**
-     * @brief GPU state for a "splat" sim: an atomic uint accumulator resolved to an RGBA16F texture.
+    /** GPU state for a "splat" sim: an atomic uint accumulator resolved to an RGBA16F texture.
      *
      * Sims that scatter colour into the frame (a thread decides which pixel
      * to touch) accumulate into the fixed-point `ssbo` using uint atomics,
@@ -144,12 +152,12 @@ private:
      * the accumulator is cleared (clearAccum), the sim's compute shader
      * scatters into it, and resolve() tonemaps it into `tex`, which is what
      * gets published to the effect shaders.
-     */
+     **/
     struct Canvas
     {
         GLuint ssbo = 0; ///< w*h*4 uints: R,G,B,hits accumulator, atomically scattered into
         GLuint tex = 0;  ///< RGBA16F result texture published to effect shaders
-        /** @brief Canvas width in texels (0 until ensureCanvas() allocates it; a size change reallocates). */
+        /** Canvas width in texels (0 until ensureCanvas() allocates it; a size change reallocates). */
         int   w = 0, h = 0;   ///< canvas height in texels (0 until allocated)
         float lastUse = 0.f;  ///< last step() time this canvas was touched; drives retireIdle()
         bool  seeded = false; ///< whether this canvas's sim state has been initialised at least once
@@ -197,8 +205,7 @@ private:
     void freeCanvas( Canvas &c );
 
     // Generic ping-pong field (RGBA16F) for the grid-based sims.
-    /**
-     * @brief A ping-pong pair of RGBA16F textures used by grid-based sims.
+    /** A ping-pong pair of RGBA16F textures used by grid-based sims.
      *
      * Each step reads from `tex[idx]` and writes the new state into
      * `tex[1-idx]`, then flips `idx`; this is the standard double-buffering
@@ -207,12 +214,11 @@ private:
      * DLA crystal, erosion) only ever use tex[0] as a single read-write
      * image instead, when the update does not need the previous state kept
      * intact.
-     */
+     **/
     struct Field
     {
         GLuint tex[2] = { 0, 0 }; ///< the two ping-pong textures
-        /** @brief Field width in texels (0 until ensureField() allocates it; a size change reallocates both textures).
-         */
+        /** Field width in texels (0 until ensureField() allocates it; a size change reallocates both textures). */
         int w = 0, h = 0, idx = 0; ///< which of tex[] is "current" (read side), 0 or 1; flipped after each ping-pong
                                    ///< step
         float lastUse = 0.f;       ///< last step() time this field was touched; drives retireIdle()

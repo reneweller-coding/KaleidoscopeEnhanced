@@ -1,23 +1,32 @@
-/**
- * @file PlatformQt.h
- * @brief The Qt-side half of the platform seam: path normalisation for QString.
+//---------------------------------------------------------------------------
+//                              PlatformQt
+//---------------------------------------------------------------------------
+//  Copyright (C): 2026 reneweller, MIT License (see LICENSE)
+//---------------------------------------------------------------------------
+/*! @file
  *
- * Platform.h deliberately knows nothing about Qt -- it is included from the
- * Qt-free core (glcore, textfile), and that separation is worth keeping. This
- * header carries the same assetPath() service for the Qt half of the codebase,
- * where paths travel as QString into QFile, QDir and QSettings.
+ *  @brief
+ *  The Qt-side half of the platform seam: path normalisation for QString.
  *
- * Why it is needed at all: the asset paths in this program are written the
- * Windows way, "..\\Presets", "..\\cache\\lyrics". Qt on Windows accepts
- * that. Qt on Linux and macOS does not translate it -- there a backslash is an
- * ordinary character in a filename, so "..\\Presets" names one file with
- * a backslash in it, in the current directory, which does not exist. The
- * failure is quiet and confusing: the program reports an empty folder rather
- * than a bad path.
+ *  Platform.h deliberately knows nothing about Qt -- it is included from the
+ *  Qt-free core (glcore, textfile), and that separation is worth keeping. This
+ *  header carries the same assetPath() service for the Qt half of the codebase,
+ *  where paths travel as QString into QFile, QDir and QSettings.
  *
- * Under _WIN32 this is `return p;` and compiles away, so the call sites keep
- * doing exactly what they did.
+ *  Why it is needed at all: the asset paths in this program are written the
+ *  Windows way, "..\\Presets", "..\\cache\\lyrics". Qt on Windows accepts
+ *  that. Qt on Linux and macOS does not translate it -- there a backslash is an
+ *  ordinary character in a filename, so "..\\Presets" names one file with
+ *  a backslash in it, in the current directory, which does not exist. The
+ *  failure is quiet and confusing: the program reports an empty folder rather
+ *  than a bad path.
+ *
+ *  Under _WIN32 this is `return p;` and compiles away, so the call sites keep
+ *  doing exactly what they did.
+ *
+ *  @author René Weller
  */
+
 #ifndef KALEIDOSCOPE_PLATFORM_QT_H
 #define KALEIDOSCOPE_PLATFORM_QT_H
 

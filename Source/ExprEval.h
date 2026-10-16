@@ -1,32 +1,40 @@
-/**
- * @file ExprEval.h
- * @brief Tiny expression compiler/evaluator for the preset FORMULA LAYER — the
- *   MilkDrop lesson: presets become scripts.  A formula string like
- *       "0.5 + 0.3*bassRel*sin(6.28*barPhase)"
- *   is compiled ONCE (shunting-yard -> RPN program) and evaluated every frame
- *   against the live audio features; the result is uploaded as a float uniform.
+//---------------------------------------------------------------------------
+//                              ExprEval
+//---------------------------------------------------------------------------
+//  Copyright (C): 2026 reneweller, MIT License (see LICENSE)
+//---------------------------------------------------------------------------
+/*! @file
  *
- * Variables (resolved to indices at compile time — see kExprVarNames):
- *   time  bass mid treb  bassRel midRel trebRel  subBass high level
- *   kick snare hat onset beat  beatPhase barPhase downbeat
- *   swell buildUp drop  chromaHue centroid flux  arousal valence
- *   ambient rhythm music  advance phase  seed1 seed2 seed3
- * Functions: sin cos tan abs sqrt exp log floor fract tanh sign
- *            min(a,b) max(a,b) pow(a,b) atan2(a,b)  clamp(x,a,b) mix(a,b,t)
- * Operators: + - * / ^ (power), unary minus, parentheses.
+ *  @brief
+ *  Tiny expression compiler/evaluator for the preset FORMULA LAYER — the MilkDrop lesson: presets become scripts.
+ *  A formula string like "0.5 + 0.3*bassRel*sin(6.28*barPhase)" is compiled ONCE (shunting-yard -> RPN program) and
+ *  evaluated every frame against the live audio features; the result is uploaded as a float uniform.
  *
- * Parse errors are reported to stderr once; a broken expression yields 0.
+ *  Variables (resolved to indices at compile time — see kExprVarNames):
+ *    time  bass mid treb  bassRel midRel trebRel  subBass high level
+ *    kick snare hat onset beat  beatPhase barPhase downbeat
+ *    swell buildUp drop  chromaHue centroid flux  arousal valence
+ *    ambient rhythm music  advance phase  seed1 seed2 seed3
+ *  Functions: sin cos tan abs sqrt exp log floor fract tanh sign
+ *             min(a,b) max(a,b) pow(a,b) atan2(a,b)  clamp(x,a,b) mix(a,b,t)
+ *  Operators: + - * / ^ (power), unary minus, parentheses.
+ *
+ *  Parse errors are reported to stderr once; a broken expression yields 0.
+ *
+ *  @author René Weller
  */
+
 #pragma once
 
 #include <vector>
 #include <string>
 
-/** @brief Identifiers usable inside a preset `<expr formula="...">` string, and the lookup table that names them. */
+/** Identifiers usable inside a preset `<expr formula="...">` string, and the lookup table that names them. */
 namespace ExprVars
 {
-/** @brief Index of each audio/time feature exposed to formulas; also the layout of the `vars` array passed to
- * ExprProgram::eval(). */
+/** Index of each audio/time feature exposed to formulas; also the layout of the `vars` array passed to
+ * ExprProgram::eval().
+ **/
 enum IndexE
 {
     V_TIME,
@@ -76,15 +84,17 @@ enum IndexE
 // Names in Index order (size V_COUNT) -- for building an editor menu /
 // autocomplete list; the evaluator itself resolves identifiers structurally
 // at compile() time and never calls this.
-/**
- * @brief Returns the variable-name table, indexed by ExprVars::Index (size V_COUNT).
- * @return Pointer to a static array of C-string variable names, in Index order.
- */
+/**  Returns the variable-name table, indexed by ExprVars::Index (size V_COUNT).
+ *
+ * @return
+ *   Pointer to a static array of C-string variable names, in Index order.
+ **/
 const char *const *names();
 }
 
-/**
- * @brief Compiles a formula-language expression string into an RPN program and evaluates it against live variables.
+/** @class ExprProgram
+ *
+ * Compiles a formula-language expression string into an RPN program and evaluates it against live variables.
  *
  * Used for a preset's `<expr name="..." formula="...">` uniform overrides:
  * compile() is called once at preset-load time (see
@@ -94,7 +104,7 @@ const char *const *names();
  * array with no further allocation or parsing. An instance that failed to
  * compile (valid() == false) evaluates to 0 rather than crashing or using
  * stale state.
- */
+ **/
 class ExprProgram
 {
 public:
@@ -131,8 +141,9 @@ public:
     bool valid() const { return m_ok; }
 
 private:
-    /// One RPN instruction: code<0 means push const (OpConst, value=the constant) or push var (OpVar, value=the
-    /// ExprVars index as a float); code>=0 is an operator/function opcode consuming its operands off the stack.
+    /** One RPN instruction: code<0 means push const (OpConst, value=the constant) or push var (OpVar, value=the
+     * ExprVars index as a float); code>=0 is an operator/function opcode consuming its operands off the stack.
+     **/
     struct Op
     {
         int   code;  /**< OpConst, OpVar, or an operator/function opcode. */

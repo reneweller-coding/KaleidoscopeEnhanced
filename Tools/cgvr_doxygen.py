@@ -54,7 +54,7 @@ def members( out_dir, only_cpp=True ):
         except ET.ParseError:
             continue
         for md in root.iter( "memberdef" ):
-            if md.get( "kind" ) != "function":
+            if md.get( "kind" ) not in ( "function", "slot", "signal" ):
                 continue
             loc = md.find( "location" )
             if loc is None:

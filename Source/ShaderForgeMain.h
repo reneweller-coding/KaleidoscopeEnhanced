@@ -1,9 +1,18 @@
-/**
- * @file ShaderForgeMain.h
- * @brief Command-line entry of the ShaderForge helper (see ShaderForge.h): both executables forge.
+//---------------------------------------------------------------------------
+//                              ShaderForgeMain
+//---------------------------------------------------------------------------
+//  Copyright (C): 2026 reneweller, MIT License (see LICENSE)
+//---------------------------------------------------------------------------
+/*! @file
  *
- * No glcore here: the helper draws through Qt's GL functions.
+ *  @brief
+ *  Command-line entry of the ShaderForge helper (see ShaderForge.h): both executables forge.
+ *
+ *  No glcore here: the helper draws through Qt's GL functions.
+ *
+ *  @author René Weller
  */
+
 #pragma once
 
 /**  Whether the command line asks for the forge (--forge, --forgeload or --forge-serve).

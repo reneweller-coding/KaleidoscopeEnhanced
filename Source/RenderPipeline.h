@@ -1,10 +1,18 @@
-/**
- * @file RenderPipeline.h
- * @brief Declares RenderPipeline, the central per-frame render/present pipeline of one
- *        loaded preset (texture-effect + combine-effect scheduling, cross-fade
- *        compositing, feedback/trails, shadow and OIT passes, 2D camera rig, stereo
- *        output, track-title reveal) and its background ImageLoader helper thread.
+//---------------------------------------------------------------------------
+//                              RenderPipeline
+//---------------------------------------------------------------------------
+//  Copyright (C): 2026 reneweller, MIT License (see LICENSE)
+//---------------------------------------------------------------------------
+/*! @file
+ *
+ *  @brief
+ *  Declares RenderPipeline, the central per-frame render/present pipeline of one loaded preset (texture-effect +
+ *  combine-effect scheduling, cross-fade compositing, feedback/trails, shadow and OIT passes, 2D camera rig, stereo
+ *  output, track-title reveal) and its background ImageLoader helper thread.
+ *
+ *  @author René Weller
  */
+
 #ifndef RENDERPIPELINE_H
 #define RENDERPIPELINE_H
 
@@ -34,8 +42,9 @@
 
 class ImageLoader; ///< Forward declaration; background image-loading thread, defined at the bottom of this file.
 
-/**
- * @brief Owns and drives the whole per-frame render/present pipeline of one loaded preset.
+/** @class RenderPipeline
+ *
+ * Owns and drives the whole per-frame render/present pipeline of one loaded preset.
  *
  * RenderPipeline renders the two texture-effect FBOs (the active effect and, while cross-fading,
  * the incoming one), composites them through a combine-shader stage (itself cross-fadable),
@@ -48,7 +57,7 @@ class ImageLoader; ///< Forward declaration; background image-loading thread, de
  * instance exists per loaded preset (Configuration); init() stores the config, start()/reinit()
  * build the GL state, and paint() is called once per displayed frame with the current rotation
  * matrix and audio analysis.
- */
+ **/
 class RenderPipeline
 {
 public:
@@ -144,10 +153,7 @@ public:
     /** Lyrics-/Künstlerbild-Overlay: GLwidget berechnet den Frame-Zustand
      *  (Sync, Blenden, Bildrotation) und liefert fertige Texturen; hier wird
      *  nur an den PresentPass durchgereicht. */
-    /**
-     * @brief Per-frame state for the lyrics/artist-image overlay, computed by GLwidget and passed through to
-     * PresentPass.
-     */
+    /** Per-frame state for the lyrics/artist-image overlay, computed by GLwidget and passed through to PresentPass. */
     struct OverlayFrame
     {
         float lyricsAlpha = 0.f;   ///< Lyrics overlay opacity, 0 (hidden) .. 1 (fully visible).
@@ -627,10 +633,11 @@ public:
     // Spout output (CLI -o): publish the displayed frame as sender "Kaleidoscope".
     static bool M_SpoutEnabled; ///< Whether the Spout output sender ("Kaleidoscope") is enabled (CLI -o).
 
-    /** Spout INPUT (CLI -i <sender|any>): a Spout sender's live texture (OBS,
-     *  Resolume, a webcam through OBS, ...) replaces the photo as the source
-     *  image of the whole pipeline — the audience becomes the mandala.  While
-     *  no sender runs, the photos are the fallback. */
+    /** Spout INPUT (CLI -i <sender|any>): a Spout sender's live texture (OBS, Resolume, a webcam through OBS, ...)
+     * replaces the photo as the source image of the whole pipeline — the audience becomes the mandala.
+     *
+     * While no sender runs, the photos are the fallback.
+     **/
     static bool M_SpoutInEnabled; ///< Whether Spout input is enabled (CLI -i): a live sender texture replaces the photo
                                   ///< source.
     static QString M_SpoutInSender; ///< Name of the Spout sender to receive from, or "any" (CLI -i argument).
@@ -1292,7 +1299,7 @@ private:
      **/
     void updateTimingScale( const AudioFeatures &audio );
 
-    /** @brief One frame's two time bases, both MEASURED (never a fixed step). */
+    /** One frame's two time bases, both MEASURED (never a fixed step). */
     struct FrameTiming
     {
         float dt;     ///< Scene time step, later scaled by freeze/DJ-stop.
@@ -1615,14 +1622,13 @@ private:
     static float M_RenderScale; ///< 0.25 .. 2.0 (1.0 = native; set via -s) — internal render scale relative to display
                                 ///< resolution.
 public:
-    /**
-     * @brief True only when -s was given on the command line.
+    /** True only when -s was given on the command line.
      *
      * The adaptive controller is allowed to treat an EXPLICIT -s as a ceiling,
      * but it must not treat the persisted M_RenderScale that way: that value is
      * whatever the controller itself last wrote, so using it as the ceiling makes
      * the adaptation one-way (see GLwidget::updateAdaptiveScale()).
-     */
+     **/
     static bool  M_RenderScaleFromCli;
     static float M_RenderScaleMax; ///< Ceiling the adaptive scaler may raise to (ini key renderScaleMax); >1.0
                                    ///< supersamples.
@@ -1764,15 +1770,16 @@ private:
 };
 
 
-/**
- * @brief Background thread that loads and prepares background-photo images off the render thread.
+/** @class ImageLoader
+ *
+ * Background thread that loads and prepares background-photo images off the render thread.
  *
  * Runs a tight poll loop: whenever the owning RenderPipeline sets m_triggerImageload, it picks
  * the next image (mood-matched: probes a few random candidates and scores them against the
  * live music mood via cached brightness/colourfulness thumbnail stats), decodes and GL-prepares
  * it into m_shader->m_nextImage, and clears the trigger flag. Idles with a short sleep otherwise.
  * One instance is owned per RenderPipeline, started in start() and terminated in stop().
- */
+ **/
 class ImageLoader : public QThread
 {
 public:

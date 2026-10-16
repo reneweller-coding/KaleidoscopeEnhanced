@@ -1,60 +1,69 @@
-/**
- * @file CueReceiver.h
- * @brief Score cues over OSC/UDP: the generator tells the scheduler where the bars, the sections
- *        and the drops are, so it no longer has to guess them from the audio.
+//---------------------------------------------------------------------------
+//                              CueReceiver
+//---------------------------------------------------------------------------
+//  Copyright (C): 2026 reneweller, MIT License (see LICENSE)
+//---------------------------------------------------------------------------
+/*! @file
  *
- * The Phosphene psytrance generator (docs/PLAN.md 8.3 over there) WROTE the music it is playing.
- * It knows the bar line exactly, it knows a drop is coming before it lands, and it knows when a
- * section ends -- none of which an FFT of the loudspeaker output can do better than guess.
- * Switched on, it sends five messages, and this is the end that reads them:
+ *  @brief
+ *  Score cues over OSC/UDP: the generator tells the scheduler where the bars, the sections and the drops are, so it
+ *  no longer has to guess them from the audio.
  *
- * | message                | meaning                                             |
- * |------------------------|-----------------------------------------------------|
- * | `/phos/beat i`         | beat number from the start of the set                |
- * | `/phos/bar i`          | bar number from the start of the set                 |
- * | `/phos/section s f`    | a section starts: its type and its energy (0..1)     |
- * | `/phos/key s`          | the key from here, e.g. "F# Phrygian"                |
- * | `/phos/drop`           | a drop lands on this instant                         |
+ *  The Phosphene psytrance generator (docs/PLAN.md 8.3 over there) WROTE the music it is playing.
+ *  It knows the bar line exactly, it knows a drop is coming before it lands, and it knows when a
+ *  section ends -- none of which an FFT of the loudspeaker output can do better than guess.
+ *  Switched on, it sends five messages, and this is the end that reads them:
  *
- * **Nothing here is required.** With no sender -- the normal case -- ScoreCues::Frame::live stays
- * false and applyScoreCues() leaves the scheduler tick exactly as the audio analysis built it.
- * That is not a claim, it is checked: `Kaleidoscope.exe -q` builds a tick, runs it through
- * applyScoreCues() with nothing live, and compares the bytes.
+ *  | message                | meaning                                             |
+ *  |------------------------|-----------------------------------------------------|
+ *  | `/phos/beat i`         | beat number from the start of the set                |
+ *  | `/phos/bar i`          | bar number from the start of the set                 |
+ *  | `/phos/section s f`    | a section starts: its type and its energy (0..1)     |
+ *  | `/phos/key s`          | the key from here, e.g. "F# Phrygian"                |
+ *  | `/phos/drop`           | a drop lands on this instant                         |
  *
- * **And the cues never reach anything they should not.** They feed the two counters the scheduler
- * already watches for a rising edge (Tick::sectionCount, Tick::dropCount) and the downbeat flag it
- * already quantises to. Everything the standing rules protect -- camera, zoom, rotation, every
- * continuous motion -- is untouched, because a cue is an event on the same wire a section change
- * has always travelled on. A cue that lands mid-fade therefore meets the same guards as an
- * analyser-derived one (SceneScheduler.cpp: the `midFade` test, and the drop's shorten-the-running-
- * fade branch), and cannot retarget a fade that is already visible.
+ *  **Nothing here is required.** With no sender -- the normal case -- ScoreCues::Frame::live stays
+ *  false and applyScoreCues() leaves the scheduler tick exactly as the audio analysis built it.
+ *  That is not a claim, it is checked: `Kaleidoscope.exe -q` builds a tick, runs it through
+ *  applyScoreCues() with nothing live, and compares the bytes.
  *
- * The socket is a plain QUdpSocket on the Qt main thread, exactly like WebRemote's discovery
- * responder: the render loop and the event loop are the same thread here, so a datagram can be
- * turned into state the next frame reads without any synchronisation.
+ *  **And the cues never reach anything they should not.** They feed the two counters the scheduler
+ *  already watches for a rising edge (Tick::sectionCount, Tick::dropCount) and the downbeat flag it
+ *  already quantises to. Everything the standing rules protect -- camera, zoom, rotation, every
+ *  continuous motion -- is untouched, because a cue is an event on the same wire a section change
+ *  has always travelled on. A cue that lands mid-fade therefore meets the same guards as an
+ *  analyser-derived one (SceneScheduler.cpp: the `midFade` test, and the drop's shorten-the-running-
+ *  fade branch), and cannot retarget a fade that is already visible.
  *
- * **The family's dialects (02.10.2026).** The other generators of the family say the same things in their own words,
- * and decodeScoreCue() understands them too: Totality (`/tot/beat i f`, `/tot/bar i`, `/tot/block s`, `/tot/op s`,
- * `/tot/key s` -- a Camelot label such as "8A"), Parhelion (`/parh/...`, the same five), Ephemeris (`/eph/beat i f`,
- * `/eph/phase s i`, `/eph/key s`, `/eph/conjunction i f`) and Noctuary (`/noct/bar i`, `/noct/key s`, `/noct/scene s
- * f`). A block, a phase or a scene becomes a section of the table above (a Return, a Drop, a PEAK lands as a drop as
- * well), a bar line is a bar line (Ephemeris has none: its every fourth beat is one), an operation or a conjunction
- * keeps the cues alive without moving anything.
+ *  The socket is a plain QUdpSocket on the Qt main thread, exactly like WebRemote's discovery
+ *  responder: the render loop and the event loop are the same thread here, so a datagram can be
+ *  turned into state the next frame reads without any synchronisation.
  *
- * **Or from a file (02.10.2026).** A rendered track has its cues written down beside it, so a batch
- * render (`-x track.wav -k track.cues.tsv`) can be steered by them as a live set is by the socket:
- * ScoreCueFile holds the file's cues and hands each to ScoreCues once the offline WAV has played up
- * to its time. One line per message, tab-separated -- the seconds, the address, the arguments:
+ *  **The family's dialects (02.10.2026).** The other generators of the family say the same things in their own words,
+ *  and decodeScoreCue() understands them too: Totality (`/tot/beat i f`, `/tot/bar i`, `/tot/block s`, `/tot/op s`,
+ *  `/tot/key s` -- a Camelot label such as "8A"), Parhelion (`/parh/...`, the same five), Ephemeris (`/eph/beat i f`,
+ *  `/eph/phase s i`, `/eph/key s`, `/eph/conjunction i f`) and Noctuary (`/noct/bar i`, `/noct/key s`, `/noct/scene s
+ *  f`). A block, a phase or a scene becomes a section of the table above (a Return, a Drop, a PEAK lands as a drop as
+ *  well), a bar line is a bar line (Ephemeris has none: its every fourth beat is one), an operation or a conjunction
+ *  keeps the cues alive without moving anything.
  *
- * @code
- *   # seconds  address        arguments
- *   0.000      /phos/key      F# Phrygian
- *   0.000      /phos/section  Intro   0.20
- *   0.000      /phos/bar      0
- *   0.000      /phos/beat     0
- *   59.077     /phos/drop
- * @endcode
+ *  **Or from a file (02.10.2026).** A rendered track has its cues written down beside it, so a batch
+ *  render (`-x track.wav -k track.cues.tsv`) can be steered by them as a live set is by the socket:
+ *  ScoreCueFile holds the file's cues and hands each to ScoreCues once the offline WAV has played up
+ *  to its time. One line per message, tab-separated -- the seconds, the address, the arguments:
+ *
+ *  @code
+ *    # seconds  address        arguments
+ *    0.000      /phos/key      F# Phrygian
+ *    0.000      /phos/section  Intro   0.20
+ *    0.000      /phos/bar      0
+ *    0.000      /phos/beat     0
+ *    59.077     /phos/drop
+ *  @endcode
+ *
+ *  @author René Weller
  */
+
 #ifndef CUERECEIVER_H
 #define CUERECEIVER_H
 
@@ -66,13 +75,12 @@
 
 class QUdpSocket;
 
-/**
- * @brief The two counters that turn a cue stream into the rising edges the scheduler watches.
+/** The two counters that turn a cue stream into the rising edges the scheduler watches.
  *
  * SceneScheduler reacts to `sectionCount == last + 1` and `dropCount == last + 1`, so a cue cannot
  * simply be written into those fields: the numbers have to keep counting from wherever the audio
  * analysis had got to. One of these lives in each RenderPipeline, beside the scheduler it feeds.
- */
+ **/
 struct ScoreCueBridge
 {
     int  sections = 0;     ///< sections handed over while the cues are live
@@ -104,14 +112,15 @@ struct ScoreCueBridge
  **/
 void applyScoreCues( const ScoreCues::Frame &cue, ScoreCueBridge &bridge, SceneScheduler::Tick &t );
 
-/**
- * @brief Binds the cue port and feeds every datagram into ScoreCues.
+/** @class CueReceiver
+ *
+ * Binds the cue port and feeds every datagram into ScoreCues.
  *
  * Deliberately NO Q_OBJECT: this project only runs moc over three headers
  * (AudioAnalyzer/glwidget/QMyWindow), and WebRemote sets the precedent for a plain QObject subclass
  * that uses lambda connections instead of its own signals. Parented to the widget that creates it,
  * so it dies with the window and needs no shutdown path of its own.
- */
+ **/
 class CueReceiver : public QObject
 {
 public:

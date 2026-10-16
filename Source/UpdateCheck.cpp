@@ -1,8 +1,14 @@
-/**
- * @file UpdateCheck.cpp
- * @brief Implementation of UpdateCheck -- see the header for the safety rules
- *        this file is written to keep.
+/*****************************************************************************\
+ *                              UpdateCheck
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Implementation of UpdateCheck -- see the header for the safety rules this file is written to keep.
+ *
+ *  @author René Weller
  */
+
 #include "UpdateCheck.h"
 #include "Version.h"
 
@@ -21,9 +27,11 @@
 #include <QtNetwork/QNetworkReply>
 #include <QtNetwork/QNetworkRequest>
 
-/// The one repository this build ever asks about. Hard-coded rather than
-/// configurable: a settable update source is an obvious way to turn a
-/// convenience feature into a way to push arbitrary executables at someone.
+/** The one repository this build ever asks about.
+ *
+ * Hard-coded rather than configurable: a settable update source is an obvious way to turn a convenience feature into a
+ * way to push arbitrary executables at someone.
+ **/
 static const char *kReleaseApi =
     "https://api.github.com/repos/reneweller-coding/KaleidoscopeEnhanced/releases/latest";
 

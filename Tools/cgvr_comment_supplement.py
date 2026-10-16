@@ -454,6 +454,78 @@ SUPPLEMENT = {
         "brief": "Scalar times vector, with the scalar first.",
         "params": { "r": "The scale factor.", "v": "The vector." }, "return": "The scaled vector." },
 
+    # ---- helpers in anonymous namespaces (Doxygen's EXTRACT_ANON_NSPACES)
+    "anonymous_namespace{glwidget.cpp}::menuNavKey": {
+        "params": { "key": "The Qt key code.", "cursor": "The menu's selected row; moved by the navigation keys.",
+                    "count": "Number of rows in the menu." },
+        "return": "MOVED if the cursor moved, ACCEPT for Return/Enter, CANCEL for Escape/Back, NONE if the key is "
+                  "not the menu's." },
+    "anonymous_namespace{glwidget.cpp}::menuScroll": {
+        "params": { "cursor": "The selected row; clamped to the list.", "top": "The first visible row; receives the new one.",
+                    "count": "Number of rows in the list.", "visible": "Number of rows the menu shows at once." } },
+    "anonymous_namespace{glwidget.cpp}::menuFilterKey": {
+        "params": { "e": "The key event.", "filter": "The menu's filter text; edited by the key.",
+                    "cursor": "The selected row; set back to 0 when the filter changes." },
+        "return": "True if the key belonged to the filter (consumed), false otherwise." },
+    "anonymous_namespace{glwidget.cpp}::menuRowAt": { "return": "The row index under the point, or -1." },
+    "anonymous_namespace{ComputeFX.cpp}::groups": {
+        "params": { "n": "Number of items (texels, particles) to cover.", "local": "Workgroup size." },
+        "return": "The number of workgroups, rounded up." },
+    "anonymous_namespace{CueSelfTest.cpp}::check": {
+        "params": { "ok": "Whether the check passed.", "what": "What was checked, as printed.",
+                    "detail": "Optional extra text printed after the description." } },
+    "anonymous_namespace{CueSelfTest.cpp}::putString": {
+        "params": { "b": "The message being built; receives the string.", "s": "The text." } },
+    "anonymous_namespace{CueSelfTest.cpp}::putInt": {
+        "params": { "b": "The message being built; receives the four bytes.", "v": "The value." } },
+    "anonymous_namespace{CueSelfTest.cpp}::putFloat": {
+        "params": { "b": "The message being built; receives the four bytes.", "v": "The value." } },
+    "anonymous_namespace{CueSelfTest.cpp}::intMessage": {
+        "params": { "address": "The OSC address, e.g. \"/phos/bar\".", "value": "The integer argument." },
+        "return": "The encoded datagram." },
+    "anonymous_namespace{CueSelfTest.cpp}::sectionMessage": {
+        "params": { "type": "The section name.", "energy": "The section's energy, 0..1." },
+        "return": "The encoded datagram." },
+    "anonymous_namespace{CueSelfTest.cpp}::keyMessage": {
+        "params": { "key": "The key name, e.g. \"F# Phrygian\"." }, "return": "The encoded datagram." },
+    "anonymous_namespace{CueSelfTest.cpp}::dialectMessage": {
+        "params": { "address": "The OSC address.", "tags": "The type tag string, starting with ','.",
+                    "text": "The string argument, used for every 's'.", "i": "The integer argument, used for every 'i'.",
+                    "f": "The float argument, used for every 'f'." },
+        "return": "The encoded datagram." },
+    "anonymous_namespace{EffectShader.cpp}::warmPasses": {
+        "params": { "ord": "The lab's stage orders (\"// @chainord\"); their branches are the passes to build.",
+                    "with3D": "Whether the 3D passes are wanted as well." } },
+    "anonymous_namespace{MeshImport.cpp}::packMaterialLayers": {
+        "params": { "base": "Base colour with opacity; may be null.", "mr": "Metallic-roughness map; may be null.",
+                    "nrm": "Tangent-space normal map; may be null.",
+                    "out": "The mesh asset; receives the layered RGBA8 buffer and its size." } },
+    "anonymous_namespace{ScoreCues.cpp}::readInt": {
+        "params": { "data": "The datagram.", "pos": "Byte offset of the value." }, "return": "The value." },
+    "anonymous_namespace{ScoreCues.cpp}::readFloat": {
+        "params": { "data": "The datagram.", "pos": "Byte offset of the value." }, "return": "The value." },
+    "anonymous_namespace{ScoreCues.cpp}::pitchClassOf": {
+        "params": { "text": "The key name." }, "return": "The pitch class 0..11, or -1." },
+    "anonymous_namespace{ScoreCues.cpp}::dialectSection": {
+        "params": { "table": "The dialect's section names.",
+                    "out": "The cue; its text is looked up, its section, energy and drop are set." } },
+    "anonymous_namespace{ScoreCues.cpp}::camelotPitchClass": {
+        "params": { "text": "The Camelot label." }, "return": "The pitch class 0..11, or -1." },
+    "anonymous_namespace{ScoreCues.cpp}::decodeDialect": {
+        "params": { "address": "The message's OSC address.", "data": "The datagram.", "size": "Its length in bytes.",
+                    "pos": "Offset of the type tag string, just after the address.",
+                    "out": "Receives the decoded cue." } },
+    "anonymous_namespace{ShaderForgeMain.cpp}::drawInto": {
+        "params": { "gl": "The context's GL functions.", "prog": "The linked program.",
+                    "targets": "Number of colour targets, 1..4.", "size": "Width and height of each target in pixels." },
+        "return": "The time the draw took, in milliseconds (glFinish included)." },
+    "anonymous_namespace{ShaderForgeMain.cpp}::forgeOne": {
+        "params": { "gl": "The context's GL functions.", "frag": "Path of the fragment shader.",
+                    "out": "Path of the binary to write.", "targets": "Number of colour targets of the warm draw.",
+                    "vert": "Path of the vertex shader." } },
+    "anonymous_namespace{ShaderWorker.cpp}::printLog": {
+        "params": { "obj": "The shader or program object.", "program": "True for a program, false for a shader." } },
+
     # ---- inline setters whose description was a trailing comment
     "EditorWindow::isScene3D": { "params": { "fileName": "Bare file name of a scene shader, as listed in the texture combo." } },
     "EffectShader::setProbability": { "params": { "probability": "The new threshold." } },

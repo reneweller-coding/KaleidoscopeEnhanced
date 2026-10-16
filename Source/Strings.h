@@ -1,9 +1,18 @@
-/**
- * @file Strings.h
- * @brief The one place every on-screen UI label lives, in every supported language -- shared between Kaleidoscope.exe
- * (QPainter overlays) and SetupTool.exe (its own widgets), and used by WebRemote.cpp to build the phone page in the
- * current language.
+//---------------------------------------------------------------------------
+//                              Strings
+//---------------------------------------------------------------------------
+//  Copyright (C): 2026 reneweller, MIT License (see LICENSE)
+//---------------------------------------------------------------------------
+/*! @file
+ *
+ *  @brief
+ *  The one place every on-screen UI label lives, in every supported language -- shared between Kaleidoscope.exe
+ *  (QPainter overlays) and SetupTool.exe (its own widgets), and used by WebRemote.cpp to build the phone page in
+ *  the current language.
+ *
+ *  @author René Weller
  */
+
 #pragma once
 
 // Strings: DE/EN string table for every user-visible label this project
@@ -28,21 +37,22 @@
 // own reading/writing that key and call setLanguage() with the result --
 // this header only owns the enum, the tables, and the current selection.
 
-/** @brief A supported UI language; the value doubles as the index of that language's string table. German is the
- * default/fallback. */
+/** A supported UI language; the value doubles as the index of that language's string table.
+ *
+ * German is the default/fallback.
+ **/
 enum class LangE
 {
     DE = 0,
     EN = 1
 };
 
-/**
- * @brief Identifier of one user-visible string; the same id indexes every language's parallel table.
+/** Identifier of one user-visible string; the same id indexes every language's parallel table.
  *
  * Grouped by the file that draws the string. Entries ending in `_FMT` are
  * QString::arg() format strings (the comment beside each shows the
  * placeholders). The last enumerator is the table length, not a string.
- */
+ **/
 enum StrIdE
 {
     // ---- glwidget.cpp: help overlay ('h') ----

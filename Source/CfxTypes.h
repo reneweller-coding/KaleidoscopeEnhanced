@@ -1,16 +1,25 @@
-/**
- * @file CfxTypes.h
- * @brief Shared identities for the ComputeFX sims: which kinds exist and which
- *        sampler/texture unit each one publishes on.
+//---------------------------------------------------------------------------
+//                              CfxTypes
+//---------------------------------------------------------------------------
+//  Copyright (C): 2026 reneweller, MIT License (see LICENSE)
+//---------------------------------------------------------------------------
+/*! @file
+ *
+ *  @brief
+ *  Shared identities for the ComputeFX sims: which kinds exist and which sampler/texture unit each one publishes
+ *  on.
+ *
+ *  The compute-FX sim identities and sampler/unit table, split
+ *  out of ComputeFX.h so code that only needs to name a kind or look up its
+ *  sampler/unit (no GL calls at all) doesn't have to pull in glcore.h too.
+ *  See PresetEditor/ComputeFXPreview.h for why that split matters there.
+ *
+ *  @author René Weller
  */
-// CfxTypes.h — the compute-FX sim identities and sampler/unit table, split
-// out of ComputeFX.h so code that only needs to name a kind or look up its
-// sampler/unit (no GL calls at all) doesn't have to pull in glcore.h too.
-// See PresetEditor/ComputeFXPreview.h for why that split matters there.
+
 #pragma once
 
-/**
- * @brief Identifies which GPU compute simulation an effect wants to sample.
+/** Identifies which GPU compute simulation an effect wants to sample.
  *
  * One value per independent compute-shader sim owned by ComputeFX (fractal
  * flames, particle advection, N-body gravity, and so on). Adding a new sim
@@ -18,7 +27,7 @@
  * giving it a sampler name and texture unit, and a stepXxx() function in
  * ComputeFX — nothing else in the engine needs to change. CFX_COUNT is not a
  * real kind; it is the sentinel used to size per-kind arrays.
- */
+ **/
 enum CfxKindE
 {
     CFX_FLAME = 0, ///< fractal flames (IFS + atomic density histogram)
@@ -40,14 +49,13 @@ enum CfxKindE
     CFX_COUNT      ///< sentinel: number of sim kinds, not a real kind
 };
 
-/**
- * @brief The sampler name and texture unit a compute-FX kind publishes on.
+/** The sampler name and texture unit a compute-FX kind publishes on.
  *
  * Each CfxKindE gets exactly one entry: the uniform name an effect shader
  * must declare to opt into reading that sim's output, and the global texture
  * unit ComputeFX binds its result texture to. The table itself (CfxInfoTable) is
  * defined in ComputeFX.cpp, indexed by CfxKindE.
- */
+ **/
 struct CfxInfo
 {
     const char *sampler; ///< uniform name an effect declares to request this sim

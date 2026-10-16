@@ -1,8 +1,14 @@
-/**
- * @file MeshImport.cpp
- * @brief Implementation of loadMeshAsset() -- see MeshImport.h.
+/*****************************************************************************\
+ *                              MeshImport
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Implementation of loadMeshAsset() -- see MeshImport.h.
+ *
+ *  @author René Weller
  */
-// Source/MeshImport.cpp
+
 #define CGLTF_IMPLEMENTATION
 #include "../ThirdParty/cgltf/cgltf.h"
 #define TINYOBJLOADER_IMPLEMENTATION
@@ -31,6 +37,14 @@
 namespace
 {
 
+/**  Whether a string ends with a suffix, ignoring case.
+ *
+ * @param s       The string. (in)
+ * @param suffix  The suffix, e.g. ".glb". (in)
+ *
+ * @return
+ *   True if s ends with suffix.
+ **/
 bool endsWithNoCase( const std::string &s, const char *suffix )
 {
     size_t n = strlen( suffix );
@@ -43,10 +57,18 @@ bool endsWithNoCase( const std::string &s, const char *suffix )
     return true;
 }
 
-// Decodes a cgltf image, whether it is embedded in the .glb's binary chunk
-// (the common case -- TRELLIS-style exporters embed WebP there, which
-// QImage::fromData() sniffs and decodes on its own; no format hint needed)
-// or referenced by a loose file / base64 data URI (rarer, but valid glTF).
+/**  Decodes a cgltf image, whether it is embedded in the .glb's binary chunk or referenced by a loose file / base64
+ * data URI.
+ *
+ * @param img       The image; null gives a null QImage. (in)
+ * @param gltfPath  Path of the .glb/.gltf, against which a loose file's URI is resolved. (in)
+ *
+ * @return
+ *   The decoded image, or a null QImage.
+ *
+ * Embedded is the common case -- TRELLIS-style exporters embed WebP there, which QImage::fromData() sniffs and
+ * decodes on its own; no format hint needed.  A loose file or a base64 data URI is rarer, but valid glTF.
+ **/
 QImage decodeGltfImage( const cgltf_image *img, const std::string &gltfPath )
 {
     if ( !img )
@@ -75,9 +97,13 @@ QImage decodeGltfImage( const cgltf_image *img, const std::string &gltfPath )
     return QImage();
 }
 
-/**
- * @brief Packs base-color(+opacity), optional metallic-roughness and optional tangent-space normal into MeshAsset's
+/**  Packs base-color(+opacity), optional metallic-roughness and optional tangent-space normal into MeshAsset's
  * layered RGBA8 buffer.
+ *
+ * @param base  Base colour with opacity; may be null. (in)
+ * @param mr    Metallic-roughness map; may be null. (in)
+ * @param nrm   Tangent-space normal map; may be null. (in)
+ * @param out   The mesh asset; receives the layered RGBA8 buffer and its size. (out)
  *
  * Both layers are flipped vertically before packing -- the same convention
  * Utils.cpp::prepareImage() uses for every other texture this app uploads
@@ -85,7 +111,7 @@ QImage decodeGltfImage( const cgltf_image *img, const std::string &gltfPath )
  * BOTTOM-left texel). Callers must flip their V texture coordinate to match
  * (`1 - v`) UNLESS their source format's V already runs bottom-up the way
  * OBJ's does -- see loadGlb()/loadObj()'s differing V handling for why.
- */
+ **/
 void packMaterialLayers( const QImage &base, const QImage &mr, const QImage &nrm, MeshAsset &out )
 {
     int w = 0, h = 0;
@@ -163,9 +189,15 @@ void packMaterialLayers( const QImage &base, const QImage &mr, const QImage &nrm
     }
 }
 
-// Combines separate OBJ roughness/metallic greyscale maps into one glTF-style
-// packed image (G = roughness, B = metallic) so packMaterialLayers() only
-// ever has to deal with one metallic-roughness convention.
+/**  Combines separate OBJ roughness/metallic greyscale maps into one glTF-style packed image (G = roughness, B =
+ * metallic) so packMaterialLayers() only ever has to deal with one metallic-roughness convention.
+ *
+ * @param roughness  Roughness map; may be null (then fully rough). (in)
+ * @param metallic   Metallic map; may be null (then non-metal). (in)
+ *
+ * @return
+ *   The packed RGBA image at the larger of the two sizes, or a null QImage if both maps are null.
+ **/
 QImage packObjRoughnessMetallic( const QImage &roughness, const QImage &metallic )
 {
     if ( roughness.isNull() && metallic.isNull() )
@@ -195,6 +227,15 @@ QImage packObjRoughnessMetallic( const QImage &roughness, const QImage &metallic
     return out;
 }
 
+/**  Loads a .glb/.gltf file: its triangles and, from the first material that has them, its base colour,
+ * metallic-roughness and normal textures.
+ *
+ * @param path  The file. (in)
+ * @param out   Receives the mesh (see loadMeshAsset()). (out)
+ *
+ * @return
+ *   True if the file parsed, its buffers loaded and it held at least one triangle.
+ **/
 bool loadGlb( const std::string &path, MeshAsset &out )
 {
     cgltf_options options;
@@ -331,6 +372,14 @@ bool loadGlb( const std::string &path, MeshAsset &out )
     return true;
 }
 
+/**  Loads a Wavefront .obj file (triangulated) with its .mtl textures.
+ *
+ * @param path  The file. (in)
+ * @param out   Receives the mesh (see loadMeshAsset()). (out)
+ *
+ * @return
+ *   True if the file parsed and held at least one triangle.
+ **/
 bool loadObj( const std::string &path, MeshAsset &out )
 {
     tinyobj::ObjReaderConfig config;

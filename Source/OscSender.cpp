@@ -1,7 +1,14 @@
-/**
- * @file OscSender.cpp
- * @brief Implementation of OscSender: hand-rolled OSC 1.0 encoding, no dependencies.
+/*****************************************************************************\
+ *                              OscSender
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Implementation of OscSender: hand-rolled OSC 1.0 encoding, no dependencies.
+ *
+ *  @author René Weller
  */
+
 #include "OscSender.h"
 
 #include <QtCore/QtEndian>

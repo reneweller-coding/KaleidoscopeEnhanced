@@ -1,8 +1,15 @@
-/**
- * @file TrackMedia.cpp
- * @brief Implementation of TrackMedia: the chained lyrics fetch/parse/render pipeline and the multi-source artist-image
- * download pipeline described in TrackMedia.h.
+/*****************************************************************************\
+ *                              TrackMedia
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Implementation of TrackMedia: the chained lyrics fetch/parse/render pipeline and the multi-source artist-image
+ *  download pipeline described in TrackMedia.h.
+ *
+ *  @author René Weller
  */
+
 #include "TrackMedia.h"
 #include "PlatformQt.h"
 

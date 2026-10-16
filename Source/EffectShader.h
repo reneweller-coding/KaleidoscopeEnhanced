@@ -1,9 +1,17 @@
-/**
- * @file EffectShader.h
- * @brief Base class for every 2D texture-effect / FX-overlay shader: owns one compiled
- *        GLSL program, its uniform bindings, and the solo/interpolation timing state
- *        shared by all effect and kaleidoscope-family subclasses.
+//---------------------------------------------------------------------------
+//                              EffectShader
+//---------------------------------------------------------------------------
+//  Copyright (C): 2026 reneweller, MIT License (see LICENSE)
+//---------------------------------------------------------------------------
+/*! @file
+ *
+ *  @brief
+ *  Base class for every 2D texture-effect / FX-overlay shader: owns one compiled GLSL program, its uniform
+ *  bindings, and the solo/interpolation timing state shared by all effect and kaleidoscope-family subclasses.
+ *
+ *  @author René Weller
  */
+
 #ifndef EFFECT_SHADER_H
 #define EFFECT_SHADER_H
 
@@ -18,8 +26,9 @@
 #include "AudioFeatures.h"
 #include "ExprEval.h"
 
-/**
- * @brief Common base for all 2D-plane (fullscreen-quad) effect shaders.
+/** @class EffectShader
+ *
+ * Common base for all 2D-plane (fullscreen-quad) effect shaders.
  *
  * Wraps exactly one compiled GLSL fragment/vertex program together with the
  * "randomised parameter" (Uniform) list that drives its per-activation variety,
@@ -35,7 +44,7 @@
  * FxEffectMulti, ...) all derive from this class, chaining into its
  * initUniforms()/setUniforms()/resetParameters() to add their own uniform
  * locations and randomised parameters on top.
- */
+ **/
 class EffectShader
 {
 public:
@@ -582,33 +591,42 @@ public:
      *   whose own scale differs.
      **/
     virtual float shadowExtent() const { return ShadowExtent; }
-    /// Review span in seconds while a Test* preset is loaded, 0 outside it.
-    /// sceneProgress normalises over the ROLLED solo span, which review mode
-    /// then caps its display time below -- so a staged scene only ever showed
-    /// the first third of its arc on the very bench meant to judge it.
-    /// SceneScheduler::setReviewMode() owns this value.
+    /** Review span in seconds while a Test* preset is loaded, 0 outside it.
+     *
+     * sceneProgress normalises over the ROLLED solo span, which review mode then caps its display time below -- so a
+     * staged scene only ever showed the first third of its arc on the very bench meant to judge it.
+     * SceneScheduler::setReviewMode() owns this value.
+     **/
     static float M_ReviewSolo;
-    /// True in the app (main.cpp): chain labs with Engine/ChainPass/Final_NAME.frag run as passes; the editor keeps the
-    /// uber-shaders.
+    /** True in the app (main.cpp): chain labs with Engine/ChainPass/Final_NAME.frag run as passes; the editor keeps
+     * the uber-shaders.
+     **/
     static bool M_ChainRunner;
-    /// The 2D chain runner's resolution relative to the frame (ini "chainScale", 0.5..1; KALEIDO_CHAIN_SCALE):
-    /// below 1 the chain passes run on a coarser grid and the lab's last pass reads them bilinearly (not across seams).
+    /** The 2D chain runner's resolution relative to the frame (ini "chainScale", 0.5..1; KALEIDO_CHAIN_SCALE): below
+     * 1 the chain passes run on a coarser grid and the lab's last pass reads them bilinearly (not across seams).
+     **/
     static float M_ChainScale;
-    /// Supersampling of the sparkling chain classes (ini "chainSupersample", KALEIDO_CHAIN_SS=0 off): their chain
-    /// passes run on a doubled grid and the last pass averages four photo samples; only at chainScale 1.
+    /** Supersampling of the sparkling chain classes (ini "chainSupersample", KALEIDO_CHAIN_SS=0 off): their chain
+     * passes run on a doubled grid and the last pass averages four photo samples; only at chainScale 1.
+     **/
     static bool M_ChainSS;
-    /// KALEIDO_FREEZE_TIME (set by RenderPipeline): the scene time every effect shows in a comparison run; < 0: off.
+    /** KALEIDO_FREEZE_TIME (set by RenderPipeline): the scene time every effect shows in a comparison run; < 0: off. */
     static float M_FreezeTime;
-    /// The host's VJ freeze this frame (set by RenderPipeline): the chain walk and the 3D chains' flight stand still.
+    /** The host's VJ freeze this frame (set by RenderPipeline): the chain walk and the 3D chains' flight stand
+     * still.
+     **/
     static bool M_Frozen;
-    /// Score cues live this frame (set by RenderPipeline, CueReceiver.h): the chain walk takes the
-    /// generator's section and drop counters (M_CueSections, M_CueDrops) instead of the analyser's.
+    /** Score cues live this frame (set by RenderPipeline, CueReceiver.h): the chain walk takes the generator's
+     * section and drop counters (M_CueSections, M_CueDrops) instead of the analyser's.
+     **/
     static bool M_CueLive;
     static int  M_CueSections; ///< The scheduler's section counter while M_CueLive.
     static int  M_CueDrops;    ///< The scheduler's drop counter while M_CueLive.
-    /// Taste per chain class, classTasteKey() -> weight in [0.6, 1.6] (absent: 1).  Likes and skips
-    /// of a chain lab weight the classes it showed; among three targets in the music's region the
-    /// walk takes one with odds after these weights.  Shared by every lab; RenderPipeline loads and saves it.
+    /** Taste per chain class, classTasteKey() -> weight in [0.6, 1.6] (absent: 1).
+     *
+     * Likes and skips of a chain lab weight the classes it showed; among three targets in the music's region the walk
+     * takes one with odds after these weights.  Shared by every lab; RenderPipeline loads and saves it.
+     **/
     static std::map<std::string, float> M_ClassTaste;
     /**  The taste key of a chain class: "<stage knob>/<class name>" ('/' in the name made '_').
      *
@@ -814,7 +832,7 @@ public:
     }
 
     // ---- Mood tags (config attribute mood="dark,calm,...") ----
-    /// Bitmask flags parsed from a preset's mood="..." config attribute.
+    /** Bitmask flags parsed from a preset's mood="..." config attribute. */
     enum MoodFlagsE
     {
         MOOD_DARK = 1,
@@ -970,8 +988,7 @@ protected:
                                    ///< grade="...".
     int m_gradeMode = 0;                  ///< Grade rolled for the current activation (0 = none).
 
-    /**
-     * @brief Host side of the chain lab's walk (uniforms walkA..walkD, walkS, walkHost).
+    /** Host side of the chain lab's walk (uniforms walkA..walkD, walkS, walkHost).
      *
      * The shader alone cannot let the music choose where a stage walks: it has no
      * memory, so a target taken from the current audio could change mid-fade.
@@ -982,7 +999,7 @@ protected:
      * the more energy) and where to (the classes are ordered calm..energetic in
      * the shader, the smoothed arousal picks the region).  A returning section
      * (chorus #2) walks back to the chain it had the first time.
-     */
+     **/
     struct ChainWalk
     {
         bool  active = false; ///< Walk mode rolled (morphP >= 0.5) and the shader takes host walks.
@@ -1015,16 +1032,14 @@ protected:
         bool                                  hasLast = false;  ///< last is valid.
         std::minstd_rand rng; ///< Own random stream (keeps the scene's rand() stream untouched per frame).
     } m_walk;                                                   ///< The walk of this activation (chain labs only).
-    /**
-     * @brief Camera host of the 3D chains (uniform camHost): the flight
-     * position and the gaze.
+    /** Camera host of the 3D chains (uniform camHost): the flight position and the gaze.
      *
      * The flight is integrated here -- time plus the music's advance, times a
      * speed per gaze -- so a gaze can slow the flight (floating) without the
      * camera jumping, which a closed-form position in the shader cannot.  The
      * gaze holds 2-5 minutes, then pans 40-60 s to another one; wall-clock
      * time only, the camera never follows the audio.
-     */
+     **/
     struct ChainCam
     {
         bool                                  pending = true;  ///< Reset due (activation).
@@ -1229,8 +1244,9 @@ protected:
     // program id (auto-refreshes after recompile / hot reload).
     // Sized with headroom over AL_COUNT — the array is indexed by the enum, so
     // it has to stay ahead of it as uniforms are added.
-    /// Per-program cache of all audio-uniform locations, avoiding ~45 glGetUniformLocation string lookups per shader
-    /// per frame.
+    /** Per-program cache of all audio-uniform locations, avoiding ~45 glGetUniformLocation string lookups per shader
+     * per frame.
+     **/
     struct AudioLocCache
     {
         GLuint progId = 0; /**< Program id the locations were resolved for; 0 = never resolved. */
@@ -1240,19 +1256,19 @@ protected:
     AudioLocCache m_audioLocs; ///< applyAudioFeatures()'s location cache; auto-refreshes when m_shProgId changes
                                ///< (recompile/hot reload).
 
-    /// A scene's own "power" uniform (superellipse/distortion exponent, e.g.
-    /// Kaleidoscope.frag/DarkAmbientTunnel.frag's polar fold shape) is a plain
-    /// per-frame value with no time-integrated state, so -- unlike speed/
-    /// speedTunnel (see applyAudioFeatures()'s big comment on why those are
-    /// NOT touched here) -- it is safe to modulate live: re-scaled by
-    /// AudioFeatures::powerScale every frame via Uniform::setGLValueScaled(),
-    /// on top of whatever value that scene's own `<float name="power">` range
-    /// rolled for this activation. Resolved by name alongside the AL_* cache
-    /// above (nullptr if this program has no "power" uniform).
+    /** A scene's own "power" uniform (superellipse/distortion exponent, e.g.
+     * Kaleidoscope.frag/DarkAmbientTunnel.frag's polar fold shape) is a plain per-frame value with no
+     * time-integrated state, so -- unlike speed/ speedTunnel (see applyAudioFeatures()'s big comment on why those
+     * are NOT touched here) -- it is safe to modulate live: re-scaled by AudioFeatures::powerScale every frame via
+     * Uniform::setGLValueScaled(), on top of whatever value that scene's own `<float name="power">` range rolled
+     * for this activation.
+     *
+     * Resolved by name alongside the AL_* cache above (nullptr if this program has no "power" uniform).
+     **/
     Uniform *m_powerUniform = nullptr;
 
     // Formula-layer expressions (uniform name -> compiled program).
-    /// One compiled formula-layer expression bound to a target uniform name.
+    /** One compiled formula-layer expression bound to a target uniform name. */
     struct ExprEntry
     {
         std::string name;       ///< Target GLSL uniform name.

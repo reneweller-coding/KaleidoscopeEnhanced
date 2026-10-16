@@ -1,22 +1,29 @@
-// glcore.cpp — see glcore.h.  Pointers resolve via wglGetProcAddress with an
-// opengl32.dll fallback (GL 1.1 exports are not returned by wgl).
-/**
- * @file glcore.cpp
- * @brief Implements the glcore.h function-pointer loader: defines storage for every
- *        `glcore_<name>` pointer and glcoreInit(), which resolves them all via
- *        wglGetProcAddress (falling back to GetProcAddress on opengl32.dll for the
- *        GL 1.1 entry points wgl doesn't return).
+/*****************************************************************************\
+ *                              glcore
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Implements the glcore.h function-pointer loader: defines storage for every `glcore_<name>` pointer and
+ *  glcoreInit(), which resolves them all via wglGetProcAddress (falling back to GetProcAddress on opengl32.dll for
+ *  the GL 1.1 entry points wgl doesn't return).
+ *
+ *  See glcore.h.  Pointers resolve via wglGetProcAddress with an
+ *  opengl32.dll fallback (GL 1.1 exports are not returned by wgl).
+ *
+ *  @author René Weller
  */
+
 #include "glcore.h"
 #include "Platform.h"
 #include <stdio.h>
 #include <map>
 #include <string>
 
-/**
- * @brief Defines the storage (zero-initialized) for one loaded GL function pointer.
- * @param name Name of the GL function whose `glcore_<name>` pointer is defined.
- */
+/**  Defines the storage (zero-initialized) for one loaded GL function pointer.
+ *
+ * @param name  Name of the GL function whose `glcore_<name>` pointer is defined.
+ **/
 #define GLC_DEF( name ) PFN_##name glcore_##name = 0;
 
 /// @name Storage for every GL function pointer declared in glcore.h; see there for grouping.
@@ -99,7 +106,7 @@ GLC_DEF( glTexImage3D )
 GLC_DEF( glFramebufferTextureLayer )
 GLC_DEF( glBlitFramebuffer )
 GLC_DEF( glTexImage2DMultisample )
-///@}
+/** @} */
 
 #undef GLC_DEF
 
@@ -135,16 +142,20 @@ int glcoreHasDebug = 0;   ///< Definition of glcoreHasDebug; set by glcoreInit()
 // ---------------------------------------------------------------------------
 
 // ---- Stand-in textures, see glcore.h for the why -------------------------
-/** @brief Lazily created 1x1 black GL_TEXTURE_2D bound to sampler2D units a scene left unassigned; 0 until
- * glcoreDummyTex2D() first runs. Lives for the process (never deleted). */
-static GLuint s_dummy2D = 0, s_dummy2DArray = 0, s_dummyShadow = 0; ///< Lazily created 1x1 GL_DEPTH_COMPONENT24 texture
-                                                                    ///< filled with 1.0 (far plane) in compare mode, so
-                                                                    ///< an unassigned sampler2DShadow reads "nothing
-                                                                    ///< occludes"; 0 until glcoreDummyShadow() first
-                                                                    ///< runs.
-/** @var s_dummy2DArray
- *  @brief Lazily created 1x1x1 black GL_TEXTURE_2D_ARRAY for unassigned sampler2DArray units; stays 0 when glTexImage3D
- * is unavailable or until glcoreDummyTex2DArray() first runs. */
+/** Lazily created 1x1 black GL_TEXTURE_2D bound to sampler2D units a scene left unassigned; 0 until
+ * glcoreDummyTex2D() first runs.
+ *
+ * Lives for the process (never deleted).
+ **/
+static GLuint s_dummy2D = 0;
+/** Lazily created 1x1x1 black GL_TEXTURE_2D_ARRAY for unassigned sampler2DArray units; stays 0 when glTexImage3D is
+ * unavailable or until glcoreDummyTex2DArray() first runs.
+ **/
+static GLuint s_dummy2DArray = 0;
+/** Lazily created 1x1 GL_DEPTH_COMPONENT24 texture filled with 1.0 (far plane) in compare mode, so an unassigned
+ * sampler2DShadow reads "nothing occludes"; 0 until glcoreDummyShadow() first runs.
+ **/
+static GLuint s_dummyShadow = 0;
 
 GLuint glcoreDummyTex2D()
 {
@@ -206,12 +217,11 @@ GLuint glcoreDummyShadow()
     return s_dummyShadow;
 }
 
-/**
- * @brief Program id -> shader file, filled in by shader_setup (via glcoreNameProgram()) as programs are built.
+/** Program id -> shader file, filled in by shader_setup (via glcoreNameProgram()) as programs are built.
  *
  * Only populated while KALEIDO_GL_DEBUG is on; a plain array keeps the
  * callback allocation-free, which matters because it runs inside the driver.
- */
+ **/
 static std::map<unsigned, std::string> s_progNames;
 
 void glcoreNameProgram( unsigned prog, const char *name )
@@ -278,16 +288,18 @@ void glcoreEnableDebugOutput()
     glDebugMessageControl( GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, 0, GL_TRUE );
     fprintf( stderr, "GLDEBUG: synchronous debug output enabled\n" );
 }
-/**
- * @brief Resolves one GL entry point by name with the context current.
+/**  Resolves one GL entry point by name with the context current.
+ *
+ * @param name  Exact GL function name, e.g. "glGenBuffers". (in)
+ *
+ * @return
+ *   The function pointer, or null if the driver does not provide it.
  *
  * On Windows tries wglGetProcAddress first and falls back to opengl32.dll's
  * exports for the GL 1.1 functions wgl does not hand out (treating wgl's
  * small sentinel return values as failure); elsewhere defers to
  * Platform::glProcAddress().
- * @param name Exact GL function name, e.g. "glGenBuffers".
- * @return The function pointer, or null if the driver does not provide it.
- */
+ **/
 static void *glcGet( const char *name );
 void        *glcoreProc( const char *name )
 {

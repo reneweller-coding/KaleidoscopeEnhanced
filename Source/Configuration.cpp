@@ -1,8 +1,15 @@
-/**
- * @file Configuration.cpp
- * @brief Implements Configuration: XML parsing of Presets/ *.xml presets into RenderPipeline/EffectShader objects,
- * uniform-range/formula registration, and the legacy shader-path remap.
+/*****************************************************************************\
+ *                              Configuration
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Implements Configuration: XML parsing of Presets/ *.xml presets into RenderPipeline/EffectShader objects,
+ *  uniform-range/formula registration, and the legacy shader-path remap.
+ *
+ *  @author René Weller
  */
+
 #include <float.h>
 
 #include "shader_setup.h"
@@ -86,8 +93,10 @@ static QMap<QString, QList<QPair<QString, QString>>> s_rigTable; ///< Rig name -
                                                                  ///< pairs, exactly as `<expr name= formula=>` lists
                                                                  ///< them in rigs.xml; process-wide, filled once by
                                                                  ///< loadRigTable().
-static bool s_rigLoaded = false; ///< Guards loadRigTable() so the table is read at most once per process (also set when
-                                 ///< rigs.xml is missing, so a missing table is reported once, not per scene).
+/**  Guards loadRigTable() so the table is read at most once per process (also set when rigs.xml is missing, so a
+ * missing table is reported once, not per scene).
+ **/
+static bool s_rigLoaded = false;
 
 /**  Loads Presets/rigs.xml into #s_rigTable on the first call; every later call is a no-op.
  *

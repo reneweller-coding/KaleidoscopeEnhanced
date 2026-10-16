@@ -1,16 +1,25 @@
-/**
- * @file ShaderWorker.h
- * @brief A thread with its own GL context (sharing objects with the main one) that compiles and links fragment programs
- * off the render thread.
+//---------------------------------------------------------------------------
+//                              ShaderWorker
+//---------------------------------------------------------------------------
+//  Copyright (C): 2026 reneweller, MIT License (see LICENSE)
+//---------------------------------------------------------------------------
+/*! @file
  *
- * GL_KHR_parallel_shader_compile was not enough: on the NVIDIA driver the
- * build reported itself complete, and the first GL_LINK_STATUS query on the
- * render thread then blocked for ~0.8 s per chain-lab variant -- a visible
- * freeze every time the lab walked.  Here the whole build, link status and a
- * glFinish run on the worker; the render thread only receives finished,
- * linked programs.  Where the worker cannot start (no shareable context), the
- * callers keep their old paths.
+ *  @brief
+ *  A thread with its own GL context (sharing objects with the main one) that compiles and links fragment programs
+ *  off the render thread.
+ *
+ *  GL_KHR_parallel_shader_compile was not enough: on the NVIDIA driver the
+ *  build reported itself complete, and the first GL_LINK_STATUS query on the
+ *  render thread then blocked for ~0.8 s per chain-lab variant -- a visible
+ *  freeze every time the lab walked.  Here the whole build, link status and a
+ *  glFinish run on the worker; the render thread only receives finished,
+ *  linked programs.  Where the worker cannot start (no shareable context), the
+ *  callers keep their old paths.
+ *
+ *  @author René Weller
  */
+
 #pragma once
 #include <string>
 #include "glcore.h"

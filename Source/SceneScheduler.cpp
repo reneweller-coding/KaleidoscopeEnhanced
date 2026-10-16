@@ -1,9 +1,15 @@
-/**
- * @file SceneScheduler.cpp
- * @brief Implementation of SceneScheduler: initial random pick, the
- *        effect/combine Solo-Fade state machines, musical trigger handling,
- *        and the mood-weighted rejection-sampling selection.
+/*****************************************************************************\
+ *                              SceneScheduler
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Implementation of SceneScheduler: initial random pick, the effect/combine Solo-Fade state machines, musical
+ *  trigger handling, and the mood-weighted rejection-sampling selection.
+ *
+ *  @author René Weller
  */
+
 #include <algorithm>
 #include <cctype>
 #include <cstdio>

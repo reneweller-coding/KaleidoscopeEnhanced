@@ -1,7 +1,14 @@
-/**
- * @file QMyWindow.cpp
- * @brief Implements QMyWindow: UI setup and the quit-action wiring.
+/*****************************************************************************\
+ *                              QMyWindow
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Implements QMyWindow: UI setup and the quit-action wiring.
+ *
+ *  @author René Weller
  */
+
 #include <QtWidgets/QFileDialog>
 #include <utility>
 

@@ -1,9 +1,17 @@
-/**
- * @file SceneScheduler.h
- * @brief Picks the next scene/combine effect and drives the cross-fade state
- *        machines (probability-weighted rejection sampling, beat-quantised
- *        timing) that the render pipeline reads back every frame.
+//---------------------------------------------------------------------------
+//                              SceneScheduler
+//---------------------------------------------------------------------------
+//  Copyright (C): 2026 reneweller, MIT License (see LICENSE)
+//---------------------------------------------------------------------------
+/*! @file
+ *
+ *  @brief
+ *  Picks the next scene/combine effect and drives the cross-fade state machines (probability-weighted rejection
+ *  sampling, beat-quantised timing) that the render pipeline reads back every frame.
+ *
+ *  @author René Weller
  */
+
 #ifndef SCENESCHEDULER_H
 #define SCENESCHEDULER_H
 
@@ -35,9 +43,9 @@
 
 class EffectShader;
 
-/**
- * @brief Chooses which effect/combine shader plays next and owns the
- *        cross-fade timing between them.
+/** @class SceneScheduler
+ *
+ * Chooses which effect/combine shader plays next and owns the cross-fade timing between them.
  *
  * SceneScheduler is the "director" that used to live inline in RenderPipeline:
  * it runs two parallel Solo/Fade state machines (one for the texture/effect
@@ -55,7 +63,7 @@ class EffectShader;
  * (actTexture()/nextTexture()/texInterp()/...); it never touches the state
  * machine directly. The class is Qt-free (a RendererCore building block);
  * persisting the learned taste is left to the caller via setTasteCallback().
- */
+ **/
 class SceneScheduler
 {
 public:
@@ -79,11 +87,11 @@ public:
     void reset();
 
     // ---- Konfiguration / Zustand von außen ----
-    /** Review bench pacing: how long each scene holds in review mode
-     * (Test* presets). 25 s is a full musical phrase at ~120 BPM, so a
-     * scene's slow camera arcs and palette drifts complete at least once
-     * before the walk moves on -- 8 s showed only the opening moment.
-     */
+    /** Review bench pacing: how long each scene holds in review mode (Test* presets).
+     *
+     * 25 s is a full musical phrase at ~120 BPM, so a scene's slow camera arcs and palette drifts complete at least
+     * once before the walk moves on -- 8 s showed only the opening moment.
+     **/
     static constexpr float ReviewSoloSecs = 25.f;
 
     /**  Enable/disable review mode (alphabetical walk, fixed ReviewSoloSecs per scene).
@@ -203,7 +211,7 @@ public:
         m_clockEffectFx += d;
     }
 
-    /** @brief Per-frame inputs consumed by tick()/tickFx(). */
+    /** Per-frame inputs consumed by tick()/tickFx(). */
     struct Tick
     {
         float dt = 0.f;             ///< timeSinceLastFrameSec (break-skaliert)

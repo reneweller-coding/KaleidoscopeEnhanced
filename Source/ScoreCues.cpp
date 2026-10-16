@@ -1,8 +1,15 @@
-/**
- * @file ScoreCues.cpp
- * @brief Implementation of ScoreCues.h: the OSC decoder and its dialects, the cue file's lines,
- *        ScoreCueFile and the ScoreCues accumulator.
+/*****************************************************************************\
+ *                              ScoreCues
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Implementation of ScoreCues.h: the OSC decoder and its dialects, the cue file's lines, ScoreCueFile and the
+ *  ScoreCues accumulator.
+ *
+ *  @author René Weller
  */
+
 #include "ScoreCues.h"
 
 #include <QtCore/QFile>
@@ -21,10 +28,19 @@ const float ScoreCues::LiveSecs = 2.0f;
 namespace
 {
 
-/// The five addresses, in the order of ScoreCue::Kind.
+/** The five addresses, in the order of ScoreCue::Kind. */
 const char *const Addresses[5] = { "/phos/beat", "/phos/bar", "/phos/section", "/phos/key", "/phos/drop" };
 
-/// Big-endian int32 at @p pos. OSC is network byte order throughout.
+/**  Big-endian int32 at @p pos.
+ *
+ * @param data  The datagram. (in)
+ * @param pos   Byte offset of the value. (in)
+ *
+ * @return
+ *   The value.
+ *
+ * OSC is network byte order throughout.
+ **/
 int readInt( const char *data, int pos )
 {
     return ( static_cast<int>( static_cast<unsigned char>( data[pos] ) ) << 24 )
@@ -33,7 +49,14 @@ int readInt( const char *data, int pos )
            | static_cast<int>( static_cast<unsigned char>( data[pos + 3] ) );
 }
 
-/// Big-endian float32 at @p pos.
+/**  Big-endian float32 at @p pos.
+ *
+ * @param data  The datagram. (in)
+ * @param pos   Byte offset of the value. (in)
+ *
+ * @return
+ *   The value.
+ **/
 float readFloat( const char *data, int pos )
 {
     const int bits = readInt( data, pos );
@@ -42,19 +65,21 @@ float readFloat( const char *data, int pos )
     return f;
 }
 
-/**
- * @brief One OSC string: bytes up to a null, then null padding to the next multiple of four.
+/**  One OSC string: bytes up to a null, then null padding to the next multiple of four.
+ *
+ * @param data  Datagram. (in)
+ * @param size  Its length. (in)
+ * @param pos   Where the string starts; advanced past the padding on success. (in,out)
+ * @param out   Receives the text, truncated to @p cap - 1 characters. (out)
+ * @param cap   Size of @p out. (in)
+ *
+ * @return
+ *   false when the string is unterminated, unpadded, or runs past the end.
  *
  * The padding is CHECKED, not skipped. A sender that pads with anything other than nulls is not
  * speaking OSC, and a receiver that shrugs at that is the reason two programs can disagree about a
  * format for years without either of them noticing.
- * @param data Datagram.
- * @param size Its length.
- * @param pos  Where the string starts; advanced past the padding on success.
- * @param out  Receives the text, truncated to @p cap - 1 characters.
- * @param cap  Size of @p out.
- * @return false when the string is unterminated, unpadded, or runs past the end.
- */
+ **/
 bool readString( const char *data, int size, int &pos, char *out, int cap )
 {
     int end = pos;
@@ -76,7 +101,13 @@ bool readString( const char *data, int size, int &pos, char *out, int cap )
     return true;
 }
 
-/// Pitch class of a key name's leading note ("F# Phrygian" -> 6), or -1.
+/**  Pitch class of a key name's leading note ("F# Phrygian" -> 6), or -1.
+ *
+ * @param text  The key name. (in)
+ *
+ * @return
+ *   The pitch class 0..11, or -1.
+ **/
 int pitchClassOf( const char *text )
 {
     static const int Base[7] = { 9, 11, 0, 2, 4, 5, 7 }; // A B C D E F G
@@ -90,7 +121,7 @@ int pitchClassOf( const char *text )
     return ( pc % 12 + 12 ) % 12;
 }
 
-/// A section name of one of the family's dialects, and what it means here.
+/** A section name of one of the family's dialects, and what it means here. */
 struct DialectSection
 {
     const char *name;    ///< as the generator sends it (a prefix where @c prefix is set)
@@ -100,27 +131,31 @@ struct DialectSection
     bool        prefix;  ///< @c name is a prefix ("Block 3")
 };
 
-/// Totality's blocks (its Cue.h): the intro, the plateaus, the reduction, the return, the outro.
+/** Totality's blocks (its Cue.h): the intro, the plateaus, the reduction, the return, the outro. */
 const DialectSection TotalitySections[] = { { "Intro", CueSectionE::INTRO, 0.30f, false, false },
                                             { "Block", CueSectionE::GROOVE, 0.60f, false, true },
                                             { "Reduction", CueSectionE::BREAK, 0.35f, false, false },
                                             { "Return", CueSectionE::DROP, 0.90f, true, false },
                                             { "Outro", CueSectionE::OUTRO, 0.30f, false, false } };
-/// Parhelion's sections (its Cue.h).
+/** Parhelion's sections (its Cue.h). */
 const DialectSection ParhelionSections[] = {
     { "Intro", CueSectionE::INTRO, 0.30f, false, false },     { "Groove", CueSectionE::GROOVE, 0.55f, false, false },
     { "Breakdown", CueSectionE::BREAK, 0.30f, false, false }, { "Build", CueSectionE::BUILD, 0.60f, false, false },
     { "Main drop", CueSectionE::DROP, 1.00f, true, false },   { "Drop", CueSectionE::DROP, 0.90f, true, false },
     { "Outro", CueSectionE::OUTRO, 0.30f, false, false } };
-/// Ephemeris' phases (its Cue.h).
+/** Ephemeris' phases (its Cue.h). */
 const DialectSection EphemerisSections[] = {
     { "ATMOSPHERE", CueSectionE::INTRO, 0.20f, false, false }, { "ENTRY", CueSectionE::GROOVE, 0.45f, false, false },
     { "BUILD", CueSectionE::BUILD, 0.60f, false, false },      { "LEAD", CueSectionE::DROP, 0.75f, false, false },
     { "PEAK", CueSectionE::DROP, 0.95f, true, false },         { "BREAKDOWN", CueSectionE::BREAK, 0.35f, false, false },
     { "BRIDGE", CueSectionE::GROOVE, 0.50f, false, false },    { "CODA", CueSectionE::OUTRO, 0.30f, false, false } };
 
-/// @p text looked up in @p table (@p n entries); anything else -- a set's track, a name not in the table -- is a
-/// groove.
+/**  @p text looked up in @p table (@p n entries); anything else -- a set's track, a name not in the table -- is a
+ * groove.
+ *
+ * @param table  The dialect's section names. (in)
+ * @param out    The cue; its text is looked up, its section, energy and drop are set. (in,out)
+ **/
 template <size_t N>
 void dialectSection( const DialectSection ( &table )[N], ScoreCue &out )
 {
@@ -137,7 +172,13 @@ void dialectSection( const DialectSection ( &table )[N], ScoreCue &out )
         }
 }
 
-/// The pitch class of a Camelot label ("8A" A minor, "8B" C major), or -1.
+/**  The pitch class of a Camelot label ("8A" A minor, "8B" C major), or -1.
+ *
+ * @param text  The Camelot label. (in)
+ *
+ * @return
+ *   The pitch class 0..11, or -1.
+ **/
 int camelotPitchClass( const char *text )
 {
     char      *end = nullptr;
@@ -148,10 +189,17 @@ int camelotPitchClass( const char *text )
     return *end == 'A' ? minor : ( minor + 3 ) % 12;                        // B: the relative major
 }
 
-/**
- * @brief One message of the family's other dialects (see CueReceiver.h), after its address.
- * @return true when it is one of theirs and well formed
- */
+/**  One message of the family's other dialects (see CueReceiver.h), after its address.
+ *
+ * @param address  The message's OSC address. (in)
+ * @param data     The datagram. (in)
+ * @param size     Its length in bytes. (in)
+ * @param pos      Offset of the type tag string, just after the address. (in)
+ * @param out      Receives the decoded cue. (out)
+ *
+ * @return
+ *   true when it is one of theirs and well formed
+ **/
 bool decodeDialect( const char *address, const char *data, int size, int pos, ScoreCue &out )
 {
     enum WhoE

@@ -1,8 +1,15 @@
-/**
- * @file GpuSims.cpp
- * @brief Implementation of GpuSims: sets up and steps the ping-ponged fullscreen-fragment-shader GPU simulations and
- * the two host-computed ring histories described in GpuSims.h.
+/*****************************************************************************\
+ *                              GpuSims
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Implementation of GpuSims: sets up and steps the ping-ponged fullscreen-fragment-shader GPU simulations and the
+ *  two host-computed ring histories described in GpuSims.h.
+ *
+ *  @author René Weller
  */
+
 #include <algorithm>
 #include <cmath>
 #include <cstdio>
@@ -22,8 +29,9 @@
 extern GLuint fullscreenVAO();
 
 #ifndef GL_VERTEX_PROGRAM_POINT_SIZE
-/** @brief Fallback definition of the GL enable token (0x8642) for GL headers that omit it; the Physarum deposit pass
- * enables it so its vertex shader's gl_PointSize takes effect. */
+/** Fallback definition of the GL enable token (0x8642) for GL headers that omit it; the Physarum deposit pass
+ * enables it so its vertex shader's gl_PointSize takes effect.
+ **/
 #define GL_VERTEX_PROGRAM_POINT_SIZE 0x8642
 #endif
 

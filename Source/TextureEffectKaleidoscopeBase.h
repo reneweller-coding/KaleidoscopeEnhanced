@@ -1,9 +1,18 @@
-/**
- * @file TextureEffectKaleidoscopeBase.h
- * @brief Base class for the kaleidoscope/tunnel family of EffectShader subclasses: adds
- *        the shared "power" (zoom-recursion) and rotation-interpolation state driving
- *        Kaleidoscope.frag and its Tunnel/TunnelReverse descendants.
+//---------------------------------------------------------------------------
+//                              TextureEffectKaleidoscopeBase
+//---------------------------------------------------------------------------
+//  Copyright (C): 2026 reneweller, MIT License (see LICENSE)
+//---------------------------------------------------------------------------
+/*! @file
+ *
+ *  @brief
+ *  Base class for the kaleidoscope/tunnel family of EffectShader subclasses: adds the shared "power"
+ *  (zoom-recursion) and rotation-interpolation state driving Kaleidoscope.frag and its Tunnel/TunnelReverse
+ *  descendants.
+ *
+ *  @author René Weller
  */
+
 #ifndef TEXTURE_EFFECT_KALEIDOSCOPE_BASE_H
 #define TEXTURE_EFFECT_KALEIDOSCOPE_BASE_H
 
@@ -13,8 +22,9 @@
 #include "EffectShader.h"
 
 
-/**
- * @brief EffectShader subclass driving Kaleidoscope.frag's mirrored-segment/power/rotation look.
+/** @class TextureEffectKaleidoscopeBase
+ *
+ * EffectShader subclass driving Kaleidoscope.frag's mirrored-segment/power/rotation look.
  *
  * Adds the "sides" (mirror segment count), "power" (per-iteration zoom-recursion
  * exponent) and rotation-interpolation uniforms on top of EffectShader's common
@@ -27,7 +37,7 @@
  * resetParameters() are currently active. TextureEffectTunnel and
  * TextureEffectTunnelReverse derive from this class to add tunnel-specific
  * scroll-speed uniforms on top.
- */
+ **/
 class TextureEffectKaleidoscopeBase : public EffectShader
 {
 public:

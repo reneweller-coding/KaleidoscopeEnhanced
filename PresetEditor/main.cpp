@@ -1,44 +1,51 @@
-/**
- * @file main.cpp
- * @brief Entry point and CLI dispatch for the standalone Preset Editor.
+/*****************************************************************************\
+ *                              main
+\*****************************************************************************/
+/*! @file
  *
- * PresetEditor — a standalone editor for the visualizer's preset XMLs, with a
- * live preview of each texture/combine shader.  Independent of the main app.
+ *  @brief
+ *  Entry point and CLI dispatch for the standalone Preset Editor.
  *
- * main() first checks argv for one of several headless self-test/probe
- * flags (each returns without ever opening the QMainWindow); if none match,
- * it falls through to launching the normal windowed editor (EditorWindow).
+ *  PresetEditor — a standalone editor for the visualizer's preset XMLs, with a
+ *  live preview of each texture/combine shader.  Independent of the main app.
  *
- * Usage:
- *   PresetEditor.exe                         launch the editor GUI
- *   PresetEditor.exe --roundtrip in.xml out.xml   headless load+save (self-test)
- *   PresetEditor.exe --validate [preset.xml]      headless completeness check: every
- *                                            preset entry must carry every param its
- *                                            shader declares in Komplett.xml (checks
- *                                            all Presets/ *.xml if no file given)
- *   PresetEditor.exe --render tex.frag comb.frag out.png [W H]   grab one preview
- *                                            frame to a PNG (optional --geom/
- *                                            --stateBytes/--shadowExtent for scene3d,
- *                                            --param name=value, --expr name=formula,
- *                                            --time seconds, --images dir, "drone",
- *                                            --trans d to pin a transition's progress
- *                                            in [0,1] -- comb.frag should then be a
- *                                            folder-qualified "Transitions/X.frag")
- *   PresetEditor.exe --transcheck            verify every shader in Transitions/:
- *                                            exact A at d=0 / exact B at d=1 and
- *                                            no temporal jumps across the sweep
- *   PresetEditor.exe --transprofile          measure how each registered transition
- *                                            distributes its change over the fade
- *                                            (core80, clock flicker, flash; optional
- *                                            --images dir, --steps N, --out file.tsv,
- *                                            --scene Blit.frag for a still A, drone)
- *   PresetEditor.exe --compile <files|\@list> compile every shader with the real driver
- *                                            (fullscreen fragments also linked against
- *                                            Engine/Fullscreen.vert); exit code = failures
- *   PresetEditor.exe --cfxcheck              verify the GL 4.3 compute-FX
- *                                            2D shaders don't render solid
- *                                            black (regression guard)
+ *  main() first checks argv for one of several headless self-test/probe
+ *  flags (each returns without ever opening the QMainWindow); if none match,
+ *  it falls through to launching the normal windowed editor (EditorWindow).
+ *
+ *  Usage:
+ *    PresetEditor.exe                         launch the editor GUI
+ *    PresetEditor.exe --roundtrip in.xml out.xml   headless load+save (self-test)
+ *    PresetEditor.exe --validate [preset.xml]      headless completeness check: every
+ *                                             preset entry must carry every param its
+ *                                             shader declares in Komplett.xml (checks
+ *                                             all Presets/ *.xml if no file given)
+ *    PresetEditor.exe --render tex.frag comb.frag out.png [W H]   grab one preview
+ *                                             frame to a PNG (optional --geom/
+ *                                             --stateBytes/--shadowExtent for scene3d,
+ *                                             --param name=value, --expr name=formula,
+ *                                             --time seconds, --images dir, "drone",
+ *                                             --trans d to pin a transition's progress
+ *                                             in [0,1] -- comb.frag should then be a
+ *                                             folder-qualified "Transitions/X.frag")
+ *    PresetEditor.exe --transcheck            verify every shader in Transitions/:
+ *                                             exact A at d=0 / exact B at d=1 and
+ *                                             no temporal jumps across the sweep
+ *    PresetEditor.exe --transprofile          measure how each registered transition
+ *                                             distributes its change over the fade
+ *                                             (core80, clock flicker, flash; optional
+ *                                             --images dir, --steps N, --out file.tsv,
+ *                                             --scene Blit.frag for a still A, drone)
+ *    PresetEditor.exe --compile <files|\@list> compile every shader with the real driver
+ *                                             (fullscreen fragments also linked against
+ *                                             Engine/Fullscreen.vert); exit code = failures
+ *    PresetEditor.exe --cfxcheck              verify the GL 4.3 compute-FX
+ *                                             2D shaders don't render solid
+ *                                             black (regression guard)
+ *
+ *  @author René Weller
  */
+
 #include <QtWidgets/QApplication>
 #include <QtGui/QSurfaceFormat>
 #include <QtGui/QImage>

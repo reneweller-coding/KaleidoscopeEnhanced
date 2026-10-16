@@ -1,10 +1,18 @@
-/**
- * @file Scene3DShader.cpp
- * @brief Implementation of Scene3DShader: per-geom-kind procedural mesh generation, the compute-generator ("indirect")
- * pipeline, the CPU-side formula-driven camera rig, and the per-geom-kind draw state (blend/depth, shadow pass, OIT
- * pass).
+/*****************************************************************************\
+ *                              Scene3DShader
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Implementation of Scene3DShader: per-geom-kind procedural mesh generation, the compute-generator ("indirect")
+ *  pipeline, the CPU-side formula-driven camera rig, and the per-geom-kind draw state (blend/depth, shadow pass,
+ *  OIT pass).
+ *
+ *  See Scene3DShader.h.
+ *
+ *  @author René Weller
  */
-// Scene3DShader.cpp — see Scene3DShader.h.
+
 #include <thread>
 #include <mutex>
 #include <condition_variable>
@@ -144,19 +152,26 @@ Scene3DShader::Scene3DShader( const std::string &filenameFragmentShader, const s
 // ---------------------------------------------------------------------------
 namespace
 {
+/** The mesh warm-up queue and its worker's state (see the comment above). */
 struct MeshWarmupQueue
 {
-    std::mutex                  mtx;
-    std::condition_variable     cv;
-    std::deque<Scene3DShader *> queue;
-    Scene3DShader              *inFlight = nullptr;
-    bool                        threadStarted = false;
+    std::mutex                  mtx;                   ///< Guards queue and inFlight.
+    std::condition_variable     cv;                    ///< Wakes the worker; signals that a load finished.
+    std::deque<Scene3DShader *> queue;                 ///< Shaders waiting for their mesh to be loaded.
+    Scene3DShader              *inFlight = nullptr;    ///< The shader whose mesh the worker is loading now, or null.
+    bool                        threadStarted = false; ///< Whether the detached worker thread runs.
 };
+/**  The process-wide queue, created on first use.
+ *
+ * @return
+ *   The queue; deliberately never destroyed.
+ **/
 MeshWarmupQueue &warmQ()
 {
     static MeshWarmupQueue *q = new MeshWarmupQueue; // leaked on purpose, see above
     return *q;
 }
+/** The detached worker thread: takes one shader after the other off the queue and loads its mesh (never GL). */
 void warmupWorker()
 {
     MeshWarmupQueue &q = warmQ();

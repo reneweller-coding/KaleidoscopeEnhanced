@@ -1,7 +1,15 @@
-/**
- * @file Utils.h
- * @brief Misc small helper utilities used across the engine: a nanosecond-resolution
- *        timer (NanoTimer) and a QImage helper used to prepare textures.
+//---------------------------------------------------------------------------
+//                              Utils
+//---------------------------------------------------------------------------
+//  Copyright (C): 2026 reneweller, MIT License (see LICENSE)
+//---------------------------------------------------------------------------
+/*! @file
+ *
+ *  @brief
+ *  Misc small helper utilities used across the engine: a nanosecond-resolution timer (NanoTimer) and a QImage
+ *  helper used to prepare textures.
+ *
+ *  @author René Weller
  */
 
 #ifndef UTILS_H
@@ -9,15 +17,16 @@
 
 #include <QtGui/QImage>
 
-/**
- * @brief High-resolution wall-clock stopwatch (nanosecond-scale, Windows QPC backed).
+/** @class NanoTimer
+ *
+ * High-resolution wall-clock stopwatch (nanosecond-scale, Windows QPC backed).
  *
  * Wraps the Windows high-performance counter (QueryPerformanceCounter/Frequency) to
  * measure elapsed wall-clock time. The reported unit is always nanoseconds, though the
  * actual resolution depends on whether a high-frequency counter is available (checked
  * once, lazily, the first time a NanoTimer is constructed). If no high-frequency counter
  * exists the readings are bogus/coarse rather than failing outright.
- */
+ **/
 class NanoTimer
 {
 public:
@@ -30,7 +39,7 @@ public:
      *
      * @return
      *   Elapsed time in nanoseconds (scaled by the measured counter frequency when a high-frequency counter is in
-     *   use, otherwise raw counter ticks).
+     *   use, otherwise raw counter ticks). Elapsed nanoseconds (or raw counter ticks if no high-frequency counter).
      **/
     double elapsed( void ) const;
 
@@ -38,12 +47,13 @@ public:
      *
      * @return
      *   True if QueryPerformanceFrequency succeeded; valid only after the first NanoTimer has been constructed.
+     *   True if the high-frequency counter path is active.
      **/
     static bool usesHighFrequ( void );
     /**  Returns the measured counter frequency.
      *
      * @return
-     *   Frequency in GHz; valid only when usesHighFrequ() is true.
+     *   Frequency in GHz; valid only when usesHighFrequ() is true. Counter frequency in GHz.
      **/
     static double frequ( void );
 
@@ -57,7 +67,8 @@ private:
     /**  Reads the raw hardware counter value.
      *
      * @return
-     *   Current QueryPerformanceCounter tick count. Meaning depends on M_UseHighFrequ.
+     *   Current QueryPerformanceCounter tick count. Meaning depends on M_UseHighFrequ. Raw QueryPerformanceCounter
+     *   tick count.
      **/
     static long long unsigned int getTimeStamp( void );
     /**  Determines the CPU/counter frequency once and caches it in M_GHz / M_UseHighFrequ.

@@ -1,7 +1,14 @@
-/**
- * @file main.cpp
- * @brief Entry point for the Kaleidoscope Setup tool (see SetupWindow.h).
+/*****************************************************************************\
+ *                              main
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Entry point for the Kaleidoscope Setup tool (see SetupWindow.h).
+ *
+ *  @author René Weller
  */
+
 #include <QtWidgets/QApplication>
 #include "SetupWindow.h"
 

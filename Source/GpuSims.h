@@ -1,9 +1,18 @@
-/**
- * @file GpuSims.h
- * @brief GPU-resident procedural simulations (reaction-diffusion, fluid dye, volumetric smoke/fire, Physarum) plus two
- * host-computed ring histories (self-similarity matrix, spectrogram), all feeding fixed global sampler units consumed
- * by the scene/combine shaders.
+//---------------------------------------------------------------------------
+//                              GpuSims
+//---------------------------------------------------------------------------
+//  Copyright (C): 2026 reneweller, MIT License (see LICENSE)
+//---------------------------------------------------------------------------
+/*! @file
+ *
+ *  @brief
+ *  GPU-resident procedural simulations (reaction-diffusion, fluid dye, volumetric smoke/fire, Physarum) plus two
+ *  host-computed ring histories (self-similarity matrix, spectrogram), all feeding fixed global sampler units
+ *  consumed by the scene/combine shaders.
+ *
+ *  @author René Weller
  */
+
 #ifndef GPUSIMS_H
 #define GPUSIMS_H
 
@@ -30,8 +39,9 @@
 #include "glcore.h"
 #include "AudioFeatures.h"
 
-/**
- * @brief Owns and steps every GPU-resident procedural simulation sampled by the visualizer's shaders.
+/** @class GpuSims
+ *
+ * Owns and steps every GPU-resident procedural simulation sampled by the visualizer's shaders.
  *
  * Runs four ping-ponged fullscreen-fragment-shader simulations (Gray-Scott
  * reaction-diffusion, curl-noise fluid-dye advection, tiled pseudo-3D
@@ -42,19 +52,18 @@
  * fail-safe pattern: if its setup fails, its `*Ready` flag stays false and
  * the consuming effect degrades visibly but without crashing. Deliberately
  * kept free of Qt so it can move into a later, Qt-independent RendererCore.
- */
+ **/
 class GpuSims
 {
 public:
     /** Welche Sims dieser Frame wirklich braucht (usesSim/usesFluid/... des
      *  aktiven und ggf. einblendenden Effekts, ermittelt vom Aufrufer). */
-    /**
-     * @brief Per-frame flags telling run() which simulations are actually needed this frame.
+    /** Per-frame flags telling run() which simulations are actually needed this frame.
      *
      * Filled by the caller from the active (and any cross-fading) effect's
      * usesSim/usesFluid/... flags, so idle simulations are skipped instead
      * of stepped every frame regardless of whether they are visible.
-     */
+     **/
     struct Demand
     {
         bool rd = false;       ///< Step the Gray-Scott reaction-diffusion sim and bind texSim (unit 7).
@@ -67,15 +76,14 @@ public:
 
     /** Frame-Kontext aus der Pipeline: integrierte Phasen (anti-flicker) und
      *  die Bildquellen, die der Fluid-Sim als Farbstoff dienen. */
-    /**
-     * @brief Per-frame pipeline context: integrated time phases plus the image(s) the fluid sim uses as dye.
+    /** Per-frame pipeline context: integrated time phases plus the image(s) the fluid sim uses as dye.
      *
      * globalTime/audioAdvance are already integrated ("anti-flicker") phase
      * accumulators rather than raw absolute time (see the project-wide
      * audio-reactive phase convention: never multiply absolute time by an
      * audio-varying factor, integrate the rate instead) -- they are meant
      * to be consumed as-is, not scaled further by an audio-varying factor.
-     */
+     **/
     struct Frame
     {
         float globalTime = 0.f;   ///< Integrated wall-clock phase (see phase convention note above).

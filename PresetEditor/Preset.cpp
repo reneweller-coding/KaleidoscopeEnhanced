@@ -1,7 +1,14 @@
-/**
- * @file Preset.cpp
- * @brief Implements Preset/PresetEntry XML load and save (see Preset.h for the schema).
+/*****************************************************************************\
+ *                              Preset
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Implements Preset/PresetEntry XML load and save (see Preset.h for the schema).
+ *
+ *  @author René Weller
  */
+
 #include "Preset.h"
 
 #include <QtCore/QFile>

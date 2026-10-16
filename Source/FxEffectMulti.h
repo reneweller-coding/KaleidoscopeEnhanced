@@ -1,8 +1,16 @@
-/**
- * @file FxEffectMulti.h
- * @brief FX-overlay EffectShader subclass wrapping FxMulti.frag: a "multiply/tile the
- *        image N times" combine effect.
+//---------------------------------------------------------------------------
+//                              FxEffectMulti
+//---------------------------------------------------------------------------
+//  Copyright (C): 2026 reneweller, MIT License (see LICENSE)
+//---------------------------------------------------------------------------
+/*! @file
+ *
+ *  @brief
+ *  FX-overlay EffectShader subclass wrapping FxMulti.frag: a "multiply/tile the image N times" combine effect.
+ *
+ *  @author René Weller
  */
+
 #ifndef FX_EFFECT_MULTI_H
 #define FX_EFFECT_MULTI_H
 
@@ -11,14 +19,15 @@
 #include <QtCore/QThread>
 #include "EffectShader.h"
 
-/**
- * @brief EffectShader subclass driving FxMulti.frag's tiled/multiplied-copies combine effect.
+/** @class FxEffectMulti
+ *
+ * EffectShader subclass driving FxMulti.frag's tiled/multiplied-copies combine effect.
  *
  * The simplest of this file group: adds exactly one extra uniform, `copies`
  * (how many times the source image is tiled/repeated), re-rolled on
  * resetParameters(). Used as an "FX" (combine-stage) effect, per the ".."
  * path to "FX\\FxMulti.frag".
- */
+ **/
 class FxEffectMulti : public EffectShader
 {
 public:

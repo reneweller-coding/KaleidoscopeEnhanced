@@ -1,9 +1,15 @@
-/**
- * @file ComputeFXPreview.cpp
- * @brief See ComputeFXPreview.h for why this indirection exists. DELIBERATELY
- *        its own translation unit: this is the only file in the 2D preview
- *        path that includes Source/ComputeFX.h (and, through it, glcore.h).
+/*****************************************************************************\
+ *                              ComputeFXPreview
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  See ComputeFXPreview.h for why this indirection exists. DELIBERATELY its own translation unit: this is the only
+ *  file in the 2D preview path that includes Source/ComputeFX.h (and, through it, glcore.h).
+ *
+ *  @author René Weller
  */
+
 #include "ComputeFXPreview.h"
 #include "../Source/ComputeFX.h"
 

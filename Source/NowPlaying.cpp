@@ -1,8 +1,15 @@
-/**
- * @file NowPlaying.cpp
- * @brief Implementation of NowPlaying: WinRT SMTC polling thread, VLC window-title fallback, and playback-position
- * settling/smoothing.
+/*****************************************************************************\
+ *                              NowPlaying
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Implementation of NowPlaying: WinRT SMTC polling thread, VLC window-title fallback, and playback-position
+ *  settling/smoothing.
+ *
+ *  @author René Weller
  */
+
 // C++/WinRT's await adapters pull in <experimental/coroutine> under C++17, which
 // MSVC now flags as deprecated.  We only block on the async results with .get()
 // (no real coroutines), so silence it.
@@ -34,19 +41,20 @@ using namespace winrt::Windows::Media::Control;
 // SMTC and never reach this fallback.)
 namespace
 {
-/** @brief Result accumulator for vlcEnumProc(): the matched window's media title, if any. */
+/** Result accumulator for vlcEnumProc(): the matched window's media title, if any. */
 struct VlcScan
 {
-    std::wstring text;
-}; ///< Non-empty once a VLC window title has been matched.
+    std::wstring text; ///< Non-empty once a VLC window title has been matched.
+};
 
-/**
- * @brief EnumWindows callback that scans top-level windows for a classic-VLC title suffix.
+/**  EnumWindows callback that scans top-level windows for a classic-VLC title suffix.
  *
- * @param hwnd The window handle being visited.
- * @param lp A `VlcScan*` cast to LPARAM; receives the matched title (minus the VLC suffix).
- * @return TRUE to keep enumerating, FALSE to stop (a match was found).
- */
+ * @param hwnd  The window handle being visited. (in)
+ * @param lp    A `VlcScan*` cast to LPARAM; receives the matched title (minus the VLC suffix). (in)
+ *
+ * @return
+ *   TRUE to keep enumerating, FALSE to stop (a match was found).
+ **/
 BOOL CALLBACK vlcEnumProc( HWND hwnd, LPARAM lp )
 {
     if ( !IsWindowVisible( hwnd ) )
@@ -66,15 +74,15 @@ BOOL CALLBACK vlcEnumProc( HWND hwnd, LPARAM lp )
     return TRUE;
 }
 
-/**
- * @brief "<artist> - <title>" metadata split + filename cleanup for the VLC fallback.
+/**  "<artist> - <title>" metadata split + filename cleanup for the VLC fallback.
+ *
+ * @param raw     The VLC window title with the " - VLC media player" suffix already stripped. (in)
+ * @param title   Receives the parsed (or cleaned raw) title. (out)
+ * @param artist  Receives the parsed artist, left untouched if no " - " separator was found. (out)
  *
  * Drops a known media-file extension and turns underscores into spaces, so a raw file name still
  * reads like a title; then splits on the first " - " into artist/title if present.
- * @param raw The VLC window title with the " - VLC media player" suffix already stripped.
- * @param title Receives the parsed (or cleaned raw) title.
- * @param artist Receives the parsed artist, left untouched if no " - " separator was found.
- */
+ **/
 void parseVlcTitle( const std::wstring &raw, QString &title, QString &artist )
 {
     QString w = QString::fromStdWString( raw ).trimmed();

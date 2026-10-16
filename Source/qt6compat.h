@@ -1,8 +1,15 @@
-/**
- * @file qt6compat.h
- * @brief Small Qt5 -> Qt6 API-shim: restores the qrand()/qsrand() free functions that
- *        Qt6 removed, so the many existing call sites across the codebase keep
- *        compiling and behaving the same without being rewritten one by one.
+//---------------------------------------------------------------------------
+//                              qt6compat
+//---------------------------------------------------------------------------
+//  Copyright (C): 2026 reneweller, MIT License (see LICENSE)
+//---------------------------------------------------------------------------
+/*! @file
+ *
+ *  @brief
+ *  Small Qt5 -> Qt6 API-shim: restores the qrand()/qsrand() free functions that Qt6 removed, so the many existing
+ *  call sites across the codebase keep compiling and behaving the same without being rewritten one by one.
+ *
+ *  @author René Weller
  */
 
 #ifndef QT6COMPAT_H

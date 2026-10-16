@@ -1,8 +1,15 @@
-/**
- * @file TextureEffectTunnel.cpp
- * @brief Implementation of TextureEffectTunnel: the forward tunnel scroll-speed uniform
- *        layered on top of TextureEffectKaleidoscopeBase.
+/*****************************************************************************\
+ *                              TextureEffectTunnel
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Implementation of TextureEffectTunnel: the forward tunnel scroll-speed uniform layered on top of
+ *  TextureEffectKaleidoscopeBase.
+ *
+ *  @author René Weller
  */
+
 #include <float.h>
 
 #include "shader_setup.h"

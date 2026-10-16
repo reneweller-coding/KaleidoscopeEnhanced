@@ -1,10 +1,18 @@
-/**
- * @file AudioConditioner.h
- * @brief Turns one frame's raw AudioFeatures into the anti-flicker, slew-limited
- *        copy every shader/uniform/camera term downstream actually reads, plus
- *        the handful of "virtual director" signals (camera drift, rewind,
- *        letterbox, shockwave) that aren't part of AudioFeatures itself.
+//---------------------------------------------------------------------------
+//                              AudioConditioner
+//---------------------------------------------------------------------------
+//  Copyright (C): 2026 reneweller, MIT License (see LICENSE)
+//---------------------------------------------------------------------------
+/*! @file
+ *
+ *  @brief
+ *  Turns one frame's raw AudioFeatures into the anti-flicker, slew-limited copy every shader/uniform/camera term
+ *  downstream actually reads, plus the handful of "virtual director" signals (camera drift, rewind, letterbox,
+ *  shockwave) that aren't part of AudioFeatures itself.
+ *
+ *  @author René Weller
  */
+
 #ifndef AUDIOCONDITIONER_H
 #define AUDIOCONDITIONER_H
 
@@ -21,23 +29,22 @@
 
 #include "AudioFeatures.h"
 
-/**
- * @brief Owns every per-frame audio-conditioning state variable (envelopes,
- *        slews, integrated phases, the beat PLL, the virtual camera, and the
- *        "Zeit-Regie" dramaturgy signals) and produces the anti-flicker
- *        AudioFeatures copy the rest of the pipeline consumes.
+/** @class AudioConditioner
+ *
+ * Owns every per-frame audio-conditioning state variable (envelopes, slews, integrated phases, the beat PLL, the
+ * virtual camera, and the "Zeit-Regie" dramaturgy signals) and produces the anti-flicker AudioFeatures copy the
+ * rest of the pipeline consumes.
  *
  * update() must be called exactly once per rendered frame, in frame order --
  * every signal here is an integrator or a slew limiter, so skipping or
  * reordering calls changes the accumulated state, not just this frame's
  * output. dt should already reflect freeze/pin/break-hold time scaling (the
  * caller's job); this class only ever integrates the dt it's given.
- */
+ **/
 class AudioConditioner
 {
 public:
-    /**
-     * @brief Per-frame inputs this class needs but does not own the source of.
+    /** Per-frame inputs this class needs but does not own the source of.
      *
      * Everything here is read-only from AudioConditioner's point of view --
      * globalTime and trailDepth3D are RenderPipeline members, reactivity/
@@ -45,7 +52,7 @@ public:
      * values come from GpuSims's ring-buffer accessors. Passed as plain
      * values (not references to those owning classes) to keep this class
      * decoupled from them.
-     */
+     **/
     struct Context
     {
         float globalTime = 0.f;   ///< Wall-clock seconds since start (day/night cycle, camera drift/gate-weave,
@@ -278,22 +285,22 @@ private:
     // the peak and releases exponentially so the slew has a stable target, and
     // each *Smooth is the slew-limited value (rise to full >= ~150 ms, never a
     // single frame -- photosensitivity safety) that actually reaches the show.
-    /** @brief Peak-hold envelope of audio.beatDecay (0..1, exponential release, tau 0.30 s). */
+    /** Peak-hold envelope of audio.beatDecay (0..1, exponential release, tau 0.30 s). */
     float m_beatEnv = 0.f, m_audioBeatSmooth = 0.f; ///< Slew-limited (6/s) beat strength BEFORE the music gate; target
                                                     ///< is max(m_beatEnv, tempo-locked PLL phase pulse). Published as
                                                     ///< beatDecay * gate, read ungated via beatSmooth().
-    /** @brief Peak-hold envelope of audio.onsetStrength (0..1, exponential release, tau 0.22 s). */
+    /** Peak-hold envelope of audio.onsetStrength (0..1, exponential release, tau 0.22 s). */
     float m_onsetEnv = 0.f, m_onsetSmooth = 0.f; ///< Slew-limited (7/s) onset strength; published as onsetStrength *
                                                  ///< gate.
-    /** @brief Peak-hold envelope of audio.downbeat (0..1, exponential release, tau 0.45 s). */
+    /** Peak-hold envelope of audio.downbeat (0..1, exponential release, tau 0.45 s). */
     float m_downbeatEnv = 0.f, m_downbeatSmooth = 0.f; ///< Slew-limited (5/s) downbeat pulse; published as downbeat *
                                                        ///< gate and scales the virtual-camera punch-in.
-    /** @brief Peak-hold envelope of audio.onsetKick (0..1, exponential release, tau 0.24 s -- kicks boom). */
+    /** Peak-hold envelope of audio.onsetKick (0..1, exponential release, tau 0.24 s -- kicks boom). */
     float m_kickEnv = 0.f, m_kickSmooth = 0.f; ///< Slew-limited (7/s) kick onset; published as onsetKick * gate, drives
                                                ///< camera shake and the bass-shockwave kick edge.
-    /** @brief Peak-hold envelope of audio.onsetSnare (0..1, exponential release, tau 0.20 s). */
+    /** Peak-hold envelope of audio.onsetSnare (0..1, exponential release, tau 0.20 s). */
     float m_snareEnv = 0.f, m_snareSmooth = 0.f; ///< Slew-limited (7/s) snare onset; published as onsetSnare * gate.
-    /** @brief Peak-hold envelope of audio.onsetHat (0..1, exponential release, tau 0.14 s -- hats snap). */
+    /** Peak-hold envelope of audio.onsetHat (0..1, exponential release, tau 0.14 s -- hats snap). */
     float m_hatEnv = 0.f, m_hatSmooth = 0.f; ///< Slew-limited (8/s) hat onset; published as onsetHat * gate.
     float m_audioLevelSmooth = 0.f; ///< Slew-limited (3/s) copy of audio.overallLevel (0..1); published as overallLevel
                                     ///< * gate.
@@ -312,8 +319,9 @@ private:
     float m_camPunch = 0.f; ///< Decaying punch-in envelope (downbeat/drop "punch-in") for the virtual camera.
     float m_camZoom = 1.f;  ///< Current virtual-camera zoom factor.
     float m_camRot = 0.f;   ///< Current virtual-camera roll (per-bar sway).
-    /** @brief Current virtual-camera horizontal offset as a fraction of the frame (slow drift + kick/drop shake + film
-     * gate-weave; forced to 0 under calmMotion), for PresentPass. */
+    /** Current virtual-camera horizontal offset as a fraction of the frame (slow drift + kick/drop shake + film
+     * gate-weave; forced to 0 under calmMotion), for PresentPass.
+     **/
     float m_camOffX = 0.f, m_camOffY = 0.f; ///< Current virtual-camera vertical offset, same composition and units as
                                             ///< m_camOffX.
 

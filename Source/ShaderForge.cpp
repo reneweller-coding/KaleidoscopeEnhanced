@@ -1,7 +1,14 @@
-/**
- * @file ShaderForge.cpp
- * @brief Helper-process program builds with a disk cache of program binaries (see ShaderForge.h).
+/*****************************************************************************\
+ *                              ShaderForge
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Helper-process program builds with a disk cache of program binaries (see ShaderForge.h).
+ *
+ *  @author René Weller
  */
+
 #include "ShaderForge.h"
 #include "textfile.h"
 #include <QtCore/QCoreApplication>
@@ -22,20 +29,31 @@
 namespace
 {
 
+/** What the forge knows about one program. */
 struct Entry
 {
-    GLuint prog = 0;
-    bool   failed = false;
+    GLuint prog = 0;       ///< The program loaded from the cache; 0 until there is one.
+    bool   failed = false; ///< The helper could not build it; the caller builds it itself.
     bool   queued = false; ///< handed to the helper, result not there yet
 };
 
-bool                         s_init = false, s_ok = false;
-QString                      s_helper, s_dir, s_vert;
-std::string                  s_salt; ///< GPU, driver and vertex shader: part of every key
-std::map<std::string, Entry> s_entries;
-QProcess                    *s_server = nullptr;
-int                          s_serverStarts = 0;
+bool                         s_init = false;     ///< Whether shaderForgeInit() ran.
+bool                         s_ok = false;       ///< Whether the forge can be used (shaderForgeInit()'s result).
+QString                      s_helper;           ///< This executable, which serves as the helper (--forge-serve).
+QString                      s_dir; ///< The cache directory, %LOCALAPPDATA%/KaleidoscopeVisualizer/ShaderCache.
+QString                      s_vert;             ///< Absolute path of Engine/Fullscreen.vert.
+std::string                  s_salt;             ///< GPU, driver and vertex shader: part of every key
+std::map<std::string, Entry> s_entries;          ///< Every program asked for, by key.
+QProcess                    *s_server = nullptr; ///< The helper process; null until server() starts it.
+int                          s_serverStarts = 0; ///< How often server() started the helper; it gives up after three.
 
+/**  The cache key of a fragment shader source.
+ *
+ * @param src  The source. (in)
+ *
+ * @return
+ *   FNV-1a 64 over s_salt and the source, as 16 hex digits.
+ **/
 std::string keyOf( const std::string &src )
 {
     unsigned long long h = 1469598103934665603ULL; // FNV-1a 64
@@ -48,15 +66,19 @@ std::string keyOf( const std::string &src )
     return b;
 }
 
-/**
- * @brief The helper, started once (this executable with --forge-serve) and fed one job per line.
+/**  The helper, started once (this executable with --forge-serve) and fed one job per line.
+ *
+ * @return
+ *   The running helper, or nullptr.
  *
  * One process for the whole session: a helper per program created a GL
  * context each time, and every creation cost the app two frame gaps of ~55 ms
  * (measured 02.10.2026).  If it dies, it is started again (at most three
  * times) and every job still waiting is handed over once more.
- * @return The running helper, or nullptr.
- */
+ *
+ * @sideeffects
+ *   Changes s_server, s_serverStarts.
+ **/
 QProcess *server()
 {
     if ( s_server && s_server->state() != QProcess::NotRunning )
@@ -86,16 +108,16 @@ QProcess *server()
     return s_server;
 }
 
-/**
- * @brief Keeps the cache below a size: removes the binaries used longest ago (and leftovers).
+/**  Keeps the cache below a size: removes the binaries used longest ago (and leftovers).
+ *
+ * @param dir         The cache directory. (in)
+ * @param limitBytes  The size it may keep. (in)
  *
  * A binary's modification time is refreshed whenever it is loaded, so it
  * tells when a program was last used.  Leftovers: .tmp files of an
  * interrupted build, .frag job files whose result is there, stray .err files
  * older than a week (a fixed shader gets a new key anyway).
- * @param dir The cache directory.
- * @param limitBytes The size it may keep.
- */
+ **/
 void trimCache( const QString &dir, qint64 limitBytes )
 {
     struct Item
@@ -139,6 +161,13 @@ void trimCache( const QString &dir, qint64 limitBytes )
                  total / 1048576.0 );
 }
 
+/**  Loads a cached program binary and marks the file as used for trimCache().
+ *
+ * @param path  The binary: "KFRG", the binary format, then the driver's program binary. (in)
+ *
+ * @return
+ *   The program, or 0 if the file is missing, not a forge binary or from another driver.
+ **/
 GLuint loadBinary( const QString &path )
 {
     QFile f( path );

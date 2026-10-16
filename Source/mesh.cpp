@@ -1,10 +1,17 @@
-/**
- * @file mesh.cpp
- * @brief Implementation of Mesh: a two-pass Wavefront .obj/.mtl text parser and a legacy fixed-function (glBegin/glEnd)
- * renderer for the result.
+/*****************************************************************************\
+ *                              Mesh
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Implementation of Mesh: a two-pass Wavefront .obj/.mtl text parser and a legacy fixed-function (glBegin/glEnd)
+ *  renderer for the result.
+ *
+ *  Program from Stephan Mock 324612 and Randolf Schärfig 327639
+ *  modified by cg.in.tu-clausthal
+ *
+ *  @author Stephan Mock and Randolf Schärfig, modified by cg.in.tu-clausthal; adapted by René Weller
  */
-// Program from Stephan Mock 324612 and Randolf Sch�rfig 327639
-// modifiziert von cg.in.tu-clausthal
 
 #include <QtGui/qopengl.h>
 #include <GL/gl.h>

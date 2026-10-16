@@ -1,9 +1,15 @@
-/**
- * @file EffectShader.cpp
- * @brief Implementation of EffectShader: shader compile/uniform plumbing, solo/interpolation
- *        timing, the audio-feature and formula-layer uniform uploads, and the cached
- *        "usesXxx" shader-capability queries.
+/*****************************************************************************\
+ *                              EffectShader
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Implementation of EffectShader: shader compile/uniform plumbing, solo/interpolation timing, the audio-feature
+ *  and formula-layer uniform uploads, and the cached "usesXxx" shader-capability queries.
+ *
+ *  @author René Weller
  */
+
 #include <float.h>
 
 #include "shader_setup.h"
@@ -129,8 +135,8 @@ EffectShader::~EffectShader()
 
 namespace
 {
-std::set<EffectShader *> s_chainHolders;
-} ///< Labs holding chain textures (retireIdleChains)
+std::set<EffectShader *> s_chainHolders; ///< Labs holding chain textures (retireIdleChains)
+}
 
 void EffectShader::freeChainTextures()
 {
@@ -646,6 +652,7 @@ unsigned int EffectShader::getInterpolatedTime( unsigned int minTime, unsigned i
 // (indices = the AL_* enum; order must match).
 namespace
 {
+/** Slot of each audio uniform in the per-program location cache; AL_COUNT is the number of slots. */
 enum AudioLocE
 {
     AL_PHASE,
@@ -748,6 +755,7 @@ enum AudioLocE
     AL_MELODYPHASE,
     AL_COUNT
 };
+/** The audio uniforms' names, indexed by AudioLocE (the order must match). */
 const char *kAudioLocNames[AL_COUNT] = {
     "audioPhase", "audioAdvance", "audioBeat", "audioLevel", "sides",
     "audioFlip", "audioCentroid", "audioFlux", "audioSubBass", "audioBass",
@@ -1336,13 +1344,13 @@ bool EffectShader::usesBake()
 // Stage order: A, B, C, D (the chain), S (the look); each has a rolled knob.
 // Stages 5..7 (the 3D structure: space, fold core, body) exist in ChainLab3D only.
 static const int WalkN = 9; ///< Walk stages: A..D, the look, space, core, body and the stage order (8).
-/// The rolled knob of each walk stage.
+/** The rolled knob of each walk stage. */
 static const char *kWalkKnob[9] = { "chainAP", "chainBP", "chainCP", "chainDP", "styleP",
                                     "spaceP", "coreP", "bodyP", "orderP" };
-/// The walk uniform of each stage (shown, target, fade).
+/** The walk uniform of each stage (shown, target, fade). */
 static const char *kWalkUni[9] = { "walkA", "walkB", "walkC", "walkD", "walkS",
                                    "walkSpace", "walkCore", "walkBody", "walkO" };
-/// Short stage names for the log.
+/** Short stage names for the log. */
 static const char *kWalkName[9] = { "A", "B", "C", "D", "look", "space", "core", "body", "order" };
 /**  Whether walk stage s is a structure stage (space, core, body) of the 3D labs.
  *
@@ -1356,14 +1364,13 @@ static bool isStructure( int s )
     return s >= 5 && s <= 7;
 }
 
-/**
- * @brief What the chain lab on screen showed last (written every frame by stepChainWalk()).
+/** What the chain lab on screen showed last (written every frame by stepChainWalk()).
  *
  * A chain lab that comes in while another one fades out starts on the
  * classes that one shows -- matched by class name, sub-variant included -- so
  * the crossfade between two labs keeps the chain and changes the rest (the
  * flat lab hands its chain to the tunnel, the 3D flight its world to the slice).
- */
+ **/
 struct LastChain
 {
     const EffectShader                                  *who = nullptr; ///< The lab that wrote it.
@@ -2038,17 +2045,30 @@ void EffectShader::stepChainWalk( const AudioFeatures &audio )
 extern GLuint fullscreenVAO();
 namespace
 {
+/** One pass shader of the chain runner: its program and the locations of its uniforms. */
 struct PassProg
 {
-    GLuint prog = 0;
-    GLint  texIn = -1, texB = -1, firstPass = -1, subV = -1, mixF = -1, chainOff = -1, bakeSize = -1, texStart = -1,
-           useStart = -1, res = -1, sceneTime = -1, adv = -1, phase = -1, spread = -1, speed = -1, tilt = -1, swell = -1,
-           scale = -1, tiltA = -1, walkHost = -1;
+    GLuint prog = 0; ///< The linked program.
+    /** @name Uniform locations
+     *  @{ */
+    /** Location of one uniform in prog (passProg() names the uniform of each); -1 where the shader lacks it. */
+    GLint texIn = -1, texB = -1, firstPass = -1, subV = -1, mixF = -1, chainOff = -1, bakeSize = -1, texStart = -1,
+          useStart = -1, res = -1, sceneTime = -1, adv = -1, phase = -1, spread = -1, speed = -1, tilt = -1, swell = -1,
+          scale = -1, tiltA = -1, walkHost = -1;
+    /** @} */
 };
-std::map<std::string, PassProg> s_passProgs; ///< pass shader file -> program and locations
-std::vector<std::string>        s_passWarm;  ///< pass files still to build in the background
-bool                            s_passWarmInit = false;
+std::map<std::string, PassProg> s_passProgs;            ///< pass shader file -> program and locations
+std::vector<std::string>        s_passWarm;             ///< pass files still to build in the background
+bool                            s_passWarmInit = false; ///< Whether s_passWarm was filled (once per session)
 
+/**  The file of one pass shader.
+ *
+ * @param stage   Walk stage, 'A' to 'D'. (in)
+ * @param branch  Branch of that stage. (in)
+ *
+ * @return
+ *   The path, Engine/ChainPass/A3.frag for stage 'A', branch 3 (relative to the run directory, Windows separators).
+ **/
 std::string passFile( char stage, int branch )
 {
     char b[64];
@@ -2056,6 +2076,18 @@ std::string passFile( char stage, int branch )
     return b;
 }
 
+/**  The program and uniform locations of a pass shader, looked up once and then cached in s_passProgs.
+ *
+ * @param file  Path of the pass shader. (in)
+ *
+ * @return
+ *   The cached entry.
+ *
+ * The program comes from setShaders(), a cache hit once warmPasses() had it built in the background.
+ *
+ * @sideeffects
+ *   Changes s_passProgs.
+ **/
 const PassProg &passProg( const std::string &file )
 {
     auto it = s_passProgs.find( file );
@@ -2085,7 +2117,14 @@ const PassProg &passProg( const std::string &file )
     p.walkHost = glGetUniformLocation( p.prog, "walkHost" );
     return s_passProgs[file] = p;
 }
-/// @brief Pass shaders built in the background a few at a time, once per session (every chain runner lab, each frame).
+/**  Pass shaders built in the background a few at a time, once per session (every chain runner lab, each frame).
+ *
+ * @param ord     The lab's stage orders ("// @chainord"); their branches are the passes to build. (in,out)
+ * @param with3D  Whether the 3D passes are wanted as well. (in)
+ *
+ * @sideeffects
+ *   Changes s_passWarmInit.
+ **/
 void warmPasses( std::map<std::string, std::vector<int>> &ord, bool with3D )
 {
     static const char Stage[4] = { 'A', 'B', 'C', 'D' };
@@ -2120,6 +2159,13 @@ void warmPasses( std::map<std::string, std::vector<int>> &ord, bool with3D )
             s_passWarm.clear(); // no background compile: build on use
     }
 }
+/**  Hermite smoothstep from 0 to 1.
+ *
+ * @param x  The input; clamped to [0, 1] first. (in)
+ *
+ * @return
+ *   3x^2 - 2x^3 of the clamped input.
+ **/
 float smooth01( float x )
 {
     x = x < 0.f ? 0.f : ( x > 1.f ? 1.f : x );
@@ -3100,7 +3146,7 @@ std::vector<std::pair<std::string, float>> EffectShader::bumpClassTaste( float m
 // Speed of the flight per gaze -- the order of gazeAngles() in the shader:
 // ahead, right window, slanted down, left window, slanted up, floating, orthographic.
 static const int GazeN = 7; ///< Number of gazes (the shader's gazeAngles()).
-/// Flight speed per gaze, in the order above.
+/** Flight speed per gaze, in the order above. */
 static const float GazeSpeed[GazeN] = { 1.f, 0.7f, 0.85f, 0.7f, 0.85f, 0.08f, 0.5f };
 
 void EffectShader::stepChainCam( const AudioFeatures &f )

@@ -1,11 +1,17 @@
-/**
- * @file RenderPipeline.cpp
- * @brief Implements RenderPipeline: the per-frame render/present pipeline (see paint()) —
- *        texture-effect and combine-effect rendering, the SceneScheduler-driven cross-fade
- *        state machines, feedback/trails, shadow and order-independent-transparency passes,
- *        the 2D camera rig, true-stereo per-eye rendering, and the background ImageLoader
- *        thread that streams new photos in without stalling the render thread.
+/*****************************************************************************\
+ *                              RenderPipeline
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Implements RenderPipeline: the per-frame render/present pipeline (see paint()) — texture-effect and
+ *  combine-effect rendering, the SceneScheduler-driven cross-fade state machines, feedback/trails, shadow and
+ *  order-independent-transparency passes, the 2D camera rig, true-stereo per-eye rendering, and the background
+ *  ImageLoader thread that streams new photos in without stalling the render thread.
+ *
+ *  @author René Weller
  */
+
 #include <float.h>
 #include <math.h>
 #include <algorithm>

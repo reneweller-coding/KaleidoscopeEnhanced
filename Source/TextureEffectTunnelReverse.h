@@ -1,8 +1,16 @@
-/**
- * @file TextureEffectTunnelReverse.h
- * @brief Tunnel subclass adding a second, independently-signed scroll-speed uniform, used
- *        by TunnelReverse.frag.
+//---------------------------------------------------------------------------
+//                              TextureEffectTunnelReverse
+//---------------------------------------------------------------------------
+//  Copyright (C): 2026 reneweller, MIT License (see LICENSE)
+//---------------------------------------------------------------------------
+/*! @file
+ *
+ *  @brief
+ *  Tunnel subclass adding a second, independently-signed scroll-speed uniform, used by TunnelReverse.frag.
+ *
+ *  @author René Weller
  */
+
 #ifndef TEXTURE_EFFECT_TUNNEL_REVERSE_H
 #define TEXTURE_EFFECT_TUNNEL_REVERSE_H
 
@@ -11,8 +19,9 @@
 #include <QtCore/QThread>
 #include "TextureEffectTunnel.h"
 
-/**
- * @brief TextureEffectTunnel subclass driving TunnelReverse.frag's counter-scrolling tunnel look.
+/** @class TextureEffectTunnelReverse
+ *
+ * TextureEffectTunnel subclass driving TunnelReverse.frag's counter-scrolling tunnel look.
  *
  * Adds a second scroll-speed uniform, `speedTunnelReverse`, on top of the base
  * class's own `speedTunnel`. Always compiles "..\\Scene2D\\TunnelReverse.frag"
@@ -20,7 +29,7 @@
  * min/max rolling range is inverted (min > max, both negative) relative to the
  * base class's speedTunnel range - see resetParameters() in the .cpp for why
  * that still produces a negative value despite the inverted bounds.
- */
+ **/
 class TextureEffectTunnelReverse : public TextureEffectTunnel
 {
 public:

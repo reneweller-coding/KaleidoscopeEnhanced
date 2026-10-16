@@ -1,9 +1,18 @@
-/**
- * @file TrackMedia.h
- * @brief Optional internet extras for the currently-playing track: chained multi-source lyrics fetching (rendered to a
- * texture), deduplicated artist-photo downloads, and an official-music-video search+download (via yt-dlp), all
- * disk-cached and polled asynchronously from the GL widget.
+//---------------------------------------------------------------------------
+//                              TrackMedia
+//---------------------------------------------------------------------------
+//  Copyright (C): 2026 reneweller, MIT License (see LICENSE)
+//---------------------------------------------------------------------------
+/*! @file
+ *
+ *  @brief
+ *  Optional internet extras for the currently-playing track: chained multi-source lyrics fetching (rendered to a
+ *  texture), deduplicated artist-photo downloads, and an official-music-video search+download (via yt-dlp), all
+ *  disk-cached and polled asynchronously from the GL widget.
+ *
+ *  @author René Weller
  */
+
 #pragma once
 
 // TrackMedia: Internet-Zusatzmaterial zum laufenden Track (optional).
@@ -47,9 +56,10 @@ class QNetworkAccessManager;
 class QNetworkReply;
 class QProcess;
 
-/**
- * @brief Fetches, caches, and renders optional online extras (synced/plain lyrics, artist photos, an official music
- * video) for the currently-playing track.
+/** @class TrackMedia
+ *
+ * Fetches, caches, and renders optional online extras (synced/plain lyrics, artist photos, an official music video)
+ * for the currently-playing track.
  *
  * On requestTrack() it kicks off up to three independent async chains: a
  * lyrics chain (QNetworkAccessManager) that tries a disk cache then falls
@@ -70,7 +80,7 @@ class QProcess;
  * thread; the owning GL widget polls lyricsRevision()/imagesRevision() each
  * frame to notice new results. Every failure degrades silently (empty
  * lyrics/images), never throws or crashes.
- */
+ **/
 class TrackMedia
 {
 public:
@@ -103,21 +113,22 @@ public:
     void requestTrack( const QString &artist, const QString &title, double durationSec = -1.0 );
 
     // ---- Lyrics ----
-    /**
-     * @brief One line of (possibly time-synced) lyrics, plus its vertical band within lyricsImage().
-     */
+    /** One line of (possibly time-synced) lyrics, plus its vertical band within lyricsImage(). */
     struct LyricLine
     {
-        /** @brief Start time of this line in song seconds for synced lyrics; < 0 means unsynchronised (plain-text mode,
-         * both times stay -1). An empty-text entry with only t0 meaningful is a GAP MARKER for an instrumental break
-         * (see parseSynced()). */
+        /** Start time of this line in song seconds for synced lyrics; < 0 means unsynchronised (plain-text mode,
+         * both times stay -1).
+         *
+         * An empty-text entry with only t0 meaningful is a GAP MARKER for an instrumental break (see parseSynced()).
+         **/
         double t0 = -1.0, t1 = -1.0; ///< End time in song seconds: the following line's t0 after time-sorting, or t0 +
                                      ///< 6 s for the last line; -1 for unsynchronised lyrics. A gap marker's t1 is
                                      ///< likewise the next sung line's t0, which is exactly what keeps mid-song
                                      ///< silences measurable.
         QString text;                ///< Line text; empty for a gap marker (instrumental break), never empty otherwise.
-        /** @brief Top edge of this line's vertical band within lyricsImage(), in texture-V units [0,1] (0 = image top);
-         * a gap marker reuses the previous sung line's band. */
+        /** Top edge of this line's vertical band within lyricsImage(), in texture-V units [0,1] (0 = image top); a
+         * gap marker reuses the previous sung line's band.
+         **/
         float v0 = 0.f, v1 = 0.f; ///< Bottom edge of the same band in texture-V units [0,1] (v0 + one line height /
                                   ///< image height); consumers sample/highlight the strip v0..v1.
         float overflowU = 0.f;    ///< How far (in lyricsImage()-wide texture-U units) this line's full, un-elided text
@@ -220,8 +231,9 @@ public:
     }
 
     // ---- Musikvideo (optional, via yt-dlp) ----
-    /** Tracks longer than this are never searched for a video -- picked
-     *  because the request explicitly framed it as "songs, not DJ sets". */
+    /** Tracks longer than this are never searched for a video -- picked because the request explicitly framed it as
+     * "songs, not DJ sets".
+     **/
     static const int VideoMaxDurationSec = 20 * 60;
     /**  True once a cached music video is ready to play for the CURRENT track (from disk cache or a finished
      * download).
@@ -371,8 +383,9 @@ private:
      *                     by the caller. (in)
      **/
     void videoFromCacheOrNet( double durationSec );
-    /** @brief One candidate returned by the yt-dlp search step, before scoring (parsed from one
-     * "id|||title|||channel|||duration" --print line). */
+    /** One candidate returned by the yt-dlp search step, before scoring (parsed from one
+     * "id|||title|||channel|||duration" --print line).
+     **/
     struct VideoCandidate
     {
         QString id, title, channel;
@@ -426,8 +439,11 @@ private:
 
     QNetworkAccessManager *m_nam = nullptr; ///< Shared network manager for every request this object issues; owned,
                                             ///< created in the ctor.
-    /** @brief Current track's artist name, whitespace-trimmed (case preserved for display/queries; lower-cased only for
-     * cache keys). Empty skips the artist-image chain. */
+    /** Current track's artist name, whitespace-trimmed (case preserved for display/queries; lower-cased only for
+     * cache keys).
+     *
+     * Empty skips the artist-image chain.
+     **/
     QString m_artist, m_title, m_key; ///< Lower-cased "artist|title" identity of the active request; used to detect
                                       ///< duplicate requestTrack() calls and to invalidate stale async callbacks (each
                                       ///< callback captures it and bails if it no longer matches).

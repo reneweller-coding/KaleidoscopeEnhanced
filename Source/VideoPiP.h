@@ -1,9 +1,18 @@
-/**
- * @file VideoPiP.h
- * @brief A second, independent Qt6Multimedia video decoder for the music-video picture-in-picture overlay (see
- * TrackMedia's video cache) -- deliberately separate from VideoIn's single global instance, since that one REPLACES the
- * photo source, while this one plays ALONGSIDE it in a screen corner.
+//---------------------------------------------------------------------------
+//                              VideoPiP
+//---------------------------------------------------------------------------
+//  Copyright (C): 2026 reneweller, MIT License (see LICENSE)
+//---------------------------------------------------------------------------
+/*! @file
+ *
+ *  @brief
+ *  A second, independent Qt6Multimedia video decoder for the music-video picture-in-picture overlay (see
+ *  TrackMedia's video cache) -- deliberately separate from VideoIn's single global instance, since that one
+ *  REPLACES the photo source, while this one plays ALONGSIDE it in a screen corner.
+ *
+ *  @author René Weller
  */
+
 #ifndef VIDEOPIP_H
 #define VIDEOPIP_H
 

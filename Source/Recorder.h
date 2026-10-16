@@ -1,9 +1,17 @@
-/**
- * @file Recorder.h
- * @brief Framebuffer-capture recorder: a full recording ('r' / CLI -r) piped
- *        raw into ffmpeg, and a rolling instant-replay ring of JPEG frames,
- *        both fed by one PBO-backed async readback.
+//---------------------------------------------------------------------------
+//                              Recorder
+//---------------------------------------------------------------------------
+//  Copyright (C): 2026 reneweller, MIT License (see LICENSE)
+//---------------------------------------------------------------------------
+/*! @file
+ *
+ *  @brief
+ *  Framebuffer-capture recorder: a full recording ('r' / CLI -r) piped raw into ffmpeg, and a rolling
+ *  instant-replay ring of JPEG frames, both fed by one PBO-backed async readback.
+ *
+ *  @author René Weller
  */
+
 #ifndef RECORDER_H
 #define RECORDER_H
 
@@ -53,9 +61,9 @@
 class AudioAnalyzer;
 class QProcess;
 
-/**
- * @brief Captures the rendered framebuffer to disk, either as a full
- *        recording or into a rolling instant-replay ring.
+/** @class Recorder
+ *
+ * Captures the rendered framebuffer to disk, either as a full recording or into a rolling instant-replay ring.
  *
  * Recorder owns a PBO-double-buffered async GL readback (captureIfDue(), one
  * frame of latency, no GPU->CPU stall) feeding two mutually exclusive modes.
@@ -71,7 +79,7 @@ class QProcess;
  * GL/GUI thread, and captureIfDue() requires a current GL context; the JPEG
  * pool only ever touches its queue and the replay ring, and the pipe thread
  * only its own queue and the ffmpeg process, each behind its own mutex.
- */
+ **/
 class Recorder
 {
 public:
@@ -231,9 +239,11 @@ private:
                                ///< queued recording frame's duration so the timeline still adds up.
 
     // Encoder-Worker (bedient Recording UND Replay-Ring)
-    /** @brief One unit of encoder work: an image to mirror/scale/encode, its destination path (empty means "route to
-     * the replay ring instead"), and its output duration. `seq` is assigned on the GL thread and only orders REPLAY
-     * frames (recording frames carry their index in `path`). */
+    /** One unit of encoder work: an image to mirror/scale/encode, its destination path (empty means "route to the
+     * replay ring instead"), and its output duration.
+     *
+     * `seq` is assigned on the GL thread and only orders REPLAY frames (recording frames carry their index in `path`).
+     **/
     struct RecJob
     {
         QImage img;   /**< Frame pixels as read back from the PBO (bottom-up, RGBA8888), copied so the PBO can be
@@ -326,14 +336,14 @@ private:
     GLint m_mbTexUni = -1;     ///< Uniform location: source sampler ("tex") of m_mbProg.
     GLint m_mbScaleUni = -1; ///< Uniform location: multiplier ("scale") of m_mbProg -- 1 when accumulating, 1/m_mbCount
                              ///< when resolving.
-    /** @brief Width in pixels the blur targets were allocated for; a size change reallocates them. */
+    /** Width in pixels the blur targets were allocated for; a size change reallocates them. */
     int m_mbW = 0, m_mbH = 0; ///< Height in pixels the blur targets were allocated for.
     int m_mbCount = 0;        ///< Frames summed since the last capture; the divisor is this MEASURED count.
 
     // PBO-Doppelpuffer für den asynchronen Readback
     GLuint m_pbo[2] = { 0, 0 }; ///< Double-buffered pixel-pack buffer objects for async glReadPixels.
     int    m_pboIdx = 0;        ///< Index of the PBO slot used for THIS frame's readback (the other slot is consumed).
-    /** @brief Bookkeeping for one PBO slot's in-flight readback. */
+    /** Bookkeeping for one PBO slot's in-flight readback. */
     struct PboMeta
     {
         bool  pending = false; /**< A glReadPixels into this slot has been issued and not yet consumed. */
@@ -345,7 +355,7 @@ private:
     PboMeta m_pboMeta[2]; ///< Per-PBO-slot metadata (pending flag, target mode, duration, size).
 
     // Replay-Ring
-    /** @brief One buffered replay-ring frame: its JPEG bytes and output duration. */
+    /** One buffered replay-ring frame: its JPEG bytes and output duration. */
     struct ReplayFrame
     {
         QByteArray         jpg;     /**< JPEG-encoded frame (quality 80, at most 720 px tall). */

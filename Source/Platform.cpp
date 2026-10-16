@@ -1,10 +1,17 @@
-/**
- * @file Platform.cpp
- * @brief Non-Windows half of the platform seam (see Platform.h).
+/*****************************************************************************\
+ *                              Platform
+\*****************************************************************************/
+/*! @file
  *
- * The whole file is inside `#ifndef _WIN32`: on Windows it compiles to an empty
- * translation unit, so it cannot affect the reference build even by accident.
+ *  @brief
+ *  Non-Windows half of the platform seam (see Platform.h).
+ *
+ *  The whole file is inside `#ifndef _WIN32`: on Windows it compiles to an empty
+ *  translation unit, so it cannot affect the reference build even by accident.
+ *
+ *  @author René Weller
  */
+
 #include "Platform.h"
 
 #ifndef _WIN32

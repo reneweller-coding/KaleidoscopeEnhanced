@@ -1,17 +1,21 @@
-// textfile.cpp
-//
-// simple reading and writing for text files
-//
-// www.lighthouse3d.com
-//
-// You may use these functions freely.
-// they are provided as is, and no warranties, either implicit,
-// or explicit are given
-//////////////////////////////////////////////////////////////////////
-/**
- * @file textfile.cpp
- * @brief Implements textFileRead()/textFileWrite() -- plain C file-slurp/write
- *        helpers (see textfile.h), historically used to load GLSL shader sources.
+/*****************************************************************************\
+ *                              textfile
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Implements textFileRead()/textFileWrite() -- plain C file-slurp/write helpers (see textfile.h), historically
+ *  used to load GLSL shader sources.
+ *
+ *  simple reading and writing for text files
+ *
+ *  www.lighthouse3d.com
+ *
+ *  You may use these functions freely.
+ *  they are provided as is, and no warranties, either implicit,
+ *  or explicit are given
+ *
+ *  @author www.lighthouse3d.com ("You may use these functions freely"); adapted by René Weller
  */
 
 

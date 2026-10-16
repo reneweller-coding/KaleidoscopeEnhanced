@@ -1,8 +1,17 @@
-/**
- * @file AudioAnalyzer.h
- * @brief Real-time WASAPI-loopback audio capture and analysis: 6-band spectrum, beat/onset/section/drop detection,
- * tempo, mood.
+//---------------------------------------------------------------------------
+//                              AudioAnalyzer
+//---------------------------------------------------------------------------
+//  Copyright (C): 2026 reneweller, MIT License (see LICENSE)
+//---------------------------------------------------------------------------
+/*! @file
+ *
+ *  @brief
+ *  Real-time WASAPI-loopback audio capture and analysis: 6-band spectrum, beat/onset/section/drop detection, tempo,
+ *  mood.
+ *
+ *  @author René Weller
  */
+
 #pragma once
 
 #include <QtCore/QThread>
@@ -17,13 +26,12 @@
 
 struct IMMDeviceEnumerator; // fwd (WASAPI) — only a pointer is used in the header
 
-/**
- * @brief One selectable audio source: an output endpoint (captured via loopback) or an input endpoint (mic / line-in).
+/** One selectable audio source: an output endpoint (captured via loopback) or an input endpoint (mic / line-in).
  *
  * Populated by AudioAnalyzer::enumerateDevices() and exposed through
  * AudioAnalyzer::devices() for the device-selection UI; AudioAnalyzer::requestDevice()
  * takes the AudioDevice::id back to switch the active capture source at runtime.
- */
+ **/
 struct AudioDevice
 {
     QString id;                ///< WASAPI endpoint id.
@@ -31,8 +39,9 @@ struct AudioDevice
     bool    isCapture = false; ///< true = input device (mic/line-in), false = output (captured via loopback).
 };
 
-/**
- * @brief Real-time audio capture + analysis engine: turns raw PCM into a rich AudioFeatures snapshot every ~10 ms.
+/** @class AudioAnalyzer
+ *
+ * Real-time audio capture + analysis engine: turns raw PCM into a rich AudioFeatures snapshot every ~10 ms.
  *
  * Runs as a QThread that captures system audio via WASAPI loopback (works with
  * Spotify, foobar2000, VLC – any Windows audio output), or optionally a
@@ -68,7 +77,7 @@ struct AudioDevice
  *   AudioFeatures f = az->getFeatures();  // call from render thread each frame
  *   az->stop();
  *   az->wait();
- */
+ **/
 class AudioAnalyzer : public QThread
 {
     Q_OBJECT
@@ -155,15 +164,14 @@ public:
      **/
     static std::vector<AudioFeatures> analyzeWavToTimeline( const QString &path );
 
-    /**
-     * @brief Offline analysis mode (CLI -w <file.wav>): path to a WAV to feed through processBlock() instead of
-     * capturing WASAPI loopback.
+    /** Offline analysis mode (CLI -w <file.wav>): path to a WAV to feed through processBlock() instead of capturing
+     * WASAPI loopback.
      *
      * When non-empty, the analysis thread feeds this WAV through processBlock()
      * in capture-sized chunks and exits. Deterministic (independent of
      * whatever the system is playing) — used to test/calibrate the
      * classifiers.
-     */
+     **/
     static QString M_OfflineWav;
 
 protected:
@@ -194,7 +202,7 @@ private:
     float m_sHigh = 0.f;     ///< Smoothed 6k+ Hz band energy (linear RMS).
 
     // ---- Beat detection ----
-    /** @brief Length of #m_bassHistory: ~1.5 s at ~10 ms poll interval. */
+    /** Length of #m_bassHistory: ~1.5 s at ~10 ms poll interval. */
     static constexpr int HistoryLen = 64;
     float m_bassHistory[HistoryLen] = {}; ///< Ring of combined subBass+bass linear RMS, for the adaptive beat
                                           ///< threshold.
@@ -206,15 +214,16 @@ private:
     float                  m_prevBeatBand = 0.f;         ///< Previous-block beat band value (rising-edge test).
 
     // ---- Ambient detection, and the music/speech classifier's envelope ring ----
-    /** @brief Length of #m_envHistory: 600 blocks, i.e. ~6 s at the usual 10 ms block. */
+    /** Length of #m_envHistory: 600 blocks, i.e. ~6 s at the usual 10 ms block. */
     static constexpr int EnvHistLen = 600;
-    /** @brief Rolling RAW LINEAR broadband envelope, one entry per block (music/speech classifier).
+    /** Rolling RAW LINEAR broadband envelope, one entry per block (music/speech classifier).
      *
      *  Deliberately NOT the dB-normalised, attack/release-smoothed `level`: both of
      *  those destroy exactly what this ring is read for. dB compression squeezes a
      *  speech pause at -40 dB up to 0.33 of full scale, and the release smoothing
      *  (up to ~1 s) fills the pause in before the next word starts, so gaps stop
-     *  looking like gaps. */
+     *  looking like gaps.
+     **/
     float m_envHistory[EnvHistLen] = {};
     int   m_envIdx = 0;          ///< Next write index into #m_envHistory.
     float m_sBeatAC = 0.f;       ///< Envelope-autocorrelation peak over musical lags (music/speech classifier).
@@ -241,7 +250,7 @@ private:
     int   m_beatCount = 0;    ///< Cumulative beat counter (for sub-sampling discrete changes).
 
     // ---- BPM estimation ----
-    /** @brief Length of #m_beatIntervals: last 8 inter-beat intervals. */
+    /** Length of #m_beatIntervals: last 8 inter-beat intervals. */
     static constexpr int BPMHistLen = 8;
     float                m_beatIntervals[BPMHistLen] = {}; ///< Ring of the last inter-beat intervals, in BPM.
     int                  m_bpmIdx = 0;                     ///< Next write index into #m_beatIntervals.
@@ -269,8 +278,7 @@ private:
     float m_onsetRate = 0.f;     ///< Leaky onsets-per-second (percussive density).
     float m_kickRate = 0.f;      ///< Leaky BASS-DRUM beats/second (kick dominance).
 
-    /**
-     * @brief HPSS-inspired harmonic/percussive content measure: cosine similarity of consecutive FFT magnitude spectra.
+    /** HPSS-inspired harmonic/percussive content measure: cosine similarity of consecutive FFT magnitude spectra.
      *
      * Sustained harmonic material (drones, pads, held chords) keeps the
      * spectrum similar frame-to-frame (measured ~0.8+ — leakage interference
@@ -279,19 +287,17 @@ private:
      * (measured ~0.3 on a kick pattern). Asymmetrically smoothed (dips
      * tracked fast, recovery slow) so a beat every 0.5 s keeps the value
      * visibly down.
-     */
+     **/
     float m_sSpecSim = 1.f;
 
-    /**
-     * @brief FFT-based onset detection function (normalised positive spectral flux of the 2048-sample magnitude
-     * spectra).
+    /** FFT-based onset detection function (normalised positive spectral flux of the 2048-sample magnitude spectra).
      *
      * The old per-block 6-band RMS deltas RIPPLED on low-frequency content
      * (a 55 Hz sine's period beats against the ~10 ms block rate), firing
      * ~10 phantom onsets/sec on a pure drone — which also fooled the
      * autocorrelation into "detecting" a rhythm. The 43 ms FFT window
      * integrates over several periods and is stable.
-     */
+     **/
     float m_odfFFT = 0.f;
     float m_bandRef32[32] = {};  ///< Per-band peak-hold reference (~200 ms release), used for the FFT-based ODF.
     float m_downbeatPulse = 0.f; ///< Decaying accent on the bar's "1"; see AudioFeatures::downbeat.
@@ -301,9 +307,9 @@ private:
     float m_barAccum[4] = {};    ///< Per-bar-position accent strength (argmax = the musical "1").
 
     // ---- Autocorrelation tempo (fixed-rate onset envelope) ----
-    /** @brief Onset-envelope sample rate, in Hz. */
+    /** Onset-envelope sample rate, in Hz. */
     static constexpr int EnvRate = 100;
-    /** @brief Length of #m_odfEnv: ~4 s of envelope. */
+    /** Length of #m_odfEnv: ~4 s of envelope. */
     static constexpr int OdfEnvLen = 400;
     float m_odfEnv[OdfEnvLen] = {}; ///< Fixed-rate ring of the onset detection function, fed to the tempo
                                     ///< autocorrelation.
@@ -315,13 +321,12 @@ private:
     float m_odfEnvStd = 0.f;                       ///< Last ODF-envelope std-dev (diagnostic for the tempo gate).
     float m_roughRaw = 0.f; ///< Unscaled roughness ratio (diagnostic; the scale constant came from measuring this).
 
-    /**
-     * @brief Smoothed chroma-hue VECTOR (cosine component).
+    /** Smoothed chroma-hue VECTOR (cosine component).
      *
      * Smoothing the vector (not the angle) lets the harmony→hue drift slowly
      * without the angle jumping across the colour-wheel wrap-around → no
      * abrupt colour changes.
-     */
+     **/
     float m_hueCos = 0.f;
     float m_hueSin = 0.f; ///< Smoothed chroma-hue vector (sine component); see #m_hueCos.
 
@@ -340,7 +345,7 @@ private:
 
     float m_prevPitch = 0.f;   ///< Previous dominant pitch (for delta-pitch).
     float m_sDeltaPitch = 0.f; ///< Smoothed melodic activity; see AudioFeatures::deltaPitch.
-    /** @brief Length of #m_fluxHistory: ~1 s of spectral-flux samples. */
+    /** Length of #m_fluxHistory: ~1 s of spectral-flux samples. */
     static constexpr int FluxHistLen = 100;
     float m_fluxHistory[FluxHistLen] = {}; ///< Ring of recent spectral-flux values, for the flux-variance
                                            ///< ("restlessness") measure.
@@ -352,9 +357,12 @@ private:
     // Window: 2048 samples ≈ 42 ms at 48 kHz → 23.4 Hz / bin.
     // Enables: spectral rolloff, spectral spread, chroma-based major/minor
     // detection (Krumhansl-Kessler profiles), and dominant pitch via HPS.
-    /** @brief FFT window size in samples (2048 ≈ 42 ms at 48 kHz → 23.4 Hz / bin). Must be a power of two. */
+    /** FFT window size in samples (2048 ≈ 42 ms at 48 kHz → 23.4 Hz / bin).
+     *
+     * Must be a power of two.
+     **/
     static constexpr int FFTSize = 2048;
-    /** @brief Number of unique FFT bins after a real-valued FFT (FFTSize/2 + 1). */
+    /** Number of unique FFT bins after a real-valued FFT (FFTSize/2 + 1). */
     static constexpr int FFTHalf = FFTSize / 2 + 1;
 
     float m_ringBuf[FFTSize] = {}; ///< Circular buffer of most-recent mono samples, feeding the FFT window.
@@ -368,37 +376,34 @@ private:
     float m_smoothedChroma[12] = {}; ///< Smoothed 12-bin chroma vector (C .. B), L1-normalised.
 
     // Smoothed FFT-derived outputs
-    /** @brief 32-band log-spaced spectrum for the analyzer effects (self-normalised); see AudioFeatures::spectrum. */
+    /** 32-band log-spaced spectrum for the analyzer effects (self-normalised); see AudioFeatures::spectrum. */
     float m_sSpectrum[AudioFeatures::SpectrumBands] = {};
     float m_specRef = 1e-4f; ///< Decaying-peak reference for #m_sSpectrum auto-scaling.
 
-    /**
-     * @brief MilkDrop-style relative band levels: instant / slow-average ratio per register (bass / mid / treble), ~1.0
-     * = as loud as usual.
+    /** MilkDrop-style relative band levels: instant / slow-average ratio per register (bass / mid / treble), ~1.0 =
+     * as loud as usual.
      *
      * The slow EMA (~5 s, #m_relSlow) is the "usual"; the ratio (#m_sRel) is
      * lightly smoothed.
-     */
+     **/
     float m_relSlow[3] = { 0.2f, 0.2f, 0.2f };
     float m_sRel[3] = { 1.0f, 1.0f, 1.0f }; ///< Smoothed relative band levels; see
                                             ///< AudioFeatures::bassRel/midRel/trebRel.
 
-    /**
-     * @brief Rolling mono ring (last 2048 samples) feeding the `audioWave[64]` waveform output.
+    /** Rolling mono ring (last 2048 samples) feeding the `audioWave[64]` waveform output.
      *
      * Downsampled to 64 averaged points per block and normalised with a
      * decaying-peak reference (see AudioFeatures::wave).
-     */
+     **/
     static const int WaveRing = 2048;
     float            m_waveRing[WaveRing] = {}; ///< Rolling mono sample ring feeding the waveform downsampler.
     int              m_waveWritePos = 0;                      ///< Next write index into #m_waveRing.
     float            m_waveRef = 0.05f; ///< Decaying |peak| reference (keeps the wave visible independent of volume).
     float m_sWave[AudioFeatures::WavePoints] = {}; ///< Smoothed, downsampled waveform points; see AudioFeatures::wave.
 
-    /**
-     * @brief Section-change detector state (see AudioFeatures::sectionCount): fast/slow EMAs of the normalised 32-band
+    /** Section-change detector state (see AudioFeatures::sectionCount): fast/slow EMAs of the normalised 32-band
      * shape and total band energy.
-     */
+     **/
     float m_secFast[AudioFeatures::SpectrumBands] = {}; ///< Fast (~2.5 s) EMA of the normalised 32-band spectral
                                                         ///< shape.
     float m_secSlow[AudioFeatures::SpectrumBands] = {}; ///< Slow (~18 s) EMA of the normalised 32-band spectral shape.
@@ -410,14 +415,13 @@ private:
     int m_secCooldown = 0;                              ///< Blocks until the next section trigger is allowed.
     int m_sectionCount = 0; ///< Cumulative section-change count; see AudioFeatures::sectionCount.
 
-    /**
-     * @brief Song-structure memory: spectral fingerprints of the sections heard so far.
+    /** Song-structure memory: spectral fingerprints of the sections heard so far.
      *
      * #m_secPrint is a ~1 s EMA of the shape (at trigger time it is already
      * ~90% the NEW section, unlike the laggier 2.5 s average). On a section
      * trigger it is matched against the stored prints (cosine similarity) —
      * the same chorus is recognised when it returns.
-     */
+     **/
     static const int MaxSectionPrints = 8;
     float m_secPrint[AudioFeatures::SpectrumBands] = {}; ///< ~1 s EMA of the spectral shape (used as the section
                                                          ///< fingerprint).
@@ -429,37 +433,38 @@ private:
     bool m_secKnown = false; ///< Whether the current section matched a stored print (vs. was newly stored, possibly in
                              ///< a recycled slot); see AudioFeatures::sectionKnown.
 
-    /**
-     * @brief Instrument-separated onsets (see AudioFeatures::onsetKick/Snare/Hat): per-group positive flux
-     * (low/mid/high bands) with its own spike test.
-     */
+    /** Instrument-separated onsets (see AudioFeatures::onsetKick/Snare/Hat): per-group positive flux (low/mid/high
+     * bands) with its own spike test.
+     **/
     float m_onsetAvgGrp[3] = {};  ///< Running ODF averages per instrument group (kick/snare/hat).
     int   m_onsetCoolGrp[3] = {}; ///< Per-group re-trigger cooldowns, in blocks.
     float m_onsetEnvGrp[3] = {};  ///< Decaying output envelopes per instrument group.
 
-    /**
-     * @brief Build-up / drop detection state (see AudioFeatures::buildUp/dropPulse).
+    /** Build-up / drop detection state (see AudioFeatures::buildUp/dropPulse).
      *
      * Build-up evidence: fast-vs-slow (bias-corrected) EMAs of onset rate,
      * centroid and level, plus a leaky snare-roll density. Drop: a bass
      * vacuum while armed (recent build-up) followed by the bass slamming
      * back.
-     */
+     **/
     float m_bldFastOnset = 0.f, m_bldSlowOnset = 0.f; ///< Fast (~1.5 s) / slow (~10 s) EMAs of onset rate.
-    /** @brief Fast (~1.5 s) EMA of the smoothed spectral centroid (0..1); its rise over #m_bldSlowCent is the "filter
-     * sweep" build-up evidence. */
+    /** Fast (~1.5 s) EMA of the smoothed spectral centroid (0..1); its rise over #m_bldSlowCent is the "filter
+     * sweep" build-up evidence.
+     **/
     float m_bldFastCent = 0.f, m_bldSlowCent = 0.f; ///< Slow (~10 s) EMA of spectral centroid, the baseline the fast
                                                     ///< one is compared against.
-    /** @brief Fast (~1.5 s) EMA of the overall level (0..1); its ratio to #m_bldSlowLvl is the "swelling level"
-     * build-up evidence. */
+    /** Fast (~1.5 s) EMA of the overall level (0..1); its ratio to #m_bldSlowLvl is the "swelling level" build-up
+     * evidence.
+     **/
     float m_bldFastLvl = 0.f, m_bldSlowLvl = 0.f; ///< Slow (~10 s) EMA of overall level, the baseline the fast one is
                                                   ///< compared against.
     float m_bldSnareRoll = 0.f;                   ///< Smoothed snare-onset envelope mean (snare-roll density).
     int   m_bldWarm = 0; ///< Bias-correction counter (EMA warm-up), also used as a block-count clock for build-up/drop
                          ///< logging.
     float m_sBuildUp = 0.f;                       ///< Smoothed 0..1 build-up output; see AudioFeatures::buildUp.
-    /** @brief Fast (~0.15 s) EMA of the LINEAR sub-bass + bass RMS (not the dB-normalised 0..1 bands); a value under
-     * 0.35 x #m_bassSlow while armed is the drop "vacuum". */
+    /** Fast (~0.15 s) EMA of the LINEAR sub-bass + bass RMS (not the dB-normalised 0..1 bands); a value under 0.35 x
+     * #m_bassSlow while armed is the drop "vacuum".
+     **/
     float m_bassFast = 0.f, m_bassSlow = 0.f; ///< Slow (~5 s) EMA of the same linear bass energy, FROZEN while a vacuum
                                               ///< is open so the gap cannot drag the average down.
     float m_dropArmed = 0.f;                  ///< Blocks of arming left (recent build-up qualifies a drop).
@@ -483,12 +488,11 @@ private:
     float m_breakSlam = 0.f;    ///< Decaying slam-back pulse; see AudioFeatures::breakSlam.
     int   m_breakCount = 0;     ///< Cumulative detected DJ stops.
 
-    /**
-     * @brief Instant-replay audio ring: the last ~32 s of captured PCM (stereo s16).
+    /** Instant-replay audio ring: the last ~32 s of captured PCM (stereo s16).
      *
      * Fed in processBlock() (capture thread), dumped by dumpReplayWav() (main
      * thread) — guarded by #m_replayMx.
-     */
+     **/
     static const int   ReplaySeconds = 32;
     std::vector<short> m_replayRing; ///< Ring buffer of captured PCM (stereo, interleaved s16); sized lazily as rate *
                                      ///< 2ch * seconds.

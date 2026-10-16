@@ -1,15 +1,24 @@
-// textfile.h: interface for reading and writing text files
-// www.lighthouse3d.com
-//
-// You may use these functions freely.
-// they are provided as is, and no warranties, either implicit,
-// or explicit are given
-//////////////////////////////////////////////////////////////////////
-/**
- * @file textfile.h
- * @brief Tiny helpers to read a whole text file into a std::string / write a string
- *        out to a text file. Used across the engine to load GLSL shader source from disk.
+//---------------------------------------------------------------------------
+//                              textfile
+//---------------------------------------------------------------------------
+//  Copyright (C): www.lighthouse3d.com; changes 2026 reneweller, MIT License (see LICENSE)
+//---------------------------------------------------------------------------
+/*! @file
+ *
+ *  @brief
+ *  Tiny helpers to read a whole text file into a std::string / write a string out to a text file. Used across the
+ *  engine to load GLSL shader source from disk.
+ *
+ *  Interface for reading and writing text files
+ *  www.lighthouse3d.com
+ *
+ *  You may use these functions freely.
+ *  they are provided as is, and no warranties, either implicit,
+ *  or explicit are given
+ *
+ *  @author www.lighthouse3d.com ("You may use these functions freely"); adapted by René Weller
  */
+
 #ifndef TEXTFILE_H
 #define TEXTFILE_H
 

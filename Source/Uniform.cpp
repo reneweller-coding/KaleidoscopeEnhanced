@@ -1,19 +1,21 @@
-//=============================================================================
-/** @file:		uniform.cpp
- * @brief Implements Uniform: value rolling (resetParameters), GL upload (setUniform/setGLValueScaled), and the
-interpolator ramp timing.
+/*****************************************************************************\
+ *                              Uniform
+\*****************************************************************************/
+/*! @file
  *
- * Implements CUniform.
+ *  @brief
+ *  Implements Uniform: value rolling (resetParameters), GL upload (setUniform/setGLValueScaled), and the
+ *  interpolator ramp timing.
  *
-    @internal
-    created:	2007-11-21
-    last mod:	2008-03-30
-
-    Shader Maker - a cross-platform GLSL editor.
-    Copyright (C) 2007-2008 Markus Kramer
-    For details, see main.cpp or COPYING.
-
-=============================================================================*/
+ *  Implements CUniform.  It comes from Shader Maker, a cross-platform GLSL editor; Copyright (C) 2007-2008 Markus
+ *  Kramer; for details, see main.cpp or COPYING there.
+ *
+ *  @author Markus Kramer (Shader Maker, 2007-2008); trimmed down by René Weller
+ *
+ *  @internal
+ *    created:  2007-11-21
+ *    last mod: 2008-03-30
+ */
 
 #include <cstring>
 #include <string>

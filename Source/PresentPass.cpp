@@ -1,9 +1,15 @@
-/**
- * @file PresentPass.cpp
- * @brief Implementation of PresentPass: FBO/program setup, the brightness
- *        limiter, GPU auto-exposure, two-pass bloom, the frame-history ring,
- *        and the Present.frag draw call that ties it all together.
+/*****************************************************************************\
+ *                              PresentPass
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Implementation of PresentPass: FBO/program setup, the brightness limiter, GPU auto-exposure, two-pass bloom, the
+ *  frame-history ring, and the Present.frag draw call that ties it all together.
+ *
+ *  @author René Weller
  */
+
 #include <cstdio>
 #include <cstdlib>
 #include <cmath>
@@ -254,8 +260,7 @@ static void uploadRGBA( GLuint &tex, const void *rgba, int w, int h )
 // Drittel-Auflösung reicht: Rewind trägt ohnehin einen VHS-Look (der die
 // Weichheit verkauft) und das Zeitecho ist eine Geisterschicht.  96 Layer bei
 // ~30 Aufnahmen/s = ~3.2 s Vergangenheit; bei 1080p-Rendering ~88 MB VRAM.
-/**
- * @brief Capture the current frame into the history ring at a fixed ~30 Hz wall-clock cadence, via an FBO blit (no CPU
+/**  Capture the current frame into the history ring at a fixed ~30 Hz wall-clock cadence, via an FBO blit (no CPU
  * readback).
  *
  * The availability check (m_histTried/m_histReady) runs only once — if the
@@ -269,7 +274,7 @@ static void uploadRGBA( GLuint &tex, const void *rgba, int w, int h )
  * crosses 1/30 s, keep the remainder via fmodf) rather than frame-counted,
  * so the effective layer spacing stays close to 1/30 s regardless of the
  * actual render frame rate.
- */
+ **/
 
 void PresentPass::captureHistory( GLuint sourceTex, int renderW, int renderH,
                                   float dtWall )

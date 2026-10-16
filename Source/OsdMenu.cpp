@@ -1,7 +1,14 @@
-/**
- * @file OsdMenu.cpp
- * @brief Implementation of OsdMenu: key handling and the 10-foot drawing.
+/*****************************************************************************\
+ *                              OsdMenu
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Implementation of OsdMenu: key handling and the 10-foot drawing.
+ *
+ *  @author René Weller
  */
+
 #include "OsdMenu.h"
 #include "Strings.h"
 

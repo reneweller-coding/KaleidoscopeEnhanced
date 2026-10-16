@@ -1,17 +1,26 @@
-/**
- * @file OscSender.h
- * @brief Minimal OSC-over-UDP output of the live audio analysis (mood, beats, bands).
+//---------------------------------------------------------------------------
+//                              OscSender
+//---------------------------------------------------------------------------
+//  Copyright (C): 2026 reneweller, MIT License (see LICENSE)
+//---------------------------------------------------------------------------
+/*! @file
  *
- * OSC (Open Sound Control) is the de-facto transport between audio analysis
- * and visual engines: TouchDesigner, Resolume, Max/MSP, Unity and browser
- * frontends all speak it natively. This sender lets those tools consume THIS
- * visualizer's analysis — the measured mood axes above all — instead of
- * re-deriving a cruder one from an FFT of their own.
+ *  @brief
+ *  Minimal OSC-over-UDP output of the live audio analysis (mood, beats, bands).
  *
- * Deliberately tiny: OSC 1.0 messages and one bundle framing, floats and
- * strings only, no external library. See docs/mood-and-mapping.md for the
- * address list and rates.
+ *  OSC (Open Sound Control) is the de-facto transport between audio analysis
+ *  and visual engines: TouchDesigner, Resolume, Max/MSP, Unity and browser
+ *  frontends all speak it natively. This sender lets those tools consume THIS
+ *  visualizer's analysis — the measured mood axes above all — instead of
+ *  re-deriving a cruder one from an FFT of their own.
+ *
+ *  Deliberately tiny: OSC 1.0 messages and one bundle framing, floats and
+ *  strings only, no external library. See docs/mood-and-mapping.md for the
+ *  address list and rates.
+ *
+ *  @author René Weller
  */
+
 #pragma once
 
 #include <QtCore/QString>
@@ -20,8 +29,9 @@
 
 #include "AudioFeatures.h"
 
-/**
- * @brief Sends the per-frame AudioFeatures as OSC messages over UDP.
+/** @class OscSender
+ *
+ * Sends the per-frame AudioFeatures as OSC messages over UDP.
  *
  * Three cadences, matching the two-layer design the real-time-MER literature
  * recommends (fast signal layer, slow semantic layer, discrete events):
@@ -32,7 +42,7 @@
  *
  * Disabled entirely while the port is 0 — tick() then returns before touching
  * the socket.
- */
+ **/
 class OscSender
 {
 public:

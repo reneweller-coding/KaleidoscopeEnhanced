@@ -1,11 +1,18 @@
-/**
- * @file ShaderForgeMain.cpp
- * @brief The helper side of ShaderForge: "--forge" builds a program binary, "--forgeload" times loading one.
+/*****************************************************************************\
+ *                              ShaderForgeMain
+\*****************************************************************************/
+/*! @file
  *
- * Kept apart from ShaderForge.cpp: this file draws through Qt's GL functions,
- * the app side through glcore's entry points, and the two must not meet in
- * one translation unit.
+ *  @brief
+ *  The helper side of ShaderForge: "--forge" builds a program binary, "--forgeload" times loading one.
+ *
+ *  Kept apart from ShaderForge.cpp: this file draws through Qt's GL functions,
+ *  the app side through glcore's entry points, and the two must not meet in
+ *  one translation unit.
+ *
+ *  @author René Weller
  */
+
 #include "ShaderForgeMain.h"
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
@@ -27,7 +34,16 @@
 namespace
 {
 
-/// One draw of the fullscreen triangle into @p targets RGBA32F colour targets of @p size pixels.
+/**  One draw of the fullscreen triangle into @p targets RGBA32F colour targets of @p size pixels.
+ *
+ * @param gl       The context's GL functions. (in)
+ * @param prog     The linked program. (in)
+ * @param targets  Number of colour targets, 1..4. (in)
+ * @param size     Width and height of each target in pixels. (in)
+ *
+ * @return
+ *   The time the draw took, in milliseconds (glFinish included).
+ **/
 double drawInto( QOpenGLExtraFunctions *gl, GLuint prog, int targets, int size )
 {
     GLuint fbo = 0, vao = 0, tex[4] = {};
@@ -61,6 +77,14 @@ double drawInto( QOpenGLExtraFunctions *gl, GLuint prog, int targets, int size )
     return ms;
 }
 
+/**  Reads a whole file.
+ *
+ * @param path  The file. (in)
+ * @param o     Receives its contents. (out)
+ *
+ * @return
+ *   False if the file could not be opened.
+ **/
 bool readAll( const QString &path, QByteArray &o )
 {
     QFile f( path );
@@ -70,8 +94,18 @@ bool readAll( const QString &path, QByteArray &o )
     return true;
 }
 
-/// @brief Builds one program (compile, link, warm draw into @p targets RGBA32F targets) and writes its binary to @p out
-/// (via out.tmp and a rename), or out.err with the log.  @return 0 on success.
+/**  Builds one program (compile, link, warm draw into @p targets RGBA32F targets) and writes its binary to @p out
+ * (via out.tmp and a rename), or out.err with the log.
+ *
+ * @param gl       The context's GL functions. (in)
+ * @param frag     Path of the fragment shader. (in)
+ * @param out      Path of the binary to write. (in)
+ * @param targets  Number of colour targets of the warm draw. (in)
+ * @param vert     Path of the vertex shader. (in)
+ *
+ * @return
+ *   0 on success.
+ **/
 int forgeOne( QOpenGLExtraFunctions *gl, const QString &frag, const QString &out, int targets, const QString &vert )
 {
     auto fail = [&]( const QByteArray &why )

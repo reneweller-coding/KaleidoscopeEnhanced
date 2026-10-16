@@ -1,10 +1,17 @@
-/**
- * @file PresentPass.h
- * @brief Final present/composite pass: photosensitivity limiter, GPU
- *        auto-exposure, bloom, and Present.frag (upscale, mood grade,
- *        virtual camera, stereo reprojection, title reveal, lyrics/artist
- *        overlays, time-direction effects).
+//---------------------------------------------------------------------------
+//                              PresentPass
+//---------------------------------------------------------------------------
+//  Copyright (C): 2026 reneweller, MIT License (see LICENSE)
+//---------------------------------------------------------------------------
+/*! @file
+ *
+ *  @brief
+ *  Final present/composite pass: photosensitivity limiter, GPU auto-exposure, bloom, and Present.frag (upscale,
+ *  mood grade, virtual camera, stereo reprojection, title reveal, lyrics/artist overlays, time-direction effects).
+ *
+ *  @author René Weller
  */
+
 #ifndef PRESENTPASS_H
 #define PRESENTPASS_H
 
@@ -30,8 +37,9 @@
 #include "glcore.h"
 #include "AudioFeatures.h"
 
-/**
- * @brief The final present/composite stage of the render pipeline.
+/** @class PresentPass
+ *
+ * The final present/composite stage of the render pipeline.
  *
  * PresentPass owns everything that used to live at the tail of
  * RenderPipeline::paint(): the photosensitivity brightness limiter, the GPU
@@ -46,7 +54,7 @@
  * RendererCore building block) — the title/lyrics/artist images arrive as
  * already-rendered RGBA pixel buffers; Qt text rendering stays with the
  * caller.
- */
+ **/
 class PresentPass
 {
 public:
@@ -180,38 +188,38 @@ public:
 
     /** Frame-Eingaben für run() - alles Werte, die weiterhin der Pipeline/
      *  den Statics von RenderPipeline gehören. */
-    /**
-     * @brief Per-frame inputs to run(); everything here still belongs to the pipeline/RenderPipeline's statics, not to
+    /** Per-frame inputs to run(); everything here still belongs to the pipeline/RenderPipeline's statics, not to
      * PresentPass itself.
-     */
+     **/
     struct Inputs
     {
         GLuint source = 0;    ///< Finished frame to present (trail-pass output), at render resolution; also what the
                               ///< history ring captures and the limiter measures.
         GLuint targetFbo = 0; ///< Destination FBO for the final upscaled draw (usually the QOpenGLWidget default FBO).
-        /** @brief Render (source) width in pixels. */
+        /** Render (source) width in pixels. */
         int renderW = 0, renderH = 0; ///< Render (source) height in pixels.
-        /** @brief Display (destination) width in pixels. */
+        /** Display (destination) width in pixels. */
         int                  displayW = 0, displayH = 0; ///< Display (destination) height in pixels.
         const AudioFeatures *fx = nullptr; ///< Already-gated audio features (bereits gegatete audioFx) driving the mood
                                            ///< grade/beat visuals; run() is a no-op if null.
         float dtFrame = 0.f; ///< Frame delta time in seconds, possibly break-scaled (as before); drives the limiter's
                              ///< per-second rise budget.
-        /** @brief True while the scheduler is cross-fading between scenes.
+        /** True while the scheduler is cross-fading between scenes.
          *
          *  The auto-exposure adapts FAST during a fade and slowly otherwise.
          *  Only the scheduler can supply this: a luminance-based cut detector
          *  is blind to a crossfade by construction (the median moves ~2% per
-         *  frame) and would meanwhile misfire on strobes inside one scene. */
+         *  frame) and would meanwhile misfire on strobes inside one scene.
+         **/
         bool sceneFade = false;
-        /** @brief True only while the scheduler's cross-fade itself runs (no
-         *  post-fade tail). Gates the exposure's fast MEASUREMENT: during the
-         *  tail only the gain may still move fast to finish its walk -- the
-         *  measurement must already be slow again, or a beat flash landing in
-         *  the tail yanks the exposure and reads as the scene abruptly dimming
-         *  a moment after the change. */
+        /** True only while the scheduler's cross-fade itself runs (no post-fade tail).
+         *
+         * Gates the exposure's fast MEASUREMENT: during the tail only the gain may still move fast to finish its walk
+         * -- the measurement must already be slow again, or a beat flash landing in the tail yanks the exposure and
+         * reads as the scene abruptly dimming a moment after the change.
+         **/
         bool sceneFadeStrict = false;
-        /** @brief True for exactly ONE frame: the first after a scene fade ends.
+        /** True for exactly ONE frame: the first after a scene fade ends.
          *
          *  The exposure's percentile EMAs snap to this frame's raw values. The
          *  fade-time fast smoothing can only ever track the MIX, and the mix
@@ -220,9 +228,10 @@ public:
          *  scene for seconds, and the gain visibly dimmed the picture after the
          *  change (worst arriving from a near-black scene, where the gain sits
          *  pinned). This frame is 100%% the new scene, so its raw percentiles
-         *  are the honest measurement. */
+         *  are the honest measurement.
+         **/
         bool expoSnap = false;
-        /** @brief During a scene fade: the INCOMING scene's own composite.
+        /** During a scene fade: the INCOMING scene's own composite.
          *
          *  The auto-exposure measures this instead of the presented mix while
          *  a fade runs. Measuring the mix cannot work by construction: its
@@ -232,7 +241,8 @@ public:
          *  correction lands in the final tenth -- fast makes it a visible
          *  crash, slow makes it a visible crawl, and both were reported.
          *  Measuring the destination makes the gain glide across the whole
-         *  fade. 0 outside fades (measure in.source as always). */
+         *  fade. 0 outside fades (measure in.source as always).
+         **/
         unsigned int fadeMeasureTex = 0;
         float        dtWall = 0.f;     ///< Wall-clock frame delta time (drives blackout slew and history-ring cadence).
         float        globalTime = 0.f; ///< Global shader time uniform.
@@ -303,7 +313,7 @@ public:
         // 2.5D-Parallaxe: Tiefentextur der aktiven Szene + Stärke (geslewt).
         GLuint sceneDepthTex = 0; ///< Active scene's depth texture for 2.5D parallax (0 = none).
         float  depthPar = 0.f;    ///< Parallax strength (slewed by the caller).
-        /** @brief Near-plane distance (world units) of the scene camera, used to linearise sceneDepthTex. */
+        /** Near-plane distance (world units) of the scene camera, used to linearise sceneDepthTex. */
         float nearZ = 0.5f, farZ = 220.f; ///< Far-plane distance (world units) of the scene camera, used to linearise
                                           ///< sceneDepthTex.
     };
@@ -399,7 +409,7 @@ private:
     GLint  m_bloomDirUni = -1;       ///< Uniform location: blur direction ("dir").
     GLint  m_bloomThreshUni = -1;    ///< Uniform location: bright-pass threshold ("threshold").
     bool   m_bloomReady = false;     ///< True once the bloom FBOs/program were created successfully.
-    /** @brief Bloom texture width (render width / 4, floor 8). */
+    /** Bloom texture width (render width / 4, floor 8). */
     int m_bloomW = 0, m_bloomH = 0; ///< Bloom texture height (render height / 4, floor 8).
 
     // ---- Titel-Reveal ----
@@ -443,7 +453,7 @@ private:
     GLuint m_histFboDst = 0; ///< Blit destination FBO, re-attached to the current ring layer of m_histTex before each
                              ///< capture.
     GLuint m_histFboSrc = 0; ///< Blit source FBO, attached to the fresh frame texture being captured.
-    /** @brief Ring texture width (render width / 3, floor 32); a change reallocates the array texture. */
+    /** Ring texture width (render width / 3, floor 32); a change reallocates the array texture. */
     int m_histW = 0, m_histH = 0;      ///< Ring texture height (render height / 3, floor 32).
     int m_histHead = 0;                ///< Next write slot (ring head), 0..HistLayers-1.
     int m_histCount = 0; ///< Number of filled slots so far (<= HistLayers); bounds how far back historyLayerBack() may

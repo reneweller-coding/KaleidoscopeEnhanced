@@ -1,8 +1,16 @@
-/**
- * @file TextureEffectTunnel.h
- * @brief Kaleidoscope-base subclass adding a forward tunnel scroll-speed uniform, used by
- *        Tunnel.frag.
+//---------------------------------------------------------------------------
+//                              TextureEffectTunnel
+//---------------------------------------------------------------------------
+//  Copyright (C): 2026 reneweller, MIT License (see LICENSE)
+//---------------------------------------------------------------------------
+/*! @file
+ *
+ *  @brief
+ *  Kaleidoscope-base subclass adding a forward tunnel scroll-speed uniform, used by Tunnel.frag.
+ *
+ *  @author René Weller
  */
+
 #ifndef TEXTURE_EFFECT_TUNNEL_H
 #define TEXTURE_EFFECT_TUNNEL_H
 
@@ -11,8 +19,9 @@
 #include <QtCore/QThread>
 #include "TextureEffectKaleidoscopeBase.h"
 
-/**
- * @brief TextureEffectKaleidoscopeBase subclass driving Tunnel.frag's forward-scrolling tunnel look.
+/** @class TextureEffectTunnel
+ *
+ * TextureEffectKaleidoscopeBase subclass driving Tunnel.frag's forward-scrolling tunnel look.
  *
  * Adds a single extra uniform, `speedTunnel`, on top of the kaleidoscope base's
  * sides/power/rotation state. Always compiles "..\\Scene2D\\Tunnel.frag" (set in
@@ -21,7 +30,7 @@
  * resetParameters() runs, so this effect's kaleidoscope power never animates via
  * rotation. TextureEffectTunnelReverse derives from this class to add a second,
  * independent (negative-signed) scroll-speed uniform on top.
- */
+ **/
 class TextureEffectTunnel : public TextureEffectKaleidoscopeBase
 {
 public:

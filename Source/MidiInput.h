@@ -1,15 +1,25 @@
-/**
- * @file MidiInput.h
- * @brief MIDI-Learn input: binds incoming MIDI CC/note messages from a hardware controller to shader parameters.
+//---------------------------------------------------------------------------
+//                              MidiInput
+//---------------------------------------------------------------------------
+//  Copyright (C): 2026 reneweller, MIT License (see LICENSE)
+//---------------------------------------------------------------------------
+/*! @file
+ *
+ *  @brief
+ *  MIDI-Learn input: binds incoming MIDI CC/note messages from a hardware controller to shader parameters.
+ *
+ *  @author René Weller
  */
+
 #pragma once
 
 #include <QtCore/QMutex>
 #include <QtCore/QString>
 #include <vector>
 
-/**
- * @brief Optional MIDI control: opens the first MIDI-in device and queues its CC/Note-On messages.
+/** @class MidiInput
+ *
+ * Optional MIDI control: opens the first MIDI-in device and queues its CC/Note-On messages.
  *
  * Opens the first available MIDI input device (a knob / pad controller) via the Win32 winmm API
  * and queues incoming Control-Change and Note-On messages. The host drains them each frame
@@ -19,11 +29,11 @@
  * visualizer is unaffected. Message decoding happens on the winmm callback thread
  * (handleMessage()); the event queue is protected by a mutex so drain() can run safely on the
  * host/render thread.
- */
+ **/
 class MidiInput
 {
 public:
-    /** @brief One decoded MIDI short-message event, queued for the host to consume via drain(). */
+    /** One decoded MIDI short-message event, queued for the host to consume via drain(). */
     struct Event
     {
         int type;  ///< Status nibble: 0xB0 = Control-Change, 0x90 = Note-On.

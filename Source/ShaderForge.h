@@ -1,27 +1,36 @@
-/**
- * @file ShaderForge.h
- * @brief Fragment programs built in a helper process and kept as driver program binaries on disk.
+//---------------------------------------------------------------------------
+//                              ShaderForge
+//---------------------------------------------------------------------------
+//  Copyright (C): 2026 reneweller, MIT License (see LICENSE)
+//---------------------------------------------------------------------------
+/*! @file
  *
- * Compiling a big shader stalls the render thread on the NVIDIA driver --
- * 0.4 to 5 s, also with GL_KHR_parallel_shader_compile and also from a second
- * context in this process (measured 01.10.2026).  A separate process does
- * not: a second instance of this executable (--forge-serve, ShaderForgeMain.h,
- * started once with the app and fed one job per line) compiles and links the
- * source, draws once and writes the driver's program binary; this process
- * only loads it with glProgramBinary (the 5 s chain lab: 18 ms).  One helper
- * for the session: a process per program made a GL context each time, and
- * each creation cost the app two frame gaps of ~55 ms.
+ *  @brief
+ *  Fragment programs built in a helper process and kept as driver program binaries on disk.
  *
- * What a binary cannot carry: the driver finishes the GPU code at
- * the program's first draw (a 3D-lab world: 25-35 ms in the app) and caches
- * that per executable, read only when a process starts -- so the helper is
- * this executable and its warm draw spares the NEXT sessions; the running one
- * pays once per new program (kept small: make_chainpass's one-site geometry).
- * A binary appears by a rename, so it is never read half-written.  The binaries live in
- * %LOCALAPPDATA%\\KaleidoscopeVisualizer\\ShaderCache, keyed by the source and
- * the GPU / driver, so a program is built once and loads instantly in every
- * later session.
+ *  Compiling a big shader stalls the render thread on the NVIDIA driver --
+ *  0.4 to 5 s, also with GL_KHR_parallel_shader_compile and also from a second
+ *  context in this process (measured 01.10.2026).  A separate process does
+ *  not: a second instance of this executable (--forge-serve, ShaderForgeMain.h,
+ *  started once with the app and fed one job per line) compiles and links the
+ *  source, draws once and writes the driver's program binary; this process
+ *  only loads it with glProgramBinary (the 5 s chain lab: 18 ms).  One helper
+ *  for the session: a process per program made a GL context each time, and
+ *  each creation cost the app two frame gaps of ~55 ms.
+ *
+ *  What a binary cannot carry: the driver finishes the GPU code at
+ *  the program's first draw (a 3D-lab world: 25-35 ms in the app) and caches
+ *  that per executable, read only when a process starts -- so the helper is
+ *  this executable and its warm draw spares the NEXT sessions; the running one
+ *  pays once per new program (kept small: make_chainpass's one-site geometry).
+ *  A binary appears by a rename, so it is never read half-written.  The binaries live in
+ *  %LOCALAPPDATA%\\KaleidoscopeVisualizer\\ShaderCache, keyed by the source and
+ *  the GPU / driver, so a program is built once and loads instantly in every
+ *  later session.
+ *
+ *  @author René Weller
  */
+
 #pragma once
 #include <string>
 #include "glcore.h"

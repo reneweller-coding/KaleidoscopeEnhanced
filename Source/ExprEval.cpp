@@ -1,8 +1,15 @@
-/**
- * @file ExprEval.cpp
- * @brief Implements ExprProgram — see ExprEval.h. Classic shunting-yard to RPN, evaluated
- *   on a small value stack. No allocations at eval time.
+/*****************************************************************************\
+ *                              ExprEval
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Implements ExprProgram — see ExprEval.h. Classic shunting-yard to RPN, evaluated on a small value stack. No
+ *  allocations at eval time.
+ *
+ *  @author René Weller
  */
+
 #include "ExprEval.h"
 
 #include <cstdio>
@@ -12,8 +19,9 @@
 namespace
 {
 
-/** @brief Variable identifier strings, in ExprVars::Index order; the only place that names must match ExprVars::Index
- * for compile()'s identifier lookup to work. */
+/** Variable identifier strings, in ExprVars::Index order; the only place that names must match ExprVars::Index for
+ * compile()'s identifier lookup to work.
+ **/
 const char *kVarNames[ExprVars::V_COUNT] = {
     "time", "bass", "mid", "treb", "bassRel", "midRel", "trebRel",
     "subBass", "high", "level", "kick", "snare", "hat", "onset", "beat",
@@ -39,9 +47,12 @@ namespace
 
 // RPN op codes (>= 0).  Negative codes in Op.code mean:
 //   OpConst (-1): push Op.value;  OpVar (-2): push vars[(int)Op.value].
-/** @brief Operator/function opcodes stored in a non-negative Op::code (see OpConst/OpVar for the two negative "push"
- * codes). F_SIN..F_SIGN are unary, F_MIN..F_ATAN2 binary, F_CLAMP/F_MIX ternary — see the arity table in compile()'s
- * stack-depth sanity check and the dispatch in eval(). */
+/** Operator/function opcodes stored in a non-negative Op::code (see OpConst/OpVar for the two negative "push"
+ * codes).
+ *
+ * F_SIN..F_SIGN are unary, F_MIN..F_ATAN2 binary, F_CLAMP/F_MIX ternary — see the arity table in compile()'s
+ * stack-depth sanity check and the dispatch in eval().
+ **/
 enum
 {
     OP_ADD,
@@ -71,15 +82,16 @@ enum
 const int OpConst = -1; ///< Op::code sentinel: push Op::value onto the eval stack as a literal constant.
 const int OpVar = -2;   ///< Op::code sentinel: push vars[(int)Op::value] onto the eval stack.
 
-/** @brief One entry in the function table: source-text name, its opcode, and its argument count (used both to consume
- * the right number of comma-separated args and by compile()'s stack-depth sanity check). */
+/** One entry in the function table: source-text name, its opcode, and its argument count (used both to consume the
+ * right number of comma-separated args and by compile()'s stack-depth sanity check).
+ **/
 struct FuncDef
 {
-    const char *name;
-    int         code;
-    int         arity;
+    const char *name;  ///< The function's name in formulas.
+    int         code;  ///< Its opcode (F_...).
+    int         arity; ///< Its number of arguments.
 };
-/** @brief All formula-language built-in functions, matched by name during tokenising. */
+/** All formula-language built-in functions, matched by name during tokenising. */
 const FuncDef Funcs[] = { { "sin", F_SIN, 1 },     { "cos", F_COS, 1 },     { "tan", F_TAN, 1 },
                           { "abs", F_ABS, 1 },     { "sqrt", F_SQRT, 1 },   { "exp", F_EXP, 1 },
                           { "log", F_LOG, 1 },     { "floor", F_FLOOR, 1 }, { "fract", F_FRACT, 1 },
@@ -87,9 +99,10 @@ const FuncDef Funcs[] = { { "sin", F_SIN, 1 },     { "cos", F_COS, 1 },     { "t
                           { "max", F_MAX, 2 },     { "pow", F_POWF, 2 },    { "atan2", F_ATAN2, 2 },
                           { "clamp", F_CLAMP, 3 }, { "mix", F_MIX, 3 } };
 
-/** @brief One lexical token produced by compile()'s tokeniser and consumed by its shunting-yard pass. */
+/** One lexical token produced by compile()'s tokeniser and consumed by its shunting-yard pass. */
 struct Token
 {
+    /** The forms a token can take. */
     enum KindE
     {
         NUM,
@@ -101,17 +114,18 @@ struct Token
         COMMA
     } kind;          ///< Which of the token forms this is.
     float num = 0.f; ///< Literal value, valid only when kind == NUM.
-    int   idx = 0;   // var index / func table index / op char
-                     ///< Meaning depends on kind: ExprVars index (VAR), Funcs table index (FUNC), or the operator
+    int   idx = 0;   ///< Meaning depends on kind: ExprVars index (VAR), Funcs table index (FUNC), or the operator
                      ///< character — including the synthetic 'n' for unary minus (OP).
 };
 
-/**
- * @brief Binding strength of an operator, for the shunting-yard pop-while-higher-or-equal-precedence rule.
- * @param opChar The operator character (as stored in Token::idx / Op-building switch): '+','-','*','/','^', or the
- * synthetic 'n' for unary minus.
- * @return Higher number binds tighter (^ > unary minus > * / > + -); 0 for anything not a recognised operator.
- */
+/**  Binding strength of an operator, for the shunting-yard pop-while-higher-or-equal-precedence rule.
+ *
+ * @param opChar  The operator character (as stored in Token::idx / Op-building switch): '+','-','*','/','^', or the
+ *                synthetic 'n' for unary minus. (in)
+ *
+ * @return
+ *   Higher number binds tighter (^ > unary minus > * / > + -); 0 for anything not a recognised operator.
+ **/
 int precedence( int opChar )
 {
     switch ( opChar )
@@ -126,9 +140,13 @@ int precedence( int opChar )
     }
     return 0;
 }
-/** @brief Whether an operator is right-associative (so equal-precedence chains pop the OTHER way in shunting-yard).
- * @param opChar The operator character (see precedence()).
- * @return True for '^' and unary minus ('n'); false (left-associative) for all others. */
+/**  Whether an operator is right-associative (so equal-precedence chains pop the OTHER way in shunting-yard).
+ *
+ * @param opChar  The operator character (see precedence()). (in)
+ *
+ * @return
+ *   True for '^' and unary minus ('n'); false (left-associative) for all others.
+ **/
 bool rightAssoc( int opChar )
 {
     return opChar == '^' || opChar == 'n';

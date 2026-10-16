@@ -1,18 +1,26 @@
-/**
- * @file PreviewWidget.h
- * @brief Live preview widget: renders one texture shader folded through one
- *        combine shader, exactly as the main app's two-pass pipeline does,
- *        but with a single fixed selection and a synthesized (animated) set
- *        of audio uniforms so that audio-reactive shaders still move.
+//---------------------------------------------------------------------------
+//                              PreviewWidget
+//---------------------------------------------------------------------------
+//  Copyright (C): 2026 reneweller, MIT License (see LICENSE)
+//---------------------------------------------------------------------------
+/*! @file
  *
- * Two texture-shader paths live here side by side.  type="normal" keeps the
- * original self-contained pipeline: QOpenGLShaderProgram + QOpenGLFramebuffer-
- * Object + QOpenGLFunctions, no EffectShader.  type="scene3d" hands off to
- * Scene3DPreview, which renders a REAL Scene3DShader (procedural geometry,
- * shadow map, order-independent transparency) through the engine's own Qt-
- * free rendering core.  The two never mix GL bindings in this file — see
- * Scene3DPreview.h for why that would be a silent, hard-to-find bug.
+ *  @brief
+ *  Live preview widget: renders one texture shader folded through one combine shader, exactly as the main app's
+ *  two-pass pipeline does, but with a single fixed selection and a synthesized (animated) set of audio uniforms so
+ *  that audio-reactive shaders still move.
+ *
+ *  Two texture-shader paths live here side by side.  type="normal" keeps the
+ *  original self-contained pipeline: QOpenGLShaderProgram + QOpenGLFramebuffer-
+ *  Object + QOpenGLFunctions, no EffectShader.  type="scene3d" hands off to
+ *  Scene3DPreview, which renders a REAL Scene3DShader (procedural geometry,
+ *  shadow map, order-independent transparency) through the engine's own Qt-
+ *  free rendering core.  The two never mix GL bindings in this file — see
+ *  Scene3DPreview.h for why that would be a silent, hard-to-find bug.
+ *
+ *  @author René Weller
  */
+
 #pragma once
 
 #include <QtOpenGLWidgets/QOpenGLWidget>
@@ -33,8 +41,9 @@ class QOpenGLTexture;
 class QOpenGLVertexArrayObject;
 class ExprProgram;
 
-/**
- * @brief Live OpenGL preview pane rendering one texture shader through one combine shader.
+/** @class PreviewWidget
+ *
+ * Live OpenGL preview pane rendering one texture shader through one combine shader.
  *
  * Owns the whole editor preview pipeline: compiles/links both shaders each
  * time the selection changes (or, for type="scene3d", hands the texture
@@ -46,7 +55,7 @@ class ExprProgram;
  * --render/--transcheck/--cfxcheck (paintGL() plus the inherited
  * QOpenGLWidget::grabFramebuffer()), so this one class serves both the
  * interactive GUI and the command-line self-tests.
- */
+ **/
 class PreviewWidget : public QOpenGLWidget, protected QOpenGLFunctions
 {
     Q_OBJECT
@@ -88,13 +97,12 @@ public:
      **/
     void setImageDirectory( const QString &dir );
 
-    /**
-     * @brief Synthesized music profile driving the preview's audio uniforms.
+    /** Synthesized music profile driving the preview's audio uniforms.
      *
      * Beat  = 120 BPM kicks/onsets, audioAmbient = 0.
      * Drone = no transients, slow swells, audioAmbient = 1.
      * Lets an author check how a shader responds to each kind of music.
-     */
+     **/
     enum MusicModeE
     {
         BEAT = 0,
@@ -135,8 +143,9 @@ public:
         return !m_timeline.empty();
     }
 
-    /// Live per-activation parameter override (editor slider): uniform #name pinned to #value (uploaded as an int when
-    /// #isInt).
+    /** Live per-activation parameter override (editor slider): uniform #name pinned to #value (uploaded as an int
+     * when #isInt).
+     **/
     struct ParamOverride
     {
         QString name;
@@ -224,10 +233,10 @@ public:
     }
 
 signals:
-    /**
-     * @brief Emitted whenever the current selection's compile status or log changes.
-     * @param text Human-readable status text (compile/link error log, or "<file>  OK").
-     */
+    /**  Emitted whenever the current selection's compile status or log changes.
+     *
+     * @param text  Human-readable status text (compile/link error log, or "<file>  OK"). (in)
+     **/
     void statusChanged( const QString &text ); // compile logs / current selection
 
 protected:
@@ -341,8 +350,9 @@ private:
 
     QString m_texFile = "Kaleidoscope.frag"; ///< Selected texture (pass-1) shader filename.
     QString m_combFile = "FxPlain.frag";     ///< Selected combine (pass-2) shader filename.
-    /// Texture (pass-1) shader needs a (re)compile: set by setTextureShader() and setSceneExprs(); consumed (and
-    /// cleared) by paintGL()'s lazy recompile.
+    /** Texture (pass-1) shader needs a (re)compile: set by setTextureShader() and setSceneExprs(); consumed (and
+     * cleared) by paintGL()'s lazy recompile.
+     **/
     bool m_texDirty = true, m_combDirty = true; ///< Combine (pass-2) shader needs a (re)compile: set by
                                                 ///< setCombineShader(); consumed (and cleared) by paintGL()'s lazy
                                                 ///< recompile.
@@ -376,8 +386,9 @@ private:
                                 ///< yet stepped".
     QOpenGLFramebufferObject *m_fbo = nullptr; ///< Pass-1 (texture-shader) render target, resized to match the widget
                                                ///< each frame.
-    /// tex0 sample image texture (GL object name, owned; 0 until loadImages() ran); bound on units 0 and 7 and passed
-    /// to the compute-FX and scene3d paths.
+    /** tex0 sample image texture (GL object name, owned; 0 until loadImages() ran); bound on units 0 and 7 and
+     * passed to the compute-FX and scene3d paths.
+     **/
     GLuint m_img0 = 0, m_img1 = 0; ///< tex1 sample image texture (GL object name, owned); the same image as #m_img0
                                    ///< when the directory holds only one file.
     GLuint                    m_vbo = 0;           ///< Fullscreen-quad vertex buffer (NDC positions).
@@ -387,8 +398,9 @@ private:
 
     QElapsedTimer m_clock; ///< Wall clock driving m_time whenever the preview time is not pinned via setFixedTime().
     float         m_time = 0.f; ///< Current preview time in seconds (live wall-clock value, or the pinned m_fixedTime).
-    /// Width #m_fbo was last allocated at, in device pixels; paintGL() reallocates the FBO when the widget size
-    /// differs, and it feeds the "resolution" uniform.
+    /** Width #m_fbo was last allocated at, in device pixels; paintGL() reallocates the FBO when the widget size
+     * differs, and it feeds the "resolution" uniform.
+     **/
     int m_fbW = 0, m_fbH = 0; ///< Height #m_fbo was last allocated at, in device pixels (see #m_fbW).
 
     QVector<ParamOverride> m_overrides; ///< Editor slider values installed by setParamOverrides(); uploaded by
@@ -450,25 +462,25 @@ private:
     float         m_tlPrevT = 0.f;         ///< for dt
     float         m_tlPhase = 0.f;         ///< host-style integrated rotation phase
     float         m_tlAdvance = 0.f;       ///< host-style integrated travel
-    /// Peak-hold envelope of the timeline's beatDecay (exponential decay, 0.30 s time constant); [0,1].
+    /** Peak-hold envelope of the timeline's beatDecay (exponential decay, 0.30 s time constant); [0,1]. */
     float m_tlBeatEnv = 0.f, m_tlBeat = 0.f; ///< Slew-limited (6/s) follower of #m_tlBeatEnv; uploaded as the audioBeat
                                              ///< uniform / beatDecay field.
-    /// Peak-hold envelope of onsetStrength (0.22 s time constant); [0,1].
+    /** Peak-hold envelope of onsetStrength (0.22 s time constant); [0,1]. */
     float m_tlOnsetEnv = 0.f, m_tlOnset = 0.f; ///< Slew-limited (7/s) follower of #m_tlOnsetEnv; uploaded as audioOnset
                                                ///< / onsetStrength.
-    /// Peak-hold envelope of the downbeat accent (0.45 s time constant); [0,1].
+    /** Peak-hold envelope of the downbeat accent (0.45 s time constant); [0,1]. */
     float m_tlDownEnv = 0.f, m_tlDown = 0.f; ///< Slew-limited (5/s) follower of #m_tlDownEnv; uploaded as the downbeat
                                              ///< field.
-    /// Peak-hold envelope of the kick onset (0.24 s time constant); [0,1].
+    /** Peak-hold envelope of the kick onset (0.24 s time constant); [0,1]. */
     float m_tlKickEnv = 0.f, m_tlKick = 0.f; ///< Slew-limited (7/s) follower of #m_tlKickEnv; uploaded as the onsetKick
                                              ///< field.
-    /// Peak-hold envelope of the snare onset (0.20 s time constant); [0,1].
+    /** Peak-hold envelope of the snare onset (0.20 s time constant); [0,1]. */
     float m_tlSnareEnv = 0.f, m_tlSnare = 0.f; ///< Slew-limited (7/s) follower of #m_tlSnareEnv; uploaded as the
                                                ///< onsetSnare field.
-    /// Peak-hold envelope of the hat onset (0.14 s time constant); [0,1].
+    /** Peak-hold envelope of the hat onset (0.14 s time constant); [0,1]. */
     float m_tlHatEnv = 0.f, m_tlHat = 0.f; ///< Slew-limited (8/s) follower of #m_tlHatEnv; uploaded as the onsetHat
                                            ///< field.
-    /// overallLevel smoothed with a 1.5 s time constant; the swell is (fast - slow) * 4, clamped to [0,1].
+    /** overallLevel smoothed with a 1.5 s time constant; the swell is (fast - slow) * 4, clamped to [0,1]. */
     float m_tlLvlFast = 0.f, m_tlLvlSlow = 0.f; ///< overallLevel smoothed with an 8 s time constant (the swell's
                                                 ///< reference level, see #m_tlLvlFast).
     float m_tlBeatPhase = 0.f;                  ///< integrated beat phase (0..1, wraps once per beat)

@@ -1,8 +1,17 @@
-/**
- * @file SetupWindow.h
- * @brief The Kaleidoscope Setup tool's single window: reads/writes kaleidoscope_settings.ini directly, the same file
- * the main app loads on startup.
+//---------------------------------------------------------------------------
+//                              SetupWindow
+//---------------------------------------------------------------------------
+//  Copyright (C): 2026 reneweller, MIT License (see LICENSE)
+//---------------------------------------------------------------------------
+/*! @file
+ *
+ *  @brief
+ *  The Kaleidoscope Setup tool's single window: reads/writes kaleidoscope_settings.ini directly, the same file the
+ *  main app loads on startup.
+ *
+ *  @author René Weller
  */
+
 #pragma once
 
 #include <QtWidgets/QWidget>
@@ -19,8 +28,9 @@ class QPushButton;
 class QScrollArea;
 class QVBoxLayout;
 
-/**
- * @brief A small standalone settings editor for kaleidoscope_settings.ini.
+/** @class SetupWindow
+ *
+ * A small standalone settings editor for kaleidoscope_settings.ini.
  *
  * Deliberately NOT a live remote control (that's the embedded web remote's job, see
  * Source/WebRemote.cpp) -- this edits the persisted STARTUP DEFAULTS the main app's
@@ -29,7 +39,7 @@ class QVBoxLayout;
  * dropdown, which retranslates THIS window's own labels immediately (via buildContent()
  * tearing down and rebuilding the form) so picking a language is a WYSIWYG action, not a "trust
  * me, it worked" one. No GL/audio/shader dependency at all; a plain Qt Widgets form.
- */
+ **/
 class SetupWindow : public QWidget
 {
 public:

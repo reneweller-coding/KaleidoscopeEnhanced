@@ -1,7 +1,14 @@
-/**
- * @file ShaderWorker.cpp
- * @brief Off-thread compile and link of fragment programs (see ShaderWorker.h).
+/*****************************************************************************\
+ *                              ShaderWorker
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Off-thread compile and link of fragment programs (see ShaderWorker.h).
+ *
+ *  @author René Weller
  */
+
 #include "ShaderWorker.h"
 #include "textfile.h"
 #include <QtCore/QThread>
@@ -17,26 +24,33 @@
 namespace
 {
 
+/** One fragment program to build. */
 struct Job
 {
-    std::string key, src;
+    std::string key; ///< The caller's name for the program, handed back with the result.
+    std::string src; ///< The fragment shader source.
 };
+/** One finished build. */
 struct Done
 {
-    std::string key;
-    GLuint      prog;
+    std::string key;  ///< The Job's key.
+    GLuint      prog; ///< The linked program, or 0 if compiling or linking failed.
 };
 
-std::mutex              s_m;
-std::condition_variable s_cv;
-std::deque<Job>         s_jobs;
-std::deque<Done>        s_done;
+std::mutex              s_m;               ///< Guards s_jobs and s_done.
+std::condition_variable s_cv;              ///< Wakes the worker when a job arrives.
+std::deque<Job>         s_jobs;            ///< Builds waiting for the worker.
+std::deque<Done>        s_done;            ///< Builds the render thread has yet to collect.
 QOpenGLContext         *s_ctx = nullptr;   ///< the worker's context (lives on the worker thread)
 QOpenGLContext         *s_share = nullptr; ///< the main context it shares with
-QOffscreenSurface      *s_surf = nullptr;
-bool                    s_running = false;
+QOffscreenSurface      *s_surf = nullptr;  ///< The offscreen surface the worker's context is made current on.
+bool                    s_running = false; ///< Whether shaderWorkerStart() succeeded.
 
-/** @brief Prints a shader's or program's info log (worker thread). */
+/**  Prints a shader's or program's info log (worker thread).
+ *
+ * @param obj      The shader or program object. (in)
+ * @param program  True for a program, false for a shader. (in)
+ **/
 void printLog( GLuint obj, bool program )
 {
     GLint n = 0;
@@ -54,9 +68,11 @@ void printLog( GLuint obj, bool program )
     fprintf( stderr, "%s\n", log.data() );
 }
 
+/** The thread that compiles and links the submitted programs in its own context, shared with the main one. */
 class Worker : public QThread
 {
 protected:
+    /** Makes the worker context current, compiles the shared vertex shader, then builds jobs until the process ends. */
     void run() override
     {
         if ( !s_ctx->makeCurrent( s_surf ) )
@@ -114,16 +130,20 @@ protected:
     }
 
 public:
-    /// @brief Default construction, which the declared copy operations would otherwise suppress.
+    /** Default construction, which the declared copy operations would otherwise suppress. */
     Worker() = default;
 
 private:
-    /// @brief Not copyable (CGVR template: copy constructor and assignment are always declared).
+    /** Not copyable (CGVR template: copy constructor and assignment are always declared). */
     Worker( const Worker & ) = delete;
-    /// @brief Not assignable; see the copy constructor.
+    /**  Not assignable; see the copy constructor.
+     *
+     * @return
+     *   Nothing: the operator is deleted, so no call compiles.
+     **/
     Worker &operator=( const Worker & ) = delete;
 };
-Worker *s_worker = nullptr;
+Worker *s_worker = nullptr; ///< The worker thread; null until shaderWorkerStart() succeeds.
 
 } // namespace
 

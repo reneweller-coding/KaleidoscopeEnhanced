@@ -1,13 +1,15 @@
-/*! \file Vector3D.cpp
-  implements the class Vector3D
-  \author Frank Firsching
-  \date 17.03.2001
-*/
-/**
- * @file Vector3D.cpp
- * @brief Implements the non-inline members of Vector3D: the constructors/destructor
- *        and the reflect/refract geometry helpers (the rest of Vector3D is implemented
- *        inline in Vector3D.h).
+/*****************************************************************************\
+ *                              Vector3D
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Implements the non-inline members of Vector3D: the constructors/destructor and the reflect/refract geometry
+ *  helpers (the rest of Vector3D is implemented inline in Vector3D.h).
+ *
+ *  Implements the class Vector3D.
+ *
+ *  @author Frank Firsching (17.03.2001); adapted by René Weller
  */
 
 #include "Vector3D.h"

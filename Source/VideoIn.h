@@ -1,7 +1,16 @@
-/**
- * @file VideoIn.h
- * @brief Webcam/capture-device (and local video file/folder) input as an image source, via Qt6Multimedia.
+//---------------------------------------------------------------------------
+//                              VideoIn
+//---------------------------------------------------------------------------
+//  Copyright (C): 2026 reneweller, MIT License (see LICENSE)
+//---------------------------------------------------------------------------
+/*! @file
+ *
+ *  @brief
+ *  Webcam/capture-device (and local video file/folder) input as an image source, via Qt6Multimedia.
+ *
+ *  @author René Weller
  */
+
 #ifndef VIDEOIN_H
 #define VIDEOIN_H
 

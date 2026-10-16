@@ -1,7 +1,14 @@
-/**
- * @file FxEffectMulti.cpp
- * @brief Implementation of FxEffectMulti: the `copies` uniform driving FxMulti.frag.
+/*****************************************************************************\
+ *                              FxEffectMulti
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Implementation of FxEffectMulti: the `copies` uniform driving FxMulti.frag.
+ *
+ *  @author René Weller
  */
+
 #include <float.h>
 
 #include "shader_setup.h"

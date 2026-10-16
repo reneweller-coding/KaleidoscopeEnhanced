@@ -1,8 +1,15 @@
-/**
- * @file CueReceiver.cpp
- * @brief Implementation of the score-cue receiver: the bridge to the scheduler and the UDP socket
- *        (the decoder and the accumulator are in ScoreCues.cpp).
+/*****************************************************************************\
+ *                              CueReceiver
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Implementation of the score-cue receiver: the bridge to the scheduler and the UDP socket (the decoder and the
+ *  accumulator are in ScoreCues.cpp).
+ *
+ *  @author René Weller
  */
+
 #include "CueReceiver.h"
 
 #include <QtCore/QByteArray>

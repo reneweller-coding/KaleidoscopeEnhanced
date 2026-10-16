@@ -1,9 +1,15 @@
-/**
- * @file Recorder.cpp
- * @brief Implementation of Recorder: the PBO async-readback capture path,
- *        the shared encoder worker thread, recording start/stop lifecycle,
- *        and instant-replay ring save.
+/*****************************************************************************\
+ *                              Recorder
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Implementation of Recorder: the PBO async-readback capture path, the shared encoder worker thread, recording
+ *  start/stop lifecycle, and instant-replay ring save.
+ *
+ *  @author René Weller
  */
+
 #include <algorithm>
 #include <mutex>
 #include <chrono>
@@ -71,8 +77,9 @@ static bool probeEncoder( const QString &enc, const QStringList &encArgs )
     return ok;
 }
 
-/** @brief One ffmpeg encoder to try: its name (as listed by `ffmpeg -encoders`) and the complete video-codec argument
- * list that selects it. */
+/** One ffmpeg encoder to try: its name (as listed by `ffmpeg -encoders`) and the complete video-codec argument list
+ * that selects it.
+ **/
 struct Candidate
 {
     const char *name; /**< ffmpeg encoder name, e.g. "h264_nvenc"; also matched against KALEIDO_VIDEO_ENCODER. */
@@ -257,24 +264,25 @@ static QStringList computeVideoCodecArgs()
 // blocking behaviour we want if a recording is somehow stopped before the warm
 // probe finished -- the GL thread waits for the running probe instead of
 // starting a second one.
-static std::once_flag g_codecOnce; ///< Guards the one-time encoder probe behind videoCodecArgs() (see the comment above
-                                   ///< for why call_once and not a plain "is it cached" check).
+/**  Guards the one-time encoder probe behind videoCodecArgs() (see the comment above for why call_once and not a
+ * plain "is it cached" check).
+ **/
+static std::once_flag g_codecOnce;
 static QStringList g_codecArgs; ///< Process-wide cached result of computeVideoCodecArgs(); valid once g_codecOnce has
                                 ///< fired.
 
-/**
- * @brief Owner of the warm encoder-probe thread that joins it on destruction.
+/** Owner of the warm encoder-probe thread that joins it on destruction.
  *
  * NOT a bare static std::thread: ~thread() calls std::terminate() if the thread
  * is still joinable, so arming the replay ring and then closing the window
  * before anything was ever muxed would abort the process on the way out. The
  * holder joins instead. The explicit joinVideoEncoderProbe() calls below mean
  * this destructor is a backstop that normally has nothing left to do.
- */
+ **/
 struct ProbeThread
 {
-    std::thread t; ///< The probe thread started by warmVideoEncoderProbe(); not joinable while no probe has been
-                   ///< started.
+    /** The probe thread started by warmVideoEncoderProbe(); not joinable while no probe has been started. */
+    std::thread t;
     ~ProbeThread()
     {
         if ( t.joinable() )

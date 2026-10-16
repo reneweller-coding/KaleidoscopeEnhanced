@@ -1,13 +1,17 @@
-/*! \file Vector3d.h
-  implements the class Vector3D
-  \author Frank Firsching
-  \date 17.03.2001
- */
-/**
- * @file Vector3D.h
- * @brief Small 3D vector math type (float xyz) with the usual arithmetic, geometric
- *        (cross/dot product, angle, reflect/refract) and normalization operations,
- *        used throughout the engine's math/geometry code.
+//---------------------------------------------------------------------------
+//                              Vector3D
+//---------------------------------------------------------------------------
+//  Copyright (C): 2001 Frank Firsching; changes 2026 reneweller, MIT License (see LICENSE)
+//---------------------------------------------------------------------------
+/*! @file
+ *
+ *  @brief
+ *  Small 3D vector math type (float xyz) with the usual arithmetic, geometric (cross/dot product, angle,
+ *  reflect/refract) and normalization operations, used throughout the engine's math/geometry code.
+ *
+ *  Implements the class Vector3D.
+ *
+ *  @author Frank Firsching (17.03.2001); adapted by René Weller
  */
 
 #ifndef VECTOR3D_H
@@ -19,8 +23,9 @@
 // forward-declaration of the 4-dimensional vector
 class Vector4D;
 
-/**
- * @brief A 3-dimensional vector of floats (x, y, z).
+/** @class Vector3D
+ *
+ * A 3-dimensional vector of floats (x, y, z).
  *
  * Provides the standard set of vector-math operators (add/subtract/scale, dot and
  * cross product, length/normalization, reflection and refraction) plus interop with
@@ -28,16 +33,16 @@ class Vector4D;
  * performs the perspective divide by w). Coordinates are public data members for
  * efficient, direct access, and the class exposes a `float*` cast so instances can be
  * passed straight into OpenGL calls that expect a `float[3]`.
- */
+ **/
 class Vector3D
 {
 public:
     // public data-members for efficient access and manipulation
-    //! x coordinate of the vector
+    /** x coordinate of the vector */
     float x;
-    //! y coordinate of the vector
+    /** y coordinate of the vector */
     float y;
-    //! z coordinate of the vector
+    /** z coordinate of the vector */
     float z;
 
     /** default-constructor generates a zero-vector */

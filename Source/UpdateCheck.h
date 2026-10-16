@@ -1,19 +1,28 @@
-/**
- * @file UpdateCheck.h
- * @brief Optional "is there a newer release?" check against this project's
- *        GitHub releases, plus the download-and-run-the-installer step.
+//---------------------------------------------------------------------------
+//                              UpdateCheck
+//---------------------------------------------------------------------------
+//  Copyright (C): 2026 reneweller, MIT License (see LICENSE)
+//---------------------------------------------------------------------------
+/*! @file
  *
- * Deliberately conservative, because this feature downloads and starts an
- * executable:
- *  - It only ever talks to GitHub. The API host is hard-coded and the
- *    download URL taken from the API response is REJECTED unless it lives on
- *    a GitHub host, so a spoofed or tampered response cannot redirect the
- *    download somewhere else.
- *  - Nothing happens without the user asking for it. The check only reports;
- *    downloading and starting the installer needs a separate, explicit
- *    action, and the installer then shows its own UI.
- *  - The whole thing is off unless the "updateCheck" setting is on.
+ *  @brief
+ *  Optional "is there a newer release?" check against this project's GitHub releases, plus the
+ *  download-and-run-the-installer step.
+ *
+ *  Deliberately conservative, because this feature downloads and starts an
+ *  executable:
+ *   - It only ever talks to GitHub. The API host is hard-coded and the
+ *     download URL taken from the API response is REJECTED unless it lives on
+ *     a GitHub host, so a spoofed or tampered response cannot redirect the
+ *     download somewhere else.
+ *   - Nothing happens without the user asking for it. The check only reports;
+ *     downloading and starting the installer needs a separate, explicit
+ *     action, and the installer then shows its own UI.
+ *   - The whole thing is off unless the "updateCheck" setting is on.
+ *
+ *  @author René Weller
  */
+
 #ifndef UPDATECHECK_H
 #define UPDATECHECK_H
 
@@ -22,12 +31,13 @@
 
 class QNetworkAccessManager;
 
-/**
- * @brief Queries the newest GitHub release and, on request, installs it.
+/** @class UpdateCheck
+ *
+ * Queries the newest GitHub release and, on request, installs it.
  *
  * Lives on the GUI thread and uses Qt's asynchronous network stack, so no
  * call here ever blocks the render loop.
- */
+ **/
 class UpdateCheck : public QObject
 {
     // Deliberately NO Q_OBJECT: this project only runs moc over three headers

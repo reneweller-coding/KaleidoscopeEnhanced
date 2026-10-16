@@ -1,25 +1,34 @@
-/**
- * @file Preset.h
- * @brief In-memory preset data model plus its XML load/save.
+//---------------------------------------------------------------------------
+//                              Preset
+//---------------------------------------------------------------------------
+//  Copyright (C): 2026 reneweller, MIT License (see LICENSE)
+//---------------------------------------------------------------------------
+/*! @file
  *
- * Preset.h — the preset data model + XML load/save, shared by the editor GUI and
- * the headless --roundtrip self-test.  Matches the schema read by the main app's
- * Configuration.cpp exactly:
+ *  @brief
+ *  In-memory preset data model plus its XML load/save.
  *
- * @code
- *   <configuration ImageDirectory=".." ConfigurationName=".."
- *                  timeTextureSoloMin/Max timeTextureInterpolationMin/Max>
- *     <TextureShader minTimeSolo maxTimeSolo minTimeInterpolation
- *                    maxTimeInterpolation file type probability complexity>
- *       <bool  name= probability=/>
- *       <int   name= minValue= maxValue=/>
- *       <float name= minValue= maxValue=/>
- *       <interpolator name= minMin= maxMin= minMax= maxMax=/>
- *     </TextureShader>
- *     <CombineShader .../>  (type="normal" only)
- *   </configuration>
- * @endcode
+ *  Preset.h — the preset data model + XML load/save, shared by the editor GUI and
+ *  the headless --roundtrip self-test.  Matches the schema read by the main app's
+ *  Configuration.cpp exactly:
+ *
+ *  @code
+ *    <configuration ImageDirectory=".." ConfigurationName=".."
+ *                   timeTextureSoloMin/Max timeTextureInterpolationMin/Max>
+ *      <TextureShader minTimeSolo maxTimeSolo minTimeInterpolation
+ *                     maxTimeInterpolation file type probability complexity>
+ *        <bool  name= probability=/>
+ *        <int   name= minValue= maxValue=/>
+ *        <float name= minValue= maxValue=/>
+ *        <interpolator name= minMin= maxMin= minMax= maxMax=/>
+ *      </TextureShader>
+ *      <CombineShader .../>  (type="normal" only)
+ *    </configuration>
+ *  @endcode
+ *
+ *  @author René Weller
  */
+
 #pragma once
 
 #include <QtCore/QString>
@@ -47,25 +56,25 @@ inline QString presetsDir( const QString &root )
     return QDir( old ).exists() ? old : cur;
 }
 
-/**
- * @brief One `<bool>`/`<int>`/`<float>`/`<interpolator>`/`<expr>` child element of a shader entry.
+/** One `<bool>`/`<int>`/`<float>`/`<interpolator>`/`<expr>` child element of a shader entry.
  *
  * Stored as raw attribute strings rather than parsed numbers, so an existing
  * preset round-trips losslessly through Preset::load()/Preset::save() even
  * for values this editor never specifically interprets. The @c kind field
  * selects which of the other fields are meaningful for a given instance;
  * fields that don't apply to the current @c kind are simply left empty.
- */
+ **/
 struct ShaderParam
 {
     QString kind;        ///< "bool" | "int" | "float" | "interpolator" | "expr"
     QString name;        ///< Uniform/parameter name as declared in the shader.
     QString probability; ///< bool: probability [0,1] the flag rolls true.
-    /// int / float: lower bound of the range the value is randomly rolled from (attribute text, kept verbatim).
+    /** int / float: lower bound of the range the value is randomly rolled from (attribute text, kept verbatim). */
     QString minValue, maxValue; ///< int / float: upper bound of the range the value is randomly rolled from (attribute
                                 ///< text, kept verbatim).
-    /// interpolator: lower bound for the rolled ramp-START value (attribute text; the engine rolls the start in
-    /// [minMin,minMax]).
+    /** interpolator: lower bound for the rolled ramp-START value (attribute text; the engine rolls the start in
+     * [minMin,minMax]).
+     **/
     QString minMin, maxMin, minMax, maxMax; ///< interpolator: upper bound for the rolled ramp-END value (attribute
                                             ///< text; the engine rolls the end in [maxMin,maxMax]).
     /** @var QString ShaderParam::maxMin
@@ -75,8 +84,7 @@ struct ShaderParam
     QString formula; ///< expr (formula layer): ExprEval source text; empty = engine/random default.
 };
 
-/**
- * @brief One `<TextureShader>` or `<CombineShader>` entry within a Preset.
+/** One `<TextureShader>` or `<CombineShader>` entry within a Preset.
  *
  * Represents a single shader-activation slot: which shader file to run (and,
  * for scene3d, its geometry/state settings), how long it solos and
@@ -86,21 +94,20 @@ struct ShaderParam
  * (a scene). Instances are produced by Preset::load() or by the editor's
  * "Add texture effect"/"Add combine" actions (EditorWindow::addTextureEntry()/
  * addCombineEntry()).
- */
+ **/
 struct PresetEntry
 {
     bool isCombine = false;    ///< true = `<CombineShader>` (FX overlay pass); false = `<TextureShader>` (scene).
     bool isTransition = false; ///< true = `<TransitionShader>` (scene-fade blend from Transitions/); mutually exclusive
                                ///< with isCombine.
-    /**
-     * @brief Folder segment of the file= attribute ("Scene2D" | "Scene3D" | "FX").
+    /** Folder segment of the file= attribute ("Scene2D" | "Scene3D" | "FX").
      *
      * Carried explicitly because the BARE filename is ambiguous: a 2D
      * Scene2D/X.frag and a 3D Scene3D/X.frag can legitimately coexist
      * (CrystalGrowth does), and --validate matching on the bare name alone
      * checked one against the other's params.  Empty = infer from
      * isFX/type (pre-folder files round-trip unchanged).
-     */
+     **/
     QString folder;
     QString file;            ///< Bare filename, e.g. "Kaleidoscope.frag" (folder stripped; see #folder).
     QString type = "normal"; ///< "normal" | "KaleidoscopeBase" | "scene3d"
@@ -108,12 +115,14 @@ struct PresetEntry
     // scene3d only, both optional (0 = attribute omitted, matching Configuration.cpp):
     int    stateBytes = 0;     ///< scene3d only: persistent generator state buffer size; 0 = attribute omitted.
     double shadowExtent = 0.0; ///< scene3d only: shadow-box half-width; 0 = engine default.
-    /// Lower bound, in seconds, of the random solo duration this entry runs alone before interpolating to the next (0
-    /// is treated as the engine default 20).
+    /** Lower bound, in seconds, of the random solo duration this entry runs alone before interpolating to the next
+     * (0 is treated as the engine default 20).
+     **/
     int minTimeSolo = 20, maxTimeSolo = 80; ///< Upper bound, in seconds, of the random solo duration (the engine bumps
                                             ///< it above minTimeSolo if not greater).
-    /// Lower bound, in seconds, of the random crossfade/interpolation duration into the next entry (0 is treated as the
-    /// engine default 15).
+    /** Lower bound, in seconds, of the random crossfade/interpolation duration into the next entry (0 is treated as
+     * the engine default 15).
+     **/
     int minTimeInterpolation = 15, maxTimeInterpolation = 50; ///< Upper bound, in seconds, of the random
                                                               ///< crossfade/interpolation duration (the engine bumps it
                                                               ///< above minTimeInterpolation if not greater).
@@ -122,40 +131,43 @@ struct PresetEntry
     QString              mood;   ///< Optional mood tags ("dark,calm", ...) — passed through, not interpreted here.
     QVector<ShaderParam> params; ///< Per-activation parameter rows (bool/int/float/interpolator/expr) for this entry's
                                  ///< shader.
-    /// Attributes this editor does not model (model=, model2=, instances=,
-    /// minFade=, genPasses=, ...), written back verbatim on save. Before this
-    /// existed, saving Komplett.xml from the editor stripped model= from every
-    /// mesh scene and the engine then skipped all of them.
+    /** Attributes this editor does not model (model=, model2=, instances=, minFade=, genPasses=, ...), written back
+     * verbatim on save.
+     *
+     * Before this existed, saving Komplett.xml from the editor stripped model= from every mesh scene and the engine
+     * then skipped all of them.
+     **/
     QVector<QPair<QString, QString>> extraAttrs;
 };
 
-/**
- * @brief One preset XML file's full contents: the in-memory model shared by the GUI and the headless self-tests.
+/** One preset XML file's full contents: the in-memory model shared by the GUI and the headless self-tests.
  *
  * Mirrors the `<configuration>` root element: preset metadata, the global
  * texture-solo/interpolation timing defaults, and an ordered list of
  * PresetEntry (texture entries then combine entries). load()/save() are the
  * only way an instance talks to disk; the editor mutates one in place
  * (via EditorWindow) and calls save() to write it back into Presets/.
- */
+ **/
 struct Preset
 {
     QString name = "MyPreset"; ///< ConfigurationName attribute; also the on-disk filename stem when saved from the
                                ///< editor.
     QString imageDirectory;    ///< ImageDirectory attribute: folder of photos this preset's scenes draw tex0/tex1 from.
-    /**
-     * @brief hidden="true": the main app keeps this preset out of its user-facing selection.
+    /** hidden="true": the main app keeps this preset out of its user-facing selection.
      *
      * hidden="true": the main app keeps this preset out of its user-facing
      * selection (menu, digit keys, web remote); only -c `<name>` reaches it.
      * Used for master/reference presets (Komplett) and Test* benches.
-     */
+     **/
     bool hidden = false;
-    /// Preset-wide lower bound of the texture solo duration in seconds (root attribute timeTextureSoloMin; 0 is treated
-    /// as 10 by the engine).
+    /** Preset-wide lower bound of the texture solo duration in seconds (root attribute timeTextureSoloMin; 0 is
+     * treated as 10 by the engine).
+     **/
     int timeTextureSoloMin = 10, timeTextureSoloMax = 40; ///< Preset-wide upper bound of the texture solo duration in
                                                           ///< seconds (root attribute timeTextureSoloMax).
-    /// Preset-wide lower bound of the interpolation duration in seconds (root attribute timeTextureInterpolationMin).
+    /** Preset-wide lower bound of the interpolation duration in seconds (root attribute
+     * timeTextureInterpolationMin).
+     **/
     int timeTextureInterpolationMin = 20, timeTextureInterpolationMax = 80; ///< Preset-wide upper bound of the
                                                                             ///< interpolation duration in seconds (root
                                                                             ///< attribute timeTextureInterpolationMax).

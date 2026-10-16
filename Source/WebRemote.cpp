@@ -1,9 +1,16 @@
-/**
- * @file WebRemote.cpp
- * @brief Implementation of WebRemote: the embedded phone-remote HTML/JS page and its GET-only JSON/JPEG /api/
- * endpoints.
+/*****************************************************************************\
+ *                              WebRemote
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Implementation of WebRemote: the embedded phone-remote HTML/JS page and its GET-only JSON/JPEG /api/ endpoints.
+ *
+ *  See WebRemote.h.
+ *
+ *  @author René Weller
  */
-// WebRemote.cpp — see WebRemote.h.
+
 #include "WebRemote.h"
 #include "glwidget.h"
 #include "RenderPipeline.h"
@@ -20,17 +27,20 @@
 #include <QtCore/QSysInfo>
 #include <QtCore/QCoreApplication>
 
-/// LAN discovery: fixed UDP port + magic request string the Android app
-/// broadcasts. Bound with ShareAddress so several Kaleidoscope instances on
-/// the SAME PC can all listen here and each answer for itself (Windows
-/// delivers a copy of every broadcast datagram to every bound socket).
+/** LAN discovery: fixed UDP port + magic request string the Android app broadcasts.
+ *
+ * Bound with ShareAddress so several Kaleidoscope instances on the SAME PC can all listen here and each answer for
+ * itself (Windows delivers a copy of every broadcast datagram to every bound socket).
+ **/
 static const quint16 DiscoveryPort = 45677;
-/// The request payload the app broadcasts; anything else on the port is ignored.
+/** The request payload the app broadcasts; anything else on the port is ignored. */
 static const char *kDiscoveryMagic = "KALEIDO_DISCOVER_V1";
 
-/// How long a kept-alive connection may sit idle before the server drops it.
-/// Long enough to span the page's 2 s polling cadence many times over, short
-/// enough that a phone that walked out of the room doesn't hold a socket.
+/** How long a kept-alive connection may sit idle before the server drops it.
+ *
+ * Long enough to span the page's 2 s polling cadence many times over, short enough that a phone that walked out of the
+ * room doesn't hold a socket.
+ **/
 static const int KeepAliveIdleMs = 30000;
 
 /**  Escapes a string for embedding inside a JSON double-quoted string literal (backslash, quote, and control
@@ -69,8 +79,7 @@ static QString jsonEscape( const QString &s )
     return out;
 }
 
-/**
- * @brief The single-page HTML/CSS/JS remote-control UI template served for GET "/".
+/** The single-page HTML/CSS/JS remote-control UI template served for GET "/".
  *
  * The phone page: dark, thumb-sized controls, fetch()-driven, self-refreshing. Polls
  * /api/state and /api/snapshot every 2s and posts user actions to the other /api/ endpoints
@@ -82,7 +91,7 @@ static QString jsonEscape( const QString &s )
  * Strings::T() in the CURRENT language -- see buildPage() below. Keeping the template as one
  * readable raw string (rather than building the HTML via C++ string concatenation) means the
  * markup/CSS/JS structure stays exactly as easy to read and edit as before.
- */
+ **/
 static const char *kPageTemplate = R"HTML(<!DOCTYPE html>
 <html><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">

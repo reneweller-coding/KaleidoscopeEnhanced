@@ -1,8 +1,15 @@
-/**
- * @file MidiInput.cpp
- * @brief Implementation of MidiInput: Win32 winmm device open/close, callback-thread message decode, and thread-safe
- * event queue.
+/*****************************************************************************\
+ *                              MidiInput
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Implementation of MidiInput: Win32 winmm device open/close, callback-thread message decode, and thread-safe
+ *  event queue.
+ *
+ *  @author René Weller
  */
+
 #include "MidiInput.h"
 
 #ifdef _WIN32

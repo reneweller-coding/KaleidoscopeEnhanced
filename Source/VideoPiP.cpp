@@ -1,8 +1,15 @@
-/**
- * @file VideoPiP.cpp
- * @brief Implementation of VideoPiP: same decode-to-GL-texture shape as VideoIn.cpp, plus seek/play-state control for
- * staying in sync with the actual song position.
+/*****************************************************************************\
+ *                              VideoPiP
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Implementation of VideoPiP: same decode-to-GL-texture shape as VideoIn.cpp, plus seek/play-state control for
+ *  staying in sync with the actual song position.
+ *
+ *  @author René Weller
  */
+
 #include "glcore.h"
 #include "VideoPiP.h"
 
@@ -20,26 +27,28 @@
 namespace
 {
 
-/**
- * @brief Process-wide PiP decoder state -- see VideoIn.cpp's VideoState for the same unsynchronized-on-the-GUI-thread
- * rationale. A second, independent instance from VideoIn's `g`: this one plays ALONGSIDE the photo/video source, not
- * instead of it.
- */
+/** Process-wide PiP decoder state -- see VideoIn.cpp's VideoState for the same unsynchronized-on-the-GUI-thread
+ * rationale.
+ *
+ * A second, independent instance from VideoIn's `g`: this one plays ALONGSIDE the photo/video source, not instead of
+ * it.
+ **/
 struct PipState
 {
-    QMediaPlayer *player = nullptr;
-    QVideoSink   *sink = nullptr;
-    QAudioOutput *audio = nullptr; // muted; this is a silent visual, the song itself is the soundtrack
+    QMediaPlayer *player = nullptr; ///< The PiP's Qt6Multimedia player, created by the first videoPipLoad().
+    QVideoSink   *sink = nullptr;   ///< Receives the decoded frames from player.
+    QAudioOutput *audio = nullptr;  ///< muted; this is a silent visual, the song itself is the soundtrack
 
     QString openedPath; ///< The path last passed to videoPipLoad(), used to detect a redundant re-load as a no-op.
 
-    QImage latest;
-    bool   dirty = false;
-    GLuint tex = 0;
-    int    texW = 0, texH = 0;
+    QImage latest;        ///< Newest decoded frame.
+    bool   dirty = false; ///< A frame arrived since the last upload.
+    GLuint tex = 0;       ///< GL texture holding the last uploaded frame; 0 until the first upload.
+    int    texW = 0;      ///< Width of tex as last allocated.
+    int    texH = 0;      ///< Height of tex as last allocated.
 };
 
-PipState g;
+PipState g; ///< The process-wide PiP state.
 
 } // namespace
 

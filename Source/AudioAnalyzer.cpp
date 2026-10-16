@@ -1,8 +1,15 @@
-/**
- * @file AudioAnalyzer.cpp
- * @brief Implementation of AudioAnalyzer: WASAPI loopback capture, the per-block DSP pipeline (processBlock), and
- * offline/replay/recording helpers.
+/*****************************************************************************\
+ *                              AudioAnalyzer
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Implementation of AudioAnalyzer: WASAPI loopback capture, the per-block DSP pipeline (processBlock), and
+ *  offline/replay/recording helpers.
+ *
+ *  @author René Weller
  */
+
 #include "AudioAnalyzer.h"
 #include "CueReceiver.h"
 
@@ -414,7 +421,7 @@ void AudioAnalyzer::tapTempo()
     fprintf( stderr, "TAP tempo: %.1f BPM (%d taps)\n", 60000.f / med, cnt );
 }
 
-/** @brief Definition of the static offline-WAV path flag (see AudioAnalyzer::M_OfflineWav in the header). */
+/** Definition of the static offline-WAV path flag (see AudioAnalyzer::M_OfflineWav in the header). */
 QString AudioAnalyzer::M_OfflineWav;
 
 /**  Offline analysis (CLI -w): feeds a 16-bit PCM WAV through processBlock() in 480-frame chunks, paced to real time.

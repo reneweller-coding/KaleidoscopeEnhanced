@@ -1,31 +1,38 @@
-/**
- * @file WebRemote.h
- * @brief Embedded HTTP web-remote server: scene browser, force-scene API, snapshot/replay/blackout/favourite/skip
- * controls, and LAN auto-discovery.
+//---------------------------------------------------------------------------
+//                              WebRemote
+//---------------------------------------------------------------------------
+//  Copyright (C): 2026 reneweller, MIT License (see LICENSE)
+//---------------------------------------------------------------------------
+/*! @file
+ *
+ *  @brief
+ *  Embedded HTTP web-remote server: scene browser, force-scene API, snapshot/replay/blackout/favourite/skip
+ *  controls, and LAN auto-discovery.
+ *
+ *  Tiny embedded HTTP server (CLI `-t <port>`, on by default at 8080) serving a
+ *  phone-friendly remote control page: switch presets, trigger the next
+ *  effect, and adjust the live parameters (reactivity / trails / mood /
+ *  latency lead) plus the toggles (light show, auto-preset).  GET-only,
+ *  single-page, no dependencies beyond QtNetwork.  Runs on the main thread
+ *  (QTcpServer events on the Qt loop), so it can call straight into GLwidget
+ *  like the keyboard handler does.
+ *
+ *  Also runs a tiny UDP discovery responder alongside the HTTP server, so the
+ *  companion Android app never needs a typed IP: it broadcasts a magic
+ *  request on the LAN, and every running instance answers with its hostname,
+ *  HTTP port, and active preset — letting the phone auto-connect (or, with
+ *  several instances running, show a picker). If the requested HTTP port is
+ *  already taken (e.g. a second instance on this same PC), the next few ports
+ *  are tried automatically so each instance still ends up reachable.
+ *
+ *  SECURITY NOTE: this is a LAN convenience remote without authentication —
+ *  it only exposes the same harmless controls as the keyboard, and the
+ *  discovery responder only ever announces host/port/preset name (no photos,
+ *  no file paths, no credentials). Do not port-forward it to the internet.
+ *
+ *  @author René Weller
  */
-// WebRemote.h
-// ---------------------------------------------------------------------------
-// Tiny embedded HTTP server (CLI -t <port>, on by default at 8080) serving a
-// phone-friendly remote control page: switch presets, trigger the next
-// effect, and adjust the live parameters (reactivity / trails / mood /
-// latency lead) plus the toggles (light show, auto-preset).  GET-only,
-// single-page, no dependencies beyond QtNetwork.  Runs on the main thread
-// (QTcpServer events on the Qt loop), so it can call straight into GLwidget
-// like the keyboard handler does.
-//
-// Also runs a tiny UDP discovery responder alongside the HTTP server, so the
-// companion Android app never needs a typed IP: it broadcasts a magic
-// request on the LAN, and every running instance answers with its hostname,
-// HTTP port, and active preset — letting the phone auto-connect (or, with
-// several instances running, show a picker). If the requested HTTP port is
-// already taken (e.g. a second instance on this same PC), the next few ports
-// are tried automatically so each instance still ends up reachable.
-//
-// SECURITY NOTE: this is a LAN convenience remote without authentication —
-// it only exposes the same harmless controls as the keyboard, and the
-// discovery responder only ever announces host/port/preset name (no photos,
-// no file paths, no credentials). Do not port-forward it to the internet.
-// ---------------------------------------------------------------------------
+
 #pragma once
 
 #include <QtCore/QObject>
@@ -34,8 +41,9 @@ class GLwidget;
 class QTcpServer;
 class QUdpSocket;
 
-/**
- * @brief Embedded single-page HTTP remote control for the visualizer (scene browser, force-scene, snapshot, replay,
+/** @class WebRemote
+ *
+ * Embedded single-page HTTP remote control for the visualizer (scene browser, force-scene, snapshot, replay,
  * blackout, favourite, live parameters).
  *
  * Listens on a TCP port (CLI `-t <port>`) and serves one self-contained HTML/CSS/JS page plus a
@@ -44,7 +52,7 @@ class QUdpSocket;
  * GLwidget and RenderPipeline the same way the keyboard shortcut handler does — no cross-thread
  * synchronization is needed. Deliberately unauthenticated: it is meant as a LAN convenience
  * remote only and should not be port-forwarded to the internet.
- */
+ **/
 class WebRemote : public QObject
 {
 public:

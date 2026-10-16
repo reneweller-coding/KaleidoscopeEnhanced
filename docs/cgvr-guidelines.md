@@ -152,6 +152,14 @@ this is not written. Generated shaders get their names when they are written (`g
 
 ## Comments (C++)
 
+Every file starts with the header of `template.h` (headers) or `template.cpp` (sources): a banner with the class or
+file name -- in headers with the copyright line -- and the `/*! @file` block with `@brief`, the details and
+`@author`. Code that began elsewhere names its authors: Frank Firsching (`stdinc.h`, `Vector3D`, `Vector4D`), Markus
+Kramer's Shader Maker (`Uniform`), lighthouse3d.com (`textfile`), Stephan Mock and Randolf Schärfig via
+cg.in.tu-clausthal (`mesh`); every other file has `@author René Weller`. A class is introduced by a `/** @class Name`
+block, structs, enums, types, macros and variables by `/** One line.` (and the details) `**/`, or `/** One line. */`
+when the line is all there is.
+
 Every function is commented in the layout of `template-comments.cpp`:
 
 ```cpp
@@ -172,16 +180,21 @@ Every function is commented in the layout of `template-comments.cpp`:
 
 | What | How |
 |---|---|
-| Rewriting the comment blocks | `python Tools/cgvr_comments.py --apply`: reads Doxygen's XML (names, parameters, types), parses the block above the declaration and the one above the definition, and writes them back in the template's order |
+| File headers | `python Tools/cgvr_fileheaders.py --apply` (the authors of code that began elsewhere are listed in the script) |
+| Classes, structs, enums, types, macros, variables | `python Tools/cgvr_typecomments.py --apply` |
+| Function comments | `python Tools/cgvr_comments.py --apply`: reads Doxygen's XML (names, parameters, types), parses the block above the declaration and the one above the definition, and writes them back in the template's order |
 | Parameter directions | From the type: by value and through `const &`/`const *` it is `(in)`; a non-const reference `(in,out)`, or `(out)` where the text says the parameter receives or is filled; a non-const pointer `(in)` unless the text says so |
 | `@sideeffects` | The class variables (`M_...`) and file-static variables (`s_...`) the body assigns; `@sideeffects` is an alias in the `Doxyfile` |
 | Descriptions that were missing | `Tools/cgvr_comment_supplement.py`, keyed by the function's qualified name |
-| Check | `Tools/cgvr_doxygen.py` runs Doxygen with `WARN_NO_PARAMDOC`: 0 warnings in `Source/`, `PresetEditor/`, `SetupTool/` |
+| Check | `Tools/cgvr_doxygen.py` runs Doxygen with `WARN_NO_PARAMDOC`: 0 warnings in `Source/`, `PresetEditor/`, `SetupTool/`, the helpers in anonymous namespaces included (`EXTRACT_ANON_NSPACES`) |
 
 The rewrite changes no code token except parameter names: 24 declarations took the names of their definitions
 (`GpuSims::stepFluid( a, f )` was defined as `( audio, f )`), because a block can only document one set of names. A
 parameter documented above the declaration and above the definition is kept once, above the declaration. A comment
-that trailed a function (`int numV() { ... } ///< ...`) now stands above it.
+that trailed a function (`int numV() { ... } ///< ...`) now stands above it. Declarations of two or three variables
+that needed a comment each were split (`int texW = 0, texH = 0;`), the `PassProg` locations of `EffectShader.cpp` share
+one comment as a Doxygen member group, and `Uniform.h`'s include guard is `UNIFORM_H` (names with two leading
+underscores are reserved).
 
 ### Deviations
 
@@ -190,6 +203,11 @@ that trailed a function (`int numV() { ... } ///< ...`) now stands above it.
 | Function comment over several lines | A function without parameters, return value or details gets its line as `/** ... */` | Three lines around one sentence would bury the interface |
 | — | A getter whose only text was its one line repeats it under `@return` (`Whether X` becomes `True if X`) | The template asks for `@return`, and there was nothing else to say |
 | — | Member variables and enumerators keep their trailing `///<` comment | One line per member keeps a class declaration readable; Doxygen attaches the comment to the member before it |
+| `@class` blocks in the `.cpp` (`template.cpp`) | The `@class` block stands above the class declaration in the header | Most classes here have no `.cpp` of their own or share one; the reader of the header sees the class described where it is declared. A class in an anonymous namespace keeps a block without `@class` (Doxygen names it after the file) |
+| Section rulers of `template.h`/`template.cpp` (Includes, Types, Public Instance methods, ...) | Not added | The access specifiers and the comment blocks already mark the parts; the rulers would add some 40 lines per file |
+| `#ifdef __sgi` / `#pragma once` and `static char cvsid[]` | Left out | IRIX compilers and CVS keywords are gone; the include guard (or `#pragma once`) does the work, git keeps the history |
+| Every file has the template header | `Source/mainwindow.h` keeps uic's header | It is generated from `mainwindow.ui`; uic overwrites it |
+| One author line | Files with someone else's code name both: the original author and the adaptation | Credit belongs to both |
 | — | Parameters a definition leaves unnamed (`resizeGL( int, int )`, unused `src` in `ComputeFX::stepMetal`) stay unnamed there | Naming them would bring back the unused-parameter warning; the declaration names and documents them |
 
 ## Known state outside the guidelines

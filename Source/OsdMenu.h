@@ -1,9 +1,17 @@
-/**
- * @file OsdMenu.h
- * @brief On-screen menu for remote-control operation (HTPC IR remote): a tree
- *        of submenus, actions, switches, choices and sliders, driven by the
- *        arrow keys, OK, Back and Esc, drawn with QPainter over the output.
+//---------------------------------------------------------------------------
+//                              OsdMenu
+//---------------------------------------------------------------------------
+//  Copyright (C): 2026 reneweller, MIT License (see LICENSE)
+//---------------------------------------------------------------------------
+/*! @file
+ *
+ *  @brief
+ *  On-screen menu for remote-control operation (HTPC IR remote): a tree of submenus, actions, switches, choices and
+ *  sliders, driven by the arrow keys, OK, Back and Esc, drawn with QPainter over the output.
+ *
+ *  @author René Weller
  */
+
 #pragma once
 
 #include <QString>
@@ -14,16 +22,15 @@
 
 class QPainter;
 
-/**
- * @brief One row of the on-screen menu.
+/** One row of the on-screen menu.
  *
  * Every row reads and writes its state through callbacks, so the menu never
  * keeps a copy of anything: the keyboard shortcuts, the web remote and the
  * menu all change the same members and always show the same values.
- */
+ **/
 struct OsdItem
 {
-    /** @brief What a row does. */
+    /** What a row does. */
     enum KindE
     {
         SUBMENU, ///< opens #children (built fresh every time it is entered)
@@ -57,8 +64,9 @@ struct OsdItem
     std::function<QString( float )> fmt;         ///< Slider: value text (default: one decimal).
 };
 
-/**
- * @brief The menu itself: a stack of levels, key handling and drawing.
+/** @class OsdMenu
+ *
+ * The menu itself: a stack of levels, key handling and drawing.
  *
  * Remote keys: Up/Down select; OK (Enter) opens a submenu, runs an action or
  * switches a toggle / advances a choice; Right does the same for submenus and
@@ -66,7 +74,7 @@ struct OsdItem
  * and on any other row goes back; Back (Back/Backspace) goes one level up and
  * closes at the top; Esc and the Menu key close the menu. It hides itself
  * after a while without input.
- */
+ **/
 class OsdMenu
 {
 public:
@@ -119,11 +127,11 @@ public:
      **/
     void draw( QPainter *p, int w, int h );
 
-    /** @brief Seconds without input after which the menu closes by itself. */
+    /** Seconds without input after which the menu closes by itself. */
     static constexpr int IdleCloseSec = 20;
 
 private:
-    /** @brief One open level of the menu. */
+    /** One open level of the menu. */
     struct Level
     {
         QString                               title;      ///< Heading.

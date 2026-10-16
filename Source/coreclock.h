@@ -1,7 +1,15 @@
-/**
- * @file coreclock.h
- * @brief Qt-free drop-in replacement for QElapsedTimer, used in the render core
- *        (Task 5, RendererCore preparation) so that code can be Qt-free.
+//---------------------------------------------------------------------------
+//                              coreclock
+//---------------------------------------------------------------------------
+//  Copyright (C): 2026 reneweller, MIT License (see LICENSE)
+//---------------------------------------------------------------------------
+/*! @file
+ *
+ *  @brief
+ *  Qt-free drop-in replacement for QElapsedTimer, used in the render core (Task 5, RendererCore preparation) so
+ *  that code can be Qt-free.
+ *
+ *  @author René Weller
  */
 
 #ifndef CORECLOCK_H
@@ -13,14 +21,15 @@
 
 #include <chrono>
 
-/**
- * @brief Wall-clock stopwatch with millisecond elapsed() readout, matching
- *        QElapsedTimer's semantics but built purely on std::chrono::steady_clock.
+/** @class WallClock
+ *
+ * Wall-clock stopwatch with millisecond elapsed() readout, matching QElapsedTimer's semantics but built purely on
+ * std::chrono::steady_clock.
  *
  * Constructed already started (m_t0 = now()); start()/restart() reset the reference
  * point and elapsed() reports milliseconds since then. Used where the render core
  * needs timing without depending on Qt.
- */
+ **/
 class WallClock
 {
 public:

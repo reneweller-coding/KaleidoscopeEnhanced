@@ -1,8 +1,16 @@
-/**
- * @file QMyWindow.h
- * @brief Declares QMyWindow, the top-level QMainWindow that hosts the GLwidget
- *        via the generated mainwindow.ui layout.
+//---------------------------------------------------------------------------
+//                              QMyWindow
+//---------------------------------------------------------------------------
+//  Copyright (C): 2026 reneweller, MIT License (see LICENSE)
+//---------------------------------------------------------------------------
+/*! @file
+ *
+ *  @brief
+ *  Declares QMyWindow, the top-level QMainWindow that hosts the GLwidget via the generated mainwindow.ui layout.
+ *
+ *  @author René Weller
  */
+
 #ifndef QMYWINDOW_H
 #define QMYWINDOW_H
 
@@ -10,15 +18,16 @@
 
 #include "mainwindow.h"
 
-/**
- * @brief Top-level application window that hosts GLwidget.
+/** @class QMyWindow
+ *
+ * Top-level application window that hosts GLwidget.
  *
  * QMyWindow wraps the Qt Designer layout generated into mainwindow.h
  * (Ui::MainWindow, which embeds a GLwidget as its central widget). It sets the
  * window title, wires the "Exit" menu action to a quit slot, and forwards the
  * request to the rest of the application via signalQuitApp(). It also stores a
  * working directory, set from outside via setDirectory().
- */
+ **/
 class QMyWindow : public QMainWindow
 {
     Q_OBJECT
@@ -37,11 +46,11 @@ public:
     void setDirectory( QString directory );
 
 public slots:
-    /// Slot bound to the "Exit" menu action; emits signalQuitApp().
+    /** Slot bound to the "Exit" menu action; emits signalQuitApp(). */
     void slotQuitApp();
 
 signals:
-    /// Emitted when the user requests to quit the application (via the Exit menu action).
+    /** Emitted when the user requests to quit the application (via the Exit menu action). */
     void signalQuitApp();
 
 private:

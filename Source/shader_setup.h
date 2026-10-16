@@ -1,8 +1,17 @@
-/**
- * @file shader_setup.h
- * @brief Low-level GLSL shader compile/link helpers shared across the engine: builds fragment-only, vertex+fragment,
- * full-pipeline (with optional tessellation/geometry stages) and compute programs from source files.
+//---------------------------------------------------------------------------
+//                              shader_setup
+//---------------------------------------------------------------------------
+//  Copyright (C): 2026 reneweller, MIT License (see LICENSE)
+//---------------------------------------------------------------------------
+/*! @file
+ *
+ *  @brief
+ *  Low-level GLSL shader compile/link helpers shared across the engine: builds fragment-only, vertex+fragment,
+ *  full-pipeline (with optional tessellation/geometry stages) and compute programs from source files.
+ *
+ *  @author René Weller
  */
+
 #ifndef SHADER_SETUP_H
 #define SHADER_SETUP_H
 

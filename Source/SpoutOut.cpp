@@ -1,8 +1,16 @@
-/**
- * @file SpoutOut.cpp
- * @brief Implementation of the Spout send facade (SpoutOut.h); wraps the Spout2 SDK's Spout class.
+/*****************************************************************************\
+ *                              SpoutOut
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Implementation of the Spout send facade (SpoutOut.h); wraps the Spout2 SDK's Spout class.
+ *
+ *  See SpoutOut.h.  The ONLY file that includes Spout headers.
+ *
+ *  @author René Weller
  */
-// SpoutOut.cpp — see SpoutOut.h.  The ONLY file that includes Spout headers.
+
 #include "SpoutOut.h"
 #ifdef _WIN32
 #include "../ThirdParty/SpoutGL/Spout.h"

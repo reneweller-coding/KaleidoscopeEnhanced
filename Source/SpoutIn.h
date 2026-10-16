@@ -1,19 +1,26 @@
-/**
- * @file SpoutIn.h
- * @brief Facade for receiving a texture from another application via the Spout GPU texture-sharing protocol, for use as
- * an image source.
+//---------------------------------------------------------------------------
+//                              SpoutIn
+//---------------------------------------------------------------------------
+//  Copyright (C): 2026 reneweller, MIT License (see LICENSE)
+//---------------------------------------------------------------------------
+/*! @file
+ *
+ *  @brief
+ *  Facade for receiving a texture from another application via the Spout GPU texture-sharing protocol, for use as
+ *  an image source.
+ *
+ *  Minimal facade around the Spout2 SDK (ThirdParty/SpoutGL, BSD-2 licence):
+ *  RECEIVES a Spout sender's texture so it can replace the photo as the source
+ *  image of the whole pipeline (CLI flag -i <sender|any>).  A webcam reaches
+ *  the app the same way (e.g. OBS with its Spout output).
+ *
+ *  Like SpoutOut this is deliberately a separate translation unit: the Spout
+ *  sources load their own OpenGL extension pointers, which must never be mixed
+ *  into the GLee-based translation units.  Only plain ints cross the interface.
+ *
+ *  @author René Weller
  */
-// SpoutIn.h
-// ---------------------------------------------------------------------------
-// Minimal facade around the Spout2 SDK (ThirdParty/SpoutGL, BSD-2 licence):
-// RECEIVES a Spout sender's texture so it can replace the photo as the source
-// image of the whole pipeline (CLI flag -i <sender|any>).  A webcam reaches
-// the app the same way (e.g. OBS with its Spout output).
-//
-// Like SpoutOut this is deliberately a separate translation unit: the Spout
-// sources load their own OpenGL extension pointers, which must never be mixed
-// into the GLee-based translation units.  Only plain ints cross the interface.
-// ---------------------------------------------------------------------------
+
 #pragma once
 
 /**  Creates the Spout receiver, optionally pinned to one sender name.

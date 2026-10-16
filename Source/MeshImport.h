@@ -1,8 +1,17 @@
-/**
- * @file MeshImport.h
- * @brief Loads a static 3D model (.glb/.gltf via cgltf, .obj via tinyobjloader) into the vertex/material layout
- * Scene3DShader's geom="mesh" kind expects.
+//---------------------------------------------------------------------------
+//                              MeshImport
+//---------------------------------------------------------------------------
+//  Copyright (C): 2026 reneweller, MIT License (see LICENSE)
+//---------------------------------------------------------------------------
+/*! @file
+ *
+ *  @brief
+ *  Loads a static 3D model (.glb/.gltf via cgltf, .obj via tinyobjloader) into the vertex/material layout
+ *  Scene3DShader's geom="mesh" kind expects.
+ *
+ *  @author René Weller
  */
+
 #pragma once
 // Source/MeshImport.h
 // ---------------------------------------------------------------------------
@@ -32,10 +41,9 @@
 #include <string>
 #include <vector>
 
-/**
- * @brief Host-side result of loading a mesh file: flattened geometry plus (optionally) its packed material texture
- * layers, ready for Scene3DShader::buildGeometry() to upload.
- */
+/** Host-side result of loading a mesh file: flattened geometry plus (optionally) its packed material texture layers,
+ * ready for Scene3DShader::buildGeometry() to upload.
+ **/
 struct MeshAsset
 {
     std::vector<float> vertices;              ///< 8 floats/vertex (attrA.xyzw, attrB.xyzw), GL_TRIANGLES, non-indexed.

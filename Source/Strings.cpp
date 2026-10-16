@@ -1,7 +1,14 @@
-/**
- * @file Strings.cpp
- * @brief Implementation of Strings: the DE/EN tables (see Strings.h for the design rationale).
+/*****************************************************************************\
+ *                              Strings
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Implementation of Strings: the DE/EN tables (see Strings.h for the design rationale).
+ *
+ *  @author René Weller
  */
+
 #include "Strings.h"
 #include "Platform.h"
 #include <cstring>
@@ -10,10 +17,11 @@
 namespace
 {
 
-LangE g_lang = LangE::DE;
+LangE g_lang = LangE::DE; ///< The UI language, set by Strings::setLanguage().
 
-// Order MUST match the StrIdE enum exactly -- both tables are indexed
-// directly by it, no separate key lookup.
+/** The German texts.  Order MUST match the StrIdE enum exactly -- both tables are indexed directly by it, no separate
+ * key lookup.
+ **/
 const char *kDE[S_COUNT] = {
     // ---- Hilfe-Uebersicht ----
     /* S_HELP_TITLE */ "KALEIDOSCOPE  -  Tastatur",
@@ -254,6 +262,7 @@ const char *kDE[S_COUNT] = {
     /* S_HELP_MEDIA */ "Medientasten: ⏭ nächste Szene, ⏯ Freeze, ⏹ Blackout",
 };
 
+/** The English texts, in the same order as kDE. */
 const char *kEN[S_COUNT] = {
     // ---- Help overview ----
     /* S_HELP_TITLE */ "KALEIDOSCOPE  -  Keyboard",

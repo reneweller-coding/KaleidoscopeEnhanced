@@ -1,9 +1,17 @@
-/**
- * @file SpoutIn.cpp
- * @brief Implementation of the Spout receive facade (SpoutIn.h); wraps the Spout2 SDK's Spout class.
+/*****************************************************************************\
+ *                              SpoutIn
+\*****************************************************************************/
+/*! @file
+ *
+ *  @brief
+ *  Implementation of the Spout receive facade (SpoutIn.h); wraps the Spout2 SDK's Spout class.
+ *
+ *  See SpoutIn.h.  Includes Spout headers (like SpoutOut.cpp,
+ *  never mixed with GLee translation units).
+ *
+ *  @author René Weller
  */
-// SpoutIn.cpp — see SpoutIn.h.  Includes Spout headers (like SpoutOut.cpp,
-// never mixed with GLee translation units).
+
 #include "SpoutIn.h"
 #ifdef _WIN32
 #include "../ThirdParty/SpoutGL/Spout.h"

@@ -1,31 +1,33 @@
-//=============================================================================
-/** @file		uniform.h
- * @brief Defines Uniform: per-shader-uniform value storage, min/max range randomisation, and audio-reactive min/max
-interpolation ("interpolator") state.
+//---------------------------------------------------------------------------
+//                              Uniform
+//---------------------------------------------------------------------------
+//  Copyright (C): 2007-2008 Markus Kramer (Shader Maker); changes 2026 reneweller, MIT License (see LICENSE)
+//---------------------------------------------------------------------------
+/*! @file
  *
- * Defines a uniform variable management class
+ *  @brief
+ *  Defines Uniform: per-shader-uniform value storage, min/max range randomisation, and audio-reactive min/max
+ *  interpolation ("interpolator") state.
  *
-    @internal
-    created:	2007-11-16
-    last mod:	2007-12-16
+ *  Defines a uniform variable management class.  It comes from Shader Maker, a cross-platform GLSL editor; for
+ *  details, see main.cpp or COPYING there.
+ *
+ *  NOTE (Kaleidoscope Enhanced): the class below has been trimmed down from the original "Shader Maker" CUniform
+ *  (see the `#if 0` block at the end of Uniform.cpp for the original, matrix/vector-capable implementation this
+ *  project no longer uses) to just the bool/int/float/interpolator-float scalar cases actually needed by this
+ *  project's shaders.  The class-level doc comment further down (originally written for CUniform) is kept for
+ *  historical context but describes capabilities (matrices, getColumnVector etc.) that are no longer present on
+ *  this class.
+ *
+ *  @author Markus Kramer (Shader Maker, 2007-2008); trimmed down by René Weller
+ *
+ *  @internal
+ *    created:  2007-11-16
+ *    last mod: 2007-12-16
+ */
 
-    Shader Maker - a cross-platform GLSL editor.
-    Copyright (C) 2007-2008 Markus Kramer
-    For details, see main.cpp or COPYING.
-
-    NOTE (Kaleidoscope Enhanced): the class below has been trimmed down from
-    the original "Shader Maker" CUniform (see the #if 0 block at the end of
-    Uniform.cpp for the original, matrix/vector-capable implementation this
-    project no longer uses) to just the bool/int/float/interpolator-float
-    scalar cases actually needed by this project's shaders. The class-level
-    doc comment further down (originally written for CUniform) is kept for
-    historical context but describes capabilities (matrices, getColumnVector
-    etc.) that are no longer present on this class.
-
-=============================================================================*/
-
-#ifndef __UNIFORM_H_INCLUDED__
-#define __UNIFORM_H_INCLUDED__
+#ifndef UNIFORM_H
+#define UNIFORM_H
 
 #include <string>
 #include "coreclock.h"
@@ -60,9 +62,10 @@ interpolation ("interpolator") state.
 
 
 /** Uniform base type.
- * Since uniforms can be vectors and matrices, this defines the
- * type if the scalars stored in those vectors and matrices.
- */
+ *
+ * Since uniforms can be vectors and matrices, this defines the type if the scalars stored in those vectors and
+ * matrices.
+ **/
 enum BaseTypeE
 {
     BASE_TYPE_BAD = 0,           ///< Invalid/unset type; not otherwise used by Uniform's own logic.
@@ -78,9 +81,10 @@ enum BaseTypeE
                                  // BASE_TYPE_SAMPLER,
 };
 
-/**
- * @brief Per-shader-uniform runtime state: current value, its randomisation range, and (for
- * BASE_TYPE_INTERPOLATOR_FLOAT) a timed min-to-max ramp.
+/** @class Uniform
+ *
+ * Per-shader-uniform runtime state: current value, its randomisation range, and (for BASE_TYPE_INTERPOLATOR_FLOAT)
+ * a timed min-to-max ramp.
  *
  * One Uniform instance backs one named GLSL uniform on an EffectShader. Its
  * behaviour is dictated entirely by m_type (set once at construction):
@@ -95,7 +99,7 @@ enum BaseTypeE
  * without touching the rolled base value. snapshotValue()/restoreValue()
  * let a caller save and later exactly replay a rolled value (used by the
  * song-structure "replay this section's look" memory).
- */
+ **/
 class Uniform
 {
 public:
@@ -250,9 +254,10 @@ public:
 
 private:
     /** The actual data container.
+     *
      * @internal
      *   - Must match for each basic type!
-     */
+     **/
     typedef union DataUnitU
     {
         // GLfloat	_float	[ 16 ]; ///< up to mat4, in column major order!
@@ -312,4 +317,4 @@ private:
 
 
 
-#endif // __UNIFORM_H_INCLUDED__
+#endif // UNIFORM_H

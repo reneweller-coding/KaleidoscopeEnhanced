@@ -1,47 +1,55 @@
-/**
- * @file Scene3DPreview.h
- * @brief Renders ONE Scene3DShader for the editor's live preview, including
- *        the shadow-map and order-independent-transparency passes it may opt
- *        into.
+//---------------------------------------------------------------------------
+//                              Scene3DPreview
+//---------------------------------------------------------------------------
+//  Copyright (C): 2026 reneweller, MIT License (see LICENSE)
+//---------------------------------------------------------------------------
+/*! @file
  *
- * This is what closes the gap PreviewWidget always had: it drew every shader
- * through a trivial fullscreen-quad pipeline, so of the engine's Scene3D
- * catalogue — real geometry, shadow maps, OIT, compute-driven
- * persistent-state generators — none of it could be previewed correctly.
+ *  @brief
+ *  Renders ONE Scene3DShader for the editor's live preview, including the shadow-map and
+ *  order-independent-transparency passes it may opt into.
  *
- * VERIFIED: any scene3d shader with a SINGLE draw() per frame -- geom=points/
- * cubes/ribbon/grid/quads/patches/scatter, and indirect/compute scenes with
- * no shadow or OIT (CoralGrowth, FeatherStorm, PrismExplode all confirmed via
- * --render, full shading including per-fragment discard).
+ *  This is what closes the gap PreviewWidget always had: it drew every shader
+ *  through a trivial fullscreen-quad pipeline, so of the engine's Scene3D
+ *  catalogue — real geometry, shadow maps, OIT, compute-driven
+ *  persistent-state generators — none of it could be previewed correctly.
  *
- * KNOWN LIMITATION, NOT YET ROOT-CAUSED: a scene that opts into the shadow map
- * or OIT -- meaning Scene3DShader::draw() is called MORE than once per frame,
- * with EffectShader::M_ShadowPass / M_OitPass toggled between calls -- comes
- * back with part or all of its geometry missing (confirmed on ShadowForest,
- * PillarHall, CathedralGlass).  It is not a compile failure, not a missing
- * per-activation parameter (both were real, separate bugs found and fixed
- * while investigating this -- see the depth-test fix in renderShadowPass()
- * and the addFloatRange/addIntRange mechanism), and not the shadow LOOKUP
- * specifically returning the wrong value (a lookup-only bug would misshade
- * geometry, not remove it).  Two different scenes showed two different
- * SUBSETS of their geometry surviving (ShadowForest: trunks yes, floor no;
- * PillarHall: floor-ish ground yes, pillars no), which does not fit a single
- * simple hypothesis tried so far (vertex-count clamp, generation-skipped-on-
- * the-second-pass, depth-test state).  Do not extend this file's multi-pass
- * handling further without first designing a way to inspect the indirect
- * command buffer's vertex count after each pass (glGetBufferSubData on
- * cmd[0]) -- guessing blind from screenshots has hit diminishing returns.
+ *  VERIFIED: any scene3d shader with a SINGLE draw() per frame -- geom=points/
+ *  cubes/ribbon/grid/quads/patches/scatter, and indirect/compute scenes with
+ *  no shadow or OIT (CoralGrowth, FeatherStorm, PrismExplode all confirmed via
+ *  --render, full shading including per-fragment discard).
  *
- * DELIBERATELY its own translation unit.  Scene3DShader draws through
- * glcore.h, which uses `#define` to remap every gl* call in the file that
- * includes it onto a loaded function pointer.  PreviewWidget.cpp calls GL through Qt's
- * QOpenGLFunctions instead — the only place in this codebase that does — and
- * mixing the two in one file would silently rebind PreviewWidget's own
- * already-working 2D calls onto glcore's pointers too, for a bug with no
- * visible cause at the call site.  Keeping this class in a header with no GL
- * types at all (GLuint appears as plain unsigned int) lets PreviewWidget.h
- * include it without ever seeing glcore's macros.
+ *  KNOWN LIMITATION, NOT YET ROOT-CAUSED: a scene that opts into the shadow map
+ *  or OIT -- meaning Scene3DShader::draw() is called MORE than once per frame,
+ *  with EffectShader::M_ShadowPass / M_OitPass toggled between calls -- comes
+ *  back with part or all of its geometry missing (confirmed on ShadowForest,
+ *  PillarHall, CathedralGlass).  It is not a compile failure, not a missing
+ *  per-activation parameter (both were real, separate bugs found and fixed
+ *  while investigating this -- see the depth-test fix in renderShadowPass()
+ *  and the addFloatRange/addIntRange mechanism), and not the shadow LOOKUP
+ *  specifically returning the wrong value (a lookup-only bug would misshade
+ *  geometry, not remove it).  Two different scenes showed two different
+ *  SUBSETS of their geometry surviving (ShadowForest: trunks yes, floor no;
+ *  PillarHall: floor-ish ground yes, pillars no), which does not fit a single
+ *  simple hypothesis tried so far (vertex-count clamp, generation-skipped-on-
+ *  the-second-pass, depth-test state).  Do not extend this file's multi-pass
+ *  handling further without first designing a way to inspect the indirect
+ *  command buffer's vertex count after each pass (glGetBufferSubData on
+ *  cmd[0]) -- guessing blind from screenshots has hit diminishing returns.
+ *
+ *  DELIBERATELY its own translation unit.  Scene3DShader draws through
+ *  glcore.h, which uses `#define` to remap every gl* call in the file that
+ *  includes it onto a loaded function pointer.  PreviewWidget.cpp calls GL through Qt's
+ *  QOpenGLFunctions instead — the only place in this codebase that does — and
+ *  mixing the two in one file would silently rebind PreviewWidget's own
+ *  already-working 2D calls onto glcore's pointers too, for a bug with no
+ *  visible cause at the call site.  Keeping this class in a header with no GL
+ *  types at all (GLuint appears as plain unsigned int) lets PreviewWidget.h
+ *  include it without ever seeing glcore's macros.
+ *
+ *  @author René Weller
  */
+
 #pragma once
 
 #include <QtCore/QString>
@@ -49,8 +57,9 @@
 
 class Scene3DShader;
 
-/**
- * @brief Owns and renders a single real Scene3DShader for the editor's preview pane.
+/** @class Scene3DPreview
+ *
+ * Owns and renders a single real Scene3DShader for the editor's preview pane.
  *
  * Wraps the shared, Qt-free Scene3DShader rendering core (from Source/) so
  * PreviewWidget's scene3d texture-shader path gets the actual engine render
@@ -62,7 +71,7 @@ class Scene3DShader;
  * therefore include this header without ever seeing a raw GL type or macro.
  * Not copyable/movable (holds raw GL object names it destroys itself); one
  * instance is owned by PreviewWidget for the lifetime of the preview pane.
- */
+ **/
 class Scene3DPreview
 {
 public:
@@ -233,25 +242,30 @@ private:
     Scene3DShader *m_scene = nullptr; ///< Currently loaded scene, owned; null until the first successful setShader().
     bool           m_glReady = false; ///< Whether ensureGL() has successfully loaded the glcore function pointers.
 
-    /// Main render target's framebuffer object (GL name, owned; 0 until ensureFbo() first ran); the scene's colour and
-    /// depth are drawn into it.
+    /** Main render target's framebuffer object (GL name, owned; 0 until ensureFbo() first ran); the scene's colour
+     * and depth are drawn into it.
+     **/
     unsigned m_fbo = 0, m_colorTex = 0, m_depthTex = 0; ///< Depth texture attachment of #m_fbo (GL name, owned); handed
                                                         ///< out as render()'s outDepthTex.
     /** @var unsigned Scene3DPreview::m_colorTex
      *  Colour texture attachment of #m_fbo (GL name, owned); handed out as render()'s outColorTex and the target of the
      * OIT resolve. */
-    /// Width #m_fbo/#m_colorTex/#m_depthTex were last allocated at, in pixels; ensureFbo() reallocates when it differs.
+    /** Width #m_fbo/#m_colorTex/#m_depthTex were last allocated at, in pixels; ensureFbo() reallocates when it
+     * differs.
+     **/
     int m_fboW = 0, m_fboH = 0; ///< Height #m_fbo/#m_colorTex/#m_depthTex were last allocated at, in pixels (see
                                 ///< #m_fboW).
 
     static const int ShadowSize = 2048; ///< Shadow-map texture width/height in texels.
-    /// Depth-only framebuffer object for the shadow pass (GL name, owned; 0 until ensureShadowMap() ran), ShadowSize x
-    /// ShadowSize.
+    /** Depth-only framebuffer object for the shadow pass (GL name, owned; 0 until ensureShadowMap() ran), ShadowSize
+     * x ShadowSize.
+     **/
     unsigned m_shadowFbo = 0, m_shadowTex = 0; ///< Depth texture attachment of #m_shadowFbo (GL name, owned), sampled
                                                ///< with hardware PCF comparison by the main draw.
 
-    /// Order-independent-transparency framebuffer object (GL name, owned; 0 until ensureOitTargets() ran) with
-    /// #m_oitAccum and #m_oitReveal attached.
+    /** Order-independent-transparency framebuffer object (GL name, owned; 0 until ensureOitTargets() ran) with
+     * #m_oitAccum and #m_oitReveal attached.
+     **/
     unsigned m_oitFbo = 0, m_oitAccum = 0, m_oitReveal = 0, m_oitResolveProg = 0; ///< Program (GL name, owned) built
                                                                                   ///< from Engine/OitResolve.frag that
                                                                                   ///< composites accumulation and
@@ -263,11 +277,12 @@ private:
     /** @var unsigned Scene3DPreview::m_oitReveal
      *  Revealage (transmittance) texture (GL name, owned) the OIT pass multiplies into; bound as texReveal by the
      * resolve. */
-    /// Width the OIT targets were last allocated at, in pixels; ensureOitTargets() reallocates when it differs.
+    /** Width the OIT targets were last allocated at, in pixels; ensureOitTargets() reallocates when it differs. */
     int m_oitW = 0, m_oitH = 0; ///< Height the OIT targets were last allocated at, in pixels (see #m_oitW).
 
-    /// Vertex array object of this class's own fullscreen quad (GL name, owned; lazily created), used only by the OIT
-    /// resolve so PreviewWidget's Qt-side quad is never touched from here.
+    /** Vertex array object of this class's own fullscreen quad (GL name, owned; lazily created), used only by the
+     * OIT resolve so PreviewWidget's Qt-side quad is never touched from here.
+     **/
     unsigned m_quadVao = 0, m_quadVbo = 0; ///< Vertex buffer (NDC positions) backing #m_quadVao (GL name, owned).
 private:
     /** Not copyable (CGVR template: copy constructor and assignment are always declared). */
