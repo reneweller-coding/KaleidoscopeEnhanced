@@ -430,6 +430,15 @@ private:
 
     std::function<float( const char * )> m_tasteFor; ///< Learned-taste callback (fragment path -> multiplier); unset
                                                      ///< means neutral 1.0 for everything.
+public:
+    /// @brief Default construction, which the declared copy operations would otherwise suppress.
+    SceneScheduler() = default;
+
+private:
+    /// @brief Not copyable (CGVR template: copy constructor and assignment are always declared).
+    SceneScheduler( const SceneScheduler & ) = delete;
+    /// @brief Not assignable; see the copy constructor.
+    SceneScheduler &operator=( const SceneScheduler & ) = delete;
 };
 
 #endif

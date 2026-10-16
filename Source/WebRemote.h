@@ -94,4 +94,9 @@ private:
     QUdpSocket *m_discoverySocket = nullptr; ///< LAN discovery responder; a child QObject, destroyed automatically with
                                              ///< this.
     int m_httpPort = 0; ///< The port m_server actually ended up listening on (may differ from the requested one).
+private:
+    /// @brief Not copyable (CGVR template: copy constructor and assignment are always declared).
+    WebRemote( const WebRemote & ) = delete;
+    /// @brief Not assignable; see the copy constructor.
+    WebRemote &operator=( const WebRemote & ) = delete;
 };

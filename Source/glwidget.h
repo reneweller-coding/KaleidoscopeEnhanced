@@ -728,6 +728,11 @@ protected:
 
     int m_width;  ///< Physical (DPI-scaled) framebuffer width, set in resizeGL().
     int m_height; ///< Physical (DPI-scaled) framebuffer height, set in resizeGL().
+private:
+    /// @brief Not copyable (CGVR template: copy constructor and assignment are always declared).
+    GLwidget( const GLwidget & ) = delete;
+    /// @brief Not assignable; see the copy constructor.
+    GLwidget &operator=( const GLwidget & ) = delete;
 };
 
 

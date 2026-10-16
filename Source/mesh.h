@@ -216,6 +216,11 @@ private:
                         ///< readObj()/assignTexture(); gates whether
                         ///< generateSphereTexCoords()/generateCylinderTexCoords()/assignTexture() are allowed to
                         ///< override them.
+private:
+    /// @brief Not copyable (CGVR template: copy constructor and assignment are always declared).
+    Mesh( const Mesh & ) = delete;
+    /// @brief Not assignable; see the copy constructor.
+    Mesh &operator=( const Mesh & ) = delete;
 };
 
 #endif // MESH_H

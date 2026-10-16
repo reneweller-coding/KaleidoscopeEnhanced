@@ -60,11 +60,11 @@ public:
     inline float &operator[]( int i );
 
     //! Assign the vector the value (t,t,t)
-    inline Vector3D operator=( float t );
+    inline void operator=( float t );
     //! Assigns the value of a vector to another
-    inline Vector3D operator=( const Vector3D &b );
+    inline void operator=( const Vector3D &b );
     //! Project a 4D-homogenous vector into 3D-space
-    inline Vector3D operator=( const Vector4D &b );
+    inline void operator=( const Vector4D &b );
 
     //! check for equality
     inline bool operator==( const Vector3D &b ) const;
@@ -255,26 +255,23 @@ inline float &Vector3D::operator[]( int i )
     return ( &x )[i];
 }
 
-inline Vector3D Vector3D::operator=( float t )
+inline void Vector3D::operator=( float t )
 {
     x = y = z = t;
-    return *this;
 }
 
-inline Vector3D Vector3D::operator=( const Vector3D &b )
+inline void Vector3D::operator=( const Vector3D &b )
 {
     x = b.x;
     y = b.y;
     z = b.z;
-    return *this;
 }
 
-inline Vector3D Vector3D::operator=( const Vector4D &b )
+inline void Vector3D::operator=( const Vector4D &b )
 {
     x = b.x / b.w;
     y = b.y / b.w;
     z = b.z / b.w;
-    return *this;
 }
 
 inline bool Vector3D::operator==( const Vector3D &b ) const

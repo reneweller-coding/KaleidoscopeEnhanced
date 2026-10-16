@@ -141,6 +141,15 @@ private:
     int   m_barIndex = -1;    ///< the last bar number
     int   m_accepted = 0;     ///< @copydoc accepted
     int   m_rejected = 0;     ///< @copydoc rejected
+private:
+    /// @brief Move assignment: reset() assigns a fresh instance.
+    ScoreCues &operator=( ScoreCues && ) = default;
+
+private:
+    /// @brief Not copyable (CGVR template: copy constructor and assignment are always declared).
+    ScoreCues( const ScoreCues & ) = delete;
+    /// @brief Not assignable; see the copy constructor.
+    ScoreCues &operator=( const ScoreCues & ) = delete;
 };
 
 /**
@@ -192,6 +201,11 @@ private:
     std::vector<Timed>  m_cues;          ///< the file's cues, sorted by time (stable: file order within a time)
     size_t              m_next = 0;      ///< the first cue not yet handed over
     std::atomic<double> m_clock{ -1.0 }; ///< the WAV's position; below zero until it plays
+private:
+    /// @brief Not copyable (CGVR template: copy constructor and assignment are always declared).
+    ScoreCueFile( const ScoreCueFile & ) = delete;
+    /// @brief Not assignable; see the copy constructor.
+    ScoreCueFile &operator=( const ScoreCueFile & ) = delete;
 };
 
 #endif // SCORECUES_H

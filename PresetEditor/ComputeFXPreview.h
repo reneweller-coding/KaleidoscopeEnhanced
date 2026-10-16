@@ -60,4 +60,9 @@ public:
 
 private:
     ComputeFX *m_impl; ///< Owned ComputeFX instance; all calls above forward to it.
+private:
+    /// @brief Not copyable (CGVR template: copy constructor and assignment are always declared).
+    ComputeFXPreview( const ComputeFXPreview & ) = delete;
+    /// @brief Not assignable; see the copy constructor.
+    ComputeFXPreview &operator=( const ComputeFXPreview & ) = delete;
 };

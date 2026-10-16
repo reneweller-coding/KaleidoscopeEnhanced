@@ -517,4 +517,9 @@ private:
     GLuint m_buf2[CFX_COUNT] = { 0 }; ///< per-kind secondary SSBO (spatial-hash grid, atomic counters, or paired state,
                                       ///< depending on the kind)
     bool m_dead[CFX_COUNT] = { false }; ///< per-kind: setup or step failed once -> never retried again
+private:
+    /// @brief Not copyable (CGVR template: copy constructor and assignment are always declared).
+    ComputeFX( const ComputeFX & ) = delete;
+    /// @brief Not assignable; see the copy constructor.
+    ComputeFX &operator=( const ComputeFX & ) = delete;
 };

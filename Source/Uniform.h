@@ -276,6 +276,11 @@ private:
 
     WallClock m_time; ///< Wall-clock timer used to measure elapsed milliseconds between setUniform() calls while
                       ///< ramping (BASE_TYPE_INTERPOLATOR_FLOAT only).
+private:
+    /// @brief Not copyable (CGVR template: copy constructor and assignment are always declared).
+    Uniform( const Uniform & ) = delete;
+    /// @brief Not assignable; see the copy constructor.
+    Uniform &operator=( const Uniform & ) = delete;
 };
 
 

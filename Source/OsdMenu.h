@@ -149,4 +149,13 @@ private:
     QString                  m_flashText;              ///< Confirmation shown in the hint line for a moment.
     bool                     m_rebuildPending = false; ///< rebuildAll() due at the next draw.
     std::function<QString()> m_rootTitle;              ///< Root heading, re-read on rebuild.
+public:
+    /// @brief Default construction, which the declared copy operations would otherwise suppress.
+    OsdMenu() = default;
+
+private:
+    /// @brief Not copyable (CGVR template: copy constructor and assignment are always declared).
+    OsdMenu( const OsdMenu & ) = delete;
+    /// @brief Not assignable; see the copy constructor.
+    OsdMenu &operator=( const OsdMenu & ) = delete;
 };

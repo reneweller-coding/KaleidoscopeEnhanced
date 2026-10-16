@@ -1085,6 +1085,11 @@ protected:
     std::vector<Uniform *> m_uniforms; ///< All randomised parameters registered via
                                        ///< addUniform()/addUniformInterpolator(), owned for the lifetime of this effect
                                        ///< (never explicitly deleted).
+private:
+    /// @brief Not copyable (CGVR template: copy constructor and assignment are always declared).
+    EffectShader( const EffectShader & ) = delete;
+    /// @brief Not assignable; see the copy constructor.
+    EffectShader &operator=( const EffectShader & ) = delete;
 };
 
 

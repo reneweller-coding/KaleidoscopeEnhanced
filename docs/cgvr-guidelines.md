@@ -115,6 +115,32 @@ this is not written. Generated shaders get their names when they are written (`g
 | — | 92 locals keep their name | The new name would also be a parameter, a file-scope name or a macro word somewhere in the file: a rename there could change what a name refers to |
 | Generated files follow the guidelines | `Tools/scenegen/src/*.glsl` and the GLSL inside `gen.py` keep the old names | The generators patch that text with patterns written for it; their output is renamed when it is written |
 
+## C++ language rules
+
+| Rule | How it holds |
+|---|---|
+| C++ casts only | All C-style and functional casts are `static_cast`/`reinterpret_cast` (clang-tidy `google-readability-casting`, run through `Tools/cgvr_tidy.py --fix`) |
+| Single-argument constructors are `explicit` | clang-tidy `google-explicit-constructor`; conversion operators too |
+| `const` consistently, `const &` for read-only objects | clang-tidy `readability-make-member-function-const`, `performance-unnecessary-value-param` |
+| Copy constructor and assignment always declared | Every class declares both (`Tools/cgvr_copyops.py`): `= delete` where nothing copies it (C++11's form of template.h's private undefined declarations), `= default` plus the move operations where instances live by value (`ExprProgram`) |
+| Virtual destructors | `EffectShader` and `Scene3DShader`, the one hierarchy deleted through its base |
+| Assignment operators return `void` | `Vector3D`, `Vector4D` |
+| Member variables are never public | `Configuration` has accessors; `RenderPipeline`'s mesh and image members are private (`ImageLoader` is a friend: it fills the next photo) |
+| No assignment inside a condition | The uniform upload in `EffectShader` assigns, then tests |
+| Every `switch` has a `default` | A "can't happen" default prints what it got and goes on |
+| `++i`, not `i++` | Where the value is unused: `for` increments and statements of their own, C++ and GLSL (`Tools/cgvr_preincrement.py`) |
+
+### Deviations
+
+| Rule | Here | Why |
+|---|---|---|
+| Virtual destructors in every class | Only where a class is used polymorphically | A vtable in value types and plain data (`AudioFeatures`, `Vector3D`) would change their layout and size for nothing |
+| Avoid multiple inheritance | `PresetEditor`'s `PreviewWidget : QOpenGLWidget, QOpenGLFunctions` | Qt's documented way to reach the GL functions from a widget |
+| Member variables are never public | `Vector3D`/`Vector4D` keep public `x y z w`; plain data `struct`s keep public fields | Value types of maths and records without invariants; the guidelines give no rule for struct fields |
+| Avoid nested classes | Records nested in the class they serve stay (`Mesh::Triangle`, `ScoreCues::Frame`) | They have no meaning outside it |
+| Assignment operators return `void` | Defaulted ones (`ExprProgram`) return a reference | That is what `= default` declares; the containers holding them require it |
+| — | `IMMDeviceEnumerator`'s destructor | A Windows COM interface, not ours |
+
 ## Known state outside the guidelines
 
 - 223 of the 264 scenes that `gen.py` builds from `Tools/scenegen/src` differ from what `gen.py` produces today: the

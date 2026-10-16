@@ -76,6 +76,12 @@ private:
     /** @brief Replaces the status text the UI polls via status(). @param s New progress/error text (German,
      * user-facing); empty clears it. */
     void setStatus( const QString &s );
+
+private:
+    /// @brief Not copyable (CGVR template: copy constructor and assignment are always declared).
+    UpdateCheck( const UpdateCheck & ) = delete;
+    /// @brief Not assignable; see the copy constructor.
+    UpdateCheck &operator=( const UpdateCheck & ) = delete;
 };
 
 #endif

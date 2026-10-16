@@ -61,9 +61,9 @@ public:
     inline double &operator[]( int i );
 
     //! Assigns the value of a vector to another
-    inline Vector4D operator=( const Vector4D &b );
+    inline void operator=( const Vector4D &b );
     //! Project a 3D vector to homogenous-space
-    inline Vector4D operator=( const Vector3D &b );
+    inline void operator=( const Vector3D &b );
 
     //! project a homogenous vector to 3D-space (cast operator to Vector3D)
     // inline operator Vector3D() const;
@@ -145,22 +145,20 @@ inline double &Vector4D::operator[]( int i )
     return ( &x )[i];
 }
 
-inline Vector4D Vector4D::operator=( const Vector4D &b )
+inline void Vector4D::operator=( const Vector4D &b )
 {
     x = b.x;
     y = b.y;
     z = b.z;
     w = b.w;
-    return *this;
 }
 
-inline Vector4D Vector4D::operator=( const Vector3D &b )
+inline void Vector4D::operator=( const Vector3D &b )
 {
     x = b.x;
     y = b.y;
     z = b.z;
     w = 1.0;
-    return *this;
 }
 
 /*

@@ -81,4 +81,9 @@ private:
     std::vector<Event> m_events; ///< Queue of decoded events awaiting the next drain() call (capped at 256, see
                                  ///< push()).
     QString m_name;              ///< Display name of the opened MIDI device, as reported by midiInGetDevCapsW().
+private:
+    /// @brief Not copyable (CGVR template: copy constructor and assignment are always declared).
+    MidiInput( const MidiInput & ) = delete;
+    /// @brief Not assignable; see the copy constructor.
+    MidiInput &operator=( const MidiInput & ) = delete;
 };

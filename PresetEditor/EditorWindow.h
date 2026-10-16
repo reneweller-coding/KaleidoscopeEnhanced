@@ -262,4 +262,9 @@ private:
     QLabel *m_status = nullptr; ///< Status-bar label; most actions update it to report their outcome.
 
     QString m_wavPath; ///< current real-audio preview WAV (empty = synthetic)
+private:
+    /// @brief Not copyable (CGVR template: copy constructor and assignment are always declared).
+    EditorWindow( const EditorWindow & ) = delete;
+    /// @brief Not assignable; see the copy constructor.
+    EditorWindow &operator=( const EditorWindow & ) = delete;
 };

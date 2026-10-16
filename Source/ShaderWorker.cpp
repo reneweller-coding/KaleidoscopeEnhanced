@@ -111,6 +111,16 @@ protected:
             s_done.push_back( { j.key, prog } );
         }
     }
+
+public:
+    /// @brief Default construction, which the declared copy operations would otherwise suppress.
+    Worker() = default;
+
+private:
+    /// @brief Not copyable (CGVR template: copy constructor and assignment are always declared).
+    Worker( const Worker & ) = delete;
+    /// @brief Not assignable; see the copy constructor.
+    Worker &operator=( const Worker & ) = delete;
 };
 Worker *s_worker = nullptr;
 

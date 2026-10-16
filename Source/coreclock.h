@@ -43,6 +43,11 @@ public:
 
 private:
     std::chrono::steady_clock::time_point m_t0; ///< Reference time point set by the constructor / start() / restart().
+private:
+    /// @brief Not copyable (CGVR template: copy constructor and assignment are always declared).
+    WallClock( const WallClock & ) = delete;
+    /// @brief Not assignable; see the copy constructor.
+    WallClock &operator=( const WallClock & ) = delete;
 };
 
 #endif

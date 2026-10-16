@@ -426,9 +426,13 @@ public:
      * scenes as used and gives back the vertex buffers of the least recently
      * seen mesh scenes beyond the budget (KALEIDO_MESH_BUDGET, default 16).
      */
-    void                          trimMeshResidency();
+    void trimMeshResidency();
+
+private:
     QHash<EffectShader *, qint64> m_meshLastUse; ///< Last frame stamp at which a mesh scene was active or fading in.
     qint64                        m_meshUseClock = 0; ///< Monotonic frame counter behind m_meshLastUse.
+
+public:
     /// @return Label of the last warm-up step ("glsl <file>", "mesh <file>", "fx <file>" or empty). Diagnostics only.
     static const QString &lastWarmLabel() { return M_WarmLabel; }
 
@@ -544,6 +548,9 @@ public:
      * RenderPipeline). @param shader Transition shader to add. */
     void addTransitionShader( EffectShader *shader );
 
+
+private:
+    friend class ImageLoader; // the loader thread fills m_nextImage and reads the mood snapshot
 
     bool m_triggerImageload;   ///< Set by the render thread to request the next background photo from the ImageLoader
                                ///< thread; cleared by ImageLoader once m_nextImage is filled.
@@ -1267,6 +1274,11 @@ private:
     ImageLoader *m_imageLoader = nullptr; ///< Background thread that decodes/prepares the next photo off the render
                                           ///< thread; see ImageLoader. Null while stopped -- start() recreates it, and
                                           ///< it was previously left uninitialised AND dangling after stop().
+private:
+    /// @brief Not copyable (CGVR template: copy constructor and assignment are always declared).
+    RenderPipeline( const RenderPipeline & ) = delete;
+    /// @brief Not assignable; see the copy constructor.
+    RenderPipeline &operator=( const RenderPipeline & ) = delete;
 };
 
 
@@ -1304,6 +1316,11 @@ private:
     static QPair<float, float>          imageStats( const QString &path );
     QHash<QString, QPair<float, float>> m_stats; ///< Per-path cache of imageStats() results; loader-thread-only, so no
                                                  ///< locking is needed.
+private:
+    /// @brief Not copyable (CGVR template: copy constructor and assignment are always declared).
+    ImageLoader( const ImageLoader & ) = delete;
+    /// @brief Not assignable; see the copy constructor.
+    ImageLoader &operator=( const ImageLoader & ) = delete;
 };
 
 #endif

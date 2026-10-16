@@ -132,6 +132,11 @@ private:
 
     QUdpSocket *m_socket = nullptr;  ///< the bound socket, a child of this object
     bool        m_listening = false; ///< @copydoc listening
+private:
+    /// @brief Not copyable (CGVR template: copy constructor and assignment are always declared).
+    CueReceiver( const CueReceiver & ) = delete;
+    /// @brief Not assignable; see the copy constructor.
+    CueReceiver &operator=( const CueReceiver & ) = delete;
 };
 
 /**

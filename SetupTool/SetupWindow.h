@@ -156,4 +156,9 @@ private:
     QLabel *m_status = nullptr; ///< Fixed status line between the scroll area and the buttons: green "saved" / red
                                 ///< "save failed: path" from saveToIni(), cleared after four seconds; also the "no
                                 ///< settings file yet" note.
+private:
+    /// @brief Not copyable (CGVR template: copy constructor and assignment are always declared).
+    SetupWindow( const SetupWindow & ) = delete;
+    /// @brief Not assignable; see the copy constructor.
+    SetupWindow &operator=( const SetupWindow & ) = delete;
 };

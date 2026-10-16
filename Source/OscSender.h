@@ -73,4 +73,13 @@ private:
     float        m_fastAcc = 0.f;      ///< Time since the last ~30 Hz /audio bundle.
     float        m_moodAcc = 999.f;    ///< Time since the last ~5 Hz /mood bundle (999 = fire immediately).
     float        m_prevDownbeat = 0.f; ///< Previous downbeat pulse, for edge detection.
+public:
+    /// @brief Default construction, which the declared copy operations would otherwise suppress.
+    OscSender() = default;
+
+private:
+    /// @brief Not copyable (CGVR template: copy constructor and assignment are always declared).
+    OscSender( const OscSender & ) = delete;
+    /// @brief Not assignable; see the copy constructor.
+    OscSender &operator=( const OscSender & ) = delete;
 };

@@ -209,8 +209,8 @@ void GLwidget::remoteTapTempo()
 
 QString GLwidget::remoteShaderInfo() const
 {
-    if ( m_actConfiguration && m_actConfiguration->m_renderPipeline )
-        return m_actConfiguration->m_renderPipeline->activeShaderInfo();
+    if ( m_actConfiguration && m_actConfiguration->renderPipeline() )
+        return m_actConfiguration->renderPipeline()->activeShaderInfo();
     return QString();
 }
 
@@ -252,16 +252,16 @@ void GLwidget::remoteSelectConfig( int idx )
 
 void GLwidget::remoteNextEffect()
 {
-    if ( m_actConfiguration && m_actConfiguration->m_renderPipeline )
-        m_actConfiguration->m_renderPipeline->requestSceneChange();
+    if ( m_actConfiguration && m_actConfiguration->renderPipeline() )
+        m_actConfiguration->renderPipeline()->requestSceneChange();
 }
 
 void GLwidget::remoteFavorite()
 {
-    if ( m_actConfiguration && m_actConfiguration->m_renderPipeline )
+    if ( m_actConfiguration && m_actConfiguration->renderPipeline() )
     {
-        m_actConfiguration->m_renderPipeline->favoriteCurrentEffect();
-        m_actConfiguration->m_renderPipeline->rememberCue( cueTrackKey(), cuePosSec() );
+        m_actConfiguration->renderPipeline()->favoriteCurrentEffect();
+        m_actConfiguration->renderPipeline()->rememberCue( cueTrackKey(), cuePosSec() );
     }
 }
 
@@ -291,27 +291,27 @@ double GLwidget::cuePosSec() const
 
 void GLwidget::remoteToggleMark()
 {
-    if ( m_actConfiguration && m_actConfiguration->m_renderPipeline )
-        m_actConfiguration->m_renderPipeline->toggleMarkCurrentScene();
+    if ( m_actConfiguration && m_actConfiguration->renderPipeline() )
+        m_actConfiguration->renderPipeline()->toggleMarkCurrentScene();
 }
 
 void GLwidget::remoteSaveMarked()
 {
-    if ( m_actConfiguration && m_actConfiguration->m_renderPipeline )
-        m_actConfiguration->m_renderPipeline->saveMarkedPreset();
+    if ( m_actConfiguration && m_actConfiguration->renderPipeline() )
+        m_actConfiguration->renderPipeline()->saveMarkedPreset();
 }
 
 QStringList GLwidget::remoteSceneNames()
 {
-    if ( m_actConfiguration && m_actConfiguration->m_renderPipeline )
-        return m_actConfiguration->m_renderPipeline->sceneNames();
+    if ( m_actConfiguration && m_actConfiguration->renderPipeline() )
+        return m_actConfiguration->renderPipeline()->sceneNames();
     return QStringList();
 }
 
 void GLwidget::remoteForceScene( int idx )
 {
-    if ( m_actConfiguration && m_actConfiguration->m_renderPipeline )
-        m_actConfiguration->m_renderPipeline->forceScene( idx );
+    if ( m_actConfiguration && m_actConfiguration->renderPipeline() )
+        m_actConfiguration->renderPipeline()->forceScene( idx );
 }
 
 /**
@@ -341,8 +341,8 @@ QByteArray GLwidget::remoteThumb( int idx ) const
     // and this keeps remoteThumb() const.
     if ( idx >= 0 && m_actConfiguration )
     {
-        const QStringList names = m_actConfiguration->m_renderPipeline
-                                      ? m_actConfiguration->m_renderPipeline->sceneNames()
+        const QStringList names = m_actConfiguration->renderPipeline()
+                                      ? m_actConfiguration->renderPipeline()->sceneNames()
                                       : QStringList();
         if ( idx < names.size() )
         {
@@ -518,12 +518,12 @@ GLwidget::GLwidget( QWidget *parent )
     for ( size_t i = m_configurationList.size(); i-- > 0; )
     {
         Configuration *c = m_configurationList[i];
-        if ( c->m_loadedScenes == 0 && c->m_skippedMeshScenes > 0 && !c->isHidden() )
+        if ( c->loadedScenes() == 0 && c->skippedMeshScenes() > 0 && !c->isHidden() )
         {
             fprintf( stderr, "Configuration '%s' needs the 3D model pack "
                              "(all %d of its scenes were skipped) - not offered.\n",
                      c->getConfigurationName().toLocal8Bit().constData(),
-                     c->m_skippedMeshScenes );
+                     c->skippedMeshScenes() );
             m_hiddenConfigurations.push_back( c );
             m_configurationList.erase( m_configurationList.begin() + i );
         }
@@ -552,9 +552,9 @@ GLwidget::GLwidget( QWidget *parent )
     {
         int skipped = 0;
         for ( Configuration *c : m_configurationList )
-            skipped += c->m_skippedMeshScenes;
+            skipped += c->skippedMeshScenes();
         for ( Configuration *c : m_hiddenConfigurations )
-            skipped += c->m_skippedMeshScenes;
+            skipped += c->skippedMeshScenes();
         if ( skipped > 0 )
             fprintf( stderr,
                      "3D model pack not installed: %d mesh scene(s) skipped. "
@@ -728,8 +728,8 @@ void GLwidget::initializeGL()
     // eagerly, then quit — the log holds one verdict per shader.
     if ( qEnvironmentVariableIsSet( "KALEIDO_COMPILE_ALL" ) )
     {
-        if ( m_actConfiguration->m_renderPipeline )
-            m_actConfiguration->m_renderPipeline->compileAllShaders();
+        if ( m_actConfiguration->renderPipeline() )
+            m_actConfiguration->renderPipeline()->compileAllShaders();
         fflush( stderr );
         exit( 0 );
     }
@@ -1029,9 +1029,9 @@ void GLwidget::paintGL()
                          : RenderPipeline::lastWarmLabel().toLocal8Bit().constData() );
     }
 
-    if ( CostLog && m_actConfiguration && m_actConfiguration->m_renderPipeline )
+    if ( CostLog && m_actConfiguration && m_actConfiguration->renderPipeline() )
     {
-        RenderPipeline   *rp = m_actConfiguration->m_renderPipeline;
+        RenderPipeline   *rp = m_actConfiguration->renderPipeline();
         const QStringList nm = rp->sceneNames();
         const int         idx = rp->activeSceneIndex();
         if ( idx >= 0 && idx < nm.size() )
@@ -1099,8 +1099,8 @@ void GLwidget::draw()
     // Track-change: a fresh track (after a silent gap) gets a clean transition.
     // Suppressed under KALEIDO_SCENE_SWEEP, where the sweep decides what is on
     // screen and a surprise cut would land in the middle of a scene under review.
-    if ( audio.trackChange && !sweepActive() && m_actConfiguration && m_actConfiguration->m_renderPipeline )
-        m_actConfiguration->m_renderPipeline->requestSceneChange();
+    if ( audio.trackChange && !sweepActive() && m_actConfiguration && m_actConfiguration->renderPipeline() )
+        m_actConfiguration->renderPipeline()->requestSceneChange();
 
     // KALEIDO_FX_SWEEP=<seconds>: the same walk, but over the OVERLAYS.
     // The scene stays put (review mode holds it) and the combine shader steps
@@ -1108,9 +1108,9 @@ void GLwidget::draw()
     // which is what makes "this FX does nothing" measurable instead of a
     // suspicion.  Independent of the scene sweep; setting both walks scenes.
     if ( fxSweepSeconds() > 0 && !sweepActive()
-         && m_actConfiguration && m_actConfiguration->m_renderPipeline )
+         && m_actConfiguration && m_actConfiguration->renderPipeline() )
     {
-        RenderPipeline   *rp = m_actConfiguration->m_renderPipeline;
+        RenderPipeline   *rp = m_actConfiguration->renderPipeline();
         const QStringList names = rp->fxNames();
         if ( !m_sweepReview )
         {
@@ -1145,9 +1145,9 @@ void GLwidget::draw()
     // entries. This walks it exactly once. The recorder captures on the same
     // wall clock, so scene n sits at a known timestamp in the output file --
     // which is what makes a contact sheet attributable.
-    if ( sweepActive() && m_actConfiguration && m_actConfiguration->m_renderPipeline )
+    if ( sweepActive() && m_actConfiguration && m_actConfiguration->renderPipeline() )
     {
-        RenderPipeline   *rp = m_actConfiguration->m_renderPipeline;
+        RenderPipeline   *rp = m_actConfiguration->renderPipeline();
         const QStringList names = rp->sceneNames();
 
         // Review mode already exists for exactly this problem -- it stops the
@@ -1253,8 +1253,8 @@ void GLwidget::draw()
         for ( const QString &n : m_pendingReloads )
             for ( const auto *lst : { &m_configurationList, &m_hiddenConfigurations } )
                 for ( Configuration *c : *lst )
-                    if ( c && c->m_renderPipeline )
-                        c->m_renderPipeline->reloadFragment( n );
+                    if ( c && c->renderPipeline() )
+                        c->renderPipeline()->reloadFragment( n );
         m_pendingReloads.clear();
     }
 
@@ -1263,10 +1263,10 @@ void GLwidget::draw()
 
     // QOpenGLWidget renders into its own FBO, not framebuffer 0.  Tell the
     // pipeline where the final image must land, otherwise it draws off-screen.
-    m_actConfiguration->m_renderPipeline->setDefaultFBO( defaultFramebufferObject() );
+    m_actConfiguration->renderPipeline()->setDefaultFBO( defaultFramebufferObject() );
 
-    m_actConfiguration->m_renderPipeline->tickCues( cueTrackKey(), cuePosSec() );
-    m_actConfiguration->m_renderPipeline->paint( m_rotationMatrix, m_xTrans, m_yTrans, m_zTrans, audio );
+    m_actConfiguration->renderPipeline()->tickCues( cueTrackKey(), cuePosSec() );
+    m_actConfiguration->renderPipeline()->paint( m_rotationMatrix, m_xTrans, m_yTrans, m_zTrans, audio );
 
     // Capture the clean frame (before any overlay is drawn) while recording
     // or while the instant-replay ring is armed.
@@ -1297,7 +1297,7 @@ void GLwidget::draw()
         // grows the cache while the remote page is open, which is fine — the
         // scene browser just shows no image yet for scenes nobody has landed
         // on this session.
-        RenderPipeline *rp = m_actConfiguration ? m_actConfiguration->m_renderPipeline : nullptr;
+        RenderPipeline *rp = m_actConfiguration ? m_actConfiguration->renderPipeline() : nullptr;
         if ( rp && !rp->sceneTransitioning() && !RenderPipeline::blackout() )
         {
             const int scene_idx = rp->activeSceneIndex();
@@ -1360,8 +1360,8 @@ void GLwidget::draw()
         {
             m_lastNpTitle = np_title;
             m_npShownAt = m_fpsTimer.elapsed();
-            if ( m_actConfiguration && m_actConfiguration->m_renderPipeline )
-                m_actConfiguration->m_renderPipeline->showTitle( np_title,
+            if ( m_actConfiguration && m_actConfiguration->renderPipeline() )
+                m_actConfiguration->renderPipeline()->showTitle( np_title,
                                                                  m_nowPlaying->artist() );
             // Trackwechsel: Lyrics + Künstlerbilder für den neuen Titel holen
             // (nur wenn ein Modus aktiv ist - sonst keine Netz-Anfragen).
@@ -1388,8 +1388,8 @@ void GLwidget::draw()
 
     // Lyrics-/Künstlerbild-Overlay: Zustand berechnen + Texturen hochladen
     // (GL-Kontext ist hier aktuell), dann an den PresentPass durchreichen.
-    if ( m_actConfiguration && m_actConfiguration->m_renderPipeline )
-        updateTrackOverlays( m_actConfiguration->m_renderPipeline );
+    if ( m_actConfiguration && m_actConfiguration->renderPipeline() )
+        updateTrackOverlays( m_actConfiguration->renderPipeline() );
     // Demo/test hook: KALEIDO_TITLE_TEST=1 fires one reveal a few seconds in
     // (lets the reveal be tuned without a real media session running).
     {
@@ -1397,8 +1397,8 @@ void GLwidget::draw()
         if ( title_test && m_fpsTimer.elapsed() > 3000 )
         {
             title_test = false;
-            if ( m_actConfiguration && m_actConfiguration->m_renderPipeline )
-                m_actConfiguration->m_renderPipeline->showTitle( "Neon Cathedral",
+            if ( m_actConfiguration && m_actConfiguration->renderPipeline() )
+                m_actConfiguration->renderPipeline()->showTitle( "Neon Cathedral",
                                                                  "The Prisms" );
         }
     }
@@ -1426,9 +1426,9 @@ void GLwidget::draw()
             drawHelpOverlay( &painter );
         if ( m_showAudioMenu )
             drawAudioMenu( &painter );
-        if ( m_showShaderInfo && m_actConfiguration && m_actConfiguration->m_renderPipeline )
+        if ( m_showShaderInfo && m_actConfiguration && m_actConfiguration->renderPipeline() )
         {
-            QString     info = m_actConfiguration->m_renderPipeline->activeShaderInfo();
+            QString     info = m_actConfiguration->renderPipeline()->activeShaderInfo();
             QStringList rows = info.split( '\n' );
             // Grows upward: a chain lab adds up to ten lines of its chain.
             int y = height() - 120 - 28 * ( rows.size() > 3 ? rows.size() - 3 : 0 );
@@ -1806,8 +1806,8 @@ void GLwidget::updateAdaptiveScale()
     if ( next != scale )
     {
         RenderPipeline::setRenderScale( next );
-        if ( m_actConfiguration && m_actConfiguration->m_renderPipeline )
-            m_actConfiguration->m_renderPipeline->resize( m_width, m_height );
+        if ( m_actConfiguration && m_actConfiguration->renderPipeline() )
+            m_actConfiguration->renderPipeline()->resize( m_width, m_height );
         m_lastScaleAdjust = now;
         fprintf( stderr, "Adaptive scale: %.2f (%d FPS)\n", next, m_fpsValue );
     }
@@ -1864,7 +1864,7 @@ void GLwidget::resizeGL( int /*wLogical*/, int /*hLogical*/ )
     // Lightweight resize: keeps the loaded image textures + shader programs and
     // only re-sizes the off-screen buffers (no reload, no GL-object leak).
     // (The one-time full build happens in Configuration::start -> reinit.)
-    m_actConfiguration->m_renderPipeline->resize( m_width, m_height );
+    m_actConfiguration->renderPipeline()->resize( m_width, m_height );
 }
 
 // set rotation Matrix for trackball to Identity
@@ -2032,10 +2032,10 @@ void GLwidget::drawFeatureOverlay( QPainter *painter, const AudioFeatures &f )
     // live, damit man eine Shader-Aenderung ansieht statt sie zu rendern,
     // zu extrahieren und dann anzusehen.
     float pic_std = 0.f, pic_mot = 0.f;
-    if ( m_actConfiguration && m_actConfiguration->m_renderPipeline )
+    if ( m_actConfiguration && m_actConfiguration->renderPipeline() )
     {
-        pic_std = m_actConfiguration->m_renderPipeline->liveStructure();
-        pic_mot = m_actConfiguration->m_renderPipeline->liveMotion();
+        pic_std = m_actConfiguration->renderPipeline()->liveStructure();
+        pic_mot = m_actConfiguration->renderPipeline()->liveMotion();
     }
     const Row pic_rows[] = {
         { "BILD Struktur", pic_std },
@@ -2241,8 +2241,8 @@ void GLwidget::applyMidi()
                 RenderPipeline::toggleBlackout();
             }
             else if ( m_midiMap[MIDI_NEXT] < 0 || e.data1 == m_midiMap[MIDI_NEXT] )
-                if ( m_actConfiguration && m_actConfiguration->m_renderPipeline )
-                    m_actConfiguration->m_renderPipeline->requestSceneChange();
+                if ( m_actConfiguration && m_actConfiguration->renderPipeline() )
+                    m_actConfiguration->renderPipeline()->requestSceneChange();
         }
     }
 }
@@ -3608,9 +3608,9 @@ void GLwidget::keyPressEvent( QKeyEvent *event )
             break;
         case Qt::Key_N:
             // Manually advance to the next effect (texture + combine), snappy cut.
-            if ( m_actConfiguration && m_actConfiguration->m_renderPipeline )
+            if ( m_actConfiguration && m_actConfiguration->renderPipeline() )
             {
-                m_actConfiguration->m_renderPipeline->requestSceneChange();
+                m_actConfiguration->renderPipeline()->requestSceneChange();
                 fprintf( stderr, "n: next effect requested\n" );
             }
             break;
@@ -3665,10 +3665,10 @@ void GLwidget::keyPressEvent( QKeyEvent *event )
 
         // ---- Taste learning: favourite the current effect ----
         case Qt::Key_F:
-            if ( m_actConfiguration && m_actConfiguration->m_renderPipeline )
+            if ( m_actConfiguration && m_actConfiguration->renderPipeline() )
             {
-                m_actConfiguration->m_renderPipeline->favoriteCurrentEffect();
-                m_actConfiguration->m_renderPipeline->rememberCue( cueTrackKey(), cuePosSec() );
+                m_actConfiguration->renderPipeline()->favoriteCurrentEffect();
+                m_actConfiguration->renderPipeline()->rememberCue( cueTrackKey(), cuePosSec() );
             }
             break;
 
@@ -3678,9 +3678,9 @@ void GLwidget::keyPressEvent( QKeyEvent *event )
         // two gestures on one key: marking happens constantly during an
         // inspection pass, saving once at the end.
         case Qt::Key_Space:
-            if ( m_actConfiguration && m_actConfiguration->m_renderPipeline )
+            if ( m_actConfiguration && m_actConfiguration->renderPipeline() )
             {
-                RenderPipeline *rp = m_actConfiguration->m_renderPipeline;
+                RenderPipeline *rp = m_actConfiguration->renderPipeline();
                 if ( event->modifiers() & Qt::ShiftModifier )
                     rp->saveMarkedPreset();
                 else

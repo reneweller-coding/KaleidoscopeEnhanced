@@ -245,6 +245,15 @@ private:
     float m_fakePulse = 0.f;    ///< Decaying synthetic drop pulse.
     float m_forceDropAt = -2.f; ///< Global time to inject the next forced drop; < -1 = not yet read from the
                                 ///< environment.
+public:
+    /// @brief Default construction, which the declared copy operations would otherwise suppress.
+    AudioConditioner() = default;
+
+private:
+    /// @brief Not copyable (CGVR template: copy constructor and assignment are always declared).
+    AudioConditioner( const AudioConditioner & ) = delete;
+    /// @brief Not assignable; see the copy constructor.
+    AudioConditioner &operator=( const AudioConditioner & ) = delete;
 };
 
 #endif // AUDIOCONDITIONER_H

@@ -450,4 +450,9 @@ private:
     float m_tlLvlFast = 0.f, m_tlLvlSlow = 0.f; ///< overallLevel smoothed with an 8 s time constant (the swell's
                                                 ///< reference level, see #m_tlLvlFast).
     float m_tlBeatPhase = 0.f;                  ///< integrated beat phase (0..1, wraps once per beat)
+private:
+    /// @brief Not copyable (CGVR template: copy constructor and assignment are always declared).
+    PreviewWidget( const PreviewWidget & ) = delete;
+    /// @brief Not assignable; see the copy constructor.
+    PreviewWidget &operator=( const PreviewWidget & ) = delete;
 };

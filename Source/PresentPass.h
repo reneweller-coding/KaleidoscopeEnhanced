@@ -458,6 +458,15 @@ private:
     GLint m_presentArtistTexUni = -1;     ///< Uniform location: artist-image texture ("artistTex").
     GLint m_presentArtistAlphaUni = -1;   ///< Uniform location: artist-image opacity ("artistAlpha").
     GLint m_presentArtistAspectUni = -1;  ///< Uniform location: artist-image aspect ratio ("artistAspect").
+public:
+    /// @brief Default construction, which the declared copy operations would otherwise suppress.
+    PresentPass() = default;
+
+private:
+    /// @brief Not copyable (CGVR template: copy constructor and assignment are always declared).
+    PresentPass( const PresentPass & ) = delete;
+    /// @brief Not assignable; see the copy constructor.
+    PresentPass &operator=( const PresentPass & ) = delete;
 };
 
 #endif

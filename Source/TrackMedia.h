@@ -386,4 +386,9 @@ private:
                                      ///< actually needs the video feature (YouTube's extraction breaks on a stale
                                      ///< yt-dlp often enough that silent staleness would otherwise slowly kill this
                                      ///< feature).
+private:
+    /// @brief Not copyable (CGVR template: copy constructor and assignment are always declared).
+    TrackMedia( const TrackMedia & ) = delete;
+    /// @brief Not assignable; see the copy constructor.
+    TrackMedia &operator=( const TrackMedia & ) = delete;
 };

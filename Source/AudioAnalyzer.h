@@ -577,4 +577,10 @@ private:
      * @return Coefficient `a` such that `y[n] = a*y[n-1] + (1-a)*x[n]`; larger `a` = slower response (lower cutoff).
      */
     static float coeff( float cutoffHz, int sampleRate );
+
+private:
+    /// @brief Not copyable (CGVR template: copy constructor and assignment are always declared).
+    AudioAnalyzer( const AudioAnalyzer & ) = delete;
+    /// @brief Not assignable; see the copy constructor.
+    AudioAnalyzer &operator=( const AudioAnalyzer & ) = delete;
 };

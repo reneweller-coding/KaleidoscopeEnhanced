@@ -301,6 +301,11 @@ private:
     qint64 m_repLastFrame = 0; ///< Timestamp (ms) of the last replay-ring frame capture, for pacing/duration.
     float m_repCarryDur = 0.f; ///< Duration of replay frames dropped by the bounded queue, carried into the next queued
                                ///< replay frame's duration.
+private:
+    /// @brief Not copyable (CGVR template: copy constructor and assignment are always declared).
+    Recorder( const Recorder & ) = delete;
+    /// @brief Not assignable; see the copy constructor.
+    Recorder &operator=( const Recorder & ) = delete;
 };
 
 #endif

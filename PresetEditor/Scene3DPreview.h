@@ -244,4 +244,9 @@ private:
     /// Vertex array object of this class's own fullscreen quad (GL name, owned; lazily created), used only by the OIT
     /// resolve so PreviewWidget's Qt-side quad is never touched from here.
     unsigned m_quadVao = 0, m_quadVbo = 0; ///< Vertex buffer (NDC positions) backing #m_quadVao (GL name, owned).
+private:
+    /// @brief Not copyable (CGVR template: copy constructor and assignment are always declared).
+    Scene3DPreview( const Scene3DPreview & ) = delete;
+    /// @brief Not assignable; see the copy constructor.
+    Scene3DPreview &operator=( const Scene3DPreview & ) = delete;
 };

@@ -131,4 +131,17 @@ private:
     std::vector<Op> m_prog; ///< The compiled program, in RPN (postfix) order, as produced by compile()'s shunting-yard
                             ///< pass.
     bool m_ok = false;      ///< Whether m_prog is a valid, safely-evaluable program (set by compile()).
+public:
+    /// @brief Default construction, which the declared copy operations would otherwise suppress.
+    ExprProgram() = default;
+
+    /// @brief Member-wise copy; programs live by value in EffectShader's expression list (CGVR template: always
+    ///        declared).
+    ExprProgram( const ExprProgram & ) = default;
+    /// @brief Member-wise copy assignment.
+    ExprProgram &operator=( const ExprProgram & ) = default;
+    /// @brief Member-wise move; declared because a declared copy would suppress it.
+    ExprProgram( ExprProgram && ) = default;
+    /// @brief Member-wise move assignment.
+    ExprProgram &operator=( ExprProgram && ) = default;
 };

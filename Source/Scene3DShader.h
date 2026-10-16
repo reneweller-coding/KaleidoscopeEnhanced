@@ -559,4 +559,9 @@ private:
                                ///< different camera/burst phase.
     float m_speedFactor = 1.f; ///< Per-activation speed multiplier (~0.82..1.18), constant for the whole activation.
     float m_hueOffset = 0.f;   ///< Per-activation hue rotation applied to chroma hue and audio rotation/advance phases.
+private:
+    /// @brief Not copyable (CGVR template: copy constructor and assignment are always declared).
+    Scene3DShader( const Scene3DShader & ) = delete;
+    /// @brief Not assignable; see the copy constructor.
+    Scene3DShader &operator=( const Scene3DShader & ) = delete;
 };

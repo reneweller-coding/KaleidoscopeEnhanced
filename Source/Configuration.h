@@ -69,6 +69,14 @@ public:
     /** @brief Stops the owned RenderPipeline (releases its running state). */
     void stop() const;
 
+    /** @brief The shader/scene pipeline built by readConfiguration(). @return It; owned by this configuration. */
+    RenderPipeline *renderPipeline() const { return m_renderPipeline; }
+    /** @brief Mesh scenes skipped for a missing model file. @return Their number (see m_skippedMeshScenes). */
+    int skippedMeshScenes() const { return m_skippedMeshScenes; }
+    /** @brief Scenes this preset actually built. @return Their number (see m_loadedScenes). */
+    int loadedScenes() const { return m_loadedScenes; }
+
+private:
     RenderPipeline *m_renderPipeline; ///< The shader/scene pipeline built by readConfiguration(); owned (deleted in the
                                       ///< destructor).
 
@@ -87,7 +95,6 @@ public:
     /// today, but the guard is what makes adding one safe.
     int m_loadedScenes = 0;
 
-private:
     /**
      * @brief Parses the preset XML document and populates m_renderPipeline with its TextureShader/CombineShader
      * entries.
@@ -120,6 +127,11 @@ private:
                                        ///< baseline when absent/0 in the XML.
     unsigned int m_timeTextureSoloMax; ///< Preset-wide maximum time an image is held solo (seconds); falls back to a
                                        ///< baseline when absent/invalid in the XML.
+private:
+    /// @brief Not copyable (CGVR template: copy constructor and assignment are always declared).
+    Configuration( const Configuration & ) = delete;
+    /// @brief Not assignable; see the copy constructor.
+    Configuration &operator=( const Configuration & ) = delete;
 };
 
 

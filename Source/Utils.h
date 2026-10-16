@@ -62,6 +62,12 @@ private:
      * @brief Determines the CPU/counter frequency once and caches it in M_GHz / M_UseHighFrequ.
      */
     static void checkFrequency( void );
+
+private:
+    /// @brief Not copyable (CGVR template: copy constructor and assignment are always declared).
+    NanoTimer( const NanoTimer & ) = delete;
+    /// @brief Not assignable; see the copy constructor.
+    NanoTimer &operator=( const NanoTimer & ) = delete;
 };
 
 /**

@@ -48,6 +48,11 @@ private:
     Ui::MainWindow m_ui; ///< Generated Designer UI (holds the central GLwidget and menu actions).
 
     QString m_directory; ///< Working directory set via setDirectory().
+private:
+    /// @brief Not copyable (CGVR template: copy constructor and assignment are always declared).
+    QMyWindow( const QMyWindow & ) = delete;
+    /// @brief Not assignable; see the copy constructor.
+    QMyWindow &operator=( const QMyWindow & ) = delete;
 };
 
 #endif

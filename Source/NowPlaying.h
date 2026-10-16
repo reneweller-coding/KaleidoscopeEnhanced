@@ -92,4 +92,9 @@ private:
     std::atomic<bool> m_running{ false }; ///< Set true by start(), false by stop(); polled by threadFunc() as its run
                                           ///< condition.
     std::thread m_thread; ///< The background polling thread started by start() and joined by the destructor.
+private:
+    /// @brief Not copyable (CGVR template: copy constructor and assignment are always declared).
+    NowPlaying( const NowPlaying & ) = delete;
+    /// @brief Not assignable; see the copy constructor.
+    NowPlaying &operator=( const NowPlaying & ) = delete;
 };

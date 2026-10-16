@@ -381,6 +381,15 @@ private:
     int   m_spectroPend = 0;    ///< Number of rows written since the last texture upload, still pending (capped at
                                 ///< SpectroH).
     GLuint m_texSpectro = 0;    ///< Lazily-created R8 texture (unit 28) holding m_spectroData.
+public:
+    /// @brief Default construction, which the declared copy operations would otherwise suppress.
+    GpuSims() = default;
+
+private:
+    /// @brief Not copyable (CGVR template: copy constructor and assignment are always declared).
+    GpuSims( const GpuSims & ) = delete;
+    /// @brief Not assignable; see the copy constructor.
+    GpuSims &operator=( const GpuSims & ) = delete;
 };
 
 #endif
