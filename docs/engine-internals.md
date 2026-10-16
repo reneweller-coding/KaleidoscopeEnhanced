@@ -5161,8 +5161,7 @@ plan of a long run computed by the scheduler itself instead of a Python model of
     track: 177 before, 33 after, none sooner than 4 s; drop cuts on a spectacle: 1 of 144 before, 41 of 120 after
     (the build-up edge comes too late for the reserve before most of that track's drops).
   - *Build-ups without drops.* On the screening track (`.screen/screen.wav` from `Tools/screen.py`: a 128-BPM
-    groove that turns loud for four seconds out of eight -- a build-up each time, never a drop; there is no real
-    music on this machine to try) every
+    groove that turns loud for four seconds out of eight -- a build-up each time, never a drop) every
     change in Club went to a spectacle and the labs got 0 % of their 40 %: the reserve was re-armed on every
     build-up edge, and its re-roll at a fade end overwrote the lab the clock had called. A lab waiting as the next
     scene now keeps its turn (a walking lab takes a drop itself), and after two predictions without a drop the
@@ -5237,6 +5236,15 @@ measuring the batch tools before running them showed: most of their hours were w
   0. They take the bands' mean now (as StereoSpectrum does). `check_uniform_types.py` (release_check's rules) checked
   only the preset's knobs; it now checks every shader file (1843) against the call the engine uses for each of its
   91 uniforms, read from EffectShader.cpp -- red on the five, green after.
+- **The scene plan on real music.** Seven tracks lie in `.screen/music` (Astrix, Daft Punk, DMT, Infected Mushroom,
+  Prodigy, "Ironic", "Thunderstruck"); round 9's rules were tried on the synthetic tracks only. Club, three hours each
+  looped: every rule green, the labs at 39..41 %. One rule of round 9 was wrong for real music: the spectacle reserve
+  rested after two predicted drops that did not come -- and a prediction a phrase or two early is the rule in long
+  build-ups, so most drops came without their reserve. It counts misses only before the song's first drop now
+  (music that never drops is what it was for): Prodigy 8 -> 25 of 39 drop cuts on a spectacle, Infected Mushroom
+  7 -> 11 of 15. Astrix, Daft Punk and DMT stay at 0 of 65: the phrase grid predicts the drop one phrase early, a
+  section cut there takes the reserved scene, and the drop gets a rolled one. Picking a compiled spectacle at the drop
+  itself, instead of reserving one ahead, is the next step -- not done here.
 - **What it taught.** The catalogue, the snapshots and the screening were waiting, not computing: 28 s of real time
   per catalogue scene, the panel's 120 Hz for 600 fixed steps, a preview refreshed once a second, a three-hour
   recording. Measured first, each took a fraction: 6.7 min for 325 catalogue scenes, half an hour for 1430 snapshots,

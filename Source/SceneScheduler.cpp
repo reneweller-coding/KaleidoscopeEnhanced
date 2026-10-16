@@ -770,7 +770,10 @@ void SceneScheduler::tick( const Tick &t )
     if ( m_spectacleFor > 0.f )
     {
         m_spectacleFor = std::max( 0.f, m_spectacleFor - t.dt );
-        if ( m_spectacleFor <= 0.f && t.dropCount == m_lastDropCount && ++m_missedDrops == 2 )
+        // Only before the song's first drop: in music that drops, a prediction a phrase or two early is the rule
+        // (psytrance builds for 16..32 bars), and resting after two of them left most drops of real tracks without
+        // their reserve (Astrix, Daft Punk, DMT: 0 of 68 drop cuts on a spectacle, the scene plan run, 17.10.2026).
+        if ( m_spectacleFor <= 0.f && t.dropCount == m_lastDropCount && !m_dropInSong && ++m_missedDrops == 2 )
             fprintf( stderr, "REGIE: zweimal kein Drop nach der Vorhersage -> keine Spektakel-Reserve bis zum "
                              "naechsten Drop\n" );
     }

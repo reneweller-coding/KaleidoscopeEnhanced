@@ -29,10 +29,14 @@ Nicht oder nur teilweise:
 
 - **processBlock zerlegen** (Stufe 2 der Analyse-Idee): bewusst nicht -- die Prüfung hat nur Stufe 1 bewertet, und die
   ist in Runde 5 gekommen.
-- **Valenz-Anker** neu kalibrieren: nicht ohne Musik-Korpus (keiner auf dem Rechner); die Analyse-Runde hebt die
-  Erregung (arousal) bei Beat-Musik um etwa 0,1 an.
-- Nur synthetisch geprüft: die neuen Regie-Regeln aus Runde 9 (Abschnitt im Drop-Anlauf, Abschnitt direkt nach einem
-  Wechsel, Spektakel-Reserve bei Aufbauten ohne Drop) -- am Strukturtrack, am Screening-Groove und im Selbsttest.
+- **Valenz-Anker** neu kalibrieren: nicht -- auf dem Rechner liegen sieben Titel (.screen/music), aber ohne
+  Valenz-Urteile, also kein Kalibrierkorpus; die Analyse-Runde hebt die Erregung (arousal) bei Beat-Musik um etwa 0,1 an.
+- Die Regie-Regeln aus Runde 9 sind am Strukturtrack, am Screening-Groove, im Selbsttest und am 17.10. mit dem
+  Szenenplan an den sieben echten Titeln geprüft (alle Regeln grün, Labore 39..41 %). Dabei zeigte sich: Bei langen
+  Aufbauten (Astrix, Daft Punk, DMT) sagt das Phrasenraster den Drop eine Phrase zu früh voraus, ein Abschnittswechsel
+  dort nimmt die Spektakel-Szene, und der Drop trifft eine gewürfelte -- 0 von 65 Drop-Schnitten auf einem Spektakel
+  (Prodigy 25 von 39, Infected Mushroom 11 von 15). Vorschlag: beim Drop selbst ein schon kompiliertes Spektakel
+  wählen statt vorab zu reservieren.
 - Nicht live geprüft: der Installer auf einem echten Nutzerkonto und die Bildschirmwahl nach Namen.
 - **Szenenkosten als GPU-Zeit** sind gemessen (Screening vom 17.10., alle 1215 Szenen), aber nicht in `complexity`
   übernommen: Das Attribut ist zugleich die „Unruhe“, die die Stimmungswahl gegen die Erregung abwägt. Eine ruhige,
