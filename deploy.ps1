@@ -65,11 +65,30 @@ $binDir    = Join-Path $pkgDir  "bin"
 
 function Info($m) { Write-Host "[deploy] $m" -ForegroundColor Cyan }
 
+# The running visualizers, with the path of their exe. Only this repository's
+# own may be stopped: a show from an installation, a days-long run out of
+# dist\, somebody's measurement -- a build has no business ending those. Until
+# 16.10.2026 every build stopped every Kaleidoscope.exe on the machine. A path
+# that cannot be read (another user's process) counts as foreign.
+function Get-Visualizers {
+    @(Get-CimInstance Win32_Process -Filter "Name = 'Kaleidoscope.exe'" -ErrorAction SilentlyContinue |
+        ForEach-Object { [pscustomobject]@{ Id = $_.ProcessId; Path = [string]$_.ExecutablePath } })
+}
+function Test-Under([string]$path, [string]$dir) {
+    $path -and $path.StartsWith($dir.TrimEnd('\') + '\', [StringComparison]::OrdinalIgnoreCase)
+}
+
 # --- 0. optional build -------------------------------------------------------
 if ($Build) {
     Info "Building Release|x64 ..."
-    Get-Process Kaleidoscope -ErrorAction SilentlyContinue | Stop-Process -Force
-    Start-Sleep -Seconds 2
+    # The link replaces Release\Kaleidoscope.exe: an instance of THAT exe has to go.
+    $relDir = Join-Path $root "Release"
+    $own = @(Get-Visualizers | Where-Object { Test-Under $_.Path $relDir })
+    foreach ($p in $own) {
+        Info "stopping this repository's Release instance (pid $($p.Id))"
+        Stop-Process -Id $p.Id -Force -ErrorAction SilentlyContinue
+    }
+    if ($own.Count) { Start-Sleep -Seconds 2 }
     $env:QTDIR = $QtDir
     $vcvars = "C:\Program Files\Microsoft Visual Studio\18\Community\VC\Auxiliary\Build\vcvars64.bat"
     $env:Path += ";C:\Program Files (x86)\Microsoft Visual Studio\Installer"   # vcvars64.bat calls vswhere.exe bare; not on PATH by default
@@ -89,10 +108,16 @@ if ($Build) {
 if (-not (Test-Path $exeSrc))    { throw "Release\Kaleidoscope.exe not found - build first (use -Build)." }
 if (-not (Test-Path $windeploy)) { throw "windeployqt not found at $windeploy - check -QtDir." }
 
-# A previously-launched copy (e.g. the packaged exe) would lock the staging dir
-# during a post-build run; close it before staging.
-Get-Process Kaleidoscope -ErrorAction SilentlyContinue | Stop-Process -Force
-Start-Sleep -Milliseconds 300
+# An instance running out of the staging folder locks it: the staging stops
+# with a message instead of ending it (the post-build step reports that as a
+# warning, the build itself stands). Instances elsewhere are only mentioned.
+foreach ($p in (Get-Visualizers)) {
+    if (Test-Under $p.Path $pkgDir) {
+        throw "Kaleidoscope.exe is running from the package folder (pid $($p.Id), $($p.Path)) - close it, then run deploy.ps1 again. Nothing was staged."
+    }
+    $where = if ($p.Path) { $p.Path } else { "path not readable" }
+    Info "leaving the running visualizer alone (pid $($p.Id), $where)"
+}
 
 # --- 1. clean staging --------------------------------------------------------
 Info "Staging into $pkgDir ..."

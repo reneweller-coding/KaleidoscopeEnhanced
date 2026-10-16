@@ -25,6 +25,7 @@
 #include "AudioAnalyzer.h"
 #include "AudioConditioner.h"
 #include "RenderPipeline.h"
+#include "SettingsFile.h"
 #include "VideoExport.h"
 #include "coreclock.h"
 
@@ -32,6 +33,8 @@
 #include <QtCore/QDir>
 #include <QtCore/QElapsedTimer>
 #include <QtCore/QFile>
+#include <QtCore/QSettings>
+#include <QtCore/QTemporaryDir>
 #include <QtNetwork/QHostAddress>
 #include <QtNetwork/QUdpSocket>
 
@@ -764,6 +767,53 @@ void outputChecks()
     }
 }
 
+/**  The settings file (16.10.2026): an exit writes back only what the session changed, so an edit in the Setup
+ * tool made meanwhile survives; "save as default" writes everything; a file that cannot be written is noticed.
+ **/
+void settingsChecks()
+{
+    printf( "\nsettings (SettingsFile.h)\n" );
+    QTemporaryDir dir;
+    const QString path = dir.path() + "/settings.ini";
+    {
+        QSettings s( path, QSettings::IniFormat );
+        s.setValue( "selftest/trails", 0.75 );
+        s.setValue( "selftest/lyricsMode", 2 );
+    }
+    // The session starts: what it found.
+    SettingsFile::remember( "selftest/trails", 0.75 );
+    SettingsFile::remember( "selftest/lyricsMode", 2 );
+    // While it runs, the Setup tool changes the lyrics mode in the file.
+    QSettings( path, QSettings::IniFormat ).setValue( "selftest/lyricsMode", 0 );
+    // The session changed the trails; at the exit it writes what it has.
+    bool wrote_trails = false, wrote_lyrics = false;
+    {
+        QSettings s( path, QSettings::IniFormat );
+        wrote_trails = SettingsFile::store( s, "selftest/trails", 0.5, false );
+        wrote_lyrics = SettingsFile::store( s, "selftest/lyricsMode", 2, false );
+    }
+    QSettings   after( path, QSettings::IniFormat );
+    const int   lyrics = after.value( "selftest/lyricsMode" ).toInt();
+    const float trails = after.value( "selftest/trails" ).toFloat();
+    check( wrote_trails && !wrote_lyrics && lyrics == 0 && std::fabs( trails - 0.5f ) < 1e-6f,
+           "an exit writes what the session changed and keeps the Setup tool's edit",
+           "lyricsMode " + std::to_string( lyrics ) + ", trails " + std::to_string( trails ).substr( 0, 4 ) );
+    {
+        QSettings s( path, QSettings::IniFormat );
+        SettingsFile::store( s, "selftest/lyricsMode", 2, true );
+    }
+    check( QSettings( path, QSettings::IniFormat ).value( "selftest/lyricsMode" ).toInt() == 2,
+           "'save as default' writes every key" );
+
+    QFile::setPermissions( path, QFileDevice::ReadOwner );
+    QSettings ro( path, QSettings::IniFormat );
+    ro.setValue( "selftest/trails", 0.25 );
+    ro.sync();
+    const QString why = SettingsFile::failure( ro );
+    QFile::setPermissions( path, QFileDevice::ReadOwner | QFileDevice::WriteOwner );
+    check( !why.isEmpty(), "a settings file that cannot be written is noticed", why.toStdString() );
+}
+
 /**  The video export's frame clock (EngineClock, WallClock) and its command line (-g, -j).
  *
  * Runs last: it switches this process's engine clock to virtual time for good.
@@ -1100,6 +1150,7 @@ int runCueSelfTest()
     harmonyChecks();
     inputChecks();
     outputChecks();
+    settingsChecks();
     exportChecks();
 
     printf( "\n%d passed, %d failed\n", g_passed, g_failed );

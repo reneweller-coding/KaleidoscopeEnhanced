@@ -34,17 +34,18 @@ with what is there).  apply_energy_order.py turns them into the order.
   python Tools/chain_class_stats.py --alias
   python Tools/chain_class_stats.py --world
 """
-import argparse, io, os, re, shutil, statistics, subprocess, sys, time
+import argparse, io, os, re, statistics, subprocess, sys, time
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SG = os.path.join(ROOT, "Tools", "scenegen")
 REL = os.path.join(ROOT, "Release")
 # KALEIDO_EXE: a copy of the app in Release/ (a long run goes on while the app is rebuilt)
 EXE = os.environ.get("KALEIDO_EXE", "Kaleidoscope.exe")
-INI = os.path.join(ROOT, "kaleidoscope_settings.ini")
 OUT = os.path.join(SG, "class_stats.tsv")
 sys.path.insert(0, SG)
 import chain_classes as cc                                    # noqa: E402
+from private_settings import PrivateSettings                  # noqa: E402
+PS = None  # the private settings of a measuring run (gpu())
 
 STAGES = [("A", "chainAP"), ("B", "chainBP"), ("C", "chainCP"), ("D", "chainDP")]
 BASE = {"morphP": 0.0, "styleP": 0.1, "paletteP": 0.3, "orderP": 0.01, "speedP": 0.5, "detailP": 0.6,
@@ -204,8 +205,9 @@ def preset(pins):
 
 def gpu_once(pins, secs):
     io.open(os.path.join(ROOT, "Presets", "_stats.xml"), "w", encoding="utf-8").write(preset(pins))
-    env = dict(os.environ, KALEIDO_MAX_RUNTIME_SECS=str(secs), KALEIDO_NO_ACTIVATE="1", KALEIDO_GPU_TIMING="1",
-               KALEIDO_FREEZE_TIME="30", KALEIDO_SEED="7", KALEIDO_FIXED_PHOTO=sorted(os.listdir(os.path.join(ROOT, "Images")))[0])
+    env = PS.env(dict(os.environ, KALEIDO_MAX_RUNTIME_SECS=str(secs), KALEIDO_NO_ACTIVATE="1", KALEIDO_GPU_TIMING="1",
+                      KALEIDO_FREEZE_TIME="30", KALEIDO_SEED="7",
+                      KALEIDO_FIXED_PHOTO=sorted(os.listdir(os.path.join(ROOT, "Images")))[0]))
     subprocess.run([os.path.join(REL, EXE), "-c", "_stats", "-l"], cwd=REL, env=env,
                    stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=secs + 120)
     log = io.open(os.path.join(REL, "kaleidoscope.log"), encoding="utf-8", errors="replace").read()
@@ -217,8 +219,8 @@ MISSING_ONLY = False
 
 
 def gpu(rows, secs):
-    backup = INI + ".stats_backup"
-    shutil.copy(INI, backup)
+    global PS
+    PS = PrivateSettings("stats")
     try:
         base = gpu_once(pins_for("chainAP", 0), secs)
         print("baseline (all none): %.3f ms" % base, flush=True)
@@ -233,8 +235,7 @@ def gpu(rows, secs):
                 print("%s%-2d %-30s gpu %+.3f ms" % (st, pos, name or "none", ms), flush=True)
                 save(rows)
     finally:
-        shutil.copy(backup, INI)
-        os.remove(backup)
+        PS.close()
         try:
             os.remove(os.path.join(ROOT, "Presets", "_stats.xml"))
         except OSError:

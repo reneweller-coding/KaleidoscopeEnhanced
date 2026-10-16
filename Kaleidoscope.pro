@@ -12,7 +12,7 @@
 TEMPLATE = app
 TARGET   = Kaleidoscope
 
-QT      += core gui widgets opengl openglwidgets xml network
+QT      += core gui widgets opengl openglwidgets xml network multimedia
 CONFIG  += c++17
 
 DEFINES += _CRT_SECURE_NO_WARNINGS
@@ -26,26 +26,47 @@ LIBS += -lopengl32 -lglu32 -lole32 -loleaut32 -lwinmm -lWindowsApp
 
 SOURCES += \
     Source/AudioAnalyzer.cpp \
+    Source/AudioConditioner.cpp \
+    Source/ComputeFX.cpp \
     Source/Configuration.cpp \
+    Source/CueReceiver.cpp \
+    Source/CueSelfTest.cpp \
     Source/EffectShader.cpp \
-    Source/filterShader.cpp \
+    Source/ExprEval.cpp \
     Source/glcore.cpp \
     Source/glwidget.cpp \
+    Source/GpuSims.cpp \
     Source/main.cpp \
     Source/mesh.cpp \
+    Source/MeshImport.cpp \
     Source/MidiInput.cpp \
     Source/NowPlaying.cpp \
+    Source/OscSender.cpp \
+    Source/OsdMenu.cpp \
+    Source/PresentPass.cpp \
     Source/QMyWindow.cpp \
-    Source/ExprEval.cpp \
+    Source/Recorder.cpp \
+    Source/RenderPipeline.cpp \
     Source/Scene3DShader.cpp \
+    Source/SceneScheduler.cpp \
+    Source/ScoreCues.cpp \
     Source/shader_setup.cpp \
+    Source/ShaderForge.cpp \
+    Source/ShaderForgeMain.cpp \
+    Source/ShaderWorker.cpp \
     Source/SpoutIn.cpp \
     Source/SpoutOut.cpp \
+    Source/Strings.cpp \
     Source/textfile.cpp \
     Source/TextureEffectKaleidoscopeBase.cpp \
+    Source/TrackMedia.cpp \
     Source/Uniform.cpp \
+    Source/UpdateCheck.cpp \
     Source/Utils.cpp \
     Source/Vector3D.cpp \
+    Source/VideoExport.cpp \
+    Source/VideoIn.cpp \
+    Source/VideoPiP.cpp \
     Source/WebRemote.cpp \
     ThirdParty/SpoutGL/Spout.cpp \
     ThirdParty/SpoutGL/SpoutCopy.cpp \
@@ -59,30 +80,57 @@ SOURCES += \
 
 HEADERS += \
     Source/AudioAnalyzer.h \
+    Source/AudioConditioner.h \
     Source/AudioFeatures.h \
+    Source/CfxTypes.h \
+    Source/ComputeFX.h \
     Source/Configuration.h \
+    Source/coreclock.h \
+    Source/CueReceiver.h \
     Source/EffectShader.h \
-    Source/filterShader.h \
+    Source/ExprEval.h \
     Source/glcore.h \
     Source/glwidget.h \
+    Source/GpuSims.h \
+    Source/LongRunVariety.h \
     Source/mainwindow.h \
     Source/mesh.h \
+    Source/MeshImport.h \
     Source/MidiInput.h \
     Source/NowPlaying.h \
+    Source/OscSender.h \
+    Source/OsdMenu.h \
+    Source/Platform.h \
+    Source/PlatformQt.h \
+    Source/PresentPass.h \
     Source/QMyWindow.h \
     Source/qt6compat.h \
-    Source/ExprEval.h \
+    Source/Recorder.h \
+    Source/RenderPipeline.h \
     Source/Scene3DShader.h \
+    Source/SceneScheduler.h \
+    Source/ScoreCues.h \
+    Source/SettingsFile.h \
     Source/shader_setup.h \
+    Source/ShaderForge.h \
+    Source/ShaderForgeMain.h \
+    Source/ShaderWorker.h \
     Source/SpoutIn.h \
     Source/SpoutOut.h \
     Source/stdinc.h \
+    Source/Strings.h \
     Source/textfile.h \
     Source/TextureEffectKaleidoscopeBase.h \
+    Source/TrackMedia.h \
     Source/Uniform.h \
+    Source/UpdateCheck.h \
     Source/Utils.h \
     Source/Vector3D.h \
     Source/Vector4D.h \
+    Source/Version.h \
+    Source/VideoExport.h \
+    Source/VideoIn.h \
+    Source/VideoPiP.h \
     Source/WebRemote.h
 
 # Source/mainwindow.h is the COMMITTED uic output of this form (QMyWindow

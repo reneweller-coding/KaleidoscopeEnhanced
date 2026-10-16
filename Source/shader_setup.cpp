@@ -411,10 +411,11 @@ static bool parallelCompile()
     }
     if ( has )
     {
+        // reinterpret_cast: a data pointer becomes a function pointer -- MSVC let static_cast through, GCC does not.
         typedef void( APIENTRY * MaxThreadsFnT )( GLuint );
-        MaxThreadsFnT fn = static_cast<MaxThreadsFnT>( glcoreProc( "glMaxShaderCompilerThreadsKHR" ) );
+        MaxThreadsFnT fn = reinterpret_cast<MaxThreadsFnT>( glcoreProc( "glMaxShaderCompilerThreadsKHR" ) );
         if ( !fn )
-            fn = static_cast<MaxThreadsFnT>( glcoreProc( "glMaxShaderCompilerThreadsARB" ) );
+            fn = reinterpret_cast<MaxThreadsFnT>( glcoreProc( "glMaxShaderCompilerThreadsARB" ) );
         if ( fn )
             fn( 0xFFFFFFFFu ); // as many threads as the driver likes
         s_parallel = 1;

@@ -203,6 +203,9 @@
     <ClInclude Include="Source\AudioFeatures.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Source\SettingsFile.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="Source\CueReceiver.h">
       <Filter>Header Files</Filter>
     </ClInclude>

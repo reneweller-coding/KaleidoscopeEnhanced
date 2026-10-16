@@ -2,6 +2,8 @@
 """One check before a release: every test of the visual side in one run, one report, green or red.
 
 Steps (each with its own threshold; --skip leaves steps out):
+  buildlists Tools/check_build_lists.py -- CMakeLists.txt and Kaleidoscope.pro list what the vcxproj builds;
+             Tools/check_settings_path.py -- the settings file is named in SettingsFile.h only
   shaders    Tools/shadercheck.py -- every shader compiles and links with the real driver
   shaderdoc  Tools/doc_shaders.py --check -- the shader Doxygen comments are current
   layout     Tools/cgvr_format.py --check -- C++ and GLSL in the CGVR layout (docs/cgvr-guidelines.md)
@@ -34,6 +36,13 @@ def run(cmd, timeout):
     t = time.time()
     p = subprocess.run(cmd, cwd=ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=timeout)
     return p.returncode, (p.stdout or "") + (p.stderr or ""), time.time() - t
+
+
+def step_buildlists():
+    rc, out, dt = run([PY, "Tools/check_build_lists.py"], 60)
+    rc2, out2, dt2 = run([PY, "Tools/check_settings_path.py"], 60)
+    last = [l for l in (out + out2).splitlines() if l.startswith(("build lists:", "settings path:"))]
+    return rc == 0 and rc2 == 0, ("; ".join(last) if last else (out + out2)[-300:]), dt + dt2
 
 
 def step_shaders():
@@ -116,7 +125,7 @@ def main():
     ap.add_argument("--label", default=datetime.date.today().isoformat(), help="name of this snapshot set")
     a = ap.parse_args()
     sys.stdout.reconfigure(encoding="utf-8")
-    steps = [("shaders", step_shaders), ("shaderdoc", step_shaderdoc), ("layout", step_layout), ("doxygen", step_doxygen),
+    steps = [("buildlists", step_buildlists), ("shaders", step_shaders), ("shaderdoc", step_shaderdoc), ("layout", step_layout), ("doxygen", step_doxygen),
              ("chain", step_chain), ("perf", step_perf), ("snapshots", lambda: step_snapshots(a.label))]
     rows, red = [], 0
     for name, fn in steps:

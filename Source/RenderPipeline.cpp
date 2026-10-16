@@ -23,6 +23,7 @@
 #include <string>
 #include "RenderPipeline.h"
 #include "PlatformQt.h"
+#include "SettingsFile.h"
 #include "SpoutOut.h"
 #include "SpoutIn.h"
 #include "VideoIn.h"
@@ -93,18 +94,6 @@ QString               RenderPipeline::M_WarmLabel;    // what the lazy warm-up d
 QString               RenderPipeline::M_ImageDirCli;  // photo source override (CLI -f)
 QString               RenderPipeline::M_ImageDirUser; // photo source override (ini)
 
-/**  Path of the shared settings INI (kaleidoscope_settings.ini).
- *
- * @return
- *   Absolute path resolved through Platform::assetPath(); the file need not exist yet.
- *
- * Settings file lives next to the Presets folder (parent of Debug/Release),
- * matching how shaders and configs are loaded ("..\\...").
- **/
-static QString settingsFilePath()
-{
-    return Platform::assetPath( QString( "..\\kaleidoscope_settings.ini" ) );
-}
 
 /**  Whether this is a scripted run (a test tool driving the app): KALEIDO_SEED, KALEIDO_FREEZE_TIME,
  * KALEIDO_SCENE_SWEEP or KALEIDO_FX_SWEEP is set -- or a video export (M_FrameStep).
@@ -141,7 +130,7 @@ static QString historyKey( QString preset )
 
 void RenderPipeline::loadSettings()
 {
-    QSettings s( settingsFilePath(), QSettings::IniFormat );
+    QSettings s( SettingsFile::path(), QSettings::IniFormat );
     M_Reactivity = clampParam( s.value( "reactivity", M_Reactivity ).toFloat(), 0.f, 3.0f );
     M_TrailAmount = clampParam( s.value( "trails", M_TrailAmount ).toFloat(), 0.f, 0.95f );
     // calmMotion (default ON): no beat-driven motion of the whole frame in
@@ -264,7 +253,7 @@ void RenderPipeline::bumpTaste( const char *fragPath, float mul )
     M_Taste[key] = v;
     // Persist immediately (rare events; losing them to a crash would defeat
     // the learning).
-    QSettings s( settingsFilePath(), QSettings::IniFormat );
+    QSettings s( SettingsFile::path(), QSettings::IniFormat );
     s.setValue( "taste/" + key, v );
     s.sync();
     fprintf( stderr, "Taste: %s -> %.2f\n", key.toLocal8Bit().constData(), v );
@@ -280,7 +269,7 @@ static void bumpClassTaste( EffectShader *e, float mul )
     const auto changed = e->bumpClassTaste( mul );
     if ( changed.empty() )
         return;
-    QSettings s( settingsFilePath(), QSettings::IniFormat );
+    QSettings s( SettingsFile::path(), QSettings::IniFormat );
     for ( const auto &kv : changed )
         s.setValue( "classTaste/" + QString::fromStdString( kv.first ), kv.second );
     s.sync();
@@ -293,7 +282,7 @@ void RenderPipeline::saveHistory( const std::vector<std::string> &names ) const
     QStringList list;
     for ( const std::string &n : names )
         list << QString::fromStdString( n );
-    QSettings s( settingsFilePath(), QSettings::IniFormat );
+    QSettings s( SettingsFile::path(), QSettings::IniFormat );
     s.setValue( historyKey( m_presetName ), list.join( QChar( '|' ) ) );
     for ( const std::string &k : EffectShader::M_ClassSeenDirty )
         s.setValue( "classSeen/" + QString::fromStdString( k ), EffectShader::M_ClassSeen[k] );
@@ -301,27 +290,43 @@ void RenderPipeline::saveHistory( const std::vector<std::string> &names ) const
     s.sync();
 }
 
-void RenderPipeline::saveSettings()
+QList<QPair<QString, QVariant>> RenderPipeline::lookSettings()
 {
-    QSettings s( settingsFilePath(), QSettings::IniFormat );
-    s.setValue( "reactivity", M_Reactivity );
-    s.setValue( "trails", M_TrailAmount );
-    s.setValue( "calmMotion", M_CalmMotion );
-    s.setValue( "mood", M_MoodStrength );
-    s.setValue( "latencyLead", M_LatencyLead );
-    s.setValue( "stereoMode", M_StereoMode );
-    s.setValue( "stereoDepth", M_StereoDepth );
-    s.setValue( "renderScale", M_RenderScale );
-    s.setValue( "renderScaleMax", M_RenderScaleMax );
-    s.setValue( "chainScale", M_ChainScaleIni );
-    s.setValue( "chainSupersample", EffectShader::M_ChainSS );
-    // Written back even when empty, so the key is visible in the file for
-    // anyone who wants to point the visualizer at their own pictures without
-    // hunting through documentation for its name.
-    s.setValue( "imageDirectory", M_ImageDirUser );
+    return {
+        { "reactivity", M_Reactivity },
+        { "trails", M_TrailAmount },
+        { "calmMotion", M_CalmMotion },
+        { "mood", M_MoodStrength },
+        { "latencyLead", M_LatencyLead },
+        { "stereoMode", M_StereoMode },
+        { "stereoDepth", M_StereoDepth },
+        { "renderScale", M_RenderScale },
+        { "renderScaleMax", M_RenderScaleMax },
+        { "chainScale", M_ChainScaleIni },
+        { "chainSupersample", EffectShader::M_ChainSS },
+        // Written back even when empty (by 'k'), so the key is visible in the file for anyone who wants to point
+        // the visualizer at their own pictures without hunting through documentation for its name.
+        { "imageDirectory", M_ImageDirUser },
+    };
+}
+
+void RenderPipeline::rememberSettings()
+{
+    for ( const auto &kv : lookSettings() )
+        SettingsFile::remember( kv.first, kv.second );
+}
+
+QString RenderPipeline::saveSettings( bool everything )
+{
+    QSettings   s( SettingsFile::path(), QSettings::IniFormat );
+    QStringList written;
+    for ( const auto &kv : lookSettings() )
+        if ( SettingsFile::store( s, kv.first, kv.second, everything ) )
+            written << kv.first;
     s.sync();
-    fprintf( stderr, "Saved settings: react=%.2f trails=%.2f mood=%.2f lead=%.0fms scale=%.2f\n",
-             M_Reactivity, M_TrailAmount, M_MoodStrength, M_LatencyLead * 1000.f, M_RenderScale );
+    if ( !written.isEmpty() )
+        fprintf( stderr, "Saved settings%s: %s\n", everything ? " (all)" : "", qPrintable( written.join( ' ' ) ) );
+    return SettingsFile::failure( s );
 }
 
 
@@ -574,7 +579,7 @@ void RenderPipeline::start( int width, int height )
     { return tasteFor( f ); } );
     if ( !scriptedRun() )
     {
-        QSettings                s( settingsFilePath(), QSettings::IniFormat );
+        QSettings                s( SettingsFile::path(), QSettings::IniFormat );
         std::vector<std::string> names;
         for ( const QString &n :
               s.value( historyKey( m_presetName ) ).toString().split( QChar( '|' ), Qt::SkipEmptyParts ) )
@@ -1256,7 +1261,7 @@ bool RenderPipeline::toggleMarkCurrentScene()
     const char   *frag = m_effectTextures[m_scheduler.actTexture()]->fragmentName();
     const QString base = tasteBase( frag );
 
-    QSettings  s( settingsFilePath(), QSettings::IniFormat );
+    QSettings  s( SettingsFile::path(), QSettings::IniFormat );
     const bool now_marked = !M_Marked.contains( base );
     if ( now_marked )
     {
@@ -1288,7 +1293,7 @@ bool RenderPipeline::saveMarkedPreset( QString *outPath )
     // Take the scenes' real nodes from the master catalogue. Synthesising tags
     // here would drop geom and every preset parameter -- the exact failure that
     // made a whole measurement campaign's probes meaningless earlier.
-    const QString cfg_dir = Platform::presetsDir( QFileInfo( settingsFilePath() ).absolutePath() );
+    const QString cfg_dir = Platform::presetsDir( SettingsFile::rootDir() );
     QDomDocument  master;
     QFile         mf( cfg_dir + "/Komplett.xml" );
     QString       parse_err;
@@ -1386,7 +1391,7 @@ static void logLikedRoll( const EffectShader *e )
         line += QString( "%1=%2 " ).arg( QString::fromStdString( nv.first ) ).arg( nv.second, 0, 'f', 4 );
     line = line.trimmed();
     fprintf( stderr, "Like: %s\n", line.toLocal8Bit().constData() );
-    QFile f( QFileInfo( settingsFilePath() ).absolutePath() + "/liked_rolls.tsv" );
+    QFile f( QFileInfo( SettingsFile::path() ).absolutePath() + "/liked_rolls.tsv" );
     if ( f.open( QIODevice::Append | QIODevice::Text ) )
     {
         QTextStream ts( &f );
@@ -1439,7 +1444,7 @@ void RenderPipeline::rememberCue( const QString &trackKey, double posSec )
     const QString key = cueKey( trackKey );
     const QString base = tasteBase( m_effectTextures[m_scheduler.actTexture()]->fragmentName() );
     M_Cues[key].append( qMakePair( posSec, base ) );
-    QSettings s( Platform::assetPath( "..\\kaleidoscope_settings.ini" ), QSettings::IniFormat );
+    QSettings s( SettingsFile::path(), QSettings::IniFormat );
     s.setValue( QString( "cues/%1/%2" ).arg( key ).arg( static_cast<int>( posSec ) ), base );
     fprintf( stderr, "CUE gemerkt: %s @ %.0f s -> %s\n", key.toUtf8().constData(), posSec, base.toUtf8().constData() );
 }
@@ -3895,15 +3900,19 @@ void RenderPipeline::checkGLErrors( const char *label )
     if ( !Enabled )
         return;
 
-    GLenum err_code = glGetError();
-    if ( err_code == GL_NO_ERROR )
-        return;
-
-    fputs( "OpenGL ERROR: ", stderr );
-    fputs( reinterpret_cast<const char *>( gluErrorString( err_code ) ), stderr );
-    fputs( " (label: ", stderr );
-    fputs( label, stderr );
-    fputs( ")\n", stderr );
+    // Every pending error, not only the first: glGetError() hands them out one per call, and the rest would be
+    // blamed on the next checkpoint. gluErrorString() returns null for codes it does not know (newer GL); fputs(null)
+    // crashed the program -- exactly in the run started to find a GL error (EffectShader::checkGLErrors() has had
+    // the guard for long).
+    for ( int i = 0; i < 16; ++i )
+    {
+        const GLenum err_code = glGetError();
+        if ( err_code == GL_NO_ERROR )
+            return;
+        const char *msg = reinterpret_cast<const char *>( gluErrorString( err_code ) );
+        fprintf( stderr, "OpenGL ERROR: %s (0x%04x, noticed at: %s)\n", msg ? msg : "?",
+                 static_cast<unsigned>( err_code ), label ? label : "?" );
+    }
 }
 
 /**  Checks framebuffer status.
@@ -3923,29 +3932,31 @@ bool RenderPipeline::checkFramebufferStatus( void )
     {
         case GL_FRAMEBUFFER_COMPLETE:
             return true;
+        // stderr: the release build is a Windows-subsystem program, its stdout goes nowhere (and -l only takes
+        // stderr into the log).
         case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
-            printf( "Framebuffer incomplete, incomplete attachment\n" );
+            fprintf( stderr, "Framebuffer incomplete, incomplete attachment\n" );
             return false;
         case GL_FRAMEBUFFER_UNSUPPORTED:
-            printf( "Unsupported framebuffer format\n" );
+            fprintf( stderr, "Unsupported framebuffer format\n" );
             return false;
         case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
-            printf( "Framebuffer incomplete, missing attachment\n" );
+            fprintf( stderr, "Framebuffer incomplete, missing attachment\n" );
             return false;
         case GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS:
-            printf( "Framebuffer incomplete, attached images must have same dimensions\n" );
+            fprintf( stderr, "Framebuffer incomplete, attached images must have same dimensions\n" );
             return false;
         case GL_FRAMEBUFFER_INCOMPLETE_FORMATS:
-            printf( "Framebuffer incomplete, attached images must have same format\n" );
+            fprintf( stderr, "Framebuffer incomplete, attached images must have same format\n" );
             return false;
         case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:
-            printf( "Framebuffer incomplete, missing draw buffer\n" );
+            fprintf( stderr, "Framebuffer incomplete, missing draw buffer\n" );
             return false;
         case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:
-            printf( "Framebuffer incomplete, missing read buffer\n" );
+            fprintf( stderr, "Framebuffer incomplete, missing read buffer\n" );
             return false;
         default:
-            printf( "Framebuffer incomplete, status 0x%x\n", status );
+            fprintf( stderr, "Framebuffer incomplete, status 0x%x\n", status );
             return false;
     }
 }

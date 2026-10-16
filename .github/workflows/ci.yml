@@ -94,6 +94,17 @@ jobs:
           python Tools\check_uniform_types.py
           if ($LASTEXITCODE -ne 0) { exit 1 }
 
+      # The Linux/macOS build (CMakeLists.txt) and the Qt Creator one
+      # (Kaleidoscope.pro) list their sources by hand; nothing built them here,
+      # so they fell weeks behind the vcxproj without anyone noticing.
+      - name: Self-test -- build lists in step (vcxproj, CMake, .pro; no GL)
+        shell: pwsh
+        run: |
+          python Tools\check_build_lists.py
+          if ($LASTEXITCODE -ne 0) { exit 1 }
+          python Tools\check_settings_path.py
+          if ($LASTEXITCODE -ne 0) { exit 1 }
+
       - name: Self-test -- enum/name tables stay in step (AudioLoc, ExprVars; no GL)
         shell: pwsh
         run: |

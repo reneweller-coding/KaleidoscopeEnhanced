@@ -316,6 +316,7 @@ const char *kDE[S_COUNT] = {
     /* S_EXPORT_NEED_AUDIO */ "Bitte zuerst eine Audiodatei wählen.",
     /* S_EXPORT_OVERWRITE_FMT */ "%1 gibt es schon. Überschreiben?",
     /* S_EXPORT_QUIT_RUNNING */ "Der Export läuft noch. Abbrechen und schließen?",
+    /* S_NOTICE_SETTINGS_READONLY_FMT */ "Einstellungen werden nicht gespeichert: %1 ist schreibgeschützt",
 };
 
 /** The English texts, in the same order as kDE. */
@@ -612,6 +613,7 @@ const char *kEN[S_COUNT] = {
     /* S_EXPORT_NEED_AUDIO */ "Please choose an audio file first.",
     /* S_EXPORT_OVERWRITE_FMT */ "%1 already exists. Overwrite it?",
     /* S_EXPORT_QUIT_RUNNING */ "The export is still running. Cancel it and close?",
+    /* S_NOTICE_SETTINGS_READONLY_FMT */ "Settings will not be saved: %1 is read-only",
 };
 
 } // namespace

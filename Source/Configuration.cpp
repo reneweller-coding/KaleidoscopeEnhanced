@@ -49,7 +49,11 @@
 Configuration::Configuration( const QString &configurationFile )
 {
     m_renderPipeline = new RenderPipeline();
+    const int formulas_before = EffectShader::M_ExprCompiled;
     readConfiguration( configurationFile );
+    if ( !m_configurationName.isEmpty() )
+        fprintf( stderr, "Preset %s: %d scenes, %d formulas compiled\n", qPrintable( m_configurationName ),
+                 m_loadedScenes, EffectShader::M_ExprCompiled - formulas_before );
     // Namespace for the per-preset taste learning (skip-malus / favourite).
     m_renderPipeline->setPresetName( m_configurationName );
     m_renderPipeline->init( m_imageDirectory, m_timeTextureSoloMin, m_timeTextureSoloMax, m_timeTextureInterpolationMin,
@@ -308,17 +312,42 @@ void Configuration::readConfiguration( const QString &filenameIn )
     // we are handed rather than from a compiled-in path, so the packaged build
     // finds it the same way it finds everything else.
     loadRigTable( QFileInfo( filename ).absolutePath() );
-    QFile *file = new QFile( filename );
-    if ( !file->open( QIODevice::ReadOnly | QIODevice::Text ) )
+    m_sourceFile = filename;
+    // A preset that cannot be read or parsed is skipped with a line in the log: it keeps no name, and a nameless
+    // preset is not offered (GLwidget). Until 16.10.2026 an unreadable file ended the program -- exit(0), which the
+    // watchdog reads as a normal end, after a message on stdout, which a Windows-subsystem program shows nowhere --
+    // and a file that was no valid XML vanished without a word.
+    QFile file( filename );
+    if ( !file.open( QIODevice::ReadOnly | QIODevice::Text ) )
     {
-        printf( "Error on loading %s\n!", qPrintable( filename ) );
-        exit( 0 );
+        fprintf( stderr, "PRESET: cannot read %s (%s) - skipped\n", qPrintable( filename ),
+                 qPrintable( file.errorString() ) );
+        return;
     }
 
     /* QDomDocument takes any QIODevice. as well as QString buffer*/
     QDomDocument doc( "filename" );
-    if ( !doc.setContent( file ) )
+    QString      parse_error;
+    long long    parse_line = 0, parse_column = 0;
+#if QT_VERSION >= QT_VERSION_CHECK( 6, 5, 0 )
+    const QDomDocument::ParseResult parsed = doc.setContent( &file );
+    const bool                      parsed_ok = static_cast<bool>( parsed );
+    if ( !parsed_ok )
     {
+        parse_error = parsed.errorMessage;
+        parse_line = parsed.errorLine;
+        parse_column = parsed.errorColumn;
+    }
+#else // Qt 6.2/6.4 (Ubuntu 22.04/24.04): ParseResult came with 6.5; the out-parameter overload
+    int        line = 0, column = 0;
+    const bool parsed_ok = doc.setContent( &file, &parse_error, &line, &column );
+    parse_line = line;
+    parse_column = column;
+#endif
+    if ( !parsed_ok )
+    {
+        fprintf( stderr, "PRESET: %s is no valid XML (line %lld, column %lld: %s) - skipped\n", qPrintable( filename ),
+                 parse_line, parse_column, qPrintable( parse_error ) );
         return;
     }
 

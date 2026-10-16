@@ -58,6 +58,7 @@ set(KALEIDO_SOURCES
 	Source/MidiInput.cpp
 	Source/NowPlaying.cpp
 	Source/OscSender.cpp
+	Source/OsdMenu.cpp
 	Source/Platform.cpp
 	Source/PresentPass.cpp
 	Source/QMyWindow.cpp
@@ -65,6 +66,9 @@ set(KALEIDO_SOURCES
 	Source/RenderPipeline.cpp
 	Source/Scene3DShader.cpp
 	Source/SceneScheduler.cpp
+	Source/ShaderForge.cpp
+	Source/ShaderForgeMain.cpp
+	Source/ShaderWorker.cpp
 	Source/SpoutIn.cpp
 	Source/SpoutOut.cpp
 	Source/Strings.cpp
@@ -74,6 +78,7 @@ set(KALEIDO_SOURCES
 	Source/UpdateCheck.cpp
 	Source/Utils.cpp
 	Source/Vector3D.cpp
+	Source/VideoExport.cpp
 	Source/VideoIn.cpp
 	Source/VideoPiP.cpp
 	Source/WebRemote.cpp

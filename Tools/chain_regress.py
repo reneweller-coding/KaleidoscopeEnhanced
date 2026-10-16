@@ -12,7 +12,7 @@ Run i pins stage A to class i, B to class i mod 23, C to i mod 18, D to i mod 20
 (the 2D lab's positions), so every class of every stage is shown at least once
 in 58 runs; the order, the time tilt and the look vary with i too.  Each run is
 a full-resolution screenshot of the app (web remote /api/screenshot), once with
-the runner and once without.  The repo ini is backed up and restored.
+the runner and once without, on a private copy of the settings (KALEIDO_SETTINGS).
 
   python Tools/chain_regress.py                 # all 58 combinations (~1 h)
   python Tools/chain_regress.py --every 6       # every 6th (~10 min)
@@ -25,9 +25,10 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 REL = os.path.join(ROOT, "Release")
 # KALEIDO_EXE: a copy of the app in Release/ (a long run goes on while the app is rebuilt)
 EXE = os.environ.get("KALEIDO_EXE", "Kaleidoscope.exe")
-INI = os.path.join(ROOT, "kaleidoscope_settings.ini")
 sys.path.insert(0, os.path.join(ROOT, "Tools", "scenegen"))
 import chain_classes as cc                                    # noqa: E402
+from private_settings import PrivateSettings                  # noqa: E402
+PS = None  # the private settings of this run (main())
 
 N = {"chainAP": 58, "chainBP": 23, "chainCP": 18, "chainDP": 20}
 
@@ -47,9 +48,9 @@ def preset(pins):
 
 def shot(pins, out, runner, photo, wait):
     io.open(os.path.join(ROOT, "Presets", "_regress.xml"), "w", encoding="utf-8").write(preset(pins))
-    env = dict(os.environ, KALEIDO_MAX_RUNTIME_SECS=str(int(wait) + 10), KALEIDO_NO_ACTIVATE="1",
-               KALEIDO_FREEZE_TIME="30", KALEIDO_FIXED_PHOTO=photo, KALEIDO_SEED="7",
-               KALEIDO_CHAIN_SS="0")   # supersampling changes the sparkling classes on purpose
+    env = PS.env(dict(os.environ, KALEIDO_MAX_RUNTIME_SECS=str(int(wait) + 10), KALEIDO_NO_ACTIVATE="1",
+                      KALEIDO_FREEZE_TIME="30", KALEIDO_FIXED_PHOTO=photo, KALEIDO_SEED="7",
+                      KALEIDO_CHAIN_SS="0"))   # supersampling changes the sparkling classes on purpose
     if not runner:
         env["KALEIDO_NO_CHAINPASS"] = "1"
     p = subprocess.Popen([os.path.join(REL, EXE), "-c", "_regress", "-l"], cwd=REL, env=env,
@@ -92,8 +93,8 @@ def main():
     work = a.keep or os.path.join(os.environ.get("TEMP", "."), "chain_regress")
     os.makedirs(work, exist_ok=True)
     combos = a.only if a.only else list(range(0, 58, a.every))
-    backup = INI + ".regress_backup"
-    shutil.copy(INI, backup)
+    global PS
+    PS = PrivateSettings("regress")
     fails = 0
     try:
         for i in combos:
@@ -113,8 +114,7 @@ def main():
             fails += bad
             print("%2d  %s  diff %.3f  %s" % (i, "FAIL" if bad else "ok  ", d, names), flush=True)
     finally:
-        shutil.copy(backup, INI)
-        os.remove(backup)
+        PS.close()
         try:
             os.remove(os.path.join(ROOT, "Presets", "_regress.xml"))
         except OSError:

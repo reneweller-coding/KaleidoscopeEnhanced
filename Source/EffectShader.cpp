@@ -29,9 +29,34 @@
 #include <typeinfo>
 #include <algorithm>
 #include <QtCore/qdir.h>
+#include <QtCore/QSet>
+#include "PlatformQt.h"
 #include <QtCore/qfileinfo.h>
 
 #include <GL/GLU.h>
+
+/**  Whether Engine/ChainPass holds a file of this name.
+ *
+ * @param file  The bare file name, e.g. "Final_ChainLab2D.frag". (in)
+ *
+ * @return
+ *   True if it is there.
+ *
+ * One listing of the folder, read once, instead of an fopen() per preset entry: 8,400 at every start, nearly all
+ * of them for files that do not exist.  Compared without case, as Windows does.
+ **/
+static bool chainPassHas( const std::string &file )
+{
+    static const QSet<QString> Names = []
+    {
+        QSet<QString> n;
+        for ( const QString &f :
+              QDir( Platform::assetPath( QString( "..\\Engine\\ChainPass" ) ) ).entryList( QDir::Files ) )
+            n.insert( f.toLower() );
+        return n;
+    }();
+    return Names.contains( QString::fromStdString( file ).toLower() );
+}
 
 // Constructor
 EffectShader::EffectShader( const std::string &filenameFragmentShader, unsigned int minTimeSolo,
@@ -62,26 +87,24 @@ EffectShader::EffectShader( const std::string &filenameFragmentShader, unsigned 
         if ( d != std::string::npos )
             base = base.substr( 0, d );
         const std::string fin = "..\\Engine\\ChainPass\\Final_" + base + ".frag";
-        if ( M_ChainRunner && !getenv( "KALEIDO_NO_CHAINPASS" ) )
-            if ( FILE *fp = fopen( fin.c_str(), "rb" ) )
+        if ( M_ChainRunner && !getenv( "KALEIDO_NO_CHAINPASS" ) && chainPassHas( "Final_" + base + ".frag" ) )
+        {
+            m_compileFile = fin;
+            const std::string t = textFileRead( m_compileFile.c_str() );
+            if ( !t.empty() )
             {
-                fclose( fp );
-                m_compileFile = fin;
-                const std::string t = textFileRead( m_compileFile.c_str() );
-                if ( !t.empty() )
-                {
-                    if ( const char *b = strstr( t.c_str(), "// @chainbake " ) )
-                        m_chainBake = atoi( b + 14 );
-                    m_chain3D = strstr( t.c_str(), "// @chain3d" ) != nullptr;
-                }
-                if ( m_chain3D )
-                {
-                    const std::string g = "..\\Engine\\ChainPass\\Geom_" + base + ".frag";
-                    m_geomSrc = textFileRead( g.c_str() );
-                    if ( m_geomSrc.empty() )
-                        m_chain3D = false;
-                }
+                if ( const char *b = strstr( t.c_str(), "// @chainbake " ) )
+                    m_chainBake = atoi( b + 14 );
+                m_chain3D = strstr( t.c_str(), "// @chain3d" ) != nullptr;
             }
+            if ( m_chain3D )
+            {
+                const std::string g = "..\\Engine\\ChainPass\\Geom_" + base + ".frag";
+                m_geomSrc = textFileRead( g.c_str() );
+                if ( m_geomSrc.empty() )
+                    m_chain3D = false;
+            }
+        }
     }
 
     // Optional per-scene bake compute shader: "X.frag" -> "X.comp", sibling of
@@ -196,6 +219,8 @@ float                         EffectShader::M_DepthValid[2] = { 0.f, 0.f };
 float                         EffectShader::M_ShadowPass = 0.f;
 float                         EffectShader::M_ReviewSolo = 0.f;
 bool                          EffectShader::M_ChainRunner = false;
+bool                          EffectShader::M_ExprLog = qEnvironmentVariableIsSet( "KALEIDO_EXPR_LOG" );
+int                           EffectShader::M_ExprCompiled = 0;
 float                         EffectShader::M_ChainScale = 1.f;
 bool                          EffectShader::M_ChainSS = true;
 float                         EffectShader::M_FreezeTime = -1.f;
@@ -1180,8 +1205,12 @@ void EffectShader::addExpression( const std::string &name, const std::string &fo
         m_exprs.push_back( e );
         if ( formula.find( "progress" ) != std::string::npos )
             m_exprUsesProgress = true;
-        fprintf( stderr, "Expr OK: %s = %s\n", ctx.c_str(),
-                 formula.c_str() );
+        // One line per formula was 25,451 of a start log's 25,598 lines (2.1 MB with -l, written unbuffered): only
+        // when asked for (KALEIDO_EXPR_LOG, on in the editor), otherwise counted for the preset's summary line.
+        // A formula that fails to compile is still reported one by one (ExprEval).
+        ++M_ExprCompiled;
+        if ( M_ExprLog )
+            fprintf( stderr, "Expr OK: %s = %s\n", ctx.c_str(), formula.c_str() );
     }
 
     for ( int i = 0; i < 3; ++i )

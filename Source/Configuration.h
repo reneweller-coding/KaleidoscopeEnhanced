@@ -57,6 +57,12 @@ public:
      *   The root element's ConfigurationName attribute (empty if the preset had none).
      **/
     QString getConfigurationName() { return m_configurationName; };
+    /**  The file this preset was read from.
+     *
+     * @return
+     *   Its path as given to the constructor (separators normalised).
+     **/
+    QString sourceFile() const { return m_sourceFile; }
     // hidden="true" on the root element: a master/reference or test-bench
     // preset that must not appear in the user-facing selection (menu, digit
     // keys, web remote, auto-config).  Still loadable via -c <name>.
@@ -146,7 +152,8 @@ private:
                                  ///< passed to RenderPipeline::init().
     QString m_configurationName; ///< Preset display name (root element's ConfigurationName attribute); also used as the
                                  ///< taste-learning namespace.
-    bool m_hidden = false;       ///< True when the root element has hidden="true" (excluded from user-facing preset
+    QString m_sourceFile;        ///< The file the preset was read from (for messages).
+    bool    m_hidden = false;    ///< True when the root element has hidden="true" (excluded from user-facing preset
                                  ///< selection).
     QString m_audioFile;         ///< Optional AudioFile="..." from the root element; see audioFile().
 

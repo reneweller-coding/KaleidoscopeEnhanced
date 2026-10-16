@@ -29,6 +29,7 @@
 #include "shader_setup.h" // setShaders() for the accumulation pass
 #include "Recorder.h"
 #include "PlatformQt.h"
+#include "SettingsFile.h"
 #include "AudioAnalyzer.h"
 
 // ---------------------------------------------------------------------------
@@ -161,7 +162,7 @@ static QString wantedCodecFamily()
         // Same file the rest of the app uses (see RenderPipeline::loadSettings
         // and the SetupTool), read directly so the Recorder stays free of
         // settings plumbing.
-        QSettings st( Platform::assetPath( "..\\kaleidoscope_settings.ini" ), QSettings::IniFormat );
+        QSettings st( SettingsFile::path(), QSettings::IniFormat );
         fam = st.value( "videoCodec", "h264" ).toString().trimmed().toLower();
     }
     if ( fam == "h265" )
@@ -463,7 +464,7 @@ void Recorder::toggle()
         warmVideoEncoderProbe(); // codec probe now, not only when stopping
 
         {
-            QSettings st( Platform::assetPath( "..\\kaleidoscope_settings.ini" ), QSettings::IniFormat );
+            QSettings st( SettingsFile::path(), QSettings::IniFormat );
             m_mbWanted = st.value( "motionBlur", false ).toBool();
         }
         m_mbCount = 0;
@@ -771,7 +772,7 @@ static double recordFps()
     static double fps = 0.0;
     if ( fps == 0.0 )
     {
-        QSettings st( Platform::assetPath( "..\\kaleidoscope_settings.ini" ), QSettings::IniFormat );
+        QSettings st( SettingsFile::path(), QSettings::IniFormat );
         // KALEIDO_RECORD_FPS beats the ini -- for measurement runs that need
         // 60 fps (the strobe measure aliases at 30), without touching the
         // user's setting.

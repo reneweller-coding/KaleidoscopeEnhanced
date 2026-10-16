@@ -18,8 +18,10 @@
       * audio menu:  type-to-filter works on device names
       * the freed digit keys do nothing
 
-    Results are read back from kaleidoscope_settings.ini (activeConfig) and the
-    analyzer's stderr ("Audio source: ..."), never from a screenshot.
+    Results are read back from the settings (activeConfig) and the analyzer's
+    stderr ("Audio source: ..."), never from a screenshot.  The app runs on a
+    private copy of kaleidoscope_settings.ini (KALEIDO_SETTINGS): the user's
+    file is never touched.
 
 .NOTES
     HARNESS CAVEATS, learned the hard way:
@@ -52,11 +54,12 @@ $root = Split-Path -Parent $PSScriptRoot
 if (-not $Exe) { $Exe = Join-Path $root "Release\Kaleidoscope.exe" }
 if (-not (Test-Path $Exe)) { Write-Host "not built: $Exe"; exit 2 }
 
-$ini  = Join-Path $root "kaleidoscope_settings.ini"
 $tmp  = Join-Path $env:TEMP "kaleido_uismoke"
 New-Item -ItemType Directory -Force -Path $tmp | Out-Null
-$bak  = Join-Path $tmp "settings.bak"
-Copy-Item $ini $bak -Force
+$ini  = Join-Path $tmp "settings.ini"
+$userIni = Join-Path $root "kaleidoscope_settings.ini"
+if (Test-Path $userIni) { Copy-Item $userIni $ini -Force } else { Set-Content $ini "[General]" }
+$env:KALEIDO_SETTINGS = $ini
 
 Add-Type -TypeDefinition @'
 using System;
@@ -188,7 +191,7 @@ try {
     }
 }
 finally {
-    Copy-Item $bak $ini -Force
+    Remove-Item Env:\KALEIDO_SETTINGS -ErrorAction SilentlyContinue
 }
 
 Write-Host ""

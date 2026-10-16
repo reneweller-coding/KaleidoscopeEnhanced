@@ -14,17 +14,18 @@
            scenes new or gone, frames that are black, renders that failed.
 
 Snapshot sets live in %LOCALAPPDATA%\\KaleidoscopeVisualizer\\snapshots\\<label>.
-The repo ini is backed up and restored.  Nothing is sent anywhere.
+Every instance runs on its own copy of the settings (KALEIDO_SETTINGS).  Nothing is sent anywhere.
 
   python Tools/scene_snapshots.py render v1.18-pre --jobs 3   # all scenes (~2 h)
   python Tools/scene_snapshots.py render quick --only Chain   # names containing 'Chain'
   python Tools/scene_snapshots.py compare v1.17 v1.18-pre      # -> report.html in the second set
 """
-import argparse, html, io, os, re, shutil, subprocess, sys, threading, time, urllib.request
+import argparse, html, io, os, re, subprocess, sys, threading, time, urllib.request
+
+from private_settings import PrivateSettings
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 REL = os.path.join(ROOT, "Release")
-INI = os.path.join(ROOT, "kaleidoscope_settings.ini")
 EXE = os.environ.get("KALEIDO_EXE", "Kaleidoscope.exe")      # a copy: the app can be rebuilt meanwhile
 BASE = os.path.join(os.environ.get("LOCALAPPDATA", ROOT), "KaleidoscopeVisualizer", "snapshots")
 
@@ -47,6 +48,9 @@ def preset(block, fx, name="_snap"):
             'ConfigurationName="%s" hidden="true">\n' % name + block + "\n" + fx + "\n</configuration>\n")
 
 
+PS = None  # the private settings of this run (render())
+
+
 def shoot(block, fx, out, photo, timeout, slot=0):
     """One scene in its own app run (preset _snap<slot>, port 18200+slot).
     Returns "ok", "unstable" (the frame never stood still after the freeze -- a
@@ -54,8 +58,8 @@ def shoot(block, fx, out, photo, timeout, slot=0):
     or "" (no frame)."""
     name = "_snap%d" % slot
     io.open(os.path.join(ROOT, "Presets", name + ".xml"), "w", encoding="utf-8").write(preset(block, fx, name))
-    env = dict(os.environ, KALEIDO_MAX_RUNTIME_SECS=str(timeout + 15), KALEIDO_NO_ACTIVATE="1",
-               KALEIDO_FREEZE_TIME="20", KALEIDO_FIXED_PHOTO=photo, KALEIDO_SEED="7")
+    env = PS.env(dict(os.environ, KALEIDO_MAX_RUNTIME_SECS=str(timeout + 15), KALEIDO_NO_ACTIVATE="1",
+                      KALEIDO_FREEZE_TIME="20", KALEIDO_FIXED_PHOTO=photo, KALEIDO_SEED="7"), slot)
     # no -l: stderr comes here through a pipe -- runs at once never share a log file
     p = subprocess.Popen([os.path.join(REL, EXE), "-c", name, "-t", str(18200 + slot)], cwd=REL, env=env,
                          stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
@@ -111,8 +115,8 @@ def render(label, only, photo, timeout, jobs=1):
     src = io.open(os.path.join(ROOT, "Presets", "Komplett.xml"), encoding="utf-8").read()
     fx = re.search(r"[ \t]*<CombineShader\b[^>]*[\\/]FxPlain\.frag\"[^>]*>.*?</CombineShader>", src, re.S).group(0)
     photo = photo or sorted(os.listdir(os.path.join(ROOT, "Images")))[len(os.listdir(os.path.join(ROOT, "Images"))) // 2]
-    backup = INI + ".snap_backup"
-    shutil.copy(INI, backup)
+    global PS
+    PS = PrivateSettings("snap")
     idx = io.open(os.path.join(out, "index.tsv"), "a", encoding="utf-8")
     todo = [(n, b) for n, b in entries() if (not only or any(o in n for o in only))
             and not os.path.exists(os.path.join(out, n + ".jpg"))]          # resumable
@@ -140,8 +144,7 @@ def render(label, only, photo, timeout, jobs=1):
             th.join()
     finally:
         idx.close()
-        shutil.copy(backup, INI)
-        os.remove(backup)
+        PS.close()
         for k in range(max(1, jobs)):
             try:
                 os.remove(os.path.join(ROOT, "Presets", "_snap%d.xml" % k))

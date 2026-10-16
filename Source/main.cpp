@@ -496,6 +496,8 @@ int main( int argc, char *argv[] )
     }
 #endif
     parsecommandline( argc, argv );
+    // What the session starts with, command line included: an exit writes back only what changed after this.
+    RenderPipeline::rememberSettings();
 
     // A video export renders the file it was given and nothing else: no live
     // capture or WAV replay, no recording, no web remote, no Spout, a window

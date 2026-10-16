@@ -32,6 +32,14 @@
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
 AppPublisher={#MyAppPublisher}
+; Per user, without admin rights: {autopf} is then %LOCALAPPDATA%\Programs. The
+; program keeps its settings, taste, scene memory, cache, recordings and replays
+; beside itself ({app}), and under C:\Program Files a normal user cannot write
+; there -- every one of those writes failed without a word (16.10.2026). An old
+; installation for all users is found in [Code] below and can be removed first;
+; the automatic update starts this setup too, so it would otherwise end up with
+; two installations.
+PrivilegesRequired=lowest
 DefaultDirName={autopf}\KaleidoscopeVisualizer
 DefaultGroupName={#MyAppName}
 DisableProgramGroupPage=yes
@@ -69,6 +77,10 @@ english.PackShips=3D models: ships, 79 of them (715 MB)
 english.PackStations=3D models: stations, 30 of them (259 MB)
 english.PackObjects=3D models: objects, 48 of them (384 MB)
 english.PackFailed=Downloading the extra content failed:%n%n%1%n%nInstallation continues without it. You can fetch it any time from Kaleidoscope Setup.
+german.OldInstall=Eine ältere Installation für alle Benutzer liegt in%n%n%1%n%nDort kann das Programm seine Einstellungen nicht speichern; die neue Version installiert sich deshalb in Ihr Benutzerprofil.%n%nDie alte Installation jetzt entfernen?%n%nJa: entfernen (fragt nach Administratorrechten). Nein: beide behalten. Abbrechen: Setup beenden.
+german.OldUninstFailed=Die alte Installation wurde nicht entfernt. Sie lässt sich später unter Einstellungen > Apps deinstallieren.
+english.OldInstall=An older installation for all users is in%n%n%1%n%nThe program cannot save its settings there, so the new version installs into your user profile.%n%nRemove the old installation now?%n%nYes: remove it (asks for administrator rights). No: keep both. Cancel: quit setup.
+english.OldUninstFailed=The old installation was not removed. You can uninstall it later under Settings > Apps.
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
@@ -134,6 +146,61 @@ Filename: "{app}\bin\{#MyAppExeName}"; WorkingDir: "{app}\bin"; Description: "{c
   --------------------------------------------------------------------------- }
 var
   DownloadPage: TDownloadWizardPage;
+  OldAdminDir: String; { an old installation for all users (Program Files), or '' }
+
+{ ---------------------------------------------------------------------------
+  Up to 1.17 the setup installed for all users, into Program Files, where the
+  program cannot write its settings. This one installs per user. An old
+  all-users installation is offered for removal before anything happens --
+  the automatic update starts this setup as well, and would leave two
+  installations side by side -- and its settings file, if it ever got one
+  (run as administrator), comes along into the new folder.
+  --------------------------------------------------------------------------- }
+const
+  UninstKey = 'Software\Microsoft\Windows\CurrentVersion\Uninstall\{#MyAppName}_is1';
+
+function OldAdminInstall(var Dir, Uninst: String): Boolean;
+begin
+  Result := RegQueryStringValue( HKLM64, UninstKey, 'UninstallString', Uninst )
+            or RegQueryStringValue( HKLM32, UninstKey, 'UninstallString', Uninst );
+  if Result then
+    if not RegQueryStringValue( HKLM64, UninstKey, 'InstallLocation', Dir ) then
+      RegQueryStringValue( HKLM32, UninstKey, 'InstallLocation', Dir );
+end;
+
+function InitializeSetup: Boolean;
+var
+  Uninst: String;
+  Code: Integer;
+begin
+  Result := True;
+  OldAdminDir := '';
+  if not OldAdminInstall( OldAdminDir, Uninst ) then
+    Exit;
+  case SuppressibleMsgBox( FmtMessage( CustomMessage( 'OldInstall' ), [RemoveBackslash( OldAdminDir )] ),
+                           mbConfirmation, MB_YESNOCANCEL, IDNO ) of
+    IDYES:
+      { The old uninstaller asks for administrator rights itself; ShellExec lets it (Exec could not elevate). }
+      if not ShellExec( 'open', RemoveQuotes( Uninst ), '/SILENT', '', SW_SHOW, ewWaitUntilTerminated, Code )
+         or ( Code <> 0 ) then
+        SuppressibleMsgBox( CustomMessage( 'OldUninstFailed' ), mbError, MB_OK, IDOK );
+    IDCANCEL:
+      Result := False;
+  end;
+end;
+
+procedure CurStepChanged(CurStep: TSetupStep);
+var
+  OldIni, NewIni: String;
+begin
+  if ( CurStep <> ssPostInstall ) or ( OldAdminDir = '' ) then
+    Exit;
+  { An uninstaller leaves files it did not install, so the old settings are still there to take along. }
+  OldIni := AddBackslash( OldAdminDir ) + 'kaleidoscope_settings.ini';
+  NewIni := ExpandConstant( '{app}\kaleidoscope_settings.ini' );
+  if FileExists( OldIni ) and not FileExists( NewIni ) then
+    FileCopy( OldIni, NewIni, True );
+end;
 
 function OnDownloadProgress(const Url, FileName: String; const Progress, ProgressMax: Int64): Boolean;
 begin

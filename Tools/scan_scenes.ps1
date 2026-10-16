@@ -11,8 +11,9 @@
 # The app's Now-Playing / artist-image / music-video PiP overlay composites real
 # SMTC media (and a downloaded YouTube video) over the render even in offline
 # -w mode, which makes probe frames useless for visual or statistical review.
-# This script therefore disables those three settings for the duration of the
-# scan and restores kaleidoscope_settings.ini afterwards -- including on Ctrl-C.
+# This script therefore disables those three settings in a private copy of
+# kaleidoscope_settings.ini that the app runs on (KALEIDO_SETTINGS); the user's
+# file is never touched, not even by a run stopped with Ctrl-C.
 
 param(
     [string[]] $Scenes = @(),
@@ -29,8 +30,8 @@ $root   = Split-Path $PSScriptRoot -Parent
 $rel    = Join-Path $root "Release"
 $recDir = Join-Path $rel "recordings"
 $outDir = Join-Path $rel $Out
-$ini    = Join-Path $root "kaleidoscope_settings.ini"
-$bak    = Join-Path $env:TEMP ("kaleidoscope_settings.scan.bak")
+$userIni = Join-Path $root "kaleidoscope_settings.ini"
+$ini    = Join-Path $env:TEMP ("kaleidoscope_settings.scan.ini")
 
 if ($All) {
     $Scenes = @(
@@ -64,15 +65,8 @@ if (-not $ImageDir) {
 
 New-Item -ItemType Directory -Force $outDir | Out-Null
 
-function Restore-Ini {
-    if (Test-Path $bak) {
-        Copy-Item $bak $ini -Force
-        Remove-Item $bak -Force
-        Write-Host "[scan] kaleidoscope_settings.ini restored"
-    }
-}
-
-Copy-Item $ini $bak -Force
+if (Test-Path $userIni) { Copy-Item $userIni $ini -Force } else { Set-Content $ini "[General]" }
+$env:KALEIDO_SETTINGS = $ini
 try {
     # Disable the overlays that would otherwise composite real media over frames.
     $txt = Get-Content $ini -Raw
@@ -118,7 +112,8 @@ try {
 finally {
     Remove-Item Env:\KALEIDO_FPS_LOG -ErrorAction SilentlyContinue
     Remove-Item Env:\KALEIDO_FORCE_MOOD -ErrorAction SilentlyContinue
-    Restore-Ini
+    Remove-Item Env:\KALEIDO_SETTINGS -ErrorAction SilentlyContinue
+    Remove-Item $ini -Force -ErrorAction SilentlyContinue
 }
 
 Write-Host "`n[scan] frames in $outDir"

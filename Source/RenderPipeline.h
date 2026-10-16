@@ -26,6 +26,7 @@
 #include <QtCore/QHash>
 #include <QtCore/QSet>
 #include <QtCore/QPair>
+#include <QtCore/QVariant>
 
 #include "mesh.h"
 
@@ -767,8 +768,23 @@ public:
      *   M_LatencyLead, M_MoodStrength, M_Reactivity, M_StereoDepth, M_StereoMode, M_Taste, M_TrailAmount.
      **/
     static void loadSettings();
-    /** Persists the live-tunable look parameters and render scale to the settings INI. */
-    static void saveSettings();
+    /**  The look settings as the ini keys they live under, with their values now.
+     *
+     * @return
+     *   key -> value, in the order they are written.
+     **/
+    static QList<QPair<QString, QVariant>> lookSettings();
+    /** Notes the look settings as the session starts with them (after the command line), see SettingsFile. */
+    static void rememberSettings();
+    /**  Persists the live-tunable look parameters and render scale to the settings INI.
+     *
+     * @param everything  Write every key ('k', "save as default"); otherwise only the keys this session changed, so
+     *                    an edit in the Setup tool made meanwhile survives. (in)
+     *
+     * @return
+     *   Why the file could not be written, or an empty string.
+     **/
+    static QString saveSettings( bool everything );
     /**  Performs a full (re)build of this instance's GL state: shader programs, image and FBO textures, and all
      * framebuffers, sized for the given display resolution.
      *

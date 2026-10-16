@@ -82,6 +82,7 @@
 #include "Preset.h"
 #include "../Source/AudioAnalyzer.h"
 #include "../Source/AudioConditioner.h"
+#include "../Source/EffectShader.h"
 
 /**  Locate the visualizer project root directory.
  *
@@ -212,6 +213,10 @@ static int dumpFeatures( const QString &wav, const QString &csv, int every )
  **/
 int main( int argc, char *argv[] )
 {
+    // The editor's console is where a preset author reads every formula's compile ("Expr OK"); the main program
+    // logs only a count per preset unless KALEIDO_EXPR_LOG is set.
+    EffectShader::M_ExprLog = true;
+
     QStringList args;
     for ( int i = 1; i < argc; ++i )
         args << QString::fromLocal8Bit( argv[i] );

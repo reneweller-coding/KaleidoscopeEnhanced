@@ -73,7 +73,11 @@ lights.*
 
 [Download the latest release](https://github.com/reneweller-coding/KaleidoscopeEnhanced/releases/latest):
 - **`KaleidoscopeVisualizer-Setup.exe`** — regular installer, Start-menu
-  shortcuts for the visualizer, the Preset editor and the Setup tool.
+  shortcuts for the visualizer, the Preset editor and the Setup tool. It
+  installs for your user, without administrator rights, into
+  `%LOCALAPPDATA%\Programs\KaleidoscopeVisualizer`, where the program can keep
+  its settings; an older installation under Program Files is offered for
+  removal, and its settings come along.
 - **`KaleidoscopeVisualizer-portable.zip`** — unzip anywhere, double-click
   `Kaleidoscope-starten.bat`. No installation, nothing written outside the
   folder.
@@ -607,6 +611,8 @@ cmd /c '"C:\Program Files\Microsoft Visual Studio\18\Community\VC\Auxiliary\Buil
 **Qt Creator** — `Kaleidoscope.pro` mirrors the VS project, so the code can
 also be browsed and built from Qt Creator with a Qt 6 / MSVC kit; the VS
 project remains the primary build (it also runs the auto-deploy).
+`python Tools/check_build_lists.py` keeps the `.pro` and `CMakeLists.txt` in step
+with it (`release_check` and the CI run it).
 
 **Run** — the exe needs the Qt 6 DLLs on `PATH` (or run `windeployqt`):
 ```powershell

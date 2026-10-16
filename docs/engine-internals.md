@@ -2553,7 +2553,7 @@ dropped rig leaves the camera frozen, and a frozen camera looks like a design
 choice rather than a missing entry.
 
 **The migration was proved, not assumed.** The engine prints an `Expr OK` line
-for every expression it resolves; the set was 2307 lines before and 2307 after,
+for every expression it resolves (since 16.10.2026 only with `KALEIDO_EXPR_LOG=1`); the set was 2307 lines before and 2307 after,
 with an empty diff. And a checker that reads only `Komplett.xml` goes blind the
 moment the formulas move — `Tools/temporal_budget.py` dropped from 1579 terms
 to twelve while still reporting "0 frozen", so it now resolves the table too,
@@ -4737,3 +4737,53 @@ major triad in octave 3 came out as C#, F# and A#. That is the later idea "chrom
 bass"; the self-test plays its chords in octave 5 until then.
 
 `Kaleidoscope.exe -q`: 98 checks.
+
+## 16.10.2026 (7): settings that stay, a log that can be read, builds that agree
+
+The third round of the idea list: what the program writes, and where.
+
+- **One settings path.** `Source/SettingsFile.h` is the only place that names `kaleidoscope_settings.ini` (it was
+  written out fifteen times in three spellings); `KALEIDO_SETTINGS=<file>` points a run at another file.
+  perf_labs, scene_snapshots, chain_regress, chain_class_stats, fps_probe, scan_scenes and ui_smoke now give every
+  instance a fresh copy (`Tools/private_settings.py`) instead of backing the user's file up and copying it back,
+  which overwrote whatever a show wrote in between and left `activeConfig=_snapN` behind when a run was stopped.
+  Things that belong to the program (the master catalogue for "save marked") are found from
+  `SettingsFile::rootDir()`, never from the settings file's folder. `Tools/check_settings_path.py` guards it.
+- **Setup changes survive.** Every exit wrote every key from memory, so a change made in the Setup tool while the
+  show ran was lost without a word. Each key is now remembered as the session started (after the command line and
+  the start preset); an exit writes only the keys that differ (`SettingsFile::store()`); `k`, the menu's and the
+  remote's "save as default" still write all. Side effect: `-c`, `-t` and `-s` of one run no longer become the next
+  run's defaults -- the test tools had been writing `activeConfig=_catalog` and the like into the user's file.
+  Tried live on a copy: lyricsMode and reactivity edited in the file meanwhile survived, the trails changed through
+  the remote were written, `-c Komplett -t 18091` were not.
+- **A folder that cannot be written** (an installation under Program Files without admin rights: settings, taste,
+  scene memory, cache, recordings all failed silently) is checked at the start with a test file and said on screen
+  for 15 s (`GLwidget::notify()`, a small fading box at the bottom, sized by the output's height -- the start of the
+  on-screen feedback); a failed save says it too.
+- **The installer** installs per user (`PrivilegesRequired=lowest`, i.e. `%LOCALAPPDATA%\Programs`). An older
+  all-users installation is found by its uninstall key and offered for removal (its uninstaller asks for admin
+  rights itself), so the automatic update does not leave two installations; its settings file comes along.
+  Compiled with ISCC 7; the run on an account without admin rights is still to be done by hand.
+- **deploy.ps1 stops only its own** `Release\` instances before a build (by `ExecutablePath`), and none at all
+  before staging: an instance running from `dist\` stops the staging with a message, every other one is only named.
+  Until now every Release build ended every Kaleidoscope.exe on the machine -- a show from an installation, a genre
+  run out of `dist\`.
+- **The build lists.** CMakeLists.txt lacked OsdMenu, ShaderForge, ShaderForgeMain, ShaderWorker and VideoExport
+  (the Linux link could not succeed since 29.09.); Kaleidoscope.pro lacked 22 files and named one deleted in July.
+  Both are complete again, and `Tools/check_build_lists.py` compares them with the vcxproj in release_check and CI.
+  Built under WSL (Ubuntu 22.04, Qt 6.2.4, GCC) for the first time since 31.08.: two more breaks, both fixed -- a
+  `static_cast` from `void *` to a function pointer (MSVC lets it through, GCC does not; `shader_setup.cpp`) and
+  `QDomDocument::ParseResult`, which only exists from Qt 6.5. The Linux build then ran `-q` with 101 of 101.
+- **Error messages that arrived nowhere.** `RenderPipeline::checkGLErrors()` passed gluErrorString()'s null to
+  fputs -- a crash in exactly the KALEIDO_GL_DEBUG run started to find a GL error -- and reported one error of many;
+  it now drains all with code and checkpoint. The framebuffer check wrote to stdout, which the Windows-subsystem
+  build has nowhere. An unreadable preset ended the program with `exit(0)` (the watchdog reads that as a normal
+  end), invalid XML vanished silently; both are now skipped with a line naming file, line and column, and a preset
+  without a name is named when it is left out (rigs.xml excepted).
+- **The log.** 25,451 of a start log's 25,598 lines were "Expr OK" (2.1 MB with `-l`). Formulas are now counted
+  per preset ("Preset Club: 411 scenes, 1373 formulas compiled") and listed only with `KALEIDO_EXPR_LOG=1` (always
+  in the editor). The chain labs' pass shaders are looked up in one listing of Engine/ChainPass instead of an
+  fopen() per preset entry, and NowPlaying's "Settle" wait is said once per title. A start log is now 309 lines,
+  6.9 KB; all 17 preset files are read in 0.47 s -- too little to be worth the risks of loading presets lazily.
+
+`Kaleidoscope.exe -q`: 101 checks (the settings round trip and a read-only file among them).

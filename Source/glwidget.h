@@ -380,7 +380,7 @@ public:
     /** Persists the current look + state as the startup default (same as key 'k'). */
     void remoteSaveDefaults()
     {
-        saveAllSettings();
+        saveAllSettings( true );
     }
     /**  Name of the active configuration, even when it is hidden and therefore absent from remoteConfigNames().
      *
@@ -702,6 +702,9 @@ protected:
      **/
     int     m_cuePort = 0;         ///< UDP port for the score cues; 0 = the feature is off.
     QString m_cueBind = "0.0.0.0"; ///< Interface to listen on ("127.0.0.1" = this machine only).
+    QString m_notice;              ///< The message notify() shows; empty = none.
+    qint64  m_noticeAt = -1;       ///< m_fpsTimer time the notice appeared; -1 = with the next frame.
+    int     m_noticeMs = 0;        ///< How long the notice stays, in milliseconds.
     /** MIDI-learn targets, cycled with key 'j': controller knobs (CC-mapped) first, then note-mapped pads. */
     enum
     {
@@ -814,16 +817,56 @@ protected:
      *   Changes M_RemotePort, M_StartConfig.
      **/
     void loadUiSettings();
-    /** Writes the current UI state to the shared settings INI (key 'k' and every quit path). */
-    void saveUiSettings();
-    /**  Persists everything: RenderPipeline::saveSettings() (look knobs) plus saveUiSettings() (UI state).
+    /**  The UI state as the ini keys it lives under, with the values now.
      *
-     * Bundles saveUiSettings() + RenderPipeline::saveSettings() - called by
-     * key 'k' AND by every quit path (including the hard exit(0) spots,
-     * which run no C++ destructors any more), so the last chosen state
-     * really always survives.
+     * @return
+     *   key -> value, in the order they are written.
      **/
-    void saveAllSettings();
+    QList<QPair<QString, QVariant>> uiSettings() const;
+    /** Notes the UI state as the session starts with it (start preset and command line included), see SettingsFile. */
+    void rememberUiSettings();
+    /**  Writes the UI state to the shared settings INI.
+     *
+     * @param everything  Every key ('k', "save as default"); otherwise only the keys this session changed. (in)
+     *
+     * @return
+     *   Why the file could not be written, or an empty string.
+     **/
+    QString saveUiSettings( bool everything );
+    /**  Persists RenderPipeline::saveSettings() (look knobs) plus saveUiSettings() (UI state).
+     *
+     * @param everything  Every key -- key 'k', the menu's and the remote's "save as default"; every quit path
+     *                    writes only what this session changed, so an edit in the Setup tool made while the show
+     *                    ran survives it. (in)
+     *
+     * Called by every quit path as well (including the hard exit(0) spots, which run no C++ destructors), so the
+     * last chosen state really always survives.  A file that cannot be written is said on screen.
+     **/
+    void saveAllSettings( bool everything );
+    /**  Whether the settings can be written where they live; says so on screen when not.
+     *
+     * An installation under Program Files cannot write beside itself without admin rights, and every write --
+     * settings, taste, scene memory -- failed there without a word.
+     **/
+    void checkSettingsWritable();
+    /**  Shows a short message on screen (bottom centre, fading) and writes it to the log.
+     *
+     * @param text  The message, in the UI language. (in)
+     * @param ms    How long it stays, in milliseconds. (in)
+     **/
+    void notify( const QString &text, int ms = 6000 );
+    /**  The notice's opacity now: fades in and out over a quarter second.
+     *
+     * @return
+     *   0 when there is none or it is over, up to 1.
+     **/
+    float noticeAlpha();
+    /**  Draws the notice of notify().
+     *
+     * @param painter  The overlay painter. (in,out)
+     * @param alpha    Its opacity (noticeAlpha()). (in)
+     **/
+    void drawNotice( QPainter *painter, float alpha );
     /** Opens the remote-control menu at its root. */
     void openOsdMenu();
     /** Asks "quit?" in the menu (Esc outside any menu). */

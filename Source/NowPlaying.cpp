@@ -203,6 +203,7 @@ void NowPlaying::threadFunc()
     QString  prev_title;
     qint64   track_change_ms = 0;   // when WE recognised the current title
     bool     pos_confirmed = false; // TRUE only once two reports agree with each other
+    bool     settle_said = false;   // the "Settle" wait was logged for this title (once is enough)
     Timeline candidate;             // first (not yet confirmed) report of the new track
 
     // Title confirmation (like the position confirmation above, but it NEVER
@@ -284,6 +285,7 @@ void NowPlaying::threadFunc()
             // caller uses its own local clock since the change (position < 0).
             track_change_ms = raw.stampMs;
             pos_confirmed = false;
+            settle_said = false;
             candidate = raw;
             tl.positionSec = -1.0;
         }
@@ -303,9 +305,13 @@ void NowPlaying::threadFunc()
                 pos_confirmed = true;
             else
             {
-                fprintf( stderr, "[NowPlaying] Settle: Meldung (%.1fs) passt nicht zur vorherigen "
-                                 "(%.1fs erwartet) - noch %.1fs seit Trackwechsel, warte weiter\n",
-                         raw.positionSec, erwartet, static_cast<double>( raw.stampMs - track_change_ms ) * 0.001 );
+                // Once per title: a player that never settles said it 29 times in a 35-s run.
+                if ( !settle_said )
+                    fprintf( stderr, "[NowPlaying] Settle: Meldung (%.1fs) passt nicht zur vorherigen "
+                                     "(%.1fs erwartet) - noch %.1fs seit Trackwechsel, warte weiter\n",
+                             raw.positionSec, erwartet,
+                             static_cast<double>( raw.stampMs - track_change_ms ) * 0.001 );
+                settle_said = true;
                 candidate = raw;
                 tl.positionSec = -1.0;
             }

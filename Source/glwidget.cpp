@@ -11,10 +11,12 @@
  */
 
 #include <math.h>
+#include <algorithm>
 
 #include <QtCore/QFile>
 #include <QtCore/QTextStream>
 #include <QtCore/QFileInfo>
+#include <QtCore/QTemporaryFile>
 #include <QtCore/QBuffer>
 #include <QtCore/QDateTime>
 #include <QtCore/QFileSystemWatcher>
@@ -40,6 +42,7 @@
 #include "ShaderWorker.h"
 #include "ShaderForge.h"
 #include "PlatformQt.h"
+#include "SettingsFile.h"
 #include "WebRemote.h"
 #include "CueReceiver.h"
 #include "UpdateCheck.h"
@@ -56,8 +59,6 @@
     0x809D ///< Core GL enable token for multisampling, provided here in case the GL header set lacks it.
 #endif
 
-/** Settings file shared with RenderPipeline (next to the Presets folder, relative to the working directory). */
-static const char *kUiSettingsPath = "..\\kaleidoscope_settings.ini";
 
 // Start configuration requested on the command line (-c <name>); empty = default.
 QString GLwidget::M_StartConfig;
@@ -462,8 +463,15 @@ GLwidget::GLwidget( QWidget *parent )
     }
 
     m_configurationList.clear();
-    traverseConfigurations( Platform::presetsDir( ".." ) /*directory*/,
-                            m_configurationList );
+    {
+        // Timed: reading every preset at the start is the one large piece of work before the window appears.
+        QElapsedTimer presets_timer;
+        presets_timer.start();
+        traverseConfigurations( Platform::presetsDir( ".." ) /*directory*/,
+                                m_configurationList );
+        fprintf( stderr, "Presets: %d files read in %.2f s\n", static_cast<int>( m_configurationList.size() ),
+                 presets_timer.nsecsElapsed() * 1e-9 );
+    }
 
     // Embedded web remote (CLI -t <port>): phone page with the same harmless
     // controls as the keyboard.  Parented to this widget; main-thread events.
@@ -532,7 +540,7 @@ GLwidget::GLwidget( QWidget *parent )
     bool show_hidden = false;
     {
         const QString ini_path =
-            Platform::assetPath( "..\\kaleidoscope_settings.ini" );
+            SettingsFile::path();
         QSettings s( ini_path, QSettings::IniFormat );
         show_hidden = s.value( "showHiddenPresets", false ).toBool();
         // Named ABSOLUTELY, and once. The path is relative to the WORKING
@@ -557,6 +565,13 @@ GLwidget::GLwidget( QWidget *parent )
     for ( size_t i = m_configurationList.size(); i-- > 0; )
         if ( m_configurationList[i]->getConfigurationName().trimmed().isEmpty() )
         {
+            // Said, except for the rig table, which is no preset and is meant to be there: an XML file of the
+            // preset folder that silently did not show up was a riddle (a typo in the attribute, a file a tool
+            // half wrote, one that could not be read -- Configuration says which).
+            const QFileInfo src( m_configurationList[i]->sourceFile() );
+            if ( src.fileName().compare( "rigs.xml", Qt::CaseInsensitive ) != 0 )
+                fprintf( stderr, "PRESET: %s has no ConfigurationName - not offered\n",
+                         qPrintable( src.fileName() ) );
             m_hiddenConfigurations.push_back( m_configurationList[i] );
             m_configurationList.erase( m_configurationList.begin() + i );
         }
@@ -634,6 +649,11 @@ GLwidget::GLwidget( QWidget *parent )
                      M_StartConfig.toLocal8Bit().constData() );
     }
 
+    // What the session starts with, start preset and command line included: an exit writes back only what changed
+    // after this (a -c or -t of this run is no new default).
+    rememberUiSettings();
+    checkSettingsWritable();
+
     resetRotation();
 }
 
@@ -666,7 +686,7 @@ GLwidget::~GLwidget()
     // for them.  An export saves nothing: it must not become the live show's
     // start preset.
     if ( !exported )
-        saveAllSettings();
+        saveAllSettings( false );
 
     // Closing mid-recording: finalise cleanly (drains + joins the encoder
     // worker) WHILE the audio analyzer is still alive — the recorder closes
@@ -849,7 +869,7 @@ void GLwidget::initializeGL()
     m_audioAnalyzer = new AudioAnalyzer( this );
     // The source chosen last time (audio menu); missing devices fall back to the default until they come back.
     {
-        QSettings     st( Platform::assetPath( kUiSettingsPath ), QSettings::IniFormat );
+        QSettings     st( SettingsFile::path(), QSettings::IniFormat );
         const QString dev = st.value( "audioDevice" ).toString();
         if ( !dev.isEmpty() )
             m_audioAnalyzer->requestDevice( dev, st.value( "audioDeviceInput", false ).toBool() );
@@ -897,7 +917,7 @@ void GLwidget::initializeGL()
     if ( !qEnvironmentVariableIsSet( "KALEIDO_NO_MIDI" ) )
     {
         const QString midi_want =
-            QSettings( Platform::assetPath( kUiSettingsPath ), QSettings::IniFormat ).value( "midiDevice" ).toString();
+            QSettings( SettingsFile::path(), QSettings::IniFormat ).value( "midiDevice" ).toString();
         std::thread( [midi_want]
         {
             MidiInput *mi = new MidiInput();
@@ -1503,9 +1523,10 @@ void GLwidget::draw()
     // printf( "Painting Now\n" );
     // Only spin up a QPainter when an overlay or the cross-fade needs it, so the
     // normal render path is pure GL (no QPainter/GL state interaction).
+    const float notice_alpha = noticeAlpha();
     if ( m_showSelectConfigurationMenu || m_showFeatureOverlay || m_showHelp
          || m_showAudioMenu || m_showShaderInfo || m_recorder.recording()
-         || fade_alpha > 0.f || np_alpha > 0.f || m_osd.isOpen() )
+         || fade_alpha > 0.f || np_alpha > 0.f || m_osd.isOpen() || notice_alpha > 0.f )
     {
         QPainter painter( this );
         // painter.setRenderHint(QPainter::Antialiasing);
@@ -1549,6 +1570,8 @@ void GLwidget::draw()
             painter.drawText( width() - 126, 39,
                               QString::fromUtf8( Strings::uiText( S_REC_FMT ) ).arg( m_recorder.frameCount() ) );
         }
+        if ( notice_alpha > 0.f )
+            drawNotice( &painter, notice_alpha );
         m_osd.draw( &painter, width(), height() ); // last: on top of everything
         painter.end();
     }
@@ -1701,7 +1724,7 @@ void GLwidget::applyQualityProfile()
     // chain labs at full size: with qualityProfile=auto (the default) it gets,
     // for this session, the chain on a half grid and the adaptive render scale.
     // "high" never, "low" always.  Nothing of it is written to the ini.
-    QSettings     s( Platform::assetPath( kUiSettingsPath ), QSettings::IniFormat );
+    QSettings     s( SettingsFile::path(), QSettings::IniFormat );
     const QString profile = s.value( "qualityProfile", "auto" ).toString().toLower();
     const QString vendor = QString::fromLatin1( reinterpret_cast<const char *>( glGetString( GL_VENDOR ) ) );
     const QString renderer = QString::fromLatin1( reinterpret_cast<const char *>( glGetString( GL_RENDERER ) ) );
@@ -1726,7 +1749,7 @@ void GLwidget::applyQualityProfile()
 
 void GLwidget::loadUiSettings()
 {
-    QSettings s( Platform::assetPath( kUiSettingsPath ), QSettings::IniFormat );
+    QSettings s( SettingsFile::path(), QSettings::IniFormat );
     m_autoConfig = s.value( "autoConfig", m_autoConfig ).toBool();
     m_autoScale = s.value( "autoScale", m_autoScale ).toBool();
     m_showNowPlaying = s.value( "nowPlaying", m_showNowPlaying ).toBool();
@@ -1758,35 +1781,116 @@ void GLwidget::loadUiSettings()
         s.value( "language", Strings::toCode( Strings::language() ) ).toString().toLocal8Bit().constData() ) );
 }
 
-void GLwidget::saveUiSettings()
+QList<QPair<QString, QVariant>> GLwidget::uiSettings() const
 {
-    QSettings s( Platform::assetPath( kUiSettingsPath ), QSettings::IniFormat );
+    QList<QPair<QString, QVariant>> v;
     if ( m_actConfiguration )
-        s.setValue( "activeConfig", m_actConfiguration->getConfigurationName() );
-    s.setValue( "autoConfig", m_autoConfig );
-    s.setValue( "autoScale", m_autoScaleByProfile ? false : m_autoScale ); // a profile's session value is not the
-                                                                           // user's
-    s.setValue( "nowPlaying", m_showNowPlaying );
-    s.setValue( "lyricsMode", m_lyricsMode );
-    s.setValue( "artistImages", m_artistShow );
-    s.setValue( "videoEnabled", m_videoEnabled );
-    s.setValue( "lyricsKinetic", m_lyricsKinetic );
-    s.setValue( "updateCheck", m_updateCheck );
-    s.setValue( "midiLearned", m_midiLearned );
+        v.append( { "activeConfig", m_actConfiguration->getConfigurationName() } );
+    v.append( { "autoConfig", m_autoConfig } );
+    v.append( { "autoScale", m_autoScaleByProfile ? false : m_autoScale } ); // a profile's session value is not
+                                                                             // the user's
+    v.append( { "nowPlaying", m_showNowPlaying } );
+    v.append( { "lyricsMode", m_lyricsMode } );
+    v.append( { "artistImages", m_artistShow } );
+    v.append( { "videoEnabled", m_videoEnabled } );
+    v.append( { "lyricsKinetic", m_lyricsKinetic } );
+    v.append( { "updateCheck", m_updateCheck } );
+    v.append( { "midiLearned", m_midiLearned } );
     for ( int i = 0; i < MIDI_TARGETS; ++i )
-        s.setValue( QString( "midiMap%1" ).arg( i ), m_midiMap[i] );
-    s.setValue( "lightShow", RenderPipeline::lightShow() );
-    s.setValue( "remotePort", M_RemotePort );
-    s.setValue( "cuePort", m_cuePort );
-    s.setValue( "cueBind", m_cueBind );
-    s.setValue( "language", Strings::toCode( Strings::language() ) );
-    s.sync();
+        v.append( { QString( "midiMap%1" ).arg( i ), m_midiMap[i] } );
+    v.append( { "lightShow", RenderPipeline::lightShow() } );
+    v.append( { "remotePort", M_RemotePort } );
+    v.append( { "cuePort", m_cuePort } );
+    v.append( { "cueBind", m_cueBind } );
+    v.append( { "language", QString::fromLatin1( Strings::toCode( Strings::language() ) ) } );
+    return v;
 }
 
-void GLwidget::saveAllSettings()
+void GLwidget::rememberUiSettings()
 {
-    RenderPipeline::saveSettings();
-    saveUiSettings();
+    for ( const auto &kv : uiSettings() )
+        SettingsFile::remember( kv.first, kv.second );
+}
+
+QString GLwidget::saveUiSettings( bool everything )
+{
+    QSettings s( SettingsFile::path(), QSettings::IniFormat );
+    for ( const auto &kv : uiSettings() )
+        SettingsFile::store( s, kv.first, kv.second, everything );
+    s.sync();
+    return SettingsFile::failure( s );
+}
+
+void GLwidget::saveAllSettings( bool everything )
+{
+    QString why = RenderPipeline::saveSettings( everything );
+    if ( why.isEmpty() )
+        why = saveUiSettings( everything );
+    else
+        saveUiSettings( everything );
+    if ( !why.isEmpty() )
+    {
+        fprintf( stderr, "SETTINGS: %s is %s - nothing was saved\n",
+                 qPrintable( QFileInfo( SettingsFile::path() ).absoluteFilePath() ), qPrintable( why ) );
+        notify( QString::fromUtf8( Strings::uiText( S_NOTICE_SETTINGS_READONLY_FMT ) )
+                    .arg( QDir::toNativeSeparators( QFileInfo( SettingsFile::path() ).absoluteFilePath() ) ) );
+    }
+}
+
+void GLwidget::checkSettingsWritable()
+{
+    // QSettings writes through a temporary file beside the ini and renames it, so the folder must take a new file.
+    const QFileInfo ini( SettingsFile::path() );
+    QTemporaryFile  probe( ini.absolutePath() + "/.kaleidoscope_write_test_XXXXXX" );
+    if ( probe.open() && ( !ini.exists() || ini.isWritable() ) )
+        return;
+    fprintf( stderr, "SETTINGS: %s cannot be written - settings, taste and scene memory will not be kept\n",
+             qPrintable( ini.absoluteFilePath() ) );
+    notify( QString::fromUtf8( Strings::uiText( S_NOTICE_SETTINGS_READONLY_FMT ) )
+                .arg( QDir::toNativeSeparators( ini.absoluteFilePath() ) ),
+            15000 );
+}
+
+void GLwidget::notify( const QString &text, int ms )
+{
+    fprintf( stderr, "NOTICE: %s\n", qPrintable( text ) );
+    m_notice = text;
+    m_noticeAt = -1; // starts with the next frame (the frame timer may not run yet)
+    m_noticeMs = ms;
+    update();
+}
+
+float GLwidget::noticeAlpha()
+{
+    if ( m_notice.isEmpty() )
+        return 0.f;
+    const qint64 now = m_fpsTimer.elapsed();
+    if ( m_noticeAt < 0 )
+        m_noticeAt = now;
+    const float t = static_cast<float>( now - m_noticeAt );
+    if ( t >= static_cast<float>( m_noticeMs ) )
+    {
+        m_notice.clear();
+        return 0.f;
+    }
+    return std::min( { 1.f, t / 250.f, ( static_cast<float>( m_noticeMs ) - t ) / 250.f } );
+}
+
+void GLwidget::drawNotice( QPainter *painter, float alpha )
+{
+    // Sized by the output's height, so it reads on a 720p projector and on a 4K wall alike.
+    QFont        f( "Segoe UI", std::max( 11, height() / 60 ) );
+    QFontMetrics fm( f );
+    const int    pad = fm.height() / 2;
+    const int    w = std::min( width() - 40, fm.horizontalAdvance( m_notice ) + 4 * pad );
+    const int    h = fm.height() + 2 * pad;
+    const QRect  box( ( width() - w ) / 2, height() - h - height() / 12, w, h );
+    painter->fillRect( box, QColor( 0, 0, 0, static_cast<int>( 190.f * alpha ) ) );
+    painter->fillRect( box.x(), box.y(), 5, h, QColor( 255, 190, 80, static_cast<int>( 255.f * alpha ) ) );
+    painter->setFont( f );
+    painter->setPen( QColor( 255, 255, 255, static_cast<int>( 255.f * alpha ) ) );
+    painter->drawText( box.adjusted( 2 * pad, 0, -pad, 0 ), Qt::AlignVCenter | Qt::AlignLeft,
+                       fm.elidedText( m_notice, Qt::ElideMiddle, w - 3 * pad ) );
 }
 
 // Capture the current frame so it can be cross-faded out over the new config.
@@ -2406,7 +2510,7 @@ void GLwidget::applyMidi()
                 {
                     m_midiLearn = -1;
                     m_midiLearned = true;
-                    saveUiSettings(); // persist the new mapping
+                    saveUiSettings( false ); // persist the new mapping
                     fprintf( stderr, "MIDI learn: done (gespeichert)\n" );
                 }
             }
@@ -3037,7 +3141,7 @@ void GLwidget::selectAudioDevice( int index )
     if ( index == 0 ) // 0 = default output (loopback)
     {
         m_audioAnalyzer->requestDevice( QString(), false );
-        QSettings( Platform::assetPath( kUiSettingsPath ), QSettings::IniFormat ).remove( "audioDevice" );
+        QSettings( SettingsFile::path(), QSettings::IniFormat ).remove( "audioDevice" );
         fprintf( stderr, "Audio source: default (loopback)\n" );
         return;
     }
@@ -3047,7 +3151,7 @@ void GLwidget::selectAudioDevice( int index )
     {
         m_audioAnalyzer->requestDevice( devs[di].id, devs[di].isCapture );
         // remembered: the next start captures the same source (or the default while it is missing)
-        QSettings st( Platform::assetPath( kUiSettingsPath ), QSettings::IniFormat );
+        QSettings st( SettingsFile::path(), QSettings::IniFormat );
         st.setValue( "audioDevice", devs[di].id );
         st.setValue( "audioDeviceInput", devs[di].isCapture );
         fprintf( stderr, "Audio source: %s\n", devs[di].name.toLocal8Bit().constData() );
@@ -3388,7 +3492,7 @@ void GLwidget::openQuitConfirm()
         return std::vector<OsdItem>{
             osdAct( osdT( S_OSD_QUIT_NO ), [] {}, true ), // first row: OK by reflex does no harm
             osdAct( osdT( S_OSD_QUIT_YES ), [this]
-        { saveAllSettings(); exit( 0 ); } ),
+        { saveAllSettings( false ); exit( 0 ); } ),
         };
     } );
 }
@@ -3629,7 +3733,7 @@ std::vector<OsdItem> GLwidget::osdRootItems()
                                 [this]( int i )
         { Strings::setLanguage( i == 1 ? LangE::EN : LangE::DE ); m_osd.requestRebuild(); } ) );
         v.push_back( osdAct( osdT( S_OSD_SAVEDEFAULTS ), [this]
-        { saveAllSettings(); }, false, true ) );
+        { saveAllSettings( true ); }, false, true ) );
         if ( updateAvailable() )
             v.push_back( osdAct( osdT( S_OSD_UPDATE_FMT ).arg( updateVersion() ), [this]
             { remoteInstallUpdate(); }, true ) );
@@ -3638,7 +3742,7 @@ std::vector<OsdItem> GLwidget::osdRootItems()
             return std::vector<OsdItem>{
                 osdAct( osdT( S_OSD_QUIT_NO ), [] {}, true ),
                 osdAct( osdT( S_OSD_QUIT_YES ), [this]
-            { saveAllSettings(); exit( 0 ); } ),
+            { saveAllSettings( false ); exit( 0 ); } ),
             };
         } ) );
         return v;
@@ -3797,7 +3901,7 @@ void GLwidget::keyPressEvent( QKeyEvent *event )
             RenderPipeline::toggleBlackout();
             break;
         case Qt::Key_Q:
-            saveAllSettings();
+            saveAllSettings( false );
             exit( 0 );
             break;
         case Qt::Key_0:
@@ -3901,7 +4005,7 @@ void GLwidget::keyPressEvent( QKeyEvent *event )
 
         // ---- Persist the current look + UI state as the startup default ----
         case Qt::Key_K:
-            saveAllSettings();
+            saveAllSettings( true );
             break;
 
         // ---- Instant replay: 'y' arms the rolling buffer, 'x' saves it ----

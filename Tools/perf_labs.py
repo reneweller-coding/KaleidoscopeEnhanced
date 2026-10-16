@@ -12,7 +12,7 @@ ShaderForge log on and the same rolls (--seed), for --secs seconds.  Per scene:
   first draws            the longest first draw of a forged 3D-lab program
   GL                     KHR_debug messages of high or medium severity (--gldebug: a debug context, slower)
 
-The repo ini (kaleidoscope_settings.ini) is backed up and restored, the
+The app runs on a private copy of the settings (KALEIDO_SETTINGS, private_settings.py), the
 temporary preset removed.  Nothing is sent anywhere; the app ends itself
 (KALEIDO_MAX_RUNTIME_SECS).
 
@@ -21,13 +21,14 @@ temporary preset removed.  Nothing is sent anywhere; the app ends itself
   python Tools/perf_labs.py --tsv perf.tsv        # also as a table file
   python Tools/perf_labs.py --wav Tools/review128.wav   # with music (a steady beat: phrase-locked walks)
 """
-import argparse, io, os, re, shutil, statistics, subprocess, sys, time
+import argparse, io, os, re, statistics, subprocess, sys, time
+
+from private_settings import PrivateSettings
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 REL = os.path.join(ROOT, "Release")
 # KALEIDO_EXE: a copy of the app in Release/ (a long run goes on while the app is rebuilt)
 EXE = os.environ.get("KALEIDO_EXE", "Kaleidoscope.exe")
-INI = os.path.join(ROOT, "kaleidoscope_settings.ini")
 DEFAULT = ["ChainLab2D", "ChainLabTunnel", "ChainLab3D", "ChainSlice3D",
            "Chain3DKifsTetra", "Chain3DMandelbox", "Chain3DOctaGyroid", "Chain3DPolarTunnelBoxes", "Chain3DTwistTorus",
            "ChainP4mSpiralKaleidoWarp", "ChainWaveDrosteHex"]
@@ -50,6 +51,7 @@ def preset(scene, still):
 
 
 SEED, GLDEBUG = 1, False
+PS = None  # the private settings of this run (main())
 
 
 WAV = None
@@ -57,8 +59,8 @@ WAV = None
 
 def run(scene, secs, skip, still):
     io.open(os.path.join(ROOT, "Presets", "_perf.xml"), "w", encoding="utf-8").write(preset(scene, still))
-    env = dict(os.environ, KALEIDO_MAX_RUNTIME_SECS=str(secs), KALEIDO_NO_ACTIVATE="1", KALEIDO_FPS_LOG="1",
-               KALEIDO_GPU_TIMING="1", KALEIDO_FRAME_LOG="25", KALEIDO_SPEC_LOG="1", KALEIDO_SEED=str(SEED))
+    env = PS.env(dict(os.environ, KALEIDO_MAX_RUNTIME_SECS=str(secs), KALEIDO_NO_ACTIVATE="1", KALEIDO_FPS_LOG="1",
+                      KALEIDO_GPU_TIMING="1", KALEIDO_FRAME_LOG="25", KALEIDO_SPEC_LOG="1", KALEIDO_SEED=str(SEED)))
     if GLDEBUG:
         env["KALEIDO_GL_DEBUG"] = "1"
     cmd = [os.path.join(REL, EXE), "-c", "_perf", "-l"] + (["-w", os.path.abspath(WAV)] if WAV else [])
@@ -94,11 +96,10 @@ def main():
     ap.add_argument("--wav", help="analyse this WAV instead of the live input (silent, real time): music for the walk")
     ap.add_argument("--gldebug", action="store_true", help="KHR_debug on (a debug context: slower, the GL column counts)")
     a = ap.parse_args()
-    global SEED, GLDEBUG, WAV
+    global SEED, GLDEBUG, WAV, PS
     SEED, GLDEBUG, WAV = a.seed, a.gldebug, a.wav
     sys.stdout.reconfigure(encoding="utf-8")
-    backup = INI + ".perf_backup"
-    shutil.copy(INI, backup)
+    PS = PrivateSettings("perf")
     rows = []
     try:
         hdr = "%-26s %6s %5s %7s %7s %7s %10s %10s %8s %4s" % ("scene", "fps", "min", "gpu ms", "p90", "max",
@@ -111,8 +112,7 @@ def main():
                 s, r["fps_med"], r["fps_min"], r["gpu_med"], r["gpu_p90"], r["gpu_max"], r["frames"], r["frame_max"],
                 r["gaps"], r["gap_max"], r["first_draw_max"], r["gl"]), flush=True)
     finally:
-        shutil.copy(backup, INI)
-        os.remove(backup)
+        PS.close()
         try:
             os.remove(os.path.join(ROOT, "Presets", "_perf.xml"))
         except OSError:

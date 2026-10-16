@@ -346,6 +346,8 @@ enum StrIdE
     S_EXPORT_NEED_AUDIO,
     S_EXPORT_OVERWRITE_FMT, // %1 file name
     S_EXPORT_QUIT_RUNNING,
+    // The main program's on-screen notices (GLwidget::notify()).
+    S_NOTICE_SETTINGS_READONLY_FMT, // %1 the settings file
 
     S_COUNT
 };

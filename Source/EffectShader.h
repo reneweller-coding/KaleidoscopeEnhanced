@@ -603,6 +603,11 @@ public:
      * the uber-shaders.
      **/
     static bool M_ChainRunner;
+    /// Whether every compiled formula is logged ("Expr OK"): KALEIDO_EXPR_LOG, or the editor; otherwise a preset
+    /// logs one summary line.
+    static bool M_ExprLog;
+    /// Formulas compiled so far in this process (for the presets' summary lines).
+    static int M_ExprCompiled;
     /** The 2D chain runner's resolution relative to the frame (ini "chainScale", 0.5..1; KALEIDO_CHAIN_SCALE): below
      * 1 the chain passes run on a coarser grid and the lab's last pass reads them bilinearly (not across seams).
      **/

@@ -19,7 +19,8 @@ appears once is clearer written out than hidden behind a name invented for it.
 The engine resolves `<rig preset="X"/>` from Presets/rigs.xml in
 Configuration::addUniforms, so this is a pure re-expression: the resulting
 expression list per scene is identical, which `--verify` checks by comparing
-the engine's own "Expr OK" log lines from before and after.
+the engine's own "Expr OK" log lines from before and after (since 16.10.2026 the
+main program writes them only with KALEIDO_EXPR_LOG=1; the editor always does).
 """
 import argparse, collections, io, os, re, sys
 
