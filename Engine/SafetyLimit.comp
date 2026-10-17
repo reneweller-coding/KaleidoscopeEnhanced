@@ -38,9 +38,10 @@ layout( std430, binding = 3 ) buffer Exposure
     float prevSample[64]; ///< This pass: the sample of the statistics' last frame.
     float cellRef[64];    ///< Flashing areas: each cell's last luminance extreme.
     float cellDir[64];    ///< Flashing areas: the direction it travels since (+1 up, -1 down, 0 not started).
-    float cellRate[64];   ///< Flashing areas: its reversals per second (decaying over a second).
+    float cellRate[64];   ///< Flashing areas: its reversals within the last second.
     float hazardDim;      ///< Flashing areas: the extra dimming while they cover a quarter of the frame (1 = none).
     float hazardOn;       ///< Flashing areas: 1 while they do (with hysteresis).
+    float cellAge[512];   ///< Flashing areas: the ages in seconds of each cell's last eight reversals (8 per cell).
 };
 uniform sampler2D texFrame; ///< The finished frame, mipmapped.
 uniform int       lvl;      ///< The mip level to read (long side at most 4 texels).
@@ -70,14 +71,18 @@ void main()
     // (six reversals) in a quarter of the frame or more -- the guideline's threshold (Harding, ITU-R BT.1702) --
     // the picture is dimmed to 60 % (fast) and the mean may rise at a quarter of the rate, until the share falls
     // under 15 % (released slowly).  A scene fade is one change, not a flash, and is not counted.
+    //
+    // The reversals are counted within the last second, the way the guideline counts (any one second).  Until
+    // 17.10.2026 they were a sum decaying over a second, which flashing in bursts -- the way music flashes -- kept
+    // under six: measured at 60 fps over real music, VolumetricFire flashed 3.5 times a second and the dimming was
+    // on in 1 % of its frames, VolcanicLightningPlume and HarmonicRings in none.
     const int m = min( lsize2.x * lsize2.y, 64 );
-    const float keep = exp( -dt );
-    int         hot = 0;
+    int       hot = 0;
     for ( int i = 0; i < m; ++i )
     {
         const vec3  c = texelFetch( texFrame, ivec2( i % lsize2.x, i / lsize2.x ), lvl2 ).rgb;
         const float l = dot( c, vec3( 0.299, 0.587, 0.114 ) );
-        cellRate[i] *= keep;
+        bool        turned = false;
         if ( cellDir[i] == 0.0 )
         {
             cellRef[i] = l;
@@ -91,8 +96,7 @@ void main()
             {
                 cellDir[i] = -1.0;
                 cellRef[i] = l;
-                if ( fading == 0 )
-                    cellRate[i] += 1.0;
+                turned = fading == 0;
             }
         }
         else
@@ -103,11 +107,21 @@ void main()
             {
                 cellDir[i] = 1.0;
                 cellRef[i] = l;
-                if ( fading == 0 )
-                    cellRate[i] += 1.0;
+                turned = fading == 0;
             }
         }
-        if ( cellRate[i] >= 6.0 )
+        // Age the cell's last eight reversals by this frame; a new one enters at age 0 and pushes the oldest out.
+        // Downwards, so each slot reads its younger neighbour before that one is overwritten.
+        int recent = 0;
+        for ( int k = 7; k >= 0; --k )
+        {
+            const int j = i * 8 + k;
+            cellAge[j] = turned ? ( k > 0 ? min( cellAge[j - 1] + dt, 99.0 ) : 0.0 ) : min( cellAge[j] + dt, 99.0 );
+            if ( cellAge[j] < 1.0 )
+                ++recent;
+        }
+        cellRate[i] = float( recent );
+        if ( recent >= 6 )
             ++hot;
     }
     const float share = m > 0 ? float( hot ) / float( m ) : 0.0;

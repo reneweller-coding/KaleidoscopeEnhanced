@@ -428,7 +428,8 @@ private:
                                ///< wall-clock rate and multiplies the brightness scale by (1 - level).
     GLuint m_autoExpBuf = 0;              ///< SSBO (bind point 3): { exposure, p50, p98 } from CfxHistogram.comp, then
                                           ///< the limiter's { limScale, prevMean, liveStd, liveMotion, frameCount,
-                                          ///< prevSample[64] } from SafetyLimit.comp; read directly by Present.frag.
+                                          ///< prevSample[64], the flashing areas' cells and their reversal ages }
+                                          ///< from SafetyLimit.comp; read directly by Present.frag.
     GLuint m_autoExpProg = 0;             ///< CfxHistogram.comp compute program (0 if unavailable).
     GLuint m_limitProg = 0;               ///< SafetyLimit.comp compute program (0: the CPU readback path).
     bool   m_autoExpTried = false; ///< True once auto-exposure program creation has been attempted (tried only once).

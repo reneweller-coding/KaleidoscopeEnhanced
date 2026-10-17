@@ -505,9 +505,11 @@ void PresentPass::run( const Inputs &in )
         if ( m_autoExpProg || m_limitProg )
         {
             // { exposure, p50, p98, limScale, prevMean, liveStd, liveMotion, frameCount, prevSample[64] }
-            // ... + the flashing areas' { cellRef[64], cellDir[64], cellRate[64], hazardDim, hazardOn }
-            float init[8 + 64 + 3 * 64 + 2] = { 1.f, 0.5f, 1.f, 1.f, -1.f, 0.f, 0.f, 0.f };
+            // ... + the flashing areas' { cellRef[64], cellDir[64], cellRate[64], hazardDim, hazardOn, cellAge[512] }
+            static float init[8 + 64 + 3 * 64 + 2 + 512] = { 1.f, 0.5f, 1.f, 1.f, -1.f, 0.f, 0.f, 0.f };
             init[8 + 64 + 3 * 64] = 1.f; // hazardDim: no extra dimming
+            for ( int i = 0; i < 512; ++i )
+                init[8 + 64 + 3 * 64 + 2 + i] = 99.f; // cellAge: no reversal yet (long ago)
             glGenBuffers( 1, &m_autoExpBuf );
             glBindBuffer( GL_SHADER_STORAGE_BUFFER, m_autoExpBuf );
             glBufferData( GL_SHADER_STORAGE_BUFFER, sizeof( init ), init, GL_DYNAMIC_COPY );

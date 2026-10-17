@@ -378,9 +378,18 @@ def decode(vid):
     return fr @ np.array([0.299, 0.587, 0.114], np.float32), n
 
 
+# A video export (-e) runs on the frame clock: the video's time IS the log's time, and a scene shows 0.2 .. 1.35 s
+# after its [sweep] line (measured 17.10.2026, 60 fps).  With the guards below, 0.2 starts every window after the cut
+# and ends it before the next one.  Estimated instead, the offset of one recording came out 2.8 s (the screening
+# WAV's loud/quiet edge recurs every 4 s, in step with the 8-s windows, and scores nearly as high as the cuts) -- and
+# every window of it held the first 1.6 s of the next scene, a cut that read as BLITZ.
+EXPORT_OFFSET = 0.2
+
+
 def time_offset(luma, ev, nfr):
     """Video and app clocks drift; scene cuts are motion spikes, so the offset
-    that lands the cuts on the spikes is the offset."""
+    that lands the cuts on the spikes is the offset.  Only for a real-time recording -- an export knows its offset
+    (EXPORT_OFFSET)."""
     d = np.abs(np.diff(luma, axis=0)).mean(axis=(1, 2))
     best, score = 0.0, -1.0
     for off in np.arange(-3.0, 3.01, 0.2):
@@ -399,7 +408,8 @@ def measure(vid, log_path, hold, cycle=8.0):
     luma, nfr = decode(vid)
     if luma is None:
         return []
-    off = time_offset(luma, ev, nfr)
+    exported = "[export]" in io.open(log_path, encoding="utf-8", errors="ignore").read()
+    off = EXPORT_OFFSET if exported else time_offset(luma, ev, nfr)
     rows = []
     for k, (t0, name) in enumerate(ev):
         # The FIRST window catches the app still coming up (the fade in from

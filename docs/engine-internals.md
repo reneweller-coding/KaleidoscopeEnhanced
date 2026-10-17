@@ -5310,3 +5310,26 @@ measuring the batch tools before running them showed: most of their hours were w
   run-to-run scatter named in the screening section above (2 % calm, 20 % busy) predates the seeded `qrand()`.
 
 `Kaleidoscope.exe -q`: 122 checks.
+
+## 17.10.2026 (16): the 70 flagged scenes, looked at
+
+The new baseline flagged 70 scenes (LEER, STARR, BLITZ). Each was rendered again as a 60-fps export -- three seeds,
+the screening WAV and real music (Prodigy, Infected Mushroom, Astrix) -- and looked at as a contact sheet; the
+flashes were counted the way the guidelines count them (WCAG 2.3.1, ITU-R BT.1702: swings of at least 0.1 in
+relative luminance, the darker state under 0.8, in a quarter of the frame, more than three flashes in any one
+second), which the 5-fps BLITZ figure cannot: it is the largest single step against the typical one, and above
+2.5 Hz it sees nothing.
+
+- **The flash limiter never came on.** `SafetyLimit.comp` counted each cell's reversals as a sum decaying over a
+  second and waited for six. Flashing in bursts, the way music flashes, kept that sum under six: VolumetricFire
+  flashed 3.5 times a second over Infected Mushroom in all three seeds, VolcanicLightningPlume and HarmonicRings
+  too, and replayed on the same frames the hazard was on in 1 % of VolumetricFire's frames and in none of the
+  others' (the 16.10 test was a steady 5-Hz checkerboard, which a decaying sum does reach). Now each cell keeps the
+  ages of its last eight reversals and counts those of the last second. Same music, same seeds: the highest count
+  is 3.0 (the limiter comes on at six reversals, three flashes, which the guideline still allows), VolumetricFire
+  and VolcanicLightningPlume 3.5 -> 3.0, HarmonicRings 3.5 -> 2.5; the dimming was on in about 0.2 % of the frames.
+- **The screening's windows sat 2.6 s late in one recording.** `screen.py` estimated the offset between log and
+  video from the cuts; the screening WAV's loud/quiet edge recurs every 4 s, in step with the 8-s windows, and in
+  one of six recordings it won -- every window then held the first 1.6 s of the next scene and its cut, which reads
+  as BLITZ. An export runs on the frame clock, so the offset is known (a scene shows 0.2 .. 1.35 s after its
+  `[sweep]` line): 0.2 now. The baseline's 39 recordings were not affected (no recording with BLITZ throughout).
