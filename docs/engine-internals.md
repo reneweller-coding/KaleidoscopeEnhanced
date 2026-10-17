@@ -5711,3 +5711,10 @@ Tools/scenegen/chain_classes.py, which gen.py writes into every shader with a ch
 The looks' code stays; `PHOTO_ONLY = False` brings it all back. Measured on the same rolls (old | new): 2D lab hue
 change across the picture 0.098 -> 0.072, over time 0.066 -> 0.042; the 3D scenes' saturation 0.38 .. 0.50 ->
 0.40 .. 0.63 (the photos' own colours, where the field had greyed them).
+
+**OctaGyroid less flat.** Asked the same day: the scene with surfaces and round holes still looked flat. It is one
+gyroid sheet; even at half size its smooth saddles filled the picture. Tried on the same six rolls: the world at a
+third (k 3) -- more of the same sheets; the sheet perforated by the pockets of a gyroid three times finer (where that
+gyroid exceeds 0.55, `max(sheet, (g - 0.55) / (1.8 * 7.5))`) -- a coral-like lacework with the large forms kept;
+both together -- too busy. Taken: the perforation at k 2. Frame-to-frame luma change 0.006 -> 0.010 (the finer
+structure moving), no sparkle in consecutive frames.

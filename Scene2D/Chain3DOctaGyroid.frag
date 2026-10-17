@@ -6,7 +6,8 @@
  *
  *  @brief
  *  CHAIN3DOCTAGYROID: a raymarched world built from a chain of continuous 3D space transforms -- a gyroid membrane
- *  folded into octahedral mirror symmetry, the mirrors turning.
+ *  folded into octahedral mirror symmetry, the mirrors turning, perforated by the pockets of a gyroid three times
+ *  finer (17.10.2026: one smooth sheet filled the picture).
  *
  *  We fly slowly through it; the surfaces are textured with the photograph read through a 2D transform chain of its
  *  own (triplanar), lit and fogged. Every stage is continuous, so the structure morphs without jumps. Endless,
@@ -4055,7 +4056,9 @@ float field3( vec3 p )
     p = fOcta( p );
     p = fRot( p, vec3( 1.0, 0.0, 0.0 ), 0.4 * sin( gT * 0.05 ) );
     gP = p;
-    return sdGyroid3( p * 2.5, 0.25 + 0.15 * gSpread ) / 2.5;
+    float g = sdGyroid3( p * 2.5, 0.25 + 0.15 * gSpread ) / 2.5;
+    vec3  w = p * 7.5 + vec3( 1.3, 0.7, 2.1 );
+    return max( g, ( dot( sin( w ), cos( w.yzx ) ) - 0.55 ) / ( 1.8 * 7.5 ) );
 }
 /**  The surface colouring: a 2D chain of its own, applied triplanarly.
  *
