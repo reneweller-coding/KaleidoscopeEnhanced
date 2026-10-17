@@ -5613,8 +5613,8 @@ rotation phase what a long show gathers).
 The 2D chain lab looked too colourful and too fast in its colours, against the rest of the program -- most of all
 in relief, glowing edges and contour lines. Measured (Tools-free, a scratch script: pinned looks x two palettes x
 three chains against a sample of 169 catalogue scenes), per frame over the coloured pixels: the share of coloured
-pixels was 0.87 .. 0.98 (catalogue median 0.47, p90 0.94), the hue change across the picture 0.17 .. 0.51 rad per
-4 px (catalogue median 0.09, p75 0.17), and over time 0.09 .. 0.26 rad per 1/6 s (median 0.07). The cause: the
+pixels was 0.80 .. 1.00 (catalogue median 0.47, p90 0.94), the hue change across the picture 0.12 .. 0.53 rad per
+4 px (catalogue median 0.09, p75 0.17), and over time 0.09 .. 0.22 rad per 1/6 s (median 0.07). The cause: the
 colour field's hue ran through 0.9 + 0.6 turns per unit of the chain's coordinates plus a quarter turn with the
 photo's luma, at 0.6 .. 0.95 saturation -- in a kaleidoscope or a tiling every cell the whole rainbow -- and the
 glow of edges and contour lines was that field, or the photo, pushed to neon (`neonOf`, `glowColour`'s cubed photo
@@ -5622,16 +5622,16 @@ colour). Now one base hue that wanders with the music, a soft swing of +-0.13 tu
 mirrored coordinates, so it stays seamless), saturation 0.38 .. 0.6, the photo's own colours raised 1.1 instead of
 1.4, and the glow drawn from the base hue with a little of the photo's own colour. In ChainLab2D, FxChain and the
 tunnel (sources Tools/scenegen/src, make_chainlabtunnel.py; the frags and Engine/ChainPass regenerated): the hue
-change across the picture 0.05 .. 0.14, over time 0.03 .. 0.11 -- the catalogue's range.
+change across the picture 0.06 .. 0.16, over time 0.04 .. 0.12 -- the catalogue's range.
 
 The 3D chain labs had the same colour field: ChainLab3D, ChainSlice3D and the five Chain3D scenes colour their
 surfaces with a 2D chain projected on three planes (`chainPlane`, from Tools/scenegen/make_chains3d.py), raised the
 surface colour's saturation 1.5 again, glowed their rims with `glowColour` (an fbm hue field over the screen, the
 photo's colour cubed into neon) and fogged in the palette's complementary hue. Measured the same way (pinned looks x
-two palettes x three worlds, and the five scenes): the hue change across the picture 0.21 .. 0.41 in the slice lab and
-the Chain3D scenes, over time 0.15 .. 0.32. Now the same base hue and +-0.13 swing as the 2D lab (`chainHue0`), the
+two palettes x three worlds, and the five scenes): the hue change across the picture 0.24 .. 0.40 in the slice lab and
+the Chain3D scenes, over time 0.12 .. 0.30. Now the same base hue and +-0.13 swing as the 2D lab (`chainHue0`), the
 surface saturation raised 1.1, rims and fog in `calmGlow` (the base hue with a little of the surface's own colour) and
-the fog a neighbour of the surfaces' hue: across the picture 0.07 .. 0.17, over time 0.06 .. 0.13. The generators were
+the fog a neighbour of the surfaces' hue: across the picture 0.08 .. 0.17, over time 0.07 .. 0.12. The generators were
 checked first to reproduce the committed sources exactly (make_chains3d -> make_chainlab3d -> make_chainslice3d ->
 gen.py, which writes the chain passes too); make_chainlab3d now cuts the lab's main at the palette helpers.
 
@@ -5640,16 +5640,20 @@ hue -- calm, but monochrome, and the photos themselves are rarely colourful; the
 Now the glow takes the photo's own colour where the line runs: its broad colour (a coarse mip, level 5: the colour of
 the region, not of every grain), at the photo's own saturation, brought up to full brightness; the chroma measured over
 a brightness floor (0.25), because brought up to full brightness a dark patch's noise turns into strong random hues --
-the first try without it measured as restless as the original. Where the photo is grey, the field's hue tints the glow;
+the first try without it measured more restless (edges up to 0.18 across the picture, up to 0.15 over time). Where the photo is grey, the field's hue tints the glow;
 the palette knob leans it there. The photo's share in the photo and relief looks rose too (field 0.15 .. 0.6, was
-0.2 .. 0.75). 2D lab measured: across the picture 0.05 .. 0.21 (edges 0.13, contour lines 0.20, flow 0.15; originally
-0.22, 0.17 .. 0.32, 0.33 .. 0.51), over time 0.05 .. 0.12. The 3D labs' rims and fog (`calmGlow`) the same way.
+0.2 .. 0.75). 2D lab measured: across the picture 0.07 .. 0.20 (edges 0.08, contour lines 0.16 .. 0.20, flow 0.14;
+originally 0.15 .. 0.33, 0.12 .. 0.53, 0.32 .. 0.39), over time 0.05 .. 0.11. The 3D labs' rims and fog (`calmGlow`) the same way.
 
 **Not washed out.** The calm palette looked washed out (asked 17.10.2026): measured as the mean saturation of the
-lit pixels, 0.32 .. 0.56 against the catalogue's median 0.43 and upper quartile 0.59 (the rainbow version had
-0.52 .. 0.79). Now the field at 0.55 .. 0.8 saturation, the photo's colours raised 1.35 and its tones spread (darks
-a little darker, lights brighter), the relief's light stronger, the glow's photo colour a little purer: 0.41 .. 0.67
--- the catalogue's vivid end -- while the hue change across the picture stays 0.07 .. 0.22.
+lit pixels, 0.32 .. 0.49 against the catalogue's median 0.43 and upper quartile 0.59 (the rainbow version had
+0.44 .. 0.82). Now the field at 0.55 .. 0.8 saturation, the photo's colours raised 1.35 and its tones spread (darks
+a little darker, lights brighter), the relief's light stronger, the glow's photo colour a little purer: 0.39 .. 0.60
+-- up to the catalogue's upper quartile -- while the hue change across the picture stays 0.06 .. 0.21.
+
+(The numbers in this section were corrected the same day: the measuring script had read every sweep window as the
+entry after it -- the sweep's scene 0 is a copy of the seeded first scene.  The ranges moved by up to 0.05; the
+conclusions stand.)
 
 ## 17.10.2026 (21): the 3D chain worlds from a little further away
 

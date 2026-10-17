@@ -441,7 +441,7 @@ void main()
     float fsat = 0.55 + 0.25 * swell;   // 0.55 .. 0.8: the calm palette looked washed out at 0.38 .. 0.6
     vec3 field = hsv2rgb(vec3(fract(h), fsat, 1.0)) * (0.35 + 1.3 * m);
     // The photo's colours raised 1.35 and its tones spread (darks a little darker, lights brighter): the photo and
-    // relief looks measured a luma contrast of 0.04 .. 0.06 against the catalogue's 0.12 (17.10.2026).
+    // relief looks measured a luma contrast of 0.04 .. 0.08 against the catalogue's 0.12 (17.10.2026).
     vec3 photo = max((ph - m) * 1.35 + m, 0.0) * (0.45 + 1.1 * smoothstep(0.05, 0.7, m));
     photo = mix(photo, field, 0.45 * clamp(paletteP, 0.0, 1.0));   // the scene keeps its colours unless paletteP asks
     // Relief: the chain's photo lit from a slowly circling light.
