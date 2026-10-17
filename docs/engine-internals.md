@@ -6273,3 +6273,29 @@ Eighteen scenes of family L. These are nature pieces built as fields that fill t
   main creeks first and the fine ones last. With sqrt valleys the flat stayed dry.
 
 With family L all 200 ideas of docs/proposals-2026-10-17-abstrakt-200.md are built.
+
+## 17.10.2026 (38): catalogue and measurements of the 200
+
+**Catalogue frames.** Tools/render_catalog_export.py rendered all 200 scenes as 600 frames in 3.6 min, with three
+jobs. make_catalog.py now holds 1415 scenes and 4523 pictures. Portable Chrome printed the PDF in 24 s (586 pages,
+47 MB).
+
+**What the frames showed:**
+- GreenbergHastingsWaves lit its own arc only when stateFrame was a multiple of both 30 and 400, that is every 1200
+  steps (30 s), so quiet passages went dark. It is now every 300 steps.
+- HarmonicLatticeFlight's eye flew through nodes on an irrational heading. It now flies along x through the cells'
+  middles, where no node or rod comes nearer than a third of a cell.
+- WireworldCircuitry, which the screening flagged as empty, got a brighter board and four times the spontaneous
+  electrons.
+
+**Screening.** Tools/screen.py measured the 200 scenes as 200 windows in 3.0 min.
+- It overwrites .screen/metrics.json and scene-cost.json with only what it measured. Both were saved first and the
+  new rows merged into them, so the full set covers 1415 scenes again.
+- GPU time a frame at 1920 x 1080: 0.43 to 1.65 ms, median 0.51. The dearest are LensSpaceInterior,
+  AntoineNecklaceZoom and TwinDragonRepTile. (The commit message 400bc1b4 said 0.12 for the lower end; that was
+  wrong.)
+- There were no drops against the baseline. The baseline itself was not re-saved: the new scenes have one seed
+  each, not three.
+- sync_scene_measures.py wrote gpuMs and the measured restlessness as complexity (Spearman 0.91 against the
+  hand-set values). The ranks spread over all scenes, so 292 entries moved.
+- check_schedule.py --quick: 14 plans, no violations.
