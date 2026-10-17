@@ -6021,3 +6021,32 @@ Eighteen stateless scenes of family E, each the analytic or semi-analytic field 
 started anywhere in the plane were rarely seen inside it. They now start inside the wedge, and each is summed with
 its images in the wedge's two mirrors, so it bounces off them and interferes with itself.
 
+## 17.10.2026 (31): light, abstract (ideas 87-100)
+
+Fourteen scenes of family F.
+- **CausticWeb:** caustics without a pool, from the refraction map's Jacobian: the light density is
+  1 / |det(I + D Hess h)|, summed over two to five drifting sheets. On a change of harmony the layer count fades in
+  and out, both ways across its wrap.
+- **The photo split by colour or wavelength:** DispersivePrismField (a triangular field of turning prisms, seven
+  wavelengths each bent further), ChromaticAberrationVortex (the red, green and blue channels twisted by different
+  amounts), SpectralSynthesisGlow (eight bands, each displaced further).
+- **Optics on the photo:** LightFieldParallaxLattice (a hexagonal microlens sheet, the photo's brightness as depth
+  layers), PolarizationRotatorField (optical rotation growing as 1 / lambda^2 between crossed polarisers),
+  GrinLensDrift (fish-eye and Luneburg lenses), InfiniteMirrorCorridorsAbstract (two mirrors at an angle that does
+  not close the circle), FresnelLensWarp (a magnifier collapsed into ring facets).
+- **Light over the photo:** CoherentSpeckleBloom (random speckle ordering into rosettes with the swell),
+  VolumetricShaftsAbstract (beams gathered by marching toward a wandering light through the photo's dark masses),
+  LightLeakChoreography (leaks sweeping arcs over a phrase, screen-blended).
+- **Two on the state pass:**
+  - AfterimageField keeps the eye's slow memory of the moving photo and shows the opponent colour wherever the
+    memory is brighter than what is seen now.
+  - KerrSelfFocusingFilaments is a ring buffer of a saturable 1D nonlinear Schroedinger beam, one row a step,
+    shown as the beam's history from the centre line.
+
+**Leapfrog and diffusion do not mix.** The Kerr beam is advanced by leapfrog: A_new = A_old + 2 dz i (D A_xx + N A),
+which holds for this dispersive equation while dz (4 D + N) < 1. A little real diffusion was added to damp the
+grid's own noise, and taken from the current row it made the scheme blow up within seconds; leapfrog is unstable for
+any diffusion on the middle level. Taken from the older row it is stable (DuFort-Frankel style, 8 nu dz < 1). A
+gentle pump, A *= 1 + 0.004 (1 - |A|^2), keeps the mean power from starving or running away. A slow sideways shift
+of both earlier rows lets the filaments wander.
+
