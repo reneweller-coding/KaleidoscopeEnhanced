@@ -14,6 +14,8 @@
  *   audioSwell      -> the relief light (slow)
  *
  * Knobs: styleP (photo / relief / glowing edges / contour lines), speedP (flow speed), detailP (texture sharpness), hueP.
+ * chainPhotoOnly (chain_classes.PHOTO_ONLY, set since 17.10.2026): only the photo in its own colours -- styleP has no
+ * effect, no edge glints on the kick, no tint with the mode.
 //@params styleP speedP detailP
 //@audio audioSpread audioKick audioMode audioSwell
 //@body
@@ -38,12 +40,13 @@ void main()
     vec2 grad;
     vec3 ph = imgChain(p, 1.0 - 1.2 * clamp(detailP, 0.0, 1.0), grad);
     float m = luma(ph);
-    vec3 photo = max((ph - m) * 1.4 + m, 0.0);
+    vec3 photo = max((ph - m) * (chainPhotoOnly ? 1.0 : 1.4) + m, 0.0);
     // Relief: the chain's photo lit from a slowly circling light.
     float la = 0.1 * sceneTime;
     float relief = clamp(0.5 + dot(grad, vec2(cos(la), sin(la))) * 5.0, 0.0, 1.0);
     vec3 reliefC = photo * (0.3 + 1.2 * relief) + vec3(1.0) * pow(relief, 6.0) * (0.1 + 0.3 * swell);
-    // Glowing edges: gradient magnitude as neon in the photo's colour.
+    // Glowing edges: gradient magnitude as neon in the photo's colour, over the photo held down to a sixth (at 6 %
+    // the frame was near black wherever the chain is smooth: ChainHexTunnel's catalogue frames, mean 3 of 255).
     float edge = smoothstep(0.02, 0.25, length(grad));
     vec3 neon = glowColour(ph, p, hueP * 0.159) * edge * (1.2 + 1.2 * kick) + photo * 0.16;
     // Isolines of the chain's luma: glowing contour lines.
@@ -51,11 +54,13 @@ void main()
     float pxi = fwidth(xi) + 1e-4;
     float iso = smoothstep(pxi * 1.5, 0.0, abs(fract(xi) - 0.5) - 0.5 + pxi * 1.5);
     vec3 isoC = glowColour(ph, p, hueP * 0.159) * iso * (1.0 + kick) + photo * 0.16;
-    float st = clamp(styleP, 0.0, 1.0) * 3.0;               // 0 photo, 1 relief, 2 edges, 3 isolines
+    float st = chainPhotoOnly ? 0.0 : clamp(styleP, 0.0, 1.0) * 3.0;   // 0 photo, 1 relief, 2 edges, 3 isolines
     vec3 col = mix(photo, reliefC, smoothstep(0.0, 1.0, st));
     col = mix(col, neon, smoothstep(1.0, 2.0, st));
     col = mix(col, isoC, smoothstep(2.0, 3.0, st));
-    col *= mix(vec3(0.9, 0.97, 1.08), vec3(1.08, 0.98, 0.9), mode);
-    col += glowColour(ph, p, hueP * 0.159) * edge * kick * 0.3 * (1.0 - smoothstep(1.0, 2.0, st));
+    if (!chainPhotoOnly) {
+        col *= mix(vec3(0.9, 0.97, 1.08), vec3(1.08, 0.98, 0.9), mode);
+        col += glowColour(ph, p, hueP * 0.159) * edge * kick * 0.3 * (1.0 - smoothstep(1.0, 2.0, st));
+    }
     finish(col);
 }

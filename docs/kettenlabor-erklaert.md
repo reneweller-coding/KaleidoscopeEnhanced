@@ -487,7 +487,7 @@ Relief, Konturlinien, Fluss und leuchtende Kanten im 2D-Labor und in der
 FX-Kette, die leuchtenden Ränder und das Relief im 3D-Labor und in den
 Chain3D-Szenen, die leuchtenden Kämme im Tunnel, die Höhenlinien im Raumschnitt
 und überall das Farbfeld, das Licht in Kalt/Warm-Tönen und die Kanten-Blitze
-auf dem Kick. Der Code dafür bleibt erhalten: Ein Schalter
+auf dem Kick – auch in den 36 festen Ketten-Szenen (`make_chains.py`). Der Code dafür bleibt erhalten: Ein Schalter
 (`PHOTO_ONLY` in `Tools/scenegen/chain_classes.py`, im Shader
 `chainPhotoOnly`) holt alles zurück. `styleP` und `paletteP` (im 3D-Labor auch
 `reliefP`, im Schnitt `isoP`) wirken solange nicht; die App wandert den Look

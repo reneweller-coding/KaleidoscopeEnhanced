@@ -5762,3 +5762,9 @@ blocks. Compared on six rolls: three rounds (larger blocks), three rounds at a w
 texture taken before the folds (one photo laid over the whole structure), both. Taken: three rounds and the
 continuous texture -- readable blocks, calm faces.
 
+**The 36 named chain scenes too.** The fixed chains (Tools/scenegen/make_chains.py: ChainSpiralKaleido ..
+ChainSquareChirikov) blend photo, relief, glowing edges and contour lines with styleP, push the photo's colours 1.4,
+glint along the edges on the kick and tint with the mode. Under the same switch they show the photo in its own
+colours only. Regenerated through gen.py, their frags carry the whole current chain library (the committed ones had
+an older, smaller one); the compiler drops what a chain does not call.
+
