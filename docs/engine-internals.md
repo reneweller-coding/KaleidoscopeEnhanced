@@ -5907,3 +5907,48 @@ HerringboneWrinkles and the display halves of the rest.
 - **Herringbone turned on the stereo width.** That is a rotation on the audio, which the standing rule forbids. The
   direction now swings on time only; the compression follows the swell, not the level.
 
+## 17.10.2026 (28): the photo as a fluid (ideas 1-18)
+
+Eighteen scenes of family A. Twelve carry the photo on the state pass. The state library gained three helpers for
+that:
+- `stCarry(vel, fresh)` moves the field one step.
+- `stUV(cc)` gives the photo coordinate the frame shows.
+- `stLod(cc, cellPx)` gives the mip level that matches the map's stretching, so strands finer than a pixel are
+  averaged rather than aliased.
+
+The field holds the **displacement** D = uv - x / H of the photo coordinate, not uv itself. uv is not periodic: the
+plain coordinate jumps by the field's width at the torus seam, and linear filtering across the seam mixed the two
+sides. D is periodic, and the semi-Lagrangian step becomes D_new(x) = D(x - v) - v / H. A small `fresh` share pulls
+D back toward zero every step, so a fresh photo flows back in and the strands never fold finer than the screen can
+show.
+
+The velocity fields are kinematic, written down rather than solved:
+- **Stirring:** rods dragging the fluid along a braid, a circle or a figure eight (ChaoticTaffyMixer); a hierarchy
+  of 32 point vortices that merge pairwise in five stages (VortexMergerCascade). Each group's centre is the mean of
+  its first-generation vortices, so a merged pair starts the next stage where it ended, and the sign belongs to the
+  hierarchy's half, so no merge flips a vortex.
+- **Gyres and jets:** the double gyre, mirrored into a field that holds exactly one period (LagrangianRidgeTransport);
+  meandering Kolmogorov jets (KolmogorovMeanders); zonal jets with vortex chains (ZonalJetBelts); a sliding cellular
+  lattice (CellularFlowMixing).
+- **Eddies and patches:** a curl-noise eddy field with a marker for two water masses (SurfaceQGFronts); slow modes
+  for elastic turbulence (ElasticTurbulenceRibbons); rotating elliptical patches whose marker re-forms slowly
+  (ContourDynamicsPatches).
+
+Every structural switch crossfades two velocity fields: a section over its first four seconds, a change of harmony
+over the fractional part of `audioHarmAdvance`.
+
+Six scenes are stateless:
+- **ArnoldCatRecurrence:** the cat map on 89, 144 or 377 tiles, whose periods are 22, 12 and 14. One period lasts
+  one phrase, so the photo is whole on the phrase's one. The partial step slides whole rows of tiles in the map's
+  two shears, so every step lands exactly on the integer map.
+- **BakerHorseshoeFold:** each change of harmony rolls one more tent-baker fold across the frame.
+- **ReversibleStokesUnmix:** the Couette profile, wound out and back over a phrase.
+- **RotatingPolygonVortex:** a lattice of polygon vortices, gaining a corner with each change of harmony.
+- **OrszagTangPlasma:** field lines and current sheets of a bent Orszag-Tang potential.
+- **RichtmyerMeshkovSpikes:** layered interfaces hit by a shock every phrase.
+- **DoubleDiffusiveStaircase:** a mirrored staircase with swaying fingers.
+
+**RayleighTaylorBlend began as a state scene.** Rising and sinking columns carried a marker, but the closed cells
+only wound each tile up: marbled squares, no plumes. It is now procedural: the tips travel over the phrase, and
+the fluid around each tip rolls up, the two sides turning opposite ways, into mushroom caps.
+
