@@ -1,15 +1,17 @@
 //@doc
  * @brief HISTOGRAM FLOW MATCH: the colours of one picture carried over into another's by optimal transport along each
  * colour channel -- every value of the first picture moves to the value at the same rank in the second, so the
- * first keeps its forms but takes on the second's whole palette.  Two pictures are cut from the photo; on each
- * change of harmony the colours flow one way or back, in patches that drift across the frame, so the palette pours
- * over in waves rather than all at once.
+ * first keeps its forms but takes on the second's whole palette.  The two are the current photo and the one shown
+ * before it (gliding over to their new pictures when the photos change).  On each change of harmony the colours
+ * flow one way or back, in patches that drift across the frame, so the palette pours over in waves rather than all at
+ * once.
  *
  * Audio Reactivity (structure, not only light):
  *   audioHarmAdvance -> each change of harmony sends the colours over or back (gliding)
  *   audioAdvance    -> the pictures and the patches drift (integrated)
  *
- * Knobs: patchP (the patches' size), cutP (where the second picture is cut), photoP (how far the flow goes), hueP.
+ * Knobs: patchP (the patches' size), cutP (how the second photo is framed: turned and shifted a little), photoP (how
+ * far the flow goes), hueP.
 //@params patchP cutP photoP
 //@audio audioHarmAdvance
 //@body
@@ -19,15 +21,15 @@ void main()
     vec2 drift = 0.05 * vec2(sin(0.017 * sceneTime + 0.01 * audioAdvance), cos(0.014 * sceneTime));
     vec2 uvA = 0.5 + p * 0.5 + drift;
     float cut = clamp(cutP, 0.0, 1.0);
-    vec2 offB = vec2(0.33, -0.21) + 0.25 * vec2(cut, -cut);
-    mat2 RB = rot2(2.0 + 2.0 * cut);
+    vec2 offB = 0.08 * vec2(cut, -cut);
+    mat2 RB = rot2(0.6 * (cut - 0.5));
     // sixteen samples of each picture: their values per channel, sorted, are the two distributions
     float aS[16], bR[16], bG[16], bB[16];
     vec3 aC[16];
     for (int i = 0; i < 16; ++i) {
         vec2 g = (vec2(float(i % 4), float(i / 4)) + 0.5) / 4.0 - 0.5;
         aC[i] = imgLod(0.5 + g * 0.9 + drift, 4.0);
-        vec3 b = imgLod(0.5 + RB * (g * 0.9 - drift) + offB, 4.0);
+        vec3 b = imgB(0.5 + RB * (g * 0.9 - drift) + offB, 4.0);   // the second photo
         bR[i] = b.r; bG[i] = b.g; bB[i] = b.b;
     }
     for (int a = 1; a < 16; ++a) {

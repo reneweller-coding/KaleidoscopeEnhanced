@@ -24,6 +24,8 @@ out vec4 fragColor; ///< The pixel's colour (output).
 // together by dark lead lines; warm godrays radiate from behind, pulsing
 // with the swell and flaring on the kick.
 uniform sampler2D tex0;         ///< The current photo.
+uniform sampler2D tex1;         ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 uniform float     time;         ///< Seconds since this activation, plus a rolled start (see sceneTime).
 uniform float     audioAdvance; ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
                                 ///< backwards).
@@ -34,6 +36,18 @@ uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, u
 
 in vec2 vPolar; ///< angle, radius 0..1
 in vec2 vXY;    ///< XY (from the vertex stage).
+
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
+}
 
 /**  Pseudo-random value(s) of the input.
  *
@@ -125,7 +139,7 @@ void main()
     // Each glass piece: a seeded crop of the current image, saturated.
     vec2  crop = hash2G( vec2( cell_hash * 37.0, cell_hash * 71.0 ) ) * 0.6;
     vec2  sample_uv = crop + fract( pv * 0.15 + cell_hash * 3.0 ) * 0.4;
-    vec3  pic = texture( tex0, sample_uv ).rgb;
+    vec3  pic = img( sample_uv );
     float lum = dot( pic, vec3( 0.299, 0.587, 0.114 ) );
     vec3  glass = mix( vec3( lum ), pic, 1.7 ); // extra saturation
     glass = hueRotG( glass, audioChromaHue * 0.5 + cell_hash * 2.2 );

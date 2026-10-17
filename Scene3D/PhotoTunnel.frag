@@ -20,6 +20,8 @@ out vec4 fragColor; ///< The pixel's colour (output).
 // PhotoTunnel.frag — the wall texture is the CURRENT IMAGE, folded into
 // kaleidoscope sectors around the tube and scrolling toward the camera.
 uniform sampler2D tex0;         ///< The current photo.
+uniform sampler2D tex1;         ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 uniform float     time;         ///< Seconds since this activation, plus a rolled start (see sceneTime).
 uniform float     sceneSeed;    ///< A random number fixed per activation.
 uniform float     audioAdvance; ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
@@ -32,6 +34,18 @@ uniform float audioBarPhase;    ///< Position within the current bar, 0..1.
 in vec2  vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 in float vDist; ///< Distance (from the vertex stage).
 in float vAng;  ///< Ang (from the vertex stage).
+
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
+}
 
 /**  Rotates a colour's hue by an angle (about the grey axis).
  *
@@ -70,7 +84,7 @@ void main()
 
     // The music scrolls the image down the tube.
     vec2 uv = vec2( a * 1.6, vUV.y * 7.0 - time * 0.30 - audioAdvance * 1.1 );
-    vec3 col = texture( tex0, mfold( uv ) ).rgb;
+    vec3 col = img( mfold( uv ) );
 
     // A luminous ring sweeps through once per bar; kicks flash the walls.
     float ring = exp( -abs( fract( vUV.y * 3.0 - audioBarPhase ) - 0.5 ) * 16.0 );

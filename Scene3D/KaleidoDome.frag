@@ -20,6 +20,8 @@ out vec4 fragColor; ///< The pixel's colour (output).
 // spinning across the dome; kicks bloom the centre, the bar phase breathes
 // the fold radius.
 uniform sampler2D tex0;         ///< The current photo.
+uniform sampler2D tex1;         ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 uniform float     time;         ///< Seconds since this activation, plus a rolled start (see sceneTime).
 uniform float     sceneSeed;    ///< A random number fixed per activation.
 uniform float     audioAdvance; ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
@@ -31,6 +33,18 @@ uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, u
 
 in vec2  vUV; ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 in float vR;  ///< R (from the vertex stage).
+
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
+}
 
 /**  Rotates a colour's hue by an angle (about the grey axis).
  *
@@ -77,7 +91,7 @@ void main()
     vec2 crop = vec2( sceneSeed * 3.7, sceneSeed * 7.3 );
     vec2 uv = vec2( ang / sector * 1.6 + crop.x,
                     r * 0.9 + crop.y );
-    vec3 col = texture( tex0, mfold( uv ) ).rgb;
+    vec3 col = img( mfold( uv ) );
 
     // Centre bloom on the kick, whole-sky flash on a drop.
     float centre = exp( -vR * 2.2 );

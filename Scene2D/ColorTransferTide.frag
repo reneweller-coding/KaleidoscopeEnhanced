@@ -10,14 +10,16 @@
  *  not all at once but on a tide: a wandering, frayed front sweeps across the frame and back, the transferred mood
  *  behind it, the picture's own in front.
  *
- *  Two pictures are cut from the photo; both drift.
+ *  The two are the current photo and the one shown before it (gliding over to their new pictures when the photos
+ *  change); both drift.
  *
  *  Audio Reactivity (structure, not only light):
  *    audioPhrasePos  -> the tide sweeps across and back once a phrase (continuous)
  *    audioAdvance    -> the pictures and the front's fraying drift (integrated)
  *
- *  Knobs: frontP (how frayed the front is), cutP (where the second picture is cut), photoP (how far the mood is
- *  carried), hueP.
+ *  Knobs: frontP (how frayed the front is), cutP (how the second photo is framed: turned and shifted a little),
+ *  photoP
+ *  (how far the mood is carried), hueP.
  *
  *  @author René Weller
  */
@@ -39,10 +41,13 @@ uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unw
 uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
 uniform float audioPhrasePos; ///< Position within the current 8-bar phrase, 0..1.
 
-uniform float frontP; ///< Front knob: how frayed the front is.
-uniform float cutP;   ///< Cut knob: where the second picture is cut.
-uniform float photoP; ///< Photo knob: how much of the photo shows, 0..1.
-uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float     frontP;     ///< Front knob: how frayed the front is, 0..1.
+uniform float     cutP;       ///< Cut knob: how the second photo is framed: turned and shifted a little, 0..1.
+uniform float     photoP;     ///< Photo knob: how much of the photo shows, 0..1.
+uniform float     hueP;       ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform sampler2D texPhotoB0; ///< The second photo, slot 0: the photo shown before the current one (unit 38).
+uniform sampler2D texPhotoB1; ///< The second photo, slot 1: the next one it fades over to (unit 39).
+uniform float     photoBMix;  ///< How far the second photo has faded from slot 0 to slot 1, 0..1.
 
 // ---- shared building blocks (texture pool, noise, shapes) ----
 /**  Pseudo-random number 0..1 from a float.
@@ -499,6 +504,24 @@ void finish( vec3 col )
     fragColor = vec4( clamp( t, 0.0, 1.0 ), 1.0 );
 }
 
+
+// ---- the second photo ----
+/**  The second photo at a mip level: the photo shown before the current one, gliding over to the next when the photos
+ * change (the app's two slots, mixed by photoBMix).
+ *
+ * @param uv   The point (mirrored at the edges, as imgLod()). (in)
+ * @param lod  The mip level: 0 full detail, ~4 a soft field. (in)
+ *
+ * @return
+ *   The colour.
+ **/
+vec3 imgB( vec2 uv, float lod )
+{
+    uv = mirrorUV( uv );
+    float m = smoothstep( 0.0, 1.0, clamp( photoBMix, 0.0, 1.0 ) );
+    return mix( textureLod( texPhotoB0, uv, lod ), textureLod( texPhotoB1, uv, lod ), m ).rgb;
+}
+
 /**  Converts linear RGB to Reinhard's l-alpha-beta space.
  *
  * @param c  The colour. (in)
@@ -538,15 +561,15 @@ void main()
     float prog = audioPhrasePos > 0.001 ? audioPhrasePos : fract( sceneTime / 16.0 );
     vec2  drift = 0.04 * vec2( sin( 0.016 * sceneTime + 0.01 * audioAdvance ), cos( 0.013 * sceneTime ) );
     float cut = clamp( cutP, 0.0, 1.0 );
-    mat2  RB = rot2( 2.3 + 2.0 * cut );
-    vec2  off_b = vec2( 0.3, -0.25 ) + 0.2 * vec2( cut, cut );
+    mat2  RB = rot2( 0.6 * ( cut - 0.5 ) );
+    vec2  off_b = 0.08 * vec2( cut, cut );
     // the two pictures' means and spreads in l-alpha-beta, from sixteen samples each
     vec3 m_a = vec3( 0.0 ), s_a = vec3( 0.0 ), m_b = vec3( 0.0 ), s_b = vec3( 0.0 );
     for ( int i = 0; i < 16; ++i )
     {
         vec2 g = ( vec2( float( i % 4 ), float( i / 4 ) ) + 0.5 ) / 4.0 - 0.5;
         vec3 a = toLab( imgLod( 0.5 + g * 0.9 + drift, 4.0 ) + 0.01 );
-        vec3 b = toLab( imgLod( 0.5 + RB * ( g * 0.9 - drift ) + off_b, 4.0 ) + 0.01 );
+        vec3 b = toLab( imgB( 0.5 + RB * ( g * 0.9 - drift ) + off_b, 4.0 ) + 0.01 ); // the second photo
         m_a += a;
         s_a += a * a;
         m_b += b;

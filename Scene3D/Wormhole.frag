@@ -24,6 +24,8 @@ out vec4 fragColor; ///< The pixel's colour (output).
 // channels sample at slightly different bend amounts (chromatic
 // aberration).  A bright photon ring traces the horizon itself.
 uniform sampler2D tex0;         ///< The current photo.
+uniform sampler2D tex1;         ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 uniform float     time;         ///< Seconds since this activation, plus a rolled start (see sceneTime).
 uniform float     audioAdvance; ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
                                 ///< backwards).
@@ -35,6 +37,18 @@ in vec2  vUV;      ///< Texture coordinate 0..1 over the screen (from the vertex
 in float vDist;    ///< Distance (from the vertex stage).
 in float vAng;     ///< Ang (from the vertex stage).
 in float vLensAmt; ///< Lens amt (from the vertex stage).
+
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
+}
 
 /**  Rotates a colour's hue by an angle (about the grey axis).
  *
@@ -78,7 +92,7 @@ vec3 sampleBent( float bendMul )
     a = abs( a - sector ) / sector; // 0..1 mirrored
     vec2 uv = vec2( a * 1.4,
                     vUV.y * 6.0 - time * 0.30 - audioAdvance * 1.0 );
-    return texture( tex0, mfold( uv ) ).rgb;
+    return img( mfold( uv ) );
 }
 
 /** Entry point of this shader stage (the file description says what it draws). */

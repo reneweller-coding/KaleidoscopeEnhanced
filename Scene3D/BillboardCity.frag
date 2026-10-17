@@ -20,6 +20,8 @@ out vec4 fragColor; ///< The pixel's colour (output).
 // BillboardCity.frag — each screen: kaleido-mirrored crop of the image,
 // neon border, brightness driven by the board's own spectrum band.
 uniform sampler2D tex0;           ///< The current photo.
+uniform sampler2D tex1;           ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation;  ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 uniform float     time;           ///< Seconds since this activation, plus a rolled start (see sceneTime).
 uniform float     audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float     audioDrop;      ///< Drop envelope: high after a detected drop, decaying.
@@ -28,6 +30,18 @@ in vec2  vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex st
 in vec4  vSeed; ///< Per-instance random seed (from the vertex stage).
 in float vBand; ///< Band (from the vertex stage).
 in float vFade; ///< Fade (from the vertex stage).
+
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
+}
 
 /**  Rotates a colour's hue by an angle (about the grey axis).
  *
@@ -54,7 +68,7 @@ void main()
                          * 2.0
                      - 1.0 )
                     * 0.5;
-    vec3 col = texture( tex0, uv ).rgb;
+    vec3 col = img( uv );
 
     // The board's spectrum band lights the screen; some boards flicker.
     float flicker = 0.9 + 0.1 * sin( time * ( 20.0 + vSeed.w * 40.0 ) );

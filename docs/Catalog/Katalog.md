@@ -1650,7 +1650,7 @@ COLLATZ FRACTAL TREE ABYSS: Analytic complex continuation of the Collatz (3n+1) 
 
 `Scene2D/ColorTransferTide.frag` · type=normal · mood=dreamy,calm · complexity=1
 
-COLOR TRANSFER TIDE: the colour mood of one picture carried onto another by Reinhard's colour transfer -- in the decorrelated l-alpha-beta space every channel is shifted and scaled to the other picture's mean and spread -- not all at once but on a tide: a wandering, frayed front sweeps across the frame and back, the transferred mood behind it, the picture's own in front. Two pictures are cut from the photo; both drif…
+COLOR TRANSFER TIDE: the colour mood of one picture carried onto another by Reinhard's colour transfer -- in the decorrelated l-alpha-beta space every channel is shifted and scaled to the other picture's mean and spread -- not all at once but on a tide: a wandering, frayed front sweeps across the frame and back, the transferred mood behind it, the picture's own in front. The two are the current photo and the one show…
 
 ![ColorTransferTide ruhig (t=8)](img/ColorTransferTide_A.jpg) ![ColorTransferTide ruhig (t=16)](img/ColorTransferTide_B.jpg) ![ColorTransferTide audio-heiß (t=21)](img/ColorTransferTide_C.jpg)
 
@@ -3220,7 +3220,7 @@ HILBERT SPACE FILLING CURVE: a true Hilbert curve (order 7, one unbroken path th
 
 `Scene2D/HistogramFlowMatch.frag` · type=normal · mood=dreamy,calm · complexity=3
 
-HISTOGRAM FLOW MATCH: the colours of one picture carried over into another's by optimal transport along each colour channel -- every value of the first picture moves to the value at the same rank in the second, so the first keeps its forms but takes on the second's whole palette. Two pictures are cut from the photo; on each change of harmony the colours flow one way or back, in patches that drift across the frame, so…
+HISTOGRAM FLOW MATCH: the colours of one picture carried over into another's by optimal transport along each colour channel -- every value of the first picture moves to the value at the same rank in the second, so the first keeps its forms but takes on the second's whole palette. The two are the current photo and the one shown before it (gliding over to their new pictures when the photos change). On each change of ha…
 
 ![HistogramFlowMatch ruhig (t=8)](img/HistogramFlowMatch_A.jpg) ![HistogramFlowMatch ruhig (t=16)](img/HistogramFlowMatch_B.jpg) ![HistogramFlowMatch audio-heiß (t=21)](img/HistogramFlowMatch_C.jpg)
 
@@ -5517,7 +5517,7 @@ PHOTOELASTIC STRESS FRINGES: a transparent part between crossed polarisers. Wher
 
 `Scene2D/PhotoFourierPhaseSwap.frag` · type=normal · mood=psychedelic,dreamy · complexity=4
 
-PHOTO FOURIER PHASE SWAP: the famous swap of amplitude and phase -- two pictures cut from the photo, each taken apart band by band into local amplitude and local phase (the monogenic signal: the band and its Riesz transform), and put together with the strength of the one and the phase of the other. The phase carries the forms: as the blend moves over, the first picture's colours and contrasts take on the second pictu…
+PHOTO FOURIER PHASE SWAP: the famous swap of amplitude and phase -- two photos, the current one and the one shown before it, each taken apart band by band into local amplitude and local phase (the monogenic signal: the band and its Riesz transform), and put together with the strength of the one and the phase of the other. The phase carries the forms: as the blend moves over, the first photo's colours and contrasts ta…
 
 ![PhotoFourierPhaseSwap ruhig (t=8)](img/PhotoFourierPhaseSwap_A.jpg) ![PhotoFourierPhaseSwap ruhig (t=16)](img/PhotoFourierPhaseSwap_B.jpg) ![PhotoFourierPhaseSwap audio-heiß (t=21)](img/PhotoFourierPhaseSwap_C.jpg)
 
@@ -5789,7 +5789,7 @@ POINTILLIST DOTS: the photograph repainted as a pointillist canvas in the manner
 
 `Scene2D/PoissonGradientRemix.frag` · type=normal · mood=dreamy,psychedelic · complexity=2
 
-POISSON GRADIENT REMIX: blending in the gradient domain -- the edges and fine structure of one picture set into the broad surfaces and colours of another, as Poisson image editing does: one picture's Laplacian pyramid above a cut-off level, the other's below it. Two pictures are cut from the photo; with every section the cut-off moves, so sometimes only the finest grain of the one rides on the other, sometimes all it…
+POISSON GRADIENT REMIX: blending in the gradient domain -- the edges and fine structure of one picture set into the broad surfaces and colours of another, as Poisson image editing does: one picture's Laplacian pyramid above a cut-off level, the other's below it. The two are the current photo and the one shown before it (gliding over to their new pictures when the photos change). With every section the cut-off moves, …
 
 ![PoissonGradientRemix ruhig (t=8)](img/PoissonGradientRemix_A.jpg) ![PoissonGradientRemix ruhig (t=16)](img/PoissonGradientRemix_B.jpg) ![PoissonGradientRemix audio-heiß (t=21)](img/PoissonGradientRemix_C.jpg)
 

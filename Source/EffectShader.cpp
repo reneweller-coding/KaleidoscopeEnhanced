@@ -230,6 +230,7 @@ bool                          EffectShader::M_ChainSS = true;
 float                         EffectShader::M_FreezeTime = -1.f;
 bool                          EffectShader::M_Frozen = false;
 float                         EffectShader::M_FixedDt = -1.f;
+float                         EffectShader::M_PhotoBMix = 0.f;
 std::map<std::string, float>  EffectShader::M_ClassTaste;
 std::map<std::string, double> EffectShader::M_ClassSeen;
 std::set<std::string>         EffectShader::M_ClassSeenDirty;
@@ -837,6 +838,11 @@ enum AudioLocE
     AL_HARMADVANCE,
     // How sure the analysis is that a melody sounds (AudioFeatures::melodyConf).
     AL_MELODYCONF,
+    // The second photo (17.10.2026): the photo shown before the current one, in two slots the host fades between
+    // (RenderPipeline::takePhotoB()), for scenes that set two pictures against each other.
+    AL_TEXPHOTOB0,
+    AL_TEXPHOTOB1,
+    AL_PHOTOBMIX,
     AL_COUNT
 };
 /** The audio uniforms' names, indexed by AudioLocE (the order must match). */
@@ -863,7 +869,8 @@ const char *kAudioLocNames[AL_COUNT] = {
     "audioMelodyPitch",
     "audioPhrasePos", "audioPhraseLeft",
     "audioSectionId", "audioSectionPrev", "audioSectionAge", "audioSectionKnown", "audioSectionCount",
-    "audioMelodyPhase", "audioHarmAdvance", "audioMelodyConf" };
+    "audioMelodyPhase", "audioHarmAdvance", "audioMelodyConf",
+    "texPhotoB0", "texPhotoB1", "photoBMix" };
 }
 
 void EffectShader::applyAudioFeatures( const AudioFeatures &features )
@@ -1079,6 +1086,13 @@ void EffectShader::applyAudioFeatures( const AudioFeatures &features )
     // yet). Opt-in the same way as texSim/texSpectro -- just declare it.
     if ( locs[AL_TEXPREVFRAME] >= 0 )
         glUniform1i( locs[AL_TEXPREVFRAME], 34 );
+    // Units 38/39: the second photo's two slots, mixed by photoBMix (RenderPipeline binds them with the photos).
+    if ( locs[AL_TEXPHOTOB0] >= 0 )
+        glUniform1i( locs[AL_TEXPHOTOB0], PhotoBUnit );
+    if ( locs[AL_TEXPHOTOB1] >= 0 )
+        glUniform1i( locs[AL_TEXPHOTOB1], PhotoBUnit + 1 );
+    if ( locs[AL_PHOTOBMIX] >= 0 )
+        glUniform1f( locs[AL_PHOTOBMIX], M_PhotoBMix );
     // The two scene depth buffers, as the combine stage sees them.  depthValid
     // says whether each one actually holds a 3D scene's geometry — a 2D effect
     // leaves the far plane there, and a depth-driven combine has to know the

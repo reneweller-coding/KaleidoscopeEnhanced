@@ -835,6 +835,9 @@ void RenderPipeline::cleanTextures()
     glDeleteFramebuffers( 1, &m_fboTransition );     // clean up framebuffer object
     glDeleteTextures( 1, &m_actTex );                // clean up textures
     glDeleteTextures( 1, &m_nextTex );
+    glDeleteTextures( 2, m_photoBTex );
+    glDeleteFramebuffers( 2, m_photoBFbo );
+    m_photoBTex[0] = m_photoBTex[1] = m_photoBFbo[0] = m_photoBFbo[1] = 0;
     // Zeroed so this is idempotent. A name that has been deleted can be
     // REISSUED by the driver to the next glGen*, and deleting it a second
     // time would then destroy a live object belonging to someone else.
@@ -2119,6 +2122,15 @@ AudioFeatures RenderPipeline::conditionAudio( const AudioFeatures &audio, float 
 
 void RenderPipeline::updateImageState( float timeSinceLastFrameSec )
 {
+    // The second photo glides to its newest slot over five seconds of the frame clock (an export fades the same).
+    if ( m_photoBMix != m_photoBTarget )
+    {
+        const float step = timeSinceLastFrameSec / 5.f;
+        m_photoBMix = m_photoBTarget > m_photoBMix ? std::min( m_photoBMix + step, m_photoBTarget )
+                                                   : std::max( m_photoBMix - step, m_photoBTarget );
+    }
+    EffectShader::M_PhotoBMix = m_photoBMix;
+
     if ( m_waitForImageToLoad )
     {
         if ( !m_triggerImageload )
@@ -2183,6 +2195,8 @@ void RenderPipeline::updateImageState( float timeSinceLastFrameSec )
             GLuint temp = m_actTex;
             m_actTex = m_nextTex;
             m_nextTex = temp;
+            // the photo just faded out becomes the second photo -- copied before the loader overwrites its slot
+            takePhotoB( m_nextTex );
             // loadNewTexture( temp );
             m_waitForImageToLoad = true;
             m_triggerImageload = true;
@@ -2371,6 +2385,12 @@ void RenderPipeline::bindSceneInputs()
 {
     // restore render destination to regular frame buffer
     glViewport( 0, 0, m_width, m_height );
+
+    // the second photo's slots (a live input stands in for both, as for the photos)
+    glActiveTexture( GL_TEXTURE0 + EffectShader::PhotoBUnit );
+    glBindTexture( GL_TEXTURE_2D, m_liveTex ? m_liveTex : m_photoBTex[0] );
+    glActiveTexture( GL_TEXTURE0 + EffectShader::PhotoBUnit + 1 );
+    glBindTexture( GL_TEXTURE_2D, m_liveTex ? m_liveTex : m_photoBTex[1] );
 
     glActiveTexture( GL_TEXTURE0 );
     glBindTexture( GL_TEXTURE_2D, m_liveTex ? m_liveTex : m_actTex );
@@ -3821,6 +3841,52 @@ void RenderPipeline::loadNewTexture( GLuint &texID )
 }
 
 
+void RenderPipeline::createPhotoB( const QImage &image )
+{
+    for ( GLuint &tex : m_photoBTex )
+    {
+        if ( tex == 0 )
+            glGenTextures( 1, &tex );
+        glBindTexture( GL_TEXTURE_2D, tex );
+        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR );
+        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT );
+        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT );
+        glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA8, image.width(), image.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                      image.bits() );
+        glGenerateMipmap( GL_TEXTURE_2D );
+    }
+    if ( m_photoBFbo[0] == 0 )
+        glGenFramebuffers( 2, m_photoBFbo );
+    m_photoBSize = image.width();
+    m_photoBMix = m_photoBTarget = 0.f;
+}
+
+void RenderPipeline::takePhotoB( GLuint src )
+{
+    if ( m_photoBTex[0] == 0 || src == 0 || m_photoBSize <= 0 )
+        return;
+    m_photoBMix = m_photoBTarget; // a fade still running ends here: the slot it left is written now
+    const int dst = m_photoBTarget > 0.5f ? 0 : 1;
+    GLint read_fbo = 0, draw_fbo = 0;
+    glGetIntegerv( GL_READ_FRAMEBUFFER_BINDING, &read_fbo );
+    glGetIntegerv( GL_DRAW_FRAMEBUFFER_BINDING, &draw_fbo );
+    glBindFramebuffer( GL_READ_FRAMEBUFFER, m_photoBFbo[0] );
+    glFramebufferTexture2D( GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, src, 0 );
+    glBindFramebuffer( GL_DRAW_FRAMEBUFFER, m_photoBFbo[1] );
+    glFramebufferTexture2D( GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_photoBTex[dst], 0 );
+    glBlitFramebuffer( 0, 0, m_photoBSize, m_photoBSize, 0, 0, m_photoBSize, m_photoBSize, GL_COLOR_BUFFER_BIT,
+                       GL_NEAREST );
+    glBindFramebuffer( GL_READ_FRAMEBUFFER, static_cast<GLuint>( read_fbo ) );
+    glBindFramebuffer( GL_DRAW_FRAMEBUFFER, static_cast<GLuint>( draw_fbo ) );
+    // the copy's mipmaps, on the slot's own unit (bindSceneInputs() binds it there anyway)
+    glActiveTexture( GL_TEXTURE0 + EffectShader::PhotoBUnit + dst );
+    glBindTexture( GL_TEXTURE_2D, m_photoBTex[dst] );
+    glGenerateMipmap( GL_TEXTURE_2D );
+    glActiveTexture( GL_TEXTURE0 );
+    m_photoBTarget = static_cast<float>( dst );
+}
+
 void RenderPipeline::createFBOTexture( GLuint &texID )
 {
     checkGLErrors( "createTextures() 0" );
@@ -3907,17 +3973,28 @@ void RenderPipeline::createTexture()
     {
         setupTexture( m_actTex, prepareImage( fallbackImage() ) );
         setupTexture( m_nextTex, prepareImage( fallbackImage() ) );
+        createPhotoB( prepareImage( fallbackImage() ) );
         checkGLErrors( "createTextures() 1" );
         return;
     }
 
     // The start pair: two free photos (the photo memory), not directory neighbours -- those were one family.
+    QString first;
     for ( GLuint tex : { m_actTex, m_nextTex } )
     {
         const QString path = pickFreePhoto();
         notePhoto( path );
         setupTexture( tex, prepareImage( loadImageOrFallback( path ) ) );
         fprintf( stderr, "PHOTO %s\n", qPrintable( path ) );
+        if ( first.isEmpty() )
+            first = path;
+    }
+    // The second photo starts as a third one: half the list away from the first -- no roll of the seeded generator,
+    // so a scripted run's later rolls stay where they were.  From the first swap on it is the photo shown before.
+    {
+        const int n = static_cast<int>( m_imageList.size() );
+        const int k = static_cast<int>( m_imageList.indexOf( first ) );
+        createPhotoB( prepareImage( loadImageOrFallback( m_imageList[( ( k < 0 ? 0 : k ) + n / 2 ) % n] ) ) );
     }
 
     /*m_imageListIterator++;

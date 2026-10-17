@@ -9,16 +9,16 @@
  *  the broad surfaces and colours of another, as Poisson image editing does: one picture's Laplacian pyramid above
  *  a cut-off level, the other's below it.
  *
- *  Two pictures are cut from the photo; with every section the cut-off moves, so sometimes only the finest grain of
- *  the one rides on the other, sometimes all its forms; both pictures drift, so the seams of the remix keep moving.
+ *  The two are the current photo and the one shown before it (gliding over to their new pictures when the photos
+ *  change).  With every section the cut-off moves, so sometimes only the finest grain of the one rides on the
+ *  other, sometimes all its forms; both pictures drift, so the seams of the remix keep moving.
  *
  *  Audio Reactivity (structure, not only light):
  *    audioSectionId  -> each section moves the cut-off level (gliding over four seconds)
  *    audioAdvance    -> both pictures drift (integrated)
  *
- *  Knobs: cutP (the base cut-off), contrastP (how strongly the edges are set in), photoP (where the second picture
- *  is
- *  cut), hueP.
+ *  Knobs: cutP (the base cut-off), contrastP (how strongly the edges are set in), photoP (how the second photo is
+ *  framed: turned and shifted a little), hueP.
  *
  *  @author René Weller
  */
@@ -41,10 +41,13 @@ uniform float audioPhase;      ///< Rotation phase driven by the music (integrat
 uniform float audioSectionId;  ///< Slot of the current song section in the analyzer's fingerprint store (-1: none yet).
 uniform float audioSectionAge; ///< Seconds since the current song section began.
 
-uniform float cutP;      ///< Cut knob: the base cut-off.
-uniform float contrastP; ///< Contrast knob: how strongly the edges are set in.
-uniform float photoP;    ///< Photo knob: how much of the photo shows, 0..1.
-uniform float hueP;      ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float     cutP;       ///< Cut knob: the base cut-off, 0..1.
+uniform float     contrastP;  ///< Contrast knob: how strongly the edges are set in, 0..1.
+uniform float     photoP;     ///< Photo knob: how much of the photo shows, 0..1.
+uniform float     hueP;       ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform sampler2D texPhotoB0; ///< The second photo, slot 0: the photo shown before the current one (unit 38).
+uniform sampler2D texPhotoB1; ///< The second photo, slot 1: the next one it fades over to (unit 39).
+uniform float     photoBMix;  ///< How far the second photo has faded from slot 0 to slot 1, 0..1.
 
 // ---- shared building blocks (texture pool, noise, shapes) ----
 /**  Pseudo-random number 0..1 from a float.
@@ -501,6 +504,24 @@ void finish( vec3 col )
     fragColor = vec4( clamp( t, 0.0, 1.0 ), 1.0 );
 }
 
+
+// ---- the second photo ----
+/**  The second photo at a mip level: the photo shown before the current one, gliding over to the next when the photos
+ * change (the app's two slots, mixed by photoBMix).
+ *
+ * @param uv   The point (mirrored at the edges, as imgLod()). (in)
+ * @param lod  The mip level: 0 full detail, ~4 a soft field. (in)
+ *
+ * @return
+ *   The colour.
+ **/
+vec3 imgB( vec2 uv, float lod )
+{
+    uv = mirrorUV( uv );
+    float m = smoothstep( 0.0, 1.0, clamp( photoBMix, 0.0, 1.0 ) );
+    return mix( textureLod( texPhotoB0, uv, lod ), textureLod( texPhotoB1, uv, lod ), m ).rgb;
+}
+
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
@@ -508,14 +529,14 @@ void main()
     vec2  drift = 0.05 * vec2( sin( 0.018 * sceneTime + 0.01 * audioAdvance ), cos( 0.015 * sceneTime ) );
     vec2  uv_a = 0.5 + p * 0.5 + drift;
     float cut2 = clamp( photoP, 0.0, 1.0 );
-    vec2  uv_b = 0.5 + rot2( 2.4 + 1.6 * cut2 ) * ( p * 0.55 - 0.7 * drift ) + vec2( -0.29, 0.33 ) + 0.2 * cut2;
+    vec2  uv_b = 0.5 + rot2( 0.6 * ( cut2 - 0.5 ) ) * ( p * 0.5 - 0.7 * drift ) + 0.08 * vec2( -cut2, cut2 );
     // the cut-off level: below it the second picture, above it the first one's detail
     float k = max( audioSectionId, 0.0 );
     float lv_now = 1.5 + 3.0 * hash11( k * 1.37 + 0.2 ), lv_before = 1.5 + 3.0 * hash11( ( k - 1.0 ) * 1.37 + 0.2 );
     float m = audioSectionId < 0.5 ? 1.0 : smoothstep( 0.0, 4.0, audioSectionAge );
     float cut_lv = mix( lv_before, lv_now, m ) + 1.5 * ( clamp( cutP, 0.0, 1.0 ) - 0.5 );
     float gain = 1.0 + 0.8 * clamp( contrastP, 0.0, 1.0 );
-    vec3  col = imgLod( uv_b, cut_lv ); // the second picture's broad surfaces
+    vec3  col = imgB( uv_b, cut_lv ); // the second photo's broad surfaces
     vec3  prev = imgLod( uv_a, cut_lv );
     for ( int i = 0; i < 6; ++i )
     {

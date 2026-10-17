@@ -9,14 +9,17 @@
  *  colour channel -- every value of the first picture moves to the value at the same rank in the second, so the
  *  first keeps its forms but takes on the second's whole palette.
  *
- *  Two pictures are cut from the photo; on each change of harmony the colours flow one way or back, in patches that
- *  drift across the frame, so the palette pours over in waves rather than all at once.
+ *  The two are the current photo and the one shown before it (gliding over to their new pictures when the photos
+ *  change).  On each change of harmony the colours flow one way or back, in patches that drift across the frame, so
+ *  the palette pours over in waves rather than all at once.
  *
  *  Audio Reactivity (structure, not only light):
  *    audioHarmAdvance -> each change of harmony sends the colours over or back (gliding)
  *    audioAdvance    -> the pictures and the patches drift (integrated)
  *
- *  Knobs: patchP (the patches' size), cutP (where the second picture is cut), photoP (how far the flow goes), hueP.
+ *  Knobs: patchP (the patches' size), cutP (how the second photo is framed: turned and shifted a little), photoP
+ *  (how
+ *  far the flow goes), hueP.
  *
  *  @author René Weller
  */
@@ -39,10 +42,13 @@ uniform float audioPhase;       ///< Rotation phase driven by the music (integra
 uniform float audioHarmAdvance; ///< The harmony's advance: ~1 more with every chord change (integrated, never jumps
                                 ///< back).
 
-uniform float patchP; ///< Patch knob: the patches' size, 0..1.
-uniform float cutP;   ///< Cut knob: where the second picture is cut, 0..1.
-uniform float photoP; ///< Photo knob: how much of the photo shows, 0..1.
-uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float     patchP;     ///< Patch knob: the patches' size, 0..1.
+uniform float     cutP;       ///< Cut knob: how the second photo is framed: turned and shifted a little, 0..1.
+uniform float     photoP;     ///< Photo knob: how much of the photo shows, 0..1.
+uniform float     hueP;       ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform sampler2D texPhotoB0; ///< The second photo, slot 0: the photo shown before the current one (unit 38).
+uniform sampler2D texPhotoB1; ///< The second photo, slot 1: the next one it fades over to (unit 39).
+uniform float     photoBMix;  ///< How far the second photo has faded from slot 0 to slot 1, 0..1.
 
 // ---- shared building blocks (texture pool, noise, shapes) ----
 /**  Pseudo-random number 0..1 from a float.
@@ -499,6 +505,24 @@ void finish( vec3 col )
     fragColor = vec4( clamp( t, 0.0, 1.0 ), 1.0 );
 }
 
+
+// ---- the second photo ----
+/**  The second photo at a mip level: the photo shown before the current one, gliding over to the next when the photos
+ * change (the app's two slots, mixed by photoBMix).
+ *
+ * @param uv   The point (mirrored at the edges, as imgLod()). (in)
+ * @param lod  The mip level: 0 full detail, ~4 a soft field. (in)
+ *
+ * @return
+ *   The colour.
+ **/
+vec3 imgB( vec2 uv, float lod )
+{
+    uv = mirrorUV( uv );
+    float m = smoothstep( 0.0, 1.0, clamp( photoBMix, 0.0, 1.0 ) );
+    return mix( textureLod( texPhotoB0, uv, lod ), textureLod( texPhotoB1, uv, lod ), m ).rgb;
+}
+
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
@@ -506,8 +530,8 @@ void main()
     vec2  drift = 0.05 * vec2( sin( 0.017 * sceneTime + 0.01 * audioAdvance ), cos( 0.014 * sceneTime ) );
     vec2  uv_a = 0.5 + p * 0.5 + drift;
     float cut = clamp( cutP, 0.0, 1.0 );
-    vec2  off_b = vec2( 0.33, -0.21 ) + 0.25 * vec2( cut, -cut );
-    mat2  RB = rot2( 2.0 + 2.0 * cut );
+    vec2  off_b = 0.08 * vec2( cut, -cut );
+    mat2  RB = rot2( 0.6 * ( cut - 0.5 ) );
     // sixteen samples of each picture: their values per channel, sorted, are the two distributions
     float a_s[16], b_r[16], b_g[16], b_b[16];
     vec3  a_c[16];
@@ -515,7 +539,7 @@ void main()
     {
         vec2 g = ( vec2( float( i % 4 ), float( i / 4 ) ) + 0.5 ) / 4.0 - 0.5;
         a_c[i] = imgLod( 0.5 + g * 0.9 + drift, 4.0 );
-        vec3 b = imgLod( 0.5 + RB * ( g * 0.9 - drift ) + off_b, 4.0 );
+        vec3 b = imgB( 0.5 + RB * ( g * 0.9 - drift ) + off_b, 4.0 ); // the second photo
         b_r[i] = b.r;
         b_g[i] = b.g;
         b_b[i] = b.b;

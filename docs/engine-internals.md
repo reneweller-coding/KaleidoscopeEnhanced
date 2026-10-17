@@ -6313,3 +6313,43 @@ jobs. make_catalog.py now holds 1415 scenes and 4523 pictures. Portable Chrome p
 
 The snapshot set 2026-10-17-base200 holds 2026-10-17-base plus the 200 (1630 frames). release_check still compares
 against Tools/snapshot_baseline.txt (2026-10-03-night); naming a new baseline is the release's decision.
+
+## 17.10.2026 (39): a real second photo, and the 3D scenes that cut the photo hard
+
+**The question.** Why did the photo change abruptly, when the photos used to fade? The fade itself never went away.
+img() and every hand-written img() helper mix the two slots, interpolation · tex0 + (1 − interpolation) · tex1, with
+interpolation falling from 1 to 0 over the fade. At its end RenderPipeline swaps the slots and sets interpolation
+back to 1, so the mix shows the same photo before and after the swap. The loader then refills tex1 while its weight
+is 0, which nobody sees.
+
+**What did cut hard.** Eleven 3D shaders sampled tex0 alone:
+- BillboardCity, GalleryHall, KaleidoDome, MosaicWave, PhotoCarousel, PhotoShatter, PhotoTunnel, SilkPhoto,
+  StainedGlassRosette and Wormhole (fragment stage);
+- VideoRelief.vert, whose relief height comes from the photo.
+
+During the whole fade tex0 still holds the old photo, and at the swap it becomes the new one from one frame to the
+next. They now declare tex1 and interpolation and read the photo through the same img() helper as the other 3D
+scenes. Their frozen snapshots are unchanged (16 compared, 0 changed), since a snapshot is taken outside a fade. A
+search over every tracked shader finds no other photo read without interpolation.
+
+**The second photo (imgB).** The four scenes that set two pictures against each other used two crops of one photo:
+PhotoFourierPhaseSwap, HistogramFlowMatch, PoissonGradientRemix and ColorTransferTide. The hidden slot cannot serve
+as the second picture, because it is refilled hard. They now get a store of their own:
+- RenderPipeline keeps two more 1024 × 1024 textures (m_photoBTex), bound on units 38 and 39
+  (EffectShader::PhotoBUnit), with the uniforms texPhotoB0, texPhotoB1 and photoBMix.
+- At every photo swap takePhotoB() blits the photo that has just faded out into the slot not shown. It uses
+  glBlitFramebuffer through two framebuffers of its own; the GL loader has no glCopyImageSubData. The copy happens
+  before the loader overwrites that photo. It then regenerates the slot's mipmaps and lets photoBMix glide to it
+  over 5 s of frame time. A swap during a running glide finishes it first.
+- So the second photo is always the one shown before the current one, and it never jumps.
+- At the start it is the photo half the list away from the first one. Nothing is rolled for it, so seeded runs keep
+  their rolls.
+- A live input stands in for both slots, as for the photos.
+- gen.py adds imgB(uv, lod) and its three uniforms only to sources that call imgB(). It mirrors the coordinate like
+  imgLod() and mixes the slots with a smoothstep of photoBMix.
+- The PresetEditor preview binds its second sample image to both slots.
+
+A probe scene (photo left, second photo right, photoBMix and interpolation as bars) was rendered for 150 s with
+several swaps. The second photo held still between swaps and glided over in about 5 s after each one, always
+differing from the first. The probe was removed again. A GL-debug snapshot run of the four scenes showed no errors.
+Their catalogue frames were rendered anew, and their snapshots in 2026-10-17-base200 replaced.

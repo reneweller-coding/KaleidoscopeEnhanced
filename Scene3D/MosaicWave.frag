@@ -19,12 +19,26 @@ out vec4 fragColor; ///< The pixel's colour (output).
 // MosaicWave.frag — front = the image; back = hue-inverted twin.  Thin dark
 // grout lines keep the mosaic readable.
 uniform sampler2D tex0;           ///< The current photo.
+uniform sampler2D tex1;           ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation;  ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 uniform float     audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float     audioDrop;      ///< Drop envelope: high after a detected drop, decaying.
 
 in vec2  vUV;    ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 in float vFlip;  ///< Flip (from the vertex stage).
 in float vLight; ///< Light (from the vertex stage).
+
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
+}
 
 /**  Rotates a colour's hue by an angle (about the grey axis).
  *
@@ -44,7 +58,7 @@ vec3 hueRot( vec3 c, float a )
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
-    vec3 col = texture( tex0, vUV ).rgb;
+    vec3 col = img( vUV );
 
     // While a tile shows its back, show the key-rotated twin image.
     if ( vFlip < 0.0 )

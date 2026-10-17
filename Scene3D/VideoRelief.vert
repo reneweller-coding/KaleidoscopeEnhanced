@@ -33,6 +33,8 @@ out vec3  vView;   ///< View vector (from the vertex stage).
 out float vHeight; ///< Height (from the vertex stage).
 
 uniform sampler2D tex0;         ///< The current photo.
+uniform sampler2D tex1;         ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 uniform mat4      projM;        ///< Projection matrix.
 uniform float     eyeOff;       ///< Stereo eye offset (0 in mono).
 uniform float     time;         ///< Seconds since this activation, plus a rolled start (see sceneTime).
@@ -47,6 +49,18 @@ uniform float scrollP;  ///< preset: how fast the sheet drifts
 uniform float camDistP; ///< Camera distance knob, 0..1.
 uniform float tiltP;    ///< Tilt knob, 0..1.
 
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
+}
+
 /**  Luminance of the photo at a coordinate.
  *
  * @param uv  Coordinate in the photo. (in)
@@ -56,7 +70,7 @@ uniform float tiltP;    ///< Tilt knob, 0..1.
  **/
 float lum( vec2 uv )
 {
-    return dot( texture( tex0, clamp( uv, vec2( 0.001 ), vec2( 0.999 ) ) ).rgb,
+    return dot( img( clamp( uv, vec2( 0.001 ), vec2( 0.999 ) ) ),
                 vec3( 0.299, 0.587, 0.114 ) );
 }
 

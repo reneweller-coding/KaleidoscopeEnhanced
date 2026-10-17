@@ -21,6 +21,8 @@ out vec4 fragColor; ///< The pixel's colour (output).
 // SilkPhoto.frag — the photo itself, recognisable, with cloth shading and a
 // silky key-coloured sheen wandering across the folds.
 uniform sampler2D tex0;           ///< The current photo.
+uniform sampler2D tex1;           ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation;  ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 uniform float     time;           ///< Seconds since this activation, plus a rolled start (see sceneTime).
 uniform float     audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float     audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
@@ -28,6 +30,18 @@ uniform float     audioDrop;      ///< Drop envelope: high after a detected drop
 
 in vec2  vUV;    ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 in float vShade; ///< Shade (from the vertex stage).
+
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
+}
 
 /**  Rotates a colour's hue by an angle (about the grey axis).
  *
@@ -47,7 +61,7 @@ vec3 hueRot( vec3 c, float a )
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
-    vec3 col = texture( tex0, vec2( vUV.x, 1.0 - vUV.y ) ).rgb;
+    vec3 col = img( vec2( vUV.x, 1.0 - vUV.y ) );
 
     col *= vShade;
 

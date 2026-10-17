@@ -519,6 +519,9 @@ void PreviewWidget::applyCommonUniforms( QOpenGLShaderProgram *p )
         p->setUniformValue( "tex0", 0 );
         p->setUniformValue( "tex1", 1 );
         p->setUniformValue( "texSim", 7 );
+        p->setUniformValue( "texPhotoB0", 38 );
+        p->setUniformValue( "texPhotoB1", 39 );
+        p->setUniformValue( "photoBMix", 0.f );
 
         p->setUniformValue( "audioBeat", m_tlBeat );
         p->setUniformValue( "audioOnset", m_tlOnset );
@@ -598,6 +601,9 @@ void PreviewWidget::applyCommonUniforms( QOpenGLShaderProgram *p )
     p->setUniformValue( "tex0", 0 );
     p->setUniformValue( "tex1", 1 );
     p->setUniformValue( "texSim", 7 );
+    p->setUniformValue( "texPhotoB0", 38 ); // the second photo: the second sample image in both slots
+    p->setUniformValue( "texPhotoB1", 39 );
+    p->setUniformValue( "photoBMix", 0.f );
 
     p->setUniformValue( "audioBeat", beat );
     p->setUniformValue( "audioOnset", onset );
@@ -953,6 +959,10 @@ void PreviewWidget::paintGL()
     glBindTexture( GL_TEXTURE_2D, m_img1 );
     glActiveTexture( GL_TEXTURE7 );
     glBindTexture( GL_TEXTURE_2D, m_img0 );
+    glActiveTexture( GL_TEXTURE0 + 38 ); // the second photo's two slots (the app's EffectShader::PhotoBUnit)
+    glBindTexture( GL_TEXTURE_2D, m_img1 );
+    glActiveTexture( GL_TEXTURE0 + 39 );
+    glBindTexture( GL_TEXTURE_2D, m_img1 );
     glActiveTexture( GL_TEXTURE0 );
 
     unsigned scene_color_tex = 0, scene_depth_tex = 0;

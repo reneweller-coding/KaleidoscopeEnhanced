@@ -670,6 +670,11 @@ public:
      * takes this frame, so the field evolves exactly the same in every run before the frame freezes; < 0: none.
      **/
     static float M_FixedDt;
+    /** The second photo's fade between its two slots this frame (set by RenderPipeline::updateImageState()): the
+     * `photoBMix` every scene that declares it receives, 0 = slot 0 (unit PhotoBUnit), 1 = slot 1 (PhotoBUnit + 1).
+     **/
+    static float M_PhotoBMix;
+    static const int PhotoBUnit = 38; ///< Units of the second photo's slots: texPhotoB0 here, texPhotoB1 one up.
     /** Score cues live this frame (set by RenderPipeline, CueReceiver.h): the chain walk takes the generator's
      * section and drop counters (M_CueSections, M_CueDrops) instead of the analyser's.
      **/

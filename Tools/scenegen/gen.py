@@ -196,6 +196,27 @@ void finish(vec3 col)
 }
 """
 
+# The second photo (17.10.2026): the photo shown before the current one, kept by the app in two slots it fades
+# between (RenderPipeline::takePhotoB()); for scenes that set two pictures against each other.
+PHOTOB_LIB = r"""
+// ---- the second photo ----
+/**  The second photo at a mip level: the photo shown before the current one, gliding over to the next when the
+ * photos change (the app's two slots, mixed by photoBMix).
+ *
+ * @param uv   The point (mirrored at the edges, as imgLod()). (in)
+ * @param lod  The mip level: 0 full detail, ~4 a soft field. (in)
+ *
+ * @return
+ *   The colour.
+ **/
+vec3 imgB(vec2 uv, float lod)
+{
+    uv = mirrorUV(uv);
+    float m = smoothstep(0.0, 1.0, clamp(photoBMix, 0.0, 1.0));
+    return mix(textureLod(texPhotoB0, uv, lod), textureLod(texPhotoB1, uv, lod), m).rgb;
+}
+"""
+
 # Scenes with a field of their own (//@state W H RATE [32], EffectShader::stepState): the step's helpers.
 STATE_LIB = r"""
 // ---- the scene's own field (state pass) ----
@@ -2190,12 +2211,16 @@ def assemble(name):
         out.append("uniform float %s;" % q)
     for n, f in exprs:
         out.append("// @expr %s = %s" % (n, f.strip()))
+    if re.search(r"\bimgB\s*\(", src):
+        out += ["uniform sampler2D texPhotoB0;", "uniform sampler2D texPhotoB1;", "uniform float photoBMix;"]
     st = re.search(r"^//@state\s+(\d+)\s+(\d+)\s+([0-9.]+)(\s+32)?\s*$", src, re.M)
     if st:
         out.append("// @state %s %s %s%s" % (st.group(1), st.group(2), st.group(3), " 32" if st.group(4) else ""))
         out += ["uniform sampler2D texState;", "uniform int statePass;", "uniform float stateFrame;",
                 "uniform vec2 stateRes;", "uniform float stateFrac;"]
     out.append(LIB)
+    if re.search(r"\bimgB\s*\(", src):
+        out.append(PHOTOB_LIB)
     if st:
         out.append(STATE_LIB)
     if re.search(r"vec2\s+chain\s*\(", body):

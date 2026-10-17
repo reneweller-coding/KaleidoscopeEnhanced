@@ -1247,6 +1247,17 @@ private:
      * @param texID  Destination texture id (m_actTex or m_nextTex after a swap). (in,out)
      **/
     void loadNewTexture( GLuint &texID );
+    /**  Creates the second photo's two slots (and the copy framebuffers) and fills both with one photo.
+     *
+     * @param image  The photo, already prepared (prepareImage(): a square RGBA image). (in)
+     **/
+    void createPhotoB( const QImage &image );
+    /**  Copies a photo texture into the second photo's hidden slot and starts the fade toward it (a fade still
+     * running is finished first: its old slot is the one written).
+     *
+     * @param src  The photo texture to copy: a photo slot, the same size as the second photo's slots. (in)
+     **/
+    void takePhotoB( GLuint src );
 
 
     Mesh *m_mesh; ///< Legacy OBJ mesh for the (currently unused) drawScene() preview path; see loadObj().
@@ -2033,6 +2044,16 @@ private:
     unsigned int m_timeTextureSoloMax;          ///< Maximum rolled solo duration (seconds), set via init().
     GLuint       m_actTex = 0;                  ///< Currently displayed background-photo texture.
     GLuint       m_nextTex = 0; ///< Incoming background-photo texture (cross-fade target / next solo image).
+
+    // ---- The second photo (17.10.2026) ----
+    // Scenes that set two pictures against each other (imgB() in Tools/scenegen) get the photo shown BEFORE the
+    // current one: at every swap the photo just faded out is copied into the hidden one of two slots, and the second
+    // photo fades over to it.  m_nextTex cannot serve: the loader overwrites it right after the swap, a hard change.
+    GLuint m_photoBTex[2] = { 0, 0 }; ///< The second photo's slots, bound to units EffectShader::PhotoBUnit and +1.
+    GLuint m_photoBFbo[2] = { 0, 0 }; ///< Read and draw framebuffers that copy a photo into a slot (a blit).
+    int    m_photoBSize = 0;          ///< The slots' width and height (every photo slot is prepareImage()'s square).
+    float  m_photoBMix = 0.f;         ///< How far the second photo has faded from slot 0 toward slot 1, 0..1.
+    float  m_photoBTarget = 0.f;      ///< The slot it fades toward: 0 or 1.
 
     /// Accumulated wall time (seconds, paused while frozen) driving every time-based shader -- a double since
     /// 17.10.2026: as a float it lost the frame step in a long show (after four days at 60 Hz it ran in 31-ms steps,

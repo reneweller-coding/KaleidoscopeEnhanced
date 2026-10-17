@@ -26,6 +26,8 @@ uniform float audioKick;  ///< Kick-drum envelope, 0..1 (fast attack, short deca
 // GalleryHall.frag — gold-framed image crops under warm gallery light;
 // ceiling strips are soft white bars.
 uniform sampler2D tex0;           ///< The current photo.
+uniform sampler2D tex1;           ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation;  ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 uniform float     audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float     audioDrop;      ///< Drop envelope: high after a detected drop, decaying.
 
@@ -33,6 +35,18 @@ in vec2  vUV;    ///< Texture coordinate 0..1 over the screen (from the vertex s
 in vec4  vSeed;  ///< Per-instance random seed (from the vertex stage).
 in float vLight; ///< Light (from the vertex stage).
 in float vKind;  ///< Element kind (from the vertex stage).
+
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
+}
 
 /**  Rotates a colour's hue by an angle (about the grey axis).
  *
@@ -57,7 +71,7 @@ void main()
     {
         // Seeded crop of the image inside a gold frame.
         vec2 crop = vSeed.xy * 0.5;
-        col = texture( tex0, crop + vUV * 0.5 ).rgb;
+        col = img( crop + vUV * 0.5 );
 
         vec2  b = min( vUV, 1.0 - vUV );
         float frame = 1.0 - smoothstep( 0.045, 0.09, min( b.x, b.y ) );
