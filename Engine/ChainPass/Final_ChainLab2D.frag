@@ -222,6 +222,7 @@ vec3 imgChain( vec2 p, float bias, out vec2 grad )
     grad = vec2( dFdx( l ), dFdy( l ) ) * 1.5;
     return col;
 }
+const bool ChainPhotoOnly = true; ///< Only the photos' own textures: the line looks and the colour field are not used.
 /** @{ */
 float gT, gSpread, gRot, gMw; ///< gT: The chain's (or scene's) time this frame; gSpread: The spectral spread this
                               ///< frame, 0..1; gRot: The rotation phase this frame; gMw: The chain's morph position
@@ -349,8 +350,11 @@ void main()
     vec3  field = hsv2rgb( vec3( fract( h ), fsat, 1.0 ) ) * ( 0.35 + 1.3 * m );
 
 
-    vec3 photo = max( ( ph - m ) * 1.35 + m, 0.0 ) * ( 0.45 + 1.1 * smoothstep( 0.05, 0.7, m ) );
-    photo = mix( photo, field, 0.15 + 0.45 * clamp( paletteP, 0.0, 1.0 ) );
+
+    vec3 photo = max( ( ph - m ) * ( ChainPhotoOnly ? 1.0 : 1.35 ) + m, 0.0 )
+                 * ( 0.45 + 1.1 * smoothstep( 0.05, 0.7, m ) );
+    if ( !ChainPhotoOnly )
+        photo = mix( photo, field, 0.15 + 0.45 * clamp( paletteP, 0.0, 1.0 ) );
 
     float la = 0.1 * sceneTime;
     float relief = clamp( 0.5 + dot( grad, vec2( cos( la ), sin( la ) ) ) * 5.0, 0.0, 1.0 );
@@ -378,22 +382,25 @@ void main()
 
 
 
-    int   s0, s1;
+    int   s0 = 0, s1 = 0;
     float sf = 0.0, dummy;
-    s0 = pickStage( styleP, 5 );
-    s1 = s0;
-    if ( walkHost > 0.5 && walkAll() )
+    if ( !ChainPhotoOnly )
     {
-        s0 = pickStage( walkS.x, 5 );
-        s1 = pickStage( walkS.y, 5 );
-        sf = smoothstep( 0.0, 1.0, walkS.z );
-    }
-    else if ( walkAll() )
-    {
-        float kf = 0.2 * gMw + 0.6, c = floor( kf );
-        walkPick( c, s0, 0.0, 5, 23.0, s0, dummy );
-        walkPick( c + 1.0, pickStage( styleP, 5 ), 0.0, 5, 23.0, s1, dummy );
-        sf = smoothstep( 0.7, 1.0, fract( kf ) );
+        s0 = pickStage( styleP, 5 );
+        s1 = s0;
+        if ( walkHost > 0.5 && walkAll() )
+        {
+            s0 = pickStage( walkS.x, 5 );
+            s1 = pickStage( walkS.y, 5 );
+            sf = smoothstep( 0.0, 1.0, walkS.z );
+        }
+        else if ( walkAll() )
+        {
+            float kf = 0.2 * gMw + 0.6, c = floor( kf );
+            walkPick( c, s0, 0.0, 5, 23.0, s0, dummy );
+            walkPick( c + 1.0, pickStage( styleP, 5 ), 0.0, 5, 23.0, s1, dummy );
+            sf = smoothstep( 0.7, 1.0, fract( kf ) );
+        }
     }
 
 
@@ -422,8 +429,10 @@ void main()
     s0 = ords( s0 );
     s1 = ords( s1 );
     vec3 col = mix( looks[s0], looks[s1], sf );
-    col *= mix( vec3( 0.9, 0.97, 1.08 ), vec3( 1.08, 0.98, 0.9 ), mode );
-    col += gc * edge * kick * 0.55 * ( ( s0 <= 1 ? 1.0 - sf : 0.0 ) + ( s1 <= 1 ? sf : 0.0 ) );
+    if ( !ChainPhotoOnly )
+        col *= mix( vec3( 0.9, 0.97, 1.08 ), vec3( 1.08, 0.98, 0.9 ), mode );
+    if ( !ChainPhotoOnly )
+        col += gc * edge * kick * 0.55 * ( ( s0 <= 1 ? 1.0 - sf : 0.0 ) + ( s1 <= 1 ? sf : 0.0 ) );
     if ( walkHost < -1.0 )
         col += vec3( walkA.x + walkB.x + walkC.x + walkD.x + walkO.x ); // keeps the walk uniforms
     finish( chainAfterglow( col ) );

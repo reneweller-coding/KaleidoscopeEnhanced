@@ -446,13 +446,13 @@ def write_3d(base="ChainLab3D"):
         "    vec3 n = normalize(gn.xyz + vec3(1e-6));\n"
         "    float lod = clamp(log2(max(t, 0.05) * gWorldK * 2.0) + 1.5 * (1.0 - clamp(detailP, 0.0, 1.0)), 0.0, 7.0);\n"
         "    vec3 nGeo = n;                                          // texture on the geometric normal, light on the bumped one\n"
-        "    vec3 tex0 = colour3T(nGeo, lod, 0.2 + 0.7 * clamp(paletteP, 0.0, 1.0));\n"
+        "    vec3 tex0 = colour3T(nGeo, lod, chainPal());\n"
         "    // relief: the colour chain's brightness as height; its slope on the surface from the\n"
         "    // screen-space derivatives (bump mapping without tangents, Mikkelsen 2010)\n"
         "    float hgt = luma(tex0);\n"
         "    vec3 dpx = dFdx(q), dpy = dFdy(q);\n"
         "    float dhx = dFdx(hgt), dhy = dFdy(hgt);\n"
-        "    if (reliefP > 0.3) {\n"
+        "    if (!chainPhotoOnly && reliefP > 0.3) {\n"
         "        vec3 r1 = cross(dpy, n), r2 = cross(n, dpx);\n"
         "        float det = dot(dpx, r1);\n"
         "        vec3 sg = (dhx * r1 + dhy * r2) / (abs(det) > 1e-14 ? det : 1e-14);\n"
@@ -468,7 +468,7 @@ def write_3d(base="ChainLab3D"):
     fin_main = fin_main.replace("        vec3 q = ro + rd * t;\n" + _nline, "")
     fin_main = re.sub(r"        float lod = clamp\(log2\(t \* (gWorldK \* )?2\.0\).*?\n", "", fin_main)
     fin_main = fin_main.replace("        vec3 nGeo = n;                                          // texture on the geometric normal, light on the bumped one\n", "")
-    k0 = fin_main.index("        if (reliefP > 0.3) {")
+    k0 = fin_main.index("        if (!chainPhotoOnly && reliefP > 0.3) {")
     k1 = fin_main.index("        vec3 tex = colour3(")
     fin_main = fin_main[:k0] + fin_main[k1:]
     fin_main = re.sub(r"        vec3 tex = colour3\(fp, nGeo, lod, [^;]*\);", "        vec3 tex = tex0;", fin_main)

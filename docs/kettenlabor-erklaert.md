@@ -478,7 +478,20 @@ Kamera, Zoom und Drehung folgen **nie** direkt der Musik (keine Erschütterungen
 
 ### ChainLab2D – das 2D-Labor
 Alles aus den Abschnitten 2–9, voller Umfang: 58 × 23 × 18 × 20 Klassen,
-Untervarianten, 24 Reihenfolgen, 5 Looks.
+Untervarianten, 24 Reihenfolgen, 5 Looks (seit 17.10. nur noch der Foto-Look,
+s. u.).
+
+**Nur das Foto (seit 17.10.):** Alle Kettenlabore zeigen nur noch die Fotos
+selbst, durch die Kette verwandelt, in ihren eigenen Farben. Abgeschaltet sind
+Relief, Konturlinien, Fluss und leuchtende Kanten im 2D-Labor und in der
+FX-Kette, die leuchtenden Ränder und das Relief im 3D-Labor und in den
+Chain3D-Szenen, die leuchtenden Kämme im Tunnel, die Höhenlinien im Raumschnitt
+und überall das Farbfeld, das Licht in Kalt/Warm-Tönen und die Kanten-Blitze
+auf dem Kick. Der Code dafür bleibt erhalten: Ein Schalter
+(`PHOTO_ONLY` in `Tools/scenegen/chain_classes.py`, im Shader
+`chainPhotoOnly`) holt alles zurück. `styleP` und `paletteP` (im 3D-Labor auch
+`reliefP`, im Schnitt `isoP`) wirken solange nicht; die App wandert den Look
+nicht mehr.
 
 ### ChainLabTunnel – das Tunnel-Labor
 Die gewürfelte 2D-Kette als **Wand eines Tunnels**, ihre Helligkeit als echtes

@@ -46,6 +46,7 @@ HEAD = r'''//@doc
  * (drift speed), detailP, paletteP, camP (the first plane orientation), hueP,
  * isoP (contour lines of the distance field: the air around the bodies drawn
  * like a map's height lines, running slowly outward; none below ~0.35).
+ * chainPhotoOnly (chain_classes.PHOTO_ONLY, set since 17.10.2026): only the photo -- styleP, paletteP, reliefP and isoP have no effect.
 //@params spaceP coreP bodyP layerP hyperP isoP solidP reliefP chainAP chainBP chainCP chainDP orderP morphP styleP speedP detailP paletteP camP
 //@audio audioSpread audioKick audioMode audioSwell
 //@body
@@ -121,7 +122,7 @@ ISO = r'''
         // outward (clock, never audio: the kick only brightens them).  Their
         // width is a pixel in the world (sPx), not fwidth: the cut loop
         // branches per pixel.  They fade with the distance from matter.
-        float iso = smoothstep(0.35, 0.75, isoP);
+        float iso = chainPhotoOnly ? 0.0 : smoothstep(0.35, 0.75, isoP);   // chainPhotoOnly: no contour lines
         if (iso > 0.0) {
             float isoW = 0.05 * sView;
             float isoU = dHit / isoW - 0.12 * sceneTime;

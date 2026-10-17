@@ -27,6 +27,8 @@
  *  morphP (which stage, if any, morphs on with the music), styleP (frame /
  *  relief / edges / contours / flow), speedP (flow speed), detailP (sharpness),
  *  paletteP (the frame's own colours / colour field), hueP.
+ *  ChainPhotoOnly (chain_classes.PHOTO_ONLY, set since 17.10.2026): only the photo -- styleP and paletteP have no
+ *  effect.
  *
  *  @author René Weller
  */
@@ -3292,6 +3294,8 @@ vec3 imgChain( vec2 p, float bias, out vec2 grad )
     return col;
 }
 
+const bool ChainPhotoOnly = true; ///< only the photos' own textures: no line looks, no colour field
+                                  ///< (chain_classes.PHOTO_ONLY)
 // @chainclasses spaceP mirrored lattice|log-spherical Droste|twisted 3D Droste|icosahedral lattice|log-cylindrical Droste|polar ring tunnel|noise-warped lattice|4D-rotated lattice|bent cells|gyroid-warped lattice|octahedral lattice|turning lattice|torus-wrapped world|hyperbolic half-space|rolled world|hexagonal lattice|twisted lattice|double helix|helix|inverted lattice
 // @chainclasses coreP no fold core|octahedral KIFS|Sierpinski octahedron|twisted octahedral KIFS|polyhedral kaleidoscope|Mandelbulb|tetrahedral KIFS|icosahedral KIFS|plane folds|dodecahedral KIFS|Mandalay box|sphere-inversion box fold|Apollonian sphere packing|pseudo-Kleinian|Menger sponge|kaliset|cross-Menger|amazing surface|spherical KIFS|hyperbolic honeycomb|mixed Sierpinski|Kleinian fold
 // @chainclasses bodyP pills|gears|twisted pillars|Steinmetz solids|balls|chain links|superquadrics|octahedra|blocks|Neovius surface|linked rings|icosahedra|hollow spheres|rhombic dodecahedra|Schwarz P surface|stellated octahedra|Schwarz D surface|tori|Lidinoid|crosses|gyroid membrane|rod lattice
@@ -3299,7 +3303,7 @@ vec3 imgChain( vec2 p, float bias, out vec2 grad )
 // @chainclasses chainBP none|mirror line|origami folds|curved kaleidoscope|p4m lattice|p6m lattice|Sierpinski fold|Pythagoras-tree fold|Pappus chain|Steiner kaleidoscope|Vicsek fold|Levy C fold|kaleidoscope|Ammann-Beenker mirror|Penrose mirror|12-fold quasicrystal mirror|spiral kaleidoscope|Schottky mirror|modular group mirror|Koch fold|iterated fold|Apollonian inversion fold|p3m1 triangle mirror
 // @chainclasses chainCP none|lens|zone lens|Farris rosette|fisheye|gravitational lens|binary lens|Lorentz boost|blossom|inversion|Joukowski map|kaleidoscope|log vortex|Cayley transform|mirrored power|complex square|spiral|tunnel
 // @chainclasses chainDP none|turning|bend|convection cells|cylinder flow|curl flow|dipole field|twirl|Kelvin-Helmholtz rolls|vortex pair|Taylor-Green vortices|domain warp|wave interference|double gyre|ripple|Gerstner waves|vortex street|Karman street|gravitational wave|shear wave
-// @chainclasses styleP photo|relief|contour lines|flow|glowing edges
+// @chainclasses styleP photo
 // @chainclasses orderP A → B → C → D|A → B → D → C|A → C → B → D|A → C → D → B|A → D → B → C|A → D → C → B|B → A → C → D|B → A → D → C|B → C → A → D|B → C → D → A|B → D → A → C|B → D → C → A|C → A → B → D|C → A → D → B|C → B → A → D|C → B → D → A|C → D → A → B|C → D → B → A|D → A → B → C|D → A → C → B|D → B → A → C|D → B → C → A|D → C → A → B|D → C → B → A
 // @chainord chainAP 11|26|37|51|57|45|30|32|55|49|50|8|14|0|7|21|36|27|54|33|38|42|53|5|18|56|25|48|15|28|22|46|6|23|3|41|40|35|52|17|44|34|16|13|29|31|20|47|19|43|4|39|12|1|24|2|10|9
 // @chainord chainBP 0|5|20|10|3|2|7|12|19|21|13|11|1|14|8|15|22|17|16|9|4|6|18
@@ -5200,8 +5204,12 @@ void main()
     vec3  field = hsv2rgb( vec3( fract( h ), fsat, 1.0 ) ) * ( 0.35 + 1.3 * m );
     // The photo's colours raised 1.35 and its tones spread (darks a little darker, lights brighter): the photo and
     // relief looks measured a luma contrast of 0.04 .. 0.08 against the catalogue's 0.12 (17.10.2026).
-    vec3 photo = max( ( ph - m ) * 1.35 + m, 0.0 ) * ( 0.45 + 1.1 * smoothstep( 0.05, 0.7, m ) );
-    photo = mix( photo, field, 0.45 * clamp( paletteP, 0.0, 1.0 ) ); // the scene keeps its colours unless paletteP asks
+    // With ChainPhotoOnly the photo keeps its own colours (17.10.2026); only its tones are spread.
+    vec3 photo = max( ( ph - m ) * ( ChainPhotoOnly ? 1.0 : 1.35 ) + m, 0.0 )
+                 * ( 0.45 + 1.1 * smoothstep( 0.05, 0.7, m ) );
+    if ( !ChainPhotoOnly )
+        photo = mix( photo, field, 0.45 * clamp( paletteP, 0.0, 1.0 ) ); // the scene keeps its colours unless paletteP
+                                                                         // asks
     // Relief: the chain's photo lit from a slowly circling light.
     float la = 0.1 * sceneTime;
     float relief = clamp( 0.5 + dot( grad, vec2( cos( la ), sin( la ) ) ) * 5.0, 0.0, 1.0 );
@@ -5235,22 +5243,27 @@ void main()
     // are muddy); in the all-stages walk the look walks too, slowly, each look
     // computed on its own and cross-faded.  s0/s1/sf depend on knobs and time
     // only, so every pixel takes the same branches.
-    int   s0, s1;
+    // With ChainPhotoOnly the look is the photo (17.10.2026): nothing is selected, so the look's walk uniform drops
+    // out of the program and the app does not walk the look.
+    int   s0 = 0, s1 = 0;
     float sf = 0.0, dummy;
-    s0 = pickStage( styleP, 5 );
-    s1 = s0;
-    if ( walkHost > 0.5 && walkAll() )
+    if ( !ChainPhotoOnly )
     {
-        s0 = pickStage( walkS.x, 5 );
-        s1 = pickStage( walkS.y, 5 );
-        sf = smoothstep( 0.0, 1.0, walkS.z );
-    }
-    else if ( walkAll() )
-    {
-        float kf = 0.2 * gMw + 0.6, c = floor( kf );
-        walkPick( c, s0, 0.0, 5, 23.0, s0, dummy );
-        walkPick( c + 1.0, pickStage( styleP, 5 ), 0.0, 5, 23.0, s1, dummy );
-        sf = smoothstep( 0.7, 1.0, fract( kf ) );
+        s0 = pickStage( styleP, 5 );
+        s1 = s0;
+        if ( walkHost > 0.5 && walkAll() )
+        {
+            s0 = pickStage( walkS.x, 5 );
+            s1 = pickStage( walkS.y, 5 );
+            sf = smoothstep( 0.0, 1.0, walkS.z );
+        }
+        else if ( walkAll() )
+        {
+            float kf = 0.2 * gMw + 0.6, c = floor( kf );
+            walkPick( c, s0, 0.0, 5, 23.0, s0, dummy );
+            walkPick( c + 1.0, pickStage( styleP, 5 ), 0.0, 5, 23.0, s1, dummy );
+            sf = smoothstep( 0.7, 1.0, fract( kf ) );
+        }
     }
     // Flow: noise living in the chain's own space, smeared along the chain's
     // contour direction (line integral convolution) with a travelling phase --
@@ -5282,9 +5295,9 @@ void main()
     s0 = ords( s0 );
     s1 = ords( s1 ); // position on the calm..energetic scale -> look
     vec3 col = mix( looks[s0], looks[s1], sf );
-    col *= mix( vec3( 0.9, 0.97, 1.08 ), vec3( 1.08, 0.98, 0.9 ), mode );
-    col += gc * edge * kick * 0.55 * ( ( s0 <= 1 ? 1.0 - sf : 0.0 ) + ( s1 <= 1 ? sf : 0.0 ) ); // kick glints on
-                                                                                                // photo/relief (light
-                                                                                                // only)
+    if ( !ChainPhotoOnly )
+        col *= mix( vec3( 0.9, 0.97, 1.08 ), vec3( 1.08, 0.98, 0.9 ), mode ); // cool .. warm with the mode
+    if ( !ChainPhotoOnly ) // kick glints on photo/relief: glowing edges
+        col += gc * edge * kick * 0.55 * ( ( s0 <= 1 ? 1.0 - sf : 0.0 ) + ( s1 <= 1 ? sf : 0.0 ) );
     finish( chainAfterglow( col ) );
 }

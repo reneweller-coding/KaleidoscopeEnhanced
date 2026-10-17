@@ -3,6 +3,12 @@
 the shaders pick them (position = pickStage(knob, len)).  Single source for
 promote_likes.py (descriptions) and gen.py (the "// @chainclasses" lines the app
 reads for the shader-info overlay, key v).  None = the identity."""
+# Only the photos' own textures (asked 17.10.2026: the colours still did not please): the looks -- relief, contour
+# lines, flow and glowing edges in the 2D labs, glowing rims, crests, iso lines and the relief bumps in the 3D labs,
+# the tunnel and the slice -- and the colour field stay in the shaders but are never used; the look is the photo.
+# gen.py hands the switch to the shaders (const bool chainPhotoOnly).  False brings everything back.
+PHOTO_ONLY = True
+STYLES = ['photo', 'relief', 'contour lines', 'flow', 'glowing edges']
 CLASSES = {
     'spaceP': ['mirrored lattice', 'log-spherical Droste', 'twisted 3D Droste', 'icosahedral lattice', 'log-cylindrical Droste', 'polar ring tunnel', 'noise-warped lattice', '4D-rotated lattice', 'bent cells', 'gyroid-warped lattice', 'octahedral lattice', 'turning lattice', 'torus-wrapped world', 'hyperbolic half-space', 'rolled world', 'hexagonal lattice', 'twisted lattice', 'double helix', 'helix', 'inverted lattice'],
     'coreP': ['no fold core', 'octahedral KIFS', 'Sierpinski octahedron', 'twisted octahedral KIFS', 'polyhedral kaleidoscope', 'Mandelbulb', 'tetrahedral KIFS', 'icosahedral KIFS', 'plane folds', 'dodecahedral KIFS', 'Mandalay box', 'sphere-inversion box fold', 'Apollonian sphere packing', 'pseudo-Kleinian', 'Menger sponge', 'kaliset', 'cross-Menger', 'amazing surface', 'spherical KIFS', 'hyperbolic honeycomb', 'mixed Sierpinski', 'Kleinian fold'],
@@ -11,7 +17,7 @@ CLASSES = {
     'chainBP': [None, 'mirror line', 'origami folds', 'curved kaleidoscope', 'p4m lattice', 'p6m lattice', 'Sierpinski fold', 'Pythagoras-tree fold', 'Pappus chain', 'Steiner kaleidoscope', 'Vicsek fold', 'Levy C fold', 'kaleidoscope', 'Ammann-Beenker mirror', 'Penrose mirror', '12-fold quasicrystal mirror', 'spiral kaleidoscope', 'Schottky mirror', 'modular group mirror', 'Koch fold', 'iterated fold', 'Apollonian inversion fold', 'p3m1 triangle mirror'],
     'chainCP': [None, 'lens', 'zone lens', 'Farris rosette', 'fisheye', 'gravitational lens', 'binary lens', 'Lorentz boost', 'blossom', 'inversion', 'Joukowski map', 'kaleidoscope', 'log vortex', 'Cayley transform', 'mirrored power', 'complex square', 'spiral', 'tunnel'],
     'chainDP': [None, 'turning', 'bend', 'convection cells', 'cylinder flow', 'curl flow', 'dipole field', 'twirl', 'Kelvin-Helmholtz rolls', 'vortex pair', 'Taylor-Green vortices', 'domain warp', 'wave interference', 'double gyre', 'ripple', 'Gerstner waves', 'vortex street', 'Karman street', 'gravitational wave', 'shear wave'],
-    'styleP': ['photo', 'relief', 'contour lines', 'flow', 'glowing edges'],
+    'styleP': STYLES[:1] if PHOTO_ONLY else STYLES,
     'orderP': ['A → B → C → D', 'A → B → D → C', 'A → C → B → D', 'A → C → D → B', 'A → D → B → C', 'A → D → C → B', 'B → A → C → D', 'B → A → D → C', 'B → C → A → D', 'B → C → D → A', 'B → D → A → C', 'B → D → C → A', 'C → A → B → D', 'C → A → D → B', 'C → B → A → D', 'C → B → D → A', 'C → D → A → B', 'C → D → B → A', 'D → A → B → C', 'D → A → C → B', 'D → B → A → C', 'D → B → C → A', 'D → C → A → B', 'D → C → B → A'],
 }
 

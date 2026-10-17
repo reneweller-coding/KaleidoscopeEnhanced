@@ -79,8 +79,9 @@ vec2 screenP()
 {
     return ( gl_FragCoord.xy / resolution - 0.5 ) * vec2( resolution.x / resolution.y, 1.0 );
 }
-float gDR = 1.0;        ///< Running scale factor of the folds (divides the distance estimate).
-vec3  gP = vec3( 0.0 ); ///< The point the distance field was last evaluated at (scaled; textures the surface).
+const bool ChainPhotoOnly = true; ///< Only the photos' own textures: the line looks and the colour field are not used.
+float      gDR = 1.0;             ///< Running scale factor of the folds (divides the distance estimate).
+vec3       gP = vec3( 0.0 ); ///< The point the distance field was last evaluated at (scaled; textures the surface).
 /**  Rotation of p about an axis.
  *
  * @param p     The point. (in)

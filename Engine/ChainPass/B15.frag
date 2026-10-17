@@ -154,6 +154,7 @@ vec2 tQuasiMirror( vec2 uv, vec2 c, float N, float cells, vec2 drift )
     vec2 f = min( ab, 1.0 - ab );
     return c + vec2( min( f.x, f.y ), max( f.x, f.y ) ) * 0.9;
 }
+const bool ChainPhotoOnly = true; ///< Only the photos' own textures: the line looks and the colour field are not used.
 /** @{ */
 float gT, gSpread, gRot, gMw; ///< gT: The chain's (or scene's) time this frame; gSpread: The spectral spread this
                               ///< frame, 0..1; gRot: The rotation phase this frame; gMw: The chain's morph position

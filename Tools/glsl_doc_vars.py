@@ -509,6 +509,7 @@ VAR_DOCS.update( {
     "gPathAmp": "Amplitude of the camera path's wander.",
     "gTube": "Radius of the flight tube this frame.",
     "gWorldK": "The world's scale: the field's structures 1/gWorldK as large around the camera.",
+    "chainPhotoOnly": "Only the photos' own textures: the line looks and the colour field are not used.",
     "gThin": "How far the matter is thinned on the flight path (fading out over 1.4 units).",
     "gCorrR": "Radius of the corridor this frame (breathes with the sub-bass).",
     "hitMat": "Material of the last surface the ray hit (set by the distance field).",

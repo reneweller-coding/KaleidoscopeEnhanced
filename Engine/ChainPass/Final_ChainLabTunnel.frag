@@ -114,6 +114,7 @@ void finish( vec3 col )
     t /= 1.0 + 0.35 * max( t.r, max( t.g, t.b ) );
     fragColor = vec4( clamp( t, 0.0, 1.0 ), 1.0 );
 }
+const bool ChainPhotoOnly = true; ///< Only the photos' own textures: the line looks and the colour field are not used.
 /** @{ */
 float gT, gTC, gSpread, gRot, gMw, gH; ///< gT: The chain's (or scene's) time this frame; gTC: The chain's time for this
                                        ///< pixel (gT plus the tilt across the picture); gSpread: The spectral spread
@@ -256,7 +257,9 @@ void main()
     }
     float hue_f = hueP * 0.159 + 0.12 * audioPhase + 0.004 * sceneTime + 0.3 * mode;
     vec3  fog_c = hsv2rgb( vec3( fract( hue_f + 0.5 ), 0.5, 1.0 ) ) * ( 0.04 + 0.08 * swell );
-    vec3  col = fog_c;
+    if ( ChainPhotoOnly )
+        fog_c = imgLod( vec2( 0.5 ) + 0.2 * p, 6.0 ) * ( 0.12 + 0.24 * swell );
+    vec3 col = fog_c;
     if ( hit )
     {
         vec3 q = ro + rd * t;
@@ -295,8 +298,10 @@ void main()
         float h = hue_f + hue_w * 0.13 * ( 0.6 * sin( 6.2831853 * cm.x ) + 0.4 * sin( 6.2831853 * cm.y + 1.3 ) )
                   + 0.03 * m0;
         vec3  field = hsv2rgb( vec3( fract( h ), 0.55 + 0.25 * swell, 1.0 ) ) * ( 0.35 + 1.3 * m0 );
-        vec3  tex = mix( max( ( ph - m0 ) * 1.35 + m0, 0.0 ), field, 0.15 + 0.45 * clamp( paletteP, 0.0, 1.0 ) );
-        vec3  lc = mix( vec3( 0.75, 0.88, 1.1 ), vec3( 1.12, 0.92, 0.72 ), mode );
+        vec3  tex = max( ( ph - m0 ) * ( ChainPhotoOnly ? 1.0 : 1.35 ) + m0, 0.0 );
+        if ( !ChainPhotoOnly )
+            tex = mix( tex, field, 0.15 + 0.45 * clamp( paletteP, 0.0, 1.0 ) );
+        vec3 lc = ChainPhotoOnly ? vec3( 1.0 ) : mix( vec3( 0.75, 0.88, 1.1 ), vec3( 1.12, 0.92, 0.72 ), mode );
 
         vec3  lh = normalize( ro + vec3( 0.0, 0.0, 1.5 ) - q );
         float la = 0.13 * sceneTime;
@@ -317,8 +322,9 @@ void main()
         float own_w = ( 0.5 + 0.4 * smoothstep( 0.06, 0.3, psat ) ) * ( 1.0 - 0.5 * clamp( paletteP, 0.0, 1.0 ) );
         vec3  glow = mix( hsv2rgb( vec3( fract( h ), 0.5 + 0.2 * swell, 1.0 ) ), own, own_w )
                      * ( crest * ( 0.6 + 1.2 * kick ) + fres * 0.5 );
-        float st = clamp( styleP, 0.0, 1.0 );
-        vec3  sc = mix( surf + glow * 0.25 * ( 0.5 + kick ), glow + surf * 0.55, smoothstep( 0.35, 0.65, st ) );
+        float st = ChainPhotoOnly ? 0.0 : clamp( styleP, 0.0, 1.0 );
+        vec3  sc = mix( surf + glow * ( ChainPhotoOnly ? 0.0 : 0.25 * ( 0.5 + kick ) ), glow + surf * 0.55,
+                        smoothstep( 0.35, 0.65, st ) );
         col = mix( fog_c, sc, exp( -t * ( 0.07 + 0.03 * swell ) ) );
     }
     if ( walkHost < -1.0 )

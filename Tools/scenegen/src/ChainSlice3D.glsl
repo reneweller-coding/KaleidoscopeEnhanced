@@ -27,6 +27,7 @@
  * (drift speed), detailP, paletteP, camP (the first plane orientation), hueP,
  * isoP (contour lines of the distance field: the air around the bodies drawn
  * like a map's height lines, running slowly outward; none below ~0.35).
+ * chainPhotoOnly (chain_classes.PHOTO_ONLY, set since 17.10.2026): only the photo -- styleP, paletteP, reliefP and isoP have no effect.
 //@params spaceP coreP bodyP layerP hyperP isoP solidP reliefP chainAP chainBP chainCP chainDP orderP morphP styleP speedP detailP paletteP camP
 //@audio audioSpread audioKick audioMode audioSwell
 //@body
@@ -704,8 +705,14 @@ vec3 calmGlow(vec3 own, float dh)
     float mx = max(own.r, max(own.g, own.b));
     float s = (mx - min(own.r, min(own.g, own.b))) / max(mx, 0.25);
     vec3 o = mix(vec3(1.0), own / max(mx, 1e-3), clamp(s * 2.0, 0.0, 1.0));
+    if (chainPhotoOnly) return o;                          // the surface's own colour only, grey where it is grey
     vec3 g = hsv2rgb(vec3(fract(chainHue0() + dh), 0.5 + 0.2 * clamp(audioSwell, 0.0, 1.0), 1.0));
     return mix(g, o, 0.5 + 0.4 * smoothstep(0.06, 0.3, s));
+}
+// How much of the colour field the surfaces take (none with chainPhotoOnly: the photos' own textures, 17.10.2026).
+float chainPal()
+{
+    return chainPhotoOnly ? 0.0 : 0.2 + 0.7 * clamp(paletteP, 0.0, 1.0);
 }
 // One plane: the photo through the chain, plus a colour field that follows
 // the chain's own coordinates (mirrorUV keeps it seamless at the atan cuts).
@@ -830,20 +837,20 @@ void main()
         d = fieldS(ro + rd * t);
         if (d < 0.0 || i >= nl - 1) { hit = true; fp = gP; fdr = gDR; dHit = d; break; }
     }
-    vec3 lc = mix(vec3(0.7, 0.85, 1.1), vec3(1.15, 0.9, 0.7), mode);
+    vec3 lc = chainPhotoOnly ? vec3(1.0) : mix(vec3(0.7, 0.85, 1.1), vec3(1.15, 0.9, 0.7), mode);   // white: the photo's own colours
     // The fog takes the palette's hue (wandering with the music) rather than the photo's cast: a neighbour of the
     // surfaces' hue, not its complement (17.10.2026).
     vec3 fogPal = hsv2rgb(vec3(fract(chainHue0() + 0.08), 0.4, 1.0));
     // A little brighter and denser since the world is smaller (17.10.2026): the depth reads in layers fading into
     // the haze, and a sparse world's void is no longer black.
-    vec3 fogC = mix(calmGlow(imgK(vec2(0.5) + 0.2 * p, 5.0), 0.04), fogPal, 0.8 * clamp(paletteP, 0.0, 1.0)) * (0.08 + 0.1 * swell);
+    vec3 fogC = mix(calmGlow(imgK(vec2(0.5) + 0.2 * p, 5.0), 0.04), fogPal, chainPhotoOnly ? 0.0 : 0.8 * clamp(paletteP, 0.0, 1.0)) * (0.08 + 0.1 * swell);
     vec3 col = fogC;
     if (hit) {
         vec3 q = ro + rd * t;
         vec3 n = normalS(q);
         float lod = clamp(log2(t * gWorldK * 2.0) + 1.5 * (1.0 - clamp(detailP, 0.0, 1.0)), 0.0, 7.0);
         vec3 nGeo = n;                                          // texture on the geometric normal, light on the bumped one
-        if (reliefP > 0.3) {                                    // a knob: every pixel takes the same branch
+        if (!chainPhotoOnly && reliefP > 0.3) {                 // a knob: every pixel takes the same branch
             vec3 t1 = normalize(cross(n, abs(n.y) < 0.9 ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0))), t2 = cross(n, t1);
             float e = 0.006 * max(t, 1.0), hl = lod + 1.5;
             // sampled in the folded space around fp (the fold stretches by fdr there)
@@ -851,9 +858,11 @@ void main()
             vec3 g = t1 * (reliefH(fp + t1 * ef, n, hl) - h0) + t2 * (reliefH(fp + t2 * ef, n, hl) - h0);
             n = normalize(n - g / e * 0.05 * smoothstep(0.3, 1.0, reliefP));
         }
-        vec3 tex = colour3(fp, nGeo, lod, 0.2 + 0.7 * clamp(paletteP, 0.0, 1.0));
+        vec3 tex = colour3(fp, nGeo, lod, chainPal());
         float tm = luma(tex);
-        tex = max((tex - tm) * 1.1 + tm, 0.0) * 1.5;           // brighter, the colour a little livelier (was 1.5)
+        // Brighter; with chainPhotoOnly the photo's own colours, and a little more light since the glowing rims and the
+        // colour field (which lifted dark photos) are gone: the 3D lab measured a third darker (17.10.2026).
+        tex = max((tex - tm) * (chainPhotoOnly ? 1.0 : 1.1) + tm, 0.0) * (chainPhotoOnly ? 1.9 : 1.5);
         vec3 L = sL;
         float diff = 0.5 + 0.5 * dot(n, L);   // wrapped: a cut shows normals of every direction
         float ao = 0.0;
@@ -868,15 +877,15 @@ void main()
         vec3 surf = tex * lc * (0.3 + 0.75 * diff + 0.45 * lamp) * ao * drift;
         vec3 rimC = calmGlow(tex, 0.05 * sin(fp.x + fp.y));
         vec3 rim = rimC * fres * (0.7 + 1.5 * kick) + surf * 0.4;       // lab audit: the glow style was half as bright
-        float st = clamp(styleP, 0.0, 1.0);
-        vec3 sc = mix(surf + rimC * fres * (0.15 + 0.6 * kick), rim * 1.3 + rimC * 0.12 * ao, smoothstep(0.5, 1.0, st));
+        float st = chainPhotoOnly ? 0.0 : clamp(styleP, 0.0, 1.0);   // chainPhotoOnly: no glowing rims
+        vec3 sc = mix(surf + rimC * fres * (chainPhotoOnly ? 0.0 : 0.15 + 0.6 * kick), rim * 1.3 + rimC * 0.12 * ao, smoothstep(0.5, 1.0, st));
         col = mix(fogC, sc, exp(-t * (0.09 + 0.04 * swell)));
         // isoP: the distance field's contour lines -- around every body its
         // height lines, like a map; every fourth stronger, all running slowly
         // outward (clock, never audio: the kick only brightens them).  Their
         // width is a pixel in the world (sPx), not fwidth: the cut loop
         // branches per pixel.  They fade with the distance from matter.
-        float iso = smoothstep(0.35, 0.75, isoP);
+        float iso = chainPhotoOnly ? 0.0 : smoothstep(0.35, 0.75, isoP);   // chainPhotoOnly: no contour lines
         if (iso > 0.0) {
             float isoW = 0.05 * sView;
             float isoU = dHit / isoW - 0.12 * sceneTime;

@@ -27,6 +27,8 @@
  *  morphP (which stage, if any, morphs on with the music), depthP (relief
  *  height), styleP (lit photo / glowing crests), speedP (flight speed),
  *  detailP (texture sharpness), paletteP (photo colours / colour field), hueP.
+ *  ChainPhotoOnly (chain_classes.PHOTO_ONLY, set since 17.10.2026): only the photo -- styleP and paletteP have no
+ *  effect.
  *
  *  @author René Weller
  */
@@ -3292,6 +3294,8 @@ vec3 imgChain( vec2 p, float bias, out vec2 grad )
     return col;
 }
 
+const bool ChainPhotoOnly = true; ///< only the photos' own textures: no line looks, no colour field
+                                  ///< (chain_classes.PHOTO_ONLY)
 // @chainclasses spaceP mirrored lattice|log-spherical Droste|twisted 3D Droste|icosahedral lattice|log-cylindrical Droste|polar ring tunnel|noise-warped lattice|4D-rotated lattice|bent cells|gyroid-warped lattice|octahedral lattice|turning lattice|torus-wrapped world|hyperbolic half-space|rolled world|hexagonal lattice|twisted lattice|double helix|helix|inverted lattice
 // @chainclasses coreP no fold core|octahedral KIFS|Sierpinski octahedron|twisted octahedral KIFS|polyhedral kaleidoscope|Mandelbulb|tetrahedral KIFS|icosahedral KIFS|plane folds|dodecahedral KIFS|Mandalay box|sphere-inversion box fold|Apollonian sphere packing|pseudo-Kleinian|Menger sponge|kaliset|cross-Menger|amazing surface|spherical KIFS|hyperbolic honeycomb|mixed Sierpinski|Kleinian fold
 // @chainclasses bodyP pills|gears|twisted pillars|Steinmetz solids|balls|chain links|superquadrics|octahedra|blocks|Neovius surface|linked rings|icosahedra|hollow spheres|rhombic dodecahedra|Schwarz P surface|stellated octahedra|Schwarz D surface|tori|Lidinoid|crosses|gyroid membrane|rod lattice
@@ -3299,7 +3303,7 @@ vec3 imgChain( vec2 p, float bias, out vec2 grad )
 // @chainclasses chainBP none|mirror line|origami folds|curved kaleidoscope|p4m lattice|p6m lattice|Pappus chain|Steiner kaleidoscope|kaleidoscope|spiral kaleidoscope|iterated fold|p3m1 triangle mirror
 // @chainclasses chainCP none|lens|zone lens|Farris rosette|fisheye|gravitational lens|binary lens|Lorentz boost|blossom|inversion|Joukowski map|kaleidoscope|log vortex|Cayley transform|mirrored power|complex square|spiral|tunnel
 // @chainclasses chainDP none|turning|bend|convection cells|cylinder flow|dipole field|twirl|Kelvin-Helmholtz rolls|vortex pair|wave interference|ripple|Gerstner waves|gravitational wave|shear wave
-// @chainclasses styleP photo|relief|contour lines|flow|glowing edges
+// @chainclasses styleP photo
 // @chainord chainAP 11|8|0|7|21|33|42|5|48|6|3|41|40|52|44|34|16|13|29|31|20|19|43|4|39|12|1|2|10
 // @chainord chainBP 0|5|20|10|3|2|19|21|1|22|4|18
 // @chainord chainCP 0|5|17|9|12|13|14|15|8|3|7|6|16|11|10|4|1|2
@@ -4713,7 +4717,9 @@ void main()
     }
     float hue_f = hueP * 0.159 + 0.12 * audioPhase + 0.004 * sceneTime + 0.3 * mode;
     vec3  fog_c = hsv2rgb( vec3( fract( hue_f + 0.5 ), 0.5, 1.0 ) ) * ( 0.04 + 0.08 * swell );
-    vec3  col = fog_c;
+    if ( ChainPhotoOnly )
+        fog_c = imgLod( vec2( 0.5 ) + 0.2 * p, 6.0 ) * ( 0.12 + 0.24 * swell ); // the photo's own colour
+    vec3 col = fog_c;
     if ( hit )
     {
         vec3 q = ro + rd * t;
@@ -4753,8 +4759,13 @@ void main()
         float h = hue_f + hue_w * 0.13 * ( 0.6 * sin( 6.2831853 * cm.x ) + 0.4 * sin( 6.2831853 * cm.y + 1.3 ) )
                   + 0.03 * m0;
         vec3  field = hsv2rgb( vec3( fract( h ), 0.55 + 0.25 * swell, 1.0 ) ) * ( 0.35 + 1.3 * m0 );
-        vec3  tex = mix( max( ( ph - m0 ) * 1.35 + m0, 0.0 ), field, 0.15 + 0.45 * clamp( paletteP, 0.0, 1.0 ) );
-        vec3  lc = mix( vec3( 0.75, 0.88, 1.1 ), vec3( 1.12, 0.92, 0.72 ), mode );
+        vec3  tex = max( ( ph - m0 ) * ( ChainPhotoOnly ? 1.0 : 1.35 ) + m0, 0.0 ); // ChainPhotoOnly: the photo's own
+                                                                                    // colours
+        if ( !ChainPhotoOnly )
+            tex = mix( tex, field, 0.15 + 0.45 * clamp( paletteP, 0.0, 1.0 ) );
+        vec3 lc = ChainPhotoOnly ? vec3( 1.0 )
+                                 : mix( vec3( 0.75, 0.88, 1.1 ), vec3( 1.12, 0.92, 0.72 ), mode ); // white: the photo's
+                                                                                                   // colours
         // A light travelling with the camera plus a slow circling key light.
         vec3  lh = normalize( ro + vec3( 0.0, 0.0, 1.5 ) - q );
         float la = 0.13 * sceneTime;
@@ -4775,8 +4786,9 @@ void main()
         float own_w = ( 0.5 + 0.4 * smoothstep( 0.06, 0.3, psat ) ) * ( 1.0 - 0.5 * clamp( paletteP, 0.0, 1.0 ) );
         vec3  glow = mix( hsv2rgb( vec3( fract( h ), 0.5 + 0.2 * swell, 1.0 ) ), own, own_w )
                      * ( crest * ( 0.6 + 1.2 * kick ) + fres * 0.5 );
-        float st = clamp( styleP, 0.0, 1.0 );
-        vec3  sc = mix( surf + glow * 0.25 * ( 0.5 + kick ), glow + surf * 0.55, smoothstep( 0.35, 0.65, st ) );
+        float st = ChainPhotoOnly ? 0.0 : clamp( styleP, 0.0, 1.0 ); // ChainPhotoOnly: no glowing crests
+        vec3  sc = mix( surf + glow * ( ChainPhotoOnly ? 0.0 : 0.25 * ( 0.5 + kick ) ), glow + surf * 0.55,
+                        smoothstep( 0.35, 0.65, st ) );
         col = mix( fog_c, sc, exp( -t * ( 0.07 + 0.03 * swell ) ) );
     }
     finish( chainAfterglow( col ) );

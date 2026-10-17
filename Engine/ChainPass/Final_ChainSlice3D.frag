@@ -143,13 +143,14 @@ void finish( vec3 col )
     t /= 1.0 + 0.35 * max( t.r, max( t.g, t.b ) );
     fragColor = vec4( clamp( t, 0.0, 1.0 ), 1.0 );
 }
-vec3          gCam = vec3( 0.0 ); ///< The camera position this frame.
-float         gPathAmp = 1.0;     ///< Amplitude of the camera path's wander.
-float         gWorldK = 1.0;      ///< The world's scale: the field's structures 1/gWorldK as large around the camera.
-float         gThin = 0.0;        ///< How far the matter is thinned on the flight path (fading out over 1.4 units).
-uniform float camHost;            ///< 1 when the app drives the camera (camZ, camGaze).
-uniform float camZ;               ///< Flight position along the camera path (integrated by the app).
-uniform vec3  camGaze;            ///< Gaze shown, gaze panned to, pan progress.
+const bool ChainPhotoOnly = true; ///< Only the photos' own textures: the line looks and the colour field are not used.
+vec3          gCam = vec3( 0.0 );    ///< The camera position this frame.
+float         gPathAmp = 1.0;        ///< Amplitude of the camera path's wander.
+float         gWorldK = 1.0; ///< The world's scale: the field's structures 1/gWorldK as large around the camera.
+float         gThin = 0.0;           ///< How far the matter is thinned on the flight path (fading out over 1.4 units).
+uniform float camHost;               ///< 1 when the app drives the camera (camZ, camGaze).
+uniform float camZ;                  ///< Flight position along the camera path (integrated by the app).
+uniform vec3  camGaze;               ///< Gaze shown, gaze panned to, pan progress.
 /**  The camera's flight position (the app's integrated one, or gT).
  *
  * @param gt  The scene's own time (used without a host camera). (in)
@@ -389,8 +390,14 @@ vec3 calmGlow( vec3 own, float dh )
     float mx = max( own.r, max( own.g, own.b ) );
     float s = ( mx - min( own.r, min( own.g, own.b ) ) ) / max( mx, 0.25 );
     vec3  o = mix( vec3( 1.0 ), own / max( mx, 1e-3 ), clamp( s * 2.0, 0.0, 1.0 ) );
-    vec3  g = hsv2rgb( vec3( fract( chainHue0() + dh ), 0.5 + 0.2 * clamp( audioSwell, 0.0, 1.0 ), 1.0 ) );
+    if ( ChainPhotoOnly )
+        return o;
+    vec3 g = hsv2rgb( vec3( fract( chainHue0() + dh ), 0.5 + 0.2 * clamp( audioSwell, 0.0, 1.0 ), 1.0 ) );
     return mix( g, o, 0.5 + 0.4 * smoothstep( 0.06, 0.3, s ) );
+}
+float chainPal()
+{
+    return ChainPhotoOnly ? 0.0 : 0.2 + 0.7 * clamp( paletteP, 0.0, 1.0 );
 }
 /**  Colour of a chain coordinate: the photo, shifted toward a hue that follows the music.
  *
@@ -493,13 +500,14 @@ void main()
     vec3  fp = gp.xyz;
     float g_u = length( gn.xyz ) - 2.0; // the cut point's distance, packed by the geometry pass
     float d_hit = g_u * s_view / max( 1.0 - abs( g_u ), 1e-6 );
-    vec3  lc = mix( vec3( 0.7, 0.85, 1.1 ), vec3( 1.15, 0.9, 0.7 ), mode );
+    vec3  lc = ChainPhotoOnly ? vec3( 1.0 ) : mix( vec3( 0.7, 0.85, 1.1 ), vec3( 1.15, 0.9, 0.7 ), mode );
 
 
     vec3 fog_pal = hsv2rgb( vec3( fract( chainHue0() + 0.08 ), 0.4, 1.0 ) );
 
 
-    vec3 fog_c = mix( calmGlow( imgK( vec2( 0.5 ) + 0.2 * p, 5.0 ), 0.04 ), fog_pal, 0.8 * clamp( paletteP, 0.0, 1.0 ) )
+    vec3 fog_c = mix( calmGlow( imgK( vec2( 0.5 ) + 0.2 * p, 5.0 ), 0.04 ), fog_pal,
+                      ChainPhotoOnly ? 0.0 : 0.8 * clamp( paletteP, 0.0, 1.0 ) )
                  * ( 0.08 + 0.1 * swell );
     vec3 col = fog_c;
     // colour and relief for every pixel: the derivatives must not sit in a pixel branch
@@ -507,13 +515,13 @@ void main()
     vec3  n = normalize( gn.xyz + vec3( 1e-6 ) );
     float lod = clamp( log2( max( t, 0.05 ) * gWorldK * 2.0 ) + 1.5 * ( 1.0 - clamp( detailP, 0.0, 1.0 ) ), 0.0, 7.0 );
     vec3  n_geo = n; // texture on the geometric normal, light on the bumped one
-    vec3  tex0 = colour3T( n_geo, lod, 0.2 + 0.7 * clamp( paletteP, 0.0, 1.0 ) );
+    vec3  tex0 = colour3T( n_geo, lod, chainPal() );
     // relief: the colour chain's brightness as height; its slope on the surface from the
     // screen-space derivatives (bump mapping without tangents, Mikkelsen 2010)
     float hgt = luma( tex0 );
     vec3  dpx = dFdx( q ), dpy = dFdy( q );
     float dhx = dFdx( hgt ), dhy = dFdy( hgt );
-    if ( reliefP > 0.3 )
+    if ( !ChainPhotoOnly && reliefP > 0.3 )
     {
         vec3  r1 = cross( dpy, n ), r2 = cross( n, dpx );
         float det = dot( dpx, r1 );
@@ -526,7 +534,9 @@ void main()
         vec3  n_geo = n;
         vec3  tex = tex0;
         float tm = luma( tex );
-        tex = max( ( tex - tm ) * 1.1 + tm, 0.0 ) * 1.5;
+
+
+        tex = max( ( tex - tm ) * ( ChainPhotoOnly ? 1.0 : 1.1 ) + tm, 0.0 ) * ( ChainPhotoOnly ? 1.9 : 1.5 );
         vec3  L = s_l;
         float diff = 0.5 + 0.5 * dot( n, L );
         float ao = gn.w;
@@ -543,15 +553,15 @@ void main()
         vec3  surf = tex * lc * ( 0.3 + 0.75 * diff + 0.45 * lamp ) * ao * drift;
         vec3  rim_c = calmGlow( tex, 0.05 * sin( fp.x + fp.y ) );
         vec3  rim = rim_c * fres * ( 0.7 + 1.5 * kick ) + surf * 0.4;
-        float st = clamp( styleP, 0.0, 1.0 );
-        vec3  sc = mix( surf + rim_c * fres * ( 0.15 + 0.6 * kick ), rim * 1.3 + rim_c * 0.12 * ao,
-                        smoothstep( 0.5, 1.0, st ) );
+        float st = ChainPhotoOnly ? 0.0 : clamp( styleP, 0.0, 1.0 );
+        vec3  sc = mix( surf + rim_c * fres * ( ChainPhotoOnly ? 0.0 : 0.15 + 0.6 * kick ),
+                        rim * 1.3 + rim_c * 0.12 * ao, smoothstep( 0.5, 1.0, st ) );
         col = mix( fog_c, sc, exp( -t * ( 0.09 + 0.04 * swell ) ) );
 
 
 
 
-        float iso = smoothstep( 0.35, 0.75, isoP );
+        float iso = ChainPhotoOnly ? 0.0 : smoothstep( 0.35, 0.75, isoP );
         if ( iso > 0.0 )
         {
             float iso_w = 0.05 * s_view;

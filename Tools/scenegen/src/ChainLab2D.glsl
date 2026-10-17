@@ -32,6 +32,7 @@
  * runs), orderP (the order of the four stages: one of 24), morphP (the chain walk: none, one stage, or every stage and the
  * look -- driven by the music, always as a cross-fade), styleP (photo / relief / glowing edges / contour lines / flow), speedP (flow
  * speed), detailP (texture sharpness), paletteP (photo colours / colour field), hueP.
+ * chainPhotoOnly (chain_classes.PHOTO_ONLY, set since 17.10.2026): only the photo -- styleP and paletteP have no effect.
 //@params chainAP chainBP chainCP chainDP orderP morphP styleP speedP detailP paletteP
 //@audio audioSpread audioKick audioMode audioSwell
 //@body
@@ -452,8 +453,9 @@ void main()
     vec3 field = hsv2rgb(vec3(fract(h), fsat, 1.0)) * (0.35 + 1.3 * m);
     // The photo's colours raised 1.35 and its tones spread (darks a little darker, lights brighter): the photo and
     // relief looks measured a luma contrast of 0.04 .. 0.08 against the catalogue's 0.12 (17.10.2026).
-    vec3 photo = max((ph - m) * 1.35 + m, 0.0) * (0.45 + 1.1 * smoothstep(0.05, 0.7, m));
-    photo = mix(photo, field, 0.15 + 0.45 * clamp(paletteP, 0.0, 1.0));
+    // With chainPhotoOnly the photo keeps its own colours (17.10.2026); only its tones are spread.
+    vec3 photo = max((ph - m) * (chainPhotoOnly ? 1.0 : 1.35) + m, 0.0) * (0.45 + 1.1 * smoothstep(0.05, 0.7, m));
+    if (!chainPhotoOnly) photo = mix(photo, field, 0.15 + 0.45 * clamp(paletteP, 0.0, 1.0));
     // Relief: the chain's photo lit from a slowly circling light.
     float la = 0.1 * sceneTime;
     float relief = clamp(0.5 + dot(grad, vec2(cos(la), sin(la))) * 5.0, 0.0, 1.0);
@@ -483,16 +485,20 @@ void main()
     // are muddy); in the all-stages walk the look walks too, slowly, each look
     // computed on its own and cross-faded.  s0/s1/sf depend on knobs and time
     // only, so every pixel takes the same branches.
-    int s0, s1; float sf = 0.0, dummy;
-    s0 = pickStage(styleP, 5); s1 = s0;
-    if (walkHost > 0.5 && walkAll()) {
-        s0 = pickStage(walkS.x, 5); s1 = pickStage(walkS.y, 5);
-        sf = smoothstep(0.0, 1.0, walkS.z);
-    } else if (walkAll()) {
-        float kf = 0.2 * gMw + 0.6, c = floor(kf);
-        walkPick(c, s0, 0.0, 5, 23.0, s0, dummy);
-        walkPick(c + 1.0, pickStage(styleP, 5), 0.0, 5, 23.0, s1, dummy);
-        sf = smoothstep(0.7, 1.0, fract(kf));
+    // With chainPhotoOnly the look is the photo (17.10.2026): nothing is selected, so the look's walk uniform drops
+    // out of the program and the app does not walk the look.
+    int s0 = 0, s1 = 0; float sf = 0.0, dummy;
+    if (!chainPhotoOnly) {
+        s0 = pickStage(styleP, 5); s1 = s0;
+        if (walkHost > 0.5 && walkAll()) {
+            s0 = pickStage(walkS.x, 5); s1 = pickStage(walkS.y, 5);
+            sf = smoothstep(0.0, 1.0, walkS.z);
+        } else if (walkAll()) {
+            float kf = 0.2 * gMw + 0.6, c = floor(kf);
+            walkPick(c, s0, 0.0, 5, 23.0, s0, dummy);
+            walkPick(c + 1.0, pickStage(styleP, 5), 0.0, 5, 23.0, s1, dummy);
+            sf = smoothstep(0.7, 1.0, fract(kf));
+        }
     }
     // Flow: noise living in the chain's own space, smeared along the chain's
     // contour direction (line integral convolution) with a travelling phase --
@@ -517,7 +523,8 @@ void main()
     vec3 looks[5] = vec3[5](photo, reliefC, neon, isoC, flowC);
     s0 = ords(s0); s1 = ords(s1);                            // position on the calm..energetic scale -> look
     vec3 col = mix(looks[s0], looks[s1], sf);
-    col *= mix(vec3(0.9, 0.97, 1.08), vec3(1.08, 0.98, 0.9), mode);
-    col += gc * edge * kick * 0.55 * ((s0 <= 1 ? 1.0 - sf : 0.0) + (s1 <= 1 ? sf : 0.0));   // kick glints on photo/relief (light only)
+    if (!chainPhotoOnly) col *= mix(vec3(0.9, 0.97, 1.08), vec3(1.08, 0.98, 0.9), mode);   // cool .. warm with the mode
+    if (!chainPhotoOnly)                                     // kick glints on photo/relief: glowing edges
+        col += gc * edge * kick * 0.55 * ((s0 <= 1 ? 1.0 - sf : 0.0) + (s1 <= 1 ? sf : 0.0));
     finish(chainAfterglow(col));
 }

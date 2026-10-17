@@ -31,8 +31,10 @@
  *  (the 2D colour chain, rolled per start), morphP (which colour stage morphs on
  *  with the music), styleP (lit surface / glowing rims),
  *  speedP (flight speed), detailP (texture sharpness), paletteP (photo colours /
- *  colour field), camP (the first gaze: ahead, out of a side window, slanted down or up,
- *  floating, an orthographic side view -- the scene pans on every few minutes), hueP.
+ *  colour field), camP (the first gaze: ahead, ahead-right or -left, slanted down or up,
+ *  floating, ahead-right and up -- the scene pans on every few minutes), hueP.
+ *  ChainPhotoOnly (chain_classes.PHOTO_ONLY, set since 17.10.2026): only the photo -- styleP, paletteP and reliefP
+ *  have no effect.
  *
  *  @author René Weller
  */
@@ -3304,6 +3306,8 @@ vec3 imgChain( vec2 p, float bias, out vec2 grad )
     return col;
 }
 
+const bool ChainPhotoOnly = true; ///< only the photos' own textures: no line looks, no colour field
+                                  ///< (chain_classes.PHOTO_ONLY)
 
 // ---- composable continuous 3D space transforms (for raymarched fields) ----
 // Each stage is continuous; stages that scale space multiply gDR so the
@@ -4060,7 +4064,7 @@ vec3 photo3( vec3 q, vec3 n, float lod )
 // @chainclasses chainBP none|mirror line|origami folds|curved kaleidoscope|p4m lattice|p6m lattice|Sierpinski fold|Pythagoras-tree fold|Pappus chain|Steiner kaleidoscope|Vicsek fold|Levy C fold|kaleidoscope|spiral kaleidoscope|Schottky mirror|modular group mirror|Koch fold|iterated fold|Apollonian inversion fold|p3m1 triangle mirror
 // @chainclasses chainCP none|lens|zone lens|Farris rosette|fisheye|gravitational lens|binary lens|Lorentz boost|blossom|inversion|Joukowski map|kaleidoscope|log vortex|Cayley transform|mirrored power|complex square|spiral|tunnel
 // @chainclasses chainDP none|turning|bend|convection cells|cylinder flow|curl flow|dipole field|twirl|Kelvin-Helmholtz rolls|vortex pair|Taylor-Green vortices|domain warp|wave interference|double gyre|ripple|Gerstner waves|vortex street|Karman street|gravitational wave|shear wave
-// @chainclasses styleP photo|relief|contour lines|flow|glowing edges
+// @chainclasses styleP photo
 // @chainclasses orderP A → B → C → D|A → B → D → C|A → C → B → D|A → C → D → B|A → D → B → C|A → D → C → B|B → A → C → D|B → A → D → C|B → C → A → D|B → C → D → A|B → D → A → C|B → D → C → A|C → A → B → D|C → A → D → B|C → B → A → D|C → B → D → A|C → D → A → B|C → D → B → A|D → A → B → C|D → A → C → B|D → B → A → C|D → B → C → A|D → C → A → B|D → C → B → A
 // @chainord chainAP 11|26|37|51|57|45|30|32|55|49|50|8|14|0|7|21|36|27|54|33|38|42|53|5|18|56|25|48|15|28|22|46|6|23|3|41|40|35|52|17|44|34|16|13|29|31|20|47|19|43|4|39|12|1|24|2|10|9
 // @chainord chainBP 0|5|20|10|3|2|7|12|19|21|13|11|1|22|17|16|9|4|6|18
@@ -7409,8 +7413,15 @@ vec3 calmGlow( vec3 own, float dh )
     float mx = max( own.r, max( own.g, own.b ) );
     float s = ( mx - min( own.r, min( own.g, own.b ) ) ) / max( mx, 0.25 );
     vec3  o = mix( vec3( 1.0 ), own / max( mx, 1e-3 ), clamp( s * 2.0, 0.0, 1.0 ) );
-    vec3  g = hsv2rgb( vec3( fract( chainHue0() + dh ), 0.5 + 0.2 * clamp( audioSwell, 0.0, 1.0 ), 1.0 ) );
+    if ( ChainPhotoOnly )
+        return o; // the surface's own colour only, grey where it is grey
+    vec3 g = hsv2rgb( vec3( fract( chainHue0() + dh ), 0.5 + 0.2 * clamp( audioSwell, 0.0, 1.0 ), 1.0 ) );
     return mix( g, o, 0.5 + 0.4 * smoothstep( 0.06, 0.3, s ) );
+}
+/** How much of the colour field the surfaces take (none with ChainPhotoOnly: the photos' own textures, 17.10.2026). */
+float chainPal()
+{
+    return ChainPhotoOnly ? 0.0 : 0.2 + 0.7 * clamp( paletteP, 0.0, 1.0 );
 }
 /**  One plane: the photo through the chain, plus a colour field that follows the chain's own coordinates (mirrorUV
  * keeps it seamless at the atan cuts).
@@ -7595,13 +7606,16 @@ void main()
         if ( t > 30.0 )
             break;
     }
-    vec3 lc = mix( vec3( 0.7, 0.85, 1.1 ), vec3( 1.15, 0.9, 0.7 ), mode );
+    vec3 lc = ChainPhotoOnly ? vec3( 1.0 ) : mix( vec3( 0.7, 0.85, 1.1 ), vec3( 1.15, 0.9, 0.7 ), mode ); // white: the
+                                                                                                          // photo's own
+                                                                                                          // colours
     // The fog takes the palette's hue (wandering with the music) rather than the photo's cast: a neighbour of the
     // surfaces' hue, not its complement (17.10.2026).
     vec3 fog_pal = hsv2rgb( vec3( fract( chainHue0() + 0.08 ), 0.4, 1.0 ) );
     // A little brighter and denser since the world is smaller (17.10.2026): the depth reads in layers fading into
     // the haze, and a sparse world's void is no longer black.
-    vec3 fog_c = mix( calmGlow( imgK( vec2( 0.5 ) + 0.2 * p, 5.0 ), 0.04 ), fog_pal, 0.8 * clamp( paletteP, 0.0, 1.0 ) )
+    vec3 fog_c = mix( calmGlow( imgK( vec2( 0.5 ) + 0.2 * p, 5.0 ), 0.04 ), fog_pal,
+                      ChainPhotoOnly ? 0.0 : 0.8 * clamp( paletteP, 0.0, 1.0 ) )
                  * ( 0.08 + 0.1 * swell );
     vec3 col = fog_c;
     if ( hit )
@@ -7610,7 +7624,7 @@ void main()
         vec3  n = normal3( q );
         float lod = clamp( log2( t * gWorldK * 2.0 ) + 1.5 * ( 1.0 - clamp( detailP, 0.0, 1.0 ) ), 0.0, 7.0 );
         vec3  n_geo = n; // texture on the geometric normal, light on the bumped one
-        if ( reliefP > 0.3 )
+        if ( !ChainPhotoOnly && reliefP > 0.3 )
         { // a knob: every pixel takes the same branch
             vec3  t1 = normalize( cross( n, abs( n.y ) < 0.9 ? vec3( 0.0, 1.0, 0.0 ) : vec3( 1.0, 0.0, 0.0 ) ) ),
                   t2 = cross( n, t1 );
@@ -7620,9 +7634,11 @@ void main()
             vec3  g = t1 * ( reliefH( fp + t1 * ef, n, hl ) - h0 ) + t2 * ( reliefH( fp + t2 * ef, n, hl ) - h0 );
             n = normalize( n - g / e * 0.05 * smoothstep( 0.3, 1.0, reliefP ) );
         }
-        vec3  tex = colour3( fp, n_geo, lod, 0.2 + 0.7 * clamp( paletteP, 0.0, 1.0 ) );
+        vec3  tex = colour3( fp, n_geo, lod, chainPal() );
         float tm = luma( tex );
-        tex = max( ( tex - tm ) * 1.1 + tm, 0.0 ) * 1.5; // brighter, the colour a little livelier (was 1.5)
+        // Brighter; with ChainPhotoOnly the photo's own colours, and a little more light since the glowing rims and the
+        // colour field (which lifted dark photos) are gone: the 3D lab measured a third darker (17.10.2026).
+        tex = max( ( tex - tm ) * ( ChainPhotoOnly ? 1.0 : 1.1 ) + tm, 0.0 ) * ( ChainPhotoOnly ? 1.9 : 1.5 );
         vec3  L = normalize( vec3( 0.5, 0.7, -0.4 ) );
         float diff = max( dot( n, L ), 0.0 );
         float ao = 0.0;
@@ -7645,9 +7661,9 @@ void main()
         vec3  surf = tex * lc * ( 0.3 + 0.75 * diff + 0.45 * lamp ) * ao * drift;
         vec3  rim_c = calmGlow( tex, 0.05 * sin( fp.x + fp.y ) );
         vec3  rim = rim_c * fres * ( 0.7 + 1.5 * kick ) + surf * 0.4; // lab audit: the glow style was half as bright
-        float st = clamp( styleP, 0.0, 1.0 );
-        vec3  sc = mix( surf + rim_c * fres * ( 0.15 + 0.6 * kick ), rim * 1.3 + rim_c * 0.12 * ao,
-                        smoothstep( 0.5, 1.0, st ) );
+        float st = ChainPhotoOnly ? 0.0 : clamp( styleP, 0.0, 1.0 );  // ChainPhotoOnly: no glowing rims
+        vec3  sc = mix( surf + rim_c * fres * ( ChainPhotoOnly ? 0.0 : 0.15 + 0.6 * kick ),
+                        rim * 1.3 + rim_c * 0.12 * ao, smoothstep( 0.5, 1.0, st ) );
         col = mix( fog_c, sc, exp( -t * ( 0.09 + 0.04 * swell ) ) );
     }
     finish( chainAfterglow( col ) );

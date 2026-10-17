@@ -5690,3 +5690,24 @@ KifsTetra 0.161 -> 0.119, the others lower or within 0.004; mean luma 0.154 -> 0
 0.20 -> 0.17. Looked at side by side: the walls became corridors, fields and rows with depth (OctaGyroid shows its
 holes instead of one surface filling the picture, PolarTunnelBoxes rows of boxes); a few axial worlds seen from
 ahead-left show mostly haze.
+
+## 17.10.2026 (22): only the photos in the chain labs
+
+The colours of the chain labs still did not please (asked 17.10.2026): the user's call was to drop edges, contour
+lines and rims and keep only the original textures, then the relief too. One switch, `PHOTO_ONLY` in
+Tools/scenegen/chain_classes.py, which gen.py writes into every shader with a chain as `const bool chainPhotoOnly`:
+
+* 2D lab and FX chain: the look is the photo -- no selection at all, so the look's walk uniform (`walkS`) drops out
+  of the program and the app no longer walks the look (EffectShader finds the stages by their uniform locations); the
+  class list the app reads (`// @chainclasses styleP`) is `photo` only. The photo keeps its own colours (no 1.35 push,
+  the tone spread stays), no colour field, no kick glints along the edges, no cool/warm grade with the mode.
+* Tunnel: no glowing crests, no colour field, white light, the fog the photo's broad colour instead of the palette's
+  complementary hue.  The wall relief stays: it is the tunnel's geometry.
+* 3D lab, slice and Chain3D scenes: no glowing rims (also not the faint rim on the surface look), no relief bumps, no
+  colour field on the surfaces (`chainPal()`), white light, the fog the photo's own colour; the slice without its
+  contour lines (`isoP`). The photo a little brighter (x1.9 instead of x1.5): without the rims and the field, which had
+  lifted dark photos, the 3D lab measured a third darker (mean luma 0.153 -> 0.104, now 0.124).
+
+The looks' code stays; `PHOTO_ONLY = False` brings it all back. Measured on the same rolls (old | new): 2D lab hue
+change across the picture 0.098 -> 0.072, over time 0.066 -> 0.042; the 3D scenes' saturation 0.38 .. 0.50 ->
+0.40 .. 0.63 (the photos' own colours, where the field had greyed them).

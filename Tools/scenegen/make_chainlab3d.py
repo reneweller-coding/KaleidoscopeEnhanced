@@ -45,8 +45,9 @@ HEAD = r'''//@doc
  * (the 2D colour chain, rolled per start), morphP (which colour stage morphs on
  * with the music), styleP (lit surface / glowing rims),
  * speedP (flight speed), detailP (texture sharpness), paletteP (photo colours /
- * colour field), camP (the first gaze: ahead, out of a side window, slanted down or up,
- * floating, an orthographic side view -- the scene pans on every few minutes), hueP.
+ * colour field), camP (the first gaze: ahead, ahead-right or -left, slanted down or up,
+ * floating, ahead-right and up -- the scene pans on every few minutes), hueP.
+ * chainPhotoOnly (chain_classes.PHOTO_ONLY, set since 17.10.2026): only the photo -- styleP, paletteP and reliefP have no effect.
 //@params spaceP coreP bodyP solidP reliefP chainAP chainBP chainCP chainDP orderP morphP styleP speedP detailP paletteP camP
 //@audio audioSpread audioKick audioMode audioSwell
 //@body
@@ -351,7 +352,7 @@ MAIN = MAIN.replace("void main()", RELIEF + "\nvoid main()", 1)
 assert MAIN.rstrip().endswith("finish(col);\n}") or MAIN.rstrip().endswith("finish(col);\r\n}")
 MAIN = MAIN[:MAIN.rindex("finish(col);")] + "finish(chainAfterglow(col));" + MAIN[MAIN.rindex("finish(col);") + len("finish(col);"):]
 MAIN = MAIN.replace("        vec3 tex = colour3(fp, n, lod, ", """        vec3 nGeo = n;                                          // texture on the geometric normal, light on the bumped one
-        if (reliefP > 0.3) {                                    // a knob: every pixel takes the same branch
+        if (!chainPhotoOnly && reliefP > 0.3) {                 // a knob: every pixel takes the same branch
             vec3 t1 = normalize(cross(n, abs(n.y) < 0.9 ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0))), t2 = cross(n, t1);
             float e = 0.006 * max(t, 1.0), hl = lod + 1.5;
             // sampled in the folded space around fp (the fold stretches by fdr there)

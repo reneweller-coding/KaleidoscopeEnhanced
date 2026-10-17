@@ -2034,6 +2034,9 @@ def assemble(name):
     out.append(LIB)
     if re.search(r"vec2\s+chain\s*\(", body):
         out.append(CHAIN_LIB)
+        import chain_classes as _ccp
+        out.append("const bool chainPhotoOnly = %s;   // only the photos' own textures: no line looks, no colour field "
+                   "(chain_classes.PHOTO_ONLY)" % ("true" if _ccp.PHOTO_ONLY else "false"))
     if re.search(r"float\s+field3\s*\(", body):
         out.append(CHAIN3D_LIB)
     # Chain labs: the class names of every stage, for the app's shader-info
