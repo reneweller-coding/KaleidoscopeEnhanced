@@ -147,7 +147,7 @@ void main()
     float hue = ( hueP > 0.001 ) ? hueP : 0.0;
 
     // Night sky: a faint nebula from the photo, breathing with the swell.
-    vec3 sky = img( clamp( p * 0.25 + 0.5, 0.0, 1.0 ) ) * ( 0.05 + 0.12 * audioSwell );
+    vec3 sky = img( clamp( p * 0.25 + 0.5, 0.0, 1.0 ) ) * ( 0.09 + 0.14 * audioSwell );
     // Background stars, fixed.
     vec2  g = floor( p * 40.0 );
     float hs = hash11( dot( g, vec2( 1.0, 57.0 ) ) );
@@ -181,14 +181,16 @@ void main()
             float both = pen * smoothstep( 0.02, 0.06, prev_m );
             float ld = segDist( p, prev_pos, sp );
             float leap = abs( m - prev_m );
-            lines += exp( -ld * 380.0 ) * both * ( 0.3 + 1.2 * leap ) * ( 1.0 - age * 0.8 );
+            lines += exp( -ld * 380.0 ) * both * ( 0.6 + 1.2 * leap ) * ( 1.0 - age * 0.8 );
         }
         prev_pos = sp;
         prev_m = m;
     }
     // Twinkle with melodic activity.
     float tw = 0.85 + 0.35 * sin( sceneAdvance * 6.0 + p.x * 40.0 ) * clamp( audioDeltaPitch * 2.0, 0.0, 1.0 );
-    col += star_col * acc * 1.3 * tw + line_col * lines * 0.7;
+    // Stars x2.0 and struts x1.5 (17.10.2026): the frame averaged 0.01..0.04 -- a few dim dots, the struts that
+    // draw the tune barely visible.
+    col += star_col * acc * 2.0 * tw + line_col * lines * 1.5;
 
     // Fallback when the host has no melody yet (probe render, silence): a
     // slow procedural constellation, so the sky is never just empty.

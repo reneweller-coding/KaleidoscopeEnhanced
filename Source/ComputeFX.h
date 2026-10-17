@@ -158,9 +158,10 @@ private:
         GLuint ssbo = 0; ///< w*h*4 uints: R,G,B,hits accumulator, atomically scattered into
         GLuint tex = 0;  ///< RGBA16F result texture published to effect shaders
         /** Canvas width in texels (0 until ensureCanvas() allocates it; a size change reallocates). */
-        int   w = 0, h = 0;   ///< canvas height in texels (0 until allocated)
-        float lastUse = 0.f;  ///< last step() time this canvas was touched; drives retireIdle()
-        bool  seeded = false; ///< whether this canvas's sim state has been initialised at least once
+        int          w = 0, h = 0;   ///< canvas height in texels (0 until allocated)
+        float        lastUse = 0.f;  ///< last step() time this canvas was touched; drives retireIdle()
+        bool         seeded = false; ///< whether this canvas's sim state has been initialised at least once
+        unsigned int frame = 0;      ///< steps since seeding: a sim that ping-pongs its state reads half ( frame & 1 )
     };
     /**  Lazily (re)allocates a Canvas's texture and accumulator SSBO for the given size.
      *

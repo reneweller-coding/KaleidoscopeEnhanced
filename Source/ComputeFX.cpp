@@ -1192,10 +1192,10 @@ GLuint ComputeFX::stepNSFluid( const AudioFeatures &a, float dt, [[maybe_unused]
 // particles are self-contained and never sample the photo, but the parameter
 // is kept so step()'s call site stays uniform with the other photo-consuming
 // kinds.
-GLuint ComputeFX::stepMetal( const AudioFeatures &a, [[maybe_unused]] float dt, float t, GLuint )
+GLuint ComputeFX::stepMetal( const AudioFeatures &a, float dt, float t, GLuint )
 {
-    const int Parts = 1 << 16; // 65,536
-    const int Grid = 96, PerCell = 32;
+    const int Parts = 1 << 16;         // 65,536
+    const int Grid = 96, PerCell = 48; // about 25 particles per cell at the rest spacing
     Canvas   &c = m_canvas[CFX_METAL];
     // A DELIBERATELY small canvas.  Screen-space fluid needs the particle
     // discs to overlap into a continuous density field; at 1280x720 the same
@@ -1203,38 +1203,20 @@ GLuint ComputeFX::stepMetal( const AudioFeatures &a, [[maybe_unused]] float dt, 
     // surface from it.  640x360 quadruples the density per pixel.
     if ( !ensureCanvas( c, 640, 360 ) )
         return 0;
-    if ( !ensureBuffer( m_buf[CFX_METAL], static_cast<size_t>( Parts ) * 4 * sizeof( float ) ) )
+    // Two halves: each step reads one and writes the other.  In place, half the neighbours a particle saw had
+    // already moved this step -- up to a fifth of the spacing in the flow -- and that noise tore holes into the drops.
+    if ( !ensureBuffer( m_buf[CFX_METAL], static_cast<size_t>( Parts ) * 2 * 4 * sizeof( float ) ) )
         return 0;
     if ( !ensureBuffer( m_buf2[CFX_METAL],
                         static_cast<size_t>( Grid ) * Grid * ( PerCell + 1 ) * sizeof( unsigned int ) ) )
         return 0;
 
-    GLuint pi = prog( P_PART_INIT, "..\\Engine\\CfxParticleInit.comp" );
     GLuint ps = prog( P_METAL_STEP, "..\\Engine\\CfxMetalStep.comp" );
-    if ( !pi || !ps )
+    if ( !ps )
         return 0;
 
-    if ( !c.seeded )
-    {
-        glUseProgram( pi );
-        glBindBufferBase( GL_SHADER_STORAGE_BUFFER, 1, m_buf[CFX_METAL] );
-        glUniform1ui( glGetUniformLocation( pi, "count" ), static_cast<GLuint>( Parts ) );
-        glDispatchCompute( groups( Parts, 256 ), 1, 1 );
-        glMemoryBarrier( GL_SHADER_STORAGE_BARRIER_BIT );
-        c.seeded = true;
-    }
-
-    static float swirl = 0.f;
-    swirl = 0.25f + 0.5f * sinf( t * 0.11f );
-
-    const unsigned int zero = 0;
-    glBindBuffer( GL_SHADER_STORAGE_BUFFER, m_buf2[CFX_METAL] );
-    glClearBufferData( GL_SHADER_STORAGE_BUFFER, GL_R32UI, GL_RED_INTEGER,
-                       GL_UNSIGNED_INT, &zero );
-    glBindBuffer( GL_SHADER_STORAGE_BUFFER, 0 );
-
-    clearAccum( c );
-    for ( int pass = 1; pass >= 0; --pass ) // 1 = bin, 0 = simulate + splat
+    // mode 2 = place the particles in drops (a new canvas), 1 = bin, 0 = simulate + splat.
+    auto run = [&]( int mode )
     {
         glUseProgram( ps );
         glBindBufferBase( GL_SHADER_STORAGE_BUFFER, 0, c.ssbo );
@@ -1244,16 +1226,41 @@ GLuint ComputeFX::stepMetal( const AudioFeatures &a, [[maybe_unused]] float dt, 
         glUniform1ui( glGetUniformLocation( ps, "count" ), static_cast<GLuint>( Parts ) );
         glUniform1i( glGetUniformLocation( ps, "gridN" ), Grid );
         glUniform1i( glGetUniformLocation( ps, "perCell" ), PerCell );
-        glUniform1f( glGetUniformLocation( ps, "dt" ), 0.55f );
+        glUniform1f( glGetUniformLocation( ps, "frameDt" ), dt );
         glUniform1f( glGetUniformLocation( ps, "kick" ), a.onsetKick );
         glUniform1f( glGetUniformLocation( ps, "level" ), a.overallLevel );
-        glUniform1f( glGetUniformLocation( ps, "swirl" ), swirl );
-        glUniform1i( glGetUniformLocation( ps, "buildGrid" ), pass );
+        glUniform1f( glGetUniformLocation( ps, "phase" ), t );
+        glUniform1i( glGetUniformLocation( ps, "mode" ), mode );
+        glUniform1ui( glGetUniformLocation( ps, "src" ), c.frame & 1u );
         glDispatchCompute( groups( Parts, 256 ), 1, 1 );
         glMemoryBarrier( GL_SHADER_STORAGE_BARRIER_BIT );
+    };
+
+    if ( !c.seeded )
+    {
+        c.frame = 0;
+        run( 2 );
+        c.seeded = true;
     }
 
+    const unsigned int zero = 0;
+    glBindBuffer( GL_SHADER_STORAGE_BUFFER, m_buf2[CFX_METAL] );
+    glClearBufferData( GL_SHADER_STORAGE_BUFFER, GL_R32UI, GL_RED_INTEGER,
+                       GL_UNSIGNED_INT, &zero );
+    glBindBuffer( GL_SHADER_STORAGE_BUFFER, 0 );
+
+    clearAccum( c );
+    run( 1 );
+    run( 0 );
+    ++c.frame;
+
     resolve( c, 0, 1.0f, 1.f, 0.0f ); // no trails: it is a SURFACE
+    // Mipmaps: LiquidMetal.frag reads the density pre-averaged at a coarser level, so its height field is smooth.
+    // From the sharp level-0 rim, its 17 taps summed 17 small steps: every rim showed a stack of parallel highlights.
+    glBindTexture( GL_TEXTURE_2D, c.tex );
+    glGenerateMipmap( GL_TEXTURE_2D );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR );
+    glBindTexture( GL_TEXTURE_2D, 0 );
     return c.tex;
 }
 

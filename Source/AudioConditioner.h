@@ -279,9 +279,11 @@ private:
                               ///< m_fadeSlow20.
 
     // ---- melody ring ----
-    float m_melody[96] = {};   ///< dominantPitch ring (~7.7 s), sampled every 80 ms.
-    int   m_melodyHead = 0;    ///< Current write position in m_melody.
-    float m_melodyAccum = 0.f; ///< Seconds accumulated since the last m_melody sample.
+    float m_melody[96] = {};    ///< dominantPitch ring (~7.7 s), sampled every 80 ms.
+    int   m_melodyHead = 0;     ///< Current write position in m_melody.
+    float m_melodyAccum = 0.f;  ///< Seconds accumulated since the last m_melody sample.
+    float m_noMelodySecs = 0.f; ///< Seconds since the analyzer last heard a melody (the harmony fills in after 2 s).
+    int   m_harmClass = -1;     ///< The pitch class the harmony fallback holds (-1 = none yet).
 
     // ---- rotation / advance / symmetry ----
     float m_audioDir = 1.f;      ///< Eased rotation direction (-1..+1), smoothly follows audio.audioFlip's sign.
@@ -290,14 +292,14 @@ private:
     float m_rotEnergy = 0.f;     ///< Slowly-slewed rotation-speed envelope (no per-beat jerk).
     // double (17.10.2026): as floats they grew too coarse to take a frame's step in a long show -- the advance at
     // 16000 (some days) stood still in quiet music.
-    double m_audioRotPhase = 0.0; ///< Accumulated rotation phase (radians), integrated from a rate each frame.
-    double m_audioAdvance = 0.0;  ///< Accumulated tunnel forward offset, integrated from a rate each frame.
-    bool  m_advanceStarted = false; ///< KALEIDO_ADVANCE_START has been added to the two accumulators above.
+    double m_audioRotPhase = 0.0;    ///< Accumulated rotation phase (radians), integrated from a rate each frame.
+    double m_audioAdvance = 0.0;     ///< Accumulated tunnel forward offset, integrated from a rate each frame.
+    bool   m_advanceStarted = false; ///< KALEIDO_ADVANCE_START has been added to the two accumulators above.
     /// Integral of the harmonic envelope over a typical chord change (the unit of harmAdvance): 0.83 for the old
     /// chroma, 1.38 since its peak chroma (a slow chord change of make_chord_wav.py advances it by about 1).
     static constexpr float HarmPerChord = 1.38f;
-    float m_harmEnv = 0.f;     ///< Peak-hold envelope of the harmonic change above its noise floor (release ~1.2 s).
-    float m_harmSmooth = 0.f;  ///< m_harmEnv with a limited rise (~0.4 s to full); published as harmonicChange * gate.
+    float  m_harmEnv = 0.f;     ///< Peak-hold envelope of the harmonic change above its noise floor (release ~1.2 s).
+    float  m_harmSmooth = 0.f;  ///< m_harmEnv with a limited rise (~0.4 s to full); published as harmonicChange * gate.
     double m_harmAdvance = 0.0; ///< m_harmSmooth integrated (~1 per chord change); published as harmAdvance.
 
     // ---- peak-hold + release envelopes / their slewed display values ----

@@ -30,7 +30,8 @@ void main()
     board = mix(board, board * (0.7 + 0.6 * smudge), 0.15 + 0.35 * swell);
     board *= 0.95 + 0.05 * fbm3(p * 20.0);
     // Half-erased chalk ghosts of the kaleidoscoped photo on the board.
-    board = mix(board, board * (0.55 + 0.9 * imgKRelief(uv, 2.0, vec2(-0.6, 0.8))), 0.35 + 0.3 * swell);
+    // The board's relief at 0.12..0.24 (17.10.2026): at 0.35..0.65 its grain drowned the scribble.
+    board = mix(board, board * (0.55 + 0.9 * imgKRelief(uv, 2.0, vec2(-0.6, 0.8))), 0.12 + 0.12 * swell);
     vec3 chalk = mix(vec3(0.92, 0.92, 0.9), vec3(0.12, 0.12, 0.14), mode);
     vec3 col = board;
     float T = 0.1 * sceneTime + 0.6 * audioAdvance;
@@ -62,10 +63,11 @@ void main()
                 best = min(best, sdSeg(p, q, q2));
             }
             float age = 0.5 + 0.5 * sin(T * 0.3 + h * 6.28);
-            float w = (0.0015 + 0.0035 * clamp(lineP, 0.0, 1.0)) * (0.7 + 0.6 * h);
+            // Lines twice as wide, old strokes darker (17.10.2026): the scribble all but vanished at 720p.
+            float w = (0.003 + 0.005 * clamp(lineP, 0.0, 1.0)) * (0.7 + 0.6 * h);
             float line = smoothstep(w + 0.0015, w - 0.0015, best);
             line *= 1.0 - (0.2 + 0.5 * rough) * smoothstep(0.45, 0.75, noise2(p * 300.0 + r + fm * 3.0));
-            ink = max(ink, line * (0.25 + 0.75 * age));
+            ink = max(ink, line * (0.6 + 0.4 * age));
         }
     }
     col = mix(col, chalk * (1.0 + 0.3 * kick), ink);

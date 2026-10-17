@@ -237,7 +237,34 @@ AudioFeatures AudioConditioner::update( const AudioFeatures &audio, float rawDt,
         m_melodyAccum = fmodf( m_melodyAccum, 0.08f );
         // The TUNE, not the root: the melody's note (above the bass line), 0 while none sounds -- a step per note
         // and a pen-up between phrases, where the smoothed melodyPitch drew a glissando through the drums.
-        m_melody[m_melodyHead] = audio.melodyNote;
+        // After 2 s without a melody the ring carries the harmony instead: the strongest pitch class, in the octave
+        // above middle C, while the chroma has a clear peak (over twice its mean of 1/12).  The detector finds a tune
+        // in 2 % (Thunderstruck) to 55 % (Ironic) of a track, and the six melody scenes drew an empty page through
+        // the rest (17.10.2026).  Gaps between phrases (under 2 s) stay pen-up.
+        float note = audio.melodyNote;
+        m_noMelodySecs = ( note > 0.f ) ? 0.f : m_noMelodySecs + 0.08f;
+        if ( note <= 0.f && m_noMelodySecs > 2.f )
+        {
+            int   best = 0;
+            float best_v = audio.chroma[0];
+            for ( int c = 1; c < 12; ++c )
+                if ( audio.chroma[c] > best_v )
+                {
+                    best_v = audio.chroma[c];
+                    best = c;
+                }
+            // Hysteresis: the held class gives way only to one a quarter stronger -- two near-equal classes swapped
+            // every 80 ms and drew needles into the ridge lines.
+            if ( m_harmClass >= 0 && audio.chroma[m_harmClass] * 1.25f > best_v )
+                best = m_harmClass;
+            if ( best_v > 2.f / 12.f )
+            {
+                m_harmClass = best;
+                const float hz = 261.63f * std::exp2( static_cast<float>( best ) / 12.f );
+                note = ( std::log2( hz + 1.f ) - std::log2( 61.f ) ) / ( std::log2( 1201.f ) - std::log2( 61.f ) );
+            }
+        }
+        m_melody[m_melodyHead] = note;
         m_melodyHead = ( m_melodyHead + 1 ) % 96;
     }
     for ( int i = 0; i < 96; ++i )

@@ -51,8 +51,12 @@ void main()
     float mode = clamp(audioMode, 0.0, 1.0);
     vec2 uv = p * 0.7 + 0.5;
     vec3 paper = mix(vec3(0.78, 0.8, 0.83), vec3(0.92, 0.87, 0.76), mode);
-    paper = mix(paper, paper * (0.55 + 0.6 * imgLod(uv, 1.5)), 0.6 * clamp(photoP, 0.0, 1.0));
+    paper = mix(paper, paper * (0.55 + 0.6 * imgLod(uv, 1.5)), 0.3 * clamp(photoP, 0.0, 1.0));
     paper *= 0.95 + 0.05 * noise2(p * 300.0);
+    // A lamp's pool of light on the paper (17.10.2026): the even paper filled the frame, the auto exposure pulled
+    // it down to a flat mid grey, and the dark filings stood on it with little contrast.  Darker edges let the
+    // middle stay paper-white.
+    paper *= 0.5 + 0.75 * exp(-dot(p, p) * 1.6);
     vec3 col = paper;
     // Filings: short needles in jittered cells, oriented along the field.
     float dens = 0.45 + 0.5 * clamp(densityP, 0.0, 1.0);
@@ -60,7 +64,7 @@ void main()
     float ink = 0.0;
     for (int L = 0; L < 2; ++L) {
         float fl = float(L);
-        float S = 70.0 + 40.0 * fl;
+        float S = 42.0 + 26.0 * fl;
         vec2 g = p * S + fl * 7.3;
         vec2 gi = floor(g);
         for (int j = -1; j <= 1; ++j) for (int i = -1; i <= 1; ++i) {
@@ -82,7 +86,7 @@ void main()
             ink = max(ink, smoothstep(0.1, 0.03, d) * (0.6 + 0.4 * gather));
         }
     }
-    col *= 1.0 - 0.85 * ink;
+    col *= 1.0 - 0.92 * ink;
     // The poles glow faintly through the paper.
     vec3 gc = glowColour(imgLod(uv, 5.0), p, hueP * 0.159);
     for (int i = 0; i < 4; ++i) {

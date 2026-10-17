@@ -5,23 +5,23 @@
 /*! @file
  *
  *  @brief
- *  Simulates SPH-flavoured liquid-metal particles (short-range repulsion, mid-range attraction) and splats their
- *  density into the accumulation buffer for screen-space fluid rendering.
+ *  Simulates liquid-metal particles (short-range repulsion, mid-range cohesion, viscosity) carried by a slow
+ *  divergence-free flow, and splats their density into the accumulation buffer for screen-space fluid rendering.
  *
- *  Self-contained dual-mode kernel dispatched twice per frame via the
- *  `buildGrid` uniform, mirroring the boids grid/step split: with
- *  `buildGrid == 1` it only bins particles from the `Parts` SSBO (binding 1)
- *  into the `Grid` SSBO (binding 2) using the same uniform-grid atomic
- *  technique as CfxBoidsGrid.comp; with `buildGrid == 0` it uses that grid to
- *  find the 3x3-cell neighbourhood, applies a Lennard-Jones-like force
- *  (repel very close, attract at mid range, which produces surface tension
- *  and droplet cohesion) plus a swirling rotational field and gravity, then
- *  splats a small density disc per particle atomically into the `Accum` SSBO
- *  (binding 0) for the display to threshold into a smooth metal surface.
+ *  Self-contained three-mode kernel selected by the `mode` uniform: `mode == 2` places the particles in seven
+ *  round drops (once, when the canvas is new); `mode == 1` only bins particles from the `Parts` SSBO (binding 1)
+ *  into the `Grid` SSBO (binding 2) using the same uniform-grid atomic technique as CfxBoidsGrid.comp; `mode == 0`
+ *  uses that grid to find the 3x3-cell neighbourhood, applies linear springs (repel closer than the rest spacing,
+ *  attract in a band beyond it -- the surface tension that keeps the drops round) and XSPH viscosity, drags the
+ *  particles along a stream-function flow, then splats a small density disc per particle atomically into the
+ *  `Accum` SSBO (binding 0) for the display to turn into a smooth metal surface.
+ *
+ *  Forces act in a square metric (x scaled by the canvas aspect), so the drops are round on screen, and the flow is
+ *  the curl of a periodic stream function: it moves, stretches and folds the drops but never compresses them.
  *
  *  @author René Weller
  */
-/// CfxMetalStep.comp — SPH-flavoured blobs of liquid metal.
+/// CfxMetalStep.comp — drops of liquid metal.
 /// Particles attract into cohesive drops and repel at short range, so the
 /// population behaves like a fluid with surface tension rather than a gas.
 /// The neighbourhood comes from the same uniform-grid trick as the boids.
@@ -32,28 +32,44 @@ layout( std430, binding = 0 ) buffer Accum
 {
     uint acc[];
 };
-/// The particles: position (xy) and velocity (zw).
+/// The particles in two halves of count each (a step reads half src and writes the other): position (xy, 0..1 on
+/// the canvas) and velocity (zw, canvas heights per step).
 layout( std430, binding = 1 ) buffer Parts
 {
     vec4 part[];
-}; // xy pos, zw vel
+};
 /// The spatial hash grid: the elements of each cell.
 layout( std430, binding = 2 ) buffer Grid
 {
     uint cell[];
 };
 
-uniform ivec2 size;      ///< Size of the simulation grid in cells.
-uniform uint  count;     ///< Number of elements (boids, particles, walkers ...).
-uniform int   gridN;     ///< Cells per side of the spatial hash grid.
-uniform int   perCell;   ///< Capacity of a grid cell (elements per cell).
-uniform float dt;        ///< Time step of the simulation (seconds).
-uniform float kick;      ///< Kick envelope, 0..1.
-uniform float level;     ///< The music's level, 0..1.
-uniform float swirl;     ///< Strength of the swirl.
-uniform int   buildGrid; ///< 1 = only bin into the grid, 0 = simulate + splat
+uniform ivec2 size;    ///< Size of the canvas in pixels.
+uniform uint  count;   ///< Number of particles.
+uniform int   gridN;   ///< Cells per side of the spatial hash grid.
+uniform int   perCell; ///< Capacity of a grid cell (elements per cell).
+uniform float frameDt; ///< Seconds since the last step: the flow's travel is per second, not per frame.
+uniform float kick;    ///< Kick envelope, 0..1: the drops swell a little.
+uniform float level;   ///< The music's level, 0..1: the flow runs faster.
+uniform int   mode;    ///< 2 = place the particles in drops, 1 = bin into the grid, 0 = simulate + splat.
+uniform float phase;   ///< Seconds of simulation: where the slow flow stands.
+uniform uint  src;     ///< The half of the particle buffer this step reads (0 or 1); it writes the other.
 
 const float Scale = 256.0; ///< Fixed-point scale of the accumulation buffer (colour times Scale, added as integers).
+const float Pi2 = 6.2831853;
+
+// The physics, in canvas heights and steps (17.10.2026).  The old forces repelled with ( h - r ) / r -- a
+// stiffness of thousands per step -- and capped the speed at a quarter of the picture per frame: every particle
+// jumped past its neighbours each frame, the population boiled as a gas, and the picture was one even, noisy sheet.
+// Linear springs of 0.08 per neighbour stay stable (about six neighbours: 0.5 per step, below the explicit limit),
+// and the viscosity damps the jitter between neighbours without braking the drops' travel.
+const float Rest = 0.0030;    ///< Rest spacing of the particles (canvas heights; about one canvas pixel).
+const float Reach = 0.0075;   ///< Reach of tension and viscosity (inside the 3x3 cells searched; a cell: 0.0104).
+const float Stiff = 0.08;     ///< Repulsion per neighbour and unit of overlap, per step.
+const float Tension = 0.022;  ///< Pull toward the neighbours' centroid, per step (the surface tension).
+const float Visc = 0.12;      ///< XSPH viscosity: the share of the neighbours' mean velocity taken per step.
+const float Drag = 0.02;      ///< How fast a particle takes up the flow's velocity, per step.
+const float MaxStep = 0.0015; ///< Speed limit, canvas heights per step.
 
 /**  Adds a weight to the density at a pixel (skipped off the image).
  *
@@ -70,17 +86,81 @@ void splat1( ivec2 ip, float w )
     atomicAdd( acc[i + 3u], uint( w * Scale ) );
 }
 
+/**  The slow flow that carries the drops: the curl of a stream function of six waves that fit the canvas (it
+ *   wraps), each drifting at its own slow rate.  Divergence-free, so it never piles the metal up.
+ *
+ * @param q       The position on the canvas, 0..1. (in)
+ * @param aspect  Width / height of the canvas. (in)
+ *
+ * @return
+ *   The flow's velocity, canvas heights per second.
+ **/
+vec2 flow( vec2 q, float aspect )
+{
+    const vec4 W[6] = vec4[6]( vec4( 1.0, 0.0, 1.0, 0.031 ), vec4( 0.0, 1.0, 0.9, 0.023 ),
+                               vec4( 1.0, 1.0, 0.7, 0.041 ), vec4( 1.0, -1.0, 0.7, 0.037 ),
+                               vec4( 2.0, 1.0, 0.4, 0.053 ), vec4( 1.0, 2.0, 0.4, 0.047 ) );
+    vec2       g = vec2( 0.0 ); // d psi / d q
+    for ( int m = 0; m < 6; ++m )
+    {
+        vec4  w = W[m];
+        float c = cos( Pi2 * dot( w.xy, q ) + w.w * phase + float( m ) * 1.9 );
+        g += w.xy * ( w.z * Pi2 * c );
+    }
+    // u = ( d psi / dY, -d psi / dX ) with X = q.x * aspect, Y = q.y; 0.0012 sets about 0.02 heights per second.
+    return 0.0012 * vec2( g.y, -g.x / aspect );
+}
+
+/**  Places particle id in one of seven drops of different sizes (a sunflower spiral: even spacing at the rest
+ *   distance), so the scene opens on round drops instead of a grey haze that would take minutes to bead up.
+ *
+ * @param id      The particle. (in)
+ * @param aspect  Width / height of the canvas. (in)
+ **/
+void placeInDrop( uint id, float aspect )
+{
+    const float Share[7] = float[7]( 0.22, 0.18, 0.16, 0.14, 0.12, 0.10, 0.08 );
+    const vec2  At[7] = vec2[7]( vec2( 0.30, 0.30 ), vec2( 0.85, 0.70 ), vec2( 1.40, 0.28 ), vec2( 1.50, 0.75 ),
+                                 vec2( 0.30, 0.78 ), vec2( 0.85, 0.22 ), vec2( 1.15, 0.55 ) );
+    uint        start = 0u;
+    int         j = 6;
+    for ( int k = 0; k < 6; ++k )
+    {
+        uint n = uint( Share[k] * float( count ) );
+        if ( id < start + n )
+        {
+            j = k;
+            break;
+        }
+        start += n;
+    }
+    float n = float( id - start ) + 0.5;
+    // A sunflower spiral at density 1 / ( 0.87 Rest^2 ): radius 0.526 Rest sqrt( n ), golden angle.
+    float r = 0.526 * Rest * sqrt( n );
+    float a = n * 2.3999632;
+    vec2  at = At[j] + r * vec2( cos( a ), sin( a ) );
+    part[src * count + id] = vec4( fract( vec2( at.x / aspect, at.y ) ), 0.0, 0.0 );
+}
+
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     uint id = gl_GlobalInvocationID.x;
     if ( id >= count )
         return;
+    float aspect = float( size.x ) / float( size.y );
 
-    vec4 s = part[id];
+    if ( mode == 2 )
+    {
+        placeInDrop( id, aspect );
+        return;
+    }
+
+    uint rd = src * count;
+    vec4 s = part[rd + id];
     vec2 p = s.xy, v = s.zw;
 
-    if ( buildGrid == 1 )
+    if ( mode == 1 )
     {
         ivec2 g = clamp( ivec2( fract( p ) * float( gridN ) ), ivec2( 0 ), ivec2( gridN - 1 ) );
         uint  base = uint( g.y * gridN + g.x ) * uint( perCell + 1 );
@@ -90,7 +170,14 @@ void main()
         return;
     }
 
+    // A kick swells the drops a little: the springs' rest spacing grows by up to 4 %.
+    float rest = Rest * ( 1.0 + 0.04 * kick );
+    float reach = Reach * ( 1.0 + 0.04 * kick );
+
     vec2  force = vec2( 0.0 );
+    vec2  vsum = vec2( 0.0 );
+    vec2  csum = vec2( 0.0 );
+    float wsum = 0.0;
     ivec2 g = clamp( ivec2( fract( p ) * float( gridN ) ), ivec2( 0 ), ivec2( gridN - 1 ) );
     for ( int oy = -1; oy <= 1; ++oy )
         for ( int ox = -1; ox <= 1; ++ox )
@@ -103,33 +190,40 @@ void main()
                 uint oi = cell[base + 1u + k];
                 if ( oi == id )
                     continue;
-                vec2 d = part[oi].xy - p;
+                vec4 o = part[rd + oi];
+                vec2 d = o.xy - p;
                 d -= round( d );
-                float r = length( d ) + 1e-5;
-                if ( r > 0.030 )
+                d.x *= aspect; // a square metric: round drops on a wide canvas
+                float r = length( d ) + 1e-6;
+                if ( r > reach )
                     continue;
-                // Lennard-Jones-ish: repel very close, attract in the mid range.
-                // The attraction is the surface tension that forms the droplets.
-                float f = ( r < 0.011 ) ? -2.6 * ( 0.011 - r ) / r : 0.55 * ( 0.030 - r );
-                force += d / r * f;
+                vec2 dir = d / r;
+                if ( r < rest )
+                    force -= dir * ( Stiff * ( rest - r ) );
+                float w = 1.0 - r / reach;
+                vsum += o.zw * w;
+                csum += d * w;
+                wsum += w;
             }
         }
 
-    // A slow rotational field keeps the drops travelling and colliding.
-    vec2 c = p - 0.5;
-    force += vec2( -c.y, c.x ) * swirl * ( 0.25 + level );
-    force.y -= 0.06; // gravity
+    // Cohesion toward the neighbours' centroid: zero inside the metal, inward at its rim -- a surface tension that
+    // rounds the drops and puts their insides under a little pressure, so holes close.  A pairwise attraction
+    // (Lennard-Jones-like) pulled the inside too: under that tension the drops cavitated into sponges.
+    if ( wsum > 0.0 )
+        force += Tension * csum / wsum;
 
-    if ( kick > 0.3 )
-        force += normalize( c + 1e-5 ) * kick * 0.5;
-
-    v = ( v + force * dt ) * 0.94;
+    v += force;
+    if ( wsum > 0.0 )
+        v = mix( v, vsum / wsum, Visc );
+    vec2 u = flow( p, aspect ) * ( 0.5 + level ) * frameDt;
+    v = mix( v, u, Drag );
     float sp = length( v );
-    if ( sp > 0.5 )
-        v *= 0.5 / sp;
-    p = fract( p + v * dt + 1.0 );
+    if ( sp > MaxStep )
+        v *= MaxStep / sp;
+    p = fract( p + vec2( v.x / aspect, v.y ) + 1.0 );
 
-    part[id] = vec4( p, v );
+    part[( 1u - src ) * count + id] = vec4( p, v );
 
     // Splat a small disc: overlapping discs are what merge into a smooth
     // surface once the display thresholds the density.

@@ -27,7 +27,8 @@ void main()
     float mode = smoothstep(0.2, 0.8, clamp(audioMode, 0.0, 1.0));
     float r = length(p);
     float a = atan(p.y, p.x) + 0.02 * sceneTime + 0.2 * audioPhase;
-    float N = 40.0 + 60.0 * (1.0 - clamp(pitchP, 0.0, 1.0));   // turns per unit radius
+    // 28..60 turns (17.10.2026): at 40..100 the line was finer than a pixel at 720p and the spiral read as grey moire.
+    float N = 28.0 + 32.0 * (1.0 - clamp(pitchP, 0.0, 1.0));   // turns per unit radius
     float wob = 0.15 * clamp(wobbleP, 0.0, 1.0) * sin(a * 7.0 + r * 20.0 + 0.3 * sceneTime);
     float s = r * N - a / 6.2831853 - (0.4 * sceneTime + 3.0 * audioAdvance) + wob;
     float f = abs(fract(s) - 0.5) * 2.0;                        // 0 on the line's centre

@@ -5464,3 +5464,37 @@ rotation phase what a long show gathers).
   channel at the cap. And 34 scenes carry a highlight gain `HiK` (0.45 .. 0.8, measured, noted with the share it
   was set against) before their final clamp: what clipped keeps its gradation, and the auto exposure lifts the frame
   back. Measured again: none above 8 % but SlotMachineReels and KluverFormConstants, whose white is the design.
+
+## 17.10.2026 (18): the defects one by one -- liquid metal, a tune where none is heard
+
+- **LiquidMetal was a gas.** `CfxMetalStep.comp` repelled with `( h - r ) / r` -- a stiffness of thousands per step
+  -- and capped the speed at a quarter of the picture per frame, so every particle jumped past its neighbours each
+  frame and the population boiled: the picture was one even, rippled sheet of noise, whatever the radii. Now the
+  physics is written in canvas heights and steps: linear springs (0.08 per neighbour and unit of overlap, about six
+  neighbours, stable), XSPH viscosity, a speed limit of 0.0015 heights per step, and a square metric (x times the
+  canvas aspect) so drops are round on screen. The particles start in seven drops of different sizes (a sunflower
+  spiral at the rest spacing, `mode == 2`); a slow flow carries them -- the curl of a periodic stream function of six
+  waves, so it moves, stretches and folds the metal but never piles it up. Two lessons on the way:
+  - **A pairwise attraction makes sponges.** A Lennard-Jones-like band (attract beyond the rest spacing) pulls the
+    inside of a drop as well; under that tension the drops cavitated into porous clumps, and a stronger attraction
+    made more holes. The cohesion is now a pull toward the neighbours' centroid: zero inside the metal, inward at its
+    rim -- a surface tension that rounds the drops and puts their insides under a little pressure, so holes close.
+  - **Read the old state, write the new.** The step read its neighbours from the buffer it wrote: half of them had
+    already moved this step, by up to a fifth of the spacing in the flow, and that noise tore holes too. The buffer
+    has two halves now (`src`, the canvas's step counter).
+  The display (`LiquidMetal.frag`) no longer takes the raw density's gradient (the particles' grain) as the normal:
+  the canvas gets mipmaps, the coverage is read pre-averaged (level 2.5) and averaged over a disc into a height with
+  a liquid rim (square root: steep at the edge, flat on top). The reflection is the photo mirrored and magnified about
+  the middle -- a flat top showed a hole cut into the background -- with a chrome horizon, a dark outline and a shadow.
+  Over 3.5 minutes the drops stretch into strands, break and merge again; engine 0.75 ms a frame at 960x540.
+- **A tune where the detector hears none.** The melody tracker finds a tune in 2 % (Thunderstruck) to 55 % (Ironic)
+  of a track; the six melody scenes drew an empty page through the rest. After 2 s without a melody the history now
+  carries the harmony: the strongest pitch class of the chroma (while it has a clear peak, over twice its mean), in
+  the octave above middle C, held until another class is a quarter stronger -- two near-equal classes swapped every
+  80 ms and drew needles into MelodyRidgeline. Gaps between phrases (under 2 s) stay pen-up.
+- **Smaller things.** MelodyConstellation's stars x2 and struts x1.5 (the frame averaged 0.01 .. 0.04);
+  MelodyRidgeline's rock photo mirrored (fract() cut a seam at x = 0.5, clamp() smeared the bottom row into
+  vertical stripes) and its ridge edge covered over a pixel; TwomblyScribble's lines twice as wide on a quieter board;
+  SpiralPhoto 28 .. 60 turns (40 .. 100 was finer than a pixel at 720p: grey moire); TextureIronFilings coarser
+  filings, darker ink and a lamp's pool of light on the paper. The paper stays grey-ish: a frame that is mostly bright
+  is pulled down by the present pass (`pow( c * 0.78, 1.25 )`, the auto exposure down to 0.72) -- by design.

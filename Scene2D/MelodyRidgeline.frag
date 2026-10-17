@@ -145,7 +145,8 @@ void main()
         float m = max( m_raw, roll * ( 1.0 - smoothstep( 0.02, 0.1, m_raw ) ) );
         float base = -0.45 + depth * 0.32;
         float ridge_y = base + m * height * ( 1.0 - depth * 0.55 ) + 0.02 * sin( x * 40.0 + fj );
-        float below = step( p.y, ridge_y );
+        // Coverage over one pixel: the steep walls of a note step stood as stair-stepped edges.
+        float below = clamp( ( ridge_y - p.y ) * resolution.y + 0.5, 0.0, 1.0 );
         // Slope shading from the profile's derivative.
         float m2_raw = melodyAt( ago - 1.5 );
         float roll2 = 0.3 + 0.2 * sin( ( ago - 1.5 ) * 0.25 + fj )
@@ -153,7 +154,10 @@ void main()
         float m2 = max( m2_raw, roll2 * ( 1.0 - smoothstep( 0.02, 0.1, m2_raw ) ) );
         float slope = ( m2 - m ) * height;
         float facing = 0.5 + 0.5 * clamp( slope * 8.0, -1.0, 1.0 );
-        vec3  rock = img( vec2( fract( x * 2.0 + fj * 0.3 ), clamp( ( p.y - base ) * 1.5, 0.0, 1.0 ) ) );
+        // Mirrored photo coordinates (17.10.2026): fract() cut a seam into the rock at x = 0.5, and clamp() smeared
+        // the photo's bottom row into vertical stripes below each ridge's base.
+        vec2 rock_uv = vec2( x * 2.0 + fj * 0.3, ( p.y - base ) * 1.5 );
+        vec3 rock = img( 1.0 - abs( 1.0 - 2.0 * fract( rock_uv * 0.5 ) ) );
         rock = mix( rock, rock * imgPalette( hue * 0.159 + 0.3 + fj * 0.08 ) * 1.5, 0.35 );
         rock *= ( 0.3 + 0.7 * facing ) * ( 1.0 - depth * 0.4 ) * day;
         // Snow on the summits: bright above a line, glinting on the treble.
