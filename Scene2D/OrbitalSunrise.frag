@@ -9,11 +9,12 @@
  *
  *  The planet's curve fills the lower frame; its atmosphere is a stack of Rayleigh layers that go from deep blue
  *  through gold as the sun climbs; city lights on the night side (round, jittered) fade out with the dawn; clouds
- *  from the photo; stars above.  The sun's elevation is the sine of the host's day clock -- it rises AND sets
- *  continuously, no wrap ever shows.  The music is the weather and the light; the camera never moves.
+ *  from the photo; stars above.  The sun rises over the scene's screen time (sceneProgress): every appearance is a
+ *  sunrise, from the last of the night to full day.  The music is the weather and the light; the camera never
+ *  moves.
  *
  *  Audio Reactivity:
- *    dayPhase      -> sun elevation (sin, continuous)
+ *    sceneProgress -> sun elevation (staged over the screen time, continuous)
  *    audioValence  -> cloud brightness / weather (light)
  *    audioSwell    -> atmosphere glow (slow)
  *    audioKick     -> city lights twinkle (light)
@@ -35,7 +36,7 @@ uniform float sceneAdvance;   ///< The music's advance since this scene was acti
 uniform float sceneTime;      ///< Seconds since this scene was activated.
 uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
                               ///< backwards).
-uniform float dayPhase;       ///< Phase of the slow day cycle, 0..1.
+uniform float sceneProgress;  ///< 0 at activation, 1 at the end of the scene's screen time.
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
@@ -130,8 +131,10 @@ void main()
     float R = 2.2 + 0.6 * clamp( altP, 0.0, 1.0 );
     vec2  pc = vec2( 0.0, -R - 0.25 );
     float d = length( p - pc ) - R; // < 0 on the planet
-    // Sun elevation from the day clock: rises and sets, never wraps.
-    float elev = sin( dayPhase * 6.2831853 );     // -1 .. 1
+    // Sun elevation: a sunrise over the screen time, from just below the limb (city lights, the first gold) to well
+    // above it.  Until 17.10.2026 it followed the engine's 280-s day cycle (dayPhase), which is night 42 % of the
+    // time -- the screening found it at night in every seed, the frame near black (a structure of 0.006).
+    float elev = mix( -0.3, 0.8, smoothstep( 0.0, 0.9, sceneProgress ) ); // -1 .. 1
     float dawn = smoothstep( -0.25, 0.35, elev ); // 0 night .. 1 day
     vec2  sun_pos = vec2( 0.35, -0.25 + 0.55 * elev );
 

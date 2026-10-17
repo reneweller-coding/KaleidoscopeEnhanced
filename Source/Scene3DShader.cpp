@@ -891,7 +891,11 @@ void Scene3DShader::runGenerator( float time )
     // Scene clocks, same definitions as the fragment stage: advance and time
     // since this activation, and the staged progress the regie may bend.
     set_f( m_genLocs.sceneAdvance, ( m_advanceAtReset > -1.0e8f ) ? a.audioAdvance - m_advanceAtReset : 0.f );
-    set_f( m_genLocs.sceneTime, ( m_activationTime > -1.0e8f ) ? time - m_activationTime : 0.f );
+    // The value the render stages got this frame.  Until 17.10.2026 this was `time - m_activationTime` -- the RAW
+    // time against an activation stamped in the VARIED time (m_timeOffset + time * m_speedFactor, see
+    // setUniforms()), so the generator's sceneTime ran some hundreds of seconds below zero: GalaxyMergerNBody
+    // re-seeded its 32,768 stars every frame and never drew one, and 81 other generators read the same wrong clock.
+    set_f( m_genLocs.sceneTime, m_lastSceneTime );
     set_f( m_genLocs.sceneProgress, m_sceneProgress );
     if ( m_genLocs.audioChroma >= 0 )
         glUniform1fv( m_genLocs.audioChroma, 12, a.chroma );

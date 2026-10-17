@@ -38,6 +38,8 @@ uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short 
 uniform float audioCentroid;  ///< Spectral centroid (brightness of the sound), 0..1.
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float sceneTime;      ///< Seconds since this scene was activated.
+uniform float sceneAdvance;   ///< The music's advance since this scene was activated (integrated, never jumps).
 
 uniform float dustP; ///< Dust knob: density and complexity of the dust pillars (0.5..1.5).
 uniform float starP; ///< Star knob: intensity of the newborn stars (0.5..2.0).
@@ -95,7 +97,10 @@ vec3 hueRot( vec3 c, float a )
  **/
 float hash11( float n )
 {
-    return fract( sin( n * 127.1 ) * 43758.5453 );
+    n = fract( n * 0.1031 );
+    n *= n + 33.33;
+    n *= n + n;
+    return fract( n );
 }
 /**  Pseudo-random number 0..1 from a 3D point.
  *
@@ -106,7 +111,9 @@ float hash11( float n )
  **/
 float hash31( vec3 p )
 {
-    return fract( sin( dot( p, vec3( 127.1, 311.7, 74.7 ) ) ) * 43758.5453 );
+    p = fract( p * 0.1031 );
+    p += dot( p, p.zyx + 31.32 );
+    return fract( ( p.x + p.y ) * p.z );
 }
 
 /**  Smooth value noise.
@@ -158,18 +165,22 @@ void main()
 
     vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution ) / resolution.y;
 
-    float drift = time * 0.5 + audioAdvance * 2.0;
+    // The flight runs on the scene's own clocks.  Until 17.10.2026 it ran on `time` and `audioAdvance`, both counted
+    // since the program started: after some minutes of a show the camera stood hundreds of units deep, the sine
+    // hashes above lost their precision there, and the pillars fell apart into a flat fog with flat facets in it
+    // (the screening measured a structure of 0.006).  The hashes are sine-free now as well.
+    float drift = sceneTime * 0.5 + sceneAdvance * 2.0;
 
     vec3 ro = vec3( 0.0, 0.0, drift );
 
     // Slow, majestic camera pan
-    vec3 ta = ro + vec3( sin( time * 0.1 ) * 0.3, cos( time * 0.15 ) * 0.2, 1.0 );
+    vec3 ta = ro + vec3( sin( sceneTime * 0.1 ) * 0.3, cos( sceneTime * 0.15 ) * 0.2, 1.0 );
 
     vec3 ww = normalize( ta - ro );
     vec3 uu = normalize( cross( ww, vec3( 0.0, 1.0, 0.0 ) ) );
     vec3 vv = cross( uu, ww );
 
-    float roll = 0.1 * sin( time * 0.05 );
+    float roll = 0.1 * sin( sceneTime * 0.05 );
     vec2  ruv = mat2( cos( roll ), -sin( roll ), sin( roll ), cos( roll ) ) * uv;
     vec3  rd = normalize( ruv.x * uu + ruv.y * vv + 1.0 * ww );
 
@@ -191,14 +202,25 @@ void main()
     {
         p = ro + rd * d;
 
-        // Shape of the pillars
-        // Base structure: columns going roughly along Y axis
-        float pillar_shape = sin( p.x * 0.5 ) * cos( p.z * 0.3 );
-        pillar_shape += sin( p.y * 0.2 );
+        // The pillars: columns on a loose lattice in x/z, thicker at the base and capped at a height of their own,
+        // the camera's lane (x = 0) between two rows.  Until 17.10.2026 the field was sin(x)cos(z) + sin(y) plus
+        // 1.5 fbm, above the threshold almost everywhere: the camera stood inside the dust and saw a flat fog after
+        // three steps.
+        vec2  cell = vec2( 10.0, 14.0 );
+        vec2  cid = floor( p.xz / cell );
+        vec2  lc = mod( p.xz, cell ) - 0.5 * cell;
+        lc -= ( vec2( hash11( dot( cid, vec2( 1.0, 57.0 ) ) ), hash11( dot( cid, vec2( 1.0, 57.0 ) ) + 7.0 ) ) - 0.5 )
+              * vec2( 2.5, 6.0 );
+        float rad = 1.5 + 0.9 * hash11( dot( cid, vec2( 1.0, 57.0 ) ) + 3.0 ) - 0.06 * p.y;
+        float top = 1.5 + 3.5 * hash11( dot( cid, vec2( 1.0, 57.0 ) ) + 5.0 );
+        float column = max( length( lc ) - rad, p.y - top );
 
-        // Add fractal detail to the edges of the pillars
+        // Fractal detail frays the surface: dust, not a cylinder.
         float detail = fbm( p * 0.8 * dp );
-        float density = smoothstep( 0.15, 0.55, pillar_shape + detail * 1.5 ) * dp;
+        float shape = -column + ( detail - 0.5 ) * 1.8;
+        float density = smoothstep( 0.0, 0.7, shape ) * dp;
+        // The bright rims where the stars' light eats into the dust (the photoevaporation fronts).
+        col += dust_color2 * exp( -abs( shape ) * 5.0 ) * 0.035 * ( 1.0 - density_accum ) * ( 1.0 + audioSwell );
 
         if ( density > 0.01 )
         {
@@ -211,13 +233,17 @@ void main()
             float lum = ( 0.45 + shadow * 1.1 ) * ( 1.0 + audioSwell );
             local_col *= lum;
 
-            // Add newborn stars embedded in the dust
-            float star_field = hash31( floor( p * 5.0 ) );
-            if ( star_field > 0.98 )
+            // Newborn stars embedded in the dust: a soft round glow around a jittered point in a 1.5-unit cell -- the
+            // ray integrates the Gaussian into a round disc.  Until 17.10.2026 whole 0.2-unit cells lit up (squares on
+            // the screen), and a kick re-rolled which cells flashed four times a second.
+            vec3  sc = floor( p / 1.5 );
+            float sh = hash31( sc );
+            if ( sh > 0.88 )
             {
-                float pulse = sin( time * 5.0 + star_field * 100.0 ) * 0.5 + 0.5;
-                float kick_flash = step( 0.99, hash11( floor( p.z ) + floor( time * 4.00 ) ) );
-                local_col += star_color * ( pulse + kick_flash * audioKick * 10.0 ) * sp * 5.0;
+                vec3  sp3 = ( sc + 0.2 + 0.6 * vec3( hash31( sc + 1.7 ), hash31( sc + 4.1 ), hash31( sc + 9.3 ) ) ) * 1.5;
+                float g = exp( -dot( p - sp3, p - sp3 ) / 0.09 );
+                float pulse = 0.6 + 0.4 * sin( sceneTime * 2.0 + sh * 100.0 );
+                col += star_color * g * pulse * ( 1.0 + 1.5 * audioKick ) * sp * 0.8 * ( 1.0 - density_accum );
             }
 
             // Accumulate

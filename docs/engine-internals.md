@@ -5333,3 +5333,21 @@ second), which the 5-fps BLITZ figure cannot: it is the largest single step agai
   one of six recordings it won -- every window then held the first 1.6 s of the next scene and its cut, which reads
   as BLITZ. An export runs on the frame clock, so the offset is known (a scene shows 0.2 .. 1.35 s after its
   `[sweep]` line): 0.2 now. The baseline's 39 recordings were not affected (no recording with BLITZ throughout).
+- **The generators' sceneTime ran hundreds of seconds below zero.** Since 03.09 a compute generator gets
+  `sceneTime` as `time - m_activationTime` -- the raw time against an activation stamped in the varied time
+  (`m_timeOffset + time * m_speedFactor`, an offset of up to 900 s per activation). GalaxyMergerNBody re-seeded its
+  32,768 stars in every frame (`sceneTime < 0.06`) and never drew one -- two dots on a black sky in every catalogue
+  image since. The generator now gets the value the render stages got (`m_lastSceneTime`). Of the 82 generators
+  that read it, 32 frozen snapshots changed against the 16.10 base; all 32 were looked at: other moments of the
+  same motion, nothing broken, the merging galaxies now there.
+- **PillarsOfCreationFlight** had no pillars: its density (sin x cos z + sin y + 1.5 fbm) was above the threshold
+  almost everywhere, the camera stood in the dust and saw a flat fog after three steps; and it flew on `time` and
+  `audioAdvance`, counted since the program started, where its sine hashes lost their precision. Now columns on a
+  loose lattice (thicker at the base, capped, bright rims), the camera in a lane between two rows, on the scene's
+  own clocks, sine-free hashes, the newborn stars round (they were lit 0.2-unit cells: squares).
+- **OrbitalSunrise** followed the engine's 280-s day cycle, night 42 % of the time -- the screening found it at
+  night in every seed. The sun now rises over the scene's screen time (`sceneProgress`).
+- **AccretionDiskToroidVortex** drew its square grid's corners as a tilted plate: cut at the unit circle, the gas
+  thinning out toward it, and somewhat brighter (it measured 0.005 .. 0.02).
+- **RunwayApproachLights** looked at a 45-m runway from 900 m with a wide lens: 64 pixels, one line of lights.
+  Now 480 .. 60 m, focal 2.0, the lamps' glare 1.2 m.

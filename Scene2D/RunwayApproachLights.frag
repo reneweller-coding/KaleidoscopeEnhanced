@@ -122,6 +122,9 @@ vec3 gRo; ///< The camera position this frame.
 vec3 gFw, gRt, gUp; ///< gFw: The camera's forward axis; gRt: The camera's right axis; gUp: The camera's up axis.
 /** @} */
 
+/// The lens: 2.0 (was 1.2, from 900 m out the 45-m runway came out 64 pixels wide -- one line of lights).
+const float Focal = 2.0;
+
 /**  Add one light at world position P with colour c and intensity I.
  *
  * @param p  The screen point. (in)
@@ -135,12 +138,13 @@ void light( vec2 p, vec3 P, vec3 c, float I )
     float z = dot( v, gFw );
     if ( z < 1.0 )
         return;
-    vec2  s = vec2( dot( v, gRt ), dot( v, gUp ) ) / z * 1.2;
+    vec2  s = vec2( dot( v, gRt ), dot( v, gUp ) ) / z * Focal;
     float d = length( p - s );
-    float r = max( 0.6 / z, gPx * 0.7 );
+    // A lamp's glare, not its housing: 1.2 m (was 0.6, two pixels at 300 m), and a stronger halo in the mist.
+    float r = max( 1.2 / z, gPx * 1.0 );
     float core = smoothstep( r + gPx, r * 0.3, d );
     float halo = exp( -d / ( r * 4.0 + 0.004 ) ) * gMist / ( 1.0 + z / 250.0 );
-    gCol += c * I * ( core * 1.4 + halo * 0.5 ) * clamp( 40.0 / z, 0.25, 1.0 );
+    gCol += c * I * ( core * 1.6 + halo * 0.9 ) * clamp( 60.0 / z, 0.3, 1.0 );
 }
 
 /** Entry point of this shader stage (the file description says what it draws). */
@@ -160,7 +164,7 @@ void main()
     // repeats smoothly (fading at the loop).
     float cyc = 40.0;
     float u = fract( T / cyc );
-    float dist = mix( 900.0, 120.0, u ); // metres to the threshold
+    float dist = mix( 480.0, 60.0, u ); // metres to the threshold (was 900 .. 120: a line of lights)
     gRo = vec3( 3.0 * sin( T * 0.05 ), dist * 0.0524 + 3.0, -dist );
     gFw = normalize( vec3( 0.0, -0.06, 1.0 ) );
     gRt = normalize( cross( vec3( 0.0, 1.0, 0.0 ), gFw ) );
@@ -168,7 +172,7 @@ void main()
     float loop_fade = smoothstep( 0.0, 0.06, u ) * smoothstep( 1.0, 0.94, u );
 
     // Night sky and the orange city glow on the horizon.
-    float hz_y = 0.06 * 1.2; // looking down, the horizon sits above centre
+    float hz_y = 0.06 * Focal; // looking down, the horizon sits above centre
     gCol = mix( vec3( 0.03, 0.035, 0.06 ), vec3( 0.01, 0.012, 0.03 ), smoothstep( hz_y, 0.5, p.y ) );
     gCol += vec3( 0.4, 0.22, 0.1 ) * exp( -abs( p.y - hz_y ) * 14.0 ) * ( 0.5 + 0.5 * noise2( vec2( p.x * 3.0, 1.0 ) ) )
             * ( 0.6 + 0.4 * gMist );

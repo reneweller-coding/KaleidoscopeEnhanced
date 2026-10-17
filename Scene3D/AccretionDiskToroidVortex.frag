@@ -86,6 +86,13 @@ void main()
 {
     float hue = ( hueP > 0.0 ) ? hueP : 0.0;
 
+    // The disk is a square grid, and a disk has a round edge: beyond the grid's unit circle nothing is drawn, and
+    // toward it the gas thins out.  Until 17.10.2026 the grid's corners stood in the black as a tilted square plate.
+    float rr = length( vTexCoord * 2.0 - 1.0 );
+    if ( rr > 1.0 )
+        discard;
+    float edge = smoothstep( 1.0, 0.65, rr );
+
     // Photo texture mapping onto accretion grid
     vec3 photo = img( vTexCoord );
 
@@ -119,7 +126,8 @@ void main()
 
     // Catalogue review: soft-knee exposure — hot audio compresses
     // instead of clipping the whole frame to white.
-    vec3 cat_tone = ( col ) * 0.55;
+    // 0.7 (was 0.55): the screening measured the disk at 0.005 .. 0.02 of full brightness.
+    vec3 cat_tone = col * edge * 0.7;
     cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
     fragColor = vec4( cat_tone, 1.0 );
 }
