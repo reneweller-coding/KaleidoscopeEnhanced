@@ -470,7 +470,7 @@ private:
     unsigned int m_frameIndex = 0; ///< Running frame counter uploaded to the generator as `frameIndex`; incremented
                                    ///< once per runGenerator() call.
     AudioFeatures m_lastAudio;                                 ///< this scene's features, for the generator
-    float         m_lastTime = 0.f;                            ///< the `time` the render stages got (EffectShader::m_exprTime), for the generator
+    float         m_lastTime = 0.f; ///< the `time` the render stages got (EffectShader::m_exprTime), for the generator
     float         m_shadowExtent = EffectShader::ShadowExtent; ///< This scene's shadow-map light box half-width (see
                                                                ///< setShadowExtent()/shadowExtent()).
     // The counter-clamp pass is identical for every indirect scene, so it is
@@ -596,6 +596,37 @@ private:
     GLint m_meshCenter2Uni = -1; ///< Location of the `meshCenter2` (vec3) uniform; -1 if the shader doesn't declare it.
     GLint m_meshExtentUni = -1;  ///< Location of the `meshExtent` (vec3) uniform; -1 if the shader doesn't declare it.
     GLint m_meshCenterUni = -1;  ///< Location of the `meshCenter` (vec3) uniform; -1 if the shader doesn't declare it.
+    /** The craft frame of model 1 from Engine/model_orient.tsv (Tools/model_orient.py): the rotation into it (nose +Z,
+     * up +Y), row-major, uploaded as `meshOrient`; identity for a model the table does not list.
+     **/
+    float m_orient[9] = { 1.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f, 1.f };
+    float m_orientExt[3] = { 0.5f, 0.5f, 0.5f }; ///< Model 1's half-extents in its craft frame (`meshOrientExtent`).
+    float m_orientCen[3] = { 0.f, 0.f, 0.f };    ///< Model 1's centre in its craft frame (`meshOrientCenter`).
+    float m_oriented = 0.f;                      ///< 1 if the table lists model 1 (`meshOriented`).
+    float m_orient2[9] = { 1.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f, 1.f }; ///< The same for model 2 (`meshOrient2`).
+    float m_orientExt2[3] = { 0.5f, 0.5f, 0.5f }; ///< Model 2's half-extents in its craft frame (`meshOrientExtent2`).
+    float m_orientCen2[3] = { 0.f, 0.f, 0.f };    ///< Model 2's centre in its craft frame (`meshOrientCenter2`).
+    float m_oriented2 = 0.f;                      ///< 1 if the table lists model 2 (`meshOriented2`).
+    GLint m_orientUni = -1;     ///< Location of `meshOrient` (mat3); -1 if the shader doesn't declare it.
+    GLint m_orientedUni = -1;   ///< Location of `meshOriented` (float); -1 if not declared.
+    GLint m_orientExtUni = -1;  ///< Location of `meshOrientExtent` (vec3); -1 if not declared.
+    GLint m_orientCenUni = -1;  ///< Location of `meshOrientCenter` (vec3); -1 if not declared.
+    GLint m_orient2Uni = -1;    ///< Location of `meshOrient2` (mat3); -1 if not declared.
+    GLint m_oriented2Uni = -1;  ///< Location of `meshOriented2` (float); -1 if not declared.
+    GLint m_orientExt2Uni = -1; ///< Location of `meshOrientExtent2` (vec3); -1 if not declared.
+    GLint m_orientCen2Uni = -1; ///< Location of `meshOrientCenter2` (vec3); -1 if not declared.
+    /**  Fills one model's craft frame from Engine/model_orient.tsv, or identity and its raw box if it is not listed.
+     *
+     * @param path      The model's path from the scene entry. (in)
+     * @param rawExt    Its measured half-extents (the fallback). (in)
+     * @param rawCen    Its measured centre (the fallback). (in)
+     * @param rot       Receives the rotation, row-major. (out)
+     * @param ext       Receives the half-extents in the craft frame. (out)
+     * @param cen       Receives the centre in the craft frame. (out)
+     * @param oriented  Receives 1 if the table lists the model, else 0. (out)
+     **/
+    static void setOrient( const std::string &path, const float rawExt[3], const float rawCen[3], float rot[9],
+                           float ext[3], float cen[3], float &oriented );
     /** How many copies of the loaded mesh to draw (instances="N" on the scene entry; 1 = the ordinary single-object
      * case).
      *

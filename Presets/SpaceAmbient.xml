@@ -2128,7 +2128,7 @@
     <float name="tintP" minValue="4.6" maxValue="4.6"></float>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <TextureShader minTimeSolo="30" maxTimeSolo="80" interest="6" file="..\\Scene3D\\Fleet.frag" type="scene3d" geom="mesh" model="..\\Models\\BelterMiningTug.glb" instances="36" mood="space,dark" probability="0.32" complexity="7" gpuMs="1.29">
+  <TextureShader minTimeSolo="30" maxTimeSolo="80" interest="6" file="..\\Scene3D\\Fleet.frag" type="scene3d" geom="mesh" model="..\\Models\\JumpDriveTug.glb" instances="48" mood="space,dark" probability="0.32" complexity="7" gpuMs="1.29">
     <rig preset="mesh-14"/>
     <float name="sizeP" minValue="1.0" maxValue="1.0"></float>
     <float name="formP" minValue="1" maxValue="1"></float>
@@ -2136,7 +2136,7 @@
     <float name="tintP" minValue="3.6" maxValue="3.6"></float>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <TextureShader minTimeSolo="30" maxTimeSolo="80" interest="6" file="..\\Scene3D\\Fleet.frag" type="scene3d" geom="mesh" model="..\\Models\\EinsitzigerAbfangjaeger.glb" instances="36" mood="space,dark" probability="0.3" complexity="7" gpuMs="1.29">
+  <TextureShader minTimeSolo="30" maxTimeSolo="80" interest="6" file="..\\Scene3D\\Fleet.frag" type="scene3d" geom="mesh" model="..\\Models\\EinsitzigerAbfangjaeger.glb" instances="48" mood="space,dark" probability="0.3" complexity="7" gpuMs="1.29">
     <rig preset="mesh-15"/>
     <float name="sizeP" minValue="1.0" maxValue="1.0"></float>
     <float name="formP" minValue="0" maxValue="0"></float>

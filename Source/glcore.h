@@ -293,6 +293,7 @@ extern "C"
     GLC_FN( void, glUniform1iv, (GLint, GLsizei, const GLint *))
     GLC_FN( void, glUniform2fv, (GLint, GLsizei, const GLfloat *))
     GLC_FN( void, glUniform3fv, (GLint, GLsizei, const GLfloat *))
+    GLC_FN( void, glUniformMatrix3fv, (GLint, GLsizei, GLboolean, const GLfloat *))
     GLC_FN( void, glUniformMatrix4fv, (GLint, GLsizei, GLboolean, const GLfloat *))
     GLC_FN( void, glGenFramebuffers, (GLsizei, GLuint *))
     GLC_FN( void, glBindFramebuffer, ( GLenum, GLuint ) )
@@ -410,6 +411,7 @@ extern "C"
 #define glUniform1iv               glcore_glUniform1iv
 #define glUniform2fv               glcore_glUniform2fv
 #define glUniform3fv               glcore_glUniform3fv
+#define glUniformMatrix3fv         glcore_glUniformMatrix3fv
 #define glUniformMatrix4fv         glcore_glUniformMatrix4fv
 #define glGenFramebuffers          glcore_glGenFramebuffers
 #define glBindFramebuffer          glcore_glBindFramebuffer

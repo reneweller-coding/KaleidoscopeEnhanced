@@ -46,7 +46,9 @@ in vec2  vUV;     ///< Texture coordinate 0..1 over the screen (from the vertex 
 in vec3  vNormal; ///< Surface normal (from the vertex stage).
 in vec3  vPos;    ///< Position (from the vertex stage).
 in float vBg;     ///< Background flag (from the vertex stage).
-in float vRank;   ///< Rank (from the vertex stage).
+in float vRank;   ///< Place in the squadron, 0 = leader (from the vertex stage).
+in float vAft;    ///< How much a face looks toward the stern (from the vertex stage).
+in float vStern;  ///< Where along the hull, 1 at the stern end (from the vertex stage).
 
 /**  Rotates a colour's hue by an angle (about the grey axis).
  *
@@ -272,22 +274,25 @@ void main()
     // ambient term carries it there.
     vec3 col = base * ( 0.62 + 1.85 * lam );
 
-    // The running light: a bright band travelling down the formation. This is
-    // the ONLY per-craft variation, and it is what turns N copies into a fleet
-    // under one command instead of a swarm.
-    float wave = fract( vRank * 3.0 - time * 0.35 - audioAdvance * 0.15 );
+    // The running light: a faint band travelling down each squadron.  It lit whole hulls in the tint (17.10.2026) --
+    // flat, glowing silhouettes; now it is a sheen.
+    float wave = fract( vRank * 1.5 - time * 0.35 - audioAdvance * 0.15 );
     float pip = smoothstep( 0.0, 0.06, wave ) * ( 1.0 - smoothstep( 0.06, 0.16, wave ) );
-    col += tint * pip * ( 0.9 + 1.8 * audioSwell );
+    col += tint * pip * 0.12 * ( 1.0 + audioSwell );
 
-    // Engine glow on the trailing faces, flaring with the kick.
-    float aft = pow( max( -n.z, 0.0 ), 2.0 );
-    col += tint * aft * ( 0.30 + 1.5 * audioKick );
+    // Engine glow on the faces toward the stern at the stern end of the hull -- the nozzles, not every aft-facing
+    // panel: seen from behind, the whole craft glowed in the tint -- flaring with the kick.
+    float aft = smoothstep( 0.6, 0.95, vAft ) * smoothstep( 0.55, 0.9, vStern );
+    col += tint * aft * ( 0.6 + 1.5 * audioKick );
 
     float rim = pow( 1.0 - max( dot( n, view_dir ), 0.0 ), 3.0 );
     col += tint * rim * 0.30;
 
     if ( hue > 0.001 )
         col = hueRot( col, 0.12 * sin( hue ) );
+
+    // Distance haze: a receding squadron fades into the nebula before it reaches the far plane (220).
+    col = mix( col, renderSky( normalize( vPos ), tint ), smoothstep( 135.0, 204.0, length( vPos ) ) );
 
     vec3 cat_tone = max( col, 0.0 );
     cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );

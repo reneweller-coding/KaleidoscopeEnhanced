@@ -29,6 +29,10 @@
 #include <cstdio>
 #include <cmath>
 #include <vector>
+#include <map>
+#include <fstream>
+#include <sstream>
+#include <string>
 
 #ifndef GL_POINT_SPRITE
 #define GL_POINT_SPRITE \
@@ -40,6 +44,59 @@
     0x8642 ///< Enable letting the vertex shader set gl_PointSize (GEOM_POINTS / GEOM_SCATTER), for GL headers that lack
            ///< it.
 #endif
+
+/**  A craft's own frame, measured by Tools/model_orient.py and read from Engine/model_orient.tsv.
+ *
+ * The ship scenes guessed a craft's direction of travel from its longest bounding-box axis and never knew which end
+ * was the nose; hulls modelled at an angle flew crabwise and hair-thin generator needles set the box (17.10.2026).
+ * The table holds, per model file, the rotation into the craft frame (nose +Z, up +Y) and the half-extents and centre
+ * in that frame, measured without the needles.  It is handed to the shaders as uniforms only -- a shader that does not
+ * ask for meshOriented sees the model exactly as before.
+ **/
+struct ModelOrient
+{
+    float rot[9]; ///< The rotation into the craft frame, row-major.
+    float ext[3]; ///< Half-extents in the craft frame.
+    float cen[3]; ///< Centre in the craft frame.
+};
+
+/**  Looks a model up in Engine/model_orient.tsv (read once, on first use).
+ *
+ * @param modelPath  The model's path as the scene entry gives it; only the file name counts. (in)
+ *
+ * @return
+ *   The model's frame, or nullptr if the table does not list it.
+ **/
+static const ModelOrient *findModelOrient( const std::string &modelPath )
+{
+    static std::map<std::string, ModelOrient> table;
+    static std::once_flag                     once;
+    std::call_once( once, []
+    {
+        std::ifstream in( "..\\Engine\\model_orient.tsv" );
+        std::string   line;
+        while ( std::getline( in, line ) )
+        {
+            if ( line.empty() || line[0] == '#' )
+                continue;
+            std::istringstream ss( line );
+            std::string        name;
+            ModelOrient        o{};
+            ss >> name;
+            for ( float &x : o.rot )
+                ss >> x;
+            for ( float &x : o.ext )
+                ss >> x;
+            for ( float &x : o.cen )
+                ss >> x;
+            if ( ss )
+                table[name] = o;
+        }
+    } );
+    const size_t cut = modelPath.find_last_of( "\\/" );
+    const auto   it = table.find( cut == std::string::npos ? modelPath : modelPath.substr( cut + 1 ) );
+    return ( it == table.end() ) ? nullptr : &it->second;
+}
 
 /**  Deterministic integer hash producing a pseudo-random float in [0,1).
  *
@@ -622,6 +679,7 @@ void Scene3DShader::buildGeometry()
                     m_meshExtent[c] = 1e-4f;
             }
         }
+        setOrient( m_modelPath, m_meshExtent, m_meshCenter, m_orient, m_orientExt, m_orientCen, m_oriented );
 
         if ( !m_modelPath2.empty() )
             load_into( m_modelPath2, ( warmed && m_warmOk2 ) ? &m_warmAsset2 : nullptr,
@@ -658,6 +716,8 @@ void Scene3DShader::buildGeometry()
                     m_meshExtent2[c] = 1e-4f;
             }
         }
+        if ( !m_modelPath2.empty() )
+            setOrient( m_modelPath2, m_meshExtent2, m_meshCenter2, m_orient2, m_orientExt2, m_orientCen2, m_oriented2 );
 
         // Append a big enclosing "sky shell" after the loaded mesh's own
         // vertices (same 36-corner unit-cube table GEOM_CUBES builds,
@@ -877,7 +937,7 @@ void Scene3DShader::runGenerator( float time )
     auto set_f = [&]( GLint l, float v )
     { if( l >= 0 ) glUniform1f( l, v ); };
     const AudioFeatures &a = m_lastAudio; // already carries this scene's offsets
-    set_f( m_genLocs.time, time ); // already the render stages' `time` (setUniforms())
+    set_f( m_genLocs.time, time );        // already the render stages' `time` (setUniforms())
     set_f( m_genLocs.sceneSeed, m_sceneSeed );
     set_f( m_genLocs.audioAdvance, a.audioAdvance );
     set_f( m_genLocs.audioLevel, a.overallLevel );
@@ -1063,6 +1123,14 @@ void Scene3DShader::initUniforms( int width, int height )
     m_meshCenter2Uni = glGetUniformLocation( m_shProgId, "meshCenter2" );
     m_meshInstancesUni = glGetUniformLocation( m_shProgId, "meshInstances" );
     m_meshCenterUni = glGetUniformLocation( m_shProgId, "meshCenter" );
+    m_orientUni = glGetUniformLocation( m_shProgId, "meshOrient" );
+    m_orientedUni = glGetUniformLocation( m_shProgId, "meshOriented" );
+    m_orientExtUni = glGetUniformLocation( m_shProgId, "meshOrientExtent" );
+    m_orientCenUni = glGetUniformLocation( m_shProgId, "meshOrientCenter" );
+    m_orient2Uni = glGetUniformLocation( m_shProgId, "meshOrient2" );
+    m_oriented2Uni = glGetUniformLocation( m_shProgId, "meshOriented2" );
+    m_orientExt2Uni = glGetUniformLocation( m_shProgId, "meshOrientExtent2" );
+    m_orientCen2Uni = glGetUniformLocation( m_shProgId, "meshOrientCenter2" );
     m_mesh2VertexCountUni = glGetUniformLocation( m_shProgId, "mesh2VertexCount" );
     m_meshMaterial2Uni = glGetUniformLocation( m_shProgId, "texMeshMaterial2" );
     m_meshMaterial2LayersUni = glGetUniformLocation( m_shProgId, "texMeshMaterialLayers2" );
@@ -1287,6 +1355,26 @@ void Scene3DShader::draw()
         glUniform3f( m_meshExtentUni, m_meshExtent[0], m_meshExtent[1], m_meshExtent[2] );
     if ( m_geomKind == GEOM_MESH && m_meshCenterUni >= 0 )
         glUniform3f( m_meshCenterUni, m_meshCenter[0], m_meshCenter[1], m_meshCenter[2] );
+    if ( m_geomKind == GEOM_MESH )
+    {
+        // The craft frames (see findModelOrient); identity and the raw box for a model the table does not list.
+        if ( m_orientUni >= 0 )
+            glUniformMatrix3fv( m_orientUni, 1, GL_TRUE, m_orient );
+        if ( m_orientedUni >= 0 )
+            glUniform1f( m_orientedUni, m_oriented );
+        if ( m_orientExtUni >= 0 )
+            glUniform3fv( m_orientExtUni, 1, m_orientExt );
+        if ( m_orientCenUni >= 0 )
+            glUniform3fv( m_orientCenUni, 1, m_orientCen );
+        if ( m_orient2Uni >= 0 )
+            glUniformMatrix3fv( m_orient2Uni, 1, GL_TRUE, m_orient2 );
+        if ( m_oriented2Uni >= 0 )
+            glUniform1f( m_oriented2Uni, m_oriented2 );
+        if ( m_orientExt2Uni >= 0 )
+            glUniform3fv( m_orientExt2Uni, 1, m_orientExt2 );
+        if ( m_orientCen2Uni >= 0 )
+            glUniform3fv( m_orientCen2Uni, 1, m_orientCen2 );
+    }
     if ( m_geomKind == GEOM_MESH && m_meshExtent2Uni >= 0 )
         glUniform3f( m_meshExtent2Uni, m_meshExtent2[0], m_meshExtent2[1], m_meshExtent2[2] );
     if ( m_geomKind == GEOM_MESH && m_meshCenter2Uni >= 0 )
@@ -1529,4 +1617,28 @@ void Scene3DShader::draw()
     glBindVertexArray( 0 );
 
     checkGLErrors( "Scene3DShader::draw" );
+}
+
+/**  Fills one model's craft frame from Engine/model_orient.tsv, or with identity and its raw box if it is not listed.
+ *
+ * @param path      The model's path from the scene entry. (in)
+ * @param rawExt    Its measured half-extents (the fallback). (in)
+ * @param rawCen    Its measured centre (the fallback). (in)
+ * @param rot       Receives the rotation, row-major. (out)
+ * @param ext       Receives the half-extents in the craft frame. (out)
+ * @param cen       Receives the centre in the craft frame. (out)
+ * @param oriented  Receives 1 if the table lists the model, else 0. (out)
+ **/
+void Scene3DShader::setOrient( const std::string &path, const float rawExt[3], const float rawCen[3], float rot[9],
+                               float ext[3], float cen[3], float &oriented )
+{
+    const ModelOrient *o = findModelOrient( path );
+    for ( int i = 0; i < 9; ++i )
+        rot[i] = o ? o->rot[i] : ( ( i % 4 == 0 ) ? 1.f : 0.f );
+    for ( int c = 0; c < 3; ++c )
+    {
+        ext[c] = o ? o->ext[c] : rawExt[c];
+        cen[c] = o ? o->cen[c] : rawCen[c];
+    }
+    oriented = o ? 1.f : 0.f;
 }

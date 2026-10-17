@@ -5523,3 +5523,32 @@ rotation phase what a long show gathers).
   Starfield and KleinianLimitSetAbyss tiled the photo with fract() (rotated rectangles with hard seams; the
   Kleinian's translation fold mod( x + 1, 2 ) - 1 too): mirrored now, and Starfield's stars are sized on the screen
   (a fifth of a cell made the nearest layer's stars soft ovals a quarter of the frame wide).
+
+## 17.10.2026 (19): spacecraft that know where their nose is, and a fleet under way
+
+- **Which end is the nose.** Every ship scene guessed a craft's direction of travel from its longest bounding-box axis
+  and never knew which end led. On this asset set that fails four ways: the sign (half the craft flew stern first,
+  Fleet's engine glow sat on the bow); hulls modelled at an angle (FuelTankerStarship, GsvNoMoreMrNiceGuy,
+  MerchantersLuck lie 40 .. 50 degrees off the axes and flew crabwise); generator needles -- many models carry
+  hair-thin geometry (antenna wires, rigging, debris) up to the full model size, which set the box, so the "longest
+  axis" became the vertical and the craft flew upright, shrunk by the false size (UnionCruiserNorway's box is
+  0.32 x 1.0 x 1.0, its hull 0.30 x 0.68 x 0.98); and ties (BelterMiningTug's masts make it as tall as it is long).
+  `Tools/model_orient.py` measures each craft of the ship scenes without them: the hull's direction is the main axis
+  of its surface in the horizontal plane (area-weighted), the nose the narrower end -- overridden by hand where the
+  aligned views (`--views`) say otherwise, with the reason -- and the size the 0.5 .. 99.5 % range of the surface.
+  It writes `Engine/model_orient.tsv`; Scene3DShader hands a listed model's rotation (nose +Z, up +Y), extents and
+  centre to the shaders as `meshOrient`, `meshOrientExtent`, `meshOrientCenter`, `meshOriented` (and `...2` for
+  model2). Only a shader that asks for them sees them: the other families that share these models (Hologram,
+  CrossSection, Assembly ...) are unchanged.
+- **The fleet.** Fleet flew head-on at the camera as one lattice -- wedge, column or shell -- every craft at the same
+  distance and nearly the same speed: a flat band or an even cloud of fronts. Now it is squadrons of five or six,
+  each in its own formation (wedge, echelon and line abreast only for small groups, column, loose), spacing, size class
+  (the leader a size up) and speed (0.82 .. 1.18), a degree or two off one course; each craft off its slot and
+  keeping station with a slow drift of its own. The fleet passes the camera's shoulder and heads into the depth,
+  three-quarters from behind: near squadrons sweep past, far ones creep toward the vanishing point and fade into the
+  nebula before the far plane (220). Every craft wraps on its own (behind the camera, and fogged out at 205), so a
+  squadron keeps its formation and the stream covers any scene length. Lighting uses world-space normals now (the
+  old ones only knew the roll); the engine glow sits on the stern faces at the stern end of the hull (it lit every
+  aft-facing panel: seen from behind, the whole craft glowed), and the running light is a sheen, no longer a
+  flat glowing silhouette. BelterMiningTug -- a seagoing tug whose rigging reads as rain in space -- gave its Fleet
+  entry to JumpDriveTug; the three fleets of 30 and 36 craft have 48.
