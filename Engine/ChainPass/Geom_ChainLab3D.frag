@@ -717,6 +717,16 @@ float camFlight( float gt )
 {
     return camHost > 0.5 ? camZ : gt;
 }
+/**  The ray direction of pixel p: the camera frame turned by the gaze (the host's, or one of seven).
+ *
+ * @param p     The pixel's centred coordinate. (in)
+ * @param cam   The gaze knob, 0..1 (without a host camera). (in)
+ * @param time  The scene's time. (in)
+ * @param cf    The camera frame. (in)
+ *
+ * @return
+ *   The ray direction (unit length).
+ **/
 vec3 gazeDir( vec2 p, float cam, float time, mat3 cf )
 {
     float k0, k1, f;

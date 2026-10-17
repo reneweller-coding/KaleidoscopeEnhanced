@@ -5801,3 +5801,36 @@ structure under a dark photo -- with only the photo's own colours nothing lifted
 a dark photo's mean brightness (its last mip) toward 0.32, at most 1.8 times (`photoGain()`): the darkest of 24 fresh
 rolls 0.067 -> 0.086 mean luma, the mean 0.175 -> 0.178.
 
+## 17.10.2026 (25): a scene with a memory of its own
+
+The 200 abstract ideas (`docs/proposals-2026-10-17-abstrakt-200.md`) bring whole families that a pure function of
+the time cannot draw: cellular automata, pattern-forming equations (Swift-Hohenberg, Gray-Scott on a flow, Cahn-
+Hilliard), a photo carried by a flow. Each needs the field of the frame before. The engine now gives every scene one,
+by convention in the scene itself and with no new file:
+
+- A scene that declares `uniform sampler2D texState; uniform int statePass;` (and optionally `stateFrame`,
+  `stateRes`) and a line `// @state W H RATE` -- the field's size and its steps per second -- carries a state.
+  `EffectShader::usesState()` finds the two uniforms per program and reads the line (no size: half the render size).
+- `EffectShader::stepState()` keeps a ping-pong pair of RGBA16F textures (repeat, linear) and, before the frame,
+  draws the same program into the newer one with `statePass = 1`, reading the older one on unit 37: as many steps as
+  `RATE` asks for since the last frame, counted on `sceneTime` (in a video export the frame clock), at most eight a
+  frame, none while the picture is frozen, none to catch up after a pause. Then the frame is drawn as always with
+  `statePass = 0` and `texState` holding the newest field. Both passes see the same uniforms, photos and music, so a
+  step reacts to the beat the frame shows.
+- `stateFrame` counts the steps since the activation; 0 is the seed. A scene activation (`resetParameters()`), a
+  new program or a new size seeds the field anew.
+- The scene generator writes the uniforms and the line from `//@state W H RATE` in the source; the shader's main
+  branches on `statePass` (`Tools/scenegen/src/CyclicAutomatonSpirals.glsl` is the pattern). The PresetEditor's
+  preview runs no state pass: such scenes are judged in app renders.
+
+**The first: CyclicAutomatonSpirals.** Griffeath's cyclic automaton on a 480 x 270 field at 120 steps a second: a
+cell moves on to the next of N states when enough neighbours already show it. Six classic rules (Mirek's
+Cellebration: Griffeath's demons, cyclic spirals R3/T5/C8, perfect spirals, squarish spirals, 313, turbulent phase);
+`ruleP` picks the first, a new section of the music the next. The state is kept as an angle (cosine, sine), so
+the linear filter draws the field smoothly between the cells and a blend shows as a darker seam. Two traps on the way:
+a per-cell random pace (cells skipping steps on their own) broke every spiral into noise -- the pace is now one global
+choice per step (`audioSwell` how many are taken); and the first R1/T3/C8 and N14 rules stayed noise for eight
+seconds -- the cyclic-spirals rule is the R3/T5 one of the literature, and demons need their seconds (they form by
+the third). Onsets seed a small noise patch every 40 steps, where new cores grow; the phase reads a ring through the
+photo and lights the band fronts, the kick flashes the fresh ones.
+

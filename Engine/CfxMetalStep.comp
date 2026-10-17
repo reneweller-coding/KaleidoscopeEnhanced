@@ -56,7 +56,7 @@ uniform float phase;   ///< Seconds of simulation: where the slow flow stands.
 uniform uint  src;     ///< The half of the particle buffer this step reads (0 or 1); it writes the other.
 
 const float Scale = 256.0; ///< Fixed-point scale of the accumulation buffer (colour times Scale, added as integers).
-const float Pi2 = 6.2831853;
+const float Pi2 = 6.2831853; ///< Two pi.
 
 // The physics, in canvas heights and steps (17.10.2026).  The old forces repelled with ( h - r ) / r -- a
 // stiffness of thousands per step -- and capped the speed at a quarter of the picture per frame: every particle

@@ -310,6 +310,7 @@ RECENT_SCENES = {
     "TruchetMaze",
     "ChainCurlFarris", "ChainWarpQuasi", "ChainTaylorHex", "ChainGerstnerJacobi", "ChainBillowPenrose", "ChainConvectionSierpinski", "ChainGyreSquareWave", "ChainTriangleStreet", "ChainWeierstrassWarp", "ChainInterferenceKoch", "ChainCurlAmmann", "ChainSquareChirikov",
     "NoirBlindsLight", "NoirSmokeBacklight", "NoirKaleidoscope", "NoirTunnel", "NoirSearchlights", "NoirSilverFlow",
+    "CyclicAutomatonSpirals",
 }
 
 def rule_recent(m, h):

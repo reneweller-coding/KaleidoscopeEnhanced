@@ -246,6 +246,16 @@ float camFlight( float gt )
 {
     return camHost > 0.5 ? camZ : gt;
 }
+/**  The ray direction of pixel p: the camera frame turned by the gaze (the host's, or one of seven).
+ *
+ * @param p     The pixel's centred coordinate. (in)
+ * @param cam   The gaze knob, 0..1 (without a host camera). (in)
+ * @param time  The scene's time. (in)
+ * @param cf    The camera frame. (in)
+ *
+ * @return
+ *   The ray direction (unit length).
+ **/
 vec3 gazeDir( vec2 p, float cam, float time, mat3 cf )
 {
     float k0, k1, f;
@@ -349,10 +359,20 @@ vec3 calmGlow( vec3 own, float dh )
     vec3 g = hsv2rgb( vec3( fract( chainHue0() + dh ), 0.5 + 0.2 * clamp( audioSwell, 0.0, 1.0 ), 1.0 ) );
     return mix( g, o, 0.5 + 0.4 * smoothstep( 0.06, 0.3, s ) );
 }
+/**  How much of the colour field the surfaces take (none with chainPhotoOnly: the photos' own textures).
+ *
+ * @return
+ *   The colour field's share, 0..0.9.
+ **/
 float chainPal()
 {
     return ChainPhotoOnly ? 0.0 : 0.2 + 0.7 * clamp( paletteP, 0.0, 1.0 );
 }
+/**  A dark photo lifted: its mean brightness (the last mip) brought toward 0.32, at most 1.8 times.
+ *
+ * @return
+ *   The factor on the photo's colour, 1..1.8 (1 without chainPhotoOnly).
+ **/
 float photoGain()
 {
     return ChainPhotoOnly ? clamp( 0.32 / max( luma( imgLod( vec2( 0.5 ), 9.0 ) ), 0.04 ), 1.0, 1.8 ) : 1.0;

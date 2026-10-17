@@ -257,6 +257,14 @@ void EffectShader::cleanShaderPrograms()
         glDeleteProgram( m_bakeProg );
     if ( m_bakeTex )
         glDeleteTextures( 1, &m_bakeTex );
+    if ( m_stateTex[0] )
+        glDeleteTextures( 2, m_stateTex );
+    if ( m_stateFbo )
+        glDeleteFramebuffers( 1, &m_stateFbo );
+    m_stateTex[0] = m_stateTex[1] = 0;
+    m_stateFbo = 0;
+    m_usesState = -1;
+    m_stateReset = true;
 
     // Leave the object in the state it had before its first compile, so that
     // calling this twice is harmless and a later ensureCompiled() actually
@@ -378,6 +386,7 @@ void EffectShader::resetParameters()
     // A chain lab starts its walk afresh from the knobs just rolled.
     m_walk.pending = true;
     m_cam.pending = true;
+    m_stateReset = true; // a scene with a state of its own seeds it anew
 
     // Under KALEIDO_SEED, log what was drawn: the proof that the same scene
     // gets the same numbers in every configuration is a diff of these lines
@@ -526,6 +535,8 @@ void EffectShader::draw()
 {
     if ( usesBake() )
         stepBake( m_exprTime, m_lastAudioForBake );
+    if ( usesState() )
+        stepState();
     // texMandelbrot always reads unit 35 (RenderPipeline.cpp binds the
     // compute result there -- see ComputeFX::stepMandelbrot()'s comment for
     // why this bypasses the generic cfxMask() unit table); same one-line-
@@ -1463,10 +1474,13 @@ static const char *kWalkKnob[9] = { "chainAP", "chainBP", "chainCP", "chainDP", 
 /** The walk uniform of each stage (shown, target, fade). */
 static const char *kWalkUni[9] = { "walkA", "walkB", "walkC", "walkD", "walkS",
                                    "walkSpace", "walkCore", "walkBody", "walkO" };
-/** Where a lab's roll counts as poor (worldPoorness(), chainPoorness()) and where clearly good: the 3D lab's line
+/* Where a lab's roll counts as poor (worldPoorness(), chainPoorness()) and where clearly good: the 3D lab's line
  * set on 48 rolls looked at by eye (0.4: 16 of 19 poor ones caught, 4 of 16 good ones moved -- 0.5 caught 12), the
  * flat labs' line on the 2D probe (Tools/chain2d_probe.py). */
-static const float WorldLine = 0.4f, WorldClear = 0.3f, ChainLine = 0.5f, ChainClear = 0.35f;
+static const float WorldLine = 0.4f;   ///< A 3D lab world above this worldPoorness() is poor.
+static const float WorldClear = 0.3f;  ///< Below this a 3D lab world is clearly good (the repair stops there).
+static const float ChainLine = 0.5f;   ///< A flat lab chain above this chainPoorness() is poor.
+static const float ChainClear = 0.35f; ///< Below this a flat lab chain is clearly good.
 /** Short stage names for the log. */
 static const char *kWalkName[9] = { "A", "B", "C", "D", "look", "space", "core", "body", "order" };
 /**  Whether walk stage s is a structure stage (space, core, body) of the 3D labs.
@@ -3794,6 +3808,136 @@ bool EffectShader::usesMandelbrot()
     if ( m_usesMandelbrot < 0 )
         m_usesMandelbrot = ( m_shProgId != 0 && glGetUniformLocation( m_shProgId, "texMandelbrot" ) >= 0 ) ? 1 : 0;
     return m_usesMandelbrot == 1;
+}
+
+bool EffectShader::usesState()
+{
+    if ( !m_glReady || m_shProgId == 0 )
+        return false;
+    if ( m_usesState >= 0 && m_stateUsesProg == m_shProgId )
+        return m_usesState == 1;
+    m_stateUsesProg = m_shProgId;
+    m_stateTexUni = glGetUniformLocation( m_shProgId, "texState" );
+    m_statePassUni = glGetUniformLocation( m_shProgId, "statePass" );
+    m_stateFrameUni = glGetUniformLocation( m_shProgId, "stateFrame" );
+    m_stateResUni = glGetUniformLocation( m_shProgId, "stateRes" );
+    m_usesState = ( m_stateTexUni >= 0 && m_statePassUni >= 0 ) ? 1 : 0;
+    if ( m_usesState == 1 )
+    {
+        // "// @state W H RATE" in the fragment source: the field's size and its steps per second
+        int         w = 0, h = 0;
+        float       rate = 60.f;
+        std::string src = textFileRead( m_fragmentShaderFilename.c_str() );
+        size_t      at = src.find( "// @state " );
+        if ( at != std::string::npos )
+            sscanf( src.c_str() + at + 10, "%d %d %f", &w, &h, &rate );
+        w = w > 0 ? w : ( m_width > 1 ? m_width / 2 : 640 );
+        h = h > 0 ? h : ( m_height > 1 ? m_height / 2 : 360 );
+        if ( w != m_stateW || h != m_stateH )
+        {
+            if ( m_stateTex[0] )
+                glDeleteTextures( 2, m_stateTex );
+            m_stateTex[0] = m_stateTex[1] = 0;
+            m_stateReset = true;
+        }
+        m_stateW = w;
+        m_stateH = h;
+        m_stateRate = rate > 0.f ? rate : 60.f;
+    }
+    return m_usesState == 1;
+}
+
+void EffectShader::stepState()
+{
+    if ( !m_stateTex[0] )
+    {
+        glGenTextures( 2, m_stateTex );
+        for ( GLuint t : m_stateTex )
+        {
+            glBindTexture( GL_TEXTURE_2D, t );
+            glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+            glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+            glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
+            glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
+            glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA16F, m_stateW, m_stateH, 0, GL_RGBA, GL_FLOAT, nullptr );
+        }
+        glBindTexture( GL_TEXTURE_2D, 0 );
+        if ( !m_stateFbo )
+            glGenFramebuffers( 1, &m_stateFbo );
+        m_stateReset = true;
+    }
+    // How many steps this frame: the field runs on sceneTime (the export's frame clock in a video export), so its
+    // pace does not depend on the frame rate; a second draw at the same moment (stereo) steps nothing.
+    int steps = 0;
+    if ( m_stateReset )
+    {
+        m_stateReset = false;
+        m_stateFrame = 0.f;
+        m_stateAcc = 0.f;
+        m_stateLastT = m_lastSceneTime;
+        steps = 1; // the seed
+    }
+    else
+    {
+        float dt = m_lastSceneTime - m_stateLastT;
+        m_stateLastT = m_lastSceneTime;
+        if ( dt < 0.f || M_Frozen )
+            dt = 0.f;
+        if ( dt > 0.25f )
+            dt = 1.f / 60.f; // back from a pause: no catch-up
+        m_stateAcc += dt * m_stateRate;
+        steps = static_cast<int>( m_stateAcc );
+        m_stateAcc -= static_cast<float>( steps );
+        if ( steps > 8 )
+            steps = 8;
+    }
+    if ( steps > 0 )
+    {
+        GLint fbo = 0, vp[4];
+        glGetIntegerv( GL_FRAMEBUFFER_BINDING, &fbo );
+        glGetIntegerv( GL_VIEWPORT, vp );
+        const GLboolean blend = glIsEnabled( GL_BLEND ), depth = glIsEnabled( GL_DEPTH_TEST );
+        glDisable( GL_BLEND );
+        glDisable( GL_DEPTH_TEST );
+        glBindFramebuffer( GL_FRAMEBUFFER, m_stateFbo );
+        glViewport( 0, 0, m_stateW, m_stateH );
+        glUniform1i( m_statePassUni, 1 );
+        glUniform2f( m_texSizeRcpUni, static_cast<float>( m_stateW ), static_cast<float>( m_stateH ) );
+        if ( m_stateResUni >= 0 )
+            glUniform2f( m_stateResUni, static_cast<float>( m_stateW ), static_cast<float>( m_stateH ) );
+        glUniform1i( m_stateTexUni, StateUnit );
+        extern GLuint fullscreenVAO();
+        glBindVertexArray( fullscreenVAO() );
+        for ( int i = 0; i < steps; ++i )
+        {
+            glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_stateTex[1 - m_stateCur], 0 );
+            glActiveTexture( GL_TEXTURE0 + StateUnit );
+            glBindTexture( GL_TEXTURE_2D, m_stateTex[m_stateCur] );
+            glActiveTexture( GL_TEXTURE0 );
+            if ( m_stateFrameUni >= 0 )
+                glUniform1f( m_stateFrameUni, m_stateFrame );
+            glDrawArrays( GL_TRIANGLES, 0, 3 );
+            m_stateCur = 1 - m_stateCur;
+            m_stateFrame += 1.f;
+        }
+        glBindVertexArray( 0 );
+        glBindFramebuffer( GL_FRAMEBUFFER, static_cast<GLuint>( fbo ) );
+        glViewport( vp[0], vp[1], vp[2], vp[3] );
+        if ( blend )
+            glEnable( GL_BLEND );
+        if ( depth )
+            glEnable( GL_DEPTH_TEST );
+        glUniform2f( m_texSizeRcpUni, static_cast<float>( m_width ), static_cast<float>( m_height ) );
+    }
+    glUniform1i( m_statePassUni, 0 );
+    glUniform1i( m_stateTexUni, StateUnit );
+    if ( m_stateResUni >= 0 )
+        glUniform2f( m_stateResUni, static_cast<float>( m_stateW ), static_cast<float>( m_stateH ) );
+    if ( m_stateFrameUni >= 0 )
+        glUniform1f( m_stateFrameUni, m_stateFrame );
+    glActiveTexture( GL_TEXTURE0 + StateUnit );
+    glBindTexture( GL_TEXTURE_2D, m_stateTex[m_stateCur] );
+    glActiveTexture( GL_TEXTURE0 );
 }
 
 void EffectShader::ensureBakeProg()

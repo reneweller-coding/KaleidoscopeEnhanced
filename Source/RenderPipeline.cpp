@@ -138,6 +138,13 @@ static bool comparisonWaitsForPrograms()
     return wait;
 }
 
+/**  Whether this run is scripted (a fixed seed, a frozen clock, a scene or FX sweep, or frame steps): such a run must
+ * not depend on the clock or on what earlier sessions remembered, so it neither reads nor writes the scene history,
+ * the class memory or the photo memory.
+ *
+ * @return
+ *   True for a scripted run.
+ **/
 static bool scriptedRun()
 {
     static const bool Scripted = qEnvironmentVariableIsSet( "KALEIDO_SEED" )

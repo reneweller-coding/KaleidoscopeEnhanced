@@ -789,6 +789,13 @@ public:
      *   True if this effect's compiled fragment shader declares the "texBake" sampler. Cached after first query.
      **/
     bool usesBake();
+    /**  True if this effect's compiled fragment shader declares the "texState" sampler: a field of its own that it
+     * carries from frame to frame (see stepState()).
+     *
+     * @return
+     *   True if the shader declares and uses "texState". Cached per program.
+     **/
+    bool usesState();
     /**  True if this effect's compiled fragment shader declares the "texMandelbrot" sampler.
      *
      * @return
@@ -1020,6 +1027,36 @@ protected:
      *               specific bake shader reads. (in)
      **/
     void stepBake( float time, const AudioFeatures &audio );
+
+    // ---- per-scene state (see usesState()) ----
+    /**  Advances this scene's own field and binds it for the frame (17.10.2026).
+     *
+     * A scene that declares "uniform sampler2D texState" and "uniform int statePass" (and a "// @state W H RATE"
+     * line: field size, steps per second) is drawn into a ping-pong pair of RGBA16F textures with statePass = 1,
+     * reading its last state from texState, RATE times a second (steps accumulated over sceneTime, at most eight a
+     * frame, none while the clock stands); then the frame is drawn as usual with statePass = 0 and texState holding
+     * the newest state. The same program, uniforms and photos serve both passes, so the step sees the music the frame
+     * sees. stateFrame counts the steps since the activation (0: seed the field); stateRes is the field's size.
+     * Cellular automata, pattern-forming equations and a photo carried by a flow live here.
+     **/
+    void stepState();
+    int    m_usesState = -1;          ///< -1 not yet known, 0 no state, 1 the shader carries a state.
+    GLuint m_stateUsesProg = 0;       ///< Program m_usesState and the locations below belong to.
+    GLuint m_stateTex[2] = { 0, 0 };  ///< The ping-pong pair (RGBA16F, repeat, linear).
+    GLuint m_stateFbo = 0;            ///< Framebuffer the step draws into.
+    int    m_stateCur = 0;            ///< Which of the pair holds the newest state.
+    int    m_stateW = 0;              ///< Field width ("// @state W H RATE"; 0: half the render size).
+    int    m_stateH = 0;              ///< Field height.
+    float  m_stateRate = 60.f;        ///< Steps per second.
+    float  m_stateAcc = 0.f;          ///< Fraction of a step carried to the next frame.
+    float  m_stateLastT = 0.f;        ///< sceneTime of the last step decision.
+    float  m_stateFrame = 0.f;        ///< Steps since the activation.
+    bool   m_stateReset = true;       ///< Seed the field anew (activation, size change).
+    GLint  m_statePassUni = -1;       ///< Location of "statePass".
+    GLint  m_stateTexUni = -1;        ///< Location of "texState".
+    GLint  m_stateFrameUni = -1;      ///< Location of "stateFrame".
+    GLint  m_stateResUni = -1;        ///< Location of "stateRes".
+    static const int StateUnit = 37;  ///< Texture unit of texState.
 
     std::string m_vertexShaderFilename; ///< Path to the vertex shader source (always "..\\standard.vert" in practice).
     std::string m_fragmentShaderFilename; ///< Path to this effect's fragment shader source.

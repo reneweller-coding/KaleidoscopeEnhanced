@@ -7,6 +7,9 @@ Source format:
     //@params fooP barP       (per-activation knobs, 0..1; hueP is always added)
     //@audio audioSwell audioSpectrum[32] ...
     //@expr fooP = clamp(0.5 + 0.3*swell, 0.0, 1.0)   (optional, any number)
+    //@state W H RATE         (optional: a field of its own, W x H texels, RATE steps a second -- EffectShader::stepState;
+                               declares texState, statePass, stateFrame, stateRes; main() answers statePass == 1
+                               with the next state in fragColor)
     //@body
     ... GLSL (functions + main, main ends with finish(col);)
 Usage: gen.py Name [Name ...]
@@ -2031,6 +2034,11 @@ def assemble(name):
         out.append("uniform float %s;" % q)
     for n, f in exprs:
         out.append("// @expr %s = %s" % (n, f.strip()))
+    st = re.search(r"^//@state\s+(\d+)\s+(\d+)\s+([0-9.]+)\s*$", src, re.M)
+    if st:
+        out.append("// @state %s %s %s" % st.groups())
+        out += ["uniform sampler2D texState;", "uniform int statePass;", "uniform float stateFrame;",
+                "uniform vec2 stateRes;"]
     out.append(LIB)
     if re.search(r"vec2\s+chain\s*\(", body):
         out.append(CHAIN_LIB)
