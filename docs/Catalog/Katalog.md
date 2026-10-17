@@ -786,7 +786,7 @@ CEPHALOPOD CHROMATOPHORES: octopus skin, close. Thousands of chromatophores -- r
 
 `Scene2D/Chain3DKifsTetra.frag` · type=normal · mood=psychedelic,energetic · complexity=8
 
-CHAIN3DKIFSTETRA: a raymarched world built from a chain of continuous 3D space transforms -- a Sierpinski-tetrahedron fractal: tetrahedral mirror folds, a turning axis and a doubling scale, repeated six times. We fly slowly through it; the surfaces are textured with the photograph read through a 2D transform chain of its own (triplanar), lit and fogged. Every stage is continuous, so the structure morphs without jumps…
+CHAIN3DKIFSTETRA: a raymarched world built from a chain of continuous 3D space transforms -- a Sierpinski-tetrahedron fractal: tetrahedral mirror folds, a turning axis and a doubling scale, repeated three times, the photo laid over the whole structure (17.10.2026: four rounds and a texture per block were restless). We fly slowly through it; the surfaces are textured with the photograph read through a 2D transform cha…
 
 ![Chain3DKifsTetra ruhig (t=8)](img/Chain3DKifsTetra_A.jpg) ![Chain3DKifsTetra ruhig (t=16)](img/Chain3DKifsTetra_B.jpg) ![Chain3DKifsTetra audio-heiß (t=21)](img/Chain3DKifsTetra_C.jpg)
 
