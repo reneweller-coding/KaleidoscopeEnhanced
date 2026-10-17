@@ -322,6 +322,7 @@ RECENT_SCENES = {
     "LaplacianPyramidEqualizer", "KuwaharaFlowPainting", "PixelSortCascade", "PhotoFourierPhaseSwap", "HistogramFlowMatch", "SeamCarvingBreath", "TextureSynthesisGrowth", "PoissonGradientRemix", "SuperpixelMosaicFlow", "DistanceFieldEcho", "BilateralDreamGrid", "ColorTransferTide", "PhotoMeanShiftBlooms", "StructureTensorLens", "PhotoSpectralWarp", "DepthFromFocusLayers", "MorphologicalBreath", "PhotoWatershedFlood", "PatchShuffleKaleido", "ToneMappingTide",
     "SPHVortexDance", "ChargedDustCrystal", "ActiveBrownianClusters", "VortexLatticeParticles", "LiquidCrystalOfBubbles", "FlockingPhaseTransition", "GranularGasCooling", "MagneticDipoleSwarm", "ElectrohydroDropletRain", "ThomsonProblemShells", "BrownianTreeRain", "SwarmalatorRings", "CoulombExplosionBloom", "StokesianSedimentation",
     "EuclideanRhythmMandala", "PolyrhythmLissajousLattice", "ChromaVectorField", "KeySpiralArray", "TimbreSculpture", "HarmonicLatticeFlight", "CadenceGravity", "IntervalInterference", "SongFormRings", "OnsetCrystalSeeds", "TempoFieldWarp", "StereoFieldCurtains", "DissonanceRoughnessTerrain", "MelodyGeodesics",
+    "MurmurationOfLeaves", "CoralPolypField", "DiatomKaleidoField", "RadiolarianSwarm", "SeaAnemoneMeadow", "SporeCloudBloom", "PhytoplanktonSpirals", "NeuronForestFiring", "SilkMothScales", "SnowflakeFieldGrowth", "SolarGranulationField", "NebulaDustPillarsField", "CloudChamberField", "MagmaConvectionTop", "SilkSpinningLoom", "PollenStormMacro", "GlassMarbleCascade", "TidalFlatChannels",
 }
 
 def rule_recent(m, h):

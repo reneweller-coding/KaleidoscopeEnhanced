@@ -6239,3 +6239,37 @@ smoothly.
   - TimbreSculpture: 32 wave trains, one per band.
   - MelodyGeodesics: paths bent by the hills' slopes. The photo is traced back without blur, then given a short
     streak.
+
+## 17.10.2026 (37): less abstract, but filling the frame (ideas 183-200)
+
+Eighteen scenes of family L. These are nature pieces built as fields that fill the frame.
+- **Fields of the same thing:** each cell of a lattice draws one creature, and neighbours are checked so that
+  overlaps stay right.
+  - CoralPolypField: a hexagonal carpet from two interleaved lattices.
+  - SeaAnemoneMeadow: a point is bent back against the current, more toward the tip, before the tentacle sectors
+    are tested.
+  - DiatomKaleidoField: centric and pennate shells, with symmetry and mix crossfaded by the harmony.
+  - RadiolarianSwarm: Fibonacci-sphere pore lattices. The bar is where the nearest and second-nearest points are
+    close; three depth layers.
+  - SilkMothScales: overlapping rows with thin-film colour, 0.5 + 0.5 cos(2 pi (tilt x 1.6 + rgb)).
+  - PollenStormMacro: three layers with focus blur; only the middle layer is sharp.
+  - GlassMarbleCascade: hexagonal packing; each marble inverts and shrinks the photo behind it.
+- **Small state-pass agendas:**
+  - SporeCloudBloom: 16 puffs, released on drops or every 1.2 to 4 s. The motes sit on a fixed lattice where the
+    puff began and are measured back on screen. A first version tied the lattice to the swelling, and the motes
+    slid.
+  - CloudChamberField: 32 tracks from onsets, straight or curved by kind.
+  - NeuronForestFiring: an excitable medium that onsets strike. The glow spreads from the soma along the dendrites.
+  - MagmaConvectionTop: a clock integrating the bass, so the plates never jump.
+  - SilkSpinningLoom: the beat counter; the weave is crossfaded by section.
+- **SnowflakeFieldGrowth** is Gravner and Griffeath's model on a hexagonal lattice in offset coordinates. Diffusion
+  reflects off ice; freezing uses kappa; attachment uses beta for one or two neighbours, alpha and theta for three,
+  and always for four. Melting uses mu and gamma. Ice ages and sublimes, and new seeds appear in the vapour, so
+  the field keeps renewing. The render maps a cell to 1 / 0.866 of a row.
+- **Advection and noise:** PhytoplanktonSpirals (16 back-steps through drifting eddies), MurmurationOfLeaves
+  (tumbling discs inside a folding density), SolarGranulationField (Worley with wandering centres),
+  NebulaDustPillarsField (columns with rims facing the wind).
+- **TidalFlatChannels:** creeks are narrow valleys, smoothstep(0, 0.3, |2n - 1|) per octave. The tide floods the
+  main creeks first and the fine ones last. With sqrt valleys the flat stayed dry.
+
+With family L all 200 ideas of docs/proposals-2026-10-17-abstrakt-200.md are built.
