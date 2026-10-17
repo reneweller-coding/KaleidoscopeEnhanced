@@ -46,6 +46,7 @@ uniform float cascadeP; ///< Cascade knob, 0.5..2.
 uniform float fieldP;   ///< Field knob, 0.5..2.
 uniform float speedP;   ///< Speed knob, 0..1.
 uniform float hueP;     ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform vec2 resolution; ///< Size of the render target in pixels (point sprites scale with it).
 
 out vec4 vCol; ///< Colour (from the vertex stage).
 out vec2 vUV;  ///< Texture coordinate 0..1 over the screen (from the vertex stage).
@@ -65,9 +66,14 @@ vec3 hueRot( vec3 c, float a )
     return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 
+float PointScale = 1.0; ///< The render height over 1080 (set first thing in main()).
+
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
+    // Sized for 1080p and scaled to the render size (17.10.2026): in pixels alone, the sprites covered 2.25 times
+    // the picture at 720p -- where the adaptive resolution goes when the GPU is busy -- and ran into a flat sheet.
+    PointScale = resolution.y > 0.0 ? resolution.y / 1080.0 : 1.0;
     float pi = attrA.x; // particle index 0..59999
     vec4  seeds = attrB;
 
@@ -116,8 +122,8 @@ void main()
     // Point size attenuation — hi-hats/cymbals spark a scattered SUBSET of the
     // tracks into brief bright grains (bounded, so the frame cannot flood).
     float hat_spark = min( audioHat, 1.0 ) * step( 0.62, seeds.z ) * ( 1.0 - cycle );
-    gl_PointSize = ( 7.0 + 12.0 * audioKick * ( 1.0 - cycle ) + 4.5 * hat_spark )
-                   * ( 1.0 / max( gl_Position.w * 0.1, 0.5 ) );
+    gl_PointSize = ( ( 7.0 + 12.0 * audioKick * ( 1.0 - cycle ) + 4.5 * hat_spark )
+                   * ( 1.0 / max( gl_Position.w * 0.1, 0.5 ) ) ) * PointScale;
 
     vUV = vec2( seeds.x, seeds.y );
 

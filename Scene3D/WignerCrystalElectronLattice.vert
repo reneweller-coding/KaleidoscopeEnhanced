@@ -36,6 +36,7 @@ uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0
 
 uniform float crystalScaleP; ///< Crystal scale knob, 0.06..0.22.
 uniform float jitterP;       ///< Jitter knob, 0.005..0.04.
+uniform vec2 resolution; ///< Size of the render target in pixels (point sprites scale with it).
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *
@@ -65,9 +66,14 @@ vec3 imgPalette( float t )
     return mix( vec3( g ), col, 0.55 + 0.45 * audioValence );
 }
 
+float PointScale = 1.0; ///< The render height over 1080 (set first thing in main()).
+
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
+    // Sized for 1080p and scaled to the render size (17.10.2026): in pixels alone, the sprites covered 2.25 times
+    // the picture at 720p -- where the adaptive resolution goes when the GPU is busy -- and ran into a flat sheet.
+    PointScale = resolution.y > 0.0 ? resolution.y / 1080.0 : 1.0;
     float t = time * 0.4 + audioAdvance * 0.35;
 
     // Triangular 2D/3D electron lattice arrangement
@@ -97,8 +103,8 @@ void main()
     vCol = imgPalette( fract( vPhononAmp * 0.4 + seed.x * 0.2 + audioCentroid ) );
 
     // Controlled Point Size (Rule V8c: Cap 10-16 px for 60k points)
-    gl_PointSize = clamp( 18.6 + audioKick * 1.0, 4.0, 27.0 ); // sprite sweep 2026-08-22: measured luma 0.049, area
-                                                               // x2.9
+    // sprite sweep 2026-08-22: measured luma 0.049, area x2.9
+    gl_PointSize = ( clamp( 18.6 + audioKick * 1.0, 4.0, 27.0 ) ) * PointScale;
 
     // Camera Transform (V3). Tilt FIRST, about the lattice centre -- the
     // old tilt-after-dolly shifted the structure down by 4.8*sin(0.55)

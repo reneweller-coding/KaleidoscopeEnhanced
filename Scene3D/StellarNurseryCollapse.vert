@@ -24,15 +24,21 @@ uniform float audioBass;    ///< Bass band level, 0..1.
 uniform float audioMid;     ///< Mid band level, 0..1.
 uniform float audioHigh;    ///< High band level, 0..1.
 uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
+uniform vec2 resolution; ///< Size of the render target in pixels (point sprites scale with it).
 
 out vec3  vPos;    ///< Position (from the vertex stage).
 out float vTemp;   ///< Temp (from the vertex stage).
 out float vSeed;   ///< Per-instance random seed (from the vertex stage).
 out float vRadius; ///< Radius (from the vertex stage).
 
+float PointScale = 1.0; ///< The render height over 1080 (set first thing in main()).
+
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
+    // Sized for 1080p and scaled to the render size (17.10.2026): in pixels alone, the sprites covered 2.25 times
+    // the picture at 720p -- where the adaptive resolution goes when the GPU is busy -- and ran into a flat sheet.
+    PointScale = resolution.y > 0.0 ? resolution.y / 1080.0 : 1.0;
     float id = attrA.w;
     vec4  seed = attrB;
 
@@ -105,5 +111,5 @@ void main()
 
     // Dynamic point size (larger near core and during beat hits)
     float p_size = ( 1.5 + temp * 4.0 + 3.0 * audioKick * step( 0.8, temp ) ) * ( 1.0 + 0.5 * audioSwell );
-    gl_PointSize = clamp( p_size * ( 6.5 / rotated_vp.z ), 1.0, 48.0 );
+    gl_PointSize = ( clamp( p_size * ( 6.5 / rotated_vp.z ), 1.0, 48.0 ) ) * PointScale;
 }

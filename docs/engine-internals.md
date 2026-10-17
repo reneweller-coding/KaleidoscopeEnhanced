@@ -5422,3 +5422,8 @@ rotation phase what a long show gathers).
   render stages' values. Tested: 20 scenes, two seeds, normally and with the clocks eight days ahead
   (`KALEIDO_TIME_START=691200`, `KALEIDO_ADVANCE_START=50000`): 18 identical to the last digit, two apart by a
   photo change (which follows the program clock). The doc comment of `time` in 1594 files says so now.
+- **Point sprites scale with the render size.** 13 point-sprite scenes sized their sprites in pixels alone,
+  tuned at 1080p; at 720p -- where the adaptive resolution goes when the GPU is busy, and where the inspection
+  renders -- they covered 2.25 times the picture and ran into a flat grey sheet (SpinGlassFrustrationLattice,
+  RydbergAtomQuantumSimulatorArray, WignerCrystalElectronLattice: structure 0.46 .. 0.55 of flat grey). They now
+  multiply by the render height over 1080, as 32 others already did (those were left alone).

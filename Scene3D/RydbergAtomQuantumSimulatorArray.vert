@@ -46,6 +46,7 @@ uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0
 uniform float arrayPitchP;  ///< Array pitch knob, 0.015..0.04.
 uniform float pointSizeP;   ///< Point size knob, 8..16.
 uniform float blockadeRadP; ///< Blockade rad knob, 0.2..0.8.
+uniform vec2 resolution; ///< Size of the render target in pixels (point sprites scale with it).
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *
@@ -75,9 +76,14 @@ vec3 imgPalette( float t )
     return mix( vec3( g ), col, 0.55 + 0.45 * audioValence );
 }
 
+float PointScale = 1.0; ///< The render height over 1080 (set first thing in main()).
+
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
+    // Sized for 1080p and scaled to the render size (17.10.2026): in pixels alone, the sprites covered 2.25 times
+    // the picture at 720p -- where the adaptive resolution goes when the GPU is busy -- and ran into a flat sheet.
+    PointScale = resolution.y > 0.0 ? resolution.y / 1080.0 : 1.0;
     float p_id = attrA.w;
     vec4  seeds = attrB;
 
@@ -95,7 +101,7 @@ void main()
         vCol = vec3( 0.0 );
         vBlockade = 0.0;
         vPointSize = 1.0;
-        gl_PointSize = 1.0;
+        gl_PointSize = ( 1.0 ) * PointScale;
         gl_Position = vec4( 0.0, 0.0, -3.0, 1.0 );
         return;
     }
@@ -136,7 +142,7 @@ void main()
     // 8-16px triples the lit area per atom; the per-point cap and knee in the
     // frag keep additive stacking from burning.
     float ps_max = ( pointSizeP > 0.01 ? pointSizeP : 26.0 );
-    gl_PointSize = clamp( ps_max * ( 0.8 + 0.4 * is_rydberg_excited ), 18.0, 34.0 );
+    gl_PointSize = ( clamp( ps_max * ( 0.8 + 0.4 * is_rydberg_excited ), 18.0, 34.0 ) ) * PointScale;
     vPointSize = gl_PointSize;
 
     // Same raw-centroid hue-flicker trap as SuperconductingVortex: the

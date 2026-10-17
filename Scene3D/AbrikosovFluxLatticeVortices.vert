@@ -38,13 +38,19 @@ uniform float fluxP;   ///< Flux knob, 0.5..2.
 uniform float kelvinP; ///< Kelvin knob, 0.5..2.
 uniform float speedP;  ///< Speed knob, 0..1.
 uniform float hueP;    ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform vec2 resolution; ///< Size of the render target in pixels (point sprites scale with it).
 
 out vec3  vWorldPos;    ///< World position (from the vertex stage).
 out float vVortexPhase; ///< Vortex phase (from the vertex stage).
 
+float PointScale = 1.0; ///< The render height over 1080 (set first thing in main()).
+
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
+    // Sized for 1080p and scaled to the render size (17.10.2026): in pixels alone, the sprites covered 2.25 times
+    // the picture at 720p -- where the adaptive resolution goes when the GPU is busy -- and ran into a flat sheet.
+    PointScale = resolution.y > 0.0 ? resolution.y / 1080.0 : 1.0;
     float flx = ( fluxP > 0.0 ) ? fluxP : 1.0;
     float klv = ( kelvinP > 0.0 ) ? kelvinP : 1.0;
     float spd = ( speedP > 0.0 ) ? speedP : 1.0;
@@ -84,9 +90,7 @@ void main()
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
 
     // Point sprite size
-    gl_PointSize = clamp( ( 39.6 / max( gl_Position.w, 0.4 ) ) * ( 1.0 + audioKick * 1.2 ), 2.0, 64.0 ); // sprite sweep
-                                                                                                         // 2026-08-22:
-                                                                                                         // measured
-                                                                                                         // luma 0.016,
-                                                                                                         // area x4.8
+    // sprite sweep 2026-08-22: measured luma 0.016, area x4.8
+    gl_PointSize = PointScale
+                   * ( clamp( ( 39.6 / max( gl_Position.w, 0.4 ) ) * ( 1.0 + audioKick * 1.2 ), 2.0, 64.0 ) );
 }

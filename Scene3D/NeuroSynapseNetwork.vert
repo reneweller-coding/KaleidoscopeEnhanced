@@ -41,6 +41,7 @@ uniform sampler2D tex1;           ///< The next photo (cross-faded in by interpo
 uniform float     interpolation;  ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 uniform float     audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float     audioValence;   ///< Mood valence: 0 dark .. 1 bright.
+uniform vec2 resolution; ///< Size of the render target in pixels (point sprites scale with it).
 
 out vec4  vCol;  ///< Colour (from the vertex stage).
 out float vLife; ///< Life (from the vertex stage).
@@ -91,9 +92,14 @@ vec3 hueRot( vec3 c, float a )
     return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 
+float PointScale = 1.0; ///< The render height over 1080 (set first thing in main()).
+
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
+    // Sized for 1080p and scaled to the render size (17.10.2026): in pixels alone, the sprites covered 2.25 times
+    // the picture at 720p -- where the adaptive resolution goes when the GPU is busy -- and ran into a flat sheet.
+    PointScale = resolution.y > 0.0 ? resolution.y / 1080.0 : 1.0;
     float idx = attrA.w;
     vec4  seeds = attrB;
 
@@ -151,7 +157,7 @@ void main()
     // additive network integrates sprite AREA, the old 64 px cap was the
     // real reason the palette washed to white.
     float p_size = ( 2.0 + action_potential * 9.0 + audioHigh * 2.0 ) * ( 25.0 / max( view_p.z, 1.0 ) ); // sprite sweep
-    gl_PointSize = clamp( p_size, 1.0, 26.0 );
+    gl_PointSize = ( clamp( p_size, 1.0, 26.0 ) ) * PointScale;
 
     // Synaptic colour from the photo arc (house standard); action potentials
     // still flash the classic gold so spikes read as events.

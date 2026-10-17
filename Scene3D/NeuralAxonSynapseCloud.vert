@@ -51,9 +51,14 @@ uniform float hueP;    ///< Hue knob (radians), usually the music's chroma hue p
 out vec4  vColor; ///< Color (from the vertex stage).
 out float vSize;  ///< Size (from the vertex stage).
 
+float PointScale = 1.0; ///< The render height over 1080 (set first thing in main()).
+
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
+    // Sized for 1080p and scaled to the render size (17.10.2026): in pixels alone, the sprites covered 2.25 times
+    // the picture at 720p -- where the adaptive resolution goes when the GPU is busy -- and ran into a flat sheet.
+    PointScale = resolution.y > 0.0 ? resolution.y / 1080.0 : 1.0;
     float neu = ( neuralP > 0.0 ) ? neuralP : 1.0;
     float pls = ( pulseP > 0.0 ) ? pulseP : 1.0;
     float spd = ( speedP > 0.0 ) ? speedP : 1.0;
@@ -99,9 +104,8 @@ void main()
         // A speck must stay legible at any distance -- below about 2.5 px an
         // additive sprite averages away to nothing and the far field reads
         // black again.
-        gl_PointSize = clamp( 133.3 * ( 0.5 + 1.0 * hz ) / max( hv.z, 1.0 ), 2.6, 27.4 ); // sprite sweep 2026-08-22:
-                                                                                          // measured luma 0.048, area
-                                                                                          // x2.9
+        // sprite sweep 2026-08-22: measured luma 0.048, area x2.9
+        gl_PointSize = ( clamp( 133.3 * ( 0.5 + 1.0 * hz ) / max( hv.z, 1.0 ), 2.6, 27.4 ) ) * PointScale;
         vSize = gl_PointSize;
         return;
     }
@@ -177,6 +181,6 @@ void main()
     // Perspective point size — small on purpose: sprite AREA is what the
     // additive sum integrates, so radius is the real exposure control here.
     float base_size = ( 5.5 + 7.0 * is_synapse + 8.0 * cognitive_surge );
-    gl_PointSize = clamp( base_size * ( 6.5 / max( vp.z, 1.0 ) ), 2.2, 22.0 );
+    gl_PointSize = ( clamp( base_size * ( 6.5 / max( vp.z, 1.0 ) ), 2.2, 22.0 ) ) * PointScale;
     vSize = gl_PointSize;
 }

@@ -38,6 +38,7 @@ uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0
 uniform float kagomePitchP; ///< Kagome pitch knob, 0.015..0.031.
 uniform float pointSizeP;   ///< Point size knob, 12..16.
 uniform float pointGainP;   ///< Point gain knob, 0.8..1.8.
+uniform vec2 resolution; ///< Size of the render target in pixels (point sprites scale with it).
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *
@@ -67,9 +68,14 @@ vec3 imgPalette( float t )
     return mix( vec3( g ), col, 0.55 + 0.45 * audioValence );
 }
 
+float PointScale = 1.0; ///< The render height over 1080 (set first thing in main()).
+
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
+    // Sized for 1080p and scaled to the render size (17.10.2026): in pixels alone, the sprites covered 2.25 times
+    // the picture at 720p -- where the adaptive resolution goes when the GPU is busy -- and ran into a flat sheet.
+    PointScale = resolution.y > 0.0 ? resolution.y / 1080.0 : 1.0;
     float p_index = attrA.w;
     vec4  seeds = attrB;
 
@@ -122,6 +128,6 @@ void main()
     {
         gl_Position = vec4( 0.0, 0.0, -3.0, 1.0 );
     }
-    gl_PointSize = clamp( base_size * ( 3.2 / max( gl_Position.w * 0.25, 0.5 ) ), 5.0, 40.0 );
+    gl_PointSize = ( clamp( base_size * ( 3.2 / max( gl_Position.w * 0.25, 0.5 ) ), 5.0, 40.0 ) ) * PointScale;
     vPointSize = gl_PointSize;
 }

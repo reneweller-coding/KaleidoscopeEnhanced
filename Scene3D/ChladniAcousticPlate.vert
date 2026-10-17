@@ -34,6 +34,7 @@ uniform float audioHigh;       ///< High band level, 0..1.
 uniform float audioSwell;      ///< Slow loudness envelope, 0..1 (seconds).
 uniform float audioZCR;        ///< signal noisiness -> grain scatter
 uniform float audioHarmChange; ///< spikes on chord / key changes
+uniform vec2 resolution; ///< Size of the render target in pixels (point sprites scale with it).
 
 out vec3  vPos;         ///< Position (from the vertex stage).
 out float vNodalDist;   ///< Nodal dist (from the vertex stage).
@@ -54,9 +55,14 @@ float hash11( float p )
     return fract( p );
 }
 
+float PointScale = 1.0; ///< The render height over 1080 (set first thing in main()).
+
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
+    // Sized for 1080p and scaled to the render size (17.10.2026): in pixels alone, the sprites covered 2.25 times
+    // the picture at 720p -- where the adaptive resolution goes when the GPU is busy -- and ran into a flat sheet.
+    PointScale = resolution.y > 0.0 ? resolution.y / 1080.0 : 1.0;
     float id = float( gl_VertexID );
     float seed_x = hash11( id );
     float seed_y = hash11( id + 5000.0 );
@@ -121,5 +127,6 @@ void main()
     gl_Position = projM * vec4( rotated_vp.x, rotated_vp.y, -rotated_vp.z, 1.0 );
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
 
-    gl_PointSize = clamp( ( 5.0 + 5.5 * vPlateEnergy ) * ( 9.5 / rotated_vp.z ), 2.0, 34.0 ); // sprite sweep
+    // sprite sweep
+    gl_PointSize = ( clamp( ( 5.0 + 5.5 * vPlateEnergy ) * ( 9.5 / rotated_vp.z ), 2.0, 34.0 ) ) * PointScale;
 }

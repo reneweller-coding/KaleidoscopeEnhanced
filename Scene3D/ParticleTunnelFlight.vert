@@ -47,6 +47,7 @@ uniform sampler2D tex1;           ///< The next photo (cross-faded in by interpo
 uniform float     interpolation;  ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 uniform float     audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float     audioValence;   ///< Mood valence: 0 dark .. 1 bright.
+uniform vec2 resolution; ///< Size of the render target in pixels (point sprites scale with it).
 
 out vec4  vCol;  ///< Colour (from the vertex stage).
 out float vLife; ///< Life (from the vertex stage).
@@ -98,9 +99,14 @@ vec3 hueRot( vec3 c, float a )
     return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 
+float PointScale = 1.0; ///< The render height over 1080 (set first thing in main()).
+
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
+    // Sized for 1080p and scaled to the render size (17.10.2026): in pixels alone, the sprites covered 2.25 times
+    // the picture at 720p -- where the adaptive resolution goes when the GPU is busy -- and ran into a flat sheet.
+    PointScale = resolution.y > 0.0 ? resolution.y / 1080.0 : 1.0;
     float idx = attrA.w;
     vec4  seeds = attrB;
 
@@ -161,7 +167,7 @@ void main()
     // Point sprite size by depth and shock -- capped low (V8c): 60,000
     // additive sprites integrate area, not just gain.
     float p_size = ( 2.5 + shock * 5.0 + audioHigh * 1.5 ) * ( 26.0 / max( vp.z, 1.0 ) ); // sprite sweep
-    gl_PointSize = clamp( p_size, 1.0, 30.0 );
+    gl_PointSize = ( clamp( p_size, 1.0, 30.0 ) ) * PointScale;
 
     vec3 base_col = imgPalette( 0.5 + 0.5 * sin( ang * sides_v * 0.5 + rel_z * 0.1 ) ) * 2.0;
     base_col = mix( base_col, vec3( 1.0, 0.92, 0.55 ), clamp( shock * 1.5, 0.0, 1.0 ) );
