@@ -24,7 +24,10 @@ meshOrientCenter, meshOriented), and removes the threads of a model whose share 
 (removeThreads, the same two rules).  A model not listed is left as it is.
 
 Columns: model, r00 r01 r02 r10 r11 r12 r20 r21 r22 (the rotation, rows), ex ey ez (half-extents after it),
-cx cy cz (centre after it), threads (share of the surface in generator threads, %).
+cx cy cz (centre after it), threads (share of the surface in generator threads, %), ox oy oz and ocx ocy ocz
+(the half-extents and centre without the threads in the model's own frame).  The models of the ship scenes are listed
+with their frame; every other mesh model with 1 % threads or more with the identity, for the thread removal and its
+true size.
 """
 import io
 import json
@@ -241,7 +244,7 @@ def thread_mask(T):
     return isolated_columns(T, S) | sliver_chains(T, S)
 
 
-def measure(path):
+def measure(path, orient=True):
     """Rotation into the craft frame (nose +Z, up +Y), half-extents and centre in it, and the share of the surface
     in generator threads (%)."""
     T = load_triangles(path)
@@ -261,9 +264,9 @@ def measure(path):
     d = vec[:, 1]  # (x, z) of the main axis
     theta = np.arctan2(d[0], d[1])  # angle of the main axis from +Z toward +X
     name = os.path.basename(path)
-    fixed = name in NOSE and NOSE[name][1] is not None
+    fixed = (name in NOSE and NOSE[name][1] is not None) or not orient
     if fixed:
-        theta = np.radians(NOSE[name][1])
+        theta = np.radians(NOSE[name][1]) if orient else 0.0
 
     def rot_y(a):
         c, s = np.cos(a), np.sin(a)
@@ -298,11 +301,11 @@ def measure(path):
             z = Q[:, 2]
             lo, hi = np.percentile(z, 8), np.percentile(z, 92)
     sign = 1.0 if (fixed or spread(z > hi) <= spread(z < lo)) else -1.0
-    if name in NOSE:
+    if name in NOSE and orient:
         sign *= NOSE[name][0]
     if sign < 0:
         R = rot_y(np.pi) @ R
-    if name in POSE:
+    if name in POSE and orient:
         R = np.array(POSE[name]) @ R
     Q = (C - mu) @ R.T
     plo = np.array([wpct(Q[:, k], 0.5) for k in range(3)])
@@ -328,7 +331,14 @@ def measure(path):
         plo[1], phi[1] = max(plo[1], edges[bot]), min(phi[1], edges[top + 1])
     ext = 0.5 * (phi - plo)
     cen = R @ mu + 0.5 * (phi + plo)  # the centre in the rotated frame
-    return R, ext, cen, share, float(np.degrees(theta))
+    # The same box in the model's own frame (the loader's meshExtent / meshCenter for a model with threads): its y is
+    # the hull's height where the rotation keeps y (a turn about it), else the plain range.
+    Co = C
+    olo = np.array([wpct(Co[:, k], 0.5) for k in range(3)])
+    ohi = np.array([wpct(Co[:, k], 99.5) for k in range(3)])
+    if share >= 1.0 and abs(R[1, 1] - 1.0) < 1e-6:
+        olo[1], ohi[1] = plo[1] + (R @ mu)[1], phi[1] + (R @ mu)[1]
+    return R, ext, cen, share, float(np.degrees(theta)), 0.5 * (ohi - olo), 0.5 * (ohi + olo)
 
 
 def ship_models():
@@ -343,6 +353,18 @@ def ship_models():
         if mm:
             out.append(mm.group(1).split("\\")[-1])
     return sorted(set(out))
+
+
+def mesh_models():
+    """Every model a geom="mesh" scene loads (model= and model2=)."""
+    s = io.open(os.path.join(ROOT, "Presets", "Komplett.xml"), encoding="utf-8").read()
+    out = set()
+    for m in re.finditer(r'<TextureShader[^>]*geom="mesh"[^>]*>', s):
+        for key in ("model", "model2"):
+            mm = re.search(r"\b" + key + r'="([^"]+)"', m.group(0))
+            if mm:
+                out.add(mm.group(1).replace("/", "\\").split("\\")[-1])
+    return sorted(out)
 
 
 def views(rows, out):
@@ -377,17 +399,25 @@ def views(rows, out):
 
 def main():
     rows = []
-    lines = ["# model\tr00\tr01\tr02\tr10\tr11\tr12\tr20\tr21\tr22\tex\tey\tez\tcx\tcy\tcz\tthreads"]
-    for name in ship_models():
+    lines = ["# model\tr00\tr01\tr02\tr10\tr11\tr12\tr20\tr21\tr22\tex\tey\tez\tcx\tcy\tcz\tthreads"
+             "\tox\toy\toz\tocx\tocy\tocz"]
+    ships = ship_models()
+    others = [m for m in mesh_models() if m not in ships]
+    for name in ships + others:
         path = os.path.join(ROOT, "Models", name)
         if not os.path.exists(path):
             print("?? missing", name)
             continue
-        R, ext, cen, nd, th = measure(path)
+        ship = name in ships
+        R, ext, cen, nd, th, oext, ocen = measure(path, orient=ship)
+        if not ship and nd < 1.0:
+            continue  # a model of another family is listed only for its threads
         rows.append((name, R, ext, cen, nd, th))
         lines.append("\t".join([name] + ["%.6f" % x for x in R.ravel()] + ["%.5f" % x for x in ext]
-                               + ["%.5f" % x for x in cen] + ["%.2f" % nd]))
-        print("%-36s yaw %6.1f  ext %.2f %.2f %.2f  threads %5.2f %%" % (name, th, *ext, nd))
+                               + ["%.5f" % x for x in cen] + ["%.2f" % nd] + ["%.5f" % x for x in oext]
+                               + ["%.5f" % x for x in ocen]))
+        print("%-36s %s yaw %6.1f  ext %.2f %.2f %.2f  threads %5.2f %%" % (name, "ship " if ship else "other", th,
+                                                                           *ext, nd))
     io.open(os.path.join(ROOT, "Engine", "model_orient.tsv"), "w", encoding="utf-8", newline="\n").write(
         "\n".join(lines) + "\n")
     if "--views" in sys.argv:

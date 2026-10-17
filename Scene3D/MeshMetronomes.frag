@@ -123,7 +123,9 @@ float materialExposure( sampler2DArray tex )
 vec3 renderSky( vec3 dir )
 {
     float swell = clamp( audioSwell, 0.0, 1.0 );
-    float lamp = 0.45 + 0.6 * swell;
+    // The lamp at 0.75 .. 1.25 with the swell (18.10.2026): from 0.45 the object stood dim on a dark floor in quiet
+    // music.
+    float lamp = 0.75 + 0.5 * swell;
     vec3  col;
     if ( dir.y < -0.004 )
     {
@@ -158,7 +160,9 @@ void main()
     float hue = ( hueP > 0.01 ? hueP : 0.0 );
     float swell = clamp( audioSwell, 0.0, 1.0 );
     float kick = clamp( audioKick, 0.0, 1.0 );
-    float lamp = 0.45 + 0.6 * swell;
+    // The lamp at 0.75 .. 1.25 with the swell (18.10.2026): from 0.45 the object stood dim on a dark floor in quiet
+    // music.
+    float lamp = 0.75 + 0.5 * swell;
     int   i = int( vInst + 0.5 );
     float band = clamp( audioSpectrum[( i * 2 + 3 ) % 32] * 1.5, 0.0, 1.0 );
     bool  arm = vArm > 0.5;

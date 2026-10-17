@@ -169,7 +169,9 @@ vec3 renderSky( vec3 dir )
 {
     float swell = clamp( audioSwell, 0.0, 1.0 );
     float kick = clamp( audioKick, 0.0, 1.0 );
-    float lamp = 0.45 + 0.6 * swell + 0.3 * kick;
+    // The lamp at 0.75 .. 1.25 with the swell (18.10.2026): from 0.45 the object stood dim on a dark floor in quiet
+    // music.
+    float lamp = 0.75 + 0.5 * swell + 0.15 * kick;
     float az = atan( dir.x, dir.z );
     vec3  col;
     if ( dir.y < -0.004 )
@@ -211,7 +213,9 @@ void main()
     float swell = clamp( audioSwell, 0.0, 1.0 );
     float kick = clamp( audioKick, 0.0, 1.0 );
     float high = clamp( audioHigh, 0.0, 1.0 );
-    float lamp = 0.45 + 0.6 * swell + 0.3 * kick;
+    // The lamp at 0.75 .. 1.25 with the swell (18.10.2026): from 0.45 the object stood dim on a dark floor in quiet
+    // music.
+    float lamp = 0.75 + 0.5 * swell + 0.15 * kick;
 
     vec4 base = texture( texMeshMaterial, vec3( vUV, 0.0 ) );
     if ( base.a < 0.1 )

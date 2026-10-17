@@ -132,7 +132,9 @@ float seamW( float a )
 vec3 renderSky( vec3 dir )
 {
     float swell = clamp( audioSwell, 0.0, 1.0 );
-    float lamp = 0.45 + 0.6 * swell;
+    // The lamp at 0.75 .. 1.25 with the swell (18.10.2026): from 0.45 the object stood dim on a dark floor in quiet
+    // music.
+    float lamp = 0.75 + 0.5 * swell;
     vec3  col;
     if ( dir.y < -0.004 )
     {
@@ -172,7 +174,9 @@ void main()
     float hue = ( hueP > 0.01 ? hueP : 0.0 );
     float swell = clamp( audioSwell, 0.0, 1.0 );
     float kick = clamp( audioKick, 0.0, 1.0 );
-    float lamp = 0.45 + 0.6 * swell;
+    // The lamp at 0.75 .. 1.25 with the swell (18.10.2026): from 0.45 the object stood dim on a dark floor in quiet
+    // music.
+    float lamp = 0.75 + 0.5 * swell;
     bool  drum = vDrum > 0.5;
 
     vec4  base;
@@ -212,7 +216,8 @@ void main()
         float luma = dot( base.rgb, vec3( 0.299, 0.587, 0.114 ) );
         float mx = max( base.r, max( base.g, base.b ) );
         float mn = min( base.r, min( base.g, base.b ) );
-        float paper = smoothstep( 0.45, 0.7, luma ) * ( 1.0 - smoothstep( 0.15, 0.35, ( mx - mn ) / max( mx, 1e-3 ) ) );
+        float paper = smoothstep( 0.30, 0.55, luma )
+                      * ( 1.0 - smoothstep( 0.15, 0.35, ( mx - mn ) / max( mx, 1e-3 ) ) );
         // Where on the cylinder: the angle round the axle, and the position along it.
         float phi = atan( vLocal.y, vLocal.z );
         // This point passed under the pen when the drum had turned by (PenAngle - phi).
@@ -226,7 +231,8 @@ void main()
         float x_pen = -0.70 + 1.40 * slow;
         float wiggle = ( e - 0.12 ) * 0.35 * sin( since * 9.0 + phi * 3.0 )
                        + ( fine - 0.1 ) * 0.12 * sin( since * 31.0 );
-        float ink = 1.0 - smoothstep( 0.010, 0.022, abs( vLocal.x - ( x_pen + wiggle ) ) );
+        // The line a little wider (18.10.2026): at 0.010 .. 0.022 of the drum's length it was one pixel at 720p.
+        float ink = 1.0 - smoothstep( 0.016, 0.034, abs( vLocal.x - ( x_pen + wiggle ) ) );
         ink *= paper * smoothstep( 0.0, 0.06, age01 );
         // Older revolutions: the faint helix of earlier traces.
         float older = 0.0;

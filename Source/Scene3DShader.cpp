@@ -59,6 +59,8 @@ struct ModelOrient
     float ext[3];  ///< Half-extents in the craft frame.
     float cen[3];  ///< Centre in the craft frame.
     float threads; ///< Share of the surface in generator threads, % (removeThreads() from 1 % on).
+    float oext[3]; ///< Half-extents without the threads in the model's own frame (meshExtent for a model with threads).
+    float ocen[3]; ///< Centre without the threads in the model's own frame (meshCenter for a model with threads).
 };
 
 /**  Looks a model up in Engine/model_orient.tsv (read once, on first use).
@@ -91,6 +93,10 @@ static const ModelOrient *findModelOrient( const std::string &modelPath )
             for ( float &x : o.cen )
                 ss >> x;
             ss >> o.threads;
+            for ( float &x : o.oext )
+                ss >> x;
+            for ( float &x : o.ocen )
+                ss >> x;
             if ( ss )
                 table[name] = o;
         }
@@ -880,6 +886,14 @@ void Scene3DShader::buildGeometry()
                     m_meshExtent[c] = 1e-4f;
             }
         }
+        // A model with generator threads: its box without them -- what the rules miss of a dense curtain set the box,
+        // and every scene sized the model by it, too small (18.10.2026).
+        if ( const ModelOrient *o = findModelOrient( m_modelPath ); o && o->threads >= 1.f )
+            for ( int c = 0; c < 3; ++c )
+            {
+                m_meshExtent[c] = std::max( o->oext[c], 1e-4f );
+                m_meshCenter[c] = o->ocen[c];
+            }
         setOrient( m_modelPath, m_meshExtent, m_meshCenter, m_orient, m_orientExt, m_orientCen, m_oriented );
 
         if ( !m_modelPath2.empty() )
@@ -920,6 +934,13 @@ void Scene3DShader::buildGeometry()
                     m_meshExtent2[c] = 1e-4f;
             }
         }
+        if ( const ModelOrient *o = m_modelPath2.empty() ? nullptr : findModelOrient( m_modelPath2 );
+             o && o->threads >= 1.f )
+            for ( int c = 0; c < 3; ++c )
+            {
+                m_meshExtent2[c] = std::max( o->oext[c], 1e-4f );
+                m_meshCenter2[c] = o->ocen[c];
+            }
         if ( !m_modelPath2.empty() )
             setOrient( m_modelPath2, m_meshExtent2, m_meshCenter2, m_orient2, m_orientExt2, m_orientCen2, m_oriented2 );
 

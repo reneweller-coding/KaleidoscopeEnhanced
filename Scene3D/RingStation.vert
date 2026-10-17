@@ -24,6 +24,8 @@ uniform mat4  projM;           ///< Projection matrix.
 uniform float eyeOff;          ///< Stereo eye offset (0 in mono).
 uniform float time;            ///< Seconds since this activation, plus a rolled start (see sceneTime).
 uniform int   meshVertexCount; ///< Vertices of the scene's mesh.
+uniform vec3  meshExtent;      ///< Half size of the model's box, without generator threads.
+uniform vec3  meshCenter;      ///< Centre of the model's box.
 
 uniform float audioAdvance; ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
                             ///< backwards).
@@ -73,7 +75,11 @@ void main()
         // to a size that reads clearly at this scene's ~110-unit camera distance,
         // sizeP then nudges it per-instance (megastructures bigger, outposts smaller).
         float sz = ( sizeP > 0.01 ? sizeP : 1.0 );
-        vec3  local = attrA.xyz * ( 32.0 * sz );
+        // 44 units on the hull's longest side, measured without the generator's threads (meshExtent), centred
+        // (18.10.2026): at 32 on the raw box a station filled about a sixth of the frame's height, less where
+        // threads had stretched the box.
+        float fit = 0.5 / max( max( meshExtent.x, meshExtent.y ), meshExtent.z );
+        vec3  local = ( attrA.xyz - meshCenter ) * ( 44.0 * sz * fit );
 
         // A ring reads as a RING only if its own spin is the dominant motion --
         // a fixed axis tilt keeps it from looking like a flat, static

@@ -5593,3 +5593,13 @@ rotation phase what a long show gathers).
   one flat white), the knob only tints, and the sparks rise around the funnel. **PillarHall**'s emissive bands went
   from 0.55 to 3.85 on every kick -- hard bright blocks on the near pillars; now 0.7 .. 1.2, and the pillars breathe
   4 % on the kick instead of hopping 12 %. CalabiYauManifoldKaleido looked right on a second look.
+- **Mesh scenes small and dark.** Measured as object coverage (pixels over 0.06) and the object's own brightness:
+  most objects were bright enough but small, in a black room. Fifteen more models of other families carry generator
+  threads (ScienceLabStation 8 %, VerschlungenerKnoten 6 %, a curtain over ErstarrteWelle ...); the table lists them
+  too (identity frame) with their box without the threads in the model's own frame, and the loader removes their
+  threads and sizes them by that box -- every scene that fits a model by meshExtent shows it at its true size. The six
+  station families fit the hull's longest side (without threads) to 44 units, centred, where they took the raw box at
+  32 (a sixth of the frame's height); ShatterSculpture's statue is 42 units (was 30); MeshSeismograph 19 (was 14), its
+  trace wider and found on darker paper; the Mesh* desk lamps light 0.75 .. 1.25 with the swell (were 0.45 .. 1.05).
+  Hologram and ShatterSculpture turned on audioAdvance -- speeding up on every kick, against the standing rule; now on
+  time alone.

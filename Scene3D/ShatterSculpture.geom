@@ -190,7 +190,7 @@ void main()
     // The statue's own slow display rotation, applied after the shatter so
     // shards keep flying relative to the piece rather than being dragged
     // sideways by it.
-    float rot_y = time * 0.10 + audioAdvance * 0.05;
+    float rot_y = time * 0.125; // time alone: advance speeds up on every kick
     float cy = cos( rot_y ), sy = sin( rot_y );
     mat3  disp = mat3( cy, 0.0, -sy, 0.0, 1.0, 0.0, sy, 0.0, cy );
 
@@ -200,7 +200,7 @@ void main()
         // triangle about its own centre would shear the chunk apart again
         // and undo the grouping.
         vec3 p = cell_mid + shard_spin * ( gPos[i] - cell_mid ) + offset;
-        vec3 w = disp * ( p * ( 30.0 * sz ) );
+        vec3 w = disp * ( p * ( 42.0 * sz ) ); // 42 (18.10.2026): at 30 the statue stood small in the dark
         w.z += 82.0;
 
         vUV = gUV[i];

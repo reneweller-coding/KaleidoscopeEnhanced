@@ -97,7 +97,7 @@ void main()
     float sz = ( sizeP > 0.01 ? sizeP : 1.0 );
     float sp = ( spinP > 0.01 ? spinP : 1.0 );
 
-    float       rot_y = ( time * 0.20 + audioAdvance * 0.10 ) * sp;
+    float       rot_y = time * 0.25 * sp; // time alone: advance speeds up on every kick
     float       cy = cos( rot_y ), sy = sin( rot_y );
     mat3        rot_y_mat = mat3( cy, 0.0, -sy, 0.0, 1.0, 0.0, sy, 0.0, cy );
     const float tilt_x = 0.20;
