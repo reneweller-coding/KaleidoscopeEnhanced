@@ -486,12 +486,6 @@
     <float name="glowP" minValue="0.4" maxValue="0.9"></float>
     <float name="voidP" minValue="0.3" maxValue="0.8"></float>
   </TextureShader>
-  <TextureShader minTimeSolo="31" maxTimeSolo="80" interest="8" file="..\\Scene2D\\EventHorizon.frag" type="normal" mood="dark,aggressive" probability="0.5" complexity="8" gpuMs="0.52">
-    <rig preset="flat"/>
-    <float name="massP" minValue="0.3" maxValue="0.9"></float>
-    <float name="diskP" minValue="0.3" maxValue="0.8"></float>
-    <float name="tiltP" minValue="0.2" maxValue="0.9"></float>
-  </TextureShader>
   <TextureShader minTimeSolo="10" maxTimeSolo="27" interest="5" file="..\\Scene3D\\Detonation.frag" type="scene3d" geom="grid" probability="0.5" mood="aggressive,dark" complexity="3" shadowExtent="3.2" gpuMs="0.46">
     <rig preset="procedural"/>
     <float name="blastP"   minValue="0.6"  maxValue="1.15"></float>
@@ -3018,6 +3012,14 @@
     <float name="layersP" minValue="0" maxValue="1"></float>
     <float name="spikeP" minValue="0" maxValue="1"></float>
     <float name="curlP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader minTimeSolo="25" maxTimeSolo="65" interest="7" file="..\\Scene2D\\DoublePendulumFlipFractal.frag" type="normal" mood="psychedelic,energetic" probability="0.45" complexity="7">
+    <rig preset="flat"/>
+    <float name="zoomP" minValue="0" maxValue="1"></float>
+    <float name="stepsP" minValue="0" maxValue="1"></float>
+    <float name="photoP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>

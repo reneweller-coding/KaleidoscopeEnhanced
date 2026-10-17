@@ -5952,3 +5952,41 @@ Six scenes are stateless:
 only wound each tile up: marbled squares, no plumes. It is now procedural: the tips travel over the phrase, and
 the fluid around each tip rolls up, the two sides turning opposite ways, into mushroom caps.
 
+## 17.10.2026 (29): chaos fields and fractals (ideas 51-68)
+
+Eighteen scenes of family D. Every pixel runs its own orbit, so the cost lay in the iteration counts. All
+eighteen stayed below 0.6 ms of GPU time in the 960 x 540 export: the double pendulum takes 250 semi-implicit
+steps, the magnetic pendulum 160, Henon-Heiles 260 leapfrog steps, Mandelbrot 200 iterations. The scenes:
+- **Flip times and basins:** DoublePendulumFlipFractal (time to the first flip over the square of starting angles),
+  MagneticPendulumBasins (3..6 magnets, one more per change of harmony, growing in), HenonHeilesEscape (Wada basins
+  of the three exits).
+- **Rotation numbers:** ArnoldTonguesField, CircleMapDevilStairs.
+- **Orbit statistics:** LogisticVeils (orbit density per column), StandardMapIslands (the orbit's mean and spread
+  split islands from the chaotic sea), DeJongNebula.
+- **Fractal sets:** OrbitTrapStalks (Pickover stalks), NewtonRelaxedBloom, KleinianQuasiFuchsian (a Schottky
+  necklace pushed off orthogonality), MandelbrotCardioidUnwrap.
+- **Tilings and cascades:** RauzyFractalTiles, TwinDragonRepTile, FordCirclesCascade.
+- **Flows, billiards, mirrors:** LyapunovVectorHair (finite-time Cauchy-Green eigenvectors), HyperbolicBilliardChaos
+  (stadium and Sinai), ChaoticScatteringFractal (three or four mirror spheres, the photo as sky).
+
+**Membership by bounded search.** The Rauzy fractal and the twin dragon are sets of digit expansions. A greedy
+descent (take the nearest preimage) classified only 84 % of sampled points right; a depth-first search that keeps
+every preimage inside the bounding disc, capped at 120 nodes, got 99 %. The Rauzy fractal tiles the plane by the
+projected lattice pi(e1 - e2), pi(e1 - e3) of the tribonacci matrix. Tested on 300 000 sampled points, the overlap
+was 0.3 %; 1 - alpha and other guesses overlapped 29 %. The twin dragon tiles by the Gaussian integers, and its
+supertiles follow from the parity of the coordinates (g = b g1 + d).
+
+**A seamless infinite zoom from the modular group.** FordCirclesCascade flows toward the golden ratio along the
+one-parameter group of z -> (2z + 1) / (z + 1): in u = (z - phi) / (z - phi') the map is u -> phi^-4 u, so a
+fraction t of it is u -> phi^(-4t) u. After t = 1 the picture is the same set of circles again, exactly. A pixel's
+Ford circle comes from the reduction to the fundamental domain: the circle of the cusp M^-1(infinity) holds the
+point when Im(M z) > 1.
+
+**The first renders' lessons.**
+- **Windows too timid:** the logistic window lay in the period doublings (four lines); the tongues' window sat on the
+  0/1 tongue (one diamond); the standard map's kick was below the break-up of the last tori.
+- **Photo too dark:** basins coloured through a dark photo's palette did not part. The basin's tone is now taken
+  at full brightness, and every basin gets its own level.
+- **Branch derivatives:** the derivatives for the basin edges are taken outside the branches (see
+  fwidth-divergent-branch-grid-lines).
+
