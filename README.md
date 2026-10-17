@@ -378,6 +378,8 @@ the number keys. Included presets:
 
 - **Allround** — the full modern arsenal, balanced; a safe default
 - **Club** — aggressive & bright: tunnels, godrays, lattices, analyzers
+- **Electronic** — the synthetic look for techno and electronica: grids, lasers,
+  neon, spectra, data streams, hard geometry
 - **Ambient** — calm drift: fluid ink, lava, drones, liquid light shows
 - **SpaceAmbient** — sci-fi & deep space: starships, planets, space
   stations, nebulae, black holes, alien worlds

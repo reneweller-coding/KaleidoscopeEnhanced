@@ -16,6 +16,9 @@ overlays and transitions, and the scenes nobody has rated yet:
     SpaceAmbient the hand-curated `space` tag: ships, worlds, deep sky --
                  long scene times and long crossfades (see TIMING)
     Club         aggressive, or bright without calm
+    Electronic   aggressive, energetic, bright or psychedelic, never calm --
+                 by its own rating column the synthetic look: grids,
+                 lasers, neon, spectra, data, tunnels, hard geometry
     Noir         dark
     Psychedelic  psychedelic
     Galerie      calm/bright/dreamy, never aggressive or psychedelic
@@ -45,6 +48,7 @@ IMAGE_DIR = "..\\\\Images"
 # tag (geom="mesh") and no mood can stand in for it.
 def rule_ambient(m, h):     return ("calm" in m or "dreamy" in m) and "aggressive" not in m
 def rule_club(m, h):        return "aggressive" in m or ("bright" in m and "calm" not in m)
+def rule_electronic(m, h):  return bool(m & {"aggressive", "energetic", "bright", "psychedelic"}) and "calm" not in m
 def rule_noir(m, h):        return "dark" in m
 def rule_psychedelic(m, h): return "psychedelic" in m
 def rule_galerie(m, h):     return (("calm" in m or "bright" in m or "dreamy" in m)
@@ -422,9 +426,9 @@ LAB_SOLO = {"Kettenlabor": (600, 1800), "Transformationen": (180, 480)}
 # (morphP 0.5..1) and stays LAB_STAY seconds; their probabilities only weigh
 # the variants against each other (which lab, when the clock calls one).
 LAB_SHARE = {"Psychedelic": 0.50, "SpaceAmbient": 0.40, "Club": 0.40, "Allround": 0.35, "Ambient": 0.35,
-             "Noir": 0.25, "Galerie": 0.20}
+             "Noir": 0.25, "Galerie": 0.20, "Electronic": 0.30}
 LAB_STAY = {"Ambient": (360, 900), "SpaceAmbient": (420, 1080), "Club": (240, 600), "Psychedelic": (300, 900),
-            "Noir": (300, 720), "Galerie": (240, 600), "Allround": (300, 900)}
+            "Noir": (300, 720), "Galerie": (240, 600), "Allround": (300, 900), "Electronic": (240, 600)}
 # The characters: knob ranges as fractions of the energy-sorted class lists
 # (chainAP..chainDP the 2D chain, spaceP/coreP/bodyP the 3D world, styleP the
 # look: photo | relief | contour lines | flow | glowing edges) and of the plain
@@ -457,6 +461,10 @@ LAB_FLAVOURS = {
                      ("ChainLab2D", 0.2, dict(CALM, speedP=("0", "0.35")), "calm", "")],
     "Club": [("ChainLab2D", 0.5, WILD, "aggressive", ""), ("ChainLabTunnel", 0.45, WILD, "aggressive", ""),
              ("ChainLab3D", 0.4, WILD, "aggressive", ""), ("ChainSlice3D", 0.25, WILD, "aggressive", "")],
+    # Electronic: the wild half, its flow quick and its colours past the photo's own.
+    "Electronic": [("ChainLab2D", 0.5, dict(WILD, paletteP=("0.4", "1")), "energetic", ""),
+                   ("ChainLabTunnel", 0.45, WILD, "energetic", ""), ("ChainLab3D", 0.4, WILD, "energetic", ""),
+                   ("ChainSlice3D", 0.3, WILD, "energetic", "")],
     "Psychedelic": [("ChainLab2D", 0.5, COLOUR, "", ""), ("ChainLab2D", 0.3, WILD, "aggressive", ""),
                     ("ChainLabTunnel", 0.4, COLOUR, "", ""), ("ChainLab3D", 0.4, COLOUR, "", ""),
                     ("ChainSlice3D", 0.35, COLOUR, "", "")],
@@ -471,6 +479,7 @@ LAB_FLAVOURS = {
 GENRES = [
     ("Ambient",     rule_ambient,     False),
     ("Club",        rule_club,        False),
+    ("Electronic",  rule_electronic,  False),
     ("Noir",        rule_noir,        False),
     ("Psychedelic", rule_psychedelic, False),
     ("Galerie",     rule_galerie,     False),
@@ -564,7 +573,8 @@ ALWAYS = {"FxPlain", "Crossfade"}
 # the mood rule of its genre until someone rates it.
 FIT_FILE = "Tools/preset_fit.tsv"
 FIT_COLUMN = {"Ambient": "ambient", "SpaceAmbient": "space", "Club": "club",
-              "Noir": "noir", "Psychedelic": "psychedelic", "Galerie": "galerie"}
+              "Noir": "noir", "Psychedelic": "psychedelic", "Galerie": "galerie",
+              "Electronic": "electronic"}
 MIN_SCENES = 400
 RANK_TAKE = 6.0
 FIT_FLOOR = 3          # never fill with a scene rated below this, even short of MIN_SCENES
@@ -603,7 +613,7 @@ if os.path.exists(FIT_FILE):
     for ln in lines[1:]:
         if ln.strip():
             v = ln.split("\t")
-            fit[v[0]] = {head[i]: int(v[i]) for i in range(1, len(head))}
+            fit[v[0]] = {head[i]: int(v[i]) for i in range(1, min(len(head), len(v))) if v[i].strip()}
 
 def select_by_fit(genre, rule):
     col = FIT_COLUMN[genre]
@@ -611,7 +621,7 @@ def select_by_fit(genre, rule):
     for b in scenes:
         if b[1] not in shaders:
             shaders.append(b[1])
-    rated = [s for s in shaders if s in fit]
+    rated = [s for s in shaders if s in fit and col in fit[s]]
     second = SECOND_FIT.get(genre)
     def rank(s):
         r = fit[s][col] + INTEREST_WEIGHT * (fit[s]["interest"] - 5)
@@ -626,8 +636,8 @@ def select_by_fit(genre, rule):
                 break
             if fit[s][col] >= FIT_FLOOR and (dull_ok or fit[s]["interest"] > DULL):
                 chosen.add(s)
-    # Unrated scenes: the old mood rule decides.
-    chosen |= {b[1] for b in scenes if b[1] not in fit and rule(b[2], b[4])}
+    # Unrated scenes (or unrated in this genre's column): the old mood rule decides.
+    chosen |= {b[1] for b in scenes if (b[1] not in fit or col not in fit[b[1]]) and rule(b[2], b[4])}
     sel = []
     for s in shaders:
         if s not in chosen:
@@ -646,7 +656,7 @@ def solo_times(genre, sel):
     if not own:
         return {}
     def value(s):
-        if s not in fit:
+        if s not in fit or (col and col not in fit[s]):
             return None
         return fit[s]["interest"] + (SOLO_FIT * (fit[s][col] - 7) if col else 0.0)
     known = sorted(v for v in (value(b[1]) for b in own) if v is not None)

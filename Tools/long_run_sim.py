@@ -29,7 +29,7 @@ import xml.etree.ElementTree as ET
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 LABS = ("ChainLab2D", "ChainLab3D", "ChainLabTunnel", "ChainSlice3D")
-GENRES = ("Ambient", "Club", "Noir", "Psychedelic", "Galerie", "SpaceAmbient", "Allround")
+GENRES = ("Ambient", "Club", "Electronic", "Noir", "Psychedelic", "Galerie", "SpaceAmbient", "Allround")
 TAU = 3 * 3600.0
 
 

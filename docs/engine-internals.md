@@ -6403,3 +6403,31 @@ Left after the review: 51 `calm` scenes measured at 9 or 10, all looked at and k
 1 or 2 (BuildUpAvalanche, VolcanicLightningPlume and TaikoSilhouettes, whose bursts and strikes the median
 misses); 1 club-rated scene
 at 1 or 2. check_schedule.py --quick: 14 plans, no violations.
+
+## 17.10.2026 (41): a genre preset Electronic
+
+Electronic is for techno and electronica. Its picture is the synthetic look: grids, lasers, neon, spectrum analysers,
+data streams, tunnels, hard geometry.
+
+**The rating column.** Tools/preset_fit.tsv has a new column, `electronic`, appended after `interest`. All 1415
+scenes were rated from sheets of their three catalogue frames, twelve scenes to a sheet. Top marks (9 and 10) went
+to CyberGridCity, SynthTerrain, TronCycles, LaserArena, DiscoGodrays, NeonSignAlley, StereoSpectrum and the like.
+Landscapes, animals, painting and nature macros got 0 to 2. The column ranks scenes like `club` (Spearman 0.78), but
+it keeps out the natural spectacles a club takes and takes in the data, spectrum and grid scenes that are not
+aggressive.
+
+**The preset.**
+- make_genre_configs.py picks the scenes by that column, like the other genres: 401 distinct scenes, 273 of them
+  ranked 6 or more. 283 are also in Club and 260 in Psychedelic, against 47 in Ambient.
+- Overlays and transitions follow the rule aggressive, energetic, bright or psychedelic, never calm: 15 overlays,
+  76 transitions.
+- Labs take 30 % of the screen time, the wild half of the chain classes. The 2D lab's colours run past the photo's
+  own (paletteP 0.4 to 1). Each lab stays 240 to 600 s.
+- No scene-fade floor: with a beat, fades follow four beats, as in Club.
+
+A row shorter than the header now counts as unrated in its missing columns, so the mood rule decides there. That
+keeps rows written with seven values valid. finish_block.py now takes eight values per rating row, ending with
+`electronic`.
+
+check_schedule.py and long_run_sim.py list the new genre. check_schedule.py --quick: 16 plans, no violations.
+Electronic over 6 h of structure128.wav makes 489 changes, with labs at 31.1 % of the screen time.

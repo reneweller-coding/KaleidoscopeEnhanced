@@ -40,7 +40,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 EXE = os.path.join(ROOT, "Release", "Kaleidoscope.exe")
 QT_BIN = r"C:\Qt\6.11.1\msvc2022_64\bin"
 OUTDIR = os.path.join(ROOT, ".screen", "schedule")
-GENRES = ("Ambient", "Club", "Noir", "Psychedelic", "Galerie", "SpaceAmbient", "Allround")
+GENRES = ("Ambient", "Club", "Electronic", "Noir", "Psychedelic", "Galerie", "SpaceAmbient", "Allround")
 STRUCTURE = os.path.join(ROOT, ".screen", "structure128.wav")
 
 

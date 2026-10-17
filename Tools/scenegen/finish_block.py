@@ -2,7 +2,7 @@
 """Finish a block of new scenes: register in Komplett.xml, add ratings to
 preset_fit.tsv, add them to RECENT_SCENES (TestNeu), regenerate presets and
 run the checks.
-Usage: finish_block.py "Name|mood,mood|complexity|amb space club noir psy gal interest" ..."""
+Usage: finish_block.py "Name|mood,mood|complexity|amb space club noir psy gal interest electronic" ..."""
 import os, re, subprocess, sys
 ROOT = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
 SP = os.path.dirname(os.path.abspath(__file__))
