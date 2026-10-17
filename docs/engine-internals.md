@@ -5768,3 +5768,22 @@ glint along the edges on the kick and tint with the mode. Under the same switch 
 colours only. Regenerated through gen.py, their frags carry the whole current chain library (the committed ones had
 an older, smaller one); the compiler drops what a chain does not call.
 
+## 17.10.2026 (24): the flat labs' chains, measured
+
+The 2D lab (and the FX chain) rolls four stages -- A 58 classes, B 23, C 18, D 20 -- in one of 24 orders: far too
+many chains to try them all. Twenty-four rolls looked at showed what a poor 2D chain is: not a carpet as in 3D but a
+picture mapped to one colour -- the photo mip-averaged where the chain shrinks it many times over, or blurred where it
+magnifies one patch. `Tools/chain2d_probe.py` tries 16384 random chains in four invisible PresetEditor frames: at
+8 x 5 screen points the Jacobian of the chain's mirrored photo coordinate in photo pixels per screen pixel; `mush`
+the share shrunk more than 8x in every direction, `flat` magnified more than 6.7x. A third measure, streaks (one
+direction compressed, the other stretched), was dropped: the twelve highest chains by it were nearly all calm
+flowing bands. By mush the twelve highest were 8 times poor, by flat 6 times.
+
+Far fewer chains are poor than 3D worlds: 4.4 % above 0.7 (3D: 43 %). Mush is close to additive in the classes
+(R^2 0.70; flat 0.30) and comes mostly from a few: the sphere kaleidoscope (0.76), the Apollonian inversion fold
+(0.67), the theta wave (0.51), the Newton and Julia maps. `Engine/chain2d_classes.tsv` holds a ridge fit -- an
+intercept and a term per class and measure -- and `EffectShader::chainPoorness()` sums it for a chain; the roll repair
+and the walk of the 3D lab's world filter now serve both (stages A..D for ChainLab2D and FxChain, never onto an
+opening; `KALEIDO_NO_CHAIN_FILTER`). It flags 6.3 % of the chains, about half of them poor, and catches 71 % of the
+poor ones; a wrong catch only moves one stage. Over six seeds the app moved four chains.
+

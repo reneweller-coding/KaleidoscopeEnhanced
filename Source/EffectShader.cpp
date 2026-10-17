@@ -1606,51 +1606,63 @@ void EffectShader::resetChainWalk()
         m_walkHi[s] = hi < m_walkLo[s] ? m_walkLo[s] : ( hi > 1.f ? 1.f : hi );
         m_seenPos[s] = -1;
     }
-    // The 3D lab keeps off its poor worlds, mostly haze or a fine-grained carpet from its camera (worldPoorness(),
-    // 17.10.2026).  A poor roll moves one structure stage to another class in the entry's range, tried in an order
-    // hashed from the rolled knobs (no draw from the scene's random stream): the first world clearly good (below
-    // 0.35), else the best one tried, if it is not poor.  (The first one just below 0.5 often still read as carpet.)
+    // The labs keep off their poor rolls (17.10.2026): the 3D lab off worlds that show mostly haze or a fine-grained
+    // carpet from its camera (worldPoorness(), structure stages 5..7), the flat labs off chains that turn the photo
+    // into mush or a blur (chainPoorness(), stages A..D).  A poor roll moves one stage to another class in the
+    // entry's range, tried in an order hashed from the rolled knobs (no draw from the scene's random stream): the
+    // first roll clearly good (below 0.35), else the best one tried, if it is not poor.  (The first one just below
+    // 0.5 often still read as carpet.)  A chain stage never moves onto an opening (the rule above).
     {
         float    x[9] = {};
         Uniform *k[9] = {};
-        for ( int s = 5; s <= 7; ++s )
+        for ( int s = 0; s <= 7; ++s )
             for ( Uniform *u : m_uniforms )
-                if ( u->getName() == kWalkKnob[s] )
+                if ( s != 4 && u->getName() == kWalkKnob[s] )
                 {
                     k[s] = u;
                     x[s] = u->snapshotValue();
                 }
-        const float before = ( k[5] && k[6] && k[7] ) ? worldPoorness( x ) : 0.f;
+        auto poorness = [this]( const float *v )
+        {
+            const float w = worldPoorness( v ), c = chainPoorness( v );
+            return w > c ? w : c;
+        };
+        const float before = poorness( x );
         if ( before > 0.5f )
         {
-            const float rolled[3] = { x[5], x[6], x[7] };
-            int         best_s = -1;
-            float       best_v = 0.f, best_p = 0.5f;
-            for ( int i = 1; i <= 90; ++i )
+            float rolled[9];
+            for ( int s = 0; s < 9; ++s )
+                rolled[s] = x[s];
+            const bool world = worldPoorness( x ) > 0.5f; // which stages can help: the world's or the chain's
+            int        best_s = -1;
+            float      best_v = 0.f, best_p = 0.5f;
+            for ( int i = 1; i <= 120; ++i )
             {
-                const int s = 5 + i % 3;
-                if ( m_walkCarried[s] || m_walkHi[s] <= m_walkLo[s] )
+                const int s = world ? 5 + i % 3 : i % 4;
+                if ( !k[s] || m_walkCarried[s] || m_walkHi[s] <= m_walkLo[s] )
                     continue;
-                const float h = sinf( rolled[0] * 127.1f + rolled[1] * 311.7f + rolled[2] * 74.7f +
+                const float h = sinf( rolled[0] * 17.3f + rolled[1] * 41.9f + rolled[2] * 23.1f + rolled[3] * 11.7f +
+                                      rolled[5] * 127.1f + rolled[6] * 311.7f + rolled[7] * 74.7f +
                                       static_cast<float>( i ) * 12.9898f ) *
                                 43758.5453f;
                 const float v = m_walkLo[s] + ( m_walkHi[s] - m_walkLo[s] ) * ( h - floorf( h ) );
                 x[s] = v < 0.999f ? v : 0.999f;
-                const float p = worldPoorness( x );
+                const float p = ( s < 4 && opensAt( s, x[s] ) ) ? 1.f : poorness( x );
                 if ( p < best_p )
                 {
                     best_s = s;
                     best_v = x[s];
                     best_p = p;
                 }
-                x[s] = rolled[s - 5];
+                x[s] = rolled[s];
                 if ( best_p < 0.35f )
                     break;
             }
             if ( best_s >= 0 )
             {
-                fprintf( stderr, "%s: world %s %.3f -> %.3f (a poor world: haze or carpet, %.2f -> %.2f)\n",
-                         fragmentName(), kWalkName[best_s], rolled[best_s - 5], best_v, before, best_p );
+                fprintf( stderr, "%s: stage %s %.3f -> %.3f (a poor %s, %.2f -> %.2f)\n", fragmentName(),
+                         kWalkName[best_s], rolled[best_s], best_v,
+                         world ? "world: haze or carpet" : "chain: mush or blur", before, best_p );
                 k[best_s]->restoreValue( best_v );
             }
         }
@@ -1857,12 +1869,12 @@ void EffectShader::stepChainWalk( const AudioFeatures &audio )
         }
         return c[2];
     };
-    // The 3D lab walks only to good worlds (worldPoorness() up to 0.5): a structure target that would make a poor
-    // one is drawn again, a dozen times at most.
+    // The labs walk only to good rolls (worldPoorness(), chainPoorness() up to 0.5): a structure or chain target
+    // that would make a poor one is drawn again, a dozen times at most.
     auto pick_for = [&]( int s )
     {
         float v = pick_one( s );
-        if ( !isStructure( s ) )
+        if ( s == 4 || s > 7 )
             return v;
         float x[9];
         for ( int o = 0; o < 9; ++o )
@@ -1870,7 +1882,7 @@ void EffectShader::stepChainWalk( const AudioFeatures &audio )
         for ( int i = 0; i < 12; ++i )
         {
             x[s] = v;
-            if ( worldPoorness( x ) <= 0.5f )
+            if ( ( isStructure( s ) ? worldPoorness( x ) : chainPoorness( x ) ) <= 0.5f )
                 break;
             v = pick_one( s );
         }
@@ -3336,6 +3348,70 @@ float EffectShader::worldPoorness( const float *x ) const
         pos[i] = classPos( x[5 + i], N[i] );
     }
     return t[( pos[0] * 22 + pos[1] ) * 22 + pos[2]];
+}
+
+/**  The flat labs' chain terms (Engine/chain2d_classes.tsv), read once.
+ *
+ * @return
+ *   Per stage A..D (index 0..3) the terms of each class position, mush and blur interleaved, and at index 4 the two
+ *   intercepts; empty without the table.
+ **/
+static const std::vector<std::vector<float>> &chainTermTable()
+{
+    static std::vector<std::vector<float>> table;
+    static std::once_flag                  once;
+    std::call_once( once, []
+    {
+        std::ifstream                   in( "../Engine/chain2d_classes.tsv" ); // forward slashes: Windows and Linux
+        std::string                     line;
+        std::vector<std::vector<float>> t( 5 );
+        static const char              *Knob[4] = { "chainAP", "chainBP", "chainCP", "chainDP" };
+        while ( std::getline( in, line ) )
+        {
+            if ( line.empty() || line[0] == '#' )
+                continue;
+            std::istringstream ss( line );
+            std::string        knob;
+            int                pos = 0;
+            float              mush = 0.f, blur = 0.f;
+            if ( !( ss >> knob >> pos >> mush >> blur ) )
+                continue;
+            int s = knob == "intercept" ? 4 : -1;
+            for ( int i = 0; i < 4; ++i )
+                if ( knob == Knob[i] )
+                    s = i;
+            if ( s < 0 || pos != static_cast<int>( t[s].size() ) / 2 )
+                continue; // rows in order, one per class
+            t[s].push_back( mush );
+            t[s].push_back( blur );
+        }
+        if ( t[4].size() == 2 && !t[0].empty() && !t[1].empty() && !t[2].empty() && !t[3].empty() )
+            table = t;
+    } );
+    return table;
+}
+
+float EffectShader::chainPoorness( const float *x ) const
+{
+    static const bool Off = getenv( "KALEIDO_NO_CHAIN_FILTER" ) != nullptr;
+    if ( Off || ( m_fragmentShaderFilename.find( "ChainLab2D" ) == std::string::npos &&
+                  m_fragmentShaderFilename.find( "FxChain" ) == std::string::npos ) )
+        return 0.f;
+    const std::vector<std::vector<float>> &t = chainTermTable();
+    if ( t.empty() )
+        return 0.f;
+    float mush = t[4][0], blur = t[4][1];
+    for ( int s = 0; s < 4; ++s )
+    {
+        const auto it = m_chainClasses.find( kWalkKnob[s] );
+        const int  n = static_cast<int>( t[s].size() ) / 2;
+        if ( it == m_chainClasses.end() || static_cast<int>( it->second.size() ) != n )
+            return 0.f; // the lab's class lists changed: the table no longer matches them
+        const int p = classPos( x[s], n );
+        mush += t[s][2 * p];
+        blur += t[s][2 * p + 1];
+    }
+    return mush > blur ? mush : blur;
 }
 
 float EffectShader::closedClass( int s, float x ) const

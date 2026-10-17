@@ -493,6 +493,15 @@ auf dem Kick – auch in den 36 festen Ketten-Szenen (`make_chains.py`). Der Cod
 `reliefP`, im Schnitt `isoP`) wirken solange nicht; die App wandert den Look
 nicht mehr.
 
+**Schwache Ketten (seit 17.10.):** Im 2D-Labor und in der FX-Kette ist eine
+Kette schwach, wenn sie das Foto zu einer Farbe verwischt: stark gestaucht
+(Mip-Brei) oder stark vergrößert (Unschärfe). Das betrifft nur rund 4 % der
+Ketten, vor allem mit Kugel-Kaleidoskop, Apollonischer Inversionsfaltung,
+Theta-Welle, Newton- und Julia-Abbildung. `Tools/chain2d_probe.py` misst das an
+16384 Zufallsketten und schreibt je Klasse einen Beitrag nach
+`Engine/chain2d_classes.tsv`; die App lenkt vorhergesagt schwache Ketten beim
+Würfeln und Wandern um (`KALEIDO_NO_CHAIN_FILTER` schaltet das ab).
+
 ### ChainLabTunnel – das Tunnel-Labor
 Die gewürfelte 2D-Kette als **Wand eines Tunnels**, ihre Helligkeit als echtes
 Relief, die Röhre windet sich. Weil die Kette hier in *jedem Schritt* des

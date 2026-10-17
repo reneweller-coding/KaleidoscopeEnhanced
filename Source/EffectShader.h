@@ -1291,6 +1291,17 @@ protected:
      *   match it, or with KALEIDO_NO_WORLD_FILTER set.
      **/
     float worldPoorness( const float *x ) const;
+    /**  How poor the flat labs' chain at the stage knob values A..D looks: the larger of its predicted share of
+     * mush (the photo mip-averaged to one colour or a grain) and of blur, from the classes' terms in
+     * Engine/chain2d_classes.tsv (a fit by Tools/chain2d_probe.py); above 0.5 the chain counts as poor.
+     *
+     * @param x  Knob value per walk stage, as m_walk.x0; only the stages 0..3 (A..D) are read. (in)
+     *
+     * @return
+     *   The predicted poorness; 0 for any shader but ChainLab2D and FxChain, without the table, if the lab's class
+     *   lists no longer match it, or with KALEIDO_NO_CHAIN_FILTER set.
+     **/
+    float chainPoorness( const float *x ) const;
     /**  The taste weight (M_ClassTaste) of the class knob value x picks on walk stage s; 1 without one.
      *
      * @param s  Walk stage, 0..3 for A..D. (in)
