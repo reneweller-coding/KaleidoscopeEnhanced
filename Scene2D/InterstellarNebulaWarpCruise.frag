@@ -29,6 +29,8 @@ uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0
 uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
 uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
                               ///< backwards).
+uniform float sceneTime;    ///< Seconds since this scene was activated.
+uniform float sceneAdvance; ///< The music's advance since this scene was activated (integrated, never jumps).
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 uniform float audioLevel;     ///< Overall loudness, 0..1.
 uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
@@ -103,6 +105,20 @@ float fbm3D( vec3 p, float t )
     return f;
 }
 
+/**  Pseudo-random number 0..1 from a 3D point (sine-free, so it holds its precision).
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
+float hash13( vec3 p )
+{
+    p = fract( p * 0.1031 );
+    p += dot( p, p.zyx + 31.32 );
+    return fract( ( p.x + p.y ) * p.z );
+}
+
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
@@ -113,7 +129,9 @@ void main()
     float str_mod = ( starsP > 0.01 ) ? starsP : 1.0;
     float glw = ( glowP > 0.01 ) ? glowP : 1.0;
 
-    float t = time * 0.192 * spd + audioAdvance * 0.192 * spd;
+    // The scene's own clocks: `time` and `audioAdvance` count since the program started, and the cruise ran some
+    // thousands of units deep after a long show (17.10.2026).
+    float t = sceneTime * 0.192 * spd + sceneAdvance * 0.192 * spd;
     // Time base + music push: audioAdvance ALONE stands still in quiet
     // music (the reported "looks like a still picture" class).
 
@@ -123,7 +141,9 @@ void main()
 
     vec3  col_acc = vec3( 0.0 );
     float trans_acc = 1.0;
-    float tot_dist = 0.0;
+    // A start offset per pixel (interleaved gradient noise): a fixed 0.12 step without it drew the gas in
+    // concentric slices.
+    float tot_dist = 0.12 * fract( 52.9829189 * fract( dot( gl_FragCoord.xy, vec2( 0.06711056, 0.00583715 ) ) ) );
 
     // Volumetric raymarching loop
     for ( int i = 0; i < 44; ++i )
@@ -139,8 +159,15 @@ void main()
 
         if ( gas_density > 0.001 )
         {
-            // Protostellar core sparkle inside dense regions
-            float star_spark = pow( max( 0.0, sin( dot( p, vec3( 12.3, 45.6, 78.9 ) ) ) ), 32.0 ) * str_mod;
+            // Protostellar cores inside the gas: a soft round glow around a jittered point in a half-unit cell.
+            // Were sin(dot(p, k))^32 -- parallel planes, which the view cut into concentric arcs (17.10.2026).
+            vec3  sc = floor( p * 2.0 );
+            float star_spark = 0.0;
+            if ( hash13( sc ) > 0.93 )
+            {
+                vec3 sp3 = ( sc + 0.25 + 0.5 * vec3( hash13( sc + 1.7 ), hash13( sc + 4.1 ), hash13( sc + 9.3 ) ) ) * 0.5;
+                star_spark = exp( -dot( p - sp3, p - sp3 ) / 0.02 ) * str_mod;
+            }
 
             // Emission color gradient based on gas temperature
             vec3 pal_gas = imgPalette( gas_noise * 0.4 + p.z * 0.05 );
@@ -148,10 +175,11 @@ void main()
                                      clamp( gas_noise * 0.5 + 0.5, 0.0, 1.0 ) );
             gas_emission = mix( gas_emission, pal_gas, 0.45 );
 
-            vec3 gas_color = gas_emission + vec3( 1.8, 1.7, 1.2 ) * star_spark * ( 1.0 + 3.0 * audioKick ) * glw;
+            vec3 gas_color = gas_emission + vec3( 1.8, 1.7, 1.2 ) * star_spark * ( 1.0 + 1.5 * audioKick ) * glw;
 
             // Light integration with Beer-Lambert absorption
-            col_acc += gas_color * gas_density * trans_acc * ( 1.0 + 2.0 * audioKick );
+            // The kick lifts the gas by up to 60 % (was 200 %: the whole frame flashed on every kick).
+            col_acc += gas_color * gas_density * trans_acc * ( 1.0 + 0.6 * audioKick );
             trans_acc *= ( 1.0 - gas_density * 2.0 );
 
             if ( trans_acc < 0.02 )
@@ -162,7 +190,8 @@ void main()
     }
 
     // Background cosmic space texture
-    vec2 sky_uv = fract( uv * 0.3 + vec2( t * 0.02, 0.0 ) );
+    // Mirrored repeat: fract() cut the photo into tiles with hard edges.
+    vec2 sky_uv = abs( fract( ( uv * 0.3 + vec2( t * 0.02, 0.0 ) ) * 0.5 ) * 2.0 - 1.0 );
     vec3 bg_tex = img( sky_uv );
     vec3 final_col = bg_tex * 0.25 * trans_acc + col_acc;
 

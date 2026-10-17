@@ -33,6 +33,8 @@ uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0
 uniform float audioPhase;    ///< Rotation phase driven by the music (integrated, never jumps).
 uniform float audioAdvance;  ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
                              ///< backwards).
+uniform float sceneTime;    ///< Seconds since this scene was activated.
+uniform float sceneAdvance; ///< The music's advance since this scene was activated (integrated, never jumps).
 uniform float audioSwell;    ///< Slow loudness envelope, 0..1 (seconds).
 uniform float audioLevel;    ///< Overall loudness, 0..1.
 uniform float audioKick;     ///< Kick-drum envelope, 0..1 (fast attack, short decay).
@@ -160,11 +162,11 @@ void main()
     vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution ) / resolution.y;
 
     // Ray setup: origin (ro) and direction (rd)
-    vec3 ro = vec3( 0.0, 0.0, -2.5 + audioSwell * 0.5 );
+    vec3 ro = vec3( 0.0, 0.0, -2.5 ); // the camera stands (it rode the swell: a zoom on the music)
     vec3 rd = normalize( vec3( uv, 1.0 ) );
 
     // Camera rotation
-    float t = time * 0.15 * spd + audioAdvance * 0.1;
+    float t = sceneTime * 0.15 * spd + sceneAdvance * 0.1;
     mat2  rot_xz = mat2( cos( t ), sin( t ), -sin( t ), cos( t ) );
     ro.xz = rot_xz * ro.xz;
     rd.xz = rot_xz * rd.xz;
@@ -174,29 +176,37 @@ void main()
     float transmittance = 1.0;
     float step_size = 0.12;
 
-    float shockwave_radius = 0.45 + mod( time * 0.18 * spd + audioAdvance * 0.22, 2.4 )
-                             + audioKick * 0.35;
+    // The shock cycle grows from the core to well inside the camera's distance and fades out before it starts
+    // anew, so the restart never shows.  Until 17.10.2026 it was 0.45 + mod(..., 2.4) + kick * 0.35: the shell
+    // snapped back by 2.4 every 13 s, swelled past the camera (the whole frame white) and jumped on every kick.
+    float cyc = fract( sceneTime * 0.075 * spd + sceneAdvance * 0.09 );
+    float shockwave_radius = 0.35 + 1.55 * cyc;
+    float shock_fade = smoothstep( 0.0, 0.12, cyc ) * smoothstep( 1.0, 0.7, cyc );
+    float hot_radius = mix( 1.2, shockwave_radius, shock_fade ); // the colours glide through the restart
+    // A start offset per pixel (interleaved gradient noise) against the slices of a fixed step.
+    float jitter = fract( 52.9829189 * fract( dot( gl_FragCoord.xy, vec2( 0.06711056, 0.00583715 ) ) ) );
 
     for ( int i = 0; i < 28; ++i )
     {
-        float depth = 1.0 + float( i ) * step_size;
+        float depth = 1.0 + ( float( i ) + jitter ) * step_size;
         vec3  p = ro + rd * depth;
 
         // Radial distance from supernova core
         float dist = length( p );
 
         // Calculate density with noise and shockwave front
-        float shock_front = smoothstep( 0.3, 0.0, abs( dist - shockwave_radius ) );
-        float n = fbm3D( p * 1.5 + vec3( 0.0, 0.0, time * 0.4 * spd ) );
+        float shock_front = smoothstep( 0.14, 0.0, abs( dist - shockwave_radius ) ) * shock_fade; // a front, not a ball
+        float n = fbm3D( p * 1.5 + vec3( 0.0, 0.0, sceneTime * 0.4 * spd ) );
 
         float d = smoothstep( 2.5, 0.2, dist ) * n * dens * 0.045; // the broad fog was drawing a solid ball
-        d += shock_front * ( 1.6 + 1.4 * ( audioKick + audioBass ) );
+        d += shock_front * ( 0.9 + 0.6 * ( audioKick + audioBass ) );
 
         // Radial EJECTA filaments streaking away from the core, plus a
         // white-hot centre - the difference between fog and an explosion.
-        float fil = pow( fbm3D( normalize( p ) * 5.0 + vec3( 7.0 ) ), 3.5 )
+        // Contrast, not a power: fbm sits near 0.5, and its 3.5th power (0.09) drowned under the shell.
+        float fil = smoothstep( 0.52, 0.78, fbm3D( normalize( p ) * 6.0 + vec3( 7.0 ) ) )
                     * smoothstep( shockwave_radius + 0.25, shockwave_radius * 0.2, dist )
-                    * smoothstep( 0.10, 0.45, dist ); // shell, not the core fill
+                    * smoothstep( 0.10, 0.45, dist ) * shock_fade; // shell, not the core fill
         d += fil * 2.6 * dens;                        // ejecta filaments carry the explosion
         d += smoothstep( 0.40, 0.05, dist ) * 0.55;
 
@@ -212,7 +222,7 @@ void main()
             // is white-hot, at the front gold, outside ember red fading to
             // violet.  Absolute dist thresholds never fired -- the marched
             // samples all sit past them.
-            float hot = clamp( 1.0 - dist / max( shockwave_radius, 0.25 ), 0.0, 1.0 );
+            float hot = clamp( 1.0 - dist / max( hot_radius, 0.25 ), 0.0, 1.0 );
             vec3  fire = mix( vec3( 1.0, 0.32, 0.07 ), vec3( 1.0, 0.92, 0.62 ),
                               smoothstep( 0.15, 0.95, hot ) );
             fire = mix( vec3( 0.35, 0.12, 0.30 ), fire, smoothstep( 0.0, 0.35, hot ) );
@@ -236,7 +246,7 @@ void main()
 
     // Add chromatic lens flare at center
     float center_dist = length( uv );
-    float flare = 0.10 / ( center_dist + 0.10 ) * flr * ( audioKick * 0.5 + audioLevel * 0.5 );
+    float flare = 0.10 / ( center_dist + 0.10 ) * flr * ( audioKick * 0.3 + audioLevel * 0.5 );
     vec3  flare_col = imgPalette( 0.30 * audioCentroid ) * 1.4;
     final_col += flare_col * flare;
 

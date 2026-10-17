@@ -5351,3 +5351,11 @@ second), which the 5-fps BLITZ figure cannot: it is the largest single step agai
   thinning out toward it, and somewhat brighter (it measured 0.005 .. 0.02).
 - **RunwayApproachLights** looked at a 45-m runway from 900 m with a wide lens: 64 pixels, one line of lights.
   Now 480 .. 60 m, focal 2.0, the lamps' glare 1.2 m.
+- **InterstellarNebulaWarpCruise** drew concentric arcs: its protostar sparkle was sin(dot(p, k))^32 -- parallel
+  planes, cut by the view into arcs -- over a fixed step without jitter. Now round cores in a half-unit cell, a
+  start offset per pixel, the scene's clocks; the kick lifts the gas by 60 % (it tripled it, the whole frame
+  flashing), and the background photo repeats mirrored (fract() cut it into tiles).
+- **VolumetricSupernova**: its shock radius was 0.45 + mod(..., 2.4) + kick -- it snapped back every 13 s, grew
+  past the camera (the whole frame white) and jumped on every kick -- and the camera rode the swell (a zoom on the
+  music). Now the shell grows to inside the camera's distance and fades out before it starts anew, the camera
+  stands, the front is narrow and the ejecta have contrast (fbm^3.5 was 0.09 under a shell of 1.6).
