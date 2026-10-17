@@ -34,7 +34,10 @@ void main()
         vec2 w = vec2(fbm3(p * sc * 0.6 + o * 0.5), fbm3(p * sc * 0.6 - o * 0.5 + 4.0));
         dens += smoothstep(0.42, 0.75, fbm(p * sc + o + 1.2 * w)) / (1.0 + fk * 0.4);
     }
-    dens *= (0.45 + 0.4 * clamp(smokeP, 0.0, 1.0)) * (0.6 + 0.7 * swell);
+    // The smoke and the beams in quiet music (17.10.2026): the smoke 0.6 .. 1.3 with the swell and the beams
+    // 0.5 .. 1 with the bass -- the light goes with the smoke's 1.5th power, and a quiet passage fell to a
+    // seventh.  Now 0.85 .. 1.3 and 0.7 .. 1.
+    dens *= (0.45 + 0.4 * clamp(smokeP, 0.0, 1.0)) * (0.85 + 0.45 * swell);
     float nB = floor(3.0 + 3.0 * clamp(beamsP, 0.0, 1.0));
     float bw = 0.07 + 0.08 * clamp(audioSpread, 0.0, 1.0);
     vec3 light = vec3(0.0);
@@ -59,7 +62,7 @@ void main()
         vec3 bc = glowColour(imgLod(guv, 4.0), vec2(fi, 0.0), hueP * 0.159 + fi * 0.13);
         bc = mix(bc, g / max(luma(g), 0.1) * 0.5, 0.35 * clamp(goboP, 0.0, 1.0));
         float fall = 1.0 / (1.0 + along * along * 0.5);
-        light += bc * cone * ray * fall * on * (0.5 + 0.5 * bass);
+        light += bc * cone * ray * fall * on * (0.7 + 0.3 * bass);
     }
     float mode = clamp(audioMode, 0.0, 1.0);
     vec3 haze = mix(vec3(0.02, 0.025, 0.04), vec3(0.04, 0.025, 0.02), mode);

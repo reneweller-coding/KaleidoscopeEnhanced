@@ -112,9 +112,11 @@ vec3 imgPalette( float t )
  **/
 float ringGlow( float r, float ri, float wBase, float energy )
 {
-    float w = wBase + energy * 0.045;
+    // The rings stay drawn in quiet music (17.10.2026): at energy 0 a ring was 0.007 wide at a third of its
+    // brightness, a fortieth of its loud glow -- without drums the frame fell to 0.01.  Now about a fifth.
+    float w = wBase + 0.018 + energy * 0.03;
     float diff = r - ri;
-    return exp( -( diff * diff ) / ( w * w ) ) * ( 0.35 + energy * 1.65 );
+    return exp( -( diff * diff ) / ( w * w ) ) * ( 0.7 + energy * 1.3 );
 }
 
 /**  Sample the image texture along the ring arc, offset per ring to avoid identical wrapping on all rings.

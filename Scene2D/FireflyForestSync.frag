@@ -188,7 +188,9 @@ void main()
                 float delay = ( cp.x - wave_pos ) * 2.2 + 0.3 * hash21( id + 3.0 );
                 float flash = exp( -delay * delay * 3.0 ) * bursts * 2.0;
                 // A dim constant glimmer between waves, some out of step.
-                float own = pow( max( 0.0, sin( T * 1.3 + hash21( id + 5.0 ) * 40.0 ) ), 16.0 ) * 0.4;
+                float own = pow( max( 0.0, sin( T * 1.3 + hash21( id + 5.0 ) * 40.0 ) ), 16.0 ) * 0.8; // x2: the pause
+                                                                                                       // between waves
+                                                                                                       // stood black
                 float I = flash + own;
                 float d = length( g - c );
                 float r0 = 0.08 + 0.04 * fl;

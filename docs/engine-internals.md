@@ -5498,3 +5498,12 @@ rotation phase what a long show gathers).
   SpiralPhoto 28 .. 60 turns (40 .. 100 was finer than a pixel at 720p: grey moire); TextureIronFilings coarser
   filings, darker ink and a lamp's pool of light on the paper. The paper stays grey-ish: a frame that is mostly bright
   is pulled down by the present pass (`pow( c * 0.78, 1.25 )`, the auto exposure down to 0.72) -- by design.
+- **Dark in quiet music.** The screening WAV alternates loud (drums, bass) and quiet (bed and lead at -12 dB) every
+  4 s, so a scene's darkest and brightest frame tell how far it falls without drums. 36 scenes fell under a quarter
+  and under 0.04; rendered again, five did so in both seeds. The causes: a floor too low under an audio term.
+  VolumetricFire's fuel was 0.20 + kick, bass and drop (brightness goes with about its square: 0.02 against 0.39;
+  now 0.70 .. 1.6, 0.75 of the loud brightness); HarmonicRings' rings were 0.007 wide at a third of their brightness
+  without energy (now wider and at 0.7: 0.27 .. 0.38); SolidLightCones' beams 0.3 .. 1.5 (now 0.9 .. 1.4 at two
+  thirds the gain, which also ends the flat white wedges of the loud half: 0.35); CoronagraphSpeckleField's halo
+  0.3 .. 1.2 with the swell (now 0.6 .. 1.2: 0.45); TextureSmokeChamber's smoke and beams (0.4). FireflyForestSync's
+  dark half is its own rhythm -- a flash wave, then a pause -- whose glimmer is now twice as bright.

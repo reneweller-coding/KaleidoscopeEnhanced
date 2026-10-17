@@ -268,7 +268,7 @@ void main()
     float hue = ( hueP > 0.001 ) ? hueP : 0.0;
     g_shape = clamp( shapeP, 0.0, 1.0 );
     g_clock = sceneAdvance * 0.35 + sceneTime * 0.12;
-    float haze = 0.55 + 0.65 * clamp( audioSwell, 0.0, 1.0 );
+    float haze = 0.75 + 0.45 * clamp( audioSwell, 0.0, 1.0 );
     float bands[3];
     bands[0] = clamp( audioBass * 1.3, 0.0, 1.0 );
     bands[1] = clamp( audioMid * 1.6, 0.0, 1.0 );
@@ -304,7 +304,9 @@ void main()
             break;
         Shape sh = shapeOf( j );
         vec4  h = sheetHits( ro, rd, P[j], sh, t_end );
-        float lvl = 0.3 + 1.2 * bands[j];
+        // 0.9 .. 1.4 at two thirds the gain (17.10.2026): from 0.3 .. 1.5 the beams all but went out in quiet music
+        // (frame 0.016) and stood as flat white wedges in loud.
+        float lvl = 0.9 + 0.5 * bands[j];
         for ( int k = 0; k < 2; ++k )
         {
             vec2 hk = ( k == 0 ) ? h.xy : h.zw;
@@ -312,7 +314,7 @@ void main()
                 continue;
             vec3  x = ro + rd * hk.x;
             float dens = 0.45 + 0.55 * noise3( x * 0.45 + vec3( 0.0, -sceneTime * 0.04, sceneTime * 0.02 ) );
-            acc += beam_col[j] * min( hk.y, 12.0 ) * dens * haze * lvl * 0.11 * exp( -hk.x * 0.03 );
+            acc += beam_col[j] * min( hk.y, 12.0 ) * dens * haze * lvl * 0.07 * exp( -hk.x * 0.03 );
         }
     }
 
@@ -335,7 +337,7 @@ void main()
             if ( j >= n_on )
                 break;
             float d = wallDist( shapeOf( j ), wp.yz );
-            wall_c += beam_col[j] * exp( -d * d / 0.0015 ) * ( 0.6 + 1.2 * bands[j] );
+            wall_c += beam_col[j] * exp( -d * d / 0.0015 ) * ( 0.8 + 0.8 * bands[j] );
         }
         col += wall_c * exp( -tWall * 0.02 );
     }

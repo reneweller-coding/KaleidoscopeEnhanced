@@ -105,7 +105,8 @@ void main()
     float hue = ( hueP > 0.001 ) ? hueP : 0.0;
     int   n_planets = 2 + int( clamp( planetsP, 0.0, 1.0 ) * 3.0 );
     float speckle_dens = 30.0 + 30.0 * clamp( speckleP, 0.0, 1.0 );
-    float halo = 0.3 + 0.9 * clamp( audioSwell, 0.0, 1.0 );
+    // 0.6 .. 1.2 (17.10.2026): from 0.3 the field went dark in every quiet passage (a fifth of its loud brightness).
+    float halo = 0.6 + 0.6 * clamp( audioSwell, 0.0, 1.0 );
     float rot = sceneAdvance * 0.12 + sceneTime * 0.025;
     float r = length( p );
     float mask_r = 0.08;

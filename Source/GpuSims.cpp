@@ -420,11 +420,14 @@ void GpuSims::stepSmoke3DPass( const AudioFeatures &audio, const Frame &f, float
         glUniform1f( m_smoke3DTurbUni,
                      0.8f + 1.8f * audio.highLevel + 1.4f * audio.onsetStrength
                          + 1.2f * audio.onsetKick );
+    // A fire that burns in quiet music too (17.10.2026): from 0.20 the injection climbed to 2.2 on kick, bass and
+    // drop, and the brightness goes with about its square -- without drums the fire shrank to embers, the frame to
+    // 0.02 (0.39 with them).  Now 0.70 .. 1.6.
     if ( m_smoke3DInjectUni >= 0 )
         glUniform1f( m_smoke3DInjectUni,
-                     0.20f + 0.40f * audio.bassLevel
-                         + 0.90f * audio.onsetKick
-                         + 0.70f * audio.dropPulse );
+                     0.70f + 0.20f * audio.bassLevel
+                         + 0.35f * audio.onsetKick
+                         + 0.35f * audio.dropPulse );
     // Wandering emitter positions ride the integrated advance phase (jump-free).
     if ( m_smoke3DEmitPhaseUni >= 0 )
         glUniform1f( m_smoke3DEmitPhaseUni, f.audioAdvance * 0.5f );
