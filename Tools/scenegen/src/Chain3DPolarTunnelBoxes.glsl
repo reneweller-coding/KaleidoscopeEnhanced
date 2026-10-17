@@ -1,6 +1,6 @@
 //@doc
  * @brief CHAIN3DPOLARTUNNELBOXES: a raymarched world built from a chain of continuous 3D space
- * transforms -- a tunnel whose wall is a mirrored ring of blocks, repeated along the flight.  We fly slowly through it; the surfaces are textured
+ * transforms -- a tunnel whose wall is a mirrored ring of blocks, repeated along the flight, in a shell with rows of round windows onto a far wall (17.10.2026: the smooth shell filled the picture).  We fly slowly through it; the surfaces are textured
  * with the photograph read through a 2D transform chain of its own
  * (triplanar), lit and fogged.
  * Every stage is continuous, so the structure morphs without jumps.
@@ -30,7 +30,11 @@ float field3(vec3 p)
     q.z = 0.8 * (abs(mod(q.z / 0.8 - 1.0, 4.0) - 2.0) - 1.0);
     q = fRot(q, vec3(0.0, 0.0, 1.0), 0.3 * sin(gRot));
     gP = q * 2.0;
-    return min(sdBox3(q, vec3(0.35, 0.25 + 0.2 * gSpread, 0.5)), 3.0 - length(p.xy));
+    float blocks = sdBox3(q, vec3(0.35, 0.25 + 0.2 * gSpread, 0.5));
+    vec3 w = fPolarZ(p, 16.0);
+    w.z = 0.4 * (abs(mod(w.z / 0.4 - 1.0, 4.0) - 2.0) - 1.0);
+    float wall = max(abs(length(p.xy) - 3.15) - 0.15, 0.28 - length(w.yz));
+    return min(min(blocks, wall), 5.5 - length(p.xy));
 }
 // The surface colouring: a 2D chain of its own, applied triplanarly.
 vec2 chain(vec2 uv)

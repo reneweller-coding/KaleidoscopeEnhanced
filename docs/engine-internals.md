@@ -5718,3 +5718,7 @@ third (k 3) -- more of the same sheets; the sheet perforated by the pockets of a
 gyroid exceeds 0.55, `max(sheet, (g - 0.55) / (1.8 * 7.5))`) -- a coral-like lacework with the large forms kept;
 both together -- too busy. Taken: the perforation at k 2. Frame-to-frame luma change 0.006 -> 0.010 (the finer
 structure moving), no sparkle in consecutive frames.
+
+**PolarTunnelBoxes less flat.** Its ring of blocks sat in a smooth cylinder (radius 3) that filled the picture with
+one even wall. Now that cylinder is a shell 0.3 thick with rows of round windows (16 round, every 0.8 along the
+flight, between the block rings), and a far wall at 5.5 behind it: the wall has depth and light and shade.
