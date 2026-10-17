@@ -118,6 +118,20 @@ float fbm( vec2 p )
     return v;
 }
 
+/**  Weight that closes atan's cut: 0 over most of the circle, 1 at a = pi.  A noise of an angle from atan() does
+ *   not repeat after a turn and tears along the cut; mixed toward the same noise of a - 2*pi near a = pi it meets,
+ *   at the cut, exactly the value on the other side (17.10.2026).
+ *
+ * @param a  The angle, -pi..pi. (in)
+ *
+ * @return
+ *   The weight, 0..1.
+ **/
+float seamW( float a )
+{
+    return smoothstep( 2.5, 3.14159265, a );
+}
+
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
@@ -140,7 +154,13 @@ void main()
     // Sun rays falling from the gap.
     vec2  rd = p - gap_c;
     float ang = atan( rd.x, -rd.y );
-    float rays = pow( 0.5 + 0.5 * sin( ang * 13.0 + fbm( vec2( ang * 3.0, 0.0 ) ) * 6.0 ), 3.0 )
+    float rays = pow( 0.5
+                          + 0.5
+                                * sin( ang * 13.0
+                                       + mix( fbm( vec2( ang * 3.0, 0.0 ) ),
+                                              fbm( vec2( ( ang - 6.2831853 ) * 3.0, 0.0 ) ), seamW( ang ) )
+                                             * 6.0 ),
+                      3.0 )
                  * exp( -length( rd ) * 2.5 ) * smoothstep( gap_c.y, gap_c.y - 0.1, p.y );
     // Lightning glowing inside the cloud on the kick, off to one side.
     float lg = exp( -length( ( p - vec2( -0.55, 0.3 ) ) * vec2( 1.0, 1.6 ) ) * 4.0 ) * smoothstep( 0.4, 0.7, cl );

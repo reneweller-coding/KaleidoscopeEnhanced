@@ -254,6 +254,20 @@ vec3 lightAt( vec3 P, vec3 n, vec3 lp, vec3 lc, float range )
 
 const vec3 SunDir = vec3( 0.75, 0.10, -0.55 ); ///< the last sun, low, right, behind the camera
 
+/**  Weight that closes atan's cut: 0 over most of the circle, 1 at a = pi.  A noise of an angle from atan() does
+ *   not repeat after a turn and tears along the cut; mixed toward the same noise of a - 2*pi near a = pi it meets,
+ *   at the cut, exactly the value on the other side (17.10.2026).
+ *
+ * @param a  The angle, -pi..pi. (in)
+ *
+ * @return
+ *   The weight, 0..1.
+ **/
+float seamW( float a )
+{
+    return smoothstep( 2.5, 3.14159265, a );
+}
+
 /**  The sky colour for a direction.
  *
  * @param dir  The view direction (unit length). (in)
@@ -288,11 +302,15 @@ vec3 renderSky( vec3 dir )
         col = mix( vec3( 0.85, 0.42, 0.25 ), vec3( 0.05, 0.05, 0.16 ), pow( h, 0.45 ) );
         col += stars( dir ) * smoothstep( 0.2, 0.6, h );
         // The plant on the horizon: blocky silhouettes.
-        float roof = 0.02 + 0.03 * step( 0.5, noise1( az * 14.0 ) ) + 0.015 * noise1( az * 40.0 );
+        float roof = 0.02
+                     + 0.03 * step( 0.5, mix( noise1( az * 14.0 ), noise1( ( az - 6.2831853 ) * 14.0 ), seamW( az ) ) )
+                     + 0.015 * mix( noise1( az * 40.0 ), noise1( ( az - 6.2831853 ) * 40.0 ), seamW( az ) );
         float plant_mask = 1.0 - smoothstep( roof - 0.004, roof + 0.004, dir.y );
         col = mix( col, vec3( 0.03, 0.03, 0.04 ), plant_mask );
         // A few sodium lamps along it.
-        float lamp = step( 0.93, hash21( vec2( floor( az * 60.0 ), 1.0 ) ) )
+        float lamp = step( 0.93, mix( hash21( vec2( floor( az * 60.0 ), 1.0 ) ),
+                                      hash21( vec2( floor( ( az - 6.2831853 ) * 60.0 ), 1.0 ) ),
+                                      seamW( az ) ) )
                      * ( 1.0 - smoothstep( 0.004, 0.009, abs( dir.y - roof + 0.006 ) ) );
         col += vec3( 1.0, 0.7, 0.3 ) * lamp * 0.8;
 

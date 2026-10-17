@@ -139,6 +139,20 @@ float fbm( vec3 p )
     return f;
 }
 
+/**  Weight that closes atan's cut: 0 over most of the circle, 1 at a = pi.  A noise of an angle from atan() does
+ *   not repeat after a turn and tears along the cut; mixed toward the same noise of a - 2*pi near a = pi it meets,
+ *   at the cut, exactly the value on the other side (17.10.2026).
+ *
+ * @param a  The angle, -pi..pi. (in)
+ *
+ * @return
+ *   The weight, 0..1.
+ **/
+float seamW( float a )
+{
+    return smoothstep( 2.5, 3.14159265, a );
+}
+
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
@@ -223,7 +237,9 @@ void main()
 
             // Solar flares reaching out
             float angle = atan( uv.y - star_pos.y, uv.x - star_pos.x );
-            float flares = fbm( vec3( angle * 10.0, d_star * 5.0, time * 2.0 ) );
+            float flares = mix( fbm( vec3( angle * 10.0, d_star * 5.0, time * 2.0 ) ),
+                                fbm( vec3( ( angle - 6.2831853 ) * 10.0, d_star * 5.0, time * 2.0 ) ),
+                                seamW( angle ) );
             flares = smoothstep( 0.6, 0.9, flares ) * exp( -( d_star - star_rad ) * 5.0 );
 
             col += star_color * corona * sp * ( 0.5 + audioSwell );

@@ -197,6 +197,20 @@ vec3 perturbNormal( sampler2DArray tex, int layers, vec2 uv, vec3 n, vec3 wpos, 
 
 const vec3 KeyDir = vec3( 0.5, 0.55, -0.65 ); ///< the sun, behind the camera's right shoulder
 
+/**  Weight that closes atan's cut: 0 over most of the circle, 1 at a = pi.  A noise of an angle from atan() does
+ *   not repeat after a turn and tears along the cut; mixed toward the same noise of a - 2*pi near a = pi it meets,
+ *   at the cut, exactly the value on the other side (17.10.2026).
+ *
+ * @param a  The angle, -pi..pi. (in)
+ *
+ * @return
+ *   The weight, 0..1.
+ **/
+float seamW( float a )
+{
+    return smoothstep( 2.5, 3.14159265, a );
+}
+
 /**  The sky colour for a direction.
  *
  * @param dir  The view direction (unit length). (in)
@@ -234,7 +248,9 @@ vec3 renderSky( vec3 dir )
         col = mix( col, vec3( 1.0, 0.97, 0.92 ) * day, cl * smoothstep( 0.02, 0.15, h ) );
         // The far side of the valley.
         float az = atan( dir.x, dir.z );
-        float hill = 0.06 + 0.07 * noise1( az * 2.5 + 1.0 ) + 0.03 * noise1( az * 9.0 );
+        float hill = 0.06
+                     + 0.07 * mix( noise1( az * 2.5 + 1.0 ), noise1( ( az - 6.2831853 ) * 2.5 + 1.0 ), seamW( az ) )
+                     + 0.03 * mix( noise1( az * 9.0 ), noise1( ( az - 6.2831853 ) * 9.0 ), seamW( az ) );
         float hill_mask = 1.0 - smoothstep( hill - 0.008, hill + 0.008, dir.y );
         col = mix( col, mix( vec3( 0.16, 0.24, 0.16 ), vec3( 0.45, 0.50, 0.55 ), 0.5 ) * day * 0.7, hill_mask );
     }

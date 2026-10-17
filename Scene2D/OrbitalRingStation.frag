@@ -292,6 +292,20 @@ float stationSDF( vec3 p, out float part )
     return d;
 }
 
+/**  Weight that closes atan's cut: 0 over most of the circle, 1 at a = pi.  A noise of an angle from atan() does
+ *   not repeat after a turn and tears along the cut; mixed toward the same noise of a - 2*pi near a = pi it meets,
+ *   at the cut, exactly the value on the other side (17.10.2026).
+ *
+ * @param a  The angle, -pi..pi. (in)
+ *
+ * @return
+ *   The weight, 0..1.
+ **/
+float seamW( float a )
+{
+    return smoothstep( 2.5, 3.14159265, a );
+}
+
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
@@ -526,7 +540,9 @@ void main()
                 float ang = atan( hp.z, hp.x );
                 float band = smoothstep( 0.20, 0.05, abs( hp.y ) );
                 float wf = fract( ang * 22.0 / 6.2831853 * 6.0 );
-                float lit = step( 0.35, hash11( floor( ang * 21.0 ) ) )
+                float lit = step( 0.35, mix( hash11( floor( ang * 21.0 ) ),
+                                             hash11( floor( ( ang - 6.2831853 ) * 21.0 ) ),
+                                             seamW( ang ) ) )
                             * smoothstep( 0.5, 0.2, abs( fract( ang * 21.0 ) - 0.5 ) ); // windows, not cells (V8e)
                 float win = band * lit * smoothstep( 0.15, 0.35, wf ) * smoothstep( 0.85, 0.65, wf );
                 scol += vec3( 1.0, 0.90, 0.68 ) * win

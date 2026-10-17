@@ -203,6 +203,20 @@ vec3 perturbNormal( sampler2DArray tex, int layers, vec2 uv, vec3 n, vec3 wpos, 
 
 const vec3 KeyDir = vec3( 0.6, 0.30, -0.65 ); ///< the last sun, low, behind the camera's right
 
+/**  Weight that closes atan's cut: 0 over most of the circle, 1 at a = pi.  A noise of an angle from atan() does
+ *   not repeat after a turn and tears along the cut; mixed toward the same noise of a - 2*pi near a = pi it meets,
+ *   at the cut, exactly the value on the other side (17.10.2026).
+ *
+ * @param a  The angle, -pi..pi. (in)
+ *
+ * @return
+ *   The weight, 0..1.
+ **/
+float seamW( float a )
+{
+    return smoothstep( 2.5, 3.14159265, a );
+}
+
 /**  The sky colour for a direction.
  *
  * @param dir  The view direction (unit length). (in)
@@ -234,8 +248,12 @@ vec3 renderSky( vec3 dir )
         // Acacias on the horizon: flat crowns on thin trunks, as silhouettes.
         float az = atan( dir.x, dir.z );
         float crown = 0.035
-                      + 0.045 * smoothstep( 0.55, 0.75, noise1( az * 6.0 + 2.0 ) )
-                            * ( 0.7 + 0.3 * noise1( az * 40.0 ) );
+                      + 0.045
+                            * smoothstep(
+                                0.55, 0.75,
+                                mix( noise1( az * 6.0 + 2.0 ), noise1( ( az - 6.2831853 ) * 6.0 + 2.0 ), seamW( az ) ) )
+                            * ( 0.7
+                                + 0.3 * mix( noise1( az * 40.0 ), noise1( ( az - 6.2831853 ) * 40.0 ), seamW( az ) ) );
         float tree_mask = 1.0 - smoothstep( crown - 0.005, crown + 0.005, dir.y );
         col = mix( col, vec3( 0.03, 0.025, 0.02 ), tree_mask );
         col += stars( dir ) * smoothstep( 0.12, 0.5, h ) * ( 1.2 - 0.6 * swell );
@@ -248,8 +266,12 @@ vec3 renderSky( vec3 dir )
         float w = 0.10 + 0.22 * rise;
         float column = exp( -pow( ( az - lean ) / w, 2.0 ) ) * smoothstep( -0.05, 0.15, rise )
                        * ( 1.0 - smoothstep( 0.6, 1.3, rise ) );
-        float hz = fbm2( vec2( az * 9.0, dir.y * 7.0 - sceneTime * 0.18 ) );
-        float fine = noise2( vec2( az * 60.0, dir.y * 40.0 - sceneTime * 1.2 ) );
+        float hz = mix( fbm2( vec2( az * 9.0, dir.y * 7.0 - sceneTime * 0.18 ) ),
+                        fbm2( vec2( ( az - 6.2831853 ) * 9.0, dir.y * 7.0 - sceneTime * 0.18 ) ),
+                        seamW( az ) );
+        float fine = mix( noise2( vec2( az * 60.0, dir.y * 40.0 - sceneTime * 1.2 ) ),
+                          noise2( vec2( ( az - 6.2831853 ) * 60.0, dir.y * 40.0 - sceneTime * 1.2 ) ),
+                          seamW( az ) );
         float plume = column * smoothstep( 0.35, 0.7, hz + 0.15 * fine * high ) * ( 0.25 + 0.75 * bass );
         col += vec3( 1.0, 0.55, 0.25 ) * plume * 0.55;
     }

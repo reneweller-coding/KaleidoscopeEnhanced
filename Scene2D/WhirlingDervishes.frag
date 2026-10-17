@@ -107,6 +107,20 @@ float noise2( vec2 p )
                 mix( hash21( i + vec2( 0.0, 1.0 ) ), hash21( i + vec2( 1.0, 1.0 ) ), f.x ), f.y );
 }
 
+/**  Weight that closes atan's cut: 0 over most of the circle, 1 at a = pi.  A noise of an angle from atan() does
+ *   not repeat after a turn and tears along the cut; mixed toward the same noise of a - 2*pi near a = pi it meets,
+ *   at the cut, exactly the value on the other side (17.10.2026).
+ *
+ * @param a  The angle, -pi..pi. (in)
+ *
+ * @return
+ *   The weight, 0..1.
+ **/
+float seamW( float a )
+{
+    return smoothstep( 2.5, 3.14159265, a );
+}
+
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
@@ -156,7 +170,11 @@ void main()
         vec3  skirt = cloth * lum * mix( vec3( 1.0 ), lamp_c, 0.35 );
         // The hem: a brighter ring with sparkle.
         float hem = exp( -abs( r - 0.97 ) * 40.0 );
-        skirt += cloth * hem * ( 0.35 + 0.8 * hi * noise2( vec2( ang * 10.0 + spin, fk ) ) );
+        skirt += cloth * hem
+                 * ( 0.35
+                     + 0.8 * hi
+                           * mix( noise2( vec2( ang * 10.0 + spin, fk ) ),
+                                  noise2( vec2( ( ang - 6.2831853 ) * 10.0 + spin, fk ) ), seamW( ang ) ) );
         // Head and shoulders: the tall felt hat seen from above, dark.
         float head = smoothstep( 0.2, 0.15, r );
         skirt = mix( skirt, vec3( 0.12, 0.08, 0.06 ), head );

@@ -145,6 +145,20 @@ float fbm( vec3 p )
     return f;
 }
 
+/**  Weight that closes atan's cut: 0 over most of the circle, 1 at a = pi.  A noise of an angle from atan() does
+ *   not repeat after a turn and tears along the cut; mixed toward the same noise of a - 2*pi near a = pi it meets,
+ *   at the cut, exactly the value on the other side (17.10.2026).
+ *
+ * @param a  The angle, -pi..pi. (in)
+ *
+ * @return
+ *   The weight, 0..1.
+ **/
+float seamW( float a )
+{
+    return smoothstep( 2.5, 3.14159265, a );
+}
+
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
@@ -170,7 +184,9 @@ void main()
     float tear = 0.0;
     if ( audioKick > 0.1 )
     {
-        float tear_noise = fbm( vec3( angle * 10.0, sceneTime * 20.0, 0.0 ) );
+        float tear_noise = mix( fbm( vec3( angle * 10.0, sceneTime * 20.0, 0.0 ) ),
+                                fbm( vec3( ( angle - 6.2831853 ) * 10.0, sceneTime * 20.0, 0.0 ) ),
+                                seamW( angle ) );
         if ( tear_noise > 0.7 )
         {
             // Offset UV radially
@@ -218,7 +234,9 @@ void main()
         float photon_sphere = exp( -d_out * 10.0 * wp );
         vec3  disk_color = imgPalette( 0.2 ); // Redshifted
 
-        float disk_noise = fbm( vec3( angle * 10.0, d_out * 50.0 - sceneTime * 5.0, sceneTime ) );
+        float disk_noise = mix( fbm( vec3( angle * 10.0, d_out * 50.0 - sceneTime * 5.0, sceneTime ) ),
+                                fbm( vec3( ( angle - 6.2831853 ) * 10.0, d_out * 50.0 - sceneTime * 5.0, sceneTime ) ),
+                                seamW( angle ) );
 
         streak_col = mix( streak_col, disk_color * disk_noise * 5.0 * ( 1.0 + audioSwell ), photon_sphere );
 

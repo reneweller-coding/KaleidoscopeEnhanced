@@ -418,6 +418,20 @@ vec3 delaunayPal( float k, float mode )
     return r * mix( vec3( 0.9, 0.95, 1.1 ), vec3( 1.1, 1.0, 0.9 ), mode );
 }
 
+/**  Weight that closes atan's cut: 0 over most of the circle, 1 at a = pi.  A noise of an angle from atan() does
+ *   not repeat after a turn and tears along the cut; mixed toward the same noise of a - 2*pi near a = pi it meets,
+ *   at the cut, exactly the value on the other side (17.10.2026).
+ *
+ * @param a  The angle, -pi..pi. (in)
+ *
+ * @return
+ *   The weight, 0..1.
+ **/
+float seamW( float a )
+{
+    return smoothstep( 2.5, 3.14159265, a );
+}
+
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
@@ -469,7 +483,9 @@ void main()
                           hueP * 0.159 );
     c = mix( c, pc * 0.9, 0.25 * clamp( photoP, 0.0, 1.0 ) );
     // Brushed paint: strokes following the ring direction.
-    float brush = noise2( vec2( ang * 8.0, rr * 60.0 ) + bid * 3.0 );
+    float brush = mix( noise2( vec2( ang * 8.0, rr * 60.0 ) + bid * 3.0 ),
+                       noise2( vec2( ( ang - 6.2831853 ) * 8.0, rr * 60.0 ) + bid * 3.0 ),
+                       seamW( ang ) );
     c *= 0.95 + ( 0.04 + 0.1 * rough ) * ( brush - 0.5 ) * 2.0;
     // Thin dark lines between rings and sectors, a little irregular.
     float px_r = fwidth( rr * n_r ) + 1e-4;

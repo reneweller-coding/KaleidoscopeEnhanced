@@ -119,16 +119,18 @@ void main()
     float onset = clamp( audioOnset, 0.0, 1.0 );
     for ( int layer = 0; layer < 3; ++layer )
     {
-        float sc = 6.0 * pow( 1.7, float( layer ) );  // cells per unit rho
-        float ang = 5.0 * pow( 1.7, float( layer ) ); // cells per radian
-        vec2  c = vec2( rho * sc, th * ang );
+        float sc = 6.0 * pow( 1.7, float( layer ) ); // cells per unit rho
+        // A whole number of cells round the circle, so the grid closes where atan jumps (17.10.2026: 5 * 1.7^layer
+        // cells per radian did not, and the bodies broke off along the left axis).
+        float n_ang = floor( 6.2831853 * 5.0 * pow( 1.7, float( layer ) ) + 0.5 );
+        vec2  c = vec2( rho * sc, th / 6.2831853 * n_ang );
         // Neighbouring cells so bodies can cross cell borders.
         for ( int dx = -1; dx <= 1; ++dx )
             for ( int dy = -1; dy <= 1; ++dy )
             {
                 vec2 cell = floor( c ) + vec2( float( dx ), float( dy ) );
                 // Periodicity in rho: wrap the cell index so the zoom loops.
-                vec2 key = vec2( mod( cell.x, L * sc ), mod( cell.y, 6.2831853 * ang ) );
+                vec2 key = vec2( mod( cell.x, L * sc ), mod( cell.y, n_ang ) );
                 vec2 h = hash22( key + float( layer ) * 31.0 );
                 if ( h.x > dens )
                     continue;

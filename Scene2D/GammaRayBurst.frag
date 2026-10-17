@@ -161,7 +161,10 @@ void main()
     // We create a perspective illusion of a tunnel of light.
 
     // Wobbly, relativistic distortion of the beam
-    float beam_wobble = fbm( vec3( angle * 2.0, time * 2.0, 0.0 ) ) * 0.05;
+    // Every noise of the angle is sampled on a circle (cos, sin): a noise of the angle itself does not repeat after
+    // a turn, and tore along the left axis where atan jumps (17.10.2026).
+    vec2  ring = vec2( cos( angle ), sin( angle ) );
+    float beam_wobble = fbm( vec3( ring * 2.0, time * 2.0 ) ) * 0.05;
     float dist_distort = dist + beam_wobble;
 
     // The core of the beam is infinitely bright and tiny
@@ -171,11 +174,10 @@ void main()
     // Relativistic particles shooting outwards from the center (Z-axis illusion)
     // Map 2D to a 3D cylindrical tunnel
     float tunnel_z = 1.0 / max( dist_distort, 0.001 );
-    float tunnel_u = angle * 2.0;                                      // wrap around
     float tunnel_v = tunnel_z - ( time * 10.0 + audioAdvance * 20.0 ); // rushing towards us
 
     // High frequency noise for the chaotic plasma
-    float plasma = fbm( vec3( tunnel_u * 5.0, tunnel_v * 2.0, time ) );
+    float plasma = fbm( vec3( ring.x * 10.0, ring.y * 10.0 + tunnel_v * 2.0, time ) );
     float plasma_strands = step( 0.7, plasma );
 
     // Combine core and plasma
@@ -197,7 +199,7 @@ void main()
         float ring_mask = smoothstep( 0.9, 1.0, rings );
 
         // Break rings into turbulent debris
-        float debris = fbm( vec3( angle * 10.0, dist * 5.0, time * 2.0 ) );
+        float debris = fbm( vec3( ring.x * 10.0, ring.y * 10.0 + dist * 5.0, time * 2.0 ) );
         float ejecta = ring_mask * debris * sp;
 
         // Ejecta gets destroyed/fades as it gets pushed further out
@@ -214,7 +216,7 @@ void main()
 
     // 3. Glare and Lens effects (the energy is overwhelming)
     // Massive radial glare rays
-    float rays = fbm( vec3( angle * 20.0, time * 0.5, 0.0 ) );
+    float rays = fbm( vec3( ring * 20.0, time * 0.5 ) );
     float rays_mask = smoothstep( 0.6, 0.9, rays ) * exp( -dist * 3.0 );
     col += beam_color * rays_mask * 0.5 * ( 1.0 + audioKick * 2.0 );
 

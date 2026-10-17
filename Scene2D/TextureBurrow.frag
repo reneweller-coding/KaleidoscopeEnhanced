@@ -390,6 +390,20 @@ void finish( vec3 col )
     fragColor = vec4( clamp( t, 0.0, 1.0 ), 1.0 );
 }
 
+/**  Weight that closes atan's cut: 0 over most of the circle, 1 at a = pi.  A noise of an angle from atan() does
+ *   not repeat after a turn and tears along the cut; mixed toward the same noise of a - 2*pi near a = pi it meets,
+ *   at the cut, exactly the value on the other side (17.10.2026).
+ *
+ * @param a  The angle, -pi..pi. (in)
+ *
+ * @return
+ *   The weight, 0..1.
+ **/
+float seamW( float a )
+{
+    return smoothstep( 2.5, 3.14159265, a );
+}
+
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
@@ -430,7 +444,11 @@ void main()
     float lamp = exp( -z * ( 0.12 + 0.15 * swell ) );
     col *= ( 0.35 + 0.8 * lamp ) * ( 1.0 - rib_d * 0.6 );
     // Wet glisten on the rib crests.
-    float wet = pow( rib, 12.0 ) * ( 0.3 + 0.7 * noise2( vec2( a * 6.0, wz * 3.0 ) ) );
+    float wet = pow( rib, 12.0 )
+                * ( 0.3
+                    + 0.7
+                          * mix( noise2( vec2( a * 6.0, wz * 3.0 ) ),
+                                 noise2( vec2( ( a - 6.2831853 ) * 6.0, wz * 3.0 ) ), seamW( a ) ) );
     col += mix( flesh, vec3( 1.0 ), 0.6 ) * wet * lamp * ( 0.25 + 0.8 * bass );
     // Darkness in the depth, a faint glow where the passage continues.
     vec3 gc = glowColour( imgLod( vec2( 0.5 ), 6.0 ), vec2( travel * 0.03, 0.0 ), hueP * 0.159 );

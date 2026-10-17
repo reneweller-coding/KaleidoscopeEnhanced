@@ -167,6 +167,20 @@ float segDist( vec3 d, vec3 a, vec3 b, out float u )
     return distance( d, normalize( a + ab * u ) );
 }
 
+/**  Weight that closes atan's cut: 0 over most of the circle, 1 at a = pi.  A noise of an angle from atan() does
+ *   not repeat after a turn and tears along the cut; mixed toward the same noise of a - 2*pi near a = pi it meets,
+ *   at the cut, exactly the value on the other side (17.10.2026).
+ *
+ * @param a  The angle, -pi..pi. (in)
+ *
+ * @return
+ *   The weight, 0..1.
+ **/
+float seamW( float a )
+{
+    return smoothstep( 2.5, 3.14159265, a );
+}
+
 /**  The sky colour for a direction.
  *
  * @param dir  The view direction (unit length). (in)
@@ -194,7 +208,12 @@ vec3 renderSky( vec3 dir )
     else
     {
         float h = clamp( dir.y, 0.0, 1.0 );
-        col = vec3( 0.10, 0.08, 0.07 ) * ( 0.6 + 0.5 * noise2( vec2( az * 6.0, dir.y * 8.0 ) ) ) * exp( -h * 2.5 );
+        col = vec3( 0.10, 0.08, 0.07 )
+              * ( 0.6
+                  + 0.5
+                        * mix( noise2( vec2( az * 6.0, dir.y * 8.0 ) ),
+                               noise2( vec2( ( az - 6.2831853 ) * 6.0, dir.y * 8.0 ) ), seamW( az ) ) )
+              * exp( -h * 2.5 );
         // The furnace mouth, low on the right: the bass is its roar as light.
         float mouth = step( abs( az - 0.95 ), 0.10 ) * step( 0.0, dir.y ) * step( dir.y, 0.14 );
         col += vec3( 1.0, 0.45, 0.10 ) * mouth * ( 0.5 + 1.2 * bass );

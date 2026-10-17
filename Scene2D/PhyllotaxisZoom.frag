@@ -142,7 +142,10 @@ void main()
     // Gaps between seeds: a faint version of the photo so the field is never
     // black.
     float r = length( p );
-    col += img( fract( vec2( rho * 0.35, th * 0.159 ) ) ) * 0.12 * ( 1.0 - disc );
+    // The photo mirrored round the circle, not wrapped: it does not tile, and fract() drew a cut on the right
+    // axis (17.10.2026).  A triangle wave of th / (2 pi) closes after a turn.
+    vec2 puv = vec2( rho * 0.35, th * 0.159 );
+    col += img( abs( fract( puv * 0.5 ) * 2.0 - 1.0 ) ) * 0.12 * ( 1.0 - disc );
 
     // Kick: light from the centre.  The very centre is aliased seed-dust, so
     // it dims softly.

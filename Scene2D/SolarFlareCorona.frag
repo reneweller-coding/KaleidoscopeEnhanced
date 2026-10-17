@@ -212,6 +212,20 @@ vec3 blackbody( float t )
     return c;
 }
 
+/**  Weight that closes atan's cut: 0 over most of the circle, 1 at a = pi.  A noise of an angle from atan() does
+ *   not repeat after a turn and tears along the cut; mixed toward the same noise of a - 2*pi near a = pi it meets,
+ *   at the cut, exactly the value on the other side (17.10.2026).
+ *
+ * @param a  The angle, -pi..pi. (in)
+ *
+ * @return
+ *   The weight, 0..1.
+ **/
+float seamW( float a )
+{
+    return smoothstep( 2.5, 3.14159265, a );
+}
+
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
@@ -278,7 +292,10 @@ void main()
     col *= ( 1.0 - sunspots * 0.65 );
 
     // Background cosmic corona rays & solar wind
-    float corona_rays = pow( noise2D( vec2( a * 5.0 + t * 0.4, r * 2.0 - t * 1.5 ) ), 2.0 );
+    float corona_rays = pow( mix( noise2D( vec2( a * 5.0 + t * 0.4, r * 2.0 - t * 1.5 ) ),
+                                  noise2D( vec2( ( a - 6.2831853 ) * 5.0 + t * 0.4, r * 2.0 - t * 1.5 ) ),
+                                  seamW( a ) ),
+                             2.0 );
     vec3  corona_col = palTint( mix( vec3( 1.0, 0.4, 0.1 ), vec3( 0.9, 0.1, 0.4 ), sin( a * 3.0 + t ) * 0.5 + 0.5 ),
                                 0.10, 0.20 );
     col += corona_col * corona_rays * ( 0.6 + audioSwell * 0.8 ) * exp( -r * 0.8 );

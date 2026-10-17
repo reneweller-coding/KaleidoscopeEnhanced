@@ -204,6 +204,20 @@ vec3 lightAt( vec3 P, vec3 n, vec3 lp, vec3 lc, float range )
 const vec3 CandleA = vec3( -16.0, Ground + 3.0, Dist - 22.0 ); ///< Position of the first candle light.
 const vec3 CandleB = vec3( 14.0, Ground + 2.0, Dist - 26.0 );  ///< Position of the second candle light.
 
+/**  Weight that closes atan's cut: 0 over most of the circle, 1 at a = pi.  A noise of an angle from atan() does
+ *   not repeat after a turn and tears along the cut; mixed toward the same noise of a - 2*pi near a = pi it meets,
+ *   at the cut, exactly the value on the other side (17.10.2026).
+ *
+ * @param a  The angle, -pi..pi. (in)
+ *
+ * @return
+ *   The weight, 0..1.
+ **/
+float seamW( float a )
+{
+    return smoothstep( 2.5, 3.14159265, a );
+}
+
 /**  The sky colour for a direction.
  *
  * @param dir  The view direction (unit length). (in)
@@ -235,7 +249,11 @@ vec3 renderSky( vec3 dir )
         // Sandstone walls with pilasters, candlelight from below dying
         // into a dark vault.
         float h = clamp( dir.y, 0.0, 1.0 );
-        vec3  wall = vec3( 0.20, 0.16, 0.12 ) * ( 0.6 + 0.6 * fbm2( vec2( az * 6.0, dir.y * 9.0 ) ) );
+        vec3  wall = vec3( 0.20, 0.16, 0.12 )
+                     * ( 0.6
+                         + 0.6
+                               * mix( fbm2( vec2( az * 6.0, dir.y * 9.0 ) ),
+                                      fbm2( vec2( ( az - 6.2831853 ) * 6.0, dir.y * 9.0 ) ), seamW( az ) ) );
         float pil = smoothstep( 0.42, 0.47, abs( fract( az * 2.2 ) - 0.5 ) );
         wall *= 0.75 + 0.35 * pil;
         float dark = exp( -h * 4.5 );

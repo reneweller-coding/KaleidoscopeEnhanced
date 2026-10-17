@@ -140,6 +140,20 @@ float fbm( vec3 p )
     return f;
 }
 
+/**  Weight that closes atan's cut: 0 over most of the circle, 1 at a = pi.  A noise of an angle from atan() does
+ *   not repeat after a turn and tears along the cut; mixed toward the same noise of a - 2*pi near a = pi it meets,
+ *   at the cut, exactly the value on the other side (17.10.2026).
+ *
+ * @param a  The angle, -pi..pi. (in)
+ *
+ * @return
+ *   The weight, 0..1.
+ **/
+float seamW( float a )
+{
+    return smoothstep( 2.5, 3.14159265, a );
+}
+
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
@@ -270,13 +284,17 @@ void main()
     {
         // A massive plasma jet escaping this hole
         // Noise for the jet shape
-        float flare_noise = fbm( vec3( angle * 5.0, dist * 5.0 - time * 5.0, 0.0 ) );
+        float flare_noise = mix( fbm( vec3( angle * 5.0, dist * 5.0 - time * 5.0, 0.0 ) ),
+                                 fbm( vec3( ( angle - 6.2831853 ) * 5.0, dist * 5.0 - time * 5.0, 0.0 ) ),
+                                 seamW( angle ) );
 
         // The flare gets weaker further out
         float flare_falloff = exp( -( dist - sphere_rad ) * ( 10.0 / fp ) );
 
         // Flash on kick
-        float jet_spike = step( 0.95, hash11( floor( angle * 5.0 ) + floor( time * 4.00 ) ) );
+        float jet_spike = step( 0.95, mix( hash11( floor( angle * 5.0 ) + floor( time * 4.00 ) ),
+                                           hash11( floor( ( angle - 6.2831853 ) * 5.0 ) + floor( time * 4.00 ) ),
+                                           seamW( angle ) ) );
         float jet_intensity = 1.0 + ( jet_spike * audioKick * 10.0 * fp );
 
         float flare = smoothstep( 0.3, 0.8, flare_noise ) * flare_falloff * edge_hole_mask;

@@ -215,6 +215,20 @@ vec3 perturbNormal( sampler2DArray tex, int layers, vec2 uv, vec3 n, vec3 wpos, 
 
 const vec3 SunDir = vec3( -0.5, 0.07, 0.85 ); ///< Direction to the sun (normalised where it is used).
 
+/**  Weight that closes atan's cut: 0 over most of the circle, 1 at a = pi.  A noise of an angle from atan() does
+ *   not repeat after a turn and tears along the cut; mixed toward the same noise of a - 2*pi near a = pi it meets,
+ *   at the cut, exactly the value on the other side (17.10.2026).
+ *
+ * @param a  The angle, -pi..pi. (in)
+ *
+ * @return
+ *   The weight, 0..1.
+ **/
+float seamW( float a )
+{
+    return smoothstep( 2.5, 3.14159265, a );
+}
+
 /**  The sky colour for a direction.
  *
  * @param dir  The view direction (unit length). (in)
@@ -250,7 +264,8 @@ vec3 renderSky( vec3 dir )
         col += vec3( 1.0, 0.75, 0.45 ) * exp( -sd * 9.0 ) * ( 0.7 + 0.4 * swell );
         col += vec3( 1.0, 0.9, 0.7 ) * ( 1.0 - smoothstep( 0.035, 0.045, sd ) ) * 1.5;
         float az = atan( dir.x, dir.z );
-        float tree = 0.045 + 0.05 * noise1( az * 3.0 ) + 0.02 * noise1( az * 11.0 + 3.0 );
+        float tree = 0.045 + 0.05 * mix( noise1( az * 3.0 ), noise1( ( az - 6.2831853 ) * 3.0 ), seamW( az ) )
+                     + 0.02 * mix( noise1( az * 11.0 + 3.0 ), noise1( ( az - 6.2831853 ) * 11.0 + 3.0 ), seamW( az ) );
         float tree_mask = 1.0 - smoothstep( tree - 0.006, tree + 0.006, dir.y );
         col = mix( col, vec3( 0.02, 0.03, 0.02 ), tree_mask );
         col += stars( dir ) * smoothstep( 0.15, 0.6, h );

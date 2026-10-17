@@ -108,6 +108,20 @@ float materialExposure( sampler2DArray tex )
     return clamp( 0.28 / max( l, 0.02 ), 0.60, 1.8 );
 }
 
+/**  Weight that closes atan's cut: 0 over most of the circle, 1 at a = pi.  A noise of an angle from atan() does
+ *   not repeat after a turn and tears along the cut; mixed toward the same noise of a - 2*pi near a = pi it meets,
+ *   at the cut, exactly the value on the other side (17.10.2026).
+ *
+ * @param a  The angle, -pi..pi. (in)
+ *
+ * @return
+ *   The weight, 0..1.
+ **/
+float seamW( float a )
+{
+    return smoothstep( 2.5, 3.14159265, a );
+}
+
 /**  The sky colour for a direction.
  *
  * @param dir  The view direction (unit length). (in)
@@ -134,8 +148,12 @@ vec3 renderSky( vec3 dir )
     {
         float h = clamp( dir.y, 0.0, 1.0 );
         float az = atan( dir.x, dir.z );
-        col = vec3( 0.18, 0.19, 0.17 ) * ( 0.6 + 0.5 * noise2( vec2( az * 6.0, dir.y * 8.0 ) ) ) * exp( -h * 3.0 )
-              * lamp;
+        col = vec3( 0.18, 0.19, 0.17 )
+              * ( 0.6
+                  + 0.5
+                        * mix( noise2( vec2( az * 6.0, dir.y * 8.0 ) ),
+                               noise2( vec2( ( az - 6.2831853 ) * 6.0, dir.y * 8.0 ) ), seamW( az ) ) )
+              * exp( -h * 3.0 ) * lamp;
         col += vec3( 1.0, 0.85, 0.6 ) * exp( -distance( dir, normalize( vec3( 0.35, 0.65, 1.0 ) ) ) * 4.0 ) * 0.18
                * lamp;
     }
@@ -216,7 +234,10 @@ void main()
         {
             float xk = x_pen - float( k ) * ( 6.2831853 / Rate ) / 140.0 * 1.40;
             float wk = 0.08 * sin( phi * 7.0 + float( k ) * 2.0 )
-                       * ( 0.3 + 0.7 * noise2( vec2( phi * 3.0, float( k ) ) ) );
+                       * ( 0.3
+                           + 0.7
+                                 * mix( noise2( vec2( phi * 3.0, float( k ) ) ),
+                                        noise2( vec2( ( phi - 6.2831853 ) * 3.0, float( k ) ) ), seamW( phi ) ) );
             older += ( 1.0 - smoothstep( 0.008, 0.018, abs( vLocal.x - ( xk + wk ) ) ) ) * 0.45;
         }
         older *= paper;

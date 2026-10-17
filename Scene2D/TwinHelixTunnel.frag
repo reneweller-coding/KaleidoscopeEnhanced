@@ -390,6 +390,20 @@ void finish( vec3 col )
     fragColor = vec4( clamp( t, 0.0, 1.0 ), 1.0 );
 }
 
+/**  Weight that closes atan's cut: 0 over most of the circle, 1 at a = pi.  A noise of an angle from atan() does
+ *   not repeat after a turn and tears along the cut; mixed toward the same noise of a - 2*pi near a = pi it meets,
+ *   at the cut, exactly the value on the other side (17.10.2026).
+ *
+ * @param a  The angle, -pi..pi. (in)
+ *
+ * @return
+ *   The weight, 0..1.
+ **/
+float seamW( float a )
+{
+    return smoothstep( 2.5, 3.14159265, a );
+}
+
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
@@ -426,7 +440,11 @@ void main()
     // Light glowing through the gaps.
     vec3 gap_c = mix( vec3( 0.3, 0.6, 1.0 ), vec3( 1.0, 0.6, 0.3 ), clamp( audioMode, 0.0, 1.0 ) )
                  * ( 0.35 + 0.9 * bass );
-    vec3 col = gap_c * ( 0.5 + 0.5 * noise2( vec2( a * 3.0, u ) ) );
+    vec3 col = gap_c
+               * ( 0.5
+                   + 0.5
+                         * mix( noise2( vec2( a * 3.0, u ) ), noise2( vec2( ( a - 6.2831853 ) * 3.0, u ) ),
+                                seamW( a ) ) );
     if ( cr > 0.5 )
     {
         col = mix( col, r2, in2 );

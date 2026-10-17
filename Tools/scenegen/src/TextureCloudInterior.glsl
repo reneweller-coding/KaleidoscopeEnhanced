@@ -21,6 +21,20 @@
 //@audio audioSpread audioRoughness audioMode audioBass audioSwell
 //@expr densityP = clamp(0.4 + 0.35*swell + 0.2*seed2, 0.0, 1.0)
 //@body
+/**  Weight that closes atan's cut: 0 over most of the circle, 1 at a = pi.  A noise of an angle from atan() does
+ *   not repeat after a turn and tears along the cut; mixed toward the same noise of a - 2*pi near a = pi it meets,
+ *   at the cut, exactly the value on the other side (17.10.2026).
+ *
+ * @param a  The angle, -pi..pi. (in)
+ *
+ * @return
+ *   The weight, 0..1.
+ **/
+float seamW( float a )
+{
+    return smoothstep( 2.5, 3.14159265, a );
+}
+
 void main()
 {
     vec2 p = screenP();
@@ -72,7 +86,9 @@ void main()
     vec2 sp2 = sunDir * 0.9;
     vec2 v = p - sp2;
     float ang = atan(v.y, v.x);
-    float rays = pow(0.5 + 0.5 * noise2(vec2(ang * 9.0, z0 * 0.3)), 3.0) * exp(-length(v) * 0.9);
+    float rays = pow(0.5 + 0.5 * mix( noise2(vec2(ang * 9.0, z0 * 0.3)),
+                                      noise2(vec2(( ang - 6.2831853 ) * 9.0, z0 * 0.3)),
+                                      seamW( ang ) ), 3.0) * exp(-length(v) * 0.9);
     col += sunC * rays * (0.15 + 0.35 * clamp(sunP, 0.0, 1.0)) * (0.6 + 0.8 * bass);
     finish(col);
 }

@@ -119,6 +119,20 @@ float fbm( vec2 p )
     return v;
 }
 
+/**  Weight that closes atan's cut: 0 over most of the circle, 1 at a = pi.  A noise of an angle from atan() does
+ *   not repeat after a turn and tears along the cut; mixed toward the same noise of a - 2*pi near a = pi it meets,
+ *   at the cut, exactly the value on the other side (17.10.2026).
+ *
+ * @param a  The angle, -pi..pi. (in)
+ *
+ * @return
+ *   The weight, 0..1.
+ **/
+float seamW( float a )
+{
+    return smoothstep( 2.5, 3.14159265, a );
+}
+
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
@@ -135,10 +149,19 @@ void main()
     vec2  c = p - vec2( -0.08, 0.02 );
     float ang = atan( c.y, c.x );
     float r = length( c * vec2( 1.0, 1.12 ) );
-    float wob = 0.035 * ( fbm( vec2( ang * 1.5, 1.0 ) ) - 0.5 ) + 0.02 * sin( ang * 3.0 + 1.0 );
+    float wob = 0.035
+                    * ( mix( fbm( vec2( ang * 1.5, 1.0 ) ), fbm( vec2( ( ang - 6.2831853 ) * 1.5, 1.0 ) ),
+                             seamW( ang ) )
+                        - 0.5 )
+                + 0.02 * sin( ang * 3.0 + 1.0 );
     float rr = r + wob; // the distorted radius
     // Radial fingers of microbial mat running out from the rim.
-    float fingers = fbm( vec2( ang * 18.0, r * 3.0 ) ) * 0.7 + 0.3 * noise2( vec2( ang * 60.0, r * 10.0 ) );
+    float fingers = mix( fbm( vec2( ang * 18.0, r * 3.0 ) ), fbm( vec2( ( ang - 6.2831853 ) * 18.0, r * 3.0 ) ),
+                         seamW( ang ) )
+                        * 0.7
+                    + 0.3
+                          * mix( noise2( vec2( ang * 60.0, r * 10.0 ) ),
+                                 noise2( vec2( ( ang - 6.2831853 ) * 60.0, r * 10.0 ) ), seamW( ang ) );
     float reach = rr - 0.06 * fingers * smoothstep( 0.2, 0.34, rr );
 
     // The bands, from the deep blue centre outward.
@@ -161,8 +184,12 @@ void main()
     col = mix( sinter * ( 0.93 + 0.07 * noise2( p * 200.0 ) ) * ( 0.95 + 0.08 * fbm( p * 6.0 ) ), col, mat );
     // Orange runoff channels trailing away over the crust.
     float run = smoothstep( 0.62, 0.72,
-                            fbm( vec2( ang * 5.0 + 3.0, r * 1.5 ) )
-                                + 0.1 * ( noise2( vec2( ang * 80.0, r * 6.0 ) ) - 0.5 ) )
+                            mix( fbm( vec2( ang * 5.0 + 3.0, r * 1.5 ) ),
+                                 fbm( vec2( ( ang - 6.2831853 ) * 5.0 + 3.0, r * 1.5 ) ), seamW( ang ) )
+                                + 0.1
+                                      * ( mix( noise2( vec2( ang * 80.0, r * 6.0 ) ),
+                                               noise2( vec2( ( ang - 6.2831853 ) * 80.0, r * 6.0 ) ), seamW( ang ) )
+                                          - 0.5 ) )
                 * smoothstep( 0.3, 0.5, s ) * smoothstep( 1.2, 0.5, s );
     col = mix( col, mix( orng, rust, 0.5 ), run * 0.6 );
     // Terraces: faint ridges on the crust.

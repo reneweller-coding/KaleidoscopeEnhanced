@@ -148,7 +148,9 @@ void main()
         float r = max( length( uv ), 1e-3 );
         float a = atan( uv.y, uv.x );
         vec2  t = vec2( a / 3.14159265, 0.32 / r + audioAdvance * 0.06 + time * 0.05 );
-        col = photo( fract( t * vec2( 1.0, 0.5 ) ) );
+        // Mirrored, not fract(): the photo does not tile, and its wrap drew a standing cut along the axis where
+        // a / pi crosses a whole number (17.10.2026).  The triangle wave has period 2 in a / pi: one turn.
+        col = photo( abs( fract( t * vec2( 0.5, 0.25 ) ) * 2.0 - 1.0 ) );
         col *= smoothstep( 0.0, 0.45, r ); // dark at the vanishing point
         col *= 0.7 + 1.0 * audioSwell;
     }

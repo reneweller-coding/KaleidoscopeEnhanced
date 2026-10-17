@@ -35,7 +35,7 @@ out vec4 fragColor; ///< The pixel's colour (output).
 // effect leaves the far plane there, and blurring THAT would mean blurring the
 // whole frame uniformly — so those layers pass through untouched.
 uniform vec2      resolution;    ///< Size of the render target in pixels.
-uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform float     time;          ///< Seconds since this activation, plus a rolled start (see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.
 uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
 uniform sampler2D texDepth0;     ///< Depth buffer of the current 3D scene (the source of tex0).

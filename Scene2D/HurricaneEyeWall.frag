@@ -117,6 +117,20 @@ float fbm( vec2 p )
     return v;
 }
 
+/**  Weight that closes atan's cut: 0 over most of the circle, 1 at a = pi.  A noise of an angle from atan() does
+ *   not repeat after a turn and tears along the cut; mixed toward the same noise of a - 2*pi near a = pi it meets,
+ *   at the cut, exactly the value on the other side (17.10.2026).
+ *
+ * @param a  The angle, -pi..pi. (in)
+ *
+ * @return
+ *   The weight, 0..1.
+ **/
+float seamW( float a )
+{
+    return smoothstep( 2.5, 3.14159265, a );
+}
+
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
@@ -175,13 +189,19 @@ void main()
         float ang = atan( q.z, q.x ) + rot;
         vec2  wuv = vec2( ang / 6.2831853 * 3.0, q.y / wall_h );
         vec3  cloud = img( fract( wuv ) ) * 0.6 + 0.35;
-        float bil = fbm( vec2( ang * 3.0, q.y * 0.4 ) + vec2( 0.0, -sceneAdvance * 0.05 ) );
+        float bil = mix( fbm( vec2( ang * 3.0, q.y * 0.4 ) + vec2( 0.0, -sceneAdvance * 0.05 ) ),
+                         fbm( vec2( ( ang - 6.2831853 ) * 3.0, q.y * 0.4 ) + vec2( 0.0, -sceneAdvance * 0.05 ) ),
+                         seamW( ang ) );
         cloud *= 0.6 + 0.6 * bil;
         cloud = mix( cloud, cloud * imgPalette( hue * 0.159 + 0.6 ) * 1.5, 0.2 );
         float height_light = 0.25 + 0.75 * pow( q.y / wall_h, 0.7 );
         col = cloud * height_light;
         // Lightning: a localised branching flash (never the whole wall) on the kick.
-        float bolt = pow( fbm( vec2( ang * 6.0, q.y * 0.5 + sceneAdvance ) ), 5.0 ) * 8.0;
+        float bolt = pow( mix( fbm( vec2( ang * 6.0, q.y * 0.5 + sceneAdvance ) ),
+                               fbm( vec2( ( ang - 6.2831853 ) * 6.0, q.y * 0.5 + sceneAdvance ) ),
+                               seamW( ang ) ),
+                          5.0 )
+                     * 8.0;
         float sector = exp( -pow( sin( ang * 0.5 - sceneAdvance * 0.2 ), 2.0 ) * 12.0 );
         col += vec3( 1.0, 0.95, 0.9 ) * bolt * sector * audioKick * 0.5;
         float fog = 1.0 - exp( -t_wall * 0.03 );

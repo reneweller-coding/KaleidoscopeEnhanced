@@ -173,6 +173,20 @@ vec3 perturbNormal( sampler2DArray tex, int layers, vec2 uv, vec3 n, vec3 wpos, 
     return normalize( cotangentFrame( n, wpos, uv ) * normalize( m ) );
 }
 
+/**  Weight that closes atan's cut: 0 over most of the circle, 1 at a = pi.  A noise of an angle from atan() does
+ *   not repeat after a turn and tears along the cut; mixed toward the same noise of a - 2*pi near a = pi it meets,
+ *   at the cut, exactly the value on the other side (17.10.2026).
+ *
+ * @param a  The angle, -pi..pi. (in)
+ *
+ * @return
+ *   The weight, 0..1.
+ **/
+float seamW( float a )
+{
+    return smoothstep( 2.5, 3.14159265, a );
+}
+
 /**  The sky colour for a direction.
  *
  * @param dir  The view direction (unit length). (in)
@@ -186,8 +200,15 @@ vec3 renderSky( vec3 dir )
     float kick = clamp( audioKick, 0.0, 1.0 );
     // The inside of a clock: dark iron plates, a warm lamp high on the left.
     float az = atan( dir.x, dir.z );
-    vec3  plate = vec3( 0.10, 0.09, 0.08 ) * ( 0.6 + 0.6 * fbm2( vec2( az * 8.0, dir.y * 8.0 ) ) );
-    float rivet = step( 0.985, hash21( floor( vec2( az * 40.0, dir.y * 30.0 ) ) ) ) * 0.4;
+    vec3  plate = vec3( 0.10, 0.09, 0.08 )
+                  * ( 0.6
+                      + 0.6
+                            * mix( fbm2( vec2( az * 8.0, dir.y * 8.0 ) ),
+                                   fbm2( vec2( ( az - 6.2831853 ) * 8.0, dir.y * 8.0 ) ), seamW( az ) ) );
+    float rivet = step( 0.985, mix( hash21( floor( vec2( az * 40.0, dir.y * 30.0 ) ) ),
+                                    hash21( floor( vec2( ( az - 6.2831853 ) * 40.0, dir.y * 30.0 ) ) ),
+                                    seamW( az ) ) )
+                  * 0.4;
     vec3  col = ( plate + vec3( 0.35, 0.28, 0.15 ) * rivet ) * ( 0.3 + 0.5 * swell );
     vec3  lamp = normalize( vec3( -0.5, 0.7, 0.8 ) );
     col += vec3( 1.0, 0.75, 0.45 ) * exp( -distance( dir, lamp ) * 3.5 ) * 0.25 * ( 0.5 + 0.5 * swell );

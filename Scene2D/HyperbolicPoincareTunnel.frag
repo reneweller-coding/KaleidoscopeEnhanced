@@ -110,7 +110,8 @@ void main()
     angle = atan( p.y, p.x );
 
     // 8-fold hyperbolic sector symmetry
-    float sectors = 8.0 * brn;
+    // A whole number of sectors: 8 * branchP rolled as any number, and the fold did not close at atan's jump.
+    float sectors = max( 3.0, floor( 8.0 * brn + 0.5 ) );
     float sec_angle = 6.2831853 / sectors;
     float folded_angle = mod( angle + 0.5 * sec_angle, sec_angle ) - 0.5 * sec_angle;
     vec2  h_coord = vec2( cos( folded_angle ), sin( folded_angle ) ) * ( 1.0 - exp( -r * 2.0 ) );

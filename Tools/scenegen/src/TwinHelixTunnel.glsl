@@ -18,6 +18,20 @@
 //@params pitchP widthP photoP
 //@audio audioPhase audioSpread audioMode audioBass audioHigh
 //@body
+/**  Weight that closes atan's cut: 0 over most of the circle, 1 at a = pi.  A noise of an angle from atan() does
+ *   not repeat after a turn and tears along the cut; mixed toward the same noise of a - 2*pi near a = pi it meets,
+ *   at the cut, exactly the value on the other side (17.10.2026).
+ *
+ * @param a  The angle, -pi..pi. (in)
+ *
+ * @return
+ *   The weight, 0..1.
+ **/
+float seamW( float a )
+{
+    return smoothstep( 2.5, 3.14159265, a );
+}
+
 void main()
 {
     vec2 p = screenP() * 3.0;
@@ -52,7 +66,9 @@ void main()
     r2 = mix(tint2 * 0.6, r2, photo) * (0.5 + 0.5 * (1.0 - d2 / w));
     // Light glowing through the gaps.
     vec3 gapC = mix(vec3(0.3, 0.6, 1.0), vec3(1.0, 0.6, 0.3), clamp(audioMode, 0.0, 1.0)) * (0.35 + 0.9 * bass);
-    vec3 col = gapC * (0.5 + 0.5 * noise2(vec2(a * 3.0, u)));
+    vec3 col = gapC * (0.5 + 0.5 * mix( noise2(vec2(a * 3.0, u)),
+                                        noise2(vec2(( a - 6.2831853 ) * 3.0, u)),
+                                        seamW( a ) ));
     if (cr > 0.5) { col = mix(col, r2, in2); col = mix(col, r1 * (1.0 - 0.4 * in2), in1); }
     else          { col = mix(col, r1, in1); col = mix(col, r2 * (1.0 - 0.4 * in1), in2); }
     // Edge seams.

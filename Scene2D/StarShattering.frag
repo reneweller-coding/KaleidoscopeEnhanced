@@ -159,6 +159,20 @@ vec2 lens( vec2 uv, vec2 center, float mass )
     return uv - normalize( dir ) * deflection;
 }
 
+/**  Weight that closes atan's cut: 0 over most of the circle, 1 at a = pi.  A noise of an angle from atan() does
+ *   not repeat after a turn and tears along the cut; mixed toward the same noise of a - 2*pi near a = pi it meets,
+ *   at the cut, exactly the value on the other side (17.10.2026).
+ *
+ * @param a  The angle, -pi..pi. (in)
+ *
+ * @return
+ *   The weight, 0..1.
+ **/
+float seamW( float a )
+{
+    return smoothstep( 2.5, 3.14159265, a );
+}
+
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
@@ -286,7 +300,9 @@ void main()
         float angle_bh = atan( uv.y - bh_pos.y, uv.x - bh_pos.x );
         float disk_speed = time * 5.0 + audioAdvance * 5.0;
 
-        float disk_noise = fbm( vec3( angle_bh * 10.0 + disk_speed, d_bh * 20.0, time ) );
+        float disk_noise = mix( fbm( vec3( angle_bh * 10.0 + disk_speed, d_bh * 20.0, time ) ),
+                                fbm( vec3( ( angle_bh - 6.2831853 ) * 10.0 + disk_speed, d_bh * 20.0, time ) ),
+                                seamW( angle_bh ) );
 
         // Disk falls off quickly
         float disk_mask = exp( -( d_bh - event_horizon ) * ( 30.0 / gp ) );

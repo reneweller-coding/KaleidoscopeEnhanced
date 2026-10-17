@@ -200,6 +200,20 @@ vec3 perturbNormal( sampler2DArray tex, int layers, vec2 uv, vec3 n, vec3 wpos, 
     return normalize( cotangentFrame( n, wpos, uv ) * normalize( m ) );
 }
 
+/**  Weight that closes atan's cut: 0 over most of the circle, 1 at a = pi.  A noise of an angle from atan() does
+ *   not repeat after a turn and tears along the cut; mixed toward the same noise of a - 2*pi near a = pi it meets,
+ *   at the cut, exactly the value on the other side (17.10.2026).
+ *
+ * @param a  The angle, -pi..pi. (in)
+ *
+ * @return
+ *   The weight, 0..1.
+ **/
+float seamW( float a )
+{
+    return smoothstep( 2.5, 3.14159265, a );
+}
+
 /**  The sky and the desert, also sampled by the mirrors.
  *
  * @param dir  The view direction (unit length). (in)
@@ -231,7 +245,9 @@ vec3 renderSky( vec3 dir )
         col += vec3( 1.0, 0.95, 0.85 ) * exp( -sdist * 6.0 ) * 0.6;
         col += vec3( 1.0 ) * ( 1.0 - smoothstep( 0.03, 0.04, sdist ) ) * 3.0;
         float az = atan( dir.x, dir.z );
-        float ridge = 0.015 + 0.03 * noise1( az * 3.0 + 4.0 ) + 0.01 * noise1( az * 12.0 );
+        float ridge = 0.015
+                      + 0.03 * mix( noise1( az * 3.0 + 4.0 ), noise1( ( az - 6.2831853 ) * 3.0 + 4.0 ), seamW( az ) )
+                      + 0.01 * mix( noise1( az * 12.0 ), noise1( ( az - 6.2831853 ) * 12.0 ), seamW( az ) );
         float mtn = 1.0 - smoothstep( ridge - 0.004, ridge + 0.004, dir.y );
         col = mix( col, vec3( 0.62, 0.60, 0.65 ) * day, mtn );
     }

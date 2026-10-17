@@ -129,6 +129,20 @@ float fbm( vec2 p )
     return v;
 }
 
+/**  Weight that closes atan's cut: 0 over most of the circle, 1 at a = pi.  A noise of an angle from atan() does
+ *   not repeat after a turn and tears along the cut; mixed toward the same noise of a - 2*pi near a = pi it meets,
+ *   at the cut, exactly the value on the other side (17.10.2026).
+ *
+ * @param a  The angle, -pi..pi. (in)
+ *
+ * @return
+ *   The weight, 0..1.
+ **/
+float seamW( float a )
+{
+    return smoothstep( 2.5, 3.14159265, a );
+}
+
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
@@ -167,8 +181,13 @@ void main()
         // A bright rayed crater low in the south, its rays thin and long.
         vec2  ty = mu - vec2( -0.15, -0.6 );
         float ta = atan( ty.y, ty.x );
-        float rays = smoothstep( 0.55, 0.9, noise2( vec2( ta * 5.0, 1.0 ) ) )
-                         * smoothstep( 0.3, 0.7, noise2( vec2( ta * 5.0, length( ty ) * 6.0 ) ) )
+        float rays = smoothstep( 0.55, 0.9,
+                                 mix( noise2( vec2( ta * 5.0, 1.0 ) ), noise2( vec2( ( ta - 6.2831853 ) * 5.0, 1.0 ) ),
+                                      seamW( ta ) ) )
+                         * smoothstep( 0.3, 0.7,
+                                       mix( noise2( vec2( ta * 5.0, length( ty ) * 6.0 ) ),
+                                            noise2( vec2( ( ta - 6.2831853 ) * 5.0, length( ty ) * 6.0 ) ),
+                                            seamW( ta ) ) )
                          * exp( -length( ty ) * 2.8 ) * 0.6
                      + exp( -length( ty ) * 20.0 );
         float alb = 0.92 - 0.32 * maria + 0.3 * rays + 0.06 * ( noise2( mu * 30.0 ) - 0.5 )

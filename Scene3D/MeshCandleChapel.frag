@@ -127,6 +127,20 @@ float materialExposure( sampler2DArray tex )
     return clamp( 0.28 / max( l, 0.02 ), 0.60, 1.8 );
 }
 
+/**  Weight that closes atan's cut: 0 over most of the circle, 1 at a = pi.  A noise of an angle from atan() does
+ *   not repeat after a turn and tears along the cut; mixed toward the same noise of a - 2*pi near a = pi it meets,
+ *   at the cut, exactly the value on the other side (17.10.2026).
+ *
+ * @param a  The angle, -pi..pi. (in)
+ *
+ * @return
+ *   The weight, 0..1.
+ **/
+float seamW( float a )
+{
+    return smoothstep( 2.5, 3.14159265, a );
+}
+
 /**  The sky colour for a direction.
  *
  * @param dir  The view direction (unit length). (in)
@@ -154,7 +168,11 @@ vec3 renderSky( vec3 dir )
     else
     {
         float h = clamp( dir.y, 0.0, 1.0 );
-        vec3  stone = vec3( 0.22, 0.18, 0.14 ) * ( 0.6 + 0.6 * fbm2( vec2( az * 6.0, dir.y * 9.0 ) ) );
+        vec3  stone = vec3( 0.22, 0.18, 0.14 )
+                      * ( 0.6
+                          + 0.6
+                                * mix( fbm2( vec2( az * 6.0, dir.y * 9.0 ) ),
+                                       fbm2( vec2( ( az - 6.2831853 ) * 6.0, dir.y * 9.0 ) ), seamW( az ) ) );
         col = stone * ( 0.08 + 0.7 * breath * exp( -h * 4.0 ) );
         // The window: a tall arch, twelve panes, one per pitch class.
         float dx = az / 0.09;

@@ -39,7 +39,7 @@ out vec4 fragColor; ///< The pixel's colour (output).
 // makes the step index jump backwards and forwards, and the drawing stutters at
 // random.  The music changes how FAR the line moves, never how often.
 uniform vec2      resolution;    ///< Size of the render target in pixels.
-uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform float     time;          ///< Seconds since this activation, plus a rolled start (see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.
 uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
 uniform sampler2D texDepth0;     ///< Depth buffer of the current 3D scene (the source of tex0).

@@ -5427,3 +5427,19 @@ rotation phase what a long show gathers).
   renders -- they covered 2.25 times the picture and ran into a flat grey sheet (SpinGlassFrustrationLattice,
   RydbergAtomQuantumSimulatorArray, WignerCrystalElectronLattice: structure 0.46 .. 0.55 of flat grey). They now
   multiply by the render height over 1080, as 32 others already did (those were left alone).
+- **The atan cut, searched for everywhere.** An angle from atan() jumps by 2*pi on one half axis; every use has to
+  be periodic in 2*pi there (see "Two horizons" above for the rule). Measured in the picture first: in all 1430
+  catalogue windows the step across each half axis through the centre against the steps beside it -- 17 stood out,
+  five of them cuts (the rest horizons, grid lines, geometry): Aperture (the photo sampled through fract(a / pi),
+  and the photo does not tile), DiamondFireMacro (facet numbers floor(a / sector) jumped by N at the cut, so the
+  facets there took other facets' colours), OortCloudDrift (5 * 1.7^n cells per radian: the cell grid did not
+  close), HyperbolicPoincareTunnel (8 * branchP sectors, a rolled non-integer), GammaRayBurst (four noises of the
+  angle itself). Then in the code, because a centre that moves (AbandonedStarGate's ring drifts with the camera)
+  never sits on the picture's axes: every noise or hash whose argument holds the raw angle -- 33 scenes, 50 calls,
+  the Mesh family's sky domes among them (noise of the azimuth). Those calls now blend, in a narrow wedge before the
+  cut, into the same noise of a - 2*pi (`seamW()`): at the cut both sides meet exactly, the rest of the circle is
+  untouched. The photo sampled by angle is mirrored round the circle instead of wrapped (Aperture,
+  PhyllotaxisZoom, SporeReleaseGills); the sector and cell counts are whole numbers; GammaRayBurst samples its
+  noises on a circle (cos, sin). Measured again: Aperture 12.9 -> 1.6, DiamondFireMacro 8.4 -> 0.6,
+  HyperbolicPoincareTunnel 6.3 -> 1.1, OortCloudDrift 2.7 -> 1.4, GammaRayBurst 4.1 -> 2.4 (a value-noise crease
+  on the vertical axis, not a step). EndOfTheUniverse's noiseP was already periodic.

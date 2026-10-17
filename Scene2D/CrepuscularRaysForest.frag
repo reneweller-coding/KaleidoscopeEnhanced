@@ -129,6 +129,20 @@ float fbm( vec2 p )
     return v;
 }
 
+/**  Weight that closes atan's cut: 0 over most of the circle, 1 at a = pi.  A noise of an angle from atan() does
+ *   not repeat after a turn and tears along the cut; mixed toward the same noise of a - 2*pi near a = pi it meets,
+ *   at the cut, exactly the value on the other side (17.10.2026).
+ *
+ * @param a  The angle, -pi..pi. (in)
+ *
+ * @return
+ *   The weight, 0..1.
+ **/
+float seamW( float a )
+{
+    return smoothstep( 2.5, 3.14159265, a );
+}
+
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
@@ -182,7 +196,10 @@ void main()
     float e = clamp( audioSpectrum[band] * 1.7, 0.0, 1.0 );
     // A ray is a soft wedge; its own slow shimmer comes from the mist.
     float shape = pow( 0.5 + 0.5 * cos( ( cell_f - 0.5 ) * 6.2831853 ), 2.2 );
-    float shimmer = 0.7 + 0.5 * fbm( vec2( ang * 6.0, dist * 3.0 - clock * 0.5 ) );
+    float shimmer = 0.7
+                    + 0.5
+                          * mix( fbm( vec2( ang * 6.0, dist * 3.0 - clock * 0.5 ) ),
+                                 fbm( vec2( ( ang - 6.2831853 ) * 6.0, dist * 3.0 - clock * 0.5 ) ), seamW( ang ) );
     float ray = shape * wedge * shimmer * smoothstep( 0.02, 0.5, dist ) * exp( -dist * 0.9 );
     col += sun_col * ray * mist * ( 0.18 + 1.0 * e ) * 1.6;
     // The sun's own glow behind the trees.

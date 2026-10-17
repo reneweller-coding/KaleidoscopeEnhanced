@@ -101,6 +101,20 @@ float noise2( vec2 p )
                 mix( hash21( i + vec2( 0.0, 1.0 ) ), hash21( i + vec2( 1.0, 1.0 ) ), f.x ), f.y );
 }
 
+/**  Weight that closes atan's cut: 0 over most of the circle, 1 at a = pi.  A noise of an angle from atan() does
+ *   not repeat after a turn and tears along the cut; mixed toward the same noise of a - 2*pi near a = pi it meets,
+ *   at the cut, exactly the value on the other side (17.10.2026).
+ *
+ * @param a  The angle, -pi..pi. (in)
+ *
+ * @return
+ *   The weight, 0..1.
+ **/
+float seamW( float a )
+{
+    return smoothstep( 2.5, 3.14159265, a );
+}
+
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
@@ -132,7 +146,9 @@ void main()
     {
         float fi = float( i );
         float sc = 6.0 + fi * 5.0;
-        float n = noise2( vec2( a * sc, z * ( 0.6 + fi * 0.3 ) * 3.0 + fi * 7.0 ) );
+        float n = mix( noise2( vec2( a * sc, z * ( 0.6 + fi * 0.3 ) * 3.0 + fi * 7.0 ) ),
+                       noise2( vec2( ( a - 6.2831853 ) * sc, z * ( 0.6 + fi * 0.3 ) * 3.0 + fi * 7.0 ) ),
+                       seamW( a ) );
         streak += pow( n, 2.0 + 3.0 * ( 1.0 - flatn ) ) * ( 1.0 - fi * 0.25 );
     }
     streak *= grain * 1.6;

@@ -109,6 +109,20 @@ float noise2( vec2 p )
                 mix( hash21( i + vec2( 0.0, 1.0 ) ), hash21( i + vec2( 1.0, 1.0 ) ), f.x ), f.y );
 }
 
+/**  Weight that closes atan's cut: 0 over most of the circle, 1 at a = pi.  A noise of an angle from atan() does
+ *   not repeat after a turn and tears along the cut; mixed toward the same noise of a - 2*pi near a = pi it meets,
+ *   at the cut, exactly the value on the other side (17.10.2026).
+ *
+ * @param a  The angle, -pi..pi. (in)
+ *
+ * @return
+ *   The weight, 0..1.
+ **/
+float seamW( float a )
+{
+    return smoothstep( 2.5, 3.14159265, a );
+}
+
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
@@ -132,7 +146,10 @@ void main()
 
     // Wall: translucent tissue, veins of the photo, a flush on the sub-bass.
     vec3  tissue = mix( vec3( 0.55, 0.12, 0.12 ), imgPalette( hue * 0.159 + 0.05 ), 0.4 );
-    float fibres = 0.6 + 0.4 * noise2( vec2( a * 6.0, zw * 0.8 ) );
+    float fibres = 0.6
+                   + 0.4
+                         * mix( noise2( vec2( a * 6.0, zw * 0.8 ) ),
+                                noise2( vec2( ( a - 6.2831853 ) * 6.0, zw * 0.8 ) ), seamW( a ) );
     vec2  uv = vec2( fract( a * 0.15915494 * 2.0 ), fract( zw * 0.06 ) );
     vec3  wall = tissue * fibres * ( 0.6 + 0.5 * img( uv ) );
     wall *= 1.0 + 0.6 * clamp( audioSubBass, 0.0, 1.0 );

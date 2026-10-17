@@ -115,9 +115,10 @@ void main()
     int   band = int( mod( gill_idx, 32.0 ) );
     float e = clamp( audioSpectrum[band] * 1.6, 0.0, 1.0 );
     float ridge = smoothstep( 0.5, 0.0, abs( gill_f ) );
-    vec3  cream = mix( vec3( 0.85, 0.78, 0.65 ),
-                       img( vec2( fract( a / 6.2831853 + 0.5 ), clamp( r / cap_r, 0.0, 1.0 ) ) ) * 1.1, 0.35 );
-    vec3  gill_col = cream * ( 0.35 + 0.5 * ridge ) * ( 0.5 + 0.5 * smoothstep( 0.0, 0.5, r ) );
+    vec3  cream = mix(
+        vec3( 0.85, 0.78, 0.65 ),
+        img( vec2( abs( fract( a / 6.2831853 + 0.5 ) * 2.0 - 1.0 ), clamp( r / cap_r, 0.0, 1.0 ) ) ) * 1.1, 0.35 );
+    vec3 gill_col = cream * ( 0.35 + 0.5 * ridge ) * ( 0.5 + 0.5 * smoothstep( 0.0, 0.5, r ) );
     gill_col += imgPalette( hue * 0.159 + float( band ) / 32.0 ) * ridge * e * 0.6;
     gill_col *= 0.6 + 0.4 * ( 1.0 - r / cap_r ); // darker toward the rim
     col = mix( col, gill_col, under_cap );

@@ -185,6 +185,20 @@ vec3 background( vec3 rd )
     return col;
 }
 
+/**  Weight that closes atan's cut: 0 over most of the circle, 1 at a = pi.  A noise of an angle from atan() does
+ *   not repeat after a turn and tears along the cut; mixed toward the same noise of a - 2*pi near a = pi it meets,
+ *   at the cut, exactly the value on the other side (17.10.2026).
+ *
+ * @param a  The angle, -pi..pi. (in)
+ *
+ * @return
+ *   The weight, 0..1.
+ **/
+float seamW( float a )
+{
+    return smoothstep( 2.5, 3.14159265, a );
+}
+
 // Its flight runs on the scene clocks (sceneTime, sceneAdvance): on `time` and `audioAdvance`, counted since the
 // program started, a run with the clocks a day ahead found it collapsed (17.10.2026).
 /** Entry point of this shader stage (the file description says what it draws). */
@@ -260,7 +274,9 @@ void main()
             // at clock 3600 fbm resolves nothing there any more and the disc loses
             // all structure.
             float flow_speed = sceneTime * 5.0 * ( rs / dr ) + audioPhase * 2.0;
-            float disk_dens = fbm( vec3( dr * 2.0, angle * 5.0 - flow_speed, sceneTime ) );
+            float disk_dens = mix( fbm( vec3( dr * 2.0, angle * 5.0 - flow_speed, sceneTime ) ),
+                                   fbm( vec3( dr * 2.0, ( angle - 6.2831853 ) * 5.0 - flow_speed, sceneTime ) ),
+                                   seamW( angle ) );
 
             // Doppler shift (fake) based on velocity relative to camera
             vec3  vel = normalize( vec3( -dp3.z, 0.0, dp3.x ) );
@@ -269,7 +285,10 @@ void main()
                                        doppler * 0.5 + 0.5 );
 
             // Kick flashes in the disk
-            float flash = step( 0.9, hash11( floor( dr * 5.0 ) + floor( angle * 10.0 - flow_speed ) ) );
+            float flash = step( 0.9,
+                                mix( hash11( floor( dr * 5.0 ) + floor( angle * 10.0 - flow_speed ) ),
+                                     hash11( floor( dr * 5.0 ) + floor( ( angle - 6.2831853 ) * 10.0 - flow_speed ) ),
+                                     seamW( angle ) ) );
             shifted_color *= 1.0 + flash * audioKick * 3.0;
 
             float alpha = smoothstep( 0.4, 0.8, disk_dens ) * dp * 0.1 * ( rs * 3.0 / dr );

@@ -144,6 +144,20 @@ float fbm( vec3 p )
     return f;
 }
 
+/**  Weight that closes atan's cut: 0 over most of the circle, 1 at a = pi.  A noise of an angle from atan() does
+ *   not repeat after a turn and tears along the cut; mixed toward the same noise of a - 2*pi near a = pi it meets,
+ *   at the cut, exactly the value on the other side (17.10.2026).
+ *
+ * @param a  The angle, -pi..pi. (in)
+ *
+ * @return
+ *   The weight, 0..1.
+ **/
+float seamW( float a )
+{
+    return smoothstep( 2.5, 3.14159265, a );
+}
+
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
@@ -187,7 +201,9 @@ void main()
     if ( ring_dist < ring_thickness )
     {
         // Detailed surface texture (rust, panels, damage)
-        float surface_detail = fbm( vec3( angle * 10.0, dist_to_center * 20.0, 0.0 ) );
+        float surface_detail = mix( fbm( vec3( angle * 10.0, dist_to_center * 20.0, 0.0 ) ),
+                                    fbm( vec3( ( angle - 6.2831853 ) * 10.0, dist_to_center * 20.0, 0.0 ) ),
+                                    seamW( angle ) );
         float panels = step( 0.9, fract( angle * 15.0 ) ); // Radial panel gaps
 
         vec3 local_col = mix( gate_col, vec3( 0.05 ), surface_detail * rp ) * 2.2;
@@ -198,7 +214,10 @@ void main()
         local_col *= lighting;
 
         // Damage/holes in the ring
-        float damage = smoothstep( 0.4, 0.6, fbm( vec3( angle * 5.0, dist_to_center * 5.0, 10.0 ) ) );
+        float damage = smoothstep( 0.4, 0.6,
+                                   mix( fbm( vec3( angle * 5.0, dist_to_center * 5.0, 10.0 ) ),
+                                        fbm( vec3( ( angle - 6.2831853 ) * 5.0, dist_to_center * 5.0, 10.0 ) ),
+                                        seamW( angle ) ) );
         if ( damage * rp > 0.6 )
         {
             local_col = vec3( 0.0 ); // hole
@@ -209,7 +228,9 @@ void main()
         }
 
         // Residual glowing circuitry on the ring (dormant until kick)
-        float circuitry = step( 0.95, fbm( vec3( angle * 30.0, dist_to_center * 40.0, 0.0 ) ) );
+        float circuitry = step( 0.95, mix( fbm( vec3( angle * 30.0, dist_to_center * 40.0, 0.0 ) ),
+                                           fbm( vec3( ( angle - 6.2831853 ) * 30.0, dist_to_center * 40.0, 0.0 ) ),
+                                           seamW( angle ) ) );
         col += energy_col * circuitry * ( 0.2 + audioSwell * 0.5 );
     }
 
@@ -220,7 +241,10 @@ void main()
         float tear = fbm( vec3( ring_p * 3.0, sceneTime * 2.0 + sceneAdvance * 5.0 ) );
 
         // Intensity spikes on audioKick (violent unstable sparking)
-        float spark_trigger = step( 0.95, hash11( floor( sceneTime * 4.00 ) + floor( angle * 5.0 ) ) ); // was 10 Hz
+        float spark_trigger = step( 0.95,
+                                    mix( hash11( floor( sceneTime * 4.00 ) + floor( angle * 5.0 ) ),
+                                         hash11( floor( sceneTime * 4.00 ) + floor( ( angle - 6.2831853 ) * 5.0 ) ),
+                                         seamW( angle ) ) ); // was 10 Hz
         float spark_int = spark_trigger * audioKick * 10.0 * sp;
 
         // Energy arcs jumping across the inner radius

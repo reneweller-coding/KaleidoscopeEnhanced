@@ -111,7 +111,9 @@ void main()
     float r = length( p ) / R;
     float a = atan( p.y, p.x );
     float sector = 6.2831853 / N;
-    float ai = floor( a / sector );
+    // Facet numbers counted round the stone (mod N): atan's jump by 2*pi on the left made them jump by N, and the
+    // facets there took the colours of other facets (17.10.2026).
+    float ai = mod( floor( a / sector ), N );
     float af = fract( a / sector );  // 0..1 across the sector
     float m = abs( af - 0.5 ) * 2.0; // 0 in the middle, 1 at the edge
 
@@ -135,12 +137,12 @@ void main()
     else if ( r < kite_edge )
     {
         ring = 2.0;
-        fid = vec2( floor( a / sector + 0.5 ), 2.0 );
+        fid = vec2( mod( floor( a / sector + 0.5 ), N ), 2.0 );
     }
     else
     {
         ring = 3.0;
-        fid = vec2( floor( a / sector * 2.0 ), 3.0 );
+        fid = vec2( mod( floor( a / sector * 2.0 ), 2.0 * N ), 3.0 );
     }
 
     // Each facet has its own normal tilt: the table faces up, the crown
