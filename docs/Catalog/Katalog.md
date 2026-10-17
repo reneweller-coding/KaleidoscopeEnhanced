@@ -813,7 +813,7 @@ CHAIN3DOCTAGYROID: a raymarched world built from a chain of continuous 3D space 
 
 `Scene2D/Chain3DPolarTunnelBoxes.frag` · type=normal · mood=psychedelic,energetic · complexity=4
 
-CHAIN3DPOLARTUNNELBOXES: a raymarched world built from a chain of continuous 3D space transforms -- a tunnel whose wall is a mirrored ring of blocks, repeated along the flight. We fly slowly through it; the surfaces are textured with the photograph read through a 2D transform chain of its own (triplanar), lit and fogged. Every stage is continuous, so the structure morphs without jumps. Endless, mirrorable. Audio Reac…
+CHAIN3DPOLARTUNNELBOXES: a raymarched world built from a chain of continuous 3D space transforms -- a tunnel whose wall is a mirrored ring of blocks, repeated along the flight, in a shell with rows of round windows onto a far wall (17.10.2026: the smooth shell filled the picture). We fly slowly through it; the surfaces are textured with the photograph read through a 2D transform chain of its own (triplanar), lit and …
 
 ![Chain3DPolarTunnelBoxes ruhig (t=8)](img/Chain3DPolarTunnelBoxes_A.jpg) ![Chain3DPolarTunnelBoxes ruhig (t=16)](img/Chain3DPolarTunnelBoxes_B.jpg) ![Chain3DPolarTunnelBoxes audio-heiß (t=21)](img/Chain3DPolarTunnelBoxes_C.jpg)
 
