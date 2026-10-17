@@ -804,7 +804,7 @@ CHAIN3DMANDELBOX: a raymarched world built from a chain of continuous 3D space t
 
 `Scene2D/Chain3DOctaGyroid.frag` · type=normal · mood=psychedelic,dreamy · complexity=4
 
-CHAIN3DOCTAGYROID: a raymarched world built from a chain of continuous 3D space transforms -- a gyroid membrane folded into octahedral mirror symmetry, the mirrors turning. We fly slowly through it; the surfaces are textured with the photograph read through a 2D transform chain of its own (triplanar), lit and fogged. Every stage is continuous, so the structure morphs without jumps. Endless, mirrorable. Audio Reactivi…
+CHAIN3DOCTAGYROID: a raymarched world built from a chain of continuous 3D space transforms -- a gyroid membrane folded into octahedral mirror symmetry, the mirrors turning, perforated by the pockets of a gyroid three times finer (17.10.2026: one smooth sheet filled the picture). We fly slowly through it; the surfaces are textured with the photograph read through a 2D transform chain of its own (triplanar), lit and fo…
 
 ![Chain3DOctaGyroid ruhig (t=8)](img/Chain3DOctaGyroid_A.jpg) ![Chain3DOctaGyroid ruhig (t=16)](img/Chain3DOctaGyroid_B.jpg) ![Chain3DOctaGyroid audio-heiß (t=21)](img/Chain3DOctaGyroid_C.jpg)
 
