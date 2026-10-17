@@ -6353,3 +6353,53 @@ A probe scene (photo left, second photo right, photoBMix and interpolation as ba
 several swaps. The second photo held still between swaps and glided over in about 5 s after each one, always
 differing from the first. The probe was removed again. A GL-debug snapshot run of the four scenes showed no errors.
 Their catalogue frames were rendered anew, and their snapshots in 2026-10-17-base200 replaced.
+
+## 17.10.2026 (40): the 200 in the genre presets, and the old tags against the measured restlessness
+
+**The ratings of the 200 were too high.** Each was rated by eye while it was built: seven columns in
+Tools/preset_fit.tsv, from which make_genre_configs.py picks every genre's scenes. Against the 1214 older rows their
+scale had slipped:
+
+| | interest | psychedelic | galerie | space |
+|---|---|---|---|---|
+| older rows, mean | 5.8 | 4.6 | 5.0 | 3.7 |
+| the 200 at build time | 6.5 | 6.2 | 6.1 | 3.4 |
+| the 200 re-rated | 4.8 | 4.9 | 4.7 | 1.7 |
+
+The genres are capped at 400 scenes each. The inflated ratings had pushed out up to 42 older scenes per genre (Noir
+28, Club 32, SpaceAmbient 42). All 200 were rated again from sheets of their catalogue frames, after first
+calibrating on older scenes with known ratings. Now 12 to 32 come into the capped genres and push out as many.
+Psychedelic (518) and Galerie (465) have no cap pressure and simply grow. Tunnel, Kaleidoscope and
+SymmetryBreathing (interest 9, fit 5) stay out of Ambient and Club even so: the rule ranks fit before interest.
+
+The `space` tag of 38 new scenes came off. These are abstract scenes on a dark ground, such as waves, light,
+tilings and lattices. Calibration showed that the older rows keep that tag for a cosmic subject: of 154 tagged older
+scenes, 138 have a space fit of 6 or more. Two new scenes lost `calm`.
+
+**The old tags against the measured restlessness.** Since 17.10. `complexity` is the measured restlessness, spread
+evenly over 1 to 10. The scheduler matches it against the music's arousal; the mood tags add their own pull. 144
+scenes contradicted themselves:
+- `calm` but measured at 9 or 10;
+- `aggressive` but measured at 1 or 2;
+- rated a calm fit of 7 or more but measured at 9 or 10;
+- rated club 7 or more but measured at 1 or 2.
+
+All 144 were rendered by ns_sample.py (6 s each, four frames per scene) and looked at in motion. A sheet of still
+frames cannot show restlessness.
+- **Measurement right, tag wrong.**
+  - 43 lost `calm`, for example FlowingWires, SolarSailArmada and TunnelPlain.
+  - 16 lost `aggressive`: HaboobDustWall, HurricaneEyeWall, ShelfCloudPrairie, FortressStation and other slow,
+    still scenes.
+  - Seven 2D chain scenes, BoogieWoogieGrid and NeonFluidDynamics came down from club 7 to 5. They drift slowly;
+    they are psychedelic, not club.
+  - Eleven other fits were corrected by hand.
+  - A shader left without any mood is tagged `dreamy`.
+- **Measurement fooled, tag kept.** These measure busy only because of many small moving things on a dark ground,
+  which the eye reads as a calm drift: SnowDrift, Jellyfish, KelpForest, TempleLanternHall, TextureLanternField,
+  RainOnWater, Ocean and others. The same effect was noted when the measurement was introduced: a dense snowfall
+  ranks busy.
+
+Left after the review: 51 `calm` scenes measured at 9 or 10, all looked at and kept; 3 `aggressive` scenes measured at
+1 or 2 (BuildUpAvalanche, VolcanicLightningPlume and TaikoSilhouettes, whose bursts and strikes the median
+misses); 1 club-rated scene
+at 1 or 2. check_schedule.py --quick: 14 plans, no violations.
