@@ -345,14 +345,16 @@ void main()
 
     float h0 = hueP * 0.159 + 0.06 * audioPhase + 0.004 * sceneTime + 0.3 * mode;
     float h = h0 + 0.13 * ( 0.6 * sin( 6.2831853 * cm.x ) + 0.4 * sin( 6.2831853 * cm.y + 1.3 ) ) + 0.03 * m;
-    float fsat = 0.38 + 0.22 * swell;
+    float fsat = 0.55 + 0.25 * swell;
     vec3  field = hsv2rgb( vec3( fract( h ), fsat, 1.0 ) ) * ( 0.35 + 1.3 * m );
-    vec3  photo = max( ( ph - m ) * 1.1 + m, 0.0 );
+
+
+    vec3 photo = max( ( ph - m ) * 1.35 + m, 0.0 ) * ( 0.45 + 1.1 * smoothstep( 0.05, 0.7, m ) );
     photo = mix( photo, field, 0.15 + 0.45 * clamp( paletteP, 0.0, 1.0 ) );
 
     float la = 0.1 * sceneTime;
     float relief = clamp( 0.5 + dot( grad, vec2( cos( la ), sin( la ) ) ) * 5.0, 0.0, 1.0 );
-    vec3  relief_c = photo * ( 0.3 + 1.2 * relief )
+    vec3  relief_c = photo * ( 0.15 + 1.5 * relief )
                      + vec3( 1.0 ) * pow( relief, 6.0 ) * ( 0.1 + 0.3 * swell + 0.35 * kick );
 
 
@@ -361,8 +363,8 @@ void main()
     vec3  phc = imgLod( cm, 5.0 );
     float pmx = max( phc.r, max( phc.g, phc.b ) );
     float psat = ( pmx - min( phc.r, min( phc.g, phc.b ) ) ) / max( pmx, 0.25 );
-    vec3  own = mix( vec3( 1.0 ), phc / max( pmx, 1e-3 ), clamp( psat * 2.0, 0.0, 1.0 ) );
-    vec3  gbase = hsv2rgb( vec3( fract( h ), 0.5 + 0.2 * swell, 1.0 ) );
+    vec3  own = pow( mix( vec3( 1.0 ), phc / max( pmx, 1e-3 ), clamp( psat * 2.0, 0.0, 1.0 ) ), vec3( 1.5 ) );
+    vec3  gbase = hsv2rgb( vec3( fract( h ), 0.6 + 0.2 * swell, 1.0 ) );
     float own_w = ( 0.5 + 0.4 * smoothstep( 0.06, 0.3, psat ) ) * ( 1.0 - 0.5 * clamp( paletteP, 0.0, 1.0 ) );
     vec3  gc = mix( gbase, own, own_w );
     float edge = smoothstep( 0.01, 0.14, length( grad ) );

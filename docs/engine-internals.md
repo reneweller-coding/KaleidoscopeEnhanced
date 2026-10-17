@@ -5644,3 +5644,9 @@ the first try without it measured as restless as the original. Where the photo i
 the palette knob leans it there. The photo's share in the photo and relief looks rose too (field 0.15 .. 0.6, was
 0.2 .. 0.75). 2D lab measured: across the picture 0.05 .. 0.21 (edges 0.13, contour lines 0.20, flow 0.15; originally
 0.22, 0.17 .. 0.32, 0.33 .. 0.51), over time 0.05 .. 0.12. The 3D labs' rims and fog (`calmGlow`) the same way.
+
+**Not washed out.** The calm palette looked washed out (asked 17.10.2026): measured as the mean saturation of the
+lit pixels, 0.32 .. 0.56 against the catalogue's median 0.43 and upper quartile 0.59 (the rainbow version had
+0.52 .. 0.79). Now the field at 0.55 .. 0.8 saturation, the photo's colours raised 1.35 and its tones spread (darks
+a little darker, lights brighter), the relief's light stronger, the glow's photo colour a little purer: 0.41 .. 0.67
+-- the catalogue's vivid end -- while the hue change across the picture stays 0.07 .. 0.22.
