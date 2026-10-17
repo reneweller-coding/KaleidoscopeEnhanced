@@ -94,6 +94,23 @@ float photoLevel()
     return dot( s * 0.2, vec3( 0.299, 0.587, 0.114 ) );
 }
 
+/**  A glow of a tint that saturates instead of clipping: as bright as tint * x while that is small, then toward the
+ *   tint at full strength (its brightest channel at cap) -- the hue stays.  min( tint * x, vec3( cap ) ) clipped
+ *   every channel to cap, and every bright band became one flat white (17.10.2026).
+ *
+ * @param tint  The glow's colour per unit of x. (in)
+ * @param x     The glow's strength, 0.. (in)
+ * @param cap   The brightest channel's limit. (in)
+ *
+ * @return
+ *   The glow's colour.
+ **/
+vec3 glowSat( vec3 tint, float x, float cap )
+{
+    float m = max( tint.r, max( tint.g, tint.b ) );
+    return tint / m * cap * ( 1.0 - exp( -max( x, 0.0 ) * m / cap ) );
+}
+
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
@@ -204,7 +221,7 @@ void main()
     // Add glowing Gothic tracery ribbing and rosette window flashes. Both
     // tints exceed 1.0 per channel on their own, so the TINTED vectors are
     // what gets capped.
-    vec3 tracery_tint = min( vec3( 1.4, 1.2, 1.8 ) * arch_glow * ( 1.0 + 2.5 * audioKick ), vec3( 1.2 ) );
+    vec3 tracery_tint = glowSat( vec3( 1.4, 1.2, 1.8 ), arch_glow * ( 1.0 + 2.5 * audioKick ), 1.2 );
     vault_col += tracery_tint;
     // The DE ribs: bright leading between the glass panes.
     vault_col += vec3( 1.2, 1.1, 0.85 ) * ribs * ( 0.55 + 0.45 * audioLevel ) * glw;
@@ -219,5 +236,9 @@ void main()
     cat_tone /= 1.0 + 0.30 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
     cat_tone = clamp( ( cat_tone - 0.28 ) * 1.65 + 0.13, 0.0, 1.0 ); // washed-out fix: contrast S-curve, darker fog
                                                                      // floor
-    fragColor = vec4( cat_tone, 1.0 );
+    // Highlights x0.6 before the clamp (17.10.2026): 44 % of the frame was bright, colourless and flat -- values
+    // above 1 clipped to one plateau, which the soft knee and the auto exposure turned into a flat grey.  The
+    // auto exposure lifts the frame back; the highlights keep their gradation.
+    const float HiK = 0.6;
+    fragColor = vec4( cat_tone * HiK, 1.0 );
 }

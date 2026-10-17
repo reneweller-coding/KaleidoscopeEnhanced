@@ -77,6 +77,23 @@ vec3 imgPalette( float t )
     return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
+/**  A glow of a tint that saturates instead of clipping: as bright as tint * x while that is small, then toward the
+ *   tint at full strength (its brightest channel at cap) -- the hue stays.  min( tint * x, vec3( cap ) ) clipped
+ *   every channel to cap, and every bright band became one flat white (17.10.2026).
+ *
+ * @param tint  The glow's colour per unit of x. (in)
+ * @param x     The glow's strength, 0.. (in)
+ * @param cap   The brightest channel's limit. (in)
+ *
+ * @return
+ *   The glow's colour.
+ **/
+vec3 glowSat( vec3 tint, float x, float cap )
+{
+    float m = max( tint.r, max( tint.g, tint.b ) );
+    return tint / m * cap * ( 1.0 - exp( -max( x, 0.0 ) * m / cap ) );
+}
+
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
@@ -127,9 +144,9 @@ void main()
     // even at that cap -- e.g. a "capped" flux term still added up to 2.0 of
     // pure white. The cap has to bound the FINAL tinted vector, not just the
     // glow scalar feeding it; do that here and lower the tint peaks too.
-    vec3 flux_tint = min( vec3( 0.3, 1.0, 1.4 ) * ( line_glow * ( 1.0 + 2.0 * audioKick ) ), vec3( 0.75 ) );
-    vec3 ring_tint = min( vec3( 1.3, 0.9, 0.3 ) * ring_glow, vec3( 0.65 ) );
-    vec3 beam_tint = min( vec3( 1.3, 1.2, 1.4 ) * pulsar_beam, vec3( 0.75 ) );
+    vec3 flux_tint = glowSat( vec3( 0.3, 1.0, 1.4 ), ( line_glow * ( 1.0 + 2.0 * audioKick ) ), 0.75 );
+    vec3 ring_tint = glowSat( vec3( 1.3, 0.9, 0.3 ), ring_glow, 0.65 );
+    vec3 beam_tint = glowSat( vec3( 1.3, 1.2, 1.4 ), pulsar_beam, 0.75 );
 
     col += flux_tint + ring_tint + beam_tint;
 
@@ -139,7 +156,7 @@ void main()
     // re-verification still showed a large flat white core. Cap the
     // finished tinted term itself and lower its ceiling.
     float polar_bloom = exp( -r * 10.0 ) * ( 2.0 + 4.0 * audioKick );
-    col += min( vec3( 1.1, 1.2, 1.4 ) * polar_bloom, vec3( 0.85 ) );
+    col += glowSat( vec3( 1.1, 1.2, 1.4 ), polar_bloom, 0.85 );
 
     col = pow( col, vec3( 0.88 ) );
     vec3 cat_tone = clamp( col, 0.0, 1.0 );

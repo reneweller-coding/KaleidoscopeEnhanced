@@ -58,5 +58,9 @@ void main()
 
     vec3 cat_tone = clamp( col, 0.0, 1.0 ) * 0.85;
     cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
-    fragColor = vec4( cat_tone, 1.0 );
+    // Highlights x0.7 before the clamp (17.10.2026): 15 % of the frame was bright, colourless and flat -- values
+    // above 1 clipped to one plateau, which the soft knee and the auto exposure turned into a flat grey.  The
+    // auto exposure lifts the frame back; the highlights keep their gradation.
+    const float HiK = 0.7;
+    fragColor = vec4( cat_tone * HiK, 1.0 );
 }

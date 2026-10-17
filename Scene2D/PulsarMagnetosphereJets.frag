@@ -157,5 +157,9 @@ void main()
     if ( hue > 0.001 )
         col = hueRot( col, hue );
 
-    fragColor = vec4( col, 1.0 );
+    // Highlights x0.45 before the clamp (17.10.2026): 22 % of the frame was bright, colourless and flat -- values
+    // above 1 clipped to one plateau, which the soft knee and the auto exposure turned into a flat grey.  The
+    // auto exposure lifts the frame back; the highlights keep their gradation.
+    const float HiK = 0.45;
+    fragColor = vec4( col * HiK, 1.0 );
 }

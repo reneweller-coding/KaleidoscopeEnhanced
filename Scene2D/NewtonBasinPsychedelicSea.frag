@@ -137,6 +137,23 @@ vec2 cPow( vec2 z, int n )
     return res;
 }
 
+/**  A glow of a tint that saturates instead of clipping: as bright as tint * x while that is small, then toward the
+ *   tint at full strength (its brightest channel at cap) -- the hue stays.  min( tint * x, vec3( cap ) ) clipped
+ *   every channel to cap, and every bright band became one flat white (17.10.2026).
+ *
+ * @param tint  The glow's colour per unit of x. (in)
+ * @param x     The glow's strength, 0.. (in)
+ * @param cap   The brightest channel's limit. (in)
+ *
+ * @return
+ *   The glow's colour.
+ **/
+vec3 glowSat( vec3 tint, float x, float cap )
+{
+    float m = max( tint.r, max( tint.g, tint.b ) );
+    return tint / m * cap * ( 1.0 - exp( -max( x, 0.0 ) * m / cap ) );
+}
+
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
@@ -239,8 +256,8 @@ void main()
     float root_edge_glow = smoothstep( 0.45, 1.0, converge_slow ) * glw;
 
     basin_col = basin_col * ( 0.25 + 0.75 * diff )
-                + min( vec3( 1.2, 1.3, 1.5 ) * spec, vec3( 1.15 ) );
-    basin_col += min( vec3( 1.4, 0.9, 1.6 ) * root_edge_glow * ( 1.0 + 2.5 * audioKick ), vec3( 1.25 ) );
+                + glowSat( vec3( 1.2, 1.3, 1.5 ), spec, 1.15 );
+    basin_col += glowSat( vec3( 1.4, 0.9, 1.6 ), root_edge_glow * ( 1.0 + 2.5 * audioKick ), 1.25 );
 
     basin_col = pow( basin_col, vec3( 0.87 ) );
     vec3 cat_tone = clamp( basin_col, 0.0, 1.0 );
@@ -248,5 +265,9 @@ void main()
     cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) ); // peak knee round 2
     float nb_lum = dot( cat_tone, vec3( 0.299, 0.587, 0.114 ) );
     cat_tone = clamp( mix( vec3( nb_lum ), cat_tone, 1.35 ), 0.0, 1.0 );
-    fragColor = vec4( cat_tone, 1.0 );
+    // Highlights x0.7 before the clamp (17.10.2026): 19 % of the frame was bright, colourless and flat -- values
+    // above 1 clipped to one plateau, which the soft knee and the auto exposure turned into a flat grey.  The
+    // auto exposure lifts the frame back; the highlights keep their gradation.
+    const float HiK = 0.7;
+    fragColor = vec4( cat_tone * HiK, 1.0 );
 }

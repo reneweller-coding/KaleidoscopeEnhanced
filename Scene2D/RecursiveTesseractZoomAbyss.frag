@@ -261,5 +261,9 @@ void main()
     // against the ceiling. The knee bends those crests over instead.
     vec3 cat_tone = clamp( col_acc, 0.0, 1.0 );
     cat_tone /= 1.0 + 0.26 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
-    fragColor = vec4( cat_tone, 1.0 );
+    // Highlights x0.6 before the clamp (17.10.2026): 21 % of the frame was bright, colourless and flat -- values
+    // above 1 clipped to one plateau, which the soft knee and the auto exposure turned into a flat grey.  The
+    // auto exposure lifts the frame back; the highlights keep their gradation.
+    const float HiK = 0.6;
+    fragColor = vec4( cat_tone * HiK, 1.0 );
 }

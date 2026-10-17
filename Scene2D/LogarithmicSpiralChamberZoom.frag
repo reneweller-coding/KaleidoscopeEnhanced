@@ -184,5 +184,9 @@ void main()
         final_col = mix( final_col, vortexAt( a - 6.2831853, uv, r, spd, s_growth, n_chamb, glw, t ), seam_w );
 
     final_col = pow( final_col, vec3( 0.88 ) );
-    fragColor = vec4( clamp( final_col, 0.0, 1.0 ), 1.0 );
+    // Highlights x0.7 before the clamp (17.10.2026): 12 % of the frame was bright, colourless and flat -- values
+    // above 1 clipped to one plateau, which the soft knee and the auto exposure turned into a flat grey.  The
+    // auto exposure lifts the frame back; the highlights keep their gradation.
+    const float HiK = 0.7;
+    fragColor = vec4( clamp( final_col * HiK, 0.0, 1.0 ), 1.0 );
 }

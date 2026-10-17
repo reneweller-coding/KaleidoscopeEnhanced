@@ -5454,3 +5454,13 @@ rotation phase what a long show gathers).
   twist glides with the music and cannot be whole, so near the cut the whole vortex is mixed into the same vortex a
   turn back (`vortexAt( a - 2 pi )`, computed only in that wedge). A mirrored photo coordinate across the angle
   needs period 1 in a / 2 pi to meet itself after a turn.
+- **Flat grey where white clipped.** A new measure over the catalogue: the share of the frame that is bright,
+  colourless and flat (luma over 0.42, chroma under 0.07, no gradient) -- white that clipped to one plateau, which the
+  soft knee (1.0 / 1.35 = 0.74) and the auto exposure (down to 0.72 for a bright frame) turn into a flat grey. 50
+  scenes had more than 8 % of it, up to 75 %. Three causes: point sprites in pixels (fixed above), a highlight
+  level the clamp cut off, and the glow idiom `min( vec3( 1.3, 1.1, 1.8 ) * glow, vec3( 0.85 ) )`, which clips every
+  channel to 0.85 -- neutral white -- so every bright band lost its hue. The idiom is now `glowSat( tint, glow, cap )`
+  (33 calls, 22 scenes): as bright as before while faint, then toward the tint at full strength, the brightest
+  channel at the cap. And 34 scenes carry a highlight gain `HiK` (0.45 .. 0.8, measured, noted with the share it
+  was set against) before their final clamp: what clipped keeps its gradation, and the auto exposure lifts the frame
+  back. Measured again: none above 8 % but SlotMachineReels and KluverFormConstants, whose white is the design.

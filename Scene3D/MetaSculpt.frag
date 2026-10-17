@@ -134,6 +134,23 @@ float shadowAt( vec3 world, vec3 n, float ndl )
     return s / 9.0;
 }
 
+/**  A glow of a tint that saturates instead of clipping: as bright as tint * x while that is small, then toward the
+ *   tint at full strength (its brightest channel at cap) -- the hue stays.  min( tint * x, vec3( cap ) ) clipped
+ *   every channel to cap, and every bright band became one flat white (17.10.2026).
+ *
+ * @param tint  The glow's colour per unit of x. (in)
+ * @param x     The glow's strength, 0.. (in)
+ * @param cap   The brightest channel's limit. (in)
+ *
+ * @return
+ *   The glow's colour.
+ **/
+vec3 glowSat( vec3 tint, float x, float cap )
+{
+    float m = max( tint.r, max( tint.g, tint.b ) );
+    return tint / m * cap * ( 1.0 - exp( -max( x, 0.0 ) * m / cap ) );
+}
+
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
@@ -214,9 +231,8 @@ void main()
     col = mix( col, env * ( 0.55 + 0.8 * glossP ), fres * ( 0.35 + 0.45 * glossP ) );
 
     vec3 H = normalize( L + V );
-    col += min( vec3( 1.0, 0.96, 0.9 ) * pow( max( dot( n, H ), 0.0 ), 45.0 + 300.0 * glossP )
-                    * shadow * ( 0.9 + 2.2 * audioHigh ),
-                vec3( 1.5 ) );
+    col += glowSat( vec3( 1.0, 0.96, 0.9 ),
+                    pow( max( dot( n, H ), 0.0 ), 45.0 + 300.0 * glossP ) * shadow * ( 0.9 + 2.2 * audioHigh ), 1.5 );
 
     // Rim, so the silhouette survives against the black background.
     col += hue2rgb( fract( hue + 0.5 ) ) * pow( fres, 1.7 )

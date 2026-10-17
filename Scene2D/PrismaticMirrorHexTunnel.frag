@@ -138,6 +138,23 @@ float strutDist( vec2 pRot, float r )
     return length( vec2( rr * cos( da ) - rv, rr * sin( da ) ) );
 }
 
+/**  A glow of a tint that saturates instead of clipping: as bright as tint * x while that is small, then toward the
+ *   tint at full strength (its brightest channel at cap) -- the hue stays.  min( tint * x, vec3( cap ) ) clipped
+ *   every channel to cap, and every bright band became one flat white (17.10.2026).
+ *
+ * @param tint  The glow's colour per unit of x. (in)
+ * @param x     The glow's strength, 0.. (in)
+ * @param cap   The brightest channel's limit. (in)
+ *
+ * @return
+ *   The glow's colour.
+ **/
+vec3 glowSat( vec3 tint, float x, float cap )
+{
+    float m = max( tint.r, max( tint.g, tint.b ) );
+    return tint / m * cap * ( 1.0 - exp( -max( x, 0.0 ) * m / cap ) );
+}
+
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
@@ -268,7 +285,7 @@ void main()
     // exceeds 1.0 on two channels, so the TINTED vector carries the cap --
     // bounding only strut_glow left vec3(1.3,1.1,1.8) * it free to reach 7.2.
     float strut_glow = strut_acc * glw;
-    vec3  strut_tint = min( vec3( 1.3, 1.1, 1.8 ) * strut_glow * ( 1.0 + 3.0 * audioKick ), vec3( 0.85 ) );
+    vec3  strut_tint = glowSat( vec3( 1.3, 1.1, 1.8 ), strut_glow * ( 1.0 + 3.0 * audioKick ), 0.85 );
 
     col_acc += strut_tint;
 
@@ -282,7 +299,7 @@ void main()
         vec2  pr = mat2( cos( ir ), -sin( ir ), sin( ir ), cos( ir ) ) * uv;
         float iris_r = 0.034 * ( 1.0 - 0.45 * audioKick );
         float ring = exp( -abs( sdHexagon( pr, iris_r ) ) * 210.0 );
-        col_acc += min( vec3( 1.2, 1.0, 1.7 ) * ring * ( 0.7 + 1.8 * audioKick ), vec3( 0.85 ) );
+        col_acc += glowSat( vec3( 1.2, 1.0, 1.7 ), ring * ( 0.7 + 1.8 * audioKick ), 0.85 );
         col_acc += imgPalette( 0.5 ) * exp( -length( pr ) * 34.0 ) * 0.30 * exp_gain;
     }
 

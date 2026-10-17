@@ -113,6 +113,23 @@ vec3 knotCurve( float s, float pParam, float qParam )
     return vec3( r * cos( phi ), r * sin( phi ), r_minor * sin( theta ) );
 }
 
+/**  A glow of a tint that saturates instead of clipping: as bright as tint * x while that is small, then toward the
+ *   tint at full strength (its brightest channel at cap) -- the hue stays.  min( tint * x, vec3( cap ) ) clipped
+ *   every channel to cap, and every bright band became one flat white (17.10.2026).
+ *
+ * @param tint  The glow's colour per unit of x. (in)
+ * @param x     The glow's strength, 0.. (in)
+ * @param cap   The brightest channel's limit. (in)
+ *
+ * @return
+ *   The glow's colour.
+ **/
+vec3 glowSat( vec3 tint, float x, float cap )
+{
+    float m = max( tint.r, max( tint.g, tint.b ) );
+    return tint / m * cap * ( 1.0 - exp( -max( x, 0.0 ) * m / cap ) );
+}
+
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
@@ -218,8 +235,7 @@ void main()
     float rail_glow = exp( -max( 0.0, min_track_dist ) * ( 24.0 + 12.0 * audioCentroid ) ) * glw;
     // The tint exceeds 1.0 per channel on its own and ring_glow_acc accumulates
     // over the whole march, so the TINTED vector is what has to be capped.
-    vec3 rail_tint = min( vec3( 1.3, 1.0, 1.7 ) * ( rail_glow + ring_glow_acc ) * ( 1.0 + 2.5 * audioKick ),
-                          vec3( 1.3 ) );
+    vec3 rail_tint = glowSat( vec3( 1.3, 1.0, 1.7 ), ( rail_glow + ring_glow_acc ) * ( 1.0 + 2.5 * audioKick ), 1.3 );
 
     // Background laser chamber grid. The old selector was
     // mix(bg, hit_col, clamp(length(hit_col), 0, 1)): intended as a "did we

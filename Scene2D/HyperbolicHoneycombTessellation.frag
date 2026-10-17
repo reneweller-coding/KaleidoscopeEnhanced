@@ -187,5 +187,9 @@ void main()
     col += imgPalette( 0.85 ) * rim_glow;
 
     col = pow( col, vec3( 0.88 ) );
-    fragColor = vec4( clamp( col, 0.0, 1.0 ), 1.0 );
+    // Highlights x0.7 before the clamp (17.10.2026): 10 % of the frame was bright, colourless and flat -- values
+    // above 1 clipped to one plateau, which the soft knee and the auto exposure turned into a flat grey.  The
+    // auto exposure lifts the frame back; the highlights keep their gradation.
+    const float HiK = 0.7;
+    fragColor = vec4( clamp( col * HiK, 0.0, 1.0 ), 1.0 );
 }

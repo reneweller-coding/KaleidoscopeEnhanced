@@ -120,6 +120,23 @@ float mapTrench( vec3 p, float t, float cWidth, out float bioNode )
     return d_wall;
 }
 
+/**  A glow of a tint that saturates instead of clipping: as bright as tint * x while that is small, then toward the
+ *   tint at full strength (its brightest channel at cap) -- the hue stays.  min( tint * x, vec3( cap ) ) clipped
+ *   every channel to cap, and every bright band became one flat white (17.10.2026).
+ *
+ * @param tint  The glow's colour per unit of x. (in)
+ * @param x     The glow's strength, 0.. (in)
+ * @param cap   The brightest channel's limit. (in)
+ *
+ * @return
+ *   The glow's colour.
+ **/
+vec3 glowSat( vec3 tint, float x, float cap )
+{
+    float m = max( tint.r, max( tint.g, tint.b ) );
+    return tint / m * cap * ( 1.0 - exp( -max( x, 0.0 ) * m / cap ) );
+}
+
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
@@ -180,8 +197,7 @@ void main()
             // the walls landed on the black floor. Keep the same mix, drop the
             // crushing constants, and put it on the fixed exposure instead.
             vec3 rock_base = mix( tex_col * 0.85, pal_col * 0.95, 0.5 ) * lam * exp_gain;
-            vec3 bio_glow = min( vec3( 0.3, 1.5, 1.8 ) * hit_bio * b_dens * ( 1.0 + 2.5 * audioKick ) * glw,
-                                 vec3( 1.35 ) );
+            vec3 bio_glow = glowSat( vec3( 0.3, 1.5, 1.8 ), hit_bio * b_dens * ( 1.0 + 2.5 * audioKick ) * glw, 1.35 );
 
             hit_col = rock_base + bio_glow;
             break;
@@ -210,9 +226,9 @@ void main()
     // Volumetric marine snow and plankton
     // Round specks drifting up through a jittered cell grid.  Until 17.10.2026 this was
     // pow(sin(dot(uv, k) * 40 + t * 4), 24): diagonal stripes sweeping the frame.
-    vec2  pu = uv * 38.0 + vec2( 0.0, t ); // a steady scroll (a fract() here would jump back)
-    vec2  pc = floor( pu );
-    vec2  pq = fract( pc * vec2( 0.1031, 0.1030 ) );
+    vec2 pu = uv * 38.0 + vec2( 0.0, t ); // a steady scroll (a fract() here would jump back)
+    vec2 pc = floor( pu );
+    vec2 pq = fract( pc * vec2( 0.1031, 0.1030 ) );
     pq += dot( pq, pq.yx + 33.33 );
     float ph = fract( ( pq.x + pq.y ) * pq.x );
     vec2  po = 0.2 + 0.6 * fract( vec2( ph * 17.3, ph * 31.7 ) );

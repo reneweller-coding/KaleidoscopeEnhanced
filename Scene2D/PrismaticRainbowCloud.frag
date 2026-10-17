@@ -165,6 +165,23 @@ float fbm( vec2 p )
     return v;
 }
 
+/**  A glow of a tint that saturates instead of clipping: as bright as tint * x while that is small, then toward the
+ *   tint at full strength (its brightest channel at cap) -- the hue stays.  min( tint * x, vec3( cap ) ) clipped
+ *   every channel to cap, and every bright band became one flat white (17.10.2026).
+ *
+ * @param tint  The glow's colour per unit of x. (in)
+ * @param x     The glow's strength, 0.. (in)
+ * @param cap   The brightest channel's limit. (in)
+ *
+ * @return
+ *   The glow's colour.
+ **/
+vec3 glowSat( vec3 tint, float x, float cap )
+{
+    float m = max( tint.r, max( tint.g, tint.b ) );
+    return tint / m * cap * ( 1.0 - exp( -max( x, 0.0 ) * m / cap ) );
+}
+
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
@@ -208,7 +225,7 @@ void main()
     float god_ray = ( 0.5 + 0.5 * sin( sun_angle * 18.0 + t * 0.5 ) ) * exp( -sun_dist * 1.5 ) * ry;
     // rayP alone reaches 2.2 and a kick trebles it, so the TINTED vector
     // carries the cap; bounding the scalar would have left the tint free.
-    vec3 ray_color = min( vec3( 1.0, 0.85, 0.6 ) * god_ray * ( 1.0 + audioKick * 2.0 ), vec3( 1.05 ) );
+    vec3 ray_color = glowSat( vec3( 1.0, 0.85, 0.6 ), god_ray * ( 1.0 + audioKick * 2.0 ), 1.05 );
 
     // Hold the sheet back to a fixed exposure: both the cirrus layer and the
     // iridescence are photo samples, so a light photo used to pin the whole sky
@@ -244,7 +261,7 @@ void main()
         {
             vec2  kp = ( vec2( fract( sparkle * 7.3 ), fract( sparkle * 13.7 ) ) - 0.5 ) * 0.7;
             float kd = dot( kf - kp, kf - kp );
-            col += min( vec3( 1.2, 1.1, 1.0 ) * audioHigh * 1.5, vec3( 0.85 ) )
+            col += glowSat( vec3( 1.2, 1.1, 1.0 ), audioHigh * 1.5, 0.85 )
                    * exp( -kd * 55.0 );
         }
     }

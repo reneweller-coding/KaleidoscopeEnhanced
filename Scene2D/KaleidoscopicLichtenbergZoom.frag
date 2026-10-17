@@ -93,6 +93,23 @@ float photoLevel()
     return dot( s * 0.2, vec3( 0.299, 0.587, 0.114 ) );
 }
 
+/**  A glow of a tint that saturates instead of clipping: as bright as tint * x while that is small, then toward the
+ *   tint at full strength (its brightest channel at cap) -- the hue stays.  min( tint * x, vec3( cap ) ) clipped
+ *   every channel to cap, and every bright band became one flat white (17.10.2026).
+ *
+ * @param tint  The glow's colour per unit of x. (in)
+ * @param x     The glow's strength, 0.. (in)
+ * @param cap   The brightest channel's limit. (in)
+ *
+ * @return
+ *   The glow's colour.
+ **/
+vec3 glowSat( vec3 tint, float x, float cap )
+{
+    float m = max( tint.r, max( tint.g, tint.b ) );
+    return tint / m * cap * ( 1.0 - exp( -max( x, 0.0 ) * m / cap ) );
+}
+
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
@@ -185,8 +202,8 @@ void main()
     // Add high-voltage electric blue/violet arcs & white spark cores. The tint
     // constants exceed 1.0 per channel on their own, so the TINTED vectors are
     // capped -- capping only the scalar glow left them unbounded.
-    vec3 arc_color = min( vec3( 1.1, 1.4, 1.9 ) * arc_glow * ( 1.0 + 2.5 * audioKick ), vec3( 1.25 ) );
-    vec3 spark_color = min( vec3( 1.8, 1.8, 2.0 ) * core_spark * ( 1.5 + 3.5 * audioKick ), vec3( 1.5 ) );
+    vec3 arc_color = glowSat( vec3( 1.1, 1.4, 1.9 ), arc_glow * ( 1.0 + 2.5 * audioKick ), 1.25 );
+    vec3 spark_color = glowSat( vec3( 1.8, 1.8, 2.0 ), core_spark * ( 1.5 + 3.5 * audioKick ), 1.5 );
     col += arc_color + spark_color;
 
     // Ambient discharge haze (on the same exposure gain as the base, since it

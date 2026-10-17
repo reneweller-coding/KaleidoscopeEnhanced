@@ -109,6 +109,23 @@ float mapHopf( vec3 p, float t, float fiberDens, float tubeR, out float fiberPha
     return d_tor + stream_rib * 0.04;
 }
 
+/**  A glow of a tint that saturates instead of clipping: as bright as tint * x while that is small, then toward the
+ *   tint at full strength (its brightest channel at cap) -- the hue stays.  min( tint * x, vec3( cap ) ) clipped
+ *   every channel to cap, and every bright band became one flat white (17.10.2026).
+ *
+ * @param tint  The glow's colour per unit of x. (in)
+ * @param x     The glow's strength, 0.. (in)
+ * @param cap   The brightest channel's limit. (in)
+ *
+ * @return
+ *   The glow's colour.
+ **/
+vec3 glowSat( vec3 tint, float x, float cap )
+{
+    float m = max( tint.r, max( tint.g, tint.b ) );
+    return tint / m * cap * ( 1.0 - exp( -max( x, 0.0 ) * m / cap ) );
+}
+
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
@@ -211,7 +228,7 @@ void main()
     // streamline signal, not a thin edge), so the raw (1.3,1.1,1.8) tint
     // already exceeds 1.0 per channel on AVERAGE before any kick -- capping
     // only the scalar left the tinted vec3 itself unbounded.
-    vec3 fiber_tint = min( vec3( 1.3, 1.1, 1.8 ) * fiber_glow * ( 1.0 + 2.5 * audioKick ), vec3( 0.65 ) );
+    vec3 fiber_tint = glowSat( vec3( 1.3, 1.1, 1.8 ), fiber_glow * ( 1.0 + 2.5 * audioKick ), 0.65 );
 
     // Background Hopf field flare
     vec3 bg_col = imgPalette( length( uv ) * 0.4 + 0.3 ) * ( 0.2 + 0.15 * audioLevel );

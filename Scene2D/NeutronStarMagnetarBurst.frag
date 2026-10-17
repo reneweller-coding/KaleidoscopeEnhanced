@@ -215,5 +215,9 @@ void main()
     col = pow( col, vec3( 0.85 ) ); // Contrast boost
     col += vec3( 0.03, 0.02, 0.06 ) * audioSwell;
 
-    fragColor = vec4( col, 1.0 );
+    // Highlights x0.5 before the clamp (17.10.2026): 11 % of the frame was bright, colourless and flat -- values
+    // above 1 clipped to one plateau, which the soft knee and the auto exposure turned into a flat grey.  The
+    // auto exposure lifts the frame back; the highlights keep their gradation.
+    const float HiK = 0.5;
+    fragColor = vec4( col * HiK, 1.0 );
 }

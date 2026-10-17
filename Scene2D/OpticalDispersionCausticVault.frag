@@ -115,6 +115,23 @@ float causticIntensity( vec2 p, float t, float wlOffset, float wScale )
     return min( pow( jacobian, 1.8 ), 3.0 );
 }
 
+/**  A glow of a tint that saturates instead of clipping: as bright as tint * x while that is small, then toward the
+ *   tint at full strength (its brightest channel at cap) -- the hue stays.  min( tint * x, vec3( cap ) ) clipped
+ *   every channel to cap, and every bright band became one flat white (17.10.2026).
+ *
+ * @param tint  The glow's colour per unit of x. (in)
+ * @param x     The glow's strength, 0.. (in)
+ * @param cap   The brightest channel's limit. (in)
+ *
+ * @return
+ *   The glow's colour.
+ **/
+vec3 glowSat( vec3 tint, float x, float cap )
+{
+    float m = max( tint.r, max( tint.g, tint.b ) );
+    return tint / m * cap * ( 1.0 - exp( -max( x, 0.0 ) * m / cap ) );
+}
+
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
@@ -165,7 +182,7 @@ void main()
     // scalar feeding it.
     float total_caustic = ( caustic_r + caustic_g + caustic_b ) * 0.3333;
     float specular_glint = pow( clamp( total_caustic * 0.8, 0.0, 1.0 ), 4.0 ) * ( 1.0 + 3.0 * audioKick );
-    col += min( vec3( 1.0, 1.0, 1.15 ) * specular_glint, vec3( 0.55 ) );
+    col += glowSat( vec3( 1.0, 1.0, 1.15 ), specular_glint, 0.55 );
 
     // Edge water vignette
     float vig = 1.0 - smoothstep( 0.85, 1.4, length( uv ) );

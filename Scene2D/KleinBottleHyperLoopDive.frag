@@ -124,6 +124,23 @@ float mapKlein( vec3 p, float t, float rBase, out float uCoord )
     return d * 0.65;
 }
 
+/**  A glow of a tint that saturates instead of clipping: as bright as tint * x while that is small, then toward the
+ *   tint at full strength (its brightest channel at cap) -- the hue stays.  min( tint * x, vec3( cap ) ) clipped
+ *   every channel to cap, and every bright band became one flat white (17.10.2026).
+ *
+ * @param tint  The glow's colour per unit of x. (in)
+ * @param x     The glow's strength, 0.. (in)
+ * @param cap   The brightest channel's limit. (in)
+ *
+ * @return
+ *   The glow's colour.
+ **/
+vec3 glowSat( vec3 tint, float x, float cap )
+{
+    float m = max( tint.r, max( tint.g, tint.b ) );
+    return tint / m * cap * ( 1.0 - exp( -max( x, 0.0 ) * m / cap ) );
+}
+
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
@@ -196,7 +213,7 @@ void main()
     float rib_v = ( dot( rib_vec, rib_vec ) > 1e-8 ) ? atan( rib_vec.y, rib_vec.x ) : 0.0;
     float ribs = pow( max( 0.0, sin( hit_u * 3.0 + rib_v * ( 5.0 + 4.0 * audioCentroid ) + t ) ), 6.0 );
     float rib_glow = ribs * glw * float( hit ) * ( 0.30 + 0.25 * audioLevel );
-    vec3  glow_tint = min( vec3( 1.3, 1.1, 1.8 ) * rib_glow * ( 1.0 + 2.5 * audioKick ), vec3( 1.15 ) );
+    vec3  glow_tint = glowSat( vec3( 1.3, 1.1, 1.8 ), rib_glow * ( 1.0 + 2.5 * audioKick ), 1.15 );
 
     // Surface-vs-background selection. The old test was
     // mix(bg, hit_col, clamp(length(hit_col), 0, 1)) -- with a dark photo a

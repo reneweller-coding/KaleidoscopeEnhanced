@@ -110,6 +110,23 @@ vec2 ebruComb( vec2 p, float t, float freq, float dir )
     return p;
 }
 
+/**  A glow of a tint that saturates instead of clipping: as bright as tint * x while that is small, then toward the
+ *   tint at full strength (its brightest channel at cap) -- the hue stays.  min( tint * x, vec3( cap ) ) clipped
+ *   every channel to cap, and every bright band became one flat white (17.10.2026).
+ *
+ * @param tint  The glow's colour per unit of x. (in)
+ * @param x     The glow's strength, 0.. (in)
+ * @param cap   The brightest channel's limit. (in)
+ *
+ * @return
+ *   The glow's colour.
+ **/
+vec3 glowSat( vec3 tint, float x, float cap )
+{
+    float m = max( tint.r, max( tint.g, tint.b ) );
+    return tint / m * cap * ( 1.0 - exp( -max( x, 0.0 ) * m / cap ) );
+}
+
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
@@ -161,12 +178,12 @@ void main()
     // Add glowing marble ridge filaments & kick flash. The tint constants
     // exceed 1.0 per channel, so the TINTED vectors carry the caps -- bounding
     // only the scalars left them unbounded.
-    vec3 ridge_tint = min( vec3( 1.4, 1.1, 1.7 ) * ring_glow * ( 1.0 + 2.5 * audioKick ), vec3( 0.85 ) );
+    vec3 ridge_tint = glowSat( vec3( 1.4, 1.1, 1.7 ), ring_glow * ( 1.0 + 2.5 * audioKick ), 0.85 );
     marb_col += ridge_tint;
 
     // Specular liquid reflection
     float spec = pow( clamp( 1.0 - abs( drop_rings ) * 2.0, 0.0, 1.0 ), 4.0 );
-    marb_col += min( vec3( 1.3, 1.3, 1.5 ) * spec * ( 0.5 + 1.0 * audioLevel ), vec3( 0.70 ) );
+    marb_col += glowSat( vec3( 1.3, 1.3, 1.5 ), spec * ( 0.5 + 1.0 * audioLevel ), 0.70 );
 
     marb_col = pow( marb_col, vec3( 0.88 ) );
     vec3 cat_tone = clamp( marb_col, 0.0, 1.0 );

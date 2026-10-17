@@ -155,5 +155,9 @@ void main()
     float vig = smoothstep( 1.3, 0.3, r );
     col *= vig;
 
-    fragColor = vec4( col, 1.0 );
+    // Highlights x0.8 before the clamp (17.10.2026): 8 % of the frame was bright, colourless and flat -- values
+    // above 1 clipped to one plateau, which the soft knee and the auto exposure turned into a flat grey.  The
+    // auto exposure lifts the frame back; the highlights keep their gradation.
+    const float HiK = 0.8;
+    fragColor = vec4( col * HiK, 1.0 );
 }

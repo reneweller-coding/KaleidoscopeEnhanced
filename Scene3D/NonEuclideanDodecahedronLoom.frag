@@ -127,5 +127,7 @@ void main()
     // be held down for a density that never actually arrived.
     // Additive stack: at ~hundreds of overlapping strands even a 0.55
     // cap integrates to one white mass (the probe showed exactly that).
-    fragColor = vec4( min( col * 0.30, vec3( 0.22 ) ), 1.0 );
+    // Each strand x0.6 (17.10.2026): the stack still clipped to one flat plateau over 38 % of the frame, which
+    // the auto exposure turned grey; with less per strand the knots keep their gradation.
+    fragColor = vec4( min( col * 0.18, vec3( 0.13 ) ), 1.0 );
 }

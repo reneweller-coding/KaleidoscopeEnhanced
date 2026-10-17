@@ -100,6 +100,23 @@ vec3 torusKnotPoint( float u, float R, float r )
     return vec3( r_knot * cos( p * u ), r_knot * sin( p * u ), r * sin( q * u ) );
 }
 
+/**  A glow of a tint that saturates instead of clipping: as bright as tint * x while that is small, then toward the
+ *   tint at full strength (its brightest channel at cap) -- the hue stays.  min( tint * x, vec3( cap ) ) clipped
+ *   every channel to cap, and every bright band became one flat white (17.10.2026).
+ *
+ * @param tint  The glow's colour per unit of x. (in)
+ * @param x     The glow's strength, 0.. (in)
+ * @param cap   The brightest channel's limit. (in)
+ *
+ * @return
+ *   The glow's colour.
+ **/
+vec3 glowSat( vec3 tint, float x, float cap )
+{
+    float m = max( tint.r, max( tint.g, tint.b ) );
+    return tint / m * cap * ( 1.0 - exp( -max( x, 0.0 ) * m / cap ) );
+}
+
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
@@ -215,7 +232,7 @@ void main()
 
     // Glowing laser track rails & support rings
     float rail_glow = exp( -min_track_dist * ( 24.0 + 12.0 * audioCentroid ) ) * glw;
-    vec3  rail_tint = min( vec3( 1.4, 1.1, 1.8 ) * rail_glow * ( 1.0 + 1.6 * audioKick ), vec3( 1.1 ) );
+    vec3  rail_tint = glowSat( vec3( 1.4, 1.1, 1.8 ), rail_glow * ( 1.0 + 1.6 * audioKick ), 1.1 );
 
     // --- hyperspace: chromatic speed streaks over the whole frame ----------
     float ang = atan( uv.y, uv.x );
