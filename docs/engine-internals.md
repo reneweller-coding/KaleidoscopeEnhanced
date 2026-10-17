@@ -5875,3 +5875,35 @@ makes the scheduler cut away inside a window (the sweep puts the scene back once
 review sheets now take their frames only where the wanted scene is on screen (the `[shown]` lines) and mark the
 coverage.
 
+## 17.10.2026 (27): pattern formation (ideas 19-36)
+
+Eighteen scenes of family B. Thirteen integrate a pattern-forming equation on the state pass, explicitly, with the
+time step held under the stability limit of their stiffest term:
+- **Fourth order:** the 13-point biharmonic, at dt 0.006..0.01 with cells 0.75..0.8 apart. These are
+  SwiftHohenbergMorph, KuramotoSivashinskyCells (damped, on a 32-bit field, so the mean stays bounded),
+  CahnHilliardQuench and PhaseFieldCrystalGrains (the hexagonal Swift-Hohenberg phase grown from turned seeds, with
+  a heat band that melts and refreezes it).
+- **Second order:** a 5- or 9-point Laplacian, with 8 D dt < 2. These are GinzburgLandauDefects (complex,
+  (1 + a^2) dt < 0.5), the Brusselator in TuringHopfBlinkers, FitzHugh-Nagumo in BistableLabyrinths, Gray-Scott in
+  PhotoGuidedTuringStripes and ReactionDiffusionOnFlow, and RockPaperScissorsSpirals.
+- **Spins and oscillators:** IsingCriticalField (checkerboard Metropolis), XYVortexGas (Langevin) and
+  ChemicalOscillatorLattice (nonlocal Kuramoto sampled on two rings).
+- **WilliamsDomainsElectroconvection:** an anisotropic Swift-Hohenberg whose square of the directional operator is
+  taken one step behind: D u is kept in a channel, and D^2 u is D of the last step's D u.
+
+Five are stateless: GranularOscillons (jittered round grains on a pattern that climbs the stability diagram with
+the bass), FaradayQuasipattern (8-, 10- or 12-fold plane-wave sums, crossfaded on a section), SmecticFocalConicMosaic,
+HerringboneWrinkles and the display halves of the rest.
+
+**What the first renders showed.**
+- **Turing-Hopf strobed.** At the codimension-two point the Hopf mode won: the whole field blinked at once, which is
+  a strobe. With D_v / D_u = 5 the Turing threshold sits below the Hopf point; the spots form first and blink locally.
+- **Rock-paper-scissors coexisted.** With equal growth and predation the species settled into a uniform blend.
+  Predation 2.5 times the growth gives the heteroclinic cycle, and big spirals.
+- **The photo-guided stripes were spots.** Their Gray-Scott pair lay in the spot regime. The knob now runs from maze
+  (F 0.029, k 0.057) to coral (F 0.0545, k 0.062), and the stripes lie along the photo's contours.
+- **The XY field was invisible as a displacement.** Seen between crossed polarisers -- sin^2(2 (theta - phi)), the
+  Schlieren texture of a nematic -- every vortex sprouts four dark brushes.
+- **Herringbone turned on the stereo width.** That is a rotation on the audio, which the standing rule forbids. The
+  direction now swings on time only; the compression follows the swell, not the level.
+

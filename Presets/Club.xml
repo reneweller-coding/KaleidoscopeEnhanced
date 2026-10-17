@@ -1979,12 +1979,6 @@
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <TextureShader minTimeSolo="30" maxTimeSolo="80" interest="8" file="..\\Scene2D\\FireflyForestSync.frag" type="normal" mood="dark,dreamy,psychedelic" probability="0.2" complexity="7" gpuMs="0.49">
-    <rig preset="flat"/>
-    <float name="swarmP" minValue="0" maxValue="1"></float>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
   <TextureShader minTimeSolo="38" maxTimeSolo="100" interest="7" file="..\\Scene2D\\InterchangeLightTrails.frag" type="normal" mood="dark,bright" probability="0.2" complexity="4" gpuMs="0.46">
     <rig preset="flat"/>
     <float name="loopsP" minValue="0" maxValue="1"></float>
@@ -2025,40 +2019,6 @@
     <float name="scaleP" minValue="0" maxValue="1"></float>
     <float name="crustP" minValue="0" maxValue="1"></float>
     <float name="flowP" minValue="0" maxValue="1"></float>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
-  <TextureShader minTimeSolo="30" maxTimeSolo="80" interest="8" file="..\\Scene2D\\TextureMaelstrom.frag" type="normal" mood="dark,dreamy,psychedelic" probability="0.45" complexity="3" gpuMs="0.41">
-    <rig preset="flat"/>
-    <float name="armsP" minValue="0" maxValue="1"></float>
-    <float name="windP" minValue="0" maxValue="1"></float>
-    <float name="foamP" minValue="0" maxValue="1"></float>
-    <expr name="foamP" formula="clamp(0.3 + 0.5*swell + 0.2*seed2, 0.0, 1.0)"/>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
-  <TextureShader minTimeSolo="30" maxTimeSolo="80" interest="8" file="..\\Scene2D\\WallpaperGroupCycle.frag" type="normal" mood="psychedelic,bright" probability="0.45" complexity="3" gpuMs="0.44">
-    <rig preset="flat"/>
-    <float name="cellP" minValue="0" maxValue="1"></float>
-    <float name="groupP" minValue="0" maxValue="1"></float>
-    <float name="speedP" minValue="0" maxValue="1"></float>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
-  <TextureShader minTimeSolo="30" maxTimeSolo="80" interest="8" file="..\\Scene2D\\TextureFlowParticles.frag" type="normal" mood="psychedelic,dreamy" probability="0.45" complexity="5" gpuMs="2.19">
-    <rig preset="flat"/>
-    <float name="scaleP" minValue="0" maxValue="1"></float>
-    <float name="densityP" minValue="0" maxValue="1"></float>
-    <float name="curlP" minValue="0" maxValue="1"></float>
-    <expr name="densityP" formula="clamp(0.4 + 0.4*swell + 0.2*seed2, 0.0, 1.0)"/>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
-  <TextureShader minTimeSolo="30" maxTimeSolo="80" interest="8" file="..\\Scene2D\\SchillerOverTexture.frag" type="normal" mood="dark,psychedelic" probability="0.45" complexity="6" gpuMs="0.42">
-    <rig preset="flat"/>
-    <float name="scaleP" minValue="0" maxValue="1"></float>
-    <float name="domainP" minValue="0" maxValue="1"></float>
-    <float name="darkP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
@@ -3063,6 +3023,45 @@
     <rig preset="flat"/>
     <float name="growP" minValue="0" maxValue="1"></float>
     <float name="sparkP" minValue="0" maxValue="1"></float>
+    <float name="scaleP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader minTimeSolo="38" maxTimeSolo="100" interest="8" file="..\\Scene2D\\GinzburgLandauDefects.frag" type="normal" mood="psychedelic,energetic" probability="0.45" complexity="7">
+    <rig preset="flat"/>
+    <float name="dispP" minValue="0" maxValue="1"></float>
+    <float name="twistP" minValue="0" maxValue="1"></float>
+    <float name="scaleP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader minTimeSolo="20" maxTimeSolo="52" interest="6" file="..\\Scene2D\\GranularOscillons.frag" type="normal" mood="energetic,bright" probability="0.45" complexity="6">
+    <rig preset="flat"/>
+    <float name="grainP" minValue="0" maxValue="1"></float>
+    <float name="waveP" minValue="0" maxValue="1"></float>
+    <float name="driveP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader minTimeSolo="30" maxTimeSolo="80" interest="7" file="..\\Scene2D\\TuringHopfBlinkers.frag" type="normal" mood="energetic,psychedelic" probability="0.45" complexity="6">
+    <rig preset="flat"/>
+    <float name="spotP" minValue="0" maxValue="1"></float>
+    <float name="lensP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader minTimeSolo="25" maxTimeSolo="65" interest="7" file="..\\Scene2D\\SmecticFocalConicMosaic.frag" type="normal" mood="psychedelic,bright" probability="0.45" complexity="6">
+    <rig preset="flat"/>
+    <float name="domainP" minValue="0" maxValue="1"></float>
+    <float name="bandsP" minValue="0" maxValue="1"></float>
+    <float name="photoP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader minTimeSolo="38" maxTimeSolo="100" interest="8" file="..\\Scene2D\\RockPaperScissorsSpirals.frag" type="normal" mood="psychedelic,energetic" probability="0.45" complexity="6">
+    <rig preset="flat"/>
+    <float name="speciesP" minValue="0" maxValue="1"></float>
+    <float name="mobilityP" minValue="0" maxValue="1"></float>
     <float name="scaleP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>

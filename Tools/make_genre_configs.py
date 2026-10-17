@@ -312,6 +312,7 @@ RECENT_SCENES = {
     "NoirBlindsLight", "NoirSmokeBacklight", "NoirKaleidoscope", "NoirTunnel", "NoirSearchlights", "NoirSilverFlow",
     "CyclicAutomatonSpirals",
     "GreenbergHastingsWaves", "LangtonTurmiteHighways", "ElementaryRuleTapestry", "WireworldCircuitry", "BriansBrainStorm", "LifeRuleMorph", "SandpileIdentityMandala", "MargolusBilliardGas", "ForestFireCriticality", "QuantumWalkCones", "KPZGrowthFronts", "RotorRouterAggregate", "TilingSubstitutionAutomaton",
+    "SwiftHohenbergMorph", "GinzburgLandauDefects", "KuramotoSivashinskyCells", "CahnHilliardQuench", "IsingCriticalField", "XYVortexGas", "GranularOscillons", "FaradayQuasipattern", "TuringHopfBlinkers", "PhotoGuidedTuringStripes", "BistableLabyrinths", "PhaseFieldCrystalGrains", "WilliamsDomainsElectroconvection", "SmecticFocalConicMosaic", "HerringboneWrinkles", "RockPaperScissorsSpirals", "ReactionDiffusionOnFlow", "ChemicalOscillatorLattice",
 }
 
 def rule_recent(m, h):
