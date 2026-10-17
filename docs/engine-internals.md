@@ -5288,4 +5288,11 @@ measuring the batch tools before running them showed: most of their hours were w
   some 2400 lines of library the committed shaders do not carry, so the change went into the shaders and their
   sources directly, not through a regeneration.
 
+- **Restlessness spread evenly.** Mapped onto the hand values' distribution, three quarters of the scenes sat on 2 and
+  3, and the match against the arousal told only the extremes apart. Spread over 1..10 now, a tenth on each step (the
+  stacking budget holds: two scenes at 10 and the plain overlay sum to 22 of 28). Allround, four hours each, judged
+  by the measured restlessness before and after: to ambient music (arousal 0.03) the calm scenes (1..3) went from 35
+  to 47 % of the screen time and the busy ones (8..10) from 21 to 10 %; to Prodigy (0.74) the busy from 30 to 35 %
+  and the calm from 30 to 22 %; to Berlin-school sequences (0.45) and Astrix (0.67) little changed. A lean, not a
+  filter -- the mood match never excludes a scene. Drops: 24/25, 21/25, 13/16, 16/16, 37/37 on a spectacle.
 `Kaleidoscope.exe -q`: 122 checks.

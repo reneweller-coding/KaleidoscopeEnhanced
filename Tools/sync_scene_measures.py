@@ -16,9 +16,10 @@ have read as busy.  Now:
                 .screen/metrics.json) -- large movement and flicker, not the sparkle of single particles,
               * detail (40 %): the mean edge strength of its 160 x 90 frames (`detail_mid`),
               each relative to the picture's brightness (+ 0.10: a dark scene is not calm for being dark, nor
-              restless for a small change), ranked, the ranks weighted.  The ranking is mapped onto the distribution
-              the hand-set values had, so the scheduler's thresholds (arousal target 1..10, the stacking budget of
-              28) keep their meaning.  Measured against the eye on 18 scenes (17.10.2026): a dense snowfall and a
+              restless for a small change), ranked, the ranks weighted, and spread evenly over 1..10 -- a tenth of
+              the scenes on each step.  (The first cut kept the distribution the hand-set values had: three quarters
+              of the scenes on 2 and 3, and the match against the music's arousal told only the extremes apart.  The
+              stacking budget of 28 still holds: two scenes at 10 and the plain overlay sum to 22.)  Measured against the eye on 18 scenes (17.10.2026): a dense snowfall and a
               firefly sparkle field rank busy -- they are, hard white specks all over --, a slowly turning tile
               ball, a disco floor and soft colour clouds calm.
 
@@ -93,13 +94,9 @@ def main():
     both = [s for s in hand if s in motion and s in det]
     rm, rd = ranks({s: motion[s] for s in both}), ranks({s: det[s] for s in both})
     score = {s: 0.6 * rm[s] + 0.4 * rd[s] for s in both}
-    # the hand values' distribution, per entry, onto the measured order
-    entry_stems = [stem_of(t) for t in tags if stem_of(t) in score]
-    pool = sorted(hand[s] for s in entry_stems)
-    by_score = sorted(entry_stems, key=lambda s: score[s])
-    want = {}
-    for i, s in enumerate(by_score):
-        want.setdefault(s, pool[i])
+    # evenly over 1..10 by the measured order (a tenth of the scenes on each step)
+    order = sorted(score, key=score.get)
+    want = {s: 1 + min(9, i * 10 // len(order)) for i, s in enumerate(order)}
 
     changes = []
 
