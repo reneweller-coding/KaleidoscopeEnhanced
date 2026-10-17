@@ -56,6 +56,19 @@ vec2 chain(vec2 uv)
 {COL}
     return uv;
 }}
+// The palette's base hue: the knob, wandering with the music (integrated, jump-free), shifted by the mode.
+float chainHue0()
+{{
+    return hueP * 0.159 + 0.06 * audioPhase + 0.004 * sceneTime + 0.3 * clamp(audioMode, 0.0, 1.0);
+}}
+// A glow colour of the base hue with a little of the surface's own colour: the rims and the fog.  glowColour() ran
+// an fbm hue field over the screen and cubed the photo's colour into neon.
+vec3 calmGlow(vec3 own, float dh)
+{{
+    vec3 o = own / max(max(own.r, max(own.g, own.b)), 1e-3);
+    vec3 g = hsv2rgb(vec3(fract(chainHue0() + dh), 0.5 + 0.2 * clamp(audioSwell, 0.0, 1.0), 1.0));
+    return mix(g, mix(vec3(dot(o, vec3(0.333))), o, 0.6), 0.3);
+}}
 // One plane: the photo through the chain, plus a colour field that follows
 // the chain's own coordinates (mirrorUV keeps it seamless at the atan cuts).
 vec3 chainPlane(vec2 uv, float lod, float pal)
@@ -65,8 +78,11 @@ vec3 chainPlane(vec2 uv, float lod, float pal)
     vec2 m = mirrorUV(c);
     // The colours wander on their own (integrated music phase, jump-free), the
     // mode shifts the palette, the swell saturates it, the kick lights it.
-    float h = hueP * 0.159 + 0.9 * m.x + 0.6 * m.y + 0.25 * luma(ph) + 0.12 * audioPhase + 0.004 * sceneTime + 0.3 * clamp(audioMode, 0.0, 1.0);
-    float sat = 0.55 + 0.4 * clamp(audioSwell, 0.0, 1.0);
+    // Calm colours, as in the 2D lab (17.10.2026): one base hue and a soft swing of +-0.13 turns over the chain --
+    // the hue ran through 0.9 + 0.6 turns per unit of the chain's coordinates plus a quarter turn with the photo's
+    // luma, and every cell of a kaleidoscope on every face carried the whole rainbow.
+    float h = chainHue0() + 0.13 * (0.6 * sin(6.2831853 * m.x) + 0.4 * sin(6.2831853 * m.y + 1.3)) + 0.03 * luma(ph);
+    float sat = 0.38 + 0.22 * clamp(audioSwell, 0.0, 1.0);
     vec3 fc = hsv2rgb(vec3(fract(h), sat, 1.0)) * (0.35 + 1.3 * luma(ph)) * (1.0 + 0.4 * clamp(audioKick, 0.0, 1.0));
     return mix(ph, fc, pal);
 }}
@@ -98,9 +114,10 @@ void main()
         if (t > 30.0) break;
     }}
     vec3 lc = mix(vec3(0.7, 0.85, 1.1), vec3(1.15, 0.9, 0.7), mode);
-    // The fog takes the palette's hue (wandering with the music) rather than the photo's cast.
-    vec3 fogPal = hsv2rgb(vec3(fract(hueP * 0.159 + 0.12 * audioPhase + 0.004 * sceneTime + 0.3 * mode + 0.5), 0.55, 1.0));
-    vec3 fogC = mix(glowColour(imgK(vec2(0.5) + 0.2 * p, 5.0), p, hueP * 0.159), fogPal, 0.8 * clamp(paletteP, 0.0, 1.0)) * (0.05 + 0.1 * swell);
+    // The fog takes the palette's hue (wandering with the music) rather than the photo's cast: a neighbour of the
+    // surfaces' hue, not its complement (17.10.2026).
+    vec3 fogPal = hsv2rgb(vec3(fract(chainHue0() + 0.08), 0.4, 1.0));
+    vec3 fogC = mix(calmGlow(imgK(vec2(0.5) + 0.2 * p, 5.0), 0.04), fogPal, 0.8 * clamp(paletteP, 0.0, 1.0)) * (0.05 + 0.1 * swell);
     vec3 col = fogC;
     if (hit) {{
         vec3 q = ro + rd * t;
@@ -108,7 +125,7 @@ void main()
         float lod = clamp(log2(t * 2.0) + 1.5 * (1.0 - clamp(detailP, 0.0, 1.0)), 0.0, 7.0);
         vec3 tex = photoChain3(fp, n, lod, 0.2 + 0.7 * clamp(paletteP, 0.0, 1.0));
         float tm = luma(tex);
-        tex = max((tex - tm) * 1.5 + tm, 0.0) * 1.5;           // livelier colour, brighter
+        tex = max((tex - tm) * 1.1 + tm, 0.0) * 1.5;           // brighter, the colour a little livelier (was 1.5)
         vec3 L = normalize(vec3(0.5, 0.7, -0.4));
         float diff = max(dot(n, L), 0.0);
         float ao = 0.0;
@@ -116,7 +133,7 @@ void main()
         ao = clamp(1.0 - 0.4 * ao, 0.2, 1.0);
         float fres = pow(1.0 - abs(dot(n, -rd)), 3.0);
         vec3 surf = tex * lc * (0.35 + 0.9 * diff) * ao;
-        vec3 rimC = glowColour(tex, fp.xy, hueP * 0.159);
+        vec3 rimC = calmGlow(tex, 0.05 * sin(fp.x + fp.y));
         vec3 rim = rimC * fres * (0.7 + 1.5 * kick) + surf * 0.4;       // lab audit: the glow style was half as bright
         float st = clamp(styleP, 0.0, 1.0);
         vec3 sc = mix(surf + rimC * fres * (0.15 + 0.6 * kick), rim * 1.3 + rimC * 0.12 * ao, smoothstep(0.5, 1.0, st));

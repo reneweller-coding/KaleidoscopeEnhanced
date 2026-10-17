@@ -5622,5 +5622,15 @@ colour). Now one base hue that wanders with the music, a soft swing of +-0.13 tu
 mirrored coordinates, so it stays seamless), saturation 0.38 .. 0.6, the photo's own colours raised 1.1 instead of
 1.4, and the glow drawn from the base hue with a little of the photo's own colour. In ChainLab2D, FxChain and the
 tunnel (sources Tools/scenegen/src, make_chainlabtunnel.py; the frags and Engine/ChainPass regenerated): the hue
-change across the picture 0.05 .. 0.14, over time 0.03 .. 0.11 -- the catalogue's range. The 3D chain lab's colour
-field is unchanged.
+change across the picture 0.05 .. 0.14, over time 0.03 .. 0.11 -- the catalogue's range.
+
+The 3D chain labs had the same colour field: ChainLab3D, ChainSlice3D and the five Chain3D scenes colour their
+surfaces with a 2D chain projected on three planes (`chainPlane`, from Tools/scenegen/make_chains3d.py), raised the
+surface colour's saturation 1.5 again, glowed their rims with `glowColour` (an fbm hue field over the screen, the
+photo's colour cubed into neon) and fogged in the palette's complementary hue. Measured the same way (pinned looks x
+two palettes x three worlds, and the five scenes): the hue change across the picture 0.21 .. 0.41 in the slice lab and
+the Chain3D scenes, over time 0.15 .. 0.32. Now the same base hue and +-0.13 swing as the 2D lab (`chainHue0`), the
+surface saturation raised 1.1, rims and fog in `calmGlow` (the base hue with a little of the surface's own colour) and
+the fog a neighbour of the surfaces' hue: across the picture 0.07 .. 0.17, over time 0.06 .. 0.13. The generators were
+checked first to reproduce the committed sources exactly (make_chains3d -> make_chainlab3d -> make_chainslice3d ->
+gen.py, which writes the chain passes too); make_chainlab3d now cuts the lab's main at the palette helpers.

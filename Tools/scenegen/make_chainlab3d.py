@@ -285,7 +285,7 @@ vec2 chain(vec2 uv)
 }
 '''
 t3 = io.open(os.path.join(SP, "src", "Chain3DTwistTorus.glsl"), encoding="utf-8").read()
-m = t3.index("// One plane: the photo through the chain")
+m = t3.index("// The palette's base hue")   # the palette helpers, then the planes
 MAIN = t3[m:]
 MAIN = MAIN.replace("    gSpread = clamp(audioSpread, 0.0, 1.0);\n",
     "    gSpread = clamp(audioSpread, 0.0, 1.0);\n"

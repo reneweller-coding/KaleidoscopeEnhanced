@@ -42,51 +42,6 @@ uniform float detailP;           ///< Detail knob, 0..1.
 uniform float paletteP;          ///< Palette knob: photo colours .. colour field, 0..1.
 uniform float camP;              ///< Camera knob, 0..1.
 uniform float hueP;              ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
-/**  Pseudo-random number 0..1 from a 2D point.
- *
- * @param p  The point. (in)
- *
- * @return
- *   A pseudo-random number 0..1.
- **/
-float hash21( vec2 p )
-{
-    vec3 p3 = fract( vec3( p.xyx ) * 0.1031 );
-    p3 += dot( p3, p3.yzx + 33.33 );
-    return fract( ( p3.x + p3.y ) * p3.z );
-}
-/**  Smooth 2D value noise, 0..1.
- *
- * @param p  The point. (in)
- *
- * @return
- *   The noise value, 0..1.
- **/
-float noise2( vec2 p )
-{
-    vec2 i = floor( p ), f = fract( p );
-    f = f * f * ( 3.0 - 2.0 * f );
-    return mix( mix( hash21( i ), hash21( i + vec2( 1.0, 0.0 ) ), f.x ),
-                mix( hash21( i + vec2( 0.0, 1.0 ) ), hash21( i + vec2( 1.0, 1.0 ) ), f.x ), f.y );
-}
-/**  Fractal noise of three octaves, 0..1.
- *
- * @param p  The point. (in)
- *
- * @return
- *   The fractal noise value, 0..1.
- **/
-float fbm3( vec2 p )
-{
-    float v = 0.0, a = 0.5;
-    for ( int i = 0; i < 3; ++i )
-    {
-        v += a * noise2( p );
-        p = mat2( 1.6, 1.2, -1.2, 1.6 ) * p + 2.3;
-        a *= 0.5;
-    }
-    return v;
-}
 /**  Mirrored repeat of a coordinate into 0..1 (seamless at every edge).
  *
  * @param uv  The coordinate, any range. (in)
@@ -133,34 +88,6 @@ vec3 hsv2rgb( vec3 c )
 {
     vec3 k = clamp( abs( mod( c.x * 6.0 + vec3( 0.0, 4.0, 2.0 ), 6.0 ) - 3.0 ) - 1.0, 0.0, 1.0 );
     return c.z * mix( vec3( 1.0 ), k, c.y );
-}
-/**  Saturation of a colour, 0..1.
- *
- * @param c  The colour. (in)
- *
- * @return
- *   The saturation, 0..1.
- **/
-float satOf( vec3 c )
-{
-    float mx = max( c.r, max( c.g, c.b ) );
-    return ( mx - min( c.r, min( c.g, c.b ) ) ) / max( mx, 1e-3 );
-}
-/**  A glowing colour for a place: the photo's own hue where it has one, a wandering hue field where it is grey.
- *
- * @param photo  The photo's colour at the place. (in)
- * @param q      The place; drives the wandering hue field. (in)
- * @param hue0   Anchor hue, 0..1. (in)
- *
- * @return
- *   The glow colour (RGB, bright).
- **/
-vec3 glowColour( vec3 photo, vec2 q, float hue0 )
-{
-    vec3 field = hsv2rgb( vec3( fract( hue0 + 0.55 * fbm3( q * 0.8 ) + 0.03 * audioAdvance ), 0.85, 1.0 ) );
-    vec3 own = photo / max( max( photo.r, max( photo.g, photo.b ) ), 1e-3 );
-    own = own * own * own;
-    return mix( field, own, smoothstep( 0.12, 0.35, satOf( photo ) ) );
 }
 /**  2D rotation matrix.
  *
@@ -410,6 +337,29 @@ uniform vec3 walkSpace, walkCore, walkBody; ///< walkSpace: The 3D lab's space a
                                             ///< fade); walkBody: The 3D lab's body as the app walks it: (shown, target,
                                             ///< fade).
 /** @} */
+/**  The palette's base hue: the knob, wandering with the music, shifted by the mode.
+ *
+ * @return
+ *   The base hue, in turns (unwrapped).
+ **/
+float chainHue0()
+{
+    return hueP * 0.159 + 0.06 * audioPhase + 0.004 * sceneTime + 0.3 * clamp( audioMode, 0.0, 1.0 );
+}
+/**  A glow colour of the base hue with a little of the surface's own colour.
+ *
+ * @param own  The surface's own colour, a little of which the glow keeps. (in)
+ * @param dh   Offset from the base hue, in turns. (in)
+ *
+ * @return
+ *   The glow colour (RGB).
+ **/
+vec3 calmGlow( vec3 own, float dh )
+{
+    vec3 o = own / max( max( own.r, max( own.g, own.b ) ), 1e-3 );
+    vec3 g = hsv2rgb( vec3( fract( chainHue0() + dh ), 0.5 + 0.2 * clamp( audioSwell, 0.0, 1.0 ), 1.0 ) );
+    return mix( g, mix( vec3( dot( o, vec3( 0.333 ) ) ), o, 0.6 ), 0.3 );
+}
 /**  Colour of a chain coordinate: the photo, shifted toward a hue that follows the music.
  *
  * @param c    The chain coordinate. (in)
@@ -425,9 +375,11 @@ vec3 chainPlaneC( vec2 c, float lod, float pal )
     vec2 m = mirrorUV( c );
 
 
-    float h = hueP * 0.159 + 0.9 * m.x + 0.6 * m.y + 0.25 * luma( ph ) + 0.12 * audioPhase + 0.004 * sceneTime
-              + 0.3 * clamp( audioMode, 0.0, 1.0 );
-    float sat = 0.55 + 0.4 * clamp( audioSwell, 0.0, 1.0 );
+
+
+    float h = chainHue0() + 0.13 * ( 0.6 * sin( 6.2831853 * m.x ) + 0.4 * sin( 6.2831853 * m.y + 1.3 ) )
+              + 0.03 * luma( ph );
+    float sat = 0.38 + 0.22 * clamp( audioSwell, 0.0, 1.0 );
     vec3  fc = hsv2rgb( vec3( fract( h ), sat, 1.0 ) ) * ( 0.35 + 1.3 * luma( ph ) )
                * ( 1.0 + 0.4 * clamp( audioKick, 0.0, 1.0 ) );
     return mix( ph, fc, pal );
@@ -485,10 +437,9 @@ void main()
     vec3  fp = gp.xyz;
     vec3  lc = mix( vec3( 0.7, 0.85, 1.1 ), vec3( 1.15, 0.9, 0.7 ), mode );
 
-    vec3 fog_pal = hsv2rgb(
-        vec3( fract( hueP * 0.159 + 0.12 * audioPhase + 0.004 * sceneTime + 0.3 * mode + 0.5 ), 0.55, 1.0 ) );
-    vec3 fog_c = mix( glowColour( imgK( vec2( 0.5 ) + 0.2 * p, 5.0 ), p, hueP * 0.159 ), fog_pal,
-                      0.8 * clamp( paletteP, 0.0, 1.0 ) )
+
+    vec3 fog_pal = hsv2rgb( vec3( fract( chainHue0() + 0.08 ), 0.4, 1.0 ) );
+    vec3 fog_c = mix( calmGlow( imgK( vec2( 0.5 ) + 0.2 * p, 5.0 ), 0.04 ), fog_pal, 0.8 * clamp( paletteP, 0.0, 1.0 ) )
                  * ( 0.05 + 0.1 * swell );
     vec3 col = fog_c;
     // colour and relief for every pixel: the derivatives must not sit in a pixel branch
@@ -515,13 +466,13 @@ void main()
         vec3  n_geo = n;
         vec3  tex = tex0;
         float tm = luma( tex );
-        tex = max( ( tex - tm ) * 1.5 + tm, 0.0 ) * 1.5;
+        tex = max( ( tex - tm ) * 1.1 + tm, 0.0 ) * 1.5;
         vec3  L = normalize( vec3( 0.5, 0.7, -0.4 ) );
         float diff = max( dot( n, L ), 0.0 );
         float ao = gn.w;
         float fres = pow( 1.0 - abs( dot( n, -rd ) ), 3.0 );
         vec3  surf = tex * lc * ( 0.35 + 0.9 * diff ) * ao;
-        vec3  rim_c = glowColour( tex, fp.xy, hueP * 0.159 );
+        vec3  rim_c = calmGlow( tex, 0.05 * sin( fp.x + fp.y ) );
         vec3  rim = rim_c * fres * ( 0.7 + 1.5 * kick ) + surf * 0.4;
         float st = clamp( styleP, 0.0, 1.0 );
         vec3  sc = mix( surf + rim_c * fres * ( 0.15 + 0.6 * kick ), rim * 1.3 + rim_c * 0.12 * ao,
