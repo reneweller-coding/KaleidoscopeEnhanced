@@ -5603,3 +5603,7 @@ rotation phase what a long show gathers).
   trace wider and found on darker paper; the Mesh* desk lamps light 0.75 .. 1.25 with the swell (were 0.45 .. 1.05).
   Hologram and ShatterSculpture turned on audioAdvance -- speeding up on every kick, against the standing rule; now on
   time alone.
+- **Scenes that stood still.** EuropaChaosTerrain only let its rafts drift: now the camera glides over the ice (the
+  surface slides toward it on time). HologramGauze's dancer held one pose, arms raised, for the whole scene and turned
+  once in three minutes: her arms now sweep and bend about the shoulders, out of step, and she turns once a minute.
+  HoneyFold (0.05 -> 0.12), EpoxyWaves (0.15 -> 0.3) and HurricaneEyeWall (0.025 -> 0.06) run faster on time.

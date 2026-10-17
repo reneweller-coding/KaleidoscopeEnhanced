@@ -186,10 +186,19 @@ vec4 ghost( vec2 p )
     float d = max( m.x - w, y - 0.44 ) - 0.03;
     d = smin( d, sdSeg( m, vec2( 0.0, 0.44 ), vec2( 0.0, 0.56 ) ) - 0.045, 0.04 );       // neck
     d = smin( d, length( ( hu - vec2( 0.0, 0.66 ) ) * vec2( 1.0, 0.88 ) ) - 0.1, 0.03 ); // head
-    d = smin( d, sdSeg( m, vec2( 0.2, 0.42 ), vec2( 0.5, 0.64 ) ) - 0.045 + 0.01 * smoothstep( 0.2, 0.5, m.x ),
-              0.06 );                                                             // upper arms
-    d = smin( d, sdSeg( m, vec2( 0.5, 0.64 ), vec2( 0.72, 0.9 ) ) - 0.03, 0.04 ); // forearms
-    d = smin( d, length( m - vec2( 0.74, 0.93 ) ) - 0.035, 0.02 );                // hands
+    // The dancer dances (18.10.2026): she held one pose, arms raised, for the whole scene.  Each arm sweeps slowly
+    // about its shoulder, the elbow bends, the two arms out of step; the turn and the sway carry the rest.
+    float side_ph = ( hu.x > 0.0 ) ? 0.0 : 2.1;
+    float sw = 0.38 * sin( gT * 0.42 + side_ph ) + 0.12 * sin( gT * 0.23 + side_ph * 1.7 );
+    float bend = 0.35 * sin( gT * 0.31 + side_ph + 1.0 );
+    vec2  sh = vec2( 0.2, 0.42 );
+    vec2  a1 = vec2( 0.3, 0.22 ), a2 = vec2( 0.22, 0.26 ); // upper arm and forearm at rest
+    float c1 = cos( sw ), s1 = sin( sw ), c2 = cos( sw + bend ), s2 = sin( sw + bend );
+    vec2  el = sh + vec2( c1 * a1.x - s1 * a1.y, s1 * a1.x + c1 * a1.y );
+    vec2  ha = el + vec2( c2 * a2.x - s2 * a2.y, s2 * a2.x + c2 * a2.y );
+    d = smin( d, sdSeg( m, sh, el ) - 0.045 + 0.01 * smoothstep( 0.2, 0.5, m.x ), 0.06 ); // upper arms
+    d = smin( d, sdSeg( m, el, ha ) - 0.03, 0.04 );                                       // forearms
+    d = smin( d, length( m - ha - normalize( ha - el ) * 0.03 ) - 0.035, 0.02 );          // hands
     float dissolve = smoothstep( -1.0, -0.45, hu.y + 0.3 * ( fbm( hu * 4.0 + vec2( 0.0, gT * 0.1 ) ) - 0.5 ) );
     float mask = smoothstep( 0.02, -0.02, d ) * dissolve;
     float line = exp( -abs( d ) * 60.0 ) * dissolve * 0.6;
@@ -223,7 +232,7 @@ void main()
     gHi = clamp( audioHigh * 2.0, 0.0, 1.0 );
     float swell = clamp( audioSwell, 0.0, 1.0 );
     gT = sceneTime + sceneAdvance * 0.4;
-    gAng = ( 0.15 + 0.35 * clamp( turnP, 0.0, 1.0 ) ) * sin( gT * 0.035 );
+    gAng = ( 0.15 + 0.35 * clamp( turnP, 0.0, 1.0 ) ) * sin( gT * 0.11 ); // a turn in a minute (was three)
 
     float bright = 0.8 + 0.6 * bass;
 

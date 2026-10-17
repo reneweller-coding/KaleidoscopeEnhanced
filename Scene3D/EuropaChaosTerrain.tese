@@ -129,16 +129,20 @@ void main()
     vec2 xz = vec2( ( uv.x - 0.5 ) * Extent.x, uv.y * Extent.y + 3.0 );
 
     float clock = sceneAdvance * 0.3 + sceneTime * 0.06;
+    // A slow glide over the ice, on time alone (18.10.2026): the terrain stood still, only the rafts drifted.  The
+    // grid stays with the camera, the surface it samples slides toward it.
+    vec2  fly = vec2( 0.0, sceneTime * 1.1 );
+    vec2  sx = xz + fly;
     float seam, raft;
-    float h = surface( xz, clock, seam, raft );
+    float h = surface( sx, clock, seam, raft );
     float e = 0.6;
     float s1, r1, s2, r2;
-    float hx = surface( xz + vec2( e, 0.0 ), clock, s1, r1 ) - surface( xz - vec2( e, 0.0 ), clock, s2, r2 );
-    float hz = surface( xz + vec2( 0.0, e ), clock, s1, r1 ) - surface( xz - vec2( 0.0, e ), clock, s2, r2 );
+    float hx = surface( sx + vec2( e, 0.0 ), clock, s1, r1 ) - surface( sx - vec2( e, 0.0 ), clock, s2, r2 );
+    float hz = surface( sx + vec2( 0.0, e ), clock, s1, r1 ) - surface( sx - vec2( 0.0, e ), clock, s2, r2 );
     vec3  n = normalize( vec3( -hx / ( 2.0 * e ), 1.0, -hz / ( 2.0 * e ) ) );
 
     vec3 p = vec3( xz.x, h, xz.y );
-    vWorld = p;
+    vWorld = vec3( sx.x, h, sx.y ); // the ice's own coordinates: the texture slides with it
     vSurfUV = uv;
     vNormal = n;
     vSeam = seam;

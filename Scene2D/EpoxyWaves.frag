@@ -399,7 +399,7 @@ void main()
     float rough = clamp( audioRoughness, 0.0, 1.0 );
     // The shore line runs diagonally, wavy; the sea on one side (repeating so the plane is endless).
     float s = dot( p, normalize( vec2( 0.8, 0.6 ) ) ) + 0.12 * fbm3( p * 2.0 );
-    float T = 0.15 * sceneTime + 1.0 * audioAdvance;
+    float T = 0.3 * sceneTime + 1.0 * audioAdvance; // 0.3 (18.10.2026): at 0.15 the resin stood still
     float wash = ( 0.12 + 0.12 * clamp( audioSpread, 0.0, 1.0 ) ) * sin( T );
     float x = mod( s + wash + 1.0, 2.0 ) - 1.0; // -1..1, the shore at 0
     vec2  uv = p * 0.5 + 0.5;
