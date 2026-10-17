@@ -10,7 +10,7 @@ _1215 Szenen, 30 FX-Overlays, 110 Übergänge. Generiert von `Tools/make_catalog
 
 ### AbacusBeadCount
 
-`Scene2D/AbacusBeadCount.frag` · type=normal · mood=calm,bright,dreamy · complexity=3
+`Scene2D/AbacusBeadCount.frag` · type=normal · mood=calm,bright,dreamy · complexity=9
 
 ABACUS BEAD COUNT: a soroban counting the music. One rod per spectrum band; on each rod the beads slide toward the reckoning bar to the value of that band, so the whole frame reads as a bar chart made of wooden beads. The beads glide -- their position is a smoothed function of the band, never a jump -- and a rod's beads brighten as they reach the bar. The photo is the frame's wood and the felt behind. Camera fixed on…
 
@@ -19,7 +19,7 @@ ABACUS BEAD COUNT: a soroban counting the music. One rod per spectrum band; on e
 
 ### AbandonedStarGate
 
-`Scene2D/AbandonedStarGate.frag` · type=normal · mood=dark,calm,space · complexity=4
+`Scene2D/AbandonedStarGate.frag` · type=normal · mood=dark,calm,space · complexity=7
 
 ABANDONED STAR GATE: A massive, ancient and corroded ring structure drifting in deep space. It occasionally sparks with unstable, violent wormhole energy that pulses to the music. audioAdvance -> slow drifting past the structure audioKick -> violent energy sparks and unstable wormhole flashes audioSwell -> ambient brightness of the dormant energy ring audioChromaHue-> palette offset for the wormhole energy Per-activa…
 
@@ -28,7 +28,7 @@ ABANDONED STAR GATE: A massive, ancient and corroded ring structure drifting in 
 
 ### AbyssalLuminescence
 
-`Scene2D/AbyssalLuminescence.frag` · type=normal · mood=calm,dark,dreamy · complexity=3
+`Scene2D/AbyssalLuminescence.frag` · type=normal · mood=calm,dark,dreamy · complexity=7
 
 ABYSSAL LUMINESCENCE: Deep ocean bioluminescent ecosystem with undulating siphonophores, translucent glowing tentacles, underwater volumetric caustic sunbeams, deep thermal marine snow, and organic fluid currents. audioBass -> pulses organism bell contraction & tentacle wave velocity audioHigh -> sparks bioluminescent marine snow & plankton flashes audioSwell -> thickens volumetric oceanic mist & caustic ray depth au…
 
@@ -37,7 +37,7 @@ ABYSSAL LUMINESCENCE: Deep ocean bioluminescent ecosystem with undulating siphon
 
 ### AccretionDiskRelativistic
 
-`Scene2D/AccretionDiskRelativistic.frag` · type=normal · mood=space,dark,dreamy · complexity=3
+`Scene2D/AccretionDiskRelativistic.frag` · type=normal · mood=space,dark,dreamy · complexity=8
 
 RELATIVISTIC ACCRETION DISK: a black hole seen almost edge-on, its disc bent over the top and under the bottom by the hole's gravity (rays are marched with a 1/r^2 pull toward the centre, so the far side of the disc appears above and below the shadow), and Doppler-beamed: the side of the disc coming toward us burns brighter and bluer, the receding side dims and reddens. The disc turns on the music's pace, inner rings…
 
@@ -46,7 +46,7 @@ RELATIVISTIC ACCRETION DISK: a black hole seen almost edge-on, its disc bent ove
 
 ### AcousticBlackHoleEventHorizon
 
-`Scene2D/AcousticBlackHoleEventHorizon.frag` · type=normal · mood=dark,psychedelic,space · complexity=4
+`Scene2D/AcousticBlackHoleEventHorizon.frag` · type=normal · mood=dark,psychedelic,space · complexity=2
 
 ACOUSTIC BLACK HOLE EVENT HORIZON: Sonic black hole (Dumb Hole) in a transsonic superfluid Laval nozzle. Inflowing fluid accelerates past the local speed of sound (Mach > 1), trapping acoustic phonons behind the acoustic event horizon and radiating analog Hawking radiation. audioAdvance -> accelerates fluid inflow velocity across transsonic Laval nozzle audioKick -> flashes spontaneous quantum phonon pair emission (H…
 
@@ -55,7 +55,7 @@ ACOUSTIC BLACK HOLE EVENT HORIZON: Sonic black hole (Dumb Hole) in a transsonic 
 
 ### ActiveNematicDefects
 
-`Scene2D/ActiveNematicDefects.frag` · type=normal · mood=psychedelic,dreamy · complexity=3
+`Scene2D/ActiveNematicDefects.frag` · type=normal · mood=psychedelic,dreamy · complexity=4
 
 ACTIVE NEMATIC DEFECTS: a living liquid crystal -- a dense carpet of rod-like filaments that align with their neighbours and push, so the whole field churns in never-ending turbulence: the rods bend into bands and swirls, and topological defects wander through them, comet-shaped +1/2 defects that swim head-first and three-armed -1/2 defects that drift, pairs born and annihilating. Seen between crossed polarisers the …
 
@@ -64,7 +64,7 @@ ACTIVE NEMATIC DEFECTS: a living liquid crystal -- a dense carpet of rod-like fi
 
 ### AfKlintSpirals
 
-`Scene2D/AfKlintSpirals.frag` · type=normal · mood=calm,bright · complexity=2
+`Scene2D/AfKlintSpirals.frag` · type=normal · mood=calm,bright · complexity=1
 
 AF KLINT SPIRALS: in the spirit of Hilma af Klint's temple paintings -- great spirals wind in two alternating colours like snail shells, circles split into contrasting halves, over a soft field of pastel pinks, ochres and blues; the spirals slowly turn (some inward, some outward), the halves rotate, everything breathing gently; the colours are softened by the photograph, which shows through like the texture of old te…
 
@@ -91,7 +91,7 @@ ALCOHOL INK BLOOMS: alcohol ink on white synthetic paper, blooming -- drops of i
 
 ### AlcubierreWarpDriveHighway
 
-`Scene2D/AlcubierreWarpDriveHighway.frag` · type=normal · mood=psychedelic,aggressive,bright · complexity=2
+`Scene2D/AlcubierreWarpDriveHighway.frag` · type=normal · mood=psychedelic,aggressive,bright · complexity=9
 
 ALCUBIERRE WARP DRIVE HIGHWAY: Faster-than-light warp bubble flight in curved spacetime based on the Alcubierre metric. Spacetime compression ahead (blueshift gleam), expansion behind (redshift), and glowing negative-energy exotic matter containment rings. Audio Reactivity: audioAdvance -> drives extreme relativistic warp drive forward progression audioKick -> flashes exotic matter warp bubble nodes & spacetime compr…
 
@@ -100,7 +100,7 @@ ALCUBIERRE WARP DRIVE HIGHWAY: Faster-than-light warp bubble flight in curved sp
 
 ### AlfvenWavePlasmaFilamentation
 
-`Scene2D/AlfvenWavePlasmaFilamentation.frag` · type=normal · mood=aggressive,bright,psychedelic · complexity=4
+`Scene2D/AlfvenWavePlasmaFilamentation.frag` · type=normal · mood=aggressive,bright,psychedelic · complexity=9
 
 ALFVÉN WAVE PLASMA FILAMENTATION: Torsional shear Alfvén waves in solar coronal flux tubes. Magnetohydrodynamic wave propagation along magnetic field lines undergoes non-linear filamentation, creating phase-mixed current sheets, turbulent plasma heating channels, and coronal photo texturing. audioAdvance -> propagates Alfvén wave packets along magnetized coronal flux tubes audioKick -> flashes phase-mixed current she…
 
@@ -109,7 +109,7 @@ ALFVÉN WAVE PLASMA FILAMENTATION: Torsional shear Alfvén waves in solar corona
 
 ### AlienPlanetOrbit
 
-`Scene2D/AlienPlanetOrbit.frag` · type=normal · mood=calm,dreamy,dark,space · complexity=4
+`Scene2D/AlienPlanetOrbit.frag` · type=normal · mood=calm,dreamy,dark,space · complexity=8
 
 ALIEN PLANET ORBIT: A slow orbital flight above a massive alien world, viewing its atmosphere, city lights on the night side, and orbital megastructures. The planet's terminator line separates day and night. Space stations and satellites float in the foreground. audioAdvance -> orbital progression and station rotation audioSwell -> atmospheric glow intensity and station thrusters audioKick -> city lights pulsing on t…
 
@@ -118,7 +118,7 @@ ALIEN PLANET ORBIT: A slow orbital flight above a massive alien world, viewing i
 
 ### AlienWorldSurface
 
-`Scene2D/AlienWorldSurface.frag` · type=normal · mood=calm,dreamy,dark,space · complexity=4
+`Scene2D/AlienWorldSurface.frag` · type=normal · mood=calm,dreamy,dark,space · complexity=1
 
 ALIEN WORLD SURFACE: standing on the ground of another world. A raymarched terrain of ridged mountains and wind-carved spires runs back to a real horizon; over it hangs an alien sky with a low sun, a banded gas giant with its ring seen edge-on, a second small moon, and high cirrus that drifts across both. Bioluminescent growth glows in the hollows where the light does not reach, and a haze layer separates every ridge…
 
@@ -127,7 +127,7 @@ ALIEN WORLD SURFACE: standing on the ground of another world. A raymarched terra
 
 ### AnamorphicMirrorLabyrinth
 
-`Scene2D/AnamorphicMirrorLabyrinth.frag` · type=normal · mood=psychedelic,dark · complexity=2
+`Scene2D/AnamorphicMirrorLabyrinth.frag` · type=normal · mood=psychedelic,dark · complexity=3
 
 ANAMORPHIC MIRROR LABYRINTH: Cylindrical & conical optical anamorphic transformation labyrinth. Virtual chrome mirror columns reconstruct distorted psychedelic image projections into sharp holographic mandalas. Audio Reactivity: audioAdvance -> rotates the anamorphic distortion fields & mirror centers audioKick -> flashes liquid specular ripples & mirror axis pulse audioSubBass -> expands radial mirror column radius …
 
@@ -136,7 +136,7 @@ ANAMORPHIC MIRROR LABYRINTH: Cylindrical & conical optical anamorphic transforma
 
 ### AnomalousFloquetTopologicalInsulator
 
-`Scene2D/AnomalousFloquetTopologicalInsulator.frag` · type=normal · mood=bright,psychedelic · complexity=3
+`Scene2D/AnomalousFloquetTopologicalInsulator.frag` · type=normal · mood=bright,psychedelic · complexity=5
 
 ANOMALOUS FLOQUET TOPOLOGICAL INSULATOR: Out-of-equilibrium Floquet topological state driven by circularly polarized light. High-frequency time-periodic driving breaks time-reversal symmetry, creating chiral edge states traversing bulk bandgaps with photo-derived quasienergy spectra. audioAdvance -> drives Floquet drive frequency & quasienergy phase integration audioKick -> flashes Floquet band inversion topological …
 
@@ -154,7 +154,7 @@ ANTICREPUSCULAR RAYS: looking out to sea at sunset with the sun at your back -- 
 
 ### AntimatterWeapon
 
-`Scene2D/AntimatterWeapon.frag` · type=normal · mood=dark,aggressive,space · complexity=4
+`Scene2D/AntimatterWeapon.frag` · type=normal · mood=dark,aggressive,space · complexity=8
 
 ANTIMATTER WEAPON: A doomsday superweapon firing a continuous beam of pure antimatter into a target. The annihilation zone flashes violently with pure energy on audio kicks, sending ripples of destruction through space. audioAdvance -> flow of the antimatter particles in the beam audioKick -> blinding annihilation flashes at the impact site audioSwell -> ambient brightness of the destruction audioChromaHue-> palette …
 
@@ -163,7 +163,7 @@ ANTIMATTER WEAPON: A doomsday superweapon firing a continuous beam of pure antim
 
 ### ApollonianGasketNebulaFlight
 
-`Scene2D/ApollonianGasketNebulaFlight.frag` · type=normal · mood=psychedelic,dreamy,aggressive · complexity=2
+`Scene2D/ApollonianGasketNebulaFlight.frag` · type=normal · mood=psychedelic,dreamy,aggressive · complexity=9
 
 APOLLONIAN GASKET NEBULA FLIGHT: 3D Raymarching camera flight through nested Apollonian sphere packing gasket voids immersed in glowing volumetric cosmic nebula clouds with metallic reflections. Audio Reactivity: audioAdvance -> drives continuous forward 3D flight trajectory audioKick -> flashes the void rim glow on rays that miss the packing audioCentroid-> modulates the sphere packing folding scale (`s` in the IFS)…
 
@@ -172,7 +172,7 @@ APOLLONIAN GASKET NEBULA FLIGHT: 3D Raymarching camera flight through nested Apo
 
 ### ApollonianSpherePackingDive
 
-`Scene2D/ApollonianSpherePackingDive.frag` · type=normal · mood=psychedelic,aggressive,dark · complexity=2
+`Scene2D/ApollonianSpherePackingDive.frag` · type=normal · mood=psychedelic,aggressive,dark · complexity=10
 
 APOLLONIAN SPHERE PACKING DIVE: 3D Raymarching continuous dive into the voids of an Apollonian sphere packing (mutually tangent Soddy spheres). Endless recursive sphere inversions, glowing circular contact laser rings, and infinite depth reflection. Audio Reactivity: audioAdvance -> drives continuous forward dive into tangent sphere voids audioKick -> flashes sphere contact tangency nodes & triggers inversion burst a…
 
@@ -181,7 +181,7 @@ APOLLONIAN SPHERE PACKING DIVE: 3D Raymarching continuous dive into the voids of
 
 ### ApollonianSpherePackingGasket
 
-`Scene2D/ApollonianSpherePackingGasket.frag` · type=normal · mood=bright,psychedelic · complexity=4
+`Scene2D/ApollonianSpherePackingGasket.frag` · type=normal · mood=bright,psychedelic · complexity=8
 
 APOLLONIAN SPHERE PACKING GASKET: Raymarched infinite 3D Apollonian sphere packing gasket formed by recursive sphere inversions. Mutually tangent "kissing" spheres create an infinite fractal foam with jewel refractions, specular mirror reflections, and audio-reactive metric scaling. audioAdvance -> navigates camera through the Apollonian sphere foam audioKick -> flashes sphere facet contact points and jewel glints au…
 
@@ -190,7 +190,7 @@ APOLLONIAN SPHERE PACKING GASKET: Raymarched infinite 3D Apollonian sphere packi
 
 ### AsteroidMiningBase
 
-`Scene2D/AsteroidMiningBase.frag` · type=normal · mood=dark,calm,space · complexity=4
+`Scene2D/AsteroidMiningBase.frag` · type=normal · mood=dark,calm,space · complexity=5
 
 ASTEROID MINING BASE: a slow orbit round a big asteroid that has been turned into a mine. Its cratered grey-brown surface carries lit domes with warm windows and blinking pad lights; a mining ship hangs above it, cutting into the rock with a laser whose impact throws a hot glow; smaller lumpy asteroids tumble in the field around it, sharp in the light of a distant sun. The camera circles steadily (never on audio); th…
 
@@ -199,7 +199,7 @@ ASTEROID MINING BASE: a slow orbit round a big asteroid that has been turned int
 
 ### AttentionHeadRibbons
 
-`Scene2D/AttentionHeadRibbons.frag` · type=normal · mood=dark,calm,psychedelic · complexity=3
+`Scene2D/AttentionHeadRibbons.frag` · type=normal · mood=dark,calm,psychedelic · complexity=6
 
 ATTENTION HEAD RIBBONS: the harmony as an attention map, drawn as a chord diagram. The twelve pitch classes sit round a ring in circle-of- fifths order, each an arc of the photo lit by its energy; glowing ribbons curve through the middle between every pair that sounds together, one colour per attention head -- fifths cyan, thirds magenta, steps gold, tritones violet -- so a major chord draws a magenta triangle with a…
 
@@ -208,7 +208,7 @@ ATTENTION HEAD RIBBONS: the harmony as an attention map, drawn as a chord diagra
 
 ### Aurora
 
-`Scene2D/Aurora.frag` · type=normal · mood=calm,dark,space · complexity=1
+`Scene2D/Aurora.frag` · type=normal · mood=calm,dark,space · complexity=6
 
 AURORA BOREALIS v2: TWO waving curtain layers over a starfield with a moon — the back layer higher, dimmer and hue-shifted for real depth. The display DANCES: kicks surge the rays, onsets flare the active regions, the swell breathes the whole sky, and rare high-reaching parts tip into the classic red top fringe. The image glows through the curtains as their colour texture; a faint aurora glow warms the ground. swell …
 
@@ -217,7 +217,7 @@ AURORA BOREALIS v2: TWO waving curtain layers over a starfield with a moon — t
 
 ### AuroraAustralisCurtainSwell
 
-`Scene2D/AuroraAustralisCurtainSwell.frag` · type=normal · mood=calm,dreamy,bright,space · complexity=3
+`Scene2D/AuroraAustralisCurtainSwell.frag` · type=normal · mood=calm,dreamy,bright,space · complexity=6
 
 AURORA AUSTRALIS CURTAIN SWELL: Volumetric double-sheet Antarctic Aurora Australis waving along geomagnetic field lines. Atomic oxygen green emission (557.7nm) and high-altitude molecular nitrogen crimson rays (630.0nm), magnetic substorm surges, and polar ice pack photo reflections. audioAdvance -> drives geomagnetic auroral curtain wave undulations audioKick -> triggers explosive geomagnetic substorm brightening au…
 
@@ -235,7 +235,7 @@ AURORA BOREALIS CURTAIN FLIGHT: Volumetric 3D flight directly through rippling m
 
 ### BallisticGrapheneElectronFocussing
 
-`Scene2D/BallisticGrapheneElectronFocussing.frag` · type=normal · mood=bright,psychedelic · complexity=3
+`Scene2D/BallisticGrapheneElectronFocussing.frag` · type=normal · mood=bright,psychedelic · complexity=7
 
 BALLISTIC GRAPHENE ELECTRON FOCUSSING: Veselago electron-optic lens in monolayer graphene. Relativistic Dirac electrons undergo negative refraction at p-n junction interfaces, forming caustic cusp focal points, Klein tunneling fringes, and quantum interference lattices. audioAdvance -> steers ballistic electron trajectory wavefronts across p-n interface audioKick -> flashes Klein tunneling transmission focal hot-spot…
 
@@ -253,7 +253,7 @@ BALL LIGHTNING PLASMOID: Volumetric autonomous ball lightning plasmoid with magn
 
 ### BambooGroveWind
 
-`Scene2D/BambooGroveWind.frag` · type=normal · mood=calm,bright,dreamy · complexity=3
+`Scene2D/BambooGroveWind.frag` · type=normal · mood=calm,bright,dreamy · complexity=2
 
 BAMBOO GROVE WIND: inside a grove of tall culms, looking up the green columns into the light. A slow wave of wind on the scene clock runs through the grove and every culm sways with it (bending more toward the top), the leaves at the top hiss with the treble as glints, the light beyond the culms (the photo) is the swell, the bass is the creak as a low warm glow at the base. Camera fixed on the path. Audio Reactivity:…
 
@@ -262,7 +262,7 @@ BAMBOO GROVE WIND: inside a grove of tall culms, looking up the green columns in
 
 ### BaryonAcousticRipples
 
-`Scene2D/BaryonAcousticRipples.frag` · type=normal · mood=space,calm,dreamy · complexity=2
+`Scene2D/BaryonAcousticRipples.frag` · type=normal · mood=space,calm,dreamy · complexity=8
 
 BARYON ACOUSTIC RIPPLES: the sound waves of the early universe, frozen into the galaxy distribution as faint rings of one fixed scale around every overdensity. Galaxies are round dots of the photo, denser on the shells; the whole pattern expands steadily over the scene arc (the universe growing), the shells light with their spectrum band, and the bass breathes the cosmic web between them. Literally acoustic: the ring…
 
@@ -271,7 +271,7 @@ BARYON ACOUSTIC RIPPLES: the sound waves of the early universe, frozen into the 
 
 ### BasilicaCisternColumns
 
-`Scene2D/BasilicaCisternColumns.frag` · type=normal · mood=dark,calm,dreamy · complexity=4
+`Scene2D/BasilicaCisternColumns.frag` · type=normal · mood=dark,calm,dreamy · complexity=5
 
 BASILICA CISTERN COLUMNS: an underground cistern -- a forest of stone columns under brick cross vaults, standing in black water that mirrors all of it. Every column is lit from its foot by a warm uplight; drops fall from the vault and ring the water. We glide slowly between the rows. Each uplight belongs to a spectrum band and swells with it, so the music moves through the hall as light along the colonnade. Audio Rea…
 
@@ -280,7 +280,7 @@ BASILICA CISTERN COLUMNS: an underground cistern -- a forest of stone columns un
 
 ### BatExodusSunset
 
-`Scene2D/BatExodusSunset.frag` · type=normal · mood=dark,dreamy · complexity=2
+`Scene2D/BatExodusSunset.frag` · type=normal · mood=dark,dreamy · complexity=1
 
 BAT EXODUS SUNSET: the evening emergence of a bat colony -- out of a cave mouth in a rocky hillside millions of bats pour into the red dusk sky, rising in a dense spiralling column that bends away and streams off across the sky as a long, rippling ribbon, thinning at its far end into scattered specks. Close to the camera single bats flutter past, wings beating. The sky burns red and orange behind; a few thin clouds g…
 
@@ -298,7 +298,7 @@ BATIK WAX CRACKS: cloth under wax, dyed. A drawn motif of dots and vines is rese
 
 ### BauhausGeo
 
-`Scene2D/BauhausGeo.frag` · type=normal · mood=bright · complexity=3
+`Scene2D/BauhausGeo.frag` · type=normal · mood=bright · complexity=1
 
 BAUHAUS GEOMETRY: a rotating composition of flat geometric primitives (discs, quarter-circle arcs, bars, triangles) on a grid — Kandinsky / Bauhaus poster style. The palette is REDUCED and taken from the image (each panel samples its colour from the picture), so the artwork follows the photos and the music's mood. snare -> a hashed subset of panels flashes its accent (envelope, smooth) barPhase -> a diagonal accent s…
 
@@ -316,7 +316,7 @@ A BEAT-FIRST primary effect, built for rhythmic music. Research-informed: onsets
 
 ### BelousovZhabotinskyChemicalWave
 
-`Scene2D/BelousovZhabotinskyChemicalWave.frag` · type=normal · mood=psychedelic,bright · complexity=3
+`Scene2D/BelousovZhabotinskyChemicalWave.frag` · type=normal · mood=psychedelic,bright · complexity=6
 
 BELOUSOV-ZHABOTINSKY CHEMICAL WAVE: Classic Belousov-Zhabotinsky (BZ) non-equilibrium chemical oscillator. Spontaneous formation of rotating Archimedean spiral waves and concentric target patterns undergoing mutual wave annihilation with photo-derived redox color gradients. audioAdvance -> drives chemical reaction diffusion phase rotation velocity audioKick -> flashes autocatalytic oxidation wave burst fronts audioSw…
 
@@ -343,7 +343,7 @@ BINARY STAR SYSTEM: Two massive stars orbit each other in a close binary system,
 
 ### BinauralTunnel
 
-`Scene2D/BinauralTunnel.frag` · type=normal · mood=dark,aggressive · complexity=2
+`Scene2D/BinauralTunnel.frag` · type=normal · mood=dark,aggressive · complexity=6
 
 BINAURAL TUNNEL: a tunnel whose cross-section is the stereo image. The left wall is pushed out by the left channel's energy, the right wall by the right's, and the stereo width stretches the tube vertically: a mono track is a round pipe, a wide mix a cathedral nave, a hard-panned part bulges one wall. Ribs stream past on the music's pace; each wall is lit by its own channel, so the tube leans visibly toward whichever…
 
@@ -361,7 +361,7 @@ BIO CELLULAR INFINITE ZOOM: Continuous multi-scale infinite zoom dive transition
 
 ### BioluminescentAbyssalTrenches
 
-`Scene2D/BioluminescentAbyssalTrenches.frag` · type=normal · mood=calm,bright,dreamy · complexity=4
+`Scene2D/BioluminescentAbyssalTrenches.frag` · type=normal · mood=calm,bright,dreamy · complexity=9
 
 BIOLUMINESCENT ABYSSAL TRENCHES: 100% viewport-filling deep-sea Hadal zone (11,000m depth). Volumetric raymarched hydrothermal spires, flashing siphonophore colonies, pyrosome light tubes, marine snow, and deep-sea photo refraction across turbulent oceanic thermal boundary layers.
 
@@ -370,7 +370,7 @@ BIOLUMINESCENT ABYSSAL TRENCHES: 100% viewport-filling deep-sea Hadal zone (11,0
 
 ### BioluminescentDeepSeaCombJelly
 
-`Scene2D/BioluminescentDeepSeaCombJelly.frag` · type=normal · mood=psychedelic,dreamy,dark · complexity=2
+`Scene2D/BioluminescentDeepSeaCombJelly.frag` · type=normal · mood=psychedelic,dreamy,dark · complexity=4
 
 BIOLUMINESCENT DEEP SEA COMB JELLY: Macro-scale 3D visualization of a transparent deep-sea comb jelly (Ctenophore) with cascading rainbow diffraction ctene rows, pulsating gelatinous body walls, and luminous internal bio-lanterns. Audio Reactivity: audioAdvance -> drives continuous ctene row diffraction wave progression audioKick -> flashes internal bioluminescent lantern organs & pulse burst audioCentroid-> sharpens…
 
@@ -379,7 +379,7 @@ BIOLUMINESCENT DEEP SEA COMB JELLY: Macro-scale 3D visualization of a transparen
 
 ### BioluminescentDeepSeaTrenchDive
 
-`Scene2D/BioluminescentDeepSeaTrenchDive.frag` · type=normal · mood=psychedelic,dark,dreamy · complexity=2
+`Scene2D/BioluminescentDeepSeaTrenchDive.frag` · type=normal · mood=psychedelic,dark,dreamy · complexity=5
 
 BIOLUMINESCENT DEEP SEA TRENCH DIVE: Vertical 3D Raymarching dive into an abyss trench canyon. Rocky canyon walls encrusted with glowing deep-sea corals, hydrothermal black smoker chimneys, floating bioluminescent jellyfish, and volumetric marine snow. Audio Reactivity: audioAdvance -> drives continuous vertical plunge velocity into the trench audioKick -> flashes hydrothermal chimney vent eruption cores & coral bio-…
 
@@ -388,7 +388,7 @@ BIOLUMINESCENT DEEP SEA TRENCH DIVE: Vertical 3D Raymarching dive into an abyss 
 
 ### BioluminescentNebula
 
-`Scene2D/BioluminescentNebula.frag` · type=normal · mood=dark,psychedelic,space · complexity=10
+`Scene2D/BioluminescentNebula.frag` · type=normal · mood=dark,psychedelic,space · complexity=5
 
 BIOLUMINESCENT NEBULA: Massive, fluid-like clouds of interstellar gas that glow with organic, bioluminescent colors. The nebula ripples and pulses like a living organism in response to the audio. audioAdvance -> drift speed through the nebula audioKick -> flashes of bright light through the gas clouds audioSwell -> overall glow intensity and color shifting audioPhase -> rotation of the viewing angle audioChromaHue-> …
 
@@ -397,7 +397,7 @@ BIOLUMINESCENT NEBULA: Massive, fluid-like clouds of interstellar gas that glow 
 
 ### BioLuminescentTendrilTunnel
 
-`Scene2D/BioLuminescentTendrilTunnel.frag` · type=normal · mood=psychedelic,aggressive,dreamy · complexity=2
+`Scene2D/BioLuminescentTendrilTunnel.frag` · type=normal · mood=psychedelic,aggressive,dreamy · complexity=3
 
 BIO LUMINESCENT TENDRIL TUNNEL: 3D Raymarching dive through an organic deep-sea tunnel lined with swaying bioluminescent siphonophore tentacles, luminous synaptic nerve pulses, and glowing volumetric plankton clouds. Audio Reactivity: audioAdvance -> drives continuous forward swim trajectory through the abyss audioKick -> flashes intense cyan/magenta tentacle bioluminescence pulses audioCentroid-> modulates tendril h…
 
@@ -406,7 +406,7 @@ BIO LUMINESCENT TENDRIL TUNNEL: 3D Raymarching dive through an organic deep-sea 
 
 ### BioNeuralDendriteZoom
 
-`Scene2D/BioNeuralDendriteZoom.frag` · type=normal · mood=psychedelic,dark,aggressive · complexity=2
+`Scene2D/BioNeuralDendriteZoom.frag` · type=normal · mood=psychedelic,dark,aggressive · complexity=8
 
 BIO NEURAL DENDRITE ZOOM: Microscopic continuous dive through a dense bioluminescent neural axon arborization. Luminous synaptic vesicles, action potentials firing like high-voltage electric pulses along dendrites, and glowing soma cell bodies. Audio Reactivity: audioAdvance -> surges the forward plunge along the axon on top of a steady flight audioKick -> flashes synaptic neurotransmitter bursts & triggers action po…
 
@@ -415,7 +415,7 @@ BIO NEURAL DENDRITE ZOOM: Microscopic continuous dive through a dense biolumines
 
 ### BismuthHyperLabyrinth
 
-`Scene2D/BismuthHyperLabyrinth.frag` · type=normal · mood=psychedelic,bright · complexity=4
+`Scene2D/BismuthHyperLabyrinth.frag` · type=normal · mood=psychedelic,bright · complexity=5
 
 BISMUTH HYPER LABYRINTH: Raymarched infinite 3D/4D hopper crystal maze of elemental bismuth with stepped 90-degree concentric square terraces, thin-film optical interference oxidation iridescence, metallic specular reflections, holographic audio equalizer pulses, and photo texturing.
 
@@ -424,7 +424,7 @@ BISMUTH HYPER LABYRINTH: Raymarched infinite 3D/4D hopper crystal maze of elemen
 
 ### BismuthLabyrinth
 
-`Scene2D/BismuthLabyrinth.frag` · type=normal · mood=bright,psychedelic · complexity=4
+`Scene2D/BismuthLabyrinth.frag` · type=normal · mood=bright,psychedelic · complexity=5
 
 BISMUTH LABYRINTH: Raymarched infinite 3D hopper crystal labyrinth of metallic elemental bismuth. Stepped 90-degree geometric terraces, thin-film optical interference rainbow oxidation layers, specular metallic reflections, and audio-reactive architectural fractals filling the screen. audioSwell -> pulses fractal hopper terrace depth & step density audioKick -> flashes chromatic iridescent oxidation reflection audioC…
 
@@ -433,7 +433,7 @@ BISMUTH LABYRINTH: Raymarched infinite 3D hopper crystal labyrinth of metallic e
 
 ### BlackSandBeachWaves
 
-`Scene2D/BlackSandBeachWaves.frag` · type=normal · mood=calm,dark · complexity=2
+`Scene2D/BlackSandBeachWaves.frag` · type=normal · mood=calm,dark · complexity=6
 
 BLACK SAND BEACH WAVES: an Icelandic black sand beach seen straight down from high above -- the dark ocean rolling in from the top, line after line of white breakers crossing it, each one leaving behind a lace of foam that stretches and tears into a fine white net as it drifts, and at the bottom the black volcanic sand, wet and shining where the last film of each wave slides up and drains back. The camera hangs still…
 
@@ -442,7 +442,7 @@ BLACK SAND BEACH WAVES: an Icelandic black sand beach seen straight down from hi
 
 ### BlacksmithSparks
 
-`Scene2D/BlacksmithSparks.frag` · type=normal · mood=dark,aggressive · complexity=2
+`Scene2D/BlacksmithSparks.frag` · type=normal · mood=dark,aggressive · complexity=5
 
 BLACKSMITH SPARKS: a glowing bar on the anvil under the hammer. The bar's heat is the swell (it is drawn from the fire and cools), the kick is the hammer blow -- a flash on the bar and a burst of round sparks (light only: the sparks fly on the scene clock, the blow brightens them), the bass is the forge fire behind, the treble the scale flaking off as glints; the photo is the smithy wall and the bar's surface. Camera…
 
@@ -451,7 +451,7 @@ BLACKSMITH SPARKS: a glowing bar on the anvil under the hammer. The bar's heat i
 
 ### BlueHourSkylineMirror
 
-`Scene2D/BlueHourSkylineMirror.frag` · type=normal · mood=calm,dreamy · complexity=3
+`Scene2D/BlueHourSkylineMirror.frag` · type=normal · mood=calm,dreamy · complexity=2
 
 BLUE HOUR SKYLINE MIRROR: a city skyline across a wide river in the blue hour -- the sky deep blue above, a last band of orange at the horizon, the towers dark silhouettes pricked with thousands of lit windows, a few crowned with coloured lights and red aircraft beacons. A bridge with its string of lamps crosses in front; the river doubles everything in long, trembling streaks, and a small boat draws a line of light …
 
@@ -460,7 +460,7 @@ BLUE HOUR SKYLINE MIRROR: a city skyline across a wide river in the blue hour --
 
 ### BobbinLacePillow
 
-`Scene2D/BobbinLacePillow.frag` · type=normal · mood=dark,calm,dreamy · complexity=3
+`Scene2D/BobbinLacePillow.frag` · type=normal · mood=dark,calm,dreamy · complexity=4
 
 BOBBIN LACE PILLOW: the lace maker's pillow under a warm lamp. On a dome of blue-green cotton lies the buff pricking card; above the working line the finished lace -- a torchon ground of twisted pairs with round spiders and scalloped fans down both edges -- and below it the pricking holes still waiting, brass pins in the last worked rows. From the line the threads run down to a fan of turned wooden bobbins, each with…
 
@@ -469,7 +469,7 @@ BOBBIN LACE PILLOW: the lace maker's pillow under a warm lamp. On a dome of blue
 
 ### BoogieWoogieGrid
 
-`Scene2D/BoogieWoogieGrid.frag` · type=normal · mood=bright,energetic · complexity=2
+`Scene2D/BoogieWoogieGrid.frag` · type=normal · mood=bright,energetic · complexity=1
 
 BOOGIE WOOGIE GRID: Mondrian's Broadway Boogie Woogie set to music -- a city grid of yellow streets on white, each street dotted with small blocks of red, blue and grey that race along like traffic lights and taxis, larger coloured blocks sitting in the squares between, some holding a small window of the photograph; the street pattern is endless and the traffic never stops. Mirrorable. Audio Reactivity (structure, no…
 
@@ -478,7 +478,7 @@ BOOGIE WOOGIE GRID: Mondrian's Broadway Boogie Woogie set to music -- a city gri
 
 ### BookPagesTunnel
 
-`Scene2D/BookPagesTunnel.frag` · type=normal · mood=dreamy,calm,bright · complexity=3
+`Scene2D/BookPagesTunnel.frag` · type=normal · mood=dreamy,calm,bright · complexity=5
 
 BOOK PAGES TUNNEL: a tunnel whose walls are the pages of a book, turning as we pass. Each page is a leaf hinged on the tunnel's spine that turns steadily on the scene clock (which runs with the music's energy, never with a beat tracker, so a resync can never jolt the leaves), carrying the photo on one side and its palette negative on the other. The flight down the spine is steady; the kick lights the edges. Audio Rea…
 
@@ -496,7 +496,7 @@ BOSE-EINSTEIN GIANT VORTEX TURBULENCE: 2D quantum turbulence in a trapped Bose-E
 
 ### BreathingFractal
 
-`Scene2D/BreathingFractal.frag` · type=normal · mood=calm,psychedelic · complexity=1
+`Scene2D/BreathingFractal.frag` · type=normal · mood=calm,psychedelic · complexity=6
 
 Adapted from an untitled Shadertoy fractal (pasted by the user; exact page/ author not given) — very likely the same base as, or the direct parent of, https://www.shadertoy.com/view/DsscWn (identified later from two forks of that page the user also shared; see BreathingFractalZoom.frag / Noir.frag, which share this exact fold/rotate core). A "breathing" abs/fract kaleidoscope with a per-iteration rotation, producing …
 
@@ -505,7 +505,7 @@ Adapted from an untitled Shadertoy fractal (pasted by the user; exact page/ auth
 
 ### BreathingFractalNoir
 
-`Scene2D/BreathingFractalNoir.frag` · type=normal · mood=dark,psychedelic · complexity=1
+`Scene2D/BreathingFractalNoir.frag` · type=normal · mood=dark,psychedelic · complexity=8
 
 Forked from https://www.shadertoy.com/view/DsscWn (the same fold/rotate fractal core as BreathingFractal.frag / BreathingFractalZoom.frag), here with an oscillating zoom, different colour coefficients and a base-colour subtraction instead of a palette remap — a darker, higher-contrast look. Adapted to our engine: GLSL 1.20 (gl_FragCoord/resolution/time); the original's comma-operator loop body de-golfed into ordinary…
 
@@ -514,7 +514,7 @@ Forked from https://www.shadertoy.com/view/DsscWn (the same fold/rotate fractal 
 
 ### BreathingFractalZoom
 
-`Scene2D/BreathingFractalZoom.frag` · type=normal · mood=calm,bright · complexity=1
+`Scene2D/BreathingFractalZoom.frag` · type=normal · mood=calm,bright · complexity=6
 
 Forked from https://www.shadertoy.com/view/DsscWn (the same fold/rotate fractal core as BreathingFractal.frag, extended here with an oscillating zoom and a final palette remap). Palette from https://www.shadertoy.com/view/dlVSDK (iq-style cosine palette). Adapted to our engine: GLSL 1.20 (gl_FragCoord/resolution/time); the original's comma-operator loop body de-golfed into ordinary statements; its mouse-driven per-it…
 
@@ -523,7 +523,7 @@ Forked from https://www.shadertoy.com/view/DsscWn (the same fold/rotate fractal 
 
 ### BrutalistAtriumWaterfall
 
-`Scene2D/BrutalistAtriumWaterfall.frag` · type=normal · mood=calm,dreamy · complexity=2
+`Scene2D/BrutalistAtriumWaterfall.frag` · type=normal · mood=calm,dreamy · complexity=1
 
 BRUTALIST ATRIUM WATERFALL: a tall concrete atrium, galleries on both sides stacked floor over floor, their board-marked slabs carrying planters from which green vines hang down, and at the far end a waterfall pouring over the whole height of the end wall into a pool. Daylight falls from a skylight high above, straight into the spray, so the mist glows and shafts of light stand in it; droplets glitter. The camera is …
 
@@ -532,7 +532,7 @@ BRUTALIST ATRIUM WATERFALL: a tall concrete atrium, galleries on both sides stac
 
 ### Bubble
 
-`Scene2D/Bubble.frag` · type=normal · mood=calm,bright,dreamy · complexity=10
+`Scene2D/Bubble.frag` · type=normal · mood=calm,bright,dreamy · complexity=1
 
 Soap bubbles rise and pop over a dimmed backdrop of the current photo, each one refracting the picture like a tiny lens with an iridescent rim. audioAdvance integrates travel so the bubbles climb faster with the music without ever jump-cutting; audioFlux (plus audioLevel and audioBeat) sets how many of the 32 bubble slots are alive at once, audioKick puffs each bubble's radius and slams the pop-ring flash, and audioL…
 
@@ -541,7 +541,7 @@ Soap bubbles rise and pop over a dimmed backdrop of the current photo, each one 
 
 ### BubbleChamberTracks
 
-`Scene2D/BubbleChamberTracks.frag` · type=normal · mood=dark,calm · complexity=3
+`Scene2D/BubbleChamberTracks.frag` · type=normal · mood=dark,calm · complexity=6
 
 BUBBLE CHAMBER TRACKS: the physicist's photograph -- charged particles spiralling in a magnetic field, their tracks as strings of round bubbles. Tracks are born on a continuous clock at a vertex, grow along their spiral over their life, and fade; the onsets do not spawn anything (that would be a cut) but light the tracks brighter as they happen. Curvature per track = charge and momentum, once at birth. The photo is t…
 
@@ -550,7 +550,7 @@ BUBBLE CHAMBER TRACKS: the physicist's photograph -- charged particles spirallin
 
 ### BubbleOilLamp
 
-`Scene2D/BubbleOilLamp.frag` · type=normal · mood=calm,bright · complexity=2
+`Scene2D/BubbleOilLamp.frag` · type=normal · mood=calm,bright · complexity=6
 
 BUBBLE OIL LAMP: a wall of glowing bubble-tube lamps -- tall columns of coloured liquid, lit from below, through which strings of bubbles rise, wobbling, speeding up and slowing, each bubble a little lens flashing with the light and bending the colours behind it; the liquids take their colours from the photograph and glow softly into each other, the photo faintly visible as the room reflected in the glass. Endless, m…
 
@@ -559,7 +559,7 @@ BUBBLE OIL LAMP: a wall of glowing bubble-tube lamps -- tall columns of coloured
 
 ### BuddhabrotCosmicGhost
 
-`Scene2D/BuddhabrotCosmicGhost.frag` · type=normal · mood=psychedelic,dark · complexity=2
+`Scene2D/BuddhabrotCosmicGhost.frag` · type=normal · mood=psychedelic,dark · complexity=1
 
 BUDDHABROT COSMIC GHOST: Inverse orbit-density projection of escaping Mandelbrot trajectories forming a luminous, meditating cosmic ghost figure with multi-spectral exposure channels, nebula halos, and spiritual resonance. Audio Reactivity: audioAdvance -> drives continuous orbit trajectory integration & ghost rotation audioKick -> flashes interior third-eye chakra & expands astral aura audioCentroid-> modulates fine…
 
@@ -568,7 +568,7 @@ BUDDHABROT COSMIC GHOST: Inverse orbit-density projection of escaping Mandelbrot
 
 ### BuffaloFractalThunderstorm
 
-`Scene2D/BuffaloFractalThunderstorm.frag` · type=normal · mood=psychedelic,dark,aggressive · complexity=2
+`Scene2D/BuffaloFractalThunderstorm.frag` · type=normal · mood=psychedelic,dark,aggressive · complexity=4
 
 BUFFALO FRACTAL THUNDERSTORM: Deep plunge into the non-holomorphic Buffalo fractal z -> (|Re(z)| + i|Im(z)|)^2 - |Re(z)| + c with pointed horn cusps, high-voltage lightning discharges running along boundary ridges, and thunderous flares. Audio Reactivity: audioAdvance -> surges the deep zoom into the Buffalo horn boundary audioKick -> flashes lightning discharge arcs & explodes thunder core audioCentroid-> sharpens s…
 
@@ -577,7 +577,7 @@ BUFFALO FRACTAL THUNDERSTORM: Deep plunge into the non-holomorphic Buffalo fract
 
 ### BuildUpAvalanche
 
-`Scene2D/BuildUpAvalanche.frag` · type=normal · mood=aggressive,bright · complexity=2
+`Scene2D/BuildUpAvalanche.frag` · type=normal · mood=aggressive,bright · complexity=1
 
 BUILD-UP AVALANCHE: a great alpine peak under a deep blue sky -- its left face in sun, ribbed with rock and couloirs, the right in blue shade, a pale range behind, spruce along the valley floor. As the music builds, the snow loads the face (the rock disappears under it), the cornice grows and a banner of spindrift streams off the summit; at the drop the slab releases and a powder avalanche billows down the sunny face…
 
@@ -586,7 +586,7 @@ BUILD-UP AVALANCHE: a great alpine peak under a deep blue sky -- its left face i
 
 ### BuildUpPressureChamber
 
-`Scene2D/BuildUpPressureChamber.frag` · type=normal · mood=dark,aggressive · complexity=2
+`Scene2D/BuildUpPressureChamber.frag` · type=normal · mood=dark,aggressive · complexity=6
 
 BUILD-UP PRESSURE CHAMBER: a corridor whose walls close in as the music builds. The camera flies down it on the music's pace; the build-up envelope (seconds-slow) narrows the walls and ceiling and reddens the light, so the space itself tightens toward the drop -- and on the drop the far end floods with light and the walls glow, then release. The walls never jump: build-up and release are slew-limited envelopes, and t…
 
@@ -595,7 +595,7 @@ BUILD-UP PRESSURE CHAMBER: a corridor whose walls close in as the music builds. 
 
 ### BurningShipDeepVoyage
 
-`Scene2D/BurningShipDeepVoyage.frag` · type=normal · mood=psychedelic,dark,aggressive · complexity=2
+`Scene2D/BurningShipDeepVoyage.frag` · type=normal · mood=psychedelic,dark,aggressive · complexity=8
 
 BURNING SHIP DEEP VOYAGE: Continuous deep plunge into the non-analytic Burning Ship fractal z -> (|Re(z)| + i|Im(z)|)^2 + c. Glowing fire kathedrals, burning masts, and high-temperature plasma flares. Audio Reactivity: audioAdvance -> drives continuous deep zoom into fractal mast structures audioKick -> flashes interior ship core & explodes solar flares audioCentroid-> sharpens flame filigree & iteration escape bound…
 
@@ -604,7 +604,7 @@ BURNING SHIP DEEP VOYAGE: Continuous deep plunge into the non-analytic Burning S
 
 ### ButterflyWingScales
 
-`Scene2D/ButterflyWingScales.frag` · type=normal · mood=bright,psychedelic,dreamy · complexity=2
+`Scene2D/ButterflyWingScales.frag` · type=normal · mood=bright,psychedelic,dreamy · complexity=3
 
 BUTTERFLY WING SCALES: gliding low over a butterfly's wing under the microscope -- rows of tiny overlapping scales laid like roof tiles, each a rounded paddle with fine ridges along it, and the colour in them is structural: iridescent blue shifting to violet and green as the angle changes, like a morpho's wing, broken by a band of the wing's pattern where the scales turn black and a patch where they turn orange. The …
 
@@ -613,7 +613,7 @@ BUTTERFLY WING SCALES: gliding low over a butterfly's wing under the microscope 
 
 ### CalabiYauManifold
 
-`Scene2D/CalabiYauManifold.frag` · type=normal · mood=psychedelic,bright · complexity=4
+`Scene2D/CalabiYauManifold.frag` · type=normal · mood=psychedelic,bright · complexity=7
 
 CALABI-YAU MANIFOLD: 3D raymarched projection of a 6-dimensional Calabi-Yau Kähler manifold (quintic threefold z1^5 + z2^5 + z3^5 + z4^5 + z5^5 = 0) with audio-reactive topological genus morphing and iridescent metallic highlights. audioPhase -> rotates 6D slicing angle into 3D Euclidean space audioKick -> flashes Ricci-flat curvature metric energy pulses audioCentroid-> morphs complex moduli parameters audioSwell ->…
 
@@ -622,7 +622,7 @@ CALABI-YAU MANIFOLD: 3D raymarched projection of a 6-dimensional Calabi-Yau Käh
 
 ### CalabiYauManifoldKaleido
 
-`Scene2D/CalabiYauManifoldKaleido.frag` · type=normal · mood=psychedelic,bright · complexity=2
+`Scene2D/CalabiYauManifoldKaleido.frag` · type=normal · mood=psychedelic,bright · complexity=4
 
 CALABI-YAU MANIFOLD KALEIDO: 2D cross-section through a 6D Calabi-Yau compactification (Quintic Threefold in CP4) from superstring theory. Organic multi-curved complex polynomial manifolds folding like a transcendent cosmic lotus with moduli-space morphing. Audio Reactivity: audioAdvance -> drives continuous navigation through Calabi-Yau moduli space psi audioKick -> flashes manifold singularity nodes & triggers dime…
 
@@ -640,7 +640,7 @@ CALATRAVA RIBS HALL: gliding through a vast white hall built of ribs, after Cala
 
 ### CalligraphyBrushStrokes
 
-`Scene2D/CalligraphyBrushStrokes.frag` · type=normal · mood=calm,bright,dreamy · complexity=3
+`Scene2D/CalligraphyBrushStrokes.frag` · type=normal · mood=calm,bright,dreamy · complexity=1
 
 CALLIGRAPHY BRUSH STROKES: a brush writing on paper. Strokes are laid down on the scene clock -- each a curve drawn from its start with a pressure profile that swells and thins -- and the ink bleeds into the paper on the swell (the strokes soften and spread), the bass sets the pressure (stroke width, slow), the kick is a dab of the brush (a splash of ink as round drops), the treble the dry-brush fibre. The photo is t…
 
@@ -649,7 +649,7 @@ CALLIGRAPHY BRUSH STROKES: a brush writing on paper. Strokes are laid down on th
 
 ### CameraObscuraRoom
 
-`Scene2D/CameraObscuraRoom.frag` · type=normal · mood=calm,dark,dreamy · complexity=2
+`Scene2D/CameraObscuraRoom.frag` · type=normal · mood=calm,dark,dreamy · complexity=3
 
 CAMERA OBSCURA ROOM: a darkened room with a pinhole in one wall. The world outside (the photo) stands upside-down and left-right reversed on the far wall, soft at the edges as a pinhole image is. The aperture breathes with the swell -- wide open means bright and soft, stopped down means dim and sharp -- dust motes drift through the light cone on the scene clock, and the kick is a flicker of the daylight outside (a cl…
 
@@ -658,7 +658,7 @@ CAMERA OBSCURA ROOM: a darkened room with a pinhole in one wall. The world outsi
 
 ### CanyonRiverGoldenHour
 
-`Scene2D/CanyonRiverGoldenHour.frag` · type=normal · mood=calm,bright · complexity=3
+`Scene2D/CanyonRiverGoldenHour.frag` · type=normal · mood=calm,bright · complexity=2
 
 CANYON RIVER GOLDEN HOUR: flying low through a winding desert canyon in the last hour of sun -- red sandstone walls rising in ledges and cliffs, banded by their strata, one wall blazing gold where the low sun strikes it, the other deep in blue shadow, and far below a green river winding along the floor, glittering where it catches the light. Warm haze fills the distance. The camera glides along the river's course at …
 
@@ -676,7 +676,7 @@ CAPILLARY FLIGHT: a flight through a blood capillary. The vessel wall is a soft,
 
 ### CapitalShipCruise
 
-`Scene2D/CapitalShipCruise.frag` · type=normal · mood=calm,dreamy,dark,space · complexity=4
+`Scene2D/CapitalShipCruise.frag` · type=normal · mood=calm,dreamy,dark,space · complexity=5
 
 CAPITAL SHIP CRUISE: a kilometre-long capital ship under way through deep space, seen from a camera flying alongside it. The silhouette is raymarched from a handful of large primitives -- tapered hull, dorsal spine, bridge tower, ventral keel and four engine bells -- while the surface detail (panel seams, hull plating, window rows, running lights) comes from the shading, which is how a ship this size reads on screen …
 
@@ -685,7 +685,7 @@ CAPITAL SHIP CRUISE: a kilometre-long capital ship under way through deep space,
 
 ### CaramelBubbling
 
-`Scene2D/CaramelBubbling.frag` · type=normal · mood=calm,warm · complexity=2
+`Scene2D/CaramelBubbling.frag` · type=normal · mood=calm,warm · complexity=1
 
 CARAMEL BUBBLING: a pan of caramelising sugar seen from above -- a molten golden-to-amber surface crowded with bubbles of every size that swell, glint and burst, leaving rings that close over, the colour deepening from pale gold to dark amber in slow swirls; the photograph lends its patterns to the swirls of colour. Endless, mirrorable. Audio Reactivity (structure, not only light): audioAdvance -> the bubbling (integ…
 
@@ -703,7 +703,7 @@ CASIMIR CAVITY VACUUM FLUCTUATIONS: Nanoscale optical cavity between two reflect
 
 ### CatatumboRelightningTower
 
-`Scene2D/CatatumboRelightningTower.frag` · type=normal · mood=aggressive,bright · complexity=4
+`Scene2D/CatatumboRelightningTower.frag` · type=normal · mood=aggressive,bright · complexity=6
 
 CATATUMBO RELIGHTNING TOWER: Nocturnal continuous electrical storm column above Lake Maracaibo. Kilometers-tall intra-cloud lightning arcs, methane-ionized plasma channels, volumetric anvil cloud illuminations, and thunderous photo reflections. audioAdvance -> navigates atmospheric storm updrafts & cloud turbulence audioKick -> fires explosive stepped leader lightning arc detonations audioSnare -> triggers spiderweb …
 
@@ -712,7 +712,7 @@ CATATUMBO RELIGHTNING TOWER: Nocturnal continuous electrical storm column above 
 
 ### CausticPool
 
-`Scene2D/CausticPool.frag` · type=normal · mood=calm,bright,dreamy · complexity=2
+`Scene2D/CausticPool.frag` · type=normal · mood=calm,bright,dreamy · complexity=7
 
 The photograph seen as a pool floor through a rippling water surface lit by caustics. texCaustics (written by the CfxPhoton compute pass) supplies both the refraction, whose gradient bends the tex0 lookup so the floor appears to wobble under moving water, and the light pattern itself, blurred into a soft glow and blended in multiplicatively so it reveals the floor rather than sitting on top of it. The warpP and glowP…
 
@@ -730,7 +730,7 @@ CAVE DIVERS TORCHES: inside a flooded limestone cave -- the tunnel running away 
 
 ### CavityOptomechanicsPhononLasing
 
-`Scene2D/CavityOptomechanicsPhononLasing.frag` · type=normal · mood=bright,psychedelic · complexity=3
+`Scene2D/CavityOptomechanicsPhononLasing.frag` · type=normal · mood=bright,psychedelic · complexity=6
 
 CAVITY OPTOMECHANICS PHONON LASING: Optomechanical optical microcavity with movable nanomechanical membrane mirrors. Radiation pressure creates parametric phonon amplification, stimulated Brillouin acoustic shockwaves, laser optical frequency combs, and photo texturing. audioAdvance -> navigates optomechanical limit-cycle oscillations audioKick -> flashes stimulated phonon-lasing threshold burst peaks audioSwell -> w…
 
@@ -739,7 +739,7 @@ CAVITY OPTOMECHANICS PHONON LASING: Optomechanical optical microcavity with mova
 
 ### CellophanePolarized
 
-`Scene2D/CellophanePolarized.frag` · type=normal · mood=psychedelic,bright · complexity=2
+`Scene2D/CellophanePolarized.frag` · type=normal · mood=psychedelic,bright · complexity=8
 
 CELLOPHANE POLARIZED: crumpled cellophane between crossed polarising filters -- the layers of stretched film light up in vivid interference colours that depend on how many layers overlap and how they were stretched: overlapping angular shards of colour (magenta, yellow, cyan, green) with sharp creases, over a black background where no film is; as the filter slowly turns, every colour shifts to its complement and back…
 
@@ -748,7 +748,7 @@ CELLOPHANE POLARIZED: crumpled cellophane between crossed polarising filters -- 
 
 ### CelticMandelbrotGothicVault
 
-`Scene2D/CelticMandelbrotGothicVault.frag` · type=normal · mood=psychedelic,bright · complexity=2
+`Scene2D/CelticMandelbrotGothicVault.frag` · type=normal · mood=psychedelic,bright · complexity=4
 
 CELTIC MANDELBROT GOTHIC VAULT: Celtic Mandelbrot variation z -> |Re(z^2)| + i*Im(z^2) + c. Gothic cathedral tracery arches, lancet church window filigree, stained-glass luminescence, and continuous deep plunge through endless vaulted fractal naves. Audio Reactivity: audioAdvance -> drives continuous deep plunge through Gothic cathedral arches audioKick -> flashes stained-glass rosette window cores & cathedral flares…
 
@@ -757,7 +757,7 @@ CELTIC MANDELBROT GOTHIC VAULT: Celtic Mandelbrot variation z -> |Re(z^2)| + i*I
 
 ### CenoteLightShaft
 
-`Scene2D/CenoteLightShaft.frag` · type=normal · mood=dark,calm,dreamy · complexity=3
+`Scene2D/CenoteLightShaft.frag` · type=normal · mood=dark,calm,dreamy · complexity=4
 
 CENOTE LIGHT SHAFT: below the surface of a flooded sinkhole, looking up at the opening. One shaft of sunlight comes through the hole and stands in the water as a solid cone, thick with drifting round motes; tree roots hang down through it, the cavern wall is the photo, and the halocline lies across the middle as a shimmering layer. The sun crosses the opening over the scene arc, so the shaft sweeps. Camera fixed, loo…
 
@@ -766,7 +766,7 @@ CENOTE LIGHT SHAFT: below the surface of a flooded sinkhole, looking up at the o
 
 ### CentroidSunArc
 
-`Scene2D/CentroidSunArc.frag` · type=normal · mood=calm,bright,dreamy · complexity=2
+`Scene2D/CentroidSunArc.frag` · type=normal · mood=calm,bright,dreamy · complexity=1
 
 CENTROID SUN ARC: the timbre as the time of day. The spectral centroid -- how bright the sound is -- is the height of the sun over a landscape of the photo: dark, bassy passages are dusk with long shadows and a red sun on the horizon, bright passages are noon; spectral flatness is the haze (noisy sound = hazy air); the centroid is slow enough on its own to move the sun smoothly. Round birds cross on the scene clock; …
 
@@ -784,7 +784,7 @@ CEPHALOPOD CHROMATOPHORES: octopus skin, close. Thousands of chromatophores -- r
 
 ### Chain3DKifsTetra
 
-`Scene2D/Chain3DKifsTetra.frag` · type=normal · mood=psychedelic,energetic · complexity=3
+`Scene2D/Chain3DKifsTetra.frag` · type=normal · mood=psychedelic,energetic · complexity=8
 
 CHAIN3DKIFSTETRA: a raymarched world built from a chain of continuous 3D space transforms -- a Sierpinski-tetrahedron fractal: tetrahedral mirror folds, a turning axis and a doubling scale, repeated six times. We fly slowly through it; the surfaces are textured with the photograph read through a 2D transform chain of its own (triplanar), lit and fogged. Every stage is continuous, so the structure morphs without jumps…
 
@@ -793,7 +793,7 @@ CHAIN3DKIFSTETRA: a raymarched world built from a chain of continuous 3D space t
 
 ### Chain3DMandelbox
 
-`Scene2D/Chain3DMandelbox.frag` · type=normal · mood=psychedelic,dark · complexity=3
+`Scene2D/Chain3DMandelbox.frag` · type=normal · mood=psychedelic,dark · complexity=6
 
 CHAIN3DMANDELBOX: a raymarched world built from a chain of continuous 3D space transforms -- a Mandelbox: box folds and sphere folds repeated six times, its scale breathing slowly. We fly slowly through it; the surfaces are textured with the photograph read through a 2D transform chain of its own (triplanar), lit and fogged. Every stage is continuous, so the structure morphs without jumps. Endless, mirrorable. Audio …
 
@@ -802,7 +802,7 @@ CHAIN3DMANDELBOX: a raymarched world built from a chain of continuous 3D space t
 
 ### Chain3DOctaGyroid
 
-`Scene2D/Chain3DOctaGyroid.frag` · type=normal · mood=psychedelic,dreamy · complexity=3
+`Scene2D/Chain3DOctaGyroid.frag` · type=normal · mood=psychedelic,dreamy · complexity=4
 
 CHAIN3DOCTAGYROID: a raymarched world built from a chain of continuous 3D space transforms -- a gyroid membrane folded into octahedral mirror symmetry, the mirrors turning. We fly slowly through it; the surfaces are textured with the photograph read through a 2D transform chain of its own (triplanar), lit and fogged. Every stage is continuous, so the structure morphs without jumps. Endless, mirrorable. Audio Reactivi…
 
@@ -811,7 +811,7 @@ CHAIN3DOCTAGYROID: a raymarched world built from a chain of continuous 3D space 
 
 ### Chain3DPolarTunnelBoxes
 
-`Scene2D/Chain3DPolarTunnelBoxes.frag` · type=normal · mood=psychedelic,energetic · complexity=3
+`Scene2D/Chain3DPolarTunnelBoxes.frag` · type=normal · mood=psychedelic,energetic · complexity=4
 
 CHAIN3DPOLARTUNNELBOXES: a raymarched world built from a chain of continuous 3D space transforms -- a tunnel whose wall is a mirrored ring of blocks, repeated along the flight. We fly slowly through it; the surfaces are textured with the photograph read through a 2D transform chain of its own (triplanar), lit and fogged. Every stage is continuous, so the structure morphs without jumps. Endless, mirrorable. Audio Reac…
 
@@ -820,7 +820,7 @@ CHAIN3DPOLARTUNNELBOXES: a raymarched world built from a chain of continuous 3D 
 
 ### Chain3DTwistTorus
 
-`Scene2D/Chain3DTwistTorus.frag` · type=normal · mood=psychedelic,playful · complexity=3
+`Scene2D/Chain3DTwistTorus.frag` · type=normal · mood=psychedelic,playful · complexity=8
 
 CHAIN3DTWISTTORUS: a raymarched world built from a chain of continuous 3D space transforms -- a lattice of tori, twisted slowly along the flight. We fly slowly through it; the surfaces are textured with the photograph read through a 2D transform chain of its own (triplanar), lit and fogged. Every stage is continuous, so the structure morphs without jumps. Endless, mirrorable. Audio Reactivity (structure, not only lig…
 
@@ -829,7 +829,7 @@ CHAIN3DTWISTTORUS: a raymarched world built from a chain of continuous 3D space 
 
 ### ChainBillowPenrose
 
-`Scene2D/ChainBillowPenrose.frag` · type=normal · mood=psychedelic,dreamy · complexity=2
+`Scene2D/ChainBillowPenrose.frag` · type=normal · mood=psychedelic,dreamy · complexity=4
 
 CHAINBILLOWPENROSE: a chain of continuous transforms -- Kelvin-Helmholtz billows, then a Penrose mirror (a five-fold aperiodic tiling). Every stage is continuous and the stages are joined by the photo's mirror repeat, so the whole map is seamless; the photograph flows through it endlessly and never repeats. Rendered as the photo, as a lit relief of it, or as glowing edges or as glowing contour lines (styleP blends th…
 
@@ -856,7 +856,7 @@ CHAINCURLAMMANN: a chain of continuous transforms -- a curling flow, then an Amm
 
 ### ChainCurlFarris
 
-`Scene2D/ChainCurlFarris.frag` · type=normal · mood=psychedelic,dreamy · complexity=2
+`Scene2D/ChainCurlFarris.frag` · type=normal · mood=psychedelic,dreamy · complexity=3
 
 CHAINCURLFARRIS: a chain of continuous transforms -- a curling flow, then a Farris wallpaper (a smooth symmetric pattern tiling the plane). Every stage is continuous and the stages are joined by the photo's mirror repeat, so the whole map is seamless; the photograph flows through it endlessly and never repeats. Rendered as the photo, as a lit relief of it, or as glowing edges or as glowing contour lines (styleP blend…
 
@@ -865,7 +865,7 @@ CHAINCURLFARRIS: a chain of continuous transforms -- a curling flow, then a Farr
 
 ### ChainDrosteKaleido
 
-`Scene2D/ChainDrosteKaleido.frag` · type=normal · mood=psychedelic,energetic · complexity=2
+`Scene2D/ChainDrosteKaleido.frag` · type=normal · mood=psychedelic,energetic · complexity=7
 
 CHAINDROSTEKALEIDO: a chain of continuous transforms -- a Droste zoom (the picture repeating inward at every scale), folded six-fold. Every stage is continuous and the stages are joined by the photo's mirror repeat, so the whole map is seamless; the photograph flows through it endlessly and never repeats. Rendered as the photo, as a lit relief of it, or as glowing edges or as glowing contour lines (styleP blends thro…
 
@@ -874,7 +874,7 @@ CHAINDROSTEKALEIDO: a chain of continuous transforms -- a Droste zoom (the pictu
 
 ### ChainExpKaleido
 
-`Scene2D/ChainExpKaleido.frag` · type=normal · mood=psychedelic,energetic · complexity=2
+`Scene2D/ChainExpKaleido.frag` · type=normal · mood=psychedelic,energetic · complexity=4
 
 CHAINEXPKALEIDO: a chain of continuous transforms -- the complex exponential (a spiral of repeating bands), folded eight-fold. Every stage is continuous and the stages are joined by the photo's mirror repeat, so the whole map is seamless; the photograph flows through it endlessly and never repeats. Rendered as the photo, as a lit relief of it, or as glowing edges or as glowing contour lines (styleP blends through the…
 
@@ -892,7 +892,7 @@ CHAINFOLDSPIRAL: a chain of continuous transforms -- an iterated fractal fold wo
 
 ### ChainGerstnerJacobi
 
-`Scene2D/ChainGerstnerJacobi.frag` · type=normal · mood=psychedelic,dreamy · complexity=2
+`Scene2D/ChainGerstnerJacobi.frag` · type=normal · mood=psychedelic,dreamy · complexity=6
 
 CHAINGERSTNERJACOBI: a chain of continuous transforms -- rolling Gerstner waves, then a Jacobi elliptic wallpaper. Every stage is continuous and the stages are joined by the photo's mirror repeat, so the whole map is seamless; the photograph flows through it endlessly and never repeats. Rendered as the photo, as a lit relief of it, or as glowing edges or as glowing contour lines (styleP blends through them). Endless,…
 
@@ -901,7 +901,7 @@ CHAINGERSTNERJACOBI: a chain of continuous transforms -- rolling Gerstner waves,
 
 ### ChainGyreSquareWave
 
-`Scene2D/ChainGyreSquareWave.frag` · type=normal · mood=psychedelic,dreamy · complexity=2
+`Scene2D/ChainGyreSquareWave.frag` · type=normal · mood=psychedelic,dreamy · complexity=4
 
 CHAINGYRESQUAREWAVE: a chain of continuous transforms -- a double gyre, a square mirror lattice and a shear wave. Every stage is continuous and the stages are joined by the photo's mirror repeat, so the whole map is seamless; the photograph flows through it endlessly and never repeats. Rendered as the photo, as a lit relief of it, or as glowing edges or as glowing contour lines (styleP blends through them). Endless, …
 
@@ -910,7 +910,7 @@ CHAINGYRESQUAREWAVE: a chain of continuous transforms -- a double gyre, a square
 
 ### ChainHexTunnel
 
-`Scene2D/ChainHexTunnel.frag` · type=normal · mood=psychedelic,energetic · complexity=2
+`Scene2D/ChainHexTunnel.frag` · type=normal · mood=psychedelic,energetic · complexity=6
 
 CHAINHEXTUNNEL: a chain of continuous transforms -- a six-fold mirror lattice lining a tunnel around a wandering centre. Every stage is continuous and the stages are joined by the photo's mirror repeat, so the whole map is seamless; the photograph flows through it endlessly and never repeats. Rendered as the photo, as a lit relief of it, or as glowing edges or as glowing contour lines (styleP blends through them). En…
 
@@ -919,7 +919,7 @@ CHAINHEXTUNNEL: a chain of continuous transforms -- a six-fold mirror lattice li
 
 ### ChainInterferenceKoch
 
-`Scene2D/ChainInterferenceKoch.frag` · type=normal · mood=psychedelic,dreamy · complexity=2
+`Scene2D/ChainInterferenceKoch.frag` · type=normal · mood=psychedelic,dreamy · complexity=3
 
 CHAININTERFERENCEKOCH: a chain of continuous transforms -- interfering waves, then a Koch-snowflake fold. Every stage is continuous and the stages are joined by the photo's mirror repeat, so the whole map is seamless; the photograph flows through it endlessly and never repeats. Rendered as the photo, as a lit relief of it, or as glowing edges or as glowing contour lines (styleP blends through them). Endless, mirrorab…
 
@@ -928,7 +928,7 @@ CHAININTERFERENCEKOCH: a chain of continuous transforms -- interfering waves, th
 
 ### ChainInvertFold
 
-`Scene2D/ChainInvertFold.frag` · type=normal · mood=psychedelic,calm · complexity=2
+`Scene2D/ChainInvertFold.frag` · type=normal · mood=psychedelic,calm · complexity=3
 
 CHAININVERTFOLD: a chain of continuous transforms -- a circle inversion of the photo, folded by an iterated fractal kaleidoscope. Every stage is continuous and the stages are joined by the photo's mirror repeat, so the whole map is seamless; the photograph flows through it endlessly and never repeats. Rendered as the photo, as a lit relief of it, or as glowing edges or as glowing contour lines (styleP blends through …
 
@@ -937,7 +937,7 @@ CHAININVERTFOLD: a chain of continuous transforms -- a circle inversion of the p
 
 ### ChainKaleidoMobius
 
-`Scene2D/ChainKaleidoMobius.frag` · type=normal · mood=psychedelic,calm · complexity=2
+`Scene2D/ChainKaleidoMobius.frag` · type=normal · mood=psychedelic,calm · complexity=5
 
 CHAINKALEIDOMOBIUS: a chain of continuous transforms -- a kaleidoscope whose mirror image is then streamed through a Moebius map. Every stage is continuous and the stages are joined by the photo's mirror repeat, so the whole map is seamless; the photograph flows through it endlessly and never repeats. Rendered as the photo, as a lit relief of it, or as glowing edges or as glowing contour lines (styleP blends through …
 
@@ -946,7 +946,7 @@ CHAINKALEIDOMOBIUS: a chain of continuous transforms -- a kaleidoscope whose mir
 
 ### ChainKaleidoSpiral
 
-`Scene2D/ChainKaleidoSpiral.frag` · type=normal · mood=psychedelic,calm · complexity=2
+`Scene2D/ChainKaleidoSpiral.frag` · type=normal · mood=psychedelic,calm · complexity=5
 
 CHAINKALEIDOSPIRAL: a chain of continuous transforms -- a six-fold kaleidoscope wound into an endlessly zooming log-polar spiral. Every stage is continuous and the stages are joined by the photo's mirror repeat, so the whole map is seamless; the photograph flows through it endlessly and never repeats. Rendered as the photo, as a lit relief of it, or as glowing edges or as glowing contour lines (styleP blends through …
 
@@ -955,7 +955,7 @@ CHAINKALEIDOSPIRAL: a chain of continuous transforms -- a six-fold kaleidoscope 
 
 ### ChainKaleidoTunnel
 
-`Scene2D/ChainKaleidoTunnel.frag` · type=normal · mood=psychedelic,energetic · complexity=2
+`Scene2D/ChainKaleidoTunnel.frag` · type=normal · mood=psychedelic,energetic · complexity=8
 
 CHAINKALEIDOTUNNEL: a chain of continuous transforms -- a turning kaleidoscope whose image lines a tunnel around a wandering centre. Every stage is continuous and the stages are joined by the photo's mirror repeat, so the whole map is seamless; the photograph flows through it endlessly and never repeats. Rendered as the photo, as a lit relief of it, or as glowing edges or as glowing contour lines (styleP blends throu…
 
@@ -964,7 +964,7 @@ CHAINKALEIDOTUNNEL: a chain of continuous transforms -- a turning kaleidoscope w
 
 ### ChainLab2D
 
-`Scene2D/ChainLab2D.frag` · type=normal · mood=psychedelic,dreamy,energetic · complexity=3
+`Scene2D/ChainLab2D.frag` · type=normal · mood=psychedelic,dreamy,energetic · complexity=6
 
 CHAIN LAB 2D: the chain laboratory -- every time the scene starts it rolls a new chain of up to four continuous transforms from four classes (each with 'none' at its calm end): a global map (kaleidoscope, log-polar spiral, tunnel, Moebius, Droste, polar, exponential, sine, inversion, hyperbolic Poincare tiling, bipolar stream, rotating Riemann sphere, loxodromic stream, Farris wallpaper functions, the hyperbolic band…
 
@@ -973,7 +973,7 @@ CHAIN LAB 2D: the chain laboratory -- every time the scene starts it rolls a new
 
 ### ChainLab3D
 
-`Scene2D/ChainLab3D.frag` · type=normal · mood=psychedelic,energetic · complexity=3
+`Scene2D/ChainLab3D.frag` · type=normal · mood=psychedelic,energetic · complexity=7
 
 CHAIN LAB 3D: the 3D chain laboratory -- every start rolls a new raymarched world from three classes of continuous space transforms: a space (mirrored lattice, polar ring tunnel, twisted lattice, octahedral lattice, turning lattice, helix, hexagonal lattice, a lattice turned in 4D), a fold core (none, tetrahedral KIFS, octahedral KIFS, a sphere-inversion box fold, plane folds, Menger sponge, Kleinian fold, icosahedra…
 
@@ -982,7 +982,7 @@ CHAIN LAB 3D: the 3D chain laboratory -- every start rolls a new raymarched worl
 
 ### ChainLabTunnel
 
-`Scene2D/ChainLabTunnel.frag` · type=normal · mood=psychedelic,dreamy,energetic · complexity=3
+`Scene2D/ChainLabTunnel.frag` · type=normal · mood=psychedelic,dreamy,energetic · complexity=6
 
 CHAIN LAB TUNNEL: the chain laboratory as a tunnel, like the original Tunnel scenes -- every start rolls a new chain of four continuous transforms (the 2D chain lab's classes: global map, symmetry, second map, warp), the photograph flows through it, and the chain is wrapped around the inside of a tube whose axis winds slowly, so the vanishing point wanders. The chain's brightness becomes real depth: the wall is a rel…
 
@@ -991,7 +991,7 @@ CHAIN LAB TUNNEL: the chain laboratory as a tunnel, like the original Tunnel sce
 
 ### ChainmailRingRipple
 
-`Scene2D/ChainmailRingRipple.frag` · type=normal · mood=dark,aggressive,psychedelic · complexity=4
+`Scene2D/ChainmailRingRipple.frag` · type=normal · mood=dark,aggressive,psychedelic · complexity=9
 
 CHAINMAIL RING RIPPLE: a sheet of European 4-in-1 mail filling the frame. Every ring is a torus seen at an angle, threaded through four of its neighbours, so the sheet reads as interlocking metal rather than a pattern of circles. A ripple travels across it on the scene clock, tilting the rings it passes and running a band of highlight with it; each ring's polish takes the colour of one spectrum band, and the kick sen…
 
@@ -1000,7 +1000,7 @@ CHAINMAIL RING RIPPLE: a sheet of European 4-in-1 mail filling the frame. Every 
 
 ### ChainMirrorTunnelSpiral
 
-`Scene2D/ChainMirrorTunnelSpiral.frag` · type=normal · mood=psychedelic,energetic · complexity=2
+`Scene2D/ChainMirrorTunnelSpiral.frag` · type=normal · mood=psychedelic,energetic · complexity=7
 
 CHAINMIRRORTUNNELSPIRAL: a chain of continuous transforms -- a turning mirror line, a tunnel around a wandering centre, and a zooming spiral. Every stage is continuous and the stages are joined by the photo's mirror repeat, so the whole map is seamless; the photograph flows through it endlessly and never repeats. Rendered as the photo, as a lit relief of it, or as glowing edges or as glowing contour lines (styleP ble…
 
@@ -1018,7 +1018,7 @@ CHAINMOBIUSFOLDTWIRL: a chain of continuous transforms -- a Moebius stream, an i
 
 ### ChainMobiusKaleido
 
-`Scene2D/ChainMobiusKaleido.frag` · type=normal · mood=psychedelic,calm · complexity=2
+`Scene2D/ChainMobiusKaleido.frag` · type=normal · mood=psychedelic,calm · complexity=4
 
 CHAINMOBIUSKALEIDO: a chain of continuous transforms -- a Moebius map streaming the photo between two wandering poles, then folded eight-fold. Every stage is continuous and the stages are joined by the photo's mirror repeat, so the whole map is seamless; the photograph flows through it endlessly and never repeats. Rendered as the photo, as a lit relief of it, or as glowing edges or as glowing contour lines (styleP bl…
 
@@ -1027,7 +1027,7 @@ CHAINMOBIUSKALEIDO: a chain of continuous transforms -- a Moebius map streaming 
 
 ### ChainP4mSpiralKaleidoWarp
 
-`Scene2D/ChainP4mSpiralKaleidoWarp.frag` · type=normal · mood=psychedelic,calm · complexity=2
+`Scene2D/ChainP4mSpiralKaleidoWarp.frag` · type=normal · mood=psychedelic,calm · complexity=3
 
 CHAINP4MSPIRALKALEIDOWARP: a chain of continuous transforms -- four stages: a square mirror lattice, a zooming spiral, a kaleidoscope and a warp. Every stage is continuous and the stages are joined by the photo's mirror repeat, so the whole map is seamless; the photograph flows through it endlessly and never repeats. Rendered as the photo, as a lit relief of it, or as glowing edges or as glowing contour lines (styleP…
 
@@ -1045,7 +1045,7 @@ CHAINPOLARKALEIDOWAVE: a chain of continuous transforms -- a polar unwrap, folde
 
 ### ChainRippleHex
 
-`Scene2D/ChainRippleHex.frag` · type=normal · mood=psychedelic,energetic · complexity=2
+`Scene2D/ChainRippleHex.frag` · type=normal · mood=psychedelic,energetic · complexity=4
 
 CHAINRIPPLEHEX: a chain of continuous transforms -- radial ripples spreading from a wandering centre, over a six-fold mirror lattice. Every stage is continuous and the stages are joined by the photo's mirror repeat, so the whole map is seamless; the photograph flows through it endlessly and never repeats. Rendered as the photo, as a lit relief of it, or as glowing edges or as glowing contour lines (styleP blends thro…
 
@@ -1054,7 +1054,7 @@ CHAINRIPPLEHEX: a chain of continuous transforms -- radial ripples spreading fro
 
 ### ChainSinFold
 
-`Scene2D/ChainSinFold.frag` · type=normal · mood=psychedelic,energetic · complexity=2
+`Scene2D/ChainSinFold.frag` · type=normal · mood=psychedelic,energetic · complexity=4
 
 CHAINSINFOLD: a chain of continuous transforms -- the complex sine (a lattice of saddles), folded by an iterated fractal kaleidoscope. Every stage is continuous and the stages are joined by the photo's mirror repeat, so the whole map is seamless; the photograph flows through it endlessly and never repeats. Rendered as the photo, as a lit relief of it, or as glowing edges or as glowing contour lines (styleP blends thr…
 
@@ -1063,7 +1063,7 @@ CHAINSINFOLD: a chain of continuous transforms -- the complex sine (a lattice of
 
 ### ChainSlice3D
 
-`Scene2D/ChainSlice3D.frag` · type=normal · mood=psychedelic,energetic · complexity=3
+`Scene2D/ChainSlice3D.frag` · type=normal · mood=psychedelic,energetic · complexity=7
 
 CHAIN SLICE 3D: the 3D chain laboratory without raymarching -- the screen is a plane through a rolled 3D world (a space, a fold core and an end body, the 3D lab's classes), every pixel one point sent once through the chain of space transforms. Up to eight planes behind each other (layerP): the first that cuts matter is shown, the deeper ones through its holes, a stack of cut plates. Matter is coloured by a rolled 2D …
 
@@ -1072,7 +1072,7 @@ CHAIN SLICE 3D: the 3D chain laboratory without raymarching -- the screen is a p
 
 ### ChainSpiralInvertKaleido
 
-`Scene2D/ChainSpiralInvertKaleido.frag` · type=normal · mood=psychedelic,calm · complexity=2
+`Scene2D/ChainSpiralInvertKaleido.frag` · type=normal · mood=psychedelic,calm · complexity=4
 
 CHAINSPIRALINVERTKALEIDO: a chain of continuous transforms -- a zooming spiral, turned inside out by a circle inversion, then folded. Every stage is continuous and the stages are joined by the photo's mirror repeat, so the whole map is seamless; the photograph flows through it endlessly and never repeats. Rendered as the photo, as a lit relief of it, or as glowing edges or as glowing contour lines (styleP blends thro…
 
@@ -1081,7 +1081,7 @@ CHAINSPIRALINVERTKALEIDO: a chain of continuous transforms -- a zooming spiral, 
 
 ### ChainSpiralKaleido
 
-`Scene2D/ChainSpiralKaleido.frag` · type=normal · mood=psychedelic,calm · complexity=2
+`Scene2D/ChainSpiralKaleido.frag` · type=normal · mood=psychedelic,calm · complexity=4
 
 CHAINSPIRALKALEIDO: a chain of continuous transforms -- a log-polar spiral (endless zoom) seen through a six-fold kaleidoscope. Every stage is continuous and the stages are joined by the photo's mirror repeat, so the whole map is seamless; the photograph flows through it endlessly and never repeats. Rendered as the photo, as a lit relief of it, or as glowing edges or as glowing contour lines (styleP blends through th…
 
@@ -1099,7 +1099,7 @@ CHAINSQUARECHIRIKOV: a chain of continuous transforms -- a square mirror lattice
 
 ### ChainSquareKaleido
 
-`Scene2D/ChainSquareKaleido.frag` · type=normal · mood=psychedelic,calm · complexity=2
+`Scene2D/ChainSquareKaleido.frag` · type=normal · mood=psychedelic,calm · complexity=1
 
 CHAINSQUAREKALEIDO: a chain of continuous transforms -- the photo squared in the complex plane (every angle doubled), then folded five-fold. Every stage is continuous and the stages are joined by the photo's mirror repeat, so the whole map is seamless; the photograph flows through it endlessly and never repeats. Rendered as the photo, as a lit relief of it, or as glowing edges or as glowing contour lines (styleP blen…
 
@@ -1108,7 +1108,7 @@ CHAINSQUAREKALEIDO: a chain of continuous transforms -- the photo squared in the
 
 ### ChainTaylorHex
 
-`Scene2D/ChainTaylorHex.frag` · type=normal · mood=psychedelic,dreamy · complexity=2
+`Scene2D/ChainTaylorHex.frag` · type=normal · mood=psychedelic,dreamy · complexity=3
 
 CHAINTAYLORHEX: a chain of continuous transforms -- Taylor-Green vortices, then a six-fold mirror lattice. Every stage is continuous and the stages are joined by the photo's mirror repeat, so the whole map is seamless; the photograph flows through it endlessly and never repeats. Rendered as the photo, as a lit relief of it, or as glowing edges or as glowing contour lines (styleP blends through them). Endless, mirrora…
 
@@ -1117,7 +1117,7 @@ CHAINTAYLORHEX: a chain of continuous transforms -- Taylor-Green vortices, then 
 
 ### ChainTriangleStreet
 
-`Scene2D/ChainTriangleStreet.frag` · type=normal · mood=psychedelic,dreamy · complexity=2
+`Scene2D/ChainTriangleStreet.frag` · type=normal · mood=psychedelic,dreamy · complexity=3
 
 CHAINTRIANGLESTREET: a chain of continuous transforms -- a triangle mirror lattice (p3m1), its tiles streaming with a vortex street. Every stage is continuous and the stages are joined by the photo's mirror repeat, so the whole map is seamless; the photograph flows through it endlessly and never repeats. Rendered as the photo, as a lit relief of it, or as glowing edges or as glowing contour lines (styleP blends throu…
 
@@ -1126,7 +1126,7 @@ CHAINTRIANGLESTREET: a chain of continuous transforms -- a triangle mirror latti
 
 ### ChainTunnelHex
 
-`Scene2D/ChainTunnelHex.frag` · type=normal · mood=psychedelic,energetic · complexity=2
+`Scene2D/ChainTunnelHex.frag` · type=normal · mood=psychedelic,energetic · complexity=7
 
 CHAINTUNNELHEX: a chain of continuous transforms -- a tunnel around a wandering centre, its walls tiled by a six-fold mirror lattice. Every stage is continuous and the stages are joined by the photo's mirror repeat, so the whole map is seamless; the photograph flows through it endlessly and never repeats. Rendered as the photo, as a lit relief of it, or as glowing edges or as glowing contour lines (styleP blends thro…
 
@@ -1135,7 +1135,7 @@ CHAINTUNNELHEX: a chain of continuous transforms -- a tunnel around a wandering 
 
 ### ChainTunnelKaleido
 
-`Scene2D/ChainTunnelKaleido.frag` · type=normal · mood=psychedelic,energetic · complexity=2
+`Scene2D/ChainTunnelKaleido.frag` · type=normal · mood=psychedelic,energetic · complexity=7
 
 CHAINTUNNELKALEIDO: a chain of continuous transforms -- a tunnel around a wandering centre, its walls folded by a six-fold kaleidoscope. Every stage is continuous and the stages are joined by the photo's mirror repeat, so the whole map is seamless; the photograph flows through it endlessly and never repeats. Rendered as the photo, as a lit relief of it, or as glowing edges or as glowing contour lines (styleP blends t…
 
@@ -1144,7 +1144,7 @@ CHAINTUNNELKALEIDO: a chain of continuous transforms -- a tunnel around a wander
 
 ### ChainTunnelLens
 
-`Scene2D/ChainTunnelLens.frag` · type=normal · mood=psychedelic,energetic · complexity=2
+`Scene2D/ChainTunnelLens.frag` · type=normal · mood=psychedelic,energetic · complexity=7
 
 CHAINTUNNELLENS: a chain of continuous transforms -- a tunnel around a wandering centre, seen through a drifting magnifying lens. Every stage is continuous and the stages are joined by the photo's mirror repeat, so the whole map is seamless; the photograph flows through it endlessly and never repeats. Rendered as the photo, as a lit relief of it, or as glowing edges or as glowing contour lines (styleP blends through …
 
@@ -1153,7 +1153,7 @@ CHAINTUNNELLENS: a chain of continuous transforms -- a tunnel around a wandering
 
 ### ChainTwirlP4m
 
-`Scene2D/ChainTwirlP4m.frag` · type=normal · mood=psychedelic,calm · complexity=2
+`Scene2D/ChainTwirlP4m.frag` · type=normal · mood=psychedelic,calm · complexity=3
 
 CHAINTWIRLP4M: a chain of continuous transforms -- a slowly breathing twirl folded into a square mirror lattice (p4m). Every stage is continuous and the stages are joined by the photo's mirror repeat, so the whole map is seamless; the photograph flows through it endlessly and never repeats. Rendered as the photo, as a lit relief of it, or as glowing edges or as glowing contour lines (styleP blends through them). Endl…
 
@@ -1162,7 +1162,7 @@ CHAINTWIRLP4M: a chain of continuous transforms -- a slowly breathing twirl fold
 
 ### ChainWarpKaleidoSpiral
 
-`Scene2D/ChainWarpKaleidoSpiral.frag` · type=normal · mood=psychedelic,calm · complexity=2
+`Scene2D/ChainWarpKaleidoSpiral.frag` · type=normal · mood=psychedelic,calm · complexity=3
 
 CHAINWARPKALEIDOSPIRAL: a chain of continuous transforms -- a flowing domain warp, folded six-fold, then wound into a zooming spiral. Every stage is continuous and the stages are joined by the photo's mirror repeat, so the whole map is seamless; the photograph flows through it endlessly and never repeats. Rendered as the photo, as a lit relief of it, or as glowing edges or as glowing contour lines (styleP blends thro…
 
@@ -1171,7 +1171,7 @@ CHAINWARPKALEIDOSPIRAL: a chain of continuous transforms -- a flowing domain war
 
 ### ChainWarpQuasi
 
-`Scene2D/ChainWarpQuasi.frag` · type=normal · mood=psychedelic,dreamy · complexity=2
+`Scene2D/ChainWarpQuasi.frag` · type=normal · mood=psychedelic,dreamy · complexity=3
 
 CHAINWARPQUASI: a chain of continuous transforms -- a flowing domain warp, then a seven-fold quasicrystal. Every stage is continuous and the stages are joined by the photo's mirror repeat, so the whole map is seamless; the photograph flows through it endlessly and never repeats. Rendered as the photo, as a lit relief of it, or as glowing edges or as glowing contour lines (styleP blends through them). Endless, mirrora…
 
@@ -1180,7 +1180,7 @@ CHAINWARPQUASI: a chain of continuous transforms -- a flowing domain warp, then 
 
 ### ChainWaveDrosteHex
 
-`Scene2D/ChainWaveDrosteHex.frag` · type=normal · mood=psychedelic,energetic · complexity=2
+`Scene2D/ChainWaveDrosteHex.frag` · type=normal · mood=psychedelic,energetic · complexity=4
 
 CHAINWAVEDROSTEHEX: a chain of continuous transforms -- a shear wave, a Droste zoom and a six-fold mirror lattice in sequence. Every stage is continuous and the stages are joined by the photo's mirror repeat, so the whole map is seamless; the photograph flows through it endlessly and never repeats. Rendered as the photo, as a lit relief of it, or as glowing edges or as glowing contour lines (styleP blends through the…
 
@@ -1189,7 +1189,7 @@ CHAINWAVEDROSTEHEX: a chain of continuous transforms -- a shear wave, a Droste z
 
 ### ChainWeierstrassWarp
 
-`Scene2D/ChainWeierstrassWarp.frag` · type=normal · mood=psychedelic,dreamy · complexity=2
+`Scene2D/ChainWeierstrassWarp.frag` · type=normal · mood=psychedelic,dreamy · complexity=3
 
 CHAINWEIERSTRASSWARP: a chain of continuous transforms -- the Weierstrass p function (a doubly periodic lattice of poles), then a domain warp. Every stage is continuous and the stages are joined by the photo's mirror repeat, so the whole map is seamless; the photograph flows through it endlessly and never repeats. Rendered as the photo, as a lit relief of it, or as glowing edges or as glowing contour lines (styleP bl…
 
@@ -1198,7 +1198,7 @@ CHAINWEIERSTRASSWARP: a chain of continuous transforms -- the Weierstrass p func
 
 ### ChandBaoriStepwell
 
-`Scene2D/ChandBaoriStepwell.frag` · type=normal · mood=calm,bright · complexity=2
+`Scene2D/ChandBaoriStepwell.frag` · type=normal · mood=calm,bright · complexity=1
 
 CHAND BAORI STEPWELL: an Indian stepwell seen from straight above -- a square funnel of sandstone sinking level after level toward a small pool of green water at the bottom, every level a zigzag of double flights of steps, thousands of treads catching the sun and thousands of risers in shadow. The rim wall throws a hard diagonal shadow down into the well that creeps around as the sun moves; the water glints. The came…
 
@@ -1207,7 +1207,7 @@ CHAND BAORI STEPWELL: an Indian stepwell seen from straight above -- a square fu
 
 ### CherenkovRadiationWakefield
 
-`Scene2D/CherenkovRadiationWakefield.frag` · type=normal · mood=bright,aggressive,psychedelic · complexity=4
+`Scene2D/CherenkovRadiationWakefield.frag` · type=normal · mood=bright,aggressive,psychedelic · complexity=5
 
 CHERENKOV RADIATION WAKEFIELD: Relativistic charged particle wakefield traversing a dense dielectric medium. Emits superluminal Cherenkov shockwave cones, plasma bubble cavitation cavities, travelling optical Mach fringes, and photo-driven dielectric polarization glow. audioAdvance -> drives relativistic particle beam & shockwave propagation audioKick -> triggers high-gradient plasma cavitation detonations audioCentr…
 
@@ -1216,7 +1216,7 @@ CHERENKOV RADIATION WAKEFIELD: Relativistic charged particle wakefield traversin
 
 ### CherryBlossomFront
 
-`Scene2D/CherryBlossomFront.frag` · type=normal · mood=bright,calm,dreamy · complexity=2
+`Scene2D/CherryBlossomFront.frag` · type=normal · mood=bright,calm,dreamy · complexity=1
 
 CHERRY BLOSSOM FRONT: looking down a narrow canal lined with cherry trees whose canopies arch over the water -- stone banks, a path with lanterns, the sky pale with spring. During the scene arc the blossom front travels toward the camera: far trees burst into pink first, then nearer and nearer ones, until the whole avenue is in flower and the petals come down and gather on the water as drifting pink rafts. Petals (ro…
 
@@ -1225,7 +1225,7 @@ CHERRY BLOSSOM FRONT: looking down a narrow canal lined with cherry trees whose 
 
 ### ChiralNematicBeetleCuticle
 
-`Scene2D/ChiralNematicBeetleCuticle.frag` · type=normal · mood=bright,psychedelic · complexity=3
+`Scene2D/ChiralNematicBeetleCuticle.frag` · type=normal · mood=bright,psychedelic · complexity=6
 
 CHIRAL NEMATIC BEETLE CUTICLE: Biomimetic jewel scarab beetle cuticle (Chrysina resplendens). Helical cholesteric liquid-crystal chitin nanofibril multilayers generate circular polarization, angle-dependent Bragg structural color, hexagonal cellular micro-faceting, and metallic iridescence. audioAdvance -> rotates cholesteric helical director pitch & viewing angle audioPhase -> shifts chiral nematic polarization phas…
 
@@ -1234,7 +1234,7 @@ CHIRAL NEMATIC BEETLE CUTICLE: Biomimetic jewel scarab beetle cuticle (Chrysina 
 
 ### ChiralNematicLiquidCrystal
 
-`Scene2D/ChiralNematicLiquidCrystal.frag` · type=normal · mood=psychedelic,dreamy,dark · complexity=2
+`Scene2D/ChiralNematicLiquidCrystal.frag` · type=normal · mood=psychedelic,dreamy,dark · complexity=3
 
 CHIRAL NEMATIC LIQUID CRYSTAL: Cholesteric liquid crystal texture with helical molecular director field twisting, Bragg diffraction selective color reflection, fingerprint texture disclinations, and thermo-chromatic audio waves. Audio Reactivity: audioAdvance -> drives continuous helical director pitch rotation & domain advection audioKick -> flashes Bragg reflection selective wavelength peaks & defect lines audioCen…
 
@@ -1243,7 +1243,7 @@ CHIRAL NEMATIC LIQUID CRYSTAL: Cholesteric liquid crystal texture with helical m
 
 ### ChordRailwaySwitches
 
-`Scene2D/ChordRailwaySwitches.frag` · type=normal · mood=bright,calm,dreamy · complexity=3
+`Scene2D/ChordRailwaySwitches.frag` · type=normal · mood=bright,calm,dreamy · complexity=4
 
 CHORD RAILWAY SWITCHES: a marshalling yard from above -- five parallel tracks crossing the field diagonally, twelve crossovers along them, one per chroma class: each crossover has a signal lit by its class and a switch blade that leans over smoothly as the class sounds. Trains of photo wagons run the yard on the scene clock, each on a route fixed for the activation, sliding across the crossovers on smooth S-curves; t…
 
@@ -1252,7 +1252,7 @@ CHORD RAILWAY SWITCHES: a marshalling yard from above -- five parallel tracks cr
 
 ### ChromaAcidTrip
 
-`Scene2D/ChromaAcidTrip.frag` · type=normal · mood=psychedelic,bright · complexity=3
+`Scene2D/ChromaAcidTrip.frag` · type=normal · mood=psychedelic,bright · complexity=8
 
 CHROMA ACID TRIP: Hypnotic psychedelic feedback vortex with melting contour lines, reaction-diffusion spirals, liquid rainbow gradients, optical warp displacement, and high-energy audio-driven color state transformations. audioLevel -> drives feedback displacement velocity & melt intensity audioKick -> triggers chromatic inversion flash & color ripple shockwaves audioChromaHue-> rotates liquid psychedelic color spect…
 
@@ -1261,7 +1261,7 @@ CHROMA ACID TRIP: Hypnotic psychedelic feedback vortex with melting contour line
 
 ### ChromaKaleidoscope
 
-`Scene2D/ChromaKaleidoscope.frag` · type=normal · mood=psychedelic,bright,aggressive · complexity=2
+`Scene2D/ChromaKaleidoscope.frag` · type=normal · mood=psychedelic,bright,aggressive · complexity=9
 
 CHROMA KALEIDOSCOPE: twelve mirror segments, one per pitch class. The chroma vector decides how brightly each segment burns, so a chord is a pattern of lit wedges and a key change rotates that pattern around the ring; the melody note breathes a soft halo over its own wedge. In fifths mode the wedges are ordered by the circle of fifths, so harmonic neighbours sit side by side and a diatonic chord lights a contiguous a…
 
@@ -1270,7 +1270,7 @@ CHROMA KALEIDOSCOPE: twelve mirror segments, one per pitch class. The chroma vec
 
 ### ChromeDreams
 
-`Scene2D/ChromeDreams.frag` · type=normal · mood=bright · complexity=2
+`Scene2D/ChromeDreams.frag` · type=normal · mood=bright · complexity=10
 
 Adapted from "Chrome Dreams" by \@kishimisu (2022) — https://www.shadertoy.com/view/ctX3RM Original licensed CC BY-NC-SA 4.0 (attribution kept per the licence). Rotations + space repetition into a chromatic tunnel of tori. Adapted to our engine, and COLOURED BY THE IMAGE: each depth takes its colour from a slowly- drifting crop of the source picture (imgPal), so the palette is the image itself and keeps changing. Aud…
 
@@ -1279,7 +1279,7 @@ Adapted from "Chrome Dreams" by \@kishimisu (2022) — https://www.shadertoy.com
 
 ### ChronoSynapticMandala
 
-`Scene2D/ChronoSynapticMandala.frag` · type=normal · mood=psychedelic,bright · complexity=2
+`Scene2D/ChronoSynapticMandala.frag` · type=normal · mood=psychedelic,bright · complexity=8
 
 CHRONO SYNAPTIC MANDALA: Multi-ring temporal echo kaleidoscope with staggered time-delay rings, synaptic neural energy conduits, and high-frequency harmonic mandala folding. Audio Reactivity: audioAdvance -> continuous rotation & temporal phase wave progression audioKick -> inward-to-outward radial synaptic pulse & flash audioCentroid-> modulates neural conduit branching frequency audioSubBass -> expands temporal rin…
 
@@ -1288,7 +1288,7 @@ CHRONO SYNAPTIC MANDALA: Multi-ring temporal echo kaleidoscope with staggered ti
 
 ### CirclePackingBloom
 
-`Scene2D/CirclePackingBloom.frag` · type=normal · mood=calm,psychedelic · complexity=2
+`Scene2D/CirclePackingBloom.frag` · type=normal · mood=calm,psychedelic · complexity=6
 
 CIRCLE PACKING BLOOM: a breathing circle packing -- large discs swell and shrink slowly, and in the gaps between them smaller discs grow to fill every space they can, and still smaller ones in the gaps between those, never overlapping, so the whole plane stays densely packed while its sizes keep shifting. Each disc holds a piece of the photograph, magnified and ringed with concentric bands, with a bright rim. Endless…
 
@@ -1297,7 +1297,7 @@ CIRCLE PACKING BLOOM: a breathing circle packing -- large discs swell and shrink
 
 ### CityBokeh
 
-`Scene2D/CityBokeh.frag` · type=normal · mood=dark,dreamy · complexity=2
+`Scene2D/CityBokeh.frag` · type=normal · mood=dark,dreamy · complexity=4
 
 CITY LIGHTS BOKEH: a night city seen through a defocused lens — layers of soft bokeh discs drifting past at different depths (parallax), coloured by the source image (every light picks its colour from the picture). The focus BREATHES with the swell; kicks pulse a scattered subset of lights. swell -> focus/size breathing (the whole field softens and swells) kick -> a hashed subset of lights pulses up (envelope-driven,…
 
@@ -1306,7 +1306,7 @@ CITY LIGHTS BOKEH: a night city seen through a defocused lens — layers of soft
 
 ### CliffordAttractorSilkRibbons
 
-`Scene2D/CliffordAttractorSilkRibbons.frag` · type=normal · mood=psychedelic,dark,dreamy · complexity=2
+`Scene2D/CliffordAttractorSilkRibbons.frag` · type=normal · mood=psychedelic,dark,dreamy · complexity=4
 
 CLIFFORD ATTRACTOR SILK RIBBONS: Hyper-dense trigonometric Clifford / De Jong attractor density maps with silky flowing ribbon sheets, dynamic parameter morphing, and high-luminance glowing caustics. Audio Reactivity: audioAdvance -> drives continuous Clifford parameter modulation & ribbon flow audioKick -> flashes attractor density caustic peaks & shockwave ripple audioCentroid-> modulates trigonometric frequency pa…
 
@@ -1315,7 +1315,7 @@ CLIFFORD ATTRACTOR SILK RIBBONS: Hyper-dense trigonometric Clifford / De Jong at
 
 ### CliffordTorusKleinBottle
 
-`Scene2D/CliffordTorusKleinBottle.frag` · type=normal · mood=bright,psychedelic · complexity=3
+`Scene2D/CliffordTorusKleinBottle.frag` · type=normal · mood=bright,psychedelic · complexity=9
 
 CLIFFORD TORUS KLEIN BOTTLE: 4D non-orientable Klein bottle and flat Clifford torus rotating in 4D space with glass refraction, internal self-intersection, chromatic dispersion, and live photo distortion. audioAdvance -> drives continuous 4D isometric rotation audioKick -> flashes glass refraction shockwaves and caustic sparkles audioBass -> pulses figure-8 Klein bottle tube thickness audioSwell -> increases chromati…
 
@@ -1324,7 +1324,7 @@ CLIFFORD TORUS KLEIN BOTTLE: 4D non-orientable Klein bottle and flat Clifford to
 
 ### CliffordTorusStereographicKaleido
 
-`Scene2D/CliffordTorusStereographicKaleido.frag` · type=normal · mood=psychedelic,dark · complexity=2
+`Scene2D/CliffordTorusStereographicKaleido.frag` · type=normal · mood=psychedelic,dark · complexity=3
 
 CLIFFORD TORUS STEREOGRAPHIC KALEIDO: 4D Clifford Torus (S1 x S1 in S3) stereographically projected into 3D space. Nested Villarceau circles, continuous isoclinic SO(4) rotations, and dynamic conformal interference rings. Audio Reactivity: audioAdvance -> drives continuous 4D Villarceau circle rotation & flight audioKick -> flashes Villarceau ring intersection nodes & radial shockwave audioCentroid-> modulates ring f…
 
@@ -1333,7 +1333,7 @@ CLIFFORD TORUS STEREOGRAPHIC KALEIDO: 4D Clifford Torus (S1 x S1 in S3) stereogr
 
 ### CloisonneEnamelCells
 
-`Scene2D/CloisonneEnamelCells.frag` · type=normal · mood=bright,psychedelic,calm · complexity=3
+`Scene2D/CloisonneEnamelCells.frag` · type=normal · mood=bright,psychedelic,calm · complexity=6
 
 CLOISONNE ENAMEL CELLS: a copper plate with gold wires bent into a scrolling pattern, the compartments between them filled with coloured enamel. Over the scene arc the cells are filled one after another and then fired: the enamel sinks, wets out and comes up glassy, so each cell goes from powder to a domed pane of colour. The chroma classes pick the enamels, the treble is the gold wire catching the light, and the swe…
 
@@ -1342,7 +1342,7 @@ CLOISONNE ENAMEL CELLS: a copper plate with gold wires bent into a scrolling pat
 
 ### ClothDrape
 
-`Scene2D/ClothDrape.frag` · type=normal · mood=calm,dreamy · complexity=2
+`Scene2D/ClothDrape.frag` · type=normal · mood=calm,dreamy · complexity=7
 
 A silk curtain whose folds are a real Verlet mass-spring simulation, printed with the current photo. texCloth (from the CfxCloth compute pass) supplies a displacement field: its RGB warps the tex0 lookup so the printed photo rides with the fabric, and its gradient gives the surface normal used for diffuse, specular and rim-sheen lighting. audioKick punches up the specular highlight, audioBeat swells the silk sheen, a…
 
@@ -1351,7 +1351,7 @@ A silk curtain whose folds are a real Verlet mass-spring simulation, printed wit
 
 ### CloudSeaSummit
 
-`Scene2D/CloudSeaSummit.frag` · type=normal · mood=bright,calm,dreamy · complexity=4
+`Scene2D/CloudSeaSummit.frag` · type=normal · mood=bright,calm,dreamy · complexity=1
 
 CLOUD SEA SUMMIT: above a sea of cloud at sunrise. The cloud tops roll slowly through the valleys below, billowed and lit gold on the sun side, blue in their troughs; ridges and summits stand out of the sea in layers that fade into the haze, and the sun sits on the horizon with its light running across the cloud tops. The music is in the light: the swell raises the sun's glow, the bands brighten the ridge rims, the t…
 
@@ -1360,7 +1360,7 @@ CLOUD SEA SUMMIT: above a sea of cloud at sunrise. The cloud tops roll slowly th
 
 ### CoffeeRingStains
 
-`Scene2D/CoffeeRingStains.frag` · type=normal · mood=calm,bright · complexity=2
+`Scene2D/CoffeeRingStains.frag` · type=normal · mood=calm,bright · complexity=1
 
 COFFEE RING STAINS: drops drying on a sheet -- round stains of coffee, tea and wine spread and dry across the paper, each leaving the characteristic dark ring at its edge (the coffee-ring effect) with a pale centre, overlapping stains darkening each other, some with satellite droplets and drips; the stains slowly fade as new ones fall. The paper and the stain colours are tinted by the photograph. Endless, mirrorable.…
 
@@ -1369,7 +1369,7 @@ COFFEE RING STAINS: drops drying on a sheet -- round stains of coffee, tea and w
 
 ### CollatzFractalTreeAbyss
 
-`Scene2D/CollatzFractalTreeAbyss.frag` · type=normal · mood=psychedelic,dark · complexity=2
+`Scene2D/CollatzFractalTreeAbyss.frag` · type=normal · mood=psychedelic,dark · complexity=1
 
 COLLATZ FRACTAL TREE ABYSS: Analytic complex continuation of the Collatz (3n+1) map f(z) = (1 + 4z - (1+2z)cos(pi*z))/4. Infinite fractal spires, needle feathers, and high-voltage spiky branching forests. Audio Reactivity: audioAdvance -> drives continuous complex plane zoom & spire navigation audioKick -> flashes Collatz parity branch singularity nodes audioCentroid-> sharpens transcendental cosine needle oscillatio…
 
@@ -1378,7 +1378,7 @@ COLLATZ FRACTAL TREE ABYSS: Analytic complex continuation of the Collatz (3n+1) 
 
 ### CometOverLake
 
-`Scene2D/CometOverLake.frag` · type=normal · mood=calm,dark,dreamy,space · complexity=2
+`Scene2D/CometOverLake.frag` · type=normal · mood=calm,dark,dreamy,space · complexity=1
 
 COMET OVER LAKE: a great comet low over a mountain lake after dusk, the way Hale-Bopp and NEOWISE were photographed -- a bright head, a broad curved dust tail in pale gold fanning away from the sun below the horizon, and a thin straight blue ion tail beside it; the last blue of twilight along the ridge, stars coming out, dark pines on the shore, and the lake holding the whole sky upside down in its still, faintly rip…
 
@@ -1387,7 +1387,7 @@ COMET OVER LAKE: a great comet low over a mountain lake after dusk, the way Hale
 
 ### ConcentricPhoto
 
-`Scene2D/ConcentricPhoto.frag` · type=normal · mood=psychedelic,calm · complexity=2
+`Scene2D/ConcentricPhoto.frag` · type=normal · mood=psychedelic,calm · complexity=3
 
 CONCENTRIC PHOTO: the photograph drawn with concentric rings -- a field of ring systems whose rings swell where the picture is dark and thin where it is light, so the image emerges from rippling circles like a halftone made of ripples; the ring centres drift, the rings flow outward, and where two systems overlap they make moire. Endless, mirrorable. Audio Reactivity (structure, not only light): audioAdvance -> the ri…
 
@@ -1396,7 +1396,7 @@ CONCENTRIC PHOTO: the photograph drawn with concentric rings -- a field of ring 
 
 ### ConformalLogPolarDive
 
-`Scene2D/ConformalLogPolarDive.frag` · type=normal · mood=psychedelic,aggressive,dark · complexity=2
+`Scene2D/ConformalLogPolarDive.frag` · type=normal · mood=psychedelic,aggressive,dark · complexity=7
 
 CONFORMAL LOG POLAR DIVE: Complex exponential mapping w = exp(z) transforming the Cartesian image plane into infinite swirling twin galactic spiral arms with seamless multi-octave zoom blending and high-energy chromatic distortion. Audio Reactivity: audioAdvance -> drives continuous exponential spiral plunge trajectory audioKick -> flashes spiral galaxy core & shoots centrifugal ripple waves audioCentroid-> modulates…
 
@@ -1405,7 +1405,7 @@ CONFORMAL LOG POLAR DIVE: Complex exponential mapping w = exp(z) transforming th
 
 ### CoronagraphSpeckleField
 
-`Scene2D/CoronagraphSpeckleField.frag` · type=normal · mood=space,dark,psychedelic · complexity=2
+`Scene2D/CoronagraphSpeckleField.frag` · type=normal · mood=space,dark,psychedelic · complexity=6
 
 CORONAGRAPH SPECKLE FIELD: direct imaging of exoplanets. A coronagraph mask blocks the star; what remains is the speckle halo -- a field of diffraction speckles whose brightness is the spectrum (band by radius) -- rotating slowly with the sky (angular differential imaging: the speckles turn with the telescope, the planets do not), so the few steady round dots that stay put are the planets. The photo is the residual h…
 
@@ -1414,7 +1414,7 @@ CORONAGRAPH SPECKLE FIELD: direct imaging of exoplanets. A coronagraph mask bloc
 
 ### CosmicMicrowaveBackgroundSky
 
-`Scene2D/CosmicMicrowaveBackgroundSky.frag` · type=normal · mood=space,psychedelic,calm · complexity=2
+`Scene2D/CosmicMicrowaveBackgroundSky.frag` · type=normal · mood=space,psychedelic,calm · complexity=1
 
 COSMIC MICROWAVE BACKGROUND SKY: the oldest light, as a sky. The anisotropy map is built from noise at eight angular scales, and the amplitude of each scale is a spectrum band -- the acoustic peaks of the early universe were literally sound waves in the plasma, so here the music's spectrum IS the power spectrum: bass paints the large blobs, treble the fine grain. We look out from inside the sphere; the view turns slo…
 
@@ -1423,7 +1423,7 @@ COSMIC MICROWAVE BACKGROUND SKY: the oldest light, as a sky. The anisotropy map 
 
 ### CosmicRayAirShowerCherenkov
 
-`Scene2D/CosmicRayAirShowerCherenkov.frag` · type=normal · mood=aggressive,dark · complexity=3
+`Scene2D/CosmicRayAirShowerCherenkov.frag` · type=normal · mood=aggressive,dark · complexity=8
 
 COSMIC RAY AIR SHOWER CHERENKOV: Ultra-high-energy cosmic ray striking the upper atmosphere, generating a cascading air shower of billions of relativistic secondary particles, nitrogen fluorescence in near-UV, and forward-directed atmospheric Cherenkov light cones. audioAdvance -> drives relativistic particle cascade propagation audioKick -> fires primary cosmic ray impact & giant Cherenkov shock flash audioBass -> w…
 
@@ -1432,7 +1432,7 @@ COSMIC RAY AIR SHOWER CHERENKOV: Ultra-high-energy cosmic ray striking the upper
 
 ### CosmicRayTransitionRadiation
 
-`Scene2D/CosmicRayTransitionRadiation.frag` · type=normal · mood=dark,aggressive · complexity=3
+`Scene2D/CosmicRayTransitionRadiation.frag` · type=normal · mood=dark,aggressive · complexity=10
 
 COSMIC RAY TRANSITION RADIATION: Ultra-relativistic charged particles traversing periodic multilayer foil stacks (mylar/polypropylene radiator). Sudden dielectric boundary crossings emit highly collimated forward X-ray transition radiation cones with photo-derived interference fringes. audioAdvance -> accelerates relativistic particle beam traversing radiator stack audioKick -> flashes boundary crossing X-ray photon …
 
@@ -1441,7 +1441,7 @@ COSMIC RAY TRANSITION RADIATION: Ultra-relativistic charged particles traversing
 
 ### CrepuscularRaysForest
 
-`Scene2D/CrepuscularRaysForest.frag` · type=normal · mood=calm,bright,dreamy · complexity=3
+`Scene2D/CrepuscularRaysForest.frag` · type=normal · mood=calm,bright,dreamy · complexity=5
 
 CREPUSCULAR RAYS FOREST: sun shafts through mist between tall trunks. The rays fan from a sun low behind the wood; each ray carries one spectrum band, so the fan reads the music across its width. The mist drifts on the scene clock and the sun sinks over the scene arc, swinging the fan and warming its colour. Pollen floats as round motes where the light is. The photo is the wood. Camera fixed on the path. Audio Reacti…
 
@@ -1450,7 +1450,7 @@ CREPUSCULAR RAYS FOREST: sun shafts through mist between tall trunks. The rays f
 
 ### CrossHatchPhoto
 
-`Scene2D/CrossHatchPhoto.frag` · type=normal · mood=calm,dark · complexity=2
+`Scene2D/CrossHatchPhoto.frag` · type=normal · mood=calm,dark · complexity=4
 
 CROSS HATCH PHOTO: the photograph as a living copperplate engraving -- its tones are cut in layers of fine parallel lines: light areas get a single sparse layer, darker ones a second layer across it, the darkest three and four, each line swelling and thinning with the tone like an engraver's burin; the lines bend gently along the picture's forms, and the hatching directions slowly turn while the photo drifts. Ink on …
 
@@ -1459,7 +1459,7 @@ CROSS HATCH PHOTO: the photograph as a living copperplate engraving -- its tones
 
 ### CryosleepChamber
 
-`Scene2D/CryosleepChamber.frag` · type=normal · mood=dark,calm,space · complexity=4
+`Scene2D/CryosleepChamber.frag` · type=normal · mood=dark,calm,space · complexity=7
 
 CRYOSLEEP CHAMBER: Flight down an endless, monumental hallway lined with thousands of cryosleep pods aboard a generation ship. The pods pulse with vital signs and life-support lights synchronized to the beat. audioAdvance -> camera flight speed down the hallway audioKick -> flashes of alarm/activation lights audioSwell -> ambient corridor lighting and fog audioChromaHue-> palette offset for the pod lights Per-activat…
 
@@ -1468,7 +1468,7 @@ CRYOSLEEP CHAMBER: Flight down an endless, monumental hallway lined with thousan
 
 ### CrystalAsteroidField
 
-`Scene2D/CrystalAsteroidField.frag` · type=normal · mood=bright,calm,space · complexity=4
+`Scene2D/CrystalAsteroidField.frag` · type=normal · mood=bright,calm,space · complexity=9
 
 CRYSTAL ASTEROID FIELD: An asteroid field made entirely of giant, floating crystals. The crystals refract and scatter distant starlight, lighting up like prisms in sync with the music. audioAdvance -> flight speed through the crystal field audioKick -> flashes from light hitting the crystal facets audioSwell -> overall ambient brightness and glow audioChromaHue-> palette offset for the refracted light Per-activation …
 
@@ -1477,7 +1477,7 @@ CRYSTAL ASTEROID FIELD: An asteroid field made entirely of giant, floating cryst
 
 ### CrystalGeodeCavernFlight
 
-`Scene2D/CrystalGeodeCavernFlight.frag` · type=normal · mood=psychedelic,aggressive,dreamy · complexity=2
+`Scene2D/CrystalGeodeCavernFlight.frag` · type=normal · mood=psychedelic,aggressive,dreamy · complexity=4
 
 CRYSTAL GEODE CAVERN FLIGHT: 3D Raymarching flight through a subterranean amethyst & emerald crystal geode cavern with sharp faceted prism pillars, volumetric specular light beams, and glowing gemstone refractions. Audio Reactivity: audioAdvance -> drives continuous forward flight through crystal tunnels audioKick -> flashes interior gemstone crystal nodes & specular bursts audioCentroid-> sharpens crystal facet norm…
 
@@ -1486,7 +1486,7 @@ CRYSTAL GEODE CAVERN FLIGHT: 3D Raymarching flight through a subterranean amethy
 
 ### CrystalGrowth
 
-`Scene2D/CrystalGrowth.frag` · type=normal · mood=dark,calm · complexity=2
+`Scene2D/CrystalGrowth.frag` · type=normal · mood=dark,calm · complexity=1
 
 _(Vorschau eingeschränkt: Sim-Textur/Mehrpass — Bilder unterschätzen die echte App)_
 
@@ -1497,7 +1497,7 @@ Frost spreading across the frame, its growth front picked out by geometry rather
 
 ### CrystalMirrorGrid
 
-`Scene2D/CrystalMirrorGrid.frag` · type=normal · mood=bright,aggressive,psychedelic · complexity=4
+`Scene2D/CrystalMirrorGrid.frag` · type=normal · mood=bright,aggressive,psychedelic · complexity=8
 
 CRYSTAL MIRROR GRID: Raymarched 3D crystal mirror lattice filling 100% of the screen. Every facet refracts and reflects the live photo/kaleidoscope. audioKick -> shatter impulse bursting crystal facets towards the camera lens audioMid -> lattice rotation & folding wave audioBass -> facet extrusion depth & pulse audioChroma -> spectral dispersion on crystal edges Per-activation variety (0 = default): facetP float face…
 
@@ -1506,7 +1506,7 @@ CRYSTAL MIRROR GRID: Raymarched 3D crystal mirror lattice filling 100% of the sc
 
 ### CrystalThroatTunnel
 
-`Scene2D/CrystalThroatTunnel.frag` · type=normal · mood=energetic,psychedelic · complexity=2
+`Scene2D/CrystalThroatTunnel.frag` · type=normal · mood=energetic,psychedelic · complexity=6
 
 CRYSTAL THROAT TUNNEL: flying down a throat of crystal -- the tunnel wall is lined with prismatic crystal facets (hexagonal columns seen end on, their faces tilted), each facet showing the photograph refracted and split into its spectral colours at the facet edges, the facets glinting as we pass, the whole throat slowly turning; a white light burns at the far end. Endless, mirrorable; the wall continues beyond the fr…
 
@@ -1515,16 +1515,16 @@ CRYSTAL THROAT TUNNEL: flying down a throat of crystal -- the tunnel wall is lin
 
 ### CurlAurora
 
-`Scene2D/CurlAurora.frag` · type=normal · mood=calm,space · complexity=1
+`Scene2D/CurlAurora.frag` · type=normal · mood=calm,space · complexity=6
 
-Flowing aurora curtains (domain-warped value noise) driven by mood. audioArousal -> contrast / brightness of the curtains audioValence -> palette (low = teal/green, high = magenta/pink) audioCentroid -> pale-blue bright tips (spectral brightness) audioLevel/SubBass -> overall glow audioPhase/Advance -> smooth, jump-free horizontal drift with the music audioBeat -> gentle shimmer (slew-limited host-side, never strobes…
+Flowing aurora curtains driven by mood: three hanging sheets, each a winding lower edge with rays standing up from it, green at the edge and magenta toward the fringe, over a night sky. audioArousal -> contrast / brightness of the curtains audioValence -> palette (low = teal/green, high = magenta/pink) audioCentroid -> pale-blue bright tips (spectral brightness) audioLevel/SubBass -> overall glow audioPhase/Advance -…
 
 ![CurlAurora ruhig (t=8)](img/CurlAurora_A.jpg) ![CurlAurora ruhig (t=16)](img/CurlAurora_B.jpg) ![CurlAurora audio-heiß (t=21)](img/CurlAurora_C.jpg)
 
 
 ### CurvedMirrorKaleido
 
-`Scene2D/CurvedMirrorKaleido.frag` · type=normal · mood=psychedelic,dreamy · complexity=2
+`Scene2D/CurvedMirrorKaleido.frag` · type=normal · mood=psychedelic,dreamy · complexity=6
 
 CURVED MIRROR KALEIDO: a kaleidoscope whose mirrors are not flat -- the photo is folded through a ring of wedge mirrors whose surfaces bow and breathe, so the seams curve like petals, the reflections swell and pinch toward the rim, and the rosette opens and closes like a flower. Each fold also nests a smaller, turned rosette inside (a second kaleidoscope stage), so the pattern has depth. The fold continues endlessly …
 
@@ -1533,7 +1533,7 @@ CURVED MIRROR KALEIDO: a kaleidoscope whose mirrors are not flat -- the photo is
 
 ### CyberGridCity
 
-`Scene2D/CyberGridCity.frag` · type=normal · mood=aggressive,dark · complexity=3
+`Scene2D/CyberGridCity.frag` · type=normal · mood=aggressive,dark · complexity=10
 
 CYBER GRID CITY: Full-screen raymarched synthwave/cyberpunk metropolis. Towering skyscrapers with illuminated neon grid windows, reflective rain-slicked highway streets, rushing traffic light pulses along grids, holographic photo billboards mapping tex0/tex1, and skyward neon beams. audioSubBass -> pulses ground grid shockwave & street reflections audioKick -> flashes neon skyline & lightning storm over city audioHig…
 
@@ -1542,7 +1542,7 @@ CYBER GRID CITY: Full-screen raymarched synthwave/cyberpunk metropolis. Towering
 
 ### CyberHologramGlitchVoxel
 
-`Scene2D/CyberHologramGlitchVoxel.frag` · type=normal · mood=aggressive,bright,psychedelic · complexity=3
+`Scene2D/CyberHologramGlitchVoxel.frag` · type=normal · mood=aggressive,bright,psychedelic · complexity=9
 
 CYBER HOLOGRAM GLITCH VOXEL: 100% viewport-filling volumetric 3D laser holographic scan. The 2D photo is converted into a floating 3D voxel pointcloud via luminance depth extrusion, with scanning laser sheets, chromatic optical aberration, CRT scanlines, and audio data-mosh glitches.
 
@@ -1551,7 +1551,7 @@ CYBER HOLOGRAM GLITCH VOXEL: 100% viewport-filling volumetric 3D laser holograph
 
 ### CyberpunkSynthGridHighwayFly
 
-`Scene2D/CyberpunkSynthGridHighwayFly.frag` · type=normal · mood=psychedelic,bright,aggressive · complexity=2
+`Scene2D/CyberpunkSynthGridHighwayFly.frag` · type=normal · mood=psychedelic,bright,aggressive · complexity=9
 
 CYBERPUNK SYNTH GRID HIGHWAY FLY: High-velocity 3D flight across an endless neon wireframe synthesizer highway with audio-reactive mountain equalizers, a giant segmented laser horizon sun, and gleaming digital data streams. Audio Reactivity: audioAdvance -> drives high-speed highway flight progression audioKick -> flashes sun horizon flares & highway laser pulse audioBass/SubBass -> elevates mountain equalizer peaks …
 
@@ -1560,7 +1560,7 @@ CYBERPUNK SYNTH GRID HIGHWAY FLY: High-velocity 3D flight across an endless neon
 
 ### CyberpunkWireframeTerrainFlyover
 
-`Scene2D/CyberpunkWireframeTerrainFlyover.frag` · type=normal · mood=psychedelic,bright,aggressive · complexity=2
+`Scene2D/CyberpunkWireframeTerrainFlyover.frag` · type=normal · mood=psychedelic,bright,aggressive · complexity=8
 
 CYBERPUNK WIREFRAME TERRAIN FLYOVER: fast flight over an infinite 80s synthwave neon wireframe plain toward a segmented vector laser sun, stars above. (A mountain height function used to be computed here and never drawn -- the plane is projected, not marched -- so the header no longer promises mountains it cannot show.) Audio Reactivity: audioAdvance -> drives continuous high-velocity forward flight across terrain au…
 
@@ -1569,7 +1569,7 @@ CYBERPUNK WIREFRAME TERRAIN FLYOVER: fast flight over an infinite 80s synthwave 
 
 ### CyborgHiveShip
 
-`Scene2D/CyborgHiveShip.frag` · type=normal · mood=dark,aggressive,space · complexity=4
+`Scene2D/CyborgHiveShip.frag` · type=normal · mood=dark,aggressive,space · complexity=10
 
 CYBORG HIVE SHIP: A terrifying, claustrophobic flight through the interior of a massive, geometrically perfect cyborg hive ship. Cold steel, dense greebles, and scanning lasers that react to the beat. audioAdvance -> camera flight speed through the hive audioKick -> flashes from machinery and lasers audioSwell -> ambient interior glow and active nodes audioChromaHue-> palette offset for the hive's energy Per-activati…
 
@@ -1578,7 +1578,7 @@ CYBORG HIVE SHIP: A terrifying, claustrophobic flight through the interior of a 
 
 ### DarkAmbientTunnel
 
-`Scene2D/DarkAmbientTunnel.frag` · type=KaleidoscopeBase · mood=calm,dreamy · complexity=1
+`Scene2D/DarkAmbientTunnel.frag` · type=KaleidoscopeBase · mood=calm,dreamy · complexity=6
 
 Atmospheric void tunnel designed for dark ambient and drone music. (Christoph Heemann, Thomas Köner, Lustmord aesthetics) Audio mapping: audioSubBass → heavy vignette (darkness closing in from edges) audioFlux → forward motion (still on held drone, moves when layers change) audioLowMid → harmonic wave distortion along tunnel walls audioCentroid → colour temperature: void-blue (dark) → deep amber (warm) audioBeat → su…
 
@@ -1587,7 +1587,7 @@ Atmospheric void tunnel designed for dark ambient and drone music. (Christoph He
 
 ### DarkMatterWeb
 
-`Scene2D/DarkMatterWeb.frag` · type=normal · mood=dark,psychedelic,space · complexity=4
+`Scene2D/DarkMatterWeb.frag` · type=normal · mood=dark,psychedelic,space · complexity=8
 
 DARK MATTER WEB: the cosmic web as the big simulations draw it -- filaments of dark matter strung between bright halos where they cross, voids of near-black between them, galaxies strung along the threads like dew. Three depths of the web lie behind one another and drift at their own slow speeds (parallax), the nearest brightest: gold-white cores, a violet-blue dark-matter glow around them. Knots of light travel alon…
 
@@ -1596,7 +1596,7 @@ DARK MATTER WEB: the cosmic web as the big simulations draw it -- filaments of d
 
 ### DarkNebulaBokGlobules
 
-`Scene2D/DarkNebulaBokGlobules.frag` · type=normal · mood=space,dark,calm · complexity=3
+`Scene2D/DarkNebulaBokGlobules.frag` · type=normal · mood=space,dark,calm · complexity=4
 
 DARK NEBULA / BOK GLOBULES: cocoons of dust in silhouette before a glowing emission nebula -- the photo IS the nebula. The globules are a ray-marched density field (fbm blobs, domain-warped on the scene clock), and the nebula and the stars behind them dim by the integrated column, so the cocoons have a front, a back and soft edges where the dust thins. The swell thickens the dust (slow); onsets ignite protostars deep…
 
@@ -1605,7 +1605,7 @@ DARK NEBULA / BOK GLOBULES: cocoons of dust in silhouette before a glowing emiss
 
 ### DeepSpaceArmada
 
-`Scene2D/DeepSpaceArmada.frag` · type=normal · mood=calm,dark,space · complexity=4
+`Scene2D/DeepSpaceArmada.frag` · type=normal · mood=calm,dark,space · complexity=6
 
 DEEP SPACE ARMADA: A massive fleet of warships advancing through a dense, colorful nebula. The ships are arrayed in formation, with their engines glowing brightly. The camera flies alongside or through the formation. audioAdvance -> forward flight speed of the armada and camera audioKick -> engine flares and weapon flashes audioSwell -> nebula brightness and engine trail intensity audioChromaHue-> nebula hue follows …
 
@@ -1623,7 +1623,7 @@ DELAUNAY DISCS: Robert Delaunay's "simultaneous contrasts" set in motion -- grea
 
 ### DepthPortalRecursion
 
-`Scene2D/DepthPortalRecursion.frag` · type=normal · mood=psychedelic,dreamy,dark · complexity=2
+`Scene2D/DepthPortalRecursion.frag` · type=normal · mood=psychedelic,dreamy,dark · complexity=6
 
 DEPTH PORTAL RECURSION: a Droste zoom built from the engine's own previous frame. A rounded portal in the middle of the picture shows the LAST frame, shrunk and turned -- which already contains the portal, which contains the portal ... The recursion is real, not painted: every level is one frame older than the one around it, so a beat that flashes the rim travels inward level by level over the following frames. Audio…
 
@@ -1632,7 +1632,7 @@ DEPTH PORTAL RECURSION: a Droste zoom built from the engine's own previous frame
 
 ### DerelictMothership
 
-`Scene2D/DerelictMothership.frag` · type=normal · mood=dark,calm,space · complexity=4
+`Scene2D/DerelictMothership.frag` · type=normal · mood=dark,calm,space · complexity=1
 
 DERELICT MOTHERSHIP: an enormous dead ship hangs across the sky above a blue-limbed planet. Its hull runs out of frame on both sides, plated and greebled, lit along its upper edge by the planet's glow; great breaches have torn the plating open, and inside the exposed ribs a few emergency lights still burn orange. Running lights along the keel pulse slowly, debris tumbles in the foreground. The ship drifts with glacia…
 
@@ -1641,7 +1641,7 @@ DERELICT MOTHERSHIP: an enormous dead ship hangs across the sky above a blue-lim
 
 ### DesertMilkyWayArch
 
-`Scene2D/DesertMilkyWayArch.frag` · type=normal · mood=dark,calm,dreamy,space · complexity=3
+`Scene2D/DesertMilkyWayArch.frag` · type=normal · mood=dark,calm,dreamy,space · complexity=2
 
 DESERT MILKY WAY ARCH: a sandstone arch in the desert at night, the Milky Way rising through it -- a band of countless round stars with dark dust lanes and the warm glow of the galactic core, turning slowly across the sky as the night goes on. A small campfire at the foot of the arch lights its inner curve orange; beyond, the desert floor and distant buttes lie in starlight. The sky's turn is steady; the music is the…
 
@@ -1650,7 +1650,7 @@ DESERT MILKY WAY ARCH: a sandstone arch in the desert at night, the Milky Way ri
 
 ### DewdropLensArray
 
-`Scene2D/DewdropLensArray.frag` · type=normal · mood=calm,dreamy · complexity=2
+`Scene2D/DewdropLensArray.frag` · type=normal · mood=calm,dreamy · complexity=3
 
 DEWDROP LENS ARRAY: a field of dew drops on a sheet of glass in front of the photograph -- hundreds of round drops of every size, each a tiny lens that shows the photo behind it sharp, magnified and upside down, with a bright rim of light on one side and a dark refraction ring on the other, while the glass between the drops is fogged and shows the photo soft and pale. The drops slowly grow, merge and slide, the photo…
 
@@ -1659,7 +1659,7 @@ DEWDROP LENS ARRAY: a field of dew drops on a sheet of glass in front of the pho
 
 ### DiamondFireMacro
 
-`Scene2D/DiamondFireMacro.frag` · type=normal · mood=bright,psychedelic · complexity=3
+`Scene2D/DiamondFireMacro.frag` · type=normal · mood=bright,psychedelic · complexity=2
 
 DIAMOND FIRE MACRO: a brilliant-cut diamond seen from above, filling the frame -- the table in the middle, the star and kite facets around it, the crown facets out to the girdle. Every facet mirrors the photo at its own angle, and the stone's dispersion splits white light into spectral "fire": small flashes of pure colour that move across the facets as the light source circles slowly overhead. The facets keep still; …
 
@@ -1668,7 +1668,7 @@ DIAMOND FIRE MACRO: a brilliant-cut diamond seen from above, filling the frame -
 
 ### DichroicInfinityPrismVault
 
-`Scene2D/DichroicInfinityPrismVault.frag` · type=normal · mood=bright,psychedelic · complexity=4
+`Scene2D/DichroicInfinityPrismVault.frag` · type=normal · mood=bright,psychedelic · complexity=6
 
 DICHROIC INFINITY PRISM VAULT: Raymarched infinite mirror chamber of dichroic glass prisms and cubic beam-splitters. RGB spectral dispersion, total internal reflection (TIR), multi-bounce optical caustics, and continuous kaleidoscopic photo refraction. audioAdvance -> navigates camera through the infinite prism vault audioKick -> flashes total internal reflection facet edges & glints audioBass -> pulses dichroic thin…
 
@@ -1677,7 +1677,7 @@ DICHROIC INFINITY PRISM VAULT: Raymarched infinite mirror chamber of dichroic gl
 
 ### DichroicPrismLaserField
 
-`Scene2D/DichroicPrismLaserField.frag` · type=normal · mood=psychedelic,dark · complexity=2
+`Scene2D/DichroicPrismLaserField.frag` · type=normal · mood=psychedelic,dark · complexity=3
 
 DICHROIC PRISM LASER FIELD: Multi-angle floating dichroic glass prism plates with polarized thin-film color splitting (Cyan/Yellow/Magenta), high-intensity laser beam reflections, and luminous internal optical diffraction nodes. Audio Reactivity: audioAdvance -> drives continuous glass plate orbital rotation & laser tracking audioKick -> flashes internal laser beam slicing bursts & plate transmissions audioCentroid->…
 
@@ -1686,7 +1686,7 @@ DICHROIC PRISM LASER FIELD: Multi-angle floating dichroic glass prism plates wit
 
 ### DielectricMetasurfaceHologram
 
-`Scene2D/DielectricMetasurfaceHologram.frag` · type=normal · mood=dark,psychedelic,calm · complexity=3
+`Scene2D/DielectricMetasurfaceHologram.frag` · type=normal · mood=dark,psychedelic,calm · complexity=4
 
 DIELECTRIC METASURFACE HOLOGRAM: a laser lights a metasurface -- a chip covered in nanopillars whose diameters follow a Fresnel-zone pattern, so the surface shimmers in concentric rainbow rings like a CD seen close -- and the chip throws a hologram into the air above it: the photo, rendered in laser light as a floating field of glowing points with the grain of speckle, inside a faint cone of light. The hologram hangs…
 
@@ -1695,7 +1695,7 @@ DIELECTRIC METASURFACE HOLOGRAM: a laser lights a metasurface -- a chip covered 
 
 ### DiffusionDenoiseReveal
 
-`Scene2D/DiffusionDenoiseReveal.frag` · type=normal · mood=psychedelic,dreamy,calm · complexity=2
+`Scene2D/DiffusionDenoiseReveal.frag` · type=normal · mood=psychedelic,dreamy,calm · complexity=3
 
 DIFFUSION DENOISE REVEAL: a diffusion model sampling, as a picture. Each phrase begins as pure Gaussian noise and, step by step, the photo emerges from it (the noise level falls with the phrase position; the blend is smooth), the way a generated image resolves; at the phrase end the image is re-noised with a soft crossfade and the next phrase resolves it again. The drop finishes the reveal at once. A faint grid of th…
 
@@ -1704,7 +1704,7 @@ DIFFUSION DENOISE REVEAL: a diffusion model sampling, as a picture. Each phrase 
 
 ### DiracConeGrapheneValleytronics
 
-`Scene2D/DiracConeGrapheneValleytronics.frag` · type=normal · mood=bright,psychedelic · complexity=3
+`Scene2D/DiracConeGrapheneValleytronics.frag` · type=normal · mood=bright,psychedelic · complexity=8
 
 DIRAC CONE GRAPHENE VALLEYTRONICS: 2D honeycomb carbon lattice displaying linear relativistic Dirac cones (E = +/- hbar * v_F * |k|). Valley Hall pseudospin states (K and K' valleys), Berry curvature flux, quantum wavepacket tunneling, and continuous photo texture reflections. audioAdvance -> drives electronic wavepacket drift across K/K' valleys audioKick -> flashes inter-valley quantum tunneling & plasmonic bursts …
 
@@ -1713,7 +1713,7 @@ DIRAC CONE GRAPHENE VALLEYTRONICS: 2D honeycomb carbon lattice displaying linear
 
 ### DiscoFloorTiles
 
-`Scene2D/DiscoFloorTiles.frag` · type=normal · mood=bright,aggressive,psychedelic · complexity=3
+`Scene2D/DiscoFloorTiles.frag` · type=normal · mood=bright,aggressive,psychedelic · complexity=5
 
 DISCO FLOOR TILES: a lit dance floor seen from a low angle, glass tiles glowing from beneath, running away into a dark club with a mirror ceiling that repeats the floor overhead. Every tile column is a spectrum band and each tile lights by how high that band reaches -- the floor is an equaliser you could dance on -- and the kick pulses the whole grid. Haze hangs over it and catches the glow. Nothing moves but the lig…
 
@@ -1722,7 +1722,7 @@ DISCO FLOOR TILES: a lit dance floor seen from a low angle, glass tiles glowing 
 
 ### DiscoGodrays
 
-`Scene2D/DiscoGodrays.frag` · type=normal · mood=aggressive,dark · complexity=2
+`Scene2D/DiscoGodrays.frag` · type=normal · mood=aggressive,dark · complexity=9
 
 Adapted from "Disco Godrays" by \@kishimisu (2023) — https://www.shadertoy.com/view/Dt33RS Original licensed CC BY-NC-SA 4.0 (attribution kept per the licence). Kaleidoscopic volumetric "godrays": a densely-sampled raymarch through a mirror-ball fold of a tube + sphere, giving fans of coloured light. Adapted to our engine: * Shadertoy -> ours (gl_FragCoord/resolution/time, GLSL 1.20; round() -> floor(x+.5); the blue-…
 
@@ -1749,7 +1749,7 @@ DOUBLE MIRROR WAVE: two wavy mirrors facing each other -- the photograph sits be
 
 ### DoubleSlitElectronBuildup
 
-`Scene2D/DoubleSlitElectronBuildup.frag` · type=normal · mood=dark,calm,psychedelic · complexity=2
+`Scene2D/DoubleSlitElectronBuildup.frag` · type=normal · mood=dark,calm,psychedelic · complexity=7
 
 DOUBLE SLIT ELECTRON BUILD-UP: the experiment that shows one particle at a time still interferes, in two panels. On the left, seen from above: the gun, the barrier with its two slits, and the waves -- plane waves before the barrier, two circular waves after it, crossing into bright and dark rays. On the right, the phosphor screen face on: single electrons arrive as round green dots, each at a place drawn from the int…
 
@@ -1758,7 +1758,7 @@ DOUBLE SLIT ELECTRON BUILD-UP: the experiment that shows one particle at a time 
 
 ### DoyleSpiralTexture
 
-`Scene2D/DoyleSpiralTexture.frag` · type=normal · mood=psychedelic,calm · complexity=2
+`Scene2D/DoyleSpiralTexture.frag` · type=normal · mood=psychedelic,calm · complexity=5
 
 DOYLE SPIRAL TEXTURE: a Doyle spiral -- a packing of circles, each touching six neighbours, winding out from an infinitely small centre in interlocking spiral arms, every circle bigger than the one before; each circle holds its own copy of the photograph (the map is conformal, so every picture keeps its true shape), framed by a thin gold rim; the spiral turns and grows toward us forever. Endless, mirrorable. Audio Re…
 
@@ -1767,7 +1767,7 @@ DOYLE SPIRAL TEXTURE: a Doyle spiral -- a packing of circles, each touching six 
 
 ### DroneDepths
 
-`Scene2D/DroneDepths.frag` · type=normal · mood=calm,dark · complexity=1
+`Scene2D/DroneDepths.frag` · type=normal · mood=calm,dark · complexity=4
 
 An AMBIENT-FIRST primary effect, built for drone / dark-ambient music (no beat dependence at all). Research-informed mappings: swell (slow loudness build) -> luminous breathing + LOOMING zoom (loudness -> expansion/approach); dominantPitch -> vertical drift of the whole nebula (pitch -> elevation); centroid -> brightness / colour temperature; harmonicChange -> slow morphs of the cloud structure. The image is the subs…
 
@@ -1776,7 +1776,7 @@ An AMBIENT-FIRST primary effect, built for drone / dark-ambient music (no beat d
 
 ### DropCoalescence
 
-`Scene2D/DropCoalescence.frag` · type=normal · mood=calm,psychedelic · complexity=2
+`Scene2D/DropCoalescence.frag` · type=normal · mood=calm,psychedelic · complexity=9
 
 DROP COALESCENCE: coloured liquid drops seen from above in a dark dish -- glossy blobs of ink-coloured liquid wander, touch, and flow into each other with a soft neck, their colours mixing where they merge, then pull apart again; each drop is a small lens showing the photograph magnified and bent inside it, with a bright meniscus highlight and a darker rim. The drops' colours come from the photo beneath them. Endless…
 
@@ -1785,7 +1785,7 @@ DROP COALESCENCE: coloured liquid drops seen from above in a dark dish -- glossy
 
 ### DropCountdownVortex
 
-`Scene2D/DropCountdownVortex.frag` · type=normal · mood=psychedelic,aggressive,dark · complexity=2
+`Scene2D/DropCountdownVortex.frag` · type=normal · mood=psychedelic,aggressive,dark · complexity=5
 
 DROP COUNTDOWN VORTEX: a vortex that counts down to the drop. The host predicts the next 8-bar boundary (audioPhraseLeft, seconds); rings of the vortex are spaced one beat apart and slide toward the throat as the boundary nears, tightening and heating with the build-up -- and on the drop they snap shut and the vortex blows out into a bright tube. When no tempo is known the vortex just turns and breathes with the leve…
 
@@ -1794,7 +1794,7 @@ DROP COUNTDOWN VORTEX: a vortex that counts down to the drop. The host predicts 
 
 ### DyedIceMelt
 
-`Scene2D/DyedIceMelt.frag` · type=normal · mood=calm,bright · complexity=2
+`Scene2D/DyedIceMelt.frag` · type=normal · mood=calm,bright · complexity=1
 
 DYED ICE MELT: ice-dyeing seen from above -- a heap of ice crystals sprinkled with powdered dyes melts slowly, and the coloured meltwater seeps outward in crystalline, feathery blooms, the dyes splitting into their component colours along the fronts (a purple breaking into blue and magenta), pooling in intense spots, soaking into a white fabric whose weave shows through. The dye colours come from the photograph. Endl…
 
@@ -1803,7 +1803,7 @@ DYED ICE MELT: ice-dyeing seen from above -- a heap of ice crystals sprinkled wi
 
 ### DysonSphereCollapse
 
-`Scene2D/DysonSphereCollapse.frag` · type=normal · mood=dark,aggressive,space · complexity=4
+`Scene2D/DysonSphereCollapse.frag` · type=normal · mood=dark,aggressive,space · complexity=6
 
 DYSON SPHERE COLLAPSE: A massive metal shell completely encasing a star is suffering a catastrophic structural failure. The enraged star's plasma bursts violently through the shattering metal plates, tearing the megastructure apart in sync with the audio. audioAdvance -> slow rotation/drift of the crumbling sphere audioKick -> massive plasma eruptions blowing off armor plates audioSwell -> blinding internal brightnes…
 
@@ -1812,7 +1812,7 @@ DYSON SPHERE COLLAPSE: A massive metal shell completely encasing a star is suffe
 
 ### EarthriseLunar
 
-`Scene2D/EarthriseLunar.frag` · type=normal · mood=calm,dark,space · complexity=3
+`Scene2D/EarthriseLunar.frag` · type=normal · mood=calm,dark,space · complexity=2
 
 EARTHRISE LUNAR: the Apollo 8 view -- the grey, cratered horizon of the Moon in the foreground, harsh sunlight from the side throwing long black crater shadows, and above it, in the black sky, the Earth half lit: blue oceans, brown-green land, swirling white cloud bands, the thin blue rim of its atmosphere, the night side dark. The Earth rises with the slowness of an orbit and turns; the Moon's surface slides past be…
 
@@ -1821,7 +1821,7 @@ EARTHRISE LUNAR: the Apollo 8 view -- the grey, cratered horizon of the Moon in 
 
 ### EclipseLeafCrescents
 
-`Scene2D/EclipseLeafCrescents.frag` · type=normal · mood=calm,dark,dreamy · complexity=2
+`Scene2D/EclipseLeafCrescents.frag` · type=normal · mood=calm,dark,dreamy · complexity=8
 
 ECLIPSE LEAF CRESCENTS: the ground under a canopy during a partial eclipse. Every gap between the leaves is a pinhole, so the dapples on the ground stop being round and become crescents, all pointing the same way, thinning as the eclipse deepens over the scene arc and filling again. The canopy sways gently on the clock, which moves the dapples; the swell is the daylight, the treble the sparkle on their rims. The phot…
 
@@ -1830,7 +1830,7 @@ ECLIPSE LEAF CRESCENTS: the ground under a canopy during a partial eclipse. Ever
 
 ### EinsteinHatTiling
 
-`Scene2D/EinsteinHatTiling.frag` · type=normal · mood=psychedelic,bright,calm · complexity=2
+`Scene2D/EinsteinHatTiling.frag` · type=normal · mood=psychedelic,bright,calm · complexity=6
 
 EINSTEIN HAT TILING: the aperiodic monotile of 2023 -- one shape that tiles the plane but never repeats. The hat is a polykite: eight kites of the [3.4.6.4] kite lattice; here the lattice of kites is drawn exactly and grouped into hats by a deterministic aperiodic rule of the kite index (a substitution-flavoured hash), so the picture reads as the hat tiling: every hat a piece of the photo, the reflected hats lit by c…
 
@@ -1839,7 +1839,7 @@ EINSTEIN HAT TILING: the aperiodic monotile of 2023 -- one shape that tiles the 
 
 ### EinsteinRingGravitationalLens
 
-`Scene2D/EinsteinRingGravitationalLens.frag` · type=normal · mood=bright,psychedelic,space · complexity=3
+`Scene2D/EinsteinRingGravitationalLens.frag` · type=normal · mood=bright,psychedelic,space · complexity=5
 
 EINSTEIN RING GRAVITATIONAL LENS: Relativistic gravitational lensing around a massive rotating dark-matter singularity. Background photo textures are warped into Einstein rings, arc mirages, and multiple relativistic images with Doppler frequency shifts and gravitational wave metric ripples. audioAdvance -> rotates relativistic accretion and frame dragging audioKick -> fires gravitational metric compression shockwave…
 
@@ -1848,7 +1848,7 @@ EINSTEIN RING GRAVITATIONAL LENS: Relativistic gravitational lensing around a ma
 
 ### EmbroideryHoopStitches
 
-`Scene2D/EmbroideryHoopStitches.frag` · type=normal · mood=bright,calm,dreamy · complexity=3
+`Scene2D/EmbroideryHoopStitches.frag` · type=normal · mood=bright,calm,dreamy · complexity=6
 
 EMBROIDERY HOOP STITCHES: a hoop of linen with a design worked in it. Satin stitch fills the petals in bands of parallel floss, stem stitch draws the lines, and French knots sit as round beads in the centres. The design is worked over the scene arc, stitch after stitch, and the needle with its trailing thread sits at the working point. The chroma classes pick the flosses; the treble is the silk sheen, which is what m…
 
@@ -1866,7 +1866,7 @@ END OF THE UNIVERSE: the heat death of the cosmos, and the last thing left in it
 
 ### EpoxyWaves
 
-`Scene2D/EpoxyWaves.frag` · type=normal · mood=calm,bright · complexity=2
+`Scene2D/EpoxyWaves.frag` · type=normal · mood=calm,bright · complexity=1
 
 EPOXY WAVES: resin-art ocean -- the classic poured-epoxy seascape seen from above: bands of deep blue, teal and turquoise resin with white lacy "foam" cells along the wave fronts, the waves slowly washing in over a sandy shore made of the photograph, retreating and washing in again, the lacing reforming each time. Endless, mirrorable. Audio Reactivity (structure, not only light): audioAdvance -> the waves wash in and…
 
@@ -1875,7 +1875,7 @@ EPOXY WAVES: resin-art ocean -- the classic poured-epoxy seascape seen from abov
 
 ### ErodedLand
 
-`Scene2D/ErodedLand.frag` · type=normal · mood=calm,bright,dreamy · complexity=2
+`Scene2D/ErodedLand.frag` · type=normal · mood=calm,bright,dreamy · complexity=1
 
 ERODED LAND: a slow glide over a worn mountain range -- long smooth valleys and sharp crests (fractal terrain whose octaves are damped where the slope is already steep, the classic erosion look), grass on the valley floors, bare rock on the flanks, snow on the ridges, lakes in the hollows, the far ranges fading into blue haze. The sun wheels slowly overhead, so the relief keeps turning in the light. This scene used t…
 
@@ -1884,7 +1884,7 @@ ERODED LAND: a slow glide over a worn mountain range -- long smooth valleys and 
 
 ### EscherRelativityMatrix
 
-`Scene2D/EscherRelativityMatrix.frag` · type=normal · mood=bright · complexity=3
+`Scene2D/EscherRelativityMatrix.frag` · type=normal · mood=bright · complexity=1
 
 PENROSE ENDLESS STAIRCASE: a real Escher, drawn as an isometric lithograph after "Ascending and Descending". Four flights of steps (7-4-7-4) close into an impossible loop whose screen polygon closes EXACTLY — the two short flights secretly swallow the accumulated height while still showing ascending risers. Glowing walkers climb the loop forever, driven by the music. audioAdvance -> walkers march around the impossibl…
 
@@ -1893,7 +1893,7 @@ PENROSE ENDLESS STAIRCASE: a real Escher, drawn as an isometric lithograph after
 
 ### EventHorizon
 
-`Scene2D/EventHorizon.frag` · type=normal · mood=dark,aggressive · complexity=3
+`Scene2D/EventHorizon.frag` · type=normal · mood=dark,aggressive · complexity=8
 
 A Schwarzschild black hole with gravitational lensing and a Keplerian accretion disk, integrated per-pixel from the actual light-bending equation rather than an approximation. Each pixel's photon is stepped through d2u/dphi2 = 3 M u^2 - u in its own orbit plane until it escapes, falls in, or crosses the disk; the photo becomes the background starfield, so lensed pixels visibly smear the slideshow around the shadow. a…
 
@@ -1902,7 +1902,7 @@ A Schwarzschild black hole with gravitational lensing and a Keplerian accretion 
 
 ### EventHorizonSingularityPlunge
 
-`Scene2D/EventHorizonSingularityPlunge.frag` · type=normal · mood=psychedelic,dark,aggressive · complexity=2
+`Scene2D/EventHorizonSingularityPlunge.frag` · type=normal · mood=psychedelic,dark,aggressive · complexity=5
 
 EVENT HORIZON SINGULARITY PLUNGE: Relativistic free-fall plunge past the Schwarzschild event horizon into the central singularity with tidal spaghettification, celestial sky compression into a shrinking Einstein circle, and chaotic plasma flares. Audio Reactivity: audioAdvance -> drives continuous relativistic gravitational plunge progression audioKick -> flashes singularity core & triggers tidal force gravitational …
 
@@ -1911,7 +1911,7 @@ EVENT HORIZON SINGULARITY PLUNGE: Relativistic free-fall plunge past the Schwarz
 
 ### ExoplanetOcean
 
-`Scene2D/ExoplanetOcean.frag` · type=normal · mood=calm,dreamy,space · complexity=3
+`Scene2D/ExoplanetOcean.frag` · type=normal · mood=calm,dreamy,space · complexity=4
 
 EXOPLANET OCEAN: A vast, undulating alien ocean under a dark sky dominated by a massive, close gas giant or moon. The water glows with strange bio-luminescence that pulses gently to the audio swells. audioAdvance -> movement of the waves and clouds audioKick -> flashes of bio-luminescence in the wave crests audioSwell -> ambient brightness of the sky and reflection audioChromaHue-> palette offset for the alien water …
 
@@ -1920,7 +1920,7 @@ EXOPLANET OCEAN: A vast, undulating alien ocean under a dark sky dominated by a 
 
 ### ExoplanetRings
 
-`Scene2D/ExoplanetRings.frag` · type=normal · mood=dark,space · complexity=4
+`Scene2D/ExoplanetRings.frag` · type=normal · mood=dark,space · complexity=7
 
 EXOPLANET RINGS: The camera skims closely over the immense, icy ring system of an exoplanet. Massive chunks of ice and rock tumble past, catching the light of a distant star. audioAdvance -> flight speed over the rings audioKick -> flashes from micro-collisions in the rings audioSwell -> ambient brightness of the star and ring dust audioChromaHue-> palette offset for the ice and rock colors Per-activation variety: de…
 
@@ -1929,7 +1929,7 @@ EXOPLANET RINGS: The camera skims closely over the immense, icy ring system of a
 
 ### FanVaultFlight
 
-`Scene2D/FanVaultFlight.frag` · type=normal · mood=calm,dark,dreamy · complexity=3
+`Scene2D/FanVaultFlight.frag` · type=normal · mood=calm,dark,dreamy · complexity=2
 
 FAN VAULT FLIGHT: gliding slowly along the nave of a late-Gothic chapel, after King's College, under its fan vault -- from every wall shaft an inverted cone of stone spreads upward like a fan, ribbed like a palm leaf, the fans meeting overhead in a lace of ribs and bosses. The ribs are drawn in light, lines of it running out along the fans in the rhythm; tall windows glow dimly between the shafts, and far ahead, rows…
 
@@ -1938,7 +1938,7 @@ FAN VAULT FLIGHT: gliding slowly along the nave of a late-Gothic chapel, after K
 
 ### FastRadioBurstDispersion
 
-`Scene2D/FastRadioBurstDispersion.frag` · type=normal · mood=space,dark,psychedelic · complexity=2
+`Scene2D/FastRadioBurstDispersion.frag` · type=normal · mood=space,dark,psychedelic · complexity=10
 
 FAST RADIO BURST DISPERSION: a radio telescope under a sky that is the dynamic spectrum -- frequency up the sky, time across it, the live spectrogram scrolling steadily. Fast radio bursts arrive as dispersed chirps: a burst that left its galaxy at one instant reaches us high frequencies first, low last, so it draws a sweeping curve (delay ~ DM / f^2) across the sky. Bursts are launched on the scene clock (each with i…
 
@@ -1956,7 +1956,7 @@ FATA MORGANA MIRAGE: a ship on the horizon seen through layered air -- the mirag
 
 ### FeedbackKaleidoscope
 
-`Scene2D/FeedbackKaleidoscope.frag` · type=normal · mood=psychedelic,dark · complexity=2
+`Scene2D/FeedbackKaleidoscope.frag` · type=normal · mood=psychedelic,dark · complexity=6
 
 Analog VIDEO FEEDBACK, kaleidoscope edition: last frame's fully composited image (`texPrevFrame`) is folded through an n-way mirror, slightly zoomed and rotated, decayed, and blended back in -- like a camera pointed at its own monitor, but the monitor is a kaleidoscope. Because the fold applies again to an already-folded previous frame every single frame, detail recursively compounds into ever-finer symmetric structu…
 
@@ -1974,7 +1974,7 @@ FERROELECTRIC DOMAIN VORTEX ARRAY: 2D square array of nanoscale electric polariz
 
 ### FerrofluidHexMatrix
 
-`Scene2D/FerrofluidHexMatrix.frag` · type=normal · mood=dark,aggressive · complexity=4
+`Scene2D/FerrofluidHexMatrix.frag` · type=normal · mood=dark,aggressive · complexity=10
 
 FERROFLUID HEX MATRIX: Raymarched magnetic liquid ferrofluid pool rising into sharp Rosensweig instability cone spikes in a dynamic hexagonal magnetic lattice, with viscous fluid vortex advection, oily rainbow thin-film sheen, and audio-reactive magnetic field flux.
 
@@ -1983,7 +1983,7 @@ FERROFLUID HEX MATRIX: Raymarched magnetic liquid ferrofluid pool rising into sh
 
 ### FerrofluidMagneticSpikeSurge
 
-`Scene2D/FerrofluidMagneticSpikeSurge.frag` · type=normal · mood=psychedelic,dreamy,dark · complexity=2
+`Scene2D/FerrofluidMagneticSpikeSurge.frag` · type=normal · mood=psychedelic,dreamy,dark · complexity=5
 
 FERROFLUID MAGNETIC SPIKE SURGE: Liquid metal ferrofluid Rosensweig normal-field instability with explosive magnetic spike eruptions, mirror-chrome liquid reflections, and high-luminance specular field glints. Audio Reactivity: audioAdvance -> drives continuous magnetic dipole rotation & spike growth audioKick -> flashes magnetic spike tips & triggers ferrofluid eruption shockwaves audioCentroid-> modulates ferroflui…
 
@@ -1992,7 +1992,7 @@ FERROFLUID MAGNETIC SPIKE SURGE: Liquid metal ferrofluid Rosensweig normal-field
 
 ### FerrofluidSpikeForest
 
-`Scene2D/FerrofluidSpikeForest.frag` · type=normal · mood=dark,aggressive · complexity=4
+`Scene2D/FerrofluidSpikeForest.frag` · type=normal · mood=dark,aggressive · complexity=6
 
 FERROFLUID SPIKE FOREST: 3D raymarched pool of magnetic liquid ferrofluid rising into sharp Rosensweig instability spikes under dynamic electromagnets. Metallic liquid specular reflections, oily rainbow thin-film sheen, and photo projection. audioSubBass -> pulls ferrofluid spikes up into tall sharp needles audioKick -> triggers magnetic pulse shockwaves across the fluid pool audioCentroid-> shifts thin-film oil-slic…
 
@@ -2001,7 +2001,7 @@ FERROFLUID SPIKE FOREST: 3D raymarched pool of magnetic liquid ferrofluid rising
 
 ### FerrohydrodynamicRosensweigSpikes
 
-`Scene2D/FerrohydrodynamicRosensweigSpikes.frag` · type=normal · mood=dark,aggressive · complexity=4
+`Scene2D/FerrohydrodynamicRosensweigSpikes.frag` · type=normal · mood=dark,aggressive · complexity=5
 
 FERROHYDRODYNAMIC ROSENSWEIG SPIKES: Normal-field Rosensweig instability in magnetic ferrofluids. Critical magnetic threshold breaks liquid surface into a highly ordered hexagonal array of needle-sharp ferrofluid spikes with specular oily sheen and magnetic field texturing. audioAdvance -> navigates magnetic spike tip precession & ferrofluid surface wave modulation audioKick -> flashes magnetic field pulse sharp spik…
 
@@ -2010,7 +2010,7 @@ FERROHYDRODYNAMIC ROSENSWEIG SPIKES: Normal-field Rosensweig instability in magn
 
 ### FerroSpikes
 
-`Scene2D/FerroSpikes.frag` · type=normal · mood=aggressive,dark · complexity=2
+`Scene2D/FerroSpikes.frag` · type=normal · mood=aggressive,dark · complexity=5
 
 Black ferrofluid standing up into the Rosensweig spike lattice under a magnet, rendered as reflective liquid metal rather than a colour ramp. texFerro (from the CfxFerro Swift-Hohenberg compute pass) supplies a height field; its gradient gives the surface normal used for specular highlights and a photo reflection sampled along that normal, so the fluid mirrors the room it sits in. audioKick and audioHigh punch up the…
 
@@ -2019,7 +2019,7 @@ Black ferrofluid standing up into the Rosensweig spike lattice under a magnet, r
 
 ### FiberOpticChandelier
 
-`Scene2D/FiberOpticChandelier.frag` · type=normal · mood=dark,psychedelic,dreamy · complexity=2
+`Scene2D/FiberOpticChandelier.frag` · type=normal · mood=dark,psychedelic,dreamy · complexity=5
 
 FIBER OPTIC CHANDELIER: a vast fibre-optic chandelier seen from directly below, in the dark stairwell it hangs in -- the handrails of the floors above ringing it, smaller and smaller toward the top -- a thousand glass strands spraying out from a glowing hub like a dandelion clock, sagging as they fan out, each ending in a point of light. Pulses of light run outward through the strands, and the tips glow in the colour…
 
@@ -2028,7 +2028,7 @@ FIBER OPTIC CHANDELIER: a vast fibre-optic chandelier seen from directly below, 
 
 ### FidenzaStrokes
 
-`Scene2D/FidenzaStrokes.frag` · type=normal · mood=calm,bright · complexity=2
+`Scene2D/FidenzaStrokes.frag` · type=normal · mood=calm,bright · complexity=4
 
 FIDENZA STROKES: fat curving ribbons of paint laid side by side along a flow field, in the manner of generative flow-field art -- each ribbon follows the field's curves, broken into strokes of different lengths with rounded ends, the strokes coloured from the photograph's palette, with a thin dark gap between neighbours and a subtle painted texture inside each stroke. The field slowly bends, so the whole composition …
 
@@ -2037,7 +2037,7 @@ FIDENZA STROKES: fat curving ribbons of paint laid side by side along a flow fie
 
 ### FireflyForestSync
 
-`Scene2D/FireflyForestSync.frag` · type=normal · mood=dark,dreamy,psychedelic · complexity=2
+`Scene2D/FireflyForestSync.frag` · type=normal · mood=dark,dreamy,psychedelic · complexity=7
 
 FIREFLY FOREST SYNC: a forest on a June night where the fireflies flash in synchrony -- among the dark trunks and ferns thousands of small yellow-green lights, and their flashes run through the woods in waves: a burst sweeps across from one side, the whole forest lights up in a ripple of points, then darkness, then the next wave. The trunks stand in layers receding into blue night mist, the ferns catch the glow. The …
 
@@ -2046,7 +2046,7 @@ FIREFLY FOREST SYNC: a forest on a June night where the fireflies flash in synch
 
 ### FireWhirlTornado
 
-`Scene2D/FireWhirlTornado.frag` · type=normal · mood=aggressive,dark · complexity=4
+`Scene2D/FireWhirlTornado.frag` · type=normal · mood=aggressive,dark · complexity=7
 
 FIRE WHIRL TORNADO: Volumetric 3D rotating fire tornado with helical flame column, turbulent soot/ash advection, rising ember sparks, and blackbody thermal radiation gradient with audio-reactive explosive bursts. audioAdvance -> accelerates tornado vortex swirl & thermal updraft audioKick -> triggers explosive fireball detonations in the core audioBass -> widens tornado base and convective vortex reach audioCentroid-…
 
@@ -2064,7 +2064,7 @@ FLAMINGO LAKE AERIAL: an East African soda lake seen from high above -- water st
 
 ### FlowingWires
 
-`Scene2D/FlowingWires.frag` · type=normal · mood=calm,bright · complexity=2
+`Scene2D/FlowingWires.frag` · type=normal · mood=calm,bright · complexity=9
 
 Adapted from "Flowing Wires" by \@kishimisu (2023) — https://www.shadertoy.com/view/DsBczR Original licensed CC BY-NC-SA 4.0 (attribution kept per the licence). A 3D truchet pattern raymarched into interlocking glowing wire loops. Adapted to our engine: * Shadertoy -> ours (gl_FragCoord/resolution/time, GLSL 1.20; round() -> floor(x+.5), the mat2(cos(a+vec4(0,33,11,0))) trick -> a proper rotation). * IMAGE-FORWARD: t…
 
@@ -2073,7 +2073,7 @@ Adapted from "Flowing Wires" by \@kishimisu (2023) — https://www.shadertoy.com
 
 ### Fluid
 
-`Scene2D/Fluid.frag` · type=normal · mood=calm · complexity=1
+`Scene2D/Fluid.frag` · type=normal · mood=calm · complexity=6
 
 _(Vorschau eingeschränkt: Sim-Textur/Mehrpass — Bilder unterschätzen die echte App)_
 
@@ -2093,7 +2093,7 @@ FLUID CHLADNI KALEIDO RESONANCE: Acoustic standing wave modal nodal lines couple
 
 ### FluidChromaMarangoniConvection
 
-`Scene2D/FluidChromaMarangoniConvection.frag` · type=normal · mood=psychedelic,dark · complexity=2
+`Scene2D/FluidChromaMarangoniConvection.frag` · type=normal · mood=psychedelic,dark · complexity=5
 
 FLUID CHROMA MARANGONI CONVECTION: Bénard-Marangoni thermal convection cells (hexagonal thermal upwelling honeycomb) with surface-tension gradient driven droplet bursting, toroidal fluid vortex rings, and psychedelic Chroma diffusion. Audio Reactivity: audioAdvance -> drives continuous thermal advection & Marangoni droplet spread audioKick -> flashes thermal upwelling plume cores & surface tension shockwave audioCent…
 
@@ -2102,7 +2102,7 @@ FLUID CHROMA MARANGONI CONVECTION: Bénard-Marangoni thermal convection cells (h
 
 ### FluidInkMandala
 
-`Scene2D/FluidInkMandala.frag` · type=normal · mood=psychedelic,dreamy,calm · complexity=3
+`Scene2D/FluidInkMandala.frag` · type=normal · mood=psychedelic,dreamy,calm · complexity=5
 
 FLUID INK MANDALA: the Navier-Stokes dye field (texFluid) laid into concentric rings, each ring an n-fold mirror of a wedge of the ink and each ring turning against its neighbours. The ink is real fluid -- it curls, tears and mixes on its own -- and the mandala only orders it, so the ornament is never the same twice. Onsets send ripples out from the centre through every ring; the stereo balance decides which side of …
 
@@ -2111,7 +2111,7 @@ FLUID INK MANDALA: the Navier-Stokes dye field (texFluid) laid into concentric r
 
 ### FluidInkMarble
 
-`Scene2D/FluidInkMarble.frag` · type=normal · mood=dreamy,bright · complexity=3
+`Scene2D/FluidInkMarble.frag` · type=normal · mood=dreamy,bright · complexity=5
 
 FLUID INK MARBLE: 100% Full-screen liquid hydrodynamics & reaction-diffusion surface. Loaded photos act as vibrant floating inks in turbulent vorticity and Curl-Noise fluid streams. audioKick -> radial liquid splash & shockwaves audioFlux -> turbulent swirl generation & fluid vorticity audioValence -> color temperature & palette shifting audioSwell -> fluid expansion & flow velocity Per-activation variety (0 = defaul…
 
@@ -2120,7 +2120,7 @@ FLUID INK MARBLE: 100% Full-screen liquid hydrodynamics & reaction-diffusion sur
 
 ### FluidPhotoMarblingEbru
 
-`Scene2D/FluidPhotoMarblingEbru.frag` · type=normal · mood=calm,bright,dreamy · complexity=3
+`Scene2D/FluidPhotoMarblingEbru.frag` · type=normal · mood=calm,bright,dreamy · complexity=7
 
 FLUID PHOTO MARBLING EBRU: 100% viewport-filling traditional Turkish Ebru paper-marbling simulation. The loaded photo floats as viscous liquid oil pigments on a water bath, combed and raked into elegant peacock plumes, curling swirls, and non-Euclidean fluid streamlines.
 
@@ -2129,7 +2129,7 @@ FLUID PHOTO MARBLING EBRU: 100% viewport-filling traditional Turkish Ebru paper-
 
 ### FlyEyeLensArray
 
-`Scene2D/FlyEyeLensArray.frag` · type=normal · mood=psychedelic,calm · complexity=2
+`Scene2D/FlyEyeLensArray.frag` · type=normal · mood=psychedelic,calm · complexity=6
 
 FLY EYE LENS ARRAY: seeing the photograph through a compound eye -- a honeycomb of hundreds of tiny domed lenses, each showing its own small, slightly shifted and flipped image of the scene, so the picture repeats in a mosaic of little worlds; the whole eye slowly scans across the picture, the lenses glinting with highlights and a thin dark rim between them. Endless, mirrorable. Audio Reactivity (structure, not only …
 
@@ -2138,7 +2138,7 @@ FLY EYE LENS ARRAY: seeing the photograph through a compound eye -- a honeycomb 
 
 ### FoamCoarsening
 
-`Scene2D/FoamCoarsening.frag` · type=normal · mood=calm,bright · complexity=2
+`Scene2D/FoamCoarsening.frag` · type=normal · mood=calm,bright · complexity=4
 
 FOAM COARSENING: a sheet of soap foam in close-up -- polygonal bubbles packed together, their thin walls glowing with interference colours, thick bright Plateau borders where three walls meet, each bubble a lens showing the photograph behind; the foam slowly shifts, small bubbles shrink and big ones grow, walls slide and the pattern rearranges; a second, fainter layer of foam lies behind. Endless, mirrorable. Audio R…
 
@@ -2147,7 +2147,7 @@ FOAM COARSENING: a sheet of soap foam in close-up -- polygonal bubbles packed to
 
 ### FogbowMoor
 
-`Scene2D/FogbowMoor.frag` · type=normal · mood=calm,dreamy,bright · complexity=2
+`Scene2D/FogbowMoor.frag` · type=normal · mood=calm,dreamy,bright · complexity=1
 
 FOGBOW MOOR: an early morning on a moor in fog, the low sun at your back -- and standing in the fog ahead a fogbow: a broad, ghostly white arch, faintly orange on its outer rim and bluish inside, far wider and paler than a rainbow. Beneath it the moor fades away in layers: brown heather and pale grass tussocks close by, dark peat pools mirroring the white sky, a line of birches and a stone wall dissolving into the fo…
 
@@ -2156,7 +2156,7 @@ FOGBOW MOOR: an early morning on a moor in fog, the low sun at your back -- and 
 
 ### FogBridgeTowers
 
-`Scene2D/FogBridgeTowers.frag` · type=normal · mood=calm,bright,dreamy · complexity=2
+`Scene2D/FogBridgeTowers.frag` · type=normal · mood=calm,bright,dreamy · complexity=1
 
 FOG BRIDGE TOWERS: early morning above a bay filled with fog -- a smooth white sea of cloud lying in the strait, and rising out of it the two towers of a great suspension bridge, red-orange steel lit by the low sun, the main cables sweeping in catenaries between them and down into the fog, the thin suspender ropes hanging in rows. Hills stand dark on either side, the far shore's hills floating above the fog. The fog …
 
@@ -2165,7 +2165,7 @@ FOG BRIDGE TOWERS: early morning above a bay filled with fog -- a smooth white s
 
 ### ForaminiferaSpiralShells
 
-`Scene2D/ForaminiferaSpiralShells.frag` · type=normal · mood=calm,dreamy,bright · complexity=3
+`Scene2D/ForaminiferaSpiralShells.frag` · type=normal · mood=calm,dreamy,bright · complexity=6
 
 FORAMINIFERA SPIRAL SHELLS: the chambered shells of forams -- single cells that build a spiral of ever larger chambers. Several shells fill the frame; each grows chamber by chamber over the scene arc (a new chamber inflates smoothly at the aperture), the chambers carry the photo as their calcite wall and are tinted by the chroma class of their index, the pores glint with the treble, and the whole field drifts very sl…
 
@@ -2174,7 +2174,7 @@ FORAMINIFERA SPIRAL SHELLS: the chambered shells of forams -- single cells that 
 
 ### FormantVowelSpace
 
-`Scene2D/FormantVowelSpace.frag` · type=normal · mood=calm,bright,dreamy · complexity=3
+`Scene2D/FormantVowelSpace.frag` · type=normal · mood=calm,bright,dreamy · complexity=7
 
 FORMANT VOWEL SPACE: the vowel chart of phonetics -- the second formant across (high F2 on the left, as the chart is drawn), the first formant down -- with the cardinal vowels as photo blobs at their places. A marker glides to where the spectral shape points (a smoothed centroid and spread read from the spectrogram history, so it never jumps), trailing the recent seconds as a fading path of dots; the blob nearest the…
 
@@ -2183,7 +2183,7 @@ FORMANT VOWEL SPACE: the vowel chart of phonetics -- the second formant across (
 
 ### FourierEpicycleDraw
 
-`Scene2D/FourierEpicycleDraw.frag` · type=normal · mood=calm,dreamy,psychedelic · complexity=3
+`Scene2D/FourierEpicycleDraw.frag` · type=normal · mood=calm,dreamy,psychedelic · complexity=2
 
 FOURIER EPICYCLE DRAW: a chain of rotating circles -- each turning at its own harmonic, its radius the energy of a spectrum band -- whose last point draws a closed curve, the way a Fourier series traces a shape. The pen runs on the scene clock; the trace it leaves is the curve of the last cycle, fading; the circles' radii are the bands (smoothed by the drawing itself), the kick lights the pen, the treble sparkles the…
 
@@ -2192,7 +2192,7 @@ FOURIER EPICYCLE DRAW: a chain of rotating circles -- each turning at its own ha
 
 ### FractalBloom
 
-`Scene2D/FractalBloom.frag` · type=normal · mood=bright · complexity=1
+`Scene2D/FractalBloom.frag` · type=normal · mood=bright · complexity=10
 
 Adapted from kishimisu's GLSL-tutorial fractal (2023) — https://www.shadertoy.com/view/mtyGWy (palette by iq: iquilezles.org/articles/palettes) Original licensed CC BY-NC-SA 4.0 (attribution kept per the licence). A glowing fractal "flower": a domain-repeating kaleidoscope of bright rings. Adapted to our engine: * Shadertoy -> ours (gl_FragCoord/resolution/time, GLSL 1.20). * IMAGE-FORWARD: the source image tiles int…
 
@@ -2201,7 +2201,7 @@ Adapted from kishimisu's GLSL-tutorial fractal (2023) — https://www.shadertoy.
 
 ### FractalFlame
 
-`Scene2D/FractalFlame.frag` · type=normal · mood=psychedelic,bright,aggressive · complexity=2
+`Scene2D/FractalFlame.frag` · type=normal · mood=psychedelic,bright,aggressive · complexity=7
 
 Displays and grades the density field produced by the compute-shader chaos-game fractal flame. The GPU chaos game (CfxFlame compute pass) does the actual fractal iteration into texFlame; this pass only tone-maps it: a 6-tap bloom, a filmic knee, a bounded hue rotation, and a peek of the photo showing through the flame's dark gaps. audioBeat and audioLevel drive a beat-pumped zoom and a slow rotation around the frame …
 
@@ -2210,7 +2210,7 @@ Displays and grades the density field produced by the compute-shader chaos-game 
 
 ### FractalKIFS
 
-`Scene2D/FractalKIFS.frag` · type=normal · mood=aggressive,psychedelic · complexity=1
+`Scene2D/FractalKIFS.frag` · type=normal · mood=aggressive,psychedelic · complexity=9
 
 Kaleidoscopic Iterated Function System (fold + rotate + scale): the source image is sampled THROUGH the folded IFS coordinate, so the picture itself is shattered into an endlessly self-similar fractal kaleidoscope, with the orbit-trap structure glowing through it. The *image* is the star (was a dark procedural base with the picture only inside bright bits). audioMode -> bends the c-vector's real part (minor = sharp/e…
 
@@ -2228,7 +2228,7 @@ FRACTAL MORPHO DENDRITE: A whole COLONY of growing bio-luminescent coral & elect
 
 ### FractalPortalRecursionHall
 
-`Scene2D/FractalPortalRecursionHall.frag` · type=normal · mood=psychedelic,dark · complexity=2
+`Scene2D/FractalPortalRecursionHall.frag` · type=normal · mood=psychedelic,dark · complexity=3
 
 FRACTAL PORTAL RECURSION HALL: Infinite recursive corridor of nested affine portal gates. Each portal frame rotates and scales into the next transfinite portal chamber with glowing elliptical laser rings and chromatic feedback echoes. Audio Reactivity: audioAdvance -> drives continuous forward plunge through the recursive portals audioKick -> flashes portal event horizons & triggers dimensional zoom leaps audioCentro…
 
@@ -2237,7 +2237,7 @@ FRACTAL PORTAL RECURSION HALL: Infinite recursive corridor of nested affine port
 
 ### FrankenthalerSoakStain
 
-`Scene2D/FrankenthalerSoakStain.frag` · type=normal · mood=calm,bright · complexity=2
+`Scene2D/FrankenthalerSoakStain.frag` · type=normal · mood=calm,bright · complexity=1
 
 FRANKENTHALER SOAK STAIN: colour-field painting by soak-staining -- thinned washes of colour bleed into raw canvas in great translucent pools, their edges darker where the pigment gathered as the pool dried, the canvas weave showing through, overlapping pools mixing like watercolour; the pools slowly spread, shift and fade into new ones. The colours come from the photograph. Endless, mirrorable. Audio Reactivity (str…
 
@@ -2246,7 +2246,7 @@ FRANKENTHALER SOAK STAIN: colour-field painting by soak-staining -- thinned wash
 
 ### FrescoRestorationReveal
 
-`Scene2D/FrescoRestorationReveal.frag` · type=normal · mood=dark,calm,dreamy · complexity=2
+`Scene2D/FrescoRestorationReveal.frag` · type=normal · mood=dark,calm,dreamy · complexity=7
 
 FRESCO RESTORATION REVEAL: a chapel fresco black with centuries of soot, and the restorer at work. Beneath the grime: a lapis-blue vault strewn with gold stars and two painted panels in red-and-cream Cosmati frames, the photo rendered in them as soft tempera, with plaster cracks and a few losses. Over the scene arc the sponge works along the wall in a serpentine, row after row -- its path is continuous, and the colou…
 
@@ -2255,7 +2255,7 @@ FRESCO RESTORATION REVEAL: a chapel fresco black with centuries of soot, and the
 
 ### FrostFernsSunrise
 
-`Scene2D/FrostFernsSunrise.frag` · type=normal · mood=calm,bright,dreamy · complexity=3
+`Scene2D/FrostFernsSunrise.frag` · type=normal · mood=calm,bright,dreamy · complexity=1
 
 FROST FERNS SUNRISE: ice flowers on a window pane at dawn. Feathery frost ferns branch across the glass from its edges -- main stems, side barbs, finer barbs again, each crystal catching the low sun -- and through the clear patches between them glows the sunrise outside: orange at the horizon, rose, then pale blue, a blurred row of snowy roofs. Where the sun stands behind the glass the frost lights up gold and sparkl…
 
@@ -2264,7 +2264,7 @@ FROST FERNS SUNRISE: ice flowers on a window pane at dawn. Feathery frost ferns 
 
 ### FrozenMethaneLakes
 
-`Scene2D/FrozenMethaneLakes.frag` · type=normal · mood=calm,dreamy,space · complexity=3
+`Scene2D/FrozenMethaneLakes.frag` · type=normal · mood=calm,dreamy,space · complexity=4
 
 FROZEN METHANE LAKES: The surface of an icy moon (like Titan). Still, alien lakes of liquid methane reflect the colossal, ringed gas giant hanging in the sky. Gentle alien winds and distant ring-glints pulse to the audio. audioAdvance -> gentle panning across the landscape audioKick -> flashes from meteor impacts on the rings audioSwell -> ambient brightness of the rings and reflection audioChromaHue-> palette offset…
 
@@ -2273,7 +2273,7 @@ FROZEN METHANE LAKES: The surface of an icy moon (like Titan). Still, alien lake
 
 ### FuturisticCityFlight
 
-`Scene2D/FuturisticCityFlight.frag` · type=normal · mood=bright,aggressive · complexity=4
+`Scene2D/FuturisticCityFlight.frag` · type=normal · mood=bright,aggressive · complexity=10
 
 FUTURISTIC CITY FLIGHT: a low, steady flight down one street of a night city. Towers line both sides of the canyon, their windows lit in a pattern that holds still, neon signs on the street walls, traffic lights streaming through the canyon above the car, fog closing the far end. REBUILT. The previous versions raymarched a city-block lattice with a corridor cut through it, and three things about that never worked (re…
 
@@ -2282,7 +2282,7 @@ FUTURISTIC CITY FLIGHT: a low, steady flight down one street of a night city. To
 
 ### GalacticAccretionStreamFlight
 
-`Scene2D/GalacticAccretionStreamFlight.frag` · type=normal · mood=psychedelic,aggressive,dark · complexity=2
+`Scene2D/GalacticAccretionStreamFlight.frag` · type=normal · mood=psychedelic,aggressive,dark · complexity=4
 
 GALACTIC ACCRETION STREAM FLIGHT: Relativistic helical flight along magnetic flux tubes directly into a supermassive black hole quasar accretion disk with synchrotron radiation jets, Doppler-boosted plasma streams, and event horizon plunges. Audio Reactivity: audioAdvance -> drives continuous high-velocity helical plunge trajectory audioKick -> flashes accretion disk reconnection bursts & jet shockwaves audioCentroid…
 
@@ -2291,7 +2291,7 @@ GALACTIC ACCRETION STREAM FLIGHT: Relativistic helical flight along magnetic flu
 
 ### GalacticCoreBlackHole
 
-`Scene2D/GalacticCoreBlackHole.frag` · type=normal · mood=dark,aggressive,space · complexity=5
+`Scene2D/GalacticCoreBlackHole.frag` · type=normal · mood=dark,aggressive,space · complexity=9
 
 GALACTIC CORE BLACK HOLE: A fast-paced orbit around Sagittarius A* at the center of the galaxy. Extreme density of fast-moving stars zooming past, heavily distorted by the immense gravitational lensing of the black hole. audioAdvance -> camera orbital speed audioKick -> flashes from stars being torn apart / accretion flares audioSwell -> brightness of the dense galactic core background audioChromaHue-> palette offset…
 
@@ -2300,7 +2300,7 @@ GALACTIC CORE BLACK HOLE: A fast-paced orbit around Sagittarius A* at the center
 
 ### GalaxyCollision
 
-`Scene2D/GalaxyCollision.frag` · type=normal · mood=dark,dreamy,space · complexity=2
+`Scene2D/GalaxyCollision.frag` · type=normal · mood=dark,dreamy,space · complexity=9
 
 Displays the compute N-body simulation of two colliding galaxies (32k gravitating bodies) as a star field with a tight stellar glow and a wide galactic haze. texNBody holds the simulated star field; this pass adds a two-scale halo, a near one for star glow and a far one for galactic dust haze, and grades the result. The photo appears only as a heavily darkened deep-space backdrop showing through the sparser regions. …
 
@@ -2309,7 +2309,7 @@ Displays the compute N-body simulation of two colliding galaxies (32k gravitatin
 
 ### GaltonBoardBeads
 
-`Scene2D/GaltonBoardBeads.frag` · type=normal · mood=dark,calm,psychedelic · complexity=3
+`Scene2D/GaltonBoardBeads.frag` · type=normal · mood=dark,calm,psychedelic · complexity=7
 
 GALTON BOARD BEADS: the bean machine. Round beads drop through a triangular lattice of pegs, bouncing left or right at each row, and pile up in the bins below; over the scene arc the heap in the bins grows into the bell curve, which is the whole point of the machine. Every bead falls on its own continuous phase, so beads are always in flight and none ever appears from nothing. The bins take their colour from the spec…
 
@@ -2327,7 +2327,7 @@ GAMMA RAY BURST: The most powerful explosion in the universe. We are looking alm
 
 ### GasGiantAtmosphere
 
-`Scene2D/GasGiantAtmosphere.frag` · type=normal · mood=calm,dreamy,bright,space · complexity=10
+`Scene2D/GasGiantAtmosphere.frag` · type=normal · mood=calm,dreamy,bright,space · complexity=1
 
 GAS GIANT ATMOSPHERE: cruising low over the cloud deck of a gas giant. Billowing tops in the planet's own zone-and-belt colours (cream, ochre, rust) run to a warm hazy horizon; convective towers rise here and there, lit by a low sun with long shadows. Above, the planet's rings arch across a blue-violet sky beside a crescent moon. Storm cells deep in the deck light up from inside with the kick. sceneTime/sceneAdvance …
 
@@ -2336,7 +2336,7 @@ GAS GIANT ATMOSPHERE: cruising low over the cloud deck of a gas giant. Billowing
 
 ### GasGiantCloudCity
 
-`Scene2D/GasGiantCloudCity.frag` · type=normal · mood=calm,dreamy,space · complexity=3
+`Scene2D/GasGiantCloudCity.frag` · type=normal · mood=calm,dreamy,space · complexity=6
 
 GAS GIANT CLOUD CITY: Floating, sleek megastructures drifting deep within the incredibly thick, turbulent atmosphere of a gas giant. Massive lightning storms illuminate the dense clouds from within, syncing to the beat. audioAdvance -> flight speed through the heavy clouds audioKick -> massive lightning flashes in the clouds audioSwell -> ambient glow of the floating city structures audioChromaHue-> palette offset fo…
 
@@ -2345,7 +2345,7 @@ GAS GIANT CLOUD CITY: Floating, sleek megastructures drifting deep within the in
 
 ### GemInclusionFlight
 
-`Scene2D/GemInclusionFlight.frag` · type=normal · mood=dreamy,calm,psychedelic · complexity=2
+`Scene2D/GemInclusionFlight.frag` · type=normal · mood=dreamy,calm,psychedelic · complexity=1
 
 GEM INCLUSION FLIGHT: gliding through the inside of an emerald -- a deep green crystal world lit from behind, full of the inclusions a gemologist calls its garden: fine needles of rutile crossing at angles, wispy veils of liquid fingerprints, tiny three-phase cavities with bubbles inside, glittering flakes of mica, and the crystal's facets seen from within as bright planes where the light reflects. Everything drifts …
 
@@ -2363,7 +2363,7 @@ GLACIER CREVASSE DESCENT: a steady descent into a blue crevasse. The walls are o
 
 ### GlassblowerGather
 
-`Scene2D/GlassblowerGather.frag` · type=normal · mood=dark,calm,dreamy · complexity=2
+`Scene2D/GlassblowerGather.frag` · type=normal · mood=dark,calm,dreamy · complexity=4
 
 GLASSBLOWER GATHER: a gather of molten glass on the end of the blowpipe, turning steadily on the scene clock, inflating with the swell (the breath), and cooling from white-orange toward the colour it will keep -- the photo, which shows through the glass as its pattern once the glow has gone. The kick is the reheat in the glory hole (a flash of orange), the treble the glints on the glass, the bass the furnace mouth gl…
 
@@ -2372,7 +2372,7 @@ GLASSBLOWER GATHER: a gather of molten glass on the end of the blowpipe, turning
 
 ### GlasshouseIronRibs
 
-`Scene2D/GlasshouseIronRibs.frag` · type=normal · mood=bright,calm,dreamy · complexity=3
+`Scene2D/GlasshouseIronRibs.frag` · type=normal · mood=bright,calm,dreamy · complexity=4
 
 GLASSHOUSE IRON RIBS: inside a Victorian palm house, looking up along the barrel vault. Iron ribs and glazing bars converge toward the ridge, the panes carry the sky and the garden beyond (the photo), condensation drops slide down the glass on the scene clock, and the sun crosses the vault over the scene arc so the whole cast pattern travels. The bass is the warm haze under the roof. Camera fixed, looking up. Audio R…
 
@@ -2381,7 +2381,7 @@ GLASSHOUSE IRON RIBS: inside a Victorian palm house, looking up along the barrel
 
 ### GlassStack
 
-`Scene2D/GlassStack.frag` · type=normal · mood=calm,bright,dreamy · complexity=3
+`Scene2D/GlassStack.frag` · type=normal · mood=calm,bright,dreamy · complexity=1
 
 GLASS STACK: a sculpture of coloured glass slabs on a white light table -- thick panes of cobalt, amber, ruby, emerald and violet glass stacked and leaning at angles, turning very slowly on a turntable. Where the panes overlap their colours multiply into deeper ones; their edges glow bright where light travels inside them; and the light from a lamp above passes through them and throws coloured shadows across the whit…
 
@@ -2390,7 +2390,7 @@ GLASS STACK: a sculpture of coloured glass slabs on a white light table -- thick
 
 ### GlitchMatrixHypercube
 
-`Scene2D/GlitchMatrixHypercube.frag` · type=normal · mood=aggressive,bright,psychedelic · complexity=3
+`Scene2D/GlitchMatrixHypercube.frag` · type=normal · mood=aggressive,bright,psychedelic · complexity=6
 
 GLITCH MATRIX HYPERCUBE: 4D Tesseract projection intersecting 3D/2D space, combined with cybernetic data moshing, digital glitch slices, ASCII/Matrix data streams, chromatic aberration, and multi-planar photo texture projection. audioAdvance -> drives 4D hyper-rotations across XY/XW/YW planes audioKick -> triggers temporal buffer slice glitches & matrix flash audioSpectrum-> modulates 4D hyper-facet tessellation dept…
 
@@ -2399,7 +2399,7 @@ GLITCH MATRIX HYPERCUBE: 4D Tesseract projection intersecting 3D/2D space, combi
 
 ### GlowwormCaveThreads
 
-`Scene2D/GlowwormCaveThreads.frag` · type=normal · mood=dark,calm,dreamy · complexity=3
+`Scene2D/GlowwormCaveThreads.frag` · type=normal · mood=dark,calm,dreamy · complexity=9
 
 GLOWWORM CAVE THREADS: the ceiling of a glow-worm cave -- a galaxy of blue-green lights, each a larva at the top of a hanging silk thread strung with sticky beads (round), the still water below mirroring it all. The lights glow with their spectrum band (each worm a band), the beads catch the treble, a drip from the ceiling on the kick sends a ring across the water; the photo is the wet rock. Camera fixed in the boat.…
 
@@ -2408,7 +2408,7 @@ GLOWWORM CAVE THREADS: the ceiling of a glow-worm cave -- a galaxy of blue-green
 
 ### GrandPrismaticAerial
 
-`Scene2D/GrandPrismaticAerial.frag` · type=normal · mood=bright,dreamy,psychedelic · complexity=2
+`Scene2D/GrandPrismaticAerial.frag` · type=normal · mood=bright,dreamy,psychedelic · complexity=1
 
 GRAND PRISMATIC AERIAL: a great hot spring seen from high above -- a pool of impossible deep blue in the middle, ringed by turquoise, then bands of green, yellow, orange and rust where the heat-loving microbes grow, their mats running out from the rim in fine radial fingers across the pale sinter terraces. A thin boardwalk crosses the white crust. Steam rises off the hot water and drifts across in slow veils. The cam…
 
@@ -2417,7 +2417,7 @@ GRAND PRISMATIC AERIAL: a great hot spring seen from high above -- a pool of imp
 
 ### GranularCloudSynth
 
-`Scene2D/GranularCloudSynth.frag` · type=normal · mood=dark,psychedelic,dreamy · complexity=3
+`Scene2D/GranularCloudSynth.frag` · type=normal · mood=dark,psychedelic,dreamy · complexity=8
 
 GRANULAR CLOUD SYNTH: a cloud of grains scattered over the scrolling spectrogram -- each grain a round snippet of the photo at its pitch height (the band on the y axis), drifting left with the history on the scene clock, its brightness the energy of its band; the density of the cloud rises with the swell (grains fade in by a smooth threshold), the treble is the grain sparkle, the kick a pulse of the grain rims. Camer…
 
@@ -2426,7 +2426,7 @@ GRANULAR CLOUD SYNTH: a cloud of grains scattered over the scrolling spectrogram
 
 ### GrapheneDiracPlasmonics
 
-`Scene2D/GrapheneDiracPlasmonics.frag` · type=normal · mood=bright · complexity=3
+`Scene2D/GrapheneDiracPlasmonics.frag` · type=normal · mood=bright · complexity=9
 
 GRAPHENE DIRAC PLASMONICS: 100% viewport-filling 2D honeycomb carbon graphene lattice visualizing Dirac cones, topological quantum Hall edge states, localized electronic wavepacket hops, and plasmonic resonances.
 
@@ -2435,7 +2435,7 @@ GRAPHENE DIRAC PLASMONICS: 100% viewport-filling 2D honeycomb carbon graphene la
 
 ### GravitationalWaveInterferometer
 
-`Scene2D/GravitationalWaveInterferometer.frag` · type=normal · mood=bright,calm,dreamy,space · complexity=3
+`Scene2D/GravitationalWaveInterferometer.frag` · type=normal · mood=bright,calm,dreamy,space · complexity=8
 
 GRAVITATIONAL WAVE INTERFEROMETER: Laser interferometer optical cavity (LIGO/Virgo) with orthogonal Fabry-Pérot resonator arms and central beam splitter. Quadrupolar spacetime metric strains (h_+, h_x) modulate optical interference fringes, photon storage cavities, and dark-port photodiode signals. audioAdvance -> cycles laser cavity phase resonance & arm length modulation audioKick -> passes a binary black-hole insp…
 
@@ -2444,7 +2444,7 @@ GRAVITATIONAL WAVE INTERFEROMETER: Laser interferometer optical cavity (LIGO/Vir
 
 ### GravityLensingZoom
 
-`Scene2D/GravityLensingZoom.frag` · type=normal · mood=space,psychedelic,bright · complexity=2
+`Scene2D/GravityLensingZoom.frag` · type=normal · mood=space,psychedelic,bright · complexity=3
 
 GRAVITY LENSING ZOOM: an endless zoom into the photo through a chain of gravitational lenses. The picture lives in log-polar space and repeats every zoom period, so the fall never ends and never wraps visibly; along the way point-mass lenses sit at fixed places in that space, each bending the picture into an Einstein ring and a pair of arcs. The lens masses swell slowly with the music; the bass lights the rings, noth…
 
@@ -2462,7 +2462,7 @@ GUILLOCHE ENGRAVING: the banknote rosette. Nested guilloche curves -- r(theta) =
 
 ### GyroidalInterferenceKaleido
 
-`Scene2D/GyroidalInterferenceKaleido.frag` · type=normal · mood=psychedelic,bright · complexity=2
+`Scene2D/GyroidalInterferenceKaleido.frag` · type=normal · mood=psychedelic,bright · complexity=6
 
 GYROIDAL INTERFERENCE KALEIDO: Dual counter-rotating triply periodic minimal surface (TPMS) Gyroid lattices creating dynamic moiré mandalas, phase-slip wave interference, and glowing non-Euclidean fluid channels. Audio Reactivity: audioAdvance -> drives continuous Gyroid phase translation & rotation audioKick -> flashes Gyroid nodal surfaces & phase-slip shockwaves audioCentroid-> modulates Gyroid spatial frequency &…
 
@@ -2471,7 +2471,7 @@ GYROIDAL INTERFERENCE KALEIDO: Dual counter-rotating triply periodic minimal sur
 
 ### GyroidTriplyPeriodicLabyrinth
 
-`Scene2D/GyroidTriplyPeriodicLabyrinth.frag` · type=normal · mood=bright,psychedelic · complexity=4
+`Scene2D/GyroidTriplyPeriodicLabyrinth.frag` · type=normal · mood=bright,psychedelic · complexity=5
 
 GYROID TRIPLY PERIODIC LABYRINTH: Raymarched infinite non-Euclidean minimal surface (TPMS) dividing 3D space into two interpenetrating congruent labyrinths. Seamless camera flight through twisting titanium and crystal passages with caustic reflections, photo mapping, and audio-reactive wall breathing. audioAdvance -> navigates camera through the infinite gyroid tunnels audioBass -> modulates gyroid isosurface thresho…
 
@@ -2489,7 +2489,7 @@ HABOOB DUST WALL: a wall of dust a kilometre high rolling over a desert town. Th
 
 ### Halftone
 
-`Scene2D/Halftone.frag` · type=normal · mood=calm · complexity=2
+`Scene2D/Halftone.frag` · type=normal · mood=calm · complexity=6
 
 Renders the photograph as a genuine four-colour halftone print: separate CMYK screens, each rotated to its own classic press angle (15, 75, 0 and 45 degrees) so the dot grids never form a moire. The image is converted to CMYK with under-colour removal, then each channel is screened independently before being recombined subtractively onto a warm paper tint. audioKick coarsens the screen frequency and widens a colour-p…
 
@@ -2498,7 +2498,7 @@ Renders the photograph as a genuine four-colour halftone print: separate CMYK sc
 
 ### HarmonicChangeLightning
 
-`Scene2D/HarmonicChangeLightning.frag` · type=normal · mood=dark,calm,dreamy · complexity=2
+`Scene2D/HarmonicChangeLightning.frag` · type=normal · mood=dark,calm,dreamy · complexity=6
 
 HARMONIC CHANGE LIGHTNING: a still night over a dark sea. Nothing moves but the clouds' slow drift -- until the harmony changes: then a bolt strikes, and its branching is the chroma vector, twelve limbs whose lengths are the twelve pitch classes, so every chord change draws a different tree of light. The bolt lights the clouds from within and mirrors in the water. All light, no motion; the camera never moves. Audio R…
 
@@ -2507,7 +2507,7 @@ HARMONIC CHANGE LIGHTNING: a still night over a dark sea. Nothing moves but the 
 
 ### HarmonicRings
 
-`Scene2D/HarmonicRings.frag` · type=KaleidoscopeBase · mood=calm,bright · complexity=1
+`Scene2D/HarmonicRings.frag` · type=KaleidoscopeBase · mood=calm,bright · complexity=9
 
 6 concentric Gaussian glow rings, one per frequency band. A visual spectrograph tuned for drone and dark ambient music: overtone structures, sub-bass rumble, and metallic harmonics all appear as distinct glowing rings against a near-black field. Band → ring radius mapping (inner to outer): Ring 0 r≈0.10 subBass (20-60 Hz) – inner void-blue pulse Ring 1 r≈0.24 bass (60-150 Hz) – drone fundamental Ring 2 r≈0.41 lowMid …
 
@@ -2516,7 +2516,7 @@ HARMONIC CHANGE LIGHTNING: a still night over a dark sea. Nothing moves but the 
 
 ### HarmonicSeriesStrings
 
-`Scene2D/HarmonicSeriesStrings.frag` · type=normal · mood=calm,dreamy,bright · complexity=2
+`Scene2D/HarmonicSeriesStrings.frag` · type=normal · mood=calm,dreamy,bright · complexity=9
 
 HARMONIC SERIES STRINGS: a monochord and its overtones. Eight strings span the frame, the n-th sounding the n-th harmonic; each shows its standing wave as a lit envelope (n antinodes) -- never the fast vibration itself, only the envelope, so nothing flickers -- and the envelope's brightness is the energy of the band that harmonic falls in. The nodes are round beads of light; the bridge glows with the bass; the kick p…
 
@@ -2534,7 +2534,7 @@ HARTUNG SCRATCHES: Hans Hartung's late scratched paintings -- a field of luminou
 
 ### HawkingRadiationEvaporation
 
-`Scene2D/HawkingRadiationEvaporation.frag` · type=normal · mood=bright,psychedelic · complexity=3
+`Scene2D/HawkingRadiationEvaporation.frag` · type=normal · mood=bright,psychedelic · complexity=9
 
 HAWKING RADIATION EVAPORATION: Micro-black hole event horizon displaying quantum tunneling evaporation. Virtual particle-antiparticle pairs separate at the horizon boundary, emitting thermal Hawking photons with extreme gravitational redshift, photon sphere light deflection, and photo mapping. audioAdvance -> accelerates quantum horizon entanglement & particle flux audioKick -> triggers explosive micro-black hole eva…
 
@@ -2543,7 +2543,7 @@ HAWKING RADIATION EVAPORATION: Micro-black hole event horizon displaying quantum
 
 ### HeatHazeOverFlames
 
-`Scene2D/HeatHazeOverFlames.frag` · type=normal · mood=energetic,warm · complexity=2
+`Scene2D/HeatHazeOverFlames.frag` · type=normal · mood=energetic,warm · complexity=3
 
 HEAT HAZE OVER FLAMES: the photograph seen through the shimmering air above a row of flames -- along the bottom of each band low blue and orange flames flicker, and above them the hot air ripples and wavers, bending the picture behind in rising, wobbling streaks, the distortion strongest just above the flames and calming higher up; the bands repeat so the plane is endless. Mirrorable. Audio Reactivity (structure, not…
 
@@ -2552,7 +2552,7 @@ HEAT HAZE OVER FLAMES: the photograph seen through the shimmering air above a ro
 
 ### HeliosphericCurrentSheet
 
-`Scene2D/HeliosphericCurrentSheet.frag` · type=normal · mood=bright,psychedelic · complexity=3
+`Scene2D/HeliosphericCurrentSheet.frag` · type=normal · mood=bright,psychedelic · complexity=9
 
 HELIOSPHERIC CURRENT SHEET: Rotating Parker spiral "ballerina skirt" current sheet separating opposite magnetic polarities throughout the solar system. Wavy sector boundary crossings, solar wind stream turbulence, and undulating plasma membrane photo reflections. audioAdvance -> rotates Parker spiral sector boundaries & solar wind audioKick -> flashes interplanetary magnetic reconnection sheets audioBass -> undulates…
 
@@ -2561,7 +2561,7 @@ HELIOSPHERIC CURRENT SHEET: Rotating Parker spiral "ballerina skirt" current she
 
 ### HexagonalLaserMatrixTunnel
 
-`Scene2D/HexagonalLaserMatrixTunnel.frag` · type=normal · mood=psychedelic,aggressive,bright · complexity=2
+`Scene2D/HexagonalLaserMatrixTunnel.frag` · type=normal · mood=psychedelic,aggressive,bright · complexity=5
 
 HEXAGONAL LASER MATRIX TUNNEL: High-speed flight through a 6-sided mirror tunnel laced with intersecting 3D laser projector beams, opening geometric light portals, and high-voltage laser matrix scanning grids. Audio Reactivity: audioAdvance -> drives continuous forward flight speed through the laser tunnel audioKick -> flashes laser portal gates & triggers radial matrix beam bursts audioCentroid-> modulates laser gri…
 
@@ -2570,7 +2570,7 @@ HEXAGONAL LASER MATRIX TUNNEL: High-speed flight through a 6-sided mirror tunnel
 
 ### HexKaleido
 
-`Scene2D/HexKaleido.frag` · type=normal · mood=psychedelic,bright · complexity=1
+`Scene2D/HexKaleido.frag` · type=normal · mood=psychedelic,bright · complexity=10
 
 Adapted from an untitled Shadertoy hex-kaleidoscope — https://www.shadertoy.com/view/Xljczw (author not specified on the page; adapted under the site's standard terms). A layered hexagonal kaleidoscope: each iteration re-tiles the plane into hexagons and rings glow at a shifting radius, giving a jewel-like radiating lattice. Adapted to our engine: GLSL 1.20 (gl_FragCoord/resolution/time), jump-free audio motion (the …
 
@@ -2579,7 +2579,7 @@ Adapted from an untitled Shadertoy hex-kaleidoscope — https://www.shadertoy.co
 
 ### HigherDimensionAscension
 
-`Scene2D/HigherDimensionAscension.frag` · type=normal · mood=calm,dreamy,space · complexity=3
+`Scene2D/HigherDimensionAscension.frag` · type=normal · mood=calm,dreamy,space · complexity=6
 
 HIGHER DIMENSION ASCENSION: Breaking through the veil of 3D space into a mind-bending 4D reality. Geometry folds into itself in impossible ways, constantly shifting and morphing. Audio kicks cause sudden dimensional shifts and structural reconfigurations. audioAdvance -> continuous folding of the higher-dimensional geometry audioKick -> intense structural shifts and color inversions audioSwell -> blinding, divine glo…
 
@@ -2588,7 +2588,7 @@ HIGHER DIMENSION ASCENSION: Breaking through the veil of 3D space into a mind-be
 
 ### HilbertSpaceFillingCurveZoom
 
-`Scene2D/HilbertSpaceFillingCurveZoom.frag` · type=normal · mood=psychedelic,dark,calm · complexity=2
+`Scene2D/HilbertSpaceFillingCurveZoom.frag` · type=normal · mood=psychedelic,dark,calm · complexity=8
 
 HILBERT SPACE FILLING CURVE: a true Hilbert curve (order 7, one unbroken path through 16,384 cells) drawn as a neon tube on a dark ground, its colour running through the spectrum along the path, so the curve's nested U-shapes read as nested colour regions. Bright comets travel along the path, each trailing a fading tail, and show how the one line winds through every cell. The view drifts slowly over the curve. The ea…
 
@@ -2597,7 +2597,7 @@ HILBERT SPACE FILLING CURVE: a true Hilbert curve (order 7, one unbroken path th
 
 ### HitomezashiStitch
 
-`Scene2D/HitomezashiStitch.frag` · type=normal · mood=calm,bright · complexity=2
+`Scene2D/HitomezashiStitch.frag` · type=normal · mood=calm,bright · complexity=3
 
 HITOMEZASHI STITCH: Japanese hitomezashi sashiko embroidery, endlessly re-stitching itself -- white running stitches on indigo cloth along every row and column, each line starting on or off the grid according to a pattern, so that the dashes lock together into surprising closed shapes and labyrinths; the row patterns slowly change (lines fade out and are re-stitched offset), and the regions they enclose are tinted by…
 
@@ -2606,7 +2606,7 @@ HITOMEZASHI STITCH: Japanese hitomezashi sashiko embroidery, endlessly re-stitch
 
 ### HoliColourCloud
 
-`Scene2D/HoliColourCloud.frag` · type=normal · mood=bright,psychedelic,dreamy · complexity=4
+`Scene2D/HoliColourCloud.frag` · type=normal · mood=bright,psychedelic,dreamy · complexity=1
 
 HOLI COLOUR CLOUD: clouds of coloured powder thrown into low sun, billowing in slow motion and lit from behind so their edges burn and their cores glow. Several plumes in different colours roll into each other and mix where they meet; fine grains glitter in the back light. The plumes keep their own slow billow; the music lights them: each plume glows with its band, and the kick sends a warm surge through the back lig…
 
@@ -2615,7 +2615,7 @@ HOLI COLOUR CLOUD: clouds of coloured powder thrown into low sun, billowing in s
 
 ### HologramGauze
 
-`Scene2D/HologramGauze.frag` · type=normal · mood=dark,dreamy · complexity=2
+`Scene2D/HologramGauze.frag` · type=normal · mood=dark,dreamy · complexity=3
 
 HOLOGRAM GAUZE: the Pepper's-ghost trick of a modern stage show -- an invisible gauze stretched across a dark stage, and on it, floating in mid-air, a giant dancer of light, arms raised, her gown dissolving into light below, filled with the photograph: its bright parts glowing, its dark parts thinning out, fine scan lines running through it, a cold halo around it. It turns slowly in space as if it stood there in thre…
 
@@ -2624,7 +2624,7 @@ HOLOGRAM GAUZE: the Pepper's-ghost trick of a modern stage show -- an invisible 
 
 ### HolographicDiffractionGratingMandala
 
-`Scene2D/HolographicDiffractionGratingMandala.frag` · type=normal · mood=psychedelic,bright · complexity=2
+`Scene2D/HolographicDiffractionGratingMandala.frag` · type=normal · mood=psychedelic,bright · complexity=7
 
 HOLOGRAPHIC DIFFRACTION GRATING MANDALA: Triple crossed laser interference gratings at 120 degrees creating a hyper-sharp holographic security seal mandala with rainbow diffraction sparkle, micro-etched fractal rings, and laser nodes. Audio Reactivity: audioAdvance -> drives continuous grating phase translation & rainbow rotation audioKick -> flashes holographic laser nodes & expands diffraction bandwidth audioCentro…
 
@@ -2633,7 +2633,7 @@ HOLOGRAPHIC DIFFRACTION GRATING MANDALA: Triple crossed laser interference grati
 
 ### HoneyFold
 
-`Scene2D/HoneyFold.frag` · type=normal · mood=calm,dreamy · complexity=2
+`Scene2D/HoneyFold.frag` · type=normal · mood=calm,dreamy · complexity=1
 
 HONEY FOLD: a thick stream of honey falling onto itself, seen close and backlit -- the viscous rope coils and folds into loops on a growing mound, the golden light shining through it, bright where it is thin and deep amber where it is thick, with glossy highlights along every fold and tiny air bubbles caught inside. Many ropes side by side fill the frame, each coiling at its own rhythm, so the whole picture is an end…
 
@@ -2642,7 +2642,7 @@ HONEY FOLD: a thick stream of honey falling onto itself, seen close and backlit 
 
 ### HopfFibrationStreamlines
 
-`Scene2D/HopfFibrationStreamlines.frag` · type=normal · mood=psychedelic,dark · complexity=2
+`Scene2D/HopfFibrationStreamlines.frag` · type=normal · mood=psychedelic,dark · complexity=7
 
 HOPF FIBRATION STREAMLINES: 4D-to-3D Hopf Fibration (S3 -> S2) raymarching. Luminous interlocking linked fiber tori, relativistic circular streamlines, and high-velocity electric pulse cascades. Audio Reactivity: audioAdvance -> drives continuous circular stream flow along fiber links audioKick -> flashes fiber linkage nodes & expands fiber tube radius audioCentroid-> modulates fiber density & fine stream resolution …
 
@@ -2660,7 +2660,7 @@ HOT WAX BLOBS TOP: looking down into a giant lava lamp -- soft, glowing blobs of
 
 ### HourglassSandFall
 
-`Scene2D/HourglassSandFall.frag` · type=normal · mood=calm,dark,dreamy · complexity=3
+`Scene2D/HourglassSandFall.frag` · type=normal · mood=calm,dark,dreamy · complexity=2
 
 HOURGLASS SAND FALL: a glass running through over the scene arc. The upper bulb empties as a cone whose surface sinks, the stream falls through the waist as a thin column of round grains, and the lower heap grows into a mound with a crater where the stream lands. All three are one function of the arc, so the glass fills and empties without a cut. The lamp behind it rides the swell, the treble is the grains catching t…
 
@@ -2669,7 +2669,7 @@ HOURGLASS SAND FALL: a glass running through over the scene arc. The upper bulb 
 
 ### HurricaneEyeWall
 
-`Scene2D/HurricaneEyeWall.frag` · type=normal · mood=aggressive,dark,dreamy · complexity=3
+`Scene2D/HurricaneEyeWall.frag` · type=normal · mood=aggressive,dark,dreamy · complexity=1
 
 HURRICANE EYE WALL: standing in the eye. All around, the stadium of the eyewall rises -- a tilted amphitheatre of cloud turning steadily on the scene clock -- and above, the calm blue sky. The wall's height is the swell, lightning flickers in it on the kick, the sea below heaves with the bass, and the photo is the cloud texture of the wall. Camera fixed, looking across the eye. Audio Reactivity: sceneAdvance -> the w…
 
@@ -2678,7 +2678,7 @@ HURRICANE EYE WALL: standing in the eye. All around, the stadium of the eyewall 
 
 ### HyperbolicEscherCircleLimit
 
-`Scene2D/HyperbolicEscherCircleLimit.frag` · type=normal · mood=psychedelic,bright · complexity=2
+`Scene2D/HyperbolicEscherCircleLimit.frag` · type=normal · mood=psychedelic,bright · complexity=3
 
 HYPERBOLIC ESCHER CIRCLE LIMIT: Conformal Poincaré disk tessellation with infinite tile density toward the boundary and dynamic Möbius inversions. Fills the screen with breathing non-Euclidean hyperbolic symmetries. Audio Reactivity: audioAdvance -> continuous rotation & hyperbolic space translation audioKick -> inward/outward inversion shockwave audioSubBass -> pulses the hyperbolic curvature & boundary breathing au…
 
@@ -2687,7 +2687,7 @@ HYPERBOLIC ESCHER CIRCLE LIMIT: Conformal Poincaré disk tessellation with infin
 
 ### HyperbolicEscherFish
 
-`Scene2D/HyperbolicEscherFish.frag` · type=normal · mood=psychedelic,calm,bright · complexity=3
+`Scene2D/HyperbolicEscherFish.frag` · type=normal · mood=psychedelic,calm,bright · complexity=8
 
 HYPERBOLIC ESCHER FISH: Escher's Circle Limit with the fish actually swimming. The Poincare disc is tiled by a {p,q} polygon; in every chamber a fish (body, tail, eye) is drawn from the same fundamental-domain coordinates, alternating light and dark by chamber parity. The shoal swims toward the rim: a hyperbolic translation by one polygon step is a symmetry of the tiling, so the swim is periodic and its wrap invisibl…
 
@@ -2696,7 +2696,7 @@ HYPERBOLIC ESCHER FISH: Escher's Circle Limit with the fish actually swimming. T
 
 ### HyperbolicHoneycombTessellation
 
-`Scene2D/HyperbolicHoneycombTessellation.frag` · type=normal · mood=bright,psychedelic · complexity=3
+`Scene2D/HyperbolicHoneycombTessellation.frag` · type=normal · mood=bright,psychedelic · complexity=4
 
 HYPERBOLIC HONEYCOMB TESSELLATION: Poincaré disk model of a 7-fold {7,3} hyperbolic honeycomb tiling. Non-Euclidean SL(2, R) Möbius translations, exponential boundary tile packing, and glowing hyperbolic circular arcs. Audio Reactivity: audioAdvance -> drives continuous non-Euclidean hyperbolic geodesic translation audioKick -> flashes hyperbolic vertex nodes & boundary shockwaves audioCentroid-> modulates 7-fold sym…
 
@@ -2705,7 +2705,7 @@ HYPERBOLIC HONEYCOMB TESSELLATION: Poincaré disk model of a 7-fold {7,3} hyperb
 
 ### HyperbolicKaleidoscope
 
-`Scene2D/HyperbolicKaleidoscope.frag` · type=normal · mood=psychedelic,bright · complexity=3
+`Scene2D/HyperbolicKaleidoscope.frag` · type=normal · mood=psychedelic,bright · complexity=7
 
 HYPERBOLIC KALEIDOSCOPE: a kaleidoscope folded in the Poincare disc. A flat kaleidoscope has p mirrors meeting at one point; this one reflects across the edges of a regular {p,q} polygon of the hyperbolic plane, so infinitely many chambers crowd toward the rim, each a smaller copy of the last. The camera drives toward the rim forever: a hyperbolic translation by exactly one polygon step is a symmetry of the tiling, s…
 
@@ -2714,7 +2714,7 @@ HYPERBOLIC KALEIDOSCOPE: a kaleidoscope folded in the Poincare disc. A flat kale
 
 ### HyperbolicKnotFlight
 
-`Scene2D/HyperbolicKnotFlight.frag` · type=normal · mood=psychedelic,aggressive,dark · complexity=2
+`Scene2D/HyperbolicKnotFlight.frag` · type=normal · mood=psychedelic,aggressive,dark · complexity=7
 
 HYPERBOLIC KNOT FLIGHT: High-G 3D roller-coaster ride along a parametric (p, q) torus knot curve with Frenet-Serret camera banking, concentric neon plasma rings, reflective mirror-chamber walls, and dynamic velocity boosts. Audio Reactivity: audioAdvance -> drives continuous roller coaster forward progress along the knot audioKick -> accelerates flight velocity in loopings & flashes plasma rings audioCentroid-> modul…
 
@@ -2723,7 +2723,7 @@ HYPERBOLIC KNOT FLIGHT: High-G 3D roller-coaster ride along a parametric (p, q) 
 
 ### HyperbolicMetamaterialSpacetime
 
-`Scene2D/HyperbolicMetamaterialSpacetime.frag` · type=normal · mood=psychedelic,dark · complexity=4
+`Scene2D/HyperbolicMetamaterialSpacetime.frag` · type=normal · mood=psychedelic,dark · complexity=5
 
 HYPERBOLIC METAMATERIAL SPACETIME: Anisotropic dielectric tensor metamaterial emulating an effective (2+1)D Minkowski spacetime with hyperbolic dispersion relations. Light rays trace relativistic null geodesics around artificial singularities, forming nested hyperbolic resonance cones and chromatic phase-fronts. audioAdvance -> navigates through anisotropic spacetime layers audioBass -> bends dielectric principal ten…
 
@@ -2732,7 +2732,7 @@ HYPERBOLIC METAMATERIAL SPACETIME: Anisotropic dielectric tensor metamaterial em
 
 ### HyperbolicPenroseZoomAbyss
 
-`Scene2D/HyperbolicPenroseZoomAbyss.frag` · type=normal · mood=psychedelic,bright,aggressive · complexity=2
+`Scene2D/HyperbolicPenroseZoomAbyss.frag` · type=normal · mood=psychedelic,bright,aggressive · complexity=3
 
 HYPERBOLIC PENROSE ZOOM ABYSS: Infinite logarithmic scale dive into a 5-fold Penrose kite-and-dart aperiodic tiling. Continuous golden ratio deflation subdivisions, self-similar multi-octave zoom blending, and glowing gold-metallic tile borders. Audio Reactivity: audioAdvance -> drives continuous infinite zoom progression into Penrose tiles audioKick -> flashes Penrose vertex nodes & triggers deflation scale bursts a…
 
@@ -2741,7 +2741,7 @@ HYPERBOLIC PENROSE ZOOM ABYSS: Infinite logarithmic scale dive into a 5-fold Pen
 
 ### HyperbolicPoincareTunnel
 
-`Scene2D/HyperbolicPoincareTunnel.frag` · type=normal · mood=bright,psychedelic · complexity=4
+`Scene2D/HyperbolicPoincareTunnel.frag` · type=normal · mood=bright,psychedelic · complexity=8
 
 HYPERBOLIC POINCARE TUNNEL: 100% viewport-filling infinite flight down a non-Euclidean tunnel whose cross-section is an {8,3} hyperbolic Poincare disk. The tunnel walls are paved with conformal self-similar tiles of the loaded photo with hyperbolic circle reflections.
 
@@ -2750,7 +2750,7 @@ HYPERBOLIC POINCARE TUNNEL: 100% viewport-filling infinite flight down a non-Euc
 
 ### HyperbolicTilingPolyhedralFlight
 
-`Scene2D/HyperbolicTilingPolyhedralFlight.frag` · type=normal · mood=psychedelic,aggressive,dark · complexity=2
+`Scene2D/HyperbolicTilingPolyhedralFlight.frag` · type=normal · mood=psychedelic,aggressive,dark · complexity=7
 
 HYPERBOLIC TILING POLYHEDRAL FLIGHT: 3D Raymarching flight through non-Euclidean curved dodecahedral honeycombs in hyperbolic 3-space (H^3). Endless grand cathedral arches, relativistic curvature warping, and glowing struts. Audio Reactivity: audioAdvance -> continuous forward flight trajectory through hyperbolic arches audioKick -> flashes polyhedral facet vertex nodes & shockwave burst audioCentroid-> modulates str…
 
@@ -2759,7 +2759,7 @@ HYPERBOLIC TILING POLYHEDRAL FLIGHT: 3D Raymarching flight through non-Euclidean
 
 ### HyperCube
 
-`Scene2D/HyperCube.frag` · type=normal · mood=psychedelic,bright · complexity=2
+`Scene2D/HyperCube.frag` · type=normal · mood=psychedelic,bright · complexity=8
 
 Infinity-mirror cube (a la the Hyperspace Lighting Co. "HyperCube"): the source image is wrapped onto the walls of an endlessly receding square tunnel, so you fly INTO the picture through glowing cube frames that flash on the beat. A counter-rotating inner cube outline and a vanishing-point glow complete the illusion. The *image* is the star (was a 4% tint). The tunnel lurches forward on the beat (integrated advance)…
 
@@ -2768,7 +2768,7 @@ Infinity-mirror cube (a la the Hyperspace Lighting Co. "HyperCube"): the source 
 
 ### HyperDimensionalTesseractTunnel
 
-`Scene2D/HyperDimensionalTesseractTunnel.frag` · type=normal · mood=aggressive,bright,psychedelic · complexity=4
+`Scene2D/HyperDimensionalTesseractTunnel.frag` · type=normal · mood=aggressive,bright,psychedelic · complexity=6
 
 HYPER DIMENSIONAL TESSERACT TUNNEL: 100% viewport-filling 4D hypercube lattice rotating simultaneously across all 6 orthogonal Euclidean planes (XY, XZ, XW, YZ, YW, ZW) and projected into a 3D perspective warp tunnel. Infinite recursive interior mirror reflections, glowing neon hyper-edges, multi-angle photo texturing on 4D hyper-faces, and hyperspace warp flow.
 
@@ -2777,7 +2777,7 @@ HYPER DIMENSIONAL TESSERACT TUNNEL: 100% viewport-filling 4D hypercube lattice r
 
 ### HyperlaneJunction
 
-`Scene2D/HyperlaneJunction.frag` · type=normal · mood=dark,calm,space · complexity=4
+`Scene2D/HyperlaneJunction.frag` · type=normal · mood=dark,calm,space · complexity=8
 
 HYPERLANE JUNCTION: A massive cosmic traffic hub for FTL travel. Neon-lit super-highways of light intersect in the void. Glowing pulses (ships) zip past along these lanes at incredible speeds. audioAdvance -> camera flight speed through the junction audioKick -> flashes from ships entering/exiting FTL audioSwell -> brightness of the hyperlanes audioChromaHue-> palette offset for the neon lanes Per-activation variety:…
 
@@ -2786,7 +2786,7 @@ HYPERLANE JUNCTION: A massive cosmic traffic hub for FTL travel. Neon-lit super-
 
 ### HyperspaceGridToroidTube
 
-`Scene2D/HyperspaceGridToroidTube.frag` · type=normal · mood=psychedelic,bright,aggressive · complexity=2
+`Scene2D/HyperspaceGridToroidTube.frag` · type=normal · mood=psychedelic,bright,aggressive · complexity=9
 
 HYPERSPACE GRID TOROID TUBE: High-speed 3D flight within the curved lumen of a giant toroidal geometry tube. Pulsing kinetic neon polygon scales, curving camera bankings, and high-frequency energy grid waves. Audio Reactivity: audioAdvance -> drives continuous forward flight progression inside the toroid audioKick -> flashes polygon scale grid vertices & energy pulses audioCentroid-> modulates kinetic scale tessellat…
 
@@ -2795,7 +2795,7 @@ HYPERSPACE GRID TOROID TUBE: High-speed 3D flight within the curved lumen of a g
 
 ### HyperspaceKaleidoscopicMatrix
 
-`Scene2D/HyperspaceKaleidoscopicMatrix.frag` · type=normal · mood=psychedelic,dark · complexity=2
+`Scene2D/HyperspaceKaleidoscopicMatrix.frag` · type=normal · mood=psychedelic,dark · complexity=9
 
 HYPERSPACE KALEIDOSCOPIC MATRIX: Digital cyber code rain streams folded into an 8-fold kaleidoscopic hyper-mandala with high-velocity glyph cascades, iridescent gold/cyan/magenta quantum glyph transitions, and kick flash bursts. Audio Reactivity: audioAdvance -> drives continuous code rain streaming & mandala rotation audioKick -> flashes cyber glyph matrices into intense gold/white bursts audioCentroid-> modulates c…
 
@@ -2804,7 +2804,7 @@ HYPERSPACE KALEIDOSCOPIC MATRIX: Digital cyber code rain streams folded into an 
 
 ### HyperToroidalRollerCoaster
 
-`Scene2D/HyperToroidalRollerCoaster.frag` · type=normal · mood=psychedelic,aggressive,dark · complexity=2
+`Scene2D/HyperToroidalRollerCoaster.frag` · type=normal · mood=psychedelic,aggressive,dark · complexity=5
 
 HYPER TOROIDAL ROLLER COASTER: Extreme 3D Frenet-Serret camera tracking ride along a complex (3, 7)-torus knot roller-coaster track in hyperspace. Neon laser track rails, high-G bankings and loopings, and chromatic tunnel speed streaks. Audio Reactivity: audioAdvance -> drives continuous forward roller-coaster velocity along the knot audioKick -> flashes track rail support gantries & triggers inversion burst audioCen…
 
@@ -2813,7 +2813,7 @@ HYPER TOROIDAL ROLLER COASTER: Extreme 3D Frenet-Serret camera tracking ride alo
 
 ### HyperWarpTunnel
 
-`Scene2D/HyperWarpTunnel.frag` · type=normal · mood=aggressive,dark,psychedelic · complexity=3
+`Scene2D/HyperWarpTunnel.frag` · type=normal · mood=aggressive,dark,psychedelic · complexity=9
 
 HYPER WARP TUNNEL: Full-screen infinite warp tunnel with dynamic polar coordinates, multi-frequency FBM domain warping, and high-velocity flight. The wall is a photo sample DIVIDED BY THE PHOTO'S OWN MEAN (imgDC), so the picture supplies texture and colour while the tunnel supplies its own light: a dark nebula and a bright portrait now light the same tunnel. audioAdvance -> continuous high-speed forward progression (…
 
@@ -2822,7 +2822,7 @@ HYPER WARP TUNNEL: Full-screen infinite warp tunnel with dynamic polar coordinat
 
 ### IcebergWaterline
 
-`Scene2D/IcebergWaterline.frag` · type=normal · mood=calm,dreamy,bright · complexity=2
+`Scene2D/IcebergWaterline.frag` · type=normal · mood=calm,dreamy,bright · complexity=1
 
 ICEBERG WATERLINE: the split view of an over-under photograph -- the camera half in the water. Above the waterline a white berg under a pale polar sky, its faces lit by a low sun, blue in the crevasses; below it the nine tenths, vast and glowing turquoise, fading into the deep blue, sun rays slanting down through the water, round bubbles rising along the ice. The waterline itself wobbles as a bright meniscus with the…
 
@@ -2831,7 +2831,7 @@ ICEBERG WATERLINE: the split view of an over-under photograph -- the camera half
 
 ### IceCaveBlueArch
 
-`Scene2D/IceCaveBlueArch.frag` · type=normal · mood=calm,bright,dreamy · complexity=4
+`Scene2D/IceCaveBlueArch.frag` · type=normal · mood=calm,bright,dreamy · complexity=2
 
 ICE CAVE BLUE ARCH: inside a glacier cave. The walls and ceiling are glacial ice lit from outside, glowing an impossible sapphire blue, scalloped by meltwater into shallow cups whose rims catch the light; dark bands of rock dust run through the ice; at the far end the mouth of the cave opens onto white daylight. A trickle of meltwater glints on the floor. The camera drifts slowly toward the mouth and back (bounded); …
 
@@ -2840,7 +2840,7 @@ ICE CAVE BLUE ARCH: inside a glacier cave. The walls and ceiling are glacial ice
 
 ### IceCrack
 
-`Scene2D/IceCrack.frag` · type=normal · mood=calm,bright · complexity=3
+`Scene2D/IceCrack.frag` · type=normal · mood=calm,bright · complexity=5
 
 The photograph seen through a sheet of ice that keeps shattering into Voronoi shards, each shard refracting the picture like a separate slab of glass. The crack lines use a two-pass Voronoi, a true bisector distance rather than the naive F2-F1 gap, so every crack keeps an even width even where three shards meet. audioKick and audioSubBass drive a shatter impulse that widens the cracks and pushes each shard outward fr…
 
@@ -2849,7 +2849,7 @@ The photograph seen through a sheet of ice that keeps shattering into Voronoi sh
 
 ### IkedaDataStreams
 
-`Scene2D/IkedaDataStreams.frag` · type=normal · mood=energetic,dark · complexity=2
+`Scene2D/IkedaDataStreams.frag` · type=normal · mood=energetic,dark · complexity=9
 
 IKEDA DATA STREAMS: a data-art cascade in the spirit of Ryoji Ikeda -- the whole view is ruled into horizontal lanes of racing barcodes, binary strips and thin bars flickering at different speeds and resolutions, black and white with rare accents of colour; the lanes' density and brightness are driven by the photograph scanned line by line, so its picture emerges ghostlike from the data flood. Endless, mirrorable. Au…
 
@@ -2858,7 +2858,7 @@ IKEDA DATA STREAMS: a data-art cascade in the spirit of Ryoji Ikeda -- the whole
 
 ### IlluminatedManuscript
 
-`Scene2D/IlluminatedManuscript.frag` · type=normal · mood=calm,bright,dreamy · complexity=3
+`Scene2D/IlluminatedManuscript.frag` · type=normal · mood=calm,bright,dreamy · complexity=1
 
 ILLUMINATED MANUSCRIPT: a vellum page with a gilded initial and a border of vines. The vines grow along the margins over the scene arc (each tendril extends smoothly, its leaves opening as it passes), the gold leaf catches the light as it turns on the swell (a slow sweep of a highlight across the gilding), the miniature in the initial is the photo, the text lines are ruled script; the kick is the flash of the gold, t…
 
@@ -2867,7 +2867,7 @@ ILLUMINATED MANUSCRIPT: a vellum page with a gilded initial and a border of vine
 
 ### ImpressionistDabs
 
-`Scene2D/ImpressionistDabs.frag` · type=normal · mood=calm,bright · complexity=2
+`Scene2D/ImpressionistDabs.frag` · type=normal · mood=calm,bright · complexity=3
 
 IMPRESSIONIST DABS: the photograph repainted in short broken brushstrokes, Monet-style -- every stroke a small comma of paint laid along the picture's forms, its colour taken from the photo but split into pure touches (a warm and a cool neighbour hue side by side), with thick impasto edges catching the light; the strokes slowly shimmer and re-lay as the light of the day changes, the picture drifting beneath. Endless,…
 
@@ -2876,7 +2876,7 @@ IMPRESSIONIST DABS: the photograph repainted in short broken brushstrokes, Monet
 
 ### InfinitePhotoZoomAbyss
 
-`Scene2D/InfinitePhotoZoomAbyss.frag` · type=normal · mood=bright,psychedelic · complexity=3
+`Scene2D/InfinitePhotoZoomAbyss.frag` · type=normal · mood=bright,psychedelic · complexity=7
 
 INFINITE PHOTO ZOOM ABYSS: 100% viewport-filling seamless infinite logarithmic Droste spiral dive into the loaded photo texture. Conformal mapping w = ln(z) transforms the image into an endless self-similar recursive fractal spiral with smooth multi-octave blending.
 
@@ -2885,7 +2885,7 @@ INFINITE PHOTO ZOOM ABYSS: 100% viewport-filling seamless infinite logarithmic D
 
 ### InfinitePsychedelicDrosteVortex
 
-`Scene2D/InfinitePsychedelicDrosteVortex.frag` · type=normal · mood=psychedelic,bright · complexity=2
+`Scene2D/InfinitePsychedelicDrosteVortex.frag` · type=normal · mood=psychedelic,bright · complexity=7
 
 INFINITE PSYCHEDELIC DROSTE VORTEX: Dual counter-rotating logarithmic Droste spiral infinite zoom with seamless multi-octave blending, conformal Möbius twist, and deep inward/outward recursive photo reflections. Audio Reactivity: audioAdvance -> drives continuous infinite logarithmic zoom progression audioKick -> flashes spiral octave transition boundaries & ripple burst audioCentroid-> modulates Droste spiral twist …
 
@@ -2894,7 +2894,7 @@ INFINITE PSYCHEDELIC DROSTE VORTEX: Dual counter-rotating logarithmic Droste spi
 
 ### InfinityMirrorRoom
 
-`Scene2D/InfinityMirrorRoom.frag` · type=normal · mood=dark,dreamy,calm · complexity=3
+`Scene2D/InfinityMirrorRoom.frag` · type=normal · mood=dark,dreamy,calm · complexity=4
 
 INFINITY MIRROR ROOM: a mirrored box with real depth. Instead of a depth buffer the regress is built the way mirrors build it: space is folded (mod + mirror), so a ray that leaves the room through a wall re-enters a reflected copy, and every copy carries the same lamps and the same photo panel. The copies recede to infinity with a fog that thickens on the sub-bass, so the room breathes deeper and shallower with the l…
 
@@ -2903,7 +2903,7 @@ INFINITY MIRROR ROOM: a mirrored box with real depth. Instead of a depth buffer 
 
 ### InkDropsFalling
 
-`Scene2D/InkDropsFalling.frag` · type=normal · mood=calm,bright · complexity=2
+`Scene2D/InkDropsFalling.frag` · type=normal · mood=calm,bright · complexity=1
 
 INK DROPS FALLING: drops of ink falling into a tank of clear water, seen from the side against a bright, softly blurred photograph -- each drop plunges in and becomes a descending vortex ring, a mushroom head curling outward with a thin stem trailing behind, the head spreading, branching into smaller rings and finally dissolving into a coloured cloud; dozens of plumes at different depths, each ink its own colour, abs…
 
@@ -2912,7 +2912,7 @@ INK DROPS FALLING: drops of ink falling into a tank of clear water, seen from th
 
 ### InkInOilDroplet
 
-`Scene2D/InkInOilDroplet.frag` · type=normal · mood=calm,bright · complexity=2
+`Scene2D/InkInOilDroplet.frag` · type=normal · mood=calm,bright · complexity=1
 
 INK IN OIL DROPLET: drops of coloured water suspended in clear oil -- round and oval droplets of every size float in a golden oil, drifting slowly, wobbling, and when two meet they merge into one with a little shiver; inside each drop the colour swirls (from the photograph) and a bright rim and highlight show its lens; small satellite droplets trail around the big ones. Endless, mirrorable. Audio Reactivity (structur…
 
@@ -2921,7 +2921,7 @@ INK IN OIL DROPLET: drops of coloured water suspended in clear oil -- round and 
 
 ### InkTank
 
-`Scene2D/InkTank.frag` · type=normal · mood=calm,bright,dreamy · complexity=2
+`Scene2D/InkTank.frag` · type=normal · mood=calm,bright,dreamy · complexity=1
 
 INK TANK: drops of ink falling through a backlit tank of water, the way the macro photographs show it -- each drop sinks as a vortex ring, its head curling into a mushroom of fine filaments, a thinning stem trailing behind, and the inks (deep blue, magenta, amber, tinted by the photo) absorbing the white back-light where they overlap, so crossings go dark and rich. New drops enter at the top while old plumes spread a…
 
@@ -2930,7 +2930,7 @@ INK TANK: drops of ink falling through a backlit tank of water, the way the macr
 
 ### InkWater
 
-`Scene2D/InkWater.frag` · type=normal · mood=calm · complexity=2
+`Scene2D/InkWater.frag` · type=normal · mood=calm · complexity=8
 
 INK IN WATER: coloured ink plumes sink into still water and billow into slow, marbled clouds (procedural — unrelated to the FluidSim pass). The image IS the ink: every plume carries the colours of a drifting crop of the source picture. Calm, hypnotic, ambient-first. swell -> the water "breathes", plumes billow wider bass -> deep slow swirl of the whole volume (slew-limited) onset -> fresh ink visibly wells out of the…
 
@@ -2939,7 +2939,7 @@ INK IN WATER: coloured ink plumes sink into still water and billow into slow, ma
 
 ### InsideSystem
 
-`Scene2D/InsideSystem.frag` · type=normal · mood=aggressive,psychedelic · complexity=2
+`Scene2D/InsideSystem.frag` · type=normal · mood=aggressive,psychedelic · complexity=8
 
 Adapted from "Inside the System" by \@kishimisu (2022) — https://www.shadertoy.com/view/msj3D3 Original licensed CC BY-NC-SA 4.0 (attribution kept per the licence). Neon torus lights in an infinitely-repeating domain, flown through by an orbiting camera. Adapted to our engine: image-forward (the picture colours the neon glow + drifts as a faint nebula), audio-reactive & jump-free (camera travel from audioAdvance; bea…
 
@@ -2948,7 +2948,7 @@ Adapted from "Inside the System" by \@kishimisu (2022) — https://www.shadertoy
 
 ### InterchangeLightTrails
 
-`Scene2D/InterchangeLightTrails.frag` · type=normal · mood=dark,bright · complexity=2
+`Scene2D/InterchangeLightTrails.frag` · type=normal · mood=dark,bright · complexity=4
 
 INTERCHANGE LIGHT TRAILS: a motorway interchange at night from straight above, as in a long exposure -- the ramps loop and cross in great curves over each other, a cloverleaf around the centre, and along every lane the traffic has left streams of light: white headlights on the lanes coming one way, red tail lights on the lanes going the other, pulses of brighter light travelling along the streams as the cars flow. Or…
 
@@ -2957,7 +2957,7 @@ INTERCHANGE LIGHT TRAILS: a motorway interchange at night from straight above, a
 
 ### InterstellarGenerationShip
 
-`Scene2D/InterstellarGenerationShip.frag` · type=normal · mood=dark,calm,space · complexity=3
+`Scene2D/InterstellarGenerationShip.frag` · type=normal · mood=dark,calm,space · complexity=10
 
 INTERSTELLAR GENERATION SHIP: A colossal rotating cylinder traveling through interstellar space. The camera glides along its miles-long hull, revealing lit habitation domes, solar arrays, and a glowing propulsion drive. audioAdvance -> flight speed of the ship and camera progression audioKick -> flashes from external comms and engine pulses audioSwell -> ambient illumination and starfield brightness audioPhase -> rot…
 
@@ -2966,7 +2966,7 @@ INTERSTELLAR GENERATION SHIP: A colossal rotating cylinder traveling through int
 
 ### InterstellarMediumDust
 
-`Scene2D/InterstellarMediumDust.frag` · type=normal · mood=space,dark,calm · complexity=3
+`Scene2D/InterstellarMediumDust.frag` · type=normal · mood=space,dark,calm · complexity=2
 
 INTERSTELLAR MEDIUM DUST: a volumetric dust cloud between the stars, ray-marched as real density -- stars behind it dim by the integrated column they shine through, not by a painted glow, so the cloud has a front and a back. The density field is fbm advected by a curl-noise flow (domain warping on the scene clock: the cloud folds and drifts without a simulation and without a jump). The bass thickens the cloud (slow, …
 
@@ -2975,7 +2975,7 @@ INTERSTELLAR MEDIUM DUST: a volumetric dust cloud between the stars, ray-marched
 
 ### InterstellarNebulaWarpCruise
 
-`Scene2D/InterstellarNebulaWarpCruise.frag` · type=normal · mood=psychedelic,aggressive,dreamy · complexity=2
+`Scene2D/InterstellarNebulaWarpCruise.frag` · type=normal · mood=psychedelic,aggressive,dreamy · complexity=1
 
 INTERSTELLAR NEBULA WARP CRUISE: Volumetric 3D FBM raymarching flight through dense stellar nursery emission nebulae (Pillars of Creation) with self-luminous protostellar cores, cosmic absorption dust lanes, and spectral gas clouds. Audio Reactivity: audioAdvance -> drives continuous forward cruising through the nebula clouds audioKick -> flashes interior protostar fusion cores & gas ionization bursts audioCentroid->…
 
@@ -2984,7 +2984,7 @@ INTERSTELLAR NEBULA WARP CRUISE: Volumetric 3D FBM raymarching flight through de
 
 ### IoVolcanicPlumes
 
-`Scene2D/IoVolcanicPlumes.frag` · type=normal · mood=space,dark,aggressive · complexity=2
+`Scene2D/IoVolcanicPlumes.frag` · type=normal · mood=space,dark,aggressive · complexity=3
 
 IO VOLCANIC PLUMES: Jupiter fills the sky, banded and turning on the scene clock; below, Io's sulphur plains (the photo as the surface) with volcanic vents. Each vent runs a continuous umbrella plume -- material rises on a travelling phase and falls back in an arc, as Io's plumes do in vacuum -- and an onset brightens the plume from the vent up (light), so the eruptions pulse with the music without a single geometric…
 
@@ -2993,7 +2993,7 @@ IO VOLCANIC PLUMES: Jupiter fills the sky, banded and turning on the scene clock
 
 ### IridescentChitinMorpho
 
-`Scene2D/IridescentChitinMorpho.frag` · type=normal · mood=calm,bright,dreamy · complexity=3
+`Scene2D/IridescentChitinMorpho.frag` · type=normal · mood=calm,bright,dreamy · complexity=4
 
 IRIDESCENT CHITIN MORPHO: 100% viewport-filling bio-photonic dielectric nanostructure grating simulation (Morpho butterfly wings & jewel beetle iridescent chitin). Multi-layer Bragg interference producing pure structural color shifting from peacock cyan to electric cobalt and violet.
 
@@ -3002,7 +3002,7 @@ IRIDESCENT CHITIN MORPHO: 100% viewport-filling bio-photonic dielectric nanostru
 
 ### JosephsonVortexFluxonLattice
 
-`Scene2D/JosephsonVortexFluxonLattice.frag` · type=normal · mood=bright · complexity=3
+`Scene2D/JosephsonVortexFluxonLattice.frag` · type=normal · mood=bright · complexity=8
 
 JOSEPHSON VORTEX FLUXON LATTICE: Layered high-Tc superconductor stacked Josephson junctions. Sine-Gordon magnetic fluxons (Josephson vortices) driven by relativistic Lorentz currents race through insulator barriers, emitting coherent terahertz Cherenkov radiation fringes. audioAdvance -> accelerates fluxon velocity towards Swihart relativistic velocity audioKick -> flashes Josephson fluxon collision & annihilation ra…
 
@@ -3011,7 +3011,7 @@ JOSEPHSON VORTEX FLUXON LATTICE: Layered high-Tc superconductor stacked Josephso
 
 ### JosephsonVortexLattice
 
-`Scene2D/JosephsonVortexLattice.frag` · type=normal · mood=bright,psychedelic · complexity=3
+`Scene2D/JosephsonVortexLattice.frag` · type=normal · mood=bright,psychedelic · complexity=7
 
 JOSEPHSON VORTEX LATTICE: High-temperature layered superconductor Josephson junction array simulating quantized fluxon vortex lattices. Cooper-pair phase isobars, vortex liquid melting transitions, soliton wave packets, and quantum phase photo mapping. audioAdvance -> drives fluxon motion across superconductor layers audioKick -> triggers vortex lattice melting into turbulent fluid audioBass -> pulses Josephson plasm…
 
@@ -3020,7 +3020,7 @@ JOSEPHSON VORTEX LATTICE: High-temperature layered superconductor Josephson junc
 
 ### JukeboxBubbleTubes
 
-`Scene2D/JukeboxBubbleTubes.frag` · type=normal · mood=dark,psychedelic · complexity=3
+`Scene2D/JukeboxBubbleTubes.frag` · type=normal · mood=dark,psychedelic · complexity=7
 
 JUKEBOX BUBBLE TUBES: the front of a period jukebox. Bubble tubes arch over the case, each a glass column of coloured liquid with round bubbles rising through it on the scene clock; behind them the record carousel turns steadily, the selection board carries the photo as its title strips, and the neon trim glows. The chroma classes drive the tube colours, the swell the neon, the kick a flicker in one tube. Camera fixe…
 
@@ -3029,7 +3029,7 @@ JUKEBOX BUBBLE TUBES: the front of a period jukebox. Bubble tubes arch over the 
 
 ### JuliaAudioMorph
 
-`Scene2D/JuliaAudioMorph.frag` · type=normal · mood=psychedelic,bright · complexity=2
+`Scene2D/JuliaAudioMorph.frag` · type=normal · mood=psychedelic,bright · complexity=6
 
 A living Julia set: unlike a Mandelbrot deep-zoom dive (MandelbrotDeepZoom.frag), the view stays at a fixed, moderate depth and instead the escape-time formula's constant `c` moves continuously along a circle in the complex plane, driven by the musical key (audioChromaHue, jump-free) and a slow audioAdvance drift -- the FRACTAL'S OWN SHAPE breathes, blooms and reorganises with the harmony rather than the camera divin…
 
@@ -3038,7 +3038,7 @@ A living Julia set: unlike a Mandelbrot deep-zoom dive (MandelbrotDeepZoom.frag)
 
 ### JupiterJunoSwirls
 
-`Scene2D/JupiterJunoSwirls.frag` · type=normal · mood=bright,psychedelic,space · complexity=3
+`Scene2D/JupiterJunoSwirls.frag` · type=normal · mood=bright,psychedelic,space · complexity=2
 
 JUPITER JUNO SWIRLS: Jupiter's clouds seen close, as the Juno probe photographed them -- belts and zones sheared into each other, chains of white ovals, filaments that curl into Kelvin-Helmholtz waves along every belt edge, and a great storm spot rolling at the centre. The whole field fills the frame and flows: the bands drift in opposite directions and every edge rolls up in eddies. Colour comes from the photo, push…
 
@@ -3047,7 +3047,7 @@ JUPITER JUNO SWIRLS: Jupiter's clouds seen close, as the Juno probe photographed
 
 ### Kaleidoscope
 
-`Scene2D/Kaleidoscope.frag` · type=KaleidoscopeBase · mood=psychedelic,bright · complexity=1
+`Scene2D/Kaleidoscope.frag` · type=KaleidoscopeBase · mood=psychedelic,bright · complexity=3
 
 The classic kaleidoscope fold: photo pixels are read back through a polar mirror-and-repeat of `sides` segments, with an optional superellipse warp via the `power` exponent. audioLevel, audioFlip, audioCentroid, audioFlux and audioValence are declared and documented here but are not read by this shader's own logic; the mood colour, saturation and loudness brightness they describe are applied globally afterwards, in t…
 
@@ -3056,7 +3056,7 @@ The classic kaleidoscope fold: photo pixels are read back through a polar mirror
 
 ### KaleidoscopicBismuthLattice
 
-`Scene2D/KaleidoscopicBismuthLattice.frag` · type=normal · mood=psychedelic,dark · complexity=2
+`Scene2D/KaleidoscopicBismuthLattice.frag` · type=normal · mood=psychedelic,dark · complexity=8
 
 KALEIDOSCOPIC BISMUTH LATTICE: Right-angled stepped hopper crystal Bismuth labyrinth (L1-norm Manhattan KIFS) with iridescent thin-film rainbow interference, 12-fold rotational symmetry, and glowing metallic hopper steps. Audio Reactivity: audioAdvance -> drives continuous Bismuth hopper step growth & rotation audioKick -> flashes iridescent rainbow oxide films & expands step edges audioCentroid-> sharpens right-angl…
 
@@ -3065,7 +3065,7 @@ KALEIDOSCOPIC BISMUTH LATTICE: Right-angled stepped hopper crystal Bismuth labyr
 
 ### KaleidoscopicLichtenbergZoom
 
-`Scene2D/KaleidoscopicLichtenbergZoom.frag` · type=normal · mood=psychedelic,dark · complexity=2
+`Scene2D/KaleidoscopicLichtenbergZoom.frag` · type=normal · mood=psychedelic,dark · complexity=10
 
 KALEIDOSCOPIC LICHTENBERG ZOOM: Infinite recursive zoom into high-voltage dielectric Lichtenberg electrical discharge trees folded across hexagonal mirror symmetries with searing lightning sparks, charge streamers, and kick flashes. Audio Reactivity: audioAdvance -> drives continuous deep lightning tree zoom trajectory audioKick -> strikes violent high-voltage discharge arcs & flashes audioCentroid-> modulates stream…
 
@@ -3074,7 +3074,7 @@ KALEIDOSCOPIC LICHTENBERG ZOOM: Infinite recursive zoom into high-voltage dielec
 
 ### KandinskyField
 
-`Scene2D/KandinskyField.frag` · type=normal · mood=bright,psychedelic · complexity=2
+`Scene2D/KandinskyField.frag` · type=normal · mood=bright,psychedelic · complexity=1
 
 KANDINSKY FIELD: a composition in the spirit of Kandinsky's Bauhaus paintings, forever recomposing -- circles with halos, sharp triangles, crossing straight lines, checkerboards and arcs float over a softly graded ground, each element drifting and turning slowly on its own, some circles pulsing their halos; colours bold and primary with the photograph lending the ground its tone. Endless, mirrorable. Audio Reactivity…
 
@@ -3092,7 +3092,7 @@ KARDASHEV TYPE III CITY: a whole spiral galaxy turned into one machine. The gala
 
 ### KarmanVortexStreet
 
-`Scene2D/KarmanVortexStreet.frag` · type=normal · mood=psychedelic,aggressive,bright · complexity=2
+`Scene2D/KarmanVortexStreet.frag` · type=normal · mood=psychedelic,aggressive,bright · complexity=4
 
 KARMAN VORTEX STREET: a flight down the wake behind a cylinder in a stream -- the alternating vortices of a von Karman street, seen as a tunnel of swirling dye. The vortices are objects on the scene clock: they shed in turn, drift downstream, grow and fade; an onset brightens the one shedding now (light). The dye is the photo advected by the vortex field (a sum of Lamb-Oseen vortices), so the picture swirls without a…
 
@@ -3101,7 +3101,7 @@ KARMAN VORTEX STREET: a flight down the wake behind a cylinder in a stream -- th
 
 ### KarstPeaksMist
 
-`Scene2D/KarstPeaksMist.frag` · type=normal · mood=calm,bright,dreamy · complexity=3
+`Scene2D/KarstPeaksMist.frag` · type=normal · mood=calm,bright,dreamy · complexity=1
 
 KARST PEAKS MIST: the tower karst of Guilin at dawn -- row behind row of steep, rounded limestone peaks, each range paler and bluer than the one before, with bands of mist lying between them. A calm river winds through the foreground mirroring the peaks, and a bamboo raft with a fisherman and his lamp drifts slowly across it. The morning sun glows through the mist behind the ranges. The mist drifts and the raft moves…
 
@@ -3110,7 +3110,7 @@ KARST PEAKS MIST: the tower karst of Guilin at dawn -- row behind row of steep, 
 
 ### KerrNewmanSingularity
 
-`Scene2D/KerrNewmanSingularity.frag` · type=normal · mood=dark,aggressive · complexity=4
+`Scene2D/KerrNewmanSingularity.frag` · type=normal · mood=dark,aggressive · complexity=5
 
 KERR-NEWMAN SINGULARITY: a spinning black hole seen from a slow orbit -- the black shadow in the middle, a thin bright accretion disk bent up and over it by the lensing, the Doppler-brightened approaching side, the Einstein ring where light from behind wraps round, and twin jets on the spin axis. REBUILT compositing. The geodesics were right and what they showed was wrong (reported: "a giant sphere"): the background …
 
@@ -3128,7 +3128,7 @@ KEY CHANGE SEASONS: a forest whose season is the key of the music. The chroma hu
 
 ### KilnGlazeCrystals
 
-`Scene2D/KilnGlazeCrystals.frag` · type=normal · mood=calm,bright,dreamy · complexity=3
+`Scene2D/KilnGlazeCrystals.frag` · type=normal · mood=calm,bright,dreamy · complexity=6
 
 KILN GLAZE CRYSTALS: a crystalline glaze -- zinc-silicate flowers that grow in the glaze while the kiln holds its temperature. A bowl fills the frame; over the scene arc the crystals nucleate and grow as radiating fans (each a fixed seed, its radius on the arc), each lit by a chroma class; the glaze body is the photo, glossy; the kiln glow is the bass, the kick a spark of the pyrometer, the treble the gloss. Camera f…
 
@@ -3137,7 +3137,7 @@ KILN GLAZE CRYSTALS: a crystalline glaze -- zinc-silicate flowers that grow in t
 
 ### KilonovaRadioactiveAfterglow
 
-`Scene2D/KilonovaRadioactiveAfterglow.frag` · type=normal · mood=aggressive,bright,dreamy,psychedelic · complexity=4
+`Scene2D/KilonovaRadioactiveAfterglow.frag` · type=normal · mood=aggressive,bright,dreamy,psychedelic · complexity=1
 
 KILONOVA RADIOACTIVE AFTERGLOW: Binary neutron star merger fireball. Expanding relativistic ejecta cloud synthesis of heavy r-process elements (gold, platinum), lanthanide-rich line opacity absorption, shock break-out gamma flash, and photo texturing. audioAdvance -> drives relativistic ejecta fireball expansion & turbulent billows audioKick -> ignites gamma-ray burst shock break-out flashes audioSwell -> swells dens…
 
@@ -3146,7 +3146,7 @@ KILONOVA RADIOACTIVE AFTERGLOW: Binary neutron star merger fireball. Expanding r
 
 ### KineticBallCeiling
 
-`Scene2D/KineticBallCeiling.frag` · type=normal · mood=calm,dark · complexity=3
+`Scene2D/KineticBallCeiling.frag` · type=normal · mood=calm,dark · complexity=8
 
 KINETIC BALL CEILING: a kinetic sculpture of hundreds of polished metal balls, each hanging on its own thin wire from a dark ceiling, the whole field together forming one slowly flowing surface -- a wave that rolls through, folds into a saddle, flattens and rises again. Seen from below at the edge of the field; every ball mirrors the photograph and catches the spot lights of the hall. The camera is still; the waves m…
 
@@ -3155,7 +3155,7 @@ KINETIC BALL CEILING: a kinetic sculpture of hundreds of polished metal balls, e
 
 ### KineticTileMosaicMatrix
 
-`Scene2D/KineticTileMosaicMatrix.frag` · type=normal · mood=bright · complexity=3
+`Scene2D/KineticTileMosaicMatrix.frag` · type=normal · mood=bright · complexity=7
 
 KINETIC TILE MOSAIC MATRIX: 100% viewport-filling architectural facade of thousands of mechanical kinetic tiles that elevate, flip, and rotate in 3D relief, physically reconstructing the loaded photo with specular bevel highlights, cast ambient shadows, and audio-reactive wave cascades.
 
@@ -3164,7 +3164,7 @@ KINETIC TILE MOSAIC MATRIX: 100% viewport-filling architectural facade of thousa
 
 ### KintsugiGoldSeams
 
-`Scene2D/KintsugiGoldSeams.frag` · type=normal · mood=dark,calm,dreamy · complexity=3
+`Scene2D/KintsugiGoldSeams.frag` · type=normal · mood=dark,calm,dreamy · complexity=4
 
 KINTSUGI GOLD SEAMS: a bowl that was broken and mended with gold. The crack network is a Voronoi seam field over the bowl; over the scene arc the breaks spread outward from the first fracture and the gold flows into them behind the spreading front, so the piece is whole, then broken, then mended -- one continuous sweep with no cut. The glaze is the photo; the treble is the gold catching the light, the kick a glint ru…
 
@@ -3173,7 +3173,7 @@ KINTSUGI GOLD SEAMS: a bowl that was broken and mended with gold. The crack netw
 
 ### KirlianAura
 
-`Scene2D/KirlianAura.frag` · type=normal · mood=dark,psychedelic,aggressive · complexity=3
+`Scene2D/KirlianAura.frag` · type=normal · mood=dark,psychedelic,aggressive · complexity=6
 
 KIRLIAN AURA: the photo as a Kirlian print -- its edges crowned with corona discharge, violet-blue filaments streaming outward from every contour. The treble drives the discharge (a light effect: brightness and reach of the filaments), the filaments flicker on a continuous noise clock, the bass warms the glow. Camera still; the print itself never moves. Audio Reactivity: audioHigh -> corona brightness and reach (ligh…
 
@@ -3182,7 +3182,7 @@ KIRLIAN AURA: the photo as a Kirlian print -- its edges crowned with corona disc
 
 ### KleinBlueSponge
 
-`Scene2D/KleinBlueSponge.frag` · type=normal · mood=calm,dark · complexity=2
+`Scene2D/KleinBlueSponge.frag` · type=normal · mood=calm,dark · complexity=3
 
 KLEIN BLUE SPONGE: Yves Klein's sponge reliefs in motion -- a wall covered with natural sea sponges soaked in pure ultramarine pigment, their porous bodies catching light and swallowing it in that deep, velvety blue; the sponges are round lumpy forms of every size with holes and pores, casting soft shadows; a slow light moves over the relief, and the photograph lends faint undertones to the pigment. Endless, mirrorab…
 
@@ -3191,7 +3191,7 @@ KLEIN BLUE SPONGE: Yves Klein's sponge reliefs in motion -- a wall covered with 
 
 ### KleinBottleFlythrough
 
-`Scene2D/KleinBottleFlythrough.frag` · type=normal · mood=psychedelic,dreamy,dark · complexity=3
+`Scene2D/KleinBottleFlythrough.frag` · type=normal · mood=psychedelic,dreamy,dark · complexity=2
 
 KLEIN BOTTLE FLYTHROUGH: a ray-marched flight through a bottle whose neck bends over and re-enters its own body. The camera rides a closed loop that runs down the neck, through the wall into the belly and out again, so "inside" and "outside" trade places every lap without a cut: the wall you fly along is the same wall you just flew through. The surface is glass-lit from within; the photo is laid over it as a triplana…
 
@@ -3200,7 +3200,7 @@ KLEIN BOTTLE FLYTHROUGH: a ray-marched flight through a bottle whose neck bends 
 
 ### KleinBottleHyperLoopDive
 
-`Scene2D/KleinBottleHyperLoopDive.frag` · type=normal · mood=psychedelic,aggressive,dark · complexity=2
+`Scene2D/KleinBottleHyperLoopDive.frag` · type=normal · mood=psychedelic,aggressive,dark · complexity=4
 
 KLEIN BOTTLE HYPER LOOP DIVE: 3D Raymarching plunge through a self-intersecting 4D Klein Bottle immersion. Seamless flight from exterior space into interior space without crossing an edge, with inverting normal colors and portal flash pulses. Audio Reactivity: audioAdvance -> drives continuous forward plunge along the Klein loop audioKick -> flashes self-intersection singularity & topology inversion audioCentroid-> m…
 
@@ -3209,7 +3209,7 @@ KLEIN BOTTLE HYPER LOOP DIVE: 3D Raymarching plunge through a self-intersecting 
 
 ### KleinianLimitSetAbyss
 
-`Scene2D/KleinianLimitSetAbyss.frag` · type=normal · mood=psychedelic,bright · complexity=2
+`Scene2D/KleinianLimitSetAbyss.frag` · type=normal · mood=psychedelic,bright · complexity=4
 
 KLEINIAN LIMIT SET ABYSS: Iterated Schottky & Maskit-slice Kleinian group limit sets (Indra's Pearls). Infinite fractal kissing pearl circles, deep zoom into parabolic tangency cusps, and dynamic complex moduli morphing. Audio Reactivity: audioAdvance -> navigates through complex moduli space & deep cusp zoom audioKick -> flashes cusp tangency nodes & explodes circle boundaries audioCentroid-> increases iteration dep…
 
@@ -3218,7 +3218,7 @@ KLEINIAN LIMIT SET ABYSS: Iterated Schottky & Maskit-slice Kleinian group limit 
 
 ### KleinQuarticHyperbolicCurve
 
-`Scene2D/KleinQuarticHyperbolicCurve.frag` · type=normal · mood=bright,calm,psychedelic · complexity=3
+`Scene2D/KleinQuarticHyperbolicCurve.frag` · type=normal · mood=bright,calm,psychedelic · complexity=8
 
 KLEIN QUARTIC HYPERBOLIC CURVE: Riemann surface of genus 3 with maximal symmetry (168 automorphisms, PSL(2,7)). Tiled by 24 regular heptagons in the hyperbolic Poincaré disk with conformal circle inversions, sacred geometry kaleidoscopic rosettes, and multi-angle photo reflections. audioAdvance -> translates hyperbolic isometry group PSL(2,7) audioKick -> flashes 168 automorphism reflection lines & facet edges audioB…
 
@@ -3227,7 +3227,7 @@ KLEIN QUARTIC HYPERBOLIC CURVE: Riemann surface of genus 3 with maximal symmetry
 
 ### KlimtGoldMosaic
 
-`Scene2D/KlimtGoldMosaic.frag` · type=normal · mood=bright,calm · complexity=3
+`Scene2D/KlimtGoldMosaic.frag` · type=normal · mood=bright,calm · complexity=2
 
 KLIMT GOLD MOSAIC: a golden-period panel. A field of beaten gold leaf carries tendrils that coil into spirals, scattered eyes of concentric rings and little black-and-white squares; down the middle a gown of glass tesserae is set from the photo, sprinkled with ornamental discs. A slow light moves across the panel and the gold answers it -- the leaf flares where the light passes, each spiral glows with its own band, a…
 
@@ -3236,7 +3236,7 @@ KLIMT GOLD MOSAIC: a golden-period panel. A field of beaten gold leaf carries te
 
 ### KlineBlackStrokes
 
-`Scene2D/KlineBlackStrokes.frag` · type=normal · mood=dark,energetic · complexity=2
+`Scene2D/KlineBlackStrokes.frag` · type=normal · mood=dark,energetic · complexity=1
 
 KLINE BLACK STROKES: Franz Kline's huge black brushstrokes on white, in motion -- massive beams of black paint slash across the canvas, crossing in girders and arches, their edges dry and ragged where the broad brush dragged, white paint cut back over them in places; the strokes slowly sweep, rotate and re-form, the photograph showing faintly as the ground's warm off-white and grey. Endless, mirrorable. Audio Reactiv…
 
@@ -3245,7 +3245,7 @@ KLINE BLACK STROKES: Franz Kline's huge black brushstrokes on white, in motion -
 
 ### KluverFormConstants
 
-`Scene2D/KluverFormConstants.frag` · type=normal · mood=psychedelic,aggressive,dark · complexity=2
+`Scene2D/KluverFormConstants.frag` · type=normal · mood=psychedelic,aggressive,dark · complexity=6
 
 KLUVER FORM CONSTANTS: the four geometric hallucination forms -- tunnel, spiral, lattice, cobweb -- as one continuously morphing field. Each form is a phase function over the retinal (log-polar) plane; the blend between them is picked by the arousal axis and drifts on the scene clock, always by smooth weights, never by a switch. The photo is the colour source: the forms are stripes of it. The whole field flows steadi…
 
@@ -3254,7 +3254,7 @@ KLUVER FORM CONSTANTS: the four geometric hallucination forms -- tunnel, spiral,
 
 ### KnittingRowsGrow
 
-`Scene2D/KnittingRowsGrow.frag` · type=normal · mood=calm,bright,dreamy · complexity=3
+`Scene2D/KnittingRowsGrow.frag` · type=normal · mood=calm,bright,dreamy · complexity=10
 
 KNITTING ROWS GROW: stocking stitch growing row by row over the scene arc. Each stitch is a V of yarn sitting in the row below, and the fabric is built as a lattice of those Vs; colourwork bands take their yarn from the chroma classes, the photo is the yarn's own dyed shade. The live row sits on the needle at the top of the growing fabric and is a little looser than the rest. Camera fixed on the work. Audio Reactivit…
 
@@ -3263,7 +3263,7 @@ KNITTING ROWS GROW: stocking stitch growing row by row over the scene arc. Each 
 
 ### KoiPondAbove
 
-`Scene2D/KoiPondAbove.frag` · type=normal · mood=bright,calm,dreamy · complexity=3
+`Scene2D/KoiPondAbove.frag` · type=normal · mood=bright,calm,dreamy · complexity=2
 
 KOI POND ABOVE: a garden pond seen straight down. Koi -- white, orange and black-patched -- glide in slow curves under the surface; the sky and the overhanging branches mirror on the water; a few maple leaves float on top; caustics ripple over the stones on the bottom. The fish swim at their own gentle pace. The music is light on the water: each fish's colour glows a little with its band, and the swell brightens the …
 
@@ -3281,7 +3281,7 @@ KUMIKO LATTICE SHOJI: a shoji screen with a kumiko lattice, lit from behind. The
 
 ### KuramotoRings
 
-`Scene2D/KuramotoRings.frag` · type=normal · mood=psychedelic,dark · complexity=2
+`Scene2D/KuramotoRings.frag` · type=normal · mood=psychedelic,dark · complexity=10
 
 KURAMOTO RINGS: a field of thousands of blinking lights that keep falling into step -- each light is an oscillator; at first they flicker at random, then neighbours pull each other into rhythm and spiral waves of flashes sweep across the field, turning around wandering centres like the waves in a chemical clock; then the order dissolves into flicker again, and re-forms elsewhere. Each light takes its colour from the …
 
@@ -3290,7 +3290,7 @@ KURAMOTO RINGS: a field of thousands of blinking lights that keep falling into s
 
 ### KusamaDotInfinity
 
-`Scene2D/KusamaDotInfinity.frag` · type=normal · mood=psychedelic,bright · complexity=2
+`Scene2D/KusamaDotInfinity.frag` · type=normal · mood=psychedelic,bright · complexity=3
 
 KUSAMA DOT INFINITY: an endless polka-dot regress -- dots of all sizes cover everything and spiral inward into an infinite centre, each ring of dots smaller than the last, forever drawing the eye in, as in an infinity mirror room; the dots' sizes follow the photograph (bright parts make large dots, dark parts small), their colours alternate between the photo's colours and a bold two-tone, and the whole field turns sl…
 
@@ -3299,7 +3299,7 @@ KUSAMA DOT INFINITY: an endless polka-dot regress -- dots of all sizes cover eve
 
 ### LanternRise
 
-`Scene2D/LanternRise.frag` · type=normal · mood=calm,bright,dreamy · complexity=2
+`Scene2D/LanternRise.frag` · type=normal · mood=calm,bright,dreamy · complexity=5
 
 LANTERN RISE: the night of the lantern festival. Over a wide river at dusk, hundreds of paper sky lanterns drift up into a deep blue sky -- warm glowing shells with a bright flame at the base, near ones large and soft, far ones tiny sparks thinning into the stars -- and the river doubles them in shimmering streaks. On the far bank a temple roofline and a crowd stand in silhouette, a few floating krathong candles drif…
 
@@ -3308,7 +3308,7 @@ LANTERN RISE: the night of the lantern festival. Over a wide river at dusk, hund
 
 ### LaserCavityTransverseModes
 
-`Scene2D/LaserCavityTransverseModes.frag` · type=normal · mood=psychedelic,dark · complexity=2
+`Scene2D/LaserCavityTransverseModes.frag` · type=normal · mood=psychedelic,dark · complexity=3
 
 LASER CAVITY TRANSVERSE MODES: Higher-order Hermite-Gaussian (TEM_mn) and Laguerre-Gaussian (LG_l^p) laser cavity resonator transverse modes carrying orbital angular momentum. Geometrical laser petal flowers, phase vortices, and resonant cavity flares. Audio Reactivity: audioAdvance -> drives continuous orbital angular momentum phase rotation audioKick -> flashes laser cavity mode nodes & triggers mode index hopping …
 
@@ -3317,7 +3317,7 @@ LASER CAVITY TRANSVERSE MODES: Higher-order Hermite-Gaussian (TEM_mn) and Laguer
 
 ### LaserHarpBeams
 
-`Scene2D/LaserHarpBeams.frag` · type=normal · mood=dark,aggressive,psychedelic · complexity=3
+`Scene2D/LaserHarpBeams.frag` · type=normal · mood=dark,aggressive,psychedelic · complexity=7
 
 LASER HARP BEAMS: twelve vertical laser beams standing in haze, one per chroma class. A beam brightens when its class sounds; a hand crosses the row on the scene clock and every beam it interrupts blooms at the point of contact and throws a splash of scattered light. The frame is the emitter bar below and the mirror strip above. The photo is the hall behind the haze. Camera fixed in front of the harp. Audio Reactivit…
 
@@ -3326,7 +3326,7 @@ LASER HARP BEAMS: twelve vertical laser beams standing in haze, one per chroma c
 
 ### LavaLamp
 
-`Scene2D/LavaLamp.frag` · type=normal · mood=calm,dreamy,psychedelic · complexity=2
+`Scene2D/LavaLamp.frag` · type=normal · mood=calm,dreamy,psychedelic · complexity=3
 
 LAVA LAMP (rebuilt 30.09.2026): inside a lava lamp, filling the frame -- warm wax rises from the heat below in slow, heavy columns, bulges into round heads, pinches off at thin necks, floats up, cools and sinks again, blobs meet and melt into each other. What makes a real lamp hypnotic and what this rebuild is about: the wax GLOWS from inside (light scattered through it, bright at the thin edges and necks, deep in th…
 
@@ -3335,7 +3335,7 @@ LAVA LAMP (rebuilt 30.09.2026): inside a lava lamp, filling the frame -- warm wa
 
 ### LavaWorldTidalLock
 
-`Scene2D/LavaWorldTidalLock.frag` · type=normal · mood=bright,aggressive,space · complexity=4
+`Scene2D/LavaWorldTidalLock.frag` · type=normal · mood=bright,aggressive,space · complexity=6
 
 LAVA WORLD TIDAL LOCK: The day-side of a tidally locked planet. The surface is a continuous, roiling ocean of glowing magma constantly baked by a massive, close star. Eruptions and waves pulse to the beat. audioAdvance -> slow pan across the magma ocean audioKick -> explosive magma bursts and solar flares audioSwell -> brightness of the star and magma heat audioChromaHue-> palette offset for the magma Per-activation …
 
@@ -3344,7 +3344,7 @@ LAVA WORLD TIDAL LOCK: The day-side of a tidally locked planet. The surface is a
 
 ### LavenderRowsSunset
 
-`Scene2D/LavenderRowsSunset.frag` · type=normal · mood=calm,dreamy,bright · complexity=2
+`Scene2D/LavenderRowsSunset.frag` · type=normal · mood=calm,dreamy,bright · complexity=1
 
 LAVENDER ROWS SUNSET: a Provence lavender field at sunset, seen straight down its rows -- mounded purple rows running away in perfect central perspective toward a low sun on the horizon, the pale earth furrows between them glowing in the backlight, every bush rimmed in gold where the sun catches its flower spikes. A lone tree and a stone farmhouse stand on the horizon, the sky burns orange to violet. Each row answers…
 
@@ -3353,7 +3353,7 @@ LAVENDER ROWS SUNSET: a Provence lavender field at sunset, seen straight down it
 
 ### LeafVenationGrowth
 
-`Scene2D/LeafVenationGrowth.frag` · type=normal · mood=calm,bright,dreamy · complexity=3
+`Scene2D/LeafVenationGrowth.frag` · type=normal · mood=calm,bright,dreamy · complexity=1
 
 LEAF VENATION GROWTH: a leaf lit through, and the growth of its veins -- the midrib first, then the secondaries branching off, then the finer orders, each order switching on later in the scene arc and extending smoothly from its parent. The photo is the leaf tissue seen against the light; sap light pulses along the veins with the bass; the treble sparkles the tissue; the swell is the sun behind the leaf. Camera still…
 
@@ -3362,7 +3362,7 @@ LEAF VENATION GROWTH: a leaf lit through, and the growth of its veins -- the mid
 
 ### LEDRainCurtain
 
-`Scene2D/LEDRainCurtain.frag` · type=normal · mood=dark,bright,psychedelic · complexity=2
+`Scene2D/LEDRainCurtain.frag` · type=normal · mood=dark,bright,psychedelic · complexity=9
 
 LED RAIN CURTAIN: a light installation seen head-on and filling the frame -- a curtain of hundreds of hanging LED tubes in a hazy dark room, rows of them one behind the other, and down every tube runs a falling drop of light with a fading tail, like rain made of light. Each column belongs to one pitch class: when that note sounds, the drops in its tubes burn bright in its colour; silent notes leave their tubes a fain…
 
@@ -3380,7 +3380,7 @@ LEIDENFROST DROPLETS: water on a plate far above its boiling point -- the drops 
 
 ### LenticularCloudStack
 
-`Scene2D/LenticularCloudStack.frag` · type=normal · mood=calm,dreamy · complexity=2
+`Scene2D/LenticularCloudStack.frag` · type=normal · mood=calm,dreamy · complexity=1
 
 LENTICULAR CLOUD STACK: a lone snow volcano at dusk, and hovering over its summit a stack of lenticular clouds -- smooth lens-shaped discs piled one on the other like a stack of plates, their rims crisp, their tops catching the last pink and orange light of the sun, their undersides lavender in shadow, a thin fibrous veil trailing from their lee edges. The mountain's snowfields glow faintly rose, the sky shades from …
 
@@ -3389,7 +3389,7 @@ LENTICULAR CLOUD STACK: a lone snow volcano at dusk, and hovering over its summi
 
 ### LenticularFlip
 
-`Scene2D/LenticularFlip.frag` · type=normal · mood=calm,dreamy,bright · complexity=1
+`Scene2D/LenticularFlip.frag` · type=normal · mood=calm,dreamy,bright · complexity=3
 
 LENTICULAR FLIP: a lenticular print of the two photos. Under the ribbed lens sheet the two images are interlaced in strips; the viewing angle -- which decides which strip each lenticule shows -- sweeps slowly on the swell and drifts on the scene clock, so the print flips from one photo to the other in a wave that runs across the sheet, with the refracted smear and rainbow fringe of a real lenticular between the two. …
 
@@ -3398,7 +3398,7 @@ LENTICULAR FLIP: a lenticular print of the two photos. Under the ribbed lens she
 
 ### LibraryOfBabel
 
-`Scene2D/LibraryOfBabel.frag` · type=normal · mood=calm,dark,dreamy · complexity=2
+`Scene2D/LibraryOfBabel.frag` · type=normal · mood=calm,dark,dreamy · complexity=4
 
 LIBRARY OF BABEL: Borges' library -- an endless stack of hexagonal galleries around a central air shaft, floor above floor above floor without end, each gallery's walls lined with shelves of books, a low railing at the edge of every floor, a warm lamp hanging in each gallery. The camera rises steadily up the shaft, looking out across it at the galleries sliding past, the floors above and below vanishing into warm dar…
 
@@ -3407,7 +3407,7 @@ LIBRARY OF BABEL: Borges' library -- an endless stack of hexagonal galleries aro
 
 ### LiebLatticeFlatBandLocalization
 
-`Scene2D/LiebLatticeFlatBandLocalization.frag` · type=normal · mood=bright,calm · complexity=3
+`Scene2D/LiebLatticeFlatBandLocalization.frag` · type=normal · mood=bright,calm · complexity=9
 
 LIEB LATTICE FLAT BAND LOCALIZATION: 2D line-centered square Lieb lattice with a strictly dispersionless flat band at zero energy. Destructive quantum interference creates compactly localized loop states (Aharonov-Bohm cages) with photo-derived wavepacket phase texturing. audioAdvance -> navigates compact localized state phase rotation & hopping dynamics audioKick -> flashes flat-band excitation & dispersive Dirac co…
 
@@ -3425,7 +3425,7 @@ LIESEGANG PRECIPITATION RING ARRAY: Self-organized periodic mineral precipitatio
 
 ### LighthouseFresnelLens
 
-`Scene2D/LighthouseFresnelLens.frag` · type=normal · mood=psychedelic,bright,dreamy · complexity=2
+`Scene2D/LighthouseFresnelLens.frag` · type=normal · mood=psychedelic,bright,dreamy · complexity=5
 
 LIGHTHOUSE FRESNEL LENS: inside the lantern room, looking out through the great Fresnel lens. Concentric prism rings -- each a stepped refracting band -- bend the world outside (the photo as the night sea and sky) into a fan of stretched, dispersed images; the lens assembly turns steadily on the scene clock as a lighthouse lens does, and where the bull's-eye passes the lamp the beam floods the frame. Dispersion split…
 
@@ -3434,7 +3434,7 @@ LIGHTHOUSE FRESNEL LENS: inside the lantern room, looking out through the great 
 
 ### LightningStorm
 
-`Scene2D/LightningStorm.frag` · type=normal · mood=aggressive,dark · complexity=2
+`Scene2D/LightningStorm.frag` · type=normal · mood=aggressive,dark · complexity=7
 
 Displays the branching electrical discharge simulated in Engine/CfxLightningStep, built around the fact that a real bolt reads mostly as afterglow rather than as the thin flash itself. The simulation grows exactly ONE tree of leaders per strike, from one point on the top edge, so on its own it hangs in a single narrow column of the picture. This pass re-projects that tree through three different UV frames — the origi…
 
@@ -3443,7 +3443,7 @@ Displays the branching electrical discharge simulated in Engine/CfxLightningStep
 
 ### LightPaintingTrails
 
-`Scene2D/LightPaintingTrails.frag` · type=normal · mood=dark,psychedelic,dreamy · complexity=3
+`Scene2D/LightPaintingTrails.frag` · type=normal · mood=dark,psychedelic,dreamy · complexity=8
 
 LIGHT PAINTING TRAILS: a long exposure in a dark room. A dancer swings light wands and the shutter keeps everything: the trails hang in the air as continuous ribbons, brightest where the wand is now and fading along their age. Each wand owns a chroma class and brightens with it; the trail geometry runs on the scene clock, so nothing jumps. The kick is the flash that freezes a silhouette of the dancer for an instant. …
 
@@ -3452,7 +3452,7 @@ LIGHT PAINTING TRAILS: a long exposure in a dark room. A dancer swings light wan
 
 ### LightPillarsCity
 
-`Scene2D/LightPillarsCity.frag` · type=normal · mood=dark,calm,dreamy · complexity=3
+`Scene2D/LightPillarsCity.frag` · type=normal · mood=dark,calm,dreamy · complexity=5
 
 LIGHT PILLARS CITY: a winter night so cold that ice crystals hang flat in the air, and every streetlight, sign and floodlight of a small northern city throws a tall column of light straight up into the dark sky -- sodium orange, white, green, the odd magenta -- dozens of pillars of different heights and strengths standing over the snowy rooftops. Snow lies on the roofs and the ground; a few flakes glitter in the air.…
 
@@ -3461,7 +3461,7 @@ LIGHT PILLARS CITY: a winter night so cold that ice crystals hang flat in the ai
 
 ### LiquidChromeHyperSwirl
 
-`Scene2D/LiquidChromeHyperSwirl.frag` · type=normal · mood=psychedelic,dreamy,dark · complexity=2
+`Scene2D/LiquidChromeHyperSwirl.frag` · type=normal · mood=psychedelic,dreamy,dark · complexity=5
 
 LIQUID CHROME HYPER SWIRL: Ultra-reflective liquid mercury sea agitated by multiple orbiting gravitational vortex sinks with chromatic normal reflections, high-frequency capillary ripples, and glowing Fresnel metallic highlights. Audio Reactivity: audioAdvance -> drives continuous multi-vortex liquid fluid advection audioKick -> excites high-amplitude capillary surface ripples & specular bursts audioCentroid-> sharpe…
 
@@ -3470,7 +3470,7 @@ LIQUID CHROME HYPER SWIRL: Ultra-reflective liquid mercury sea agitated by multi
 
 ### LiquidCrystalBluePhaseLattice
 
-`Scene2D/LiquidCrystalBluePhaseLattice.frag` · type=normal · mood=bright,psychedelic · complexity=3
+`Scene2D/LiquidCrystalBluePhaseLattice.frag` · type=normal · mood=bright,psychedelic · complexity=7
 
 LIQUID CRYSTAL BLUE PHASE LATTICE: 3D cubic network of double-twist cylinders in highly chiral liquid crystals (Blue Phase I / II). Cubic defect disclination lines form a 3D periodic photonic bandgap lattice with selective Bragg reflection of deep blue light. audioAdvance -> rotates chiral director double-twist cylinders & disclination lattice flow audioKick -> flashes cubic unit cell orientation switching & selectiv…
 
@@ -3479,7 +3479,7 @@ LIQUID CRYSTAL BLUE PHASE LATTICE: 3D cubic network of double-twist cylinders in
 
 ### LiquidCrystalOptics
 
-`Scene2D/LiquidCrystalOptics.frag` · type=normal · mood=psychedelic,bright · complexity=3
+`Scene2D/LiquidCrystalOptics.frag` · type=normal · mood=psychedelic,bright · complexity=8
 
 LIQUID CRYSTAL OPTICS: Polarized optical microscopy of dynamic nematic liquid crystal phases with topological Schlieren brushes, disclination vortex defects, optical retardation birefringence (Michel-Levy colors), electro-hydrodynamic convection rolls, and polarized photo texturing.
 
@@ -3488,7 +3488,7 @@ LIQUID CRYSTAL OPTICS: Polarized optical microscopy of dynamic nematic liquid cr
 
 ### LiquidLightShow
 
-`Scene2D/LiquidLightShow.frag` · type=normal · mood=psychedelic,bright · complexity=2
+`Scene2D/LiquidLightShow.frag` · type=normal · mood=psychedelic,bright · complexity=3
 
 LIQUID LIGHT SHOW: the 1960s overhead-projector light show -- two clock glasses with coloured water, oil and dyes pressed together on a projector, the light artist rocking and squeezing them, so on the wall the colours bloom, burst and chase each other: dye blossoms swelling outward in rings, oil cells pushing through them, drops of one colour blooming inside another, everything magnified, glowing, with dark outlines…
 
@@ -3497,7 +3497,7 @@ LIQUID LIGHT SHOW: the 1960s overhead-projector light show -- two clock glasses 
 
 ### LiquidMarbleEbruAcidWash
 
-`Scene2D/LiquidMarbleEbruAcidWash.frag` · type=normal · mood=psychedelic,dreamy,dark · complexity=2
+`Scene2D/LiquidMarbleEbruAcidWash.frag` · type=normal · mood=psychedelic,dreamy,dark · complexity=7
 
 LIQUID MARBLE EBRU ACID WASH: Traditional Turkish Ebru water marbling peacock comb displacement algorithms supercharged with psychedelic acid wash feedback, melting fluid swirls, and high-energy chromatic edge degradation. Audio Reactivity: audioAdvance -> drives continuous comb tine dragging & fluid marbling advection audioKick -> flashes liquid acid color inversions & drop splatter shockwaves audioCentroid-> modula…
 
@@ -3506,7 +3506,7 @@ LIQUID MARBLE EBRU ACID WASH: Traditional Turkish Ebru water marbling peacock co
 
 ### LiquidMarbleSpheres
 
-`Scene2D/LiquidMarbleSpheres.frag` · type=normal · mood=calm,bright · complexity=2
+`Scene2D/LiquidMarbleSpheres.frag` · type=normal · mood=calm,bright · complexity=1
 
 LIQUID MARBLE SPHERES: glass marbles rolling slowly across a mirror table -- each marble holds a twisted ribbon of colour inside (from the photograph) that turns as the marble rolls, the glass bending and flipping the view of the table and the other marbles behind it, a crisp highlight and a soft reflection beneath each one. Endless, mirrorable. Audio Reactivity (structure, not only light): audioAdvance -> the marble…
 
@@ -3515,7 +3515,7 @@ LIQUID MARBLE SPHERES: glass marbles rolling slowly across a mirror table -- eac
 
 ### LiquidMercuryFerrofluidChamber
 
-`Scene2D/LiquidMercuryFerrofluidChamber.frag` · type=normal · mood=bright,calm · complexity=4
+`Scene2D/LiquidMercuryFerrofluidChamber.frag` · type=normal · mood=bright,calm · complexity=8
 
 LIQUID MERCURY FERROFLUID CHAMBER: Raymarched reflective pool of liquid mercury and magnetic ferrofluid. Paramagnetic Rosensweig instability cone spikes erupt in hexagonal arrays under shifting magnetic fields, with standing Faraday ripples, chrome mirror reflections, and photo dispersion. audioAdvance -> rotates magnetic field poles & advects liquid ripples audioKick -> violently erupts sharp Rosensweig cone spikes …
 
@@ -3524,16 +3524,16 @@ LIQUID MERCURY FERROFLUID CHAMBER: Raymarched reflective pool of liquid mercury 
 
 ### LiquidMetal
 
-`Scene2D/LiquidMetal.frag` · type=normal · mood=calm,bright · complexity=2
+`Scene2D/LiquidMetal.frag` · type=normal · mood=calm,bright · complexity=7
 
-Screen-space fluid rendering of 32k cohesive metal particles as a single molten, reflective body. texMetal's density, compute-splatted by CfxMetalStep, is smoothed over a 5-tap kernel and thresholded into a surface; the gradient of that smoothed density gives the surface normal used for specular highlights and a photo reflection distorted along the normal, so the metal mirrors the room it sits in. audioKick and audio…
+Screen-space fluid rendering of 64k cohesive metal particles as drops of molten, reflective metal. texMetal's density, compute-splatted by CfxMetalStep, is saturated into a coverage and averaged over a disc into a height with a liquid rim; the slope of that height gives the surface normal used for specular highlights, a dark outline, a shadow and a mirrored, magnified photo reflection with a chrome horizon, so the me…
 
 ![LiquidMetal ruhig (t=8)](img/LiquidMetal_A.jpg) ![LiquidMetal ruhig (t=16)](img/LiquidMetal_B.jpg) ![LiquidMetal audio-heiß (t=21)](img/LiquidMetal_C.jpg)
 
 
 ### LogarithmicSpiralChamberZoom
 
-`Scene2D/LogarithmicSpiralChamberZoom.frag` · type=normal · mood=psychedelic,aggressive,dark · complexity=2
+`Scene2D/LogarithmicSpiralChamberZoom.frag` · type=normal · mood=psychedelic,aggressive,dark · complexity=7
 
 LOGARITHMIC SPIRAL CHAMBER ZOOM: Infinite scale plunge into the golden-ratio chambers of a logarithmic spiral (Nautilus shell). Iridescent mother-of-pearl (nacre) septum walls, seamless octave zoom transitions, and glowing spiral vortex currents. Audio Reactivity: audioAdvance -> drives continuous exponential spiral chamber plunge audioKick -> flashes nacre chamber septum walls & explodes vortex core audioCentroid-> …
 
@@ -3542,7 +3542,7 @@ LOGARITHMIC SPIRAL CHAMBER ZOOM: Infinite scale plunge into the golden-ratio cha
 
 ### LorenzAttractorHyperLoom
 
-`Scene2D/LorenzAttractorHyperLoom.frag` · type=normal · mood=psychedelic,bright · complexity=2
+`Scene2D/LorenzAttractorHyperLoom.frag` · type=normal · mood=psychedelic,bright · complexity=1
 
 LORENZ ATTRACTOR HYPER LOOM: High-density chaotic Lorenz attractor trajectory field woven into a glowing butterfly-wing hyper-dimensional loom with orbital particle pulses, chaotic parameter morphing, and volumetric luminous energy sheets. Audio Reactivity: audioAdvance -> drives continuous integration of chaotic Lorenz trajectories audioKick -> flashes chaotic singularity lobes & shoots particle pulses audioCentroid…
 
@@ -3551,7 +3551,7 @@ LORENZ ATTRACTOR HYPER LOOM: High-density chaotic Lorenz attractor trajectory fi
 
 ### LouisVeilPours
 
-`Scene2D/LouisVeilPours.frag` · type=normal · mood=calm,dreamy,bright · complexity=2
+`Scene2D/LouisVeilPours.frag` · type=normal · mood=calm,dreamy,bright · complexity=1
 
 LOUIS VEIL POURS: after Morris Louis's "Veils" -- translucent sheets of thinned acrylic poured over one another, each a flowing curtain of colour with soft, tide-marked edges, the layers glazing into deeper colours where they overlap; the pours keep coming, each veil flowing across and slowly fading as newer ones cover it. The colours come from the photograph; the raw canvas shows where no paint reached. Endless, mir…
 
@@ -3560,7 +3560,7 @@ LOUIS VEIL POURS: after Morris Louis's "Veils" -- translucent sheets of thinned 
 
 ### LuciferinBioluminescentWavefront
 
-`Scene2D/LuciferinBioluminescentWavefront.frag` · type=normal · mood=calm,dark,dreamy · complexity=4
+`Scene2D/LuciferinBioluminescentWavefront.frag` · type=normal · mood=calm,dark,dreamy · complexity=9
 
 LUCIFERIN BIOLUMINESCENT WAVEFRONT: Nocturnal ocean surf populated by dinoflagellates (Noctiluca scintillans). Hydrodynamic shear stresses on breaking wave crests trigger enzymatic luciferase-luciferin blue-green photon flashes, foam caustics, and water ripples. audioAdvance -> drives oceanic swell drift & shoreward wave-breaking velocity audioKick -> triggers violent wave crest collapse & explosive shear light burst…
 
@@ -3569,7 +3569,7 @@ LUCIFERIN BIOLUMINESCENT WAVEFRONT: Nocturnal ocean surf populated by dinoflagel
 
 ### LyapunovSpaceBioLoom
 
-`Scene2D/LyapunovSpaceBioLoom.frag` · type=normal · mood=psychedelic,bright · complexity=2
+`Scene2D/LyapunovSpaceBioLoom.frag` · type=normal · mood=psychedelic,bright · complexity=3
 
 LYAPUNOV SPACE BIO LOOM: Quasi-periodic Lyapunov exponent fractal space with dynamic sequence switching, bio-luminescent cellular stability zones, and 3D embossed normal relief. Audio Reactivity: audioAdvance -> drives continuous navigation through (A, B) parameter space audioKick -> flashes chaotic Lyapunov boundary nodes & stability burst audioCentroid-> modulates forced sequence order & fine cellular ridges audioS…
 
@@ -3578,7 +3578,7 @@ LYAPUNOV SPACE BIO LOOM: Quasi-periodic Lyapunov exponent fractal space with dyn
 
 ### MagnetarCrustquakeSGR
 
-`Scene2D/MagnetarCrustquakeSGR.frag` · type=normal · mood=aggressive,bright,psychedelic · complexity=4
+`Scene2D/MagnetarCrustquakeSGR.frag` · type=normal · mood=aggressive,bright,psychedelic · complexity=8
 
 MAGNETAR CRUSTQUAKE SGR: Ultra-magnetic neutron star ($10^{15}$ Gauss) displaying tectonic crust fractures (starquakes). Torsional Alfvén waves twist the magnetosphere, triggering giant Soft Gamma Repeater (SGR) flares, positron pair-plasma fountains, and relativistic synchrotron photo mapping. audioAdvance -> rotates magnetosphere dipolar magnetic field lines audioKick -> triggers catastrophic starquake crust fractu…
 
@@ -3587,7 +3587,7 @@ MAGNETAR CRUSTQUAKE SGR: Ultra-magnetic neutron star ($10^{15}$ Gauss) displayin
 
 ### MagnetohydrodynamicSolarGranulation
 
-`Scene2D/MagnetohydrodynamicSolarGranulation.frag` · type=normal · mood=bright · complexity=3
+`Scene2D/MagnetohydrodynamicSolarGranulation.frag` · type=normal · mood=bright · complexity=5
 
 MAGNETOHYDRODYNAMIC SOLAR GRANULATION: Solar photosphere turbulent thermal convection. Rising hot plasma plumes form bright polygonal convective granules, sinking dark intergranular magnetic lanes, high-frequency acoustic p-mode waves, and magnetic micro-flare brightenings. audioAdvance -> drives turbulent plasma convective turnover velocity audioKick -> ignites explosive magnetic reconnection micro-flares in lanes a…
 
@@ -3596,7 +3596,7 @@ MAGNETOHYDRODYNAMIC SOLAR GRANULATION: Solar photosphere turbulent thermal conve
 
 ### MagnetosphericBowShockTurbulence
 
-`Scene2D/MagnetosphericBowShockTurbulence.frag` · type=normal · mood=aggressive,bright,psychedelic · complexity=3
+`Scene2D/MagnetosphericBowShockTurbulence.frag` · type=normal · mood=aggressive,bright,psychedelic · complexity=6
 
 MAGNETOSPHERIC BOW SHOCK TURBULENCE: Planetary magnetosphere collision with supersonic solar wind. Features hyperbolic bow shock compression fronts, turbulent magnetosheath eddies, ion cyclotron whistler wave ripples, and photo-derived auroral particle flux curtains. audioAdvance -> drives supersonic solar wind plasma inflow & magnetosheath turbulence audioKick -> flashes geomagnetic substorm reconnection & auroral p…
 
@@ -3605,7 +3605,7 @@ MAGNETOSPHERIC BOW SHOCK TURBULENCE: Planetary magnetosphere collision with supe
 
 ### MajoranaZeroModeBraid
 
-`Scene2D/MajoranaZeroModeBraid.frag` · type=normal · mood=bright,psychedelic · complexity=3
+`Scene2D/MajoranaZeroModeBraid.frag` · type=normal · mood=bright,psychedelic · complexity=6
 
 MAJORANA ZERO MODE BRAID: 1D topological superconductor nanowire array executing non-abelian Majorana zero-mode braiding operations. Spacetime worldline braids, non-local qubit state encoding, topological phase protection, and continuous photo texture reflections. audioAdvance -> executes non-abelian Majorana braiding exchanges audioKick -> flashes topological quantum gate phase flips & qubit readout audioBass -> und…
 
@@ -3614,7 +3614,7 @@ MAJORANA ZERO MODE BRAID: 1D topological superconductor nanowire array executing
 
 ### MammatusSunset
 
-`Scene2D/MammatusSunset.frag` · type=normal · mood=dark,dreamy,aggressive · complexity=2
+`Scene2D/MammatusSunset.frag` · type=normal · mood=dark,dreamy,aggressive · complexity=3
 
 MAMMATUS SUNSET: after a thunderstorm, the underside of its anvil hangs over the land in mammatus -- hundreds of round pouches bulging down from the cloud base, filling the whole sky, receding in perspective toward the horizon, and the setting sun shining in underneath them from a clear strip on the horizon, so every pouch glows red and orange on its lower side and falls into deep violet shadow above. A dark land lie…
 
@@ -3623,7 +3623,7 @@ MAMMATUS SUNSET: after a thunderstorm, the underside of its anvil hangs over the
 
 ### MandelboxHyperCubeMetamaterial
 
-`Scene2D/MandelboxHyperCubeMetamaterial.frag` · type=normal · mood=aggressive,dark,psychedelic · complexity=4
+`Scene2D/MandelboxHyperCubeMetamaterial.frag` · type=normal · mood=aggressive,dark,psychedelic · complexity=7
 
 MANDELBOX HYPERCUBE METAMATERIAL: Raymarched 3D Mandelbox fractal generating infinite metallic cyber-architectural megastructures. Recursive box folds, sphere folds, scale inversions, neon edge lighting, and continuous multi-planar photo texture reflections. audioAdvance -> navigates camera through Mandelbox corridors audioKick -> flashes neon edge channels and metallic specular reflections audioBass -> pulses Mandel…
 
@@ -3632,7 +3632,7 @@ MANDELBOX HYPERCUBE METAMATERIAL: Raymarched 3D Mandelbox fractal generating inf
 
 ### MandelbrotDeepZoom
 
-`Scene2D/MandelbrotDeepZoom.frag` · type=normal · mood=psychedelic,bright · complexity=2
+`Scene2D/MandelbrotDeepZoom.frag` · type=normal · mood=psychedelic,bright · complexity=5
 
 Displays the deep-zoom Mandelbrot fractal computed by Engine/CfxMandelbrot.comp (`texMandelbrot`): a real infinite mathematical zoom (double-single emulated precision, roughly 10,000x deeper than plain float32 before banding) rather than the photo-based Droste dive already in the catalogue. R holds the smooth escape-time (negative = never escaped, an interior point), G an orbit-trap distance used to shade interior de…
 
@@ -3641,7 +3641,7 @@ Displays the deep-zoom Mandelbrot fractal computed by Engine/CfxMandelbrot.comp 
 
 ### MandelbulbHyperRealm
 
-`Scene2D/MandelbulbHyperRealm.frag` · type=normal · mood=psychedelic,bright · complexity=4
+`Scene2D/MandelbulbHyperRealm.frag` · type=normal · mood=psychedelic,bright · complexity=9
 
 MANDELBULB HYPER REALM: Raymarched infinite 3D Mandelbulb fractal realm (z^N + c) with audio-reactive power N morphing, internal crystalline cave traversal, and thin-film metallic specular iridescence with photo texture blending. audioSwell -> dynamically morphs fractal power N (2.0 to 8.0) audioKick -> ignites metallic specular core flare & laser beams audioPhase -> rotates higher-dimensional 3D slicing planes audio…
 
@@ -3650,7 +3650,7 @@ MANDELBULB HYPER REALM: Raymarched infinite 3D Mandelbulb fractal realm (z^N + c
 
 ### MandelbulbInfiniteDive
 
-`Scene2D/MandelbulbInfiniteDive.frag` · type=normal · mood=psychedelic,aggressive,dark · complexity=2
+`Scene2D/MandelbulbInfiniteDive.frag` · type=normal · mood=psychedelic,aggressive,dark · complexity=1
 
 MANDELBULB INFINITE DIVE: 3D Raymarching continuous dive into the fractal canyons of the 3D Mandelbulb with dynamic morphing power N, orbit-trap crystal colors, and deep ambient occlusion. Audio Reactivity: audioAdvance -> drives continuous forward flight into fractal canyons audioKick -> flashes interior fractal core & expands orbit trap highlights audioCentroid-> modulates power N harmonic morphing audioSubBass -> …
 
@@ -3659,7 +3659,7 @@ MANDELBULB INFINITE DIVE: 3D Raymarching continuous dive into the fractal canyon
 
 ### MantleConvectionPlume
 
-`Scene2D/MantleConvectionPlume.frag` · type=normal · mood=dark,aggressive · complexity=3
+`Scene2D/MantleConvectionPlume.frag` · type=normal · mood=dark,aggressive · complexity=7
 
 MANTLE CONVECTION PLUME: Deep Earth core-mantle boundary (D'' layer) thermal plumes rising through Rayleigh-Bénard viscous convection cells. Mushrooming basaltic magma diapir heads, subducting tectonic slabs, 3000°C thermal upwelling, and molten rock photo texture distortion. audioAdvance -> drives viscous mantle convection vorticity flow audioKick -> triggers explosive magma diapir eruptions at the lithosphere audio…
 
@@ -3668,7 +3668,7 @@ MANTLE CONVECTION PLUME: Deep Earth core-mantle boundary (D'' layer) thermal plu
 
 ### MarangoniConvectionTearsOfWine
 
-`Scene2D/MarangoniConvectionTearsOfWine.frag` · type=normal · mood=calm,dreamy,bright · complexity=3
+`Scene2D/MarangoniConvectionTearsOfWine.frag` · type=normal · mood=calm,dreamy,bright · complexity=7
 
 MARANGONI CONVECTION TEARS OF WINE: Solutal Marangoni effect on glass surfaces. Alcohol evaporation gradients create surface tension differentials, driving climbing thin liquid films, capillary rim instability beads, and cascading droplet rivulets (tears of wine). audioAdvance -> drives upward climbing film velocity & droplet rivulet cascade flow audioKick -> flashes capillary bead pinch-off & falling droplet impacts…
 
@@ -3677,7 +3677,7 @@ MARANGONI CONVECTION TEARS OF WINE: Solutal Marangoni effect on glass surfaces. 
 
 ### MarbleRunTrack
 
-`Scene2D/MarbleRunTrack.frag` · type=normal · mood=calm,bright,dreamy · complexity=3
+`Scene2D/MarbleRunTrack.frag` · type=normal · mood=calm,bright,dreamy · complexity=7
 
 MARBLE RUN TRACK: a looping wooden track, and marbles (round, glass, each a chroma class) rolling it on the scene clock -- down the ramps, round the loops, through the funnel, back up the lift. The rail a marble rides lights in its class colour with that class's energy; the kick is the bell at the bottom of the run; the photo is the wall behind and the marbles' glass. Camera fixed on the run. Audio Reactivity: sceneA…
 
@@ -3686,7 +3686,7 @@ MARBLE RUN TRACK: a looping wooden track, and marbles (round, glass, each a chro
 
 ### MarbleVeinsFlight
 
-`Scene2D/MarbleVeinsFlight.frag` · type=normal · mood=calm,dark · complexity=2
+`Scene2D/MarbleVeinsFlight.frag` · type=normal · mood=calm,dark · complexity=9
 
 MARBLE VEINS FLIGHT: gliding low over a vast polished slab of marble -- black Nero Marquina or white Calacatta, its surface a mirror, the veins winding through it in branching rivers of white, grey and inlaid gold that glint as the light slides over them. A soft studio light hangs above and its long reflection runs along the polish. The view glides steadily over the stone, the slab receding into a soft blur. Audio Re…
 
@@ -3695,7 +3695,7 @@ MARBLE VEINS FLIGHT: gliding low over a vast polished slab of marble -- black Ne
 
 ### MarchingSquaresIsobands
 
-`Scene2D/MarchingSquaresIsobands.frag` · type=normal · mood=calm,bright · complexity=2
+`Scene2D/MarchingSquaresIsobands.frag` · type=normal · mood=calm,bright · complexity=3
 
 MARCHING SQUARES ISOBANDS: the photograph as a stepped relief map of flat coloured bands, as a plotter would draw it -- its brightness sliced into contour bands, each band a flat layer of colour stacked like cut paper, with a small drop shadow at each step so the layers read as terraces; the levels creep slowly so the terraces grow and shrink. Endless, mirrorable. Audio Reactivity (structure, not only light): audioAd…
 
@@ -3740,7 +3740,7 @@ MAYFLY STREET LAMPS: a summer night on an old river bridge, the mayflies hatchin
 
 ### MelodyConstellation
 
-`Scene2D/MelodyConstellation.frag` · type=normal · mood=calm,dark,dreamy,space · complexity=2
+`Scene2D/MelodyConstellation.frag` · type=normal · mood=calm,dark,dreamy,space · complexity=9
 
 MELODY CONSTELLATION: the last ~8 seconds of melody drawn as stars on a night sky and joined into a constellation that writes itself as the song goes. The host keeps 96 samples of the melody pitch (audioMelody, a ring with audioMelodyHead, one sample per 80 ms); each becomes a star -- position from time (a slow spiral, so the constellation curls instead of scrolling) and pitch (radius), brightness from how recently i…
 
@@ -3749,7 +3749,7 @@ MELODY CONSTELLATION: the last ~8 seconds of melody drawn as stars on a night sk
 
 ### MelodyKaleidoscope
 
-`Scene2D/MelodyKaleidoscope.frag` · type=normal · mood=dark,psychedelic,dreamy · complexity=2
+`Scene2D/MelodyKaleidoscope.frag` · type=normal · mood=dark,psychedelic,dreamy · complexity=9
 
 MELODY KALEIDOSCOPE: the mirrored motif is the melody itself. The last eight seconds of pitch (audioMelody, 96 samples at 80 ms) are drawn as a glowing contour -- age along the wedge, pitch across it -- and folded n-way, so every phrase becomes an ornament that ages outward through the mirror. The contour is thick where the melody was loud and thin where it was quiet, and the photo shows through it as the light behin…
 
@@ -3758,7 +3758,7 @@ MELODY KALEIDOSCOPE: the mirrored motif is the melody itself. The last eight sec
 
 ### MelodyRidgeline
 
-`Scene2D/MelodyRidgeline.frag` · type=normal · mood=calm,bright,dreamy · complexity=2
+`Scene2D/MelodyRidgeline.frag` · type=normal · mood=calm,bright,dreamy · complexity=6
 
 MELODY RIDGELINE: the melody as mountains. The 96-sample melody history is the profile of the nearest ridge (newest at the right), scrolling steadily leftward with the sample clock; behind it, older ridges -- the same history at larger delays, hazed by distance -- so the tune stands as a range of hills under a sky of the photo. The swell is the daylight, the kick a flash on the nearest summit, the treble the snow gli…
 
@@ -3778,7 +3778,7 @@ MELODY SCRIPT: the tune written as ink calligraphy on rice paper. The last eight
 
 ### MeltingCrayonRainbow
 
-`Scene2D/MeltingCrayonRainbow.frag` · type=normal · mood=bright,energetic · complexity=2
+`Scene2D/MeltingCrayonRainbow.frag` · type=normal · mood=bright,energetic · complexity=4
 
 MELTING CRAYON RAINBOW: rows of wax crayons melting down a canvas under a hot-air blower -- along the top of each band a row of crayons in the photograph's colours, and from each one a glossy rivulet of molten wax runs down, splitting and splattering, the runs of neighbouring colours braiding together; the drips grow slowly longer, the bands repeat so the plane is endless. Mirrorable. Audio Reactivity (structure, not…
 
@@ -3787,7 +3787,7 @@ MELTING CRAYON RAINBOW: rows of wax crayons melting down a canvas under a hot-ai
 
 ### MetamaterialCloakingHorizon
 
-`Scene2D/MetamaterialCloakingHorizon.frag` · type=normal · mood=psychedelic,calm · complexity=3
+`Scene2D/MetamaterialCloakingHorizon.frag` · type=normal · mood=psychedelic,calm · complexity=5
 
 METAMATERIAL CLOAKING HORIZON: Transformation-optics invisibility cloaking shell. Coordinates are smoothly deformed by an inhomogeneous anisotropic permittivity/permeability tensor, routing light rays around a central hidden core with compressed boundary caustics. audioAdvance -> navigates through continuous optical transformation coordinates audioPhase -> rotates cloaking anisotropy axes audioKick -> flashes metamat…
 
@@ -3796,7 +3796,7 @@ METAMATERIAL CLOAKING HORIZON: Transformation-optics invisibility cloaking shell
 
 ### Metamorph
 
-`Scene2D/Metamorph.frag` · type=normal · mood=psychedelic,dreamy · complexity=1
+`Scene2D/Metamorph.frag` · type=normal · mood=psychedelic,dreamy · complexity=9
 
 The music-type ADAPTIVE effect: cross-fades between two personalities using the audioAmbient classifier (0 = beat music, 1 = drone/ambient), which changes over seconds — so the morph itself is a slow, seamless transition. Research-informed (crossmodal correspondence literature): percussive music -> ANGULAR, crisp, spiky forms => beat personality: hard mirrored shards of the image, pulsing on the beat, a bar-phase hig…
 
@@ -3805,7 +3805,7 @@ The music-type ADAPTIVE effect: cross-fades between two personalities using the 
 
 ### MetamorphicLavaVortex
 
-`Scene2D/MetamorphicLavaVortex.frag` · type=normal · mood=aggressive,dark · complexity=4
+`Scene2D/MetamorphicLavaVortex.frag` · type=normal · mood=aggressive,dark · complexity=5
 
 METAMORPHIC LAVA VORTEX: 100% viewport-filling viscous basalt magma ocean. Solidified black obsidian crust plates drift, fracture, and submerge into glowing 1500°C molten lava rivers, with convective heat shimmer, incandescent fault cracks, and volcanic photo texture advection.
 
@@ -3814,7 +3814,7 @@ METAMORPHIC LAVA VORTEX: 100% viewport-filling viscous basalt magma ocean. Solid
 
 ### MicrolensingCausticSweep
 
-`Scene2D/MicrolensingCausticSweep.frag` · type=normal · mood=space,dark,psychedelic · complexity=2
+`Scene2D/MicrolensingCausticSweep.frag` · type=normal · mood=space,dark,psychedelic · complexity=6
 
 MICROLENSING CAUSTIC SWEEP: a pair of point-mass lenses drifts across a star field, and where their caustics -- the folds of the lens map -- pass over a star, it flares: that is a microlensing event, and here it happens all over the sky. The star field is sampled through the lens map (each pixel asks which source it sees), and the magnification is the inverse Jacobian of that map, so the caustic curves appear as line…
 
@@ -3832,7 +3832,7 @@ MILK DYE BURST: the kitchen experiment of food colour on milk touched with soap 
 
 ### MirrorBallRoom
 
-`Scene2D/MirrorBallRoom.frag` · type=normal · mood=dark,aggressive,psychedelic · complexity=4
+`Scene2D/MirrorBallRoom.frag` · type=normal · mood=dark,aggressive,psychedelic · complexity=9
 
 MIRROR BALL ROOM: an empty ballroom at night with a mirror ball turning under the ceiling. A spotlight hits the ball and a thousand small squares of light wander steadily over the walls, the parquet and the columns; in the haze each reflection draws a thin beam back to the ball. The ball keeps its own slow speed -- the music is in the light: the spot brightens with the kick, and the reflections take their colour from…
 
@@ -3841,7 +3841,7 @@ MIRROR BALL ROOM: an empty ballroom at night with a mirror ball turning under th
 
 ### MitchellStrokes
 
-`Scene2D/MitchellStrokes.frag` · type=normal · mood=energetic,bright · complexity=2
+`Scene2D/MitchellStrokes.frag` · type=normal · mood=energetic,bright · complexity=1
 
 MITCHELL STROKES: Joan Mitchell's gestural abstraction, alive -- clusters of energetic, crisscrossing brushstrokes in vivid colours (from the photograph) tangle over a white ground like a windblown thicket, dense in the middle of each cluster and loosening toward its edges, individual strokes whipping in and fading as the clusters slowly drift and re-form. Endless, mirrorable. Audio Reactivity (structure, not only li…
 
@@ -3850,7 +3850,7 @@ MITCHELL STROKES: Joan Mitchell's gestural abstraction, alive -- clusters of ene
 
 ### MobiusInversionKaleidoscope
 
-`Scene2D/MobiusInversionKaleidoscope.frag` · type=normal · mood=psychedelic,dark · complexity=2
+`Scene2D/MobiusInversionKaleidoscope.frag` · type=normal · mood=psychedelic,dark · complexity=3
 
 An Escher "Circle Limit"-style infinite kaleidoscope: NOT an angular mirror fold and NOT escape-time iteration, but repeated CIRCLE INVERSION through a symmetric ring of n circles (the classic Apollonian-gasket / Kleinian-group construction) -- a point that falls inside any circle is inverted back out through it, over and over, so the picture appears infinitely nested into ever-smaller tangent circles right up to the…
 
@@ -3859,7 +3859,7 @@ An Escher "Circle Limit"-style infinite kaleidoscope: NOT an angular mirror fold
 
 ### MobiusOrbs
 
-`Scene2D/MobiusOrbs.frag` · type=normal · mood=dreamy,bright · complexity=2
+`Scene2D/MobiusOrbs.frag` · type=normal · mood=dreamy,bright · complexity=7
 
 Adapted from an untitled Shadertoy Möbius-inversion orb field (pasted by the user; exact page/author not given). A ring of glowing orbs seen through a Möbius (1/r^2) inversion, swirling into a hypnotic kaleidoscopic knot. Adapted to our engine: GLSL 1.20 (gl_FragCoord/resolution/time), jump-free audio motion (host-integrated audioAdvance added to time, never time*audio), beat/onset brightness, mood grade, and IMAGE-D…
 
@@ -3868,7 +3868,7 @@ Adapted from an untitled Shadertoy Möbius-inversion orb field (pasted by the us
 
 ### MobiusStripRollerDrive
 
-`Scene2D/MobiusStripRollerDrive.frag` · type=normal · mood=psychedelic,aggressive,dark · complexity=2
+`Scene2D/MobiusStripRollerDrive.frag` · type=normal · mood=psychedelic,aggressive,dark · complexity=6
 
 MOBIUS STRIP ROLLER DRIVE: High-velocity 3D roller coaster ride along a twisted single-sided Möbius strip. Seamless continuous surface traversal with periodic complementary color inversions, laser track rails, and neon sparks. Audio Reactivity: audioAdvance -> drives continuous forward roller-coaster velocity along the strip audioKick -> flashes track neon energy nodes & triggers orientation flip burst audioCentroid-…
 
@@ -3877,7 +3877,7 @@ MOBIUS STRIP ROLLER DRIVE: High-velocity 3D roller coaster ride along a twisted 
 
 ### ModularSynthPatchbay
 
-`Scene2D/ModularSynthPatchbay.frag` · type=normal · mood=dark,psychedelic,aggressive · complexity=3
+`Scene2D/ModularSynthPatchbay.frag` · type=normal · mood=dark,psychedelic,aggressive · complexity=5
 
 MODULAR SYNTH PATCHBAY: a wall of Eurorack modules -- panels carrying the photo as their graphics, knobs turning slowly on the scene clock, LEDs lit by the chroma classes, an oscilloscope module drawing the waveform (audioWave), a spectrum module with the 32 bands, and patch cables hanging in catenaries between jacks, each cable lit by the band it carries. The kick is the trigger LED, the swell the rack light. Camera…
 
@@ -3886,7 +3886,7 @@ MODULAR SYNTH PATCHBAY: a wall of Eurorack modules -- panels carrying the photo 
 
 ### MoebiusTunnel
 
-`Scene2D/MoebiusTunnel.frag` · type=normal · mood=psychedelic,dark · complexity=2
+`Scene2D/MoebiusTunnel.frag` · type=normal · mood=psychedelic,dark · complexity=9
 
 MOEBIUS TUNNEL: a tunnel whose wall is a one-sided surface. The wall is built from a few ribbons that make an odd number of half-twists per loop, so a ribbon that starts on the inside of the tube arrives on the outside one loop later and comes back around: the stripes spiral past the camera and never repeat the way a plain tunnel does. Photo on the front face, its palette-negative on the back face -- the twist is wha…
 
@@ -3913,7 +3913,7 @@ MOLECULAR CLOUD CORE: a protostar deep in a dark molecular cloud, as the infrare
 
 ### MonetLilyPond
 
-`Scene2D/MonetLilyPond.frag` · type=normal · mood=calm,bright,dreamy · complexity=3
+`Scene2D/MonetLilyPond.frag` · type=normal · mood=calm,bright,dreamy · complexity=1
 
 MONET LILY POND: the water-lily pond at Giverny as Monet painted it -- no horizon, only water: the sky and the willows mirrored in it in lilac, blue and green, and floating on it clusters of lily pads with pink and white blossoms, all laid down in short visible brushstrokes. The strokes are the picture: every pixel takes the colour of the stroke it lies in, strokes lie horizontal on the water and follow the pads' cur…
 
@@ -3922,7 +3922,7 @@ MONET LILY POND: the water-lily pond at Giverny as Monet painted it -- no horizo
 
 ### MonsterBuildingCourtyard
 
-`Scene2D/MonsterBuildingCourtyard.frag` · type=normal · mood=dark,bright · complexity=2
+`Scene2D/MonsterBuildingCourtyard.frag` · type=normal · mood=dark,bright · complexity=5
 
 MONSTER BUILDING COURTYARD: lying on your back in the courtyard of a Hong Kong housing block at dusk and looking straight up -- four walls of flats soaring on every side, thousands of windows stacked floor on floor, air-conditioner boxes under the sills, laundry on poles, the facades in faded pastel, all of it converging to a small rectangle of violet evening sky far above. The windows are lit, warm and cool, and the…
 
@@ -3940,7 +3940,7 @@ MOOD WEATHER VALLEY: a valley of the photo under weather that is the mood of the
 
 ### MoonriseSkyline
 
-`Scene2D/MoonriseSkyline.frag` · type=normal · mood=calm,dark · complexity=2
+`Scene2D/MoonriseSkyline.frag` · type=normal · mood=calm,dark · complexity=3
 
 MOONRISE SKYLINE: the telephoto shot of a full moon rising behind a city -- the moon enormous, filling half the height of the frame, its maria and bright crater rays sharp, tinted orange by the thick air near the horizon, and in front of it the skyline in silhouette: towers, spires, a radio mast with a red warning light, lit windows scattered over the dark facades. The moon rises slowly and steadily, paling as it cli…
 
@@ -3949,7 +3949,7 @@ MOONRISE SKYLINE: the telephoto shot of a full moon rising behind a city -- the 
 
 ### MultiverseBubbles
 
-`Scene2D/MultiverseBubbles.frag` · type=normal · mood=calm,dreamy,space · complexity=3
+`Scene2D/MultiverseBubbles.frag` · type=normal · mood=calm,dreamy,space · complexity=4
 
 MULTIVERSE BUBBLES: Floating in the higher-dimensional 'bulk', we see countless other universes drifting like massive, glowing bubbles. When they collide, catastrophic flashes of energy bridge the voids between them, syncing to the audio kicks. audioAdvance -> slow drift through the bulk audioKick -> flashes when universes bump into each other audioSwell -> ambient brightness of the multiverse audioChromaHue-> palett…
 
@@ -3958,7 +3958,7 @@ MULTIVERSE BUBBLES: Floating in the higher-dimensional 'bulk', we see countless 
 
 ### MuonTomographyPyramid
 
-`Scene2D/MuonTomographyPyramid.frag` · type=normal · mood=dark,calm,dreamy · complexity=2
+`Scene2D/MuonTomographyPyramid.frag` · type=normal · mood=dark,calm,dreamy · complexity=6
 
 MUON TOMOGRAPHY PYRAMID: seeing through a pyramid with cosmic rays. Muons rain from the sky in straight tracks (light events on the scene clock); where a track crosses less stone it survives, so over the arc the hidden chamber -- the photo -- resolves inside the silhouette as the region of excess flux. The kick is a bright track, the bass the detector glow beneath, the treble the scintillator sparkle. Camera still. A…
 
@@ -3967,7 +3967,7 @@ MUON TOMOGRAPHY PYRAMID: seeing through a pyramid with cosmic rays. Muons rain f
 
 ### MuqarnasDome
 
-`Scene2D/MuqarnasDome.frag` · type=normal · mood=bright,calm,psychedelic · complexity=3
+`Scene2D/MuqarnasDome.frag` · type=normal · mood=bright,calm,psychedelic · complexity=6
 
 MUQARNAS DOME: looking straight up into a honeycomb vault of stalactite niches, tier upon tier of pointed cells stepping inward to a star-shaped oculus full of daylight. Every cell is a small concave niche lit from the centre, its rim gilded, its hollow tiled in the colours of the photo; alternate tiers are offset by half a cell so the rows interlock. The vault turns very slowly; the gold of each tier glows with its …
 
@@ -3976,7 +3976,7 @@ MUQARNAS DOME: looking straight up into a honeycomb vault of stalactite niches, 
 
 ### Murmuration
 
-`Scene2D/Murmuration.frag` · type=normal · mood=calm,dreamy · complexity=2
+`Scene2D/Murmuration.frag` · type=normal · mood=calm,dreamy · complexity=6
 
 A starling flock of 131k boids, composited as dark silhouette density over an evening sky built from two colour samples of the photo. The flock (rendered upstream into texBoids) is read back here purely as a density field: a tight 8-tap blur feeds a contrast curve so dense regions go dark/solid and thin regions glow. audioAmbient brightens/dims the whole sky and its low sun glow; audioLevel and audioBeat add to the s…
 
@@ -3985,7 +3985,7 @@ A starling flock of 131k boids, composited as dark silhouette density over an ev
 
 ### MusicalFountainShow
 
-`Scene2D/MusicalFountainShow.frag` · type=normal · mood=bright,aggressive · complexity=3
+`Scene2D/MusicalFountainShow.frag` · type=normal · mood=bright,aggressive · complexity=10
 
 MUSICAL FOUNTAIN SHOW: a dancing fountain at night on a long basin, a row of jets across the whole frame, each lit from below, the spray hanging as glowing mist and the whole show mirrored in the dark water. Each jet is a spectrum band: its height follows the smoothed energy of that band, so the row of water draws the spectrum as a living silhouette. A few tall centre jets breathe with the swell. Behind the basin a c…
 
@@ -3994,7 +3994,7 @@ MUSICAL FOUNTAIN SHOW: a dancing fountain at night on a long basin, a row of jet
 
 ### MusicBoxCylinder
 
-`Scene2D/MusicBoxCylinder.frag` · type=normal · mood=calm,bright,dreamy · complexity=3
+`Scene2D/MusicBoxCylinder.frag` · type=normal · mood=calm,bright,dreamy · complexity=4
 
 MUSIC BOX CYLINDER: the works of a cylinder music box, lid open. The pinned brass cylinder turns steadily on the scene clock; the steel comb lies alongside it with one tooth per chroma class, and a tooth lights when its class sounds -- as if the pin passing under it had just plucked it. The pins are laid out as the score, so the cylinder reads as a rolled piece of music. The photo is the lid's inlay and the mirror in…
 
@@ -4003,7 +4003,7 @@ MUSIC BOX CYLINDER: the works of a cylinder music box, lid open. The pinned bras
 
 ### NebulaCliffs
 
-`Scene2D/NebulaCliffs.frag` · type=normal · mood=calm,dreamy,space · complexity=3
+`Scene2D/NebulaCliffs.frag` · type=normal · mood=calm,dreamy,space · complexity=4
 
 NEBULA CLIFFS: the "cosmic cliffs" of a star-forming region, as the infrared telescopes show them -- a wall of orange-brown dust rising from the bottom of the frame in three ranges, its crags lit gold along the ionisation front where the young cluster above (off frame) burns into it, steam-like wisps boiling off the edges, and above it all a glowing blue-cyan cavity of hot gas strewn with stars, the brightest wearing…
 
@@ -4012,7 +4012,7 @@ NEBULA CLIFFS: the "cosmic cliffs" of a star-forming region, as the infrared tel
 
 ### NebulaShipyard
 
-`Scene2D/NebulaShipyard.frag` · type=normal · mood=bright,aggressive,space · complexity=4
+`Scene2D/NebulaShipyard.frag` · type=normal · mood=bright,aggressive,space · complexity=8
 
 NEBULA SHIPYARD: A massive orbital drydock surrounded by scaffolding and robotic arms, constructing new ships amidst a colorful nebula. Welding flares and engine tests flash to the beat. audioAdvance -> camera flythrough speed audioKick -> welding flares and construction sparks audioSwell -> nebula brightness and floodlights audioChromaHue-> nebula and light palette Per-activation variety: yardP float shipyard size/c…
 
@@ -4021,7 +4021,7 @@ NEBULA SHIPYARD: A massive orbital drydock surrounded by scaffolding and robotic
 
 ### NeonCyberVoxelFlight
 
-`Scene2D/NeonCyberVoxelFlight.frag` · type=normal · mood=psychedelic,bright,aggressive · complexity=2
+`Scene2D/NeonCyberVoxelFlight.frag` · type=normal · mood=psychedelic,bright,aggressive · complexity=10
 
 NEON CYBER VOXEL FLIGHT: High-speed 3D low-altitude flight through an endless cyberpunk voxel megalopolis with audio-reactive skyscraper heights, glowing matrix window grids, holographic sky billboards, and laser searchlights. Audio Reactivity: audioAdvance -> drives continuous forward flight between voxel towers audioKick -> flashes skyscraper neon roof beacons & billboard shockwaves audioBass -> elevates skyscraper…
 
@@ -4030,7 +4030,7 @@ NEON CYBER VOXEL FLIGHT: High-speed 3D low-altitude flight through an endless cy
 
 ### NeonFluidDynamics
 
-`Scene2D/NeonFluidDynamics.frag` · type=normal · mood=dreamy,bright · complexity=3
+`Scene2D/NeonFluidDynamics.frag` · type=normal · mood=dreamy,bright · complexity=1
 
 NEON FLUID DYNAMICS: Multi-scale Navier-Stokes curl-noise vorticity fluid advection. High-luminance neon ink plumes, collision shockwaves, turbulent viscous marbling, and audio-driven dye injection pulses over photos. audioKick -> injects explosive new expanding neon dye vortex rings audioBass -> swirls macroscopic fluid bodies and advection currents audioHigh -> creates fine turbulent viscous tendrils and sparkling …
 
@@ -4039,7 +4039,7 @@ NEON FLUID DYNAMICS: Multi-scale Navier-Stokes curl-noise vorticity fluid advect
 
 ### NeonPoolNight
 
-`Scene2D/NeonPoolNight.frag` · type=normal · mood=dark,dreamy · complexity=3
+`Scene2D/NeonPoolNight.frag` · type=normal · mood=dark,dreamy · complexity=5
 
 NEON POOL NIGHT: a swimming pool at night seen straight from above, the water lit from inside by underwater lamps in turquoise and magenta. Caustic nets dance over the tiled floor and the lane lines; the wall lamps throw their colour in soft pools; the waterline of the coping glows; a lone inflatable ring drifts slowly across and its shadow slides over the floor. The pool deck around it is dark, wet, with the neon re…
 
@@ -4048,7 +4048,7 @@ NEON POOL NIGHT: a swimming pool at night seen straight from above, the water li
 
 ### NeonRingTunnel
 
-`Scene2D/NeonRingTunnel.frag` · type=normal · mood=psychedelic,aggressive,dark · complexity=2
+`Scene2D/NeonRingTunnel.frag` · type=normal · mood=psychedelic,aggressive,dark · complexity=10
 
 NEON RING TUNNEL: flying through a tunnel of neon tubes -- ring after ring of glowing tubes rush past, but the rings are not circles: each ring's outline is traced from the photograph's contours around the tunnel axis, so they buckle and notch like hand-bent neon, and every ring glows in its own colour from the photo, with a halo in the haze and a reflection smeared across the wet walls between. Endless polar field. …
 
@@ -4057,7 +4057,7 @@ NEON RING TUNNEL: flying through a tunnel of neon tubes -- ring after ring of gl
 
 ### NeonSignAlley
 
-`Scene2D/NeonSignAlley.frag` · type=normal · mood=dark,aggressive,psychedelic · complexity=4
+`Scene2D/NeonSignAlley.frag` · type=normal · mood=dark,aggressive,psychedelic · complexity=8
 
 NEON SIGN ALLEY: a narrow back street at night, hundreds of neon blade signs hanging off both walls into the depth, rain falling through their light and the wet asphalt mirroring all of it. The camera glides down the alley at a steady walking pace; each sign belongs to a spectrum band and burns with it, so the whole street plays the music as light. Audio Reactivity: audioSpectrum[32] -> brightness of each sign (its b…
 
@@ -4066,7 +4066,7 @@ NEON SIGN ALLEY: a narrow back street at night, hundreds of neon blade signs han
 
 ### NeonTubes
 
-`Scene2D/NeonTubes.frag` · type=normal · mood=aggressive,bright,psychedelic · complexity=2
+`Scene2D/NeonTubes.frag` · type=normal · mood=aggressive,bright,psychedelic · complexity=10
 
 Adapted from a \@kishimisu code-golf raymarch (2022, CC BY-NC-SA 4.0). "A nice mix between an intended result and happy bugs integrated as features." A fly-through of pulsing neon rings/tubes in a repeating domain. Adapted to our engine: image-forward (the picture colours the tubes + drifts as a faint nebula), audio-reactive & jump-free (forward travel via audioAdvance; beats brighten; centroid/valence grade).
 
@@ -4075,7 +4075,7 @@ Adapted from a \@kishimisu code-golf raymarch (2022, CC BY-NC-SA 4.0). "A nice m
 
 ### NestedMandalaInfiniteDive
 
-`Scene2D/NestedMandalaInfiniteDive.frag` · type=normal · mood=psychedelic,aggressive,dark · complexity=2
+`Scene2D/NestedMandalaInfiniteDive.frag` · type=normal · mood=psychedelic,aggressive,dark · complexity=3
 
 NESTED MANDALA INFINITE DIVE: Multi-plane continuous forward plunge through stacked ornate mandala gates with center puncture shockwaves, depth-of-field bokeh blur, and kaleidoscopic petal folding. Audio Reactivity: audioAdvance -> drives continuous forward plunge velocity through mandala gates audioKick -> triggers gate puncture shatter & radial shockwave expansion audioCentroid-> modulates mandala petal symmetry or…
 
@@ -4084,7 +4084,7 @@ NESTED MANDALA INFINITE DIVE: Multi-plane continuous forward plunge through stac
 
 ### NeutronStarCollision
 
-`Scene2D/NeutronStarCollision.frag` · type=normal · mood=dark,aggressive,space · complexity=5
+`Scene2D/NeutronStarCollision.frag` · type=normal · mood=dark,aggressive,space · complexity=8
 
 NEUTRON STAR COLLISION: Two incredibly dense neutron stars spiraling towards each other. They emit blinding, high-frequency jets of gamma radiation that pulse violently to the beat. audioAdvance -> rotation speed of the binary system audioKick -> intense energy bursts and jet pulses audioSwell -> overall brightness of the accretion disc and jets audioChromaHue-> palette offset for the extreme radiation Per-activation…
 
@@ -4093,7 +4093,7 @@ NEUTRON STAR COLLISION: Two incredibly dense neutron stars spiraling towards eac
 
 ### NeutronStarMagnetarBurst
 
-`Scene2D/NeutronStarMagnetarBurst.frag` · type=normal · mood=aggressive,bright · complexity=4
+`Scene2D/NeutronStarMagnetarBurst.frag` · type=normal · mood=aggressive,bright · complexity=9
 
 NEUTRON STAR MAGNETAR BURST: 100% viewport-filling extreme close-up of a hyper-magnetic neutron star (10^15 Gauss). Starquake crust fault fractures, blinding Cherenkov radiation bursts, relativistic pair-plasma fountains, twisted dipolar magnetic flux tubes, and gravitational synchrotron lensing.
 
@@ -4102,7 +4102,7 @@ NEUTRON STAR MAGNETAR BURST: 100% viewport-filling extreme close-up of a hyper-m
 
 ### NeutronStarMagneticFunnelPlunge
 
-`Scene2D/NeutronStarMagneticFunnelPlunge.frag` · type=normal · mood=psychedelic,dark,aggressive · complexity=2
+`Scene2D/NeutronStarMagneticFunnelPlunge.frag` · type=normal · mood=psychedelic,dark,aggressive · complexity=7
 
 NEUTRON STAR MAGNETIC FUNNEL PLUNGE: Relativistic plunge along magnetic dipole field lines into the magnetic polar cap of a rotating millisecond pulsar. Gleaming synchrotron radiation cones, magnetic funnel plasma pinch, and high-energy X-ray beam flashes. Audio Reactivity: audioAdvance -> drives continuous relativistic plunge along magnetic dipole lines audioKick -> flashes pulsar polar cap magnetic reconnection & X…
 
@@ -4111,7 +4111,7 @@ NEUTRON STAR MAGNETIC FUNNEL PLUNGE: Relativistic plunge along magnetic dipole f
 
 ### NeutronStarSurfaceSprint
 
-`Scene2D/NeutronStarSurfaceSprint.frag` · type=normal · mood=space,dark,aggressive · complexity=3
+`Scene2D/NeutronStarSurfaceSprint.frag` · type=normal · mood=space,dark,aggressive · complexity=9
 
 NEUTRON STAR SURFACE SPRINT: a racing flight over the crust of a neutron star. The ground is a height field of cooled iron plates split by glowing cracks; the camera skims it at a fixed height on the music's pace, so the crust streams under us and the horizon stays put. The sharpness of the sound is the heat in the cracks; a starquake is a kick, and it is LIGHT: a flash runs through the crack network, the ground neve…
 
@@ -4120,7 +4120,7 @@ NEUTRON STAR SURFACE SPRINT: a racing flight over the crust of a neutron star. T
 
 ### NewtonBasinPsychedelicSea
 
-`Scene2D/NewtonBasinPsychedelicSea.frag` · type=normal · mood=psychedelic,dark · complexity=2
+`Scene2D/NewtonBasinPsychedelicSea.frag` · type=normal · mood=psychedelic,dark · complexity=6
 
 NEWTON BASIN PSYCHEDELIC SEA: Higher-order complex Newton-Raphson root attraction basins with 3D embossed normal relief, fluid relaxation currents, specular wave glints, and dynamic polynomial coefficient rotation. Audio Reactivity: audioAdvance -> rotates complex polynomial roots & drives wave relaxation audioKick -> flashes root convergence singularities & shockwave pulse audioCentroid-> selects polynomial degree p…
 
@@ -4129,7 +4129,7 @@ NEWTON BASIN PSYCHEDELIC SEA: Higher-order complex Newton-Raphson root attractio
 
 ### NighthawksDiner
 
-`Scene2D/NighthawksDiner.frag` · type=normal · mood=dark,calm,dreamy · complexity=3
+`Scene2D/NighthawksDiner.frag` · type=normal · mood=dark,calm,dreamy · complexity=2
 
 NIGHTHAWKS DINER: a corner diner late at night in the manner of Edward Hopper -- a wedge of glass wall pouring green-yellow fluorescent light onto an empty street, the long counter inside, a few still figures on stools, the coffee urns, and across the street the dark shopfronts and windows above, one of them faintly lit. The light is hard and flat, the shadows cut clean, the colours those of the painting: sickly gree…
 
@@ -4138,7 +4138,7 @@ NIGHTHAWKS DINER: a corner diner late at night in the manner of Edward Hopper --
 
 ### NoctilucentClouds
 
-`Scene2D/NoctilucentClouds.frag` · type=normal · mood=calm,dark,dreamy · complexity=2
+`Scene2D/NoctilucentClouds.frag` · type=normal · mood=calm,dark,dreamy · complexity=5
 
 NOCTILUCENT CLOUDS: the highest clouds there are, lit by a sun already far below the horizon -- electric blue-white sheets rippled by gravity waves, drifting slowly over a landscape in full night. The ripples run on the scene clock, their fine structure is the treble, the twilight glow at the horizon is the swell, the bass is the deep afterglow; the photo is the dark land and the far water. Camera fixed. Audio Reacti…
 
@@ -4147,7 +4147,7 @@ NOCTILUCENT CLOUDS: the highest clouds there are, lit by a sun already far below
 
 ### NoirBlindsLight
 
-`Scene2D/NoirBlindsLight.frag` · type=normal · mood=dark,calm · complexity=4
+`Scene2D/NoirBlindsLight.frag` · type=normal · mood=dark,calm · complexity=8
 
 NOIR BLINDS LIGHT: light falling through venetian blinds into a smoky room -- hard bars of light lie across drifting smoke, everything between them is black. Where a bar meets the smoke the photograph shows through in silver tones, so the bars carry another picture every time; the blinds turn slowly, their bars bend over the smoke's folds, and the whole field drifts. Endless and mirrorable: no floor, no up and down. …
 
@@ -4156,7 +4156,7 @@ NOIR BLINDS LIGHT: light falling through venetian blinds into a smoky room -- ha
 
 ### NoirKaleidoscope
 
-`Scene2D/NoirKaleidoscope.frag` · type=normal · mood=dark · complexity=5
+`Scene2D/NoirKaleidoscope.frag` · type=normal · mood=dark · complexity=6
 
 NOIR KALEIDOSCOPE: the turning kaleidoscope of the photograph, printed as a silver-gelatin image -- deep blacks, cold silver highlights, the photo's texture raised into a relief by a raking light whose direction slowly turns, and a broad beam that sweeps across the field as if a lamp were carried past; outside the beam the pattern sinks into darkness. The kaleidoscope never stops turning (the trick of the original Ka…
 
@@ -4165,7 +4165,7 @@ NOIR KALEIDOSCOPE: the turning kaleidoscope of the photograph, printed as a silv
 
 ### NoirSearchlights
 
-`Scene2D/NoirSearchlights.frag` · type=normal · mood=dark · complexity=4
+`Scene2D/NoirSearchlights.frag` · type=normal · mood=dark · complexity=8
 
 NOIR SEARCHLIGHTS: searchlight beams sweeping through a hazy night -- three to six beams come in from beyond the frame, swing slowly, cross and part again; they only show where they meet the haze, which drifts and curls and is made of the photograph's own masses, so each beam carries a moving piece of the picture in silver. Where two beams cross the haze burns brightest. Endless and mirrorable: the lamps stand all ro…
 
@@ -4174,7 +4174,7 @@ NOIR SEARCHLIGHTS: searchlight beams sweeping through a hazy night -- three to s
 
 ### NoirSilverFlow
 
-`Scene2D/NoirSilverFlow.frag` · type=normal · mood=dark,calm · complexity=5
+`Scene2D/NoirSilverFlow.frag` · type=normal · mood=dark,calm · complexity=6
 
 NOIR SILVER FLOW: the photograph as liquid silver -- its texture becomes the relief of a slowly flowing metal surface, black in the hollows, catching a wandering light in hard white highlights on every crest, like mercury in a dark room. The flow never stops and never tears (two phases of the same flow, cross-faded), endless and mirrorable. Audio Reactivity (structure, not only light): audioAdvance -> the flow (integ…
 
@@ -4183,7 +4183,7 @@ NOIR SILVER FLOW: the photograph as liquid silver -- its texture becomes the rel
 
 ### NoirSmokeBacklight
 
-`Scene2D/NoirSmokeBacklight.frag` · type=normal · mood=dark,calm · complexity=4
+`Scene2D/NoirSmokeBacklight.frag` · type=normal · mood=dark,calm · complexity=7
 
 NOIR SMOKE BACKLIGHT: a lamp behind drifting smoke -- the smoke stands black against the light, its thin edges burn silver, and where it opens the light breaks through in shafts that sweep across the frame as the smoke moves. The smoke is made of the photograph's own masses, carried along and curled, so every photo gives another smoke. The lamp wanders slowly, now inside the frame, now just outside it. Endless and mi…
 
@@ -4192,7 +4192,7 @@ NOIR SMOKE BACKLIGHT: a lamp behind drifting smoke -- the smoke stands black aga
 
 ### NoirTunnel
 
-`Scene2D/NoirTunnel.frag` · type=normal · mood=dark · complexity=5
+`Scene2D/NoirTunnel.frag` · type=normal · mood=dark · complexity=10
 
 NOIR TUNNEL: flying through a black tunnel lit only by slits of light -- narrow rings of light rush towards the viewer, each showing a strip of the photograph in silver where it falls on the wall, the louvres between them throw the wall into darkness, and far ahead a single lamp burns at the end of the bore, against which everything stands as a silhouette. The endless polar field of the Tunnel scene, mirrorable. Audi…
 
@@ -4201,7 +4201,7 @@ NOIR TUNNEL: flying through a black tunnel lit only by slits of light -- narrow 
 
 ### NoiseSpiral
 
-`Scene2D/NoiseSpiral.frag` · type=normal · mood=psychedelic,dark · complexity=2
+`Scene2D/NoiseSpiral.frag` · type=normal · mood=psychedelic,dark · complexity=9
 
 "Playing with this idea: https://www.shadertoy.com/view/w3VGzc" (as noted in the original's own comment; exact page/author of the shader pasted by the user is otherwise unspecified). A raymarched tunnel whose walls are folded (domain-mirrored) and twisted along the travel axis, then eaten away by layered turbulent noise, giving a glowing, spiralling, organic tunnel with a bright vanishing point. Adapted to our engine…
 
@@ -4210,7 +4210,7 @@ NOIR TUNNEL: flying through a black tunnel lit only by slits of light -- narrow 
 
 ### NonEuclideanHyperbolicMandala
 
-`Scene2D/NonEuclideanHyperbolicMandala.frag` · type=normal · mood=psychedelic,bright · complexity=4
+`Scene2D/NonEuclideanHyperbolicMandala.frag` · type=normal · mood=psychedelic,bright · complexity=8
 
 NON-EUCLIDEAN HYPERBOLIC MANDALA: 100% viewport-filling infinite hyperbolic space tessellation on the Poincare disk with {7,3} sacred geometry Coxeter circle inversions, logarithmic spirals, deep fractal zoom, and recursive kaleidoscopic photo texture folding.
 
@@ -4219,7 +4219,7 @@ NON-EUCLIDEAN HYPERBOLIC MANDALA: 100% viewport-filling infinite hyperbolic spac
 
 ### NonEuclideanOctahedralLabyrinth
 
-`Scene2D/NonEuclideanOctahedralLabyrinth.frag` · type=normal · mood=psychedelic,bright · complexity=4
+`Scene2D/NonEuclideanOctahedralLabyrinth.frag` · type=normal · mood=psychedelic,bright · complexity=5
 
 NON-EUCLIDEAN OCTAHEDRAL LABYRINTH: 100% viewport-filling infinite 3D hyperbolic mirror maze constructed from {3,4} octahedral Coxeter chambers. Forward flight through recursive non-Euclidean corridors reflecting the loaded photo across infinite internal mirror planes.
 
@@ -4228,7 +4228,7 @@ NON-EUCLIDEAN OCTAHEDRAL LABYRINTH: 100% viewport-filling infinite 3D hyperbolic
 
 ### NonlinearKerrOpticalSolitonCollision
 
-`Scene2D/NonlinearKerrOpticalSolitonCollision.frag` · type=normal · mood=psychedelic,bright · complexity=4
+`Scene2D/NonlinearKerrOpticalSolitonCollision.frag` · type=normal · mood=psychedelic,bright · complexity=7
 
 NONLINEAR KERR OPTICAL SOLITON COLLISION: Spatial optical solitons in a self-focusing Kerr medium. Stable self-trapped wavepackets undergo elastic and inelastic collisions, generating four-wave mixing fringes, dispersive shock waves, and photo-derived optical spectra. audioAdvance -> propels spatial soliton trajectories towards collision center audioKick -> flashes nonlinear four-wave mixing energy peak detonation au…
 
@@ -4237,7 +4237,7 @@ NONLINEAR KERR OPTICAL SOLITON COLLISION: Spatial optical solitons in a self-foc
 
 ### NonlinearSchrodingerRogueWave
 
-`Scene2D/NonlinearSchrodingerRogueWave.frag` · type=normal · mood=dark,aggressive · complexity=4
+`Scene2D/NonlinearSchrodingerRogueWave.frag` · type=normal · mood=dark,aggressive · complexity=7
 
 NONLINEAR SCHRÖDINGER ROGUE WAVE: Peregrine breather soliton / oceanic freak monster wave. Non-linear modulational instability (Benjamin-Feir) focuses continuous background wave trains into a sudden triple-height oceanic rogue wave wall with foaming crests and deep abyssal troughs. audioAdvance -> navigates Peregrine breather non-linear focusing spacetime coordinates audioKick -> flashes catastrophic rogue wave break…
 
@@ -4246,7 +4246,7 @@ NONLINEAR SCHRÖDINGER ROGUE WAVE: Peregrine breather soliton / oceanic freak mo
 
 ### OctagrammicMirrorVault
 
-`Scene2D/OctagrammicMirrorVault.frag` · type=normal · mood=psychedelic,bright · complexity=2
+`Scene2D/OctagrammicMirrorVault.frag` · type=normal · mood=psychedelic,bright · complexity=3
 
 OCTAGRAMMIC MIRROR VAULT: 8-pointed star ({8/3}-octagram) kinetic origami mirror dome with opening/closing facet petals, central infinite light funnel, and high-velocity kaleidoscopic ray reflections. Audio Reactivity: audioAdvance -> drives continuous star facet folding & vault rotation audioKick -> explodes star facet apertures & flashes central light funnel audioCentroid-> modulates star point sharpness & facet ri…
 
@@ -4255,7 +4255,7 @@ OCTAGRAMMIC MIRROR VAULT: 8-pointed star ({8/3}-octagram) kinetic origami mirror
 
 ### OilDropsOnWater
 
-`Scene2D/OilDropsOnWater.frag` · type=normal · mood=calm,dreamy,bright · complexity=2
+`Scene2D/OilDropsOnWater.frag` · type=normal · mood=calm,dreamy,bright · complexity=4
 
 OIL DROPS ON WATER: the classic macro photograph -- a dish of water with drops of oil floating on it, held above a colourful background, so every oil drop is a lens that shows the background magnified and bent, ringed by a dark refraction edge and a bright rim; small drops cluster around big ones, drops drift together and merge. The background is the photograph, soft and colourful, and moves slowly beneath. An endles…
 
@@ -4264,7 +4264,7 @@ OIL DROPS ON WATER: the classic macro photograph -- a dish of water with drops o
 
 ### OilProjector
 
-`Scene2D/OilProjector.frag` · type=normal · mood=psychedelic,dreamy,calm · complexity=3
+`Scene2D/OilProjector.frag` · type=normal · mood=psychedelic,dreamy,calm · complexity=4
 
 OIL PROJECTOR (rebuilt 30.09.2026): a Mathmos oil-wheel light show, built from what makes the real one mesmerising -- two immiscible dyed oils and clear water sealed between glass, so the picture is made of SHARP rounded interfaces, never of smeared colour: blobs of deep magenta and yellow oil float in the bright water, where they overlap the dyes multiply to red and green, every interface is a dark refraction line w…
 
@@ -4273,7 +4273,7 @@ OIL PROJECTOR (rebuilt 30.09.2026): a Mathmos oil-wheel light show, built from w
 
 ### OilWheelMacro
 
-`Scene2D/OilWheelMacro.frag` · type=normal · mood=psychedelic,calm · complexity=2
+`Scene2D/OilWheelMacro.frag` · type=normal · mood=psychedelic,calm · complexity=5
 
 OIL WHEEL MACRO: a close-up of the rotating liquid wheel of a vintage oil projector -- between two glass discs, coloured oils and water slowly churn as the wheel turns: big lens-like bubbles of clear oil drift through pools of saturated dye, stretching into long curved streaks along the rotation, their edges glowing where the light refracts, air bubbles glinting; the dye colours come from the photograph. The wheel's …
 
@@ -4282,7 +4282,7 @@ OIL WHEEL MACRO: a close-up of the rotating liquid wheel of a vintage oil projec
 
 ### OortCloudDrift
 
-`Scene2D/OortCloudDrift.frag` · type=normal · mood=space,dark,calm · complexity=3
+`Scene2D/OortCloudDrift.frag` · type=normal · mood=space,dark,calm · complexity=6
 
 OORT CLOUD DRIFT: the million-year fall from the Oort cloud to the Sun as one endless zoom. Icy bodies hang in shells at every scale; in log-polar space the shells repeat with a fixed period, so the zoom is periodic and its wrap invisible, and the Sun waits at the centre as a glow that never arrives. Onsets ignite comets: a body near the onset grows a tail pointing away from the Sun, its brightness the onset envelope…
 
@@ -4291,7 +4291,7 @@ OORT CLOUD DRIFT: the million-year fall from the Oort cloud to the Sun as one en
 
 ### OpalStructuralColour
 
-`Scene2D/OpalStructuralColour.frag` · type=normal · mood=bright,calm,dreamy · complexity=2
+`Scene2D/OpalStructuralColour.frag` · type=normal · mood=bright,calm,dreamy · complexity=4
 
 OPAL STRUCTURAL COLOUR: the play of colour of a precious opal. The stone is a lattice of silica spheres in domains; each domain reflects the Bragg wavelength for its orientation and the viewing angle, so as the viewing angle sweeps slowly the domains flash through the spectrum. The photo is the milky body of the stone; band energy lights the domains whose colour matches; the treble sparkles the sphere lattice. Camera…
 
@@ -4300,7 +4300,7 @@ OPAL STRUCTURAL COLOUR: the play of colour of a precious opal. The stone is a la
 
 ### OpticalDispersionCausticVault
 
-`Scene2D/OpticalDispersionCausticVault.frag` · type=normal · mood=psychedelic,dark · complexity=2
+`Scene2D/OpticalDispersionCausticVault.frag` · type=normal · mood=psychedelic,dark · complexity=4
 
 OPTICAL DISPERSION CAUSTIC VAULT: High-resolution multi-wavelength dispersive refraction caustics. Crystal chamber water wave interference with full RGB spectral splitting, specular focal nodes, and luminous caustics. Audio Reactivity: audioAdvance -> drives continuous fluid caustic wave motion & focal shifts audioKick -> flashes intense caustic focal nodes & chromatic shockwaves audioCentroid-> modulates wave freque…
 
@@ -4309,7 +4309,7 @@ OPTICAL DISPERSION CAUSTIC VAULT: High-resolution multi-wavelength dispersive re
 
 ### OrbitalRingStation
 
-`Scene2D/OrbitalRingStation.frag` · type=normal · mood=calm,dreamy,dark,space · complexity=4
+`Scene2D/OrbitalRingStation.frag` · type=normal · mood=calm,dreamy,dark,space · complexity=8
 
 ORBITAL RING STATION: a rotating habitat ring turning slowly above a gas-giant-sized world. The station is a raymarched torus with a hub, four spokes, docking modules along its rim and a lit window band; it turns on its own axis so the whole structure reads as a rotating machine. Below it the planet carries a banded, domain-warped cloud deck that is advected and sheared every frame -- weather that DEFORMS rather than…
 
@@ -4320,14 +4320,14 @@ ORBITAL RING STATION: a rotating habitat ring turning slowly above a gas-giant-s
 
 `Scene2D/OrbitalSunrise.frag` · type=normal · mood=space,calm,dreamy · complexity=2
 
-ORBITAL SUNRISE: the view from low orbit as the sun comes over the limb. The planet's curve fills the lower frame; its atmosphere is a stack of Rayleigh layers that go from deep blue through gold as the sun climbs; city lights on the night side (round, jittered) fade out with the dawn; clouds from the photo; stars above. The sun's elevation is the sine of the host's day clock -- it rises AND sets continuously, no wra…
+ORBITAL SUNRISE: the view from low orbit as the sun comes over the limb. The planet's curve fills the lower frame; its atmosphere is a stack of Rayleigh layers that go from deep blue through gold as the sun climbs; city lights on the night side (round, jittered) fade out with the dawn; clouds from the photo; stars above. The sun rises over the scene's screen time (sceneProgress): every appearance is a sunrise, from t…
 
 ![OrbitalSunrise ruhig (t=8)](img/OrbitalSunrise_A.jpg) ![OrbitalSunrise ruhig (t=16)](img/OrbitalSunrise_B.jpg) ![OrbitalSunrise audio-heiß (t=21)](img/OrbitalSunrise_C.jpg)
 
 
 ### OrganicFlow
 
-`Scene2D/OrganicFlow.frag` · type=normal · mood=calm · complexity=1
+`Scene2D/OrganicFlow.frag` · type=normal · mood=calm · complexity=5
 
 The source image pushed through an organic, reaction-diffusion-like FLOW: a domain-warped fbm displaces and marbles the folded picture while glowing veins trace the cell boundaries, all mirror-symmetric so it reads like living stained glass. The *image* is the star (was a 40% tint on procedural colour). audioBass -> vein scale / thickness audioStereo -> horizontal stretch (wide stereo = wider cells) audioDeltaPitch->…
 
@@ -4336,7 +4336,7 @@ The source image pushed through an organic, reaction-diffusion-like FLOW: a doma
 
 ### OrigamiMirrorKaleidoscope
 
-`Scene2D/OrigamiMirrorKaleidoscope.frag` · type=normal · mood=bright,psychedelic · complexity=3
+`Scene2D/OrigamiMirrorKaleidoscope.frag` · type=normal · mood=bright,psychedelic · complexity=4
 
 ORIGAMI MIRROR KALEIDOSCOPE: 100% viewport-filling 3D kinetic Miura-ori origami tessellation where every triangular mirror facet reflects dynamic sections of the photo with angle-dependent chromatic dispersion and audio-reactive mechanical folding kinematics.
 
@@ -4345,7 +4345,7 @@ ORIGAMI MIRROR KALEIDOSCOPE: 100% viewport-filling 3D kinetic Miura-ori origami 
 
 ### PaintPourCells
 
-`Scene2D/PaintPourCells.frag` · type=normal · mood=bright,psychedelic,dreamy · complexity=2
+`Scene2D/PaintPourCells.frag` · type=normal · mood=bright,psychedelic,dreamy · complexity=5
 
 PAINT POUR CELLS: an acrylic pour seen close -- ribbons of glossy paint (deep teal, magenta, gold, white, black) stretched and swirled across the canvas, and scattered through them the "cells": round holes where the silicone pushed the top layer apart, each ringed by thin lacy rims of the colours beneath. The paint keeps flowing, slowly, as if the canvas were still being tilted; cells drift and stretch with it. A sof…
 
@@ -4363,7 +4363,7 @@ PANTHEON OCULUS SHAFT: inside the Pantheon, looking up into the coffered dome --
 
 ### PapercutShadowBox
 
-`Scene2D/PapercutShadowBox.frag` · type=normal · mood=calm,dreamy,dark · complexity=2
+`Scene2D/PapercutShadowBox.frag` · type=normal · mood=calm,dreamy,dark · complexity=5
 
 PAPERCUT SHADOW BOX: layered paper cut-outs in a lit box. Six sheets stand one behind the other, each cut into a silhouette (hills, trees, waves -- from noise), each a little further from the light and therefore darker; the light behind is the photo, seen through the cut-outs, in the palette's colour. The sheets slide past one another with parallax on the scene clock (a steady drift, never a jolt); the chroma tints t…
 
@@ -4372,7 +4372,7 @@ PAPERCUT SHADOW BOX: layered paper cut-outs in a lit box. Six sheets stand one b
 
 ### ParametricPavilion
 
-`Scene2D/ParametricPavilion.frag` · type=normal · mood=bright,calm · complexity=3
+`Scene2D/ParametricPavilion.frag` · type=normal · mood=bright,calm · complexity=1
 
 PARAMETRIC PAVILION: a white, flowing interior in the manner of Zaha Hadid -- walls, floor and ceiling one continuous surface that swells, twists and folds as it runs ahead, with long slit skylights curving along it, and in its creases lines of light that follow the curvature and run along the surfaces in the rhythm. All white, glossy, soft shadows gathering in the folds. The camera glides slowly through. The space i…
 
@@ -4381,7 +4381,7 @@ PARAMETRIC PAVILION: a white, flowing interior in the manner of Zaha Hadid -- wa
 
 ### ParticleFlow
 
-`Scene2D/ParticleFlow.frag` · type=normal · mood=calm,dreamy · complexity=2
+`Scene2D/ParticleFlow.frag` · type=normal · mood=calm,dreamy · complexity=8
 
 Two million curl-noise-advected particles (simulated upstream into texParticles), rendered here as a silky, glowing flow of the photo. This pass adds a directional smear along a slowly rotating axis (its angle driven by audioAdvance) so the particle field reads as motion blur without per-particle history, plus an 8-tap halo whose radius grows with audioBeat and whose strength is boosted by audioKick. audioLevel widen…
 
@@ -4390,7 +4390,7 @@ Two million curl-noise-advected particles (simulated upstream into texParticles)
 
 ### ParticleLifeClusters
 
-`Scene2D/ParticleLifeClusters.frag` · type=normal · mood=psychedelic,bright,dark · complexity=2
+`Scene2D/ParticleLifeClusters.frag` · type=normal · mood=psychedelic,bright,dark · complexity=9
 
 PARTICLE LIFE CLUSTERS: the look of "particle life" -- swarms of glowing particles of several species that attract and repel each other by simple asymmetric rules, so they organise into living forms: cells with membranes of one colour around a nucleus of another, chains that crawl, rings that spin, hunters chasing prey, all drifting and re-forming without end. Rendered here as a field: every cell of a jittered grid h…
 
@@ -4399,7 +4399,7 @@ PARTICLE LIFE CLUSTERS: the look of "particle life" -- swarms of glowing particl
 
 ### PenguinHuddleRotation
 
-`Scene2D/PenguinHuddleRotation.frag` · type=normal · mood=bright,calm,dreamy · complexity=4
+`Scene2D/PenguinHuddleRotation.frag` · type=normal · mood=bright,calm,dreamy · complexity=1
 
 PENGUIN HUDDLE ROTATION: emperor penguins huddled on the sea ice in the polar twilight. The huddle is a slowly turning mound of birds -- black heads, white fronts, the golden ear patches -- the ones at the front drifting one way, the ones behind the other, so over minutes every bird takes its turn at the cold edge. The sky glows rose and violet above a sun that never quite rises; blowing snow streams across in round …
 
@@ -4408,7 +4408,7 @@ PENGUIN HUDDLE ROTATION: emperor penguins huddled on the sea ice in the polar tw
 
 ### PenroseAperiodicTessellation
 
-`Scene2D/PenroseAperiodicTessellation.frag` · type=normal · mood=bright,calm,dreamy · complexity=3
+`Scene2D/PenroseAperiodicTessellation.frag` · type=normal · mood=bright,calm,dreamy · complexity=5
 
 PENROSE APERIODIC TESSELLATION: Infinite 5-fold aperiodic Penrose tiling (kites and darts / rhombs) governed by the Golden Ratio phi (1.618...). Recursive tile deflation, photoelastic stress birefringence colors, and sacred non-repeating geometric photo segment mapping. audioAdvance -> rotates aperiodic deflation hierarchy audioKick -> flashes photoelastic stress fringes across tile edges audioBeatPhase-> animates go…
 
@@ -4417,7 +4417,7 @@ PENROSE APERIODIC TESSELLATION: Infinite 5-fold aperiodic Penrose tiling (kites 
 
 ### PenroseParquet
 
-`Scene2D/PenroseParquet.frag` · type=normal · mood=psychedelic,bright,dreamy · complexity=2
+`Scene2D/PenroseParquet.frag` · type=normal · mood=psychedelic,bright,dreamy · complexity=5
 
 PENROSE PARQUET: an endless quasi-periodic rhombus tiling built from de Bruijn's multigrid (Penrose, Ammann-Beenker, 12- and 14-fold) -- thick and thin rhombi that never repeat, the whole floor drifting and slowly turning. Every rhombus is a pane of its own showing the kaleidoscoped photograph in its own turning frame, set in thin grout; light runs along the de Bruijn ribbons (the endless chains of tiles sharing one …
 
@@ -4426,7 +4426,7 @@ PENROSE PARQUET: an endless quasi-periodic rhombus tiling built from de Bruijn's
 
 ### PenroseProcessErgosphereExtraction
 
-`Scene2D/PenroseProcessErgosphereExtraction.frag` · type=normal · mood=psychedelic,bright · complexity=4
+`Scene2D/PenroseProcessErgosphereExtraction.frag` · type=normal · mood=psychedelic,bright · complexity=7
 
 PENROSE PROCESS ERGOSPHERE EXTRACTION: Relativistic rotational energy extraction from a spinning Kerr black hole inside its oblate ergosphere. Decaying infalling geodesics, negative-energy orbits, extreme Doppler blueshifted escaping photon fans, and photo lensing. audioAdvance -> accelerates black hole spin & frame-dragging swirl audioKick -> injects high-energy matter chunks triggering Penrose bursts audioCentroid-…
 
@@ -4435,7 +4435,7 @@ PENROSE PROCESS ERGOSPHERE EXTRACTION: Relativistic rotational energy extraction
 
 ### PersistenceOfVisionFan
 
-`Scene2D/PersistenceOfVisionFan.frag` · type=normal · mood=psychedelic,dark,dreamy · complexity=2
+`Scene2D/PersistenceOfVisionFan.frag` · type=normal · mood=psychedelic,dark,dreamy · complexity=9
 
 PERSISTENCE-OF-VISION FAN: a picture that exists only in the afterimage. A few spokes turn about the centre; each frame they paint the photo's colour along their length, and the previous frame (texPrevFrame) is kept with a decay -- so the photo appears as the sum of many sweeps, like the LED fans that draw pictures in the air, and fades where the spokes have not passed for a while. The spokes turn on the music's pace…
 
@@ -4444,7 +4444,7 @@ PERSISTENCE-OF-VISION FAN: a picture that exists only in the afterimage. A few s
 
 ### PersistentHomologyBubbles
 
-`Scene2D/PersistentHomologyBubbles.frag` · type=normal · mood=dark,calm,dreamy · complexity=3
+`Scene2D/PersistentHomologyBubbles.frag` · type=normal · mood=dark,calm,dreamy · complexity=2
 
 PERSISTENT HOMOLOGY BUBBLES: topological data analysis made visible. A point cloud sampled from the photo (points where it is bright); around every point a ball grows with the swell (the filtration radius); where two balls touch an edge lights, where three close a triangle fills -- the Vietoris-Rips complex -- and the holes that survive a long range of radii (persistent features) glow. The kick lights the newest edge…
 
@@ -4453,7 +4453,7 @@ PERSISTENT HOMOLOGY BUBBLES: topological data analysis made visible. A point clo
 
 ### PhotoelasticStressFringes
 
-`Scene2D/PhotoelasticStressFringes.frag` · type=normal · mood=dark,psychedelic,calm · complexity=3
+`Scene2D/PhotoelasticStressFringes.frag` · type=normal · mood=dark,psychedelic,calm · complexity=8
 
 PHOTOELASTIC STRESS FRINGES: a transparent part between crossed polarisers. Where the material is stressed it turns the light, and the difference of the principal stresses paints closed rainbow contours -- one full colour cycle per fringe order. Two loads press on the part and are driven by the swell (slow), so the fringe pattern breathes and grows; the bass raises the fringe order (more rings), the treble is the iso…
 
@@ -4462,7 +4462,7 @@ PHOTOELASTIC STRESS FRINGES: a transparent part between crossed polarisers. Wher
 
 ### PhotoLowPolyFacets
 
-`Scene2D/PhotoLowPolyFacets.frag` · type=normal · mood=calm,bright · complexity=2
+`Scene2D/PhotoLowPolyFacets.frag` · type=normal · mood=calm,bright · complexity=5
 
 PHOTO LOW POLY FACETS: the photograph as low-poly art -- the picture broken into a mesh of triangles, each filled with the average colour of the photo beneath it and shaded like a faceted crystal surface catching a moving light; the mesh vertices drift, so the facets slowly shift and re-form, some facets flashing as they tilt into the light. Endless, mirrorable. Audio Reactivity (structure, not only light): audioAdva…
 
@@ -4471,7 +4471,7 @@ PHOTO LOW POLY FACETS: the photograph as low-poly art -- the picture broken into
 
 ### PhotonicCrystalDiracConeDispersion
 
-`Scene2D/PhotonicCrystalDiracConeDispersion.frag` · type=normal · mood=bright,psychedelic · complexity=3
+`Scene2D/PhotonicCrystalDiracConeDispersion.frag` · type=normal · mood=bright,psychedelic · complexity=7
 
 PHOTONIC CRYSTAL DIRAC CONE DISPERSION: Zero-refractive-index (n = 0) photonic crystal. Accidental degeneracy of electric and magnetic dipole modes at the Brillouin zone center (Gamma) forms a linear Dirac cone dispersion, creating infinite phase velocity and spatially uniform fields. audioAdvance -> navigates zero-index tunneling & Bloch phase dispersion audioKick -> flashes accidental degeneracy Dirac point resonan…
 
@@ -4480,7 +4480,7 @@ PHOTONIC CRYSTAL DIRAC CONE DISPERSION: Zero-refractive-index (n = 0) photonic c
 
 ### PhotonicMetasurfacePhaseGradient
 
-`Scene2D/PhotonicMetasurfacePhaseGradient.frag` · type=normal · mood=bright,calm · complexity=3
+`Scene2D/PhotonicMetasurfacePhaseGradient.frag` · type=normal · mood=bright,calm · complexity=7
 
 PHOTONIC METASURFACE PHASE GRADIENT: Dielectric subwavelength gradient metasurface. Spatial variation of nanoantenna phase shifts implements generalized Snell's laws of reflection and refraction, forming anomalous optical beams, orbital angular momentum vortices, and photo spectra. audioAdvance -> navigates phase gradient translation & orbital angular momentum beam rotation audioKick -> flashes anomalous wavefront de…
 
@@ -4489,7 +4489,7 @@ PHOTONIC METASURFACE PHASE GRADIENT: Dielectric subwavelength gradient metasurfa
 
 ### PhotoWovenThreads
 
-`Scene2D/PhotoWovenThreads.frag` · type=normal · mood=calm,bright · complexity=2
+`Scene2D/PhotoWovenThreads.frag` · type=normal · mood=calm,bright · complexity=4
 
 PHOTO WOVEN THREADS: the photograph woven into cloth -- the warp threads carry the picture, the weft threads carry a second, shifted view of it, and they pass over and under each other in a twill, each thread round and shaded like real yarn with a fine fibre texture; the cloth billows in slow waves, the threads ripple, and the picture emerges from the interlacing. Endless, mirrorable. Audio Reactivity (structure, not…
 
@@ -4498,7 +4498,7 @@ PHOTO WOVEN THREADS: the photograph woven into cloth -- the warp threads carry t
 
 ### PhraseClockRosette
 
-`Scene2D/PhraseClockRosette.frag` · type=normal · mood=psychedelic,bright,aggressive · complexity=2
+`Scene2D/PhraseClockRosette.frag` · type=normal · mood=psychedelic,bright,aggressive · complexity=9
 
 PHRASE CLOCK ROSETTE: a 32-beat rosette that shows WHERE in the 8-bar phrase the music is. The host integrates beats from the tempo since the last drop (audioPhrasePos, 0..1 over 32 beats): a hand sweeps the rosette, the 32 petals fill behind it, and the build-up tightens the whole flower toward its centre -- until the phrase boundary, where dance music puts its drops, when it blooms open. For the first time a scene …
 
@@ -4507,7 +4507,7 @@ PHRASE CLOCK ROSETTE: a 32-beat rosette that shows WHERE in the 8-bar phrase the
 
 ### PhraseSkyscraper
 
-`Scene2D/PhraseSkyscraper.frag` · type=normal · mood=dark,calm · complexity=2
+`Scene2D/PhraseSkyscraper.frag` · type=normal · mood=dark,calm · complexity=6
 
 PHRASE SKYSCRAPER: the music builds a city. The current phrase is a tower going up floor by floor with the phrase position -- the floors are the photo, lit windows are the spectrum bands -- and the phrases already finished stand as a skyline behind it (one tower per finished phrase, counted from the section count), so a song ends as a city. The drop lights every window at once; the kick flashes the crane beacon; nigh…
 
@@ -4516,7 +4516,7 @@ PHRASE SKYSCRAPER: the music builds a city. The current phrase is a tower going 
 
 ### PhraseTideBeach
 
-`Scene2D/PhraseTideBeach.frag` · type=normal · mood=calm,bright,dreamy · complexity=2
+`Scene2D/PhraseTideBeach.frag` · type=normal · mood=calm,bright,dreamy · complexity=1
 
 PHRASE TIDE BEACH: a beach where the tide is the phrase clock -- the water line climbs the sand through each phrase and falls back as the next begins (a sine of the phrase position, continuous through the wrap) -- and the drop is the breaking wave: at the drop a wall of foam rolls up the beach as round spray, then draws back. The photo is the sand and the sky; wet sand mirrors it. Camera fixed on the shore. Audio Rea…
 
@@ -4525,7 +4525,7 @@ PHRASE TIDE BEACH: a beach where the tide is the phrase clock -- the water line 
 
 ### PhyllotaxisZoom
 
-`Scene2D/PhyllotaxisZoom.frag` · type=normal · mood=dark,psychedelic,calm · complexity=2
+`Scene2D/PhyllotaxisZoom.frag` · type=normal · mood=dark,psychedelic,calm · complexity=10
 
 PHYLLOTAXIS ZOOM: a sunflower spiral that never ends in either direction. Seed n sits at log-radius b*n and angle n*golden angle, so the pattern maps onto itself under "one seed inward" (shrink by e^b, turn by the golden angle): the zoom is periodic in that step and seamless, the seeds grow with their radius as in the real flower, and the centre is not a centre but another infinity. Each seed carries a pitch class: t…
 
@@ -4534,7 +4534,7 @@ PHYLLOTAXIS ZOOM: a sunflower spiral that never ends in either direction. Seed n
 
 ### Physarum
 
-`Scene2D/Physarum.frag` · type=normal · mood=psychedelic,bright · complexity=2
+`Scene2D/Physarum.frag` · type=normal · mood=psychedelic,bright · complexity=10
 
 _(Vorschau eingeschränkt: Sim-Textur/Mehrpass — Bilder unterschätzen die echte App)_
 
@@ -4545,7 +4545,7 @@ The living Physarum (slime mould) vein network, simulated on the GPU (see `Engin
 
 ### PhysarumGalaxy
 
-`Scene2D/PhysarumGalaxy.frag` · type=normal · mood=space,dark,dreamy,psychedelic · complexity=3
+`Scene2D/PhysarumGalaxy.frag` · type=normal · mood=space,dark,dreamy,psychedelic · complexity=8
 
 PHYSARUM GALAXY: the slime-mould simulation's trail map, wrapped onto a slowly turning globe and lit like a galaxy seen from above. A million agents (texPhysarum, two species in R and G) grow, merge and abandon vein networks; projected onto a sphere the veins become star streams and the abandoned trails dark dust lanes. The second species is drawn as a colder, thinner web behind the first. Audio Reactivity: texPhysar…
 
@@ -4554,7 +4554,7 @@ PHYSARUM GALAXY: the slime-mould simulation's trail map, wrapped onto a slowly t
 
 ### PhytoplanktonEddies
 
-`Scene2D/PhytoplanktonEddies.frag` · type=normal · mood=calm,bright,dreamy · complexity=2
+`Scene2D/PhytoplanktonEddies.frag` · type=normal · mood=calm,bright,dreamy · complexity=3
 
 PHYTOPLANKTON EDDIES: the ocean from orbit -- a spring bloom of plankton drawn out into the swirls of mesoscale eddies. The photo is the ocean colour; the bloom is advected by a field of slowly turning vortices on the scene clock (Lamb-Oseen cores, incompressible), so the green filaments wind ever finer; the bloom strength is the swell, the treble is sun glitter on the sea, the bass deepens the blue. Camera fixed hig…
 
@@ -4563,7 +4563,7 @@ PHYTOPLANKTON EDDIES: the ocean from orbit -- a spring bloom of plankton drawn o
 
 ### PianoRollWaterfall
 
-`Scene2D/PianoRollWaterfall.frag` · type=normal · mood=bright,calm,dreamy · complexity=2
+`Scene2D/PianoRollWaterfall.frag` · type=normal · mood=bright,calm,dreamy · complexity=8
 
 PIANO ROLL WATERFALL: the melody falling onto a keyboard. The 96-sample melody history is drawn as note bars descending toward a keyboard along the bottom -- the newest sample just above the keys, the oldest at the top -- scrolling steadily with the sample clock; the key of each sounding pitch class lights (chroma), the hammer flashes on the kick, the photo is the piano's lid mirror and the bars' colour. Camera fixed…
 
@@ -4572,7 +4572,7 @@ PIANO ROLL WATERFALL: the melody falling onto a keyboard. The 96-sample melody h
 
 ### PillarsOfCreationFlight
 
-`Scene2D/PillarsOfCreationFlight.frag` · type=normal · mood=dark,calm,space · complexity=4
+`Scene2D/PillarsOfCreationFlight.frag` · type=normal · mood=dark,calm,space · complexity=5
 
 PILLARS OF CREATION FLIGHT: A majestic, slow flight through colossal columns of interstellar dust and gas. Newborn stars within the pillars illuminate the dense clouds and react to the beat. audioAdvance -> flight speed through the nebula audioKick -> flashes from newly ignited protostars audioSwell -> ambient brightness of the dust clouds audioChromaHue-> palette offset for the nebula gas Per-activation variety: dus…
 
@@ -4590,7 +4590,7 @@ PIVOT IRRIGATION CIRCLES: centre-pivot fields seen from above, as a satellite se
 
 ### PixelMelt
 
-`Scene2D/PixelMelt.frag` · type=normal · mood=psychedelic,aggressive · complexity=2
+`Scene2D/PixelMelt.frag` · type=normal · mood=psychedelic,aggressive · complexity=8
 
 The photo dissolving into pixel-sorted streaks that sweep through the frame in ragged horizontal bands and then re-form. Each screen row is assigned its own random melt phase, advanced by audioAdvance, so the reveal moves through the image in bands rather than switching all at once; a horizontal blur adds smear motion once a row is mid-melt. audioBuildUp pushes the melted area outward in advance of a drop, audioDrop …
 
@@ -4608,7 +4608,7 @@ PLANETARY COLLISION: The apocalyptic moment two massive planets collide. Crusts 
 
 ### PlanetaryNebulaShells
 
-`Scene2D/PlanetaryNebulaShells.frag` · type=normal · mood=space,dreamy,bright · complexity=3
+`Scene2D/PlanetaryNebulaShells.frag` · type=normal · mood=space,dreamy,bright · complexity=5
 
 PLANETARY NEBULA SHELLS: a dying star has thrown off shell after shell of gas, and we fly inward through them. The shells sit at radii doubling outward, each one a thin sphere of fbm-mottled gas that glows with its own spectrum band -- the innermost the bass, the outermost the treble -- lit by the white dwarf at the centre. Because the shell radii double, the configuration is self-similar under "one shell inward", so…
 
@@ -4617,7 +4617,7 @@ PLANETARY NEBULA SHELLS: a dying star has thrown off shell after shell of gas, a
 
 ### PlanetaryRingRings
 
-`Scene2D/PlanetaryRingRings.frag` · type=normal · mood=dark,calm,space · complexity=4
+`Scene2D/PlanetaryRingRings.frag` · type=normal · mood=dark,calm,space · complexity=6
 
 PLANETARY RING RINGS: skimming the ring plane of a super-Saturn. The rings stretch to the horizon as a sheet of ringlets in perspective, bright and dark bands running to the vanishing point, and close under the camera the ice chunks themselves -- round, sunlit boulders of every size -- drift past and out of view. Above, the banded planet fills half the sky with the rings' shadow lying across it, against black space. …
 
@@ -4626,7 +4626,7 @@ PLANETARY RING RINGS: skimming the ring plane of a super-Saturn. The rings stret
 
 ### PlasmaFlow
 
-`Scene2D/PlasmaFlow.frag` · type=normal · mood=calm · complexity=1
+`Scene2D/PlasmaFlow.frag` · type=normal · mood=calm · complexity=6
 
 The source image MARBLED and refracted by a flowing plasma field, folded into mirror symmetry so it reads like liquid stained glass. The plasma is no longer the picture (it used to be a full-screen sine field with the image as a 40% tint) - instead the plasma is a FLOW that warps the actual picture, and its iridescence tints the folded image. So the *image* is the star. sidesP/scaleP/flowAmtP -> per-activation charac…
 
@@ -4635,7 +4635,7 @@ The source image MARBLED and refracted by a flowing plasma field, folded into mi
 
 ### PlasmaLightningGlobe
 
-`Scene2D/PlasmaLightningGlobe.frag` · type=normal · mood=aggressive,bright,psychedelic · complexity=3
+`Scene2D/PlasmaLightningGlobe.frag` · type=normal · mood=aggressive,bright,psychedelic · complexity=9
 
 PLASMA LIGHTNING GLOBE: Dielectric breakdown plasma globe with dozens of snaking, branching high-voltage filament arcs striking the glass sphere, central electrode glow, and electric neon magenta/cyan gas ionization trails. audioHigh -> sparks new dielectric breakdown plasma filament branches audioKick -> flashes high-energy arc discharges to glass boundary audioSwell -> thickens noble gas ionization luminescence aud…
 
@@ -4644,7 +4644,7 @@ PLASMA LIGHTNING GLOBE: Dielectric breakdown plasma globe with dozens of snaking
 
 ### PlasmonicMetamaterialBlackHole
 
-`Scene2D/PlasmonicMetamaterialBlackHole.frag` · type=normal · mood=psychedelic,bright · complexity=4
+`Scene2D/PlasmonicMetamaterialBlackHole.frag` · type=normal · mood=psychedelic,bright · complexity=7
 
 PLASMONIC METAMATERIAL BLACK HOLE: Omnidirectional optical absorber in graded-index metamaterials. Continuous radial variation of dielectric permittivity and magnetic permeability curves light rays into logarithmic spiral orbits toward a central plasmonic absorbing core. audioAdvance -> rotates spiral Poynting vector energy trajectories towards core audioKick -> flashes central plasmonic core resistive dissipation ho…
 
@@ -4662,7 +4662,7 @@ POINTILLIST DOTS: the photograph repainted as a pointillist canvas in the manner
 
 ### PolarRippleTunnel
 
-`Scene2D/PolarRippleTunnel.frag` · type=normal · mood=energetic,psychedelic · complexity=2
+`Scene2D/PolarRippleTunnel.frag` · type=normal · mood=energetic,psychedelic · complexity=5
 
 POLAR RIPPLE TUNNEL: a tunnel whose wall is a rippling liquid surface -- concentric waves run along it toward us, the photograph lining it bent and magnified by every wave, bright caustic rings focusing where the waves crest, the wall shimmering like the inside of a water pipe lit from outside. Endless, mirrorable; the wall continues beyond the frame. Audio Reactivity (structure, not only light): audioAdvance -> the …
 
@@ -4680,7 +4680,7 @@ POLLOCK DRIP FIELD: an all-over drip painting building itself -- long looping sk
 
 ### PowersOfTenZoom
 
-`Scene2D/PowersOfTenZoom.frag` · type=normal · mood=space,dreamy,calm · complexity=3
+`Scene2D/PowersOfTenZoom.frag` · type=normal · mood=space,dreamy,calm · complexity=4
 
 POWERS OF TEN ZOOM: the scale ladder as one endless zoom. A moon circles a planet, the planet circles a star, the star sits in a cluster, the cluster in a galaxy, the galaxy in a group -- every level is a ring of bodies around a centre, and the levels are self-similar in log-scale, so the zoom out (or in) is periodic and never wraps visibly. Each level turns at its own rate on the scene clock; the bodies glow with th…
 
@@ -4698,7 +4698,7 @@ PRISMATIC CRYSTAL CHAMBER: 100% viewport-filling infinity mirror room of faceted
 
 ### PrismaticCrystalChamber4D
 
-`Scene2D/PrismaticCrystalChamber4D.frag` · type=normal · mood=psychedelic,dark · complexity=2
+`Scene2D/PrismaticCrystalChamber4D.frag` · type=normal · mood=psychedelic,dark · complexity=5
 
 PRISMATIC CRYSTAL CHAMBER 4D: Raymarching within a 4-dimensional hyper-polychoron with spectral dispersion, multi-facet reflections, and high-velocity SO(4) isoclinic double rotations. Audio Reactivity: audioAdvance -> drives continuous 4D double rotation plane progression audioKick -> flashes internal laser nodes & expands facet clearance audioCentroid-> modulates chromatic dispersion spread audioSubBass -> expands …
 
@@ -4707,7 +4707,7 @@ PRISMATIC CRYSTAL CHAMBER 4D: Raymarching within a 4-dimensional hyper-polychoro
 
 ### PrismaticKaleidoMandala
 
-`Scene2D/PrismaticKaleidoMandala.frag` · type=normal · mood=bright,psychedelic · complexity=3
+`Scene2D/PrismaticKaleidoMandala.frag` · type=normal · mood=bright,psychedelic · complexity=6
 
 PRISMATIC KALEIDO MANDALA: Non-Euclidean Poincaré disk hyperbolic kaleidoscope with sacred geometry rosettes, infinite crystalline mirror reflections, prismatic chromatic dispersion, and golden-ratio harmonic unfolding. audioPhase -> rotates interlocking reflection symmetry axes audioSwell -> unfolds deeper geometric rosette harmonics audioKick -> triggers radiant jewel bursts and mirror bloom audioCentroid-> shifts …
 
@@ -4716,7 +4716,7 @@ PRISMATIC KALEIDO MANDALA: Non-Euclidean Poincaré disk hyperbolic kaleidoscope 
 
 ### PrismaticLaserVault
 
-`Scene2D/PrismaticLaserVault.frag` · type=normal · mood=aggressive,bright,psychedelic · complexity=3
+`Scene2D/PrismaticLaserVault.frag` · type=normal · mood=aggressive,bright,psychedelic · complexity=9
 
 PRISMATIC LASER VAULT: Volumetric 64-beam laser maze with dichroic prism cubes, optical smoke volume scattering, and beam-splitter refractions filling 100% viewport. audioKick -> flashes laser wattage into blinding flare blooms audioMid -> modulates laser beam oscillation frequencies audioAdvance -> rotates dichroic prism mirrors in 3D audioSwell -> thickens volumetric smoke density Per-activation variety: beamP floa…
 
@@ -4725,7 +4725,7 @@ PRISMATIC LASER VAULT: Volumetric 64-beam laser maze with dichroic prism cubes, 
 
 ### PrismaticMirrorHexTunnel
 
-`Scene2D/PrismaticMirrorHexTunnel.frag` · type=normal · mood=psychedelic,bright,aggressive · complexity=2
+`Scene2D/PrismaticMirrorHexTunnel.frag` · type=normal · mood=psychedelic,bright,aggressive · complexity=5
 
 PRISMATIC MIRROR HEX TUNNEL: 3D Hexagonal infinity mirror tunnel with recursive multi-bounce reflections, chromatic dispersion spectral fringe, dynamic iris aperture contractions, and high-energy laser strut pulses. Audio Reactivity: audioAdvance -> drives continuous forward flight progression through the hex tunnel audioKick -> flashes interior laser nodes & iris aperture contraction burst audioCentroid-> sharpens r…
 
@@ -4734,7 +4734,7 @@ PRISMATIC MIRROR HEX TUNNEL: 3D Hexagonal infinity mirror tunnel with recursive 
 
 ### PrismaticRainbowCloud
 
-`Scene2D/PrismaticRainbowCloud.frag` · type=normal · mood=calm,dreamy,bright · complexity=3
+`Scene2D/PrismaticRainbowCloud.frag` · type=normal · mood=calm,dreamy,bright · complexity=2
 
 PRISMATIC RAINBOW CLOUD: Polar stratospheric nacreous (mother-of-pearl) clouds with high-altitude Mie/Rayleigh pastel diffraction iridescence, glowing twilight crepuscular rays, and delicate fluid-like cloud wisp advection. audioSwell -> thickens cloud density and illuminates internal pastel glow audioPhase -> drifts diffraction iridescence color spectra audioKick -> pulses crepuscular god rays and lens sparkles audi…
 
@@ -4743,7 +4743,7 @@ PRISMATIC RAINBOW CLOUD: Polar stratospheric nacreous (mother-of-pearl) clouds w
 
 ### PrismaticSuperradiance
 
-`Scene2D/PrismaticSuperradiance.frag` · type=normal · mood=aggressive,dark · complexity=3
+`Scene2D/PrismaticSuperradiance.frag` · type=normal · mood=aggressive,dark · complexity=6
 
 PRISMATIC SUPERRADIANCE: Volumetric quantum laser resonance chamber with multi-faceted Brewster-angle dichroic prism cubes, cascaded Raman scattering, coherent Q-switched stimulated emission beam sheets, and chromatic dispersion of live kaleidoscope photo textures.
 
@@ -4752,7 +4752,7 @@ PRISMATIC SUPERRADIANCE: Volumetric quantum laser resonance chamber with multi-f
 
 ### ProjectionMappedFacade
 
-`Scene2D/ProjectionMappedFacade.frag` · type=normal · mood=dark,bright · complexity=2
+`Scene2D/ProjectionMappedFacade.frag` · type=normal · mood=dark,bright · complexity=6
 
 PROJECTION MAPPED FACADE: a baroque palace front at night, a projection-mapping show playing on it. Pilasters with capitals, heavy cornices, arched windows, a portal and a pediment -- and the photograph projected over all of it, broken by the relief: the cornices throw shadows, the window recesses swallow the light, the column shafts catch it. The show moves through its acts: the photo on the stone, light running alo…
 
@@ -4761,7 +4761,7 @@ PROJECTION MAPPED FACADE: a baroque palace front at night, a projection-mapping 
 
 ### ProtoplanetaryDiscRings
 
-`Scene2D/ProtoplanetaryDiscRings.frag` · type=normal · mood=space,dark,dreamy · complexity=2
+`Scene2D/ProtoplanetaryDiscRings.frag` · type=normal · mood=space,dark,dreamy · complexity=8
 
 PROTOPLANETARY DISC: a young star's dust disc seen from above at an angle, divided into 32 rings -- the 32 bands of the spectrum analyser. Each ring glows with its own band, bass inside, treble at the rim, so a chord is a set of bright rings and a cymbal a flash at the edge. Three planets plough their gaps and carry the disc's rotation (Keplerian, on the music's pace). The spectrum analyser as a solar system; the cam…
 
@@ -4770,7 +4770,7 @@ PROTOPLANETARY DISC: a young star's dust disc seen from above at an angle, divid
 
 ### PsychedelicPills
 
-`Scene2D/PsychedelicPills.frag` · type=normal · mood=bright · complexity=2
+`Scene2D/PsychedelicPills.frag` · type=normal · mood=bright · complexity=9
 
 Adapted from "Psychedelic Pills" by \@kishimisu (2022) — https://www.shadertoy.com/view/csfSRN Original licensed CC BY-NC-SA 4.0 (attribution kept per the licence). Raymarched capsules ("pills") in a repeating domain with psychedelic colours. (The original's antialiasing template is dropped -> a single sample.) Adapted to our engine: image-forward (the picture colours the pills + drifts as a faint nebula), audio-reac…
 
@@ -4788,7 +4788,7 @@ PSYCHEDELIC REACTION DIFFUSION WAVE: Non-linear excitable medium chemical spiral
 
 ### PsychedelicReactionMelt
 
-`Scene2D/PsychedelicReactionMelt.frag` · type=normal · mood=psychedelic,dark · complexity=2
+`Scene2D/PsychedelicReactionMelt.frag` · type=normal · mood=psychedelic,dark · complexity=7
 
 PSYCHEDELIC REACTION MELT: Turing / Gray-Scott procedural reaction-diffusion morphogenetic labyrinth with melting liquid wax feedback, chromatic phase inversions, and high-energy chemical spot/stripe division waves. Audio Reactivity: audioAdvance -> surges the chemical diffusion advection & melting on top of a constant base drift rate (so the reaction never freezes) audioKick -> triggers full chromatic phase inversio…
 
@@ -4797,7 +4797,7 @@ PSYCHEDELIC REACTION MELT: Turing / Gray-Scott procedural reaction-diffusion mor
 
 ### PuddleNeonReflections
 
-`Scene2D/PuddleNeonReflections.frag` · type=normal · mood=dark,psychedelic,dreamy · complexity=3
+`Scene2D/PuddleNeonReflections.frag` · type=normal · mood=dark,psychedelic,dreamy · complexity=6
 
 PUDDLE NEON REFLECTIONS: a wet street at night, seen low. The upper half is the shopfront signs (the photo, in chroma-class colours); the lower half is their reflection in the puddles, broken by rings from falling drops and by the wind ruffling the surface. Rings expand on continuous phases, so no ring ever pops into being; the kick is a heavier drop with a wider ring. The swell is how hard it rains. Camera fixed at …
 
@@ -4806,7 +4806,7 @@ PUDDLE NEON REFLECTIONS: a wet street at night, seen low. The upper half is the 
 
 ### PulsarJet
 
-`Scene2D/PulsarJet.frag` · type=normal · mood=dark,aggressive,space · complexity=4
+`Scene2D/PulsarJet.frag` · type=normal · mood=dark,aggressive,space · complexity=5
 
 PULSAR JET: A highly energetic, rapidly spinning neutron star emitting blinding relativistic jets. The accretion disk and jets pulsate violently to the music's beat, while the camera orbits the system. audioAdvance -> camera orbit speed around the pulsar audioKick -> intense energy pulses traveling along the jet audioSwell -> brightness of the accretion disk and surrounding gas audioChromaHue-> base palette offset fo…
 
@@ -4815,7 +4815,7 @@ PULSAR JET: A highly energetic, rapidly spinning neutron star emitting blinding 
 
 ### PulsarLighthouse
 
-`Scene2D/PulsarLighthouse.frag` · type=normal · mood=space,dark,aggressive · complexity=3
+`Scene2D/PulsarLighthouse.frag` · type=normal · mood=space,dark,aggressive · complexity=8
 
 PULSAR LIGHTHOUSE: we stand on a dark plain under a pulsar. Its beam cone sweeps around once per beat -- the beat phase IS the rotation angle, so the sweep is locked to the music without a single jump -- and every time the cone crosses the camera the whole landscape is lit for an instant: the plain, the nebula, the dust in the air. Three cones turn together: a kick cone, a snare cone and a hat cone, each in its own c…
 
@@ -4824,7 +4824,7 @@ PULSAR LIGHTHOUSE: we stand on a dark plain under a pulsar. Its beam cone sweeps
 
 ### PulsarMagnetosphereJets
 
-`Scene2D/PulsarMagnetosphereJets.frag` · type=normal · mood=aggressive,bright · complexity=4
+`Scene2D/PulsarMagnetosphereJets.frag` · type=normal · mood=aggressive,bright · complexity=9
 
 PULSAR MAGNETOSPHERE JETS: Rapidly spinning millisecond pulsar with twisted dipole magnetic light cylinder, polar synchrotron radiation lighthouse beams sweeping directly across viewport, and photo texture warping in magnetosphere. audioAdvance -> locks rotation velocity of the millisecond pulsar audioKick -> flashes blinding lighthouse synchrotron beam pass audioSubBass -> expands pulsar magnetosphere Alfvén wave ri…
 
@@ -4833,7 +4833,7 @@ PULSAR MAGNETOSPHERE JETS: Rapidly spinning millisecond pulsar with twisted dipo
 
 ### PyroclasticDensityCurrentSurge
 
-`Scene2D/PyroclasticDensityCurrentSurge.frag` · type=normal · mood=aggressive,bright · complexity=4
+`Scene2D/PyroclasticDensityCurrentSurge.frag` · type=normal · mood=aggressive,bright · complexity=9
 
 PYROCLASTIC DENSITY CURRENT SURGE: Supersonic fluidized volcanic ash-gas avalanche. Billowing turbulent shear lobes, internal incandescent pumice blocks, triboelectric friction lightning sparks, and thick ash-cloud photo obscuration across the screen. audioAdvance -> drives turbulent ash surge avalanche roll & vortex cascades audioKick -> ignites internal triboelectric ash lightning & explosive gas expansions audioBa…
 
@@ -4842,7 +4842,7 @@ PYROCLASTIC DENSITY CURRENT SURGE: Supersonic fluidized volcanic ash-gas avalanc
 
 ### QuantumChromaField
 
-`Scene2D/QuantumChromaField.frag` · type=normal · mood=bright,psychedelic · complexity=3
+`Scene2D/QuantumChromaField.frag` · type=normal · mood=bright,psychedelic · complexity=4
 
 QUANTUM CHROMA FIELD: Multi-layered complex domain quantum wave interference and Riemann surface vortex field. High-contrast holographic diffraction fringes, phase singularities, quantum spin vortices, and dynamic chromatic dispersion covering 100% of the screen. audioPhase -> spins quantum phase vortices audioSubBass -> expands nodal interference envelope audioKick -> excites high-energy quantum state collapse & fla…
 
@@ -4851,7 +4851,7 @@ QUANTUM CHROMA FIELD: Multi-layered complex domain quantum wave interference and
 
 ### QuantumChromodynamicFluxTube
 
-`Scene2D/QuantumChromodynamicFluxTube.frag` · type=normal · mood=psychedelic,bright · complexity=2
+`Scene2D/QuantumChromodynamicFluxTube.frag` · type=normal · mood=psychedelic,bright · complexity=7
 
 QUANTUM CHROMODYNAMIC FLUX TUBE: Microscopic QCD color field visualization. Relativistic gluon flux tube strings connecting color-charged quarks (Red/Green/Blue) in a nucleon with non-Abelian SU(3) vacuum foam fluctuations and string tension bursts. Audio Reactivity: audioAdvance -> drives continuous gluon flux tube vibration & quark rotation audioKick -> flashes quark color charge singularities & flux tube string sn…
 
@@ -4869,7 +4869,7 @@ QUANTUM CHROMODYNAMICS GLUON PLASMA: 100% viewport-filling relativistic heavy-io
 
 ### QuantumHallFractionalAnyonBraiding
 
-`Scene2D/QuantumHallFractionalAnyonBraiding.frag` · type=normal · mood=bright,psychedelic · complexity=3
+`Scene2D/QuantumHallFractionalAnyonBraiding.frag` · type=normal · mood=bright,psychedelic · complexity=8
 
 QUANTUM HALL FRACTIONAL ANYON BRAIDING: 2D fractional quantum Hall liquid near filling factor nu = 5/2. Non-Abelian Moore-Read Ising anyons orbit lithographic antidot islands, braiding fractional statistics worldlines with Berry phase quantum interference ribbons. audioAdvance -> drives anyon orbital trajectory circulation & Berry phase accumulation audioKick -> flashes non-Abelian topological state fusion & interfer…
 
@@ -4878,7 +4878,7 @@ QUANTUM HALL FRACTIONAL ANYON BRAIDING: 2D fractional quantum Hall liquid near f
 
 ### QuantumHallSkyrmionCrystal
 
-`Scene2D/QuantumHallSkyrmionCrystal.frag` · type=normal · mood=calm,bright,dreamy · complexity=3
+`Scene2D/QuantumHallSkyrmionCrystal.frag` · type=normal · mood=calm,bright,dreamy · complexity=4
 
 QUANTUM HALL SKYRMION CRYSTAL: 2D triangular crystal of spin-textured Skyrmions in a quantum Hall ferromagnet near filling factor nu = 1. Features entangled electron spin textures, fractional quantized Hall current ripples, and Landau level photo texturing. audioAdvance -> navigates chiral Hall drift & cyclotron phase evolution audioKick -> flashes fractional quasiparticle injection & annihilation bursts audioBass ->…
 
@@ -4887,7 +4887,7 @@ QUANTUM HALL SKYRMION CRYSTAL: 2D triangular crystal of spin-textured Skyrmions 
 
 ### QuantumSlipstream
 
-`Scene2D/QuantumSlipstream.frag` · type=normal · mood=dark,aggressive,space · complexity=4
+`Scene2D/QuantumSlipstream.frag` · type=normal · mood=dark,aggressive,space · complexity=10
 
 QUANTUM SLIPSTREAM: An intense, high-speed journey through a warp tunnel. Energetic, fluid-like bands of quantum energy twist and wrap around the camera, pulsating violently to the beat. audioAdvance -> flight speed through the slipstream audioKick -> high-frequency energy ripples and flashes audioSwell -> tunnel width and overall brightness audioChromaHue-> palette offset for the quantum energies Per-activation vari…
 
@@ -4896,7 +4896,7 @@ QUANTUM SLIPSTREAM: An intense, high-speed journey through a warp tunnel. Energe
 
 ### QuantumTachyonWarpTunnel
 
-`Scene2D/QuantumTachyonWarpTunnel.frag` · type=normal · mood=psychedelic,aggressive,dark · complexity=2
+`Scene2D/QuantumTachyonWarpTunnel.frag` · type=normal · mood=psychedelic,aggressive,dark · complexity=10
 
 QUANTUM TACHYON WARP TUNNEL: Superluminal tachyon warp tunnel with Cherenkov radiation shock cones, relativistic optical headlight beaming, hyper-speed star streaks, and high-energy spacetime compression pulses. Audio Reactivity: audioAdvance -> drives extreme superluminal warp flight progression audioKick -> flashes Cherenkov shockwave cones & hyperdrive burst audioCentroid-> sharpens radial tachyon streak resolutio…
 
@@ -4905,7 +4905,7 @@ QUANTUM TACHYON WARP TUNNEL: Superluminal tachyon warp tunnel with Cherenkov rad
 
 ### QuantumWavepacketSuperposition
 
-`Scene2D/QuantumWavepacketSuperposition.frag` · type=normal · mood=psychedelic,bright · complexity=2
+`Scene2D/QuantumWavepacketSuperposition.frag` · type=normal · mood=psychedelic,bright · complexity=5
 
 QUANTUM WAVEPACKET SUPERPOSITION: Time-dependent 2D Schrödinger wavepacket superposition and collision. High-frequency quantum interference fringes, complex phase rotation coloring, probability density nodes, and measurement collapse flashes. Audio Reactivity: audioAdvance -> drives continuous wavepacket propagation & quantum phase evolution audioKick -> triggers localized quantum wavepacket collapse flash audioCentr…
 
@@ -4914,7 +4914,7 @@ QUANTUM WAVEPACKET SUPERPOSITION: Time-dependent 2D Schrödinger wavepacket supe
 
 ### QuantumWormholeFlythrough
 
-`Scene2D/QuantumWormholeFlythrough.frag` · type=normal · mood=psychedelic,bright · complexity=2
+`Scene2D/QuantumWormholeFlythrough.frag` · type=normal · mood=psychedelic,bright · complexity=5
 
 QUANTUM WORMHOLE FLYTHROUGH: Relativistic Kerr wormhole transit raytracing. Gravitational lensing around the photon ring throat, seamless universe transit, Doppler blue/redshift optical distortions, and cosmic void shockwaves. Audio Reactivity: audioAdvance -> drives relativistic forward plunge through the wormhole throat audioKick -> flashes throat event singularity & gravitational wave chirp audioCentroid-> modulat…
 
@@ -4932,7 +4932,7 @@ QUASAR RELATIVISTIC JET: Raymarched look down the magnetic confinement funnel of
 
 ### QuasicrystalPenroseKaleido
 
-`Scene2D/QuasicrystalPenroseKaleido.frag` · type=normal · mood=psychedelic,bright · complexity=2
+`Scene2D/QuasicrystalPenroseKaleido.frag` · type=normal · mood=psychedelic,bright · complexity=4
 
 QUASICRYSTAL PENROSE KALEIDO: 5D-to-2D De-Bruijn aperiodic quasicrystal projection with golden-ratio phi symmetries, 10-fold non-repeating diffraction planes, and dynamic multi-frequency interference ribbons. Audio Reactivity: audioAdvance -> translates through 5D hyper-plane cut space audioKick -> flashes aperiodic Bragg diffraction nodes audioCentroid-> modulates wave grid frequency & interference sharpness audioSu…
 
@@ -4941,7 +4941,7 @@ QUASICRYSTAL PENROSE KALEIDO: 5D-to-2D De-Bruijn aperiodic quasicrystal projecti
 
 ### QuasiPeriodicDanzerTiling
 
-`Scene2D/QuasiPeriodicDanzerTiling.frag` · type=normal · mood=psychedelic,bright · complexity=2
+`Scene2D/QuasiPeriodicDanzerTiling.frag` · type=normal · mood=psychedelic,bright · complexity=7
 
 QUASI PERIODIC DANZER TILING: 6D-to-3D cut-and-project icosahedral Danzer quasicrystal tiling. Golden ratio (phi = 1.618) fractal star needles, never-repeating aperiodic lattice nodes, and glowing holographic crystal diffraction facets. Audio Reactivity: audioAdvance -> drives continuous drift of 6D hyperspace cut-and-project plane audioKick -> flashes icosahedral quasicrystal vertex nodes & shockwave burst audioCent…
 
@@ -4950,7 +4950,7 @@ QUASI PERIODIC DANZER TILING: 6D-to-3D cut-and-project icosahedral Danzer quasic
 
 ### QuaternionFractalHopfLoom
 
-`Scene2D/QuaternionFractalHopfLoom.frag` · type=normal · mood=psychedelic,bright · complexity=4
+`Scene2D/QuaternionFractalHopfLoom.frag` · type=normal · mood=psychedelic,bright · complexity=2
 
 QUATERNION FRACTAL HOPF LOOM: 4D hypercomplex quaternion Julia fractal sliced dynamically and projected via continuous Hopf fibration into interlocking self-similar 3D/2D nested torus weaves and iridescent optical filaments. audioAdvance -> navigates hypercomplex 4D slice coordinates (w-axis orbit) audioPhase -> twists Hopf fibration projection angles audioKick -> flashes fractal boundary orbit-trap contact points au…
 
@@ -4959,7 +4959,7 @@ QUATERNION FRACTAL HOPF LOOM: 4D hypercomplex quaternion Julia fractal sliced dy
 
 ### QuaternionicJulia4DFlight
 
-`Scene2D/QuaternionicJulia4DFlight.frag` · type=normal · mood=psychedelic,bright · complexity=4
+`Scene2D/QuaternionicJulia4DFlight.frag` · type=normal · mood=psychedelic,bright · complexity=8
 
 QUATERNIONIC JULIA 4D FLIGHT: Raymarched flight through a true 4D Quaternion Julia fractal (q_{n+1} = q_n^2 + C). Projected into 3D via 4D hyper-rotations with metallic specular highlights, audio-reactive constant morphing, and continuous photo texture refraction. audioAdvance -> rotates 4D hyper-plane slicing angles (xw, yw, zw) audioKick -> morphs quaternion constant C & triggers metallic flashes audioBass -> pulse…
 
@@ -4968,7 +4968,7 @@ QUATERNIONIC JULIA 4D FLIGHT: Raymarched flight through a true 4D Quaternion Jul
 
 ### QuiltBlockPatchwork
 
-`Scene2D/QuiltBlockPatchwork.frag` · type=normal · mood=bright,calm,psychedelic · complexity=3
+`Scene2D/QuiltBlockPatchwork.frag` · type=normal · mood=bright,calm,psychedelic · complexity=8
 
 QUILT BLOCK PATCHWORK: a quilt assembling itself block by block over the scene arc. Each block is a traditional pieced pattern -- half square triangles, a nine patch, a flying goose -- cut from the photo, and the blocks arrive in row-major order, each fading in over its own slice of the arc. Running stitch lines cross every seam, the chroma classes pick the fabrics, and the kick lights the block that has just been se…
 
@@ -4977,7 +4977,7 @@ QUILT BLOCK PATCHWORK: a quilt assembling itself block by block over the scene a
 
 ### RainOnWindowCity
 
-`Scene2D/RainOnWindowCity.frag` · type=normal · mood=dark,calm,dreamy · complexity=3
+`Scene2D/RainOnWindowCity.frag` · type=normal · mood=dark,calm,dreamy · complexity=5
 
 RAIN ON WINDOW CITY: a night city seen through a rain-covered window. Out of focus behind the glass the city is soft colour and bokeh discs; on the glass every raindrop is a small lens that shows the city sharp and upside down, and now and then a drop grows heavy and runs down, leaving a clear trail and a string of tiny beads. The city lights are the music: each bokeh disc belongs to a band and swells with it. Audio …
 
@@ -4986,7 +4986,7 @@ RAIN ON WINDOW CITY: a night city seen through a rain-covered window. Out of foc
 
 ### RangoliPowderMandala
 
-`Scene2D/RangoliPowderMandala.frag` · type=normal · mood=bright,calm,psychedelic · complexity=3
+`Scene2D/RangoliPowderMandala.frag` · type=normal · mood=bright,calm,psychedelic · complexity=4
 
 RANGOLI POWDER MANDALA: coloured powder laid on a threshold in a radial design. The design is laid down ring by ring over the scene arc (each ring fills from its start angle around, as a hand would), the grains are round specks of colour, the colours come from the chroma classes (a class per ring), the kick sprinkles an extra pinch of powder (light), the treble the mica sparkle, the swell the doorway lamp. Camera fix…
 
@@ -5004,7 +5004,7 @@ RAPESEED STORM LIGHT: rolling fields of flowering rapeseed under a black thunder
 
 ### RaymarchTunnel
 
-`Scene2D/RaymarchTunnel.frag` · type=normal · mood=dark,aggressive · complexity=2
+`Scene2D/RaymarchTunnel.frag` · type=normal · mood=dark,aggressive · complexity=8
 
 A ray-marched wormhole papered with the SOURCE IMAGE, mirror-folded around the bore so the picture radiates in symmetric wedges. Now with: * a per-activation SPIRAL TWIST of the fold (the wedges corkscrew away), * corrugated rib shading so the walls have depth, * TEMPO-LOCKED LIGHT RINGS racing down the bore on the continuous beat phase (they land ON the beat, travelling smoothly - no snapping), * a warm light at the…
 
@@ -5013,7 +5013,7 @@ A ray-marched wormhole papered with the SOURCE IMAGE, mirror-folded around the b
 
 ### ReactionDiffusion
 
-`Scene2D/ReactionDiffusion.frag` · type=normal · mood=psychedelic,bright · complexity=2
+`Scene2D/ReactionDiffusion.frag` · type=normal · mood=psychedelic,bright · complexity=10
 
 The living Gray-Scott reaction-diffusion field (simulated on the GPU into "texSim") rendered as ORGANIC LIQUID METAL over the source image: * the B-concentration reveals and stains the picture where the reaction is active; * the field gradient displaces the image GENTLY (the old raw-gradient x4 displacement threw the picture around with every sim step — the "Gezappel"; now the gradient is blurred and scaled way down)…
 
@@ -5022,7 +5022,7 @@ The living Gray-Scott reaction-diffusion field (simulated on the GPU into "texSi
 
 ### ReactionDiffusionKaleidoscope
 
-`Scene2D/ReactionDiffusionKaleidoscope.frag` · type=normal · mood=psychedelic,bright,dreamy · complexity=3
+`Scene2D/ReactionDiffusionKaleidoscope.frag` · type=normal · mood=psychedelic,bright,dreamy · complexity=10
 
 REACTION-DIFFUSION KALEIDOSCOPE: the living Gray-Scott field (texSim: R = A, G = B) folded through an n-way mirror. The chemistry never repeats, the mirror makes it ornament: spots become rosettes, worms become interlocking rings, and every fold seam is a line of symmetry the pattern grows across. Spectral change "cooks" the field -- a new layer entering the mix reads as the pattern boiling over. Audio Reactivity: te…
 
@@ -5031,7 +5031,7 @@ REACTION-DIFFUSION KALEIDOSCOPE: the living Gray-Scott field (texSim: R = A, G =
 
 ### ReactionDiffusionMandala
 
-`Scene2D/ReactionDiffusionMandala.frag` · type=normal · mood=psychedelic,dark · complexity=2
+`Scene2D/ReactionDiffusionMandala.frag` · type=normal · mood=psychedelic,dark · complexity=6
 
 The living Gray-Scott reaction-diffusion field (`texSim`), sampled through TWO nested kaleidoscopic mirror-folds at different radii and blended -- a mandala-within-a-mandala, always on (unlike ReactionDiffusion.frag, where the fold is an occasional per-activation option and the field mostly reads as liquid metal draped over the photo). Colour comes from imgPalette (the house-standard photo-arc palette, key-locked via…
 
@@ -5040,7 +5040,7 @@ The living Gray-Scott reaction-diffusion field (`texSim`), sampled through TWO n
 
 ### RecursiveHexagonHoneycombZoom
 
-`Scene2D/RecursiveHexagonHoneycombZoom.frag` · type=normal · mood=calm,bright,dreamy · complexity=2
+`Scene2D/RecursiveHexagonHoneycombZoom.frag` · type=normal · mood=calm,bright,dreamy · complexity=3
 
 RECURSIVE HEXAGON HONEYCOMB: a macro photograph of a honeycomb. Pale wax walls in their hexagon lattice; cells brimming with amber honey that catches the light in a bright glint, cells sealed under matte wax caps, a few empty ones showing the depth of the cell. Bees crawl over the comb on their own unhurried paths, round-bodied, banded, their wings a shimmer. The view drifts slowly across the comb and settles ever de…
 
@@ -5049,7 +5049,7 @@ RECURSIVE HEXAGON HONEYCOMB: a macro photograph of a honeycomb. Pale wax walls i
 
 ### RecursiveRectSubdivision
 
-`Scene2D/RecursiveRectSubdivision.frag` · type=normal · mood=bright,energetic · complexity=2
+`Scene2D/RecursiveRectSubdivision.frag` · type=normal · mood=bright,energetic · complexity=7
 
 RECURSIVE RECT SUBDIVISION: a breathing Mondrian -- the plane is split into rectangles, and those again, and again, by black bars, each split line sliding slowly back and forth so the rectangles swell and shrink against each other; some rectangles are flat primary colours, others are windows onto the photograph, each showing its own crop of the picture. Endless, mirrorable. Audio Reactivity (structure, not only light…
 
@@ -5058,7 +5058,7 @@ RECURSIVE RECT SUBDIVISION: a breathing Mondrian -- the plane is split into rect
 
 ### RecursiveTesseractWireframeZoom
 
-`Scene2D/RecursiveTesseractWireframeZoom.frag` · type=normal · mood=psychedelic,dark · complexity=2
+`Scene2D/RecursiveTesseractWireframeZoom.frag` · type=normal · mood=psychedelic,dark · complexity=5
 
 RECURSIVE TESSERACT WIREFRAME ZOOM: Continuous 4D-to-3D Schlegel projection plunge through nested 8-cell Tesseract hypercube wireframe cages. Seamless 4D inner-outer cell inversion, neon laser edge struts, and dimensional portal flashes. Audio Reactivity: audioAdvance -> drives continuous 4D rotation & forward plunge through hypercube cells audioKick -> flashes 4D vertex nodes & triggers Schlegel cell inversion burst…
 
@@ -5067,7 +5067,7 @@ RECURSIVE TESSERACT WIREFRAME ZOOM: Continuous 4D-to-3D Schlegel projection plun
 
 ### RecursiveTesseractZoomAbyss
 
-`Scene2D/RecursiveTesseractZoomAbyss.frag` · type=normal · mood=psychedelic,dark,aggressive · complexity=2
+`Scene2D/RecursiveTesseractZoomAbyss.frag` · type=normal · mood=psychedelic,dark,aggressive · complexity=3
 
 RECURSIVE TESSERACT ZOOM ABYSS: Infinite recursive 4D hypercube dive. Successive nested tesseract cell portals unfold, collapse past the camera, and unleash glowing multidimensional laser wireframes with dimensional flashes. Audio Reactivity: audioAdvance -> drives continuous forward plunge through 4D hypercube cells audioKick -> triggers dimension-crossing portal flashes & edge burst audioCentroid-> modulates 4D rot…
 
@@ -5076,7 +5076,7 @@ RECURSIVE TESSERACT ZOOM ABYSS: Infinite recursive 4D hypercube dive. Successive
 
 ### RelativisticKelvinHelmholtzShear
 
-`Scene2D/RelativisticKelvinHelmholtzShear.frag` · type=normal · mood=aggressive,bright,psychedelic · complexity=4
+`Scene2D/RelativisticKelvinHelmholtzShear.frag` · type=normal · mood=aggressive,bright,psychedelic · complexity=10
 
 RELATIVISTIC KELVIN-HELMHOLTZ SHEAR: Relativistic shear instability at the boundary of collimated astrophysical radio jets. Fast internal plasma flow past ambient medium generates non-linear cat's-eye vortex trains, magnetic field compression ribbons, and synchrotron glow. audioAdvance -> drives relativistic jet shear flow velocity & vortex rolling audioKick -> flashes magnetic reconnection & synchrotron shock detona…
 
@@ -5085,7 +5085,7 @@ RELATIVISTIC KELVIN-HELMHOLTZ SHEAR: Relativistic shear instability at the bound
 
 ### RelativisticKerrPlasmaDisk
 
-`Scene2D/RelativisticKerrPlasmaDisk.frag` · type=normal · mood=psychedelic,bright,space · complexity=2
+`Scene2D/RelativisticKerrPlasmaDisk.frag` · type=normal · mood=psychedelic,bright,space · complexity=5
 
 RELATIVISTIC KERR PLASMA DISK: Rotating Kerr black hole accretion disk with Lense-Thirring frame dragging, relativistic Doppler beaming (approaching side blueshifted and super-bright), gravitational lensing light arcs, and inner ISCO plasma turbulence. Audio Reactivity: audioAdvance -> drives continuous Kerr black hole spin & plasma accretion rotation audioKick -> flashes ISCO innermost stable circular orbit & plasma…
 
@@ -5094,7 +5094,7 @@ RELATIVISTIC KERR PLASMA DISK: Rotating Kerr black hole accretion disk with Lens
 
 ### RelativisticPlasmaZpinchInstability
 
-`Scene2D/RelativisticPlasmaZpinchInstability.frag` · type=normal · mood=aggressive,dark · complexity=4
+`Scene2D/RelativisticPlasmaZpinchInstability.frag` · type=normal · mood=aggressive,dark · complexity=9
 
 RELATIVISTIC PLASMA Z-PINCH INSTABILITY: Megampere relativistic pulsed-power Z-pinch. Intense axial plasma current self-compresses via azimuthal Lorentz force, degenerating into violent m=0 (sausage) and m=1 (kink) magneto-Rayleigh-Taylor instabilities and fusion hot spots. audioAdvance -> drives relativistic axial current flow & magnetic pinch dynamics audioKick -> ignites thermonuclear fusion hotspot micro-detonati…
 
@@ -5103,7 +5103,7 @@ RELATIVISTIC PLASMA Z-PINCH INSTABILITY: Megampere relativistic pulsed-power Z-p
 
 ### RelativisticSynchrotronPulsarWind
 
-`Scene2D/RelativisticSynchrotronPulsarWind.frag` · type=normal · mood=bright · complexity=4
+`Scene2D/RelativisticSynchrotronPulsarWind.frag` · type=normal · mood=bright · complexity=7
 
 RELATIVISTIC SYNCHROTRON PULSAR WIND: Pulsar wind nebula (Crab Nebula PWN). Magnetized electron-positron relativistic plasma wind undergoes termination shock, forming equatorial synchrotron torus rings, polar collimated plasma jets, and magnetic wisps. audioAdvance -> accelerates pulsar rotational frequency & relativistic wind outflow audioKick -> flashes central pulsar lighthouse beam & magnetic reconnection flares …
 
@@ -5121,7 +5121,7 @@ RESIN GEODE POUR: resin art in the style of a geode -- concentric bands of colou
 
 ### RheoscopicSwirl
 
-`Scene2D/RheoscopicSwirl.frag` · type=normal · mood=calm,dreamy · complexity=2
+`Scene2D/RheoscopicSwirl.frag` · type=normal · mood=calm,dreamy · complexity=4
 
 RHEOSCOPIC SWIRL: a rheoscopic fluid -- water filled with tiny pearly flakes that line up with the flow, so every current, eddy and shear layer becomes visible as silky bands of light and shadow, shimmering like mother-of-pearl. Slow vortices turn and merge, thin shear lines wind around them, and the dye in the fluid takes its colours from the photograph (where it is grey, a soft pearly hue field). The whole frame fl…
 
@@ -5130,7 +5130,7 @@ RHEOSCOPIC SWIRL: a rheoscopic fluid -- water filled with tiny pearly flakes tha
 
 ### RhythmLoomWeave
 
-`Scene2D/RhythmLoomWeave.frag` · type=normal · mood=calm,bright,dreamy · complexity=2
+`Scene2D/RhythmLoomWeave.frag` · type=normal · mood=calm,bright,dreamy · complexity=7
 
 RHYTHM LOOM WEAVE: a loom weaving the music into cloth. Thirty- two warp threads run top to bottom, one per spectrum band, lit by their band; the weft shuttle crosses on the scene clock, laying a new row each pass, and the cloth already woven scrolls slowly down carrying the photo in its weave (the photo is the pattern card). The kick is the beater striking the row home (a flash along the fell line), the treble glint…
 
@@ -5139,7 +5139,7 @@ RHYTHM LOOM WEAVE: a loom weaving the music into cloth. Thirty- two warp threads
 
 ### RibosomeAssemblyLine
 
-`Scene2D/RibosomeAssemblyLine.frag` · type=normal · mood=calm,dreamy,bright · complexity=2
+`Scene2D/RibosomeAssemblyLine.frag` · type=normal · mood=calm,dreamy,bright · complexity=5
 
 RIBOSOME ASSEMBLY LINE: translation, seen as the factory it is. An mRNA tape runs steadily through the ribosome (two subunits, centre frame); at each codon the ribosome adds an amino acid -- a round bead coloured by the pitch class that is loudest at that moment -- to the growing chain, which curls away and begins to fold. The tape carries the photo as its codon pattern; the tRNAs arrive on the clock; the kick lights…
 
@@ -5148,7 +5148,7 @@ RIBOSOME ASSEMBLY LINE: translation, seen as the factory it is. An mRNA tape run
 
 ### RiceTerracesDawn
 
-`Scene2D/RiceTerracesDawn.frag` · type=normal · mood=bright,calm,dreamy · complexity=4
+`Scene2D/RiceTerracesDawn.frag` · type=normal · mood=bright,calm,dreamy · complexity=1
 
 RICE TERRACES DAWN: a hillside of flooded paddies at sunrise, the way the Yuanyang photographs show it. Curving terraces step down the slope in hundreds of thin panes, each a mirror of the sky, separated by dark earthen bunds with a line of grass; mist lies in the valley below and blue ridges fade behind. Over the scene arc the sun rises: the sky and every pane with it turn from blue-grey through rose to gold, and a …
 
@@ -5166,7 +5166,7 @@ RICHTER SQUEEGEE: a painting in the manner of Gerhard Richter's squeegee abstrac
 
 ### RiemannSphereInfinityFlight
 
-`Scene2D/RiemannSphereInfinityFlight.frag` · type=normal · mood=psychedelic,aggressive,dark · complexity=2
+`Scene2D/RiemannSphereInfinityFlight.frag` · type=normal · mood=psychedelic,aggressive,dark · complexity=7
 
 RIEMANN SPHERE INFINITY FLIGHT: Stereographic conformal flight on the Riemann number sphere (S^2). Dynamic continuous plunge from zero (South Pole) to infinity (North Pole) via Möbius automorphisms f(z) = (az+b)/(cz+d). Audio Reactivity: audioAdvance -> drives continuous conformal flight pole trajectory audioKick -> flashes polar singularities & spacetime expansion burst audioCentroid-> modulates stereographic grid r…
 
@@ -5175,7 +5175,7 @@ RIEMANN SPHERE INFINITY FLIGHT: Stereographic conformal flight on the Riemann nu
 
 ### RingSpokesAndWakes
 
-`Scene2D/RingSpokesAndWakes.frag` · type=normal · mood=space,calm,bright · complexity=2
+`Scene2D/RingSpokesAndWakes.frag` · type=normal · mood=space,calm,bright · complexity=6
 
 RING SPOKES AND WAKES: the rings of Saturn seen from above the plane, the planet's limb at one edge. Thirty-two ringlets whose density is the spectrum (bass innermost); tiny moons on their orbits raise wakes -- wavy edges that trail behind them -- and the dark radial spokes rotate with the ring, lit by the kick. The whole ring turns steadily on the scene clock (differentially: inner faster). The photo tints the ring …
 
@@ -5184,7 +5184,7 @@ RING SPOKES AND WAKES: the rings of Saturn seen from above the plane, the planet
 
 ### RingworldHabitat
 
-`Scene2D/RingworldHabitat.frag` · type=normal · mood=bright,calm,space · complexity=5
+`Scene2D/RingworldHabitat.frag` · type=normal · mood=bright,calm,space · complexity=4
 
 RINGWORLD HABITAT: the camera glides low over the inner surface of a colossal ring around its sun. Ahead the land -- oceans, fields, shore cities -- rises and rises until it arches overhead as a narrowing band against black space, walled at both edges by the rim walls. Shadow squares orbiting the sun throw night bands across the arch; the cities in them glitter. The glide is steady; the music is the light. sceneTime/…
 
@@ -5193,7 +5193,7 @@ RINGWORLD HABITAT: the camera glides low over the inner surface of a colossal ri
 
 ### RoguePlanet
 
-`Scene2D/RoguePlanet.frag` · type=normal · mood=dark,space · complexity=4
+`Scene2D/RoguePlanet.frag` · type=normal · mood=dark,space · complexity=3
 
 ROGUE PLANET: A dark, frozen world drifting without a star. The atmosphere is thick with volcanic ash and bioluminescent fissures glow intensely across its frozen surface, pulsating to the beat. audioAdvance -> flight speed over the surface audioKick -> flashes from volcanic vents audioSwell -> ambient fog and bioluminescence glow audioChromaHue-> palette offset for the fissures Per-activation variety: reliefP float …
 
@@ -5202,7 +5202,7 @@ ROGUE PLANET: A dark, frozen world drifting without a star. The atmosphere is th
 
 ### RogueWanderer
 
-`Scene2D/RogueWanderer.frag` · type=normal · mood=dark,aggressive,space · complexity=4
+`Scene2D/RogueWanderer.frag` · type=normal · mood=dark,aggressive,space · complexity=9
 
 ROGUE WANDERER: An icy, dark planet drifting entirely without a star in the cold depths of interstellar space. It is illuminated only by intensely glowing volcanic fissures that pulse to the beat. audioAdvance -> slow rotation of the rogue planet audioKick -> volcanic eruptions and fissure flashes audioSwell -> ambient glow of the magma under the ice audioChromaHue-> palette offset for the volcanic energy Per-activat…
 
@@ -5211,7 +5211,7 @@ ROGUE WANDERER: An icy, dark planet drifting entirely without a star in the cold
 
 ### RooftopRainTokyo
 
-`Scene2D/RooftopRainTokyo.frag` · type=normal · mood=dark,dreamy · complexity=2
+`Scene2D/RooftopRainTokyo.frag` · type=normal · mood=dark,dreamy · complexity=4
 
 ROOFTOP RAIN TOKYO: a rainy night over the rooftops of a dense city district -- flat roofs at every height with their railings, towers behind them studded with lit windows, all of it wet and shining, puddles on the roofs mirroring the vertical neon signs that climb the building fronts in pink, cyan and amber; towers rise behind into the low clouds, which glow with the city's light. Rain falls in fine slanting streaks…
 
@@ -5220,7 +5220,7 @@ ROOFTOP RAIN TOKYO: a rainy night over the rooftops of a dense city district -- 
 
 ### Rorschach
 
-`Scene2D/Rorschach.frag` · type=normal · mood=dark,dreamy · complexity=10
+`Scene2D/Rorschach.frag` · type=normal · mood=dark,dreamy · complexity=7
 
 An ever-morphing Rorschach inkblot: an fbm noise field mirrored on the vertical axis, rendered as dark ink on a warm paper ghost of the photo (or inverted to a "positive plate" when `positive` is set). Legacy per-activation uniforms (fiOffset, posX/Y/Z, divisor) seed the blot's noise offset and scale so each activation looks distinct. Audio Reactivity: - audioAdvance -> integrates into the fbm noise phase, so the blo…
 
@@ -5238,7 +5238,7 @@ ROSSLER ATTRACTOR HYPER RIBBON: Chaotic Rössler attractor system dx/dt = -y - z
 
 ### RotoreliefIllusion
 
-`Scene2D/RotoreliefIllusion.frag` · type=normal · mood=psychedelic,bright,dreamy · complexity=2
+`Scene2D/RotoreliefIllusion.frag` · type=normal · mood=psychedelic,bright,dreamy · complexity=7
 
 ROTORELIEF ILLUSION: the rotating discs of Duchamp -- eccentric circles and spirals that, turning, seem to bulge and sink. A field of discs, one per chroma class, each turning steadily on the scene clock at its own rate; the class that sounds lights its disc. The eccentric rings carry the photo in bands; the illusion of depth comes from the turn, not from the camera, which never moves. Audio Reactivity: sceneAdvance …
 
@@ -5256,7 +5256,7 @@ RUNWAY APPROACH LIGHTS: final approach at night, seen from the cockpit -- ahead 
 
 ### RustBloomRoughness
 
-`Scene2D/RustBloomRoughness.frag` · type=normal · mood=dark,calm · complexity=2
+`Scene2D/RustBloomRoughness.frag` · type=normal · mood=dark,calm · complexity=3
 
 RUST BLOOM ROUGHNESS: a chrome plate of the photo that rusts with the roughness of the sound -- the psychoacoustic roughness (beating partials, distortion) is the corrosion: as it rises, rust blooms across the chrome from seeds, pitting the mirror; a harmony change is the polish -- a wave of restored chrome sweeps the plate, and the rust begins again. Roughness is slow, so the bloom grows as a bloom does; the polish …
 
@@ -5265,7 +5265,7 @@ RUST BLOOM ROUGHNESS: a chrome plate of the photo that rusts with the roughness 
 
 ### SacredGeometryFlowerOfLife3D
 
-`Scene2D/SacredGeometryFlowerOfLife3D.frag` · type=normal · mood=psychedelic,dreamy,dark · complexity=2
+`Scene2D/SacredGeometryFlowerOfLife3D.frag` · type=normal · mood=psychedelic,dreamy,dark · complexity=10
 
 SACRED GEOMETRY FLOWER OF LIFE 3D: Volumetric raymarching of extruded Flower of Life interlocking torus fields, Metatron's Cube hyper-lattices, and kinetic multi-frequency moiré light conduits. Audio Reactivity: audioAdvance -> drives continuous 3D camera orbital flight & lattice rotation audioKick -> flashes central merkaba core & expands toroidal radius audioCentroid-> modulates moiré interference frequency audioSu…
 
@@ -5274,7 +5274,7 @@ SACRED GEOMETRY FLOWER OF LIFE 3D: Volumetric raymarching of extruded Flower of 
 
 ### SaffmanTaylorFingers
 
-`Scene2D/SaffmanTaylorFingers.frag` · type=normal · mood=psychedelic,calm,dreamy · complexity=2
+`Scene2D/SaffmanTaylorFingers.frag` · type=normal · mood=psychedelic,calm,dreamy · complexity=4
 
 SAFFMAN-TAYLOR FINGERS: viscous fingering in a Hele-Shaw cell. A less viscous fluid (the photo) is pushed into a more viscous one (the palette) between two plates; the interface is unstable and grows fingers that split at their tips. The pattern grows over the scene arc -- the radius expands and higher modes (the tip splits) come in later, all continuous; the swell is the injection pressure (a slow modulation of the …
 
@@ -5283,7 +5283,7 @@ SAFFMAN-TAYLOR FINGERS: viscous fingering in a Hele-Shaw cell. A less viscous fl
 
 ### SagradaForestNave
 
-`Scene2D/SagradaForestNave.frag` · type=normal · mood=dreamy,calm,bright · complexity=3
+`Scene2D/SagradaForestNave.frag` · type=normal · mood=dreamy,calm,bright · complexity=7
 
 SAGRADA FOREST NAVE: a church nave built as a stone forest, after Gaudi -- slender columns rise like trunks and branch high up into a canopy that carries the vault, whose cells open into bright star-like skylights. Down both sides run tall stained-glass windows, cool blues and greens on the one side, fiery reds, oranges and yellows on the other, and the low sun from the warm side sends coloured shafts through the haz…
 
@@ -5292,7 +5292,7 @@ SAGRADA FOREST NAVE: a church nave built as a stone forest, after Gaudi -- slend
 
 ### SalarMirrorFlats
 
-`Scene2D/SalarMirrorFlats.frag` · type=normal · mood=calm,bright,dreamy · complexity=2
+`Scene2D/SalarMirrorFlats.frag` · type=normal · mood=calm,bright,dreamy · complexity=4
 
 SALAR MIRROR FLATS: the salt flat after rain -- a few centimetres of water over the crust make the largest mirror on Earth. The sky is the photo; the flat mirrors it exactly, so the horizon vanishes; under the water the hexagonal salt crust shows through; walkers stand as round-headed silhouettes on the clock, mirrored too. The cloud light is the swell, the treble is the glitter of ripples, the kick a far flash. Came…
 
@@ -5301,7 +5301,7 @@ SALAR MIRROR FLATS: the salt flat after rain -- a few centimetres of water over 
 
 ### SaltWatercolorBlooms
 
-`Scene2D/SaltWatercolorBlooms.frag` · type=normal · mood=calm,psychedelic · complexity=2
+`Scene2D/SaltWatercolorBlooms.frag` · type=normal · mood=calm,psychedelic · complexity=1
 
 SALT WATERCOLOR BLOOMS: salt sprinkled into wet watercolour -- in a dark, saturated wash, each salt grain draws the pigment away and leaves a pale starburst: tiny feathery crystals of light spread across the colour like frost flowers, clustering where the salt fell thickly, while the wash itself shifts slowly between the photograph's colours. Endless, mirrorable. Audio Reactivity (structure, not only light): audioAdv…
 
@@ -5319,7 +5319,7 @@ SCHERK MINIMAL SURFACE TOWER: Raymarched infinite minimal surface towers governe
 
 ### SchillerOverTexture
 
-`Scene2D/SchillerOverTexture.frag` · type=normal · mood=dark,psychedelic · complexity=2
+`Scene2D/SchillerOverTexture.frag` · type=normal · mood=dark,psychedelic · complexity=6
 
 SCHILLER OVER TEXTURE: the photograph turned into labradorite -- a dark polished stone in which, where the light catches the hidden crystal lamellae, sheets of electric blue, teal, gold and violet flash up out of the dark and slide across the surface as the light wanders. The lamellae follow the photo's own structure: its bands and grain become the planes that light up, so every photo gives a different stone. The who…
 
@@ -5328,7 +5328,7 @@ SCHILLER OVER TEXTURE: the photograph turned into labradorite -- a dark polished
 
 ### Schlieren
 
-`Scene2D/Schlieren.frag` · type=normal · mood=calm,dreamy · complexity=2
+`Scene2D/Schlieren.frag` · type=normal · mood=calm,dreamy · complexity=5
 
 _(Vorschau eingeschränkt: Sim-Textur/Mehrpass — Bilder unterschätzen die echte App)_
 
@@ -5339,7 +5339,7 @@ KNIFE-EDGE SCHLIEREN OPTICS over the live GPU fluid: the classic wind-tunnel pho
 
 ### SchwarzschildWormholeTunnel
 
-`Scene2D/SchwarzschildWormholeTunnel.frag` · type=normal · mood=dark,aggressive · complexity=4
+`Scene2D/SchwarzschildWormholeTunnel.frag` · type=normal · mood=dark,aggressive · complexity=6
 
 SCHWARZSCHILD WORMHOLE TUNNEL: Raymarched flight through a traversable Morris-Thorne wormhole connecting two distinct universes (tex0 and tex1). Relativistic spacetime throat curvature, gravitational lensing arcs, chromatic dispersion, and seamless topological universe transitions. audioAdvance -> navigates camera through the wormhole throat audioKick -> pulses gravitational metric contraction shockwaves audioSubBass…
 
@@ -5348,7 +5348,7 @@ SCHWARZSCHILD WORMHOLE TUNNEL: Raymarched flight through a traversable Morris-Th
 
 ### SeaFoamLaceAerial
 
-`Scene2D/SeaFoamLaceAerial.frag` · type=normal · mood=bright,calm · complexity=2
+`Scene2D/SeaFoamLaceAerial.frag` · type=normal · mood=bright,calm · complexity=1
 
 SEA FOAM LACE AERIAL: a tropical shore from straight above -- the water shading from white sand through turquoise and aquamarine to deep blue with dark coral heads, and over it the spent waves spread out as fine white lace, foam unravelling into a net of threads and holes that drifts back as each wave retreats, while the next rolls in behind. The sun glitters on the ripples and dapples the sandy bottom with caustic l…
 
@@ -5357,7 +5357,7 @@ SEA FOAM LACE AERIAL: a tropical shore from straight above -- the water shading 
 
 ### SeaStacksFlight
 
-`Scene2D/SeaStacksFlight.frag` · type=normal · mood=calm,dreamy,bright · complexity=4
+`Scene2D/SeaStacksFlight.frag` · type=normal · mood=calm,dreamy,bright · complexity=1
 
 SEA STACKS FLIGHT: a low glide over the sea at sunset between towering sea stacks -- sheer rock pillars rising out of the swell, their sunward faces glowing orange, their shadow sides deep violet, surf foaming at their feet. The sun hangs low ahead, laying a glittering road across the water; spray haze hangs between the pillars; gulls wheel as round dark specks. The glide is steady and level; the music is the light: …
 
@@ -5366,7 +5366,7 @@ SEA STACKS FLIGHT: a low glide over the sea at sunset between towering sea stack
 
 ### SectionMemoryHalls
 
-`Scene2D/SectionMemoryHalls.frag` · type=normal · mood=calm,dreamy,dark · complexity=2
+`Scene2D/SectionMemoryHalls.frag` · type=normal · mood=calm,dreamy,dark · complexity=7
 
 SECTION MEMORY HALLS: the song's structure as a suite of rooms. Every section the analyser recognises gets its own hall -- its own colour, pillar spacing, ceiling ornament and lamp tone -- and a RETURNING section (the second chorus) leads back into the SAME hall, lit warm as a place already visited; a new section opens a cool, unfamiliar one. The change never cuts: when a section boundary arrives, a lit doorway appea…
 
@@ -5384,7 +5384,7 @@ SECTION STRATA CANYON: the song as geology, in a canyon at golden hour. Across t
 
 ### SeifertSurfaceBraidKnot
 
-`Scene2D/SeifertSurfaceBraidKnot.frag` · type=normal · mood=calm,bright,dreamy,psychedelic · complexity=3
+`Scene2D/SeifertSurfaceBraidKnot.frag` · type=normal · mood=calm,bright,dreamy,psychedelic · complexity=2
 
 SEIFERT SURFACE BRAID KNOT: a torus knot as a studio sculpture -- a thick tube of polished, thin-film-iridescent glaze winding three times through the hole of a torus while circling it five times, turning slowly on a dark stage under a softbox; inside its loops the Seifert surface is suggested by a soap film spanning the knot, shimmering in interference colours. A soft reflection lies on the glossy floor. The rotatio…
 
@@ -5402,7 +5402,7 @@ SEISMIC WAVEFRONTS: a seismograph's view of the underground -- wavefronts from s
 
 ### SelfSimilarity
 
-`Scene2D/SelfSimilarity.frag` · type=normal · mood=calm,dark · complexity=1
+`Scene2D/SelfSimilarity.frag` · type=normal · mood=calm,dark · complexity=8
 
 _(Vorschau eingeschränkt: Sim-Textur/Mehrpass — Bilder unterschätzen die echte App)_
 
@@ -5413,7 +5413,7 @@ The SONG'S STRUCTURE as the image: the host maintains a self-similarity matrix (
 
 ### SelfSimilarityCorridor
 
-`Scene2D/SelfSimilarityCorridor.frag` · type=normal · mood=dark,calm,dreamy,psychedelic · complexity=2
+`Scene2D/SelfSimilarityCorridor.frag` · type=normal · mood=dark,calm,dreamy,psychedelic · complexity=6
 
 SELF-SIMILARITY CORRIDOR: an endless corridor whose floor, ceiling and walls are tiled with the song's own structure. The host keeps a 256x256 self-similarity matrix (texSSM: ~90 s of feature history against itself). Walking down the corridor is walking down one time axis; the other time axis runs across it. A returning chorus lays bright diagonal bands across the floor, a section change is a dark threshold you step …
 
@@ -5422,7 +5422,7 @@ SELF-SIMILARITY CORRIDOR: an endless corridor whose floor, ceiling and walls are
 
 ### SelfSimilarityMandala
 
-`Scene2D/SelfSimilarityMandala.frag` · type=normal · mood=psychedelic,calm,dreamy · complexity=2
+`Scene2D/SelfSimilarityMandala.frag` · type=normal · mood=psychedelic,calm,dreamy · complexity=8
 
 SELF-SIMILARITY MANDALA: the song's memory of itself as a mandala. The self-similarity matrix (texSSM) holds how much every moment of the last stretch resembles every other. Here the row "now against the past" is wrapped into rings -- the centre is now, each ring further out a moment further back -- and folded n-way into a mandala, so a returning chorus lights whole rings at once and a new section darkens them. A sec…
 
@@ -5431,7 +5431,7 @@ SELF-SIMILARITY MANDALA: the song's memory of itself as a mandala. The self-simi
 
 ### SelfSimilarityTerrain
 
-`Scene2D/SelfSimilarityTerrain.frag` · type=normal · mood=dark,calm,dreamy · complexity=4
+`Scene2D/SelfSimilarityTerrain.frag` · type=normal · mood=dark,calm,dreamy · complexity=2
 
 SELF SIMILARITY TERRAIN: the song's self-similarity matrix as a moonlit mountain range. Where the music repeats itself the land rises into snowy ridges -- the diagonal, "now against now", is the main range running away from the camera -- and where it is new the land falls into valleys with a still lake in them that mirrors the moon. Under a starry sky and a large moon the snow glows blue-white, mist lies in the low g…
 
@@ -5440,7 +5440,7 @@ SELF SIMILARITY TERRAIN: the song's self-similarity matrix as a moonlit mountain
 
 ### ShatterField
 
-`Scene2D/ShatterField.frag` · type=normal · mood=aggressive,dark · complexity=2
+`Scene2D/ShatterField.frag` · type=normal · mood=aggressive,dark · complexity=10
 
 The photo blown apart into 1300 rigid shards (posed upstream in texShards) that spring back together, with the gaps between them falling away to near-black. This pass only grades the shard sim's output and lights the cracks: it reads the coverage mask's gradient to find every break line and adds a rim-light glow there, tinted by imgPalette (a rotating sample arc over the live photo, itself driven by audioChromaHue/au…
 
@@ -5449,7 +5449,7 @@ The photo blown apart into 1300 rigid shards (posed upstream in texShards) that 
 
 ### ShelfCloudPrairie
 
-`Scene2D/ShelfCloudPrairie.frag` · type=normal · mood=dark,aggressive · complexity=2
+`Scene2D/ShelfCloudPrairie.frag` · type=normal · mood=dark,aggressive · complexity=1
 
 SHELF CLOUD PRAIRIE: a supercell's gust front rolling over the prairie -- a vast shelf cloud spanning the whole horizon like a stepped wedge, its leading edge smooth and layered in tiers, blue-grey and tinged green beneath, the scud ragged along its base, and behind it the black wall of rain. In front of it a strip of clear golden sky still lights the wheat, which bends and ripples in the gust. Lightning flickers dee…
 
@@ -5458,7 +5458,7 @@ SHELF CLOUD PRAIRIE: a supercell's gust front rolling over the prairie -- a vast
 
 ### ShepardPitchHelix
 
-`Scene2D/ShepardPitchHelix.frag` · type=normal · mood=dark,calm,dreamy · complexity=3
+`Scene2D/ShepardPitchHelix.frag` · type=normal · mood=dark,calm,dreamy · complexity=4
 
 SHEPARD PITCH HELIX: pitch as a helix -- one turn per octave, the twelve chroma classes around it, octaves stacked as floors -- seen side-on, turning slowly on the scene clock. The melody history (96 samples) winds up the helix as a glowing thread of round beads, the newest at the head; each class's post on the helix lights with its chroma energy; the kick lights the current note; the photo is the hall behind. Camera…
 
@@ -5467,7 +5467,7 @@ SHEPARD PITCH HELIX: pitch as a helix -- one turn per octave, the twelve chroma 
 
 ### SidechainLungBreath
 
-`Scene2D/SidechainLungBreath.frag` · type=normal · mood=dark,aggressive,dreamy · complexity=2
+`Scene2D/SidechainLungBreath.frag` · type=normal · mood=dark,aggressive,dreamy · complexity=7
 
 SIDECHAIN LUNG BREATH: a pair of lungs on a dark ground, the bronchial tree branching into them; the lobes inflate with the swell (a slow, smooth breath -- the scene clock adds a resting rhythm), the alveoli are round cells carrying the photo, lit by the bands from the bottom (bass) to the top (treble); the kick is the sidechain pump: a dip of the light (never of the shape), read off on a gain-reduction meter beside …
 
@@ -5476,7 +5476,7 @@ SIDECHAIN LUNG BREATH: a pair of lungs on a dark ground, the bronchial tree bran
 
 ### SierpinskiOctahedronAbyss
 
-`Scene2D/SierpinskiOctahedronAbyss.frag` · type=normal · mood=psychedelic,dark,aggressive · complexity=2
+`Scene2D/SierpinskiOctahedronAbyss.frag` · type=normal · mood=psychedelic,dark,aggressive · complexity=7
 
 SIERPINSKI OCTAHEDRON ABYSS: 3D Raymarching continuous dive into the heart of a Sierpinski Octahedron (IFS) fractal. Endless nested pyramid canyons, sharp triangular facet reflections, and high-voltage glowing vertex sparks. Audio Reactivity: audioAdvance -> drives continuous forward plunge into recursive pyramid voids audioKick -> flashes octahedron vertex nodes & triggers lattice expansion burst audioCentroid-> sha…
 
@@ -5485,7 +5485,7 @@ SIERPINSKI OCTAHEDRON ABYSS: 3D Raymarching continuous dive into the heart of a 
 
 ### SilenceSnowfallHush
 
-`Scene2D/SilenceSnowfallHush.frag` · type=normal · mood=calm,dark,dreamy · complexity=2
+`Scene2D/SilenceSnowfallHush.frag` · type=normal · mood=calm,dark,dreamy · complexity=1
 
 SILENCE SNOWFALL HUSH: a quiet street at night (the photo), snow falling as round flakes on the scene clock. When the music is quiet the snow settles: the cover grows, the picture whitens and cools, the street lamps get their halos; loud passages melt it again -- all of it on the swell, slow, never on a beat. The kick is only a faint flicker of the lamps. Camera fixed on the street. Audio Reactivity: audioSwell -> sn…
 
@@ -5494,7 +5494,7 @@ SILENCE SNOWFALL HUSH: a quiet street at night (the photo), snow falling as roun
 
 ### SiphonophoreBioluminescentCurtain
 
-`Scene2D/SiphonophoreBioluminescentCurtain.frag` · type=normal · mood=calm,dark,dreamy · complexity=4
+`Scene2D/SiphonophoreBioluminescentCurtain.frag` · type=normal · mood=calm,dark,dreamy · complexity=9
 
 SIPHONOPHORE BIOLUMINESCENT CURTAIN: Massive colonial siphonophore (Praya dubia / Apolemia) cascading through deep abyssal oceanic trenches. Translucent swimming bells (nectophores), bioluminescent glowing tentilla curtains, and rhythmic contraction light waves. audioAdvance -> drives oceanic current drift & tentacle undulating waves audioKick -> flashes defensive bioluminescent luminescence cascades audioSwell -> th…
 
@@ -5503,7 +5503,7 @@ SIPHONOPHORE BIOLUMINESCENT CURTAIN: Massive colonial siphonophore (Praya dubia 
 
 ### SkyrmionChiralSpinLattice
 
-`Scene2D/SkyrmionChiralSpinLattice.frag` · type=normal · mood=psychedelic,aggressive · complexity=3
+`Scene2D/SkyrmionChiralSpinLattice.frag` · type=normal · mood=psychedelic,aggressive · complexity=4
 
 SKYRMION CHIRAL SPIN LATTICE: Dense 2D triangular lattice of topological magnetic skyrmion vortices governed by chiral Dzyaloshinskii-Moriya exchange interactions. Displays swirling out-of-plane magnetization cores, gyrotropic Skyrmion Hall drift, and holographic magneto-optical Faraday rotation patterns. audioAdvance -> drives gyrotropic Skyrmion Hall angle drift & spin precession audioKick -> compresses lattice spa…
 
@@ -5512,7 +5512,7 @@ SKYRMION CHIRAL SPIN LATTICE: Dense 2D triangular lattice of topological magneti
 
 ### SlotMachineReels
 
-`Scene2D/SlotMachineReels.frag` · type=normal · mood=bright,psychedelic · complexity=3
+`Scene2D/SlotMachineReels.frag` · type=normal · mood=bright,psychedelic · complexity=7
 
 SLOT MACHINE REELS: a fruit machine in a dark casino. Behind the glass three drum reels turn, each at its own steady rate for the whole activation -- cherries, lucky sevens, golden bells, BAR plates, blue diamonds and lemons wrapping round the curved drums, darkening toward the top and bottom of the window. The cabinet is red and chrome, rimmed by a chase of round bulbs; the red pay line glows across the middle; the …
 
@@ -5521,7 +5521,7 @@ SLOT MACHINE REELS: a fruit machine in a dark casino. Behind the glass three dru
 
 ### SmokeColourCollide
 
-`Scene2D/SmokeColourCollide.frag` · type=normal · mood=psychedelic,dreamy,dark · complexity=2
+`Scene2D/SmokeColourCollide.frag` · type=normal · mood=psychedelic,dreamy,dark · complexity=8
 
 SMOKE COLOUR COLLIDE: two streams of coloured smoke blown into each other against black -- one magenta from the left, one cyan-teal from the right, lit hard from the side like a studio smoke photograph. Where they meet they curl up into billowing vortices and fine filaments, rolling over one another, their colours mixing to violet and white at the seam, wisps tearing off and fading into the dark. The streams flow ste…
 
@@ -5530,7 +5530,7 @@ SMOKE COLOUR COLLIDE: two streams of coloured smoke blown into each other agains
 
 ### SmokeSigils
 
-`Scene2D/SmokeSigils.frag` · type=normal · mood=dark,dreamy,calm · complexity=3
+`Scene2D/SmokeSigils.frag` · type=normal · mood=dark,dreamy,calm · complexity=9
 
 SMOKE SIGILS: smoke blown through a lattice of glyphs. A slab of volumetric smoke (fbm, warped and driven on the scene clock) streams upward; in its middle plane stands a grid of sigils -- procedural glyphs cut from a cell hash -- and the smoke only shows where a glyph lets it through, so the signs appear as shapes of moving smoke and vanish where the smoke thins. The melody lifts single glyphs into light (the class …
 
@@ -5539,7 +5539,7 @@ SMOKE SIGILS: smoke blown through a lattice of glyphs. A slab of volumetric smok
 
 ### Snowfall
 
-`Scene2D/Snowfall.frag` · type=normal · mood=calm · complexity=2
+`Scene2D/Snowfall.frag` · type=normal · mood=calm · complexity=8
 
 A blizzard of four depth-layered flake sheets falling in front of a darkened, cooled photograph, with per-layer blur standing in for depth of field. A shared wind field (function of screen height, strengthened by audioSubBass and audioKick) gusts every layer together; audioAdvance integrates the fall/drift phase for all layers so speed changes never jump. audioLevel and a slight audioChromaHue hue-rotation tint the f…
 
@@ -5557,7 +5557,7 @@ SOLAR CORONA PROMINENCE: Volumetric solar magnetic coronal loops arching over a 
 
 ### SolarEclipseTotality
 
-`Scene2D/SolarEclipseTotality.frag` · type=normal · mood=space,dark,calm · complexity=2
+`Scene2D/SolarEclipseTotality.frag` · type=normal · mood=space,dark,calm · complexity=1
 
 SOLAR ECLIPSE TOTALITY: the moon's disc over the sun, and the corona that only totality shows -- thirty-two streamers whose lengths are the thirty-two spectrum bands, so the corona breathes with the music band by band; red prominences on the limb; the chromosphere's thin pink ring; the diamond ring where a sliver of photosphere shows. The host's day clock moves the moon across the sun (a slow sin, never a wrap), so t…
 
@@ -5566,7 +5566,7 @@ SOLAR ECLIPSE TOTALITY: the moon's disc over the sun, and the corona that only t
 
 ### SolarFlareCorona
 
-`Scene2D/SolarFlareCorona.frag` · type=normal · mood=aggressive,bright,psychedelic · complexity=4
+`Scene2D/SolarFlareCorona.frag` · type=normal · mood=aggressive,bright,psychedelic · complexity=2
 
 SOLAR FLARE CORONA: Extreme close-up of a turbulent stellar photosphere, incandescent plasma convection cells, magnetic coronal loops, and explosive coronal mass ejections erupting across the screen. audioSubBass -> expands radial solar flare shockwaves audioKick -> flashes incandescent core nuclear ignition audioMid -> ripples magnetic flux loops & plasma convection audioHigh -> excites fine coronal filaments & sola…
 
@@ -5575,7 +5575,7 @@ SOLAR FLARE CORONA: Extreme close-up of a turbulent stellar photosphere, incande
 
 ### SolarFlareSurfing
 
-`Scene2D/SolarFlareSurfing.frag` · type=normal · mood=bright,aggressive,space · complexity=8
+`Scene2D/SolarFlareSurfing.frag` · type=normal · mood=bright,aggressive,space · complexity=5
 
 SOLAR FLARE SURFING: Extreme close-up flight over the turbulent surface of a star. Massive solar flares and plasma prominences loop overhead, reacting violently to the beat. audioAdvance -> flight speed over the stellar surface audioKick -> explosive solar flares erupting upwards audioSwell -> brightness and height of the plasma waves audioChromaHue-> palette offset for the star's color Per-activation variety: waveP …
 
@@ -5584,7 +5584,7 @@ SOLAR FLARE SURFING: Extreme close-up flight over the turbulent surface of a sta
 
 ### SolarMagnetoPlasmaLoop
 
-`Scene2D/SolarMagnetoPlasmaLoop.frag` · type=normal · mood=psychedelic,bright · complexity=2
+`Scene2D/SolarMagnetoPlasmaLoop.frag` · type=normal · mood=psychedelic,bright · complexity=3
 
 SOLAR MAGNETO PLASMA LOOP: Twisted magnetic helical coronal loops emerging from a boiling solar photosphere with coronal reconnection flares, solar prominence arcs, and high-energy coronal mass ejection (CME) shockwaves. Audio Reactivity: audioAdvance -> drives continuous solar magnetic convection & helical loop twist audioKick -> triggers violent magnetic reconnection flares & CME plasma bursts audioCentroid-> sharp…
 
@@ -5593,7 +5593,7 @@ SOLAR MAGNETO PLASMA LOOP: Twisted magnetic helical coronal loops emerging from 
 
 ### SolarProminenceLoops
 
-`Scene2D/SolarProminenceLoops.frag` · type=normal · mood=space,bright,aggressive · complexity=3
+`Scene2D/SolarProminenceLoops.frag` · type=normal · mood=space,bright,aggressive · complexity=8
 
 SOLAR PROMINENCE LOOPS: the camera stands on the Sun. Below, the granulated photosphere boils; above, magnetic loops arch from footpoint to footpoint, each a glowing tube of plasma streaming along the field on the music's pace. Builds raise the loops (slowly, on the swell); the bass is the plasma's brightness; a drop lights the biggest loop end to end as if it had just reconnected -- light, never a jolt. The camera n…
 
@@ -5602,7 +5602,7 @@ SOLAR PROMINENCE LOOPS: the camera stands on the Sun. Below, the granulated phot
 
 ### SolidLightCones
 
-`Scene2D/SolidLightCones.frag` · type=normal · mood=dark,calm,dreamy · complexity=3
+`Scene2D/SolidLightCones.frag` · type=normal · mood=dark,calm,dreamy · complexity=2
 
 SOLID LIGHT CONES: a dark hall filled with haze, and projectors at its far end whose beams become surfaces -- each projects a slowly changing line drawing onto the wall behind the viewer, and in the haze that line becomes a luminous sheet stretching from the lens to us (after Anthony McCall's solid-light works). We stand inside the cones. Each drawing belongs to a band group and brightens with it; the haze drifts and…
 
@@ -5611,7 +5611,7 @@ SOLID LIGHT CONES: a dark hall filled with haze, and projectors at its far end w
 
 ### SolitonInternalWaveAndamanSea
 
-`Scene2D/SolitonInternalWaveAndamanSea.frag` · type=normal · mood=calm,dreamy,bright · complexity=3
+`Scene2D/SolitonInternalWaveAndamanSea.frag` · type=normal · mood=calm,dreamy,bright · complexity=1
 
 SOLITON INTERNAL WAVE ANDAMAN SEA: the Andaman Sea seen from orbit, in the sun glint -- the view the famous astronaut photographs show. The sea is a sheet of silver-bronze light fading to deep navy; across it run trains of internal solitons, curved arcs of rough and smooth water that spread from a submarine sill far off to one side, a new packet every tide. Islands with coral shallows and white surf lie in the glint;…
 
@@ -5620,7 +5620,7 @@ SOLITON INTERNAL WAVE ANDAMAN SEA: the Andaman Sea seen from orbit, in the sun g
 
 ### SonarPingReveal
 
-`Scene2D/SonarPingReveal.frag` · type=normal · mood=dark,calm,psychedelic · complexity=2
+`Scene2D/SonarPingReveal.frag` · type=normal · mood=dark,calm,psychedelic · complexity=6
 
 SONAR PING REVEAL: a bat's cave, or a submarine's sea -- the scene (the photo) exists only where an echo has returned. Pings leave the centre on the scene clock as expanding rings; where a ring passes, the photo lights up along the ring and fades behind it, so the world is painted in sweeps of returning sound. The kick fires a bright extra ping, the treble is the echo detail, the bass the hum of the emitter. Camera s…
 
@@ -5629,7 +5629,7 @@ SONAR PING REVEAL: a bat's cave, or a submarine's sea -- the scene (the photo) e
 
 ### SonoluminescenceBubble
 
-`Scene2D/SonoluminescenceBubble.frag` · type=normal · mood=bright,calm · complexity=3
+`Scene2D/SonoluminescenceBubble.frag` · type=normal · mood=bright,calm · complexity=8
 
 SONOLUMINESCENCE BUBBLE: Acoustic cavitation bubble collapse in an ultrasonic standing wave field. Adiabatic gas compression generates a picosecond-duration 20,000K plasma flash with spherical acoustic shockwaves, water refraction caustics, and liquid photo distortion. audioAdvance -> cycles ultrasonic acoustic compression phases audioKick -> triggers maximum adiabatic bubble collapse & plasma flash audioBass -> driv…
 
@@ -5638,7 +5638,7 @@ SONOLUMINESCENCE BUBBLE: Acoustic cavitation bubble collapse in an ultrasonic st
 
 ### SoulagesOutrenoir
 
-`Scene2D/SoulagesOutrenoir.frag` · type=normal · mood=dark,calm · complexity=2
+`Scene2D/SoulagesOutrenoir.frag` · type=normal · mood=dark,calm · complexity=5
 
 SOULAGES OUTRENOIR: black beyond black, after Pierre Soulages -- a surface of thick black paint combed and ridged in broad strokes, and all that is visible is LIGHT on black: the grooves and ridges catch a moving light so that bands of sheen slide across the black, silvery, bluish, warm, while the paint itself stays black. The strokes follow the photograph's structure (its gradients set the direction of the combing),…
 
@@ -5647,7 +5647,7 @@ SOULAGES OUTRENOIR: black beyond black, after Pierre Soulages -- a surface of th
 
 ### SpaceElevatorTransit
 
-`Scene2D/SpaceElevatorTransit.frag` · type=normal · mood=dark,calm,space · complexity=4
+`Scene2D/SpaceElevatorTransit.frag` · type=normal · mood=dark,calm,space · complexity=8
 
 SPACE ELEVATOR TRANSIT: A high-speed ascent up a colossal space elevator tether. The camera looks out from a glass transit pod, watching the glowing planetary surface curve away below while massive orbital structures loom above. audioAdvance -> ascent speed of the elevator pod audioKick -> flashes from passing structural rings and transit lights audioSwell -> brightness of the planet's city lights below audioChromaHu…
 
@@ -5656,7 +5656,7 @@ SPACE ELEVATOR TRANSIT: A high-speed ascent up a colossal space elevator tether.
 
 ### SpaceStationPromenade
 
-`Scene2D/SpaceStationPromenade.frag` · type=normal · mood=bright,calm,space · complexity=4
+`Scene2D/SpaceStationPromenade.frag` · type=normal · mood=bright,calm,space · complexity=8
 
 SPACE STATION PROMENADE: The camera wanders through the grand, high-tech promenade of a massive rotating space station. Huge windows offer glimpses of the starfield outside. Neon lights and holograms pulse to the beat. audioAdvance -> walking/flight speed along the promenade audioKick -> flashes from advertising holograms and accent lights audioSwell -> ambient daylight/interior lighting audioChromaHue-> palette offs…
 
@@ -5665,7 +5665,7 @@ SPACE STATION PROMENADE: The camera wanders through the grand, high-tech promena
 
 ### SpectrogramKaleidoscope
 
-`Scene2D/SpectrogramKaleidoscope.frag` · type=normal · mood=psychedelic,bright,aggressive · complexity=2
+`Scene2D/SpectrogramKaleidoscope.frag` · type=normal · mood=psychedelic,bright,aggressive · complexity=9
 
 SPECTROGRAM KALEIDOSCOPE: the mirrored motif is not a photo but the last twenty seconds of the music itself (texSpectro: 32 bands by a 20-second history ring). The centre is now, the rim is twenty seconds ago; bands run around the wedge, so every note becomes an ornament that drifts outward through the fold as it ages. The fold count is fixed per activation, the mirror turns on the music's pace, and the only thing th…
 
@@ -5674,7 +5674,7 @@ SPECTROGRAM KALEIDOSCOPE: the mirrored motif is not a photo but the last twenty 
 
 ### SpectrogramTunnel
 
-`Scene2D/SpectrogramTunnel.frag` · type=normal · mood=psychedelic,bright,aggressive · complexity=2
+`Scene2D/SpectrogramTunnel.frag` · type=normal · mood=psychedelic,bright,aggressive · complexity=10
 
 SPECTROGRAM TUNNEL: the tunnel IS the music. The host's scrolling spectrogram (texSpectro: 32 log-spaced bands across, ~20 s of history down, a ring) is rolled into a tube -- frequency runs around the wall, bass at the top and bottom, treble along the sides, mirrored so the tube is symmetric -- and history runs down the tunnel. You fly through the last eight seconds of what you are hearing: every note is a bump on th…
 
@@ -5683,7 +5683,7 @@ SPECTROGRAM TUNNEL: the tunnel IS the music. The host's scrolling spectrogram (t
 
 ### SpectrumFilter
 
-`Scene2D/SpectrumFilter.frag` · type=normal · mood=psychedelic,bright · complexity=2
+`Scene2D/SpectrumFilter.frag` · type=normal · mood=psychedelic,bright · complexity=7
 
 The photo re-lit by the song's own EQ curve: its luminance is filtered per spatial frequency upstream (texFFT) so bass dissolves the image into broad shapes while hi-hats cut its edges back in. The original photo's colours are kept and only re-lit by the ratio of filtered to original luminance (mixP controls how strongly). Where texFFT's "work" channel shows the filter changing the image most, the frame glows in imgP…
 
@@ -5692,7 +5692,7 @@ The photo re-lit by the song's own EQ curve: its luminance is filtered per spati
 
 ### SpectrumRadial
 
-`Scene2D/SpectrumRadial.frag` · type=normal · mood=aggressive,dark · complexity=1
+`Scene2D/SpectrumRadial.frag` · type=normal · mood=aggressive,dark · complexity=10
 
 Radial spectrum analyzer with 32 frequency bands (mirrored into 64 wedges) radiating around a central disc that shows the source image. Each wedge is a bar whose length tracks that band's live level, filled with the image and tinted across the rainbow by frequency; the whole ring pulses on the beat. Far more bands and far more movement than the old 6-band version.
 
@@ -5701,7 +5701,7 @@ Radial spectrum analyzer with 32 frequency bands (mirrored into 64 wedges) radia
 
 ### SpectrumStalactiteCave
 
-`Scene2D/SpectrumStalactiteCave.frag` · type=normal · mood=dark,calm,psychedelic · complexity=3
+`Scene2D/SpectrumStalactiteCave.frag` · type=normal · mood=dark,calm,psychedelic · complexity=8
 
 SPECTRUM STALACTITE CAVE: a limestone cave whose stalactites hang one per spectral band across the ceiling, the bass bands the thickest and longest. Each band's energy lights its stalactite from within (calcite glow) and lets it drip: drops form at the tip and fall as round beads on a continuous clock, brighter on onsets. Below, a still pool mirrors it all in the photo's colours. The camera never moves. Audio Reactiv…
 
@@ -5710,7 +5710,7 @@ SPECTRUM STALACTITE CAVE: a limestone cave whose stalactites hang one per spectr
 
 ### SphereGrid
 
-`Scene2D/SphereGrid.frag` · type=normal · mood=calm,bright · complexity=2
+`Scene2D/SphereGrid.frag` · type=normal · mood=calm,bright · complexity=7
 
 Adapted from an untitled \@kishimisu raymarch (CC BY-NC-SA 4.0): a fly-through of an infinite lattice of spheres down a bright corridor. Adapted to our engine, and COLOURED BY THE IMAGE: instead of a fixed cosine palette, each depth takes its colour from a slowly-drifting crop of the source picture (imgPal), so the palette is the image itself and keeps changing (like the kaleidoscope folding different crops). Audio-r…
 
@@ -5719,7 +5719,7 @@ Adapted from an untitled \@kishimisu raymarch (CC BY-NC-SA 4.0): a fly-through o
 
 ### SpiderOrbWebDew
 
-`Scene2D/SpiderOrbWebDew.frag` · type=normal · mood=calm,dreamy,bright · complexity=2
+`Scene2D/SpiderOrbWebDew.frag` · type=normal · mood=calm,dreamy,bright · complexity=4
 
 SPIDER ORB WEB WITH DEW: an orb web at dawn, strung with dew. The web is built over the scene arc the way a spider builds it -- radii first, then the spiral from the hub outward; each radius belongs to a spectrum band and glows with it; the dew drops (round, on the spiral) sparkle with the treble; the sun rises behind on the swell; the photo is the garden out of focus. Camera still. Audio Reactivity: sceneProgress ->…
 
@@ -5737,7 +5737,7 @@ SPILLWAY GATE RELEASE: the face of a dam with radial gates. As the swell rises t
 
 ### SpintronicDomainWallRacetrack
 
-`Scene2D/SpintronicDomainWallRacetrack.frag` · type=normal · mood=bright · complexity=3
+`Scene2D/SpintronicDomainWallRacetrack.frag` · type=normal · mood=bright · complexity=6
 
 SPINTRONIC DOMAIN WALL RACETRACK: Nanowire racetrack memory array. Topologically protected chiral magnetic domain walls driven by spin-transfer torque pulses race across parallel tracks with magnetoresistive fringes and spin-wave ripples. audioAdvance -> drives spin-polarized electrical current & domain wall drift audioKick -> flashes Barkhausen depinning transitions and magnetic pulses audioSwell -> widens magnetic …
 
@@ -5746,7 +5746,7 @@ SPINTRONIC DOMAIN WALL RACETRACK: Nanowire racetrack memory array. Topologically
 
 ### SpiralPhoto
 
-`Scene2D/SpiralPhoto.frag` · type=normal · mood=calm,bright · complexity=2
+`Scene2D/SpiralPhoto.frag` · type=normal · mood=calm,bright · complexity=6
 
 SPIRAL PHOTO: the photograph drawn with one single spiral line -- a groove winds out from the centre like a record, and its thickness swells where the picture is dark and thins where it is light, so the image appears out of the line itself; the spiral turns and flows slowly outward, the photo drifts beneath, and the line lies as ink on paper, tinted by the photo's colours. Endless, mirrorable. Audio Reactivity (struc…
 
@@ -5755,7 +5755,7 @@ SPIRAL PHOTO: the photograph drawn with one single spiral line -- a groove winds
 
 ### SpiralStairWell
 
-`Scene2D/SpiralStairWell.frag` · type=normal · mood=dark,calm · complexity=2
+`Scene2D/SpiralStairWell.frag` · type=normal · mood=dark,calm · complexity=5
 
 SPIRAL STAIR WELL: looking straight down an endless spiral staircase -- the steps wind around the open well in a helix, turn after turn sinking into the depth, each step a slab of the photograph with a bright nosing on its edge, a glowing handrail running along the inner rim, and the well's wall behind the steps; we descend slowly while the whole staircase turns. Mirrorable; the steps continue beyond the frame. Audio…
 
@@ -5764,7 +5764,7 @@ SPIRAL STAIR WELL: looking straight down an endless spiral staircase -- the step
 
 ### SpiralStairwellDescent
 
-`Scene2D/SpiralStairwellDescent.frag` · type=normal · mood=dark,dreamy,calm · complexity=3
+`Scene2D/SpiralStairwellDescent.frag` · type=normal · mood=dark,dreamy,calm · complexity=8
 
 SPIRAL STAIRWELL DESCENT: looking straight down an endless spiral staircase. The steps wind around a central well; the camera descends steadily on the scene clock, so the steps rise toward us and pass, and the well below stays a dark eye. The steps carry the photo as inlaid treads; lamps on every turn glow with the bands; the kick lights the banister. The descent is periodic in one step, so it is seamless; the camera…
 
@@ -5773,7 +5773,7 @@ SPIRAL STAIRWELL DESCENT: looking straight down an endless spiral staircase. The
 
 ### SpirographGearDraw
 
-`Scene2D/SpirographGearDraw.frag` · type=normal · mood=calm,bright,psychedelic · complexity=3
+`Scene2D/SpirographGearDraw.frag` · type=normal · mood=calm,bright,psychedelic · complexity=4
 
 SPIROGRAPH GEAR DRAW: the toy, in gel-pen neon on dark paper. A translucent gear rolls inside a toothed ring, the pen in one of its holes drawing a hypotrochoid in glowing ink; when the figure closes, the next one begins with another gear and another colour, and the earlier figures stay on the paper, slowly fading, so the sheet is always a layered rosette of several drawings. The gear rolls on the scene clock; the pe…
 
@@ -5782,7 +5782,7 @@ SPIROGRAPH GEAR DRAW: the toy, in gel-pen neon on dark paper. A translucent gear
 
 ### SplitFlapDepartureBoard
 
-`Scene2D/SplitFlapDepartureBoard.frag` · type=normal · mood=dark,calm,dreamy · complexity=3
+`Scene2D/SplitFlapDepartureBoard.frag` · type=normal · mood=dark,calm,dreamy · complexity=7
 
 SPLIT FLAP DEPARTURE BOARD: the old mechanical board of an airport hall. Each character is a stack of hinged flaps; when a cell changes it riffles through the alphabet, the top half falling over the bottom in a smooth rotation, then settles. Rows change one after another on the scene clock, and a whole column riffles on the kick. The photo shows through the glass as the hall behind. Camera fixed. Audio Reactivity: sc…
 
@@ -5791,7 +5791,7 @@ SPLIT FLAP DEPARTURE BOARD: the old mechanical board of an airport hall. Each ch
 
 ### SporeReleaseGills
 
-`Scene2D/SporeReleaseGills.frag` · type=normal · mood=dark,calm,dreamy · complexity=2
+`Scene2D/SporeReleaseGills.frag` · type=normal · mood=dark,calm,dreamy · complexity=5
 
 SPORE RELEASE GILLS: a mushroom cap from below, filling the frame -- the gills radiating from the stem, and the spores (round) drifting down out of them on the scene clock in slow curtains, lit from the side by the treble. The cap is the photo; the gills glow faintly with their spectrum band (a gill per band around the circle); the bass is the damp warmth of the forest floor light from below; the kick a puff releases…
 
@@ -5800,7 +5800,7 @@ SPORE RELEASE GILLS: a mushroom cap from below, filling the frame -- the gills r
 
 ### SpriteElvesUpperLightning
 
-`Scene2D/SpriteElvesUpperLightning.frag` · type=normal · mood=dark,aggressive,space · complexity=2
+`Scene2D/SpriteElvesUpperLightning.frag` · type=normal · mood=dark,aggressive,space · complexity=1
 
 SPRITES AND ELVES: the lightning above the storm. A thundercloud on the horizon glows from within with the bass; above it, red sprites -- columns of tendrils reaching up to the ionosphere -- flare on the kick (light: their shapes are fixed per column, only their brightness comes and goes), and elves -- expanding rings of light at the base of the ionosphere -- are launched on the scene clock and spread outward. The ph…
 
@@ -5809,7 +5809,7 @@ SPRITES AND ELVES: the lightning above the storm. A thundercloud on the horizon 
 
 ### StadiumFloodlights
 
-`Scene2D/StadiumFloodlights.frag` · type=normal · mood=dark,aggressive · complexity=2
+`Scene2D/StadiumFloodlights.frag` · type=normal · mood=dark,aggressive · complexity=3
 
 STADIUM FLOODLIGHTS: an empty football stadium on a rainy night -- the four great floodlight masts at the corners, each a tall lattice tower carrying a banked grid of lamps, their beams cutting down through the drizzle and mist as solid white cones that meet over the pitch; the rain shows up as silver streaks in the light and falls away into dark outside it. The stands curve round in shadow, rows of empty seats; the …
 
@@ -5818,7 +5818,7 @@ STADIUM FLOODLIGHTS: an empty football stadium on a rainy night -- the four grea
 
 ### StageRigMovingHeads
 
-`Scene2D/StageRigMovingHeads.frag` · type=normal · mood=dark,aggressive,psychedelic · complexity=3
+`Scene2D/StageRigMovingHeads.frag` · type=normal · mood=dark,aggressive,psychedelic · complexity=6
 
 STAGE RIG MOVING HEADS: a truss of moving-head lamps over a hazy stage. Each lamp owns a chroma class and sweeps its beam on the scene clock -- steadily, never on a beat -- and brightens when its class sounds. The beams are volumetric wedges in the haze with a gobo pattern from the photo; where they land they paint a pool on the deck. The kick lights the backline strip, not the whole frame. Camera fixed in the audien…
 
@@ -5827,7 +5827,7 @@ STAGE RIG MOVING HEADS: a truss of moving-head lamps over a hazy stage. Each lam
 
 ### StainedGlassCathedralCaustics
 
-`Scene2D/StainedGlassCathedralCaustics.frag` · type=normal · mood=calm,bright,dreamy · complexity=3
+`Scene2D/StainedGlassCathedralCaustics.frag` · type=normal · mood=calm,bright,dreamy · complexity=6
 
 STAINED GLASS CATHEDRAL CAUSTICS: 100% viewport-filling Gothic cathedral rose window. The loaded photo is transformed into a luminous stained glass masterpiece with procedural lead tracery, antique bubbled glass refraction, and volumetric sunbeams (godrays) casting jewel-toned caustics.
 
@@ -5836,7 +5836,7 @@ STAINED GLASS CATHEDRAL CAUSTICS: 100% viewport-filling Gothic cathedral rose wi
 
 ### StandingWaveTunnel
 
-`Scene2D/StandingWaveTunnel.frag` · type=normal · mood=energetic,psychedelic · complexity=2
+`Scene2D/StandingWaveTunnel.frag` · type=normal · mood=energetic,psychedelic · complexity=6
 
 STANDING WAVE TUNNEL: flying through a tunnel that vibrates like the inside of an organ pipe -- its wall bulges and pinches in a standing wave along its length and around its circumference, nodes and antinodes breathing in and out, the photograph stretched over the moving wall and lit by how the wall faces us: bulges glow, pinches darken into rings. Endless, mirrorable; the wall continues beyond the frame. Audio Reac…
 
@@ -5845,7 +5845,7 @@ STANDING WAVE TUNNEL: flying through a tunnel that vibrates like the inside of a
 
 ### Starfield
 
-`Scene2D/Starfield.frag` · type=normal · mood=calm,dark,dreamy,space · complexity=1
+`Scene2D/Starfield.frag` · type=normal · mood=calm,dark,dreamy,space · complexity=4
 
 Flying INTO the source image: the picture rushes past in looping nebula layers while a star warp-field sparkles on top. Now with: * WARP STREAKS: on each beat the stars stretch into radial light trails (classic warp-jump), longer for nearer stars; * image-coloured, twinkling stars (imgPal tint); * THREE nebula layers with differential roll (parallax) and per-depth hue rotation, swept gently once per bar; * a soft cor…
 
@@ -5854,7 +5854,7 @@ Flying INTO the source image: the picture rushes past in looping nebula layers w
 
 ### StargateWormhole
 
-`Scene2D/StargateWormhole.frag` · type=normal · mood=aggressive,dark,psychedelic · complexity=3
+`Scene2D/StargateWormhole.frag` · type=normal · mood=aggressive,dark,psychedelic · complexity=9
 
 STARGATE WORMHOLE: Relativistic Einstein-Rosen bridge hyperspace tunnel. Gravitational light lensing around a central singularity, event horizon photon sphere, relativistic Doppler shifts, hyper-velocity star streaks, and explosive accretion corona bursts on audio transients. audioAdvance -> accelerates warp tunnel velocity & streak velocity audioSubBass -> expands gravitational lensing ring & singularity radius audi…
 
@@ -5863,7 +5863,7 @@ STARGATE WORMHOLE: Relativistic Einstein-Rosen bridge hyperspace tunnel. Gravita
 
 ### StarryNightFlow
 
-`Scene2D/StarryNightFlow.frag` · type=normal · mood=bright,psychedelic,dreamy · complexity=4
+`Scene2D/StarryNightFlow.frag` · type=normal · mood=bright,psychedelic,dreamy · complexity=3
 
 STARRY NIGHT FLOW: the photo repainted in thick, flowing brush strokes, the way Van Gogh painted a night sky. A few great vortices turn in the picture and everything else streams around them; every stroke follows the flow, the paint is laid on in ridges, and the brightest places of the photo become stars wrapped in rings of strokes. The strokes creep along the flow on the music's pace; each vortex's halo glows with i…
 
@@ -5872,7 +5872,7 @@ STARRY NIGHT FLOW: the photo repainted in thick, flowing brush strokes, the way 
 
 ### StarShattering
 
-`Scene2D/StarShattering.frag` · type=normal · mood=bright,aggressive,space · complexity=4
+`Scene2D/StarShattering.frag` · type=normal · mood=bright,aggressive,space · complexity=7
 
 STAR SHATTERING: A massive star is being violently ripped apart by a rogue black hole. Stellar material is violently siphoned off into an accretion disk, causing the star to shatter and explode with the audio. audioAdvance -> speed of the material being sucked into the black hole audioKick -> catastrophic explosions on the star's surface audioSwell -> blinding brightness of the dying star audioChromaHue-> palette off…
 
@@ -5881,7 +5881,7 @@ STAR SHATTERING: A massive star is being violently ripped apart by a rogue black
 
 ### StarshipPlanetaryOrbit
 
-`Scene2D/StarshipPlanetaryOrbit.frag` · type=normal · mood=calm,dreamy,dark,space · complexity=4
+`Scene2D/StarshipPlanetaryOrbit.frag` · type=normal · mood=calm,dreamy,dark,space · complexity=6
 
 STARSHIP PLANETARY ORBIT: a heavy cruiser holding station over a living world. The planet is an analytic sphere -- oceans, continents, an ice cap and a SEPARATE cloud shell above the surface that is domain-warped and advected every frame, so the weather genuinely deforms rather than scrolling. A soft terminator runs across it, city lights come up on the night side, and the atmosphere scatters into a rim that brighten…
 
@@ -5890,7 +5890,7 @@ STARSHIP PLANETARY ORBIT: a heavy cruiser holding station over a living world. T
 
 ### StarStreakTunnel
 
-`Scene2D/StarStreakTunnel.frag` · type=normal · mood=energetic,dark · complexity=2
+`Scene2D/StarStreakTunnel.frag` · type=normal · mood=energetic,dark · complexity=8
 
 STAR STREAK TUNNEL: the jump to light speed -- thousands of stars stretch into streaks that race outward from the centre, each streak coloured from the photograph (which lines a faint tunnel behind them), longer and brighter the faster we go; the streaks come in waves, a soft glow sits at the vanishing point, and the whole starfield slowly rolls. Endless, mirrorable. Audio Reactivity (structure, not only light): audi…
 
@@ -5899,7 +5899,7 @@ STAR STREAK TUNNEL: the jump to light speed -- thousands of stars stretch into s
 
 ### StarTrailsPolaris
 
-`Scene2D/StarTrailsPolaris.frag` · type=normal · mood=calm,dark,space · complexity=2
+`Scene2D/StarTrailsPolaris.frag` · type=normal · mood=calm,dark,space · complexity=8
 
 STAR TRAILS POLARIS: a long-exposure night photograph come alive -- above a dark landscape, hundreds of stars drawn into concentric arcs around the pole star, white, blue and amber, each trail the same length of the night, the whole sky turning about Polaris at a steady pace. On the ground a rock arch stands in silhouette against the faint glow of a distant town, and a small tent glows orange under it. The rings of t…
 
@@ -5917,7 +5917,7 @@ STELLA PROTRACTORS: Frank Stella's Protractor paintings in motion -- great inter
 
 ### StellarEngine
 
-`Scene2D/StellarEngine.frag` · type=normal · mood=bright,aggressive,space · complexity=4
+`Scene2D/StellarEngine.frag` · type=normal · mood=bright,aggressive,space · complexity=6
 
 STELLAR ENGINE: A gigantic Shkadov thruster (a planet-sized mirror) built to move an entire star system across the galaxy. The camera hovers behind the massive mirror as it harnesses explosive solar flares. audioAdvance -> intense propulsion and solar wind flow audioKick -> massive plasma bursts hitting the mirror audioSwell -> brightness of the star and reflected light audioChromaHue-> palette offset for the star's …
 
@@ -5926,7 +5926,7 @@ STELLAR ENGINE: A gigantic Shkadov thruster (a planet-sized mirror) built to mov
 
 ### StellarNursery
 
-`Scene2D/StellarNursery.frag` · type=normal · mood=calm,dreamy,space · complexity=5
+`Scene2D/StellarNursery.frag` · type=normal · mood=calm,dreamy,space · complexity=1
 
 STELLAR NURSERY: pillars of creation -- three towering columns of cold dust rising from the bottom of the frame into a glowing cavity, in the narrow-band palette of the famous photographs (teal oxygen, gold sulphur and hydrogen). The tops of the pillars are lit and eroded by the young stars above: bright rims, fingers of gas streaming off them, tiny evaporating globules at the tips; a few protostars inside the pillar…
 
@@ -5935,7 +5935,7 @@ STELLAR NURSERY: pillars of creation -- three towering columns of cold dust risi
 
 ### StepSequencerGrid
 
-`Scene2D/StepSequencerGrid.frag` · type=normal · mood=dark,aggressive,psychedelic · complexity=3
+`Scene2D/StepSequencerGrid.frag` · type=normal · mood=dark,aggressive,psychedelic · complexity=4
 
 STEP SEQUENCER GRID: the front panel of a step sequencer. Rows are voices, columns are steps, and every cell is a lit pad with the photo showing through its window. The playhead sweeps the grid on the scene clock -- steadily, so it never snaps -- and a pad brightens when the playhead is over it and its own voice is sounding. The chroma classes give each row its colour, the spectrum bands the pad glow, and the kick li…
 
@@ -5944,7 +5944,7 @@ STEP SEQUENCER GRID: the front panel of a step sequencer. Rows are voices, colum
 
 ### StereoKaleidoscope
 
-`Scene2D/StereoKaleidoscope.frag` · type=normal · mood=psychedelic,bright,aggressive · complexity=2
+`Scene2D/StereoKaleidoscope.frag` · type=normal · mood=psychedelic,bright,aggressive · complexity=5
 
 STEREO KALEIDOSCOPE: the first kaleidoscope that hears in stereo. The left half of the picture is folded from the left channel's energy, the right half from the right's -- fold count, rotation and zoom differ per side by exactly the stereo difference of the mix. A mono track gives one symmetric ornament; a wide mix pulls the two halves apart and they meet in a seam down the middle that shimmers with the stereo width.…
 
@@ -5953,7 +5953,7 @@ STEREO KALEIDOSCOPE: the first kaleidoscope that hears in stereo. The left half 
 
 ### StereoSearchlights
 
-`Scene2D/StereoSearchlights.frag` · type=normal · mood=dark,calm,dreamy · complexity=2
+`Scene2D/StereoSearchlights.frag` · type=normal · mood=dark,calm,dreamy · complexity=8
 
 STEREO SEARCHLIGHTS: a night city skyline of the photo, with searchlights sweeping the sky. The beams point where the sound is: the stereo balance steers them (smoothly -- the balance is filtered and the beam follows it with a slow lag built from the scene clock), the left and right channel levels set the two banks' brightness, and the swell lights the low cloud they play on. Camera fixed on the skyline. Audio Reacti…
 
@@ -5962,7 +5962,7 @@ STEREO SEARCHLIGHTS: a night city skyline of the photo, with searchlights sweepi
 
 ### StereoSpectrum
 
-`Scene2D/StereoSpectrum.frag` · type=normal · mood=aggressive,dark · complexity=1
+`Scene2D/StereoSpectrum.frag` · type=normal · mood=aggressive,dark · complexity=10
 
 Stereo spectrum analyzer with 32 frequency bands per side. Bass sits at the centre and treble runs out to the edges; the LEFT half's bar heights are scaled by the LEFT channel's energy and the RIGHT half by the RIGHT channel, so a wide stereo mix makes the two sides visibly differ. The bars are filled with the (mirror-folded) source image and tinted across the rainbow; the central seam glows with the overall stereo w…
 
@@ -5980,7 +5980,7 @@ STEREO WIDTH CANYON: a slot canyon whose width is the stereo width of the mix --
 
 ### StippleVoronoiRelax
 
-`Scene2D/StippleVoronoiRelax.frag` · type=normal · mood=bright,calm,dreamy · complexity=2
+`Scene2D/StippleVoronoiRelax.frag` · type=normal · mood=bright,calm,dreamy · complexity=3
 
 STIPPLE VORONOI RELAX: weighted Voronoi stippling of the photo -- the dots are denser and larger where the picture is dark, as in a pen-and-ink stipple, and they relax on the scene clock (each dot drifts on a small smooth orbit as if Lloyd's iteration were still settling). The swell tightens the pattern (finer dots), the kick lights the dots on the darkest tones, the treble the lightest. Camera still. Audio Reactivit…
 
@@ -5998,7 +5998,7 @@ STORM LIGHTHOUSE: a lighthouse on a rock in a gale at night. Its lamp turns stea
 
 ### StringArtChords
 
-`Scene2D/StringArtChords.frag` · type=normal · mood=calm,dreamy,dark · complexity=2
+`Scene2D/StringArtChords.frag` · type=normal · mood=calm,dreamy,dark · complexity=4
 
 STRING ART CHORDS: twelve pins on a circle, one per pitch class; strings run between the classes that sound together -- a chord is literally a chord across the circle. Each string fades in and out with the product of its two pins' chroma (continuous), the wheel turns steadily on the scene clock, the pins glow with their class, and the strings shimmer with the treble. Behind the wheel, the photo as the board. Camera s…
 
@@ -6007,7 +6007,7 @@ STRING ART CHORDS: twelve pins on a circle, one per pitch class; strings run bet
 
 ### StripePhoto
 
-`Scene2D/StripePhoto.frag` · type=normal · mood=calm,psychedelic · complexity=2
+`Scene2D/StripePhoto.frag` · type=normal · mood=calm,psychedelic · complexity=7
 
 STRIPE PHOTO: the photograph rendered by bent stripes -- parallel lines sweep across the view and bend where the picture is bright, as if the image were a relief pushing up through a striped sheet (the classic "line displacement" portrait); the stripes slide slowly, the photo drifts beneath, and the stripe direction turns. Endless, mirrorable. Audio Reactivity (structure, not only light): audioAdvance -> the stripes …
 
@@ -6016,7 +6016,7 @@ STRIPE PHOTO: the photograph rendered by bent stripes -- parallel lines sweep ac
 
 ### SubstrateCracks
 
-`Scene2D/SubstrateCracks.frag` · type=normal · mood=calm,bright · complexity=2
+`Scene2D/SubstrateCracks.frag` · type=normal · mood=calm,bright · complexity=5
 
 SUBSTRATE CRACKS: in the manner of Jared Tarbell's "Substrate" -- straight lines grow across the plane like cracks, each starting from an existing line at a right angle and running until it hits another, carving the space into an architectural city map of rectangles and slivers; soft watercolour sand trails along one side of each crack in colours sampled from the photograph; the map slowly redraws itself region by re…
 
@@ -6025,7 +6025,7 @@ SUBSTRATE CRACKS: in the manner of Jared Tarbell's "Substrate" -- straight lines
 
 ### SubwayMapPulse
 
-`Scene2D/SubwayMapPulse.frag` · type=normal · mood=bright,calm,psychedelic · complexity=3
+`Scene2D/SubwayMapPulse.frag` · type=normal · mood=bright,calm,psychedelic · complexity=1
 
 SUBWAY MAP PULSE: a transit diagram in the style of a network map -- straight runs, forty-five degree bends, interchange circles. Twelve lines, one per chroma class; a train runs each line as a pulse of light on the scene clock, and a station lights as its line sounds. The photo is the printed paper the map sits on. Camera fixed on the map. Audio Reactivity: audioChroma[12] -> line brightness and its stations (light)…
 
@@ -6034,7 +6034,7 @@ SUBWAY MAP PULSE: a transit diagram in the style of a network map -- straight ru
 
 ### SumiEnsoField
 
-`Scene2D/SumiEnsoField.frag` · type=normal · mood=calm,bright · complexity=2
+`Scene2D/SumiEnsoField.frag` · type=normal · mood=calm,bright · complexity=1
 
 SUMI ENSO FIELD: Zen ink circles drawn again and again -- bold enso brush circles appear across a field of rice paper, each drawn in one sweep as we watch (the stroke growing around, dry-brush streaks where the ink ran out, a heavy start and a flicking tail), then slowly fading while new ones are drawn elsewhere; the paper carries the photograph as a faint wash. Endless, mirrorable. Audio Reactivity (structure, not o…
 
@@ -6043,7 +6043,7 @@ SUMI ENSO FIELD: Zen ink circles drawn again and again -- bold enso brush circle
 
 ### SundialShadowSweep
 
-`Scene2D/SundialShadowSweep.frag` · type=normal · mood=bright,calm,dreamy · complexity=3
+`Scene2D/SundialShadowSweep.frag` · type=normal · mood=bright,calm,dreamy · complexity=5
 
 SUNDIAL SHADOW SWEEP: a garden sundial from above. The gnomon throws its shadow across the dial and the shadow sweeps the hour lines over the scene arc; as it goes the light warms from morning through noon to evening and the shadow lengthens again. Each hour numeral lights as the shadow passes it, taking the colour of a chroma class. The photo is the weathered bronze of the plate. Camera fixed above. Audio Reactivity…
 
@@ -6052,7 +6052,7 @@ SUNDIAL SHADOW SWEEP: a garden sundial from above. The gnomon throws its shadow 
 
 ### SundogHaloSky
 
-`Scene2D/SundogHaloSky.frag` · type=normal · mood=calm,bright,dreamy · complexity=2
+`Scene2D/SundogHaloSky.frag` · type=normal · mood=calm,bright,dreamy · complexity=1
 
 SUNDOG HALO SKY: a low winter sun in a sky full of ice crystals, and the optics they draw -- the 22 degree halo, the two sun dogs on the parhelic circle, the upper tangent arc, a sun pillar. The crystal load (the treble) is the halo brightness, the sun itself is the swell, the bass warms the low light; the photo is the snowy landscape below and the thin cloud the crystals float in. Camera fixed. Audio Reactivity: aud…
 
@@ -6070,7 +6070,7 @@ SUPERBLOOM OPENING: a desert valley carpeted in wildflowers that open with the l
 
 ### SupercellMesocyclone
 
-`Scene2D/SupercellMesocyclone.frag` · type=normal · mood=dark,dreamy · complexity=3
+`Scene2D/SupercellMesocyclone.frag` · type=normal · mood=dark,dreamy · complexity=1
 
 SUPERCELL MESOCYCLONE: the storm chasers' "mothership" over the plains at dusk. A colossal rotating updraft stacked in striated tiers like a layer cake, lit gold on its sunset side and steel-blue in shade, its striations turning slowly round the axis; a dark wall cloud lowers beneath it; a grey curtain of rain hangs off to one side; an anvil spreads overhead. The flat plains below are lit by the last sun through the …
 
@@ -6079,7 +6079,7 @@ SUPERCELL MESOCYCLONE: the storm chasers' "mothership" over the plains at dusk. 
 
 ### SupercriticalFluidOpalescence
 
-`Scene2D/SupercriticalFluidOpalescence.frag` · type=normal · mood=calm,dreamy,bright · complexity=3
+`Scene2D/SupercriticalFluidOpalescence.frag` · type=normal · mood=calm,dreamy,bright · complexity=4
 
 SUPERCRITICAL FLUID OPALESCENCE: Thermodynamic critical point in a supercritical fluid (CO2/Xenon). Diverging correlation length and scale-invariant density fluctuations scatter all wavelengths of visible light, creating milky iridescent opalescent clouds and liquid-gas fog. audioAdvance -> churns supercritical density fluctuation clusters & thermal diffusion audioKick -> flashes critical phase transition condensatio…
 
@@ -6088,7 +6088,7 @@ SUPERCRITICAL FLUID OPALESCENCE: Thermodynamic critical point in a supercritical
 
 ### SuperfluidQuantumTurbulence
 
-`Scene2D/SuperfluidQuantumTurbulence.frag` · type=normal · mood=psychedelic,dreamy,dark · complexity=2
+`Scene2D/SuperfluidQuantumTurbulence.frag` · type=normal · mood=psychedelic,dreamy,dark · complexity=4
 
 SUPERFLUID QUANTUM TURBULENCE: Microscopic quantized vortex filament tangle in liquid Helium-4 (Gross-Pitaevskii condensate). Luminous vortex core singularities, dynamic reconnections, phase-slip acoustic waves, and Kelvin wave ripples. Audio Reactivity: audioAdvance -> drives continuous quantized vortex advection & reconnection audioKick -> flashes vortex reconnection singularities & acoustic shockwave burst audioCe…
 
@@ -6106,7 +6106,7 @@ SUPERHEATED CORONAL LOOP: 100% viewport-filling volumetric view of solar coronal
 
 ### SupermassiveAccretionDisk
 
-`Scene2D/SupermassiveAccretionDisk.frag` · type=normal · mood=aggressive,bright,psychedelic · complexity=4
+`Scene2D/SupermassiveAccretionDisk.frag` · type=normal · mood=aggressive,bright,psychedelic · complexity=8
 
 SUPERMASSIVE ACCRETION DISK: Raymarched Kerr rotating black hole with extreme gravitational frame-dragging, Doppler-boosted photon sphere, relativistic polar plasma jets, and gravitational lensing warping background starfields & photos. audioSubBass -> expands ergosphere & singularity gravitational lens ring audioKick -> ignites explosive polar relativistic jet bursts audioHigh -> sparks synchrotron radiation in accr…
 
@@ -6124,7 +6124,7 @@ SUPERMASSIVE BLACK HOLE: A terrifying orbit around the event horizon of a superm
 
 ### SupernovaRemnant
 
-`Scene2D/SupernovaRemnant.frag` · type=normal · mood=bright,psychedelic,space · complexity=4
+`Scene2D/SupernovaRemnant.frag` · type=normal · mood=bright,psychedelic,space · complexity=1
 
 SUPERNOVA REMNANT: A beautiful, chaotic expanding shell of colorful ionized gas from a recent stellar explosion. The gas filaments ripple and pulse intensely to the music. audioAdvance -> slow expansion / flight through the gas audioKick -> shockwaves propagating through the nebula audioSwell -> brightness of the ionized gas audioChromaHue-> palette offset for the colorful gas layers Per-activation variety: gasP floa…
 
@@ -6133,7 +6133,7 @@ SUPERNOVA REMNANT: A beautiful, chaotic expanding shell of colorful ionized gas 
 
 ### SuperradiantBlackHoleBomb
 
-`Scene2D/SuperradiantBlackHoleBomb.frag` · type=normal · mood=psychedelic,aggressive · complexity=4
+`Scene2D/SuperradiantBlackHoleBomb.frag` · type=normal · mood=psychedelic,aggressive · complexity=9
 
 SUPERRADIANT BLACK HOLE BOMB: Massive bosonic field trapped in an artificial reflecting mirror cavity around a rapidly rotating Kerr black hole. Superradiant scattering exponentially extracts rotational energy, creating violent photon amplification and ergosphere detonation rings. audioAdvance -> accelerates black hole spin & bosonic wavefield superradiant amplification audioKick -> triggers runaway superradiant cavi…
 
@@ -6142,7 +6142,7 @@ SUPERRADIANT BLACK HOLE BOMB: Massive bosonic field trapped in an artificial ref
 
 ### SuperradiantTokamakIgnition
 
-`Scene2D/SuperradiantTokamakIgnition.frag` · type=normal · mood=aggressive,bright,psychedelic · complexity=4
+`Scene2D/SuperradiantTokamakIgnition.frag` · type=normal · mood=aggressive,bright,psychedelic · complexity=9
 
 SUPERRADIANT TOKAMAK IGNITION: 100% viewport-filling volumetric view from inside a burning magnetic confinement thermonuclear fusion core. Toroidal magnetic flux surfaces, helical runaway electron beams, turbulent Alfven wave filaments, glowing divertor plates, and D-T fusion plasma.
 
@@ -6151,7 +6151,7 @@ SUPERRADIANT TOKAMAK IGNITION: 100% viewport-filling volumetric view from inside
 
 ### SurfBarrelInside
 
-`Scene2D/SurfBarrelInside.frag` · type=normal · mood=bright,dreamy · complexity=2
+`Scene2D/SurfBarrelInside.frag` · type=normal · mood=bright,dreamy · complexity=1
 
 SURF BARREL INSIDE: riding deep inside the barrel of a breaking wave -- the water curls from the wave face on the right, up over your head and down in a falling curtain on the left, a tunnel of glassy turquoise, and ahead the round opening where the tube ends shows the blinding sky and the bright beach. Sunlight shines through the thin lip overhead, so the water glows green-gold there and darkens to deep teal where i…
 
@@ -6187,7 +6187,7 @@ TAIKO SILHOUETTES: a taiko ensemble on a dark stage, backlit. A row of drummers 
 
 ### TangramShuffle
 
-`Scene2D/TangramShuffle.frag` · type=normal · mood=calm,bright,dreamy · complexity=3
+`Scene2D/TangramShuffle.frag` · type=normal · mood=calm,bright,dreamy · complexity=9
 
 TANGRAM SHUFFLE: the seven pieces -- two large triangles, one medium, two small, a square and a parallelogram -- each carrying its part of the photo, gliding between figures over the scene arc: the square, a cat, a bird, a boat, a runner. Every piece moves and turns by a smooth blend between its poses (no snaps); the piece that has just settled lights on the kick, the swell is the lamp on the table, the treble the la…
 
@@ -6196,7 +6196,7 @@ TANGRAM SHUFFLE: the seven pieces -- two large triangles, one medium, two small,
 
 ### TapeReelEcho
 
-`Scene2D/TapeReelEcho.frag` · type=normal · mood=dark,calm,dreamy · complexity=3
+`Scene2D/TapeReelEcho.frag` · type=normal · mood=dark,calm,dreamy · complexity=1
 
 TAPE REEL ECHO: a reel-to-reel machine, the tape running from the supply reel over the heads to the take-up reel on the scene clock (the reels turn at the speeds their radii give them), the tape carrying the photo as its oxide; along the tape path the spectrum is printed as a bar graph at the record head and repeats, dimmer, at each playback head -- the echo. The VU needles follow the level (slow-damped as a needle w…
 
@@ -6214,7 +6214,7 @@ TELEIDOSCOPE: the three-mirror kaleidoscope with a lens at the end -- the world 
 
 ### TempleLanternHall
 
-`Scene2D/TempleLanternHall.frag` · type=normal · mood=bright,calm,dreamy · complexity=4
+`Scene2D/TempleLanternHall.frag` · type=normal · mood=bright,calm,dreamy · complexity=9
 
 TEMPLE LANTERN HALL: a long temple hall whose whole ceiling is hung with glowing paper lanterns, row behind row into the depth, between red lacquered pillars, all of it mirrored in the polished dark floor. The lanterns sway very gently on their cords; each one belongs to a spectrum band and brightens with it, so the music drifts through the canopy as light. We walk slowly down the hall. Audio Reactivity: audioSpectru…
 
@@ -6223,7 +6223,7 @@ TEMPLE LANTERN HALL: a long temple hall whose whole ceiling is hung with glowing
 
 ### TemporalZoomSSM
 
-`Scene2D/TemporalZoomSSM.frag` · type=normal · mood=psychedelic,calm,dark · complexity=2
+`Scene2D/TemporalZoomSSM.frag` · type=normal · mood=psychedelic,calm,dark · complexity=8
 
 TEMPORAL ZOOM: the song zooms into itself. The self-similarity matrix (texSSM) is drawn as a square field, and the picture is a nest of that field at time scales that shrink by four -- the whole ring, a quarter of it, a sixteenth -- so the block structure of sections, the lattice of phrases and the fine grid of beats are all the same picture at different depths. The zoom runs through those scales on the scene clock; …
 
@@ -6232,7 +6232,7 @@ TEMPORAL ZOOM: the song zooms into itself. The self-similarity matrix (texSSM) i
 
 ### TenPrintMaze
 
-`Scene2D/TenPrintMaze.frag` · type=normal · mood=energetic,psychedelic · complexity=2
+`Scene2D/TenPrintMaze.frag` · type=normal · mood=energetic,psychedelic · complexity=3
 
 TEN PRINT MAZE: the famous one-line maze, alive -- every cell holds a diagonal, "/" or "\", and together they form an endless labyrinth; the diagonals slowly rotate from one to the other in waves (cross-faded smoothly, never jumping), so corridors open and close across the maze; the lines glow in the photograph's colours, and pulses of light race along them. Endless, mirrorable. Audio Reactivity (structure, not only …
 
@@ -6241,7 +6241,7 @@ TEN PRINT MAZE: the famous one-line maze, alive -- every cell holds a diagonal, 
 
 ### TerraformingColony
 
-`Scene2D/TerraformingColony.frag` · type=normal · mood=calm,dreamy,space · complexity=4
+`Scene2D/TerraformingColony.frag` · type=normal · mood=calm,dreamy,space · complexity=2
 
 TERRAFORMING COLONY: A flight over a harsh, barren planet being transformed. Massive glowing biodomes and towering atmospheric processors dominate the landscape. Smoke and terraforming gases glow intensely to the beat. audioAdvance -> camera flight speed over the colony audioKick -> flashes from atmospheric processors and vent stacks audioSwell -> brightness of the biodomes and artificial daylight audioChromaHue-> pa…
 
@@ -6250,7 +6250,7 @@ TERRAFORMING COLONY: A flight over a harsh, barren planet being transformed. Mas
 
 ### TextureAccretionStreams
 
-`Scene2D/TextureAccretionStreams.frag` · type=normal · mood=space,psychedelic,dark · complexity=2
+`Scene2D/TextureAccretionStreams.frag` · type=normal · mood=space,psychedelic,dark · complexity=4
 
 TEXTURE ACCRETION STREAMS: looking down onto a vast glowing disc of matter spiralling inward -- many rings of hot streams circling a bright centre, inner rings faster than outer ones (Kepler shear), so the streams are drawn out into fine spiral filaments; the streams are made of the photograph, sheared along the orbits, glowing hot white-gold near the centre and cooling to red and violet outward, with dark lanes betw…
 
@@ -6277,7 +6277,7 @@ TEXTURE AMBER SUBSURFACE: looking into a great slab of amber held against the li
 
 ### TextureAnodizeRainbow
 
-`Scene2D/TextureAnodizeRainbow.frag` · type=normal · mood=psychedelic,bright · complexity=2
+`Scene2D/TextureAnodizeRainbow.frag` · type=normal · mood=psychedelic,bright · complexity=1
 
 TEXTURE ANODIZE RAINBOW: anodised titanium -- the photograph is stamped into a sheet of brushed titanium, and a slowly travelling wave of anodising voltage grows an oxide film across it whose thickness paints the metal in its famous colour sequence: straw gold, bronze, purple, deep blue, teal, gold and magenta; the photo's relief changes the thickness, so the picture appears in bands of colour; brushed grain and a mo…
 
@@ -6286,7 +6286,7 @@ TEXTURE ANODIZE RAINBOW: anodised titanium -- the photograph is stamped into a s
 
 ### TextureAuroraField
 
-`Scene2D/TextureAuroraField.frag` · type=normal · mood=dreamy,dark,space · complexity=2
+`Scene2D/TextureAuroraField.frag` · type=normal · mood=dreamy,dark,space · complexity=7
 
 TEXTURE AURORA FIELD: lying on your back under a great aurora -- the whole sky is curtains of light converging toward the zenith (the corona), rays and folds rippling, green fading up into red and violet, and the colours and the shape of the folds come from the photograph: its colours where it has them, its structure as the ripples running along the curtains. No horizon: the view is straight up, the curtains radiate …
 
@@ -6313,7 +6313,7 @@ TEXTURE BATIK CRACKLE: batik cloth with its famous crackle -- the photograph's s
 
 ### TextureBioluminescentField
 
-`Scene2D/TextureBioluminescentField.frag` · type=normal · mood=calm,dark · complexity=2
+`Scene2D/TextureBioluminescentField.frag` · type=normal · mood=calm,dark · complexity=3
 
 TEXTURE BIOLUMINESCENT FIELD: a dark shore at night teeming with glowing plankton -- countless tiny cyan-blue sparks lie over the dark photograph, and waves of excitation sweep through them in expanding rings, as if something were stirring the water: each ring lights the sparks it passes, which glow and slowly fade; the photo's bright structures are densely populated, glowing filaments trace its edges. Endless, mirro…
 
@@ -6322,7 +6322,7 @@ TEXTURE BIOLUMINESCENT FIELD: a dark shore at night teeming with glowing plankto
 
 ### TextureBokehStreams
 
-`Scene2D/TextureBokehStreams.frag` · type=normal · mood=calm,dark · complexity=2
+`Scene2D/TextureBokehStreams.frag` · type=normal · mood=calm,dark · complexity=7
 
 TEXTURE BOKEH STREAMS: rivers of out-of-focus lights -- like city traffic seen through a defocused lens at night, streams of soft glowing discs flow along gently curving lanes across the view, near ones large and faint, far ones small and bright, each disc with the faint ring and cat's-eye shape of a real lens; the colours come from the photograph (warm red tail lights, white headlights, its own hues). Endless, mirro…
 
@@ -6331,7 +6331,7 @@ TEXTURE BOKEH STREAMS: rivers of out-of-focus lights -- like city traffic seen t
 
 ### TextureBoreTunnel
 
-`Scene2D/TextureBoreTunnel.frag` · type=normal · mood=psychedelic,dark · complexity=2
+`Scene2D/TextureBoreTunnel.frag` · type=normal · mood=psychedelic,dark · complexity=9
 
 TEXTURE BORE TUNNEL: a drill bore through the photograph -- the tunnel's wall IS the texture, raised into a relief whose ridges and grooves catch the light of a lamp travelling with the camera, rifled by helical grooves, and far ahead the exit glows. Like the original Tunnel the picture is an endless polar field: it continues past the frame edges and mirrors without seams, and every photo of the pool gives a differen…
 
@@ -6340,7 +6340,7 @@ TEXTURE BORE TUNNEL: a drill bore through the photograph -- the tunnel's wall IS
 
 ### TextureBubbleColumn
 
-`Scene2D/TextureBubbleColumn.frag` · type=normal · mood=calm,bright · complexity=2
+`Scene2D/TextureBubbleColumn.frag` · type=normal · mood=calm,bright · complexity=7
 
 TEXTURE BUBBLE COLUMN: columns of rising bubbles in a dark aquarium -- streams of bubbles of every size well up from below in wavering columns, big ones wobbling and flattening as they rise, small ones racing in tight spirals, each bubble a little mirror with a bright rim and a highlight, catching and bending the coloured light of the photograph behind the glass. Endless, mirrorable. Audio Reactivity (structure, not …
 
@@ -6349,7 +6349,7 @@ TEXTURE BUBBLE COLUMN: columns of rising bubbles in a dark aquarium -- streams o
 
 ### TextureBurrow
 
-`Scene2D/TextureBurrow.frag` · type=normal · mood=dark,energetic · complexity=2
+`Scene2D/TextureBurrow.frag` · type=normal · mood=dark,energetic · complexity=5
 
 TEXTURE BURROW: crawling through an organic burrow -- a tunnel with soft, irregular, breathing walls, its cross-section a wobbling blob rather than a circle, the walls ribbed with rings like a gullet and lined with the photograph, glistening wet in a light that we carry with us; the passage winds and narrows and widens as we move. Endless, mirrorable. Audio Reactivity (structure, not only light): audioAdvance -> the …
 
@@ -6358,7 +6358,7 @@ TEXTURE BURROW: crawling through an organic burrow -- a tunnel with soft, irregu
 
 ### TextureCausticCeiling
 
-`Scene2D/TextureCausticCeiling.frag` · type=normal · mood=calm,dreamy · complexity=2
+`Scene2D/TextureCausticCeiling.frag` · type=normal · mood=calm,dreamy · complexity=8
 
 TEXTURE CAUSTIC CEILING: sunlight through moving water, cast onto a pale surface -- the bright, sharp, ever-changing net of caustic lines that dances on the bottom of a pool, but the water's surface is shaped by the photograph: its relief becomes the waves, so the net takes the photo's structure (tight cells over fine grain, long lines along veins and ridges), and the light carries the photo's colours, split into rai…
 
@@ -6367,7 +6367,7 @@ TEXTURE CAUSTIC CEILING: sunlight through moving water, cast onto a pale surface
 
 ### TextureCelticKnotwork
 
-`Scene2D/TextureCelticKnotwork.frag` · type=normal · mood=psychedelic,calm · complexity=2
+`Scene2D/TextureCelticKnotwork.frag` · type=normal · mood=psychedelic,calm · complexity=6
 
 TEXTURE CELTIC KNOTWORK: an endless Celtic knot -- broad ribbons weave diagonally over and under each other, turning at the borders of a grid of cells so they form one continuous interlace, each ribbon cut from the photograph and outlined in dark ink, shaded where it dips under its crossing partner; light pulses travel along the ribbons, and the knot pattern slowly re-routes as crossing points open and close. Endless…
 
@@ -6376,7 +6376,7 @@ TEXTURE CELTIC KNOTWORK: an endless Celtic knot -- broad ribbons weave diagonall
 
 ### TextureChainCurtains
 
-`Scene2D/TextureChainCurtains.frag` · type=normal · mood=calm,bright · complexity=2
+`Scene2D/TextureChainCurtains.frag` · type=normal · mood=calm,bright · complexity=7
 
 TEXTURE CHAIN CURTAINS: curtains of hanging beads and chains, like a glittering stage curtain -- thousands of small glass beads on vertical strings sway in slow waves, each bead a tiny lens showing the photograph behind the curtain (which glows in coloured light) upside down and bright, with a crisp highlight; the strings ripple as if someone just walked through, and several curtains hang one behind another. Endless,…
 
@@ -6385,7 +6385,7 @@ TEXTURE CHAIN CURTAINS: curtains of hanging beads and chains, like a glittering 
 
 ### TextureChatoyance
 
-`Scene2D/TextureChatoyance.frag` · type=normal · mood=calm,dark · complexity=2
+`Scene2D/TextureChatoyance.frag` · type=normal · mood=calm,dark · complexity=1
 
 TEXTURE CHATOYANCE: tiger's eye -- a polished slab of fibrous stone whose silky bands of golden brown and deep blue flash bright and dark as the light moves, each band's fibres running in its own direction, so the stripes seem to roll like a cat's eye as the stone is turned; the bands follow the photograph's structure, its colours shifting the stone between tiger's eye, hawk's eye and red cat's eye. Endless, mirrorab…
 
@@ -6394,7 +6394,7 @@ TEXTURE CHATOYANCE: tiger's eye -- a polished slab of fibrous stone whose silky 
 
 ### TextureChromatographyRings
 
-`Scene2D/TextureChromatographyRings.frag` · type=normal · mood=calm,bright · complexity=2
+`Scene2D/TextureChromatographyRings.frag` · type=normal · mood=calm,bright · complexity=1
 
 TEXTURE CHROMATOGRAPHY RINGS: paper chromatography, circle after circle -- on filter paper, drops of ink spread outward as solvent soaks through, and each ink separates into rings of its component pigments (a black splitting into violet, blue, yellow and pink bands), with feathered, spiky outer fronts; the paper takes its tone from the photograph. Many spots overlap across the endless sheet and slowly develop anew. M…
 
@@ -6403,7 +6403,7 @@ TEXTURE CHROMATOGRAPHY RINGS: paper chromatography, circle after circle -- on fi
 
 ### TextureCircuitGlow
 
-`Scene2D/TextureCircuitGlow.frag` · type=normal · mood=dark,psychedelic · complexity=2
+`Scene2D/TextureCircuitGlow.frag` · type=normal · mood=dark,psychedelic · complexity=9
 
 TEXTURE CIRCUIT GLOW: the photograph etched into a glowing circuit -- its structure is traced as circuit traces running only horizontally, vertically and at 45 degrees, with solder pads at the junctions and little vias, on a dark green-black board; pulses of light race along the traces from pad to pad, the board around the busy traces faintly back-lit. The trace layout follows the photo (each photo wires a different …
 
@@ -6412,7 +6412,7 @@ TEXTURE CIRCUIT GLOW: the photograph etched into a glowing circuit -- its struct
 
 ### TextureCityLightsOrbit
 
-`Scene2D/TextureCityLightsOrbit.frag` · type=normal · mood=calm,dark · complexity=2
+`Scene2D/TextureCityLightsOrbit.frag` · type=normal · mood=calm,dark · complexity=5
 
 TEXTURE CITY LIGHTS ORBIT: the Earth at night seen from orbit, gliding slowly beneath -- the photograph becomes a continent: where it is bright, cities sprawl as clusters of countless tiny sodium-orange and white lights, strung together by glowing roads along its edges; its dark areas are sea and wilderness, faintly moonlit; thin clouds drift over it, lit from within now and then by lightning. Endless, mirrorable. Au…
 
@@ -6421,7 +6421,7 @@ TEXTURE CITY LIGHTS ORBIT: the Earth at night seen from orbit, gliding slowly be
 
 ### TextureCloudInterior
 
-`Scene2D/TextureCloudInterior.frag` · type=normal · mood=calm,dreamy,bright · complexity=3
+`Scene2D/TextureCloudInterior.frag` · type=normal · mood=calm,dreamy,bright · complexity=5
 
 TEXTURE CLOUD INTERIOR: flying through the inside of towering clouds -- soft white and grey masses loom up out of the haze and slide past, the sun behind them turning their edges into silver and gold linings, shafts of light breaking through the gaps, darker cores glowing warm where the light scatters deep inside. The clouds are built from the photograph: its bright regions become the dense cloud, so every photo give…
 
@@ -6430,7 +6430,7 @@ TEXTURE CLOUD INTERIOR: flying through the inside of towering clouds -- soft whi
 
 ### TextureCoilSpring
 
-`Scene2D/TextureCoilSpring.frag` · type=normal · mood=energetic,psychedelic · complexity=2
+`Scene2D/TextureCoilSpring.frag` · type=normal · mood=energetic,psychedelic · complexity=8
 
 TEXTURE COIL SPRING: flying through the inside of an endless coil -- a thick helical ribbon, wrapped in the photograph, winds around us turn after turn into the distance, lit from inside so its inner face glows and its edges catch the light; through the gaps between the turns a second, slower coil turns in the opposite direction further out, and behind it a dim glow. The coil stretches and compresses like a spring as…
 
@@ -6439,7 +6439,7 @@ TEXTURE COIL SPRING: flying through the inside of an endless coil -- a thick hel
 
 ### TextureCometShower
 
-`Scene2D/TextureCometShower.frag` · type=normal · mood=calm,dark · complexity=2
+`Scene2D/TextureCometShower.frag` · type=normal · mood=calm,dark · complexity=6
 
 TEXTURE COMET SHOWER: a shower of comets across a starry night -- bright heads streak diagonally over the sky trailing long curved tails that fan out and fade, some tails split into a straight blue ion tail and a curved golden dust tail; the sky behind is the photograph turned into a deep night with faint stars, and the heads take their colours from it. Endless, mirrorable. Audio Reactivity (structure, not only light…
 
@@ -6448,7 +6448,7 @@ TEXTURE COMET SHOWER: a shower of comets across a starry night -- bright heads s
 
 ### TextureConfettiVolume
 
-`Scene2D/TextureConfettiVolume.frag` · type=normal · mood=energetic,bright · complexity=2
+`Scene2D/TextureConfettiVolume.frag` · type=normal · mood=energetic,bright · complexity=10
 
 TEXTURE CONFETTI VOLUME: flying through a slow storm of glittering confetti -- countless small metallic flakes (squares, circles and strips) tumble toward the viewer in deep perspective, each catching the light only when it turns flat to us, so the air sparkles in waves; the flakes carry the photograph's colours, far ones tiny and dim, near ones sailing past large and soft. Endless, mirrorable. Audio Reactivity (stru…
 
@@ -6466,7 +6466,7 @@ TEXTURE CONFORMAL MORPH: the photograph streams in a double spiral between two w
 
 ### TextureContourNeonMap
 
-`Scene2D/TextureContourNeonMap.frag` · type=normal · mood=psychedelic,dark · complexity=2
+`Scene2D/TextureContourNeonMap.frag` · type=normal · mood=psychedelic,dark · complexity=5
 
 TEXTURE CONTOUR NEON MAP: the photograph read as a landscape and drawn as a glowing topographic map -- contour lines at every height level, index contours brighter and thicker, the colour running through a neon hypsometric scale from deep valleys to high peaks; the terrain slowly heaves as the photo drifts, the contours sliding and merging, and a scanning light line passes over the map. Endless, mirrorable. Audio Rea…
 
@@ -6484,7 +6484,7 @@ TEXTURE CRACKLE GLAZE: a glazed ceramic surface with the photograph fired into i
 
 ### TextureCrystalLatticeFlight
 
-`Scene2D/TextureCrystalLatticeFlight.frag` · type=normal · mood=energetic,psychedelic · complexity=3
+`Scene2D/TextureCrystalLatticeFlight.frag` · type=normal · mood=energetic,psychedelic · complexity=6
 
 TEXTURE CRYSTAL LATTICE FLIGHT: gliding through the inside of a vast crystal lattice -- an endless three-dimensional grid of glowing struts meeting at bright nodes, receding in perfect perspective in all directions, the struts sheathed in the photograph's colours, the whole lattice slowly rolling as we fly diagonally through it; fog swallows the far rows in the photo's tint. Endless, mirrorable. Audio Reactivity (str…
 
@@ -6493,7 +6493,7 @@ TEXTURE CRYSTAL LATTICE FLIGHT: gliding through the inside of a vast crystal lat
 
 ### TextureDelaunayLightNet
 
-`Scene2D/TextureDelaunayLightNet.frag` · type=normal · mood=calm,dark · complexity=2
+`Scene2D/TextureDelaunayLightNet.frag` · type=normal · mood=calm,dark · complexity=5
 
 TEXTURE DELAUNAY LIGHT NET: a living net of light -- glowing nodes drift slowly over the dark photograph and every pair of nearby nodes is joined by a thin luminous thread, fading as they move apart and brightening as they approach, so the web continually re-knits itself; nodes take their colour from the photo beneath them and gather more densely on its bright parts; small triangles between close nodes fill with a fa…
 
@@ -6502,7 +6502,7 @@ TEXTURE DELAUNAY LIGHT NET: a living net of light -- glowing nodes drift slowly 
 
 ### TextureDichroicCoat
 
-`Scene2D/TextureDichroicCoat.frag` · type=normal · mood=psychedelic,bright · complexity=2
+`Scene2D/TextureDichroicCoat.frag` · type=normal · mood=psychedelic,bright · complexity=5
 
 TEXTURE DICHROIC COAT: dichroic glass -- a sheet of glass coated with thin metal-oxide layers that transmit one colour and reflect its complement: the photograph seen through it takes on the transmitted hue while bright reflected patches flash in the opposite colour, and as the sheet slowly tilts, the pair of colours slides through the spectrum (cyan/red, magenta/green, gold/blue); the glass is cut into fused pieces …
 
@@ -6511,7 +6511,7 @@ TEXTURE DICHROIC COAT: dichroic glass -- a sheet of glass coated with thin metal
 
 ### TextureDustMotes
 
-`Scene2D/TextureDustMotes.frag` · type=normal · mood=calm,dark · complexity=2
+`Scene2D/TextureDustMotes.frag` · type=normal · mood=calm,dark · complexity=1
 
 TEXTURE DUST MOTES: a quiet sunbeam in a dim old room -- a broad slanting shaft of light crosses the view, and in it thousands of dust motes drift and swirl lazily in the air currents, sparkling when they catch the light and vanishing when they leave the beam; behind, the photograph hangs in the dim room, dimly lit by the scattered light. The beam slowly shifts as the sun moves. Endless, mirrorable. Audio Reactivity …
 
@@ -6520,7 +6520,7 @@ TEXTURE DUST MOTES: a quiet sunbeam in a dim old room -- a broad slanting shaft 
 
 ### TextureEffectParallaxKaleidoscope
 
-`Scene2D/TextureEffectParallaxKaleidoscope.frag` · type=KaleidoscopeBase · mood=psychedelic,bright · complexity=10
+`Scene2D/TextureEffectParallaxKaleidoscope.frag` · type=KaleidoscopeBase · mood=psychedelic,bright · complexity=1
 
 A mirrored-segment kaleidoscope viewed through a 32-layer retro pixel-parallax: each depth layer is a coarsely pixellated sample of the kaleidoscope-warped photo, offset by its own orbiting parallax drift, composited front layer over back until a luma test decides the ray has "hit" something. Audio Reactivity: - audioAdvance -> adds to the parallax orbit angle (integrated, jump-free), on top of the base speedMovement…
 
@@ -6529,7 +6529,7 @@ A mirrored-segment kaleidoscope viewed through a 32-layer retro pixel-parallax: 
 
 ### TextureEffectParallaxKaleidoscopeTunnel
 
-`Scene2D/TextureEffectParallaxKaleidoscopeTunnel.frag` · type=KaleidoscopeBase · mood=psychedelic,bright · complexity=10
+`Scene2D/TextureEffectParallaxKaleidoscopeTunnel.frag` · type=KaleidoscopeBase · mood=psychedelic,bright · complexity=3
 
 The same 32-layer retro pixel-parallax as TextureEffectParallaxKaleidoscope.frag, but each layer's kaleidoscope sample is remapped into a scrolling tunnel UV (radius feeds a forward scroll coordinate, angle feeds the cross coordinate) instead of a direct planar sample, so the parallax reads as flying down a mirrored tunnel rather than orbiting over a flat mosaic. Audio Reactivity: - audioAdvance -> adds to the parall…
 
@@ -6538,7 +6538,7 @@ The same 32-layer retro pixel-parallax as TextureEffectParallaxKaleidoscope.frag
 
 ### TextureEmberBed
 
-`Scene2D/TextureEmberBed.frag` · type=normal · mood=dark,aggressive · complexity=2
+`Scene2D/TextureEmberBed.frag` · type=normal · mood=dark,aggressive · complexity=6
 
 TEXTURE EMBER BED: looking down into a bed of glowing embers -- the photograph becomes the coals: its bright parts glow orange-white hot, its dark parts are black charred crust with fine glowing cracks, and waves of heat breathe across the bed so the glow swells and ebbs region by region, while round sparks rise and drift away, and heat shimmer wavers above. Endless, mirrorable. Audio Reactivity (structure, not only …
 
@@ -6547,7 +6547,7 @@ TEXTURE EMBER BED: looking down into a bed of glowing embers -- the photograph b
 
 ### TextureFanFold
 
-`Scene2D/TextureFanFold.frag` · type=normal · mood=calm,psychedelic · complexity=2
+`Scene2D/TextureFanFold.frag` · type=normal · mood=calm,psychedelic · complexity=5
 
 TEXTURE FAN FOLD: the photograph printed on a huge sheet of paper folded like an accordion -- pleats run across the picture, each face tilted alternately toward and away from the light, the image squeezed on the faces that turn away; the pleats slowly fold tighter and open flat again in travelling waves, their direction turning, so the picture ripples in and out of legibility. Endless, mirrorable. Audio Reactivity (s…
 
@@ -6556,7 +6556,7 @@ TEXTURE FAN FOLD: the photograph printed on a huge sheet of paper folded like an
 
 ### TextureFiberOptic
 
-`Scene2D/TextureFiberOptic.frag` · type=normal · mood=calm,dark · complexity=2
+`Scene2D/TextureFiberOptic.frag` · type=normal · mood=calm,dark · complexity=8
 
 TEXTURE FIBER OPTIC: a fibre-optic lamp seen from above -- a dense spray of thin glass fibres fans out from several hubs, each fibre dark along its length but glowing at its tip in the colour the colour wheel inside the lamp is showing, the wheel being the photograph turning slowly behind the hubs; the fibres sway gently, the tips twinkle. Endless, mirrorable. Audio Reactivity (structure, not only light): audioAdvanc…
 
@@ -6565,7 +6565,7 @@ TEXTURE FIBER OPTIC: a fibre-optic lamp seen from above -- a dense spray of thin
 
 ### TextureFireflyGathering
 
-`Scene2D/TextureFireflyGathering.frag` · type=normal · mood=calm,dark · complexity=2
+`Scene2D/TextureFireflyGathering.frag` · type=normal · mood=calm,dark · complexity=6
 
 TEXTURE FIREFLY GATHERING: a swarm of fireflies over the dark photograph -- thousands of small glowing points that drift, blink and gather where the photo is bright, as if drawn to its light, tracing its shapes in living sparks, then disperse and gather again elsewhere as the photo drifts; each firefly glows yellow-green (or in the photo's colour), blinking on its own rhythm with a soft halo. Endless, mirrorable. Aud…
 
@@ -6574,7 +6574,7 @@ TEXTURE FIREFLY GATHERING: a swarm of fireflies over the dark photograph -- thou
 
 ### TextureFireFront
 
-`Scene2D/TextureFireFront.frag` · type=normal · mood=energetic,dark · complexity=2
+`Scene2D/TextureFireFront.frag` · type=normal · mood=energetic,dark · complexity=4
 
 TEXTURE FIRE FRONT: the photograph burning like paper held over a flame -- a ragged front of glowing embers eats its way across the picture, the paper browning and curling ahead of it, the burnt area behind turning to grey-black ash with the image still faintly printed in it, sparks rising from the front; then the ash cools and the picture returns (as if regrowing) while fronts start elsewhere. Endless, mirrorable. A…
 
@@ -6583,7 +6583,7 @@ TEXTURE FIRE FRONT: the photograph burning like paper held over a flame -- a rag
 
 ### TextureFlipDisc
 
-`Scene2D/TextureFlipDisc.frag` · type=normal · mood=energetic,dark · complexity=2
+`Scene2D/TextureFlipDisc.frag` · type=normal · mood=energetic,dark · complexity=9
 
 TEXTURE FLIP DISC: a giant flip-disc display, the kind once used on buses and stations -- thousands of round discs, dark on one side and fluorescent on the other, show the photograph; as the picture drifts and a threshold sweeps through it, waves of discs flip over on their axles, glinting edge-on for a moment as they turn; the fluorescent faces glow softly in the dark housing. Endless, mirrorable. Audio Reactivity (…
 
@@ -6601,7 +6601,7 @@ TEXTURE FLOATING LIGHTS: a night festival of floating lanterns on a dark lake --
 
 ### TextureFlowerThroat
 
-`Scene2D/TextureFlowerThroat.frag` · type=normal · mood=psychedelic,calm · complexity=2
+`Scene2D/TextureFlowerThroat.frag` · type=normal · mood=psychedelic,calm · complexity=8
 
 TEXTURE FLOWER THROAT: diving into the throat of an endless flower -- ring after ring of petals opens toward us, each whorl turned half a petal against the one before, the petals cut from the photograph and veined, cupped (bright at their tips, shadowed at their bases), glowing translucent where the light shines through; deep inside, a glowing heart of stamens. The whorls slowly turn in alternating directions. Endles…
 
@@ -6619,7 +6619,7 @@ TEXTURE FLOW FIELD HAIR: the photograph combed into hair -- countless fine stran
 
 ### TextureFlowParticles
 
-`Scene2D/TextureFlowParticles.frag` · type=normal · mood=psychedelic,dreamy · complexity=3
+`Scene2D/TextureFlowParticles.frag` · type=normal · mood=psychedelic,dreamy · complexity=5
 
 TEXTURE FLOW PARTICLES: the photograph dissolved into a river of light particles -- countless fine grains stream along the contours of the texture (the flow runs across its brightness gradient, so it follows the grain of wood, the rings of agate, the veins of marble), each grain carrying the colour of the photo where it is, drawn as a short glowing streak. Denser streams gather where the texture has strong structure,…
 
@@ -6628,7 +6628,7 @@ TEXTURE FLOW PARTICLES: the photograph dissolved into a river of light particles
 
 ### TextureForkingTunnel
 
-`Scene2D/TextureForkingTunnel.frag` · type=normal · mood=psychedelic,energetic · complexity=2
+`Scene2D/TextureForkingTunnel.frag` · type=normal · mood=psychedelic,energetic · complexity=9
 
 TEXTURE FORKING TUNNEL: a tunnel that keeps branching -- ahead of us the passage splits into two (or three) smaller tunnels, and we drift toward one of them; as we enter it, it grows to fill the view and splits again, and again, forever, like flying down the branches of a tree of caves; the walls are lined with the photograph, the branch openings glow. Endless, mirrorable. Audio Reactivity (structure, not only light)…
 
@@ -6646,7 +6646,7 @@ TEXTURE FRIEZE BANDS: a wall of stacked friezes -- horizontal bands of the photo
 
 ### TextureFrostCreep
 
-`Scene2D/TextureFrostCreep.frag` · type=normal · mood=calm,bright · complexity=2
+`Scene2D/TextureFrostCreep.frag` · type=normal · mood=calm,bright · complexity=1
 
 TEXTURE FROST CREEP: frost growing over a window pane with the photograph behind it -- feathery ice ferns creep across the glass from many seeds, branching and filling in, frosting the view into a soft blur; then they slowly melt back, the glass clears in patches and the picture shines through sharp again, until the frost returns. The ferns sparkle where light catches their facets. Endless, mirrorable. Audio Reactivi…
 
@@ -6655,7 +6655,7 @@ TEXTURE FROST CREEP: frost growing over a window pane with the photograph behind
 
 ### TextureGalaxyFlight
 
-`Scene2D/TextureGalaxyFlight.frag` · type=normal · mood=calm,psychedelic · complexity=2
+`Scene2D/TextureGalaxyFlight.frag` · type=normal · mood=calm,psychedelic · complexity=4
 
 TEXTURE GALAXY FLIGHT: drifting over the face of a spiral galaxy -- the photograph wound into the galaxy's arms (its colours become the star clouds, dust lanes darken the inner edges of the arms), a bright yellow core, blue star-forming knots along the arms, pink nebulae, countless faint stars; the galaxy turns slowly and we glide across it, other galaxies drifting in the distance. Endless, mirrorable. Audio Reactivi…
 
@@ -6664,7 +6664,7 @@ TEXTURE GALAXY FLIGHT: drifting over the face of a spiral galaxy -- the photogra
 
 ### TextureGasGiantDive
 
-`Scene2D/TextureGasGiantDive.frag` · type=normal · mood=calm,psychedelic · complexity=2
+`Scene2D/TextureGasGiantDive.frag` · type=normal · mood=calm,psychedelic · complexity=1
 
 TEXTURE GAS GIANT DIVE: hovering over the cloud tops of a gas giant -- broad bands of atmosphere race past each other in opposite directions, their edges curling into festoons and eddies, great oval storms turn slowly between them, and the colours (cream, ochre, rust, blue-grey) are drawn from the photograph's palette; the band structure stretches endlessly across the view. Mirrorable. Audio Reactivity (structure, no…
 
@@ -6673,7 +6673,7 @@ TEXTURE GAS GIANT DIVE: hovering over the cloud tops of a gas giant -- broad ban
 
 ### TextureGeodeInterior
 
-`Scene2D/TextureGeodeInterior.frag` · type=normal · mood=psychedelic,dark · complexity=2
+`Scene2D/TextureGeodeInterior.frag` · type=normal · mood=psychedelic,dark · complexity=8
 
 TEXTURE GEODE INTERIOR: looking into a hollow geode that opens endlessly into the depth -- the cavity is lined with crystal points, all pointing inward toward the centre, ring after ring of them receding, each crystal a faceted wedge glowing with light that shines through the stone from outside; the crystals' colours are the photo's colours, and the banded agate crust between the rings is the photo itself. A light tr…
 
@@ -6682,7 +6682,7 @@ TEXTURE GEODE INTERIOR: looking into a hollow geode that opens endlessly into th
 
 ### TextureGirihChambers
 
-`Scene2D/TextureGirihChambers.frag` · type=normal · mood=psychedelic,bright · complexity=2
+`Scene2D/TextureGirihChambers.frag` · type=normal · mood=psychedelic,bright · complexity=4
 
 TEXTURE GIRIH CHAMBERS: an Islamic star lattice of gilded strapwork -- eight-pointed stars and the crosses between them, outlined by raised bands of gold that interlace over and under each other, and every chamber of the pattern filled with the photograph, folded so each star holds a kaleidoscopic eight-fold image; the picture flows through the chambers, the gold catches a moving light. Endless, mirrorable. Audio Rea…
 
@@ -6691,7 +6691,7 @@ TEXTURE GIRIH CHAMBERS: an Islamic star lattice of gilded strapwork -- eight-poi
 
 ### TextureGlassBlocksWall
 
-`Scene2D/TextureGlassBlocksWall.frag` · type=normal · mood=calm,bright · complexity=2
+`Scene2D/TextureGlassBlocksWall.frag` · type=normal · mood=calm,bright · complexity=1
 
 TEXTURE GLASS BLOCKS WALL: a wall of pressed glass blocks with the photograph moving slowly behind it -- each block bends the view in its own pattern (ribbed, rippled, pillowed or with concentric waves), so the picture breaks into a grid of distorted fragments, sharp in some blocks and swimming in others; the blocks' edges gleam, the mortar joints are pale, and a highlight wanders across the glass. Endless, mirrorabl…
 
@@ -6700,7 +6700,7 @@ TEXTURE GLASS BLOCKS WALL: a wall of pressed glass blocks with the photograph mo
 
 ### TextureGlassCubeSwarm
 
-`Scene2D/TextureGlassCubeSwarm.frag` · type=normal · mood=dreamy,bright · complexity=2
+`Scene2D/TextureGlassCubeSwarm.frag` · type=normal · mood=dreamy,bright · complexity=4
 
 TEXTURE GLASS CUBE SWARM: a swarm of clear glass cubes tumbling slowly through space in front of the photograph -- each cube refracts the photo behind it into a shifted, magnified, chromatically fringed tile, its edges bright, its faces tinted by the thickness of glass, near cubes large and sharp, far ones small; they turn slowly on their own axes so the refracted tiles slide and flip. The photo behind drifts; the fi…
 
@@ -6709,7 +6709,7 @@ TEXTURE GLASS CUBE SWARM: a swarm of clear glass cubes tumbling slowly through s
 
 ### TextureGlideReflection
 
-`Scene2D/TextureGlideReflection.frag` · type=normal · mood=calm,psychedelic · complexity=2
+`Scene2D/TextureGlideReflection.frag` · type=normal · mood=calm,psychedelic · complexity=5
 
 TEXTURE GLIDE REFLECTION: a frieze of the photograph repeated by glide reflection -- tiles of the picture, each mirrored and shifted half a step against its neighbour, interlock in herringbone and zigzag like a woven or parquet pattern; the pattern slowly glides along its axis, the axis itself turns, and the tiles' borders are inlaid with thin lines of light. Endless, mirrorable. Audio Reactivity (structure, not only…
 
@@ -6727,7 +6727,7 @@ TEXTURE GLOWING ICE: looking into a block of glacier ice lit from within -- deep
 
 ### TextureGlowVines
 
-`Scene2D/TextureGlowVines.frag` · type=normal · mood=calm,dark · complexity=2
+`Scene2D/TextureGlowVines.frag` · type=normal · mood=calm,dark · complexity=5
 
 TEXTURE GLOW VINES: luminous vines creeping over the dark photograph -- slender stems wind along the picture's contours, curl into spiral tendrils and sprout glowing leaves in pairs, and pulses of light travel along them like sap; where the vines cross the photo's bright parts they glow brighter. The vines sway slowly. Endless, mirrorable. Audio Reactivity (structure, not only light): audioAdvance -> the sap pulses t…
 
@@ -6736,7 +6736,7 @@ TEXTURE GLOW VINES: luminous vines creeping over the dark photograph -- slender 
 
 ### TextureGoboWash
 
-`Scene2D/TextureGoboWash.frag` · type=normal · mood=energetic,psychedelic · complexity=2
+`Scene2D/TextureGoboWash.frag` · type=normal · mood=energetic,psychedelic · complexity=9
 
 TEXTURE GOBO WASH: a theatre stage wall washed by moving-head lights -- several soft spots glide over a dark textured wall (the photograph as the wall's surface), each projecting a rotating gobo pattern (breakup leaves, star, spiral, dots) in its own colour, the patterns overlapping and mixing additively, the edges soft with defocus; the wall's relief catches the light. Endless, mirrorable. Audio Reactivity (structur…
 
@@ -6745,7 +6745,7 @@ TEXTURE GOBO WASH: a theatre stage wall washed by moving-head lights -- several 
 
 ### TextureGoldLeafBurnish
 
-`Scene2D/TextureGoldLeafBurnish.frag` · type=normal · mood=calm,psychedelic · complexity=2
+`Scene2D/TextureGoldLeafBurnish.frag` · type=normal · mood=calm,psychedelic · complexity=1
 
 TEXTURE GOLD LEAF BURNISH: a surface gilded with gold leaf -- square leaves laid slightly overlapping, each with its own faint crinkles and a slightly different tilt, so a moving light makes them flash one after another, burnished parts mirror-bright, the photograph showing through where the leaf has cracked and worn away (like an old icon); the light sweeps slowly across. Endless, mirrorable. Audio Reactivity (struc…
 
@@ -6763,7 +6763,7 @@ TEXTURE HEAT GLOW METAL: a steel plate with the photograph stamped into it, heat
 
 ### TextureHoloFoil
 
-`Scene2D/TextureHoloFoil.frag` · type=normal · mood=psychedelic,bright · complexity=2
+`Scene2D/TextureHoloFoil.frag` · type=normal · mood=psychedelic,bright · complexity=3
 
 TEXTURE HOLO FOIL: the photograph printed on crumpled holographic foil -- every facet of the crinkled foil throws back a different slice of the rainbow as the light moves, colours racing across the folds in sheets, while the photo shows through the foil's diffraction as its pattern. The foil itself breathes slowly (the creases shift), the light wanders, so the whole frame shimmers. An endless field, mirrorable. Diffr…
 
@@ -6781,7 +6781,7 @@ TEXTURE ICE FLOES: pack ice seen from above -- white and pale-blue floes of ever
 
 ### TextureIceGlaze
 
-`Scene2D/TextureIceGlaze.frag` · type=normal · mood=calm,bright · complexity=2
+`Scene2D/TextureIceGlaze.frag` · type=normal · mood=calm,bright · complexity=3
 
 TEXTURE ICE GLAZE: the photograph frozen under a sheet of clear ice -- trapped air bubbles in strings and clouds, white fracture planes cutting through the ice at angles (flashing when the light catches them), the picture below bent and cooled by the ice's thickness, and frost feathers growing at the edges of the cracks; a cold light slides across the surface. Endless, mirrorable. Audio Reactivity (structure, not onl…
 
@@ -6790,7 +6790,7 @@ TEXTURE ICE GLAZE: the photograph frozen under a sheet of clear ice -- trapped a
 
 ### TextureInfiniteRosettes
 
-`Scene2D/TextureInfiniteRosettes.frag` · type=normal · mood=psychedelic,energetic · complexity=2
+`Scene2D/TextureInfiniteRosettes.frag` · type=normal · mood=psychedelic,energetic · complexity=4
 
 TEXTURE INFINITE ROSETTES: kaleidoscope rosettes nested without end -- a large rosette of the photograph (mirrored into 2n petals) fills the view, and at its centre another rosette opens, turned and with a different petal count, and inside that another, forever; we sink slowly into them while each rosette turns its own way, the borders between them glowing rings. Endless, mirrorable; the outermost rosette continues b…
 
@@ -6799,7 +6799,7 @@ TEXTURE INFINITE ROSETTES: kaleidoscope rosettes nested without end -- a large r
 
 ### TextureIrisShutter
 
-`Scene2D/TextureIrisShutter.frag` · type=normal · mood=energetic,psychedelic · complexity=2
+`Scene2D/TextureIrisShutter.frag` · type=normal · mood=energetic,psychedelic · complexity=5
 
 TEXTURE IRIS SHUTTER: an endless nest of camera irises -- a ring of overlapping metal blades (each a sheet of the photograph, polished and darkened like blued steel) forms a turning polygonal aperture that slowly opens and closes; through the aperture lies the next iris, and the next, and we drift inward through them forever. Each iris has its own blade count and turn; the blades' edges catch a bright line of light. …
 
@@ -6808,7 +6808,7 @@ TEXTURE IRIS SHUTTER: an endless nest of camera irises -- a ring of overlapping 
 
 ### TextureIronFilings
 
-`Scene2D/TextureIronFilings.frag` · type=normal · mood=calm,dark · complexity=2
+`Scene2D/TextureIronFilings.frag` · type=normal · mood=calm,dark · complexity=1
 
 TEXTURE IRON FILINGS: iron filings on paper over moving magnets -- thousands of tiny dark needles lie on the photograph (printed on the paper) and align themselves with the magnetic field: they trace the field lines between the poles in arcs and spirals, bunch up densely at the poles, and as the hidden magnets glide and turn beneath the paper the whole pattern slowly re-forms. The poles glow faintly. Endless, mirrora…
 
@@ -6817,7 +6817,7 @@ TEXTURE IRON FILINGS: iron filings on paper over moving magnets -- thousands of 
 
 ### TextureLanternField
 
-`Scene2D/TextureLanternField.frag` · type=normal · mood=calm,dreamy,dark · complexity=2
+`Scene2D/TextureLanternField.frag` · type=normal · mood=calm,dreamy,dark · complexity=9
 
 TEXTURE LANTERN FIELD: looking straight up into a night sky full of floating paper lanterns -- hundreds of glowing lanterns at every depth, the near ones large and soft with the photograph printed on their paper (each shows a different piece of it, lit from within), the far ones small warm points, all drifting slowly upward and away, turning gently. No horizon, no ground: the field of lanterns is endless and mirrors …
 
@@ -6826,7 +6826,7 @@ TEXTURE LANTERN FIELD: looking straight up into a night sky full of floating pap
 
 ### TextureLanternTunnel
 
-`Scene2D/TextureLanternTunnel.frag` · type=normal · mood=calm,dreamy,psychedelic · complexity=2
+`Scene2D/TextureLanternTunnel.frag` · type=normal · mood=calm,dreamy,psychedelic · complexity=10
 
 TEXTURE LANTERN TUNNEL: flying through a tunnel whose wall is made of glowing paper lanterns -- ring after ring of lanterns hung close together line the bore, each lit from within, each showing a different piece of the photograph on its paper, their warm light filling the tunnel and reflecting on the ribs between them; far ahead the rings melt into a golden glow. An endless polar field like the Tunnel, mirrorable. Au…
 
@@ -6835,7 +6835,7 @@ TEXTURE LANTERN TUNNEL: flying through a tunnel whose wall is made of glowing pa
 
 ### TextureLaserGrid
 
-`Scene2D/TextureLaserGrid.frag` · type=normal · mood=energetic,psychedelic · complexity=2
+`Scene2D/TextureLaserGrid.frag` · type=normal · mood=energetic,psychedelic · complexity=4
 
 TEXTURE LASER GRID: a laser show in haze -- fans of thin coloured beams sweep through a smoky room from several projectors, crossing into shimmering grids and tunnels, the beams visible only where they cut through the haze, flaring where they cross; the photograph is projected as a laser-scanned image (glowing contour lines) on the far wall. Endless, mirrorable. Audio Reactivity (structure, not only light): audioAdva…
 
@@ -6844,7 +6844,7 @@ TEXTURE LASER GRID: a laser show in haze -- fans of thin coloured beams sweep th
 
 ### TextureLatticeTunnel
 
-`Scene2D/TextureLatticeTunnel.frag` · type=normal · mood=energetic,dark · complexity=2
+`Scene2D/TextureLatticeTunnel.frag` · type=normal · mood=energetic,dark · complexity=10
 
 TEXTURE LATTICE TUNNEL: flying through a tube built of a steel lattice -- diagonal girders crossing in a diamond pattern, their joints studded with lights -- and through the gaps between the girders the photograph shines, lining a wider tunnel further out that moves past at its own slower pace (parallax); the lattice twists slowly as we go. Endless, mirrorable; the tunnel continues beyond the frame. Audio Reactivity …
 
@@ -6853,7 +6853,7 @@ TEXTURE LATTICE TUNNEL: flying through a tube built of a steel lattice -- diagon
 
 ### TextureLavaCracks
 
-`Scene2D/TextureLavaCracks.frag` · type=normal · mood=dark,aggressive · complexity=2
+`Scene2D/TextureLavaCracks.frag` · type=normal · mood=dark,aggressive · complexity=3
 
 TEXTURE LAVA CRACKS: the photograph as a cooling lava crust -- its dark lines and hollows split open and glow white-yellow-orange with the molten rock beneath, while the plates between them are the photo itself, darkened and cooling, with a thin red rim where they meet the heat. The heat flows slowly through the network of cracks like a pulse through veins, the crust drifts and the cracks widen and close in slow wave…
 
@@ -6862,7 +6862,7 @@ TEXTURE LAVA CRACKS: the photograph as a cooling lava crust -- its dark lines an
 
 ### TextureLavaFieldTop
 
-`Scene2D/TextureLavaFieldTop.frag` · type=normal · mood=dark,energetic · complexity=2
+`Scene2D/TextureLavaFieldTop.frag` · type=normal · mood=dark,energetic · complexity=7
 
 TEXTURE LAVA FIELD TOP: an active lava field seen from straight above at night -- channels and rivers of bright molten rock wind between plates of black cooled crust, the crust split by glowing cracks, fresh lava oozing out as bright lobes that cool from yellow-white to orange to dark red at their edges; the flow creeps along the channels. The channel network is shaped by the photograph (its dark valleys are where th…
 
@@ -6871,7 +6871,7 @@ TEXTURE LAVA FIELD TOP: an active lava field seen from straight above at night -
 
 ### TextureLeafStorm
 
-`Scene2D/TextureLeafStorm.frag` · type=normal · mood=calm,warm · complexity=2
+`Scene2D/TextureLeafStorm.frag` · type=normal · mood=calm,warm · complexity=6
 
 TEXTURE LEAF STORM: an autumn storm of leaves swirling toward the viewer -- thousands of leaves in several depth layers tumble and spin through the air on gusty spiralling winds, each leaf a small pointed shape with a midrib, its colour cut from the photograph (so every photo gives its own foliage), turning so it flashes its lighter underside; near leaves large and soft, far ones small and many. Endless, mirrorable. …
 
@@ -6880,7 +6880,7 @@ TEXTURE LEAF STORM: an autumn storm of leaves swirling toward the viewer -- thou
 
 ### TextureLightningPaths
 
-`Scene2D/TextureLightningPaths.frag` · type=normal · mood=dark,aggressive · complexity=2
+`Scene2D/TextureLightningPaths.frag` · type=normal · mood=dark,aggressive · complexity=4
 
 TEXTURE LIGHTNING PATHS: electricity crawling through the photograph -- branching bolts of blue-white lightning run along the dark cracks and valleys of the texture, as if the photo were a slab of stone charged from within: the bolts flicker along their paths, fork into finer branches, and light up the surrounding stone in cold violet, then fade and strike again elsewhere. The surface itself is dark, only lit by the …
 
@@ -6889,7 +6889,7 @@ TEXTURE LIGHTNING PATHS: electricity crawling through the photograph -- branchin
 
 ### TextureLightShafts
 
-`Scene2D/TextureLightShafts.frag` · type=normal · mood=calm,dark · complexity=2
+`Scene2D/TextureLightShafts.frag` · type=normal · mood=calm,dark · complexity=6
 
 TEXTURE LIGHT SHAFTS: sunlight breaking through a dark canopy -- the photograph's bright gaps become openings in a black screen of leaves (or a cathedral's tracery), and from them shafts of light fan out through hazy air, crossing and merging, dust motes drifting and sparkling inside the beams; the light source wanders slowly, so the rays sweep and turn, and the canopy itself sways. Endless, mirrorable. Audio Reactiv…
 
@@ -6898,7 +6898,7 @@ TEXTURE LIGHT SHAFTS: sunlight breaking through a dark canopy -- the photograph'
 
 ### TextureMaelstrom
 
-`Scene2D/TextureMaelstrom.frag` · type=normal · mood=dark,dreamy,psychedelic · complexity=2
+`Scene2D/TextureMaelstrom.frag` · type=normal · mood=dark,dreamy,psychedelic · complexity=3
 
 TEXTURE MAELSTROM: looking down into a whirlpool whose walls are the photograph -- the texture is wound into a logarithmic spiral that turns and sinks toward the eye of the vortex, streaks of foam spiral down with it, the walls grow darker and faster with depth, and at the bottom a cold light glows. An endless polar field like the Tunnel: it continues past the frame edges and mirrors without seams; every photo gives …
 
@@ -6916,7 +6916,7 @@ TEXTURE MARBLE FLOW: polished marble that has not quite set -- the photograph be
 
 ### TextureMicaGlitter
 
-`Scene2D/TextureMicaGlitter.frag` · type=normal · mood=calm,dark · complexity=2
+`Scene2D/TextureMicaGlitter.frag` · type=normal · mood=calm,dark · complexity=6
 
 TEXTURE MICA GLITTER: a slab of mica-flecked stone -- dark granite-like ground (the photograph's forms) dense with flakes of mica that lie in layers at slightly different angles, so whole sheets of them flash golden or silver together as a light sweeps across, the flashes rolling over the stone in waves. Endless, mirrorable. Audio Reactivity (structure, not only light): audioAdvance -> the light sweeps (integrated, j…
 
@@ -6925,7 +6925,7 @@ TEXTURE MICA GLITTER: a slab of mica-flecked stone -- dark granite-like ground (
 
 ### TextureMicroscopeSlide
 
-`Scene2D/TextureMicroscopeSlide.frag` · type=normal · mood=calm,bright · complexity=2
+`Scene2D/TextureMicroscopeSlide.frag` · type=normal · mood=calm,bright · complexity=4
 
 TEXTURE MICROSCOPE SLIDE: panning across a fluorescence-stained tissue section under the microscope -- a dense carpet of cells, their nuclei glowing blue, the cell bodies and membranes in green and red, fibres threading between them in a third colour; the tissue's layout follows the photograph (its dark and light regions become different tissue densities), and the focus breathes slowly, bringing layers in and out of …
 
@@ -6934,7 +6934,7 @@ TEXTURE MICROSCOPE SLIDE: panning across a fluorescence-stained tissue section u
 
 ### TextureMirrorSeamsWander
 
-`Scene2D/TextureMirrorSeamsWander.frag` · type=normal · mood=psychedelic · complexity=2
+`Scene2D/TextureMirrorSeamsWander.frag` · type=normal · mood=psychedelic · complexity=8
 
 TEXTURE MIRROR SEAMS WANDER: a kaleidoscope without straight mirrors -- the photograph is reflected across curved seams that wander over the plane like slow rivers: wherever a seam passes, the picture on one side appears mirrored on the other, and where several seams cross, the reflections multiply into rosettes that form, drift and dissolve. The seams glow faintly like the edges of liquid glass. An endless field, mi…
 
@@ -6952,7 +6952,7 @@ TEXTURE MIST LIGHTS: coloured lights glowing through drifting fog at night -- do
 
 ### TextureMitosisField
 
-`Scene2D/TextureMitosisField.frag` · type=normal · mood=calm,bright · complexity=2
+`Scene2D/TextureMitosisField.frag` · type=normal · mood=calm,bright · complexity=4
 
 TEXTURE MITOSIS FIELD: a sheet of living cells dividing -- each translucent cell swells, its nucleus lines up, the cell stretches, pinches in the middle and splits into two daughters that drift apart and shrink back to size, over and over, each at its own pace, so the whole field seethes with divisions; the cells carry the photograph's colours, lit from behind like a microscope. Endless, mirrorable. Audio Reactivity …
 
@@ -6961,7 +6961,7 @@ TEXTURE MITOSIS FIELD: a sheet of living cells dividing -- each translucent cell
 
 ### TextureMoldBloom
 
-`Scene2D/TextureMoldBloom.frag` · type=normal · mood=calm,bright · complexity=2
+`Scene2D/TextureMoldBloom.frag` · type=normal · mood=calm,bright · complexity=3
 
 TEXTURE MOLD BLOOM: colonies of mould and lichen spreading over the photograph like over an old print -- round colonies grow outward in rings of different colour (a dense centre, a fuzzy hyphal margin, spore-darkened zones), meet each other and stop at sharp borders, velvety in texture; old colonies fade back into the picture while new ones sprout. Oddly beautiful, like a petri dish of art. Endless, mirrorable. Audio…
 
@@ -6970,7 +6970,7 @@ TEXTURE MOLD BLOOM: colonies of mould and lichen spreading over the photograph l
 
 ### TextureMurmurationShape
 
-`Scene2D/TextureMurmurationShape.frag` · type=normal · mood=calm,dark · complexity=2
+`Scene2D/TextureMurmurationShape.frag` · type=normal · mood=calm,dark · complexity=1
 
 TEXTURE MURMURATION SHAPE: a starling murmuration at dusk -- tens of thousands of birds swirl as one living cloud against the evening sky, the flock thickening and thinning in waves that ripple through it, folding, splitting and rejoining; the flock's shape is drawn from the photograph's dark forms, which it keeps morphing toward; each bird is a tiny dark fleck. Endless, mirrorable. Audio Reactivity (structure, not o…
 
@@ -6979,7 +6979,7 @@ TEXTURE MURMURATION SHAPE: a starling murmuration at dusk -- tens of thousands o
 
 ### TextureNacreSheen
 
-`Scene2D/TextureNacreSheen.frag` · type=normal · mood=calm,bright · complexity=2
+`Scene2D/TextureNacreSheen.frag` · type=normal · mood=calm,bright · complexity=1
 
 TEXTURE NACRE SHEEN: mother-of-pearl -- the photograph becomes the inside of a shell: its structure turns into fine growth terraces and layered platelets whose thin-film interference plays in pink, green, gold and blue, the colours sliding across the surface as if the shell were slowly tilted in the light; a soft pearly white underlies it all, a bright sheen band wanders over it. Endless, mirrorable. Audio Reactivity…
 
@@ -6988,7 +6988,7 @@ TEXTURE NACRE SHEEN: mother-of-pearl -- the photograph becomes the inside of a s
 
 ### TextureNebulaVolume
 
-`Scene2D/TextureNebulaVolume.frag` · type=normal · mood=space,dreamy,dark · complexity=3
+`Scene2D/TextureNebulaVolume.frag` · type=normal · mood=space,dreamy,dark · complexity=7
 
 TEXTURE NEBULA VOLUME: flying through a nebula made of the photograph -- the texture is stacked in many translucent layers that drift toward the camera and past it, each one a veil of glowing gas in the photo's colours with dark dust lanes where the photo is dark, lit from within by hidden stars that shine through as soft bright cores, with sharp stars far behind. Layers fade in from the depth and fade out as they pa…
 
@@ -6997,7 +6997,7 @@ TEXTURE NEBULA VOLUME: flying through a nebula made of the photograph -- the tex
 
 ### TextureNeonCalligraphy
 
-`Scene2D/TextureNeonCalligraphy.frag` · type=normal · mood=energetic,psychedelic · complexity=2
+`Scene2D/TextureNeonCalligraphy.frag` · type=normal · mood=energetic,psychedelic · complexity=8
 
 TEXTURE NEON CALLIGRAPHY: glowing brush calligraphy written in light -- broad sweeping strokes that swell and taper like a brush pen, drawn across the dark as we watch, loops and hooks and flourishes, each stroke a neon tube of the photograph's colours with a hot white core and a soft bloom; old strokes fade as new ones are written, the whole script drifting slowly. Endless, mirrorable. Audio Reactivity (structure, n…
 
@@ -7006,7 +7006,7 @@ TEXTURE NEON CALLIGRAPHY: glowing brush calligraphy written in light -- broad sw
 
 ### TextureNeonRain
 
-`Scene2D/TextureNeonRain.frag` · type=normal · mood=dark,psychedelic · complexity=2
+`Scene2D/TextureNeonRain.frag` · type=normal · mood=dark,psychedelic · complexity=9
 
 TEXTURE NEON RAIN: rain falling through neon light at night -- long thin streaks of rain slant down in several depth layers, each drop lit by the coloured signs of the photograph behind (which glows blurred through the wet air), near streaks long and soft, far ones short and sharp; wet reflections shimmer across the whole plane as a faint mirrored copy. Endless, mirrorable. Audio Reactivity (structure, not only light…
 
@@ -7015,7 +7015,7 @@ TEXTURE NEON RAIN: rain falling through neon light at night -- long thin streaks
 
 ### TextureNeonTrace
 
-`Scene2D/TextureNeonTrace.frag` · type=normal · mood=psychedelic,dark,aggressive · complexity=2
+`Scene2D/TextureNeonTrace.frag` · type=normal · mood=psychedelic,dark,aggressive · complexity=7
 
 TEXTURE NEON TRACE: the photograph redrawn in neon -- every strong edge of the texture becomes a glowing tube, the tubes bend along the material's own contours (the grain of wood, the cracks in a glaze, the fibres of felt), each with its halo in the dark, and between them the photo itself lies dim and wet, catching the glow as reflections. Waves of light run through the tubes; the whole field drifts slowly, so the pi…
 
@@ -7024,7 +7024,7 @@ TEXTURE NEON TRACE: the photograph redrawn in neon -- every strong edge of the t
 
 ### TextureNewtonRings
 
-`Scene2D/TextureNewtonRings.frag` · type=normal · mood=psychedelic,calm · complexity=2
+`Scene2D/TextureNewtonRings.frag` · type=normal · mood=psychedelic,calm · complexity=5
 
 TEXTURE NEWTON RINGS: Newton's rings where a curved glass touches a flat -- concentric rainbow rings of interference fan out from several contact points pressed onto the photograph, the rings tightening toward the edges, their colours running through the interference orders; the glasses slowly slide and press harder, so the ring systems breathe and merge into contour-like patterns over the picture. Endless, mirrorabl…
 
@@ -7033,7 +7033,7 @@ TEXTURE NEWTON RINGS: Newton's rings where a curved glass touches a flat -- conc
 
 ### TextureOilSlickSheen
 
-`Scene2D/TextureOilSlickSheen.frag` · type=normal · mood=psychedelic,dark · complexity=2
+`Scene2D/TextureOilSlickSheen.frag` · type=normal · mood=psychedelic,dark · complexity=1
 
 TEXTURE OIL SLICK SHEEN: a film of oil on a wet road at night -- rainbow interference colours swirl across the dark asphalt (the photograph as the road's texture beneath), the thin film spreading and twisting in slow eddies, thicker bands showing the richer second-order colours, the film breaking into islands where it thins; a street light glints on the wet surface. Endless, mirrorable. Audio Reactivity (structure, n…
 
@@ -7042,7 +7042,7 @@ TEXTURE OIL SLICK SHEEN: a film of oil on a wet road at night -- rainbow interfe
 
 ### TextureOpalFire
 
-`Scene2D/TextureOpalFire.frag` · type=normal · mood=psychedelic,bright · complexity=2
+`Scene2D/TextureOpalFire.frag` · type=normal · mood=psychedelic,bright · complexity=4
 
 TEXTURE OPAL FIRE: the play-of-colour of a black opal -- the photograph becomes the dark body of the stone, and within it a harlequin mosaic of patches flashes in pure spectral colours, each patch lighting up in its own colour as the stone slowly turns in the light, then dimming while its neighbours flare; fine striations run through the patches, a milky sheen floats over them. Endless, mirrorable. Audio Reactivity (…
 
@@ -7051,7 +7051,7 @@ TEXTURE OPAL FIRE: the play-of-colour of a black opal -- the photograph becomes 
 
 ### TextureOpWaves
 
-`Scene2D/TextureOpWaves.frag` · type=normal · mood=psychedelic,energetic · complexity=2
+`Scene2D/TextureOpWaves.frag` · type=normal · mood=psychedelic,energetic · complexity=7
 
 TEXTURE OP WAVES: an op-art painting in motion -- fine parallel stripes that swell, pinch and ripple in waves so the flat surface seems to billow like cloth; the photograph bends the stripes (its bright parts push them apart, dark parts pull them together), so each photo creates its own landscape of optical folds; the stripes run in interleaved colours taken from the photo, and a slow wave travels through them. Endle…
 
@@ -7069,7 +7069,7 @@ TEXTURE ORBIFOLD FLOW: a kaleidoscope whose mirrors are themselves in motion -- 
 
 ### TextureP6Crystal
 
-`Scene2D/TextureP6Crystal.frag` · type=normal · mood=psychedelic,bright · complexity=2
+`Scene2D/TextureP6Crystal.frag` · type=normal · mood=psychedelic,bright · complexity=3
 
 TEXTURE P6 CRYSTAL: the photograph cut into a crystal of six-fold pinwheels -- each hexagonal cell holds the picture six times, rotated (not mirrored) around its centre, so the cells swirl like turbines; every one of the six wedges is a bevelled facet catching a slowly circling light, with sharp bright facet edges and a small refracting jewel at each cell centre. The photo glides under the crystal, the facet light wa…
 
@@ -7078,7 +7078,7 @@ TEXTURE P6 CRYSTAL: the photograph cut into a crystal of six-fold pinwheels -- e
 
 ### TexturePetalFold
 
-`Scene2D/TexturePetalFold.frag` · type=normal · mood=calm,bright · complexity=2
+`Scene2D/TexturePetalFold.frag` · type=normal · mood=calm,bright · complexity=6
 
 TEXTURE PETAL FOLD: origami blossoms opening and closing -- a field of paper flowers, each folded from a square of the photograph into pleated petals that radiate from the centre, their valley and mountain folds shaded by a soft light; the blossoms slowly open (petals flatten) and close (petals rise and narrow) in waves across the field. Endless, mirrorable. Audio Reactivity (structure, not only light): audioAdvance …
 
@@ -7087,7 +7087,7 @@ TEXTURE PETAL FOLD: origami blossoms opening and closing -- a field of paper flo
 
 ### TexturePhosphorTrails
 
-`Scene2D/TexturePhosphorTrails.frag` · type=normal · mood=dark,calm · complexity=2
+`Scene2D/TexturePhosphorTrails.frag` · type=normal · mood=dark,calm · complexity=5
 
 TEXTURE PHOSPHOR TRAILS: an old vector display drawing the photograph -- a bright beam traces Lissajous-like figures whose shape is steered by the picture, and on the long-persistence phosphor its path glows and fades slowly behind it, so the screen fills with luminous curves in green (or amber), brightest where the beam lingers; faint scan grain and the glass's curvature vignette. Endless, mirrorable. Audio Reactivi…
 
@@ -7096,7 +7096,7 @@ TEXTURE PHOSPHOR TRAILS: an old vector display drawing the photograph -- a brigh
 
 ### TexturePinArt
 
-`Scene2D/TexturePinArt.frag` · type=normal · mood=calm,dark · complexity=2
+`Scene2D/TexturePinArt.frag` · type=normal · mood=calm,dark · complexity=7
 
 TEXTURE PIN ART: the pin-art toy -- a dense bed of polished metal pins seen from above, pushed up into a relief of the photograph (bright parts stand high, dark parts sink), each pin head a small shiny dome reflecting the light, the high pins casting long shadows over the low ones; slow waves roll through the bed as if a hand pressed from below, and the relief slowly morphs as the photo drifts. Endless, mirrorable. A…
 
@@ -7105,7 +7105,7 @@ TEXTURE PIN ART: the pin-art toy -- a dense bed of polished metal pins seen from
 
 ### TexturePineConeSpirals
 
-`Scene2D/TexturePineConeSpirals.frag` · type=normal · mood=psychedelic,calm · complexity=2
+`Scene2D/TexturePineConeSpirals.frag` · type=normal · mood=psychedelic,calm · complexity=6
 
 TEXTURE PINE CONE SPIRALS: looking down onto an endless pine cone (or the heart of a sunflower) -- scales arranged in the golden Fibonacci spirals, 8 winding one way and 13 the other, growing from the tiny centre outward forever; each scale is a small cushion cut from the photograph, lit at its tip and shadowed at its base where the next scale overlaps it; the cone grows slowly toward us and turns. Endless, mirrorabl…
 
@@ -7114,7 +7114,7 @@ TEXTURE PINE CONE SPIRALS: looking down onto an endless pine cone (or the heart 
 
 ### TexturePinwheelTiling
 
-`Scene2D/TexturePinwheelTiling.frag` · type=normal · mood=psychedelic,energetic · complexity=2
+`Scene2D/TexturePinwheelTiling.frag` · type=normal · mood=psychedelic,energetic · complexity=3
 
 TEXTURE PINWHEEL TILING: the photograph cut into a rotating pinwheel pattern -- square blocks, each divided into four triangles spinning around its centre, every triangle holding the same piece of the picture rotated a quarter turn (p4 symmetry, no mirrors), so the pattern whirls; neighbouring blocks turn in opposite directions, their windmill blades meshing like gears. Endless, mirrorable. Audio Reactivity (structur…
 
@@ -7123,7 +7123,7 @@ TEXTURE PINWHEEL TILING: the photograph cut into a rotating pinwheel pattern -- 
 
 ### TexturePlanktonDrift
 
-`Scene2D/TexturePlanktonDrift.frag` · type=normal · mood=calm,dark · complexity=2
+`Scene2D/TexturePlanktonDrift.frag` · type=normal · mood=calm,dark · complexity=7
 
 TEXTURE PLANKTON DRIFT: a dark-field microscope view of drifting plankton -- glassy diatoms (discs and needles), radiolarian spheres with spiny halos and tiny copepods glide through the view at different depths, glowing against black in dark-field light, their colours tinted by the photograph; out-of-focus ones blur into soft shapes. Endless, mirrorable. Audio Reactivity (structure, not only light): audioAdvance -> t…
 
@@ -7132,7 +7132,7 @@ TEXTURE PLANKTON DRIFT: a dark-field microscope view of drifting plankton -- gla
 
 ### TextureRainTrickle
 
-`Scene2D/TextureRainTrickle.frag` · type=normal · mood=calm,dark · complexity=2
+`Scene2D/TextureRainTrickle.frag` · type=normal · mood=calm,dark · complexity=1
 
 TEXTURE RAIN TRICKLE: rain running down a window at night -- the photograph outside is blurred into soft coloured lights by the wet glass, and rivulets of water snake down it, each rivulet a sharp lens showing the scene clearly (flipped and bright) inside its narrow channel, with a fat drop at its head that pauses, gathers, and then runs on; tiny beads cover the rest of the pane. Endless, mirrorable. Audio Reactivity…
 
@@ -7141,7 +7141,7 @@ TEXTURE RAIN TRICKLE: rain running down a window at night -- the photograph outs
 
 ### TextureRibbonVortex
 
-`Scene2D/TextureRibbonVortex.frag` · type=normal · mood=psychedelic,energetic · complexity=2
+`Scene2D/TextureRibbonVortex.frag` · type=normal · mood=psychedelic,energetic · complexity=8
 
 TEXTURE RIBBON VORTEX: broad ribbons of the photograph spiral down into a vortex -- two sets of curling bands, one winding clockwise, the other counter-clockwise, weave over and under each other as they are drawn toward the bright eye in the centre; each ribbon is curved like silk, dark at its folded edges and catching a sheen along its crown, the photo streaming along it. Endless, mirrorable. Audio Reactivity (struc…
 
@@ -7150,7 +7150,7 @@ TEXTURE RIBBON VORTEX: broad ribbons of the photograph spiral down into a vortex
 
 ### TextureRingFlight
 
-`Scene2D/TextureRingFlight.frag` · type=normal · mood=energetic,psychedelic · complexity=2
+`Scene2D/TextureRingFlight.frag` · type=normal · mood=energetic,psychedelic · complexity=10
 
 TEXTURE RING FLIGHT: flying through an endless procession of floating rings -- great hoops of the photograph, each tilted and turned its own way, hang in a dark space one behind another along a gently curving path, and we glide through them one by one, each ring sweeping past the edge of the view; their rims glow, the ones far ahead are small bright halos. Endless, mirrorable. Audio Reactivity (structure, not only li…
 
@@ -7159,7 +7159,7 @@ TEXTURE RING FLIGHT: flying through an endless procession of floating rings -- g
 
 ### TextureRingGears
 
-`Scene2D/TextureRingGears.frag` · type=normal · mood=energetic,calm · complexity=2
+`Scene2D/TextureRingGears.frag` · type=normal · mood=energetic,calm · complexity=4
 
 TEXTURE RING GEARS: an endless clockwork of meshing gears -- gear wheels of many sizes, cut from the photograph like enamelled brass plates, interlock across the whole view, each turning at the speed its tooth count demands (big ones slow, small ones fast, neighbours in opposite directions), with spokes, hubs and a polished rim; the mechanism never stops. Endless, mirrorable. Audio Reactivity (structure, not only lig…
 
@@ -7168,7 +7168,7 @@ TEXTURE RING GEARS: an endless clockwork of meshing gears -- gear wheels of many
 
 ### TextureRippleInterference
 
-`Scene2D/TextureRippleInterference.frag` · type=normal · mood=calm,bright · complexity=2
+`Scene2D/TextureRippleInterference.frag` · type=normal · mood=calm,bright · complexity=5
 
 TEXTURE RIPPLE INTERFERENCE: raindrops falling on a still pond over a picture -- from every drop a train of rings spreads out, the rings cross each other and form shimmering interference patterns, and through the moving surface the photograph on the bottom wobbles and bends, while the rings catch a bright sky reflection on their crests; drops keep falling at wandering places. Endless, mirrorable. Audio Reactivity (st…
 
@@ -7177,7 +7177,7 @@ TEXTURE RIPPLE INTERFERENCE: raindrops falling on a still pond over a picture --
 
 ### TextureRiverDelta
 
-`Scene2D/TextureRiverDelta.frag` · type=normal · mood=calm,bright · complexity=2
+`Scene2D/TextureRiverDelta.frag` · type=normal · mood=calm,bright · complexity=3
 
 TEXTURE RIVER DELTA: a vast river delta seen from high above -- braided channels split and rejoin across the land in branching threads, the water catching the sky in bright silver and turquoise, milky sediment plumes streaming along the channels, sandbars in pale ochre, the land between them the photograph's own colours and textures, darkened like wetland vegetation. The view drifts slowly downstream. Endless, mirror…
 
@@ -7186,7 +7186,7 @@ TEXTURE RIVER DELTA: a vast river delta seen from high above -- braided channels
 
 ### TextureSandRipples
 
-`Scene2D/TextureSandRipples.frag` · type=normal · mood=calm,warm · complexity=2
+`Scene2D/TextureSandRipples.frag` · type=normal · mood=calm,warm · complexity=5
 
 TEXTURE SAND RIPPLES: a desert seen from above in low evening sun -- wind ripples run across the sand in long wavy crests that bend around the dunes (the photograph's large shapes), every crest casting a thin shadow and catching a line of warm light; fine sand streams across the surface in wisps, and the ripples creep slowly downwind. The sand takes its tint from the photo. Endless, mirrorable. Audio Reactivity (stru…
 
@@ -7195,7 +7195,7 @@ TEXTURE SAND RIPPLES: a desert seen from above in low evening sun -- wind ripple
 
 ### TextureSatelliteClouds
 
-`Scene2D/TextureSatelliteClouds.frag` · type=normal · mood=calm,bright · complexity=2
+`Scene2D/TextureSatelliteClouds.frag` · type=normal · mood=calm,bright · complexity=1
 
 TEXTURE SATELLITE CLOUDS: a weather satellite's view drifting over the planet -- white cloud decks, cloud streets in long parallel rows, swirling cyclones with their spiral bands, and patches of clear sky where the ground below (the photograph as land and sea) shows through, with the clouds casting shadows on it; the whole scene drifts slowly and the cyclones turn. Endless, mirrorable. Audio Reactivity (structure, no…
 
@@ -7204,7 +7204,7 @@ TEXTURE SATELLITE CLOUDS: a weather satellite's view drifting over the planet --
 
 ### TextureSequinField
 
-`Scene2D/TextureSequinField.frag` · type=normal · mood=bright,psychedelic · complexity=2
+`Scene2D/TextureSequinField.frag` · type=normal · mood=bright,psychedelic · complexity=7
 
 TEXTURE SEQUIN FIELD: a wall of sequins that shows the photograph -- thousands of small round metal discs in overlapping rows like fish scales, each tinted with the colour of the photo at its place, and waves run across the wall that tip the sequins over: where a wave passes they flip from the photo's colour to their bright metallic backs and catch the light in a sweep of glints. Several waves cross at once, curving …
 
@@ -7213,7 +7213,7 @@ TEXTURE SEQUIN FIELD: a wall of sequins that shows the photograph -- thousands o
 
 ### TextureShardCloud
 
-`Scene2D/TextureShardCloud.frag` · type=normal · mood=energetic,dark · complexity=2
+`Scene2D/TextureShardCloud.frag` · type=normal · mood=energetic,dark · complexity=7
 
 TEXTURE SHARD CLOUD: a slowly tumbling cloud of glass shards -- a shattered pane of the photograph floats in the dark, hundreds of triangular fragments drifting apart and together, each tilted its own way so it shows its piece of the picture slightly shifted and flashes a bright edge when it turns toward the light; fragments at different depths drift at different speeds, the far ones smaller and dimmer. Endless, mirr…
 
@@ -7231,7 +7231,7 @@ TEXTURE SILK VEILS: layers of sheer silk drifting in a slow breeze -- translucen
 
 ### TextureSmokeChamber
 
-`Scene2D/TextureSmokeChamber.frag` · type=normal · mood=dark,energetic · complexity=2
+`Scene2D/TextureSmokeChamber.frag` · type=normal · mood=dark,energetic · complexity=5
 
 TEXTURE SMOKE CHAMBER: a dark hall filled with slowly rolling smoke, cut by broad beams of projected light -- each beam carries the photograph like a gobo, so its rays are patterned with the picture's light and shadow and coloured with its colours; the beams sweep slowly through the smoke, cross each other and mix, and the smoke only shows where light catches it, in layered billows at different depths. Endless, mirro…
 
@@ -7240,7 +7240,7 @@ TEXTURE SMOKE CHAMBER: a dark hall filled with slowly rolling smoke, cut by broa
 
 ### TextureSnowVolume
 
-`Scene2D/TextureSnowVolume.frag` · type=normal · mood=calm,dark · complexity=2
+`Scene2D/TextureSnowVolume.frag` · type=normal · mood=calm,dark · complexity=4
 
 TEXTURE SNOW VOLUME: heavy snow falling at night under a street lamp -- flakes of every size drift down through deep space toward us, near ones large, soft and out of focus, far ones tiny and sharp, all swirling on gusts; the lamp's cone of light picks them out, and behind the snow the photograph glows as blurred lights of a town. Endless, mirrorable. Audio Reactivity (structure, not only light): audioAdvance -> the …
 
@@ -7249,7 +7249,7 @@ TEXTURE SNOW VOLUME: heavy snow falling at night under a street lamp -- flakes o
 
 ### TextureSphericalTiling
 
-`Scene2D/TextureSphericalTiling.frag` · type=normal · mood=energetic,bright · complexity=2
+`Scene2D/TextureSphericalTiling.frag` · type=normal · mood=energetic,bright · complexity=5
 
 TEXTURE SPHERICAL TILING: a field of turning globes -- a lattice of spheres, each one tiled like a football or a disco ball with facets holding the photograph, rotating on its own tilted axis, lit from one side with a bright specular glint and a shadowed terminator; the spheres are packed tightly and drift slowly across the view. Endless, mirrorable. Audio Reactivity (structure, not only light): audioAdvance -> the g…
 
@@ -7258,7 +7258,7 @@ TEXTURE SPHERICAL TILING: a field of turning globes -- a lattice of spheres, eac
 
 ### TextureSpillBloom
 
-`Scene2D/TextureSpillBloom.frag` · type=normal · mood=calm,bright · complexity=2
+`Scene2D/TextureSpillBloom.frag` · type=normal · mood=calm,bright · complexity=1
 
 TEXTURE SPILL BLOOM: watercolour spilled on wet paper, blooming -- the photograph's colours flow into the wet sheet as soft cauliflower blooms ("backruns"), each bloom pushing pigment to its edge where it dries into a dark, crisp, lacy line, paler pigment left inside; blooms keep opening into each other, and granulating pigment settles into the paper's grain. Endless, mirrorable. Audio Reactivity (structure, not only…
 
@@ -7267,7 +7267,7 @@ TEXTURE SPILL BLOOM: watercolour spilled on wet paper, blooming -- the photograp
 
 ### TextureSquareShaft
 
-`Scene2D/TextureSquareShaft.frag` · type=normal · mood=energetic,dark · complexity=2
+`Scene2D/TextureSquareShaft.frag` · type=normal · mood=energetic,dark · complexity=7
 
 TEXTURE SQUARE SHAFT: flying down an endless square shaft whose four walls are lined with the photograph -- the shaft twists slowly around its axis as it goes deeper, so the corners spiral away into the distance; the corners are lit by lines of light with pulses racing along them, square frames of light rush past, and the far end glows. Each wall is shaded by its own angle to a slowly circling light. The walls contin…
 
@@ -7276,7 +7276,7 @@ TEXTURE SQUARE SHAFT: flying down an endless square shaft whose four walls are l
 
 ### TextureStainedGlassField
 
-`Scene2D/TextureStainedGlassField.frag` · type=normal · mood=bright,calm · complexity=2
+`Scene2D/TextureStainedGlassField.frag` · type=normal · mood=bright,calm · complexity=4
 
 TEXTURE STAINED GLASS FIELD: an endless wall of stained glass lit from behind -- the photograph is cut into glass pieces of irregular, slightly curved shapes, each piece a single deep jewel colour taken from the photo at that place, joined by dark lead cames; the light behind the glass moves slowly, so pieces brighten and dim in drifting waves, and the glass itself has ripples and seeds that make the light sparkle. T…
 
@@ -7285,7 +7285,7 @@ TEXTURE STAINED GLASS FIELD: an endless wall of stained glass lit from behind --
 
 ### TextureStarsFromLight
 
-`Scene2D/TextureStarsFromLight.frag` · type=normal · mood=calm,dark · complexity=2
+`Scene2D/TextureStarsFromLight.frag` · type=normal · mood=calm,dark · complexity=7
 
 TEXTURE STARS FROM LIGHT: the photograph turned into a night sky -- each bright spot of the picture becomes a star, bigger and brighter the brighter the spot, coloured like real stars from blue-white to orange by the photo's hue, with diffraction spikes on the brightest; faint ones form milky clouds where the photo is soft, and the whole firmament turns slowly around a distant pole. Endless, mirrorable. Audio Reactiv…
 
@@ -7294,7 +7294,7 @@ TEXTURE STARS FROM LIGHT: the photograph turned into a night sky -- each bright 
 
 ### TextureSuminagashiDrops
 
-`Scene2D/TextureSuminagashiDrops.frag` · type=normal · mood=calm,bright · complexity=2
+`Scene2D/TextureSuminagashiDrops.frag` · type=normal · mood=calm,bright · complexity=3
 
 TEXTURE SUMINAGASHI DROPS: the Japanese art of floating ink -- drop after drop of ink and of clear water is laid on the surface, each new drop spreading out and pushing all the older rings outward, so nested, ever-deformed rings of colour grow across the water (computed with the exact marbling transform); a gentle breath of air stirs the rings into slow swirls. The ink colours and the paper come from the photograph. …
 
@@ -7303,7 +7303,7 @@ TEXTURE SUMINAGASHI DROPS: the Japanese art of floating ink -- drop after drop o
 
 ### TextureTelescopeRings
 
-`Scene2D/TextureTelescopeRings.frag` · type=normal · mood=energetic,psychedelic · complexity=2
+`Scene2D/TextureTelescopeRings.frag` · type=normal · mood=energetic,psychedelic · complexity=4
 
 TEXTURE TELESCOPE RINGS: looking into an endless telescope of nested rings -- band after band of the photograph, each ring a separately turning barrel stepping down into the next, with knurled metal edges, engraved scale ticks and a bevelled step that catches the light; the rings slide toward us as if the telescope were being drawn out forever, each turning at its own speed and direction. Endless, mirrorable. Audio R…
 
@@ -7312,7 +7312,7 @@ TEXTURE TELESCOPE RINGS: looking into an endless telescope of nested rings -- ba
 
 ### TextureThinFilmSoap
 
-`Scene2D/TextureThinFilmSoap.frag` · type=normal · mood=psychedelic,calm · complexity=2
+`Scene2D/TextureThinFilmSoap.frag` · type=normal · mood=psychedelic,calm · complexity=1
 
 TEXTURE THIN FILM SOAP: a vast soap film seen against the dark -- its thickness paints it in interference colours: bands of magenta, gold, green and blue, thinning toward black at the top where the film drains, while Marangoni swirls stir the colours into curling eddies and plumes; the photograph shows faintly as a reflection in the film, a soft window highlight glides over it. Endless, mirrorable. Audio Reactivity (…
 
@@ -7330,7 +7330,7 @@ TEXTURE TIDE POOLS: looking down into rock pools at low tide -- the photograph i
 
 ### TextureTruchetMirror
 
-`Scene2D/TextureTruchetMirror.frag` · type=normal · mood=psychedelic,calm · complexity=2
+`Scene2D/TextureTruchetMirror.frag` · type=normal · mood=psychedelic,calm · complexity=5
 
 TEXTURE TRUCHET MIRROR: quarter-circle Truchet tiles whose arcs are mirrors -- each tile holds two arcs, and the bands between the arcs show the photograph reflected back and forth across them, so the picture folds into endless meandering ribbons of mirrored image; tiles turn slowly (cross-faded, never jumping), re-routing the ribbons, and the arc mirrors gleam. Endless, mirrorable. Audio Reactivity (structure, not o…
 
@@ -7339,7 +7339,7 @@ TEXTURE TRUCHET MIRROR: quarter-circle Truchet tiles whose arcs are mirrors -- e
 
 ### TextureTubeBundle
 
-`Scene2D/TextureTubeBundle.frag` · type=normal · mood=energetic,psychedelic · complexity=2
+`Scene2D/TextureTubeBundle.frag` · type=normal · mood=energetic,psychedelic · complexity=7
 
 TEXTURE TUBE BUNDLE: looking straight down a bundle of tubes -- a honeycomb of round tubes, each one its own little tunnel lined with the photograph, all flowing toward the viewer at their own pace, each ending in its own coloured glow deep inside; the metal rims between them catch the light, and the whole bundle turns slowly. Tunnels of tunnels, endless beyond the frame; mirrorable. Audio Reactivity (structure, not …
 
@@ -7348,7 +7348,7 @@ TEXTURE TUBE BUNDLE: looking straight down a bundle of tubes -- a honeycomb of r
 
 ### TextureTumblingBlocks
 
-`Scene2D/TextureTumblingBlocks.frag` · type=normal · mood=psychedelic,calm · complexity=2
+`Scene2D/TextureTumblingBlocks.frag` · type=normal · mood=psychedelic,calm · complexity=5
 
 TEXTURE TUMBLING BLOCKS: the classic tumbling-blocks illusion -- a lattice of rhombi that reads as stacked cubes, each face a piece of the photograph; as the light slowly circles, the faces' shading shifts, and the cubes flip in the mind between standing up and hanging down, rolling in waves across the pattern; bevelled edges catch the light. Endless, mirrorable. Audio Reactivity (structure, not only light): audioAdv…
 
@@ -7366,7 +7366,7 @@ TEXTURE UNDERWATER HAZE: drifting through open water beneath the surface -- shaf
 
 ### TextureUVBlacklight
 
-`Scene2D/TextureUVBlacklight.frag` · type=normal · mood=psychedelic,dark · complexity=2
+`Scene2D/TextureUVBlacklight.frag` · type=normal · mood=psychedelic,dark · complexity=6
 
 TEXTURE UV BLACKLIGHT: the photograph under a black light -- the picture itself sinks into a deep violet dark, while fluorescent paint glows on it: contour lines of the photo's brightness, drawn in neon pink, acid green, orange and cyan, creep slowly across the picture as their levels rise and fall (like a psychedelic black-light poster that keeps redrawing itself), the brightest parts of the photo fluoresce blue-whi…
 
@@ -7375,7 +7375,7 @@ TEXTURE UV BLACKLIGHT: the photograph under a black light -- the picture itself 
 
 ### TextureVortexCloud
 
-`Scene2D/TextureVortexCloud.frag` · type=normal · mood=energetic,calm · complexity=2
+`Scene2D/TextureVortexCloud.frag` · type=normal · mood=energetic,calm · complexity=3
 
 TEXTURE VORTEX CLOUD: looking up into the heart of a rotating storm -- a vast spiral of clouds winds around a clear eye, the cloud bands stretched by the rotation into long streaks that sweep inward faster near the centre, their undersides tinted by the photograph and lit from the eye's pale glow; lightning flickers within the bands. Endless beyond the frame; mirrorable. Audio Reactivity (structure, not only light): …
 
@@ -7384,7 +7384,7 @@ TEXTURE VORTEX CLOUD: looking up into the heart of a rotating storm -- a vast sp
 
 ### TextureWaterSurfaceLookUp
 
-`Scene2D/TextureWaterSurfaceLookUp.frag` · type=normal · mood=calm,dark · complexity=2
+`Scene2D/TextureWaterSurfaceLookUp.frag` · type=normal · mood=calm,dark · complexity=5
 
 TEXTURE WATER SURFACE LOOK UP: lying on the bottom of a pool and looking straight up -- the whole sky (the photograph) is squeezed into a bright circle overhead, Snell's window, its rim fringed with rainbow colours; the waves on the surface ripple and bend the picture inside it, and outside the window the surface turns into a dark mirror reflecting the depths; dancing light nets and shafts hang in the water. The circ…
 
@@ -7393,7 +7393,7 @@ TEXTURE WATER SURFACE LOOK UP: lying on the bottom of a pool and looking straigh
 
 ### TextureWeaveSymmetry
 
-`Scene2D/TextureWeaveSymmetry.frag` · type=normal · mood=calm,psychedelic · complexity=2
+`Scene2D/TextureWeaveSymmetry.frag` · type=normal · mood=calm,psychedelic · complexity=5
 
 TEXTURE WEAVE SYMMETRY: a kaleidoscope woven from ribbons -- the photograph is folded into a square mirror symmetry (p4m), and the folded image is then cut into ribbons that weave over and under each other in a basket weave, each ribbon shaded round and dipping at the crossings; the weave slowly slides along its ribbons and the fold window drifts through the picture. Endless, mirrorable. Audio Reactivity (structure, …
 
@@ -7402,7 +7402,7 @@ TEXTURE WEAVE SYMMETRY: a kaleidoscope woven from ribbons -- the photograph is f
 
 ### TheBigBounce
 
-`Scene2D/TheBigBounce.frag` · type=normal · mood=bright,aggressive,space · complexity=4
+`Scene2D/TheBigBounce.frag` · type=normal · mood=bright,aggressive,space · complexity=10
 
 THE BIG BOUNCE: The end and the beginning. The entire universe collapses rapidly into an infinitely dense, blinding singularity, only to violently explode outward again in a new Big Bang, driven by the audio kicks. audioAdvance -> chaotic movement of the primordial plasma audioKick -> triggers the catastrophic collapse and subsequent explosion audioSwell -> blinding brightness of the singularity audioChromaHue-> pale…
 
@@ -7411,7 +7411,7 @@ THE BIG BOUNCE: The end and the beginning. The entire universe collapses rapidly
 
 ### TheCore
 
-`Scene2D/TheCore.frag` · type=normal · mood=aggressive,psychedelic · complexity=2
+`Scene2D/TheCore.frag` · type=normal · mood=aggressive,psychedelic · complexity=9
 
 Adapted from "The Core" by \@kishimisu (2023) — https://www.shadertoy.com/view/cdy3Dd Original licensed CC BY-NC-SA 4.0 (attribution kept per the licence). A glowing warm "core" seen down a twisting, domain-repeating tunnel of tubes. Adapted to our engine: image-forward (the picture colours the glow + drifts as a faint nebula), audio-reactive & jump-free (tunnel scroll via audioAdvance, twist via audioPhase; beats br…
 
@@ -7420,7 +7420,7 @@ Adapted from "The Core" by \@kishimisu (2023) — https://www.shadertoy.com/view
 
 ### ThermalIronbowStreet
 
-`Scene2D/ThermalIronbowStreet.frag` · type=normal · mood=dark,psychedelic,dreamy · complexity=3
+`Scene2D/ThermalIronbowStreet.frag` · type=normal · mood=dark,psychedelic,dreamy · complexity=2
 
 THERMAL IRONBOW STREET: a street seen through a thermal camera. The photo becomes a temperature field in the ironbow palette -- black through purple and orange to white -- warm bodies walk across it on the scene clock as soft blobs with a bright core, exhaust breath drifts, and the ambient heat rises with the swell. The kick is a hot doorway opening (a local flare, not a frame flash). The camera's own furniture (spot…
 
@@ -7438,7 +7438,7 @@ THERMOCHROMIC SHEET: a sheet of heat-sensitive liquid-crystal foil being warmed 
 
 ### ThinSectionPolarized
 
-`Scene2D/ThinSectionPolarized.frag` · type=normal · mood=psychedelic,bright · complexity=2
+`Scene2D/ThinSectionPolarized.frag` · type=normal · mood=psychedelic,bright · complexity=7
 
 THIN SECTION POLARIZED: a rock thin section under the polarising microscope, crossed polars -- a mosaic of mineral grains, each glowing in its own vivid interference colour (the Michel-Levy chart: blues, magentas, golds, greens), with twinned grains striped, and as the stage turns every grain passes through its colours and blacks out at extinction, so the whole mosaic flickers slowly through the spectrum. The grain p…
 
@@ -7456,7 +7456,7 @@ THOMAS ATTRACTOR COSMIC LABYRINTH: Cyclically symmetric chaotic Thomas attractor
 
 ### ThreeBodyFigureEight
 
-`Scene2D/ThreeBodyFigureEight.frag` · type=normal · mood=space,dreamy,bright · complexity=2
+`Scene2D/ThreeBodyFigureEight.frag` · type=normal · mood=space,dreamy,bright · complexity=5
 
 THREE BODY FIGURE EIGHT: the figure-eight choreography of the three-body problem -- three equal suns chasing one another around one lemniscate, one third of a period apart. The suns carry the photo, leave fading trails along the curve, and glow with the bass; the one passing through the centre crossing lights on the kick. The orbit runs on the scene clock; the camera never moves. Audio Reactivity: sceneAdvance -> the…
 
@@ -7465,7 +7465,7 @@ THREE BODY FIGURE EIGHT: the figure-eight choreography of the three-body problem
 
 ### ThunderstormFromOrbit
 
-`Scene2D/ThunderstormFromOrbit.frag` · type=normal · mood=dark,dreamy,space · complexity=3
+`Scene2D/ThunderstormFromOrbit.frag` · type=normal · mood=dark,dreamy,space · complexity=7
 
 THUNDERSTORM FROM ORBIT: the night side of the Earth seen from low orbit, a line of thunderstorms below. Their towering tops are lit only by the moon and by the lightning inside them -- whole cloud cells glow from within, blue-white, and fade -- while between the storms the city lights of the ground show through as a golden net of streets. The limb curves across the top with its thin green airglow and the stars above…
 
@@ -7483,7 +7483,7 @@ TIDAL LOCK TERMINATOR: a flight along the day/night line of a tidally locked pla
 
 ### TidePoolRefraction
 
-`Scene2D/TidePoolRefraction.frag` · type=normal · mood=bright,calm,dreamy · complexity=3
+`Scene2D/TidePoolRefraction.frag` · type=normal · mood=bright,calm,dreamy · complexity=6
 
 TIDE POOL REFRACTION: a rock pool from directly above. The floor of the pool -- anemones, urchins, weed, the photo as its rock -- is seen through a rippling surface that refracts it, so everything below sways while the rim stays still. The tide breathes with the swell (the water level rises and the pool widens), sun caustics move across the floor on the scene clock, and the treble is the glitter on the surface. Camer…
 
@@ -7492,7 +7492,7 @@ TIDE POOL REFRACTION: a rock pool from directly above. The floor of the pool -- 
 
 ### TieDyeFold
 
-`Scene2D/TieDyeFold.frag` · type=normal · mood=psychedelic,bright,calm · complexity=2
+`Scene2D/TieDyeFold.frag` · type=normal · mood=psychedelic,bright,calm · complexity=3
 
 TIE-DYE FOLD: the photo folded radially like a shirt tied for dyeing -- the plane folded into wedges, the dye soaking in along the folds in rings and spirals. The dye diffuses on the swell (the wet-in-wet bleeding grows as the music swells and stays), the fold turns steadily on the scene clock, and the kick brightens the dye fronts. Camera still. Audio Reactivity: sceneAdvance -> fold rotation and dye spiral (continu…
 
@@ -7501,7 +7501,7 @@ TIE-DYE FOLD: the photo folded radially like a shirt tied for dyeing -- the plan
 
 ### TimeCrystalLattice
 
-`Scene2D/TimeCrystalLattice.frag` · type=normal · mood=dark,psychedelic,aggressive · complexity=2
+`Scene2D/TimeCrystalLattice.frag` · type=normal · mood=dark,psychedelic,aggressive · complexity=8
 
 TIME CRYSTAL LATTICE: a discrete time crystal -- a lattice of spins driven by a periodic kick that responds at half the drive frequency, the hallmark of the phase. The spins are round discs of the photo; a phase gradient across the lattice makes the flips travel as a wave; the flips themselves are light (colour A to colour B, crossfaded, never a hard switch), the drive pulses are a flash on the kick, and the swell is…
 
@@ -7510,7 +7510,7 @@ TIME CRYSTAL LATTICE: a discrete time crystal -- a lattice of spins driven by a 
 
 ### TimeDilation
 
-`Scene2D/TimeDilation.frag` · type=normal · mood=bright,aggressive,space · complexity=4
+`Scene2D/TimeDilation.frag` · type=normal · mood=bright,aggressive,space · complexity=8
 
 TIME DILATION: Falling into a supermassive black hole, experiencing extreme time dilation. The universe outside speeds up to infinity, turning into blurred streaks of light, while the event horizon below stretches forever. Audio kicks violently distort the space-time fabric. audioAdvance -> descent speed into the gravity well audioKick -> violent space-time tearing/glitches audioSwell -> blinding brightness of the in…
 
@@ -7519,7 +7519,7 @@ TIME DILATION: Falling into a supermassive black hole, experiencing extreme time
 
 ### TimeReflectionPond
 
-`Scene2D/TimeReflectionPond.frag` · type=normal · mood=calm,dreamy,bright · complexity=2
+`Scene2D/TimeReflectionPond.frag` · type=normal · mood=calm,dreamy,bright · complexity=4
 
 TIME REFLECTION POND: ripples on a pond, seen from above through the water to the photo on the pond floor -- and a time reflection: when the medium changes abruptly in time (the drop), every wave reverses, its outgoing rings running back to their sources. The reversal is a smooth change of the phase velocity sign over the drop envelope (the waves slow, stop, run back), so it is continuous; the drop is the one cut the…
 
@@ -7537,7 +7537,7 @@ TITAN METHANE RAIN: the shore of a hydrocarbon lake on Titan under the orange ha
 
 ### Tonnetz
 
-`Scene2D/Tonnetz.frag` · type=normal · mood=dreamy · complexity=2
+`Scene2D/Tonnetz.frag` · type=normal · mood=dreamy · complexity=9
 
 _(Vorschau eingeschränkt: Sim-Textur/Mehrpass — Bilder unterschätzen die echte App)_
 
@@ -7548,7 +7548,7 @@ The music-theory Tonnetz: a triangular lattice of pitch classes (perfect-fifth a
 
 ### TopologicalInsulatorDiracSurface
 
-`Scene2D/TopologicalInsulatorDiracSurface.frag` · type=normal · mood=bright,calm,dreamy · complexity=3
+`Scene2D/TopologicalInsulatorDiracSurface.frag` · type=normal · mood=bright,calm,dreamy · complexity=7
 
 TOPOLOGICAL INSULATOR DIRAC SURFACE: 3D topological insulator crystal with insulating bulk and protected conducting 2D Dirac surface states. Spin-momentum locking (k x sigma), suppressed backscattering, helical current loops, and continuous photo texture reflections. audioAdvance -> rotates spin-momentum locked Dirac surface currents audioKick -> flashes protected topological edge state transitions audioBass -> pulse…
 
@@ -7557,7 +7557,7 @@ TOPOLOGICAL INSULATOR DIRAC SURFACE: 3D topological insulator crystal with insul
 
 ### TransitLightCurveStars
 
-`Scene2D/TransitLightCurveStars.frag` · type=normal · mood=space,calm,dark · complexity=2
+`Scene2D/TransitLightCurveStars.frag` · type=normal · mood=space,calm,dark · complexity=6
 
 TRANSIT LIGHT CURVE STARS: the exoplanet transit method as a sky. A field of stars; each hosts a planet on its own period, and when the planet crosses the star the star dims by the transit depth (a light event: nothing moves but brightness). Below the sky, three light curves scroll steadily -- the brightness histories of three host stars picked by the tonal centre -- showing the characteristic flat-bottomed dips. The…
 
@@ -7566,7 +7566,7 @@ TRANSIT LIGHT CURVE STARS: the exoplanet transit method as a sky. A field of sta
 
 ### TricornFractalAntimatterSea
 
-`Scene2D/TricornFractalAntimatterSea.frag` · type=normal · mood=psychedelic,bright · complexity=2
+`Scene2D/TricornFractalAntimatterSea.frag` · type=normal · mood=psychedelic,bright · complexity=3
 
 TRICORN FRACTAL ANTIMATTER SEA: Anti-holomorphic Tricorn (Mandelbar) fractal z -> conj(z)^2 + c. Three-cornered fractal dragon scales, metallic antimatter fins, and high-frequency glowing crest ripples over an infinite complex sea. Audio Reactivity: audioAdvance -> drives continuous deep plunge into Tricorn dragon fin cusps audioKick -> flashes antimatter core singularities & triggers crest bursts audioCentroid-> sha…
 
@@ -7575,7 +7575,7 @@ TRICORN FRACTAL ANTIMATTER SEA: Anti-holomorphic Tricorn (Mandelbar) fractal z -
 
 ### TruchetFlowWeave
 
-`Scene2D/TruchetFlowWeave.frag` · type=normal · mood=psychedelic,bright · complexity=2
+`Scene2D/TruchetFlowWeave.frag` · type=normal · mood=psychedelic,bright · complexity=8
 
 TRUCHET FLOW WEAVE: a woven fabric of glowing bands -- quarter-circle Truchet tiles join into endless meandering ribbons that wind over and under one another; each ribbon carries a stripe of the photograph along its length, and pulses of light run along the ribbons so the whole weave seems to flow. Every so often a tile turns over and the ribbons re-route (a smooth rotation, never a cut). Endless and mirrorable. Audi…
 
@@ -7584,7 +7584,7 @@ TRUCHET FLOW WEAVE: a woven fabric of glowing bands -- quarter-circle Truchet ti
 
 ### TruchetMaze
 
-`Scene2D/TruchetMaze.frag` · type=normal · mood=psychedelic,energetic,playful · complexity=2
+`Scene2D/TruchetMaze.frag` · type=normal · mood=psychedelic,energetic,playful · complexity=8
 
 TRUCHET MAZE: an endless Truchet labyrinth -- every cell holds two quarter-circle bands that join the neighbours' bands into long winding loops, never ending, never branching; in the bands the kaleidoscoped photograph flows like liquid through tubes, lit as rounded pipes, while the gaps between them show the photo dim and far away. Two layers of different size lie over each other, the whole field drifting and slowly …
 
@@ -7593,7 +7593,7 @@ TRUCHET MAZE: an endless Truchet labyrinth -- every cell holds two quarter-circl
 
 ### TulipFieldsAerial
 
-`Scene2D/TulipFieldsAerial.frag` · type=normal · mood=bright,calm · complexity=1
+`Scene2D/TulipFieldsAerial.frag` · type=normal · mood=bright,calm · complexity=2
 
 TULIP FIELDS AERIAL: the Dutch bulb fields in April seen from a drone high above -- parcels of land laid out like a flag, each striped with rows of tulips in pure colours, red, yellow, pink, orange, white, purple, the stripes of neighbouring parcels running at their own angle, narrow canals between them shining with the sky, a farm with its shadow. Soft cloud shadows drift across the land. The view glides slowly and …
 
@@ -7602,7 +7602,7 @@ TULIP FIELDS AERIAL: the Dutch bulb fields in April seen from a drone high above
 
 ### Tunnel
 
-`Scene2D/Tunnel.frag` · type=KaleidoscopeBase · mood=psychedelic,bright · complexity=1
+`Scene2D/Tunnel.frag` · type=KaleidoscopeBase · mood=psychedelic,bright · complexity=9
 
 The classic forward-scrolling mirrored-segment kaleidoscope tunnel: polar coordinates from the frame centre are folded into `sides` mirrored wedges, then mapped to a UV that scrolls inward over time. Several audio uniforms (audioLevel, audioCentroid, audioFlux, audioValence, audioFlip) are still declared here but are no longer read in main() -- the mood-tint/brightness logic they once drove was moved to the global pr…
 
@@ -7611,7 +7611,7 @@ The classic forward-scrolling mirrored-segment kaleidoscope tunnel: polar coordi
 
 ### TunnelAcceleration
 
-`Scene2D/TunnelAcceleration.frag` · type=KaleidoscopeBase · mood=aggressive,psychedelic · complexity=1
+`Scene2D/TunnelAcceleration.frag` · type=KaleidoscopeBase · mood=aggressive,psychedelic · complexity=7
 
 A variant of the mirrored-segment kaleidoscope tunnel with its own, independently tunable forward scroll speed (`speedTunnelAccel`), used to make the tunnel appear to accelerate relative to the plain Tunnel.frag pass. Audio Reactivity: - audioPhase -> adds to the wedge rotation on top of the base time*speed spin (integrated, jump-free) - audioAdvance -> adds to the forward scroll (integrated, jump-free) - audioKick -…
 
@@ -7620,7 +7620,7 @@ A variant of the mirrored-segment kaleidoscope tunnel with its own, independentl
 
 ### TunnelPlain
 
-`Scene2D/TunnelPlain.frag` · type=normal · mood=calm,bright · complexity=10
+`Scene2D/TunnelPlain.frag` · type=normal · mood=calm,bright · complexity=9
 
 A stripped-down mirrored-segment kaleidoscope tunnel: no base rotation/tilt, just the polar fold into `sides` wedges mapped onto a forward-scrolling UV. Includes an unused `clampQuadratic` helper (its call site is commented out) left over from an aspect-correction experiment. audioFlip is declared but not read in main(). Audio Reactivity: - audioAdvance -> adds to the forward scroll (integrated, jump-free) - audioBea…
 
@@ -7629,7 +7629,7 @@ A stripped-down mirrored-segment kaleidoscope tunnel: no base rotation/tilt, jus
 
 ### TunnelReverse
 
-`Scene2D/TunnelReverse.frag` · type=KaleidoscopeBase · mood=psychedelic,bright · complexity=1
+`Scene2D/TunnelReverse.frag` · type=KaleidoscopeBase · mood=psychedelic,bright · complexity=6
 
 Two mirrored-segment kaleidoscope tunnels blended 50/50: a forward layer (same construction as Tunnel.frag) and a second layer whose rotation and radial mapping run in the opposite sense, so the two tunnels shear against each other rather than simply co-scrolling. Audio Reactivity: - audioPhase -> adds to the wedge rotation of BOTH layers (integrated, jump-free) - audioAdvance -> adds to the forward layer's scroll bu…
 
@@ -7638,7 +7638,7 @@ Two mirrored-segment kaleidoscope tunnels blended 50/50: a forward layer (same c
 
 ### TurnerVortex
 
-`Scene2D/TurnerVortex.frag` · type=normal · mood=dreamy,calm · complexity=2
+`Scene2D/TurnerVortex.frag` · type=normal · mood=dreamy,calm · complexity=1
 
 TURNER VORTEX: a painted maelstrom of light and weather in the manner of J. M. W. Turner's late storms -- a great swirling vortex of luminous haze, gold and white at the heart where the sun burns through, wheeling out into bands of ochre, rust, grey-blue and smoke, the paint laid on in broad soft sweeps and scumbles that follow the swirl, with dark flecks of spray whirled around its edge. The whole vortex turns slowl…
 
@@ -7647,7 +7647,7 @@ TURNER VORTEX: a painted maelstrom of light and weather in the manner of J. M. W
 
 ### TwinHelixTunnel
 
-`Scene2D/TwinHelixTunnel.frag` · type=normal · mood=psychedelic,bright · complexity=2
+`Scene2D/TwinHelixTunnel.frag` · type=normal · mood=psychedelic,bright · complexity=9
 
 TWIN HELIX TUNNEL: flying down a tunnel wound from two bands of the photograph -- two broad ribbons spiral along the wall in opposite senses, crossing over and under each other, each carrying the photo along its length; in the diamond-shaped gaps between them glows light from behind the wall, and bright seams run along the ribbon edges. An endless polar field like Tunnel, mirrorable. Audio Reactivity (structure, not …
 
@@ -7656,7 +7656,7 @@ TWIN HELIX TUNNEL: flying down a tunnel wound from two bands of the photograph -
 
 ### TwomblyScribble
 
-`Scene2D/TwomblyScribble.frag` · type=normal · mood=calm,bright · complexity=2
+`Scene2D/TwomblyScribble.frag` · type=normal · mood=calm,bright · complexity=3
 
 TWOMBLY SCRIBBLE: loops and scrawls in the manner of Cy Twombly's blackboard paintings -- continuous looping white lines written across a slate-grey ground, lines of chalk-like texture that loop, overlap and drift, fading as they age, new rows of loops being written; the ground holds the photograph as a smudged, erased memory. Endless, mirrorable. Audio Reactivity (structure, not only light): audioAdvance -> the writ…
 
@@ -7665,7 +7665,7 @@ TWOMBLY SCRIBBLE: loops and scrawls in the manner of Cy Twombly's blackboard pai
 
 ### UkiyoeWaveWoodblock
 
-`Scene2D/UkiyoeWaveWoodblock.frag` · type=normal · mood=calm,bright,dreamy · complexity=2
+`Scene2D/UkiyoeWaveWoodblock.frag` · type=normal · mood=calm,bright,dreamy · complexity=1
 
 UKIYO-E WAVE WOODBLOCK: a great wave in the manner of the woodblock print -- flat colour fields in Prussian blue and cream, the black key line, the foam claws as rows of round dots, the paper grain. The wave rises and curls over the scene arc (its crest reaching further with the swell, slowly), the far mountain sits under it; the photo is the print paper and the sky's colour field. The kick brightens the claws, the t…
 
@@ -7674,7 +7674,7 @@ UKIYO-E WAVE WOODBLOCK: a great wave in the manner of the woodblock print -- fla
 
 ### UlamPrimeSpiral
 
-`Scene2D/UlamPrimeSpiral.frag` · type=normal · mood=dark,psychedelic,calm · complexity=3
+`Scene2D/UlamPrimeSpiral.frag` · type=normal · mood=dark,psychedelic,calm · complexity=6
 
 ULAM PRIME SPIRAL: the integers wound into a square spiral, the primes lit -- and the diagonals they mysteriously favour. The spiral zooms out steadily on the scene clock (log-periodic, so it never wraps), the primes are round dots coloured by their residue class mod 12 (a chroma class each), the diagonals glow with the bass, the kick lights the newest ring, the photo is the paper. Camera still. Audio Reactivity: sce…
 
@@ -7692,7 +7692,7 @@ UNDER ICE LOOKING UP: beneath the ice of a frozen lake, looking up at its unders
 
 ### UVMineralsGlow
 
-`Scene2D/UVMineralsGlow.frag` · type=normal · mood=dark,psychedelic · complexity=2
+`Scene2D/UVMineralsGlow.frag` · type=normal · mood=dark,psychedelic · complexity=3
 
 UV MINERALS GLOW: a collection of fluorescent minerals under a shortwave ultraviolet lamp in a dark room -- rough rock specimens on a black shelf, and in them the minerals blazing in impossible colours: willemite in electric green, calcite in fiery red, fluorite in deep violet-blue, bands and veins and crystal clusters glowing out of the dull grey host rock. The lamp's violet light washes over everything; the glow of…
 
@@ -7701,7 +7701,7 @@ UV MINERALS GLOW: a collection of fluorescent minerals under a shortwave ultravi
 
 ### VacuumDecayBubble
 
-`Scene2D/VacuumDecayBubble.frag` · type=normal · mood=space,psychedelic,dark · complexity=2
+`Scene2D/VacuumDecayBubble.frag` · type=normal · mood=space,psychedelic,dark · complexity=6
 
 VACUUM DECAY BUBBLE: a bubble of true vacuum drifts through space and rewrites the physics inside it. Outside, a starfield and the photo as a nebula; inside the wall the same sky with the constants changed -- colours inverted toward the palette, space refracted, stars split into spectra, the nebula's structure at another scale. The wall itself is a thin refracting shell with chromatic dispersion. The bubble's radius …
 
@@ -7710,7 +7710,7 @@ VACUUM DECAY BUBBLE: a bubble of true vacuum drifts through space and rewrites t
 
 ### VaultShaftUp
 
-`Scene2D/VaultShaftUp.frag` · type=normal · mood=calm,bright · complexity=2
+`Scene2D/VaultShaftUp.frag` · type=normal · mood=calm,bright · complexity=8
 
 VAULT SHAFT UP: lying on the floor of an endless tower and looking straight up -- storey after storey of arcades and galleries recede into the height around the square shaft, each level ringed by arches whose openings show the photograph like stained glass lit from outside, the stone ribs converging toward the bright sky at the top; we rise slowly through the levels and the tower turns. Endless, mirrorable. Audio Rea…
 
@@ -7719,7 +7719,7 @@ VAULT SHAFT UP: lying on the floor of an endless tower and looking straight up -
 
 ### VillarceauCirclesHyperFlow
 
-`Scene2D/VillarceauCirclesHyperFlow.frag` · type=normal · mood=psychedelic,dark · complexity=2
+`Scene2D/VillarceauCirclesHyperFlow.frag` · type=normal · mood=psychedelic,dark · complexity=8
 
 VILLARCEAU CIRCLES HYPER FLOW: Bitangential oblique planar slices of a torus producing pairs of perfectly circular Villarceau circles. Intertwined counter-swirling luminous rings, high-contrast chromatic trails, and phase-locked geometric flow. Audio Reactivity: audioAdvance -> drives continuous counter-rotation of Villarceau circle pairs audioKick -> flashes circle intersection nodes & radial shockwaves audioCentroi…
 
@@ -7728,7 +7728,7 @@ VILLARCEAU CIRCLES HYPER FLOW: Bitangential oblique planar slices of a torus pro
 
 ### VinylGrooveMicroscope
 
-`Scene2D/VinylGrooveMicroscope.frag` · type=normal · mood=dark,calm,dreamy · complexity=2
+`Scene2D/VinylGrooveMicroscope.frag` · type=normal · mood=dark,calm,dreamy · complexity=4
 
 VINYL GROOVE MICROSCOPE: the record under a microscope -- the groove walls carved by the waveform (audioWave shapes the wall), the stylus riding in the groove, the groove scrolling past on the scene clock, dust as round motes, the vinyl's black sheen carrying the photo as a rainbow of diffraction. The kick is a crackle flash, the treble the wall glints, the bass widens the modulation (slow). Camera fixed over the sty…
 
@@ -7737,7 +7737,7 @@ VINYL GROOVE MICROSCOPE: the record under a microscope -- the groove walls carve
 
 ### VirgaCurtains
 
-`Scene2D/VirgaCurtains.frag` · type=normal · mood=calm,dreamy · complexity=2
+`Scene2D/VirgaCurtains.frag` · type=normal · mood=calm,dreamy · complexity=1
 
 VIRGA CURTAINS: late afternoon over a high desert plain -- a deck of dark storm cloud across the sky, and hanging from its base curtains of rain that never reach the ground: long soft streaks swept back by the wind, fading into nothing halfway down as the drops evaporate in the dry air. The sun stands behind the clouds, so the curtains nearest it glow gold and silver in the backlight while those further off are grey …
 
@@ -7746,7 +7746,7 @@ VIRGA CURTAINS: late afternoon over a high desert plain -- a deck of dark storm 
 
 ### VoidLeviathan
 
-`Scene2D/VoidLeviathan.frag` · type=normal · mood=dark,dreamy,space · complexity=4
+`Scene2D/VoidLeviathan.frag` · type=normal · mood=dark,dreamy,space · complexity=9
 
 VOID LEVIATHAN: Encounter with a colossal, space-dwelling entity in the deep abyss. The creature's leathery skin is covered in bioluminescent patterns that pulse to the beat, while massive tentacles drift past. audioAdvance -> flight speed alongside the leviathan audioKick -> bright bioluminescent flashes on the creature's skin audioSwell -> ambient visibility (starlight revealing the sheer scale) audioChromaHue-> pa…
 
@@ -7755,7 +7755,7 @@ VOID LEVIATHAN: Encounter with a colossal, space-dwelling entity in the deep aby
 
 ### VolcanicLightningAshColumn
 
-`Scene2D/VolcanicLightningAshColumn.frag` · type=normal · mood=aggressive,bright · complexity=4
+`Scene2D/VolcanicLightningAshColumn.frag` · type=normal · mood=aggressive,bright · complexity=9
 
 VOLCANIC LIGHTNING ASH COLUMN: Plinian volcanic eruption column. Boiling turbulent tephra ash vortices rise violently, triboelectrically charging to gigavolt potentials and discharging in thousands of branching volcanic lightning bolts, incandescent lava bombs, and glow. audioAdvance -> churns convective ash plume turbulence & upward eruption velocity audioKick -> detonates explosive volcanic lightning flash discharg…
 
@@ -7764,7 +7764,7 @@ VOLCANIC LIGHTNING ASH COLUMN: Plinian volcanic eruption column. Boiling turbule
 
 ### VolcanicLightningPlume
 
-`Scene2D/VolcanicLightningPlume.frag` · type=normal · mood=aggressive,dark · complexity=3
+`Scene2D/VolcanicLightningPlume.frag` · type=normal · mood=aggressive,dark · complexity=2
 
 VOLCANIC LIGHTNING PLUME: Volumetric explosive volcanic ash column rising into the night sky with glowing basalt magma fountains, turbulent curl-noise smoke billowing, and branched electrostatic volcanic lightning discharges. audioKick -> triggers explosive volcanic eruption burst & branched lightning audioSubBass -> rumbles seismic ground tremors and lava fountain height audioHigh -> sparks electrostatic lightning b…
 
@@ -7773,7 +7773,7 @@ VOLCANIC LIGHTNING PLUME: Volumetric explosive volcanic ash column rising into t
 
 ### VolumetricSupernova
 
-`Scene2D/VolumetricSupernova.frag` · type=normal · mood=aggressive,dark · complexity=4
+`Scene2D/VolumetricSupernova.frag` · type=normal · mood=aggressive,dark · complexity=6
 
 VOLUMETRIC SUPERNOVA: Full-screen raymarched volumetric plasma field & shockwave explosion. 100% viewport coverage with 3D Curl Noise, light absorption, and audio-driven corona flares. audioSubBass -> expands radial explosion shockwave outwards to screen corners audioKick -> ignites core luminosity and chromatic flare burst audioHigh -> sparks high-frequency plasma filaments audioSwell -> thickens volumetric fog dens…
 
@@ -7782,7 +7782,7 @@ VOLUMETRIC SUPERNOVA: Full-screen raymarched volumetric plasma field & shockwave
 
 ### VoronoiMirrorShatter
 
-`Scene2D/VoronoiMirrorShatter.frag` · type=normal · mood=psychedelic,aggressive,bright · complexity=2
+`Scene2D/VoronoiMirrorShatter.frag` · type=normal · mood=psychedelic,aggressive,bright · complexity=9
 
 VORONOI MIRROR SHATTER: a mirror that breaks and mends over the scene's arc. The picture is cut into Voronoi shards; each shard is a small kaleidoscope of the photo. Along the arc (sceneProgress, which the drop regie can bend onto the drop) the shards drift apart, tilt and let the dark through, then close again -- a slow breakage, never a cut, so the drop lands on the moment the mirror is most open. Shard edges catch…
 
@@ -7791,7 +7791,7 @@ VORONOI MIRROR SHATTER: a mirror that breaks and mends over the scene's arc. The
 
 ### VoronoiPrismShatterKaleido
 
-`Scene2D/VoronoiPrismShatterKaleido.frag` · type=normal · mood=psychedelic,bright · complexity=2
+`Scene2D/VoronoiPrismShatterKaleido.frag` · type=normal · mood=psychedelic,bright · complexity=5
 
 VORONOI PRISM SHATTER KALEIDO: Dynamic Voronoi crystal cell shatter matrix with tilting diamond facets, chromatic refraction dispersion, 8-fold kaleidoscopic symmetry, and explosive fragment displacement shockwaves. Audio Reactivity: audioAdvance -> drives continuous Voronoi crystal cell motion & facet rotation audioKick -> explodes crystal cell shockwaves & flashes diamond edge facets audioCentroid-> modulates Voron…
 
@@ -7800,7 +7800,7 @@ VORONOI PRISM SHATTER KALEIDO: Dynamic Voronoi crystal cell shatter matrix with 
 
 ### VoronoiPulse
 
-`Scene2D/VoronoiPulse.frag` · type=normal · mood=aggressive,psychedelic · complexity=1
+`Scene2D/VoronoiPulse.frag` · type=normal · mood=aggressive,psychedelic · complexity=6
 
 The source image SHATTERED into a kaleidoscopic stained-glass mosaic. The picture is first folded into n-fold mirror symmetry (like the kaleidoscope), then broken into drifting Voronoi shards; each shard acts as a little glass LENS that bulges the image, and the seams between shards glow and flare on the beat like backlit leading. So the *image* is the star (not a faint tint), and it carries the same radiating symmet…
 
@@ -7809,7 +7809,7 @@ The source image SHATTERED into a kaleidoscopic stained-glass mosaic. The pictur
 
 ### VoronoiShatter
 
-`Scene2D/VoronoiShatter.frag` · type=normal · mood=aggressive,psychedelic · complexity=2
+`Scene2D/VoronoiShatter.frag` · type=normal · mood=aggressive,psychedelic · complexity=8
 
 The photograph fracturing along a Voronoi diagram: each cell is a rigid shard that samples the photo through its own shifted, rotated transform so the seams stop lining up once the shards move. A "blast" amount (how far shards fly outward from frame centre and spin about their own centre) is driven mainly by audioDrop (a full blow-apart) and audioBuildUp (loosening in advance), with smaller contributions from audioKi…
 
@@ -7818,7 +7818,7 @@ The photograph fracturing along a Voronoi diagram: each cell is a rigid shard th
 
 ### Vortex
 
-`Scene2D/Vortex.frag` · type=normal · mood=aggressive,bright,psychedelic · complexity=2
+`Scene2D/Vortex.frag` · type=normal · mood=aggressive,bright,psychedelic · complexity=9
 
 Adapted from "Vortex" by \@kishimisu (2024) — https://www.shadertoy.com/view/MX33Dr Original licensed CC BY-NC-SA 4.0 (attribution kept per the licence). A kaleidoscopic raymarched vortex/tunnel. Reconstructed from the code-golfed original and adapted to our engine: image-forward (the picture colours the vortex + drifts as a faint nebula), audio-reactive & jump-free (forward travel via audioAdvance, spin via audioPha…
 
@@ -7827,7 +7827,7 @@ Adapted from "Vortex" by \@kishimisu (2024) — https://www.shadertoy.com/view/M
 
 ### Voyager
 
-`Scene2D/Voyager.frag` · type=normal · mood=bright,space · complexity=2
+`Scene2D/Voyager.frag` · type=normal · mood=bright,space · complexity=10
 
 Adapted from "Voyager" by \@kishimisu (2024) — https://www.shadertoy.com/view/M33XDH Original licensed CC BY-NC-SA 4.0 (attribution kept per the licence). A volumetric fly-through of glowing, endlessly-repeating cells — like a deep- space probe drifting through a field of light. Adapted to our engine: * Shadertoy conventions -> ours (gl_FragCoord/resolution/time/tex0, texture2D). * IMAGE-FORWARD: the source image is …
 
@@ -7836,7 +7836,7 @@ Adapted from "Voyager" by \@kishimisu (2024) — https://www.shadertoy.com/view/
 
 ### WallpaperGroupCycle
 
-`Scene2D/WallpaperGroupCycle.frag` · type=normal · mood=psychedelic,bright · complexity=2
+`Scene2D/WallpaperGroupCycle.frag` · type=normal · mood=psychedelic,bright · complexity=3
 
 WALLPAPER GROUP CYCLE: the photograph folded through the plane symmetry groups -- a small cell of the texture is mirrored, rotated and glide-reflected into an endless wallpaper, and the wallpaper wanders slowly from one symmetry to the next (p4m, p6m, p3m1, p4g, pmm, cmm, p31m, p6 ...), each change a soft cross-fade, while the window into the photo drifts so the motif inside the cell keeps changing. The mirror seams …
 
@@ -7845,7 +7845,7 @@ WALLPAPER GROUP CYCLE: the photograph folded through the plane symmetry groups -
 
 ### WatercolorWetInWet
 
-`Scene2D/WatercolorWetInWet.frag` · type=normal · mood=calm,bright · complexity=2
+`Scene2D/WatercolorWetInWet.frag` · type=normal · mood=calm,bright · complexity=1
 
 WATERCOLOR WET IN WET: watercolour painted wet-in-wet, forever -- soft washes of pigment bloom into damp paper, feathering out in irregular clouds with the darker tide-line edges watercolour leaves when it dries, colours running into each other and granulating in the paper's tooth; new drops of colour touch down and spread while old washes pale. The pigments come from the photograph. Endless, mirrorable. Audio Reacti…
 
@@ -7854,7 +7854,7 @@ WATERCOLOR WET IN WET: watercolour painted wet-in-wet, forever -- soft washes of
 
 ### WaterfallCurtainRainbow
 
-`Scene2D/WaterfallCurtainRainbow.frag` · type=normal · mood=bright,calm,dreamy · complexity=3
+`Scene2D/WaterfallCurtainRainbow.frag` · type=normal · mood=bright,calm,dreamy · complexity=5
 
 WATERFALL CURTAIN RAINBOW: a wide curtain of falling water filling the frame between mossy cliffs, the sun behind the viewer, and in the spray that boils up from the plunge pool a standing rainbow. The water streams down in countless threads, bright where it catches the light; each stretch of the curtain carries a spectrum band, so the music runs across it as light. Spray and rainbow grow with the swell. Camera fixed…
 
@@ -7863,7 +7863,7 @@ WATERFALL CURTAIN RAINBOW: a wide curtain of falling water filling the frame bet
 
 ### WaterfallTunnel
 
-`Scene2D/WaterfallTunnel.frag` · type=normal · mood=energetic,calm · complexity=2
+`Scene2D/WaterfallTunnel.frag` · type=normal · mood=energetic,calm · complexity=4
 
 WATERFALL TUNNEL: flying down a tunnel whose walls are falling water -- sheets of water stream along the walls toward us, the photograph behind them smeared and rippling through the flow, foam streaks and white spray lines racing past, droplets glinting, and a bright mist glowing at the far end. The water keeps flowing even when the flight slows. Endless, mirrorable; the walls continue beyond the frame. Audio Reactiv…
 
@@ -7881,7 +7881,7 @@ WATER STRIDER DIMPLES: a pond surface from just above. The striders themselves a
 
 ### WaveformRiver
 
-`Scene2D/WaveformRiver.frag` · type=normal · mood=calm,dark,dreamy · complexity=3
+`Scene2D/WaveformRiver.frag` · type=normal · mood=calm,dark,dreamy · complexity=5
 
 WAVEFORM RIVER: the oscilloscope as geography. A river winds through a night landscape; the camera flies down it on the music's pace. The water surface IS the waveform -- audioWave[64] laid along the river as ripples of light, so the wave you hear is the water you fly over -- and the melody sets the river's width and the colour it glows: a rising line widens the river and warms it, a bass-heavy passage floods the ban…
 
@@ -7890,7 +7890,7 @@ WAVEFORM RIVER: the oscilloscope as geography. A river winds through a night lan
 
 ### WaxDripCascade
 
-`Scene2D/WaxDripCascade.frag` · type=normal · mood=calm,warm · complexity=2
+`Scene2D/WaxDripCascade.frag` · type=normal · mood=calm,warm · complexity=1
 
 WAX DRIP CASCADE: a wall of candle wax -- layer upon layer of coloured wax has run down it, each layer ending in rounded tongues and fat drips that overlap the layer below, glossy on top and glowing translucent where the wax is thin, as if lit from behind by the candle flames above; the wall slowly scrolls upward, the drips lengthen and swell, and the pigments swirl faintly inside the wax (from the photograph). Endle…
 
@@ -7899,7 +7899,7 @@ WAX DRIP CASCADE: a wall of candle wax -- layer upon layer of coloured wax has r
 
 ### WeatherProjectSun
 
-`Scene2D/WeatherProjectSun.frag` · type=normal · mood=calm,dreamy,dark · complexity=3
+`Scene2D/WeatherProjectSun.frag` · type=normal · mood=calm,dreamy,dark · complexity=1
 
 WEATHER PROJECT SUN: after Olafur Eliasson's installation in a turbine hall -- a vast dark hall filled with haze, at its far end a glowing half-disc of a sun hung just under the ceiling, and the whole ceiling one mirror, so the half-disc becomes a full sun and the hall doubles upward. The mono-frequency light turns everything into shades of amber and black; people stand and lie on the floor as silhouettes, looking up…
 
@@ -7908,7 +7908,7 @@ WEATHER PROJECT SUN: after Olafur Eliasson's installation in a turbine hall -- a
 
 ### WeatherRadarSweep
 
-`Scene2D/WeatherRadarSweep.frag` · type=normal · mood=dark,energetic · complexity=2
+`Scene2D/WeatherRadarSweep.frag` · type=normal · mood=dark,energetic · complexity=3
 
 WEATHER RADAR SWEEP: a weather radar screen at night -- the beam sweeps around and around, and in its wake the rain echoes light up in the radar palette (green drizzle, yellow rain, red downpours, magenta hail cores) and slowly fade until the next pass; the echoes are storm cells shaped by the photograph and drifting with the wind; range rings, a faint map (the photo's edges) and the sweep's bright leading line. Seve…
 
@@ -7926,7 +7926,7 @@ WELDING ARC SEAM: a torch running a seam across a steel plate on the scene clock
 
 ### WhirlingDervishes
 
-`Scene2D/WhirlingDervishes.frag` · type=normal · mood=calm,dreamy · complexity=2
+`Scene2D/WhirlingDervishes.frag` · type=normal · mood=calm,dreamy · complexity=6
 
 WHIRLING DERVISHES: the sema seen as a long-exposure photograph from above. A circle of turning dancers, each a white skirt blurred into a luminous disc with soft folds, the whole ring itself slowly circling a centre; warm lamplight from above, the floor dark wood. The dancers turn at their own steady speed; the music is in the light -- each skirt glows with its band, and the swell brightens the lamps. Audio Reactivi…
 
@@ -7935,7 +7935,7 @@ WHIRLING DERVISHES: the sema seen as a long-exposure photograph from above. A ci
 
 ### WhisperingGalleryMicrocavity
 
-`Scene2D/WhisperingGalleryMicrocavity.frag` · type=normal · mood=bright,psychedelic · complexity=3
+`Scene2D/WhisperingGalleryMicrocavity.frag` · type=normal · mood=bright,psychedelic · complexity=8
 
 WHISPERING GALLERY MICROCAVITY: Deformed optical microcavity resonator exhibiting quantum chaos, ray-wave correspondence, and whispering gallery modes. Total internal reflection orbits create rich caustic networks and evanescent boundary tunneling light rays across the whole viewport. audioAdvance -> rotates chaotic Poincaré ray trajectory phase audioPhase -> deforms microcavity boundary quadropole / octupole shape a…
 
@@ -7944,7 +7944,7 @@ WHISPERING GALLERY MICROCAVITY: Deformed optical microcavity resonator exhibitin
 
 ### WhiteDwarfAccretion
 
-`Scene2D/WhiteDwarfAccretion.frag` · type=normal · mood=dark,aggressive,space · complexity=4
+`Scene2D/WhiteDwarfAccretion.frag` · type=normal · mood=dark,aggressive,space · complexity=9
 
 WHITE DWARF ACCRETION: An extremely dense, hot white dwarf siphoning glowing plasma from a bloated red giant companion. A swirling accretion disk forms and violently pulses to the beat. audioAdvance -> rotation speed of the binary system and accretion disk audioKick -> flares and matter striking the white dwarf audioSwell -> brightness of the accretion disk and the red giant audioChromaHue-> palette offset for the pl…
 
@@ -7953,7 +7953,7 @@ WHITE DWARF ACCRETION: An extremely dense, hot white dwarf siphoning glowing pla
 
 ### WildebeestDust
 
-`Scene2D/WildebeestDust.frag` · type=normal · mood=calm,dreamy · complexity=2
+`Scene2D/WildebeestDust.frag` · type=normal · mood=calm,dreamy · complexity=1
 
 WILDEBEEST DUST: the great migration crossing the savanna in the late afternoon -- a herd of wildebeest walking in a long file and in loose ranks through the dust they raise, the low sun straight ahead turning the dust into glowing gold haze, the animals black silhouettes with their humped shoulders, bearded heads and curved horns, legs swinging in step, the far ranks dissolving in the glare. A flat-topped acacia sta…
 
@@ -7971,7 +7971,7 @@ WIND MAP STREAMLINES: a living wind map -- thousands of fine glowing streamlines
 
 ### WormholeTransit
 
-`Scene2D/WormholeTransit.frag` · type=normal · mood=psychedelic,bright,space · complexity=3
+`Scene2D/WormholeTransit.frag` · type=normal · mood=psychedelic,bright,space · complexity=7
 
 WORMHOLE TRANSIT: High-speed passage through a spacetime conduit. The walls of the wormhole are formed by intense gravitational lensing of background galaxies and exotic energy phenomena. audioAdvance -> speed of travel through the wormhole audioKick -> flashes of exotic matter and energy pulses audioSwell -> tunnel expansion and contraction audioPhase -> rotation of the tunnel audioChromaHue-> energy colors follow t…
 
@@ -7980,7 +7980,7 @@ WORMHOLE TRANSIT: High-speed passage through a spacetime conduit. The walls of t
 
 ### XenobiologicalBioship
 
-`Scene2D/XenobiologicalBioship.frag` · type=normal · mood=dark,psychedelic,space · complexity=4
+`Scene2D/XenobiologicalBioship.frag` · type=normal · mood=dark,psychedelic,space · complexity=7
 
 XENOBIOLOGICAL BIOSHIP: The camera flies through the grotesque, pulsing interior of a massive living spaceship. Fleshy walls, glowing veins, and strange internal organs ripple and contract to the beat. audioAdvance -> flight speed through the biological tunnel audioKick -> intense contractions and bright bioluminescence flashes audioSwell -> ambient brightness of the organic tissue audioChromaHue-> palette offset for…
 
@@ -7989,7 +7989,7 @@ XENOBIOLOGICAL BIOSHIP: The camera flies through the grotesque, pulsing interior
 
 ### XrayLuggageBelt
 
-`Scene2D/XrayLuggageBelt.frag` · type=normal · mood=bright,calm,psychedelic · complexity=3
+`Scene2D/XrayLuggageBelt.frag` · type=normal · mood=bright,calm,psychedelic · complexity=1
 
 XRAY LUGGAGE BELT: the operator's screen at a security scanner. Bags glide right to left on the scene clock, drawn in the false-colour palette of dual-energy X-ray -- orange for organic, green for mixed, blue for metal -- with the photo showing through as their contents. The spectrum bands set how dense each bag reads, the kick raises a threat box around the densest object (light), and the screen furniture (scan line…
 
@@ -7998,7 +7998,7 @@ XRAY LUGGAGE BELT: the operator's screen at a security scanner. Bags glide right
 
 ### ZaoWouKiStorm
 
-`Scene2D/ZaoWouKiStorm.frag` · type=normal · mood=calm,dark · complexity=2
+`Scene2D/ZaoWouKiStorm.frag` · type=normal · mood=calm,dark · complexity=1
 
 ZAO WOU-KI STORM: a lyrical abstract painting in motion -- vast masses of thinned oil colour swirl like a storm over the sea, deep blues and near-blacks torn open by a luminous core of light, washes bleeding into each other with soft edges, and across them fine, nervous calligraphic strokes and spatters; the painting keeps churning slowly, the light core wandering. The colours come from the photograph. Endless, mirro…
 
@@ -8007,7 +8007,7 @@ ZAO WOU-KI STORM: a lyrical abstract painting in motion -- vast masses of thinne
 
 ### ZCRNoiseStorm
 
-`Scene2D/ZCRNoiseStorm.frag` · type=normal · mood=dark,aggressive · complexity=2
+`Scene2D/ZCRNoiseStorm.frag` · type=normal · mood=dark,aggressive · complexity=5
 
 ZCR NOISE STORM: a sandstorm tunnel whose grain IS the noise in the music. The zero-crossing rate and the spectral flatness -- how much of the sound is hiss, breath, cymbal wash -- set the density and contrast of the sand streaming past, so a clean tone flies through clear air and a noisy passage through a wall of grit. Streaks run down the tunnel on the music's pace; a light burns ahead. The camera never moves. Audi…
 
@@ -8016,7 +8016,7 @@ ZCR NOISE STORM: a sandstorm tunnel whose grain IS the noise in the music. The z
 
 ### ZellijTilework
 
-`Scene2D/ZellijTilework.frag` · type=normal · mood=bright,calm,psychedelic · complexity=2
+`Scene2D/ZellijTilework.frag` · type=normal · mood=bright,calm,psychedelic · complexity=4
 
 ZELLIJ TILEWORK: a wall of Moroccan zellij -- an eight-fold star pattern of cut tiles, every tile a piece of the photo in its own glaze colour. The pattern is built from the {8/3} star lattice: stars, their surrounding kites and the small squares between; the whole field rotates very slowly on the scene clock and drifts, the tiles light by chroma class (each colour a class), the grout darkens on the bass, the kick gl…
 
@@ -8030,7 +8030,7 @@ ZELLIJ TILEWORK: a wall of Moroccan zellij -- an eight-fold star pattern of cut 
 
 ### AbrikosovFluxLatticeVortices
 
-`Scene3D/AbrikosovFluxLatticeVortices.frag` · type=scene3d · geom=points · mood=dark,aggressive · complexity=3
+`Scene3D/AbrikosovFluxLatticeVortices.frag` · type=scene3d · geom=points · mood=dark,aggressive · complexity=8
 
 Point-sprite lattice of superconducting flux vortices, each a soft circular glow blending a cyan/violet vortex palette with the slideshow photo sampled from the vortex's own world position. audioPhase drives the cyan-to-violet oscillation of each vortex's colour; audioKick punches up a hot, palette-tinted core on every hit; audioChromaHue and the hueP preset both rotate the final hue. Vertex-side uniforms (audioSubBa…
 
@@ -8039,7 +8039,7 @@ Point-sprite lattice of superconducting flux vortices, each a soft circular glow
 
 ### AccretionDiskToroidVortex
 
-`Scene3D/AccretionDiskToroidVortex.frag` · type=scene3d · geom=grid · mood=aggressive,dark · complexity=3
+`Scene3D/AccretionDiskToroidVortex.frag` · type=scene3d · geom=grid · mood=aggressive,dark · complexity=1
 
 ACCRETION DISK TOROID VORTEX: a glowing accretion torus seen from ABOVE, the camera slowly orbiting the central hole while spiral density waves wind around the ISCO rim (the golden ring where matter takes its last stable lap before plunging in). Audio Reactivity: audioAdvance -> orbit + spiral wind-up (pre-integrated, jump-free) audioKick -> ISCO rim flare audioBass -> disk thickness / undulation audioHigh -> extra r…
 
@@ -8048,7 +8048,7 @@ ACCRETION DISK TOROID VORTEX: a glowing accretion torus seen from ABOVE, the cam
 
 ### AcousticLevitationMatrix
 
-`Scene3D/AcousticLevitationMatrix.frag` · type=scene3d · geom=cubes · mood=bright,calm · complexity=3
+`Scene3D/AcousticLevitationMatrix.frag` · type=scene3d · geom=cubes · mood=bright,calm · complexity=9
 
 Lit voxel cubes levitated in an acoustic standing-wave grid, each face a blend of a per-vertex colour and the current slideshow photo with a fixed-direction diffuse/specular highlight. This fragment shader carries no audio uniforms of its own -- reactivity (how the cubes jump, cluster and resonate with the beat) lives entirely in the companion vertex shader; here only the incoming vCol (already audio-modulated per ve…
 
@@ -8057,7 +8057,7 @@ Lit voxel cubes levitated in an acoustic standing-wave grid, each face a blend o
 
 ### AnechoicChamberWedges
 
-`Scene3D/AnechoicChamberWedges.frag` · type=scene3d · geom=patches · mood=dark,calm,psychedelic · complexity=3
+`Scene3D/AnechoicChamberWedges.frag` · type=scene3d · geom=patches · mood=dark,calm,psychedelic · complexity=9
 
 ANECHOIC CHAMBER WEDGES: the quietest room, seen wall-on. Grey foam wedges absorb everything; here they give the music back as light: each wedge belongs to a spectrum band by its column, its tip glows with that band, the base stays dark; the room light (the swell) rakes across the pyramids from one side so their ridges read; the kick pulses the whole wall's tips; the photo is the foam's faint mottle. Nothing moves bu…
 
@@ -8066,7 +8066,7 @@ ANECHOIC CHAMBER WEDGES: the quietest room, seen wall-on. Grey foam wedges absor
 
 ### AnglerfishAbyss
 
-`Scene3D/AnglerfishAbyss.frag` · type=scene3d · geom=mesh · mood=dark,calm,dreamy · complexity=3
+`Scene3D/AnglerfishAbyss.frag` · type=scene3d · geom=mesh · mood=dark,calm,dreamy · complexity=2
 
 ANGLERFISH ABYSS: black water, and the only light is the fish's own lure -- a small lamp that hangs in front of it and tints with the melody. The body is lit by that lamp alone (plus a faint blue from far above), marine snow drifts through the beam, and a drop makes the lamp flare and the bioluminescent flanks pulse. Dark, but staged: the whole scene is one pool of light in the dark. No camera motion of any kind. Aud…
 
@@ -8075,7 +8075,7 @@ ANGLERFISH ABYSS: black water, and the only light is the fish's own lure -- a sm
 
 ### Aperture
 
-`Scene3D/Aperture.frag` · type=scene3d · geom=mesh · mood=dark,psychedelic · complexity=3
+`Scene3D/Aperture.frag` · type=scene3d · geom=mesh · mood=dark,psychedelic · complexity=1
 
 The model is used as a hole, not as an object. Its silhouette is a window: inside it a flat scene plays, outside there is almost nothing. The shape turns, so the window keeps changing form while what shows through it carries on undisturbed. This is the one mesh family that composes with the REST of the catalogue rather than adding to it -- what shows through is built from the same material every 2D scene uses, the cu…
 
@@ -8084,7 +8084,7 @@ The model is used as a hole, not as an object. Its silhouette is a window: insid
 
 ### Assembly
 
-`Scene3D/Assembly.frag` · type=scene3d · geom=mesh · mood=dark,dreamy · complexity=4
+`Scene3D/Assembly.frag` · type=scene3d · geom=mesh · mood=dark,dreamy · complexity=7
 
 Pieces flying in from nowhere and settling into an object that was not there a moment ago (the flight itself is in the geometry stage). A piece still in the air is hot and half-transparent; a seated one is cold, solid and lit. The transition between those two states is what the eye follows. A shatter can be watched passively -- it is over in a second and the eye just catches the debris. An assembly has to be READ, be…
 
@@ -8093,7 +8093,7 @@ Pieces flying in from nowhere and settling into an object that was not there a m
 
 ### AsteroidBelt
 
-`Scene3D/AsteroidBelt.frag` · type=scene3d · geom=cubes · mood=dark,dreamy,space · complexity=3
+`Scene3D/AsteroidBelt.frag` · type=scene3d · geom=cubes · mood=dark,dreamy,space · complexity=9
 
 Shades a single asteroid chunk with a matte rock face plus a faint cool rim light along its cube-corner edges, keeping silhouettes readable against black space. This fragment stage carries no audio uniforms of its own: vCol (the base rock colour, already audio/position-modulated per vertex) and vCorner (a local box coordinate used purely to detect edges via smoothstep) are the only inputs, so any audio reactivity for…
 
@@ -8102,7 +8102,7 @@ Shades a single asteroid chunk with a matte rock face plus a faint cool rim ligh
 
 ### AsteroidRubblePileTumble
 
-`Scene3D/AsteroidRubblePileTumble.frag` · type=scene3d · geom=indirect · mood=space,dark,calm · complexity=4
+`Scene3D/AsteroidRubblePileTumble.frag` · type=scene3d · geom=indirect · mood=space,dark,calm · complexity=3
 
 Fragment stage for AsteroidRubblePileTumble: boulders of the photo, grey-brown regolith with the sunward term from the generator (hard shadow on the night side, a little earthshine from the palette), the probe as a bright box, the touchdown dust as soft round puffs that the kick lights, the Sun and round stars behind. Audio Reactivity: audioKick -> dust puff light; audioSwell -> sunlight; audioHigh -> regolith glints…
 
@@ -8120,7 +8120,7 @@ GEOM="MESH" FAMILY: a ship commits to a descent and burns its way into a planet'
 
 ### AtmosphericGravityWaveUndularBore
 
-`Scene3D/AtmosphericGravityWaveUndularBore.frag` · type=scene3d · geom=grid · mood=calm,dreamy,bright · complexity=3
+`Scene3D/AtmosphericGravityWaveUndularBore.frag` · type=scene3d · geom=grid · mood=calm,dreamy,bright · complexity=5
 
 ATMOSPHERIC GRAVITY WAVE UNDULAR BORE: 220x120 heightfield grid of mesospheric undular bore gravity wave solitons. Emits emerald hydroxyl airglow emission lines, atmospheric curvature depth, and photo texturing. audioAdvance -> drives mesospheric gravity wave soliton propagation audioKick -> flashes wave crest chemiluminescent airglow surges audioSwell -> thickens atmospheric airglow layer & wave amplitude audioCentr…
 
@@ -8129,7 +8129,7 @@ ATMOSPHERIC GRAVITY WAVE UNDULAR BORE: 220x120 heightfield grid of mesospheric u
 
 ### AuroraBorealisOverFjord
 
-`Scene3D/AuroraBorealisOverFjord.frag` · type=scene3d · geom=patches · mood=calm,dreamy,bright,space · complexity=4
+`Scene3D/AuroraBorealisOverFjord.frag` · type=scene3d · geom=patches · mood=calm,dreamy,bright,space · complexity=6
 
 AURORA BOREALIS OVER FJORD: night flight down a fjord - mountains on both sides, a mirror-water canal below, and a full-height AURORA CURTAIN WALL with vertical rays at the far end (arctic-green identity, tinted by the photo palette). The water reflects the curtain in drifting bands. audioAdvance -> flight down the fjord audioKick -> curtain surge audioSwell -> aurora brightness audioBass -> water ripples
 
@@ -8138,7 +8138,7 @@ AURORA BOREALIS OVER FJORD: night flight down a fjord - mountains on both sides,
 
 ### AuroraVeil
 
-`Scene3D/AuroraVeil.frag` · type=scene3d · geom=ribbon · mood=calm,dark,space · complexity=1
+`Scene3D/AuroraVeil.frag` · type=scene3d · geom=ribbon · mood=calm,dark,space · complexity=4
 
 Shades one strip of a translucent aurora curtain: a bright glowing hem where vSide approaches -1 and a soft, dim body across the rest of the strip, using two Gaussian falloffs over the cross-curtain coordinate. No audio uniforms appear in this fragment stage -- vCol (the strip's colour, already audio-modulated per vertex, e.g. by the beat/kick) and vSide (the cross-curtain position) are the only inputs, so the curtai…
 
@@ -8156,7 +8156,7 @@ BACTERIOPHAGE ICOSAHEDRAL CAPSID INJECTION: T4 Bacteriophage viral injection nan
 
 ### BaitBallVortex
 
-`Scene3D/BaitBallVortex.frag` · type=scene3d · geom=indirect · mood=calm,dark,dreamy · complexity=4
+`Scene3D/BaitBallVortex.frag` · type=scene3d · geom=indirect · mood=calm,dark,dreamy · complexity=2
 
 Fragment stage for BaitBallVortex: open water lit from above -- blue-green with caustic light from the photo and god rays -- the fish silver-sided with the photo's tint, flashing as they turn (a per-fish phase) and all at once on an onset (the fright flash is light, not motion), the predator a dark shape with a pale belly. Audio Reactivity: audioOnset -> silver flash; audioKick -> caustics brighten; audioSwell -> sun…
 
@@ -8165,7 +8165,7 @@ Fragment stage for BaitBallVortex: open water lit from above -- blue-green with 
 
 ### BeeWaggleDance
 
-`Scene3D/BeeWaggleDance.frag` · type=scene3d · geom=indirect · mood=bright,calm,dreamy · complexity=3
+`Scene3D/BeeWaggleDance.frag` · type=scene3d · geom=indirect · mood=bright,calm,dreamy · complexity=4
 
 Fragment stage for BeeWaggleDance: the comb as a hexagonal grid of photo cells (some capped with wax, some open with honey glowing with the bass), the bees as striped ovals with wings, the dancer glowing on her waggle run, the followers dimmer; the stereo balance sweeps a warm light across the comb (the sun through the hive), the treble sparkles the honey, the kick flashes the dancers. Audio Reactivity: audioStereo -…
 
@@ -8174,7 +8174,7 @@ Fragment stage for BeeWaggleDance: the comb as a hexagonal grid of photo cells (
 
 ### BillboardCity
 
-`Scene3D/BillboardCity.frag` · type=scene3d · geom=quads · mood=bright · complexity=1
+`Scene3D/BillboardCity.frag` · type=scene3d · geom=quads · mood=bright · complexity=10
 
 Shades one animated billboard screen in a night-city block: a kaleido-mirrored, slowly sliding crop of the slideshow photo behind a neon border, each screen carrying its own flicker and per-vertex spectrum band. audioChromaHue rotates the neon border's hue; audioDrop punches a burst of extra brightness into every screen on a drop. The per-board brightness (vBand) and fade-in/out (vFade) are already audio- and lifetim…
 
@@ -8183,7 +8183,7 @@ Shades one animated billboard screen in a night-city block: a kaleido-mirrored, 
 
 ### BioCell
 
-`Scene3D/BioCell.frag` · type=scene3d · geom=points · mood=calm · complexity=2
+`Scene3D/BioCell.frag` · type=scene3d · geom=points · mood=calm · complexity=10
 
 Shades a single soft, organic point sprite (a biological cell or particle) as a Gaussian glow, additively blended into the frame. audioLevel and audioKick both add directly to the glow's brightness multiplier, so the whole swarm of cells pulses brighter with the overall loudness and on every kick; per the comment above, this frag-side pulse was found to barely move any pixels in practice, so most of the scene's audio…
 
@@ -8192,7 +8192,7 @@ Shades a single soft, organic point sprite (a biological cell or particle) as a 
 
 ### BioluminescentBreakingWave
 
-`Scene3D/BioluminescentBreakingWave.frag` · type=scene3d · geom=grid · mood=dark,calm,dreamy · complexity=3
+`Scene3D/BioluminescentBreakingWave.frag` · type=scene3d · geom=grid · mood=dark,calm,dreamy · complexity=7
 
 BIOLUMINESCENT BREAKING WAVE: rolling Gerstner swell seen from above the surf line; the crests break into glowing dinoflagellate foam CELLS (not a full-width neon bar), dark troughs carry the photo tint. Audio Reactivity: audioBass -> swell / crest height audioKick -> breaker splash + bio-glow surge audioHigh -> cross-chop ripple audioAdvance -> wave phase (pre-integrated, jump-free) audioZCR -> grain of the foam: hi…
 
@@ -8201,7 +8201,7 @@ BIOLUMINESCENT BREAKING WAVE: rolling Gerstner swell seen from above the surf li
 
 ### BioluminescentCombJellyCydippid
 
-`Scene3D/BioluminescentCombJellyCydippid.frag` · type=scene3d · geom=ribbon · mood=calm,dark,dreamy · complexity=3
+`Scene3D/BioluminescentCombJellyCydippid.frag` · type=scene3d · geom=ribbon · mood=calm,dark,dreamy · complexity=7
 
 BIOLUMINESCENT COMB JELLY CYDIPPID: Abyssal ctenophore (Mertensia ovum / Beroe cucumis). A BLOOM of five animals drifting at different depths, each carrying 20 meridional rows of coordinated metachronal beating ciliated comb plates (ctenes) producing rainbow diffraction iridescence, bioelectric green fluorescent flashes, and photo texturing -- with the long sticky tentacles trailing off past the edges of the picture …
 
@@ -8210,7 +8210,7 @@ BIOLUMINESCENT COMB JELLY CYDIPPID: Abyssal ctenophore (Mertensia ovum / Beroe c
 
 ### BioluminescentForestCanopy
 
-`Scene3D/BioluminescentForestCanopy.frag` · type=scene3d · geom=indirect · mood=calm,dreamy,bright · complexity=4
+`Scene3D/BioluminescentForestCanopy.frag` · type=scene3d · geom=indirect · mood=calm,dreamy,bright · complexity=8
 
 Shades an alien rainforest canopy of bioluminescent flora, mixing an emerald/magenta base palette (chosen per-vertex via vFloraType) with a time-driven cyan pulse and the house photo-arc palette drawn from the current slideshow image. audioChromaHue drives imgPalette()'s rotating photo-arc sample point (so the plant colours track the musical key), audioValence shapes that palette's saturation, and audioAdvance slowly…
 
@@ -8219,7 +8219,7 @@ Shades an alien rainforest canopy of bioluminescent flora, mixing an emerald/mag
 
 ### BioluminescentMyceliumCave
 
-`Scene3D/BioluminescentMyceliumCave.frag` · type=scene3d · geom=indirect · mood=calm,dark,dreamy · complexity=4
+`Scene3D/BioluminescentMyceliumCave.frag` · type=scene3d · geom=indirect · mood=calm,dark,dreamy · complexity=10
 
 Shades a glowing fungal-thread filament in a mycelium cave: blends a per-vertex bioluminescent colour with the slideshow photo, then adds a brightened seam of light running along the filament's own axis. This fragment stage reads no audio uniforms directly -- vColor arrives already audio-modulated per vertex by the companion vertex shader (the filament network's pulse/growth reactivity lives there), and vTexCoord bot…
 
@@ -8228,7 +8228,7 @@ Shades a glowing fungal-thread filament in a mycelium cave: blends a per-vertex 
 
 ### BioluminescentOceanSwell
 
-`Scene3D/BioluminescentOceanSwell.frag` · type=scene3d · geom=grid · mood=calm,dreamy,bright · complexity=3
+`Scene3D/BioluminescentOceanSwell.frag` · type=scene3d · geom=grid · mood=calm,dreamy,bright · complexity=9
 
 BIOLUMINESCENT OCEAN SWELL: open-ocean Gerstner swell viewed from a gliding camera above the water, horizon high in the frame; narrow crest bands glow bioluminescent cyan, the moon adds a specular path, the photo tints sky reflection and glow. audioBass/Swell -> wave amplitude audioKick -> splash + crest flash audioAdvance -> forward glide over open water
 
@@ -8237,7 +8237,7 @@ BIOLUMINESCENT OCEAN SWELL: open-ocean Gerstner swell viewed from a gliding came
 
 ### BioluminescentSiphonophoreChain
 
-`Scene3D/BioluminescentSiphonophoreChain.frag` · type=scene3d · geom=indirect · mood=calm,dark,dreamy · complexity=4
+`Scene3D/BioluminescentSiphonophoreChain.frag` · type=scene3d · geom=indirect · mood=calm,dark,dreamy · complexity=10
 
 Renders the billboard sprites generated by BioluminescentSiphonophoreChain.comp as glowing cyan/seafoam-green nectophores, each blended with the slideshow photo sampled from its world position and topped with a racing action-potential pulse wave. Sprites whose normal points away from the camera (normal.z < 0) are the generator's marine snow and get a dim, cold silt shading instead -- that field is what carries the wa…
 
@@ -8246,7 +8246,7 @@ Renders the billboard sprites generated by BioluminescentSiphonophoreChain.comp 
 
 ### BioluminescentSwarm
 
-`Scene3D/BioluminescentSwarm.frag` · type=scene3d · geom=indirect · mood=dark,calm,dreamy · complexity=4
+`Scene3D/BioluminescentSwarm.frag` · type=scene3d · geom=indirect · mood=dark,calm,dreamy · complexity=10
 
 Lights the winged creature triangles generated by BioluminescentSwarm.comp with a fixed directional key light plus a bright specular highlight, giving each glowing boid a faceted, gem-like sheen. This fragment stage carries no audio uniforms of its own -- vCol (the per-creature hue/glow, already driven by audioSpectrum and audioKick in the compute kernel) is the sole colour input; vNormal and vWorld only serve the lo…
 
@@ -8255,7 +8255,7 @@ Lights the winged creature triangles generated by BioluminescentSwarm.comp with 
 
 ### BismuthFerriteMultiferroicDomains
 
-`Scene3D/BismuthFerriteMultiferroicDomains.frag` · type=scene3d · geom=quads · mood=aggressive,dark · complexity=3
+`Scene3D/BismuthFerriteMultiferroicDomains.frag` · type=scene3d · geom=quads · mood=aggressive,dark · complexity=10
 
 BISMUTH FERRITE MULTIFERROIC DOMAINS: 3D quad terraces of multiferroic domain walls in BiFeO3. Displays cross-coupled ferroelectric polarization terraces, conductive domain wall channels, metallic ceramic reflections, and photo texturing. audioAdvance -> switches ferroelectric domain wall polarization states audioKick -> flashes conductive domain wall nano-channel current pulses audioSwell -> thickens multiferroic te…
 
@@ -8273,7 +8273,7 @@ Shades a single soft point sprite (accretion-disk particle or infalling matter a
 
 ### BloomSculpt
 
-`Scene3D/BloomSculpt.frag` · type=scene3d · geom=patches · mood=dreamy · complexity=3
+`Scene3D/BloomSculpt.frag` · type=scene3d · geom=patches · mood=dreamy · complexity=9
 
 _(Vorschau eingeschränkt: Sim-Textur/Mehrpass — Bilder unterschätzen die echte App)_
 
@@ -8302,7 +8302,7 @@ BORROMEAN RINGS ORBIT: two-pass shader. Opaque pass: the wall behind, the photo 
 
 ### BoseEinsteinVortexTangle
 
-`Scene3D/BoseEinsteinVortexTangle.frag` · type=scene3d · geom=indirect · mood=dark,psychedelic · complexity=4
+`Scene3D/BoseEinsteinVortexTangle.frag` · type=scene3d · geom=indirect · mood=dark,psychedelic · complexity=10
 
 BOSE-EINSTEIN VORTEX TANGLE: an ultracold condensate cloud of ruby/cyan quantum sprites threaded by vortex lines, the camera orbiting INSIDE the tangle with a slow nodding pitch. audioKick -> core brightness audioPhase -> ruby/cyan state mix audioAdvance -> orbit (additive sprites, source-level gains)
 
@@ -8311,7 +8311,7 @@ BOSE-EINSTEIN VORTEX TANGLE: an ultracold condensate cloud of ruby/cyan quantum 
 
 ### BoySurfaceCrossCapImmersion
 
-`Scene3D/BoySurfaceCrossCapImmersion.frag` · type=scene3d · geom=grid · mood=dark,calm · complexity=3
+`Scene3D/BoySurfaceCrossCapImmersion.frag` · type=scene3d · geom=grid · mood=dark,calm · complexity=7
 
 BOY SURFACE CROSS-CAP IMMERSION: 3D non-orientable immersion of the real projective plane RP^2 without singular points. Displays three-fold rotational symmetry, self-intersecting triple-point core, double-sided Fresnel glow, and continuous photo-palette texturing. audioAdvance -> rotates non-orientable surface sheets through 3D space audioKick -> flashes triple-point self-intersection contact core audioSwell -> enric…
 
@@ -8320,7 +8320,7 @@ BOY SURFACE CROSS-CAP IMMERSION: 3D non-orientable immersion of the real project
 
 ### CalabiYauSixDimensionalManifoldCrossSection
 
-`Scene3D/CalabiYauSixDimensionalManifoldCrossSection.frag` · type=scene3d · geom=grid · mood=bright,psychedelic · complexity=4
+`Scene3D/CalabiYauSixDimensionalManifoldCrossSection.frag` · type=scene3d · geom=grid · mood=bright,psychedelic · complexity=6
 
 CALABI-YAU SIX-DIMENSIONAL MANIFOLD CROSS SECTION: 220x120 heightfield grid of a 3D projection of a 6-dimensional Ricci-flat Calabi-Yau compactification manifold (quintic threefold). Toric folds, complex Kähler metric modulations, glass specular sheen, and string-theory photo texturing. audioAdvance -> navigates complex structure moduli space deformation & rotation audioKick -> flashes singular conifold transition & …
 
@@ -8329,7 +8329,7 @@ CALABI-YAU SIX-DIMENSIONAL MANIFOLD CROSS SECTION: 220x120 heightfield grid of a
 
 ### CarbonNanotubeChiralityArmchairZigzag
 
-`Scene3D/CarbonNanotubeChiralityArmchairZigzag.frag` · type=scene3d · geom=ribbon · mood=dark,calm · complexity=3
+`Scene3D/CarbonNanotubeChiralityArmchairZigzag.frag` · type=scene3d · geom=ribbon · mood=dark,calm · complexity=10
 
 CARBON NANOTUBE CHIRALITY ARMCHAIR ZIGZAG: Single-walled carbon nanotube (SWCNT) network -- seven crossing tubes of a buckypaper mat, each with a tunable chiral vector (n,m). Armchair, zigzag, and chiral helicities with ballistic 1D pi-electron conduction pulses, metallic sp2 luster, and photo texturing. audioAdvance -> drives ballistic pi-electron current drift & tube rotation audioKick -> flashes 1D Van Hove singul…
 
@@ -8338,7 +8338,7 @@ CARBON NANOTUBE CHIRALITY ARMCHAIR ZIGZAG: Single-walled carbon nanotube (SWCNT)
 
 ### CathedralGlass
 
-`Scene3D/CathedralGlass.frag` · type=scene3d · geom=indirect · mood=calm,bright · complexity=3
+`Scene3D/CathedralGlass.frag` · type=scene3d · geom=indirect · mood=calm,bright · complexity=9
 
 _(Vorschau eingeschränkt: Sim-Textur/Mehrpass — Bilder unterschätzen die echte App)_
 
@@ -8358,7 +8358,7 @@ Fragment stage for CavitationCloudPropeller: green-blue water with light shafts 
 
 ### CherenkovCascadeShower
 
-`Scene3D/CherenkovCascadeShower.frag` · type=scene3d · geom=points · mood=aggressive,dark · complexity=3
+`Scene3D/CherenkovCascadeShower.frag` · type=scene3d · geom=points · mood=aggressive,dark · complexity=4
 
 Shades a single point-sprite particle in a Cherenkov air-shower cascade as a soft circular glow, blending its per-vertex colour with the slideshow photo, then applying a soft-knee tone-map so hot audio compresses instead of clipping to white. This fragment stage carries no audio uniforms of its own -- vCol (the per-particle colour and alpha, already audio-modulated per vertex, e.g. by cascade energy or beat timing) i…
 
@@ -8367,7 +8367,7 @@ Shades a single point-sprite particle in a Cherenkov air-shower cascade as a sof
 
 ### ChiralLiquidCrystalCholesteric
 
-`Scene3D/ChiralLiquidCrystalCholesteric.frag` · type=scene3d · geom=ribbon · mood=dark,calm,dreamy · complexity=3
+`Scene3D/ChiralLiquidCrystalCholesteric.frag` · type=scene3d · geom=ribbon · mood=dark,calm,dreamy · complexity=7
 
 CHIRAL LIQUID CRYSTAL (CHOLESTERIC): 20 helical director ribbons seen from the SIDE at a slow orbit - layered golden wave-sheets whose twist period (the cholesteric pitch) reads directly in the picture; Bragg colours come from the photo palette. audioAdvance -> orbit + helix twist audioKick -> ribbon width pitchP/twistP -> cholesteric pitch and twist rate
 
@@ -8376,7 +8376,7 @@ CHIRAL LIQUID CRYSTAL (CHOLESTERIC): 20 helical director ribbons seen from the S
 
 ### Chladni3DAcousticLevitation
 
-`Scene3D/Chladni3DAcousticLevitation.frag` · type=scene3d · geom=cubes · mood=bright,calm · complexity=3
+`Scene3D/Chladni3DAcousticLevitation.frag` · type=scene3d · geom=cubes · mood=bright,calm · complexity=9
 
 CHLADNI 3D ACOUSTIC LEVITATION: 3D acoustic levitation in a multi-emitter ultrasound standing wave array. Thousands of levitating microparticle clusters fill the whole working volume of the chamber, trapped on the 3D Chladni acoustic Gor'kov radiation force nodal surfaces, with ultrasonic field glows and photo texturing. audioAdvance -> navigates 3D acoustic trap focal shifting & particle rotation audioKick -> flashe…
 
@@ -8385,7 +8385,7 @@ CHLADNI 3D ACOUSTIC LEVITATION: 3D acoustic levitation in a multi-emitter ultras
 
 ### ChladniAcousticPlate
 
-`Scene3D/ChladniAcousticPlate.frag` · type=scene3d · geom=points · mood=bright,calm · complexity=2
+`Scene3D/ChladniAcousticPlate.frag` · type=scene3d · geom=points · mood=bright,calm · complexity=10
 
 Shades a single grain of sand settling into a Chladni acoustic resonance pattern, as a soft circular point sprite whose colour shifts between a gold/bronze "resting on a nodal line" hue and an electric-azure "in flight" hue. vNodalDist (distance from the nearest vibration node, set per vertex) selects that gold-to-azure mix, and vPlateEnergy (the plate's local vibration energy) drives the grain's brightness; both alr…
 
@@ -8394,7 +8394,7 @@ Shades a single grain of sand settling into a Chladni acoustic resonance pattern
 
 ### ChromeFlow
 
-`Scene3D/ChromeFlow.frag` · type=scene3d · geom=grid · mood=calm · complexity=2
+`Scene3D/ChromeFlow.frag` · type=scene3d · geom=grid · mood=calm · complexity=9
 
 Renders a rolling sheet of molten chrome that mirrors the current slideshow photo via a true reflect() environment lookup, overlaid with two sweeping polish-streak sheen bands and a fixed moonlight specular highlight. audioSwell strengthens the first sheen band and audioCentroid strengthens the second; audioAdvance and audioChromaHue feed imgPalette() (via palTint()) so the warm/cool sheen tints drift with the musica…
 
@@ -8412,7 +8412,7 @@ The model as polished metal: it shows almost nothing of itself and almost everyt
 
 ### CliffordTorusVillarceauLinks
 
-`Scene3D/CliffordTorusVillarceauLinks.frag` · type=scene3d · geom=cubes · mood=bright,psychedelic · complexity=3
+`Scene3D/CliffordTorusVillarceauLinks.frag` · type=scene3d · geom=cubes · mood=bright,psychedelic · complexity=10
 
 Shades the interlinked Villarceau circles of a Clifford torus (its characteristic linked-loop decomposition) as a SOLID stereographic surface reaching past the top and bottom edges, blending the slideshow photo with a topological-phase colour and simple diffuse/specular lighting, then fading to a dark fog with distance -- over a faint field of 4D dust motes that carries the corners the donut can never reach. audioPha…
 
@@ -8421,7 +8421,7 @@ Shades the interlinked Villarceau circles of a Clifford torus (its characteristi
 
 ### CometRide
 
-`Scene3D/CometRide.frag` · type=scene3d · geom=points · mood=calm,dark,space · complexity=2
+`Scene3D/CometRide.frag` · type=scene3d · geom=points · mood=calm,dark,space · complexity=5
 
 Shades a single soft point sprite -- ice/dust particle in a comet's tail during a first-person ride alongside it -- as a bright Gaussian glow, additively blended into the frame. This fragment stage carries no audio uniforms of its own -- vCol (the per-particle colour, already audio-modulated per vertex, e.g. by ride speed or beat-driven brightness) is the only input, so the scene's reactivity to the music lives entir…
 
@@ -8430,7 +8430,7 @@ Shades a single soft point sprite -- ice/dust particle in a comet's tail during 
 
 ### ConcertCrowd
 
-`Scene3D/ConcertCrowd.frag` · type=scene3d · geom=points · mood=dark,aggressive · complexity=2
+`Scene3D/ConcertCrowd.frag` · type=scene3d · geom=points · mood=dark,aggressive · complexity=9
 
 Shades a single soft point sprite -- one member of a crowd of concert-goers or their raised phone-light/glow -- as a Gaussian glow, additively blended into the frame. This fragment stage carries no audio uniforms of its own -- vCol (the per-person colour, already audio-modulated per vertex, e.g. cheering brightness on the beat) is the only input, so the crowd's reactivity to the music lives entirely in the companion …
 
@@ -8439,7 +8439,7 @@ Shades a single soft point sprite -- one member of a crowd of concert-goers or t
 
 ### Condensation
 
-`Scene3D/Condensation.frag` · type=scene3d · geom=mesh · mood=calm,dreamy,space · complexity=4
+`Scene3D/Condensation.frag` · type=scene3d · geom=mesh · mood=calm,dreamy,space · complexity=3
 
 Gas resolving into an object. For most of the scene there is only a slowly stirring volume; then a shape starts to be implied by where the fog is thicker, and by the end the thing is simply there. The migration itself is in the geometry stage. Density without blending: the mesh path draws opaque, so a real volume cannot be accumulated by alpha. Instead each puff DISCARDS most of its fragments on an ordered threshold,…
 
@@ -8459,7 +8459,7 @@ Lighting for a growing coral colony: bleached, hard old wood in the interior giv
 
 ### CoralReefFluorescence
 
-`Scene3D/CoralReefFluorescence.frag` · type=scene3d · geom=grid · mood=calm,dreamy,bright · complexity=3
+`Scene3D/CoralReefFluorescence.frag` · type=scene3d · geom=grid · mood=calm,dreamy,bright · complexity=7
 
 CORAL REEF FLUORESCENCE: a reef ridge under UV night light - the coral tips fluoresce in colours drawn from the photo-palette arc (GFP/RFP style), deep-ocean blue ambient below. audioKick -> fluorescence pulse audioSwell -> polyp sway glowP/fluorP -> emission strength
 
@@ -8468,7 +8468,7 @@ CORAL REEF FLUORESCENCE: a reef ridge under UV night light - the coral tips fluo
 
 ### CosmicBoidsVortex
 
-`Scene3D/CosmicBoidsVortex.frag` · type=scene3d · geom=points · mood=dark,aggressive · complexity=3
+`Scene3D/CosmicBoidsVortex.frag` · type=scene3d · geom=points · mood=dark,aggressive · complexity=10
 
 Fragment shader for the boid-swarm vortex's particles: renders each point sprite as a soft radial glow (Gaussian falloff, discarded outside a circular mask) for additive blending into thousands of overlapping points. All audio reactivity for this scene lives upstream in CosmicBoidsVortex.vert, which sets the incoming vCol per particle: audioKick drives a radial explosion impulse, audioAdvance the vortex spin and Z-dr…
 
@@ -8477,7 +8477,7 @@ Fragment shader for the boid-swarm vortex's particles: renders each point sprite
 
 ### CosmicInflationaryTensorModes
 
-`Scene3D/CosmicInflationaryTensorModes.frag` · type=scene3d · geom=grid · mood=calm,dreamy,bright,space · complexity=3
+`Scene3D/CosmicInflationaryTensorModes.frag` · type=scene3d · geom=grid · mood=calm,dreamy,bright,space · complexity=6
 
 COSMIC INFLATIONARY TENSOR MODES: 220x120 heightfield grid of primordial gravitational wave tensor fluctuations from the inflationary epoch. Plus (+) and cross (x) polarization metric strains stretch and squeeze spacetime grid lines with cosmic microwave background photo texturing. audioAdvance -> propagates cosmological tensor gravitational wave perturbations audioKick -> flashes quantum metric fluctuation horizon r…
 
@@ -8486,7 +8486,7 @@ COSMIC INFLATIONARY TENSOR MODES: 220x120 heightfield grid of primordial gravita
 
 ### CosmicRayCherenkovAirShowerCascade
 
-`Scene3D/CosmicRayCherenkovAirShowerCascade.frag` · type=scene3d · geom=indirect · mood=aggressive,dark · complexity=5
+`Scene3D/CosmicRayCherenkovAirShowerCascade.frag` · type=scene3d · geom=indirect · mood=aggressive,dark · complexity=9
 
 COSMIC RAY CHERENKOV AIR SHOWER CASCADE: a SKY FULL of ultra-high-energy cosmic ray extensive air showers (EAS) -- 24 independent cascades laid out across the frustum at every depth, over a faint upper-atmosphere airglow speck field. Relativistic secondary electron/positron avalanche, nitrogen fluorescence tracks, Cherenkov light cones, and atmospheric photo texturing. audioAdvance -> drives relativistic particle cas…
 
@@ -8495,7 +8495,7 @@ COSMIC RAY CHERENKOV AIR SHOWER CASCADE: a SKY FULL of ultra-high-energy cosmic 
 
 ### CosmicStringCuspKinkGravitationalRadiation
 
-`Scene3D/CosmicStringCuspKinkGravitationalRadiation.frag` · type=scene3d · geom=indirect · mood=aggressive,dark · complexity=5
+`Scene3D/CosmicStringCuspKinkGravitationalRadiation.frag` · type=scene3d · geom=indirect · mood=aggressive,dark · complexity=10
 
 COSMIC STRING CUSP KINK GRAVITATIONAL RADIATION: Relativistic cosmic string loops formed in early universe phase transitions. Sub-luminal loop oscillations periodically form light-speed cusps and kinks, emitting beamed gravitational wave bursts and spacetime lensing halos. A NETWORK of 160 loops scattered through the whole view volume (frustum-spread, so a far loop is drawn as large as a near one) rather than the sin…
 
@@ -8504,7 +8504,7 @@ COSMIC STRING CUSP KINK GRAVITATIONAL RADIATION: Relativistic cosmic string loop
 
 ### CosmicStringHyperspaceWeb
 
-`Scene3D/CosmicStringHyperspaceWeb.frag` · type=scene3d · geom=ribbon · mood=bright · complexity=3
+`Scene3D/CosmicStringHyperspaceWeb.frag` · type=scene3d · geom=ribbon · mood=bright · complexity=10
 
 Fragment shader for the cosmic-string web ribbons: blends the per-vertex colour with a photo sample scrolling along the ribbon length, then adds a bright edge rim and a hot core beam down the ribbon centre. The scene's audio reactivity (string tension/vibration, kick jolts, swell, hue) is computed upstream in CosmicStringHyperspaceWeb.vert and arrives here baked into vCol; this stage only re-samples the slideshow pho…
 
@@ -8513,7 +8513,7 @@ Fragment shader for the cosmic-string web ribbons: blends the per-vertex colour 
 
 ### CosmicWebFilamentAnisotropy
 
-`Scene3D/CosmicWebFilamentAnisotropy.frag` · type=scene3d · geom=points · mood=calm,dark,dreamy,space · complexity=3
+`Scene3D/CosmicWebFilamentAnisotropy.frag` · type=scene3d · geom=points · mood=calm,dark,dreamy,space · complexity=10
 
 COSMIC WEB FILAMENT ANISOTROPY: 60,000-particle large-scale dark matter structure spanning the whole frustum. Intersecting cosmic web filaments connect massive galaxy cluster nodes with soft halo glow, over a far-field void glow that carries the empty corners, gravitational lens distortions, and photo-derived cosmological spectra. audioAdvance -> drives cosmic expansion & large-scale structure flow, and the drift of …
 
@@ -8522,7 +8522,7 @@ COSMIC WEB FILAMENT ANISOTROPY: 60,000-particle large-scale dark matter structur
 
 ### Creature
 
-`Scene3D/Creature.frag` · type=scene3d · geom=mesh · mood=calm,dreamy · complexity=3
+`Scene3D/Creature.frag` · type=scene3d · geom=mesh · mood=calm,dreamy · complexity=4
 
 GEOM="MESH" FAMILY: a sea creature (jellyfish, manta, humpback, squid, seahorse, anglerfish) swimming in an open water column. The swimming itself is vertex-stage deformation -- see Creature.vert, which is where the four movement modes live. This stage lights it the way water does: a hard sunlit top, a dim blue-green bounce from below, caustic light webs crawling over the upward-facing surfaces, and enough translucen…
 
@@ -8531,7 +8531,7 @@ GEOM="MESH" FAMILY: a sea creature (jellyfish, manta, humpback, squid, seahorse,
 
 ### CrossSection
 
-`Scene3D/CrossSection.frag` · type=scene3d · geom=mesh · mood=dark,space · complexity=3
+`Scene3D/CrossSection.frag` · type=scene3d · geom=mesh · mood=dark,space · complexity=4
 
 A plane sweeps through a real 3D model and everything in front of it is cut away, leaving the object opened like a scan through a body. The cut face glows; a bright contour runs along the exact line where the surface meets the plane, so the shape of the section reads even where the interior is dark. These meshes are HOLLOW shells with no interior, so a real solid section is not available. What sells it instead is tha…
 
@@ -8540,7 +8540,7 @@ A plane sweeps through a real 3D model and everything in front of it is cut away
 
 ### CryogenicBrinicleStalactite
 
-`Scene3D/CryogenicBrinicleStalactite.frag` · type=scene3d · geom=indirect · mood=calm,dark,dreamy · complexity=4
+`Scene3D/CryogenicBrinicleStalactite.frag` · type=scene3d · geom=indirect · mood=calm,dark,dreamy · complexity=8
 
 CRYOGENIC BRINICLE STALACTITE: a CURTAIN of hollow ice stalactite tubes (brinicles) descending from polar sea ice into supercooled seawater at every depth, through a suspended field of frost motes. Freezing brine channels, benthic frost webs, refractive ice crystal glints, and polar deep ocean photo texturing. audioAdvance -> drives descending brine icicle growth, the freeze front running down each tube, & polar curr…
 
@@ -8549,7 +8549,7 @@ CRYOGENIC BRINICLE STALACTITE: a CURTAIN of hollow ice stalactite tubes (brinicl
 
 ### CryovolcanicIceGeysers
 
-`Scene3D/CryovolcanicIceGeysers.frag` · type=scene3d · geom=indirect · mood=bright,calm,dreamy · complexity=4
+`Scene3D/CryovolcanicIceGeysers.frag` · type=scene3d · geom=indirect · mood=bright,calm,dreamy · complexity=10
 
 Fragment shader for the cryovolcanic ice-geyser plume particles: blends the incoming per-particle colour with a slideshow photo sample and adds a soft glow toward the centre of each plume ribbon. The plume colouring itself (icy cyan/white/sun-gold mix, audioChromaHue and hueP hue rotation, audioLevel brightness) is computed upstream in CryovolcanicIceGeysers.vert and passed in via vColor; this stage only re-textures …
 
@@ -8558,7 +8558,7 @@ Fragment shader for the cryovolcanic ice-geyser plume particles: blends the inco
 
 ### CrystalCave
 
-`Scene3D/CrystalCave.frag` · type=scene3d · geom=cubes · mood=dark,dreamy · complexity=3
+`Scene3D/CrystalCave.frag` · type=scene3d · geom=cubes · mood=dark,dreamy · complexity=10
 
 Lighting for a flight through a cave lined with glowing crystal shards: dark faceted cube faces with luminous edges where three faces meet, depth-tested so nearer crystals occlude the ones behind. The colour and brightness of each shard (vCol) already carry the scene's audio reactivity from CrystalCave.vert -- audioKick flares crystals just ahead of the camera, audioSnare sparkles a hashed subset, audioSwell breathes…
 
@@ -8567,7 +8567,7 @@ Lighting for a flight through a cave lined with glowing crystal shards: dark fac
 
 ### CrystallineCavernTessellation
 
-`Scene3D/CrystallineCavernTessellation.frag` · type=scene3d · geom=patches · mood=calm,bright · complexity=4
+`Scene3D/CrystallineCavernTessellation.frag` · type=scene3d · geom=patches · mood=calm,bright · complexity=7
 
 Lighting for a tessellated amethyst/quartz cavern: a point light at the cavern's centre lights the rock, a projected photo textures the stone substrate, and a per-vertex crystal mask (teCrystal) blooms into emissive, specular-highlighted facets. Audio Reactivity: - audioKick -> brightness of the crystal facet emission - audioChromaHue -> MUSICAL KEY: rotates the final colour, and sets the arc imgPalette() reads the g…
 
@@ -8576,7 +8576,7 @@ Lighting for a tessellated amethyst/quartz cavern: a point light at the cavern's
 
 ### CrystalMonoliths
 
-`Scene3D/CrystalMonoliths.frag` · type=scene3d · geom=quads · mood=calm,bright · complexity=2
+`Scene3D/CrystalMonoliths.frag` · type=scene3d · geom=quads · mood=calm,bright · complexity=8
 
 Lighting for orbiting obsidian and prismatic-glass monolith slabs: maps a slideshow photo through the crystal as refracted light, adds a bright rim glow at each facet's border, and a sharp specular highlight off a fixed key light. The monoliths' motion and base colour (orbit radius/speed, kick expansion, hue) are computed upstream in CrystalMonoliths.vert from audioAdvance, audioKick and audioSwell and passed in thro…
 
@@ -8585,7 +8585,7 @@ Lighting for orbiting obsidian and prismatic-glass monolith slabs: maps a slides
 
 ### CrystalShatterBurst
 
-`Scene3D/CrystalShatterBurst.frag` · type=scene3d · geom=cubes · mood=aggressive,dark · complexity=4
+`Scene3D/CrystalShatterBurst.frag` · type=scene3d · geom=cubes · mood=aggressive,dark · complexity=9
 
 Lighting for the exploding gem geode's tetrahedral shards: a directional diffuse plus specular highlight per facet, with a bright wireframe line traced along each triangle's edges via barycentric coordinates. All of this scene's audio reactivity happens further upstream in CrystalShatterBurst.geom, which fractures the incoming cube mesh into shards and flings them outward on audioKick and audioSubBass, tumbles them w…
 
@@ -8594,7 +8594,7 @@ Lighting for the exploding gem geode's tetrahedral shards: a directional diffuse
 
 ### CubeWave
 
-`Scene3D/CubeWave.frag` · type=scene3d · geom=cubes · mood=aggressive,dark · complexity=3
+`Scene3D/CubeWave.frag` · type=scene3d · geom=cubes · mood=aggressive,dark · complexity=10
 
 Lighting for the neon-city cube flythrough: dark cube faces with bright edges glowing where two or three faces meet, giving each tower a Tron-style wireframe look; depth-tested and opaque. The scene's audio reactivity lives in CubeWave.vert, which sizes each column from its own band of audioSpectrum, flashes street-level columns on audioKick, lights the whole city on audioDrop, and drifts hue with audioCentroid/seed …
 
@@ -8603,7 +8603,7 @@ Lighting for the neon-city cube flythrough: dark cube faces with bright edges gl
 
 ### CyberRibbonHighway
 
-`Scene3D/CyberRibbonHighway.frag` · type=scene3d · geom=ribbon · mood=aggressive,dark · complexity=2
+`Scene3D/CyberRibbonHighway.frag` · type=scene3d · geom=ribbon · mood=aggressive,dark · complexity=10
 
 Lighting for the neon multi-lane highway ribbons: an additive glow that brightens toward each ribbon's outer edge, plus a dashed, glowing lane-divider stripe running down the centre. The ribbons' colour and pulse packets (vCol) are computed upstream in CyberRibbonHighway.vert from audioAdvance (lane speed), audioKick (radius pulses and pulse-packet brightness), audioSwell (highway radius) and audioChromaHue/hueP (hue…
 
@@ -8612,7 +8612,7 @@ Lighting for the neon multi-lane highway ribbons: an additive glow that brighten
 
 ### CyberspaceDNAHelix
 
-`Scene3D/CyberspaceDNAHelix.frag` · type=scene3d · geom=ribbon · mood=dark,psychedelic · complexity=2
+`Scene3D/CyberspaceDNAHelix.frag` · type=scene3d · geom=ribbon · mood=dark,psychedelic · complexity=8
 
 Lighting for the double-helix DNA strand: colours each base-pair rung by nucleotide (Adenine/Thymine/Cytosine/Guanine, cycled along the strand) and flashes it toward white as a transcription pulse travels past. The transcription pulse itself (vTranscription, which drives both the brightness boost and the colour mix toward the pulse colour) is generated per-vertex in CyberspaceDNAHelix.vert, where audioKick sharpens i…
 
@@ -8621,7 +8621,7 @@ Lighting for the double-helix DNA strand: colours each base-pair rung by nucleot
 
 ### CyberVoxelTerraform
 
-`Scene3D/CyberVoxelTerraform.frag` · type=scene3d · geom=cubes · mood=aggressive,dark · complexity=3
+`Scene3D/CyberVoxelTerraform.frag` · type=scene3d · geom=cubes · mood=aggressive,dark · complexity=10
 
 Lighting for a voxel landscape projected with a slideshow photo: diffuse-lit cube terrain blended with the photo texture, coloured by elevation (vHeight) via the house photo-palette, with glowing neon rim lines on each voxel's top face. audioKick brightens the neon top-face rim, and the photo-palette itself (imgPalette) follows the musical key through audioChromaHue and audioAdvance with saturation shaped by audioVal…
 
@@ -8630,7 +8630,7 @@ Lighting for a voxel landscape projected with a slideshow photo: diffuse-lit cub
 
 ### CymaticsPlate
 
-`Scene3D/CymaticsPlate.frag` · type=scene3d · geom=points · mood=calm · complexity=2
+`Scene3D/CymaticsPlate.frag` · type=scene3d · geom=points · mood=calm · complexity=9
 
 Point-sprite shader for the Chladni-figure sand grains: an additive dot with a bright core and a broad halo, so grains that have converged onto a nodal line read as glowing figures rather than as clipped pin-pricks that the frame's own downscale averages away. audioLevel and audioKick both boost the sprite's overall brightness; the grain's own colour (vCol) and its position on the vibrating plate are computed upstrea…
 
@@ -8639,7 +8639,7 @@ Point-sprite shader for the Chladni-figure sand grains: an additive dot with a b
 
 ### DandelionClock
 
-`Scene3D/DandelionClock.frag` · type=scene3d · geom=indirect · mood=calm,bright,dreamy · complexity=4
+`Scene3D/DandelionClock.frag` · type=scene3d · geom=indirect · mood=calm,bright,dreamy · complexity=1
 
 Fragment stage for DandelionClock: a summer meadow behind (the photo as soft bokeh with round highlights), the seed head backlit by a low sun -- the pappus bristles as fine radial lines in a soft white disc, the seeds as tiny brown grains, the stalks as hairlines; the treble sparkles the bristles, the kick warms the backlight. Audio Reactivity: audioHigh -> bristle sparkle; audioKick -> backlight; audioSwell -> relea…
 
@@ -8648,7 +8648,7 @@ Fragment stage for DandelionClock: a summer meadow behind (the photo as soft bok
 
 ### DeepSeaHydrothermalChimneyPillar
 
-`Scene3D/DeepSeaHydrothermalChimneyPillar.frag` · type=scene3d · geom=grid · mood=dark,calm · complexity=4
+`Scene3D/DeepSeaHydrothermalChimneyPillar.frag` · type=scene3d · geom=grid · mood=dark,calm · complexity=8
 
 DEEP SEA HYDROTHERMAL CHIMNEY PILLAR: an abyssal black-smoker VENT FIELD -- fifteen mineral chimney towers in three depth layers, standing in a slowly swelling water column threaded with marine snow. 400C mineral-laden superheated hydrothermal fluid vents from every summit into near-freezing ocean water, precipitating anhydrite, chalcopyrite, and pyrite crystals with deep-sea photo texturing. audioAdvance -> drives h…
 
@@ -8657,7 +8657,7 @@ DEEP SEA HYDROTHERMAL CHIMNEY PILLAR: an abyssal black-smoker VENT FIELD -- fift
 
 ### DeepSeaVentsEcosystem
 
-`Scene3D/DeepSeaVentsEcosystem.frag` · type=scene3d · geom=indirect · mood=calm,dark,dreamy · complexity=4
+`Scene3D/DeepSeaVentsEcosystem.frag` · type=scene3d · geom=indirect · mood=calm,dark,dreamy · complexity=10
 
 Lighting for a hydrothermal-vent ecosystem's particles: colours each one by species (vSpecies) -- sulfur-mineral smoker particles, bioluminescent siphonophores, or tube-worm plume tips -- tinted toward the house photo palette and brightened by its own bio-glow value (vBioGlow). audioKick pumps the overall brightness of every organism, and hueP applies a final preset hue rotation; the photo palette itself follows the …
 
@@ -8666,7 +8666,7 @@ Lighting for a hydrothermal-vent ecosystem's particles: colours each one by spec
 
 ### DendriticSnowCrystal
 
-`Scene3D/DendriticSnowCrystal.frag` · type=scene3d · geom=indirect · mood=dark,calm,dreamy · complexity=4
+`Scene3D/DendriticSnowCrystal.frag` · type=scene3d · geom=indirect · mood=dark,calm,dreamy · complexity=9
 
 Lighting for growing dendritic snow-crystal facets: mixes an icy- white core with a rainbow-dispersion tint per facet (vRefract), overlays a refracted slideshow photo through the ice, and scatters bright hashed specular sparkle glints across the surface. audioKick intensifies the sparkle glints, and the facet's rainbow tint (imgPalette) follows the musical key through audioChromaHue/audioAdvance with audioValence sha…
 
@@ -8675,7 +8675,7 @@ Lighting for growing dendritic snow-crystal facets: mixes an icy- white core wit
 
 ### DendriticSnowflakeIceCrystalHabit
 
-`Scene3D/DendriticSnowflakeIceCrystalHabit.frag` · type=scene3d · geom=grid · mood=calm,dreamy,bright · complexity=3
+`Scene3D/DendriticSnowflakeIceCrystalHabit.frag` · type=scene3d · geom=grid · mood=calm,dreamy,bright · complexity=4
 
 DENDRITIC SNOWFLAKE ICE CRYSTAL HABIT: Hexagonal 6-fold dendritic snowflake growth (stellar dendrite / fernlike crystal habit). Non-linear diffusion-limited aggregation, faceted ice prism specular highlights, prismatic refraction, and cryogenic photo texturing. audioAdvance -> navigates supersaturated ice vapor diffusion & branch growth audioKick -> flashes ice crystal facet specular glints & diamond sparkles audioSw…
 
@@ -8684,7 +8684,7 @@ DENDRITIC SNOWFLAKE ICE CRYSTAL HABIT: Hexagonal 6-fold dendritic snowflake grow
 
 ### Detonation
 
-`Scene3D/Detonation.frag` · type=scene3d · geom=grid · mood=aggressive,dark · complexity=4
+`Scene3D/Detonation.frag` · type=scene3d · geom=grid · mood=aggressive,dark · complexity=3
 
 _(Vorschau eingeschränkt: Sim-Textur/Mehrpass — Bilder unterschätzen die echte App)_
 
@@ -8695,7 +8695,7 @@ Two-sided lighting for a shattering, exploding sphere: the outer shell reads as 
 
 ### DiatomSilicaMicrofrustule
 
-`Scene3D/DiatomSilicaMicrofrustule.frag` · type=scene3d · geom=quads · mood=bright,calm,dreamy · complexity=3
+`Scene3D/DiatomSilicaMicrofrustule.frag` · type=scene3d · geom=quads · mood=bright,calm,dreamy · complexity=8
 
 Lighting for a diatom's circular silica shell (valve): discards outside the disc, overlays a hexagonal micropore lattice, blends a slideshow photo with an iridescent structural-colour palette, and adds a bright rim glow at the shell's edge, fading into distance fog. audioPhase offsets the iridescent colour arc, audioKick brightens the rim glow, and audioChromaHue (guarded by hueP) rotates the final hue; the iridescen…
 
@@ -8704,7 +8704,7 @@ Lighting for a diatom's circular silica shell (valve): discards outside the disc
 
 ### DielectricResonatorMetagrating
 
-`Scene3D/DielectricResonatorMetagrating.frag` · type=scene3d · geom=quads · mood=dark,aggressive · complexity=3
+`Scene3D/DielectricResonatorMetagrating.frag` · type=scene3d · geom=quads · mood=dark,aggressive · complexity=8
 
 DIELECTRIC RESONATOR METAGRATING: 2D array of resonant high-refractive-index silicon dielectric nanopillars. High-Q electric and magnetic Mie dipole resonances, polarimetric phase retardation, diffraction beam splitting, and photo-derived optical texturing. audioAdvance -> navigates dielectric polarimetric phase wavefront translation audioKick -> flashes high-Q Mie dipole resonance optical transmission bursts audioSw…
 
@@ -8713,7 +8713,7 @@ DIELECTRIC RESONATOR METAGRATING: 2D array of resonant high-refractive-index sil
 
 ### Dissolve
 
-`Scene3D/Dissolve.frag` · type=scene3d · geom=mesh · mood=dreamy,dark · complexity=4
+`Scene3D/Dissolve.frag` · type=scene3d · geom=mesh · mood=dreamy,dark · complexity=5
 
 The object as a cloud of its own surface: every triangle is a splat (the placement is in the geometry stage), drifting out on a curl field and drawn back in. The silhouette survives as density, not as shape. Each splat keeps the colour its triangle had, so the cloud is not a uniform dust -- it carries the object's own markings, and a hull's panels or a statue's shadows stay faintly readable in the drift. That is what…
 
@@ -8722,7 +8722,7 @@ The object as a cloud of its own surface: every triangle is a splat (the placeme
 
 ### DNAOrigamiNanotubeLattice
 
-`Scene3D/DNAOrigamiNanotubeLattice.frag` · type=scene3d · geom=ribbon · mood=bright,psychedelic · complexity=3
+`Scene3D/DNAOrigamiNanotubeLattice.frag` · type=scene3d · geom=ribbon · mood=bright,psychedelic · complexity=10
 
 DNA ORIGAMI NANOTUBE LATTICE: Bionanotechnological self-assembled 4-helix bundle DNA origami nanotubes -- ten of them on a slowly turning ring lattice, each at its own depth in the culture so the near bundles are lit and the far ones sink into the medium. Interweaving phosphoribosyl double helices, staple strand crossovers, Cy5/Cy3 fluorophore tagging pulses, and biomolecular photo texturing. audioAdvance -> drives D…
 
@@ -8731,7 +8731,7 @@ DNA ORIGAMI NANOTUBE LATTICE: Bionanotechnological self-assembled 4-helix bundle
 
 ### DragonFlight
 
-`Scene3D/DragonFlight.frag` · type=scene3d · geom=points · mood=aggressive,dark · complexity=2
+`Scene3D/DragonFlight.frag` · type=scene3d · geom=points · mood=aggressive,dark · complexity=9
 
 Point-sprite shader shared by every particle of the flying dragon (body scales, wing membranes, fire breath and sky embers): a soft additive glow dot with Gaussian falloff. All of this scene's audio reactivity -- the beat-locked wingbeat (audioBeatPhase), the fire breath's intensity on audioDrop/audioKick, body shimmer from audioBass/audioSwell, and hue drift from audioChromaHue -- is computed per-particle upstream i…
 
@@ -8740,7 +8740,7 @@ Point-sprite shader shared by every particle of the flying dragon (body scales, 
 
 ### DrumSkin
 
-`Scene3D/DrumSkin.frag` · type=scene3d · geom=indirect · mood=aggressive,dark · complexity=4
+`Scene3D/DrumSkin.frag` · type=scene3d · geom=indirect · mood=aggressive,dark · complexity=8
 
 Lighting for the vibrating drumhead mesh generated by DrumSkin.comp: a thin, tight, slightly iridescent mylar-film material lit by two key lights plus a pair of tight/broad specular highlights, so the Bessel-mode ripples read through the way the surface catches light rather than through flat diffuse shading. Colour is keyed off the signed displacement (vDisp) so crests and troughs read differently, with faint glowing…
 
@@ -8749,7 +8749,7 @@ Lighting for the vibrating drumhead mesh generated by DrumSkin.comp: a thin, tig
 
 ### DysonSphereCore
 
-`Scene3D/DysonSphereCore.frag` · type=scene3d · geom=cubes · mood=dark,space · complexity=4
+`Scene3D/DysonSphereCore.frag` · type=scene3d · geom=cubes · mood=dark,space · complexity=7
 
 DYSON SPHERE CORE: Huge panels and spires of a megastructure surrounding a central star. The geometry is built from instances, and shaded with intricate tech patterns and emissive energy lines. audioAdvance -> rotation of the structure and camera travel audioKick -> flashes from energy conduits audioSwell -> ambient illumination and star brightness audioChromaHue-> color palette follows the musical key Per-activation…
 
@@ -8758,7 +8758,7 @@ DYSON SPHERE CORE: Huge panels and spires of a megastructure surrounding a centr
 
 ### DysonSwarmConstruction
 
-`Scene3D/DysonSwarmConstruction.frag` · type=scene3d · geom=indirect · mood=space,dark,calm · complexity=4
+`Scene3D/DysonSwarmConstruction.frag` · type=scene3d · geom=indirect · mood=space,dark,calm · complexity=9
 
 Fragment stage for DysonSwarmConstruction: the star, the sky and the panels. The star is a soft disc (kind 2) that discards outside its glow; the sky (kind -1) is deep space with the photo's grain as a star field; panels get a thin frame and, on the kick, a flare on their back. Audio Reactivity: audioKick flares the panel backs; audioBass swells the star; audioSwell warms the sky.
 
@@ -8767,7 +8767,7 @@ Fragment stage for DysonSwarmConstruction: the star, the sky and the panels. The
 
 ### DysonSwarmSolarHarvester
 
-`Scene3D/DysonSwarmSolarHarvester.frag` · type=scene3d · geom=quads · mood=dark,aggressive · complexity=2
+`Scene3D/DysonSwarmSolarHarvester.frag` · type=scene3d · geom=quads · mood=dark,aggressive · complexity=10
 
 Lighting for a Dyson-swarm solar-collector panel: discards outside a hexagonal boundary, blends a reflected slideshow photo with a gold/blue photovoltaic-cell colour that varies by ring (vRingIdx), adds a bright hexagon-edge rim, and overlays a high-energy laser relay pulse (vLaserRelay). audioSwell brightens the photovoltaic colour mix, relayP scales the laser relay's intensity, and hueP rotates the final hue; the p…
 
@@ -8776,7 +8776,7 @@ Lighting for a Dyson-swarm solar-collector panel: discards outside a hexagonal b
 
 ### E8LieAlgebraRootLattice
 
-`Scene3D/E8LieAlgebraRootLattice.frag` · type=scene3d · geom=cubes · mood=aggressive,bright,psychedelic · complexity=4
+`Scene3D/E8LieAlgebraRootLattice.frag` · type=scene3d · geom=cubes · mood=aggressive,bright,psychedelic · complexity=9
 
 E8 LIE ALGEBRA ROOT LATTICE: 240 root vectors of the exceptional 8D Lie group E8, projected into 3D as rotatable faceted Gosset polytope cube clusters with sharp Bragg reflections, edge bevel glows, and dynamic photo-palette mapping. audioAdvance -> rotates 8D Lie algebra projection planes audioKick -> flashes root lattice Bragg diffraction resonance peaks audioSwell -> widens polytope cluster radius & facet luminanc…
 
@@ -8785,7 +8785,7 @@ E8 LIE ALGEBRA ROOT LATTICE: 240 root vectors of the exceptional 8D Lie group E8
 
 ### EchoSpiral
 
-`Scene3D/EchoSpiral.frag` · type=scene3d · geom=ribbon · mood=psychedelic,dreamy · complexity=1
+`Scene3D/EchoSpiral.frag` · type=scene3d · geom=ribbon · mood=psychedelic,dreamy · complexity=10
 
 Lighting for the whipping comet-ribbon trails: a wide soft glow band across the ribbon's width with a brighter luminous core down the centre line, plus a soft-knee tone map so a hot audio moment compresses smoothly instead of clipping the whole frame to white. The trail's colour and brightness (vCol) are computed upstream in EchoSpiral.vert, where audioKick cracks the whip with extra speed, audioSwell and audioDrop s…
 
@@ -8794,7 +8794,7 @@ Lighting for the whipping comet-ribbon trails: a wide soft glow band across the 
 
 ### EnneperMinimalSurfaceHyperfold
 
-`Scene3D/EnneperMinimalSurfaceHyperfold.frag` · type=scene3d · geom=grid · mood=calm,dreamy,bright · complexity=3
+`Scene3D/EnneperMinimalSurfaceHyperfold.frag` · type=scene3d · geom=grid · mood=calm,dreamy,bright · complexity=7
 
 ENNEPER MINIMAL SURFACE HYPERFOLD: 220x120 parametric grid of a higher-order self-intersecting Enneper minimal surface. Gaussian curvature shading, double-sided specular glints, and photo texturing mapped along isothermal coordinate patches. audioAdvance -> rotates isometric parameter domain through 3D space audioKick -> flashes Gaussian curvature focal point highlights audioSwell -> widens self-intersecting hyperfol…
 
@@ -8803,7 +8803,7 @@ ENNEPER MINIMAL SURFACE HYPERFOLD: 220x120 parametric grid of a higher-order sel
 
 ### EscalatorHallCrossing
 
-`Scene3D/EscalatorHallCrossing.frag` · type=scene3d · geom=indirect · mood=dark,calm,dreamy · complexity=4
+`Scene3D/EscalatorHallCrossing.frag` · type=scene3d · geom=indirect · mood=dark,calm,dreamy · complexity=1
 
 ESCALATOR HALL CROSSING (fragment): a station hall with crossing escalators. Steps are ribbed metal treads catching the hall light, the balustrades are glass with the photo behind them, riders are dark silhouettes with a rim, and the advertising panels on the far wall carry the photo lit by chroma classes. The swell is the hall light, the spectrum runs along the step edges as a comb of colour, the kick lifts the pane…
 
@@ -8812,7 +8812,7 @@ ESCALATOR HALL CROSSING (fragment): a station hall with crossing escalators. Ste
 
 ### EuropaChaosTerrain
 
-`Scene3D/EuropaChaosTerrain.frag` · type=scene3d · geom=patches · mood=space,calm,dark · complexity=4
+`Scene3D/EuropaChaosTerrain.frag` · type=scene3d · geom=patches · mood=space,calm,dark · complexity=2
 
 EUROPA CHAOS TERRAIN: blue-white ice rafts in a matrix of rubble ice, the rust-red lineae along the raft edges, and -- the reason to be here -- the ocean beneath, whose light wells up through the seams with the sub-bass. Low sunlight (the swell) rakes across the rafts; the kick sparks frost on the ridges; the photo is the ice texture. Camera height fixed. Audio Reactivity: audioSubBass -> ocean light through the seam…
 
@@ -8821,7 +8821,7 @@ EUROPA CHAOS TERRAIN: blue-white ice rafts in a matrix of rubble ice, the rust-r
 
 ### ExoticStation
 
-`Scene3D/ExoticStation.frag` · type=scene3d · geom=mesh · mood=bright,calm,space · complexity=3
+`Scene3D/ExoticStation.frag` · type=scene3d · geom=mesh · mood=bright,calm,space · complexity=1
 
 GEOM="MESH" STATION FAMILY: the five one-off stations that don't fit the other families (agri-biosphere, neutral diplomatic seat, solar collector, luxury border post, smuggler hideout), each shown against its own backdrop painted onto the sky shell Scene3DShader::buildGeometry() appends after the loaded mesh (see ExoticStation.vert) -- vBg selects shell vs. hull. Unlike the other families, these five are meant to loo…
 
@@ -8830,7 +8830,7 @@ GEOM="MESH" STATION FAMILY: the five one-off stations that don't fit the other f
 
 ### ExplodedViewDiagram
 
-`Scene3D/ExplodedViewDiagram.frag` · type=scene3d · geom=mesh · mood=calm,dark · complexity=3
+`Scene3D/ExplodedViewDiagram.frag` · type=scene3d · geom=mesh · mood=calm,dark · complexity=4
 
 EXPLODED VIEW DIAGRAM: drawn as a technical illustration -- a blueprint. The paper is the photo, bleached and gridded; the model's surfaces are shaded in the drawing's flat washes with ink edges where the surface turns away from the eye; the parts that have flown apart carry leader lines of light back toward the centre (the explosion's own measure). The bass warms the wash, the kick brightens the ink, the treble adds…
 
@@ -8839,7 +8839,7 @@ EXPLODED VIEW DIAGRAM: drawn as a technical illustration -- a blueprint. The pap
 
 ### FadeOutDissolution
 
-`Scene3D/FadeOutDissolution.frag` · type=scene3d · geom=indirect · mood=calm,dreamy,bright · complexity=4
+`Scene3D/FadeOutDissolution.frag` · type=scene3d · geom=indirect · mood=calm,dreamy,bright · complexity=6
 
 Fragment stage for FadeOutDissolution: each particle shows its patch of the photo; as it frees it fades toward the palette and sparkles on the kick; the backdrop (kind -1) is near-black with a faint palette glow so the dissolving picture has dark to thin into. Audio Reactivity: audioKick sparkles the freed particles; audioLevel is the curtain brightness; audioFadeOut dims the backdrop.
 
@@ -8848,7 +8848,7 @@ Fragment stage for FadeOutDissolution: each particle shows its patch of the phot
 
 ### FeatherStorm
 
-`Scene3D/FeatherStorm.frag` · type=scene3d · geom=indirect · mood=calm,dreamy · complexity=4
+`Scene3D/FeatherStorm.frag` · type=scene3d · geom=indirect · mood=calm,dreamy · complexity=8
 
 Cuts a single feather's silhouette out of its quad and shades it as a backlit, barbed vane rather than a flat leaf shape. audioLevel brightens the through-vane translucency, audioKick strengthens the fresnel rim, audioHigh brightens the specular highlight, audioAmbient adds a flat ambient tint, and audioBeat/audioSubBass pulse the final brightness; hue comes from the rotating photo-arc palette (imgPalette), whose arc…
 
@@ -8857,7 +8857,7 @@ Cuts a single feather's silhouette out of its quad and shades it as a backlit, b
 
 ### FerrisWheelNight
 
-`Scene3D/FerrisWheelNight.frag` · type=scene3d · geom=indirect · mood=dark,dreamy · complexity=4
+`Scene3D/FerrisWheelNight.frag` · type=scene3d · geom=indirect · mood=dark,dreamy · complexity=6
 
 Fragment stage for FerrisWheelNight: a night sky with round stars, the fairground below as the photo lit by stalls (the swell), the wheel's spokes and rim strung with round lamps whose patterns run with the spectrum bands (spoke i = band i, lamps along the spoke light up to the band's level; the rim lamps chase on the clock), the cabins as photo boxes with lit windows, the kick a flash of the hub star. Audio Reactivi…
 
@@ -8866,7 +8866,7 @@ Fragment stage for FerrisWheelNight: a night sky with round stars, the fairgroun
 
 ### FiberopticLightLoom
 
-`Scene3D/FiberopticLightLoom.frag` · type=scene3d · geom=ribbon · mood=bright,calm · complexity=3
+`Scene3D/FiberopticLightLoom.frag` · type=scene3d · geom=ribbon · mood=bright,calm · complexity=10
 
 Shades a woven bundle of fiber-optic strands: each strand's cross-section (vSide) blends its per-vertex color with a slideshow photo that scrolls lengthwise along the strand (vLength, animated by time), and a bright rim picks out the strand's outer edge. This fragment stage declares no audio uniforms itself; any audio-driven brightness arrives already baked into the per-vertex vCol supplied by the companion vertex sh…
 
@@ -8875,7 +8875,7 @@ Shades a woven bundle of fiber-optic strands: each strand's cross-section (vSide
 
 ### FireflyField
 
-`Scene3D/FireflyField.frag` · type=scene3d · geom=points · mood=calm · complexity=2
+`Scene3D/FireflyField.frag` · type=scene3d · geom=points · mood=calm · complexity=10
 
 Shades one firefly as a soft radial glow sprite (a Gaussian falloff from the point-sprite center), meant to be additively blended so overlapping fireflies pool into brighter light. This fragment shader declares no audio uniforms of its own; its audio-reactive color and brightness (vCol) are computed per-vertex by the companion vertex shader and only shaped here by the radial falloff.
 
@@ -8884,7 +8884,7 @@ Shades one firefly as a soft radial glow sprite (a Gaussian falloff from the poi
 
 ### Fireworks
 
-`Scene3D/Fireworks.frag` · type=scene3d · geom=points · mood=bright · complexity=2
+`Scene3D/Fireworks.frag` · type=scene3d · geom=points · mood=bright · complexity=10
 
 Shades one firework spark as a soft radial glow point (additive blending), a tight Gaussian falloff from the point-sprite center that lets overlapping sparks pool into brighter bursts of light. This fragment shader declares no audio uniforms of its own; the spark's audio-reactive color and brightness (vCol) are computed per-vertex by the companion vertex shader and only shaped here by the radial falloff.
 
@@ -8893,7 +8893,7 @@ Shades one firework spark as a soft radial glow point (additive blending), a tig
 
 ### Fleet
 
-`Scene3D/Fleet.frag` · type=scene3d · geom=mesh · mood=space,dark · complexity=4
+`Scene3D/Fleet.frag` · type=scene3d · geom=mesh · mood=space,dark · complexity=5
 
 A formation of one craft drawn many times (the placement is in the vertex stage, via instances="N" and gl_InstanceID). The subject is the ORDER, not the ship: the formation tightens on the beat, breathes between, and a drop blows it apart. Shading is deliberately simple and mostly the same for every craft. Detail per ship would be wasted -- at formation scale each is a few dozen pixels -- and worse, it would compete …
 
@@ -8902,7 +8902,7 @@ A formation of one craft drawn many times (the placement is in the vertex stage,
 
 ### FleetJump
 
-`Scene3D/FleetJump.frag` · type=scene3d · geom=mesh · mood=space,dark,aggressive · complexity=4
+`Scene3D/FleetJump.frag` · type=scene3d · geom=mesh · mood=space,dark,aggressive · complexity=5
 
 Fragment stage for FleetJump: hulls from their own material, drives spooling up along the arc (light), a hyperspace streak tint as a craft jumps; the sky shell is a starfield with a faint nebula the drives light on the kick. Audio Reactivity: audioKick pulses the drive glow; audioSwell brightens the key light; sceneProgress spools the drives.
 
@@ -8911,7 +8911,7 @@ Fragment stage for FleetJump: hulls from their own material, drives spooling up 
 
 ### FlowRibbons
 
-`Scene3D/FlowRibbons.frag` · type=scene3d · geom=indirect · mood=dreamy · complexity=4
+`Scene3D/FlowRibbons.frag` · type=scene3d · geom=indirect · mood=dreamy · complexity=9
 
 Shades a twisting flow ribbon as a thin, two-sided, iridescent surface -- lit from both faces since a ribbon has no volume, with a tight specular flash that fires when a twisting face swings toward the camera and a fresnel-driven iridescent hue shift like a thin film. audioHigh brightens the specular flash, audioLevel strengthens the iridescent fresnel glow, audioKick brightens a pulse that continually travels along …
 
@@ -8920,7 +8920,7 @@ Shades a twisting flow ribbon as a thin, two-sided, iridescent surface -- lit fr
 
 ### FortressStation
 
-`Scene3D/FortressStation.frag` · type=scene3d · geom=mesh · mood=dark,aggressive,space · complexity=3
+`Scene3D/FortressStation.frag` · type=scene3d · geom=mesh · mood=dark,aggressive,space · complexity=1
 
 GEOM="MESH" STATION FAMILY: armored/military hulls (bastions, citadels, border patrol posts, defense platforms, fortified outposts), shown against a moody dust nebula painted onto the sky shell Scene3DShader::buildGeometry() appends after the loaded mesh (see FortressStation.vert) -- vBg selects shell vs. hull. Harsh single-source key light (a searchlight/beacon, not a soft star) plus a pulsing red alarm-strobe accen…
 
@@ -8929,7 +8929,7 @@ GEOM="MESH" STATION FAMILY: armored/military hulls (bastions, citadels, border p
 
 ### FullereneC60BuckyballCrystalLattice
 
-`Scene3D/FullereneC60BuckyballCrystalLattice.frag` · type=scene3d · geom=cubes · mood=dark,calm · complexity=3
+`Scene3D/FullereneC60BuckyballCrystalLattice.frag` · type=scene3d · geom=cubes · mood=dark,calm · complexity=10
 
 FULLERENE C60 BUCKYBALL CRYSTAL LATTICE: Buckminsterfullerene C60 crystal lattice (fullerite). Truncated icosahedral carbon cages arranged in a 3D FCC crystal structure. Pentagonal/hexagonal ring vibrations, metallic carbon luster, and fullerene photo texturing. audioAdvance -> rotates fullerite crystal orientation & intramolecular cage tumbling audioKick -> flashes C60 intramolecular vibrational mode resonance burst…
 
@@ -8938,7 +8938,7 @@ FULLERENE C60 BUCKYBALL CRYSTAL LATTICE: Buckminsterfullerene C60 crystal lattic
 
 ### GalaxyMergerNBody
 
-`Scene3D/GalaxyMergerNBody.frag` · type=scene3d · geom=indirect · mood=space,dark,dreamy · complexity=4
+`Scene3D/GalaxyMergerNBody.frag` · type=scene3d · geom=indirect · mood=space,dark,dreamy · complexity=6
 
 Fragment stage for GalaxyMergerNBody: soft star dots, two glowing cores and a deep-space sky. A star is a quad that discards outside its radial falloff, so the discs read as dust rather than confetti; the cores (kind 2) are wide soft glows swelling with the bass; the sky (kind -1) is near-black with the photo's grain as a distant star field. Audio Reactivity: audioKick flashes the stars; audioBass swells the cores.
 
@@ -8947,7 +8947,7 @@ Fragment stage for GalaxyMergerNBody: soft star dots, two glowing cores and a de
 
 ### GalleryHall
 
-`Scene3D/GalleryHall.frag` · type=scene3d · geom=quads · mood=dark,calm · complexity=1
+`Scene3D/GalleryHall.frag` · type=scene3d · geom=quads · mood=dark,calm · complexity=9
 
 Shades a gallery wall of gold-framed photo crops (vKind < 0.5) under warm spotlighting, plus soft white ceiling light-strip bars (vKind >= 0.5); each frame samples a per-instance seeded crop (vSeed) of the current slideshow photo. audioChromaHue rotates the gold frame's hue slightly, and audioDrop punches the whole scene brighter on a musical drop. audioLevel and audioKick were added specifically to this fragment sta…
 
@@ -8956,7 +8956,7 @@ Shades a gallery wall of gold-framed photo crops (vKind < 0.5) under warm spotli
 
 ### GearWorks
 
-`Scene3D/GearWorks.frag` · type=scene3d · geom=cubes · mood=aggressive,dark · complexity=3
+`Scene3D/GearWorks.frag` · type=scene3d · geom=cubes · mood=aggressive,dark · complexity=10
 
 Shades a gear-mechanism face as flat brass with machined, luminous edges: distance from each cube corner (vCorner) picks out the beveled edge lines and brightens them against a dim flat face. This fragment shader declares no audio uniforms directly; its color (vCol) is computed per-vertex by the companion vertex shader, so any audio reactivity arrives already baked into that per-vertex color.
 
@@ -8965,7 +8965,7 @@ Shades a gear-mechanism face as flat brass with machined, luminous edges: distan
 
 ### GeomagneticDynamoCore
 
-`Scene3D/GeomagneticDynamoCore.frag` · type=scene3d · geom=indirect · mood=dark,aggressive · complexity=4
+`Scene3D/GeomagneticDynamoCore.frag` · type=scene3d · geom=indirect · mood=dark,aggressive · complexity=8
 
 GEOMAGNETIC DYNAMO CORE: the flux-tube strings of a planetary dynamo - gold and teal filament ropes coiling in four concentric shells around the core's vertical rotation axis, camera orbiting close with a slow pitch, the whole thing suspended in a faint fog of dissolved field. audioKick -> field-line surge audioAdvance -> orbit + convection + fog drift audioBass/audioHigh -> flux-blob girth audioSwell -> fog brightne…
 
@@ -8974,7 +8974,7 @@ GEOMAGNETIC DYNAMO CORE: the flux-tube strings of a planetary dynamo - gold and 
 
 ### GeothermalFumaroleMineralSpires
 
-`Scene3D/GeothermalFumaroleMineralSpires.frag` · type=scene3d · geom=grid · mood=dark,calm · complexity=4
+`Scene3D/GeothermalFumaroleMineralSpires.frag` · type=scene3d · geom=grid · mood=dark,calm · complexity=3
 
 GEOTHERMAL FUMAROLE MINERAL SPIRES: Deep-sea hydrothermal vent chimneys and volcanic solfatara mineral towers. Sulfide mineral precipitations, superheated black smoker hydrothermal venting, mineral crust crystalline sheen, and geothermal photo texturing. A whole FIELD of chimneys marching away from the camera (see the .vert), standing against a far curtain of mineral steam. audioAdvance -> drives hydrothermal fluid c…
 
@@ -8983,7 +8983,7 @@ GEOTHERMAL FUMAROLE MINERAL SPIRES: Deep-sea hydrothermal vent chimneys and volc
 
 ### GlacierCalvingFront
 
-`Scene3D/GlacierCalvingFront.frag` · type=scene3d · geom=indirect · mood=calm,bright · complexity=4
+`Scene3D/GlacierCalvingFront.frag` · type=scene3d · geom=indirect · mood=calm,bright · complexity=2
 
 Fragment stage for GlacierCalvingFront: a grey polar sky, the cliff face of blue-white ice carrying the photo as its crevasse pattern and lit from within by the bass, the sea dark with the cliff reflected, slabs as photo ice, spray as round white drops, the kick a flash along the fresh calving scar. Audio Reactivity: audioBass -> ice glow; audioKick -> scar flash; audioSwell -> daylight; audioHigh -> spray sparkle; a…
 
@@ -8992,7 +8992,7 @@ Fragment stage for GlacierCalvingFront: a grey polar sky, the cliff face of blue
 
 ### GlacierTessellation
 
-`Scene3D/GlacierTessellation.frag` · type=scene3d · geom=patches · mood=calm,bright · complexity=4
+`Scene3D/GlacierTessellation.frag` · type=scene3d · geom=patches · mood=calm,bright · complexity=1
 
 GLACIER TESSELLATION: low flight over tessellated glacier ice - white/blue subsurface-scattering ice with crevasse light from INSIDE, tinted by the photo palette; the terrain streams beneath the camera. audioAdvance -> flight speed audioKick -> crevasse flash audioBass -> ice-wave heave
 
@@ -9001,7 +9001,7 @@ GLACIER TESSELLATION: low flight over tessellated glacier ice - white/blue subsu
 
 ### GlassNaveFlight
 
-`Scene3D/GlassNaveFlight.frag` · type=scene3d · geom=indirect · mood=bright,dreamy,calm · complexity=4
+`Scene3D/GlassNaveFlight.frag` · type=scene3d · geom=indirect · mood=bright,dreamy,calm · complexity=3
 
 Fragment stage for GlassNaveFlight: stone (pillars, floor) and sky in the opaque pass, backlit glass panes in the weighted-blended OIT pass. Each pane's glow is its spectrum band; the sun's height and colour come from the host day clock; the floor takes the coloured light of the panes as a soft wash. Declares oitPass, so the host runs the transparent pass. Audio Reactivity: audioSpectrum[32] -> pane glow (light); aud…
 
@@ -9010,7 +9010,7 @@ Fragment stage for GlassNaveFlight: stone (pillars, floor) and sky in the opaque
 
 ### GlassVesselsOIT
 
-`Scene3D/GlassVesselsOIT.frag` · type=scene3d · geom=indirect · mood=calm,bright,dreamy · complexity=4
+`Scene3D/GlassVesselsOIT.frag` · type=scene3d · geom=indirect · mood=calm,bright,dreamy · complexity=3
 
 GLASS VESSELS: two-pass shader. Opaque pass: the back wall (the photo as a lit studio wall) and the shelf. OIT pass: the glass -- each vessel tinted by its pitch class, the photo refracted through it (the wall image sampled along the refracted ray), a Fresnel reflection, a specular highlight; the class that sounds fills its vessel with light (the chroma as the liquid level glow), the kick sparks the highlights, the t…
 
@@ -9019,7 +9019,7 @@ GLASS VESSELS: two-pass shader. Opaque pass: the back wall (the photo as a lit s
 
 ### GrapheneGyroidTriplyPeriodicMinimalSurface
 
-`Scene3D/GrapheneGyroidTriplyPeriodicMinimalSurface.frag` · type=scene3d · geom=grid · mood=calm,dreamy,bright · complexity=3
+`Scene3D/GrapheneGyroidTriplyPeriodicMinimalSurface.frag` · type=scene3d · geom=grid · mood=calm,dreamy,bright · complexity=8
 
 GRAPHENE GYROID TRIPLY PERIODIC MINIMAL SURFACE: 220x120 heightfield grid of a continuous 3D Gyroid minimal surface (TPMS). Endless interpenetrating non-self-intersecting labyrinth channels, sp2 carbon honeycomb sheen, and crystallographic photo texturing. audioAdvance -> navigates gyroid minimal surface isometric deformation & rotation audioKick -> flashes gyroid neck opening & saddle-point specular reflections audi…
 
@@ -9028,7 +9028,7 @@ GRAPHENE GYROID TRIPLY PERIODIC MINIMAL SURFACE: 220x120 heightfield grid of a c
 
 ### GrassField
 
-`Scene3D/GrassField.frag` · type=scene3d · geom=scatter · mood=calm · complexity=3
+`Scene3D/GrassField.frag` · type=scene3d · geom=scatter · mood=calm · complexity=5
 
 Shades a field of grass with three materials picked by vKind: a photo-tinted sky gradient, a soil-to-lawn ground plane, and individual blades shaded mostly by occlusion along their own length (dark base, lit tip) plus backlit translucency and large-scale patchiness so the sward doesn't read as a flat green mat. audioLevel brightens a warm sky glow band, audioAmbient lifts soil brightness and blade backlight transluce…
 
@@ -9037,7 +9037,7 @@ Shades a field of grass with three materials picked by vKind: a photo-tinted sky
 
 ### GrowthTree
 
-`Scene3D/GrowthTree.frag` · type=scene3d · geom=indirect · mood=calm · complexity=4
+`Scene3D/GrowthTree.frag` · type=scene3d · geom=indirect · mood=calm · complexity=6
 
 Shades the grown grove with three materials picked by vKind: bark that warms from dark trunk to lighter young wood along vDepth with an inner sap-glow near the tips, leaves lit mainly by backlit translucency, and the forest floor, whose far reaches dissolve into a palette-tinted mist; a cool counter-light keeps the far side of the trunks from going flat black. audioChromaHue picks the sap-glow, leaf and ground-mist h…
 
@@ -9046,7 +9046,7 @@ Shades the grown grove with three materials picked by vKind: bark that warms fro
 
 ### GyroRings
 
-`Scene3D/GyroRings.frag` · type=scene3d · geom=cubes · mood=dark,calm · complexity=3
+`Scene3D/GyroRings.frag` · type=scene3d · geom=cubes · mood=dark,calm · complexity=8
 
 Shades a gyroscopic ring segment as a dark face with luminous, machined edges: distance from each cube corner (vCorner) picks out the beveled edge lines and brightens them against a dim body. Audio Reactivity: audioSharpness -> MACHINED-EDGE CRISPNESS: dull, dark material leaves the bevels a wide soft sheen; bright harsh material (cymbals, metallic transients) hones them down to a hairline brighter highlight, so the …
 
@@ -9055,7 +9055,7 @@ Shades a gyroscopic ring segment as a dark face with luminous, machined edges: d
 
 ### HairCurtain
 
-`Scene3D/HairCurtain.frag` · type=scene3d · geom=scatter · mood=dreamy · complexity=3
+`Scene3D/HairCurtain.frag` · type=scene3d · geom=scatter · mood=dreamy · complexity=5
 
 Shades a curtain of hair strands with Kajiya-Kay anisotropic shading: two materials picked by vKind, a soft photo-tinted backdrop behind the curtain, and individual strands lit by a ring-integral diffuse term plus a primary root-shifted highlight and a secondary, pigment-tinted, glinting highlight shifted the other way. audioAmbient tints the backdrop and lifts the strand diffuse floor, audioHigh brightens the primar…
 
@@ -9064,7 +9064,7 @@ Shades a curtain of hair strands with Kajiya-Kay anisotropic shading: two materi
 
 ### HarmonicStrings
 
-`Scene3D/HarmonicStrings.frag` · type=scene3d · geom=ribbon · mood=calm · complexity=1
+`Scene3D/HarmonicStrings.frag` · type=scene3d · geom=ribbon · mood=calm · complexity=10
 
 Shades a vibrating string as a thin bright core line with a soft halo: distance from the string's center (vSide) drives two Gaussian falloffs, a tight one for the core and a wider, dimmer one for the glow. This fragment shader declares no audio uniforms directly; its color (vCol) is computed per-vertex by the companion vertex shader, so any audio reactivity arrives already baked into that per-vertex color.
 
@@ -9073,7 +9073,7 @@ Shades a vibrating string as a thin bright core line with a soft halo: distance 
 
 ### Harmonograph
 
-`Scene3D/Harmonograph.frag` · type=scene3d · geom=indirect · mood=calm · complexity=3
+`Scene3D/Harmonograph.frag` · type=scene3d · geom=indirect · mood=calm · complexity=10
 
 Shades the harmonograph's wire trace as a drawn line rather than a lit object: hue sweeps three full turns along the trace (vAlong) so the pendulum's start and its wound-down finish read as distinct colors, with brightness carrying most of the shape information. audioLevel and the per-vertex vEnergy (the chroma-driven strength from the companion compute pass) brighten the glow, audioHigh adds a sharp white highlight …
 
@@ -9082,7 +9082,7 @@ Shades the harmonograph's wire trace as a drawn line rather than a lit object: h
 
 ### HelicoidMinimalSurfaceTunnel
 
-`Scene3D/HelicoidMinimalSurfaceTunnel.frag` · type=scene3d · geom=grid · mood=calm,dreamy,bright · complexity=3
+`Scene3D/HelicoidMinimalSurfaceTunnel.frag` · type=scene3d · geom=grid · mood=calm,dreamy,bright · complexity=6
 
 HELICOID MINIMAL SURFACE TUNNEL: 220x120 heightfield grid of an infinite double-helical minimal surface (the only ruled minimal surface besides the plane). Ruled spiral ramps, zero mean curvature lighting, specular sheen, and photo texturing. audioAdvance -> drives continuous helical winding & camera spiral advance audioKick -> flashes ruled line reflection glints & caustic highlights audioSwell -> widens minimal sur…
 
@@ -9091,7 +9091,7 @@ HELICOID MINIMAL SURFACE TUNNEL: 220x120 heightfield grid of an infinite double-
 
 ### HelixTower
 
-`Scene3D/HelixTower.frag` · type=scene3d · geom=points · mood=calm · complexity=2
+`Scene3D/HelixTower.frag` · type=scene3d · geom=points · mood=calm · complexity=10
 
 Shades one point of the helix tower as a soft radial glow sprite (additive blending), a Gaussian falloff from the point-sprite center so overlapping points pool into brighter light. This fragment shader declares no audio uniforms of its own; the point's audio-reactive color and brightness (vCol) are computed per-vertex by the companion vertex shader and only shaped here by the radial falloff.
 
@@ -9100,7 +9100,7 @@ Shades one point of the helix tower as a soft radial glow sprite (additive blend
 
 ### Hologram
 
-`Scene3D/Hologram.frag` · type=scene3d · geom=mesh · mood=dark,space · complexity=3
+`Scene3D/Hologram.frag` · type=scene3d · geom=mesh · mood=dark,space · complexity=5
 
 GEOM="MESH" FAMILY: any loaded model re-read as a sci-fi holotable projection -- wireframe over a see-through fill, scanlines, edge glow and signal dropouts. This family deliberately ships NO assets of its own: it is pointed at the ships and stations already in Models/, so every existing mesh gets a second, completely different look for free (the model= config attribute picks which). TRANSPARENCY WITHOUT BLENDING. ge…
 
@@ -9109,7 +9109,7 @@ GEOM="MESH" FAMILY: any loaded model re-read as a sci-fi holotable projection --
 
 ### HolographicLaserDiffractionGrid
 
-`Scene3D/HolographicLaserDiffractionGrid.frag` · type=scene3d · geom=quads · mood=dark,psychedelic · complexity=3
+`Scene3D/HolographicLaserDiffractionGrid.frag` · type=scene3d · geom=quads · mood=dark,psychedelic · complexity=9
 
 Shades a holographic diffraction-grating surface: a sine-wave interference grating in UV space picks out bright fringe lines, blended with the current slideshow photo, plus a sharp specular "laser" glint from a fixed light direction. This fragment shader declares no audio uniforms directly; its base color and fringe tint (vCol) are computed per-vertex by the companion vertex shader, so any audio reactivity arrives al…
 
@@ -9118,7 +9118,7 @@ Shades a holographic diffraction-grating surface: a sine-wave interference grati
 
 ### HolographicMemoryCore
 
-`Scene3D/HolographicMemoryCore.frag` · type=scene3d · geom=quads · mood=bright,calm · complexity=2
+`Scene3D/HolographicMemoryCore.frag` · type=scene3d · geom=quads · mood=bright,calm · complexity=10
 
 Shades a hexagonal holographic memory-crystal wafer: a hard hex-boundary cutout, a rim glow at its edge, the current slideshow photo as its stored imagery with scanning optical data-track lines, an iridescent per-tier photo-arc tint (imgPalette), and a cyan laser pulse that reads across it. audioKick boosts the laser read pulse (vReadLaser) by up to 4x, and audioSwell brightens the blend of stored photo and iridescen…
 
@@ -9127,7 +9127,7 @@ Shades a hexagonal holographic memory-crystal wafer: a hard hex-boundary cutout,
 
 ### HopfFibrationToruses
 
-`Scene3D/HopfFibrationToruses.frag` · type=scene3d · geom=ribbon · mood=dark,psychedelic · complexity=2
+`Scene3D/HopfFibrationToruses.frag` · type=scene3d · geom=ribbon · mood=dark,psychedelic · complexity=10
 
 Shades one fiber of a Hopf-fibration torus arrangement (Villarceau circles) as a glowing strand with a soft cross-section falloff (cross_edge) and a light pulse that visibly travels along the fiber over time. Each fiber's chromatic hue comes from the photo-arc palette (imgPalette) offset by its fiber ID (vFiberID) and audioPhase, so the phase of the music shifts which color sits where along the fibration; the per-ver…
 
@@ -9136,7 +9136,7 @@ Shades one fiber of a Hopf-fibration torus arrangement (Villarceau circles) as a
 
 ### HopfTorusCliffordKlein
 
-`Scene3D/HopfTorusCliffordKlein.frag` · type=scene3d · geom=ribbon · mood=bright,psychedelic · complexity=3
+`Scene3D/HopfTorusCliffordKlein.frag` · type=scene3d · geom=ribbon · mood=bright,psychedelic · complexity=10
 
 Shades one strand of a Hopf-torus / Clifford-torus tube lattice: blends its per-vertex color (vCol) with a slideshow photo that scrolls along the strand's length (vLength, animated by time), with a bright rim along the strand's cross-section edge (vSide). This fragment shader declares no audio uniforms directly; any audio reactivity arrives already baked into the per-vertex vCol supplied by the companion vertex shade…
 
@@ -9145,7 +9145,7 @@ Shades one strand of a Hopf-torus / Clifford-torus tube lattice: blends its per-
 
 ### HotAirBalloonDawn
 
-`Scene3D/HotAirBalloonDawn.frag` · type=scene3d · geom=indirect · mood=calm,bright,dreamy · complexity=4
+`Scene3D/HotAirBalloonDawn.frag` · type=scene3d · geom=indirect · mood=calm,bright,dreamy · complexity=2
 
 Fragment stage for HotAirBalloonDawn: a dawn sky (orange to blue) with the sun on the horizon and the swell as its strength, the misty field below as the photo, the envelopes in gores of the photo tinted per balloon and lit from the east, the baskets in wicker, the burners flaring on the kick and glowing into the envelope from below. Audio Reactivity: audioKick -> burner flare; audioSwell -> sunrise; audioBass -> bur…
 
@@ -9154,7 +9154,7 @@ Fragment stage for HotAirBalloonDawn: a dawn sky (orange to blue) with the sun o
 
 ### HubStation
 
-`Scene3D/HubStation.frag` · type=scene3d · geom=mesh · mood=dark,space · complexity=3
+`Scene3D/HubStation.frag` · type=scene3d · geom=mesh · mood=dark,space · complexity=1
 
 GEOM="MESH" STATION FAMILY: civilian/trade hubs (cargo docks, merchanter outposts, shipyards, quarantine posts, trade promenades), shown against a busy starfield (with faint distant nebula wisps) painted onto the sky shell Scene3DShader::buildGeometry() appends after the loaded mesh (see HubStation.vert) -- vBg selects shell vs. hull. Warm, brighter key light plus busy amber docking-light speckle across the hull's da…
 
@@ -9163,7 +9163,7 @@ GEOM="MESH" STATION FAMILY: civilian/trade hubs (cargo docks, merchanter outpost
 
 ### HyperbolicHelicoidCatenaMinimalSheet
 
-`Scene3D/HyperbolicHelicoidCatenaMinimalSheet.frag` · type=scene3d · geom=grid · mood=calm,dreamy,bright · complexity=3
+`Scene3D/HyperbolicHelicoidCatenaMinimalSheet.frag` · type=scene3d · geom=grid · mood=calm,dreamy,bright · complexity=5
 
 HYPERBOLIC HELICOID CATENA MINIMAL SHEET: 220x120 heightfield grid of the continuous isometric Bonnet deformation between a catenoid and a helicoid. Zero mean curvature throughout deformation, saddle-point glass specular sheen, and minimal surface photo texturing. audioAdvance -> navigates Bonnet isometric morphing parameter & minimal surface rotation audioKick -> flashes minimal surface waist throat & helicoid ramp …
 
@@ -9172,7 +9172,7 @@ HYPERBOLIC HELICOID CATENA MINIMAL SHEET: 220x120 heightfield grid of the contin
 
 ### HyperbolicPseudosphereTractroid
 
-`Scene3D/HyperbolicPseudosphereTractroid.frag` · type=scene3d · geom=grid · mood=dark,calm · complexity=3
+`Scene3D/HyperbolicPseudosphereTractroid.frag` · type=scene3d · geom=grid · mood=dark,calm · complexity=7
 
 HYPERBOLIC PSEUDOSPHERE TRACTROID: a 5 x 4 LATTICE of pseudospheres of constant negative Gaussian curvature (K = -1, the surface of revolution of the tractrix), each turning on its own axis and hung in frustum coordinates so the lattice spans the whole frame. Flared trumpet horn cusps, hyperbolic geodesic streamlines, glass specular sheen, and non-Euclidean photo texturing. audioAdvance -> navigates hyperbolic tractr…
 
@@ -9181,7 +9181,7 @@ HYPERBOLIC PSEUDOSPHERE TRACTROID: a 5 x 4 LATTICE of pseudospheres of constant 
 
 ### HypercubeLatticePillars
 
-`Scene3D/HypercubeLatticePillars.frag` · type=scene3d · geom=cubes · mood=bright · complexity=3
+`Scene3D/HypercubeLatticePillars.frag` · type=scene3d · geom=cubes · mood=bright · complexity=7
 
 Shades a lattice of tesseract/hypercube pillar monoliths: a dark photo-textured monolith face with sci-fi neon edge lines picked out near each cube corner (vTexCoord), lit with a simple diffuse+specular term. audioHigh brightens the neon edge color, audioKick intensifies the specular highlight, and audioChromaHue (plus the hueP preset) rotates the final color's hue. Most of the other declared audio* uniforms in this …
 
@@ -9190,7 +9190,7 @@ Shades a lattice of tesseract/hypercube pillar monoliths: a dark photo-textured 
 
 ### IndustrialStation
 
-`Scene3D/IndustrialStation.frag` · type=scene3d · geom=mesh · mood=dark,space · complexity=3
+`Scene3D/IndustrialStation.frag` · type=scene3d · geom=mesh · mood=dark,space · complexity=2
 
 GEOM="MESH" STATION FAMILY: mining/refinery/salvage hulls (asteroid refineries, mining cores, fuel depots, ice processors, scrap yards), shown drifting through a real asteroid field painted onto the sky shell Scene3DShader::buildGeometry() appends after the loaded mesh (see IndustrialStation.vert) -- vBg selects shell vs. hull. Dim, grimy ambient light plus a warm furnace/vent glow that flickers with the beat, standi…
 
@@ -9208,7 +9208,7 @@ INTERSTELLAR MHD SHOCK FRONT: 3D tessellated stellar wind bow shock front impact
 
 ### JellyBody
 
-`Scene3D/JellyBody.frag` · type=scene3d · geom=grid · mood=calm,dreamy · complexity=2
+`Scene3D/JellyBody.frag` · type=scene3d · geom=grid · mood=calm,dreamy · complexity=6
 
 Lighting for a single translucent jelly body: deep saturated colour, fresnel rim, wet specular highlight, and light seeming to pass through from behind. The body's shape and per-vertex deformation (vDefo) and hue (vHue) are computed upstream in JellyBody.vert from the instrument-triggered modal ringing (audioKick/audioSnare/audioHat); this stage only reads audioSwell and audioDrop, using them to brighten the subsurfa…
 
@@ -9217,7 +9217,7 @@ Lighting for a single translucent jelly body: deep saturated colour, fresnel rim
 
 ### Jellyfish
 
-`Scene3D/Jellyfish.frag` · type=scene3d · geom=points · mood=calm · complexity=2
+`Scene3D/Jellyfish.frag` · type=scene3d · geom=points · mood=calm · complexity=10
 
 Additive point-sprite shader for a bloom of bioluminescent jellyfish, rendering each point (bell shell or trailing tentacle particle) as a soft radial glow. The colour (vCol) is fully computed upstream in Jellyfish.vert, where the beat-phase pulse, onset flashes and drop brighten each jelly; this stage only shapes a Gaussian falloff from the point's centre and multiplies it onto that colour for additive blending.
 
@@ -9226,7 +9226,7 @@ Additive point-sprite shader for a bloom of bioluminescent jellyfish, rendering 
 
 ### JellyfishBioluminescenceAbyss
 
-`Scene3D/JellyfishBioluminescenceAbyss.frag` · type=scene3d · geom=indirect · mood=calm,dark,dreamy · complexity=4
+`Scene3D/JellyfishBioluminescenceAbyss.frag` · type=scene3d · geom=indirect · mood=calm,dark,dreamy · complexity=10
 
 Shades the abyssal medusae bells and tentacle curtains generated by JellyfishBioluminescenceAbyss.comp: translucent cyan-to-violet bell material blended toward a warm pulse colour wherever bioluminescence fires along a tentacle. Per-vertex vTentacle (0..1 across a strand) and vBioGlow (pulse strength), both baked by the compute generator, mix the bell and pulse colours and scale overall brightness. Colour is tinted t…
 
@@ -9235,7 +9235,7 @@ Shades the abyssal medusae bells and tentacle curtains generated by JellyfishBio
 
 ### KaleidocycleFold
 
-`Scene3D/KaleidocycleFold.frag` · type=scene3d · geom=indirect · mood=bright,calm,psychedelic · complexity=3
+`Scene3D/KaleidocycleFold.frag` · type=scene3d · geom=indirect · mood=bright,calm,psychedelic · complexity=2
 
 Fragment stage for KaleidocycleFold: a paper-craft desk (the photo as the cutting mat), the ring's faces as photo triangles -- each tetrahedron its own tint, each face lit by a spectrum band (24 faces, bands cycling) -- with paper-fold creases at the edges and a shading from a screen-space normal; the kick a flash on the topmost faces, the treble the paper sheen. Audio Reactivity: audioSpectrum[32] -> face light; aud…
 
@@ -9244,7 +9244,7 @@ Fragment stage for KaleidocycleFold: a paper-craft desk (the photo as the cuttin
 
 ### KaleidoDome
 
-`Scene3D/KaleidoDome.frag` · type=scene3d · geom=grid · mood=psychedelic,bright · complexity=2
+`Scene3D/KaleidoDome.frag` · type=scene3d · geom=grid · mood=psychedelic,bright · complexity=5
 
 Renders a spinning kaleidoscope rosette of the current slideshow photo projected onto a dome, folded into 8/10/12/14 mirrored sectors chosen per activation from sceneSeed. audioAdvance drives both the sector spin and a slow radial creep across the source image so the crop never repeats; audioSwell breathes the sampled radius; audioKick blooms the dome's centre and audioDrop flashes the whole sky; audioChromaHue tints…
 
@@ -9253,7 +9253,7 @@ Renders a spinning kaleidoscope rosette of the current slideshow photo projected
 
 ### KaleidoscopeOrganism
 
-`Scene3D/KaleidoscopeOrganism.frag` · type=scene3d · geom=indirect · mood=psychedelic,dreamy · complexity=4
+`Scene3D/KaleidoscopeOrganism.frag` · type=scene3d · geom=indirect · mood=psychedelic,dreamy · complexity=9
 
 Lighting for the growing, mirror-replicated DLA organism from KaleidoscopeOrganism.comp: crystalline/bioluminescent rather than coral-organic, with hue shifted per angular wedge (derived from vObj's own azimuth) so the mirror-kaleidoscope symmetry the generator built into the geometry is reinforced by colour, not left for the silhouette alone to carry. Colour is imgPalette-driven (photo-arc, key-locked via audioChrom…
 
@@ -9262,7 +9262,7 @@ Lighting for the growing, mirror-replicated DLA organism from KaleidoscopeOrgani
 
 ### KelpForest
 
-`Scene3D/KelpForest.frag` · type=scene3d · geom=ribbon · mood=calm · complexity=1
+`Scene3D/KelpForest.frag` · type=scene3d · geom=ribbon · mood=calm · complexity=10
 
 Shades one kelp-blade ribbon of an underwater forest: a soft translucent body with a brighter midrib line down the centre. All colour and motion (the surge sway, tip taper, caustic tinting, and audio response) are computed upstream in KelpForest.vert and arrive baked into vCol; this stage only shapes the cross-blade falloff from vSide into a body-plus-midrib glow.
 
@@ -9271,7 +9271,7 @@ Shades one kelp-blade ribbon of an underwater forest: a soft translucent body wi
 
 ### KelvinHelmholtzCloudWaves
 
-`Scene3D/KelvinHelmholtzCloudWaves.frag` · type=scene3d · geom=grid · mood=calm,dreamy,bright · complexity=3
+`Scene3D/KelvinHelmholtzCloudWaves.frag` · type=scene3d · geom=grid · mood=calm,dreamy,bright · complexity=8
 
 Shades a 220x120 heightfield of rolling cloud billows shaped by Kelvin-Helmholtz shear instability, lit as a sunset sky (dusk indigo troughs, amber crests, white cloud caps). The billow geometry, palette mixing and audio response (audioBass swelling the wave height, audioKick puffing the crests, audioChromaHue and hueP rotating the sky hue, audioLevel scaling brightness) are all computed upstream in KelvinHelmholtzCl…
 
@@ -9280,7 +9280,7 @@ Shades a 220x120 heightfield of rolling cloud billows shaped by Kelvin-Helmholtz
 
 ### KelvinWakeShipWavePattern
 
-`Scene3D/KelvinWakeShipWavePattern.frag` · type=scene3d · geom=grid · mood=calm,bright,dreamy · complexity=3
+`Scene3D/KelvinWakeShipWavePattern.frag` · type=scene3d · geom=grid · mood=calm,bright,dreamy · complexity=4
 
 KELVIN WAKE SHIP WAVE PATTERN: 220x120 heightfield grid of the classical hydrodynamic Kelvin ship wake pattern. Divergent and transverse wave systems bounded by the universal 19.47-degree Mach wedge, foamy crest highlights, specular ocean sheen, and photo texturing. audioAdvance -> propels ship wake propagation & hydrodynamic phase velocity audioKick -> flashes wave crest foam cavitation & whitecap glints audioSwell …
 
@@ -9289,7 +9289,7 @@ KELVIN WAKE SHIP WAVE PATTERN: 220x120 heightfield grid of the classical hydrody
 
 ### KineticMirrorHexagonArray
 
-`Scene3D/KineticMirrorHexagonArray.frag` · type=scene3d · geom=quads · mood=bright,calm · complexity=3
+`Scene3D/KineticMirrorHexagonArray.frag` · type=scene3d · geom=quads · mood=bright,calm · complexity=10
 
 Shades one mirror plate of the suspended kinetic hexagon-lattice sculpture generated by KineticMirrorHexagonArray.vert: chrome-tinted reflection of the current photo pair plus a bright neon edge band. The per-plate normal (vNormal) reflects the slideshow texture; a Blinn-Phong specular term catches a fixed sun direction and is driven harder by audioKick, while audioLevel and audioHigh brighten the reflection and edge…
 
@@ -9298,7 +9298,7 @@ Shades one mirror plate of the suspended kinetic hexagon-lattice sculpture gener
 
 ### KineticTesseractOrigami
 
-`Scene3D/KineticTesseractOrigami.frag` · type=scene3d · geom=quads · mood=bright,calm · complexity=2
+`Scene3D/KineticTesseractOrigami.frag` · type=scene3d · geom=quads · mood=bright,calm · complexity=6
 
 Shades one facet of the Miura-ori origami sheet folded by KineticTesseractOrigami.vert: the stored photo blended with an iridescent paper sheen, plus neon crease lines at each facet's border. vFoldAngle (the current fold amount from the vertex stage, itself driven by audioAdvance/audioBass/audioKick) selects the sheen's hue from the house photo palette; audioKick brightens the glowing crease lines and audioSwell lift…
 
@@ -9307,7 +9307,7 @@ Shades one facet of the Miura-ori origami sheet folded by KineticTesseractOrigam
 
 ### KiteFestival
 
-`Scene3D/KiteFestival.frag` · type=scene3d · geom=indirect · mood=bright,calm,dreamy · complexity=4
+`Scene3D/KiteFestival.frag` · type=scene3d · geom=indirect · mood=bright,calm,dreamy · complexity=3
 
 Fragment stage for KiteFestival: a bright windy sky with cloud streaks, a green hillside carrying the photo as its patchwork of fields, kites as photo diamonds with bright spars, tails in palette colours that sparkle with the treble, and the kick lighting the kite edges. Audio Reactivity: audioHigh -> tail sparkle; audioKick -> kite edges; audioSwell -> sunlight; audioLevel -> brightness.
 
@@ -9316,7 +9316,7 @@ Fragment stage for KiteFestival: a bright windy sky with cloud streaks, a green 
 
 ### LargeHadronCollision
 
-`Scene3D/LargeHadronCollision.frag` · type=scene3d · geom=points · mood=aggressive,dark · complexity=2
+`Scene3D/LargeHadronCollision.frag` · type=scene3d · geom=points · mood=aggressive,dark · complexity=9
 
 Shades one particle-track point from a continuous stream of simulated collision debris, coloured by species: gold quark/gluon jets, cyan muon/Cherenkov tracks, magenta Higgs-decay cascades. vEnergy (per-point brightness, freshest tracks brightest, baked in LargeHadronCollision.vert from audioKick-boosted burst speed and an evolving helical Lorentz trajectory) scales the additive output; the species colour is tinted t…
 
@@ -9325,7 +9325,7 @@ Shades one particle-track point from a continuous stream of simulated collision 
 
 ### LaserArena
 
-`Scene3D/LaserArena.frag` · type=scene3d · geom=ribbon · mood=aggressive,dark · complexity=1
+`Scene3D/LaserArena.frag` · type=scene3d · geom=ribbon · mood=aggressive,dark · complexity=10
 
 Shades one laser-beam ribbon of the club-style laser show built in LaserArena.vert: a razor-thin bright core wrapped in a broad, dim fog glow across the beam width. All colour (per-beam hue cycling, the audioBeatPhase strobe, audioKick punch, and the DROP-triggered vertical snap) is computed upstream in the vertex stage and arrives baked in vCol; this stage only shapes the cross-beam falloff from vSide into core+halo…
 
@@ -9334,7 +9334,7 @@ Shades one laser-beam ribbon of the club-style laser show built in LaserArena.ve
 
 ### LaserSpireArray
 
-`Scene3D/LaserSpireArray.frag` · type=scene3d · geom=scatter · mood=aggressive,bright,psychedelic · complexity=4
+`Scene3D/LaserSpireArray.frag` · type=scene3d · geom=scatter · mood=aggressive,bright,psychedelic · complexity=10
 
 Shades the crystalline laser-spire array extruded by LaserSpireArray.geom: lit hexagonal pillar facets, or (where gBeam marks a beam quad) a pure emissive skyward laser column. All colour, including the audioSpectrum-driven per-spire height/hue and the audioKick pulse baked into gCol by the geometry stage, arrives pre-computed; this fragment stage only adds a fixed-direction diffuse and specular term to the pillar fa…
 
@@ -9343,7 +9343,7 @@ Shades the crystalline laser-spire array extruded by LaserSpireArray.geom: lit h
 
 ### LidarSweepPointCloud
 
-`Scene3D/LidarSweepPointCloud.frag` · type=scene3d · geom=indirect · mood=dark,calm,psychedelic · complexity=4
+`Scene3D/LidarSweepPointCloud.frag` · type=scene3d · geom=indirect · mood=dark,calm,psychedelic · complexity=7
 
 Fragment stage for LidarSweepPointCloud: black (no room is drawn, only what the beam has seen), the points as round dots coloured by the photo at their uv and by height (the classic range colouring), fading with their age; the scanner as a small glowing box, the beam as a line; the bass is the scanner glow, the kick a flash along the beam, the treble sparkles the freshest points. Audio Reactivity: audioBass -> scanne…
 
@@ -9352,7 +9352,7 @@ Fragment stage for LidarSweepPointCloud: black (no room is drawn, only what the 
 
 ### LissajousOrbits
 
-`Scene3D/LissajousOrbits.frag` · type=scene3d · geom=points · mood=dark,calm,space · complexity=2
+`Scene3D/LissajousOrbits.frag` · type=scene3d · geom=points · mood=dark,calm,space · complexity=9
 
 Additive point-sprite shader for six particle streams tracing closed 3D Lissajous figures, rendering each point as a soft radial glow. Colour, including the per-stream photo-palette hue and the audioAdvance/audioSwell/audioBass/audioChromaHue/audioValence response that shapes the streams and their brightness, is computed upstream in LissajousOrbits.vert and arrives baked in vCol; this stage only applies the Gaussian …
 
@@ -9361,7 +9361,7 @@ Additive point-sprite shader for six particle streams tracing closed 3D Lissajou
 
 ### LorenzAttractorTurbulence
 
-`Scene3D/LorenzAttractorTurbulence.frag` · type=scene3d · geom=ribbon · mood=bright,psychedelic · complexity=2
+`Scene3D/LorenzAttractorTurbulence.frag` · type=scene3d · geom=ribbon · mood=bright,psychedelic · complexity=10
 
 Shades one ribbon-tube segment of the strange-attractor flow traced in LorenzAttractorTurbulence.vert: a glowing tube core whose hue Doppler-shifts from blue to magenta with the local path speed (vVelocity), overlaid with fast travelling pulse packets and a sampled strip of the current photo. audioKick sharpens and brightens the travelling pulse packets; audioChromaHue, together with the hueP preset, rotates the fina…
 
@@ -9370,7 +9370,7 @@ Shades one ribbon-tube segment of the strange-attractor flow traced in LorenzAtt
 
 ### LuttingerLiquidSpinChargeSeparation
 
-`Scene3D/LuttingerLiquidSpinChargeSeparation.frag` · type=scene3d · geom=ribbon · mood=calm,psychedelic · complexity=3
+`Scene3D/LuttingerLiquidSpinChargeSeparation.frag` · type=scene3d · geom=ribbon · mood=calm,psychedelic · complexity=10
 
 LUTTINGER LIQUID SPIN-CHARGE SEPARATION: 1D quantum wire Tomonaga-Luttinger liquid. Electrons split into independent holon (charge) and spinon (spin) density waves propagating at different velocities along 3D ribbon channels with photo-palette interference. audioAdvance -> drives spinon/holon collective wave velocities audioKick -> flashes electron injection quantum tunnel pulses audioSwell -> widens 1D wire cross-se…
 
@@ -9379,7 +9379,7 @@ LUTTINGER LIQUID SPIN-CHARGE SEPARATION: 1D quantum wire Tomonaga-Luttinger liqu
 
 ### MagnetarCrustalQuakeAlfvenResonance
 
-`Scene3D/MagnetarCrustalQuakeAlfvenResonance.frag` · type=scene3d · geom=indirect · mood=aggressive,dark · complexity=5
+`Scene3D/MagnetarCrustalQuakeAlfvenResonance.frag` · type=scene3d · geom=indirect · mood=aggressive,dark · complexity=6
 
 MAGNETAR CRUSTAL QUAKE ALFVÉN RESONANCE: Crustal fracture and global seismic oscillations on an ultrastrong magnetar (SGR / AXP). Relativistic shear fractures inject high-frequency torsional Alfven waves into a FULL twisted magnetosphere -- 160 dipolar L-shells reaching past the frame corners, over a far X-ray point-source field and a trapped pair-plasma haze -- igniting giant gamma-ray flare fireballs. audioAdvance …
 
@@ -9388,7 +9388,7 @@ MAGNETAR CRUSTAL QUAKE ALFVÉN RESONANCE: Crustal fracture and global seismic os
 
 ### MagnetoRotationalHypernovaInstability
 
-`Scene3D/MagnetoRotationalHypernovaInstability.frag` · type=scene3d · geom=indirect · mood=aggressive,dark · complexity=5
+`Scene3D/MagnetoRotationalHypernovaInstability.frag` · type=scene3d · geom=indirect · mood=aggressive,dark · complexity=8
 
 MAGNETOROTATIONAL HYPERNOVA INSTABILITY: Relativistic bipolar plasma jets launched by core collapse in rapidly rotating magnetized hypernovae, wrapped by a frame-spanning accretion torus and set against a far field of ejecta. Helical magnetic flux tubes, Alfven wave turbulences, magnetic reconnection flares, and synchrotron photo texturing. audioAdvance -> accelerates helical magnetic jet outflow & rotation rate, and…
 
@@ -9397,7 +9397,7 @@ MAGNETOROTATIONAL HYPERNOVA INSTABILITY: Relativistic bipolar plasma jets launch
 
 ### Magnetosphere
 
-`Scene3D/Magnetosphere.frag` · type=scene3d · geom=indirect · mood=dark,dreamy,space · complexity=4
+`Scene3D/Magnetosphere.frag` · type=scene3d · geom=indirect · mood=dark,dreamy,space · complexity=10
 
 Lights the planet-and-dipole-field scene generated by Magnetosphere.comp: a near-black planet lit only by a fixed sun and its own aurora, surrounded by self-luminous plasma field-line tubes. vKind distinguishes planet (>1.5) from field line, and vEnergy (that shell's audioSpectrum band, baked by the compute stage) drives the tube's core-and-halo brightness and a white-hot centre; the shell fraction (also vKind) picks…
 
@@ -9406,7 +9406,7 @@ Lights the planet-and-dipole-field scene generated by Magnetosphere.comp: a near
 
 ### MagnetotacticBacteriaChains
 
-`Scene3D/MagnetotacticBacteriaChains.frag` · type=scene3d · geom=cubes · mood=bright,psychedelic · complexity=3
+`Scene3D/MagnetotacticBacteriaChains.frag` · type=scene3d · geom=cubes · mood=bright,psychedelic · complexity=8
 
 MAGNETOTACTIC BACTERIA CHAINS: a whole CULTURE of helical swimming chains of magnetotactic bacteria -- 306 of them spread through the cell at every depth -- containing biomineralized magnetite nanocrystal cubes aligned along 3D geomagnetic field lines. Octahedral crystal faceting, magnetic dipole orientation glints, and photo texturing. Each chain carries its own level (how deep it swims x how strongly it mineralised…
 
@@ -9415,7 +9415,7 @@ MAGNETOTACTIC BACTERIA CHAINS: a whole CULTURE of helical swimming chains of mag
 
 ### MajoranaNanowireBraiding
 
-`Scene3D/MajoranaNanowireBraiding.frag` · type=scene3d · geom=ribbon · mood=bright,psychedelic · complexity=3
+`Scene3D/MajoranaNanowireBraiding.frag` · type=scene3d · geom=ribbon · mood=bright,psychedelic · complexity=10
 
 MAJORANA NANOWIRE BRAIDING: Topological quantum computing braid worldlines. 1D topological superconductor nanowires undergo non-Abelian braiding permutations in 3D spacetime, carrying localized Majorana zero modes at wire endpoints with photo texturing. THREE braided bundles stand side by side across the frame, over the superconducting vacuum (see the .vert). audioAdvance -> drives non-Abelian braiding worldline evol…
 
@@ -9424,7 +9424,7 @@ MAJORANA NANOWIRE BRAIDING: Topological quantum computing braid worldlines. 1D t
 
 ### MandalaGrid
 
-`Scene3D/MandalaGrid.frag` · type=scene3d · geom=grid · mood=psychedelic,calm · complexity=2
+`Scene3D/MandalaGrid.frag` · type=scene3d · geom=grid · mood=psychedelic,calm · complexity=5
 
 Renders an 8/10-fold (rolled per activation via sceneSeed) mirrored plasma rosette in folded polar space, its layered sine fields mapped into the current photo palette and flowing slowly inward. audioAdvance drives both the rosette's slow spin and the inward flow speed; audioBarPhase positions a soft ring of light that breathes outward once per bar; audioSwell/audioDrop brighten the whole pattern; audioChromaHue (via…
 
@@ -9433,7 +9433,7 @@ Renders an 8/10-fold (rolled per activation via sceneSeed) mirrored plasma roset
 
 ### MangroveRootsTide
 
-`Scene3D/MangroveRootsTide.frag` · type=scene3d · geom=indirect · mood=dark,calm,dreamy · complexity=4
+`Scene3D/MangroveRootsTide.frag` · type=scene3d · geom=indirect · mood=dark,calm,dreamy · complexity=3
 
 MANGROVE ROOTS TIDE (fragment): standing in the shallows among prop roots. Light comes down through the surface as a moving net of caustics that lands on the bed and on every root; the water is green and thickens with distance; fish flicker silver as they turn. The tide level rides the swell, the bass is the depth colour, the treble the caustic sparkle, the kick a fish flashing its flank. Audio Reactivity: audioSwell…
 
@@ -9442,7 +9442,7 @@ MANGROVE ROOTS TIDE (fragment): standing in the shallows among prop roots. Light
 
 ### MeshAqueduct
 
-`Scene3D/MeshAqueduct.frag` · type=scene3d · geom=mesh · mood=bright,calm,dreamy · complexity=3
+`Scene3D/MeshAqueduct.frag` · type=scene3d · geom=mesh · mood=bright,calm,dreamy · complexity=2
 
 MESH AQUEDUCT: a real Roman aqueduct (model=) striding across a valley in the late afternoon. Each arch is lit from beneath by one chroma class, water glitters in the channel along the top, swifts cross the openings as round silhouettes, the daylight follows the swell. The mesh counterpart of the procedural AqueductArchesValley. Audio Reactivity: audioChroma[12] -> the light under each arch (light) audioHigh -> water…
 
@@ -9451,7 +9451,7 @@ MESH AQUEDUCT: a real Roman aqueduct (model=) striding across a valley in the la
 
 ### MeshBellTower
 
-`Scene3D/MeshBellTower.frag` · type=scene3d · geom=mesh · mood=dark,calm,dreamy · complexity=3
+`Scene3D/MeshBellTower.frag` · type=scene3d · geom=mesh · mood=dark,calm,dreamy · complexity=6
 
 MESH BELL TOWER: four real bronze bells (one model, instances="4") of falling size swinging in a belfry, the dusk sky through the arcade behind them. Each bell answers a band -- the big one the bass, then the low mids, the mids, the treble -- glowing warm in the bronze; the kick is the clapper's strike, a flash on the bell and on the stone; the swell is the lamp and the swing. The mesh counterpart of BellTowerDownbea…
 
@@ -9469,7 +9469,7 @@ MESH CANDLE CHAPEL: three hundred real candles (one model, instances="300") on a
 
 ### MeshCoolingTowers
 
-`Scene3D/MeshCoolingTowers.frag` · type=scene3d · geom=mesh · mood=dark,dreamy,calm · complexity=3
+`Scene3D/MeshCoolingTowers.frag` · type=scene3d · geom=mesh · mood=dark,dreamy,calm · complexity=2
 
 MESH COOLING TOWERS: three real hyperboloid towers (one model, instances="3") against an evening sky, each breathing a plume of steam that rises and leans away on the scene clock. The plumes are painted on the sky shell above each tower, lit from below by the plant floodlights and from the side by the last sun, and each carries the colour of a spectrum band by height, so the sky reads the music. The swell is how much…
 
@@ -9478,7 +9478,7 @@ MESH COOLING TOWERS: three real hyperboloid towers (one model, instances="3") ag
 
 ### MeshDominoWave
 
-`Scene3D/MeshDominoWave.frag` · type=scene3d · geom=mesh · mood=dark,calm · complexity=3
+`Scene3D/MeshDominoWave.frag` · type=scene3d · geom=mesh · mood=dark,calm · complexity=6
 
 MESH DOMINO WAVE: 224 real dominoes (one model, instances="224") standing in serpentine lanes on a table, seen low, and the wave of toppling running along them on the scene clock. A spotlight follows the front; the tiles' faces catch the lamp as they turn; the kick is a glint on the standing tiles, the swell the room light. The mesh counterpart of the procedural DominoCascadeWave. Audio Reactivity: sceneProgress -> t…
 
@@ -9487,7 +9487,7 @@ MESH DOMINO WAVE: 224 real dominoes (one model, instances="224") standing in ser
 
 ### MeshFoundryPour
 
-`Scene3D/MeshFoundryPour.frag` · type=scene3d · geom=mesh · mood=dark,aggressive,dreamy · complexity=3
+`Scene3D/MeshFoundryPour.frag` · type=scene3d · geom=mesh · mood=dark,aggressive,dreamy · complexity=4
 
 MESH FOUNDRY POUR: a real sand mould (model=) on the foundry floor and a real ladle (model2=) tipping molten metal into it on the scene clock. The stream is painted on the shell along the line from the lip to the pouring cup (there is no geometry for it, and everything the stream crosses on screen is background); the melt spreads in the mould and cools from white through orange to dull red; sparks fly from the cup; t…
 
@@ -9505,7 +9505,7 @@ MESH GEAR TRAIN: seven real brass gears (one model, instances="7") meshing acros
 
 ### MeshHeliostatField
 
-`Scene3D/MeshHeliostatField.frag` · type=scene3d · geom=mesh · mood=bright,calm · complexity=3
+`Scene3D/MeshHeliostatField.frag` · type=scene3d · geom=mesh · mood=bright,calm · complexity=1
 
 MESH HELIOSTAT FIELD: a real receiver tower (model=) in a field of real heliostats (model2=, instanced), each aimed so the sun lands on the receiver. The panels reflect the sky -- a true reflection, the sky shell sampled along the mirrored view direction -- and track the sun as it creeps on time. The receiver glows white-hot with the bass, the treble runs glints across the field where a panel catches the sun, the swe…
 
@@ -9514,7 +9514,7 @@ MESH HELIOSTAT FIELD: a real receiver tower (model=) in a field of real heliosta
 
 ### MeshKaleidoscope
 
-`Scene3D/MeshKaleidoscope.frag` · type=scene3d · geom=mesh · mood=psychedelic,dark,dreamy · complexity=4
+`Scene3D/MeshKaleidoscope.frag` · type=scene3d · geom=mesh · mood=psychedelic,dark,dreamy · complexity=8
 
 Fragment stage for MeshKaleidoscope: the twelve copies of the model lit by one key light plus a rim that is the palette's colour, alternating copies tinted warm/cool so the mirror symmetry reads; the sky shell is a dark velvet with the photo as a soft glow behind the wreath. Audio Reactivity: audioKick flashes the rim; audioSwell brightens the key; audioChromaHue drives the tint via the palette.
 
@@ -9523,7 +9523,7 @@ Fragment stage for MeshKaleidoscope: the twelve copies of the model lit by one k
 
 ### MeshMetronomes
 
-`Scene3D/MeshMetronomes.frag` · type=scene3d · geom=mesh · mood=dark,calm · complexity=3
+`Scene3D/MeshMetronomes.frag` · type=scene3d · geom=mesh · mood=dark,calm · complexity=7
 
 MESH METRONOMES: twelve real metronomes (body model= and a rod from model2=, instances="12") on a bench in two rows, each ticking at its own tempo, their rods swinging on time. Each body answers a spectrum band, glowing on its scale plate; the brass weights glint on the kick and flash at the ends of their swings (the tick); the swell is the lamp. The mesh counterpart of the procedural MetronomeForest. Audio Reactivit…
 
@@ -9541,7 +9541,7 @@ MESH PEACOCK DISPLAY: a real peacock (model=) in full display on a lawn at dusk,
 
 ### MeshPendulumWave
 
-`Scene3D/MeshPendulumWave.frag` · type=scene3d · geom=mesh · mood=calm,dark,dreamy · complexity=3
+`Scene3D/MeshPendulumWave.frag` · type=scene3d · geom=mesh · mood=calm,dark,dreamy · complexity=6
 
 MESH PENDULUM WAVE: twelve real pendulums (one model, instances="12") hanging from a rail in a dark lab, swinging the pendulum-wave pattern on time. The bob glows with the bass; the bob passing through centre lights on the beat; the swell is the lamp. The mesh counterpart of the procedural PendulumWaveTempo. Audio Reactivity: audioBeat -> highlight on the bob passing centre (light) audioBass -> bob glow (light) audio…
 
@@ -9577,7 +9577,7 @@ MESH SAND SCULPTURE: wet sand -- warm, grainy, with round glints of shell and qu
 
 ### MeshSeismograph
 
-`Scene3D/MeshSeismograph.frag` · type=scene3d · geom=mesh · mood=calm,dark · complexity=3
+`Scene3D/MeshSeismograph.frag` · type=scene3d · geom=mesh · mood=calm,dark · complexity=1
 
 MESH SEISMOGRAPH: a real drum seismograph -- the cast-iron base with its pen arm (model=) and the paper drum (model2=) turning under the pen on time. The trace on the paper is REAL: the last revolution of the drum carries the bass energy of the last eighteen seconds, read from the engine's spectrogram ring (texSpectro) at the age each point on the paper passed under the pen, drawn as a wandering ink line; older revol…
 
@@ -9595,7 +9595,7 @@ MESH SERVER AISLE: sixteen real server racks (one model, instances="16") in two 
 
 ### MeshTermiteMound
 
-`Scene3D/MeshTermiteMound.frag` · type=scene3d · geom=mesh · mood=calm,dreamy,dark · complexity=3
+`Scene3D/MeshTermiteMound.frag` · type=scene3d · geom=mesh · mood=calm,dreamy,dark · complexity=1
 
 MESH TERMITE MOUND: a real cathedral mound (model=) on the savanna at dusk, and the heat it breathes out -- columns of warm haze rising from its chimneys into the evening sky on the scene clock, their strength the bass (the mound's warmth), their fine flicker the treble, the dusk light the swell. Acacias on the horizon, the first stars. The mesh counterpart of the procedural TermiteMoundPlumes (whose refracting plume…
 
@@ -9604,7 +9604,7 @@ MESH TERMITE MOUND: a real cathedral mound (model=) on the savanna at dusk, and 
 
 ### MeshTerrain
 
-`Scene3D/MeshTerrain.frag` · type=scene3d · geom=mesh · mood=calm,dark · complexity=3
+`Scene3D/MeshTerrain.frag` · type=scene3d · geom=mesh · mood=calm,dark · complexity=5
 
 Flying low across a landscape that is really a 3D model blown up two orders of magnitude (the transform is in the vertex stage). Grazing light and distance haze do the rest: at that scale, folds become ridges and the eye stops asking what the object used to be. Two things make this read as terrain rather than as a big object: - The light is LOW. A raking sun turns every fold into a lit face and a dark one, which is h…
 
@@ -9613,7 +9613,7 @@ Flying low across a landscape that is really a 3D model blown up two orders of m
 
 ### MeshTuningForks
 
-`Scene3D/MeshTuningForks.frag` · type=scene3d · geom=mesh · mood=calm,dark,dreamy · complexity=3
+`Scene3D/MeshTuningForks.frag` · type=scene3d · geom=mesh · mood=calm,dark,dreamy · complexity=5
 
 MESH TUNING FORKS: twelve real tuning forks (one model, instances="12") in a row on a sounding board in a dark room, one per pitch class. A fork RINGS when its class sounds: it glows in its class colour and throws halos -- concentric rings travelling outward across the wall behind it on the scene clock. The kick is the mallet striking the loudest fork (a flash on that fork), the swell the room light. The mesh counter…
 
@@ -9622,7 +9622,7 @@ MESH TUNING FORKS: twelve real tuning forks (one model, instances="12") in a row
 
 ### MeshWindChime
 
-`Scene3D/MeshWindChime.frag` · type=scene3d · geom=mesh · mood=bright,calm,dreamy · complexity=3
+`Scene3D/MeshWindChime.frag` · type=scene3d · geom=mesh · mood=bright,calm,dreamy · complexity=1
 
 MESH WIND CHIME: a real wind chime (model=) hanging under a porch roof, the afternoon garden beyond. It sways in the breeze on time; a tube does not move when its note sounds, it RINGS: it brightens in its class colour and throws a halo of rings across the garden behind it. Which tube is which class comes from its place round the disc. The kick is the clapper's glint, the treble the sheen on the metal, the swell the …
 
@@ -9631,7 +9631,7 @@ MESH WIND CHIME: a real wind chime (model=) hanging under a porch roof, the afte
 
 ### MeshZoetrope
 
-`Scene3D/MeshZoetrope.frag` · type=scene3d · geom=mesh · mood=dark,dreamy,psychedelic · complexity=3
+`Scene3D/MeshZoetrope.frag` · type=scene3d · geom=mesh · mood=dark,dreamy,psychedelic · complexity=2
 
 MESH ZOETROPE: a real Victorian zoetrope (model=) on a parlour table, its drum turning on its spindle while the base stands still. An oil lamp lights the room with the swell; the strip of figures inside glows through the slits; the kick is a flare of the lamp; the treble a sheen on the japanned tin. The mesh counterpart of ZoetropeDrum. Audio Reactivity: audioSwell -> lamp light, the glow of the strip (slow) audioKic…
 
@@ -9649,7 +9649,7 @@ METAMATERIAL NEGATIVE REFRACTION: a wave-carrying slab seen from above; two medi
 
 ### MetaSculpt
 
-`Scene3D/MetaSculpt.frag` · type=scene3d · geom=indirect · mood=dreamy · complexity=4
+`Scene3D/MetaSculpt.frag` · type=scene3d · geom=indirect · mood=dreamy · complexity=8
 
 _(Vorschau eingeschränkt: Sim-Textur/Mehrpass — Bilder unterschätzen die echte App)_
 
@@ -9660,7 +9660,7 @@ Lights the metaball body generated by MetaSculpt.comp as a wet, heavy, subsurfac
 
 ### MeteorStorm
 
-`Scene3D/MeteorStorm.frag` · type=scene3d · geom=points · mood=aggressive,dark · complexity=2
+`Scene3D/MeteorStorm.frag` · type=scene3d · geom=points · mood=aggressive,dark · complexity=10
 
 Additive point-sprite shader for the meteor shower / static star dome, rendering each point (a meteor's head, one of its trail particles, or a background star) as a soft radial glow. Colour, including the per-meteor cycle timing and the audioOnset/audioSwell/audioChromaHue/audioDrop response that shapes flight and brightness, is computed upstream in MeteorStorm.vert and arrives baked in vCol; this stage's own audioLe…
 
@@ -9669,7 +9669,7 @@ Additive point-sprite shader for the meteor shower / static star dome, rendering
 
 ### MirrorShardKaleidoscope
 
-`Scene3D/MirrorShardKaleidoscope.frag` · type=scene3d · geom=cubes · mood=aggressive,dark,psychedelic · complexity=3
+`Scene3D/MirrorShardKaleidoscope.frag` · type=scene3d · geom=cubes · mood=aggressive,dark,psychedelic · complexity=9
 
 Lights each mirror shard from MirrorShardKaleidoscope.vert as a real reflective facet: the view ray from the (near-origin) camera to the shard is reflected off its tilted normal and used to sample the current slideshow photo as a wrapped equirectangular environment -- the shard genuinely shows a different sliver of the picture depending on its current tilt, the same trick as Scene3D/ChromeFlow.frag's chrome reflectio…
 
@@ -9678,7 +9678,7 @@ Lights each mirror shard from MirrorShardKaleidoscope.vert as a real reflective 
 
 ### MirrorShatterExplosion
 
-`Scene3D/MirrorShatterExplosion.frag` · type=scene3d · geom=scatter · mood=aggressive,bright,psychedelic · complexity=4
+`Scene3D/MirrorShatterExplosion.frag` · type=scene3d · geom=scatter · mood=aggressive,bright,psychedelic · complexity=10
 
 Shades one triangular mirror shard from MirrorShatterExplosion.geom: a lit glinting facet (fixed-direction diffuse + tight specular) with a Fresnel rim so shards read as sharp glass/mirror fragments rather than flat matte confetti. All placement, colour and the beat- synced explosion are computed in the geometry stage and arrive pre-baked in gCol.
 
@@ -9687,7 +9687,7 @@ Shades one triangular mirror shard from MirrorShatterExplosion.geom: a lit glint
 
 ### ModalVibration
 
-`Scene3D/ModalVibration.frag` · type=scene3d · geom=mesh · mood=dark,psychedelic · complexity=3
+`Scene3D/ModalVibration.frag` · type=scene3d · geom=mesh · mood=dark,psychedelic · complexity=2
 
 A real object rung by the music: four spectral bands drive four spatial standing waves across its surface (the displacement itself is in the vertex stage). This stage paints where the surface is moving -- crests hot, nodes dark -- so the vibration pattern is visible even when the displacement is too small to see as motion. The nodal lines are what carry it. On a struck plate the still lines between moving regions are…
 
@@ -9696,7 +9696,7 @@ A real object rung by the music: four spectral bands drive four spatial standing
 
 ### MoireHyperInterference
 
-`Scene3D/MoireHyperInterference.frag` · type=scene3d · geom=grid · mood=bright,psychedelic · complexity=3
+`Scene3D/MoireHyperInterference.frag` · type=scene3d · geom=grid · mood=bright,psychedelic · complexity=10
 
 Shades the 220x120 heightfield of optical Moire superlattice fringes built in MoireHyperInterference.vert: the baked interference palette blended with the current photo, a fixed-light specular highlight, and an amber glow where the two gratings' beat pattern (vInterference) is strongest. All audio response (grating rotation speed, beat-frequency depth, kick elevation, hue rotation) is computed upstream in the vertex …
 
@@ -9705,7 +9705,7 @@ Shades the 220x120 heightfield of optical Moire superlattice fringes built in Mo
 
 ### MonarchRoostTree
 
-`Scene3D/MonarchRoostTree.frag` · type=scene3d · geom=indirect · mood=calm,bright,dreamy · complexity=4
+`Scene3D/MonarchRoostTree.frag` · type=scene3d · geom=indirect · mood=calm,bright,dreamy · complexity=2
 
 Fragment stage for MonarchRoostTree: a misty forest of the photo behind, the fir in dark green-brown, the wings orange with black veins and white-dotted margins, the photo showing through as the orange field (a wing-shaped cut of it), flying ones brighter in the sun; the kick a flash of sun through the boughs, the treble a shimmer on the wings. Audio Reactivity: audioSwell -> sun (and wing opening in the generator); …
 
@@ -9714,7 +9714,7 @@ Fragment stage for MonarchRoostTree: a misty forest of the photo behind, the fir
 
 ### MonolithField
 
-`Scene3D/MonolithField.frag` · type=scene3d · geom=cubes · mood=dark,dreamy · complexity=3
+`Scene3D/MonolithField.frag` · type=scene3d · geom=cubes · mood=dark,dreamy · complexity=8
 
 Shades the near-black monolith slabs and drifting shards built in MonolithField.vert -- their faces stay almost unlit while segmented luminous glyph dashes trace the vertical edges -- plus the two plain solids that carry the frame around them: the ground slabs of the plain itself and the sky-dust haze above the horizon. vCorner (the vertex's local cube-corner position) picks out the edges and their dashed glyph segme…
 
@@ -9723,7 +9723,7 @@ Shades the near-black monolith slabs and drifting shards built in MonolithField.
 
 ### MosaicWave
 
-`Scene3D/MosaicWave.frag` · type=scene3d · geom=quads · mood=bright,calm · complexity=1
+`Scene3D/MosaicWave.frag` · type=scene3d · geom=quads · mood=bright,calm · complexity=9
 
 Shades one tile of a mosaic wall built from photo tiles that flip between front (the image) and back (a hue-inverted twin), with thin dark grout lines keeping the mosaic pattern readable. vFlip (front/back sign from the vertex stage) selects which face is shown, hue-rotating the back face by audioChromaHue; vLight (also baked upstream) shades edge-on tiles darker as they flip; audioDrop adds a final brightness pulse …
 
@@ -9732,7 +9732,7 @@ Shades one tile of a mosaic wall built from photo tiles that flip between front 
 
 ### MyceliumNeuralPulse
 
-`Scene3D/MyceliumNeuralPulse.frag` · type=scene3d · geom=indirect · mood=dark,calm · complexity=4
+`Scene3D/MyceliumNeuralPulse.frag` · type=scene3d · geom=indirect · mood=dark,calm · complexity=10
 
 MYCELIUM NEURAL PULSE: an underground hyphae network - teal resting threads through which photo-palette-coloured action potentials flash, camera orbiting the thicket. Audio Reactivity: audioKick -> action-potential firing (.comp generator) audioAdvance -> camera orbit + photo-palette arc drift audioChromaHue -> musical key picks the photo-palette arc audioValence -> saturation of the palette (bleak = greyer) audioMod…
 
@@ -9741,7 +9741,7 @@ MYCELIUM NEURAL PULSE: an underground hyphae network - teal resting threads thro
 
 ### NebulaCloud
 
-`Scene3D/NebulaCloud.frag` · type=scene3d · geom=points · mood=calm,dark,space · complexity=2
+`Scene3D/NebulaCloud.frag` · type=scene3d · geom=points · mood=calm,dark,space · complexity=4
 
 Renders one particle of the gas-nebula point cloud as a soft, wide additive glow sprite. This shader reads no audio uniforms itself; every audio mapping lives in the paired NebulaCloud.vert and arrives baked into vCol / the point size. Audio Reactivity (all applied in NebulaCloud.vert): audioChromaHue -> hue of both nebula colour families audioSwell -> overall glow of the gas audioLevel -> overall glow of the gas aud…
 
@@ -9750,7 +9750,7 @@ Renders one particle of the gas-nebula point cloud as a soft, wide additive glow
 
 ### NeonHighwayDrive
 
-`Scene3D/NeonHighwayDrive.frag` · type=scene3d · geom=grid · mood=dark,aggressive · complexity=3
+`Scene3D/NeonHighwayDrive.frag` · type=scene3d · geom=grid · mood=dark,aggressive · complexity=6
 
 Shades the NeonHighwayDrive heightfield: a dark asphalt road strip lit by a headlight cone that travels with the camera, neon-tinted centre and edge lines, glowing roadside pylons (vPylonGlow, baked per-vertex from the height/kick pulse), and image-palette-tinted terrain either side that dims into distance haze. audioKick brightens the pylon glow and headlight reach; this stage reads no other audio directly, since dr…
 
@@ -9759,7 +9759,7 @@ Shades the NeonHighwayDrive heightfield: a dark asphalt road strip lit by a head
 
 ### NeuralAxonSynapseCloud
 
-`Scene3D/NeuralAxonSynapseCloud.frag` · type=scene3d · geom=points · mood=aggressive,dark · complexity=3
+`Scene3D/NeuralAxonSynapseCloud.frag` · type=scene3d · geom=points · mood=aggressive,dark · complexity=10
 
 Renders one particle of the 60,000-point cortical-connectome cloud as a soft gaussian point sprite, then hue-rotates it. Per-particle position, cluster/dendrite placement and the action-potential flash brightness are all computed upstream in NeuralAxonSynapseCloud.vert from a wide set of audio uniforms; this fragment shader only discards outside the circular sprite, shapes the gaussian core, and applies a final hueRo…
 
@@ -9768,7 +9768,7 @@ Renders one particle of the 60,000-point cortical-connectome cloud as a soft gau
 
 ### NeuralConnectomeGlow
 
-`Scene3D/NeuralConnectomeGlow.frag` · type=scene3d · geom=indirect · mood=dark,calm,psychedelic · complexity=4
+`Scene3D/NeuralConnectomeGlow.frag` · type=scene3d · geom=indirect · mood=dark,calm,psychedelic · complexity=7
 
 Fragment stage for NeuralConnectomeGlow: deep tissue dark with the photo faint, somas as round glowing cells, dendrites as faint fibres, axons carrying spikes -- bright pulses that travel along the fibre on a continuous phase of the scene clock at a rate set by the axon's band energy... no: the rate is fixed, the band energy is the pulse brightness (continuity rule); the kick lights every soma, the swell the tissue. …
 
@@ -9777,7 +9777,7 @@ Fragment stage for NeuralConnectomeGlow: deep tissue dark with the photo faint, 
 
 ### NeuroSynapseNetwork
 
-`Scene3D/NeuroSynapseNetwork.frag` · type=scene3d · geom=points · mood=dark,calm · complexity=2
+`Scene3D/NeuroSynapseNetwork.frag` · type=scene3d · geom=points · mood=dark,calm · complexity=10
 
 Renders one particle of the 60,000-node neural-connectome point cloud as a tight-cored, short-tailed glow sprite. Reads no audio uniforms directly: per-particle position, the electrical action-potential flashes and colour are all computed in the paired NeuroSynapseNetwork.vert (which itself reacts to audioKick, audioBass, audioSubBass, audioHigh, audioSwell and the spectrum bins) and arrive here as vCol and vLife. vL…
 
@@ -9786,7 +9786,7 @@ Renders one particle of the 60,000-node neural-connectome point cloud as a tight
 
 ### NonEuclideanDodecahedronLoom
 
-`Scene3D/NonEuclideanDodecahedronLoom.frag` · type=scene3d · geom=ribbon · mood=bright,calm,psychedelic · complexity=3
+`Scene3D/NonEuclideanDodecahedronLoom.frag` · type=scene3d · geom=ribbon · mood=bright,calm,psychedelic · complexity=6
 
 NON-EUCLIDEAN DODECAHEDRON LOOM: a frame-spanning shell of twenty glowing thread-knots, one woven around each vertex axis of a real dodecahedron, tumbling around all three axes; each strand takes its colour from the photo-palette arc. audioPhase -> thread colour drift audioAdvance + time -> tumble audioKick -> swells the ribbon width (additive threads, source-level gains, final colour capped)
 
@@ -9795,7 +9795,7 @@ NON-EUCLIDEAN DODECAHEDRON LOOM: a frame-spanning shell of twenty glowing thread
 
 ### NonEuclideanKleinQuarticTile
 
-`Scene3D/NonEuclideanKleinQuarticTile.frag` · type=scene3d · geom=grid · mood=bright,calm · complexity=3
+`Scene3D/NonEuclideanKleinQuarticTile.frag` · type=scene3d · geom=grid · mood=bright,calm · complexity=7
 
 NON-EUCLIDEAN KLEIN QUARTIC TILE: Hyperbolic tiling of the Klein quartic Riemann surface (genus 3) by 24 regular heptagons with PSL(2,7) symmetry group of order 168. Features glassy hyperbolic heptagon facets, specular reflections, and photo-derived geometric texturing. audioAdvance -> drives non-Euclidean hyperbolic geodesic isometry flow audioKick -> flashes specular facet reflections & symmetry axis pulses audioSw…
 
@@ -9804,7 +9804,7 @@ NON-EUCLIDEAN KLEIN QUARTIC TILE: Hyperbolic tiling of the Klein quartic Riemann
 
 ### NonlinearLaserPlasmaWakefieldAccelerator
 
-`Scene3D/NonlinearLaserPlasmaWakefieldAccelerator.frag` · type=scene3d · geom=ribbon · mood=aggressive,dark · complexity=4
+`Scene3D/NonlinearLaserPlasmaWakefieldAccelerator.frag` · type=scene3d · geom=ribbon · mood=aggressive,dark · complexity=9
 
 NONLINEAR LASER PLASMA WAKEFIELD ACCELERATOR: Laser plasma wakefield acceleration (LWFA) in the non-linear bubble (blowout) regime. Relativistic laser ponderomotive force expels ambient electrons, creating a spherical accelerating ion bubble with trapped GeV electron bunch injection. The plasma oscillates behind the driver, so the blowout repeats as a damped TRAIN of cavities down the whole channel, its sheath drawn …
 
@@ -9813,7 +9813,7 @@ NONLINEAR LASER PLASMA WAKEFIELD ACCELERATOR: Laser plasma wakefield acceleratio
 
 ### Ocean
 
-`Scene3D/Ocean.frag` · type=scene3d · geom=patches · mood=calm · complexity=3
+`Scene3D/Ocean.frag` · type=scene3d · geom=patches · mood=calm · complexity=10
 
 Shades the tessellated ocean surface: a Fresnel mix between the water body colour and a reflected sky built from the current slideshow photo. audioLevel lifts the water body's brightness, audioHigh sharpens the sun glitter's specular lobe, audioKick pumps the foam on breaking crests, audioSubBass drives a subsurface glow in the wave backs, audioBeat adds a final overall pulse, and audioChromaHue nudges the water's hu…
 
@@ -9822,7 +9822,7 @@ Shades the tessellated ocean surface: a Fresnel mix between the water body colou
 
 ### OceanAbyssalBrinePool
 
-`Scene3D/OceanAbyssalBrinePool.frag` · type=scene3d · geom=grid · mood=calm,dark,dreamy · complexity=3
+`Scene3D/OceanAbyssalBrinePool.frag` · type=scene3d · geom=grid · mood=calm,dark,dreamy · complexity=8
 
 OCEAN ABYSSAL BRINE POOL: a deep-sea brine basin seen from above, the camera slowly ORBITING the pool; hypersaline internal waves shimmer in photo-palette colours against the abyssal blue shore. audioKick -> halocline shimmer audioBass -> internal waves audioAdvance -> orbit
 
@@ -9831,7 +9831,7 @@ OCEAN ABYSSAL BRINE POOL: a deep-sea brine basin seen from above, the camera slo
 
 ### OceanNight
 
-`Scene3D/OceanNight.frag` · type=scene3d · geom=grid · mood=calm,dark · complexity=2
+`Scene3D/OceanNight.frag` · type=scene3d · geom=grid · mood=calm,dark · complexity=8
 
 Shades a night ocean: deep blue water, a moon-glitter lane running to the horizon, and foam sparkle on the crests. audioDrop flashes the whole surface brighter, audioCentroid warms or cools the overall tint, and audioChromaHue turns the deep-water base colour through a hue rotation. Colour is further pulled toward the house imgPalette (a rotating sample arc over the current slideshow photo, tex0/tex1 crossfaded by in…
 
@@ -9840,7 +9840,7 @@ Shades a night ocean: deep blue water, a moon-glitter lane running to the horizo
 
 ### OpticalLatticeAtoms
 
-`Scene3D/OpticalLatticeAtoms.frag` · type=scene3d · geom=indirect · mood=dark,calm,dreamy · complexity=4
+`Scene3D/OpticalLatticeAtoms.frag` · type=scene3d · geom=indirect · mood=dark,calm,dreamy · complexity=9
 
 Fragment stage for OpticalLatticeAtoms: the vacuum chamber dark with the photo faint on its far window, the lattice beams as faint red lines, the atoms as round glowing discs whose colour is their chroma class and whose brightness is that class's energy (the fluorescence imaging), the magneto-optical-trap glow with the level, the treble a sparkle on the beam crossings. Audio Reactivity: audioChroma[12] -> atom bright…
 
@@ -9849,7 +9849,7 @@ Fragment stage for OpticalLatticeAtoms: the vacuum chamber dark with the photo f
 
 ### OrbitalDebrisField
 
-`Scene3D/OrbitalDebrisField.frag` · type=scene3d · geom=indirect · mood=space,dark,calm · complexity=4
+`Scene3D/OrbitalDebrisField.frag` · type=scene3d · geom=indirect · mood=space,dark,calm · complexity=8
 
 Fragment stage for OrbitalDebrisField: metal plates with a glint, the station hull with running lights, a planet limb with an atmosphere gradient (kind 3) and a hashed star sky (kind -1). Audio Reactivity: audioRoughness sharpens the glint; audioKick flashes the station lights; audioSwell warms the atmosphere.
 
@@ -9858,7 +9858,7 @@ Fragment stage for OrbitalDebrisField: metal plates with a glint, the station hu
 
 ### OrbitalDrop
 
-`Scene3D/OrbitalDrop.frag` · type=scene3d · geom=points · mood=aggressive,dark · complexity=2
+`Scene3D/OrbitalDrop.frag` · type=scene3d · geom=points · mood=aggressive,dark · complexity=10
 
 Renders one particle of the endless atmospheric-re-entry loop (stars, plasma streaks, clouds, city lights, sonic-boom ring) as a soft additive glow sprite. Reads no audio uniforms directly. Which of the five layers a particle belongs to, its motion, and its colour are all decided in the paired OrbitalDrop.vert, which reacts to audioAdvance (falls the camera through the loop and drifts the frustum-spread star field), …
 
@@ -9867,7 +9867,7 @@ Renders one particle of the endless atmospheric-re-entry loop (stars, plasma str
 
 ### OrbitalShells
 
-`Scene3D/OrbitalShells.frag` · type=scene3d · geom=points · mood=dark,dreamy,space · complexity=2
+`Scene3D/OrbitalShells.frag` · type=scene3d · geom=points · mood=dark,dreamy,space · complexity=1
 
 Renders one particle of the glowing-nucleus-plus-four-electron- shells "atom" as a soft additive glow sprite. Reads no audio uniforms directly. The paired OrbitalShells.vert computes per-particle position and colour: the nucleus breathes with audioSubBass, each of the four precessing shells is keyed to its own register (audioBass/audioMid/audioHigh), audioSwell scales overall brightness, and audioChromaHue sets the p…
 
@@ -9876,7 +9876,7 @@ Renders one particle of the glowing-nucleus-plus-four-electron- shells "atom" as
 
 ### Origami
 
-`Scene3D/Origami.frag` · type=scene3d · geom=indirect · mood=calm,bright · complexity=3
+`Scene3D/Origami.frag` · type=scene3d · geom=indirect · mood=calm,bright · complexity=5
 
 _(Vorschau eingeschränkt: Sim-Textur/Mehrpass — Bilder unterschätzen die echte App)_
 
@@ -9887,7 +9887,7 @@ Shades the folded Miura-ori sheet as tight-specular metallic foil, so each flat 
 
 ### OrreryBrass
 
-`Scene3D/OrreryBrass.frag` · type=scene3d · geom=indirect · mood=calm,dark,dreamy · complexity=3
+`Scene3D/OrreryBrass.frag` · type=scene3d · geom=indirect · mood=calm,dark,dreamy · complexity=6
 
 Fragment stage for OrreryBrass: a dark study (the photo as the bookshelves), the brass base engraved with rings, the arms and column in warm brass, the sun lamp glowing with the bass, the planets as photo spheres lit from the sun side (the orbit angle gives the terminator), moons as small ivory beads; the kick glints the brass, the treble the engraving. Audio Reactivity: audioBass -> sun lamp; audioKick -> brass glin…
 
@@ -9896,7 +9896,7 @@ Fragment stage for OrreryBrass: a dark study (the photo as the bookshelves), the
 
 ### OscilloRings
 
-`Scene3D/OscilloRings.frag` · type=scene3d · geom=ribbon · mood=bright · complexity=1
+`Scene3D/OscilloRings.frag` · type=scene3d · geom=ribbon · mood=bright · complexity=10
 
 Renders one segment of the 20 nested oscilloscope rings as a glowing line with a bright core and a soft halo. Reads no audio uniforms directly. The paired OscilloRings.vert bends each ring's radius by its own spectrum band (audioSpectrum), wraps the real waveform (audioWave) around the innermost rings, breathes the base radius with audioBass, and colours the whole set via audioChromaHue and audioSwell; this shader tu…
 
@@ -9905,7 +9905,7 @@ Renders one segment of the 20 nested oscilloscope rings as a glowing line with a
 
 ### ParticleGalaxy
 
-`Scene3D/ParticleGalaxy.frag` · type=scene3d · geom=points · mood=calm,space · complexity=2
+`Scene3D/ParticleGalaxy.frag` · type=scene3d · geom=points · mood=calm,space · complexity=3
 
 Renders one star of the 60,000-point 3D spiral galaxy as a soft round additive glow sprite. Reads no audio uniforms directly. The paired ParticleGalaxy.vert builds the log-spiral arms, pumps the central bulge with audioBass, rolls an outward shock ring along audioBeatPhase on every audioKick, flares the whole disc on audioDrop, and tints the palette from the current slideshow photo (via audioChromaHue/audioAdvance/au…
 
@@ -9914,7 +9914,7 @@ Renders one star of the 60,000-point 3D spiral galaxy as a soft round additive g
 
 ### ParticleTunnelFlight
 
-`Scene3D/ParticleTunnelFlight.frag` · type=scene3d · geom=points · mood=psychedelic,bright,aggressive · complexity=3
+`Scene3D/ParticleTunnelFlight.frag` · type=scene3d · geom=points · mood=psychedelic,bright,aggressive · complexity=10
 
 Renders one particle of the mirror-kaleidoscope tunnel-flight point cloud as a tight- cored glow sprite. Reads no audio uniforms directly: position, kaleidoscope fold, kick shockwave flash and colour are all computed in the paired ParticleTunnelFlight.vert and arrive here as vCol and vLife (0..~1.5, brightens the glow on a kick shockwave). A soft-knee tone-map compresses hot additive overlap instead of clipping the w…
 
@@ -9923,7 +9923,7 @@ Renders one particle of the mirror-kaleidoscope tunnel-flight point cloud as a t
 
 ### PermafrostPolygons
 
-`Scene3D/PermafrostPolygons.frag` · type=scene3d · geom=patches · mood=calm,bright,dreamy · complexity=4
+`Scene3D/PermafrostPolygons.frag` · type=scene3d · geom=patches · mood=calm,bright,dreamy · complexity=2
 
 PERMAFROST POLYGONS: the tundra from a low flight -- ice-wedge polygons rimmed with ridges of moss and cotton grass, the troughs between them flooded, every pond a mirror of the sky (the photo). The ponds brighten with the bass (the sky light in them), frost glints on the ridges with the treble, the low arctic sun is the swell, the kick a bird lifting as a flash of white. Camera height fixed. Audio Reactivity: audioB…
 
@@ -9932,7 +9932,7 @@ PERMAFROST POLYGONS: the tundra from a low flight -- ice-wedge polygons rimmed w
 
 ### PhotoCarousel
 
-`Scene3D/PhotoCarousel.frag` · type=scene3d · geom=quads · mood=calm,bright · complexity=1
+`Scene3D/PhotoCarousel.frag` · type=scene3d · geom=quads · mood=calm,bright · complexity=10
 
 Shades one card of the photo carousel: a seeded crop of the current slideshow image (tex0) with a thin glowing frame. audioChromaHue sets the frame's hue (offset per card by its seed), audioKick brightens the frame flashes, and audioDrop lifts the whole card's exposure; vGlow (from the vertex shader) additionally modulates per-card brightness.
 
@@ -9941,7 +9941,7 @@ Shades one card of the photo carousel: a seeded crop of the current slideshow im
 
 ### PhotonicChiralMetamaterialGyroidHelix
 
-`Scene3D/PhotonicChiralMetamaterialGyroidHelix.frag` · type=scene3d · geom=ribbon · mood=bright,psychedelic · complexity=3
+`Scene3D/PhotonicChiralMetamaterialGyroidHelix.frag` · type=scene3d · geom=ribbon · mood=bright,psychedelic · complexity=8
 
 PHOTONIC CHIRAL METAMATERIAL GYROID HELIX: 3D chiral metamaterial micro-helix array. A 5 x 4 frustum lattice of helical metallic nano-springs, each tumbling on its own axis pair, exhibits giant circular dichroism and optical activity, selectively transmitting left vs right circularly polarized light with chiral plasmonic photo texturing. audioAdvance -> screws the micro-helices, drifts the lattice & rotates polarizat…
 
@@ -9950,7 +9950,7 @@ PHOTONIC CHIRAL METAMATERIAL GYROID HELIX: 3D chiral metamaterial micro-helix ar
 
 ### PhotonicCrystalFiberCore
 
-`Scene3D/PhotonicCrystalFiberCore.frag` · type=scene3d · geom=cubes · mood=bright,psychedelic · complexity=3
+`Scene3D/PhotonicCrystalFiberCore.frag` · type=scene3d · geom=cubes · mood=bright,psychedelic · complexity=10
 
 PHOTONIC CRYSTAL FIBER CORE: the cross-section lattice of a holey fiber (hexagonal cladding, hollow core) slowly rolling; LIGHT PULSES race down the guided core on the kick, supercontinuum colours from the photo arc. audioKick -> guided light pulse audioPhase -> supercontinuum drift audioSwell -> brightness of the bulk glass behind the cladding time -> slow roll around the fiber axis vKind = 1 marks the single slab t…
 
@@ -9959,7 +9959,7 @@ PHOTONIC CRYSTAL FIBER CORE: the cross-section lattice of a holey fiber (hexagon
 
 ### PhotonicTopologicalEdgeStates
 
-`Scene3D/PhotonicTopologicalEdgeStates.frag` · type=scene3d · geom=ribbon · mood=dark,psychedelic · complexity=3
+`Scene3D/PhotonicTopologicalEdgeStates.frag` · type=scene3d · geom=ribbon · mood=dark,psychedelic · complexity=9
 
 PHOTONIC TOPOLOGICAL EDGE STATES: 3D ribbon lattice of coupled optical waveguides. Demonstrates robust, backscattering-immune topological edge currents routing light pulses around defects, with core laser pulses and iridescent photo texturing. audioAdvance -> drives edge current photon propagation velocity audioKick -> flashes high-energy laser pulse injection bursts audioSwell -> thickens waveguide ribbon width & cl…
 
@@ -9968,7 +9968,7 @@ PHOTONIC TOPOLOGICAL EDGE STATES: 3D ribbon lattice of coupled optical waveguide
 
 ### PhotoShatter
 
-`Scene3D/PhotoShatter.frag` · type=scene3d · geom=quads · mood=aggressive,dark · complexity=1
+`Scene3D/PhotoShatter.frag` · type=scene3d · geom=quads · mood=aggressive,dark · complexity=10
 
 Shades one flying shard of the shattered current photo (tex0): the plain image, lit by vLight, with hot fracture-line edges. audioDrop is what ignites the fracture edges — they stay faint between drops and blaze orange on one — and audioChromaHue hue-rotates that edge colour so it tracks the music's key.
 
@@ -9977,7 +9977,7 @@ Shades one flying shard of the shattered current photo (tex0): the plain image, 
 
 ### PhotoSphere
 
-`Scene3D/PhotoSphere.frag` · type=scene3d · geom=grid · mood=calm,space · complexity=2
+`Scene3D/PhotoSphere.frag` · type=scene3d · geom=grid · mood=calm,space · complexity=9
 
 Shades the photo-wrapped planet: the current slideshow image wraps the sphere twice, mirror-folded so the seam never shows, with day-side lighting and a key-coloured atmosphere rim. tex0/tex1 are crossfaded by interpolation so the wrap survives a photo change mid-scene. audioChromaHue sets the rim colour, audioCentroid brightens that rim, audioKick pulses a flash band at the equator, and audioDrop lights the entire g…
 
@@ -9986,7 +9986,7 @@ Shades the photo-wrapped planet: the current slideshow image wraps the sphere tw
 
 ### PhotoTunnel
 
-`Scene3D/PhotoTunnel.frag` · type=scene3d · geom=grid · mood=bright · complexity=2
+`Scene3D/PhotoTunnel.frag` · type=scene3d · geom=grid · mood=bright · complexity=9
 
 Shades the tunnel wall as the current slideshow image (tex0), kaleidoscope-folded into 6/8/10/12 mirrored sectors and scrolled toward the camera. sceneSeed picks the sector count per activation. audioAdvance drives both the slow sector rotation and the image's inward scroll speed; audioKick and audioDrop flash the walls brighter; a luminous ring keyed to audioBarPhase sweeps down the tunnel once per bar, coloured by …
 
@@ -9995,7 +9995,7 @@ Shades the tunnel wall as the current slideshow image (tex0), kaleidoscope-folde
 
 ### PhotoVortex
 
-`Scene3D/PhotoVortex.frag` · type=scene3d · geom=grid · mood=psychedelic,bright · complexity=2
+`Scene3D/PhotoVortex.frag` · type=scene3d · geom=grid · mood=psychedelic,bright · complexity=5
 
 Shades the vortex throat: the current slideshow image is wound into mirrored rings that stream inward and stretch as they fall toward a glowing eye. tex0/tex1 are crossfaded by interpolation. audioAdvance drives the inward streaming speed of the image rings; audioKick pulses the throat's eye glow, audioDrop blazes it; audioChromaHue sets the eye's hue.
 
@@ -10004,7 +10004,7 @@ Shades the vortex throat: the current slideshow image is wound into mirrored rin
 
 ### Phyllotaxis
 
-`Scene3D/Phyllotaxis.frag` · type=scene3d · geom=points · mood=dark,calm,dreamy · complexity=2
+`Scene3D/Phyllotaxis.frag` · type=scene3d · geom=points · mood=dark,calm,dreamy · complexity=9
 
 Renders one floret of the 60,000-point golden-angle sunflower head as a soft additive glow sprite. Reads no audio uniforms directly -- every mapping lives in the paired Phyllotaxis.vert and arrives here baked into vCol / the point size. This shader only shapes the result into a gaussian point. Audio Reactivity (all applied in Phyllotaxis.vert): audioBarPhase -> ring of light rolling centre -> rim once per bar audioSw…
 
@@ -10013,7 +10013,7 @@ Renders one floret of the 60,000-point golden-angle sunflower head as a soft add
 
 ### PillarHall
 
-`Scene3D/PillarHall.frag` · type=scene3d · geom=cubes · mood=dark,dreamy · complexity=4
+`Scene3D/PillarHall.frag` · type=scene3d · geom=cubes · mood=dark,dreamy · complexity=9
 
 _(Vorschau eingeschränkt: Sim-Textur/Mehrpass — Bilder unterschätzen die echte App)_
 
@@ -10024,7 +10024,7 @@ Shades the shadow-mapped pillar hall: a warm sun-and-sky lit tiled floor and flu
 
 ### Planet4D
 
-`Scene3D/Planet4D.frag` · type=scene3d · geom=points · mood=dreamy,psychedelic,space · complexity=2
+`Scene3D/Planet4D.frag` · type=scene3d · geom=points · mood=dreamy,psychedelic,space · complexity=9
 
 Renders one grain of the 4D harmony visualisation (pitch classes on a Clifford torus, stereographically projected to 3D) as a soft glow sprite with a bright core and a broad secondary halo. Reads no audio uniforms directly. The paired Planet4D.vert places the 12 pitch-class node clouds, their 36 interval edges and the surrounding dust field the structure hangs in, brightening each node by its live audioChroma[] energ…
 
@@ -10033,7 +10033,7 @@ Renders one grain of the 4D harmony visualisation (pitch classes on a Clifford t
 
 ### PlanetRings
 
-`Scene3D/PlanetRings.frag` · type=scene3d · geom=points · mood=calm,dark,space · complexity=2
+`Scene3D/PlanetRings.frag` · type=scene3d · geom=points · mood=calm,dark,space · complexity=3
 
 Renders one point of the pointillist gas-giant scene — planet body, Kepler-orbiting rings, and far starfield — as a soft additive glow sprite. Reads no audio uniforms directly. The paired PlanetRings.vert decides which of the three layers a point belongs to and computes its motion and colour: audioKick sends a density wave rolling outward through the rings, audioBass wobbles them, audioSwell pulls the orbiting camera…
 
@@ -10042,7 +10042,7 @@ Renders one point of the pointillist gas-giant scene — planet body, Kepler-orb
 
 ### PlasmaFilamentTornado
 
-`Scene3D/PlasmaFilamentTornado.frag` · type=scene3d · geom=indirect · mood=aggressive,dark · complexity=4
+`Scene3D/PlasmaFilamentTornado.frag` · type=scene3d · geom=indirect · mood=aggressive,dark · complexity=3
 
 Shades one strand segment of the plasma-filament tornado as a glowing cross-section profile, brightest along the strand's centre line and fading toward its edges. The per-strand cyan/violet/white colour mix and its audio-reactive brightness (audioKick, audioLevel) are computed upstream in PlasmaFilamentTornado.vert and arrive here as vColor; this shader applies a further hueRot() driven directly by audioChromaHue plu…
 
@@ -10051,7 +10051,7 @@ Shades one strand segment of the plasma-filament tornado as a glowing cross-sect
 
 ### PlasmaSheet
 
-`Scene3D/PlasmaSheet.frag` · type=scene3d · geom=grid · mood=aggressive,psychedelic · complexity=2
+`Scene3D/PlasmaSheet.frag` · type=scene3d · geom=grid · mood=aggressive,psychedelic · complexity=3
 
 Shades the classic smooth plasma sheet: three drifting sine fields summed and mapped through the house photo palette. audioAdvance drifts the sine fields' phase; audioSwell and audioLevel scale overall brightness; the sheet's colour is drawn from the house imgPalette (a rotating sample arc over the current slideshow photo, tex0/tex1 crossfaded by interpolation) whose angle follows audioChromaHue with an audioAdvance …
 
@@ -10060,7 +10060,7 @@ Shades the classic smooth plasma sheet: three drifting sine fields summed and ma
 
 ### PlasmaVortexGrid
 
-`Scene3D/PlasmaVortexGrid.frag` · type=scene3d · geom=grid · mood=aggressive,bright,psychedelic · complexity=3
+`Scene3D/PlasmaVortexGrid.frag` · type=scene3d · geom=grid · mood=aggressive,bright,psychedelic · complexity=5
 
 PLASMA VORTEX GRID: a glowing funnel grid swirled by a TRAVELING SPIRAL WAVE (rigid base rotation + bounded radial wave - no mesh shear), the camera banking around and into the funnel. audioKick -> shock tsunami audioSubBass -> funnel depth audioSpectrum -> Bessel ripple heights
 
@@ -10069,7 +10069,7 @@ PLASMA VORTEX GRID: a glowing funnel grid swirled by a TRAVELING SPIRAL WAVE (ri
 
 ### PolaritonCondensateVortexLattice
 
-`Scene3D/PolaritonCondensateVortexLattice.frag` · type=scene3d · geom=grid · mood=calm,dreamy,bright · complexity=3
+`Scene3D/PolaritonCondensateVortexLattice.frag` · type=scene3d · geom=grid · mood=calm,dreamy,bright · complexity=4
 
 POLARITON CONDENSATE VORTEX LATTICE: 220x120 heightfield grid of an exciton-polariton quantum condensate. Quantized vortices create macroscopic phase dislocations, superfluid density dips, Bogoliubov phonon ripples, and dynamic photo-palette interference. audioAdvance -> integrates macroscopic polariton condensate phase evolution audioKick -> excites quantized vortex-antivortex pair creation bursts audioSwell -> lift…
 
@@ -10087,7 +10087,7 @@ Shades one cube of the nested platonic-shell constellation with dark faces and l
 
 ### PortalRush
 
-`Scene3D/PortalRush.frag` · type=scene3d · geom=ribbon · mood=aggressive,dark · complexity=2
+`Scene3D/PortalRush.frag` · type=scene3d · geom=ribbon · mood=aggressive,dark · complexity=10
 
 Shades one band segment of a torus-shaped portal gate in the ring-gate slalom as a soft-edged glowing line (additive). Reads no audio uniforms directly. The paired PortalRush.vert races the camera down the slalom on audioAdvance, pulses the nearest gate in tempo via audioBeatPhase, flashes a gate on audioKick as it is passed, flares every gate on audioDrop, and colours them via audioChromaHue; this shader turns the r…
 
@@ -10096,7 +10096,7 @@ Shades one band segment of a torus-shaped portal gate in the ring-gate slalom as
 
 ### PrismExplode
 
-`Scene3D/PrismExplode.frag` · type=scene3d · geom=indirect · mood=aggressive,dark · complexity=4
+`Scene3D/PrismExplode.frag` · type=scene3d · geom=indirect · mood=aggressive,dark · complexity=8
 
 Renders the exploding shell of glass-prism shards built by PrismExplode.comp, refracting a procedural sky through each facet with real chromatic dispersion (Cauchy's equation, one refraction per colour channel) instead of a painted rainbow gradient. audioKick and audioSubBass widen the dispersion spread on transients; audioBeat and audioSubBass also pulse the overall exposure. audioHigh adds a faint white highlight a…
 
@@ -10105,7 +10105,7 @@ Renders the exploding shell of glass-prism shards built by PrismExplode.comp, re
 
 ### ProteinFoldingChain
 
-`Scene3D/ProteinFoldingChain.frag` · type=scene3d · geom=indirect · mood=calm,dreamy,bright · complexity=4
+`Scene3D/ProteinFoldingChain.frag` · type=scene3d · geom=indirect · mood=calm,dreamy,bright · complexity=6
 
 Fragment stage for ProteinFoldingChain: the cytoplasm behind (the photo soft and warm), residues as round shaded beads -- side chains coloured by chroma class (index mod 12), the hydrophobic ones glowing from within with the bass as the core forms -- bonds as pale tubes, the kick a flash on the newest contacts, the treble a sparkle of water. Audio Reactivity: audioChroma[12] -> bead colour by class; audioBass -> hydr…
 
@@ -10114,7 +10114,7 @@ Fragment stage for ProteinFoldingChain: the cytoplasm behind (the photo soft and
 
 ### QuantumHallEdgeChiralRibbon
 
-`Scene3D/QuantumHallEdgeChiralRibbon.frag` · type=scene3d · geom=ribbon · mood=bright,calm · complexity=3
+`Scene3D/QuantumHallEdgeChiralRibbon.frag` · type=scene3d · geom=ribbon · mood=bright,calm · complexity=10
 
 QUANTUM HALL EDGE CHIRAL RIBBON: Topologically protected 1D chiral edge channels in the integer and fractional Quantum Hall effects. Dissipationless skipping orbits, quantized Hall conductance plates, ballistic wavepacket pulses, and photo texturing. audioAdvance -> accelerates chiral electron skipping orbit velocity along boundary audioKick -> flashes quantized Hall conductance plateau transition bursts audioSwell -…
 
@@ -10123,7 +10123,7 @@ QUANTUM HALL EDGE CHIRAL RIBBON: Topologically protected 1D chiral edge channels
 
 ### QuantumHallEdgeCurrents
 
-`Scene3D/QuantumHallEdgeCurrents.frag` · type=scene3d · geom=ribbon · mood=bright,calm · complexity=3
+`Scene3D/QuantumHallEdgeCurrents.frag` · type=scene3d · geom=ribbon · mood=bright,calm · complexity=10
 
 Shades the 20 chiral edge-current ribbons of the Quantum Hall scene: a soft-edged glowing strip per ribbon, blended with a scrolling sample of the live slideshow photo and brightened toward its edges. This fragment stage reads no audio uniforms directly — all of the audio reactivity (cyclotron skipping-orbit radius from audioBass, kick phase jumps from audioKick, chiral pulse timing, hue rotation from audioChromaHue/…
 
@@ -10132,7 +10132,7 @@ Shades the 20 chiral edge-current ribbons of the Quantum Hall scene: a soft-edge
 
 ### QuantumQubitArray
 
-`Scene3D/QuantumQubitArray.frag` · type=scene3d · geom=cubes · mood=aggressive,dark · complexity=3
+`Scene3D/QuantumQubitArray.frag` · type=scene3d · geom=cubes · mood=aggressive,dark · complexity=9
 
 QUANTUM QUBIT ARRAY: a 70x70 quantum-processor die seen from above - thousands of Josephson qubit plates whose Bloch rotations ripple across the chip in waves, gold circuit substrate beneath. audioSpectrum -> plate heights by band audioKick -> gate-flip wave audioBass -> overall lift (state colours from the photo palette)
 
@@ -10141,7 +10141,7 @@ QUANTUM QUBIT ARRAY: a 70x70 quantum-processor die seen from above - thousands o
 
 ### QuantumSpinLiquidKagomeSpinonLattice
 
-`Scene3D/QuantumSpinLiquidKagomeSpinonLattice.frag` · type=scene3d · geom=points · mood=calm,psychedelic · complexity=3
+`Scene3D/QuantumSpinLiquidKagomeSpinonLattice.frag` · type=scene3d · geom=points · mood=calm,psychedelic · complexity=10
 
 QUANTUM SPIN LIQUID KAGOME SPINON LATTICE: 59,319 geometrically frustrated quantum spins in a Kagome-pyrochlore lattice (Herbertsmithite), stacked into a WIDE SLAB of kagome planes that overflows both frame edges. Long-range quantum entanglement prevents magnetic ordering down to absolute zero, hosting fractionalized spinon excitations and emergent gauge fields: three interfering spinon plane waves light whole cells …
 
@@ -10150,7 +10150,7 @@ QUANTUM SPIN LIQUID KAGOME SPINON LATTICE: 59,319 geometrically frustrated quant
 
 ### QuantumVortexField
 
-`Scene3D/QuantumVortexField.frag` · type=scene3d · geom=indirect · mood=aggressive,dark · complexity=4
+`Scene3D/QuantumVortexField.frag` · type=scene3d · geom=indirect · mood=aggressive,dark · complexity=8
 
 QUANTUM VORTEX FIELD: a toroidal magnetosphere of filament streamlines - thin ribbon fibres integrated through a poloidal/toroidal vector field (tamed Lorenz perturbation), forming a feathered vortex ring. audioKick -> filament width + glow audioSubBass -> ring radius audioSpectrum -> per-filament glow
 
@@ -10159,7 +10159,7 @@ QUANTUM VORTEX FIELD: a toroidal magnetosphere of filament streamlines - thin ri
 
 ### QuantumWavepacketCollapse
 
-`Scene3D/QuantumWavepacketCollapse.frag` · type=scene3d · geom=points · mood=bright,psychedelic · complexity=2
+`Scene3D/QuantumWavepacketCollapse.frag` · type=scene3d · geom=points · mood=bright,psychedelic · complexity=10
 
 Additive point-sprite shader for a cloud of particles representing a superposed 3D quantum eigenstate wavepacket that collapses toward a shifting nodal centre on the beat. Each sprite is a soft circular blob (gl_PointCoord falloff, discarded outside its radius). Its colour comes from imgPalette — a live sample of the slideshow photo whose sampling angle is driven by the per-particle phase angle vPhase plus audioPhase…
 
@@ -10168,7 +10168,7 @@ Additive point-sprite shader for a cloud of particles representing a superposed 
 
 ### QuasicrystalPenroseRhomb3D
 
-`Scene3D/QuasicrystalPenroseRhomb3D.frag` · type=scene3d · geom=cubes · mood=dark,psychedelic · complexity=4
+`Scene3D/QuasicrystalPenroseRhomb3D.frag` · type=scene3d · geom=cubes · mood=dark,psychedelic · complexity=10
 
 QUASICRYSTAL PENROSE RHOMB 3D: 3D icosahedral Penrose quasicrystal (Ammann-Kramer-Neri tiling). Rhombohedral building blocks with 5-fold non-crystallographic aperiodic order, Bragg diffraction glints, golden ratio shell scaling, and photo texturing. audioAdvance -> rotates 6D-to-3D projection slice & aperiodic phason dynamics audioKick -> flashes 5-fold Bragg diffraction specular reflections audioSwell -> thickens rh…
 
@@ -10177,7 +10177,7 @@ QUASICRYSTAL PENROSE RHOMB 3D: 3D icosahedral Penrose quasicrystal (Ammann-Krame
 
 ### RadiolarianMicrotubuleExoskeleton
 
-`Scene3D/RadiolarianMicrotubuleExoskeleton.frag` · type=scene3d · geom=indirect · mood=dark,calm,dreamy · complexity=4
+`Scene3D/RadiolarianMicrotubuleExoskeleton.frag` · type=scene3d · geom=indirect · mood=dark,calm,dreamy · complexity=5
 
 RADIOLARIAN MICROTUBULE EXOSKELETON: Intricate geometric silica micro-exoskeleton of deep-sea radiolaria. 3D compute-generated porous icosahedral lattices, radiating axopodia spicules, iridescent biosilica glass refraction, and photo texturing. audioAdvance -> rotates silica skeleton lattice & axopodia fluid flow audioKick -> flashes cytoplasmic bioluminescence & spicule tip glints audioSwell -> swells concentric ico…
 
@@ -10186,7 +10186,7 @@ RADIOLARIAN MICROTUBULE EXOSKELETON: Intricate geometric silica micro-exoskeleto
 
 ### RadiolarianSilicaLattice
 
-`Scene3D/RadiolarianSilicaLattice.frag` · type=scene3d · geom=quads · mood=bright,calm,dreamy · complexity=3
+`Scene3D/RadiolarianSilicaLattice.frag` · type=scene3d · geom=quads · mood=bright,calm,dreamy · complexity=9
 
 RADIOLARIAN SILICA LATTICE: concentric glass micro-skeleton shells rotating against each other, seen from a safe distance (no camera collisions); silica cards tinted by the photo palette, star sparkles on the kick. audioKick -> shell burst audioSwell -> lattice breathing latticeP -> shell spacing
 
@@ -10195,7 +10195,7 @@ RADIOLARIAN SILICA LATTICE: concentric glass micro-skeleton shells rotating agai
 
 ### RainOnWater
 
-`Scene3D/RainOnWater.frag` · type=scene3d · geom=grid · mood=calm,dark · complexity=2
+`Scene3D/RainOnWater.frag` · type=scene3d · geom=grid · mood=calm,dark · complexity=9
 
 Shades a night pond and the sky curtain behind it: near-black water, a trembling moon-lane reflection, pale rings where raindrops (simulated in RainOnWater.vert) are still expanding across the surface, and above the horizon a low moon, moonlit cloud shelves, stars and falling drizzle. The moon-lane reflection flares wherever vSlope (the ripple surface slope from the vertex shader) is non-zero, and converges on the mo…
 
@@ -10204,7 +10204,7 @@ Shades a night pond and the sky curtain behind it: near-black water, a trembling
 
 ### RegattaSpinnakers
 
-`Scene3D/RegattaSpinnakers.frag` · type=scene3d · geom=indirect · mood=bright,calm · complexity=4
+`Scene3D/RegattaSpinnakers.frag` · type=scene3d · geom=indirect · mood=bright,calm · complexity=1
 
 Fragment stage for RegattaSpinnakers: a bright sea sky, the sea as the photo in blue-green with whitecaps on the bass, the spinnakers as photo panels tinted per boat and lit by the sun (brighter on the belly), dark hulls, masts, white wakes; the kick a gust flash on the sails, the treble the spray sparkle. Audio Reactivity: audioBass -> whitecaps; audioKick -> gust flash; audioHigh -> spray sparkle; audioSwell -> win…
 
@@ -10213,7 +10213,7 @@ Fragment stage for RegattaSpinnakers: a bright sea sky, the sea as the photo in 
 
 ### RelativisticAccretionTorusMHD
 
-`Scene3D/RelativisticAccretionTorusMHD.frag` · type=scene3d · geom=grid · mood=aggressive,dark · complexity=4
+`Scene3D/RelativisticAccretionTorusMHD.frag` · type=scene3d · geom=grid · mood=aggressive,dark · complexity=2
 
 RELATIVISTIC ACCRETION TORUS MHD: Thick geometrically-inflated accretion torus (Polish Donut) around a Kerr black hole, with the wide spiral-corrugated accretion flow that feeds it flaring out of the tube's inner wall to the frame edges. Relativistic Doppler beaming boost, turbulent magnetohydrodynamic spiral ripples, a radial temperature gradient, event horizon shadow illumination, and photo texturing. audioAdvance …
 
@@ -10222,7 +10222,7 @@ RELATIVISTIC ACCRETION TORUS MHD: Thick geometrically-inflated accretion torus (
 
 ### RibbonTunnel
 
-`Scene3D/RibbonTunnel.frag` · type=scene3d · geom=ribbon · mood=bright · complexity=2
+`Scene3D/RibbonTunnel.frag` · type=scene3d · geom=ribbon · mood=bright · complexity=10
 
 Shades the 20 twisting ribbons of the real-3D ribbon tunnel as a soft-edged additive glow: a Gaussian falloff across the ribbon width (vSide) multiplying the per-vertex colour vCol. This fragment stage reads no audio uniforms directly; the reactivity (bar-phase twist from audioBarPhase, kick bulges from audioKick and audioBass, swell breathing, hue drift from audioChromaHue, drop brightening from audioDrop) is entire…
 
@@ -10240,7 +10240,7 @@ GEOM="MESH" STATION FAMILY: wheel/ring/torus-shaped stations (spin- gravity habi
 
 ### RollerCoaster
 
-`Scene3D/RollerCoaster.frag` · type=scene3d · geom=ribbon · mood=aggressive,dark · complexity=1
+`Scene3D/RollerCoaster.frag` · type=scene3d · geom=ribbon · mood=aggressive,dark · complexity=9
 
 Shades the glowing rails, ties, neon arch gates and scenery pylons of the roller-coaster ride (the camera itself rides the procedural track built in RollerCoaster.vert): a bright core plus a soft halo from the per-vertex colour vCol, using vSide as the distance-from-centreline falloff. audioLevel and audioKick give this fragment stage its own small extra pulse on top of the colour vCol already carries — added after a…
 
@@ -10249,7 +10249,7 @@ Shades the glowing rails, ties, neon arch gates and scenery pylons of the roller
 
 ### RoseOrbit
 
-`Scene3D/RoseOrbit.frag` · type=scene3d · geom=points · mood=calm,space · complexity=2
+`Scene3D/RoseOrbit.frag` · type=scene3d · geom=points · mood=calm,space · complexity=8
 
 Shades the particle streams that trace three nested spirograph rose curves (r = cos(k*theta)) plus the pollen field drifting between them, rendered as soft additive point sprites — a simple Gaussian falloff from the sprite centre times the per-vertex colour vCol. This fragment stage reads no audio uniforms directly; every mapping is computed per-vertex in RoseOrbit.vert and arrives here baked into vCol. Audio Reactiv…
 
@@ -10258,7 +10258,7 @@ Shades the particle streams that trace three nested spirograph rose curves (r = 
 
 ### RydbergAtomQuantumSimulatorArray
 
-`Scene3D/RydbergAtomQuantumSimulatorArray.frag` · type=scene3d · geom=points · mood=calm,bright,dreamy · complexity=3
+`Scene3D/RydbergAtomQuantumSimulatorArray.frag` · type=scene3d · geom=points · mood=calm,bright,dreamy · complexity=7
 
 RYDBERG ATOM QUANTUM SIMULATOR ARRAY: 59,319 neutral alkali atoms trapped in a 3D optical tweezer array -- a WIDE SLAB of tweezer planes that overflows both frame edges. Laser driving to high principal quantum number Rydberg states (n ~ 70) creates strong Van der Waals Rydberg blockade interactions, crystalline quantum states, and photo texturing. audioAdvance -> navigates Rabi frequency detuning & quantum simulator …
 
@@ -10276,7 +10276,7 @@ SALMON RUN FALLS (fragment): the step in the river where the fish jump. The chut
 
 ### SandDuneBarchanMigration
 
-`Scene3D/SandDuneBarchanMigration.frag` · type=scene3d · geom=grid · mood=calm,dreamy,bright · complexity=3
+`Scene3D/SandDuneBarchanMigration.frag` · type=scene3d · geom=grid · mood=calm,dreamy,bright · complexity=5
 
 SAND DUNE BARCHAN MIGRATION: golden barchan dunes seen from above in late light - crescent slip faces, wind-ripple specular, photo blended into the sand. The gold stays gold (no global hue spin). The field is a perspective carpet that runs to the horizon (see the .vert), so the dune sea fills the frame; distance is carried by a dark dusk haze whose temperature follows the same audioMode as the shadows. Audio Reactivi…
 
@@ -10285,7 +10285,7 @@ SAND DUNE BARCHAN MIGRATION: golden barchan dunes seen from above in late light 
 
 ### SciFiHUD
 
-`Scene3D/SciFiHUD.frag` · type=scene3d · geom=ribbon · mood=aggressive,dark · complexity=1
+`Scene3D/SciFiHUD.frag` · type=scene3d · geom=ribbon · mood=aggressive,dark · complexity=7
 
 _(Vorschau eingeschränkt: Sim-Textur/Mehrpass — Bilder unterschätzen die echte App)_
 
@@ -10296,7 +10296,7 @@ Shades the 20 ribbons of the diegetic sci-fi cockpit HUD (bezel rings, radar swe
 
 ### SensorStation
 
-`Scene3D/SensorStation.frag` · type=scene3d · geom=mesh · mood=calm,space · complexity=3
+`Scene3D/SensorStation.frag` · type=scene3d · geom=mesh · mood=calm,space · complexity=1
 
 GEOM="MESH" STATION FAMILY: science/sensor/comms hulls (relay stations, laboratories, terraforming observers, comms arrays, deep-space probes), watching over a colorful deep-space nebula painted onto the sky shell Scene3DShader::buildGeometry() appends after the loaded mesh (see SensorStation.vert) -- vBg selects shell vs. hull. Cool cyan tech light plus a slow scanning band that sweeps along the hull's own local axi…
 
@@ -10305,7 +10305,7 @@ GEOM="MESH" STATION FAMILY: science/sensor/comms hulls (relay stations, laborato
 
 ### ShadowForest
 
-`Scene3D/ShadowForest.frag` · type=scene3d · geom=indirect · mood=calm,dark · complexity=4
+`Scene3D/ShadowForest.frag` · type=scene3d · geom=indirect · mood=calm,dark · complexity=9
 
 _(Vorschau eingeschränkt: Sim-Textur/Mehrpass — Bilder unterschätzen die echte App)_
 
@@ -10325,7 +10325,7 @@ A shadow play. A lamp behind a lit screen, a real 3D model turning in front of i
 
 ### ShatterSculpture
 
-`Scene3D/ShatterSculpture.frag` · type=scene3d · geom=mesh · mood=dark,calm · complexity=3
+`Scene3D/ShatterSculpture.frag` · type=scene3d · geom=mesh · mood=dark,calm · complexity=2
 
 GEOM="MESH" FAMILY: a museum piece (marble bust, gargoyle, bronze dancer, terracotta warrior, stone lion) lit like a gallery at night, which bursts into its own triangles with the music and reassembles. The shatter itself is done in ShatterSculpture.geom -- see that file for why it needs the geometry stage. This stage shades the result and lights the fracture: vShard says how far a given shard has flown, and the furt…
 
@@ -10343,7 +10343,7 @@ GEOM="MESH" FAMILY: a small ship flies an approach and comes alongside a far lar
 
 ### ShipFlyby
 
-`Scene3D/ShipFlyby.frag` · type=scene3d · geom=mesh · mood=dark,aggressive,space · complexity=3
+`Scene3D/ShipFlyby.frag` · type=scene3d · geom=mesh · mood=dark,aggressive,space · complexity=4
 
 GEOM="MESH" FAMILY: a capital ship makes one slow, majestic pass across the frame -- entering off one side, coming close enough at mid-pass that a large one no longer fits on screen, and leaving off the other. The pass is staged on `sceneProgress`, so it always fills exactly the screen time the scheduler gave the scene; see ShipFlyby.vert for the path. bgTypeP picks what it passes IN FRONT OF, which changes the whole…
 
@@ -10352,7 +10352,7 @@ GEOM="MESH" FAMILY: a capital ship makes one slow, majestic pass across the fram
 
 ### ShipShadowPlay
 
-`Scene3D/ShipShadowPlay.frag` · type=scene3d · geom=mesh · mood=dark,calm,dreamy · complexity=3
+`Scene3D/ShipShadowPlay.frag` · type=scene3d · geom=mesh · mood=dark,calm,dreamy · complexity=4
 
 Fragment stage for ShipShadowPlay: the wall (sky shell's back face) is lit by the two coloured lamps; the ship itself is a dim silhouette; the two projected copies are flat shadows in the complementary colour of the lamp that casts them (where a red lamp's shadow falls, only the blue lamp lights the wall), overlapping to dark. Audio Reactivity: audioKick brightens lamp A, audioSnare lamp B (light); audioSwell warms b…
 
@@ -10361,7 +10361,7 @@ Fragment stage for ShipShadowPlay: the wall (sky shell's back face) is lit by th
 
 ### SilkPhoto
 
-`Scene3D/SilkPhoto.frag` · type=scene3d · geom=grid · mood=calm · complexity=2
+`Scene3D/SilkPhoto.frag` · type=scene3d · geom=grid · mood=calm · complexity=9
 
 Renders the current slideshow photo mapped straight onto a wind-rippled silk banner (the ripple mesh comes from SilkPhoto.vert), shaded by the fold slope vShade and overlaid with a silky diagonal sheen that wanders across the fabric over time. audioChromaHue rotates the sheen's colour via hueRot; audioSwell scales how strongly the sheen highlight shows; audioDrop punches up the overall brightness on a drop. The banne…
 
@@ -10370,7 +10370,7 @@ Renders the current slideshow photo mapped straight onto a wind-rippled silk ban
 
 ### SineTunnel
 
-`Scene3D/SineTunnel.frag` · type=scene3d · geom=grid · mood=bright · complexity=2
+`Scene3D/SineTunnel.frag` · type=scene3d · geom=grid · mood=bright · complexity=3
 
 Shades the procedural warp tunnel of SineTunnel.vert with smooth longitudinal colour bands flowing toward the camera and a slow double helix stripe winding around the tube wall, in a deep teal-violet palette. audioAdvance drives the flow speed of the bands and helix; audioChromaHue rotates between the two band hues via hueRot; audioSwell and audioKick brighten the wall; distance fog fades the far tube. A soft-knee to…
 
@@ -10379,7 +10379,7 @@ Shades the procedural warp tunnel of SineTunnel.vert with smooth longitudinal co
 
 ### Skyburst
 
-`Scene3D/Skyburst.frag` · type=scene3d · geom=indirect · mood=aggressive,dark · complexity=4
+`Scene3D/Skyburst.frag` · type=scene3d · geom=indirect · mood=aggressive,dark · complexity=7
 
 Shades the firework spark trails built by Skyburst.comp as pure emissive light (no lighting model): a blackbody-style cooling gradient from white-hot at the head (vAge near 0) through the shell's own hue to deep red at the tail (vAge near 1), against a faint night sky. audioChromaHue tints the shell's base colour via hue2rgb/imgPalette (with audioAdvance and audioValence shaping that photo-sampled palette); audioLeve…
 
@@ -10388,7 +10388,7 @@ Shades the firework spark trails built by Skyburst.comp as pure emissive light (
 
 ### SmokeHall
 
-`Scene3D/SmokeHall.frag` · type=scene3d · geom=indirect · mood=dark,dreamy · complexity=5
+`Scene3D/SmokeHall.frag` · type=scene3d · geom=indirect · mood=dark,dreamy · complexity=4
 
 _(Vorschau eingeschränkt: Sim-Textur/Mehrpass — Bilder unterschätzen die echte App)_
 
@@ -10399,7 +10399,7 @@ Two-mode fragment shader for the SmokeHall colonnade built by SmokeHall.comp: sh
 
 ### SmokeRingChorus
 
-`Scene3D/SmokeRingChorus.frag` · type=scene3d · geom=indirect · mood=dark,calm,dreamy · complexity=4
+`Scene3D/SmokeRingChorus.frag` · type=scene3d · geom=indirect · mood=dark,calm,dreamy · complexity=8
 
 SMOKE RING CHORUS: two-pass shader. Opaque pass: the dark room behind, the photo as a faint far wall lit by the mouths' glow. OIT pass: the rings as translucent smoke -- soft-edged (alpha falls toward the tube's silhouette), thinning as they expand and age, tinted by the palette, lit from the front; the onsets brighten every ring in flight, the kick warms them, the treble adds a curl of light on the rims. Weighted-bl…
 
@@ -10408,7 +10408,7 @@ SMOKE RING CHORUS: two-pass shader. Opaque pass: the dark room behind, the photo
 
 ### SnowDrift
 
-`Scene3D/SnowDrift.frag` · type=scene3d · geom=points · mood=calm · complexity=2
+`Scene3D/SnowDrift.frag` · type=scene3d · geom=points · mood=calm · complexity=10
 
 Shades falling snowflakes as soft additive point sprites — a simple Gaussian falloff from the sprite centre times the per-vertex colour vCol. This fragment stage reads no audio uniforms directly; every mapping is computed per-vertex in SnowDrift.vert and arrives here baked into vCol, kept deliberately gentle so the music only leans on the snowfall rather than shaking it. Audio Reactivity (all applied in SnowDrift.ver…
 
@@ -10417,7 +10417,7 @@ Shades falling snowflakes as soft additive point sprites — a simple Gaussian f
 
 ### SoapFilmMembrane
 
-`Scene3D/SoapFilmMembrane.frag` · type=scene3d · geom=patches · mood=psychedelic,bright,calm · complexity=4
+`Scene3D/SoapFilmMembrane.frag` · type=scene3d · geom=patches · mood=psychedelic,bright,calm · complexity=2
 
 SOAP FILM MEMBRANE: a soap film in a frame, filling the view. Its colour is thin-film interference from the thickness the evaluation stage computed: the film drains over the scene arc, so the bands of colour creep downward as they do on a real bubble, the black film appearing at the top near the end. The photo is reflected in the film (it is a mirror) and seen through it, dimmer; the treble is the shimmer of the thin…
 
@@ -10426,7 +10426,7 @@ SOAP FILM MEMBRANE: a soap film in a frame, filling the view. Its colour is thin
 
 ### SolarProminenceHelicalMagneticRope
 
-`Scene3D/SolarProminenceHelicalMagneticRope.frag` · type=scene3d · geom=ribbon · mood=aggressive,dark · complexity=3
+`Scene3D/SolarProminenceHelicalMagneticRope.frag` · type=scene3d · geom=ribbon · mood=aggressive,dark · complexity=9
 
 SOLAR PROMINENCE HELICAL MAGNETIC ROPE: Arching solar coronal magnetic flux rope supporting dense chromospheric plasma. Torsional magnetic helicity, kink instabilities, coronal mass ejection (CME) flare reconnection bursts, and extreme ultraviolet solar photo texturing. audioAdvance -> navigates solar prominence magnetic flux rope ascent & twist rotation audioKick -> flashes solar flare magnetic reconnection & corona…
 
@@ -10435,7 +10435,7 @@ SOLAR PROMINENCE HELICAL MAGNETIC ROPE: Arching solar coronal magnetic flux rope
 
 ### SolarSailArmada
 
-`Scene3D/SolarSailArmada.frag` · type=scene3d · geom=quads · mood=bright,calm,space · complexity=2
+`Scene3D/SolarSailArmada.frag` · type=scene3d · geom=quads · mood=bright,calm,space · complexity=10
 
 Shades a fleet of reflective solar-sail panels (gold and titanium foil, picked per quad by vQuadID) with the live slideshow photo projected onto each membrane, a framed carbon-strut border, specular solar-flare glints, and a laser-mesh glow linking the sails. vGlint (a per-vertex specular term from SolarSailArmada.vert) drives the glint highlight, and vQuadID both selects the foil material and offsets the projected p…
 
@@ -10444,7 +10444,7 @@ Shades a fleet of reflective solar-sail panels (gold and titanium foil, picked p
 
 ### SolarWindMagnetosphere
 
-`Scene3D/SolarWindMagnetosphere.frag` · type=scene3d · geom=grid · mood=bright,calm,space · complexity=3
+`Scene3D/SolarWindMagnetosphere.frag` · type=scene3d · geom=grid · mood=bright,calm,space · complexity=10
 
 Shades the magnetosphere bow-shock heightfield (built in SolarWindMagnetosphere.vert) with a diffuse/specular lighting term, a projected sample of the live slideshow photo, a wireframe magnetic-flux grid, and additive auroral colour carried in vColor. audioLevel boosts the auroral colour; audioHigh brightens both the flux-grid wireframe glow and the specular highlight; audioChromaHue (with the hueP preset) rotates th…
 
@@ -10453,7 +10453,7 @@ Shades the magnetosphere bow-shock heightfield (built in SolarWindMagnetosphere.
 
 ### SpaceElevator
 
-`Scene3D/SpaceElevator.frag` · type=scene3d · geom=cubes · mood=bright,aggressive,space · complexity=4
+`Scene3D/SpaceElevator.frag` · type=scene3d · geom=cubes · mood=bright,aggressive,space · complexity=10
 
 SPACE ELEVATOR: A colossal tether extending into orbit. Glowing cars race up and down the structure, while massive support rings pulse with energy synchronized to the music. audioAdvance -> climbing speed up the tether audioKick -> flashes from the elevator cars and warning beacons audioSwell -> ambient daylight and atmospheric scattering audioChromaHue-> palette offset for the lights Per-activation variety: tetherP …
 
@@ -10462,7 +10462,7 @@ SPACE ELEVATOR: A colossal tether extending into orbit. Glowing cars race up and
 
 ### Spaceship
 
-`Scene3D/Spaceship.frag` · type=scene3d · geom=mesh · mood=dark,space · complexity=3
+`Scene3D/Spaceship.frag` · type=scene3d · geom=mesh · mood=dark,space · complexity=5
 
 GEOM="MESH" SHOWCASE: a real loaded 3D model (config attribute model=, see Source/MeshImport.h) tumbling through a real backdrop -- a dust nebula + starfield painted onto the sky shell Scene3DShader:: buildGeometry() appends after the loaded mesh (see Spaceship.vert) -- vBg selects shell vs. hull. Lit from its own baked material plus a shield-flicker rim; no photo-tinting on the hull itself, the nebula carries the co…
 
@@ -10471,7 +10471,7 @@ GEOM="MESH" SHOWCASE: a real loaded 3D model (config attribute model=, see Sourc
 
 ### SpectralOrb
 
-`Scene3D/SpectralOrb.frag` · type=scene3d · geom=grid · mood=calm,dreamy,bright · complexity=2
+`Scene3D/SpectralOrb.frag` · type=scene3d · geom=grid · mood=calm,dreamy,bright · complexity=7
 
 Companion to SpectralOrb.vert. Lights the vibrating orb like a physical resonating body — a cool key light, a warm rim, and an emissive glow that follows the absolute displacement vDefo, so the antinodes where the audio actually excites the surface light up while the nodal lines stay dark metal. audioSwell and audioDrop scale the antinode glow's intensity, making the excited regions flare brighter on swells and drops…
 
@@ -10480,7 +10480,7 @@ Companion to SpectralOrb.vert. Lights the vibrating orb like a physical resonati
 
 ### SpectralTorus
 
-`Scene3D/SpectralTorus.frag` · type=scene3d · geom=grid · mood=calm,dreamy,bright · complexity=2
+`Scene3D/SpectralTorus.frag` · type=scene3d · geom=grid · mood=calm,dreamy,bright · complexity=9
 
 Companion to SpectralTorus.vert. Uses the same physical-body lighting language as SpectralOrb.frag (dark nodal lines, radiant antinodes) but in a warmer key, so the two manifold-harmonics scenes read as siblings rather than twins. audioSwell and audioDrop scale the antinode glow driven by the absolute displacement vDefo; vHue (from SpectralTorus.vert) keys the body metal tint, the glow colour and the rim colour to th…
 
@@ -10489,7 +10489,7 @@ Companion to SpectralTorus.vert. Uses the same physical-body lighting language a
 
 ### SpectroCanyon
 
-`Scene3D/SpectroCanyon.frag` · type=scene3d · geom=patches · mood=dark,dreamy · complexity=3
+`Scene3D/SpectroCanyon.frag` · type=scene3d · geom=patches · mood=dark,dreamy · complexity=9
 
 Shades a canyon whose terrain is read out of a live spectrogram (built in the SpectroCanyon.vert/.tesc/.tese tessellation pipeline): rock lit from a low sun, with the loud parts of the spectrum glowing from inside the stone. The emission is keyed to the same per-vertex energy (vEnergy) and frequency band (vFreq) that shaped the terrain height, so a peak is both a peak and a light — the canyon is a spectrum analyser y…
 
@@ -10498,7 +10498,7 @@ Shades a canyon whose terrain is read out of a live spectrogram (built in the Sp
 
 ### SpectroDevice
 
-`Scene3D/SpectroDevice.frag` · type=scene3d · geom=mesh · mood=dark,aggressive · complexity=3
+`Scene3D/SpectroDevice.frag` · type=scene3d · geom=mesh · mood=dark,aggressive · complexity=4
 
 GEOM="MESH" FAMILY: a real hi-fi prop (boombox, turntable, modular synth, jukebox, tube radio, tape deck) turning on a showroom turntable in front of a synthwave grid horizon -- and the device's own front panel is a LIVE display of the music, read straight out of the engine's spectrogram ring (texSpectro, unit 28; declaring the sampler is the whole opt-in, see EffectShader::usesSpectro()). The visualizer's own signal…
 
@@ -10507,7 +10507,7 @@ GEOM="MESH" FAMILY: a real hi-fi prop (boombox, turntable, modular synth, jukebo
 
 ### SpectroWeave
 
-`Scene3D/SpectroWeave.frag` · type=scene3d · geom=indirect · mood=dark,dreamy · complexity=4
+`Scene3D/SpectroWeave.frag` · type=scene3d · geom=indirect · mood=dark,dreamy · complexity=10
 
 _(Vorschau eingeschränkt: Sim-Textur/Mehrpass — Bilder unterschätzen die echte App)_
 
@@ -10518,7 +10518,7 @@ Shades a bundle of glowing tube strands, one per frequency band, so the audio sp
 
 ### SpectrumArena
 
-`Scene3D/SpectrumArena.frag` · type=scene3d · geom=cubes · mood=aggressive,dark · complexity=3
+`Scene3D/SpectrumArena.frag` · type=scene3d · geom=cubes · mood=aggressive,dark · complexity=9
 
 Shades the depth-tested equalizer-column cubes of a circular "arena" the camera flies inside, drawing each cube as a dark face with a luminous rim where its corner faces the eye. This fragment stage reads no audio uniforms directly: all reactivity (per-column spectrum band level, kick shockwave ring, downbeat jump, chroma-driven hue) is computed once per vertex in the companion vertex shader and arrives already baked…
 
@@ -10527,7 +10527,7 @@ Shades the depth-tested equalizer-column cubes of a circular "arena" the camera 
 
 ### SpectrumCity
 
-`Scene3D/SpectrumCity.frag` · type=scene3d · geom=indirect · mood=dark,dreamy · complexity=4
+`Scene3D/SpectrumCity.frag` · type=scene3d · geom=indirect · mood=dark,dreamy · complexity=10
 
 Shades the towers generated by SpectrumCity.comp as a dark night city whose only real light source is its window grid, with concrete walls barely more than a backdrop to hang the windows on. audioLevel and glowP set how many windows are lit, weighted per-building by vEnergy (that tower's band energy); audioChromaHue tints the window hue; audioKick drives a bright band sweeping up each tower; audioBeat blinks the roof…
 
@@ -10536,7 +10536,7 @@ Shades the towers generated by SpectrumCity.comp as a dark night city whose only
 
 ### SPHFluidSplash
 
-`Scene3D/SPHFluidSplash.frag` · type=scene3d · geom=indirect · mood=dark,calm,dreamy · complexity=4
+`Scene3D/SPHFluidSplash.frag` · type=scene3d · geom=indirect · mood=dark,calm,dreamy · complexity=10
 
 Shades the SPH fluid's per-particle tetrahedra as water: a cool blue-cyan body, Fresnel-brightened rims, and a sharp specular highlight, with brightness/saturation driven by each particle's local SPH density (compressed regions -- the leading edge of a splash -- read brighter and whiter, like foam). Faces are flat-shaded via screen-space derivatives of the world position (SPHFluidSplash.comp doesn't emit explicit nor…
 
@@ -10545,7 +10545,7 @@ Shades the SPH fluid's per-particle tetrahedra as water: a cool blue-cyan body, 
 
 ### SpinGlassFrustrationLattice
 
-`Scene3D/SpinGlassFrustrationLattice.frag` · type=scene3d · geom=points · mood=calm,psychedelic · complexity=3
+`Scene3D/SpinGlassFrustrationLattice.frag` · type=scene3d · geom=points · mood=calm,psychedelic · complexity=7
 
 SPIN GLASS FRUSTRATION LATTICE: 60,000 geometrically frustrated electron spins on a 3D Kagome/pyrochlore lattice. Complex energy landscapes, non-ergodic aging dynamics, Barkhausen spin-flip avalanches, and photo-derived magnetic order texturing. audioAdvance -> navigates non-ergodic spin-glass energy landscape valley transitions audioKick -> flashes macroscopic Barkhausen spin-flip avalanche avalanches audioSwell -> …
 
@@ -10554,7 +10554,7 @@ SPIN GLASS FRUSTRATION LATTICE: 60,000 geometrically frustrated electron spins o
 
 ### SpiralArray
 
-`Scene3D/SpiralArray.frag` · type=scene3d · geom=points · mood=dark,dreamy · complexity=2
+`Scene3D/SpiralArray.frag` · type=scene3d · geom=points · mood=dark,dreamy · complexity=10
 
 Additive glow-sprite shader for the DNA-double-helix particle scene: renders each strand bead, base-pair rung, or ambient plasma point as a soft two-lobe radial falloff -- a dim wire glow with a brighter, tighter core at its centre. No audio uniforms are read here; all reactivity (the beat pulse climbing the helix, kick-driven breathing, the drop's "unzip" split, and chroma-lit base-pair rungs) is computed per-point …
 
@@ -10563,7 +10563,7 @@ Additive glow-sprite shader for the DNA-double-helix particle scene: renders eac
 
 ### StainedGlassRosette
 
-`Scene3D/StainedGlassRosette.frag` · type=scene3d · geom=grid · mood=bright · complexity=2
+`Scene3D/StainedGlassRosette.frag` · type=scene3d · geom=grid · mood=bright · complexity=4
 
 Renders a 12-fold-mirrored cathedral rose window as a Voronoi mosaic of stained-glass "panes", each a saturated, hue-rotated crop of the current slideshow image (tex0) held together by dark lead lines, backlit by radiating godrays. audioSwell breathes the backlight and godray intensity; audioKick and audioDrop flare the rays and backlight further; audioChromaHue rotates both the per-pane glass hue and the godray colo…
 
@@ -10572,7 +10572,7 @@ Renders a 12-fold-mirrored cathedral rose window as a Voronoi mosaic of stained-
 
 ### StarlingMurmuration
 
-`Scene3D/StarlingMurmuration.frag` · type=scene3d · geom=indirect · mood=calm,dreamy,bright · complexity=4
+`Scene3D/StarlingMurmuration.frag` · type=scene3d · geom=indirect · mood=calm,dreamy,bright · complexity=2
 
 Fragment stage for StarlingMurmuration: bird silhouettes over a dusk sky. An indirect scene has no background shell, so the generator emits one huge sky quad (vKind = 1) that is painted here as a dusk gradient sampled from the slideshow image; every other fragment is a bird, shaded as a silhouette that catches the sky at the flock's fringe. Audio Reactivity: audioKick brightens the wing edges for a beat; audioSwell w…
 
@@ -10581,7 +10581,7 @@ Fragment stage for StarlingMurmuration: bird silhouettes over a dusk sky. An ind
 
 ### StellarNurseryCollapse
 
-`Scene3D/StellarNurseryCollapse.frag` · type=scene3d · geom=points · mood=dark,dreamy,space · complexity=2
+`Scene3D/StellarNurseryCollapse.frag` · type=scene3d · geom=points · mood=dark,dreamy,space · complexity=7
 
 Draws the 60k-point protostellar system built in StellarNurseryCollapse.vert (accretion disk, spherical halo, and bipolar jets around a collapsing stellar nursery) as soft blackbody-coloured point sprites. Point colour comes from a black -> red -> yellow -> blue-white blackbody ramp driven by vTemp (cooler in the outer disk, hotter toward the core and in the jets), tinted by a photo-derived dust colour sampled from t…
 
@@ -10590,7 +10590,7 @@ Draws the 60k-point protostellar system built in StellarNurseryCollapse.vert (ac
 
 ### StrangeAttractor
 
-`Scene3D/StrangeAttractor.frag` · type=scene3d · geom=points · mood=dark,psychedelic · complexity=2
+`Scene3D/StrangeAttractor.frag` · type=scene3d · geom=points · mood=dark,psychedelic · complexity=9
 
 Additive glow-sprite shader for the chaotic-attractor particle trails (Lorenz, Thomas, Aizawa or Halvorsen, chosen per activation in the vertex stage): renders each trajectory point as a soft point sprite whose strands sum into glowing ribbons of light. No audio uniforms are read here; audio reactivity (the attractor's breathing parameters, travel speed along each trajectory, and velocity-to-colour mapping via the ph…
 
@@ -10599,7 +10599,7 @@ Additive glow-sprite shader for the chaotic-attractor particle trails (Lorenz, T
 
 ### SubglacialVolcanicPillowLava
 
-`Scene3D/SubglacialVolcanicPillowLava.frag` · type=scene3d · geom=grid · mood=dark,calm · complexity=4
+`Scene3D/SubglacialVolcanicPillowLava.frag` · type=scene3d · geom=grid · mood=dark,calm · complexity=9
 
 SUBGLACIAL VOLCANIC PILLOW LAVA: 220x120 heightfield grid of basaltic pillow lava extruding under glacial ice sheets. Glassy quenching basalt crust, incandescent magma fissure glows, hydrothermal steam cavitation, and photo texturing. audioAdvance -> drives subglacial lava lobe extrusion & spreading audioKick -> fractures glassy basalt crust with molten magma flashes audioSwell -> widens incandescent fissure thicknes…
 
@@ -10608,7 +10608,7 @@ SUBGLACIAL VOLCANIC PILLOW LAVA: 220x120 heightfield grid of basaltic pillow lav
 
 ### SuperconductingFluxoniumQubitCircuit
 
-`Scene3D/SuperconductingFluxoniumQubitCircuit.frag` · type=scene3d · geom=ribbon · mood=bright,psychedelic · complexity=3
+`Scene3D/SuperconductingFluxoniumQubitCircuit.frag` · type=scene3d · geom=ribbon · mood=bright,psychedelic · complexity=9
 
 SUPERCONDUCTING FLUXONIUM QUBIT CIRCUIT: Fluxonium superconducting quantum circuit. Small Josephson junction shunted by a high-inductance array of larger Josephson junctions (superinductance). Quantum phase slips, microwave gate pulses, and niobium metallic photo texturing. A whole DIE of them: five qubit loops spread across the chip in frustum coordinates, wired together by twenty meandering coplanar-waveguide reado…
 
@@ -10617,7 +10617,7 @@ SUPERCONDUCTING FLUXONIUM QUBIT CIRCUIT: Fluxonium superconducting quantum circu
 
 ### SuperconductingFluxVortex
 
-`Scene3D/SuperconductingFluxVortex.frag` · type=scene3d · geom=indirect · mood=bright,calm · complexity=4
+`Scene3D/SuperconductingFluxVortex.frag` · type=scene3d · geom=indirect · mood=bright,calm · complexity=9
 
 Shades the two primitive families of the superconducting vortex lattice: the flux-tube ribbons (a glowing core fading toward the ribbon's edges, per-vertex cyan flux line / violet Cooper-pair / green Meissner tint mixed in the vertex stage) and the soft round motes of the expelled Meissner field that fill the far background. vHaze tells the two apart. Only audioChromaHue and the hueP preset are read here, rotating th…
 
@@ -10626,7 +10626,7 @@ Shades the two primitive families of the superconducting vortex lattice: the flu
 
 ### SuperconductingLevitationMeissnerPinch
 
-`Scene3D/SuperconductingLevitationMeissnerPinch.frag` · type=scene3d · geom=grid · mood=bright,calm · complexity=3
+`Scene3D/SuperconductingLevitationMeissnerPinch.frag` · type=scene3d · geom=grid · mood=bright,calm · complexity=5
 
 SUPERCONDUCTING LEVITATION MEISSNER PINCH: an ARRAY of eight levitation cells -- stable magnetic levitation via the Meissner-Ochsenfeld effect and flux pinning over high-Tc YBCO discs, each on a wide cryostat cold plate whose rim meets its neighbours', so the bed spans the frame. Expelled magnetic flux lines, fluxon vortex pinning channels, metallic mirror sheen, and cryogenic photo texturing. audioAdvance -> navigat…
 
@@ -10635,7 +10635,7 @@ SUPERCONDUCTING LEVITATION MEISSNER PINCH: an ARRAY of eight levitation cells --
 
 ### SuperconductingQubitResonator
 
-`Scene3D/SuperconductingQubitResonator.frag` · type=scene3d · geom=ribbon · mood=dark,calm · complexity=3
+`Scene3D/SuperconductingQubitResonator.frag` · type=scene3d · geom=ribbon · mood=dark,calm · complexity=10
 
 SUPERCONDUCTING QUBIT RESONATOR: microwave standing waves meandering along a superconducting coplanar resonator strip, seen at a 3/4 orbit; blue/pink photon-number states glow along the line. audioSpectrum -> mode amplitudes audioKick -> readout pulse audioAdvance -> orbit
 
@@ -10644,7 +10644,7 @@ SUPERCONDUCTING QUBIT RESONATOR: microwave standing waves meandering along a sup
 
 ### SuperconductingVortexLatticeMelting
 
-`Scene3D/SuperconductingVortexLatticeMelting.frag` · type=scene3d · geom=points · mood=calm,dark,dreamy · complexity=3
+`Scene3D/SuperconductingVortexLatticeMelting.frag` · type=scene3d · geom=points · mood=calm,dark,dreamy · complexity=8
 
 SUPERCONDUCTING VORTEX LATTICE MELTING: 60,000 magnetic flux quanta (Abrikosov vortices) in a high-Tc cuprate superconductor. Ordered triangular vortex solid undergoes thermal melting into entangled vortex liquid and vortex glass phases with photo texturing. audioAdvance -> accelerates thermal vortex fluctuations & vortex liquid drift velocity audioKick -> flashes vortex depinning avalanches & flux-flow voltage spike…
 
@@ -10653,7 +10653,7 @@ SUPERCONDUCTING VORTEX LATTICE MELTING: 60,000 magnetic flux quanta (Abrikosov v
 
 ### SuperconductorLevitation
 
-`Scene3D/SuperconductorLevitation.frag` · type=scene3d · geom=cubes · mood=bright · complexity=3
+`Scene3D/SuperconductorLevitation.frag` · type=scene3d · geom=cubes · mood=bright · complexity=10
 
 Lights the 70x70 field of levitating superconductor tiles from SuperconductorLevitation.vert as metallic plates: a directional key light plus specular highlight, a glowing grid-edge trim per tile, and the current slideshow photo reflected faintly across each tile's top face. This fragment stage itself reads no audio uniforms; the tiles' levitation height, tilt, and per-tile colour (audioSpectrum band level, audioKick…
 
@@ -10662,7 +10662,7 @@ Lights the 70x70 field of levitating superconductor tiles from SuperconductorLev
 
 ### SuperfluidHeliumVortexReconnection
 
-`Scene3D/SuperfluidHeliumVortexReconnection.frag` · type=scene3d · geom=indirect · mood=calm,bright,dreamy · complexity=4
+`Scene3D/SuperfluidHeliumVortexReconnection.frag` · type=scene3d · geom=indirect · mood=calm,bright,dreamy · complexity=6
 
 SUPERFLUID HELIUM VORTEX RECONNECTION: Quantized vortex filament reconnection events in superfluid liquid Helium-4 (He-II). Singular vortex line crossing, topological reconnection cusps, Kelvin-wave phonon sound radiation, and superfluid photo texturing. audioAdvance -> drives vortex line hydrodynamic Biot-Savart velocity audioKick -> flashes singular reconnection cusp energy dissipation bursts audioSwell -> widens v…
 
@@ -10671,7 +10671,7 @@ SUPERFLUID HELIUM VORTEX RECONNECTION: Quantized vortex filament reconnection ev
 
 ### SuperfluidHeliumVortexTurbulence
 
-`Scene3D/SuperfluidHeliumVortexTurbulence.frag` · type=scene3d · geom=indirect · mood=aggressive,dark · complexity=4
+`Scene3D/SuperfluidHeliumVortexTurbulence.frag` · type=scene3d · geom=indirect · mood=aggressive,dark · complexity=10
 
 Draws quantized vortex lines in turbulent superfluid helium as glowing point sprites, coloured from the rotating photo-arc palette and flashed white-hot where local "kelvin wave" amplitude (vKelvin) spikes. vCirculation (the vortex line's local circulation strength, from the vertex stage) sets both the palette sample position and the brightness multiplier; audioKick adds an overall brightness pulse; hueP rotates the …
 
@@ -10680,7 +10680,7 @@ Draws quantized vortex lines in turbulent superfluid helium as glowing point spr
 
 ### SuperfluidVortexRingPinchOff
 
-`Scene3D/SuperfluidVortexRingPinchOff.frag` · type=scene3d · geom=indirect · mood=dark,calm,dreamy · complexity=4
+`Scene3D/SuperfluidVortexRingPinchOff.frag` · type=scene3d · geom=indirect · mood=dark,calm,dreamy · complexity=10
 
 SUPERFLUID VORTEX RING PINCH OFF: Quantized vortex filament reconnection and ring pinch-off in superfluid Helium-II. Crow instability on anti-parallel vortex pairs undergoes topological reconnection, launching stable self-propelling quantized vortex rings with Kelvin wave cascades. A ring GAS of 168 rings fills the cell, laid out on a jittered lattice in frustum coordinates by the sibling .comp so it covers the frame…
 
@@ -10689,7 +10689,7 @@ SUPERFLUID VORTEX RING PINCH OFF: Quantized vortex filament reconnection and rin
 
 ### SuperfluidVortexTangle
 
-`Scene3D/SuperfluidVortexTangle.frag` · type=scene3d · geom=indirect · mood=bright,calm · complexity=4
+`Scene3D/SuperfluidVortexTangle.frag` · type=scene3d · geom=indirect · mood=bright,calm · complexity=10
 
 Draws a tangle of quantized superfluid vortex rings as glowing point sprites, blending a deep-ocean-blue-to-electric-cyan/emerald circulation colour with a faint reflection of the current slideshow photo. vCirc (local circulation, from the vertex stage) drives a pulsing core glow that brightens toward white; vRingID cycles the base circulation hue over time; audioKick punches overall brightness (scaled by the vortexP…
 
@@ -10698,7 +10698,7 @@ Draws a tangle of quantized superfluid vortex rings as glowing point sprites, bl
 
 ### SupernovaRemnantNebula
 
-`Scene3D/SupernovaRemnantNebula.frag` · type=scene3d · geom=indirect · mood=dark,calm,dreamy,space · complexity=4
+`Scene3D/SupernovaRemnantNebula.frag` · type=scene3d · geom=indirect · mood=dark,calm,dreamy,space · complexity=6
 
 Shades the supernova-remnant filament strands built in SupernovaRemnantNebula.vert, blending the current slideshow photo (tex0/ tex1, cross-faded by interpolation) with each strand's emission-line colour and brightening a filament-edge glow along its width. This fragment stage reads no audio uniforms directly: the emission-line colour mix ([SII] red / [OIII] cyan / H-alpha pink), the central pulsar flash (driven by a…
 
@@ -10707,7 +10707,7 @@ Shades the supernova-remnant filament strands built in SupernovaRemnantNebula.ve
 
 ### SuspensionBridgeCables
 
-`Scene3D/SuspensionBridgeCables.frag` · type=scene3d · geom=indirect · mood=dark,calm,dreamy · complexity=4
+`Scene3D/SuspensionBridgeCables.frag` · type=scene3d · geom=indirect · mood=dark,calm,dreamy · complexity=3
 
 SUSPENSION BRIDGE CABLES (fragment): under the deck of a suspension bridge, flying along it on the scene clock. The main cables sweep in their catenary with lamp beads along them, the hangers drop to the girder overhead, the towers pass, and the water below carries the lights. Each lamp takes a spectrum band; the swell is the fog that softens the far end; the kick lifts the aircraft warning lights on the tower tops (…
 
@@ -10716,7 +10716,7 @@ SUSPENSION BRIDGE CABLES (fragment): under the deck of a suspension bridge, flyi
 
 ### Swarm
 
-`Scene3D/Swarm.frag` · type=scene3d · geom=points · mood=calm · complexity=2
+`Scene3D/Swarm.frag` · type=scene3d · geom=points · mood=calm · complexity=7
 
 Additive glow-sprite shader for the murmuration/flock scene: draws each of the 60k trailing points as a soft round point of light. No audio uniforms are read here; the flock's scatter/tighten response to onsets and drops, its Lissajous leader-path travel speed (audioAdvance), and its iridescent, key-following hue (audioChromaHue) are all computed in the companion vertex shader (Swarm.vert) and arrive pre-baked in vCo…
 
@@ -10725,7 +10725,7 @@ Additive glow-sprite shader for the murmuration/flock scene: draws each of the 6
 
 ### SynchrotronRadiationRing
 
-`Scene3D/SynchrotronRadiationRing.frag` · type=scene3d · geom=ribbon · mood=aggressive,dark · complexity=2
+`Scene3D/SynchrotronRadiationRing.frag` · type=scene3d · geom=ribbon · mood=aggressive,dark · complexity=7
 
 SYNCHROTRON RADIATION RING: a storage ring with 24 undulator wiggles - the electron beam glows golden where it is bent, and TANGENTIAL RADIATION JETS spray off along the tangent (that IS synchrotron light), camera orbiting with a top-down pitch. audioKick -> beam + jet surge audioBass -> wiggler amplitude audioAdvance -> ring rotation + orbit
 
@@ -10734,7 +10734,7 @@ SYNCHROTRON RADIATION RING: a storage ring with 24 undulator wiggles - the elect
 
 ### SynthTerrain
 
-`Scene3D/SynthTerrain.frag` · type=scene3d · geom=grid · mood=aggressive,dark · complexity=2
+`Scene3D/SynthTerrain.frag` · type=scene3d · geom=grid · mood=aggressive,dark · complexity=10
 
 Shades a synthwave valley flythrough: a dark ground plane crossed by a glowing grid whose lines are coloured from the rotating photo-arc palette, with a bright horizon-bound scan pulse sweeping the grid once per bar. audioKick and audioDrop punch the grid-line brightness; audioBarPhase times the recurring scan sweep down the valley; audioCentroid tilts the ground's colour balance warm or cool; audioChromaHue/audioAdv…
 
@@ -10743,7 +10743,7 @@ Shades a synthwave valley flythrough: a dark ground plane crossed by a glowing g
 
 ### TachyonCommRelay
 
-`Scene3D/TachyonCommRelay.frag` · type=scene3d · geom=cubes · mood=bright,psychedelic,space · complexity=4
+`Scene3D/TachyonCommRelay.frag` · type=scene3d · geom=cubes · mood=bright,psychedelic,space · complexity=7
 
 TACHYON COMM RELAY: A gigantic communication relay with massive rotating rings and a central data spire. Energy pulses shoot along its length, synchronized with the bass drops. audioAdvance -> camera travel speed through the rings audioKick -> data pulse flashes along the spire and rings audioSwell -> ambient illumination of the energy field audioChromaHue-> energy color palette Per-activation variety: ringP float th…
 
@@ -10752,7 +10752,7 @@ TACHYON COMM RELAY: A gigantic communication relay with massive rotating rings a
 
 ### TensegrityFloat
 
-`Scene3D/TensegrityFloat.frag` · type=scene3d · geom=indirect · mood=calm,bright,dreamy · complexity=3
+`Scene3D/TensegrityFloat.frag` · type=scene3d · geom=indirect · mood=calm,bright,dreamy · complexity=2
 
 Fragment stage for TensegrityFloat: a soft studio of the photo behind, the struts as photo-wrapped bars with a per-face shade, the cables as thin lines that light with their pitch class, the kick a glint along every cable, the swell the studio light. Audio Reactivity: audioChroma[12] -> cable light; audioKick -> cable glint; audioSwell -> studio light; audioLevel.
 
@@ -10761,7 +10761,7 @@ Fragment stage for TensegrityFloat: a soft studio of the photo behind, the strut
 
 ### TeslaLightningTree
 
-`Scene3D/TeslaLightningTree.frag` · type=scene3d · geom=indirect · mood=aggressive,dark · complexity=4
+`Scene3D/TeslaLightningTree.frag` · type=scene3d · geom=indirect · mood=aggressive,dark · complexity=10
 
 TESLA LIGHTNING TREE: a branching discharge tree grown fresh every frame, camera ORBITING the trunk; plasma tinted by a bounded hue wobble (never a full rainbow spin), photo colours in the corona. Three families come out of the generator, told apart by their per-segment gain (attrB.x): the main bolts striking a wide ground disc, the Lichtenberg SURFACE CREEP running outward from each strike, and a sparse CORONA of io…
 
@@ -10788,7 +10788,7 @@ TESSELLATED OCEAN: a night sea whose fineness is the treble. The tessellation co
 
 ### ThunderCloud
 
-`Scene3D/ThunderCloud.frag` · type=scene3d · geom=points · mood=dark,dreamy · complexity=2
+`Scene3D/ThunderCloud.frag` · type=scene3d · geom=points · mood=dark,dreamy · complexity=8
 
 Additive glow-sprite shader for the thunderstorm point cloud (billowing cloud mass, jagged lightning bolts, falling rain, and the far overcast sky behind them): renders each point with an extra-soft, wide Gaussian falloff suited to cloud and flash glow. No audio uniforms are read here; the storm's reactivity -- snare-triggered lightning strikes, kick/drop-driven flash intensity, cloud billows lit from within by "thei…
 
@@ -10797,7 +10797,7 @@ Additive glow-sprite shader for the thunderstorm point cloud (billowing cloud ma
 
 ### TidalDisruptionEvent
 
-`Scene3D/TidalDisruptionEvent.frag` · type=scene3d · geom=indirect · mood=space,dark,aggressive · complexity=4
+`Scene3D/TidalDisruptionEvent.frag` · type=scene3d · geom=indirect · mood=space,dark,aggressive · complexity=1
 
 Fragment stage for TidalDisruptionEvent: soft star particles, the black hole as a shadow disc with a photon ring that glows with the bass, and a deep-space sky with round stars. Audio Reactivity: audioKick flashes the particles; audioBass glows the photon ring; audioDrop floods the ring (the tearing).
 
@@ -10806,7 +10806,7 @@ Fragment stage for TidalDisruptionEvent: soft star particles, the black hole as 
 
 ### TokamakFusionCore
 
-`Scene3D/TokamakFusionCore.frag` · type=scene3d · geom=indirect · mood=aggressive,dark · complexity=4
+`Scene3D/TokamakFusionCore.frag` · type=scene3d · geom=indirect · mood=aggressive,dark · complexity=10
 
 Draws the magnetically confined plasma filaments of a tokamak fusion core (geometry baked by a compute generator and passed in as vPos/vHeat/vStrand) as glowing point sprites shading from the rotating photo-arc palette toward white-hot at high heat. vHeat (per-point plasma temperature) mixes the core colour toward near-white and scales overall intensity; audioKick adds an extra brightness surge; vStrand selects the p…
 
@@ -10815,7 +10815,7 @@ Draws the magnetically confined plasma filaments of a tokamak fusion core (geome
 
 ### TopologicalDiracSemimetalFermiArcs
 
-`Scene3D/TopologicalDiracSemimetalFermiArcs.frag` · type=scene3d · geom=ribbon · mood=bright,psychedelic · complexity=3
+`Scene3D/TopologicalDiracSemimetalFermiArcs.frag` · type=scene3d · geom=ribbon · mood=bright,psychedelic · complexity=10
 
 TOPOLOGICAL DIRAC SEMIMETAL FERMI ARCS: Open disjoint Fermi surface arcs in Dirac and Weyl semimetals (TaAs / Cd3As2). Non-closed contours on opposite crystal surfaces connect projections of bulk Weyl nodes of opposite chirality with chiral anomaly current texturing. The twenty ribbons are dealt out as ten nested arcs per crystal surface -- even indices bowing up out of the top face, odd ones mirroring them out of th…
 
@@ -10824,7 +10824,7 @@ TOPOLOGICAL DIRAC SEMIMETAL FERMI ARCS: Open disjoint Fermi surface arcs in Dira
 
 ### Tornado
 
-`Scene3D/Tornado.frag` · type=scene3d · geom=points · mood=aggressive,dark · complexity=2
+`Scene3D/Tornado.frag` · type=scene3d · geom=points · mood=aggressive,dark · complexity=8
 
 Additive glow-sprite shader for the debris-vortex tornado scene: renders each of the 60k funnel/debris/lightning-bolt points as a soft round point of light. No audio uniforms are read here; the funnel's spin rate, kick-driven cinching, snare-triggered forked-lightning bolts, and flung-debris flares are all computed in the companion vertex shader (Tornado.vert) and arrive pre-baked in vCol.
 
@@ -10833,7 +10833,7 @@ Additive glow-sprite shader for the debris-vortex tornado scene: renders each of
 
 ### TorusKnot
 
-`Scene3D/TorusKnot.frag` · type=scene3d · geom=points · mood=dark,dreamy · complexity=2
+`Scene3D/TorusKnot.frag` · type=scene3d · geom=points · mood=dark,dreamy · complexity=6
 
 Additive glow-sprite shader for the two streaming (p,q) torus-knot particle curves and the ember field around them: renders each of the 60k flowing points as a bright round point of light. No audio uniforms are read here; every mapping is computed in the companion vertex shader (TorusKnot.vert) and arrives pre-baked in vCol. Audio Reactivity (all applied in TorusKnot.vert): audioAdvance -> flow of the particles along…
 
@@ -10842,7 +10842,7 @@ Additive glow-sprite shader for the two streaming (p,q) torus-knot particle curv
 
 ### TravertineTerracePools
 
-`Scene3D/TravertineTerracePools.frag` · type=scene3d · geom=patches · mood=bright,calm,dreamy · complexity=4
+`Scene3D/TravertineTerracePools.frag` · type=scene3d · geom=patches · mood=bright,calm,dreamy · complexity=3
 
 TRAVERTINE TERRACE POOLS: a white limestone hillside of stacked pools. The crust is blinding white, the water in each pool is a shallow turquoise mirror of the sky (the photo), and the rims are wet and glassy where the water pours over them. The sky light in the pools rides the bass, the wet rims glint with the treble, the sun is the swell, and the kick is a wader lifting off as a flash of white. Camera height fixed.…
 
@@ -10851,7 +10851,7 @@ TRAVERTINE TERRACE POOLS: a white limestone hillside of stacked pools. The crust
 
 ### TronCycles
 
-`Scene3D/TronCycles.frag` · type=scene3d · geom=ribbon · mood=aggressive,dark · complexity=1
+`Scene3D/TronCycles.frag` · type=scene3d · geom=ribbon · mood=aggressive,dark · complexity=4
 
 Shades the light-cycle walls and arena floor grid of the Tron-style duel as a solid light wall with a blazing top edge (vSide selects how far across the wall's height this fragment sits). audioLevel and audioKick both scale the wall/edge brightness directly in this stage; a prior reactivity pass noted this frag-side coupling barely moves any pixels on its own -- the bulk of the audio response (racing head flash on ki…
 
@@ -10860,7 +10860,7 @@ Shades the light-cycle walls and arena floor grid of the Tron-style duel as a so
 
 ### TurtleHatchlingsMoon
 
-`Scene3D/TurtleHatchlingsMoon.frag` · type=scene3d · geom=indirect · mood=dark,calm,dreamy · complexity=4
+`Scene3D/TurtleHatchlingsMoon.frag` · type=scene3d · geom=indirect · mood=dark,calm,dreamy · complexity=1
 
 Fragment stage for TurtleHatchlingsMoon: a night sky with a moon (the swell) and round stars, the sea as the photo in silver-blue with a moon path and waves sliding up on the clock (the bass), the beach as pale sand (the photo), the hatchlings as dark round shells with a moonlit sheen, their tracks; the kick a wave breaking brighter, the treble the wet-sand sparkle. Audio Reactivity: audioSwell -> moon; audioBass -> …
 
@@ -10869,7 +10869,7 @@ Fragment stage for TurtleHatchlingsMoon: a night sky with a moon (the swell) and
 
 ### VideoRelief
 
-`Scene3D/VideoRelief.frag` · type=scene3d · geom=grid · mood=calm,bright · complexity=4
+`Scene3D/VideoRelief.frag` · type=scene3d · geom=grid · mood=calm,bright · complexity=8
 
 Lights the image-as-terrain relief built in VideoRelief.vert (the slideshow photo's luminance raised into height) while keeping the source picture itself the dominant term, so the result reads as the photo standing up rather than a shaded landscape. audioHigh sharpens a specular highlight; audioKick and audioChromaHue drive a rim-light wash along the ridge lines, coloured from the rotating photo-arc palette; audioBea…
 
@@ -10878,7 +10878,7 @@ Lights the image-as-terrain relief built in VideoRelief.vert (the slideshow phot
 
 ### VolcanicBasaltColumnarJointingHexagon
 
-`Scene3D/VolcanicBasaltColumnarJointingHexagon.frag` · type=scene3d · geom=cubes · mood=dark,calm · complexity=3
+`Scene3D/VolcanicBasaltColumnarJointingHexagon.frag` · type=scene3d · geom=cubes · mood=dark,calm · complexity=10
 
 VOLCANIC BASALT COLUMNAR JOINTING HEXAGON: Hexagonal columnar jointed basalt terraces (Giant's Causeway / Fingal's Cave). Thermal contraction cracking during slow basaltic lava cooling creates stepped polygonal stone prisms with volcanic fracture magma glow and basalt photo texturing. audioAdvance -> navigates lava cooling thermal stress fracture propagation & terrace drift audioKick -> flashes subsurface molten magm…
 
@@ -10887,7 +10887,7 @@ VOLCANIC BASALT COLUMNAR JOINTING HEXAGON: Hexagonal columnar jointed basalt ter
 
 ### VolcanoIsland
 
-`Scene3D/VolcanoIsland.frag` · type=scene3d · geom=points · mood=aggressive,dark · complexity=2
+`Scene3D/VolcanoIsland.frag` · type=scene3d · geom=points · mood=aggressive,dark · complexity=7
 
 Additive glow-sprite shader for the night volcano-island scene (lava fountain, cone rock, lava rivers, rising embers, stars, and the moonlit sea with its horizon mist): renders each of the 60k points as a soft round point of light. No audio uniforms are read here; the eruption strength (kick-fed fountain, drop-triggered full eruption), lava-river pulsing, the bass/drop flare of the volcano's reflection lane on the wa…
 
@@ -10896,7 +10896,7 @@ Additive glow-sprite shader for the night volcano-island scene (lava fountain, c
 
 ### VolumetricFire
 
-`Scene3D/VolumetricFire.frag` · type=scene3d · geom=ribbon · mood=aggressive,dark · complexity=1
+`Scene3D/VolumetricFire.frag` · type=scene3d · geom=ribbon · mood=aggressive,dark · complexity=7
 
 _(Vorschau eingeschränkt: Sim-Textur/Mehrpass — Bilder unterschätzen die echte App)_
 
@@ -10907,7 +10907,7 @@ Companion to VolumetricFire.vert: samples the live GPU fire/smoke simulation (R 
 
 ### VoxelizedModel
 
-`Scene3D/VoxelizedModel.frag` · type=scene3d · geom=mesh · mood=psychedelic,bright,calm · complexity=3
+`Scene3D/VoxelizedModel.frag` · type=scene3d · geom=mesh · mood=psychedelic,bright,calm · complexity=7
 
 VOXELIZED MODEL: the model as a voxel sculpture of the photo. The surface is coloured per voxel cell -- one photo sample per cell, flat -- and lit per cell with the normal snapped to the nearest axis, with a thin dark seam at the cell boundaries, so the smooth mesh reads as stacked cubes. The cell size breathes on the swell (slowly: fewer, bigger voxels in the quiet, a fine sculpture at the peak), the cells glow with…
 
@@ -10916,7 +10916,7 @@ VOXELIZED MODEL: the model as a voxel sculpture of the photo. The surface is col
 
 ### WarpStars
 
-`Scene3D/WarpStars.frag` · type=scene3d · geom=points · mood=aggressive,dark · complexity=1
+`Scene3D/WarpStars.frag` · type=scene3d · geom=points · mood=aggressive,dark · complexity=10
 
 Additive glow-sprite shader for the warp-speed starfield: renders each streaking star point as a soft, tightly-focused point of light. No audio uniforms are read here; audioAdvance acting as the flight throttle, the audioDrop/audioKick-triggered hyperjump flash, and the key-following star tint are all computed in the companion vertex shader (WarpStars.vert) and arrive pre-baked in vCol.
 
@@ -10925,7 +10925,7 @@ Additive glow-sprite shader for the warp-speed starfield: renders each streaking
 
 ### WaveRibbon
 
-`Scene3D/WaveRibbon.frag` · type=scene3d · geom=ribbon · mood=calm,dreamy · complexity=1
+`Scene3D/WaveRibbon.frag` · type=scene3d · geom=ribbon · mood=calm,dreamy · complexity=9
 
 Shades one of the 20 stacked oscilloscope-style wave lines (echoes of the live waveform trailing back into space) as a glowing ribbon: a tight bright core plus a soft wide halo across its width (vSide). No audio uniforms are read directly in this stage; the waveform shape (blended from the live audioWave time-domain signal and a harmonic ghost driven by audioSpectrum bands), its audioSwell-driven amplitude, and its a…
 
@@ -10934,7 +10934,7 @@ Shades one of the 20 stacked oscilloscope-style wave lines (echoes of the live w
 
 ### WhiteHoleFountain
 
-`Scene3D/WhiteHoleFountain.frag` · type=scene3d · geom=indirect · mood=space,bright,dreamy · complexity=4
+`Scene3D/WhiteHoleFountain.frag` · type=scene3d · geom=indirect · mood=space,bright,dreamy · complexity=7
 
 Fragment stage for WhiteHoleFountain: photo tiles that are bright and white-hot at birth and cool to the photo's own colours as they climb, fading out near the end of their life; the horizon is a blinding disc that flashes on the kick; the sky is deep space with round stars. Audio Reactivity: audioKick flashes the horizon and the newborn tiles; audioLevel is the tile brightness.
 
@@ -10943,7 +10943,7 @@ Fragment stage for WhiteHoleFountain: photo tiles that are bright and white-hot 
 
 ### WignerCrystalElectronLattice
 
-`Scene3D/WignerCrystalElectronLattice.frag` · type=scene3d · geom=points · mood=calm,bright,dreamy · complexity=3
+`Scene3D/WignerCrystalElectronLattice.frag` · type=scene3d · geom=points · mood=calm,bright,dreamy · complexity=8
 
 WIGNER CRYSTAL ELECTRON LATTICE: Triangular 2D/3D quantum electron crystal formed by pure Coulomb repulsion at ultralow temperatures. Zero-point quantum fluctuations, propagating acoustic phonon waves, and photo-palette dispersion halos. audioAdvance -> propagates phonon acoustic wave modes across the crystal audioKick -> excites quantum melting fluctuation bursts audioSwell -> widens electron wavepacket cloud halo a…
 
@@ -10952,7 +10952,7 @@ WIGNER CRYSTAL ELECTRON LATTICE: Triangular 2D/3D quantum electron crystal forme
 
 ### WindTurbineFieldDusk
 
-`Scene3D/WindTurbineFieldDusk.frag` · type=scene3d · geom=indirect · mood=calm,dark,dreamy · complexity=3
+`Scene3D/WindTurbineFieldDusk.frag` · type=scene3d · geom=indirect · mood=calm,dark,dreamy · complexity=2
 
 WIND TURBINE FIELD DUSK (fragment): a field of turbines at dusk. The blades are pale against a photo sky, each turbine turning at its own steady rate; the nav lights breathe with the kick (light only, never motion); the swell is the last daylight; the spectrum tints the sky band by band along the horizon. Distance haze stacks the rows. Audio Reactivity: audioSwell -> daylight and haze (slow) audioKick -> nav lights (…
 
@@ -10961,7 +10961,7 @@ WIND TURBINE FIELD DUSK (fragment): a field of turbines at dusk. The blades are 
 
 ### Wormhole
 
-`Scene3D/Wormhole.frag` · type=scene3d · geom=grid · mood=aggressive,dark · complexity=2
+`Scene3D/Wormhole.frag` · type=scene3d · geom=grid · mood=aggressive,dark · complexity=7
 
 Flies through a repeating chain of gravitational-lensing wormhole throats: bends the slideshow image (tex0) around each throat with growing angular smear near its horizon and per-channel chromatic aberration, and traces a bright photon ring at the horizon itself. audioAdvance drives the flight speed and the image's scroll along the tube; audioKick and audioDrop flare the photon ring's brightness; audioChromaHue tints…
 
@@ -10970,7 +10970,7 @@ Flies through a repeating chain of gravitational-lensing wormhole throats: bends
 
 ### WormholeMirrorWeave
 
-`Scene3D/WormholeMirrorWeave.frag` · type=scene3d · geom=ribbon · mood=dark,psychedelic,aggressive · complexity=3
+`Scene3D/WormholeMirrorWeave.frag` · type=scene3d · geom=ribbon · mood=dark,psychedelic,aggressive · complexity=8
 
 Shades one ribbon segment of the mirror-symmetric wormhole from WormholeMirrorWeave.vert: additive glow falling off across the ribbon's width (vSide), same order-independent unlit treatment as the existing RibbonTunnel, so the woven, pinching throat reads as pure light rather than lit geometry. Colour (photo-palette, kaleidoscope-wedge-tinted, kick flash) arrives pre-computed from the vertex stage.
 
@@ -10979,7 +10979,7 @@ Shades one ribbon segment of the mirror-symmetric wormhole from WormholeMirrorWe
 
 ### XenophyophoreGiantProtistSarcodina
 
-`Scene3D/XenophyophoreGiantProtistSarcodina.frag` · type=scene3d · geom=ribbon · mood=dark,calm,dreamy · complexity=3
+`Scene3D/XenophyophoreGiantProtistSarcodina.frag` · type=scene3d · geom=ribbon · mood=dark,calm,dreamy · complexity=10
 
 XENOPHYOPHORE GIANT PROTIST SARCODINA: Hadal zone giant single-celled xenophyophore (Syringammina fragilissima). Complex branching networks of agglutinated sediment granellare tubes, streaming translucent reticulopodia plasma strands, bioelectric waves, and photo texturing. audioAdvance -> drives protoplasmic cytoplasmic streaming velocity audioKick -> flashes bioelectric membrane depolarization waves audioSwell -> t…
 
