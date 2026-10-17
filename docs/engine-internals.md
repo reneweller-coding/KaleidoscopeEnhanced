@@ -5793,3 +5793,11 @@ through just below the line (0.38 .. 0.48). Over all 48 rolls looked at (19 poor
 ones and moved 2 good ones, 0.4 caught 16 and moved 4 -- a good world moved only meets another good one. The 3D line is
 now 0.4 (`WorldLine`, clearly good below 0.3), 57 % of the worlds above it; the flat labs keep 0.5.
 
+**Leftovers.** The tunnel lab needs no chain filter: the classes that make mush (sphere kaleidoscope, theta wave,
+Newton and Julia maps, Apollonian inversion fold) are already left out of it for speed, and its highest possible
+prediction is 0.38. Of the three 3D rolls that still looked poor after the filter, one was the filter's (now caught
+at 0.4), one a bubbly Mandelbulb carpet at 0.38 (left: a lower line moves too many good worlds), and one a world with
+structure under a dark photo -- with only the photo's own colours nothing lifted it any more. The 3D scenes now bring
+a dark photo's mean brightness (its last mip) toward 0.32, at most 1.8 times (`photoGain()`): the darkest of 24 fresh
+rolls 0.067 -> 0.086 mean luma, the mean 0.175 -> 0.178.
+

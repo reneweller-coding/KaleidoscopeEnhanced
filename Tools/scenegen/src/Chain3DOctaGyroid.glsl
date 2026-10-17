@@ -64,6 +64,12 @@ float chainPal()
 {
     return chainPhotoOnly ? 0.0 : 0.2 + 0.7 * clamp(paletteP, 0.0, 1.0);
 }
+// A dark photo lifted (17.10.2026): with only the photo's own colours a dark photo left the whole world dark.  Its
+// mean brightness (the last mip) is brought toward 0.32, at most 1.8 times.
+float photoGain()
+{
+    return chainPhotoOnly ? clamp(0.32 / max(luma(imgLod(vec2(0.5), 9.0)), 0.04), 1.0, 1.8) : 1.0;
+}
 // One plane: the photo through the chain, plus a colour field that follows
 // the chain's own coordinates (mirrorUV keeps it seamless at the atan cuts).
 vec3 chainPlane(vec2 uv, float lod, float pal)
@@ -129,7 +135,7 @@ void main()
         float tm = luma(tex);
         // Brighter; with chainPhotoOnly the photo's own colours, and a little more light since the glowing rims and the
         // colour field (which lifted dark photos) are gone: the 3D lab measured a third darker (17.10.2026).
-        tex = max((tex - tm) * (chainPhotoOnly ? 1.0 : 1.1) + tm, 0.0) * (chainPhotoOnly ? 1.9 : 1.5);
+        tex = max((tex - tm) * (chainPhotoOnly ? 1.0 : 1.1) + tm, 0.0) * (chainPhotoOnly ? 1.9 : 1.5) * photoGain();
         vec3 L = normalize(vec3(0.5, 0.7, -0.4));
         float diff = max(dot(n, L), 0.0);
         float ao = 0.0;

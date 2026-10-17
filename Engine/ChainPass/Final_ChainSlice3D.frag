@@ -399,6 +399,10 @@ float chainPal()
 {
     return ChainPhotoOnly ? 0.0 : 0.2 + 0.7 * clamp( paletteP, 0.0, 1.0 );
 }
+float photoGain()
+{
+    return ChainPhotoOnly ? clamp( 0.32 / max( luma( imgLod( vec2( 0.5 ), 9.0 ) ), 0.04 ), 1.0, 1.8 ) : 1.0;
+}
 /**  Colour of a chain coordinate: the photo, shifted toward a hue that follows the music.
  *
  * @param c    The chain coordinate. (in)
@@ -536,7 +540,8 @@ void main()
         float tm = luma( tex );
 
 
-        tex = max( ( tex - tm ) * ( ChainPhotoOnly ? 1.0 : 1.1 ) + tm, 0.0 ) * ( ChainPhotoOnly ? 1.9 : 1.5 );
+        tex = max( ( tex - tm ) * ( ChainPhotoOnly ? 1.0 : 1.1 ) + tm, 0.0 ) * ( ChainPhotoOnly ? 1.9 : 1.5 )
+              * photoGain();
         vec3  L = s_l;
         float diff = 0.5 + 0.5 * dot( n, L );
         float ao = gn.w;
