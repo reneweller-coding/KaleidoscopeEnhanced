@@ -6130,3 +6130,48 @@ Sixteen scenes of family H, most of them ray-marched.
   - SL2RFlowField: an exact exp(tau X) Moebius flow in two phases.
   - ProjectivePlaneRoll: Steiner's Roman surface.
   - FlatTorusUnfold: the Clifford torus turned once a phrase.
+
+## 17.10.2026 (34): the photo as raw material (ideas 135-154)
+
+Twenty scenes of family I. All of them are single-pass image processing on the mip chain.
+
+**Only one photo.** tex1 holds the preloaded next image. It changes at every photo swap, after the crossfade, so a
+scene that used it as "the second photo" would jump. The ideas for two photos therefore cut two pictures from the
+same photo: the second is turned by about 2 to 4 radians and shifted. Both drift with sceneTime and audioAdvance.
+
+**The methods:**
+- **Pyramids:**
+  - LaplacianPyramidEqualizer: band k = L_k - L_{k+1}. Each band's gain comes from audioSubBass .. audioRolloff,
+    carried across the frame by a slow wave of its own.
+  - PoissonGradientRemix: the first picture's bands above a cut-off level, the second's L_cut below it.
+  - PhotoFourierPhaseSwap: the monogenic signal per band. The Riesz pair is the band's slope at its own scale; the
+    amplitude of A is multiplied by cos(phase of B).
+- **Local filters:**
+  - KuwaharaFlowPainting: an anisotropic Kuwahara filter with 8 sectors x 6 taps along the structure direction.
+    The weight is 1 / (1 + (300 var)^4).
+  - BilateralDreamGrid: 7 x 7 taps.
+  - PhotoMeanShiftBlooms: 5 mean-shift steps over 8 taps.
+  - MorphologicalBreath: opening and closing, each the max of mins (or the min of maxes) over two rings.
+  - ToneMappingTide: L / L_avg with the surroundings pulled toward a key.
+- **Searches along a line:**
+  - PixelSortCascade: a run between two luma thresholds is found by marching up to 48 steps each way. Twelve
+    samples of the run are insertion-sorted, and the pixel reads the sorted run at its own place.
+  - SeamCarvingBreath: 24 busyness samples per row and per column (L at 4.5 minus L at 7), with weight
+    1 + kappa (0.5 - e). The inverse of the cumulative sum maps the frame onto the photo. Finer busyness levels
+    made neighbouring rows disagree and the picture zig-zag.
+- **Distributions:**
+  - HistogramFlowMatch: 16 samples per picture. Each channel's soft rank in A is mapped to B's sorted value.
+  - ColorTransferTide: Reinhard's transfer in l-alpha-beta, with the mean and spread from 16 samples.
+- **Synthesis:**
+  - TextureSynthesisGrowth: by-example noise on a triangle lattice with variance-preserving blending (Heitz and
+    Neyret). The seed is the harmony's integer, so a crossfade's end state is the next one's start.
+  - PatchShuffleKaleido: PatchMatch-lite. A plan of the photo's broad colours folded six times, and for each square
+    the best of 3 to 8 random candidates by mean colour.
+- **Fields from the photo:**
+  - SuperpixelMosaicFlow: SLIC-style assignment to 9 moving seeds by place and colour.
+  - DistanceFieldEcho: the first-order distance to the nearest luma step, |L - level| / |grad L|. Rings run at
+    2 pi (d / lambda - audioBeatPhase) and push the photo along the gradient.
+  - StructureTensorLens: the structure tensor's orientation and coherence decide the pull.
+  - PhotoSpectralWarp: 10 steps back along each hue's direction.
+  - DepthFromFocusLayers: a parallax march over a sharpness height field.
+  - PhotoWatershedFlood: 14 steps of gradient descent to the basin's floor, which gives the basin's colour.
