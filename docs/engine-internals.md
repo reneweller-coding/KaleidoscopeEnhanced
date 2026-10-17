@@ -5575,3 +5575,14 @@ rotation phase what a long show gathers).
   toward it (the yaw's sign), and every docking station spun about its object Z -- TradePromenadeStation's cylinder
   and MegastructureCentralHub's ring (round about Y) turned end over end. The stations take `spinAxisP` now;
   HyperspaceRelayStation (a box) no longer spins, DoubleRingResearchStation spins about its rings' axis (Z, not Y).
+- **Oriented by looking (18.10.2026).** The rules (main axis, taper) were wrong for ten craft, which flew engines first.
+  Each craft of the ship scenes was looked at in textured views of its craft frame -- side, top, bow and stern --
+  and decided by its engines (nozzle clusters, exhaust rings, glowing cones trail), its bow (spikes, raked stems,
+  bulbous bows, scoops, windshields lead) and its family (UnionDestroyer carries the stern tubes of its sister
+  UnionCruiserNorway): UnionDestroyer, RouKillingTime, SuperlifterBringerOfThings, CommsRelayShip, OrbitalTugboat,
+  SystemShuttleCutter and ModularContainerShip turned round (the last one's earlier hand flip was wrong: its eight
+  nozzles led); LsvPureIntent, an arch, turned a quarter about its beam to fly horns first like its sister LsvZealot
+  (`POSE` in the tool). Six whose bow could not be told -- AllianceCarrierEurope (nearly square), SuperlifterHeavyBurden
+  (a fan at both ends), FleetReplenishmentOiler, MerchanterFinitysEnd (boxes with hatches at both ends),
+  CommandCitadelStation (a station) and FuelTankerStarship (bridge windows facing aft, hull pointed forward) -- are no
+  longer flybys but orbits: Spaceship.frag, the camera going round the craft.

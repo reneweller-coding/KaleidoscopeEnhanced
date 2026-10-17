@@ -7944,14 +7944,8 @@
     <expr name="hueP" formula="chromaHue + seed2*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <TextureShader file="..\Scene3D\ShipFlyby.frag" type="scene3d" geom="mesh" model="..\Models\AllianceCarrierEurope.glb" mood="dark,space" probability="0.4" complexity="6" gpuMs="0.54">
-    <rig preset="mesh-18-yaw3"/>
-    <float name="sizeP" minValue="1.20" maxValue="1.20"></float>
-    <float name="travelP" minValue="0.9" maxValue="0.9"></float>
-    <float name="approachP" minValue="0.9" maxValue="0.9"></float>
-    <float name="bankP" minValue="1.2" maxValue="1.2"></float>
-    <float name="bgTypeP" minValue="0" maxValue="0"></float>
-    <float name="tintP" minValue="2.10" maxValue="2.10"></float>
+  <TextureShader file="..\Scene3D\Spaceship.frag" type="scene3d" geom="mesh" model="..\Models\AllianceCarrierEurope.glb" mood="dark,space" probability="0.4" complexity="2" gpuMs="0.54">
+    <rig preset="mesh-32-roll"/>
     <expr name="hueP" formula="chromaHue + seed3*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
@@ -8140,14 +8134,8 @@
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <TextureShader file="..\Scene3D\ShipFlyby.frag" type="scene3d" geom="mesh" model="..\Models\SuperlifterHeavyBurden.glb" mood="dark,space" probability="0.35" complexity="6" gpuMs="0.54">
-    <rig preset="mesh-18-yaw2"/>
-    <float name="sizeP" minValue="1.45" maxValue="1.45"></float>
-    <float name="travelP" minValue="1.0" maxValue="1.0"></float>
-    <float name="approachP" minValue="1.0" maxValue="1.0"></float>
-    <float name="bankP" minValue="0.9" maxValue="0.9"></float>
-    <float name="bgTypeP" minValue="0" maxValue="0"></float>
-    <float name="tintP" minValue="1.10" maxValue="1.10"></float>
+  <TextureShader file="..\Scene3D\Spaceship.frag" type="scene3d" geom="mesh" model="..\Models\SuperlifterHeavyBurden.glb" mood="dark,space" probability="0.35" complexity="2" gpuMs="0.54">
+    <rig preset="mesh-32-roll"/>
     <expr name="hueP" formula="chromaHue + seed2*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
@@ -8195,14 +8183,8 @@
     <expr name="hueP" formula="chromaHue + seed3*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <TextureShader file="..\Scene3D\ShipFlyby.frag" type="scene3d" geom="mesh" model="..\Models\FleetReplenishmentOiler.glb" mood="calm,space" probability="0.35" complexity="6" gpuMs="0.54">
-    <rig preset="mesh-18"/>
-    <float name="sizeP" minValue="1.20" maxValue="1.20"></float>
-    <float name="travelP" minValue="1.0" maxValue="1.0"></float>
-    <float name="approachP" minValue="1.0" maxValue="1.0"></float>
-    <float name="bankP" minValue="0.9" maxValue="0.9"></float>
-    <float name="bgTypeP" minValue="1" maxValue="1"></float>
-    <float name="tintP" minValue="3.60" maxValue="3.60"></float>
+  <TextureShader file="..\Scene3D\Spaceship.frag" type="scene3d" geom="mesh" model="..\Models\FleetReplenishmentOiler.glb" mood="calm,space" probability="0.35" complexity="2" gpuMs="0.54">
+    <rig preset="mesh-32-roll"/>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
@@ -8217,14 +8199,8 @@
     <expr name="hueP" formula="chromaHue + seed2*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <TextureShader file="..\Scene3D\ShipFlyby.frag" type="scene3d" geom="mesh" model="..\Models\MerchanterFinitysEnd.glb" mood="bright,calm,space" probability="0.35" complexity="6" gpuMs="0.54">
-    <rig preset="mesh-18-yaw3"/>
-    <float name="sizeP" minValue="1.15" maxValue="1.15"></float>
-    <float name="travelP" minValue="1.0" maxValue="1.0"></float>
-    <float name="approachP" minValue="1.0" maxValue="1.0"></float>
-    <float name="bankP" minValue="0.9" maxValue="0.9"></float>
-    <float name="bgTypeP" minValue="0" maxValue="0"></float>
-    <float name="tintP" minValue="4.90" maxValue="4.90"></float>
+  <TextureShader file="..\Scene3D\Spaceship.frag" type="scene3d" geom="mesh" model="..\Models\MerchanterFinitysEnd.glb" mood="bright,calm,space" probability="0.35" complexity="2" gpuMs="0.54">
+    <rig preset="mesh-32-roll"/>
     <expr name="hueP" formula="chromaHue + seed3*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
@@ -9497,14 +9473,8 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
 
-  <TextureShader file="..\\Scene3D\\ShipFlyby.frag" type="scene3d" geom="mesh" model="..\\Models\\CommandCitadelStation.glb" mood="space,dark" probability="0.3" complexity="6" gpuMs="0.54">
-    <rig preset="mesh-15"/>
-    <float name="sizeP" minValue="1.0" maxValue="1.0"></float>
-    <float name="travelP" minValue="0.9" maxValue="0.9"></float>
-    <float name="approachP" minValue="1.0" maxValue="1.0"></float>
-    <float name="bankP" minValue="1.0" maxValue="1.0"></float>
-    <float name="bgTypeP" minValue="1" maxValue="1"></float>
-    <float name="tintP" minValue="0.93" maxValue="0.93"></float>
+  <TextureShader file="..\\Scene3D\\Spaceship.frag" type="scene3d" geom="mesh" model="..\\Models\\CommandCitadelStation.glb" mood="space,dark" probability="0.3" complexity="2" gpuMs="0.54">
+    <rig preset="mesh-32-roll"/>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
@@ -9559,14 +9529,8 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
 
-  <TextureShader file="..\\Scene3D\\ShipFlyby.frag" type="scene3d" geom="mesh" model="..\\Models\\FuelTankerStarship.glb" mood="space,dark" probability="0.3" complexity="6" gpuMs="0.54">
-    <rig preset="mesh-15"/>
-    <float name="sizeP" minValue="1.0" maxValue="1.0"></float>
-    <float name="travelP" minValue="0.9" maxValue="0.9"></float>
-    <float name="approachP" minValue="1.0" maxValue="1.0"></float>
-    <float name="bankP" minValue="1.0" maxValue="1.0"></float>
-    <float name="bgTypeP" minValue="1" maxValue="1"></float>
-    <float name="tintP" minValue="2.79" maxValue="2.79"></float>
+  <TextureShader file="..\\Scene3D\\Spaceship.frag" type="scene3d" geom="mesh" model="..\\Models\\FuelTankerStarship.glb" mood="space,dark" probability="0.3" complexity="2" gpuMs="0.54">
+    <rig preset="mesh-32-roll"/>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>

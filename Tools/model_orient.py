@@ -47,10 +47,29 @@ NOSE = {
     "FormationsAufklaerungsdrohne.glb": (1, 0.0),
     # A dagger-shaped blade: the point leads, not the broad end.
     "LsvZealot.glb": (-1, None),
-    # The bridge sits at the stern of a container ship; the taper rule took the bridge end for the bow.
-    "ModularContainerShip.glb": (-1, None),
     # Two engine tubes at one end, the sloped cockpit at the other.
     "SchwererBegleitjaeger.glb": (-1, None),
+    # From the textured end views (Tools/model_orient.py --views and the ship sheets, 18.10.2026): the engines lead.
+    # A cluster of eight protruding tubes at the end the taper rule chose -- the sister ship UnionCruiserNorway
+    # carries the same tubes at its stern, its bow a raked stem.
+    "UnionDestroyer.glb": (-1, None),
+    # A round nozzle between glowing fins at the chosen end; the long spike at the other is the nose.
+    "RouKillingTime.glb": (-1, None),
+    # A bulbous bow and a narrowing hull at one end, the bridge and a square stern at the other.
+    "SuperlifterBringerOfThings.glb": (-1, None),
+    # The pointed end trails, the end plate with the engine pods leads.
+    "CommsRelayShip.glb": (-1, None),
+    # An exhaust pipe at the chosen end, the radiator grille at the other.
+    "OrbitalTugboat.glb": (-1, None),
+    # Concentric nozzle rings in a tapering shroud at the chosen end.
+    "SystemShuttleCutter.glb": (-1, None),
+}
+
+# Turns in the craft frame after the measurement, where the hull is not a plain length: rows of a rotation.
+POSE = {
+    # An arch, its legs down, lying along the course: turned a quarter about the beam so the legs point ahead --
+    # a crescent flying horns first, like its sister LsvZealot (asked for 18.10.2026).
+    "LsvPureIntent.glb": ((1.0, 0.0, 0.0), (0.0, 0.0, 1.0), (0.0, -1.0, 0.0)),
 }
 
 CT = {5120: np.int8, 5121: np.uint8, 5122: np.int16, 5123: np.uint16, 5125: np.uint32, 5126: np.float32}
@@ -283,6 +302,8 @@ def measure(path):
         sign *= NOSE[name][0]
     if sign < 0:
         R = rot_y(np.pi) @ R
+    if name in POSE:
+        R = np.array(POSE[name]) @ R
     Q = (C - mu) @ R.T
     plo = np.array([wpct(Q[:, k], 0.5) for k in range(3)])
     phi = np.array([wpct(Q[:, k], 99.5) for k in range(3)])
