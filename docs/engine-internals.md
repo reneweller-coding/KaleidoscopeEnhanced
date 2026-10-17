@@ -5304,6 +5304,9 @@ measuring the batch tools before running them showed: most of their hours were w
 - **Screening side by side.** `screen.py --jobs N` runs every chunk and seed as a job of its own (own video, log and
   settings copy), N at a time: one renders while another measures, the measurement being CPU. Three seeds of 40
   scenes: 2.0 min alone, 0.9 min with `--jobs 3`. The GPU cost (KALEIDO_COST_LOG) only with `--jobs 1` -- windows side
-  by side share the GPU and inflate each other's times.
+  by side share the GPU and inflate each other's times. The new baseline (`docs/scene-baseline.json`, 17.10.2026): all
+  1215 scenes, three seeds, 39 recordings, 19 min with `--jobs 6`; the old one held 616 scenes, measured live on
+  03.09. Against it only SeifertSurfaceBraidKnot had collapsed -- rebuilt from 3D to 2D on 29.09, not a defect. The
+  run-to-run scatter named in the screening section above (2 % calm, 20 % busy) predates the seeded `qrand()`.
 
 `Kaleidoscope.exe -q`: 122 checks.
