@@ -32,7 +32,7 @@ WHY IT LOOKS LIKE THIS -- every rule below cost a wasted run to find:
   0.0, so darkness alone is useless as a criterion -- what matters is whether
   there is any STRUCTURE (spatial_std) and any MOTION.
 """
-import argparse, atexit, io, json, math, os, re, struct, subprocess, sys, time, wave
+import argparse, atexit, io, json, math, os, re, struct, subprocess, sys, threading, time, wave
 
 import numpy as np
 
@@ -43,13 +43,14 @@ from private_settings import PrivateSettings
 _PS = None
 
 
-def settings_env(env):
-    """env plus KALEIDO_SETTINGS on a fresh copy of the user's settings (removed when the run ends)."""
+def settings_env(env, slot=0):
+    """env plus KALEIDO_SETTINGS on a fresh copy of the user's settings (removed when the run ends); one per slot, so
+    windows side by side (--jobs) never write one file."""
     global _PS
     if _PS is None:
         _PS = PrivateSettings("screen")
         atexit.register(_PS.close)
-    env["KALEIDO_SETTINGS"] = _PS.path()
+    env["KALEIDO_SETTINGS"] = _PS.path(slot)
     return env
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -302,8 +303,9 @@ def decodable(vid):
     return len(p.stdout) > 0
 
 
-def render(cfg, wav, log_path, hold, seed, kind="scene", time_start=0, extra_env=None):
-    """One chunk as a video export; returns the video's path (None if there is none)."""
+def render(cfg, wav, log_path, hold, seed, kind="scene", time_start=0, extra_env=None, cost=True, tag=None, slot=0):
+    """One chunk as a video export; returns the video's path (None if there is none).  cost: KALEIDO_COST_LOG (only
+    for a run alone -- windows side by side share the GPU and inflate each other's times); tag names the video."""
     # Die Engine liest KALEIDO_SCENE_SWEEP mit qEnvironmentVariableIntValue:
     # "12.0" ergibt dort 0 und der Sweep laeuft schlicht nicht an -- die
     # Aufnahme sieht dann wie ein normaler Lauf aus und liefert null Fenster.
@@ -311,13 +313,15 @@ def render(cfg, wav, log_path, hold, seed, kind="scene", time_start=0, extra_env
     # KALEIDO_SOLO_SECS = Haltezeit: sceneProgress laeuft dann ueber das
     # Fenster, nicht ueber die Review-Spanne von 25 s -- sonst sieht das
     # Screening von einer inszenierten Szene (Assembly) nie das Ende.
-    env = dict(os.environ, KALEIDO_SEED=str(seed), KALEIDO_COST_LOG="1",
+    env = dict(os.environ, KALEIDO_SEED=str(seed),
                KALEIDO_TIME_START=str(int(time_start)),
                KALEIDO_SOLO_SECS=str(int(round(hold))))
     if extra_env:
         env.update(extra_env)
     env[var] = str(int(round(hold)))
-    settings_env(env)
+    if cost:
+        env["KALEIDO_COST_LOG"] = "1"
+    settings_env(env, slot)
     with io.open(log_path, "w", encoding="utf-8", errors="replace") as fh:
         # BELOW_NORMAL_PRIORITY_CLASS (0x4000): a screening run is a batch job
         # on a machine someone is using, so it yields to the foreground.
@@ -334,7 +338,7 @@ def render(cfg, wav, log_path, hold, seed, kind="scene", time_start=0, extra_env
         env["KALEIDO_MAX_RUNTIME_SECS"] = str(int(secs + 120))
         env["KALEIDO_NO_ACTIVATE"] = "1"
         below = 0x00004000 if os.name == "nt" else 0
-        vid = os.path.join(WORK, "%s.mp4" % cfg)
+        vid = os.path.join(WORK, "%s.mp4" % (tag or cfg))
         if os.path.exists(vid):
             os.remove(vid)
         subprocess.run([os.path.join(APP_DIR, "Kaleidoscope.exe"),
@@ -727,6 +731,9 @@ def main():
                     help="jeden Chunk mit N Seeds (seed..seed+N-1) rendern und "
                          "die Verteilung je Szene festhalten -- die Basis fuer "
                          "eine Basislinie, die Streuung von Einbruch trennt")
+    ap.add_argument("--jobs", type=int, default=1,
+                    help="so viele Aufnahmen gleichzeitig rendern und auswerten (die GPU-Kosten misst "
+                         "nur --jobs 1, nebeneinander verfaelschen sich die Zeiten)")
     ap.add_argument("--time-start", type=int, default=0, dest="time_start",
                     help="die Uhr der Shader vorstellen (Sekunden) -- prueft, "
                          "ob eine Szene nach langer Laufzeit noch etwas zeigt"),
@@ -801,47 +808,73 @@ def main():
         write_wav(wav, need)
 
     allrows, costs = [], {}
+    # Every chunk and seed is a job of its own -- its own video, log and settings copy -- and up to --jobs run side by
+    # side: one renders while another measures (the measurement is CPU, some 45 s of every 100 s a chunk took), and
+    # the seeds of a baseline need no GPU time at all.  The scene cost (KALEIDO_COST_LOG) only with --jobs 1: windows
+    # side by side share the GPU and inflate each other's times.
+    todo, by_cfg = [], {}
     for cfg, count in chunks:
         mpath = os.path.join(WORK, "metrics_%s.json" % cfg[-2:])
         if a.resume and os.path.exists(mpath):
             allrows += json.load(io.open(mpath, encoding="utf-8"))
             print("  %s: uebersprungen (schon gemessen)" % cfg)
             continue
-        rows = []
+        by_cfg[cfg] = []
         for si in range(max(1, a.seeds)):
-            seed = a.seed + si
-            log = os.path.join(WORK, "%s.log" % cfg)
-            t_render = time.time()
+            todo.append((cfg, count, a.seed + si))
+    alone = a.jobs <= 1
+    lock = threading.Lock()
+    t_all = time.time()
+
+    def job(item, slot):
+        cfg, count, seed = item
+        tag = cfg if a.seeds <= 1 else "%s_s%d" % (cfg, seed)
+        log = os.path.join(WORK, "%s.log" % tag)
+        t_render = time.time()
+        with lock:
             print("  %s: rendern (%d Szenen, Seed %d, %.0f min Video) ..."
-                  % (cfg, count, seed, (count * a.hold + 40) / 60.0))
-            vid = render(cfg, wav, log, a.hold, seed, a.kind, a.time_start)
-            if not vid:
-                print("  %s: KEIN Video -- uebersprungen (Log: %s)" % (cfg, log))
-                continue
-            part = measure(vid, log, a.hold)
-            for r in part:
-                r["seed"] = seed
-            if part:
-                os.remove(vid)
-            else:
-                print("  %s: 0 Fenster -- Video BLEIBT: %s" % (cfg, vid))
-            rows += part
-        # The app writes scene-cost.json into its working directory and
-        # overwrites it per chunk, so fold it into a running total before the
-        # next render clobbers it.  Measured cost is the honest replacement for
-        # the hand-set `complexity` the scheduler budgets with.
+                  % (tag, count, seed, (count * a.hold + 40) / 60.0), flush=True)
+        vid = render(cfg, wav, log, a.hold, seed, a.kind, a.time_start, cost=alone, tag=tag, slot=slot)
+        part_cost = None
         cp = os.path.join(APP_DIR, "scene-cost.json")
-        if os.path.exists(cp):
+        if alone and os.path.exists(cp):
+            # The app writes scene-cost.json into its working directory and overwrites it per chunk: fold it into the
+            # total before the next render clobbers it.
             try:
-                part = json.load(io.open(cp, encoding="utf-8"))
-                costs.update(part)
+                part_cost = json.load(io.open(cp, encoding="utf-8"))
             except ValueError:
                 pass
             os.remove(cp)
+        if not vid:
+            with lock:
+                print("  %s: KEIN Video -- uebersprungen (Log: %s)" % (tag, log), flush=True)
+            return cfg, [], part_cost
+        part = measure(vid, log, a.hold)
+        for r in part:
+            r["seed"] = seed
+        if part:
+            os.remove(vid)
+        with lock:
+            if part:
+                print("  %s: %d Fenster in %.1f min" % (tag, len(part), (time.time() - t_render) / 60.0), flush=True)
+            else:
+                print("  %s: 0 Fenster -- Video BLEIBT: %s" % (tag, vid), flush=True)
+        return cfg, part, part_cost
+
+    import concurrent.futures
+    with concurrent.futures.ThreadPoolExecutor(max(1, a.jobs)) as pool:
+        futures = [pool.submit(job, item, k % max(1, a.jobs)) for k, item in enumerate(todo)]
+        for f in futures:
+            cfg, part, part_cost = f.result()
+            by_cfg[cfg] += part
+            if part_cost:
+                costs.update(part_cost)
+    for cfg, rows in by_cfg.items():
         if rows:
-            json.dump(rows, io.open(mpath, "w", encoding="utf-8"), indent=1)
-            print("  %s: %d Fenster in %.1f min" % (cfg, len(rows), (time.time() - t_render) / 60.0))
+            json.dump(rows, io.open(os.path.join(WORK, "metrics_%s.json" % cfg[-2:]), "w", encoding="utf-8"),
+                      indent=1)
         allrows += rows
+    print("  alle Aufnahmen in %.1f min" % ((time.time() - t_all) / 60.0))
 
     for cfg, _ in chunks:
         p = os.path.join(ROOT, "Presets", cfg + ".xml")

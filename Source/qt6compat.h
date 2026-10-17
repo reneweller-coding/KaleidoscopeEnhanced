@@ -24,6 +24,7 @@
 // ---------------------------------------------------------------------------
 
 #include <cstdlib> // RAND_MAX
+#include <mutex>
 #include <QtCore/QRandomGenerator>
 
 /**  Drop-in replacement for the Qt5 qrand(), backed by QRandomGenerator.
@@ -33,10 +34,24 @@
  *
  * QRandomGenerator::bounded(hi) returns [0, hi); match the historical
  * qrand() range of [0, RAND_MAX].
+ *
+ * With KALEIDO_SEED set (a measurement run) the numbers come from a generator of their own seeded with it, not from
+ * the engine-seeded global one: the photos (and the title style) were rolled anew on every start, so two screening
+ * runs with one seed differed by up to a factor of ten in a photo scene's brightness (17.10.2026).  A generator of
+ * its own, not rand(): that keeps the scenes' parameter rolls (rand()) exactly as they were.
  **/
 inline int qrand()
 {
-    return static_cast<int>( QRandomGenerator::global()->bounded( static_cast<quint32>( RAND_MAX ) + 1 ) );
+    static QRandomGenerator *Seeded = qEnvironmentVariableIsSet( "KALEIDO_SEED" )
+                                          ? new QRandomGenerator( static_cast<quint32>(
+                                                qEnvironmentVariableIntValue( "KALEIDO_SEED" ) ) )
+                                          : nullptr;
+    static std::mutex        SeededLock; // a QRandomGenerator of one's own is not thread-safe, global() is
+    const quint32            Range = static_cast<quint32>( RAND_MAX ) + 1;
+    if ( !Seeded )
+        return static_cast<int>( QRandomGenerator::global()->bounded( Range ) );
+    std::lock_guard<std::mutex> lock( SeededLock );
+    return static_cast<int>( Seeded->bounded( Range ) );
 }
 
 /**  Drop-in replacement for the Qt5 qsrand(); a no-op under Qt6.

@@ -5295,4 +5295,15 @@ measuring the batch tools before running them showed: most of their hours were w
   to 47 % of the screen time and the busy ones (8..10) from 21 to 10 %; to Prodigy (0.74) the busy from 30 to 35 %
   and the calm from 30 to 22 %; to Berlin-school sequences (0.45) and Astrix (0.67) little changed. A lean, not a
   filter -- the mood match never excludes a scene. Drops: 24/25, 21/25, 13/16, 16/16, 37/37 on a spectacle.
+- **One seed, one measurement.** Two screening runs with the same KALEIDO_SEED differed by up to a factor of ten in a
+  photo scene's brightness: the photos (and the title style, the solo times) are drawn with `qrand()`, which the Qt6
+  shim took from the engine-seeded `QRandomGenerator::global()` -- KALEIDO_SEED seeded only `rand()`. With
+  KALEIDO_SEED set, `qrand()` now draws from a generator of its own seeded with it (`qt6compat.h`; `rand()` and so the
+  parameter rolls stay as they were; normal use stays clock-seeded). 40 scenes, three seeds, run twice: 111 of 945
+  values off by more than 20 % before, 2 after (one window of PulsarJet), half bit-identical, the rest within 7 %.
+- **Screening side by side.** `screen.py --jobs N` runs every chunk and seed as a job of its own (own video, log and
+  settings copy), N at a time: one renders while another measures, the measurement being CPU. Three seeds of 40
+  scenes: 2.0 min alone, 0.9 min with `--jobs 3`. The GPU cost (KALEIDO_COST_LOG) only with `--jobs 1` -- windows side
+  by side share the GPU and inflate each other's times.
+
 `Kaleidoscope.exe -q`: 122 checks.
