@@ -78,24 +78,34 @@ vec3 imgPalette( float t )
     return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
-/** Entry point of this shader stage (the file description says what it draws). */
-void main()
+/**  Weight that closes atan's cut: 0 over most of the circle, 1 at a = pi (see main()).
+ *
+ * @param a  The angle, -pi..pi. (in)
+ *
+ * @return
+ *   The weight, 0..1.
+ **/
+float seamW( float a )
 {
-    vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution.xy ) / min( resolution.x, resolution.y );
+    return smoothstep( 2.5, 3.14159265, a );
+}
 
-    float spd = ( speedP > 0.01 ) ? speedP : 1.0;
-    float s_growth = ( spiralGrowthP > 0.01 ) ? spiralGrowthP : 0.306349; // Golden ratio growth: ln(phi)/(pi/2)
-    float n_chamb = ( chambersP > 1.0 ) ? chambersP : 8.0;
-    float glw = ( glowP > 0.01 ) ? glowP : 1.0;
-
-    float t = time * 0.210 * spd + audioAdvance * 0.210 * spd;
-    // Time base + music push: audioAdvance ALONE stands still in quiet
-    // music (the reported "looks like a still picture" class).
-
-    float r = max( 1e-5, length( uv ) );
-    // Branch cut rotated to the BOTTOM half-axis (was centre-left); see
-    // InfinitePsychedelicDrosteVortex for why it cannot be removed outright.
-    float a = atan( -uv.x, uv.y );
+/**  The vortex at an angle: everything main() draws after the angle is known.
+ *
+ * @param a  The angle (atan), or that angle minus a turn near the cut. (in)
+ * @param uv  As in main(). (in)
+ * @param r  As in main(). (in)
+ * @param spd  As in main(). (in)
+ * @param s_growth  As in main(). (in)
+ * @param n_chamb  As in main(). (in)
+ * @param glw  As in main(). (in)
+ * @param t  As in main(). (in)
+ *
+ * @return
+ *   The colour before main()'s finish.
+ **/
+vec3 vortexAt( float a, vec2 uv, float r, float spd, float s_growth, float n_chamb, float glw, float t )
+{
 
     // Log-polar spiral coordinate: theta_spiral = a - ln(r)/b
     float theta_spiral = a - ( log( r ) / s_growth );
@@ -142,6 +152,36 @@ void main()
     // Center spiral origin singularity bloom
     float center_bloom = exp( -r * 8.0 ) * ( 1.2 + 2.5 * audioKick );
     final_col += imgPalette( 0.85 ) * center_bloom;
+
+    return final_col;
+}
+
+/** Entry point of this shader stage (the file description says what it draws). */
+void main()
+{
+    vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution.xy ) / min( resolution.x, resolution.y );
+
+    float spd = ( speedP > 0.01 ) ? speedP : 1.0;
+    float s_growth = ( spiralGrowthP > 0.01 ) ? spiralGrowthP : 0.306349; // Golden ratio growth: ln(phi)/(pi/2)
+    float n_chamb = ( chambersP > 1.0 ) ? chambersP : 8.0;
+    float glw = ( glowP > 0.01 ) ? glowP : 1.0;
+
+    float t = time * 0.210 * spd + audioAdvance * 0.210 * spd;
+    // Time base + music push: audioAdvance ALONE stands still in quiet
+    // music (the reported "looks like a still picture" class).
+
+    float r = max( 1e-5, length( uv ) );
+    // Branch cut rotated to the BOTTOM half-axis (was centre-left); see
+    // InfinitePsychedelicDrosteVortex for why it cannot be removed outright.
+    float a = atan( -uv.x, uv.y );
+
+    // The cut closed (17.10.2026): the spiral's twist glides with the music, so it cannot be a whole number of
+    // turns, and its pattern does not meet itself where atan jumps (the bottom half axis).  Just before the jump
+    // the vortex is mixed into the same vortex a turn back, which is what the other side shows.
+    vec3  final_col = vortexAt( a, uv, r, spd, s_growth, n_chamb, glw, t );
+    float seam_w = seamW( a );
+    if ( seam_w > 0.0 )
+        final_col = mix( final_col, vortexAt( a - 6.2831853, uv, r, spd, s_growth, n_chamb, glw, t ), seam_w );
 
     final_col = pow( final_col, vec3( 0.88 ) );
     fragColor = vec4( clamp( final_col, 0.0, 1.0 ), 1.0 );

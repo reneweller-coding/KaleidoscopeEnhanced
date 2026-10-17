@@ -5443,3 +5443,14 @@ rotation phase what a long show gathers).
   noises on a circle (cos, sin). Measured again: Aperture 12.9 -> 1.6, DiamondFireMacro 8.4 -> 0.6,
   HyperbolicPoincareTunnel 6.3 -> 1.1, OortCloudDrift 2.7 -> 1.4, GammaRayBurst 4.1 -> 2.4 (a value-noise crease
   on the vertical axis, not a step). EndOfTheUniverse's noiseP was already periodic.
+- **Seven more cuts**, found with a sharper measurement: the step profile across the 33 lines around each half axis
+  (a cut need not sit on the centre line to the pixel), one line on ONE half standing out while the other half is
+  quiet there (a horizon or a frame edge runs through both), and only scenes that use atan -- 45 suspects, looked
+  at one by one, seven of them cuts. KluverFormConstants (a fractional spiral arm count and a wrapped photo),
+  SuperradiantBlackHoleBomb (a rolled azimuthal mode number: now whole), EventHorizonSingularityPlunge (an arm count
+  gliding with the brightness: now a blend of the two whole counts around it; and a photo wrapped at the horizontal
+  axis), KarmanVortexStreet (the angle as the dye's lateral coordinate: now mirrored, abs(a)), and the two spirals
+  whose comments said the cut could not go -- LogarithmicSpiralChamberZoom and InfinitePsychedelicDrosteVortex: the
+  twist glides with the music and cannot be whole, so near the cut the whole vortex is mixed into the same vortex a
+  turn back (`vortexAt( a - 2 pi )`, computed only in that wedge). A mirrored photo coordinate across the angle
+  needs period 1 in a / 2 pi to meet itself after a turn.

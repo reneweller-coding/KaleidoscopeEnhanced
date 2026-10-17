@@ -95,7 +95,8 @@ void main()
     //   lattice: a checker of lr and th
     //   cobweb:  radial spokes and rings together
     float tunnel = sin( lr * dens - flow );
-    float spiral = sin( lr * dens + th * twist * 3.0 - flow );
+    // A whole number of arms: twist * 3.0 rolled as any number and the spiral tore along atan's cut (17.10.2026).
+    float spiral = sin( lr * dens + th * floor( twist * 3.0 + 0.5 ) - flow );
     float lattice = sin( lr * dens - flow ) * sin( th * 8.0 + flow * 0.3 );
     float cobweb = max( sin( th * 12.0 ), sin( lr * dens * 0.7 - flow * 0.7 ) );
     // Blend weights: arousal picks the family (calm -> tunnel/cobweb,
@@ -115,7 +116,9 @@ void main()
     float contrast = 0.35 + 0.5 * clamp( audioSwell, 0.0, 1.0 );
     float stripe = smoothstep( -0.2, 0.2, field );
     // Colour: the photo sampled by the field phase and the angle.
-    vec2 suv = vec2( fract( lr * 0.15 - flow * 0.02 ), fract( th / 6.2831853 + 0.5 ) );
+    // Mirrored, not wrapped: the photo does not tile, and fract() cut it along the left axis and in rings.  Across
+    // the angle the triangle wave has period 1 in th / 2 pi, so it meets itself after a turn.
+    vec2 suv = abs( fract( vec2( ( lr * 0.15 - flow * 0.02 ) * 0.5, th / 6.2831853 + 0.5 ) ) * 2.0 - 1.0 );
     vec3 photo = img( suv );
     vec3 pal_a = imgPalette( hue * 0.159 + 0.0 );
     vec3 pal_b = imgPalette( hue * 0.159 + 0.5 );

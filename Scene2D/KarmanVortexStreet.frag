@@ -94,7 +94,9 @@ void main()
     // and drift downstream with the flow; each vortex is a Lamb-Oseen
     // whirl that advects the dye coordinates.  Work in the wall's unrolled
     // coordinates (angle -> lateral y, z -> downstream).
-    vec2  w = vec2( a * 0.6, z ); // (lateral, downstream)
+    // The angle mirrored (abs): as a coordinate it jumped by 2 pi along the left axis and the dye tore there; mirrored
+    // the tunnel wall meets itself (17.10.2026).
+    vec2  w = vec2( abs( a ) * 0.6, z ); // (lateral, downstream)
     vec2  adv = w;
     float newest = 0.0;
     for ( int k = -2; k <= 3; ++k )

@@ -109,13 +109,19 @@ void main()
     // the t-driven terms keep their fixed rate so the phase is never remapped.
     float filament_freq = 12.0 * ( 1.0 + 0.45 * audioCentroid );
     float plasma_noise = sin( p_tidal.x * filament_freq + t * 4.0 ) * cos( p_tidal.y * filament_freq - t * 3.5 );
-    float plasma_spiral = sin( a * filament_freq * 0.5 - ( 1.0 / max( 0.05, r ) ) * 4.0 + t * 6.0 );
+    // Whole numbers of spiral arms, blended between the two around filament_freq / 2: the count glides with the
+    // music and still closes round the circle (a fractional count tore along atan's cut, 17.10.2026).
+    float arms = filament_freq * 0.5;
+    float arm_lo = floor( arms );
+    float sp_phase = -( 1.0 / max( 0.05, r ) ) * 4.0 + t * 6.0;
+    float plasma_spiral = mix( sin( a * arm_lo + sp_phase ), sin( a * ( arm_lo + 1.0 ) + sp_phase ), fract( arms ) );
 
     // Sample slideshow texture on outer universe disk vs inner plasma
     vec2 sky_uv = fract( sky_pos * 1.5 + 0.5 );
     vec3 sky_col = img( sky_uv ) * ( 1.2 + 0.8 * audioLevel );
 
-    vec2 plasma_uv = fract( p_tidal * 0.5 + vec2( t * 0.1, 0.0 ) );
+    // Mirrored, not wrapped: fract() cut the photo along the horizontal axis, where p_tidal.y crosses 0 (17.10.2026).
+    vec2 plasma_uv = abs( fract( ( p_tidal * 0.5 + vec2( t * 0.1, 0.0 ) ) * 0.5 ) * 2.0 - 1.0 );
     vec3 plasma_tex = img( plasma_uv );
 
     // Inner singularity palette (deep ultraviolet to gleam-white)

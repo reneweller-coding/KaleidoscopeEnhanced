@@ -114,7 +114,8 @@ void main()
     float r_mirror = 0.85 * ( mirrorRadiusP > 0.01 ? mirrorRadiusP : 1.0 ) * ( 0.9 + 0.2 * audioSwell );
 
     // Superradiant bosonic wavefield: Psi(r, theta) = R(r) * cos(m * theta - omega * t)
-    float mode_m = ( modeL_P > 1.0 ? modeL_P : 4.0 );
+    // A whole number: the azimuthal mode is cos(m * theta), and a rolled m like 3.4 tore along atan's cut.
+    float mode_m = floor( ( modeL_P > 1.0 ? modeL_P : 4.0 ) + 0.5 );
     float growth = ( growthRateP > 0.01 ? growthRateP : 1.2 );
 
     // Radial standing wave trapped between ergosphere and mirror
