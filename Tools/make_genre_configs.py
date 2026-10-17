@@ -321,6 +321,7 @@ RECENT_SCENES = {
     "Polytope600CellShadow", "TwentyFourCellBreathing", "RiemannSurfaceSheets", "SphereEversionLoop", "CostaSurfaceTunnel", "LensSpaceInterior", "PoincareDodecahedralSpace", "ThreeTorusFlight", "SolGeometryTunnel", "NilGeometryHelix", "SL2RFlowField", "ProjectivePlaneRoll", "HyperbolicDodecahedronFlight", "FlatTorusUnfold", "AlexanderHornedSphere", "AntoineNecklaceZoom",
     "LaplacianPyramidEqualizer", "KuwaharaFlowPainting", "PixelSortCascade", "PhotoFourierPhaseSwap", "HistogramFlowMatch", "SeamCarvingBreath", "TextureSynthesisGrowth", "PoissonGradientRemix", "SuperpixelMosaicFlow", "DistanceFieldEcho", "BilateralDreamGrid", "ColorTransferTide", "PhotoMeanShiftBlooms", "StructureTensorLens", "PhotoSpectralWarp", "DepthFromFocusLayers", "MorphologicalBreath", "PhotoWatershedFlood", "PatchShuffleKaleido", "ToneMappingTide",
     "SPHVortexDance", "ChargedDustCrystal", "ActiveBrownianClusters", "VortexLatticeParticles", "LiquidCrystalOfBubbles", "FlockingPhaseTransition", "GranularGasCooling", "MagneticDipoleSwarm", "ElectrohydroDropletRain", "ThomsonProblemShells", "BrownianTreeRain", "SwarmalatorRings", "CoulombExplosionBloom", "StokesianSedimentation",
+    "EuclideanRhythmMandala", "PolyrhythmLissajousLattice", "ChromaVectorField", "KeySpiralArray", "TimbreSculpture", "HarmonicLatticeFlight", "CadenceGravity", "IntervalInterference", "SongFormRings", "OnsetCrystalSeeds", "TempoFieldWarp", "StereoFieldCurtains", "DissonanceRoughnessTerrain", "MelodyGeodesics",
 }
 
 def rule_recent(m, h):

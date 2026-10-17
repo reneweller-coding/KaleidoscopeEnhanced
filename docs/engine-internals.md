@@ -6208,3 +6208,34 @@ Fourteen scenes of family J. The engine has no general particle simulation, so t
 
 **screenP() is one unit high** (-0.5 .. 0.5), not two. The particle scenes are scaled to that. The earlier families
 were checked by eye and their scales stand.
+
+## 17.10.2026 (36): music as geometry (ideas 169-182)
+
+Fourteen scenes of family K. Most of them keep a small state of their own, so that what the music decides changes
+smoothly.
+- **Counters:** the beats (EuclideanRhythmMandala, PolyrhythmLissajousLattice, TempoFieldWarp: wraps of
+  audioBeatPhase plus the phase itself, so rings and seams turn without a jump).
+- **Smoothing:** the chroma (ChromaVectorField, IntervalInterference), the spectrum (TimbreSculpture), the stereo
+  levels (StereoFieldCurtains), the roughness (DissonanceRoughnessTerrain) and the onset density (Euclidean rings).
+- **Musical analysis on the state pass:**
+  - CadenceGravity finds the key by correlating the chroma with the 24 Krumhansl-Kessler profiles. It keeps the key
+    unless another wins by 8 %. The tension is 1 - (tonic triad / half the chroma sum). The wells' angle glides the
+    short way round to a new key.
+  - IntervalInterference takes the two strongest smoothed pitch classes, and the just ratio of their interval glides
+    (3:2, 5:4, 16:15, 45:32 and the rest).
+  - SongFormRings counts the section changes and stores each ring's section label. A recurring section wears the
+    same cut of the photo, so the form reads in the rings. The growth glides toward count + age / 40, and the
+    scale keeps the newest ring at 0.46.
+  - OnsetCrystalSeeds keeps a ring of 64 seeds, one per onset (at most four a second). The newest crystal whose
+    polygonal front has reached a pixel is on top, so an overwritten slot is always long overgrown.
+- **Pure geometry:**
+  - EuclideanRhythmMandala: a hit where floor((s + 1) k / n) - floor(s k / n) = 1. The hit count crossfades between
+    k and k + 1.
+  - PolyrhythmLissajousLattice: a Lissajous table, with the curve drawn as joined segments. Sampled points showed
+    as dots.
+  - KeySpiralArray: Chew's spiral array, pitch class = 7 k mod 12. The centre of effect is the chroma-weighted mean
+    under a soft window along the line of fifths; a hard window jumped as the eye moved on.
+  - HarmonicLatticeFlight: the just lattice, pitch class = 7a + 4b + 10c.
+  - TimbreSculpture: 32 wave trains, one per band.
+  - MelodyGeodesics: paths bent by the hills' slopes. The photo is traced back without blur, then given a short
+    streak.
