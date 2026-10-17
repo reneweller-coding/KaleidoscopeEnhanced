@@ -38,6 +38,7 @@ in vec2  vUV;     ///< Texture coordinate 0..1 over the screen (from the vertex 
 in vec3  vNormal; ///< Surface normal (from the vertex stage).
 in vec3  vPos;    ///< Position (from the vertex stage).
 in float vBg;     ///< Background flag (from the vertex stage).
+in vec3  vLight;  ///< Direction to the star, view space (from the vertex stage).
 
 /**  Rotates a colour's hue by an angle (about the grey axis).
  *
@@ -247,7 +248,7 @@ void main()
     // A single distant key light plus a soft fill, standing in for the
     // system's star -- there is no scene-wide light rig to hook into here,
     // every Scene3D scene fakes its own.
-    vec3  light_dir = normalize( vec3( 0.4, 0.6, -0.5 ) );
+    vec3  light_dir = normalize( vLight ); // fixed in the world: the camera orbits the ship
     float diff = max( dot( n, light_dir ), 0.0 );
     float fill = 0.5 + 0.5 * dot( n, vec3( 0.0, 1.0, 0.0 ) );
 

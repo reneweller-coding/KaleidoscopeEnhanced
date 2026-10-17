@@ -10,20 +10,21 @@ end was the nose (17.10.2026).  That fails four ways on this asset set:
   * the sign: half the craft flew stern first, the engine glow on the bow;
   * hulls modelled at an angle: FuelTankerStarship, GsvNoMoreMrNiceGuy and MerchantersLuck lie some 40 degrees off
     the axes and flew crabwise;
-  * needles: many generated models carry long, hair-thin triangles (antenna wires, generator debris) up to the full
-    model size.  They set the bounding box -- the "longest axis" became the vertical, and the craft flew upright,
-    shrunk by the false size;
+  * threads: many generated models carry hair-thin vertical threads (strings of tiny triangles) hanging from the hull
+    to the model's full height.  They set the bounding box -- the "longest axis" became the vertical, and the craft
+    flew upright, shrunk by the false size -- and on screen they read as black rain;
   * ties: a hull as long as it is tall (masts) picked whichever axis came first.
-This tool measures each craft without the needles: the direction of the hull is the main axis of its surface in the
-horizontal plane (area-weighted), the nose is chosen by hand from aligned views (NOSE below, with the reason) where the
-taper rule -- the narrower end leads -- would be wrong, and the size is taken from the 0.5 .. 99.5 % range of the
-surface, so a stray needle does not count.
+This tool measures each craft without the threads (thread_mask, two rules below): the direction of the hull is the
+main axis of its surface in the horizontal plane (area-weighted), the nose is chosen by hand from aligned views (NOSE
+below, with the reason) where the taper rule -- the narrower end leads -- would be wrong, and the size is taken from the
+0.5 .. 99.5 % range of the surface (by area).
 
-The loader (Scene3DShader) turns a listed model into this frame when it loads it: nose on +Z, up on +Y, centred,
-and passes meshCenter / meshExtent from the table and meshOriented = 1.  A model not listed keeps its own frame.
+Scene3DShader hands a listed model's frame to the shaders that ask for it (meshOrient, meshOrientExtent,
+meshOrientCenter, meshOriented), and removes the threads of a model whose share is 1 % or more when it loads it
+(removeThreads, the same two rules).  A model not listed is left as it is.
 
 Columns: model, r00 r01 r02 r10 r11 r12 r20 r21 r22 (the rotation, rows), ex ey ez (half-extents after it),
-cx cy cz (centre after it), needles (triangles left out of the measurement).
+cx cy cz (centre after it), threads (share of the surface in generator threads, %).
 """
 import io
 import json
@@ -95,17 +96,140 @@ def load_triangles(path):
     return np.concatenate(tris)
 
 
+# ---- generator threads -------------------------------------------------------------------------------------------
+# Many generated models carry hair-thin vertical threads (strings of tiny triangles, 0.002 .. 0.008 wide) that hang
+# from the hull up and down to the model's box; on screen they read as black rain.  Two rules find them; the loader
+# (Scene3DShader::removeThreads) applies the same two to a model whose `threads` column is 1 % or more.  All lengths
+# are fractions of the model's longest side S.
+CELL = 0.006     # column width
+NY = 100         # height bins over the model's height
+THIN = 0.008     # a thread triangle is narrower than this horizontally
+MIN_RUN = 0.05   # an isolated thin column is a thread from this length on
+SLIVER_W = 0.006  # a sliver: narrower than this ...
+SLIVER_R = 2.5   # ... and this many times taller than wide
+CHAIN = 0.06     # a chain of slivers in one column is a thread from this length on
+CHAIN_GAP = 0.012  # slivers whose height ranges are closer than this are one chain
+
+
+def isolated_columns(T, S):
+    """Rule 1: thin geometry in a column whose eight neighbour columns are (nearly) empty at that height, over a run
+    of at least MIN_RUN -- a thread standing free.  A hull wall always has neighbours along the wall."""
+    P = T.reshape(-1, 3)
+    lo, hi = P.min(0), P.max(0)
+    cell = CELL * S
+    nx = int((hi[0] - lo[0]) / cell) + 3
+    nz = int((hi[2] - lo[2]) / cell) + 3
+    hy = max(hi[1] - lo[1], 1e-6) / NY
+    hxz = np.sqrt((T[..., 0].max(1) - T[..., 0].min(1)) ** 2 + (T[..., 2].max(1) - T[..., 2].min(1)) ** 2)
+    thin = hxz < THIN * S
+    C = T.mean(1)
+    cx = ((C[:, 0] - lo[0]) / cell).astype(np.int64) + 1
+    cz = ((C[:, 2] - lo[2]) / cell).astype(np.int64) + 1
+    y0 = np.clip(((T[..., 1].min(1) - lo[1]) / hy).astype(np.int64), 0, NY - 1)
+    y1 = np.clip(((T[..., 1].max(1) - lo[1]) / hy).astype(np.int64), 0, NY - 1)
+    occ = np.zeros((nx, nz, NY), bool)
+    thinocc = np.zeros((nx, nz, NY), bool)
+    span = y1 - y0
+    for d in range(0, int(span.max()) + 1):
+        sel = span >= d
+        occ[cx[sel], cz[sel], y0[sel] + d] = True
+        s2 = sel & thin
+        thinocc[cx[s2], cz[s2], y0[s2] + d] = True
+    nb = np.zeros((nx, nz, NY), np.int8)
+    for dx in (-1, 0, 1):
+        for dz in (-1, 0, 1):
+            if dx or dz:
+                nb += np.roll(np.roll(occ, dx, 0), dz, 1)
+    iso = thinocc & (nb <= 1)
+    run = np.zeros((nx, nz, NY), np.int32)
+    run[..., 0] = iso[..., 0]
+    for y in range(1, NY):
+        run[..., y] = np.where(iso[..., y], run[..., y - 1] + 1, 0)
+    full = run.copy()
+    for y in range(NY - 2, -1, -1):
+        full[..., y] = np.where(iso[..., y] & iso[..., y + 1], full[..., y + 1], full[..., y])
+    need = max(2, int(np.ceil(MIN_RUN * S / hy)))
+    thread_bins = iso & (full >= need)
+    yc = np.clip(((C[:, 1] - lo[1]) / hy).astype(np.int64), 0, NY - 1)
+    return thin & thread_bins[cx, cz, yc]
+
+
+def sliver_chains(T, S):
+    """Rule 2: tall, narrow triangles (slivers) chained up one column over at least CHAIN -- a thread inside a dense
+    curtain of threads, where rule 1 sees neighbours."""
+    hx = T[..., 0].max(1) - T[..., 0].min(1)
+    hz = T[..., 2].max(1) - T[..., 2].min(1)
+    h = np.sqrt(hx * hx + hz * hz)
+    y0 = T[..., 1].min(1)
+    y1 = T[..., 1].max(1)
+    sliver = (h < SLIVER_W * S) & ((y1 - y0) > SLIVER_R * h)
+    C = T.mean(1)
+    # The body: every triangle that is not a sliver, dilated by one column.  A chain of slivers inside or against it is
+    # a hull edge or a cylinder wall, not a thread (removing those tore holes into clean hulls).
+    P = T.reshape(-1, 3)
+    lo = P.min(0)
+    cell = CELL * S
+    hy = max(P[:, 1].max() - lo[1], 1e-6) / NY
+    gx = np.floor((C[:, 0] - lo[0]) / cell).astype(np.int64) + 2
+    gz = np.floor((C[:, 2] - lo[2]) / cell).astype(np.int64) + 2
+    nx, nz = gx.max() + 3, gz.max() + 3
+    b0 = np.clip(((y0 - lo[1]) / hy).astype(np.int64), 0, NY - 1)
+    b1 = np.clip(((y1 - lo[1]) / hy).astype(np.int64), 0, NY - 1)
+    body = np.zeros((nx, nz, NY), bool)
+    nb_ = ~sliver
+    span = b1 - b0
+    for d in range(0, int(span[nb_].max()) + 1 if nb_.any() else 0):
+        sel = nb_ & (span >= d)
+        body[gx[sel], gz[sel], b0[sel] + d] = True
+    near = np.zeros_like(body)
+    for dx in (-1, 0, 1):
+        for dz in (-1, 0, 1):
+            near |= np.roll(np.roll(body, dx, 0), dz, 1)
+    yc = np.clip(((C[:, 1] - lo[1]) / hy).astype(np.int64), 0, NY - 1)
+    free = ~near[gx, gz, yc]
+    sliver &= free
+    key = np.floor(C[:, [0, 2]] / (CELL * S)).astype(np.int64)
+    k = key[:, 0] * 1000003 + key[:, 1]
+    m = np.zeros(len(T), bool)
+    idx = np.where(sliver)[0]
+    if len(idx) == 0:
+        return m
+    order = idx[np.lexsort((y0[idx], k[idx]))]
+    ks = k[order]
+    starts = np.r_[0, np.where(np.diff(ks) != 0)[0] + 1, len(ks)]
+    tol, need = CHAIN_GAP * S, CHAIN * S
+    for a, b in zip(starts[:-1], starts[1:]):
+        tri = order[a:b]
+        lo_, hi_ = y0[tri], y1[tri]
+        cur0, cur1, members = lo_[0], hi_[0], [tri[0]]
+        for t, s0, e0 in zip(tri[1:], lo_[1:], hi_[1:]):
+            if s0 <= cur1 + tol:
+                cur1 = max(cur1, e0)
+                members.append(t)
+            else:
+                if cur1 - cur0 >= need:
+                    m[members] = True
+                cur0, cur1, members = s0, e0, [t]
+        if cur1 - cur0 >= need:
+            m[members] = True
+    return m
+
+
+def thread_mask(T):
+    """The generator threads of a model (both rules), as a mask over its triangles."""
+    P = T.reshape(-1, 3)
+    S = float((P.max(0) - P.min(0)).max())
+    return isolated_columns(T, S) | sliver_chains(T, S)
+
+
 def measure(path):
-    """Rotation into the craft frame (nose +Z, up +Y), half-extents and centre in it, and the needle count."""
+    """Rotation into the craft frame (nose +Z, up +Y), half-extents and centre in it, and the share of the surface
+    in generator threads (%)."""
     T = load_triangles(path)
     e1, e2 = T[:, 1] - T[:, 0], T[:, 2] - T[:, 0]
     area = 0.5 * np.linalg.norm(np.cross(e1, e2), axis=1)
-    edges = np.stack([np.linalg.norm(T[:, 1] - T[:, 0], axis=1), np.linalg.norm(T[:, 2] - T[:, 1], axis=1),
-                      np.linalg.norm(T[:, 0] - T[:, 2], axis=1)], 1)
-    L = edges.max(1)
-    size = np.percentile(np.abs(T.reshape(-1, 3) - np.median(T.reshape(-1, 3), 0)), 99, axis=0).max()
-    needle = (area < 0.004 * L * L) & (L > 0.12 * size)
-    keep = ~needle & (area > 0)
+    thread = thread_mask(T)
+    keep = ~thread & (area > 0)
     # Surface samples: each triangle's centroid and its corners, weighted by area.
     C = np.concatenate([T[keep].mean(1), T[keep][:, 0], T[keep][:, 1], T[keep][:, 2]])
     W = np.concatenate([area[keep]] * 4)
@@ -137,17 +261,53 @@ def measure(path):
         ww = W[mask] / max(W[mask].sum(), 1e-12)
         return float(np.sqrt((ww * (q[:, 0] ** 2 + (q[:, 1] - (ww * q[:, 1]).sum()) ** 2)).sum()))
 
+    def wpct(x, q):
+        # area-weighted percentile: thousands of tiny thread triangles left in a model count by their area
+        o = np.argsort(x)
+        cw = np.cumsum(W[o])
+        return float(np.interp(q / 100.0, cw / cw[-1], x[o]))
+
+    # The main axis of the spread is not always the long one: side pods carry much surface and pull it across
+    # (AsteroidTugboat flew sideways).  Where the extent across is clearly the larger, the hull turns a quarter.
+    if not fixed:
+        ex_ = wpct(Q[:, 0], 99.5) - wpct(Q[:, 0], 0.5)
+        ez_ = wpct(Q[:, 2], 99.5) - wpct(Q[:, 2], 0.5)
+        if ex_ > 1.08 * ez_:
+            theta += np.pi / 2
+            R = rot_y(-theta)
+            Q = (C - mu) @ R.T
+            z = Q[:, 2]
+            lo, hi = np.percentile(z, 8), np.percentile(z, 92)
     sign = 1.0 if (fixed or spread(z > hi) <= spread(z < lo)) else -1.0
     if name in NOSE:
         sign *= NOSE[name][0]
     if sign < 0:
         R = rot_y(np.pi) @ R
     Q = (C - mu) @ R.T
-    plo = np.array([np.percentile(Q[:, k], 0.5) for k in range(3)])
-    phi = np.array([np.percentile(Q[:, k], 99.5) for k in range(3)])
+    plo = np.array([wpct(Q[:, k], 0.5) for k in range(3)])
+    phi = np.array([wpct(Q[:, k], 99.5) for k in range(3)])
+    share = float(100.0 * area[thread].sum() / area.sum())
+    if share >= 1.0:
+        # The hull's own height, for a model with threads: what the rules miss of a dense curtain still hangs above
+        # or below it, sparse -- in 40 layers, the layers whose footprint (occupied 0.012 cells) is at least an
+        # eighth of the fullest, walked outward from the fullest until two in a row fall short.  ShipFlyby cuts at it.
+        Cq = (T[keep].mean(1) - mu) @ R.T
+        yl, yh = Cq[:, 1].min(), Cq[:, 1].max()
+        edges = np.linspace(yl, yh, 41)
+        cov = np.zeros(40)
+        for i in range(40):
+            sel = (Cq[:, 1] >= edges[i]) & (Cq[:, 1] < edges[i + 1] + (1e-9 if i == 39 else 0.0))
+            cov[i] = len(np.unique(np.floor(Cq[sel][:, [0, 2]] / 0.012).astype(np.int64), axis=0))
+        ok = cov >= cov.max() / 8.0
+        top = bot = int(np.argmax(cov))
+        while top + 1 < 40 and (ok[top + 1] or (top + 2 < 40 and ok[top + 2])):
+            top += 1
+        while bot > 0 and (ok[bot - 1] or (bot - 2 >= 0 and ok[bot - 2])):
+            bot -= 1
+        plo[1], phi[1] = max(plo[1], edges[bot]), min(phi[1], edges[top + 1])
     ext = 0.5 * (phi - plo)
     cen = R @ mu + 0.5 * (phi + plo)  # the centre in the rotated frame
-    return R, ext, cen, int(needle.sum()), float(np.degrees(theta))
+    return R, ext, cen, share, float(np.degrees(theta))
 
 
 def ship_models():
@@ -184,7 +344,7 @@ def views(rows, out):
                 dr.polygon(pts, fill=(200, 190, 170), outline=(120, 115, 105))
             tile.paste(img, (4 + i * 224, 4))
             ImageDraw.Draw(tile).text((8 + i * 224, 6), lab, fill=(150, 200, 255))
-        ImageDraw.Draw(tile).text((6, 230), "%s  yaw %.0f  needles %d" % (name, th, nd), fill=(255, 255, 160))
+        ImageDraw.Draw(tile).text((6, 230), "%s  yaw %.0f  threads %.1f %%" % (name, th, nd), fill=(255, 255, 160))
         tiles.append(tile)
     for k in range(0, len(tiles), 12):
         part = tiles[k:k + 12]
@@ -196,7 +356,7 @@ def views(rows, out):
 
 def main():
     rows = []
-    lines = ["# model\tr00\tr01\tr02\tr10\tr11\tr12\tr20\tr21\tr22\tex\tey\tez\tcx\tcy\tcz\tneedles"]
+    lines = ["# model\tr00\tr01\tr02\tr10\tr11\tr12\tr20\tr21\tr22\tex\tey\tez\tcx\tcy\tcz\tthreads"]
     for name in ship_models():
         path = os.path.join(ROOT, "Models", name)
         if not os.path.exists(path):
@@ -205,8 +365,8 @@ def main():
         R, ext, cen, nd, th = measure(path)
         rows.append((name, R, ext, cen, nd, th))
         lines.append("\t".join([name] + ["%.6f" % x for x in R.ravel()] + ["%.5f" % x for x in ext]
-                               + ["%.5f" % x for x in cen] + [str(nd)]))
-        print("%-36s yaw %6.1f  ext %.2f %.2f %.2f  needles %d" % (name, th, *ext, nd))
+                               + ["%.5f" % x for x in cen] + ["%.2f" % nd]))
+        print("%-36s yaw %6.1f  ext %.2f %.2f %.2f  threads %5.2f %%" % (name, th, *ext, nd))
     io.open(os.path.join(ROOT, "Engine", "model_orient.tsv"), "w", encoding="utf-8", newline="\n").write(
         "\n".join(lines) + "\n")
     if "--views" in sys.argv:

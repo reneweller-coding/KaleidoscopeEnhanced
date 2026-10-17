@@ -335,7 +335,7 @@ void EffectShader::resetParameters()
                                              : static_cast<unsigned>( std::chrono::steady_clock::now()
                                                                           .time_since_epoch()
                                                                           .count() );
-        unsigned h = Salt ^ 2166136261u;
+        unsigned              h = Salt ^ 2166136261u;
         for ( const char *c = m_fragmentShaderFilename.c_str(); *c; ++c )
             h = ( h ^ static_cast<unsigned>( static_cast<unsigned char>( *c ) ) ) * 16777619u;
         h = ( h ^ m_activations ) * 16777619u;
@@ -454,7 +454,7 @@ void EffectShader::setUniforms( double programTime, float interpolation, GLint t
     if ( m_clockT0 < -1.0e299 )
         m_clockT0 = programTime;
     const float time = ( M_FreezeTime >= 0.f ) ? static_cast<float>( programTime )
-                                                : static_cast<float>( programTime - m_clockT0 ) + m_clockBaseT;
+                                               : static_cast<float>( programTime - m_clockT0 ) + m_clockBaseT;
     m_exprTime = time;                      // formula layer reads this frame's time
     glUniform1i( m_texPointUni1, texLoc1 ); // combine unit 0, not to be confused with texId
     glUniform1i( m_texPointUni2, texLoc2 ); // combine unit 0, not to be confused with texId
@@ -1376,6 +1376,26 @@ void EffectShader::setClimaxIn( float secs )
     if ( p0 >= 0.93f )
         return; // already there; nothing to bend
     const float span = secs / ( 0.95f - p0 );
+    m_progressT0 = m_exprTime - p0 * span;
+    m_soloAtReset = span;
+}
+
+void EffectShader::setStayIn( float secs )
+{
+    // The same continuous bend as setClimaxIn(), to 1 at the end of the solo the scheduler actually gives (17.10.2026).
+    // The ramp ran over the solo time rolled from the config, but the stay is that divided by the music's timing scale
+    // (up to 2.6) and times the taste (0.7 .. 1.5): ShipFlyby's pass was cut off at 40 % of the way, or the ship had
+    // left long before the scene did.
+    // A review bench with a fixed span per scene (KALEIDO_SOLO_SECS) keeps that span: the bench switches the scenes,
+    // not the scheduler's solo.
+    if ( soloCap() > 0.01f )
+        return;
+    if ( m_progressT0 < -0.9e9f || m_soloAtReset <= 0.01f || secs < 1.f )
+        return;
+    const float p0 = m_sceneProgress;
+    if ( p0 >= 0.98f )
+        return;
+    const float span = secs / ( 1.f - p0 );
     m_progressT0 = m_exprTime - p0 * span;
     m_soloAtReset = span;
 }

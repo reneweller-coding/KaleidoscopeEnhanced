@@ -132,7 +132,7 @@
     <float name="sizeP" minValue="1.0" maxValue="1.0"></float>
     <float name="spinP" minValue="0.8" maxValue="0.8"></float>
     <float name="windowP" minValue="0.8" maxValue="0.8"></float>
-    <float name="spinAxisP" minValue="1" maxValue="1"></float>
+    <float name="spinAxisP" minValue="2" maxValue="2"></float>
     <expr name="hueP" formula="chromaHue + seed2*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>

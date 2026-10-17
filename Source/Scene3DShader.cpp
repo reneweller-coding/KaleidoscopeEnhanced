@@ -55,9 +55,10 @@
  **/
 struct ModelOrient
 {
-    float rot[9]; ///< The rotation into the craft frame, row-major.
-    float ext[3]; ///< Half-extents in the craft frame.
-    float cen[3]; ///< Centre in the craft frame.
+    float rot[9];  ///< The rotation into the craft frame, row-major.
+    float ext[3];  ///< Half-extents in the craft frame.
+    float cen[3];  ///< Centre in the craft frame.
+    float threads; ///< Share of the surface in generator threads, % (removeThreads() from 1 % on).
 };
 
 /**  Looks a model up in Engine/model_orient.tsv (read once, on first use).
@@ -89,6 +90,7 @@ static const ModelOrient *findModelOrient( const std::string &modelPath )
                 ss >> x;
             for ( float &x : o.cen )
                 ss >> x;
+            ss >> o.threads;
             if ( ss )
                 table[name] = o;
         }
@@ -96,6 +98,199 @@ static const ModelOrient *findModelOrient( const std::string &modelPath )
     const size_t cut = modelPath.find_last_of( "\\/" );
     const auto   it = table.find( cut == std::string::npos ? modelPath : modelPath.substr( cut + 1 ) );
     return ( it == table.end() ) ? nullptr : &it->second;
+}
+
+/**  Removes a generated model's threads: hair-thin vertical strings of tiny triangles that hang from the hull to the
+ * model's full height and read as black rain on screen (17.10.2026).  The same two rules as Tools/model_orient.py's
+ * thread_mask, all lengths as fractions of the model's longest side S:
+ *
+ *   1. thin geometry (narrower than 0.008 S) in a column (0.006 S wide) whose eight neighbour columns are at most once
+ *      occupied at that height, over a run of 0.05 S -- a thread standing free; a hull wall always has neighbours;
+ *   2. slivers (narrower than 0.006 S, 2.5 times taller than wide) with no other geometry in their column or next to
+ *      it at their height, chained up the column over 0.06 S -- a thread inside a dense curtain of threads.
+ *
+ * Called only for a model the table lists with a thread share of 1 % or more; a clean model keeps every triangle.
+ *
+ * @param v      The vertex buffer, 8 floats a vertex, three vertices a triangle. (in,out)
+ * @param first  The model's first vertex; everything after it is the model. (in)
+ *
+ * @return
+ *   The number of triangles removed.
+ **/
+static size_t removeThreads( std::vector<float> &v, size_t first )
+{
+    const size_t nt = ( v.size() / 8 - first ) / 3;
+    if ( nt == 0 )
+        return 0;
+    auto at = [&]( size_t t, int k, int c )
+    { return v[( first + t * 3 + static_cast<size_t>( k ) ) * 8 + c]; };
+    float lo[3] = { 1e30f, 1e30f, 1e30f }, hi[3] = { -1e30f, -1e30f, -1e30f };
+    for ( size_t t = 0; t < nt; ++t )
+        for ( int k = 0; k < 3; ++k )
+            for ( int c = 0; c < 3; ++c )
+            {
+                lo[c] = std::min( lo[c], at( t, k, c ) );
+                hi[c] = std::max( hi[c], at( t, k, c ) );
+            }
+    const float S = std::max( { hi[0] - lo[0], hi[1] - lo[1], hi[2] - lo[2] } );
+    if ( S <= 0.f )
+        return 0;
+    const int   Ny = 100;
+    const float cell = 0.006f * S, hy = std::max( hi[1] - lo[1], 1e-6f ) / static_cast<float>( Ny );
+    const int   nx = static_cast<int>( ( hi[0] - lo[0] ) / cell ) + 5;
+    const int   nz = static_cast<int>( ( hi[2] - lo[2] ) / cell ) + 5;
+    auto        bin = [&]( float y )
+    { return std::clamp( static_cast<int>( ( y - lo[1] ) / hy ), 0, Ny - 1 ); };
+    auto idx = [&]( int x, int z, int y )
+    { return ( static_cast<size_t>( x ) * static_cast<size_t>( nz ) + static_cast<size_t>( z ) ) * Ny + y; };
+
+    struct Tri
+    {
+        int   cx, cz, b0, b1, yc;
+        float y0, y1;
+        bool  thin, sliver;
+    };
+    std::vector<Tri> tri( nt );
+    for ( size_t t = 0; t < nt; ++t )
+    {
+        float mn[3] = { 1e30f, 1e30f, 1e30f }, mx[3] = { -1e30f, -1e30f, -1e30f }, c[3] = { 0.f, 0.f, 0.f };
+        for ( int k = 0; k < 3; ++k )
+            for ( int a = 0; a < 3; ++a )
+            {
+                const float x = at( t, k, a );
+                mn[a] = std::min( mn[a], x );
+                mx[a] = std::max( mx[a], x );
+                c[a] += x / 3.f;
+            }
+        const float hxz = std::hypot( mx[0] - mn[0], mx[2] - mn[2] );
+        Tri        &r = tri[t];
+        r.cx = static_cast<int>( ( c[0] - lo[0] ) / cell ) + 2;
+        r.cz = static_cast<int>( ( c[2] - lo[2] ) / cell ) + 2;
+        r.b0 = bin( mn[1] );
+        r.b1 = bin( mx[1] );
+        r.yc = bin( c[1] );
+        r.y0 = mn[1];
+        r.y1 = mx[1];
+        r.thin = hxz < 0.008f * S;
+        r.sliver = hxz < 0.006f * S && ( mx[1] - mn[1] ) > 2.5f * hxz;
+    }
+    const size_t         n = static_cast<size_t>( nx ) * static_cast<size_t>( nz ) * Ny;
+    std::vector<uint8_t> occ( n, 0 ), thin_occ( n, 0 ), body( n, 0 );
+    for ( const Tri &r : tri )
+        for ( int b = r.b0; b <= r.b1; ++b )
+        {
+            const size_t i = idx( r.cx, r.cz, b );
+            occ[i] = 1;
+            if ( r.thin )
+                thin_occ[i] = 1;
+            if ( !r.sliver )
+                body[i] = 1;
+        }
+    // Rule 1: isolated thin bins, in runs of 0.05 S up a column.
+    std::vector<uint8_t> thread_bin( n, 0 );
+    const int            need = std::max( 2, static_cast<int>( std::ceil( 0.05f * S / hy ) ) );
+    for ( int x = 1; x < nx - 1; ++x )
+        for ( int z = 1; z < nz - 1; ++z )
+        {
+            int run = 0;
+            for ( int y = 0; y <= Ny; ++y )
+            {
+                bool iso = false;
+                if ( y < Ny && thin_occ[idx( x, z, y )] )
+                {
+                    int nb = 0;
+                    for ( int dx = -1; dx <= 1; ++dx )
+                        for ( int dz = -1; dz <= 1; ++dz )
+                            if ( ( dx || dz ) && occ[idx( x + dx, z + dz, y )] )
+                                ++nb;
+                    iso = nb <= 1;
+                }
+                if ( iso )
+                    ++run;
+                else
+                {
+                    if ( run >= need )
+                        for ( int k = y - run; k < y; ++k )
+                            thread_bin[idx( x, z, k )] = 1;
+                    run = 0;
+                }
+            }
+        }
+    std::vector<uint8_t> drop( nt, 0 );
+    for ( size_t t = 0; t < nt; ++t )
+        drop[t] = tri[t].thin && thread_bin[idx( tri[t].cx, tri[t].cz, tri[t].yc )];
+
+    // Rule 2: slivers free of the body (none in their column or next to it at their height), chained up a column.
+    std::vector<size_t> free_slivers;
+    for ( size_t t = 0; t < nt; ++t )
+    {
+        const Tri &r = tri[t];
+        if ( !r.sliver )
+            continue;
+        bool by_body = false;
+        for ( int dx = -1; dx <= 1 && !by_body; ++dx )
+            for ( int dz = -1; dz <= 1 && !by_body; ++dz )
+                by_body = body[idx( r.cx + dx, r.cz + dz, r.yc )] != 0;
+        if ( !by_body )
+            free_slivers.push_back( t );
+    }
+    std::sort( free_slivers.begin(), free_slivers.end(), [&]( size_t a, size_t b )
+    {
+        const Tri &p = tri[a], &q = tri[b];
+        if ( p.cx != q.cx )
+            return p.cx < q.cx;
+        if ( p.cz != q.cz )
+            return p.cz < q.cz;
+        return p.y0 < q.y0;
+    } );
+    const float tol = 0.012f * S, chain = 0.06f * S;
+    for ( size_t a = 0; a < free_slivers.size(); )
+    {
+        size_t b = a;
+        while ( b < free_slivers.size() && tri[free_slivers[b]].cx == tri[free_slivers[a]].cx
+                && tri[free_slivers[b]].cz == tri[free_slivers[a]].cz )
+            ++b;
+        // one column: union of the height ranges, joined across gaps under tol
+        size_t s = a;
+        float  c0 = tri[free_slivers[a]].y0, c1 = tri[free_slivers[a]].y1;
+        for ( size_t i = a + 1; i <= b; ++i )
+        {
+            if ( i < b && tri[free_slivers[i]].y0 <= c1 + tol )
+            {
+                c1 = std::max( c1, tri[free_slivers[i]].y1 );
+                continue;
+            }
+            if ( c1 - c0 >= chain )
+                for ( size_t j = s; j < i; ++j )
+                    drop[free_slivers[j]] = 1;
+            if ( i < b )
+            {
+                s = i;
+                c0 = tri[free_slivers[i]].y0;
+                c1 = tri[free_slivers[i]].y1;
+            }
+        }
+        a = b;
+    }
+
+    // Compact the buffer.
+    size_t out = first, removed = 0;
+    for ( size_t ti = 0; ti < nt; ++ti )
+    {
+        if ( drop[ti] )
+        {
+            ++removed;
+            continue;
+        }
+        const size_t src = ( first + ti * 3 ) * 8;
+        if ( src != out * 8 )
+            std::copy( v.begin() + static_cast<std::ptrdiff_t>( src ),
+                       v.begin() + static_cast<std::ptrdiff_t>( src + 24 ),
+                       v.begin() + static_cast<std::ptrdiff_t>( out * 8 ) );
+        out += 3;
+    }
+    v.resize( out * 8 );
+    return removed;
 }
 
 /**  Deterministic integer hash producing a pseudo-random float in [0,1).
@@ -649,6 +844,12 @@ void Scene3DShader::buildGeometry()
         const bool warmed = ( ws == WARM_READY );
         load_into( m_modelPath, ( warmed && m_warmOk ) ? &m_warmAsset : nullptr,
                    m_meshMaterialTex, m_meshMaterialLayers );
+        if ( const ModelOrient *o = findModelOrient( m_modelPath ); o && o->threads >= 1.f )
+        {
+            const size_t gone = removeThreads( v, 0 );
+            fprintf( stderr, "Modell %s: %zu Faden-Dreiecke entfernt (%.1f %% der Flaeche)\n", m_modelPath.c_str(),
+                     gone, o->threads );
+        }
         m_meshOwnVertexCount = static_cast<int>( v.size() / 8 );
 
         // Measure the model's own bounding box, exposed as meshCenter/meshExtent.
@@ -684,6 +885,9 @@ void Scene3DShader::buildGeometry()
         if ( !m_modelPath2.empty() )
             load_into( m_modelPath2, ( warmed && m_warmOk2 ) ? &m_warmAsset2 : nullptr,
                        m_meshMaterialTex2, m_meshMaterialLayers2 );
+        if ( const ModelOrient *o = m_modelPath2.empty() ? nullptr : findModelOrient( m_modelPath2 );
+             o && o->threads >= 1.f )
+            removeThreads( v, static_cast<size_t>( m_meshOwnVertexCount ) );
         m_mesh2VertexCount = static_cast<int>( v.size() / 8 );
 
         // Consumed: release the prefetched CPU copies (tens of MB per model).
@@ -1627,7 +1831,7 @@ void Scene3DShader::draw()
  * @param rot       Receives the rotation, row-major. (out)
  * @param ext       Receives the half-extents in the craft frame. (out)
  * @param cen       Receives the centre in the craft frame. (out)
- * @param oriented  Receives 1 if the table lists the model, else 0. (out)
+ * @param oriented  Receives 1 if the table lists the model (2 if it has generator threads), else 0. (out)
  **/
 void Scene3DShader::setOrient( const std::string &path, const float rawExt[3], const float rawCen[3], float rot[9],
                                float ext[3], float cen[3], float &oriented )
@@ -1640,5 +1844,7 @@ void Scene3DShader::setOrient( const std::string &path, const float rawExt[3], c
         ext[c] = o ? o->ext[c] : rawExt[c];
         cen[c] = o ? o->cen[c] : rawCen[c];
     }
-    oriented = o ? 1.f : 0.f;
+    // 2 for a model with generator threads: removeThreads() takes the free ones out, and a shader may cut what is
+    // left beyond the hull's height (ShipFlyby does).
+    oriented = o ? ( o->threads >= 1.f ? 2.f : 1.f ) : 0.f;
 }

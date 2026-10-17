@@ -369,7 +369,7 @@
     <float name="sizeP" minValue="1.0" maxValue="1.0"></float>
     <float name="spinP" minValue="0.8" maxValue="0.8"></float>
     <float name="windowP" minValue="0.8" maxValue="0.8"></float>
-    <float name="spinAxisP" minValue="1" maxValue="1"></float>
+    <float name="spinAxisP" minValue="2" maxValue="2"></float>
     <expr name="hueP" formula="chromaHue + seed2*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
@@ -6477,6 +6477,7 @@
     <float name="sizeP" minValue="1.0" maxValue="1.0"></float>
     <float name="shipScaleP" minValue="0.26" maxValue="0.26"></float>
     <float name="spinP" minValue="0.9" maxValue="0.9"></float>
+    <float name="spinAxisP" minValue="2" maxValue="2"></float>
     <float name="tintP" minValue="4.00" maxValue="4.00"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
@@ -6495,6 +6496,7 @@
     <float name="sizeP" minValue="1.0" maxValue="1.0"></float>
     <float name="shipScaleP" minValue="0.22" maxValue="0.22"></float>
     <float name="spinP" minValue="1.1" maxValue="1.1"></float>
+    <float name="spinAxisP" minValue="1" maxValue="1"></float>
     <float name="tintP" minValue="5.30" maxValue="5.30"></float>
     <expr name="hueP" formula="chromaHue + seed3*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
@@ -6797,6 +6799,7 @@
     <float name="sizeP" minValue="1.0" maxValue="1.0"></float>
     <float name="shipScaleP" minValue="0.24" maxValue="0.24"></float>
     <float name="spinP" minValue="1.0" maxValue="1.0"></float>
+    <float name="spinAxisP" minValue="2" maxValue="2"></float>
     <float name="tintP" minValue="1.90" maxValue="1.90"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
@@ -6806,6 +6809,7 @@
     <float name="sizeP" minValue="1.0" maxValue="1.0"></float>
     <float name="shipScaleP" minValue="0.20" maxValue="0.20"></float>
     <float name="spinP" minValue="0.6" maxValue="0.6"></float>
+    <float name="spinAxisP" minValue="1" maxValue="1"></float>
     <float name="tintP" minValue="4.10" maxValue="4.10"></float>
     <expr name="hueP" formula="chromaHue + seed2*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
@@ -6841,7 +6845,7 @@
     <rig preset="mesh-18-yaw3"/>
     <float name="sizeP" minValue="1.0" maxValue="1.0"></float>
     <float name="shipScaleP" minValue="0.24" maxValue="0.24"></float>
-    <float name="spinP" minValue="0.8" maxValue="0.8"></float>
+    <float name="spinP" minValue="0" maxValue="0"></float>
     <float name="tintP" minValue="3.45" maxValue="3.45"></float>
     <expr name="hueP" formula="chromaHue + seed3*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>

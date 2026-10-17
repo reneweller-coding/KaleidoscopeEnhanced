@@ -19,10 +19,13 @@ in vec4 attrA; ///< mesh: xyz = object-space position, w = U.  shell: xyz = worl
 in vec4 attrB; ///< mesh: xyz = object-space normal,   w = V.  shell: xyz = outward direction (reused as "sky
                ///< direction").
 
-uniform mat4  projM;           ///< Projection matrix.
-uniform float eyeOff;          ///< Stereo eye offset (0 in mono).
-uniform float time;            ///< Seconds since this activation, plus a rolled start (see sceneTime).
-uniform int   meshVertexCount; ///< Vertices of the scene's mesh.
+uniform mat4  projM;            ///< Projection matrix.
+uniform float eyeOff;           ///< Stereo eye offset (0 in mono).
+uniform float time;             ///< Seconds since this activation, plus a rolled start (see sceneTime).
+uniform int   meshVertexCount;  ///< Vertices of the scene's mesh.
+uniform mat3  meshOrient;       ///< Rotation into the craft frame (nose +Z, up +Y), Engine/model_orient.tsv.
+uniform vec3  meshOrientExtent; ///< Half-extents in the craft frame.
+uniform vec3  meshOrientCenter; ///< Centre in the craft frame.
 
 uniform float audioAdvance; ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
                             ///< backwards).
@@ -32,39 +35,34 @@ out vec2  vUV;     ///< Texture coordinate 0..1 over the screen (from the vertex
 out vec3  vNormal; ///< Surface normal (from the vertex stage).
 out vec3  vPos;    ///< Position (from the vertex stage).
 out float vBg;     ///< Background flag (from the vertex stage).
+out vec3  vLight;  ///< Direction to the star in view space (it stays put in the world as the camera orbits).
 
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec3 world, n;
     bool is_bg = gl_VertexID >= meshVertexCount;
+
+    // The CAMERA orbits the ship, slowly, at a gently changing elevation (17.10.2026).  The ship itself turned like a
+    // model on a turntable -- a full turn every 14 s against a fixed sky -- which a warship holding station never
+    // does.  Now the ship, the sky and the light keep their places in the world and only the view goes round: the
+    // same rotation turns the ship and, inverted, the sky directions (at infinity, so its centre does not matter).
+    // Time alone (audioAdvance jerks on kicks); a full orbit takes about a minute.
+    float orbit = 0.7 + time * 0.10;
+    float elev = 0.20 + 0.08 * sin( time * 0.05 );
+    float co = cos( orbit ), so = sin( orbit ), ce = cos( elev ), se = sin( elev );
+    mat3  orbit_m = mat3( co, 0.0, -so, 0.0, 1.0, 0.0, so, 0.0, co );
+    mat3  elev_m = mat3( 1.0, 0.0, 0.0, 0.0, ce, se, 0.0, -se, ce );
+    mat3  rot_mat = elev_m * orbit_m;
+
     if ( !is_bg )
     {
-        // The generator's "game" export is NORMALIZED to roughly a unit
-        // bounding box (measured directly: ~1.0 on its longest axis),
-        // regardless of the "size_meters" the ship was conceptually
-        // designed at -- that number never gets baked into these vertex
-        // coordinates. Scale up to a size that reads clearly against this
-        // scene's ~90-unit camera distance.
-        const float ModelScale = 35.0;
-        vec3        local = attrA.xyz * ModelScale;
-
-        // Slow tumble + yaw so a single static asset still reads as alive;
-        // audio only adds a small kick-driven bob -- this is one hero
-        // object, not a crowd, so a big audio-synced jump would just look
-        // like the model glitching rather than the scene reacting to the
-        // music.
-        // Rotation on TIME alone. audioAdvance integrates a beat-driven rate,
-        // so anything it turns visibly speeds up on every kick -- measured as
-        // residual beat-periodic motion (autocorr 0.46 @ 1s) after every other
-        // coupling was removed. The summed coefficient keeps the average pace.
-        float rot_y = time * 0.45;
-        float rot_x = sin( time * 0.07 ) * 0.2;
-        float cy = cos( rot_y ), sy = sin( rot_y );
-        float cx = cos( rot_x ), sx = sin( rot_x );
-        mat3  rot_y_mat = mat3( cy, 0.0, -sy, 0.0, 1.0, 0.0, sy, 0.0, cy );
-        mat3  rot_x_mat = mat3( 1.0, 0.0, 0.0, 0.0, cx, sx, 0.0, -sx, cx );
-        mat3  rot_mat = rot_y_mat * rot_x_mat;
+        // The craft in its own frame (Engine/model_orient.tsv): nose +Z, up +Y, centred, one unit long.
+        vec3  e = meshOrientExtent;
+        float fit = 1.0 / max( max( e.x, e.y ), e.z ) * 0.5;
+        vec3  q = ( meshOrient * attrA.xyz - meshOrientCenter ) * fit;
+        // 70 units long at 90 units: about two fifths of the frame width.
+        vec3 local = q * 70.0;
 
         world = rot_mat * local;
         world.z += 90.0; // push out in front of the camera
@@ -72,15 +70,18 @@ void main()
         // in time reads as a glitch, not as reactivity (reported) -- the beat
         // belongs to the engine glow and the background, not the ship's mass.
         world.y += 4.0 * sin( time * 0.2 );
-        n = normalize( rot_mat * attrB.xyz );
+        n = normalize( rot_mat * ( meshOrient * attrB.xyz ) );
         vUV = vec2( attrA.w, attrB.w );
+        vPos = world;
     }
     else
     {
         world = attrA.xyz;
         n = attrB.xyz;
         vUV = vec2( 0.0 );
+        vPos = transpose( rot_mat ) * world; // the sky's own direction for this view direction
     }
+    vLight = rot_mat * normalize( vec3( 0.4, 0.6, -0.5 ) ); // the star, fixed in the world
 
     vec3 vp = world;
     vp.x -= eyeOff;
@@ -95,6 +96,5 @@ void main()
         gl_Position.z = gl_Position.w * 0.999999;
 
     vNormal = n;
-    vPos = world;
     vBg = is_bg ? 1.0 : 0.0;
 }

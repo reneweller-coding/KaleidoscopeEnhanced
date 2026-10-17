@@ -36,9 +36,11 @@ uniform float audioAdvance;  ///< The music's advance: integrated tempo-weighted
 uniform float audioKick;     ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 uniform float audioSwell;    ///< Slow loudness envelope, 0..1 (seconds).
 
-uniform float hueP;    ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
-uniform float bgTypeP; ///< Bg type knob: 0 = nebula, 1 = backlit star, 0..1.
-uniform float tintP;   ///< Tint knob, 0..1.
+uniform float hueP;             ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float bgTypeP;          ///< Bg type knob: 0 = nebula, 1 = backlit star, 0..1.
+uniform float tintP;            ///< Tint knob, 0..1.
+uniform vec3  meshOrientExtent; ///< Half-extents of the hull in its craft frame (Engine/model_orient.tsv).
+uniform float meshOriented;     ///< 2 for a model with generator threads.
 
 in vec2  vUV;       ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 in vec3  vNormal;   ///< Surface normal (from the vertex stage).
@@ -250,6 +252,15 @@ vec3 perturbNormal( sampler2DArray tex, int layers, vec2 uv, vec3 n, vec3 wpos, 
 void main()
 {
     vec3 tint = hsv2rgb( vec3( tintP / 6.2831853, ( bgTypeP < 0.5 ? 0.55 : 0.28 ), 1.0 ) );
+
+    // What the loader left of a model's generator threads, above or below the hull's height: cut (17.10.2026).
+    if ( vBg < 0.5 && meshOriented > 1.5 )
+    {
+        vec3  e = meshOrientExtent;
+        float fit = 0.5 / max( max( e.x, e.y ), e.z );
+        if ( abs( vLocalPos.y ) > e.y * fit * 1.05 + 0.005 )
+            discard;
+    }
 
     if ( vBg > 0.5 )
     {

@@ -602,7 +602,7 @@ private:
     float m_orient[9] = { 1.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f, 1.f };
     float m_orientExt[3] = { 0.5f, 0.5f, 0.5f }; ///< Model 1's half-extents in its craft frame (`meshOrientExtent`).
     float m_orientCen[3] = { 0.f, 0.f, 0.f };    ///< Model 1's centre in its craft frame (`meshOrientCenter`).
-    float m_oriented = 0.f;                      ///< 1 if the table lists model 1 (`meshOriented`).
+    float m_oriented = 0.f;                      ///< 1 if the table lists model 1, 2 with threads (`meshOriented`).
     float m_orient2[9] = { 1.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f, 1.f }; ///< The same for model 2 (`meshOrient2`).
     float m_orientExt2[3] = { 0.5f, 0.5f, 0.5f }; ///< Model 2's half-extents in its craft frame (`meshOrientExtent2`).
     float m_orientCen2[3] = { 0.f, 0.f, 0.f };    ///< Model 2's centre in its craft frame (`meshOrientCenter2`).
@@ -623,7 +623,7 @@ private:
      * @param rot       Receives the rotation, row-major. (out)
      * @param ext       Receives the half-extents in the craft frame. (out)
      * @param cen       Receives the centre in the craft frame. (out)
-     * @param oriented  Receives 1 if the table lists the model, else 0. (out)
+     * @param oriented  Receives 1 if the table lists the model (2 if it has generator threads), else 0. (out)
      **/
     static void setOrient( const std::string &path, const float rawExt[3], const float rawCen[3], float rot[9],
                            float ext[3], float cen[3], float &oriented );

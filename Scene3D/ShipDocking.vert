@@ -31,14 +31,17 @@ in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage
                ///< index).
 in vec4 attrB; ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
 
-uniform mat4  projM;            ///< Projection matrix.
-uniform float eyeOff;           ///< Stereo eye offset (0 in mono).
-uniform float time;             ///< Seconds since this activation, plus a rolled start (see sceneTime).
-uniform int   meshVertexCount;  ///< Vertices of the scene's mesh.
-uniform vec3  meshExtent;       ///< half-extents of model 1 (the station)
-uniform vec3  meshExtent2;      ///< half-extents of model 2 (the ship)
-uniform int   mesh2VertexCount; ///< Vertices of the scene's second mesh.
-uniform float sceneProgress;    ///< Progress through this scene's solo time, 0..1.
+uniform mat4  projM;             ///< Projection matrix.
+uniform float eyeOff;            ///< Stereo eye offset (0 in mono).
+uniform float time;              ///< Seconds since this activation, plus a rolled start (see sceneTime).
+uniform int   meshVertexCount;   ///< Vertices of the scene's mesh.
+uniform vec3  meshExtent;        ///< half-extents of model 1 (the station)
+uniform vec3  meshExtent2;       ///< half-extents of model 2 (the ship)
+uniform mat3  meshOrient2;       ///< Rotation of model 2 into its craft frame (nose +Z, up +Y).
+uniform vec3  meshOrientExtent2; ///< Half-extents of model 2 in its craft frame.
+uniform vec3  meshOrientCenter2; ///< Centre of model 2 in its craft frame.
+uniform int   mesh2VertexCount;  ///< Vertices of the scene's second mesh.
+uniform float sceneProgress;     ///< Progress through this scene's solo time, 0..1.
 
 uniform float audioAdvance; ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
                             ///< backwards).
@@ -47,6 +50,7 @@ uniform float audioKick;    ///< Kick-drum envelope, 0..1 (fast attack, short de
 uniform float sizeP;      ///< station scale
 uniform float shipScaleP; ///< ship size AS A FRACTION of the station
 uniform float spinP;      ///< station spin (0 for a non-rotating hull)
+uniform float spinAxisP;  ///< The station's own axis it spins about: 0 = X, 1 = Y, 2 = Z (see axisSpin()).
 
 out vec2  vUV;       ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 out vec3  vNormal;   ///< Surface normal (from the vertex stage).
@@ -55,6 +59,28 @@ out vec3  vLocalPos; ///< Object-space position (from the vertex stage).
 out float vBg;       ///< Background flag (from the vertex stage).
 out float vShip;     ///< 1 on the ship, 0 on the station -- the frag stage lights them differently
 out float vApproach; ///< 0 far out, 1 docked; drives thruster and floodlight intensity
+
+/**  Rotation about one of the model's own object-space axes.
+ *
+ * @param axis  The axis: 0 = x, 1 = y, 2 = z. (in)
+ * @param ang   The angle in radians. (in)
+ *
+ * @return
+ *   The rotation matrix.
+ *
+ * spinAxisP is set per station to the axis its hull is rotationally symmetric about (17.10.2026): every docking
+ * station spun about its object Z, which for the cylinder of TradePromenadeStation and the ring of
+ * MegastructureCentralHub (both round about Y) turned the station end over end.
+ **/
+mat3 axisSpin( float axis, float ang )
+{
+    float c = cos( ang ), s = sin( ang );
+    if ( axis < 0.5 )
+        return mat3( 1.0, 0.0, 0.0, 0.0, c, s, 0.0, -s, c );
+    if ( axis < 1.5 )
+        return mat3( c, 0.0, -s, 0.0, 1.0, 0.0, s, 0.0, c );
+    return mat3( c, s, 0.0, -s, c, 0.0, 0.0, 0.0, 1.0 );
+}
 
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()
@@ -89,9 +115,7 @@ void main()
         // so anything it turns visibly speeds up on every kick -- measured as
         // residual beat-periodic motion (autocorr 0.46 @ 1s) after every other
         // coupling was removed. The summed coefficient keeps the average pace.
-        float       rot = time * 0.11 * sp;
-        float       cr = cos( rot ), sr = sin( rot );
-        mat3        spin_m = mat3( cr, sr, 0.0, -sr, cr, 0.0, 0.0, 0.0, 1.0 );
+        mat3        spin_m = axisSpin( spinAxisP, time * 0.11 * sp );
         const float tilt_x = 0.35;
         float       cx = cos( tilt_x ), sx = sin( tilt_x );
         mat3        tilt_m = mat3( 1.0, 0.0, 0.0, 0.0, cx, sx, 0.0, -sx, cx );
@@ -107,32 +131,15 @@ void main()
     else if ( is_ship )
     {
         float shs = ( shipScaleP > 0.001 ? shipScaleP : 0.26 );
-        // Put the hull's LONGEST axis along the direction of travel. This used
-        // to be hardcoded as "the nose is +Z", which was true of the asset set
-        // it was written against and false for the one that replaced it: three
-        // of the ships now measure longest on X and would have flown sideways.
-        // meshExtent is the model that ACTUALLY loaded, so the choice is made
-        // from the geometry rather than from an assumption about it.
-        //
-        // Both branches are rotations, not axis swaps: exchanging two axes
-        // mirrors the hull, which turns every asymmetric detail inside out and
-        // reverses the winding.
-        // model2's box: this branch orients the SHIP, and model1 here is the
-        // station it is approaching.
-        vec3 e = meshExtent2;
-        vec3 p = attrA.xyz, nrm = attrB.xyz;
-        if ( e.z >= e.x && e.z >= e.y ) // nose on +Z: rotate about Y
-        {
-            p = vec3( p.z, p.y, -p.x );
-            nrm = vec3( nrm.z, nrm.y, -nrm.x );
-        }
-        else if ( e.y >= e.x && e.y >= e.z ) // nose on +Y: rotate about Z
-        {
-            p = vec3( p.y, -p.x, p.z );
-            nrm = vec3( nrm.y, -nrm.x, nrm.z );
-        }
-        // longest already on X: already pointing along travel, leave it alone.
-        vec3 local = p * ( 90.0 * sz * shs );
+        // The ship in its own frame (Engine/model_orient.tsv, model2): nose +Z, up +Y, centred, one unit long, then a
+        // quarter turn about Y puts the nose on +X (17.10.2026).  The longest box axis had been taken for the
+        // direction of travel, with whichever sign the file happened to have.
+        vec3  e = meshOrientExtent2;
+        float fit = 0.5 / max( max( e.x, e.y ), e.z );
+        vec3  q = ( meshOrient2 * attrA.xyz - meshOrientCenter2 ) * fit;
+        vec3  qn = meshOrient2 * attrB.xyz;
+        vec3  p = vec3( q.z, q.y, -q.x ), nrm = vec3( qn.z, qn.y, -qn.x );
+        vec3  local = p * ( 90.0 * sz * shs );
 
         // Approach path: in from the lower left and further out, curving up
         // to the station's dock side. Kept as a straight-ish lerp with an
@@ -155,14 +162,18 @@ void main()
         world = mix( start, dock, ease );
         world.y += 9.0 * sin( ease * 3.14159 ) * ( 1.0 - ease * 0.5 ); // arc over
 
-        // Yaw to face travel, flattening out as it arrives.
-        float yaw = -0.5 * ( 1.0 - ease );
-        float cy = cos( yaw ), sy = sin( yaw );
+        // Nose along the approach -- right, up and TOWARD the camera, (112, 52, -72) -- levelling out and turning
+        // parallel to the station's face as it arrives.  The yaw had the wrong sign: the nose pointed away from the
+        // camera while the ship came toward it, and the ship backed into the dock.
+        float yaw = 0.57 * ( 1.0 - 0.7 * ease );
+        float pit = 0.30 * ( 1.0 - ease );
+        float cy = cos( yaw ), sy = sin( yaw ), cpi = cos( pit ), spi = sin( pit );
         mat3  yaw_m = mat3( cy, 0.0, -sy, 0.0, 1.0, 0.0, sy, 0.0, cy );
-        world += yaw_m * local;
-        n = normalize( yaw_m * nrm );
+        mat3  pit_m = mat3( cpi, spi, 0.0, -spi, cpi, 0.0, 0.0, 0.0, 1.0 );
+        world += yaw_m * pit_m * local;
+        n = normalize( yaw_m * pit_m * nrm );
         vUV = vec2( attrA.w, attrB.w );
-        vLocalPos = p;
+        vLocalPos = q; // the craft frame (nose +Z): the frag finds the engines at its -Z end
     }
     else
     {

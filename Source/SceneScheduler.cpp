@@ -1202,6 +1202,8 @@ void SceneScheduler::tick( const Tick &t )
             // lab: its stay is its share of the screen time.
             if ( !tex[m_actTexture]->walksWithMusic() )
                 m_texFadeDur *= std::clamp( std::sqrt( tasteOf( tex[m_actTexture]->fragmentName() ) ), 0.7f, 1.5f );
+            // The scene's sceneProgress ends with this solo, not with the solo rolled from its config.
+            tex[m_actTexture]->setStayIn( m_reviewMode ? std::min( m_texFadeDur, ReviewSoloSecs ) : m_texFadeDur );
 
             restart( m_clockEffectTexture );
         }

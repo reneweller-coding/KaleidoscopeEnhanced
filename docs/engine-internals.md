@@ -5552,3 +5552,26 @@ rotation phase what a long show gathers).
   aft-facing panel: seen from behind, the whole craft glowed), and the running light is a sheen, no longer a
   flat glowing silhouette. BelterMiningTug -- a seagoing tug whose rigging reads as rain in space -- gave its Fleet
   entry to JumpDriveTug; the three fleets of 30 and 36 craft have 48.
+- **Black rain.** The "needles" were more: many generated models carry hair-thin vertical threads -- strings of tiny
+  triangles hanging from the hull to the model's full height, up to a quarter of the surface (UnionDestroyer),
+  black lines on screen. `Tools/model_orient.py` finds them by two rules (thin geometry in a column with empty
+  neighbour columns over a run; slivers chained up a column free of the body), measures the craft without them
+  (area-weighted extents, and for a model with threads the hull's own height from the footprint per layer) and writes
+  the share into the table; the loader (`removeThreads`, the same rules) takes them out of nine models at load, and
+  ShipFlyby cuts what is left beyond the hull's height (`meshOriented` 2). A hull whose side pods pull the spread
+  across turns a quarter (AsteroidTugboat flew sideways).
+- **The pass covers the stay.** `sceneProgress` ran over the solo rolled from the config; the scheduler's stay is
+  that over the music's timing scale (up to 2.6) and times the taste (0.7 .. 1.5) -- ShipFlyby's pass was cut off
+  at 40 %, or the ship left long before the scene. `EffectShader::setStayIn()` bends the ramp at the start of each
+  solo to end with it (continuously, like setClimaxIn), for every staged scene -- the docking manoeuvres too. A review
+  bench with a fixed span keeps that span.
+- **ShipFlyby** is a straight run at constant speed and heading -- in from the distance on one side (the course 20
+  degrees toward the camera, its vanishing point off screen), past the camera, out at the other side -- the bow
+  entering at one edge as the scene opens and the stern leaving the other as it closes; the side per activation.
+  The ship had followed a parabola (crabbing, then turning with it) and came within 0.95 hull lengths of the lens;
+  now the hull fills at most about 60 % of the frame as it leaves. **Spaceship** turned the dreadnought like a model
+  on a turntable (a full turn every 14 s against a fixed sky); now the camera orbits it, about once a minute, and the
+  sky and the star turn with the view. **ShipDocking**'s ship flew with its nose away from the camera while it came
+  toward it (the yaw's sign), and every docking station spun about its object Z -- TradePromenadeStation's cylinder
+  and MegastructureCentralHub's ring (round about Y) turned end over end. The stations take `spinAxisP` now;
+  HyperspaceRelayStation (a box) no longer spins, DoubleRingResearchStation spins about its rings' axis (Z, not Y).
