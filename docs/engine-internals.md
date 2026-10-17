@@ -5359,3 +5359,30 @@ second), which the 5-fps BLITZ figure cannot: it is the largest single step agai
   past the camera (the whole frame white) and jumped on every kick -- and the camera rode the swell (a zoom on the
   music). Now the shell grows to inside the camera's distance and fades out before it starts anew, the camera
   stands, the front is narrow and the ejecta have contrast (fbm^3.5 was 0.09 under a shell of 1.6).
+- **The auto exposure never brightened past 1.35.** On 30.08 its range was measured -- the dark catalogue wanted
+  a gain of 1.8, and CfxHistogram got maxGain 1.8 -- but Present.frag clamped the gain to 0.72 .. 1.35, the range
+  written before the pass ever ran, and the table had been computed from the percentiles offline, past that clamp.
+  The ceiling is 1.8 now (the floor stays at 0.72: bright scenes were never the complaint). Over real music the
+  dark scenes came out 1.5 times as bright in the median (linear luminance), bright ones unchanged or a little
+  darker. SafetyLimit.comp measures the frame at the current gain (the previous frame's, from the shared buffer),
+  so the limiter sees what the viewer sees: a swing of 0.06 in a dark scene reaches the screen as 0.11.
+- **The hazard dimming comes on within a few frames** (0.06 s, was 0.25 s): with the brighter exposure,
+  ShipFlyby's close pass of a pale hull measured 3.5 flashes a second -- the limiter came on at the sixth reversal,
+  and the seventh still came through at full strength.
+- **Twenty-four dark scenes brighter, each by its measured shortfall.** The screen's average (sRGB, after the
+  auto exposure) was 0.010 .. 0.044 against a catalogue median of about 0.15; each got a factor aimed at about
+  0.055 -- still night -- between 1.25 and 2.5, noted in the shader with the value it was measured at:
+  LEDRainCurtain (whose tubes and drops also glow on their own now: a tube was 0.05, a drop 0.12 without its pitch
+  class), MayflyStreetLamps, StarStreakTunnel, HartungScratches, KuramotoRings, SmokeColourCollide,
+  WeatherRadarSweep, SpirographGearDraw, KintsugiGoldSeams, TextureDelaunayLightNet, HologramGauze,
+  TextureLaserGrid, CoronagraphSpeckleField, TextureBioluminescentField, UVMineralsGlow, TextureSmokeChamber,
+  TextureGlowVines, TidalDisruptionEvent, CarbonNanotubeChiralityArmchairZigzag, PlasmaFilamentTornado,
+  NebulaCloud, MeshSeismograph, MeshZoetrope and EndOfTheUniverse (1.6 only: its embers are meant to be dim).
+- **The limiter looks at finer cells and at quarter windows.** Its cells came from the mip whose long side is at
+  most 8 texels -- 7 x 4 at 1080p, 5 x 2 at 720p (the render size, which the adaptive resolution lowers): a cell
+  spanned half the picture's height, and ShipFlyby's flashing band across the middle was averaged away with the
+  calm half. Now up to 16 texels (15 x 8 at 1080p, 10 x 5 at 720p, at most 128 cells). And cell by cell, concentric
+  rings flash each cell at its own moment and never a quarter of the cells at once, while the quarter as a whole
+  flashed 3.5 times a second (HarmonicRings): the nine quarter windows (half the width and height, at 0, 1/4 and
+  1/2) now count their mean luminance's reversals too -- the way the guideline and the screening measure an area
+  -- and any one of them at six switches the hazard on, next to the share of hot cells.

@@ -246,7 +246,9 @@ void main()
            - 0.35
                  * smoothstep( bowl_r + 0.08, bowl_r - 0.02,
                                length( ( p - vec2( 0.02, -0.03 ) ) * vec2( 1.0, 1.12 ) ) );
-    col *= 0.9 + 0.2 * audioLevel;
+    // x1.90 (17.10.2026): the screen showed 0.029 of full brightness on the average, after the auto
+    // exposure -- a few lights in the black.  Aimed at about 0.055: still night, but there is something to see.
+    col *= ( 0.9 + 0.2 * audioLevel ) * 1.90;
 
     vec3 cat_tone = max( col, 0.0 );
     cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );

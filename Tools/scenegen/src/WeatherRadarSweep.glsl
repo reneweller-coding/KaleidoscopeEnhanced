@@ -76,5 +76,7 @@ void main()
     col += lineC * smoothstep(0.3, 0.8, mapE) * 0.06 * clamp(mapP + 0.2, 0.0, 1.2);
     col = mix(col, col * glowColour(imgLod(uv, 6.0), p, hueP * 0.159) * 1.3, 0.08);
     col += vec3(0.0, 0.01, 0.015);
-    finish(col);
+    // x2.45 (17.10.2026): the screen showed 0.022 of full brightness on the average, after the auto
+    // exposure -- a few lights in the black.  Aimed at about 0.055: still night, but there is something to see.
+    finish(col * 2.45);
 }

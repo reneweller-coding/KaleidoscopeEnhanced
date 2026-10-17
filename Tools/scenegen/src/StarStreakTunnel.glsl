@@ -61,5 +61,7 @@ void main()
     // Glow at the vanishing point.
     vec3 gc = glowColour(imgLod(vec2(0.5), 6.0), vec2(travel * 0.02, 0.0), hueP * 0.159);
     col += gc * exp(-r * 12.0) * (0.6 + 0.8 * swell);
-    finish(col);
+    // x2.50 (17.10.2026): the screen showed 0.018 of full brightness on the average, after the auto
+    // exposure -- a few lights in the black.  Aimed at about 0.055: still night, but there is something to see.
+    finish(col * 2.50);
 }

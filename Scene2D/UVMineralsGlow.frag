@@ -227,7 +227,9 @@ void main()
     // The shelf's front edge catching the violet light.
     col += vec3( 0.2, 0.05, 0.4 ) * smoothstep( 0.006, 0.0, abs( p.y - shelf_y + 0.004 ) ) * 0.4 * ( 0.5 + reach );
 
-    col *= 0.9 + 0.2 * audioLevel;
+    // x1.55 (17.10.2026): the screen showed 0.036 of full brightness on the average, after the auto
+    // exposure -- a few lights in the black.  Aimed at about 0.055: still night, but there is something to see.
+    col *= ( 0.9 + 0.2 * audioLevel ) * 1.55;
     vec3 cat_tone = max( col, 0.0 );
     cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
     fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );

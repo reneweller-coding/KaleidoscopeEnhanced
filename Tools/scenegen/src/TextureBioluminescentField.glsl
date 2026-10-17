@@ -79,5 +79,7 @@ void main()
             col += pc * (smoothstep(0.22, 0.05, d) * 1.1 + exp(-d * 4.0) * 0.12) * I / (1.0 + fl * 0.6);
         }
     }
-    finish(col);
+    // x1.55 (17.10.2026): the screen showed 0.035 of full brightness on the average, after the auto
+    // exposure -- a few lights in the black.  Aimed at about 0.055: still night, but there is something to see.
+    finish(col * 1.55);
 }

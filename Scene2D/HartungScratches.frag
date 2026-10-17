@@ -443,5 +443,7 @@ void main()
             scratch = max( scratch, on * fade );
         }
     vec3 col = mix( top, under * ( 1.0 + 0.7 * kick ), scratch );
-    finish( col );
+    // x2.50 (17.10.2026): the screen showed 0.016 of full brightness on the average, after the auto
+    // exposure -- a few lights in the black.  Aimed at about 0.055: still night, but there is something to see.
+    finish( col * 2.50 );
 }

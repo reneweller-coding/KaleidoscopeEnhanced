@@ -36,12 +36,12 @@ layout( std430, binding = 3 ) buffer Exposure
     float liveMotion;     ///< This pass: mean change against the sample 3 frames ago (is anything moving).
     float frameCount;     ///< This pass: frames counted, for the every-3rd-frame statistics.
     float prevSample[64]; ///< This pass: the sample of the statistics' last frame.
-    float cellRef[64];    ///< Flashing areas: each cell's last luminance extreme.
-    float cellDir[64];    ///< Flashing areas: the direction it travels since (+1 up, -1 down, 0 not started).
-    float cellRate[64];   ///< Flashing areas: its reversals within the last second.
+    float cellRef[137];   ///< Flashing areas: each area's last luminance extreme (128 cells, then 9 quarter windows).
+    float cellDir[137];   ///< Flashing areas: the direction it travels since (+1 up, -1 down, 0 not started).
+    float cellRate[137];  ///< Flashing areas: its reversals within the last second.
     float hazardDim;      ///< Flashing areas: the extra dimming while they cover a quarter of the frame (1 = none).
     float hazardOn;       ///< Flashing areas: 1 while they do (with hysteresis).
-    float cellAge[512];   ///< Flashing areas: the ages in seconds of each cell's last eight reversals (8 per cell).
+    float cellAge[1096];  ///< Flashing areas: the ages in seconds of each area's last eight reversals (8 per area).
 };
 uniform sampler2D texFrame; ///< The finished frame, mipmapped.
 uniform int       lvl;      ///< The mip level to read (long side at most 4 texels).
@@ -49,8 +49,64 @@ uniform ivec2     lsize;    ///< Its size in texels.
 uniform float     dt;       ///< This frame's time step in seconds.
 uniform float     riseRate; ///< How fast the mean luminance may rise, per second (2.0; 1.0 in the strict mode).
 uniform int       lvl2;     ///< The finer mip level for the flashing areas (long side at most 8 texels).
-uniform ivec2     lsize2;   ///< Its size in texels (at most 64 cells).
+uniform ivec2     lsize2;   ///< Its size in texels (at most 128 cells).
 uniform int       fading;   ///< 1 while a scene fade runs: its one change is no flash.
+
+/// Index of the first quarter window in the area arrays (after the 128 cells).
+const int Windows = 128;
+
+/**  Follows one area's luminance: a reversal is a turn of at least 0.1 against the way it went; the ages of its last
+ *   eight reversals are kept, and those of the last second counted.
+ *
+ * @param i  The area: a cell (0..127) or a quarter window (Windows + 0..8). (in)
+ * @param l  Its luminance this frame, as seen. (in)
+ *
+ * @return
+ *   Its reversals within the last second.
+ **/
+int reversals( int i, float l )
+{
+    bool turned = false;
+    if ( cellDir[i] == 0.0 )
+    {
+        cellRef[i] = l;
+        cellDir[i] = 1.0;
+    }
+    else if ( cellDir[i] > 0.0 )
+    {
+        if ( l > cellRef[i] )
+            cellRef[i] = l;
+        else if ( cellRef[i] - l >= 0.1 )
+        {
+            cellDir[i] = -1.0;
+            cellRef[i] = l;
+            turned = fading == 0;
+        }
+    }
+    else
+    {
+        if ( l < cellRef[i] )
+            cellRef[i] = l;
+        else if ( l - cellRef[i] >= 0.1 )
+        {
+            cellDir[i] = 1.0;
+            cellRef[i] = l;
+            turned = fading == 0;
+        }
+    }
+    // Age the last eight reversals by this frame; a new one enters at age 0 and pushes the oldest out.  Downwards,
+    // so each slot reads its younger neighbour before that one is overwritten.
+    int recent = 0;
+    for ( int k = 7; k >= 0; --k )
+    {
+        const int j = i * 8 + k;
+        cellAge[j] = turned ? ( k > 0 ? min( cellAge[j - 1] + dt, 99.0 ) : 0.0 ) : min( cellAge[j] + dt, 99.0 );
+        if ( cellAge[j] < 1.0 )
+            ++recent;
+    }
+    cellRate[i] = float( recent );
+    return recent;
+}
 
 /** Entry point of this shader stage (the file description says what it computes). */
 void main()
@@ -65,6 +121,10 @@ void main()
         mean += lum[i];
     }
     mean /= float( n );
+    // The frame as the viewer sees it: Present.frag applies the auto exposure (CfxHistogram.comp, the previous
+    // frame's value here) after this pass, up to 1.8 -- a swing of 0.06 in a dark scene reaches the screen as 0.11.
+    const float gain = clamp( exposureOut, 0.72, 1.8 );
+    const float seen = mean * gain;
 
     // Flashing AREAS (16.10.2026): the mean misses two halves flashing against each other.  Per cell of a finer
     // mip, a reversal is a turn of at least 0.1 in luminance against the way it went; at three flashes a second
@@ -76,69 +136,52 @@ void main()
     // 17.10.2026 they were a sum decaying over a second, which flashing in bursts -- the way music flashes -- kept
     // under six: measured at 60 fps over real music, VolumetricFire flashed 3.5 times a second and the dimming was
     // on in 1 % of its frames, VolcanicLightningPlume and HarmonicRings in none.
-    const int m = min( lsize2.x * lsize2.y, 64 );
+    // Up to 128 cells (1080p: 15 x 8).  With 7 x 4 -- 5 x 2 at 720p -- a cell spanned half the picture's height, and
+    // a flashing band across the middle (a pale hull passing close) was averaged away with the calm half around it:
+    // seven reversals in a second, and the hazard came on two seconds later (17.10.2026).
+    const int m = min( lsize2.x * lsize2.y, 128 );
     int       hot = 0;
+    float     lc[128];
     for ( int i = 0; i < m; ++i )
     {
-        const vec3  c = texelFetch( texFrame, ivec2( i % lsize2.x, i / lsize2.x ), lvl2 ).rgb;
-        const float l = dot( c, vec3( 0.299, 0.587, 0.114 ) );
-        bool        turned = false;
-        if ( cellDir[i] == 0.0 )
-        {
-            cellRef[i] = l;
-            cellDir[i] = 1.0;
-        }
-        else if ( cellDir[i] > 0.0 )
-        {
-            if ( l > cellRef[i] )
-                cellRef[i] = l;
-            else if ( cellRef[i] - l >= 0.1 )
-            {
-                cellDir[i] = -1.0;
-                cellRef[i] = l;
-                turned = fading == 0;
-            }
-        }
-        else
-        {
-            if ( l < cellRef[i] )
-                cellRef[i] = l;
-            else if ( l - cellRef[i] >= 0.1 )
-            {
-                cellDir[i] = 1.0;
-                cellRef[i] = l;
-                turned = fading == 0;
-            }
-        }
-        // Age the cell's last eight reversals by this frame; a new one enters at age 0 and pushes the oldest out.
-        // Downwards, so each slot reads its younger neighbour before that one is overwritten.
-        int recent = 0;
-        for ( int k = 7; k >= 0; --k )
-        {
-            const int j = i * 8 + k;
-            cellAge[j] = turned ? ( k > 0 ? min( cellAge[j - 1] + dt, 99.0 ) : 0.0 ) : min( cellAge[j] + dt, 99.0 );
-            if ( cellAge[j] < 1.0 )
-                ++recent;
-        }
-        cellRate[i] = float( recent );
-        if ( recent >= 6 )
+        const vec3 c = texelFetch( texFrame, ivec2( i % lsize2.x, i / lsize2.x ), lvl2 ).rgb;
+        lc[i] = dot( c, vec3( 0.299, 0.587, 0.114 ) ) * gain;
+        if ( reversals( i, lc[i] ) >= 6 )
             ++hot;
     }
+    // The nine quarter windows (half the width and the height, at 0, 1/4 and 1/2 of each), the way the guideline and
+    // the screening measure an area: their MEAN luminance against its own last second.  Cell by cell, concentric
+    // rings flash each cell at its own moment and never a quarter of the cells at once, while the quarter as a whole
+    // flashed 3.5 times a second (HarmonicRings, 17.10.2026).
+    bool win_hot = false;
+    for ( int w = 0; w < 9 && m == lsize2.x * lsize2.y; ++w )
+    {
+        const int x0 = ( w % 3 ) * lsize2.x / 4, x1 = x0 + max( 1, lsize2.x / 2 );
+        const int y0 = ( w / 3 ) * lsize2.y / 4, y1 = y0 + max( 1, lsize2.y / 2 );
+        float     sum = 0.0;
+        for ( int y = y0; y < y1; ++y )
+            for ( int x = x0; x < x1; ++x )
+                sum += lc[y * lsize2.x + x];
+        if ( reversals( Windows + w, sum / float( ( x1 - x0 ) * ( y1 - y0 ) ) ) >= 6 )
+            win_hot = true;
+    }
     const float share = m > 0 ? float( hot ) / float( m ) : 0.0;
-    if ( share >= 0.25 )
+    if ( share >= 0.25 || win_hot )
         hazardOn = 1.0;
     else if ( share < 0.15 )
         hazardOn = 0.0;
     const float dimTarget = hazardOn > 0.5 ? 0.6 : 1.0;
-    hazardDim += ( dimTarget - hazardDim ) * ( 1.0 - exp( -dt / ( dimTarget < hazardDim ? 0.25 : 3.0 ) ) );
+    // Down within a few frames (0.06 s; was 0.25 s, and the seventh reversal of a second still came through at
+    // full strength -- ShipFlyby's close pass measured 3.5 flashes a second), up again over three seconds.
+    hazardDim += ( dimTarget - hazardDim ) * ( 1.0 - exp( -dt / ( dimTarget < hazardDim ? 0.06 : 3.0 ) ) );
 
     if ( prevMean < 0.0 )
-        prevMean = mean;
+        prevMean = seen;
     const float rate = hazardOn > 0.5 ? 0.25 * riseRate : riseRate;
-    const float hi = prevMean + rate * dt;     // <= riseRate (2.0) luma per second
-    const float clamped = min( mean, hi );     // only a RISE is limited
-    limScale = ( mean > 1e-4 ? min( clamped / mean, 1.0 ) : 1.0 ) * hazardDim;
-    prevMean = mean < prevMean ? mean : clamped;
+    const float hi = prevMean + rate * dt;     // <= riseRate (2.0) luma per second, as seen
+    const float clamped = min( seen, hi );     // only a RISE is limited
+    limScale = ( seen > 1e-4 ? min( clamped / seen, 1.0 ) : 1.0 ) * hazardDim;
+    prevMean = seen < prevMean ? seen : clamped;
 
     frameCount += 1.0;
     if ( mod( frameCount, 3.0 ) < 0.5 )

@@ -251,7 +251,8 @@ void main()
     if ( hue > 0.001 )
         col = hueRot( col, 0.06 * sin( hue ) );
 
-    vec3 cat_tone = max( col, 0.0 );
+    // x1.30 (17.10.2026): the screen showed 0.043 of full brightness on the average, after the auto exposure.
+    vec3 cat_tone = max( col * 1.3, 0.0 );
     cat_tone /= 1.0 + 0.30 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
     fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

@@ -54,5 +54,6 @@ void main()
     vec3 col = vColor.rgb * filament_glow * 1.5;
 
     col = hueRot( col, audioChromaHue + hue );
-    fragColor = vec4( col, 1.0 );
+    // x2.20 (17.10.2026): the screen showed 0.025 of full brightness on the average, after the auto exposure.
+    fragColor = vec4( col * 2.2, 1.0 );
 }

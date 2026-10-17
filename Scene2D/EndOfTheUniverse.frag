@@ -242,7 +242,9 @@ void main()
     vec3 void_color = mix( vec3( 0.045, 0.02, 0.06 ), vec3( 0.01, 0.006, 0.018 ), length( uv ) );
     col = max( col, void_color * ( 1.0 + swell * 0.5 ) );
 
-    col *= 0.9 + 0.2 * audioLevel;
+    // x1.60 (17.10.2026): the screen showed 0.026 of full brightness on the average, after the auto exposure -- the
+    // embers are meant to be dim, not gone.
+    col *= ( 0.9 + 0.2 * audioLevel ) * 1.6;
     if ( hue > 0.001 )
         col = hueRot( col, 0.2 * sin( hue ) );
 

@@ -505,11 +505,12 @@ void PresentPass::run( const Inputs &in )
         if ( m_autoExpProg || m_limitProg )
         {
             // { exposure, p50, p98, limScale, prevMean, liveStd, liveMotion, frameCount, prevSample[64] }
-            // ... + the flashing areas' { cellRef[64], cellDir[64], cellRate[64], hazardDim, hazardOn, cellAge[512] }
-            static float init[8 + 64 + 3 * 64 + 2 + 512] = { 1.f, 0.5f, 1.f, 1.f, -1.f, 0.f, 0.f, 0.f };
-            init[8 + 64 + 3 * 64] = 1.f; // hazardDim: no extra dimming
-            for ( int i = 0; i < 512; ++i )
-                init[8 + 64 + 3 * 64 + 2 + i] = 99.f; // cellAge: no reversal yet (long ago)
+            // ... + the flashing areas' { cellRef[137], cellDir[137], cellRate[137], hazardDim, hazardOn,
+            // cellAge[1096] } -- 128 cells and 9 quarter windows
+            static float init[8 + 64 + 3 * 137 + 2 + 1096] = { 1.f, 0.5f, 1.f, 1.f, -1.f, 0.f, 0.f, 0.f };
+            init[8 + 64 + 3 * 137] = 1.f; // hazardDim: no extra dimming
+            for ( int i = 0; i < 1096; ++i )
+                init[8 + 64 + 3 * 137 + 2 + i] = 99.f; // cellAge: no reversal yet (long ago)
             glGenBuffers( 1, &m_autoExpBuf );
             glBindBuffer( GL_SHADER_STORAGE_BUFFER, m_autoExpBuf );
             glBufferData( GL_SHADER_STORAGE_BUFFER, sizeof( init ), init, GL_DYNAMIC_COPY );
@@ -556,8 +557,8 @@ void PresentPass::run( const Inputs &in )
         glUniform1f( glGetUniformLocation( m_limitProg, "dt" ), in.dtFrame );
         glUniform1f( glGetUniformLocation( m_limitProg, "riseRate" ),
                      in.strictLight ? std::min( riseRate(), 1.f ) : riseRate() );
-        int lvl2 = 0; // the flashing areas' mip: long side at most 8 texels (1080p: 7 x 4 cells)
-        for ( int d = std::max( in.renderW, in.renderH ); d > 8; d >>= 1 )
+        int lvl2 = 0; // the flashing areas' mip: long side at most 16 texels (1080p: 15 x 8 cells, 720p: 10 x 5)
+        for ( int d = std::max( in.renderW, in.renderH ); d > 16; d >>= 1 )
             ++lvl2;
         glUniform1i( glGetUniformLocation( m_limitProg, "lvl2" ), lvl2 );
         glUniform2i( glGetUniformLocation( m_limitProg, "lsize2" ), std::max( 1, in.renderW >> lvl2 ),
@@ -572,7 +573,7 @@ void PresentPass::run( const Inputs &in )
             if ( const float *r = static_cast<const float *>( glMapBuffer( GL_SHADER_STORAGE_BUFFER, GL_READ_ONLY ) ) )
             {
                 fprintf( stderr, "EXPO prev=%.4f scale=%.3f flashDim=%.3f flashOn=%.0f\n", r[4], r[3],
-                         r[8 + 64 + 3 * 64], r[8 + 64 + 3 * 64 + 1] );
+                         r[8 + 64 + 3 * 137], r[8 + 64 + 3 * 137 + 1] );
                 glUnmapBuffer( GL_SHADER_STORAGE_BUFFER );
             }
             glBindBuffer( GL_SHADER_STORAGE_BUFFER, 0 );

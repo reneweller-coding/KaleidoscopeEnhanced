@@ -300,7 +300,9 @@ void main()
     col += vec3( 1.0 ) * exp( -pd * pd * 40000.0 ) * ( 1.0 + 1.5 * kick );
     col += vec3( 1.0, 0.9, 0.8 ) * exp( -pd * 60.0 ) * 0.15 * ( 1.0 + kick );
 
-    col *= 0.9 + 0.2 * audioLevel;
+    // x2.20 (17.10.2026): the screen showed 0.025 of full brightness on the average, after the auto
+    // exposure -- a few lights in the black.  Aimed at about 0.055: still night, but there is something to see.
+    col *= ( 0.9 + 0.2 * audioLevel ) * 2.20;
     vec3 cat_tone = max( col, 0.0 );
     cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
     fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );

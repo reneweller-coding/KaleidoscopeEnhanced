@@ -207,7 +207,9 @@ void main()
     col = mix( col, lamp_c * 2.0, lan_m );
     col += glow;
 
-    col *= 0.9 + 0.2 * audioLevel;
+    // x2.50 (17.10.2026): the screen showed 0.019 of full brightness on the average, after the auto
+    // exposure -- a few lights in the black.  Aimed at about 0.055: still night, but there is something to see.
+    col *= ( 0.9 + 0.2 * audioLevel ) * 2.50;
     vec3 cat_tone = max( col, 0.0 );
     cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
     fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );

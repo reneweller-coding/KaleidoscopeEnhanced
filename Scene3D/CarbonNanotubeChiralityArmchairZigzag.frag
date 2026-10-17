@@ -70,7 +70,8 @@ void main()
            * 2.2 * ( core + 0.30 * sheen );
     col += vCol * edge * 1.4;
     col += vCol * sheen * ( 0.85 + 0.55 * audioSwell );
-    col *= ( 0.85 + 0.35 * audioSwell );
+    // x2.50 (17.10.2026): the screen showed 0.018 of full brightness on the average, after the auto exposure.
+    col *= ( 0.85 + 0.35 * audioSwell ) * 2.5;
     col += vCol * ( audioKick * 0.3 ) * ( core + sheen );
 
     // Additive geometry: cap the tinted vec3, then soft-knee it

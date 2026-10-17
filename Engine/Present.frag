@@ -920,8 +920,12 @@ void main()
     // Percentile auto-exposure ON TOP of the limiter, never instead of it: the
     // limiter is what caps how fast the frame may BRIGHTEN, and that safety
     // property must not depend on a histogram being available.
+    // Up to the histogram pass's maxGain.  Until 17.10.2026 this clamped to 0.72 .. 1.35 -- the range written before
+    // the pass ever ran -- so the 1.8 measured on 30.08 for the dark catalogue never reached the screen.  The floor
+    // stays at 0.72 (bright scenes were never the complaint).  SafetyLimit.comp measures the frame at this gain, so
+    // the limiter sees what the viewer sees.
     if ( autoExposure > 0.0 )
-        c *= clamp( autoExposure, 0.72, 1.35 );
+        c *= clamp( autoExposure, 0.72, 1.8 );
 
     // --- Film grain: fine temporal grain, stronger in the shadows (like real
     // emulsion) and a touch more present while music plays.  Zero-mean pixel

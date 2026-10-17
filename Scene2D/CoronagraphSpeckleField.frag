@@ -160,7 +160,9 @@ void main()
     col += imgPalette( hue * 0.159 + 0.9 ) * rim * ( 0.3 + 1.2 * audioKick );
     // The inner working angle ring, faint.
     col += vec3( 0.4, 0.45, 0.6 ) * smoothstep( 0.003, 0.0, abs( r - mask_r * 2.2 ) ) * 0.15;
-    col *= 0.75 + 0.5 * audioLevel;
+    // x1.75 (17.10.2026): the screen showed 0.031 of full brightness on the average, after the auto
+    // exposure -- a few lights in the black.  Aimed at about 0.055: still night, but there is something to see.
+    col *= ( 0.75 + 0.5 * audioLevel ) * 1.75;
 
     vec3 cat_tone = max( col, 0.0 );
     cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );

@@ -66,5 +66,7 @@ void main()
     vec3 col = haze * (0.5 + dens) + light * (0.015 + 1.6 * pow(dens, 1.5));
     // A faint floor glow where the beams land.
     col += light * 0.02;
-    finish(col);
+    // x1.40 (17.10.2026): the screen showed 0.039 of full brightness on the average, after the auto
+    // exposure -- a few lights in the black.  Aimed at about 0.055: still night, but there is something to see.
+    finish(col * 1.40);
 }

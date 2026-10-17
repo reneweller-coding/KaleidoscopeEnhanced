@@ -67,5 +67,7 @@ void main()
         float tip = pow(max(0.0, sin(sceneTime * 2.0 + si * 3.0 + fk)), 12.0);
         col += c * on * leaf * (0.35 + 0.5 * pulse + 0.8 * hi * tip);
     }
-    finish(col);
+    // x1.25 (17.10.2026): the screen showed 0.044 of full brightness on the average, after the auto
+    // exposure -- a few lights in the black.  Aimed at about 0.055: still night, but there is something to see.
+    finish(col * 1.25);
 }

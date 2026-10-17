@@ -62,5 +62,8 @@ void main()
         col += bc * exp(-r * 20.0) * 0.5 * on;                 // the projector aperture
     }
     col += vec3(0.02, 0.02, 0.03) * haze;
-    finish(col);
+    // x1.30 (17.10.2026; more washed the wall over the beams): the screen showed 0.031 of full brightness on the
+    // average, after the auto exposure -- a few lights in the black.  Aimed at about 0.055: still night, but there is
+    // something to see.
+    finish(col * 1.30);
 }

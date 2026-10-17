@@ -481,5 +481,7 @@ void main()
         float d = length( g - P[k] );
         col += C[k] * ( smoothstep( px * 3.0, px, d ) * 1.2 + exp( -d * 8.0 ) * 0.2 ) * ( 0.6 + 1.2 * kick );
     }
-    finish( col );
+    // x1.90 (17.10.2026): the screen showed 0.029 of full brightness on the average, after the auto
+    // exposure -- a few lights in the black.  Aimed at about 0.055: still night, but there is something to see.
+    finish( col * 1.90 );
 }

@@ -34,5 +34,6 @@ void main()
 {
     vec2  d = gl_PointCoord - 0.5;
     float a = exp( -dot( d, d ) * 7.0 );
-    fragColor = vec4( vCol.rgb * a, 1.0 );
+    // x2.10 (17.10.2026): the screen showed 0.026 of full brightness on the average, after the auto exposure.
+    fragColor = vec4( vCol.rgb * a * 2.1, 1.0 );
 }

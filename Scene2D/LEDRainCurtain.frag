@@ -180,8 +180,11 @@ vec3 curtain( vec2 p )
             float ends = smoothstep( bottom - 0.01, bottom + 0.01, p.y ) * smoothstep( top, top - 0.05, p.y );
             float w = 0.0022 * depth_k + gPx * 0.6;
             float core = exp( -dx * dx / ( w * w ) );
-            float halo = exp( -abs( dx ) / ( 0.22 * sp ) ) * 0.3;
-            float bright = ( 0.05 + drop * ( 0.12 + 1.6 * e ) ) * ends * depth_k;
+            // The tubes glow on their own and every drop is seen; its pitch class makes it burn.  Until 17.10.2026
+            // a tube was 0.05 and a drop 0.12 without its class sounding: the screening measured the curtain at
+            // 0.001 .. 0.003 of full brightness, a few falling dots in the black.
+            float halo = exp( -abs( dx ) / ( 0.22 * sp ) ) * 0.45;
+            float bright = ( 0.14 + drop * ( 0.4 + 1.6 * e ) ) * ends * depth_k;
             col += cc * bright * ( core + halo );
             // A white-hot core at the drop heads.
             col += vec3( 1.0 ) * core * drop * e * 0.4 * ends * depth_k;
@@ -209,7 +212,7 @@ void main()
     vec3  haze = mix( vec3( 0.05, 0.06, 0.1 ), imgPalette( 0.55 + hueP * 0.159 ) * 0.12, 0.3 );
     float hz = ( 0.5 + 0.5 * noise2( p * 3.0 + vec2( 0.0, gT * 0.03 ) ) ) * ( 0.5 + 0.8 * swell )
                * ( 0.6 + 0.8 * energy );
-    vec3  col = haze * hz * smoothstep( 0.7, -0.2, abs( p.y - 0.05 ) );
+    vec3  col = haze * hz * 2.0 * smoothstep( 0.7, -0.2, abs( p.y - 0.05 ) ); // the room's haze, twice as lit
 
     if ( p.y > Floory )
     {
@@ -224,7 +227,10 @@ void main()
         col += haze * 0.15 * f;
     }
 
-    col *= 0.9 + 0.2 * audioLevel;
+    // x1.20 (17.10.2026; the brighter tubes and drops above already carry most of it): the screen showed 0.017 of full
+    // brightness on the average, after the auto exposure -- a few lights in the black.  Aimed at about 0.055: still
+    // night, but there is something to see.
+    col *= ( 0.9 + 0.2 * audioLevel ) * 1.20;
     vec3 cat_tone = max( col, 0.0 );
     cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
     fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );

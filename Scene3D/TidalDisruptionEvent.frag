@@ -100,7 +100,8 @@ void main()
         col = vColor.rgb * a * ( 1.6 + 0.8 * audioKick );
         col *= clamp( 1.5 - vDepth * 0.06, 0.35, 1.0 );
     }
-    vec3 cat_tone = max( col, 0.0 );
+    // x2.50 (17.10.2026): the screen showed 0.010 of full brightness on the average, after the auto exposure.
+    vec3 cat_tone = max( col * 2.5, 0.0 );
     cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
     fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }
