@@ -5834,3 +5834,44 @@ seconds -- the cyclic-spirals rule is the R3/T5 one of the literature, and demon
 the third). Onsets seed a small noise patch every 40 steps, where new cores grow; the phase reads a ring through the
 photo and lights the band fronts, the kick flashes the fresh ones.
 
+## 17.10.2026 (26): the automata (ideas 38-50)
+
+Thirteen scenes of family C, all but one on the state pass: GreenbergHastingsWaves (an excitable medium; a disc of
+radius 2 gives round fronts, onsets set a short arc whose open ends curl into a pair of spirals), LangtonTurmiteHighways
+(hundreds of generalised ants, gathered: a cell asks its four neighbours whose ant steps onto it),
+ElementaryRuleTapestry (a ring buffer of rows, the newest on the centre line, `stateFrac` moving the rows between
+two steps), WireworldCircuitry (the photo's contour lines as one-cell traces), BriansBrainStorm, LifeRuleMorph (eight
+Life-like rules, a section the next), SandpileIdentityMandala, MargolusBilliardGas, ForestFireCriticality,
+QuantumWalkCones, KPZGrowthFronts (ballistic deposition, every cell carrying its column's height), RotorRouterAggregate
+and TilingSubstitutionAutomaton (stateless: chair and table substitution, one zoom octave one generation).
+
+**The state pass grew three things.** `// @state W H RATE 32` asks for RGBA32F (chip counts, unwrapped heights);
+`stateFrac` is the share of the next step already due; and the cap on steps a frame follows the field's size (8 for
+512K cells, up to 64 for a small field: the sandpile runs 960 steps a second on 144 x 144). The generator adds a
+small library to every state scene (`STATE_LIB`: `stWrap`, `stAt`, `stRand` per cell and step, `stRandStep`,
+`stLin`, two Laplacians, `stView`).
+
+**`%` on a negative int is undefined in GLSL.** The first `stAt()` wrapped with `(ip % s + s) % s`; on NVIDIA
+`-1 % 200` read a cell in the middle of the field, so every scene read wrong neighbours along two field edges. It
+showed only in the rotor-router: one source grew four discs, the ones at the half-period offsets reached the
+probe cell that stops the feed, and the disc stalled at radius 17. A numpy port of the shader grew one disc; a probe
+scene that spreads a marker with `(ip + d + s) % s` (no negative operand) was right -- the difference was the
+operand's sign. `stWrap()` now wraps with floor.
+
+**The sandpile identity by burning.** The burning configuration (one grain per edge to the sink) is equivalent to
+adding nothing, so (k beta) stabilised is the identity once it is recurrent -- and by Dhar's burning test a
+stabilisation in which every cell has toppled ends recurrent. The scene feeds four betas a step at the border until
+the centre cell (the last to burn) has toppled, then lets the pile settle; a drop or a phrase start adds one beta
+more, every cell topples exactly once, and the same mandala forms again. A fixed span of 3 max(w, h) steps had left
+the middle empty.
+
+**The reversible gas runs back exactly.** The Margolus block map (two balls on a diagonal mirrored left-right, every
+other block turned 180 degrees) is an involution, so the backward run applies it with the partitions in reverse
+order; the light and the dark half of the photo, as two gases, mix and un-mix to the step. No audio may touch the
+dynamics here -- a skipped step forward and a taken one backward would break it.
+
+**Looking at state scenes.** Their first seconds differ from their minutes, and the screening WAV's loud/quiet cycle
+makes the scheduler cut away inside a window (the sweep puts the scene back once, which reseeds the field). The
+review sheets now take their frames only where the wanted scene is on screen (the `[shown]` lines) and mark the
+coverage.
+

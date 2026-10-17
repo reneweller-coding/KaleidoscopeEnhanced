@@ -311,6 +311,7 @@ RECENT_SCENES = {
     "ChainCurlFarris", "ChainWarpQuasi", "ChainTaylorHex", "ChainGerstnerJacobi", "ChainBillowPenrose", "ChainConvectionSierpinski", "ChainGyreSquareWave", "ChainTriangleStreet", "ChainWeierstrassWarp", "ChainInterferenceKoch", "ChainCurlAmmann", "ChainSquareChirikov",
     "NoirBlindsLight", "NoirSmokeBacklight", "NoirKaleidoscope", "NoirTunnel", "NoirSearchlights", "NoirSilverFlow",
     "CyclicAutomatonSpirals",
+    "GreenbergHastingsWaves", "LangtonTurmiteHighways", "ElementaryRuleTapestry", "WireworldCircuitry", "BriansBrainStorm", "LifeRuleMorph", "SandpileIdentityMandala", "MargolusBilliardGas", "ForestFireCriticality", "QuantumWalkCones", "KPZGrowthFronts", "RotorRouterAggregate", "TilingSubstitutionAutomaton",
 }
 
 def rule_recent(m, h):

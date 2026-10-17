@@ -57,6 +57,8 @@ uniform sampler2D texState;   ///< The scene's own field from the last step (Eff
 uniform int       statePass;  ///< 1 while the scene computes its next state, 0 while it draws the frame.
 uniform float     stateFrame; ///< Steps of the scene's own field since the activation (0: seed it).
 uniform vec2      stateRes;   ///< Size of the scene's own field in texels.
+uniform float     stateFrac;  ///< Share of the next step of the scene's own field already due, 0..1 (motion between two
+                              ///< steps).
 
 // ---- shared building blocks (texture pool, noise, shapes) ----
 /**  Pseudo-random number 0..1 from a float.
@@ -511,6 +513,135 @@ void finish( vec3 col )
     vec3 t = max( col, 0.0 );
     t /= 1.0 + 0.35 * max( t.r, max( t.g, t.b ) );
     fragColor = vec4( clamp( t, 0.0, 1.0 ), 1.0 );
+}
+
+
+// ---- the scene's own field (state pass) ----
+/**  An integer hash (Wellons' lowbias32).
+ *
+ * @param x  The input. (in)
+ *
+ * @return
+ *   A well mixed 32-bit value.
+ **/
+uint stHashU( uint x )
+{
+    x ^= x >> 16u;
+    x *= 0x7feb352du;
+    x ^= x >> 15u;
+    x *= 0x846ca68bu;
+    x ^= x >> 16u;
+    return x;
+}
+/**  A random number for this cell and this step (state pass): a different one for every k.
+ *
+ * @param k  Which of the cell's random streams. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1, the same for the same cell, step and k.
+ **/
+float stRand( int k )
+{
+    uvec2 c = uvec2( gl_FragCoord.xy );
+    uint  h = stHashU( c.x + stHashU( c.y + stHashU( uint( stateFrame ) * 8u + uint( k ) ) ) );
+    return float( h >> 8u ) / 16777216.0;
+}
+/**  A random number for this step, the same in every cell (state pass).
+ *
+ * @param k  Which of the step's random streams. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
+float stRandStep( int k )
+{
+    return float( stHashU( uint( stateFrame ) * 8u + uint( k ) + 0x9e3779b9u ) >> 8u ) / 16777216.0;
+}
+/**  A cell wrapped into the field (the field is a torus).
+ *
+ * @param ip  The cell, anywhere. (in)
+ *
+ * @return
+ *   The same cell inside 0..stateRes-1.
+ *
+ * The wrap uses floor, not %: GLSL leaves % undefined for a negative operand, and NVIDIA's -1 % 200 read a cell in
+ * the middle of the field (a rotor-router grew four discs from one source).
+ **/
+ivec2 stWrap( ivec2 ip )
+{
+    vec2 s = stateRes;
+    return ivec2( vec2( ip ) - s * floor( ( vec2( ip ) + 0.5 ) / s ) );
+}
+/**  The field at a cell, wrapped around.
+ *
+ * @param ip  The cell. (in)
+ *
+ * @return
+ *   The cell's state from the last step.
+ **/
+vec4 stAt( ivec2 ip )
+{
+    return texelFetch( texState, stWrap( ip ), 0 );
+}
+/**  This texel's cell in the state pass.
+ *
+ * @return
+ *   The cell's integer coordinate.
+ **/
+ivec2 stCell()
+{
+    return ivec2( gl_FragCoord.xy );
+}
+/**  The field filtered at a coordinate in cells (linear, wrapped).
+ *
+ * @param c  The coordinate in cells (cell centres at .5). (in)
+ *
+ * @return
+ *   The interpolated state.
+ **/
+vec4 stLin( vec2 c )
+{
+    return texture( texState, c / stateRes );
+}
+/**  The five-point Laplacian of the field at a cell.
+ *
+ * @param ip  The cell. (in)
+ *
+ * @return
+ *   The neighbours' sum minus four times the cell.
+ **/
+vec4 stLap( ivec2 ip )
+{
+    return stAt( ip + ivec2( 1, 0 ) ) + stAt( ip - ivec2( 1, 0 ) ) + stAt( ip + ivec2( 0, 1 ) )
+           + stAt( ip - ivec2( 0, 1 ) ) - 4.0 * stAt( ip );
+}
+/**  The nine-point Laplacian (isotropic: the diagonals weigh a quarter, the sides a half).
+ *
+ * @param ip  The cell. (in)
+ *
+ * @return
+ *   The isotropic Laplacian of the field.
+ **/
+vec4 stLap9( ivec2 ip )
+{
+    vec4 s = stAt( ip + ivec2( 1, 0 ) ) + stAt( ip - ivec2( 1, 0 ) ) + stAt( ip + ivec2( 0, 1 ) )
+             + stAt( ip - ivec2( 0, 1 ) );
+    vec4 d = stAt( ip + ivec2( 1, 1 ) ) + stAt( ip - ivec2( 1, 1 ) ) + stAt( ip + ivec2( 1, -1 ) )
+             + stAt( ip + ivec2( -1, 1 ) );
+    return 0.5 * s + 0.25 * d - 3.0 * stAt( ip );
+}
+/**  Where the screen shows the field: a screen point (screenP()) mapped to field cells, the field's height filling
+ * the screen's height divided by zoom; the field repeats beyond it.
+ *
+ * @param p     The screen point. (in)
+ * @param zoom  How many field heights the screen shows. (in)
+ *
+ * @return
+ *   The coordinate in cells.
+ **/
+vec2 stView( vec2 p, float zoom )
+{
+    return ( p * zoom + vec2( 0.5 * stateRes.x / stateRes.y, 0.5 ) ) * stateRes.y;
 }
 
 const float Tau = 6.2831853; ///< Two pi.

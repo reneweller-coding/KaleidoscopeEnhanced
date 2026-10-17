@@ -112,6 +112,7 @@ VARS = {
     "statePass": "1 while the scene computes its next state, 0 while it draws the frame.",
     "stateFrame": "Steps of the scene's own field since the activation (0: seed it).",
     "stateRes": "Size of the scene's own field in texels.",
+    "stateFrac": "Share of the next step of the scene's own field already due, 0..1 (motion between two steps).",
     "vUV": "Texture coordinate 0..1 over the screen (from the vertex stage).",
     "vNormal": "Surface normal (from the vertex stage).",
     "vPos": "Position (from the vertex stage).",

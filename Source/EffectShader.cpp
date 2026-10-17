@@ -3821,19 +3821,20 @@ bool EffectShader::usesState()
     m_statePassUni = glGetUniformLocation( m_shProgId, "statePass" );
     m_stateFrameUni = glGetUniformLocation( m_shProgId, "stateFrame" );
     m_stateResUni = glGetUniformLocation( m_shProgId, "stateRes" );
+    m_stateFracUni = glGetUniformLocation( m_shProgId, "stateFrac" );
     m_usesState = ( m_stateTexUni >= 0 && m_statePassUni >= 0 ) ? 1 : 0;
     if ( m_usesState == 1 )
     {
-        // "// @state W H RATE" in the fragment source: the field's size and its steps per second
-        int         w = 0, h = 0;
+        // "// @state W H RATE [32]" in the fragment source: the field's size, its steps per second, its precision
+        int         w = 0, h = 0, bits = 16;
         float       rate = 60.f;
         std::string src = textFileRead( m_fragmentShaderFilename.c_str() );
         size_t      at = src.find( "// @state " );
         if ( at != std::string::npos )
-            sscanf( src.c_str() + at + 10, "%d %d %f", &w, &h, &rate );
+            sscanf( src.c_str() + at + 10, "%d %d %f %d", &w, &h, &rate, &bits );
         w = w > 0 ? w : ( m_width > 1 ? m_width / 2 : 640 );
         h = h > 0 ? h : ( m_height > 1 ? m_height / 2 : 360 );
-        if ( w != m_stateW || h != m_stateH )
+        if ( w != m_stateW || h != m_stateH || ( bits == 32 ) != m_stateF32 )
         {
             if ( m_stateTex[0] )
                 glDeleteTextures( 2, m_stateTex );
@@ -3842,6 +3843,7 @@ bool EffectShader::usesState()
         }
         m_stateW = w;
         m_stateH = h;
+        m_stateF32 = bits == 32;
         m_stateRate = rate > 0.f ? rate : 60.f;
     }
     return m_usesState == 1;
@@ -3859,7 +3861,8 @@ void EffectShader::stepState()
             glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
             glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
             glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
-            glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA16F, m_stateW, m_stateH, 0, GL_RGBA, GL_FLOAT, nullptr );
+            glTexImage2D( GL_TEXTURE_2D, 0, m_stateF32 ? GL_RGBA32F : GL_RGBA16F, m_stateW, m_stateH, 0, GL_RGBA,
+                          GL_FLOAT, nullptr );
         }
         glBindTexture( GL_TEXTURE_2D, 0 );
         if ( !m_stateFbo )
@@ -3888,8 +3891,11 @@ void EffectShader::stepState()
         m_stateAcc += dt * m_stateRate;
         steps = static_cast<int>( m_stateAcc );
         m_stateAcc -= static_cast<float>( steps );
-        if ( steps > 8 )
-            steps = 8;
+        // at most 8 steps a frame for a field of 512K cells, more for small fields (a 96 x 96 sandpile: 64)
+        const int cells = m_stateW * m_stateH > 1 ? m_stateW * m_stateH : 1;
+        const int cap = 4194304 / cells < 8 ? 8 : ( 4194304 / cells > 64 ? 64 : 4194304 / cells );
+        if ( steps > cap )
+            steps = cap;
     }
     if ( steps > 0 )
     {
@@ -3935,6 +3941,8 @@ void EffectShader::stepState()
         glUniform2f( m_stateResUni, static_cast<float>( m_stateW ), static_cast<float>( m_stateH ) );
     if ( m_stateFrameUni >= 0 )
         glUniform1f( m_stateFrameUni, m_stateFrame );
+    if ( m_stateFracUni >= 0 )
+        glUniform1f( m_stateFracUni, m_stateAcc );
     glActiveTexture( GL_TEXTURE0 + StateUnit );
     glBindTexture( GL_TEXTURE_2D, m_stateTex[m_stateCur] );
     glActiveTexture( GL_TEXTURE0 );

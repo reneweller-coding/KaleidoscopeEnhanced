@@ -7,9 +7,9 @@ Source format:
     //@params fooP barP       (per-activation knobs, 0..1; hueP is always added)
     //@audio audioSwell audioSpectrum[32] ...
     //@expr fooP = clamp(0.5 + 0.3*swell, 0.0, 1.0)   (optional, any number)
-    //@state W H RATE         (optional: a field of its own, W x H texels, RATE steps a second -- EffectShader::stepState;
-                               declares texState, statePass, stateFrame, stateRes; main() answers statePass == 1
-                               with the next state in fragColor)
+    //@state W H RATE [32]    (optional: a field of its own, W x H texels, RATE steps a second, 32 for RGBA32F --
+                               EffectShader::stepState; declares texState, statePass, stateFrame, stateRes, stateFrac
+                               and the helpers of STATE_LIB; main() answers statePass == 1 with the next state)
     //@body
     ... GLSL (functions + main, main ends with finish(col);)
 Usage: gen.py Name [Name ...]
@@ -192,6 +192,116 @@ void finish(vec3 col)
     t /= 1.0 + 0.35 * max(t.r, max(t.g, t.b));
     fragColor = vec4(clamp(t, 0.0, 1.0), 1.0);
 }
+"""
+
+# Scenes with a field of their own (//@state W H RATE [32], EffectShader::stepState): the step's helpers.
+STATE_LIB = r"""
+// ---- the scene's own field (state pass) ----
+/**  An integer hash (Wellons' lowbias32).
+ *
+ * @param x  The input. (in)
+ *
+ * @return
+ *   A well mixed 32-bit value.
+ **/
+uint stHashU(uint x)
+{
+    x ^= x >> 16u; x *= 0x7feb352du; x ^= x >> 15u; x *= 0x846ca68bu; x ^= x >> 16u;
+    return x;
+}
+/**  A random number for this cell and this step (state pass): a different one for every k.
+ *
+ * @param k  Which of the cell's random streams. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1, the same for the same cell, step and k.
+ **/
+float stRand(int k)
+{
+    uvec2 c = uvec2(gl_FragCoord.xy);
+    uint  h = stHashU(c.x + stHashU(c.y + stHashU(uint(stateFrame) * 8u + uint(k))));
+    return float(h >> 8u) / 16777216.0;
+}
+/**  A random number for this step, the same in every cell (state pass).
+ *
+ * @param k  Which of the step's random streams. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
+float stRandStep(int k) { return float(stHashU(uint(stateFrame) * 8u + uint(k) + 0x9e3779b9u) >> 8u) / 16777216.0; }
+/**  A cell wrapped into the field (the field is a torus).
+ *
+ * @param ip  The cell, anywhere. (in)
+ *
+ * @return
+ *   The same cell inside 0..stateRes-1.
+ *
+ * The wrap uses floor, not %: GLSL leaves % undefined for a negative operand, and NVIDIA's -1 % 200 read a cell in
+ * the middle of the field (a rotor-router grew four discs from one source).
+ **/
+ivec2 stWrap(ivec2 ip)
+{
+    vec2 s = stateRes;
+    return ivec2(vec2(ip) - s * floor((vec2(ip) + 0.5) / s));
+}
+/**  The field at a cell, wrapped around.
+ *
+ * @param ip  The cell. (in)
+ *
+ * @return
+ *   The cell's state from the last step.
+ **/
+vec4 stAt(ivec2 ip) { return texelFetch(texState, stWrap(ip), 0); }
+/**  This texel's cell in the state pass.
+ *
+ * @return
+ *   The cell's integer coordinate.
+ **/
+ivec2 stCell() { return ivec2(gl_FragCoord.xy); }
+/**  The field filtered at a coordinate in cells (linear, wrapped).
+ *
+ * @param c  The coordinate in cells (cell centres at .5). (in)
+ *
+ * @return
+ *   The interpolated state.
+ **/
+vec4 stLin(vec2 c) { return texture(texState, c / stateRes); }
+/**  The five-point Laplacian of the field at a cell.
+ *
+ * @param ip  The cell. (in)
+ *
+ * @return
+ *   The neighbours' sum minus four times the cell.
+ **/
+vec4 stLap(ivec2 ip)
+{
+    return stAt(ip + ivec2(1, 0)) + stAt(ip - ivec2(1, 0)) + stAt(ip + ivec2(0, 1)) + stAt(ip - ivec2(0, 1))
+           - 4.0 * stAt(ip);
+}
+/**  The nine-point Laplacian (isotropic: the diagonals weigh a quarter, the sides a half).
+ *
+ * @param ip  The cell. (in)
+ *
+ * @return
+ *   The isotropic Laplacian of the field.
+ **/
+vec4 stLap9(ivec2 ip)
+{
+    vec4 s = stAt(ip + ivec2(1, 0)) + stAt(ip - ivec2(1, 0)) + stAt(ip + ivec2(0, 1)) + stAt(ip - ivec2(0, 1));
+    vec4 d = stAt(ip + ivec2(1, 1)) + stAt(ip - ivec2(1, 1)) + stAt(ip + ivec2(1, -1)) + stAt(ip + ivec2(-1, 1));
+    return 0.5 * s + 0.25 * d - 3.0 * stAt(ip);
+}
+/**  Where the screen shows the field: a screen point (screenP()) mapped to field cells, the field's height
+ * filling the screen's height divided by zoom; the field repeats beyond it.
+ *
+ * @param p     The screen point. (in)
+ * @param zoom  How many field heights the screen shows. (in)
+ *
+ * @return
+ *   The coordinate in cells.
+ **/
+vec2 stView(vec2 p, float zoom) { return (p * zoom + vec2(0.5 * stateRes.x / stateRes.y, 0.5)) * stateRes.y; }
 """
 
 CHAIN_LIB = r"""
@@ -2034,12 +2144,14 @@ def assemble(name):
         out.append("uniform float %s;" % q)
     for n, f in exprs:
         out.append("// @expr %s = %s" % (n, f.strip()))
-    st = re.search(r"^//@state\s+(\d+)\s+(\d+)\s+([0-9.]+)\s*$", src, re.M)
+    st = re.search(r"^//@state\s+(\d+)\s+(\d+)\s+([0-9.]+)(\s+32)?\s*$", src, re.M)
     if st:
-        out.append("// @state %s %s %s" % st.groups())
+        out.append("// @state %s %s %s%s" % (st.group(1), st.group(2), st.group(3), " 32" if st.group(4) else ""))
         out += ["uniform sampler2D texState;", "uniform int statePass;", "uniform float stateFrame;",
-                "uniform vec2 stateRes;"]
+                "uniform vec2 stateRes;", "uniform float stateFrac;"]
     out.append(LIB)
+    if st:
+        out.append(STATE_LIB)
     if re.search(r"vec2\s+chain\s*\(", body):
         out.append(CHAIN_LIB)
         import chain_classes as _ccp

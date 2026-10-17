@@ -1031,12 +1031,14 @@ protected:
     // ---- per-scene state (see usesState()) ----
     /**  Advances this scene's own field and binds it for the frame (17.10.2026).
      *
-     * A scene that declares "uniform sampler2D texState" and "uniform int statePass" (and a "// @state W H RATE"
-     * line: field size, steps per second) is drawn into a ping-pong pair of RGBA16F textures with statePass = 1,
-     * reading its last state from texState, RATE times a second (steps accumulated over sceneTime, at most eight a
-     * frame, none while the clock stands); then the frame is drawn as usual with statePass = 0 and texState holding
-     * the newest state. The same program, uniforms and photos serve both passes, so the step sees the music the frame
-     * sees. stateFrame counts the steps since the activation (0: seed the field); stateRes is the field's size.
+     * A scene that declares "uniform sampler2D texState" and "uniform int statePass" (and a "// @state W H RATE
+     * [32]" line: field size, steps per second, 32 for RGBA32F) is drawn into a ping-pong pair of RGBA16F (or 32F)
+     * textures with statePass = 1, reading its last state from texState, RATE times a second (steps accumulated over
+     * sceneTime, at most 8 a frame for a field of 512K cells, up to 64 for small ones, none while the clock stands);
+     * then the frame is drawn as usual with statePass = 0 and texState holding the newest state. The same program,
+     * uniforms and photos serve both passes, so the step sees the music the frame sees. stateFrame counts the steps
+     * since the activation (0: seed the field), stateFrac is the share of the next step already due (for motion
+     * between two steps), stateRes is the field's size.
      * Cellular automata, pattern-forming equations and a photo carried by a flow live here.
      **/
     void stepState();
@@ -1048,6 +1050,7 @@ protected:
     int    m_stateW = 0;              ///< Field width ("// @state W H RATE"; 0: half the render size).
     int    m_stateH = 0;              ///< Field height.
     float  m_stateRate = 60.f;        ///< Steps per second.
+    bool   m_stateF32 = false;        ///< RGBA32F instead of RGBA16F ("// @state W H RATE 32").
     float  m_stateAcc = 0.f;          ///< Fraction of a step carried to the next frame.
     float  m_stateLastT = 0.f;        ///< sceneTime of the last step decision.
     float  m_stateFrame = 0.f;        ///< Steps since the activation.
@@ -1056,6 +1059,7 @@ protected:
     GLint  m_stateTexUni = -1;        ///< Location of "texState".
     GLint  m_stateFrameUni = -1;      ///< Location of "stateFrame".
     GLint  m_stateResUni = -1;        ///< Location of "stateRes".
+    GLint  m_stateFracUni = -1;       ///< Location of "stateFrac".
     static const int StateUnit = 37;  ///< Texture unit of texState.
 
     std::string m_vertexShaderFilename; ///< Path to the vertex shader source (always "..\\standard.vert" in practice).
