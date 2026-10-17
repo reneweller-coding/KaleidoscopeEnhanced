@@ -94,19 +94,6 @@ vec3 hsv2rgb( vec3 c )
     vec3 k = clamp( abs( mod( c.x * 6.0 + vec3( 0.0, 4.0, 2.0 ), 6.0 ) - 3.0 ) - 1.0, 0.0, 1.0 );
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
-/**  A colour normalised to its maximum and raised to a power: a saturated neon of it.
- *
- * @param c  The colour. (in)
- * @param k  Exponent: the higher, the purer (and darker) the neon. (in)
- *
- * @return
- *   The saturated colour.
- **/
-vec3 neonOf( vec3 c, float k )
-{
-    vec3 n = c / max( max( c.r, max( c.g, c.b ) ), 1e-3 );
-    return pow( n, vec3( k ) );
-}
 /**  The pixel's position, centred and aspect-corrected (y spans -0.5..0.5).
  *
  * @return
@@ -303,9 +290,12 @@ void main()
 
 
         float hue_w = clamp( 1.0 - ( log2( max( max( fx, fy ) * 1024.0, 1.0 ) ) - 3.0 ) / 3.0, 0.0, 1.0 );
-        float h = hue_f + hue_w * ( 0.9 * cm.x + 0.6 * cm.y ) + 0.25 * m0;
-        vec3  field = hsv2rgb( vec3( fract( h ), 0.55 + 0.4 * swell, 1.0 ) ) * ( 0.35 + 1.3 * m0 );
-        vec3  tex = mix( max( ( ph - m0 ) * 1.4 + m0, 0.0 ), field, 0.2 + 0.75 * clamp( paletteP, 0.0, 1.0 ) );
+
+
+        float h = hue_f + hue_w * 0.13 * ( 0.6 * sin( 6.2831853 * cm.x ) + 0.4 * sin( 6.2831853 * cm.y + 1.3 ) )
+                  + 0.03 * m0;
+        vec3  field = hsv2rgb( vec3( fract( h ), 0.38 + 0.22 * swell, 1.0 ) ) * ( 0.35 + 1.3 * m0 );
+        vec3  tex = mix( max( ( ph - m0 ) * 1.1 + m0, 0.0 ), field, 0.2 + 0.55 * clamp( paletteP, 0.0, 1.0 ) );
         vec3  lc = mix( vec3( 0.75, 0.88, 1.1 ), vec3( 1.12, 0.92, 0.72 ), mode );
 
         vec3  lh = normalize( ro + vec3( 0.0, 0.0, 1.5 ) - q );
@@ -318,7 +308,8 @@ void main()
 
         float crest = smoothstep( 0.45, 0.85, hgt );
         float fres = pow( 1.0 - abs( dot( n, -rd ) ), 3.0 );
-        vec3  glow = neonOf( field + 1e-3, 2.0 ) * ( crest * ( 0.6 + 1.2 * kick ) + fres * 0.5 );
+        vec3  glow = hsv2rgb( vec3( fract( h ), 0.55 + 0.2 * swell, 1.0 ) )
+                     * ( crest * ( 0.6 + 1.2 * kick ) + fres * 0.5 );
         float st = clamp( styleP, 0.0, 1.0 );
         vec3  sc = mix( surf + glow * 0.25 * ( 0.5 + kick ), glow + surf * 0.55, smoothstep( 0.35, 0.65, st ) );
         col = mix( fog_c, sc, exp( -t * ( 0.07 + 0.03 * swell ) ) );

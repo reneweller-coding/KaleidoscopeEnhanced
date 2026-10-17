@@ -5607,3 +5607,20 @@ rotation phase what a long show gathers).
   surface slides toward it on time). HologramGauze's dancer held one pose, arms raised, for the whole scene and turned
   once in three minutes: her arms now sweep and bend about the shoulders, out of step, and she turns once a minute.
   HoneyFold (0.05 -> 0.12), EpoxyWaves (0.15 -> 0.3) and HurricaneEyeWall (0.025 -> 0.06) run faster on time.
+
+## 18.10.2026 (20): a calmer chain lab
+
+The 2D chain lab looked too colourful and too fast in its colours, against the rest of the program -- most of all
+in relief, glowing edges and contour lines. Measured (Tools-free, a scratch script: pinned looks x two palettes x
+three chains against a sample of 169 catalogue scenes), per frame over the coloured pixels: the share of coloured
+pixels was 0.87 .. 0.98 (catalogue median 0.47, p90 0.94), the hue change across the picture 0.17 .. 0.51 rad per
+4 px (catalogue median 0.09, p75 0.17), and over time 0.09 .. 0.26 rad per 1/6 s (median 0.07). The cause: the
+colour field's hue ran through 0.9 + 0.6 turns per unit of the chain's coordinates plus a quarter turn with the
+photo's luma, at 0.6 .. 0.95 saturation -- in a kaleidoscope or a tiling every cell the whole rainbow -- and the
+glow of edges and contour lines was that field, or the photo, pushed to neon (`neonOf`, `glowColour`'s cubed photo
+colour). Now one base hue that wanders with the music, a soft swing of +-0.13 turns over the chain (sines of the
+mirrored coordinates, so it stays seamless), saturation 0.38 .. 0.6, the photo's own colours raised 1.1 instead of
+1.4, and the glow drawn from the base hue with a little of the photo's own colour. In ChainLab2D, FxChain and the
+tunnel (sources Tools/scenegen/src, make_chainlabtunnel.py; the frags and Engine/ChainPass regenerated): the hue
+change across the picture 0.05 .. 0.14, over time 0.03 .. 0.11 -- the catalogue's range. The 3D chain lab's colour
+field is unchanged.

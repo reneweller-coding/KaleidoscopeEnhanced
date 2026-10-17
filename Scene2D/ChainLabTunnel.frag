@@ -4748,9 +4748,12 @@ void main()
         // The hue follows the chain's coordinates -- but not where they change
         // faster than a pixel (that would be colour noise): fade by the footprint.
         float hue_w = clamp( 1.0 - ( log2( max( max( fx, fy ) * 1024.0, 1.0 ) ) - 3.0 ) / 3.0, 0.0, 1.0 );
-        float h = hue_f + hue_w * ( 0.9 * cm.x + 0.6 * cm.y ) + 0.25 * m0;
-        vec3  field = hsv2rgb( vec3( fract( h ), 0.55 + 0.4 * swell, 1.0 ) ) * ( 0.35 + 1.3 * m0 );
-        vec3  tex = mix( max( ( ph - m0 ) * 1.4 + m0, 0.0 ), field, 0.2 + 0.75 * clamp( paletteP, 0.0, 1.0 ) );
+        // Calm colours, as in the 2D lab (18.10.2026): a soft swing of +-0.13 turns round the base hue instead of
+        // 1.5 turns per unit of the chain's coordinates, moderate saturation.
+        float h = hue_f + hue_w * 0.13 * ( 0.6 * sin( 6.2831853 * cm.x ) + 0.4 * sin( 6.2831853 * cm.y + 1.3 ) )
+                  + 0.03 * m0;
+        vec3  field = hsv2rgb( vec3( fract( h ), 0.38 + 0.22 * swell, 1.0 ) ) * ( 0.35 + 1.3 * m0 );
+        vec3  tex = mix( max( ( ph - m0 ) * 1.1 + m0, 0.0 ), field, 0.2 + 0.55 * clamp( paletteP, 0.0, 1.0 ) );
         vec3  lc = mix( vec3( 0.75, 0.88, 1.1 ), vec3( 1.12, 0.92, 0.72 ), mode );
         // A light travelling with the camera plus a slow circling key light.
         vec3  lh = normalize( ro + vec3( 0.0, 0.0, 1.5 ) - q );
@@ -4763,7 +4766,8 @@ void main()
         // Glowing crests: the relief's ridges light up in the palette colour.
         float crest = smoothstep( 0.45, 0.85, hgt );
         float fres = pow( 1.0 - abs( dot( n, -rd ) ), 3.0 );
-        vec3  glow = neonOf( field + 1e-3, 2.0 ) * ( crest * ( 0.6 + 1.2 * kick ) + fres * 0.5 );
+        vec3  glow = hsv2rgb( vec3( fract( h ), 0.55 + 0.2 * swell, 1.0 ) )
+                     * ( crest * ( 0.6 + 1.2 * kick ) + fres * 0.5 );
         float st = clamp( styleP, 0.0, 1.0 );
         vec3  sc = mix( surf + glow * 0.25 * ( 0.5 + kick ), glow + surf * 0.55, smoothstep( 0.35, 0.65, st ) );
         col = mix( fog_c, sc, exp( -t * ( 0.07 + 0.03 * swell ) ) );

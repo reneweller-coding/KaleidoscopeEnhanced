@@ -114,24 +114,6 @@ float noise2( vec2 p )
     return mix( mix( hash21( i ), hash21( i + vec2( 1.0, 0.0 ) ), f.x ),
                 mix( hash21( i + vec2( 0.0, 1.0 ) ), hash21( i + vec2( 1.0, 1.0 ) ), f.x ), f.y );
 }
-/**  Fractal noise of three octaves, 0..1.
- *
- * @param p  The point. (in)
- *
- * @return
- *   The fractal noise value, 0..1.
- **/
-float fbm3( vec2 p )
-{
-    float v = 0.0, a = 0.5;
-    for ( int i = 0; i < 3; ++i )
-    {
-        v += a * noise2( p );
-        p = mat2( 1.6, 1.2, -1.2, 1.6 ) * p + 2.3;
-        a *= 0.5;
-    }
-    return v;
-}
 /**  Mirrored repeat of a coordinate into 0..1 (seamless at every edge).
  *
  * @param uv  The coordinate, any range. (in)
@@ -178,47 +160,6 @@ vec3 hsv2rgb( vec3 c )
 {
     vec3 k = clamp( abs( mod( c.x * 6.0 + vec3( 0.0, 4.0, 2.0 ), 6.0 ) - 3.0 ) - 1.0, 0.0, 1.0 );
     return c.z * mix( vec3( 1.0 ), k, c.y );
-}
-/**  Saturation of a colour, 0..1.
- *
- * @param c  The colour. (in)
- *
- * @return
- *   The saturation, 0..1.
- **/
-float satOf( vec3 c )
-{
-    float mx = max( c.r, max( c.g, c.b ) );
-    return ( mx - min( c.r, min( c.g, c.b ) ) ) / max( mx, 1e-3 );
-}
-/**  A glowing colour for a place: the photo's own hue where it has one, a wandering hue field where it is grey.
- *
- * @param photo  The photo's colour at the place. (in)
- * @param q      The place; drives the wandering hue field. (in)
- * @param hue0   Anchor hue, 0..1. (in)
- *
- * @return
- *   The glow colour (RGB, bright).
- **/
-vec3 glowColour( vec3 photo, vec2 q, float hue0 )
-{
-    vec3 field = hsv2rgb( vec3( fract( hue0 + 0.55 * fbm3( q * 0.8 ) + 0.03 * audioAdvance ), 0.85, 1.0 ) );
-    vec3 own = photo / max( max( photo.r, max( photo.g, photo.b ) ), 1e-3 );
-    own = own * own * own;
-    return mix( field, own, smoothstep( 0.12, 0.35, satOf( photo ) ) );
-}
-/**  A colour normalised to its maximum and raised to a power: a saturated neon of it.
- *
- * @param c  The colour. (in)
- * @param k  Exponent: the higher, the purer (and darker) the neon. (in)
- *
- * @return
- *   The saturated colour.
- **/
-vec3 neonOf( vec3 c, float k )
-{
-    vec3 n = c / max( max( c.r, max( c.g, c.b ) ), 1e-3 );
-    return pow( n, vec3( k ) );
 }
 /**  The pixel's position, centred and aspect-corrected (y spans -0.5..0.5).
  *
@@ -397,18 +338,29 @@ void main()
     float m = luma( ph );
 
 
-    vec2  cm = gChainM;
-    float h = hueP * 0.159 + 0.9 * cm.x + 0.6 * cm.y + 0.25 * m + 0.12 * audioPhase + 0.004 * sceneTime + 0.3 * mode;
-    vec3  field = hsv2rgb( vec3( fract( h ), 0.6 + 0.35 * swell, 1.0 ) ) * ( 0.35 + 1.3 * m );
-    vec3  photo = max( ( ph - m ) * 1.4 + m, 0.0 );
-    photo = mix( photo, field, 0.25 + 0.7 * clamp( paletteP, 0.0, 1.0 ) );
+    vec2 cm = gChainM;
+
+
+
+
+    float h0 = hueP * 0.159 + 0.06 * audioPhase + 0.004 * sceneTime + 0.3 * mode;
+    float h = h0 + 0.13 * ( 0.6 * sin( 6.2831853 * cm.x ) + 0.4 * sin( 6.2831853 * cm.y + 1.3 ) ) + 0.03 * m;
+    float fsat = 0.38 + 0.22 * swell;
+    vec3  field = hsv2rgb( vec3( fract( h ), fsat, 1.0 ) ) * ( 0.35 + 1.3 * m );
+    vec3  photo = max( ( ph - m ) * 1.1 + m, 0.0 );
+    photo = mix( photo, field, 0.2 + 0.55 * clamp( paletteP, 0.0, 1.0 ) );
 
     float la = 0.1 * sceneTime;
     float relief = clamp( 0.5 + dot( grad, vec2( cos( la ), sin( la ) ) ) * 5.0, 0.0, 1.0 );
     vec3  relief_c = photo * ( 0.3 + 1.2 * relief )
                      + vec3( 1.0 ) * pow( relief, 6.0 ) * ( 0.1 + 0.3 * swell + 0.35 * kick );
 
-    vec3  gc = mix( glowColour( ph, p, hueP * 0.159 ), neonOf( field + 1e-3, 2.0 ), clamp( paletteP, 0.0, 1.0 ) );
+
+
+    vec3  own = ph / max( max( ph.r, max( ph.g, ph.b ) ), 1e-3 );
+    vec3  gbase = hsv2rgb( vec3( fract( h0 + 0.08 * sin( 6.2831853 * cm.x ) ), 0.55 + 0.2 * swell, 1.0 ) );
+    vec3  gc = mix( gbase, mix( vec3( dot( own, vec3( 0.333 ) ) ), own, 0.6 ),
+                    0.35 * ( 1.0 - clamp( paletteP, 0.0, 1.0 ) ) );
     float edge = smoothstep( 0.01, 0.14, length( grad ) );
     vec3  neon = gc * edge * ( 1.6 + 1.6 * kick ) + photo * 0.22;
 
