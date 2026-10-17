@@ -5586,3 +5586,10 @@ rotation phase what a long show gathers).
   (a fan at both ends), FleetReplenishmentOiler, MerchanterFinitysEnd (boxes with hatches at both ends),
   CommandCitadelStation (a station) and FuelTankerStarship (bridge windows facing aft, hull pointed forward) -- are no
   longer flybys but orbits: Spaceship.frag, the camera going round the craft.
+- **FireWhirlTornado** read as a hairy spiral of the photo: the photo at 0.7 filled the frame, the flame was a faint
+  tint over it, the whole palette turned with the hue knob (green fire), the noise of atan() cut a seam down the
+  funnel, and a fourth power of a coarse fbm at kick x 3 lit glowing blobs over the whole frame on every beat. Now
+  the noise twists in a rotating frame, the photo is a dim smoky ground, the flame saturates (a wide funnel had gone
+  one flat white), the knob only tints, and the sparks rise around the funnel. **PillarHall**'s emissive bands went
+  from 0.55 to 3.85 on every kick -- hard bright blocks on the near pillars; now 0.7 .. 1.2, and the pillars breathe
+  4 % on the kick instead of hopping 12 %. CalabiYauManifoldKaleido looked right on a second look.

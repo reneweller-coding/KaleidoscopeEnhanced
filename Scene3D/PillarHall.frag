@@ -275,18 +275,20 @@ void main()
     // A bounce off the floor, so pillar sides facing down are not dead.
     col += base * vec3( 0.22, 0.20, 0.18 ) * max( -n.y, 0.0 ) * 0.5;
 
-    // Emissive band climbing the pillars on the kick.
+    // Emissive band climbing the pillars, a little brighter on the kick.  At ( 0.25 + 1.5 kick ) x 2.2 it went
+    // from 0.55 to 3.85 on every beat: on the near pillars, which fill the frame's sides, hard bright blocks that
+    // jumped with the drums (18.10.2026).
     if ( vKind > 0.5 )
     {
         float band = fract( vHeight * 1.2 - time * 0.30 );
         col += hue2rgb( fract( hue + 0.5 ) )
                * pow( max( 1.0 - abs( band - 0.5 ) * 7.0, 0.0 ), 3.0 )
-               * ( 0.25 + 1.5 * audioKick ) * 2.2;
+               * ( 0.8 + 0.5 * audioKick ) * 0.9;
     }
 
     vec3 H = normalize( L + V );
     col += vec3( 1.0, 0.95, 0.85 ) * pow( max( dot( n, H ), 0.0 ), 60.0 )
-           * sun_vis * rel * ( 0.3 + 1.6 * audioHigh ) * 1.4;
+           * sun_vis * rel * ( 0.5 + 0.6 * audioHigh ) * 1.4;
 
     // Distance haze so the hall recedes. Pushed out from 190 to 300 units and
     // darkened: at 190 the fog card owned the far half of the frame, became the

@@ -199,9 +199,12 @@ void main()
         // Tornado funnel profile: r(y) narrows near base, flares at top
         float funnel_r = ( 0.25 + 0.35 * pow( max( y + 1.0, 0.0 ), 1.2 ) ) * trn + 0.1 * audioBass;
 
-        // Upward vortex motion: theta + y * twist - t
-        float theta = atan( p.z, p.x );
-        vec3  vortex_coord = vec3( r * 4.0, y * 3.0 - t * 4.0, theta * 2.0 + y * 2.0 - t * 6.0 );
+        // Upward vortex motion: the noise is sampled in a frame that twists with the height and turns with time --
+        // the same swirl as theta * 2 + y * 2 - t * 6, without the angle's cut (18.10.2026: the noise of atan()
+        // stood as a seam down the funnel).
+        float tw = y - t * 3.0;
+        vec2  q = mat2( cos( tw ), sin( tw ), -sin( tw ), cos( tw ) ) * p.xz;
+        vec3  vortex_coord = vec3( q.x * 4.0, y * 3.0 - t * 4.0, q.y * 4.0 );
 
         float fbm_val = fireFBM( vortex_coord );
 
@@ -218,26 +221,35 @@ void main()
     // Photo texture mapping warped by thermal updraft
     vec2 photo_warp = st
                       + vec2( sin( uv.y * 6.0 + t * 2.0 ), cos( uv.x * 6.0 - t * 2.0 ) ) * 0.04 * ( 1.0 + audioKick );
-    vec3 photo = img( fract( photo_warp ) );
+    vec3 photo = img( 1.0 - abs( 1.0 - 2.0 * fract( photo_warp * 0.5 ) ) ); // mirrored at the edges, no seam
 
     // Blackbody thermal flame colors (red -> orange -> yellow -> white-hot)
     vec3 fire_color = palTint(
         mix( vec3( 0.8, 0.15, 0.02 ), vec3( 1.0, 0.65, 0.1 ), clamp( accum_flame * 1.5, 0.0, 1.0 ) ),
         0.08 * clamp( accum_flame * 1.5, 0.0, 1.0 ), 0.20 );
-    fire_color = mix( fire_color, vec3( 1.0, 0.95, 0.85 ),
-                      clamp( accum_flame * 0.8 * ht + audioKick * 1.5, 0.0, 1.0 ) );
+    // The white-hot core only where the flame is dense, and never all white: a wide funnel (tornadoP 2.2) summed
+    // to a flame of several units and the frame went one flat white.
+    float flame_i = 1.0 - exp( -accum_flame * 2.2 ); // saturating: the funnel's density, 0..1
+    fire_color = mix( fire_color, vec3( 1.0, 0.92, 0.78 ),
+                      0.6 * smoothstep( 0.55, 1.0, flame_i * ( 0.8 + 0.2 * ht ) + 0.25 * audioKick ) );
 
-    // Combine visualizer
-    vec3 col = mix( photo * 0.7, vec3( 0.1, 0.08, 0.08 ), clamp( accum_smoke * 0.8, 0.0, 1.0 ) );
-    col += accum_flame * fire_color * ( 1.2 + audioSwell * 0.8 );
+    // Combine visualizer.  The fire leads (18.10.2026): the photo at 0.7 filled the frame and the flame, at its
+    // accumulated density, was a faint tint over it -- the whirl did not read as fire.  The photo is a dim, smoky
+    // ground now and the flame stronger, saturating.
+    vec3 col = mix( photo * 0.22, vec3( 0.05, 0.035, 0.03 ), clamp( accum_smoke * 0.8, 0.0, 1.0 ) );
+    col += flame_i * fire_color * ( 1.5 + audioSwell * 0.6 );
 
     // Rising ember sparks
-    float embers = pow( fireFBM( vec3( uv * 12.0, t * 3.0 ) ), 4.0 ) * ( audioKick * 3.0 + audioHigh * 1.5 );
-    col += embers * vec3( 1.0, 0.8, 0.3 ) * 2.0;
+    // Sparks around the funnel only, rising, brighter on the kick (18.10.2026): a fourth power of a coarse fbm at
+    // kick x 3 lit glowing blobs over the whole frame on every beat -- a full-frame flicker.
+    float ember_f = fireFBM( vec3( uv.x * 22.0, uv.y * 14.0 - t * 5.0, t * 1.5 ) );
+    float embers = smoothstep( 0.62, 0.78, ember_f ) * exp( -abs( uv.x ) * 3.5 )
+                   * ( 0.25 + 0.8 * audioKick + 0.4 * audioHigh );
+    col += embers * vec3( 1.0, 0.75, 0.3 ) * 0.9;
 
-    if ( audioChromaHue != 0.0 )
-        if ( hue > 0.001 )
-            col = hueRot( col, hue );
+    // A tint, not a turn of the whole palette: fire stays fire (a full rotation made it green or blue).
+    if ( hue > 0.001 )
+        col = hueRot( col, 0.15 * sin( hue ) );
 
     // Vignette
     float vig = smoothstep( 1.3, 0.35, length( uv ) );

@@ -117,7 +117,7 @@ void main()
         // tall about the origin, and a pillar whose top leaves it stops
         // casting.
         float h = heightP * ( 7.0 + 20.0 * e * ( 0.5 + 0.9 * attrB.x ) )
-                  * ( 1.0 + 0.12 * audioKick );
+                  * ( 1.0 + 0.04 * audioKick ); // a breath on the kick, no hop
         h = max( h, 6.0 );
 
         vec3 size = vec3( 2.2 + 1.4 * attrB.y, h, 2.2 + 1.4 * attrB.z );
