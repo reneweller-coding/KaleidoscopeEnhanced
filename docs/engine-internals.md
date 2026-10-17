@@ -6090,3 +6090,43 @@ Eighteen scenes of family G.
   - Each hole opens by its size on screen, not by its level.
   - The hash seed is kept when the flight passes through a middle hole and changed only in the side holes.
   - The light and dark turns follow the absolute generation, floor(z) plus the holes entered.
+
+## 17.10.2026 (33): spaces and topology (ideas 119-134)
+
+Sixteen scenes of family H, most of them ray-marched.
+- **Four-dimensional polytopes by Coxeter folding.**
+  - The point is projected stereographically onto S^3, turned in two planes and folded into the chamber of the
+    symmetry group. The folding repeats the reflections until the point lies on their positive sides.
+  - Polytope600CellShadow uses H4, which needs 15 passes. TwentyFourCellBreathing uses F4, which needs 6.
+  - The corner is the Wythoff point: it lies on all mirrors but one. H4 with the end node ringed has 120 corners,
+    which is the 600-cell. F4 with either end node ringed has 24, which is the 24-cell and its dual. All of this was
+    checked in Python by counting the orbit.
+  - The distance to a half-edge on the sphere is the angle to the projection onto the plane (corner, mirror normal).
+    It is scaled to space by (1 + r^2) / 2.
+  - With the eye inside a tube, the march is negated and runs to the tube's inner wall.
+- **Quotient spaces.**
+  - LensSpaceInterior marches along great circles of S^3. It folds by arg z1 and checks the copies k and k +- 1.
+  - PoincareDodecahedralSpace is a portal trace. It leaves through the nearest face plane and comes in at
+    R(n, 36 deg)(e - 2n), which lands on the opposite face because -F = R(36 deg)(F - 2n) as a set.
+  - ThreeTorusFlight is a mirrored cubic crystal.
+  - NilGeometryHelix folds by the Heisenberg action, (x, y, z) ~ (x + 1, y, z + y). Its rays curl about the vertical
+    as Nil's geodesics do. Only x-steps shear, so the eye stays near x = 0.
+- **SolGeometryTunnel** draws bead slices of the lattice in the cat map's eigenbasis, stretched by (e^z, e^-z). It
+  repeats itself after ln(phi^2), and the beads are coloured by X * Y, which the stretch keeps.
+- **HyperbolicDodecahedronFlight** works in the Poincare ball.
+  - It folds by the icosahedral mirrors and inverts in the face sphere, with D = 1.3157 and R = 0.8550 for a
+    dihedral angle of 72 degrees. The edge is the face sphere's circle in the mirror y = 0.
+  - It flies by a hyperbolic translation along a 5-fold axis. This wraps after 4 inradii (3.9855), because the two
+    reflections in opposite faces compose to that translation.
+- **Infinite zooms:**
+  - AntoineNecklaceZoom flies toward the fixed point of "into link 0", q* = e1 / (1 - a). It renders from two
+    levels up, and a level fades by its depth relative to the zoom, so the wrap is unseen.
+  - AlexanderHornedSphere is a binary tree of linked rings. Each child is turned into the parent's xz-plane and a
+    quarter within its own plane.
+- **The rest:**
+  - SphereEversionLoop: both sheets r = R(u) and r = -R(-u). The side shown is chosen by which sheet was hit.
+  - CostaSurfaceTunnel: (r - R(y)) sin(pi y / P) - eps cos(2 phi) near each waist.
+  - RiemannSurfaceSheets: helicoid ramps of n sheets, or endless for the logarithm.
+  - SL2RFlowField: an exact exp(tau X) Moebius flow in two phases.
+  - ProjectivePlaneRoll: Steiner's Roman surface.
+  - FlatTorusUnfold: the Clifford torus turned once a phrase.
