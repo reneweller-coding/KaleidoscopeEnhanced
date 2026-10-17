@@ -6050,3 +6050,43 @@ any diffusion on the middle level. Taken from the older row it is stable (DuFort
 gentle pump, A *= 1 + 0.004 (1 - |A|^2), keeps the mean power from starving or running away. A slow sideways shift
 of both earlier rows lets the filaments wander.
 
+
+## 17.10.2026 (32): tilings in motion (ideas 101-118)
+
+Eighteen scenes of family G.
+- **Symmetry groups:**
+  - WallpaperGroupMorph folds the plane by eight wallpaper groups (pmm, p2, p4, p4m, p3, p6m, cmm, pg). A change of
+    harmony crossfades to the next group.
+  - ApeirogonalTiling folds the Poincare disc by {p, q} with p from 7 to 20, and the polygons alternate light and
+    dark.
+  - ModularTessellationFlow reduces a point to the modular group's fundamental domain. It is shown in the disc
+    model, and its triangles are light and dark like Klein's picture. The flow is elliptic, hyperbolic or
+    parabolic, chosen by the harmony. The parabolic shift wraps after eight, and the word hash treats n and n + 8
+    alike, so the wrap does not show.
+- **Escher's methods:**
+  - ConwayCriterionTiles bends a hexagonal tiling's edges by a periodic displacement.
+  - IsohedralTileMorph bends square tilings of the TTTT, rotation and brick types. Every tile holds the same motif,
+    taken in its own bent cell.
+  - GirihStrapwork uses Hankin's polygons in contact over squares or hexagons.
+  - HexToTriMorph slides three line families between triangles, kagome and hexagons.
+- **Folding and cutting:**
+  - MiuraFoldField folds and unfolds on an integrated clock and draws together as it folds. The swell only deepens
+    the light and shade.
+  - YoshimuraBuckling, KirigamiExpansion (opening on the phrase clock), NetsOfPolytopes (cube nets folding, seen
+    from straight above) and HoberSphereLattice.
+- **Others:**
+  - QuasiperiodicDualGrid (de Bruijn grids of 5 to 13 families).
+  - SpiderwebTessellation (log-polar).
+  - CirclePatternFlow (a circle packing on the log plane).
+  - PolyominoFlow: three rows or columns slide per beat, and a round of moves is undone in reverse. The beats are
+    counted on the state pass. The three lines of a step are distinct and on one axis, so they commute and glide
+    together.
+  - ShearingMosaic (whole tiles slid by row and column shears).
+
+**A seamless flight into the Sierpinski carpet.**
+- Every hole holds a carpet of its own. The view grows by 3 / brc per generation, where brc is the middle hole's
+  fixed size; only the other holes breathe. The zoom is wrapped and shows the same picture one generation on.
+- Three things keep the wrap invisible:
+  - Each hole opens by its size on screen, not by its level.
+  - The hash seed is kept when the flight passes through a middle hole and changed only in the side holes.
+  - The light and dark turns follow the absolute generation, floor(z) plus the holes entered.

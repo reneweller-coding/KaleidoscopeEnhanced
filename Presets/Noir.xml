@@ -1650,13 +1650,6 @@
     <float name="jetP" minValue="0.6" maxValue="2.2"></float>
     <float name="lensP" minValue="0.8" maxValue="2.5"></float>
   </TextureShader>
-  <TextureShader minTimeSolo="19" maxTimeSolo="51" interest="6" grade="fade,grey,sepia" file="..\Scene2D\CatatumboRelightningTower.frag" type="normal" probability="0.4" mood="aggressive,bright" complexity="6" gpuMs="0.37">
-    <rig preset="flat"/>
-    <float name="branchP" minValue="1.0" maxValue="3.5"></float>
-    <float name="cloudP" minValue="0.6" maxValue="2.0"></float>
-    <float name="flashP" minValue="0.8" maxValue="2.5"></float>
-    <float name="methaneP" minValue="0.2" maxValue="1.5"></float>
-  </TextureShader>
   <TextureShader minTimeSolo="30" maxTimeSolo="78" interest="7" grade="fade,grey,sepia" file="..\Scene3D\LuttingerLiquidSpinChargeSeparation.frag" type="scene3d" geom="ribbon" probability="0.45" mood="calm,psychedelic" complexity="10" gpuMs="0.46">
     <rig preset="procedural"/>
     <float name="ribbonWidthP" minValue="0.02" maxValue="0.1"></float>
@@ -3664,6 +3657,14 @@
     <rig preset="flat"/>
     <float name="powerP" minValue="0" maxValue="1"></float>
     <float name="spreadP" minValue="0" maxValue="1"></float>
+    <float name="photoP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader minTimeSolo="30" maxTimeSolo="78" interest="7" grade="fade,grey,sepia" file="..\\Scene2D\\SierpinskiCarpetBreathe.frag" type="normal" mood="psychedelic,calm" probability="0.45" complexity="6">
+    <rig preset="flat"/>
+    <float name="depthP" minValue="0" maxValue="1"></float>
+    <float name="breathP" minValue="0" maxValue="1"></float>
     <float name="photoP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
