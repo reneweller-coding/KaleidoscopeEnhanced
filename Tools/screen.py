@@ -745,8 +745,9 @@ def main():
                     help="so viele Aufnahmen gleichzeitig rendern und auswerten (die GPU-Kosten misst "
                          "nur --jobs 1, nebeneinander verfaelschen sich die Zeiten)")
     ap.add_argument("--time-start", type=int, default=0, dest="time_start",
-                    help="die Uhr der Shader vorstellen (Sekunden) -- prueft, "
-                         "ob eine Szene nach langer Laufzeit noch etwas zeigt"),
+                    help="die Programmuhr vorstellen (Sekunden).  Seit 17.10.2026 sehen Szenen, FX und "
+                         "Uebergaenge ihre Uhren relativ zur Aktivierung: das prueft nur noch, was "
+                         "an der Programmuhr selbst haengt (Tageszyklus, Fotowechsel, Simulationen)"),
     ap.add_argument("--report", action="store_true", help="nur neu auswerten")
     ap.add_argument("--confirm", action="store_true",
                     help="die auffaelligen Szenen der letzten Messung mit drei "

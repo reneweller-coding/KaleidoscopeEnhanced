@@ -37,7 +37,7 @@
 out vec4 fragColor; ///< The pixel's colour (output).
 // RainOnWater.frag — ink-dark water under a low moon, ripple rings catching
 // its long trembling reflection, drizzle falling through the night sky behind.
-uniform float time;           ///< Seconds since the program started (never reset; see sceneTime).
+uniform float time;           ///< Seconds since this activation, plus a rolled start (see sceneTime).
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 uniform float audioMode;      ///< Mode of the music: 0 minor .. 1 major.

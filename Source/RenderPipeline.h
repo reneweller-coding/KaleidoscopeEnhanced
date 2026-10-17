@@ -2034,8 +2034,11 @@ private:
     GLuint       m_actTex = 0;                  ///< Currently displayed background-photo texture.
     GLuint       m_nextTex = 0; ///< Incoming background-photo texture (cross-fade target / next solo image).
 
-    float m_globaltime; ///< Accumulated wall time (seconds, paused while frozen) driving every time-based shader
-                        ///< uniform; advanced once per frame in paint().
+    /// Accumulated wall time (seconds, paused while frozen) driving every time-based shader -- a double since
+    /// 17.10.2026: as a float it lost the frame step in a long show (after four days at 60 Hz it ran in 31-ms steps,
+    /// after eight it stood still).  Effects take it relative to their activation (EffectShader::setUniforms()).
+    /// Advanced once per frame in paint().
+    double m_globaltime;
 
     std::vector<EffectShader *> m_effectTextures; ///< All configured texture-effect shaders for this preset (registered
                                                   ///< via addTextureShader()); indexed by the SceneScheduler.

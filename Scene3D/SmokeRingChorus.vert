@@ -18,7 +18,7 @@ layout( location = 1 ) in vec4 attrB; ///< x = life, y = kind (-1 wall, 0/1 ring
 
 uniform mat4  projM;   ///< Projection matrix.
 uniform float eyeOff;  ///< Stereo eye offset (0 in mono).
-uniform float time;    ///< Seconds since the program started (never reset; see sceneTime).
+uniform float time;    ///< Seconds since this activation, plus a rolled start (see sceneTime).
 uniform float oitPass; ///< Order-independent transparency pass flag.
 
 out vec2  vTexCoord; ///< Texture coordinate (from the vertex stage).

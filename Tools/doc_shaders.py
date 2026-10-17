@@ -43,7 +43,7 @@ EXT = (".frag", ".vert", ".comp", ".tesc", ".tese", ".geom")
 
 # ---- the shared uniforms, varyings and globals --------------------------------
 VARS = {
-    "time": "Seconds since the program started (never reset; see sceneTime).",
+    "time": "Seconds since this activation, plus a rolled start (see sceneTime).",
     "sceneTime": "Seconds since this scene was activated.",
     "sceneAdvance": "The music's advance since this scene was activated (integrated, never jumps).",
     "sceneProgress": "Progress through this scene's solo time, 0..1.",

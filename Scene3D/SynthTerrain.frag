@@ -20,7 +20,7 @@
  */
 out vec4 fragColor; ///< The pixel's colour (output).
 // SynthTerrain.frag — dark ground, glowing synthwave grid lines.
-uniform float     time;           ///< Seconds since the program started (never reset; see sceneTime).
+uniform float     time;           ///< Seconds since this activation, plus a rolled start (see sceneTime).
 uniform float     audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 uniform float     audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float     audioCentroid;  ///< Spectral centroid (brightness of the sound), 0..1.

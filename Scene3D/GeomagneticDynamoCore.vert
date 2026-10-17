@@ -15,7 +15,7 @@ layout( location = 1 ) in vec4 attrB; ///< x = radius, y = phase, z = isHaze, w 
 uniform mat4  projM;        ///< Projection matrix.
 uniform float eyeOff;       ///< Stereo eye offset (0 in mono).
 uniform float audioKick;    ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float time;         ///< Seconds since the program started (never reset; see sceneTime).
+uniform float time;         ///< Seconds since this activation, plus a rolled start (see sceneTime).
 uniform float audioAdvance; ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
                             ///< backwards).
 uniform vec2 resolution;    ///< Size of the render target in pixels.

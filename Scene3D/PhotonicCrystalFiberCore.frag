@@ -36,7 +36,7 @@ uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighte
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 uniform float audioLevel;     ///< Overall loudness, 0..1.
 uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float time;           ///< Seconds since the program started (never reset; see sceneTime).
+uniform float time;           ///< Seconds since this activation, plus a rolled start (see sceneTime).
 uniform float audioCentroid;  ///< Spectral centroid (brightness of the sound), 0..1.
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioSubBass;   ///< Sub-bass band level, 0..1.

@@ -32,7 +32,7 @@ uniform int            texMeshMaterialLayers;  ///< Number of layers in texMeshM
 uniform sampler2DArray texMeshMaterial2;       ///< ship
 uniform int            texMeshMaterialLayers2; ///< Number of layers in the second mesh's material textures.
 
-uniform float time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform float time;          ///< Seconds since this activation, plus a rolled start (see sceneTime).
 uniform float sceneProgress; ///< Progress through this scene's solo time, 0..1.
 uniform float audioAdvance;  ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
                              ///< backwards).

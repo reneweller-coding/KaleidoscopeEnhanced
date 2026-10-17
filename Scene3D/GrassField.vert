@@ -22,7 +22,7 @@ out float gIndex; ///< Index (from the geometry stage).
 uniform float audioAdvance; ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
                             ///< backwards).
 uniform float sceneSeed;    ///< A random number fixed per activation.
-uniform float time;         ///< Seconds since the program started (never reset; see sceneTime).
+uniform float time;         ///< Seconds since this activation, plus a rolled start (see sceneTime).
 
 // Field size.  z runs ahead of the camera (the engine projects with -z).
 const float FieldW = 26.0; ///< Width of the grass field (world units).

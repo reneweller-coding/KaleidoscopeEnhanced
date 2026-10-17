@@ -26,7 +26,7 @@ uniform mat4  projM;        ///< Projection matrix.
 uniform mat4  lightM;       ///< Light view-projection matrix (shadow map).
 uniform float shadowPass;   ///< 1 during the shadow map's depth-only pass.
 uniform float eyeOff;       ///< Stereo eye offset (0 in mono).
-uniform float time;         ///< Seconds since the program started (never reset; see sceneTime).
+uniform float time;         ///< Seconds since this activation, plus a rolled start (see sceneTime).
 uniform vec2  resolution;   ///< Size of the render target in pixels.
 uniform float audioAdvance; ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
                             ///< backwards).

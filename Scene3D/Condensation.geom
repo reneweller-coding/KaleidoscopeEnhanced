@@ -45,7 +45,7 @@ out float vFormed; ///< 0 = still gas, 1 = arrived on the surface
 
 uniform mat4  projM;         ///< Projection matrix.
 uniform float eyeOff;        ///< Stereo eye offset (0 in mono).
-uniform float time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform float time;          ///< Seconds since this activation, plus a rolled start (see sceneTime).
 uniform float sceneProgress; ///< Progress through this scene's solo time, 0..1.
 uniform vec3  meshExtent;    ///< Half size of the scene's mesh bounding box.
 uniform vec3  meshCenter;    ///< Centre of the scene's mesh bounding box.

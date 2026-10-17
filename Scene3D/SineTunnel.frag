@@ -19,7 +19,7 @@
 out vec4 fragColor; ///< The pixel's colour (output).
 // SineTunnel.frag — smooth colour bands flow along the tube; a gentle
 // helix stripe winds around it.  Deep teal-violet palette, no strobes.
-uniform float time;           ///< Seconds since the program started (never reset; see sceneTime).
+uniform float time;           ///< Seconds since this activation, plus a rolled start (see sceneTime).
 uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
                               ///< backwards).
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).

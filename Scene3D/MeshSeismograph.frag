@@ -34,7 +34,7 @@ uniform sampler2D texSpectro;  ///< 32 log-spaced bands across, ~20 s of history
 uniform float     spectroHead; ///< T coordinate of "now"
 uniform float     spectroFill; ///< How full the spectrogram ring texSpectro is, 0..1 (after a scene start).
 
-uniform float time;       ///< Seconds since the program started (never reset; see sceneTime).
+uniform float time;       ///< Seconds since this activation, plus a rolled start (see sceneTime).
 uniform float audioKick;  ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 uniform float audioSwell; ///< Slow loudness envelope, 0..1 (seconds).
 uniform float audioLevel; ///< Overall loudness, 0..1.

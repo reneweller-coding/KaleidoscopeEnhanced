@@ -21,7 +21,7 @@
 out vec4 fragColor; ///< The pixel's colour (output).
 // OceanNight.frag — deep blue water, a moon-glitter lane running to the
 // horizon, foam sparkle on the crests.
-uniform float     time;           ///< Seconds since the program started (never reset; see sceneTime).
+uniform float     time;           ///< Seconds since this activation, plus a rolled start (see sceneTime).
 uniform float     audioCentroid;  ///< Spectral centroid (brightness of the sound), 0..1.
 uniform float     audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float     audioDrop;      ///< Drop envelope: high after a detected drop, decaying.

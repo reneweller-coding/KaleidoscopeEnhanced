@@ -33,7 +33,7 @@ uniform sampler2D texPrev;      ///< The simulation's previous state.
 uniform vec2      resolution;   ///< full atlas size in pixels
 uniform float     seedMode;     ///< 1 on the very first frame -> clear to black
 uniform float     subStep;      ///< 0 = horizontal pass, 1 = vertical pass
-uniform float     time;         ///< Seconds since the program started (never reset; see sceneTime).
+uniform float     time;         ///< Seconds since this activation, plus a rolled start (see sceneTime).
 uniform float     turbulence;   ///< audio treble/onset -> per-cell swirl strength
 uniform float     injectAmt;    ///< audio kick/bass/drop -> base injection strength
 uniform float     emitterPhase; ///< integrated (jump-free) wander phase for emitters

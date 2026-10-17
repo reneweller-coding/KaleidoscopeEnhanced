@@ -24,7 +24,7 @@ in vec4 attrB; ///< mesh: xyz = object-space normal,   w = V.  shell: xyz = outw
 
 uniform mat4  projM;           ///< Projection matrix.
 uniform float eyeOff;          ///< Stereo eye offset (0 in mono).
-uniform float time;            ///< Seconds since the program started (never reset; see sceneTime).
+uniform float time;            ///< Seconds since this activation, plus a rolled start (see sceneTime).
 uniform int   meshVertexCount; ///< Vertices of the scene's mesh.
 uniform vec3  meshExtent;      ///< half-extents of THIS model, object space
 uniform vec3  meshCenter;      ///< Centre of the scene's mesh bounding box.

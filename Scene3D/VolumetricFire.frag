@@ -106,7 +106,7 @@ vec3 hueRot( vec3 c, float a )
     return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 
-uniform float time;      ///< Seconds since the program started (never reset; see sceneTime).
+uniform float time;      ///< Seconds since this activation, plus a rolled start (see sceneTime).
 uniform float audioKick; ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 
 /**  Pseudo-random value of a 2D point.

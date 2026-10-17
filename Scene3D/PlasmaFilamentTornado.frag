@@ -20,7 +20,7 @@ out vec4 fragColor; ///< The pixel's colour (output).
 // PlasmaFilamentTornado.frag
 
 uniform vec2  resolution;     ///< Size of the render target in pixels.
-uniform float time;           ///< Seconds since the program started (never reset; see sceneTime).
+uniform float time;           ///< Seconds since this activation, plus a rolled start (see sceneTime).
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float hueP;           ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 

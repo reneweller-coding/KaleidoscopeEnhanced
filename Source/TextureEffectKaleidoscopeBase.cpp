@@ -157,7 +157,7 @@ TextureEffectKaleidoscopeBase::~TextureEffectKaleidoscopeBase()
  * The rotation state machine below it is entirely commented out (dead code) - only the
  * static m_interpolationRotation value set by resetParameters() reaches the shader.
  **/
-void TextureEffectKaleidoscopeBase::setUniforms( float time, float interpolation, GLint texLoc1, GLint texLoc2 )
+void TextureEffectKaleidoscopeBase::setUniforms( double time, float interpolation, GLint texLoc1, GLint texLoc2 )
 {
     EffectShader::setUniforms( time, interpolation, texLoc1, texLoc2 );
     /*************************Rotation*******************************************************/

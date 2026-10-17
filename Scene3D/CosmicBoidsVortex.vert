@@ -22,7 +22,7 @@ in vec4 attrB; ///< Vertex attribute B (meaning per geometry kind; e.g. normal o
 
 uniform mat4  projM;      ///< Projection matrix.
 uniform float eyeOff;     ///< Stereo eye offset (0 in mono).
-uniform float time;       ///< Seconds since the program started (never reset; see sceneTime).
+uniform float time;       ///< Seconds since this activation, plus a rolled start (see sceneTime).
 uniform vec2  resolution; ///< Size of the render target in pixels.
 
 uniform float audioBeatPhase;     ///< Position within the current beat, 0..1.

@@ -21,7 +21,7 @@ out vec4 fragColor; ///< The pixel's colour (output).
 // SilkPhoto.frag — the photo itself, recognisable, with cloth shading and a
 // silky key-coloured sheen wandering across the folds.
 uniform sampler2D tex0;           ///< The current photo.
-uniform float     time;           ///< Seconds since the program started (never reset; see sceneTime).
+uniform float     time;           ///< Seconds since this activation, plus a rolled start (see sceneTime).
 uniform float     audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float     audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 uniform float     audioDrop;      ///< Drop envelope: high after a detected drop, decaying.

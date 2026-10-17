@@ -44,7 +44,7 @@ uniform float windPhase; ///< Phase of the wind wave (integrated).
 uniform float windAmp;   ///< Strength of the wind.
 uniform float kick;      ///< Kick envelope, 0..1.
 uniform float level;     ///< The music's level, 0..1.
-uniform float time;      ///< Seconds since the program started (never reset; see sceneTime).
+uniform float time;      ///< Seconds since this activation, plus a rolled start (see sceneTime).
 
 /**  Displacement of grid node p (clamped to the grid).
  *

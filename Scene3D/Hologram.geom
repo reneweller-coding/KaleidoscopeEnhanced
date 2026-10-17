@@ -44,7 +44,7 @@ out float vBg;       ///< Background flag (from the vertex stage).
 
 uniform mat4  projM;  ///< Projection matrix.
 uniform float eyeOff; ///< Stereo eye offset (0 in mono).
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform float time;   ///< Seconds since this activation, plus a rolled start (see sceneTime).
 
 uniform float audioAdvance; ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
                             ///< backwards).

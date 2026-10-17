@@ -33,7 +33,7 @@ out vec4 fragColor; ///< The pixel's colour (output).
 uniform sampler2D tex0; ///< The current photo.
 uniform sampler2D tex1; ///< The next photo (cross-faded in by interpolation).
 
-uniform float time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform float time;          ///< Seconds since this activation, plus a rolled start (see sceneTime).
 uniform float interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 uniform float audioAdvance;  ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
                              ///< backwards).

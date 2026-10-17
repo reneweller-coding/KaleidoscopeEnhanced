@@ -73,7 +73,7 @@ layout( std430, binding = 1 ) buffer CmdBuf
 }; // [0]=count [4]=rawCount (atomic)
 
 uniform float genPass; ///< 1 while the generation pass runs (it fills the state buffer once), 0 in the frames after.
-uniform float time;         ///< Seconds since the program started (never reset; see sceneTime).
+uniform float time;         ///< Seconds since this activation, plus a rolled start (see sceneTime).
 uniform float sceneSeed;    ///< A random number fixed per activation.
 uniform float audioKick;    ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 uniform float audioLevel;   ///< Overall loudness, 0..1.

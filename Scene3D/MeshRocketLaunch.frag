@@ -35,7 +35,7 @@ uniform int            texMeshMaterialLayers;  ///< Number of layers in texMeshM
 uniform sampler2DArray texMeshMaterial2;       ///< the rocket
 uniform int            texMeshMaterialLayers2; ///< Number of layers in the second mesh's material textures.
 
-uniform float time;         ///< Seconds since the program started (never reset; see sceneTime).
+uniform float time;         ///< Seconds since this activation, plus a rolled start (see sceneTime).
 uniform float audioBuildUp; ///< Build-up toward a drop, 0..1.
 uniform float audioBass;    ///< Bass band level, 0..1.
 uniform float audioKick;    ///< Kick-drum envelope, 0..1 (fast attack, short decay).

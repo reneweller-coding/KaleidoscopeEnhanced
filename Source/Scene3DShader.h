@@ -255,7 +255,7 @@ public:
      * @param texLoc1        Texture unit bound as `tex0` (current image). (in)
      * @param texLoc2        Texture unit bound as `tex1` (incoming crossfade image). (in)
      **/
-    void setUniforms( float time, float interpolation,
+    void setUniforms( double time, float interpolation,
                       GLint texLoc1, GLint texLoc2 ) override;
     /**  Applies this activation's hue offset to the chroma hue and audio rotation/advance phases before forwarding
      * the features to EffectShader, and caches the adjusted snapshot for the (separate-program) indirect generator.
@@ -470,7 +470,7 @@ private:
     unsigned int m_frameIndex = 0; ///< Running frame counter uploaded to the generator as `frameIndex`; incremented
                                    ///< once per runGenerator() call.
     AudioFeatures m_lastAudio;                                 ///< this scene's features, for the generator
-    float         m_lastTime = 0.f;                            ///< raw time from setUniforms, ditto
+    float         m_lastTime = 0.f;                            ///< the `time` the render stages got (EffectShader::m_exprTime), for the generator
     float         m_shadowExtent = EffectShader::ShadowExtent; ///< This scene's shadow-map light box half-width (see
                                                                ///< setShadowExtent()/shadowExtent()).
     // The counter-clamp pass is identical for every indirect scene, so it is

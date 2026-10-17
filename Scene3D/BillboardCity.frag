@@ -20,7 +20,7 @@ out vec4 fragColor; ///< The pixel's colour (output).
 // BillboardCity.frag — each screen: kaleido-mirrored crop of the image,
 // neon border, brightness driven by the board's own spectrum band.
 uniform sampler2D tex0;           ///< The current photo.
-uniform float     time;           ///< Seconds since the program started (never reset; see sceneTime).
+uniform float     time;           ///< Seconds since this activation, plus a rolled start (see sceneTime).
 uniform float     audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float     audioDrop;      ///< Drop envelope: high after a detected drop, decaying.
 

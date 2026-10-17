@@ -42,7 +42,7 @@ uniform float brineP;     ///< Brine knob, 0.5..2.
 uniform float haloclineP; ///< Halocline knob, 0.5..2.
 uniform float speedP;     ///< Speed knob, 0..1.
 uniform float hueP;       ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
-uniform float time;       ///< Seconds since the program started (never reset; see sceneTime).
+uniform float time;       ///< Seconds since this activation, plus a rolled start (see sceneTime).
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

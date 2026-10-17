@@ -24,7 +24,7 @@ out vec4 fragColor; ///< The pixel's colour (output).
 // together by dark lead lines; warm godrays radiate from behind, pulsing
 // with the swell and flaring on the kick.
 uniform sampler2D tex0;         ///< The current photo.
-uniform float     time;         ///< Seconds since the program started (never reset; see sceneTime).
+uniform float     time;         ///< Seconds since this activation, plus a rolled start (see sceneTime).
 uniform float     audioAdvance; ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
                                 ///< backwards).
 uniform float audioSwell;       ///< Slow loudness envelope, 0..1 (seconds).

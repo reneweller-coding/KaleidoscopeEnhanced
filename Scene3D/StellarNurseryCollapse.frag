@@ -25,7 +25,7 @@ in float vTemp;   ///< Temp (from the vertex stage).
 in float vSeed;   ///< Per-instance random seed (from the vertex stage).
 in float vRadius; ///< Radius (from the vertex stage).
 
-uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform float     time;          ///< Seconds since this activation, plus a rolled start (see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.
 uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
 uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.

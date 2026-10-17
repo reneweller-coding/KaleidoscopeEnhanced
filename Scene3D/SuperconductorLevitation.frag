@@ -28,7 +28,7 @@ in vec2 vUV;       ///< Texture coordinate 0..1 over the screen (from the vertex
 uniform sampler2D tex0;          ///< The current photo.
 uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
 uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
-uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform float     time;          ///< Seconds since this activation, plus a rolled start (see sceneTime).
 
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()

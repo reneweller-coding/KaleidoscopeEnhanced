@@ -57,7 +57,7 @@ layout( std430, binding = 2 ) buffer State
 uniform uint  maxVertices;   ///< Capacity of the vertex buffer (compute stage).
 uniform uint  frameIndex;    ///< Frame counter since the scene started.
 uniform float genPass; ///< 1 while the generation pass runs (it fills the state buffer once), 0 in the frames after.
-uniform float time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform float time;          ///< Seconds since this activation, plus a rolled start (see sceneTime).
 uniform float sceneSeed;     ///< A random number fixed per activation.
 uniform float sceneAdvance;  ///< The music's advance since this scene was activated (integrated, never jumps).
 uniform float sceneTime;     ///< Seconds since this scene was activated.

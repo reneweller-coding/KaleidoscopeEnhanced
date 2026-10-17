@@ -24,7 +24,7 @@ out vec4 fragColor; ///< The pixel's colour (output).
 // MIRRORS the current photo (true reflect() environment lookup), with
 // polish-streak sheen bands and four wave trains for real curvature.
 //   audioBass/Swell -> wave weight    audioAdvance -> flow phase
-uniform float     time;           ///< Seconds since the program started (never reset; see sceneTime).
+uniform float     time;           ///< Seconds since this activation, plus a rolled start (see sceneTime).
 uniform float     audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float     audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 uniform float     audioCentroid;  ///< Spectral centroid (brightness of the sound), 0..1.

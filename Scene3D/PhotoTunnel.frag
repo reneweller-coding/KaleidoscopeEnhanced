@@ -20,7 +20,7 @@ out vec4 fragColor; ///< The pixel's colour (output).
 // PhotoTunnel.frag — the wall texture is the CURRENT IMAGE, folded into
 // kaleidoscope sectors around the tube and scrolling toward the camera.
 uniform sampler2D tex0;         ///< The current photo.
-uniform float     time;         ///< Seconds since the program started (never reset; see sceneTime).
+uniform float     time;         ///< Seconds since this activation, plus a rolled start (see sceneTime).
 uniform float     sceneSeed;    ///< A random number fixed per activation.
 uniform float     audioAdvance; ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
                                 ///< backwards).

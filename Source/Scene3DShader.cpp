@@ -347,12 +347,13 @@ void Scene3DShader::resetParameters()
 // The variation is injected HOST-side so every scene benefits without shader
 // edits: the time uniform gets this activation's epoch + speed, the audio
 // phases and the key hue get constant offsets.
-void Scene3DShader::setUniforms( float time, float interpolation,
+void Scene3DShader::setUniforms( double time, float interpolation,
                                  GLint texLoc1, GLint texLoc2 )
 {
+    // In double: the speed factor on the program time (the base class takes it relative to the activation).
     EffectShader::setUniforms( m_timeOffset + time * m_speedFactor,
                                interpolation, texLoc1, texLoc2 );
-    m_lastTime = time; // the indirect generator needs it in draw()
+    m_lastTime = m_exprTime; // the indirect generator needs it in draw(): the `time` the render stages got
 }
 
 void Scene3DShader::applyAudioFeatures( const AudioFeatures &f )
@@ -363,12 +364,12 @@ void Scene3DShader::applyAudioFeatures( const AudioFeatures &f )
     // activations, instead of every hue-driven phase just being m_hueOffset
     // again under a different name.
     v.chromaHue = f.chromaHue + m_hueOffset;
-    v.audioRotPhase = f.audioRotPhase + m_hueOffset * 3.1f;
-    v.audioAdvance = f.audioAdvance + m_hueOffset * 2.3f;
+    // (The phase offsets are the base class's per-activation clock bases since 17.10.2026: audioRotPhase and
+    // audioAdvance are taken relative to the activation there, from the exact values.)
     EffectShader::applyAudioFeatures( v );
     // Kept for the indirect generator, which is a separate program and so is
-    // not reached by the shared uniform upload above.
-    m_lastAudio = v;
+    // not reached by the shared uniform upload above: the features as the render stages saw them.
+    m_lastAudio = m_audioSeen;
 }
 
 // A generator can sample the host's data textures too, and the host only
@@ -876,7 +877,7 @@ void Scene3DShader::runGenerator( float time )
     auto set_f = [&]( GLint l, float v )
     { if( l >= 0 ) glUniform1f( l, v ); };
     const AudioFeatures &a = m_lastAudio; // already carries this scene's offsets
-    set_f( m_genLocs.time, m_timeOffset + time * m_speedFactor );
+    set_f( m_genLocs.time, time ); // already the render stages' `time` (setUniforms())
     set_f( m_genLocs.sceneSeed, m_sceneSeed );
     set_f( m_genLocs.audioAdvance, a.audioAdvance );
     set_f( m_genLocs.audioLevel, a.overallLevel );

@@ -41,7 +41,7 @@ in float vKind;   ///< 0 = spark trail, 1 = sky dome
 
 uniform sampler2D tex0;          ///< The current photo.
 uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
-uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform float     time;          ///< Seconds since this activation, plus a rolled start (see sceneTime).
 
 uniform float audioLevel;     ///< Overall loudness, 0..1.
 uniform float audioBeat;      ///< Beat envelope, 0..1.

@@ -25,7 +25,7 @@ uniform sampler2D texAgents;  ///< previous agent state
 uniform sampler2D texTrail;   ///< trail map (R = species A, G = species B)
 uniform vec2      resolution; ///< agent texture size
 uniform float     seedMode;   ///< 1 on the first frame -> random init
-uniform float     time;       ///< Seconds since the program started (never reset; see sceneTime).
+uniform float     time;       ///< Seconds since this activation, plus a rolled start (see sceneTime).
 uniform float     speed;      ///< move step per frame (trail-map uv units)
 uniform float     sensAngle;  ///< sensor half-angle (radians)
 uniform float     sensDist;   ///< sensor distance (trail-map uv units)

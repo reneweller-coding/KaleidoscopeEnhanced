@@ -560,6 +560,12 @@ struct AudioFeatures
     float audioAdvance = 0.f;  ///< Accumulated tunnel forward offset (uv units).
     float harmAdvance = 0.f;   ///< The harmony's advance: the harmonic-change envelope integrated, ~1 per chord change
                                ///< (never jumps, never runs backwards) -- what a phase may add (audioHarmAdvance).
+    /// The three accumulators above, exact.  As floats they grow coarse in a long show (audioAdvance at 16000 no
+    /// longer moves in quiet music); every effect takes them relative to its own activation from these
+    /// (EffectShader::applyAudioFeatures()), so what a shader sees stays small and exact however long the show runs.
+    double audioRotPhaseD = 0.0;
+    double audioAdvanceD = 0.0; ///< audioAdvance, exact (see audioRotPhaseD).
+    double harmAdvanceD = 0.0;  ///< harmAdvance, exact (see audioRotPhaseD).
 };
 
 /** @class AudioEventLatch

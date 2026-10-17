@@ -288,15 +288,17 @@ private:
     float m_smoothedSides = 6.f; ///< Eased kaleidoscope symmetry (no snap), gradually steps toward the beat-chosen
                                  ///< target.
     float m_rotEnergy = 0.f;     ///< Slowly-slewed rotation-speed envelope (no per-beat jerk).
-    float m_audioRotPhase = 0.f; ///< Accumulated rotation phase (radians), integrated from a rate each frame.
-    float m_audioAdvance = 0.f;  ///< Accumulated tunnel forward offset, integrated from a rate each frame.
+    // double (17.10.2026): as floats they grew too coarse to take a frame's step in a long show -- the advance at
+    // 16000 (some days) stood still in quiet music.
+    double m_audioRotPhase = 0.0; ///< Accumulated rotation phase (radians), integrated from a rate each frame.
+    double m_audioAdvance = 0.0;  ///< Accumulated tunnel forward offset, integrated from a rate each frame.
     bool  m_advanceStarted = false; ///< KALEIDO_ADVANCE_START has been added to the two accumulators above.
     /// Integral of the harmonic envelope over a typical chord change (the unit of harmAdvance): 0.83 for the old
     /// chroma, 1.38 since its peak chroma (a slow chord change of make_chord_wav.py advances it by about 1).
     static constexpr float HarmPerChord = 1.38f;
     float m_harmEnv = 0.f;     ///< Peak-hold envelope of the harmonic change above its noise floor (release ~1.2 s).
     float m_harmSmooth = 0.f;  ///< m_harmEnv with a limited rise (~0.4 s to full); published as harmonicChange * gate.
-    float m_harmAdvance = 0.f; ///< m_harmSmooth integrated (~1 per chord change); published as harmAdvance.
+    double m_harmAdvance = 0.0; ///< m_harmSmooth integrated (~1 per chord change); published as harmAdvance.
 
     // ---- peak-hold + release envelopes / their slewed display values ----
     // The analyzer's raw pulses decay at audio-block rate (gone in ~60 ms),

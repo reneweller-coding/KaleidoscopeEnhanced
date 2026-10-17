@@ -5410,3 +5410,15 @@ rotation phase what a long show gathers).
 - **Seven scenes collapsed after a day** (structure 3 to 15 times below the baseline): CalabiYauManifold,
   CollatzFractalTreeAbyss, DeepSpaceArmada, NoirBlindsLight, SupermassiveBlackHoleOrbit, SupernovaRemnant,
   WaxDripCascade -- their flights on `time` and `audioAdvance`; now on the scene clocks.
+- **The clocks survive a long show.** `RenderPipeline::m_globaltime` was a float advanced by each frame's dt: after
+  six hours at 60 Hz it ran 5 % fast, after four days in 31-ms steps at 1.9 times the speed, after eight days it
+  stood still (at 120 Hz: four days). The music's accumulators likewise -- the advance at 16000 (some days of
+  quiet music) took no step any more. They are doubles now (AudioFeatures carries `audioAdvanceD`,
+  `audioRotPhaseD`, `harmAdvanceD` next to the floats), and every effect -- scene, overlay, transition -- sees
+  `time`, `audioAdvance`, `audioPhase` and `harmAdvance` relative to its own activation plus a base rolled per
+  activation (0..600 s, 0..40, 0..100 rad; hashed from the shader, the activation count and a run salt, not drawn
+  with rand(), which would have shifted every parameter roll): small and exact however long the show, a fresh
+  moment at every activation as before. A comparison run keeps its frozen moment. A 3D scene's generator gets the
+  render stages' values. Tested: 20 scenes, two seeds, normally and with the clocks eight days ahead
+  (`KALEIDO_TIME_START=691200`, `KALEIDO_ADVANCE_START=50000`): 18 identical to the last digit, two apart by a
+  photo change (which follows the program clock). The doc comment of `time` in 1594 files says so now.

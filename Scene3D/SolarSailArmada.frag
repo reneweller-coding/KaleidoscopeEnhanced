@@ -34,7 +34,7 @@ in vec2  vUV;     ///< Texture coordinate 0..1 over the screen (from the vertex 
 in float vQuadID; ///< Quad ID (from the vertex stage).
 in float vGlint;  ///< Glint (from the vertex stage).
 
-uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform float     time;          ///< Seconds since this activation, plus a rolled start (see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.
 uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
 uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.

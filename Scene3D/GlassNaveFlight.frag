@@ -31,7 +31,7 @@ uniform sampler2D tex1;              ///< The next photo (cross-faded in by inte
 uniform float     interpolation;     ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 uniform float     oitPass;           ///< Order-independent transparency pass flag.
 uniform vec2      nearFar;           ///< Near and far clip distances.
-uniform float     time;              ///< Seconds since the program started (never reset; see sceneTime).
+uniform float     time;              ///< Seconds since this activation, plus a rolled start (see sceneTime).
 uniform float     dayPhase;          ///< Phase of the slow day cycle, 0..1.
 uniform float     audioSpectrum[32]; ///< Spectrum bands, 0..1.
 uniform float     audioKick;         ///< Kick-drum envelope, 0..1 (fast attack, short decay).

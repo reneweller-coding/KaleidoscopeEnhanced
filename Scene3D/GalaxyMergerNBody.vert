@@ -16,7 +16,7 @@ layout( location = 1 ) in vec4 attrB; ///< x = speed, y = kind (-1 sky, 2 core, 
 
 uniform mat4  projM;          ///< Projection matrix.
 uniform float eyeOff;         ///< Stereo eye offset (0 in mono).
-uniform float time;           ///< Seconds since the program started (never reset; see sceneTime).
+uniform float time;           ///< Seconds since this activation, plus a rolled start (see sceneTime).
 uniform float sceneAdvance;   ///< The music's advance since this scene was activated (integrated, never jumps).
 uniform float sceneTime;      ///< Seconds since this scene was activated.
 uniform float audioLevel;     ///< Overall loudness, 0..1.

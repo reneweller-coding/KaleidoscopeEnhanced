@@ -27,7 +27,7 @@ out vec4 fragColor; ///< The pixel's colour (output).
 uniform sampler2DArray texMeshMaterial;       ///< The mesh's material textures (albedo, roughness, normal ...).
 uniform int            texMeshMaterialLayers; ///< Number of layers in texMeshMaterial.
 
-uniform float time;       ///< Seconds since the program started (never reset; see sceneTime).
+uniform float time;       ///< Seconds since this activation, plus a rolled start (see sceneTime).
 uniform float sceneTime;  ///< Seconds since this scene was activated.
 uniform float audioBass;  ///< Bass band level, 0..1.
 uniform float audioHigh;  ///< High band level, 0..1.

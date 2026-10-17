@@ -51,7 +51,7 @@ uniform float           shadowPass;    ///< 1 during the shadow map's depth-only
 uniform float           shadowTexel;   ///< Size of a shadow-map texel in world units.
 uniform float           shadowExtent;  ///< Half size of the area the shadow map covers (world units).
 uniform float           interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
-uniform float           time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform float           time;          ///< Seconds since this activation, plus a rolled start (see sceneTime).
 
 uniform float audioLevel;     ///< Overall loudness, 0..1.
 uniform float audioBeat;      ///< Beat envelope, 0..1.

@@ -326,6 +326,30 @@ void EffectShader::resetParameters()
     m_activationTime = -1.0e9f;
     m_progressT0 = -1.0e9f;
     m_advanceAtReset = -1.0e9f; // sceneAdvance starts again at 0
+    // The clocks start again (m_clockT0): at a base of their own, hashed from the shader, the activation count and a
+    // run salt -- not drawn with rand(), which would shift every parameter roll after it.
+    m_clockT0 = -1.0e300;
+    m_clockA0 = -1.0e300;
+    {
+        static const unsigned Salt = pin_env ? static_cast<unsigned>( strtoul( pin_env, nullptr, 10 ) ) * 2654435761u
+                                             : static_cast<unsigned>( std::chrono::steady_clock::now()
+                                                                          .time_since_epoch()
+                                                                          .count() );
+        unsigned h = Salt ^ 2166136261u;
+        for ( const char *c = m_fragmentShaderFilename.c_str(); *c; ++c )
+            h = ( h ^ static_cast<unsigned>( static_cast<unsigned char>( *c ) ) ) * 16777619u;
+        h = ( h ^ m_activations ) * 16777619u;
+        auto next = [&h]()
+        {
+            h ^= h >> 13;
+            h *= 0x5bd1e995u;
+            h ^= h >> 15;
+            return static_cast<float>( h & 0xffffu ) / 65535.f;
+        };
+        m_clockBaseT = 600.f * next();
+        m_clockBaseA = 40.f * next();
+        m_clockBaseR = 100.f * next();
+    }
     m_sceneProgress = 0.f;
 
     // The "life" budget handed to each Uniform is solo + 2*interpolation: one
@@ -424,8 +448,13 @@ void EffectShader::dropVariants( bool release )
 }
 
 
-void EffectShader::setUniforms( float time, float interpolation, GLint texLoc1, GLint texLoc2 )
+void EffectShader::setUniforms( double programTime, float interpolation, GLint texLoc1, GLint texLoc2 )
 {
+    // `time` relative to the activation (m_clockT0); a comparison run keeps its frozen moment.
+    if ( m_clockT0 < -1.0e299 )
+        m_clockT0 = programTime;
+    const float time = ( M_FreezeTime >= 0.f ) ? static_cast<float>( programTime )
+                                                : static_cast<float>( programTime - m_clockT0 ) + m_clockBaseT;
     m_exprTime = time;                      // formula layer reads this frame's time
     glUniform1i( m_texPointUni1, texLoc1 ); // combine unit 0, not to be confused with texId
     glUniform1i( m_texPointUni2, texLoc2 ); // combine unit 0, not to be confused with texId
@@ -819,8 +848,21 @@ const char *kAudioLocNames[AL_COUNT] = {
     "audioMelodyPhase", "audioHarmAdvance", "audioMelodyConf" };
 }
 
-void EffectShader::applyAudioFeatures( const AudioFeatures &f )
+void EffectShader::applyAudioFeatures( const AudioFeatures &features )
 {
+    // The music's accumulators relative to this activation (see m_clockT0): exact, and small however long the show.
+    if ( m_clockA0 < -1.0e299 )
+    {
+        m_clockA0 = features.audioAdvanceD;
+        m_clockR0 = features.audioRotPhaseD;
+        m_clockH0 = features.harmAdvanceD;
+    }
+    m_audioSeen = features;
+    m_audioSeen.audioAdvance = static_cast<float>( features.audioAdvanceD - m_clockA0 ) + m_clockBaseA;
+    m_audioSeen.audioRotPhase = static_cast<float>( features.audioRotPhaseD - m_clockR0 ) + m_clockBaseR;
+    m_audioSeen.harmAdvance = static_cast<float>( features.harmAdvanceD - m_clockH0 );
+    const AudioFeatures &f = m_audioSeen;
+
     // Cached for stepBake(), called later from draw() -- which, unlike this
     // function, takes no AudioFeatures parameter.
     m_lastAudioForBake = f;

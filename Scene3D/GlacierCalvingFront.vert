@@ -17,7 +17,7 @@ layout( location = 1 ) in vec4 attrB; ///< x = life, y = kind, zw = uv
 
 uniform mat4  projM;  ///< Projection matrix.
 uniform float eyeOff; ///< Stereo eye offset (0 in mono).
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform float time;   ///< Seconds since this activation, plus a rolled start (see sceneTime).
 
 out vec2  vTexCoord; ///< Texture coordinate (from the vertex stage).
 out vec3  vWorld;    ///< World position (from the vertex stage).

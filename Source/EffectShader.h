@@ -241,7 +241,7 @@ public:
      * m_timeSolo/m_timeInterpolation at the end of the call. Subclasses override this
      * to chain to the base implementation and then upload their own extra uniforms.
      **/
-    virtual void setUniforms( float time, float interpolation, GLint texLoc1, GLint texLoc2 ); // setting uniforms
+    virtual void setUniforms( double time, float interpolation, GLint texLoc1, GLint texLoc2 ); // setting uniforms
     /**  Checks glGetError() and prints any pending OpenGL error to stderr.
      *
      * @param label  Short tag identifying the call site, included in the printed message. (in)
@@ -1384,7 +1384,22 @@ protected:
         GLuint      progId = 0; ///< Program id `loc` was resolved for; mismatch triggers re-resolution.
     };
     std::vector<ExprEntry> m_exprs; ///< All formula-layer expressions registered via addExpression().
-    float m_exprTime = 0.f; ///< Time as passed to setUniforms; current frame's time value, read by the formula layer.
+    float m_exprTime = 0.f; ///< The `time` uploaded this frame (relative to the activation, see m_clockT0); read by
+                            ///< the formula layer.
+    // The effect's clocks relative to its activation (17.10.2026).  The program's clock and the music's accumulators
+    // grow without bound; as floats they lose the frame step in a long show (`time` after four days at 60 Hz ran in
+    // 31-ms steps, after eight it stood still).  An effect now sees each of them as the time since its activation
+    // plus a base rolled per activation: small and exact for as long as the show runs, a fresh moment at every
+    // activation as before.
+    double m_clockT0 = -1.0e300;  ///< The program time at the activation's first frame (sentinel: not yet).
+    double m_clockA0 = -1.0e300;  ///< audioAdvanceD at the activation's first frame (sentinel: not yet).
+    double m_clockR0 = 0.0;       ///< audioRotPhaseD at the activation's first frame.
+    double m_clockH0 = 0.0;       ///< harmAdvanceD at the activation's first frame.
+    float  m_clockBaseT = 0.f;    ///< `time` at the activation's first frame (0..600 s, rolled per activation).
+    float  m_clockBaseA = 0.f;    ///< `audioAdvance` at the activation's first frame (0..40).
+    float  m_clockBaseR = 0.f;    ///< `audioPhase` at the activation's first frame (0..100 rad).
+    AudioFeatures m_audioSeen;    ///< This frame's features as the effect sees them (its clocks relative), for the
+                                  ///< second programs (a 3D scene's generator).
     float m_exprSeeds[3] = { 0.5f, 0.5f, 0.5f }; ///< Re-rolled per activation: random seeds exposed to formulas as
                                                  ///< seed1/seed2/seed3; re-rolled by resetParameters()/addExpression().
 

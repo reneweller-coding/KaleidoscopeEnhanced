@@ -15,7 +15,7 @@ layout( location = 0 ) out vec4 gbPos; ///< folded hit point, distance (-1: no h
 layout( location = 1 ) out vec4 gbNrm; ///< normal, ambient occlusion
 // world classes: SPEC_SP0/1, SPEC_CO0/1, SPEC_BO0/1 (branch numbers), set by the app
 uniform vec2  resolution;   ///< Size of the render target in pixels.
-uniform float time;         ///< Seconds since the program started (never reset; see sceneTime).
+uniform float time;         ///< Seconds since this activation, plus a rolled start (see sceneTime).
 uniform float sceneTime;    ///< Seconds since this scene was activated.
 uniform float sceneAdvance; ///< The music's advance since this scene was activated (integrated, never jumps).
 uniform float audioAdvance; ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs

@@ -20,7 +20,7 @@
 out vec4 fragColor; ///< The pixel's colour (output).
 // MandalaGrid.frag — an 8-fold colour rosette flowing softly inward; the
 // bar phase rolls a gentle ring of light through the pattern.
-uniform float time;               ///< Seconds since the program started (never reset; see sceneTime).
+uniform float time;               ///< Seconds since this activation, plus a rolled start (see sceneTime).
 uniform float sceneSeed;          ///< A random number fixed per activation.
 uniform float audioAdvance;       ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
                                   ///< backwards).

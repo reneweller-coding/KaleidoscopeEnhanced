@@ -2085,7 +2085,8 @@ AudioFeatures RenderPipeline::conditionAudio( const AudioFeatures &audio, float 
     // called exactly once per frame, in frame order -- every signal in there
     // is an integrator or a slew limiter.
     AudioConditioner::Context ac_ctx;
-    ac_ctx.globalTime = m_globaltime;
+    // The conditioner's day cycle is 280 s; a whole number of them keeps its phase while the float stays exact.
+    ac_ctx.globalTime = static_cast<float>( std::fmod( m_globaltime, 280.0 * 1000.0 ) );
     ac_ctx.trailDepth3D = m_trailDepth3D;
     ac_ctx.meshUp = m_meshUp;
     ac_ctx.calm = M_CalmMotion;
@@ -2252,7 +2253,7 @@ void RenderPipeline::stepSimulations( const AudioFeatures &audio, float timeSinc
         need.spectro = akt_e->usesSpectro() || ( fading && nxt_e->usesSpectro() );
 
         GpuSims::Frame sim_frame;
-        sim_frame.globalTime = m_globaltime;
+        sim_frame.globalTime = static_cast<float>( m_globaltime );
         sim_frame.audioAdvance = audioFx.audioAdvance;
         sim_frame.dyeTexA = m_liveTex ? m_liveTex : m_actTex;
         sim_frame.dyeTexB = m_liveTex ? m_liveTex : m_nextTex;
@@ -2306,7 +2307,8 @@ void RenderPipeline::stepSimulations( const AudioFeatures &audio, float timeSinc
                 // dt 0 for 1/60 s and run on -- the last published state is bound again.
                 GLuint tex = ( M_Freeze && m_cfxLast[k] )
                                  ? m_cfxLast[k]
-                                 : m_cfx.step( k, audio, timeSinceLastFrameSec, m_globaltime, src, m_width, m_height );
+                                 : m_cfx.step( k, audio, timeSinceLastFrameSec, static_cast<float>( m_globaltime ), src,
+                                                           m_width, m_height );
                 m_cfxLast[k] = tex;
                 // The stand-in when the sim has no output yet -- its first frames of
                 // seeding, or right after retireIdle() deleted the previous tenant's
@@ -2318,7 +2320,7 @@ void RenderPipeline::stepSimulations( const AudioFeatures &audio, float timeSinc
             }
             glActiveTexture( GL_TEXTURE0 );
         }
-        m_cfx.retireIdle( m_globaltime );
+        m_cfx.retireIdle( static_cast<float>( m_globaltime ) );
         EffectShader::retireIdleChainTextures(); // chain labs not shown for 25 s give their coordinate textures back
     }
 
@@ -2345,7 +2347,7 @@ void RenderPipeline::stepSimulations( const AudioFeatures &audio, float timeSinc
         if ( want_mandelbrot )
         {
             GLuint mb_tex = m_cfx.stepMandelbrot( audio, timeSinceLastFrameSec,
-                                                  m_globaltime, m_width, m_height );
+                                                  static_cast<float>( m_globaltime ), m_width, m_height );
             if ( mb_tex )
             {
                 glActiveTexture( GL_TEXTURE0 + 35 );
@@ -2450,7 +2452,7 @@ void RenderPipeline::renderActiveScenePass( const AudioFeatures &audioFx )
     // the map's 2048 texels are spent across whatever this says.
     EffectShader::M_ShadowExtent =
         m_effectTextures[m_scheduler.actTexture()]->shadowExtent();
-    updateLightMatrix( m_globaltime );
+    updateLightMatrix( static_cast<float>( m_globaltime ) );
     if ( m_effectTextures[m_scheduler.actTexture()]->usesShadow() )
     {
         renderShadowPass( m_effectTextures[m_scheduler.actTexture()] );
@@ -2459,7 +2461,7 @@ void RenderPipeline::renderActiveScenePass( const AudioFeatures &audioFx )
     // Second, independent shadow-casting light (studio-style two-light setup);
     // same scope as light 1 -- the active scene only, never the cross-fading
     // "next" one.
-    updateLightMatrix2( m_globaltime );
+    updateLightMatrix2( static_cast<float>( m_globaltime ) );
     if ( m_effectTextures[m_scheduler.actTexture()]->usesShadow2() )
     {
         renderShadowPass2( m_effectTextures[m_scheduler.actTexture()] );
@@ -2745,7 +2747,7 @@ void RenderPipeline::renderFinalBlend()
     glUniform1i( m_texPointFxUni2, 6 ); // texture unit 0, not to be confused with texId
     glUniform2f( m_texSizeRcpFxUni, static_cast<float>( m_width ), static_cast<float>( m_height ) );
     glUniform1f( m_interpolationFxUni, m_scheduler.fxInterp() );
-    glUniform1f( m_timeFxUni, m_globaltime );
+    glUniform1f( m_timeFxUni, static_cast<float>( m_globaltime ) );
 
 
 
@@ -2823,7 +2825,7 @@ GLuint RenderPipeline::renderTrailsPass( const AudioFeatures &audio, const Audio
                          + ( 0.05f + ( M_CalmMotion ? 0.f : 0.22f * m_audioConditioner.beatSmooth() )
                              + 0.08f * audio.ambientFactor )
                                * dtf;
-            float rot_a = 0.15f * sinf( m_globaltime * 0.02f ) * dtf;
+            float rot_a = 0.15f * static_cast<float>( std::sin( m_globaltime * 0.02 ) ) * dtf;
             float hue_d = 0.10f * dtf;
             // True stereo: the echo-warp would drag content across the eye
             // boundary of the packed frame — keep only the plain decay.
@@ -2881,7 +2883,7 @@ GLuint RenderPipeline::renderTrailsPass( const AudioFeatures &audio, const Audio
                 float rip = M_CalmMotion
                                 ? 0.f
                                 : ( 0.05f * m_audioConditioner.beatSmooth() + 0.10f * audioFx.dropPulse ) * dtf;
-                float swl = 0.25f * sinf( m_globaltime * 0.013f )
+                float swl = 0.25f * static_cast<float>( std::sin( m_globaltime * 0.013 ) )
                             * ( 0.4f + 0.6f * audio.ambientFactor ) * dtf;
                 float flw = ( 0.02f + 0.05f * audio.ambientFactor
                               + 0.04f * audioFx.swell )
@@ -2956,7 +2958,7 @@ void RenderPipeline::runPresentPass( GLuint presentSource, const AudioFeatures &
         pin.fadeMeasureTex = m_fadeInTex;
         m_expoWasFading = pin.sceneFadeStrict;
         pin.dtWall = dtWall;
-        pin.globalTime = m_globaltime;
+        pin.globalTime = static_cast<float>( m_globaltime ); // (titles turn with it: a wrap would jump)
         pin.chasePhase = m_audioConditioner.chasePhase();
         pin.camZoom = m_audioConditioner.camZoom();
         pin.camRot = m_audioConditioner.camRot();

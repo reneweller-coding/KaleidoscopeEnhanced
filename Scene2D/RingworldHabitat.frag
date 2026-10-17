@@ -26,7 +26,7 @@
 out vec4 fragColor; ///< The pixel's colour (output).
 
 uniform vec2      resolution;    ///< Size of the render target in pixels.
-uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform float     time;          ///< Seconds since this activation, plus a rolled start (see sceneTime).
 uniform float     sceneTime;     ///< Seconds since this scene was activated.
 uniform float     sceneAdvance;  ///< The music's advance since this scene was activated (integrated, never jumps).
 uniform sampler2D tex0;          ///< The current photo.

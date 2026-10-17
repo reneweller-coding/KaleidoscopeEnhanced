@@ -403,8 +403,10 @@ AudioFeatures AudioConditioner::update( const AudioFeatures &audio, float rawDt,
         }
     }
 
-    audio_fx.audioRotPhase = m_audioRotPhase;
-    audio_fx.audioAdvance = m_audioAdvance;
+    audio_fx.audioRotPhase = static_cast<float>( m_audioRotPhase );
+    audio_fx.audioAdvance = static_cast<float>( m_audioAdvance );
+    audio_fx.audioRotPhaseD = m_audioRotPhase;
+    audio_fx.audioAdvanceD = m_audioAdvance;
     audio_fx.beatDecay = m_audioBeatSmooth * gate;
     audio_fx.onsetStrength = m_onsetSmooth * gate;
     audio_fx.downbeat = m_downbeatSmooth * gate;
@@ -674,7 +676,8 @@ AudioFeatures AudioConditioner::update( const AudioFeatures &audio, float rawDt,
     }
     audio_fx.chromaHue = m_chromaHueSlew;
     audio_fx.harmonicChange = m_harmSmooth * gate;
-    audio_fx.harmAdvance = m_harmAdvance;
+    audio_fx.harmAdvance = static_cast<float>( m_harmAdvance );
+    audio_fx.harmAdvanceD = m_harmAdvance;
     audio_fx.roughness = audio.roughness * gate;
     audio_fx.sharpness = audio.sharpness * gate;
     audio_fx.deltaPitch = audio.deltaPitch * gate;

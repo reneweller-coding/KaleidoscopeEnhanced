@@ -80,7 +80,7 @@ public:
      * @param texLoc1        Texture unit bound to the `tex0` sampler. (in)
      * @param texLoc2        Texture unit bound to the `tex1` sampler. (in)
      **/
-    virtual void setUniforms( float time, float interpolation, GLint texLoc1, GLint texLoc2 ); // setting uniforms
+    virtual void setUniforms( double time, float interpolation, GLint texLoc1, GLint texLoc2 ); // setting uniforms
     /**  Re-rolls speed and sides, and flips m_interpolationRotation between 0 and pi/4, after chaining to
      * EffectShader::resetParameters().
      **/
