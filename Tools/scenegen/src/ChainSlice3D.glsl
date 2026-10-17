@@ -451,13 +451,13 @@ float fieldK(vec3 p, float xs, float xc, float xb, int world)
         q = fRepeat(p, vec3(1.7 + 0.3 * vs)); q = fInvert(q + vec3(0.3, 0.2, 0.0), 1.4);   // in every cell a sphere inversion
         q = fRepeat(fScale(q, 1.6, vec3(0.0)), vec3(1.3));                                   // ... of a lattice: a bubble world per cell
     }
-    else if (ks == 9) q = fRepeat(fScale(fLogSphere(p, gCam + vec3(0.0, 0.0, 6.0), 2.5 + vs, gT * 0.05), 2.5, vec3(0.0)), vec3(1.4));   // 3D Droste shells
+    else if (ks == 9) q = fRepeat(fScale(fLogSphere(p, gCam * gWorldK + vec3(0.0, 0.0, 6.0), 2.5 + vs, gT * 0.05), 2.5, vec3(0.0)), vec3(1.4));   // 3D Droste shells
     else if (ks == 12) q = fRepeat(fHalfSpace(p, 1.0), vec3(1.3));                  // hyperbolic half-space
     else if (ks == 13) { q = fPolarZ(fTwistZ(p, 0.6 + 0.3 * vs), 2.0); q.x -= 1.4; q = zRepeat(q, 0.6); }   // double helix
     else if (ks == 14) q = fRepeat(fLogCyl(p, 2.5 + vs), vec3(1.2));                  // log-cylindrical Droste
     else if (ks == 15) q = fPoly(fRepeat(p, vec3(1.6)), 5.0);                        // icosahedral lattice
     else if (ks == 16) { q = fRepeat(p, vec3(1.5)); float kb2 = 0.35 + 0.25 * vs; q.xy = rot2(kb2 * q.x) * q.xy; gDR *= 1.0 + 1.5 * kb2; }   // bent cells
-    else if (ks == 17) { vec3 cc = gCam + vec3(0.0, 0.0, 6.0); float lr = log(max(length(p - cc), 1e-3));
+    else if (ks == 17) { vec3 cc = gCam * gWorldK + vec3(0.0, 0.0, 6.0); float lr = log(max(length(p - cc), 1e-3));
         q = fLogSphere(p, cc, 2.5 + vs, gT * 0.05); q.xy = rot2(0.9 * lr) * q.xy; gDR *= 1.9; q = fRepeat(fScale(q, 2.5, vec3(0.0)), vec3(1.4)); }   // twisted 3D Droste
     else if (ks == 18) { float ws = 0.3 + 0.2 * vs; q = fRepeat(fWarp(p, ws, gT * 0.05), vec3(1.4)); }   // noise-warped lattice
     else if (ks == 19) q = fRollZ(p, 3.2 + vs, 1.2);                                   // the world rolled round the flight axis
@@ -630,7 +630,7 @@ float field3(vec3 p)
 }
 // ---- the slice ------------------------------------------------------------
 // The world without the flight tube: a plane cuts it, nothing has to be carved.
-float fieldS(vec3 p) { gDR = 1.0; return field3(p); }
+float fieldS(vec3 p) { gDR = 1.0; return field3(p * gWorldK) / gWorldK; }   // the world at 1/gWorldK, as in fieldD
 vec3 normalS(vec3 p)
 {
     const vec2 e = vec2(0.0015, -0.0015);
@@ -795,6 +795,11 @@ void main()
     gMw = 0.012 * sceneTime + 0.15 * sceneAdvance;          // colour-chain morph position (integrated)
     gCw = vec2(0.5) + 0.15 * vec2(sin(0.017 * sceneTime), cos(0.013 * sceneTime));
     gCt = vec2(0.5) + vec2(0.22 * sin(0.023 * sceneTime + 0.3 * sin(0.011 * sceneTime)), 0.16 * cos(0.019 * sceneTime));
+    // The world at 1/2.0 of its size around the camera (17.10.2026): at full size the camera flew a hand's breadth
+    // from walls and bodies as large as the view -- a few huge alike faces filled the picture.
+    gWorldK = 2.0;
+    gPathAmp = 1.0 / gWorldK;                               // the path winds round the world's axis as before
+    gThin = 0.25;                                         // the matter thins toward the flight path
     vec3 ro;
     // The plane: its normal from the gaze, its depth the integrated flight along
     // the world's axis (the polar worlds stay in view), a little perspective so
@@ -829,12 +834,14 @@ void main()
     // The fog takes the palette's hue (wandering with the music) rather than the photo's cast: a neighbour of the
     // surfaces' hue, not its complement (17.10.2026).
     vec3 fogPal = hsv2rgb(vec3(fract(chainHue0() + 0.08), 0.4, 1.0));
-    vec3 fogC = mix(calmGlow(imgK(vec2(0.5) + 0.2 * p, 5.0), 0.04), fogPal, 0.8 * clamp(paletteP, 0.0, 1.0)) * (0.05 + 0.1 * swell);
+    // A little brighter and denser since the world is smaller (17.10.2026): the depth reads in layers fading into
+    // the haze, and a sparse world's void is no longer black.
+    vec3 fogC = mix(calmGlow(imgK(vec2(0.5) + 0.2 * p, 5.0), 0.04), fogPal, 0.8 * clamp(paletteP, 0.0, 1.0)) * (0.08 + 0.1 * swell);
     vec3 col = fogC;
     if (hit) {
         vec3 q = ro + rd * t;
         vec3 n = normalS(q);
-        float lod = clamp(log2(t * 2.0) + 1.5 * (1.0 - clamp(detailP, 0.0, 1.0)), 0.0, 7.0);
+        float lod = clamp(log2(t * gWorldK * 2.0) + 1.5 * (1.0 - clamp(detailP, 0.0, 1.0)), 0.0, 7.0);
         vec3 nGeo = n;                                          // texture on the geometric normal, light on the bumped one
         if (reliefP > 0.3) {                                    // a knob: every pixel takes the same branch
             vec3 t1 = normalize(cross(n, abs(n.y) < 0.9 ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0))), t2 = cross(n, t1);
@@ -853,12 +860,17 @@ void main()
         for (int k = 1; k <= 2; ++k) { float h = 0.06 * float(k); ao += (h - fieldS(q + n * h) + dHit) / h; }
         ao = clamp(1.0 - 0.4 * ao, 0.2, 1.0) * sliceShade(dHit, sPx);
         float fres = pow(1.0 - abs(dot(n, -rd)), 3.0);
-        vec3 surf = tex * lc * (0.35 + 0.9 * diff) * ao;
+        // A lamp at the camera beside the key light, and broad light and shade drifting through the world (a slow
+        // wave over its coordinates): near structures stand out against farther ones, and a wall of fine structure
+        // is no longer one even tone (17.10.2026).
+        float lamp = max(dot(n, -rd), 0.0) / (1.0 + 0.15 * t * t);
+        float drift = 0.8 + 0.4 * smoothstep(-0.6, 0.6, sin(0.45 * q.x + 0.8 * sin(0.21 * q.z)) * sin(0.38 * q.y + 0.17 * q.z + 1.3));
+        vec3 surf = tex * lc * (0.3 + 0.75 * diff + 0.45 * lamp) * ao * drift;
         vec3 rimC = calmGlow(tex, 0.05 * sin(fp.x + fp.y));
         vec3 rim = rimC * fres * (0.7 + 1.5 * kick) + surf * 0.4;       // lab audit: the glow style was half as bright
         float st = clamp(styleP, 0.0, 1.0);
         vec3 sc = mix(surf + rimC * fres * (0.15 + 0.6 * kick), rim * 1.3 + rimC * 0.12 * ao, smoothstep(0.5, 1.0, st));
-        col = mix(fogC, sc, exp(-t * (0.06 + 0.04 * swell)));
+        col = mix(fogC, sc, exp(-t * (0.09 + 0.04 * swell)));
         // isoP: the distance field's contour lines -- around every body its
         // height lines, like a map; every fourth stronger, all running slowly
         // outward (clock, never audio: the kick only brightens them).  Their

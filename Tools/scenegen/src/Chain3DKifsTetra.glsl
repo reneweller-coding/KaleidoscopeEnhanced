@@ -87,11 +87,16 @@ void main()
     gT = (0.15 + 0.25 * clamp(speedP, 0.0, 1.0)) * sceneTime + 1.5 * audioAdvance;
     gRot = 0.02 * sceneTime + 0.2 * audioPhase;
     gSpread = clamp(audioSpread, 0.0, 1.0);
+    // The world at 1/2.0 of its size around the camera (17.10.2026): at full size the camera flew a hand's breadth
+    // from walls and bodies as large as the view -- a few huge alike faces filled the picture.
+    gWorldK = 2.0;
+    gPathAmp = 1.0 / gWorldK;                               // the path winds round the world's axis as before
+    gThin = 0.25;                                         // the matter thins toward the flight path
     vec3 ro;
     mat3 cf = camFrame(camFlight(gT), ro);
     gCam = ro;
     gTube = 0.4 + 0.15 * swell;                             // the carved tube breathes with the slow swell
-    vec3 rd = gazeDir(p, camP, sceneTime, cf, ro);
+    vec3 rd = gazeDir(p, camP, sceneTime, cf);
     float t = 0.05; float d = 1.0; bool hit = false; vec3 fp = vec3(0.0); float fdr = 1.0;
     for (int i = 0; i < 100; ++i) {
         d = fieldD(ro + rd * t);
@@ -103,12 +108,14 @@ void main()
     // The fog takes the palette's hue (wandering with the music) rather than the photo's cast: a neighbour of the
     // surfaces' hue, not its complement (17.10.2026).
     vec3 fogPal = hsv2rgb(vec3(fract(chainHue0() + 0.08), 0.4, 1.0));
-    vec3 fogC = mix(calmGlow(imgK(vec2(0.5) + 0.2 * p, 5.0), 0.04), fogPal, 0.8 * clamp(paletteP, 0.0, 1.0)) * (0.05 + 0.1 * swell);
+    // A little brighter and denser since the world is smaller (17.10.2026): the depth reads in layers fading into
+    // the haze, and a sparse world's void is no longer black.
+    vec3 fogC = mix(calmGlow(imgK(vec2(0.5) + 0.2 * p, 5.0), 0.04), fogPal, 0.8 * clamp(paletteP, 0.0, 1.0)) * (0.08 + 0.1 * swell);
     vec3 col = fogC;
     if (hit) {
         vec3 q = ro + rd * t;
         vec3 n = normal3(q);
-        float lod = clamp(log2(t * 2.0) + 1.5 * (1.0 - clamp(detailP, 0.0, 1.0)), 0.0, 7.0);
+        float lod = clamp(log2(t * gWorldK * 2.0) + 1.5 * (1.0 - clamp(detailP, 0.0, 1.0)), 0.0, 7.0);
         vec3 tex = photoChain3(fp, n, lod, 0.2 + 0.7 * clamp(paletteP, 0.0, 1.0));
         float tm = luma(tex);
         tex = max((tex - tm) * 1.1 + tm, 0.0) * 1.5;           // brighter, the colour a little livelier (was 1.5)
@@ -118,12 +125,17 @@ void main()
         for (int k = 1; k <= 2; ++k) { float h = 0.06 * float(k); ao += (h - fieldD(q + n * h)) / h; }
         ao = clamp(1.0 - 0.4 * ao, 0.2, 1.0);
         float fres = pow(1.0 - abs(dot(n, -rd)), 3.0);
-        vec3 surf = tex * lc * (0.35 + 0.9 * diff) * ao;
+        // A lamp at the camera beside the key light, and broad light and shade drifting through the world (a slow
+        // wave over its coordinates): near structures stand out against farther ones, and a wall of fine structure
+        // is no longer one even tone (17.10.2026).
+        float lamp = max(dot(n, -rd), 0.0) / (1.0 + 0.15 * t * t);
+        float drift = 0.8 + 0.4 * smoothstep(-0.6, 0.6, sin(0.45 * q.x + 0.8 * sin(0.21 * q.z)) * sin(0.38 * q.y + 0.17 * q.z + 1.3));
+        vec3 surf = tex * lc * (0.3 + 0.75 * diff + 0.45 * lamp) * ao * drift;
         vec3 rimC = calmGlow(tex, 0.05 * sin(fp.x + fp.y));
         vec3 rim = rimC * fres * (0.7 + 1.5 * kick) + surf * 0.4;       // lab audit: the glow style was half as bright
         float st = clamp(styleP, 0.0, 1.0);
         vec3 sc = mix(surf + rimC * fres * (0.15 + 0.6 * kick), rim * 1.3 + rimC * 0.12 * ao, smoothstep(0.5, 1.0, st));
-        col = mix(fogC, sc, exp(-t * (0.06 + 0.04 * swell)));
+        col = mix(fogC, sc, exp(-t * (0.09 + 0.04 * swell)));
     }
     finish(col);
 }

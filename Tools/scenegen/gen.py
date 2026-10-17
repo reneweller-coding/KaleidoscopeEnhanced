@@ -1654,6 +1654,9 @@ vec3 fHyperBall(vec3 p, float k)
 // wraps); gDR corrects the stretch inside the ring.
 vec3 fTorusWrap(vec3 p, float R, float cell)
 {
+    // The flight axis folded (mirror repeat, period 8R) into the reach of one ring: the camera starts anywhere on
+    // z 0..500, and far from a single ring round the origin the wrapped world was stretched into streaks.
+    p.z = 2.0 * R * (abs(mod(p.z / (2.0 * R) - 1.0, 4.0) - 2.0) - 1.0);
     float rho = length(p.xz);
     float arc = atan(p.z, p.x) * R;
     float per = 6.2831853 * R / max(floor(6.2831853 * R / (4.0 * cell) + 0.5), 1.0) / 4.0;   // whole periods round the ring
@@ -1746,8 +1749,8 @@ vec3 gCam = vec3(0.0);
 float gPathAmp = 1.0;   // how far the path winds (a scene may shrink it)
 float gTube = 0.45;     // tube radius
 float gSide = 0.0;      // how far the gaze looks out of a side window (0 ahead .. 1): see gazeDir
-float gOrtho = 0.0;      // orthographic share of the gaze (6)
-vec3 gAxis = vec3(0.0, 0.0, 1.0);   // the view axis (world): the ortho slab is cut across it
+float gWorldK = 1.0;     // the world's scale: the field's structures 1/gWorldK as large around the same camera
+float gThin = 0.0;       // how far the matter is thinned on the flight path (fading out over 1.4 units)
 vec2 camPathXY(float z)
 {
     return gPathAmp * vec2(1.1 * sin(z * 0.11) + 0.4 * sin(z * 0.23 + 1.3), 0.8 * sin(z * 0.083 + 0.7) + 0.3 * cos(z * 0.19));
@@ -1756,17 +1759,24 @@ float smaxK(float a, float b, float k) { float h = clamp(0.5 - 0.5 * (b - a) / k
 float fieldD(vec3 p)
 {
     gDR = 1.0;
-    float d = field3(p);
-    float tube = max(gTube - length(p.xy - camPathXY(p.z)), -1.0);
+    // The field at gWorldK times the position: its structures 1/gWorldK as large while the camera's tube, near
+    // carve and flight keep their size -- the camera keeps its distance to more, smaller structures.
+    float d = field3(p * gWorldK) / gWorldK;
+    float r = length(p.xy - camPathXY(p.z));
+    // Thinning: toward the flight path the matter is eroded (its surface moved inward by up to gThin), so bodies
+    // near the camera become slender and open the view into the depth instead of being cut into broad, alike faces
+    // by the tube (17.10.2026).  Slope at most 1.5 * gThin / 1.4: with gThin 0.25 the distance stays conservative
+    // enough under the march's 0.8.  It ends within 1.4: the worlds round the flight axis (helix, polar ring, roll)
+    // keep their rings.  Looking out of a side window it fades along the flight like the tube.
+    float thin = gThin * (1.0 - smoothstep(0.0, 1.4, r));
+    if (gSide > 0.0) thin *= 1.0 - gSide * smoothstep(3.0, 6.0, abs(p.z - gCam.z));
+    d += thin;
+    float tube = max(gTube - r, -1.0);
     // Looking out of a side window the tube is carved only around the camera
     // (it fades out 3..6 along the flight): carved along the whole path it
     // showed from the side as a dark channel winding off.  The fade is gentle
     // (slope below 0.5, tube clamped at -1), so the distance stays conservative.
     if (gSide > 0.0) tube = mix(tube, -1.0, gSide * smoothstep(3.0, 6.0, abs(p.z - gCam.z)));
-    // The orthographic gaze starts its rays on a plane through the camera: a
-    // slab across the view axis is carved free, its far face is the
-    // cross-section the view shows.
-    if (gOrtho > 0.0) tube = max(tube, mix(-1.0, 0.35 - abs(dot(p - gCam, gAxis)), gOrtho));
     return max(smaxK(d, 0.8 * tube, 0.15), 0.3 - length(p - gCam));
 }
 // The camera frame at depth z: on the path, looking at the path ahead.
@@ -1785,12 +1795,15 @@ mat3 camFrame(float z, out vec3 ro)
 }
 // The gaze: where the camera looks relative to its flight.  Straight ahead
 // shows the vanishing point -- a dark opening the eye keeps flying into -- so
-// that is only one of seven:
-//   0 ahead, 1 out of the right window (the world slides past with parallax),
-//   2 slanted down ahead, 3 out of the left window, 4 slanted up,
-//   5 floating (the flight nearly stops, the gaze turns slowly all round),
-//   6 an orthographic side view (parallel rays, no vanishing point at all:
-//     a cross-section through the world slides past, the depth behind it).
+// that is only one of seven; the others look diagonally, the vanishing point
+// just outside the picture, so the depth of the flight stays in view:
+//   0 ahead, 1 ahead-right (the world slides past with parallax),
+//   2 slanted down ahead, 3 ahead-left, 4 slanted up, 5 floating (the
+//   flight nearly stops, the gaze sways slowly from side to side),
+//   6 ahead-right and up.
+// The side windows looked across the flight (77 degrees), the slants 45
+// degrees down or up, and gaze 6 was orthographic (a cross-section sliding
+// past): each filled the picture with one wall of the world (17.10.2026).
 // In the app the camera host (camHost) picks the gazes and integrates the
 // flight (camZ, slower in some gazes -- EffectShader::stepChainCam keeps the
 // speed table); elsewhere (editor renders) the knob picks the first gaze and
@@ -1799,26 +1812,24 @@ mat3 camFrame(float z, out vec3 ro)
 uniform float camHost;   // 1: the app drives the camera (camZ, camGaze)
 uniform float camZ;      // the flight position along the path
 uniform vec3 camGaze;    // (gaze shown, gaze panned to, pan 0..1)
-// (yaw, pitch, ortho, carve the tube only near the camera)
-vec4 gazeAngles(float k, float time)
+// (yaw, pitch, carve the tube only near the camera)
+vec3 gazeAngles(float k, float time)
 {
     float i = mod(k, 7.0);
-    // Never along a lattice axis: parallel rays grazing whole rows of bodies
-    // took the most march steps (39 fps orthographic straight across, 117 tilted).
-    if (i > 5.5) return vec4(1.2, 0.3, 1.0, 1.0);
-    if (i > 4.5) return vec4(0.035 * time, 0.35 + 0.2 * sin(0.019 * time), 0.0, 1.0);
-    if (i > 3.5) return vec4(-0.3, 0.75, 0.0, 0.0);
-    if (i > 2.5) return vec4(-1.35, 0.08, 0.0, 1.0);
-    if (i > 1.5) return vec4(0.35, -0.8, 0.0, 0.0);
-    if (i > 0.5) return vec4(1.35, -0.08, 0.0, 1.0);
-    return vec4(0.0);
+    // Never along a lattice axis: rays grazing whole rows of bodies take the most march steps.
+    if (i > 5.5) return vec3(0.6, 0.32, 1.0);
+    if (i > 4.5) return vec3(1.0 * sin(0.017 * time), 0.25 + 0.15 * sin(0.019 * time), 1.0);
+    if (i > 3.5) return vec3(-0.3, 0.5, 0.0);
+    if (i > 2.5) return vec3(-0.8, 0.06, 1.0);
+    if (i > 1.5) return vec3(0.3, -0.5, 0.0);
+    if (i > 0.5) return vec3(0.8, -0.06, 1.0);
+    return vec3(0.0);
 }
 vec3 gazeTurn(vec3 v, vec2 a) { v.yz = rot2(a.y) * v.yz; v.xz = rot2(-a.x) * v.xz; return v; }
 // The camera's flight position (the app's integrated one, or gT).
 float camFlight(float gt) { return camHost > 0.5 ? camZ : gt; }
-// The ray of pixel p: its direction, and its origin moved off the camera for
-// the orthographic share (rays start on a plane through the camera).
-vec3 gazeDir(vec2 p, float cam, float time, mat3 cf, inout vec3 ro)
+// The ray direction of pixel p.
+vec3 gazeDir(vec2 p, float cam, float time, mat3 cf)
 {
     float k0, k1, f;
     if (camHost > 0.5) {
@@ -1827,16 +1838,12 @@ vec3 gazeDir(vec2 p, float cam, float time, mat3 cf, inout vec3 ro)
         float g = floor(clamp(cam, 0.0, 0.999) * 7.0) + 0.004 * time;
         k0 = floor(g); k1 = k0 + 1.0; f = smoothstep(0.75, 1.0, fract(g));
     }
-    vec4 a0 = gazeAngles(k0, time), a1 = gazeAngles(k1, time);
+    vec3 a0 = gazeAngles(k0, time), a1 = gazeAngles(k1, time);
     a1.x += 6.2831853 * floor((a0.x - a1.x) / 6.2831853 + 0.5);   // pan the shorter way round
-    vec4 a = mix(a0, a1, f);
-    a.xy += (1.0 - a.z) * vec2(0.12 * sin(0.031 * time), 0.08 * sin(0.023 * time + 1.0));
-    gSide = a.w;
-    gOrtho = a.z;
-    vec3 ax = gazeTurn(vec3(0.0, 0.0, 1.0), a.xy);
-    gAxis = cf * ax;
-    ro += cf * gazeTurn(vec3(p, 0.0), a.xy) * (2.2 * gOrtho);
-    return cf * normalize(mix(gazeTurn(normalize(vec3(p, 1.1)), a.xy), ax, gOrtho));
+    vec3 a = mix(a0, a1, f);
+    a.xy += vec2(0.12 * sin(0.031 * time), 0.08 * sin(0.023 * time + 1.0));
+    gSide = a.z;
+    return cf * gazeTurn(normalize(vec3(p, 1.1)), a.xy);
 }
 vec3 normal3(vec3 p)
 {

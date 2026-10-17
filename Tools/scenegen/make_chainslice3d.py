@@ -56,7 +56,7 @@ body = src[i_body:]
 SLICE = r'''
 // ---- the slice ------------------------------------------------------------
 // The world without the flight tube: a plane cuts it, nothing has to be carved.
-float fieldS(vec3 p) { gDR = 1.0; return field3(p); }
+float fieldS(vec3 p) { gDR = 1.0; return field3(p * gWorldK) / gWorldK; }   // the world at 1/gWorldK, as in fieldD
 vec3 normalS(vec3 p)
 {
     const vec2 e = vec2(0.0015, -0.0015);
@@ -113,7 +113,7 @@ void sliceFrame(float cam, float time, out vec3 N, out vec3 X, out vec3 Y)
     Y = cos(a) * y0 - sin(a) * x0;
 }
 '''
-COLMIX = "        col = mix(fogC, sc, exp(-t * (0.06 + 0.04 * swell)));"
+COLMIX = "        col = mix(fogC, sc, exp(-t * (0.09 + 0.04 * swell)));"
 # isoP: the distance field's contour lines, after the colour of the cut point
 ISO = r'''
         // isoP: the distance field's contour lines -- around every body its

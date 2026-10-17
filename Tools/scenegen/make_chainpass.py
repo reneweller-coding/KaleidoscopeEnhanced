@@ -444,7 +444,7 @@ def write_3d(base="ChainLab3D"):
         "    // colour and relief for every pixel: the derivatives must not sit in a pixel branch\n"
         "    vec3 q = ro + rd * max(t, 0.0);\n"
         "    vec3 n = normalize(gn.xyz + vec3(1e-6));\n"
-        "    float lod = clamp(log2(max(t, 0.05) * 2.0) + 1.5 * (1.0 - clamp(detailP, 0.0, 1.0)), 0.0, 7.0);\n"
+        "    float lod = clamp(log2(max(t, 0.05) * gWorldK * 2.0) + 1.5 * (1.0 - clamp(detailP, 0.0, 1.0)), 0.0, 7.0);\n"
         "    vec3 nGeo = n;                                          // texture on the geometric normal, light on the bumped one\n"
         "    vec3 tex0 = colour3T(nGeo, lod, 0.2 + 0.7 * clamp(paletteP, 0.0, 1.0));\n"
         "    // relief: the colour chain's brightness as height; its slope on the surface from the\n"
@@ -466,7 +466,7 @@ def write_3d(base="ChainLab3D"):
     _nline = "        vec3 n = normalS(q);\n" if slice_ else "        vec3 n = normal3(q);\n"
     assert ("        vec3 q = ro + rd * t;\n" + _nline) in fin_main, "3D final: the hit point lines changed"
     fin_main = fin_main.replace("        vec3 q = ro + rd * t;\n" + _nline, "")
-    fin_main = re.sub(r"        float lod = clamp\(log2\(t \* 2\.0\).*?\n", "", fin_main)
+    fin_main = re.sub(r"        float lod = clamp\(log2\(t \* (gWorldK \* )?2\.0\).*?\n", "", fin_main)
     fin_main = fin_main.replace("        vec3 nGeo = n;                                          // texture on the geometric normal, light on the bumped one\n", "")
     k0 = fin_main.index("        if (reliefP > 0.3) {")
     k1 = fin_main.index("        vec3 tex = colour3(")

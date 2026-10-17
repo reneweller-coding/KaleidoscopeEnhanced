@@ -349,6 +349,9 @@ void EffectShader::resetParameters()
         m_clockBaseT = 600.f * next();
         m_clockBaseA = 40.f * next();
         m_clockBaseR = 100.f * next();
+        // The 3D chains' camera (flight start, hold times) from the same hash: under KALEIDO_SEED a sample of
+        // rolls shows the same views in every run, so two shader versions can be compared picture by picture.
+        m_cam.seed = ( h ^ 0x9e3779b9u ) | 1u;
     }
     m_sceneProgress = 0.f;
 
@@ -3396,7 +3399,7 @@ std::vector<std::pair<std::string, float>> EffectShader::bumpClassTaste( float m
 
 // ---- Camera host of the 3D chains --------------------------------------------
 // Speed of the flight per gaze -- the order of gazeAngles() in the shader:
-// ahead, right window, slanted down, left window, slanted up, floating, orthographic.
+// ahead, ahead-right, slanted down, ahead-left, slanted up, floating, ahead-right and up.
 static const int GazeN = 7; ///< Number of gazes (the shader's gazeAngles()).
 /** Flight speed per gaze, in the order above. */
 static const float GazeSpeed[GazeN] = { 1.f, 0.7f, 0.85f, 0.7f, 0.85f, 0.08f, 0.5f };
@@ -3424,13 +3427,9 @@ void EffectShader::stepChainCam( const AudioFeatures &f )
     if ( m_cam.pending )
     {
         m_cam.pending = false;
-        m_cam.rng.seed( M_FreezeTime >= 0.f ? 12345u // a comparison run: the same flight every time
-                                            : static_cast<unsigned>( now.time_since_epoch().count() ) | 1u ); // not
-                                                                                                              // from
-                                                                                                              // the
-                                                                                                              // scene's
-                                                                                                              // rand()
-                                                                                                              // stream
+        // A comparison run flies the same flight every time; otherwise the activation's own seed (resetParameters(),
+        // not from the scene's rand() stream: pinned under KALEIDO_SEED, from the clock in the show).
+        m_cam.rng.seed( M_FreezeTime >= 0.f ? 12345u : m_cam.seed );
         m_cam.z = std::uniform_real_distribution<float>( 0.f, 500.f )( m_cam.rng ); // a fresh stretch of the world
         m_cam.g0 = m_cam.g1 = static_cast<int>( ( cam_p < 0.f ? 0.f : ( cam_p > 0.999f ? 0.999f : cam_p ) ) * GazeN );
         m_cam.f = 0.f;

@@ -144,6 +144,9 @@ void finish( vec3 col )
     fragColor = vec4( clamp( t, 0.0, 1.0 ), 1.0 );
 }
 vec3          gCam = vec3( 0.0 ); ///< The camera position this frame.
+float         gPathAmp = 1.0;     ///< Amplitude of the camera path's wander.
+float         gWorldK = 1.0;      ///< The world's scale: the field's structures 1/gWorldK as large around the camera.
+float         gThin = 0.0;        ///< How far the matter is thinned on the flight path (fading out over 1.4 units).
 uniform float camHost;            ///< 1 when the app drives the camera (camZ, camGaze).
 uniform float camZ;               ///< Flight position along the camera path (integrated by the app).
 uniform vec3  camGaze;            ///< Gaze shown, gaze panned to, pan progress.
@@ -454,6 +457,11 @@ void main()
     gCw = vec2( 0.5 ) + 0.15 * vec2( sin( 0.017 * sceneTime ), cos( 0.013 * sceneTime ) );
     gCt = vec2( 0.5 )
           + vec2( 0.22 * sin( 0.023 * sceneTime + 0.3 * sin( 0.011 * sceneTime ) ), 0.16 * cos( 0.019 * sceneTime ) );
+
+
+    gWorldK = 2.0;
+    gPathAmp = 1.0 / gWorldK;
+    gThin = 0.25;
     vec3 ro;
 
 
@@ -489,13 +497,15 @@ void main()
 
 
     vec3 fog_pal = hsv2rgb( vec3( fract( chainHue0() + 0.08 ), 0.4, 1.0 ) );
+
+
     vec3 fog_c = mix( calmGlow( imgK( vec2( 0.5 ) + 0.2 * p, 5.0 ), 0.04 ), fog_pal, 0.8 * clamp( paletteP, 0.0, 1.0 ) )
-                 * ( 0.05 + 0.1 * swell );
+                 * ( 0.08 + 0.1 * swell );
     vec3 col = fog_c;
     // colour and relief for every pixel: the derivatives must not sit in a pixel branch
     vec3  q = ro + rd * max( t, 0.0 );
     vec3  n = normalize( gn.xyz + vec3( 1e-6 ) );
-    float lod = clamp( log2( max( t, 0.05 ) * 2.0 ) + 1.5 * ( 1.0 - clamp( detailP, 0.0, 1.0 ) ), 0.0, 7.0 );
+    float lod = clamp( log2( max( t, 0.05 ) * gWorldK * 2.0 ) + 1.5 * ( 1.0 - clamp( detailP, 0.0, 1.0 ) ), 0.0, 7.0 );
     vec3  n_geo = n; // texture on the geometric normal, light on the bumped one
     vec3  tex0 = colour3T( n_geo, lod, 0.2 + 0.7 * clamp( paletteP, 0.0, 1.0 ) );
     // relief: the colour chain's brightness as height; its slope on the surface from the
@@ -521,13 +531,22 @@ void main()
         float diff = 0.5 + 0.5 * dot( n, L );
         float ao = gn.w;
         float fres = pow( 1.0 - abs( dot( n, -rd ) ), 3.0 );
-        vec3  surf = tex * lc * ( 0.35 + 0.9 * diff ) * ao;
+
+
+
+        float lamp = max( dot( n, -rd ), 0.0 ) / ( 1.0 + 0.15 * t * t );
+        float drift = 0.8
+                      + 0.4
+                            * smoothstep( -0.6, 0.6,
+                                          sin( 0.45 * q.x + 0.8 * sin( 0.21 * q.z ) )
+                                              * sin( 0.38 * q.y + 0.17 * q.z + 1.3 ) );
+        vec3  surf = tex * lc * ( 0.3 + 0.75 * diff + 0.45 * lamp ) * ao * drift;
         vec3  rim_c = calmGlow( tex, 0.05 * sin( fp.x + fp.y ) );
         vec3  rim = rim_c * fres * ( 0.7 + 1.5 * kick ) + surf * 0.4;
         float st = clamp( styleP, 0.0, 1.0 );
         vec3  sc = mix( surf + rim_c * fres * ( 0.15 + 0.6 * kick ), rim * 1.3 + rim_c * 0.12 * ao,
                         smoothstep( 0.5, 1.0, st ) );
-        col = mix( fog_c, sc, exp( -t * ( 0.06 + 0.04 * swell ) ) );
+        col = mix( fog_c, sc, exp( -t * ( 0.09 + 0.04 * swell ) ) );
 
 
 

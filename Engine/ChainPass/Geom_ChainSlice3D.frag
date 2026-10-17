@@ -320,6 +320,9 @@ vec3 fHyperBall( vec3 p, float k )
  **/
 vec3 fTorusWrap( vec3 p, float R, float cell )
 {
+
+
+    p.z = 2.0 * R * ( abs( mod( p.z / ( 2.0 * R ) - 1.0, 4.0 ) - 2.0 ) - 1.0 );
     float rho = length( p.xz );
     float arc = atan( p.z, p.x ) * R;
     float per = 6.2831853 * R / max( floor( 6.2831853 * R / ( 4.0 * cell ) + 0.5 ), 1.0 ) / 4.0;
@@ -577,6 +580,9 @@ float sdGyroid3( vec3 p, float thick )
 float field3( vec3 p );
 /// @endcond
 vec3          gCam = vec3( 0.0 ); ///< The camera position this frame.
+float         gPathAmp = 1.0;     ///< Amplitude of the camera path's wander.
+float         gWorldK = 1.0;      ///< The world's scale: the field's structures 1/gWorldK as large around the camera.
+float         gThin = 0.0;        ///< How far the matter is thinned on the flight path (fading out over 1.4 units).
 uniform float camHost;            ///< 1 when the app drives the camera (camZ, camGaze).
 uniform float camZ;               ///< Flight position along the camera path (integrated by the app).
 uniform vec3  camGaze;            ///< Gaze shown, gaze panned to, pan progress.
@@ -884,8 +890,9 @@ float fieldK0( vec3 p, float xs, float xc, float xb, int world )
         q = fRepeat( fScale( q, 1.6, vec3( 0.0 ) ), vec3( 1.3 ) );
     }
 #elif SPEC_SP0 == 9
-    q = fRepeat( fScale( fLogSphere( p, gCam + vec3( 0.0, 0.0, 6.0 ), 2.5 + vs, gT * 0.05 ), 2.5, vec3( 0.0 ) ),
-                 vec3( 1.4 ) );
+    q = fRepeat(
+        fScale( fLogSphere( p, gCam * gWorldK + vec3( 0.0, 0.0, 6.0 ), 2.5 + vs, gT * 0.05 ), 2.5, vec3( 0.0 ) ),
+        vec3( 1.4 ) );
 #elif SPEC_SP0 == 12
     q = fRepeat( fHalfSpace( p, 1.0 ), vec3( 1.3 ) );
 #elif SPEC_SP0 == 13
@@ -907,7 +914,7 @@ float fieldK0( vec3 p, float xs, float xc, float xb, int world )
     }
 #elif SPEC_SP0 == 17
     {
-        vec3  cc = gCam + vec3( 0.0, 0.0, 6.0 );
+        vec3  cc = gCam * gWorldK + vec3( 0.0, 0.0, 6.0 );
         float lr = log( max( length( p - cc ), 1e-3 ) );
         q = fLogSphere( p, cc, 2.5 + vs, gT * 0.05 );
         q.xy = rot2( 0.9 * lr ) * q.xy;
@@ -1302,8 +1309,9 @@ float fieldK1( vec3 p, float xs, float xc, float xb, int world )
         q = fRepeat( fScale( q, 1.6, vec3( 0.0 ) ), vec3( 1.3 ) );
     }
 #elif SPEC_SP1 == 9
-    q = fRepeat( fScale( fLogSphere( p, gCam + vec3( 0.0, 0.0, 6.0 ), 2.5 + vs, gT * 0.05 ), 2.5, vec3( 0.0 ) ),
-                 vec3( 1.4 ) );
+    q = fRepeat(
+        fScale( fLogSphere( p, gCam * gWorldK + vec3( 0.0, 0.0, 6.0 ), 2.5 + vs, gT * 0.05 ), 2.5, vec3( 0.0 ) ),
+        vec3( 1.4 ) );
 #elif SPEC_SP1 == 12
     q = fRepeat( fHalfSpace( p, 1.0 ), vec3( 1.3 ) );
 #elif SPEC_SP1 == 13
@@ -1325,7 +1333,7 @@ float fieldK1( vec3 p, float xs, float xc, float xb, int world )
     }
 #elif SPEC_SP1 == 17
     {
-        vec3  cc = gCam + vec3( 0.0, 0.0, 6.0 );
+        vec3  cc = gCam * gWorldK + vec3( 0.0, 0.0, 6.0 );
         float lr = log( max( length( p - cc ), 1e-3 ) );
         q = fLogSphere( p, cc, 2.5 + vs, gT * 0.05 );
         q.xy = rot2( 0.9 * lr ) * q.xy;
@@ -1707,7 +1715,7 @@ float field3( vec3 p )
 float fieldS( vec3 p )
 {
     gDR = 1.0;
-    return field3( p );
+    return field3( p * gWorldK ) / gWorldK;
 }
 /**  Matter lit, air dimmer: the cut through a body is the subject.
  *
@@ -1817,6 +1825,11 @@ void main()
     gCw = vec2( 0.5 ) + 0.15 * vec2( sin( 0.017 * sceneTime ), cos( 0.013 * sceneTime ) );
     gCt = vec2( 0.5 )
           + vec2( 0.22 * sin( 0.023 * sceneTime + 0.3 * sin( 0.011 * sceneTime ) ), 0.16 * cos( 0.019 * sceneTime ) );
+
+
+    gWorldK = 2.0;
+    gPathAmp = 1.0 / gWorldK;
+    gThin = 0.25;
     vec3 ro;
 
 

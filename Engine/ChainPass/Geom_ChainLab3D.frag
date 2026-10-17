@@ -318,6 +318,9 @@ vec3 fHyperBall( vec3 p, float k )
  **/
 vec3 fTorusWrap( vec3 p, float R, float cell )
 {
+
+
+    p.z = 2.0 * R * ( abs( mod( p.z / ( 2.0 * R ) - 1.0, 4.0 ) - 2.0 ) - 1.0 );
     float rho = length( p.xz );
     float arc = atan( p.z, p.x ) * R;
     float per = 6.2831853 * R / max( floor( 6.2831853 * R / ( 4.0 * cell ) + 0.5 ), 1.0 ) / 4.0;
@@ -574,12 +577,12 @@ float sdGyroid3( vec3 p, float thick )
 /// @cond
 float field3( vec3 p );
 /// @endcond
-vec3  gCam = vec3( 0.0 );            ///< The camera position this frame.
-float gPathAmp = 1.0;                ///< Amplitude of the camera path's wander.
-float gTube = 0.45;                  ///< Radius of the flight tube this frame.
-float gSide = 0.0;                   ///< Share of the side walls this frame (from the walk).
-float gOrtho = 0.0;                  ///< Share of the orthographic look, 0..1 (from the gaze).
-vec3  gAxis = vec3( 0.0, 0.0, 1.0 ); ///< The flight axis (x, y) this frame.
+vec3  gCam = vec3( 0.0 ); ///< The camera position this frame.
+float gPathAmp = 1.0;     ///< Amplitude of the camera path's wander.
+float gTube = 0.45;       ///< Radius of the flight tube this frame.
+float gSide = 0.0;        ///< Share of the side walls this frame (from the walk).
+float gWorldK = 1.0;      ///< The world's scale: the field's structures 1/gWorldK as large around the camera.
+float gThin = 0.0;        ///< How far the matter is thinned on the flight path (fading out over 1.4 units).
 /**  The camera path's x/y offset at depth z.
  *
  * @param z  Depth along the flight. (in)
@@ -617,19 +620,25 @@ float smaxK( float a, float b, float k )
 float fieldD( vec3 p )
 {
     gDR = 1.0;
-    float d = field3( p );
-    float tube = max( gTube - length( p.xy - camPathXY( p.z ) ), -1.0 );
+
+
+    float d = field3( p * gWorldK ) / gWorldK;
+    float r = length( p.xy - camPathXY( p.z ) );
+
+
+
+
+    float thin = gThin * ( 1.0 - smoothstep( 0.0, 1.4, r ) );
+    if ( gSide > 0.0 )
+        thin *= 1.0 - gSide * smoothstep( 3.0, 6.0, abs( p.z - gCam.z ) );
+    d += thin;
+    float tube = max( gTube - r, -1.0 );
 
 
 
 
     if ( gSide > 0.0 )
         tube = mix( tube, -1.0, gSide * smoothstep( 3.0, 6.0, abs( p.z - gCam.z ) ) );
-
-
-
-    if ( gOrtho > 0.0 )
-        tube = max( tube, mix( -1.0, 0.35 - abs( dot( p - gCam, gAxis ) ), gOrtho ) );
     return max( smaxK( d, 0.8 * tube, 0.15 ), 0.3 - length( p - gCam ) );
 }
 /**  The camera frame at depth z: on the path, looking at the path ahead.
@@ -664,24 +673,23 @@ uniform vec3  camGaze; ///< Gaze shown, gaze panned to, pan progress.
  * @return
  *   Yaw, pitch, orthographic share, and whether to carve the tube only near the camera.
  **/
-vec4 gazeAngles( float k, float time )
+vec3 gazeAngles( float k, float time )
 {
     float i = mod( k, 7.0 );
 
-
     if ( i > 5.5 )
-        return vec4( 1.2, 0.3, 1.0, 1.0 );
+        return vec3( 0.6, 0.32, 1.0 );
     if ( i > 4.5 )
-        return vec4( 0.035 * time, 0.35 + 0.2 * sin( 0.019 * time ), 0.0, 1.0 );
+        return vec3( 1.0 * sin( 0.017 * time ), 0.25 + 0.15 * sin( 0.019 * time ), 1.0 );
     if ( i > 3.5 )
-        return vec4( -0.3, 0.75, 0.0, 0.0 );
+        return vec3( -0.3, 0.5, 0.0 );
     if ( i > 2.5 )
-        return vec4( -1.35, 0.08, 0.0, 1.0 );
+        return vec3( -0.8, 0.06, 1.0 );
     if ( i > 1.5 )
-        return vec4( 0.35, -0.8, 0.0, 0.0 );
+        return vec3( 0.3, -0.5, 0.0 );
     if ( i > 0.5 )
-        return vec4( 1.35, -0.08, 0.0, 1.0 );
-    return vec4( 0.0 );
+        return vec3( 0.8, -0.06, 1.0 );
+    return vec3( 0.0 );
 }
 /**  Turns a direction by the gaze angles (yaw, pitch).
  *
@@ -708,19 +716,7 @@ float camFlight( float gt )
 {
     return camHost > 0.5 ? camZ : gt;
 }
-/**  The ray of pixel p: its direction, and its origin moved off the camera for the orthographic share (rays start on
- * a plane through the camera).
- *
- * @param p     The pixel's centred coordinate. (in)
- * @param cam   Camera knob (orthographic share and gaze). (in)
- * @param time  The scene's time. (in)
- * @param cf    The camera frame (right, up, forward). (in)
- * @param ro    The ray origin; moved off the camera for the orthographic share. (in,out)
- *
- * @return
- *   The ray direction (unit length).
- **/
-vec3 gazeDir( vec2 p, float cam, float time, mat3 cf, inout vec3 ro )
+vec3 gazeDir( vec2 p, float cam, float time, mat3 cf )
 {
     float k0, k1, f;
     if ( camHost > 0.5 )
@@ -736,16 +732,12 @@ vec3 gazeDir( vec2 p, float cam, float time, mat3 cf, inout vec3 ro )
         k1 = k0 + 1.0;
         f = smoothstep( 0.75, 1.0, fract( g ) );
     }
-    vec4 a0 = gazeAngles( k0, time ), a1 = gazeAngles( k1, time );
+    vec3 a0 = gazeAngles( k0, time ), a1 = gazeAngles( k1, time );
     a1.x += 6.2831853 * floor( ( a0.x - a1.x ) / 6.2831853 + 0.5 );
-    vec4 a = mix( a0, a1, f );
-    a.xy += ( 1.0 - a.z ) * vec2( 0.12 * sin( 0.031 * time ), 0.08 * sin( 0.023 * time + 1.0 ) );
-    gSide = a.w;
-    gOrtho = a.z;
-    vec3 ax = gazeTurn( vec3( 0.0, 0.0, 1.0 ), a.xy );
-    gAxis = cf * ax;
-    ro += cf * gazeTurn( vec3( p, 0.0 ), a.xy ) * ( 2.2 * gOrtho );
-    return cf * normalize( mix( gazeTurn( normalize( vec3( p, 1.1 ) ), a.xy ), ax, gOrtho ) );
+    vec3 a = mix( a0, a1, f );
+    a.xy += vec2( 0.12 * sin( 0.031 * time ), 0.08 * sin( 0.023 * time + 1.0 ) );
+    gSide = a.z;
+    return cf * gazeTurn( normalize( vec3( p, 1.1 ) ), a.xy );
 }
 /** @{ */
 float gT, gTC, gSpread, gRot, gMw; ///< gT: The chain's (or scene's) time this frame; gTC: The chain's time for this
@@ -1040,8 +1032,9 @@ float fieldK0( vec3 p, float xs, float xc, float xb, int world )
         q = fRepeat( fScale( q, 1.6, vec3( 0.0 ) ), vec3( 1.3 ) );
     }
 #elif SPEC_SP0 == 9
-    q = fRepeat( fScale( fLogSphere( p, gCam + vec3( 0.0, 0.0, 6.0 ), 2.5 + vs, gT * 0.05 ), 2.5, vec3( 0.0 ) ),
-                 vec3( 1.4 ) );
+    q = fRepeat(
+        fScale( fLogSphere( p, gCam * gWorldK + vec3( 0.0, 0.0, 6.0 ), 2.5 + vs, gT * 0.05 ), 2.5, vec3( 0.0 ) ),
+        vec3( 1.4 ) );
 #elif SPEC_SP0 == 12
     q = fRepeat( fHalfSpace( p, 1.0 ), vec3( 1.3 ) );
 #elif SPEC_SP0 == 13
@@ -1063,7 +1056,7 @@ float fieldK0( vec3 p, float xs, float xc, float xb, int world )
     }
 #elif SPEC_SP0 == 17
     {
-        vec3  cc = gCam + vec3( 0.0, 0.0, 6.0 );
+        vec3  cc = gCam * gWorldK + vec3( 0.0, 0.0, 6.0 );
         float lr = log( max( length( p - cc ), 1e-3 ) );
         q = fLogSphere( p, cc, 2.5 + vs, gT * 0.05 );
         q.xy = rot2( 0.9 * lr ) * q.xy;
@@ -1458,8 +1451,9 @@ float fieldK1( vec3 p, float xs, float xc, float xb, int world )
         q = fRepeat( fScale( q, 1.6, vec3( 0.0 ) ), vec3( 1.3 ) );
     }
 #elif SPEC_SP1 == 9
-    q = fRepeat( fScale( fLogSphere( p, gCam + vec3( 0.0, 0.0, 6.0 ), 2.5 + vs, gT * 0.05 ), 2.5, vec3( 0.0 ) ),
-                 vec3( 1.4 ) );
+    q = fRepeat(
+        fScale( fLogSphere( p, gCam * gWorldK + vec3( 0.0, 0.0, 6.0 ), 2.5 + vs, gT * 0.05 ), 2.5, vec3( 0.0 ) ),
+        vec3( 1.4 ) );
 #elif SPEC_SP1 == 12
     q = fRepeat( fHalfSpace( p, 1.0 ), vec3( 1.3 ) );
 #elif SPEC_SP1 == 13
@@ -1481,7 +1475,7 @@ float fieldK1( vec3 p, float xs, float xc, float xb, int world )
     }
 #elif SPEC_SP1 == 17
     {
-        vec3  cc = gCam + vec3( 0.0, 0.0, 6.0 );
+        vec3  cc = gCam * gWorldK + vec3( 0.0, 0.0, 6.0 );
         float lr = log( max( length( p - cc ), 1e-3 ) );
         q = fLogSphere( p, cc, 2.5 + vs, gT * 0.05 );
         q.xy = rot2( 0.9 * lr ) * q.xy;
@@ -1869,11 +1863,16 @@ void main()
     gCw = vec2( 0.5 ) + 0.15 * vec2( sin( 0.017 * sceneTime ), cos( 0.013 * sceneTime ) );
     gCt = vec2( 0.5 )
           + vec2( 0.22 * sin( 0.023 * sceneTime + 0.3 * sin( 0.011 * sceneTime ) ), 0.16 * cos( 0.019 * sceneTime ) );
+
+
+    gWorldK = 2.0;
+    gPathAmp = 1.0 / gWorldK;
+    gThin = 0.25;
     vec3 ro;
     mat3 cf = camFrame( camFlight( gT ), ro );
     gCam = ro;
     gTube = 0.4 + 0.15 * swell;
-    vec3  rd = gazeDir( p, camP, sceneTime, cf, ro );
+    vec3  rd = gazeDir( p, camP, sceneTime, cf );
     int   z0 = min( int( sceneTime ), 0 ); // a start the compiler cannot see: the loop stays a loop
     float t = 0.05;
     bool  hit = false;

@@ -516,13 +516,19 @@ einer 2D-Kette (A–D, Reihenfolge gewürfelt, aber nicht wandernd, ohne die dre
 
 **Kamera:** Die Kamera fliegt auf einer geschwungenen Bahn. Eine Röhre um die
 Bahn wird aus jedem Körper ausgeschnitten, deshalb gibt es nie eine Kollision.
-Seit 01.10. gibt es **sieben Blicke**: geradeaus, rechtes Fenster, schräg
-unten, linkes Fenster, schräg oben, Schweben (Flug fast still, Blick dreht
-sich langsam rundum), orthografisch (parallele Strahlen, ein schräger
-Querschnitt zieht vorbei). `camP` wählt den ersten. Dann hält die App jeden
-Blick 2–5 min und schwenkt in 40–60 s zu einem anderen, nur nach der Uhr.
-Die App summiert auch die Flugposition auf, damit Schweben den Flug ohne
-Sprung bremsen kann.
+Seit 17.10. ist die Welt **halb so groß** um dieselbe Kamera (`gWorldK` = 2),
+und zur Bahn hin wird die Materie **ausgedünnt** (`gThin`): Körper nahe der
+Kamera werden schlanker und geben den Blick in die Tiefe frei, statt von einer
+breiteren Röhre in große, gleichartige Schnittflächen zerschnitten zu werden.
+Es gibt **sieben Blicke**: geradeaus, schräg rechts voraus, schräg unten,
+schräg links voraus, schräg oben, Schweben (Flug fast still, Blick pendelt
+langsam hin und her), schräg rechts oben voraus. Alle Schrägblicke lassen den
+Fluchtpunkt knapp außerhalb des Bildes, damit die Tiefe sichtbar bleibt. Bis
+17.10. blickten die Seitenfenster quer zum Flug und ein orthografischer Blick
+zeigte einen Querschnitt; beide füllten das Bild mit einer Wand. `camP` wählt
+den ersten Blick. Dann hält die App jeden Blick 2–5 min und schwenkt in
+40–60 s zu einem anderen, nur nach der Uhr. Die App summiert auch die
+Flugposition auf, damit Schweben den Flug ohne Sprung bremsen kann.
 
 ### ChainSlice3D – der Raumschnitt (Prototyp seit 01.10.)
 Die 3D-Kette ohne Raymarching: Der Bildschirm ist eine **Ebene durch die

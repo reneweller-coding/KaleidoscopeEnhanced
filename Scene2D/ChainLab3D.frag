@@ -3568,6 +3568,9 @@ vec3 fHyperBall( vec3 p, float k )
  **/
 vec3 fTorusWrap( vec3 p, float R, float cell )
 {
+    // The flight axis folded (mirror repeat, period 8R) into the reach of one ring: the camera starts anywhere on
+    // z 0..500, and far from a single ring round the origin the wrapped world was stretched into streaks.
+    p.z = 2.0 * R * ( abs( mod( p.z / ( 2.0 * R ) - 1.0, 4.0 ) - 2.0 ) - 1.0 );
     float rho = length( p.xz );
     float arc = atan( p.z, p.x ) * R;
     float per = 6.2831853 * R / max( floor( 6.2831853 * R / ( 4.0 * cell ) + 0.5 ), 1.0 ) / 4.0; // whole periods round
@@ -3832,11 +3835,11 @@ vec3 gCam = vec3( 0.0 ); ///< The camera position this frame.
 // Collision-free flight: the camera follows a winding path through the field, and a
 // tube around that path is carved out of every body (soft edges, so the cut faces
 // read as sculpted walls).  The path depends only on z, so the carve is stateless.
-float gPathAmp = 1.0;                ///< how far the path winds (a scene may shrink it)
-float gTube = 0.45;                  ///< tube radius
-float gSide = 0.0;                   ///< how far the gaze looks out of a side window (0 ahead .. 1): see gazeDir
-float gOrtho = 0.0;                  ///< orthographic share of the gaze (6)
-vec3  gAxis = vec3( 0.0, 0.0, 1.0 ); ///< the view axis (world): the ortho slab is cut across it
+float gPathAmp = 1.0; ///< how far the path winds (a scene may shrink it)
+float gTube = 0.45;   ///< tube radius
+float gSide = 0.0;    ///< how far the gaze looks out of a side window (0 ahead .. 1): see gazeDir
+float gWorldK = 1.0;  ///< the world's scale: the field's structures 1/gWorldK as large around the same camera
+float gThin = 0.0;    ///< how far the matter is thinned on the flight path (fading out over 1.4 units)
 /**  The camera path's x/y offset at depth z.
  *
  * @param z  Depth along the flight. (in)
@@ -3874,19 +3877,26 @@ float smaxK( float a, float b, float k )
 float fieldD( vec3 p )
 {
     gDR = 1.0;
-    float d = field3( p );
-    float tube = max( gTube - length( p.xy - camPathXY( p.z ) ), -1.0 );
+    // The field at gWorldK times the position: its structures 1/gWorldK as large while the camera's tube, near
+    // carve and flight keep their size -- the camera keeps its distance to more, smaller structures.
+    float d = field3( p * gWorldK ) / gWorldK;
+    float r = length( p.xy - camPathXY( p.z ) );
+    // Thinning: toward the flight path the matter is eroded (its surface moved inward by up to gThin), so bodies
+    // near the camera become slender and open the view into the depth instead of being cut into broad, alike faces
+    // by the tube (17.10.2026).  Slope at most 1.5 * gThin / 1.4: with gThin 0.25 the distance stays conservative
+    // enough under the march's 0.8.  It ends within 1.4: the worlds round the flight axis (helix, polar ring, roll)
+    // keep their rings.  Looking out of a side window it fades along the flight like the tube.
+    float thin = gThin * ( 1.0 - smoothstep( 0.0, 1.4, r ) );
+    if ( gSide > 0.0 )
+        thin *= 1.0 - gSide * smoothstep( 3.0, 6.0, abs( p.z - gCam.z ) );
+    d += thin;
+    float tube = max( gTube - r, -1.0 );
     // Looking out of a side window the tube is carved only around the camera
     // (it fades out 3..6 along the flight): carved along the whole path it
     // showed from the side as a dark channel winding off.  The fade is gentle
     // (slope below 0.5, tube clamped at -1), so the distance stays conservative.
     if ( gSide > 0.0 )
         tube = mix( tube, -1.0, gSide * smoothstep( 3.0, 6.0, abs( p.z - gCam.z ) ) );
-    // The orthographic gaze starts its rays on a plane through the camera: a
-    // slab across the view axis is carved free, its far face is the
-    // cross-section the view shows.
-    if ( gOrtho > 0.0 )
-        tube = max( tube, mix( -1.0, 0.35 - abs( dot( p - gCam, gAxis ) ), gOrtho ) );
     return max( smaxK( d, 0.8 * tube, 0.15 ), 0.3 - length( p - gCam ) );
 }
 /**  The camera frame at depth z: on the path, looking at the path ahead.
@@ -3912,12 +3922,15 @@ mat3 camFrame( float z, out vec3 ro )
 }
 // The gaze: where the camera looks relative to its flight.  Straight ahead
 // shows the vanishing point -- a dark opening the eye keeps flying into -- so
-// that is only one of seven:
-//   0 ahead, 1 out of the right window (the world slides past with parallax),
-//   2 slanted down ahead, 3 out of the left window, 4 slanted up,
-//   5 floating (the flight nearly stops, the gaze turns slowly all round),
-//   6 an orthographic side view (parallel rays, no vanishing point at all:
-//     a cross-section through the world slides past, the depth behind it).
+// that is only one of seven; the others look diagonally, the vanishing point
+// just outside the picture, so the depth of the flight stays in view:
+//   0 ahead, 1 ahead-right (the world slides past with parallax),
+//   2 slanted down ahead, 3 ahead-left, 4 slanted up, 5 floating (the
+//   flight nearly stops, the gaze sways slowly from side to side),
+//   6 ahead-right and up.
+// The side windows looked across the flight (77 degrees), the slants 45
+// degrees down or up, and gaze 6 was orthographic (a cross-section sliding
+// past): each filled the picture with one wall of the world (17.10.2026).
 // In the app the camera host (camHost) picks the gazes and integrates the
 // flight (camZ, slower in some gazes -- EffectShader::stepChainCam keeps the
 // speed table); elsewhere (editor renders) the knob picks the first gaze and
@@ -3926,7 +3939,7 @@ mat3 camFrame( float z, out vec3 ro )
 uniform float camHost; ///< 1: the app drives the camera (camZ, camGaze)
 uniform float camZ;    ///< the flight position along the path
 uniform vec3  camGaze; ///< (gaze shown, gaze panned to, pan 0..1)
-/**  (yaw, pitch, ortho, carve the tube only near the camera)
+/**  (yaw, pitch, carve the tube only near the camera)
  *
  * @param k     Gaze variant (taken modulo 7). (in)
  * @param time  The scene's time. (in)
@@ -3934,24 +3947,23 @@ uniform vec3  camGaze; ///< (gaze shown, gaze panned to, pan 0..1)
  * @return
  *   Yaw, pitch, orthographic share, and whether to carve the tube only near the camera.
  **/
-vec4 gazeAngles( float k, float time )
+vec3 gazeAngles( float k, float time )
 {
     float i = mod( k, 7.0 );
-    // Never along a lattice axis: parallel rays grazing whole rows of bodies
-    // took the most march steps (39 fps orthographic straight across, 117 tilted).
+    // Never along a lattice axis: rays grazing whole rows of bodies take the most march steps.
     if ( i > 5.5 )
-        return vec4( 1.2, 0.3, 1.0, 1.0 );
+        return vec3( 0.6, 0.32, 1.0 );
     if ( i > 4.5 )
-        return vec4( 0.035 * time, 0.35 + 0.2 * sin( 0.019 * time ), 0.0, 1.0 );
+        return vec3( 1.0 * sin( 0.017 * time ), 0.25 + 0.15 * sin( 0.019 * time ), 1.0 );
     if ( i > 3.5 )
-        return vec4( -0.3, 0.75, 0.0, 0.0 );
+        return vec3( -0.3, 0.5, 0.0 );
     if ( i > 2.5 )
-        return vec4( -1.35, 0.08, 0.0, 1.0 );
+        return vec3( -0.8, 0.06, 1.0 );
     if ( i > 1.5 )
-        return vec4( 0.35, -0.8, 0.0, 0.0 );
+        return vec3( 0.3, -0.5, 0.0 );
     if ( i > 0.5 )
-        return vec4( 1.35, -0.08, 0.0, 1.0 );
-    return vec4( 0.0 );
+        return vec3( 0.8, -0.06, 1.0 );
+    return vec3( 0.0 );
 }
 /**  Turns a direction by the gaze angles (yaw, pitch).
  *
@@ -3978,19 +3990,17 @@ float camFlight( float gt )
 {
     return camHost > 0.5 ? camZ : gt;
 }
-/**  The ray of pixel p: its direction, and its origin moved off the camera for the orthographic share (rays start on
- * a plane through the camera).
+/**  The ray direction of pixel p.
  *
  * @param p     The pixel's centred coordinate. (in)
  * @param cam   Camera knob (orthographic share and gaze). (in)
  * @param time  The scene's time. (in)
  * @param cf    The camera frame (right, up, forward). (in)
- * @param ro    The ray origin; moved off the camera for the orthographic share. (in,out)
  *
  * @return
  *   The ray direction (unit length).
  **/
-vec3 gazeDir( vec2 p, float cam, float time, mat3 cf, inout vec3 ro )
+vec3 gazeDir( vec2 p, float cam, float time, mat3 cf )
 {
     float k0, k1, f;
     if ( camHost > 0.5 )
@@ -4006,16 +4016,12 @@ vec3 gazeDir( vec2 p, float cam, float time, mat3 cf, inout vec3 ro )
         k1 = k0 + 1.0;
         f = smoothstep( 0.75, 1.0, fract( g ) );
     }
-    vec4 a0 = gazeAngles( k0, time ), a1 = gazeAngles( k1, time );
+    vec3 a0 = gazeAngles( k0, time ), a1 = gazeAngles( k1, time );
     a1.x += 6.2831853 * floor( ( a0.x - a1.x ) / 6.2831853 + 0.5 ); // pan the shorter way round
-    vec4 a = mix( a0, a1, f );
-    a.xy += ( 1.0 - a.z ) * vec2( 0.12 * sin( 0.031 * time ), 0.08 * sin( 0.023 * time + 1.0 ) );
-    gSide = a.w;
-    gOrtho = a.z;
-    vec3 ax = gazeTurn( vec3( 0.0, 0.0, 1.0 ), a.xy );
-    gAxis = cf * ax;
-    ro += cf * gazeTurn( vec3( p, 0.0 ), a.xy ) * ( 2.2 * gOrtho );
-    return cf * normalize( mix( gazeTurn( normalize( vec3( p, 1.1 ) ), a.xy ), ax, gOrtho ) );
+    vec3 a = mix( a0, a1, f );
+    a.xy += vec2( 0.12 * sin( 0.031 * time ), 0.08 * sin( 0.023 * time + 1.0 ) );
+    gSide = a.z;
+    return cf * gazeTurn( normalize( vec3( p, 1.1 ) ), a.xy );
 }
 /**  Surface normal of the world by a tetrahedron of differences.
  *
@@ -6126,8 +6132,9 @@ float fieldK( vec3 p, float xs, float xc, float xb, int world )
         q = fRepeat( fScale( q, 1.6, vec3( 0.0 ) ), vec3( 1.3 ) ); // ... of a lattice: a bubble world per cell
     }
     else if ( ks == 9 )
-        q = fRepeat( fScale( fLogSphere( p, gCam + vec3( 0.0, 0.0, 6.0 ), 2.5 + vs, gT * 0.05 ), 2.5, vec3( 0.0 ) ),
-                     vec3( 1.4 ) ); // 3D Droste shells
+        q = fRepeat(
+            fScale( fLogSphere( p, gCam * gWorldK + vec3( 0.0, 0.0, 6.0 ), 2.5 + vs, gT * 0.05 ), 2.5, vec3( 0.0 ) ),
+            vec3( 1.4 ) ); // 3D Droste shells
     else if ( ks == 12 )
         q = fRepeat( fHalfSpace( p, 1.0 ), vec3( 1.3 ) ); // hyperbolic half-space
     else if ( ks == 13 )
@@ -6149,7 +6156,7 @@ float fieldK( vec3 p, float xs, float xc, float xb, int world )
     } // bent cells
     else if ( ks == 17 )
     {
-        vec3  cc = gCam + vec3( 0.0, 0.0, 6.0 );
+        vec3  cc = gCam * gWorldK + vec3( 0.0, 0.0, 6.0 );
         float lr = log( max( length( p - cc ), 1e-3 ) );
         q = fLogSphere( p, cc, 2.5 + vs, gT * 0.05 );
         q.xy = rot2( 0.9 * lr ) * q.xy;
@@ -6540,8 +6547,9 @@ float fieldK0( vec3 p, float xs, float xc, float xb, int world )
         q = fRepeat( fScale( q, 1.6, vec3( 0.0 ) ), vec3( 1.3 ) ); // ... of a lattice: a bubble world per cell
     }
 #elif SPEC_SP0 == 9
-    q = fRepeat( fScale( fLogSphere( p, gCam + vec3( 0.0, 0.0, 6.0 ), 2.5 + vs, gT * 0.05 ), 2.5, vec3( 0.0 ) ),
-                 vec3( 1.4 ) );
+    q = fRepeat(
+        fScale( fLogSphere( p, gCam * gWorldK + vec3( 0.0, 0.0, 6.0 ), 2.5 + vs, gT * 0.05 ), 2.5, vec3( 0.0 ) ),
+        vec3( 1.4 ) );
 #elif SPEC_SP0 == 12
     q = fRepeat( fHalfSpace( p, 1.0 ), vec3( 1.3 ) );
 #elif SPEC_SP0 == 13
@@ -6563,7 +6571,7 @@ float fieldK0( vec3 p, float xs, float xc, float xb, int world )
     }
 #elif SPEC_SP0 == 17
     {
-        vec3  cc = gCam + vec3( 0.0, 0.0, 6.0 );
+        vec3  cc = gCam * gWorldK + vec3( 0.0, 0.0, 6.0 );
         float lr = log( max( length( p - cc ), 1e-3 ) );
         q = fLogSphere( p, cc, 2.5 + vs, gT * 0.05 );
         q.xy = rot2( 0.9 * lr ) * q.xy;
@@ -6960,8 +6968,9 @@ float fieldK1( vec3 p, float xs, float xc, float xb, int world )
         q = fRepeat( fScale( q, 1.6, vec3( 0.0 ) ), vec3( 1.3 ) ); // ... of a lattice: a bubble world per cell
     }
 #elif SPEC_SP1 == 9
-    q = fRepeat( fScale( fLogSphere( p, gCam + vec3( 0.0, 0.0, 6.0 ), 2.5 + vs, gT * 0.05 ), 2.5, vec3( 0.0 ) ),
-                 vec3( 1.4 ) );
+    q = fRepeat(
+        fScale( fLogSphere( p, gCam * gWorldK + vec3( 0.0, 0.0, 6.0 ), 2.5 + vs, gT * 0.05 ), 2.5, vec3( 0.0 ) ),
+        vec3( 1.4 ) );
 #elif SPEC_SP1 == 12
     q = fRepeat( fHalfSpace( p, 1.0 ), vec3( 1.3 ) );
 #elif SPEC_SP1 == 13
@@ -6983,7 +6992,7 @@ float fieldK1( vec3 p, float xs, float xc, float xb, int world )
     }
 #elif SPEC_SP1 == 17
     {
-        vec3  cc = gCam + vec3( 0.0, 0.0, 6.0 );
+        vec3  cc = gCam * gWorldK + vec3( 0.0, 0.0, 6.0 );
         float lr = log( max( length( p - cc ), 1e-3 ) );
         q = fLogSphere( p, cc, 2.5 + vs, gT * 0.05 );
         q.xy = rot2( 0.9 * lr ) * q.xy;
@@ -7557,11 +7566,16 @@ void main()
     gCw = vec2( 0.5 ) + 0.15 * vec2( sin( 0.017 * sceneTime ), cos( 0.013 * sceneTime ) );
     gCt = vec2( 0.5 )
           + vec2( 0.22 * sin( 0.023 * sceneTime + 0.3 * sin( 0.011 * sceneTime ) ), 0.16 * cos( 0.019 * sceneTime ) );
+    // The world at 1/2.0 of its size around the camera (17.10.2026): at full size the camera flew a hand's breadth
+    // from walls and bodies as large as the view -- a few huge alike faces filled the picture.
+    gWorldK = 2.0;
+    gPathAmp = 1.0 / gWorldK; // the path winds round the world's axis as before
+    gThin = 0.25;             // the matter thins toward the flight path
     vec3 ro;
     mat3 cf = camFrame( camFlight( gT ), ro );
     gCam = ro;
     gTube = 0.4 + 0.15 * swell; // the carved tube breathes with the slow swell
-    vec3  rd = gazeDir( p, camP, sceneTime, cf, ro );
+    vec3  rd = gazeDir( p, camP, sceneTime, cf );
     float t = 0.05;
     float d = 1.0;
     bool  hit = false;
@@ -7585,14 +7599,16 @@ void main()
     // The fog takes the palette's hue (wandering with the music) rather than the photo's cast: a neighbour of the
     // surfaces' hue, not its complement (17.10.2026).
     vec3 fog_pal = hsv2rgb( vec3( fract( chainHue0() + 0.08 ), 0.4, 1.0 ) );
+    // A little brighter and denser since the world is smaller (17.10.2026): the depth reads in layers fading into
+    // the haze, and a sparse world's void is no longer black.
     vec3 fog_c = mix( calmGlow( imgK( vec2( 0.5 ) + 0.2 * p, 5.0 ), 0.04 ), fog_pal, 0.8 * clamp( paletteP, 0.0, 1.0 ) )
-                 * ( 0.05 + 0.1 * swell );
+                 * ( 0.08 + 0.1 * swell );
     vec3 col = fog_c;
     if ( hit )
     {
         vec3  q = ro + rd * t;
         vec3  n = normal3( q );
-        float lod = clamp( log2( t * 2.0 ) + 1.5 * ( 1.0 - clamp( detailP, 0.0, 1.0 ) ), 0.0, 7.0 );
+        float lod = clamp( log2( t * gWorldK * 2.0 ) + 1.5 * ( 1.0 - clamp( detailP, 0.0, 1.0 ) ), 0.0, 7.0 );
         vec3  n_geo = n; // texture on the geometric normal, light on the bumped one
         if ( reliefP > 0.3 )
         { // a knob: every pixel takes the same branch
@@ -7617,13 +7633,22 @@ void main()
         }
         ao = clamp( 1.0 - 0.4 * ao, 0.2, 1.0 );
         float fres = pow( 1.0 - abs( dot( n, -rd ) ), 3.0 );
-        vec3  surf = tex * lc * ( 0.35 + 0.9 * diff ) * ao;
+        // A lamp at the camera beside the key light, and broad light and shade drifting through the world (a slow
+        // wave over its coordinates): near structures stand out against farther ones, and a wall of fine structure
+        // is no longer one even tone (17.10.2026).
+        float lamp = max( dot( n, -rd ), 0.0 ) / ( 1.0 + 0.15 * t * t );
+        float drift = 0.8
+                      + 0.4
+                            * smoothstep( -0.6, 0.6,
+                                          sin( 0.45 * q.x + 0.8 * sin( 0.21 * q.z ) )
+                                              * sin( 0.38 * q.y + 0.17 * q.z + 1.3 ) );
+        vec3  surf = tex * lc * ( 0.3 + 0.75 * diff + 0.45 * lamp ) * ao * drift;
         vec3  rim_c = calmGlow( tex, 0.05 * sin( fp.x + fp.y ) );
         vec3  rim = rim_c * fres * ( 0.7 + 1.5 * kick ) + surf * 0.4; // lab audit: the glow style was half as bright
         float st = clamp( styleP, 0.0, 1.0 );
         vec3  sc = mix( surf + rim_c * fres * ( 0.15 + 0.6 * kick ), rim * 1.3 + rim_c * 0.12 * ao,
                         smoothstep( 0.5, 1.0, st ) );
-        col = mix( fog_c, sc, exp( -t * ( 0.06 + 0.04 * swell ) ) );
+        col = mix( fog_c, sc, exp( -t * ( 0.09 + 0.04 * swell ) ) );
     }
     finish( chainAfterglow( col ) );
 }

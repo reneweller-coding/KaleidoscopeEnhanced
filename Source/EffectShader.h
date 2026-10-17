@@ -1146,6 +1146,7 @@ protected:
         bool                                  hasLast = false; ///< last/lastAdv valid.
         std::chrono::steady_clock::time_point last;            ///< Wall clock of the previous step.
         std::minstd_rand                      rng;             ///< Own random stream.
+        unsigned                              seed = 1u;       ///< Its seed, hashed per activation (resetParameters()).
     } m_cam;                                                   ///< The camera of this activation (3D chains only).
     GLuint m_camProg = 0;                                      ///< Program the camera locations belong to.
     GLint  m_camHostLoc = -1;                                  ///< camHost (-1: no camera host).

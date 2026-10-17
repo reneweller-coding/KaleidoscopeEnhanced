@@ -5650,3 +5650,39 @@ lit pixels, 0.32 .. 0.56 against the catalogue's median 0.43 and upper quartile 
 0.52 .. 0.79). Now the field at 0.55 .. 0.8 saturation, the photo's colours raised 1.35 and its tones spread (darks
 a little darker, lights brighter), the relief's light stronger, the glow's photo colour a little purer: 0.41 .. 0.67
 -- the catalogue's vivid end -- while the hue change across the picture stays 0.07 .. 0.22.
+
+## 17.10.2026 (21): the 3D chain worlds from a little further away
+
+The 3D chain scenes often looked like random huge, alike faces (asked 17.10.2026). The camera flew a tube of radius
+0.4 .. 0.55 through worlds whose cells are 1.2 .. 1.7 wide with bodies nearly as large: out of a side window (77
+degrees across the flight), slanted 45 degrees down or up, or in the orthographic gaze (a cross-section sliding past)
+the picture was one wall of the world; only the gaze straight ahead had depth. A probe of the lab's 9680 world
+classes (one PresetEditor frame, each pixel a class: the share of points 0.6 .. 2.5 from the flight inside matter)
+found the worlds porous, not full -- median 4 %, p90 28 % -- so the wall look came from fine structure seen up close
+and from the gazes across the flight.
+
+* **Scale** (`gWorldK`, 2 in all seven scenes): `fieldD` and the slice's `fieldS` evaluate `field3(p * k) / k`, the
+  structures half as large around the same camera, tube and near carve. The Droste worlds centre on `gCam * k`, the
+  texture's mip level follows `t * k`, and the path winds `1 / k` as far (`gPathAmp`), so the worlds round the flight
+  axis (polar ring, helix, roll) keep the camera inside their rings as before.
+* **A free space that is not cut** (`gThin` 0.25): toward the flight the matter is eroded, its surface moved inward by
+  up to 0.25, fading out within 1.4 -- bodies near the camera thin out and open the view instead of being cut into
+  broad faces by a wider tube. It ends inside the axial worlds' rings.
+* **Gazes that keep the depth**: ahead-right and ahead-left at 46 degrees (were 77), slanted 29 degrees (were 45),
+  floating sways +-57 degrees (turned all round), and gaze 6 is ahead-right and up -- the orthographic gaze is gone
+  (`gOrtho`, `gAxis`, the slab carve). The vanishing point stays just outside the picture.
+* **Depth by light**: the fog a little brighter and denser (a sparse world's void is no longer black), a lamp at
+  the camera beside the key light (falling off with the distance), and broad light and shade drifting through the
+  world (a slow wave over its coordinates), so a field of fine structure is no single even tone.
+* **The torus wrap** (space class 10) wrapped the world round one ring at the origin; the camera starts anywhere on
+  z 0 .. 500, where the wrapped world was stretched into streaks. The flight axis is folded into one ring's reach.
+* **The same views in every run** (EffectShader): the camera's random stream (flight start, hold times) is seeded per
+  activation from the hash the clocks use -- pinned under KALEIDO_SEED, from the clock in the show -- instead of the
+  wall clock, so two shader versions can be compared picture by picture.
+
+Measured with the old and new shaders on the same binary and camera (24 rolls of the lab, four of each other scene,
+960 x 540): GPU time per frame lab 0.57 -> 0.60 ms, the others -6 .. +13 %; the temporal flicker lab 0.104 -> 0.090,
+KifsTetra 0.161 -> 0.119, the others lower or within 0.004; mean luma 0.154 -> 0.156, the share of near-black pixels
+0.20 -> 0.17. Looked at side by side: the walls became corridors, fields and rows with depth (OctaGyroid shows its
+holes instead of one surface filling the picture, PolarTunnelBoxes rows of boxes); a few axial worlds seen from
+ahead-left show mostly haze.
