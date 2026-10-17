@@ -5990,3 +5990,34 @@ point when Im(M z) > 1.
 - **Branch derivatives:** the derivatives for the basin edges are taken outside the branches (see
   fwidth-divergent-branch-grid-lines).
 
+## 17.10.2026 (30): waves, modes, interference (ideas 69-86)
+
+Eighteen stateless scenes of family E, each the analytic or semi-analytic field of a wave phenomenon.
+- **Propagated fields:** TalbotCarpet (a slit grating's Fresnel series, 25 orders), BeamformingLobes (a steered
+  phased array), AiryBeamCurves (accelerating Airy lobes healing behind a drifting obstacle), BesselRingWeave.
+- **Modes:** QuantumScarBilliard (Berry random waves plus a scar along one of four stadium orbits),
+  SphericalHarmonicBloom (a raymarched sphere swollen by a Y_lm-like pattern, the mode crossfading on a change of
+  harmony), StandingWaveMosaic (4 to 12 standing directions cut into tile levels), ScarredMembraneDrum (an
+  irregular rim, modes chosen by the smoothed melody).
+- **Water and surfaces:** SolitonGasCollisions (KP-like line solitons with raised crossings), CnoidalWaveLattice,
+  DispersiveWaveTrain (Kelvin wakes), WaveTurbulenceSpectrum (the analyser's 32 bands as eight octaves of capillary
+  ripples).
+- **Quantum:** WavePacketKaleido (free Schroedinger packets with their mirror images in a kaleidoscope's wedge),
+  QuantumRevivalRing (the rotor's fractional revivals as a circular carpet), HarmonicOscillatorCoherent (Wigner
+  functions, cat states with negative fringes).
+- **The rest:** ParametricResonanceTongues (the Mathieu chart by one-period Floquet traces),
+  HolographicReconstruction, WaveFrontFolding (offset curves of a wavy source, caustics where branches meet).
+
+**Two that needed another way.**
+- **The Kelvin wake as a direction sum stayed invisible.** Its stationary points need far more than 24 samples. It
+  now comes from Kelvin's crest lines: x = A cos t (1 + sin^2 t), y = A cos^2 t sin t. A point inside the 19.5
+  degree wedge lies on one transverse and one divergent crest, each found by bisection on y / x, and it is lit
+  where A is near a whole number of wavelengths.
+- **The melody chose the drum's mode note by note**, which made the pattern jump with every note. It now averages
+  the newest 16 samples of the melody ring (`audioMelody[96]`, 80 ms apart), weighted by a triangle and without
+  the samples that hold no pitch, and blends the two neighbouring semitones' modes.
+
+**The packets were outside the kaleidoscope.** WavePacketKaleido folds the plane into a mirrored wedge, and packets
+started anywhere in the plane were rarely seen inside it. They now start inside the wedge, and each is summed with
+its images in the wedge's two mirrors, so it bounces off them and interferes with itself.
+
