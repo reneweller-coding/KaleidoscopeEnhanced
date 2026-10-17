@@ -6491,7 +6491,12 @@ float fieldK( vec3 p, float xs, float xc, float xb, int world )
     else
         d = min( min( sdBox3( q, vec3( 0.6, 0.08, 0.08 ) * bs * th ), sdBox3( q, vec3( 0.08, 0.6, 0.08 ) * bs * th ) ),
                  sdBox3( q, vec3( 0.08, 0.08, 0.6 ) * bs * th ) );
-    return d / gDR * 0.8;
+    // The worlds rolled or Droste-folded round the flight axis are singular on it (the fold's stretch grows
+    // without bound): where the path came near the axis the march stood still and the picture sank into the
+    // haze.  A core round the axis stays free (17.10.2026).  An expression, not an if-chain on ks: the
+    // specialised variants turn those into #if selections and took the return for the last branch.
+    float axis_core = ks == 19 ? 0.5 * ( 3.2 + vs ) - length( p.xy ) : ( ks == 14 ? 1.0 - length( p.xy ) : -1e9 );
+    return max( d / gDR * 0.8, axis_core );
 }
 #else
 /**  fieldK() with the world fixed at compile time (the shown end of a specialised pass).
@@ -6913,7 +6918,12 @@ float fieldK0( vec3 p, float xs, float xc, float xb, int world )
              sdBox3( q, vec3( 0.08, 0.08, 0.6 ) * bs * th ) );
 #endif
 
-    return d / gDR * 0.8;
+    // The worlds rolled or Droste-folded round the flight axis are singular on it (the fold's stretch grows
+    // without bound): where the path came near the axis the march stood still and the picture sank into the
+    // haze.  A core round the axis stays free (17.10.2026).  An expression, not an if-chain on ks: the
+    // specialised variants turn those into #if selections and took the return for the last branch.
+    float axis_core = ks == 19 ? 0.5 * ( 3.2 + vs ) - length( p.xy ) : ( ks == 14 ? 1.0 - length( p.xy ) : -1e9 );
+    return max( d / gDR * 0.8, axis_core );
 }
 /**  fieldK() with the world fixed at compile time (the target end of a specialised pass).
  *
@@ -7334,7 +7344,12 @@ float fieldK1( vec3 p, float xs, float xc, float xb, int world )
              sdBox3( q, vec3( 0.08, 0.08, 0.6 ) * bs * th ) );
 #endif
 
-    return d / gDR * 0.8;
+    // The worlds rolled or Droste-folded round the flight axis are singular on it (the fold's stretch grows
+    // without bound): where the path came near the axis the march stood still and the picture sank into the
+    // haze.  A core round the axis stays free (17.10.2026).  An expression, not an if-chain on ks: the
+    // specialised variants turn those into #if selections and took the return for the last branch.
+    float axis_core = ks == 19 ? 0.5 * ( 3.2 + vs ) - length( p.xy ) : ( ks == 14 ? 1.0 - length( p.xy ) : -1e9 );
+    return max( d / gDR * 0.8, axis_core );
 }
 #endif
 /**  The world, walking: while the app fades one structure stage, the two worlds' distance fields are mixed --

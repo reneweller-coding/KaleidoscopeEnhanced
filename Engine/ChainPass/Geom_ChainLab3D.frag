@@ -1395,7 +1395,11 @@ float fieldK0( vec3 p, float xs, float xc, float xb, int world )
              sdBox3( q, vec3( 0.08, 0.08, 0.6 ) * bs * th ) );
 #endif
 
-    return d / gDR * 0.8;
+
+
+
+    float axis_core = ks == 19 ? 0.5 * ( 3.2 + vs ) - length( p.xy ) : ( ks == 14 ? 1.0 - length( p.xy ) : -1e9 );
+    return max( d / gDR * 0.8, axis_core );
 }
 /**  fieldK() with the world fixed at compile time (the target end of a specialised pass).
  *
@@ -1814,7 +1818,11 @@ float fieldK1( vec3 p, float xs, float xc, float xb, int world )
              sdBox3( q, vec3( 0.08, 0.08, 0.6 ) * bs * th ) );
 #endif
 
-    return d / gDR * 0.8;
+
+
+
+    float axis_core = ks == 19 ? 0.5 * ( 3.2 + vs ) - length( p.xy ) : ( ks == 14 ? 1.0 - length( p.xy ) : -1e9 );
+    return max( d / gDR * 0.8, axis_core );
 }
 /**  The world's distance field (folded lattice of bodies).
  *

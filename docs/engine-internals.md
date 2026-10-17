@@ -5722,3 +5722,37 @@ structure moving), no sparkle in consecutive frames.
 **PolarTunnelBoxes less flat.** Its ring of blocks sat in a smooth cylinder (radius 3) that filled the picture with
 one even wall. Now that cylinder is a shell 0.3 thick with rows of round windows (16 round, every 0.8 along the
 flight, between the block rings), and a far wall at 5.5 behind it: the wall has depth and light and shade.
+
+## 17.10.2026 (23): the 3D lab keeps off its poor worlds
+
+The 3D lab rolls its world from three stages -- space (20 classes), fold core (22), body (22): 9680 worlds -- and many
+looked poor from its camera: mostly haze, or a fine-grained carpet (surfaces turning at pixel scale everywhere).
+`Tools/chain3d_world_probe.py` measures every world in one PresetEditor frame (every pixel a world): rays like the
+lab's camera from twelve positions along 450 units of the flight (every other one as from a side window), 8
+directions each in the gazes' cone, each with a neighbour 5 px away, marched through the lab's own `fieldK` with the
+world scale, tube, thinning and near carve. Per world: `miss` (rays into the haze), `bump` (neighbour pixels on one
+surface whose normals differ by more than 37 degrees: the carpet), `dark` (the worst camera position's miss share);
+poorness = max(miss, bump, dark - 0.25), poor above 0.5. Checked against 24 rolls looked at by eye: the empty, dark
+ones had miss 0.41 .. 0.83, the carpets bump 0.35 .. 0.75, the corridors, blob fields and crystals 0 .. 0.34. Poor:
+43 % of the worlds -- above all the Kleinian folds (84 %), the hyperbolic honeycomb (79 %), the Menger sponge (63 %),
+and thin bodies (pills, rings, crosses, chain links ~70 %), which the folds grind to dust.
+
+`Engine/chain3d_worlds.tsv` holds the measure; EffectShader reads it (`worldPoorness()`): a poor roll moves one
+structure stage, tried in an order hashed from the rolled knobs (no draw from the scene's stream), to the first world
+clearly good (below 0.35), else the best one tried -- the first one just below 0.5 often still read as a carpet; a
+structure walk draws a poor target again (a dozen times at most). ChainLab3D only (the slice cuts the worlds, its
+camera does not fly them); `KALEIDO_NO_WORLD_FILTER` switches it off. Of the 24 rolls 9 were poor; their replacements
+looked as good or better in all nine (the carpet of pills became bold blobs, the empty Droste a lattice of tori, the
+half-space's dark chain links a dense braid).
+
+On the way: the worlds rolled or Droste-folded round the flight axis (rolled world, log-cylindrical Droste) are
+singular on it -- where the path came near the axis the march stood still and the picture sank into the haze. A core
+round the axis now stays free. Written first as an if-chain on the space class, it broke the specialised variants:
+the converter turns such chains into `#if` selections and took the following `return` for the last branch, so the
+rolled-world variants had no return, did not compile, and the export fell back to the whole lab at 17 s a frame. Now
+an expression.
+
+The probe used to start the editor once per space class -- twenty windows in a row in front of the user. The editor's
+command-line render now shows its window off the screen, without a taskbar button and without taking the focus, and
+the probe is one render.
+

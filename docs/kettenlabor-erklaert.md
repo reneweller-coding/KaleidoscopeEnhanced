@@ -543,6 +543,14 @@ den ersten Blick. Dann hält die App jeden Blick 2–5 min und schwenkt in
 40–60 s zu einem anderen, nur nach der Uhr. Die App summiert auch die
 Flugposition auf, damit Schweben den Flug ohne Sprung bremsen kann.
 
+**Schwache Welten (seit 17.10.):** Von den 9680 Welten des 3D-Labors
+(Raum × Faltkern × Körper) wirken 43 % aus der Kamera schwach: fast nur Dunst
+oder ein feinkörniger Teppich. `Tools/chain3d_world_probe.py` misst jede Welt
+mit Strahlen wie die Kamera des Labors und schreibt
+`Engine/chain3d_worlds.tsv`. Würfelt das Labor eine schwache Welt, wechselt eine
+Stufe auf eine klar gute; beim Wandern werden schwache Ziele neu gezogen.
+`KALEIDO_NO_WORLD_FILTER` schaltet das ab.
+
 ### ChainSlice3D – der Raumschnitt (Prototyp seit 01.10.)
 Die 3D-Kette ohne Raymarching: Der Bildschirm ist eine **Ebene durch die
 Welt** des 3D-Labors (dieselben Raum-, Faltkern- und Körperklassen). Jeder

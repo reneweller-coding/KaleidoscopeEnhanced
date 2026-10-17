@@ -633,6 +633,12 @@ int main( int argc, char *argv[] )
         if ( !time_arg.isEmpty() )
             w->setFixedTime( time_arg.toFloat() );
         w->resize( W ? W : 960, H ? H : 600 );
+        // A command-line render is a batch job on a machine someone is using: its window takes no focus, has no
+        // taskbar button and lies off the screen -- the GL widget renders into its framebuffer and is grabbed all the
+        // same.  (Twenty probe renders in a row kept popping up in front of the user, 17.10.2026.)
+        w->setAttribute( Qt::WA_ShowWithoutActivating );
+        w->setWindowFlags( Qt::Tool | Qt::FramelessWindowHint | Qt::WindowDoesNotAcceptFocus );
+        w->move( -20000, -20000 );
         w->show();
         const QString out = args[3];
         // A 3D scene compiles a compute generator + shadow map + OIT targets

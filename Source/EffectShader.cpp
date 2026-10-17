@@ -28,6 +28,9 @@
 #include <set>
 #include <typeinfo>
 #include <algorithm>
+#include <fstream>
+#include <mutex>
+#include <sstream>
 #include <QtCore/qdir.h>
 #include <QtCore/QSet>
 #include "PlatformQt.h"
@@ -1603,6 +1606,55 @@ void EffectShader::resetChainWalk()
         m_walkHi[s] = hi < m_walkLo[s] ? m_walkLo[s] : ( hi > 1.f ? 1.f : hi );
         m_seenPos[s] = -1;
     }
+    // The 3D lab keeps off its poor worlds, mostly haze or a fine-grained carpet from its camera (worldPoorness(),
+    // 17.10.2026).  A poor roll moves one structure stage to another class in the entry's range, tried in an order
+    // hashed from the rolled knobs (no draw from the scene's random stream): the first world clearly good (below
+    // 0.35), else the best one tried, if it is not poor.  (The first one just below 0.5 often still read as carpet.)
+    {
+        float    x[9] = {};
+        Uniform *k[9] = {};
+        for ( int s = 5; s <= 7; ++s )
+            for ( Uniform *u : m_uniforms )
+                if ( u->getName() == kWalkKnob[s] )
+                {
+                    k[s] = u;
+                    x[s] = u->snapshotValue();
+                }
+        const float before = ( k[5] && k[6] && k[7] ) ? worldPoorness( x ) : 0.f;
+        if ( before > 0.5f )
+        {
+            const float rolled[3] = { x[5], x[6], x[7] };
+            int         best_s = -1;
+            float       best_v = 0.f, best_p = 0.5f;
+            for ( int i = 1; i <= 90; ++i )
+            {
+                const int s = 5 + i % 3;
+                if ( m_walkCarried[s] || m_walkHi[s] <= m_walkLo[s] )
+                    continue;
+                const float h = sinf( rolled[0] * 127.1f + rolled[1] * 311.7f + rolled[2] * 74.7f +
+                                      static_cast<float>( i ) * 12.9898f ) *
+                                43758.5453f;
+                const float v = m_walkLo[s] + ( m_walkHi[s] - m_walkLo[s] ) * ( h - floorf( h ) );
+                x[s] = v < 0.999f ? v : 0.999f;
+                const float p = worldPoorness( x );
+                if ( p < best_p )
+                {
+                    best_s = s;
+                    best_v = x[s];
+                    best_p = p;
+                }
+                x[s] = rolled[s - 5];
+                if ( best_p < 0.35f )
+                    break;
+            }
+            if ( best_s >= 0 )
+            {
+                fprintf( stderr, "%s: world %s %.3f -> %.3f (a poor world: haze or carpet, %.2f -> %.2f)\n",
+                         fragmentName(), kWalkName[best_s], rolled[best_s - 5], best_v, before, best_p );
+                k[best_s]->restoreValue( best_v );
+            }
+        }
+    }
     m_seenValid = false;
     m_specOff = false;
     m_specWait = 0.f;
@@ -1787,7 +1839,7 @@ void EffectShader::stepChainWalk( const AudioFeatures &audio )
     // its class's learnt taste (classTaste) times its novelty (classNoveltyAt:
     // a class seen minutes ago is five times less likely than one not seen for
     // six hours).  With equal weights that is the same as one target.
-    auto pick_for = [&]( int s )
+    auto pick_one = [&]( int s )
     {
         float c[3], w[3], sum = 0.f;
         for ( int i = 0; i < 3; ++i )
@@ -1804,6 +1856,25 @@ void EffectShader::stepChainWalk( const AudioFeatures &audio )
             r -= w[i];
         }
         return c[2];
+    };
+    // The 3D lab walks only to good worlds (worldPoorness() up to 0.5): a structure target that would make a poor
+    // one is drawn again, a dozen times at most.
+    auto pick_for = [&]( int s )
+    {
+        float v = pick_one( s );
+        if ( !isStructure( s ) )
+            return v;
+        float x[9];
+        for ( int o = 0; o < 9; ++o )
+            x[o] = m_walk.x0[o];
+        for ( int i = 0; i < 12; ++i )
+        {
+            x[s] = v;
+            if ( worldPoorness( x ) <= 0.5f )
+                break;
+            v = pick_one( s );
+        }
+        return v;
     };
     auto lerp = []( float a, float b, float t )
     { return a + ( b - a ) * t; };
@@ -3210,6 +3281,61 @@ bool EffectShader::opensAt( int s, float x ) const
         if ( p == k )
             return true;
     return false;
+}
+
+/**  The 3D lab's worlds as its camera sees them (Engine/chain3d_worlds.tsv), read once.
+ *
+ * @return
+ *   The poorness -- the larger of the haze and the carpet share -- of the world at (space * 22 + core) * 22 + body
+ *   (positions in the energy order); empty without the table.
+ **/
+static const std::vector<float> &worldPoornessTable()
+{
+    static std::vector<float> table;
+    static std::once_flag    once;
+    std::call_once( once, []
+    {
+        std::ifstream     in( "../Engine/chain3d_worlds.tsv" ); // forward slashes: Windows and Linux
+        std::string       line;
+        std::vector<float> t( 20 * 22 * 22, 0.f );
+        int               n = 0;
+        while ( std::getline( in, line ) )
+        {
+            if ( line.empty() || line[0] == '#' )
+                continue;
+            std::istringstream ss( line );
+            int                sp = 0, co = 0, bo = 0;
+            float              poorness = 0.f;
+            if ( ss >> sp >> co >> bo >> poorness && sp >= 0 && sp < 20 && co >= 0 && co < 22 && bo >= 0 && bo < 22 )
+            {
+                t[( sp * 22 + co ) * 22 + bo] = poorness;
+                ++n;
+            }
+        }
+        if ( n == 20 * 22 * 22 )
+            table = t;
+    } );
+    return table;
+}
+
+float EffectShader::worldPoorness( const float *x ) const
+{
+    static const bool Off = getenv( "KALEIDO_NO_WORLD_FILTER" ) != nullptr;
+    if ( Off || m_fragmentShaderFilename.find( "ChainLab3D" ) == std::string::npos )
+        return 0.f;
+    const std::vector<float> &t = worldPoornessTable();
+    if ( t.empty() )
+        return 0.f;
+    static const int N[3] = { 20, 22, 22 };
+    int              pos[3];
+    for ( int i = 0; i < 3; ++i )
+    {
+        const auto it = m_chainClasses.find( kWalkKnob[5 + i] );
+        if ( it == m_chainClasses.end() || static_cast<int>( it->second.size() ) != N[i] )
+            return 0.f; // the lab's class lists changed: the table no longer matches them
+        pos[i] = classPos( x[5 + i], N[i] );
+    }
+    return t[( pos[0] * 22 + pos[1] ) * 22 + pos[2]];
 }
 
 float EffectShader::closedClass( int s, float x ) const

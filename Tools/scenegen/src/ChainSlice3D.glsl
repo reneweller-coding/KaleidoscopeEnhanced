@@ -610,7 +610,12 @@ float fieldK(vec3 p, float xs, float xc, float xb, int world)
         d = max(max(rho - Rr, 0.2 * bs - rho), abs(q.z) - 0.08 * bs * th) * 0.7; }   // gear
     else if (kb == 21) { vec3 w = q; w.x -= clamp(w.x, -0.3 * bs, 0.3 * bs); d = length(w) - 0.15 * bs * th; }   // pill
     else d = min(min(sdBox3(q, vec3(0.6, 0.08, 0.08) * bs * th), sdBox3(q, vec3(0.08, 0.6, 0.08) * bs * th)), sdBox3(q, vec3(0.08, 0.08, 0.6) * bs * th));
-    return d / gDR * 0.8;
+    // The worlds rolled or Droste-folded round the flight axis are singular on it (the fold's stretch grows
+    // without bound): where the path came near the axis the march stood still and the picture sank into the
+    // haze.  A core round the axis stays free (17.10.2026).  An expression, not an if-chain on ks: the
+    // specialised variants turn those into #if selections and took the return for the last branch.
+    float axisCore = ks == 19 ? 0.5 * (3.2 + vs) - length(p.xy) : (ks == 14 ? 1.0 - length(p.xy) : -1e9);
+    return max(d / gDR * 0.8, axisCore);
 }
 // The world, walking: while the app fades one structure stage, the two worlds'
 // distance fields are mixed -- continuous, the architecture melts into the next.
