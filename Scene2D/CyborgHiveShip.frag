@@ -268,9 +268,8 @@ void main()
 
     vec3 ro = vec3( 0.0, 0.0, drift );
 
-    // Slight jitter based on kick
-    ro.x += ( hash11( time * 10.0 ) - 0.5 ) * audioKick * 0.2;
-    ro.y += ( hash11( time * 10.0 + 1.0 ) - 0.5 ) * audioKick * 0.2;
+    // No camera shake: the kick shook the camera at random here until 17.10.2026 -- the standing rule is that
+    // camera, zoom and rotation never follow the audio.
 
     vec3 ta = ro + vec3( 0.0, 0.0, 1.0 );
 

@@ -290,6 +290,7 @@ private:
     float m_rotEnergy = 0.f;     ///< Slowly-slewed rotation-speed envelope (no per-beat jerk).
     float m_audioRotPhase = 0.f; ///< Accumulated rotation phase (radians), integrated from a rate each frame.
     float m_audioAdvance = 0.f;  ///< Accumulated tunnel forward offset, integrated from a rate each frame.
+    bool  m_advanceStarted = false; ///< KALEIDO_ADVANCE_START has been added to the two accumulators above.
     /// Integral of the harmonic envelope over a typical chord change (the unit of harmAdvance): 0.83 for the old
     /// chroma, 1.38 since its peak chroma (a slow chord change of make_chord_wav.py advances it by about 1).
     static constexpr float HarmPerChord = 1.38f;

@@ -297,6 +297,20 @@ AudioFeatures AudioConditioner::update( const AudioFeatures &audio, float rawDt,
                      * ( 0.015f + 0.08f * audio.spectralFlux + 0.02f * motion
                          + 0.03f * swell ); // ambient builds surge gently
     m_audioAdvance += dt * adv_rate;
+    // KALEIDO_ADVANCE_START (a test): what a long show has gathered by now.  With KALEIDO_TIME_START a late run shows
+    // a scene after a day or more -- `time`, `audioAdvance` and `audioRotPhase` all far from zero, where a camera
+    // flying on them and a sine hash lose their precision.  The scene clocks (sceneTime, sceneAdvance) stay small.
+    static const float AdvanceStart = []
+    {
+        const char *e = getenv( "KALEIDO_ADVANCE_START" );
+        return e ? static_cast<float>( atof( e ) ) : 0.f;
+    }();
+    if ( !m_advanceStarted )
+    {
+        m_advanceStarted = true;
+        m_audioAdvance += AdvanceStart;
+        m_audioRotPhase += AdvanceStart;
+    }
 
     // Harmonic change: the analyzer's spike above its floor (0.3: a held
     // drone reads ~0.02, the noise of real music up to ~0.4), held at its

@@ -5386,3 +5386,27 @@ second), which the 5-fps BLITZ figure cannot: it is the largest single step agai
   flashed 3.5 times a second (HarmonicRings): the nine quarter windows (half the width and height, at 0, 1/4 and
   1/2) now count their mean luminance's reversals too -- the way the guideline and the screening measure an area
   -- and any one of them at six switches the hazard on, next to the share of hot cells.
+
+## 17.10.2026 (17): the whole catalogue looked at
+
+All 1430 entries as 60-fps exports over real music (13 recordings, each its own stretch of the music, 15 min with
+`--jobs 6`), flashes counted per entry, a contact sheet per entry, every sheet looked at; plus a run with the clocks
+a day ahead (`--time-start 86400`, `KALEIDO_ADVANCE_START=5000`, a new test hook that adds to the music's advance and
+rotation phase what a long show gathers).
+
+- **The limiter counts in relative luminance.** It counted swings of 0.1 in display (sRGB) values; in a bright
+  picture a swing of 0.1 in relative luminance is some 0.05 there, and MonarchRoostTree and a ShipFlyby flashed 3.5
+  times a second under its threshold. It now decodes to relative luminance with the darker state under 0.8, the
+  guideline's and the screening's own terms. Over real music, three seeds, the 30 scenes that came near: none above
+  3.0 flashes a second on a quarter of the frame. On a sixteenth of it some reach 4.0 .. 4.5 (ShipFlyby,
+  PrismaticLaserVault, SpectrumRadial, PulsarLighthouse) -- the strict mode's business.
+- **Camera shakes on the kick** in CryosleepChamber, CyborgHiveShip and XenobiologicalBioship (random camera jumps
+  on every kick), and CyberpunkSynthGridHighwayFly's camera height on the swell: removed -- the camera never follows
+  the audio.
+- **ChladniAcousticPlate's mode numbers** were floor(mod(...)) of the mid and bass envelopes: the figure could jump
+  several times a second. They glide now (a triangle wave over the music's advance). JellyfishBioluminescenceAbyss's
+  tentacle pulse no longer jumps on the kick; BioluminescentDeepSeaTrenchDive's plankton are round specks (they were
+  sine stripes sweeping the frame).
+- **Seven scenes collapsed after a day** (structure 3 to 15 times below the baseline): CalabiYauManifold,
+  CollatzFractalTreeAbyss, DeepSpaceArmada, NoirBlindsLight, SupermassiveBlackHoleOrbit, SupernovaRemnant,
+  WaxDripCascade -- their flights on `time` and `audioAdvance`; now on the scene clocks.

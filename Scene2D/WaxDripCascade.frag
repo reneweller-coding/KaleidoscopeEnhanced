@@ -426,6 +426,8 @@ float layerEdge( float k, float x, float spacing, float dens, float run )
     return base - drip;
 }
 
+// Its flight runs on the scene clocks (sceneTime, sceneAdvance): on `time` and `audioAdvance`, counted since the
+// program started, a run with the clocks a day ahead found it collapsed (17.10.2026).
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
@@ -435,7 +437,7 @@ void main()
     float spacing = 0.25 + 0.2 * clamp( layerP, 0.0, 1.0 );
     float dens = clamp( dripP, 0.0, 1.0 );
     float run = 0.6 + 1.2 * clamp( audioSpread, 0.0, 1.0 );
-    float scroll = 0.03 * sceneTime + 0.25 * audioAdvance;
+    float scroll = 0.03 * sceneTime + 0.25 * sceneAdvance;
     vec2  w = vec2( p.x * 1.2, p.y * 1.2 - scroll );
     // Layers stack downward: layer k covers y above its edge; the lowest
     // covering layer (largest k whose edge is below us) is the visible one.

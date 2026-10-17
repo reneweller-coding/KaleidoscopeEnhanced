@@ -33,6 +33,8 @@ uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0
 uniform float audioPhase;    ///< Rotation phase driven by the music (integrated, never jumps).
 uniform float audioAdvance;  ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
                              ///< backwards).
+uniform float sceneAdvance; ///< The music's advance since this scene was activated (integrated, never jumps).
+uniform float sceneTime;    ///< Seconds since this scene was activated.
 uniform float audioSwell;    ///< Slow loudness envelope, 0..1 (seconds).
 uniform float audioLevel;    ///< Overall loudness, 0..1.
 uniform float audioKick;     ///< Kick-drum envelope, 0..1 (fast attack, short decay).
@@ -122,7 +124,7 @@ mat2 rot2D( float a )
  **/
 float mapCalabiYau( vec3 p, float gen, out float genusField )
 {
-    float t = time * 0.3 + audioAdvance * 0.2;
+    float t = sceneTime * 0.3 + sceneAdvance * 0.2;
 
     // Complex coordinates z1, z2, z3
     float r = length( p );
@@ -141,6 +143,8 @@ float mapCalabiYau( vec3 p, float gen, out float genusField )
     return surface * 0.6;
 }
 
+// Its flight runs on the scene clocks (sceneTime, sceneAdvance): on `time` and `audioAdvance`, counted since the
+// program started, a run with the clocks a day ahead found it collapsed (17.10.2026).
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
@@ -152,7 +156,7 @@ void main()
     vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution ) / resolution.y;
     vec2 st = gl_FragCoord.xy / resolution;
 
-    float t = time * 0.25 + audioAdvance * 0.15;
+    float t = sceneTime * 0.25 + sceneAdvance * 0.15;
     vec3  ro = vec3( sin( t ) * 3.0, 1.2 * cos( t * 0.7 ), cos( t ) * 3.0 ) / zm;
     vec3  ta = vec3( 0.0, 0.0, 0.0 );
 
@@ -214,7 +218,7 @@ void main()
     }
 
     // Add internal energy glow
-    vec3 glow_col = imgPalette( 0.45 + 0.20 * sin( time * 2.0 ) );
+    vec3 glow_col = imgPalette( 0.45 + 0.20 * sin( sceneTime * 2.0 ) );
     col += glow_col * glow * ( 1.0 + audioKick * 2.5 );
 
     if ( hue > 0.001 )

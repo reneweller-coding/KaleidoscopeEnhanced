@@ -32,6 +32,8 @@ uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0
 uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
 uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
                               ///< backwards).
+uniform float sceneAdvance; ///< The music's advance since this scene was activated (integrated, never jumps).
+uniform float sceneTime;    ///< Seconds since this scene was activated.
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 uniform float audioLevel;     ///< Overall loudness, 0..1.
 uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
@@ -138,6 +140,8 @@ float fbm( vec3 p )
     return f;
 }
 
+// Its flight runs on the scene clocks (sceneTime, sceneAdvance): on `time` and `audioAdvance`, counted since the
+// program started, a run with the clocks a day ahead found it collapsed (17.10.2026).
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
@@ -147,18 +151,18 @@ void main()
 
     vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution ) / resolution.y;
 
-    float drift = time * 0.5 + audioAdvance * 2.0;
+    float drift = sceneTime * 0.5 + sceneAdvance * 2.0;
 
     vec3 ro = vec3( 0.0, 0.0, drift );
 
     // Slow camera panning across the remnant
-    vec3 ta = ro + vec3( sin( time * 0.1 ) * 0.5, cos( time * 0.15 ) * 0.3, 1.0 );
+    vec3 ta = ro + vec3( sin( sceneTime * 0.1 ) * 0.5, cos( sceneTime * 0.15 ) * 0.3, 1.0 );
 
     vec3 ww = normalize( ta - ro );
     vec3 uu = normalize( cross( ww, vec3( 0.0, 1.0, 0.0 ) ) );
     vec3 vv = cross( uu, ww );
 
-    float roll = 0.2 * sin( time * 0.05 );
+    float roll = 0.2 * sin( sceneTime * 0.05 );
     vec2  ruv = mat2( cos( roll ), -sin( roll ), sin( roll ), cos( roll ) ) * uv;
     vec3  rd = normalize( ruv.x * uu + ruv.y * vv + 1.0 * ww );
 
@@ -195,7 +199,7 @@ void main()
             // Chaotic filaments inside the shell
             // Filaments are thin ridges of the turbulence, not a fill: a
             // ridged transform turns the smooth fbm into lace.
-            float detail = fbm( p * 0.5 * gp - vec3( time * 0.05 ) );
+            float detail = fbm( p * 0.5 * gp - vec3( sceneTime * 0.05 ) );
             float ridge = 1.0 - abs( detail * 2.0 - 1.0 );
             float filament = pow( smoothstep( 0.55, 1.0, ridge ), 2.0 );
 
@@ -209,7 +213,7 @@ void main()
 
                 // Shockwaves propagating outward
                 // We use distance from center and time/audio to create rippling spheres
-                float shock = step( 0.95, fract( dist_to_center * 2.0 - time * 5.0 - audioPhase ) );
+                float shock = step( 0.95, fract( dist_to_center * 2.0 - sceneTime * 5.0 - audioPhase ) );
                 shock *= audioKick * 3.0 * sp;
 
                 local_col += core_color * shock;

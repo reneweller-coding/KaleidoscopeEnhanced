@@ -509,6 +509,8 @@ void finish( vec3 col )
     fragColor = vec4( clamp( t, 0.0, 1.0 ), 1.0 );
 }
 
+// Its flight runs on the scene clocks (sceneTime, sceneAdvance): on `time` and `audioAdvance`, counted since the
+// program started, a run with the clocks a day ahead found it collapsed (17.10.2026).
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
@@ -517,7 +519,7 @@ void main()
     float spread = clamp( audioSpread, 0.0, 1.0 );
     float bass = clamp( audioBass, 0.0, 1.0 );
     // Smoke: a slowly drifting, curling density field; the photo's broad masses steer it.
-    vec2  q = p * ( 1.6 + 0.8 * rough ) + vec2( 0.05 * sceneTime + 0.3 * audioAdvance, 0.013 * sceneTime );
+    vec2  q = p * ( 1.6 + 0.8 * rough ) + vec2( 0.05 * sceneTime + 0.3 * sceneAdvance, 0.013 * sceneTime );
     vec2  warp = vec2( fbm3( q + 1.7 ), fbm3( q.yx - 3.1 ) ) - 0.5;
     float mass = luma( imgLod( p * 0.35 + 0.5 + 0.1 * warp, 6.0 ) );
     float f = fbm( q + 1.8 * warp + 0.6 * mass );

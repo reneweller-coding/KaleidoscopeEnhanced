@@ -185,6 +185,8 @@ vec3 background( vec3 rd )
     return col;
 }
 
+// Its flight runs on the scene clocks (sceneTime, sceneAdvance): on `time` and `audioAdvance`, counted since the
+// program started, a run with the clocks a day ahead found it collapsed (17.10.2026).
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
@@ -194,7 +196,7 @@ void main()
 
     vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution ) / resolution.y;
 
-    float t = time * 0.1 + audioAdvance * 0.2;
+    float t = sceneTime * 0.1 + sceneAdvance * 0.2;
 
     // Camera orbit
     vec3 ro = vec3( 10.0 * cos( t ), 2.0 * sin( t * 0.5 ), 10.0 * sin( t ) );

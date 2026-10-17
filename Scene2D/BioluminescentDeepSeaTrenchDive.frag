@@ -208,7 +208,15 @@ void main()
     }
 
     // Volumetric marine snow and plankton
-    float plankton = pow( max( 0.0, sin( dot( uv, vec2( 12.3, 45.6 ) ) * 40.0 + t * 4.0 ) ), 24.0 );
+    // Round specks drifting up through a jittered cell grid.  Until 17.10.2026 this was
+    // pow(sin(dot(uv, k) * 40 + t * 4), 24): diagonal stripes sweeping the frame.
+    vec2  pu = uv * 38.0 + vec2( 0.0, t ); // a steady scroll (a fract() here would jump back)
+    vec2  pc = floor( pu );
+    vec2  pq = fract( pc * vec2( 0.1031, 0.1030 ) );
+    pq += dot( pq, pq.yx + 33.33 );
+    float ph = fract( ( pq.x + pq.y ) * pq.x );
+    vec2  po = 0.2 + 0.6 * fract( vec2( ph * 17.3, ph * 31.7 ) );
+    float plankton = step( 0.86, ph ) * smoothstep( 0.16, 0.02, length( fract( pu ) - po ) );
     hit_col += vec3( 0.8, 1.4, 1.8 ) * plankton * ( 0.8 + 1.2 * audioHigh );
 
     // Deep sea water absorption & extinction fog. The old rate reached 0.91

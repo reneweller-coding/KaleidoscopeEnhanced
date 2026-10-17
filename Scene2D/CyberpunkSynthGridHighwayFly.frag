@@ -114,7 +114,8 @@ void main()
     float t = time * 0.40 * spd + audioAdvance * 0.35 * spd;
 
     // Camera setup: low hovering perspective above cyber highway
-    vec3 ro = vec3( sin( t * 0.3 ) * 0.4, 0.8 + 0.2 * sin( audioSwell * 2.0 ), t * 4.0 );
+    // The height glides on its own clock (it followed the swell: the camera on the music, 17.10.2026).
+    vec3 ro = vec3( sin( t * 0.3 ) * 0.4, 0.8 + 0.1 * sin( t * 0.17 ), t * 4.0 );
     vec3 rd = normalize( vec3( uv.x, uv.y - 0.15, 1.2 ) );
 
     vec3 col = vec3( 0.0 );

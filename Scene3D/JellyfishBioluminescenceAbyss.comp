@@ -180,7 +180,8 @@ void main()
         vec3  tip = rim_p - vec3( wave_x, tentacle_len, wave_z );
 
         // Bioluminescent pulse travelling down the tentacle
-        float bio_glow = exp( -abs( tentacle_len * 0.5 - mod( time * 2.2 + audioKick * 2.0, 1.6 ) ) * 6.0 );
+        // The kick brightens the pulse (below); it no longer moves it -- it made the pulse jump (17.10.2026).
+        float bio_glow = exp( -abs( tentacle_len * 0.5 - mod( time * 2.2, 1.6 ) ) * 6.0 );
         bio_glow *= ( 1.0 + audioKick * 2.5 );
 
         emitSegment( rim_p, tip, fract( medusa_id * 0.317 + 0.45 ), bio_glow, 0.012 );

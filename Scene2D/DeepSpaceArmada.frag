@@ -34,6 +34,8 @@ uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0
 uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
 uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
                               ///< backwards).
+uniform float sceneAdvance; ///< The music's advance since this scene was activated (integrated, never jumps).
+uniform float sceneTime;    ///< Seconds since this scene was activated.
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 uniform float audioLevel;     ///< Overall loudness, 0..1.
 uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
@@ -298,6 +300,8 @@ vec3 calcNormal( vec3 p, float fp )
         map( p + e.yyx, fp ) - map( p - e.yyx, fp ) ) );
 }
 
+// Its flight runs on the scene clocks (sceneTime, sceneAdvance): on `time` and `audioAdvance`, counted since the
+// program started, a run with the clocks a day ahead found it collapsed (17.10.2026).
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
@@ -308,8 +312,8 @@ void main()
 
     vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution ) / resolution.y;
 
-    float t = time * 0.05 + audioAdvance * 0.15;
-    float drift = time * 8.0 + audioAdvance * 20.0;
+    float t = sceneTime * 0.05 + sceneAdvance * 0.15;
+    float drift = sceneTime * 8.0 + sceneAdvance * 20.0;
 
     // Camera travels with the fleet
     vec3 ro = vec3( 0.0, 2.0 * sin( t * 0.4 ), drift * 0.5 );

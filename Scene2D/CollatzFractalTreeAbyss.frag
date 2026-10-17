@@ -30,6 +30,8 @@ uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0
 uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
 uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
                               ///< backwards).
+uniform float sceneAdvance; ///< The music's advance since this scene was activated (integrated, never jumps).
+uniform float sceneTime;    ///< Seconds since this scene was activated.
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 uniform float audioLevel;     ///< Overall loudness, 0..1.
 uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
@@ -118,6 +120,8 @@ vec2 collatzMap( vec2 z )
     return ( term1 - term2 ) * 0.25;
 }
 
+// Its flight runs on the scene clocks (sceneTime, sceneAdvance): on `time` and `audioAdvance`, counted since the
+// program started, a run with the clocks a day ahead found it collapsed (17.10.2026).
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
@@ -128,7 +132,7 @@ void main()
     float ndl = ( needleP > 0.01 ) ? needleP : 1.0;
     float glw = ( glowP > 0.01 ) ? glowP : 1.0;
 
-    float t = time * 0.150 * spd + audioAdvance * 0.150 * spd;
+    float t = sceneTime * 0.150 * spd + sceneAdvance * 0.150 * spd;
     // Time base + music push: audioAdvance ALONE stands still in quiet
     // music (the reported "looks like a still picture" class).
 

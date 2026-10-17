@@ -9,11 +9,8 @@
  *
  *  Audio Reactivity:
  *    audioAdvance   -> slow walk through the Chladni mode numbers (jump-free)
- *    audioBass      -> n mode number + bounce height
- *    audioMid       -> m mode number
+ *    audioBass      -> bounce height
  *    audioKick      -> grains jump off the plate and briefly stop settling
- *    audioSpread    -> modal complexity: a pure tone rings a simple low-order
- *                      figure, a broadband spectrum drives high-order lines
  *    audioZCR       -> grain scatter: hiss keeps the sand skittering, a held
  *                      tone lets it settle into razor-sharp nodal lines
  *    audioHarmChange-> a chord change re-tunes the plate; the sand is thrown
@@ -35,7 +32,6 @@ uniform float audioBass;       ///< Bass band level, 0..1.
 uniform float audioMid;        ///< Mid band level, 0..1.
 uniform float audioHigh;       ///< High band level, 0..1.
 uniform float audioSwell;      ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioSpread;     ///< narrow (pure tone) .. wide (rich/noisy)
 uniform float audioZCR;        ///< signal noisiness -> grain scatter
 uniform float audioHarmChange; ///< spikes on chord / key changes
 
@@ -68,12 +64,11 @@ void main()
     // Initial random position on square plate [-1, 1]
     vec2 p = vec2( seed_x * 2.0 - 1.0, seed_y * 2.0 - 1.0 );
 
-    // Chladni modal numbers (m, n) driven by spectrum / audio frequencies.
-    // Spectral SPREAD is the plate's modal complexity: a narrow, pure spectrum
-    // rings a simple low-order figure, a rich broadband one drives the plate
-    // into high-order patterns with many more nodal lines.
-    float m = 3.0 + floor( mod( audioAdvance * 0.5 + audioMid * 4.0 + audioSpread * 3.0, 5.0 ) );
-    float n = 2.0 + floor( mod( audioAdvance * 0.3 + audioBass * 3.0 + audioSpread * 2.0, 4.0 ) );
+    // The mode numbers GLIDE: a triangle wave over the music's advance, so the figure morphs from one mode into the
+    // next and back without a wrap.  Until 17.10.2026 they were floor(mod(...)) of the mid and bass envelopes as
+    // well -- the figure could jump several times a second, a strobe of whole patterns.
+    float m = 3.0 + 4.0 * abs( fract( audioAdvance * 0.5 / 8.0 ) * 2.0 - 1.0 ); // 3..7
+    float n = 2.0 + 3.0 * abs( fract( audioAdvance * 0.3 / 6.0 + 0.25 ) * 2.0 - 1.0 );               // 2..5
 
     float pi = 3.14159265;
     // Chladni vibration amplitude function

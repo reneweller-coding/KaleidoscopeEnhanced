@@ -241,9 +241,8 @@ void main()
 
     vec3 ro = vec3( 0.5 * sin( time * 0.5 ), 0.5 * cos( time * 0.6 ), drift );
 
-    // Spasmodic camera shake on kick
-    ro.x += ( hash11( time * 20.0 ) - 0.5 ) * audioKick * 0.3;
-    ro.y += ( hash11( time * 20.0 + 1.0 ) - 0.5 ) * audioKick * 0.3;
+    // No camera shake: the kick shook the camera at random here until 17.10.2026 -- the standing rule is that
+    // camera, zoom and rotation never follow the audio.
 
     vec3 ta = ro + vec3( sin( time * 0.2 ) * 0.5, cos( time * 0.3 ) * 0.5, 1.0 );
 
