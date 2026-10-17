@@ -666,6 +666,10 @@ public:
      * still.
      **/
     static bool M_Frozen;
+    /** A comparison run's fixed frames (set by RenderPipeline): the step every scene's own field (the state pass)
+     * takes this frame, so the field evolves exactly the same in every run before the frame freezes; < 0: none.
+     **/
+    static float M_FixedDt;
     /** Score cues live this frame (set by RenderPipeline, CueReceiver.h): the chain walk takes the generator's
      * section and drop counters (M_CueSections, M_CueDrops) instead of the analyser's.
      **/

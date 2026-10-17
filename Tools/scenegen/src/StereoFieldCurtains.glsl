@@ -5,8 +5,9 @@
  * the light like heavy cloth; behind the parting glows the photo, blurred and deep.
  *
  * Audio Reactivity (structure, not only light):
- *   audioStereoL    -> the left curtain's folds (smoothed on the state pass)
- *   audioStereoR    -> the right curtain's folds (smoothed on the state pass)
+ *   audioStereoL    -> the left curtain's folds: the left channel's energy over its three bands (smoothed on the state
+ *                      pass)
+ *   audioStereoR    -> the right curtain's folds, the same for the right channel
  *   audioStereo     -> the stereo width: how far the curtains part
  *   audioKick       -> the folds' sheen flashes (light)
  *
@@ -23,7 +24,7 @@
 vec4 stateStep()
 {
     int i = int(gl_FragCoord.x);
-    float v = clamp(i == 0 ? audioStereoL : (i == 1 ? audioStereoR : audioStereo), 0.0, 1.0);
+    float v = clamp(i == 0 ? dot(audioStereoL, vec3(0.3333333)) : (i == 1 ? dot(audioStereoR, vec3(0.3333333)) : audioStereo), 0.0, 1.0);
     if (stateFrame < 0.5) return vec4(v, 0.0, 0.0, 1.0);
     return vec4(mix(texelFetch(texState, ivec2(i, 0), 0).r, v, 0.03), 0.0, 0.0, 1.0);
 }

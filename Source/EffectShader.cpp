@@ -229,6 +229,7 @@ float                         EffectShader::M_ChainScale = 1.f;
 bool                          EffectShader::M_ChainSS = true;
 float                         EffectShader::M_FreezeTime = -1.f;
 bool                          EffectShader::M_Frozen = false;
+float                         EffectShader::M_FixedDt = -1.f;
 std::map<std::string, float>  EffectShader::M_ClassTaste;
 std::map<std::string, double> EffectShader::M_ClassSeen;
 std::set<std::string>         EffectShader::M_ClassSeenDirty;
@@ -3884,7 +3885,9 @@ void EffectShader::stepState()
     {
         float dt = m_lastSceneTime - m_stateLastT;
         m_stateLastT = m_lastSceneTime;
-        if ( dt < 0.f || M_Frozen )
+        if ( M_FixedDt >= 0.f )
+            dt = M_FixedDt; // a comparison run: fixed steps until the frame freezes, the same in every run
+        else if ( dt < 0.f || M_Frozen )
             dt = 0.f;
         if ( dt > 0.25f )
             dt = 1.f / 60.f; // back from a pause: no catch-up

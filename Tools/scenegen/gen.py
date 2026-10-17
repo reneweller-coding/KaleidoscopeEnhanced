@@ -18,6 +18,8 @@ import io, os, re, sys
 ROOT = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
 SP = os.path.dirname(os.path.abspath(__file__))
 
+# Audio uniforms the engine sets as vec3 (left/right energy per band: low, mid, high) -- EffectShader.cpp AL_STBAND*.
+VEC3_AUDIO = {"audioStereoL", "audioStereoR"}
 BASE_AUDIO = ["audioAdvance", "audioLevel", "audioValence", "audioChromaHue", "audioPhase"]
 
 LIB = r"""
@@ -2179,7 +2181,10 @@ def assemble(name):
             "uniform float sceneAdvance;"]
     for a in BASE_AUDIO + [a for a in audio if a not in BASE_AUDIO]:
         m = re.match(r"(\w+)\[(\d+)\]", a)
-        out.append("uniform float %s[%s];" % m.groups() if m else "uniform float %s;" % a)
+        if a in VEC3_AUDIO:
+            out.append("uniform vec3 %s;" % a)                 # the engine sets these per band (glUniform3f)
+        else:
+            out.append("uniform float %s[%s];" % m.groups() if m else "uniform float %s;" % a)
     out.append("")
     for q in params + ["hueP"]:
         out.append("uniform float %s;" % q)

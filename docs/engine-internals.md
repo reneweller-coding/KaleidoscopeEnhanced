@@ -6299,3 +6299,17 @@ jobs. make_catalog.py now holds 1415 scenes and 4523 pictures. Portable Chrome p
 - sync_scene_measures.py wrote gpuMs and the measured restlessness as complexity (Spearman 0.91 against the
   hand-set values). The ranks spread over all scenes, so 292 entries moved.
 - check_schedule.py --quick: 14 plans, no violations.
+
+**Two faults the snapshots showed:**
+- A comparison run (KALEIDO_FREEZE_TIME) sets EffectShader::M_Frozen from its first frame, so the state pass only
+  ever ran its seed step. Every scene with a field of its own was snapshotted in its starting state, some of them
+  black. RenderPipeline now hands the fixed frames' step to EffectShader::M_FixedDt: 1/120 s per counted frame,
+  and 0 while waiting for programs. stepState() takes that step, so the field evolves exactly the same in every
+  run. Two runs of six such scenes compared with 0 changed and 0 unstable. Flat or dark frames among the 200 went
+  from 39 to 31, and none is black.
+- gen.py declared every audio uniform as float. The engine sets audioStereoL and audioStereoR as vec3 (per band),
+  and glUniform3f on a float is GL_INVALID_OPERATION, so StereoFieldCurtains never heard left and right. The
+  VEC3_AUDIO table now types them, and the curtains take the mean of the three bands.
+
+The snapshot set 2026-10-17-base200 holds 2026-10-17-base plus the 200 (1630 frames). release_check still compares
+against Tools/snapshot_baseline.txt (2026-10-03-night); naming a new baseline is the release's decision.

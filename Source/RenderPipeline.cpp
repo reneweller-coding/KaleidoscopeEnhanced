@@ -2009,6 +2009,8 @@ void RenderPipeline::applyTransportModifiers( const AudioFeatures &audio, float 
     EffectShader::M_Frozen = M_Freeze || freezeTime() >= 0.f; // the walk and the 3D flight never move in a comparison
                                                               // run
     EffectShader::M_FreezeTime = freezeTime();
+    // the fixed frames step the scenes' own fields too (stepState()): 1/120 s each, 0 while waiting for programs
+    EffectShader::M_FixedDt = freezeTime() >= 0.f && !M_Freeze ? timeSinceLastFrameSec : -1.f;
     if ( M_Freeze )
     {
         timeSinceLastFrameSec = 0.f;
