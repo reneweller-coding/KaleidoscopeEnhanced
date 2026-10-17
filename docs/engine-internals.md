@@ -6175,3 +6175,36 @@ same photo: the second is turned by about 2 to 4 radians and shifted. Both drift
   - PhotoSpectralWarp: 10 steps back along each hue's direction.
   - DepthFromFocusLayers: a parallax march over a sharpness height field.
   - PhotoWatershedFlood: 14 steps of gradient descent to the basin's floor, which gives the basin's colour.
+
+## 17.10.2026 (35): swarms and particles, round and space-filling (ideas 155-168)
+
+Fourteen scenes of family J. The engine has no general particle simulation, so there are three ways in.
+- **A few actors on the state pass, the rest drawn per pixel:**
+  - SPHVortexDance: 8 point vortices, each moved by the others' Lamb-Oseen velocity.
+  - SwarmalatorRings: 144 swarmalators, after O'Keeffe, Ha and Strogatz.
+  - ThomsonProblemShells: 4 x 48 charges on spheres. Each charge's presence fades toward whether the chord
+    counts it, so charges never pop.
+  - MagneticDipoleSwarm: 1 cell that only smooths the bass, so rings and chains glide.
+- **A field on the state pass, with particles scattered over it:**
+  - ActiveBrownianClusters: Cahn-Hilliard plus Oono's term -eps (c - mean), which keeps the clusters finite, plus
+    noise.
+  - FlockingPhaseTransition: a Vicsek heading field, carried along itself, aligned 3 x 3 and shaken by eta.
+  - GranularGasCooling: density drawn up the gradient of its own blurred image, as in Keller-Segel. It is unstable
+    while drawIn x rho > warm; drawIn = 0.3 (1 - e) + 0.04 and warm = 0.02 + 0.12 e, so loud, elastic passages melt
+    the clusters. A first try with velocity, pressure and loss never clustered.
+  - BrownianTreeRain: a diffusing rain fed from the top that evaporates (x 0.995 per step), so it stays thin.
+    Cells with one or two tree neighbours stick with a chance proportional to rain^2. There is no growth across the
+    top and bottom edges: the periodic wrap had grown a second forest down from the top.
+- **Particles traced back through a flow** (SPHVortexDance, VortexLatticeParticles, Stokesian clouds):
+  - Each drop is traced back along the stream to where it came from, in two phases half a life apart.
+  - Its distance is measured back on screen through the inverse of the flow map's Jacobian (two neighbouring
+    traces). So the drops stay round even where the flow stretches.
+- **Analytic:**
+  - ChargedDustCrystal: hexagonal sites, with trembling and wandering that grow with the temperature.
+  - CoulombExplosionBloom: r(r0, t) from the charge inside r0 for a Gaussian cloud. The starting radii that land
+    on a pixel are found by scanning 28 of them for sign changes; more than one lands inside the shell.
+  - ElectrohydroDropletRain: metaballs stretched along the field, splitting into two lobes when stretched far.
+  - LiquidCrystalOfBubbles: a power diagram of domes whose radii follow audioSpectrum.
+
+**screenP() is one unit high** (-0.5 .. 0.5), not two. The particle scenes are scaled to that. The earlier families
+were checked by eye and their scales stand.

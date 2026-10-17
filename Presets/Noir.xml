@@ -1515,14 +1515,6 @@
     <expr name="hueP" formula="chromaHue + seed3*6.28"/>
     <float name="hueP"  minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <TextureShader minTimeSolo="19" maxTimeSolo="50" interest="6" grade="fade,grey,sepia" file="..\Scene2D\BioluminescentAbyssalTrenches.frag" type="normal" probability="0.5" mood="calm,bright,dreamy" complexity="9" gpuMs="0.31">
-    <rig preset="flat"/>
-    <float name="trenchP" minValue="0.5" maxValue="2.0"></float>
-    <float name="bioP"    minValue="0.5" maxValue="2.2"></float>
-    <float name="speedP"  minValue="0.5" maxValue="2.0"></float>
-    <expr name="hueP" formula="chromaHue + seed3*6.28"/>
-    <float name="hueP"    minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
   <TextureShader minTimeSolo="29" maxTimeSolo="77" interest="7" grade="fade,grey,sepia" file="..\Scene3D\KineticMirrorHexagonArray.frag" type="scene3d" geom="quads" probability="0.5" mood="bright,calm" complexity="10" gpuMs="0.45">
     <rig preset="procedural"/>
     <expr name="waveP" formula="clamp(1.25 + 0.3*(seed3*2.0-1.0) + 0.6*(max(bassRel-0.9,0.0)), 0.5, 2)"/>
@@ -3661,6 +3653,14 @@
     <rig preset="flat"/>
     <float name="spanP" minValue="0" maxValue="1"></float>
     <float name="bandP" minValue="0" maxValue="1"></float>
+    <float name="photoP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader minTimeSolo="24" maxTimeSolo="62" interest="6" file="..\\Scene2D\\BrownianTreeRain.frag" type="normal" mood="dark,dreamy" probability="0.45" complexity="6">
+    <rig preset="flat"/>
+    <float name="rainP" minValue="0" maxValue="1"></float>
+    <float name="stickP" minValue="0" maxValue="1"></float>
     <float name="photoP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
