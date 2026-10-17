@@ -55,7 +55,7 @@ vec4 stateStep()
                 for (int dx = -1; dx <= 1; ++dx)
                     if ((dx != 0 || dy != 0) && abs(stAt(ip + ivec2(dx, dy)).r - 2.0) < 0.5) heads += 1.0;
             s2 = (heads > 0.5 && heads < 2.5) ? 2.0 : 1.0;
-            if (s2 < 1.5 && stRand(1) < 1.5e-5 * (0.3 + clamp(audioSwell, 0.0, 1.0))) s2 = 2.0;
+            if (s2 < 1.5 && stRand(1) < 6.0e-5 * (0.3 + clamp(audioSwell, 0.0, 1.0))) s2 = 2.0;
             // an onset feeds electrons in at a contact that wanders every 15 steps
             float slot = floor(stateFrame / 15.0);
             vec2 at = vec2(hash11(slot * 2.31 + 0.4), hash11(slot * 4.77 + 0.9)) * stateRes;
@@ -79,9 +79,9 @@ void main()
     vec2 drift = (0.002 + 0.01 * clamp(driftP, 0.0, 1.0)) * sceneTime * vec2(1.0, 0.6);
     vec2 uv = cc / stateRes.y * 0.55 + drift;
     vec3 photo = imgLod(uv, 1.0);
-    vec3 board = photo * 0.16;                                  // the photo under the board
+    vec3 board = photo * 0.28;                                  // the photo under the board
     vec3 copper = mix(imgPalette(0.1 + 0.03 * audioPhase), vec3(0.9, 0.7, 0.45) * luma(photo) * 2.0, 0.4);
-    vec3 col = board + copper * s.b * 0.4;
+    vec3 col = board + copper * s.b * 0.7;
     // the electrons with a soft halo (a ring of taps around the pixel), so a single cell reads as a round spark
     float halo = 0.0;
     for (int i = 0; i < 6; ++i) {

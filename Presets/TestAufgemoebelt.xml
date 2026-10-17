@@ -88,7 +88,7 @@
     <float name="sunP" minValue="0.3" maxValue="0.9"></float>
     <float name="waterP" minValue="0.3" maxValue="0.8"></float>
   </TextureShader>
-  <TextureShader interest="6" file="..\Scene2D\FrescoRestorationReveal.frag" type="normal" mood="dark,calm,dreamy" probability="0.45" complexity="7" gpuMs="0.45">
+  <TextureShader interest="6" file="..\Scene2D\FrescoRestorationReveal.frag" type="normal" mood="dark,calm,dreamy" probability="0.45" complexity="8" gpuMs="0.45">
     <rig preset="flat"/>
     <float name="gridP" minValue="0" maxValue="1"></float>
     <float name="sootP" minValue="0" maxValue="1"></float>
@@ -143,7 +143,7 @@
   <TextureShader interest="8" file="..\\Scene2D\\LanternRise.frag" type="normal" probability="0.3" mood="calm,bright,dreamy" complexity="5" gpuMs="0.33">
     <rig preset="flat"/>
   </TextureShader>
-  <TextureShader interest="5" file="..\Scene2D\LenticularFlip.frag" type="normal" mood="calm,dreamy,bright" probability="0.45" complexity="3" gpuMs="0.42">
+  <TextureShader interest="5" file="..\Scene2D\LenticularFlip.frag" type="normal" mood="calm,dreamy,bright" probability="0.45" complexity="2" gpuMs="0.42">
     <rig preset="flat"/>
     <float name="pitchP" minValue="0" maxValue="1"></float>
     <float name="waveP" minValue="0" maxValue="1"></float>
