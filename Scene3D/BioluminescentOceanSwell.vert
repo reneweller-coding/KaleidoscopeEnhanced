@@ -30,6 +30,8 @@ out vec3  vNormal; ///< Surface normal (from the vertex stage).
 out vec2  vUV;     ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 out float vCrest;  ///< Crest (from the vertex stage).
 out float vHeight; ///< Height (from the vertex stage).
+out vec2  vFlow;   ///< Position in the moving water (the waves' own coordinate), for glints that drift with it.
+out float vDepth;  ///< Distance into the scene (world z, -5 near .. 40 at the horizon).
 
 /**  Gerstner wave function
  *
@@ -64,7 +66,12 @@ vec3 gerstnerWave( vec2 p, vec2 dir, float steepness, float wavelength, float sp
 void main()
 {
     vec2 uv = attrA.xy;
-    vec2 world_xz = ( uv - vec2( 0.5 ) ) * vec2( 16.0, 10.0 );
+    // The water reaches toward the horizon (17.10.2026): it was a 16 x 10 patch whose far edge stood as a row of
+    // crests across the middle of the frame, with black above.  The rows now run out to 40 (denser near, where the
+    // waves are big on screen) and widen with the distance, the waves calm there, and the fragment stage fogs it.
+    float wz = -5.0 + 45.0 * pow( uv.y, 1.8 );
+    vec2  world_xz = vec2( ( uv.x - 0.5 ) * ( 16.0 + 1.6 * ( wz + 5.0 ) ), wz );
+    float far = smoothstep( 6.0, 32.0, wz );
 
     // FLIGHT: the wave field scrolls beneath the camera, so we glide
     // forward over open water (audioAdvance = jump-free music push).
@@ -74,7 +81,7 @@ void main()
     vec3 n = vec3( 0.0, 1.0, 0.0 );
     vec3 disp = vec3( 0.0 );
 
-    float amp = ( 0.7 + 0.6 * audioBass ) * ( 0.8 + 0.4 * audioSwell );
+    float amp = ( 0.7 + 0.6 * audioBass ) * ( 0.8 + 0.4 * audioSwell ) * ( 1.0 - 0.75 * far );
 
     // Superposition of 4 Gerstner wave harmonics
     disp += gerstnerWave( wp, normalize( vec2( 1.0, 0.2 ) ), 0.30 * amp, 3.2, 0.6, n );
@@ -83,7 +90,7 @@ void main()
     disp += gerstnerWave( wp, normalize( vec2( 0.9, -0.3 ) ), 0.10 * amp, 0.8, 1.5, n );
 
     // Beat splash impulse
-    float splash = sin( length( world_xz ) * 4.0 - time * 6.0 ) * audioKick * 0.4;
+    float splash = sin( length( world_xz ) * 4.0 - time * 6.0 ) * audioKick * 0.25 * ( 1.0 - far );
     disp.y += splash;
 
     vec3 pos = vec3( world_xz.x + disp.x, disp.y - 2.2, world_xz.y + disp.z );
@@ -97,6 +104,8 @@ void main()
     vUV = uv;
     vCrest = crest;
     vHeight = disp.y;
+    vFlow = wp;
+    vDepth = wz;
 
     // Stereoscopic 3D camera projection.  NEGATIVE tilt = the camera looks
     // DOWN onto the swell (the old +0.38 tipped the ocean into a ceiling

@@ -21,6 +21,8 @@ in vec3  vNormal; ///< Surface normal (from the vertex stage).
 in vec2  vUV;     ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 in float vCrest;  ///< Crest (from the vertex stage).
 in float vHeight; ///< Height (from the vertex stage).
+in vec2  vFlow;   ///< Position in the moving water (from the vertex stage).
+in float vDepth;  ///< Distance into the scene, world z (from the vertex stage).
 
 uniform float     time;          ///< Seconds since this activation, plus a rolled start (see sceneTime).
 uniform sampler2D tex0;          ///< The current photo.
@@ -101,6 +103,20 @@ vec3 hueRot( vec3 c, float a )
     return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 
+/**  Pseudo-random number 0..1 from a 2D point.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
+float hash21( vec2 p )
+{
+    p = fract( p * vec2( 123.34, 345.45 ) );
+    p += dot( p, p + 34.345 );
+    return fract( p.x * p.y );
+}
+
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
@@ -127,12 +143,21 @@ void main()
     vec3  half_vec = normalize( light_dir + view_dir );
     float spec = pow( max( dot( n, half_vec ), 0.0 ), 64.0 );
 
-    // Bioluminescent dinoflagellate blue-cyan glow on wave crests — a
-    // narrow crest band, hot audio brightens WITHOUT washing to white.
-    float bio_intensity = smoothstep( 0.7, 2.2, vCrest );
+    // Bioluminescent dinoflagellate blue-cyan glow on wave crests -- hot audio brightens WITHOUT washing to white.
+    // From 0.3 (17.10.2026): the band 0.7 .. 2.2 was all but never reached, and the sea showed no glow at all.
+    float bio_intensity = smoothstep( 0.3, 1.3, vCrest );
     vec3  bio_glow_col = palTint(
         mix( vec3( 0.0, 0.8, 1.0 ), vec3( 0.1, 1.0, 0.6 ), sin( vPos.x * 2.0 + time * 3.0 ) * 0.5 + 0.5 ), 0.15, 0.25 );
-    vec3 bio_emission = bio_glow_col * bio_intensity * ( 0.9 + 1.1 * audioKick ) * bio * glw;
+    bio_glow_col = hueRot( bio_glow_col, 0.5 * sin( hue ) ); // the knob tints the glow, no longer the whole sea
+    // Glints: single plankton flaring in the water, drifting with the waves, brighter where the water is stirred.
+    vec2  gg = vFlow * 2.6;
+    vec2  gi = floor( gg );
+    vec2  go = vec2( hash21( gi ), hash21( gi + 7.1 ) ) - 0.5;
+    float glint = smoothstep( 0.16, 0.0, length( fract( gg ) - 0.5 - go * 0.6 ) ) * step( 0.55, hash21( gi + 3.3 ) )
+                  * ( 0.55 + 0.45 * sin( time * 1.7 + hash21( gi + 9.2 ) * 40.0 ) )
+                  * ( 1.0 - smoothstep( 8.0, 18.0, vDepth ) ); // far away they would only shimmer as noise
+    vec3  bio_emission = bio_glow_col * ( bio_intensity + glint * ( 1.0 + 1.0 * clamp( vCrest, 0.0, 1.0 ) ) )
+                         * ( 0.9 + 0.8 * audioKick ) * bio * glw;
 
     // Subsurface scattering glow
     float sss = smoothstep( -0.2, 0.8, vHeight ) * ( 1.0 - n.y );
@@ -140,7 +165,9 @@ void main()
 
     vec3 col = water_base + photo_sky * fresnel * 0.8 + vec3( 1.0 ) * spec * 0.9 + bio_emission + sss_col;
 
-    col = hueRot( col, hue ); // chromaHue handled inside imgPalette
+    // Haze toward the horizon, dark at the very edge so the sea meets the night sky without a seam.
+    vec3 haze = mix( vec3( 0.015, 0.03, 0.055 ), vec3( 0.0 ), smoothstep( 30.0, 40.0, vDepth ) );
+    col = mix( col, haze, smoothstep( 8.0, 34.0, vDepth ) );
     col /= 1.0 + 0.32 * max( col.r, max( col.g, col.b ) );
     fragColor = vec4( col, 1.0 );
 }

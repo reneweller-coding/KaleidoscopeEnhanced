@@ -168,21 +168,31 @@ void main()
                          .rgb,
                      vec3( 0.9, 0.92, 0.95 ), milk );
     body = mix( body, body * imgPalette( hue * 0.159 + 0.6 ) * 1.5, 0.2 );
+    // A darker body (17.10.2026): the milky white at full light outshone the play of colour, and the tone map
+    // pressed the two into one grey disc.  An opal shows its fire best on a dark body.
+    body *= 0.38;
     // Domains and their Bragg colour: wavelength parameter from the domain
     // orientation and the viewing angle (Bragg: lambda ~ d cos(theta)).
     float id, edge;
     vec2  orient;
     domains( p * scale + 3.0, id, edge, orient );
-    float theta = orient.x * 1.2 + view * 1.1 + orient.y * 0.4;
-    float lam = fract( 0.5 + 0.5 * cos( theta ) + orient.y * 0.3 );
+    // Inside a domain the lattice planes bend a little: the Bragg angle runs across it in soft striations, so a
+    // band of colour sweeps through each domain as the stone tilts (17.10.2026).  One colour per domain, with dark
+    // outlines, read as a stained-glass window, not as opal fire.
+    vec2  dir = normalize( orient - 0.5 + 1e-3 );
+    float u = dot( p * scale, dir );
+    float theta = orient.x * 1.2 + view * 1.1 + orient.y * 0.4 + 0.55 * sin( u * 2.6 + orient.x * 6.3 )
+                  + 0.35 * u;
+    float lam = 0.5 + 0.5 * cos( theta + orient.y * 1.9 );
     vec3  flash = spectral( lam );
     // Band energy for this colour: map wavelength to a band.
     int   band = int( clamp( lam * 31.0, 0.0, 31.0 ) );
     float e = clamp( audioSpectrum[band] * 1.6, 0.0, 1.0 );
-    // Domain visibility: strong near a Bragg match (a bell in theta), soft edges.
-    float match = exp( -pow( fract( theta / 3.14159 + 0.5 ) - 0.5, 2.0 ) * 30.0 );
-    float dom = match * smoothstep( 0.0, 0.06, edge );
-    vec3  play = flash * dom * ( 0.5 + 0.9 * e ) * light * 1.4;
+    // Domain visibility: strong near a Bragg match (a bell in theta), all but dark off it -- a few domains flash at
+    // a time, the rest of the stone rests.  The domain borders only darken a little.
+    float match = exp( -pow( fract( theta / 3.14159 + 0.5 ) - 0.5, 2.0 ) * 18.0 );
+    float dom = ( 0.05 + 0.95 * match * match ) * ( 0.6 + 0.4 * smoothstep( 0.0, 0.04, edge ) );
+    vec3  play = flash * dom * ( 0.7 + 0.8 * e ) * light * 1.9;
     // The sphere lattice itself: fine round sparkles, brighter with the treble.
     vec2  gu = p * 140.0;
     vec2  cell = floor( gu );
@@ -192,7 +202,7 @@ void main()
                     * ( 0.15 + 0.9 * clamp( audioHigh * 2.0, 0.0, 1.0 ) ) * dom;
     vec3  stone_col = body * ( 0.45 + 0.6 * dome ) * light + play + vec3( 1.0 ) * sparkle;
     // Surface highlight of the cabochon.
-    stone_col += vec3( 1.0 ) * pow( max( 1.0 - length( p - vec2( -0.2, 0.25 ) ) * 3.0, 0.0 ), 3.0 ) * 0.5 * light;
+    stone_col += vec3( 1.0 ) * pow( max( 1.0 - length( p - vec2( -0.2, 0.25 ) ) * 3.0, 0.0 ), 3.0 ) * 0.35 * light;
     col = mix( col, stone_col, stone );
     col *= 0.75 + 0.5 * audioLevel;
 

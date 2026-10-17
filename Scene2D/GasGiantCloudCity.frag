@@ -102,6 +102,20 @@ float hash11( float n )
     return fract( sin( n * 127.1 ) * 43758.5453 );
 }
 
+/**  Pseudo-random number 0..1 from a lattice point.
+ *
+ * @param p  The lattice point. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
+float hash31( vec3 p )
+{
+    p = fract( p * vec3( 0.1031, 0.1030, 0.0973 ) );
+    p += dot( p, p.yzx + 33.33 );
+    return fract( ( p.x + p.y ) * p.z );
+}
+
 /**  Smooth value noise.
  *
  * @param p  The point. (in)
@@ -111,16 +125,17 @@ float hash11( float n )
  **/
 float noise( vec3 p )
 {
+    // A hash of the whole lattice point (17.10.2026).  The classic n = x + 57 y + 113 z ties the axes together
+    // (113 is nearly 2 * 57): stepping through z -- the distance flown -- slid the pattern along y, and the clouds
+    // streaked vertically instead of lying in bands.
     vec3 i = floor( p );
     vec3 f = fract( p );
     f = f * f * ( 3.0 - 2.0 * f );
-    float n = i.x + i.y * 57.0 + i.z * 113.0;
-    return mix(
-        mix( mix( hash11( n + 0.0 ), hash11( n + 1.0 ), f.x ),
-             mix( hash11( n + 57.0 ), hash11( n + 58.0 ), f.x ), f.y ),
-        mix( mix( hash11( n + 113.0 ), hash11( n + 114.0 ), f.x ),
-             mix( hash11( n + 170.0 ), hash11( n + 171.0 ), f.x ), f.y ),
-        f.z );
+    return mix( mix( mix( hash31( i ), hash31( i + vec3( 1.0, 0.0, 0.0 ) ), f.x ),
+                     mix( hash31( i + vec3( 0.0, 1.0, 0.0 ) ), hash31( i + vec3( 1.0, 1.0, 0.0 ) ), f.x ), f.y ),
+                mix( mix( hash31( i + vec3( 0.0, 0.0, 1.0 ) ), hash31( i + vec3( 1.0, 0.0, 1.0 ) ), f.x ),
+                     mix( hash31( i + vec3( 0.0, 1.0, 1.0 ) ), hash31( i + vec3( 1.0, 1.0, 1.0 ) ), f.x ), f.y ),
+                f.z );
 }
 
 /**  Fractal noise: octaves of value noise.
@@ -167,7 +182,9 @@ void main()
     vec3 col = vec3( 0.0 );
     // Brightness floor: on dark photos the plain palette was black and the
     // whole scene stayed black with it ("stays black").
-    vec3 cloud_color = max( imgPalette( 0.3 ), vec3( 0.14, 0.11, 0.08 ) );
+    // The floor is a gas giant's own ochre at half strength (17.10.2026): from a grey photo the clouds were a dark
+    // grey haze (frame 0.04).
+    vec3 cloud_color = max( imgPalette( 0.3 ), vec3( 0.30, 0.22, 0.14 ) );
     vec3 lightning_color = max( imgPalette( 0.8 + audioCentroid * 0.1 ), vec3( 0.65, 0.6, 0.5 ) );
     vec3 city_color = max( imgPalette( 0.5 ), vec3( 0.30, 0.24, 0.14 ) );
 
@@ -195,14 +212,16 @@ void main()
 
         float density = smoothstep( 0.3, 0.7, clouds );
 
-        // Lightning deep in the clouds
-        // Triggers randomly but heavily influenced by audioKick
-        float flash_trigger = step( 0.9, hash11( floor( p3.x * 2.0 ) + floor( p3.z * 0.5 ) + floor( time * 4.00 ) ) );
-        float flash = flash_trigger * audioKick * 5.0 * density;
+        // Lightning deep in the clouds: soft storm cells drifting through the layer, lit by the kick (17.10.2026).
+        // A hash of floor( x ), floor( z ) and floor( 4 t ) lit rectangular blocks that switched four times a
+        // second: hard vertical edges across the clouds, and a strobe.
+        float cell = smoothstep( 0.62, 0.85,
+                                 fbm( vec3( p3.x * 0.8 + 3.0, p3.y * 0.3, p3.z * 0.35 + sceneTime * 0.15 ) ) );
+        float flash = cell * audioKick * 2.5 * density;
 
         // Add color
         float alpha = density * 0.4;
-        vec3  layer_col = mix( cloud_color * ( 0.4 + audioSwell * 0.35 ), lightning_color, flash );
+        vec3  layer_col = mix( cloud_color * ( 0.6 + audioSwell * 0.35 ), lightning_color, flash );
 
         atmos_col += layer_col * alpha * ( 1.0 - total_density );
         total_density += alpha;
@@ -220,9 +239,11 @@ void main()
     float struct_drift = drift * 1.5;
     vec2  struct_uv = uv * 2.0;
 
-    // Grid for placing structures
+    // Grid for placing structures; each generation of them fades in and out over its stretch of the flight
+    // (17.10.2026) -- at every whole step of the drift the whole set used to swap at once.
     float grid_x = floor( struct_uv.x * 2.0 + struct_drift * 0.5 );
     float grid_z = floor( struct_drift ); // using time as depth progression
+    float gen_w = sin( 3.14159 * fract( struct_drift ) );
 
     float struct_hash = hash11( grid_x * 12.3 + grid_z * 45.6 );
 
@@ -240,7 +261,7 @@ void main()
             vec3 s_col = vec3( 0.05 ); // dark hull
 
             // Neon strips/windows
-            float windows = step( 0.8, sin( local_uv.y * 100.0 ) );
+            float windows = smoothstep( 0.7, 0.9, sin( local_uv.y * 100.0 ) );
             float edge_light = smoothstep( 0.25, 0.3, d );
 
             s_col = mix( s_col, city_color * ( 1.0 + audioSwell ), windows * ( 1.0 - edge_light ) * cy );
@@ -249,7 +270,7 @@ void main()
             // The structure is in front, so minimal fog, but edges fade into clouds
             float fog = smoothstep( 0.2, 0.3, d );
 
-            col = mix( s_col, col, fog );
+            col = mix( col, mix( s_col, col, fog ), gen_w );
         }
     }
 

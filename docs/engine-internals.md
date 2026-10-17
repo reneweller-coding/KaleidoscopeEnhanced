@@ -5507,3 +5507,19 @@ rotation phase what a long show gathers).
   thirds the gain, which also ends the flat white wedges of the loud half: 0.35); CoronagraphSpeckleField's halo
   0.3 .. 1.2 with the swell (now 0.6 .. 1.2: 0.45); TextureSmokeChamber's smoke and beams (0.4). FireflyForestSync's
   dark half is its own rhythm -- a flash wave, then a pause -- whose glimmer is now twice as bright.
+- **Defects from the catalogue review, one by one.** CurlAurora had no curtain -- a vertical gradient times
+  low-contrast noise; now three hanging sheets, each a winding lower edge with rays standing up from it, green at the
+  edge, magenta toward the fringe. BioluminescentOceanSwell's water was a 16 x 10 patch whose far edge stood as a row
+  of crests mid-frame with black above, and its crest glow started above what the crests ever reached: the rows now
+  run out to the horizon (denser near, calmer and fogged far), the glow starts lower, plankton glints drift with the
+  water, and the hue knob tints the glow instead of turning the whole sea green or purple. OpalStructuralColour's
+  milky body outshone its play of colour (one grey disc): a darker body, striations of the Bragg angle inside each
+  domain, and only the domains near the match flash. ClothDrape's gravity asked for a sag of 16 against a clamp of
+  1.5 -- the lower fifth read one row of the photo (stripes); now about 0.08. IndustrialStation's asteroid field was
+  a hard threshold of an fbm (flat tan camouflage); now round, lit rocks in two layers. GasGiantCloudCity lit its
+  lightning in rectangles switched four times a second (floor( x ), floor( 4 t )), swapped its structures at every
+  whole step of the drift, and hashed its noise with n = x + 57 y + 113 z, which slides the pattern along y as z
+  (the flight) advances: vertical streaks; now soft storm cells on the kick, fading generations and a lattice hash.
+  Starfield and KleinianLimitSetAbyss tiled the photo with fract() (rotated rectangles with hard seams; the
+  Kleinian's translation fold mod( x + 1, 2 ) - 1 too): mirrored now, and Starfield's stars are sized on the screen
+  (a fifth of a cell made the nearest layer's stars soft ovals a quarter of the frame wide).

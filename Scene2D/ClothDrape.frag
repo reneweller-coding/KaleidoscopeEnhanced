@@ -110,7 +110,8 @@ void main()
     // Silk sheen: a broad anisotropic-ish rim rather than a point highlight.
     float sheen = pow( 1.0 - max( dot( n, V ), 0.0 ), 2.0 );
 
-    vec3 fabric = texture( tex0, clamp( warp, 0.0, 1.0 ) ).rgb;
+    // Mirrored at the photo's edges, not clamped: a clamp smears the edge row into stripes.
+    vec3 fabric = texture( tex0, 1.0 - abs( 1.0 - 2.0 * fract( warp * 0.5 ) ) ).rgb;
     fabric = mix( vec3( dot( fabric, vec3( 0.33 ) ) ), fabric, 0.4 + 0.6 * printP );
 
     vec3 tint = imgPalette( 0.0 ) * 1.35;

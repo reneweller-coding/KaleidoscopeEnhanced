@@ -1375,7 +1375,10 @@ GLuint ComputeFX::stepCloth( const AudioFeatures &a, float dt, float t )
         glUniform2i( glGetUniformLocation( ps, "size" ), W, H );
         glUniform1f( glGetUniformLocation( ps, "damp" ), 0.988f );
         glUniform1f( glGetUniformLocation( ps, "stiff" ), 0.22f );
-        glUniform1f( glGetUniformLocation( ps, "gravity" ), 0.00035f );
+        // Gravity for a sag of about 0.08 at the hem (17.10.2026): a sheet pinned at the top settles where
+        // stiff * d'' = gravity, a sag of gravity / stiff * H^2 / 2 -- 0.00035 asked for 16, the displacement ran
+        // into its clamp at 1.5, and the lower fifth of ClothDrape read one row of the photo: vertical stripes.
+        glUniform1f( glGetUniformLocation( ps, "gravity" ), 1.7e-6f );
         glUniform1f( glGetUniformLocation( ps, "windPhase" ), wind );
         glUniform1f( glGetUniformLocation( ps, "windAmp" ), 0.0016f );
         glUniform1f( glGetUniformLocation( ps, "kick" ), a.onsetKick * 0.004f );

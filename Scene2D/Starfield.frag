@@ -136,7 +136,8 @@ void main()
         float zscale = mix( 2.2, 0.15, depth );         // zoom in as depth -> 1
         vec2  iuv = ruv * zscale * 0.5 + 0.5;
         float fade = sin( depth * Pi );
-        vec3  layer = img( fract( iuv ) ) * fade * ( 0.32 + 0.42 * audioLevel );
+        // Mirrored tiles (17.10.2026): fract() cut the photo into rotated rectangles with hard seams.
+        vec3 layer = img( 1.0 - abs( 1.0 - 2.0 * fract( iuv * 0.5 ) ) ) * fade * ( 0.32 + 0.42 * audioLevel );
         layer = hueRot( layer, ( depth - 0.5 ) * 0.5
                                    + 0.30 * sin( audioBarPhase * 2.0 * Pi ) );
         col += layer;
@@ -157,12 +158,15 @@ void main()
         float h = hash21( gi );
 
         // Radial direction of this star cell (for the warp trail).
-        vec2  cell_pos = ( gi + 0.5 - fi * 37.2 ) / scale;
-        vec2  dir = cell_pos / max( length( cell_pos ), 1e-3 );
-        float trail = 0.05 + 0.55 * audioBeat * depth; // beat -> warp jump
+        vec2 cell_pos = ( gi + 0.5 - fi * 37.2 ) / scale;
+        vec2 dir = cell_pos / max( length( cell_pos ), 1e-3 );
+        // Sizes on the screen, not in cells (17.10.2026): a fifth of a cell made the nearest layer's stars (0.6
+        // cells to the picture height) soft ovals a quarter of the frame wide.
+        float trail = ( 0.004 + 0.05 * audioBeat * depth ) * scale; // beat -> warp jump
         vec2  dv = gf - dir * clamp( dot( gf, dir ), -trail, trail );
+        float rs = ( 0.003 + 0.006 * depth ) * scale;
 
-        float star = step( dens, h ) * smoothstep( 0.17, 0.02, length( dv ) );
+        float star = step( dens, h ) * smoothstep( rs, rs * 0.2, length( dv ) );
         float fade = sin( depth * Pi );
         float tw = 0.72 + 0.28 * sin( time * 3.0 + h * 40.0 ); // twinkle
         vec3  sc = mix( vec3( 0.95, 0.97, 1.08 ), imgPal( h * 6.0 ) * 1.5, 0.45 );

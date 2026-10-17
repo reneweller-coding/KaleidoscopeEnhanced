@@ -150,8 +150,10 @@ void main()
     // b: z -> -1/z + mu
     for ( int i = 0; i < 28; ++i )
     {
-        // Translation fold (generator a)
-        z.x = mod( z.x + 1.0, 2.0 ) - 1.0;
+        // Translation fold (generator a), as a mirror fold (17.10.2026): mod() jumped from +1 to -1 at every strip
+        // border, and those borders stood as hard, tilted edges across the picture.  The triangle wave folds the
+        // same strip continuously.
+        z.x = abs( mod( z.x + 1.0, 4.0 ) - 2.0 ) - 1.0;
 
         // Circle inversion fold (generator b)
         vec2 z_inv = cInv( z );
@@ -170,7 +172,7 @@ void main()
     }
 
     // Dynamic texture sample mapped to chaotic attractor coordinate
-    vec2 sample_uv = fract( z * 0.3 + 0.5 );
+    vec2 sample_uv = 1.0 - abs( 1.0 - 2.0 * fract( ( z * 0.3 + 0.5 ) * 0.5 ) ); // mirrored: no tile seams
     vec3 tex_col = img( sample_uv );
 
     // Glowing pearl necklace edge lines

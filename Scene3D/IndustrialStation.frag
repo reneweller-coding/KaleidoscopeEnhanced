@@ -130,19 +130,44 @@ float starsField( vec3 dir, float density )
  **/
 vec3 renderSky( vec3 dir )
 {
-    // Loose rock silhouettes (a lower-frequency fbm, hard-thresholded so it
-    // reads as chunky bodies rather than smooth cloud) drifting over a
-    // faint dust haze, plus stars showing through the gaps.
+    // Loose rocks drifting over a faint dust haze, plus stars showing through the gaps.
     float haze = fbm( dir * 1.6 );
     // The beat lives HERE now. The hulls hold still (their kick hops and
     // the camera's swell-dolly are gone), so the backgrounds carry the
     // music: a kick pulse on the dominant glow, sized to read clearly
     // without breaking the temporal budget's full-frame brightness cap.
-    vec3  col = vec3( 0.026, 0.024, 0.022 )
-                + vec3( 0.13, 0.115, 0.10 ) * haze * ( 0.80 + 0.25 * audioBass + 0.20 * audioKick );
-    float rock_field = fbm( dir * 9.0 );
-    float rocks = smoothstep( 0.56, 0.63, rock_field );
-    col += vec3( 0.34, 0.28, 0.23 ) * rocks * ( 0.6 + 0.4 * fbm( dir * 30.0 ) );
+    vec3 col = vec3( 0.026, 0.024, 0.022 )
+               + vec3( 0.13, 0.115, 0.10 ) * haze * ( 0.80 + 0.25 * audioBass + 0.20 * audioKick );
+    // The rocks (17.10.2026): round, lit bodies in two layers -- a hard threshold of an fbm drew flat tan blobs with
+    // the outline of camouflage, which read as stains on the sky, not as an asteroid field.  Each rock sits in one
+    // cell of a grid over the direction (small enough to stay inside it, so no neighbour search), with a ragged
+    // edge, a lit side toward the scene's sun and a dark side.
+    vec3  sun = normalize( vec3( 0.55, 0.35, -0.75 ) );
+    float rocks = 0.0;
+    for ( int L = 0; L < 2; ++L )
+    {
+        float K = ( L == 0 ) ? 11.0 : 23.0;
+        vec3  g = dir * K;
+        vec3  gi = floor( g );
+        float h = hash13( gi + float( L ) * 17.0 );
+        if ( h > 0.16 )
+            continue;
+        vec3 c = gi + 0.5 + ( vec3( hash13( gi + 3.1 ), hash13( gi + 5.7 ), hash13( gi + 8.3 ) ) - 0.5 ) * 0.3;
+        vec3 d = g - c;
+        d -= dir * dot( d, dir ); // across the line of sight
+        float r = ( 0.14 + 0.18 * hash13( gi + 11.9 ) ) * ( 0.85 + 0.3 * noise3( d * 7.0 + gi ) );
+        float cov = smoothstep( r, r * 0.82, length( d ) );
+        if ( cov <= 0.0 )
+            continue;
+        // A sphere's shading from the offset: the side toward the sun bright, the far side dark.
+        vec3  sp = sun - dir * dot( sun, dir );
+        float nz = sqrt( max( 1.0 - dot( d, d ) / ( r * r ), 0.0 ) );
+        float lit = clamp( dot( d / r, sp ) * 0.9 + 0.45 * nz, 0.0, 1.0 );
+        vec3  rock = vec3( 0.30, 0.26, 0.22 ) * ( 0.10 + 1.4 * lit ) * ( 0.75 + 0.5 * noise3( d * 16.0 + gi ) )
+                     * ( L == 0 ? 1.0 : 0.7 );
+        col = mix( col, rock, cov );
+        rocks = max( rocks, cov );
+    }
     col += vec3( 1.0 ) * starsField( dir, 0.0012 ) * ( 1.0 - rocks );
     return col;
 }
