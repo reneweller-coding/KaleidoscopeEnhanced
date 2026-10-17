@@ -356,9 +356,12 @@ float chainHue0()
  **/
 vec3 calmGlow( vec3 own, float dh )
 {
-    vec3 o = own / max( max( own.r, max( own.g, own.b ) ), 1e-3 );
-    vec3 g = hsv2rgb( vec3( fract( chainHue0() + dh ), 0.5 + 0.2 * clamp( audioSwell, 0.0, 1.0 ), 1.0 ) );
-    return mix( g, mix( vec3( dot( o, vec3( 0.333 ) ) ), o, 0.6 ), 0.3 );
+
+    float mx = max( own.r, max( own.g, own.b ) );
+    float s = ( mx - min( own.r, min( own.g, own.b ) ) ) / max( mx, 0.25 );
+    vec3  o = mix( vec3( 1.0 ), own / max( mx, 1e-3 ), clamp( s * 2.0, 0.0, 1.0 ) );
+    vec3  g = hsv2rgb( vec3( fract( chainHue0() + dh ), 0.5 + 0.2 * clamp( audioSwell, 0.0, 1.0 ), 1.0 ) );
+    return mix( g, o, 0.5 + 0.4 * smoothstep( 0.06, 0.3, s ) );
 }
 /**  Colour of a chain coordinate: the photo, shifted toward a hue that follows the music.
  *

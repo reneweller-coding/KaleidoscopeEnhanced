@@ -348,7 +348,7 @@ void main()
     float fsat = 0.38 + 0.22 * swell;
     vec3  field = hsv2rgb( vec3( fract( h ), fsat, 1.0 ) ) * ( 0.35 + 1.3 * m );
     vec3  photo = max( ( ph - m ) * 1.1 + m, 0.0 );
-    photo = mix( photo, field, 0.55 * clamp( paletteP, 0.0, 1.0 ) );
+    photo = mix( photo, field, 0.45 * clamp( paletteP, 0.0, 1.0 ) );
 
     float la = 0.1 * sceneTime;
     float relief = clamp( 0.5 + dot( grad, vec2( cos( la ), sin( la ) ) ) * 5.0, 0.0, 1.0 );
@@ -357,10 +357,14 @@ void main()
 
 
 
-    vec3  own = ph / max( max( ph.r, max( ph.g, ph.b ) ), 1e-3 );
-    vec3  gbase = hsv2rgb( vec3( fract( h0 + 0.08 * sin( 6.2831853 * cm.x ) ), 0.55 + 0.2 * swell, 1.0 ) );
-    vec3  gc = mix( gbase, mix( vec3( dot( own, vec3( 0.333 ) ) ), own, 0.6 ),
-                    0.35 * ( 1.0 - clamp( paletteP, 0.0, 1.0 ) ) );
+
+    vec3  phc = imgLod( cm, 5.0 );
+    float pmx = max( phc.r, max( phc.g, phc.b ) );
+    float psat = ( pmx - min( phc.r, min( phc.g, phc.b ) ) ) / max( pmx, 0.25 );
+    vec3  own = mix( vec3( 1.0 ), phc / max( pmx, 1e-3 ), clamp( psat * 2.0, 0.0, 1.0 ) );
+    vec3  gbase = hsv2rgb( vec3( fract( h ), 0.5 + 0.2 * swell, 1.0 ) );
+    float own_w = ( 0.5 + 0.4 * smoothstep( 0.06, 0.3, psat ) ) * ( 1.0 - 0.5 * clamp( paletteP, 0.0, 1.0 ) );
+    vec3  gc = mix( gbase, own, own_w );
     float edge = smoothstep( 0.01, 0.14, length( grad ) );
     vec3  neon = gc * edge * ( 1.6 + 1.6 * kick ) + photo * 0.22;
 

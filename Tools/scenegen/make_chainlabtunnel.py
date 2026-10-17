@@ -163,7 +163,7 @@ void main()
         // 1.5 turns per unit of the chain's coordinates, moderate saturation.
         float h = hueF + hueW * 0.13 * (0.6 * sin(6.2831853 * cm.x) + 0.4 * sin(6.2831853 * cm.y + 1.3)) + 0.03 * m0;
         vec3 field = hsv2rgb(vec3(fract(h), 0.38 + 0.22 * swell, 1.0)) * (0.35 + 1.3 * m0);
-        vec3 tex = mix(max((ph - m0) * 1.1 + m0, 0.0), field, 0.2 + 0.55 * clamp(paletteP, 0.0, 1.0));
+        vec3 tex = mix(max((ph - m0) * 1.1 + m0, 0.0), field, 0.15 + 0.45 * clamp(paletteP, 0.0, 1.0));
         vec3 lc = mix(vec3(0.75, 0.88, 1.1), vec3(1.12, 0.92, 0.72), mode);
         // A light travelling with the camera plus a slow circling key light.
         vec3 Lh = normalize(ro + vec3(0.0, 0.0, 1.5) - q);
@@ -176,7 +176,14 @@ void main()
         // Glowing crests: the relief's ridges light up in the palette colour.
         float crest = smoothstep(0.45, 0.85, hgt);
         float fres = pow(1.0 - abs(dot(n, -rd)), 3.0);
-        vec3 glow = hsv2rgb(vec3(fract(h), 0.55 + 0.2 * swell, 1.0)) * (crest * (0.6 + 1.2 * kick) + fres * 0.5);
+        // The crests glow in the photo's own colour (its broad colour, its own saturation over a brightness floor,
+        // full brightness), tinted by the field's hue where the photo is grey (17.10.2026).
+        vec3 phc = imgLod(c, lod + 4.5);
+        float pmx = max(phc.r, max(phc.g, phc.b));
+        float psat = (pmx - min(phc.r, min(phc.g, phc.b))) / max(pmx, 0.25);
+        vec3 own = mix(vec3(1.0), phc / max(pmx, 1e-3), clamp(psat * 2.0, 0.0, 1.0));
+        float ownW = (0.5 + 0.4 * smoothstep(0.06, 0.3, psat)) * (1.0 - 0.5 * clamp(paletteP, 0.0, 1.0));
+        vec3 glow = mix(hsv2rgb(vec3(fract(h), 0.5 + 0.2 * swell, 1.0)), own, ownW) * (crest * (0.6 + 1.2 * kick) + fres * 0.5);
         float st = clamp(styleP, 0.0, 1.0);
         vec3 sc = mix(surf + glow * 0.25 * (0.5 + kick), glow + surf * 0.55, smoothstep(0.35, 0.65, st));
         col = mix(fogC, sc, exp(-t * (0.07 + 0.03 * swell)));

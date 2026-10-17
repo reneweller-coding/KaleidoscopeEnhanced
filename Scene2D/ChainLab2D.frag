@@ -5208,7 +5208,7 @@ void main()
     float fsat = 0.38 + 0.22 * swell;
     vec3  field = hsv2rgb( vec3( fract( h ), fsat, 1.0 ) ) * ( 0.35 + 1.3 * m );
     vec3  photo = max( ( ph - m ) * 1.1 + m, 0.0 );
-    photo = mix( photo, field, 0.2 + 0.55 * clamp( paletteP, 0.0, 1.0 ) );
+    photo = mix( photo, field, 0.15 + 0.45 * clamp( paletteP, 0.0, 1.0 ) );
     // Relief: the chain's photo lit from a slowly circling light.
     float la = 0.1 * sceneTime;
     float relief = clamp( 0.5 + dot( grad, vec2( cos( la ), sin( la ) ) ) * 5.0, 0.0, 1.0 );
@@ -5216,12 +5216,19 @@ void main()
                      + vec3( 1.0 ) * pow( relief, 6.0 ) * ( 0.1 + 0.3 * swell + 0.35 * kick ); // the kick catches the
                                                                                                // highlights
     // Glowing edges: gradient magnitude as neon.
-    // The glow: the base hue, a little warmer or cooler along the chain, and the photo's own colour softened -- not
-    // the photo pushed to neon, nor the field's rainbow.
-    vec3  own = ph / max( max( ph.r, max( ph.g, ph.b ) ), 1e-3 );
-    vec3  gbase = hsv2rgb( vec3( fract( h0 + 0.08 * sin( 6.2831853 * cm.x ) ), 0.55 + 0.2 * swell, 1.0 ) );
-    vec3  gc = mix( gbase, mix( vec3( dot( own, vec3( 0.333 ) ) ), own, 0.6 ),
-                    0.35 * ( 1.0 - clamp( paletteP, 0.0, 1.0 ) ) );
+    // The glow takes the photo's own colour: its broad colour where the line runs (a coarse mip -- the colour of the
+    // region, not of every grain), at the photo's own saturation, brought up to full brightness, so the lines carry
+    // the colours the photo has (17.10.2026).  The chroma is measured over a brightness floor: brought up to full
+    // brightness, the noise of a dark patch would turn into strong random hues.  The old glow cubed the photo's
+    // colour into neon or took the rainbow field; the first calm version gave every line one hue.  Where the photo
+    // is grey the field's hue (the base hue with its soft swing) tints the glow; the palette knob leans it there.
+    vec3  phc = imgLod( cm, 5.0 );
+    float pmx = max( phc.r, max( phc.g, phc.b ) );
+    float psat = ( pmx - min( phc.r, min( phc.g, phc.b ) ) ) / max( pmx, 0.25 );
+    vec3  own = mix( vec3( 1.0 ), phc / max( pmx, 1e-3 ), clamp( psat * 2.0, 0.0, 1.0 ) );
+    vec3  gbase = hsv2rgb( vec3( fract( h ), 0.5 + 0.2 * swell, 1.0 ) );
+    float own_w = ( 0.5 + 0.4 * smoothstep( 0.06, 0.3, psat ) ) * ( 1.0 - 0.5 * clamp( paletteP, 0.0, 1.0 ) );
+    vec3  gc = mix( gbase, own, own_w );
     float edge = smoothstep( 0.01, 0.14, length( grad ) ); // lab audit: 0.02..0.25 left smooth chains nearly black
     vec3  neon = gc * edge * ( 1.6 + 1.6 * kick ) + photo * 0.22;
     // Isolines of the chain's luma: glowing contour lines.

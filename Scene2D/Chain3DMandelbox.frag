@@ -4077,7 +4077,8 @@ float chainHue0()
 {
     return hueP * 0.159 + 0.06 * audioPhase + 0.004 * sceneTime + 0.3 * clamp( audioMode, 0.0, 1.0 );
 }
-/**  A glow colour of the base hue with a little of the surface's own colour: the rims and the fog.
+/**  A glow colour for the rims and the fog: the surface's own colour (the photo's, at its own saturation) brought up
+ * to full brightness, tinted by the base hue where the surface is grey.
  *
  * @param own  The surface's own colour, a little of which the glow keeps. (in)
  * @param dh   Offset from the base hue, in turns. (in)
@@ -4085,13 +4086,17 @@ float chainHue0()
  * @return
  *   The glow colour (RGB).
  *
- * glowColour() ran an fbm hue field over the screen and cubed the photo's colour into neon.
+ * glowColour() ran an fbm hue field over the screen and cubed the photo's colour into neon; the first calm version
+ * (17.10.2026) gave every rim one hue.
  **/
 vec3 calmGlow( vec3 own, float dh )
 {
-    vec3 o = own / max( max( own.r, max( own.g, own.b ) ), 1e-3 );
-    vec3 g = hsv2rgb( vec3( fract( chainHue0() + dh ), 0.5 + 0.2 * clamp( audioSwell, 0.0, 1.0 ), 1.0 ) );
-    return mix( g, mix( vec3( dot( o, vec3( 0.333 ) ) ), o, 0.6 ), 0.3 );
+    // The chroma over a brightness floor: brought up to full brightness, a dark patch's noise would be a strong hue.
+    float mx = max( own.r, max( own.g, own.b ) );
+    float s = ( mx - min( own.r, min( own.g, own.b ) ) ) / max( mx, 0.25 );
+    vec3  o = mix( vec3( 1.0 ), own / max( mx, 1e-3 ), clamp( s * 2.0, 0.0, 1.0 ) );
+    vec3  g = hsv2rgb( vec3( fract( chainHue0() + dh ), 0.5 + 0.2 * clamp( audioSwell, 0.0, 1.0 ), 1.0 ) );
+    return mix( g, o, 0.5 + 0.4 * smoothstep( 0.06, 0.3, s ) );
 }
 /**  One plane: the photo through the chain, plus a colour field that follows the chain's own coordinates (mirrorUV
  * keeps it seamless at the atan cuts).

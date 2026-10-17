@@ -5634,3 +5634,13 @@ surface saturation raised 1.1, rims and fog in `calmGlow` (the base hue with a l
 the fog a neighbour of the surfaces' hue: across the picture 0.07 .. 0.17, over time 0.06 .. 0.13. The generators were
 checked first to reproduce the committed sources exactly (make_chains3d -> make_chainlab3d -> make_chainslice3d ->
 gen.py, which writes the chain passes too); make_chainlab3d now cuts the lab's main at the palette helpers.
+
+**The photo's colours back in the lines.** The first calm version gave every glowing edge, contour line and rim one
+hue -- calm, but monochrome, and the photos themselves are rarely colourful; the unrest came from the neon push.
+Now the glow takes the photo's own colour where the line runs: its broad colour (a coarse mip, level 5: the colour of
+the region, not of every grain), at the photo's own saturation, brought up to full brightness; the chroma measured over
+a brightness floor (0.25), because brought up to full brightness a dark patch's noise turns into strong random hues --
+the first try without it measured as restless as the original. Where the photo is grey, the field's hue tints the glow;
+the palette knob leans it there. The photo's share in the photo and relief looks rose too (field 0.15 .. 0.6, was
+0.2 .. 0.75). 2D lab measured: across the picture 0.05 .. 0.21 (edges 0.13, contour lines 0.20, flow 0.15; originally
+0.22, 0.17 .. 0.32, 0.33 .. 0.51), over time 0.05 .. 0.12. The 3D labs' rims and fog (`calmGlow`) the same way.
