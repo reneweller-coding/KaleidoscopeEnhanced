@@ -42,8 +42,9 @@ void main()
     float rn = 0.13 + 0.08 * clamp(nodeP, 0.0, 1.0);
     float rr = 0.02 + 0.03 * clamp(rodP, 0.0, 1.0);
     float s = 0.25 * sceneTime + 0.9 * audioAdvance;
-    vec3 dirF = normalize(vec3(1.0, 0.618, 0.382));
-    vec3 ro = dirF * s + vec3(0.5, 0.31, 0.17);
+    // the eye flies through the cells' middles, where no node or rod comes nearer than half a cell
+    vec3 dirF = vec3(1.0, 0.0, 0.0);
+    vec3 ro = vec3(s, 0.5 + 0.15 * sin(0.37 * s), 0.5 + 0.15 * cos(0.29 * s));
     float ya = 0.5 * sin(0.03 * sceneTime), pa = 0.3 * sin(0.023 * sceneTime);
     vec3 fw = normalize(dirF + vec3(sin(ya), sin(pa), 0.0) * 0.6);
     vec3 rt = normalize(cross(vec3(0.0, 1.0, 0.0), fw)), up = cross(fw, rt);

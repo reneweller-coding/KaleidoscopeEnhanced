@@ -57,7 +57,8 @@ vec4 stateStep()
         s2 = s + 1.0 >= n ? 0.0 : s + 1.0;
     }
     // a short arc of fire, with refractory cells on one side: its open ends curl into a pair of spirals -- on an
-    // onset, and every 400 steps by itself, so the field never runs out of spiral cores
+    // onset, and every 300 steps by itself (a multiple of the 30-step slot: 400 met it only every 1200), so the
+    // field never runs out of spiral cores
     float slot = floor(stateFrame / 30.0);
     vec2 at = vec2(hash11(slot * 3.17 + 0.3), hash11(slot * 5.91 + 0.7)) * stateRes;
     vec2 d = vec2(ip) - at;
@@ -65,7 +66,7 @@ vec4 stateStep()
     d = rot2(6.2831853 * hash11(slot * 1.37)) * d;
     bool arc = abs(d.x) < 14.0 && abs(d.y) < 1.5;
     bool behind = abs(d.x) < 14.0 && d.y < -1.5 && d.y > -6.0;
-    bool go = mod(stateFrame, 30.0) < 1.0 && (clamp(audioOnset, 0.0, 1.0) > 0.6 || mod(stateFrame, 400.0) < 1.0);
+    bool go = mod(stateFrame, 30.0) < 1.0 && (clamp(audioOnset, 0.0, 1.0) > 0.6 || mod(stateFrame, 300.0) < 1.0);
     if (go && arc) s2 = 1.0;
     if (go && behind) s2 = 2.0;
     bool firing = abs(s2 - 1.0) < 0.5;

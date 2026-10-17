@@ -640,6 +640,51 @@ vec2 stView( vec2 p, float zoom )
 {
     return ( p * zoom + vec2( 0.5 * stateRes.x / stateRes.y, 0.5 ) ) * stateRes.y;
 }
+/**  The photo carried by a flow, one step (state pass).
+ *
+ * @param vel    The fluid's displacement at this cell this step, in cells. (in)
+ * @param fresh  The share pulled back toward the plain photo this step. (in)
+ *
+ * @return
+ *   The new displacement (rg) and the carried b, a.
+ *
+ * The field's rg hold the displacement D = uv - x / H of the photo coordinate each cell shows: periodic where uv itself
+ * is not, so the torus has no seam.  Moving the fluid by vel gives D_new(x) = D(x - vel) - vel / H (traced back,
+ * linearly filtered); fresh pulls it back toward the plain photo.  b and a travel along with the fluid.
+ **/
+vec4 stCarry( vec2 vel, float fresh )
+{
+    vec4 c = stLin( vec2( stCell() ) + 0.5 - vel );
+    c.rg = ( c.rg - vel / stateRes.y ) * ( 1.0 - fresh );
+    return c;
+}
+/**  The photo coordinate the frame shows at a field coordinate (a field carried by stCarry()).
+ *
+ * @param cc  The coordinate in cells. (in)
+ *
+ * @return
+ *   The photo coordinate.
+ **/
+vec2 stUV( vec2 cc )
+{
+    return cc / stateRes.y + stLin( cc ).rg;
+}
+/**  The mip level for a carried photo: how much the map stretches one screen pixel (strands finer than a pixel are
+ * averaged, not aliased).
+ *
+ * @param cc      The coordinate in cells. (in)
+ * @param cellPx  Screen pixels per cell. (in)
+ *
+ * @return
+ *   The mip level, 0..6.
+ **/
+float stLod( vec2 cc, float cellPx )
+{
+    vec2 d0 = stLin( cc ).rg;
+    vec2 ux = stLin( cc + vec2( 1.0, 0.0 ) ).rg - d0 + vec2( 1.0 / stateRes.y, 0.0 );
+    vec2 uy = stLin( cc + vec2( 0.0, 1.0 ) ).rg - d0 + vec2( 0.0, 1.0 / stateRes.y );
+    return clamp( log2( max( max( length( ux ), length( uy ) ) * 1024.0 / max( cellPx, 1e-3 ), 1.0 ) ), 0.0, 6.0 );
+}
 
 /**  The number of states: resting, firing and the refractory ones.
  *
@@ -693,7 +738,8 @@ vec4 stateStep()
         s2 = s + 1.0 >= n ? 0.0 : s + 1.0;
     }
     // a short arc of fire, with refractory cells on one side: its open ends curl into a pair of spirals -- on an
-    // onset, and every 400 steps by itself, so the field never runs out of spiral cores
+    // onset, and every 300 steps by itself (a multiple of the 30-step slot: 400 met it only every 1200), so the
+    // field never runs out of spiral cores
     float slot = floor( stateFrame / 30.0 );
     vec2  at = vec2( hash11( slot * 3.17 + 0.3 ), hash11( slot * 5.91 + 0.7 ) ) * stateRes;
     vec2  d = vec2( ip ) - at;
@@ -702,7 +748,7 @@ vec4 stateStep()
     bool arc = abs( d.x ) < 14.0 && abs( d.y ) < 1.5;
     bool behind = abs( d.x ) < 14.0 && d.y < -1.5 && d.y > -6.0;
     bool go = mod( stateFrame, 30.0 ) < 1.0
-              && ( clamp( audioOnset, 0.0, 1.0 ) > 0.6 || mod( stateFrame, 400.0 ) < 1.0 );
+              && ( clamp( audioOnset, 0.0, 1.0 ) > 0.6 || mod( stateFrame, 300.0 ) < 1.0 );
     if ( go && arc )
         s2 = 1.0;
     if ( go && behind )
