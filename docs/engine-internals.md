@@ -5756,3 +5756,9 @@ The probe used to start the editor once per space class -- twenty windows in a r
 command-line render now shows its window off the screen, without a taskbar button and without taking the focus, and
 the probe is one render.
 
+**KifsTetra calmer.** The Sierpinski tetrahedron ran four rounds of folds (sixteen-fold detail, the blocks at half
+size besides) and textured every block with the chain at its own folded coordinates -- a restless rubble of striped
+blocks. Compared on six rolls: three rounds (larger blocks), three rounds at a world scale of 1.4 (closer), the
+texture taken before the folds (one photo laid over the whole structure), both. Taken: three rounds and the
+continuous texture -- readable blocks, calm faces.
+

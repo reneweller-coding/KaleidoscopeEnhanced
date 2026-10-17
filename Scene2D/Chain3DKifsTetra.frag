@@ -6,8 +6,8 @@
  *
  *  @brief
  *  CHAIN3DKIFSTETRA: a raymarched world built from a chain of continuous 3D space transforms -- a
- *  Sierpinski-tetrahedron fractal: tetrahedral mirror folds, a turning axis and a doubling scale, repeated six
- *  times.
+ *  Sierpinski-tetrahedron fractal: tetrahedral mirror folds, a turning axis and a doubling scale, repeated three
+ *  times, the photo laid over the whole structure (17.10.2026: four rounds and a texture per block were restless).
  *
  *  We fly slowly through it; the surfaces are textured with the photograph read through a 2D transform chain of its
  *  own (triplanar), lit and fogged. Every stage is continuous, so the structure morphs without jumps. Endless,
@@ -4054,13 +4054,14 @@ float field3( vec3 p )
 {
     p = fScale( p, 0.45, vec3( 0.0 ) );
     p = fRepeat( p, vec3( 1.3 ) );
-    for ( int i = 0; i < 4; ++i )
+    vec3 p0 = p;
+    for ( int i = 0; i < 3; ++i )
     {
         p = fTetra( p );
         p = fRot( p, vec3( 1.0, 1.0, 0.0 ), gRot );
         p = fScale( p, 2.0, vec3( 1.0 ) );
     }
-    gP = p * 0.3;
+    gP = p0 * 1.2;
     return sdBox3( p, vec3( 1.1 + 0.3 * gSpread ) ) / gDR;
 }
 /**  The surface colouring: a 2D chain of its own, applied triplanarly.

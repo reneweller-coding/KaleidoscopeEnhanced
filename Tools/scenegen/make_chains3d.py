@@ -3,10 +3,10 @@
 import io, os
 SP = os.path.dirname(os.path.abspath(__file__))
 SPECS = [
- ("Chain3DKifsTetra", "a Sierpinski-tetrahedron fractal: tetrahedral mirror folds, a turning axis and a doubling scale, repeated six times",
-  ["p = fScale(p, 0.45, vec3(0.0));", "p = fRepeat(p, vec3(1.3));",
-   "for (int i = 0; i < 4; ++i) { p = fTetra(p); p = fRot(p, vec3(1.0, 1.0, 0.0), gRot); p = fScale(p, 2.0, vec3(1.0)); }",
-   "gP = p * 0.3;", "return sdBox3(p, vec3(1.1 + 0.3 * gSpread)) / gDR;"]),
+ ("Chain3DKifsTetra", "a Sierpinski-tetrahedron fractal: tetrahedral mirror folds, a turning axis and a doubling scale, repeated three times, the photo laid over the whole structure (17.10.2026: four rounds and a texture per block were restless)",
+  ["p = fScale(p, 0.45, vec3(0.0));", "p = fRepeat(p, vec3(1.3));", "vec3 p0 = p;",
+   "for (int i = 0; i < 3; ++i) { p = fTetra(p); p = fRot(p, vec3(1.0, 1.0, 0.0), gRot); p = fScale(p, 2.0, vec3(1.0)); }",
+   "gP = p0 * 1.2;", "return sdBox3(p, vec3(1.1 + 0.3 * gSpread)) / gDR;"]),
  ("Chain3DMandelbox", "a Mandelbox: box folds and sphere folds repeated six times, its scale breathing slowly",
   ["p = fRepeat(p, vec3(3.0));", "vec3 p0 = p;", "float sc = -1.8 + 0.25 * sin(gRot);",
    "for (int i = 0; i < 6; ++i) { p = fBox(p, 1.0); p = fSphere(p, 0.5, 1.0); p = fScale(p, sc, -p0); gDR += 1.0; }   // 8 rounds: 38 fps",
