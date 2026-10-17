@@ -14,10 +14,10 @@ tube, the thinning, the near carve) exactly as the lab marches.  Per world:
   dark   the largest miss share of one camera position -- a stretch of the flight in nothing but haze (the worlds
          rolled round the flight axis march to a standstill where the path comes near the axis)
 
-poorness = max(miss, bump, dark - 0.25); a world is poor above 0.5 (checked against 24 rolls looked at by eye,
-17.10.2026: the empty, dark ones had miss 0.41 .. 0.83, the carpets bump 0.35 .. 0.75; the corridors, blob fields and
-crystals 0 .. 0.34).  EffectShader keeps the lab off the poor worlds when it rolls one -- preferring a replacement
-clearly below (0.35) -- or walks to one (KALEIDO_NO_WORLD_FILTER switches that off).
+poorness = max(miss, bump, dark - 0.25).  Against 48 rolls looked at by eye (17.10.2026: 19 poor, 16 good) the
+line 0.4 caught 16 of the poor ones and moved 4 good ones (0.5: 12 and 2) -- 57 % of the worlds lie above it.
+EffectShader keeps the lab off them (WorldLine 0.4) when it rolls one -- preferring a replacement clearly below
+(WorldClear 0.3) -- or walks to one (KALEIDO_NO_WORLD_FILTER switches that off).
 
 The whole probe is one PresetEditor --render (a 22 x 440 frame, every pixel a world; the editor's
 command-line render shows no window on the screen and takes no focus).  Positions are the energy order of the classes
@@ -36,7 +36,7 @@ from PIL import Image
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, "Engine", "chain3d_worlds.tsv")
 NS, NC, NB = 20, 22, 22
-POOR = 0.5
+POOR = 0.4
 
 PROBE = r"""
 float gXs, gXc, gXb;

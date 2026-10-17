@@ -5787,3 +5787,9 @@ and the walk of the 3D lab's world filter now serve both (stages A..D for ChainL
 opening; `KALEIDO_NO_CHAIN_FILTER`). It flags 6.3 % of the chains, about half of them poor, and catches 71 % of the
 poor ones; a wrong catch only moves one stage. Over six seeds the app moved four chains.
 
+**The 3D line checked again.** 24 fresh rolls, rolled and as the filter shows them: 11 moved, nine of them visibly
+better (a black frame became a red tunnel with holes, a grey carpet coral), two about the same; but poor rolls slipped
+through just below the line (0.38 .. 0.48). Over all 48 rolls looked at (19 poor, 16 good): the line 0.5 caught 12 poor
+ones and moved 2 good ones, 0.4 caught 16 and moved 4 -- a good world moved only meets another good one. The 3D line is
+now 0.4 (`WorldLine`, clearly good below 0.3), 57 % of the worlds above it; the flat labs keep 0.5.
+

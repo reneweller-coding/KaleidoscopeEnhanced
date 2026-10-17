@@ -1463,6 +1463,10 @@ static const char *kWalkKnob[9] = { "chainAP", "chainBP", "chainCP", "chainDP", 
 /** The walk uniform of each stage (shown, target, fade). */
 static const char *kWalkUni[9] = { "walkA", "walkB", "walkC", "walkD", "walkS",
                                    "walkSpace", "walkCore", "walkBody", "walkO" };
+/** Where a lab's roll counts as poor (worldPoorness(), chainPoorness()) and where clearly good: the 3D lab's line
+ * set on 48 rolls looked at by eye (0.4: 16 of 19 poor ones caught, 4 of 16 good ones moved -- 0.5 caught 12), the
+ * flat labs' line on the 2D probe (Tools/chain2d_probe.py). */
+static const float WorldLine = 0.4f, WorldClear = 0.3f, ChainLine = 0.5f, ChainClear = 0.35f;
 /** Short stage names for the log. */
 static const char *kWalkName[9] = { "A", "B", "C", "D", "look", "space", "core", "body", "order" };
 /**  Whether walk stage s is a structure stage (space, core, body) of the 3D labs.
@@ -1610,8 +1614,8 @@ void EffectShader::resetChainWalk()
     // carpet from its camera (worldPoorness(), structure stages 5..7), the flat labs off chains that turn the photo
     // into mush or a blur (chainPoorness(), stages A..D).  A poor roll moves one stage to another class in the
     // entry's range, tried in an order hashed from the rolled knobs (no draw from the scene's random stream): the
-    // first roll clearly good (below 0.35), else the best one tried, if it is not poor.  (The first one just below
-    // 0.5 often still read as carpet.)  A chain stage never moves onto an opening (the rule above).
+    // first roll clearly good (WorldClear, ChainClear), else the best one tried, if it is not poor.  (The first one
+    // just below the line often still read as carpet.)  A chain stage never moves onto an opening (the rule above).
     {
         float    x[9] = {};
         Uniform *k[9] = {};
@@ -1622,20 +1626,16 @@ void EffectShader::resetChainWalk()
                     k[s] = u;
                     x[s] = u->snapshotValue();
                 }
-        auto poorness = [this]( const float *v )
+        const float wp = worldPoorness( x ), cp = chainPoorness( x );
+        const bool  world = wp > WorldLine; // which stages can help: the world's or the chain's
+        if ( world || cp > ChainLine )
         {
-            const float w = worldPoorness( v ), c = chainPoorness( v );
-            return w > c ? w : c;
-        };
-        const float before = poorness( x );
-        if ( before > 0.5f )
-        {
-            float rolled[9];
+            const float before = world ? wp : cp, clear = world ? WorldClear : ChainClear;
+            float       rolled[9];
             for ( int s = 0; s < 9; ++s )
                 rolled[s] = x[s];
-            const bool world = worldPoorness( x ) > 0.5f; // which stages can help: the world's or the chain's
-            int        best_s = -1;
-            float      best_v = 0.f, best_p = 0.5f;
+            int   best_s = -1;
+            float best_v = 0.f, best_p = world ? WorldLine : ChainLine;
             for ( int i = 1; i <= 120; ++i )
             {
                 const int s = world ? 5 + i % 3 : i % 4;
@@ -1647,7 +1647,7 @@ void EffectShader::resetChainWalk()
                                 43758.5453f;
                 const float v = m_walkLo[s] + ( m_walkHi[s] - m_walkLo[s] ) * ( h - floorf( h ) );
                 x[s] = v < 0.999f ? v : 0.999f;
-                const float p = ( s < 4 && opensAt( s, x[s] ) ) ? 1.f : poorness( x );
+                const float p = ( s < 4 && opensAt( s, x[s] ) ) ? 1.f : ( world ? worldPoorness( x ) : chainPoorness( x ) );
                 if ( p < best_p )
                 {
                     best_s = s;
@@ -1655,7 +1655,7 @@ void EffectShader::resetChainWalk()
                     best_p = p;
                 }
                 x[s] = rolled[s];
-                if ( best_p < 0.35f )
+                if ( best_p < clear )
                     break;
             }
             if ( best_s >= 0 )
@@ -1869,8 +1869,8 @@ void EffectShader::stepChainWalk( const AudioFeatures &audio )
         }
         return c[2];
     };
-    // The labs walk only to good rolls (worldPoorness(), chainPoorness() up to 0.5): a structure or chain target
-    // that would make a poor one is drawn again, a dozen times at most.
+    // The labs walk only to good rolls (worldPoorness() up to WorldLine, chainPoorness() up to ChainLine): a
+    // structure or chain target that would make a poor one is drawn again, a dozen times at most.
     auto pick_for = [&]( int s )
     {
         float v = pick_one( s );
@@ -1882,7 +1882,7 @@ void EffectShader::stepChainWalk( const AudioFeatures &audio )
         for ( int i = 0; i < 12; ++i )
         {
             x[s] = v;
-            if ( ( isStructure( s ) ? worldPoorness( x ) : chainPoorness( x ) ) <= 0.5f )
+            if ( isStructure( s ) ? worldPoorness( x ) <= WorldLine : chainPoorness( x ) <= ChainLine )
                 break;
             v = pick_one( s );
         }

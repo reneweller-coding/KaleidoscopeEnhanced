@@ -1282,7 +1282,8 @@ protected:
     float closedClass( int s, float x ) const;
     /**  How poor the 3D lab's world at the structure knob values looks from the lab's camera: its share of rays
      * into the haze, its share of pixels on a fine-grained carpet, or a stretch of the flight in haze, whichever is
-     * worst (Engine/chain3d_worlds.tsv, measured by Tools/chain3d_world_probe.py); above 0.5 the world counts as poor.
+     * worst (Engine/chain3d_worlds.tsv, measured by Tools/chain3d_world_probe.py); above 0.4 (WorldLine) the world
+     * counts as poor.
      *
      * @param x  Knob value per walk stage, as m_walk.x0; only the structure stages 5..7 are read. (in)
      *

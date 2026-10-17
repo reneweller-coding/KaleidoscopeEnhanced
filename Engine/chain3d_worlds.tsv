@@ -1,5 +1,5 @@
 # The 3D chain lab's worlds as its camera sees them (Tools/chain3d_world_probe.py; read by EffectShader).
-# space core body (positions in the energy order), poorness = max(miss, bump, dark - 0.25) (poor above 0.50),
+# space core body (positions in the energy order), poorness = max(miss, bump, dark - 0.25) (poor above 0.40),
 # miss (share of rays into the haze), bump (share of neighbour pixels whose surface turns more than 37
 # degrees), dark (the largest miss share of one camera position).
 0	0	0	0.314	0.314	0.051	0.498
