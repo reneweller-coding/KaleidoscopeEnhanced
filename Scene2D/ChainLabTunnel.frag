@@ -4748,7 +4748,7 @@ void main()
         // The hue follows the chain's coordinates -- but not where they change
         // faster than a pixel (that would be colour noise): fade by the footprint.
         float hue_w = clamp( 1.0 - ( log2( max( max( fx, fy ) * 1024.0, 1.0 ) ) - 3.0 ) / 3.0, 0.0, 1.0 );
-        // Calm colours, as in the 2D lab (18.10.2026): a soft swing of +-0.13 turns round the base hue instead of
+        // Calm colours, as in the 2D lab (17.10.2026): a soft swing of +-0.13 turns round the base hue instead of
         // 1.5 turns per unit of the chain's coordinates, moderate saturation.
         float h = hue_f + hue_w * 0.13 * ( 0.6 * sin( 6.2831853 * cm.x ) + 0.4 * sin( 6.2831853 * cm.y + 1.3 ) )
                   + 0.03 * m0;

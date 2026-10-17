@@ -57,7 +57,7 @@ void main()
     vDrum = is_drum ? 1.0 : 0.0;
     vTurn = time * Rate;
 
-    float      sz = 19.0 * ( sizeP > 0.01 ? sizeP : 1.0 ); // 19 (18.10.2026): at 14 the drum and its trace were small
+    float      sz = 19.0 * ( sizeP > 0.01 ? sizeP : 1.0 ); // 19 (17.10.2026): at 14 the drum and its trace were small
     float      mx_b = max( meshExtent.x, max( meshExtent.y, meshExtent.z ) );
     vec3       base_half = meshExtent / mx_b * sz;
     const mat3 turn_m = mat3( -1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, -1.0 );

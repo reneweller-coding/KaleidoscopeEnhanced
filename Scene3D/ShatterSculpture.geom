@@ -200,7 +200,7 @@ void main()
         // triangle about its own centre would shear the chunk apart again
         // and undo the grouping.
         vec3 p = cell_mid + shard_spin * ( gPos[i] - cell_mid ) + offset;
-        vec3 w = disp * ( p * ( 42.0 * sz ) ); // 42 (18.10.2026): at 30 the statue stood small in the dark
+        vec3 w = disp * ( p * ( 42.0 * sz ) ); // 42 (17.10.2026): at 30 the statue stood small in the dark
         w.z += 82.0;
 
         vUV = gUV[i];

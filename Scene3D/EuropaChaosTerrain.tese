@@ -129,7 +129,7 @@ void main()
     vec2 xz = vec2( ( uv.x - 0.5 ) * Extent.x, uv.y * Extent.y + 3.0 );
 
     float clock = sceneAdvance * 0.3 + sceneTime * 0.06;
-    // A slow glide over the ice, on time alone (18.10.2026): the terrain stood still, only the rafts drifted.  The
+    // A slow glide over the ice, on time alone (17.10.2026): the terrain stood still, only the rafts drifted.  The
     // grid stays with the camera, the surface it samples slides toward it.
     vec2  fly = vec2( 0.0, sceneTime * 1.1 );
     vec2  sx = xz + fly;

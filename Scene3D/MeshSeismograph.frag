@@ -132,7 +132,7 @@ float seamW( float a )
 vec3 renderSky( vec3 dir )
 {
     float swell = clamp( audioSwell, 0.0, 1.0 );
-    // The lamp at 0.75 .. 1.25 with the swell (18.10.2026): from 0.45 the object stood dim on a dark floor in quiet
+    // The lamp at 0.75 .. 1.25 with the swell (17.10.2026): from 0.45 the object stood dim on a dark floor in quiet
     // music.
     float lamp = 0.75 + 0.5 * swell;
     vec3  col;
@@ -174,7 +174,7 @@ void main()
     float hue = ( hueP > 0.01 ? hueP : 0.0 );
     float swell = clamp( audioSwell, 0.0, 1.0 );
     float kick = clamp( audioKick, 0.0, 1.0 );
-    // The lamp at 0.75 .. 1.25 with the swell (18.10.2026): from 0.45 the object stood dim on a dark floor in quiet
+    // The lamp at 0.75 .. 1.25 with the swell (17.10.2026): from 0.45 the object stood dim on a dark floor in quiet
     // music.
     float lamp = 0.75 + 0.5 * swell;
     bool  drum = vDrum > 0.5;
@@ -231,7 +231,7 @@ void main()
         float x_pen = -0.70 + 1.40 * slow;
         float wiggle = ( e - 0.12 ) * 0.35 * sin( since * 9.0 + phi * 3.0 )
                        + ( fine - 0.1 ) * 0.12 * sin( since * 31.0 );
-        // The line a little wider (18.10.2026): at 0.010 .. 0.022 of the drum's length it was one pixel at 720p.
+        // The line a little wider (17.10.2026): at 0.010 .. 0.022 of the drum's length it was one pixel at 720p.
         float ink = 1.0 - smoothstep( 0.016, 0.034, abs( vLocal.x - ( x_pen + wiggle ) ) );
         ink *= paper * smoothstep( 0.0, 0.06, age01 );
         // Older revolutions: the faint helix of earlier traces.

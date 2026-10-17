@@ -141,7 +141,7 @@ void main()
     float R = 6.0 + 4.0 * clamp( radiusP, 0.0, 1.0 );    // eye radius (world units)
     float tilt = 0.15 + 0.25 * clamp( tiltP, 0.0, 1.0 ); // the wall leans outward
     float wall_h = ( 5.0 + 5.0 * clamp( radiusP, 0.0, 1.0 ) ) * ( 0.7 + 0.6 * clamp( audioSwell, 0.0, 1.0 ) );
-    float rot = sceneAdvance * 0.12 + sceneTime * 0.06; // 0.06 (18.10.2026): the eye wall all but stood
+    float rot = sceneAdvance * 0.12 + sceneTime * 0.06; // 0.06 (17.10.2026): the eye wall all but stood
     float bass = clamp( audioBass, 0.0, 1.0 );
 
     // Camera at the eye centre, 1.5 units above the sea, looking +z; a ray

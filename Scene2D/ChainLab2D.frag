@@ -5197,7 +5197,7 @@ void main()
     // Colour field: follows the chain's own (mirrored, hence seamless) coordinates
     // and wanders with the music; the photo's luma keeps the detail.
     vec2 cm = gChainM; // the one chain evaluation (imgChain)
-    // Calm colours (18.10.2026): the hue ran through 0.9 + 0.6 turns per unit of the chain's coordinates, plus a
+    // Calm colours (17.10.2026): the hue ran through 0.9 + 0.6 turns per unit of the chain's coordinates, plus a
     // quarter turn with the photo's luma, at 0.6 .. 0.95 saturation -- in a kaleidoscope or a tiling every cell the
     // whole rainbow, and the edges and contour lines took it on as neon.  Measured against the catalogue: 95 % of
     // the pixels coloured (catalogue median 47 %), the hue changing 2 .. 5 times as fast across the picture.  Now one

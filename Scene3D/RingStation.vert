@@ -76,7 +76,7 @@ void main()
         // sizeP then nudges it per-instance (megastructures bigger, outposts smaller).
         float sz = ( sizeP > 0.01 ? sizeP : 1.0 );
         // 44 units on the hull's longest side, measured without the generator's threads (meshExtent), centred
-        // (18.10.2026): at 32 on the raw box a station filled about a sixth of the frame's height, less where
+        // (17.10.2026): at 32 on the raw box a station filled about a sixth of the frame's height, less where
         // threads had stretched the box.
         float fit = 0.5 / max( max( meshExtent.x, meshExtent.y ), meshExtent.z );
         vec3  local = ( attrA.xyz - meshCenter ) * ( 44.0 * sz * fit );

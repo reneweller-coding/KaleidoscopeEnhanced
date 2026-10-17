@@ -186,7 +186,7 @@ vec4 ghost( vec2 p )
     float d = max( m.x - w, y - 0.44 ) - 0.03;
     d = smin( d, sdSeg( m, vec2( 0.0, 0.44 ), vec2( 0.0, 0.56 ) ) - 0.045, 0.04 );       // neck
     d = smin( d, length( ( hu - vec2( 0.0, 0.66 ) ) * vec2( 1.0, 0.88 ) ) - 0.1, 0.03 ); // head
-    // The dancer dances (18.10.2026): she held one pose, arms raised, for the whole scene.  Each arm sweeps slowly
+    // The dancer dances (17.10.2026): she held one pose, arms raised, for the whole scene.  Each arm sweeps slowly
     // about its shoulder, the elbow bends, the two arms out of step; the turn and the sway carry the rest.
     float side_ph = ( hu.x > 0.0 ) ? 0.0 : 2.1;
     float sw = 0.38 * sin( gT * 0.42 + side_ph ) + 0.12 * sin( gT * 0.23 + side_ph * 1.7 );

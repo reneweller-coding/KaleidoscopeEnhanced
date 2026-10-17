@@ -200,7 +200,7 @@ void main()
         float funnel_r = ( 0.25 + 0.35 * pow( max( y + 1.0, 0.0 ), 1.2 ) ) * trn + 0.1 * audioBass;
 
         // Upward vortex motion: the noise is sampled in a frame that twists with the height and turns with time --
-        // the same swirl as theta * 2 + y * 2 - t * 6, without the angle's cut (18.10.2026: the noise of atan()
+        // the same swirl as theta * 2 + y * 2 - t * 6, without the angle's cut (17.10.2026: the noise of atan()
         // stood as a seam down the funnel).
         float tw = y - t * 3.0;
         vec2  q = mat2( cos( tw ), sin( tw ), -sin( tw ), cos( tw ) ) * p.xz;
@@ -233,14 +233,14 @@ void main()
     fire_color = mix( fire_color, vec3( 1.0, 0.92, 0.78 ),
                       0.6 * smoothstep( 0.55, 1.0, flame_i * ( 0.8 + 0.2 * ht ) + 0.25 * audioKick ) );
 
-    // Combine visualizer.  The fire leads (18.10.2026): the photo at 0.7 filled the frame and the flame, at its
+    // Combine visualizer.  The fire leads (17.10.2026): the photo at 0.7 filled the frame and the flame, at its
     // accumulated density, was a faint tint over it -- the whirl did not read as fire.  The photo is a dim, smoky
     // ground now and the flame stronger, saturating.
     vec3 col = mix( photo * 0.22, vec3( 0.05, 0.035, 0.03 ), clamp( accum_smoke * 0.8, 0.0, 1.0 ) );
     col += flame_i * fire_color * ( 1.5 + audioSwell * 0.6 );
 
     // Rising ember sparks
-    // Sparks around the funnel only, rising, brighter on the kick (18.10.2026): a fourth power of a coarse fbm at
+    // Sparks around the funnel only, rising, brighter on the kick (17.10.2026): a fourth power of a coarse fbm at
     // kick x 3 lit glowing blobs over the whole frame on every beat -- a full-frame flicker.
     float ember_f = fireFBM( vec3( uv.x * 22.0, uv.y * 14.0 - t * 5.0, t * 1.5 ) );
     float embers = smoothstep( 0.62, 0.78, ember_f ) * exp( -abs( uv.x ) * 3.5 )

@@ -25,7 +25,7 @@ void main()
     float bass = clamp(audioBass, 0.0, 1.0);
     float hi = clamp(audioHigh * 1.5, 0.0, 1.0);
     float rough = clamp(audioRoughness, 0.0, 1.0);
-    float T = 0.12 * sceneTime + 0.4 * audioAdvance; // 0.12 (18.10.2026): at 0.05 the honey stood still
+    float T = 0.12 * sceneTime + 0.4 * audioAdvance; // 0.12 (17.10.2026): at 0.05 the honey stood still
     float mode = clamp(audioMode, 0.0, 1.0);
     vec3 thin = mix(vec3(1.0, 0.72, 0.22), vec3(1.0, 0.88, 0.5), mode);
     vec3 thick = mix(vec3(0.3, 0.09, 0.01), vec3(0.6, 0.3, 0.04), mode);

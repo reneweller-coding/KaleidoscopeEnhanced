@@ -52,7 +52,7 @@ NOSE = {
     "LsvZealot.glb": (-1, None),
     # Two engine tubes at one end, the sloped cockpit at the other.
     "SchwererBegleitjaeger.glb": (-1, None),
-    # From the textured end views (Tools/model_orient.py --views and the ship sheets, 18.10.2026): the engines lead.
+    # From the textured end views (Tools/model_orient.py --views and the ship sheets, 17.10.2026): the engines lead.
     # A cluster of eight protruding tubes at the end the taper rule chose -- the sister ship UnionCruiserNorway
     # carries the same tubes at its stern, its bow a raked stem.
     "UnionDestroyer.glb": (-1, None),
@@ -71,7 +71,7 @@ NOSE = {
 # Turns in the craft frame after the measurement, where the hull is not a plain length: rows of a rotation.
 POSE = {
     # An arch, its legs down, lying along the course: turned a quarter about the beam so the legs point ahead --
-    # a crescent flying horns first, like its sister LsvZealot (asked for 18.10.2026).
+    # a crescent flying horns first, like its sister LsvZealot (asked for 17.10.2026).
     "LsvPureIntent.glb": ((1.0, 0.0, 0.0), (0.0, 0.0, 1.0), (0.0, -1.0, 0.0)),
 }
 

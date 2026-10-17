@@ -887,7 +887,7 @@ void Scene3DShader::buildGeometry()
             }
         }
         // A model with generator threads: its box without them -- what the rules miss of a dense curtain set the box,
-        // and every scene sized the model by it, too small (18.10.2026).
+        // and every scene sized the model by it, too small (17.10.2026).
         if ( const ModelOrient *o = findModelOrient( m_modelPath ); o && o->threads >= 1.f )
             for ( int c = 0; c < 3; ++c )
             {

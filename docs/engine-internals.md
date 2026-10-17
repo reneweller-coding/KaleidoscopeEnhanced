@@ -5575,7 +5575,7 @@ rotation phase what a long show gathers).
   toward it (the yaw's sign), and every docking station spun about its object Z -- TradePromenadeStation's cylinder
   and MegastructureCentralHub's ring (round about Y) turned end over end. The stations take `spinAxisP` now;
   HyperspaceRelayStation (a box) no longer spins, DoubleRingResearchStation spins about its rings' axis (Z, not Y).
-- **Oriented by looking (18.10.2026).** The rules (main axis, taper) were wrong for ten craft, which flew engines first.
+- **Oriented by looking (17.10.2026).** The rules (main axis, taper) were wrong for ten craft, which flew engines first.
   Each craft of the ship scenes was looked at in textured views of its craft frame -- side, top, bow and stern --
   and decided by its engines (nozzle clusters, exhaust rings, glowing cones trail), its bow (spikes, raked stems,
   bulbous bows, scoops, windshields lead) and its family (UnionDestroyer carries the stern tubes of its sister
@@ -5608,7 +5608,7 @@ rotation phase what a long show gathers).
   once in three minutes: her arms now sweep and bend about the shoulders, out of step, and she turns once a minute.
   HoneyFold (0.05 -> 0.12), EpoxyWaves (0.15 -> 0.3) and HurricaneEyeWall (0.025 -> 0.06) run faster on time.
 
-## 18.10.2026 (20): a calmer chain lab
+## 17.10.2026 (20): a calmer chain lab
 
 The 2D chain lab looked too colourful and too fast in its colours, against the rest of the program -- most of all
 in relief, glowing edges and contour lines. Measured (Tools-free, a scratch script: pinned looks x two palettes x
