@@ -188,7 +188,7 @@ Bilder / Photos
 
 Dieser Ordner ist absichtlich leer. Er ist die eingestellte Bilderquelle des
 Programms -- die Szenen, die Fotos verarbeiten (Kaleidoskope, Spiegelungen,
-Galerie, Foto-Tunnel ...), holen ihr Material von hier.
+Foto-Tunnel, Cinematic ...), holen ihr Material von hier.
 
 Mitgeliefert wird ein Satz von 977 lizenzfreien, eigens erzeugten Texturen
 (1024x1024, quadratisch, vollflaechig -- also ohne Motivrand, der beim
@@ -250,13 +250,6 @@ foreach ($f in @(Get-ChildItem $pkgPresets -File -Recurse)) {
         Remove-Item $f.FullName -Force
     }
 }
-# The review bench (TestAlle) analyses its own silent track instead of
-# listening; the preset names ..\Tools\review128.wav, so the package needs
-# exactly that file at exactly that spot. Without it the engine now falls
-# back to live capture with a warning -- but shipping 2.8 MB is better than
-# shipping a bench that behaves differently from the developer's.
-New-Item -ItemType Directory -Force (Join-Path $pkgDir "Tools") | Out-Null
-Copy-Item (Join-Path $root "Tools\review128.wav") (Join-Path $pkgDir "Tools")
 if (Test-Path (Join-Path $root "icon.png")) {
     Copy-Item (Join-Path $root "icon.png") $pkgDir
 }

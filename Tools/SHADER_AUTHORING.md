@@ -839,9 +839,9 @@ Kaleidoscope.exe -c MeshSweep -x <wav> -l -t 0
 ```
 
 Die Config wird hier ERZEUGT und ist absichtlich nicht eingecheckt: sie ist ein
-Wegwerf-Filter fuer genau eine Durchsicht. Wer den ganzen Katalog der Reihe nach
-sehen will, nimmt stattdessen das eingecheckte `TestAlle` -- 2D-Block, dann
-3D-Block, 8 s je Szene, ohne Overlay.
+Wegwerf-Filter fuer genau eine Durchsicht. (Die eingecheckte Pruefbank `TestAlle`
+gibt es seit 18.10.2026 nicht mehr; ein Preset, dessen Name mit `Test` beginnt,
+schaltet die App aber weiter in den Pruefmodus: 2D-Block, dann 3D-Block.)
 
 `KALEIDO_SCENE_SWEEP=<Sekunden>` schaltet per `forceScene()` der Reihe nach
 durch JEDE Szene der geladenen Config und schreibt Index, Name und Zeitstempel

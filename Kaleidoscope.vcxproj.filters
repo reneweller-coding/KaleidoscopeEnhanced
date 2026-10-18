@@ -2676,9 +2676,6 @@
     <None Include="Presets\Club.xml">
       <Filter>Presets</Filter>
     </None>
-    <None Include="Presets\Galerie.xml">
-      <Filter>Presets</Filter>
-    </None>
     <None Include="Presets\Komplett.xml">
       <Filter>Presets</Filter>
     </None>

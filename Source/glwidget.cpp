@@ -2608,8 +2608,8 @@ void GLwidget::updateAutoConfig( const AudioFeatures &f )
     if ( !m_autoConfig )
         return;
 
-    // Map the sustained mood to a configuration bucket (2026-07 preset set).
-    //   0 ambient/drone -> Ambient, 1 calm -> Galerie,
+    // Map the sustained mood to a configuration bucket (preset set of 18.10.2026).
+    //   0 ambient/drone -> Ambient, 1 calm with a beat -> Downtempo,
     //   2 normal -> Allround,       3 energetic -> Club.
     int bucket;
     if ( f.ambientFactor > 0.6f )
@@ -2620,7 +2620,7 @@ void GLwidget::updateAutoConfig( const AudioFeatures &f )
         bucket = 3;
     else
         bucket = 2;
-    static const char *names[4] = { "Ambient", "Galerie", "Allround", "Club" };
+    static const char *names[4] = { "Ambient", "Downtempo", "Allround", "Club" };
 
     const qint64 now = m_fpsTimer.elapsed();
     if ( bucket != m_moodBucket )

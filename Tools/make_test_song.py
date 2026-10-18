@@ -3,7 +3,8 @@ r"""Synthesise the review bench's audio: bright, energetic, deterministic.
 
     python Tools/make_test_song.py            # -> Tools/review128.wav
 
-TestAlle analyses a fixed WAV instead of listening (AudioFile= in the preset),
+The review bench TestAlle (retired 18.10.2026) analysed a fixed WAV instead of listening (AudioFile= in the
+preset), and the measuring tools still do,
 because a review has to show the same scene the same way twice and live audio
 cannot do that. Which WAV is not a detail: nearly every scene in the catalogue
 reads the music and dims itself for quiet, calm, ambient material. The first

@@ -6431,3 +6431,43 @@ keeps rows written with seven values valid. finish_block.py now takes eight valu
 
 check_schedule.py and long_run_sim.py list the new genre. check_schedule.py --quick: 16 plans, no violations.
 Electronic over 6 h of structure128.wav makes 489 changes, with labs at 31.1 % of the screen time.
+
+## 18.10.2026 (42): ten genre presets -- Psytrance, Cinematic, Downtempo; the benches go
+
+**Three new genres, each with its own rating column.** Tools/preset_fit.tsv has three more columns after
+`electronic`: `psytrance`, `cinematic` and `downtempo`. All 1415 scenes were rated from sheets of their catalogue
+frames, with psychedelic, ambient, galerie and electronic shown as anchors.
+- **Psytrance** is the driving psychedelic look: tunnels, fractal flights, kaleidoscopes, hard patterns. 360 scenes
+  rate 6 or more. Overlays and transitions are psychedelic, aggressive or energetic, never calm. Labs take 45 % of the
+  screen time, from the wild half of the chain classes in full colour. 359 of its 401 scenes are also in Psychedelic
+  (518), which has no cap pressure. The difference lies in the transitions (72 against 57), the labs and the faster
+  drop cuts.
+- **Cinematic** is for classical, film music and piano: landscapes, architecture, painting and slow flights. Only
+  160 scenes rate 6 or more, so the preset fills up to 400 with fits of 4 and 5. Overlays follow the old Galerie
+  rule (calm, bright or dreamy, never aggressive or psychedelic). Scenes average 80 s instead of 55 (SOLO_MEAN_BY),
+  photos stay 50 to 140 s, fades take at least 6 s, and labs get 15 % in the photo look. One point is left: in a
+  calm preset a section change may end a scene after 20 s. On the structure track this gives Cinematic 355 musical
+  changes in 6 h, more than Ambient (185), so its scenes average about 44 s there.
+- **Downtempo** is the slow beat: chillout, trip-hop, lounge. It is warm, flowing and colourful. Its overlays and
+  transitions are calm, dreamy or bright, never aggressive. Fades take at least 4 s, and labs get 30 % in the calm
+  classes with colour. 214 of its 401 scenes are also in Ambient, which stays the preset for music without a beat.
+
+The app's automatic preset choice sends calm music with a beat (arousal below 0.33, ambient factor at most 0.6) to
+Downtempo instead of Galerie.
+
+**Retired (user's request):**
+- Galerie: Cinematic takes its overlay rule and its lab variants.
+- Kettenlabor and Transformationen: the labs run in every genre preset with their own share of the screen time.
+  The named chains run in the genre presets their ratings fit, and all of them in Allround.
+- The hidden benches TestAlle, TestModified, TestNeu, TestAufgemoebelt and TestNiedrigerSchauwert. The engine's
+  review mode stays: a preset named `Test...` still walks every scene in a fixed order, 25 s each.
+
+make_genre_configs.py lost the bench lists (MODIFIED_SCENES, RECENT_SCENES, IMPROVED_SCENES), the
+review-audio handling and the two chain presets' special knobs. finish_block.py no longer adds new scenes to a
+TestNeu list. The package no longer carries Tools/review128.wav, which only the bench needed. The measuring tools
+keep using it from the repository.
+
+Komplett stays the hidden master. A saved `activeConfig` that names a retired preset falls back to the first
+preset, Allround, with the usual "not found" line.
+
+check_schedule.py --quick: 20 plans (10 presets, silence and the structure track), no violations.

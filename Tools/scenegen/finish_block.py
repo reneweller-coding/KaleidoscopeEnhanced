@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 """Finish a block of new scenes: register in Komplett.xml, add ratings to
-preset_fit.tsv, add them to RECENT_SCENES (TestNeu), regenerate presets and
-run the checks.
-Usage: finish_block.py "Name|mood,mood|complexity|amb space club noir psy gal interest electronic" ..."""
+preset_fit.tsv, regenerate presets and run the checks.
+Usage: finish_block.py "Name|mood,mood|complexity|<ratings>" ...
+<ratings>: the columns of preset_fit.tsv in order -- amb space club noir psy gal interest electronic
+psytrance cinematic downtempo (a shorter row leaves the rest unrated; the mood rule decides there)."""
 import os, re, subprocess, sys
 ROOT = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
 SP = os.path.dirname(os.path.abspath(__file__))
@@ -22,19 +23,9 @@ for r in rows:
     else:
         lines.append(new)
 open(p, "w", encoding="utf-8", newline="\n").write("\n".join(lines) + "\n")
-# 3. TestNeu list
-g = "Tools/make_genre_configs.py"
-t = open(g, encoding="utf-8").read()
-i = t.index("RECENT_SCENES = {")
-j = t.index("\n}", i)
-names = [r[0] for r in rows if ('"%s"' % r[0]) not in t[i:j]]
-if names:
-    line = "    " + ", ".join('"%s"' % n for n in names) + ",\n"
-    t = t[:j + 1] + line + t[j + 1:]
-    open(g, "w", encoding="utf-8", newline="\n").write(t)
-# 4. regenerate + checks
+# 3. regenerate + checks
 out = subprocess.run([sys.executable, "Tools/make_genre_configs.py"], capture_output=True, text=True).stdout
-print("\n".join(l for l in out.splitlines() if l.startswith(("TestNeu", "Ambient ", "Club "))))
+print("\n".join(l for l in out.splitlines() if l.startswith(("Ambient ", "Club ", "Psytrance "))))
 print(subprocess.run([sys.executable, "Tools/shadercheck.py"], capture_output=True, text=True).stdout.strip().splitlines()[-1])
 shake = subprocess.run([sys.executable, "Tools/shake_scan.py"], capture_output=True, text=True).stdout.splitlines()
 hit = False

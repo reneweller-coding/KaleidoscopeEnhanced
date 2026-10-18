@@ -1220,7 +1220,6 @@ if errorlevel 1 exit /b 1
     <None Include="Presets\Allround.xml" />
     <None Include="Presets\Ambient.xml" />
     <None Include="Presets\Club.xml" />
-    <None Include="Presets\Galerie.xml" />
     <None Include="Presets\Komplett.xml" />
     <None Include="Presets\Noir.xml" />
     <None Include="Presets\Psychedelic.xml" />

@@ -28,7 +28,7 @@ $root = Split-Path $PSScriptRoot -Parent
 $rel  = Join-Path $root "Release"
 $cfgD = Join-Path $root "Presets"
 $wav  = Join-Path $PSScriptRoot "broadband120.wav"
-# The presets as they are (a fixed list missed SpaceAmbient, Kettenlabor and Transformationen): every
+# The presets as they are (a fixed list once missed some): every
 # Presets\*.xml with a ConfigurationName, without the rig table, the Test* benches and ZZMesh.
 $presets = Get-ChildItem (Join-Path $root "Presets") -Filter *.xml | ForEach-Object {
     $m = Select-String -Path $_.FullName -Pattern 'ConfigurationName="([^"]+)"' | Select-Object -First 1

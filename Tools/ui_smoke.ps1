@@ -129,17 +129,17 @@ try {
     #
     # With showHiddenPresets on, the menu IS the alphabetical Presets
     # listing, so both expectations below are positions in that listing:
-    # Allround, Ambient, Club, Galerie, Komplett, Noir, Psychedelic,
-    # SpaceAmbient, TestAlle. They no longer depend on whether the optional
+    # Allround, Ambient, Cinematic, Club, Downtempo, Electronic, Komplett, Noir,
+    # Psychedelic, Psytrance, SpaceAmbient. They no longer depend on whether the optional
     # model pack is installed -- there is no mesh-only preset left to drop out
     # of the list and shift everything after it, which is what these two
     # checks used to be silently sensitive to.
     Session { param($h, $p) K $h 0x30; K $h 0x08; K $h 0x23; K $h 0x0D } | Out-Null
-    Check "End + Enter reach the last entry" ((ActiveConfig) -eq "TestAlle") ("-> " + (ActiveConfig))
+    Check "End + Enter reach the last entry" ((ActiveConfig) -eq "SpaceAmbient") ("-> " + (ActiveConfig))
 
     SetIni "activeConfig" "Komplett"
     Session { param($h, $p) K $h 0x30; K $h 0x08; for ($i=0; $i -lt 5; $i++) { K $h 0x28 }; K $h 0x0D } | Out-Null
-    Check "5x Down from the top" ((ActiveConfig) -eq "Noir") ("-> " + (ActiveConfig))
+    Check "5x Down from the top" ((ActiveConfig) -eq "Electronic") ("-> " + (ActiveConfig))
 
     SetIni "activeConfig" "Komplett"
     Session { param($h, $p) K $h 0x30; K $h 0x08; foreach ($c in "psy".ToCharArray()) { Ch $h $c }; K $h 0x0D } | Out-Null

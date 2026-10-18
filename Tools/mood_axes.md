@@ -137,7 +137,7 @@ order), measured over 40 frames each:
 Side effect worth knowing: the auto-config mood buckets (`arousal < 0.33` /
 `> 0.66`) were nearly unreachable with the old compressed arousal (0.36..0.65),
 so auto-preset effectively sat on Allround. With the rebuilt axis the
-Ambient/Galerie/Club buckets actually trigger.
+Ambient/Galerie/Club buckets actually trigger. (Since 18.10.2026 the calm bucket is Downtempo.)
 
 ## Re-running
 

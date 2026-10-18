@@ -24,13 +24,13 @@ build. See [Quick start](#quick-start).
 | ![HexKaleido](docs/screenshots/kaleidoscope.png) | ![ChromeForm](docs/screenshots/chromeform.png) |
 | ![ShadowTheatre](docs/screenshots/shadowtheatre.png) | ![AuroraBorealisOverFjord](docs/screenshots/aurora.png) |
 
-*Four of the 865 scenes in the [scene catalogue](docs/Catalog/Katalog.md) — a
+*Four of the 1,415 scenes in the [scene catalogue](docs/Catalog/Katalog.md) — a
 photograph folded into a kaleidoscope, a loaded 3D model used as a mirror, one
 used as a shadow puppet, and a hardware-tessellated fjord under the northern
 lights.*
 
 **Highlights**
-- 865 scenes + 29 overlay effects + 110 scene transitions, all audio-reactive
+- 1,415 scenes + 30 overlay effects + 110 scene transitions, all audio-reactive
   and image-driven — see the [scene catalogue](docs/Catalog/Katalog.md).
 - Real signal analysis (beat/onset detection, key & mood, song-structure
   tracking) drives the visuals, not a generic FFT bar graph — see
@@ -373,28 +373,34 @@ writes the file from what each generator's renderer knows about its track.
 probabilities, mood tags, and the photo folder (`ImageDirectory`, shipping as
 `..\Images`) they draw on. These files are GENERATED, so change the folder in
 the Setup tool rather than in here — see
-[Extra content](#extra-content-photos-and-3d-models). Switch between them with
-the number keys. Included presets:
+[Extra content](#extra-content-photos-and-3d-models). Switch between them in
+the preset menu (`0`) or from the remote. Included presets, one per kind of
+music, each with at least 400 scenes picked by a rating of how well they fit:
 
-- **Allround** — the full modern arsenal, balanced; a safe default
+- **Allround** — everything, balanced; a safe default
+- **Ambient** — music without a beat: calm drift, fluid ink, lava, slow light
+- **Downtempo** — the slow beat (chillout, trip-hop, lounge): warm, flowing,
+  colourful
+- **SpaceAmbient** — sci-fi & deep space: starships, planets, space
+  stations, nebulae, black holes, alien worlds
+- **Cinematic** — classical, film music, piano: landscapes, architecture,
+  painting and slow flights, with long scenes and long fades
 - **Club** — aggressive & bright: tunnels, godrays, lattices, analyzers
 - **Electronic** — the synthetic look for techno and electronica: grids, lasers,
   neon, spectra, data streams, hard geometry
-- **Ambient** — calm drift: fluid ink, lava, drones, liquid light shows
-- **SpaceAmbient** — sci-fi & deep space: starships, planets, space
-  stations, nebulae, black holes, alien worlds
-- **Galerie** — the *photos* star: kaleidoscopes, image tunnels, gentle folds
+- **Psytrance** — the driving psychedelic look: tunnels, fractal flights,
+  kaleidoscopes, hard patterns
 - **Psychedelic** — breathing fractals, pills, chrome, plasma, mushrooms
 - **Noir** — dark, high-contrast: noir fractals, dark tunnels, deep drones
-- **Komplett** — every scene and overlay in one rotation, mainly used as the
-  master reference the other presets and the editor start from
+- **Komplett** (hidden) — every scene and overlay in one rotation: the master
+  list the other presets are generated from, and where the editor starts
 
 Every scene re-rolls its own parameters each time it's picked, so one
 shader yields many different looks over a session rather than repeating
 itself identically.
 
-**[Browse the full scene catalogue](docs/Catalog/Katalog.md)** — all 865
-scenes, 29 overlay effects and 110 transitions, each with a description and
+**[Browse the full scene catalogue](docs/Catalog/Katalog.md)** — all 1,415
+scenes, 30 overlay effects and 110 transitions, each with a description and
 three example frames. A printable `Katalog.pdf` ships with every release.
 
 **Building your own presets:** `PresetEditor.exe` (its own small Qt app,
@@ -415,25 +421,12 @@ BY-NC-SA 4.0 — see [Credits and license](#credits-and-license).
 
 ### Reviewing the shader library
 
-Two pieces that work together when you want to look *at* the shaders rather
-than enjoy them:
-
-* **`TestAlle`** — the review bench: every scene, **25 s each**, walked in a
-  fixed order (all 2D scenes alphabetically, then all 3D ones), with `FxPlain`
-  as the only overlay and `Crossfade` as the only transition, so nothing is
-  ever painted over the scene you are judging. It also brings its own silent
-  audio (`AudioFile=` in the preset), so the same shader looks the same on
-  every pass — live audio would make each run different, which is the one
-  thing a review must not do. Regenerate it after adding shaders:
-
-  ```bash
-  python Tools/make_genre_configs.py
-  ```
-
-  The ordered walk and the 8 s come from the preset's `Test` name prefix,
-  which switches the engine into review mode — keep the prefix or it silently
-  goes back to random selection. Start it with `-c TestAlle`; it is hidden
-  from the normal preset list on purpose.
+When you want to look *at* the shaders rather than enjoy them, play
+`Komplett` (start it with `-c Komplett`, or show hidden presets) and mark what
+you see. A preset whose name starts with `Test` switches the engine into
+review mode: every scene in a fixed order (2D alphabetically, then 3D), 25 s
+each. The checked-in bench `TestAlle` was retired in v1.18; make your own by
+copying a preset under such a name.
 
 * **Marking** — press `Space` while a scene is up to shortlist it, and
   `Shift+Space` to write every marked scene to `Presets\Marked.xml` as
@@ -443,7 +436,7 @@ than enjoy them:
   span several sessions. The `v` overlay shows whether the current scene is
   marked.
 
-So: run `TestAlle`, tap `Space` on anything that looks wrong, then
+So: run `Komplett`, tap `Space` on anything that looks wrong, then
 `Shift+Space` and switch to `Marked` to work through the shortlist.
 
 ## Recording
@@ -548,11 +541,10 @@ the presets carry a default (`..\Images`) but they are regenerated from the
 catalogue, so a path typed into them would not survive. Leave the field empty
 for the bundled images.
 
-**Debug: show hidden presets** puts `Komplett` and the `TestAlle` review bench
-back into the menu, onto the digit keys and into the remote, so you can reach
-them without a command line. They are out of the way by default because one is
-a reference catalogue and the other an inspection bench — neither is something
-to land on while enjoying the show. The same switch is one line in the ini if
+**Debug: show hidden presets** puts the `Komplett` master back into the menu
+and into the remote, so you can reach it without a command line. It is out of
+the way by default because it is a reference catalogue, not something to land
+on while enjoying the show. The same switch is one line in the ini if
 you would rather not open the tool:
 
 ```ini
