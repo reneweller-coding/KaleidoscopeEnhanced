@@ -206,9 +206,9 @@ void main()
         // the camera's lane (x = 0) between two rows.  Until 17.10.2026 the field was sin(x)cos(z) + sin(y) plus
         // 1.5 fbm, above the threshold almost everywhere: the camera stood inside the dust and saw a flat fog after
         // three steps.
-        vec2  cell = vec2( 10.0, 14.0 );
-        vec2  cid = floor( p.xz / cell );
-        vec2  lc = mod( p.xz, cell ) - 0.5 * cell;
+        vec2 cell = vec2( 10.0, 14.0 );
+        vec2 cid = floor( p.xz / cell );
+        vec2 lc = mod( p.xz, cell ) - 0.5 * cell;
         lc -= ( vec2( hash11( dot( cid, vec2( 1.0, 57.0 ) ) ), hash11( dot( cid, vec2( 1.0, 57.0 ) ) + 7.0 ) ) - 0.5 )
               * vec2( 2.5, 6.0 );
         float rad = 1.5 + 0.9 * hash11( dot( cid, vec2( 1.0, 57.0 ) ) + 3.0 ) - 0.06 * p.y;
@@ -240,7 +240,8 @@ void main()
             float sh = hash31( sc );
             if ( sh > 0.88 )
             {
-                vec3  sp3 = ( sc + 0.2 + 0.6 * vec3( hash31( sc + 1.7 ), hash31( sc + 4.1 ), hash31( sc + 9.3 ) ) ) * 1.5;
+                vec3  sp3 = ( sc + 0.2 + 0.6 * vec3( hash31( sc + 1.7 ), hash31( sc + 4.1 ), hash31( sc + 9.3 ) ) )
+                            * 1.5;
                 float g = exp( -dot( p - sp3, p - sp3 ) / 0.09 );
                 float pulse = 0.6 + 0.4 * sin( sceneTime * 2.0 + sh * 100.0 );
                 col += star_color * g * pulse * ( 1.0 + 1.5 * audioKick ) * sp * 0.8 * ( 1.0 - density_accum );

@@ -1,4 +1,3 @@
-FRAME	Scene2D/BioCellularInfiniteZoom.frag	scale_col += min( vec3( 1.2, 1.4, 1.8 ) * memb_glow * ( 0.8 + 1.5 * audioKick ), vec3( 0.85 ) );
 FRAME	Scene2D/BreathingFractal.frag	p += p * sin( dot( p, p ) * breath_v - tt ) * ( 0.04 + 0.02 * audioBeat + 0.02 * audioSwell );
 FRAME	Scene2D/BreathingFractalNoir.frag	p += p * sin( dot( p, p ) * breath_v - tt ) * ( 0.04 + 0.02 * audioBeat + 0.02 * audioSwell );
 FRAME	Scene2D/BreathingFractalZoom.frag	p += p * sin( dot( p, p ) * breath_v - tt ) * ( 0.04 + 0.02 * audioBeat + 0.02 * audioSwell );
@@ -57,6 +56,7 @@ SHAKE	Scene2D/NeutronStarMagnetarBurst.frag	float quake_flash = exp( -abs( starq
 SHAKE	Scene2D/NeutronStarSurfaceSprint.frag	float quake = audioKick * ( 0.5 + 0.5 * sin( pos.z * 3.0 - sceneTime * 12.0 ) );
 SHAKE	Scene2D/PulsarJet.frag	float shake = 0.0;
 SHAKE	Scene2D/PulsarJet.frag	vec2 shake_uv = uv + vec2( hash11( time * 100.0 ), hash11( time * 100.0 + 1.0 ) ) * shake - ( shake * 0.5 );
+SHAKE	Scene2D/VolumetricSupernova.frag	float jitter = fract( 52.9829189 * fract( dot( gl_FragCoord.xy, vec2( 0.06711056, 0.00583715 ) ) ) );
 SHAKE	Scene3D/AtmosphericEntry.vert	float shake = 0.0;
 SHAKE	Scene3D/AtmosphericEntry.vert	vec3 jitter = vec3( sin( time * 37.0 ), sin( time * 43.0 + 1.7 ), sin( time * 31.0 + 3.1 ) ) * 0.55 * shake * ( 0.6 + 0.8 * audioKick );
 SHAKE	Scene3D/CherenkovCascadeShower.vert	float jitter = audioRoughness * 0.55;

@@ -254,14 +254,15 @@ vec3 lightAt( vec3 P, vec3 n, vec3 lp, vec3 lc, float range )
 
 const vec3 SunDir = vec3( 0.75, 0.10, -0.55 ); ///< the last sun, low, right, behind the camera
 
-/**  Weight that closes atan's cut: 0 over most of the circle, 1 at a = pi.  A noise of an angle from atan() does
- *   not repeat after a turn and tears along the cut; mixed toward the same noise of a - 2*pi near a = pi it meets,
- *   at the cut, exactly the value on the other side (17.10.2026).
+/**  Weight that closes atan's cut: 0 over most of the circle, 1 at a = pi.
  *
  * @param a  The angle, -pi..pi. (in)
  *
  * @return
  *   The weight, 0..1.
+ *
+ * A noise of an angle from atan() does not repeat after a turn and tears along the cut; mixed toward the same noise of
+ * a - 2*pi near a = pi it meets, at the cut, exactly the value on the other side (17.10.2026).
  **/
 float seamW( float a )
 {

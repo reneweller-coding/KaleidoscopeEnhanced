@@ -135,7 +135,7 @@ void main()
     // above it.  Until 17.10.2026 it followed the engine's 280-s day cycle (dayPhase), which is night 42 % of the
     // time -- the screening found it at night in every seed, the frame near black (a structure of 0.006).
     float elev = mix( -0.3, 0.8, smoothstep( 0.0, 0.9, sceneProgress ) ); // -1 .. 1
-    float dawn = smoothstep( -0.25, 0.35, elev ); // 0 night .. 1 day
+    float dawn = smoothstep( -0.25, 0.35, elev );                         // 0 night .. 1 day
     vec2  sun_pos = vec2( 0.35, -0.25 + 0.55 * elev );
 
     // Sky colours through the dawn.

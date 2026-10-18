@@ -910,7 +910,7 @@ void main()
         float a = tt.a * fade_in * ( 1.0 - outp ) * mask_a;
         c = mix( c, tt.rgb, a * 0.92 );
         c += tt.rgb * a * ( 0.25 + 0.30 * audioBeat * ( 1.0 - strictLight ) ); // gentle beat glow (none if strict)
-        c += tt.rgb * a * glow_x;                      // style-specific glint
+        c += tt.rgb * a * glow_x;                                              // style-specific glint
     }
 
     // Photosensitivity limit (applied last): the compute pass's limScale, every frame; where it does not run

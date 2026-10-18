@@ -72,8 +72,8 @@ vec3 imgPalette( float t )
     return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
-/**  How much metal covers a point: the splat density pre-averaged over about six canvas pixels (mipmap level 2.5),
- *   in units of the inside of a drop (where the particles' discs add up to about 12), clamped to 1.
+/**  How much metal covers a point: the splat density pre-averaged over about six canvas pixels (mipmap level 2.5), in
+ * units of the inside of a drop (where the particles' discs add up to about 12), clamped to 1.
  *
  * @param uv  The coordinate. (in)
  *
@@ -85,17 +85,17 @@ float cover( vec2 uv )
     return clamp( textureLod( texMetal, uv, 2.5 ).a / 12.0, 0.0, 1.0 );
 }
 
-/**  The metal's height: its coverage averaged over a disc of about 12 canvas pixels (17 taps on two rings), shaped
- *   by a square root -- a liquid rim, steep at the edge and flat on top of a large drop.
- *
- *   It replaced the raw density (17.10.2026), whose gradient was the particles' grain: every pixel's normal pointed
- *   elsewhere and the metal read as a rippled sheet of noise.
+/**  The metal's height: its coverage averaged over a disc of about 12 canvas pixels (17 taps on two rings), shaped by
+ * a square root -- a liquid rim, steep at the edge and flat on top of a large drop.
  *
  * @param uv  The coordinate. (in)
  * @param tx  One canvas pixel in uv. (in)
  *
  * @return
  *   The height, 0..1.
+ *
+ *   It replaced the raw density (17.10.2026), whose gradient was the particles' grain: every pixel's normal pointed
+ *   elsewhere and the metal read as a rippled sheet of noise.
  **/
 float height( vec2 uv, vec2 tx )
 {

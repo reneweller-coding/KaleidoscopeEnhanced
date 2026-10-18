@@ -1670,13 +1670,14 @@ void EffectShader::resetChainWalk()
                 const int s = world ? 5 + i % 3 : i % 4;
                 if ( !k[s] || m_walkCarried[s] || m_walkHi[s] <= m_walkLo[s] )
                     continue;
-                const float h = sinf( rolled[0] * 17.3f + rolled[1] * 41.9f + rolled[2] * 23.1f + rolled[3] * 11.7f +
-                                      rolled[5] * 127.1f + rolled[6] * 311.7f + rolled[7] * 74.7f +
-                                      static_cast<float>( i ) * 12.9898f ) *
-                                43758.5453f;
+                const float h = sinf( rolled[0] * 17.3f + rolled[1] * 41.9f + rolled[2] * 23.1f + rolled[3] * 11.7f
+                                      + rolled[5] * 127.1f + rolled[6] * 311.7f + rolled[7] * 74.7f
+                                      + static_cast<float>( i ) * 12.9898f )
+                                * 43758.5453f;
                 const float v = m_walkLo[s] + ( m_walkHi[s] - m_walkLo[s] ) * ( h - floorf( h ) );
                 x[s] = v < 0.999f ? v : 0.999f;
-                const float p = ( s < 4 && opensAt( s, x[s] ) ) ? 1.f : ( world ? worldPoorness( x ) : chainPoorness( x ) );
+                const float p = ( s < 4 && opensAt( s, x[s] ) ) ? 1.f
+                                                                : ( world ? worldPoorness( x ) : chainPoorness( x ) );
                 if ( p < best_p )
                 {
                     best_s = s;
@@ -3333,13 +3334,13 @@ bool EffectShader::opensAt( int s, float x ) const
 static const std::vector<float> &worldPoornessTable()
 {
     static std::vector<float> table;
-    static std::once_flag    once;
+    static std::once_flag     once;
     std::call_once( once, []
     {
-        std::ifstream     in( "../Engine/chain3d_worlds.tsv" ); // forward slashes: Windows and Linux
-        std::string       line;
+        std::ifstream      in( "../Engine/chain3d_worlds.tsv" ); // forward slashes: Windows and Linux
+        std::string        line;
         std::vector<float> t( 20 * 22 * 22, 0.f );
-        int               n = 0;
+        int                n = 0;
         while ( std::getline( in, line ) )
         {
             if ( line.empty() || line[0] == '#' )
@@ -3423,8 +3424,9 @@ static const std::vector<std::vector<float>> &chainTermTable()
 float EffectShader::chainPoorness( const float *x ) const
 {
     static const bool Off = getenv( "KALEIDO_NO_CHAIN_FILTER" ) != nullptr;
-    if ( Off || ( m_fragmentShaderFilename.find( "ChainLab2D" ) == std::string::npos &&
-                  m_fragmentShaderFilename.find( "FxChain" ) == std::string::npos ) )
+    if ( Off
+         || ( m_fragmentShaderFilename.find( "ChainLab2D" ) == std::string::npos
+              && m_fragmentShaderFilename.find( "FxChain" ) == std::string::npos ) )
         return 0.f;
     const std::vector<std::vector<float>> &t = chainTermTable();
     if ( t.empty() )
@@ -3933,7 +3935,8 @@ void EffectShader::stepState()
         glBindVertexArray( fullscreenVAO() );
         for ( int i = 0; i < steps; ++i )
         {
-            glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_stateTex[1 - m_stateCur], 0 );
+            glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_stateTex[1 - m_stateCur],
+                                    0 );
             glActiveTexture( GL_TEXTURE0 + StateUnit );
             glBindTexture( GL_TEXTURE_2D, m_stateTex[m_stateCur] );
             glActiveTexture( GL_TEXTURE0 );

@@ -24,7 +24,7 @@ uniform float audioBass;    ///< Bass band level, 0..1.
 uniform float audioMid;     ///< Mid band level, 0..1.
 uniform float audioHigh;    ///< High band level, 0..1.
 uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform vec2 resolution; ///< Size of the render target in pixels (point sprites scale with it).
+uniform vec2  resolution;   ///< Size of the render target in pixels (point sprites scale with it).
 
 out vec3  vPos;    ///< Position (from the vertex stage).
 out float vTemp;   ///< Temp (from the vertex stage).

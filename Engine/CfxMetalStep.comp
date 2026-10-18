@@ -55,7 +55,7 @@ uniform int   mode;    ///< 2 = place the particles in drops, 1 = bin into the g
 uniform float phase;   ///< Seconds of simulation: where the slow flow stands.
 uniform uint  src;     ///< The half of the particle buffer this step reads (0 or 1); it writes the other.
 
-const float Scale = 256.0; ///< Fixed-point scale of the accumulation buffer (colour times Scale, added as integers).
+const float Scale = 256.0;   ///< Fixed-point scale of the accumulation buffer (colour times Scale, added as integers).
 const float Pi2 = 6.2831853; ///< Two pi.
 
 // The physics, in canvas heights and steps (17.10.2026).  The old forces repelled with ( h - r ) / r -- a
@@ -86,14 +86,16 @@ void splat1( ivec2 ip, float w )
     atomicAdd( acc[i + 3u], uint( w * Scale ) );
 }
 
-/**  The slow flow that carries the drops: the curl of a stream function of six waves that fit the canvas (it
- *   wraps), each drifting at its own slow rate.  Divergence-free, so it never piles the metal up.
+/**  The slow flow that carries the drops: the curl of a stream function of six waves that fit the canvas (it wraps),
+ * each drifting at its own slow rate.
  *
  * @param q       The position on the canvas, 0..1. (in)
  * @param aspect  Width / height of the canvas. (in)
  *
  * @return
  *   The flow's velocity, canvas heights per second.
+ *
+ * Divergence-free, so it never piles the metal up.
  **/
 vec2 flow( vec2 q, float aspect )
 {
@@ -112,7 +114,7 @@ vec2 flow( vec2 q, float aspect )
 }
 
 /**  Places particle id in one of seven drops of different sizes (a sunflower spiral: even spacing at the rest
- *   distance), so the scene opens on round drops instead of a grey haze that would take minutes to bead up.
+ * distance), so the scene opens on round drops instead of a grey haze that would take minutes to bead up.
  *
  * @param id      The particle. (in)
  * @param aspect  Width / height of the canvas. (in)

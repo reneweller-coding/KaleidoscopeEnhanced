@@ -34,8 +34,8 @@ uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0
 uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
 uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
                               ///< backwards).
-uniform float sceneAdvance; ///< The music's advance since this scene was activated (integrated, never jumps).
-uniform float sceneTime;    ///< Seconds since this scene was activated.
+uniform float sceneAdvance;   ///< The music's advance since this scene was activated (integrated, never jumps).
+uniform float sceneTime;      ///< Seconds since this scene was activated.
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 uniform float audioLevel;     ///< Overall loudness, 0..1.
 uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).

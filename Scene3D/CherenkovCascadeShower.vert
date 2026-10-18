@@ -42,11 +42,11 @@ uniform float audioSpread;    ///< narrow spectrum = collimated, wide = fanned o
 uniform float audioRoughness; ///< sensory dissonance -> track scatter
 uniform float audioHat;       ///< hi-hat / cymbal onset envelope
 
-uniform float cascadeP; ///< Cascade knob, 0.5..2.
-uniform float fieldP;   ///< Field knob, 0.5..2.
-uniform float speedP;   ///< Speed knob, 0..1.
-uniform float hueP;     ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
-uniform vec2 resolution; ///< Size of the render target in pixels (point sprites scale with it).
+uniform float cascadeP;   ///< Cascade knob, 0.5..2.
+uniform float fieldP;     ///< Field knob, 0.5..2.
+uniform float speedP;     ///< Speed knob, 0..1.
+uniform float hueP;       ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform vec2  resolution; ///< Size of the render target in pixels (point sprites scale with it).
 
 out vec4 vCol; ///< Colour (from the vertex stage).
 out vec2 vUV;  ///< Texture coordinate 0..1 over the screen (from the vertex stage).
@@ -123,7 +123,8 @@ void main()
     // tracks into brief bright grains (bounded, so the frame cannot flood).
     float hat_spark = min( audioHat, 1.0 ) * step( 0.62, seeds.z ) * ( 1.0 - cycle );
     gl_PointSize = ( ( 7.0 + 12.0 * audioKick * ( 1.0 - cycle ) + 4.5 * hat_spark )
-                   * ( 1.0 / max( gl_Position.w * 0.1, 0.5 ) ) ) * PointScale;
+                     * ( 1.0 / max( gl_Position.w * 0.1, 0.5 ) ) )
+                   * PointScale;
 
     vUV = vec2( seeds.x, seeds.y );
 

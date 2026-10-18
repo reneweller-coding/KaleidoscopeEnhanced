@@ -673,7 +673,7 @@ public:
     /** The second photo's fade between its two slots this frame (set by RenderPipeline::updateImageState()): the
      * `photoBMix` every scene that declares it receives, 0 = slot 0 (unit PhotoBUnit), 1 = slot 1 (PhotoBUnit + 1).
      **/
-    static float M_PhotoBMix;
+    static float     M_PhotoBMix;
     static const int PhotoBUnit = 38; ///< Units of the second photo's slots: texPhotoB0 here, texPhotoB1 one up.
     /** Score cues live this frame (set by RenderPipeline, CueReceiver.h): the chain walk takes the generator's
      * section and drop counters (M_CueSections, M_CueDrops) instead of the analyser's.
@@ -1050,26 +1050,26 @@ protected:
      * between two steps), stateRes is the field's size.
      * Cellular automata, pattern-forming equations and a photo carried by a flow live here.
      **/
-    void stepState();
-    int    m_usesState = -1;          ///< -1 not yet known, 0 no state, 1 the shader carries a state.
-    GLuint m_stateUsesProg = 0;       ///< Program m_usesState and the locations below belong to.
-    GLuint m_stateTex[2] = { 0, 0 };  ///< The ping-pong pair (RGBA16F, repeat, linear).
-    GLuint m_stateFbo = 0;            ///< Framebuffer the step draws into.
-    int    m_stateCur = 0;            ///< Which of the pair holds the newest state.
-    int    m_stateW = 0;              ///< Field width ("// @state W H RATE"; 0: half the render size).
-    int    m_stateH = 0;              ///< Field height.
-    float  m_stateRate = 60.f;        ///< Steps per second.
-    bool   m_stateF32 = false;        ///< RGBA32F instead of RGBA16F ("// @state W H RATE 32").
-    float  m_stateAcc = 0.f;          ///< Fraction of a step carried to the next frame.
-    float  m_stateLastT = 0.f;        ///< sceneTime of the last step decision.
-    float  m_stateFrame = 0.f;        ///< Steps since the activation.
-    bool   m_stateReset = true;       ///< Seed the field anew (activation, size change).
-    GLint  m_statePassUni = -1;       ///< Location of "statePass".
-    GLint  m_stateTexUni = -1;        ///< Location of "texState".
-    GLint  m_stateFrameUni = -1;      ///< Location of "stateFrame".
-    GLint  m_stateResUni = -1;        ///< Location of "stateRes".
-    GLint  m_stateFracUni = -1;       ///< Location of "stateFrac".
-    static const int StateUnit = 37;  ///< Texture unit of texState.
+    void             stepState();
+    int              m_usesState = -1;         ///< -1 not yet known, 0 no state, 1 the shader carries a state.
+    GLuint           m_stateUsesProg = 0;      ///< Program m_usesState and the locations below belong to.
+    GLuint           m_stateTex[2] = { 0, 0 }; ///< The ping-pong pair (RGBA16F, repeat, linear).
+    GLuint           m_stateFbo = 0;           ///< Framebuffer the step draws into.
+    int              m_stateCur = 0;           ///< Which of the pair holds the newest state.
+    int              m_stateW = 0;             ///< Field width ("// @state W H RATE"; 0: half the render size).
+    int              m_stateH = 0;             ///< Field height.
+    float            m_stateRate = 60.f;       ///< Steps per second.
+    bool             m_stateF32 = false;       ///< RGBA32F instead of RGBA16F ("// @state W H RATE 32").
+    float            m_stateAcc = 0.f;         ///< Fraction of a step carried to the next frame.
+    float            m_stateLastT = 0.f;       ///< sceneTime of the last step decision.
+    float            m_stateFrame = 0.f;       ///< Steps since the activation.
+    bool             m_stateReset = true;      ///< Seed the field anew (activation, size change).
+    GLint            m_statePassUni = -1;      ///< Location of "statePass".
+    GLint            m_stateTexUni = -1;       ///< Location of "texState".
+    GLint            m_stateFrameUni = -1;     ///< Location of "stateFrame".
+    GLint            m_stateResUni = -1;       ///< Location of "stateRes".
+    GLint            m_stateFracUni = -1;      ///< Location of "stateFrac".
+    static const int StateUnit = 37;           ///< Texture unit of texState.
 
     std::string m_vertexShaderFilename; ///< Path to the vertex shader source (always "..\\standard.vert" in practice).
     std::string m_fragmentShaderFilename; ///< Path to this effect's fragment shader source.

@@ -19,17 +19,17 @@ out vec4 fragColor; ///< The pixel's colour (output).
 // KaleidoDome.frag — a 10-sector kaleidoscope rosette of the current image
 // spinning across the dome; kicks bloom the centre, the bar phase breathes
 // the fold radius.
-uniform sampler2D tex0;         ///< The current photo.
-uniform sampler2D tex1;         ///< The next photo (cross-faded in by interpolation).
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
 uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
-uniform float     time;         ///< Seconds since this activation, plus a rolled start (see sceneTime).
-uniform float     sceneSeed;    ///< A random number fixed per activation.
-uniform float     audioAdvance; ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
-                                ///< backwards).
-uniform float audioKick;        ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioDrop;        ///< Drop envelope: high after a detected drop, decaying.
-uniform float audioSwell;       ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float     time;          ///< Seconds since this activation, plus a rolled start (see sceneTime).
+uniform float     sceneSeed;     ///< A random number fixed per activation.
+uniform float     audioAdvance;  ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                                 ///< backwards).
+uniform float audioKick;         ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioDrop;         ///< Drop envelope: high after a detected drop, decaying.
+uniform float audioSwell;        ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioChromaHue;    ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
 in vec2  vUV; ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 in float vR;  ///< R (from the vertex stage).

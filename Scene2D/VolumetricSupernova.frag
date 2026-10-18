@@ -33,8 +33,8 @@ uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0
 uniform float audioPhase;    ///< Rotation phase driven by the music (integrated, never jumps).
 uniform float audioAdvance;  ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
                              ///< backwards).
-uniform float sceneTime;    ///< Seconds since this scene was activated.
-uniform float sceneAdvance; ///< The music's advance since this scene was activated (integrated, never jumps).
+uniform float sceneTime;     ///< Seconds since this scene was activated.
+uniform float sceneAdvance;  ///< The music's advance since this scene was activated (integrated, never jumps).
 uniform float audioSwell;    ///< Slow loudness envelope, 0..1 (seconds).
 uniform float audioLevel;    ///< Overall loudness, 0..1.
 uniform float audioKick;     ///< Kick-drum envelope, 0..1 (fast attack, short decay).
@@ -207,7 +207,7 @@ void main()
         float fil = smoothstep( 0.52, 0.78, fbm3D( normalize( p ) * 6.0 + vec3( 7.0 ) ) )
                     * smoothstep( shockwave_radius + 0.25, shockwave_radius * 0.2, dist )
                     * smoothstep( 0.10, 0.45, dist ) * shock_fade; // shell, not the core fill
-        d += fil * 2.6 * dens;                        // ejecta filaments carry the explosion
+        d += fil * 2.6 * dens;                                     // ejecta filaments carry the explosion
         d += smoothstep( 0.40, 0.05, dist ) * 0.55;
 
         if ( d > 0.01 )

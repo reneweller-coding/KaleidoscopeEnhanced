@@ -32,17 +32,17 @@ out vec3  vNormal; ///< Surface normal (from the vertex stage).
 out vec3  vView;   ///< View vector (from the vertex stage).
 out float vHeight; ///< Height (from the vertex stage).
 
-uniform sampler2D tex0;         ///< The current photo.
-uniform sampler2D tex1;         ///< The next photo (cross-faded in by interpolation).
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
 uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
-uniform mat4      projM;        ///< Projection matrix.
-uniform float     eyeOff;       ///< Stereo eye offset (0 in mono).
-uniform float     time;         ///< Seconds since this activation, plus a rolled start (see sceneTime).
-uniform float     audioAdvance; ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
-                                ///< backwards).
-uniform float audioLevel;       ///< Overall loudness, 0..1.
-uniform float audioKick;        ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioSubBass;     ///< Sub-bass band level, 0..1.
+uniform mat4      projM;         ///< Projection matrix.
+uniform float     eyeOff;        ///< Stereo eye offset (0 in mono).
+uniform float     time;          ///< Seconds since this activation, plus a rolled start (see sceneTime).
+uniform float     audioAdvance;  ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                                 ///< backwards).
+uniform float audioLevel;        ///< Overall loudness, 0..1.
+uniform float audioKick;         ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioSubBass;      ///< Sub-bass band level, 0..1.
 
 uniform float reliefP;  ///< preset: height of the relief
 uniform float scrollP;  ///< preset: how fast the sheet drifts

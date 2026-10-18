@@ -36,7 +36,7 @@ uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0
 
 uniform float crystalScaleP; ///< Crystal scale knob, 0.06..0.22.
 uniform float jitterP;       ///< Jitter knob, 0.005..0.04.
-uniform vec2 resolution; ///< Size of the render target in pixels (point sprites scale with it).
+uniform vec2  resolution;    ///< Size of the render target in pixels (point sprites scale with it).
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

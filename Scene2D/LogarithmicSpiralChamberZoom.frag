@@ -92,14 +92,14 @@ float seamW( float a )
 
 /**  The vortex at an angle: everything main() draws after the angle is known.
  *
- * @param a  The angle (atan), or that angle minus a turn near the cut. (in)
- * @param uv  As in main(). (in)
- * @param r  As in main(). (in)
- * @param spd  As in main(). (in)
+ * @param a         The angle (atan), or that angle minus a turn near the cut. (in)
+ * @param uv        As in main(). (in)
+ * @param r         As in main(). (in)
+ * @param spd       As in main(). (in)
  * @param s_growth  As in main(). (in)
- * @param n_chamb  As in main(). (in)
- * @param glw  As in main(). (in)
- * @param t  As in main(). (in)
+ * @param n_chamb   As in main(). (in)
+ * @param glw       As in main(). (in)
+ * @param t         As in main(). (in)
  *
  * @return
  *   The colour before main()'s finish.

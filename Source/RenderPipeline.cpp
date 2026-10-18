@@ -2331,7 +2331,7 @@ void RenderPipeline::stepSimulations( const AudioFeatures &audio, float timeSinc
                 GLuint tex = ( M_Freeze && m_cfxLast[k] )
                                  ? m_cfxLast[k]
                                  : m_cfx.step( k, audio, timeSinceLastFrameSec, static_cast<float>( m_globaltime ), src,
-                                                           m_width, m_height );
+                                               m_width, m_height );
                 m_cfxLast[k] = tex;
                 // The stand-in when the sim has no output yet -- its first frames of
                 // seeding, or right after retireIdle() deleted the previous tenant's
@@ -3868,7 +3868,7 @@ void RenderPipeline::takePhotoB( GLuint src )
         return;
     m_photoBMix = m_photoBTarget; // a fade still running ends here: the slot it left is written now
     const int dst = m_photoBTarget > 0.5f ? 0 : 1;
-    GLint read_fbo = 0, draw_fbo = 0;
+    GLint     read_fbo = 0, draw_fbo = 0;
     glGetIntegerv( GL_READ_FRAMEBUFFER_BINDING, &read_fbo );
     glGetIntegerv( GL_DRAW_FRAMEBUFFER_BINDING, &draw_fbo );
     glBindFramebuffer( GL_READ_FRAMEBUFFER, m_photoBFbo[0] );

@@ -93,8 +93,7 @@ float photoLevel()
 }
 
 /**  A glow of a tint that saturates instead of clipping: as bright as tint * x while that is small, then toward the
- *   tint at full strength (its brightest channel at cap) -- the hue stays.  min( tint * x, vec3( cap ) ) clipped
- *   every channel to cap, and every bright band became one flat white (17.10.2026).
+ * tint at full strength (its brightest channel at cap) -- the hue stays.
  *
  * @param tint  The glow's colour per unit of x. (in)
  * @param x     The glow's strength, 0.. (in)
@@ -102,6 +101,8 @@ float photoLevel()
  *
  * @return
  *   The glow's colour.
+ *
+ * min( tint * x, vec3( cap ) ) clipped every channel to cap, and every bright band became one flat white (17.10.2026).
  **/
 vec3 glowSat( vec3 tint, float x, float cap )
 {

@@ -38,7 +38,7 @@ uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0
 uniform float latticePitchP; ///< Lattice pitch knob, 0.015..0.04.
 uniform float pointSizeP;    ///< Point size knob, 8..16.
 uniform float pointGainP;    ///< Point gain knob, 0.5..1.8.
-uniform vec2 resolution; ///< Size of the render target in pixels (point sprites scale with it).
+uniform vec2  resolution;    ///< Size of the render target in pixels (point sprites scale with it).
 
 /**  The photo at a coordinate: the cross-fade of tex0 and tex1.
  *

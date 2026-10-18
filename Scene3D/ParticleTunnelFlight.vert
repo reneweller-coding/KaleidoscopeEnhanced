@@ -47,7 +47,7 @@ uniform sampler2D tex1;           ///< The next photo (cross-faded in by interpo
 uniform float     interpolation;  ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 uniform float     audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float     audioValence;   ///< Mood valence: 0 dark .. 1 bright.
-uniform vec2 resolution; ///< Size of the render target in pixels (point sprites scale with it).
+uniform vec2      resolution;     ///< Size of the render target in pixels (point sprites scale with it).
 
 out vec4  vCol;  ///< Colour (from the vertex stage).
 out float vLife; ///< Life (from the vertex stage).

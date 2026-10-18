@@ -23,15 +23,15 @@ out vec4 fragColor; ///< The pixel's colour (output).
 // lensAmt, like light dragged around a photon sphere) and the three colour
 // channels sample at slightly different bend amounts (chromatic
 // aberration).  A bright photon ring traces the horizon itself.
-uniform sampler2D tex0;         ///< The current photo.
-uniform sampler2D tex1;         ///< The next photo (cross-faded in by interpolation).
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
 uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
-uniform float     time;         ///< Seconds since this activation, plus a rolled start (see sceneTime).
-uniform float     audioAdvance; ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
-                                ///< backwards).
-uniform float audioKick;        ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioDrop;        ///< Drop envelope: high after a detected drop, decaying.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float     time;          ///< Seconds since this activation, plus a rolled start (see sceneTime).
+uniform float     audioAdvance;  ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                                 ///< backwards).
+uniform float audioKick;         ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioDrop;         ///< Drop envelope: high after a detected drop, decaying.
+uniform float audioChromaHue;    ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
 in vec2  vUV;      ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 in float vDist;    ///< Distance (from the vertex stage).

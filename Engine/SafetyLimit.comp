@@ -56,7 +56,7 @@ uniform int       fading;   ///< 1 while a scene fade runs: its one change is no
 const int Windows = 128;
 
 /**  Relative (linear) luminance of a colour as the viewer sees it: the frame's display value times the exposure,
- *   decoded from sRGB.
+ * decoded from sRGB.
  *
  * @param c     The colour as rendered (display values). (in)
  * @param gain  The auto exposure Present.frag applies. (in)
@@ -72,8 +72,8 @@ float seenLinear( vec3 c, float gain )
 }
 
 /**  Follows one area's luminance: a reversal is a turn of at least 0.1 against the way it went with the darker state
- *   under 0.8 (WCAG 2.3.1, ITU-R BT.1702); the ages of its last eight reversals are kept, and those of the last
- *   second counted.
+ * under 0.8 (WCAG 2.3.1, ITU-R BT.1702); the ages of its last eight reversals are kept, and those of the last
+ * second counted.
  *
  * @param i  The area: a cell (0..127) or a quarter window (Windows + 0..8). (in)
  * @param l  Its relative (linear) luminance this frame, as seen. (in)
@@ -198,8 +198,8 @@ void main()
     if ( prevMean < 0.0 )
         prevMean = seen;
     const float rate = hazardOn > 0.5 ? 0.25 * riseRate : riseRate;
-    const float hi = prevMean + rate * dt;     // <= riseRate (2.0) luma per second, as seen
-    const float clamped = min( seen, hi );     // only a RISE is limited
+    const float hi = prevMean + rate * dt; // <= riseRate (2.0) luma per second, as seen
+    const float clamped = min( seen, hi ); // only a RISE is limited
     limScale = ( seen > 1e-4 ? min( clamped / seen, 1.0 ) : 1.0 ) * hazardDim;
     prevMean = seen < prevMean ? seen : clamped;
 

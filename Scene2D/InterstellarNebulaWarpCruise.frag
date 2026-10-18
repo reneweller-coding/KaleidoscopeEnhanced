@@ -29,8 +29,8 @@ uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0
 uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
 uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
                               ///< backwards).
-uniform float sceneTime;    ///< Seconds since this scene was activated.
-uniform float sceneAdvance; ///< The music's advance since this scene was activated (integrated, never jumps).
+uniform float sceneTime;      ///< Seconds since this scene was activated.
+uniform float sceneAdvance;   ///< The music's advance since this scene was activated (integrated, never jumps).
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 uniform float audioLevel;     ///< Overall loudness, 0..1.
 uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
@@ -165,7 +165,8 @@ void main()
             float star_spark = 0.0;
             if ( hash13( sc ) > 0.93 )
             {
-                vec3 sp3 = ( sc + 0.25 + 0.5 * vec3( hash13( sc + 1.7 ), hash13( sc + 4.1 ), hash13( sc + 9.3 ) ) ) * 0.5;
+                vec3 sp3 = ( sc + 0.25 + 0.5 * vec3( hash13( sc + 1.7 ), hash13( sc + 4.1 ), hash13( sc + 9.3 ) ) )
+                           * 0.5;
                 star_spark = exp( -dot( p - sp3, p - sp3 ) / 0.02 ) * str_mod;
             }
 

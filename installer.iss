@@ -100,6 +100,19 @@ Name: "packships";    Description: "{cm:PackShips}";    GroupDescription: "{cm:P
 Name: "packstations"; Description: "{cm:PackStations}"; GroupDescription: "{cm:PacksGroup}"
 Name: "packobjects";  Description: "{cm:PackObjects}";  GroupDescription: "{cm:PacksGroup}"
 
+[InstallDelete]
+; Presets retired in 1.18: an update over an older installation must not leave them in the menu.  Only these
+; names -- Presets\ also holds the user's own Marked.xml.
+Type: files; Name: "{app}\Presets\Galerie.xml"
+Type: files; Name: "{app}\Presets\Kettenlabor.xml"
+Type: files; Name: "{app}\Presets\Transformationen.xml"
+Type: files; Name: "{app}\Presets\TestAlle.xml"
+Type: files; Name: "{app}\Presets\TestModified.xml"
+Type: files; Name: "{app}\Presets\TestNeu.xml"
+Type: files; Name: "{app}\Presets\TestAufgemoebelt.xml"
+Type: files; Name: "{app}\Presets\TestNiedrigerSchauwert.xml"
+Type: files; Name: "{app}\Tools\review128.wav"
+
 [Files]
 ; The entire staged standalone package (exe + Qt/MSVC runtime + shaders + configs).
 ; Excludes: running the packaged exe once out of dist\ -- which is exactly how
