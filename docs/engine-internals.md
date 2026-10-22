@@ -6684,3 +6684,47 @@ Twenty-five scenes of family F: long exposures, orbits and envelopes, lines that
 - **CurveShorteningLoops:** the k-th wiggle of a star-shaped curve fades as e^(-k^2 tau), and the radius follows
   R^2 = R0^2 (1 - 0.95 life), the circle's law. Each cell is at its own point in life.
 - **TraceOfRollingSpheres:** the tracks fade out before their ball wraps round, so no track vanishes at once.
+
+## 22.10.2026 (49): particle swarms and dot fields (400 list, family G)
+
+Twenty-five scenes of family G: flocks, vortices and lattices made of round points of light.
+
+**Points in a volume.** OrbitalProbabilityDots, GyroidSurfaceSwarm and DustRevealsForms march the ray through a
+jittered lattice of candidate dots. Each candidate glows by its distance to the ray, `length(cross(dp - ro, rd))`,
+times a density at the dot.
+- The lattice must stand askew to the view, by a fixed SKEW rotation, as in family A. An axis-aligned lattice showed
+  its cell planes as straight seams and streaks across the picture.
+
+**Bounded densities.** The orbitals first used hydrogen-like radial terms such as r^6 e^(-r/2) (the f orbital).
+These grow far past the atom's cell, so every dot lit and the picture was noise. Each orbital is now its angular
+part (cos^2, ((3c^2 - 1)/2)^2, ...) times a radial shell exp(-((r - rp)/w)^2). That is at most 1 and gone before
+the cell's edge.
+
+**Seeing the whole sky.** SphereSkySwarm keeps its particles on a sphere round the eye. A pinhole view showed one
+vortex at a time. A stereographic view, `(x . rt, x . up) / (1 + z)`, puts the whole front hemisphere on the screen.
+The vortex centres sit on a golden spiral, so some are always in sight.
+
+**Hashes that do two jobs.** FlockTunnelEscort chose each point's side from `h1 < 0.5` and also took its x offset
+from `h1 - 0.5`. When the flock split, every left point sat at the left of its half too, so the halves stuck to the
+screen's edges. The offset now comes from `fract(2 h1)`. One hash must not both pick a group and place the point
+inside it.
+
+**Even scatter.** ChoreographedLightDots scattered its dots by `sin` of a uniformly spread phase. That piles them up
+at the extremes, so the cloud looked like a rectangle's outline. The free place is now an angle plus a radius
+`sqrt(u)` in an ellipse, which fills the disc evenly.
+
+**Rivers, not dust.** ParticleKnotRivers spread its particles randomly through the knot's tube, and the knot did not
+read. Four strands twisting round it (angle = quarter steps + 3t) draw the knot with the same number of points.
+- The tube's frame is the torus' radial and axial directions, because a torus knot lies on a torus. This saves two
+  of the four knot evaluations per point.
+
+**Cells and neighbours.** PhononLatticeWaves and InertialCircleDots draw one particle per cell and look at the
+3 x 3 neighbourhood.
+- Every displacement must stay under about one cell, or points get cut at the neighbourhood's edge. The six phonon
+  waves together stay at most 1.1 cells.
+- Each wave has a base amplitude (0.4 + 0.6 spectrum), so the lattice moves visibly in quiet passages too.
+- Squeezed places (negative divergence) are bright and stretched places dim. That makes the waves visible.
+
+**Point budgets.** Single-point scenes now loop over 360-600 points (ParticleKnotRivers 600, SphereSkySwarm 400).
+Below about 250 points, a full-screen swarm looked sparse at 1080p. The counts stay knob-driven, so they stay fixed
+per roll.
