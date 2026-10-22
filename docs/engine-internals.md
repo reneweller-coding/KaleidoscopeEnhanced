@@ -7007,3 +7007,51 @@ bays behind the newest: a single arch on a quiet start.
 
 **Chords ring several bells.** BellFieldRings keeps the onsets weighted by the squared chroma (over its maximum) in
 a 256 x 3 state, four pitch classes to a row; a bell's ring reads its own channel at its age.
+
+## 22.10.2026 (56): tunnels and portals of a new build (400 list, family N)
+
+Thirty-five scenes of family N: tunnels whose walls are built in new ways -- folded paper, woven ribbons, scales,
+nets, louvres, stained glass, lace, bottles -- and sequences of gates, hoops and rings to fly through.
+
+**The tunnel's wall as an unrolled surface.** Most walls use the classic mapping: depth z = R0 / r, X = a R0 round
+and Y = z + flight along.
+- A pattern closes on itself only if it has a whole number of cells round. This holds for a lattice of three
+  crease families (Kresling: A = s - t/2, B = s + t/2), for helical ribbons (the kagome weave: the period chosen so
+  the helices count M round), and for Voronoi tilings (the cell index taken mod M in every neighbour lookup).
+- A pixel's size in lattice units comes from the mapping, `R0 / (r^2 height)` along and `M / (2 pi r height)` round.
+  Every wall fades its detail to the pattern's mean where a cell shrinks below a few pixels, so the far end never
+  shimmers.
+- The kagome weave's over and under is the cyclic rule (1 over 2, 2 over 3, 3 over 1). Three line families at half
+  integers never meet in one point, which leaves the hexagons open.
+
+**A helicoid seen along its axis.** ArchimedesScrewInterior first set the first blade ahead at `P / ns (1 - fract)`.
+The phase falls with depth, so the first blade lies at `P / ns fract(phase)`, with the blade number floor(phase).
+- With the wrong depth the blade numbers did not match across the angle where fract wraps, and a hard line ran
+  through the picture.
+- The blade passing through the eye fades out over the blade behind it. This is a cross-fade of light, never of
+  depths.
+
+**Polygons from laser sheets.** LaserConeTunnel first drew beams inside sheets parallel to the flight. Every line
+parallel to the view axis projects through the centre, so the picture became a second starburst.
+- Scan lines at constant depth on each sheet draw straight polygon sides instead, and they cross into a turning web.
+- The nearest sheet, which is the tunnel's wall, is weighted up.
+- The scan lines' width in depth is `z^2 / (distance height)`.
+
+**Rings from the music, a procession for the start.** SmokeRingGates and RubatoStretchTunnel take their rings from
+bars or beats written into state slots, so the way was empty for the first seconds.
+- SmokeRingGates adds a fainter fixed procession.
+- RubatoStretchTunnel starts its slots with half-second beats in the past, numbered below zero, so the first real
+  beat overwrites the oldest.
+- A ring stands where its beat has travelled to by now. A place on the wall finds the rings just nearer and just
+  farther among the 32 slots and stretches the photo between them, so a rubato is seen as space.
+
+**Gates whose form is set when they appear.** MandalaGateSequence writes a gate's symmetry (from the strongest pitch
+class) into its slot as soon as the gate exists: one gate beyond the farthest one drawn, so no gate changes in
+view. The same kind of slot holds the cathedral's bays in family M.
+
+**Melody on a wall.** AuroraTubeFlight's curtains sway at each depth by the melody's pitch of as long ago as that
+depth (seven samples a unit), averaged over nine samples with a triangle weight. The steps of single notes would
+otherwise draw zigzags, and the sway is let go toward the far end.
+
+**Soap films need bands.** A film's light only as a mix of two tones read as a flat disc. The interference phase
+must also modulate the brightness, `(0.5 + 0.5 cos(phase))^2`, so the swirling bands show.
