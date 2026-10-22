@@ -6948,3 +6948,62 @@ out of the picture. PhotoColourSpaceCloud subtracts the Lab value of the photo's
 SpirolateralRhythms keep spectrum bands smoothed in 8 x 1 states. ScriabinColourOrgan keeps the twelve chroma values
 in a 12 x 1 state; the main colour is a soft maximum (strengths to the fourth power), so a chord change glides from
 colour to colour. FlowDirectionRelief keeps the smoothed onset in a 1 x 1 state.
+
+## 22.10.2026 (55): music as architecture of light (400 list, family M)
+
+Twenty scenes of family M: the music's structure itself becomes the building, the path or the pattern -- chords
+build bays, bars build rings, voices braid, the stereo image sends waves.
+
+**A period from a measurement must not divide the clock.** OstinatoRings first turned each ring's marker by
+`fract(now / P)`, with P a share of the measured bar length. Every new measurement changed P and so jumped every
+marker by now times the change -- the same fault as an audio factor on time.
+- The marker phases now live in the state (row 1, cells 1 to 4) and are integrated, `phase + 1 / (60 P)`.
+- The measured bar length is itself smoothed there (blend 0.01 a step), so the onset window round each ring stretches
+  softly.
+
+**Counts and histories carried on between state steps.** A state stepped 60 (or 30, or 20) times a second moves in
+steps on a faster display.
+- A counter that sums the steps of a phase (PanoramaLightWaves the beats, MeterStarPolygon the bars) adds in the main
+  pass the step since the last state step, `count + fract(phase - lastPhase + 1)` (when below one half).
+- A history read at an age reads the cell `age * rate - stateFrac` (ReverbLightReflections, BellFieldRings,
+  OstinatoRings, BassRiverOfLight); CounterpointBraids places its steps at `j + stateFrac`.
+- A time stamp written by the state pass (DownbeatRipplePool's drops) is compared with
+  `(stateFrame - 1 + stateFrac) / rate`.
+
+**The melody ring.** audioMelodyHead is the next write index, so the slot at the head is the oldest sample, not the
+newest; the newest is head - 1.
+- The ring moves on every 80 ms; audioMelodyPhase is the progress toward the next sample and carries every tread or
+  note on smoothly (ArpeggioSpiralSteps, LightScoreFlythrough).
+- Drawing only every second sample swapped the drawn samples at every write (even and odd); both scenes now draw
+  every sample.
+- The analysis spans 61 to 1201 Hz, so a tune covers a narrow band of the normalised pitch. A pitch is placed by its
+  distance from the ring's mean in its spread. Both are weighted by a sine window over the sample's age, so a sample
+  enters and leaves without a jump.
+
+**The downbeat uniform is not a pulse.** audioDownbeat is a slewed envelope that peaks near 0.7 times the gate. A
+rising edge at 0.5 misses quiet passages, so DownbeatRipplePool takes the wraps of the beat, bar and phrase phases.
+
+**Modes must not cancel.** RoomModeGlow first summed the signed mode shapes of all pitch classes; a chord's modes
+cancelled and only one corner glowed.
+- Each mode now shines with its own antinodes, `pow(|cos cos cos|, sharp)`, weighted by its strength over the
+  strongest one's, so a chord's lattices overlap.
+- The spheres need a width above the step: step 0.02 with a dithered start, sharp 12 to 24, wavelengths of about one
+  unit.
+
+**Walls of a twisted prism, found along the ray.** ChordOrbifoldFlight looks along the prism's axis. The depth where
+a ray meets the wall is the fixed point of `z = r_in / max_e dot(p, n_e(twist (z + fly)))`; six steps are enough.
+- The edges glow where the largest and the second largest face distances meet.
+- The frames are lines of `(z + fly) / 0.7` with an analytic width.
+
+**No fwidth inside the branch.** LightScoreFlythrough's bar lines on the plane are drawn only below the horizon.
+Their width in pixels is computed from the plane's depth, `z^2 / (eye F) / height`, because fwidth inside the branch
+would draw a grid.
+
+**A nave that is there from the start.** ChordCathedralNave first drew only bays built by chords and stood three
+bays behind the newest: a single arch on a quiet start.
+- The view now stands ten bays before the newest, built at the far end.
+- Bays from before the first chord stand in plain proportions, dimmer.
+- The floor line ends at a fixed depth (ten bays), so it never jumps when a bay is added.
+
+**Chords ring several bells.** BellFieldRings keeps the onsets weighted by the squared chroma (over its maximum) in
+a 256 x 3 state, four pitch classes to a row; a bell's ring reads its own channel at its age.
