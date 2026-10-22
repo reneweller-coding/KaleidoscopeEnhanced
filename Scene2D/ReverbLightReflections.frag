@@ -18,6 +18,7 @@
  *    audioOnset   -> every onset sends out a ring and its echoes (kept for four seconds)
  *    audioAdvance -> the source wanders through the hall (integrated)
  *    audioSwell   -> the rings' glow
+ *    audioBeatPhase -> a soft pulse on every beat, so quiet passages with weak onsets keep their light
  *
  *  Knobs: hallP (the hall's size), decayP (how long the echoes last), hueP.
  *
@@ -40,6 +41,7 @@ uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
 uniform float audioOnset;     ///< Onset envelope (any instrument), 0..1.
+uniform float audioBeatPhase; ///< Position within the current beat, 0..1.
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 
 uniform float hallP;  ///< Hall knob: the hall's size, 0..1.
@@ -739,7 +741,8 @@ vec4 stateStep()
 {
     ivec2 c = stCell();
     if ( c.x == 0 )
-        return vec4( clamp( audioOnset, 0.0, 1.0 ), 0.0, 0.0, 1.0 );
+        return vec4( max( clamp( audioOnset, 0.0, 1.0 ), 0.4 * exp( -10.0 * clamp( audioBeatPhase, 0.0, 1.0 ) ) ), 0.0,
+                     0.0, 1.0 );
     if ( stateFrame < 0.5 )
         return vec4( 0.0, 0.0, 0.0, 1.0 );
     return texelFetch( texState, ivec2( c.x - 1, 0 ), 0 );

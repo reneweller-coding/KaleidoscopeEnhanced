@@ -19,6 +19,7 @@
  *    audioOnset   -> every onset releases a new cloud (at most one every 0.4 s)
  *    audioAdvance -> the space drifts (integrated)
  *    audioSwell   -> the inks' glow
+ *    audioBeatPhase -> a quiet passage releases a cloud on a beat when no onset did for two seconds
  *
  *  Knobs: sizeP (how big the clouds grow), curlP (how torn their edges are), hueP.
  *
@@ -41,10 +42,11 @@ uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
 uniform float audioOnset;     ///< Onset envelope (any instrument), 0..1.
+uniform float audioBeatPhase; ///< Position within the current beat, 0..1.
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 
 uniform float sizeP; ///< Size knob, 0..1.
-uniform float curlP; ///< Curl knob: how torn their edges are.
+uniform float curlP; ///< Curl knob: how torn their edges are, 0..1.
 uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 // @state 11 1 60 32
 uniform sampler2D texState;   ///< The scene's own field from the last step (EffectShader::stepState).
@@ -731,24 +733,24 @@ float stLod( vec2 cc, float cellPx )
     return clamp( log2( max( max( length( ux ), length( uy ) ) * 1024.0 / max( cellPx, 1e-3 ), 1.0 ) ), 0.0, 6.0 );
 }
 
-/**  The state pass: ten cloud slots and an eleventh that remembers the last onset, the clouds so far and the last
- * release's time.
+/**  The state pass: ten cloud slots and an eleventh that remembers the last onset, the clouds so far, the last
+ * release's time and the last beat phase.
  *
  * @return
  *   A cloud: its birth (s), its place x, y and its seed; or the bookkeeping: last onset, clouds so far, last
- *   release, 1.
+ *   release, last beat phase.
  **/
 vec4 stateStep()
 {
     int   j = stCell().x;
     float now = stateFrame / 60.0;
-    float on = clamp( audioOnset, 0.0, 1.0 );
+    float on = clamp( audioOnset, 0.0, 1.0 ), bt = clamp( audioBeatPhase, 0.0, 1.0 );
     if ( stateFrame < 0.5 )
-        return j == 10 ? vec4( on, 0.0, -1.0, 1.0 ) : vec4( -100.0, 0.0, 0.0, 0.0 );
+        return j == 10 ? vec4( on, 0.0, -1.0, bt ) : vec4( -100.0, 0.0, 0.0, 0.0 );
     vec4 book = texelFetch( texState, ivec2( 10, 0 ), 0 );
-    bool rel = on > 0.45 && book.x <= 0.45 && now - book.z > 0.4;
+    bool rel = ( on > 0.45 && book.x <= 0.45 && now - book.z > 0.4 ) || ( bt < book.w - 0.5 && now - book.z > 2.0 );
     if ( j == 10 )
-        return vec4( on, rel ? mod( book.y + 1.0, 1000.0 ) : book.y, rel ? now : book.z, 1.0 );
+        return vec4( on, rel ? mod( book.y + 1.0, 1000.0 ) : book.y, rel ? now : book.z, bt );
     if ( rel && j == int( mod( book.y, 10.0 ) ) )
     {
         float k = book.y;

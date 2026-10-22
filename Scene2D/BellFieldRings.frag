@@ -18,6 +18,7 @@
  *    audioChroma    -> which bells ring: the tones that sound, a chord ringing several at once
  *    audioAdvance   -> the bells sway (integrated)
  *    audioSwell     -> the rings' glow
+ *    audioBeatPhase -> a soft pulse on every beat, so quiet passages with weak onsets keep their light
  *
  *  Knobs: bellP (the bells' size), ringP (how fast the rings spread), hueP.
  *
@@ -40,10 +41,11 @@ uniform float audioValence;    ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioChromaHue;  ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioPhase;      ///< Rotation phase driven by the music (integrated, never jumps).
 uniform float audioOnset;      ///< Onset envelope (any instrument), 0..1.
+uniform float audioBeatPhase;  ///< Position within the current beat, 0..1.
 uniform float audioChroma[12]; ///< Pitch-class energies (12 values).
 uniform float audioSwell;      ///< Slow loudness envelope, 0..1 (seconds).
 
-uniform float bellP; ///< Bell knob: the bells' size.
+uniform float bellP; ///< Bell knob: the bells' size, 0..1.
 uniform float ringP; ///< Ring knob, 0..1.
 uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 // @state 256 3 60
@@ -747,7 +749,8 @@ vec4 stateStep()
             mx = max( mx, audioChroma[i] );
         int  b = 4 * c.y;
         vec4 ch = vec4( audioChroma[b], audioChroma[b + 1], audioChroma[b + 2], audioChroma[b + 3] ) / mx;
-        return clamp( audioOnset, 0.0, 1.0 ) * pow( clamp( ch, 0.0, 1.0 ), vec4( 2.0 ) );
+        return max( clamp( audioOnset, 0.0, 1.0 ), 0.4 * exp( -10.0 * clamp( audioBeatPhase, 0.0, 1.0 ) ) )
+               * pow( clamp( ch, 0.0, 1.0 ), vec4( 2.0 ) );
     }
     if ( stateFrame < 0.5 )
         return vec4( 0.0 );

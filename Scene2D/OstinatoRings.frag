@@ -19,6 +19,7 @@
  *    audioOnset    -> the rings' figures: the onsets of each ring's last cycle (kept for four seconds)
  *    audioBarPhase -> the cycles' lengths (the bar's length, measured) and the rings' turning
  *    audioSwell    -> the rings' glow
+ *    audioBeatPhase -> a soft pulse on every beat, so quiet passages with weak onsets keep their light
  *
  *  Knobs: sizeP (the rings' size), widthP (the rings' width), hueP.
  *
@@ -41,6 +42,7 @@ uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
 uniform float audioOnset;     ///< Onset envelope (any instrument), 0..1.
+uniform float audioBeatPhase; ///< Position within the current beat, 0..1.
 uniform float audioBarPhase;  ///< Position within the current bar, 0..1.
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 
@@ -761,7 +763,8 @@ vec4 stateStep()
     if ( c.y == 0 )
     {
         if ( c.x == 0 )
-            return vec4( clamp( audioOnset, 0.0, 1.0 ), 0.0, 0.0, 1.0 );
+            return vec4( max( clamp( audioOnset, 0.0, 1.0 ), 0.4 * exp( -10.0 * clamp( audioBeatPhase, 0.0, 1.0 ) ) ),
+                         0.0, 0.0, 1.0 );
         if ( stateFrame < 0.5 )
             return vec4( 0.0, 0.0, 0.0, 1.0 );
         return texelFetch( texState, ivec2( c.x - 1, 0 ), 0 );

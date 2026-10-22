@@ -57,7 +57,7 @@ void main()
     float fh = famHue();
     float R = 0.3 + 0.12 * clamp(ballP, 0.0, 1.0);
     float swing = 0.5 - 0.5 * cos(0.05 * sceneTime + 0.25 * audioAdvance);
-    float dist = mix(2.0, 1.25 - 0.2 * clamp(approachP, 0.0, 1.0), swing);
+    float dist = mix(2.2, 1.45 - 0.1 * clamp(approachP, 0.0, 1.0), swing);   // the eye stays outside the ball (> 1.33)
     float three = mix(mod(max(audioSectionPrev, 0.0) + 1.0, 2.0), mod(max(audioSectionId, 0.0) + 1.0, 2.0),
                       smoothstep(0.0, 6.0, audioSectionAge));
     // the eye on the corner's diagonal, looking into it

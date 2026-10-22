@@ -11,10 +11,11 @@
  *   audioOnset    -> the rings' figures: the onsets of each ring's last cycle (kept for four seconds)
  *   audioBarPhase -> the cycles' lengths (the bar's length, measured) and the rings' turning
  *   audioSwell    -> the rings' glow
+ *   audioBeatPhase -> a soft pulse on every beat, so quiet passages with weak onsets keep their light
  *
  * Knobs: sizeP (the rings' size), widthP (the rings' width), hueP.
 //@params sizeP widthP
-//@audio audioOnset audioBarPhase audioSwell
+//@audio audioOnset audioBeatPhase audioBarPhase audioSwell
 //@state 256 2 60 32
 //@body
 /**  A ring's cycle: a beat, half a bar, a bar or two bars.
@@ -41,7 +42,7 @@ vec4 stateStep()
 {
     ivec2 c = stCell();
     if (c.y == 0) {
-        if (c.x == 0) return vec4(clamp(audioOnset, 0.0, 1.0), 0.0, 0.0, 1.0);
+        if (c.x == 0) return vec4(max(clamp(audioOnset, 0.0, 1.0), 0.4 * exp(-10.0 * clamp(audioBeatPhase, 0.0, 1.0))), 0.0, 0.0, 1.0);
         if (stateFrame < 0.5) return vec4(0.0, 0.0, 0.0, 1.0);
         return texelFetch(texState, ivec2(c.x - 1, 0), 0);
     }

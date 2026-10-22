@@ -10,10 +10,11 @@
  *   audioChroma    -> which bells ring: the tones that sound, a chord ringing several at once
  *   audioAdvance   -> the bells sway (integrated)
  *   audioSwell     -> the rings' glow
+ *   audioBeatPhase -> a soft pulse on every beat, so quiet passages with weak onsets keep their light
  *
  * Knobs: bellP (the bells' size), ringP (how fast the rings spread), hueP.
 //@params bellP ringP
-//@audio audioOnset audioChroma[12] audioSwell
+//@audio audioOnset audioBeatPhase audioChroma[12] audioSwell
 //@state 256 3 60
 //@body
 /**  The state pass: the onsets of the last four seconds weighted by the chroma, three rows of four tones, the newest
@@ -30,7 +31,7 @@ vec4 stateStep()
         for (int i = 0; i < 12; ++i) mx = max(mx, audioChroma[i]);
         int b = 4 * c.y;
         vec4 ch = vec4(audioChroma[b], audioChroma[b + 1], audioChroma[b + 2], audioChroma[b + 3]) / mx;
-        return clamp(audioOnset, 0.0, 1.0) * pow(clamp(ch, 0.0, 1.0), vec4(2.0));
+        return max(clamp(audioOnset, 0.0, 1.0), 0.4 * exp(-10.0 * clamp(audioBeatPhase, 0.0, 1.0))) * pow(clamp(ch, 0.0, 1.0), vec4(2.0));
     }
     if (stateFrame < 0.5) return vec4(0.0);
     return texelFetch(texState, ivec2(c.x - 1, c.y), 0);
