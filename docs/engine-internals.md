@@ -6903,3 +6903,48 @@ passes the eye and the slots shift (SpheromakTwist). Tie them to the ring's own 
   beam segment (opening to centre) in closed form: about 100 segments.
 - StellaratorFluxSurfaces finds where a ray from the axis meets an elliptic tube that turns with depth, by four
   fixed-point steps z = r_e(theta - phi(z)) / rho.
+
+## 22.10.2026 (54): colour as space (400 list, family L)
+
+Twenty scenes of family L: colour itself becomes the place one flies through, or the stuff that moves.
+
+**A direction times an unbounded clock leaps.** FlowDirectionRelief first carried its streak noise by
+`p - dir * run`, with dir the local flow direction. Wherever the direction turned, even slightly, the sample point
+jumped by run times the change: the noise flickered across the whole field.
+- Now two layers are each carried only a short way, `dir * 0.05 * fract(4 run)` and the same shifted by half a
+  period, and cross-faded with the triangle weight |1 - 2 fract|.
+- Each layer is invisible at the moment it restarts. This is the usual flow-noise technique.
+- A search of all sources (direction or velocity times sceneTime, run or advance) found no other case: the remaining
+  hits were signs (plus or minus 1) or bounded step lengths.
+
+**Indices that wrap may only be blended as colours.** PaletteCyclingRipples blended three index fields (ripples, a
+fall, a whirl). The whirl's index jumps by whole turns where its angle wraps. Mixed with another index by a fractional
+weight, the jump became a visible seam. Each part now takes its own palette colour, and the colours are blended.
+
+**True blackbody colours read as sepia.** From about 3500 K on they are pale, so a field of 1000 to 9000 kelvin at
+moderate brightness looked brown and grey. Neither deeper powers nor brightness tied to heat helped. A saturated glow
+ramp along the same stations (dark red, red, orange, yellow, white, blue-white) reads as heat. The documentation says
+so.
+
+**Metamers by Gram-Schmidt in six bands.** MetamerismReveal models colour as six spectral bands seen through three
+sensor curves.
+- The hidden pigment is the photo's pigment plus a fixed spectral wiggle with the three
+  "sensor x first light" rows projected out (Gram-Schmidt on two vec3 halves).
+- Under the first light the two are exact metamers; under the second they part.
+
+**Pairs that are born and die smoothly.** In ColourPhaseVortices a vortex pair's two points separate by
+s = D sin(pi * phrase), so at birth and at death they coincide and their angles cancel exactly. A radial phase term
+summed over both points (not differenced) winds the arms into spirals. A difference cancels at every place midway
+between the two points.
+
+**A collision that keeps its light.** In ColouredSmokeRingCollisions the merged ring starts with twice the brightness
+and the average of the two colours, so it equals the two rings' sum at the moment of contact. Only then does the
+colour pattern round it fade in.
+
+**The photo's colour cloud is centred on its mean.** A strongly coloured photo puts its Lab cloud far off the axis,
+out of the picture. PhotoColourSpaceCloud subtracts the Lab value of the photo's mean colour (mip level 8).
+
+**Smoothed control values in tiny states.** LuminousFogStrata, AdditiveSpotlightVenn, GeisslerTubeSpirals and
+SpirolateralRhythms keep spectrum bands smoothed in 8 x 1 states. ScriabinColourOrgan keeps the twelve chroma values
+in a 12 x 1 state; the main colour is a soft maximum (strengths to the fourth power), so a chord change glides from
+colour to colour. FlowDirectionRelief keeps the smoothed onset in a 1 x 1 state.
