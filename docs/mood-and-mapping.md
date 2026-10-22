@@ -240,6 +240,28 @@ Sektions*typ* einzusetzen hieße, jeder Drop eines ganzen Sets teilte sich einen
 Speicherplatz — genau das „immer dieselben Szenen", das dieser Index schon
 einmal erzeugt hat. Eine Cue-Sektion würfelt also immer frisch.
 
+Seit dem 22.10.2026 reichen die Cues weiter als bis zum Schnitt:
+
+* **Der Drop trifft auch das Bild.** Solange Cues laufen, kommen Drop-Zähler
+  und Drop-Puls der Aufbereitung (`audioDrop` der Szenen, Streaks des
+  Present-Pass, Schockwelle, Drop-Rewind) vom Cue. Die eigenen Drop-Vermutungen
+  der Analyse zählen dann nicht. Jede Taktlinie setzt die Taktposition zurück
+  und rastet das Phrasenraster auf den Takt ein.
+* **Ein Break wird überblendet, nicht geschnitten.** Ist die neue Sektion
+  ruhiger als die letzte (`Break`, `Cut`, `Outro` oder 0,15 weniger Energie),
+  setzt `applyScoreCues()` `Tick::sectionFalls`. Der Wechsel kommt dann auf der
+  nächsten Taktlinie und blendet über 8–16 Beats; das Overlay ebenso. Der harte
+  Schnitt bleibt dem Drop.
+
+Wie gut die Analyse ohne Cues trifft, misst `Tools/analyser_vs_cues.py` an den
+Demos der Generator-Familie, deren Cue-Dateien danebenliegen (43 Tracks, Stand
+22.10.2026):
+
+* **Sektionsgrenzen:** 38 % gefunden.
+* **Drops:** 20 % gefunden; 62 % der erkannten Drops sind erfunden.
+
+Mit Cues ist das egal.
+
 Schweigt der Sender zwei Sekunden lang, übernimmt die Audioanalyse wieder.
 `Kaleidoscope.exe -q` prüft Decoder, Akkumulator, Socket und vor allem die
 Eigenschaft, auf der alles ruht: ohne Cues kommt ein Scheduler-Tick byteweise

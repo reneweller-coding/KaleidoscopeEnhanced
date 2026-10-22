@@ -26,6 +26,8 @@ which makes drops, sections and phrases; silence runs on the solo times alone.  
   floor    every natural fade (timer; a musical trigger in a calm preset) at least max(timeSceneFadeMin, the
            transition's minFade); a calm preset never cuts (no "music" or "drop" change) and no fade there ends
            sooner than timeSceneFadeMin
+  soft     (in floor) a change into a calmer section (score cues: a break, an outro, less energy) fades over at least
+           eight beats
   fxfloor  the same for the overlay (combine) fades of a calm preset: a natural one at least timeSceneFadeMin, a
            musical trigger only after 20 s and as a natural change, never a cut
 
@@ -161,9 +163,9 @@ def check(path):
                 beats = float(r["phrase_left"]) * bpm / 60.0
                 if not 3.0 - 0.1 < beats <= 4.0 + 0.1:
                     bad["stay"].append("%s: on the phrase with %.2f beats left" % (at, beats))
-        elif why in ("music", "drop", "music-calm"):
+        elif why in ("music", "drop", "music-calm", "music-soft"):
             # a drop may cut after 2 s; a section or a harmonic jump within 4 s of a change was answered by it
-            least = 20.0 if calm else 4.0 if why == "music" else 2.0
+            least = 20.0 if calm else 4.0 if why in ("music", "music-soft") else 2.0
             if solo < least - frame:
                 bad["stay"].append("%s: cut (%s) after %.2f s, before %.0f s" % (at, why, solo, least))
 
@@ -176,12 +178,14 @@ def check(path):
             lab_secs += on_screen
 
         # floor
-        if why in ("timer", "music-calm"):
+        if why in ("timer", "music-calm", "music-soft"):
             floor = max(fade_min, trans.get(r["transition"], 0.0))
             if fade_planned < floor - 1e-3:
                 bad["floor"].append("%s: fade %.2f s via %s, floor %.2f s" % (at, fade_planned, r["transition"],
                                                                                floor))
-        if calm and why in ("music", "drop"):
+        if why == "music-soft" and fade_planned < 8 * 60.0 / 200.0 - 1e-3:
+            bad["floor"].append("%s: into a calmer section in %.2f s, under eight beats" % (at, fade_planned))
+        if calm and why in ("music", "drop", "music-soft"):
             bad["floor"].append("%s: a %s cut in a calm preset" % (at, why))
         if calm and fade < fade_min - 2 * frame:
             bad["floor"].append("%s: the fade ended after %.2f s, timeSceneFadeMin %.0f s" % (at, fade, fade_min))

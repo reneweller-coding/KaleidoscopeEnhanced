@@ -45,7 +45,16 @@ void applyScoreCues( const ScoreCues::Frame &cue, ScoreCueBridge &bridge, SceneS
         bridge.wasLive = true;
     }
     if ( cue.section )
+    {
         ++bridge.sections;
+        // Calmer than the last: the section's type says so, or its energy is down by 0.15 (a groove that thins out).
+        const bool calm_type = cue.sectionType == static_cast<int>( CueSectionE::BREAK )
+                               || cue.sectionType == static_cast<int>( CueSectionE::CUT )
+                               || cue.sectionType == static_cast<int>( CueSectionE::OUTRO );
+        t.sectionFalls = !cue.drop
+                         && ( calm_type || ( bridge.lastEnergy >= 0.f && cue.energy < bridge.lastEnergy - 0.15f ) );
+        bridge.lastEnergy = cue.energy;
+    }
     if ( cue.drop )
         ++bridge.drops;
 

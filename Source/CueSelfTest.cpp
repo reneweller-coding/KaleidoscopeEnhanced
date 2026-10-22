@@ -1491,6 +1491,31 @@ int runCueSelfTest()
                std::to_string( x.sectionCount ) );
     }
 
+    // ---------------------------------------------------------------- calmer sections (22.10.2026)
+    {
+        ScoreCues::instance().reset();
+        ScoreCueBridge bridge;
+        auto           section = [&]( const char *type, float energy, bool drop )
+        {
+            ScoreCue s;
+            decodes( sectionMessage( type, energy ), s );
+            ScoreCues::instance().apply( s );
+            if ( drop )
+            {
+                decodes( dropMessage(), s );
+                ScoreCues::instance().apply( s );
+            }
+            SceneScheduler::Tick t = sampleTick();
+            applyScoreCues( ScoreCues::instance().drain( 0.016f ), bridge, t );
+            return t.sectionFalls;
+        };
+        check( !section( "Groove", 0.6f, false ), "the first section has nothing to be calmer than" );
+        check( !section( "Drop", 0.9f, true ), "a drop never falls" );
+        check( section( "Break", 0.8f, false ), "a break falls by its type, whatever its energy" );
+        check( !section( "Build", 0.7f, false ), "a build with a little less energy does not" );
+        check( section( "Groove", 0.5f, false ), "a groove with 0.2 less energy does" );
+    }
+
     // ---------------------------------------------------------------- the family's dialects (02.10.2026)
     {
         ScoreCue d;

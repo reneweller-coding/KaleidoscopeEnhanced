@@ -594,7 +594,10 @@ void SceneScheduler::tick( const Tick &t )
          && t.harmonicChange * t.musicPresence > 0.95f )
     {
         if ( !mid_fade )
+        {
             m_forceEffectChange = true;
+            m_forceIsSoft = false;
+        }
         m_noveltyCooldown = 8.0f; // at most one musical cut every ~8 s
         m_harmCutCooldown = 45.f;
     }
@@ -765,8 +768,15 @@ void SceneScheduler::tick( const Tick &t )
                 if ( ( ++m_freshSections & 1 ) == 0 )
                     m_forceFxChange = true;
             }
+            // INTO A CALMER SECTION (22.10.2026): a break, a cut or an outro the score cues name, or a section with
+            // less energy, fades in over two to four bars instead of the 0.8 s cut -- the music opens up there; the
+            // hard cut is the drop's gesture.
             if ( !mid_fade )
+            {
                 m_forceEffectChange = true;
+                m_forceIsSoft = t.sectionFalls;
+            }
+            m_forceFxSoft = t.sectionFalls;
         }
         m_noveltyCooldown = 8.0f; // hold off the harmonic hook right after
     }
@@ -806,6 +816,7 @@ void SceneScheduler::tick( const Tick &t )
         else
         {
             m_forceEffectChange = true;
+            m_forceIsSoft = false;
             m_dropCutPending = true;
             // THE DROP'S SCENE (17.10.2026): the reserve rolls a spectacle on the build-up edge, a phrase grid's
             // prediction ahead -- in long build-ups a phrase too early, and a section cut there took the reserved
@@ -889,6 +900,7 @@ void SceneScheduler::tick( const Tick &t )
         // stays a cut.
         bool       forced = m_forceEffectChange;
         const bool calm_trigger = forced && !m_forceIsManual && m_sceneFadeMin > 0.f;
+        const bool soft_trigger = forced && !m_forceIsManual && !calm_trigger && m_forceIsSoft;
         float      min_solo = m_forceIsManual ? 0.6f : ( m_sceneFadeMin > 0.f ? 20.f : 2.0f );
         if ( ts > m_texFadeDur || ( forced && ts > min_solo ) )
         {
@@ -899,11 +911,14 @@ void SceneScheduler::tick( const Tick &t )
                 m_changeWhy = !forced || ( calm_trigger && ts > m_texFadeDur ) ? "timer"
                               : m_forceIsManual                                ? "manual"
                               : calm_trigger                                   ? "music-calm"
+                              : soft_trigger                                   ? "music-soft"
                                                                                : "music";
             m_forceEffectChange = false;
             m_forceIsManual = false;
+            m_forceIsSoft = false;
             m_pendingEffectChange = true;
-            m_pendingEffectForced = m_pendingEffectForced || ( forced && !calm_trigger );
+            m_pendingEffectForced = m_pendingEffectForced || ( forced && !calm_trigger && !soft_trigger );
+            m_pendingEffectSoft = m_pendingEffectSoft || soft_trigger;
         }
 
         // Beat-quantised: a due change is held PENDING until the next downbeat
@@ -916,7 +931,8 @@ void SceneScheduler::tick( const Tick &t )
             // four-beat fade ends on the next 8-bar boundary, where dance music turns: it starts with four beats
             // left.  At most one phrase of waiting, then as before.  A forced change is not held.
             bool phrase_wait = false, phrase_due = false;
-            if ( !m_pendingEffectForced && !m_reviewMode && t.rhythmStrength > 0.55f && t.estimatedBPM > 0.004f
+            if ( !m_pendingEffectForced && !m_pendingEffectSoft && !m_reviewMode && t.rhythmStrength > 0.55f
+                 && t.estimatedBPM > 0.004f
                  && m_dropInSong && m_secsSinceDrop < 180.f && t.phraseSecsLeft > 0.f )
             {
                 const float beat = 60.f / ( 40.f + 160.f * t.estimatedBPM );
@@ -931,9 +947,11 @@ void SceneScheduler::tick( const Tick &t )
                 if ( PhraseLog && phrase_due )
                     fprintf( stderr, "PHRASE: change held %.1f s, starts %.2f s before the boundary\n",
                              m_pendingEffectAge, t.phraseSecsLeft );
-                bool forced_go = m_pendingEffectForced;
+                bool       forced_go = m_pendingEffectForced;
+                const bool soft_go = m_pendingEffectSoft && !forced_go;
                 m_pendingEffectChange = false;
                 m_pendingEffectForced = false;
+                m_pendingEffectSoft = false;
                 m_pendingEffectAge = 0.f;
 
                 m_texState = 1;
@@ -1015,6 +1033,13 @@ void SceneScheduler::tick( const Tick &t )
                         if ( m_transitions && m_actTransition < m_transitions->size() )
                             floor_t = fmaxf( floor_t, ( *m_transitions )[m_actTransition]->minFade() );
                         m_texFadeDur = fmaxf( m_texFadeDur, floor_t );
+                    }
+                    // Into a calmer section: two to four bars, whatever the config time or the beat clamp said (a
+                    // break often loses the beat's confidence, and the config's 15..50 s would outlast it).
+                    if ( soft_go && !m_reviewMode )
+                    {
+                        const float beat = 60.f / ( 40.f + 160.f * std::max( t.estimatedBPM, 0.4f ) );
+                        m_texFadeDur = fmaxf( std::clamp( m_texFadeDur, 8.f * beat, 16.f * beat ), floor_t );
                     }
                     // KALEIDO_FADE_LOG: one line per scene fade -- which transition,
                     // how long, and what the floor was -- to verify the floors in a
@@ -1248,6 +1273,7 @@ void SceneScheduler::tickFx( const Tick &t, bool trueStereoHold )
         // swapped FxPlain for FxWater in 0.8-1.9 s (the scene plan run on the
         // 128-BPM structure track, 22.10.2026).
         const bool  calm_trigger = forced_c && !m_forceFxIsManual && m_sceneFadeMin > 0.f;
+        const bool  soft_trigger = forced_c && !m_forceFxIsManual && !calm_trigger && m_forceFxSoft;
         const float min_stay = calm_trigger ? 20.f : 0.6f;
         // The true-stereo hold freezes combine switching: an eye-packed 3D
         // frame must not enter a combine cross-fade (the pending change fires
@@ -1259,11 +1285,14 @@ void SceneScheduler::tickFx( const Tick &t, bool trueStereoHold )
                 m_fxChangeWhy = !forced_c || ( calm_trigger && ts > m_fxFadeDur ) ? "timer"
                                 : m_forceFxIsManual                               ? "manual"
                                 : calm_trigger                                    ? "music-calm"
+                                : soft_trigger                                    ? "music-soft"
                                                                                   : "music";
             m_forceFxChange = false;
             m_forceFxIsManual = false;
+            m_forceFxSoft = false;
             m_pendingFxChange = true;
-            m_pendingFxForced = m_pendingFxForced || ( forced_c && !calm_trigger );
+            m_pendingFxForced = m_pendingFxForced || ( forced_c && !calm_trigger && !soft_trigger );
+            m_pendingFxSoft = m_pendingFxSoft || soft_trigger;
         }
 
         // Beat-quantised, like the texture-effect change (manual cuts fire
@@ -1274,9 +1303,11 @@ void SceneScheduler::tickFx( const Tick &t, bool trueStereoHold )
             if ( m_pendingFxForced || t.downbeatTick
                  || m_pendingFxAge > 2.5f || t.gateSmooth < 0.25f )
             {
-                bool forced_go = m_pendingFxForced;
+                bool       forced_go = m_pendingFxForced;
+                const bool soft_go = m_pendingFxSoft && !forced_go;
                 m_pendingFxChange = false;
                 m_pendingFxForced = false;
+                m_pendingFxSoft = false;
                 m_pendingFxAge = 0.f;
 
                 m_fxState = 1;
@@ -1294,9 +1325,15 @@ void SceneScheduler::tickFx( const Tick &t, bool trueStereoHold )
                     }
                     cfg_t *= 1.f - 0.35f * t.logAttackTime;
                     m_fxFadeDur = forced_go ? 0.8f : cfg_t;
-                    // A calm preset's fade floor holds for the overlay too.
+                    // A calm preset's fade floor holds for the overlay too; into a calmer section two to four
+                    // bars, as for the scene.
                     if ( !forced_go )
                         m_fxFadeDur = fmaxf( m_fxFadeDur, m_sceneFadeMin );
+                    if ( soft_go )
+                    {
+                        const float beat = 60.f / ( 40.f + 160.f * std::max( t.estimatedBPM, 0.4f ) );
+                        m_fxFadeDur = std::clamp( m_fxFadeDur, 8.f * beat, 16.f * beat );
+                    }
                 }
 
                 comb[m_nextFx]->startInterpolators();

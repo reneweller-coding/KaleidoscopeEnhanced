@@ -310,6 +310,8 @@ public:
                              ///< arc.
         float phraseSecsLeft = 0.f; ///< Seconds to the next 8-bar boundary = the predicted drop; 0 when the tempo is
                                     ///< unknown.
+        bool sectionFalls = false;  ///< The section starting now is calmer than the last (score cues only: a break,
+                                    ///< a cut, an outro, or less energy): its change fades instead of cutting.
     };
 
     /**  Evaluate musical triggers and advance the effect (texture) Solo/Fade state machine.
@@ -422,14 +424,15 @@ public:
      *
      * @return
      *   "timer", "music" (a section trigger), "music-calm" (such a trigger in a calm preset, taken as a natural
-     *   change after 20 s), "manual" or "start" -- as changeWhy() for the scene.
+     *   change after 20 s), "music-soft" (into a calmer section), "manual" or "start" -- as changeWhy() for the scene.
      **/
     const char *fxChangeWhy() const { return m_fxChangeWhy; }
     /**  Why the last scene change came.
      *
      * @return
      *   "timer" (the scene's solo time ran out), "music" (a section, novelty or drop trigger cut the solo short),
-     *   "music-calm" (such a trigger in a calm preset, taken as a natural change after 20 s), "drop" (a drop cut),
+     *   "music-calm" (such a trigger in a calm preset, taken as a natural change after 20 s), "music-soft" (a section
+     *   calmer than the last, Tick::sectionFalls: a natural change faded over two to four bars), "drop" (a drop cut),
      *   "manual" (a key, the remote, a forced scene) or "start" before the first change.
      *
      * For the scene plan run (Kaleidoscope.exe --schedule, ScheduleSim.h), which checks each kind against its rule.
@@ -596,9 +599,14 @@ private:
     bool m_forceFxIsManual = false;            ///< The pending m_forceFxChange came from a person (requestChange(true),
                                                ///< forceFx()), not from a musical trigger.
     const char *m_fxChangeWhy = "start";       ///< fxChangeWhy(): why the last combine change came.
-    unsigned    m_freshSections = 0; ///< Sections that rolled a fresh look; every second one changes the overlay.
-    int m_forcedNextTexture = -1;    ///< Remote direct-jump target index (-1 = none); wins over review mode and random
-                                     ///< pick.
+    unsigned    m_freshSections = 0;   ///< Sections that rolled a fresh look; every second one changes the overlay.
+    bool        m_forceIsSoft = false; ///< The pending m_forceEffectChange is a section calmer than the last (Tick::
+                                       ///< sectionFalls): a natural change on the next downbeat, faded over 2..4 bars.
+    bool m_forceFxSoft = false;                ///< The same for the pending m_forceFxChange.
+    bool m_pendingEffectSoft = false; ///< The pending effect change goes into a calmer section (see m_forceIsSoft).
+    bool m_pendingFxSoft = false;              ///< The pending combine change goes into a calmer section.
+    int  m_forcedNextTexture = -1; ///< Remote direct-jump target index (-1 = none); wins over review mode and random
+                                   ///< pick.
     bool        m_pendingEffectChange = false; ///< True while an effect change is due but waiting on beat quantisation.
     const char *m_changeWhy = "start";         ///< changeWhy(): why the last scene change came.
     bool        m_changeOnPhrase = false;      ///< changeOnPhrase(): the last change waited for the phrase.

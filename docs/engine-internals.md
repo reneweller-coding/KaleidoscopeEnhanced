@@ -7261,3 +7261,75 @@ The plan now records why each overlay changed and how long its fade was planned.
 - *The plan run takes cue files.* `Kaleidoscope.exe --schedule ... --cues track.cues.tsv` (and `check_schedule.py
   --cues`) hand a generator's score cues to the scheduler on the WAV's clock, again with every loop
   (`ScoreCueFile::rewind()`), as `-k` does for a render. Section 61 uses it.
+
+## 22.10.2026 (61): breaks, drops and the score cues, checked against the generators' own cues
+
+The user asked to check how the picture answers the music's dynamics -- breaks, drops -- and the score cues. Nine
+demos of the generator family were run, each with the cue file written beside it (Goa, Uplifting, Ostgut, Riot,
+Lounge, Crescendo, Drift, Cosmic, Betelgeuse). Each went through the scene plan (`--schedule ... --cues`, section 60)
+in a fitting preset, once with the cues and once from the audio alone. The cues mark where every section starts and
+where the drops land, so they serve as the answer key.
+
+**With cues, the scenes were already right.** In Club, Psytrance and Electronic every cue section got its change
+within 0.1 s, and every cue drop got its drop cut. Calm presets take a section as a natural change after 20 s, so
+there a cue often falls into a running 6-25 s fade or the 20 s stay. That is intended.
+
+**But the cues reached only the scene cut.** Three things were missing:
+
+- *The drop's hit.* The drop pulse -- the shaders' `audioDrop` (74 scenes), the present pass's streaks, the shock
+  wave and the drop rewind -- and the phrase grid's anchor came from the analyser alone, even with cues live. The
+  analyser missed both drops of Uplifting, so its drops cut without a hit. In Goa it took the build-up after the
+  break for a drop, and the hit came 12 s early.
+
+  Now `RenderPipeline::conditionAudio` drains the cues once a frame, before the conditioner (`buildSchedulerTick`
+  reads the same frame). While cues are live:
+  - the conditioner's drop count and drop pulse are the cues' (the pulse decays like the analyser's, 0.66 s);
+  - the analyser's guesses are ignored;
+  - the count carries on across the switch-over, so neither direction reads as a drop;
+  - a cue bar line resets the bar position and snaps the phrase grid's integrated beats to the bar, so the grid
+    cannot drift.
+
+  The plan now also records the picture's drop hit (`hit` rows: the conditioned pulse crossing 0.85). With cues every
+  drop hit came 0.02-0.08 s after the cue drop, and none came anywhere else. Goa's false hit is gone.
+
+- *The kind of section.* A break got the same 0.8 s hard cut as a drop. Now `applyScoreCues` sets
+  `Tick::sectionFalls` when the new section is calmer than the last: a Break, Cut or Outro, or 0.15 less energy. The
+  scheduler then takes the change as a natural one ("music-soft"):
+  - on the next downbeat (the cue's bar line), without waiting for the phrase;
+  - faded over 8 to 16 beats (3.3-8 s in the demos), floored by the transition's own minFade.
+
+  The overlay follows the same rule. The hard cut stays the drop's gesture. `check_schedule` checks that a soft
+  change lasts at least eight beats.
+
+- *Tested.* `Kaleidoscope.exe -q` gains five checks for `sectionFalls` (127 pass). `check_schedule --quick` and a run
+  with Riot's cues in Club, Psytrance, Ambient and Downtempo show no violations.
+
+**The analyser without cues, measured.** The family's demos with cue files are a labelled test set for the
+analyser: 43 tracks, 281 section boundaries, 30 drops. `Tools/analyser_vs_cues.py` (new) runs every one through
+`PresetEditor --features` and counts:
+
+| | found | invented |
+|---|---|---|
+| section boundaries | 106 of 281 (38 %) | 159 of 259 (61 %) |
+| drops | 6 of 30 (20 %) | 18 of 24 (75 %) |
+
+Found by kind: breaks 73 %, drops 46 %, outros 38 %, grooves 31 %, builds 14 %. Many of the "drops" are not EDM drops
+at all: a cinematic climax, a ritual groove's return.
+
+The false drops had three causes:
+- 7 of the 18 fell in the intro, between 12 and 24 s. There the bass comes and goes against a slow average that has
+  not seen a groove yet.
+- 4 came from the return-after-breakdown path where a build-up, not a drop, follows the break (Goa 133 s).
+- The rest were orchestral swells.
+
+The bass-gap path now arms only after 30 s, not 12 s. False drops fell from 18 to 10, while the 6 found drops stayed.
+The real tracks in `.screen/music` (Astrix, Daft Punk, DMT, Infected Mushroom, Prodigy, ...) and the structure track
+keep every drop at the same time.
+
+The rest is left as found and needs its own round:
+- the return path that cannot tell a build-up from a drop;
+- the trance drop without a bass gap (Uplifting);
+- the section detector's 38 %.
+
+The benchmark is the baseline any such change has to beat. With a generator's cues, all of this is moot: the cues
+now steer the cut and the hit alike.

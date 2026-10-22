@@ -249,6 +249,7 @@ int runScheduleSim( int argc, char **argv )
     solo.planned = s.texFadeDur();
     Fade                       fade, fx_fade;
     int                        tex_state = s.texState(), fx_state = s.fxState();
+    float                      hit_prev = 0.f;
     long long                  scenes = 0, combines = 0;
     std::map<std::string, int> whys;
     for ( long long k = 1; k <= frames; ++k )
@@ -268,6 +269,12 @@ int runScheduleSim( int argc, char **argv )
                                                                                     : 0.f;
         if ( k == 1 )
             solo.walk = tex[s.actTexture()]->walksWithMusic(); // the first scene decided it in its first frame
+        // The picture's drop hit (the conditioned drop pulse crossing 0.85, as the shock wave reads it): the
+        // analyser's drops, or the score cues' while they are live.
+        const float hit = rp->simulatedDropPulse();
+        if ( hit > 0.85f && hit_prev <= 0.85f )
+            fprintf( out, "hit\t%.3f\n", t );
+        hit_prev = hit;
         if ( tex_state == 0 && s.texState() != 0 )
         {
             fade.start = t;

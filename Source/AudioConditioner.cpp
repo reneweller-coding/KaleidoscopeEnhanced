@@ -169,7 +169,7 @@ AudioFeatures AudioConditioner::update( const AudioFeatures &audio, float rawDt,
         m_barBeatHost = ( m_barBeatHost + 1 ) & 3;
     m_prevPllPhase = m_beatPhasePLL;
     m_downbeatTick = ( audio.downbeat > 0.9f && m_prevRawDownbeat <= 0.9f );
-    if ( m_downbeatTick )
+    if ( m_downbeatTick || ctx.cueBar )
         m_barBeatHost = 0;
     m_prevRawDownbeat = audio.downbeat;
 
@@ -193,6 +193,9 @@ AudioFeatures AudioConditioner::update( const AudioFeatures &audio, float rawDt,
         }
         else if ( tempo_known )
             m_phraseBeats += dt * bpm / 60.f * gate;
+        // A score cue's bar line is exact: the integrated beats snap to it, so the grid cannot drift a beat off.
+        if ( ctx.cueBar )
+            m_phraseBeats = 4.f * roundf( m_phraseBeats / 4.f );
         const float beats_in = fmodf( m_phraseBeats, 32.f );
         m_phrasePos = beats_in / 32.f;
         m_phraseSecsLeft = tempo_known ? ( 32.f - beats_in ) * 60.f / bpm : 0.f;

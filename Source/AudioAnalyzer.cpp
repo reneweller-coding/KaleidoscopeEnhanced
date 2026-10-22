@@ -3484,7 +3484,13 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
         // no drop was ever detected.  The vacuum + bass-slam tests behind the
         // arming are what keep a false drop rare; the arming only opens the
         // window.
-        if ( m_sBuildUp > 0.45f && m_bldWarm > 1200 )
+        // Not before 30 s (22.10.2026): in an intro the bass comes and goes
+        // against a slow average that has not seen a groove yet, and every
+        // entry reads as a slam -- 7 of the 18 false drops the analyser made on
+        // the generators' 43 demos with score cues (Tools/analyser_vs_cues.py)
+        // fell between 12 and 24 s, inside the intro.  The earliest real drop
+        // there lands at 66 s, on the real tracks at 41 s.
+        if ( m_sBuildUp > 0.45f && m_bldWarm > 3000 )
             m_dropArmed = 800.f; // ~8 s arming
         if ( m_dropArmed > 0.f )
             m_dropArmed -= 1.f;

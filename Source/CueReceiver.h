@@ -83,11 +83,12 @@ class QUdpSocket;
  **/
 struct ScoreCueBridge
 {
-    int  sections = 0;     ///< sections handed over while the cues are live
-    int  drops = 0;        ///< drops handed over while the cues are live
-    int  lastSections = 0; ///< what was handed over last frame, from whichever source
-    int  lastDrops = 0;    ///< @copydoc lastSections
-    bool wasLive = false;  ///< whether the previous frame was cue-driven
+    int   sections = 0;      ///< sections handed over while the cues are live
+    int   drops = 0;         ///< drops handed over while the cues are live
+    int   lastSections = 0;  ///< what was handed over last frame, from whichever source
+    int   lastDrops = 0;     ///< @copydoc lastSections
+    bool  wasLive = false;   ///< whether the previous frame was cue-driven
+    float lastEnergy = -1.f; ///< the energy of the section before, -1 before the first
 };
 
 /**  Overlays a frame of score cues on a scheduler tick that was built from the audio.
@@ -99,7 +100,7 @@ struct ScoreCueBridge
  * With ScoreCues::Frame::live false this does nothing at all -- @p t comes out byte for byte as it
  * went in, which is the property that makes the whole feature safe to ship switched off.
  *
- * With cues live, four fields change and no others:
+ * With cues live, five fields change and no others:
  *  - `sectionCount` and `dropCount` count the generator's boundaries instead of the analyser's
  *    guesses, continuing from the number the scheduler was last handed so the rising edge still
  *    reads as +1 across the switch-over;
@@ -108,7 +109,10 @@ struct ScoreCueBridge
  *    analyser's recycled eight-slot LRU id, and a cue does not carry one; feeding it the section
  *    TYPE instead would make every drop in a set replay the same scene, which is precisely the
  *    "always the same scenes" failure that index has caused before. A cue-driven section therefore
- *    always rolls fresh.
+ *    always rolls fresh;
+ *  - `sectionFalls` says whether the section starting now is calmer than the last: a break, a cut or an
+ *    outro, or 0.15 less energy. The scheduler fades into it instead of cutting -- the music opens up
+ *    there, and a hard cut is the drop's gesture, not the break's.
  **/
 void applyScoreCues( const ScoreCues::Frame &cue, ScoreCueBridge &bridge, SceneScheduler::Tick &t );
 

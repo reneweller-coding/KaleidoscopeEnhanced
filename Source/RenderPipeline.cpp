@@ -679,7 +679,7 @@ SceneScheduler::Tick RenderPipeline::simulateFrame( const AudioFeatures &audio, 
 {
     m_scheduler.setMood( audio.arousal, audio.valence, audio.ambientFactor ); // as beginFrame()
     updateTimingScale( audio );
-    conditionAudio( audio, dt );
+    m_simDropPulse = conditionAudio( audio, dt ).dropPulse;
     const SceneScheduler::Tick tick = buildSchedulerTick( audio, dt );
     // The scene passes: a chain lab decides at its first frame on screen whether this activation walks -- the scene
     // on screen, and during a fade the incoming one.
@@ -2096,7 +2096,33 @@ AudioFeatures RenderPipeline::conditionAudio( const AudioFeatures &audio, float 
     // this function to the scheduling/render pipeline). update() must be
     // called exactly once per frame, in frame order -- every signal in there
     // is an integrator or a slew limiter.
+    // Score cues (CueReceiver.h): drained here, once a frame, before the conditioner -- a cue file (-k) is a sender
+    // too, and whatever of it the offline WAV has reached goes in first.  buildSchedulerTick() reads the same frame.
+    ScoreCueFile::instance().feed();
+    m_cueFrame = ScoreCues::instance().drain( timeSinceLastFrameSec );
+    // THE DROP CHANNEL FOLLOWS THE CUES (22.10.2026).  A cue drop cut the scene but did not hit the picture: the
+    // drop pulse (the shaders' audioDrop, the present pass, the echo and the streaks), the drop rewind and the
+    // phrase grid's anchor came from the analyser alone -- which missed both drops of the Uplifting demo and took
+    // the Goa demo's build-up after its break for one.  While cues are live the generator's drops are the drops; the
+    // count goes on from wherever it was, so neither switch-over reads as a drop.
+    AudioFeatures in = audio;
+    if ( m_cueFrame.live )
+    {
+        if ( m_cueFrame.drop )
+        {
+            ++m_condDrops;
+            m_cuePulse = 1.f;
+        }
+        m_condDropOffset = m_condDrops - audio.dropCount;
+        in.dropPulse = m_cuePulse;
+    }
+    else
+        m_condDrops = audio.dropCount + m_condDropOffset;
+    in.dropCount = m_condDrops;
+    m_cuePulse *= expf( -std::max( timeSinceLastFrameSec, 0.f ) / 0.66f );
+
     AudioConditioner::Context ac_ctx;
+    ac_ctx.cueBar = m_cueFrame.live && m_cueFrame.downbeat;
     // The conditioner's day cycle is 280 s; a whole number of them keeps its phase while the float stays exact.
     ac_ctx.globalTime = static_cast<float>( std::fmod( m_globaltime, 280.0 * 1000.0 ) );
     ac_ctx.trailDepth3D = m_trailDepth3D;
@@ -2108,14 +2134,14 @@ AudioFeatures RenderPipeline::conditionAudio( const AudioFeatures &audio, float 
     ac_ctx.ssmFill = m_sims.ssmFillNorm();
     ac_ctx.spectroHead = m_sims.spectroHeadNorm();
     ac_ctx.spectroFill = m_sims.spectroFillNorm();
-    AudioFeatures out = m_audioConditioner.update( audio, timeSinceLastFrameSec, ac_ctx );
+    AudioFeatures out = m_audioConditioner.update( in, timeSinceLastFrameSec, ac_ctx );
     // A NaN in an integrator stays there for good -- and so would a frozen or black picture. Start the conditioner
     // over instead, and say which value it was.
     if ( const char *bad = AudioConditioner::firstNonFinite( out ) )
     {
         fprintf( stderr, "AUDIO: conditioned %s is not finite - conditioner reset\n", bad );
         m_audioConditioner.reset();
-        out = m_audioConditioner.update( audio, timeSinceLastFrameSec, ac_ctx );
+        out = m_audioConditioner.update( in, timeSinceLastFrameSec, ac_ctx );
     }
     return out;
 }
@@ -2244,9 +2270,8 @@ SceneScheduler::Tick RenderPipeline::buildSchedulerTick( const AudioFeatures &au
     // the drops ARE, the scheduler stops guessing them from the loudspeaker output. With no sender
     // -- the normal case -- this call leaves sched_tick byte for byte as it is above; the four fields
     // it touches when cues are live, and why it touches exactly those four, are in the header.
-    // A cue file (-k) is a sender too: whatever of it the offline WAV has reached goes in first.
-    ScoreCueFile::instance().feed();
-    applyScoreCues( ScoreCues::instance().drain( timeSinceLastFrameSec ), m_cueBridge, sched_tick );
+    // The cues were drained in conditionAudio(), which runs first every frame.
+    applyScoreCues( m_cueFrame, m_cueBridge, sched_tick );
     EffectShader::M_CueLive = m_cueBridge.wasLive; // the chain walk follows the same counters
     EffectShader::M_CueSections = sched_tick.sectionCount;
     EffectShader::M_CueDrops = sched_tick.dropCount;

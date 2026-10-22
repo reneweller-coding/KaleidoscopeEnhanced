@@ -72,6 +72,8 @@ public:
         float ssmFill = 0.f;      ///< GpuSims::ssmFillNorm() -- self-similarity-matrix ring fill.
         float spectroHead = 0.f;  ///< GpuSims::spectroHeadNorm() -- spectrogram ring write head.
         float spectroFill = 0.f;  ///< GpuSims::spectroFillNorm() -- spectrogram ring fill.
+        bool  cueBar = false;     ///< A score cue's bar line landed this frame (CueReceiver.h): the bar position and
+                                  ///< the phrase grid snap to it.
     };
 
     /**  Advances every envelope/slew/integrator by @p rawDt and returns the processed AudioFeatures copy.

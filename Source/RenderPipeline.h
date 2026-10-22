@@ -1011,6 +1011,12 @@ public:
      * and everything that draws.
      **/
     SceneScheduler::Tick simulateFrame( const AudioFeatures &audio, float dt );
+    /**  The drop hit the last simulateFrame() gave the picture: the conditioned drop pulse (the shaders' audioDrop).
+     *
+     * @return
+     *   0..1.
+     **/
+    float simulatedDropPulse() const { return m_simDropPulse; }
     /**  The scene scheduler, for the scene plan run's log.
      *
      * @return
@@ -1848,10 +1854,17 @@ private:
     GpuSims m_sims; ///< Older GPU/host simulations (reaction-diffusion, fluid, smoke3D, Physarum, self-similarity
                     ///< matrix, spectrogram): fully encapsulated in GpuSims; paint() only reports demand.
     // Szenen-/Combine-Wahl, Trigger, Review, Song-Struktur: SceneScheduler.
-    SceneScheduler m_scheduler; ///< Scene/combine selection, triggers (novelty/section/drop), review mode and
-                                ///< song-structure memory: fully encapsulated in SceneScheduler.
-    ScoreCueBridge m_cueBridge; ///< Carries the section/drop counters across the switch between the score cues and the
-                                ///< audio analysis (CueReceiver.h); one per pipeline, beside the scheduler it feeds.
+    SceneScheduler m_scheduler;  ///< Scene/combine selection, triggers (novelty/section/drop), review mode and
+                                 ///< song-structure memory: fully encapsulated in SceneScheduler.
+    ScoreCueBridge m_cueBridge;  ///< Carries the section/drop counters across the switch between the score cues and the
+                                 ///< audio analysis (CueReceiver.h); one per pipeline, beside the scheduler it feeds.
+    ScoreCues::Frame m_cueFrame; ///< This frame's score cues, drained once in conditionAudio() before the conditioner
+                                 ///< and read again by buildSchedulerTick().
+    int m_condDrops = 0;         ///< The drop count the conditioner sees: the analyser's, or the cues' while they are
+                                 ///< live (conditionAudio()).
+    int   m_condDropOffset = 0;  ///< m_condDrops minus the analyser's count, kept when the cues fall silent.
+    float m_cuePulse = 0.f;      ///< The drop hit of a cue drop, decaying like the analyser's (about 1.5 s of tail).
+    float m_simDropPulse = 0.f;  ///< simulatedDropPulse().
     // Audio-Konditionierung (Envelopes, Slews, integrierte Phasen, Beat-PLL,
     // virtuelle Kamera, Zeit-Regie): komplett in AudioConditioner gekapselt.
     AudioConditioner m_audioConditioner; ///< Turns each frame's raw AudioFeatures into the anti-flicker copy +

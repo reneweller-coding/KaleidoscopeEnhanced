@@ -18,7 +18,8 @@
  *  the WAV's clock and again with every loop.
  *
  *  The output is one line per completed change -- scene fades and combine fades -- with the reason, the planned and
- *  the actual times and the transition; the head lists the entries with their ranges.  Tools/check_schedule.py
+ *  the actual times and the transition, and a `hit` line where the picture's drop hit lands; the head lists the
+ *  entries with their ranges.  Tools/check_schedule.py
  *  checks the standing rules against it (solo times inside the entry's range, never two labs in a row, the lab
  *  share, the fade floors), Tools/long_run_sim.py --real computes its statistics from it.
  *
