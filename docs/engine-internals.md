@@ -6629,3 +6629,31 @@ collection lacked: several planes, real depth, kaleidoscopes on curved surfaces.
 - **KaleidoCubeUnfold:** cube nets (crosses) tile the plane on the lattice (2, 1), (-1, 2). A square's cross is found
   by testing which of the five candidate centres (itself, or one step in four directions) lies on that lattice.
   Rounding the square in lattice coordinates had picked wrong crosses.
+
+## 22.10.2026 (47): light shows and abstract film (400 list, family E)
+
+Twenty-five scenes of family E. They rebuild the craft of the light shows since the sixties and the works of
+abstract-film pioneers.
+- **The light shows' devices as optics:**
+  - WaterRippleProjector multiplies two rippled discs' caustics, 1 / |det(I + d Hess h)| each.
+  - RibbedGlassLightOrgan uses vertical cylinder lenses that pull the seen point toward the rib's middle.
+  - RotatingShadowLamp: a hole at height h on a cylinder of radius r lands on the wall at h R / r. The inner
+    cylinder makes the spots and the outer two shade them. A plain product of three masks was nearly black.
+  - LeParcMirrorRain: a mirror turned by a sends its spot D sin(2a) sideways and appears cos(a) wide. Each pixel
+    gathers the mirrors of its row band within reach.
+  - RoseWindowLampDisc: the shafts outside the disc average the panes along the same angle from the middle to the
+    rim. Sampling only outward from the rim gathered almost nothing.
+- **Films without their frame jumps:** McLaren's paint and Len Lye's scratches run and swing continuously (the
+  strip runs on the integrated drive; the swing is an onset envelope times a steady oscillation). Richter's
+  rectangles breathe on a cosine of the bar phase, and their colour share glides instead of flipping at a
+  threshold.
+- **WhitneyArabesque:** the first version ran its clock on the phrase with whole turns per phrase, so it closed up
+  at the phrase's end. With hundreds of points the outer ones turned up to 541 times per phrase, a strobe. Sharing
+  turn counts in groups left only six spokes. Now the clock is the integrated drive and does not wrap. The n-th
+  point turns n/3 to n steps faster than the first, at most about 1.3 turns a second for the outermost. A harmony
+  change swaps the step and cross-fades the two swarms' light.
+- **AnalogVideoFeedback:** the state field is the monitor. Each step reads it back turned and zoomed, fades it, and
+  drifts its colour a little within the family. The photo seeds the middle. The colour drift first stepped
+  through sixteen values and reset, which made a small hue jump; it is now a slow sine.
+- **Lissajous and oscilloscope figures** (LaserGraphicsFog, XYPhosphorSculptures) are polyline distances over 72-100
+  samples. A harmony change cross-fades the light of two ratios, never their distances.
