@@ -80,5 +80,5 @@ void main()
     float t = clamp(dot(sp, sd) / dot(sd, sd), 0.0, 1.0);
     float beam = exp(-pow(length(sp - sd * t) / 0.006, 2.0)) * t;
     col += laser * beam * 0.5 * glow + laser * exp(-length(p - head) / 0.02) * 0.6 * glow;
-    finish(col);
+    finish(famExpose(col, 2.05, 0.80, 0.00, fh));
 }

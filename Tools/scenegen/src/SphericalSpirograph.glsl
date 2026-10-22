@@ -77,5 +77,5 @@ void main()
         col += famLight(fh, fj / 5.0, 0.3) * g * on;
     }
     col *= 0.7 + 0.6 * clamp(audioSwell, 0.0, 1.0);
-    finish(col);
+    finish(famExpose(col, 3.43, 1.00, 0.00, fh));
 }

@@ -76,5 +76,5 @@ void main()
     vec3 col = famCol(fh, 0.45) * 0.015 + famCol(fh, 0.5) * 0.05 * in1;
     col += famLight(fh, 0.5, 0.5) * (c * (0.8 + 0.4 * pulse) + ringC * 0.9 + fringe * 0.25) * glow;
     col += famLight(fh, 0.85, 0.35) * gon * glow * 0.9;
-    finish(col);
+    finish(famExpose(col, 2.00, 1.00, 0.03, fh));
 }

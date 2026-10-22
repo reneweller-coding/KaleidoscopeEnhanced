@@ -80,5 +80,5 @@ void main()
         col += w * (famLight(fh, fract(0.17 * floor(terr)), 0.4 * g) * (g + body) + famCol(fh, 0.2) * chaos);
     }
     col += famCol(fh, 0.5) * 0.012;
-    finish(col);
+    finish(famExpose(col, 3.13, 1.00, 0.03, fh));
 }

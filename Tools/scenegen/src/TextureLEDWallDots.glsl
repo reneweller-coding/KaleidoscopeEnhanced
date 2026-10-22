@@ -98,5 +98,5 @@ void main()
         fan += exp(-pow((an - aim) / 0.025, 2.0));
     }
     col += famLight(fh, 0.6, 0.6) * fan * 0.25 * glow * smoothstep(1.4, 0.2, length(p - src));
-    finish(col);
+    finish(famExpose(col, 1.80, 1.00, 0.00, fh));
 }

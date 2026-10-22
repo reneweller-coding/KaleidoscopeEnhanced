@@ -80,5 +80,5 @@ void main()
         t += d * 0.9;
         if (t > 40.0) break;
     }
-    finish(col);
+    finish(famExpose(col, 1.20, 1.00, 0.03, fh));
 }

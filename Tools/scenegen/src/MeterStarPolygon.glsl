@@ -99,5 +99,5 @@ void main()
         float fade = exp(-0.3 * dz) * smoothstep(0.12, 0.5, dz) * (1.0 - smoothstep(8.0, 11.0, dz));
         col += famLight(fh, 0.3 + 0.4 * fract(n * 0.13), 0.4) * g * fade * glow;
     }
-    finish(col);
+    finish(famExpose(col, 2.20, 0.80, 0.03, fh));
 }

@@ -57,5 +57,5 @@ void main()
     for (int k = 0; k < 4; ++k) lit += exp(-pow((arrive - fract(clock + float(k) * 0.25) * 2.6) / 0.12, 2.0));
     col += famLight(fh, 0.6, 0.3) * inside * lit * 0.25 + famCol(fh, 0.5) * rim * 0.12;
     col += famCol(fh, 0.45) * 0.03 * (0.5 + 0.8 * clamp(audioSwell, 0.0, 1.0)) * fbm(p * 3.0);
-    finish(col);
+    finish(famExpose(col, 3.33, 0.80, 0.03, fh));
 }

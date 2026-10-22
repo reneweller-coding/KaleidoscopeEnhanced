@@ -62,5 +62,5 @@ void main()
         float pulse = 0.5 + 0.5 * cos(6.2831853 * fract(j / 6.0));
         col += (famLight(fh, 0.2, 0.7) * pm + famLight(fh, 0.8, 0.7) * ph) * pulse * fade * 1.2;
     }
-    finish(col);
+    finish(famExpose(col, 4.50, 0.80, 0.05, fh));
 }

@@ -58,5 +58,5 @@ void main()
     vec3 col = famLight(fh, 0.3 + 0.4 * hc, 0.25 * smoothstep(1.0, 4.0, light)) * light * 0.22;
     col += famCol(fh, 0.5) * exp(-wall / 0.004) * 0.2;
     col += famLight(fh, 0.6, 0.8) * exp(-length(q - src) / 0.012) * 0.4;
-    finish(col);
+    finish(famExpose(col, 1.85, 1.00, 0.00, fh));
 }

@@ -60,5 +60,5 @@ void main()
         float lit = (body * 0.25 + edge * 0.8) * (1.0 - smoothstep(0.1, 0.5, blur)) + bokeh * 0.18;
         col += famLight(fh, 0.3 + 0.4 * hs, 0.5) * lit * glow * exp(-0.25 * fl) * smoothstep(1.35, 1.2, r);
     }
-    finish(col);
+    finish(famExpose(col, 1.70, 1.00, 0.00, fh));
 }

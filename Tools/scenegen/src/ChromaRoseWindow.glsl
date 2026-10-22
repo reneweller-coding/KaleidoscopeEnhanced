@@ -82,5 +82,5 @@ void main()
     float total = 0.0;
     for (int i = 0; i < 12; ++i) total += texelFetch(texState, ivec2(i, 0), 0).r;
     col += famLight(fh, 0.6, 0.7) * smoothstep(0.15 * R, 0.1 * R, r) * total / 12.0 * glow;
-    finish(col);
+    finish(famExpose(col, 2.05, 1.00, 0.00, fh));
 }

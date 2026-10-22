@@ -45,13 +45,13 @@ float segD(vec2 p, vec2 a, vec2 b)
 vec4 paint(vec2 p, float g, float turn, float splash, float ND, float fh)
 {
     vec4 acc = vec4(0.0);
-    float meet = smoothstep(0.0, 0.35, g);
+    float meet = smoothstep(0.0, 0.22, g);                            // the jets are in the picture from the start
     for (int i = 0; i < 3; ++i) {
         float a = turn + 2.0943951 * float(i);
         vec2 dir = vec2(cos(a), sin(a));
-        vec2 tip = dir * mix(0.9, 0.04, meet);
+        vec2 tip = dir * mix(0.5, 0.04, meet);
         float d = segD(p, tip, tip + dir * 1.2);
-        float r = 0.07 * (1.0 - 0.6 * smoothstep(0.35, 0.8, g));
+        float r = 0.1 * (1.0 - 0.6 * smoothstep(0.35, 0.8, g));
         float f = r * r / (d * d + 1e-4);
         acc += vec4(famLight(fract(fh + 0.12 * (float(i) - 1.0)), 0.5, 0.1) * f, f);
     }
@@ -102,5 +102,5 @@ void main()
     float spec = pow(max(dot(n, normalize(vec3(-0.4, 0.6, 1.7))), 0.0), 40.0);
     vec3 col = famCol(fh, 0.45) * 0.02;
     col = mix(col, base * dif + vec3(1.0) * spec * 0.6, inside * life);
-    finish(col);
+    finish(famExpose(col, 3.65, 0.80, 0.05, fh));
 }

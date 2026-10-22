@@ -57,5 +57,5 @@ void main()
     float d = best * R;
     float line = exp(-pow(d / lw, 2.0)) + 0.2 * exp(-d / (6.0 * lw));
     vec3 col = famCol(fh, 0.45) * 0.02 + famLight(fh, 0.3 + 0.4 * r, 0.5) * line * glow * smoothstep(1.05, 0.95, r);
-    finish(col);
+    finish(famExpose(col, 2.00, 0.90, 0.00, fh));
 }

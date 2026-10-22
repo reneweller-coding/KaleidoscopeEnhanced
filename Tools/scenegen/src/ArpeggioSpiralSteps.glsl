@@ -89,5 +89,5 @@ void main()
         float life = smoothstep(0.0, 1.0, age) * (1.0 - smoothstep(90.0, 95.0, age)) * (1.0 - 0.8 * age / 96.0);
         col += famLight(fh, 0.3 + 0.4 * clamp(0.5 + 0.5 * rel, 0.0, 1.0), 0.4 + 0.4 * (1.0 - age / 96.0)) * (tread + riser) * life * glow;
     }
-    finish(col);
+    finish(famExpose(col, 4.35, 0.70, 0.05, fh));
 }

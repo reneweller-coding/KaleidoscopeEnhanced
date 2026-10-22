@@ -498,6 +498,81 @@ void finish( vec3 col )
     fragColor = vec4( clamp( t, 0.0, 1.0 ), 1.0 );
 }
 
+
+// ---- the scene's colour family ----
+/**  The hue the scene is built on: the photo's broad colour at a slowly wandering place; where the photo is grey, the
+ * hue knob.
+ *
+ * @return
+ *   The hue in turns, 0..1.
+ *
+ * It glides with the photos' cross-fade and never jumps.
+ **/
+float famHue()
+{
+    vec3 b = imgLod(
+        vec2( 0.5 ) + 0.28 * vec2( cos( 0.009 * sceneTime + 0.013 * audioAdvance ), sin( 0.007 * sceneTime ) ), 7.0 );
+    float k = smoothstep( 0.06, 0.22, satOf( b ) );
+    vec2  v = mix( vec2( cos( hueP ), sin( hueP ) ),
+                   vec2( cos( 6.2831853 * hueOf( b ) ), sin( 6.2831853 * hueOf( b ) ) ), k );
+    return fract( atan( v.y, v.x ) / 6.2831853 + 1.0 );
+}
+
+/**  A colour of the family: t walks the neighbouring hues (a tenth of the circle around the base), at a fixed
+ * saturation and full value.
+ *
+ * @param h  The family's hue (famHue()). (in)
+ * @param t  Where in the family, 0..1. (in)
+ *
+ * @return
+ *   The colour.
+ **/
+vec3 famCol( float h, float t )
+{
+    return hsv2rgb( vec3( fract( h + 0.1 * ( t - 0.5 ) ), 0.7, 1.0 ) );
+}
+
+/**  A family colour lifted toward warm white light: the highlights and cores of glowing things.
+ *
+ * @param h  The family's hue. (in)
+ * @param t  Where in the family, 0..1. (in)
+ * @param w  How far toward warm white, 0..1. (in)
+ *
+ * @return
+ *   The colour.
+ **/
+vec3 famLight( float h, float t, float w )
+{
+    return mix( famCol( h, t ), vec3( 1.0, 0.93, 0.82 ), clamp( w, 0.0, 1.0 ) );
+}
+
+/**  The scene's light lifted toward a fuller picture (22.10.2026: the 400 new scenes were half as bright as the old
+ * ones): a gain, a gamma below one that widens the glows' soft falloffs, and a faint haze of the colour family that
+ * drifts slowly where the picture is dark.
+ *
+ * @param col   The scene's light. (in)
+ * @param gain  The gain. (in)
+ * @param gam   The gamma: 1 keeps the falloffs, below 1 widens them. (in)
+ * @param haze  The haze's strength (0: none). (in)
+ * @param h     The family's hue. (in)
+ *
+ * @return
+ *   The light.
+ *
+ * The lift starts above a toe of 0.02, so a scene's flat dark ground stays dark instead of turning into a flat coloured
+ * wash.  Each scene's values come from its catalogue frames.
+ **/
+vec3 famExpose( vec3 col, float gain, float gam, float haze, float h )
+{
+    const float Toe = 0.02;
+    vec3        c = max( col, vec3( 0.0 ) );
+    col = min( c, vec3( Toe ) ) + gain * pow( max( c - Toe, vec3( 0.0 ) ), vec3( gam ) );
+    vec2  q = screenP();
+    float n = fbm( 1.1 * q + vec2( 0.011, -0.007 ) * sceneTime );
+    vec3  mist = famCol( h, 0.3 + 0.4 * n ) * haze * ( 0.45 + 0.55 * n );
+    return col + mist * ( 1.0 - smoothstep( 0.0, 0.25, luma( col ) ) );
+}
+
 /**  A colour from sRGB to Lab (D65), scaled: L / 100, a / 100, b / 100.
  *
  * @param c  The sRGB colour. (in)
@@ -544,5 +619,5 @@ void main()
             continue;
         col += c * ( smoothstep( s, s * 0.5, sqrt( dd ) ) + 0.3 * exp( -sqrt( dd ) / ( 2.0 * s ) ) ) * glow;
     }
-    finish( col );
+    finish( famExpose( col, 3.26, 0.80, 0.03, famHue() ) );
 }

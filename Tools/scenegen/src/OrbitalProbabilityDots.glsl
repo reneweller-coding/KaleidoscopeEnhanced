@@ -67,5 +67,5 @@ void main()
         t += D * 0.7;
     }
     col *= bright;
-    finish(col);
+    finish(famExpose(col, 2.10, 1.00, 0.03, fh));
 }

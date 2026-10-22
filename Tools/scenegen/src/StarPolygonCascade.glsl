@@ -62,5 +62,5 @@ void main()
     float line = exp(-pow(best / lw, 2.0)) + 0.2 * exp(-best / (5.0 * lw));
     vec3 col = tone(imgLod(p * 0.5 + 0.5, 3.0), fh) * 0.12 * (0.6 + 0.4 * smoothstep(R, 0.0, r));
     col += famLight(fh, 0.4 + 0.3 * r / R, 0.55) * line * glow;
-    finish(col);
+    finish(famExpose(col, 1.20, 1.00, 0.03, fh));
 }

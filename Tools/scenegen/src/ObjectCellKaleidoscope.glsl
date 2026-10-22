@@ -112,5 +112,5 @@ void main()
     vec3 col = mix(back, cell.rgb, cell.a);
     // every bounce costs a tenth of the light; the seams where the mirrors meet are a fine dark line
     col *= pow(0.9, n) * smoothstep(0.0, 0.006, e);
-    finish(col);
+    finish(famExpose(col, 1.25, 1.00, 0.03, fh));
 }

@@ -52,5 +52,5 @@ void main()
         float bead = pow(0.5 + 0.5 * cos(6.2831853 * (r / (0.06 * S) - run + hs)), 12.0);
         col += famLight(fh, 0.4 + 0.3 * hs, 0.5) * ray * (0.35 + 0.5 * toNb * join + 0.9 * bead);
     }
-    finish(col);
+    finish(famExpose(col, 3.46, 0.80, 0.00, fh));
 }

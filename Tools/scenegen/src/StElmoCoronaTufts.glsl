@@ -54,5 +54,5 @@ void main()
             col += famCol(vh, 0.5) * exp(-length(rel - vec2(0.0, 0.4 * L)) / (0.6 * L)) * 0.1;  // the glow round the tuft
         }
     }
-    finish(col);
+    finish(famExpose(col, 2.44, 0.70, 0.00, fh));
 }

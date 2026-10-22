@@ -60,5 +60,5 @@ void main()
     vec3 shade = f > 0.0 ? famLight(fh, 0.3, 0.4) : famLight(fh, 0.7, 0.4);
     vec3 col = famCol(fh, 0.45) * 0.015 + shade * line * glow;
     col += famCol(fh, f > 0.0 ? 0.3 : 0.7) * 0.06 * smoothstep(0.5, 2.5, abs(f));   // a faint fill near the charges
-    finish(col);
+    finish(famExpose(col, 3.33, 0.70, 0.03, fh));
 }

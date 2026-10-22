@@ -86,5 +86,5 @@ void main()
     // the shafts falling out of the window
     float shaft = (0.55 + 0.45 * noise2(vec2(cos(a), sin(a)) * 9.0 + vec2(0.0, 0.05 * sceneTime))) * smoothstep(0.98, 1.05, r) * exp(-2.0 * (r - 1.0));
     col += tone(imgLod(vec2(0.5) + 0.3 * vec2(cos(a), sin(a)), 4.0), fh) * shaft * 0.5 * behind;
-    finish(col);
+    finish(famExpose(col, 1.45, 1.00, 0.00, fh));
 }

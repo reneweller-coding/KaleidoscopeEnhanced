@@ -85,5 +85,5 @@ void main()
             col = mix(col, drop * fade + col * (1.0 - fade), 1.0 - smoothstep(0.85, 1.0, rr));
         }
     }
-    finish(col);
+    finish(famExpose(col, 1.25, 1.00, 0.00, fh));
 }

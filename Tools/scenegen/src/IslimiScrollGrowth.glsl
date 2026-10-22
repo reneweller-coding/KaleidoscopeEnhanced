@@ -76,5 +76,5 @@ void main()
     vec3 gold = mix(vec3(1.0, 0.78, 0.38), famCol(fh, 0.6), 0.35);
     vec3 col = famCol(fh, 0.4) * 0.03;
     col += gold * (o.x * 0.8 + o.y * 0.6) * (reach + 0.12) * (1.0 + 1.5 * front);
-    finish(col);
+    finish(famExpose(col, 1.15, 1.00, 0.00, fh));
 }

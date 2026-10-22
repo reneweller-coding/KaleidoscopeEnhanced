@@ -99,5 +99,5 @@ void main()
     float glow = 0.6 + 0.6 * clamp(audioSwell, 0.0, 1.0);
     float l = (1.0 - m) * trail(p, nA, t0, span, size) + m * trail(p, nB, t0, span, size);
     vec3 col = famCol(fh, 0.45) * 0.015 + famLight(fh, 0.5, 0.5) * l * glow;
-    finish(col);
+    finish(famExpose(col, 6.11, 0.90, 0.00, fh));
 }

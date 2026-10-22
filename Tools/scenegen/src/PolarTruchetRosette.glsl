@@ -39,5 +39,5 @@ void main()
     float fade = smoothstep(0.02, 0.08, r);
     vec3 col = famCol(fh, 0.45) * 0.02 + famLight(fh, 0.3 + 0.4 * fract(cid.x * 0.13), 0.5) * arcs * glow * fade;
     col += famLight(fh, 0.5, 0.8) * exp(-r / 0.03) * 0.3;
-    finish(col);
+    finish(famExpose(col, 1.75, 1.00, 0.00, fh));
 }

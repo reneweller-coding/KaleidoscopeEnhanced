@@ -44,7 +44,7 @@ uniform float audioHarmAdvance; ///< The harmony's advance: ~1 more with every c
 uniform float audioSwell;       ///< Slow loudness envelope, 0..1 (seconds).
 
 uniform float sizeP;   ///< Size knob, 0..1.
-uniform float fringeP; ///< Fringe knob: how dense the rim's fringe is.
+uniform float fringeP; ///< Fringe knob: how dense the rim's fringe is, 0..1.
 uniform float hueP;    ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 // ---- shared building blocks (texture pool, noise, shapes) ----
@@ -550,6 +550,33 @@ vec3 famLight( float h, float t, float w )
     return mix( famCol( h, t ), vec3( 1.0, 0.93, 0.82 ), clamp( w, 0.0, 1.0 ) );
 }
 
+/**  The scene's light lifted toward a fuller picture (22.10.2026: the 400 new scenes were half as bright as the old
+ * ones): a gain, a gamma below one that widens the glows' soft falloffs, and a faint haze of the colour family that
+ * drifts slowly where the picture is dark.
+ *
+ * @param col   The scene's light. (in)
+ * @param gain  The gain. (in)
+ * @param gam   The gamma: 1 keeps the falloffs, below 1 widens them. (in)
+ * @param haze  The haze's strength (0: none). (in)
+ * @param h     The family's hue. (in)
+ *
+ * @return
+ *   The light.
+ *
+ * The lift starts above a toe of 0.02, so a scene's flat dark ground stays dark instead of turning into a flat coloured
+ * wash.  Each scene's values come from its catalogue frames.
+ **/
+vec3 famExpose( vec3 col, float gain, float gam, float haze, float h )
+{
+    const float Toe = 0.02;
+    vec3        c = max( col, vec3( 0.0 ) );
+    col = min( c, vec3( Toe ) ) + gain * pow( max( c - Toe, vec3( 0.0 ) ), vec3( gam ) );
+    vec2  q = screenP();
+    float n = fbm( 1.1 * q + vec2( 0.011, -0.007 ) * sceneTime );
+    vec3  mist = famCol( h, 0.3 + 0.4 * n ) * haze * ( 0.45 + 0.55 * n );
+    return col + mist * ( 1.0 - smoothstep( 0.0, 0.25, luma( col ) ) );
+}
+
 /**  A canal's light at a place: a thin line along the angle phi(r) of the canal.
  *
  * @param phi  The place's angle in the folded eighth. (in)
@@ -613,5 +640,5 @@ void main()
     vec3  col = famCol( fh, 0.45 ) * 0.015 + famCol( fh, 0.5 ) * 0.05 * in1;
     col += famLight( fh, 0.5, 0.5 ) * ( c * ( 0.8 + 0.4 * pulse ) + ring_c * 0.9 + fringe * 0.25 ) * glow;
     col += famLight( fh, 0.85, 0.35 ) * gon * glow * 0.9;
-    finish( col );
+    finish( famExpose( col, 2.00, 1.00, 0.03, fh ) );
 }

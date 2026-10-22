@@ -46,5 +46,5 @@ void main()
         vec3 c = tint * (0.5 + 0.8 * luma(ph)) + vec3(ca, 0.0, -ca) * 0.6;
         col += c * (0.3 * inBand + 0.9 * rim) * scan * flicker * (0.35 + 0.9 * band) * glow * (0.55 + 0.1 * (5.0 - fk));
     }
-    finish(max(col, vec3(0.0)));
+    finish(famExpose(max(col, vec3(0.0)), 1.98, 1.00, 0.00, fh));
 }

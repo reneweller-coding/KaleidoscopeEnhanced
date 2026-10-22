@@ -47,5 +47,5 @@ void main()
     vec3 col = famCol(fh, 0.45) * 0.015;
     col += famCol(fh, 0.3 + 0.4 * hc) * blob * grain * 0.07;
     col += famLight(fh, 0.3 + 0.4 * hc, 0.3 + 0.5 * wave) * blob * grain * lit;
-    finish(col);
+    finish(famExpose(col, 1.55, 1.00, 0.03, fh));
 }

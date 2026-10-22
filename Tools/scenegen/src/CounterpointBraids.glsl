@@ -76,5 +76,5 @@ void main()
         float g = exp(-pow(best / w, 2.0)) + 0.25 * exp(-best / (5.0 * w));
         col += famLight(fh, 0.2 + 0.3 * fv, 0.4) * g * exp(-0.4 * nearZ) * glow;
     }
-    finish(col);
+    finish(famExpose(col, 5.24, 0.70, 0.05, fh));
 }

@@ -59,5 +59,5 @@ void main()
     float dot_ = smoothstep(size, size * 0.6, d) + 0.2 * exp(-d / (size * 2.0));
     vec3 col = famLight(fh, 0.3 + 0.4 * hs * temp, 0.3 * edge) * dot_ * (inside * 0.8 + edge * 0.6);
     col += famCol(fh, 0.45) * 0.012;
-    finish(col);
+    finish(famExpose(col, 2.20, 1.00, 0.03, fh));
 }

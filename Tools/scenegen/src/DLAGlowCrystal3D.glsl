@@ -100,5 +100,5 @@ void main()
     float now = crystal(p, cyc, 1.4 * u, arms, fan, turn, sNow);
     float old = crystal(p, cyc - 1.0, 1.4, arms, fan, turn + 1.0, sOld) * (1.0 - smoothstep(0.0, 0.35, u));
     col += famLight(fh, 0.2 + 0.6 * sNow, 0.3 * sNow) * now * 0.5 + famLight(fh, 0.2 + 0.6 * sOld, 0.2) * old * 0.5;
-    finish(col);
+    finish(famExpose(col, 1.85, 0.70, 0.03, fh));
 }

@@ -46,5 +46,5 @@ void main()
         float g = exp(-pow(dist / 0.0022, 2.0)) * focus + 0.2 * exp(-dist / 0.012);
         col += famLight(fh, h, 0.55 * exp(-pow(dist / 0.002, 2.0))) * g * bright * 0.7;
     }
-    finish(col);
+    finish(famExpose(col, 4.95, 0.70, 0.03, fh));
 }

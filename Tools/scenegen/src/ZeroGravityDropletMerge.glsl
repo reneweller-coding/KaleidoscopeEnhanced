@@ -66,5 +66,5 @@ void main()
     float rim = pow(1.0 - n.z, 2.0);
     vec3 col = famCol(fh, 0.45) * 0.015;
     col = mix(col, base * dif * (0.6 + 0.6 * sw) + vec3(1.0) * spec * 0.7 + famLight(fh, 0.5, 0.6) * rim * 0.4, inside);
-    finish(col);
+    finish(famExpose(col, 3.13, 0.70, 0.05, fh));
 }

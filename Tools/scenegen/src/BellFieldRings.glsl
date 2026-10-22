@@ -83,5 +83,5 @@ void main()
         float rim = exp(-pow(sd / 0.05, 2.0)) * open + exp(-pow((y + 0.95) / 0.05, 2.0)) * step(ax, 1.0);
         col += tone * (body * (0.08 + 0.8 * ringing) + rim * (0.2 + 0.4 * ringing));
     }
-    finish(col);
+    finish(famExpose(col, 2.20, 0.80, 0.00, fh));
 }

@@ -41,8 +41,8 @@ uniform float audioPhase;     ///< Rotation phase driven by the music (integrate
 uniform float audioBass;      ///< Bass band level, 0..1.
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 
-uniform float pairP;  ///< Pair knob: how many pairs.
-uniform float pointP; ///< Point knob: how many points per ring.
+uniform float pairP;  ///< Pair knob: how many pairs, 0..1.
+uniform float pointP; ///< Point knob: how many points per ring, 0..1.
 uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 // ---- shared building blocks (texture pool, noise, shapes) ----
@@ -548,15 +548,42 @@ vec3 famLight( float h, float t, float w )
     return mix( famCol( h, t ), vec3( 1.0, 0.93, 0.82 ), clamp( w, 0.0, 1.0 ) );
 }
 
+/**  The scene's light lifted toward a fuller picture (22.10.2026: the 400 new scenes were half as bright as the old
+ * ones): a gain, a gamma below one that widens the glows' soft falloffs, and a faint haze of the colour family that
+ * drifts slowly where the picture is dark.
+ *
+ * @param col   The scene's light. (in)
+ * @param gain  The gain. (in)
+ * @param gam   The gamma: 1 keeps the falloffs, below 1 widens them. (in)
+ * @param haze  The haze's strength (0: none). (in)
+ * @param h     The family's hue. (in)
+ *
+ * @return
+ *   The light.
+ *
+ * The lift starts above a toe of 0.02, so a scene's flat dark ground stays dark instead of turning into a flat coloured
+ * wash.  Each scene's values come from its catalogue frames.
+ **/
+vec3 famExpose( vec3 col, float gain, float gam, float haze, float h )
+{
+    const float Toe = 0.02;
+    vec3        c = max( col, vec3( 0.0 ) );
+    col = min( c, vec3( Toe ) ) + gain * pow( max( c - Toe, vec3( 0.0 ) ), vec3( gam ) );
+    vec2  q = screenP();
+    float n = fbm( 1.1 * q + vec2( 0.011, -0.007 ) * sceneTime );
+    vec3  mist = famCol( h, 0.3 + 0.4 * n ) * haze * ( 0.45 + 0.55 * n );
+    return col + mist * ( 1.0 - smoothstep( 0.0, 0.25, luma( col ) ) );
+}
+
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec2  p = screenP();
     float fh = famHue();
-    float pairs = floor( 2.0 + 2.0 * clamp( pairP, 0.0, 1.0 ) );
+    float pairs = floor( 3.0 + 1.0 * clamp( pairP, 0.0, 1.0 ) );
     float M = floor( 24.0 + 12.0 * clamp( pointP, 0.0, 1.0 ) );
     float ph = 0.25 * sceneTime + 1.0 * audioAdvance;
-    float R0 = 0.28 + 0.08 * clamp( audioBass, 0.0, 1.0 );
+    float R0 = 0.4 + 0.1 * clamp( audioBass, 0.0, 1.0 );
     float glow = 0.7 + 0.6 * clamp( audioSwell, 0.0, 1.0 );
     vec3  col = famCol( fh, 0.45 ) * 0.012;
     for ( int k = 0; k < 4; ++k )
@@ -568,7 +595,7 @@ void main()
         vec3 u1 = normalize( cross( ax, vec3( 0.0, 1.0, 0.0 ) ) ), u2 = cross( ax, u1 );
         // the pair drifts along its axis, wrapping round the space
         float drift = mod( 0.12 * ph + 1.3 * fk, 3.0 ) - 1.5;
-        vec3  base = vec3( 0.4 * sin( 2.7 * fk ), 0.25 * cos( 1.9 * fk ), 2.6 ) + ax * drift;
+        vec3  base = vec3( 0.9 * sin( 2.7 * fk + 0.5 ), 0.35 * cos( 1.9 * fk ), 2.4 ) + ax * drift;
         for ( int r = 0; r < 2; ++r )
         {
             float s = r == 0 ? 1.0 : -1.0;
@@ -585,7 +612,7 @@ void main()
                 if ( x.z < 0.3 )
                     continue;
                 vec2  sp = x.xy / x.z * 1.3;
-                float size = 0.003 + 0.01 / x.z;
+                float size = 0.004 + 0.014 / x.z;
                 float d = length( p - sp );
                 float g = smoothstep( size, size * 0.6, d ) + 0.2 * exp( -d / ( size * 2.5 ) );
                 float fade = smoothstep( 1.5, 1.1, abs( drift ) );
@@ -593,5 +620,5 @@ void main()
             }
         }
     }
-    finish( col );
+    finish( famExpose( col, 4.10, 0.70, 0.05, fh ) );
 }

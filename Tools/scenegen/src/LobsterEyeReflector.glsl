@@ -60,5 +60,5 @@ void main()
     float bevel = exp(-pow((m - 0.36) / 0.04, 2.0));
     vec3 col = famCol(fh, 0.45) * 0.02 + famCol(fh, 0.5) * 0.04 * open;
     col += light * (open * (0.7 + 0.3 * (1.0 - m)) + bevel * 0.4);
-    finish(col);
+    finish(famExpose(col, 4.04, 1.00, 0.03, fh));
 }

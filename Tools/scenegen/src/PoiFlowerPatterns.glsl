@@ -70,5 +70,5 @@ void main()
         float hd = exp(-pow(head / 0.02, 2.0)) * (0.6 + 1.0 * clamp(headP, 0.0, 1.0));
         col += famLight(fh, 0.2 + 0.6 * hc, 0.3) * (g + hd) * w;
     }
-    finish(col);
+    finish(famExpose(col, 4.94, 0.70, 0.00, fh));
 }

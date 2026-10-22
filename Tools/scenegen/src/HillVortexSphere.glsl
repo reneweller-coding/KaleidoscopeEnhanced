@@ -68,5 +68,5 @@ void main()
             col += famLight(fh, fract(0.2 * fv + 0.5 * h1), 0.4) * g * on * (1.4 / x.z);
         }
     }
-    finish(col);
+    finish(famExpose(col, 6.71, 0.90, 0.00, fh));
 }

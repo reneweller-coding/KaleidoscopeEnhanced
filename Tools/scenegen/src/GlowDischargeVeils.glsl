@@ -56,5 +56,5 @@ void main()
     float band = smoothstep(0.25, 0.75, 0.5 + 0.5 * cos(6.2831853 * (u / spacing - 0.2 * run)));
     col *= (1.0 - dark) + dark * band;
     col *= glow;
-    finish(col);
+    finish(famExpose(col, 1.85, 0.70, 0.00, fh));
 }

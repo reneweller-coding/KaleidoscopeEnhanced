@@ -62,5 +62,5 @@ void main()
         float alpha = smoothstep(1.02, 0.96, r) * (0.45 + 0.4 * near);
         col = mix(col, sc * glow * (0.5 + 0.6 * near), alpha);
     }
-    finish(col);
+    finish(famExpose(col, 2.10, 1.00, 0.00, fh));
 }

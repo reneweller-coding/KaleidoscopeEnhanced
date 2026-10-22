@@ -52,5 +52,5 @@ void main()
     float line = exp(-pow(d / 0.004, 2.0)) * show * smoothstep(0.5 * W, 0.42 * W, abs(v));
     vec3 col = famLight(fh, fract(hk * 3.0), 0.75) * line;
     col += famCol(fh, 0.45) * 0.015;
-    finish(col);
+    finish(famExpose(col, 5.69, 0.80, 0.03, fh));
 }

@@ -90,5 +90,5 @@ void main()
         float dim = t < 5 ? 1.0 : 0.55;
         col += mix(famLight(fh, 0.3 + 0.4 * dd.y, 0.4), vec3(1.0), 0.4 * core) * (core + halo) * dim * (0.7 + 0.8 * flash * dd.y);
     }
-    finish(col);
+    finish(famExpose(col, 2.75, 0.80, 0.03, fh));
 }

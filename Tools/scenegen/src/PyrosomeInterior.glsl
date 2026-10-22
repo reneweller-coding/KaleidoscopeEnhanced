@@ -74,5 +74,5 @@ void main()
     float fade = exp(-0.22 * dz) * smoothstep(0.0, 0.25, dz);
     vec3 col = famLight(fh, 0.3 + 0.4 * hz, 0.3 + 0.5 * wave) * zooid * lit * fade;
     col += famCol(fh, 0.45) * 0.015;
-    finish(col);
+    finish(famExpose(col, 2.20, 0.90, 0.03, fh));
 }

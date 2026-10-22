@@ -35,5 +35,5 @@ void main()
     vec3 col = (fA * smoothstep(0.35, 0.65, rays) + fB * (1.0 - smoothstep(0.35, 0.65, rays))) * pass;
     col *= (0.7 + 0.5 * clamp(audioSwell, 0.0, 1.0)) * 1.2;
     col *= smoothstep(1.3, 0.5, length(p));
-    finish(col);
+    finish(famExpose(col, 2.18, 1.00, 0.00, fh));
 }

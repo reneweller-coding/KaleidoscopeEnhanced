@@ -46,5 +46,5 @@ void main()
     }
     // the galaxy's core
     col += famLight(fh, 0.5, 0.7) * exp(-length(p - vec2(0.0, 0.0)) * 8.0) * 0.25;
-    finish(col);
+    finish(famExpose(col, 4.28, 0.70, 0.03, fh));
 }

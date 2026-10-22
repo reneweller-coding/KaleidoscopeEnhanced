@@ -72,5 +72,5 @@ void main()
         }
     }
     col += famLight(fh, 0.5, 0.6) * exp(-r * 6.0) * 0.2 * glow + famCol(fh, 0.45) * 0.05 * glow;
-    finish(col);
+    finish(famExpose(col, 1.85, 0.90, 0.00, fh));
 }

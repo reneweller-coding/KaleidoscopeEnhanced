@@ -95,5 +95,5 @@ void main()
         col += famLight(fh, 0.25 + 0.15 * fk, 0.4 + 0.4 * on) * ring * (0.08 + 1.3 * on) * glow;
         col += famLight(fh, 0.5, 0.9) * ring * exp(-pow(back * 6.2831853 * R / 0.01, 2.0)) * 0.4;   // the marker
     }
-    finish(col);
+    finish(famExpose(col, 1.55, 1.00, 0.00, fh));
 }

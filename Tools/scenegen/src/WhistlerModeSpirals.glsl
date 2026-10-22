@@ -77,5 +77,5 @@ void main()
         float line = exp(-pow(best / 0.0022, 2.0)) * (0.3 + 1.4 * env) + 0.25 * exp(-best / 0.012) * (0.2 + env);
         col += famLight(fh, 0.3 + 0.08 * fi, 0.4 + 0.4 * env) * line * glow;
     }
-    finish(col);
+    finish(famExpose(col, 6.10, 0.70, 0.05, fh));
 }

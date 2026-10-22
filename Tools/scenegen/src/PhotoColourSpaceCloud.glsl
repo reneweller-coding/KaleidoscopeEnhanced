@@ -56,5 +56,5 @@ void main()
         if (dd > 36.0 * s * s) continue;
         col += c * (smoothstep(s, s * 0.5, sqrt(dd)) + 0.3 * exp(-sqrt(dd) / (2.0 * s))) * glow;
     }
-    finish(col);
+    finish(famExpose(col, 3.26, 0.80, 0.03, famHue()));
 }

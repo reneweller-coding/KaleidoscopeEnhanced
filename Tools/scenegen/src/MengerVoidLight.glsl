@@ -71,5 +71,5 @@ void main()
         col += famLight(fh, 0.2 + 0.18 * lvl, 0.3) * (0.03 + 0.25 * kick) * fade * (0.3 + 0.3 * lvl);
     }
     col += famCol(fh, 0.5) * 0.012;
-    finish(col);
+    finish(famExpose(col, 1.10, 1.00, 0.00, fh));
 }

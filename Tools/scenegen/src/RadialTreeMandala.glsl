@@ -76,5 +76,5 @@ void main()
     col += famLight(fh, 0.3 + 0.4 * tin.y, 0.3 + 0.5 * tin.y) * exp(-pow(tin.x / (lw + 0.002 * (1.0 - tin.y)), 2.0)) * (0.5 + 0.8 * tin.y) * glow;
     col += famLight(fh, 0.5 + 0.3 * tout.y, 0.3 + 0.5 * tout.y) * exp(-pow(tout.x / (lw + 0.002 * (1.0 - tout.y)), 2.0)) * (0.4 + 0.7 * tout.y) * glow;
     col += famLight(fh, 0.5, 0.7) * exp(-pow((r - R0) / 0.003, 2.0)) * 0.3;
-    finish(col);
+    finish(famExpose(col, 4.94, 0.70, 0.03, fh));
 }

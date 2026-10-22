@@ -85,5 +85,5 @@ void main()
     }
     float line = exp(-pow(best / lw, 2.0)) + 0.2 * exp(-best / (5.0 * lw));
     vec3 col = famCol(fh, 0.45) * 0.02 + famLight(fh, 0.4 + 0.3 * fract(dot(floor(g), vec2(0.37, 0.61))), 0.5) * line;
-    finish(col);
+    finish(famExpose(col, 1.70, 1.00, 0.03, fh));
 }

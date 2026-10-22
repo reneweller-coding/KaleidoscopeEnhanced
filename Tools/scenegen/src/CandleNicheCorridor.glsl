@@ -161,5 +161,5 @@ void main()
         col = famCol(fh, 0.3) * 0.03 * exp(-0.05 * zCeil);
     }
     col += warm * exp(-length(p - vec2(0.0, 0.05)) * 6.0) * 0.25;
-    finish(col);
+    finish(famExpose(col, 1.25, 1.00, 0.00, fh));
 }

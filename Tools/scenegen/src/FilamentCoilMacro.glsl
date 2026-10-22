@@ -55,5 +55,5 @@ void main()
         float hot = (1.0 + 2.0 * flare * which) * heat;
         col += famLight(fh, 0.05 + 0.1 * fc, 0.6 * smoothstep(0.3, 1.0, g)) * g * hot * 0.8;
     }
-    finish(col);
+    finish(famExpose(col, 1.75, 0.70, 0.03, fh));
 }

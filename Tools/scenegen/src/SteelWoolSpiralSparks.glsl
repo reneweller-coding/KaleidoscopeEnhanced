@@ -52,5 +52,5 @@ void main()
         float spark = exp(-pow(best / 0.006, 2.0)) * (1.0 - along) * (1.0 + 1.5 * burst * step(0.7, h2)) * on;
         col += famLight(fh, 0.1 + 0.2 * h2, 0.7 - 0.5 * along) * spark;
     }
-    finish(col);
+    finish(famExpose(col, 3.70, 0.70, 0.05, fh));
 }

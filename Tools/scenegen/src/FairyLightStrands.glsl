@@ -51,5 +51,5 @@ void main()
         float wy = ((0.46 - 0.11 * fs) * z / 1.2 + hang * cos(sw)) / (z + hang * sin(sw) * 0.8) * 1.2;
         col += famCol(fh, 0.4) * exp(-abs(p.y - wy) / 0.002) * 0.04 * step(abs(p.x * z / (1.2 * 1.6)), 1.0);
     }
-    finish(col);
+    finish(famExpose(col, 2.98, 0.70, 0.00, fh));
 }

@@ -45,5 +45,5 @@ void main()
     vec3 stone = tone(imgLod(vec2(0.5) + p * vec2(0.55, 0.95), 2.5), fh) * 0.08;
     vec3 col = stone + sc * schiller * (0.45 + 0.6 * clamp(audioSwell, 0.0, 1.0));
     col += vec3(1.0) * pow(max(facing, 0.0), 40.0) * 0.05;          // the polish
-    finish(col);
+    finish(famExpose(col, 1.98, 1.00, 0.00, fh));
 }

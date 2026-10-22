@@ -68,5 +68,5 @@ void main()
             + hm * (exp(-pow(dB / 0.005, 2.0)) + 0.15 * exp(-dB / 0.02));
     float pen = (1.0 - hm) * exp(-pow(pA / 0.02, 2.0)) + hm * exp(-pow(pB / 0.02, 2.0));
     vec3 col = (famLight(fh, 0.2 + 0.6 * hc, 0.3) * g + famLight(fh, 0.5, 0.85) * pen) * glow;
-    finish(col);
+    finish(famExpose(col, 2.50, 0.70, 0.03, fh));
 }

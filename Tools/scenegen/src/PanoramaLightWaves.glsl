@@ -56,5 +56,5 @@ void main()
     float glow = 0.6 + 0.6 * clamp(audioSwell, 0.0, 1.0);
     vec3 col = famCol(fh, 0.45) * 0.03 * fog;
     col += (famLight(fh, 0.3, 0.4) * wl + famLight(fh, 0.7, 0.4) * wr) * fog * glow;
-    finish(col);
+    finish(famExpose(col, 1.85, 0.80, 0.00, fh));
 }

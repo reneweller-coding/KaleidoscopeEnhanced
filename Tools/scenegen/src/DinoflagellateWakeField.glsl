@@ -100,5 +100,5 @@ void main()
         float arm = exp(-pow((abs(d) - KT * back) / (0.006 + 0.02 * u), 2.0)) * smoothstep(0.0, 0.1, back);
         col += famLight(fh, 0.3 + 0.4 * hi, 0.5 * (1.0 - u)) * (1.3 * track + arm) * fade * wi;
     }
-    finish(col);
+    finish(famExpose(col, 3.60, 0.80, 0.03, fh));
 }

@@ -46,7 +46,7 @@ vec3 swarm(vec2 p, float N, float step_, float s, float shape, float fh)
         float tt = clamp(dot(p - pt2, e) / max(dot(e, e), 1e-8), 0.0, 1.0);
         float dt = length(p - pt2 - e * tt);
         float d = length(p - pt);
-        float g = exp(-d * d / 0.00004) + 0.5 * exp(-dt * dt / 0.000012) * tt;
+        float g = exp(-d * d / 0.0001) + 0.5 * exp(-dt * dt / 0.00003) * tt;
         col += famLight(fh, fi / N, 0.4) * g;
     }
     return col;
@@ -54,7 +54,7 @@ vec3 swarm(vec2 p, float N, float step_, float s, float shape, float fh)
 
 void main()
 {
-    vec2 p = screenP();
+    vec2 p = screenP() * vec2(0.6, 1.0);                             // the figure spread over the picture's width
     float fh = famHue();
     float N = floor(100.0 + 80.0 * clamp(pointP, 0.0, 1.0));
     float h = max(audioHarmAdvance, 0.0);
@@ -67,5 +67,5 @@ void main()
     if (hm > 0.001) col += swarm(p, N, (1.0 + mod(hk + 1.0, 3.0)) / 3.0, clock, shape, fh) * hm;
     col *= glow;
     col += famCol(fh, 0.45) * 0.02;
-    finish(col);
+    finish(famExpose(col, 3.31, 0.70, 0.05, fh));
 }

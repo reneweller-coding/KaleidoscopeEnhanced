@@ -84,5 +84,5 @@ void main()
             col += famLight(fh, 0.3 + 0.4 * hi, 0.3 + 0.5 * wave) * (stalk + 0.8 * leaf) * lit * (0.5 + 0.25 * fr);
         }
     }
-    finish(col);
+    finish(famExpose(col, 3.70, 0.70, 0.00, fh));
 }

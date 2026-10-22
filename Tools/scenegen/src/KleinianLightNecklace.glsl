@@ -76,5 +76,5 @@ void main()
     float halo = 0.25 * exp(-d / (px * 30.0));
     vec3 col = famLight(fh, clamp(n / 30.0, 0.0, 1.0), 0.5 * g) * (g + halo);
     col += famCol(fh, 0.5) * 0.012;
-    finish(col);
+    finish(famExpose(col, 2.77, 1.00, 0.03, fh));
 }

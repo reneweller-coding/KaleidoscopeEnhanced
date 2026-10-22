@@ -50,5 +50,5 @@ void main()
         float along0 = mod(v * clock, track) - 0.5 * track;
         col += famLight(fh, 0.5, 0.85) * exp(-pow(length(p - dir * along0 - nrm * lane) / 0.012, 2.0));
     }
-    finish(col);
+    finish(famExpose(col, 1.90, 1.00, 0.03, fh));
 }

@@ -48,7 +48,7 @@ uniform float audioSwell;       ///< Slow loudness envelope, 0..1 (seconds).
 uniform float rowP;  ///< Row knob: how many particles, 0..1.
 uniform float loopP; ///< Loop knob: the loops' size, 0..1.
 uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
-// @state 8 1 60 32
+// @state 12 1 60 32
 uniform sampler2D texState;   ///< The scene's own field from the last step (EffectShader::stepState).
 uniform int       statePass;  ///< 1 while the scene computes its next state, 0 while it draws the frame.
 uniform float     stateFrame; ///< Steps of the scene's own field since the activation (0: seed it).
@@ -559,6 +559,33 @@ vec3 famLight( float h, float t, float w )
     return mix( famCol( h, t ), vec3( 1.0, 0.93, 0.82 ), clamp( w, 0.0, 1.0 ) );
 }
 
+/**  The scene's light lifted toward a fuller picture (22.10.2026: the 400 new scenes were half as bright as the old
+ * ones): a gain, a gamma below one that widens the glows' soft falloffs, and a faint haze of the colour family that
+ * drifts slowly where the picture is dark.
+ *
+ * @param col   The scene's light. (in)
+ * @param gain  The gain. (in)
+ * @param gam   The gamma: 1 keeps the falloffs, below 1 widens them. (in)
+ * @param haze  The haze's strength (0: none). (in)
+ * @param h     The family's hue. (in)
+ *
+ * @return
+ *   The light.
+ *
+ * The lift starts above a toe of 0.02, so a scene's flat dark ground stays dark instead of turning into a flat coloured
+ * wash.  Each scene's values come from its catalogue frames.
+ **/
+vec3 famExpose( vec3 col, float gain, float gam, float haze, float h )
+{
+    const float Toe = 0.02;
+    vec3        c = max( col, vec3( 0.0 ) );
+    col = min( c, vec3( Toe ) ) + gain * pow( max( c - Toe, vec3( 0.0 ) ), vec3( gam ) );
+    vec2  q = screenP();
+    float n = fbm( 1.1 * q + vec2( 0.011, -0.007 ) * sceneTime );
+    vec3  mist = famCol( h, 0.3 + 0.4 * n ) * haze * ( 0.45 + 0.55 * n );
+    return col + mist * ( 1.0 - smoothstep( 0.0, 0.25, luma( col ) ) );
+}
+
 
 // ---- the scene's own field (state pass) ----
 /**  An integer hash (Wellons' lowbias32).
@@ -758,7 +785,7 @@ vec4 stateStep()
     int  i = stCell().x;
     vec2 r = rates( float( i ) );
     vec4 old = stateFrame < 0.5 ? vec4( 0.0 ) : texelFetch( texState, ivec2( i, 0 ), 0 );
-    // (both wrap where nothing shows: 200 x 2.5 is a whole number of spans, the phase a whole number of turns)
+    // (both wrap where nothing shows: 200 x 2.5 is a whole number of spans of 4, the phase a whole number of turns)
     return vec4( mod( old.r + r.y / 60.0, 200.0 ), mod( old.g + r.x / 60.0, 6.2831853 * 100.0 ), 0.0, 1.0 );
 }
 
@@ -772,11 +799,11 @@ void main()
     }
     vec2  p = screenP();
     float fh = famHue();
-    float N = floor( 5.0 + 3.0 * clamp( rowP, 0.0, 1.0 ) );
+    float N = floor( 8.0 + 4.0 * clamp( rowP, 0.0, 1.0 ) );
     float rsize = 0.03 + 0.03 * clamp( loopP, 0.0, 1.0 );
     float glow = 0.6 + 0.6 * clamp( audioSwell, 0.0, 1.0 );
     vec3  col = famCol( fh, 0.45 ) * 0.015;
-    for ( int i = 0; i < 8; ++i )
+    for ( int i = 0; i < 12; ++i )
     {
         float fi = float( i );
         if ( fi >= N )
@@ -787,9 +814,9 @@ void main()
         float sgn = mod( fi, 2.0 ) < 0.5 ? 1.0 : -1.0; // opposite charges gyrate the other way
         float rg = rsize * ( 0.7 + 0.6 * hi ) * 3.0 / r.x * 3.0;
         float y0 = 0.9 * ( ( fi + 0.5 ) / N - 0.5 );
-        // the head crosses the screen and wraps far off it, after its trail has left
-        const float Span = 5.0;
-        float       xh = -2.5 + mod( st.r * 2.5 + Span * hi, Span );
+        // the head crosses the screen and wraps off it, after its trail (at most 1.05 long) has left
+        const float Span = 4.0;
+        float       xh = -2.0 + mod( st.r * 2.5 + Span * hi, Span );
         float       best = 9.0, age = 1.0;
         vec2        prev = vec2( 0.0 );
         for ( int k = 0; k <= 80; ++k )
@@ -812,5 +839,5 @@ void main()
         float g = exp( -pow( best / 0.0022, 2.0 ) ) * ( 1.0 - 0.85 * age ) + 0.2 * exp( -best / 0.012 ) * ( 1.0 - age );
         col += famLight( fh, 0.3 + 0.4 * hi, 0.45 * ( 1.0 - age ) ) * g * glow;
     }
-    finish( col );
+    finish( famExpose( col, 4.00, 0.70, 0.05, fh ) );
 }

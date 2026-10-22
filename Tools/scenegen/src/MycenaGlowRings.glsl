@@ -42,5 +42,5 @@ void main()
             col += famLight(fh, 0.3 + 0.1 * fc, 0.3 + 0.4 * cap) * (line + 1.3 * cap) * life;
         }
     }
-    finish(col);
+    finish(famExpose(col, 2.18, 1.00, 0.03, fh));
 }

@@ -56,5 +56,5 @@ void main()
         vec3 c = light * (0.03 + 0.35 * (edgeOn - 1.0)) * side * hem * (1.0 - 0.1 * fk);
         col = col * 0.82 + c;
     }
-    finish(col);
+    finish(famExpose(col, 1.20, 1.00, 0.00, fh));
 }

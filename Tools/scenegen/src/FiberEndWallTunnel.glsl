@@ -86,5 +86,5 @@ void main()
     col += dotc * 0.15 * exp(-length(l) * 6.0);                        // each fibre's halo
     col = mix(photo * 0.35 * glow, col, detail);
     col = mix(col, famCol(fh, 0.5) * 0.3, smoothstep(6.0, 20.0, z));
-    finish(col);
+    finish(famExpose(col, 1.58, 1.00, 0.00, fh));
 }

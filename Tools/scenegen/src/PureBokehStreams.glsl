@@ -60,5 +60,5 @@ void main()
                 col += tint * (disc * (0.22 + rim) * lit) * (k == 2 ? 1.6 : 1.0);
             }
     }
-    finish(col);
+    finish(famExpose(col, 2.05, 0.80, 0.00, fh));
 }

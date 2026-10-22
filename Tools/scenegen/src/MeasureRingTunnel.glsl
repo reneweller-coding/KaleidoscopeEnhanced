@@ -60,5 +60,5 @@ void main()
         float w = wr / dz + 1.2 / resolution.y;
         col += famLight(fh, phraseRing ? 0.7 : 0.4, 0.3 + 0.5 * played) * exp(-pow(d / w, 2.0)) * gap * lit * fade * glow;
     }
-    finish(col);
+    finish(famExpose(col, 5.85, 0.70, 0.03, fh));
 }

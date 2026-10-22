@@ -43,5 +43,5 @@ void main()
             col += famLight(fh, fk / 6.0, 0.4 * band) * g * (0.35 + 0.9 * band) * (1.2 / x.z);
         }
     }
-    finish(col);
+    finish(famExpose(col, 4.16, 0.70, 0.03, fh));
 }

@@ -103,5 +103,5 @@ void main()
         }
     }
     if (!blocked) col += back * 0.8;
-    finish(col);
+    finish(famExpose(col, 2.15, 0.90, 0.03, fh));
 }

@@ -61,5 +61,5 @@ void main()
     float inner = smoothstep(0.0, 0.06, edge);
     vec3 col = famCol(vh, 0.45) * 0.02 + famCol(vh, 0.4 + 0.2 * fract(float(bi) * 0.37)) * 0.05 * inner;
     col += famLight(vh, 0.5, 0.35) * skin * (0.6 + 0.6 * sw);
-    finish(col);
+    finish(famExpose(col, 2.00, 1.00, 0.03, fh));
 }

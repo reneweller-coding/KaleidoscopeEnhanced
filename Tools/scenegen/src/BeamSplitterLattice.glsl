@@ -74,5 +74,5 @@ void main()
         float plate = exp(-pow(abs(f.x - f.y) / 0.03, 2.0)) * step(length(f), 0.3) * (shH > 0.002 ? 0.25 : 0.0);
         col += famLight(fh, src == 0 ? 0.3 : 0.7, 0.4 * min(light, 1.0)) * (light + plate) * amp;
     }
-    finish(col);
+    finish(famExpose(col, 4.90, 0.90, 0.03, fh));
 }

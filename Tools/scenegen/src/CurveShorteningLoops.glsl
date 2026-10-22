@@ -61,5 +61,5 @@ void main()
         col += famLight(fh, fract(hc * 3.3), 0.3) * exp(-pow(dist / 0.004, 2.0)) * fade;
     }
     col += famCol(fh, 0.45) * 0.015;
-    finish(col);
+    finish(famExpose(col, 7.00, 0.80, 0.03, fh));
 }

@@ -52,5 +52,5 @@ void main()
         col += famLight(fh, 0.3 + 0.4 * hi, 0.5) * (core + 0.25 * halo) * (0.35 + 0.65 * front) * (0.6 + 0.6 * sw);
         col += famLight(fh, 0.5, 0.9) * exp(-dot(p - vec2(cx, 0.5), p - vec2(cx, 0.5)) / 0.0003) * 0.6;   // the nozzle
     }
-    finish(col);
+    finish(famExpose(col, 3.12, 0.70, 0.03, fh));
 }

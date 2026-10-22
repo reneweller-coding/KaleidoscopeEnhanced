@@ -80,5 +80,5 @@ void main()
     col += famCol(fh, 0.5) * exp(-rim / 0.003) * 0.25;
     col *= 0.7 + 0.6 * clamp(audioSwell, 0.0, 1.0);
     col *= step(length(q), 1.02);
-    finish(col);
+    finish(famExpose(col, 5.45, 0.70, 0.03, fh));
 }

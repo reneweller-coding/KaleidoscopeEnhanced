@@ -66,5 +66,5 @@ void main()
         col += gas * (core * lit + 0.25 * lit * exp(-best / 0.02)) * (0.4 + 0.6 * front);
         col += vec3(0.85, 0.9, 0.95) * wall * 0.12 * (0.4 + 0.6 * front);
     }
-    finish(col);
+    finish(famExpose(col, 2.67, 0.80, 0.00, fh));
 }

@@ -43,5 +43,5 @@ void main()
         float fade = smoothstep(0.0, 0.6, dz) * smoothstep(30.0 * sp, 26.0 * sp, dz) * exp(-0.08 * dz);
         col += famLight(fh, 0.35 + 0.3 * fract(k * 0.17), 0.3 + 0.5 * spokes) * band * (0.25 + 1.3 * spokes) * fade * glow;
     }
-    finish(col);
+    finish(famExpose(col, 1.40, 1.00, 0.00, fh));
 }

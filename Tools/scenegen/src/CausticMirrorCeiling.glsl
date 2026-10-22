@@ -42,5 +42,5 @@ void main()
     vec3 tint = imgLod(k * 0.8 + 0.5, 3.0);
     vec3 col = famLight(fh, 0.2 + 0.6 * luma(tint), 0.3 * smoothstep(3.0, 15.0, light)) * light * 0.12;
     col += famCol(fh, 0.4) * 0.03;
-    finish(col);
+    finish(famExpose(col, 1.30, 1.00, 0.03, fh));
 }

@@ -47,5 +47,5 @@ void main()
             col += famLight(fh, float(j) / n, 0.4) * g * glow * stripe * (1.6 / x.z);
         }
     }
-    finish(col);
+    finish(famExpose(col, 2.25, 0.80, 0.00, fh));
 }

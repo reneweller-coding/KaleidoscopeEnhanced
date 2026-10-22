@@ -57,5 +57,5 @@ void main()
     float line = exp(-pow(d / (1.5 / resolution.y), 2.0)) * (1.0 - crowd) + crowd * 0.35;
     float k = floor(u + 0.5);
     vec3 col = famCol(fh, 0.45) * 0.015 + famLight(fh, 0.4 + 0.2 * sin(0.7 * k), 0.4) * line;
-    finish(col);
+    finish(famExpose(col, 4.29, 0.90, 0.03, fh));
 }

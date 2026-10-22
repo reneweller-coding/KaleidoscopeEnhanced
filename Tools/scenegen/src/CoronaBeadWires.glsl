@@ -45,5 +45,5 @@ void main()
         float bead = exp(-(along * along + perp * perp) / (w * w)) * on;
         col += famLight(fh, 0.3 + 0.4 * h2, 0.5) * (wire + bead * 2.0 / (0.4 + 0.3 * z));
     }
-    finish(col);
+    finish(famExpose(col, 5.58, 0.70, 0.05, fh));
 }

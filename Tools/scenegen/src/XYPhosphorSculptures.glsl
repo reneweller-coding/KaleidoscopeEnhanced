@@ -71,5 +71,5 @@ void main()
     // the screen's graticule, faint
     vec2 gr = abs(fract(p * 5.0) - 0.5);
     col += famCol(fh, 0.4) * 0.03 * exp(-min(gr.x, gr.y) / 0.01);
-    finish(col);
+    finish(famExpose(col, 3.51, 0.70, 0.03, fh));
 }

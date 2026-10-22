@@ -72,5 +72,5 @@ void main()
     vec2 h = hash22(cell);
     float st = exp(-dot(fract(g) - 0.5 - (h - 0.5) * 0.6, fract(g) - 0.5 - (h - 0.5) * 0.6) / 0.004) * step(0.86, hash21(cell + 3.0));
     col += famLight(fh, 0.5, 0.85) * st * 0.5;
-    finish(col);
+    finish(famExpose(col, 1.35, 1.00, 0.00, fh));
 }

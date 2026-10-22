@@ -52,5 +52,5 @@ void main()
         vec3 fc = mix(famLight(fh, t, 0.8), fringe, smoothstep(0.3, 0.8, e) * (0.5 + 0.5 * smoothstep(0.2, 0.8, abs(along / len))));
         col += fc * (core + 0.2 * exp(-2.0 * e)) * on * (0.08 + 0.75 * flare + 0.9 * flash) * (1.2 / depth);
     }
-    finish(col);
+    finish(famExpose(col, 2.20, 0.80, 0.03, fh));
 }

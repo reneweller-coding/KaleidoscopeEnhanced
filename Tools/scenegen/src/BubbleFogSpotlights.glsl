@@ -68,5 +68,5 @@ void main()
         float glint = exp(-pow(length((g - c) / R - vec2(-0.35, 0.4)) / 0.15, 2.0));
         col += (skin * 1.6 + vec3(glint) * 0.8) * (0.05 + 1.4 * luma(lit)) * pop * (1.0 - 0.2 * fl);
     }
-    finish(col);
+    finish(famExpose(col, 1.55, 1.00, 0.00, fh));
 }

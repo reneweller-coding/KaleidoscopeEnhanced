@@ -56,5 +56,5 @@ void main()
         float g = smoothstep(size, size * 0.6, d) + 0.25 * exp(-d / (size * 2.5));
         col += famLight(fh, fract(h1 + 0.3 * couple), 0.4) * g * glow * (0.5 + 0.5 * z);
     }
-    finish(col);
+    finish(famExpose(col, 4.61, 0.70, 0.03, fh));
 }

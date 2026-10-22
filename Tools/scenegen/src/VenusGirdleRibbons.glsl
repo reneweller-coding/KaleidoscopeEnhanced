@@ -96,5 +96,5 @@ void main()
         vec3 fringe = hsv2rgb(vec3(fract(fh + spread * sin(9.0 * x + 2.0 * fi + 6.0 * d / max(hw, 1e-3))), 0.7, 1.0));
         col += mix(famLight(fh, 0.5, 0.6), fringe, 0.7) * edge * 0.9 + famCol(fh, 0.4 + 0.1 * fi) * body;
     }
-    finish(col);
+    finish(famExpose(col, 2.50, 1.00, 0.00, fh));
 }

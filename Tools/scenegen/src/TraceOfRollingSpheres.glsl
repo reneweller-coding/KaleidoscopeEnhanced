@@ -44,5 +44,5 @@ void main()
         float fade = exp(-0.12 * z);
         col += famLight(fh, fk / tracks, 0.3 * ball) * (line * 0.8 + ball * 1.4) * fade * glow * life;
     }
-    finish(col);
+    finish(famExpose(col, 2.95, 0.70, 0.03, fh));
 }

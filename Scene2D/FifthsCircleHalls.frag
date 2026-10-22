@@ -42,8 +42,8 @@ uniform float audioPhase;      ///< Rotation phase driven by the music (integrat
 uniform float audioChroma[12]; ///< Pitch-class energies (12 values).
 uniform float audioSwell;      ///< Slow loudness envelope, 0..1 (seconds).
 
-uniform float archP; ///< Arch knob: the arches' height.
-uniform float fovP;  ///< Fov knob: how wide the view is.
+uniform float archP; ///< Arch knob: the arches' height, 0..1.
+uniform float fovP;  ///< Fov knob: how wide the view is, 0..1.
 uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 // @state 12 1 60
 uniform sampler2D texState;   ///< The scene's own field from the last step (EffectShader::stepState).
@@ -556,6 +556,33 @@ vec3 famLight( float h, float t, float w )
     return mix( famCol( h, t ), vec3( 1.0, 0.93, 0.82 ), clamp( w, 0.0, 1.0 ) );
 }
 
+/**  The scene's light lifted toward a fuller picture (22.10.2026: the 400 new scenes were half as bright as the old
+ * ones): a gain, a gamma below one that widens the glows' soft falloffs, and a faint haze of the colour family that
+ * drifts slowly where the picture is dark.
+ *
+ * @param col   The scene's light. (in)
+ * @param gain  The gain. (in)
+ * @param gam   The gamma: 1 keeps the falloffs, below 1 widens them. (in)
+ * @param haze  The haze's strength (0: none). (in)
+ * @param h     The family's hue. (in)
+ *
+ * @return
+ *   The light.
+ *
+ * The lift starts above a toe of 0.02, so a scene's flat dark ground stays dark instead of turning into a flat coloured
+ * wash.  Each scene's values come from its catalogue frames.
+ **/
+vec3 famExpose( vec3 col, float gain, float gam, float haze, float h )
+{
+    const float Toe = 0.02;
+    vec3        c = max( col, vec3( 0.0 ) );
+    col = min( c, vec3( Toe ) ) + gain * pow( max( c - Toe, vec3( 0.0 ) ), vec3( gam ) );
+    vec2  q = screenP();
+    float n = fbm( 1.1 * q + vec2( 0.011, -0.007 ) * sceneTime );
+    vec3  mist = famCol( h, 0.3 + 0.4 * n ) * haze * ( 0.45 + 0.55 * n );
+    return col + mist * ( 1.0 - smoothstep( 0.0, 0.25, luma( col ) ) );
+}
+
 
 // ---- the scene's own field (state pass) ----
 /**  An integer hash (Wellons' lowbias32).
@@ -798,5 +825,5 @@ void main()
     vec3  col = mix( stone, view, opening );
     col += famLight( fh, 0.5, 0.6 ) * rim * ( 0.15 + 0.6 * lit );
     col += famCol( fh, 0.5 ) * 0.06 * exp( -pow( ( p.y + 0.42 ) / 0.01, 2.0 ) ); // the floor's edge
-    finish( col );
+    finish( famExpose( col, 1.20, 1.00, 0.00, fh ) );
 }

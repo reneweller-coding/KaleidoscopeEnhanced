@@ -42,5 +42,5 @@ void main()
     float tip = exp(-trap / (0.25 * width)) * flare;
     vec3 col = famLight(fh, fract(at / 14.0), 0.3 * g + 0.6 * tip) * (g * 0.9 + tip * 1.5);
     col += famCol(fh, 0.5) * 0.012;
-    finish(col);
+    finish(famExpose(col, 6.48, 1.00, 0.00, fh));
 }

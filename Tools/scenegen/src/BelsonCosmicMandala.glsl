@@ -54,5 +54,5 @@ void main()
     mist = smoothstep(0.35, 0.8, mist) * (0.3 + 0.7 * clamp(mistP, 0.0, 1.0)) * smoothstep(0.05, 0.6, r);
     vec3 col = famLight(fh, 0.3 + 0.2 * fract(u), 0.4 * m) * m * 0.9 + famCol(fh, 0.6) * mist * 0.4;
     col += famLight(fh, 0.5, 0.8) * exp(-r * 10.0) * 0.4;      // the heart, where the next one is born
-    finish(col);
+    finish(famExpose(col, 1.35, 1.00, 0.00, fh));
 }

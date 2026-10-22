@@ -60,5 +60,5 @@ void main()
         vec2 c = vec2(0.6 * sin(0.4 * h + 2.3 * fw + 0.03 * sceneTime), 0.35 * cos(0.33 * h + 1.7 * fw));
         col += famLight(fh, 0.5, 0.6) * exp(-length(p - c) * 25.0) * 0.4;
     }
-    finish(col);
+    finish(famExpose(col, 5.67, 0.70, 0.03, fh));
 }

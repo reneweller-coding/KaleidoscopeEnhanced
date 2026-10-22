@@ -64,5 +64,5 @@ void main()
     // the two orbits, faintly
     float rq = length(q);
     col += famCol(fh, 0.45) * (exp(-abs(rq - 0.26) / 0.003) + exp(-abs(rq - 0.42) / 0.003)) * 0.05;
-    finish(col);
+    finish(famExpose(col, 1.85, 0.70, 0.00, fh));
 }

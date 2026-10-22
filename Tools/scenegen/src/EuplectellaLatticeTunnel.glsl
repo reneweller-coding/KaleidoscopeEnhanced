@@ -59,5 +59,5 @@ void main()
     vec3 col = famCol(fh, 0.45) * 0.012;
     col += famLight(fh, 0.35, 0.3) * outer.x * back;
     col += famLight(fh, 0.6, 0.6) * inner.x * glow;
-    finish(col);
+    finish(famExpose(col, 1.30, 1.00, 0.00, fh));
 }

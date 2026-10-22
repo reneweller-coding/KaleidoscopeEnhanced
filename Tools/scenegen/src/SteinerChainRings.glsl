@@ -106,5 +106,5 @@ void main()
     float light = (1.0 - hm) * nested(z, nA, run, a, px) + hm * nested(z, nB, run, a, px);
     float glow = (0.6 + 0.6 * clamp(audioSwell, 0.0, 1.0)) * (1.0 - 0.35 * outside);
     vec3 col = famCol(fh, 0.45) * 0.02 + famLight(fh, 0.4 + 0.2 * outside, 0.6) * light * glow;
-    finish(col);
+    finish(famExpose(col, 1.85, 0.80, 0.00, fh));
 }

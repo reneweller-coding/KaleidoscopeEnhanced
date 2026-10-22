@@ -14,7 +14,7 @@
  * Knobs: rowP (how many particles), loopP (the loops' size), hueP.
 //@params rowP loopP
 //@audio audioBass audioHarmAdvance audioSwell
-//@state 8 1 60 32
+//@state 12 1 60 32
 //@body
 /**  The fields' gyration rate and drift speed for a particle.
  *
@@ -41,7 +41,7 @@ vec4 stateStep()
     int i = stCell().x;
     vec2 r = rates(float(i));
     vec4 old = stateFrame < 0.5 ? vec4(0.0) : texelFetch(texState, ivec2(i, 0), 0);
-    // (both wrap where nothing shows: 200 x 2.5 is a whole number of spans, the phase a whole number of turns)
+    // (both wrap where nothing shows: 200 x 2.5 is a whole number of spans of 4, the phase a whole number of turns)
     return vec4(mod(old.r + r.y / 60.0, 200.0), mod(old.g + r.x / 60.0, 6.2831853 * 100.0), 0.0, 1.0);
 }
 
@@ -50,11 +50,11 @@ void main()
     if (statePass == 1) { fragColor = stateStep(); return; }
     vec2 p = screenP();
     float fh = famHue();
-    float N = floor(5.0 + 3.0 * clamp(rowP, 0.0, 1.0));
+    float N = floor(8.0 + 4.0 * clamp(rowP, 0.0, 1.0));
     float rsize = 0.03 + 0.03 * clamp(loopP, 0.0, 1.0);
     float glow = 0.6 + 0.6 * clamp(audioSwell, 0.0, 1.0);
     vec3 col = famCol(fh, 0.45) * 0.015;
-    for (int i = 0; i < 8; ++i) {
+    for (int i = 0; i < 12; ++i) {
         float fi = float(i);
         if (fi >= N) break;
         float hi = fract(sin(fi * 12.9898) * 43758.5453);
@@ -63,9 +63,9 @@ void main()
         float sgn = mod(fi, 2.0) < 0.5 ? 1.0 : -1.0;                   // opposite charges gyrate the other way
         float rg = rsize * (0.7 + 0.6 * hi) * 3.0 / r.x * 3.0;
         float y0 = 0.9 * ((fi + 0.5) / N - 0.5);
-        // the head crosses the screen and wraps far off it, after its trail has left
-        const float SPAN = 5.0;
-        float xh = -2.5 + mod(st.r * 2.5 + SPAN * hi, SPAN);
+        // the head crosses the screen and wraps off it, after its trail (at most 1.05 long) has left
+        const float SPAN = 4.0;
+        float xh = -2.0 + mod(st.r * 2.5 + SPAN * hi, SPAN);
         float best = 9.0, age = 1.0;
         vec2 prev = vec2(0.0);
         for (int k = 0; k <= 80; ++k) {
@@ -82,5 +82,5 @@ void main()
         float g = exp(-pow(best / 0.0022, 2.0)) * (1.0 - 0.85 * age) + 0.2 * exp(-best / 0.012) * (1.0 - age);
         col += famLight(fh, 0.3 + 0.4 * hi, 0.45 * (1.0 - age)) * g * glow;
     }
-    finish(col);
+    finish(famExpose(col, 4.00, 0.70, 0.05, fh));
 }

@@ -40,5 +40,5 @@ void main()
         col += c * beam * fog * exp(-r * 0.5) * 0.7 * bright;
     }
     col += famLight(fh, 0.5, 0.9) * exp(-r * r / 0.004) * bright;
-    finish(col);
+    finish(famExpose(col, 3.56, 1.00, 0.00, fh));
 }

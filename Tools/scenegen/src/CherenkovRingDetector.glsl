@@ -48,5 +48,5 @@ void main()
         lit += exp(-pow(d / ((0.5 + 0.5 * clamp(audioSwell, 0.0, 1.0)) * T), 2.0)) * env;
     }
     col += famLight(fh, 0.5, 0.3 * min(lit, 1.0)) * min(lit, 1.5) * smoothstep(0.48, 0.3, face) * bright;
-    finish(col);
+    finish(famExpose(col, 2.10, 0.70, 0.03, fh));
 }

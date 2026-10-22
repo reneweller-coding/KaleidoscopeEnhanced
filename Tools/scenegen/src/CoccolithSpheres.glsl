@@ -79,5 +79,5 @@ void main()
         sc += famLight(fh, 0.5, 0.9) * pow(rel, 3.0) * pow(z, 2.0) * 0.25 * sheen;
         col = mix(col, sc, smoothstep(1.02, 0.97, r));
     }
-    finish(col);
+    finish(famExpose(col, 2.05, 0.90, 0.00, fh));
 }

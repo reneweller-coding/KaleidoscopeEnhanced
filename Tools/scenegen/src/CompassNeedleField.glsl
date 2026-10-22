@@ -55,5 +55,5 @@ void main()
     vec3 col = famCol(fh, 0.45) * 0.015;
     col += mix(famCol(fh, 0.3 + 0.2 * hn) * 0.25, famLight(fh, 0.5 + 0.2 * hn, 0.5), north) * inside * glow;
     col += famLight(fh, 0.5, 0.6) * exp(-dot(lq, lq) / (0.0000025)) * 0.3;   // the pivot
-    finish(col);
+    finish(famExpose(col, 7.00, 0.70, 0.00, fh));
 }

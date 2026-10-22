@@ -35,5 +35,5 @@ void main()
         float core = exp(-pow(d / 0.003, 2.0)), sheath = exp(-d / 0.02);
         col += mix(famLight(fh, 0.3 + 0.4 * hi, 0.5), vec3(1.0), 0.35 * core) * (core + 0.3 * sheath) * (0.4 + 0.6 * front);
     }
-    finish(col);
+    finish(famExpose(col, 2.45, 0.70, 0.03, fh));
 }

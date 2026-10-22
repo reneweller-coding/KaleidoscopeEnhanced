@@ -58,5 +58,5 @@ void main()
         col += famCol(fh, 0.25 + 0.5 * fk / NC) * band * 0.7 * glow;
     }
     col += famLight(fh, 0.5, 0.8) * exp(-r * r / 0.002) * 0.4 * glow;
-    finish(col);
+    finish(famExpose(col, 2.20, 0.90, 0.00, fh));
 }

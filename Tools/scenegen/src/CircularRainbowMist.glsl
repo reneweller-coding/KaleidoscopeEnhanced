@@ -45,5 +45,5 @@ void main()
         col += (c1 * prim * 0.5 + c2 * sec * 0.5) * mist;
         col += mix(vec3(1.0), famLight(fh, 0.5, 0.4), 0.5) * sup * 0.35 * mist;
     }
-    finish(col);
+    finish(famExpose(col, 1.10, 1.00, 0.00, fh));
 }

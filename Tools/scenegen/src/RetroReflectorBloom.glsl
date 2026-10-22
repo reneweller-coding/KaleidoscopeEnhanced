@@ -59,5 +59,5 @@ void main()
     float ridge = abs(fract(ang / 2.0943951 + 0.5) - 0.5) * length(g);
     float rim = 0.5 - max(abs(g.x) * 0.8660254 + abs(g.y) * 0.5, abs(g.y));
     col *= smoothstep(0.0, 0.05, ridge) * smoothstep(0.0, 0.04, rim);
-    finish(col);
+    finish(famExpose(col, 1.60, 1.00, 0.03, fh));
 }

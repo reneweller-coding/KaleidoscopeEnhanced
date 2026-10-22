@@ -48,5 +48,5 @@ void main()
     float sl = exp(-pow((fract(psi * lines) - 0.5) / 0.06, 2.0));
     float beads = pow(0.5 + 0.5 * cos(6.2831853 * (q.x * 3.0 - run)), 10.0);
     col += famLight(fh, 0.7, 0.8) * sl * (0.08 + 0.9 * beads) * (0.4 + 0.6 * sw);
-    finish(col);
+    finish(famExpose(col, 2.25, 0.90, 0.03, fh));
 }

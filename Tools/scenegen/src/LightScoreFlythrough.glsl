@@ -90,5 +90,5 @@ void main()
         prev = sp;
         mprev = m;
     }
-    finish(col);
+    finish(famExpose(col, 7.00, 0.70, 0.05, fh));
 }

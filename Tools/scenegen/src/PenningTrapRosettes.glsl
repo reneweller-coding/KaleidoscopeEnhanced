@@ -50,5 +50,5 @@ void main()
         float ionG = exp(-pow(length(p - ion) / 0.012, 2.0));
         col += famLight(fh, 0.2 + 0.6 * hc, 0.3) * g1 + famLight(fh, 0.5, 0.85) * ionG;
     }
-    finish(col);
+    finish(famExpose(col, 4.18, 0.70, 0.03, fh));
 }

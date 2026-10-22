@@ -53,5 +53,5 @@ void main()
             col += famLight(fh, 0.3 + 0.4 * h2, 0.5 * b) * b * pulse * 1.5 * (smoothstep(ds, ds * 0.5, d) + 0.3 * exp(-d / (3.0 * ds)));
         }
     }
-    finish(col);
+    finish(famExpose(col, 2.30, 0.90, 0.00, fh));
 }

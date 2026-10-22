@@ -42,5 +42,5 @@ void main()
         float tip = exp(-pow(length(d - R * vec2(cos(mid + half_), sin(mid + half_))) / 0.01, 2.0));
         col += famLight(fh, fract(hc * 2.3), 0.3) * (band + tip * 0.8);
     }
-    finish(col * 0.8);
+    finish(famExpose(col * 0.8, 4.00, 0.80, 0.03, fh));
 }

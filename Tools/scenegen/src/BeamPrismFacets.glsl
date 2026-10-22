@@ -70,5 +70,5 @@ void main()
     vec3 col = mix(prismLight(p, facets(audioSectionPrev), spread, turn, sides, fh),
                    prismLight(p, facets(audioSectionId), spread, turn, sides, fh), m);
     col *= 0.7 + 0.5 * clamp(audioSwell, 0.0, 1.0);
-    finish(col);
+    finish(famExpose(col, 1.60, 0.70, 0.05, fh));
 }

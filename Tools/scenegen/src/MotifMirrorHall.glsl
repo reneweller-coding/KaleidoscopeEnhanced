@@ -75,5 +75,5 @@ void main()
     }
     float g = mix(plain, hall, known);
     vec3 col = famCol(fh, 0.45) * (0.015 + 0.02 * fbm(1.5 * p + 0.02 * run)) + famLight(fh, 0.4 + 0.2 * known, 0.5) * g * glow;
-    finish(col);
+    finish(famExpose(col, 1.95, 0.80, 0.03, fh));
 }

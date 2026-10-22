@@ -92,5 +92,5 @@ void main()
     float kA = mod(max(audioSectionPrev, 0.0) + floor(hc * 3.0), 3.0), kB = mod(max(audioSectionId, 0.0) + floor(hc * 3.0), 3.0);
     vec3 col = dance(q, kB, n, r, trail, fh);
     if (m < 0.999 && kA != kB) col = mix(dance(q, kA, n, r, trail, fh), col, m);
-    finish(col);
+    finish(famExpose(col, 4.84, 0.90, 0.03, fh));
 }

@@ -87,5 +87,5 @@ void main()
             col += c * ms * haze * glow / (0.6 + 0.15 * al);
         }
     }
-    finish(col);
+    finish(famExpose(col, 1.45, 1.00, 0.00, fh));
 }

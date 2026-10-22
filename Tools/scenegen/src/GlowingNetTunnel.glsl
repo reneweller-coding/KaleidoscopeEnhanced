@@ -98,5 +98,5 @@ void main()
     vec3 col = famCol(fh, 0.45) * 0.03 + mix(nA, nB, m) * glow;
     col = mix(col, famCol(fh, 0.5) * 0.25, smoothstep(5.0, 18.0, z));
     col += famLight(fh, 0.5, 0.7) * exp(-r * 10.0) * 0.35;
-    finish(col);
+    finish(famExpose(col, 1.45, 1.00, 0.00, fh));
 }

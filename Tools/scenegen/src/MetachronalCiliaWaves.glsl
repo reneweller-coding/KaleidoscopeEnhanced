@@ -53,5 +53,5 @@ void main()
     vec3 col = famCol(fh, 0.5) * 0.03;
     col += c * line * (0.6 + 1.6 * shimmer * glow) * seam;
     col += famCol(fh, 0.45) * exp(-pow((vv + 0.5 * rs) / 0.002, 2.0)) * 0.2 * seam;   // the row's base plate
-    finish(col);
+    finish(famExpose(col, 1.75, 1.00, 0.00, fh));
 }

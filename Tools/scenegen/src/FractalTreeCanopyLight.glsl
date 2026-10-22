@@ -61,5 +61,5 @@ void main()
     float g = exp(-pow(d / (px * 1.6), 2.0)) + 0.2 * exp(-d / (px * 10.0));
     vec3 col = famLight(fh, lvl / 11.0, 0.15 + 0.4 * (lvl / 11.0)) * g * (0.7 + 0.08 * lvl);
     col += famCol(fh, 0.5) * 0.012;
-    finish(col);
+    finish(famExpose(col, 1.84, 1.00, 0.00, fh));
 }

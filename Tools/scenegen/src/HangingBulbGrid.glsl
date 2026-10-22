@@ -83,5 +83,5 @@ void main()
             col += warm * (fil + glass) * lit * glow * exp(-0.08 * b.z) + warm * cord * exp(-0.08 * b.z);
         }
     }
-    finish(col);
+    finish(famExpose(col, 2.15, 0.70, 0.00, fh));
 }

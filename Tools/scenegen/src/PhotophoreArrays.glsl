@@ -45,5 +45,5 @@ void main()
     float d = length(q - jit);
     float organ = smoothstep(0.28, 0.16, d) + 0.25 * exp(-d / 0.18);
     vec3 col = famCol(fh, 0.45) * 0.02 + famLight(fh, 0.3 + 0.4 * ho, 0.35 + 0.3 * b) * organ * b;
-    finish(col);
+    finish(famExpose(col, 3.20, 1.00, 0.03, fh));
 }

@@ -73,5 +73,5 @@ void main()
     }
     // the floor: a dark pool mirroring the glow
     if (p.y < Y0 / 3.0) col += famCol(fh, 0.4) * 0.04 * (0.7 + 0.3 * noise2(vec2(p.x * 8.0, 2.0 / (Y0 / 3.0 - p.y + 0.05) + fly)));
-    finish(col);
+    finish(famExpose(col, 2.10, 0.80, 0.03, fh));
 }

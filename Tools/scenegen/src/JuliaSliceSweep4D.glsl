@@ -88,5 +88,5 @@ void main()
     }
     col += famCol(fh, 0.4) * glow * (0.5 + 0.6 * swell);
     col += famCol(fh, 0.5) * 0.012;
-    finish(col);
+    finish(famExpose(col, 1.15, 1.00, 0.00, fh));
 }

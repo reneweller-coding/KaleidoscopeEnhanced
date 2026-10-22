@@ -46,5 +46,5 @@ void main()
     }
     float motes = smoothstep(0.82, 0.95, noise2(p * 90.0 + vec2(0.0, run * 3.0)));
     col += mix(blue, vec3(1.0), 0.5) * motes * 0.12;
-    finish(col);
+    finish(famExpose(col, 2.44, 1.00, 0.00, fh));
 }

@@ -40,5 +40,5 @@ void main()
     }
     // the film's grain
     col += famCol(fh, 0.5) * 0.02 * hash21(floor(p * 300.0) + floor(0.5 * sceneTime));
-    finish(col);
+    finish(famExpose(col, 7.00, 0.90, 0.03, fh));
 }

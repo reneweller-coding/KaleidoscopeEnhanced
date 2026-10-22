@@ -54,5 +54,5 @@ void main()
     }
     col *= smoothstep(0.0, 0.03, dz) * exp(-0.05 * z);
     col += famCol(fh, 0.45) * 0.02;
-    finish(col);
+    finish(famExpose(col, 3.60, 0.70, 0.03, fh));
 }

@@ -42,8 +42,8 @@ uniform float audioPhase;     ///< Rotation phase driven by the music (integrate
 uniform float audioPhrasePos; ///< Position within the current 8-bar phrase, 0..1.
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 
-uniform float splashP; ///< Splash knob: how far the crown spreads.
-uniform float dropP;   ///< Drop knob: how many droplets.
+uniform float splashP; ///< Splash knob: how far the crown spreads, 0..1.
+uniform float dropP;   ///< Drop knob: how many droplets, 0..1.
 uniform float hueP;    ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 // ---- shared building blocks (texture pool, noise, shapes) ----
@@ -549,6 +549,33 @@ vec3 famLight( float h, float t, float w )
     return mix( famCol( h, t ), vec3( 1.0, 0.93, 0.82 ), clamp( w, 0.0, 1.0 ) );
 }
 
+/**  The scene's light lifted toward a fuller picture (22.10.2026: the 400 new scenes were half as bright as the old
+ * ones): a gain, a gamma below one that widens the glows' soft falloffs, and a faint haze of the colour family that
+ * drifts slowly where the picture is dark.
+ *
+ * @param col   The scene's light. (in)
+ * @param gain  The gain. (in)
+ * @param gam   The gamma: 1 keeps the falloffs, below 1 widens them. (in)
+ * @param haze  The haze's strength (0: none). (in)
+ * @param h     The family's hue. (in)
+ *
+ * @return
+ *   The light.
+ *
+ * The lift starts above a toe of 0.02, so a scene's flat dark ground stays dark instead of turning into a flat coloured
+ * wash.  Each scene's values come from its catalogue frames.
+ **/
+vec3 famExpose( vec3 col, float gain, float gam, float haze, float h )
+{
+    const float Toe = 0.02;
+    vec3        c = max( col, vec3( 0.0 ) );
+    col = min( c, vec3( Toe ) ) + gain * pow( max( c - Toe, vec3( 0.0 ) ), vec3( gam ) );
+    vec2  q = screenP();
+    float n = fbm( 1.1 * q + vec2( 0.011, -0.007 ) * sceneTime );
+    vec3  mist = famCol( h, 0.3 + 0.4 * n ) * haze * ( 0.45 + 0.55 * n );
+    return col + mist * ( 1.0 - smoothstep( 0.0, 0.25, luma( col ) ) );
+}
+
 /**  The distance from a point to a segment.
  *
  * @param p  The point. (in)
@@ -579,14 +606,14 @@ float segD( vec2 p, vec2 a, vec2 b )
 vec4 paint( vec2 p, float g, float turn, float splash, float ND, float fh )
 {
     vec4  acc = vec4( 0.0 );
-    float meet = smoothstep( 0.0, 0.35, g );
+    float meet = smoothstep( 0.0, 0.22, g ); // the jets are in the picture from the start
     for ( int i = 0; i < 3; ++i )
     {
         float a = turn + 2.0943951 * float( i );
         vec2  dir = vec2( cos( a ), sin( a ) );
-        vec2  tip = dir * mix( 0.9, 0.04, meet );
+        vec2  tip = dir * mix( 0.5, 0.04, meet );
         float d = segD( p, tip, tip + dir * 1.2 );
-        float r = 0.07 * ( 1.0 - 0.6 * smoothstep( 0.35, 0.8, g ) );
+        float r = 0.1 * ( 1.0 - 0.6 * smoothstep( 0.35, 0.8, g ) );
         float f = r * r / ( d * d + 1e-4 );
         acc += vec4( famLight( fract( fh + 0.12 * ( float( i ) - 1.0 ) ), 0.5, 0.1 ) * f, f );
     }
@@ -642,5 +669,5 @@ void main()
     float       spec = pow( max( dot( n, normalize( vec3( -0.4, 0.6, 1.7 ) ) ), 0.0 ), 40.0 );
     vec3        col = famCol( fh, 0.45 ) * 0.02;
     col = mix( col, base * dif + vec3( 1.0 ) * spec * 0.6, inside * life );
-    finish( col );
+    finish( famExpose( col, 3.65, 0.80, 0.05, fh ) );
 }

@@ -47,5 +47,5 @@ void main()
     float g = smoothstep(1.2, 6.5 - 1.5 * clamp(audioSwell, 0.0, 1.0), n);
     vec3 col = famLight(fh, fract(0.6 * s + 0.1), 0.4 * g * g) * g * 1.1;
     col += famCol(fh, 0.5) * 0.012;
-    finish(col);
+    finish(famExpose(col, 2.20, 1.00, 0.00, fh));
 }

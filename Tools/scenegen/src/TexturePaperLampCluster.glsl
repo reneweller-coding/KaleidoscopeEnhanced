@@ -109,5 +109,5 @@ void main()
     }
     col = bestZ < 1e8 ? bestC : col;
     col += halo;
-    finish(col);
+    finish(famExpose(col, 1.25, 1.00, 0.00, fh));
 }

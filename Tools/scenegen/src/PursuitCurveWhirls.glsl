@@ -65,5 +65,5 @@ void main()
     float shade = (1.0 - hm) * a.y + hm * b.y;
     vec3 col = famCol(fh, 0.35 + 0.3 * shade) * (0.04 + 0.08 * shade);
     col += famLight(fh, 0.5, 0.6) * lines * glow;
-    finish(col);
+    finish(famExpose(col, 1.35, 1.00, 0.03, fh));
 }

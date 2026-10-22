@@ -84,5 +84,5 @@ void main()
         if (t > 2.5) break;
     }
     col += famCol(fh, 0.5) * 0.012;
-    finish(col);
+    finish(famExpose(col, 1.90, 0.90, 0.00, fh));
 }

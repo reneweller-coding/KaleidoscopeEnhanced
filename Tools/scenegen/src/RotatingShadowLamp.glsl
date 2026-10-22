@@ -62,5 +62,5 @@ void main()
     // where only two of the three let light through, a faint halo; the lamp's falloff toward the floor and ceiling
     col += famCol(fh, 0.4) * (m1 * m2 + m2 * m3) * 0.06;
     col *= smoothstep(1.9, 0.6, abs(y));
-    finish(col);
+    finish(famExpose(col, 2.05, 0.90, 0.03, fh));
 }

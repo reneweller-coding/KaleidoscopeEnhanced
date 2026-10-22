@@ -550,6 +550,33 @@ vec3 famLight( float h, float t, float w )
     return mix( famCol( h, t ), vec3( 1.0, 0.93, 0.82 ), clamp( w, 0.0, 1.0 ) );
 }
 
+/**  The scene's light lifted toward a fuller picture (22.10.2026: the 400 new scenes were half as bright as the old
+ * ones): a gain, a gamma below one that widens the glows' soft falloffs, and a faint haze of the colour family that
+ * drifts slowly where the picture is dark.
+ *
+ * @param col   The scene's light. (in)
+ * @param gain  The gain. (in)
+ * @param gam   The gamma: 1 keeps the falloffs, below 1 widens them. (in)
+ * @param haze  The haze's strength (0: none). (in)
+ * @param h     The family's hue. (in)
+ *
+ * @return
+ *   The light.
+ *
+ * The lift starts above a toe of 0.02, so a scene's flat dark ground stays dark instead of turning into a flat coloured
+ * wash.  Each scene's values come from its catalogue frames.
+ **/
+vec3 famExpose( vec3 col, float gain, float gam, float haze, float h )
+{
+    const float Toe = 0.02;
+    vec3        c = max( col, vec3( 0.0 ) );
+    col = min( c, vec3( Toe ) ) + gain * pow( max( c - Toe, vec3( 0.0 ) ), vec3( gam ) );
+    vec2  q = screenP();
+    float n = fbm( 1.1 * q + vec2( 0.011, -0.007 ) * sceneTime );
+    vec3  mist = famCol( h, 0.3 + 0.4 * n ) * haze * ( 0.45 + 0.55 * n );
+    return col + mist * ( 1.0 - smoothstep( 0.0, 0.25, luma( col ) ) );
+}
+
 /**  The swarm's light for one frequency grid.
  *
  * @param p      The point. (in)
@@ -582,7 +609,7 @@ vec3 swarm( vec2 p, float N, float step_, float s, float shape, float fh )
         float tt = clamp( dot( p - pt2, e ) / max( dot( e, e ), 1e-8 ), 0.0, 1.0 );
         float dt = length( p - pt2 - e * tt );
         float d = length( p - pt );
-        float g = exp( -d * d / 0.00004 ) + 0.5 * exp( -dt * dt / 0.000012 ) * tt;
+        float g = exp( -d * d / 0.0001 ) + 0.5 * exp( -dt * dt / 0.00003 ) * tt;
         col += famLight( fh, fi / N, 0.4 ) * g;
     }
     return col;
@@ -591,7 +618,7 @@ vec3 swarm( vec2 p, float N, float step_, float s, float shape, float fh )
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
-    vec2  p = screenP();
+    vec2  p = screenP() * vec2( 0.6, 1.0 ); // the figure spread over the picture's width
     float fh = famHue();
     float N = floor( 100.0 + 80.0 * clamp( pointP, 0.0, 1.0 ) );
     float h = max( audioHarmAdvance, 0.0 );
@@ -605,5 +632,5 @@ void main()
         col += swarm( p, N, ( 1.0 + mod( hk + 1.0, 3.0 ) ) / 3.0, clock, shape, fh ) * hm;
     col *= glow;
     col += famCol( fh, 0.45 ) * 0.02;
-    finish( col );
+    finish( famExpose( col, 3.31, 0.70, 0.05, fh ) );
 }

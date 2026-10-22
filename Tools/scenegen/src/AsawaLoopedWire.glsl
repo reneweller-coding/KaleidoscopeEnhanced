@@ -75,5 +75,5 @@ void main()
         float l = mix(lightA, lightB, lm);
         col += famLight(fh, 0.2 + 0.5 * hk, 0.2) * l * (1.0 - 0.45 * fr) * 0.7;
     }
-    finish(col);
+    finish(famExpose(col, 5.13, 0.80, 0.00, fh));
 }

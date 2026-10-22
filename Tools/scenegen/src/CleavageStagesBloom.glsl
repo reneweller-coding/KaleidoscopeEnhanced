@@ -72,5 +72,5 @@ void main()
         }
     }
     col += bestC * glow;
-    finish(col);
+    finish(famExpose(col, 1.79, 1.00, 0.00, fh));
 }

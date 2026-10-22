@@ -7157,3 +7157,47 @@ rendered at 20:57): 1630 compared, 31 changed, 400 new, none gone, 22 black as b
 - BakerHorseshoeFold, a tenth state scene, also has the swell clock of section 51.
 - The rest are simulations that evolved a little differently (GalaxyCollision, PhysarumGalaxy, Murmuration) or
   differences of single pixels; side by side none is worse.
+
+## 22.10.2026 (59): the dark new scenes lifted
+
+The catalogue frames showed the 400 new scenes at half the brightness of the old ones: a mean of 0.109 in the median
+against 0.195, 0.049 at the 25 % mark against 0.131, and only a quarter of the picture above 0.15 against more than
+half. Eighty were below 0.04. The list asked for pictures that fill the screen, and light on black is not that.
+
+**famExpose() in the family library.** Every new scene ends in `finish(famExpose(col, gain, gamma, haze, fh))`:
+- a gain;
+- a gamma below one, which widens the glows' soft falloffs (a halo at 0.02 becomes 0.065 at gamma 0.7);
+- a faint haze of the colour family, drifting slowly, only where the picture is dark.
+
+The lift starts above a toe of 0.02. Without it, gamma 0.7 and gain 4 turned a scene's flat dark ground
+(famCol x 0.015) into a flat brown or red wash.
+
+**The values come from the catalogue frames.** The frames are the shader's light after finish(), v = x / (1 + 0.35 x).
+Inverted per pixel, lifted and mapped back, they predict the new frame. The script `plan_expose.py` (scratchpad)
+picks the gentlest lift that reaches a mean of 0.11, the loud frame C not above 0.42. Gamma below one is used only
+where gain alone would need more than 2.4.
+- The first render missed the prediction widely: every export draws other photos, and the colour family's hue with
+  them.
+- Two correction passes from the new frames followed (gain scaled by 0.105 / mean, at most 1.8 a pass), and one
+  scene that came out too bright (BeamPrismFacets, 0.36) was lowered.
+
+195 scenes were lifted. The new 400 now measure 0.083 at the 10 % mark (the old scenes 0.079), 0.097 at 25 % and
+0.128 in the median; 30 % of the picture lies above 0.15 in the median. Seven stay below 0.06: thin lines and dots in
+a blue family (CompassNeedleField, CoronaBeadWires, MeasureRingTunnel ...), clear but dark by luma.
+
+**Some needed more picture, not more light.**
+- ExBDriftCycloids sent at most eight particles across a span of 5 for a picture 1.78 wide. Now it sends 8 to 12
+  over a span of 4. 500 is still a whole number of spans, and a trail of at most 1.05 still leaves before its head
+  wraps.
+- PaintCollisionSlowMo's jets started at radius 0.9, outside a picture 0.5 high, and needed a third of the phrase to
+  meet. Now they start at 0.5, are thicker, and meet in a fifth.
+- SalpChainSpirals' chains (24 salps, 2.5 long) ran out of the picture. Their path is now folded at the edges like a
+  mirror, `FOLD - |mod(pos - FOLD, 4 FOLD) - 2 FOLD|`, with the salps' direction mirrored by the sign of the fold. It
+  is continuous at the fold and stays whole in the picture.
+- WhitneyArabesque is spread over the picture's width with larger points. LeapfroggingVortexRings has three or four
+  pairs of larger rings, spread further.
+
+**Measured again.** The 195 scenes were screened again and merged. Their brighter pictures moved 514 complexities:
+192 of the lifted scenes and 322 old ones that the ranks moved by one step each (the restlessness is measured
+relative to the brightness). `check_schedule --quick`: no violations. The catalogue PDF needed a fresh Chrome profile
+again; the one from the afternoon had gone bad.

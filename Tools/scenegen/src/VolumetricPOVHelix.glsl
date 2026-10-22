@@ -74,5 +74,5 @@ void main()
     }
     // the dark frame of the display's columns
     col += famCol(fh, 0.45) * 0.015;
-    finish(col);
+    finish(famExpose(col, 1.75, 0.70, 0.00, fh));
 }

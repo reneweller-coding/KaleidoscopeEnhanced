@@ -68,5 +68,5 @@ void main()
         float g = exp(-pow(best / w, 2.0)) * 1.3 + 0.3 * exp(-best / (4.0 * w));
         col += famLight(fh, 0.2 + 0.3 * float(r), 0.4 + 0.3 * (1.0 - age)) * g * (1.0 - age) * glow;
     }
-    finish(col);
+    finish(famExpose(col, 5.87, 0.80, 0.03, fh));
 }

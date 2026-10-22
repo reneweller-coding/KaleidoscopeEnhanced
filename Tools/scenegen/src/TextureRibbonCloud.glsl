@@ -105,5 +105,5 @@ void main()
         float edge = 1.0 - smoothstep(0.8, 1.0, d);
         col = mix(col, c * (0.7 + 0.3 * (1.0 - d * d)) * glow * (1.15 - 0.08 * i), edge);
     }
-    finish(col);
+    finish(famExpose(col, 2.85, 1.00, 0.00, fh));
 }

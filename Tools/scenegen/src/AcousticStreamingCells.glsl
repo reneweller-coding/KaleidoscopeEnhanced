@@ -84,5 +84,5 @@ void main()
     if (hm > 0.002) l += streaming(qd, nB, M, run, hc) * hm;
     vec3 col = famLight(fh, 0.2 + 0.6 * hc, 0.3) * l * 0.5 * step(length(qd), 1.0);
     col += famCol(fh, 0.5) * exp(-abs(length(q) - rim) / 0.006) * 0.25;   // the drop's surface
-    finish(col);
+    finish(famExpose(col, 4.87, 0.70, 0.00, fh));
 }

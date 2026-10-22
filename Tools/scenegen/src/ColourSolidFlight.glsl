@@ -82,5 +82,5 @@ void main()
         t += 0.09 + 0.02 * t;
     }
     col += famCol(fh, 0.45) * 0.02;
-    finish(col);
+    finish(famExpose(col, 1.35, 1.00, 0.00, fh));
 }

@@ -67,5 +67,5 @@ void main()
     vec3 shade = f > 0.0 ? famLight(fh, 0.3, 0.45) : famLight(fh, 0.7, 0.45);
     vec3 col = famCol(fh, 0.45) * 0.015 + shade * line * glow * smoothstep(0.02, 0.08, r);
     col += famLight(fh, 0.5, 0.9) * exp(-r * r / 0.0006) * 0.8;        // the dipole
-    finish(col);
+    finish(famExpose(col, 1.55, 1.00, 0.00, fh));
 }

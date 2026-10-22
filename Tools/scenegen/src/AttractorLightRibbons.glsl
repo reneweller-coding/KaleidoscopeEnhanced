@@ -131,5 +131,5 @@ void main()
     float shade = s.g / max(s.r, 1e-4);
     vec3 col = famLight(fh, shade, 0.5 * lit * lit) * lit;
     col += famCol(fh, 0.5) * 0.012;
-    finish(col);
+    finish(famExpose(col, 2.10, 1.00, 0.03, fh));
 }

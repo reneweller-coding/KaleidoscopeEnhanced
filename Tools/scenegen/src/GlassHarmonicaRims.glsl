@@ -39,5 +39,5 @@ void main()
         float g = exp(-pow(d / w, 2.0)) + 0.25 * sheen * exp(-d / (6.0 * w));
         col += famLight(fh, pc / 11.0, 0.3 + 0.6 * note) * g * fade * (0.12 + 1.6 * note);
     }
-    finish(col);
+    finish(famExpose(col, 2.95, 0.80, 0.00, fh));
 }

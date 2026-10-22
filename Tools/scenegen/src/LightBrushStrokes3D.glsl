@@ -100,5 +100,5 @@ void main()
         float g = exp(-pow(across, 4.0)) * bristle + 0.15 * exp(-best / (2.0 * max(w, 1e-4)));
         col += famLight(fh, 0.2 + 0.6 * st.z, 0.35 + 0.3 * (1.0 - across)) * g * fade * glow;
     }
-    finish(col);
+    finish(famExpose(col, 4.14, 0.70, 0.03, fh));
 }

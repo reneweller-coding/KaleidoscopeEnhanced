@@ -58,5 +58,5 @@ void main()
         float sq = smoothstep(0.4, -0.4, div);                      // squeezed: bright; stretched: dim
         col += famLight(fh, 0.4 - 0.3 * div, 0.4 * sq) * g * (0.25 + 1.5 * sq);
     }
-    finish(col);
+    finish(famExpose(col, 2.38, 1.00, 0.05, fh));
 }

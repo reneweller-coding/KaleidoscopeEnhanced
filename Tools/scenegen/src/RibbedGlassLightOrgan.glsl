@@ -40,5 +40,5 @@ void main()
     // the ribs' edges: thin dark lines where the glass turns
     col *= smoothstep(0.5, 0.44, abs(f)) * 0.85 + 0.15;
     col += famCol(fh, 0.4) * 0.02;
-    finish(col);
+    finish(famExpose(col, 1.25, 1.00, 0.00, fh));
 }

@@ -79,5 +79,5 @@ void main()
         col += wk * famLight(fh, fract(n / 40.0), 0.3 * g) * (g + halo);
     }
     col += famCol(fh, 0.5) * 0.012;
-    finish(col);
+    finish(famExpose(col, 1.55, 1.00, 0.03, fh));
 }

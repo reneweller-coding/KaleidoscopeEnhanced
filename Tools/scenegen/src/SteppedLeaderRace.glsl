@@ -90,5 +90,5 @@ void main()
         col += famLight(fh, 0.35 + 0.3 * l.y, 0.4) * (core + 0.25 * halo) * 0.6 * fadeAll * glow;
         col += famLight(fh, 0.5, 0.85) * (core + 0.6 * halo) * l.z * chosenGlow * 1.5 * glow;
     }
-    finish(col);
+    finish(famExpose(col, 6.48, 0.80, 0.03, fh));
 }

@@ -11,7 +11,8 @@
  *
  *  A chain is laid out by walking along it: every salp turns the chain's heading by its curvature, which itself
  *  grows along the chain, so a strongly curled chain rolls up into a spiral and a weakly curled one into a loose
- *  arc.  The salps are clear glass in shades of one colour family from the photo, their organs warm.
+ *  arc; a chain that reaches the picture's edge is folded back like a mirror, so it stays whole in the picture.
+ *  The salps are clear glass in shades of one colour family from the photo, their organs warm.
  *
  *  Audio Reactivity (structure, not only light):
  *    audioHarmAdvance -> the chains' curl glides with the chords: arcs roll up into rings and spirals and open
@@ -550,20 +551,48 @@ vec3 famLight( float h, float t, float w )
     return mix( famCol( h, t ), vec3( 1.0, 0.93, 0.82 ), clamp( w, 0.0, 1.0 ) );
 }
 
+/**  The scene's light lifted toward a fuller picture (22.10.2026: the 400 new scenes were half as bright as the old
+ * ones): a gain, a gamma below one that widens the glows' soft falloffs, and a faint haze of the colour family that
+ * drifts slowly where the picture is dark.
+ *
+ * @param col   The scene's light. (in)
+ * @param gain  The gain. (in)
+ * @param gam   The gamma: 1 keeps the falloffs, below 1 widens them. (in)
+ * @param haze  The haze's strength (0: none). (in)
+ * @param h     The family's hue. (in)
+ *
+ * @return
+ *   The light.
+ *
+ * The lift starts above a toe of 0.02, so a scene's flat dark ground stays dark instead of turning into a flat coloured
+ * wash.  Each scene's values come from its catalogue frames.
+ **/
+vec3 famExpose( vec3 col, float gain, float gam, float haze, float h )
+{
+    const float Toe = 0.02;
+    vec3        c = max( col, vec3( 0.0 ) );
+    col = min( c, vec3( Toe ) ) + gain * pow( max( c - Toe, vec3( 0.0 ) ), vec3( gam ) );
+    vec2  q = screenP();
+    float n = fbm( 1.1 * q + vec2( 0.011, -0.007 ) * sceneTime );
+    vec3  mist = famCol( h, 0.3 + 0.4 * n ) * haze * ( 0.45 + 0.55 * n );
+    return col + mist * ( 1.0 - smoothstep( 0.0, 0.25, luma( col ) ) );
+}
+
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
-    vec2  p = screenP();
-    float fh = famHue();
-    float h = max( audioHarmAdvance, 0.0 );
-    float curl = 0.5 + 0.5 * sin( 0.6 * h );
-    float pump = 0.3 * sceneTime + 1.2 * audioAdvance;
-    float drift = 0.02 * sceneTime + 0.08 * audioAdvance;
-    float NC = floor( 4.0 + 2.0 * clamp( chainP, 0.0, 1.0 ) );
-    float sz = 0.05 + 0.025 * clamp( sizeP, 0.0, 1.0 );
-    float glow = 0.6 + 0.6 * clamp( audioSwell, 0.0, 1.0 );
-    float stp = 2.1 * sz;
-    vec3  col = famCol( fh, 0.45 ) * 0.012;
+    vec2       p = screenP();
+    float      fh = famHue();
+    float      h = max( audioHarmAdvance, 0.0 );
+    float      curl = 0.5 + 0.5 * sin( 0.6 * h );
+    float      pump = 0.3 * sceneTime + 1.2 * audioAdvance;
+    float      drift = 0.02 * sceneTime + 0.08 * audioAdvance;
+    float      NC = floor( 4.0 + 2.0 * clamp( chainP, 0.0, 1.0 ) );
+    float      sz = 0.05 + 0.025 * clamp( sizeP, 0.0, 1.0 );
+    float      glow = 0.6 + 0.6 * clamp( audioSwell, 0.0, 1.0 );
+    float      stp = 2.1 * sz;
+    const vec2 Fold = vec2( 0.82, 0.44 ); // the picture's half size, less a margin
+    vec3       col = famCol( fh, 0.45 ) * 0.012;
     for ( int c = 0; c < 6; ++c )
     {
         float fc = float( c );
@@ -580,11 +609,15 @@ void main()
             head += k * stp;
             k += k_grow * stp;
             pos += stp * vec2( cos( head ), sin( head ) );
-            vec2 dv = p - pos;
+            // the chain is folded back at the picture's edges, like a mirror, so it never leaves the picture
+            vec2 m = mod( pos - Fold, 4.0 * Fold ) - 2.0 * Fold;
+            vec2 fpos = Fold - abs( m );
+            vec2 dirv = -sign( m ) * vec2( cos( head ), sin( head ) );
+            vec2 dv = p - fpos;
             if ( dot( dv, dv ) > 6.0 * sz * sz )
                 continue;
             float pump_i = 1.0 + 0.08 * sin( pump - 0.5 * fi ); // the pumping runs down the chain
-            vec2  e = rot2( head ) * dv / ( vec2( sz, 0.55 * sz ) * pump_i );
+            vec2  e = rot2( atan( dirv.y, dirv.x ) ) * dv / ( vec2( sz, 0.55 * sz ) * pump_i );
             float r = length( e );
             float inside = smoothstep( 1.0, 0.9, r );
             float body = exp( -pow( ( r - 1.0 ) / 0.08, 2.0 ) ) * 0.7 + 0.1 * inside;
@@ -594,5 +627,5 @@ void main()
             col += famLight( fh, 0.75, 0.5 ) * organ * glow * 0.9;
         }
     }
-    finish( col );
+    finish( famExpose( col, 2.88, 0.70, 0.03, fh ) );
 }

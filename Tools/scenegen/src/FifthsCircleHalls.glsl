@@ -75,5 +75,5 @@ void main()
     vec3 col = mix(stone, view, opening);
     col += famLight(fh, 0.5, 0.6) * rim * (0.15 + 0.6 * lit);
     col += famCol(fh, 0.5) * 0.06 * exp(-pow((p.y + 0.42) / 0.01, 2.0));   // the floor's edge
-    finish(col);
+    finish(famExpose(col, 1.20, 1.00, 0.00, fh));
 }

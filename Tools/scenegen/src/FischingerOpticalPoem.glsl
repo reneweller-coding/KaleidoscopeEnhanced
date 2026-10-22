@@ -75,5 +75,5 @@ void main()
             col = mix(col, tint * (0.5 + 0.9 * clamp(band, 0.0, 1.0)) * (1.2 / at.z), cover * 0.9);
         }
     }
-    finish(col);
+    finish(famExpose(col, 2.70, 0.70, 0.03, fh));
 }

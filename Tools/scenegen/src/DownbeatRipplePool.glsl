@@ -59,5 +59,5 @@ void main()
     }
     vec3 water = famCol(fh, 0.45) * (0.1 + 0.06 * fbm(3.0 * p + 0.02 * now));
     vec3 col = water + famLight(fh, 0.5, 0.6) * max(wave, 0.0) * 1.3 * glow - water * min(max(-wave, 0.0), 1.0) * 0.8;
-    finish(max(col, vec3(0.0)));
+    finish(famExpose(max(col, vec3(0.0)), 1.85, 1.00, 0.03, fh));
 }

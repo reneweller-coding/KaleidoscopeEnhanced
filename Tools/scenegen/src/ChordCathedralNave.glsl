@@ -88,5 +88,5 @@ void main()
         col += tone * exp(-pow(d / px, 2.0)) * fade * (0.6 + 1.2 * fresh) * glow;
         col += tone * inside * 0.012 * fade * (1.0 + 3.0 * fresh) * glow;   // the bay's window light
     }
-    finish(col);
+    finish(famExpose(col, 3.35, 0.70, 0.03, fh));
 }

@@ -46,5 +46,5 @@ void main()
             col = mix(col, dye * (0.5 + 0.6 * flash + 0.3 * streak), a0 * 0.8);
         }
     }
-    finish(col);
+    finish(famExpose(col, 1.55, 1.00, 0.00, fh));
 }

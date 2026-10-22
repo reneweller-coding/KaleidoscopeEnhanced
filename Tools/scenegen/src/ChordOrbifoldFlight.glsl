@@ -91,5 +91,5 @@ void main()
     col += famLight(fh, 0.6, 0.5 + 0.4 * (1.0 - ageT)) * (exp(-pow(bestT / 0.006, 2.0)) + 0.25 * exp(-bestT / 0.03)) * (1.0 - 0.8 * ageT) * glow;
     vec2 head = texelFetch(texState, ivec2(0, 0), 0).xy * RP * 0.75 / 0.6;
     col += famLight(fh, 0.5, 0.9) * exp(-dot(p - head, p - head) / 0.0006) * 1.2 * glow;
-    finish(col);
+    finish(famExpose(col, 1.75, 0.70, 0.03, fh));
 }

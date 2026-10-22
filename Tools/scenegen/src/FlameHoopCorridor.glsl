@@ -92,5 +92,5 @@ void main()
         col += fc * f * (1.1 + 0.6 * sw + 0.8 * flare) * fade + cMid * hoop * 0.4 * fade + cLow * f * 0.4 * fade;
     }
     col += famLight(fh, 0.6, 0.6) * exp(-length(p) * 7.0) * 0.2;
-    finish(col);
+    finish(famExpose(col, 1.25, 1.00, 0.03, fh));
 }

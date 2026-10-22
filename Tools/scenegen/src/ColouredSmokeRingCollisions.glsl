@@ -67,5 +67,5 @@ void main()
             col += mixc * m.x * life * (2.0 - smoothstep(0.0, 0.4, g));   // (it starts as the two rings' sum)
         }
     }
-    finish(col);
+    finish(famExpose(col, 5.31, 0.80, 0.03, fh));
 }

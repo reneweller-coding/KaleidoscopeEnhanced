@@ -41,5 +41,5 @@ void main()
     float d = length(q) * S;
     float fil = exp(-pow(d / (0.0028 + 0.0012 * hf), 2.0)) + 0.4 * exp(-d / (0.005 * spread));
     vec3 col = famCol(vh, 0.45) * 0.02 + famLight(vh, 0.3 + 0.4 * hf, 0.45) * fil * allow * flick * 1.8;
-    finish(col);
+    finish(famExpose(col, 6.53, 0.80, 0.03, fh));
 }

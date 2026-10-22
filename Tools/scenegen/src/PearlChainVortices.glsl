@@ -41,5 +41,5 @@ void main()
             col += famLight(fh, fc / 4.0, 0.4) * g * on * glow * (1.2 / x.z) * smoothstep(0.6, 0.9, z);
         }
     }
-    finish(col);
+    finish(famExpose(col, 2.20, 0.80, 0.03, fh));
 }
