@@ -6657,3 +6657,30 @@ abstract-film pioneers.
   through sixteen values and reset, which made a small hue jump; it is now a slow sine.
 - **Lissajous and oscilloscope figures** (LaserGraphicsFog, XYPhosphorSculptures) are polyline distances over 72-100
   samples. A harmony change cross-fades the light of two ratios, never their distances.
+
+## 22.10.2026 (48): light trails and glowing lines (400 list, family F)
+
+Twenty-five scenes of family F: long exposures, orbits and envelopes, lines that are light.
+- **A long exposure is the whole curve.** Most scenes draw a closed or time-bounded curve analytically: a polyline of
+  64-200 samples, with the point's distance to the nearest segment as the glow. The moving point is a bright head
+  on that curve, and a trail is the stretch just behind it, fading by age.
+  - Poi flowers: R1 e^(it) + R2 e^(ikt), with k = 1 - n for antispin and 1 + n for inspin.
+  - Lantern rigs: epitrochoids.
+  - Penning traps: magnetron plus cyclotron circle.
+  - Polygon roulettes: polygonal base r = cos(pi/n) / cos(mod(theta, 2pi/n) - pi/n).
+  - Lissajous table, harmonograph, spherical trochoids seen from the sphere's centre.
+- **Caustics without tracing a ray field:**
+  - CupCausticEnvelopes traces the tangential focus 1/p + 1/q = 2 / (R cos i) round the ring.
+  - BilliardCausticRays traces 40-64 rays for four bounces in an ellipse (line-ellipse intersection, reflection about
+    the normal x / ab^2). The envelopes appear where the faint segments crowd.
+- **Things that follow a clock but must not pop:** counts driven by the music (sparks by the swell, echoes by the
+  swell) fade the last item in by its fraction instead of a hard loop bound. Knob-driven counts stay fixed per roll.
+  ChronophotographEchoes first blended two forms' distances; like family A it now cross-fades their light.
+- **LightInFlightWavefront:** the arrival time is the distance from the source plus (n - 1) times the glass met on
+  the straight way, summed over 24 samples along it. The front glows where the arrival time equals the pulse's age,
+  so it dents behind every sphere.
+- **BraidWordLights** shades strands by where they run across the plait, not by their slot. Slot colours had
+  swapped abruptly where two strands traded places at a step's end.
+- **CurveShorteningLoops:** the k-th wiggle of a star-shaped curve fades as e^(-k^2 tau), and the radius follows
+  R^2 = R0^2 (1 - 0.95 life), the circle's law. Each cell is at its own point in life.
+- **TraceOfRollingSpheres:** the tracks fade out before their ball wraps round, so no track vanishes at once.
