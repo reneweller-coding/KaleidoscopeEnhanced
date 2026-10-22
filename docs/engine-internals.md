@@ -6597,3 +6597,35 @@ the screen.
 - **Shake scan:** MirrorScaleField first ran its tilt waves on audioBeatPhase, with the reflection shifted by up to
   a screen unit. That moves the whole picture on the beat, and the scan flagged it. The waves now run on the
   integrated drive, with a third of the shift.
+
+## 22.10.2026 (46): photo kaleidoscopes with depth (400 list, family D)
+
+Twenty-five scenes of family D. They are kaleidoscopes like Kaleidoscope and the chains, but built in ways the
+collection lacked: several planes, real depth, kaleidoscopes on curved surfaces.
+- **The colour rule for photo scenes:** a shared tone() keeps 55 % of the photo's own colour and pulls 45 % toward
+  the colour family (famCol by brightness). The photo still shows, but no scene turns into a rainbow.
+- **Log-polar coordinates (log r, angle) make endless motion a shift:**
+  - KaleidoHelixTower: the ramp is a straight strip.
+  - SpiralArmKaleido: the angle is sheared by pitch * log r, which turns the spiral mirrors radial.
+  - ConformalKaleidoBloom: with w = (z - a) / (z - b), the source maps to 0 and the sink to infinity.
+  - KaleidoSandMandala: rings are born at the rim and blow away at the middle.
+  - The rings are mirrored in u, so the shift never shows a seam.
+- **Folds on curved surfaces:**
+  - KaleidoSphereInterior uses the icosahedral chamber, as in family C.
+  - KaleidoTorusFlight folds both torus angles by mirrors. Its tube cell count is even, so the mirrored cells close
+    round the tube. The winding is a wave of the ring angle, so it also closes round the ring.
+  - KaleidoMoebiusBand: the band's cross direction turns by pi over L. The fold across flips sign after a round,
+    which is the band's own mirror. Rays that miss the band see a dim kaleidoscope, never black.
+  - GoldbergKaleidoShell: cells of a spherical Fibonacci lattice, found by Keinert's inverse mapping. The search
+    looks at the 3 x 3 lattice cells round the estimate, because the edge needs the second-nearest point.
+    Subdivisions are cross-faded in steps of 20 points.
+  - HyperbolicKaleidoRoom: the {5,3,5} honeycomb of family A's flight, with a five-fold photo kaleidoscope on each
+    face, read in the face's fixed frame.
+- **Planes and depth:** ParallaxKaleidoStack, CrystallographicKaleido3D (three space-group-like pane rules,
+  cross-faded per section), KaleidoSphereChain (reflected direction folded per sphere) and KaleidoBubbleSwarm.
+- **KaleidoTimeEcho** keeps the last eight frames of a turning kaleidoscope as eight tiles of a 1536 x 144 state
+  field. Each step overwrites the oldest tile, and the frame shows them as rings, newest outermost, so motion
+  spirals into the depth.
+- **KaleidoCubeUnfold:** cube nets (crosses) tile the plane on the lattice (2, 1), (-1, 2). A square's cross is found
+  by testing which of the five candidate centres (itself, or one step in four directions) lies on that lattice.
+  Rounding the square in lattice coordinates had picked wrong crosses.
