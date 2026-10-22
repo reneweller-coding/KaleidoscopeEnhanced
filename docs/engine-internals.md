@@ -6865,3 +6865,41 @@ the harmony glide the figure instead of switching it.
 
 **Smoothing a band over time.** SpirolateralRhythms keeps five spectrum bands in an 8 x 1 state, blended at 0.02 per
 step. The step lengths drawn from them reshape the figures without jitter.
+
+## 22.10.2026 (53): plasma, field and discharge (400 list, family K)
+
+Twenty-five scenes of family K: electric and magnetic phenomena that glow by themselves.
+
+**Lines of a field as level lines.** DipoleFieldLineDance, EquipotentialShells and HertzDipoleLoops draw their lines
+as even steps of a scalar:
+- the planar dipole stream function (m x r) / |r|^2, summed over the magnets;
+- the potential's asinh, so shells near and far from a charge are spaced alike;
+- Hertz's sin^2(theta) (cos(k r - w t)/(k r) - sin(k r - w t)).
+
+A line's screen distance is the distance to the nearest step divided by the gradient (by finite differences). Where
+the lines come closer than a few pixels they melt into a glow instead of aliasing.
+
+**Integrated motion with changing rates.** ExBDriftCycloids sums each particle's drift and gyration phase in an
+8 x 1 RGBA32F state, (x += v_d / 60, phase += w / 60). The fields set only the speed, never the place. Both sums wrap
+where nothing shows: a whole number of screen spans and of turns. A cycloid loops only where r w > v_d. The first
+version drifted faster than it gyrated and drew only waves.
+
+**Random trees by folding, with a path to follow.** LichtenbergAcrylicBloom and SteppedLeaderRace fold
+`q.x = abs(q.x)` per level and remember which side the pixel came from in a branch number. That number seeds the
+fork's angle and length, so every fork differs. A branch is "the chosen path" when its sides match the leader's own
+bit sequence; that path warms into a soft glow near the phrase's end instead of a flash. Levels beyond the growth
+brighten in through a small distance offset, `segD + (1 - vis) * 0.01`, rather than by cutting the segment.
+
+**Foam that divides without a jump.** PlasmaBubbleFoam is a power diagram (|x - s|^2 - w). A dividing bubble's
+second site starts on the first with weight 0, so its cell is empty, and it moves away while its weight grows. The
+skin is the exact power-diagram border distance, min over j of (d_j - d_1) / (2 |s_j - s_1|), with coincident sites
+skipped.
+
+**Scattered by number, not by slot.** A brightness wave or hue tied to a ring's on-screen slot jumps when a ring
+passes the eye and the slots shift (SpheromakTwist). Tie them to the ring's own number k.
+
+**Fixed views of 3D cages and tubes.**
+- FusorStarMode meets the cage sphere from inside for the wires. It measures the ray's closest approach to each
+  beam segment (opening to centre) in closed form: about 100 segments.
+- StellaratorFluxSurfaces finds where a ray from the axis meets an elliptic tube that turns with depth, by four
+  fixed-point steps z = r_e(theta - phi(z)) / rho.
