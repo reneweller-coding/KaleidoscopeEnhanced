@@ -46,8 +46,8 @@ Bewegung, viele Stellschrauben, Musik in der Form, aus dem Foto-Pool gespeist):
 2. **Tiefe.** Ein endloser Raum mit Fluchtpunkt oder mehreren Ebenen, durch den die Kamera stetig zieht (Vortrieb,
    nie auf Rohsignale).
 3. **Symmetrie, die lebt.** Spiegel- und Drehfaltungen, deren Ordnung, Lage und Zahl gleitend wechseln.
-4. **Satte, aber wenige Farben aus dem Foto** (siehe 9). Das Foto färbt das Licht (Mip-Mittel wandernder Ausschnitte, Farbton aus dem
-   Bild), statt als graues Material zu erscheinen.
+4. **Satte, aber wenige Farben aus dem Foto** (siehe 9). Das Foto färbt das Licht (Mip-Mittel wandernder
+   Ausschnitte, Farbton aus dem Bild), statt als graues Material zu erscheinen.
 5. **Große Form, feines Detail.** Eine klare Großstruktur mit feiner Zeichnung darin, kein gleichmäßiges Rauschen.
 6. **Bildfüllend:** endlose Felder, Räume von innen, Flüge oder Nahsichten. Kein einzelnes Gebilde auf Schwarz,
    kein Rahmen, kein Horizont.
