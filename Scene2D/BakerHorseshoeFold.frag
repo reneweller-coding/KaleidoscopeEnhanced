@@ -43,9 +43,16 @@ uniform float audioKick;        ///< Kick-drum envelope, 0..1 (fast attack, shor
 uniform float audioHarmAdvance; ///< The harmony's advance: ~1 more with every chord change (integrated, never jumps
                                 ///< back).
 
-uniform float angleP; ///< Angle knob: the direction the folds run.
+uniform float angleP; ///< Angle knob: the direction the folds run, 0..1.
 uniform float scaleP; ///< Scale knob.
 uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+// @state 1 1 60 32
+uniform sampler2D texState;   ///< The scene's own field from the last step (EffectShader::stepState).
+uniform int       statePass;  ///< 1 while the scene computes its next state, 0 while it draws the frame.
+uniform float     stateFrame; ///< Steps of the scene's own field since the activation (0: seed it).
+uniform vec2      stateRes;   ///< Size of the scene's own field in texels.
+uniform float     stateFrac;  ///< Share of the next step of the scene's own field already due, 0..1 (motion between two
+                              ///< steps).
 
 // ---- shared building blocks (texture pool, noise, shapes) ----
 /**  Pseudo-random number 0..1 from a float.
@@ -502,6 +509,192 @@ void finish( vec3 col )
     fragColor = vec4( clamp( t, 0.0, 1.0 ), 1.0 );
 }
 
+
+// ---- the scene's own field (state pass) ----
+/**  An integer hash (Wellons' lowbias32).
+ *
+ * @param x  The input. (in)
+ *
+ * @return
+ *   A well mixed 32-bit value.
+ **/
+uint stHashU( uint x )
+{
+    x ^= x >> 16u;
+    x *= 0x7feb352du;
+    x ^= x >> 15u;
+    x *= 0x846ca68bu;
+    x ^= x >> 16u;
+    return x;
+}
+/**  A random number for this cell and this step (state pass): a different one for every k.
+ *
+ * @param k  Which of the cell's random streams. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1, the same for the same cell, step and k.
+ **/
+float stRand( int k )
+{
+    uvec2 c = uvec2( gl_FragCoord.xy );
+    uint  h = stHashU( c.x + stHashU( c.y + stHashU( uint( stateFrame ) * 8u + uint( k ) ) ) );
+    return float( h >> 8u ) / 16777216.0;
+}
+/**  A random number for this step, the same in every cell (state pass).
+ *
+ * @param k  Which of the step's random streams. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
+float stRandStep( int k )
+{
+    return float( stHashU( uint( stateFrame ) * 8u + uint( k ) + 0x9e3779b9u ) >> 8u ) / 16777216.0;
+}
+/**  A cell wrapped into the field (the field is a torus).
+ *
+ * @param ip  The cell, anywhere. (in)
+ *
+ * @return
+ *   The same cell inside 0..stateRes-1.
+ *
+ * The wrap uses floor, not %: GLSL leaves % undefined for a negative operand, and NVIDIA's -1 % 200 read a cell in
+ * the middle of the field (a rotor-router grew four discs from one source).
+ **/
+ivec2 stWrap( ivec2 ip )
+{
+    vec2 s = stateRes;
+    return ivec2( vec2( ip ) - s * floor( ( vec2( ip ) + 0.5 ) / s ) );
+}
+/**  The field at a cell, wrapped around.
+ *
+ * @param ip  The cell. (in)
+ *
+ * @return
+ *   The cell's state from the last step.
+ **/
+vec4 stAt( ivec2 ip )
+{
+    return texelFetch( texState, stWrap( ip ), 0 );
+}
+/**  This texel's cell in the state pass.
+ *
+ * @return
+ *   The cell's integer coordinate.
+ **/
+ivec2 stCell()
+{
+    return ivec2( gl_FragCoord.xy );
+}
+/**  The field filtered at a coordinate in cells (linear, wrapped).
+ *
+ * @param c  The coordinate in cells (cell centres at .5). (in)
+ *
+ * @return
+ *   The interpolated state.
+ **/
+vec4 stLin( vec2 c )
+{
+    return texture( texState, c / stateRes );
+}
+/**  The five-point Laplacian of the field at a cell.
+ *
+ * @param ip  The cell. (in)
+ *
+ * @return
+ *   The neighbours' sum minus four times the cell.
+ **/
+vec4 stLap( ivec2 ip )
+{
+    return stAt( ip + ivec2( 1, 0 ) ) + stAt( ip - ivec2( 1, 0 ) ) + stAt( ip + ivec2( 0, 1 ) )
+           + stAt( ip - ivec2( 0, 1 ) ) - 4.0 * stAt( ip );
+}
+/**  The nine-point Laplacian (isotropic: the diagonals weigh a quarter, the sides a half).
+ *
+ * @param ip  The cell. (in)
+ *
+ * @return
+ *   The isotropic Laplacian of the field.
+ **/
+vec4 stLap9( ivec2 ip )
+{
+    vec4 s = stAt( ip + ivec2( 1, 0 ) ) + stAt( ip - ivec2( 1, 0 ) ) + stAt( ip + ivec2( 0, 1 ) )
+             + stAt( ip - ivec2( 0, 1 ) );
+    vec4 d = stAt( ip + ivec2( 1, 1 ) ) + stAt( ip - ivec2( 1, 1 ) ) + stAt( ip + ivec2( 1, -1 ) )
+             + stAt( ip + ivec2( -1, 1 ) );
+    return 0.5 * s + 0.25 * d - 3.0 * stAt( ip );
+}
+/**  Where the screen shows the field: a screen point (screenP()) mapped to field cells, the field's height filling
+ * the screen's height divided by zoom; the field repeats beyond it.
+ *
+ * @param p     The screen point. (in)
+ * @param zoom  How many field heights the screen shows. (in)
+ *
+ * @return
+ *   The coordinate in cells.
+ **/
+vec2 stView( vec2 p, float zoom )
+{
+    return ( p * zoom + vec2( 0.5 * stateRes.x / stateRes.y, 0.5 ) ) * stateRes.y;
+}
+/**  The photo carried by a flow, one step (state pass).
+ *
+ * @param vel    The fluid's displacement at this cell this step, in cells. (in)
+ * @param fresh  The share pulled back toward the plain photo this step. (in)
+ *
+ * @return
+ *   The new displacement (rg) and the carried b, a.
+ *
+ * The field's rg hold the displacement D = uv - x / H of the photo coordinate each cell shows: periodic where uv itself
+ * is not, so the torus has no seam.  Moving the fluid by vel gives D_new(x) = D(x - vel) - vel / H (traced back,
+ * linearly filtered); fresh pulls it back toward the plain photo.  b and a travel along with the fluid.
+ **/
+vec4 stCarry( vec2 vel, float fresh )
+{
+    vec4 c = stLin( vec2( stCell() ) + 0.5 - vel );
+    c.rg = ( c.rg - vel / stateRes.y ) * ( 1.0 - fresh );
+    return c;
+}
+/**  The photo coordinate the frame shows at a field coordinate (a field carried by stCarry()).
+ *
+ * @param cc  The coordinate in cells. (in)
+ *
+ * @return
+ *   The photo coordinate.
+ **/
+vec2 stUV( vec2 cc )
+{
+    return cc / stateRes.y + stLin( cc ).rg;
+}
+/**  The mip level for a carried photo: how much the map stretches one screen pixel (strands finer than a pixel are
+ * averaged, not aliased).
+ *
+ * @param cc      The coordinate in cells. (in)
+ * @param cellPx  Screen pixels per cell. (in)
+ *
+ * @return
+ *   The mip level, 0..6.
+ **/
+float stLod( vec2 cc, float cellPx )
+{
+    vec2 d0 = stLin( cc ).rg;
+    vec2 ux = stLin( cc + vec2( 1.0, 0.0 ) ).rg - d0 + vec2( 1.0 / stateRes.y, 0.0 );
+    vec2 uy = stLin( cc + vec2( 0.0, 1.0 ) ).rg - d0 + vec2( 0.0, 1.0 / stateRes.y );
+    return clamp( log2( max( max( length( ux ), length( uy ) ) * 1024.0 / max( cellPx, 1e-3 ), 1.0 ) ), 0.0, 6.0 );
+}
+
+/**  The state pass: a clock whose speed follows the swell, summed step by step (so its speed changes, never its
+ * reading).
+ *
+ * @return
+ *   The clock, 0, 0, 1.
+ **/
+vec4 stateStep()
+{
+    float prev = stateFrame < 0.5 ? 0.0 : texelFetch( texState, ivec2( 0, 0 ), 0 ).r;
+    return vec4( prev + ( 0.5 + clamp( audioSwell, 0.0, 1.0 ) ) / 60.0, 0.0, 0.0, 1.0 );
+}
+
 /**  The photo coordinate under n inverse baker folds (the tent version: the right half is folded back on top).
  *
  * @param q  The point in the unit square. (in)
@@ -524,6 +717,12 @@ vec2 unfold( vec2 q, float n )
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
+    if ( statePass == 1 )
+    {
+        fragColor = stateStep();
+        return;
+    }
+    float swell_clock = texelFetch( texState, ivec2( 0, 0 ), 0 ).r; // seconds, run faster as the music swells
     vec2  p = screenP();
     float ang = 1.5707963 * floor( clamp( angleP, 0.0, 0.999 ) * 2.0 ) + 0.6 * sin( 0.01 * sceneTime );
     float sc = 0.8 + 0.6 * clamp( scaleP, 0.0, 1.0 );
@@ -536,7 +735,7 @@ void main()
     float front = r.x * 0.5 + 0.5;
     float past = smoothstep( f - 0.03, f + 0.03, 1.0 - fract( front ) );
     float n_a = lvl, n_b = mod( lvl + 1.0, 9.0 );
-    vec2  drift = vec2( 0.0, 0.004 * sceneTime * ( 0.5 + clamp( audioSwell, 0.0, 1.0 ) ) );
+    vec2  drift = vec2( 0.0, 0.004 * swell_clock );
     vec3  a = imgLod( unfold( q, n_a ) + drift, 0.4 ), b = imgLod( unfold( q, n_b ) + drift, 0.4 );
     vec3  col = mix( b, a, past );
     float crease = exp( -pow( ( 1.0 - fract( front ) - f ) * 30.0, 2.0 ) ) * step( 0.02, f ) * step( f, 0.98 );

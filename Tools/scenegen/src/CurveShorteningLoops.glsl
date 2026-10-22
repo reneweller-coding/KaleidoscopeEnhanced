@@ -13,14 +13,29 @@
  * Knobs: wiggleP (how wild the new curves are), cellP (the cells' size), hueP.
 //@params wiggleP cellP
 //@audio audioSwell
+//@state 1 1 60 32
 //@body
+/**  The state pass: a clock whose speed follows the swell, summed step by step (so its speed changes, never its
+ * reading).
+ *
+ * @return
+ *   The clock, 0, 0, 1.
+ **/
+vec4 stateStep()
+{
+    float prev = stateFrame < 0.5 ? 0.0 : texelFetch(texState, ivec2(0, 0), 0).r;
+    return vec4(prev + (0.03 + 0.04 * clamp(audioSwell, 0.0, 1.0)) / 60.0, 0.0, 0.0, 1.0);
+}
+
 void main()
 {
+    if (statePass == 1) { fragColor = stateStep(); return; }
+    float swellClock = texelFetch(texState, ivec2(0, 0), 0).r;   // seconds, run faster as the music swells
     vec2 p = screenP();
     float fh = famHue();
     float S = 0.3 + 0.2 * clamp(cellP, 0.0, 1.0);
     float wild = 0.15 + 0.25 * clamp(wiggleP, 0.0, 1.0);
-    float clock = (0.03 + 0.04 * clamp(audioSwell, 0.0, 1.0)) * sceneTime + 0.12 * audioAdvance;
+    float clock = swellClock + 0.12 * audioAdvance;
     vec2 g0 = floor(p / S);
     vec3 col = vec3(0.0);
     for (int j = -1; j <= 1; ++j)

@@ -13,7 +13,20 @@
  * Knobs: dropP (the drops' size), particleP (how many particles per drop), hueP.
 //@params dropP particleP
 //@audio audioHarmAdvance audioSwell
+//@state 1 1 60 32
 //@body
+/**  The state pass: a clock whose speed follows the swell, summed step by step (so its speed changes, never its
+ * reading).
+ *
+ * @return
+ *   The clock, 0, 0, 1.
+ **/
+vec4 stateStep()
+{
+    float prev = stateFrame < 0.5 ? 0.0 : texelFetch(texState, ivec2(0, 0), 0).r;
+    return vec4(prev + (0.6 + 0.8 * clamp(audioSwell, 0.0, 1.0)) / 60.0, 0.0, 0.0, 1.0);
+}
+
 /**  A drop's particles' light for one lobe count.
  *
  * @param q     The point (drop centre at 0, radius 1). (in)
@@ -46,13 +59,15 @@ float streaming(vec2 q, float n, float M, float run, float seed)
 
 void main()
 {
+    if (statePass == 1) { fragColor = stateStep(); return; }
+    float swellClock = texelFetch(texState, ivec2(0, 0), 0).r;   // seconds, run faster as the music swells
     vec2 p = screenP();
     float fh = famHue();
     float h = max(audioHarmAdvance, 0.0);
     float hk = floor(h), hm = smoothstep(0.15, 0.85, h - hk);
     float S = 0.3 + 0.15 * clamp(dropP, 0.0, 1.0);
     float M = floor(14.0 + 14.0 * clamp(particleP, 0.0, 1.0));
-    float run = 0.3 * sceneTime + 1.2 * audioAdvance * (0.6 + 0.8 * clamp(audioSwell, 0.0, 1.0));
+    float run = 0.4 * swellClock + 1.0 * audioAdvance;
     vec2 r2 = vec2(1.0, 1.7320508);
     vec2 g = p / S;
     vec2 a = mod(g, r2) - 0.5 * r2, b = mod(g - 0.5 * r2, r2) - 0.5 * r2;

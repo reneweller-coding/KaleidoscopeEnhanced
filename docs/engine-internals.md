@@ -6774,3 +6774,50 @@ variable name.
 - The slope moves the photo lookup and tilts the shading.
 - A bevel is a constant shift toward the pane's edge, with mitred corners from `max(|x|, |y|)`. Its three colour
   channels are looked up slightly apart.
+
+## 22.10.2026 (51): glowing life, abstracted (400 list, family I)
+
+Twenty-five scenes of family I: bioluminescence and small life as fields, rooms and patterns rather than single
+animals on black.
+
+**Speed must follow the swell by integration, never by multiplication.** Seven scenes multiplied a clock by the
+swell:
+- `audioAdvance * (0.6 + 0.8 swell)`: four of family G.
+- `sceneTime * (0.5 + swell)`: two of the photo-as-fluid family of 17.10.
+- `(a + b swell) * sceneTime`: CurveShorteningLoops.
+
+When the swell moves, such a product jumps by clock x change, and the clock grows without bound. The fix is a true
+integrator: a 1 x 1 RGBA32F state (`//@state 1 1 60 32`) that adds `(a + b swell) / 60` each step. The scene reads
+it as `swellClock`, a reading that only changes its speed. The search pattern
+`(sceneTime|audioAdvance)…*…clamp(audioSwell` finds such lines. A bounded `sin(…) * swell` is fine.
+
+**Onsets that set off travelling waves.** PyrosomeInterior and SeaPenLightWaves keep the last four seconds of
+`audioOnset` in a 256 x 1 state (`//@state 256 1 60`):
+- Each step, cell i takes cell i-1's value, and cell 0 takes the current onset.
+- A place lights with `onsetAgo(distance / speed)`, read linearly between cells.
+- So every onset really starts a wave that spreads from where it was touched. A front driven by the integrated
+  clock would only pulse in place.
+- The read is clamped short of the ring's end, so the linear filter never wraps the oldest cell into the newest.
+
+**Paths that are the melody.** DinoflagellateWakeField and VenusGirdleRibbons lay the eight smoothed melody ages
+(the triangle-weighted means of AuroraRibbonVolume) along a track. The track behind a swimmer rises and falls with
+the last moments' pitches, newest nearest the swimmer. A swimmer that wraps round must travel far enough off screen
+that its whole wake has left before it reappears (span = 2 + 2 x wake length).
+
+**Lanes, not hashes.** Ribbon pairs placed by hash bunched at the top and bottom of the screen. Lanes evenly spaced
+by index fill it. The same lesson as the R2 sequence in family H.
+
+**Indices that shift at a phrase's end.** MycenaGlowRings gives ring j the age `pos + j`. When a phrase ends, every
+ring's j moves on by one, so nothing tied to j (a cap pattern's offset) may differ between rings, or it jumps.
+
+**Structures that grow by halving.** In CleavageStagesBloom a cell's place is the sum of four halvings' offsets,
+each opening smoothly as the stage passes it. 1 → 2 → 4 → 8 → 16 cells part continuously, and the frontmost cell
+at each pixel is shaded as a sphere.
+
+**Shapes that must stay in their cell.** A star or bokeh disc drawn per jittered cell is cut at the cell's border
+once its soft edge reaches past it. Clamp its radius, keep its centre's jitter inside the margin, and fade its
+light to zero before the margin.
+
+**Seams that are not the scene's.** ns_sample renders through the app's schedule, which may chain a lab effect. A
+dark straight line at the same screen place in every frame is that effect, not the shader. Compare with another
+roll before changing code.

@@ -13,9 +13,24 @@
  * Knobs: stepsP (the base number of steps), fingerP (finger spacing), stirP (the stirring inside a layer), hueP.
 //@params stepsP fingerP stirP
 //@audio audioSwell audioKick audioPhrasePos
+//@state 1 1 60 32
 //@body
+/**  The state pass: a clock whose speed follows the swell, summed step by step (so its speed changes, never its
+ * reading).
+ *
+ * @return
+ *   The clock, 0, 0, 1.
+ **/
+vec4 stateStep()
+{
+    float prev = stateFrame < 0.5 ? 0.0 : texelFetch(texState, ivec2(0, 0), 0).r;
+    return vec4(prev + (0.5 + clamp(audioSwell, 0.0, 1.0)) / 60.0, 0.0, 0.0, 1.0);
+}
+
 void main()
 {
+    if (statePass == 1) { fragColor = stateStep(); return; }
+    float swellClock = texelFetch(texState, ivec2(0, 0), 0).r;   // seconds, run faster as the music swells
     vec2 p = screenP();
     float prog = audioPhrasePos > 0.001 ? audioPhrasePos : fract(sceneTime / 16.0);
     float steps = 4.0 + 4.0 * clamp(stepsP, 0.0, 1.0) + smoothstep(0.3, 0.9, prog);
@@ -25,7 +40,7 @@ void main()
     float li = floor(ys), ly = fract(ys);
     // interfaces: thin bands at each step, with fingers hanging through them
     float k = 6.2831853 * (8.0 + 12.0 * clamp(fingerP, 0.0, 1.0));
-    float sway = 0.02 * audioAdvance + 0.2 * sceneTime * (0.5 + clamp(audioSwell, 0.0, 1.0));
+    float sway = 0.02 * audioAdvance + 0.2 * swellClock;
     float len = 0.12 + 0.2 * clamp(audioSwell, 0.0, 1.0);
     float dI = min(ly, 1.0 - ly);                               // distance to the nearest interface (in layers)
     float fx = p.x * k + 0.6 * sin(p.x * 3.0 + li * 1.7 + 0.3 * sway) + 0.4 * sin(sway + li) * (ly - 0.5);

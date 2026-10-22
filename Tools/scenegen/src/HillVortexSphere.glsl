@@ -14,14 +14,29 @@
  * Knobs: vortexP (how many vortices), pointP (how many points per vortex), hueP.
 //@params vortexP pointP
 //@audio audioSwell audioPhrasePos
+//@state 1 1 60 32
 //@body
+/**  The state pass: a clock whose speed follows the swell, summed step by step (so its speed changes, never its
+ * reading).
+ *
+ * @return
+ *   The clock, 0, 0, 1.
+ **/
+vec4 stateStep()
+{
+    float prev = stateFrame < 0.5 ? 0.0 : texelFetch(texState, ivec2(0, 0), 0).r;
+    return vec4(prev + (0.6 + 0.8 * clamp(audioSwell, 0.0, 1.0)) / 60.0, 0.0, 0.0, 1.0);
+}
+
 void main()
 {
+    if (statePass == 1) { fragColor = stateStep(); return; }
+    float swellClock = texelFetch(texState, ivec2(0, 0), 0).r;   // seconds, run faster as the music swells
     vec2 p = screenP();
     float fh = famHue();
     float V = floor(3.0 + 2.0 * clamp(vortexP, 0.0, 1.0));
     float M = floor(70.0 + 50.0 * clamp(pointP, 0.0, 1.0));
-    float run = 0.3 * sceneTime + 1.2 * audioAdvance * (0.6 + 0.8 * clamp(audioSwell, 0.0, 1.0));
+    float run = 0.5 * swellClock + 1.0 * audioAdvance;
     float drift = 0.03 * sceneTime + 0.12 * audioAdvance;
     vec3 col = famCol(fh, 0.45) * 0.012;
     for (int v = 0; v < 5; ++v) {

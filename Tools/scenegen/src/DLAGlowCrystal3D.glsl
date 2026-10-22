@@ -15,7 +15,20 @@
  * which is flat.
 //@params armP spreadP
 //@audio audioSwell
+//@state 1 1 60 32
 //@body
+/**  The state pass: a clock whose speed follows the swell, summed step by step (so its speed changes, never its
+ * reading).
+ *
+ * @return
+ *   The clock, 0, 0, 1.
+ **/
+vec4 stateStep()
+{
+    float prev = stateFrame < 0.5 ? 0.0 : texelFetch(texState, ivec2(0, 0), 0).r;
+    return vec4(prev + (0.6 + 0.8 * clamp(audioSwell, 0.0, 1.0)) / 60.0, 0.0, 0.0, 1.0);
+}
+
 /**  The crystal's light at a screen point: its branches, revealed up to a growth radius.
  *
  * @param p       The screen point. (in)
@@ -72,11 +85,13 @@ float crystal(vec2 p, float seed, float grow, float arms, float fan, float turn,
 
 void main()
 {
+    if (statePass == 1) { fragColor = stateStep(); return; }
+    float swellClock = texelFetch(texState, ivec2(0, 0), 0).r;   // seconds, run faster as the music swells
     vec2 p = screenP();
     float fh = famHue();
     float arms = floor(5.0 + 3.0 * clamp(armP, 0.0, 1.0));
     float fan = 0.35 + 0.4 * clamp(spreadP, 0.0, 1.0);
-    float clock = 0.04 * sceneTime + 0.12 * audioAdvance * (0.6 + 0.8 * clamp(audioSwell, 0.0, 1.0));
+    float clock = 0.06 * swellClock + 0.1 * audioAdvance;
     float turn = 0.02 * sceneTime + 0.05 * audioAdvance;
     float cyc = floor(clock), u = clock - cyc;
     vec3 col = famCol(fh, 0.45) * 0.012;

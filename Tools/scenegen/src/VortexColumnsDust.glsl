@@ -13,14 +13,29 @@
  * Knobs: columnP (how many columns), grainP (how many grains per column), hueP.
 //@params columnP grainP
 //@audio audioSwell audioPhrasePos
+//@state 1 1 60 32
 //@body
+/**  The state pass: a clock whose speed follows the swell, summed step by step (so its speed changes, never its
+ * reading).
+ *
+ * @return
+ *   The clock, 0, 0, 1.
+ **/
+vec4 stateStep()
+{
+    float prev = stateFrame < 0.5 ? 0.0 : texelFetch(texState, ivec2(0, 0), 0).r;
+    return vec4(prev + (0.7 + 0.6 * clamp(audioSwell, 0.0, 1.0)) / 60.0, 0.0, 0.0, 1.0);
+}
+
 void main()
 {
+    if (statePass == 1) { fragColor = stateStep(); return; }
+    float swellClock = texelFetch(texState, ivec2(0, 0), 0).r;   // seconds, run faster as the music swells
     vec2 p = screenP();
     float fh = famHue();
     float cols = floor(4.0 + 3.0 * clamp(columnP, 0.0, 1.0));
     float G = floor(60.0 + 30.0 * clamp(grainP, 0.0, 1.0));
-    float swirl = 0.15 * sceneTime + 0.6 * audioAdvance * (0.7 + 0.6 * clamp(audioSwell, 0.0, 1.0));
+    float swirl = 0.3 * swellClock + 0.5 * audioAdvance;
     float sway = 0.03 * sceneTime + 0.1 * audioAdvance;
     vec3 col = famCol(fh, 0.45) * 0.012;
     for (int c = 0; c < 7; ++c) {

@@ -14,7 +14,20 @@
  * Knobs: angleP (the direction the folds run), scaleP (the square's size on screen), hueP.
 //@params angleP scaleP
 //@audio audioSwell audioKick audioHarmAdvance
+//@state 1 1 60 32
 //@body
+/**  The state pass: a clock whose speed follows the swell, summed step by step (so its speed changes, never its
+ * reading).
+ *
+ * @return
+ *   The clock, 0, 0, 1.
+ **/
+vec4 stateStep()
+{
+    float prev = stateFrame < 0.5 ? 0.0 : texelFetch(texState, ivec2(0, 0), 0).r;
+    return vec4(prev + (0.5 + clamp(audioSwell, 0.0, 1.0)) / 60.0, 0.0, 0.0, 1.0);
+}
+
 /**  The photo coordinate under n inverse baker folds (the tent version: the right half is folded back on top).
  *
  * @param q  The point in the unit square. (in)
@@ -34,6 +47,8 @@ vec2 unfold(vec2 q, float n)
 
 void main()
 {
+    if (statePass == 1) { fragColor = stateStep(); return; }
+    float swellClock = texelFetch(texState, ivec2(0, 0), 0).r;   // seconds, run faster as the music swells
     vec2 p = screenP();
     float ang = 1.5707963 * floor(clamp(angleP, 0.0, 0.999) * 2.0) + 0.6 * sin(0.01 * sceneTime);
     float sc = 0.8 + 0.6 * clamp(scaleP, 0.0, 1.0);
@@ -46,7 +61,7 @@ void main()
     float front = r.x * 0.5 + 0.5;
     float past = smoothstep(f - 0.03, f + 0.03, 1.0 - fract(front));
     float nA = lvl, nB = mod(lvl + 1.0, 9.0);
-    vec2 drift = vec2(0.0, 0.004 * sceneTime * (0.5 + clamp(audioSwell, 0.0, 1.0)));
+    vec2 drift = vec2(0.0, 0.004 * swellClock);
     vec3 a = imgLod(unfold(q, nA) + drift, 0.4), b = imgLod(unfold(q, nB) + drift, 0.4);
     vec3 col = mix(b, a, past);
     float crease = exp(-pow((1.0 - fract(front) - f) * 30.0, 2.0)) * step(0.02, f) * step(f, 0.98);
