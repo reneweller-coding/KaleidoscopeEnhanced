@@ -6728,3 +6728,49 @@ read. Four strands twisting round it (angle = quarter steps + 3t) draw the knot 
 **Point budgets.** Single-point scenes now loop over 360-600 points (ParticleKnotRivers 600, SphereSkySwarm 400).
 Below about 250 points, a full-screen swarm looked sparse at 1080p. The counts stay knob-driven, so they stay fixed
 per roll.
+
+## 22.10.2026 (50): glass and light (400 list, family H)
+
+Twenty-five scenes of family H: glass as a source of light. Light shines through it, bends in it, gathers behind
+it, and the material carries the colour.
+
+**Refraction through a volume of walls.** GlassGyroidRefraction does not march to the first hit. A first-hit march
+fails when the camera is inside the glass: the hit sits at t = 0, so the whole screen jumps to a refracted view.
+- Instead, the ray takes fixed steps and watches the sign of the shell function |g| - thickness.
+- Each sign change is a wall. The ray refracts there with `refract()` (or `reflect()` on total internal reflection),
+  and a Fresnel share adds the room's light.
+- The remaining transmission tints the photo the bent ray finally looks up.
+
+**Voronoi borders need the bisector distance.** TiffanyOpalGlassFlow first used `dot(g - mid, n)`, which is
+negative inside the cell, and took the minimum of those values. That picked the farthest bisector, so the lead
+lines vanished. The correct form, as in IQ's two-pass method, is `min(dot(mid - g, n))` over the 5 x 5 neighbours
+of the nearest site.
+
+**Low-discrepancy placement.** GlassShadowCaustics placed its vessels at `fract(i * 0.618)` and `fract(i * 0.382)`.
+Since 0.618 + 0.382 = 1, x and y are correlated and all vessels lay on one line. Two-dimensional scatter takes the
+R2 sequence instead: `fract(i * 0.7548777)`, `fract(i * 0.5698403)`.
+
+**Stretch and fold by iterated shears.** MoltenGlassTaffy first folded with `abs()` and rotations, which gave
+rigid chevrons. Now every pull is a shear of each axis by a sine of the other:
+- `x += a sin(k y + t)`, then `y += a sin(k x - t)`.
+- Four to six pulls with a = 0.55 stretch the level lines of y into folded filaments, like marbled or pulled
+  glass.
+- Weak pulls (a = 0.35) left only three broad bands.
+
+**Colour fringes need headroom.** The chandelier flecks were bright enough that `finish()` rolled them into white,
+and their coloured rims disappeared. A fringe only shows when the fleck's core stays below the roll-off; the flecks
+now peak near 1.
+
+**Filters, not layers.** ChihulyPersianCeiling and SeaGlassTumbler multiply the backlight by each piece's
+transmission instead of layering pieces with `mix()`.
+- Multiplication does not depend on order, so overlaps within a lattice layer show no seams where the 3 x 3 loop
+  order changes.
+- A sea glass tint is normalised to its largest channel, so the pieces glow coloured instead of filtering to dark.
+
+**Reserved words.** `half` is reserved in GLSL. The NVIDIA compiler accepted it, but it must not be used as a
+variable name.
+
+**Pressed and bevelled glass** compute the facets' slope by finite differences of a height pattern (three samples).
+- The slope moves the photo lookup and tilts the shading.
+- A bevel is a constant shift toward the pane's edge, with mitred corners from `max(|x|, |y|)`. Its three colour
+  channels are looked up slightly apart.
