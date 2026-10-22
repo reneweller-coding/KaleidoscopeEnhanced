@@ -3612,13 +3612,6 @@
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <TextureShader minTimeSolo="29" maxTimeSolo="78" interest="7" grade="fade,grey,sepia" file="..\\Scene2D\\KaleidoHelixTower.frag" type="normal" mood="psychedelic,dreamy,gallery" probability="0.45" complexity="4">
-    <rig preset="flat"/>
-    <float name="tileP" minValue="0" maxValue="1"></float>
-    <float name="pitchP" minValue="0" maxValue="1"></float>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
   <TextureShader minTimeSolo="15" maxTimeSolo="41" interest="5" file="..\\Scene2D\\RotatingShadowLamp.frag" type="normal" mood="dreamy,ambient,electronic" probability="0.45" complexity="3">
     <rig preset="flat"/>
     <float name="holeP" minValue="0" maxValue="1"></float>
@@ -3693,6 +3686,13 @@
     <rig preset="flat"/>
     <float name="formP" minValue="0" maxValue="1"></float>
     <float name="gapP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader minTimeSolo="24" maxTimeSolo="63" interest="6" file="..\\Scene2D\\GothicTraceryMorph.frag" type="normal" mood="cinematic,dreamy,ambient" probability="0.45" complexity="3">
+    <rig preset="flat"/>
+    <float name="paneP" minValue="0" maxValue="1"></float>
+    <float name="lineP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>

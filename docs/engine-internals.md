@@ -6821,3 +6821,47 @@ light to zero before the margin.
 **Seams that are not the scene's.** ns_sample renders through the app's schedule, which may chain a lab effect. A
 dark straight line at the same screen place in every frame is that effect, not the shader. Compare with another
 roll before changing code.
+
+## 22.10.2026 (52): symmetry that breathes (400 list, family J)
+
+Twenty-five scenes of family J: rosettes and ornaments whose order itself changes smoothly.
+
+**Gathered densities need enough points, and a log view.** ChaoticQuiltPatterns first gathered 320 orbit points per
+step into a 320 x 320 torus. That is 320 points for 100 000 texels, so it showed only dots.
+- With 2000 points per step, a 256 x 256 field and a slow blend (0.03 per step), each texel sees enough of the orbit.
+- The density is stored relative to an even spread, `acc / (N pi sig^2)`, in RGBA32F.
+- It is shown on a log scale: (log(d + 0.05) - log 0.3) / (log 6 - log 0.3).
+- Field and Golubitsky's quilts are nearly even (entropy 0.93 on a 64 x 64 histogram). Their lace shows only in the
+  log view.
+- A numpy search (scratchpad quilt_search*.py) found that one of the four first parameter sets ran onto a periodic
+  orbit. It was replaced.
+
+SymmetricChaosIcons gathers 1200 points per step and blends at 0.06. When a section changes, the old and the new
+icon's orbits are gathered side by side, weighted by the cross-fade.
+
+**rot2(a) turns by -a, again.** RadialTreeMandala's branches mirrored to +x and then turned by rot2(ang), which put
+every branch on the folded-away side. Only the trunks showed. PursuitCurveWhirls had to map back with rot2(+j phi).
+When a fold is followed by a turn, check the turn's sign against one known point.
+
+**Reserved words in GLSL.** Besides `half`, also `layout` and `out` (and `in`, `inout`, `uniform`, `buffer`, `shared`,
+`input`, `output`). The NVIDIA compiler rejects `layout` and `out`. A function parameter must not use them either.
+
+**Mirror groups: fold both, measure once.** For a reflection group, the distance from a point to the nearest image
+of a curve equals the distance between the two folded into one chamber. GroupOrbitTracer folds the pixel and the
+trail's samples, and skips segments whose ends a fold has torn apart. numpy reproduces the rosette exactly.
+
+**Draw subsets in a scattered order.** TimesTableCircle draws only as many lines as the loudness allows. Taken in
+order, they covered only an arc of the circle. Taken as `k * 61 mod N` (61 not dividing N), any share spans the whole
+circle.
+
+**Exactly self-similar zooms.** The mice problem's nested polygons are each the previous one turned by phi and shrunk
+by rho, with rho e^(i phi) = (1 - s) + s e^(2 pi i / n). PursuitCurveWhirls sinks into the whirl without end by
+shifting the step index continuously. PolarTruchetRosette flows outward by shifting log r. Its wave round the ring
+has a whole number of periods, so it closes where the angle wraps.
+
+**Continuous parameters for star figures.** A star polygon {n/k} drawn from its chords (lines at R cos(pi k / n) with
+normals every 2 pi / n from pi k / n) stays continuous for non-whole k. Maurer roses accept a non-whole n. Both let
+the harmony glide the figure instead of switching it.
+
+**Smoothing a band over time.** SpirolateralRhythms keeps five spectrum bands in an 8 x 1 state, blended at 0.02 per
+step. The step lengths drawn from them reshape the figures without jitter.
