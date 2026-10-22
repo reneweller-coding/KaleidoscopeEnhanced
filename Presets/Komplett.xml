@@ -2096,7 +2096,7 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
 
-  <TextureShader file="..\Scene2D\SpriteElvesUpperLightning.frag" type="normal" mood="dark,space" probability="0.45" complexity="1" gpuMs="0.37">
+  <TextureShader file="..\Scene2D\SpriteElvesUpperLightning.frag" type="normal" mood="dark,space" probability="0.45" complexity="2" gpuMs="0.37">
     <rig preset="flat"/>
     <float name="columnsP" minValue="0" maxValue="1"></float>
     <float name="elveP" minValue="0" maxValue="1"></float>
@@ -13553,7 +13553,7 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
 
-  <TextureShader file="..\\Scene2D\\HyperbolicBilliardChaos.frag" type="normal" mood="psychedelic,energetic" probability="0.45" complexity="2" gpuMs="0.51">
+  <TextureShader file="..\\Scene2D\\HyperbolicBilliardChaos.frag" type="normal" mood="psychedelic,energetic" probability="0.45" complexity="1" gpuMs="0.51">
     <rig preset="flat"/>
     <float name="bouncesP" minValue="0" maxValue="1"></float>
     <float name="tableP" minValue="0" maxValue="1"></float>

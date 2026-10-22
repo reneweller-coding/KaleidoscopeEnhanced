@@ -2,9 +2,10 @@
  * @brief BASS RIVER OF LIGHT: the bass line as a glowing river winding away into the distance over a dark plain: where
  * the bass was strong the river swings wide, where it was quiet it runs straight, and the other voices float on it as
  * lights -- the middle voice to one side, the highs to the other -- all of it flowing away from the eye as it ages.  A
- * small field of the scene's own keeps the last four seconds of the bass, middle and high levels; the river at a depth
- * shows the bass of that age, and a light floats there where the middle or the highs were strong.  The light is shades
- * of one colour family from the photo.
+ * small field of the scene's own keeps the last four seconds of the bass, middle and high levels, smoothed over half a
+ * second so that the river near the eye follows the music's swell, not every kick; the river at a depth shows the bass
+ * of that age, and a light floats there where the middle or the highs were strong.  The light is shades of one colour
+ * family from the photo.
  *
  * Audio Reactivity (structure, not only light):
  *   audioBass               -> the river's swing: the bass line drawn into the plain (kept for four seconds)
@@ -28,7 +29,7 @@ vec4 stateStep()
     if (j > 0) return stateFrame < 0.5 ? vec4(0.0) : texelFetch(texState, ivec2(j - 1, 0), 0);
     vec4 old = stateFrame < 0.5 ? vec4(0.0) : texelFetch(texState, ivec2(0, 0), 0);
     vec3 now = clamp(vec3(audioBass, audioMid, audioHigh), 0.0, 1.0);
-    return vec4(mix(old.xyz, now, 0.35), 1.0);
+    return vec4(mix(old.xyz, now, 0.08), 1.0);                     // the envelope, not every kick: no strobe near the eye
 }
 
 void main()

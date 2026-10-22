@@ -3764,7 +3764,7 @@
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <TextureShader minTimeSolo="10" maxTimeSolo="28" interest="5" file="..\\Scene2D\\HyperbolicBilliardChaos.frag" type="normal" mood="psychedelic,energetic" probability="0.45" complexity="2" gpuMs="0.51">
+  <TextureShader minTimeSolo="10" maxTimeSolo="28" interest="5" file="..\\Scene2D\\HyperbolicBilliardChaos.frag" type="normal" mood="psychedelic,energetic" probability="0.45" complexity="1" gpuMs="0.51">
     <rig preset="flat"/>
     <float name="bouncesP" minValue="0" maxValue="1"></float>
     <float name="tableP" minValue="0" maxValue="1"></float>

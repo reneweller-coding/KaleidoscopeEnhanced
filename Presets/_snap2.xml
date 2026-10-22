@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<configuration ImageDirectory="..\\Images" ConfigurationName="_snap2" hidden="true">
+  <TextureShader file="..\\Scene3D\\GalleryHall.frag" type="scene3d" geom="quads" mood="dark,calm" complexity="9" gpuMs="0.45" probability="1.0" minTimeSolo="100" maxTimeSolo="120">
+    <rig preset="procedural"/>
+  </TextureShader>
+  <CombineShader file="..\\FX\\FxPlain.frag" type="normal" mood="calm,bright" probability="1.00" complexity="1">
+  </CombineShader>
+</configuration>

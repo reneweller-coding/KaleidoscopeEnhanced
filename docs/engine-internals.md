@@ -7100,3 +7100,50 @@ past, as RubatoStretchTunnel and SmokeRingGates did in family N.
 
 **The second photo.** TexturePortalRings, TextureTidalExchange and TextureVeinReveal use imgB, the photo before the
 current one, gliding over when the photos change.
+
+## 22.10.2026 (58): the 400 list closed -- catalogue, calibrated ratings, measurements
+
+**The catalogue.** `render_catalog_export.py` rendered the three frames of the 400 new scenes in one export per
+60 scenes, two jobs: 1200 frames in 8.8 min (2.2 to 2.6 s a scene). The catalogue now holds 1815 scenes and 5723
+frames; its PDF has 736 pages (58 MB).
+- The portable Chrome hung on the PDF without a profile of its own. Its renderers used 0.1 s of CPU and wrote
+  nothing. With `--user-data-dir` pointing at a folder of its own it printed the 736 pages in 12 s.
+
+**What the catalogue frames showed.**
+- CornerCubeTunnel's eye swung into the ball (1.25 on the diagonal; the ball needs more than 1.33), so every ray
+  hit at once and the picture was one flat colour. The eye now stays outside.
+- Scenes driven only by an onset history were nearly black in the quiet first half of the catalogue track:
+  ReverbLightReflections, SeaPenLightWaves, PyrosomeInterior, OstinatoRings and BellFieldRings. They now also write a
+  soft pulse on every beat (`max(onset, 0.4 exp(-10 beatPhase))`). TextureInkClouds3D releases a cloud on a beat when
+  no onset did for two seconds.
+
+**Ratings against calibrated old rows.** The ratings given while building were too high again: interest 5.97
+against 5.63 for the old rows, electronic 5.38 against 3.69. Those values pushed up to 166 old scenes out of a
+genre preset (Cinematic). The fix was the one used on 17.10:
+- Anchor sheets of 37 old scenes, spread over the interest scale and the extremes of the newer columns, came first.
+- Then all 400 were re-rated from their catalogue frames (`rate_sheet400.py`, eleven columns).
+- Interest is now 4.78, next to the 4.82 of the 200 re-rated the same way on 17.10. The genre presets now lose at
+  most 46 old scenes (Electronic, Psytrance), each to a new scene of higher rank.
+
+**Measured GPU time and restlessness.** `screen.py --scenes <the 400>` took one export, 400 windows in 8.2 min. It
+overwrites `.screen/metrics.json` and `scene-cost.json`, so both were saved before and merged after (4888 rows, 1815
+costs).
+- The new scenes cost 0.77 ms a frame at 1080p in the median. Twelve are above 3 ms; among the 1415 old scenes six
+  are.
+- The two far above the dearest old scene (6.05 ms) were made cheaper:
+  - VoronoiEdgeFoam, 11.35 to 5.72 ms: 26 dithered steps instead of 70, one phase per cell instead of three sines,
+    and the glow weighed by the step length so that fewer, longer steps stay as bright.
+  - LightCoralIFS, 6.23 to 3.34 ms: 72 dithered steps instead of 110, and the neighbouring ring and sector are
+    measured only near their border.
+  - The 8 corner cells of the 3D Voronoi search stay: with the seeds wandering up to 0.65 of a cell, a corner
+    cell can hold the nearest seed. (Short stray fragments of edges remain with all 27 cells as without them; they
+    come from the longer steps.)
+- `sync_scene_measures.py` wrote gpuMs and the measured restlessness into Komplett.xml. 412 complexities moved:
+  355 of the new scenes, whose complexity had been guessed, and 57 old ones that the new ranks moved by a step.
+- `check_schedule.py --quick` found no violations in its 20 plans.
+- The screening flagged 25 scenes: 20 "empty" and 10 "still" windows (some both), thin lines or dots on dark in the
+  quiet stretch of the screening track, with one seed each -- suspects, not findings. The one strobe was real:
+  BassRiverOfLight blended its newest history cell toward the bass by 0.35 a step at 30 Hz, so the wide near part of
+  the river flashed with every kick. It now follows the envelope (0.08 a step, about half a second) and is no longer
+  flagged. Its GPU time was kept from the first run: measured again while the snapshots ran beside it, it read 2.14
+  instead of 0.83 ms -- timings need a quiet machine.
