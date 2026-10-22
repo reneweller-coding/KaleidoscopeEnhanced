@@ -254,11 +254,14 @@ Seit dem 22.10.2026 reichen die Cues weiter als bis zum Schnitt:
   Schnitt bleibt dem Drop.
 
 Wie gut die Analyse ohne Cues trifft, misst `Tools/analyser_vs_cues.py` an den
-Demos der Generator-Familie, deren Cue-Dateien danebenliegen (43 Tracks, Stand
-22.10.2026):
+Demos der Generator-Familie, deren Cue-Dateien danebenliegen (43 Tracks). Nach
+der Überarbeitung vom 22.10.2026 (engine-internals 62):
 
-* **Sektionsgrenzen:** 38 % gefunden.
-* **Drops:** 20 % gefunden; 62 % der erkannten Drops sind erfunden.
+* **Drops:** 53 % gefunden (vorher 20 %); bei echten Tracks alle 11 von Hand
+  markierten Drops.
+* **Tempo:** liegt in 54 % der rhythmischen Zeit richtig (vorher 34 %).
+* **Grenzen:** 44 % trifft eine Sektion oder ein Drop (vorher 39 %), bei
+  weniger Fehlalarmen.
 
 Mit Cues ist das egal.
 

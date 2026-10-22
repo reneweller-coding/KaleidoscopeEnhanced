@@ -537,27 +537,29 @@ private:
     float            m_waveRef = 0.05f; ///< Decaying |peak| reference (keeps the wave visible independent of volume).
     float m_sWave[AudioFeatures::WavePoints] = {}; ///< Smoothed, downsampled waveform points; see AudioFeatures::wave.
 
-    /** Section-change detector state (see AudioFeatures::sectionCount): fast/slow EMAs of the normalised 32-band
-     * shape and total band energy.
-     **/
-    float m_secFast[AudioFeatures::SpectrumBands] = {};     ///< Fast (~2.5 s) EMA of the normalised 32-band spectral
-                                                            ///< shape.
-    float m_secSlow[AudioFeatures::SpectrumBands] = {}; ///< Slow (~18 s) EMA of the normalised 32-band spectral shape.
-    float m_secFastLvl = 0.f;                               ///< Fast (~2.5 s) EMA of total band energy.
-    float m_secSlowLvl = 0.f;                               ///< Slow (~18 s) EMA of total band energy.
-    float m_secNovelty = 0.f; ///< Current novelty score (fast-vs-slow shape/level distance); see
-                              ///< AudioFeatures::sectionNovelty.
-    int   m_secWarm = 0;      ///< Blocks since start (EMAs must settle before triggers are allowed).
-    int   m_secCooldown = 0;                                ///< Blocks until the next section trigger is allowed.
-    float m_secFreeFast[AudioFeatures::SpectrumBands] = {}; ///< Like m_secFast, but never re-anchored (drift
-                                                            ///< estimate).
-    float m_secFreeSlow[AudioFeatures::SpectrumBands] = {}; ///< Like m_secSlow, but never re-anchored.
-    float m_secFreeFastLvl = 0.f;                           ///< Like m_secFastLvl, never re-anchored.
-    float m_secFreeSlowLvl = 0.f;                           ///< Like m_secSlowLvl, never re-anchored.
-    float m_secDrift = 0.f;   ///< Running median of the never re-anchored novelty: how much the music drifts on its
-                              ///< own; the trigger threshold rises with it.
-    int   m_secReanchor = 0;  ///< Blocks until the second re-anchoring after a trigger (0: none pending).
-    float m_secThr = 0.2f;    ///< The current trigger threshold (see AudioFeatures::sectionThreshold).
+    // ---- Section-change detector (see AudioFeatures::sectionCount and processBlock) ----
+    static const int SecA = 30;                                   ///< The recent window: 3 s of 0.1-s frames.
+    static const int SecB = 120;                                  ///< The window before it: 12 s.
+    static const int SecRingLen = SecA + SecB;                    ///< Frames kept.
+    static const int SecDims = AudioFeatures::SpectrumBands + 1;  ///< The 32 bands' log shape, and the loudness.
+    static const int SecMedLen = 600;                             ///< The novelty's last minute, for its median.
+    float m_secAcc[AudioFeatures::SpectrumBands] = {}; ///< Band power summed over the current frame's blocks.
+    int              m_secAccN = 0;                               ///< Blocks in it.
+    float            m_secAccSecs = 0.f;                          ///< Seconds in it.
+    float            m_secRing[SecRingLen][SecDims] = {};         ///< The last 15 s of frames (dB).
+    int              m_secRingPos = 0;                            ///< Where the next frame goes (the oldest one).
+    int              m_secFrames = 0;                             ///< Frames since the start (or the song's).
+    float            m_secNovHist[SecMedLen] = {};                ///< The novelty of the last minute.
+    int              m_secNovPos = 0;                             ///< Where the next one goes.
+    int              m_secNovN = 0;                               ///< How many there are.
+    int              m_secMedTick = 0;                            ///< Frames until the median is taken again.
+    float            m_secNovMed = 0.f;                           ///< Their median.
+    float m_secNovelty = 0.f; ///< The novelty over its median of the last minute; see AudioFeatures::sectionNovelty.
+    int   m_secWarm = 0;      ///< Blocks since start (the fingerprint's EMA settles on it).
+    int              m_secCooldown = 0;                           ///< Frames until the next section trigger is allowed.
+    bool m_secPending = false; ///< A change found in the last frame, published in this one unless a drop came.
+    int              m_secPendingDrops = 0;                       ///< #m_dropCount when it was found.
+    float m_secThr = 3.f;     ///< The relative novelty a change must exceed (see AudioFeatures::sectionThreshold).
     int   m_sectionCount = 0; ///< Cumulative section-change count; see AudioFeatures::sectionCount.
 
     /** Song-structure memory: spectral fingerprints of the sections heard so far.
@@ -615,23 +617,22 @@ private:
     int   m_bldWarm = 0; ///< Bias-correction counter (EMA warm-up), also used as a block-count clock for build-up/drop
                          ///< logging.
     float m_sBuildUp = 0.f;                       ///< Smoothed 0..1 build-up output; see AudioFeatures::buildUp.
-    /** Fast (~0.15 s) EMA of the LINEAR sub-bass + bass RMS (not the dB-normalised 0..1 bands); a value under 0.35 x
-     * #m_bassSlow while armed is the drop "vacuum".
-     **/
-    float m_bassFast = 0.f, m_bassSlow = 0.f; ///< Slow (~5 s) EMA of the same linear bass energy, FROZEN while a vacuum
-                                              ///< is open so the gap cannot drag the average down.
-    float m_dropArmed = 0.f;                  ///< Blocks of arming left (recent build-up qualifies a drop).
-    float m_lowGapBlocks = 0.f;               ///< Consecutive blocks of bass vacuum (the breakdown gap).
-    float m_dropPulse = 0.f;                  ///< Decaying drop output (1.0 at the hit); see AudioFeatures::dropPulse.
-    int   m_dropCooldown = 0;                 ///< Blocks until the next drop may fire.
-    // ---- return after a breakdown (the drop most real tracks actually have) ----
-    float m_brkFast = 0.f;   ///< ~1 s EMA of the level mix (0..1 scale).
-    float m_brkSlow = 0.f;   ///< ~8 s EMA of the level mix.
-    bool  m_inBreak = false; ///< Currently inside a breakdown (fast level well under the slow one).
-    int   m_brkBlocks = 0;   ///< Blocks spent in the current breakdown.
-    float m_brkPre = 0.f;    ///< Slow level when the breakdown began (what 'back' means).
-    float m_brkMin = 1.f;    ///< Lowest fast level inside the breakdown.
-    int   m_dropCount = 0;   ///< Cumulative drops (host-poll counter); see AudioFeatures::dropCount.
+    // ---- the drop: the bass back at its groove level (see processBlock) ----
+    static const int DropSlots = 90;              ///< Half-second slots of the groove level's 45-s memory.
+    float            m_dropBassP = 0.f;           ///< This block's bass power, the 32 bands' lowest eight (40..180 Hz).
+    float            m_dropBassFast = 0.f;        ///< ~60 ms EMA of #m_dropBassP (the return's edge).
+    float            m_dropBassSlow = 0.f; ///< ~2 s EMA of #m_dropBassP (what the groove level is the maximum of).
+    float m_dropSlots[DropSlots] = {};     ///< Per half second the loudest 2-s bass in dB; their maximum is the groove.
+    int              m_dropSlot = 0;              ///< The slot being filled.
+    float            m_dropSlotSecs = 0.f;        ///< Seconds into that slot.
+    bool             m_dropInGap = false;         ///< The bass is 30 dB under the groove (path A: a breakdown).
+    float            m_dropGapSecs = 0.f;         ///< How long, until the bass is back in full.
+    bool             m_dropInVacuum = false; ///< The bass is 45 dB under the groove with a build-up armed (path B).
+    float            m_dropVacuumSecs = 0.f;      ///< How long.
+    float            m_dropArmed = 0.f;           ///< Blocks of arming left (a recent build-up qualifies a vacuum).
+    float            m_dropPulse = 0.f; ///< Decaying drop output (1.0 at the hit); see AudioFeatures::dropPulse.
+    int              m_dropCooldown = 0;          ///< Blocks until the next drop may fire.
+    int              m_dropCount = 0; ///< Cumulative drops (host-poll counter); see AudioFeatures::dropCount.
 
     // ---- DJ-STOP detection (see AudioFeatures::breakHold/breakSlam) ----
     float m_lvlFast = 0.f;      ///< ~60 ms full-band level EMA.

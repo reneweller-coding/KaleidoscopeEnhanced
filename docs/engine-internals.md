@@ -7333,3 +7333,111 @@ The rest is left as found and needs its own round:
 
 The benchmark is the baseline any such change has to beat. With a generator's cues, all of this is moot: the cues
 now steer the cut and the hit alike.
+
+## 22.10.2026 (62): the audio analysis, measured against an answer key and rebuilt where it failed
+
+The user asked to optimise the audio analysis. It was measured first, against three sets.
+
+- **The answer key: 43 demos of the generator family.** Each comes with the score cues its generator wrote: every
+  section with its kind, every drop, every beat (`Tools/analyser_vs_cues.py`; `@list` freezes a set, since new demos
+  keep arriving in `G:/Tools/VRAudio`).
+- **Seven real tracks and the structure track.** Their drops were labelled by hand from the bass envelope: the
+  moment the bass returns in full after a gap. Their tempo was checked against an autocorrelation over the whole
+  track.
+- **Four ambient pieces.** They must stay quiet.
+
+For quick iteration a Python prototype rebuilt the analyser's 32 log-spaced bands (FFT 2048, hop 480). Its copy of
+the old section detector found 109 boundaries and invented 161; the C++ original found 106 and invented 159. So the
+prototype could be trusted as a bench.
+
+### Drops: the bass back at its groove level
+
+The old detector had two paths:
+- the bass slamming back to 1.45 x a slow average that froze in the gap, armed by `buildUp > 0.45`;
+- the level mix coming back after more than 6 s under its 8-s mean.
+
+It found 6 of the 30 cue drops, with 10 of its 16 drops false. On the real tracks it found none of the 8 labelled
+drops and fired 9 times beside them. The level path fired where a break *ended*: at the build-up after it, or while
+the music thinned out toward it. Examples: Astrix in the full groove (184.5 s; the drop is at 199), Daft Punk 15 s
+early, Prodigy in the middle of the break. The slam path waited for a build-up that the breakbeat demos never
+reached.
+
+In the numbers, a dance drop looks like this:
+- the bass falls 30-75 dB first;
+- it comes back by 20-48 dB within a tenth of a second;
+- it returns to its *groove level*, the loudest 2-s bass of the last 45 s.
+
+The new detector (`AudioAnalyzer::processBlock`, "Drop: the bass back at its groove level") has two paths that end
+on the same edge: the 60-ms bass within 3 dB of the groove level.
+- **A, after a gap:** the bass 30 dB under the groove for at least 6 s. A breakdown often has the build-up inside
+  it; the gap counts until the bass is back in full.
+- **B, after a vacuum:** the bass 45 dB under the groove for at least 0.25 s, while a build-up is armed. These are
+  the beats struck out right before the drop, as in the structure track and many psytrance drops.
+
+The bass is the lowest eight of the 32 bands (40-180 Hz). The groove level is kept as the maxima of 90 half-second
+slots. Not before 30 s, at most one every 8 s, and all times in seconds, not blocks. A 480-sample block is 10.9 ms at
+44.1 kHz, so in blocks the 6.2-s gap before Astrix's drop counted as 5.7 s and the drop was lost.
+
+|  | cue drops found (+-0.3 s) | false of all | real + structure found | false |
+|---|---|---|---|---|
+| before | 6 of 30 | 10 of 16 | 3 of 11 (the structure track only) | 9 of 12 |
+| after | 16 of 30 | 11 of 27 | 11 of 11 | 2 of 13 |
+
+None fire in the ambient pieces. The other 14 cue drops have no bass return at all (a cinematic climax, a ritual
+groove's peak, +-1 dB), so no bass detector can find them.
+
+### Tempo: the autocorrelation gives the number, the kicks the metre
+
+The published tempo was within 4 % of the cues' beats (both folded to 70..180) in 34 % of the rhythmic time. The kick
+tempo (`ioiPeriod`) stood whenever the kicks explained their intervals, and wandered wherever they are syncopated: a
+breakbeat at 125 read 125..137, a lounge groove at 90 read 92..179. Meanwhile the autocorrelation held 125.0, and when
+it was confident it was right 70 % of the time.
+
+Now the autocorrelation sets the tempo when it is confident. The kicks only choose the metre: where they explain
+their intervals and sit at a simple ratio to it (2, 1/2, 3/2, 2/3), the tempo is the autocorrelation's times that
+ratio. That keeps the synthetic two-step at 174 against an autocorrelation of 116.6.
+
+Result: 34 % -> 54 % of the rhythmic time, 28 % -> 42 % of all. On the real tracks:
+- Kadafi 145 -> 121 (the whole-track autocorrelation says 120);
+- Prodigy 133.4 -> 130.6 (130);
+- Daft Punk now holds 121-125 instead of 121-133.
+
+Left as found:
+- slow music (60-90 BPM) read at double tempo: the cues' own metre convention and the prior around 120 disagree;
+- Ironic at 3:2.
+
+### Sections: the log shape, two windows, relative to the music's own novelty
+
+The old detector compared a 2.5-s and an 18-s EMA of the *linear* band shares. The bass ruled them: a hat, a pad or a
+lead coming in hardly moved the cosine. At the missed boundaries the novelty reached a median of 54 % of the
+threshold, while the invented ones sat just above it. And its threshold was absolute. Inside one track the novelty
+separated boundaries from the rest well (AUC 0.80-0.94 for breakbeat, psytrance, techno and trance), but across
+genres hardly at all (0.73): cinematic and ritual music move ten times as much between their sections as a techno
+groove does.
+
+Now, every 0.1 s, the last 3 s are compared with the 12 s before them. The features are the 32 bands' log shape (dB,
+its mean removed) plus the loudness, each difference measured in the earlier window's own spread (a two-sample test).
+That novelty is read against its median of the last minute (AUC 0.79 across all). A change needs 3 x the median and
+1.0 absolute, with 12 s between changes.
+
+Tried and dropped:
+- bar-synchronous windows (no gain);
+- chroma and onset density (no gain);
+- a lower threshold (more found, but twice the detections).
+
+The drop now wins over the section:
+- A change is published one frame (0.1 s) after it is found, unless a drop came in between.
+- After a drop the section detector rests 12 s. On the structure track, section and drop fell into one block, and the
+  plan counted section cuts where the drop's own cut, with its spectacle scene, belonged.
+
+What the scheduler cuts on, a section or a drop, against every cue boundary:
+
+|  | boundaries met | events invented | events |
+|---|---|---|---|
+| before | 110 of 281 (39 %) | 165 of 275 (60 %) | 275 |
+| after | 125 of 281 (44 %) | 132 of 252 (52 %) | 252 |
+
+Build-up boundaries are now met in 51 % of cases (14 % before). The four ambient pieces of the drift fix (16.10.2026)
+keep 0-2 sections each, and the real tracks keep about as many as before. `Kaleidoscope.exe -q`: 127 of 127.
+`check_schedule --quick`: no violations, and the drop cuts on the structure track are back (Club 217, 206 before
+the round). The analysis costs the same: 5.5 s for 494 s of audio.

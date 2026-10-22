@@ -1604,6 +1604,13 @@ void AudioAnalyzer::beginSong()
     m_acRival = 0;
     ++m_songEpoch;
     m_agcFastBlocks = 500;
+    // The section windows start over: the last song is no section of this one.
+    m_secFrames = 0;
+    m_secNovN = 0;
+    m_secNovPos = 0;
+    m_secMedTick = 0;
+    m_secCooldown = 0;
+    m_secPending = false;
 }
 
 void AudioAnalyzer::processBlock( const float *data, int numFrames,
@@ -2322,14 +2329,34 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
     // and only then: where the kicks explain their own intervals (ioiPeriod()),
     // their tempo stands.  On a synthetic two-step 174 the autocorrelation was
     // "confident" of 116.6 and pulled a correct kick tempo there in a second.
+    //
+    //
+    // The autocorrelation gives the number, the kicks only the metre
+    // (22.10.2026).  Measured against the beat cues of the generators' 43
+    // demos, the kick tempo wandered wherever the kicks are syncopated -- a
+    // breakbeat at 125 read 125..137 while the autocorrelation held 125.0, a
+    // lounge groove at 90 read 92..179 -- and their explained share stayed
+    // high all the same; the published tempo was right (within 4 %, both folded
+    // to 70..180) in 34 % of the rhythmic time.  Where the kicks explain their
+    // intervals and sit at a simple ratio to the autocorrelation -- its double
+    // or half, or the 3:2 of a two-step (174 against 116.6) -- that ratio is
+    // the metre, and the tempo is the autocorrelation's times it.
     const bool kicks_explain = m_ioiCount >= 6 && m_ioiExplained >= 0.75f;
-    if ( m_acConf > 0.35f && m_acBPM > 1.f && !kicks_explain )
+    if ( m_acConf > 0.35f && m_acBPM > 1.f )
     {
-        float ac_folded = fold_bpm( m_acBPM );
+        float target = fold_bpm( m_acBPM );
+        if ( kicks_explain && m_smoothedBPM > 1.f )
+        {
+            static const float Metre[] = { 2.f, 0.5f, 1.5f, 2.f / 3.f };
+            const float        ratio = m_smoothedBPM / target;
+            for ( float m : Metre )
+                if ( std::fabs( ratio / m - 1.f ) < 0.03f )
+                    target *= m;
+        }
         if ( m_smoothedBPM < 1.f )
-            m_smoothedBPM = ac_folded;
+            m_smoothedBPM = target;
         else
-            m_smoothedBPM = 0.97f * m_smoothedBPM + 0.03f * ac_folded;
+            m_smoothedBPM = 0.9f * m_smoothedBPM + 0.1f * target;
     }
     m_smoothedBPM = fold_bpm( m_smoothedBPM );
 
@@ -2588,6 +2615,10 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
         }
         m_specRef = std::max( m_specRef * 0.98f, frame_max ); // slow-decaying peak
         m_specRef = std::max( m_specRef, 1e-4f );             // floor → silence stays low
+        // The bass of the lowest eight bands (40..180 Hz) as power: what the drop detector watches.
+        m_dropBassP = 0.f;
+        for ( int b = 0; b < 8; ++b )
+            m_dropBassP += raw[b] * raw[b];
         for ( int b = 0; b < NB; ++b )
         {
             float v = std::min( raw[b] / m_specRef, 1.f );
@@ -2664,126 +2695,127 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
             }
         }
 
-        // ---- Section-change detection (Strophe / Refrain / Bridge) ----
-        // Real-time Foote-style novelty: a short-term (~2.5 s) EMA of the
-        // NORMALISED band shape (and of the total band energy) is compared
-        // against a long-term (~18 s) one.  Within a section both agree; when
-        // the arrangement changes (chorus: new instruments, more energy) the
-        // fast average pulls away -> the cosine distance spikes once.
+        // ---- Section-change detection (verse, chorus, a break, a drop) ----
+        // Two adjacent windows of the last 15 s, every 0.1 s: the last 3 s against the 12 s before them, in the
+        // 32 bands' LOG shape (dB, its mean over the bands removed) and the loudness, each difference measured in
+        // the earlier window's own spread -- a two-sample test, the change against how much the section moved
+        // within itself.  The novelty is then read against its own median of the last minute: a section change is
+        // three times the music's ordinary novelty and at least 1.0 absolute (22.10.2026).
+        //
+        // Measured against the score cues of the generators' 43 demos (Tools/analyser_vs_cues.py; prototyped in
+        // Python on the same bands, the round's scratch scripts).  The detector before compared a 2.5-s and an 18-s
+        // EMA of the LINEAR band shares: the bass ruled them, so a hat, a pad or a lead coming in hardly moved
+        // the cosine, and at the missed boundaries the novelty reached a median 54 % of the threshold.  And its
+        // threshold was absolute: inside one track the novelty told the boundaries apart well (AUC 0.80-0.94 for
+        // breakbeat, psytrance, techno, trance), across genres not at all (0.73), because cinematic and ritual
+        // music move ten times as much between their sections as a techno groove.  Relative to its own median it
+        // reads 0.79 across all.  Found boundaries 39 % -> 44 %, invented ones 61 % -> 55 %, at the same number of
+        // detections (the held-out half of the tracks: F1 0.37 -> 0.45).  The four ambient pieces of the drift
+        // fix (16.10.2026) stay at 0-2 sections each.
         {
             float sum = 1e-6f;
             for ( int b = 0; b < NB; ++b )
                 sum += raw[b];
-            // Bias-corrected EMAs: alpha = max(nominal, 1/(n+1)) makes both
-            // averages track the true mean from the very first block instead
-            // of converging up from their zero initialisation.  (Without this
-            // the slow level average lags for ~1 min and the level term reads
-            // as permanent "novelty" -> phantom triggers on the cooldown grid.)
-            float a_bias = 1.f / static_cast<float>( m_secWarm + 1 );
-            float a_f = std::max( 0.004f, a_bias );   // tau ~2.5 s at 100 blocks/s
-            float a_s = std::max( 0.00056f, a_bias ); // tau ~18 s
-            float a_p = std::max( 0.01f, a_bias );    // tau ~1 s (fingerprint)
+            // The fingerprint (a ~1 s EMA of the normalised shape) for the song-structure memory below.
+            const float a_p = std::max( 0.01f, 1.f / static_cast<float>( m_secWarm + 1 ) );
             for ( int b = 0; b < NB; ++b )
-            {
-                float sh = raw[b] / sum;
-                m_secFast[b] += a_f * ( sh - m_secFast[b] );
-                m_secSlow[b] += a_s * ( sh - m_secSlow[b] );
-                m_secPrint[b] += a_p * ( sh - m_secPrint[b] );
-            }
-            m_secFastLvl += a_f * ( sum - m_secFastLvl );
-            m_secSlowLvl += a_s * ( sum - m_secSlowLvl );
-
-            float dot_fs = 0.f, n_f = 1e-9f, n_s = 1e-9f;
-            for ( int b = 0; b < NB; ++b )
-            {
-                dot_fs += m_secFast[b] * m_secSlow[b];
-                n_f += m_secFast[b] * m_secFast[b];
-                n_s += m_secSlow[b] * m_secSlow[b];
-            }
-            float shape_dist = 1.f - dot_fs / std::sqrt( n_f * n_s );
-            float lvl_dist = std::fabs( std::log( ( m_secFastLvl + 1e-5f )
-                                                  / ( m_secSlowLvl + 1e-5f ) ) );
-            m_secNovelty = shape_dist * 3.0f + lvl_dist * 0.5f;
-
+                m_secPrint[b] += a_p * ( raw[b] / sum - m_secPrint[b] );
             if ( m_secWarm < 1000000 )
                 ++m_secWarm;
-            if ( m_secCooldown > 0 )
-                --m_secCooldown;
 
-            // The music's own drift.  Ambient textures move all the time: their
-            // novelty sat at the fixed threshold and fired a "section" on every
-            // expiry of the cooldown -- every 12.0 s on three ambient pieces
-            // (16.10.2026), each one a scene cut and a walk of the chain labs.
-            // The novelty above cannot measure that drift itself: every trigger
-            // re-anchors it to zero, and in drifting music it climbs back over
-            // any fixed share of its own average.  So a second pair of the same
-            // averages runs free (never re-anchored), and a running lower
-            // quartile of its novelty -- untouched by the peaks of real changes
-            // -- says how far the music wanders on its own.  The threshold rises
-            // with it: drifting music needs a clear jump, music that holds still
-            // inside a section (most dance music) keeps the 0.20.
-            float free_nov = 0.f;
+            // The 0.1-s frame: the band power averaged over its blocks.
+            for ( int b = 0; b < NB; ++b )
+                m_secAcc[b] += raw[b] * raw[b];
+            ++m_secAccN;
+            m_secAccSecs += static_cast<float>( numFrames ) / static_cast<float>( std::max( sampleRate, 1 ) );
+            bool trigger = false;
+            if ( m_secAccSecs >= 0.1f )
             {
-                float dot_ff = 0.f, n_ff = 1e-9f, n_fs = 1e-9f;
+                // A change found one frame ago stands now -- unless a drop came in between: the drop IS the change
+                // (on the structure track the section and the drop fell into one block, and the scene plan counted
+                // a section cut where the drop's own cut belonged).
+                trigger = m_secPending && m_dropCount == m_secPendingDrops;
+                m_secPending = false;
+                float *f = m_secRing[m_secRingPos];
+                float  total = 1e-10f, mean_db = 0.f;
                 for ( int b = 0; b < NB; ++b )
                 {
-                    const float sh = raw[b] / sum;
-                    m_secFreeFast[b] += a_f * ( sh - m_secFreeFast[b] );
-                    m_secFreeSlow[b] += a_s * ( sh - m_secFreeSlow[b] );
-                    dot_ff += m_secFreeFast[b] * m_secFreeSlow[b];
-                    n_ff += m_secFreeFast[b] * m_secFreeFast[b];
-                    n_fs += m_secFreeSlow[b] * m_secFreeSlow[b];
+                    const float pw = m_secAcc[b] / static_cast<float>( m_secAccN );
+                    total += pw;
+                    f[b] = 10.f * std::log10( pw + 1e-10f );
+                    mean_db += f[b];
+                    m_secAcc[b] = 0.f;
                 }
-                m_secFreeFastLvl += a_f * ( sum - m_secFreeFastLvl );
-                m_secFreeSlowLvl += a_s * ( sum - m_secFreeSlowLvl );
-                free_nov = ( 1.f - dot_ff / std::sqrt( n_ff * n_fs ) ) * 3.0f
-                           + std::fabs( std::log( ( m_secFreeFastLvl + 1e-5f ) / ( m_secFreeSlowLvl + 1e-5f ) ) )
-                                 * 0.5f;
-            }
-            // Its lower quartile, tracked step by step (up a quarter, down three
-            // quarters of the step): in dance music a section change keeps the
-            // free novelty up for ~20 s of every ~40, which pulled a median up
-            // with it; the quartile stays on the music's floor.
-            {
-                const float step = m_secWarm < 3000 ? 0.0012f : 0.0004f; // ~10 s, then ~30 s to move 0.1
-                m_secDrift += free_nov > m_secDrift ? 0.25f * step : -0.75f * step;
-                if ( m_secDrift < 0.f )
-                    m_secDrift = 0.f;
-            }
-            m_secThr = std::max( 0.20f, 2.6f * m_secDrift );
-            const float sec_thr = m_secThr;
-
-            // After a trigger the long-term average follows the short one for
-            // the whole cooldown (12 s): a change that builds over several bars
-            // (a filter sweep into the drop) is one section, not two.
-            if ( m_secReanchor > 0 )
-            {
-                --m_secReanchor;
+                mean_db /= static_cast<float>( NB );
                 for ( int b = 0; b < NB; ++b )
-                    m_secSlow[b] = m_secFast[b];
-                m_secSlowLvl = m_secFastLvl;
-            }
+                    f[b] -= mean_db;                // the shape: loudness removed
+                f[NB] = 10.f * std::log10( total ); // the loudness
+                m_secAccN = 0;
+                m_secAccSecs = 0.f;
+                m_secRingPos = ( m_secRingPos + 1 ) % SecRingLen;
+                if ( m_secFrames < 1000000 )
+                    ++m_secFrames;
 
-            // Trigger: enough history for the averages to mean something
-            // (>= 8 s), music actually playing, not silence, novelty clearly
-            // above the music's own floor.  The cooldown keeps sections
-            // >= ~12 s apart (no verse is shorter).
-            if ( m_secWarm > 800 && m_secCooldown == 0 && m_sMusicPresence > 0.5f && sum > 1e-3f
-                 && m_secNovelty > sec_thr )
+                // The two windows: A the last SecA frames, B the SecB before them (mean and spread).
+                float nov = 0.f;
+                if ( m_secFrames >= SecRingLen )
+                {
+                    float mean_a[SecDims] = {}, mean_b[SecDims] = {}, sq_b[SecDims] = {};
+                    for ( int k = 0; k < SecRingLen; ++k )
+                    {
+                        const float *g = m_secRing[( m_secRingPos + k ) % SecRingLen]; // oldest first
+                        for ( int d = 0; d < SecDims; ++d )
+                        {
+                            if ( k >= SecB )
+                                mean_a[d] += g[d];
+                            else
+                            {
+                                mean_b[d] += g[d];
+                                sq_b[d] += g[d] * g[d];
+                            }
+                        }
+                    }
+                    float shape = 0.f, loud = 0.f;
+                    for ( int d = 0; d < SecDims; ++d )
+                    {
+                        mean_a[d] /= SecA;
+                        mean_b[d] /= SecB;
+                        const float sd = std::sqrt( std::max( sq_b[d] / SecB - mean_b[d] * mean_b[d], 0.f ) );
+                        const float z = ( mean_a[d] - mean_b[d] ) / ( sd + 1.f ); // dB, a floor of 1 dB of spread
+                        if ( d < NB )
+                            shape += z * z;
+                        else
+                            loud = std::fabs( z );
+                    }
+                    nov = std::sqrt( shape / NB ) + 0.5f * loud;
+                }
+                // Its median over the last minute, taken once a second.
+                m_secNovHist[m_secNovPos] = nov;
+                m_secNovPos = ( m_secNovPos + 1 ) % SecMedLen;
+                m_secNovN = std::min( m_secNovN + 1, SecMedLen );
+                if ( ++m_secMedTick >= 10 )
+                {
+                    m_secMedTick = 0;
+                    float tmp[SecMedLen];
+                    std::copy( m_secNovHist, m_secNovHist + m_secNovN, tmp );
+                    std::nth_element( tmp, tmp + m_secNovN / 2, tmp + m_secNovN );
+                    m_secNovMed = tmp[m_secNovN / 2];
+                }
+                m_secNovelty = nov / ( m_secNovMed + 1e-3f );
+                if ( m_secCooldown > 0 )
+                    --m_secCooldown;
+                // At least 12 s in, music playing and not silence; sections at least 12 s apart.
+                if ( m_secFrames >= 120 && m_secCooldown == 0 && m_sMusicPresence > 0.5f && sum > 1e-3f
+                     && m_secNovelty > m_secThr && nov > 1.f )
+                {
+                    m_secPending = true;
+                    m_secPendingDrops = m_dropCount;
+                    m_secCooldown = 120;
+                }
+            }
+            if ( trigger )
             {
                 ++m_sectionCount;
-                m_secCooldown = 1200;
-                // Re-anchor the long-term average fully onto the new section
-                // so the novelty tail dies out (no echo triggers) -- and keep
-                // doing so for the cooldown (above): at the trigger the 2.5 s
-                // average is only part of the way into the new section, and
-                // finishing that move re-raised the novelty, so a real change
-                // used to come as two triggers exactly one cooldown apart (8 of
-                // the 18 sections of a psytrance track).
-                for ( int b = 0; b < NB; ++b )
-                    m_secSlow[b] = m_secFast[b];
-                m_secSlowLvl = m_secFastLvl;
-                m_secReanchor = 1200;
 
                 // ---- Song-structure memory: recognise returning sections ----
                 // Match the ~1 s fingerprint against every stored section
@@ -2856,7 +2888,7 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
                                      "novelty %.3f over %.3f, t=%.1fs)\n",
                              m_sectionCount, m_secCurId,
                              ( best >= 0 && best_sim > 0.988f ) ? "known" : "new",
-                             best_sim, m_secNovelty, sec_thr, static_cast<float>( m_secWarm ) * 0.01f );
+                             best_sim, m_secNovelty, m_secThr, static_cast<float>( m_secWarm ) * 0.01f );
                 }
             }
         }
@@ -3430,9 +3462,8 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
     // density (faster hits), a RISING spectral centroid (the classic filter
     // sweep), a swelling level and snare rolls.  Each is measured as a fast
     // EMA pulling above a slow one (bias-corrected — zero-init lesson from
-    // the section detector).  DROP: while "armed" by a recent build-up, the
-    // bass drops far below its own average (the breakdown/gap) and then
-    // slams back — that re-entry moment is the drop.
+    // the section detector).  DROP: the bass back at its groove level after a
+    // breakdown, or after a short vacuum at a build-up's end (below).
     {
         float a_bias = 1.f / static_cast<float>( m_bldWarm + 1 );
         if ( m_bldWarm < 1000000 )
@@ -3460,118 +3491,116 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
         float b_speed = ( raw > m_sBuildUp ) ? 0.02f : 0.008f; // rise ~0.5 s, fall ~1.2 s
         m_sBuildUp += b_speed * ( raw - m_sBuildUp );
 
-        // ---- Drop state machine ----
-        // The vacuum test uses a FAST bass EMA (~0.15 s) against a slow one
-        // that is FROZEN during the gap; the re-entry test uses the current
-        // smoothed band energy (fast attack: a kick spikes it within a block
-        // or two).  The gap must last >= 250 ms so the inter-kick silence of
-        // a normal groove can never count as one.  NOTE: the LINEAR band RMS
-        // (m_sSubBass/m_sBass), NOT the dB-normalised 0..1 values — ratios
-        // like "1.5x the average" are meaningless after dB compression (and
-        // can even be unreachable, since dB-norm saturates at 1.0).
-        float bass_e = m_sSubBass + m_sBass;
-        m_bassFast += 0.065f * ( bass_e - m_bassFast ); // tau ~0.15 s
-        bool vacuum = ( m_dropArmed > 0.f )
-                      && ( m_bassFast < 0.35f * m_bassSlow );
-        if ( !vacuum )                                      // freeze the slow
-            m_bassSlow += 0.002f * ( bass_e - m_bassSlow ); // avg in the gap
-        // Arming needs the slow EMAs settled (>= ~12 s after start): a fresh
-        // energetic track otherwise reads as a "build-up" while the 10 s
-        // averages are still climbing toward its steady state.
-        // Arming at 0.45 instead of 0.60: a deliberately strong synthetic
-        // build-up (level +60 %, hats to 32nds, riser, kick doubling, snare
-        // roll) peaks at 0.50-0.53 on this feature, so 0.60 armed nothing and
-        // no drop was ever detected.  The vacuum + bass-slam tests behind the
-        // arming are what keep a false drop rare; the arming only opens the
-        // window.
-        // Not before 30 s (22.10.2026): in an intro the bass comes and goes
-        // against a slow average that has not seen a groove yet, and every
-        // entry reads as a slam -- 7 of the 18 false drops the analyser made on
-        // the generators' 43 demos with score cues (Tools/analyser_vs_cues.py)
-        // fell between 12 and 24 s, inside the intro.  The earliest real drop
-        // there lands at 66 s, on the real tracks at 41 s.
-        if ( m_sBuildUp > 0.45f && m_bldWarm > 3000 )
-            m_dropArmed = 800.f; // ~8 s arming
-        if ( m_dropArmed > 0.f )
-            m_dropArmed -= 1.f;
-        if ( vacuum )
+        // ---- Drop: the bass back at its groove level (22.10.2026) ----
+        // A drop is the moment the bass comes back to the level it had in the groove: after a breakdown, or after
+        // the short vacuum at a build-up's end.  The two paths before it (the bass slamming back to 1.45 x a slow
+        // average that froze in the gap, and the level mix coming back after >= 6 s under its 8-s mean) were
+        // measured against the generators' 43 demos with score cues (Tools/analyser_vs_cues.py) and seven real
+        // tracks labelled by their bass envelope.  They found 6 of the 30 cue drops and none of the 8 real ones,
+        // with 19 false drops: the level path fired where a break ENDED -- at the build-up after it, or as the
+        // music thinned toward the break -- and the slam path wanted a build-up the breakbeat demos never measure.
+        // What a drop is, in the numbers: the bass back by 20-48 dB within a tenth of a second, to its groove
+        // level (the loudest 2-s bass of the last 45 s), after 30-75 dB of gap.
+        //
+        //   A  after a gap -- the bass 30 dB under the groove for >= 6 s (a breakdown, often with the build-up
+        //      inside it: the gap counts until the bass is back in full);
+        //   B  after a vacuum -- the bass 45 dB under the groove for >= 0.25 s while a build-up is armed (the
+        //      beats struck out right before the drop, the build-up itself running with the bass).
+        //
+        // Both end on the same frame: the fast bass (tau 60 ms) within 3 dB of the groove level, so the hit lands
+        // 40-100 ms after the drop.  Prototyped in Python on the same 32 bands (the scratch scripts of the round):
+        // 16 of the 30 cue drops on the beat (+-0.3 s; the other 14 have no bass return -- a cinematic climax, a
+        // ritual groove's peak) with 12 false, 10 of the 11 real and synthetic ones with 2 false, none in four
+        // ambient pieces.  Not before 30 s (the intro's first bass reads as a return); at most one every 8 s.
         {
-            m_lowGapBlocks += 1.f;
-            // Long breakdowns must not disarm mid-gap: hold the arming alive
-            // while the vacuum persists.
-            m_dropArmed = std::max( m_dropArmed, 200.f );
-        }
-        else if ( m_bassFast > 0.6f * m_bassSlow ) // hysteresis: the
-            m_lowGapBlocks = 0.f;                  // gap is truly over
-        if ( m_dropCooldown > 0 )
-            --m_dropCooldown;
-        if ( m_dropCooldown == 0 && m_dropArmed > 0.f && m_lowGapBlocks >= 25.f && // >= 250 ms of gap
-             bass_e > 1.45f * m_bassSlow &&                                        // bass slams back
-             ( m_onsetEnvGrp[0] > 0.25f || bass_e > 2.0f * m_bassSlow ) )
-        {
-            m_dropPulse = 1.f;
-            ++m_dropCount;
-            m_dropCooldown = 800; // >= 8 s apart
-            m_dropArmed = 0.f;
-            m_lowGapBlocks = 0.f;
-            fprintf( stderr, "DROP #%d (buildup %.2f, bass %.2fx, t=%.1fs)\n",
-                     m_dropCount, m_sBuildUp, bass_e / ( m_bassSlow + 1e-5f ),
-                     m_bldWarm * 0.01f );
+            // In seconds, not blocks: a 480-sample block is 10.9 ms at 44.1 kHz, and the 6.2-s gap before a drop of
+            // a 44.1-kHz track counted as 5.7 s.
+            const float block = static_cast<float>( numFrames ) / static_cast<float>( std::max( sampleRate, 1 ) );
+            const float a_fast = 1.f - std::exp( -block / 0.06f );
+            const float a_slow = 1.f - std::exp( -block / 2.f );
+            m_dropBassFast += a_fast * ( m_dropBassP - m_dropBassFast );
+            m_dropBassSlow += a_slow * ( m_dropBassP - m_dropBassSlow );
+            const float fast_db = 10.f * std::log10( m_dropBassFast + 1e-12f );
+            const float slow_db = 10.f * std::log10( m_dropBassSlow + 1e-12f );
+            // The groove level: the loudest 2-s bass of the last 45 s, kept as the maxima of 90 half-second slots.
+            if ( m_dropSlotSecs == 0.f )
+                m_dropSlots[m_dropSlot] = slow_db;
+            else
+                m_dropSlots[m_dropSlot] = std::max( m_dropSlots[m_dropSlot], slow_db );
+            m_dropSlotSecs += block;
+            if ( m_dropSlotSecs >= 0.5f )
+            {
+                m_dropSlotSecs = 0.f;
+                m_dropSlot = ( m_dropSlot + 1 ) % DropSlots;
+                m_dropSlots[m_dropSlot] = -300.f;
+            }
+            float groove = -300.f;
+            for ( int i = 0; i < DropSlots; ++i )
+                groove = std::max( groove, m_dropSlots[i] );
+
+            const bool warm = m_bldWarm > 3000;
+            if ( m_sBuildUp > 0.45f && warm )
+                m_dropArmed = 800.f; // ~8 s
+            if ( m_dropArmed > 0.f )
+                m_dropArmed -= 1.f;
+            const bool back = fast_db > groove - 3.f;
+            bool       after_gap = false, after_vacuum = false;
+            if ( !m_dropInGap )
+            {
+                if ( fast_db < groove - 30.f )
+                {
+                    m_dropInGap = true;
+                    m_dropGapSecs = 0.f;
+                }
+            }
+            else
+            {
+                m_dropGapSecs += block;
+                if ( back )
+                {
+                    m_dropInGap = false;
+                    after_gap = m_dropGapSecs >= 6.f;
+                }
+            }
+            if ( !m_dropInVacuum )
+            {
+                if ( fast_db < groove - 45.f && m_dropArmed > 0.f )
+                {
+                    m_dropInVacuum = true;
+                    m_dropVacuumSecs = 0.f;
+                }
+            }
+            else
+            {
+                m_dropVacuumSecs += block;
+                m_dropArmed = std::max( m_dropArmed, 200.f ); // a vacuum keeps the arming alive
+                if ( back )
+                {
+                    m_dropInVacuum = false;
+                    after_vacuum = m_dropVacuumSecs >= 0.25f;
+                }
+            }
+            if ( m_dropCooldown > 0 )
+                --m_dropCooldown;
+            if ( ( after_gap || after_vacuum ) && warm && m_dropCooldown == 0 )
+            {
+                m_dropPulse = 1.f;
+                ++m_dropCount;
+                m_dropCooldown = 800; // >= 8 s apart
+                m_dropArmed = 0.f;
+                m_secCooldown = std::max( m_secCooldown, 120 ); // the drop is the section change: none for 12 s
+                fprintf( stderr, "DROP #%d (bass back to %.1f dB of the groove after %s %.1f s, t=%.1fs)\n",
+                         m_dropCount, fast_db - groove, after_gap ? "a gap of" : "a vacuum of",
+                         after_gap ? m_dropGapSecs : m_dropVacuumSecs, m_bldWarm * 0.01f );
+            }
         }
         m_dropPulse *= 0.985f; // ~1.5 s tail
-
-        // ---- Second path: RETURN after a breakdown ----
-        // The vacuum test above wants the bass gone for >= 250 ms and back
-        // at 1.45x its average -- a synthetic drop.  Real tracks (psytrance,
-        // rock, pop alike) break down for 6-30 s with the bass often still
-        // running, and the slow bass average adapts inside the gap, so the
-        // slam never reads as 1.45x.  On three real tracks the vacuum path
-        // fired ZERO times while a plain envelope-jump reference found the
-        // returns at 222/289/302 s (DMT), 36/162/289 s (Thunderstruck).
-        // This path is that reference: the level mix sits >= 0.10 under its
-        // 8-s mean for >= 6 s, then comes back to within 0.05 of where it
-        // was before -- that return IS the drop, and it anchors the phrase.
-        // Differences, not ratios: `level` is the dB-normalised 0..1 mix.
-        {
-            m_brkFast += 0.01f * ( level - m_brkFast );    // tau ~1 s
-            m_brkSlow += 0.00125f * ( level - m_brkSlow ); // tau ~8 s
-            if ( !m_inBreak && m_bldWarm > 1200 && m_brkFast < m_brkSlow - 0.10f )
-            {
-                m_inBreak = true;
-                m_brkBlocks = 0;
-                m_brkPre = m_brkSlow;
-                m_brkMin = m_brkFast;
-            }
-            else if ( m_inBreak )
-            {
-                ++m_brkBlocks;
-                m_brkMin = std::min( m_brkMin, m_brkFast );
-                const bool back = m_brkFast > m_brkMin + 0.12f && m_brkFast > m_brkPre - 0.05f;
-                if ( back && m_brkBlocks >= 600 ) // >= 6 s of breakdown
-                {
-                    if ( m_dropCooldown == 0 )
-                    {
-                        m_dropPulse = 1.f;
-                        ++m_dropCount;
-                        m_dropCooldown = 800;
-                        fprintf( stderr, "DROP #%d (return after %.1f s breakdown, level %.2f -> %.2f, t=%.1fs)"
-                                         "\n",
-                                 m_dropCount, m_brkBlocks * 0.01f, m_brkMin, m_brkFast, m_bldWarm * 0.01f );
-                    }
-                    m_inBreak = false;
-                }
-                else if ( back ) // too short: a fill, not a breakdown
-                    m_inBreak = false;
-                else if ( m_brkBlocks > 6000 ) // 60 s: that is a new section, not a break
-                    m_inBreak = false;
-            }
-        }
     }
 
     // ========================================================================
     // DJ-STOP detection: the WHOLE spectrum collapses for 0.1..3 s in running
     // beat music, then slams back.  (The drop detector above watches only the
-    // BASS and needs a build-up; a stop is sudden total silence, no build-up.)
+    // BASS; a stop is sudden total silence of everything, no build-up.)
     // While the stop runs the host freezes the motion (breakHold); the return
     // fires breakSlam (a camera hit + audioDrop pulse for the shaders).
     // ========================================================================

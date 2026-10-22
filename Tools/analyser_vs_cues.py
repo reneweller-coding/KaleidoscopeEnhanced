@@ -3,6 +3,7 @@
 
     python Tools/analyser_vs_cues.py                      # every <name>.cues.tsv + <name>.wav under G:/Tools/VRAudio
     python Tools/analyser_vs_cues.py DIR_OR_CUES_FILE ... # those
+    python Tools/analyser_vs_cues.py @set.txt             # the cue files listed in set.txt (a frozen set)
     python Tools/analyser_vs_cues.py --detail ...         # one line per track as well
 
 The generators of the family (Phosphene, Parhelion, Totality, Skybreak, Nacreous, Ephemeris, Analemma, ...) write the
@@ -16,6 +17,7 @@ every 50 ms; a copy as 16-bit PCM in .screen/cuebench first, which the reader ne
             from 6 s before to 2 s after it
   drops     a cue drop is found if the analyser drops from 2 s before to 4 s after it; an analyser drop is invented if
             no cue drop lies from 4 s before to 2 s after it
+  either    what the scene changes follow: a cue boundary met by a section or a drop, as for sections
 
 found / invented per kind of section (a break, a build, a drop ...) and in total.  Nothing is changed; the numbers are
 the baseline any change to AudioAnalyzer's section or drop detection is measured against.
@@ -39,7 +41,9 @@ def find_pairs(args):
     """(cue file, wav) pairs under the directories or cue files given."""
     files = []
     for a in args or [DEFAULT]:
-        if os.path.isdir(a):
+        if a.startswith("@"):                      # a list file: one cue file per line (a frozen benchmark set)
+            files += [l.strip() for l in io.open(a[1:], encoding="utf-8") if l.strip()]
+        elif os.path.isdir(a):
             files += glob.glob(os.path.join(a, "**", "*.cues.tsv"), recursive=True)
         else:
             files.append(a)
@@ -102,7 +106,8 @@ def main():
     if not pairs:
         sys.exit("analyser_vs_cues: no <name>.cues.tsv beside a <name>.wav")
     kinds = {}
-    tot = dict(sec_cues=0, sec_found=0, sec_ana=0, sec_inv=0, drop_cues=0, drop_found=0, drop_ana=0, drop_inv=0)
+    tot = dict(sec_cues=0, sec_found=0, sec_ana=0, sec_inv=0, drop_cues=0, drop_found=0, drop_ana=0, drop_inv=0,
+               any_found=0, any_ana=0, any_inv=0)
     for cues_path, wav in pairs:
         sections, drops = read_cues(cues_path)
         a_secs, a_drops, length = analyse(wav)
@@ -112,13 +117,18 @@ def main():
         inv = [a for a in a_secs if not near(a, [t for t, _ in sections], 6.0, 2.0)]
         d_found = [t for t in drops if near(t, a_drops, 2.0, 4.0)]
         d_inv = [a for a in a_drops if not near(a, drops, 4.0, 2.0)]
+        # what the scheduler cuts on: a section or a drop, against every cue boundary (a drop is one too)
+        a_any = sorted(a_secs + [d for d in a_drops if d >= WARM])
+        any_found = [(t, k) for t, k in bounds if near(t, a_any, 2.0, 6.0)]
+        any_inv = [a for a in a_any if not near(a, [t for t, _ in sections] + drops, 6.0, 2.0)]
         for t, k in bounds:
             kk = kinds.setdefault(k, [0, 0])
             kk[0] += 1
             kk[1] += 1 if (t, k) in found else 0
         for key, v in (("sec_cues", len(bounds)), ("sec_found", len(found)), ("sec_ana", len(a_secs)),
                        ("sec_inv", len(inv)), ("drop_cues", len(drops)), ("drop_found", len(d_found)),
-                       ("drop_ana", len(a_drops)), ("drop_inv", len(d_inv))):
+                       ("drop_ana", len(a_drops)), ("drop_inv", len(d_inv)), ("any_found", len(any_found)),
+                       ("any_ana", len(a_any)), ("any_inv", len(any_inv))):
             tot[key] += v
         if detail:
             name = os.path.relpath(cues_path, os.path.commonpath([p[0] for p in pairs]) if len(pairs) > 1
@@ -134,6 +144,9 @@ def main():
     print("drops:    %d of %d cue drops found (%.0f %%); %d of the analyser's %d invented (%.0f %%)"
           % (tot["drop_found"], tot["drop_cues"], pct(tot["drop_found"], tot["drop_cues"]), tot["drop_inv"],
              tot["drop_ana"], pct(tot["drop_inv"], tot["drop_ana"])))
+    print("either:   %d of %d cue boundaries met by a section or a drop (%.0f %%); %d of %d invented (%.0f %%)"
+          % (tot["any_found"], tot["sec_cues"], pct(tot["any_found"], tot["sec_cues"]), tot["any_inv"],
+             tot["any_ana"], pct(tot["any_inv"], tot["any_ana"])))
     print("found by the kind of section the cue names:")
     for k, (n, f) in sorted(kinds.items(), key=lambda kv: -kv[1][0]):
         print("  %-10s %3d of %3d  (%.0f %%)" % (k, f, n, pct(f, n)))
