@@ -7147,3 +7147,13 @@ costs).
   the river flashed with every kick. It now follows the envelope (0.08 a step, about half a second) and is no longer
   flagged. Its GPU time was kept from the first run: measured again while the snapshots ran beside it, it read 2.14
   instead of 0.83 ms -- timings need a quiet machine.
+
+**The snapshots.** `scene_snapshots.py render 2026-10-22-base400 --jobs 3` took three resumed runs (each under the
+background shell's 30 minutes): 2030 frames, one per entry. Six scenes failed where a run was cut off and were
+rendered again by the next one. Against the set of 17.10 (`2026-10-17-base200`,
+rendered at 20:57): 1630 compared, 31 changed, 400 new, none gone, 22 black as before (0 newly black), 5 unstable.
+- That set was rendered one minute before 1695f199, when a comparison run still froze every scene's own field
+  after its seed step. Nine of the 31 are such state scenes, now stepped.
+- BakerHorseshoeFold, a tenth state scene, also has the swell clock of section 51.
+- The rest are simulations that evolved a little differently (GalaxyCollision, PhysarumGalaxy, Murmuration) or
+  differences of single pixels; side by side none is worse.

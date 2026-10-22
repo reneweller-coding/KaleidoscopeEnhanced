@@ -5,6 +5,47 @@ unterscheiden** und die Anforderungen an gute Szenen erfüllen, also **im oberen
 Diesmal steht am Anfang eine Auswertung der eigenen Bewertungen: Was bisher hoch bewertet wurde, gibt die Richtung
 vor.
 
+## Stand der Umsetzung (22.10.2026)
+
+Alle 400 Ideen sind gebaut, Familie für Familie, je ein Commit. Die Einzelheiten je Familie stehen in
+docs/engine-internals.md, Abschnitte "22.10.2026 (43)" bis "(58)".
+
+| Familie | Szenen | Commit |
+|---|---|---|
+| A. Neonflüge durch endlose Räume | 25 | 23857972 |
+| B. Lichtfraktale | 25 | b810740c |
+| C. Echte Spiegeloptik | 25 | 2deb200e |
+| D. Foto-Kaleidoskope mit Tiefe | 25 | 1c20a551 |
+| E. Lichtshows und abstrakter Film | 25 | 1638769f |
+| F. Lichtspuren und leuchtende Linien | 25 | 5d4aff4a |
+| G. Leuchtende Teilchen in Tiefe | 25 | a30bffec |
+| H. Glas und Licht | 25 | b642bf48 |
+| I. Leuchtendes Leben, abstrahiert | 25 | 59352290 |
+| J. Symmetrie, die atmet | 25 | 7e5b63af |
+| K. Plasma, Feld und Entladung | 25 | c674e25c |
+| L. Farbe als Raum | 20 | eeafe4db |
+| M. Musik als Lichtarchitektur | 20 | bddf2fa7 |
+| N. Tunnel und Portale neuer Bauart | 35 | 1d484902, a190ac66 |
+| Q. Aus den alten Listen übernommen | 50 | f35f4c92 |
+
+Jede Szene ist registriert, gegen alte Zeilen bewertet (`Tools/preset_fit.tsv`) und in den Genre-Presets.
+shadercheck, Erschütterungsscan und Doxygen sind ohne Fehler und ohne Warnungen.
+
+Abschluss (Einzelheiten in Abschnitt 58):
+
+- **Katalog** (d4d799ea): 1815 Szenen, 5723 Bilder, PDF 736 Seiten. Die Bilder zeigten zwei Fehler, beide behoben:
+  CornerCubeTunnel (Auge in der Kugel) und sechs onset-Szenen, die bei ruhiger Musik fast schwarz blieben.
+- **Bewertungen** (837cdda0): alle 400 nach Ankerbögen alter Szenen neu bewertet. Interest im Mittel 4,78, wie bei
+  den 200 vom 17.10. (4,82). Kein Genre verliert mehr als 46 alte Szenen, und jede nur an eine besser bewertete neue.
+- **Messung** (ed78cd5e): GPU-Zeit im Median 0,77 ms bei 1080p. VoronoiEdgeFoam (11,4 → 5,7 ms) und LightCoralIFS
+  (6,2 → 3,3 ms) wurden billiger. Die Unruhe ist gemessen, der Szenenplan hat keine Verstöße.
+- **Schnappschüsse:** neuer Satz `2026-10-22-base400` mit 2030 Bildern, eines je Eintrag (sechs Szenen fielen an den
+  Zeitgrenzen der ersten beiden Teilläufe aus und wurden neu gerendert). Gegen den Satz vom 17.10.: 31 alte Szenen verändert,
+  keine neu schwarz, 5 Bilder instabil. Neun der 31 sind Zustandsszenen, deren Feld in Vergleichsläufen seit dem 17.10.
+  abends weiterläuft (1695f199). BakerHorseshoeFold ist ebenfalls eine und hat dazu die neue Swell-Uhr. Der Rest sind
+  Simulationen, die sich etwas anders entwickeln, oder Unterschiede einzelner Pixel. Keine sichtbare Verschlechterung.
+- **BassRiverOfLight** (690a7d06) blitzte mit jedem Kick und folgt jetzt der Hüllkurve.
+
 ## Was bei uns hoch bewertet ist
 
 Grundlage sind die Schauwert-Noten (`interest`) aller 1414 bewerteten Szenen in `Tools/preset_fit.tsv`
