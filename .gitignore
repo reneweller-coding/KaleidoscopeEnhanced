@@ -62,6 +62,7 @@ Tools/catalog_batch.log
 Docs/Catalog/rendered/
 Presets/_catalog.xml
 Presets/_verify.xml
+Presets/_snap*.xml
 
 # Szenen-Katalog: PDF ist generiert (Katalog.md + img/ sind die Quelle)
 Docs/Catalog/Katalog.pdf
