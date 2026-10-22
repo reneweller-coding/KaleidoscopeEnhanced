@@ -7055,3 +7055,48 @@ otherwise draw zigzags, and the sway is let go toward the far end.
 
 **Soap films need bands.** A film's light only as a mix of two tones read as a flat disc. The interference phase
 must also modulate the brightness, `(0.5 + 0.5 cos(phase))^2`, so the swirling bands show.
+
+## 22.10.2026 (57): taken over from the old lists (400 list, family Q)
+
+Fifty scenes of family Q: unbuilt abstract ideas from the lists of 29 and 30 September -- mostly photo scenes (lamps,
+gobos, mosaics, gems, marbles, amber, agate), light art (Lumia, Ganzfeld, Soto, gels, coloured shadows) and a few
+living fields (Lenia, differential growth).
+
+**Lenia in a field of its own, measured first.** TextureLeniaHabitat's first version sampled the shell kernel at 3
+radii x 16 directions and produced crumbs and a labyrinth instead of creatures. The rule was rebuilt in numpy
+(scratchpad lenia_tune.py, the shader's bilinear samples splatted into a kernel) and swept.
+- The creatures' size follows the kernel's radius: median part size 5 cells at R 9, 34 at R 13, 61 at R 15 (dense
+  kernel).
+- Too few samples break the creatures into crumbs: 6 x 32 gave a median of 3, 8 x 40 about the dense kernel's size.
+- The scene now samples 8 radii x 40 directions at R 13 to 16, with growth centres 0.14 to 0.15 and widths 0.014 to
+  0.017. The photo's brightness scales the positive growth (food).
+- Now and then a creature is planted on an empty place, chosen by stRandStep, so the habitat never dies out.
+
+**Gray-Scott with the five-point Laplacian.** Karl Sims' coral parameters (Du 1, Dv 0.5, dt 1) belong to his 3 x 3
+kernel (centre -1, sides 0.2, corners 0.05).
+- With stLap (n + s + e + w - 4c) the same pattern needs about Du 0.21 and Dv 0.105.
+- Explicit steps stay stable only while D dt < 0.25.
+- The growth is fast enough at 240 steps a second. The cap on steps per frame follows the field's size (4M / cells),
+  so a 320 x 180 field may take 64.
+
+**More names GLSL refuses.** `patch` is a keyword, and `round` and `cross` are built-in functions; as variable names
+they fail or shadow (in addition to `half`, `layout`, `out`, `step`).
+
+**Photo coordinates must not wrap inside a shape.** `imgLod(fract(uv))` cut a paper lamp in two where uv passed 1;
+imgLod mirrors at the edges by itself, so the coordinates stay unwrapped.
+
+**Soft photos have no veins.** LiquidGold looked for places brighter than their surroundings and found none in a
+blurred photo. A fine ridged noise of its own joins the photo's veins.
+
+**Fog banks in atmospheric order.** In a parallax of banks the far ones stand higher (nearer the horizon) and paler;
+built the other way round, the nearest bank covered everything.
+
+**Lumia creases need a surface.** A twisted ribbon gathers light only at one place along it, which reads as a spot.
+A surface of two slow waves inside each veil, lit by how steeply it stands, gives the long creases of Wilfred's
+Lumia.
+
+**Strokes, rings and gates need a start.** LightBrushStrokes3D starts its slots with strokes already painted in the
+past, as RubatoStretchTunnel and SmokeRingGates did in family N.
+
+**The second photo.** TexturePortalRings, TextureTidalExchange and TextureVeinReveal use imgB, the photo before the
+current one, gliding over when the photos change.
