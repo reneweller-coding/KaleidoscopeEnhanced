@@ -504,7 +504,9 @@ vec2 tMirrorLine(vec2 uv, vec2 c, float a)
 }
 
 // The {p,q} reflection folding inside the unit disk (shared by the disk and
-// the band model).
+// the band model).  The wedge fold is the identity inside the wedge; until
+// 22.10.2026 it turned the wedge over (an -> a - an), a mirror at its bisector
+// that is no mirror of the tiling, and the tiles' edges broke apart.
 vec2 poincareFold(vec2 z, float p, float q)
 {
     float a = 3.14159265 / p;
@@ -513,7 +515,7 @@ vec2 poincareFold(vec2 z, float p, float q)
     vec2 cc = vec2(R * cq / sa, 0.0);
     for (int i = 0; i < 14; ++i) {
         float an = atan(z.y, z.x);
-        an = abs(mod(an, 2.0 * a) - a);                         // mirror into the wedge [0, pi/p]
+        an = a - abs(mod(an, 2.0 * a) - a);                     // mirror into the wedge [0, pi/p]
         z = length(z) * vec2(cos(an), sin(an));
         vec2 d = z - cc;
         float dd = dot(d, d);

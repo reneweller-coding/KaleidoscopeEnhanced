@@ -20,7 +20,7 @@ vec2 poincareFold(vec2 z, float p, float q)
     vec2 cc = vec2(R * cq / sa, 0.0);
     for (int i = 0; i < 14; ++i) {
         float an = atan(z.y, z.x);
-        an = abs(mod(an, 2.0 * a) - a);                         // mirror into the wedge [0, pi/p]
+        an = a - abs(mod(an, 2.0 * a) - a);                     // mirror into the wedge [0, pi/p] (fixed 22.10.2026)
         z = length(z) * vec2(cos(an), sin(an));
         vec2 d = z - cc;
         float dd = dot(d, d);
