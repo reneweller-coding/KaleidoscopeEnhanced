@@ -6558,3 +6558,42 @@ edges.
   for now; changing it changes the scenes that already use it.
 - **The fractal tree turned the wrong way:** rot2(a) turns by -a, so the branch tilted inward and the tree folded
   onto itself, and the picture was black. A Python port of the distance found it (minimum 0.36 instead of 0).
+
+## 22.10.2026 (45): real mirror optics (400 list, family C)
+
+Twenty-five scenes of family C. These kaleidoscopes and mirror rooms are worked out as optics, not as a fold of
+the screen.
+- **Folding a view ray back:**
+  - Triangle kaleidoscopes (ObjectCell, OilCell, KaleidoCylinderBrass, TriangularPrismKaleido) reflect the point
+    across whichever side it lies beyond and count the bounces. Every bounce costs a tenth of the light, and the
+    mirrors' meeting lines are fine dark seams.
+  - FourMirrorCorridor folds the landing point on the tube's end plane. All the images lie in that plane, as in a
+    real square tube.
+  - HexMirrorHive walks back to the centre cell across each wall it crosses. Six mirrors round a hexagon form no
+    closed mirror group, so the walks disagree at seams, as they do in a real tube.
+- **Polyhedral groups:** TaperedMirrorSphere folds the view direction into one spherical triangle of the
+  tetrahedral, octahedral or icosahedral group. Its chambers are x >= y >= |z|, x >= y >= z >= 0, and x, y >= 0 with
+  the plane (-0.809, -0.5, 0.309); 15 000 random directions converge.
+  - The first version computed all three wall sides once per round and then reflected. After the first reflection
+    the other two were stale, and half the screen stayed black. Each side is now measured right before its
+    reflection.
+- **Two mirrors at any angle:** TwoMirrorAngleSweep counts images anticlockwise from one mirror and clockwise from
+  the other. Behind the hinge the two meet, and unless the angle divides the circle, they overlap there as ghosts.
+  The old sector count jumped whenever 2 pi / a passed a whole number.
+- **Corners and rooms:**
+  - CornerCubeTunnel traces in the unfolded space (abs of the coordinates) and counts sign flips.
+  - InfinityCubeRoom unfolds a mirror cube into a lattice of cubes. The bounces are the sum of the cell's offsets.
+  - MirrorBallInterior reflects the view at facets on a latitude-longitude grid, each facet tilted by its own small
+    angle.
+- **Surfaces:**
+  - LiquidMirrorPool reflects off a quicksilver height field (Fresnel 0.7 + 0.3 (1 - cos)^5) up to a photo
+    kaleidoscope.
+  - CausticMirrorCeiling shows 1 / |det(I + 2 H Hess h)| straight from the waves' second derivatives.
+  - PolarizerStackRoom uses sin^2(2 phi) sin^2(pi Gamma / lambda) for three wavelengths, but keeps only the
+    brightness and a small shift of shade, so the colours stay in the family.
+  - BeamSplitterLattice uses binomial random-walk shares, C(i + j, j) / 2^(i + j), through Stirling.
+- **Panoramas without a seam:** a photo read round the full circle by longitude has a seam at +-pi. CornerCube,
+  MirrorBallInterior, ConvexMirrorArray and MagicLanternSlides read |angle| / pi, mirrored, instead.
+- **Shake scan:** MirrorScaleField first ran its tilt waves on audioBeatPhase, with the reflection shifted by up to
+  a screen unit. That moves the whole picture on the beat, and the scan flagged it. The waves now run on the
+  integrated drive, with a third of the shift.
