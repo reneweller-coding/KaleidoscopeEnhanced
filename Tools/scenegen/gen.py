@@ -217,6 +217,54 @@ vec3 imgB(vec2 uv, float lod)
 }
 """
 
+# The scene's colour family (22.10.2026): one wandering hue from the photo and its neighbours, instead of a different
+# colour for every cell -- the list of 22.10. asks for "not too colourful" (docs/proposals-2026-10-22-abstrakt-400.md,
+# guideline 9).  Appended for sources that call famHue(.
+FAMILY_LIB = r"""
+// ---- the scene's colour family ----
+/**  The hue the scene is built on: the photo's broad colour at a slowly wandering place; where the photo is grey,
+ * the hue knob.  It glides with the photos' cross-fade and never jumps.
+ *
+ * @return
+ *   The hue in turns, 0..1.
+ **/
+float famHue()
+{
+    vec3 b = imgLod(vec2(0.5) + 0.28 * vec2(cos(0.009 * sceneTime + 0.013 * audioAdvance), sin(0.007 * sceneTime)), 7.0);
+    float k = smoothstep(0.06, 0.22, satOf(b));
+    vec2 v = mix(vec2(cos(hueP), sin(hueP)), vec2(cos(6.2831853 * hue_of(b)), sin(6.2831853 * hue_of(b))), k);
+    return fract(atan(v.y, v.x) / 6.2831853 + 1.0);
+}
+
+/**  A colour of the family: t walks the neighbouring hues (a tenth of the circle around the base), at a fixed
+ * saturation and full value.
+ *
+ * @param h  The family's hue (famHue()). (in)
+ * @param t  Where in the family, 0..1. (in)
+ *
+ * @return
+ *   The colour.
+ **/
+vec3 famCol(float h, float t)
+{
+    return hsv2rgb(vec3(fract(h + 0.1 * (t - 0.5)), 0.7, 1.0));
+}
+
+/**  A family colour lifted toward warm white light: the highlights and cores of glowing things.
+ *
+ * @param h  The family's hue. (in)
+ * @param t  Where in the family, 0..1. (in)
+ * @param w  How far toward warm white, 0..1. (in)
+ *
+ * @return
+ *   The colour.
+ **/
+vec3 famLight(float h, float t, float w)
+{
+    return mix(famCol(h, t), vec3(1.0, 0.93, 0.82), clamp(w, 0.0, 1.0));
+}
+"""
+
 # Scenes with a field of their own (//@state W H RATE [32], EffectShader::stepState): the step's helpers.
 STATE_LIB = r"""
 // ---- the scene's own field (state pass) ----
@@ -2221,6 +2269,8 @@ def assemble(name):
     out.append(LIB)
     if re.search(r"\bimgB\s*\(", src):
         out.append(PHOTOB_LIB)
+    if re.search(r"\bfamHue\s*\(", src):
+        out.append(FAMILY_LIB)
     if st:
         out.append(STATE_LIB)
     if re.search(r"vec2\s+chain\s*\(", body):

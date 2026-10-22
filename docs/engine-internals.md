@@ -6471,3 +6471,48 @@ Komplett stays the hidden master. A saved `activeConfig` that names a retired pr
 preset, Allround, with the usual "not found" line.
 
 check_schedule.py --quick: 20 plans (10 presets, silence and the structure track), no violations.
+
+## 22.10.2026 (43): neon flights through endless spaces (400 list, family A)
+
+Twenty-five scenes of family A of docs/proposals-2026-10-22-abstrakt-400.md. All of them gather glow along the ray,
+like the nine-point flights, but with motifs the collection did not have.
+- **One colour family (the list's rule 9):** gen.py has a new FAMILY_LIB with famHue(), famCol(h, t) and
+  famLight(h, t, w). famHue() takes the hue of a slowly wandering, broad patch of the photo; when the photo is
+  grey it falls back to hueP. famCol() keeps every shade within +-0.05 of that hue, and famLight() mixes it toward
+  warm white. Lattice places and depths choose a shade, never a hue of their own.
+- **Morphing between shapes crossfades the light, not the distance.** Blending two distance fields
+  (a (2,3) and a (3,5) knot, a cuboctahedron and an icosidodecahedron) gives a curve between them that is near
+  neither, and in the middle of the blend the picture went black. TrefoilKnotCorridor, NestedPlatonicGlow,
+  ZoetropeRingCorridor, ArchimedeanCageLights, RuledSurfaceStrings and LightThreadWeave3D now glow
+  (1 - m) g_A + m g_B and step by min(d_A, d_B).
+- **Lattices askew to the flight:** a camera flying along a plane between lattice cells sees the empty gap edge-on
+  as a dark band. LemniscateLightLoops, StellatedStarFlight, ConicSectionDance and RuledSurfaceStrings turn the
+  lattice by a fixed rotation (SKEW) against the flight. Cells are also stepped no further than their wall.
+- **Folding onto one edge:** the dodecahedron, its stellations and the icosidodecahedron are folded by the
+  icosahedral mirrors (six rounds of abs(xy) and a reflection; checked on 20 000 random points). After that half of
+  one edge is left: (0, 0, phi)-(1/phi, 0, phi) for the dodecahedron, the spike from the face tip to the corner
+  (1/phi, 0, phi), and (0, 0, phi)-(0.405, 0.25, 1.464) for the icosidodecahedron. The cuboctahedron sorts
+  x >= y >= z >= 0 and keeps (1, 1, 0)-(1, 0.5, 0.5). The opening cages trim that half edge from the corner end.
+- **Lattices:**
+  - NeonTrussNave: the octet truss folds into [0, 0.5]^3, with six bars. The eye glides along the face diagonal
+    at (0.5, 0, 0.175), the widest free line (clearance 0.175 cells, found numerically).
+  - SpinNetworkGlow: the nearest diamond node is the nearest point of two face-centred lattices, rounded as D3
+    (Conway-Sloane). The packets run from the first lattice's nodes to the second's. The eye flies down the
+    (1, 1, 0) channel at (0.5, 0, 0.125), with clearance 0.286.
+  - FresnelSphereLattice: the same D3 rounding, with rays passing through every sphere so the rims glow.
+- **HilbertConduit3D:** Skilling's transposed Gray code turns the index into the cell and back. Checked in Python
+  for order 4: 4096 cells, every step adjacent, the inverse exact. The curve ends at (15, 0, 0), so blocks set
+  along x join into one endless line. The ride is a cubic B-spline through the cell centres. Sections crossfade
+  to the order-3 curve.
+- **PhyllotaxisSphereNest:** Keinert's inverse spherical Fibonacci mapping finds the nearest point on every shell a
+  ray meets. The shells have radii exp(0.36 (e + u)), so the sinking is self-similar. A harmony-driven twist
+  phi + beta z makes the spirals lean.
+- **StarNestKaliFlight:** Kali's fold p <- |p| / (p.p) - c, with light where the magnitude barely changes between
+  steps. Four fixed probe rays measure how bright the current stretch is and lift sparse stretches, so the flight
+  does not run into black.
+- **Melody as a shape:** AuroraRibbonVolume reads eight triangle-smoothed ages of audioMelody[96] into two vec4s, not
+  a float array (NVIDIA array trap). The curtains' hems follow that curve, mirrored so it has no seam.
+- **Music never moves far things fast:** a term like twist(audio) * z, with z the world depth, would spin the far
+  field. Twists and tilts are bounded waves (TwistedFiberRope, TetrahelixStrands) or are laid out per cell
+  (ConicSectionDance). TorusKnotInterior keeps the path near the eye fixed and reshapes only the bends ahead, so
+  the view never turns on the music.
