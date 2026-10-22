@@ -6516,3 +6516,45 @@ like the nine-point flights, but with motifs the collection did not have.
   field. Twists and tilts are bounded waves (TwistedFiberRope, TetrahelixStrands) or are laid out per cell
   (ConicSectionDance). TorusKnotInterior keeps the path near the eye fixed and reshapes only the bends ahead, so
   the view never turns on the music.
+
+## 22.10.2026 (44): fractals of light (400 list, family B)
+
+Twenty-five scenes of family B. These fractals are not lit bodies: they are drawn as glowing density, orbits or
+edges.
+- **Densities gathered in the state field.** BuddhabrotNebulaFlight, IFSFlameVolume and AttractorLightRibbons need
+  points scattered onto the screen, which a fragment shader cannot write. They gather instead: every step each
+  state cell counts the points of a fresh orbit that fall near it, adds that to its faded old value, and the
+  frame reads the field. All cells see the same orbit, because its random numbers come from stRandStep().
+  - BuddhabrotNebulaFlight draws its sixteen parameters per step near the Mandelbrot rim, on the cardioid and the
+    period-2 bulb, where the orbits are long. The escape time is the depth, so the nebula is three-dimensional.
+    Three exposures give three shades.
+  - IFSFlameVolume: three 3D affine maps, each blended with the sinusoidal, spherical and swirl variations. Every
+    point carries the flame's colour coordinate.
+  - AttractorLightRibbons keeps 384 particles in the field's two bottom rows: where each one is now and where it
+    was one step ago. All other cells gather the segments between the two places, so the ribbons are
+    continuous. When a section changes the attractor, each particle's display scale eases toward the new one
+    and nothing jumps. Halvorsen particles seeded at radius 6 escaped, so seeds now start at radius 1.5.
+- **Exact self-similar zooms that wrap:**
+  - SierpinskiDustSpace zooms about a corner by a factor of two, while the next level's dust fades in.
+  - QuasiFractalGlowTiles zooms by phi^4. Numerically, the Robinson-triangle configuration round the centre
+    repeats after four splits with no turn; after two it is turned by 36 degrees.
+  - HyperbolicLightLace streams by twice the distance to an edge's middle. For even p this translation is a
+    symmetry of the tiling.
+  - GoldenSpiralNebula works in log-polar coordinates. There the sinking is a shift, and the dust grains stay
+    round because the map is conformal. The grain divides a full turn, so the angle closes without a seam.
+- **Escape and survival counts as light:**
+  - HenonOrbitDust uses backward Henon steps, which run away from everything but the attractor.
+  - ChaosGameLight pulls a point back toward its nearest corner. The jump ratio
+    1 / (2 (1 + sum of cos(2 pi k / n))) makes the copies just touch. A point near the fractal survives about
+    eight pulls more than its neighbours, so the light is smoothstep(1.5, 9, count).
+  - NewtonBasinLight uses the steps until a root is reached.
+- **Distance estimates as thin glow:** KleinianLightNecklace (Jos Leys' Maskit algorithm with the derivative
+  carried), TricornGlowFilaments (the Burning Ship's antenna and the Tricorn's left spike; their views were picked
+  numerically for filament cover), ApollonianGlowWeb, PickoverStalksField and RecursiveCircleInversion (the
+  inversions' stretch carried).
+- **poincareFold in gen.py is not idempotent.** Its abs(mod(an, 2a) - a) maps [0, a] onto itself reversed, so each
+  round mirrors the point across a/2, and that is no mirror of the tiling. A numpy render showed broken edges.
+  HyperbolicLightLace uses a - abs(mod(an, 2a) - a), which draws a clean {4,5}. The shared helper is left as it was
+  for now; changing it changes the scenes that already use it.
+- **The fractal tree turned the wrong way:** rot2(a) turns by -a, so the branch tilted inward and the tree folded
+  onto itself, and the picture was black. A Python port of the distance found it (minimum 0.36 instead of 0).
