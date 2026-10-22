@@ -34,7 +34,7 @@ void main()
     float c = 0.5 + 0.5 * cos(swing * (view + 0.4 * twist) * 3.14159265);
     float flip = 0.5 - 0.5 * cos(3.14159265 * max(audioHarmAdvance, 0.0));
     c = mix(c, 1.0 - c, flip);
-    vec3 tA = famLight(fh, 0.4, 0.5), tB = famLight(fh + 3.14159265, 0.4, 0.5);
+    vec3 tA = famLight(fh, 0.4, 0.5), tB = famLight(fract(fh + 0.5), 0.4, 0.5);         // the complement (hues in turns)
     vec3 film = mix(tA, tB, smoothstep(0.15, 0.85, c));
     float px = M / (6.2831853 * r * resolution.y);
     float seam = exp(-pow((0.5 - abs(fract(s) - 0.5)) / (1.2 * px + 0.02), 2.0));

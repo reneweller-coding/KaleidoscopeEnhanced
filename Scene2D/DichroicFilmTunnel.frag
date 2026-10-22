@@ -44,8 +44,8 @@ uniform float audioHarmAdvance; ///< The harmony's advance: ~1 more with every c
                                 ///< back).
 uniform float audioSwell;       ///< Slow loudness envelope, 0..1 (seconds).
 
-uniform float stripP; ///< Strip knob: strips around.
-uniform float shiftP; ///< Shift knob: how fast the colour swings with the angle.
+uniform float stripP; ///< Strip knob: strips around, 0..1.
+uniform float shiftP; ///< Shift knob: how fast the colour swings with the angle, 0..1.
 uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 // ---- shared building blocks (texture pool, noise, shapes) ----
@@ -570,7 +570,8 @@ void main()
     float       c = 0.5 + 0.5 * cos( swing * ( view + 0.4 * twist ) * 3.14159265 );
     float       flip = 0.5 - 0.5 * cos( 3.14159265 * max( audioHarmAdvance, 0.0 ) );
     c = mix( c, 1.0 - c, flip );
-    vec3  t_a = famLight( fh, 0.4, 0.5 ), t_b = famLight( fh + 3.14159265, 0.4, 0.5 );
+    vec3 t_a = famLight( fh, 0.4, 0.5 ), t_b = famLight( fract( fh + 0.5 ), 0.4, 0.5 ); // the complement (hues in
+                                                                                        // turns)
     vec3  film = mix( t_a, t_b, smoothstep( 0.15, 0.85, c ) );
     float px = M / ( 6.2831853 * r * resolution.y );
     float seam = exp( -pow( ( 0.5 - abs( fract( s ) - 0.5 ) ) / ( 1.2 * px + 0.02 ), 2.0 ) );

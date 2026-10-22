@@ -615,7 +615,7 @@ void main()
     float play = 0.03 * sceneTime + 0.35 * audioPhase;
     float hs = hash21( bid );
     float flash = pow( 0.5 + 0.5 * cos( 6.2831853 * ( hs + 1.5 * view ) + 3.0 * play + 6.0 * hs ), 6.0 );
-    vec3  fcol = famLight( fh + 0.6 * ( hash21( bid + 5.0 ) - 0.5 ), 0.3 + 0.5 * hs, 0.7 );
+    vec3  fcol = famLight( fract( fh + 0.12 * ( hash21( bid + 5.0 ) - 0.5 ) ), 0.3 + 0.5 * hs, 0.7 );
     // a flake's own stripes of colour, shifting with the angle (the harlequin look)
     float sa = 6.2831853 * hash21( bid + 9.0 );
     flash *= 0.35
