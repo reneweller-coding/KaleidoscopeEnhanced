@@ -250,6 +250,9 @@ public:
     /** Forgets the file and the clock (used by the self test). */
     void reset();
 
+    /** Starts the file over: every cue goes in again as the clock reaches it (the scene plan run loops its WAV). */
+    void rewind() { m_next = 0; }
+
 private:
     ScoreCueFile() {}
 

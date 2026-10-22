@@ -7201,3 +7201,63 @@ a blue family (CompassNeedleField, CoronaBeadWires, MeasureRingTunnel ...), clea
 192 of the lifted scenes and 322 old ones that the ranks moved by one step each (the restlessness is measured
 relative to the brightness). `check_schedule --quick`: no violations. The catalogue PDF needed a fresh Chrome profile
 again; the one from the afternoon had gone bad.
+
+## 22.10.2026 (60): the calm genres change slowly and flowing
+
+The user asked again that the transitions in the calm presets not come suddenly, but slowly and flowing. The scene
+plan run on the 128-BPM structure track showed where the time went:
+
+- With a beat in the music, every scene fade of a calm preset sat on its floor: 5.0 s in the median in Ambient,
+  4 s in Downtempo. The four-beat clamp is shorter, so the floor wins every time.
+- The FX overlays had no floor at all. A section trigger forced them like a key press (0.8 s), and a natural overlay
+  change with a beat took four beats (1.7-1.9 s). Ambient swapped FxPlain for FxWater in under two seconds.
+
+**Fade floors.** `SCENE_FADE_MIN` in `Tools/make_genre_configs.py` rises for the three slowest genres: Ambient
+5 -> 8 s, SpaceAmbient 6 -> 10 s, Downtempo 4 -> 6 s (Cinematic stays at 6 s). `SceneScheduler::tickFx` applies the
+preset's floor to the overlays too. A musical trigger there now waits for 20 s of overlay solo and then fades as a
+natural change, as the scenes have done since 16.10. A person's cut stays a cut.
+
+**Soft transitions.** Some transitions stay abrupt at any length. The calm genres (`SOFT_GENRES`) now drop them, by
+measurement and by look:
+
+- *Measured* -- `Tools/transition_profile.tsv` holds the `PresetEditor --transprofile` sweep of all 110 (new in the
+  repository; the generator refuses to run when a transition is missing from it). Out goes a transition that:
+  - does 80 % of its change in under 45 % of the fade (Luminance 25 %, SpinodalDecomposition, LatentDenoiseArrival,
+    WaveFunctionCollapseTiles);
+  - flashes more than 30 above both ends (PolaroidDevelopSquare 44);
+  - flickers on its own clock above 1.0 (PenroseMorph 1.3);
+  - puts more than a tenth of its change into one step.
+- *By look* -- mid-transition frames of all 110 (d = 0.4) gave two new preset-only tags in Komplett.xml, which the
+  runtime ignores:
+  - `wipe` (18): a geometric front sweeping across -- blinds, doors, iris, clock, page, the straight light-edge
+    sweeps;
+  - `blocky` (16): tiles, pixels, stripes, shards and glitch.
+
+  Ambient, SpaceAmbient and Downtempo drop both. Cinematic keeps the wipes, since the iris and the wipe are film's
+  own, and drops only the blocks. Soft fronts with an organic edge (the aurora curtain, sand ripple, Schlieren
+  shimmer) stay.
+
+Ambient and SpaceAmbient keep 29 of 43 transitions, Downtempo 35 of 57, Cinematic 30 of 35. The fast genres are
+unchanged.
+
+**The plan run, again** (`check_schedule --quick`, 20 plans, no violations):
+
+| | scene fade p10 / median | overlay fade p10 / median, before -> after |
+|---|---|---|
+| Ambient | 8.0 / 8.0 s | 0.8 / 1.8 -> 8.0 / 8.0 s |
+| SpaceAmbient | 10.0 / 10.0 s | 0.8 / 1.7 -> 10.0 / 10.0 s |
+| Downtempo | 6.0 / 6.0 s | 0.8 / 1.7 -> 6.0 / 6.0 s |
+
+The plan now records why each overlay changed and how long its fade was planned. `check_schedule.py` adds the rule
+`fxfloor`: in a calm preset, a natural overlay fade lasts at least the floor, and a musical trigger comes only after
+20 s and never as a cut.
+
+**Two things found on the way.**
+
+- *Overlay changes from the music depended on parity.* "Every second section changes the overlay" was tested on the
+  section number. The sections held for a drop's run-up count too, and in the structure track every fresh section
+  fell on an odd number: in six hours of Club, not one overlay change came from the music. The scheduler now counts
+  the fresh sections itself (`m_freshSections`).
+- *The plan run takes cue files.* `Kaleidoscope.exe --schedule ... --cues track.cues.tsv` (and `check_schedule.py
+  --cues`) hand a generator's score cues to the scheduler on the WAV's clock, again with every loop
+  (`ScoreCueFile::rewind()`), as `-k` does for a render. Section 61 uses it.

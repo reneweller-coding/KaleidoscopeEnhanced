@@ -5,6 +5,7 @@
     python Tools/check_schedule.py Club,Ambient 24        # presets, hours of silence (music: half of it)
     python Tools/check_schedule.py --quick                # 6 h + 6 h (release_check's step "schedule")
     python Tools/check_schedule.py --audio song.wav Club  # this 16-bit WAV as the music, looped
+    python Tools/check_schedule.py --audio song.wav --cues song.cues.tsv Club   # ... steered by its score cues
     python Tools/check_schedule.py --tsv plan.tsv         # check a plan written before
 
 Kaleidoscope.exe --schedule (Source/ScheduleSim.h) runs SceneScheduler on a virtual clock -- the conditioner, the
@@ -25,6 +26,8 @@ which makes drops, sections and phrases; silence runs on the solo times alone.  
   floor    every natural fade (timer; a musical trigger in a calm preset) at least max(timeSceneFadeMin, the
            transition's minFade); a calm preset never cuts (no "music" or "drop" change) and no fade there ends
            sooner than timeSceneFadeMin
+  fxfloor  the same for the overlay (combine) fades of a calm preset: a natural one at least timeSceneFadeMin, a
+           musical trigger only after 20 s and as a natural change, never a cut
 
 Exit code 1 on any violation.  Each run's TSV stays in .screen/schedule/ for a look.
 """
@@ -45,11 +48,12 @@ GENRES = ("Ambient", "Downtempo", "SpaceAmbient", "Cinematic", "Club", "Electron
 STRUCTURE = os.path.join(ROOT, ".screen", "structure128.wav")
 
 
-def schedule(preset, audio, hours, out):
-    """Kaleidoscope.exe --schedule; returns its summary line."""
+def schedule(preset, audio, hours, out, cues=None):
+    """Kaleidoscope.exe --schedule (with the WAV's score cues, if given); returns its summary line."""
     env = dict(os.environ)
     env["PATH"] = QT_BIN + os.pathsep + env.get("PATH", "")
-    p = subprocess.run([EXE, "--schedule", preset, audio, "%g" % hours, out], cwd=os.path.dirname(EXE), env=env,
+    extra = ["--cues", cues] if cues and audio != "silence" else []
+    p = subprocess.run([EXE, "--schedule", preset, audio, "%g" % hours, out] + extra, cwd=os.path.dirname(EXE), env=env,
                        capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=3600)
     if p.returncode != 0:
         raise RuntimeError("--schedule %s %s: rc %d\n%s" % (preset, audio, p.returncode, p.stderr[-800:]))
@@ -182,6 +186,22 @@ def check(path):
         if calm and fade < fade_min - 2 * frame:
             bad["floor"].append("%s: the fade ended after %.2f s, timeSceneFadeMin %.0f s" % (at, fade, fade_min))
 
+    # fxfloor: the overlay fades of a calm preset (a plan written before 22.10.2026 has no "why" for them)
+    for r in rows:
+        if r["kind"] != "fx" or r["why"] == "-" or not calm:
+            continue
+        why = r["why"]
+        at = "%s -> %s at %.0f s" % (r["scene"], r["next"], float(r["start"]))
+        if why == "music":
+            bad["fxfloor"].append("%s: a cut in a calm preset" % at)
+        if why == "music-calm" and float(r["solo"]) < 20.0 - frame:
+            bad["fxfloor"].append("%s: a trigger after %.2f s, before 20 s" % (at, float(r["solo"])))
+        if why in ("timer", "music-calm") and float(r["fade_planned"]) < fade_min - 1e-3:
+            bad["fxfloor"].append("%s: fade %.2f s, floor %.2f s" % (at, float(r["fade_planned"]), fade_min))
+        if why != "manual" and float(r["fade"]) < fade_min - 2 * frame:
+            bad["fxfloor"].append("%s: the fade ended after %.2f s, timeSceneFadeMin %.0f s" % (at, float(r["fade"]),
+                                                                                                 fade_min))
+
     share = lab_secs / all_secs if all_secs else 0.0
     if share_want > 0 and hours >= 6 and abs(share - share_want) > 0.03:
         bad["share"].append("labs %.1f %% of the screen time, asked %.0f %%" % (100 * share, 100 * share_want))
@@ -199,7 +219,7 @@ def check(path):
 def main():
     opts, args, it = sys.argv[1:], [], iter(sys.argv[1:])
     for a in it:
-        if a in ("--audio", "--tsv"):
+        if a in ("--audio", "--tsv", "--cues"):
             next(it, None)                                   # its value is not a preset
         elif not a.startswith("--"):
             args.append(a)
@@ -218,13 +238,16 @@ def main():
                 os.makedirs(os.path.dirname(music), exist_ok=True)
                 subprocess.run([sys.executable, os.path.join(ROOT, "Tools", "make_structure_wav.py"), music],
                                check=True, cwd=ROOT, stdout=subprocess.DEVNULL)
+        cues = os.path.abspath(opts[opts.index("--cues") + 1]) if "--cues" in opts else None
         os.makedirs(OUTDIR, exist_ok=True)
         plans = []
         for p in presets:
             for audio, h in (("silence", hours), (music, music_hours)):
                 tag = "silence" if audio == "silence" else os.path.splitext(os.path.basename(audio))[0]
+                if cues and audio != "silence":
+                    tag += "_cues"
                 out = os.path.join(OUTDIR, "%s_%s.tsv" % (p, tag))
-                schedule(p, audio, h, out)
+                schedule(p, audio, h, out, cues)
                 plans.append(out)
     failed = 0
     for path in plans:

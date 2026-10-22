@@ -90,11 +90,16 @@ TIMING = {
 # 120 BPM), which is right for a club preset and wrong for a calm one: the
 # user found transitions "very, very fast" in Ambient and SpaceAmbient
 # (14.09.2026). A preset with a floor also never hard-cuts on a drop.
+# Raised for the slowest genres on 22.10.2026 ("slowly and flowing", user):
+# Ambient 5 -> 8, SpaceAmbient 6 -> 10, Downtempo 4 -> 6 -- with a beat in the
+# music every fade there sat on the floor (the scene plan run on the 128-BPM
+# structure track: median 5.0 s in Ambient).  The floor holds for the FX
+# overlays too (SceneScheduler::tickFx), which faded in four beats before.
 SCENE_FADE_MIN = {
-    "Ambient": 5,
-    "SpaceAmbient": 6,
+    "Ambient": 8,
+    "SpaceAmbient": 10,
     "Cinematic": 6,
-    "Downtempo": 4,
+    "Downtempo": 6,
 }
 
 # (name, scene rule, hidden [, FX/transition rule])
@@ -246,6 +251,50 @@ for _genre, _variants in LAB_FLAVOURS.items():
 # preset without either would break the 90%-Plain calibration (or fall back
 # to the engine's built-in warning path).
 ALWAYS = {"FxPlain", "Crossfade"}
+
+# ---- Soft transitions in the calm genres (22.10.2026) -----------------------
+# "With Ambient the transitions should not come suddenly but slowly and
+# flowing" (user, 22.10.2026).  The fade floors (SCENE_FADE_MIN) make every
+# fade long; these rules take out what stays abrupt at any length.  Measured
+# (Tools/transition_profile.tsv, PresetEditor --transprofile): a transition
+# that does 80 % of its change in less than SOFT_CORE of the fade (Luminance:
+# a quarter), one that flashes brighter than both ends by more than SOFT_FLASH
+# (PolaroidDevelopSquare: 44), one whose own clock flickers more than
+# SOFT_FLICK (PenroseMorph: 1.3), one with a single step over SOFT_PEAK of its
+# change.  Judged on the mid-transition frames of all 110 (d = 0.4): the
+# preset-only tags in Komplett.xml, `wipe` (a geometric front sweeping
+# across: blinds, doors, iris, clock, page) and `blocky` (tiles, pixels,
+# stripes, shards, glitch).  Cinematic keeps the wipes -- the iris and the
+# wipe are film's own -- and drops the blocks.
+SOFT_GENRES = {"Ambient": {"wipe", "blocky"}, "SpaceAmbient": {"wipe", "blocky"}, "Downtempo": {"wipe", "blocky"},
+               "Cinematic": {"blocky"}}
+SOFT_CORE, SOFT_FLASH, SOFT_FLICK, SOFT_PEAK = 0.45, 30.0, 1.0, 0.10
+PROFILE_FILE = "Tools/transition_profile.tsv"
+
+def load_profile():
+    """The measured transition profile: {name: {core, peak, flick, flash}}."""
+    prof = {}
+    for line in open(PROFILE_FILE, encoding="utf-8"):
+        p = line.rstrip("\n").split("\t")
+        if line.startswith("#") or p[0] == "name" or len(p) < 6:
+            continue
+        prof[p[0]] = {"core": float(p[2]), "peak": float(p[3]), "flick": float(p[4]), "flash": float(p[5])}
+    return prof
+
+PROFILE = load_profile()
+_unmeasured = sorted(b[1] for b in trans if b[1] not in PROFILE)
+if _unmeasured:
+    sys.exit("make_genre_configs: %s not in %s -- measure it (PresetEditor --transprofile)"
+             % (", ".join(_unmeasured), PROFILE_FILE))
+
+def soft_enough(genre, b):
+    """Whether a transition may run in a genre: always outside SOFT_GENRES, else by the tags and the profile."""
+    tags = SOFT_GENRES.get(genre)
+    if tags is None or b[1] in ALWAYS:
+        return True
+    m = PROFILE[b[1]]
+    return (not (b[2] & tags) and m["core"] >= SOFT_CORE and m["flash"] <= SOFT_FLASH and m["flick"] <= SOFT_FLICK
+            and m["peak"] <= SOFT_PEAK)
 
 # ---- Scene choice by rated fit (29.09.2026) -------------------------------
 # The mood rules alone left Club with 372 scenes, Psychedelic with 331 and
@@ -411,7 +460,7 @@ for entry in GENRES:
     if labs:
         sel_s = [b for b in sel_s if b[1] not in CHAIN_LABS] + labs
     sel_f = [b for b in fx    if fxRule(b[2], b[4]) or b[1] in ALWAYS]
-    sel_t = [b for b in trans if fxRule(b[2], b[4]) or b[1] in ALWAYS]
+    sel_t = [b for b in trans if (fxRule(b[2], b[4]) or b[1] in ALWAYS) and soft_enough(name, b)]
     hid = ' hidden="true"' if hidden else ""
     tim = ""
     if name in TIMING:

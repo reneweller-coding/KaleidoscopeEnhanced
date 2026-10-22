@@ -244,6 +244,7 @@ void SceneScheduler::forceFx( int idx )
         return;
     m_forcedNextFx = idx;
     m_forceFxChange = true;
+    m_forceFxIsManual = true;
 }
 
 /**  Tells whether a combine/FX shader is "calm" enough to run over a loaded mesh model.
@@ -757,8 +758,12 @@ void SceneScheduler::tick( const Tick &t )
                 // must not surface at the next fade-end.
                 m_pendingSectionNext = -1;
                 m_pendingSectionNextId = -1;
-                if ( ( t.sectionCount & 1 ) == 0 )
-                    m_forceFxChange = true; // bigger scenery change
+                // Every second fresh section changes the overlay too (a bigger scenery change).  Counted here, not
+                // by the section number: the sections held for a drop's run-up or answered by a fade count as well,
+                // and in the structure track every fresh one fell on an odd number -- in six hours of Club not one
+                // overlay change came from the music (the scene plan run, 22.10.2026).
+                if ( ( ++m_freshSections & 1 ) == 0 )
+                    m_forceFxChange = true;
             }
             if ( !mid_fade )
                 m_forceEffectChange = true;
@@ -834,6 +839,7 @@ void SceneScheduler::tick( const Tick &t )
         m_forceEffectChange = false;
         m_forceIsManual = false;
         m_forceFxChange = false;
+        m_forceFxIsManual = false;
         m_dropCutPending = false;
         // A pending section store/restore must not attach to some LATER,
         // unrelated switch after unpinning - drop it.
@@ -1235,15 +1241,29 @@ void SceneScheduler::tickFx( const Tick &t, bool trueStereoHold )
 
         float ts = secsSince( m_clockEffectFx );
         bool  forced_c = m_forceFxChange;
+        // In a calm preset a musical trigger changes the overlay as it changes
+        // the scene: after a real stay (20 s), as a natural change with the
+        // preset's fade floor.  As a forced change it took the 0.8 s cut of a
+        // key press, and with a beat the natural fade was four beats: Ambient
+        // swapped FxPlain for FxWater in 0.8-1.9 s (the scene plan run on the
+        // 128-BPM structure track, 22.10.2026).
+        const bool  calm_trigger = forced_c && !m_forceFxIsManual && m_sceneFadeMin > 0.f;
+        const float min_stay = calm_trigger ? 20.f : 0.6f;
         // The true-stereo hold freezes combine switching: an eye-packed 3D
         // frame must not enter a combine cross-fade (the pending change fires
         // as soon as the hold lifts).
         if ( !trueStereoHold
-             && ( ts > m_fxFadeDur || ( forced_c && ts > 0.6f ) ) )
+             && ( ts > m_fxFadeDur || ( forced_c && ts > min_stay ) ) )
         {
+            if ( !m_pendingFxChange || forced_c )
+                m_fxChangeWhy = !forced_c || ( calm_trigger && ts > m_fxFadeDur ) ? "timer"
+                                : m_forceFxIsManual                               ? "manual"
+                                : calm_trigger                                    ? "music-calm"
+                                                                                  : "music";
             m_forceFxChange = false;
+            m_forceFxIsManual = false;
             m_pendingFxChange = true;
-            m_pendingFxForced = m_pendingFxForced || forced_c;
+            m_pendingFxForced = m_pendingFxForced || ( forced_c && !calm_trigger );
         }
 
         // Beat-quantised, like the texture-effect change (manual cuts fire
@@ -1274,6 +1294,9 @@ void SceneScheduler::tickFx( const Tick &t, bool trueStereoHold )
                     }
                     cfg_t *= 1.f - 0.35f * t.logAttackTime;
                     m_fxFadeDur = forced_go ? 0.8f : cfg_t;
+                    // A calm preset's fade floor holds for the overlay too.
+                    if ( !forced_go )
+                        m_fxFadeDur = fmaxf( m_fxFadeDur, m_sceneFadeMin );
                 }
 
                 comb[m_nextFx]->startInterpolators();

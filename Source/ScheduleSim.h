@@ -6,7 +6,7 @@
  *  @brief
  *  Kaleidoscope.exe --schedule: the scene plan of a long run, computed by the real scheduler without a window.
  *
- *      Kaleidoscope.exe --schedule <preset> <audio.wav|silence> <hours> <out.tsv> [--fps N]
+ *      Kaleidoscope.exe --schedule <preset> <audio.wav|silence> <hours> <out.tsv> [--fps N] [--cues file]
  *
  *  Tools/long_run_sim.py modelled the scheduler in Python ("a model, not the app": no music, no complexity budget),
  *  and every change to SceneScheduler had to be repeated there by hand.  This run takes the code itself: it loads
@@ -14,7 +14,8 @@
  *  RenderPipeline::simulateFrame() -- the mood, the timing scale, the AudioConditioner, SceneScheduler::tick() and
  *  tickFx(), the chain labs' walk decision -- on the virtual EngineClock at 60 frames a second, from the analysis of
  *  a 16-bit WAV (looped; every loop counts as the same song played again) or of silence.  A day of silence takes
- *  some seconds.
+ *  some seconds.  `--cues` adds the generator's score cues for the WAV (the app's -k; CueReceiver.h), handed over on
+ *  the WAV's clock and again with every loop.
  *
  *  The output is one line per completed change -- scene fades and combine fades -- with the reason, the planned and
  *  the actual times and the transition; the head lists the entries with their ranges.  Tools/check_schedule.py
@@ -34,7 +35,8 @@
 /**  Runs the scene plan (see the file comment) and writes its TSV.
  *
  * @param argc  Number of arguments after "--schedule". (in)
- * @param argv  The arguments after "--schedule": preset, audio, hours, output file, optionally --fps N. (in)
+ * @param argv  The arguments after "--schedule": preset, audio, hours, output file, optionally --fps N and
+ *              --cues file. (in)
  *
  * @return
  *   0 done, 2 on a usage error or an unreadable preset or audio file.  Needs a QCoreApplication.

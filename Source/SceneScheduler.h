@@ -199,7 +199,10 @@ public:
         m_forceEffectChange = true;
         m_forceIsManual = true;
         if ( alsoFx )
+        {
             m_forceFxChange = true;
+            m_forceFxIsManual = true;
+        }
     }
     /** A natural scene change on the next tick: the change a section or a drop asks for, not a person's cut (in a
      * calm preset it waits for a real stay and fades with the preset's fade floor).  A new song's.
@@ -409,6 +412,19 @@ public:
      *   Seconds.
      **/
     float texFadeDur() const { return m_texFadeDur; }
+    /**  The combine slot's running fade length (meaningful while fxState() != 0).
+     *
+     * @return
+     *   Seconds.
+     **/
+    float fxFadeDur() const { return m_fxFadeDur; }
+    /**  Why the last combine (overlay) change came.
+     *
+     * @return
+     *   "timer", "music" (a section trigger), "music-calm" (such a trigger in a calm preset, taken as a natural
+     *   change after 20 s), "manual" or "start" -- as changeWhy() for the scene.
+     **/
+    const char *fxChangeWhy() const { return m_fxChangeWhy; }
     /**  Why the last scene change came.
      *
      * @return
@@ -577,8 +593,12 @@ private:
     bool m_forceIsManual = false; ///< The pending m_forceEffectChange came from requestChange()/forceScene() (short min
                                   ///< solo), not from a musical trigger.
     bool m_forceFxChange = false; ///< Set by requestChange(alsoFx)/triggers; consumed at the next FX Solo-phase check.
-    int  m_forcedNextTexture = -1; ///< Remote direct-jump target index (-1 = none); wins over review mode and random
-                                   ///< pick.
+    bool m_forceFxIsManual = false;            ///< The pending m_forceFxChange came from a person (requestChange(true),
+                                               ///< forceFx()), not from a musical trigger.
+    const char *m_fxChangeWhy = "start";       ///< fxChangeWhy(): why the last combine change came.
+    unsigned    m_freshSections = 0; ///< Sections that rolled a fresh look; every second one changes the overlay.
+    int m_forcedNextTexture = -1;    ///< Remote direct-jump target index (-1 = none); wins over review mode and random
+                                     ///< pick.
     bool        m_pendingEffectChange = false; ///< True while an effect change is due but waiting on beat quantisation.
     const char *m_changeWhy = "start";         ///< changeWhy(): why the last scene change came.
     bool        m_changeOnPhrase = false;      ///< changeOnPhrase(): the last change waited for the phrase.

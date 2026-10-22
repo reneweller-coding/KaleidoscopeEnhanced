@@ -17,6 +17,7 @@
 #include "PlatformQt.h"
 #include "RenderPipeline.h"
 #include "SceneScheduler.h"
+#include "ScoreCues.h"
 #include "coreclock.h"
 
 #include <QCoreApplication>
@@ -121,7 +122,7 @@ struct Fade
     unsigned    out = 0;          ///< Entry going out.
     unsigned    in = 0;           ///< Entry coming in.
     double      solo = 0.0;       ///< How long the outgoing entry stood alone before it.
-    const char *why = "-";        ///< SceneScheduler::changeWhy() (scenes only).
+    const char *why = "-";        ///< SceneScheduler::changeWhy() (fxChangeWhy() for a combine).
     bool        phrase = false;   ///< SceneScheduler::changeOnPhrase() (scenes only).
     float       hold = 0.f;       ///< SceneScheduler::changeHold() (scenes only).
     float       phraseLeft = 0.f; ///< Seconds to the 8-bar boundary when it started.
@@ -145,15 +146,18 @@ struct Solo
 
 int runScheduleSim( int argc, char **argv )
 {
-    double fps = 60.0;
+    double  fps = 60.0;
+    QString cues;
     for ( int i = 4; i + 1 < argc; ++i )
         if ( strcmp( argv[i], "--fps" ) == 0 )
             fps = atof( argv[i + 1] );
+        else if ( strcmp( argv[i], "--cues" ) == 0 )
+            cues = QString::fromLocal8Bit( argv[i + 1] );
     const double hours = argc >= 4 ? atof( argv[2] ) : 0.0;
     if ( argc < 4 || hours <= 0.0 || fps < 10.0 )
     {
         fprintf( stderr, "usage: Kaleidoscope.exe --schedule <preset> <audio.wav|silence> <hours> <out.tsv> "
-                         "[--fps N]\n" );
+                         "[--fps N] [--cues file]\n" );
         return 2;
     }
     const QString preset = QString::fromLocal8Bit( argv[0] );
@@ -189,6 +193,14 @@ int runScheduleSim( int argc, char **argv )
         fprintf( stderr, "schedule: no audio from %s (a 16-bit PCM WAV, or \"silence\")\n", qPrintable( audio ) );
         return 2;
     }
+    // ---- the generator's score cues (-k in the app): on the WAV's own clock, again with every loop
+    if ( !cues.isEmpty() && ( !song || ScoreCueFile::instance().load( cues ) < 0 ) )
+    {
+        fprintf( stderr, "schedule: the cues %s need a song and a readable cue file\n", qPrintable( cues ) );
+        return 2;
+    }
+    const double song_secs = static_cast<double>( blocks.size() ) * block_secs;
+    double       cue_clock = -1.0;
 
     // ---- the preset, on the virtual clock from the first moment
     EngineClock::startVirtual();
@@ -215,10 +227,12 @@ int runScheduleSim( int argc, char **argv )
         fprintf( stderr, "schedule: cannot write %s\n", argv[3] );
         return 2;
     }
-    fprintf( out, "# schedule\tpreset=%s\tfile=%s\taudio=%s\thours=%g\tfps=%g\tseed=%u\tsceneFadeMin=%g\tlabShare=%g\n",
+    fprintf( out,
+             "# schedule\tpreset=%s\tfile=%s\taudio=%s\thours=%g\tfps=%g\tseed=%u\tsceneFadeMin=%g\tlabShare=%g\t"
+             "cues=%s\n",
              qPrintable( cfg->getConfigurationName() ), qPrintable( QFileInfo( file ).fileName() ),
              song ? qPrintable( QFileInfo( audio ).fileName() ) : "silence", hours, fps, seed, s.sceneFadeMin(),
-             s.labShare() );
+             s.labShare(), cues.isEmpty() ? "-" : qPrintable( QFileInfo( cues ).fileName() ) );
     for ( unsigned i = 0; i < tex.size(); ++i )
         fprintf( out, "# entry\t%u\t%s\t%u\t%u\t%d\t%d\n", i, fileOf( tex[i]->fragmentName() ).c_str(),
                  tex[i]->minTimeSolo(), tex[i]->maxTimeSolo(), s.isLab( i ) ? 1 : 0, tex[i]->interest() );
@@ -241,6 +255,14 @@ int runScheduleSim( int argc, char **argv )
     {
         const double t = static_cast<double>( k ) / fps;
         EngineClock::setVirtualSeconds( t );
+        if ( !cues.isEmpty() )
+        {
+            const double c = std::fmod( t, song_secs );
+            if ( c < cue_clock )
+                ScoreCueFile::instance().rewind(); // the song starts over, and so do its cues
+            cue_clock = c;
+            ScoreCueFile::instance().setClock( c );
+        }
         const SceneScheduler::Tick tick = rp->simulateFrame( audioAt( blocks, block_secs, song, t ), dt );
         const float bpm = tick.rhythmStrength > 0.55f && tick.estimatedBPM > 0.004f ? 40.f + 160.f * tick.estimatedBPM
                                                                                     : 0.f;
@@ -285,13 +307,15 @@ int runScheduleSim( int argc, char **argv )
             fx_fade.out = s.actFx();
             fx_fade.in = s.nextFx();
             fx_fade.solo = t - fx_solo.since;
+            fx_fade.why = s.fxChangeWhy();
+            fx_fade.planned = s.fxFadeDur();
         }
         else if ( fx_state != 0 && s.fxState() == 0 && fx_fade.start >= 0.0 )
         {
-            fprintf( out, "fx\t%.3f\t%s\t%s\t-\t0\t-\t-\t%.3f\t-\t0\t-\t%.3f\t-\t%.1f\t%.2f\t-\t-\n", fx_fade.start,
-                     fileOf( fx[fx_fade.out]->fragmentName() ).c_str(),
-                     fileOf( fx[fx_fade.in]->fragmentName() ).c_str(), fx_fade.solo, t - fx_fade.start, bpm,
-                     tick.rhythmStrength );
+            fprintf( out, "fx\t%.3f\t%s\t%s\t%s\t0\t-\t-\t%.3f\t-\t0\t%.3f\t%.3f\t-\t%.1f\t%.2f\t-\t-\n",
+                     fx_fade.start, fileOf( fx[fx_fade.out]->fragmentName() ).c_str(),
+                     fileOf( fx[fx_fade.in]->fragmentName() ).c_str(), fx_fade.why, fx_fade.solo, fx_fade.planned,
+                     t - fx_fade.start, bpm, tick.rhythmStrength );
             ++combines;
             fx_fade.start = -1.0;
             fx_solo.since = t;

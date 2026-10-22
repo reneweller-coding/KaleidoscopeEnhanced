@@ -3451,19 +3451,19 @@
   <TransitionShader file="..\Transitions\KaleidoFold.frag" type="normal" minFade="5.5" mood="psychedelic,bright" probability="0.1" complexity="1"></TransitionShader>
   <TransitionShader file="..\Transitions\ZoomThrough.frag" type="normal" minFade="3" mood="aggressive,bright" probability="0.12" complexity="1"></TransitionShader>
   <TransitionShader file="..\Transitions\Swirl.frag" type="normal" minFade="5" mood="psychedelic,dreamy" probability="0.1" complexity="1"></TransitionShader>
-  <TransitionShader file="..\Transitions\Push.frag" type="normal" minFade="6.5" mood="aggressive" probability="0.06" complexity="1"></TransitionShader>
-  <TransitionShader file="..\Transitions\ClockSweep.frag" type="normal" mood="bright" probability="0.06" complexity="1"></TransitionShader>
+  <TransitionShader file="..\Transitions\Push.frag" type="normal" minFade="6.5" mood="aggressive,wipe" probability="0.06" complexity="1"></TransitionShader>
+  <TransitionShader file="..\Transitions\ClockSweep.frag" type="normal" mood="bright,wipe" probability="0.06" complexity="1"></TransitionShader>
   <TransitionShader file="..\Transitions\Melt.frag" type="normal" mood="psychedelic,dark" probability="0.08" complexity="1"></TransitionShader>
-  <TransitionShader file="..\Transitions\Pixelation.frag" type="normal" minFade="3.5" mood="aggressive,psychedelic" probability="0.08" complexity="1"></TransitionShader>
+  <TransitionShader file="..\Transitions\Pixelation.frag" type="normal" minFade="3.5" mood="aggressive,psychedelic,blocky" probability="0.08" complexity="1"></TransitionShader>
   <TransitionShader file="..\Transitions\SpinZoom.frag" type="normal" minFade="4" mood="aggressive,psychedelic" probability="0.1" complexity="1"></TransitionShader>
   <TransitionShader file="..\Transitions\Chromatic.frag" type="normal" mood="psychedelic,bright" probability="0.08" complexity="1"></TransitionShader>
   <TransitionShader file="..\Transitions\Jelly.frag" type="normal" minFade="3" mood="psychedelic" probability="0.06" complexity="1"></TransitionShader>
   <TransitionShader file="..\Transitions\KaleidoSpin.frag" type="normal" minFade="6.5" mood="psychedelic,bright" probability="0.08" complexity="1"></TransitionShader>
   <TransitionShader file="..\Transitions\DrainVortex.frag" type="normal" mood="aggressive,psychedelic" probability="0.08" complexity="1"></TransitionShader>
-  <TransitionShader file="..\Transitions\Datamosh.frag" type="normal" mood="aggressive" probability="0.06" complexity="1"></TransitionShader>
-  <TransitionShader file="..\Transitions\Shatter.frag" type="normal" mood="aggressive" probability="0.08" complexity="1"></TransitionShader>
+  <TransitionShader file="..\Transitions\Datamosh.frag" type="normal" mood="aggressive,blocky" probability="0.06" complexity="1"></TransitionShader>
+  <TransitionShader file="..\Transitions\Shatter.frag" type="normal" mood="aggressive,blocky" probability="0.08" complexity="1"></TransitionShader>
   <TransitionShader file="..\Transitions\Portal.frag" type="normal" mood="aggressive,dark" probability="0.08" complexity="1"></TransitionShader>
-  <TransitionShader file="..\Transitions\VoronoiShatter.frag" type="normal" minFade="3.5" mood="aggressive" probability="0.07" complexity="3">
+  <TransitionShader file="..\Transitions\VoronoiShatter.frag" type="normal" minFade="3.5" mood="aggressive,blocky" probability="0.07" complexity="3">
     <float name="cellP"  minValue="0.5" maxValue="2.2"></float>
     <float name="liftP"  minValue="0.5" maxValue="2.0"></float>
     <float name="speedP" minValue="0.5" maxValue="2.0"></float>
@@ -3481,7 +3481,7 @@
     <float name="speedP" minValue="0.5" maxValue="2.0"></float>
     <float name="hueP"   minValue="0.0" maxValue="6.28"></float>
   </TransitionShader>
-  <TransitionShader file="..\Transitions\QuadtreeSubdivide.frag" type="normal" minFade="2.5" mood="psychedelic,aggressive" probability="0.08" complexity="2">
+  <TransitionShader file="..\Transitions\QuadtreeSubdivide.frag" type="normal" minFade="2.5" mood="psychedelic,aggressive,blocky" probability="0.08" complexity="2">
     <float name="depthP" minValue="0.5" maxValue="2.2"></float>
     <float name="gridP"  minValue="0.5" maxValue="2.0"></float>
     <float name="speedP" minValue="0.5" maxValue="2.0"></float>
@@ -3499,7 +3499,7 @@
     <float name="speedP" minValue="0.5" maxValue="2.0"></float>
     <float name="hueP"   minValue="0.0" maxValue="6.28"></float>
   </TransitionShader>
-  <TransitionShader file="..\Transitions\AnamorphicFlareSweep.frag" type="normal" minFade="3" mood="aggressive,bright" probability="0.04" complexity="3">
+  <TransitionShader file="..\Transitions\AnamorphicFlareSweep.frag" type="normal" minFade="3" mood="aggressive,bright,wipe" probability="0.04" complexity="3">
     <float name="flareP" minValue="0.5" maxValue="2.2"></float>
     <float name="sweepP" minValue="0.5" maxValue="2.0"></float>
     <float name="speedP" minValue="0.5" maxValue="2.0"></float>
@@ -3511,19 +3511,19 @@
     <float name="speedP"   minValue="0.5" maxValue="2.0"></float>
     <float name="hueP"     minValue="0.0" maxValue="6.28"></float>
   </TransitionShader>
-  <TransitionShader file="..\Transitions\HologramScanInterference.frag" type="normal" mood="psychedelic" probability="0.06" complexity="3">
+  <TransitionShader file="..\Transitions\HologramScanInterference.frag" type="normal" mood="psychedelic,blocky" probability="0.06" complexity="3">
     <float name="scanP"  minValue="0.5" maxValue="2.2"></float>
     <float name="holoP"  minValue="0.5" maxValue="2.0"></float>
     <float name="speedP" minValue="0.5" maxValue="2.0"></float>
     <float name="hueP"   minValue="0.0" maxValue="6.28"></float>
   </TransitionShader>
-  <TransitionShader file="..\Transitions\GlitchPixelSort.frag" type="normal" mood="aggressive,psychedelic" probability="0.07" complexity="2">
+  <TransitionShader file="..\Transitions\GlitchPixelSort.frag" type="normal" mood="aggressive,psychedelic,blocky" probability="0.07" complexity="2">
     <float name="glitchP" minValue="0.5" maxValue="2.2"></float>
     <float name="streakP" minValue="0.5" maxValue="2.0"></float>
     <float name="speedP"  minValue="0.5" maxValue="2.0"></float>
     <float name="hueP"    minValue="0.0" maxValue="6.28"></float>
   </TransitionShader>
-  <TransitionShader file="..\Transitions\DichroicMirrorSlide.frag" type="normal" minFade="3" mood="psychedelic,bright" probability="0.06" complexity="3">
+  <TransitionShader file="..\Transitions\DichroicMirrorSlide.frag" type="normal" minFade="3" mood="psychedelic,bright,wipe" probability="0.06" complexity="3">
     <float name="dichroP" minValue="0.5" maxValue="2.2"></float>
     <float name="slideP"  minValue="0.5" maxValue="2.0"></float>
     <float name="speedP"  minValue="0.5" maxValue="2.0"></float>
@@ -3577,19 +3577,19 @@
     <float name="speedP" minValue="0.5" maxValue="2.0"></float>
     <float name="hueP"   minValue="0.0" maxValue="6.28"></float>
   </TransitionShader>
-  <TransitionShader file="..\Transitions\Tesseract4DRotation.frag" type="normal" minFade="6" mood="psychedelic,dark" probability="0.05" complexity="3">
+  <TransitionShader file="..\Transitions\Tesseract4DRotation.frag" type="normal" minFade="6" mood="psychedelic,dark,blocky" probability="0.05" complexity="3">
     <float name="rot4DP" minValue="0.5" maxValue="2.2"></float>
     <float name="sliceP" minValue="0.5" maxValue="2.0"></float>
     <float name="speedP" minValue="0.5" maxValue="2.0"></float>
     <float name="hueP"   minValue="0.0" maxValue="6.28"></float>
   </TransitionShader>
-  <TransitionShader file="..\Transitions\DopplerBeamingWipe.frag" type="normal" minFade="2.5" mood="aggressive,psychedelic,bright" probability="0.03" complexity="3">
+  <TransitionShader file="..\Transitions\DopplerBeamingWipe.frag" type="normal" minFade="2.5" mood="aggressive,psychedelic,bright,wipe" probability="0.03" complexity="3">
     <float name="dopplerP" minValue="0.5" maxValue="2.2"></float>
     <float name="angleP"   minValue="0.5" maxValue="2.0"></float>
     <float name="speedP"   minValue="0.5" maxValue="2.0"></float>
     <float name="hueP"     minValue="0.0" maxValue="6.28"></float>
   </TransitionShader>
-  <TransitionShader file="..\Transitions\BioluminescentSparkle.frag" type="normal" mood="dreamy,dark,bright" probability="0.06" complexity="3">
+  <TransitionShader file="..\Transitions\BioluminescentSparkle.frag" type="normal" mood="dreamy,dark,bright,blocky" probability="0.06" complexity="3">
     <float name="sparkleP" minValue="0.5" maxValue="2.2"></float>
     <float name="densityP" minValue="0.5" maxValue="2.0"></float>
     <float name="speedP"   minValue="0.5" maxValue="2.0"></float>
@@ -3601,7 +3601,7 @@
     <float name="speedP"  minValue="0.5" maxValue="2.0"></float>
     <float name="hueP"    minValue="0.0" maxValue="6.28"></float>
   </TransitionShader>
-  <TransitionShader file="..\Transitions\OceanBreakerWave.frag" type="normal" minFade="7.5" mood="aggressive,bright" probability="0.07" complexity="3">
+  <TransitionShader file="..\Transitions\OceanBreakerWave.frag" type="normal" minFade="7.5" mood="aggressive,bright,wipe" probability="0.07" complexity="3">
     <float name="waveP"  minValue="0.5" maxValue="2.2"></float>
     <float name="foamP"  minValue="0.5" maxValue="2.0"></float>
     <float name="speedP" minValue="0.5" maxValue="2.0"></float>
@@ -3625,7 +3625,7 @@
     <float name="speedP" minValue="0.5" maxValue="2.0"></float>
     <float name="hueP"   minValue="0.0" maxValue="6.28"></float>
   </TransitionShader>
-  <TransitionShader file="..\Transitions\LichtenbergLightningWipe.frag" type="normal" minFade="4" mood="aggressive,bright" probability="0.05" complexity="3">
+  <TransitionShader file="..\Transitions\LichtenbergLightningWipe.frag" type="normal" minFade="4" mood="aggressive,bright,wipe" probability="0.05" complexity="3">
     <float name="branchP"  minValue="0.5" maxValue="2.2"></float>
     <float name="voltageP" minValue="0.5" maxValue="2.0"></float>
     <float name="speedP"   minValue="0.5" maxValue="2.0"></float>
@@ -3655,7 +3655,7 @@
     <float name="speedP"  minValue="0.5" maxValue="2.0"></float>
     <float name="hueP"    minValue="0.0" maxValue="6.28"></float>
   </TransitionShader>
-  <TransitionShader file="..\Transitions\AbrikosovVortexLatticeSweep.frag" type="normal" mood="aggressive,bright,psychedelic" probability="0.06" complexity="3">
+  <TransitionShader file="..\Transitions\AbrikosovVortexLatticeSweep.frag" type="normal" mood="aggressive,bright,psychedelic,wipe" probability="0.06" complexity="3">
     <float name="vortexP" minValue="0.5" maxValue="2.2"></float>
     <float name="sweepP"  minValue="0.5" maxValue="2.0"></float>
     <float name="speedP"  minValue="0.5" maxValue="2.0"></float>
@@ -3667,13 +3667,13 @@
     <float name="speedP" minValue="0.5" maxValue="2.0"></float>
     <float name="hueP"   minValue="0.0" maxValue="6.28"></float>
   </TransitionShader>
-  <TransitionShader file="..\Transitions\SolitonWaveCollision.frag" type="normal" minFade="5.5" mood="aggressive,psychedelic" probability="0.05" complexity="3">
+  <TransitionShader file="..\Transitions\SolitonWaveCollision.frag" type="normal" minFade="5.5" mood="aggressive,psychedelic,wipe" probability="0.05" complexity="3">
     <float name="solitonP" minValue="0.5" maxValue="2.2"></float>
     <float name="widthP"   minValue="0.5" maxValue="2.0"></float>
     <float name="speedP"   minValue="0.5" maxValue="2.0"></float>
     <float name="hueP"     minValue="0.0" maxValue="6.28"></float>
   </TransitionShader>
-  <TransitionShader file="..\Transitions\ChromatographySeparation.frag" type="normal" minFade="3" mood="psychedelic" probability="0.05" complexity="3">
+  <TransitionShader file="..\Transitions\ChromatographySeparation.frag" type="normal" minFade="3" mood="psychedelic,wipe" probability="0.05" complexity="3">
     <float name="solventP" minValue="0.5" maxValue="2.2"></float>
     <float name="retardP"  minValue="0.5" maxValue="2.0"></float>
     <float name="speedP"   minValue="0.5" maxValue="2.0"></float>
@@ -3685,7 +3685,7 @@
     <float name="speedP"  minValue="0.5" maxValue="2.0"></float>
     <float name="hueP"    minValue="0.0" maxValue="6.28"></float>
   </TransitionShader>
-  <TransitionShader file="..\Transitions\FresnelDiffractionEdge.frag" type="normal" mood="psychedelic,bright" probability="0.07" complexity="3">
+  <TransitionShader file="..\Transitions\FresnelDiffractionEdge.frag" type="normal" mood="psychedelic,bright,wipe" probability="0.07" complexity="3">
     <float name="edgeP"   minValue="0.5" maxValue="2.2"></float>
     <float name="fringeP" minValue="0.5" maxValue="2.0"></float>
     <float name="speedP"  minValue="0.5" maxValue="2.0"></float>
@@ -3709,7 +3709,7 @@
     <float name="speedP" minValue="0.5" maxValue="2.0"></float>
     <float name="hueP"   minValue="0.0" maxValue="6.28"></float>
   </TransitionShader>
-  <TransitionShader file="..\Transitions\FerroelectricDomainFlip.frag" type="normal" minFade="4" mood="psychedelic,dark" probability="0.04" complexity="3">
+  <TransitionShader file="..\Transitions\FerroelectricDomainFlip.frag" type="normal" minFade="4" mood="psychedelic,dark,blocky" probability="0.04" complexity="3">
     <float name="domainP" minValue="0.5" maxValue="2.2"></float>
     <float name="wallP"   minValue="0.5" maxValue="2.0"></float>
     <float name="speedP"  minValue="0.5" maxValue="2.0"></float>
@@ -3751,7 +3751,7 @@
     <float name="coarseP" minValue="0.60" maxValue="1.60"></float>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TransitionShader>
-  <TransitionShader file="..\Transitions\MartensiticTwinBands.frag" type="normal" minFade="3" mood="dark,aggressive" probability="0.07" complexity="3">
+  <TransitionShader file="..\Transitions\MartensiticTwinBands.frag" type="normal" minFade="3" mood="dark,aggressive,blocky" probability="0.07" complexity="3">
     <float name="bandsP" minValue="0.0" maxValue="1.0"></float>
     <float name="shearP" minValue="0.60" maxValue="1.60"></float>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
@@ -3776,12 +3776,12 @@
     <float name="waveP" minValue="0.70" maxValue="1.50"></float>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TransitionShader>
-  <TransitionShader file="..\Transitions\SplitFlapDeparture.frag" type="normal" minFade="3" mood="bright,aggressive,psychedelic" probability="0.07" complexity="3">
+  <TransitionShader file="..\Transitions\SplitFlapDeparture.frag" type="normal" minFade="3" mood="bright,aggressive,psychedelic,blocky" probability="0.07" complexity="3">
     <float name="colsP" minValue="0.0" maxValue="1.0"></float>
     <float name="flapsP" minValue="0.0" maxValue="1.0"></float>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TransitionShader>
-  <TransitionShader file="..\Transitions\LenticularTilt.frag" type="normal" mood="bright,psychedelic" probability="0.07" complexity="2">
+  <TransitionShader file="..\Transitions\LenticularTilt.frag" type="normal" mood="bright,psychedelic,blocky" probability="0.07" complexity="2">
     <float name="pitchP" minValue="0.0" maxValue="1.0"></float>
     <float name="spreadP" minValue="0.60" maxValue="1.50"></float>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
@@ -3791,12 +3791,12 @@
     <float name="warpP" minValue="0.60" maxValue="1.50"></float>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TransitionShader>
-  <TransitionShader file="..\Transitions\HilbertCurveSweep.frag" type="normal" mood="bright,psychedelic" probability="0.07" complexity="2">
+  <TransitionShader file="..\Transitions\HilbertCurveSweep.frag" type="normal" mood="bright,psychedelic,blocky" probability="0.07" complexity="2">
     <float name="orderP" minValue="0.0" maxValue="1.0"></float>
     <float name="edgeP" minValue="0.60" maxValue="1.60"></float>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TransitionShader>
-  <TransitionShader file="..\Transitions\WaveFunctionCollapseTiles.frag" type="normal" mood="psychedelic,bright,dreamy" probability="0.07" complexity="3">
+  <TransitionShader file="..\Transitions\WaveFunctionCollapseTiles.frag" type="normal" mood="psychedelic,bright,dreamy,blocky" probability="0.07" complexity="3">
     <float name="tilesP" minValue="0.0" maxValue="1.0"></float>
     <float name="seedsP" minValue="0.0" maxValue="1.0"></float>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
