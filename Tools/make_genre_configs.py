@@ -314,6 +314,36 @@ if os.path.exists(FIT_FILE):
             v = ln.split("\t")
             fit[v[0]] = {head[i]: int(v[i]) for i in range(1, min(len(head), len(v))) if v[i].strip()}
 
+# Every scene has a home (22.10.2026): taking the best of each genre up to MIN_SCENES left 536 of 1815 scenes in no
+# genre preset at all -- scenes rated middling everywhere, shown only by Allround.  A scene that is not dull now also
+# goes into the genre it fits best, if it fits it at least HOME_MIN; where several genres tie, into the (at most
+# HOME_MAX) where it stands out most from that genre's mean.  Its solo time stays short (see solo_times()), so a home
+# scene comes as often as any but stays briefly.
+HOME_MIN = 4
+HOME_MAX = 2
+
+def home_genres():
+    cols = {g: c for g, c in FIT_COLUMN.items()}
+    means = {}
+    for g, c in cols.items():
+        vals = [fit[s][c] for s in fit if c in fit[s]]
+        means[g] = sum(vals) / max(len(vals), 1)
+    homes = {}
+    for s, f in fit.items():
+        if f.get("interest", 0) <= DULL:
+            continue
+        rated = {g: f[c] for g, c in cols.items() if c in f}
+        if not rated:
+            continue
+        top = max(rated.values())
+        if top < HOME_MIN:
+            continue
+        tied = sorted((g for g, v in rated.items() if v == top), key=lambda g: means[g] - top)
+        homes[s] = set(tied[:HOME_MAX])
+    return homes
+
+HOMES = home_genres()
+
 def select_by_fit(genre, rule):
     col = FIT_COLUMN[genre]
     shaders = []
@@ -329,6 +359,7 @@ def select_by_fit(genre, rule):
         return r
     chosen = {s for s in rated if rank(s) >= RANK_TAKE and fit[s][col] >= FIT_FLOOR
               and fit[s]["interest"] > DULL}
+    chosen |= {s for s in rated if genre in HOMES.get(s, ())}
     for dull_ok in (False, True):
         for s in sorted(rated, key=rank, reverse=True):
             if len(chosen) >= MIN_SCENES:
