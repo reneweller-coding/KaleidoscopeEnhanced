@@ -70,18 +70,20 @@ void main()
     rd.yz = rot2(0.16 * sin(0.019 * sceneTime + 1.0)) * rd.yz;
     float roll = 0.02 * sceneTime;
     vec3 col = vec3(0.0);
-    float t = 0.05;
-    for (int i = 0; i < 110; ++i) {
+    float t = 0.05 + 0.03 * hash21(gl_FragCoord.xy);                 // dithered: fewer steps without banding
+    for (int i = 0; i < 72; ++i) {
         vec3 x = ro + rd * t;
         // the coral's cell: a ring along the flight and a sector round the wall, every ring turned half a sector;
-        // the neighbouring ring and sector are measured too, so no coral is cut at a cell's border
+        // near a border the neighbouring ring and sector are measured too, so no coral is cut there
         float zs = x.z / SEG;
         float seg0 = floor(zs + 0.5);
         float d = 1e9, lvl = 0.0, hcBest = 0.0;
         for (int k = 0; k < 4; ++k) {
+            if (k >= 2 && abs(zs - seg0) < 0.22) continue;             // far from the ring's border: its own ring only
             float seg = seg0 + (k >= 2 ? (zs > seg0 ? 1.0 : -1.0) : 0.0);
             float th = atan(x.y, x.x) - roll - 0.5 * seg * 6.2831853 / NS;
             float u = th * NS / 6.2831853;
+            if ((k & 1) == 1 && abs(u - floor(u + 0.5)) < 0.22) continue;   // far from the sector's border: its own sector
             float sec = floor(u + 0.5) + ((k & 1) == 1 ? (u > floor(u + 0.5) ? 1.0 : -1.0) : 0.0);
             float hc = fract(sin(seg * 12.9898 + mod(sec, NS) * 78.233) * 43758.5453);
             float ca = (sec + 0.3 * (hc - 0.5)) * 6.2831853 / NS;
@@ -97,7 +99,7 @@ void main()
         float g = 1.0 / (1.0 + pow(max(d, 0.0) * 18.0, 2.0));
         float fade = exp(-0.08 * t) * smoothstep(0.05, 0.5, t);
         col += famLight(fh, 0.2 + 0.6 * hc, 0.1 + 0.5 * lv * lv) * g * fade * 0.12;
-        t += clamp(0.6 * d, 0.02, 0.25);
+        t += clamp(0.6 * d, 0.035, 0.3);
         if (t > 30.0) break;
     }
     col += famCol(fh, 0.5) * 0.012;

@@ -44,8 +44,8 @@ void main()
     rd.yz = rot2(0.2 * sin(0.017 * sceneTime + 2.0)) * rd.yz;
     rd.xy = rot2(0.012 * sceneTime) * rd.xy;
     vec3 col = vec3(0.0);
-    float t = 0.05;
-    for (int i = 0; i < 70; ++i) {
+    float t = 0.05 + 0.05 * hash21(gl_FragCoord.xy);                 // dithered: fewer steps without banding
+    for (int i = 0; i < 26; ++i) {
         vec3 x = (ro + rd * t) / S;
         vec3 c0 = floor(x);
         float d1 = 1e9, d2 = 1e9, d3 = 1e9;
@@ -54,7 +54,8 @@ void main()
             vec3 o = vec3(float(k % 3), float((k / 3) % 3), float(k / 9)) - 1.0;
             vec3 c = c0 + o;
             vec3 hh = cellHash(c);
-            vec3 seed = c + 0.5 + (hh - 0.5) * 0.4 + roam * sin(wph * (0.5 + hh.zxy) + 6.2831853 * hh.yzx);
+            float ph = wph * (0.5 + hh.z) + 6.2831853 * hh.y;            // one phase per cell, a loop in its own plane
+            vec3 seed = c + 0.5 + (hh - 0.5) * 0.4 + roam * (sin(ph) * vec3(0.8, 0.3, -0.5) + cos(ph) * (hh.zxy - 0.5));
             float d = length(x - seed);
             if (d < d1) { d3 = d2; d2 = d1; d1 = d; n1 = c; }
             else if (d < d2) { d3 = d2; d2 = d; }
@@ -66,8 +67,9 @@ void main()
         float m = memb * 0.12 * exp(-pow(f / (0.6 * width), 2.0));
         vec3 photo = imgLod(n1.xy * 0.13 + 0.5 + 0.07 * n1.z, 3.0);
         float fade = exp(-0.1 * t) * smoothstep(0.05, 0.6, t);
-        col += famLight(fh, 0.15 + 0.7 * luma(photo), 0.3 * g / (1.0 + g)) * (g + m) * fade * 0.07;
-        t += clamp(0.6 * min(e, f + 0.03), 0.03, 0.3);
+        float dt = clamp(0.6 * min(e, f + 0.03), 0.11, 0.7);
+        col += famLight(fh, 0.15 + 0.7 * luma(photo), 0.3 * g / (1.0 + g)) * (g + m) * fade * 0.07 * (dt / 0.05);   // glow by the way gone
+        t += dt;
         if (t > 14.0) break;
     }
     col += famCol(fh, 0.5) * 0.012;
