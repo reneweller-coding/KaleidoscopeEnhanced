@@ -1898,3 +1898,16 @@ ClingFilmCreases	6	1	3	4	5	7	6	3	4	4	5
 ReedAndCaneLattice	4	1	4	3	5	7	5	3	4	2	4
 DarningStitchField	5	1	3	4	4	7	5	2	3	3	5
 BraidedPhotoBands	5	1	4	3	6	7	6	3	4	3	5
+SquaredSquareCollage	4	1	5	3	7	8	7	4	6	2	4
+FibonacciRectangleMosaic	6	1	3	3	6	8	6	3	4	3	5
+RhombilleTumbleTiles	4	1	5	3	7	8	7	4	5	2	4
+DinRectangleBisection	5	1	4	3	5	7	6	4	4	2	4
+ChairTilingZoom	5	1	5	3	8	7	7	5	7	3	5
+PythagoreanTilingRotate	4	1	5	3	7	7	7	4	6	2	4
+LogSpiralCellCarpet	5	1	5	3	8	8	7	4	7	3	5
+SkeletonOffsetBands	7	1	3	4	6	8	6	3	4	4	6
+FractalShoreCells	6	1	3	3	6	8	6	3	4	3	5
+RotatedQuadNest	4	1	5	3	8	7	7	5	7	2	4
+TriangleMedialRecursion	4	1	5	3	8	8	7	5	7	2	4
+HexagonDissectionRotor	4	1	5	3	8	8	7	4	7	3	4
+CircleSquaringCollage	4	1	5	3	6	8	6	4	4	2	4

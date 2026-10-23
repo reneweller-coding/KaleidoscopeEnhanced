@@ -872,12 +872,6 @@
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <TextureShader minTimeSolo="30" maxTimeSolo="80" interest="7" file="..\\Scene2D\\FiberOpticChandelier.frag" type="normal" mood="dark,psychedelic,dreamy" probability="0.2" complexity="4" gpuMs="0.43">
-    <rig preset="flat"/>
-    <float name="spreadP" minValue="0" maxValue="1"></float>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
   <TextureShader minTimeSolo="47" maxTimeSolo="123" interest="8" file="..\\Scene2D\\SagradaForestNave.frag" type="normal" mood="dreamy,calm,bright" probability="0.2" complexity="7" gpuMs="0.50">
     <rig preset="flat"/>
     <float name="branchP" minValue="0" maxValue="1"></float>
@@ -2898,6 +2892,13 @@
     <rig preset="flat"/>
     <float name="rowsP" minValue="0" maxValue="1"></float>
     <float name="gapP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader minTimeSolo="24" maxTimeSolo="64" interest="6" file="..\\Scene2D\\SkeletonOffsetBands.frag" type="normal" mood="dreamy,calm" probability="0.45" complexity="5">
+    <rig preset="flat"/>
+    <float name="bandsP" minValue="0" maxValue="1"></float>
+    <float name="reachP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
