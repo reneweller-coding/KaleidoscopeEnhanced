@@ -473,6 +473,53 @@ vec2 fcExp(vec2 z) { return exp(z.x) * vec2(cos(z.y), sin(z.y)); }
 vec2 fcPow(vec2 z, float p) { float r = length(z), a = atan(z.y, z.x); return pow(r, p) * vec2(cos(p * a), sin(p * a)); }
 """
 
+# Flows that carry the photo (family H of docs/proposals-2026-10-23-flaechig-400.md): a scene defines licVel() and smears the
+# photo along its streamlines with licSmear().  Appended for sources that call licSmear(.
+LIC_LIB = r"""
+// ---- the photo smeared along a flow ----
+/**  The scene's velocity field (defined by the scene; the library only follows it).
+ *
+ * @param p   The place (screen units, y -0.5..0.5). (in)
+ * @param t   The scene's flow clock. (in)
+ * @param ch  The channel (0 for all colours; 0, 1, 2 where a scene sends each colour its own way). (in)
+ *
+ * @return
+ *   The velocity.
+ **/
+vec2 licVel(vec2 p, float t, int ch);
+
+/**  The photo gathered along the streamline through a place (a line-integral convolution): fourteen dithered steps, seven each way,
+ * a tapering kernel, the photo read at a coarser level the farther the step.
+ *
+ * @param p    The place. (in)
+ * @param t    The flow clock. (in)
+ * @param len  The length of the smear, in screen units. (in)
+ * @param ch   The channel, passed on to licVel(). (in)
+ *
+ * @return
+ *   The colour.
+ **/
+vec3 licSmear(vec2 p, float t, float len, int ch)
+{
+    float h = len / 7.0;
+    vec3 sum = imgLod(p * 0.8 + 0.5, 0.4);
+    float ws = 1.0;
+    for (int sg = 0; sg < 2; ++sg) {
+        vec2 x = p;
+        for (int i = 1; i <= 7; ++i) {
+            vec2 v = licVel(x, t, ch);
+            float jit = 1.0 + 0.7 * (hash21(gl_FragCoord.xy + vec2(17.0 * float(i), 71.0 * float(sg))) - 0.5);
+            x += (sg == 0 ? 1.0 : -1.0) * normalize(v + 1e-4) * h * jit * (0.4 + 0.6 * min(length(v), 1.5));
+            float fi = float(i) / 7.0;
+            float w = 1.0 - 0.85 * fi;
+            sum += w * imgLod(x * 0.8 + 0.5, 0.5 + 1.5 * fi);
+            ws += w;
+        }
+    }
+    return sum / ws;
+}
+"""
+
 # Scenes with a field of their own (//@state W H RATE [32], EffectShader::stepState): the step's helpers.
 STATE_LIB = r"""
 // ---- the scene's own field (state pass) ----
@@ -2938,6 +2985,8 @@ def assemble(name):
         out.append(LAB_LIB)
     if re.search(r"\bfracTrap\s*\(", src):
         out.append(FRAC_LIB)
+    if re.search(r"\blicSmear\s*\(", src):
+        out.append(LIC_LIB)
     if st:
         out.append(STATE_LIB)
     if re.search(r"vec2\s+chain\s*\(", body):
