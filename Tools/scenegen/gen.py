@@ -567,6 +567,68 @@ vec3 expAccum(vec2 p, float t, int mode, float lodk)
 }
 """
 
+# The music as a building plan (family L of docs/proposals-2026-10-23-flaechig-400.md): beat, bar and phrase clocks that
+# fall back to a steady clock where the tempo is not known, and a smooth bump on a cycle.  Appended for sources that
+# call rhyBeat(, rhyBar(, rhyPhrase( or rhySec.
+RHY_LIB = r"""
+// ---- the beat, the bar and the phrase as clocks ----
+/**  The position inside the beat, 0..1 (a steady two-beats-a-second clock where the tempo is not known).
+ *
+ * @return
+ *   The phase; use it only through periodic functions, it wraps once a beat.
+ **/
+float rhyBeat() { return audioBeatPhase > 0.001 ? audioBeatPhase : fract(sceneTime * 2.0); }
+/**  The position inside the bar (four beats), 0..1 (a two-second clock where the tempo is not known).
+ *
+ * @return
+ *   The phase; it wraps once a bar.
+ **/
+float rhyBar() { return audioBarPhase > 0.001 ? audioBarPhase : fract(sceneTime * 0.5); }
+/**  The position inside the phrase (eight bars), 0..1 (a sixteen-second clock where the tempo is not known).
+ *
+ * @return
+ *   The phase; it wraps once a phrase.
+ **/
+float rhyPhrase() { return audioPhrasePos > 0.001 ? audioPhrasePos : fract(sceneTime * 0.0625); }
+/**  A smooth bump on a cycle: 1 at a position, 0 farther away than a width, the cycle closing round (no jump at its end).
+ *
+ * @param x   The position on the cycle. (in)
+ * @param at  The bump's centre. (in)
+ * @param n   The cycle's length. (in)
+ * @param w   The bump's half width. (in)
+ *
+ * @return
+ *   The bump, 0..1.
+ **/
+float rhyBump(float x, float at, float n, float w)
+{
+    float d = abs(mod(x - at + 0.5 * n, n) - 0.5 * n);
+    return smoothstep(w, 0.0, d);
+}
+/**  How far a section change has been taken over: 0 right after it, 1 six seconds later.
+ *
+ * @return
+ *   The blend, 0..1.
+ **/
+float rhySecBlend() { return smoothstep(0.0, 6.0, audioSectionAge); }
+/**  The previous section's number, folded into a count of choices.
+ *
+ * @param n  How many choices. (in)
+ *
+ * @return
+ *   0 .. n-1.
+ **/
+float rhySecPrev(float n) { return mod(max(audioSectionPrev, 0.0), n); }
+/**  The current section's number, folded into a count of choices.
+ *
+ * @param n  How many choices. (in)
+ *
+ * @return
+ *   0 .. n-1.
+ **/
+float rhySecCur(float n) { return mod(max(audioSectionId, 0.0), n); }
+"""
+
 # Scenes with a field of their own (//@state W H RATE [32], EffectShader::stepState): the step's helpers.
 STATE_LIB = r"""
 // ---- the scene's own field (state pass) ----
@@ -3005,6 +3067,10 @@ def assemble(name):
             "uniform float sceneAdvance;"]
     if re.search(r"\blabWalk\s*\(", src):
         audio += [a for a in ("audioSectionId", "audioSectionPrev", "audioSectionAge") if a not in audio]
+    if re.search(r"\brhySec\w*\s*\(", src):
+        audio += [a for a in ("audioSectionId", "audioSectionPrev", "audioSectionAge") if a not in audio]
+    if re.search(r"\brhy(Beat|Bar|Phrase|Bump|Sec\w*)\s*\(", src):
+        audio += [a for a in ("audioBeatPhase", "audioBarPhase", "audioPhrasePos", "audioSectionId", "audioSectionPrev", "audioSectionAge") if a not in audio]
     for a in BASE_AUDIO + [a for a in audio if a not in BASE_AUDIO]:
         m = re.match(r"(\w+)\[(\d+)\]", a)
         if a in VEC3_AUDIO:
@@ -3036,6 +3102,8 @@ def assemble(name):
         out.append(LIC_LIB)
     if re.search(r"\bexpAccum\s*\(", src):
         out.append(EXPO_LIB)
+    if re.search(r"\brhy(Beat|Bar|Phrase|Sec\w*)\s*\(", src):
+        out.append(RHY_LIB)
     if st:
         out.append(STATE_LIB)
     if re.search(r"vec2\s+chain\s*\(", body):
