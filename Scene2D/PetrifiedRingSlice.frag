@@ -38,7 +38,7 @@ uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unw
 uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
 uniform float audioSpread;    ///< Spectral spread, 0..1.
 
-uniform float crackP; ///< Crack knob: how many cracks.
+uniform float crackP; ///< Crack knob: how many cracks, 0..1.
 uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 // ---- shared building blocks (texture pool, noise, shapes) ----
@@ -514,8 +514,11 @@ void main()
     float cr = smoothstep( 0.02 + 0.03 * clamp( crackP, 0.0, 1.0 ), 0.0,
                            abs( sin( a * 4.5 + 3.0 * fbm( vec2( r * 3.0, a ) ) ) * r ) - 0.0 * r )
                * smoothstep( 0.1, 0.4, r );
-    float hc = hash21( floor( p * 90.0 ) );
-    float crystal = step( 0.992, hc ) * smoothstep( 0.5, 0.9, hash21( floor( p * 45.0 ) ) );
+    vec2  gc = p * 90.0;
+    vec2  ic = floor( gc );
+    float hc = hash21( ic );
+    float crystal = smoothstep( 0.985, 0.992, hc )
+                    * smoothstep( 0.22, 0.08, length( fract( gc ) - 0.2 - 0.6 * hash22( ic + 3.0 ) ) );
     col *= 1.0 - 0.75 * cr * clamp( crackP * 2.0, 0.2, 1.0 );
     col += crystal * vec3( 1.0, 0.95, 0.85 ) * 0.8;
     finish( col * 1.1 );

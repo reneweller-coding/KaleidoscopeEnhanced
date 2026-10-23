@@ -25,8 +25,10 @@ void main()
     vec3 pc = imgLod(p * 0.8 + 0.5, 1.5);
     vec3 col = mix(base, pc, 0.45) * mix(0.45, 1.15, early);
     float cr = smoothstep(0.02 + 0.03 * clamp(crackP, 0.0, 1.0), 0.0, abs(sin(a * 4.5 + 3.0 * fbm(vec2(r * 3.0, a))) * r) - 0.0 * r) * smoothstep(0.1, 0.4, r);
-    float hc = hash21(floor(p * 90.0));
-    float crystal = step(0.992, hc) * smoothstep(0.5, 0.9, hash21(floor(p * 45.0)));
+    vec2 gc = p * 90.0;
+    vec2 ic = floor(gc);
+    float hc = hash21(ic);
+    float crystal = smoothstep(0.985, 0.992, hc) * smoothstep(0.22, 0.08, length(fract(gc) - 0.2 - 0.6 * hash22(ic + 3.0)));
     col *= 1.0 - 0.75 * cr * clamp(crackP * 2.0, 0.2, 1.0);
     col += crystal * vec3(1.0, 0.95, 0.85) * 0.8;
     finish(col * 1.1);
