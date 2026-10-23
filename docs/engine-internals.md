@@ -7441,3 +7441,90 @@ Build-up boundaries are now met in 51 % of cases (14 % before). The four ambient
 keep 0-2 sections each, and the real tracks keep about as many as before. `Kaleidoscope.exe -q`: 127 of 127.
 `check_schedule --quick`: no violations, and the drop cuts on the structure track are back (Club 217, 206 before
 the round). The analysis costs the same: 5.5 s for 494 s of audio.
+
+## 23.10.2026 (63): the areal 400 -- twenty labs, forty chain classes, 340 scenes
+
+The list of 23.10.2026 (`docs/proposals-2026-10-23-flaechig-400.md`) asked for areal methods that use the photos
+heavily: the photo as fabric, as plate, as relief, as signal. All of it is built, in families A to Z, one commit each.
+
+**A. Twenty labs** (`Tools/scenegen/src/*Lab.glsl`: BandLab, SeparationLab, PartitionLab, TwinPhotoLab, FlowPaintLab,
+DiffractionLab, AtlasLab, EngravingLab, ExposureLab, PerceptionLab, MeterLab, FoldLab, MicroscopeLab, LayerCutLab,
+TimeChainLab, StripLab, GlassLab, MirrorBilliardLab, DefectLab, SequenceLab). A lab is not a picture but a vocabulary:
+`labWalk(seed, ivec4 n, period)` (gen.py `LAB_LIB`) walks through combinations of up to four slots, one slot changing
+at a time with a cross-fade (`LAB_FADE` 0.2); the clock is `0.9 sceneAdvance + sceneTime / 75`, and a new section
+(`audioSectionId/Prev/Age`, 8 s) draws everything anew. `labPinA..D` pin a slot (1 + class) for tests. The twenty labs hold
+22,139 combinations of slot entries (108 for DefectLab up to 10,000 for BandLab), before knobs and photos.
+
+**B. Forty chain classes** for the four stages of the flat chain labs (`chain_lib7.glsl`, copied into gen.py by
+`sync_lib7.py`, wired by `patch_r7.py`, listed in `chain_classes.py`; `chain2d_probe.py` -> `Engine/chain2d_classes.tsv`).
+The six mirror nets of the list are not reflection groups and became continuous folds (dragon, Gosper, Fibonacci,
+Thue-Morse, Cantor, tent, cat, KIFS, Whitney, polar tent). The 43 functions needed their Doxygen in the generated pass
+shaders: `Tools/glsl_doc_table.py` now has their entries (the pass generator strips comments, the table gives them back).
+
+**Shared libraries in gen.py** (appended where a source calls them):
+- `FRAC_LIB` (family D): `fracTrap/fracZoom/fracCompose` and the complex helpers; the photo is the orbit trap, only the
+  first hit counts (later hits wash the photo out), the background is the plain photo, the zoom shallow.
+- `LIC_LIB` (H): `licSmear(p, t, len, ch)` -- fourteen dithered steps along the scene's own `licVel(p, t, ch)`.
+- `EXPO_LIB` (J): `expAccum(p, t, mode, lodk)` along the scene's `expPath(p, u, t)`: a mean, a lighten stack that picks
+  the colour-weighted brightest reading (luma x (0.3 + 2 sat)), or a comet.
+- `RHY_LIB` (L): `rhyBeat()/rhyBar()/rhyPhrase()` (a steady clock stands in where the tempo is unknown), `rhyBump(x, at,
+  n, w)` (a smooth bump on a cycle), `rhySecBlend/Prev/Cur`. A rhythm scene uses periodic functions of these phases only,
+  so nothing jumps at the end of a beat, a bar or a phrase.
+- `LIC_LIB` and `EXPO_LIB` come **after the scene's helpers, before `main()`**: the library calls the scene's `licVel` /
+  `expPath`, and a prototype in the library made Doxygen merge the two functions' @param lists.
+
+**State scenes** (`//@state W H RATE [32]`): seven rhythm scenes keep averages over the bars in a small field (onset
+energy per step and track, the counted beats modulo 35, the tempo from the beat wraps, the smoothed sub-bass), five
+scopes count histograms of the photo in a field (waveform, parade, vectorscope, gradient roses, a histogram terrain),
+and ten fields with memory are PDEs guided by the photo (wave tank, eikonal fronts, Schroedinger packet, sandpile,
+coherence diffusion, chemotaxis, FitzHugh-Nagumo, KPP fronts, dielectric breakdown, stable fluids).
+- **PresetEditor does not step state fields**: its renders show the initial field (ones, in some cases). State scenes
+  were checked in the app (`ns_sample.py`), the rest in PresetEditor sheets (`sheet.py`).
+- Physarum agents do not fit a field, so PhysarumPhotoNetwork is the Keller-Segel chemotaxis model (which forms the same
+  kind of network) and PhotoGapFingering a dielectric-breakdown growth instead of Saffman-Taylor's front.
+- The stable-fluids flow has two halves in one texture (velocity and pressure | the photo's coordinates carried by the
+  flow); the coordinates relax toward their own place so the photo stays recognisable.
+
+**Honest substitutions.** G: five tilings of the list were not feasible as tilings (Spectre, Sphinx, Voderberg, Gosper
+island, Pinwheel) and became RhombilleTumbleTiles, DinRectangleBisection, LogSpiralCellCarpet, FractalShoreCells and
+RotatedQuadNest.
+
+**Traps of the round.**
+- Large heredocs in bash fail with ENAMETOOLONG; a long source goes in with the Write tool. Heredocs also eat backslashes
+  (a patch script with regular expressions: Write tool).
+- A knob must not be called `screenP` (a function of that name exists); `dot`, `cross`, `round`, `step` and `patch`
+  are taken, too.
+- `finish_block.py` with every built frag unregistered fails the shader check until all are registered.
+- The shake scan reads a local named `pitch` as frame geometry on `audioMelodyPitch`: smoothing in a state field is fine,
+  but the name `mel` avoids the false hit.
+- A fix of a `.txt` source draft is not a fix of `src/*.glsl` until `mk.py` has run again, and the commit script adds
+  what the registration wrote: build, register, commit, in that order.
+
+**The close.**
+- *Catalogue:* `render_catalog_export.py` rendered the frames of the 360 new scenes (20 labs, 340 scenes) in 8.8 minutes
+  (two jobs, 60 scenes a chunk); `make_catalog.py` over `scan` + `fxscan` -> 2175 scenes, 6803 frames.
+- *Ratings:* the ratings given while building were far above the old rows again (interest 6.78 against 5.44, galerie 7.24
+  against 4.88). The 340 scenes were set to the old rows' level column by column (the order inside the batch kept; mean
+  and spread of each of the eleven columns moved): interest 4.78, galerie 6.24, psychedelic 5.54, electronic 4.21,
+  psytrance 4.54. The twenty labs keep 7 to 9 like the older chain labs. RgbParadeCascade lost one step (its three
+  channel colours are the one rainbow the catalogue check found). Anchor sheets: `rate_sheet400.py` with the 37 anchors.
+- *Measured:* `screen.py --scenes <360> --chunk 60`: 360 windows in 6.8 minutes. Merged into `.screen/` as before
+  (`merge_screen.py`), 5248 metric rows and 2175 costs. The new scenes cost 0.60 ms a frame at 1080p in the median
+  (the old ones 0.47), the dearest 1.55 ms (IsophoteSilkStreaks, ExposureLab); none above 3 ms (16 of the old ones).
+  The state scenes are cheap because the field steps at its own rate (the dearest, PhotoGeodesicFronts at 600 steps a
+  second, stays under 0.8 ms).
+- The screening flagged one scene as still: VectorscopeBloom only turned with the music's phase and the screening track is
+  quiet for its first half. It now turns steadily and breathes by 8 %, and measures 0.041 spatial std (0.0014 before).
+- `sync_scene_measures.py` wrote gpuMs and the measured restlessness into Komplett.xml (Spearman 0.99 against the
+  hand-set values over all 2175 scenes), `make_genre_configs.py` rebuilt the presets (Allround 2390 entries, Psychedelic 928,
+  Club 590, Ambient 784). `check_schedule.py --quick`: 20 plans, no violations.
+- *Doxygen:* 470 warnings at first, all from the round-7 chain functions and the two libraries with a prototype; none now.
+- *Snapshots:* `scene_snapshots.py render 2026-10-23-flaechig400 --jobs 3`: 2390 frames, two runs (the first was cut at the
+  background shell's 30 minutes; its last three entries read FAIL only because of the cut and were rendered by the
+  second run: 922 rendered, 0 failed). Against `2026-10-22-base400` (rendered 17:54-19:10 on 22.10): 2030 compared, 217
+  changed, 360 new, 0 gone, 27 black as before (0 newly black, no new scene black), 5 unstable.
+  - 192 of the 217 changed scenes had a changed file since that set, mostly the dark-scene lift of the same evening
+    (famExpose, `b9628517`); the other 25 are simulations that evolve differently (Murmuration, CyclicAutomatonSpirals,
+    LightningStorm, the automata, ShipDocking ...).
+- *PDF:* the portable Chrome printed it only at the second try, with its own `--user-data-dir`, `--virtual-time-budget`
+  and the machine quiet (the first try ran beside the snapshots and died after 110 s): 870 pages, 71.7 MB.

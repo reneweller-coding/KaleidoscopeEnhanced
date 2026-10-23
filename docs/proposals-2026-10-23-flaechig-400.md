@@ -1442,5 +1442,6 @@ Alle 400 sind gebaut, je Familie ein Commit (A bis Z, zuletzt 1fb07aa1): 20 Labo
 - **Katalog:** 2175 Szenen, 6803 Bilder (`render_catalog_export.py`: 1080 Bilder von 360 Szenen in 8,8 Minuten).
 - **Noten:** Die Bau-Noten waren wieder zu hoch (Interest 6,78 gegen 5,44 der alten Zeilen); die 340 Szenen wurden auf die alten
   Zeilen geeicht (Interest 4,78, Galerie 6,24, Psychedelic 5,54), die 20 Labore behalten die Noten der Kettenlabore (7 bis 9).
+- **Schnappschüsse:** Satz `2026-10-23-flaechig400` (2390 Bilder): kein neues Bild schwarz, 217 alte verändert, davon 192 durch eine geänderte Datei am Vorabend (Aufhellung der dunklen Szenen), der Rest Simulationen. Katalog-PDF: 870 Seiten, 71,7 MB.
 - **Technik und Lehren:** `docs/engine-internals.md`, Abschnitt (63).
 - **Offen:** Ein Release nur mit dem Einverständnis des Nutzers.
