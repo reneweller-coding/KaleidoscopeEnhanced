@@ -2304,3 +2304,16 @@ RabinovichFabrikantFilaments	4	5	4	5	7	6	7	6	7	5	4
 IkedaSpiralCarpet	5	4	4	3	9	8	8	5	8	4	5
 LogisticRainCascade	4	2	4	3	5	7	6	6	4	3	4
 PeanoCurveWeaveTiles	3	2	5	3	5	7	6	6	5	3	3
+CoupledMapLatticeChaosWaves	3	4	5	5	6	7	7	7	6	4	3
+RuleThirtyCurtain	2	4	6	7	5	6	7	8	6	4	3
+RuleHundredTenGliders	2	4	6	7	5	6	7	8	6	4	3
+SmoothLifeGliderField	6	5	4	4	7	8	8	6	7	5	6
+BarkleySpiralExcitable	5	4	4	4	8	8	8	6	7	4	5
+AllenCahnCoarsening	6	3	3	3	7	8	7	4	6	5	6
+PottsGrainFoto	5	2	4	3	6	8	7	5	5	4	5
+SchellingSegregationPhoto	3	2	5	4	7	8	8	6	6	4	4
+VoterBoundaryFronts	3	2	5	4	6	7	7	6	5	3	4
+AxelrodCultureDomains	3	2	4	3	7	7	7	5	6	3	4
+SznajdOpinionStreaks	3	3	5	6	5	7	7	6	5	4	3
+CyclicTrafficJamDiagonals	2	2	6	4	6	7	7	8	6	3	3
+SirEpidemicWaveFronts	3	4	5	6	6	7	7	7	6	5	3

@@ -2829,14 +2829,6 @@
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <TextureShader minTimeSolo="25" maxTimeSolo="66" interest="7" file="..\\Scene2D\\ConcentricPhoto.frag" type="normal" mood="psychedelic,calm" probability="0.45" complexity="3" gpuMs="0.34">
-    <rig preset="flat"/>
-    <float name="centreP" minValue="0" maxValue="1"></float>
-    <float name="contrastP" minValue="0" maxValue="1"></float>
-    <float name="zoomP" minValue="0" maxValue="1"></float>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
   <TextureShader minTimeSolo="16" maxTimeSolo="43" interest="6" file="..\\Scene2D\\MarchingSquaresIsobands.frag" type="normal" mood="calm,bright" probability="0.45" complexity="3" gpuMs="0.35">
     <rig preset="flat"/>
     <float name="smoothP" minValue="0" maxValue="1"></float>
@@ -3527,6 +3519,12 @@
   <TextureShader minTimeSolo="11" maxTimeSolo="28" interest="5" file="..\\Scene2D\\FlexuralIceSheetWaves.frag" type="normal" mood="calm,dreamy,cinematic" probability="0.45" complexity="6" gpuMs="0.55">
     <rig preset="flat"/>
     <float name="crackP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader minTimeSolo="39" maxTimeSolo="102" interest="8" file="..\\Scene2D\\SmoothLifeGliderField.frag" type="normal" mood="dreamy,calm,gallery" probability="0.45" complexity="7">
+    <rig preset="flat"/>
+    <float name="scaleP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
