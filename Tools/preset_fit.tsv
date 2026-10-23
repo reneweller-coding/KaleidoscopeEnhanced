@@ -2401,3 +2401,17 @@ MonotypePressPull	5	2	3	3	6	7	6	3	5	4	5
 ChalkEraseSmearGhosts	5	3	3	6	4	7	6	3	4	5	5
 PastelDustBloom	6	2	2	3	5	8	6	2	4	4	6
 WoodcutKeylineBlocks	3	2	4	5	5	7	6	4	4	4	3
+ImageQuiltingSeamDrift	4	2	4	3	6	8	7	4	5	3	4
+WangTileStochasticFloor	3	2	5	3	5	7	6	6	4	3	3
+GaborNoiseOrientationField	3	3	5	4	8	7	7	6	7	3	3
+PhasorNoiseCoherentStripes	3	3	5	4	8	7	7	6	7	3	3
+SpotNoiseFlowSmear	6	2	3	3	6	7	6	3	5	4	6
+PoissonDiskGrowingStipple	4	3	4	6	5	7	6	4	4	5	5
+TextureAdvectionPhaseFlow	7	3	3	3	8	8	7	3	6	4	7
+TextureBombingSprites	4	2	4	3	6	7	6	4	5	3	4
+SparseConvolutionFoamField	5	3	4	4	6	7	6	4	5	4	5
+ExemplarInpaintFrontSpread	5	3	3	5	4	7	6	3	4	5	5
+WaveletNoiseBandCascade	5	3	4	3	8	7	7	4	7	3	5
+PatchMatchNearestFieldMorph	3	2	5	3	5	7	6	6	4	3	3
+TriplanarBlendBandsFlow	4	3	3	5	5	7	6	3	4	5	5
+SolidTextureSliceFlight	6	4	3	3	8	8	7	3	7	4	6
