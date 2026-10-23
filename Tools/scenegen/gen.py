@@ -375,6 +375,104 @@ void labWalk(float seed, ivec4 n, float period)
 }
 """
 
+# Fractals filled with the photo (family D of docs/proposals-2026-10-23-flaechig-400.md): the orbit trap is the photo,
+# read at the iterates that fall into a window of the plane.  Appended for sources that call fracTrap(.
+FRAC_LIB = r"""
+// ---- fractals with the photo as orbit trap ----
+/**  The photo at an iterate of an orbit, if the iterate lies in the trap window: the photo covers the window
+ * |x|, |y| < sc, mirrored beyond it by the photo's mirror repeat.
+ *
+ * @param z   The iterate. (in)
+ * @param sc  The window's half size. (in)
+ *
+ * @return
+ *   The photo's colour (rgb) and the trap's weight (a: 1 well inside the window, 0 outside).
+ **/
+vec4 fracTrap(vec2 z, float sc)
+{
+    vec2 q = z / sc;
+    float w = (1.0 - smoothstep(0.75, 1.0, max(abs(q.x), abs(q.y)))) * step(dot(z, z), 1e6);
+    if (w < 0.002) return vec4(0.0);
+    return vec4(imgLod(q * 0.5 + 0.5, 0.6), w);
+}
+
+/**  The zoom of an endless-looking fractal tour: a raised cosine over the clock (continuous in value and speed, no
+ * wrap jump), from the whole set to a deep zoom and back.
+ *
+ * @param run    The clock; one cycle per unit. (in)
+ * @param depth  How deep the zoom goes, in powers of e. (in)
+ *
+ * @return
+ *   The scale of the view, 1 (the whole set) down to exp(-depth).
+ **/
+float fracZoom(float run, float depth)
+{
+    return exp(-depth * (0.5 - 0.5 * cos(6.2831853 * run)));
+}
+
+/**  The finished colour of a fractal pixel: the photo gathered by the trap where the orbit visited the window, the
+ * dimmed photo's far-away colour where it did not, shaded by how long the orbit lived.
+ *
+ * @param acc   The sum of the trap's colours weighted. (in)
+ * @param accw  The sum of the weights. (in)
+ * @param esc   How long the orbit lived, 0 (escaped at once) to 1 (never). (in)
+ * @param uv    The pixel's place in the photo, for the background. (in)
+ *
+ * @return
+ *   The colour.
+ **/
+vec3 fracCompose(vec3 acc, float accw, float esc, vec2 uv)
+{
+    vec3 hit = acc / max(accw, 1e-3);
+    vec3 bg = imgLod(uv, 2.0) * (0.55 + 0.4 * esc);
+    return mix(bg, hit, smoothstep(0.0, 0.6, accw));
+}
+
+/**  The product of two complex numbers.
+ *
+ * @param a  The first factor. (in)
+ * @param b  The second factor. (in)
+ *
+ * @return
+ *   a times b.
+ **/
+vec2 fcMul(vec2 a, vec2 b) { return vec2(a.x * b.x - a.y * b.y, a.x * b.y + a.y * b.x); }
+/**  The quotient of two complex numbers.
+ *
+ * @param a  The dividend. (in)
+ * @param b  The divisor. (in)
+ *
+ * @return
+ *   a divided by b.
+ **/
+vec2 fcDiv(vec2 a, vec2 b) { return vec2(a.x * b.x + a.y * b.y, a.y * b.x - a.x * b.y) / max(dot(b, b), 1e-12); }
+/**  The complex sine.
+ *
+ * @param z  The argument. (in)
+ *
+ * @return
+ *   sin z.
+ **/
+vec2 fcSin(vec2 z) { return vec2(sin(z.x) * cosh(z.y), cos(z.x) * sinh(z.y)); }
+/**  The complex exponential.
+ *
+ * @param z  The argument. (in)
+ *
+ * @return
+ *   exp z.
+ **/
+vec2 fcExp(vec2 z) { return exp(z.x) * vec2(cos(z.y), sin(z.y)); }
+/**  A real power of a complex number (principal branch).
+ *
+ * @param z  The base. (in)
+ * @param p  The power. (in)
+ *
+ * @return
+ *   z to the power p.
+ **/
+vec2 fcPow(vec2 z, float p) { float r = length(z), a = atan(z.y, z.x); return pow(r, p) * vec2(cos(p * a), sin(p * a)); }
+"""
+
 # Scenes with a field of their own (//@state W H RATE [32], EffectShader::stepState): the step's helpers.
 STATE_LIB = r"""
 // ---- the scene's own field (state pass) ----
@@ -2838,6 +2936,8 @@ def assemble(name):
         out.append(FAMILY_LIB)
     if re.search(r"\blabWalk\s*\(", src):
         out.append(LAB_LIB)
+    if re.search(r"\bfracTrap\s*\(", src):
+        out.append(FRAC_LIB)
     if st:
         out.append(STATE_LIB)
     if re.search(r"vec2\s+chain\s*\(", body):
