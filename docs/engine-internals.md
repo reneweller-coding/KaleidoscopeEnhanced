@@ -7705,3 +7705,18 @@ named in its `@brief`, its audio coupling in the doc block, and a knob (`sizeP` 
   silently falls back to the test card and every row of the profile differs; Crossfade must read 55.3), and an order value
   taken from the photo must be normalised against the scene, or the harness scene (still, smooth) and the moving one
   (rough everywhere) need opposite repairs.
+
+**Release v1.19.0 (23.10.2026, tag on 7713bc82).** 2475 scenes, 210 transitions, 20 new labs and 40 chain classes with 100
+variants each, the rebuilt audio analysis. The chain of v1.18 held, with these additions:
+- `Tools/release_check.py --skip snapshots` (26 min of which chain 11, perf 6.5): three steps red. *analyzer*: novelty and the
+  section threshold are in new units since the 22.10 rebuild (14 differences, nothing else), so `analyzer_regress.py --update`
+  after looking at the list. *shaderdoc* and *layout*: the 100 generated transitions (`tgen.py build`) come out of the template
+  with long comment lines and unaligned `uniform` comments; `doc_shaders.py`, then `cgvr_format.py` without `--check`, 101 files,
+  whitespace only. A `tgen.py build` is always followed by these two.
+- `deploy.ps1 -Build` rebuilds all four programs (Kaleidoscope, PresetEditor, SetupTool, ExportTool) and packs: 3.5 min, ZIP
+  43.6 MB, Setup 24.2 MB, 3508 entries. The portable ZIP, unpacked into a fresh folder, ran one export per genre preset
+  without a FATAL or a shader error (30 s of `review128.wav`, 640 x 360).
+- **The catalogue PDF**: Chrome dies with exit code `0xE0000008` (out of memory) on the single page of 2475 scenes, with and
+  without `--user-data-dir`. `Tools/print_catalog_pdf.py` prints five parts of about 540 entries (5 s each) and joins them with
+  Ghostscript: 1002 pages, 73 MB. The one catalogue image that changed (PolaroidDevelopSquare) was rendered again with
+  `render_catalog_images.ps1 -Kind trans`, then `make_catalog.py "" docs/Catalog/rendered/fxscan`.
