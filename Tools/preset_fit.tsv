@@ -2125,3 +2125,15 @@ RecursiveKaleidoCells	4	5	6	3	9	7	9	6	9	4	5
 PinwheelRotationFold	3	3	6	3	7	6	7	6	7	3	3
 AntisymmetryNegativeKaleido	3	3	6	3	8	6	8	6	8	3	3
 BullseyeMirrorRings	3	3	6	3	7	6	7	6	7	3	4
+SpringLatticeWarp	5	4	5	3	7	7	7	5	6	4	6
+HexLatticeBreathWarp	5	3	5	3	7	7	7	5	6	3	6
+PolarGridPetalWarp	4	4	5	3	8	7	8	5	7	3	5
+FibonacciSpiralGridWarp	5	4	4	3	7	7	7	4	6	4	6
+BrightnessCartogram	5	4	4	3	6	7	6	4	5	4	6
+GradientPushPullPhoto	4	3	4	4	6	7	6	4	5	3	5
+KinkFrontShift	4	3	5	3	6	7	6	5	5	3	4
+LadderSwayBands	4	2	5	3	5	6	6	5	4	2	4
+TwistedDiskStack	4	4	5	3	7	7	7	5	6	3	5
+PinchPointNet	5	4	5	3	7	7	7	5	6	4	6
+SelfLensingPhoto	6	6	5	4	8	8	8	5	7	6	6
+GrinPhotoMirage	5	5	4	3	7	7	7	4	6	5	6
