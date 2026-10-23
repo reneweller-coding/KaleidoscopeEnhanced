@@ -20975,4 +20975,60 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
 
+  <TextureShader file="..\\Scene2D\\CeilingFanShadowSweep.frag" type="normal" mood="cinematic,calm,dark" probability="0.45" complexity="4">
+    <rig preset="flat"/>
+    <float name="bladeP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene2D\\ChainLinkFenceShadow.frag" type="normal" mood="cinematic,dark,gallery" probability="0.45" complexity="4">
+    <rig preset="flat"/>
+    <float name="wireP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene2D\\LaceCurtainBreeze.frag" type="normal" mood="calm,dreamy,gallery" probability="0.45" complexity="5">
+    <rig preset="flat"/>
+    <float name="laceP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene2D\\SpokeShadowWheel.frag" type="normal" mood="cinematic,dark,gallery" probability="0.45" complexity="4">
+    <rig preset="flat"/>
+    <float name="spokeP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene2D\\WindowGrilleGlide.frag" type="normal" mood="cinematic,calm,gallery" probability="0.45" complexity="4">
+    <rig preset="flat"/>
+    <float name="gridP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene2D\\PerforatedShadeStars.frag" type="normal" mood="cinematic,gallery,calm" probability="0.45" complexity="4">
+    <rig preset="flat"/>
+    <float name="holeP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene2D\\VenetianTwistShadows.frag" type="normal" mood="cinematic,dark,gallery" probability="0.45" complexity="4">
+    <rig preset="flat"/>
+    <float name="slatP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene2D\\LeafDappleDrift.frag" type="normal" mood="calm,dreamy,bright" probability="0.45" complexity="5">
+    <rig preset="flat"/>
+    <float name="leafP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
 </configuration>
