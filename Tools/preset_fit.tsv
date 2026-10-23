@@ -2209,3 +2209,15 @@ FlipbookPageCascade	3	2	5	4	6	7	6	5	5	3	4
 RotoscopeLineBoil	3	2	4	5	5	7	6	4	4	4	4
 MuybridgeGridSequence	3	2	5	4	5	7	6	6	4	3	3
 ZoetropeSlitStrips	3	3	6	5	8	7	7	7	7	3	3
+DctBlockBasisMosaic	3	2	5	4	6	7	7	7	5	3	3
+JpegGenerationLoss	3	2	5	5	5	7	6	7	5	3	3
+VectorQuantCodebookTiles	3	2	5	4	6	7	7	7	5	3	3
+HuffmanTreemapTiles	2	2	5	3	5	8	7	7	4	2	3
+KMeansPaletteVoronoi	4	2	4	3	6	7	6	5	4	3	4
+RunLengthStreaks	4	2	4	4	5	7	6	6	4	3	4
+DeltaCodingResiduals	3	3	5	6	5	6	6	7	5	4	3
+EntropyHeatContours	3	4	5	5	6	7	7	8	5	4	3
+MortonZOrderShuffle	2	2	6	4	6	6	7	8	6	2	3
+BitDepthPosterBands	3	2	5	4	6	7	6	6	5	3	3
+AdamSevenPassReveal	3	2	5	3	5	7	7	7	5	3	3
+PngFilterScanlines	3	3	5	6	5	6	6	7	5	4	3
