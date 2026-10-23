@@ -5,11 +5,11 @@
  *
  * Audio Reactivity (structure, not only light):
  *   audioSwell      -> the smear's length: the photo runs out into the flow as the music swells
- *   audioAdvance    -> the waves travel (integrated); audioHarmAdvance steps the wave number
+ *   audioAdvance    -> the waves travel (integrated); audioSwell sets their amplitude
  *
  * Knobs: lengthP (the base smear length), scaleP (the flow's scale), hueP.
 //@params lengthP scaleP
-//@audio audioSwell audioAdvance audioHarmAdvance
+//@audio audioSwell audioAdvance
 //@body
 
 /**  The flow: a jet stream with travelling Rossby waves
@@ -24,7 +24,7 @@
 vec2 licVel(vec2 p, float t, int ch)
 {
     vec2 q = p * (1.8 + 3.0 * clamp(scaleP, 0.0, 1.0));
-    float k = 3.0 + floor(audioHarmAdvance * 0.0);
+    float k = 3.0;
     float amp = 0.15 + 0.25 * clamp(audioSwell, 0.0, 1.0);
     float eta = amp * sin(k * q.x * 0.5 - 0.5 * t) + 0.4 * amp * sin(2.3 * k * q.x * 0.5 + 0.9 * t);
     float etax = amp * 0.5 * k * cos(k * q.x * 0.5 - 0.5 * t) + 0.4 * amp * 1.15 * k * cos(2.3 * k * q.x * 0.5 + 0.9 * t);

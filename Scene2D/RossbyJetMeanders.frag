@@ -14,7 +14,7 @@
  *
  *  Audio Reactivity (structure, not only light):
  *    audioSwell      -> the smear's length: the photo runs out into the flow as the music swells
- *    audioAdvance    -> the waves travel (integrated); audioHarmAdvance steps the wave number
+ *    audioAdvance    -> the waves travel (integrated); audioSwell sets their amplitude
  *
  *  Knobs: lengthP (the base smear length), scaleP (the flow's scale), hueP.
  *
@@ -28,19 +28,17 @@ uniform sampler2D tex0;          ///< The current photo.
 uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
 uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float sceneTime;        ///< Seconds since this scene was activated.
-uniform float sceneAdvance;     ///< The music's advance since this scene was activated (integrated, never jumps).
-uniform float audioAdvance;     ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
-                                ///< backwards).
-uniform float audioLevel;       ///< Overall loudness, 0..1.
-uniform float audioValence;     ///< Mood valence: 0 dark .. 1 bright.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
-uniform float audioPhase;       ///< Rotation phase driven by the music (integrated, never jumps).
-uniform float audioSwell;       ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioHarmAdvance; ///< The harmony's advance: ~1 more with every chord change (integrated, never jumps
-                                ///< back).
+uniform float sceneTime;      ///< Seconds since this scene was activated.
+uniform float sceneAdvance;   ///< The music's advance since this scene was activated (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                              ///< backwards).
+uniform float audioLevel;     ///< Overall loudness, 0..1.
+uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 
-uniform float lengthP; ///< Length knob: the base smear length.
+uniform float lengthP; ///< Length knob: the base smear length, 0..1.
 uniform float scaleP;  ///< Scale knob.
 uniform float hueP;    ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
@@ -559,7 +557,7 @@ vec3 licSmear( vec2 p, float t, float len, int ch )
 vec2 licVel( vec2 p, float t, int ch )
 {
     vec2  q = p * ( 1.8 + 3.0 * clamp( scaleP, 0.0, 1.0 ) );
-    float k = 3.0 + floor( audioHarmAdvance * 0.0 );
+    float k = 3.0;
     float amp = 0.15 + 0.25 * clamp( audioSwell, 0.0, 1.0 );
     float eta = amp * sin( k * q.x * 0.5 - 0.5 * t ) + 0.4 * amp * sin( 2.3 * k * q.x * 0.5 + 0.9 * t );
     float etax = amp * 0.5 * k * cos( k * q.x * 0.5 - 0.5 * t )
