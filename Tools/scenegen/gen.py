@@ -290,6 +290,91 @@ vec3 famExpose(vec3 col, float gain, float gam, float haze, float h)
 }
 """
 
+# The labs of 23.10.2026 (docs/proposals-2026-10-23-flaechig-400.md, family A): a lab has a vocabulary of up to four
+# slots, each with some classes; its walk steps one slot at a time to another class, cross-fading the two looks, and
+# re-rolls all slots after a new section of the music.  Appended for sources that call labWalk(.
+LAB_LIB = r"""
+// ---- the lab's walk ----
+/** Test pin of slot 0: 1 + the class to hold it on (0: the walk decides). */
+uniform float labPinA;
+/** Test pin of slot 1. */
+uniform float labPinB;
+/** Test pin of slot 2. */
+uniform float labPinC;
+/** Test pin of slot 3. */
+uniform float labPinD;
+/** The share of an epoch a class change takes to cross-fade. */
+const float LAB_FADE = 0.2;
+/** The classes of the four slots, for each of the (up to four) looks the walk blends. */
+ivec4 gLabK[4];
+/** The weights of those looks. */
+float gLabW[4];
+
+/**  A class of a slot in an epoch: a hash of the slot, the epoch and the walk's seed.
+ *
+ * @param s     The slot, 0..3. (in)
+ * @param e     The epoch (a whole number). (in)
+ * @param seed  The walk's seed. (in)
+ * @param n     The number of classes in the slot. (in)
+ *
+ * @return
+ *   The class, 0..n-1.
+ **/
+int labCls(int s, float e, float seed, int n)
+{
+    return int(min(floor(hash21(vec2(e * 1.7 + seed, float(s) * 9.13 + 2.1)) * float(n)), float(n - 1)));
+}
+
+/**  The lab's walk through its vocabulary, into gLabK (class of every slot) and gLabW (weight of each look).  The
+ * slots change one after another (each takes a fifth of an epoch to cross-fade, the others stand), so a look differs
+ * from the one it fades into by one class; a new section of the music re-rolls every slot (the old look fades out
+ * over eight seconds).  The clock is the music's own advance with a floor of an epoch a minute.  The labPin knobs
+ * hold a slot on a class (1 + class), for tests.
+ *
+ * @param seed    The walk's seed, rolled once per activation. (in)
+ * @param n       The number of classes of each slot (0: the slot is not used). (in)
+ * @param period  The epoch's length in units of the clock (1: about twenty seconds). (in)
+ **/
+void labWalk(float seed, ivec4 n, float period)
+{
+    int nS = max(int(n.x > 0) + int(n.y > 0) + int(n.z > 0) + int(n.w > 0), 1);
+    float clk = (0.9 * sceneAdvance + sceneTime / 75.0) / period + fract(seed * 0.37) * 0.8;
+    float m = smoothstep(0.0, 8.0, audioSectionAge);
+    if (audioSectionPrev == audioSectionId) m = 1.0;
+    for (int j = 0; j < 2; ++j) {
+        float sd = seed + 0.713 * (j == 0 ? audioSectionPrev : audioSectionId);
+        ivec4 base = ivec4(0), alt = ivec4(0);
+        int fs = 0;
+        float ff = 0.0;
+        for (int s = 0; s < 4; ++s) {
+            if (n[s] <= 0) continue;
+            float w = clk + float(s) / float(nS);
+            float e = floor(w);
+            base[s] = labCls(s, e, sd, n[s]);
+            alt[s] = labCls(s, e + 1.0, sd, n[s]);
+            float f = smoothstep(1.0 - LAB_FADE, 1.0, w - e);
+            if (f > 0.0) { fs = s; ff = f; }
+        }
+        float wj = j == 0 ? 1.0 - m : m;
+        ivec4 b2 = base;
+        b2[fs] = alt[fs];
+        gLabK[2 * j] = base;
+        gLabW[2 * j] = wj * (1.0 - ff);
+        gLabK[2 * j + 1] = b2;
+        gLabW[2 * j + 1] = wj * ff;
+    }
+    if (labPinA + labPinB + labPinC + labPinD > 0.5) {
+        for (int i = 0; i < 4; ++i) {
+            if (labPinA > 0.5) gLabK[i].x = min(int(labPinA + 0.5) - 1, n.x - 1);
+            if (labPinB > 0.5) gLabK[i].y = min(int(labPinB + 0.5) - 1, n.y - 1);
+            if (labPinC > 0.5) gLabK[i].z = min(int(labPinC + 0.5) - 1, n.z - 1);
+            if (labPinD > 0.5) gLabK[i].w = min(int(labPinD + 0.5) - 1, n.w - 1);
+            gLabW[i] = i == 0 ? 1.0 : 0.0;
+        }
+    }
+}
+"""
+
 # Scenes with a field of their own (//@state W H RATE [32], EffectShader::stepState): the step's helpers.
 STATE_LIB = r"""
 // ---- the scene's own field (state pass) ----
@@ -2273,6 +2358,8 @@ def assemble(name):
     out += [" */", "", "uniform vec2  resolution;", "uniform float time;", "uniform sampler2D tex0;",
             "uniform sampler2D tex1;", "uniform float interpolation;", "", "uniform float sceneTime;",
             "uniform float sceneAdvance;"]
+    if re.search(r"\blabWalk\s*\(", src):
+        audio += [a for a in ("audioSectionId", "audioSectionPrev", "audioSectionAge") if a not in audio]
     for a in BASE_AUDIO + [a for a in audio if a not in BASE_AUDIO]:
         m = re.match(r"(\w+)\[(\d+)\]", a)
         if a in VEC3_AUDIO:
@@ -2296,6 +2383,8 @@ def assemble(name):
         out.append(PHOTOB_LIB)
     if re.search(r"\bfamHue\s*\(", src):
         out.append(FAMILY_LIB)
+    if re.search(r"\blabWalk\s*\(", src):
+        out.append(LAB_LIB)
     if st:
         out.append(STATE_LIB)
     if re.search(r"vec2\s+chain\s*\(", body):
