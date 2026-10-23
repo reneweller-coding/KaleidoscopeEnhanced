@@ -2953,12 +2953,6 @@
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <TextureShader minTimeSolo="20" maxTimeSolo="53" interest="5" file="..\\Scene2D\\OpticalFlowSlideMorph.frag" type="normal" mood="dreamy,calm,psychedelic" probability="0.45" complexity="4" gpuMs="0.74">
-    <rig preset="flat"/>
-    <float name="flowP" minValue="0" maxValue="1"></float>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
   <TextureShader minTimeSolo="31" maxTimeSolo="82" interest="5" file="..\\Scene2D\\PhotoDepthParallax.frag" type="normal" mood="calm,cinematic,gallery" probability="0.45" complexity="3" gpuMs="0.67">
     <rig preset="flat"/>
     <float name="depthP" minValue="0" maxValue="1"></float>
@@ -3152,6 +3146,12 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
   <TextureShader minTimeSolo="39" maxTimeSolo="102" interest="6" file="..\\Scene2D\\LedDiffuserBloom.frag" type="normal" mood="calm,dreamy,gallery" probability="0.45" complexity="5">
+    <rig preset="flat"/>
+    <float name="sizeP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader minTimeSolo="39" maxTimeSolo="102" interest="6" file="..\\Scene2D\\KinetoscopePeepholeIris.frag" type="normal" mood="cinematic,dark,gallery" probability="0.45" complexity="5">
     <rig preset="flat"/>
     <float name="sizeP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
