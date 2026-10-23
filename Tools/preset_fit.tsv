@@ -2415,3 +2415,15 @@ WaveletNoiseBandCascade	5	3	4	3	8	7	7	4	7	3	5
 PatchMatchNearestFieldMorph	3	2	5	3	5	7	6	6	4	3	3
 TriplanarBlendBandsFlow	4	3	3	5	5	7	6	3	4	5	5
 SolidTextureSliceFlight	6	4	3	3	8	8	7	3	7	4	6
+HilbertTraceSingleLine	4	2	4	5	4	8	7	5	4	4	5
+MedialAxisSkeletonBloom	3	3	5	6	5	7	6	6	5	5	3
+StraightSkeletonRoofLines	4	3	4	5	5	7	6	4	4	6	4
+ContourParallelEchoes	3	3	5	6	5	7	6	6	5	4	3
+ConvexHullPeelLayers	4	4	4	6	5	7	6	5	4	5	4
+CentroidalTreemapRelax	4	2	4	3	5	8	6	4	4	3	4
+ForceDirectedMeshSettle	4	3	5	5	5	7	7	6	5	4	4
+WireframeRidgeScan	3	5	6	7	5	7	8	8	6	5	3
+MinimumSpanningTreeColourWeb	4	4	4	6	5	7	6	5	4	5	4
+TruchetFlowLineArcs	3	3	5	4	6	7	7	7	5	4	3
+SpiralHalftoneLine	4	2	3	5	4	8	6	3	3	5	5
+ContinuousLineScribbleDensity	4	2	3	3	4	7	5	3	3	3	4
