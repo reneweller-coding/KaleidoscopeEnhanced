@@ -1,0 +1,254 @@
+=== RadialSpeedRushCut
+brief: TRANSITION RADIAL SPEED RUSH CUT: the picture rushes outwards in soft radial streaks, and the scene changes inside the rush.
+about: Both scenes are smeared along rays from the centre, the old one flying outwards, the new one arriving from the middle; the streaks are soft, with no flash and no jolt, and the rush grows and fades with the progress.
+music: audioSwell -> the length of the streaks
+knob: rushP 0.5 2.2 the length of the streaks
+knob: coreP 0.5 2.0 how large the calm centre is
+moods: aggressive,bright
+minfade: 3
+prob: 0.07
+cx: 3
+huegain: 0.05
+---
+vec4 trans( vec2 p, float d )
+{
+    float m = trMid( d );
+    vec2  dir = p - 0.5;
+    float len = 0.16 * gKA * m * ( 1.0 + 0.3 * audioSwell );
+    vec4  sa = vec4( 0.0 );
+    vec4  sb = vec4( 0.0 );
+    for ( int i = 0; i < 12; ++i )
+    {
+        float t = float( i ) / 11.0;
+        float k = 1.0 - len * t * smoothstep( 0.0, 0.25 * gKB, length( dir ) );
+        sa += tAm( 0.5 + dir * k );
+        sb += tBm( 0.5 + dir * k );
+    }
+    sa /= 12.0;
+    sb /= 12.0;
+    return mix( sa, sb, smoothstep( 0.4, 0.6, d ) );
+}
+
+=== DiagonalSliceStaircase
+brief: TRANSITION DIAGONAL SLICE STAIRCASE: diagonal strips step past each other like a staircase, each showing the new scene.
+about: The picture is cut into diagonal strips; they take the new scene one after the other along the diagonal, alternate strips sliding a little to the side while they change.
+music: audioSwell -> a slight breath of the brightness in the middle (light only)
+knob: stripsP 0.5 2.2 the number of strips
+knob: stepP 0.5 2.0 how far the strips slide
+moods: aggressive,wipe,blocky
+minfade: 3
+prob: 0.06
+cx: 1
+huegain: 0.0
+---
+vec4 trans( vec2 p, float d )
+{
+    float n = floor( 6.0 + 5.0 * gKA );
+    float s = ( p.x * resolution.x / resolution.y + p.y ) / ( resolution.x / resolution.y + 1.0 );
+    float strip = floor( s * n );
+    float order = strip / n;
+    float u = clamp( d * 1.4 - 0.4 * order, 0.0, 1.0 );
+    float w = smoothstep( 0.45, 0.55, u );
+    float par = mod( strip, 2.0 ) * 2.0 - 1.0;
+    vec2  sh = vec2( par * 0.05 * gKB * sin( Pi * u ), 0.0 );
+    vec4  a = tAm( p - sh );
+    vec4  b = tBm( p + sh );
+    return mix( a, b, w );
+}
+
+=== FoldedCardFlipPair
+brief: TRANSITION FOLDED CARD FLIP PAIR: the picture is two cards that flip over one after the other and show the new scene on their backs.
+about: The left half turns over about its own vertical axis first, then the right half, each narrowing to a line and widening again as the new scene.
+music: audioSwell -> none; the order is left then right
+knob: cardsP 0.5 2.2 how much the second card lags
+knob: perspP 0.5 2.0 how strong the perspective shading is
+moods: wipe
+minfade: 4
+prob: 0.06
+cx: 1
+huegain: 0.0
+---
+vec4 trans( vec2 p, float d )
+{
+    float side = ( p.x < 0.5 ) ? 0.0 : 1.0;
+    float L = 0.35 * gKA;
+    float u = clamp( ( d - L * side ) / ( 1.0 - L ), 0.0, 1.0 );
+    if ( u <= 0.0 )
+        return tA( p );
+    if ( u >= 1.0 )
+        return tB( p );
+    float th = Pi * smoothstep( 0.0, 1.0, u );
+    float ct = cos( th );
+    float sx = max( abs( ct ), 0.04 );
+    float cx = 0.25 + 0.5 * side;
+    vec2  uv = vec2( cx + ( p.x - cx ) / sx, p.y );
+    float inside = ( abs( ( p.x - cx ) / sx ) < 0.25 ) ? 1.0 : 0.0;
+    vec4  col = ( ct >= 0.0 ) ? tAm( uv ) : tBm( uv );
+    col.rgb *= 0.5 + 0.5 * mix( 1.0, sx, gKB * 0.7 );
+    return mix( vec4( mix( tA( p ), tB( p ), step( 0.5, u ) ).rgb * 0.4, 1.0 ), col, inside );
+}
+
+=== ZoomPunchBlurHandoff
+brief: TRANSITION ZOOM PUNCH BLUR HANDOFF: the old scene zooms in with a radial blur and the new scene comes out of the middle.
+about: A soft zoom: the old picture grows and blurs radially while the new one starts enlarged and settles; the hand-over happens in the blurred middle.
+music: audioSwell -> the depth of the zoom
+knob: zoomP 0.5 2.2 how deep the zoom goes
+knob: blurP 0.5 2.0 how strong the radial blur is
+moods: aggressive,bright
+minfade: 3
+prob: 0.07
+cx: 3
+huegain: 0.05
+---
+vec4 trans( vec2 p, float d )
+{
+    vec2  dir = p - 0.5;
+    float za = 0.35 * gKA * ( 1.0 + 0.3 * audioSwell ) * smoothstep( 0.0, 0.6, d );
+    float zb = 0.35 * gKA * ( 1.0 - smoothstep( 0.4, 1.0, d ) );
+    float ba = 0.12 * gKB * smoothstep( 0.0, 0.5, d ) * ( 1.0 - smoothstep( 0.5, 0.65, d ) );
+    float bb = 0.12 * gKB * smoothstep( 0.35, 0.5, d ) * ( 1.0 - smoothstep( 0.5, 1.0, d ) );
+    vec4  sa = vec4( 0.0 );
+    vec4  sb = vec4( 0.0 );
+    for ( int i = 0; i < 10; ++i )
+    {
+        float t = float( i ) / 9.0;
+        sa += tAm( 0.5 + dir / ( 1.0 + za + ba * t ) );
+        sb += tBm( 0.5 + dir / ( 1.0 + zb + bb * t ) );
+    }
+    return mix( sa / 10.0, sb / 10.0, smoothstep( 0.4, 0.6, d ) );
+}
+
+=== HorizontalStreakRelease
+brief: TRANSITION HORIZONTAL STREAK RELEASE: both scenes are drawn out into horizontal streaks and let go of each other again.
+about: A fast but smooth sideways smear, like a quick pan seen as a blur: the old scene is stretched into streaks, the new one condenses out of them, and the picture never jumps.
+music: audioSwell -> the length of the streaks
+knob: streakP 0.5 2.2 the length of the streaks
+knob: shearP 0.5 2.0 how much the streaks slope
+moods: aggressive,wipe
+minfade: 3
+prob: 0.06
+cx: 2
+huegain: 0.0
+---
+vec4 trans( vec2 p, float d )
+{
+    float m = trMid( d );
+    float len = 0.22 * gKA * m * ( 1.0 + 0.3 * audioSwell );
+    vec2  dir = vec2( 1.0, 0.12 * ( gKB - 1.0 ) );
+    vec4  sa = vec4( 0.0 );
+    vec4  sb = vec4( 0.0 );
+    for ( int i = 0; i < 14; ++i )
+    {
+        float t = ( float( i ) / 13.0 - 0.5 );
+        sa += tAm( p + dir * t * len );
+        sb += tBm( p + dir * t * len );
+    }
+    return mix( sa / 14.0, sb / 14.0, smoothstep( 0.35, 0.65, d ) );
+}
+
+=== BloomWhiteFloodHandoff
+brief: TRANSITION BLOOM WHITE FLOOD HANDOFF: the lights of the old scene overflow into a soft white that clears into the new scene; the white is capped and never flashes.
+about: A bloom of the mixed picture grows, the bright parts spill over their neighbours, and the whole picture is lifted towards a pale white, to at most 45 per cent; then the white lifts again and the new scene stands there.
+music: audioSwell -> how high the white rises (always capped)
+knob: bloomP 0.5 2.2 the radius of the bloom
+knob: floodP 0.5 2.0 how high the white rises
+moods: bright
+minfade: 4
+prob: 0.06
+cx: 3
+huegain: 0.0
+---
+vec4 trans( vec2 p, float d )
+{
+    vec4  a = tA( p );
+    vec4  b = tB( p );
+    vec4  c = mix( a, b, smoothstep( 0.35, 0.65, d ) );
+    float m = trMid( d );
+    float r = 16.0 * gKA * m;
+    vec4  bl = 0.5 * ( mix( trBlurA( p, r ), trBlurB( p, r ), smoothstep( 0.35, 0.65, d ) ) + mix( trBlurA( p, 2.0 * r ), trBlurB( p, 2.0 * r ), smoothstep( 0.35, 0.65, d ) ) );
+    float lift = clamp( 0.38 * gKB * m * m * ( 1.0 + 0.15 * audioSwell ), 0.0, 0.45 );
+    vec3  out_ = mix( c.rgb, bl.rgb, 0.6 * m );
+    out_ = mix( out_, vec3( 1.0 ), lift );
+    return vec4( min( out_, vec3( 1.0 ) ), c.a );
+}
+
+=== ColourBlockSlideStack
+brief: TRANSITION COLOUR BLOCK SLIDE STACK: blocks of different widths in alternate rows slide against each other and change the scene as they pass.
+about: The picture is cut into rows of blocks of random width; the blocks slide sideways, alternate rows in opposite directions, and each shows the new scene once it has slid half its way.
+music: audioSwell -> a slight breath of the brightness in the middle (light only)
+knob: rowsP 0.5 2.2 the number of rows
+knob: slideP 0.5 2.0 how far the blocks slide
+moods: aggressive,blocky,wipe
+minfade: 3
+prob: 0.06
+cx: 1
+huegain: 0.0
+---
+vec4 trans( vec2 p, float d )
+{
+    float n = floor( 5.0 + 4.0 * gKA );
+    float row = floor( p.y * n );
+    float rowOff = hash21( vec2( row, 1.3 ) ) * 3.0;
+    float blk = floor( p.x * 6.0 + rowOff );
+    float order = hash21( vec2( blk, row + 4.0 ) );
+    float u = clamp( d * 1.5 - 0.5 * order, 0.0, 1.0 );
+    float w = smoothstep( 0.45, 0.55, u );
+    float dir = ( mod( row, 2.0 ) < 0.5 ) ? 1.0 : -1.0;
+    vec2  sh = vec2( dir * 0.12 * gKB * sin( Pi * u ), 0.0 );
+    vec4  a = tAm( p - sh );
+    vec4  b = tBm( p + sh );
+    return mix( a, b, w );
+}
+
+=== CurtainRaiseTwoPart
+brief: TRANSITION CURTAIN RAISE TWO PART: the new scene opens as a slit that widens sideways and then opens upwards and downwards, like a letterbox.
+about: A thin horizontal slit in the middle first widens to the full width, then the two curtains rise and fall until the frame is full; the edges are soft.
+music: audioPhrasePos -> none; the two parts follow the progress
+knob: slitP 0.5 2.2 how thin the first slit is
+knob: softP 0.5 2.0 how soft the curtain edges are
+moods: wipe
+minfade: 4
+prob: 0.06
+cx: 1
+huegain: 0.0
+---
+vec4 trans( vec2 p, float d )
+{
+    vec4  a = tA( p );
+    vec4  b = tB( p );
+    float u1 = smoothstep( 0.0, 0.55, d );
+    float u2 = smoothstep( 0.4, 1.0, d );
+    float hy = 0.5 * mix( 0.012 / gKA, 1.0, u2 );
+    float hx = 0.5 * u1;
+    float s = 0.02 * gKB;
+    float wx = smoothstep( hx + s, hx - s, abs( p.x - 0.5 ) );
+    float wy = smoothstep( hy + s, hy - s, abs( p.y - 0.5 ) );
+    float w = wx * wy;
+    w = mix( w, 1.0, smoothstep( 0.93, 1.0, d ) );
+    return mix( a, b, w );
+}
+
+=== ParallaxLayerSlideOut
+brief: TRANSITION PARALLAX LAYER SLIDE OUT: the old scene slides outwards in layers by brightness, the new one slides in with its own parallax.
+about: Each scene is read as layers by its brightness (light in front); the old scene's layers fly outwards from the centre at different speeds and the new scene's layers settle from outside, so the picture has depth in the middle of the fade.
+music: audioSwell -> a slight breath of the brightness in the middle (light only)
+knob: depthP 0.5 2.2 the depth between the layers
+knob: reachP 0.5 2.0 how far the layers travel
+moods: wipe
+minfade: 4
+prob: 0.06
+cx: 2
+huegain: 0.0
+---
+vec4 trans( vec2 p, float d )
+{
+    vec2  dir = p - 0.5;
+    vec4  a0 = tA( p );
+    vec4  b0 = tB( p );
+    float la = trLuma( a0.rgb );
+    float lb = trLuma( b0.rgb );
+    float k = 0.28 * gKA * gKB * ( 1.0 + 0.3 * audioSwell );
+    vec4  a = tAm( 0.5 + dir / ( 1.0 + k * ( 0.3 + la ) * smoothstep( 0.0, 0.7, d ) ) );
+    vec4  b = tBm( 0.5 + dir / ( 1.0 - 0.5 * k * ( 0.3 + lb ) * ( 1.0 - smoothstep( 0.3, 1.0, d ) ) ) );
+    return mix( a, b, smoothstep( 0.35, 0.65, d ) );
+}

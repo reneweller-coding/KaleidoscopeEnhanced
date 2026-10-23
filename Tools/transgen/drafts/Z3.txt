@@ -1,0 +1,424 @@
+=== InkBloomWashHandoff
+brief: TRANSITION INK BLOOM WASH HANDOFF: ink spreads in damp paper from several drops, and the clouds carry the new scene.
+about: Several drops of ink fall; each blooms into an irregular cloud with fine fibres at its rim and a darker line where the pigment collects; the clouds grow into each other and the new scene stands where the ink has been.
+music: audioSwell -> the pigment line at the rim darkens
+knob: dropsP 0.5 2.2 the number of ink drops
+knob: fibreP 0.5 2.0 how ragged the rims are
+moods: calm,dreamy
+minfade: 7
+prob: 0.08
+cx: 2
+huegain: 0.05
+---
+vec4 trans( vec2 p, float d )
+{
+    vec4  a = tA( p );
+    vec4  b = tB( p );
+    float asp = resolution.x / resolution.y;
+    vec2  q = p * vec2( asp, 1.0 ) * ( 1.6 + 1.0 * gKA );
+    vec2  g = floor( q );
+    float best = 9.0;
+    for ( int j = -1; j <= 1; ++j )
+        for ( int i = -1; i <= 1; ++i )
+        {
+            vec2 c = g + vec2( float( i ), float( j ) );
+            best = min( best, length( q - ( c + 0.15 + 0.7 * hash22( c + 6.1 ) ) ) );
+        }
+    float rag = fbm2( q * 5.0 + 3.0 ) - 0.5;
+    float f = clamp( best * 1.3 + 0.22 * gKB * rag, 0.0, 1.0 );
+    float w = trThresh( f, d, 0.12 );
+    float t = d * 1.12 - 0.06;
+    float rim = exp( -pow( ( f - t ) / 0.035, 2.0 ) );
+    vec4  c = mix( a, b, w );
+    c.rgb *= 1.0 - 0.28 * rim * ( 0.7 + 0.5 * audioSwell ) * trMid( d ) * 2.0;
+    return c;
+}
+
+=== WatercolorBleedFront
+brief: TRANSITION WATERCOLOUR BLEED FRONT: a watercolour front moves over the picture and leaves the new scene behind it.
+about: An irregular front advances; at its edge the pigment collects in a darker, slightly granular line (the coffee-ring edge of a wash), behind it the new scene lies as a pale wash that deepens to full colour.
+music: audioSwell -> a slight breath of the brightness in the middle (light only)
+knob: edgeP 0.5 2.2 how dark the pigment edge is
+knob: rollP 0.5 2.0 how ragged the front is
+moods: calm,wipe
+minfade: 7
+prob: 0.08
+cx: 2
+huegain: 0.05
+---
+vec4 trans( vec2 p, float d )
+{
+    vec4  a = tA( p );
+    vec4  b = tB( p );
+    float ang = 0.3 + 1.2 * fract( 0.31 * gKB );
+    vec2  dir = vec2( cos( ang ), sin( ang ) );
+    float s = dot( p - 0.5, dir ) * 0.75 + 0.5;
+    float rag = fbm2( p * vec2( resolution.x / resolution.y, 1.0 ) * 4.0 ) - 0.5;
+    float f = clamp( s + 0.2 * gKB * rag, 0.0, 1.0 );
+    float w = trThresh( f, d, 0.08 );
+    float t = d * 1.16 - 0.08;
+    float ring = exp( -pow( ( f - t ) / 0.03, 2.0 ) );
+    float grain = 0.8 + 0.4 * noise2( p * resolution * 0.5 );
+    vec4  wash = mix( vec4( 1.0 ), b, 0.55 + 0.45 * smoothstep( 0.0, 0.3, t - f ) );
+    vec4  c = mix( a, wash, w );
+    c.rgb *= 1.0 - 0.3 * gKA * ring * grain * trMid( d ) * 2.0;
+    return mix( c, b, smoothstep( 0.9, 1.0, d ) );
+}
+
+=== SilkDrapeFoldSweep
+brief: TRANSITION SILK DRAPE FOLD SWEEP: a silk cloth glides over the picture; in front of it the old scene, on it and behind it the new one.
+about: A front with soft cloth folds travels across the picture; the cloth shows the new scene bent by its folds with a sheen of silk highlights, and the old scene is pushed a little by the drape in front of it.
+music: audioSwell -> the depth of the folds
+knob: foldP 0.5 2.2 the number of folds
+knob: sheenP 0.5 2.0 how strong the silk sheen is
+moods: calm,dreamy,wipe
+minfade: 7
+prob: 0.08
+cx: 2
+huegain: 0.05
+---
+vec4 trans( vec2 p, float d )
+{
+    float ang = 0.5;
+    vec2  dir = vec2( cos( ang ), sin( ang ) );
+    float s = dot( p - 0.5, dir ) * 0.8 + 0.5 + 0.06 * sin( p.y * 7.0 );
+    float t = d * 1.5 - 0.25;
+    float u = ( s - t ) / 0.25;
+    float onCloth = smoothstep( 0.0, -0.15, u );
+    float fold = sin( ( u + 0.3 ) * 6.2831853 * gKA * 1.2 ) * exp( -max( u, 0.0 ) * 2.0 );
+    float amp = 0.02 * trMid( d ) * ( 1.0 + 0.4 * audioSwell );
+    vec2  shift = dir * fold * amp * ( u < 0.6 ? 1.0 : 0.0 );
+    vec4  a = tAm( p + shift * 0.6 );
+    vec4  b = tBm( p - shift );
+    vec4  c = mix( a, b, onCloth );
+    float sheen = pow( clamp( 0.5 + 0.5 * fold, 0.0, 1.0 ), 4.0 ) * onCloth * ( 1.0 - smoothstep( -1.2, -0.4, u ) );
+    c.rgb += vec3( 1.0, 0.97, 0.92 ) * sheen * 0.22 * gKB * trMid( d ) * 2.0;
+    return c;
+}
+
+=== PaperFibreTearSlow
+brief: TRANSITION PAPER FIBRE TEAR SLOW: a sheet of paper is torn in long fibres and shows the scene that lies below it.
+about: The old scene is a sheet of paper; a ragged tear travels across it, its edge a band of pale torn fibres with a soft shadow, and below the sheet lies the new scene.
+music: audioSwell -> a slight breath of the brightness in the middle (light only)
+knob: tearP 0.5 2.2 how ragged the tear is
+knob: fibreP 0.5 2.0 how wide the pale fibre band is
+moods: calm,wipe
+minfade: 6
+prob: 0.07
+cx: 2
+huegain: 0.0
+---
+vec4 trans( vec2 p, float d )
+{
+    vec4  a = tA( p );
+    vec4  b = tB( p );
+    float ang = 1.1;
+    vec2  dir = vec2( cos( ang ), sin( ang ) );
+    float s = dot( p - 0.5, dir ) * 0.7 + 0.5;
+    float n1 = fbm2( p * vec2( resolution.x / resolution.y, 1.0 ) * 6.0 + 2.0 ) - 0.5;
+    float n2 = noise2( p * resolution * 0.35 ) - 0.5;
+    float f = clamp( s + 0.16 * gKA * n1 + 0.02 * n2, 0.0, 1.0 );
+    float t = d * 1.3 - 0.15;
+    float u = f - t;
+    float w = smoothstep( 0.0, -0.01, u );
+    float band = ( 1.0 - smoothstep( 0.0, 0.035 * gKB, u ) ) * ( 1.0 - w ) * smoothstep( -0.002, 0.0, u + 0.01 );
+    float shadow = ( 1.0 - smoothstep( 0.0, 0.07, -u ) ) * w * 0.35 * trMid( d ) * 2.0;
+    vec4  c = mix( a, b, w );
+    vec3  paper = vec3( 0.93, 0.91, 0.86 ) * ( 0.9 + 0.2 * noise2( p * resolution * 0.6 ) );
+    c.rgb = mix( c.rgb, paper, clamp( band * 1.2, 0.0, 0.9 ) );
+    c.rgb *= 1.0 - shadow;
+    return c;
+}
+
+=== BurnEdgeEmberRim
+brief: TRANSITION BURN EDGE EMBER RIM: a paper edge glows and eats its way through the old scene, and the new scene lies behind it.
+about: A ragged front of glowing ember (a narrow orange line with a pale hot core) advances; ahead of it the paper scorches brown and dark, behind it the new scene is clear.
+music: audioKick -> a little more glow in the ember (light only)
+knob: emberP 0.5 2.2 how strongly the ember glows
+knob: charP 0.5 2.0 how wide the scorched band is
+moods: dark,wipe
+minfade: 6
+prob: 0.06
+cx: 2
+huegain: 0.0
+---
+vec4 trans( vec2 p, float d )
+{
+    vec4  a = tA( p );
+    vec4  b = tB( p );
+    vec2  q = p * vec2( resolution.x / resolution.y, 1.0 );
+    float s = clamp( 0.55 * ( p.x - 0.5 ) + 0.45 * ( p.y - 0.5 ) + 0.5, 0.0, 1.0 );
+    float n = fbm2( q * 5.0 + vec2( 0.0, 3.0 ) ) - 0.5;
+    float f = clamp( s + 0.2 * n, 0.0, 1.0 );
+    float t = d * 1.34 - 0.17;
+    float u = f - t;
+    float w = smoothstep( 0.005, -0.005, u );
+    float char_ = ( 1.0 - smoothstep( 0.0, 0.09 * gKB, u ) ) * ( 1.0 - w );
+    float ember = exp( -pow( u / ( 0.012 + 0.006 * gKA ), 2.0 ) );
+    vec4  c = mix( a, b, w );
+    c.rgb = mix( c.rgb, c.rgb * vec3( 0.55, 0.38, 0.25 ), 0.8 * char_ );
+    float flick = 0.75 + 0.25 * noise2( q * 40.0 + trClock() * 3.0 );
+    c.rgb += ( vec3( 1.0, 0.45, 0.12 ) * ember + vec3( 1.0, 0.85, 0.5 ) * pow( ember, 3.0 ) ) * flick * ( 0.7 + 0.5 * gKA + 0.3 * audioKick );
+    return c;
+}
+
+=== LaceVeilOverlayFade
+brief: TRANSITION LACE VEIL OVERLAY FADE: a lace veil lies over the old scene, and the new one shines through its holes first.
+about: A fine lace of rosettes and meshes appears as a pale veil, its holes already show the incoming scene, the veil thins away in the order of its own thread thickness until only the new scene is left.
+music: audioSwell -> a slight breath of the brightness in the middle (light only)
+knob: laceP 0.5 2.2 the size of the lace motifs
+knob: veilP 0.5 2.0 how opaque the veil is
+moods: dreamy
+minfade: 6
+prob: 0.06
+cx: 2
+huegain: 0.05
+---
+/**  A lace pattern: threads along the edges of a cellular net with a ring motif in every mesh.
+ *
+ * @param q  The place in lace units. (in)
+ *
+ * @return
+ *   The thread density, 0..1 (1 on a thread).
+ **/
+float laceThread( vec2 q )
+{
+    vec2  g = floor( q );
+    float f1 = 9.0;
+    float f2 = 9.0;
+    for ( int j = -1; j <= 1; ++j )
+        for ( int i = -1; i <= 1; ++i )
+        {
+            vec2  c = g + vec2( float( i ), float( j ) );
+            float dd = length( q - ( c + 0.25 + 0.5 * hash22( c + 1.1 ) ) );
+            if ( dd < f1 )
+            {
+                f2 = f1;
+                f1 = dd;
+            }
+            else if ( dd < f2 )
+                f2 = dd;
+        }
+    float net = 1.0 - smoothstep( 0.0, 0.06, f2 - f1 );
+    float ring = 1.0 - smoothstep( 0.0, 0.035, abs( f1 - 0.26 ) );
+    return clamp( max( net, 0.8 * ring ), 0.0, 1.0 );
+}
+
+vec4 trans( vec2 p, float d )
+{
+    vec4  a = tA( p );
+    vec4  b = tB( p );
+    vec2  q = p * vec2( resolution.x / resolution.y, 1.0 ) * ( 12.0 / gKA );
+    float thr = laceThread( q );
+    float f = clamp( 0.3 * thr + 0.7 * smoothstep( 0.2, 0.8, fbm2( p * 3.0 + 2.0 ) ), 0.0, 1.0 );
+    float w = trThresh( f, d, 0.25 );
+    float m = trMid( d );
+    vec4  c = mix( a, b, w );
+    float veil = thr * m * 1.1 * gKB;
+    return vec4( mix( c.rgb, vec3( 0.97, 0.95, 0.92 ), clamp( veil, 0.0, 0.45 ) ), c.a );
+}
+
+=== GauzeLayerLift
+brief: TRANSITION GAUZE LAYER LIFT: three layers of gauze are lifted off one after another, each taking a part of the old scene with it.
+about: Three weaves of gauze at different angles and mesh sizes lie over the picture and are lifted away in turn; each lift takes a share of the old scene, and under the last layer lies the new one.
+music: audioSwell -> how milky the gauze is
+knob: gauzeP 0.5 2.2 the fineness of the weave
+knob: liftP 0.5 2.0 how far apart the lifts are in time
+moods: calm,dreamy
+minfade: 6
+prob: 0.06
+cx: 2
+huegain: 0.0
+---
+/**  A gauze weave: a thin lattice of threads at an angle.
+ *
+ * @param q    The place in weave units. (in)
+ * @param ang  The angle of the weave in radians. (in)
+ *
+ * @return
+ *   The thread density, 0..1.
+ **/
+float gauze( vec2 q, float ang )
+{
+    float c = cos( ang );
+    float s = sin( ang );
+    vec2  r = vec2( c * q.x + s * q.y, -s * q.x + c * q.y );
+    vec2  th = abs( fract( r ) - 0.5 );
+    return clamp( 1.0 - 4.0 * min( th.x, th.y ), 0.0, 1.0 ) * 0.6 + 0.4 * ( 1.0 - 2.0 * max( th.x, th.y ) );
+}
+
+vec4 trans( vec2 p, float d )
+{
+    vec4  a = tA( p );
+    vec4  b = tB( p );
+    vec2  q = p * vec2( resolution.x / resolution.y, 1.0 ) * ( 60.0 * gKA );
+    float lag = 0.16 * gKB;
+    float l1 = 1.0 - smoothstep( 0.0, 0.5 - lag, d - 0.1 );
+    float l2 = 1.0 - smoothstep( 0.2, 0.7, d );
+    float l3 = 1.0 - smoothstep( 0.5 + lag, 1.0, d );
+    float v = 0.25 * l1 * gauze( q, 0.2 ) + 0.22 * l2 * gauze( q * 0.7, 0.9 ) + 0.2 * l3 * gauze( q * 1.3, 1.6 );
+    float m = clamp( v * ( 1.4 + 0.5 * audioSwell ), 0.0, 0.7 ) * min( 1.0, 4.0 * trMid( d ) );
+    float w = trThresh( 0.5 * ( 1.0 - fbm2( p * 3.0 ) ) + 0.5 * ( 1.0 - p.y ), d, 0.3 );
+    vec4  c = mix( a, b, w );
+    return vec4( mix( c.rgb, vec3( 0.93, 0.94, 0.96 ), m ), c.a );
+}
+
+=== FeltPressFibreMerge
+brief: TRANSITION FELT PRESS FIBRE MERGE: two layers of felt are pressed together, their fibres interlock and the pictures merge into one fibrous weave.
+about: Fine fibres of random direction mix the two scenes pixel by pixel in a felt-like grain, with a soft darkening where the layers are pressed hardest in the middle; then the new scene is carried by the fibres.
+music: audioSwell -> a slight breath of the brightness in the middle (light only)
+knob: fibreP 0.5 2.2 how fine the fibres are
+knob: pressP 0.5 2.0 how hard the layers are pressed
+moods: calm,dark
+minfade: 6
+prob: 0.06
+cx: 2
+huegain: 0.0
+---
+vec4 trans( vec2 p, float d )
+{
+    vec4  a = tA( p );
+    vec4  b = tB( p );
+    vec2  q = p * resolution / ( 6.0 * gKA );
+    float f0 = noise2( q * vec2( 1.0, 0.25 ) );
+    float f1 = noise2( vec2( q.y, q.x ) * vec2( 1.0, 0.25 ) + 4.0 );
+    float c2 = 0.7071;
+    vec2  r = vec2( c2 * q.x + c2 * q.y, -c2 * q.x + c2 * q.y );
+    float f2 = noise2( r * vec2( 1.0, 0.25 ) + 9.0 );
+    float f = clamp( ( f0 + f1 + f2 ) / 3.0 * 1.3 - 0.15 + 0.2 * ( noise2( q * 0.15 ) - 0.5 ), 0.0, 1.0 );
+    float w = trThresh( f, d, 0.2 );
+    float m = trMid( d );
+    vec4  c = mix( a, b, w );
+    c.rgb *= 1.0 - 0.25 * gKB * m * 2.0 * ( 0.6 + 0.4 * f );
+    return c;
+}
+
+=== ChalkDustWipeSmear
+brief: TRANSITION CHALK DUST WIPE SMEAR: a hand wipes chalk over the old scene in broad strokes and the new scene appears in the smears.
+about: Broad slanting strokes of a sponge smear both scenes along their direction; each stroke leaves the new scene behind it and a dusting of pale chalk grains at its edge.
+music: audioSwell -> the breadth of the smear
+knob: strokeP 0.5 2.2 the number of strokes
+knob: smearP 0.5 2.0 how far the smear reaches
+moods: calm,wipe
+minfade: 5
+prob: 0.06
+cx: 2
+huegain: 0.0
+---
+vec4 trans( vec2 p, float d )
+{
+    float ang = 0.45;
+    vec2  dir = vec2( cos( ang ), sin( ang ) );
+    vec2  nor = vec2( -dir.y, dir.x );
+    vec2  q = ( p - 0.5 ) * vec2( resolution.x / resolution.y, 1.0 );
+    float across = dot( q, nor ) * ( 2.0 + 2.0 * gKA ) + 0.5;
+    float along = dot( q, dir ) * 0.8 + 0.5;
+    float stroke = floor( across );
+    float h = hash21( vec2( stroke, 3.0 ) );
+    float f = clamp( 0.6 * along + 0.4 * h, 0.0, 1.0 );
+    float w = trThresh( f, d, 0.12 );
+    float t = d * 1.24 - 0.12;
+    float near = exp( -pow( ( f - t ) / 0.16, 2.0 ) );
+    float len = 24.0 * gKB * near * ( 1.0 + 0.3 * audioSwell );
+    vec2  step_ = dir * len / resolution;
+    vec4  a = ( tAm( p - step_ ) + tAm( p ) + tAm( p + step_ ) ) / 3.0;
+    vec4  b = ( tBm( p - step_ ) + tBm( p ) + tBm( p + step_ ) ) / 3.0;
+    vec4  c = mix( a, b, w );
+    float dust = step( 0.93, hash21( floor( p * resolution * 0.6 ) ) ) * near * 0.5;
+    c.rgb = mix( c.rgb, vec3( 0.95, 0.95, 0.93 ), dust );
+    return c;
+}
+
+=== WaxResistDyeReveal
+brief: TRANSITION WAX RESIST DYE REVEAL: wax lines resist the dye, so the new scene appears first between the lines and last on them.
+about: A crackle of fine wax lines, like batik, keeps the old scene on its lines; the new scene is dyed in over the open cells with a deeper tint where the dye has just reached.
+music: audioSwell -> the depth of the dye tint
+knob: waxP 0.5 2.2 the fineness of the wax network
+knob: dyeP 0.5 2.0 the depth of the dye tint
+moods: calm,dreamy
+minfade: 7
+prob: 0.07
+cx: 2
+huegain: 0.05
+---
+vec4 trans( vec2 p, float d )
+{
+    vec4  a = tA( p );
+    vec4  b = tB( p );
+    vec2  q = p * vec2( resolution.x / resolution.y, 1.0 ) * ( 3.0 * gKA );
+    vec2  warp = vec2( fbm2( q * 1.2 + 2.0 ), fbm2( q * 1.2 + 7.0 ) ) - 0.5;
+    float r = fbm2( q + 1.3 * warp );
+    float line = pow( 1.0 - abs( 2.0 * r - 1.0 ), 4.0 );
+    float f = clamp( 0.2 * fbm2( q * 3.0 ) + 0.8 * line, 0.0, 1.0 );
+    float w = trThresh( f, d, 0.1 );
+    float t = d * 1.2 - 0.1;
+    float dye = exp( -pow( ( f - t ) / 0.12, 2.0 ) );
+    vec4  c = mix( a, b, w );
+    vec3  indigo = vec3( 0.12, 0.2, 0.5 );
+    c.rgb = mix( c.rgb, c.rgb * indigo * 2.0, clamp( dye * 0.55 * gKB * ( 1.0 + 0.3 * audioSwell ), 0.0, 0.7 ) );
+    return c;
+}
+
+=== ShiboriFoldUnfurl
+brief: TRANSITION SHIBORI FOLD UNFURL: a folded cloth is unfolded strip by strip, each strip showing the new scene with the dye run of the fold.
+about: Parallel strips of cloth unfold one after the other; at every fold edge the dye has run into the cloth, a soft darker tint that fades as the strip is opened.
+music: audioSwell -> the dye run at the folds
+knob: stripsP 0.5 2.2 the number of folds
+knob: dyeP 0.5 2.0 how dark the dye at the folds is
+moods: calm,dreamy
+minfade: 6
+prob: 0.06
+cx: 1
+huegain: 0.05
+---
+vec4 trans( vec2 p, float d )
+{
+    vec4  a = tA( p );
+    vec4  b = tB( p );
+    float n = floor( 5.0 + 4.0 * gKA );
+    float x = p.x * n;
+    float strip = floor( x );
+    float local = fract( x );
+    float h = hash21( vec2( strip, 2.0 ) );
+    float f = clamp( 0.65 * ( strip + 0.5 ) / n + 0.35 * h, 0.0, 1.0 );
+    float w = trThresh( f, d, 0.15 );
+    float edge = abs( local - 0.5 ) * 2.0;
+    float run = pow( edge, 2.5 ) * trMid( d ) * ( 0.6 + 0.4 * audioSwell );
+    vec4  c = mix( a, b, w );
+    c.rgb = mix( c.rgb, c.rgb * vec3( 0.55, 0.62, 0.85 ), clamp( run * gKB * 0.9, 0.0, 0.7 ) );
+    return c;
+}
+
+=== EmbroideryStitchFill
+brief: TRANSITION EMBROIDERY STITCH FILL: stitches fill the picture one by one with the new scene's colours, and the stitched cloth smooths into the new scene.
+about: Short slanting stitches of different length and turning angle appear on the old scene, each a rounded dash of the new scene's colour with a thread-like shading; they multiply until they overlap and then the weave is smoothed into the new picture.
+music: audioSwell -> a slight breath of the brightness in the middle (light only)
+knob: stitchP 0.5 2.2 the size of the stitches
+knob: threadP 0.5 2.0 how marked the thread shading is
+moods: calm
+minfade: 6
+prob: 0.06
+cx: 2
+huegain: 0.0
+---
+vec4 trans( vec2 p, float d )
+{
+    vec4  a = tA( p );
+    vec4  b = tB( p );
+    float cellSize = 14.0 * gKA;
+    vec2  q = p * resolution / cellSize;
+    vec2  g = floor( q );
+    vec2  l = fract( q ) - 0.5;
+    float h = hash21( g + 4.4 );
+    float ang = 6.2831853 * hash21( g + 1.7 ) * 0.25 + 0.6;
+    vec2  r = vec2( cos( ang ) * l.x + sin( ang ) * l.y, -sin( ang ) * l.x + cos( ang ) * l.y );
+    float len = 0.34 + 0.12 * h;
+    vec2  e = abs( r ) - vec2( len, 0.17 * gKB );
+    float sd = length( max( e, 0.0 ) ) + min( max( e.x, e.y ), 0.0 );
+    float dash = 1.0 - smoothstep( 0.0, 0.06, sd );
+    float active_ = smoothstep( h * 0.7, h * 0.7 + 0.25, d );
+    vec4  stitch = tB( ( g + 0.5 ) * cellSize / resolution );
+    vec4  thread = vec4( stitch.rgb * ( 0.8 + 0.4 * ( 0.5 + 0.5 * r.x / len ) * gKB * 0.6 ), 1.0 );
+    vec4  c = mix( a, thread, dash * active_ );
+    return mix( c, b, smoothstep( 0.55, 1.0, d ) );
+}

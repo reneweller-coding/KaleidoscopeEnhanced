@@ -1,0 +1,304 @@
+=== ChordColourBloomHandoff
+brief: TRANSITION CHORD COLOUR BLOOM HANDOFF: the colour of the sounding chord blooms as a halo in which the new scene stands.
+about: A halo in the colour of the key (the music's pitch-class hue, smoothed) grows from the centre; inside it the new scene, at its rim a soft glow in the chord colour.
+music: audioChromaHue -> the colour of the halo (slowly); audioSwell -> the growth of the halo
+knob: bloomP 0.5 2.2 how far the halo reaches
+knob: glowP 0.5 2.0 how strong the glow at its rim is
+moods: dreamy
+minfade: 6
+prob: 0.07
+cx: 1
+huegain: 0.0
+---
+vec4 trans( vec2 p, float d )
+{
+    vec4  a = tA( p );
+    vec4  b = tB( p );
+    vec2  r = ( p - 0.5 ) * vec2( resolution.x / resolution.y, 1.0 );
+    float rad = length( r );
+    float R = d * 1.2 * ( 0.9 + 0.1 * gKA ) * ( 1.0 + 0.1 * audioSwell );
+    float soft = 0.14;
+    float w = smoothstep( R, R - soft, rad );
+    float rim = exp( -pow( ( rad - R + 0.05 ) / 0.07, 2.0 ) );
+    vec3  tint = hueRot( vec3( 1.0, 0.55, 0.3 ), audioChromaHue + hueP );
+    vec4  c = mix( a, b, w );
+    c.rgb += tint * rim * 0.4 * gKB * trMid( d ) * 2.0;
+    return c;
+}
+
+=== PhraseHandArcSweep
+brief: TRANSITION PHRASE HAND ARC SWEEP: a hand like that of a phrase clock sweeps once round the picture and leaves the new scene behind it.
+about: A soft wedge turns about the centre once during the fade; behind the hand the new scene, ahead of it the old, and a pale ring of marks at the phrase's eighths gives the sweep a scale.
+music: audioPhrasePos -> the marks of the ring brighten with the position inside the phrase
+knob: handP 0.5 2.2 how soft the hand's edge is
+knob: marksP 0.5 2.0 how strong the ring of marks is
+moods: calm,wipe
+minfade: 7
+prob: 0.07
+cx: 1
+huegain: 0.0
+---
+vec4 trans( vec2 p, float d )
+{
+    vec4  a = tA( p );
+    vec4  b = tB( p );
+    vec2  r = ( p - 0.5 ) * vec2( resolution.x / resolution.y, 1.0 );
+    float ang = fract( atan( r.x, -r.y ) / 6.2831853 );
+    float w = trThresh( ang, d, 0.05 * gKA );
+    float rad = length( r );
+    float marks = pow( 0.5 + 0.5 * cos( ang * 6.2831853 * 8.0 ), 8.0 ) * smoothstep( 0.012, 0.0, abs( rad - 0.4 ) );
+    float lit = 0.5 + 0.5 * cos( 6.2831853 * ( ang - audioPhrasePos ) );
+    vec4  c = mix( a, b, w );
+    c.rgb += vec3( 0.9, 0.95, 1.0 ) * marks * ( 0.2 + 0.5 * lit ) * gKB * trMid( d ) * 2.0;
+    return c;
+}
+
+=== HarmonicSeriesBarReveal
+brief: TRANSITION HARMONIC SERIES BAR REVEAL: bars with the widths of the harmonic series open one after the other and show the new scene.
+about: The frame is divided into bars whose widths fall like 1, 1/2, 1/3 ... as the harmonics of a string do; the widest opens first and the narrow ones follow in a quick flurry at the end.
+music: audioSwell -> a slight breath of the brightness in the middle (light only)
+knob: barsP 0.5 2.2 the number of bars
+knob: lagP 0.5 2.0 how far apart the bars open
+moods: wipe,blocky
+minfade: 5
+prob: 0.06
+cx: 1
+huegain: 0.0
+---
+vec4 trans( vec2 p, float d )
+{
+    vec4  a = tA( p );
+    vec4  b = tB( p );
+    float n = floor( 8.0 + 4.0 * gKA );
+    float H = 0.0;
+    for ( int k = 1; k <= 20; ++k )
+    {
+        if ( float( k ) > n )
+            break;
+        H += 1.0 / float( k );
+    }
+    float acc = 0.0;
+    float idx = n;
+    float x0 = 0.0;
+    float x1 = 1.0;
+    for ( int k = 1; k <= 20; ++k )
+    {
+        if ( float( k ) > n )
+            break;
+        float wk = ( 1.0 / float( k ) ) / H;
+        if ( p.x < acc + wk )
+        {
+            idx = float( k );
+            x0 = acc;
+            x1 = acc + wk;
+            break;
+        }
+        acc += wk;
+    }
+    float order = ( idx - 1.0 ) / max( n - 1.0, 1.0 );
+    float w = trThresh( order, d, 0.08 * gKB );
+    float edge = min( p.x - x0, x1 - p.x ) / max( x1 - x0, 1.0e-3 );
+    vec4  c = mix( a, b, w );
+    c.rgb *= 1.0 - 0.18 * ( 1.0 - smoothstep( 0.0, 0.2, edge ) ) * trMid( d ) * 2.0;
+    return c;
+}
+
+=== StereoFieldPanWipe
+brief: TRANSITION STEREO FIELD PAN WIPE: the width of the stereo image parts the picture: left and right change at different times.
+about: The left and right halves wipe from the centre outwards, one after the other, and the delay between them follows the stereo width of the music (smoothed).
+music: audioStereo -> the delay between left and right (slow)
+knob: panP 0.5 2.2 how far apart left and right change
+knob: softP 0.5 2.0 how soft the wipe edge is
+moods: calm,wipe
+minfade: 6
+prob: 0.07
+cx: 1
+huegain: 0.0
+---
+vec4 trans( vec2 p, float d )
+{
+    vec4  a = tA( p );
+    vec4  b = tB( p );
+    float lag = clamp( 0.1 + 0.25 * audioStereo * gKA, 0.0, 0.45 );
+    float side = ( p.x < 0.5 ) ? 0.0 : 1.0;
+    float u = clamp( ( d - lag * side ) / ( 1.0 - lag ), 0.0, 1.0 );
+    float x = abs( p.x - 0.5 ) * 2.0;
+    float w = trThresh( x, u, 0.15 * gKB );
+    return mix( a, b, w );
+}
+
+=== SpectrumCurtainRise
+brief: TRANSITION SPECTRUM CURTAIN RISE: a curtain of vertical bars rises from the bottom, each bar at a pace of its own, like a spectrum display.
+about: Narrow vertical bars grow from the bottom edge with heights that follow slow waves whose phase is the music's integrated phase; the new scene is seen in the risen bars and the old scene above them, until the bars reach the top.
+music: audioPhase -> the pace of every bar (integrated, so no jumping)
+knob: barsP 0.5 2.2 the number of bars
+knob: waveP 0.5 2.0 how uneven the heights are
+moods: wipe
+minfade: 5
+prob: 0.06
+cx: 1
+huegain: 0.0
+---
+vec4 trans( vec2 p, float d )
+{
+    vec4  a = tA( p );
+    vec4  b = tB( p );
+    float n = floor( 24.0 + 24.0 * gKA );
+    float bar = floor( p.x * n );
+    float lvl = 0.5 + 0.5 * sin( bar * 1.7 + audioPhase * 0.4 ) * sin( bar * 0.53 + 2.0 );
+    float L = 0.6 * gKB * 0.7;
+    float h = clamp( d * ( 1.0 + L ) - L * lvl, 0.0, 1.0 );
+    float w = smoothstep( h + 0.01, h - 0.01, p.y );
+    w = mix( 0.0, w, step( 1.0e-4, h ) );
+    float cap = exp( -pow( ( p.y - h ) / 0.012, 2.0 ) ) * step( 1.0e-4, h );
+    vec4  c = mix( a, b, w );
+    c.rgb += 0.12 * cap * sin( Pi * d );
+    return c;
+}
+
+=== TempoPulseBreathMask
+brief: TRANSITION TEMPO PULSE BREATH MASK: a round mask breathes in the rhythm of the phrase and each breath leaves more of the new scene.
+about: A circular opening grows through the fade; a slow sine of the phrase position makes its edge swell and fall like a breath, without the opening ever shrinking.
+music: audioPhrasePos -> the breath of the edge (periodic)
+knob: breathP 0.5 2.2 how deep the breath is
+knob: softP 0.5 2.0 how soft the edge is
+moods: calm,dreamy
+minfade: 6
+prob: 0.07
+cx: 1
+huegain: 0.0
+---
+vec4 trans( vec2 p, float d )
+{
+    vec4  a = tA( p );
+    vec4  b = tB( p );
+    vec2  r = ( p - 0.5 ) * vec2( resolution.x / resolution.y, 1.0 );
+    float rad = length( r );
+    float breath = 0.5 + 0.5 * sin( 6.2831853 * audioPhrasePos * 4.0 );
+    float R = d * 1.15 + 0.05 * gKA * breath * trMid( d );
+    float soft = 0.08 + 0.1 * gKB;
+    float w = smoothstep( R, R - soft, rad );
+    return mix( a, b, w );
+}
+
+=== TonnetzTileFlipSlow
+brief: TRANSITION TONNETZ TILE FLIP SLOW: a triangular lattice turns facet by facet in the order of a wandering chord path.
+about: The lattice of the Tonnetz (triangles for the major and minor triads) turns over triangle after triangle; the order is a path through the lattice that drifts with the pitch-class hue of the music.
+music: audioChromaHue -> the drift of the path (slow)
+knob: latticeP 0.5 2.2 the number of triangles
+knob: pathP 0.5 2.0 how winding the path is
+moods: blocky,calm
+minfade: 6
+prob: 0.06
+cx: 2
+huegain: 0.0
+---
+vec4 trans( vec2 p, float d )
+{
+    vec4  a = tA( p );
+    vec4  b = tB( p );
+    float asp = resolution.x / resolution.y;
+    float n = 5.0 + 4.0 * gKA;
+    vec2  q = vec2( p.x * asp, p.y ) * n;
+    vec2  s = vec2( q.x + q.y * 0.57735027, q.y * 1.15470054 );
+    vec2  g = floor( s );
+    vec2  fr = s - g;
+    float up = ( fr.x + fr.y > 1.0 ) ? 1.0 : 0.0;
+    vec2  id = g + up * 0.5;
+    float path = 0.5 + 0.5 * sin( id.x * 0.8 + id.y * 1.3 * gKB + audioChromaHue * 0.3 );
+    float order = fract( hash21( id + 3.1 ) + 0.4 * path );
+    float u = clamp( d * 1.5 - 0.5 * order, 0.0, 1.0 );
+    float w = trThresh( order, d, 0.12 );
+    vec4  c = mix( a, b, w );
+    float tri = up > 0.5 ? 0.92 : 1.0;
+    c.rgb *= mix( 1.0, tri, sin( Pi * u ) );
+    return c;
+}
+
+=== FifthsWheelDissolve
+brief: TRANSITION FIFTHS WHEEL DISSOLVE: the twelve sectors of the circle of fifths change one after another, a fifth apart.
+about: The frame is cut into twelve sectors like a clock face; the sectors take the new scene in the order of the circle of fifths (every seventh), so neighbouring sectors never change together.
+music: audioMode -> none; the start sector is rolled once per activation
+knob: wheelP 0.5 2.2 how soft the sector edges are
+knob: startP 0.5 2.0 which sector starts (rolled)
+moods: calm,wipe
+minfade: 6
+prob: 0.06
+cx: 1
+huegain: 0.0
+---
+vec4 trans( vec2 p, float d )
+{
+    vec4  a = tA( p );
+    vec4  b = tB( p );
+    vec2  r = ( p - 0.5 ) * vec2( resolution.x / resolution.y, 1.0 );
+    float ang = fract( atan( r.x, -r.y ) / 6.2831853 );
+    float sec = floor( ang * 12.0 );
+    float start = floor( 12.0 * fract( 0.37 * gKB ) );
+    float k = mod( ( sec - start ) * 7.0, 12.0 );
+    float order = k / 11.0;
+    float w = trThresh( order, d, 0.07 * gKA );
+    float local = fract( ang * 12.0 );
+    vec4  c = mix( a, b, w );
+    c.rgb *= 1.0 - 0.14 * ( 1.0 - smoothstep( 0.0, 0.06, min( local, 1.0 - local ) ) ) * trMid( d ) * 2.0;
+    return c;
+}
+
+=== BeatGridLatticePhaseSwap
+brief: TRANSITION BEAT GRID LATTICE PHASE SWAP: a grid of cells changes in waves that run through it in the rhythm of the phrase.
+about: Every cell changes at a time that mixes a random order with a wave of the phrase position, so the change runs through the grid in ripples that repeat with the music without ever jumping.
+music: audioPhrasePos -> the phase of the waves (periodic)
+knob: cellsP 0.5 2.2 the size of the cells
+knob: waveP 0.5 2.0 how strong the waves are
+moods: blocky
+minfade: 5
+prob: 0.06
+cx: 1
+huegain: 0.0
+---
+vec4 trans( vec2 p, float d )
+{
+    vec4  a = tA( p );
+    vec4  b = tB( p );
+    float asp = resolution.x / resolution.y;
+    float n = 7.0 + 6.0 * gKA;
+    vec2  q = vec2( p.x * asp, p.y ) * n;
+    vec2  g = floor( q );
+    float h = hash21( g + 4.7 );
+    float wave = 0.5 + 0.5 * sin( 6.2831853 * ( audioPhrasePos * 2.0 + ( g.x + g.y ) / n * 0.5 ) );
+    float f = clamp( 0.7 * h + 0.3 * gKB * 0.6 * wave, 0.0, 1.0 );
+    float w = trThresh( f, d, 0.08 );
+    return mix( a, b, w );
+}
+
+=== ReverbTailBlurWash
+brief: TRANSITION REVERB TAIL BLUR WASH: the old scene fades away like a sound into a hall, in echoes that grow softer and larger, and the new scene steps out of the tail.
+about: The old scene is added to itself in six echoes, each fainter, larger and slightly turned away from the centre; the echoes grow with the fade and give way to the new scene.
+music: audioSwell -> how long the tail is
+knob: tailP 0.5 2.2 how far the echoes spread
+knob: decayP 0.5 2.0 how slowly the echoes die away
+moods: dreamy,calm
+minfade: 6
+prob: 0.07
+cx: 3
+huegain: 0.0
+---
+vec4 trans( vec2 p, float d )
+{
+    vec4  b = tB( p );
+    float grow = smoothstep( 0.0, 0.7, d ) * 0.18 * gKA * ( 1.0 + 0.3 * audioSwell );
+    vec4  s = vec4( 0.0 );
+    float ws = 0.0;
+    float decay = 0.45 + 0.2 * gKB;
+    for ( int k = 0; k < 6; ++k )
+    {
+        float wk = pow( decay, float( k ) );
+        float z = 1.0 + grow * float( k );
+        float a = 0.12 * grow * float( k );
+        mat2  R = mat2( cos( a ), sin( a ), -sin( a ), cos( a ) );
+        s += wk * tAm( 0.5 + R * ( p - 0.5 ) / z );
+        ws += wk;
+    }
+    vec4 echo = s / ws;
+    return mix( echo, b, smoothstep( 0.1, 0.95, d ) );
+}

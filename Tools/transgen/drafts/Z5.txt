@@ -1,0 +1,405 @@
+=== OrigamiUnfoldPlanes
+brief: TRANSITION ORIGAMI UNFOLD PLANES: the old scene is a folded sheet of triangles that opens and shows the new scene on its back.
+about: A triangulated grid of facets turns over from the centre outwards, each facet shading like paper at its fold angle; on the back of every facet lies the incoming scene.
+music: audioSwell -> a slight breath of the brightness in the middle (light only)
+knob: facetP 0.5 2.2 the number of facets
+knob: creaseP 0.5 2.0 how marked the shading of the folds is
+moods: wipe
+minfade: 5
+prob: 0.06
+cx: 2
+huegain: 0.0
+---
+vec4 trans( vec2 p, float d )
+{
+    vec4  a = tA( p );
+    vec4  b = tB( p );
+    float asp = resolution.x / resolution.y;
+    float n = ( 5.0 + 4.0 * gKA );
+    vec2  q = vec2( p.x * asp, p.y ) * n;
+    vec2  s = vec2( q.x + q.y * 0.57735027, q.y * 1.15470054 );
+    vec2  g = floor( s );
+    vec2  fr = s - g;
+    float up = ( fr.x + fr.y > 1.0 ) ? 1.0 : 0.0;
+    vec2  id = g + up * 0.5;
+    float order = clamp( length( vec2( ( id.x - q.y * 0.0 ) / n / asp * 1.0, id.y / n ) - vec2( 0.5 ) ) * 0.9 + 0.25 * hash21( id + 3.3 ), 0.0, 1.0 );
+    float u = clamp( d * 1.5 - 0.5 * order, 0.0, 1.0 );
+    float w = smoothstep( 0.45, 0.55, u );
+    float shade = 1.0 - 0.28 * gKB * sin( Pi * u ) * ( 0.5 + 0.5 * hash21( id + 7.7 ) ) * 1.6;
+    vec4  c = mix( a, b, w );
+    c.rgb *= shade;
+    return c;
+}
+
+=== HexShutterTurn
+brief: TRANSITION HEX SHUTTER TURN: hexagonal slats turn over one after another from a centre and show the new scene on their backs.
+about: A honeycomb of slats; each turns about its own horizontal axis (narrowing to a line and widening again), in an order that spreads from the middle with a little randomness.
+music: audioSwell -> a slight breath of the brightness in the middle (light only)
+knob: hexP 0.5 2.2 the number of hexagons
+knob: ripplesP 0.5 2.0 how much randomness the order has
+moods: blocky,wipe
+minfade: 5
+prob: 0.06
+cx: 2
+huegain: 0.0
+---
+/**  The hexagonal cell of a point: the point's offset from the cell's centre and the centre itself.
+ *
+ * @param p  The point in cell units. (in)
+ *
+ * @return
+ *   xy: the offset from the centre, zw: the centre.
+ **/
+vec4 hexInfo( vec2 p )
+{
+    vec2 r = vec2( 1.0, 1.7320508 );
+    vec2 h = r * 0.5;
+    vec2 a = mod( p, r ) - h;
+    vec2 b = mod( p - h, r ) - h;
+    vec2 g = ( dot( a, a ) < dot( b, b ) ) ? a : b;
+    return vec4( g, p - g );
+}
+
+vec4 trans( vec2 p, float d )
+{
+    float asp = resolution.x / resolution.y;
+    float n = ( 5.0 + 4.0 * gKA );
+    vec2  q = vec2( p.x * asp, p.y ) * n;
+    vec4  hx = hexInfo( q );
+    vec2  c = hx.zw;
+    vec2  pc = vec2( c.x / n / asp, c.y / n );
+    float order = clamp( length( pc - vec2( 0.5 ) ) * 1.1 + 0.3 * gKB * 0.5 * hash21( c + 2.9 ), 0.0, 1.0 );
+    float u = clamp( d * 1.5 - 0.5 * order, 0.0, 1.0 );
+    if ( u <= 0.0 )
+        return tA( p );
+    if ( u >= 1.0 )
+        return tB( p );
+    float th = Pi * smoothstep( 0.0, 1.0, u );
+    float ct = cos( th );
+    float sx = max( abs( ct ), 0.04 );
+    vec2  l = hx.xy;
+    vec2  uvc = pc + vec2( l.x / sx, l.y ) / n / vec2( asp, 1.0 );
+    float inside = ( abs( l.x / sx ) < 0.5 ) ? 1.0 : 0.0;
+    vec4  col = ( ct >= 0.0 ) ? tAm( uvc ) : tBm( uvc );
+    col.rgb *= 0.55 + 0.45 * sx;
+    return mix( vec4( mix( tA( p ), tB( p ), step( 0.5, u ) ).rgb * 0.45, 1.0 ), col, inside );
+}
+
+=== TileFlipWaveRipple
+brief: TRANSITION TILE FLIP WAVE RIPPLE: square tiles flip like cards in a wave that runs outwards from the centre.
+about: The picture is a floor of square tiles; each flips about its vertical axis when the wave reaches it, the old scene on its front and the new scene on its back.
+music: audioSwell -> a slight breath of the brightness in the middle (light only)
+knob: tileP 0.5 2.2 the number of tiles
+knob: waveP 0.5 2.0 how long the wave is
+moods: blocky
+minfade: 5
+prob: 0.06
+cx: 2
+huegain: 0.0
+---
+vec4 trans( vec2 p, float d )
+{
+    float asp = resolution.x / resolution.y;
+    float n = ( 6.0 + 5.0 * gKA );
+    vec2  q = vec2( p.x * asp, p.y ) * n;
+    vec2  g = floor( q );
+    vec2  l = fract( q ) - 0.5;
+    vec2  pc = ( g + 0.5 ) / n / vec2( asp, 1.0 );
+    float order = clamp( length( pc - vec2( 0.5 ) ) * 1.15, 0.0, 1.0 );
+    float L = 0.6 * gKB;
+    float u = clamp( d * ( 1.0 + L ) - L * order, 0.0, 1.0 );
+    float th = Pi * smoothstep( 0.0, 1.0, u );
+    float ct = cos( th );
+    float sx = max( abs( ct ), 0.05 );
+    vec2  uvc = pc + vec2( l.x / sx, l.y ) / n / vec2( asp, 1.0 );
+    float inside = ( abs( l.x / sx ) < 0.5 ) ? 1.0 : 0.0;
+    vec4  col = ( ct >= 0.0 ) ? tAm( uvc ) : tBm( uvc );
+    col.rgb *= 0.5 + 0.5 * sx;
+    return mix( vec4( mix( tA( p ), tB( p ), step( 0.5, u ) ).rgb * 0.45, 1.0 ), col, inside );
+}
+
+=== MiuraFoldReveal
+brief: TRANSITION MIURA FOLD REVEAL: the picture opens like a Miura-folded map, every fold showing a strip of the new scene.
+about: Vertical strips with zigzag edges (the Miura pattern) open one after the other from the left, each shading light or dark like a folded sheet.
+music: audioSwell -> a slight breath of the brightness in the middle (light only)
+knob: foldsP 0.5 2.2 the number of folds
+knob: zigzagP 0.5 2.0 how deep the zigzag of the edges is
+moods: wipe,blocky
+minfade: 5
+prob: 0.06
+cx: 1
+huegain: 0.0
+---
+vec4 trans( vec2 p, float d )
+{
+    vec4  a = tA( p );
+    vec4  b = tB( p );
+    float n = floor( 6.0 + 5.0 * gKA );
+    float zig = abs( fract( p.y * 7.0 ) - 0.5 ) * 2.0;
+    float sx = p.x * n + 0.5 * gKB * zig;
+    float strip = floor( sx );
+    float order = clamp( strip / n + 0.15 * hash21( vec2( strip, 5.0 ) ), 0.0, 1.0 );
+    float w = trThresh( order, d, 0.08 );
+    float sh = 1.0 - 0.18 * ( mod( strip, 2.0 ) * 2.0 - 1.0 ) * sin( Pi * clamp( d * 1.4 - 0.4 * order, 0.0, 1.0 ) );
+    vec4  c = mix( a, b, w );
+    c.rgb *= sh;
+    return c;
+}
+
+=== ParquetSlideInterlock
+brief: TRANSITION PARQUET SLIDE INTERLOCK: strips of parquet slide into one another from alternating sides and change the scene as they pass.
+about: The picture is cut into horizontal rows of planks; each row slides across in the opposite direction to its neighbours, at its own time, and the new scene is behind each sliding edge.
+music: audioSwell -> a slight breath of the brightness in the middle (light only)
+knob: rowsP 0.5 2.2 the number of rows
+knob: staggerP 0.5 2.0 how far apart the rows start
+moods: wipe,blocky
+minfade: 5
+prob: 0.06
+cx: 1
+huegain: 0.0
+---
+vec4 trans( vec2 p, float d )
+{
+    float n = floor( 6.0 + 5.0 * gKA );
+    float row = floor( p.y * n );
+    float dir = ( mod( row, 2.0 ) < 0.5 ) ? 1.0 : -1.0;
+    float L = 0.5 * gKB;
+    float ph = clamp( d * ( 1.0 + L ) - L * hash21( vec2( row, 8.0 ) ), 0.0, 1.0 );
+    ph = smoothstep( 0.0, 1.0, ph );
+    float front = ( dir > 0.0 ) ? ph : 1.0 - ph;
+    float w = ( dir > 0.0 ) ? smoothstep( front + 0.015, front - 0.015, p.x ) : smoothstep( front - 0.015, front + 0.015, p.x );
+    vec2  sh = vec2( dir * ph * 0.06, 0.0 );
+    vec4  a = tAm( p - sh );
+    vec4  b = tBm( p + vec2( dir * ( 1.0 - ph ) * 0.06, 0.0 ) );
+    float edge = exp( -pow( ( p.x - front ) / 0.01, 2.0 ) );
+    vec4  c = mix( a, b, w );
+    c.rgb *= 1.0 - 0.3 * edge * sin( Pi * ph );
+    return c;
+}
+
+=== ConcentricRingRotateReveal
+brief: TRANSITION CONCENTRIC RING ROTATE REVEAL: concentric rings turn against each other, each showing the new scene in a growing angle.
+about: The picture is cut into rings; in each ring a sector of the new scene grows from zero to the full circle, the rings alternately clockwise and counter-clockwise.
+music: audioSwell -> a slight breath of the brightness in the middle (light only)
+knob: ringsP 0.5 2.2 the number of rings
+knob: turnP 0.5 2.0 how much the rings turn while they open
+moods: calm,wipe
+minfade: 6
+prob: 0.07
+cx: 1
+huegain: 0.0
+---
+vec4 trans( vec2 p, float d )
+{
+    vec4  a = tA( p );
+    vec4  b = tB( p );
+    vec2  r = ( p - 0.5 ) * vec2( resolution.x / resolution.y, 1.0 );
+    float rad = length( r );
+    float n = floor( 4.0 + 3.0 * gKA );
+    float ring = floor( rad * n * 1.4 );
+    float dir = ( mod( ring, 2.0 ) < 0.5 ) ? 1.0 : -1.0;
+    float ang = atan( r.y, r.x ) / 6.2831853 + 0.5;
+    float L = 0.4;
+    float ph = clamp( d * ( 1.0 + L ) - L * hash21( vec2( ring, 3.0 ) ), 0.0, 1.0 );
+    float start = fract( dir * ph * 0.5 * gKB + 0.13 * ring );
+    float u = fract( ang - start );
+    float w = smoothstep( ph + 0.02, ph - 0.02, u );
+    w = mix( w, 1.0, step( 1.0, ph ) );
+    return mix( a, b, ( ph <= 0.0 ) ? 0.0 : w );
+}
+
+=== PetalIrisOpening
+brief: TRANSITION PETAL IRIS OPENING: the new scene opens out of the centre like the petals of an iris, each petal a curved blade.
+about: The boundary of the opening is a round shape with petal-like lobes that turn as it grows; the blades are soft and the opening covers the whole frame at the end.
+music: audioSwell -> a slight breath of the brightness in the middle (light only)
+knob: petalsP 0.5 2.2 the number of petals
+knob: twistP 0.5 2.0 how much the petals twist while opening
+moods: calm,wipe
+minfade: 5
+prob: 0.07
+cx: 1
+huegain: 0.0
+---
+vec4 trans( vec2 p, float d )
+{
+    vec4  a = tA( p );
+    vec4  b = tB( p );
+    vec2  r = ( p - 0.5 ) * vec2( resolution.x / resolution.y, 1.0 );
+    float rad = length( r );
+    float n = floor( 5.0 + 3.0 * gKA );
+    float ang = atan( r.y, r.x ) + 1.4 * gKB * d + 0.8 * rad;
+    float lobe = 0.75 + 0.25 * cos( n * ang );
+    float R = d * 1.45 * lobe;
+    float w = smoothstep( R, R - 0.06, rad );
+    return mix( a, b, w );
+}
+
+=== RippleGridPhaseReveal
+brief: TRANSITION RIPPLE GRID PHASE REVEAL: a grid of wave sources sends out rings, and where a crest passes the new scene stays.
+about: Every cell has its own source with a slightly different phase; the order of change is a wave radiating from each source, so the picture is covered with small expanding rings that meet.
+music: audioSwell -> a slight breath of the brightness in the middle (light only)
+knob: gridP 0.5 2.2 the size of the cells
+knob: ringP 0.5 2.0 how many rings each source sends
+moods: dreamy
+minfade: 6
+prob: 0.06
+cx: 2
+huegain: 0.05
+---
+vec4 trans( vec2 p, float d )
+{
+    vec4  a = tA( p );
+    vec4  b = tB( p );
+    float asp = resolution.x / resolution.y;
+    float n = ( 3.0 + 2.5 * gKA );
+    vec2  q = vec2( p.x * asp, p.y ) * n;
+    vec2  g = floor( q );
+    vec2  l = fract( q ) - 0.5;
+    float rad = length( l ) * 1.4;
+    float ph = hash21( g + 1.5 );
+    float s = clamp( 0.5 * rad / 0.7 + 0.5 * ph, 0.0, 1.0 );
+    float f = ( s < 0.5 ) ? 2.0 * s * s : 1.0 - 2.0 * ( 1.0 - s ) * ( 1.0 - s );
+    f = clamp( f + 0.05 * sin( rad * 18.0 * gKB + 6.2831853 * ph ), 0.0, 1.0 );
+    float w = trThresh( f, d, 0.22 );
+    float crest = exp( -pow( ( f - ( d * 1.44 - 0.22 ) ) / 0.05, 2.0 ) );
+    vec4  c = mix( a, b, w );
+    c.rgb += 0.1 * crest * trMid( d ) * 2.0;
+    return c;
+}
+
+=== TriangleMeshWaveSwap
+brief: TRANSITION TRIANGLE MESH WAVE SWAP: a mesh of triangles tilts in a wave across the picture and shows the new scene on the far side of every facet.
+about: Triangular facets flip in an order that sweeps diagonally with some randomness; each facet's brightness follows the cosine of its tilt, so the wave is seen as a glint running over the mesh.
+music: audioSwell -> a slight breath of the brightness in the middle (light only)
+knob: meshP 0.5 2.2 the number of facets
+knob: glintP 0.5 2.0 how strong the glint is
+moods: blocky
+minfade: 5
+prob: 0.06
+cx: 2
+huegain: 0.0
+---
+vec4 trans( vec2 p, float d )
+{
+    vec4  a = tA( p );
+    vec4  b = tB( p );
+    float asp = resolution.x / resolution.y;
+    float n = ( 6.0 + 5.0 * gKA );
+    vec2  q = vec2( p.x * asp, p.y ) * n;
+    vec2  s = vec2( q.x + q.y * 0.57735027, q.y * 1.15470054 );
+    vec2  g = floor( s );
+    vec2  fr = s - g;
+    float up = ( fr.x + fr.y > 1.0 ) ? 1.0 : 0.0;
+    vec2  id = g + up * 0.5;
+    float order = fract( hash21( id + 6.1 ) + 0.5 * ( p.x * 0.7 + p.y * 0.3 ) );
+    float u = clamp( d * 1.5 - 0.5 * order, 0.0, 1.0 );
+    float w = trThresh( order, d, 0.12 );
+    float tilt = cos( Pi * u );
+    vec4  c = mix( a, b, w );
+    c.rgb *= 1.0 + 0.22 * gKB * ( abs( tilt ) < 0.9 ? ( 1.0 - abs( tilt ) ) * ( hash21( id + 2.0 ) - 0.5 ) * 2.0 : 0.0 );
+    return c;
+}
+
+=== ShutterBladeTurbineOpen
+brief: TRANSITION SHUTTER BLADE TURBINE OPEN: a shutter of curved blades opens in a spiral and shows the new scene through its hole.
+about: The opening is a round hole with a scalloped edge made of overlapping blades; it widens while the blades turn, so the edge runs round the hole as in a camera diaphragm.
+music: audioSwell -> a slight breath of the brightness in the middle (light only)
+knob: bladesP 0.5 2.2 the number of blades
+knob: swirlP 0.5 2.0 how far the blades swirl
+moods: wipe
+minfade: 4
+prob: 0.06
+cx: 1
+huegain: 0.0
+---
+vec4 trans( vec2 p, float d )
+{
+    vec4  a = tA( p );
+    vec4  b = tB( p );
+    vec2  r = ( p - 0.5 ) * vec2( resolution.x / resolution.y, 1.0 );
+    float rad = length( r );
+    float n = floor( 8.0 + 6.0 * gKA );
+    float ang = atan( r.y, r.x ) + 2.0 * gKB * d + 1.5 * rad;
+    float saw = fract( ang * n / 6.2831853 );
+    float blade = 0.82 + 0.18 * ( 1.0 - saw );
+    float R = d * 1.5 * blade;
+    float w = smoothstep( R, R - 0.03, rad );
+    vec4  c = mix( a, b, w );
+    c.rgb *= 1.0 - 0.18 * ( 1.0 - saw ) * ( 1.0 - w ) * smoothstep( R + 0.12, R, rad ) * sin( Pi * d );
+    return c;
+}
+
+=== VoronoiPlateSlideApart
+brief: TRANSITION VORONOI PLATE SLIDE APART: plates of the old scene shrink and slide apart, and the new scene fills the gaps between them.
+about: The picture is a mosaic of irregular plates; each shrinks towards its own centre at its own time, a dark seam opens round it, and the new scene lies behind.
+music: audioSwell -> a slight breath of the brightness in the middle (light only)
+knob: platesP 0.5 2.2 the number of plates
+knob: gapP 0.5 2.0 how dark the seams are
+moods: blocky,wipe
+minfade: 5
+prob: 0.06
+cx: 2
+huegain: 0.0
+---
+vec4 trans( vec2 p, float d )
+{
+    float asp = resolution.x / resolution.y;
+    float n = ( 4.0 + 3.5 * gKA );
+    vec2  q = vec2( p.x * asp, p.y ) * n;
+    vec2  g = floor( q );
+    float f1 = 9.0;
+    float f2 = 9.0;
+    vec2  c1 = g;
+    for ( int j = -1; j <= 1; ++j )
+        for ( int i = -1; i <= 1; ++i )
+        {
+            vec2  c = g + vec2( float( i ), float( j ) );
+            vec2  pt = c + 0.15 + 0.7 * hash22( c + 5.0 );
+            float dd = length( q - pt );
+            if ( dd < f1 )
+            {
+                f2 = f1;
+                f1 = dd;
+                c1 = pt;
+            }
+            else if ( dd < f2 )
+                f2 = dd;
+        }
+    float t = f1 / ( f1 + f2 + 1.0e-4 ) * 2.0;
+    float order = hash21( floor( c1 * 3.0 ) + 1.7 );
+    float u = clamp( d * 1.5 - 0.5 * order, 0.0, 1.0 );
+    float k = max( 1.0 - u, 0.05 );
+    vec2  pc = c1 / n / vec2( asp, 1.0 );
+    vec2  l = p - pc;
+    vec4  a = tAm( pc + l / k );
+    float inside = 1.0 - smoothstep( k - 0.04, k, t );
+    float seam = smoothstep( k + 0.05, k, t ) * ( 1.0 - inside );
+    vec4  c = mix( tB( p ), a, inside );
+    c.rgb *= 1.0 - 0.5 * gKB * seam * sin( Pi * u );
+    return c;
+}
+
+=== SpiralWindowTurnstile
+brief: TRANSITION SPIRAL WINDOW TURNSTILE: spiral arms sweep over the picture like the blades of a turnstile and leave the new scene behind them.
+about: The picture is divided into logarithmic spiral arms; the new scene fills them from the one edge of each arm to the other as the arms turn.
+music: audioSwell -> a slight breath of the brightness in the middle (light only)
+knob: armsP 0.5 2.2 the number of arms
+knob: windP 0.5 2.0 how tightly the arms wind
+moods: wipe
+minfade: 5
+prob: 0.06
+cx: 1
+huegain: 0.0
+---
+vec4 trans( vec2 p, float d )
+{
+    vec4  a = tA( p );
+    vec4  b = tB( p );
+    vec2  r = ( p - 0.5 ) * vec2( resolution.x / resolution.y, 1.0 );
+    float rad = max( length( r ), 1.0e-3 );
+    float n = floor( 2.0 + 2.0 * gKA );
+    float ang = atan( r.y, r.x ) + 0.9 * gKB * log( rad * 4.0 + 1.0 );
+    float f = fract( ang * n / 6.2831853 );
+    float w = trThresh( f, d, 0.06 );
+    return mix( a, b, w );
+}

@@ -1,0 +1,274 @@
+=== HuygensWaveRevealWipe
+brief: TRANSITION HUYGENS WAVE REVEAL WIPE: elementary waves from a row of point sources build a front that runs over the picture and leaves the new scene.
+about: Nine point sources along the left side each send a circular wave; the order of change is the distance to the nearest source, so the front is the scalloped envelope of the circles and smooths into a straight front as it travels. Crests are lit softly.
+music: audioSwell -> a slight breath of the brightness in the middle (light only)
+knob: sourcesP 0.5 2.2 the number of point sources
+knob: crestP 0.5 2.0 how marked the crests of the waves are
+moods: wipe,calm
+minfade: 6
+prob: 0.07
+cx: 1
+huegain: 0.0
+---
+vec4 trans( vec2 p, float d )
+{
+    vec4  a = tA( p );
+    vec4  b = tB( p );
+    float asp = resolution.x / resolution.y;
+    float n = floor( 4.0 + 3.0 * gKA );
+    float best = 9.0;
+    for ( int k = 0; k < 14; ++k )
+    {
+        if ( float( k ) >= n )
+            break;
+        vec2 s = vec2( -0.04, ( float( k ) + 0.5 ) / n );
+        best = min( best, length( ( p - s ) * vec2( asp, 1.0 ) ) );
+    }
+    float f = clamp( best / ( asp + 0.1 ), 0.0, 1.0 );
+    float w = trThresh( f, d, 0.05 );
+    float t = d * 1.1 - 0.05;
+    float crest = 0.5 + 0.5 * cos( ( f - t ) * 120.0 );
+    float near = exp( -pow( ( f - t ) / 0.12, 2.0 ) );
+    vec4  c = mix( a, b, w );
+    c.rgb *= 1.0 + 0.16 * gKB * crest * near;
+    return c;
+}
+
+=== StandingWaveNodeReveal
+brief: TRANSITION STANDING WAVE NODE REVEAL: a standing wave decides the order of change: the nodes change first, the antinodes last.
+about: Stripes of a standing wave whose mode changes during the fade (two, three, five half-waves); the new scene appears on the nodal lines, widens to the stripes between, and the antinodes are the last bits of the old scene.
+music: audioSwell -> a slight breath of the brightness in the middle (light only)
+knob: modeP 0.5 2.2 the mode of the wave
+knob: tiltP 0.5 2.0 how far the stripes are turned
+moods: calm,dreamy
+minfade: 6
+prob: 0.07
+cx: 1
+huegain: 0.0
+---
+vec4 trans( vec2 p, float d )
+{
+    vec4  a = tA( p );
+    vec4  b = tB( p );
+    float ang = 0.3 * gKB;
+    vec2  r = vec2( cos( ang ) * p.x + sin( ang ) * p.y, -sin( ang ) * p.x + cos( ang ) * p.y );
+    float m1 = abs( sin( Pi * r.x * 2.0 * gKA ) );
+    float m2 = abs( sin( Pi * r.x * 3.0 * gKA ) );
+    float m3 = abs( sin( Pi * r.x * 5.0 * gKA ) );
+    float f = mix( mix( m1, m2, smoothstep( 0.2, 0.5, d ) ), m3, smoothstep( 0.6, 0.9, d ) );
+    float w = trThresh( f, d, 0.12 );
+    return mix( a, b, w );
+}
+
+=== MoireDriftSwap
+brief: TRANSITION MOIRE DRIFT SWAP: two line gratings of almost the same pitch drift over each other and the moire fringes swap the scene.
+about: The beat of two gratings gives broad fringes that slowly travel; the new scene is in the bright fringes and then in all of them as the fringes widen to one band.
+music: audioRoughness -> none; the detuning is rolled; the drift follows the clock
+knob: pitchP 0.5 2.2 the pitch of the gratings
+knob: detuneP 0.5 2.0 how far the gratings are detuned (wider fringes when small)
+moods: psychedelic
+minfade: 6
+prob: 0.06
+cx: 1
+huegain: 0.05
+---
+vec4 trans( vec2 p, float d )
+{
+    vec4  a = tA( p );
+    vec4  b = tB( p );
+    vec2  q = p * vec2( resolution.x / resolution.y, 1.0 );
+    float k1 = 60.0 * gKA;
+    float k2 = k1 * ( 1.0 + 0.06 / gKB );
+    float ang = 0.25;
+    vec2  dir = vec2( cos( ang ), sin( ang ) );
+    float s = dot( q, dir );
+    float beat = 0.5 + 0.5 * cos( s * ( k2 - k1 ) + 3.0 * trClock() );
+    float fine = 0.5 + 0.5 * cos( s * k1 );
+    float f = clamp( 0.8 * beat + 0.2 * fine, 0.0, 1.0 );
+    float w = trThresh( f, d, 0.15 );
+    return mix( a, b, w );
+}
+
+=== PhasedBeamSweepReveal
+brief: TRANSITION PHASED BEAM SWEEP REVEAL: a beam from an antenna array sweeps over the picture and leaves the new scene, with faint side lobes beside it.
+about: A fan of angle runs from a point at the lower left over the frame; the sweep is the angle, and on both sides of the main edge fainter stripes (side lobes) show a little of the new scene early.
+music: audioSwell -> a slight breath of the brightness in the middle (light only)
+knob: beamP 0.5 2.2 the width of the beam
+knob: lobesP 0.5 2.0 how strong the side lobes are
+moods: wipe
+minfade: 6
+prob: 0.06
+cx: 1
+huegain: 0.0
+---
+vec4 trans( vec2 p, float d )
+{
+    vec4  a = tA( p );
+    vec4  b = tB( p );
+    vec2  r = ( p - vec2( -0.05, -0.05 ) ) * vec2( resolution.x / resolution.y, 1.0 );
+    float ang = atan( r.y, r.x ) / 1.5707963;
+    float f = clamp( ang, 0.0, 1.0 );
+    float lobes = 0.04 * gKB * abs( sin( ang * 22.0 ) );
+    float w = trThresh( clamp( f + lobes - 0.02, 0.0, 1.0 ), d, 0.08 * gKA * ( 1.0 + 0.3 * audioSwell ) );
+    return mix( a, b, w );
+}
+
+=== MovingSourceCrestFan
+brief: TRANSITION MOVING SOURCE CREST FAN: a source runs through the picture and its waves bunch up in front of it and spread behind, carrying the new scene.
+about: A wedge of crests, close together in front of the source and far apart behind it, sweeps across; inside the wedge the new scene, outside the old, and the crests are traced as fine lines.
+music: audioSwell -> the sharpness of the wedge
+knob: crestsP 0.5 2.2 the number of crests
+knob: wedgeP 0.5 2.0 how narrow the wedge is
+moods: wipe
+minfade: 5
+prob: 0.06
+cx: 1
+huegain: 0.0
+---
+vec4 trans( vec2 p, float d )
+{
+    vec4  a = tA( p );
+    vec4  b = tB( p );
+    float asp = resolution.x / resolution.y;
+    vec2  r = ( p - vec2( 0.0, 0.5 ) ) * vec2( asp, 1.0 );
+    float f = clamp( ( r.x - ( 0.45 / gKB ) * abs( r.y ) ) / ( asp + 0.1 ) + 0.05, 0.0, 1.0 );
+    float w = trThresh( f, d, 0.07 * ( 1.0 + 0.3 * audioSwell ) );
+    float crest = pow( 0.5 + 0.5 * cos( f * 6.2831853 * 14.0 * gKA ), 6.0 );
+    vec4  c = mix( a, b, w );
+    c.rgb += 0.14 * crest * exp( -pow( ( f - ( d * 1.14 - 0.07 ) ) / 0.15, 2.0 ) );
+    return c;
+}
+
+=== InterferenceFringeOpening
+brief: TRANSITION INTERFERENCE FRINGE OPENING: two coherent sources make a fan of fringes that opens until a single fringe fills the picture.
+about: The order of change is the cosine of the path difference to two point sources; the fringes are fine at first, broaden with the progress as if the sources approached each other, and end as one wide band.
+music: audioSwell -> a slight breath of the brightness in the middle (light only)
+knob: fringesP 0.5 2.2 the number of fringes at the start
+knob: spreadP 0.5 2.0 how far apart the sources are
+moods: calm,dreamy
+minfade: 6
+prob: 0.07
+cx: 1
+huegain: 0.0
+---
+vec4 trans( vec2 p, float d )
+{
+    vec4  a = tA( p );
+    vec4  b = tB( p );
+    float asp = resolution.x / resolution.y;
+    vec2  s1 = vec2( 0.5 - 0.2 * gKB * ( 1.0 - 0.5 * d ), 0.0 );
+    vec2  s2 = vec2( 0.5 + 0.2 * gKB * ( 1.0 - 0.5 * d ), 0.0 );
+    float r1 = length( ( p - s1 ) * vec2( asp, 1.0 ) );
+    float r2 = length( ( p - s2 ) * vec2( asp, 1.0 ) );
+    float k = ( 10.0 + 10.0 * gKA ) * ( 1.0 - 0.7 * smoothstep( 0.2, 1.0, d ) );
+    float f = 0.5 + 0.5 * cos( k * ( r1 - r2 ) );
+    float w = trThresh( f, d, 0.15 );
+    return mix( a, b, w );
+}
+
+=== WaveguideChannelFlow
+brief: TRANSITION WAVEGUIDE CHANNEL FLOW: the new scene flows in along channels like a guided wave and the channels widen until they join.
+about: Horizontal channels with a smooth cross-section run through the picture; the new scene enters each channel from the left at its own time and the channels widen sideways until no old scene is left.
+music: audioSwell -> a slight breath of the brightness in the middle (light only)
+knob: channelsP 0.5 2.2 the number of channels
+knob: widenP 0.5 2.0 how fast the channels widen
+moods: wipe
+minfade: 5
+prob: 0.06
+cx: 1
+huegain: 0.0
+---
+vec4 trans( vec2 p, float d )
+{
+    vec4  a = tA( p );
+    vec4  b = tB( p );
+    float n = floor( 4.0 + 4.0 * gKA );
+    float ch = floor( p.y * n );
+    float local = fract( p.y * n ) - 0.5;
+    float profile = 1.0 - 4.0 * local * local;
+    float h = hash21( vec2( ch, 6.0 ) );
+    float f = clamp( 0.6 * p.x + 0.25 * h + 0.2 * ( 1.0 - profile ) * gKB * 0.5, 0.0, 1.0 );
+    float w = trThresh( f, d, 0.1 );
+    return mix( a, b, w );
+}
+
+=== MagnonRippleBeams
+brief: TRANSITION MAGNON RIPPLE BEAMS: beams of spin waves zigzag across the picture, bouncing off the walls, and the new scene stands where they have been.
+about: Diagonal beams run across the picture and are reflected at the top and bottom edges; the order of change is the position along the zigzag path, with a faint ripple along each beam.
+music: audioSwell -> a slight breath of the brightness in the middle (light only)
+knob: beamsP 0.5 2.2 the number of beams
+knob: rippleP 0.5 2.0 how strong the ripple along the beams is
+moods: psychedelic,wipe
+minfade: 5
+prob: 0.05
+cx: 1
+huegain: 0.05
+---
+vec4 trans( vec2 p, float d )
+{
+    vec4  a = tA( p );
+    vec4  b = tB( p );
+    float n = floor( 2.0 + 2.0 * gKA );
+    float zig = abs( fract( p.y * 1.5 ) * 2.0 - 1.0 );
+    float s = p.x * 0.6 + zig * 0.4;
+    float beam = fract( s * n + 0.37 );
+    float rip = 0.04 * gKB * sin( s * 60.0 );
+    float f = clamp( 0.5 * s + 0.35 * beam + 0.15 * ( 1.0 - zig ) + rip, 0.0, 1.0 );
+    float w = trThresh( f, d, 0.1 );
+    return mix( a, b, w );
+}
+
+=== EdgeCurrentHallSweep
+brief: TRANSITION EDGE CURRENT HALL SWEEP: a current runs round the rim of the picture and eats its way inwards, leaving the new scene.
+about: The order of change is the distance to the frame's edge, shifted by a slow wave that makes the current run round; the front is soft and carries a faint glow.
+music: audioSwell -> the width of the front
+knob: currentP 0.5 2.2 how strongly the current runs round
+knob: glowP 0.5 2.0 how bright the glow at the front is
+moods: calm,wipe
+minfade: 7
+prob: 0.07
+cx: 1
+huegain: 0.0
+---
+vec4 trans( vec2 p, float d )
+{
+    vec4  a = tA( p );
+    vec4  b = tB( p );
+    float e = min( min( p.x, 1.0 - p.x ), min( p.y, 1.0 - p.y ) ) * 2.0;
+    vec2  r = ( p - 0.5 ) * vec2( resolution.x / resolution.y, 1.0 );
+    float ang = atan( r.y, r.x );
+    float f = clamp( e + 0.14 * gKA * sin( ang * 2.0 + 2.0 * trClock() ), 0.0, 1.0 );
+    float w = trThresh( f, d, 0.15 * ( 1.0 + 0.3 * audioSwell ) );
+    float t = d * 1.3 - 0.15;
+    float glow = exp( -pow( ( f - t ) / 0.1, 2.0 ) );
+    vec4  c = mix( a, b, w );
+    c.rgb += vec3( 0.7, 0.85, 1.0 ) * glow * 0.12 * gKB * trMid( d ) * 2.0;
+    return c;
+}
+
+=== CymaticNodeLineArrival
+brief: TRANSITION CYMATIC NODE LINE ARRIVAL: the new scene arrives along the nodal lines of a vibrating plate and fills the areas between them last.
+about: A Chladni figure (two modes superposed, the pair changing during the fade) gives lines where the plate is at rest; the new scene settles there first, like sand, and spreads over the vibrating areas.
+music: audioSwell -> a slight breath of the brightness in the middle (light only)
+knob: modeP 0.5 2.2 the mode numbers of the plate
+knob: grainP 0.5 2.0 how grainy the arrival is
+moods: blocky,calm
+minfade: 6
+prob: 0.06
+cx: 2
+huegain: 0.0
+---
+vec4 trans( vec2 p, float d )
+{
+    vec4  a = tA( p );
+    vec4  b = tB( p );
+    vec2  x = p * 2.0 - 1.0;
+    float n1 = 3.0 * gKA;
+    float m1 = 5.0 * gKA;
+    float u1 = cos( n1 * Pi * x.x * 0.5 ) * cos( m1 * Pi * x.y * 0.5 ) - cos( m1 * Pi * x.x * 0.5 ) * cos( n1 * Pi * x.y * 0.5 );
+    float u2 = cos( 2.0 * Pi * x.x * 0.5 ) * cos( 6.0 * Pi * x.y * 0.5 ) - cos( 6.0 * Pi * x.x * 0.5 ) * cos( 2.0 * Pi * x.y * 0.5 );
+    float u = mix( u1, u2, smoothstep( 0.3, 0.7, d ) );
+    float f = clamp( abs( u ) * 0.6 + 0.12 * gKB * ( noise2( p * resolution * 0.5 ) - 0.5 ) * 0.5, 0.0, 1.0 );
+    float w = trThresh( f, d, 0.1 * ( 1.0 + 0.3 * audioSwell ) );
+    return mix( a, b, w );
+}

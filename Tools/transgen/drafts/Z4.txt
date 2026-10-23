@@ -1,0 +1,432 @@
+=== RackFocusBokehSwap
+brief: TRANSITION RACK FOCUS BOKEH SWAP: the focus moves from the old scene to the new one: the old one melts into bokeh discs, the new one resolves from them.
+about: Both scenes are read through a disc-shaped aperture whose radius grows for the old scene and shrinks for the new one; bright points become discs, so the middle is two clouds of soft lights over each other.
+music: audioSwell -> a slight breath of the brightness in the middle (light only)
+knob: discP 0.5 2.2 the largest disc radius
+knob: crossP 0.5 2.0 how far the two blurs overlap in time
+moods: dreamy,calm
+minfade: 6
+prob: 0.08
+cx: 3
+huegain: 0.05
+---
+/**  A disc-shaped blur of the outgoing scene that favours bright points (bokeh).
+ *
+ * @param p  The place. (in)
+ * @param r  The radius in pixels. (in)
+ *
+ * @return
+ *   The colour.
+ **/
+vec4 discA( vec2 p, float r )
+{
+    vec4  s = vec4( 0.0 );
+    float ws = 0.0;
+    for ( int i = 0; i < 16; ++i )
+    {
+        float a = 2.39996323 * float( i ) + 6.2831853 * hash21( gl_FragCoord.xy );
+        float rr = sqrt( ( float( i ) + 0.5 ) / 16.0 );
+        vec4  c = tA( p + vec2( cos( a ), sin( a ) ) * rr * r / resolution );
+        float w = 1.0 + 5.0 * pow( trLuma( c.rgb ), 3.0 );
+        s += c * w;
+        ws += w;
+    }
+    return s / ws;
+}
+
+/**  A disc-shaped blur of the incoming scene that favours bright points (bokeh).
+ *
+ * @param p  The place. (in)
+ * @param r  The radius in pixels. (in)
+ *
+ * @return
+ *   The colour.
+ **/
+vec4 discB( vec2 p, float r )
+{
+    vec4  s = vec4( 0.0 );
+    float ws = 0.0;
+    for ( int i = 0; i < 16; ++i )
+    {
+        float a = 2.39996323 * float( i ) + 6.2831853 * hash21( gl_FragCoord.xy );
+        float rr = sqrt( ( float( i ) + 0.5 ) / 16.0 );
+        vec4  c = tB( p + vec2( cos( a ), sin( a ) ) * rr * r / resolution );
+        float w = 1.0 + 5.0 * pow( trLuma( c.rgb ), 3.0 );
+        s += c * w;
+        ws += w;
+    }
+    return s / ws;
+}
+
+vec4 trans( vec2 p, float d )
+{
+    float R = 26.0 * gKA * ( 1.0 + 0.3 * audioSwell );
+    float lag = 0.3 * gKB;
+    float ra = R * smoothstep( 0.0, 0.6, d );
+    float rb = R * ( 1.0 - smoothstep( 0.4, 1.0, d ) );
+    return mix( discA( p, ra ), discB( p, rb ), smoothstep( 0.5 - lag, 0.5 + lag, d ) );
+}
+
+=== PrismDispersionDrift
+brief: TRANSITION PRISM DISPERSION DRIFT: a prism pulls the colour channels slowly apart and together again as the scene changes.
+about: The red and blue channels are shifted in opposite directions by a small distance that grows towards the middle and shrinks again, so the middle carries a soft coloured fringe on every edge; the scene itself cross-fades.
+music: audioSwell -> the width of the fringes
+knob: dispersionP 0.5 2.2 how far the channels part
+knob: turnP 0.5 2.0 how far the direction of the fringe turns
+moods: dreamy,bright
+minfade: 5
+prob: 0.07
+cx: 2
+huegain: 0.0
+---
+vec4 trans( vec2 p, float d )
+{
+    float m = trMid( d );
+    float ang = 0.6 + 0.9 * gKB * d;
+    vec2  dir = vec2( cos( ang ), sin( ang ) );
+    vec2  o = dir * ( 0.012 * gKA * m * ( 1.0 + 0.3 * audioSwell ) );
+    float w = smoothstep( 0.2, 0.8, d );
+    float r = mix( tAm( p + o ).r, tBm( p + o ).r, w );
+    float g = mix( tA( p ).g, tB( p ).g, w );
+    float b = mix( tAm( p - o ).b, tBm( p - o ).b, w );
+    return vec4( r, g, b, mix( tA( p ).a, tB( p ).a, w ) );
+}
+
+=== PolarizerRotationFade
+brief: TRANSITION POLARIZER ROTATION FADE: a polarising filter turns: reflections vanish, colours deepen, and the scene changes in the dark middle.
+about: The glare of the bright, unsaturated places (reflections, haze) is taken out and the saturation raised to a maximum in the middle of the turn, where the two scenes meet in deep, glare-free colour.
+music: audioSwell -> how deep the filter works
+knob: filterP 0.5 2.2 how much glare is taken out
+knob: deepP 0.5 2.0 how far the colours deepen
+moods: calm
+minfade: 5
+prob: 0.06
+cx: 1
+huegain: 0.0
+---
+/**  The effect of a turning polariser on a colour: glare out, saturation up.
+ *
+ * @param c    The colour. (in)
+ * @param amt  The strength of the filter, 0..1. (in)
+ *
+ * @return
+ *   The filtered colour.
+ **/
+vec3 polarise( vec3 c, float amt )
+{
+    float l = trLuma( c );
+    float mx = max( c.r, max( c.g, c.b ) );
+    float mn = min( c.r, min( c.g, c.b ) );
+    float sat = ( mx - mn ) / max( mx, 1.0e-3 );
+    float glare = smoothstep( 0.55, 1.0, l ) * ( 1.0 - sat );
+    c *= 1.0 - 0.5 * glare * amt * gKA * 0.6;
+    return mix( vec3( l ), c, 1.0 + 0.5 * amt * gKB * 0.6 );
+}
+
+vec4 trans( vec2 p, float d )
+{
+    float amt = trMid( d ) * ( 1.0 + 0.2 * audioSwell );
+    vec4  a = tA( p );
+    vec4  b = tB( p );
+    vec4  c = mix( vec4( polarise( a.rgb, amt ), a.a ), vec4( polarise( b.rgb, amt ), b.a ), smoothstep( 0.1, 0.9, d ) );
+    return c;
+}
+
+=== NdGradientPull
+brief: TRANSITION ND GRADIENT PULL: a graduated filter is pulled over the picture: the darkened side already shows the new scene.
+about: A broad soft front sweeps across; around it the picture darkens like under a graduated neutral-density filter, and the side the filter has passed shows the new scene in full light.
+music: audioSwell -> the density of the filter
+knob: densityP 0.5 2.2 how dark the filter is
+knob: softP 0.5 2.0 how wide the transition of the filter is
+moods: calm,wipe
+minfade: 6
+prob: 0.07
+cx: 1
+huegain: 0.0
+---
+vec4 trans( vec2 p, float d )
+{
+    vec4  a = tA( p );
+    vec4  b = tB( p );
+    float ang = 1.35;
+    vec2  dir = vec2( cos( ang ), sin( ang ) );
+    float s = clamp( dot( p - 0.5, dir ) * 0.75 + 0.5, 0.0, 1.0 );
+    float w = trThresh( s, d, 0.3 * gKB );
+    float t = d * ( 1.0 + 0.6 * gKB ) - 0.3 * gKB;
+    float band = exp( -pow( ( s - t ) / ( 0.3 * gKB ), 2.0 ) );
+    vec4  c = mix( a, b, w );
+    c.rgb *= 1.0 - 0.45 * band * gKA * ( 1.0 + 0.3 * audioSwell ) * trMid( d ) * 1.5;
+    return c;
+}
+
+=== RaindropLensRefraction
+brief: TRANSITION RAINDROP LENS REFRACTION: drops on the lens refract the picture, each showing the new scene inverted, and they run together.
+about: Elongated drops slide slowly down a pane in front of the picture; each is a little lens that shows the incoming scene upside down and magnified, with a bright edge; they grow and merge until the new scene fills the pane.
+music: audioSwell -> a slight breath of the brightness in the middle (light only)
+knob: dropP 0.5 2.2 the number of drops
+knob: lensP 0.5 2.0 how strongly they magnify
+moods: dreamy
+minfade: 7
+prob: 0.07
+cx: 3
+huegain: 0.0
+---
+vec4 trans( vec2 p, float d )
+{
+    vec4  a = tA( p );
+    float asp = resolution.x / resolution.y;
+    float n = ( 5.0 + 4.0 * gKA );
+    vec2  q = vec2( p.x * asp, p.y - 0.002 * trClock() * 8.0 ) * n;
+    vec2  g = floor( q );
+    float best = 9.0;
+    vec2  bc = g;
+    float rnd = 0.0;
+    for ( int j = -1; j <= 1; ++j )
+        for ( int i = -1; i <= 1; ++i )
+        {
+            vec2  c = g + vec2( float( i ), float( j ) );
+            vec2  pt = c + 0.2 + 0.6 * hash22( c + 3.9 );
+            vec2  r = q - pt;
+            float dd = length( r * vec2( 1.0, 0.62 ) );
+            if ( dd < best )
+            {
+                best = dd;
+                bc = pt;
+                rnd = hash21( c + 5.5 );
+            }
+        }
+    float grow = smoothstep( 0.0, 0.85, d );
+    float R = ( 0.2 + 0.25 * rnd ) * ( 0.3 + 1.6 * grow );
+    float inside = 1.0 - smoothstep( R * 0.9, R, best );
+    float upright = smoothstep( 0.55, 1.0, d );
+    float k = mix( -0.8 * gKB, 1.0, upright );
+    vec2  pc = vec2( bc.x / asp, bc.y + 0.002 * trClock() * 8.0 * n ) / n;
+    vec2  uv = pc + ( p - pc ) * k;
+    vec4  lens = tBm( uv );
+    float rim = smoothstep( R * 0.7, R, best ) * inside;
+    lens.rgb += vec3( 0.9, 0.95, 1.0 ) * rim * 0.18 * trMid( d ) * 2.0;
+    vec4  c0 = mix( a, lens, inside );
+    return mix( c0, tB( p ), smoothstep( 0.82, 1.0, d ) );
+}
+
+=== FresnelLensSlideBands
+brief: TRANSITION FRESNEL LENS SLIDE BANDS: a Fresnel lens sheet slides over the picture; its rings shift strips of the image and the sheet shows the new scene.
+about: A sheet of concentric prism rings moves across; where the sheet lies the incoming scene is seen through it, cut into ring-shaped strips that are each shifted a little, and in front of the sheet the old scene is seen straight.
+music: audioSwell -> a slight breath of the brightness in the middle (light only)
+knob: ringP 0.5 2.2 the number of rings
+knob: powerP 0.5 2.0 how strongly the rings shift the picture
+moods: wipe,calm
+minfade: 5
+prob: 0.06
+cx: 2
+huegain: 0.0
+---
+vec4 trans( vec2 p, float d )
+{
+    float asp = resolution.x / resolution.y;
+    float ang = 0.3;
+    vec2  dir = vec2( cos( ang ), sin( ang ) );
+    float s = clamp( dot( p - 0.5, dir ) * 0.8 + 0.5, 0.0, 1.0 );
+    float t = d * 1.3 - 0.15;
+    float onSheet = smoothstep( 0.04, -0.04, s - t );
+    vec2  c = vec2( 0.5, 0.5 ) + 0.05 * vec2( cos( trClock() ), sin( 0.8 * trClock() ) );
+    vec2  r = ( p - c ) * vec2( asp, 1.0 );
+    float rad = length( r );
+    float n = ( 10.0 + 8.0 * gKA );
+    float saw = fract( rad * n ) - 0.5;
+    vec2  shift = normalize( r + 1.0e-4 ) * saw * 0.02 * gKB * trMid( d ) * 2.0 / vec2( asp, 1.0 );
+    vec4  a = tA( p );
+    vec4  b = tBm( p + shift );
+    vec4  c0 = mix( a, b, onSheet );
+    float edge = exp( -pow( ( s - t ) / 0.02, 2.0 ) );
+    c0.rgb += 0.1 * edge * trMid( d ) * 2.0;
+    return c0;
+}
+
+=== PoolLightLatticeWash
+brief: TRANSITION POOL LIGHT LATTICE WASH: light through moving water paints a lattice of bright lines, and the new scene stands where the light is gathered.
+about: A caustic network of the kind that lies on the floor of a pool bounds the change: the new scene appears first in the bright net of the focused light and the dark cells are the last islands of the old one.
+music: audioSwell -> the brightness of the lines
+knob: poolP 0.5 2.2 the fineness of the lattice
+knob: rippleP 0.5 2.0 how fast it ripples
+moods: dreamy,bright
+minfade: 6
+prob: 0.07
+cx: 2
+huegain: 0.08
+---
+/**  A caustic network built from three crossing waves.
+ *
+ * @param q  The place in lattice units. (in)
+ * @param t  The clock. (in)
+ *
+ * @return
+ *   The brightness of the lattice, 0..1 (1 on the bright lines).
+ **/
+float causticNet( vec2 q, float t )
+{
+    float v = 0.0;
+    for ( int i = 0; i < 3; ++i )
+    {
+        float a = 2.0943951 * float( i ) + 0.4;
+        vec2  dir = vec2( cos( a ), sin( a ) );
+        float ph = dot( q, dir ) + 0.6 * sin( dot( q, vec2( -dir.y, dir.x ) ) * 0.9 + t * ( 1.0 + 0.3 * float( i ) ) );
+        v += cos( ph * 3.0 );
+    }
+    return pow( clamp( v / 3.0 * 0.5 + 0.5, 0.0, 1.0 ), 3.0 );
+}
+
+vec4 trans( vec2 p, float d )
+{
+    vec4  a = tA( p );
+    vec4  b = tB( p );
+    vec2  q = p * vec2( resolution.x / resolution.y, 1.0 ) * ( 3.2 * gKA + 3.0 );
+    float net = causticNet( q, trClock() * 3.0 * gKB );
+    float f = clamp( 0.4 * ( 1.0 - net * 1.5 ) + 0.6 * smoothstep( 0.25, 0.75, fbm2( p * 2.5 ) ), 0.0, 1.0 );
+    float w = trThresh( f, d, 0.3 );
+    vec4  c = mix( a, b, w );
+    c.rgb += vec3( 0.7, 0.9, 1.0 ) * net * 0.18 * trMid( d ) * 2.0 * ( 1.0 + 0.4 * audioSwell );
+    return c;
+}
+
+=== StainedGlassLeadReveal
+brief: TRANSITION STAINED GLASS LEAD REVEAL: the new scene appears pane by pane in a leaded window, each pane changing at its own time.
+about: Large irregular panes, bordered by dark, soft lead lines, take their change one after the other in a random order; each pane is tinted like coloured glass at the moment it changes.
+music: audioSwell -> a slight breath of the brightness in the middle (light only)
+knob: panesP 0.5 2.2 the number of panes
+knob: tintP 0.5 2.0 how strongly the glass tints
+moods: blocky,calm
+minfade: 6
+prob: 0.06
+cx: 2
+huegain: 0.0
+---
+vec4 trans( vec2 p, float d )
+{
+    vec4  a = tA( p );
+    vec4  b = tB( p );
+    float asp = resolution.x / resolution.y;
+    vec2  q = p * vec2( asp, 1.0 ) * ( 3.5 * gKA );
+    vec2  g = floor( q );
+    float f1 = 9.0;
+    float f2 = 9.0;
+    vec2  id = g;
+    for ( int j = -1; j <= 1; ++j )
+        for ( int i = -1; i <= 1; ++i )
+        {
+            vec2  c = g + vec2( float( i ), float( j ) );
+            float dd = length( q - ( c + 0.15 + 0.7 * hash22( c + 8.8 ) ) );
+            if ( dd < f1 )
+            {
+                f2 = f1;
+                f1 = dd;
+                id = c;
+            }
+            else if ( dd < f2 )
+                f2 = dd;
+        }
+    float order = hash21( id + 2.2 );
+    float w = trThresh( order, d, 0.07 );
+    float lead = 1.0 - smoothstep( 0.0, 0.07, f2 - f1 );
+    float win = exp( -pow( ( order - ( d * 1.14 - 0.07 ) ) / 0.12, 2.0 ) );
+    vec3  glass = hueRot( vec3( 1.0, 0.6, 0.3 ), 6.2831853 * hash21( id + 9.9 ) );
+    vec4  c = mix( a, b, w );
+    c.rgb = mix( c.rgb, c.rgb * glass * 1.4, clamp( 0.5 * gKB * win, 0.0, 0.6 ) );
+    c.rgb *= 1.0 - 0.4 * lead * trMid( d ) * 2.0;
+    return c;
+}
+
+=== CrystalBallInversion
+brief: TRANSITION CRYSTAL BALL INVERSION: a glass ball grows in the middle and shows the new scene upside down; as it fills the frame the picture turns upright.
+about: A sphere of clear glass grows from the centre; inside it the incoming scene is seen reversed and magnified, with a soft bright rim; once the ball has covered the picture the reversed image has turned upright.
+music: audioSwell -> the brightness of the rim
+knob: ballP 0.5 2.2 how large the ball gets
+knob: magP 0.5 2.0 how strongly it magnifies
+moods: dreamy
+minfade: 6
+prob: 0.06
+cx: 1
+huegain: 0.05
+---
+vec4 trans( vec2 p, float d )
+{
+    vec4  a = tA( p );
+    float asp = resolution.x / resolution.y;
+    vec2  c = vec2( 0.5 );
+    vec2  r = ( p - c ) * vec2( asp, 1.0 );
+    float R = 0.04 + ( 1.0 + 0.2 * gKA ) * sqrt( d );
+    float dist = length( r );
+    float inside = 1.0 - smoothstep( R * 0.97, R, dist );
+    float upright = smoothstep( 0.6, 1.0, d );
+    float k = mix( -0.55 * gKB, 1.0, upright );
+    vec4  ball = tBm( c + ( p - c ) * k );
+    float rim = smoothstep( R * 0.75, R, dist ) * inside;
+    ball.rgb += vec3( 0.9, 0.95, 1.0 ) * pow( rim, 2.0 ) * 0.3 * trMid( d ) * 2.0 * ( 1.0 + 0.3 * audioSwell );
+    vec4 c0 = mix( a, ball, inside );
+    return mix( c0, tB( p ), smoothstep( 0.9, 1.0, d ) );
+}
+
+=== AnamorphicSqueezeBreath
+brief: TRANSITION ANAMORPHIC SQUEEZE BREATH: an anamorphic lens squeezes and stretches the picture sideways while the scene changes.
+about: The old scene is squeezed towards the middle and the new one widens out of a squeezed state, like the breathing of a cinema lens; mirrored edges fill the gaps and the change is a soft cross-fade in the middle.
+music: audioSwell -> how far the picture is squeezed
+knob: squeezeP 0.5 2.2 how far the picture is squeezed
+knob: stretchP 0.5 2.0 how strongly the new scene is stretched in
+moods: calm
+minfade: 5
+prob: 0.06
+cx: 1
+huegain: 0.0
+---
+vec4 trans( vec2 p, float d )
+{
+    float sa = 0.16 * gKA * ( 1.0 + 0.3 * audioSwell ) * smoothstep( 0.0, 0.6, d );
+    float sb = 0.16 * gKB * ( 1.0 - smoothstep( 0.4, 1.0, d ) );
+    vec4  a = tAm( vec2( 0.5 + ( p.x - 0.5 ) * ( 1.0 - sa ), p.y ) );
+    vec4  b = tBm( vec2( 0.5 + ( p.x - 0.5 ) * ( 1.0 - sb ), p.y ) );
+    return mix( a, b, smoothstep( 0.15, 0.85, d ) );
+}
+
+=== LensBreathingRefocusSettle
+brief: TRANSITION LENS BREATHING REFOCUS SETTLE: the lens breathes as the focus changes: the new scene comes in slightly enlarged and settles.
+about: A very slow, small change of the field of view while the scenes cross-fade: the old one recedes a few percent, the new one starts a few percent too large and settles to its true size. The change only follows the progress of the fade.
+music: audioSwell -> none; the breathing follows the progress only
+knob: breathP 0.5 2.2 how large the change of the field of view is
+knob: settleP 0.5 2.0 how late the new scene settles
+moods: calm
+minfade: 6
+prob: 0.07
+cx: 1
+huegain: 0.0
+---
+vec4 trans( vec2 p, float d )
+{
+    float za = 1.0 + 0.04 * gKA * smoothstep( 0.0, 1.0, d );
+    float zb = 1.0 + 0.05 * gKA * ( 1.0 - smoothstep( 0.0, 0.5 + 0.2 * gKB, d ) );
+    vec4  a = tAm( 0.5 + ( p - 0.5 ) / za );
+    vec4  b = tBm( 0.5 + ( p - 0.5 ) / zb );
+    return mix( a, b, smoothstep( 0.1, 0.9, d ) );
+}
+
+=== ChromaticDefocusBloom
+brief: TRANSITION CHROMATIC DEFOCUS BLOOM: when the focus is lost the colour channels fall out of register in coloured halos; the new scene is brought into focus out of them.
+about: Each colour channel is blurred by its own radius (red most, blue least), so soft coloured halos stand round every light; the old scene dissolves into them and the new scene resolves from them.
+music: audioSwell -> a slight breath of the brightness in the middle (light only)
+knob: haloP 0.5 2.2 the size of the halos
+knob: splitP 0.5 2.0 how far apart the channels' blurs are
+moods: dreamy,psychedelic
+minfade: 6
+prob: 0.07
+cx: 3
+huegain: 0.0
+---
+vec4 trans( vec2 p, float d )
+{
+    float R = 18.0 * gKA * ( 1.0 + 0.3 * audioSwell );
+    float ra = R * smoothstep( 0.0, 0.6, d );
+    float rb = R * ( 1.0 - smoothstep( 0.4, 1.0, d ) );
+    float sp = 0.25 * gKB;
+    vec3  a = vec3( trBlurA( p, ra * ( 1.0 + sp ) ).r, trBlurA( p, ra ).g, trBlurA( p, ra * ( 1.0 - sp ) ).b );
+    vec3  b = vec3( trBlurB( p, rb * ( 1.0 + sp ) ).r, trBlurB( p, rb ).g, trBlurB( p, rb * ( 1.0 - sp ) ).b );
+    return vec4( mix( a, b, smoothstep( 0.15, 0.85, d ) ), 1.0 );
+}

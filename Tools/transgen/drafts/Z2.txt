@@ -1,0 +1,567 @@
+=== MistRiseVeil
+brief: TRANSITION MIST RISE VEIL: mist rises out of the picture and bleaches it; when it thins out the new scene stands there.
+about: A pale veil of rising mist, drawn as layered noise that drifts upwards and stretches into fine vertical streaks, thickens over the old scene, and clears from the new one.
+music: audioSwell -> the density of the mist
+knob: mistP 0.5 2.2 how dense the mist becomes
+knob: riseP 0.5 2.0 how fast the mist rises
+moods: calm,dreamy
+minfade: 8
+prob: 0.09
+cx: 2
+huegain: 0.05
+---
+vec4 trans( vec2 p, float d )
+{
+    vec4  a = tA( p );
+    vec4  b = tB( p );
+    float t = trClock() * gKB;
+    float n0 = fbm2( p * vec2( 2.4, 1.2 ) + vec2( 0.0, -0.9 * t ) );
+    float n1 = fbm2( p * vec2( 5.0, 2.4 ) + vec2( 3.0, -1.5 * t ) );
+    float f = smoothstep( 0.2, 0.8, 0.6 * n0 + 0.4 * n1 );
+    float w = trThresh( f, d, 0.32 );
+    float m = trMid( d );
+    float mist = clamp( m * ( 0.3 + 0.7 * ( 0.6 * n0 + 0.4 * n1 ) ) * 0.75 * gKA * ( 1.0 + 0.3 * audioSwell ), 0.0, 0.62 );
+    vec4  c = mix( a, b, w );
+    return vec4( mix( c.rgb, vec3( 0.86, 0.89, 0.93 ), mist ), c.a );
+}
+
+=== DewCondensationBloom
+brief: TRANSITION DEW CONDENSATION BLOOM: tiny drops condense on the old scene, each holding the new scene upside down, and grow together into the new picture.
+about: A field of round drops of different sizes appears and grows; every drop is a little lens that shows the incoming scene inverted around its own centre; as the drops merge the images turn upright and fill the frame.
+music: audioSwell -> a slight breath of the brightness in the middle (light only)
+knob: dewP 0.5 2.2 how many drops there are
+knob: lensP 0.5 2.0 how strongly the drops magnify
+moods: dreamy,calm
+minfade: 7
+prob: 0.07
+cx: 3
+huegain: 0.05
+---
+/**  The nearest drop of one layer of drops: its centre and its random size.
+ *
+ * @param q      The place in layer units. (in)
+ * @param layer  The layer, whose drops are placed differently. (in)
+ * @param rnd    The drop's random number 0..1. (out)
+ *
+ * @return
+ *   The centre of the nearest drop, in layer units.
+ **/
+vec2 dropNearest( vec2 q, float layer, out float rnd )
+{
+    vec2  g = floor( q );
+    float best = 9.0;
+    vec2  bc = g;
+    rnd = 0.0;
+    for ( int j = -1; j <= 1; ++j )
+        for ( int i = -1; i <= 1; ++i )
+        {
+            vec2  c = g + vec2( float( i ), float( j ) );
+            vec2  pt = c + 0.2 + 0.6 * hash22( c + layer * 5.7 );
+            float dd = length( q - pt );
+            if ( dd < best )
+            {
+                best = dd;
+                bc = pt;
+                rnd = hash21( c + layer * 9.1 );
+            }
+        }
+    return bc;
+}
+
+vec4 trans( vec2 p, float d )
+{
+    vec4  a = tA( p );
+    float asp = resolution.x / resolution.y;
+    float n = ( 6.0 + 5.0 * gKA );
+    vec2  q = p * vec2( asp, 1.0 ) * n;
+    float rnd;
+    vec2  c = dropNearest( q, 0.0, rnd );
+    float dist = length( q - c );
+    float grow = smoothstep( 0.0, 0.85, d );
+    float R = ( 0.18 + 0.28 * rnd ) * ( 0.3 + 1.5 * grow );
+    float inside = 1.0 - smoothstep( R * 0.92, R, dist );
+    float upright = smoothstep( 0.55, 1.0, d );
+    float k = mix( -0.9 * gKB, 1.0, upright );
+    vec2  pc = c / vec2( asp, 1.0 ) / n;
+    vec2  uv = pc + ( p - pc ) * k;
+    vec4  lens = tBm( uv );
+    float rim = smoothstep( R * 0.6, R, dist ) * inside;
+    lens.rgb *= 1.0 - 0.25 * rim * trMid( d );
+    vec4  dull = mix( a, trBlurA( p, 4.0 * trMid( d ) ), 0.6 );
+    float full = smoothstep( 0.82, 1.0, d );
+    vec4  c0 = mix( dull, lens, inside );
+    return mix( c0, tB( p ), full );
+}
+
+=== TideLineWashSand
+brief: TRANSITION TIDE LINE WASH SAND: the lines of waves slide over wet sand, and behind each line there is more of the new scene.
+about: Several lacy fronts of foam run diagonally across the picture; a front leaves a darker, wetter sheet of the new scene behind it and a thin bright line of foam on its edge.
+music: audioSwell -> a slight breath of the brightness in the middle (light only)
+knob: fronthP 0.5 2.2 the number of fronts
+knob: foamP 0.5 2.0 how bright the foam line is
+moods: calm,wipe
+minfade: 7
+prob: 0.08
+cx: 1
+huegain: 0.05
+---
+vec4 trans( vec2 p, float d )
+{
+    vec4  a = tA( p );
+    vec4  b = tB( p );
+    float ang = 0.5 + 0.7 * fract( 0.173 * gKA );
+    vec2  dir = vec2( cos( ang ), sin( ang ) );
+    float s = dot( p - 0.5, dir ) * 0.7 + 0.5;
+    float lace = fbm2( p * vec2( 9.0, 9.0 ) + vec2( trClock(), 0.0 ) ) - 0.5;
+    float nF = floor( 2.0 + gKA );
+    float f = clamp( s + 0.07 * sin( s * 6.2831853 * nF + 1.7 * lace ) + 0.09 * lace, 0.0, 1.0 );
+    float t = d * ( 1.0 + 2.0 * 0.11 ) - 0.11;
+    float w = smoothstep( f - 0.11, f + 0.11, t );
+    float foam = exp( -pow( ( f - t ) / 0.025, 2.0 ) ) * smoothstep( 0.0, 0.12, d ) * ( 1.0 - smoothstep( 0.88, 1.0, d ) );
+    vec4  c = mix( a, b, w );
+    c.rgb = c.rgb * ( 1.0 - 0.12 * w * ( 1.0 - w ) * 4.0 ) + vec3( 0.95, 0.97, 1.0 ) * foam * 0.55 * gKB;
+    return c;
+}
+
+=== CloudShadowPass
+brief: TRANSITION CLOUD SHADOW PASS: shadows of clouds glide over the picture, and wherever one has passed the scene has changed.
+about: A broad soft field of cloud shadow drifts across the frame; under it the picture is darker and already the new scene, in the sunlit places the old one is still shown, and when the shadow has left the new scene stands in full light.
+music: audioSwell -> how dark the shadows are
+knob: cloudP 0.5 2.2 the size of the clouds
+knob: windP 0.5 2.0 how fast the shadows travel
+moods: calm,dark
+minfade: 8
+prob: 0.08
+cx: 2
+huegain: 0.05
+---
+vec4 trans( vec2 p, float d )
+{
+    vec4  a = tA( p );
+    vec4  b = tB( p );
+    float t = trClock() * gKB;
+    float sh = fbm2( p * ( 1.8 / gKA + 0.8 ) + vec2( 0.8 * t, 0.3 * t ) );
+    sh = smoothstep( 0.3, 0.7, sh );
+    float f = 1.0 - sh;
+    float w = trThresh( f, d, 0.42 );
+    vec4  c = mix( a, b, w );
+    float dark = sh * trMid( d ) * ( 0.3 + 0.12 * audioSwell );
+    c.rgb *= 1.0 - dark;
+    return c;
+}
+
+=== SunbeamSheafSweep
+brief: TRANSITION SUNBEAM SHEAF SWEEP: a fan of sunbeams sweeps over the picture, and the scene has changed where it has passed.
+about: Soft rays fan out from a point beyond the frame's corner; the sweep follows their angle, and the front carries a warm veil of light that grows in the middle and is gone at the ends.
+music: audioKick -> a little extra light on the rays (light only)
+knob: raysP 0.5 2.2 the number of rays
+knob: warmP 0.5 2.0 how warm and strong the light is
+moods: bright,calm,wipe
+minfade: 5
+prob: 0.07
+cx: 1
+huegain: 0.08
+---
+vec4 trans( vec2 p, float d )
+{
+    vec4  a = tA( p );
+    vec4  b = tB( p );
+    vec2  src = vec2( -0.25, 1.2 );
+    vec2  v = ( p - src ) * vec2( resolution.x / resolution.y, 1.0 );
+    float ang = atan( v.x, -v.y );
+    float f = clamp( ( ang + 0.2 ) / 1.7, 0.0, 1.0 );
+    float nR = 7.0 + 5.0 * gKA;
+    float rays = 0.5 + 0.5 * sin( ang * nR + 0.5 * trClock() );
+    f = clamp( f + 0.05 * ( rays - 0.5 ), 0.0, 1.0 );
+    float w = trThresh( f, d, 0.12 );
+    float t = d * 1.24 - 0.12;
+    float near = exp( -pow( ( f - t ) / 0.2, 2.0 ) );
+    float m = trMid( d );
+    vec4  c = mix( a, b, w );
+    c.rgb += vec3( 1.0, 0.86, 0.6 ) * near * ( 0.12 + 0.2 * rays ) * m * gKB * ( 1.0 + 0.3 * audioKick );
+    return c;
+}
+
+=== SnowVeilBuryMelt
+brief: TRANSITION SNOW VEIL BURY MELT: fine snow veils bury the old scene in soft white drifts, then melt and give the new scene.
+about: Three layers of round flakes of different size fall and settle until the picture is veiled in white; the old scene goes under it and the new one comes up as the veil melts away.
+music: audioSwell -> how much snow falls
+knob: snowP 0.5 2.2 how much snow there is
+knob: flakeP 0.5 2.0 the size of the flakes
+moods: calm,dreamy
+minfade: 8
+prob: 0.08
+cx: 2
+huegain: 0.0
+---
+/**  The coverage of one layer of falling round flakes.
+ *
+ * @param q      The place in layer units. (in)
+ * @param layer  The layer. (in)
+ *
+ * @return
+ *   The coverage, 0..1.
+ **/
+float flakes( vec2 q, float layer )
+{
+    vec2  g = floor( q );
+    float cov = 0.0;
+    for ( int j = -1; j <= 1; ++j )
+        for ( int i = -1; i <= 1; ++i )
+        {
+            vec2  c = g + vec2( float( i ), float( j ) );
+            vec2  h = hash22( c + layer * 3.3 );
+            vec2  pt = c + 0.5 + 0.35 * ( h - 0.5 ) * 2.0;
+            float r = 0.18 + 0.2 * hash21( c + layer );
+            cov = max( cov, 1.0 - smoothstep( r * 0.5, r, length( q - pt ) ) );
+        }
+    return cov;
+}
+
+vec4 trans( vec2 p, float d )
+{
+    vec4  a = tA( p );
+    vec4  b = tB( p );
+    float asp = resolution.x / resolution.y;
+    vec2  q = p * vec2( asp, 1.0 ) * ( 10.0 / gKB );
+    float t = trClock();
+    float s0 = flakes( q + vec2( 0.2 * t, 0.6 * t ), 0.0 );
+    float s1 = flakes( q * 1.7 + vec2( -0.3 * t, 0.9 * t ), 1.0 );
+    float s2 = flakes( q * 2.9 + vec2( 0.4 * t, 1.3 * t ), 2.0 );
+    float snow = clamp( 0.6 * s0 + 0.5 * s1 + 0.4 * s2, 0.0, 1.0 );
+    float drift = 0.55 + 0.45 * fbm2( p * 2.5 + vec2( 0.1 * t, 0.0 ) );
+    float m = trMid( d );
+    float cover = clamp( m * ( 0.5 + 0.7 * snow ) * drift * gKA * ( 1.0 + 0.3 * audioSwell ), 0.0, 0.92 );
+    vec4  c = mix( a, b, smoothstep( 0.35, 0.65, d ) );
+    return vec4( mix( c.rgb, vec3( 0.95, 0.97, 1.0 ), cover ), c.a );
+}
+
+=== PollenDriftHaze
+brief: TRANSITION POLLEN DRIFT HAZE: clouds of golden pollen veil the scene and drift away.
+about: Slow golden haze made of noise and fine round grains of pollen; behind it the scene changes, and the haze carries off toward the edge.
+music: audioSwell -> a slight breath of the brightness in the middle (light only)
+knob: hazeP 0.5 2.2 how dense the haze gets
+knob: grainP 0.5 2.0 the size of the pollen grains
+moods: calm,bright
+minfade: 7
+prob: 0.07
+cx: 2
+huegain: 0.05
+---
+vec4 trans( vec2 p, float d )
+{
+    vec4  a = tA( p );
+    vec4  b = tB( p );
+    float t = trClock();
+    float asp = resolution.x / resolution.y;
+    float n0 = fbm2( p * 2.2 + vec2( 0.7 * t, 0.2 * t ) );
+    float n1 = fbm2( p * 4.8 + vec2( -0.4 * t, 0.3 * t ) + 4.0 );
+    float f = smoothstep( 0.2, 0.8, 0.6 * n0 + 0.4 * n1 );
+    float w = trThresh( f, d, 0.3 );
+    vec2  cell = floor( p * vec2( asp, 1.0 ) * ( 90.0 / gKB ) + vec2( 3.0 * t, 1.0 * t ) );
+    float grain = step( 0.94, hash21( cell ) );
+    float m = trMid( d );
+    float haze = clamp( m * ( 0.25 + 0.6 * n0 ) * 0.8 * gKA, 0.0, 0.55 ) + grain * 0.25 * m;
+    vec4  c = mix( a, b, w );
+    return vec4( mix( c.rgb, vec3( 1.0, 0.84, 0.42 ), clamp( haze, 0.0, 0.7 ) ), c.a );
+}
+
+=== PetalWindScatterMask
+brief: TRANSITION PETAL WIND SCATTER MASK: petals drift through the picture and each shows the new scene in its shape.
+about: Soft elliptical petals of different size and turning angle appear in growing numbers; inside each one the new scene is visible, and when they have met no old scene is left.
+music: audioSwell -> a slight breath of the brightness in the middle (light only)
+knob: petalP 0.5 2.2 the size of the petals
+knob: gustP 0.5 2.0 how fast the petals drift
+moods: calm,dreamy
+minfade: 6.5
+prob: 0.07
+cx: 2
+huegain: 0.08
+---
+/**  The elliptical distance to the nearest petal of one layer, in petal radii.
+ *
+ * @param q  The place in layer units. (in)
+ *
+ * @return
+ *   The distance; 1 at the petal's edge.
+ **/
+float petalDist( vec2 q )
+{
+    vec2  g = floor( q );
+    float best = 9.0;
+    for ( int j = -1; j <= 1; ++j )
+        for ( int i = -1; i <= 1; ++i )
+        {
+            vec2  c = g + vec2( float( i ), float( j ) );
+            vec2  h = hash22( c + 2.7 );
+            vec2  pt = c + 0.2 + 0.6 * h;
+            float ang = 6.2831853 * hash21( c + 8.1 );
+            vec2  r = q - pt;
+            vec2  e = vec2( cos( ang ) * r.x + sin( ang ) * r.y, -sin( ang ) * r.x + cos( ang ) * r.y );
+            float sz = 0.32 + 0.2 * hash21( c + 1.3 );
+            best = min( best, length( e / vec2( sz, sz * 0.55 ) ) );
+        }
+    return best;
+}
+
+vec4 trans( vec2 p, float d )
+{
+    vec4  a = tA( p );
+    vec4  b = tB( p );
+    float asp = resolution.x / resolution.y;
+    float t = trClock() * gKB;
+    vec2  q = p * vec2( asp, 1.0 ) * ( 7.0 / gKA ) + vec2( 0.6 * t, 0.3 * t );
+    float f = clamp( 0.45 * petalDist( q ), 0.0, 1.0 );
+    float w = trThresh( f, d, 0.12 + 0.03 * audioSwell );
+    vec4  c = mix( a, b, w );
+    c.rgb = mix( c.rgb, c.rgb * vec3( 1.04, 0.98, 1.02 ), w * ( 1.0 - w ) * 4.0 * 0.5 );
+    return c;
+}
+
+=== BreathFogGlassWipe
+brief: TRANSITION BREATH FOG GLASS WIPE: breath fogs a pane and a finger wipes it clear; the clear places show the new scene.
+about: The old scene goes soft and pale as if behind fogged glass, wiped clear in curving swaths; what is wiped shows the new scene sharply, the rest stays milky until the last swath closes.
+music: audioSwell -> the milkiness of the fog
+knob: fogP 0.5 2.2 how milky the glass is
+knob: swathP 0.5 2.0 the width of the wiped swaths
+moods: calm,wipe,dreamy
+minfade: 7
+prob: 0.07
+cx: 3
+huegain: 0.0
+---
+vec4 trans( vec2 p, float d )
+{
+    vec4  a = tA( p );
+    vec4  b = tB( p );
+    float m = trMid( d );
+    vec2  q = p * vec2( resolution.x / resolution.y, 1.0 );
+    float wob = 0.12 * sin( q.y * 5.0 + 1.3 ) + 0.07 * sin( q.y * 13.0 + 4.0 );
+    float s = q.x + wob;
+    float swath = 0.5 + 0.5 * sin( s * ( 3.0 / gKB ) );
+    float f = clamp( 0.55 * ( 1.0 - swath ) + 0.45 * fbm2( q * 3.0 ), 0.0, 1.0 );
+    float w = trThresh( f, d, 0.22 );
+    vec4  fogA = mix( a, trBlurA( p, 7.0 ) * 0.7 + 0.3 * vec4( 0.9, 0.93, 0.97, 1.0 ), clamp( 0.9 * m * gKA * ( 1.0 + 0.2 * audioSwell ), 0.0, 0.95 ) );
+    vec4  fogB = mix( b, trBlurB( p, 7.0 ) * 0.7 + 0.3 * vec4( 0.9, 0.93, 0.97, 1.0 ), clamp( 0.5 * m * gKA, 0.0, 0.7 ) );
+    return mix( fogA, fogB, w );
+}
+
+=== RainRivuletClearing
+brief: TRANSITION RAIN RIVULET CLEARING: rivulets run down a misted pane and clear it, and the clear streaks show the new scene.
+about: The old scene lies behind misted glass; narrow meandering rivulets of different start times run over it, each leaving a clear path with the new scene, widening until the whole pane is clear.
+music: audioSwell -> a slight breath of the brightness in the middle (light only)
+knob: rivuletP 0.5 2.2 how many rivulets there are
+knob: wanderP 0.5 2.0 how much they meander
+moods: calm,dark
+minfade: 7
+prob: 0.07
+cx: 2
+huegain: 0.0
+---
+vec4 trans( vec2 p, float d )
+{
+    vec4  a = tA( p );
+    vec4  b = tB( p );
+    float m = trMid( d );
+    float n = ( 22.0 + 20.0 * gKA );
+    float wx = p.x + 0.012 * gKB * sin( p.y * 14.0 + floor( p.x * n ) * 1.7 ) + 0.006 * sin( p.y * 37.0 );
+    float col = floor( wx * n );
+    float h = hash21( vec2( col, 4.0 ) );
+    float inCol = abs( fract( wx * n ) - 0.5 );
+    float run = 1.0 - p.y;
+    float f = clamp( 0.55 * h + 0.35 * run + 0.25 * inCol, 0.0, 1.0 );
+    float w = trThresh( f, d, 0.12 );
+    vec4  mist = mix( a, trBlurA( p, 6.0 ) * 0.75 + 0.25 * vec4( 0.8, 0.84, 0.9, 1.0 ), clamp( 0.85 * m, 0.0, 0.9 ) );
+    vec4  mistB = mix( b, trBlurB( p, 6.0 ) * 0.75 + 0.25 * vec4( 0.8, 0.84, 0.9, 1.0 ), clamp( 0.4 * m, 0.0, 0.6 ) );
+    return mix( mist, mistB, w );
+}
+
+=== SandVeilPassing
+brief: TRANSITION SAND VEIL PASSING: a veil of fine sand blows across the picture in long bands and leaves the new scene behind it.
+about: Long streaks of blown sand cross the frame diagonally; the veil is thick in its core and fine at its edges, and the scene changes under it.
+music: audioSwell -> a slight breath of the brightness in the middle (light only)
+knob: sandP 0.5 2.2 how thick the sand veil is
+knob: bandP 0.5 2.0 the length of the streaks
+moods: calm,wipe
+minfade: 6
+prob: 0.07
+cx: 2
+huegain: 0.05
+---
+vec4 trans( vec2 p, float d )
+{
+    vec4  a = tA( p );
+    vec4  b = tB( p );
+    float ang = 0.35;
+    vec2  dir = vec2( cos( ang ), sin( ang ) );
+    vec2  nor = vec2( -dir.y, dir.x );
+    vec2  q = ( p - 0.5 ) * vec2( resolution.x / resolution.y, 1.0 );
+    float along = dot( q, dir );
+    float across = dot( q, nor );
+    float s = clamp( along * 0.8 + 0.5, 0.0, 1.0 );
+    float streak = fbm2( vec2( along * ( 1.5 / gKB ), across * 22.0 ) + vec2( trClock() * 3.0, 0.0 ) );
+    float f = clamp( s + 0.18 * ( streak - 0.5 ), 0.0, 1.0 );
+    float w = trThresh( f, d, 0.1 );
+    float t = d * 1.2 - 0.1;
+    float core = exp( -pow( ( f - t ) / 0.22, 2.0 ) );
+    vec4  c = mix( a, b, w );
+    float veil = core * clamp( 0.35 + 0.65 * streak, 0.0, 1.0 ) * 0.7 * gKA * ( 1.0 + 0.2 * audioSwell );
+    return vec4( mix( c.rgb, vec3( 0.82, 0.68, 0.46 ), clamp( veil, 0.0, 0.75 ) ), c.a );
+}
+
+=== FireflyGlowHandoff
+brief: TRANSITION FIREFLY GLOW HANDOFF: fireflies carry the new scene as small discs of light that grow until the old scene is gone.
+about: The old scene dims into a dusk; soft green-gold lights rise in it, each a little window on the new scene with a halo, pulsing slowly; they grow and join.
+music: audioSwell -> the pulse of the lights (slow)
+knob: flyP 0.5 2.2 how many fireflies there are
+knob: haloP 0.5 2.0 how large the halos are
+moods: dark,dreamy
+minfade: 8
+prob: 0.07
+cx: 2
+huegain: 0.08
+---
+vec4 trans( vec2 p, float d )
+{
+    vec4  a = tA( p );
+    vec4  b = tB( p );
+    float asp = resolution.x / resolution.y;
+    float t = trClock();
+    float n = 3.5 + 2.0 * gKA;
+    vec2  q = p * vec2( asp, 1.0 ) * n + vec2( 0.12 * t, 0.07 * t );
+    vec2  g = floor( q );
+    float best = 9.0;
+    float ph = 0.0;
+    for ( int j = -1; j <= 1; ++j )
+        for ( int i = -1; i <= 1; ++i )
+        {
+            vec2  c = g + vec2( float( i ), float( j ) );
+            vec2  pt = c + 0.2 + 0.6 * hash22( c + 1.9 ) + 0.12 * vec2( sin( t * 1.2 + hash21( c ) * 6.28 ), cos( t * 1.0 + hash21( c + 3.0 ) * 6.28 ) );
+            float dd = length( q - pt );
+            if ( dd < best )
+            {
+                best = dd;
+                ph = hash21( c + 6.0 );
+            }
+        }
+    float f = clamp( best * 1.45, 0.0, 1.0 );
+    float w = trThresh( f, d, 0.25 );
+    float m = trMid( d );
+    float pulse = 0.75 + 0.25 * sin( t * 3.0 + ph * 6.2831853 + audioSwell );
+    float halo = exp( -best * best * ( 7.0 / gKB ) ) * pulse * m;
+    vec4  c = mix( a * ( 1.0 - 0.45 * m ), b, w );
+    c.rgb += vec3( 0.7, 1.0, 0.45 ) * halo * 0.5;
+    return c;
+}
+
+=== MeltwaterRillReveal
+brief: TRANSITION MELTWATER RILL REVEAL: meltwater finds rills through an iced picture, and the new scene shows in the rills.
+about: The order of change is a ridged noise: the new scene runs first along a branching net of narrow rills and then spreads sideways until nothing is left of the old picture; the ice shows as pale grain on the old scene.
+music: audioSwell -> the width of the rills
+knob: rillP 0.5 2.2 how fine the net of rills is
+knob: spreadP 0.5 2.0 how far the rills spread sideways
+moods: calm
+minfade: 7
+prob: 0.07
+cx: 2
+huegain: 0.05
+---
+vec4 trans( vec2 p, float d )
+{
+    vec4  a = tA( p );
+    vec4  b = tB( p );
+    vec2  q = p * vec2( resolution.x / resolution.y, 1.0 ) * ( 2.0 + 1.2 * gKA );
+    vec2  warp = vec2( fbm2( q * 1.3 + 3.0 ), fbm2( q * 1.3 + 9.0 ) ) - 0.5;
+    float r = fbm2( q + 1.6 * warp );
+    float ridge = 1.0 - abs( 2.0 * r - 1.0 );
+    float f = clamp( 1.0 - pow( ridge, 3.0 ) + 0.12 * ( 1.0 - gKB * 0.5 ) * ( fbm2( q * 5.0 ) - 0.5 ), 0.0, 1.0 );
+    float w = trThresh( f, d, 0.1 * ( 1.0 + 0.3 * audioSwell ) );
+    vec4  ice = vec4( vec3( 0.86, 0.92, 0.98 ), 1.0 );
+    float frost = trMid( d ) * 0.22 * ( 1.0 - w ) * ( 0.5 + fbm2( q * 9.0 ) );
+    vec4  c = mix( a, b, w );
+    return vec4( mix( c.rgb, ice.rgb, clamp( frost, 0.0, 0.4 ) ), c.a );
+}
+
+=== StarTwinkleDissolve
+brief: TRANSITION STAR TWINKLE DISSOLVE: the old scene falls into night and the new one is born from stars, each a window on the new picture.
+about: The old picture dims into a deep blue dark; points of light appear in it, each a growing round window that shows the new scene; the points join until the frame is full.
+music: audioSwell -> the stars' slow shimmer
+knob: starP 0.5 2.2 how many stars there are
+knob: dimP 0.5 2.0 how deep the night gets
+moods: dark,dreamy
+minfade: 8
+prob: 0.07
+cx: 2
+huegain: 0.05
+---
+vec4 trans( vec2 p, float d )
+{
+    vec4  a = tA( p );
+    vec4  b = tB( p );
+    float asp = resolution.x / resolution.y;
+    float n = ( 12.0 + 9.0 * gKA );
+    vec2  q = p * vec2( asp, 1.0 ) * n;
+    vec2  g = floor( q );
+    float best = 9.0;
+    for ( int j = -1; j <= 1; ++j )
+        for ( int i = -1; i <= 1; ++i )
+        {
+            vec2 c = g + vec2( float( i ), float( j ) );
+            vec2 pt = c + 0.15 + 0.7 * hash22( c + 4.4 );
+            best = min( best, length( q - pt ) );
+        }
+    float f = clamp( best * 1.05, 0.0, 1.0 );
+    float w = trThresh( f, d, 0.1 );
+    float m = trMid( d );
+    float tw = 0.85 + 0.15 * sin( trClock() * 6.0 + hash21( floor( q ) ) * 6.2831853 + 2.0 * audioSwell );
+    vec3  night = vec3( 0.02, 0.03, 0.09 );
+    vec4  ao = vec4( mix( a.rgb, night + 0.25 * a.rgb, clamp( 0.8 * gKB * m, 0.0, 0.9 ) ), a.a );
+    vec4  c = mix( ao, b, w );
+    float star = exp( -best * best * 60.0 ) * ( 1.0 - w ) * m * tw;
+    c.rgb += vec3( 0.9, 0.95, 1.0 ) * star * 0.7;
+    return c;
+}
+
+=== TideFoamLaceworkReveal
+brief: TRANSITION TIDE FOAM LACEWORK REVEAL: the foam of an ebbing wave draws a net of arcs, and the new scene shows through the meshes.
+about: A cellular net of foam, thick at the cell edges and clear in the cells, advances over the picture; the new scene appears first in the clear meshes and the white edges thin out last.
+music: audioSwell -> a slight breath of the brightness in the middle (light only)
+knob: meshP 0.5 2.2 the size of the meshes
+knob: foamP 0.5 2.0 how white the foam is
+moods: calm,wipe
+minfade: 7
+prob: 0.07
+cx: 2
+huegain: 0.05
+---
+vec4 trans( vec2 p, float d )
+{
+    vec4  a = tA( p );
+    vec4  b = tB( p );
+    float asp = resolution.x / resolution.y;
+    vec2  q = p * vec2( asp, 1.0 ) * ( 6.0 / gKA ) + vec2( 0.3 * trClock(), 0.0 );
+    vec2  g = floor( q );
+    float f1 = 9.0;
+    float f2 = 9.0;
+    for ( int j = -1; j <= 1; ++j )
+        for ( int i = -1; i <= 1; ++i )
+        {
+            vec2  c = g + vec2( float( i ), float( j ) );
+            float dd = length( q - ( c + 0.15 + 0.7 * hash22( c + 2.2 ) ) );
+            if ( dd < f1 )
+            {
+                f2 = f1;
+                f1 = dd;
+            }
+            else if ( dd < f2 )
+                f2 = dd;
+        }
+    float edge = clamp( 1.0 - 3.5 * ( f2 - f1 ), 0.0, 1.0 );
+    float sweep = clamp( p.x * 0.6 + p.y * 0.4, 0.0, 1.0 );
+    float f = clamp( 0.65 * sweep + 0.2 * f1 + 0.35 * edge, 0.0, 1.0 );
+    float w = trThresh( f, d, 0.14 );
+    float m = trMid( d );
+    vec4  c = mix( a, b, w );
+    c.rgb = mix( c.rgb, vec3( 0.95, 0.97, 1.0 ), 0.55 * gKB * edge * m * ( 1.0 - 0.5 * w ) );
+    return c;
+}

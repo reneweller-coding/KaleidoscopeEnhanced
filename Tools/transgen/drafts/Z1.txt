@@ -1,0 +1,569 @@
+=== LumaThresholdTide
+brief: TRANSITION LUMA THRESHOLD TIDE: the new scene rises through the old one like a tide, the darkest places first.
+about: A threshold on the old scene's brightness sweeps upwards with a soft shore: shadows are swallowed first, highlights stay the longest, and a slow noise keeps the shore from being a contour line.
+music: audioSwell -> the shore breathes (softness only)
+knob: tideP 0.5 2.2 softness of the shore
+knob: driftP 0.5 2.0 how far a slow noise bends the shore
+moods: calm,dreamy
+minfade: 6
+prob: 0.08
+cx: 1
+huegain: 0.05
+---
+vec4 trans( vec2 p, float d )
+{
+    vec4  a = tA( p );
+    vec4  b = tB( p );
+    float n = fbm2( p * 3.0 + vec2( trClock(), -0.6 * trClock() ) ) - 0.5;
+    float f = clamp( mix( 0.5 + 1.7 * ( trLuma( a.rgb ) - trMeanLumaA() ), smoothstep( 0.3, 0.7, fbm2( p * 2.0 + 7.0 ) ), 0.65 ) + 0.1 * gKB * n, 0.0, 1.0 );
+    float w = trThresh( f, d, 0.22 * gKA * ( 1.0 + 0.3 * audioSwell ) );
+    return mix( a, b, w );
+}
+
+=== HueGateBleed
+brief: TRANSITION HUE GATE BLEED: a band of hues travels round the colour wheel and the new scene stands wherever the old scene's hue lies in the band.
+about: The scene changes colour family by colour family: greens go first, then blues, then the rest; greys, which have no hue, follow the brightness instead.
+music: audioSwell -> the band's softness breathes
+knob: gateP 0.5 2.2 softness of the band's edge
+knob: turnP 0.5 2.0 how far the starting hue is rolled
+moods: calm,bright
+minfade: 6
+prob: 0.07
+cx: 1
+huegain: 0.05
+---
+/**  The hue of a colour as a fraction of the colour wheel.
+ *
+ * @param c  The colour. (in)
+ *
+ * @return
+ *   The hue, 0..1 (0 for greys).
+ **/
+float hueOf( vec3 c )
+{
+    float mx = max( c.r, max( c.g, c.b ) );
+    float mn = min( c.r, min( c.g, c.b ) );
+    float dl = mx - mn;
+    if ( dl < 1.0e-4 )
+        return 0.0;
+    float h = ( mx == c.r ) ? mod( ( c.g - c.b ) / dl, 6.0 ) : ( ( mx == c.g ) ? ( c.b - c.r ) / dl + 2.0 : ( c.r - c.g ) / dl + 4.0 );
+    return fract( h / 6.0 );
+}
+
+vec4 trans( vec2 p, float d )
+{
+    vec4  a = tA( p );
+    vec4  b = tB( p );
+    float mx = max( a.r, max( a.g, a.b ) );
+    float mn = min( a.r, min( a.g, a.b ) );
+    float chroma = clamp( ( mx - mn ) * 6.0, 0.0, 1.0 );
+    float f = mix( mix( clamp( 0.5 + 1.7 * ( trLuma( a.rgb ) - trMeanLumaA() ), 0.0, 1.0 ), smoothstep( 0.3, 0.7, fbm2( p * 2.0 + 3.0 ) ), 0.6 ), mix( fract( hueOf( a.rgb ) + 0.37 * gKB ), smoothstep( 0.3, 0.7, fbm2( p * 2.0 + 3.0 ) ), 0.5 ), chroma );
+    float w = trThresh( f, d, 0.18 * gKA * ( 1.0 + 0.3 * audioSwell ) );
+    return mix( a, b, w );
+}
+
+=== SaturationDrainBridge
+brief: TRANSITION SATURATION DRAIN BRIDGE: the old scene drains to grey, the new one takes its colour back.
+about: Both scenes meet in a quiet grey middle: the old scene loses its colour, then the new scene, still grey, is coloured in. The middle of the fade is a soft black-and-white picture with a shimmer of both.
+music: audioRolloff -> the length of the grey stretch
+knob: drainP 0.5 2.2 how long the grey stretch lasts
+knob: meetP 0.5 2.0 how softly the two greys cross
+moods: calm,dark
+minfade: 6.5
+prob: 0.07
+cx: 1
+huegain: 0.0
+---
+vec4 trans( vec2 p, float d )
+{
+    vec4  a = tA( p );
+    vec4  b = tB( p );
+    float half_ = clamp( 0.45 + 0.08 * gKA, 0.45, 0.62 );
+    vec3  ga = mix( a.rgb, vec3( trLuma( a.rgb ) ), smoothstep( 0.0, half_, d ) );
+    vec3  gb = mix( vec3( trLuma( b.rgb ) ), b.rgb, smoothstep( 1.0 - half_, 1.0, d ) );
+    float cw = clamp( 0.3 * gKB, 0.25, 0.48 );
+    float w = smoothstep( 0.5 - cw, 0.5 + cw, d );
+    return vec4( mix( ga, gb, w ), mix( a.a, b.a, w ) );
+}
+
+=== EdgeFirstSeep
+brief: TRANSITION EDGE FIRST SEEP: the new scene seeps in along the edges of the old one and floods its flat areas last.
+about: Edges of the old scene (a blurred gradient magnitude) switch first, so the new scene creeps in like water in a net; broad flat areas are the last islands of the old picture.
+music: audioSwell -> the seeping edge softens
+knob: seepP 0.5 2.2 width of the edge that seeps first
+knob: meshP 0.5 2.0 how coarse the net of edges is
+moods: calm,dreamy
+minfade: 6
+prob: 0.07
+cx: 2
+huegain: 0.05
+---
+/**  The strength of the edges of the outgoing scene, blurred over a few pixels.
+ *
+ * @param p  The place. (in)
+ * @param r  The radius in pixels. (in)
+ *
+ * @return
+ *   The edge strength, 0..1.
+ **/
+float edgeA( vec2 p, float r )
+{
+    vec2  px = r / resolution;
+    float lx = trLuma( tA( p + vec2( px.x, 0.0 ) ).rgb ) - trLuma( tA( p - vec2( px.x, 0.0 ) ).rgb );
+    float ly = trLuma( tA( p + vec2( 0.0, px.y ) ).rgb ) - trLuma( tA( p - vec2( 0.0, px.y ) ).rgb );
+    return clamp( length( vec2( lx, ly ) ) * 3.0, 0.0, 1.0 );
+}
+
+vec4 trans( vec2 p, float d )
+{
+    vec4  a = tA( p );
+    vec4  b = tB( p );
+    float e = 0.5 * ( edgeA( p, 3.0 * gKB ) + edgeA( p, 9.0 * gKB ) );
+    float f = mix( 1.0 - pow( clamp( e * ( 0.9 + 0.5 * gKA ), 0.0, 1.0 ), 0.45 ), smoothstep( 0.3, 0.7, fbm2( p * 2.0 + 5.0 ) ), 0.65 );
+    float w = trThresh( f, d, 0.16 * ( 1.0 + 0.3 * audioSwell ) );
+    return mix( a, b, w );
+}
+
+=== FlatAreasFirst
+brief: TRANSITION FLAT AREAS FIRST: the smooth areas of the old scene (sky, wall, skin) change first, its detailed areas last.
+about: The mirror image of EdgeFirstSeep: the new scene takes the flat regions and leaves the textured ones (foliage, stone, hair) as islands of the old picture until the very end.
+music: audioSwell -> the border between smooth and rough breathes
+knob: flatP 0.5 2.2 how sharply smooth and rough are told apart
+knob: grainP 0.5 2.0 the scale of the roughness that is measured
+moods: calm
+minfade: 6
+prob: 0.06
+cx: 2
+huegain: 0.05
+---
+/**  The roughness of the outgoing scene at a place: the spread of its brightness over a small neighbourhood.
+ *
+ * @param p  The place. (in)
+ * @param r  The radius in pixels. (in)
+ *
+ * @return
+ *   The roughness, 0..1.
+ **/
+float roughA( vec2 p, float r )
+{
+    vec2  px = r / resolution;
+    float c = trLuma( tA( p ).rgb );
+    float s = abs( trLuma( tA( p + vec2( px.x, 0.0 ) ).rgb ) - c ) + abs( trLuma( tA( p - vec2( px.x, 0.0 ) ).rgb ) - c )
+            + abs( trLuma( tA( p + vec2( 0.0, px.y ) ).rgb ) - c ) + abs( trLuma( tA( p - vec2( 0.0, px.y ) ).rgb ) - c );
+    return clamp( s * 2.5, 0.0, 1.0 );
+}
+
+vec4 trans( vec2 p, float d )
+{
+    vec4  a = tA( p );
+    vec4  b = tB( p );
+    float r = 0.5 * ( roughA( p, 2.0 * gKB ) + roughA( p, 6.0 * gKB ) );
+    float f = mix( pow( clamp( r * ( 1.0 + 0.5 * gKA ), 0.0, 1.0 ), 0.5 ), smoothstep( 0.3, 0.7, fbm2( p * 2.0 + 9.0 ) ), 0.65 );
+    float w = trThresh( f, d, 0.15 * ( 1.0 + 0.3 * audioSwell ) );
+    return mix( a, b, w );
+}
+
+=== HighlightBloomReveal
+brief: TRANSITION HIGHLIGHT BLOOM REVEAL: the lights of the new scene shine through the old one first and spread as soft halos until they close.
+about: The new scene's bright places switch first; each one carries a halo of its own blurred light, and the dark parts of the new scene arrive last.
+music: audioKick -> a little extra light in the halos (light only)
+knob: bloomP 0.5 2.2 the size of the halos
+knob: glowP 0.5 2.0 the strength of the halos
+moods: dreamy,bright
+minfade: 5
+prob: 0.07
+cx: 2
+huegain: 0.08
+---
+vec4 trans( vec2 p, float d )
+{
+    vec4  a = tA( p );
+    vec4  b = tB( p );
+    vec4  halo = trBlurB( p, 10.0 * gKA );
+    float f = 1.0 - trLuma( b.rgb );
+    float w = trThresh( f, d, 0.14 );
+    float m = trMid( d );
+    vec4  bb = mix( b, halo, 0.55 * m ) + vec4( halo.rgb * 0.30 * gKB * m * ( 1.0 + 0.4 * audioKick ), 0.0 );
+    return mix( a, bb, w );
+}
+
+=== ShadowLiftCrossing
+brief: TRANSITION SHADOW LIFT CROSSING: the shadows of the old scene lift and fill with the new scene; its lights stay last.
+about: Like a tide that rises from the dark, but the old picture is lifted out of its shadows as it goes, so nothing ever turns black; the lights of the old scene hold on to the end.
+music: audioSwell -> the lift deepens
+knob: liftP 0.5 2.2 how far the shadows are lifted
+knob: shoreP 0.5 2.0 softness of the shore
+moods: dark,calm
+minfade: 6.5
+prob: 0.07
+cx: 1
+huegain: 0.0
+---
+vec4 trans( vec2 p, float d )
+{
+    vec4  a = tA( p );
+    vec4  b = tB( p );
+    float la = trLuma( a.rgb );
+    float f = mix( clamp( 0.5 + 1.7 * ( la - trMeanLumaA() ), 0.0, 1.0 ), smoothstep( 0.3, 0.7, fbm2( p * 2.0 + 1.0 ) ), 0.65 );
+    float w = trThresh( f, d, 0.22 * gKB );
+    vec3  lifted = a.rgb + ( 1.0 - la ) * 0.16 * gKA * ( 1.0 + 0.4 * audioSwell ) * trMid( d );
+    return mix( vec4( lifted, a.a ), b, w );
+}
+
+=== NeutralGreyBridgeMix
+brief: TRANSITION NEUTRAL GREY BRIDGE MIX: both scenes are mixed without colour and the colour returns first in the new one.
+about: A plain cross-fade, but the colour sinks out of the mixture and comes back earlier for the new scene than it left the old one, so the middle is a black-and-white photograph made of both.
+music: audioMode -> none; the return of the colour follows the progress only
+knob: dipP 0.5 2.2 how deep the colour sinks
+knob: lateP 0.5 2.0 how early the colour returns in the new scene
+moods: calm
+minfade: 5
+prob: 0.06
+cx: 1
+huegain: 0.0
+---
+vec4 trans( vec2 p, float d )
+{
+    vec4  a = tA( p );
+    vec4  b = tB( p );
+    vec4  c = mix( a, b, smoothstep( 0.0, 1.0, d ) );
+    float k = sin( Pi * pow( d, 0.55 + 0.25 * gKB ) );
+    float sat = 1.0 - clamp( pow( k, 1.5 ) * ( 0.8 + 0.15 * gKA ), 0.0, 1.0 );
+    return vec4( mix( vec3( trLuma( c.rgb ) ), c.rgb, sat ), c.a );
+}
+
+=== PyramidDescentRefocus
+brief: TRANSITION PYRAMID DESCENT REFOCUS: the old scene is taken apart by scale, the new one assembled by scale.
+about: The old scene dissolves into ever coarser blur, the new scene condenses out of the coarsest blur to full sharpness; in the middle two soft clouds lie over each other.
+music: audioSwell -> a slight breath of the brightness in the middle (light only)
+knob: reachP 0.5 2.2 the largest blur radius
+knob: lagP 0.5 2.0 how far the two blurs overlap in time
+moods: dreamy,calm
+minfade: 6
+prob: 0.08
+cx: 3
+huegain: 0.05
+---
+vec4 trans( vec2 p, float d )
+{
+    float R = 22.0 * gKA * ( 1.0 + 0.3 * audioSwell );
+    float ra = R * smoothstep( 0.0, 0.62, d );
+    float rb = R * ( 1.0 - smoothstep( 0.38, 1.0, d ) );
+    vec4  a = 0.5 * ( trBlurA( p, ra ) + trBlurA( p, 0.5 * ra ) );
+    vec4  b = 0.5 * ( trBlurB( p, rb ) + trBlurB( p, 0.5 * rb ) );
+    float lag = clamp( 0.3 * gKB, 0.2, 0.44 );
+    return mix( a, b, smoothstep( 0.5 - lag, 0.5 + lag, d ) );
+}
+
+=== DetailLayerSwapFirst
+brief: TRANSITION DETAIL LAYER SWAP FIRST: the fine detail changes before the base colours do.
+about: A Laplacian cross-fade: both scenes are split into a blurred base and the detail above it; the detail layers are swapped first, then the bases, so in the middle the contours of the new scene stand in the colours of the old one.
+music: audioSwell -> the scale that splits base from detail
+knob: splitP 0.5 2.2 the radius that splits base from detail
+knob: lagP 0.5 2.0 how far the base lags behind the detail
+moods: dreamy
+minfade: 5
+prob: 0.06
+cx: 3
+huegain: 0.0
+---
+vec4 trans( vec2 p, float d )
+{
+    float r = 8.0 * gKA * ( 1.0 + 0.3 * audioSwell );
+    vec4  a = tA( p );
+    vec4  b = tB( p );
+    vec4  ba = trBlurA( p, r );
+    vec4  bb = trBlurB( p, r );
+    float lag = 0.18 * gKB;
+    float wd = smoothstep( 0.0, 1.0 - lag, d );
+    float wb = smoothstep( lag, 1.0, d );
+    return mix( ba, bb, wb ) + mix( a - ba, b - bb, wd );
+}
+
+=== LuminanceRankDissolve
+brief: TRANSITION LUMINANCE RANK DISSOLVE: a soft grainy dissolve ordered by the new scene's brightness, so the average never drifts to light or dark.
+about: Every pixel changes at a time that mixes its brightness rank in the new scene with a coarse grain; the middle of the fade is a fine mottling of old and new rather than a veil.
+music: audioSwell -> the softness of the grain edge
+knob: grainP 0.5 2.2 the size of the grain
+knob: rankP 0.5 2.0 how strongly brightness orders the change
+moods: calm
+minfade: 4.5
+prob: 0.06
+cx: 1
+huegain: 0.05
+---
+vec4 trans( vec2 p, float d )
+{
+    vec4  a = tA( p );
+    vec4  b = tB( p );
+    vec2  cell = floor( p * resolution / ( 3.0 * gKA ) );
+    float g = hash21( cell );
+    float f = mix( g, smoothstep( 0.05, 0.95, trLuma( b.rgb ) ), clamp( 0.25 * gKB, 0.0, 0.8 ) );
+    float w = trThresh( f, d, 0.07 * ( 1.0 + 0.3 * audioSwell ) );
+    return mix( a, b, w );
+}
+
+=== SoftMatteDriftMask
+brief: TRANSITION SOFT MATTE DRIFT MASK: a very low, slowly drifting cloud of noise decides what is old and what is new.
+about: No structure at all, only broad soft clouds of old and new that slide over each other; the calmest dissolve in the set.
+music: audioSwell -> the clouds' edges breathe
+knob: cloudP 0.5 2.2 the size of the clouds (large is high)
+knob: driftP 0.5 2.0 how fast the clouds drift
+moods: calm,dreamy
+minfade: 8
+prob: 0.09
+cx: 1
+huegain: 0.05
+---
+vec4 trans( vec2 p, float d )
+{
+    vec4  a = tA( p );
+    vec4  b = tB( p );
+    float t = trClock() * gKB;
+    float f = fbm2( p * ( 3.2 - 0.9 * gKA ) + vec2( t, 0.6 * t ) );
+    f = smoothstep( 0.3, 0.7, f );
+    float w = trThresh( f, d, 0.3 * ( 1.0 + 0.3 * audioSwell ) );
+    return mix( a, b, w );
+}
+
+=== DuotoneGhostPrelude
+brief: TRANSITION DUOTONE GHOST PRELUDE: a two-colour ghost of the new scene lies over the old one first and takes on its colours afterwards.
+about: The new scene is announced as a duotone in the colour of the music's key, floats over the old picture, and then the real colours come in as the old scene leaves.
+music: audioChromaHue -> the colour of the ghost (slowly)
+knob: ghostP 0.5 2.2 how strong the ghost is
+knob: tintP 0.5 2.0 how far the ghost's colour is turned
+moods: dreamy
+minfade: 5.5
+prob: 0.06
+cx: 1
+huegain: 0.0
+---
+vec4 trans( vec2 p, float d )
+{
+    vec4  a = tA( p );
+    vec4  b = tB( p );
+    vec3  tint = hueRot( vec3( 1.0, 0.62, 0.35 ), audioChromaHue * 0.5 + 0.8 * gKB + hueP );
+    vec3  ghost = mix( vec3( 0.04, 0.06, 0.14 ), tint, clamp( trLuma( b.rgb ) * 1.2, 0.0, 1.0 ) );
+    float w1 = smoothstep( 0.0, 0.45, d );
+    vec3  pre = mix( a.rgb, ghost, clamp( 0.55 * gKA * w1, 0.0, 0.9 ) );
+    float w2 = smoothstep( 0.45, 1.0, d );
+    return vec4( mix( pre, b.rgb, w2 ), mix( a.a, b.a, w2 ) );
+}
+
+=== ChannelStaggerTimeBlend
+brief: TRANSITION CHANNEL STAGGER TIME BLEND: red, green and blue change scenes one after the other.
+about: Not a shift in space but in time: the colour channels cross-fade with a stagger, so the middle carries a slow wandering colour cast that settles when the last channel has arrived.
+music: audioSwell -> the stagger grows a little
+knob: staggerP 0.5 2.2 how far apart the channels change
+knob: orderP 0.5 2.0 which channel leads (rolled)
+moods: calm,psychedelic
+minfade: 5
+prob: 0.06
+cx: 1
+huegain: 0.0
+---
+vec4 trans( vec2 p, float d )
+{
+    vec4  a = tA( p );
+    vec4  b = tB( p );
+    float lag = clamp( 0.26 * gKA * ( 1.0 + 0.3 * audioSwell ), 0.05, 0.6 );
+    float o = fract( 0.37 * gKB );
+    float lr = lag * ( o < 0.33 ? 0.0 : ( o < 0.66 ? 1.0 : 0.5 ) );
+    float lg = lag * ( o < 0.33 ? 0.5 : ( o < 0.66 ? 0.0 : 1.0 ) );
+    float lb = lag * ( o < 0.33 ? 1.0 : ( o < 0.66 ? 0.5 : 0.0 ) );
+    float wr = smoothstep( lr, 1.0 - lag + lr, d );
+    float wg = smoothstep( lg, 1.0 - lag + lg, d );
+    float wb = smoothstep( lb, 1.0 - lag + lb, d );
+    return vec4( mix( a.r, b.r, wr ), mix( a.g, b.g, wg ), mix( a.b, b.b, wb ), mix( a.a, b.a, d ) );
+}
+
+=== PosterBandRelease
+brief: TRANSITION POSTER BAND RELEASE: the old scene is cut into tone bands and the bands give way one after the other.
+about: The old picture is quantised by brightness into a handful of bands, and a band at a time hands its area to the new scene, from the darkest to the lightest or the other way round; the edges are soft.
+music: audioSwell -> a slight breath of the brightness in the middle (light only)
+knob: bandsP 0.5 2.2 the number of bands
+knob: softP 0.5 2.0 how soft the band edges are
+moods: calm,blocky
+minfade: 5
+prob: 0.06
+cx: 1
+huegain: 0.0
+---
+vec4 trans( vec2 p, float d )
+{
+    vec4  a = tA( p );
+    vec4  b = tB( p );
+    float n = floor( 4.0 + 2.0 * gKA );
+    float q = ( floor( clamp( trLuma( a.rgb ), 0.0, 0.999 ) * n ) + 0.5 ) / n;
+    float w = trThresh( q, d, 0.5 / n * gKB );
+    return mix( a, b, w );
+}
+
+=== GradientFlowDissolve
+brief: TRANSITION GRADIENT FLOW DISSOLVE: the blend is carried along the old scene's contours like a dye in a current.
+about: The order of change is a noise field that is pushed along the gradient of the old scene's brightness, so the new scene flows around the shapes of the old one before it covers them.
+music: audioSwell -> the softness of the flow edge
+knob: flowP 0.5 2.2 how strongly the gradient pushes the noise
+knob: scaleP 0.5 2.0 the scale of the noise
+moods: dreamy,calm
+minfade: 6
+prob: 0.07
+cx: 2
+huegain: 0.05
+---
+vec4 trans( vec2 p, float d )
+{
+    vec4  a = tA( p );
+    vec4  b = tB( p );
+    vec2  px = 3.0 / resolution;
+    vec2  g = vec2( trLuma( tA( p + vec2( px.x, 0.0 ) ).rgb ) - trLuma( tA( p - vec2( px.x, 0.0 ) ).rgb ),
+                    trLuma( tA( p + vec2( 0.0, px.y ) ).rgb ) - trLuma( tA( p - vec2( 0.0, px.y ) ).rgb ) );
+    float f = fbm2( p * ( 2.0 + 1.5 * gKB ) + g * ( 5.0 * gKA ) + vec2( 0.4 * trClock(), 0.0 ) );
+    f = smoothstep( 0.2, 0.8, f );
+    float w = trThresh( f, d, 0.22 * ( 1.0 + 0.3 * audioSwell ) );
+    return mix( a, b, w );
+}
+
+=== FogBankLayerSwap
+brief: TRANSITION FOG BANK LAYER SWAP: three banks of fog slide between the scenes, and the scene changes behind them.
+about: Three layers of drifting fog, each at its own speed and scale, thicken over the old scene, let it go and clear off the new one; nothing has an edge.
+music: audioSwell -> the density of the fog
+knob: fogP 0.5 2.2 how dense the fog gets
+knob: layersP 0.5 2.0 the scale of the banks
+moods: calm,dreamy,dark
+minfade: 8
+prob: 0.08
+cx: 2
+huegain: 0.05
+---
+vec4 trans( vec2 p, float d )
+{
+    vec4  a = tA( p );
+    vec4  b = tB( p );
+    float t = trClock();
+    float s = 1.0 + 1.0 * gKB;
+    float l0 = fbm2( p * 1.6 * s + vec2( 0.9 * t, 0.2 * t ) );
+    float l1 = fbm2( p * 2.7 * s + vec2( -0.6 * t, 0.5 * t ) + 5.0 );
+    float l2 = fbm2( p * 4.4 * s + vec2( 0.3 * t, -0.8 * t ) + 11.0 );
+    float f = smoothstep( 0.2, 0.8, 0.5 * l0 + 0.3 * l1 + 0.2 * l2 );
+    float w = trThresh( f, d, 0.35 );
+    float m = trMid( d );
+    float fog = clamp( m * ( 0.2 + 0.6 * ( 0.5 * l0 + 0.5 * l1 ) ) * ( 0.75 + 0.25 * l2 ) * 0.8 * gKA * ( 1.0 + 0.3 * audioSwell ), 0.0, 0.6 );
+    vec3  fogc = vec3( 0.76, 0.80, 0.86 ) + 0.1 * ( audioCentroid - 0.5 );
+    vec4  c = mix( a, b, w );
+    return vec4( mix( c.rgb, fogc, fog ), c.a );
+}
+
+=== DustMoteLightDrift
+brief: TRANSITION DUST MOTE LIGHT DRIFT: specks of dust in a sunbeam grow into pools of the new scene.
+about: Round specks of different sizes drift across the picture; each speck becomes a soft pool of the new scene that grows until the pools meet and the old scene is gone.
+music: audioSwell -> a little more light on the specks
+knob: moteP 0.5 2.2 the number of specks
+knob: driftP 0.5 2.0 how fast the specks drift
+moods: dreamy,calm
+minfade: 6
+prob: 0.07
+cx: 2
+huegain: 0.05
+---
+/**  The distance to the nearest speck of one layer of drifting specks.
+ *
+ * @param p      The place in layer units. (in)
+ * @param layer  The layer, whose specks are placed differently. (in)
+ *
+ * @return
+ *   The distance, in cells (at most about 1).
+ **/
+float moteDist( vec2 p, float layer )
+{
+    vec2  g = floor( p );
+    float best = 2.0;
+    for ( int j = -1; j <= 1; ++j )
+        for ( int i = -1; i <= 1; ++i )
+        {
+            vec2 c = g + vec2( float( i ), float( j ) );
+            vec2 pt = c + 0.15 + 0.7 * hash22( c + layer * 7.31 );
+            best = min( best, length( p - pt ) );
+        }
+    return best;
+}
+
+vec4 trans( vec2 p, float d )
+{
+    vec4  a = tA( p );
+    vec4  b = tB( p );
+    vec2  q = p * vec2( resolution.x / resolution.y, 1.0 );
+    float t = trClock() * gKB;
+    float n = 5.0 * gKA;
+    float d0 = moteDist( q * n + vec2( 0.4 * t, 0.2 * t ), 0.0 );
+    float d1 = moteDist( q * n * 1.7 + vec2( -0.3 * t, 0.5 * t ), 1.0 );
+    float f = smoothstep( 0.05, 0.75, 0.9 * min( d0, 1.25 * d1 ) );
+    float w = trThresh( f, d, 0.22 );
+    vec4  c = mix( a, b, w );
+    c.rgb += vec3( 1.0, 0.92, 0.78 ) * 0.06 * trMid( d ) * ( 1.0 - smoothstep( 0.0, 0.35, f ) ) * ( 1.0 + audioSwell );
+    return c;
+}
+
+=== AfterimageHandoffHalo
+brief: TRANSITION AFTERIMAGE HANDOFF HALO: the old scene leaves a complementary afterimage that hovers over the new one and fades.
+about: A plain, slow cross-fade, but a pale negative of the old scene (its complementary colours) floats over the incoming picture, as the eye would see it after staring, and drains away.
+music: audioRolloff -> how long the afterimage lasts
+knob: afterP 0.5 2.2 the strength of the afterimage
+knob: lingerP 0.5 2.0 how long the afterimage stays
+moods: dreamy,psychedelic
+minfade: 6
+prob: 0.06
+cx: 1
+huegain: 0.0
+---
+vec4 trans( vec2 p, float d )
+{
+    vec4  a = tA( p );
+    vec4  b = tB( p );
+    vec4  c = mix( a, b, smoothstep( 0.15, 0.85, d ) );
+    vec3  comp = vec3( trLuma( a.rgb ) * 2.0 ) - a.rgb;
+    float hold = clamp( 0.45 * gKB + 0.2 * audioRolloff, 0.2, 1.0 );
+    float k = smoothstep( 0.05, 0.4, d ) * ( 1.0 - smoothstep( hold, 1.0, d ) );
+    return vec4( mix( c.rgb, comp, clamp( 0.32 * gKA * k, 0.0, 0.6 ) ), c.a );
+}
+
+=== PaperGrainFibreDissolve
+brief: TRANSITION PAPER GRAIN FIBRE DISSOLVE: the order of change is the fibre structure of a handmade paper.
+about: Long fine fibres lying in a few directions form a net; the new scene is drawn in along the fibres and fills the gaps last, the way ink is taken up by laid paper.
+music: audioSwell -> a slight breath of the brightness in the middle (light only)
+knob: fibreP 0.5 2.2 how fine the fibres are
+knob: laidP 0.5 2.0 how strongly the fibres line up
+moods: calm
+minfade: 5.5
+prob: 0.06
+cx: 2
+huegain: 0.05
+---
+/**  A noise of long thin fibres in one direction.
+ *
+ * @param p      The place. (in)
+ * @param angle  The direction of the fibres in radians. (in)
+ * @param len    The elongation: how many times longer than wide. (in)
+ *
+ * @return
+ *   The fibre value, 0..1.
+ **/
+float fibre( vec2 p, float angle, float len )
+{
+    float c = cos( angle );
+    float s = sin( angle );
+    vec2  q = vec2( c * p.x + s * p.y, -s * p.x + c * p.y );
+    return noise2( q * vec2( 1.0, len ) );
+}
+
+vec4 trans( vec2 p, float d )
+{
+    vec4  a = tA( p );
+    vec4  b = tB( p );
+    vec2  q = p * vec2( resolution.x / resolution.y, 1.0 ) * ( 6.0 + 4.0 * gKA );
+    float len = 7.0;
+    float f = 0.4 * fibre( q, 0.35, len ) + 0.3 * fibre( q + 3.1, 1.9, len ) + 0.3 * mix( noise2( q * 0.7 ), fibre( q - 5.0, 2.8, len ), clamp( 0.4 * gKB, 0.0, 1.0 ) );
+    f = smoothstep( 0.2, 0.8, f );
+    float w = trThresh( f, d, 0.2 );
+    return mix( a, b, w );
+}
