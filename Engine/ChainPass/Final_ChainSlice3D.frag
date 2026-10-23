@@ -395,7 +395,7 @@ vec3 calmGlow( vec3 own, float dh )
     vec3 g = hsv2rgb( vec3( fract( chainHue0() + dh ), 0.5 + 0.2 * clamp( audioSwell, 0.0, 1.0 ), 1.0 ) );
     return mix( g, o, 0.5 + 0.4 * smoothstep( 0.06, 0.3, s ) );
 }
-/**  How much of the colour field the surfaces take (none with chainPhotoOnly: the photos' own textures).
+/**  How much of the colour field the surfaces take (none with ChainPhotoOnly: the photos' own textures).
  *
  * @return
  *   The colour field's share, 0..0.9.
@@ -407,7 +407,7 @@ float chainPal()
 /**  A dark photo lifted: its mean brightness (the last mip) brought toward 0.32, at most 1.8 times.
  *
  * @return
- *   The factor on the photo's colour, 1..1.8 (1 without chainPhotoOnly).
+ *   The factor on the photo's colour, 1..1.8 (1 without ChainPhotoOnly).
  **/
 float photoGain()
 {

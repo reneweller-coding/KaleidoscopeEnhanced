@@ -225,23 +225,30 @@ flach kennt. Die Klassen unten gibt es in keiner der vier Listen. In den Klammer
 
 **Stufe B: Spiegel und Faltungen (10)**
 
-35. **Kairo-Fünfeck-Spiegel** — Die Spiegelgruppe p4g: Das Foto in Fünfecken, die wie ein Kairoer Pflaster liegen. (Winkel ←
-    Phase)
-36. **Gestutztes-Quadrat-Spiegel** — Das Quadrat-Dreieck-Parkett 3.3.4.3.4 als Spiegelnetz. (Drehung der Zellen ← Phase)
-37. **3.12.12-Spiegel** — Das Netz aus Dreiecken und Zwölfecken. (Zwölfeck-Öffnung ← Anschwellen)
-38. **Heighway-Drachen-Faltung** — Das Foto wird wie der Drache gefaltet: jede Iteration rechts oder links gewendet. (Tiefe ←
+*Beim Bau am 23.10. geändert:* Kairo-Fünfeck, gestutztes Quadrat, 3.12.12, pgg und Hilbert-Kurve sind keine Netze aus
+Spiegeln (ihre Symmetrien enthalten Drehungen und Gleitspiegelungen, die Kachelnähte wären Sprünge, keine Spiegel), und
+das (2,3,7)-Netz gibt es als {7,3} schon. Sie sind durch zehn Faltungen ersetzt, die stetig sind.
+
+35. **Heighway-Drachen-Faltung** — Das Foto wird wie der Drache gefaltet: jede Iteration um 45° gedreht, mit Faktor √2
+    gestreckt und abwechselnd rechts und links gewendet. (Tiefe ← Spektralbreite)
+36. **Gosper-Flockenfaltung** — Die Flockenkurve als Faltmuster: Maßstab √7 und die Wendung von 19,1° mit der Faltung an
+    der Achse. (Tiefe ← Spektralbreite)
+37. **Fibonacci-Wort-Spiegel** — Spiegel an den Punkten des Fibonacci-Quasigitters (Abstände 1,618 und 1 in der Ordnung
+    des Fibonacci-Wortes); das Bild ist der Abstand zum nächsten Spiegel und wiederholt sich nie. (Schnittwinkel ← Harmoniewechsel)
+38. **Thue-Morse-Spiegel** — Die Steigung eines Zickzacks kippt dort, wo die Thue-Morse-Folge es sagt: nichts wiederholt
+    sich, nichts ist zufällig. (Zellbreite ← Phrasenuhr)
+39. **Cantor-Spiegel** — Der Abstand zur Cantor-Menge in beiden Achsen: ein Teppich aus Faltungen auf jeder Größe. (Tiefe
+    ← Abschnitt)
+40. **Zeltabbildungs-Faltung** — Die Dreieckswelle, wieder und wieder verdoppelt: binäre Spiegel auf jedem Maßstab.
+    (Runden ← Spektralbreite)
+41. **Katzenabbildungs-Faltung** — Arnolds Katze [[2,1],[1,1]] auf dem Torus, jede Runde mit einem Spiegel gefaltet:
+    chaotisches Mischen, das stetig bleibt. (Runden ← Anschwellen)
+42. **KIFS-Dreiecksfaltung** — Betrag, Verschiebung, eine wachsende Drehung und der Faktor 1,6: Spitzenwerk aus der Faltung
+    eines Dreiecks. (Drehung ← Phase)
+43. **Whitney-Kuspen-Faltung** — (x, y) ↦ (x, y³ + a·x·y): Die Ebene faltet sich an einer Spitze, und das Foto liegt über
+    sich selbst. (a ← Anschwellen)
+44. **Polare Zeltfaltung** — Die Zeltabbildung in Radius und Winkel zugleich: Blütenblätter in Blütenblättern. (Runden ←
     Spektralbreite)
-39. **Gosper-Flockenfaltung** — Die Flockenkurve als Faltmuster mit 60°-Wendungen. (Tiefe ← Spektralbreite)
-40. **Hilbert-Kurven-Faltung** — Das Foto wird in die Ordnung der Hilbert-Kurve gelegt: Nachbarn auf der Kurve sind
-    Nachbarn im Bild. (Ordnung ← Abschnitt)
-41. **Fibonacci-Wort-Spiegel** — Aus dem Fibonacci-Wort (abaab…) folgt, welche Zelle gespiegelt wird; das Netz ist
-    quasiperiodisch in einer Richtung. (Schnittwinkel ← Harmoniewechsel)
-42. **Thue-Morse-Spiegel** — Die Thue-Morse-Folge setzt Spiegel und Nichtspiegel; kein Muster wiederholt sich, keines ist
-    zufällig. (Zellbreite ← Phrasenuhr)
-43. **Gleitspiegelung pgg** — Die Gruppe pgg aus zwei senkrechten Gleitspiegelachsen: Das Foto läuft in
-    Fischgräten-Reihen. (Gleitlänge ← Vortrieb)
-44. **(2,3,7)-Dreiecksgruppen-Spiegel** — Das hyperbolische Dreiecksnetz der Gruppe (2,3,7) als Spiegel: Das Foto in einem
-    Netz, das sich nach außen unendlich verdichtet. (Krümmung ← Anschwellen)
 
 **Stufe C: Linsen (8)**
 
