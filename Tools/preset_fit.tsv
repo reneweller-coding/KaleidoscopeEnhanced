@@ -2173,3 +2173,15 @@ CamshaftStripWave	3	2	6	3	4	6	4	5	4	2	3
 PlanetaryGearMosaic	3	3	6	4	6	6	5	5	5	3	3
 FourBarLinkageCarpet	3	2	5	4	5	6	4	5	4	2	3
 PantographCopyField	3	2	5	3	4	5	4	5	4	2	3
+HeliosSwirlBokeh	6	3	3	4	6	7	6	3	4	7	7
+PolygonBokehBlades	6	3	4	4	6	7	6	4	4	6	7
+FilmGrainClumps	4	2	3	7	3	7	5	3	3	7	5
+BayerMosaicMoire	3	3	5	4	6	6	6	7	5	3	3
+CrossProcessCurves	4	2	4	5	6	7	6	4	4	7	5
+LocalToneHalos	3	2	3	5	4	7	5	3	3	6	4
+FocusStackFringes	5	2	3	4	4	7	5	3	3	5	6
+PixelBinningMosaic	2	2	6	3	5	5	6	8	5	2	3
+SensorRowBanding	3	3	5	5	4	6	5	7	4	4	3
+ChromaSubsampleBleed	3	2	5	4	6	6	5	7	5	3	3
+MiniatureFocusBandSweep	5	2	3	3	4	7	6	3	3	5	7
+ExposureBracketGhosts	4	2	3	5	4	7	5	3	3	6	5
