@@ -20618,4 +20618,46 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
 
+  <TextureShader file="..\\Scene2D\\PhotoCanyonRun.frag" type="normal" mood="cinematic,space,dreamy" probability="0.45" complexity="6">
+    <rig preset="flat"/>
+    <float name="heightP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene2D\\LithophaneSweep.frag" type="normal" mood="calm,dreamy,gallery" probability="0.45" complexity="4">
+    <rig preset="flat"/>
+    <float name="thickP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene2D\\PillowEmbossBreath.frag" type="normal" mood="calm,dreamy,gallery" probability="0.45" complexity="4">
+    <rig preset="flat"/>
+    <float name="softP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene2D\\ShadedReliefPhoto.frag" type="normal" mood="gallery,calm,bright" probability="0.45" complexity="4">
+    <rig preset="flat"/>
+    <float name="reliefP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene2D\\NadirReliefFlight.frag" type="normal" mood="cinematic,space,gallery" probability="0.45" complexity="5">
+    <rig preset="flat"/>
+    <float name="heightP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene2D\\ParallaxOcclusionDive.frag" type="normal" mood="cinematic,electronic,gallery" probability="0.45" complexity="5">
+    <rig preset="flat"/>
+    <float name="gridP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
 </configuration>
