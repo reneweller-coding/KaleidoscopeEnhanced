@@ -7666,3 +7666,19 @@ named in its `@brief`, its audio coupling in the doc block, and a knob (`sizeP` 
 - *Doxygen:* 113 warnings at first, all of them the scenes' own helper functions (and `phAt` / `stateStep` of the 15 state
   scenes); each has a block now (brief, `@param`, `@return`) in `Tools/scenegen/src/<Scene>.glsl`, written from a table
   and inserted before the definition; none now.
+
+- *Genre membership, checked afterwards.* All 300 new scenes were in Allround and in at least one genre preset (one to six, two
+  or three typically). Ten **old** scenes were in no genre preset (ChordRailwaySwitches, EmbroideryHoopStitches,
+  FormantVowelSpace, KnittingRowsGrow, MarbleRunTrack, QuiltBlockPatchwork, SundialShadowSweep, TangramShuffle,
+  WireworldCircuitry, XrayLuggageBelt): slow staged object scenes whose fit stayed below the take threshold in every column
+  (`galerie` is not a genre) and two of them with interest 2 or below, which the dull filter drops. They now have fit 7 in two
+  fitting genres each (calm ones Ambient / Downtempo, the celestial ones SpaceAmbient, the purple and colourful ones
+  Psychedelic, the circuit and the scanner Electronic with Noir and Psychedelic) and interest at least 3. WireworldCircuitry
+  is near black in all three catalogue frames; it is in Noir and Electronic now, but it stays a dark scene.
+- *Transitions.* 29 of the 210 were in no genre preset: those tagged only `wipe` or `blocky` (the tags that keep a transition
+  out of the calm genres) matched no mood rule anywhere else. `make_genre_configs.py` has `GEOMETRIC_GENRES` now: Club,
+  Electronic and Psytrance take every `wipe` / `blocky` transition, Cinematic the wipes (still subject to the measured
+  softness). Club has 117 transitions (was 63), Electronic 138 (89), Psytrance 132 (81), Cinematic 106 (89); the calm genres are
+  unchanged (75, 75, 81). Four stay in Allround alone on purpose: CrystalBallInversion, FlatAreasFirst, HueGateBleed and
+  PolaroidDevelopSquare are tagged calm or dreamy but measure abrupt, so the calm genres refuse them and the driving ones
+  refuse the `calm` tag. `check_schedule.py --quick`: 20 plans, no violations.

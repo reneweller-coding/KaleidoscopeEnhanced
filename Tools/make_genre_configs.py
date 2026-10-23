@@ -287,6 +287,20 @@ if _unmeasured:
     sys.exit("make_genre_configs: %s not in %s -- measure it (PresetEditor --transprofile)"
              % (", ".join(_unmeasured), PROFILE_FILE))
 
+# ---- Geometric transitions in the driving genres (23.10.2026) ----------------
+# `wipe` and `blocky` are preset-only tags (see above): they keep a transition OUT of the calm genres, but no mood rule
+# took them IN anywhere else, so a transition with only these tags (the doors, shutters, tile flips, page turns, 29 of
+# 210) ran in Allround alone.  The geometric fronts and blocks are the driving genres' own transitions (Club,
+# Electronic, Psytrance); Cinematic keeps the wipes ("the iris and the wipe are film's own"), still subject to the
+# measured softness.  A transition tagged calm and blocky or wipe is taken as well: its slowness is a speed, not a
+# reason to keep it out of the genres that like hard geometry.
+GEOMETRIC_GENRES = {"Club": {"wipe", "blocky"}, "Electronic": {"wipe", "blocky"}, "Psytrance": {"wipe", "blocky"},
+                    "Cinematic": {"wipe"}}
+
+def geometric_ok(genre, b):
+    """Whether a transition is let into a genre by its geometric tag alone."""
+    return bool(b[2] & GEOMETRIC_GENRES.get(genre, set()))
+
 def soft_enough(genre, b):
     """Whether a transition may run in a genre: always outside SOFT_GENRES, else by the tags and the profile."""
     tags = SOFT_GENRES.get(genre)
@@ -460,7 +474,7 @@ for entry in GENRES:
     if labs:
         sel_s = [b for b in sel_s if b[1] not in CHAIN_LABS] + labs
     sel_f = [b for b in fx    if fxRule(b[2], b[4]) or b[1] in ALWAYS]
-    sel_t = [b for b in trans if (fxRule(b[2], b[4]) or b[1] in ALWAYS) and soft_enough(name, b)]
+    sel_t = [b for b in trans if (fxRule(b[2], b[4]) or b[1] in ALWAYS or geometric_ok(name, b)) and soft_enough(name, b)]
     hid = ' hidden="true"' if hidden else ""
     tim = ""
     if name in TIMING:
