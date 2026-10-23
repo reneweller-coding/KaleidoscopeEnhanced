@@ -45,10 +45,10 @@ uniform float audioPhrasePos; ///< Position inside the musical phrase, 0..1 (per
 uniform float audioStereo;    ///< Stereo width of the sound, 0 mono .. 1 wide.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-uniform float fronthP;  ///< The number of fronts (0.5..2.2).
-uniform float foamP;  ///< How bright the foam line is (0.5..2.0).
-uniform float speedP; ///< Speed knob: clock multiplier (0.5..2.0).
-uniform float hueP;   ///< Hue knob (radians): turns the colours a little in the middle of the fade.
+uniform float fronthP; ///< The number of fronts (0.5..2.2).
+uniform float foamP;   ///< How bright the foam line is (0.5..2.0).
+uniform float speedP;  ///< Speed knob: clock multiplier (0.5..2.0).
+uniform float hueP;    ///< Hue knob (radians): turns the colours a little in the middle of the fade.
 
 const float Pi = 3.14159265358979; ///< Pi.
 
@@ -205,8 +205,8 @@ float fbm2( vec2 p )
     return s / 0.9375;
 }
 
-/**  A soft threshold wipe: a pixel with the order value f has switched at progress d, and every pixel has switched at d = 1
- *  and none at d = 0, whatever the order values are.
+/**  A soft threshold wipe: a pixel with the order value f has switched at progress d, and every pixel has switched at
+ * d = 1 and none at d = 0, whatever the order values are.
  *
  * @param f  The pixel's order value, 0..1: pixels with small values switch first. (in)
  * @param d  The progress, 0..1. (in)
@@ -221,7 +221,8 @@ float trThresh( float f, float d, float s )
     return smoothstep( f - s, f + s, t );
 }
 
-/**  The mean brightness of the outgoing scene, estimated from nine fixed points (to centre a brightness order on the picture).
+/**  The mean brightness of the outgoing scene, estimated from nine fixed points (to centre a brightness order on the
+ * picture).
  *
  * @return
  *   The mean luminance, 0..1.
@@ -269,10 +270,12 @@ vec4 trBlurA( vec2 p, float r )
 {
     vec2 px = r / resolution;
     vec4 s = texture( tex0, p ) * 0.2;
-    s += 0.1 * ( texture( tex0, p + vec2( px.x, 0.0 ) ) + texture( tex0, p - vec2( px.x, 0.0 ) )
-               + texture( tex0, p + vec2( 0.0, px.y ) ) + texture( tex0, p - vec2( 0.0, px.y ) ) );
-    s += 0.1 * ( texture( tex0, p + px * 0.7071 ) + texture( tex0, p - px * 0.7071 )
-               + texture( tex0, p + px * vec2( 0.7071, -0.7071 ) ) + texture( tex0, p - px * vec2( 0.7071, -0.7071 ) ) );
+    s += 0.1
+         * ( texture( tex0, p + vec2( px.x, 0.0 ) ) + texture( tex0, p - vec2( px.x, 0.0 ) )
+             + texture( tex0, p + vec2( 0.0, px.y ) ) + texture( tex0, p - vec2( 0.0, px.y ) ) );
+    s += 0.1
+         * ( texture( tex0, p + px * 0.7071 ) + texture( tex0, p - px * 0.7071 )
+             + texture( tex0, p + px * vec2( 0.7071, -0.7071 ) ) + texture( tex0, p - px * vec2( 0.7071, -0.7071 ) ) );
     return s;
 }
 
@@ -288,10 +291,12 @@ vec4 trBlurB( vec2 p, float r )
 {
     vec2 px = r / resolution;
     vec4 s = texture( tex1, p ) * 0.2;
-    s += 0.1 * ( texture( tex1, p + vec2( px.x, 0.0 ) ) + texture( tex1, p - vec2( px.x, 0.0 ) )
-               + texture( tex1, p + vec2( 0.0, px.y ) ) + texture( tex1, p - vec2( 0.0, px.y ) ) );
-    s += 0.1 * ( texture( tex1, p + px * 0.7071 ) + texture( tex1, p - px * 0.7071 )
-               + texture( tex1, p + px * vec2( 0.7071, -0.7071 ) ) + texture( tex1, p - px * vec2( 0.7071, -0.7071 ) ) );
+    s += 0.1
+         * ( texture( tex1, p + vec2( px.x, 0.0 ) ) + texture( tex1, p - vec2( px.x, 0.0 ) )
+             + texture( tex1, p + vec2( 0.0, px.y ) ) + texture( tex1, p - vec2( 0.0, px.y ) ) );
+    s += 0.1
+         * ( texture( tex1, p + px * 0.7071 ) + texture( tex1, p - px * 0.7071 )
+             + texture( tex1, p + px * vec2( 0.7071, -0.7071 ) ) + texture( tex1, p - px * vec2( 0.7071, -0.7071 ) ) );
     return s;
 }
 
@@ -315,7 +320,8 @@ vec4 trans( vec2 p, float d )
     float f = clamp( s + 0.07 * sin( s * 6.2831853 * nF + 1.7 * lace ) + 0.09 * lace, 0.0, 1.0 );
     float t = d * ( 1.0 + 2.0 * 0.11 ) - 0.11;
     float w = smoothstep( f - 0.11, f + 0.11, t );
-    float foam = exp( -pow( ( f - t ) / 0.025, 2.0 ) ) * smoothstep( 0.0, 0.12, d ) * ( 1.0 - smoothstep( 0.88, 1.0, d ) );
+    float foam = exp( -pow( ( f - t ) / 0.025, 2.0 ) ) * smoothstep( 0.0, 0.12, d )
+                 * ( 1.0 - smoothstep( 0.88, 1.0, d ) );
     vec4  c = mix( a, b, w );
     c.rgb = c.rgb * ( 1.0 - 0.12 * w * ( 1.0 - w ) * 4.0 ) + vec3( 0.95, 0.97, 1.0 ) * foam * 0.55 * gKB;
     return c;

@@ -45,7 +45,7 @@ uniform float audioStereo;    ///< Stereo width of the sound, 0 mono .. 1 wide.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
 uniform float tideP;  ///< Softness of the shore (0.5..2.2).
-uniform float driftP;  ///< How far a slow noise bends the shore (0.5..2.0).
+uniform float driftP; ///< How far a slow noise bends the shore (0.5..2.0).
 uniform float speedP; ///< Speed knob: clock multiplier (0.5..2.0).
 uniform float hueP;   ///< Hue knob (radians): turns the colours a little in the middle of the fade.
 
@@ -204,8 +204,8 @@ float fbm2( vec2 p )
     return s / 0.9375;
 }
 
-/**  A soft threshold wipe: a pixel with the order value f has switched at progress d, and every pixel has switched at d = 1
- *  and none at d = 0, whatever the order values are.
+/**  A soft threshold wipe: a pixel with the order value f has switched at progress d, and every pixel has switched at
+ * d = 1 and none at d = 0, whatever the order values are.
  *
  * @param f  The pixel's order value, 0..1: pixels with small values switch first. (in)
  * @param d  The progress, 0..1. (in)
@@ -220,7 +220,8 @@ float trThresh( float f, float d, float s )
     return smoothstep( f - s, f + s, t );
 }
 
-/**  The mean brightness of the outgoing scene, estimated from nine fixed points (to centre a brightness order on the picture).
+/**  The mean brightness of the outgoing scene, estimated from nine fixed points (to centre a brightness order on the
+ * picture).
  *
  * @return
  *   The mean luminance, 0..1.
@@ -268,10 +269,12 @@ vec4 trBlurA( vec2 p, float r )
 {
     vec2 px = r / resolution;
     vec4 s = texture( tex0, p ) * 0.2;
-    s += 0.1 * ( texture( tex0, p + vec2( px.x, 0.0 ) ) + texture( tex0, p - vec2( px.x, 0.0 ) )
-               + texture( tex0, p + vec2( 0.0, px.y ) ) + texture( tex0, p - vec2( 0.0, px.y ) ) );
-    s += 0.1 * ( texture( tex0, p + px * 0.7071 ) + texture( tex0, p - px * 0.7071 )
-               + texture( tex0, p + px * vec2( 0.7071, -0.7071 ) ) + texture( tex0, p - px * vec2( 0.7071, -0.7071 ) ) );
+    s += 0.1
+         * ( texture( tex0, p + vec2( px.x, 0.0 ) ) + texture( tex0, p - vec2( px.x, 0.0 ) )
+             + texture( tex0, p + vec2( 0.0, px.y ) ) + texture( tex0, p - vec2( 0.0, px.y ) ) );
+    s += 0.1
+         * ( texture( tex0, p + px * 0.7071 ) + texture( tex0, p - px * 0.7071 )
+             + texture( tex0, p + px * vec2( 0.7071, -0.7071 ) ) + texture( tex0, p - px * vec2( 0.7071, -0.7071 ) ) );
     return s;
 }
 
@@ -287,10 +290,12 @@ vec4 trBlurB( vec2 p, float r )
 {
     vec2 px = r / resolution;
     vec4 s = texture( tex1, p ) * 0.2;
-    s += 0.1 * ( texture( tex1, p + vec2( px.x, 0.0 ) ) + texture( tex1, p - vec2( px.x, 0.0 ) )
-               + texture( tex1, p + vec2( 0.0, px.y ) ) + texture( tex1, p - vec2( 0.0, px.y ) ) );
-    s += 0.1 * ( texture( tex1, p + px * 0.7071 ) + texture( tex1, p - px * 0.7071 )
-               + texture( tex1, p + px * vec2( 0.7071, -0.7071 ) ) + texture( tex1, p - px * vec2( 0.7071, -0.7071 ) ) );
+    s += 0.1
+         * ( texture( tex1, p + vec2( px.x, 0.0 ) ) + texture( tex1, p - vec2( px.x, 0.0 ) )
+             + texture( tex1, p + vec2( 0.0, px.y ) ) + texture( tex1, p - vec2( 0.0, px.y ) ) );
+    s += 0.1
+         * ( texture( tex1, p + px * 0.7071 ) + texture( tex1, p - px * 0.7071 )
+             + texture( tex1, p + px * vec2( 0.7071, -0.7071 ) ) + texture( tex1, p - px * vec2( 0.7071, -0.7071 ) ) );
     return s;
 }
 
@@ -307,7 +312,10 @@ vec4 trans( vec2 p, float d )
     vec4  a = tA( p );
     vec4  b = tB( p );
     float n = fbm2( p * 3.0 + vec2( trClock(), -0.6 * trClock() ) ) - 0.5;
-    float f = clamp( mix( 0.5 + 1.7 * ( trLuma( a.rgb ) - trMeanLumaA() ), smoothstep( 0.3, 0.7, fbm2( p * 2.0 + 7.0 ) ), 0.65 ) + 0.1 * gKB * n, 0.0, 1.0 );
+    float f = clamp(
+        mix( 0.5 + 1.7 * ( trLuma( a.rgb ) - trMeanLumaA() ), smoothstep( 0.3, 0.7, fbm2( p * 2.0 + 7.0 ) ), 0.65 )
+            + 0.1 * gKB * n,
+        0.0, 1.0 );
     float w = trThresh( f, d, 0.22 * gKA * ( 1.0 + 0.3 * audioSwell ) );
     return mix( a, b, w );
 }

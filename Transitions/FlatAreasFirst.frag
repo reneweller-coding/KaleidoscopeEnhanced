@@ -46,7 +46,7 @@ uniform float audioStereo;    ///< Stereo width of the sound, 0 mono .. 1 wide.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
 uniform float flatP;  ///< How sharply smooth and rough are told apart (0.5..2.2).
-uniform float grainP;  ///< The scale of the roughness that is measured (0.5..2.0).
+uniform float grainP; ///< The scale of the roughness that is measured (0.5..2.0).
 uniform float speedP; ///< Speed knob: clock multiplier (0.5..2.0).
 uniform float hueP;   ///< Hue knob (radians): turns the colours a little in the middle of the fade.
 
@@ -205,8 +205,8 @@ float fbm2( vec2 p )
     return s / 0.9375;
 }
 
-/**  A soft threshold wipe: a pixel with the order value f has switched at progress d, and every pixel has switched at d = 1
- *  and none at d = 0, whatever the order values are.
+/**  A soft threshold wipe: a pixel with the order value f has switched at progress d, and every pixel has switched at
+ * d = 1 and none at d = 0, whatever the order values are.
  *
  * @param f  The pixel's order value, 0..1: pixels with small values switch first. (in)
  * @param d  The progress, 0..1. (in)
@@ -221,7 +221,8 @@ float trThresh( float f, float d, float s )
     return smoothstep( f - s, f + s, t );
 }
 
-/**  The mean brightness of the outgoing scene, estimated from nine fixed points (to centre a brightness order on the picture).
+/**  The mean brightness of the outgoing scene, estimated from nine fixed points (to centre a brightness order on the
+ * picture).
  *
  * @return
  *   The mean luminance, 0..1.
@@ -269,10 +270,12 @@ vec4 trBlurA( vec2 p, float r )
 {
     vec2 px = r / resolution;
     vec4 s = texture( tex0, p ) * 0.2;
-    s += 0.1 * ( texture( tex0, p + vec2( px.x, 0.0 ) ) + texture( tex0, p - vec2( px.x, 0.0 ) )
-               + texture( tex0, p + vec2( 0.0, px.y ) ) + texture( tex0, p - vec2( 0.0, px.y ) ) );
-    s += 0.1 * ( texture( tex0, p + px * 0.7071 ) + texture( tex0, p - px * 0.7071 )
-               + texture( tex0, p + px * vec2( 0.7071, -0.7071 ) ) + texture( tex0, p - px * vec2( 0.7071, -0.7071 ) ) );
+    s += 0.1
+         * ( texture( tex0, p + vec2( px.x, 0.0 ) ) + texture( tex0, p - vec2( px.x, 0.0 ) )
+             + texture( tex0, p + vec2( 0.0, px.y ) ) + texture( tex0, p - vec2( 0.0, px.y ) ) );
+    s += 0.1
+         * ( texture( tex0, p + px * 0.7071 ) + texture( tex0, p - px * 0.7071 )
+             + texture( tex0, p + px * vec2( 0.7071, -0.7071 ) ) + texture( tex0, p - px * vec2( 0.7071, -0.7071 ) ) );
     return s;
 }
 
@@ -288,10 +291,12 @@ vec4 trBlurB( vec2 p, float r )
 {
     vec2 px = r / resolution;
     vec4 s = texture( tex1, p ) * 0.2;
-    s += 0.1 * ( texture( tex1, p + vec2( px.x, 0.0 ) ) + texture( tex1, p - vec2( px.x, 0.0 ) )
-               + texture( tex1, p + vec2( 0.0, px.y ) ) + texture( tex1, p - vec2( 0.0, px.y ) ) );
-    s += 0.1 * ( texture( tex1, p + px * 0.7071 ) + texture( tex1, p - px * 0.7071 )
-               + texture( tex1, p + px * vec2( 0.7071, -0.7071 ) ) + texture( tex1, p - px * vec2( 0.7071, -0.7071 ) ) );
+    s += 0.1
+         * ( texture( tex1, p + vec2( px.x, 0.0 ) ) + texture( tex1, p - vec2( px.x, 0.0 ) )
+             + texture( tex1, p + vec2( 0.0, px.y ) ) + texture( tex1, p - vec2( 0.0, px.y ) ) );
+    s += 0.1
+         * ( texture( tex1, p + px * 0.7071 ) + texture( tex1, p - px * 0.7071 )
+             + texture( tex1, p + px * vec2( 0.7071, -0.7071 ) ) + texture( tex1, p - px * vec2( 0.7071, -0.7071 ) ) );
     return s;
 }
 
@@ -307,13 +312,15 @@ float roughA( vec2 p, float r )
 {
     vec2  px = r / resolution;
     float c = trLuma( tA( p ).rgb );
-    float s = abs( trLuma( tA( p + vec2( px.x, 0.0 ) ).rgb ) - c ) + abs( trLuma( tA( p - vec2( px.x, 0.0 ) ).rgb ) - c )
-            + abs( trLuma( tA( p + vec2( 0.0, px.y ) ).rgb ) - c ) + abs( trLuma( tA( p - vec2( 0.0, px.y ) ).rgb ) - c );
+    float s = abs( trLuma( tA( p + vec2( px.x, 0.0 ) ).rgb ) - c )
+              + abs( trLuma( tA( p - vec2( px.x, 0.0 ) ).rgb ) - c )
+              + abs( trLuma( tA( p + vec2( 0.0, px.y ) ).rgb ) - c )
+              + abs( trLuma( tA( p - vec2( 0.0, px.y ) ).rgb ) - c );
     return clamp( s * 2.5, 0.0, 1.0 );
 }
 
-/**  The mean roughness of the outgoing scene, estimated at four fixed points (so the order of the roughness does not depend
- *  on how detailed the scene is as a whole).
+/**  The mean roughness of the outgoing scene, estimated at four fixed points (so the order of the roughness does not
+ * depend on how detailed the scene is as a whole).
  *
  * @param r  The radius in pixels. (in)
  *
@@ -322,7 +329,9 @@ float roughA( vec2 p, float r )
  **/
 float meanRoughA( float r )
 {
-    return 0.25 * ( roughA( vec2( 0.3, 0.3 ), r ) + roughA( vec2( 0.7, 0.3 ), r ) + roughA( vec2( 0.3, 0.7 ), r ) + roughA( vec2( 0.7, 0.7 ), r ) );
+    return 0.25
+           * ( roughA( vec2( 0.3, 0.3 ), r ) + roughA( vec2( 0.7, 0.3 ), r ) + roughA( vec2( 0.3, 0.7 ), r )
+               + roughA( vec2( 0.7, 0.7 ), r ) );
 }
 
 /**  The picture at a place and progress.
@@ -338,9 +347,18 @@ vec4 trans( vec2 p, float d )
     vec4  a = tA( p );
     vec4  b = tB( p );
     float rad = 4.0 * gKB;
-    float fr = pow( 1.0 - exp( -roughA( p, rad ) * ( 1.0 + 0.5 * gKA ) / ( meanRoughA( rad ) + 0.03 ) ), 0.5 );   // the roughness as a share of the typical one
+    float fr = pow( 1.0 - exp( -roughA( p, rad ) * ( 1.0 + 0.5 * gKA ) / ( meanRoughA( rad ) + 0.03 ) ),
+                    0.5 ); // the
+                           // roughness
+                           // as a
+                           // share
+                           // of
+                           // the
+                           // typical
+                           // one
     float f = mix( fr, smoothstep( 0.3, 0.7, fbm2( p * 2.0 + 9.0 ) ), 0.65 );
-    float dw = d + 0.3 * sin( 2.0 * Pi * d ) / ( 2.0 * Pi );   // the order values pile up in the middle: slower there, faster at both ends
+    float dw = d + 0.3 * sin( 2.0 * Pi * d ) / ( 2.0 * Pi ); // the order values pile up in the middle: slower there,
+                                                             // faster at both ends
     float w = trThresh( f, dw, 0.15 * ( 1.0 + 0.3 * audioSwell ) );
     return mix( a, b, w );
 }

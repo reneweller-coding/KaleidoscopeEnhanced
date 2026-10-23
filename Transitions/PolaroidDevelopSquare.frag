@@ -88,8 +88,8 @@ float noise2( vec2 p )
                 mix( hash21( i + vec2( 0.0, 1.0 ) ), hash21( i + vec2( 1.0, 1.0 ) ), f.x ), f.y );
 }
 
-/**  The mean brightness of a scene, estimated from nine fixed points (the card and the milky sheet follow it, so the print
- *  is never brighter than both scenes and the change reads as a development, not as a flash).
+/**  The mean brightness of a scene, estimated from nine fixed points (the card and the milky sheet follow it, so the
+ * print is never brighter than both scenes and the change reads as a development, not as a flash).
  *
  * @param s  The scene's texture. (in)
  *
@@ -155,9 +155,9 @@ void main()
     float mB = meanLuma( tex1 );
     float milkTone = clamp( 0.5 * ( mA + mB ) * 0.95 + 0.03, 0.06, 0.44 );
     vec3  milk = milkTone * vec3( 1.0, 0.989, 0.977 );
-    vec3 dev = vec3( mix( milk.r, src1.r, p_r ),
-                     mix( milk.g, src1.g, p_g ),
-                     mix( milk.b, src1.b, p_b ) );
+    vec3  dev = vec3( mix( milk.r, src1.r, p_r ),
+                      mix( milk.g, src1.g, p_g ),
+                      mix( milk.b, src1.b, p_b ) );
     // The early stage carries the warm cast the emulsion really has.
     float cast_amt = ( 1.0 - p_r ) * ( 0.25 + 0.45 * clamp( audioValence, 0.0, 1.0 ) );
     // hueP swings the early cast between the warm and the cold emulsion.

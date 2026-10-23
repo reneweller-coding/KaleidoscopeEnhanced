@@ -205,8 +205,8 @@ float fbm2( vec2 p )
     return s / 0.9375;
 }
 
-/**  A soft threshold wipe: a pixel with the order value f has switched at progress d, and every pixel has switched at d = 1
- *  and none at d = 0, whatever the order values are.
+/**  A soft threshold wipe: a pixel with the order value f has switched at progress d, and every pixel has switched at
+ * d = 1 and none at d = 0, whatever the order values are.
  *
  * @param f  The pixel's order value, 0..1: pixels with small values switch first. (in)
  * @param d  The progress, 0..1. (in)
@@ -221,7 +221,8 @@ float trThresh( float f, float d, float s )
     return smoothstep( f - s, f + s, t );
 }
 
-/**  The mean brightness of the outgoing scene, estimated from nine fixed points (to centre a brightness order on the picture).
+/**  The mean brightness of the outgoing scene, estimated from nine fixed points (to centre a brightness order on the
+ * picture).
  *
  * @return
  *   The mean luminance, 0..1.
@@ -269,10 +270,12 @@ vec4 trBlurA( vec2 p, float r )
 {
     vec2 px = r / resolution;
     vec4 s = texture( tex0, p ) * 0.2;
-    s += 0.1 * ( texture( tex0, p + vec2( px.x, 0.0 ) ) + texture( tex0, p - vec2( px.x, 0.0 ) )
-               + texture( tex0, p + vec2( 0.0, px.y ) ) + texture( tex0, p - vec2( 0.0, px.y ) ) );
-    s += 0.1 * ( texture( tex0, p + px * 0.7071 ) + texture( tex0, p - px * 0.7071 )
-               + texture( tex0, p + px * vec2( 0.7071, -0.7071 ) ) + texture( tex0, p - px * vec2( 0.7071, -0.7071 ) ) );
+    s += 0.1
+         * ( texture( tex0, p + vec2( px.x, 0.0 ) ) + texture( tex0, p - vec2( px.x, 0.0 ) )
+             + texture( tex0, p + vec2( 0.0, px.y ) ) + texture( tex0, p - vec2( 0.0, px.y ) ) );
+    s += 0.1
+         * ( texture( tex0, p + px * 0.7071 ) + texture( tex0, p - px * 0.7071 )
+             + texture( tex0, p + px * vec2( 0.7071, -0.7071 ) ) + texture( tex0, p - px * vec2( 0.7071, -0.7071 ) ) );
     return s;
 }
 
@@ -288,10 +291,12 @@ vec4 trBlurB( vec2 p, float r )
 {
     vec2 px = r / resolution;
     vec4 s = texture( tex1, p ) * 0.2;
-    s += 0.1 * ( texture( tex1, p + vec2( px.x, 0.0 ) ) + texture( tex1, p - vec2( px.x, 0.0 ) )
-               + texture( tex1, p + vec2( 0.0, px.y ) ) + texture( tex1, p - vec2( 0.0, px.y ) ) );
-    s += 0.1 * ( texture( tex1, p + px * 0.7071 ) + texture( tex1, p - px * 0.7071 )
-               + texture( tex1, p + px * vec2( 0.7071, -0.7071 ) ) + texture( tex1, p - px * vec2( 0.7071, -0.7071 ) ) );
+    s += 0.1
+         * ( texture( tex1, p + vec2( px.x, 0.0 ) ) + texture( tex1, p - vec2( px.x, 0.0 ) )
+             + texture( tex1, p + vec2( 0.0, px.y ) ) + texture( tex1, p - vec2( 0.0, px.y ) ) );
+    s += 0.1
+         * ( texture( tex1, p + px * 0.7071 ) + texture( tex1, p - px * 0.7071 )
+             + texture( tex1, p + px * vec2( 0.7071, -0.7071 ) ) + texture( tex1, p - px * vec2( 0.7071, -0.7071 ) ) );
     return s;
 }
 
@@ -309,7 +314,8 @@ float hueOf( vec3 c )
     float dl = mx - mn;
     if ( dl < 1.0e-4 )
         return 0.0;
-    float h = ( mx == c.r ) ? mod( ( c.g - c.b ) / dl, 6.0 ) : ( ( mx == c.g ) ? ( c.b - c.r ) / dl + 2.0 : ( c.r - c.g ) / dl + 4.0 );
+    float h = ( mx == c.r ) ? mod( ( c.g - c.b ) / dl, 6.0 )
+                            : ( ( mx == c.g ) ? ( c.b - c.r ) / dl + 2.0 : ( c.r - c.g ) / dl + 4.0 );
     return fract( h / 6.0 );
 }
 
@@ -328,8 +334,12 @@ vec4 trans( vec2 p, float d )
     float mx = max( a.r, max( a.g, a.b ) );
     float mn = min( a.r, min( a.g, a.b ) );
     float chroma = clamp( ( mx - mn ) * 6.0, 0.0, 1.0 );
-    float f0 = mix( mix( clamp( 0.5 + 1.7 * ( trLuma( a.rgb ) - trMeanLumaA() ), 0.0, 1.0 ), smoothstep( 0.3, 0.7, fbm2( p * 2.0 + 3.0 ) ), 0.6 ), mix( fract( hueOf( a.rgb ) + 0.37 * gKB ), smoothstep( 0.3, 0.7, fbm2( p * 2.0 + 3.0 ) ), 0.5 ), chroma );
-    float f = smoothstep( 0.0, 1.0, f0 );   // the order values pile up in the middle; this spreads them over the whole fade
+    float f0 = mix( mix( clamp( 0.5 + 1.7 * ( trLuma( a.rgb ) - trMeanLumaA() ), 0.0, 1.0 ),
+                         smoothstep( 0.3, 0.7, fbm2( p * 2.0 + 3.0 ) ), 0.6 ),
+                    mix( fract( hueOf( a.rgb ) + 0.37 * gKB ), smoothstep( 0.3, 0.7, fbm2( p * 2.0 + 3.0 ) ), 0.5 ),
+                    chroma );
+    float f = smoothstep( 0.0, 1.0, f0 ); // the order values pile up in the middle; this spreads them over the whole
+                                          // fade
     float w = trThresh( f, d, 0.13 * gKA * ( 1.0 + 0.3 * audioSwell ) );
     return mix( a, b, w );
 }
