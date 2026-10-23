@@ -10,6 +10,13 @@
 //@params sizeP
 //@audio audioSpread audioAdvance
 //@body
+/**  The plane folded by a threefold mirror.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The folded point.
+ **/
 vec2 fold3(vec2 p)
 {
     float a = atan(p.y, p.x);
@@ -17,6 +24,15 @@ vec2 fold3(vec2 p)
     float af = abs(mod(a + 0.5 * w, w) - 0.5 * w);
     return length(p) * vec2(cos(af), sin(af));
 }
+/**  The photo read after n folds, turns and magnifications by the square root of three.
+ *
+ * @param p  The point. (in)
+ * @param n  The number of folds. (in)
+ * @param rot  The turn. (in)
+ *
+ * @return
+ *   The colour.
+ **/
 vec3 terd(vec2 p, int n, float rot)
 {
     vec2 q = rot2(rot) * p;

@@ -495,6 +495,14 @@ void finish( vec3 col )
     fragColor = vec4( clamp( t, 0.0, 1.0 ), 1.0 );
 }
 
+/**  The intensity of the Fresnel edge pattern at a distance from the shadow's edge (lit side oscillating, shadow
+ * falling off).
+ *
+ * @param u  The distance from the shadow edge in Fresnel units. (in)
+ *
+ * @return
+ *   The intensity.
+ **/
 float edgeI( float u )
 {
     float a = abs( u );

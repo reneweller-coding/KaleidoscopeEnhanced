@@ -496,6 +496,13 @@ void finish( vec3 col )
     fragColor = vec4( clamp( t, 0.0, 1.0 ), 1.0 );
 }
 
+/**  The Helmholtz motion of the bowed string: a smooth sawtooth from six harmonics.
+ *
+ * @param ph  The phase in cycles. (in)
+ *
+ * @return
+ *   The displacement 0..1.
+ **/
 float helm( float ph )
 {
     float s = 0.0;

@@ -10,6 +10,14 @@
 //@params sizeP
 //@audio audioSwell audioAdvance
 //@body
+/**  The figure the photo moves on (two superposed waves).
+ *
+ * @param t  The time. (in)
+ * @param A  The size of the figure. (in)
+ *
+ * @return
+ *   The photo's displacement at time t.
+ **/
 vec2 path(float t, float A)
 {
     return A * vec2(sin(0.11 * t) + 0.4 * sin(0.27 * t + 1.0), cos(0.09 * t) + 0.4 * cos(0.23 * t));

@@ -10,6 +10,16 @@
 //@params sizeP
 //@audio audioSwell audioAdvance
 //@body
+/**  The layer pattern of folded steel: a sine of a folded, noise-bent coordinate.
+ *
+ * @param p  The point. (in)
+ * @param n  The fineness of the layers. (in)
+ * @param t  The time. (in)
+ * @param sc  The scale. (in)
+ *
+ * @return
+ *   The layer value 0..1.
+ **/
 float damask(vec2 p, float n, float t, float sc)
 {
     vec2 q = p * sc;

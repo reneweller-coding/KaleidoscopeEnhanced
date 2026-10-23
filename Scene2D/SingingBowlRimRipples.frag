@@ -496,6 +496,16 @@ void finish( vec3 col )
     fragColor = vec4( clamp( t, 0.0, 1.0 ), 1.0 );
 }
 
+/**  The gradient of one mode of the bowl's water surface (cos of n angles, radial power law).
+ *
+ * @param p  The point. (in)
+ * @param n  The number of angular nodes. (in)
+ * @param t  The time. (in)
+ * @param R  The bowl's radius. (in)
+ *
+ * @return
+ *   The gradient.
+ **/
 vec2 modeGrad( vec2 p, float n, float t, float R )
 {
     float r = length( p ) + 1e-4;

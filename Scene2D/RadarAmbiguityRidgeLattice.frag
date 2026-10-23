@@ -496,6 +496,13 @@ void finish( vec3 col )
     fragColor = vec4( clamp( t, 0.0, 1.0 ), 1.0 );
 }
 
+/**  The cardinal sine sin(x)/x.
+ *
+ * @param x  The argument. (in)
+ *
+ * @return
+ *   The value.
+ **/
 float sinc( float x )
 {
     return abs( x ) < 1e-3 ? 1.0 : sin( x ) / x;

@@ -11,6 +11,17 @@
 //@params sizeP
 //@audio audioRoughness audioAdvance audioHarmAdvance
 //@body
+/**  One order of the constellation: dust clouds round the points of an M x M lattice, coloured by the photo.
+ *
+ * @param p  The point. (in)
+ * @param M  The lattice order. (in)
+ * @param rot  The turn. (in)
+ * @param sg  The spread of the clouds. (in)
+ * @param dust  The size of the dust. (in)
+ *
+ * @return
+ *   The layer's colour.
+ **/
 vec3 qamLayer(vec2 p, float M, float rot, float sg, float dust)
 {
     vec2 q = rot2(rot) * p * M / 0.95 + 0.5 * M;

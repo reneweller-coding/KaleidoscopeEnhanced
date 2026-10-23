@@ -497,6 +497,19 @@ void finish( vec3 col )
     fragColor = vec4( clamp( t, 0.0, 1.0 ), 1.0 );
 }
 
+/**  The sum of the line values of forty rotated copies of a two-wave closed curve (the rose engine's weave).
+ *
+ * @param r   The radius. (in)
+ * @param th  The angle. (in)
+ * @param k1  The first wave number. (in)
+ * @param k2  The second wave number. (in)
+ * @param ph  The phase. (in)
+ * @param a   The line fineness. (in)
+ * @param b   Unused. (in)
+ *
+ * @return
+ *   The accumulated line value.
+ **/
 float rosette( float r, float th, float k1, float k2, float ph, float a, float b )
 {
     float acc = 0.0;

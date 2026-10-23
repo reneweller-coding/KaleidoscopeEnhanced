@@ -10,6 +10,14 @@
 //@params sizeP
 //@audio audioSpread audioAdvance
 //@body
+/**  The distance to the two quarter arcs of a Truchet tile (orientation o).
+ *
+ * @param f  The point in the tile. (in)
+ * @param o  The tile's orientation 0 or 1. (in)
+ *
+ * @return
+ *   The distance.
+ **/
 float arcD(vec2 f, float o)
 {
     vec2 g = o < 0.5 ? f : vec2(1.0 - f.x, f.y);

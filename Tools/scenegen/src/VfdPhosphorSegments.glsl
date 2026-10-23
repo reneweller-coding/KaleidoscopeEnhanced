@@ -10,6 +10,15 @@
 //@params sizeP
 //@audio audioRolloff audioAdvance
 //@body
+/**  The stroke of one cell of the display: a bar along the edge through the cell, glowing, with a dim dot.
+ *
+ * @param fc  The pixel coordinate. (in)
+ * @param C  The cell size in pixels. (in)
+ * @param sh  The shift of the photo. (in)
+ *
+ * @return
+ *   The brightness.
+ **/
 vec3 strokeAt(vec2 fc, float C, vec2 sh)
 {
     vec2 cell = floor(fc / C);

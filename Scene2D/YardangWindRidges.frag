@@ -495,6 +495,16 @@ void finish( vec3 col )
     fragColor = vec4( clamp( t, 0.0, 1.0 ), 1.0 );
 }
 
+/**  The height of the yardang field: noise stretched along the wind.
+ *
+ * @param p    The point. (in)
+ * @param ang  The angle. (in)
+ * @param wd   The width of the ridges. (in)
+ * @param t    The time. (in)
+ *
+ * @return
+ *   The height.
+ **/
 float yh( vec2 p, float ang, float wd, float t )
 {
     vec2  q = rot2( -ang ) * p;

@@ -7574,3 +7574,95 @@ constants did not make the labs dearer (run-to-run differences of the machine ar
 ExposureLab 1.55 -> 0.69). The pass shaders compile as
 before; `shadercheck.py` skips the monolithic ChainLab2D in the cold-compile rule (it runs as passes in the app; the editor still
 compiles all classes of its first view in 9 to 10 s). Doxygen 0 warnings.
+
+## 23.10.2026 (65): 300 new scenes and 100 new transitions from other fields' operators
+
+Asked after (64): "can we get another 300 scenes, and maybe 100 new transitions (many slow ones that can be used in an ambient
+context)? Does your imagination still suffice? As before: full frame, music reactive, in steady motion, rather abstract, and
+may use the textures." The list is `docs/proposals-2026-10-23-300-szenen-100-uebergaenge.md` (25 scene families A to Y and
+the transition families Z1 to Z8; the Stand paragraph there says what was built). The answer to the imagination question
+was yes, but the free space had moved: motifs ("one more neon flight, one more fractal") are used up, **operators from other
+fields** are not. Of the first 350 ideas about 50 existed in substance already (found by name and by keyword search in the
+descriptions of all 3226 entries); they were replaced, and more than a hundred terms had no hit at all (print gallery,
+autostereogram, flip dot, cochlea, varves, desert varnish, vocoder, image quilting, Wang tiles ...), which is where the
+list was built. The photo is not decorated but sent through a named operator, and the operator's rules are the motion.
+
+**The 100 transitions (`Tools/transgen`).** `tgen.py` takes the 100 sources (`drafts/Z1.txt` .. `Z8.txt`, a block per
+transition with its mask or warp as a GLSL body and its metadata), wraps each in one template (the contract of
+`Tools/SHADER_AUTHORING.md`, V12/V13: the endpoints exactly the two scenes, every helper term windowed with `sin(pi d)`,
+geometry only on clocks from `time` and `audioAdvance`, the clock at about 1.2/255 per frame, the middle quiet, a breath of
+`audioSwell` on the strength of the effect only), writes `Transitions/<Name>.frag` and registers them in `Komplett.xml`
+(file, type, minFade, mood, probability, complexity, two knobs, speedP and hueP). `transheet.py` renders contact sheets
+(five progress values, one job, below normal priority). Two thirds are slow or very slow (`calm`, `dreamy`), for Ambient,
+SpaceAmbient, Downtempo and Cinematic, which had 29 usable transitions; they now have 75, 75, 81 and 89 (Ambient /
+SpaceAmbient: 75 each).
+- *Measured:* `PresetEditor --transcheck` (endpoints at most 1.5/255, jump = max step / median step at most 6) and
+  `--transprofile` (the profile of every transition into `Tools/transition_profile.tsv`: total variation, the share of the
+  change in the middle 80 % (`core80`), the peak step, flicker, flash). The soft genres need `core80 >= 0.45`, flash at most
+  30, flicker at most 1.0, peak step at most 0.10 and no `wipe` / `blocky` mark; `make_genre_configs.py` refuses a transition
+  without a profile row (the rows are named without `.frag`). 81 of the 100 pass; CrystalBallInversion, HueGateBleed,
+  FlatAreasFirst and ShadowLiftCrossing stay out of the soft genres, FireflyGlowHandoff (peak 0.37) is a harness artefact:
+  the harness scene is nearly uniform, so a single bright wipe counts as a peak.
+- *Rules found while tuning:* no `audioSpread` on a count or a scale (it moved the geometry of 20 transitions; amplitudes
+  use `audioSwell` with the swell breath of the template); the order of random masks is made uniform (CDF remap) so the
+  change is spread evenly over the progress; a mask taken from the photo needs a share of noise
+  (`smoothstep(0.3, 0.7, fbm2)`), because on a nearly uniform scene a photo mask changes everything at one instant; tile and
+  hex flips need a dimmed mix of both scenes behind them (black gaps otherwise).
+
+**The 300 scenes (A to Y).** Families (number of scenes): A camera and sensor 12, B displays and printing technology 12,
+C early cinema 12, D compression and coding 12, E data visualisation 12, F signals and telecommunications 12, G music
+theory as space 12, H ear and instrument 12, I inlay and metalwork 12, J patterns of the world 12, K nonlinear dynamics 11,
+L choice models and automata 13 (state fields), M plants under the microscope 12, N animal patterns without animals 12,
+O geology II 12, P sky, sun and distance 12, Q granular matter, drops and threads 12, R solid state and quantum magnetism 12,
+S paper, ink and hand printing 12, T texture synthesis 14, U line art and geometry of optimisation 12, V recursion and
+perspective 12, W wavefronts and groups 12, X surfaces with wandering light 12, Y colour systems 10. 15 of them are state
+fields (L, AntTrailStigmergyField, RulkovNeuronMapBursts); the other 285 render in one pass. Every scene has its operator
+named in its `@brief`, its audio coupling in the doc block, and a knob (`sizeP` or `scaleP`) next to `hueP`.
+- *Sizes are relative.* The contact sheets are 480 x 270, the app runs at 1080p and more, so every size in pixels is a
+  constant per 270 lines times `resolution.y / 270.0` (a cell, a grain, a stripe); the mip level is computed from the base
+  size, not from the scaled one. Without this the sheet and the app look different (grain 4 times finer, a flip-dot board with
+  four times the dots). Round particles, no square pixel stars (the shake scan flags `floor(gl_FragCoord ...)` as PIXEL).
+- *Music in the structure.* Counts, scales, rotations and cells follow only slow or integrated signals
+  (`audioAdvance`, `audioHarmAdvance`, `audioSwell`, the phrase phase); the fast ones (Kick, Onset, Bass bands) only change
+  brightness (the vocoder's band gains, the cochlea's four peaks at fixed places, the Helmholtz resonators' activation).
+  Seamless loops by construction where an effect has one (the Risset rhythm is closed in `2^(k+f)`, and its ring pattern
+  depends only on `k+f`; the Droste loop is a shear of the log radius).
+- *Heavy ones.* The strange-attractor scenes (Chua, Roessler, Sprott, Rabinovich-Fabrikant) integrate six short trajectories
+  per pixel (70 to 110 steps) and add the midpoints of the steps (without them the paths are chains of dots); the Duffing basin
+  map runs 96 steps per pixel; Hofstadter's butterfly takes, per pixel, the nearest fraction p/q (q up to 16) and the trace of
+  Harper's transfer matrices; the wireframe scan marches 64 steps over the photo as a height field.
+- *State fields* (`//@state W H rate 32`, 32 bits): the cells carry the place of the photo they come from (g, b), so the
+  picture is the photo at first and falls apart or sorts itself with the rule (Schelling, Potts, voter, traffic, the rules
+  30 and 110 whose curtain falls one row a step at 44 steps a second). `PresetEditor --render` shows a state scene flat; the
+  check is `ns_sample.py` (an app export of 14 to 16 seconds). Sznajd and the voter models end in consensus, so Sznajd has
+  3 x 3 blocks of opinion flipped at random; the ant trails are a Keller-Segel pair (ant density climbs the pheromone gradient,
+  with volume exclusion; without it the density collapses to points) and stay the weakest scene of the round.
+
+**Traps of the round.**
+- `fbm3(vec2)` is a three-octave 2-D noise, not a 3-D noise (the solid texture uses `fbm` with a rotating offset).
+- A scene source with a local array initialised from non-constants is fine, but several `const` arrays in one function are
+  not (the NVIDIA trap of the earlier rounds); the spectral locus is written as an `if` chain of `vec2`.
+- `git add Presets/*.xml` fails on the ignored `ZZMesh.xml` / `ZZScreen01.xml`: name the eleven files.
+- PowerShell 5.1 has no `Start-Process -PriorityClass`; start, then set `$p.PriorityClass = 'BelowNormal'`. The child
+  processes (ffmpeg, the app) inherit it. While the user plays, every render ran as a single job at below normal priority.
+
+**The close.**
+- *Catalogue:* `render_catalog_export.py --list names300.txt --jobs 1 --chunk 60`: 900 frames of the 300 new scenes in 11.0
+  minutes (one job, below normal priority); `make_catalog.py docs/Catalog/rendered/cat300b .../fxscan` kept the old images
+  and added the new: 2475 scenes, 30 FX overlays, 210 transitions, 7703 images. `catalog_check.py` flagged four spatial
+  rainbows (ChameleonIridophoreLattice, ColorSolidSliceCycle, PearlescentFlipFlopPaint, SpectralLocusRibbon); they are the
+  point of their scene, so interest and galerie lost one step each instead of the scene.
+- *Ratings:* the ratings given while building were above the old rows again (interest 6.40 against 5.36, galerie 7.04 against
+  5.12, psychedelic 5.72 against 4.84, electronic 4.91 against 3.88, psytrance 4.99 against 3.91). The 300 were set to the old
+  rows' level column by column (mean and spread, the spread stretched at most twice, the order inside the batch kept): galerie
+  5.09, interest 5.80, psychedelic 4.83, electronic 3.91, psytrance 3.96.
+- *Measured:* `screen.py --scenes <300>` (one recording of 302 windows): the new scenes cost 0.60 ms a frame at 1080p in the
+  median, the dearest PolygonBokehBlades 1.77 ms, AutostereogramDepthDrift 1.44, VocoderBandBank 1.19, none above 3 ms; no
+  new scene is flagged (22 old ones are, as before). The partial run overwrites `.screen/metrics.json`: back up
+  `.screen/` first and fold the run back with `merge_screen.py <backup>` (5548 metric rows, 2475 costs).
+  `sync_scene_measures.py` wrote gpuMs and the measured restlessness into `Komplett.xml` (many of the new scenes are calm:
+  motion 0.01 to 0.02), `make_genre_configs.py` rebuilt the presets (Allround 2690 entries, Psychedelic 1011, Ambient 918,
+  Club 705). `check_schedule.py --quick`: 20 plans, no violations.
+- *Doxygen:* 113 warnings at first, all of them the scenes' own helper functions (and `phAt` / `stateStep` of the 15 state
+  scenes); each has a block now (brief, `@param`, `@return`) in `Tools/scenegen/src/<Scene>.glsl`, written from a table
+  and inserted before the definition; none now.

@@ -497,11 +497,30 @@ void finish( vec3 col )
     fragColor = vec4( clamp( t, 0.0, 1.0 ), 1.0 );
 }
 
+/**  The horizontal place of a node of the colour tree at a level.
+ *
+ * @param lvl  The level. (in)
+ * @param n    The node's number. (in)
+ * @param asp  The aspect ratio. (in)
+ *
+ * @return
+ *   The x coordinate.
+ **/
 float nodeX( float lvl, float n, float asp )
 {
     float span = exp2( lvl );
     return ( ( n + 0.5 ) * span / 32.0 - 0.5 ) * asp * 0.96;
 }
+/**  The height of a node of the colour tree at a level (it sways).
+ *
+ * @param lvl  The level. (in)
+ * @param n    The node's number. (in)
+ * @param H    The tree's height. (in)
+ * @param sw   The sway phase. (in)
+ *
+ * @return
+ *   The y coordinate.
+ **/
 float nodeY( float lvl, float n, float H, float sw )
 {
     float hh = hash21( vec2( lvl, n ) );

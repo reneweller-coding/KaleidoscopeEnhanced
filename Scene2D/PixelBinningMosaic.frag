@@ -493,6 +493,14 @@ void finish( vec3 col )
     fragColor = vec4( clamp( t, 0.0, 1.0 ), 1.0 );
 }
 
+/**  The mean colour of the block of the given size that contains the pixel.
+ *
+ * @param fc  The pixel coordinate. (in)
+ * @param Bb  The block size per 270 lines. (in)
+ *
+ * @return
+ *   The colour.
+ **/
 vec3 binned( vec2 fc, float Bb )
 {
     float B = Bb * resolution.y / 270.0;

@@ -10,6 +10,16 @@
 //@params sizeP
 //@audio audioAdvance audioPhrasePos
 //@body
+/**  The deformation of the palindrome: a twist, a zoom wave and a small shift, all scaled by s.
+ *
+ * @param p  The point. (in)
+ * @param s  The share of the deformation 0..1. (in)
+ * @param kind  The phase of the kind of deformation. (in)
+ * @param A  The strength. (in)
+ *
+ * @return
+ *   The deformed point.
+ **/
 vec2 deform(vec2 p, float s, float kind, float A)
 {
     float r = length(p);

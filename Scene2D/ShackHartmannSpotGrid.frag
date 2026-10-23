@@ -496,6 +496,15 @@ void finish( vec3 col )
     fragColor = vec4( clamp( t, 0.0, 1.0 ), 1.0 );
 }
 
+/**  The wavefront deformation (a few low terms and noise).
+ *
+ * @param p  The point. (in)
+ * @param t  The time. (in)
+ * @param A  The strength. (in)
+ *
+ * @return
+ *   The height of the wavefront.
+ **/
 float wf( vec2 p, float t, float A )
 {
     return A

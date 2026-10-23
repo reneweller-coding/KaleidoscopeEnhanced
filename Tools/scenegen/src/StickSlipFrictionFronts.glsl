@@ -10,6 +10,13 @@
 //@params sizeP
 //@audio audioSwell audioSpread
 //@body
+/**  A smooth sawtooth made of five harmonics.
+ *
+ * @param ph  The phase in cycles. (in)
+ *
+ * @return
+ *   The value 0..1.
+ **/
 float saw6(float ph)
 {
     float s = 0.0;

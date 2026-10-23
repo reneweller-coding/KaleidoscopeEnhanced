@@ -495,6 +495,15 @@ void finish( vec3 col )
     fragColor = vec4( clamp( t, 0.0, 1.0 ), 1.0 );
 }
 
+/**  An S-shaped tone curve of one channel with a movable middle.
+ *
+ * @param x  The argument. (in)
+ * @param k  The strength of the curve. (in)
+ * @param m  The middle of the curve. (in)
+ *
+ * @return
+ *   The curved value.
+ **/
 float sCurve( float x, float k, float m )
 {
     float y = clamp( x, 0.0, 1.0 );

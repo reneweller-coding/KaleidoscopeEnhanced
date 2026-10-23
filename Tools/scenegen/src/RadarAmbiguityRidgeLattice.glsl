@@ -10,6 +10,13 @@
 //@params sizeP
 //@audio audioSpread audioAdvance
 //@body
+/**  The cardinal sine sin(x)/x.
+ *
+ * @param x  The argument. (in)
+ *
+ * @return
+ *   The value.
+ **/
 float sinc(float x) { return abs(x) < 1e-3 ? 1.0 : sin(x) / x; }
 void main()
 {

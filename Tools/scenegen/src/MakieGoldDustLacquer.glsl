@@ -10,6 +10,19 @@
 //@params sizeP
 //@audio audioSwell audioAdvance
 //@body
+/**  One layer of gold dust: round grains on a jittered net, density from the photo, blurred by the layer's depth.
+ *
+ * @param fc  The pixel coordinate. (in)
+ * @param px  The pixel scale (render height / 270). (in)
+ * @param G  The grain size per 270 lines. (in)
+ * @param blur  The blur (mip level) of the layer. (in)
+ * @param seed  The layer's seed. (in)
+ * @param drift  The drift of the layer. (in)
+ * @param tint  The gold tint. (in)
+ *
+ * @return
+ *   The layer's colour.
+ **/
 vec3 dustLayer(vec2 fc, float px, float G, float blur, float seed, vec2 drift, vec3 tint)
 {
     vec2 g = (fc + drift) / (G * px);

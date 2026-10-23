@@ -10,6 +10,15 @@
 //@params sizeP
 //@audio audioSwell audioAdvance
 //@body
+/**  The height field of the triplanar relief (two octaves of noise).
+ *
+ * @param p  The point. (in)
+ * @param sc  The scale. (in)
+ * @param t  The time. (in)
+ *
+ * @return
+ *   The height.
+ **/
 float hf(vec2 p, float sc, float t)
 {
     return 0.5 * fbm(p * sc + vec2(0.0, 0.02 * t)) + 0.25 * fbm(p * sc * 2.1 + vec2(3.0, -0.03 * t));

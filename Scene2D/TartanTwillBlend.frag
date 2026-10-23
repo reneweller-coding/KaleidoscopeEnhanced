@@ -495,6 +495,16 @@ void finish( vec3 col )
     fragColor = vec4( clamp( t, 0.0, 1.0 ), 1.0 );
 }
 
+/**  The colour of a warp or a weft thread of the tartan, read from a line of the photo.
+ *
+ * @param idx         The thread's number. (in)
+ * @param horizontal  1 for a weft thread, 0 for a warp thread. (in)
+ * @param run         The number of threads of one colour. (in)
+ * @param seed        The seed of the colours. (in)
+ *
+ * @return
+ *   The colour.
+ **/
 vec3 thread( float idx, float horizontal, float run, float seed )
 {
     float k = floor( idx / run );

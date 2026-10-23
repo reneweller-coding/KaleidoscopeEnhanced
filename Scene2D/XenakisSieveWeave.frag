@@ -497,6 +497,16 @@ void finish( vec3 col )
     fragColor = vec4( clamp( t, 0.0, 1.0 ), 1.0 );
 }
 
+/**  A residue class of the Xenakis sieve, soft: 1 where the index is in the class.
+ *
+ * @param i   The cell index. (in)
+ * @param m   The modulus. (in)
+ * @param ph  The phase. (in)
+ * @param w   The width of the class. (in)
+ *
+ * @return
+ *   The value 0..1.
+ **/
 float sieve( float i, float m, float ph, float w )
 {
     float x = fract( i / m + ph );

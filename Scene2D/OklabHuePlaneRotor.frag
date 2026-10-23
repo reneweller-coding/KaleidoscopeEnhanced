@@ -495,6 +495,13 @@ void finish( vec3 col )
     fragColor = vec4( clamp( t, 0.0, 1.0 ), 1.0 );
 }
 
+/**  A colour in the Oklab space.
+ *
+ * @param c  The linear RGB colour. (in)
+ *
+ * @return
+ *   L, a, b.
+ **/
 vec3 toOklab( vec3 c )
 {
     float l = 0.4122214708 * c.r + 0.5363325363 * c.g + 0.0514459929 * c.b;
@@ -507,6 +514,13 @@ vec3 toOklab( vec3 c )
                  1.9779984951 * l - 2.4285922050 * m + 0.4505937099 * s,
                  0.0259040371 * l + 0.7827717662 * m - 0.8086757660 * s );
 }
+/**  A colour from the Oklab space back to RGB.
+ *
+ * @param c  The Oklab colour. (in)
+ *
+ * @return
+ *   The colour.
+ **/
 vec3 fromOklab( vec3 c )
 {
     float l = c.x + 0.3963377774 * c.y + 0.2158037573 * c.z;

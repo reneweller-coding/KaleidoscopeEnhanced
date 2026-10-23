@@ -10,6 +10,16 @@
 //@params sizeP
 //@audio audioSwell audioHarmAdvance
 //@body
+/**  The pattern of a gong mode: an angular cosine times a radial sine.
+ *
+ * @param p  The point. (in)
+ * @param m  The number of angular nodes. (in)
+ * @param k  The radial wave number. (in)
+ * @param t  The time. (in)
+ *
+ * @return
+ *   The signed mode value.
+ **/
 float nodal(vec2 p, float m, float k, float t)
 {
     float r = length(p);

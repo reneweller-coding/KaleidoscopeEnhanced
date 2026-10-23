@@ -497,6 +497,14 @@ void finish( vec3 col )
     fragColor = vec4( clamp( t, 0.0, 1.0 ), 1.0 );
 }
 
+/**  A mixture of four of Sprott's simplest flows with the weights w.
+ *
+ * @param s  The state. (in)
+ * @param w  The weights of the four flows. (in)
+ *
+ * @return
+ *   The rate of change of the state.
+ **/
 vec3 sprott( vec3 s, vec4 w )
 {
     vec3 a = vec3( s.y, -s.x + s.y * s.z, 1.0 - s.y * s.y );

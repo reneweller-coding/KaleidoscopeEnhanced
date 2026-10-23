@@ -10,6 +10,13 @@
 //@params sizeP
 //@audio audioSwell audioAdvance
 //@body
+/**  A point of the spectral locus of the CIE chromaticity diagram (thirteen wavelengths).
+ *
+ * @param i  The index of the wavelength 0..12. (in)
+ *
+ * @return
+ *   The chromaticity x, y.
+ **/
 vec2 locus(int i)
 {
     if (i == 0) return vec2(0.1733, 0.0048);

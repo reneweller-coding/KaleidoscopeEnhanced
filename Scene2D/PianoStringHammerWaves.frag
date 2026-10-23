@@ -498,6 +498,15 @@ void finish( vec3 col )
     fragColor = vec4( clamp( t, 0.0, 1.0 ), 1.0 );
 }
 
+/**  The shape of a plucked string: a sum of seven harmonics with the hammer's weights.
+ *
+ * @param x  The place on the string 0..1. (in)
+ * @param a  The striking place 0..1. (in)
+ * @param t  The time. (in)
+ *
+ * @return
+ *   The displacement.
+ **/
 float strg( float x, float a, float t )
 {
     float s = 0.0;

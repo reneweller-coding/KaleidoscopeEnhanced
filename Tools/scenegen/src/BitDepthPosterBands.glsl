@@ -10,6 +10,15 @@
 //@params sizeP
 //@audio audioSwell audioRoughness
 //@body
+/**  Soft quantisation of the three channels to L steps, with soft edges.
+ *
+ * @param x  The argument. (in)
+ * @param L  The number of levels. (in)
+ * @param soft  The softness of the steps. (in)
+ *
+ * @return
+ *   The quantised colour.
+ **/
 vec3 quant(vec3 x, float L, float soft)
 {
     vec3 y = x * L;

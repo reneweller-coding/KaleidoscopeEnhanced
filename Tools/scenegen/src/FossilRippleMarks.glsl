@@ -10,6 +10,15 @@
 //@params sizeP
 //@audio audioSpread audioAdvance
 //@body
+/**  The phase of the ripple field: a wave bent by noise, so that crests fork.
+ *
+ * @param p  The point. (in)
+ * @param k  The wave number. (in)
+ * @param t  The time. (in)
+ *
+ * @return
+ *   The phase in cycles.
+ **/
 float ripple(vec2 p, float k, float t)
 {
     vec2 q = p;

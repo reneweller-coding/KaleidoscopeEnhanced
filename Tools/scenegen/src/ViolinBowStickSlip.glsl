@@ -10,6 +10,13 @@
 //@params sizeP
 //@audio audioSwell audioAdvance
 //@body
+/**  The Helmholtz motion of the bowed string: a smooth sawtooth from six harmonics.
+ *
+ * @param ph  The phase in cycles. (in)
+ *
+ * @return
+ *   The displacement 0..1.
+ **/
 float helm(float ph)
 {
     float s = 0.0;

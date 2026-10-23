@@ -10,6 +10,18 @@
 //@params sizeP
 //@audio audioSwell audioHarmAdvance
 //@body
+/**  A tile of the codebook: a mean colour and a ramp whose direction and strength are snapped to the codebook.
+ *
+ * @param f  The position in the cell. (in)
+ * @param m  The tile's mean colour. (in)
+ * @param grad  The tile's brightness gradient. (in)
+ * @param N  The number of directions in the codebook. (in)
+ * @param Nc  The number of colour levels. (in)
+ * @param gain  The strength of the ramps. (in)
+ *
+ * @return
+ *   The tile's colour at the point.
+ **/
 vec3 codeTile(vec2 f, vec3 m, vec2 grad, float N, float Nc, float gain)
 {
     float th = atan(grad.y, grad.x);

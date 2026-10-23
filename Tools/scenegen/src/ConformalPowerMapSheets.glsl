@@ -10,6 +10,14 @@
 //@params sizeP
 //@audio audioAdvance audioHarmAdvance
 //@body
+/**  A complex number raised to a real power (the principal branch).
+ *
+ * @param z  The complex number. (in)
+ * @param n  The exponent. (in)
+ *
+ * @return
+ *   z to the power n.
+ **/
 vec2 cpow(vec2 z, float n)
 {
     float r = length(z);

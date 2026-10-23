@@ -497,6 +497,15 @@ void finish( vec3 col )
     fragColor = vec4( clamp( t, 0.0, 1.0 ), 1.0 );
 }
 
+/**  The Paeth predictor of PNG, per channel.
+ *
+ * @param a  The left neighbour. (in)
+ * @param b  The upper neighbour. (in)
+ * @param c  The upper-left neighbour. (in)
+ *
+ * @return
+ *   The predicted colour.
+ **/
 vec3 paeth( vec3 a, vec3 b, vec3 c )
 {
     vec3 p = a + b - c;

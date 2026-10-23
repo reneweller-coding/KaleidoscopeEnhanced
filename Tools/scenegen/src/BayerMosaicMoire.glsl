@@ -10,6 +10,14 @@
 //@params sizeP
 //@audio audioSwell audioAdvance
 //@body
+/**  The value a sensor pixel keeps: one colour channel of the photo, chosen by its place in the Bayer grid.
+ *
+ * @param ij  The sensor cell. (in)
+ * @param uvc  The photo coordinate of the cell's centre. (in)
+ *
+ * @return
+ *   The kept channel.
+ **/
 float bayerVal(ivec2 ij, vec2 uvc)
 {
     vec3 c = imgLod(uvc, 0.0);

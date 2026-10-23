@@ -11,6 +11,17 @@
 //@params sizeP
 //@audio audioSwell audioAdvance audioHarmAdvance
 //@body
+/**  The sum of the line values of a Lissajous figure drawn as a polyline of 140 segments.
+ *
+ * @param p  The point. (in)
+ * @param a  The first frequency. (in)
+ * @param b  The second frequency. (in)
+ * @param phi  The phase. (in)
+ * @param W  The line width. (in)
+ *
+ * @return
+ *   The accumulated line value.
+ **/
 float fig(vec2 p, float a, float b, float phi, float W)
 {
     float acc = 0.0;

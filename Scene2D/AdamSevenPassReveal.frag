@@ -495,6 +495,17 @@ void finish( vec3 col )
     fragColor = vec4( clamp( t, 0.0, 1.0 ), 1.0 );
 }
 
+/**  The photo read in the blocks of one stage of the seven-pass build-up.
+ *
+ * @param fc  The pixel coordinate. (in)
+ * @param s   The stage 0..6. (in)
+ * @param U   The unit cell size in pixels. (in)
+ * @param px  The pixel scale (render height / 270). (in)
+ * @param sh  The shift of the photo. (in)
+ *
+ * @return
+ *   The colour of the block under the pixel.
+ **/
 vec3 adamStage( vec2 fc, int s, float U, float px, vec2 sh )
 {
     float bw = 8.0 / exp2( ceil( float( s ) * 0.5 ) );

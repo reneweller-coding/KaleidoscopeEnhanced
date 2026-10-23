@@ -10,6 +10,15 @@
 //@params sizeP
 //@audio audioSwell audioAdvance
 //@body
+/**  A first-order estimate of the signed distance to the edge of the photo's light areas (brightness over gradient).
+ *
+ * @param uv  The photo coordinate. (in)
+ * @param thr  The brightness threshold. (in)
+ * @param lod  The mip level. (in)
+ *
+ * @return
+ *   The distance, clamped.
+ **/
 float sdEst(vec2 uv, float thr, float lod)
 {
     float e = 0.006;

@@ -496,6 +496,14 @@ void finish( vec3 col )
     fragColor = vec4( clamp( t, 0.0, 1.0 ), 1.0 );
 }
 
+/**  The cell of the Hilbert curve at a distance along the curve (level n).
+ *
+ * @param n  The level. (in)
+ * @param d  The distance along the curve. (in)
+ *
+ * @return
+ *   The cell's integer coordinate.
+ **/
 vec2 d2xy( int n, float d )
 {
     vec2  xy = vec2( 0.0 );
@@ -521,6 +529,14 @@ vec2 d2xy( int n, float d )
     }
     return xy;
 }
+/**  The distance along the Hilbert curve of a cell (level n).
+ *
+ * @param n   The count. (in)
+ * @param xy  The cell. (in)
+ *
+ * @return
+ *   The distance.
+ **/
 float xy2d( int n, vec2 xy )
 {
     float N = exp2( float( n ) );
@@ -544,6 +560,15 @@ float xy2d( int n, vec2 xy )
     }
     return d;
 }
+/**  The line of one level of the Hilbert curve at a point: its strength and the darkness there.
+ *
+ * @param p   The point. (in)
+ * @param n   The level of the curve. (in)
+ * @param lw  The line strength. (in)
+ *
+ * @return
+ *   The line value and the darkness.
+ **/
 vec4 hilbertLine( vec2 p, int n, float lw )
 {
     float N = exp2( float( n ) );

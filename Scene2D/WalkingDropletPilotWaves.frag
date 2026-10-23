@@ -498,6 +498,14 @@ void finish( vec3 col )
     fragColor = vec4( clamp( t, 0.0, 1.0 ), 1.0 );
 }
 
+/**  The slow looping path of a walking droplet.
+ *
+ * @param k  The droplet's number. (in)
+ * @param t  The time. (in)
+ *
+ * @return
+ *   The droplet's position.
+ **/
 vec2 dpath( float k, float t )
 {
     vec2 h = hash22( vec2( k, 9.0 ) );

@@ -495,6 +495,15 @@ void finish( vec3 col )
     fragColor = vec4( clamp( t, 0.0, 1.0 ), 1.0 );
 }
 
+/**  The phase of the ripple field: a wave bent by noise, so that crests fork.
+ *
+ * @param p  The point. (in)
+ * @param k  The wave number. (in)
+ * @param t  The time. (in)
+ *
+ * @return
+ *   The phase in cycles.
+ **/
 float ripple( vec2 p, float k, float t )
 {
     vec2 q = p;

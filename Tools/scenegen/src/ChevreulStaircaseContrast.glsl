@@ -10,6 +10,14 @@
 //@params sizeP
 //@audio audioSpread audioAdvance
 //@body
+/**  Soft quantisation of a brightness to n steps.
+ *
+ * @param l  The brightness. (in)
+ * @param n  The number of steps. (in)
+ *
+ * @return
+ *   The quantised brightness.
+ **/
 float quantL(float l, float n) { return floor(l * n + 0.5) / n; }
 void main()
 {

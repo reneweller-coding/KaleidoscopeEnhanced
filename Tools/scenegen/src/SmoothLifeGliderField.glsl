@@ -11,10 +11,53 @@
 //@audio audioSwell audioRolloff
 //@state 256 144 20 32
 //@body
+/**  The photo at a field cell (the photo fitted to the field's height, 0.8 of it).
+ *
+ * @param c  The colour. (in)
+ * @param lod  The lod. (in)
+ *
+ * @return
+ *   The photo's colour.
+ **/
 vec3 phAt(vec2 c, float lod) { return imgLod((c - 0.5 * stateRes) / stateRes.y * 0.8 + 0.5, lod); }
+/**  A logistic step at a with the width al.
+ *
+ * @param x  The argument. (in)
+ * @param a  The first argument. (in)
+ * @param al  The width of the step. (in)
+ *
+ * @return
+ *   The step value.
+ **/
 float sg1(float x, float a, float al) { return 1.0 / (1.0 + exp(-(x - a) * 4.0 / al)); }
+/**  A window between two logistic steps (birth and death thresholds).
+ *
+ * @param x  The argument. (in)
+ * @param a  The first argument. (in)
+ * @param b  The second argument. (in)
+ * @param al  The width of the steps. (in)
+ *
+ * @return
+ *   The window value.
+ **/
 float sg2(float x, float a, float b, float al) { return sg1(x, a, al) * (1.0 - sg1(x, b, al)); }
+/**  A blend of two thresholds by a logistic step of the inner mean.
+ *
+ * @param x  The argument. (in)
+ * @param y  The y. (in)
+ * @param m  The parameter m. (in)
+ * @param alm  The width of the step. (in)
+ *
+ * @return
+ *   The blended threshold.
+ **/
 float sgm(float x, float y, float m, float alm) { float k = sg1(m, 0.5, alm); return x * (1.0 - k) + y * k; }
+/**  The state pass: the next state of this cell from the last one (the rule of the scene).
+ *
+ *
+ * @return
+ *   The cell's new state.
+ **/
 vec4 stateStep()
 {
     ivec2 ip = stCell();

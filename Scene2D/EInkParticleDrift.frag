@@ -497,6 +497,14 @@ void finish( vec3 col )
     fragColor = vec4( clamp( t, 0.0, 1.0 ), 1.0 );
 }
 
+/**  Soft quantisation of a brightness to n steps.
+ *
+ * @param l  The brightness. (in)
+ * @param n  The number of steps. (in)
+ *
+ * @return
+ *   The quantised brightness.
+ **/
 float quantL( float l, float n )
 {
     float x = l * ( n - 1.0 );

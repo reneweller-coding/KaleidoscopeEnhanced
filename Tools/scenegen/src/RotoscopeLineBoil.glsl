@@ -10,6 +10,14 @@
 //@params sizeP
 //@audio audioSwell audioRoughness
 //@body
+/**  The colour flattened to n soft levels.
+ *
+ * @param c  The colour. (in)
+ * @param n  The number of levels. (in)
+ *
+ * @return
+ *   The flat colour.
+ **/
 vec3 flatten(vec3 c, float n)
 {
     vec3 x = c * n;

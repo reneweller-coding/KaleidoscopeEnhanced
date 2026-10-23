@@ -495,6 +495,13 @@ void finish( vec3 col )
     fragColor = vec4( clamp( t, 0.0, 1.0 ), 1.0 );
 }
 
+/**  A point of the spectral locus of the CIE chromaticity diagram (thirteen wavelengths).
+ *
+ * @param i  The index of the wavelength 0..12. (in)
+ *
+ * @return
+ *   The chromaticity x, y.
+ **/
 vec2 locus( int i )
 {
     if ( i == 0 )

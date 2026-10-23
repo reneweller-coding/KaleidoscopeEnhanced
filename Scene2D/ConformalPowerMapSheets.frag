@@ -496,6 +496,14 @@ void finish( vec3 col )
     fragColor = vec4( clamp( t, 0.0, 1.0 ), 1.0 );
 }
 
+/**  A complex number raised to a real power (the principal branch).
+ *
+ * @param z  The complex number. (in)
+ * @param n  The exponent. (in)
+ *
+ * @return
+ *   z to the power n.
+ **/
 vec2 cpow( vec2 z, float n )
 {
     float r = length( z );

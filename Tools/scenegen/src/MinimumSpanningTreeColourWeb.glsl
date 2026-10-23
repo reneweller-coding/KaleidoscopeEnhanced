@@ -10,6 +10,15 @@
 //@params sizeP
 //@audio audioSpread audioAdvance
 //@body
+/**  The place of a wandering point on the jittered lattice.
+ *
+ * @param cj  The lattice cell. (in)
+ * @param S  The cell size. (in)
+ * @param t  The time. (in)
+ *
+ * @return
+ *   The position.
+ **/
 vec2 pt(vec2 cj, float S, float t)
 {
     vec2 h = hash22(cj);

@@ -11,6 +11,15 @@
 //@params sizeP
 //@audio audioSpread audioAdvance audioHarmAdvance
 //@body
+/**  One step of the Ikeda map.
+ *
+ * @param z  The complex number. (in)
+ * @param u  The parameter u. (in)
+ * @param ph  The phase. (in)
+ *
+ * @return
+ *   The next point.
+ **/
 vec2 ikeda(vec2 z, float u, float ph)
 {
     float t = 0.4 + ph - 6.0 / (1.0 + dot(z, z));

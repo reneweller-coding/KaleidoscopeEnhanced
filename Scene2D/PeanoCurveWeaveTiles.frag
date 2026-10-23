@@ -496,6 +496,14 @@ void finish( vec3 col )
     fragColor = vec4( clamp( t, 0.0, 1.0 ), 1.0 );
 }
 
+/**  The place of a point of the unit square along the Peano curve (the base-three digits, with the reflections).
+ *
+ * @param q  The point. (in)
+ * @param L  The level. (in)
+ *
+ * @return
+ *   The position on the curve 0..1.
+ **/
 float peano( vec2 q, int L )
 {
     float idx = 0.0;

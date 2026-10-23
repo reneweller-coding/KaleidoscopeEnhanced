@@ -10,6 +10,16 @@
 //@params sizeP
 //@audio audioSpread audioAdvance
 //@body
+/**  The radius of a nine-cornered irregular polygon in a direction (the chord between two corners).
+ *
+ * @param th  The direction. (in)
+ * @param R  The mean radius. (in)
+ * @param rot  The turn of the corners. (in)
+ * @param k  The layer number (seeds the corner radii). (in)
+ *
+ * @return
+ *   The radius.
+ **/
 float polyR(float th, float R, float rot, float k)
 {
     float M = 9.0;

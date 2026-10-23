@@ -496,6 +496,13 @@ void finish( vec3 col )
     fragColor = vec4( clamp( t, 0.0, 1.0 ), 1.0 );
 }
 
+/**  The distance of a point in the unit cell to the line of the Greek key.
+ *
+ * @param f  The point in the unit cell. (in)
+ *
+ * @return
+ *   The distance.
+ **/
 float keyd( vec2 f )
 {
     vec2  P0 = vec2( 0.0, 0.15 );

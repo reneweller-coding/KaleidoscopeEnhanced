@@ -498,6 +498,15 @@ void finish( vec3 col )
     fragColor = vec4( clamp( t, 0.0, 1.0 ), 1.0 );
 }
 
+/**  The trace of the product of the transfer matrices of Harper's equation for the flux p/q at an energy.
+ *
+ * @param E  The energy. (in)
+ * @param p  The numerator of the flux. (in)
+ * @param q  The denominator of the flux. (in)
+ *
+ * @return
+ *   The trace in x.
+ **/
 vec2 harper( float E, float p, float q )
 {
     vec2 u0 = vec2( 1.0, 0.0 );

@@ -496,6 +496,15 @@ void finish( vec3 col )
     fragColor = vec4( clamp( t, 0.0, 1.0 ), 1.0 );
 }
 
+/**  A first-order estimate of the signed distance to the edge of the photo's light areas (brightness over gradient).
+ *
+ * @param uv   The photo coordinate. (in)
+ * @param thr  The brightness threshold. (in)
+ * @param lod  The mip level. (in)
+ *
+ * @return
+ *   The distance, clamped.
+ **/
 float sdEst( vec2 uv, float thr, float lod )
 {
     float e = 0.006;

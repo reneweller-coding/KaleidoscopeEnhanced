@@ -496,6 +496,15 @@ void finish( vec3 col )
     fragColor = vec4( clamp( t, 0.0, 1.0 ), 1.0 );
 }
 
+/**  The right-hand side of the Rabinovich-Fabrikant system.
+ *
+ * @param s   The state. (in)
+ * @param al  The parameter alpha. (in)
+ * @param ga  The parameter gamma. (in)
+ *
+ * @return
+ *   The rate of change of the state.
+ **/
 vec3 rf( vec3 s, float al, float ga )
 {
     return vec3( s.y * ( s.z - 1.0 + s.x * s.x ) + ga * s.x,

@@ -495,6 +495,13 @@ void finish( vec3 col )
     fragColor = vec4( clamp( t, 0.0, 1.0 ), 1.0 );
 }
 
+/**  The height of the terrain: the photo's brightness.
+ *
+ * @param xz  The terrain coordinate. (in)
+ *
+ * @return
+ *   The height.
+ **/
 float terr( vec2 xz )
 {
     return luma( imgLod( xz * 0.5 * 0.85 + 0.5, 2.0 ) );

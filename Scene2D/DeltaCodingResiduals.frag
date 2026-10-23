@@ -497,6 +497,15 @@ void finish( vec3 col )
     fragColor = vec4( clamp( t, 0.0, 1.0 ), 1.0 );
 }
 
+/**  The median edge detector's prediction from the left, upper and upper-left neighbour.
+ *
+ * @param l   The left neighbour. (in)
+ * @param u   The upper neighbour. (in)
+ * @param ul  The upper-left neighbour. (in)
+ *
+ * @return
+ *   The predicted colour.
+ **/
 vec3 med( vec3 l, vec3 u, vec3 ul )
 {
     vec3 mx = max( l, u );

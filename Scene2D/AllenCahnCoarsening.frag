@@ -676,10 +676,23 @@ float stLod( vec2 cc, float cellPx )
     return clamp( log2( max( max( length( ux ), length( uy ) ) * 1024.0 / max( cellPx, 1e-3 ), 1.0 ) ), 0.0, 6.0 );
 }
 
+/**  The photo at a field cell (the photo fitted to the field's height, 0.8 of it).
+ *
+ * @param c    The colour. (in)
+ * @param lod  The lod. (in)
+ *
+ * @return
+ *   The photo's colour.
+ **/
 vec3 phAt( vec2 c, float lod )
 {
     return imgLod( ( c - 0.5 * stateRes ) / stateRes.y * 0.8 + 0.5, lod );
 }
+/**  The state pass: the next state of this cell from the last one (the rule of the scene).
+ *
+ * @return
+ *   The cell's new state.
+ **/
 vec4 stateStep()
 {
     ivec2 ip = stCell();

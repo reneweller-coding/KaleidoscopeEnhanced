@@ -10,6 +10,16 @@
 //@params sizeP
 //@audio audioAdvance audioHarmAdvance
 //@body
+/**  One stage of the zooming grid: copies of the photo on a grid that is G^n times finer, turned by n steps.
+ *
+ * @param p  The point. (in)
+ * @param n  The stage number. (in)
+ * @param G  The cells per stage. (in)
+ * @param stepAng  The turn per stage. (in)
+ *
+ * @return
+ *   The colour.
+ **/
 vec3 stage(vec2 p, float n, float G, float stepAng)
 {
     vec2 q = rot2(n * stepAng) * p * pow(G, n);

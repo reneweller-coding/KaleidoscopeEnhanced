@@ -10,6 +10,13 @@
 //@params sizeP
 //@audio audioSpread audioAdvance
 //@body
+/**  The intensity of the Fresnel edge pattern at a distance from the shadow's edge (lit side oscillating, shadow falling off).
+ *
+ * @param u  The distance from the shadow edge in Fresnel units. (in)
+ *
+ * @return
+ *   The intensity.
+ **/
 float edgeI(float u)
 {
     float a = abs(u);

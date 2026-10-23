@@ -10,6 +10,16 @@
 //@params sizeP
 //@audio audioAdvance audioHarmAdvance
 //@body
+/**  The photo read through a kaleidoscope with N segments.
+ *
+ * @param p  The point. (in)
+ * @param N  The number of segments. (in)
+ * @param rot  The turn. (in)
+ * @param zoom  The zoom. (in)
+ *
+ * @return
+ *   The colour.
+ **/
 vec3 kal(vec2 p, float N, float rot, float zoom)
 {
     float r = length(p);

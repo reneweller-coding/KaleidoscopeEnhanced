@@ -496,6 +496,14 @@ void finish( vec3 col )
     fragColor = vec4( clamp( t, 0.0, 1.0 ), 1.0 );
 }
 
+/**  The colour flattened to n soft levels.
+ *
+ * @param c  The colour. (in)
+ * @param n  The number of levels. (in)
+ *
+ * @return
+ *   The flat colour.
+ **/
 vec3 flatten( vec3 c, float n )
 {
     vec3 x = c * n;

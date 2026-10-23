@@ -10,6 +10,13 @@
 //@params sizeP
 //@audio audioSwell audioAdvance
 //@body
+/**  The four cosine basis functions of the 4-point transform at a position in the block.
+ *
+ * @param x  The position in the block 0..1. (in)
+ *
+ * @return
+ *   The four basis values.
+ **/
 vec4 dctBasis(float x)
 {
     return vec4(1.0, cos(3.1415927 * x), cos(6.2831853 * x), cos(9.4247780 * x));

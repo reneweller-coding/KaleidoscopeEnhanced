@@ -496,6 +496,13 @@ void finish( vec3 col )
     fragColor = vec4( clamp( t, 0.0, 1.0 ), 1.0 );
 }
 
+/**  A smooth sawtooth made of five harmonics.
+ *
+ * @param ph  The phase in cycles. (in)
+ *
+ * @return
+ *   The value 0..1.
+ **/
 float saw6( float ph )
 {
     float s = 0.0;

@@ -10,6 +10,16 @@
 //@params sizeP
 //@audio audioAdvance audioHarmAdvance
 //@body
+/**  The ring of mirror images of the drum wall for n mirrors.
+ *
+ * @param p  The point. (in)
+ * @param n  The number of mirrors. (in)
+ * @param rot  The turn. (in)
+ * @param sz  The size of the ring. (in)
+ *
+ * @return
+ *   The colour.
+ **/
 vec3 prism(vec2 p, float n, float rot, float sz)
 {
     float r = length(p);

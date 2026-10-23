@@ -10,6 +10,13 @@
 //@params sizeP
 //@audio audioSpread audioAdvance
 //@body
+/**  The height of the terrain: the photo's brightness.
+ *
+ * @param xz  The terrain coordinate. (in)
+ *
+ * @return
+ *   The height.
+ **/
 float terr(vec2 xz)
 {
     return luma(imgLod(xz * 0.5 * 0.85 + 0.5, 2.0));

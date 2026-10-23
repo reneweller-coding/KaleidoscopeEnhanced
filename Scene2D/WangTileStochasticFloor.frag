@@ -496,6 +496,15 @@ void finish( vec3 col )
     fragColor = vec4( clamp( t, 0.0, 1.0 ), 1.0 );
 }
 
+/**  The photo piece (one of sixteen) a floor cell shows in one round of the shuffle.
+ *
+ * @param ci  The floor cell. (in)
+ * @param f   The place in the cell. (in)
+ * @param k   The round of the shuffle. (in)
+ *
+ * @return
+ *   The colour.
+ **/
 vec3 tilePick( vec2 ci, vec2 f, float k )
 {
     float idx = floor( hash21( ci + k * 13.7 ) * 16.0 );

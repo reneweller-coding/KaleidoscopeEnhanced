@@ -10,6 +10,16 @@
 //@params sizeP
 //@audio audioSwell audioAdvance
 //@body
+/**  One horizon-chart colour: the photo's brightness of the row folded into nb bands.
+ *
+ * @param q  The position in the picture 0..1. (in)
+ * @param rows  The number of rows. (in)
+ * @param nb  The number of bands. (in)
+ * @param t  The time. (in)
+ *
+ * @return
+ *   The colour.
+ **/
 vec3 horizon(vec2 q, float rows, float nb, float t)
 {
     float row = floor(q.y * rows);

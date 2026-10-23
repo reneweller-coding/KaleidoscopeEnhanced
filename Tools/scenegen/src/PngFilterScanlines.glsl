@@ -10,6 +10,15 @@
 //@params sizeP
 //@audio audioSwell audioHarmAdvance
 //@body
+/**  The Paeth predictor of PNG, per channel.
+ *
+ * @param a  The left neighbour. (in)
+ * @param b  The upper neighbour. (in)
+ * @param c  The upper-left neighbour. (in)
+ *
+ * @return
+ *   The predicted colour.
+ **/
 vec3 paeth(vec3 a, vec3 b, vec3 c)
 {
     vec3 p = a + b - c;

@@ -10,6 +10,15 @@
 //@params sizeP
 //@audio audioSwell audioAdvance
 //@body
+/**  The wavefront deformation (a few low terms and noise).
+ *
+ * @param p  The point. (in)
+ * @param t  The time. (in)
+ * @param A  The strength. (in)
+ *
+ * @return
+ *   The height of the wavefront.
+ **/
 float wf(vec2 p, float t, float A)
 {
     return A * (0.4 * sin(3.0 * p.x + 0.7 * t) * cos(2.0 * p.y - 0.5 * t) + 0.6 * (fbm(p * 1.5 + vec2(0.0, 0.05 * t)) - 0.5) + 0.3 * (p.x * p.x + p.y * p.y) * sin(0.3 * t));

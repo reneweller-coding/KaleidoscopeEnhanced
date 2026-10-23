@@ -10,7 +10,23 @@
 //@params sizeP
 //@audio audioSwell audioAdvance
 //@body
+/**  The product of two complex numbers.
+ *
+ * @param a  The first argument. (in)
+ * @param b  The second argument. (in)
+ *
+ * @return
+ *   The product.
+ **/
 vec2 cm(vec2 a, vec2 b) { return vec2(a.x * b.x - a.y * b.y, a.x * b.y + a.y * b.x); }
+/**  The quotient of two complex numbers (safe against zero).
+ *
+ * @param a  The first argument. (in)
+ * @param b  The second argument. (in)
+ *
+ * @return
+ *   The quotient.
+ **/
 vec2 cd(vec2 a, vec2 b) { return vec2(a.x * b.x + a.y * b.y, a.y * b.x - a.x * b.y) / (dot(b, b) + 1e-6); }
 void main()
 {

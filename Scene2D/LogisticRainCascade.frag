@@ -496,6 +496,15 @@ void finish( vec3 col )
     fragColor = vec4( clamp( t, 0.0, 1.0 ), 1.0 );
 }
 
+/**  The logistic map iterated n times.
+ *
+ * @param x  The argument. (in)
+ * @param r  The parameter r. (in)
+ * @param n  The number of iterations. (in)
+ *
+ * @return
+ *   The iterate.
+ **/
 float iter( float x, float r, float n )
 {
     for ( int i = 0; i < 64; ++i )

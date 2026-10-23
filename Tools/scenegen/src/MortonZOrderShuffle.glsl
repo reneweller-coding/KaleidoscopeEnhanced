@@ -10,6 +10,13 @@
 //@params sizeP
 //@audio audioAdvance audioHarmAdvance
 //@body
+/**  The bits of x spread to the even places (Morton code).
+ *
+ * @param x  The number. (in)
+ *
+ * @return
+ *   The spread bits.
+ **/
 uint part1by1(uint x)
 {
     x &= 0x0000ffffu;
@@ -19,6 +26,13 @@ uint part1by1(uint x)
     x = (x | (x << 1)) & 0x55555555u;
     return x;
 }
+/**  The even bits gathered (the inverse of part1by1).
+ *
+ * @param x  The Morton code. (in)
+ *
+ * @return
+ *   The gathered bits.
+ **/
 uint compact1by1(uint x)
 {
     x &= 0x55555555u;
@@ -28,6 +42,16 @@ uint compact1by1(uint x)
     x = (x ^ (x >> 8)) & 0x0000ffffu;
     return x;
 }
+/**  The photo read at the cell reached by shifting the low bits of the Z-order index.
+ *
+ * @param q  The point. (in)
+ * @param G  The grid size. (in)
+ * @param nb  The number of shifted low bits. (in)
+ * @param s  The shift along the curve. (in)
+ *
+ * @return
+ *   The colour.
+ **/
 vec3 zShift(vec2 q, float G, uint nb, uint s)
 {
     uvec2 ij = uvec2(clamp(floor(q * G), vec2(0.0), vec2(G - 1.0)));

@@ -10,6 +10,16 @@
 //@params sizeP
 //@audio audioSwell audioPhrasePos
 //@body
+/**  The place of a lattice node of the mesh: pushed off its rest place by a damped swing.
+ *
+ * @param cj  The lattice node. (in)
+ * @param S  The cell size. (in)
+ * @param k  The spring stiffness 0..1. (in)
+ * @param cyc  The phase of the kick-and-settle cycle. (in)
+ *
+ * @return
+ *   The node's position.
+ **/
 vec2 nodePos(vec2 cj, float S, float k, float cyc)
 {
     vec2 h = hash22(cj);

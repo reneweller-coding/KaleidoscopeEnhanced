@@ -495,6 +495,13 @@ void finish( vec3 col )
     fragColor = vec4( clamp( t, 0.0, 1.0 ), 1.0 );
 }
 
+/**  The hue of a colour as a number 0..1 (the angle in the chroma plane).
+ *
+ * @param c  The colour. (in)
+ *
+ * @return
+ *   The hue.
+ **/
 float hueA( vec3 c )
 {
     return atan( 1.7320508 * ( c.g - c.b ), 2.0 * c.r - c.g - c.b ) / 6.2831853 + 0.5;

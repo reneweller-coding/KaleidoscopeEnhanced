@@ -10,6 +10,15 @@
 //@params sizeP
 //@audio audioSwell audioAdvance
 //@body
+/**  The logistic map iterated n times.
+ *
+ * @param x  The argument. (in)
+ * @param r  The parameter r. (in)
+ * @param n  The number of iterations. (in)
+ *
+ * @return
+ *   The iterate.
+ **/
 float iter(float x, float r, float n)
 {
     for (int i = 0; i < 64; ++i) {

@@ -10,6 +10,14 @@
 //@params sizeP
 //@audio audioAdvance audioHarmAdvance
 //@body
+/**  The right-hand side of the Roessler system.
+ *
+ * @param s  The state. (in)
+ * @param c  The parameter c. (in)
+ *
+ * @return
+ *   The rate of change of the state.
+ **/
 vec3 rossler(vec3 s, float c)
 {
     return vec3(-s.y - s.z, s.x + 0.2 * s.y, 0.2 + s.z * (s.x - c));

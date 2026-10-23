@@ -496,6 +496,16 @@ void finish( vec3 col )
     fragColor = vec4( clamp( t, 0.0, 1.0 ), 1.0 );
 }
 
+/**  The photo read at the partner cell assigned to a cell in one round of assignments.
+ *
+ * @param ci  The cell. (in)
+ * @param f   The place in the cell. (in)
+ * @param k   The round of assignments. (in)
+ * @param S   The cell size. (in)
+ *
+ * @return
+ *   The colour.
+ **/
 vec3 pmPick( vec2 ci, vec2 f, float k, float S )
 {
     vec2 h = hash22( ci + k * 7.1 );

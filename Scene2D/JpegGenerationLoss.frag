@@ -496,6 +496,17 @@ void finish( vec3 col )
     fragColor = vec4( clamp( t, 0.0, 1.0 ), 1.0 );
 }
 
+/**  One generation of the block coding: brightness in coarse steps per block, colour in blocks of double size.
+ *
+ * @param fc  The pixel coordinate. (in)
+ * @param o   The offset of the block grid. (in)
+ * @param Bb  The block size per 270 lines. (in)
+ * @param px  The pixel scale (render height / 270). (in)
+ * @param lv  The number of brightness steps. (in)
+ *
+ * @return
+ *   The decoded colour.
+ **/
 vec3 jpegPass( vec2 fc, vec2 o, float Bb, float px, float lv )
 {
     float B = Bb * px;

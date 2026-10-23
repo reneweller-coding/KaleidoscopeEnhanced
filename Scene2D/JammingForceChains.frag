@@ -495,6 +495,14 @@ void finish( vec3 col )
     fragColor = vec4( clamp( t, 0.0, 1.0 ), 1.0 );
 }
 
+/**  A ridge field (the load) from two octaves of absolute noise.
+ *
+ * @param q  The point. (in)
+ * @param t  The time. (in)
+ *
+ * @return
+ *   The ridge value 0..1.
+ **/
 float ridgeF( vec2 q, float t )
 {
     float a = abs( fbm( q * 3.0 + vec2( 0.0, 0.03 * t ) ) - 0.5 ) * 2.0;

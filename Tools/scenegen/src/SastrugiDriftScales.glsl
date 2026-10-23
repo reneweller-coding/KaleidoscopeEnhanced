@@ -10,6 +10,16 @@
 //@params sizeP
 //@audio audioSwell audioAdvance
 //@body
+/**  The sastrugi ridge height: absolute values of stretched noise (sharp crests).
+ *
+ * @param p  The point. (in)
+ * @param ang  The angle. (in)
+ * @param sc  The scale. (in)
+ * @param t  The time. (in)
+ *
+ * @return
+ *   The height.
+ **/
 float sh(vec2 p, float ang, float sc, float t)
 {
     vec2 q = rot2(-ang) * p;

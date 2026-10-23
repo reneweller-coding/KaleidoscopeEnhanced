@@ -10,6 +10,14 @@
 //@params sizeP
 //@audio audioSwell audioHarmAdvance
 //@body
+/**  The slow looping path of a walking droplet.
+ *
+ * @param k  The droplet's number. (in)
+ * @param t  The time. (in)
+ *
+ * @return
+ *   The droplet's position.
+ **/
 vec2 dpath(float k, float t)
 {
     vec2 h = hash22(vec2(k, 9.0));

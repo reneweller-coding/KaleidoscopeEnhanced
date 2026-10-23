@@ -496,6 +496,15 @@ void finish( vec3 col )
     fragColor = vec4( clamp( t, 0.0, 1.0 ), 1.0 );
 }
 
+/**  The right-hand side of Chua's circuit with the double-scroll nonlinearity.
+ *
+ * @param s   The state. (in)
+ * @param al  The parameter alpha. (in)
+ * @param be  The parameter beta. (in)
+ *
+ * @return
+ *   The rate of change of the state.
+ **/
 vec3 chua( vec3 s, float al, float be )
 {
     float m0 = -1.143;
