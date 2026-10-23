@@ -312,6 +312,19 @@ float roughA( vec2 p, float r )
     return clamp( s * 2.5, 0.0, 1.0 );
 }
 
+/**  The mean roughness of the outgoing scene, estimated at four fixed points (so the order of the roughness does not depend
+ *  on how detailed the scene is as a whole).
+ *
+ * @param r  The radius in pixels. (in)
+ *
+ * @return
+ *   The mean roughness, 0..1.
+ **/
+float meanRoughA( float r )
+{
+    return 0.25 * ( roughA( vec2( 0.3, 0.3 ), r ) + roughA( vec2( 0.7, 0.3 ), r ) + roughA( vec2( 0.3, 0.7 ), r ) + roughA( vec2( 0.7, 0.7 ), r ) );
+}
+
 /**  The picture at a place and progress.
  *
  * @param p  The place, 0..1. (in)
@@ -324,9 +337,11 @@ vec4 trans( vec2 p, float d )
 {
     vec4  a = tA( p );
     vec4  b = tB( p );
-    float r = 0.5 * ( roughA( p, 2.0 * gKB ) + roughA( p, 6.0 * gKB ) );
-    float f = mix( pow( clamp( r * ( 1.0 + 0.5 * gKA ), 0.0, 1.0 ), 0.5 ), smoothstep( 0.3, 0.7, fbm2( p * 2.0 + 9.0 ) ), 0.65 );
-    float w = trThresh( f, d, 0.15 * ( 1.0 + 0.3 * audioSwell ) );
+    float rad = 4.0 * gKB;
+    float fr = pow( 1.0 - exp( -roughA( p, rad ) * ( 1.0 + 0.5 * gKA ) / ( meanRoughA( rad ) + 0.03 ) ), 0.5 );   // the roughness as a share of the typical one
+    float f = mix( fr, smoothstep( 0.3, 0.7, fbm2( p * 2.0 + 9.0 ) ), 0.65 );
+    float dw = d + 0.3 * sin( 2.0 * Pi * d ) / ( 2.0 * Pi );   // the order values pile up in the middle: slower there, faster at both ends
+    float w = trThresh( f, dw, 0.15 * ( 1.0 + 0.3 * audioSwell ) );
     return mix( a, b, w );
 }
 

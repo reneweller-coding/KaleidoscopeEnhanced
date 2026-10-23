@@ -91,7 +91,7 @@ CosmicStringLensing	579.34	0.625	0.043	0.55	19.0
 PageTurnFolio	195.72	0.600	0.044	0.01	10.8
 RisographDrumOffset	123.62	0.825	0.065	0.08	7.5
 CyanotypeSunPrint	139.51	0.575	0.081	0.06	1.6
-PolaroidDevelopSquare	140.63	0.850	0.139	0.14	43.7
+PolaroidDevelopSquare	100.80	0.750	0.057	0.14	21.0
 LetterpressImpression	167.67	0.800	0.085	0.10	18.5
 ScratchboardReveal	165.54	0.575	0.076	0.44	0.0
 TalbotCarpetRevival	128.95	0.775	0.038	0.41	16.1
@@ -116,12 +116,12 @@ HilbertCurveSweep	120.14	0.650	0.036	0.13	2.5
 WaveFunctionCollapseTiles	153.50	0.375	0.069	0.22	7.2
 SeamCarvingRetarget	86.81	0.550	0.061	0.11	3.7
 LumaThresholdTide	56.48	0.525	0.050	0.04	0.0
-HueGateBleed	56.88	0.425	0.059	0.03	0.0
+HueGateBleed	61.29	0.550	0.048	0.02	1.6
 SaturationDrainBridge	60.06	0.500	0.048	0.04	0.0
 EdgeFirstSeep	56.41	0.450	0.065	0.02	0.0
-FlatAreasFirst	57.11	0.400	0.086	0.02	0.0
+FlatAreasFirst	61.17	0.475	0.061	0.02	2.4
 HighlightBloomReveal	55.64	0.500	0.046	0.02	0.0
-ShadowLiftCrossing	55.30	0.350	0.078	0.03	0.0
+ShadowLiftCrossing	97.46	0.550	0.047	0.07	17.1
 NeutralGreyBridgeMix	59.09	0.625	0.037	0.04	0.0
 PyramidDescentRefocus	62.31	0.525	0.046	0.05	0.0
 DetailLayerSwapFirst	55.30	0.475	0.050	0.04	0.0
@@ -170,7 +170,7 @@ RaindropLensRefraction	102.66	0.600	0.048	0.56	0.0
 FresnelLensSlideBands	65.00	0.600	0.043	0.55	0.0
 PoolLightLatticeWash	56.40	0.475	0.054	0.25	0.0
 StainedGlassLeadReveal	75.76	0.775	0.041	0.01	0.0
-CrystalBallInversion	375.70	0.325	0.103	0.03	0.0
+CrystalBallInversion	1144.93	0.500	0.043	0.03	7.7
 AnamorphicSqueezeBreath	81.32	0.500	0.048	0.04	0.0
 LensBreathingRefocusSettle	56.72	0.475	0.050	0.04	0.0
 ChromaticDefocusBloom	65.48	0.500	0.047	0.05	0.0

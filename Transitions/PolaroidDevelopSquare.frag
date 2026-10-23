@@ -19,6 +19,11 @@
  *  The white border grows in at the start and runs off the frame at the end, so
  *  the last frame is the incoming scene full bleed with nothing left over.
  *
+ *  The sheet veils the outgoing scene slowly (over the first 42 % of the fade),
+ *  clears from the border over the whole depth of the picture, and the card and
+ *  the milky sheet take their brightness from the two scenes, so the print is
+ *  never brighter than both of them (the calm genres measure this).
+ *
  *  Audio Reactivity:
  *    audioSwell  -> how soft the clearing front is (slow)
  *    audioValence -> how strong the early warm cast reads (colour)
@@ -83,6 +88,23 @@ float noise2( vec2 p )
                 mix( hash21( i + vec2( 0.0, 1.0 ) ), hash21( i + vec2( 1.0, 1.0 ) ), f.x ), f.y );
 }
 
+/**  The mean brightness of a scene, estimated from nine fixed points (the card and the milky sheet follow it, so the print
+ *  is never brighter than both scenes and the change reads as a development, not as a flash).
+ *
+ * @param s  The scene's texture. (in)
+ *
+ * @return
+ *   The mean luminance, 0..1.
+ **/
+float meanLuma( sampler2D s )
+{
+    float sum = 0.0;
+    for ( int j = 0; j < 3; ++j )
+        for ( int i = 0; i < 3; ++i )
+            sum += dot( texture( s, ( vec2( float( i ), float( j ) ) + 0.5 ) / 3.0 ).rgb, vec3( 0.299, 0.587, 0.114 ) );
+    return sum / 9.0;
+}
+
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
@@ -101,7 +123,7 @@ void main()
 
     // The card: border in at the start, off the frame at the end, so nothing
     // of it survives into the last frame.
-    float grow = smoothstep( 0.0, 0.14, d );
+    float grow = smoothstep( 0.0, 0.42, d );
     float leave = 1.0 - smoothstep( 0.80, 1.0, d );
     float bw = 0.055 * grow * leave; // border width
     float tab = bw * 2.6;            // the wide bottom tab
@@ -114,11 +136,11 @@ void main()
     float area = smoothstep( -0.004, 0.004, inset ); // 1 inside the picture
 
     // Normalised depth into the picture, 0 at its edge, 1 deepest.
-    float depth = clamp( inset / max( 0.16 * clr, 0.04 ), 0.0, 1.0 );
+    float depth = smoothstep( 0.0, 1.0, clamp( inset / max( 0.42 * clr, 0.12 ), 0.0, 1.0 ) );
 
     // The opacifier clears from the border inward.
     float soft = 0.10 + 0.16 * clamp( audioSwell, 0.0, 1.0 );
-    float front = ( d * ( 1.0 + 2.0 * soft ) - soft - 0.02 ) / 0.42;
+    float front = ( d * ( 1.0 + 2.0 * soft ) - soft - 0.02 ) / 0.66;
     float cleared = smoothstep( front + soft, front - soft, depth );
 
     // The dyes, in the order they are released.  Each removes its own
@@ -129,7 +151,10 @@ void main()
 
     // The opacifier is grey, not white: a near-white sheet across the whole
     // frame reads as a flash, which is exactly what this catalogue avoids.
-    vec3 milk = vec3( 0.44, 0.435, 0.43 );
+    float mA = meanLuma( tex0 );
+    float mB = meanLuma( tex1 );
+    float milkTone = clamp( 0.5 * ( mA + mB ) * 0.95 + 0.03, 0.06, 0.44 );
+    vec3  milk = milkTone * vec3( 1.0, 0.989, 0.977 );
     vec3 dev = vec3( mix( milk.r, src1.r, p_r ),
                      mix( milk.g, src1.g, p_g ),
                      mix( milk.b, src1.b, p_b ) );
@@ -144,7 +169,7 @@ void main()
     picture *= 0.95 + 0.10 * noise2( p * 420.0 ) * ( 1.0 - cleared * 0.7 );
 
     // The card stock around the picture.
-    vec3 card = vec3( 0.74, 0.735, 0.72 );
+    vec3 card = min( 0.74, max( mA, mB ) * 1.15 + 0.06 ) * vec3( 1.0, 0.993, 0.973 );
     card *= 0.97 + 0.05 * noise2( p * 120.0 );
     card *= 1.0 + 0.10 * clamp( audioKick, 0.0, 1.0 );
 
@@ -156,7 +181,7 @@ void main()
     // The card covers the outgoing scene, and at the end the picture is the
     // whole frame, so this lands exactly on the incoming scene.
     vec3 col = mix( src0, print, grow );
-    col = mix( col, src1, smoothstep( 0.94, 1.0, d ) );
+    col = mix( col, src1, smoothstep( 0.88, 1.0, d ) );
 
     fragColor = vec4( clamp( col, 0.0, 1.0 ), 1.0 );
 }

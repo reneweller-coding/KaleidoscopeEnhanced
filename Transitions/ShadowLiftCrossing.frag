@@ -309,7 +309,8 @@ vec4 trans( vec2 p, float d )
     vec4  b = tB( p );
     float la = trLuma( a.rgb );
     float f = mix( clamp( 0.5 + 1.7 * ( la - trMeanLumaA() ), 0.0, 1.0 ), smoothstep( 0.3, 0.7, fbm2( p * 2.0 + 1.0 ) ), 0.65 );
-    float w = trThresh( f, d, 0.22 * gKB );
+    float dw = pow( d, 1.4 );   // the dark places switch at once: slower at first, faster at the end
+    float w = trThresh( f, dw, 0.22 * gKB );
     vec3  lifted = a.rgb + ( 1.0 - la ) * 0.16 * gKA * ( 1.0 + 0.4 * audioSwell ) * trMid( d );
     return mix( vec4( lifted, a.a ), b, w );
 }

@@ -20327,7 +20327,7 @@
     <float name="speedP" minValue="0.5" maxValue="2.0"></float>
     <float name="hueP"   minValue="0.0" maxValue="6.28"></float>
   </TransitionShader>
-  <TransitionShader file="..\Transitions\CrystalBallInversion.frag" type="normal" minFade="6" mood="dreamy" probability="0.06" complexity="1">
+  <TransitionShader file="..\Transitions\CrystalBallInversion.frag" type="normal" minFade="8" mood="dreamy" probability="0.06" complexity="1">
     <float name="ballP" minValue="0.5" maxValue="2.2"></float>
     <float name="magP" minValue="0.5" maxValue="2.0"></float>
     <float name="speedP" minValue="0.5" maxValue="2.0"></float>

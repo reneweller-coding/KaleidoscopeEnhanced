@@ -343,7 +343,7 @@ music: audioSwell -> the brightness of the rim
 knob: ballP 0.5 2.2 how large the ball gets
 knob: magP 0.5 2.0 how strongly it magnifies
 moods: dreamy
-minfade: 6
+minfade: 8
 prob: 0.06
 cx: 1
 huegain: 0.05
@@ -354,12 +354,15 @@ vec4 trans( vec2 p, float d )
     float asp = resolution.x / resolution.y;
     vec2  c = vec2( 0.5 );
     vec2  r = ( p - c ) * vec2( asp, 1.0 );
-    float R = 0.04 + ( 1.0 + 0.2 * gKA ) * sqrt( d );
+    float R = 0.04 + 1.18 * ( 0.8 + 0.2 * gKA ) * pow( d, 0.7 );
     float dist = length( r );
-    float inside = 1.0 - smoothstep( R * 0.97, R, dist );
-    float upright = smoothstep( 0.6, 1.0, d );
-    float k = mix( -0.55 * gKB, 1.0, upright );
-    vec4  ball = tBm( c + ( p - c ) * k );
+    float inside = 1.0 - smoothstep( R * 0.92, R, dist );
+    float upright = smoothstep( 0.3, 1.0, d );
+    float ang = Pi * ( 1.0 - upright );      // the reversed image turns upright by a half turn, never through a singular zoom
+    float scl = mix( 0.55 * gKB, 1.0, upright );
+    vec2  rr = r * scl;
+    vec2  rot = vec2( cos( ang ) * rr.x - sin( ang ) * rr.y, sin( ang ) * rr.x + cos( ang ) * rr.y );
+    vec4  ball = tBm( c + rot / vec2( asp, 1.0 ) );
     float rim = smoothstep( R * 0.75, R, dist ) * inside;
     ball.rgb += vec3( 0.9, 0.95, 1.0 ) * pow( rim, 2.0 ) * 0.3 * trMid( d ) * 2.0 * ( 1.0 + 0.3 * audioSwell );
     vec4 c0 = mix( a, ball, inside );

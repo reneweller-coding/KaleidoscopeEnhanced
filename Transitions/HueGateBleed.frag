@@ -328,8 +328,9 @@ vec4 trans( vec2 p, float d )
     float mx = max( a.r, max( a.g, a.b ) );
     float mn = min( a.r, min( a.g, a.b ) );
     float chroma = clamp( ( mx - mn ) * 6.0, 0.0, 1.0 );
-    float f = mix( mix( clamp( 0.5 + 1.7 * ( trLuma( a.rgb ) - trMeanLumaA() ), 0.0, 1.0 ), smoothstep( 0.3, 0.7, fbm2( p * 2.0 + 3.0 ) ), 0.6 ), mix( fract( hueOf( a.rgb ) + 0.37 * gKB ), smoothstep( 0.3, 0.7, fbm2( p * 2.0 + 3.0 ) ), 0.5 ), chroma );
-    float w = trThresh( f, d, 0.18 * gKA * ( 1.0 + 0.3 * audioSwell ) );
+    float f0 = mix( mix( clamp( 0.5 + 1.7 * ( trLuma( a.rgb ) - trMeanLumaA() ), 0.0, 1.0 ), smoothstep( 0.3, 0.7, fbm2( p * 2.0 + 3.0 ) ), 0.6 ), mix( fract( hueOf( a.rgb ) + 0.37 * gKB ), smoothstep( 0.3, 0.7, fbm2( p * 2.0 + 3.0 ) ), 0.5 ), chroma );
+    float f = smoothstep( 0.0, 1.0, f0 );   // the order values pile up in the middle; this spreads them over the whole fade
+    float w = trThresh( f, d, 0.13 * gKA * ( 1.0 + 0.3 * audioSwell ) );
     return mix( a, b, w );
 }
 

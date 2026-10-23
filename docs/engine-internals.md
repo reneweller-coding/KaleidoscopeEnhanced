@@ -7600,8 +7600,8 @@ SpaceAmbient: 75 each).
   `--transprofile` (the profile of every transition into `Tools/transition_profile.tsv`: total variation, the share of the
   change in the middle 80 % (`core80`), the peak step, flicker, flash). The soft genres need `core80 >= 0.45`, flash at most
   30, flicker at most 1.0, peak step at most 0.10 and no `wipe` / `blocky` mark; `make_genre_configs.py` refuses a transition
-  without a profile row (the rows are named without `.frag`). 81 of the 100 pass; CrystalBallInversion, HueGateBleed,
-  FlatAreasFirst and ShadowLiftCrossing stay out of the soft genres, FireflyGlowHandoff (peak 0.37) is a harness artefact:
+  without a profile row (the rows are named without `.frag`). 81 of the 100 passed at first (CrystalBallInversion, HueGateBleed,
+  FlatAreasFirst and ShadowLiftCrossing stayed out of the soft genres until they were slowed down, see below), FireflyGlowHandoff (peak 0.37) is a harness artefact:
   the harness scene is nearly uniform, so a single bright wipe counts as a peak.
 - *Rules found while tuning:* no `audioSpread` on a count or a scale (it moved the geometry of 20 transitions; amplitudes
   use `audioSwell` with the swell breath of the template); the order of random masks is made uniform (CDF remap) so the
@@ -7679,6 +7679,29 @@ named in its `@brief`, its audio coupling in the doc block, and a knob (`sizeP` 
   out of the calm genres) matched no mood rule anywhere else. `make_genre_configs.py` has `GEOMETRIC_GENRES` now: Club,
   Electronic and Psytrance take every `wipe` / `blocky` transition, Cinematic the wipes (still subject to the measured
   softness). Club has 117 transitions (was 63), Electronic 138 (89), Psytrance 132 (81), Cinematic 106 (89); the calm genres are
-  unchanged (75, 75, 81). Four stay in Allround alone on purpose: CrystalBallInversion, FlatAreasFirst, HueGateBleed and
-  PolaroidDevelopSquare are tagged calm or dreamy but measure abrupt, so the calm genres refuse them and the driving ones
-  refuse the `calm` tag. `check_schedule.py --quick`: 20 plans, no violations.
+  unchanged (75, 75, 81). Four stayed in Allround alone at first: CrystalBallInversion, FlatAreasFirst, HueGateBleed and
+  PolaroidDevelopSquare are tagged calm or dreamy but measured abrupt, so the calm genres refused them and the driving ones
+  refuse the `calm` tag; they were slowed down afterwards (next point). `check_schedule.py --quick`: 20 plans, no violations.
+- *The four slowed down (and a fifth).* Each failed a different test of the soft genres, so each got its own repair (profile before ->
+  after, `--transprofile --scene Blit.frag`, endpoints unchanged in `--transcheck`):
+  - PolaroidDevelopSquare (peak 0.139, flash 43.7 -> 0.057, 21.0): the card used to cover the old scene within the first
+    seventh of the fade and was brighter than both scenes. The veil now grows over the first 42 %, the card and the milky
+    sheet take their brightness from the two scenes (nine fixed points each, `meanLuma`), the clearing runs from the border
+    over the whole depth of the picture instead of the outer 0.16 (the middle used to clear in one go), and the last blend
+    to the new scene starts at 0.88 instead of 0.94.
+  - CrystalBallInversion (core80 0.325, peak 0.103 -> 0.500, 0.043): the reversed picture used to turn upright through a
+    zoom of factor 0, where the whole frame rushes by. It now turns by a half turn (the angle goes from pi to 0, the
+    magnification from 1.8 to 1) and the ball grows with `d^0.7` instead of `sqrt(d)`. Its total variation is the largest of
+    the soft ones (1145; a cross-fade is 55), so `minFade` rose from 6 to 8 s.
+  - HueGateBleed (core80 0.425 -> 0.550): its order values pile up in the middle; `smoothstep(0, 1, f)` spreads them and the
+    edge softness is 0.13 instead of 0.18 of a knob unit.
+  - FlatAreasFirst (core80 0.400 -> 0.475): the roughness is taken as a share of the scene's typical roughness (four fixed
+    points, `1 - exp(-r / mean)` under a square root), so a scene that is rough everywhere orders like one that is not, and the
+    progress is warped by `d + 0.3 sin(2 pi d) / (2 pi)` (slower in the middle, faster at both ends). Without the
+    normalisation the warp alone failed the jump test of `--transcheck` (9.2 against 6) on the moving harness scene.
+  - ShadowLiftCrossing (core80 0.350 -> 0.550, flash 0 -> 17.1): the dark places of the scene have the order value 0 and
+    all switched in the first third; the progress goes through `d^1.4` now (slow at the start, faster at the end).
+  All five are in Ambient, SpaceAmbient, Downtempo and Cinematic now (80, 80, 86 and 111 transitions; Allround unchanged at 210). Two traps: `Start-Process -ArgumentList` with an array does not quote a path with a space (`--images` then
+  silently falls back to the test card and every row of the profile differs; Crossfade must read 55.3), and an order value
+  taken from the photo must be normalised against the scene, or the harness scene (still, smooth) and the moving one
+  (rough everywhere) need opposite repairs.
