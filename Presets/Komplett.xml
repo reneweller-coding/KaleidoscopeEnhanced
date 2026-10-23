@@ -20835,4 +20835,74 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
 
+  <TextureShader file="..\\Scene2D\\WaveSpeedPhotoTank.frag" type="normal" mood="dreamy,space,calm" probability="0.45" complexity="7">
+    <rig preset="flat"/>
+    <float name="depthP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene2D\\PhotoGeodesicFronts.frag" type="normal" mood="dreamy,gallery,calm" probability="0.45" complexity="6">
+    <rig preset="flat"/>
+    <float name="bandP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene2D\\SchroedingerPhotoPotential.frag" type="normal" mood="space,dreamy,psychedelic" probability="0.45" complexity="7">
+    <rig preset="flat"/>
+    <float name="barrierP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene2D\\PhotoSandpileSlides.frag" type="normal" mood="gallery,playful,electronic" probability="0.45" complexity="5">
+    <rig preset="flat"/>
+    <float name="restoreP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene2D\\CoherenceDiffusionRepaint.frag" type="normal" mood="dreamy,calm,gallery" probability="0.45" complexity="6">
+    <rig preset="flat"/>
+    <float name="pullP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene2D\\PhysarumPhotoNetwork.frag" type="normal" mood="dreamy,dark,space" probability="0.45" complexity="6">
+    <rig preset="flat"/>
+    <float name="foodP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene2D\\ExcitablePhotoRefraction.frag" type="normal" mood="electronic,psychedelic,dreamy" probability="0.45" complexity="6">
+    <rig preset="flat"/>
+    <float name="thresholdP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene2D\\ReactionFrontsOnPhotoRelief.frag" type="normal" mood="dreamy,calm,gallery" probability="0.45" complexity="5">
+    <rig preset="flat"/>
+    <float name="slopeP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene2D\\PhotoGapFingering.frag" type="normal" mood="gallery,dark,electronic" probability="0.45" complexity="6">
+    <rig preset="flat"/>
+    <float name="speedP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene2D\\PhotoObstacleFlow.frag" type="normal" mood="dreamy,space,psychedelic" probability="0.45" complexity="7">
+    <rig preset="flat"/>
+    <float name="darkP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
 </configuration>
