@@ -1444,4 +1444,5 @@ Alle 400 sind gebaut, je Familie ein Commit (A bis Z, zuletzt 1fb07aa1): 20 Labo
   Zeilen geeicht (Interest 4,78, Galerie 6,24, Psychedelic 5,54), die 20 Labore behalten die Noten der Kettenlabore (7 bis 9).
 - **Schnappschüsse:** Satz `2026-10-23-flaechig400` (2390 Bilder): kein neues Bild schwarz, 217 alte verändert, davon 192 durch eine geänderte Datei am Vorabend (Aufhellung der dunklen Szenen), der Rest Simulationen. Katalog-PDF: 870 Seiten, 71,7 MB.
 - **Technik und Lehren:** `docs/engine-internals.md`, Abschnitt (63).
+- **Varianten (23.10.2026, danach):** Zu jeder der 40 Kettenklassen und zu jeder Slot-Klasse der 20 Labore gibt es 100 parametrische Varianten (4000 + 42.700); Variante 0 ist der bisherige Look. Technik und Prüfung: `docs/engine-internals.md`, Abschnitt (64).
 - **Offen:** Ein Release nur mit dem Einverständnis des Nutzers.

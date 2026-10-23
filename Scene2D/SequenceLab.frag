@@ -516,12 +516,64 @@ uniform float labPinB;
 uniform float labPinC;
 /** Test pin of slot 3. */
 uniform float labPinD;
+/** Test pin of the variants: 1 + the variant 0..99 for every slot, or 1000 * (1 + the slot) + 1 + the variant for that
+ * slot alone (the others at variant 0); 0: the walk decides. */
+uniform float labPinV;
 /** The share of an epoch a class change takes to cross-fade. */
 const float LabFade = 0.2;
 /** The classes of the four slots, for each of the (up to four) looks the walk blends. */
 ivec4 gLabK[4];
 /** The weights of those looks. */
 float gLabW[4];
+/** The variants (0..99) of the four slots' classes, for each of the looks the walk blends: a class is a family of
+ * looks, the variant sets its constants (lv(), lk()); variant 0 is the lab's original look. */
+ivec4 gLabV[4];
+
+/**  A constant of a lab's look, set by a slot's variant inside a range.
+ *
+ * @param vi  The slot's variant, 0..99. (in)
+ * @param j   The stream: another number for every constant of a look. (in)
+ * @param lo  The lower end. (in)
+ * @param hi  The upper end; variant 0 gives the middle. (in)
+ *
+ * @return
+ *   The constant.
+ **/
+float lv( int vi, float j, float lo, float hi )
+{
+    return vi == 0 ? 0.5 * ( lo + hi )
+                   : mix( lo, hi, fract( sin( float( vi ) * 12.9898 + j * 78.233 + 3.7 ) * 43758.5453 ) );
+}
+
+/**  A choice of a lab's look, set by a slot's variant.
+ *
+ * @param vi  The slot's variant, 0..99. (in)
+ * @param j   The stream. (in)
+ * @param n   The number of choices. (in)
+ *
+ * @return
+ *   0 .. n-1; 0 (the original choice) for variant 0.
+ **/
+int lk( int vi, float j, int n )
+{
+    return vi == 0
+               ? 0
+               : min( int( fract( sin( float( vi ) * 37.719 + j * 51.37 + 1.9 ) * 43758.5453 ) * float( n ) ), n - 1 );
+}
+
+/**  A variant of a slot in an epoch: a hash of the slot, the epoch and the walk's seed.
+ *
+ * @param s     The slot, 0..3. (in)
+ * @param e     The epoch (a whole number). (in)
+ * @param seed  The walk's seed. (in)
+ *
+ * @return
+ *   The variant, 0..99.
+ **/
+int labVar( int s, float e, float seed )
+{
+    return int( min( floor( hash21( vec2( e * 2.9 + seed * 1.3 + 11.0, float( s ) * 7.7 + 3.1 ) ) * 100.0 ), 99.0 ) );
+}
 
 /**  A class of a slot in an epoch: a hash of the slot, the epoch and the walk's seed.
  *
@@ -560,7 +612,7 @@ void labWalk( float seed, ivec4 n, float period )
     for ( int j = 0; j < 2; ++j )
     {
         float sd = seed + 0.713 * ( j == 0 ? audioSectionPrev : audioSectionId );
-        ivec4 base = ivec4( 0 ), alt = ivec4( 0 );
+        ivec4 base = ivec4( 0 ), alt = ivec4( 0 ), vbase = ivec4( 0 ), valt = ivec4( 0 );
         int   fs = 0;
         float ff = 0.0;
         for ( int s = 0; s < 4; ++s )
@@ -571,6 +623,8 @@ void labWalk( float seed, ivec4 n, float period )
             float e = floor( w );
             base[s] = labCls( s, e, sd, n[s] );
             alt[s] = labCls( s, e + 1.0, sd, n[s] );
+            vbase[s] = labVar( s, e, sd );
+            valt[s] = labVar( s, e + 1.0, sd );
             float f = smoothstep( 1.0 - LabFade, 1.0, w - e );
             if ( f > 0.0 )
             {
@@ -579,11 +633,14 @@ void labWalk( float seed, ivec4 n, float period )
             }
         }
         float wj = j == 0 ? 1.0 - m : m;
-        ivec4 b2 = base;
+        ivec4 b2 = base, vb2 = vbase;
         b2[fs] = alt[fs];
+        vb2[fs] = valt[fs];
         gLabK[2 * j] = base;
+        gLabV[2 * j] = vbase;
         gLabW[2 * j] = wj * ( 1.0 - ff );
         gLabK[2 * j + 1] = b2;
+        gLabV[2 * j + 1] = vb2;
         gLabW[2 * j + 1] = wj * ff;
     }
     if ( labPinA + labPinB + labPinC + labPinD > 0.5 )
@@ -601,36 +658,59 @@ void labWalk( float seed, ivec4 n, float period )
             gLabW[i] = i == 0 ? 1.0 : 0.0;
         }
     }
+    if ( labPinV > 0.5 )
+    {
+        int pv = int( labPinV + 0.5 );
+        int ps = pv / 1000 - 1;
+        int vp = clamp( pv - 1000 * ( pv / 1000 ) - 1, 0, 99 );
+        for ( int i = 0; i < 4; ++i )
+        {
+            if ( ps < 0 )
+                gLabV[i] = ivec4( vp );
+            else
+            {
+                gLabV[i] = ivec4( 0 );
+                gLabV[i][ps] = vp;
+            }
+        }
+    }
 }
 
 /**  The nth term of a sequence.
  *
- * @param s  The sequence, 0..5: Fibonacci word, Thue-Morse, Rudin-Shapiro, paper folding, period doubling, Cantor.
- *           (in)
- * @param n  The index, a whole number from 0 up. (in)
+ * @param s   The sequence, 0..5: Fibonacci word, Thue-Morse, Rudin-Shapiro, paper folding, period doubling, Cantor.
+ *            (in)
+ * @param vi  The sequence's variant 0..99: where it starts, whether it is complemented, its slope or forbidden
+ *            digit. (in)
+ * @param n   The index, a whole number from 0 up. (in)
  *
  * @return
  *   The term, 0 or 1.
  **/
-float seqTerm( int s, float n )
+float seqTerm( int s, int vi, float n )
 {
-    n = mod( n, 4096.0 );
+    n = mod( n + float( lk( vi, 1.0, 8 ) ), 4096.0 );
+    float cm = float( lk( vi, 3.0, 2 ) );
     if ( s == 0 )
-        return floor( ( n + 2.0 ) / 1.6180339 ) - floor( ( n + 1.0 ) / 1.6180339 ) > 0.5 ? 1.0 : 0.0;
+    {
+        float g = lv( vi, 2.0, 1.2360679, 2.0 );
+        float w = floor( ( n + 2.0 ) / g ) - floor( ( n + 1.0 ) / g ) > 0.5 ? 1.0 : 0.0;
+        return abs( w - cm );
+    }
     int m = int( n );
     if ( s == 1 )
     {
         int c = 0;
         for ( int i = 0; i < 12; ++i )
             c += ( m >> i ) & 1;
-        return float( c & 1 );
+        return abs( float( c & 1 ) - cm );
     }
     if ( s == 2 )
     {
         int c = 0;
         for ( int i = 0; i < 11; ++i )
             c += ( ( m >> i ) & 1 ) & ( ( m >> ( i + 1 ) ) & 1 );
-        return float( c & 1 );
+        return abs( float( c & 1 ) - cm );
     }
     if ( s == 3 )
     {
@@ -640,7 +720,7 @@ float seqTerm( int s, float n )
             if ( ( v & 1 ) == 0 )
                 v >>= 1;
         }
-        return float( ( v >> 1 ) & 1 );
+        return abs( float( ( v >> 1 ) & 1 ) - cm );
     }
     if ( s == 4 )
     {
@@ -654,22 +734,24 @@ float seqTerm( int s, float n )
                 c++;
             }
         }
-        return float( c & 1 );
+        return abs( float( c & 1 ) - cm );
     }
     int   v = m;
+    int   fd = ( 1 + lk( vi, 4.0, 3 ) ) - 3 * ( ( 1 + lk( vi, 4.0, 3 ) ) / 3 );
     float ok = 1.0;
     for ( int i = 0; i < 7; ++i )
     {
-        if ( v - 3 * ( v / 3 ) == 1 )
+        if ( v - 3 * ( v / 3 ) == fd )
             ok = 0.0;
         v /= 3;
     }
-    return ok;
+    return abs( ok - cm );
 }
 
 /**  One look of the lab.
  *
  * @param k   The classes: x the sequence, y the operation, z the grid, w the combination of the two sequences. (in)
+ * @param kv  The variants of those classes (the constants of each). (in)
  * @param p   The place. (in)
  * @param t   The clock. (in)
  * @param nc  The number of cells across a unit. (in)
@@ -678,7 +760,7 @@ float seqTerm( int s, float n )
  * @return
  *   The colour.
  **/
-vec3 seqLook( ivec4 k, vec2 p, float t, float nc, float rc )
+vec3 seqLook( ivec4 k, ivec4 kv, vec2 p, float t, float nc, float rc )
 {
     float gx, gy;
     if ( k.z == 0 )
@@ -688,24 +770,24 @@ vec3 seqLook( ivec4 k, vec2 p, float t, float nc, float rc )
     }
     else if ( k.z == 1 )
     {
-        gx = p.x * nc * 1.2;
+        gx = p.x * nc * lv( kv.z, 1.0, 0.8, 1.6 );
         gy = 0.0;
     }
     else if ( k.z == 2 )
     {
-        gx = atan( p.y, p.x ) / 6.2831853 * 18.0;
-        gy = length( p ) * nc * 1.5;
+        gx = atan( p.y, p.x ) / 6.2831853 * ( 18.0 + 2.0 * float( lk( kv.z, 2.0, 4 ) ) );
+        gy = length( p ) * nc * lv( kv.z, 3.0, 1.0, 2.0 );
     }
     else
     {
-        gx = ( p.x + 0.4 * p.y ) * nc;
-        gy = ( p.y - 0.2 * p.x ) * nc;
+        gx = ( p.x + lv( kv.z, 4.0, 0.2, 0.6 ) * p.y ) * nc;
+        gy = ( p.y - lv( kv.z, 5.0, 0.1, 0.3 ) * p.x ) * nc;
     }
     float ix = floor( gx );
     float iy = floor( gy );
     vec2  loc = ( vec2( fract( gx ), fract( gy ) ) - 0.5 ) / nc; // the place in its cell, in screen units
-    float bx = seqTerm( k.x, ix );
-    float by = seqTerm( k.x, iy );
+    float bx = seqTerm( k.x, kv.x, ix );
+    float by = seqTerm( k.x, kv.x, iy );
     float a = bx;
     float b = by;
     if ( k.w == 0 )
@@ -718,19 +800,38 @@ vec3 seqLook( ivec4 k, vec2 p, float t, float nc, float rc )
         a = bx * by;
         b = a;
     }
-    vec2 centre = p - loc;
-    vec2 uv;
+    else if ( lk( kv.w, 1.0, 2 ) == 1 )
+    {
+        a = by;
+        b = bx;
+    }
+    if ( k.w < 2 && lk( kv.w, 2.0, 2 ) == 1 )
+    {
+        a = 1.0 - a;
+        b = a;
+    }
+    vec2  centre = p - loc;
+    vec2  uv;
+    float ls = lv( kv.y, 8.0, 0.6, 1.4 );
     if ( k.y == 0 )
-        uv = ( centre + vec2( a > 0.5 ? -loc.x : loc.x, b > 0.5 ? -loc.y : loc.y ) ) * 0.8 + 0.5;
+        uv = ( centre + ls * vec2( a > 0.5 ? -loc.x : loc.x, b > 0.5 ? -loc.y : loc.y ) ) * 0.8 + 0.5;
     else if ( k.y == 1 )
-        uv = ( centre + ( a > 0.5 ? vec2( -loc.y, loc.x ) : loc ) ) * 0.8 + 0.5;
+        uv = ( centre + ls * ( a > 0.5 ? vec2( -loc.y, loc.x ) : loc ) ) * 0.8 + 0.5;
     else if ( k.y == 2 )
-        uv = ( p + vec2( a, b ) * 0.22 * rc ) * 0.8 + 0.5;
+        uv = ( p + vec2( a, b ) * lv( kv.y, 1.0, 0.1, 0.34 ) * rc ) * 0.8 + 0.5;
     else if ( k.y == 3 )
-        uv = ( centre + loc * ( a > 0.5 ? 1.0 + 0.7 * rc : 1.0 / ( 1.0 + 0.5 * rc ) ) ) * 0.8 + 0.5;
+        uv = ( centre
+               + loc
+                     * ( a > 0.5 ? 1.0 + lv( kv.y, 2.0, 0.1, 1.3 ) * rc
+                                 : 1.0 / ( 1.0 + lv( kv.y, 3.0, 0.1, 0.9 ) * rc ) ) )
+                 * 0.8
+             + 0.5;
     else
-        uv = p * 0.8 + 0.5 + 0.12 * rc * vec2( sin( 0.4 * t + 3.0 * a ), cos( 0.35 * t + 3.0 * b ) );
-    return imgLod( uv, 0.4 );
+        uv = p * 0.8 + 0.5
+             + lv( kv.y, 4.0, 0.06, 0.18 ) * rc
+                   * vec2( sin( lv( kv.y, 5.0, 0.2, 0.6 ) * t + lv( kv.y, 6.0, 1.5, 4.5 ) * a ),
+                           cos( lv( kv.y, 7.0, 0.2, 0.5 ) * t + lv( kv.y, 6.0, 1.5, 4.5 ) * b ) );
+    return imgLod( uv, lv( kv.w, 3.0, 0.2, 0.6 ) );
 }
 
 /** Entry point of this shader stage (the file description says what it draws). */
@@ -748,7 +849,7 @@ void main()
     {
         if ( gLabW[i] > 0.002 )
         {
-            col += gLabW[i] * seqLook( gLabK[i], p, t, nc, rc );
+            col += gLabW[i] * seqLook( gLabK[i], gLabV[i], p, t, nc, rc );
             ws += gLabW[i];
         }
     }

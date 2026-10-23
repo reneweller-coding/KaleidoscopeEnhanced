@@ -516,12 +516,64 @@ uniform float labPinB;
 uniform float labPinC;
 /** Test pin of slot 3. */
 uniform float labPinD;
+/** Test pin of the variants: 1 + the variant 0..99 for every slot, or 1000 * (1 + the slot) + 1 + the variant for that
+ * slot alone (the others at variant 0); 0: the walk decides. */
+uniform float labPinV;
 /** The share of an epoch a class change takes to cross-fade. */
 const float LabFade = 0.2;
 /** The classes of the four slots, for each of the (up to four) looks the walk blends. */
 ivec4 gLabK[4];
 /** The weights of those looks. */
 float gLabW[4];
+/** The variants (0..99) of the four slots' classes, for each of the looks the walk blends: a class is a family of
+ * looks, the variant sets its constants (lv(), lk()); variant 0 is the lab's original look. */
+ivec4 gLabV[4];
+
+/**  A constant of a lab's look, set by a slot's variant inside a range.
+ *
+ * @param vi  The slot's variant, 0..99. (in)
+ * @param j   The stream: another number for every constant of a look. (in)
+ * @param lo  The lower end. (in)
+ * @param hi  The upper end; variant 0 gives the middle. (in)
+ *
+ * @return
+ *   The constant.
+ **/
+float lv( int vi, float j, float lo, float hi )
+{
+    return vi == 0 ? 0.5 * ( lo + hi )
+                   : mix( lo, hi, fract( sin( float( vi ) * 12.9898 + j * 78.233 + 3.7 ) * 43758.5453 ) );
+}
+
+/**  A choice of a lab's look, set by a slot's variant.
+ *
+ * @param vi  The slot's variant, 0..99. (in)
+ * @param j   The stream. (in)
+ * @param n   The number of choices. (in)
+ *
+ * @return
+ *   0 .. n-1; 0 (the original choice) for variant 0.
+ **/
+int lk( int vi, float j, int n )
+{
+    return vi == 0
+               ? 0
+               : min( int( fract( sin( float( vi ) * 37.719 + j * 51.37 + 1.9 ) * 43758.5453 ) * float( n ) ), n - 1 );
+}
+
+/**  A variant of a slot in an epoch: a hash of the slot, the epoch and the walk's seed.
+ *
+ * @param s     The slot, 0..3. (in)
+ * @param e     The epoch (a whole number). (in)
+ * @param seed  The walk's seed. (in)
+ *
+ * @return
+ *   The variant, 0..99.
+ **/
+int labVar( int s, float e, float seed )
+{
+    return int( min( floor( hash21( vec2( e * 2.9 + seed * 1.3 + 11.0, float( s ) * 7.7 + 3.1 ) ) * 100.0 ), 99.0 ) );
+}
 
 /**  A class of a slot in an epoch: a hash of the slot, the epoch and the walk's seed.
  *
@@ -560,7 +612,7 @@ void labWalk( float seed, ivec4 n, float period )
     for ( int j = 0; j < 2; ++j )
     {
         float sd = seed + 0.713 * ( j == 0 ? audioSectionPrev : audioSectionId );
-        ivec4 base = ivec4( 0 ), alt = ivec4( 0 );
+        ivec4 base = ivec4( 0 ), alt = ivec4( 0 ), vbase = ivec4( 0 ), valt = ivec4( 0 );
         int   fs = 0;
         float ff = 0.0;
         for ( int s = 0; s < 4; ++s )
@@ -571,6 +623,8 @@ void labWalk( float seed, ivec4 n, float period )
             float e = floor( w );
             base[s] = labCls( s, e, sd, n[s] );
             alt[s] = labCls( s, e + 1.0, sd, n[s] );
+            vbase[s] = labVar( s, e, sd );
+            valt[s] = labVar( s, e + 1.0, sd );
             float f = smoothstep( 1.0 - LabFade, 1.0, w - e );
             if ( f > 0.0 )
             {
@@ -579,11 +633,14 @@ void labWalk( float seed, ivec4 n, float period )
             }
         }
         float wj = j == 0 ? 1.0 - m : m;
-        ivec4 b2 = base;
+        ivec4 b2 = base, vb2 = vbase;
         b2[fs] = alt[fs];
+        vb2[fs] = valt[fs];
         gLabK[2 * j] = base;
+        gLabV[2 * j] = vbase;
         gLabW[2 * j] = wj * ( 1.0 - ff );
         gLabK[2 * j + 1] = b2;
+        gLabV[2 * j + 1] = vb2;
         gLabW[2 * j + 1] = wj * ff;
     }
     if ( labPinA + labPinB + labPinC + labPinD > 0.5 )
@@ -601,84 +658,119 @@ void labWalk( float seed, ivec4 n, float period )
             gLabW[i] = i == 0 ? 1.0 : 0.0;
         }
     }
+    if ( labPinV > 0.5 )
+    {
+        int pv = int( labPinV + 0.5 );
+        int ps = pv / 1000 - 1;
+        int vp = clamp( pv - 1000 * ( pv / 1000 ) - 1, 0, 99 );
+        for ( int i = 0; i < 4; ++i )
+        {
+            if ( ps < 0 )
+                gLabV[i] = ivec4( vp );
+            else
+            {
+                gLabV[i] = ivec4( 0 );
+                gLabV[i][ps] = vp;
+            }
+        }
+    }
 }
 
 /**  The velocity of a named flow.
  *
  * @param kind  The flow, 0..9. (in)
+ * @param vi    The flow's variant 0..99: the constants of the field. (in)
  * @param p     The place (scaled by the flow's scale). (in)
  * @param t     The clock. (in)
  *
  * @return
  *   The velocity.
  **/
-vec2 flowVel( int kind, vec2 p, float t )
+vec2 flowVel( int kind, int vi, vec2 p, float t )
 {
     if ( kind == 0 )
-        return vec2( sin( 3.0 * p.x + 0.3 * t ) * cos( 3.0 * p.y ), -cos( 3.0 * p.x + 0.3 * t ) * sin( 3.0 * p.y ) );
+    {
+        float k = lv( vi, 1.0, 2.0, 4.0 );
+        return vec2( sin( k * p.x + lv( vi, 2.0, 0.15, 0.45 ) * t ) * cos( k * p.y ),
+                     -cos( k * p.x + lv( vi, 2.0, 0.15, 0.45 ) * t ) * sin( k * p.y ) );
+    }
     if ( kind == 1 )
     {
-        vec2 c = 0.3 * vec2( cos( 0.2 * t ), sin( 0.2 * t ) );
-        vec2 r1 = p - c, r2 = p + c;
-        return vec2( -r1.y, r1.x ) / ( dot( r1, r1 ) + 0.03 ) - vec2( -r2.y, r2.x ) / ( dot( r2, r2 ) + 0.03 );
+        vec2  c = lv( vi, 1.0, 0.15, 0.45 )
+                  * vec2( cos( lv( vi, 2.0, 0.1, 0.3 ) * t ), sin( lv( vi, 2.0, 0.1, 0.3 ) * t ) );
+        vec2  r1 = p - c, r2 = p + c;
+        float cr = lv( vi, 3.0, 0.015, 0.045 );
+        return vec2( -r1.y, r1.x ) / ( dot( r1, r1 ) + cr ) - vec2( -r2.y, r2.x ) / ( dot( r2, r2 ) + cr );
     }
     if ( kind == 2 )
     {
-        float e = 0.25;
-        float a = e * sin( 0.5 * t ), b = 1.0 - 2.0 * e * sin( 0.5 * t );
-        float x = p.x * 0.9 + 1.0, y = p.y + 0.5;
+        float e = lv( vi, 1.0, 0.1, 0.4 );
+        float a = e * sin( lv( vi, 2.0, 0.25, 0.75 ) * t ), b = 1.0 - 2.0 * e * sin( lv( vi, 2.0, 0.25, 0.75 ) * t );
+        float x = p.x * lv( vi, 3.0, 0.6, 1.2 ) + 1.0, y = p.y + 0.5;
         float f = a * x * x + b * x;
         float df = 2.0 * a * x + b;
         return vec2( -3.14159 * sin( 3.14159 * f ) * cos( 3.14159 * y ),
                      3.14159 * cos( 3.14159 * f ) * sin( 3.14159 * y ) * df )
-               * 0.6;
+               * lv( vi, 4.0, 0.4, 0.8 );
     }
     if ( kind == 3 )
-        return vec2( tanh( 5.0 * p.y ), 0.5 * sin( 5.0 * p.x + 0.6 * t ) * exp( -6.0 * p.y * p.y ) );
+        return vec2( tanh( lv( vi, 1.0, 2.0, 8.0 ) * p.y ),
+                     lv( vi, 2.0, 0.1, 0.9 ) * sin( lv( vi, 3.0, 2.0, 8.0 ) * p.x + lv( vi, 4.0, 0.3, 0.9 ) * t )
+                         * exp( lv( vi, 5.0, -11.0, -1.0 ) * p.y * p.y ) );
     if ( kind == 4 )
     {
-        float th = 0.15 * t;
-        return 1.5
+        float th = lv( vi, 2.0, 0.05, 0.25 ) * t;
+        return lv( vi, 1.0, 1.0, 2.0 )
                * vec2( cos( 2.0 * th ) * p.x + sin( 2.0 * th ) * p.y, sin( 2.0 * th ) * p.x - cos( 2.0 * th ) * p.y );
     }
     if ( kind == 5 )
-        return 0.6 * p + vec2( -p.y, p.x ) / ( length( p ) + 0.25 ) * 1.6 * ( 0.6 + 0.4 * sin( 0.2 * t ) );
+        return lv( vi, 1.0, 0.3, 0.9 ) * p
+               + vec2( -p.y, p.x ) / ( length( p ) + lv( vi, 2.0, 0.15, 0.35 ) ) * lv( vi, 3.0, 1.0, 2.2 )
+                     * ( 0.6 + 0.4 * sin( lv( vi, 4.0, 0.1, 0.3 ) * t ) );
     if ( kind == 6 )
     {
-        vec2  v = vec2( 0.6, 0.0 );
-        float d = 0.75;
+        vec2  v = vec2( lv( vi, 1.0, 0.3, 0.9 ), 0.0 );
+        float d = lv( vi, 2.0, 0.55, 0.95 );
+        float yr = lv( vi, 3.0, 0.1, 0.3 );
+        float cr = lv( vi, 4.0, 0.02, 0.06 );
+        float gm = lv( vi, 5.0, 0.15, 0.35 );
         for ( int i = -1; i <= 1; ++i )
         {
-            float x0 = ( float( i ) + fract( 0.1 * t ) ) * d - 0.1;
-            vec2  r1 = p - vec2( x0, 0.2 ), r2 = p - vec2( x0 + 0.5 * d, -0.2 );
-            v += vec2( -r1.y, r1.x ) / ( dot( r1, r1 ) + 0.04 ) * 0.25
-                 - vec2( -r2.y, r2.x ) / ( dot( r2, r2 ) + 0.04 ) * 0.25;
+            float x0 = ( float( i ) + fract( lv( vi, 6.0, 0.05, 0.15 ) * t ) ) * d - 0.1;
+            vec2  r1 = p - vec2( x0, yr ), r2 = p - vec2( x0 + 0.5 * d, -yr );
+            v += vec2( -r1.y, r1.x ) / ( dot( r1, r1 ) + cr ) * gm - vec2( -r2.y, r2.x ) / ( dot( r2, r2 ) + cr ) * gm;
         }
         return v;
     }
     if ( kind == 7 )
     {
         float e = 0.02;
-        vec2  q = p * 1.6 + vec2( 0.0, 0.1 * t );
-        float n0 = noise2( q + vec2( e, 0.0 ) ) + 0.5 * noise2( 2.1 * q + vec2( e, 0.0 ) );
-        float n1 = noise2( q - vec2( e, 0.0 ) ) + 0.5 * noise2( 2.1 * q - vec2( e, 0.0 ) );
-        float n2 = noise2( q + vec2( 0.0, e ) ) + 0.5 * noise2( 2.1 * q + vec2( 0.0, e ) );
-        float n3 = noise2( q - vec2( 0.0, e ) ) + 0.5 * noise2( 2.1 * q - vec2( 0.0, e ) );
-        return 1.6 * vec2( n2 - n3, -( n0 - n1 ) ) / ( 2.0 * e );
+        float f2 = lv( vi, 3.0, 1.6, 2.6 );
+        float a2 = lv( vi, 4.0, 0.3, 0.7 );
+        vec2  q = p * lv( vi, 1.0, 1.0, 2.2 ) + vec2( 0.0, lv( vi, 2.0, 0.05, 0.15 ) * t );
+        float n0 = noise2( q + vec2( e, 0.0 ) ) + a2 * noise2( f2 * q + vec2( e, 0.0 ) );
+        float n1 = noise2( q - vec2( e, 0.0 ) ) + a2 * noise2( f2 * q - vec2( e, 0.0 ) );
+        float n2 = noise2( q + vec2( 0.0, e ) ) + a2 * noise2( f2 * q + vec2( 0.0, e ) );
+        float n3 = noise2( q - vec2( 0.0, e ) ) + a2 * noise2( f2 * q - vec2( 0.0, e ) );
+        return lv( vi, 5.0, 1.0, 2.2 ) * vec2( n2 - n3, -( n0 - n1 ) ) / ( 2.0 * e );
     }
     if ( kind == 8 )
     {
-        float a = 0.35 * t;
-        vec2  c = 0.22 * vec2( cos( a ), sin( a ) );
+        float a = lv( vi, 1.0, 0.1, 0.6 ) * t;
+        vec2  c = lv( vi, 2.0, 0.05, 0.39 ) * vec2( cos( a ), sin( a ) );
         vec2  r1 = p - c, r2 = p + c;
-        return vec2( -r1.y, r1.x ) / ( dot( r1, r1 ) + 0.03 ) + vec2( -r2.y, r2.x ) / ( dot( r2, r2 ) + 0.03 );
+        float cr = lv( vi, 3.0, 0.005, 0.055 );
+        return vec2( -r1.y, r1.x ) / ( dot( r1, r1 ) + cr ) + vec2( -r2.y, r2.x ) / ( dot( r2, r2 ) + cr );
     }
-    return 1.2 * vec2( sin( 3.0 * p.y + 0.4 * t ), sin( 3.0 * p.x - 0.3 * t ) );
+    float k9 = lv( vi, 2.0, 2.0, 4.0 );
+    return lv( vi, 1.0, 0.7, 1.7 )
+           * vec2( sin( k9 * p.y + lv( vi, 3.0, 0.2, 0.6 ) * t ), sin( k9 * p.x - lv( vi, 4.0, 0.15, 0.45 ) * t ) );
 }
 
 /**  One look of the lab: the photo gathered along a flow's streamlines.
  *
  * @param k    The classes: x the flow, y the kernel, z the way the samples combine, w the field's motion. (in)
+ * @param kv   The variants of those classes (the constants of each). (in)
  * @param p    The place. (in)
  * @param t    The clock. (in)
  * @param len  The smear's length. (in)
@@ -687,18 +779,20 @@ vec2 flowVel( int kind, vec2 p, float t )
  * @return
  *   The colour.
  **/
-vec3 flowLook( ivec4 k, vec2 p, float t, float len, float sc )
+vec3 flowLook( ivec4 k, ivec4 kv, vec2 p, float t, float len, float sc )
 {
     vec2  q = p * sc;
     float tt = t;
     if ( k.w == 1 )
-        tt = t + 3.0 * sin( 0.35 * t );
+        tt = t + lv( kv.w, 1.0, 1.5, 4.5 ) * sin( lv( kv.w, 2.0, 0.2, 0.5 ) * t );
     else if ( k.w == 2 )
-        q = rot2( 0.12 * t ) * q;
+        q = rot2( lv( kv.w, 5.0, 0.06, 0.18 ) * t ) * q;
     else if ( k.w == 3 )
-        q += 0.3 * vec2( cos( 0.1 * t ), sin( 0.13 * t ) );
-    float amp = k.w == 1 ? 0.7 + 0.5 * sin( 0.4 * t ) : 1.0;
-    float h = len / 7.0;
+        q += lv( kv.w, 6.0, 0.15, 0.45 )
+             * vec2( cos( lv( kv.w, 7.0, 0.05, 0.15 ) * t ), sin( lv( kv.w, 8.0, 0.07, 0.19 ) * t ) );
+    float amp = k.w == 1 ? 0.7 + lv( kv.w, 3.0, 0.3, 0.7 ) * sin( lv( kv.w, 4.0, 0.2, 0.6 ) * t ) : 1.0;
+    float h = len * lv( kv.y, 4.0, 0.6, 1.4 ) / 7.0;
+    float lo = lv( kv.y, 3.0, 0.25, 0.65 );
     vec3  sum = imgLod( p * 0.8 + 0.5, 0.3 );
     float wsum = 1.0;
     vec3  mx = sum, mn = sum;
@@ -708,18 +802,20 @@ vec3 flowLook( ivec4 k, vec2 p, float t, float len, float sc )
         vec2 x = q;
         for ( int i = 1; i <= 7; ++i )
         {
-            vec2  v = flowVel( k.x, x, tt ) * amp;
+            vec2  v = flowVel( k.x, kv.x, x, tt ) * amp;
             float jit = 1.0
                         + 0.7
                               * ( hash21( gl_FragCoord.xy + vec2( 17.0 * float( i ), 71.0 * float( sgn ) ) )
                                   - 0.5 ); // dithered steps: no comb pattern
             x += ( sgn == 0 ? 1.0 : -1.0 ) * normalize( v + 1e-4 ) * h * jit * sc
-                 * ( 0.45 + 0.55 * min( length( v ), 1.5 ) );
+                 * ( lo + ( 1.0 - lo ) * min( length( v ), 1.5 ) );
             float fi = float( i ) / 7.0;
             float w = k.y == 0
                           ? 1.0
-                          : ( k.y == 1 ? 1.0 - 0.85 * fi : ( k.y == 2 ? exp( -2.2 * fi ) : ( sgn == 0 ? 1.0 : 0.0 ) ) );
-            vec3  c = imgLod( x / sc * 0.8 + 0.5, 0.5 + 1.2 * fi );
+                          : ( k.y == 1
+                                  ? 1.0 - lv( kv.y, 1.0, 0.6, 1.1 ) * fi
+                                  : ( k.y == 2 ? exp( lv( kv.y, 2.0, -3.4, -1.0 ) * fi ) : ( sgn == 0 ? 1.0 : 0.0 ) ) );
+            vec3  c = imgLod( x / sc * 0.8 + 0.5, lv( kv.y, 5.0, 0.2, 0.8 ) + lv( kv.y, 6.0, 0.6, 1.8 ) * fi );
             sum += w * c;
             wsum += w;
             mx = max( mx, c );
@@ -728,11 +824,11 @@ vec3 flowLook( ivec4 k, vec2 p, float t, float len, float sc )
     }
     vec3 avg = sum / wsum;
     if ( k.z == 1 )
-        return mix( avg, mx, 0.65 );
+        return mix( avg, mx, lv( kv.z, 1.0, 0.4, 0.9 ) );
     if ( k.z == 2 )
-        return mix( avg, mn, 0.6 ) * 1.15;
+        return mix( avg, mn, lv( kv.z, 2.0, 0.4, 0.8 ) ) * lv( kv.z, 3.0, 0.95, 1.35 );
     if ( k.z == 3 )
-        return avg + 0.7 * ( centre - avg );
+        return avg + lv( kv.z, 4.0, 0.4, 1.0 ) * ( centre - avg );
     return avg;
 }
 
@@ -751,7 +847,7 @@ void main()
     {
         if ( gLabW[i] > 0.002 )
         {
-            col += gLabW[i] * flowLook( gLabK[i], p, t, len, sc );
+            col += gLabW[i] * flowLook( gLabK[i], gLabV[i], p, t, len, sc );
             ws += gLabW[i];
         }
     }

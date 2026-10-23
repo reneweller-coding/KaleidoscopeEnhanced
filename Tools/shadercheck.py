@@ -374,6 +374,10 @@ def cold_compile_check(paths):
         src = open(p, encoding="utf-8", errors="replace").read()
         if "// @chainclasses" not in src:
             continue
+        # a lab the app runs as passes compiles only its small final shader and the class passes (EffectShader, Engine/ChainPass):
+        # the all-classes file is the editor's alone, its cold compile is no freeze of the show
+        if os.path.exists(os.path.join(ROOT, "Engine", "ChainPass", "Final_" + os.path.basename(p))):
+            continue
         tmp = os.path.join(tempfile.gettempdir(), "coldcheck_%d.frag" % random.randint(0, 10**9))
         open(tmp, "w", encoding="utf-8", newline="\n").write("// cold %d\n" % random.randint(0, 10**9) + src)
         t0 = time.time()

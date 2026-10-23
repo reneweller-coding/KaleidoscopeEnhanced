@@ -540,12 +540,64 @@ uniform float labPinB;
 uniform float labPinC;
 /** Test pin of slot 3. */
 uniform float labPinD;
+/** Test pin of the variants: 1 + the variant 0..99 for every slot, or 1000 * (1 + the slot) + 1 + the variant for that
+ * slot alone (the others at variant 0); 0: the walk decides. */
+uniform float labPinV;
 /** The share of an epoch a class change takes to cross-fade. */
 const float LabFade = 0.2;
 /** The classes of the four slots, for each of the (up to four) looks the walk blends. */
 ivec4 gLabK[4];
 /** The weights of those looks. */
 float gLabW[4];
+/** The variants (0..99) of the four slots' classes, for each of the looks the walk blends: a class is a family of
+ * looks, the variant sets its constants (lv(), lk()); variant 0 is the lab's original look. */
+ivec4 gLabV[4];
+
+/**  A constant of a lab's look, set by a slot's variant inside a range.
+ *
+ * @param vi  The slot's variant, 0..99. (in)
+ * @param j   The stream: another number for every constant of a look. (in)
+ * @param lo  The lower end. (in)
+ * @param hi  The upper end; variant 0 gives the middle. (in)
+ *
+ * @return
+ *   The constant.
+ **/
+float lv( int vi, float j, float lo, float hi )
+{
+    return vi == 0 ? 0.5 * ( lo + hi )
+                   : mix( lo, hi, fract( sin( float( vi ) * 12.9898 + j * 78.233 + 3.7 ) * 43758.5453 ) );
+}
+
+/**  A choice of a lab's look, set by a slot's variant.
+ *
+ * @param vi  The slot's variant, 0..99. (in)
+ * @param j   The stream. (in)
+ * @param n   The number of choices. (in)
+ *
+ * @return
+ *   0 .. n-1; 0 (the original choice) for variant 0.
+ **/
+int lk( int vi, float j, int n )
+{
+    return vi == 0
+               ? 0
+               : min( int( fract( sin( float( vi ) * 37.719 + j * 51.37 + 1.9 ) * 43758.5453 ) * float( n ) ), n - 1 );
+}
+
+/**  A variant of a slot in an epoch: a hash of the slot, the epoch and the walk's seed.
+ *
+ * @param s     The slot, 0..3. (in)
+ * @param e     The epoch (a whole number). (in)
+ * @param seed  The walk's seed. (in)
+ *
+ * @return
+ *   The variant, 0..99.
+ **/
+int labVar( int s, float e, float seed )
+{
+    return int( min( floor( hash21( vec2( e * 2.9 + seed * 1.3 + 11.0, float( s ) * 7.7 + 3.1 ) ) * 100.0 ), 99.0 ) );
+}
 
 /**  A class of a slot in an epoch: a hash of the slot, the epoch and the walk's seed.
  *
@@ -584,7 +636,7 @@ void labWalk( float seed, ivec4 n, float period )
     for ( int j = 0; j < 2; ++j )
     {
         float sd = seed + 0.713 * ( j == 0 ? audioSectionPrev : audioSectionId );
-        ivec4 base = ivec4( 0 ), alt = ivec4( 0 );
+        ivec4 base = ivec4( 0 ), alt = ivec4( 0 ), vbase = ivec4( 0 ), valt = ivec4( 0 );
         int   fs = 0;
         float ff = 0.0;
         for ( int s = 0; s < 4; ++s )
@@ -595,6 +647,8 @@ void labWalk( float seed, ivec4 n, float period )
             float e = floor( w );
             base[s] = labCls( s, e, sd, n[s] );
             alt[s] = labCls( s, e + 1.0, sd, n[s] );
+            vbase[s] = labVar( s, e, sd );
+            valt[s] = labVar( s, e + 1.0, sd );
             float f = smoothstep( 1.0 - LabFade, 1.0, w - e );
             if ( f > 0.0 )
             {
@@ -603,11 +657,14 @@ void labWalk( float seed, ivec4 n, float period )
             }
         }
         float wj = j == 0 ? 1.0 - m : m;
-        ivec4 b2 = base;
+        ivec4 b2 = base, vb2 = vbase;
         b2[fs] = alt[fs];
+        vb2[fs] = valt[fs];
         gLabK[2 * j] = base;
+        gLabV[2 * j] = vbase;
         gLabW[2 * j] = wj * ( 1.0 - ff );
         gLabK[2 * j + 1] = b2;
+        gLabV[2 * j + 1] = vb2;
         gLabW[2 * j + 1] = wj * ff;
     }
     if ( labPinA + labPinB + labPinC + labPinD > 0.5 )
@@ -623,6 +680,22 @@ void labWalk( float seed, ivec4 n, float period )
             if ( labPinD > 0.5 )
                 gLabK[i].w = min( int( labPinD + 0.5 ) - 1, n.w - 1 );
             gLabW[i] = i == 0 ? 1.0 : 0.0;
+        }
+    }
+    if ( labPinV > 0.5 )
+    {
+        int pv = int( labPinV + 0.5 );
+        int ps = pv / 1000 - 1;
+        int vp = clamp( pv - 1000 * ( pv / 1000 ) - 1, 0, 99 );
+        for ( int i = 0; i < 4; ++i )
+        {
+            if ( ps < 0 )
+                gLabV[i] = ivec4( vp );
+            else
+            {
+                gLabV[i] = ivec4( 0 );
+                gLabV[i][ps] = vp;
+            }
         }
     }
 }
@@ -679,6 +752,7 @@ vec2 twinGrad( vec2 uv, int second )
 /**  The two photos connected in one of twelve ways.
  *
  * @param con  The connection, 0..11. (in)
+ * @param vi   The connection's variant 0..99: the constants of the way. (in)
  * @param uv   The place in the photos. (in)
  * @param p    The place on screen. (in)
  * @param t    The clock. (in)
@@ -688,62 +762,73 @@ vec2 twinGrad( vec2 uv, int second )
  * @return
  *   The colour.
  **/
-vec3 twinConnect( int con, vec2 uv, vec2 p, float t, float sc, float st )
+vec3 twinConnect( int con, int vi, vec2 uv, vec2 p, float t, float sc, float st )
 {
     vec3  a = twinA( uv, 0.3 );
     vec3  b = twinB( uv, 0.3 );
     float la = luma( a ), lb = luma( b );
     if ( con == 0 )
-        return mix( a, b, smoothstep( -0.12, 0.12, la - ( 0.5 + 0.3 * sin( 0.15 * t ) ) ) );
+        return mix( a, b,
+                    smoothstep( -lv( vi, 4.0, 0.05, 0.19 ), lv( vi, 4.0, 0.05, 0.19 ),
+                                la
+                                    - ( lv( vi, 1.0, 0.35, 0.65 )
+                                        + lv( vi, 2.0, 0.15, 0.45 ) * sin( lv( vi, 3.0, 0.08, 0.22 ) * t ) ) ) );
     if ( con == 1 )
-        return mix( a, twinB( uv + 0.0008 * st * twinGrad( uv, 0 ) * 60.0, 0.3 ), 0.8 );
+        return mix( a, twinB( uv + lv( vi, 1.0, 0.0004, 0.0012 ) * st * twinGrad( uv, 0 ) * 60.0, 0.3 ),
+                    lv( vi, 2.0, 0.6, 1.0 ) );
     if ( con == 2 )
-        return mix( twinA( uv + ( lb - 0.5 ) * 0.22 * st * vec2( 1.0, 0.6 ), 0.3 ),
-                    twinB( uv + ( la - 0.5 ) * 0.22 * st * vec2( -0.6, 1.0 ), 0.3 ), 0.5 );
+        return mix( twinA( uv + ( lb - 0.5 ) * lv( vi, 1.0, 0.1, 0.34 ) * st * vec2( 1.0, 0.6 ), 0.3 ),
+                    twinB( uv + ( la - 0.5 ) * lv( vi, 1.0, 0.1, 0.34 ) * st * vec2( -0.6, 1.0 ), 0.3 ), 0.5 );
     if ( con == 3 )
     {
-        vec2  q = rot2( 0.1 * t ) * p * ( 3.0 + 4.0 * sc );
-        float c = 0.5 + 0.5 * sin( 3.14159 * q.x ) * sin( 3.14159 * q.y ) * 3.0;
+        vec2  q = rot2( lv( vi, 1.0, 0.0, 0.2 ) * t ) * p * ( 3.0 + 4.0 * sc );
+        float c = 0.5 + 0.5 * sin( 3.14159 * q.x ) * sin( 3.14159 * q.y ) * lv( vi, 2.0, 1.8, 4.2 );
         return mix( a, b, clamp( c, 0.0, 1.0 ) );
     }
     if ( con == 4 )
     {
         vec2  g = twinGrad( uv, 0 ) - twinGrad( uv, 1 );
-        float m = 0.5 + 0.5 * sin( 0.2 * t );
-        return mix( twinA( uv - 0.003 * st * g * m, 0.3 ), twinB( uv + 0.003 * st * g * ( 1.0 - m ), 0.3 ), m );
+        float m = 0.5 + 0.5 * sin( lv( vi, 2.0, 0.1, 0.3 ) * t );
+        float gs = lv( vi, 1.0, 0.0015, 0.0045 );
+        return mix( twinA( uv - gs * st * g * m, 0.3 ), twinB( uv + gs * st * g * ( 1.0 - m ), 0.3 ), m );
     }
     if ( con == 5 )
     {
-        float f = ( 6.0 + 14.0 * sc ) * ( p.x + 0.35 * lb + 0.05 * t );
-        return mix( a, b, smoothstep( -0.25, 0.25, sin( 6.2831853 * f ) * ( 0.4 + st ) ) );
+        float f = ( 6.0 + 14.0 * sc ) * ( p.x + lv( vi, 1.0, 0.1, 0.6 ) * lb + lv( vi, 2.0, 0.02, 0.08 ) * t );
+        return mix( a, b,
+                    smoothstep( -lv( vi, 3.0, 0.1, 0.4 ), lv( vi, 3.0, 0.1, 0.4 ),
+                                sin( 6.2831853 * f ) * ( lv( vi, 4.0, 0.2, 0.6 ) + st ) ) );
     }
     if ( con == 6 )
     {
-        vec3  low_a = twinA( uv, 4.5 );
-        vec3  hi_b = twinB( uv, 0.3 ) - twinB( uv, 3.5 );
-        float k = 0.6 + 0.9 * ( 0.5 + 0.5 * sin( 0.17 * t ) ) * st;
-        return low_a + k * hi_b + 0.3 * ( a - low_a ) * ( 1.0 - st );
+        vec3  low_a = twinA( uv, lv( vi, 1.0, 2.5, 6.5 ) );
+        vec3  hi_b = twinB( uv, 0.3 ) - twinB( uv, lv( vi, 2.0, 1.5, 5.5 ) );
+        float k = lv( vi, 3.0, 0.1, 1.1 ) + lv( vi, 4.0, 0.2, 1.6 ) * ( 0.5 + 0.5 * sin( 0.17 * t ) ) * st;
+        return low_a + k * hi_b + lv( vi, 5.0, 0.15, 0.45 ) * ( a - low_a ) * ( 1.0 - st );
     }
     if ( con == 7 )
     {
-        float m = 0.5 + 0.5 * sin( 2.0 * p.x + 0.3 * t + 1.5 * p.y );
+        float m = 0.5 + 0.5 * sin( lv( vi, 1.0, 0.5, 3.5 ) * p.x + 0.3 * t + lv( vi, 2.0, 0.3, 2.7 ) * p.y );
         vec3  c = b - luma( b );
-        return mix( a, vec3( la ) + c * 1.4, m * ( 0.5 + 0.5 * st ) );
+        return mix( a, vec3( la ) + c * lv( vi, 3.0, 0.5, 2.3 ), m * ( 0.5 + 0.5 * st ) );
     }
     if ( con == 8 )
-        return mix( b, a, smoothstep( 0.03, 0.35, abs( la - lb ) * ( 1.5 + 2.0 * st ) ) );
+        return mix( b, a,
+                    smoothstep( lv( vi, 2.0, 0.0, 0.06 ), lv( vi, 1.0, 0.1, 0.6 ),
+                                abs( la - lb ) * ( lv( vi, 4.0, 0.8, 2.2 ) + 2.0 * st ) ) );
     if ( con == 9 )
     {
-        vec2  q = p * ( 3.0 + 4.0 * sc ) + 0.15 * t * vec2( 0.6, 0.8 );
+        vec2  q = p * ( 3.0 + 4.0 * sc ) + lv( vi, 1.0, 0.05, 0.25 ) * t * vec2( 0.6, 0.8 );
         vec2  g = floor( q );
         float d1 = 9.0, d2 = 9.0;
         float par = 0.0;
+        float jt = lv( vi, 2.0, 0.4, 1.0 );
         for ( int j = -1; j <= 1; ++j )
         {
             for ( int i = -1; i <= 1; ++i )
             {
                 vec2  cg = g + vec2( float( i ), float( j ) );
-                float d = length( q - ( cg + 0.15 + 0.7 * hash22( cg ) ) );
+                float d = length( q - ( cg + 0.5 + jt * ( hash22( cg ) - 0.5 ) ) );
                 if ( d < d1 )
                 {
                     d2 = d1;
@@ -754,26 +839,28 @@ vec3 twinConnect( int con, vec2 uv, vec2 p, float t, float sc, float st )
                     d2 = d;
             }
         }
-        return mix( a, b, mix( par, 0.5, 1.0 - smoothstep( 0.0, 0.2, d2 - d1 ) ) );
+        return mix( a, b, mix( par, 0.5, 1.0 - smoothstep( 0.0, lv( vi, 3.0, 0.1, 0.3 ), d2 - d1 ) ) );
     }
     if ( con == 10 )
     {
-        float n = 6.0 + 2.0 * floor( sc * 2.99 );
-        float an = atan( p.y, p.x ) + 0.12 * t;
+        float n = 6.0 + 2.0 * floor( sc * 2.99 ) + 2.0 * float( lk( vi, 1.0, 3 ) );
+        float an = atan( p.y, p.x ) + lv( vi, 2.0, 0.06, 0.18 ) * t;
         float s = 0.5 + 0.5 * sin( n * an );
-        return mix( a, b, smoothstep( 0.35, 0.65, s ) );
+        float w = lv( vi, 3.0, 0.1, 0.2 );
+        return mix( a, b, smoothstep( 0.5 - w, 0.5 + w, s ) );
     }
-    vec2  c = 0.4 * vec2( cos( 0.13 * t ), sin( 0.11 * t ) );
+    vec2  c = lv( vi, 1.0, 0.2, 0.6 ) * vec2( cos( 0.13 * t ), sin( 0.11 * t ) );
     vec2  d = p - c;
     float r = length( d );
     float w = exp( -r * r * ( 3.0 + 4.0 * sc ) );
-    vec2  uv2 = uv + rot2( 2.5 * w * st ) * ( p - c ) * 0.0 + ( rot2( 2.5 * w * st ) * d - d ) * 0.8;
+    vec2  uv2 = uv + ( rot2( lv( vi, 2.0, 1.2, 3.8 ) * w * st ) * d - d ) * lv( vi, 3.0, 0.5, 1.1 );
     return mix( a, twinB( uv2, 0.3 ), smoothstep( 0.1, 0.6, w ) );
 }
 
 /**  One look of the lab.
  *
  * @param k   The classes: x the connection, y the shared space's bend, z the roles, w the weighting. (in)
+ * @param kv  The variants of those classes (the constants of each). (in)
  * @param p   The place on screen. (in)
  * @param t   The clock. (in)
  * @param sc  The pattern scale. (in)
@@ -784,25 +871,34 @@ vec3 twinConnect( int con, vec2 uv, vec2 p, float t, float sc, float st )
  * @return
  *   The colour.
  **/
-vec3 twinLook( ivec4 k, vec2 p, float t, float sc, float st, float sw, float hd )
+vec3 twinLook( ivec4 k, ivec4 kv, vec2 p, float t, float sc, float st, float sw, float hd )
 {
     vec2 q = p;
     if ( k.y == 1 )
     {
-        float sec = 6.2831853 / 6.0;
-        float an = abs( mod( atan( q.y, q.x ) + 0.05 * t, sec ) - 0.5 * sec );
+        float sec = 6.2831853 / ( 6.0 + 2.0 * float( lk( kv.y, 1.0, 3 ) ) );
+        float an = abs( mod( atan( q.y, q.x ) + lv( kv.y, 2.0, 0.02, 0.08 ) * t, sec ) - 0.5 * sec );
         q = length( q ) * vec2( cos( an ), sin( an ) );
     }
     else if ( k.y == 2 )
-        q = abs( fract( q * 0.9 + 0.5 + 0.02 * t ) * 2.0 - 1.0 ) * 0.55 - 0.27;
+        q = abs( fract( q * lv( kv.y, 3.0, 0.6, 1.2 ) + 0.5 + lv( kv.y, 5.0, 0.0, 0.04 ) * t ) * 2.0 - 1.0 )
+                * lv( kv.y, 4.0, 0.4, 0.7 )
+            - lv( kv.y, 4.0, 0.4, 0.7 ) * 0.4909;
     else if ( k.y == 3 )
-        q = rot2( 1.4 * exp( -2.5 * dot( q, q ) ) * sin( 0.2 * t ) ) * q;
+        q = rot2( lv( kv.y, 6.0, 0.7, 2.1 ) * exp( lv( kv.y, 7.0, -4.0, -1.0 ) * dot( q, q ) )
+                  * sin( lv( kv.y, 8.0, 0.1, 0.3 ) * t ) )
+            * q;
     else if ( k.y == 4 )
-        q += 0.04 * vec2( sin( 7.0 * q.y + 0.5 * t ), sin( 6.0 * q.x - 0.4 * t ) );
+        q += lv( kv.y, 9.0, 0.02, 0.06 )
+             * vec2( sin( lv( kv.y, 10.0, 4.0, 10.0 ) * q.y + 0.5 * t ),
+                     sin( lv( kv.y, 11.0, 3.5, 8.5 ) * q.x - 0.4 * t ) );
     else if ( k.y == 5 )
-        q *= 1.0 + 0.25 * sin( 0.2 * t );
+        q *= 1.0 + lv( kv.y, 12.0, 0.12, 0.38 ) * sin( lv( kv.y, 13.0, 0.1, 0.3 ) * t );
     vec2  uv = q * 0.8 + 0.5;
-    float swap = k.z == 1 ? 1.0 : ( k.z == 2 ? 0.5 + 0.5 * sin( 0.12 * t + 0.4 * hd ) : 0.0 );
+    float swap = k.z == 1
+                     ? 1.0
+                     : ( k.z == 2 ? 0.5 + 0.5 * sin( lv( kv.z, 1.0, 0.06, 0.18 ) * t + lv( kv.z, 2.0, 0.2, 0.6 ) * hd )
+                                  : 0.0 );
     vec3  col = vec3( 0.0 );
     for ( int r = 0; r < 2; ++r )
     {
@@ -810,10 +906,15 @@ vec3 twinLook( ivec4 k, vec2 p, float t, float sc, float st, float sw, float hd 
         if ( w < 0.002 )
             continue;
         gRoles = r;
-        col += w * twinConnect( k.x, uv, q, t, sc, st );
+        col += w * twinConnect( k.x, kv.x, uv, q, t, sc, st );
     }
     gRoles = 0;
-    float bias = k.w == 1 ? 0.18 : ( k.w == 2 ? -0.18 : ( k.w == 3 ? 0.2 * sin( 0.3 * t ) * ( 0.4 + sw ) : 0.0 ) );
+    float bg = lv( kv.w, 1.0, 0.03, 0.33 );
+    float bias = k.w == 1 ? bg
+                          : ( k.w == 2 ? -bg
+                                       : ( k.w == 3 ? lv( kv.w, 2.0, 0.1, 0.3 ) * sin( lv( kv.w, 3.0, 0.15, 0.45 ) * t )
+                                                          * ( lv( kv.w, 4.0, 0.2, 0.6 ) + sw )
+                                                    : 0.0 ) );
     vec3  a = imgLod( uv, 0.3 ), b = imgB( uv, 0.3 );
     return clamp( col + bias * ( b - a ), 0.0, 1.6 );
 }
@@ -832,7 +933,7 @@ void main()
     {
         if ( gLabW[i] > 0.002 )
         {
-            col += gLabW[i] * twinLook( gLabK[i], p, t, clamp( scaleP, 0.0, 1.0 ), st, sw, audioHarmAdvance );
+            col += gLabW[i] * twinLook( gLabK[i], gLabV[i], p, t, clamp( scaleP, 0.0, 1.0 ), st, sw, audioHarmAdvance );
             ws += gLabW[i];
         }
     }

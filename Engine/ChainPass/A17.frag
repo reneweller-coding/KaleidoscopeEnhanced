@@ -114,6 +114,29 @@ vec2 tQuincunx( vec2 uv, vec2 c, float scale, float a1, float a2 )
     P.xy = rot2( a2 ) * P.xy;
     return c + P.xy / max( 1.0 - P.z, 1e-3 ) * 0.4;
 }
+float gVar = 0.0; ///< The variant of the class in use: -1 for variant 0 (the original look), else a hash of its number,
+                  ///< 0..1.
+vec4 gVa = vec4( 0.5 ); ///< The variant's first four pseudo-random numbers, 0..1 (all 0.5 for variant 0).
+vec4 gVb = vec4( 0.5 ); ///< The variant's last four pseudo-random numbers, 0..1 (all 0.5 for variant 0).
+/**  Sets the variant a stage's sub-variant stands for (gVar, gVa, gVb).
+ *
+ * @param v  The sub-variant 0..1 of the stage. (in)
+ * @param k  The class's branch number. (in)
+ **/
+void chainSetVar( float v, int k )
+{
+    float vi = floor( clamp( v, 0.0, 0.9999 ) * 100.0 );
+    if ( vi < 0.5 )
+    {
+        gVar = -1.0;
+        gVa = vec4( 0.5 );
+        gVb = vec4( 0.5 );
+        return;
+    }
+    gVar = fract( sin( vi * 12.9898 + float( k ) * 78.233 ) * 43758.5453 );
+    gVa = fract( sin( gVar * 127.1 + 17.0 + vec4( 0.0, 311.7, 623.4, 935.1 ) ) * 43758.5453 );
+    gVb = fract( sin( gVar * 127.1 + 17.0 + vec4( 1246.8, 1558.5, 1870.2, 2181.9 ) ) * 43758.5453 );
+}
 /** @{ */
 float gT, gSpread, gRot, gMw; ///< gT: The chain's (or scene's) time this frame; gSpread: The spectral spread this
                               ///< frame, 0..1; gRot: The rotation phase this frame; gMw: The chain's morph position
@@ -149,6 +172,7 @@ float chainTiltZ( vec2 q )
  **/
 vec2 cls( vec2 uv, float v )
 {
+    chainSetVar( v, 17 );
     return tQuincunx( uv, gCw, 3.0 + 2.0 * v, 0.5 * sin( gT * 0.37 ) + v * 2.0, gT * 0.5 + gRot );
     return uv;
 }

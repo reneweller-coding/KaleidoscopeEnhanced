@@ -520,12 +520,64 @@ uniform float labPinB;
 uniform float labPinC;
 /** Test pin of slot 3. */
 uniform float labPinD;
+/** Test pin of the variants: 1 + the variant 0..99 for every slot, or 1000 * (1 + the slot) + 1 + the variant for that
+ * slot alone (the others at variant 0); 0: the walk decides. */
+uniform float labPinV;
 /** The share of an epoch a class change takes to cross-fade. */
 const float LabFade = 0.2;
 /** The classes of the four slots, for each of the (up to four) looks the walk blends. */
 ivec4 gLabK[4];
 /** The weights of those looks. */
 float gLabW[4];
+/** The variants (0..99) of the four slots' classes, for each of the looks the walk blends: a class is a family of
+ * looks, the variant sets its constants (lv(), lk()); variant 0 is the lab's original look. */
+ivec4 gLabV[4];
+
+/**  A constant of a lab's look, set by a slot's variant inside a range.
+ *
+ * @param vi  The slot's variant, 0..99. (in)
+ * @param j   The stream: another number for every constant of a look. (in)
+ * @param lo  The lower end. (in)
+ * @param hi  The upper end; variant 0 gives the middle. (in)
+ *
+ * @return
+ *   The constant.
+ **/
+float lv( int vi, float j, float lo, float hi )
+{
+    return vi == 0 ? 0.5 * ( lo + hi )
+                   : mix( lo, hi, fract( sin( float( vi ) * 12.9898 + j * 78.233 + 3.7 ) * 43758.5453 ) );
+}
+
+/**  A choice of a lab's look, set by a slot's variant.
+ *
+ * @param vi  The slot's variant, 0..99. (in)
+ * @param j   The stream. (in)
+ * @param n   The number of choices. (in)
+ *
+ * @return
+ *   0 .. n-1; 0 (the original choice) for variant 0.
+ **/
+int lk( int vi, float j, int n )
+{
+    return vi == 0
+               ? 0
+               : min( int( fract( sin( float( vi ) * 37.719 + j * 51.37 + 1.9 ) * 43758.5453 ) * float( n ) ), n - 1 );
+}
+
+/**  A variant of a slot in an epoch: a hash of the slot, the epoch and the walk's seed.
+ *
+ * @param s     The slot, 0..3. (in)
+ * @param e     The epoch (a whole number). (in)
+ * @param seed  The walk's seed. (in)
+ *
+ * @return
+ *   The variant, 0..99.
+ **/
+int labVar( int s, float e, float seed )
+{
+    return int( min( floor( hash21( vec2( e * 2.9 + seed * 1.3 + 11.0, float( s ) * 7.7 + 3.1 ) ) * 100.0 ), 99.0 ) );
+}
 
 /**  A class of a slot in an epoch: a hash of the slot, the epoch and the walk's seed.
  *
@@ -564,7 +616,7 @@ void labWalk( float seed, ivec4 n, float period )
     for ( int j = 0; j < 2; ++j )
     {
         float sd = seed + 0.713 * ( j == 0 ? audioSectionPrev : audioSectionId );
-        ivec4 base = ivec4( 0 ), alt = ivec4( 0 );
+        ivec4 base = ivec4( 0 ), alt = ivec4( 0 ), vbase = ivec4( 0 ), valt = ivec4( 0 );
         int   fs = 0;
         float ff = 0.0;
         for ( int s = 0; s < 4; ++s )
@@ -575,6 +627,8 @@ void labWalk( float seed, ivec4 n, float period )
             float e = floor( w );
             base[s] = labCls( s, e, sd, n[s] );
             alt[s] = labCls( s, e + 1.0, sd, n[s] );
+            vbase[s] = labVar( s, e, sd );
+            valt[s] = labVar( s, e + 1.0, sd );
             float f = smoothstep( 1.0 - LabFade, 1.0, w - e );
             if ( f > 0.0 )
             {
@@ -583,11 +637,14 @@ void labWalk( float seed, ivec4 n, float period )
             }
         }
         float wj = j == 0 ? 1.0 - m : m;
-        ivec4 b2 = base;
+        ivec4 b2 = base, vb2 = vbase;
         b2[fs] = alt[fs];
+        vb2[fs] = valt[fs];
         gLabK[2 * j] = base;
+        gLabV[2 * j] = vbase;
         gLabW[2 * j] = wj * ( 1.0 - ff );
         gLabK[2 * j + 1] = b2;
+        gLabV[2 * j + 1] = vb2;
         gLabW[2 * j + 1] = wj * ff;
     }
     if ( labPinA + labPinB + labPinC + labPinD > 0.5 )
@@ -605,28 +662,47 @@ void labWalk( float seed, ivec4 n, float period )
             gLabW[i] = i == 0 ? 1.0 : 0.0;
         }
     }
+    if ( labPinV > 0.5 )
+    {
+        int pv = int( labPinV + 0.5 );
+        int ps = pv / 1000 - 1;
+        int vp = clamp( pv - 1000 * ( pv / 1000 ) - 1, 0, 99 );
+        for ( int i = 0; i < 4; ++i )
+        {
+            if ( ps < 0 )
+                gLabV[i] = ivec4( vp );
+            else
+            {
+                gLabV[i] = ivec4( 0 );
+                gLabV[i][ps] = vp;
+            }
+        }
+    }
 }
 
 /**  Folds a point into the fundamental triangle of a mirror lattice.
  *
  * @param lat  The lattice: 0 hexagonal (the 30-60-90 triangle), 1 square (the 45-45-90 triangle). (in)
+ * @param vi   The lattice's variant 0..99: its orientation and offset. (in)
  * @param q    The point (the lattice's cells are one unit across). (in)
  *
  * @return
  *   The point inside the fundamental triangle.
  **/
-vec2 defFold( int lat, vec2 q )
+vec2 defFold( int lat, int vi, vec2 q )
 {
+    q += vec2( lv( vi, 1.0, -0.5, 0.5 ), lv( vi, 2.0, -0.5, 0.5 ) );
     if ( lat == 1 )
     {
         q = abs( fract( q + 0.5 ) * 2.0 - 1.0 ) * 0.5;
         return vec2( max( q.x, q.y ), min( q.x, q.y ) );
     }
+    float ro = lv( vi, 3.0, -0.5, 0.5 );
     for ( int i = 0; i < 6; ++i )
     {
         for ( int j = 0; j < 3; ++j )
         {
-            float a = 1.0471976 * float( j ) + 1.5707963;
+            float a = 1.0471976 * float( j ) + 1.5707963 + ro;
             vec2  n = vec2( cos( a ), sin( a ) );
             float d = dot( q, n );
             float f = abs( fract( d + 0.5 ) * 2.0 - 1.0 ) * 0.5;
@@ -639,6 +715,7 @@ vec2 defFold( int lat, vec2 q )
 /**  The displacement a flaw puts on the lattice at a place.
  *
  * @param flaw  The flaw, 0..5: dislocation pair, five-fold, seven-fold, twin boundary, grain boundary, mixed. (in)
+ * @param vi    The flaw's variant 0..99: its centre's path, the translation, the boundary's angle. (in)
  * @param p     The place. (in)
  * @param t     The clock. (in)
  * @param sep   The separation of a dislocation pair, 0 (cancelled) .. 1. (in)
@@ -648,11 +725,15 @@ vec2 defFold( int lat, vec2 q )
  * @return
  *   The displaced place.
  **/
-vec2 defFlaw( int flaw, vec2 p, float t, float sep, float st, float m )
+vec2 defFlaw( int flaw, int vi, vec2 p, float t, float sep, float st, float m )
 {
-    vec2 c1 = 0.25 * vec2( cos( 0.17 * t ), sin( 0.13 * t ) );
-    vec2 c2 = c1 + sep * 0.35 * vec2( cos( 0.2 * t + 1.0 ), sin( 0.2 * t + 1.0 ) );
-    vec2 b = m > 5.0 ? vec2( 0.0, 2.0 ) : vec2( 1.0, 0.0 ); // a translation of the lattice
+    vec2 c1 = lv( vi, 1.0, 0.1, 0.4 )
+              * vec2( cos( lv( vi, 2.0, 0.08, 0.26 ) * t ), sin( lv( vi, 3.0, 0.06, 0.2 ) * t ) );
+    vec2 c2 = c1
+              + sep * lv( vi, 4.0, 0.2, 0.5 )
+                    * vec2( cos( lv( vi, 5.0, 0.1, 0.3 ) * t + 1.0 ), sin( lv( vi, 5.0, 0.1, 0.3 ) * t + 1.0 ) );
+    vec2 b = m > 5.0 ? ( lk( vi, 6.0, 2 ) == 0 ? vec2( 0.0, 2.0 ) : vec2( 0.0, -2.0 ) )
+                     : ( lk( vi, 6.0, 2 ) == 0 ? vec2( 1.0, 0.0 ) : vec2( 0.0, 1.0 ) ); // a translation of the lattice
     if ( flaw == 0 || flaw == 5 )
     {
         vec2 q = p;
@@ -666,22 +747,25 @@ vec2 defFlaw( int flaw, vec2 p, float t, float sep, float st, float m )
     {
         float sg = flaw == 2 ? -1.0 : 1.0;
         vec2  d = p - c1;
-        return c1 + rot2( sg * st * atan( d.y, d.x ) / m ) * d;
+        return c1 + rot2( sg * st * lv( vi, 7.0, 0.6, 1.4 ) * atan( d.y, d.x ) / m ) * d;
     }
     if ( flaw == 3 )
     {
-        vec2  n = vec2( cos( 0.2 + 0.05 * t ), sin( 0.2 + 0.05 * t ) );
+        float ta = lv( vi, 8.0, -0.6, 1.0 ) + lv( vi, 9.0, 0.02, 0.08 ) * t;
+        vec2  n = vec2( cos( ta ), sin( ta ) );
         float s = dot( p - c1, n );
         return s < 0.0 ? p - 2.0 * s * n : p;
     }
-    vec2  n = vec2( cos( 0.5 + 0.04 * t ), sin( 0.5 + 0.04 * t ) );
+    float ga = lv( vi, 8.0, -0.1, 1.1 ) + lv( vi, 9.0, 0.02, 0.06 ) * t;
+    vec2  n = vec2( cos( ga ), sin( ga ) );
     float s = dot( p - c1, n );
-    return s < 0.0 ? c1 + rot2( 0.25 * st ) * ( p - c1 ) : p;
+    return s < 0.0 ? c1 + rot2( lv( vi, 10.0, 0.12, 0.38 ) * st ) * ( p - c1 ) : p;
 }
 
 /**  One look of the lab.
  *
  * @param k   The classes: x the lattice, y the flaw, z the flaws' motion, w the lattice's fineness. (in)
+ * @param kv  The variants of those classes (the constants of each). (in)
  * @param p   The place. (in)
  * @param t   The clock. (in)
  * @param hd  The harmonic advance. (in)
@@ -691,14 +775,15 @@ vec2 defFlaw( int flaw, vec2 p, float t, float sep, float st, float m )
  * @return
  *   The colour.
  **/
-vec3 defLook( ivec4 k, vec2 p, float t, float hd, float cs, float st )
+vec3 defLook( ivec4 k, ivec4 kv, vec2 p, float t, float hd, float cs, float st )
 {
-    float size = cs * ( k.w == 0 ? 0.6 : ( k.w == 1 ? 1.0 : 1.7 ) );
-    float sep = k.z == 2 ? 0.5 + 0.5 * cos( 0.25 * t + 0.6 * hd ) : 0.7;
-    float tt = k.z == 1 ? t * 1.7 : t;
-    vec2  q = defFlaw( k.y, p, tt, sep, st, k.x == 0 ? 6.0 : 4.0 ) * size;
-    vec2  f = defFold( k.x, q );
-    return imgLod( f * 1.6 + 0.1, 0.5 );
+    float size = cs * ( k.w == 0 ? 0.6 : ( k.w == 1 ? 1.0 : 1.7 ) ) * lv( kv.w, 1.0, 0.8, 1.2 );
+    float sep = k.z == 2 ? 0.5 + lv( kv.z, 2.0, 0.3, 0.7 ) * cos( lv( kv.z, 1.0, 0.15, 0.35 ) * t + 0.6 * hd )
+                         : lv( kv.z, 3.0, 0.4, 1.0 );
+    float tt = k.z == 1 ? t * lv( kv.z, 4.0, 1.0, 2.4 ) : t;
+    vec2  q = defFlaw( k.y, kv.y, p, tt, sep, st, k.x == 0 ? 6.0 : 4.0 ) * size;
+    vec2  f = defFold( k.x, kv.x, q );
+    return imgLod( f * lv( kv.x, 4.0, 1.0, 2.2 ) + lv( kv.x, 5.0, 0.0, 0.2 ), 0.5 );
 }
 
 /** Entry point of this shader stage (the file description says what it draws). */
@@ -716,7 +801,7 @@ void main()
     {
         if ( gLabW[i] > 0.002 )
         {
-            col += gLabW[i] * defLook( gLabK[i], p, t, audioHarmAdvance, cs, st );
+            col += gLabW[i] * defLook( gLabK[i], gLabV[i], p, t, audioHarmAdvance, cs, st );
             ws += gLabW[i];
         }
     }

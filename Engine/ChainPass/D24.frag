@@ -48,6 +48,66 @@ vec2 screenP()
 {
     return ( gl_FragCoord.xy / resolution - 0.5 ) * vec2( resolution.x / resolution.y, 1.0 );
 }
+float gVar = 0.0; ///< The variant of the class in use: -1 for variant 0 (the original look), else a hash of its number,
+                  ///< 0..1.
+vec4 gVa = vec4( 0.5 ); ///< The variant's first four pseudo-random numbers, 0..1 (all 0.5 for variant 0).
+vec4 gVb = vec4( 0.5 ); ///< The variant's last four pseudo-random numbers, 0..1 (all 0.5 for variant 0).
+/**  The variant's pseudo-random number of one stream.
+ *
+ * @param j  The stream, a whole number 0..7. (in)
+ *
+ * @return
+ *   0..1; 0.5 for variant 0, so that vv() gives the middle of its range.
+ **/
+float vr( float j )
+{
+    int i = int( j );
+    return i < 4 ? gVa[i] : gVb[i - 4];
+}
+/**  A constant of the class, set by the variant inside a range.
+ *
+ * @param j   The stream. (in)
+ * @param lo  The lower end. (in)
+ * @param hi  The upper end; variant 0 gives the middle. (in)
+ *
+ * @return
+ *   The constant.
+ **/
+float vv( float j, float lo, float hi )
+{
+    return mix( lo, hi, vr( j ) );
+}
+/**  A choice of the class, set by the variant.
+ *
+ * @param j  The stream. (in)
+ * @param n  The number of choices. (in)
+ *
+ * @return
+ *   0 .. n-1; 0 (the original choice) for variant 0.
+ **/
+float vk( float j, float n )
+{
+    return gVar < 0.0 ? 0.0 : min( floor( vr( j ) * n ), n - 1.0 );
+}
+/**  Sets the variant a stage's sub-variant stands for (gVar, gVa, gVb).
+ *
+ * @param v  The sub-variant 0..1 of the stage. (in)
+ * @param k  The class's branch number. (in)
+ **/
+void chainSetVar( float v, int k )
+{
+    float vi = floor( clamp( v, 0.0, 0.9999 ) * 100.0 );
+    if ( vi < 0.5 )
+    {
+        gVar = -1.0;
+        gVa = vec4( 0.5 );
+        gVb = vec4( 0.5 );
+        return;
+    }
+    gVar = fract( sin( vi * 12.9898 + float( k ) * 78.233 ) * 43758.5453 );
+    gVa = fract( sin( gVar * 127.1 + 17.0 + vec4( 0.0, 311.7, 623.4, 935.1 ) ) * 43758.5453 );
+    gVb = fract( sin( gVar * 127.1 + 17.0 + vec4( 1246.8, 1558.5, 1870.2, 2181.9 ) ) * 43758.5453 );
+}
 /**  Airy wave packet: displacement along a curve that accelerates like a parabola, with side lobes behind it.
  *
  * @param x  The value. (in)
@@ -78,9 +138,13 @@ float airyApprox( float x )
  **/
 vec2 tAiryPacket( vec2 uv, vec2 c, float strength, float t )
 {
-    float x = ( uv.x - c.x ) * 6.0 - 0.4 * t;
-    float a = airyApprox( x * 0.8 );
-    return uv + vec2( 0.0, strength * 0.25 * a ) + vec2( 0.06 * strength * a * a, 0.0 );
+    bool  sw = vk( 5.0, 2.0 ) > 0.5;
+    vec2  u2 = sw ? uv.yx : uv, c2 = sw ? c.yx : c;
+    float x = ( u2.x - c2.x ) * vv( 1.0, 4.0, 8.0 ) - vv( 4.0, 0.2, 0.6 ) * t;
+    float a = airyApprox( x * vv( 2.0, 0.6, 1.0 ) );
+    vec2  r = u2 + vec2( 0.0, strength * 0.25 * vv( 6.0, 0.6, 1.6 ) * a )
+              + vec2( vv( 3.0, 0.02, 0.1 ) * strength * a * a, 0.0 );
+    return sw ? r.yx : r;
 }
 /** @{ */
 float gT, gSpread, gRot, gMw; ///< gT: The chain's (or scene's) time this frame; gSpread: The spectral spread this
@@ -130,6 +194,7 @@ float chainTiltZ( vec2 q )
  **/
 vec2 cls( vec2 uv, float v )
 {
+    chainSetVar( v, 24 );
     return tAiryPacket( uv, gCw, 1.0 + gSpread, gT );
     return uv;
 }

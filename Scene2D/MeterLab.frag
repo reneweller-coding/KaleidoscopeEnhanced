@@ -520,12 +520,64 @@ uniform float labPinB;
 uniform float labPinC;
 /** Test pin of slot 3. */
 uniform float labPinD;
+/** Test pin of the variants: 1 + the variant 0..99 for every slot, or 1000 * (1 + the slot) + 1 + the variant for that
+ * slot alone (the others at variant 0); 0: the walk decides. */
+uniform float labPinV;
 /** The share of an epoch a class change takes to cross-fade. */
 const float LabFade = 0.2;
 /** The classes of the four slots, for each of the (up to four) looks the walk blends. */
 ivec4 gLabK[4];
 /** The weights of those looks. */
 float gLabW[4];
+/** The variants (0..99) of the four slots' classes, for each of the looks the walk blends: a class is a family of
+ * looks, the variant sets its constants (lv(), lk()); variant 0 is the lab's original look. */
+ivec4 gLabV[4];
+
+/**  A constant of a lab's look, set by a slot's variant inside a range.
+ *
+ * @param vi  The slot's variant, 0..99. (in)
+ * @param j   The stream: another number for every constant of a look. (in)
+ * @param lo  The lower end. (in)
+ * @param hi  The upper end; variant 0 gives the middle. (in)
+ *
+ * @return
+ *   The constant.
+ **/
+float lv( int vi, float j, float lo, float hi )
+{
+    return vi == 0 ? 0.5 * ( lo + hi )
+                   : mix( lo, hi, fract( sin( float( vi ) * 12.9898 + j * 78.233 + 3.7 ) * 43758.5453 ) );
+}
+
+/**  A choice of a lab's look, set by a slot's variant.
+ *
+ * @param vi  The slot's variant, 0..99. (in)
+ * @param j   The stream. (in)
+ * @param n   The number of choices. (in)
+ *
+ * @return
+ *   0 .. n-1; 0 (the original choice) for variant 0.
+ **/
+int lk( int vi, float j, int n )
+{
+    return vi == 0
+               ? 0
+               : min( int( fract( sin( float( vi ) * 37.719 + j * 51.37 + 1.9 ) * 43758.5453 ) * float( n ) ), n - 1 );
+}
+
+/**  A variant of a slot in an epoch: a hash of the slot, the epoch and the walk's seed.
+ *
+ * @param s     The slot, 0..3. (in)
+ * @param e     The epoch (a whole number). (in)
+ * @param seed  The walk's seed. (in)
+ *
+ * @return
+ *   The variant, 0..99.
+ **/
+int labVar( int s, float e, float seed )
+{
+    return int( min( floor( hash21( vec2( e * 2.9 + seed * 1.3 + 11.0, float( s ) * 7.7 + 3.1 ) ) * 100.0 ), 99.0 ) );
+}
 
 /**  A class of a slot in an epoch: a hash of the slot, the epoch and the walk's seed.
  *
@@ -564,7 +616,7 @@ void labWalk( float seed, ivec4 n, float period )
     for ( int j = 0; j < 2; ++j )
     {
         float sd = seed + 0.713 * ( j == 0 ? audioSectionPrev : audioSectionId );
-        ivec4 base = ivec4( 0 ), alt = ivec4( 0 );
+        ivec4 base = ivec4( 0 ), alt = ivec4( 0 ), vbase = ivec4( 0 ), valt = ivec4( 0 );
         int   fs = 0;
         float ff = 0.0;
         for ( int s = 0; s < 4; ++s )
@@ -575,6 +627,8 @@ void labWalk( float seed, ivec4 n, float period )
             float e = floor( w );
             base[s] = labCls( s, e, sd, n[s] );
             alt[s] = labCls( s, e + 1.0, sd, n[s] );
+            vbase[s] = labVar( s, e, sd );
+            valt[s] = labVar( s, e + 1.0, sd );
             float f = smoothstep( 1.0 - LabFade, 1.0, w - e );
             if ( f > 0.0 )
             {
@@ -583,11 +637,14 @@ void labWalk( float seed, ivec4 n, float period )
             }
         }
         float wj = j == 0 ? 1.0 - m : m;
-        ivec4 b2 = base;
+        ivec4 b2 = base, vb2 = vbase;
         b2[fs] = alt[fs];
+        vb2[fs] = valt[fs];
         gLabK[2 * j] = base;
+        gLabV[2 * j] = vbase;
         gLabW[2 * j] = wj * ( 1.0 - ff );
         gLabK[2 * j + 1] = b2;
+        gLabV[2 * j + 1] = vb2;
         gLabW[2 * j + 1] = wj * ff;
     }
     if ( labPinA + labPinB + labPinC + labPinD > 0.5 )
@@ -603,6 +660,22 @@ void labWalk( float seed, ivec4 n, float period )
             if ( labPinD > 0.5 )
                 gLabK[i].w = min( int( labPinD + 0.5 ) - 1, n.w - 1 );
             gLabW[i] = i == 0 ? 1.0 : 0.0;
+        }
+    }
+    if ( labPinV > 0.5 )
+    {
+        int pv = int( labPinV + 0.5 );
+        int ps = pv / 1000 - 1;
+        int vp = clamp( pv - 1000 * ( pv / 1000 ) - 1, 0, 99 );
+        for ( int i = 0; i < 4; ++i )
+        {
+            if ( ps < 0 )
+                gLabV[i] = ivec4( vp );
+            else
+            {
+                gLabV[i] = ivec4( 0 );
+                gLabV[i][ps] = vp;
+            }
         }
     }
 }
@@ -622,35 +695,41 @@ float meterBeats( int m )
 
 /**  The accent of a beat in a metre.
  *
- * @param m  The metre, 0..7. (in)
- * @param j  The beat, 0-based. (in)
+ * @param m   The metre, 0..7. (in)
+ * @param vi  The metre's variant 0..99: where the bar starts and how hard the accents are. (in)
+ * @param j0  The beat, 0-based. (in)
  *
  * @return
  *   The accent, 0..1.
  **/
-float meterAccent( int m, float j )
+float meterAccent( int m, int vi, float j0 )
 {
+    float j = mod( j0 + float( lk( vi, 2.0, 3 ) ), meterBeats( m ) );
     float r = j;
+    float a;
     if ( m == 0 )
-        return j < 0.5 ? 1.0 : ( j > 1.5 && j < 2.5 ? 0.7 : 0.35 );
-    if ( m == 1 )
-        return j < 0.5 ? 1.0 : 0.35;
-    if ( m == 2 )
-        return j < 0.5 ? 1.0 : ( j > 2.5 && j < 3.5 ? 0.7 : 0.3 );
-    if ( m == 3 )
-        return j < 0.5 ? 1.0 : ( j > 2.5 && j < 3.5 ? 0.7 : 0.3 );
-    if ( m == 4 )
-        return j < 0.5 ? 1.0 : ( ( j > 1.5 && j < 2.5 ) || ( j > 3.5 && j < 4.5 ) ? 0.65 : 0.3 );
-    if ( m == 5 )
-        return mod( r, 4.0 ) < 0.5 ? 1.0 : ( mod( r, 3.0 ) < 0.5 ? 0.8 : 0.25 );
-    if ( m == 6 )
-        return ( j < 0.5 || ( j > 2.5 && j < 3.5 ) || ( j > 5.5 && j < 6.5 ) ) ? 1.0 : 0.25;
-    return ( j < 0.5 || ( j > 1.5 && j < 3.5 ) || ( j > 4.5 && j < 6.5 ) ) ? 1.0 : 0.25;
+        a = j < 0.5 ? 1.0 : ( j > 1.5 && j < 2.5 ? 0.7 : 0.35 );
+    else if ( m == 1 )
+        a = j < 0.5 ? 1.0 : 0.35;
+    else if ( m == 2 )
+        a = j < 0.5 ? 1.0 : ( j > 2.5 && j < 3.5 ? 0.7 : 0.3 );
+    else if ( m == 3 )
+        a = j < 0.5 ? 1.0 : ( j > 2.5 && j < 3.5 ? 0.7 : 0.3 );
+    else if ( m == 4 )
+        a = j < 0.5 ? 1.0 : ( ( j > 1.5 && j < 2.5 ) || ( j > 3.5 && j < 4.5 ) ? 0.65 : 0.3 );
+    else if ( m == 5 )
+        a = mod( r, 4.0 ) < 0.5 ? 1.0 : ( mod( r, 3.0 ) < 0.5 ? 0.8 : 0.25 );
+    else if ( m == 6 )
+        a = ( j < 0.5 || ( j > 2.5 && j < 3.5 ) || ( j > 5.5 && j < 6.5 ) ) ? 1.0 : 0.25;
+    else
+        a = ( j < 0.5 || ( j > 1.5 && j < 3.5 ) || ( j > 4.5 && j < 6.5 ) ) ? 1.0 : 0.25;
+    return pow( a, lv( vi, 1.0, 0.5, 1.5 ) );
 }
 
 /**  One look of the lab.
  *
  * @param k   The classes: x the metre, y the cell mapping, z the way the counting shows, w the layout. (in)
+ * @param kv  The variants of those classes (the constants of each). (in)
  * @param p   The place. (in)
  * @param t   The clock. (in)
  * @param nr  The number of bars shown (rows), a whole number. (in)
@@ -660,12 +739,13 @@ float meterAccent( int m, float j )
  * @return
  *   The colour.
  **/
-vec3 meterLook( ivec4 k, vec2 p, float t, float nr, float sp, float sw )
+vec3 meterLook( ivec4 k, ivec4 kv, vec2 p, float t, float nr, float sp, float sw )
 {
     float nb = meterBeats( k.x );
     float X = p.x / 1.7778 + 0.5;
     float Y = p.y + 0.5;
     float bx, by;
+    float rad = lv( kv.w, 1.0, 1.0, 2.0 );
     if ( k.w == 0 )
     {
         bx = X * nb;
@@ -674,18 +754,18 @@ vec3 meterLook( ivec4 k, vec2 p, float t, float nr, float sp, float sw )
     else if ( k.w == 1 )
     {
         bx = ( atan( p.y, p.x ) / 6.2831853 + 0.5 ) * nb;
-        by = length( p ) * nr * 1.5;
+        by = length( p ) * nr * rad;
     }
     else if ( k.w == 2 )
     {
-        bx = ( X + 0.35 * Y ) * nb;
-        by = ( Y - 0.2 * X ) * nr + 0.5;
+        bx = ( X + lv( kv.w, 2.0, 0.15, 0.55 ) * Y ) * nb;
+        by = ( Y - lv( kv.w, 3.0, 0.1, 0.3 ) * X ) * nr + 0.5;
     }
     else
     {
         float r = length( p );
-        bx = ( atan( p.y, p.x ) / 6.2831853 + 0.5 ) * nb + r * 3.0 * nb * 0.5 + 0.0;
-        by = r * nr * 1.5;
+        bx = ( atan( p.y, p.x ) / 6.2831853 + 0.5 ) * nb + r * lv( kv.w, 4.0, 0.8, 2.2 ) * nb;
+        by = r * nr * rad;
     }
     float j = floor( bx );
     float i = floor( by );
@@ -694,54 +774,60 @@ vec3 meterLook( ivec4 k, vec2 p, float t, float nr, float sp, float sw )
     f *= cs / max( cs.x, cs.y ); // a window that keeps the photo's proportions
     float jj = j - nb * floor( j / nb );
     float ii = i - nr * floor( i / nr );
-    float acc = meterAccent( k.x, jj );
+    float acc = meterAccent( k.x, kv.x, jj );
     float h = hash21( vec2( jj + 3.0, ii + 7.0 ) );
     // the counting
     float pb = audioBarPhase * nb;
     float dj = abs( jj + 0.5 - pb );
     dj = min( dj, nb - dj );
-    float glow_b = exp( -dj * dj / 0.45 );
+    float glow_b = exp( -dj * dj / lv( kv.z, 1.0, 0.25, 0.65 ) );
     float pr = audioPhrasePos * nr;
     float di = abs( ii + 0.5 - pr );
     di = min( di, nr - di );
-    float glow_r = exp( -di * di / 1.2 );
+    float glow_r = exp( -di * di / lv( kv.z, 2.0, 0.7, 1.7 ) );
     // the cell's window
     vec2  uvc = vec2( X, Y ) * 0.8 + 0.1;
-    float sz = 0.45;
+    float sz = lv( kv.y, 12.0, 0.3, 0.6 );
     float ang = 0.0;
     vec2  off = vec2( 0.0 );
     float par = ( jj - 2.0 * floor( jj * 0.5 ) ) > 0.5 ? -1.0 : 1.0;
     if ( k.y == 0 )
-        sz = ( 0.3 + 0.8 * ( 1.0 - acc ) ) * ( 0.6 + 0.5 * sp );
+        sz = ( lv( kv.y, 1.0, 0.15, 0.45 ) + lv( kv.y, 2.0, 0.5, 1.1 ) * ( 1.0 - acc ) )
+             * ( lv( kv.y, 3.0, 0.4, 0.8 ) + lv( kv.y, 4.0, 0.3, 0.7 ) * sp );
     else if ( k.y == 1 )
-        ang = sp * ( ( jj + 1.0 ) * 0.38 + ii * 0.1 ) + 0.04 * t;
+        ang = sp * ( ( jj + 1.0 ) * lv( kv.y, 5.0, 0.2, 0.56 ) + ii * lv( kv.y, 6.0, 0.05, 0.15 ) )
+              + lv( kv.y, 7.0, 0.0, 0.08 ) * t;
     else if ( k.y == 2 )
-        off = sp * ( hash22( vec2( jj, ii ) + 5.0 ) - 0.5 ) * 0.6;
+        off = sp * ( hash22( vec2( jj, ii ) + 5.0 ) - 0.5 ) * lv( kv.y, 8.0, 0.3, 0.9 );
     else if ( k.y == 3 )
         f.x *= mix( 1.0, par, sp );
     else if ( k.y == 4 )
-        off = 0.2 * sp * vec2( sin( 0.2 * t + 0.9 * jj ), cos( 0.17 * t + 0.6 * ii ) );
+        off = lv( kv.y, 9.0, 0.1, 0.3 ) * sp
+              * vec2( sin( lv( kv.y, 10.0, 0.1, 0.3 ) * t + 0.9 * jj ),
+                      cos( lv( kv.y, 13.0, 0.08, 0.26 ) * t + 0.6 * ii ) );
     else
     {
         uvc = vec2( 0.5 );
-        sz = 0.9;
+        sz = lv( kv.y, 11.0, 0.6, 1.2 );
     }
     vec2  uv = uvc + off + rot2( ang ) * ( f * sz );
     vec3  col = imgLod( uv, 0.4 );
     float m = 1.0;
     float st = 0.6 + 0.5 * sw;
     if ( k.z == 0 )
-        m = 0.45 + 0.95 * st * glow_b * ( 0.6 + 0.4 * glow_r );
+        m = lv( kv.z, 3.0, 0.25, 0.65 ) + lv( kv.z, 4.0, 0.65, 1.25 ) * st * glow_b * ( 0.6 + 0.4 * glow_r );
     else if ( k.z == 1 )
     {
-        col = mix( vec3( luma( col ) ), col, 0.3 + 0.9 * acc );
-        m = 0.6 + 0.5 * acc * st;
+        col = mix( vec3( luma( col ) ), col, lv( kv.z, 5.0, 0.1, 0.5 ) + lv( kv.z, 6.0, 0.5, 1.3 ) * acc );
+        m = lv( kv.z, 7.0, 0.4, 0.8 ) + lv( kv.z, 8.0, 0.3, 0.7 ) * acc * st;
     }
     else if ( k.z == 2 )
-        m = 0.4 + 0.9 * smoothstep( jj - 0.5, jj + 0.5, pb ) * ( 0.7 + 0.3 * glow_r );
+        m = lv( kv.z, 9.0, 0.2, 0.6 )
+            + lv( kv.z, 10.0, 0.5, 1.3 ) * smoothstep( jj - 0.5, jj + 0.5, pb ) * ( 0.7 + 0.3 * glow_r );
     else
-        m = 0.4
-            + 0.95 * st * exp( -2.5 * mod( pb - ( jj + 0.5 ) + nb, nb ) / max( nb * 0.5, 1.0 ) )
+        m = lv( kv.z, 9.0, 0.2, 0.6 )
+            + lv( kv.z, 4.0, 0.65, 1.25 ) * st
+                  * exp( -lv( kv.z, 11.0, 1.5, 3.5 ) * mod( pb - ( jj + 0.5 ) + nb, nb ) / max( nb * 0.5, 1.0 ) )
                   * ( 0.7 + 0.3 * glow_r );
     return col * m;
 }
@@ -761,7 +847,7 @@ void main()
     {
         if ( gLabW[i] > 0.002 )
         {
-            col += gLabW[i] * meterLook( gLabK[i], p, t, nr, sp, sw );
+            col += gLabW[i] * meterLook( gLabK[i], gLabV[i], p, t, nr, sp, sw );
             ws += gLabW[i];
         }
     }

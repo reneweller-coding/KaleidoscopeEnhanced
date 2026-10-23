@@ -39,71 +39,76 @@ float percStairs(float u)
 /**  One illusion's pattern as a tone.
  *
  * @param kind  The illusion, 0..7. (in)
+ * @param vi    The illusion's variant 0..99: the constants of the pattern. (in)
  * @param q     The place, in pattern units. (in)
  * @param t     The clock. (in)
  *
  * @return
  *   The tone, 0..1.
  **/
-float percPat(int kind, vec2 q, float t)
+float percPat(int kind, int vi, vec2 q, float t)
 {
     float r = length(q);
     float th = atan(q.y, q.x) / 6.2831853;
     if (kind == 0) {
-        float ring = floor(r * 1.2);
+        float ring = floor(r * lv(vi, 1.0, 0.8, 1.6));
         float flip = ring - 2.0 * floor(ring * 0.5);
-        return percStairs(fract(th * 14.0 + 0.5 * flip) * 4.0 * + (flip > 0.5 ? 2.0 : 0.0));
+        return percStairs(fract(th * (14.0 + 2.0 * float(lk(vi, 2.0, 4))) + 0.5 * flip) * 4.0 * + (flip > 0.5 ? 2.0 : 0.0));
     }
     if (kind == 1) {
-        vec2 c = 0.7 * vec2(cos(0.12 * t), sin(0.15 * t));
-        float disc = smoothstep(0.1, -0.1, length(q - c) - 1.4);
-        float v = smoothstep(-0.2, 0.2, sin(6.2831853 * q.x * 1.5));
-        float h = smoothstep(-0.2, 0.2, sin(6.2831853 * q.y * 1.5));
+        vec2 c = lv(vi, 1.0, 0.4, 1.0) * vec2(cos(lv(vi, 2.0, 0.06, 0.18) * t), sin(lv(vi, 3.0, 0.08, 0.22) * t));
+        float ed = lv(vi, 7.0, 0.1, 0.3);
+        float disc = smoothstep(0.1, -0.1, length(q - c) - lv(vi, 4.0, 1.0, 1.8));
+        float v = smoothstep(-ed, ed, sin(6.2831853 * q.x * lv(vi, 5.0, 1.0, 2.0)));
+        float h = smoothstep(-ed, ed, sin(6.2831853 * q.y * lv(vi, 6.0, 1.0, 2.0)));
         return mix(h, v, disc) * 0.9 + 0.05;
     }
     if (kind == 2) {
         float row = floor(q.y);
-        float off = 0.5 * (row - 2.0 * floor(row * 0.5)) + 0.25 * sin(0.2 * t);
+        float off = lv(vi, 1.0, 0.25, 0.75) * (row - 2.0 * floor(row * 0.5)) + lv(vi, 2.0, 0.1, 0.4) * sin(lv(vi, 3.0, 0.1, 0.3) * t);
         float col = floor(q.x * 1.0 + off);
-        float tile = (col - 2.0 * floor(col * 0.5)) > 0.5 ? 0.92 : 0.08;
-        float mortar = smoothstep(0.44, 0.5, abs(fract(q.y) - 0.5));
+        float hc = lv(vi, 4.0, 0.34, 0.5);
+        float tile = (col - 2.0 * floor(col * 0.5)) > 0.5 ? 0.5 + hc : 0.5 - hc;
+        float mortar = smoothstep(lv(vi, 5.0, 0.38, 0.5), 0.5, abs(fract(q.y) - 0.5));
         return mix(tile, 0.5, mortar);
     }
     if (kind == 3) {
         float ringIdx = floor(r * 1.0);
         float sgn = (ringIdx - 2.0 * floor(ringIdx * 0.5)) > 0.5 ? 1.0 : -1.0;
-        float s = th * 24.0 + sgn * (fract(r) - 0.5) * 1.6;
+        float s = th * (24.0 + 4.0 * float(lk(vi, 1.0, 3))) + sgn * (fract(r) - 0.5) * lv(vi, 2.0, 1.0, 2.2);
         float cord = smoothstep(-0.25, 0.25, sin(6.2831853 * s));
-        vec2 g = floor(q * 1.6);
+        vec2 g = floor(q * lv(vi, 3.0, 1.0, 2.2));
         float chk = (g.x + g.y - 2.0 * floor((g.x + g.y) * 0.5)) > 0.5 ? 0.75 : 0.25;
-        return mix(chk, cord, 0.75);
+        return mix(chk, cord, lv(vi, 4.0, 0.5, 1.0));
     }
     if (kind == 4) {
-        float rays = smoothstep(-0.15, 0.15, sin(6.2831853 * th * 48.0));
-        float band = smoothstep(0.38, 0.3, abs(fract(r * 0.9) - 0.5));
-        return mix(rays, 0.5, band * 0.85);
+        float rays = smoothstep(-0.15, 0.15, sin(6.2831853 * th * (48.0 + 8.0 * float(lk(vi, 1.0, 3)))));
+        float band = smoothstep(lv(vi, 3.0, 0.3, 0.46), lv(vi, 4.0, 0.22, 0.38), abs(fract(r * lv(vi, 2.0, 0.6, 1.2)) - 0.5));
+        return mix(rays, 0.5, band * lv(vi, 5.0, 0.6, 1.1));
     }
     if (kind == 5) {
-        vec2 f = abs(fract(q * 0.9) - 0.5);
+        vec2 f = abs(fract(q * lv(vi, 1.0, 0.6, 1.2)) - 0.5);
         float m = max(f.x, f.y);
-        return mix(0.08, 0.92, smoothstep(0.38, 0.44, m));
+        float lo = lv(vi, 4.0, 0.03, 0.13);
+        return mix(lo, 1.0 - lo, smoothstep(lv(vi, 2.0, 0.3, 0.46), lv(vi, 3.0, 0.36, 0.52), m));
     }
     if (kind == 6) {
-        float row = floor(q.y * 1.2);
+        float row = floor(q.y * lv(vi, 1.0, 0.8, 1.6));
         float sgn = (row - 2.0 * floor(row * 0.5)) > 0.5 ? 1.0 : -1.0;
-        float v = fract(q.y * 1.2) - 0.5;
-        float line = smoothstep(0.06, 0.03, abs(v));
-        float tick = smoothstep(0.1, 0.05, abs(fract(q.x * 3.0 + sgn * v * 0.9) - 0.5) - 0.2) * smoothstep(0.4, 0.34, abs(v));
+        float v = fract(q.y * lv(vi, 1.0, 0.8, 1.6)) - 0.5;
+        float line = smoothstep(lv(vi, 2.0, 0.03, 0.09), lv(vi, 5.0, 0.015, 0.045), abs(v));
+        float tick = smoothstep(0.1, 0.05, abs(fract(q.x * lv(vi, 3.0, 2.0, 4.0) + sgn * v * lv(vi, 4.0, 0.5, 1.3)) - 0.5) - 0.2) * smoothstep(0.4, 0.34, abs(v));
         return 1.0 - 0.9 * max(line, tick);
     }
-    float g = 0.5 * t;
+    float g = lv(vi, 1.0, 0.25, 0.75) * t;
     float s = floor(g) + smoothstep(0.8, 1.0, fract(g));
-    return 0.5 + 0.45 * sin(6.2831853 * (q.x * 0.9 - 0.25 * s));
+    return 0.5 + lv(vi, 4.0, 0.35, 0.55) * sin(6.2831853 * (q.x * lv(vi, 2.0, 0.6, 1.2) - lv(vi, 3.0, 0.1, 0.4) * s));
 }
 
 /**  One look of the lab.
  *
  * @param k    The classes: x the illusion, y the layout, z the tones' source, w the pattern's motion. (in)
+ * @param kv   The variants of those classes (the constants of each). (in)
  * @param p    The place. (in)
  * @param t    The clock. (in)
  * @param sc   The pattern's scale. (in)
@@ -112,30 +117,31 @@ float percPat(int kind, vec2 q, float t)
  * @return
  *   The colour.
  **/
-vec3 percLook(ivec4 k, vec2 p, float t, float sc, float st)
+vec3 percLook(ivec4 k, ivec4 kv, vec2 p, float t, float sc, float st)
 {
     vec2 q = p * sc;
-    if (k.w == 0) q += 0.12 * t * vec2(0.8, 0.6) * 0.5;
-    else if (k.w == 1) q = rot2(0.06 * t) * q;
-    else if (k.w == 2) q *= 1.0 + 0.2 * sin(0.2 * t);
-    else q = rot2(p.x > 0.0 ? 0.06 * t : -0.06 * t) * q;
+    if (k.w == 0) q += lv(kv.w, 1.0, 0.03, 0.09) * t * vec2(0.8, 0.6);
+    else if (k.w == 1) q = rot2(lv(kv.w, 2.0, 0.03, 0.09) * t) * q;
+    else if (k.w == 2) q *= 1.0 + lv(kv.w, 3.0, 0.1, 0.3) * sin(lv(kv.w, 4.0, 0.1, 0.3) * t);
+    else q = rot2(p.x > 0.0 ? lv(kv.w, 2.0, 0.03, 0.09) * t : -lv(kv.w, 2.0, 0.03, 0.09) * t) * q;
     float tone;
     if (k.y == 1) {
-        vec2 cell = floor(q * 0.5 + 0.5);
-        vec2 f = (q * 0.5 + 0.5 - cell) * 2.0 - 1.0;
+        float cs = lv(kv.y, 1.0, 0.3, 0.7);
+        vec2 cell = floor(q * cs + 0.5);
+        vec2 f = (q * cs + 0.5 - cell) * 2.0 - 1.0;
         if ((cell.x + cell.y - 2.0 * floor((cell.x + cell.y) * 0.5)) > 0.5) f = vec2(-f.y, f.x);
-        tone = percPat(k.x, f * 2.0, t);
+        tone = percPat(k.x, kv.x, f * lv(kv.y, 2.0, 1.4, 2.6), t);
     } else if (k.y == 2) {
-        float sec = 6.2831853 / 6.0;
-        float an = abs(mod(atan(q.y, q.x) + 0.04 * t, sec) - 0.5 * sec);
-        tone = percPat(k.x, length(q) * vec2(cos(an), sin(an)), t);
-    } else if (k.y == 3) tone = 0.5 * (percPat(k.x, q, t) + percPat(k.x, rot2(0.4) * q * 2.3, t));
-    else tone = percPat(k.x, q, t);
+        float sec = 6.2831853 / (6.0 + 2.0 * float(lk(kv.y, 3.0, 3)));
+        float an = abs(mod(atan(q.y, q.x) + lv(kv.y, 4.0, 0.02, 0.06) * t, sec) - 0.5 * sec);
+        tone = percPat(k.x, kv.x, length(q) * vec2(cos(an), sin(an)), t);
+    } else if (k.y == 3) tone = 0.5 * (percPat(k.x, kv.x, q, t) + percPat(k.x, kv.x, rot2(lv(kv.y, 5.0, 0.2, 0.6)) * q * lv(kv.y, 6.0, 1.6, 3.0), t));
+    else tone = percPat(k.x, kv.x, q, t);
     tone = 0.5 + (tone - 0.5) * st;
     vec2 uv = p * 0.8 + 0.5;
-    if (k.z == 1) return mix(imgLod(uv + vec2(0.2, 0.1), 2.5), imgLod(uv - vec2(0.2, 0.1), 2.5), tone) * (0.55 + 0.9 * tone);
-    if (k.z == 2) return imgLod(uv, 0.4) * (0.2 + 1.3 * tone);
-    return imgLod(uv, 3.0) * (0.15 + 1.35 * tone);
+    if (k.z == 1) return mix(imgLod(uv + vec2(lv(kv.z, 1.0, 0.1, 0.3), lv(kv.z, 2.0, 0.05, 0.15)), lv(kv.z, 3.0, 1.5, 3.5)), imgLod(uv - vec2(lv(kv.z, 1.0, 0.1, 0.3), lv(kv.z, 2.0, 0.05, 0.15)), lv(kv.z, 3.0, 1.5, 3.5)), tone) * (lv(kv.z, 4.0, 0.35, 0.75) + lv(kv.z, 5.0, 0.6, 1.2) * tone);
+    if (k.z == 2) return imgLod(uv, lv(kv.z, 6.0, 0.2, 0.6)) * (lv(kv.z, 7.0, 0.1, 0.3) + lv(kv.z, 8.0, 0.9, 1.7) * tone);
+    return imgLod(uv, lv(kv.z, 9.0, 2.0, 4.0)) * (lv(kv.z, 10.0, 0.05, 0.25) + lv(kv.z, 11.0, 1.0, 1.7) * tone);
 }
 
 void main()
@@ -150,7 +156,7 @@ void main()
     float ws = 0.0;
     for (int i = 0; i < 4; ++i) {
         if (gLabW[i] > 0.002) {
-            col += gLabW[i] * percLook(gLabK[i], p, t, sc, st);
+            col += gLabW[i] * percLook(gLabK[i], gLabV[i], p, t, sc, st);
             ws += gLabW[i];
         }
     }

@@ -516,12 +516,64 @@ uniform float labPinB;
 uniform float labPinC;
 /** Test pin of slot 3. */
 uniform float labPinD;
+/** Test pin of the variants: 1 + the variant 0..99 for every slot, or 1000 * (1 + the slot) + 1 + the variant for that
+ * slot alone (the others at variant 0); 0: the walk decides. */
+uniform float labPinV;
 /** The share of an epoch a class change takes to cross-fade. */
 const float LabFade = 0.2;
 /** The classes of the four slots, for each of the (up to four) looks the walk blends. */
 ivec4 gLabK[4];
 /** The weights of those looks. */
 float gLabW[4];
+/** The variants (0..99) of the four slots' classes, for each of the looks the walk blends: a class is a family of
+ * looks, the variant sets its constants (lv(), lk()); variant 0 is the lab's original look. */
+ivec4 gLabV[4];
+
+/**  A constant of a lab's look, set by a slot's variant inside a range.
+ *
+ * @param vi  The slot's variant, 0..99. (in)
+ * @param j   The stream: another number for every constant of a look. (in)
+ * @param lo  The lower end. (in)
+ * @param hi  The upper end; variant 0 gives the middle. (in)
+ *
+ * @return
+ *   The constant.
+ **/
+float lv( int vi, float j, float lo, float hi )
+{
+    return vi == 0 ? 0.5 * ( lo + hi )
+                   : mix( lo, hi, fract( sin( float( vi ) * 12.9898 + j * 78.233 + 3.7 ) * 43758.5453 ) );
+}
+
+/**  A choice of a lab's look, set by a slot's variant.
+ *
+ * @param vi  The slot's variant, 0..99. (in)
+ * @param j   The stream. (in)
+ * @param n   The number of choices. (in)
+ *
+ * @return
+ *   0 .. n-1; 0 (the original choice) for variant 0.
+ **/
+int lk( int vi, float j, int n )
+{
+    return vi == 0
+               ? 0
+               : min( int( fract( sin( float( vi ) * 37.719 + j * 51.37 + 1.9 ) * 43758.5453 ) * float( n ) ), n - 1 );
+}
+
+/**  A variant of a slot in an epoch: a hash of the slot, the epoch and the walk's seed.
+ *
+ * @param s     The slot, 0..3. (in)
+ * @param e     The epoch (a whole number). (in)
+ * @param seed  The walk's seed. (in)
+ *
+ * @return
+ *   The variant, 0..99.
+ **/
+int labVar( int s, float e, float seed )
+{
+    return int( min( floor( hash21( vec2( e * 2.9 + seed * 1.3 + 11.0, float( s ) * 7.7 + 3.1 ) ) * 100.0 ), 99.0 ) );
+}
 
 /**  A class of a slot in an epoch: a hash of the slot, the epoch and the walk's seed.
  *
@@ -560,7 +612,7 @@ void labWalk( float seed, ivec4 n, float period )
     for ( int j = 0; j < 2; ++j )
     {
         float sd = seed + 0.713 * ( j == 0 ? audioSectionPrev : audioSectionId );
-        ivec4 base = ivec4( 0 ), alt = ivec4( 0 );
+        ivec4 base = ivec4( 0 ), alt = ivec4( 0 ), vbase = ivec4( 0 ), valt = ivec4( 0 );
         int   fs = 0;
         float ff = 0.0;
         for ( int s = 0; s < 4; ++s )
@@ -571,6 +623,8 @@ void labWalk( float seed, ivec4 n, float period )
             float e = floor( w );
             base[s] = labCls( s, e, sd, n[s] );
             alt[s] = labCls( s, e + 1.0, sd, n[s] );
+            vbase[s] = labVar( s, e, sd );
+            valt[s] = labVar( s, e + 1.0, sd );
             float f = smoothstep( 1.0 - LabFade, 1.0, w - e );
             if ( f > 0.0 )
             {
@@ -579,11 +633,14 @@ void labWalk( float seed, ivec4 n, float period )
             }
         }
         float wj = j == 0 ? 1.0 - m : m;
-        ivec4 b2 = base;
+        ivec4 b2 = base, vb2 = vbase;
         b2[fs] = alt[fs];
+        vb2[fs] = valt[fs];
         gLabK[2 * j] = base;
+        gLabV[2 * j] = vbase;
         gLabW[2 * j] = wj * ( 1.0 - ff );
         gLabK[2 * j + 1] = b2;
+        gLabV[2 * j + 1] = vb2;
         gLabW[2 * j + 1] = wj * ff;
     }
     if ( labPinA + labPinB + labPinC + labPinD > 0.5 )
@@ -601,12 +658,29 @@ void labWalk( float seed, ivec4 n, float period )
             gLabW[i] = i == 0 ? 1.0 : 0.0;
         }
     }
+    if ( labPinV > 0.5 )
+    {
+        int pv = int( labPinV + 0.5 );
+        int ps = pv / 1000 - 1;
+        int vp = clamp( pv - 1000 * ( pv / 1000 ) - 1, 0, 99 );
+        for ( int i = 0; i < 4; ++i )
+        {
+            if ( ps < 0 )
+                gLabV[i] = ivec4( vp );
+            else
+            {
+                gLabV[i] = ivec4( 0 );
+                gLabV[i][ps] = vp;
+            }
+        }
+    }
 }
 
 /**  The refraction of one sort of glass at a place: how far it moves the picture there, and how much it darkens.
  *
  * @param kind   The sort, 0..8: reeded, hammered, bull's-eye, portholes, frosted, cathedral, seeded, pebbled,
  *               leaded diamonds. (in)
+ * @param vi     The sort's variant 0..99: the constants of the glass. (in)
  * @param q      The place, in pattern cells. (in)
  * @param shade  The glass's darkening there (lead, rims), 0..1. (out)
  * @param blur   How much it frosts the picture there, 0..1. (out)
@@ -614,27 +688,28 @@ void labWalk( float seed, ivec4 n, float period )
  * @return
  *   The displacement of the picture, in cells.
  **/
-vec2 glassDisp( int kind, vec2 q, out float shade, out float blur )
+vec2 glassDisp( int kind, int vi, vec2 q, out float shade, out float blur )
 {
     shade = 0.0;
     blur = 0.0;
     if ( kind == 0 )
     {
-        float d = fract( q.x ) - 0.5;
+        float d = fract( q.x + lv( vi, 2.0, -0.4, 0.4 ) * q.y ) - 0.5;
         shade = 0.2 * smoothstep( 0.3, 0.5, abs( d ) );
-        return vec2( -1.6 * d, 0.0 );
+        return vec2( -lv( vi, 1.0, 1.0, 2.2 ) * d, 0.0 );
     }
     if ( kind == 1 || kind == 7 )
     {
         vec2  g = floor( q );
         float best = 9.0;
         vec2  c = vec2( 0.0 );
+        float jt = lv( vi, 3.0, 0.4, 1.0 );
         for ( int j = -1; j <= 1; ++j )
         {
             for ( int i = -1; i <= 1; ++i )
             {
                 vec2  cg = g + vec2( float( i ), float( j ) );
-                vec2  pt = kind == 1 ? cg + 0.15 + 0.7 * hash22( cg )
+                vec2  pt = kind == 1 ? cg + 0.5 + jt * ( hash22( cg ) - 0.5 )
                                      : cg + vec2( 0.5 + 0.5 * ( cg.y - 2.0 * floor( cg.y * 0.5 ) ), 0.5 );
                 float d = dot( q - pt, q - pt );
                 if ( d < best )
@@ -645,8 +720,8 @@ vec2 glassDisp( int kind, vec2 q, out float shade, out float blur )
             }
         }
         vec2 n = q - c;
-        shade = 0.25 * smoothstep( 0.2, 0.7, length( n ) );
-        return -1.1 * n;
+        shade = lv( vi, 5.0, 0.15, 0.35 ) * smoothstep( lv( vi, 6.0, 0.1, 0.3 ), lv( vi, 7.0, 0.5, 0.9 ), length( n ) );
+        return -lv( vi, 4.0, 0.7, 1.5 ) * n;
     }
     if ( kind == 2 || kind == 3 )
     {
@@ -657,38 +732,49 @@ vec2 glassDisp( int kind, vec2 q, out float shade, out float blur )
             f = fract( q + vec2( 0.5 * ( g.y - 2.0 * floor( g.y * 0.5 ) ), 0.0 ) ) - 0.5;
         }
         float r = length( f );
-        shade = 0.55 * smoothstep( 0.38, 0.5, r );
-        return r < 0.45 ? -f * ( kind == 2 ? 1.3 : -1.6 ) * ( 1.0 - r ) : vec2( 0.0 );
+        shade = lv( vi, 2.0, 0.35, 0.75 ) * smoothstep( lv( vi, 1.0, 0.3, 0.46 ), 0.5, r );
+        return r < lv( vi, 3.0, 0.4, 0.5 )
+                   ? -f * ( kind == 2 ? lv( vi, 4.0, 0.8, 1.8 ) : -lv( vi, 5.0, 1.0, 2.2 ) ) * ( 1.0 - r )
+                   : vec2( 0.0 );
     }
     if ( kind == 4 )
     {
-        float n = fbm( q * 1.1 + 4.0 );
-        blur = smoothstep( 0.42, 0.68, n );
-        return 0.12 * ( vec2( fbm( q * 3.0 ), fbm( q * 3.0 + 9.0 ) ) - 0.5 );
+        float n = fbm( q * lv( vi, 1.0, 0.4, 1.8 ) + 4.0 );
+        blur = smoothstep( lv( vi, 2.0, 0.2, 0.64 ), lv( vi, 3.0, 0.45, 0.91 ), n );
+        float fq = lv( vi, 5.0, 2.0, 4.0 );
+        return lv( vi, 4.0, 0.03, 0.21 ) * ( vec2( fbm( q * fq ), fbm( q * fq + 9.0 ) ) - 0.5 );
     }
     if ( kind == 5 )
-        return 0.5 * ( vec2( fbm( q * 0.9 ), fbm( q * 0.9 + 7.0 ) ) - 0.5 )
-               + 0.12 * ( vec2( noise2( q * 3.0 ), noise2( q * 3.0 + 5.0 ) ) - 0.5 );
+    {
+        float fq = lv( vi, 4.0, 2.0, 4.0 );
+        return lv( vi, 1.0, 0.25, 0.75 )
+                   * ( vec2( fbm( q * lv( vi, 2.0, 0.6, 1.2 ) ), fbm( q * lv( vi, 2.0, 0.6, 1.2 ) + 7.0 ) ) - 0.5 )
+               + lv( vi, 3.0, 0.06, 0.18 ) * ( vec2( noise2( q * fq ), noise2( q * fq + 5.0 ) ) - 0.5 );
+    }
     if ( kind == 6 )
     {
-        vec2  g = floor( q * 0.7 );
+        float ps = lv( vi, 1.0, 0.5, 0.9 );
+        vec2  g = floor( q * ps );
         vec2  pt = g + 0.15 + 0.7 * hash22( g );
-        float on = hash21( g + 3.0 ) > 0.45 ? 1.0 : 0.0;
-        vec2  n = q * 0.7 - pt;
+        float on = hash21( g + 3.0 ) > lv( vi, 2.0, 0.3, 0.6 ) ? 1.0 : 0.0;
+        vec2  n = q * ps - pt;
         float r = length( n );
-        float lens = on * smoothstep( 0.35, 0.2, r );
-        shade = 0.3 * lens * smoothstep( 0.15, 0.3, r );
-        return -n * 2.2 * lens;
+        float lens = on * smoothstep( lv( vi, 3.0, 0.25, 0.45 ), lv( vi, 4.0, 0.1, 0.3 ), r );
+        shade = lv( vi, 6.0, 0.2, 0.4 ) * lens * smoothstep( 0.15, 0.3, r );
+        return -n * lv( vi, 5.0, 1.4, 3.0 ) * lens;
     }
-    vec2 g = floor( rot2( 0.7854 ) * q * 0.8 );
-    vec2 f = fract( rot2( 0.7854 ) * q * 0.8 ) - 0.5;
-    shade = 0.8 * smoothstep( 0.4, 0.47, max( abs( f.x ), abs( f.y ) ) );
-    return ( hash22( g ) - 0.5 ) * 0.9 - f * 0.25;
+    float da = 0.7854 + lv( vi, 1.0, -0.5, 0.5 );
+    float ds = lv( vi, 2.0, 0.55, 1.05 );
+    vec2  g = floor( rot2( da ) * q * ds );
+    vec2  f = fract( rot2( da ) * q * ds ) - 0.5;
+    shade = lv( vi, 3.0, 0.5, 1.1 ) * smoothstep( lv( vi, 4.0, 0.33, 0.47 ), 0.47, max( abs( f.x ), abs( f.y ) ) );
+    return ( hash22( g ) - 0.5 ) * lv( vi, 5.0, 0.5, 1.3 ) - f * lv( vi, 6.0, 0.1, 0.4 );
 }
 
 /**  One look of the lab.
  *
  * @param k   The classes: x the sort of glass, y the thickness, z the pane's slide, w the glazing. (in)
+ * @param kv  The variants of those classes (the constants of each). (in)
  * @param p   The place. (in)
  * @param t   The clock. (in)
  * @param sc  The pattern's cells per unit. (in)
@@ -697,29 +783,34 @@ vec2 glassDisp( int kind, vec2 q, out float shade, out float blur )
  * @return
  *   The colour.
  **/
-vec3 glassLook( ivec4 k, vec2 p, float t, float sc, float th )
+vec3 glassLook( ivec4 k, ivec4 kv, vec2 p, float t, float sc, float th )
 {
-    float tk = th * ( k.y == 0 ? 0.5 : ( k.y == 1 ? 1.0 : 1.7 ) );
-    vec2 sl = k.z == 0 ? vec2( 0.05 * t, 0.0 )
-                       : ( k.z == 1 ? vec2( 0.0, 0.05 * t ) : ( k.z == 2 ? vec2( 0.04 * t, 0.03 * t ) : vec2( 0.0 ) ) );
-    vec2  q = k.z == 3 ? rot2( 0.04 * t ) * p * sc : ( p + sl ) * sc;
+    float tk = th * ( k.y == 0 ? 0.5 : ( k.y == 1 ? 1.0 : 1.7 ) ) * lv( kv.y, 1.0, 0.7, 1.3 );
+    vec2 sl = k.z == 0
+                  ? vec2( lv( kv.z, 1.0, 0.025, 0.075 ) * t, 0.0 )
+                  : ( k.z == 1 ? vec2( 0.0, lv( kv.z, 1.0, 0.025, 0.075 ) * t )
+                               : ( k.z == 2 ? vec2( lv( kv.z, 2.0, 0.02, 0.06 ) * t, lv( kv.z, 3.0, 0.015, 0.045 ) * t )
+                                            : vec2( 0.0 ) ) );
+    vec2  q = k.z == 3 ? rot2( lv( kv.z, 4.0, 0.02, 0.06 ) * t ) * p * sc : ( p + sl ) * sc;
     float shade, blur;
-    vec2  d = glassDisp( k.x, q, shade, blur ) / sc;
+    vec2  d = glassDisp( k.x, kv.x, q, shade, blur ) / sc;
     float shade2 = 0.0;
     float blur2 = 0.0;
     if ( k.w > 0 )
     {
         float s2, b2;
-        vec2  q2 = rot2( 0.5 ) * q * ( k.w == 1 ? 1.7 : 1.0 ) + 3.7;
+        float ga = lv( kv.w, 1.0, 0.2, 0.8 );
+        float gs = k.w == 1 ? lv( kv.w, 2.0, 1.3, 2.1 ) : 1.0;
+        vec2  q2 = rot2( ga ) * q * gs + 3.7;
         int   kind2 = k.w == 1 ? k.x : 4;
-        vec2  d2 = glassDisp( kind2, q2, s2, b2 ) / ( sc * ( k.w == 1 ? 1.7 : 1.0 ) );
-        d += rot2( -0.5 ) * d2;
+        vec2  d2 = glassDisp( kind2, k.w == 1 ? kv.x : kv.w, q2, s2, b2 ) / ( sc * gs );
+        d += rot2( -ga ) * d2;
         shade2 = s2;
         blur2 = b2;
     }
     vec2 uv = ( p + tk * d ) * 0.8 + 0.5;
-    vec3 col = imgLod( uv, 0.3 + 3.2 * max( blur, blur2 ) * tk );
-    col *= 1.0 - 0.55 * max( shade, shade2 ) * ( 0.5 + 0.5 * tk );
+    vec3 col = imgLod( uv, 0.3 + lv( kv.y, 2.0, 2.0, 4.4 ) * max( blur, blur2 ) * tk );
+    col *= 1.0 - lv( kv.y, 3.0, 0.35, 0.75 ) * max( shade, shade2 ) * ( lv( kv.y, 4.0, 0.3, 0.7 ) + 0.5 * tk );
     return col * 1.1;
 }
 
@@ -738,7 +829,7 @@ void main()
     {
         if ( gLabW[i] > 0.002 )
         {
-            col += gLabW[i] * glassLook( gLabK[i], p, t, sc, th );
+            col += gLabW[i] * glassLook( gLabK[i], gLabV[i], p, t, sc, th );
             ws += gLabW[i];
         }
     }

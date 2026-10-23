@@ -21,6 +21,7 @@
 /**  A grating at a place: the direction and strength of its first order and the phase of its own stripes.
  *
  * @param kind  The grating, 0..7. (in)
+ * @param vi    The grating's variant 0..99: the constants of its law (tilt, curvature, the number of waves ...). (in)
  * @param p     The place (turned and scaled by the lab's motion). (in)
  * @param K     The grating constant. (in)
  * @param t     The clock. (in)
@@ -29,53 +30,70 @@
  * @return
  *   The shift of the first order.
  **/
-vec2 diffGrating(int kind, vec2 p, float K, float t, out float ph)
+vec2 diffGrating(int kind, int vi, vec2 p, float K, float t, out float ph)
 {
     ph = 0.0;
-    if (kind == 0) { ph = K * p.x; return vec2(1.0, 0.0); }
+    if (kind == 0) {
+        float sl = lv(vi, 1.0, -0.25, 0.25);
+        float ch = lv(vi, 2.0, -0.3, 0.3);
+        ph = K * (p.x + sl * p.y + ch * dot(p, p));
+        return vec2(1.0 + 2.0 * ch * p.x, sl + 2.0 * ch * p.y);
+    }
     if (kind == 1 || kind == 2) {
-        int n = kind == 1 ? 3 : 5;
+        int n = (kind == 1 ? 3 : 5) + lk(vi, 5.0, 2);
+        float a0 = lv(vi, 1.0, -0.4, 0.4);
+        float sp = lv(vi, 2.0, 0.1, 0.3);
         vec2 g = vec2(0.0);
-        for (int i = 0; i < 5; ++i) {
+        for (int i = 0; i < 6; ++i) {
             if (i >= n) break;
-            float a = 3.14159265 * float(i) / float(n);
+            float a = a0 + 3.14159265 * float(i) / float(n);
             vec2 d = vec2(cos(a), sin(a));
-            float s = K * dot(p, d) + 0.2 * t * float(i + 1);
+            float s = K * dot(p, d) + sp * t * float(i + 1);
             ph += cos(s);
             g -= sin(s) * d;
         }
-        return g * (kind == 1 ? 0.7 : 0.55);
+        return g * (kind == 1 ? lv(vi, 3.0, 0.5, 0.9) : lv(vi, 4.0, 0.4, 0.7));
     }
-    if (kind == 3) { ph = 0.5 * K * dot(p, p); return p * 2.0; }
+    if (kind == 3) {
+        vec2 pc = p - vec2(lv(vi, 3.0, -0.3, 0.3), lv(vi, 4.0, -0.3, 0.3));
+        ph = lv(vi, 1.0, 0.3, 0.7) * K * dot(pc, pc);
+        return pc * lv(vi, 2.0, 1.2, 2.8);
+    }
     if (kind == 4) {
+        float arms = 3.0 + float(lk(vi, 1.0, 4));
         float r = max(length(p), 0.05);
         vec2 e = p / r;
-        ph = 3.0 * atan(p.y, p.x) + K * r * 0.5;
-        return (vec2(-e.y, e.x) * 3.0 / (r * 4.0 + 0.5) + e * 0.8);
+        ph = arms * atan(p.y, p.x) + K * r * lv(vi, 2.0, 0.3, 0.7);
+        return (vec2(-e.y, e.x) * arms / (r * 4.0 + 0.5) + e * lv(vi, 3.0, 0.5, 1.1));
     }
     if (kind == 5) {
+        float gr = lv(vi, 1.0, 1.236, 2.0);
         float u = K * p.x;
-        ph = u + 0.7 * sin(u / 1.618 + 0.3 * t);
-        return vec2(1.0 + 0.35 * cos(u / 1.618 + 0.3 * t), 0.2 * sin(0.7 * u));
+        ph = u + lv(vi, 2.0, 0.2, 1.2) * sin(u / gr + 0.3 * t);
+        return vec2(1.0 + lv(vi, 3.0, 0.05, 0.65) * cos(u / gr + 0.3 * t), lv(vi, 4.0, 0.05, 0.35) * sin(0.7 * u));
     }
     if (kind == 6) {
         float s = 0.0;
         float a = 1.0;
+        float rt = lv(vi, 1.0, 2.4, 3.6);
+        float dc = lv(vi, 2.0, 0.3, 0.7);
         for (int j = 0; j < 4; ++j) {
-            s += a * sin(K * 0.5 * pow(3.0, float(j)) * p.x + 0.1 * t * float(j + 1));
-            ph += a * K * 0.5 * pow(3.0, float(j)) * p.x;
-            a *= 0.5;
+            float f = K * 0.5 * pow(rt, float(j));
+            s += a * sin(f * p.x + 0.1 * t * float(j + 1));
+            ph += a * f * p.x;
+            a *= dc;
         }
         return vec2(s * 0.8, 0.15 * s);
     }
     float r = length(p);
-    ph = K * r;
-    return p / max(r, 0.05) * sin(K * r * 0.5 + 0.3 * t);
+    ph = K * r * lv(vi, 2.0, 0.8, 1.2);
+    return p / max(r, 0.05) * sin(K * r * lv(vi, 1.0, 0.3, 0.7) + 0.3 * t);
 }
 
 /**  One look of the lab.
  *
  * @param k    The classes: x the grating, y the orders, z the grating's motion, w the combination. (in)
+ * @param kv   The variants of those classes (the constants of each). (in)
  * @param p    The place. (in)
  * @param t    The clock. (in)
  * @param K    The grating constant. (in)
@@ -84,15 +102,22 @@ vec2 diffGrating(int kind, vec2 p, float K, float t, out float ph)
  * @return
  *   The colour.
  **/
-vec3 diffLook(ivec4 k, vec2 p, float t, float K, float R)
+vec3 diffLook(ivec4 k, ivec4 kv, vec2 p, float t, float K, float R)
 {
     vec2 q = p;
-    if (k.z == 0) q = rot2(0.05 * t) * q;
-    else if (k.z == 1) q *= 1.0 + 0.2 * sin(0.25 * t);
-    else if (k.z == 2) q += vec2(0.06 * t, 0.0);
-    else q.x += 0.3 * q.y * sin(0.2 * t);
+    if (k.z == 0) q = rot2(lv(kv.z, 1.0, 0.02, 0.08) * t) * q;
+    else if (k.z == 1) q *= 1.0 + lv(kv.z, 2.0, 0.05, 0.35) * sin(0.25 * t);
+    else if (k.z == 2) q += vec2(lv(kv.z, 3.0, 0.03, 0.09) * t, 0.0);
+    else q.x += lv(kv.z, 4.0, 0.05, 0.55) * q.y * sin(0.2 * t);
     float ph;
-    vec2 D = diffGrating(k.x, q, K, t, ph) * R * 0.09;
+    vec2 D = diffGrating(k.x, kv.x, q, K, t, ph) * R * 0.09;
+    float w0 = lv(kv.y, 1.0, 0.3, 0.6);
+    float w1 = lv(kv.y, 2.0, 0.12, 0.32);
+    float w2 = lv(kv.y, 3.0, 0.04, 0.14);
+    float wp = lv(kv.y, 4.0, 1.2, 2.0);
+    float wn = lv(kv.y, 5.0, 0.3, 0.7);
+    float dep = lv(kv.y, 6.0, 0.12, 0.44);
+    float ca = lv(kv.y, 7.0, 0.01, 0.07);
     vec3 sum = vec3(0.0);
     float wsum = 0.0;
     vec3 mx = vec3(0.0);
@@ -101,13 +126,13 @@ vec3 diffLook(ivec4 k, vec2 p, float t, float K, float R)
     for (int m = -2; m <= 2; ++m) {
         if (m < lo) continue;
         if (k.y == 0 && abs(m) > 1) continue;
-        float w = m == 0 ? 0.45 : (abs(m) == 1 ? 0.22 : 0.09);
-        if (k.y == 3) w *= (m > 0 ? 1.6 : 0.5);
-        float vis = 0.72 + 0.28 * cos(float(m) * ph);
+        float w = m == 0 ? w0 : (abs(m) == 1 ? w1 : w2);
+        if (k.y == 3) w *= (m > 0 ? wp : wn);
+        float vis = (1.0 - dep) + dep * cos(float(m) * ph);
         vec2 off = float(m) * D;
         vec3 c;
         if (k.y == 4) {
-            c = vec3(imgLod(p * 0.8 + 0.5 + off * 0.96 * 0.8, 0.4).r, imgLod(p * 0.8 + 0.5 + off * 0.8, 0.4).g, imgLod(p * 0.8 + 0.5 + off * 1.04 * 0.8, 0.4).b);
+            c = vec3(imgLod(p * 0.8 + 0.5 + off * (1.0 - ca) * 0.8, 0.4).r, imgLod(p * 0.8 + 0.5 + off * 0.8, 0.4).g, imgLod(p * 0.8 + 0.5 + off * (1.0 + ca) * 0.8, 0.4).b);
         } else {
             c = imgLod(p * 0.8 + 0.5 + off * 0.8, 0.4);
         }
@@ -117,9 +142,9 @@ vec3 diffLook(ivec4 k, vec2 p, float t, float K, float R)
         if (m == 0) first = c;
     }
     vec3 avg = sum / max(wsum, 1e-3) * 1.1;
-    if (k.w == 1) return mix(avg, mx, 0.7);
-    if (k.w == 2) return avg * (0.7 + 0.5 * cos(ph));
-    if (k.w == 3) return clamp(abs(first - avg) * 2.2 + 0.35 * first, 0.0, 1.4);
+    if (k.w == 1) return mix(avg, mx, lv(kv.w, 1.0, 0.4, 1.0));
+    if (k.w == 2) return avg * (lv(kv.w, 2.0, 0.5, 0.9) + lv(kv.w, 3.0, 0.3, 0.7) * cos(ph));
+    if (k.w == 3) return clamp(abs(first - avg) * lv(kv.w, 4.0, 1.4, 3.0) + lv(kv.w, 5.0, 0.2, 0.5) * first, 0.0, 1.4);
     return avg;
 }
 
@@ -135,7 +160,7 @@ void main()
     float ws = 0.0;
     for (int i = 0; i < 4; ++i) {
         if (gLabW[i] > 0.002) {
-            col += gLabW[i] * diffLook(gLabK[i], p, t, K, R);
+            col += gLabW[i] * diffLook(gLabK[i], gLabV[i], p, t, K, R);
             ws += gLabW[i];
         }
     }

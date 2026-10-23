@@ -739,6 +739,14 @@ FUNC_DOCS = {
 from glsl_doc_scenes import SCENES      # noqa: E402
 # ---- round 7 (23.10.2026): the forty chain transforms of chain_lib7.glsl
 FUNC_DOCS.update( {
+    "vr": { "brief": "The variant's pseudo-random number of one stream.", "params": { "j": "The stream, a whole number 0..7." },
+            "return": "0..1; 0.5 for variant 0, so that vv() gives the middle of its range." },
+    "vv": { "brief": "A constant of the class, set by the variant inside a range.", "params": { "j": "The stream.", "lo": "The lower end.",
+            "hi": "The upper end; variant 0 gives the middle." }, "return": "The constant." },
+    "vk": { "brief": "A choice of the class, set by the variant.", "params": { "j": "The stream.", "n": "The number of choices." },
+            "return": "0 .. n-1; 0 (the original choice) for variant 0." },
+    "chainSetVar": { "brief": "Sets the variant a stage's sub-variant stands for (gVar, gVa, gVb).", "params": { "v": "The sub-variant 0..1 of the stage.",
+            "k": "The class's branch number." } },
     "tTinkerbell": T( brief="Stage A: coordinate maps ------------------------------------------------------------------------------------ Tinkerbell map: x' = x^2 - y^2 + a x + b y, y' = 2 x y + c x + d y, the strange attractor's loops.", steps="The number of steps.", t="The scene's clock." ),
     "tLozi": T( brief="Lozi map: the piecewise linear Henon, |x| for x^2: straight kinks instead of soft loops.", steps="The number of steps.", t="The scene's clock." ),
     "tHopalong": T( brief="Hopalong (Martin): x' = y - sgn(x) sqrt|b x - c|, y' = a - x.", a="The first parameter.", t="The scene's clock." ),

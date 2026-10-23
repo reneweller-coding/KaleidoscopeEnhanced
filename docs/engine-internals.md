@@ -7528,3 +7528,49 @@ RotatedQuadNest.
     LightningStorm, the automata, ShipDocking ...).
 - *PDF:* the portable Chrome printed it only at the second try, with its own `--user-data-dir`, `--virtual-time-budget`
   and the machine quiet (the first try ran beside the snapshots and died after 110 s): 870 pages, 71.7 MB.
+
+## 23.10.2026 (64): a hundred variants for every new chain class and every lab class
+
+Asked after (63): "can you get a hundred variants for each of the new labs and chains?" Done as parametric variants: a class
+keeps its shape and takes its constants (frequencies, rates, offsets, counts, sizes) from a variant number 0..99. Variant 0 is
+always the look the class had before.
+
+**Chain classes (40 of round 7).** `chain_lib7.glsl` holds `gVar/gVa/gVb` (the variant's hash and its eight pseudo-random
+numbers), `vr(j)`, `vv(j, lo, hi)` (a constant in a range, the middle for variant 0) and `vk(j, n)` (a choice 0..n-1, the
+first for variant 0), and `chainSetVar(v, k)`, which turns the stage's sub-variant `v` (0..1) into the variant `floor(100 v)`.
+Each of the stage functions of the four chain lab sources and of FxChain calls `chainSetVar(v, k)` after `k = ord?(k)`, and the
+pass generator (`make_chainpass.py`) puts it in front of every class pass (`cls(uv, v)`), so the app's per-class passes get the
+variants without a new program: the sub-variant that the walk already sets (`closedClass` keeps it across a class change) now
+picks the constants. The 40 functions use `vv/vk` for the constants that make the class look different: a tilt, a rate, the
+number of arms, a swapped axis, the width of a lens. Where the first sheets showed variants too alike (Veselago lens,
+cylinder lens, Maxwell fish eye, lower mirage, Lamb-Oseen row, Faraday waves, Airy packet, capillary waves, Cantor mirror,
+rose fold) the ranges were widened or a structural choice was added. Doxygen: the three globals have entries in
+`Tools/glsl_doc_vars.py`, the helpers in `glsl_doc_table.py`.
+
+**Labs (20).** `LAB_LIB` (gen.py) has `gLabV[4]` next to `gLabK[4]`: `labWalk` draws a variant 0..99 for every slot and epoch
+(`labVar(slot, epoch, seed)`, blended with the class like the classes themselves are), and a look function takes `ivec4 kv`
+with the variants of its slots. The constants of the look are `lv(vi, j, lo, hi)` (a range, the middle for variant 0) and
+`lk(vi, j, n)` (a choice, the first for variant 0); `j` is a stream number so that the constants of one look are drawn
+independently. Rules kept while patching the 20 sources: the middle of every range is the old constant (so variant 0 renders
+exactly like the old lab), counts that sit on a seam (arms, sectors, turns of an atan) stay whole numbers, and the encoding
+of an inverse (a colour model's encode and decode) uses the same constants on both sides. Test pins: `labPinA..D` pin a class
+(1 + class), `labPinV` the variants: 1 + v for all four slots, or 1000 (1 + slot) + 1 + v for one slot alone, the others at
+variant 0 (the check sheets have one row per class and the variants in the columns).
+
+**Checks.** Contact sheets (one row per class, the variants 0, 7, 15 ... 95 as columns, the other three slots at their first
+class and variant 0; `PresetEditor --render` with the pins) for all 40 chain classes (stage by stage in ChainLab2D, the other
+stages off) and for every slot class of the 20 labs (427 classes, 100 variants each: 42,700 lab variants, 4,000 chain
+variants). *Variant 0 equals the old look:* all 397 lab rows rendered against the committed (HEAD) frag, the largest mean
+deviation of a frame 0.0004 (floating-point noise). *No flat or dark cells.* *Alike:* two metrics (mean difference of the
+variants at 56 x 32 and at 224 x 126 pixels; the fine one is the fair one for line and dot textures such as EngravingLab).
+Of 83 rows that looked alike at first, 28 are clearly distinct after the second pass (ranges widened, the middle kept), 28 are
+subtle (0.005 .. 0.03 against 0.05 .. 0.2 for the strong ones: overlays, seams, overprints, kernels) and 23 have no constants
+and stay identical across the hundred: the neutral classes ("none", "plain", "average", "sharp focus") and a few choice classes
+(TwinPhotoLab roles 0 and 1, SeparationLab screen "none"). Context matters: a colour model of SeparationLab only shows with a
+screen, the illumination of MicroscopeLab only with a directional method, so a row that is inert in the test can act in a walk.
+*Cost:* the labs' GPU time at 1080p, measured in the app (`screen.py --scenes`, the 20 labs): median 0.51 ms, the dearest
+0.87 ms (LayerCutLab); the values of the first measurement summed 14.9 ms for the twenty and the new ones 10.9 ms, so the
+constants did not make the labs dearer (run-to-run differences of the machine are of that size: LayerCutLab 0.65 -> 0.87,
+ExposureLab 1.55 -> 0.69). The pass shaders compile as
+before; `shadercheck.py` skips the monolithic ChainLab2D in the cold-compile rule (it runs as passes in the app; the editor still
+compiles all classes of its first view in 9 to 10 s). Doxygen 0 warnings.

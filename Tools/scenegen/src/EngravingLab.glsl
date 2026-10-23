@@ -33,6 +33,7 @@ float engLine(float a, float w)
 /**  One look of the lab.
  *
  * @param k    The classes: x the family, y the density layout, z the direction field, w the paper. (in)
+ * @param kv   The variants of those classes (the constants of each). (in)
  * @param p    The place. (in)
  * @param t    The clock. (in)
  * @param N    Lines per unit. (in)
@@ -42,7 +43,7 @@ float engLine(float a, float w)
  * @return
  *   The colour.
  **/
-vec3 engLook(ivec4 k, vec2 p, float t, float N, float wt, float wob)
+vec3 engLook(ivec4 k, ivec4 kv, vec2 p, float t, float N, float wt, float wob)
 {
     vec2 uv = p * 0.8 + 0.5;
     vec3 C = imgLod(uv, 2.5);
@@ -51,39 +52,49 @@ vec3 engLook(ivec4 k, vec2 p, float t, float N, float wt, float wob)
     vec3 C6 = imgLod(uv, 6.0);
     // the density layout
     float n = N;
-    if (k.y == 1) n *= 1.0 + 0.1 * sin(0.3 * t);
-    else if (k.y == 2) n *= 0.75 + 0.7 * exp(-2.0 * dot(p - 0.3 * vec2(cos(0.1 * t), sin(0.13 * t)), p - 0.3 * vec2(cos(0.1 * t), sin(0.13 * t))));
-    else if (k.y == 3) n *= 1.0 + 0.12 * sin(3.0 * p.x + 0.4 * t);
+    if (k.y == 1) n *= 1.0 + lv(kv.y, 1.0, 0.05, 0.15) * sin(lv(kv.y, 8.0, 0.2, 0.4) * t);
+    else if (k.y == 2) {
+        vec2 dc = p - lv(kv.y, 5.0, 0.15, 0.45) * vec2(cos(0.1 * t), sin(0.13 * t));
+        n *= lv(kv.y, 2.0, 0.5, 1.0) + lv(kv.y, 3.0, 0.4, 1.0) * exp(lv(kv.y, 4.0, -3.5, -0.5) * dot(dc, dc));
+    }
+    else if (k.y == 3) n *= 1.0 + lv(kv.y, 6.0, 0.06, 0.18) * sin(lv(kv.y, 7.0, 1.5, 4.5) * p.x + 0.4 * t);
     // the direction field: a is across the lines, b along them
     float a, b;
-    if (k.z == 0) { vec2 q = rot2(0.5 + 0.06 * t) * p; a = q.y * n; b = q.x * n; }
-    else if (k.z == 1) { a = length(p) * n; b = atan(p.y, p.x) * 6.0; }
-    else if (k.z == 2) { float th = atan(p.y, p.x); a = length(p) * n + 3.0 * th / 6.2831853 + 0.03 * t * n; b = th * 6.0; }
-    else { float w = fbm(p * 2.0 + vec2(0.0, 0.05 * t)); a = (p.y + 0.18 * w) * n; b = p.x * n; }
+    float turns = float(lk(kv.z, 4.0, 4));
+    float along = 6.0 + 2.0 * float(lk(kv.z, 3.0, 3));
+    vec2 pc = p - vec2(lv(kv.z, 8.0, -0.3, 0.3), lv(kv.z, 9.0, -0.3, 0.3));
+    if (k.z == 0) { vec2 q = rot2(lv(kv.z, 1.0, -0.4, 1.4) + lv(kv.z, 2.0, 0.03, 0.09) * t) * p; a = q.y * n; b = q.x * n; }
+    else if (k.z == 1) { a = length(pc) * n; b = atan(pc.y, pc.x) * along; }
+    else if (k.z == 2) { float th = atan(pc.y, pc.x); a = length(pc) * n + (3.0 + turns) * th / 6.2831853 + lv(kv.z, 5.0, 0.015, 0.045) * t * n; b = th * along; }
+    else { float w = fbm(p * lv(kv.z, 6.0, 1.2, 2.8) + vec2(0.0, 0.05 * t)); a = (p.y + lv(kv.z, 7.0, 0.1, 0.26) * w) * n; b = p.x * n; }
     float cover = 0.0;
     float dd = k.w == 1 ? T : D;
-    float wd = clamp(wt * dd * 1.15, 0.0, 0.5);
-    if (k.x == 0) cover = engLine(a, wd);
-    else if (k.x == 1) cover = max(engLine(a, wd), engLine(a * 0.5 + b * 0.866, 0.5 * max(dd - 0.45, 0.0) * 2.0 * wt));
-    else if (k.x == 2) cover = engLine(a, clamp(wd * (0.8 + 0.5 * wob * noise2(vec2(b * 0.7, floor(a))) * 2.0), 0.0, 0.5));
-    else if (k.x == 3) cover = engLine(a + (0.3 + 0.5 * wob) * sin(0.9 * b + 0.5 * t) + 1.6 * dd * 0.0, wd);
+    float wd = clamp(wt * dd * lv(kv.x, 12.0, 0.9, 1.4), 0.0, 0.5);
+    if (k.x == 0) cover = engLine(a, clamp(wd * (1.0 + lv(kv.x, 13.0, -0.5, 0.5) * sin(lv(kv.x, 14.0, 0.2, 0.9) * b)), 0.0, 0.5));
+    else if (k.x == 1) {
+        float ang = lv(kv.x, 1.0, 0.3, 1.7944);
+        cover = max(engLine(a, wd), engLine(a * cos(ang) + b * sin(ang), 0.5 * max(dd - lv(kv.x, 2.0, 0.3, 0.6), 0.0) * 2.0 * wt));
+    }
+    else if (k.x == 2) cover = engLine(a, clamp(wd * (lv(kv.x, 3.0, 0.5, 1.1) + lv(kv.x, 4.0, 0.3, 0.7) * wob * noise2(vec2(b * lv(kv.x, 5.0, 0.4, 1.0), floor(a))) * 2.0), 0.0, 0.5));
+    else if (k.x == 3) cover = engLine(a + (lv(kv.x, 6.0, 0.15, 0.45) + 0.5 * wob) * sin(lv(kv.x, 7.0, 0.5, 1.3) * b + 0.5 * t), wd);
     else if (k.x == 4) {
-        vec2 g = vec2(a, b * 0.0 + p.x * n);
+        vec2 g = vec2(a, p.x * n);
+        g.x += lv(kv.x, 10.0, -0.5, 0.5) * floor(g.y);
         vec2 f = fract(g) - 0.5;
         vec2 cg = floor(g);
-        vec2 jit = (hash22(cg) - 0.5) * 0.5;
-        cover = smoothstep(0.1, -0.1, length(f - jit) - 0.55 * sqrt(wt * dd));
+        vec2 jit = (hash22(cg) - 0.5) * lv(kv.x, 8.0, 0.3, 0.7);
+        cover = smoothstep(0.1, -0.1, length(f - jit) - lv(kv.x, 9.0, 0.35, 0.75) * sqrt(wt * dd));
     }
-    else if (k.x == 5) cover = engLine(a - 3.0 * (0.3 + wob) * T, clamp(0.1 + 0.4 * wt * dd, 0.0, 0.5));
-    else if (k.x == 6) { float r = length(p) * n; cover = engLine(r + 0.1 * t, wd); }
-    else cover = engLine(a, wd) * smoothstep(0.3 - 0.4 * dd, 0.7 - 0.4 * dd, abs(fract(b * 0.25) - 0.5) * 2.0 + 0.0) ;
-    vec3 ground = mix(C6, vec3(1.0), 0.62) * 0.95;
-    vec3 ink = C * 0.32;
-    if (k.w == 1) { ground = C6 * 0.07; ink = mix(C, vec3(1.0), 0.22) * 1.15; }
+    else if (k.x == 5) cover = engLine(a - lv(kv.x, 11.0, 1.8, 4.2) * (0.3 + wob) * T, clamp(lv(kv.x, 15.0, 0.05, 0.15) + 0.4 * wt * dd, 0.0, 0.5));
+    else if (k.x == 6) { float r = length(p * vec2(1.0, lv(kv.x, 17.0, 0.7, 1.3))) * n; cover = engLine(r + lv(kv.x, 16.0, 0.04, 0.16) * t, wd); }
+    else cover = engLine(a, wd) * smoothstep(lv(kv.x, 19.0, 0.2, 0.4) - 0.4 * dd, lv(kv.x, 20.0, 0.6, 0.8) - 0.4 * dd, abs(fract(b * lv(kv.x, 18.0, 0.15, 0.35)) - 0.5) * 2.0);
+    vec3 ground = mix(C6, vec3(1.0), lv(kv.w, 1.0, 0.44, 0.8)) * lv(kv.w, 2.0, 0.85, 1.05);
+    vec3 ink = C * lv(kv.w, 3.0, 0.2, 0.44);
+    if (k.w == 1) { ground = C6 * lv(kv.w, 4.0, 0.03, 0.11); ink = mix(C, vec3(1.0), lv(kv.w, 5.0, 0.1, 0.34)) * lv(kv.w, 6.0, 1.0, 1.3); }
     else if (k.w == 2) {
-        ground = C6 * 0.45 + 0.18;
-        float c2 = engLine(a + 0.5, clamp(0.5 * max(T - 0.35, 0.0) * 1.4 * wt, 0.0, 0.5));
-        return mix(mix(ground, mix(C, vec3(1.0), 0.3) * 1.1, c2), C * 0.28, cover);
+        ground = C6 * lv(kv.w, 7.0, 0.3, 0.6) + lv(kv.w, 8.0, 0.1, 0.26);
+        float c2 = engLine(a + 0.5, clamp(0.5 * max(T - lv(kv.w, 9.0, 0.2, 0.5), 0.0) * 1.4 * wt, 0.0, 0.5));
+        return mix(mix(ground, mix(C, vec3(1.0), 0.3) * 1.1, c2), C * lv(kv.w, 10.0, 0.18, 0.38), cover);
     }
     return mix(ground, ink, cover);
 }
@@ -101,7 +112,7 @@ void main()
     float ws = 0.0;
     for (int i = 0; i < 4; ++i) {
         if (gLabW[i] > 0.002) {
-            col += gLabW[i] * engLook(gLabK[i], p, t, N, wt, wob);
+            col += gLabW[i] * engLook(gLabK[i], gLabV[i], p, t, N, wt, wob);
             ws += gLabW[i];
         }
     }

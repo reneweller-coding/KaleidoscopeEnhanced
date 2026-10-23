@@ -810,3 +810,9 @@ VAR_DOCS.update( {
     "tile": "The bodies of the current tile, shared by the work group.",
     "exposure": "Exposure of the tonemap.",
 } )
+
+VAR_DOCS.update( {
+    "gVar": "The variant of the class in use: -1 for variant 0 (the original look), else a hash of its number, 0..1.",
+    "gVa": "The variant's first four pseudo-random numbers, 0..1 (all 0.5 for variant 0).",
+    "gVb": "The variant's last four pseudo-random numbers, 0..1 (all 0.5 for variant 0).",
+} )

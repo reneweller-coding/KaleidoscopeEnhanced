@@ -520,8 +520,9 @@ def main():
         gT += tz; gRot += 0.5 * tz;
     }
 """
-    def shader(cls_body, extra_uniforms, main_body, title):
-        cls = "vec2 cls(vec2 uv, float v)\n{\n    %s\n    return uv;\n}\n" % strip_comments(cls_body).strip()
+    def shader(cls_body, extra_uniforms, main_body, title, br=None):
+        var = "    chainSetVar(v, %d);\n" % br if br is not None else ""      # the class's variant (round 7's classes read it)
+        cls = "vec2 cls(vec2 uv, float v)\n{\n%s    %s\n    return uv;\n}\n" % (var, strip_comments(cls_body).strip())
         main = "void main()\n{\n" + PRE + main_body + "}\n"
         need = idents(strip_comments(cls + main)) | {"mirrorUV", "screenP"}
         keep_f = set()
@@ -593,7 +594,7 @@ def main():
                                              "fragColor = vec4(morphMix(uv, cls(uv, subV), 0.55 + 0.45 * clamp(audioSwell, 0.0, 1.0)), 0.0, 1.0);")
                 assert main_body != std_main
             _DocFile(os.path.join(OUT, "%s%d.frag" % (st, br))).write(
-                shader(code, "", main_body, title))
+                shader(code, "", main_body, title, br))
             written += 1
     # identity (a 'none' stage inside a fade), mix, fallback
     _DocFile(os.path.join(OUT, "Id.frag")).write(

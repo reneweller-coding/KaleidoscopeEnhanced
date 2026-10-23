@@ -514,12 +514,64 @@ uniform float labPinB;
 uniform float labPinC;
 /** Test pin of slot 3. */
 uniform float labPinD;
+/** Test pin of the variants: 1 + the variant 0..99 for every slot, or 1000 * (1 + the slot) + 1 + the variant for that
+ * slot alone (the others at variant 0); 0: the walk decides. */
+uniform float labPinV;
 /** The share of an epoch a class change takes to cross-fade. */
 const float LabFade = 0.2;
 /** The classes of the four slots, for each of the (up to four) looks the walk blends. */
 ivec4 gLabK[4];
 /** The weights of those looks. */
 float gLabW[4];
+/** The variants (0..99) of the four slots' classes, for each of the looks the walk blends: a class is a family of
+ * looks, the variant sets its constants (lv(), lk()); variant 0 is the lab's original look. */
+ivec4 gLabV[4];
+
+/**  A constant of a lab's look, set by a slot's variant inside a range.
+ *
+ * @param vi  The slot's variant, 0..99. (in)
+ * @param j   The stream: another number for every constant of a look. (in)
+ * @param lo  The lower end. (in)
+ * @param hi  The upper end; variant 0 gives the middle. (in)
+ *
+ * @return
+ *   The constant.
+ **/
+float lv( int vi, float j, float lo, float hi )
+{
+    return vi == 0 ? 0.5 * ( lo + hi )
+                   : mix( lo, hi, fract( sin( float( vi ) * 12.9898 + j * 78.233 + 3.7 ) * 43758.5453 ) );
+}
+
+/**  A choice of a lab's look, set by a slot's variant.
+ *
+ * @param vi  The slot's variant, 0..99. (in)
+ * @param j   The stream. (in)
+ * @param n   The number of choices. (in)
+ *
+ * @return
+ *   0 .. n-1; 0 (the original choice) for variant 0.
+ **/
+int lk( int vi, float j, int n )
+{
+    return vi == 0
+               ? 0
+               : min( int( fract( sin( float( vi ) * 37.719 + j * 51.37 + 1.9 ) * 43758.5453 ) * float( n ) ), n - 1 );
+}
+
+/**  A variant of a slot in an epoch: a hash of the slot, the epoch and the walk's seed.
+ *
+ * @param s     The slot, 0..3. (in)
+ * @param e     The epoch (a whole number). (in)
+ * @param seed  The walk's seed. (in)
+ *
+ * @return
+ *   The variant, 0..99.
+ **/
+int labVar( int s, float e, float seed )
+{
+    return int( min( floor( hash21( vec2( e * 2.9 + seed * 1.3 + 11.0, float( s ) * 7.7 + 3.1 ) ) * 100.0 ), 99.0 ) );
+}
 
 /**  A class of a slot in an epoch: a hash of the slot, the epoch and the walk's seed.
  *
@@ -558,7 +610,7 @@ void labWalk( float seed, ivec4 n, float period )
     for ( int j = 0; j < 2; ++j )
     {
         float sd = seed + 0.713 * ( j == 0 ? audioSectionPrev : audioSectionId );
-        ivec4 base = ivec4( 0 ), alt = ivec4( 0 );
+        ivec4 base = ivec4( 0 ), alt = ivec4( 0 ), vbase = ivec4( 0 ), valt = ivec4( 0 );
         int   fs = 0;
         float ff = 0.0;
         for ( int s = 0; s < 4; ++s )
@@ -569,6 +621,8 @@ void labWalk( float seed, ivec4 n, float period )
             float e = floor( w );
             base[s] = labCls( s, e, sd, n[s] );
             alt[s] = labCls( s, e + 1.0, sd, n[s] );
+            vbase[s] = labVar( s, e, sd );
+            valt[s] = labVar( s, e + 1.0, sd );
             float f = smoothstep( 1.0 - LabFade, 1.0, w - e );
             if ( f > 0.0 )
             {
@@ -577,11 +631,14 @@ void labWalk( float seed, ivec4 n, float period )
             }
         }
         float wj = j == 0 ? 1.0 - m : m;
-        ivec4 b2 = base;
+        ivec4 b2 = base, vb2 = vbase;
         b2[fs] = alt[fs];
+        vb2[fs] = valt[fs];
         gLabK[2 * j] = base;
+        gLabV[2 * j] = vbase;
         gLabW[2 * j] = wj * ( 1.0 - ff );
         gLabK[2 * j + 1] = b2;
+        gLabV[2 * j + 1] = vb2;
         gLabW[2 * j + 1] = wj * ff;
     }
     if ( labPinA + labPinB + labPinC + labPinD > 0.5 )
@@ -599,12 +656,29 @@ void labWalk( float seed, ivec4 n, float period )
             gLabW[i] = i == 0 ? 1.0 : 0.0;
         }
     }
+    if ( labPinV > 0.5 )
+    {
+        int pv = int( labPinV + 0.5 );
+        int ps = pv / 1000 - 1;
+        int vp = clamp( pv - 1000 * ( pv / 1000 ) - 1, 0, 99 );
+        for ( int i = 0; i < 4; ++i )
+        {
+            if ( ps < 0 )
+                gLabV[i] = ivec4( vp );
+            else
+            {
+                gLabV[i] = ivec4( 0 );
+                gLabV[i][ps] = vp;
+            }
+        }
+    }
 }
 
 /**  One stage of the chain: a coordinate map evaluated at its own time.
  *
  * @param m   The map, 0..7: kaleidoscope, log-spiral, ripples, twirl, inversion, mirror line, domain warp, polar
  *            tunnel. (in)
+ * @param vi  The map's variant 0..99: its constants (sectors, arms, rates, strengths). (in)
  * @param q   The place. (in)
  * @param t   The stage's own time. (in)
  * @param st  The strength, 0..1. (in)
@@ -612,45 +686,58 @@ void labWalk( float seed, ivec4 n, float period )
  * @return
  *   The mapped place.
  **/
-vec2 chainMap( int m, vec2 q, float t, float st )
+vec2 chainMap( int m, int vi, vec2 q, float t, float st )
 {
     float r = length( q );
     if ( m == 0 )
     {
-        float sec = 6.2831853 / 6.0;
-        float an = abs( mod( atan( q.y, q.x ) + 0.1 * t, sec ) - 0.5 * sec );
+        float sec = 6.2831853 / ( 6.0 + 2.0 * float( lk( vi, 1.0, 3 ) ) );
+        float an = abs( mod( atan( q.y, q.x ) + lv( vi, 2.0, 0.05, 0.15 ) * t, sec ) - 0.5 * sec );
         return r * vec2( cos( an ), sin( an ) );
     }
     if ( m == 1 )
     {
-        float A = 4.0 * atan( q.y, q.x ) / 6.2831853;
-        return vec2( log( max( r, 1e-3 ) ) * 0.9 - 0.1 * t + A, A );
+        float A = ( 4.0 + float( lk( vi, 3.0, 3 ) ) ) * atan( q.y, q.x ) / 6.2831853;
+        return vec2( log( max( r, 1e-3 ) ) * lv( vi, 4.0, 0.6, 1.2 ) - lv( vi, 5.0, 0.05, 0.15 ) * t + A, A );
     }
     if ( m == 2 )
-        return q * ( 1.0 + 0.12 * st * sin( 14.0 * r - 0.8 * t ) );
+        return q
+               * ( 1.0
+                   + lv( vi, 1.0, 0.06, 0.18 ) * st
+                         * sin( lv( vi, 2.0, 8.0, 20.0 ) * r - lv( vi, 3.0, 0.4, 1.2 ) * t ) );
     if ( m == 3 )
-        return rot2( 1.8 * st * exp( -3.0 * r * r ) * sin( 0.3 * t ) ) * q;
+        return rot2( lv( vi, 1.0, 0.9, 2.7 ) * st * exp( lv( vi, 2.0, -5.0, -1.0 ) * r * r )
+                     * sin( lv( vi, 3.0, 0.15, 0.45 ) * t ) )
+               * q;
     if ( m == 4 )
     {
-        vec2 c = 0.3 * vec2( cos( 0.13 * t ), sin( 0.17 * t ) );
+        vec2 c = lv( vi, 1.0, 0.15, 0.45 )
+                 * vec2( cos( lv( vi, 2.0, 0.07, 0.19 ) * t ), sin( lv( vi, 3.0, 0.09, 0.25 ) * t ) );
         vec2 d = q - c;
-        return c + d / max( dot( d, d ), 0.04 ) * 0.12 * ( 0.6 + 0.8 * st );
+        return c
+               + d / max( dot( d, d ), lv( vi, 4.0, 0.02, 0.06 ) ) * lv( vi, 5.0, 0.06, 0.18 )
+                     * ( lv( vi, 6.0, 0.3, 0.9 ) + lv( vi, 7.0, 0.4, 1.2 ) * st );
     }
     if ( m == 5 )
     {
-        float a = 0.5 + 0.12 * t;
+        float a = lv( vi, 1.0, -0.5, 1.5 ) + lv( vi, 2.0, 0.06, 0.18 ) * t;
         vec2  n = vec2( cos( a ), sin( a ) );
-        return q - 2.0 * min( dot( q, n ) - 0.1 * sin( 0.2 * t ), 0.0 ) * n;
+        return q - 2.0 * min( dot( q, n ) - lv( vi, 3.0, 0.0, 0.2 ) * sin( lv( vi, 4.0, 0.1, 0.3 ) * t ), 0.0 ) * n;
     }
     if ( m == 6 )
         return q
-               + 0.1 * st * vec2( sin( 5.0 * q.y + 0.5 * t ) + sin( 3.0 * q.y - 0.3 * t ), sin( 5.0 * q.x - 0.4 * t ) );
-    return vec2( 1.0 / max( r, 0.05 ) + 0.06 * t, atan( q.y, q.x ) / 6.2831853 * 4.0 );
+               + lv( vi, 1.0, 0.05, 0.15 ) * st
+                     * vec2( sin( lv( vi, 2.0, 3.0, 7.0 ) * q.y + lv( vi, 3.0, 0.3, 0.7 ) * t )
+                                 + sin( lv( vi, 4.0, 2.0, 4.0 ) * q.y - lv( vi, 5.0, 0.15, 0.45 ) * t ),
+                             sin( lv( vi, 6.0, 3.0, 7.0 ) * q.x - lv( vi, 7.0, 0.2, 0.6 ) * t ) );
+    return vec2( 1.0 / max( r, 0.05 ) + lv( vi, 1.0, 0.03, 0.09 ) * t,
+                 atan( q.y, q.x ) / 6.2831853 * ( 4.0 + float( lk( vi, 2.0, 3 ) ) ) );
 }
 
 /**  One look of the lab.
  *
  * @param k   The classes: x, y, z the three maps, w the delay. (in)
+ * @param kv  The variants of those classes (the constants of each). (in)
  * @param p   The place. (in)
  * @param t   The clock. (in)
  * @param dl  The base delay. (in)
@@ -659,16 +746,16 @@ vec2 chainMap( int m, vec2 q, float t, float st )
  * @return
  *   The colour.
  **/
-vec3 chainLook( ivec4 k, vec2 p, float t, float dl, float st )
+vec3 chainLook( ivec4 k, ivec4 kv, vec2 p, float t, float dl, float st )
 {
-    float delta = dl * ( k.w == 0 ? 0.6 : ( k.w == 1 ? 2.0 : ( k.w == 2 ? 4.5 : 9.0 ) ) );
-    vec2  q = p * 1.4;
-    q = chainMap( k.x, q, t, st );
+    float delta = dl * ( k.w == 0 ? 0.6 : ( k.w == 1 ? 2.0 : ( k.w == 2 ? 4.5 : 9.0 ) ) ) * lv( kv.w, 1.0, 0.7, 1.3 );
+    vec2  q = p * lv( kv.w, 2.0, 1.0, 1.8 );
+    q = chainMap( k.x, kv.x, q, t, st );
     q = ( mirrorUV( q * 0.5 + 0.5 ) - 0.5 ) * 2.0; // between the stages the photo's mirror repeat: every seam of a
                                                    // stage vanishes
-    q = chainMap( k.y, q, t - delta, st );
+    q = chainMap( k.y, kv.y, q, t - delta, st );
     q = ( mirrorUV( q * 0.5 + 0.5 ) - 0.5 ) * 2.0;
-    q = chainMap( k.z, q, t - 2.0 * delta, st );
+    q = chainMap( k.z, kv.z, q, t - lv( kv.w, 3.0, 1.4, 2.6 ) * delta, st );
     return imgLod( q * 0.5 + 0.5, 0.5 );
 }
 
@@ -687,7 +774,7 @@ void main()
     {
         if ( gLabW[i] > 0.002 )
         {
-            col += gLabW[i] * chainLook( gLabK[i], p, t, dl, st );
+            col += gLabW[i] * chainLook( gLabK[i], gLabV[i], p, t, dl, st );
             ws += gLabW[i];
         }
     }

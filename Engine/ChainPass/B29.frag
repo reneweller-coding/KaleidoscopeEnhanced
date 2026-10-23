@@ -48,6 +48,66 @@ vec2 screenP()
 {
     return ( gl_FragCoord.xy / resolution - 0.5 ) * vec2( resolution.x / resolution.y, 1.0 );
 }
+float gVar = 0.0; ///< The variant of the class in use: -1 for variant 0 (the original look), else a hash of its number,
+                  ///< 0..1.
+vec4 gVa = vec4( 0.5 ); ///< The variant's first four pseudo-random numbers, 0..1 (all 0.5 for variant 0).
+vec4 gVb = vec4( 0.5 ); ///< The variant's last four pseudo-random numbers, 0..1 (all 0.5 for variant 0).
+/**  The variant's pseudo-random number of one stream.
+ *
+ * @param j  The stream, a whole number 0..7. (in)
+ *
+ * @return
+ *   0..1; 0.5 for variant 0, so that vv() gives the middle of its range.
+ **/
+float vr( float j )
+{
+    int i = int( j );
+    return i < 4 ? gVa[i] : gVb[i - 4];
+}
+/**  A constant of the class, set by the variant inside a range.
+ *
+ * @param j   The stream. (in)
+ * @param lo  The lower end. (in)
+ * @param hi  The upper end; variant 0 gives the middle. (in)
+ *
+ * @return
+ *   The constant.
+ **/
+float vv( float j, float lo, float hi )
+{
+    return mix( lo, hi, vr( j ) );
+}
+/**  A choice of the class, set by the variant.
+ *
+ * @param j  The stream. (in)
+ * @param n  The number of choices. (in)
+ *
+ * @return
+ *   0 .. n-1; 0 (the original choice) for variant 0.
+ **/
+float vk( float j, float n )
+{
+    return gVar < 0.0 ? 0.0 : min( floor( vr( j ) * n ), n - 1.0 );
+}
+/**  Sets the variant a stage's sub-variant stands for (gVar, gVa, gVb).
+ *
+ * @param v  The sub-variant 0..1 of the stage. (in)
+ * @param k  The class's branch number. (in)
+ **/
+void chainSetVar( float v, int k )
+{
+    float vi = floor( clamp( v, 0.0, 0.9999 ) * 100.0 );
+    if ( vi < 0.5 )
+    {
+        gVar = -1.0;
+        gVa = vec4( 0.5 );
+        gVb = vec4( 0.5 );
+        return;
+    }
+    gVar = fract( sin( vi * 12.9898 + float( k ) * 78.233 ) * 43758.5453 );
+    gVa = fract( sin( gVar * 127.1 + 17.0 + vec4( 0.0, 311.7, 623.4, 935.1 ) ) * 43758.5453 );
+    gVb = fract( sin( gVar * 127.1 + 17.0 + vec4( 1246.8, 1558.5, 1870.2, 2181.9 ) ) * 43758.5453 );
+}
 /**  Cat-map fold: the hyperbolic automorphism [[2,1],[1,1]] of the torus, each round folded by a mirror repeat.
  *
  * @param uv     The coordinate. (in)
@@ -60,12 +120,18 @@ vec2 screenP()
  **/
 vec2 tCatFold( vec2 uv, vec2 c, float iters, float t )
 {
-    vec2 p = ( uv - c ) * 1.2 + 0.5;
+    vec2  p = ( uv - c ) * vv( 1.0, 0.9, 1.5 ) + 0.5;
+    float mi = vk( 2.0, 5.0 );
+    vec4 M = mi < 0.5
+                 ? vec4( 2.0, 1.0, 1.0, 1.0 )
+                 : ( mi < 1.5 ? vec4( 1.0, 1.0, 1.0, 2.0 )
+                              : ( mi < 2.5 ? vec4( 3.0, 1.0, 2.0, 1.0 )
+                                           : ( mi < 3.5 ? vec4( 2.0, 1.0, 3.0, 2.0 ) : vec4( 1.0, 2.0, 1.0, 1.0 ) ) ) );
     for ( int i = 0; i < 3; ++i )
     {
         if ( float( i ) >= iters )
             break;
-        p = vec2( 2.0 * p.x + p.y, p.x + p.y ) + 0.05 * sin( t * 0.2 );
+        p = vec2( M.x * p.x + M.y * p.y, M.z * p.x + M.w * p.y ) + vv( 3.0, 0.02, 0.08 ) * sin( t * 0.2 );
         p = abs( fract( p * 0.5 + 0.5 ) * 2.0 - 1.0 );
     }
     return c + p - 0.5;
@@ -105,6 +171,7 @@ float chainTiltZ( vec2 q )
  **/
 vec2 cls( vec2 uv, float v )
 {
+    chainSetVar( v, 29 );
     return tCatFold( uv, gCw, 2.0 + floor( v * 1.99 ), gT );
     return uv;
 }

@@ -83,6 +83,54 @@ vec2 cdiv( vec2 a, vec2 b )
 {
     return vec2( a.x * b.x + a.y * b.y, a.y * b.x - a.x * b.y ) / max( dot( b, b ), 1e-8 );
 }
+float gVar = 0.0; ///< The variant of the class in use: -1 for variant 0 (the original look), else a hash of its number,
+                  ///< 0..1.
+vec4 gVa = vec4( 0.5 ); ///< The variant's first four pseudo-random numbers, 0..1 (all 0.5 for variant 0).
+vec4 gVb = vec4( 0.5 ); ///< The variant's last four pseudo-random numbers, 0..1 (all 0.5 for variant 0).
+/**  The variant's pseudo-random number of one stream.
+ *
+ * @param j  The stream, a whole number 0..7. (in)
+ *
+ * @return
+ *   0..1; 0.5 for variant 0, so that vv() gives the middle of its range.
+ **/
+float vr( float j )
+{
+    int i = int( j );
+    return i < 4 ? gVa[i] : gVb[i - 4];
+}
+/**  A constant of the class, set by the variant inside a range.
+ *
+ * @param j   The stream. (in)
+ * @param lo  The lower end. (in)
+ * @param hi  The upper end; variant 0 gives the middle. (in)
+ *
+ * @return
+ *   The constant.
+ **/
+float vv( float j, float lo, float hi )
+{
+    return mix( lo, hi, vr( j ) );
+}
+/**  Sets the variant a stage's sub-variant stands for (gVar, gVa, gVb).
+ *
+ * @param v  The sub-variant 0..1 of the stage. (in)
+ * @param k  The class's branch number. (in)
+ **/
+void chainSetVar( float v, int k )
+{
+    float vi = floor( clamp( v, 0.0, 0.9999 ) * 100.0 );
+    if ( vi < 0.5 )
+    {
+        gVar = -1.0;
+        gVa = vec4( 0.5 );
+        gVb = vec4( 0.5 );
+        return;
+    }
+    gVar = fract( sin( vi * 12.9898 + float( k ) * 78.233 ) * 43758.5453 );
+    gVa = fract( sin( gVar * 127.1 + 17.0 + vec4( 0.0, 311.7, 623.4, 935.1 ) ) * 43758.5453 );
+    gVb = fract( sin( gVar * 127.1 + 17.0 + vec4( 1246.8, 1558.5, 1870.2, 2181.9 ) ) * 43758.5453 );
+}
 /**  Modular lambda function: lambda = (theta_2 / theta_3)^4 of the nome q = exp(i pi tau), three cusps 0, 1,
  * infinity.
  *
@@ -96,8 +144,8 @@ vec2 cdiv( vec2 a, vec2 b )
  **/
 vec2 tLambda( vec2 uv, vec2 c, float scale, float t )
 {
-    vec2 tau = ( uv - c ) * scale + vec2( 0.5 * sin( t * 0.1 ), 0.0 );
-    tau.y = abs( tau.y ) + 0.2;
+    vec2 tau = ( uv - c ) * scale + vec2( vv( 1.0, -0.3, 0.3 ) + 0.5 * sin( t * 0.1 ), 0.0 );
+    tau.y = abs( tau.y ) + vv( 2.0, 0.1, 0.3 );
     vec2 q = exp( -3.14159265 * tau.y ) * cexpi( 3.14159265 * tau.x );
     vec2 q2 = cmul( q, q ), q4 = cmul( q2, q2 ), q9 = cmul( q4, cmul( q4, q ) );
     vec2 th3 = vec2( 1.0, 0.0 ) + 2.0 * ( q + q4 + q9 );
@@ -105,7 +153,7 @@ vec2 tLambda( vec2 uv, vec2 c, float scale, float t )
     vec2 th2 = 2.0 * cmul( qq, vec2( 1.0, 0.0 ) + q2 + cmul( q4, q2 ) );
     vec2 r = cdiv( th2, th3 );
     vec2 l = cmul( cmul( r, r ), cmul( r, r ) );
-    return c + l * 0.5 / ( 1.0 + 0.3 * length( l ) );
+    return c + l * vv( 3.0, 0.35, 0.65 ) / ( 1.0 + vv( 4.0, 0.2, 0.4 ) * length( l ) );
 }
 /** @{ */
 float gT, gSpread, gRot, gMw; ///< gT: The chain's (or scene's) time this frame; gSpread: The spectral spread this
@@ -142,6 +190,7 @@ float chainTiltZ( vec2 q )
  **/
 vec2 cls( vec2 uv, float v )
 {
+    chainSetVar( v, 67 );
     return tLambda( uv, gCw, 1.6 + 1.2 * v, gT );
     return uv;
 }

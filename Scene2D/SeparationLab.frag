@@ -518,12 +518,64 @@ uniform float labPinB;
 uniform float labPinC;
 /** Test pin of slot 3. */
 uniform float labPinD;
+/** Test pin of the variants: 1 + the variant 0..99 for every slot, or 1000 * (1 + the slot) + 1 + the variant for that
+ * slot alone (the others at variant 0); 0: the walk decides. */
+uniform float labPinV;
 /** The share of an epoch a class change takes to cross-fade. */
 const float LabFade = 0.2;
 /** The classes of the four slots, for each of the (up to four) looks the walk blends. */
 ivec4 gLabK[4];
 /** The weights of those looks. */
 float gLabW[4];
+/** The variants (0..99) of the four slots' classes, for each of the looks the walk blends: a class is a family of
+ * looks, the variant sets its constants (lv(), lk()); variant 0 is the lab's original look. */
+ivec4 gLabV[4];
+
+/**  A constant of a lab's look, set by a slot's variant inside a range.
+ *
+ * @param vi  The slot's variant, 0..99. (in)
+ * @param j   The stream: another number for every constant of a look. (in)
+ * @param lo  The lower end. (in)
+ * @param hi  The upper end; variant 0 gives the middle. (in)
+ *
+ * @return
+ *   The constant.
+ **/
+float lv( int vi, float j, float lo, float hi )
+{
+    return vi == 0 ? 0.5 * ( lo + hi )
+                   : mix( lo, hi, fract( sin( float( vi ) * 12.9898 + j * 78.233 + 3.7 ) * 43758.5453 ) );
+}
+
+/**  A choice of a lab's look, set by a slot's variant.
+ *
+ * @param vi  The slot's variant, 0..99. (in)
+ * @param j   The stream. (in)
+ * @param n   The number of choices. (in)
+ *
+ * @return
+ *   0 .. n-1; 0 (the original choice) for variant 0.
+ **/
+int lk( int vi, float j, int n )
+{
+    return vi == 0
+               ? 0
+               : min( int( fract( sin( float( vi ) * 37.719 + j * 51.37 + 1.9 ) * 43758.5453 ) * float( n ) ), n - 1 );
+}
+
+/**  A variant of a slot in an epoch: a hash of the slot, the epoch and the walk's seed.
+ *
+ * @param s     The slot, 0..3. (in)
+ * @param e     The epoch (a whole number). (in)
+ * @param seed  The walk's seed. (in)
+ *
+ * @return
+ *   The variant, 0..99.
+ **/
+int labVar( int s, float e, float seed )
+{
+    return int( min( floor( hash21( vec2( e * 2.9 + seed * 1.3 + 11.0, float( s ) * 7.7 + 3.1 ) ) * 100.0 ), 99.0 ) );
+}
 
 /**  A class of a slot in an epoch: a hash of the slot, the epoch and the walk's seed.
  *
@@ -562,7 +614,7 @@ void labWalk( float seed, ivec4 n, float period )
     for ( int j = 0; j < 2; ++j )
     {
         float sd = seed + 0.713 * ( j == 0 ? audioSectionPrev : audioSectionId );
-        ivec4 base = ivec4( 0 ), alt = ivec4( 0 );
+        ivec4 base = ivec4( 0 ), alt = ivec4( 0 ), vbase = ivec4( 0 ), valt = ivec4( 0 );
         int   fs = 0;
         float ff = 0.0;
         for ( int s = 0; s < 4; ++s )
@@ -573,6 +625,8 @@ void labWalk( float seed, ivec4 n, float period )
             float e = floor( w );
             base[s] = labCls( s, e, sd, n[s] );
             alt[s] = labCls( s, e + 1.0, sd, n[s] );
+            vbase[s] = labVar( s, e, sd );
+            valt[s] = labVar( s, e + 1.0, sd );
             float f = smoothstep( 1.0 - LabFade, 1.0, w - e );
             if ( f > 0.0 )
             {
@@ -581,11 +635,14 @@ void labWalk( float seed, ivec4 n, float period )
             }
         }
         float wj = j == 0 ? 1.0 - m : m;
-        ivec4 b2 = base;
+        ivec4 b2 = base, vb2 = vbase;
         b2[fs] = alt[fs];
+        vb2[fs] = valt[fs];
         gLabK[2 * j] = base;
+        gLabV[2 * j] = vbase;
         gLabW[2 * j] = wj * ( 1.0 - ff );
         gLabK[2 * j + 1] = b2;
+        gLabV[2 * j + 1] = vb2;
         gLabW[2 * j + 1] = wj * ff;
     }
     if ( labPinA + labPinB + labPinC + labPinD > 0.5 )
@@ -603,60 +660,82 @@ void labWalk( float seed, ivec4 n, float period )
             gLabW[i] = i == 0 ? 1.0 : 0.0;
         }
     }
+    if ( labPinV > 0.5 )
+    {
+        int pv = int( labPinV + 0.5 );
+        int ps = pv / 1000 - 1;
+        int vp = clamp( pv - 1000 * ( pv / 1000 ) - 1, 0, 99 );
+        for ( int i = 0; i < 4; ++i )
+        {
+            if ( ps < 0 )
+                gLabV[i] = ivec4( vp );
+            else
+            {
+                gLabV[i] = ivec4( 0 );
+                gLabV[i][ps] = vp;
+            }
+        }
+    }
 }
 
 /**  A colour split into four plate values by a colour model.
  *
- * @param c  The colour. (in)
- * @param m  The model: 0 RGB, 1 luma and two chroma, 2 luma and two opponent axes, 3 cyan, magenta, yellow, black.
- *           (in)
+ * @param c   The colour. (in)
+ * @param m   The model: 0 RGB, 1 luma and two chroma, 2 luma and two opponent axes, 3 cyan, magenta, yellow, black.
+ *            (in)
+ * @param vi  The model's variant 0..99: the plates' order, the chroma scales, the black generation. (in)
  *
  * @return
  *   The plates' values, 0..1.
  **/
-vec4 sepEnc( vec3 c, int m )
+vec4 sepEnc( vec3 c, int m, int vi )
 {
     if ( m == 1 )
     {
         float y = luma( c );
-        return vec4( y, 0.5 + ( c.b - y ) * 0.565, 0.5 + ( c.r - y ) * 0.713, 0.0 );
+        return vec4( y, 0.5 + ( c.b - y ) * lv( vi, 1.0, 0.45, 0.68 ), 0.5 + ( c.r - y ) * lv( vi, 2.0, 0.58, 0.846 ),
+                     0.0 );
     }
     if ( m == 2 )
-        return vec4( luma( c ), 0.5 + 0.5 * ( c.r - c.g ), 0.5 + 0.5 * ( 0.5 * ( c.r + c.g ) - c.b ), 0.0 );
+        return vec4( luma( c ), 0.5 + lv( vi, 1.0, 0.35, 0.65 ) * ( c.r - c.g ),
+                     0.5 + lv( vi, 2.0, 0.35, 0.65 ) * ( 0.5 * ( c.r + c.g ) - c.b ), 0.0 );
     if ( m == 3 )
     {
-        float k = 1.0 - max( c.r, max( c.g, c.b ) );
+        float k = min( 1.0, ( 1.0 - max( c.r, max( c.g, c.b ) ) ) * lv( vi, 1.0, 0.5, 1.5 ) );
         return vec4( ( 1.0 - c - k ) / max( 1.0 - k, 0.02 ), k ).xyzw;
     }
-    return vec4( c, 0.0 );
+    int pm = lk( vi, 1.0, 3 );
+    return vec4( pm == 0 ? c : ( pm == 1 ? c.gbr : c.brg ), 0.0 );
 }
 
 /**  The colour back from the plates' values.
  *
- * @param p  The plates' values. (in)
- * @param m  The model, as sepEnc(). (in)
+ * @param p   The plates' values. (in)
+ * @param m   The model, as sepEnc(). (in)
+ * @param vi  The model's variant, as sepEnc(). (in)
  *
  * @return
  *   The colour.
  **/
-vec3 sepDec( vec4 p, int m )
+vec3 sepDec( vec4 p, int m, int vi )
 {
     if ( m == 1 )
     {
         float y = p.x;
-        float r = y + ( p.z - 0.5 ) / 0.713;
-        float b = y + ( p.y - 0.5 ) / 0.565;
+        float r = y + ( p.z - 0.5 ) / lv( vi, 2.0, 0.58, 0.846 );
+        float b = y + ( p.y - 0.5 ) / lv( vi, 1.0, 0.45, 0.68 );
         return vec3( r, ( y - 0.299 * r - 0.114 * b ) / 0.587, b );
     }
     if ( m == 2 )
     {
-        float rg = 2.0 * ( p.y - 0.5 );
-        float ry = 2.0 * ( p.z - 0.5 );
+        float rg = ( p.y - 0.5 ) / lv( vi, 1.0, 0.35, 0.65 );
+        float ry = ( p.z - 0.5 ) / lv( vi, 2.0, 0.35, 0.65 );
         return vec3( p.x + 0.644 * rg + 0.114 * ry, p.x - 0.356 * rg + 0.114 * ry, p.x + 0.144 * rg - 0.886 * ry );
     }
     if ( m == 3 )
         return ( 1.0 - p.xyz ) * ( 1.0 - p.w );
-    return p.xyz;
+    int pm = lk( vi, 1.0, 3 );
+    return pm == 0 ? p.xyz : ( pm == 1 ? p.zxy : p.yzx );
 }
 
 /**  Where a plate reads the photo: its motion.
@@ -666,33 +745,47 @@ vec3 sepDec( vec4 p, int m )
  * @param i    The plate, 0..3. (in)
  * @param t    The clock. (in)
  * @param amp  The amplitude. (in)
+ * @param vi   The law's variant 0..99: the constants of the motion. (in)
  *
  * @return
  *   The place to read.
  **/
-vec2 sepMove( vec2 uv, int law, int i, float t, float amp )
+vec2 sepMove( vec2 uv, int law, int i, float t, float amp, int vi )
 {
-    float a = 1.5708 * float( i ) + 0.4;
+    float a = 1.5708 * float( i ) + lv( vi, 9.0, -0.2, 1.0 );
     vec2  d = uv - 0.5;
     float sgn = ( i - 2 * ( i / 2 ) ) == 0 ? 1.0 : -1.0;
     if ( law == 0 )
-        return uv + 0.05 * amp * vec2( cos( a + 0.07 * t ), sin( a + 0.07 * t ) );
+        return uv
+               + lv( vi, 1.0, 0.02, 0.08 ) * amp
+                     * vec2( cos( a + lv( vi, 2.0, 0.03, 0.11 ) * t ), sin( a + lv( vi, 2.0, 0.03, 0.11 ) * t ) );
     if ( law == 1 )
     {
-        vec2 c = 0.5 + 0.12 * vec2( cos( a ), sin( a ) );
-        return c + rot2( 0.25 * amp * sin( 0.3 * t + a ) ) * ( uv - c );
+        vec2 c = 0.5 + lv( vi, 1.0, 0.06, 0.18 ) * vec2( cos( a ), sin( a ) );
+        return c + rot2( lv( vi, 2.0, 0.12, 0.38 ) * amp * sin( lv( vi, 3.0, 0.15, 0.45 ) * t + a ) ) * ( uv - c );
     }
     if ( law == 2 )
-        return 0.5 + d * ( 1.0 + 0.12 * amp * sin( 0.4 * t + a ) );
+        return 0.5 + d * ( 1.0 + lv( vi, 1.0, 0.06, 0.18 ) * amp * sin( lv( vi, 2.0, 0.2, 0.6 ) * t + a ) );
     if ( law == 3 )
-        return uv + 0.02 * amp * vec2( sin( 11.0 * uv.y + 0.8 * t + a ), cos( 9.0 * uv.x + 0.7 * t + a ) );
+        return uv
+               + lv( vi, 1.0, 0.01, 0.03 ) * amp
+                     * vec2( sin( lv( vi, 2.0, 6.0, 16.0 ) * uv.y + 0.8 * t + a ),
+                             cos( lv( vi, 3.0, 5.0, 13.0 ) * uv.x + 0.7 * t + a ) );
     if ( law == 4 )
-        return 0.5 + rot2( sgn * 1.2 * amp * exp( -5.0 * dot( d, d ) ) * sin( 0.3 * t + a ) ) * d;
+        return 0.5
+               + rot2( sgn * lv( vi, 1.0, 0.6, 1.8 ) * amp * exp( lv( vi, 2.0, -8.0, -2.0 ) * dot( d, d ) )
+                       * sin( lv( vi, 3.0, 0.15, 0.45 ) * t + a ) )
+                     * d;
     if ( law == 5 )
-        return uv + vec2( 0.2 * amp * d.y * sin( 0.4 * t + a ), 0.0 );
+        return lk( vi, 3.0, 2 ) == 0
+                   ? uv + vec2( lv( vi, 1.0, 0.1, 0.3 ) * amp * d.y * sin( lv( vi, 2.0, 0.2, 0.6 ) * t + a ), 0.0 )
+                   : uv + vec2( 0.0, lv( vi, 1.0, 0.1, 0.3 ) * amp * d.x * sin( lv( vi, 2.0, 0.2, 0.6 ) * t + a ) );
     if ( law == 6 )
-        return 0.5 + d * ( 1.0 + sgn * 0.1 * amp * sin( 0.5 * t + 2.0 * a ) );
-    return uv + 0.06 * amp * vec2( cos( 0.5 * t + a ), sin( 0.5 * t + a ) );
+        return 0.5
+               + d * ( 1.0 + sgn * lv( vi, 1.0, 0.05, 0.15 ) * amp * sin( lv( vi, 2.0, 0.25, 0.75 ) * t + 2.0 * a ) );
+    return uv
+           + lv( vi, 1.0, 0.03, 0.09 ) * amp
+                 * vec2( cos( lv( vi, 2.0, 0.25, 0.75 ) * t + a ), sin( lv( vi, 2.0, 0.25, 0.75 ) * t + a ) );
 }
 
 /**  A plate's value turned into a screen.
@@ -702,36 +795,38 @@ vec2 sepMove( vec2 uv, int law, int i, float t, float amp )
  * @param mode  The screen: 0 none, 1 dots, 2 lines, 3 grain, 4 square dots. (in)
  * @param ang   The screen's angle. (in)
  * @param cell  Cells per unit. (in)
+ * @param vi    The screen's variant 0..99: softness and size of the marks. (in)
  *
  * @return
  *   The plate's coverage, 0..1.
  **/
-float sepScreen( float v, vec2 q, int mode, float ang, float cell )
+float sepScreen( float v, vec2 q, int mode, float ang, float cell, int vi )
 {
     if ( mode == 0 )
         return v;
-    vec2 r = rot2( ang ) * q * cell;
-    vec2 f = fract( r ) - 0.5;
+    vec2  r = rot2( ang ) * q * cell;
+    vec2  f = fract( r ) - 0.5;
+    float sf = lv( vi, 2.0, 0.06, 0.22 );
     v = clamp( v, 0.0, 1.0 );
     if ( mode == 1 )
-        return smoothstep( 0.14, -0.14, length( f ) - 0.72 * sqrt( v ) );
+        return smoothstep( sf, -sf, length( f ) - lv( vi, 1.0, 0.55, 0.89 ) * sqrt( v ) );
     if ( mode == 2 )
-        return smoothstep( 0.12, -0.12, abs( f.y ) - 0.5 * v );
+        return smoothstep( sf * 0.85, -sf * 0.85, abs( f.y ) - lv( vi, 3.0, 0.4, 0.6 ) * v );
     if ( mode == 3 )
         return smoothstep( -0.1, 0.1,
-                           v - 0.5 * ( hash21( floor( q * cell * 0.7 ) ) + noise2( q * cell * 1.9 ) ) ); // one
-                                                                                                         // threshold
-                                                                                                         // for every
-                                                                                                         // plate: the
-                                                                                                         // grain stays
-                                                                                                         // grey, not
-                                                                                                         // coloured
-    return smoothstep( 0.14, -0.14, max( abs( f.x ), abs( f.y ) ) - 0.5 * sqrt( v ) );
+                           v
+                               - lv( vi, 6.0, 0.35, 0.65 )
+                                     * ( hash21( floor( q * cell * lv( vi, 4.0, 0.4, 1.0 ) ) )
+                                         + noise2( q * cell * lv( vi, 5.0, 1.0, 2.8 ) ) ) ); // one threshold for every
+                                                                                             // plate: the grain stays
+                                                                                             // grey, not coloured
+    return smoothstep( sf, -sf, max( abs( f.x ), abs( f.y ) ) - lv( vi, 7.0, 0.35, 0.65 ) * sqrt( v ) );
 }
 
 /**  One look: the four plates of the photo, moved, screened and overprinted.
  *
  * @param k     The classes: x the colour model, y the plates' motion, z the screen, w the overprint. (in)
+ * @param kv    The variants of those classes (the constants of each). (in)
  * @param uv    The place, 0..1. (in)
  * @param t     The clock. (in)
  * @param amp   The misregistration. (in)
@@ -740,16 +835,18 @@ float sepScreen( float v, vec2 q, int mode, float ang, float cell )
  * @return
  *   The colour.
  **/
-vec3 sepLook( ivec4 k, vec2 uv, float t, float amp, float cell )
+vec3 sepLook( ivec4 k, ivec4 kv, vec2 uv, float t, float amp, float cell )
 {
-    vec4 pl = vec4( 0.0 );
+    vec4  pl = vec4( 0.0 );
+    float ao = lv( kv.z, 8.0, -0.5, 0.5 );
+    float ar = lv( kv.z, 9.0, 0.0, 0.04 );
     for ( int i = 0; i < 4; ++i )
     {
-        vec2  q = sepMove( uv, k.y, i, t, amp );
-        vec4  e = sepEnc( imgLod( q, 0.3 ), k.x );
+        vec2  q = sepMove( uv, k.y, i, t, amp, kv.y );
+        vec4  e = sepEnc( imgLod( q, 0.3 ), k.x, kv.x );
         float v = i == 0 ? e.x : ( i == 1 ? e.y : ( i == 2 ? e.z : e.w ) );
-        float ang = ( i == 0 ? 0.26 : ( i == 1 ? 1.31 : ( i == 2 ? 0.0 : 0.785 ) ) ) + 0.02 * t;
-        v = sepScreen( v, q, k.z, ang, cell );
+        float ang = ( i == 0 ? 0.26 : ( i == 1 ? 1.31 : ( i == 2 ? 0.0 : 0.785 ) ) ) + ao + ar * t;
+        v = sepScreen( v, q, k.z, ang, cell, kv.z );
         if ( i == 0 )
             pl.x = v;
         else if ( i == 1 )
@@ -759,14 +856,14 @@ vec3 sepLook( ivec4 k, vec2 uv, float t, float amp, float cell )
         else
             pl.w = v;
     }
-    vec3 col = sepDec( pl, k.x );
+    vec3 col = sepDec( pl, k.x, kv.x );
     vec3 base = imgLod( uv, 0.3 );
     if ( k.w == 1 )
-        col = base * col * 1.7;
+        col = base * col * lv( kv.w, 1.0, 1.2, 2.2 );
     else if ( k.w == 2 )
-        col = 1.0 - ( 1.0 - base ) * ( 1.0 - col );
+        col = 1.0 - ( 1.0 - base ) * ( 1.0 - col * lv( kv.w, 2.0, 0.4, 1.6 ) );
     else if ( k.w == 3 )
-        col = mix( base, col, 0.55 );
+        col = mix( base, col, lv( kv.w, 3.0, 0.1, 1.0 ) );
     return col;
 }
 
@@ -786,7 +883,7 @@ void main()
     {
         if ( gLabW[i] > 0.002 )
         {
-            col += gLabW[i] * sepLook( gLabK[i], uv, t, amp, cell );
+            col += gLabW[i] * sepLook( gLabK[i], gLabV[i], uv, t, amp, cell );
             ws += gLabW[i];
         }
     }

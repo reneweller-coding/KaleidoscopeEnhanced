@@ -72,6 +72,54 @@ vec2 cdiv( vec2 a, vec2 b )
 {
     return vec2( a.x * b.x + a.y * b.y, a.y * b.x - a.x * b.y ) / max( dot( b, b ), 1e-8 );
 }
+float gVar = 0.0; ///< The variant of the class in use: -1 for variant 0 (the original look), else a hash of its number,
+                  ///< 0..1.
+vec4 gVa = vec4( 0.5 ); ///< The variant's first four pseudo-random numbers, 0..1 (all 0.5 for variant 0).
+vec4 gVb = vec4( 0.5 ); ///< The variant's last four pseudo-random numbers, 0..1 (all 0.5 for variant 0).
+/**  The variant's pseudo-random number of one stream.
+ *
+ * @param j  The stream, a whole number 0..7. (in)
+ *
+ * @return
+ *   0..1; 0.5 for variant 0, so that vv() gives the middle of its range.
+ **/
+float vr( float j )
+{
+    int i = int( j );
+    return i < 4 ? gVa[i] : gVb[i - 4];
+}
+/**  A constant of the class, set by the variant inside a range.
+ *
+ * @param j   The stream. (in)
+ * @param lo  The lower end. (in)
+ * @param hi  The upper end; variant 0 gives the middle. (in)
+ *
+ * @return
+ *   The constant.
+ **/
+float vv( float j, float lo, float hi )
+{
+    return mix( lo, hi, vr( j ) );
+}
+/**  Sets the variant a stage's sub-variant stands for (gVar, gVa, gVb).
+ *
+ * @param v  The sub-variant 0..1 of the stage. (in)
+ * @param k  The class's branch number. (in)
+ **/
+void chainSetVar( float v, int k )
+{
+    float vi = floor( clamp( v, 0.0, 0.9999 ) * 100.0 );
+    if ( vi < 0.5 )
+    {
+        gVar = -1.0;
+        gVa = vec4( 0.5 );
+        gVb = vec4( 0.5 );
+        return;
+    }
+    gVar = fract( sin( vi * 12.9898 + float( k ) * 78.233 ) * 43758.5453 );
+    gVa = fract( sin( gVar * 127.1 + 17.0 + vec4( 0.0, 311.7, 623.4, 935.1 ) ) * 43758.5453 );
+    gVb = fract( sin( gVar * 127.1 + 17.0 + vec4( 1246.8, 1558.5, 1870.2, 2181.9 ) ) * 43758.5453 );
+}
 /**  Lemniscate coordinates: bipolar coordinates of z^2 with the poles +-a^2: figures of eight, the poles in the ears.
  *
  * @param uv  The coordinate. (in)
@@ -84,11 +132,12 @@ vec2 cdiv( vec2 a, vec2 b )
  **/
 vec2 tLemniscate( vec2 uv, vec2 c, float a, float t )
 {
-    vec2  z = ( uv - c ) * 3.0;
+    vec2  z = ( uv - c ) * vv( 1.0, 2.4, 3.6 );
     vec2  w = cmul( z, z );
-    float a2 = a * a;
+    float a2 = a * a * vv( 2.0, 0.7, 1.3 );
     vec2  q = cdiv( w - vec2( a2, 0.0 ), w + vec2( a2, 0.0 ) );
-    return vec2( 0.5 * log( max( dot( q, q ), 1e-6 ) ) * 0.9 + 0.05 * t, atan( q.y, q.x ) / 3.14159265 * 2.0 );
+    return vec2( 0.5 * log( max( dot( q, q ), 1e-6 ) ) * vv( 3.0, 0.7, 1.1 ) + 0.05 * t,
+                 atan( q.y, q.x ) / 3.14159265 * vv( 4.0, 1.5, 2.5 ) );
 }
 /** @{ */
 float gT, gSpread, gRot, gMw; ///< gT: The chain's (or scene's) time this frame; gSpread: The spectral spread this
@@ -125,6 +174,7 @@ float chainTiltZ( vec2 q )
  **/
 vec2 cls( vec2 uv, float v )
 {
+    chainSetVar( v, 63 );
     return tLemniscate( uv, gCw, 0.35 + 0.25 * v, gT );
     return uv;
 }

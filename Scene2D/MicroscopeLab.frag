@@ -516,12 +516,64 @@ uniform float labPinB;
 uniform float labPinC;
 /** Test pin of slot 3. */
 uniform float labPinD;
+/** Test pin of the variants: 1 + the variant 0..99 for every slot, or 1000 * (1 + the slot) + 1 + the variant for that
+ * slot alone (the others at variant 0); 0: the walk decides. */
+uniform float labPinV;
 /** The share of an epoch a class change takes to cross-fade. */
 const float LabFade = 0.2;
 /** The classes of the four slots, for each of the (up to four) looks the walk blends. */
 ivec4 gLabK[4];
 /** The weights of those looks. */
 float gLabW[4];
+/** The variants (0..99) of the four slots' classes, for each of the looks the walk blends: a class is a family of
+ * looks, the variant sets its constants (lv(), lk()); variant 0 is the lab's original look. */
+ivec4 gLabV[4];
+
+/**  A constant of a lab's look, set by a slot's variant inside a range.
+ *
+ * @param vi  The slot's variant, 0..99. (in)
+ * @param j   The stream: another number for every constant of a look. (in)
+ * @param lo  The lower end. (in)
+ * @param hi  The upper end; variant 0 gives the middle. (in)
+ *
+ * @return
+ *   The constant.
+ **/
+float lv( int vi, float j, float lo, float hi )
+{
+    return vi == 0 ? 0.5 * ( lo + hi )
+                   : mix( lo, hi, fract( sin( float( vi ) * 12.9898 + j * 78.233 + 3.7 ) * 43758.5453 ) );
+}
+
+/**  A choice of a lab's look, set by a slot's variant.
+ *
+ * @param vi  The slot's variant, 0..99. (in)
+ * @param j   The stream. (in)
+ * @param n   The number of choices. (in)
+ *
+ * @return
+ *   0 .. n-1; 0 (the original choice) for variant 0.
+ **/
+int lk( int vi, float j, int n )
+{
+    return vi == 0
+               ? 0
+               : min( int( fract( sin( float( vi ) * 37.719 + j * 51.37 + 1.9 ) * 43758.5453 ) * float( n ) ), n - 1 );
+}
+
+/**  A variant of a slot in an epoch: a hash of the slot, the epoch and the walk's seed.
+ *
+ * @param s     The slot, 0..3. (in)
+ * @param e     The epoch (a whole number). (in)
+ * @param seed  The walk's seed. (in)
+ *
+ * @return
+ *   The variant, 0..99.
+ **/
+int labVar( int s, float e, float seed )
+{
+    return int( min( floor( hash21( vec2( e * 2.9 + seed * 1.3 + 11.0, float( s ) * 7.7 + 3.1 ) ) * 100.0 ), 99.0 ) );
+}
 
 /**  A class of a slot in an epoch: a hash of the slot, the epoch and the walk's seed.
  *
@@ -560,7 +612,7 @@ void labWalk( float seed, ivec4 n, float period )
     for ( int j = 0; j < 2; ++j )
     {
         float sd = seed + 0.713 * ( j == 0 ? audioSectionPrev : audioSectionId );
-        ivec4 base = ivec4( 0 ), alt = ivec4( 0 );
+        ivec4 base = ivec4( 0 ), alt = ivec4( 0 ), vbase = ivec4( 0 ), valt = ivec4( 0 );
         int   fs = 0;
         float ff = 0.0;
         for ( int s = 0; s < 4; ++s )
@@ -571,6 +623,8 @@ void labWalk( float seed, ivec4 n, float period )
             float e = floor( w );
             base[s] = labCls( s, e, sd, n[s] );
             alt[s] = labCls( s, e + 1.0, sd, n[s] );
+            vbase[s] = labVar( s, e, sd );
+            valt[s] = labVar( s, e + 1.0, sd );
             float f = smoothstep( 1.0 - LabFade, 1.0, w - e );
             if ( f > 0.0 )
             {
@@ -579,11 +633,14 @@ void labWalk( float seed, ivec4 n, float period )
             }
         }
         float wj = j == 0 ? 1.0 - m : m;
-        ivec4 b2 = base;
+        ivec4 b2 = base, vb2 = vbase;
         b2[fs] = alt[fs];
+        vb2[fs] = valt[fs];
         gLabK[2 * j] = base;
+        gLabV[2 * j] = vbase;
         gLabW[2 * j] = wj * ( 1.0 - ff );
         gLabK[2 * j + 1] = b2;
+        gLabV[2 * j + 1] = vb2;
         gLabW[2 * j + 1] = wj * ff;
     }
     if ( labPinA + labPinB + labPinC + labPinD > 0.5 )
@@ -601,6 +658,22 @@ void labWalk( float seed, ivec4 n, float period )
             gLabW[i] = i == 0 ? 1.0 : 0.0;
         }
     }
+    if ( labPinV > 0.5 )
+    {
+        int pv = int( labPinV + 0.5 );
+        int ps = pv / 1000 - 1;
+        int vp = clamp( pv - 1000 * ( pv / 1000 ) - 1, 0, 99 );
+        for ( int i = 0; i < 4; ++i )
+        {
+            if ( ps < 0 )
+                gLabV[i] = ivec4( vp );
+            else
+            {
+                gLabV[i] = ivec4( 0 );
+                gLabV[i][ps] = vp;
+            }
+        }
+    }
 }
 
 /**  The specimen's optical thickness at a place.
@@ -608,23 +681,25 @@ void labWalk( float seed, ivec4 n, float period )
  * @param uv    The place in the photo. (in)
  * @param lod   The mip level it is read at. (in)
  * @param mode  What counts as thickness: 0 brightness, 1 saturation, 2 hue. (in)
+ * @param vi    The thickness' variant 0..99: its curve. (in)
  *
  * @return
  *   The thickness, 0..1.
  **/
-float microThick( vec2 uv, float lod, int mode )
+float microThick( vec2 uv, float lod, int mode, int vi )
 {
     vec3 c = imgLod( uv, lod );
     if ( mode == 1 )
-        return satOf( c );
+        return pow( satOf( c ), lv( vi, 1.0, 0.4, 1.6 ) );
     if ( mode == 2 )
-        return 0.5 + 0.5 * cos( 6.2831853 * hueOf( c ) );
-    return luma( c );
+        return 0.5 + 0.5 * cos( 6.2831853 * ( hueOf( c ) + lv( vi, 2.0, -0.5, 0.5 ) ) );
+    return pow( luma( c ), lv( vi, 3.0, 0.4, 1.6 ) );
 }
 
 /**  One look of the lab.
  *
  * @param k   The classes: x the method, y the illumination, z the focus, w the thickness. (in)
+ * @param kv  The variants of those classes (the constants of each). (in)
  * @param p   The place. (in)
  * @param t   The clock. (in)
  * @param rd  The scale thickness is read at (a mip level). (in)
@@ -633,43 +708,60 @@ float microThick( vec2 uv, float lod, int mode )
  * @return
  *   The colour.
  **/
-vec3 microLook( ivec4 k, vec2 p, float t, float rd, float ct )
+vec3 microLook( ivec4 k, ivec4 kv, vec2 p, float t, float rd, float ct )
 {
     vec2  uv = p * 0.8 + 0.5;
-    float lod_f = k.z == 0 ? 0.3
-                           : ( k.z == 1 ? 1.8 : 0.3 + 3.0 * ( 0.5 + 0.5 * sin( 3.0 * p.x + 2.0 * p.y + 0.4 * t ) ) );
+    float lod_f = k.z == 0 ? lv( kv.z, 1.0, 0.0, 0.6 )
+                           : ( k.z == 1 ? lv( kv.z, 2.0, 0.4, 3.2 )
+                                        : lv( kv.z, 3.0, 0.0, 0.6 )
+                                              + lv( kv.z, 4.0, 1.0, 5.0 )
+                                                    * ( 0.5
+                                                        + 0.5
+                                                              * sin( lv( kv.z, 5.0, 1.5, 4.5 ) * p.x
+                                                                     + lv( kv.z, 6.0, 1.0, 3.0 ) * p.y
+                                                                     + lv( kv.z, 7.0, 0.2, 0.6 ) * t ) ) );
     vec3  C = imgLod( uv, lod_f );
-    float ang = k.y == 0 ? 0.25 * t
-                         : ( k.y == 1 ? 1.0 * sin( 0.3 * t )
-                                      : ( k.y == 2 ? 0.8 : ( p.x > 0.0 ? 0.6 + 0.2 * t : 2.4 - 0.2 * t ) ) );
-    float amp = k.y == 2 ? 0.7 + 0.3 * sin( 0.4 * t ) : 1.0;
+    float ang = k.y == 0
+                    ? lv( kv.y, 1.0, 0.1, 0.4 ) * t
+                    : ( k.y == 1 ? lv( kv.y, 2.0, 0.5, 1.5 ) * sin( lv( kv.y, 3.0, 0.15, 0.45 ) * t )
+                                 : ( k.y == 2 ? lv( kv.y, 4.0, 0.0, 1.6 )
+                                              : ( p.x > 0.0
+                                                      ? lv( kv.y, 7.0, 0.2, 1.0 ) + lv( kv.y, 9.0, 0.1, 0.3 ) * t
+                                                      : lv( kv.y, 8.0, 1.6, 3.2 ) - lv( kv.y, 9.0, 0.1, 0.3 ) * t ) ) );
+    float amp = k.y == 2 ? lv( kv.y, 5.0, 0.5, 0.9 ) + lv( kv.y, 6.0, 0.1, 0.5 ) * sin( 0.4 * t ) : 1.0;
     vec2  dir = vec2( cos( ang ), sin( ang ) );
-    float e = 0.004 * exp2( rd );
-    float t_l = microThick( uv + dir * e, rd, k.w );
-    float t_r = microThick( uv - dir * e, rd, k.w );
-    float t_u = microThick( uv + vec2( -dir.y, dir.x ) * e, rd, k.w );
-    float t_d = microThick( uv - vec2( -dir.y, dir.x ) * e, rd, k.w );
-    float T0 = microThick( uv, rd, k.w );
+    float e = lv( kv.x, 1.0, 0.002, 0.006 ) * exp2( rd );
+    float t_l = microThick( uv + dir * e, rd, k.w, kv.w );
+    float t_r = microThick( uv - dir * e, rd, k.w, kv.w );
+    float t_u = microThick( uv + vec2( -dir.y, dir.x ) * e, rd, k.w, kv.w );
+    float t_d = microThick( uv - vec2( -dir.y, dir.x ) * e, rd, k.w, kv.w );
+    float T0 = microThick( uv, rd, k.w, kv.w );
     float g_dir = ( t_l - t_r ) / ( 2.0 * e ) * e * 12.0 * amp;
     float g_mag = length( vec2( t_l - t_r, t_u - t_d ) ) / ( 2.0 * e ) * e * 12.0;
-    float tb = microThick( uv, rd + 2.5, k.w );
+    float tb = microThick( uv, rd + lv( kv.x, 12.0, 1.5, 3.5 ), k.w, kv.w );
     if ( k.x == 0 )
-        return C * ( 0.85 + 0.6 * ( T0 - 0.5 ) * ct ) * 1.1;
+        return C * ( lv( kv.x, 2.0, 0.7, 1.0 ) + lv( kv.x, 3.0, 0.3, 0.9 ) * ( T0 - 0.5 ) * ct )
+               * lv( kv.x, 4.0, 0.95, 1.25 );
     if ( k.x == 1 )
-        return C * ( 0.05 + 3.0 * ct * smoothstep( 0.02, 0.45, g_mag ) ) + 0.1 * C * smoothstep( 0.0, 0.4, g_mag );
+        return C
+                   * ( lv( kv.x, 5.0, 0.0, 0.1 )
+                       + lv( kv.x, 6.0, 1.8, 4.2 ) * ct
+                             * smoothstep( lv( kv.x, 7.0, 0.0, 0.04 ), lv( kv.x, 8.0, 0.3, 0.6 ), g_mag ) )
+               + lv( kv.x, 9.0, 0.0, 0.2 ) * C * smoothstep( 0.0, 0.4, g_mag );
     if ( k.x == 2 )
-        return C * clamp( 0.8 + 1.7 * ct * ( T0 - tb ), 0.1, 1.5 );
+        return C * clamp( lv( kv.x, 10.0, 0.6, 1.0 ) + lv( kv.x, 11.0, 1.0, 2.4 ) * ct * ( T0 - tb ), 0.1, 1.5 );
     if ( k.x == 3 )
-        return C * clamp( 0.65 + 2.6 * ct * g_dir * 3.0, 0.1, 1.7 );
+        return C * clamp( lv( kv.x, 13.0, 0.5, 0.8 ) + lv( kv.x, 14.0, 1.4, 3.8 ) * ct * g_dir * 3.0, 0.1, 1.7 );
     if ( k.x == 4 )
     {
-        float ret = T0 * 3.0 + 0.1 * t;
+        float ret = T0 * lv( kv.x, 15.0, 2.0, 4.0 ) + lv( kv.x, 16.0, 0.05, 0.15 ) * t;
         float s = sin( 3.14159 * ret );
-        return C * ( 0.25 + 1.3 * ct * s * s );
+        return C * ( lv( kv.x, 17.0, 0.1, 0.4 ) + lv( kv.x, 18.0, 0.8, 1.8 ) * ct * s * s );
     }
-    float edge = smoothstep( 0.03, 0.4, g_mag * ct );
-    vec3  flat_c = C * vec3( 1.1, 1.0, 0.88 );
-    vec3  edge_c = C * vec3( 0.86, 0.97, 1.16 );
+    float edge = smoothstep( lv( kv.x, 5.0, 0.005, 0.055 ), lv( kv.x, 6.0, 0.15, 0.65 ), g_mag * ct );
+    float tn = lv( kv.x, 7.0, 0.2, 1.8 );
+    vec3  flat_c = C * ( 1.0 + tn * vec3( 0.1, 0.0, -0.12 ) );
+    vec3  edge_c = C * ( 1.0 + tn * vec3( -0.14, -0.03, 0.16 ) );
     return mix( flat_c, edge_c, edge ) * 1.05;
 }
 
@@ -688,7 +780,7 @@ void main()
     {
         if ( gLabW[i] > 0.002 )
         {
-            col += gLabW[i] * microLook( gLabK[i], p, t, rd, ct );
+            col += gLabW[i] * microLook( gLabK[i], gLabV[i], p, t, rd, ct );
             ws += gLabW[i];
         }
     }

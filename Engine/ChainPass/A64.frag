@@ -72,6 +72,66 @@ vec2 cmul( vec2 a, vec2 b )
 {
     return vec2( a.x * b.x - a.y * b.y, a.x * b.y + a.y * b.x );
 }
+float gVar = 0.0; ///< The variant of the class in use: -1 for variant 0 (the original look), else a hash of its number,
+                  ///< 0..1.
+vec4 gVa = vec4( 0.5 ); ///< The variant's first four pseudo-random numbers, 0..1 (all 0.5 for variant 0).
+vec4 gVb = vec4( 0.5 ); ///< The variant's last four pseudo-random numbers, 0..1 (all 0.5 for variant 0).
+/**  The variant's pseudo-random number of one stream.
+ *
+ * @param j  The stream, a whole number 0..7. (in)
+ *
+ * @return
+ *   0..1; 0.5 for variant 0, so that vv() gives the middle of its range.
+ **/
+float vr( float j )
+{
+    int i = int( j );
+    return i < 4 ? gVa[i] : gVb[i - 4];
+}
+/**  A constant of the class, set by the variant inside a range.
+ *
+ * @param j   The stream. (in)
+ * @param lo  The lower end. (in)
+ * @param hi  The upper end; variant 0 gives the middle. (in)
+ *
+ * @return
+ *   The constant.
+ **/
+float vv( float j, float lo, float hi )
+{
+    return mix( lo, hi, vr( j ) );
+}
+/**  A choice of the class, set by the variant.
+ *
+ * @param j  The stream. (in)
+ * @param n  The number of choices. (in)
+ *
+ * @return
+ *   0 .. n-1; 0 (the original choice) for variant 0.
+ **/
+float vk( float j, float n )
+{
+    return gVar < 0.0 ? 0.0 : min( floor( vr( j ) * n ), n - 1.0 );
+}
+/**  Sets the variant a stage's sub-variant stands for (gVar, gVa, gVb).
+ *
+ * @param v  The sub-variant 0..1 of the stage. (in)
+ * @param k  The class's branch number. (in)
+ **/
+void chainSetVar( float v, int k )
+{
+    float vi = floor( clamp( v, 0.0, 0.9999 ) * 100.0 );
+    if ( vi < 0.5 )
+    {
+        gVar = -1.0;
+        gVa = vec4( 0.5 );
+        gVb = vec4( 0.5 );
+        return;
+    }
+    gVar = fract( sin( vi * 12.9898 + float( k ) * 78.233 ) * 43758.5453 );
+    gVa = fract( sin( gVar * 127.1 + 17.0 + vec4( 0.0, 311.7, 623.4, 935.1 ) ) * 43758.5453 );
+    gVb = fract( sin( gVar * 127.1 + 17.0 + vec4( 1246.8, 1558.5, 1870.2, 2181.9 ) ) * 43758.5453 );
+}
 /**  Schwarz-Christoffel: the disc onto a regular hexagon, w = z * integral_0^1 (1 - (s z)^6)^(-1/3) ds; outside the
  * circle of radius 0.9 the plane is inverted into it (continuous on the circle).
  *
@@ -85,7 +145,8 @@ vec2 cmul( vec2 a, vec2 b )
  **/
 vec2 tScHexagon( vec2 uv, vec2 c, float scale, float t )
 {
-    vec2  z = rot2( 0.1 * sin( t * 0.2 ) ) * ( uv - c ) * scale;
+    float nn = gVar < 0.0 ? 6.0 : 3.0 + vk( 1.0, 6.0 );
+    vec2  z = rot2( 0.1 * sin( t * 0.2 ) + vv( 2.0, -0.3, 0.3 ) ) * ( uv - c ) * scale;
     float r = length( z );
     if ( r > 0.9 )
         z *= 0.81 / ( r * r );
@@ -93,12 +154,14 @@ vec2 tScHexagon( vec2 uv, vec2 c, float scale, float t )
     for ( int i = 0; i < 8; ++i )
     {
         float s = ( float( i ) + 0.5 ) / 8.0;
-        vec2  q = z * s, q2 = cmul( q, q ), q3 = cmul( q2, q ), q6 = cmul( q3, q3 );
-        vec2  d = vec2( 1.0, 0.0 ) - q6;
+        vec2  q = z * s;
+        float qr = length( q ), qa = atan( q.y, q.x );
+        vec2  qn = pow( qr, nn ) * vec2( cos( nn * qa ), sin( nn * qa ) );
+        vec2  d = vec2( 1.0, 0.0 ) - qn;
         float m = max( length( d ), 1e-3 ), ph = atan( d.y, d.x );
-        w += pow( m, -0.3333333 ) * vec2( cos( ph / 3.0 ), -sin( ph / 3.0 ) );
+        w += pow( m, -2.0 / nn ) * vec2( cos( 2.0 * ph / nn ), -sin( 2.0 * ph / nn ) );
     }
-    return c + cmul( z, w / 8.0 ) * 0.55;
+    return c + cmul( z, w / 8.0 ) * vv( 3.0, 0.45, 0.65 );
 }
 /** @{ */
 float gT, gSpread, gRot, gMw; ///< gT: The chain's (or scene's) time this frame; gSpread: The spectral spread this
@@ -135,6 +198,7 @@ float chainTiltZ( vec2 q )
  **/
 vec2 cls( vec2 uv, float v )
 {
+    chainSetVar( v, 64 );
     return tScHexagon( uv, gCw, 1.6 + 0.8 * v, gT );
     return uv;
 }

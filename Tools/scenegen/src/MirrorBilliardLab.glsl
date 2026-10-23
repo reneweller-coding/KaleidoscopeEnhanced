@@ -72,32 +72,34 @@ vec2 billUnfold(int kind, vec2 q, float al, float R)
 /**  One look of the lab.
  *
  * @param k    The classes: x the room, y the room's motion, z the standpoint, w the photo's scale. (in)
+ * @param kv   The variants of those classes (the constants of each). (in)
  * @param p    The place. (in)
  * @param t    The clock. (in)
  * @param hd   The harmonic advance. (in)
- * @param R    The room's size. (in)
+ * @param R0   The room's size. (in)
  * @param sk   How far from a perfect room. (in)
  *
  * @return
  *   The colour.
  **/
-vec3 billLook(ivec4 k, vec2 p, float t, float hd, float R, float sk)
+vec3 billLook(ivec4 k, ivec4 kv, vec2 p, float t, float hd, float R0, float sk)
 {
-    float tilt = 0.0;
-    float al = k.x == 0 ? 3.14159265 / 5.0 : 0.0;
+    float R = R0 * lv(kv.x, 3.0, 0.8, 1.2);
+    float tilt = lv(kv.x, 2.0, -0.5, 0.5);
+    float al = k.x == 0 ? 3.14159265 / (5.0 + float(lk(kv.x, 1.0, 3))) : 0.0;
     vec2 off = vec2(0.0);
-    if (k.y == 0) al += 0.12 * sk * sin(0.2 * t) + 0.5 * sk * sin(0.4 * hd) * 0.0;
-    else if (k.y == 1) tilt = 0.05 * t;
-    else off = 0.15 * R * vec2(sin(0.13 * t), cos(0.11 * t));
+    if (k.y == 0) al += lv(kv.y, 1.0, 0.06, 0.18) * sk * sin(lv(kv.y, 2.0, 0.1, 0.3) * t);
+    else if (k.y == 1) tilt += lv(kv.y, 3.0, 0.02, 0.08) * t;
+    else off = lv(kv.y, 4.0, 0.08, 0.22) * R * vec2(sin(lv(kv.y, 5.0, 0.07, 0.19) * t), cos(lv(kv.y, 6.0, 0.06, 0.16) * t));
     al += 0.15 * sk;
     vec2 q = p;
-    if (k.z == 1) q += 0.3 * R * vec2(cos(0.2 * t), sin(0.27 * t));
-    else if (k.z == 2) q += vec2(0.04 * t, 0.025 * t);
+    if (k.z == 1) q += lv(kv.z, 1.0, 0.15, 0.45) * R * vec2(cos(lv(kv.z, 2.0, 0.1, 0.3) * t), sin(lv(kv.z, 3.0, 0.15, 0.39) * t));
+    else if (k.z == 2) q += vec2(lv(kv.z, 4.0, 0.02, 0.06) * t, lv(kv.z, 5.0, 0.0125, 0.0375) * t);
     q = rot2(tilt) * (q - off);
     vec2 u = billUnfold(k.x, q, k.x == 0 ? al : tilt, R);
-    if (k.x == 2 || k.x == 3) u -= vec2(0.6 * R, 0.2 * R);
-    float sc = k.w == 0 ? 0.6 : (k.w == 1 ? 0.95 : 1.5);
-    return imgLod(u * sc * 0.5 / R * 0.8 + 0.5, 0.5);
+    if (k.x == 2 || k.x == 3) u -= vec2(lv(kv.x, 4.0, 0.4, 0.8) * R, lv(kv.x, 5.0, 0.1, 0.3) * R);
+    float sc = (k.w == 0 ? 0.6 : (k.w == 1 ? 0.95 : 1.5)) * lv(kv.w, 1.0, 0.7, 1.3);
+    return imgLod(u * sc * 0.5 / R * 0.8 + 0.5, lv(kv.w, 2.0, 0.3, 0.7));
 }
 
 void main()
@@ -112,7 +114,7 @@ void main()
     float ws = 0.0;
     for (int i = 0; i < 4; ++i) {
         if (gLabW[i] > 0.002) {
-            col += gLabW[i] * billLook(gLabK[i], p, t, audioHarmAdvance, R, sk);
+            col += gLabW[i] * billLook(gLabK[i], gLabV[i], p, t, audioHarmAdvance, R, sk);
             ws += gLabW[i];
         }
     }

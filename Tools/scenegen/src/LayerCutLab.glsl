@@ -21,27 +21,29 @@
  *
  * @param uv    The place in the photo. (in)
  * @param rule  The rule, 0..3: brightness, hue, saturation, edge strength. (in)
+ * @param vi    The rule's variant 0..99: its offset, gain and scale. (in)
  *
  * @return
  *   The value, 0..1.
  **/
-float layerRule(vec2 uv, int rule)
+float layerRule(vec2 uv, int rule, int vi)
 {
-    vec3 c = imgLod(uv, 3.2);
-    if (rule == 1) return hue_of(c);
-    if (rule == 2) return clamp(satOf(c) * 1.2, 0.0, 1.0);
+    vec3 c = imgLod(uv, lv(vi, 6.0, 2.4, 4.0));
+    if (rule == 1) return fract(hue_of(c) + lv(vi, 3.0, -0.5, 0.5));
+    if (rule == 2) return clamp(satOf(c) * lv(vi, 2.0, 0.6, 1.8), 0.0, 1.0);
     if (rule == 3) {
-        float e = 0.01;
+        float e = lv(vi, 4.0, 0.005, 0.015);
         vec2 g = vec2(luma(imgLod(uv + vec2(e, 0.0), 2.0)) - luma(imgLod(uv - vec2(e, 0.0), 2.0)),
                       luma(imgLod(uv + vec2(0.0, e), 2.0)) - luma(imgLod(uv - vec2(0.0, e), 2.0)));
-        return clamp(length(g) * 9.0, 0.0, 1.0);
+        return clamp(length(g) * lv(vi, 5.0, 5.0, 13.0), 0.0, 1.0);
     }
-    return clamp((luma(c) - 0.08) * 1.2, 0.0, 1.0);
+    return clamp((luma(c) - lv(vi, 1.0, 0.0, 0.16)) * lv(vi, 2.0, 0.9, 1.5), 0.0, 1.0);
 }
 
 /**  One look of the lab.
  *
  * @param k    The classes: x the rule and polarity (0..7), y the number of layers, z the layers' motion, w the shadow. (in)
+ * @param kv   The variants of those classes (the constants of each). (in)
  * @param p    The place. (in)
  * @param t    The clock. (in)
  * @param pt   How far the layers part. (in)
@@ -50,34 +52,36 @@ float layerRule(vec2 uv, int rule)
  * @return
  *   The colour.
  **/
-vec3 layerLook(ivec4 k, vec2 p, float t, float pt, float ed)
+vec3 layerLook(ivec4 k, ivec4 kv, vec2 p, float t, float pt, float ed)
 {
     int rule = k.x - 4 * (k.x / 4);
     bool desc = k.x >= 4;
-    int N = k.y == 0 ? 6 : (k.y == 1 ? 8 : 11);
+    int N = (k.y == 0 ? 6 : (k.y == 1 ? 8 : 11)) + lk(kv.y, 1.0, 3);
     vec2 uv0 = p * 0.8 + 0.5;
     vec3 col = imgLod(uv0, 0.4) * 0.8;
-    float w = 0.04 + 0.12 * ed;
-    vec2 ldir = k.w == 1 ? vec2(0.8, -0.35) : vec2(0.45, -0.55);
-    for (int i = 1; i < 11; ++i) {
+    float w = lv(kv.y, 2.0, 0.005, 0.075) + lv(kv.y, 3.0, 0.02, 0.22) * ed;
+    float sa = lv(kv.w, 1.0, -0.8, 0.8);
+    vec2 ldir = rot2(sa) * (k.w == 1 ? vec2(0.8, -0.35) : vec2(0.45, -0.55));
+    float sh = k.w == 1 ? lv(kv.w, 2.0, 0.02, 0.05) : lv(kv.w, 3.0, 0.007, 0.021);
+    for (int i = 1; i < 14; ++i) {
         if (i >= N) break;
         float fi = float(i) / float(N);
         float depth = fi - 0.5;
         vec2 o;
-        if (k.z == 0) o = pt * 0.05 * depth * vec2(cos(0.2 * t), sin(0.2 * t));
-        else if (k.z == 1) o = pt * 0.06 * depth * vec2(sin(0.3 * t), 0.5 * sin(0.3 * t));
-        else o = pt * 0.045 * vec2(cos(0.25 * t + 3.0 * fi), sin(0.25 * t + 3.0 * fi)) * (0.4 + fi);
+        if (k.z == 0) o = pt * lv(kv.z, 1.0, 0.025, 0.075) * depth * vec2(cos(lv(kv.z, 2.0, 0.1, 0.3) * t), sin(lv(kv.z, 2.0, 0.1, 0.3) * t));
+        else if (k.z == 1) o = pt * lv(kv.z, 3.0, 0.03, 0.09) * depth * vec2(sin(lv(kv.z, 5.0, 0.15, 0.45) * t), lv(kv.z, 4.0, 0.0, 1.0) * sin(lv(kv.z, 5.0, 0.15, 0.45) * t));
+        else o = pt * lv(kv.z, 6.0, 0.02, 0.07) * vec2(cos(lv(kv.z, 7.0, 0.12, 0.38) * t + lv(kv.z, 8.0, 1.5, 4.5) * fi), sin(lv(kv.z, 7.0, 0.12, 0.38) * t + lv(kv.z, 8.0, 1.5, 4.5) * fi)) * (lv(kv.z, 9.0, 0.2, 0.6) + fi);
         vec2 uv = uv0 + o;
-        float r = layerRule(uv, rule);
+        float r = layerRule(uv, rule, kv.x);
         r = desc ? 1.0 - r : r;
         float th = fi;
         float m = smoothstep(th - w, th + w, r);
-        float ms = smoothstep(th - w, th + w, (desc ? 1.0 - layerRule(uv - ldir * (k.w == 1 ? 0.035 : 0.014), rule) : layerRule(uv - ldir * (k.w == 1 ? 0.035 : 0.014), rule)));
+        float ms = smoothstep(th - w, th + w, (desc ? 1.0 - layerRule(uv - ldir * sh, rule, kv.x) : layerRule(uv - ldir * sh, rule, kv.x)));
         if (k.w == 2) {
-            float bevel = clamp((m - ms) * 3.0, -1.0, 1.0);
-            col = mix(col, imgLod(uv, 0.4), m) * (1.0 + 0.25 * bevel);
+            float bevel = clamp((m - ms) * lv(kv.w, 4.0, 1.8, 4.2), -1.0, 1.0);
+            col = mix(col, imgLod(uv, 0.4), m) * (1.0 + lv(kv.w, 5.0, 0.12, 0.38) * bevel);
         } else {
-            col = mix(col * (1.0 - 0.5 * ms * (1.0 - m)), imgLod(uv, 0.4), m);
+            col = mix(col * (1.0 - lv(kv.w, 6.0, 0.3, 0.7) * ms * (1.0 - m)), imgLod(uv, 0.4), m);
         }
     }
     return col * 1.2;
@@ -95,7 +99,7 @@ void main()
     float ws = 0.0;
     for (int i = 0; i < 4; ++i) {
         if (gLabW[i] > 0.002) {
-            col += gLabW[i] * layerLook(gLabK[i], p, t, pt, ed);
+            col += gLabW[i] * layerLook(gLabK[i], gLabV[i], p, t, pt, ed);
             ws += gLabW[i];
         }
     }

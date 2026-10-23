@@ -62,6 +62,7 @@ uniform float walkHost;
 vec2 stageAk(vec2 uv, int k, float v)
 {
     k = orda(k);
+    chainSetVar(v, k);
     if (k == 58) return tTinkerbell(uv, gCw, 2.0 + floor(v * 1.99), gT);
     if (k == 59) return tLozi(uv, gCw, 3.0, gT);
     if (k == 60) return tHopalong(uv, gCw, 0.6 + 0.8 * v, gT);
@@ -156,6 +157,7 @@ vec2 stageAk(vec2 uv, int k, float v)
 vec2 stageBk(vec2 uv, int k, float v)
 {
     k = ordb(k);
+    chainSetVar(v, k);
     if (k == 23) return tDragonFold(uv, gCw, 4.0 + floor(v * 2.99), 0.2 * sin(gT * 0.3));
     if (k == 24) return tGosperFold(uv, gCw, 2.0 + floor(v * 1.99), 0.2 * sin(gT * 0.3));
     if (k == 25) return tFibonacciMirror(uv, gCw, 3.0 + 2.0 * v, gRot + 0.3 + 0.2 * sin(gT * 0.2));
@@ -194,6 +196,7 @@ vec2 stageBk(vec2 uv, int k, float v)
 vec2 stageCk(vec2 uv, int k, float v)
 {
     k = ordc(k);
+    chainSetVar(v, k);
     if (k == 18) return tCylinderLens(uv, gCw, 0.4 + 0.8 * v, gRot + 0.3 * sin(gT * 0.3));
     if (k == 19) return tAxicon(uv, gCw, 0.15 + 0.15 * v, gT);
     if (k == 20) return tFresnelStep(uv, gCw, 6.0 + 6.0 * v, gT);
@@ -225,6 +228,7 @@ vec2 stageCk(vec2 uv, int k, float v)
 vec2 stageDk(vec2 uv, int k, float v)
 {
     k = ordd(k);
+    chainSetVar(v, k);
     if (k == 20) return tLangmuir(uv, 3.0 + floor(v * 3.99), 1.0 + gSpread, gT);
     if (k == 21) return tEkman(uv, 1.0 + 2.0 * v, 1.0 + gSpread, gT);
     if (k == 22) return tCapillary(uv, 3.0 + floor(v * 2.99), 1.0 + gSpread, gT);

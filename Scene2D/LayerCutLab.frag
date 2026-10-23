@@ -517,12 +517,64 @@ uniform float labPinB;
 uniform float labPinC;
 /** Test pin of slot 3. */
 uniform float labPinD;
+/** Test pin of the variants: 1 + the variant 0..99 for every slot, or 1000 * (1 + the slot) + 1 + the variant for that
+ * slot alone (the others at variant 0); 0: the walk decides. */
+uniform float labPinV;
 /** The share of an epoch a class change takes to cross-fade. */
 const float LabFade = 0.2;
 /** The classes of the four slots, for each of the (up to four) looks the walk blends. */
 ivec4 gLabK[4];
 /** The weights of those looks. */
 float gLabW[4];
+/** The variants (0..99) of the four slots' classes, for each of the looks the walk blends: a class is a family of
+ * looks, the variant sets its constants (lv(), lk()); variant 0 is the lab's original look. */
+ivec4 gLabV[4];
+
+/**  A constant of a lab's look, set by a slot's variant inside a range.
+ *
+ * @param vi  The slot's variant, 0..99. (in)
+ * @param j   The stream: another number for every constant of a look. (in)
+ * @param lo  The lower end. (in)
+ * @param hi  The upper end; variant 0 gives the middle. (in)
+ *
+ * @return
+ *   The constant.
+ **/
+float lv( int vi, float j, float lo, float hi )
+{
+    return vi == 0 ? 0.5 * ( lo + hi )
+                   : mix( lo, hi, fract( sin( float( vi ) * 12.9898 + j * 78.233 + 3.7 ) * 43758.5453 ) );
+}
+
+/**  A choice of a lab's look, set by a slot's variant.
+ *
+ * @param vi  The slot's variant, 0..99. (in)
+ * @param j   The stream. (in)
+ * @param n   The number of choices. (in)
+ *
+ * @return
+ *   0 .. n-1; 0 (the original choice) for variant 0.
+ **/
+int lk( int vi, float j, int n )
+{
+    return vi == 0
+               ? 0
+               : min( int( fract( sin( float( vi ) * 37.719 + j * 51.37 + 1.9 ) * 43758.5453 ) * float( n ) ), n - 1 );
+}
+
+/**  A variant of a slot in an epoch: a hash of the slot, the epoch and the walk's seed.
+ *
+ * @param s     The slot, 0..3. (in)
+ * @param e     The epoch (a whole number). (in)
+ * @param seed  The walk's seed. (in)
+ *
+ * @return
+ *   The variant, 0..99.
+ **/
+int labVar( int s, float e, float seed )
+{
+    return int( min( floor( hash21( vec2( e * 2.9 + seed * 1.3 + 11.0, float( s ) * 7.7 + 3.1 ) ) * 100.0 ), 99.0 ) );
+}
 
 /**  A class of a slot in an epoch: a hash of the slot, the epoch and the walk's seed.
  *
@@ -561,7 +613,7 @@ void labWalk( float seed, ivec4 n, float period )
     for ( int j = 0; j < 2; ++j )
     {
         float sd = seed + 0.713 * ( j == 0 ? audioSectionPrev : audioSectionId );
-        ivec4 base = ivec4( 0 ), alt = ivec4( 0 );
+        ivec4 base = ivec4( 0 ), alt = ivec4( 0 ), vbase = ivec4( 0 ), valt = ivec4( 0 );
         int   fs = 0;
         float ff = 0.0;
         for ( int s = 0; s < 4; ++s )
@@ -572,6 +624,8 @@ void labWalk( float seed, ivec4 n, float period )
             float e = floor( w );
             base[s] = labCls( s, e, sd, n[s] );
             alt[s] = labCls( s, e + 1.0, sd, n[s] );
+            vbase[s] = labVar( s, e, sd );
+            valt[s] = labVar( s, e + 1.0, sd );
             float f = smoothstep( 1.0 - LabFade, 1.0, w - e );
             if ( f > 0.0 )
             {
@@ -580,11 +634,14 @@ void labWalk( float seed, ivec4 n, float period )
             }
         }
         float wj = j == 0 ? 1.0 - m : m;
-        ivec4 b2 = base;
+        ivec4 b2 = base, vb2 = vbase;
         b2[fs] = alt[fs];
+        vb2[fs] = valt[fs];
         gLabK[2 * j] = base;
+        gLabV[2 * j] = vbase;
         gLabW[2 * j] = wj * ( 1.0 - ff );
         gLabK[2 * j + 1] = b2;
+        gLabV[2 * j + 1] = vb2;
         gLabW[2 * j + 1] = wj * ff;
     }
     if ( labPinA + labPinB + labPinC + labPinD > 0.5 )
@@ -602,37 +659,55 @@ void labWalk( float seed, ivec4 n, float period )
             gLabW[i] = i == 0 ? 1.0 : 0.0;
         }
     }
+    if ( labPinV > 0.5 )
+    {
+        int pv = int( labPinV + 0.5 );
+        int ps = pv / 1000 - 1;
+        int vp = clamp( pv - 1000 * ( pv / 1000 ) - 1, 0, 99 );
+        for ( int i = 0; i < 4; ++i )
+        {
+            if ( ps < 0 )
+                gLabV[i] = ivec4( vp );
+            else
+            {
+                gLabV[i] = ivec4( 0 );
+                gLabV[i][ps] = vp;
+            }
+        }
+    }
 }
 
 /**  The value the layers are cut by at a place.
  *
  * @param uv    The place in the photo. (in)
  * @param rule  The rule, 0..3: brightness, hue, saturation, edge strength. (in)
+ * @param vi    The rule's variant 0..99: its offset, gain and scale. (in)
  *
  * @return
  *   The value, 0..1.
  **/
-float layerRule( vec2 uv, int rule )
+float layerRule( vec2 uv, int rule, int vi )
 {
-    vec3 c = imgLod( uv, 3.2 );
+    vec3 c = imgLod( uv, lv( vi, 6.0, 2.4, 4.0 ) );
     if ( rule == 1 )
-        return hueOf( c );
+        return fract( hueOf( c ) + lv( vi, 3.0, -0.5, 0.5 ) );
     if ( rule == 2 )
-        return clamp( satOf( c ) * 1.2, 0.0, 1.0 );
+        return clamp( satOf( c ) * lv( vi, 2.0, 0.6, 1.8 ), 0.0, 1.0 );
     if ( rule == 3 )
     {
-        float e = 0.01;
+        float e = lv( vi, 4.0, 0.005, 0.015 );
         vec2  g = vec2( luma( imgLod( uv + vec2( e, 0.0 ), 2.0 ) ) - luma( imgLod( uv - vec2( e, 0.0 ), 2.0 ) ),
                         luma( imgLod( uv + vec2( 0.0, e ), 2.0 ) ) - luma( imgLod( uv - vec2( 0.0, e ), 2.0 ) ) );
-        return clamp( length( g ) * 9.0, 0.0, 1.0 );
+        return clamp( length( g ) * lv( vi, 5.0, 5.0, 13.0 ), 0.0, 1.0 );
     }
-    return clamp( ( luma( c ) - 0.08 ) * 1.2, 0.0, 1.0 );
+    return clamp( ( luma( c ) - lv( vi, 1.0, 0.0, 0.16 ) ) * lv( vi, 2.0, 0.9, 1.5 ), 0.0, 1.0 );
 }
 
 /**  One look of the lab.
  *
  * @param k   The classes: x the rule and polarity (0..7), y the number of layers, z the layers' motion, w the
  *            shadow. (in)
+ * @param kv  The variants of those classes (the constants of each). (in)
  * @param p   The place. (in)
  * @param t   The clock. (in)
  * @param pt  How far the layers part. (in)
@@ -641,16 +716,18 @@ float layerRule( vec2 uv, int rule )
  * @return
  *   The colour.
  **/
-vec3 layerLook( ivec4 k, vec2 p, float t, float pt, float ed )
+vec3 layerLook( ivec4 k, ivec4 kv, vec2 p, float t, float pt, float ed )
 {
     int   rule = k.x - 4 * ( k.x / 4 );
     bool  desc = k.x >= 4;
-    int   N = k.y == 0 ? 6 : ( k.y == 1 ? 8 : 11 );
+    int   N = ( k.y == 0 ? 6 : ( k.y == 1 ? 8 : 11 ) ) + lk( kv.y, 1.0, 3 );
     vec2  uv0 = p * 0.8 + 0.5;
     vec3  col = imgLod( uv0, 0.4 ) * 0.8;
-    float w = 0.04 + 0.12 * ed;
-    vec2  ldir = k.w == 1 ? vec2( 0.8, -0.35 ) : vec2( 0.45, -0.55 );
-    for ( int i = 1; i < 11; ++i )
+    float w = lv( kv.y, 2.0, 0.005, 0.075 ) + lv( kv.y, 3.0, 0.02, 0.22 ) * ed;
+    float sa = lv( kv.w, 1.0, -0.8, 0.8 );
+    vec2  ldir = rot2( sa ) * ( k.w == 1 ? vec2( 0.8, -0.35 ) : vec2( 0.45, -0.55 ) );
+    float sh = k.w == 1 ? lv( kv.w, 2.0, 0.02, 0.05 ) : lv( kv.w, 3.0, 0.007, 0.021 );
+    for ( int i = 1; i < 14; ++i )
     {
         if ( i >= N )
             break;
@@ -658,27 +735,33 @@ vec3 layerLook( ivec4 k, vec2 p, float t, float pt, float ed )
         float depth = fi - 0.5;
         vec2  o;
         if ( k.z == 0 )
-            o = pt * 0.05 * depth * vec2( cos( 0.2 * t ), sin( 0.2 * t ) );
+            o = pt * lv( kv.z, 1.0, 0.025, 0.075 ) * depth
+                * vec2( cos( lv( kv.z, 2.0, 0.1, 0.3 ) * t ), sin( lv( kv.z, 2.0, 0.1, 0.3 ) * t ) );
         else if ( k.z == 1 )
-            o = pt * 0.06 * depth * vec2( sin( 0.3 * t ), 0.5 * sin( 0.3 * t ) );
+            o = pt * lv( kv.z, 3.0, 0.03, 0.09 ) * depth
+                * vec2( sin( lv( kv.z, 5.0, 0.15, 0.45 ) * t ),
+                        lv( kv.z, 4.0, 0.0, 1.0 ) * sin( lv( kv.z, 5.0, 0.15, 0.45 ) * t ) );
         else
-            o = pt * 0.045 * vec2( cos( 0.25 * t + 3.0 * fi ), sin( 0.25 * t + 3.0 * fi ) ) * ( 0.4 + fi );
+            o = pt * lv( kv.z, 6.0, 0.02, 0.07 )
+                * vec2( cos( lv( kv.z, 7.0, 0.12, 0.38 ) * t + lv( kv.z, 8.0, 1.5, 4.5 ) * fi ),
+                        sin( lv( kv.z, 7.0, 0.12, 0.38 ) * t + lv( kv.z, 8.0, 1.5, 4.5 ) * fi ) )
+                * ( lv( kv.z, 9.0, 0.2, 0.6 ) + fi );
         vec2  uv = uv0 + o;
-        float r = layerRule( uv, rule );
+        float r = layerRule( uv, rule, kv.x );
         r = desc ? 1.0 - r : r;
         float th = fi;
         float m = smoothstep( th - w, th + w, r );
-        float ms = smoothstep( th - w, th + w,
-                               ( desc ? 1.0 - layerRule( uv - ldir * ( k.w == 1 ? 0.035 : 0.014 ), rule )
-                                      : layerRule( uv - ldir * ( k.w == 1 ? 0.035 : 0.014 ), rule ) ) );
+        float ms = smoothstep(
+            th - w, th + w,
+            ( desc ? 1.0 - layerRule( uv - ldir * sh, rule, kv.x ) : layerRule( uv - ldir * sh, rule, kv.x ) ) );
         if ( k.w == 2 )
         {
-            float bevel = clamp( ( m - ms ) * 3.0, -1.0, 1.0 );
-            col = mix( col, imgLod( uv, 0.4 ), m ) * ( 1.0 + 0.25 * bevel );
+            float bevel = clamp( ( m - ms ) * lv( kv.w, 4.0, 1.8, 4.2 ), -1.0, 1.0 );
+            col = mix( col, imgLod( uv, 0.4 ), m ) * ( 1.0 + lv( kv.w, 5.0, 0.12, 0.38 ) * bevel );
         }
         else
         {
-            col = mix( col * ( 1.0 - 0.5 * ms * ( 1.0 - m ) ), imgLod( uv, 0.4 ), m );
+            col = mix( col * ( 1.0 - lv( kv.w, 6.0, 0.3, 0.7 ) * ms * ( 1.0 - m ) ), imgLod( uv, 0.4 ), m );
         }
     }
     return col * 1.2;
@@ -699,7 +782,7 @@ void main()
     {
         if ( gLabW[i] > 0.002 )
         {
-            col += gLabW[i] * layerLook( gLabK[i], p, t, pt, ed );
+            col += gLabW[i] * layerLook( gLabK[i], gLabV[i], p, t, pt, ed );
             ws += gLabW[i];
         }
     }

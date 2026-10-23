@@ -39,6 +39,18 @@ vec2 mirrorUV( vec2 uv )
 {
     return 1.0 - abs( fract( uv * 0.5 ) * 2.0 - 1.0 );
 }
+/**  2D rotation matrix.
+ *
+ * @param a  The angle in radians. (in)
+ *
+ * @return
+ *   The rotation matrix.
+ **/
+mat2 rot2( float a )
+{
+    float c = cos( a ), s = sin( a );
+    return mat2( c, -s, s, c );
+}
 /**  The pixel's position, centred and aspect-corrected (y spans -0.5..0.5).
  *
  * @return
@@ -47,6 +59,66 @@ vec2 mirrorUV( vec2 uv )
 vec2 screenP()
 {
     return ( gl_FragCoord.xy / resolution - 0.5 ) * vec2( resolution.x / resolution.y, 1.0 );
+}
+float gVar = 0.0; ///< The variant of the class in use: -1 for variant 0 (the original look), else a hash of its number,
+                  ///< 0..1.
+vec4 gVa = vec4( 0.5 ); ///< The variant's first four pseudo-random numbers, 0..1 (all 0.5 for variant 0).
+vec4 gVb = vec4( 0.5 ); ///< The variant's last four pseudo-random numbers, 0..1 (all 0.5 for variant 0).
+/**  The variant's pseudo-random number of one stream.
+ *
+ * @param j  The stream, a whole number 0..7. (in)
+ *
+ * @return
+ *   0..1; 0.5 for variant 0, so that vv() gives the middle of its range.
+ **/
+float vr( float j )
+{
+    int i = int( j );
+    return i < 4 ? gVa[i] : gVb[i - 4];
+}
+/**  A constant of the class, set by the variant inside a range.
+ *
+ * @param j   The stream. (in)
+ * @param lo  The lower end. (in)
+ * @param hi  The upper end; variant 0 gives the middle. (in)
+ *
+ * @return
+ *   The constant.
+ **/
+float vv( float j, float lo, float hi )
+{
+    return mix( lo, hi, vr( j ) );
+}
+/**  A choice of the class, set by the variant.
+ *
+ * @param j  The stream. (in)
+ * @param n  The number of choices. (in)
+ *
+ * @return
+ *   0 .. n-1; 0 (the original choice) for variant 0.
+ **/
+float vk( float j, float n )
+{
+    return gVar < 0.0 ? 0.0 : min( floor( vr( j ) * n ), n - 1.0 );
+}
+/**  Sets the variant a stage's sub-variant stands for (gVar, gVa, gVb).
+ *
+ * @param v  The sub-variant 0..1 of the stage. (in)
+ * @param k  The class's branch number. (in)
+ **/
+void chainSetVar( float v, int k )
+{
+    float vi = floor( clamp( v, 0.0, 0.9999 ) * 100.0 );
+    if ( vi < 0.5 )
+    {
+        gVar = -1.0;
+        gVa = vec4( 0.5 );
+        gVb = vec4( 0.5 );
+        return;
+    }
+    gVar = fract( sin( vi * 12.9898 + float( k ) * 78.233 ) * 43758.5453 );
+    gVa = fract( sin( gVar * 127.1 + 17.0 + vec4( 0.0, 311.7, 623.4, 935.1 ) ) * 43758.5453 );
+    gVb = fract( sin( gVar * 127.1 + 17.0 + vec4( 1246.8, 1558.5, 1870.2, 2181.9 ) ) * 43758.5453 );
 }
 /**  Cantor mirror: the distance to the Cantor set along both axes (a devil's carpet of folds).
  *
@@ -88,8 +160,13 @@ float cantorDist( float x )
  **/
 vec2 tCantorMirror( vec2 uv, vec2 c, float scale, float t )
 {
-    vec2 p = ( uv - c ) * scale + 0.5;
-    return c + vec2( cantorDist( p.x + 0.05 * sin( t * 0.2 ) ), cantorDist( p.y ) ) * 3.0;
+    vec2 p = rot2( vv( 6.0, -0.6, 0.6 ) ) * ( uv - c ) * scale + vv( 5.0, 0.3, 0.7 );
+    if ( vk( 3.0, 2.0 ) > 0.5 )
+        p = p.yx;
+    return c
+           + vec2( cantorDist( p.x * vv( 7.0, 0.7, 1.3 ) + vv( 2.0, 0.02, 0.08 ) * sin( t * 0.2 ) ),
+                   cantorDist( p.y * vv( 1.0, 0.6, 1.4 ) ) )
+                 * vv( 4.0, 2.4, 3.6 );
 }
 /** @{ */
 float gT, gSpread, gRot, gMw; ///< gT: The chain's (or scene's) time this frame; gSpread: The spectral spread this
@@ -126,6 +203,7 @@ float chainTiltZ( vec2 q )
  **/
 vec2 cls( vec2 uv, float v )
 {
+    chainSetVar( v, 27 );
     return tCantorMirror( uv, gCw, 1.4 + 0.8 * v, gT );
     return uv;
 }

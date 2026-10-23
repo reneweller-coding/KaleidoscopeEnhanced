@@ -48,6 +48,54 @@ vec2 screenP()
 {
     return ( gl_FragCoord.xy / resolution - 0.5 ) * vec2( resolution.x / resolution.y, 1.0 );
 }
+float gVar = 0.0; ///< The variant of the class in use: -1 for variant 0 (the original look), else a hash of its number,
+                  ///< 0..1.
+vec4 gVa = vec4( 0.5 ); ///< The variant's first four pseudo-random numbers, 0..1 (all 0.5 for variant 0).
+vec4 gVb = vec4( 0.5 ); ///< The variant's last four pseudo-random numbers, 0..1 (all 0.5 for variant 0).
+/**  The variant's pseudo-random number of one stream.
+ *
+ * @param j  The stream, a whole number 0..7. (in)
+ *
+ * @return
+ *   0..1; 0.5 for variant 0, so that vv() gives the middle of its range.
+ **/
+float vr( float j )
+{
+    int i = int( j );
+    return i < 4 ? gVa[i] : gVb[i - 4];
+}
+/**  A constant of the class, set by the variant inside a range.
+ *
+ * @param j   The stream. (in)
+ * @param lo  The lower end. (in)
+ * @param hi  The upper end; variant 0 gives the middle. (in)
+ *
+ * @return
+ *   The constant.
+ **/
+float vv( float j, float lo, float hi )
+{
+    return mix( lo, hi, vr( j ) );
+}
+/**  Sets the variant a stage's sub-variant stands for (gVar, gVa, gVb).
+ *
+ * @param v  The sub-variant 0..1 of the stage. (in)
+ * @param k  The class's branch number. (in)
+ **/
+void chainSetVar( float v, int k )
+{
+    float vi = floor( clamp( v, 0.0, 0.9999 ) * 100.0 );
+    if ( vi < 0.5 )
+    {
+        gVar = -1.0;
+        gVa = vec4( 0.5 );
+        gVb = vec4( 0.5 );
+        return;
+    }
+    gVar = fract( sin( vi * 12.9898 + float( k ) * 78.233 ) * 43758.5453 );
+    gVa = fract( sin( gVar * 127.1 + 17.0 + vec4( 0.0, 311.7, 623.4, 935.1 ) ) * 43758.5453 );
+    gVb = fract( sin( gVar * 127.1 + 17.0 + vec4( 1246.8, 1558.5, 1870.2, 2181.9 ) ) * 43758.5453 );
+}
 /**  KdV soliton train: sech^2 humps of different height that pass through each other; the photo rides them.
  *
  * @param uv        The coordinate. (in)
@@ -62,13 +110,13 @@ vec2 tSolitons( vec2 uv, float strength, float t )
     float h = 0.0;
     for ( int i = 0; i < 4; ++i )
     {
-        float sp = 0.6 + 0.5 * float( i );
-        float x0 = fract( 0.05 * t * sp + 0.27 * float( i ) ) * 2.0 - 0.5;
-        float u = ( uv.x - x0 ) * ( 3.0 + 2.0 * sp );
+        float sp = vv( 1.0, 0.4, 0.8 ) + vv( 2.0, 0.35, 0.65 ) * float( i );
+        float x0 = fract( 0.05 * t * sp + 0.27 * float( i ) + vv( 5.0, -0.2, 0.2 ) ) * 2.0 - 0.5;
+        float u = ( uv.x - x0 ) * ( vv( 3.0, 2.0, 4.0 ) + 2.0 * sp );
         float sh = 1.0 / cosh( u );
         h += sp * sh * sh;
     }
-    return uv + vec2( 0.0, strength * 0.16 * h );
+    return uv + vec2( 0.0, strength * vv( 4.0, 0.1, 0.22 ) * h );
 }
 /** @{ */
 float gT, gSpread, gRot, gMw; ///< gT: The chain's (or scene's) time this frame; gSpread: The spectral spread this
@@ -118,6 +166,7 @@ float chainTiltZ( vec2 q )
  **/
 vec2 cls( vec2 uv, float v )
 {
+    chainSetVar( v, 23 );
     return tSolitons( uv, 1.0 + gSpread, gT );
     return uv;
 }

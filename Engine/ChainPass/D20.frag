@@ -48,6 +48,66 @@ vec2 screenP()
 {
     return ( gl_FragCoord.xy / resolution - 0.5 ) * vec2( resolution.x / resolution.y, 1.0 );
 }
+float gVar = 0.0; ///< The variant of the class in use: -1 for variant 0 (the original look), else a hash of its number,
+                  ///< 0..1.
+vec4 gVa = vec4( 0.5 ); ///< The variant's first four pseudo-random numbers, 0..1 (all 0.5 for variant 0).
+vec4 gVb = vec4( 0.5 ); ///< The variant's last four pseudo-random numbers, 0..1 (all 0.5 for variant 0).
+/**  The variant's pseudo-random number of one stream.
+ *
+ * @param j  The stream, a whole number 0..7. (in)
+ *
+ * @return
+ *   0..1; 0.5 for variant 0, so that vv() gives the middle of its range.
+ **/
+float vr( float j )
+{
+    int i = int( j );
+    return i < 4 ? gVa[i] : gVb[i - 4];
+}
+/**  A constant of the class, set by the variant inside a range.
+ *
+ * @param j   The stream. (in)
+ * @param lo  The lower end. (in)
+ * @param hi  The upper end; variant 0 gives the middle. (in)
+ *
+ * @return
+ *   The constant.
+ **/
+float vv( float j, float lo, float hi )
+{
+    return mix( lo, hi, vr( j ) );
+}
+/**  A choice of the class, set by the variant.
+ *
+ * @param j  The stream. (in)
+ * @param n  The number of choices. (in)
+ *
+ * @return
+ *   0 .. n-1; 0 (the original choice) for variant 0.
+ **/
+float vk( float j, float n )
+{
+    return gVar < 0.0 ? 0.0 : min( floor( vr( j ) * n ), n - 1.0 );
+}
+/**  Sets the variant a stage's sub-variant stands for (gVar, gVa, gVb).
+ *
+ * @param v  The sub-variant 0..1 of the stage. (in)
+ * @param k  The class's branch number. (in)
+ **/
+void chainSetVar( float v, int k )
+{
+    float vi = floor( clamp( v, 0.0, 0.9999 ) * 100.0 );
+    if ( vi < 0.5 )
+    {
+        gVar = -1.0;
+        gVa = vec4( 0.5 );
+        gVb = vec4( 0.5 );
+        return;
+    }
+    gVar = fract( sin( vi * 12.9898 + float( k ) * 78.233 ) * 43758.5453 );
+    gVa = fract( sin( gVar * 127.1 + 17.0 + vec4( 0.0, 311.7, 623.4, 935.1 ) ) * 43758.5453 );
+    gVb = fract( sin( gVar * 127.1 + 17.0 + vec4( 1246.8, 1558.5, 1870.2, 2181.9 ) ) * 43758.5453 );
+}
 /**  Stage D: flows and waves ------------------------------------------------------------------------------------
  * Langmuir cells: counter-rotating roll pairs along the wind, drift lines gather in the convergence zones.
  *
@@ -61,10 +121,14 @@ vec2 screenP()
  **/
 vec2 tLangmuir( vec2 uv, float cells, float strength, float t )
 {
+    if ( vk( 4.0, 2.0 ) > 0.5 )
+        uv = uv.yx;
     float k = 6.2831853 * cells;
     float ph = k * uv.x + 0.3 * t;
-    return uv + strength * 0.03 * vec2( sin( ph ), 0.0 )
-           + strength * 0.05 * vec2( 0.0, cos( ph ) * sin( 0.7 * uv.y * k * 0.3 + t * 0.2 ) );
+    vec2  r = uv + strength * vv( 1.0, 0.02, 0.04 ) * vec2( sin( ph ), 0.0 )
+              + strength * vv( 2.0, 0.03, 0.07 )
+                    * vec2( 0.0, cos( ph ) * sin( vv( 3.0, 0.4, 1.0 ) * uv.y * k * 0.3 + t * 0.2 ) );
+    return vk( 4.0, 2.0 ) > 0.5 ? r.yx : r;
 }
 /** @{ */
 float gT, gSpread, gRot, gMw; ///< gT: The chain's (or scene's) time this frame; gSpread: The spectral spread this
@@ -114,6 +178,7 @@ float chainTiltZ( vec2 q )
  **/
 vec2 cls( vec2 uv, float v )
 {
+    chainSetVar( v, 20 );
     return tLangmuir( uv, 3.0 + floor( v * 3.99 ), 1.0 + gSpread, gT );
     return uv;
 }

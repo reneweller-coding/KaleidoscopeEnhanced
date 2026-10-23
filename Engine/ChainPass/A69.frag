@@ -60,6 +60,54 @@ vec2 screenP()
 {
     return ( gl_FragCoord.xy / resolution - 0.5 ) * vec2( resolution.x / resolution.y, 1.0 );
 }
+float gVar = 0.0; ///< The variant of the class in use: -1 for variant 0 (the original look), else a hash of its number,
+                  ///< 0..1.
+vec4 gVa = vec4( 0.5 ); ///< The variant's first four pseudo-random numbers, 0..1 (all 0.5 for variant 0).
+vec4 gVb = vec4( 0.5 ); ///< The variant's last four pseudo-random numbers, 0..1 (all 0.5 for variant 0).
+/**  The variant's pseudo-random number of one stream.
+ *
+ * @param j  The stream, a whole number 0..7. (in)
+ *
+ * @return
+ *   0..1; 0.5 for variant 0, so that vv() gives the middle of its range.
+ **/
+float vr( float j )
+{
+    int i = int( j );
+    return i < 4 ? gVa[i] : gVb[i - 4];
+}
+/**  A constant of the class, set by the variant inside a range.
+ *
+ * @param j   The stream. (in)
+ * @param lo  The lower end. (in)
+ * @param hi  The upper end; variant 0 gives the middle. (in)
+ *
+ * @return
+ *   The constant.
+ **/
+float vv( float j, float lo, float hi )
+{
+    return mix( lo, hi, vr( j ) );
+}
+/**  Sets the variant a stage's sub-variant stands for (gVar, gVa, gVb).
+ *
+ * @param v  The sub-variant 0..1 of the stage. (in)
+ * @param k  The class's branch number. (in)
+ **/
+void chainSetVar( float v, int k )
+{
+    float vi = floor( clamp( v, 0.0, 0.9999 ) * 100.0 );
+    if ( vi < 0.5 )
+    {
+        gVar = -1.0;
+        gVa = vec4( 0.5 );
+        gVb = vec4( 0.5 );
+        return;
+    }
+    gVar = fract( sin( vi * 12.9898 + float( k ) * 78.233 ) * 43758.5453 );
+    gVa = fract( sin( gVar * 127.1 + 17.0 + vec4( 0.0, 311.7, 623.4, 935.1 ) ) * 43758.5453 );
+    gVb = fract( sin( gVar * 127.1 + 17.0 + vec4( 1246.8, 1558.5, 1870.2, 2181.9 ) ) * 43758.5453 );
+}
 /**  Square root with its branch cut: |sqrt(z)| in both coordinates, so the two sheets agree on the cut.
  *
  * @param uv     The coordinate. (in)
@@ -72,10 +120,11 @@ vec2 screenP()
  **/
 vec2 tSqrtSheet( vec2 uv, vec2 c, float scale, float t )
 {
-    vec2  z = rot2( 0.2 * t ) * ( uv - c ) * scale;
+    vec2  z = rot2( vv( 1.0, 0.1, 0.3 ) * t + vv( 4.0, -1.0, 1.0 ) ) * ( uv - c ) * scale;
     float r = length( z ), th = atan( z.y, z.x );
-    vec2  w = sqrt( r ) * vec2( cos( 0.5 * th ), sin( 0.5 * th ) );
-    return c + abs( w ) * 0.7;
+    float e = vv( 2.0, 0.34, 0.66 );
+    vec2  w = pow( r, e ) * vec2( cos( e * th ), sin( e * th ) );
+    return c + abs( w ) * vv( 3.0, 0.55, 0.85 );
 }
 /** @{ */
 float gT, gSpread, gRot, gMw; ///< gT: The chain's (or scene's) time this frame; gSpread: The spectral spread this
@@ -112,6 +161,7 @@ float chainTiltZ( vec2 q )
  **/
 vec2 cls( vec2 uv, float v )
 {
+    chainSetVar( v, 69 );
     return tSqrtSheet( uv, gCw, 2.0 + 2.0 * v, gT );
     return uv;
 }

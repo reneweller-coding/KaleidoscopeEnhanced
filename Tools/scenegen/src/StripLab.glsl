@@ -19,43 +19,47 @@
 /**  The scanner's moment at a place.
  *
  * @param kind  The scanner, 0..5: rows, columns, diagonal, radial, spiral, wavy rows. (in)
+ * @param vi    The scanner's variant 0..99: its slope, scale and centre. (in)
  * @param p     The place. (in)
  *
  * @return
  *   The moment, about -1..1.
  **/
-float stripMoment(int kind, vec2 p)
+float stripMoment(int kind, int vi, vec2 p)
 {
-    if (kind == 0) return p.y * 2.0;
-    if (kind == 1) return p.x * 1.2;
-    if (kind == 2) return (p.x * 0.6 + p.y) * 1.4;
-    float r = length(p);
-    if (kind == 3) return r * 2.4 - 0.8;
-    if (kind == 4) return r * 1.6 + 1.0 * atan(p.y, p.x) / 6.2831853 * 2.0 - 0.5;
-    return (p.y + 0.12 * sin(6.0 * p.x)) * 2.0;
+    if (kind == 0) return p.y * lv(vi, 1.0, 1.2, 2.8) + lv(vi, 2.0, -0.6, 0.6) * p.x;
+    if (kind == 1) return p.x * lv(vi, 1.0, 0.7, 1.7) + lv(vi, 2.0, -0.6, 0.6) * p.y;
+    if (kind == 2) return (p.x * lv(vi, 3.0, 0.2, 1.0) + p.y) * lv(vi, 1.0, 0.9, 1.9);
+    vec2 c0 = vec2(lv(vi, 5.0, -0.3, 0.3), lv(vi, 6.0, -0.3, 0.3));
+    float r = length(p - c0);
+    if (kind == 3) return r * lv(vi, 1.0, 1.4, 3.4) + lv(vi, 4.0, -1.2, -0.4);
+    if (kind == 4) return r * lv(vi, 1.0, 0.9, 2.3) + atan(p.y - c0.y, p.x - c0.x) / 6.2831853 * (2.0 + float(lk(vi, 7.0, 3))) + lv(vi, 8.0, -0.9, -0.1);
+    return (p.y + lv(vi, 1.0, 0.06, 0.18) * sin(lv(vi, 2.0, 3.0, 9.0) * p.x)) * lv(vi, 3.0, 1.2, 2.8);
 }
 
 /**  Where the photo is read at a moment: the photo's motion.
  *
  * @param path  The motion, 0..4: circling pan, turn, breath, sway, Lissajous. (in)
+ * @param vi    The motion's variant 0..99: its sizes and rates. (in)
  * @param p     The place. (in)
  * @param tm    The moment (clock plus the scanner's offset). (in)
  *
  * @return
  *   The place in the photo.
  **/
-vec2 stripPath(int path, vec2 p, float tm)
+vec2 stripPath(int path, int vi, vec2 p, float tm)
 {
-    if (path == 0) return p + 0.18 * vec2(cos(0.5 * tm), sin(0.5 * tm));
-    if (path == 1) return rot2(0.6 * sin(0.45 * tm)) * p;
-    if (path == 2) return p * (1.0 + 0.35 * sin(0.5 * tm));
-    if (path == 3) return p + vec2(0.25 * sin(0.7 * tm), 0.0) + vec2(0.0, 0.05 * sin(1.3 * tm));
-    return p + 0.2 * vec2(sin(0.6 * tm), sin(0.9 * tm + 1.0));
+    if (path == 0) return p + lv(vi, 1.0, 0.09, 0.27) * vec2(cos(lv(vi, 2.0, 0.25, 0.75) * tm), sin(lv(vi, 2.0, 0.25, 0.75) * tm));
+    if (path == 1) return rot2(lv(vi, 1.0, 0.3, 0.9) * sin(lv(vi, 2.0, 0.25, 0.65) * tm)) * p;
+    if (path == 2) return p * (1.0 + lv(vi, 1.0, 0.15, 0.55) * sin(lv(vi, 2.0, 0.25, 0.75) * tm));
+    if (path == 3) return p + vec2(lv(vi, 1.0, 0.12, 0.38) * sin(lv(vi, 2.0, 0.4, 1.0) * tm), 0.0) + vec2(0.0, lv(vi, 3.0, 0.02, 0.08) * sin(lv(vi, 4.0, 0.8, 1.8) * tm));
+    return p + lv(vi, 1.0, 0.1, 0.3) * vec2(sin(lv(vi, 2.0, 0.3, 0.9) * tm), sin(lv(vi, 3.0, 0.5, 1.3) * tm + lv(vi, 4.0, 0.0, 2.0)));
 }
 
 /**  One look of the lab.
  *
  * @param k    The classes: x the scanner, y the photo's motion, z the span of moments, w the scanner's run. (in)
+ * @param kv   The variants of those classes (the constants of each). (in)
  * @param p    The place. (in)
  * @param t    The clock. (in)
  * @param sp   The base span. (in)
@@ -64,14 +68,14 @@ vec2 stripPath(int path, vec2 p, float tm)
  * @return
  *   The colour.
  **/
-vec3 stripLook(ivec4 k, vec2 p, float t, float sp, float sw)
+vec3 stripLook(ivec4 k, ivec4 kv, vec2 p, float t, float sp, float sw)
 {
-    float span = sp * (k.z == 0 ? 2.0 : (k.z == 1 ? 4.5 : 8.0)) * (0.7 + 0.5 * sw);
-    float m1 = stripMoment(k.x, p);
+    float span = sp * (k.z == 0 ? 2.0 : (k.z == 1 ? 4.5 : 8.0)) * lv(kv.z, 1.0, 0.7, 1.3) * (0.7 + 0.5 * sw);
+    float m1 = stripMoment(k.x, kv.x, p);
     float m = m1;
-    if (k.w == 1) m = 0.5 * (m1 + stripMoment((k.x + 1) - 6 * ((k.x + 1) / 6), p));
-    else if (k.w == 2) m = m1 * sin(0.12 * t);
-    vec2 q = stripPath(k.y, p, t + span * m);
+    if (k.w == 1) m = mix(m1, stripMoment((k.x + 1) - 6 * ((k.x + 1) / 6), kv.x, p), lv(kv.w, 1.0, 0.3, 0.7));
+    else if (k.w == 2) m = m1 * sin(lv(kv.w, 2.0, 0.06, 0.18) * t) + lv(kv.w, 3.0, -0.4, 0.4);
+    vec2 q = stripPath(k.y, kv.y, p, t + span * m);
     return imgLod(q * 0.8 + 0.5, 0.5);
 }
 
@@ -86,7 +90,7 @@ void main()
     float ws = 0.0;
     for (int i = 0; i < 4; ++i) {
         if (gLabW[i] > 0.002) {
-            col += gLabW[i] * stripLook(gLabK[i], p, t, sp, sw);
+            col += gLabW[i] * stripLook(gLabK[i], gLabV[i], p, t, sp, sw);
             ws += gLabW[i];
         }
     }

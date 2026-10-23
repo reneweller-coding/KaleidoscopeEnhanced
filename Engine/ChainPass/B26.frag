@@ -48,6 +48,66 @@ vec2 screenP()
 {
     return ( gl_FragCoord.xy / resolution - 0.5 ) * vec2( resolution.x / resolution.y, 1.0 );
 }
+float gVar = 0.0; ///< The variant of the class in use: -1 for variant 0 (the original look), else a hash of its number,
+                  ///< 0..1.
+vec4 gVa = vec4( 0.5 ); ///< The variant's first four pseudo-random numbers, 0..1 (all 0.5 for variant 0).
+vec4 gVb = vec4( 0.5 ); ///< The variant's last four pseudo-random numbers, 0..1 (all 0.5 for variant 0).
+/**  The variant's pseudo-random number of one stream.
+ *
+ * @param j  The stream, a whole number 0..7. (in)
+ *
+ * @return
+ *   0..1; 0.5 for variant 0, so that vv() gives the middle of its range.
+ **/
+float vr( float j )
+{
+    int i = int( j );
+    return i < 4 ? gVa[i] : gVb[i - 4];
+}
+/**  A constant of the class, set by the variant inside a range.
+ *
+ * @param j   The stream. (in)
+ * @param lo  The lower end. (in)
+ * @param hi  The upper end; variant 0 gives the middle. (in)
+ *
+ * @return
+ *   The constant.
+ **/
+float vv( float j, float lo, float hi )
+{
+    return mix( lo, hi, vr( j ) );
+}
+/**  A choice of the class, set by the variant.
+ *
+ * @param j  The stream. (in)
+ * @param n  The number of choices. (in)
+ *
+ * @return
+ *   0 .. n-1; 0 (the original choice) for variant 0.
+ **/
+float vk( float j, float n )
+{
+    return gVar < 0.0 ? 0.0 : min( floor( vr( j ) * n ), n - 1.0 );
+}
+/**  Sets the variant a stage's sub-variant stands for (gVar, gVa, gVb).
+ *
+ * @param v  The sub-variant 0..1 of the stage. (in)
+ * @param k  The class's branch number. (in)
+ **/
+void chainSetVar( float v, int k )
+{
+    float vi = floor( clamp( v, 0.0, 0.9999 ) * 100.0 );
+    if ( vi < 0.5 )
+    {
+        gVar = -1.0;
+        gVa = vec4( 0.5 );
+        gVb = vec4( 0.5 );
+        return;
+    }
+    gVar = fract( sin( vi * 12.9898 + float( k ) * 78.233 ) * 43758.5453 );
+    gVa = fract( sin( gVar * 127.1 + 17.0 + vec4( 0.0, 311.7, 623.4, 935.1 ) ) * 43758.5453 );
+    gVb = fract( sin( gVar * 127.1 + 17.0 + vec4( 1246.8, 1558.5, 1870.2, 2181.9 ) ) * 43758.5453 );
+}
 /**  Thue-Morse mirror: the slope of a zigzag flips where the Thue-Morse sequence says, never periodic, never random.
  *
  * @param uv  The coordinate. (in)
@@ -60,7 +120,9 @@ vec2 screenP()
  **/
 vec2 tThueMorseMirror( vec2 uv, vec2 c, float w, float t )
 {
-    vec2  p = ( uv - c ) * w + vec2( 0.3 * sin( t * 0.1 ), 0.0 );
+    vec2 p = ( uv - c ) * w + vec2( vv( 3.0, 0.15, 0.45 ) * sin( t * 0.1 ), 0.0 );
+    if ( vk( 4.0, 2.0 ) > 0.5 )
+        p = p.yx;
     float k = floor( p.x );
     float kk = mod( k, 4096.0 );
     int   n = int( kk ), bits = 0;
@@ -73,7 +135,7 @@ vec2 tThueMorseMirror( vec2 uv, vec2 c, float w, float t )
         pb += ( n1 >> i ) & 1;
     float S = kodd > 0.5 ? ( ( pb & 1 ) == 0 ? 1.0 : -1.0 ) : 0.0;
     float x = S + sg * ( p.x - k );
-    return c + vec2( x * 0.45, p.y * 0.45 );
+    return c + vec2( x * vv( 1.0, 0.3, 0.6 ), p.y * vv( 2.0, 0.3, 0.6 ) );
 }
 /** @{ */
 float gT, gSpread, gRot, gMw; ///< gT: The chain's (or scene's) time this frame; gSpread: The spectral spread this
@@ -110,6 +172,7 @@ float chainTiltZ( vec2 q )
  **/
 vec2 cls( vec2 uv, float v )
 {
+    chainSetVar( v, 26 );
     return tThueMorseMirror( uv, gCw, 3.0 + 2.0 * v, gT );
     return uv;
 }

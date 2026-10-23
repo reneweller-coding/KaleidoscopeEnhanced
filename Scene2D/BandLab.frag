@@ -519,12 +519,64 @@ uniform float labPinB;
 uniform float labPinC;
 /** Test pin of slot 3. */
 uniform float labPinD;
+/** Test pin of the variants: 1 + the variant 0..99 for every slot, or 1000 * (1 + the slot) + 1 + the variant for that
+ * slot alone (the others at variant 0); 0: the walk decides. */
+uniform float labPinV;
 /** The share of an epoch a class change takes to cross-fade. */
 const float LabFade = 0.2;
 /** The classes of the four slots, for each of the (up to four) looks the walk blends. */
 ivec4 gLabK[4];
 /** The weights of those looks. */
 float gLabW[4];
+/** The variants (0..99) of the four slots' classes, for each of the looks the walk blends: a class is a family of
+ * looks, the variant sets its constants (lv(), lk()); variant 0 is the lab's original look. */
+ivec4 gLabV[4];
+
+/**  A constant of a lab's look, set by a slot's variant inside a range.
+ *
+ * @param vi  The slot's variant, 0..99. (in)
+ * @param j   The stream: another number for every constant of a look. (in)
+ * @param lo  The lower end. (in)
+ * @param hi  The upper end; variant 0 gives the middle. (in)
+ *
+ * @return
+ *   The constant.
+ **/
+float lv( int vi, float j, float lo, float hi )
+{
+    return vi == 0 ? 0.5 * ( lo + hi )
+                   : mix( lo, hi, fract( sin( float( vi ) * 12.9898 + j * 78.233 + 3.7 ) * 43758.5453 ) );
+}
+
+/**  A choice of a lab's look, set by a slot's variant.
+ *
+ * @param vi  The slot's variant, 0..99. (in)
+ * @param j   The stream. (in)
+ * @param n   The number of choices. (in)
+ *
+ * @return
+ *   0 .. n-1; 0 (the original choice) for variant 0.
+ **/
+int lk( int vi, float j, int n )
+{
+    return vi == 0
+               ? 0
+               : min( int( fract( sin( float( vi ) * 37.719 + j * 51.37 + 1.9 ) * 43758.5453 ) * float( n ) ), n - 1 );
+}
+
+/**  A variant of a slot in an epoch: a hash of the slot, the epoch and the walk's seed.
+ *
+ * @param s     The slot, 0..3. (in)
+ * @param e     The epoch (a whole number). (in)
+ * @param seed  The walk's seed. (in)
+ *
+ * @return
+ *   The variant, 0..99.
+ **/
+int labVar( int s, float e, float seed )
+{
+    return int( min( floor( hash21( vec2( e * 2.9 + seed * 1.3 + 11.0, float( s ) * 7.7 + 3.1 ) ) * 100.0 ), 99.0 ) );
+}
 
 /**  A class of a slot in an epoch: a hash of the slot, the epoch and the walk's seed.
  *
@@ -563,7 +615,7 @@ void labWalk( float seed, ivec4 n, float period )
     for ( int j = 0; j < 2; ++j )
     {
         float sd = seed + 0.713 * ( j == 0 ? audioSectionPrev : audioSectionId );
-        ivec4 base = ivec4( 0 ), alt = ivec4( 0 );
+        ivec4 base = ivec4( 0 ), alt = ivec4( 0 ), vbase = ivec4( 0 ), valt = ivec4( 0 );
         int   fs = 0;
         float ff = 0.0;
         for ( int s = 0; s < 4; ++s )
@@ -574,6 +626,8 @@ void labWalk( float seed, ivec4 n, float period )
             float e = floor( w );
             base[s] = labCls( s, e, sd, n[s] );
             alt[s] = labCls( s, e + 1.0, sd, n[s] );
+            vbase[s] = labVar( s, e, sd );
+            valt[s] = labVar( s, e + 1.0, sd );
             float f = smoothstep( 1.0 - LabFade, 1.0, w - e );
             if ( f > 0.0 )
             {
@@ -582,11 +636,14 @@ void labWalk( float seed, ivec4 n, float period )
             }
         }
         float wj = j == 0 ? 1.0 - m : m;
-        ivec4 b2 = base;
+        ivec4 b2 = base, vb2 = vbase;
         b2[fs] = alt[fs];
+        vb2[fs] = valt[fs];
         gLabK[2 * j] = base;
+        gLabV[2 * j] = vbase;
         gLabW[2 * j] = wj * ( 1.0 - ff );
         gLabK[2 * j + 1] = b2;
+        gLabV[2 * j + 1] = vb2;
         gLabW[2 * j + 1] = wj * ff;
     }
     if ( labPinA + labPinB + labPinC + labPinD > 0.5 )
@@ -604,6 +661,22 @@ void labWalk( float seed, ivec4 n, float period )
             gLabW[i] = i == 0 ? 1.0 : 0.0;
         }
     }
+    if ( labPinV > 0.5 )
+    {
+        int pv = int( labPinV + 0.5 );
+        int ps = pv / 1000 - 1;
+        int vp = clamp( pv - 1000 * ( pv / 1000 ) - 1, 0, 99 );
+        for ( int i = 0; i < 4; ++i )
+        {
+            if ( ps < 0 )
+                gLabV[i] = ivec4( vp );
+            else
+            {
+                gLabV[i] = ivec4( 0 );
+                gLabV[i][ps] = vp;
+            }
+        }
+    }
 }
 
 /**  The place a band reads the photo at, moved by a law.
@@ -614,41 +687,57 @@ void labWalk( float seed, ivec4 n, float period )
  * @param t      The law's clock. (in)
  * @param amp    The amplitude, 0..1. (in)
  * @param phase  A phase that sets this group's law apart from the others. (in)
+ * @param vi     The group's variant 0..99: the constants of the law. (in)
  *
  * @return
  *   The place to read.
  **/
-vec2 bandLaw( vec2 uv, int law, float t, float amp, float phase )
+vec2 bandLaw( vec2 uv, int law, float t, float amp, float phase, int vi )
 {
     vec2  d = uv - 0.5;
     float a = amp * ( 0.7 + 0.3 * sin( phase ) );
     if ( law == 1 )
-        return uv + 0.16 * a * vec2( cos( phase + 0.31 * t ), sin( phase * 1.7 + 0.23 * t ) )
-               + 0.03 * a * t * vec2( cos( phase ), sin( phase ) );
+        return uv
+               + lv( vi, 1.0, 0.09, 0.23 ) * a
+                     * vec2( cos( phase + lv( vi, 2.0, 0.2, 0.42 ) * t ),
+                             sin( phase * lv( vi, 3.0, 1.2, 2.2 ) + lv( vi, 4.0, 0.15, 0.31 ) * t ) )
+               + lv( vi, 5.0, 0.0, 0.06 ) * a * t * vec2( cos( phase ), sin( phase ) );
     if ( law == 2 )
-        return 0.5 + rot2( 0.7 * a * sin( 0.4 * t + phase ) ) * d;
+        return 0.5 + rot2( lv( vi, 1.0, 0.2, 1.2 ) * a * sin( lv( vi, 2.0, 0.15, 0.65 ) * t + phase ) ) * d;
     if ( law == 3 )
-        return 0.5 + d * ( 1.0 + 0.22 * a * sin( 0.7 * t + phase ) );
+        return 0.5 + d * ( 1.0 + lv( vi, 1.0, 0.04, 0.40 ) * a * sin( lv( vi, 2.0, 0.3, 1.1 ) * t + phase ) );
     if ( law == 4 )
-        return uv + vec2( 0.35 * a * d.y * sin( 0.5 * t + phase ), 0.0 );
+        return lk( vi, 3.0, 2 ) == 0
+                   ? uv + vec2( lv( vi, 1.0, 0.1, 0.6 ) * a * d.y * sin( lv( vi, 2.0, 0.2, 0.8 ) * t + phase ), 0.0 )
+                   : uv + vec2( 0.0, lv( vi, 1.0, 0.1, 0.6 ) * a * d.x * sin( lv( vi, 2.0, 0.2, 0.8 ) * t + phase ) );
     if ( law == 5 )
-        return 0.5 + d * exp( 0.5 * a * sin( 0.25 * t + phase ) );
+        return 0.5 + d * exp( lv( vi, 1.0, 0.28, 0.72 ) * a * sin( lv( vi, 2.0, 0.14, 0.36 ) * t + phase ) );
     if ( law == 6 )
-        return uv + 0.06 * a * vec2( sin( 9.0 * uv.y + 0.9 * t + phase ), sin( 8.0 * uv.x + 0.7 * t + 2.0 * phase ) );
+        return uv
+               + lv( vi, 1.0, 0.01, 0.11 ) * a
+                     * vec2( sin( lv( vi, 2.0, 3.0, 15.0 ) * uv.y + 0.9 * t + phase ),
+                             sin( lv( vi, 3.0, 4.5, 11.5 ) * uv.x + 0.7 * t + 2.0 * phase ) );
     if ( law == 7 )
-        return 0.5 + rot2( 2.2 * a * exp( -4.0 * dot( d, d ) ) * sin( 0.35 * t + phase ) ) * d;
+        return 0.5
+               + rot2( lv( vi, 1.0, 1.2, 3.2 ) * a * exp( lv( vi, 2.0, -6.0, -2.0 ) * dot( d, d ) )
+                       * sin( lv( vi, 3.0, 0.2, 0.5 ) * t + phase ) )
+                     * d;
     if ( law == 8 )
         return uv
-               + vec2( 0.04 * a * sin( 0.6 * t + phase ) * cos( 4.0 * uv.y ),
-                       0.1 * a * sin( 7.0 * uv.x + 0.5 * t + phase ) );
+               + vec2( lv( vi, 1.0, 0.0, 0.08 ) * a * sin( 0.6 * t + phase ) * cos( lv( vi, 2.0, 1.0, 7.0 ) * uv.y ),
+                       lv( vi, 3.0, 0.02, 0.18 ) * a * sin( lv( vi, 4.0, 3.0, 11.0 ) * uv.x + 0.5 * t + phase ) );
     if ( law == 9 )
-        return uv + vec2( 0.1 * a * sin( 0.3 * t + phase ) * sin( 6.0 * uv.y + phase ), 0.0 );
+        return uv
+               + vec2( lv( vi, 1.0, 0.02, 0.18 ) * a * sin( 0.3 * t + phase )
+                           * sin( lv( vi, 2.0, 2.0, 10.0 ) * uv.y + phase ),
+                       lv( vi, 3.0, -0.08, 0.08 ) * a * sin( 0.4 * t + 2.0 * phase ) );
     return uv;
 }
 
 /**  One look of the lab: the photo as the sum of its seven bands, each read where its group's law puts it.
  *
  * @param k    The class of each slot: the law of each group of bands. (in)
+ * @param kv   The variant of each slot. (in)
  * @param uv   The place, 0..1. (in)
  * @param t    The clock. (in)
  * @param amp  The amplitude of each group (x: finest .. w: coarsest). (in)
@@ -656,7 +745,7 @@ vec2 bandLaw( vec2 uv, int law, float t, float amp, float phase )
  * @return
  *   The colour.
  **/
-vec3 bandLook( ivec4 k, vec2 uv, float t, vec4 amp )
+vec3 bandLook( ivec4 k, ivec4 kv, vec2 uv, float t, vec4 amp )
 {
     vec3 sum = vec3( 0.0 );
     vec3 prev = vec3( 0.0 );
@@ -664,8 +753,9 @@ vec3 bandLook( ivec4 k, vec2 uv, float t, vec4 amp )
     {
         int   g = i < 2 ? 0 : ( i < 4 ? 1 : ( i < 6 ? 2 : 3 ) );
         int   law = g == 0 ? k.x : ( g == 1 ? k.y : ( g == 2 ? k.z : k.w ) );
+        int   vi = g == 0 ? kv.x : ( g == 1 ? kv.y : ( g == 2 ? kv.z : kv.w ) );
         float a = g == 0 ? amp.x : ( g == 1 ? amp.y : ( g == 2 ? amp.z : amp.w ) );
-        vec2  q = bandLaw( uv, law, t * ( 1.0 + 0.15 * float( i ) ), a, 1.3 * float( i ) + 0.6 * float( g ) );
+        vec2  q = bandLaw( uv, law, t * ( 1.0 + 0.15 * float( i ) ), a, 1.3 * float( i ) + 0.6 * float( g ), vi );
         float l0 = i == 0
                        ? 0.0
                        : ( i == 1 ? 1.0
@@ -698,7 +788,7 @@ void main()
     {
         if ( gLabW[i] > 0.002 )
         {
-            col += gLabW[i] * bandLook( gLabK[i], uv, t, amp );
+            col += gLabW[i] * bandLook( gLabK[i], gLabV[i], uv, t, amp );
             ws += gLabW[i];
         }
     }

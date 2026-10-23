@@ -52,6 +52,7 @@ uniform float walkHost;
 vec2 stageAk(vec2 uv, int k, float v)
 {
     k = orda(k);
+    chainSetVar(v, k);
     if (k == 43) return tLittlePlanet(uv, gCw, 2.0 + 1.5 * v, 0.6 * sin(gT * 0.3), gT * 0.4 + gRot);
     if (k == 44) return tMercator(uv, gCw, 1.2 + 0.8 * v, 0.5 * sin(gT * 0.3) + 0.8, gT * 0.4 + gRot);
     if (k == 45) return tWeierstrass(uv, gCw, 2.0 + 2.0 * v, gT);
@@ -132,6 +133,7 @@ vec2 stageAk(vec2 uv, int k, float v)
 vec2 stageBk(vec2 uv, int k, float v)
 {
     k = ordb(k);
+    chainSetVar(v, k);
     if (k == 16) return tModular(uv, gCw, 2.0 + 1.5 * v, gT * 0.5);
     if (k == 17) return tSchottky(uv, gCw, 0.62 + 0.08 * v, gRot);
     if (k == 18) return tTriMirror(uv, gCw, 2.0 + 1.5 * v, gRot);
@@ -160,6 +162,7 @@ vec2 stageBk(vec2 uv, int k, float v)
 vec2 stageCk(vec2 uv, int k, float v)
 {
     k = ordc(k);
+    chainSetVar(v, k);
     if (k == 13) return tGravLens(uv, gCw, 0.12 + 0.06 * v, 0.2 * vec2(sin(gT * 0.4), cos(gT * 0.31)));
     if (k == 14) return tBinaryLens(uv, gCw, 0.1 + 0.05 * v, gT * 0.5);
     if (k == 15) return tBoost(uv, gCw, 0.6 * sin(gT * 0.3 + v * 6.28));
@@ -183,6 +186,7 @@ vec2 stageCk(vec2 uv, int k, float v)
 vec2 stageDk(vec2 uv, int k, float v)
 {
     k = ordd(k);
+    chainSetVar(v, k);
     if (k == 15) return tGravWave(uv, gCw, 0.4 + 0.6 * gSpread, gT * 2.0);
     if (k == 16) return tDoubleGyre(uv, 0.5 + 0.5 * gSpread, gT * 2.0);
     if (k == 17) return tTaylorGreen(uv, 1.0 + gSpread, gT * 2.0);

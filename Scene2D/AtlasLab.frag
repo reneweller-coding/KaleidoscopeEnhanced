@@ -519,12 +519,64 @@ uniform float labPinB;
 uniform float labPinC;
 /** Test pin of slot 3. */
 uniform float labPinD;
+/** Test pin of the variants: 1 + the variant 0..99 for every slot, or 1000 * (1 + the slot) + 1 + the variant for that
+ * slot alone (the others at variant 0); 0: the walk decides. */
+uniform float labPinV;
 /** The share of an epoch a class change takes to cross-fade. */
 const float LabFade = 0.2;
 /** The classes of the four slots, for each of the (up to four) looks the walk blends. */
 ivec4 gLabK[4];
 /** The weights of those looks. */
 float gLabW[4];
+/** The variants (0..99) of the four slots' classes, for each of the looks the walk blends: a class is a family of
+ * looks, the variant sets its constants (lv(), lk()); variant 0 is the lab's original look. */
+ivec4 gLabV[4];
+
+/**  A constant of a lab's look, set by a slot's variant inside a range.
+ *
+ * @param vi  The slot's variant, 0..99. (in)
+ * @param j   The stream: another number for every constant of a look. (in)
+ * @param lo  The lower end. (in)
+ * @param hi  The upper end; variant 0 gives the middle. (in)
+ *
+ * @return
+ *   The constant.
+ **/
+float lv( int vi, float j, float lo, float hi )
+{
+    return vi == 0 ? 0.5 * ( lo + hi )
+                   : mix( lo, hi, fract( sin( float( vi ) * 12.9898 + j * 78.233 + 3.7 ) * 43758.5453 ) );
+}
+
+/**  A choice of a lab's look, set by a slot's variant.
+ *
+ * @param vi  The slot's variant, 0..99. (in)
+ * @param j   The stream. (in)
+ * @param n   The number of choices. (in)
+ *
+ * @return
+ *   0 .. n-1; 0 (the original choice) for variant 0.
+ **/
+int lk( int vi, float j, int n )
+{
+    return vi == 0
+               ? 0
+               : min( int( fract( sin( float( vi ) * 37.719 + j * 51.37 + 1.9 ) * 43758.5453 ) * float( n ) ), n - 1 );
+}
+
+/**  A variant of a slot in an epoch: a hash of the slot, the epoch and the walk's seed.
+ *
+ * @param s     The slot, 0..3. (in)
+ * @param e     The epoch (a whole number). (in)
+ * @param seed  The walk's seed. (in)
+ *
+ * @return
+ *   The variant, 0..99.
+ **/
+int labVar( int s, float e, float seed )
+{
+    return int( min( floor( hash21( vec2( e * 2.9 + seed * 1.3 + 11.0, float( s ) * 7.7 + 3.1 ) ) * 100.0 ), 99.0 ) );
+}
 
 /**  A class of a slot in an epoch: a hash of the slot, the epoch and the walk's seed.
  *
@@ -563,7 +615,7 @@ void labWalk( float seed, ivec4 n, float period )
     for ( int j = 0; j < 2; ++j )
     {
         float sd = seed + 0.713 * ( j == 0 ? audioSectionPrev : audioSectionId );
-        ivec4 base = ivec4( 0 ), alt = ivec4( 0 );
+        ivec4 base = ivec4( 0 ), alt = ivec4( 0 ), vbase = ivec4( 0 ), valt = ivec4( 0 );
         int   fs = 0;
         float ff = 0.0;
         for ( int s = 0; s < 4; ++s )
@@ -574,6 +626,8 @@ void labWalk( float seed, ivec4 n, float period )
             float e = floor( w );
             base[s] = labCls( s, e, sd, n[s] );
             alt[s] = labCls( s, e + 1.0, sd, n[s] );
+            vbase[s] = labVar( s, e, sd );
+            valt[s] = labVar( s, e + 1.0, sd );
             float f = smoothstep( 1.0 - LabFade, 1.0, w - e );
             if ( f > 0.0 )
             {
@@ -582,11 +636,14 @@ void labWalk( float seed, ivec4 n, float period )
             }
         }
         float wj = j == 0 ? 1.0 - m : m;
-        ivec4 b2 = base;
+        ivec4 b2 = base, vb2 = vbase;
         b2[fs] = alt[fs];
+        vb2[fs] = valt[fs];
         gLabK[2 * j] = base;
+        gLabV[2 * j] = vbase;
         gLabW[2 * j] = wj * ( 1.0 - ff );
         gLabK[2 * j + 1] = b2;
+        gLabV[2 * j + 1] = vb2;
         gLabW[2 * j + 1] = wj * ff;
     }
     if ( labPinA + labPinB + labPinC + labPinD > 0.5 )
@@ -604,11 +661,28 @@ void labWalk( float seed, ivec4 n, float period )
             gLabW[i] = i == 0 ? 1.0 : 0.0;
         }
     }
+    if ( labPinV > 0.5 )
+    {
+        int pv = int( labPinV + 0.5 );
+        int ps = pv / 1000 - 1;
+        int vp = clamp( pv - 1000 * ( pv / 1000 ) - 1, 0, 99 );
+        for ( int i = 0; i < 4; ++i )
+        {
+            if ( ps < 0 )
+                gLabV[i] = ivec4( vp );
+            else
+            {
+                gLabV[i] = ivec4( 0 );
+                gLabV[i][ps] = vp;
+            }
+        }
+    }
 }
 
 /**  The inverse of a map projection: the place on the globe at a point of the map.
  *
  * @param kind  The projection, 0..17. (in)
+ * @param vi    The projection's variant 0..99: its parallels and scales. (in)
  * @param u     The map's coordinates, fitted to the outline's size. (in)
  * @param ok    Whether the point lies inside the map's outline. (out)
  * @param ext   The outline's half extents (its natural scale). (out)
@@ -616,7 +690,7 @@ void labWalk( float seed, ivec4 n, float period )
  * @return
  *   Longitude and latitude in radians.
  **/
-vec2 atlasInv( int kind, vec2 u, out float ok, out vec2 ext )
+vec2 atlasInv( int kind, int vi, vec2 u, out float ok, out vec2 ext )
 {
     ok = 1.0;
     ext = vec2( 3.14159265, 1.5707963 );
@@ -714,7 +788,7 @@ vec2 atlasInv( int kind, vec2 u, out float ok, out vec2 ext )
     if ( kind == 13 )
     {
         ext = vec2( 3.14159265, 2.3 );
-        return vec2( u.x, 2.5 * atan( exp( clamp( 0.8 * u.y, -6.0, 6.0 ) ) ) - 0.625 * 3.14159265 );
+        return vec2( u.x, 2.5 * atan( exp( clamp( lv( vi, 3.0, 0.6, 1.0 ) * u.y, -6.0, 6.0 ) ) ) - 0.625 * 3.14159265 );
     }
     if ( kind == 14 )
     {
@@ -723,8 +797,8 @@ vec2 atlasInv( int kind, vec2 u, out float ok, out vec2 ext )
     }
     if ( kind == 15 || kind == 16 )
     {
-        float p1 = kind == 15 ? 0.7853982 : 1.5707963;
-        float cot = kind == 15 ? 1.0 : 0.0;
+        float p1 = kind == 15 ? lv( vi, 4.0, 0.5, 1.0708 ) : 1.5707963;
+        float cot = kind == 15 ? 1.0 / tan( p1 ) : 0.0;
         ext = vec2( 2.6, 1.6 );
         u.y -= kind == 15 ? 0.8 : 1.5708;
         float r = sqrt( u.x * u.x + ( cot - u.y ) * ( cot - u.y ) );
@@ -734,8 +808,10 @@ vec2 atlasInv( int kind, vec2 u, out float ok, out vec2 ext )
         ok *= abs( lam ) <= 3.14159265 ? 1.0 : 0.0;
         return vec2( lam, ph );
     }
-    float n = ( cos( 0.5236 ) - cos( 1.0472 ) ) / ( 1.0472 - 0.5236 );
-    float G = cos( 0.5236 ) / n + 0.5236;
+    float f1 = lv( vi, 6.0, 0.3, 0.7472 );
+    float f2 = lv( vi, 8.0, 0.8, 1.2944 );
+    float n = ( cos( f1 ) - cos( f2 ) ) / ( f2 - f1 );
+    float G = cos( f1 ) / n + f1;
     ext = vec2( 3.3, 2.65 );
     u.y += 1.1;
     float r = sqrt( u.x * u.x + ( G - u.y ) * ( G - u.y ) );
@@ -749,50 +825,51 @@ vec2 atlasInv( int kind, vec2 u, out float ok, out vec2 ext )
 /**  The globe's rotation for a motion law.
  *
  * @param law  The law, 0..7: spin, tumble, precession, nodding, polar view, tilted, two axes, drift. (in)
+ * @param vi   The law's variant 0..99: the speeds and angles. (in)
  * @param t    The clock. (in)
  * @param hd   The harmonic advance. (in)
  *
  * @return
  *   The rotation matrix.
  **/
-mat3 atlasRot( int law, float t, float hd )
+mat3 atlasRot( int law, int vi, float t, float hd )
 {
     float a = 0.0, b = 0.0, g = 0.0;
     if ( law == 0 )
-        a = 0.35 * t;
+        a = lv( vi, 1.0, 0.2, 0.5 ) * t;
     else if ( law == 1 )
-        b = 0.3 * t;
+        b = lv( vi, 1.0, 0.15, 0.45 ) * t;
     else if ( law == 2 )
     {
-        a = 0.3 * t;
-        b = 0.5 * sin( 0.1 * t );
-        g = 0.5 * cos( 0.1 * t );
+        a = lv( vi, 1.0, 0.15, 0.45 ) * t;
+        b = lv( vi, 2.0, 0.25, 0.75 ) * sin( lv( vi, 3.0, 0.05, 0.15 ) * t );
+        g = lv( vi, 4.0, 0.25, 0.75 ) * cos( lv( vi, 3.0, 0.05, 0.15 ) * t );
     }
     else if ( law == 3 )
     {
-        a = 0.25 * t;
-        b = 0.4 * sin( 0.35 * t );
+        a = lv( vi, 1.0, 0.15, 0.35 ) * t;
+        b = lv( vi, 2.0, 0.2, 0.6 ) * sin( lv( vi, 3.0, 0.2, 0.5 ) * t );
     }
     else if ( law == 4 )
     {
-        a = 0.3 * t;
-        b = 1.5708;
+        a = lv( vi, 1.0, 0.15, 0.45 ) * t;
+        b = lv( vi, 5.0, 1.2, 1.9416 );
     }
     else if ( law == 5 )
     {
-        a = 0.3 * t;
-        b = 0.7854 + 0.2 * sin( 0.7 * hd );
+        a = lv( vi, 1.0, 0.15, 0.45 ) * t;
+        b = lv( vi, 5.0, 0.4, 1.1708 ) + lv( vi, 6.0, 0.1, 0.3 ) * sin( lv( vi, 7.0, 0.4, 1.0 ) * hd );
     }
     else if ( law == 6 )
     {
-        a = 0.22 * t;
-        b = 0.17 * t;
-        g = 0.11 * t;
+        a = lv( vi, 1.0, 0.12, 0.32 ) * t;
+        b = lv( vi, 2.0, 0.08, 0.26 ) * t;
+        g = lv( vi, 3.0, 0.05, 0.17 ) * t;
     }
     else
     {
-        a = 0.1 * t;
-        b = 0.3 * sin( 0.05 * t );
+        a = lv( vi, 1.0, 0.05, 0.15 ) * t;
+        b = lv( vi, 2.0, 0.15, 0.45 ) * sin( lv( vi, 3.0, 0.025, 0.075 ) * t );
     }
     float ca = cos( a ), sa = sin( a ), cb = cos( b ), sb = sin( b ), cg = cos( g ), sg = sin( g );
     mat3  rz = mat3( ca, sa, 0.0, -sa, ca, 0.0, 0.0, 0.0, 1.0 );
@@ -804,6 +881,7 @@ mat3 atlasRot( int law, float t, float hd )
 /**  One look of the lab: the photo on the rotating globe, in a projection.
  *
  * @param k   The classes: x the projection, y the globe's motion, z the light, w the view. (in)
+ * @param kv  The variants of those classes (the constants of each). (in)
  * @param p   The place on screen. (in)
  * @param t   The clock. (in)
  * @param hd  The harmonic advance. (in)
@@ -813,41 +891,50 @@ mat3 atlasRot( int law, float t, float hd )
  * @return
  *   The colour.
  **/
-vec3 atlasLook( ivec4 k, vec2 p, float t, float hd, float zm, float sw )
+vec3 atlasLook( ivec4 k, ivec4 kv, vec2 p, float t, float hd, float zm, float sw )
 {
     float ok;
     vec2  ext;
-    atlasInv( k.x, vec2( 0.0 ), ok, ext );
+    atlasInv( k.x, kv.x, vec2( 0.0 ), ok, ext );
     float fit = max( ext.x / 0.89, ext.y / 0.5 ) * 0.98;
     vec2  q = p;
-    float z = k.w == 2 ? 1.8 * zm : ( k.w == 3 ? 3.5 * zm : 1.0 );
+    float z = k.w == 2 ? lv( kv.w, 2.0, 1.4, 2.2 ) * zm : ( k.w == 3 ? lv( kv.w, 3.0, 2.5, 4.5 ) * zm : 1.0 );
     q /= z;
+    if ( k.w >= 2 )
+        q += vec2( lv( kv.w, 4.0, -0.3, 0.3 ), lv( kv.w, 5.0, -0.2, 0.2 ) );
     if ( k.w == 1 )
     {
-        vec2 cell = 2.0 * ext / fit * 1.0;
+        vec2 cell = 2.0 * ext / fit * lv( kv.w, 1.0, 0.7, 1.3 );
         q = ( fract( ( q + 0.5 * cell ) / cell ) - 0.5 ) * cell;
     }
+    q = rot2( lv( kv.x, 2.0, -0.5, 0.5 ) ) * q;
+    q.y *= lv( kv.x, 1.0, 0.75, 1.25 );
+    q.x += lv( kv.x, 7.0, -0.2, 0.2 ) * q.y;
     float oky;
-    vec2  ll = atlasInv( k.x, q * fit, oky, ext );
+    vec2  ll = atlasInv( k.x, kv.x, q * fit, oky, ext );
     vec3  bg = imgLod( p * 0.8 + 0.5, 4.5 ) * 0.4;
     if ( oky < 0.5 )
         return bg;
     vec3  s = vec3( cos( ll.y ) * cos( ll.x ), cos( ll.y ) * sin( ll.x ), sin( ll.y ) );
-    vec3  s2 = atlasRot( k.y, t, hd ) * s;
+    vec3  s2 = atlasRot( k.y, kv.y, t, hd ) * s;
     float lon = atan( s2.y, s2.x );
     float lat = asin( clamp( s2.z, -1.0, 1.0 ) );
-    vec2  uv = vec2( abs( lon ) / 3.14159265 * ( k.z == 3 ? 2.0 : 1.0 ), lat / 3.14159265 + 0.5 );
-    vec3  col = imgLod( uv, 0.6 );
+    vec2 uv = vec2( abs( lon ) / 3.14159265 * ( k.z == 3 ? lv( kv.z, 12.0, 1.4, 2.6 ) : 1.0 ), lat / 3.14159265 + 0.5 );
+    vec3  col = imgLod( uv, lv( kv.z, 11.0, 0.3, 0.9 ) );
     if ( k.z == 1 )
     {
-        float a = 0.2 * t;
-        vec3  L = normalize( vec3( 0.7, 0.8 * cos( a ), 0.8 * sin( a ) ) );
-        col *= 0.3 + 0.8 * smoothstep( -0.25 - 0.3 * ( 1.0 - sw ), 0.45, dot( s, L ) );
+        float a = lv( kv.z, 1.0, 0.1, 0.3 ) * t;
+        float lw = lv( kv.z, 3.0, 0.5, 1.1 );
+        vec3  L = normalize( vec3( lv( kv.z, 2.0, 0.4, 1.0 ), lw * cos( a ), lw * sin( a ) ) );
+        col *= lv( kv.z, 4.0, 0.15, 0.45 )
+               + lv( kv.z, 5.0, 0.5, 1.1 )
+                     * smoothstep( -lv( kv.z, 6.0, 0.1, 0.4 ) - 0.3 * ( 1.0 - sw ), lv( kv.z, 7.0, 0.3, 0.6 ),
+                                   dot( s, L ) );
     }
     else if ( k.z == 2 )
     {
         float e = length( q * fit / ext );
-        col *= 1.0 - 0.6 * smoothstep( 0.6, 1.1, e );
+        col *= 1.0 - lv( kv.z, 8.0, 0.4, 0.8 ) * smoothstep( lv( kv.z, 9.0, 0.4, 0.8 ), lv( kv.z, 10.0, 0.9, 1.3 ), e );
     }
     return col;
 }
@@ -866,7 +953,7 @@ void main()
     {
         if ( gLabW[i] > 0.002 )
         {
-            col += gLabW[i] * atlasLook( gLabK[i], p, t, audioHarmAdvance, zm, sw );
+            col += gLabW[i] * atlasLook( gLabK[i], gLabV[i], p, t, audioHarmAdvance, zm, sw );
             ws += gLabW[i];
         }
     }
