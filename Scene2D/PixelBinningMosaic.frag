@@ -493,12 +493,13 @@ void finish( vec3 col )
     fragColor = vec4( clamp( t, 0.0, 1.0 ), 1.0 );
 }
 
-vec3 binned( vec2 fc, float B )
+vec3 binned( vec2 fc, float Bb )
 {
-    vec2 cell = floor( fc / B );
-    vec2 c = ( cell + 0.5 ) * B;
-    vec2 pc = ( c - 0.5 * resolution ) / resolution.y;
-    return imgLod( pc * 0.8 + 0.5, log2( B ) - 0.6 );
+    float B = Bb * resolution.y / 270.0;
+    vec2  cell = floor( fc / B );
+    vec2  c = ( cell + 0.5 ) * B;
+    vec2  pc = ( c - 0.5 * resolution ) / resolution.y;
+    return imgLod( pc * 0.8 + 0.5, log2( Bb ) - 0.6 );
 }
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()

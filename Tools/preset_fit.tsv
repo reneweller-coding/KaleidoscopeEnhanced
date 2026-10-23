@@ -2185,3 +2185,15 @@ SensorRowBanding	3	3	5	5	4	6	5	7	4	4	3
 ChromaSubsampleBleed	3	2	5	4	6	6	5	7	5	3	3
 MiniatureFocusBandSweep	5	2	3	3	4	7	6	3	3	5	7
 ExposureBracketGhosts	4	2	3	5	4	7	5	3	3	6	5
+FlipDotWaveBoard	2	2	7	6	4	6	7	8	5	3	3
+EInkParticleDrift	7	3	2	5	3	8	6	3	3	6	7
+SubpixelStripeMacro	2	2	6	3	6	5	6	8	6	2	3
+PenTileDiamondLattice	2	3	6	4	6	5	6	8	6	2	3
+AutostereogramDepthDrift	2	3	6	3	8	6	7	7	8	2	3
+ThermalPaperFadePrint	6	2	2	5	3	8	5	3	2	6	7
+XerographyTonerCascade	4	2	3	7	3	7	5	4	3	5	4
+LaserProjectorLissajous	3	5	7	6	6	6	8	8	7	4	3
+LedDiffuserBloom	7	3	4	3	5	7	6	4	4	6	8
+FresnelSheetFacets	3	3	5	4	7	7	7	6	6	3	3
+VfdPhosphorSegments	3	5	6	6	4	5	6	8	5	4	3
+ColorFilterWheelSequential	2	3	6	3	8	6	7	7	7	2	3

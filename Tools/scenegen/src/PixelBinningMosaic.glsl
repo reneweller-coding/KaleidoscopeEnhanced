@@ -10,12 +10,13 @@
 //@params sizeP
 //@audio audioSwell audioAdvance
 //@body
-vec3 binned(vec2 fc, float B)
+vec3 binned(vec2 fc, float Bb)
 {
+    float B = Bb * resolution.y / 270.0;
     vec2 cell = floor(fc / B);
     vec2 c = (cell + 0.5) * B;
     vec2 pc = (c - 0.5 * resolution) / resolution.y;
-    return imgLod(pc * 0.8 + 0.5, log2(B) - 0.6);
+    return imgLod(pc * 0.8 + 0.5, log2(Bb) - 0.6);
 }
 void main()
 {

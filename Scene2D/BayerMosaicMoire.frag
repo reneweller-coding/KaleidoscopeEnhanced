@@ -506,7 +506,7 @@ float bayerVal( ivec2 ij, vec2 uvc )
 void main()
 {
     vec2  fc = gl_FragCoord.xy;
-    float s = 2.2 + 2.2 * clamp( sizeP, 0.0, 1.0 );
+    float s = ( 2.2 + 2.2 * clamp( sizeP, 0.0, 1.0 ) ) * resolution.y / 270.0;
     float z = 0.8 + 0.35 * sin( 0.04 * sceneTime + 0.02 * audioAdvance );
     vec2  p = screenP();
     ivec2 ij0 = ivec2( floor( fc / s ) );

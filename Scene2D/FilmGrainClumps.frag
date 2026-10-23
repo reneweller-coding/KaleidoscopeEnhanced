@@ -506,7 +506,7 @@ void main()
     float l = luma( c );
     float mid = 4.0 * l * ( 1.0 - l );
     vec2  fc = gl_FragCoord.xy;
-    float s1 = 1.6 + 3.0 * clamp( sizeP, 0.0, 1.0 );
+    float s1 = ( 1.6 + 3.0 * clamp( sizeP, 0.0, 1.0 ) ) * resolution.y / 270.0;
     vec2  drift = vec2( 0.7, -0.4 ) * sceneTime;
     float g1 = noise2( ( fc + drift ) / s1 );
     float g2 = noise2( ( fc * 0.7 + drift.yx ) / ( s1 * 2.6 ) + 9.0 );

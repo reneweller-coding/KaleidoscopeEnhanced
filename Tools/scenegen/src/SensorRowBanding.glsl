@@ -15,7 +15,7 @@ void main()
     vec2 p = screenP();
     vec2 uv = p * 0.8 + 0.5 + 0.05 * vec2(sin(0.05 * sceneTime), cos(0.04 * sceneTime));
     vec3 c = imgLod(uv, 0.3);
-    float y = gl_FragCoord.y;
+    float y = gl_FragCoord.y / (resolution.y / 270.0);
     float w = 1.0 + 3.0 * clamp(sizeP, 0.0, 1.0);
     float t = 0.02 * audioAdvance + 0.15 * sceneTime;
     float b1 = sin(y * 0.09 / w + t);
