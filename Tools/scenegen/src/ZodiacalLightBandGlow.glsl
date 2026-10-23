@@ -30,7 +30,18 @@ void main()
     vec3 dusk = mix(vec3(0.02, 0.03, 0.09), vec3(0.15, 0.1, 0.12), smoothstep(0.5, -0.6, p.y));
     vec3 glow = mix(vec3(1.0, 0.85, 0.6), sky * 1.5, 0.35);
     vec3 col = dusk + sky * 0.2 + glow * br * 2.3;
-    float star = step(0.995, hash21(floor(gl_FragCoord.xy / (resolution.y / 270.0 * 1.5))));
-    col += vec3(1.0) * star * 0.35 * smoothstep(0.0, 0.6, p.y + 0.5);
+    vec2 sg = p / 0.04;
+    vec2 si = floor(sg);
+    float starB = 0.0;
+    for (int dy = -1; dy <= 1; ++dy)
+        for (int dx = -1; dx <= 1; ++dx) {
+            vec2 cj = si + vec2(float(dx), float(dy));
+            vec2 hh = hash22(cj + 31.0);
+            if (hh.x > 0.35) continue;
+            vec2 sp = (cj + 0.2 + 0.6 * hash22(cj + 5.0)) * 0.04;
+            float dd = length(p - sp);
+            starB += exp(-dd * dd / (0.0016 * 0.0016 * (0.6 + hh.y))) * (0.5 + 0.5 * hh.y);
+        }
+    col += vec3(1.0) * starB * 0.5 * smoothstep(0.0, 0.6, p.y + 0.5);
     finish(col);
 }
