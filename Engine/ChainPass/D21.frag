@@ -48,6 +48,16 @@ vec2 screenP()
 {
     return ( gl_FragCoord.xy / resolution - 0.5 ) * vec2( resolution.x / resolution.y, 1.0 );
 }
+/**  Ekman spiral: the current turns with depth and thins: layers of the photo, each at another angle.
+ *
+ * @param uv        The coordinate. (in)
+ * @param rate      The rate. (in)
+ * @param strength  The strength. (in)
+ * @param t         The scene's clock. (in)
+ *
+ * @return
+ *   The transformed coordinate.
+ **/
 vec2 tEkman( vec2 uv, float rate, float strength, float t )
 {
     float depth = uv.y * 3.0;

@@ -48,6 +48,16 @@ vec2 screenP()
 {
     return ( gl_FragCoord.xy / resolution - 0.5 ) * vec2( resolution.x / resolution.y, 1.0 );
 }
+/**  Cat-map fold: the hyperbolic automorphism [[2,1],[1,1]] of the torus, each round folded by a mirror repeat.
+ *
+ * @param uv     The coordinate. (in)
+ * @param c      Centre of the transform. (in)
+ * @param iters  The number of iterations. (in)
+ * @param t      The scene's clock. (in)
+ *
+ * @return
+ *   The transformed coordinate.
+ **/
 vec2 tCatFold( vec2 uv, vec2 c, float iters, float t )
 {
     vec2 p = ( uv - c ) * 1.2 + 0.5;

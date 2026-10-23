@@ -37,7 +37,7 @@ uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unw
 uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
 uniform float audioSpread;    ///< Spectral spread, 0..1.
 
-uniform float rippleP; ///< Ripple knob: how coarse the ripples are.
+uniform float rippleP; ///< Ripple knob: how coarse the ripples are, 0..1.
 uniform float hueP;    ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 // ---- shared building blocks (texture pool, noise, shapes) ----

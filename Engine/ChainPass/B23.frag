@@ -60,6 +60,18 @@ vec2 screenP()
 {
     return ( gl_FragCoord.xy / resolution - 0.5 ) * vec2( resolution.x / resolution.y, 1.0 );
 }
+/**  Stage B: folds and mirrors ----------------------------------------------------------------------------------
+ * Heighway dragon fold: the dragon curve's turn by 45 degrees and scale sqrt 2, the fold turned right or left in
+ * turn.
+ *
+ * @param uv     The coordinate. (in)
+ * @param c      Centre of the transform. (in)
+ * @param iters  The number of iterations. (in)
+ * @param turn   A parameter of the transform. (in)
+ *
+ * @return
+ *   The transformed coordinate.
+ **/
 vec2 tDragonFold( vec2 uv, vec2 c, float iters, float turn )
 {
     vec2  p = rot2( turn ) * ( uv - c ) * 2.0;

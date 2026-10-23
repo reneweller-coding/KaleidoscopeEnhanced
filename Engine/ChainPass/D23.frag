@@ -48,6 +48,15 @@ vec2 screenP()
 {
     return ( gl_FragCoord.xy / resolution - 0.5 ) * vec2( resolution.x / resolution.y, 1.0 );
 }
+/**  KdV soliton train: sech^2 humps of different height that pass through each other; the photo rides them.
+ *
+ * @param uv        The coordinate. (in)
+ * @param strength  The strength. (in)
+ * @param t         The scene's clock. (in)
+ *
+ * @return
+ *   The transformed coordinate.
+ **/
 vec2 tSolitons( vec2 uv, float strength, float t )
 {
     float h = 0.0;

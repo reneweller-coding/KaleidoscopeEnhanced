@@ -60,6 +60,17 @@ vec2 screenP()
 {
     return ( gl_FragCoord.xy / resolution - 0.5 ) * vec2( resolution.x / resolution.y, 1.0 );
 }
+/**  Stage C: lenses ---------------------------------------------------------------------------------------------
+ * Cylinder lens: stretched or squeezed in one direction only, the photo drawn into bands.
+ *
+ * @param uv   The coordinate. (in)
+ * @param c    Centre of the transform. (in)
+ * @param k    The knob of the transform. (in)
+ * @param ang  A parameter of the transform. (in)
+ *
+ * @return
+ *   The transformed coordinate.
+ **/
 vec2 tCylinderLens( vec2 uv, vec2 c, float k, float ang )
 {
     vec2 d = rot2( ang ) * ( uv - c );

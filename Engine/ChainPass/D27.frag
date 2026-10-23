@@ -59,6 +59,16 @@ vec2 cexpi( float a )
 {
     return vec2( cos( a ), sin( a ) );
 }
+/**  Faraday standing waves: a vibrating surface's square or hexagonal standing wave pattern.
+ *
+ * @param uv        The coordinate. (in)
+ * @param hex       A parameter of the transform. (in)
+ * @param strength  The strength. (in)
+ * @param t         The scene's clock. (in)
+ *
+ * @return
+ *   The transformed coordinate.
+ **/
 vec2 tFaraday( vec2 uv, float hex, float strength, float t )
 {
     vec2  g = vec2( 0.0 );

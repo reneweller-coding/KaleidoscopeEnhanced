@@ -38,7 +38,7 @@ uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unw
 uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 
-uniform float lengthP; ///< Length knob: the base smear length.
+uniform float lengthP; ///< Length knob: the base smear length, 0..1.
 uniform float scaleP;  ///< Scale knob.
 uniform float hueP;    ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
@@ -497,21 +497,34 @@ void finish( vec3 col )
     fragColor = vec4( clamp( t, 0.0, 1.0 ), 1.0 );
 }
 
-
-// ---- the photo smeared along a flow ----
-/**  The scene's velocity field (defined by the scene; the library only follows it).
+/**  The flow: a pegboard of cylinders through which the photo flows (potential flow with circulation round each)
  *
  * @param p   The place (screen units, y -0.5..0.5). (in)
- * @param t   The scene's flow clock. (in)
- * @param ch  The channel (0 for all colours; 0, 1, 2 where a scene sends each colour its own way). (in)
+ * @param t   The flow clock. (in)
+ * @param ch  The channel (unused: all colours follow the same flow). (in)
  *
  * @return
  *   The velocity.
  **/
-/// @cond
-vec2 licVel( vec2 p, float t, int ch );
-/// @endcond
+vec2 licVel( vec2 p, float t, int ch )
+{
+    vec2 q = p * ( 1.8 + 3.0 * clamp( scaleP, 0.0, 1.0 ) );
+    vec2 v = vec2( cos( 0.05 * t ), sin( 0.05 * t ) ) * 1.0;
+    for ( int j = 0; j < 2; ++j )
+    {
+        for ( int i = 0; i < 3; ++i )
+        {
+            vec2  c = vec2( -1.3 + 1.3 * float( i ), -0.6 + 1.2 * float( j ) );
+            vec2  d = q - c;
+            float r2 = dot( d, d ) + 0.02;
+            v += -0.09 * vec2( d.x * d.x - d.y * d.y, 2.0 * d.x * d.y ) / ( r2 * r2 );
+            v += 0.35 * sin( 0.3 * t + 2.0 * float( i + 3 * j ) ) * vec2( -d.y, d.x ) / r2;
+        }
+    }
+    return v;
+}
 
+// ---- the photo smeared along a flow ----
 /**  The photo gathered along the streamline through a place (a line-integral convolution): fourteen dithered steps,
  * seven each way, a tapering kernel, the photo read at a coarser level the farther the step.
  *
@@ -545,32 +558,6 @@ vec3 licSmear( vec2 p, float t, float len, int ch )
     return sum / ws;
 }
 
-/**  The flow: a pegboard of cylinders through which the photo flows (potential flow with circulation round each)
- *
- * @param p   The place (screen units, y -0.5..0.5). (in)
- * @param t   The flow clock. (in)
- * @param ch  The channel (unused: all colours follow the same flow). (in)
- *
- * @return
- *   The velocity.
- **/
-vec2 licVel( vec2 p, float t, int ch )
-{
-    vec2 q = p * ( 1.8 + 3.0 * clamp( scaleP, 0.0, 1.0 ) );
-    vec2 v = vec2( cos( 0.05 * t ), sin( 0.05 * t ) ) * 1.0;
-    for ( int j = 0; j < 2; ++j )
-    {
-        for ( int i = 0; i < 3; ++i )
-        {
-            vec2  c = vec2( -1.3 + 1.3 * float( i ), -0.6 + 1.2 * float( j ) );
-            vec2  d = q - c;
-            float r2 = dot( d, d ) + 0.02;
-            v += -0.09 * vec2( d.x * d.x - d.y * d.y, 2.0 * d.x * d.y ) / ( r2 * r2 );
-            v += 0.35 * sin( 0.3 * t + 2.0 * float( i + 3 * j ) ) * vec2( -d.y, d.x ) / r2;
-        }
-    }
-    return v;
-}
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {

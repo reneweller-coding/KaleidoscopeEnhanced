@@ -60,6 +60,16 @@ vec2 screenP()
 {
     return ( gl_FragCoord.xy / resolution - 0.5 ) * vec2( resolution.x / resolution.y, 1.0 );
 }
+/**  Square root with its branch cut: |sqrt(z)| in both coordinates, so the two sheets agree on the cut.
+ *
+ * @param uv     The coordinate. (in)
+ * @param c      Centre of the transform. (in)
+ * @param scale  The scale. (in)
+ * @param t      The scene's clock. (in)
+ *
+ * @return
+ *   The transformed coordinate.
+ **/
 vec2 tSqrtSheet( vec2 uv, vec2 c, float scale, float t )
 {
     vec2  z = rot2( 0.2 * t ) * ( uv - c ) * scale;

@@ -44,7 +44,7 @@ uniform float audioSectionId; ///< Slot of the current song section in the analy
 uniform float audioSectionPrev; ///< Slot of the previous song section.
 uniform float audioSectionAge;  ///< Seconds since the current song section began.
 
-uniform float faultP; ///< Fault knob: the number of faults.
+uniform float faultP; ///< Fault knob: the number of faults, 0..1.
 uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 // ---- shared building blocks (texture pool, noise, shapes) ----

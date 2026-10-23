@@ -39,7 +39,7 @@ uniform float audioPhase;     ///< Rotation phase driven by the music (integrate
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 uniform float audioSpread;    ///< Spectral spread, 0..1.
 
-uniform float lengthP; ///< Length knob: the base smear length.
+uniform float lengthP; ///< Length knob: the base smear length, 0..1.
 uniform float scaleP;  ///< Scale knob.
 uniform float hueP;    ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
@@ -498,21 +498,24 @@ void finish( vec3 col )
     fragColor = vec4( clamp( t, 0.0, 1.0 ), 1.0 );
 }
 
-
-// ---- the photo smeared along a flow ----
-/**  The scene's velocity field (defined by the scene; the library only follows it).
+/**  The flow: the streaks of a turbulent boundary layer near a wall
  *
  * @param p   The place (screen units, y -0.5..0.5). (in)
- * @param t   The scene's flow clock. (in)
- * @param ch  The channel (0 for all colours; 0, 1, 2 where a scene sends each colour its own way). (in)
+ * @param t   The flow clock. (in)
+ * @param ch  The channel (unused: all colours follow the same flow). (in)
  *
  * @return
  *   The velocity.
  **/
-/// @cond
-vec2 licVel( vec2 p, float t, int ch );
-/// @endcond
+vec2 licVel( vec2 p, float t, int ch )
+{
+    vec2  q = p * ( 1.8 + 3.0 * clamp( scaleP, 0.0, 1.0 ) );
+    float k = 5.0 + 6.0 * clamp( audioSpread, 0.0, 1.0 );
+    float s = 1.0 + 0.5 * sin( k * q.y + 0.4 * t );
+    return vec2( s, 0.3 * sin( 2.0 * q.x - 0.5 * t ) * cos( k * q.y ) );
+}
 
+// ---- the photo smeared along a flow ----
 /**  The photo gathered along the streamline through a place (a line-integral convolution): fourteen dithered steps,
  * seven each way, a tapering kernel, the photo read at a coarser level the farther the step.
  *
@@ -546,22 +549,6 @@ vec3 licSmear( vec2 p, float t, float len, int ch )
     return sum / ws;
 }
 
-/**  The flow: the streaks of a turbulent boundary layer near a wall
- *
- * @param p   The place (screen units, y -0.5..0.5). (in)
- * @param t   The flow clock. (in)
- * @param ch  The channel (unused: all colours follow the same flow). (in)
- *
- * @return
- *   The velocity.
- **/
-vec2 licVel( vec2 p, float t, int ch )
-{
-    vec2  q = p * ( 1.8 + 3.0 * clamp( scaleP, 0.0, 1.0 ) );
-    float k = 5.0 + 6.0 * clamp( audioSpread, 0.0, 1.0 );
-    float s = 1.0 + 0.5 * sin( k * q.y + 0.4 * t );
-    return vec2( s, 0.3 * sin( 2.0 * q.x - 0.5 * t ) * cos( k * q.y ) );
-}
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {

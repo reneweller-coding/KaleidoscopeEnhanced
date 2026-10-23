@@ -48,6 +48,17 @@ vec2 screenP()
 {
     return ( gl_FragCoord.xy / resolution - 0.5 ) * vec2( resolution.x / resolution.y, 1.0 );
 }
+/**  Stage D: flows and waves ------------------------------------------------------------------------------------
+ * Langmuir cells: counter-rotating roll pairs along the wind, drift lines gather in the convergence zones.
+ *
+ * @param uv        The coordinate. (in)
+ * @param cells     The number of cells. (in)
+ * @param strength  The strength. (in)
+ * @param t         The scene's clock. (in)
+ *
+ * @return
+ *   The transformed coordinate.
+ **/
 vec2 tLangmuir( vec2 uv, float cells, float strength, float t )
 {
     float k = 6.2831853 * cells;

@@ -48,6 +48,16 @@ vec2 screenP()
 {
     return ( gl_FragCoord.xy / resolution - 0.5 ) * vec2( resolution.x / resolution.y, 1.0 );
 }
+/**  Axicon: a cone lens bends every ray by the same angle toward the axis: a ring caustic of radius k.
+ *
+ * @param uv  The coordinate. (in)
+ * @param c   Centre of the transform. (in)
+ * @param k   The knob of the transform. (in)
+ * @param t   The scene's clock. (in)
+ *
+ * @return
+ *   The transformed coordinate.
+ **/
 vec2 tAxicon( vec2 uv, vec2 c, float k, float t )
 {
     vec2  d = uv - c;

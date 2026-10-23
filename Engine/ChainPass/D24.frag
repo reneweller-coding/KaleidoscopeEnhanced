@@ -48,6 +48,13 @@ vec2 screenP()
 {
     return ( gl_FragCoord.xy / resolution - 0.5 ) * vec2( resolution.x / resolution.y, 1.0 );
 }
+/**  Airy wave packet: displacement along a curve that accelerates like a parabola, with side lobes behind it.
+ *
+ * @param x  The value. (in)
+ *
+ * @return
+ *   The value.
+ **/
 float airyApprox( float x )
 {
     if ( x > 1.0 )
@@ -59,6 +66,16 @@ float airyApprox( float x )
     }
     return 0.3550 - 0.2588 * x + 0.0592 * x * x * x;
 }
+/**  A transform of the flat chain labs.
+ *
+ * @param uv        The coordinate. (in)
+ * @param c         Centre of the transform. (in)
+ * @param strength  The strength. (in)
+ * @param t         The scene's clock. (in)
+ *
+ * @return
+ *   The transformed coordinate.
+ **/
 vec2 tAiryPacket( vec2 uv, vec2 c, float strength, float t )
 {
     float x = ( uv.x - c.x ) * 6.0 - 0.4 * t;

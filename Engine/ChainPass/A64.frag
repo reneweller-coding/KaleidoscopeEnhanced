@@ -72,6 +72,17 @@ vec2 cmul( vec2 a, vec2 b )
 {
     return vec2( a.x * b.x - a.y * b.y, a.x * b.y + a.y * b.x );
 }
+/**  Schwarz-Christoffel: the disc onto a regular hexagon, w = z * integral_0^1 (1 - (s z)^6)^(-1/3) ds; outside the
+ * circle of radius 0.9 the plane is inverted into it (continuous on the circle).
+ *
+ * @param uv     The coordinate. (in)
+ * @param c      Centre of the transform. (in)
+ * @param scale  The scale. (in)
+ * @param t      The scene's clock. (in)
+ *
+ * @return
+ *   The transformed coordinate.
+ **/
 vec2 tScHexagon( vec2 uv, vec2 c, float scale, float t )
 {
     vec2  z = rot2( 0.1 * sin( t * 0.2 ) ) * ( uv - c ) * scale;

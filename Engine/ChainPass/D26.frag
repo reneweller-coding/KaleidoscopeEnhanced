@@ -60,6 +60,16 @@ vec2 screenP()
 {
     return ( gl_FragCoord.xy / resolution - 0.5 ) * vec2( resolution.x / resolution.y, 1.0 );
 }
+/**  Lamb-Oseen vortex row: soft vortices of alternating sense in a row (Gamma / 2 pi r^2 (1 - exp(-r^2 / rc^2))).
+ *
+ * @param uv   The coordinate. (in)
+ * @param c    Centre of the transform. (in)
+ * @param gap  A parameter of the transform. (in)
+ * @param t    The scene's clock. (in)
+ *
+ * @return
+ *   The transformed coordinate.
+ **/
 vec2 tLambOseenRow( vec2 uv, vec2 c, float gap, float t )
 {
     float row = c.y;

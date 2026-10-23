@@ -477,17 +477,6 @@ vec2 fcPow(vec2 z, float p) { float r = length(z), a = atan(z.y, z.x); return po
 # photo along its streamlines with licSmear().  Appended for sources that call licSmear(.
 LIC_LIB = r"""
 // ---- the photo smeared along a flow ----
-/**  The scene's velocity field (defined by the scene; the library only follows it).
- *
- * @param p   The place (screen units, y -0.5..0.5). (in)
- * @param t   The scene's flow clock. (in)
- * @param ch  The channel (0 for all colours; 0, 1, 2 where a scene sends each colour its own way). (in)
- *
- * @return
- *   The velocity.
- **/
-vec2 licVel(vec2 p, float t, int ch);
-
 /**  The photo gathered along the streamline through a place (a line-integral convolution): fourteen dithered steps, seven each way,
  * a tapering kernel, the photo read at a coarser level the farther the step.
  *
@@ -524,17 +513,6 @@ vec3 licSmear(vec2 p, float t, float len, int ch)
 # with expAccum().  Appended for sources that call expAccum(.
 EXPO_LIB = r"""
 // ---- the photo as a long exposure ----
-/**  The place a pixel reads at a point of the exposure's path (defined by the scene).
- *
- * @param p  The pixel's place (screen units). (in)
- * @param u  The point on the path, -0.5..0.5. (in)
- * @param t  The scene's clock. (in)
- *
- * @return
- *   The place to read (screen units).
- **/
-vec2 expPath(vec2 p, float u, float t);
-
 /**  The exposure: sixteen dithered readings of the photo along the path of expPath(), averaged (a long exposure), lightened
  * (the brightest and most colourful places leave sharp trails) or weighted with a comet's tail.
  *
@@ -1832,8 +1810,16 @@ vec2 tGerstner(vec2 uv, float A, float t)
     return uv;
 }
 // ---- round 7 (23.10.2026): forty more transforms for the flat chain labs ----
-// Stage A: coordinate maps ------------------------------------------------------------------------------------
-// Tinkerbell map: x' = x^2 - y^2 + a x + b y, y' = 2 x y + c x + d y, the strange attractor's loops.
+/**  Stage A: coordinate maps ------------------------------------------------------------------------------------ Tinkerbell map: x' = x^2 - y^2 + a x + b y, y' = 2 x y + c x + d y, the strange attractor's loops.
+ *
+ * @param uv     The point to transform. (in)
+ * @param c      The centre of the map. (in)
+ * @param steps  The number of steps. (in)
+ * @param t      The scene's clock. (in)
+ *
+ * @return
+ *   The transformed point.
+ **/
 vec2 tTinkerbell(vec2 uv, vec2 c, float steps, float t)
 {
     vec2 p = (uv - c) * 2.0;
@@ -1845,7 +1831,16 @@ vec2 tTinkerbell(vec2 uv, vec2 c, float steps, float t)
     }
     return c + p * 0.5;
 }
-// Lozi map: the piecewise linear Henon, |x| for x^2: straight kinks instead of soft loops.
+/**  Lozi map: the piecewise linear Henon, |x| for x^2: straight kinks instead of soft loops.
+ *
+ * @param uv     The point to transform. (in)
+ * @param c      The centre of the map. (in)
+ * @param steps  The number of steps. (in)
+ * @param t      The scene's clock. (in)
+ *
+ * @return
+ *   The transformed point.
+ **/
 vec2 tLozi(vec2 uv, vec2 c, float steps, float t)
 {
     vec2 p = (uv - c) * 2.5;
@@ -1853,21 +1848,48 @@ vec2 tLozi(vec2 uv, vec2 c, float steps, float t)
     for (int i = 0; i < 4; ++i) { if (float(i) >= steps) break; p = vec2(1.0 - a * abs(p.x) + 0.5 * p.y, p.x); }
     return c + p * 0.4;
 }
-// Hopalong (Martin): x' = y - sgn(x) sqrt|b x - c|, y' = a - x.
+/**  Hopalong (Martin): x' = y - sgn(x) sqrt|b x - c|, y' = a - x.
+ *
+ * @param uv     The point to transform. (in)
+ * @param c      The centre of the map. (in)
+ * @param a      The first parameter. (in)
+ * @param t      The scene's clock. (in)
+ *
+ * @return
+ *   The transformed point.
+ **/
 vec2 tHopalong(vec2 uv, vec2 c, float a, float t)
 {
     vec2 p = (uv - c) * 3.0;
     for (int i = 0; i < 3; ++i) p = vec2(p.y - sign(p.x) * sqrt(abs(1.0 * p.x - (0.4 + 0.2 * sin(t * 0.15)))), a - p.x);
     return c + p * 0.3;
 }
-// Gingerbreadman map: x' = 1 - y + |x|, y' = x.
+/**  Gingerbreadman map: x' = 1 - y + |x|, y' = x.
+ *
+ * @param uv     The point to transform. (in)
+ * @param c      The centre of the map. (in)
+ * @param k      The knob of the transform. (in)
+ * @param t      The scene's clock. (in)
+ *
+ * @return
+ *   The transformed point.
+ **/
 vec2 tGingerbread(vec2 uv, vec2 c, float k, float t)
 {
     vec2 p = (uv - c) * 4.0;
     for (int i = 0; i < 4; ++i) p = vec2(1.0 - p.y + k * abs(p.x), p.x);
     return c + p * (0.16 + 0.02 * sin(t * 0.2));
 }
-// Bogdanov map: the normal form of the Bogdanov-Takens bifurcation, spirals about a fixed point.
+/**  Bogdanov map: the normal form of the Bogdanov-Takens bifurcation, spirals about a fixed point.
+ *
+ * @param uv     The point to transform. (in)
+ * @param c      The centre of the map. (in)
+ * @param k      The knob of the transform. (in)
+ * @param t      The scene's clock. (in)
+ *
+ * @return
+ *   The transformed point.
+ **/
 vec2 tBogdanov(vec2 uv, vec2 c, float k, float t)
 {
     vec2 p = (uv - c) * 2.5;
@@ -1875,7 +1897,16 @@ vec2 tBogdanov(vec2 uv, vec2 c, float k, float t)
     for (int i = 0; i < 3; ++i) { p.y += 0.0 * p.y + k * p.x * (p.x - 1.0) + mu * p.x * p.y; p.x += p.y; }
     return c + p * 0.45;
 }
-// Lemniscate coordinates: bipolar coordinates of z^2 with the poles +-a^2: figures of eight, the poles in the ears.
+/**  Lemniscate coordinates: bipolar coordinates of z^2 with the poles +-a^2: figures of eight, the poles in the ears.
+ *
+ * @param uv     The point to transform. (in)
+ * @param c      The centre of the map. (in)
+ * @param a      The first parameter. (in)
+ * @param t      The scene's clock. (in)
+ *
+ * @return
+ *   The transformed point.
+ **/
 vec2 tLemniscate(vec2 uv, vec2 c, float a, float t)
 {
     vec2 z = (uv - c) * 3.0;
@@ -1884,8 +1915,16 @@ vec2 tLemniscate(vec2 uv, vec2 c, float a, float t)
     vec2 q = cdiv(w - vec2(a2, 0.0), w + vec2(a2, 0.0));
     return vec2(0.5 * log(max(dot(q, q), 1e-6)) * 0.9 + 0.05 * t, atan(q.y, q.x) / 3.14159265 * 2.0);
 }
-// Schwarz-Christoffel: the disc onto a regular hexagon, w = z * integral_0^1 (1 - (s z)^6)^(-1/3) ds; outside
-// the circle of radius 0.9 the plane is inverted into it (continuous on the circle).
+/**  Schwarz-Christoffel: the disc onto a regular hexagon, w = z * integral_0^1 (1 - (s z)^6)^(-1/3) ds; outside the circle of radius 0.9 the plane is inverted into it (continuous on the circle).
+ *
+ * @param uv     The point to transform. (in)
+ * @param c      The centre of the map. (in)
+ * @param scale  The scale. (in)
+ * @param t      The scene's clock. (in)
+ *
+ * @return
+ *   The transformed point.
+ **/
 vec2 tScHexagon(vec2 uv, vec2 c, float scale, float t)
 {
     vec2 z = rot2(0.1 * sin(t * 0.2)) * (uv - c) * scale;
@@ -1901,7 +1940,16 @@ vec2 tScHexagon(vec2 uv, vec2 c, float scale, float t)
     }
     return c + cmul(z, w / 8.0) * 0.55;
 }
-// Rose fold: the polar mirror at r = R(theta) of a k-petal rose, petals folded into each other.
+/**  Rose fold: the polar mirror at r = R(theta) of a k-petal rose, petals folded into each other.
+ *
+ * @param uv     The point to transform. (in)
+ * @param c      The centre of the map. (in)
+ * @param k      The knob of the transform. (in)
+ * @param t      The scene's clock. (in)
+ *
+ * @return
+ *   The transformed point.
+ **/
 vec2 tRoseFold(vec2 uv, vec2 c, float k, float t)
 {
     vec2 p = (uv - c) * 3.0;
@@ -1911,7 +1959,16 @@ vec2 tRoseFold(vec2 uv, vec2 c, float k, float t)
     float rr = R * abs(mod(r / R + 1.0, 2.0) - 1.0);
     return c + rr * vec2(cos(an), sin(an)) * 0.4;
 }
-// Epitrochoid unrolling: the point moves as the pen of a gear rolling in a ring: rho (e^{i th} - d e^{i (m+1) th}).
+/**  Epitrochoid unrolling: the point moves as the pen of a gear rolling in a ring: rho (e^{i th} - d e^{i (m+1) th}).
+ *
+ * @param uv     The point to transform. (in)
+ * @param c      The centre of the map. (in)
+ * @param m      A parameter of the transform. (in)
+ * @param t      The scene's clock. (in)
+ *
+ * @return
+ *   The transformed point.
+ **/
 vec2 tEpitrochoid(vec2 uv, vec2 c, float m, float t)
 {
     vec2 d = uv - c;
@@ -1919,7 +1976,16 @@ vec2 tEpitrochoid(vec2 uv, vec2 c, float m, float t)
     float dd = 0.75 + 0.15 * sin(t * 0.2);
     return c + rho * (cexpi(th) - dd / (m + 1.0) * cexpi((m + 1.0) * th)) * 1.1;
 }
-// Modular lambda function: lambda = (theta_2 / theta_3)^4 of the nome q = exp(i pi tau), three cusps 0, 1, infinity.
+/**  Modular lambda function: lambda = (theta_2 / theta_3)^4 of the nome q = exp(i pi tau), three cusps 0, 1, infinity.
+ *
+ * @param uv     The point to transform. (in)
+ * @param c      The centre of the map. (in)
+ * @param scale  The scale. (in)
+ * @param t      The scene's clock. (in)
+ *
+ * @return
+ *   The transformed point.
+ **/
 vec2 tLambda(vec2 uv, vec2 c, float scale, float t)
 {
     vec2 tau = (uv - c) * scale + vec2(0.5 * sin(t * 0.1), 0.0);
@@ -1933,7 +1999,16 @@ vec2 tLambda(vec2 uv, vec2 c, float scale, float t)
     vec2 l = cmul(cmul(r, r), cmul(r, r));
     return c + l * 0.5 / (1.0 + 0.3 * length(l));
 }
-// Ford circles: the point is inverted in the circle that holds it (p/q, radius 1/(2 q^2)), mirror-periodic along the axis.
+/**  Ford circles: the point is inverted in the circle that holds it (p/q, radius 1/(2 q^2)), mirror-periodic along the axis.
+ *
+ * @param uv     The point to transform. (in)
+ * @param c      The centre of the map. (in)
+ * @param rank   A parameter of the transform. (in)
+ * @param t      The scene's clock. (in)
+ *
+ * @return
+ *   The transformed point.
+ **/
 vec2 tFord(vec2 uv, vec2 c, float rank, float t)
 {
     vec2 z = vec2(abs(fract((uv.x - c.x + 0.5) * 0.5) * 2.0 - 1.0), abs(fract((uv.y - c.y + 0.5) * 0.5) * 2.0 - 1.0) * 0.8);
@@ -1951,7 +2026,16 @@ vec2 tFord(vec2 uv, vec2 c, float rank, float t)
     }
     return vec2(z.x, z.y / 0.8);
 }
-// Square root with its branch cut: |sqrt(z)| in both coordinates, so the two sheets agree on the cut.
+/**  Square root with its branch cut: |sqrt(z)| in both coordinates, so the two sheets agree on the cut.
+ *
+ * @param uv     The point to transform. (in)
+ * @param c      The centre of the map. (in)
+ * @param scale  The scale. (in)
+ * @param t      The scene's clock. (in)
+ *
+ * @return
+ *   The transformed point.
+ **/
 vec2 tSqrtSheet(vec2 uv, vec2 c, float scale, float t)
 {
     vec2 z = rot2(0.2 * t) * (uv - c) * scale;
@@ -1959,7 +2043,16 @@ vec2 tSqrtSheet(vec2 uv, vec2 c, float scale, float t)
     vec2 w = sqrt(r) * vec2(cos(0.5 * th), sin(0.5 * th));
     return c + abs(w) * 0.7;
 }
-// Gamma function's poles: the principal parts of Gamma at 0, -1, -2 ... (residues (-1)^k / k!), funnels in the plane.
+/**  Gamma function's poles: the principal parts of Gamma at 0, -1, -2 ... (residues (-1)^k / k!), funnels in the plane.
+ *
+ * @param uv     The point to transform. (in)
+ * @param c      The centre of the map. (in)
+ * @param shift  A parameter of the transform. (in)
+ * @param t      The scene's clock. (in)
+ *
+ * @return
+ *   The transformed point.
+ **/
 vec2 tGammaPoles(vec2 uv, vec2 c, float shift, float t)
 {
     vec2 z = (uv - c) * 4.0 + vec2(-1.5 + shift + 0.4 * sin(t * 0.1), 0.0);
@@ -1972,7 +2065,14 @@ vec2 tGammaPoles(vec2 uv, vec2 c, float shift, float t)
     }
     return c + f * 0.35 / (1.0 + 0.3 * length(f));
 }
-// Spherical harmonic fault: the photo moves by Y * grad Y of a real harmonic of the sphere (nodal lines cut it into fields).
+/**  Spherical harmonic fault: the photo moves by Y * grad Y of a real harmonic of the sphere (nodal lines cut it into fields).
+ *
+ * @param p      The point. (in)
+ * @param m      A parameter of the transform. (in)
+ *
+ * @return
+ *   The value.
+ **/
 float shY(vec3 p, int m)
 {
     if (m == 0) return 3.0 * p.z * p.z - 1.0;
@@ -1982,6 +2082,16 @@ float shY(vec3 p, int m)
     if (m == 4) return p.x * (5.0 * p.z * p.z - 1.0);
     return p.x * p.x * p.x - 3.0 * p.x * p.y * p.y;
 }
+/**  A transform of the flat chain labs.
+ *
+ * @param uv     The point to transform. (in)
+ * @param c      The centre of the map. (in)
+ * @param which  Which variant. (in)
+ * @param t      The scene's clock. (in)
+ *
+ * @return
+ *   The transformed point.
+ **/
 vec2 tHarmonicFault(vec2 uv, vec2 c, float which, float t)
 {
     int m = int(min(which, 5.0));
@@ -1994,8 +2104,16 @@ vec2 tHarmonicFault(vec2 uv, vec2 c, float which, float t)
     vec2 g = vec2(shY(Px, m) - y0, shY(Py, m) - y0) / e;
     return uv + 0.12 * y0 * g * cos(t * 0.4) * 0.2;
 }
-// Stage B: folds and mirrors ----------------------------------------------------------------------------------
-// Heighway dragon fold: the dragon curve's turn by 45 degrees and scale sqrt 2, the fold turned right or left in turn.
+/**  Stage B: folds and mirrors ---------------------------------------------------------------------------------- Heighway dragon fold: the dragon curve's turn by 45 degrees and scale sqrt 2, the fold turned right or left in turn.
+ *
+ * @param uv     The point to transform. (in)
+ * @param c      The centre of the map. (in)
+ * @param iters  The number of iterations. (in)
+ * @param turn   A parameter of the transform. (in)
+ *
+ * @return
+ *   The transformed point.
+ **/
 vec2 tDragonFold(vec2 uv, vec2 c, float iters, float turn)
 {
     vec2 p = rot2(turn) * (uv - c) * 2.0;
@@ -2008,7 +2126,16 @@ vec2 tDragonFold(vec2 uv, vec2 c, float iters, float turn)
     }
     return c + p / sc * 1.2;
 }
-// Gosper fold: seven-fold flowsnake, scale sqrt 7 and the angle 19.1 degrees, the fold across the axis.
+/**  Gosper fold: seven-fold flowsnake, scale sqrt 7 and the angle 19.1 degrees, the fold across the axis.
+ *
+ * @param uv     The point to transform. (in)
+ * @param c      The centre of the map. (in)
+ * @param iters  The number of iterations. (in)
+ * @param turn   A parameter of the transform. (in)
+ *
+ * @return
+ *   The transformed point.
+ **/
 vec2 tGosperFold(vec2 uv, vec2 c, float iters, float turn)
 {
     vec2 p = rot2(turn) * (uv - c) * 2.0;
@@ -2021,8 +2148,16 @@ vec2 tGosperFold(vec2 uv, vec2 c, float iters, float turn)
     }
     return c + p / sc * 1.3;
 }
-// Fibonacci-word mirror: mirror lines at the points of the Fibonacci quasi-lattice (gaps 1.618 and 1 in the order of
-// the word); the picture is the distance to the nearest mirror, so it never repeats.
+/**  Fibonacci-word mirror: mirror lines at the points of the Fibonacci quasi-lattice (gaps 1.618 and 1 in the order of the word); the picture is the distance to the nearest mirror, so it never repeats.
+ *
+ * @param uv     The point to transform. (in)
+ * @param c      The centre of the map. (in)
+ * @param scale  The scale. (in)
+ * @param ang    A parameter of the transform. (in)
+ *
+ * @return
+ *   The transformed point.
+ **/
 vec2 tFibonacciMirror(vec2 uv, vec2 c, float scale, float ang)
 {
     vec2 p = rot2(ang) * (uv - c) * scale;
@@ -2036,7 +2171,16 @@ vec2 tFibonacciMirror(vec2 uv, vec2 c, float scale, float ang)
     }
     return c + vec2(best * 0.9, p.y * 0.6);
 }
-// Thue-Morse mirror: the slope of a zigzag flips where the Thue-Morse sequence says, never periodic, never random.
+/**  Thue-Morse mirror: the slope of a zigzag flips where the Thue-Morse sequence says, never periodic, never random.
+ *
+ * @param uv     The point to transform. (in)
+ * @param c      The centre of the map. (in)
+ * @param w      A parameter of the transform. (in)
+ * @param t      The scene's clock. (in)
+ *
+ * @return
+ *   The transformed point.
+ **/
 vec2 tThueMorseMirror(vec2 uv, vec2 c, float w, float t)
 {
     vec2 p = (uv - c) * w + vec2(0.3 * sin(t * 0.1), 0.0);
@@ -2052,7 +2196,13 @@ vec2 tThueMorseMirror(vec2 uv, vec2 c, float w, float t)
     float x = S + sg * (p.x - k);
     return c + vec2(x * 0.45, p.y * 0.45);
 }
-// Cantor mirror: the distance to the Cantor set along both axes (a devil's carpet of folds).
+/**  Cantor mirror: the distance to the Cantor set along both axes (a devil's carpet of folds).
+ *
+ * @param x      The value. (in)
+ *
+ * @return
+ *   The value.
+ **/
 float cantorDist(float x)
 {
     x = abs(fract(x * 0.5 + 0.5) * 2.0 - 1.0);
@@ -2064,12 +2214,31 @@ float cantorDist(float x)
     }
     return 0.0;
 }
+/**  A transform of the flat chain labs.
+ *
+ * @param uv     The point to transform. (in)
+ * @param c      The centre of the map. (in)
+ * @param scale  The scale. (in)
+ * @param t      The scene's clock. (in)
+ *
+ * @return
+ *   The transformed point.
+ **/
 vec2 tCantorMirror(vec2 uv, vec2 c, float scale, float t)
 {
     vec2 p = (uv - c) * scale + 0.5;
     return c + vec2(cantorDist(p.x + 0.05 * sin(t * 0.2)), cantorDist(p.y)) * 3.0;
 }
-// Tent-map fold: the triangle wave doubled again and again, binary mirrors at every scale.
+/**  Tent-map fold: the triangle wave doubled again and again, binary mirrors at every scale.
+ *
+ * @param uv     The point to transform. (in)
+ * @param c      The centre of the map. (in)
+ * @param iters  The number of iterations. (in)
+ * @param t      The scene's clock. (in)
+ *
+ * @return
+ *   The transformed point.
+ **/
 vec2 tTentFold(vec2 uv, vec2 c, float iters, float t)
 {
     vec2 p = (uv - c) * 1.4 + 0.5 + 0.03 * vec2(sin(t * 0.2), cos(t * 0.17));
@@ -2081,7 +2250,16 @@ vec2 tTentFold(vec2 uv, vec2 c, float iters, float t)
     }
     return c + p * 1.2 - 0.3;
 }
-// Cat-map fold: the hyperbolic automorphism [[2,1],[1,1]] of the torus, each round folded by a mirror repeat.
+/**  Cat-map fold: the hyperbolic automorphism [[2,1],[1,1]] of the torus, each round folded by a mirror repeat.
+ *
+ * @param uv     The point to transform. (in)
+ * @param c      The centre of the map. (in)
+ * @param iters  The number of iterations. (in)
+ * @param t      The scene's clock. (in)
+ *
+ * @return
+ *   The transformed point.
+ **/
 vec2 tCatFold(vec2 uv, vec2 c, float iters, float t)
 {
     vec2 p = (uv - c) * 1.2 + 0.5;
@@ -2092,7 +2270,16 @@ vec2 tCatFold(vec2 uv, vec2 c, float iters, float t)
     }
     return c + p - 0.5;
 }
-// Kaleidoscopic fold with a turn: abs, a shift, a turn that grows, a scale of 1.6: lace of a triangle's fold.
+/**  Kaleidoscopic fold with a turn: abs, a shift, a turn that grows, a scale of 1.6: lace of a triangle's fold.
+ *
+ * @param uv     The point to transform. (in)
+ * @param c      The centre of the map. (in)
+ * @param iters  The number of iterations. (in)
+ * @param t      The scene's clock. (in)
+ *
+ * @return
+ *   The transformed point.
+ **/
 vec2 tKifsTriangle(vec2 uv, vec2 c, float iters, float t)
 {
     vec2 p = (uv - c) * 2.0;
@@ -2106,14 +2293,32 @@ vec2 tKifsTriangle(vec2 uv, vec2 c, float iters, float t)
     }
     return c + p / sc * 1.4;
 }
-// Whitney cusp fold: (x, y) -> (x, y^3 + a x y): the plane folds along a cusp and the photo lies over itself.
+/**  Whitney cusp fold: (x, y) -> (x, y^3 + a x y): the plane folds along a cusp and the photo lies over itself.
+ *
+ * @param uv     The point to transform. (in)
+ * @param c      The centre of the map. (in)
+ * @param a      The first parameter. (in)
+ * @param t      The scene's clock. (in)
+ *
+ * @return
+ *   The transformed point.
+ **/
 vec2 tWhitneyCusp(vec2 uv, vec2 c, float a, float t)
 {
     vec2 p = (uv - c) * 2.2;
     float aa = a * (1.0 + 0.3 * sin(t * 0.3));
     return c + vec2(p.x, p.y * p.y * p.y * 0.5 + aa * p.x * p.y) * 0.5;
 }
-// Polar tent fold: the tent map in radius and angle at once, petals within petals.
+/**  Polar tent fold: the tent map in radius and angle at once, petals within petals.
+ *
+ * @param uv     The point to transform. (in)
+ * @param c      The centre of the map. (in)
+ * @param iters  The number of iterations. (in)
+ * @param t      The scene's clock. (in)
+ *
+ * @return
+ *   The transformed point.
+ **/
 vec2 tPolarTent(vec2 uv, vec2 c, float iters, float t)
 {
     vec2 p = uv - c;
@@ -2126,22 +2331,48 @@ vec2 tPolarTent(vec2 uv, vec2 c, float iters, float t)
     float th = a * 6.2831853;
     return c + r * vec2(cos(th), sin(th)) * 0.5;
 }
-// Stage C: lenses ---------------------------------------------------------------------------------------------
-// Cylinder lens: stretched or squeezed in one direction only, the photo drawn into bands.
+/**  Stage C: lenses --------------------------------------------------------------------------------------------- Cylinder lens: stretched or squeezed in one direction only, the photo drawn into bands.
+ *
+ * @param uv     The point to transform. (in)
+ * @param c      The centre of the map. (in)
+ * @param k      The knob of the transform. (in)
+ * @param ang    A parameter of the transform. (in)
+ *
+ * @return
+ *   The transformed point.
+ **/
 vec2 tCylinderLens(vec2 uv, vec2 c, float k, float ang)
 {
     vec2 d = rot2(ang) * (uv - c);
     d.x *= 0.35 + k;
     return c + rot2(-ang) * d;
 }
-// Axicon: a cone lens bends every ray by the same angle toward the axis: a ring caustic of radius k.
+/**  Axicon: a cone lens bends every ray by the same angle toward the axis: a ring caustic of radius k.
+ *
+ * @param uv     The point to transform. (in)
+ * @param c      The centre of the map. (in)
+ * @param k      The knob of the transform. (in)
+ * @param t      The scene's clock. (in)
+ *
+ * @return
+ *   The transformed point.
+ **/
 vec2 tAxicon(vec2 uv, vec2 c, float k, float t)
 {
     vec2 d = uv - c;
     float r = sqrt(dot(d, d) + 0.002);
     return uv - d / r * k * (0.8 + 0.2 * sin(t * 0.3));
 }
-// Fresnel step lens: concentric zones, each a slice of a lens: the picture slips back at every step (soft ramps).
+/**  Fresnel step lens: concentric zones, each a slice of a lens: the picture slips back at every step (soft ramps).
+ *
+ * @param uv     The point to transform. (in)
+ * @param c      The centre of the map. (in)
+ * @param zones  The number of zones. (in)
+ * @param t      The scene's clock. (in)
+ *
+ * @return
+ *   The transformed point.
+ **/
 vec2 tFresnelStep(vec2 uv, vec2 c, float zones, float t)
 {
     vec2 d = uv - c;
@@ -2149,7 +2380,16 @@ vec2 tFresnelStep(vec2 uv, vec2 c, float zones, float t)
     float saw = smoothstep(0.0, 0.85, f) * (1.0 - smoothstep(0.85, 1.0, f));
     return c + d * (1.0 - 0.3 * (saw - 0.5));
 }
-// Compound eye: a grid of lenslets, each showing the photo a little turned and flipped (displacement dies at the cell edge).
+/**  Compound eye: a grid of lenslets, each showing the photo a little turned and flipped (displacement dies at the cell edge).
+ *
+ * @param uv     The point to transform. (in)
+ * @param c      The centre of the map. (in)
+ * @param cells  The number of cells. (in)
+ * @param t      The scene's clock. (in)
+ *
+ * @return
+ *   The transformed point.
+ **/
 vec2 tCompoundEye(vec2 uv, vec2 c, float cells, float t)
 {
     vec2 q = (uv - c) * cells;
@@ -2159,7 +2399,16 @@ vec2 tCompoundEye(vec2 uv, vec2 c, float cells, float t)
     float sg = (mod(floor(q.x + 0.5) + floor(q.y + 0.5), 2.0) < 0.5) ? 1.0 : -1.0;
     return uv - 1.6 * sg * f / cells * edge - 0.4 * rot2(0.3 * sin(t * 0.2)) * f / cells * edge;
 }
-// Luneburg lens: a ball of refractive index sqrt(2 - r^2) focuses parallel rays on the far rim.
+/**  Luneburg lens: a ball of refractive index sqrt(2 - r^2) focuses parallel rays on the far rim.
+ *
+ * @param uv     The point to transform. (in)
+ * @param c      The centre of the map. (in)
+ * @param R      The radius. (in)
+ * @param t      The scene's clock. (in)
+ *
+ * @return
+ *   The transformed point.
+ **/
 vec2 tLuneburg(vec2 uv, vec2 c, float R, float t)
 {
     vec2 d = (uv - c) / R;
@@ -2168,7 +2417,16 @@ vec2 tLuneburg(vec2 uv, vec2 c, float R, float t)
     float s = (1.0 - sqrt(max(1.0 - r2, 0.0))) * smoothstep(1.05, 0.85, sqrt(r2));
     return uv + dir * s * R * 1.2;
 }
-// Maxwell fish eye: every point is imaged on another, the photo turned inside out in a disc (blended into the rim).
+/**  Maxwell fish eye: every point is imaged on another, the photo turned inside out in a disc (blended into the rim).
+ *
+ * @param uv     The point to transform. (in)
+ * @param c      The centre of the map. (in)
+ * @param R      The radius. (in)
+ * @param t      The scene's clock. (in)
+ *
+ * @return
+ *   The transformed point.
+ **/
 vec2 tMaxwell(vec2 uv, vec2 c, float R, float t)
 {
     vec2 d = (uv - c) / R;
@@ -2177,7 +2435,16 @@ vec2 tMaxwell(vec2 uv, vec2 c, float R, float t)
     float w = smoothstep(1.0, 0.8, sqrt(r2));
     return c + mix(d, inv, w) * R;
 }
-// Veselago lens: negative refraction in a slab: inside it the image inverts and focuses twice.
+/**  Veselago lens: negative refraction in a slab: inside it the image inverts and focuses twice.
+ *
+ * @param uv     The point to transform. (in)
+ * @param c      The centre of the map. (in)
+ * @param thick  The thickness. (in)
+ * @param t      The scene's clock. (in)
+ *
+ * @return
+ *   The transformed point.
+ **/
 vec2 tVeselago(vec2 uv, vec2 c, float thick, float t)
 {
     float y0 = c.y + 0.1 * sin(t * 0.2);
@@ -2187,7 +2454,16 @@ vec2 tVeselago(vec2 uv, vec2 c, float thick, float t)
     float s2 = s * (2.0 * a / thick - 1.0);
     return vec2(uv.x, y0 + mix(s, s2, inside));
 }
-// Inferior mirage: the sky mirrored into the ground along a hot horizon, with a shimmer in the seam.
+/**  Inferior mirage: the sky mirrored into the ground along a hot horizon, with a shimmer in the seam.
+ *
+ * @param uv     The point to transform. (in)
+ * @param c      The centre of the map. (in)
+ * @param amp    The amplitude. (in)
+ * @param t      The scene's clock. (in)
+ *
+ * @return
+ *   The transformed point.
+ **/
 vec2 tMirage(vec2 uv, vec2 c, float amp, float t)
 {
     float h = c.y;
@@ -2195,22 +2471,48 @@ vec2 tMirage(vec2 uv, vec2 c, float amp, float t)
     float shimmer = exp(-d * d / 0.004) * amp * 0.02 * sin(60.0 * uv.x + 3.0 * t + 20.0 * d);
     return vec2(uv.x + shimmer + 0.01 * amp * sin(25.0 * d + t) * exp(-d * d / 0.02), h + abs(d));
 }
-// Stage D: flows and waves ------------------------------------------------------------------------------------
-// Langmuir cells: counter-rotating roll pairs along the wind, drift lines gather in the convergence zones.
+/**  Stage D: flows and waves ------------------------------------------------------------------------------------ Langmuir cells: counter-rotating roll pairs along the wind, drift lines gather in the convergence zones.
+ *
+ * @param uv     The point to transform. (in)
+ * @param cells  The number of cells. (in)
+ * @param strength The strength. (in)
+ * @param t      The scene's clock. (in)
+ *
+ * @return
+ *   The transformed point.
+ **/
 vec2 tLangmuir(vec2 uv, float cells, float strength, float t)
 {
     float k = 6.2831853 * cells;
     float ph = k * uv.x + 0.3 * t;
     return uv + strength * 0.03 * vec2(sin(ph), 0.0) + strength * 0.05 * vec2(0.0, cos(ph) * sin(0.7 * uv.y * k * 0.3 + t * 0.2));
 }
-// Ekman spiral: the current turns with depth and thins: layers of the photo, each at another angle.
+/**  Ekman spiral: the current turns with depth and thins: layers of the photo, each at another angle.
+ *
+ * @param uv     The point to transform. (in)
+ * @param rate   The rate. (in)
+ * @param strength The strength. (in)
+ * @param t      The scene's clock. (in)
+ *
+ * @return
+ *   The transformed point.
+ **/
 vec2 tEkman(vec2 uv, float rate, float strength, float t)
 {
     float depth = uv.y * 3.0;
     float a = rate * depth + 0.2 * t;
     return uv + strength * 0.05 * exp(-0.5 * depth) * vec2(cos(a), sin(a)) * 3.0;
 }
-// Capillary ring waves: short ripples round many sources, crossing into lattices.
+/**  Capillary ring waves: short ripples round many sources, crossing into lattices.
+ *
+ * @param uv     The point to transform. (in)
+ * @param n      The count. (in)
+ * @param strength The strength. (in)
+ * @param t      The scene's clock. (in)
+ *
+ * @return
+ *   The transformed point.
+ **/
 vec2 tCapillary(vec2 uv, float n, float strength, float t)
 {
     vec2 d = vec2(0.0);
@@ -2223,7 +2525,15 @@ vec2 tCapillary(vec2 uv, float n, float strength, float t)
     }
     return uv + strength * 0.04 * d;
 }
-// KdV soliton train: sech^2 humps of different height that pass through each other; the photo rides them.
+/**  KdV soliton train: sech^2 humps of different height that pass through each other; the photo rides them.
+ *
+ * @param uv     The point to transform. (in)
+ * @param strength The strength. (in)
+ * @param t      The scene's clock. (in)
+ *
+ * @return
+ *   The transformed point.
+ **/
 vec2 tSolitons(vec2 uv, float strength, float t)
 {
     float h = 0.0;
@@ -2236,20 +2546,45 @@ vec2 tSolitons(vec2 uv, float strength, float t)
     }
     return uv + vec2(0.0, strength * 0.16 * h);
 }
-// Airy wave packet: displacement along a curve that accelerates like a parabola, with side lobes behind it.
+/**  Airy wave packet: displacement along a curve that accelerates like a parabola, with side lobes behind it.
+ *
+ * @param x      The value. (in)
+ *
+ * @return
+ *   The value.
+ **/
 float airyApprox(float x)
 {
     if (x > 1.0) return exp(-0.6667 * x * sqrt(x)) / (3.5449 * sqrt(sqrt(x)));
     if (x < -1.0) { float a = -x; return sin(0.6667 * a * sqrt(a) + 0.7853982) / (1.7725 * sqrt(sqrt(a))); }
     return 0.3550 - 0.2588 * x + 0.0592 * x * x * x;
 }
+/**  A transform of the flat chain labs.
+ *
+ * @param uv     The point to transform. (in)
+ * @param c      The centre of the map. (in)
+ * @param strength The strength. (in)
+ * @param t      The scene's clock. (in)
+ *
+ * @return
+ *   The transformed point.
+ **/
 vec2 tAiryPacket(vec2 uv, vec2 c, float strength, float t)
 {
     float x = (uv.x - c.x) * 6.0 - 0.4 * t;
     float a = airyApprox(x * 0.8);
     return uv + vec2(0.0, strength * 0.25 * a) + vec2(0.06 * strength * a * a, 0.0);
 }
-// Kida vortex: an elliptical patch of constant vorticity, turning as a whole, its rim wavy.
+/**  Kida vortex: an elliptical patch of constant vorticity, turning as a whole, its rim wavy.
+ *
+ * @param uv     The point to transform. (in)
+ * @param c      The centre of the map. (in)
+ * @param ell    A parameter of the transform. (in)
+ * @param t      The scene's clock. (in)
+ *
+ * @return
+ *   The transformed point.
+ **/
 vec2 tKida(vec2 uv, vec2 c, float ell, float t)
 {
     vec2 d = rot2(0.1 * t) * (uv - c);
@@ -2258,7 +2593,16 @@ vec2 tKida(vec2 uv, vec2 c, float ell, float t)
     float th = 1.8 * (rho < 1.0 ? 1.0 : 1.0 / (rho * rho));
     return c + rot2(-0.1 * t) * (rot2(th * sin(0.4 * t + 1.0)) * d);
 }
-// Lamb-Oseen vortex row: soft vortices of alternating sense in a row (Gamma / 2 pi r^2 (1 - exp(-r^2 / rc^2))).
+/**  Lamb-Oseen vortex row: soft vortices of alternating sense in a row (Gamma / 2 pi r^2 (1 - exp(-r^2 / rc^2))).
+ *
+ * @param uv     The point to transform. (in)
+ * @param c      The centre of the map. (in)
+ * @param gap    A parameter of the transform. (in)
+ * @param t      The scene's clock. (in)
+ *
+ * @return
+ *   The transformed point.
+ **/
 vec2 tLambOseenRow(vec2 uv, vec2 c, float gap, float t)
 {
     float row = c.y;
@@ -2271,7 +2615,16 @@ vec2 tLambOseenRow(vec2 uv, vec2 c, float gap, float t)
     }
     return uv;
 }
-// Faraday standing waves: a vibrating surface's square or hexagonal standing wave pattern.
+/**  Faraday standing waves: a vibrating surface's square or hexagonal standing wave pattern.
+ *
+ * @param uv     The point to transform. (in)
+ * @param hex    A parameter of the transform. (in)
+ * @param strength The strength. (in)
+ * @param t      The scene's clock. (in)
+ *
+ * @return
+ *   The transformed point.
+ **/
 vec2 tFaraday(vec2 uv, float hex, float strength, float t)
 {
     vec2 g = vec2(0.0);
@@ -3098,10 +3451,11 @@ def assemble(name):
         out.append(LAB_LIB)
     if re.search(r"\bfracTrap\s*\(", src):
         out.append(FRAC_LIB)
+    late = []                                              # libraries that call a function the scene defines: after its helpers
     if re.search(r"\blicSmear\s*\(", src):
-        out.append(LIC_LIB)
+        late.append(LIC_LIB)
     if re.search(r"\bexpAccum\s*\(", src):
-        out.append(EXPO_LIB)
+        late.append(EXPO_LIB)
     if re.search(r"\brhy(Beat|Bar|Phrase|Sec\w*)\s*\(", src):
         out.append(RHY_LIB)
     if st:
@@ -3143,7 +3497,11 @@ def assemble(name):
                 _pos = [i for i, n in enumerate(_CC[_k]) if (_st, n or "none") in _al]
                 if _pos:
                     out.append("// @chainss %s %s" % (_k, "|".join(str(i) for i in _pos)))
-    out.append(spec_variants(body).rstrip() + "\n")
+    bodyText = spec_variants(body).rstrip() + "\n"
+    if late:
+        mm = list(re.finditer(r"^void\s+main\s*\(", bodyText, re.M))[-1]
+        bodyText = bodyText[:mm.start()] + "\n".join(late) + "\n" + bodyText[mm.start():]
+    out.append(bodyText)
     # //@target fx: an overlay (CombineShader) -- tex0/tex1 are then the finished
     # scene frame instead of the photos; the same library applies.
     folder = "FX" if re.search(r"^//@target\s+fx\b", src, re.M) else "Scene2D"

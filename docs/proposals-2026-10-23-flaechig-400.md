@@ -498,6 +498,8 @@ Das Foto wird zu Stoff mit eigener Mechanik: gewebt, geknüpft, gelocht, gerafft
 Das Foto wird nach einer Regel zerlegt, die selbst ein Ornament ist: Quadratur des Quadrats, Fibonacci-Rechtecke, Repkacheln
 und die 2023 gefundene Spectre-Kachel. Jede Zelle liest das Foto in ihrem Maßstab.
 
+*Gebaut (23.10.2026):* Fünf der Kacheln ließen sich nicht als Parkett setzen und wurden ersetzt: Spectre durch RhombilleTumbleTiles, Sphinx durch DinRectangleBisection, Voderberg durch LogSpiralCellCarpet, Gosper durch FractalShoreCells, Pinwheel durch RotatedQuadNest.
+
 126. ★ **SquaredSquareCollage** — Ein Quadrat, in lauter verschieden große Quadrate zerlegt (das einfachste hat 21 Teile); jedes zeigt das Foto in seinem
      Maßstab, und alle drehen langsam. *Musik:* Die Drehungen laufen mit der Phase versetzt, die Größen atmen mit dem Anschwellen.
      *Foto:* in jeder Zelle gleich, nur anders groß.
@@ -1397,7 +1399,7 @@ Die 66 mit ★, nach Familie, mit ihrer Nummer oben:
 - **D. Fraktale mit Fotofüllung:** SineMandelStrips (76), LaurentPetalFields (79), PhoenixPhotoVeils (84), MandelbrotPowerSweep (86)
 - **E. Beugung, Gitter und Moiré mit dem Foto:** MoireReveal (96), ThreeGratingTriples (98), PhotoPhaseQuasicrystal (100), TwistedBilayerPhoto (108)
 - **F. Gewebe, Garn und Falten als Fläche:** SmockingDiamonds (120)
-- **G. Teilungen und Parkette für das Foto:** SquaredSquareCollage (126), SpectreTileDrift (128)
+- **G. Teilungen und Parkette für das Foto:** SquaredSquareCollage (126), SpectreTileDrift (128, gebaut als RhombilleTumbleTiles)
 - **H. Strömungsmalerei: das Foto als Farbe in einer Strömung:** KarmanSilkStreaks (139), BlinkingVortexStirring (141), KeplerShearSpiral (143), StuartVortexChain (149), MeanderChannelPhoto (156), OverturningWaveFold (158)
 - **I. Optik-Felder: Linsenraster, Tropfen und Spiegelflächen:** MirrorTileAnamorphosis (179), InverseCausticPlate (192)
 - **J. Langzeitbelichtung: das Foto als Lichtspur:** ZoomBurstRose (196), PhotoStarTrails (198), LogSpiralExposure (199), RollingShutterPropeller (201), LightenStackSpiral (210)
@@ -1429,3 +1431,16 @@ Die 66 mit ★, nach Familie, mit ihrer Nummer oben:
   Zustandsfelder (W) und die Scopes (R).
 - **Für jede Runde wie gehabt:** registrieren, gegen alte Zeilen bewerten (`preset_fit.tsv`), Katalog und Messung am Ende,
   einen Commit je Familie.
+
+
+## Stand (23.10.2026)
+
+Alle 400 sind gebaut, je Familie ein Commit (A bis Z, zuletzt 1fb07aa1): 20 Labore, 40 Kettenklassen und 340 Szenen.
+
+- **Ersetzt oder angepasst:** Die sechs Spiegelnetze von B sind stetige Faltungen (keine Spiegelgruppen), fünf Parkette von G sind
+  oben benannt, PhysarumPhotoNetwork rechnet Keller-Segel statt Agenten, PhotoGapFingering ein Dielektrischer-Durchschlag-Modell.
+- **Katalog:** 2175 Szenen, 6803 Bilder (`render_catalog_export.py`: 1080 Bilder von 360 Szenen in 8,8 Minuten).
+- **Noten:** Die Bau-Noten waren wieder zu hoch (Interest 6,78 gegen 5,44 der alten Zeilen); die 340 Szenen wurden auf die alten
+  Zeilen geeicht (Interest 4,78, Galerie 6,24, Psychedelic 5,54), die 20 Labore behalten die Noten der Kettenlabore (7 bis 9).
+- **Technik und Lehren:** `docs/engine-internals.md`, Abschnitt (63).
+- **Offen:** Ein Release nur mit dem Einverständnis des Nutzers.

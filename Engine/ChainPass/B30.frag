@@ -60,6 +60,16 @@ vec2 screenP()
 {
     return ( gl_FragCoord.xy / resolution - 0.5 ) * vec2( resolution.x / resolution.y, 1.0 );
 }
+/**  Kaleidoscopic fold with a turn: abs, a shift, a turn that grows, a scale of 1.6: lace of a triangle's fold.
+ *
+ * @param uv     The coordinate. (in)
+ * @param c      Centre of the transform. (in)
+ * @param iters  The number of iterations. (in)
+ * @param t      The scene's clock. (in)
+ *
+ * @return
+ *   The transformed coordinate.
+ **/
 vec2 tKifsTriangle( vec2 uv, vec2 c, float iters, float t )
 {
     vec2  p = ( uv - c ) * 2.0;

@@ -48,6 +48,16 @@ vec2 screenP()
 {
     return ( gl_FragCoord.xy / resolution - 0.5 ) * vec2( resolution.x / resolution.y, 1.0 );
 }
+/**  Inferior mirage: the sky mirrored into the ground along a hot horizon, with a shimmer in the seam.
+ *
+ * @param uv   The coordinate. (in)
+ * @param c    Centre of the transform. (in)
+ * @param amp  The amplitude. (in)
+ * @param t    The scene's clock. (in)
+ *
+ * @return
+ *   The transformed coordinate.
+ **/
 vec2 tMirage( vec2 uv, vec2 c, float amp, float t )
 {
     float h = c.y;

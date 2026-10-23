@@ -59,6 +59,16 @@ vec2 screenP()
 {
     return ( gl_FragCoord.xy / resolution - 0.5 ) * vec2( resolution.x / resolution.y, 1.0 );
 }
+/**  Capillary ring waves: short ripples round many sources, crossing into lattices.
+ *
+ * @param uv        The coordinate. (in)
+ * @param n         The count. (in)
+ * @param strength  The strength. (in)
+ * @param t         The scene's clock. (in)
+ *
+ * @return
+ *   The transformed coordinate.
+ **/
 vec2 tCapillary( vec2 uv, float n, float strength, float t )
 {
     vec2 d = vec2( 0.0 );

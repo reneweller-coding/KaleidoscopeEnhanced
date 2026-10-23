@@ -48,6 +48,16 @@ vec2 screenP()
 {
     return ( gl_FragCoord.xy / resolution - 0.5 ) * vec2( resolution.x / resolution.y, 1.0 );
 }
+/**  Veselago lens: negative refraction in a slab: inside it the image inverts and focuses twice.
+ *
+ * @param uv     The coordinate. (in)
+ * @param c      Centre of the transform. (in)
+ * @param thick  The thickness. (in)
+ * @param t      The scene's clock. (in)
+ *
+ * @return
+ *   The transformed coordinate.
+ **/
 vec2 tVeselago( vec2 uv, vec2 c, float thick, float t )
 {
     float y0 = c.y + 0.1 * sin( t * 0.2 );

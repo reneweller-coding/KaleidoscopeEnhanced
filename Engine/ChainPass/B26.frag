@@ -48,6 +48,16 @@ vec2 screenP()
 {
     return ( gl_FragCoord.xy / resolution - 0.5 ) * vec2( resolution.x / resolution.y, 1.0 );
 }
+/**  Thue-Morse mirror: the slope of a zigzag flips where the Thue-Morse sequence says, never periodic, never random.
+ *
+ * @param uv  The coordinate. (in)
+ * @param c   Centre of the transform. (in)
+ * @param w   A parameter of the transform. (in)
+ * @param t   The scene's clock. (in)
+ *
+ * @return
+ *   The transformed coordinate.
+ **/
 vec2 tThueMorseMirror( vec2 uv, vec2 c, float w, float t )
 {
     vec2  p = ( uv - c ) * w + vec2( 0.3 * sin( t * 0.1 ), 0.0 );

@@ -48,6 +48,16 @@ vec2 screenP()
 {
     return ( gl_FragCoord.xy / resolution - 0.5 ) * vec2( resolution.x / resolution.y, 1.0 );
 }
+/**  Tent-map fold: the triangle wave doubled again and again, binary mirrors at every scale.
+ *
+ * @param uv     The coordinate. (in)
+ * @param c      Centre of the transform. (in)
+ * @param iters  The number of iterations. (in)
+ * @param t      The scene's clock. (in)
+ *
+ * @return
+ *   The transformed coordinate.
+ **/
 vec2 tTentFold( vec2 uv, vec2 c, float iters, float t )
 {
     vec2 p = ( uv - c ) * 1.4 + 0.5 + 0.03 * vec2( sin( t * 0.2 ), cos( t * 0.17 ) );

@@ -48,6 +48,16 @@ vec2 screenP()
 {
     return ( gl_FragCoord.xy / resolution - 0.5 ) * vec2( resolution.x / resolution.y, 1.0 );
 }
+/**  Fresnel step lens: concentric zones, each a slice of a lens: the picture slips back at every step (soft ramps).
+ *
+ * @param uv     The coordinate. (in)
+ * @param c      Centre of the transform. (in)
+ * @param zones  The number of zones. (in)
+ * @param t      The scene's clock. (in)
+ *
+ * @return
+ *   The transformed coordinate.
+ **/
 vec2 tFresnelStep( vec2 uv, vec2 c, float zones, float t )
 {
     vec2  d = uv - c;

@@ -48,6 +48,15 @@ vec2 screenP()
 {
     return ( gl_FragCoord.xy / resolution - 0.5 ) * vec2( resolution.x / resolution.y, 1.0 );
 }
+/**  Spherical harmonic fault: the photo moves by Y * grad Y of a real harmonic of the sphere (nodal lines cut it into
+ * fields).
+ *
+ * @param p  The point. (in)
+ * @param m  A parameter of the transform. (in)
+ *
+ * @return
+ *   The value.
+ **/
 float shY( vec3 p, int m )
 {
     if ( m == 0 )
@@ -62,6 +71,16 @@ float shY( vec3 p, int m )
         return p.x * ( 5.0 * p.z * p.z - 1.0 );
     return p.x * p.x * p.x - 3.0 * p.x * p.y * p.y;
 }
+/**  A transform of the flat chain labs.
+ *
+ * @param uv     The coordinate. (in)
+ * @param c      Centre of the transform. (in)
+ * @param which  Which variant. (in)
+ * @param t      The scene's clock. (in)
+ *
+ * @return
+ *   The transformed coordinate.
+ **/
 vec2 tHarmonicFault( vec2 uv, vec2 c, float which, float t )
 {
     int   m = int( min( which, 5.0 ) );

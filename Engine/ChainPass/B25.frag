@@ -60,6 +60,17 @@ vec2 screenP()
 {
     return ( gl_FragCoord.xy / resolution - 0.5 ) * vec2( resolution.x / resolution.y, 1.0 );
 }
+/**  Fibonacci-word mirror: mirror lines at the points of the Fibonacci quasi-lattice (gaps 1.618 and 1 in the order
+ * of the word); the picture is the distance to the nearest mirror, so it never repeats.
+ *
+ * @param uv     The coordinate. (in)
+ * @param c      Centre of the transform. (in)
+ * @param scale  The scale. (in)
+ * @param ang    A parameter of the transform. (in)
+ *
+ * @return
+ *   The transformed coordinate.
+ **/
 vec2 tFibonacciMirror( vec2 uv, vec2 c, float scale, float ang )
 {
     vec2  p = rot2( ang ) * ( uv - c ) * scale;

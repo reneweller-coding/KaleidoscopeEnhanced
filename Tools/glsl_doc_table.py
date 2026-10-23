@@ -737,6 +737,53 @@ FUNC_DOCS = {
 
 # the functions of single scenes, keyed "File.frag::name"
 from glsl_doc_scenes import SCENES      # noqa: E402
+# ---- round 7 (23.10.2026): the forty chain transforms of chain_lib7.glsl
+FUNC_DOCS.update( {
+    "tTinkerbell": T( brief="Stage A: coordinate maps ------------------------------------------------------------------------------------ Tinkerbell map: x' = x^2 - y^2 + a x + b y, y' = 2 x y + c x + d y, the strange attractor's loops.", steps="The number of steps.", t="The scene's clock." ),
+    "tLozi": T( brief="Lozi map: the piecewise linear Henon, |x| for x^2: straight kinks instead of soft loops.", steps="The number of steps.", t="The scene's clock." ),
+    "tHopalong": T( brief="Hopalong (Martin): x' = y - sgn(x) sqrt|b x - c|, y' = a - x.", a="The first parameter.", t="The scene's clock." ),
+    "tGingerbread": T( brief="Gingerbreadman map: x' = 1 - y + |x|, y' = x.", k="The knob of the transform.", t="The scene's clock." ),
+    "tBogdanov": T( brief="Bogdanov map: the normal form of the Bogdanov-Takens bifurcation, spirals about a fixed point.", k="The knob of the transform.", t="The scene's clock." ),
+    "tLemniscate": T( brief="Lemniscate coordinates: bipolar coordinates of z^2 with the poles +-a^2: figures of eight, the poles in the ears.", a="The first parameter.", t="The scene's clock." ),
+    "tScHexagon": T( brief="Schwarz-Christoffel: the disc onto a regular hexagon, w = z * integral_0^1 (1 - (s z)^6)^(-1/3) ds; outside the circle of radius 0.9 the plane is inverted into it (continuous on the circle).", scale="The scale.", t="The scene's clock." ),
+    "tRoseFold": T( brief="Rose fold: the polar mirror at r = R(theta) of a k-petal rose, petals folded into each other.", k="The knob of the transform.", t="The scene's clock." ),
+    "tEpitrochoid": T( brief="Epitrochoid unrolling: the point moves as the pen of a gear rolling in a ring: rho (e^{i th} - d e^{i (m+1) th}).", m="A parameter of the transform.", t="The scene's clock." ),
+    "tLambda": T( brief="Modular lambda function: lambda = (theta_2 / theta_3)^4 of the nome q = exp(i pi tau), three cusps 0, 1, infinity.", scale="The scale.", t="The scene's clock." ),
+    "tFord": T( brief="Ford circles: the point is inverted in the circle that holds it (p/q, radius 1/(2 q^2)), mirror-periodic along the axis.", rank="A parameter of the transform.", t="The scene's clock." ),
+    "tSqrtSheet": T( brief="Square root with its branch cut: |sqrt(z)| in both coordinates, so the two sheets agree on the cut.", scale="The scale.", t="The scene's clock." ),
+    "tGammaPoles": T( brief="Gamma function's poles: the principal parts of Gamma at 0, -1, -2 ... (residues (-1)^k / k!), funnels in the plane.", shift="A parameter of the transform.", t="The scene's clock." ),
+    "shY": { "brief": "Spherical harmonic fault: the photo moves by Y * grad Y of a real harmonic of the sphere (nodal lines cut it into fields).", "params": { "p": "The point.", "m": "A parameter of the transform." }, "return": "The value." },
+    "tHarmonicFault": T( brief="A transform of the flat chain labs.", which="Which variant.", t="The scene's clock." ),
+    "tDragonFold": T( brief="Stage B: folds and mirrors ---------------------------------------------------------------------------------- Heighway dragon fold: the dragon curve's turn by 45 degrees and scale sqrt 2, the fold turned right or left in turn.", iters="The number of iterations.", turn="A parameter of the transform." ),
+    "tGosperFold": T( brief="Gosper fold: seven-fold flowsnake, scale sqrt 7 and the angle 19.1 degrees, the fold across the axis.", iters="The number of iterations.", turn="A parameter of the transform." ),
+    "tFibonacciMirror": T( brief="Fibonacci-word mirror: mirror lines at the points of the Fibonacci quasi-lattice (gaps 1.618 and 1 in the order of the word); the picture is the distance to the nearest mirror, so it never repeats.", scale="The scale.", ang="A parameter of the transform." ),
+    "tThueMorseMirror": T( brief="Thue-Morse mirror: the slope of a zigzag flips where the Thue-Morse sequence says, never periodic, never random.", w="A parameter of the transform.", t="The scene's clock." ),
+    "cantorDist": { "brief": "Cantor mirror: the distance to the Cantor set along both axes (a devil's carpet of folds).", "params": { "x": "The value." }, "return": "The value." },
+    "tCantorMirror": T( brief="A transform of the flat chain labs.", scale="The scale.", t="The scene's clock." ),
+    "tTentFold": T( brief="Tent-map fold: the triangle wave doubled again and again, binary mirrors at every scale.", iters="The number of iterations.", t="The scene's clock." ),
+    "tCatFold": T( brief="Cat-map fold: the hyperbolic automorphism [[2,1],[1,1]] of the torus, each round folded by a mirror repeat.", iters="The number of iterations.", t="The scene's clock." ),
+    "tKifsTriangle": T( brief="Kaleidoscopic fold with a turn: abs, a shift, a turn that grows, a scale of 1.6: lace of a triangle's fold.", iters="The number of iterations.", t="The scene's clock." ),
+    "tWhitneyCusp": T( brief="Whitney cusp fold: (x, y) -> (x, y^3 + a x y): the plane folds along a cusp and the photo lies over itself.", a="The first parameter.", t="The scene's clock." ),
+    "tPolarTent": T( brief="Polar tent fold: the tent map in radius and angle at once, petals within petals.", iters="The number of iterations.", t="The scene's clock." ),
+    "tCylinderLens": T( brief="Stage C: lenses --------------------------------------------------------------------------------------------- Cylinder lens: stretched or squeezed in one direction only, the photo drawn into bands.", k="The knob of the transform.", ang="A parameter of the transform." ),
+    "tAxicon": T( brief="Axicon: a cone lens bends every ray by the same angle toward the axis: a ring caustic of radius k.", k="The knob of the transform.", t="The scene's clock." ),
+    "tFresnelStep": T( brief="Fresnel step lens: concentric zones, each a slice of a lens: the picture slips back at every step (soft ramps).", zones="The number of zones.", t="The scene's clock." ),
+    "tCompoundEye": T( brief="Compound eye: a grid of lenslets, each showing the photo a little turned and flipped (displacement dies at the cell edge).", cells="The number of cells.", t="The scene's clock." ),
+    "tLuneburg": T( brief="Luneburg lens: a ball of refractive index sqrt(2 - r^2) focuses parallel rays on the far rim.", R="The radius.", t="The scene's clock." ),
+    "tMaxwell": T( brief="Maxwell fish eye: every point is imaged on another, the photo turned inside out in a disc (blended into the rim).", R="The radius.", t="The scene's clock." ),
+    "tVeselago": T( brief="Veselago lens: negative refraction in a slab: inside it the image inverts and focuses twice.", thick="The thickness.", t="The scene's clock." ),
+    "tMirage": T( brief="Inferior mirage: the sky mirrored into the ground along a hot horizon, with a shimmer in the seam.", amp="The amplitude.", t="The scene's clock." ),
+    "tLangmuir": T( brief="Stage D: flows and waves ------------------------------------------------------------------------------------ Langmuir cells: counter-rotating roll pairs along the wind, drift lines gather in the convergence zones.", cells="The number of cells.", strength="The strength.", t="The scene's clock." ),
+    "tEkman": T( brief="Ekman spiral: the current turns with depth and thins: layers of the photo, each at another angle.", rate="The rate.", strength="The strength.", t="The scene's clock." ),
+    "tCapillary": T( brief="Capillary ring waves: short ripples round many sources, crossing into lattices.", n="The count.", strength="The strength.", t="The scene's clock." ),
+    "tSolitons": T( brief="KdV soliton train: sech^2 humps of different height that pass through each other; the photo rides them.", strength="The strength.", t="The scene's clock." ),
+    "airyApprox": { "brief": "Airy wave packet: displacement along a curve that accelerates like a parabola, with side lobes behind it.", "params": { "x": "The value." }, "return": "The value." },
+    "tAiryPacket": T( brief="A transform of the flat chain labs.", strength="The strength.", t="The scene's clock." ),
+    "tKida": T( brief="Kida vortex: an elliptical patch of constant vorticity, turning as a whole, its rim wavy.", ell="A parameter of the transform.", t="The scene's clock." ),
+    "tLambOseenRow": T( brief="Lamb-Oseen vortex row: soft vortices of alternating sense in a row (Gamma / 2 pi r^2 (1 - exp(-r^2 / rc^2))).", gap="A parameter of the transform.", t="The scene's clock." ),
+    "tFaraday": T( brief="Faraday standing waves: a vibrating surface's square or hexagonal standing wave pattern.", hex="A parameter of the transform.", strength="The strength.", t="The scene's clock." ),
+} )
+
 FUNC_DOCS.update( SCENES )
 
 # Corrections of texts a shader already carries but that were written for another overload of the same name (an

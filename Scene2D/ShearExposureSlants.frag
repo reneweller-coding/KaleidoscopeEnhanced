@@ -37,8 +37,8 @@ uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unw
 uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 
-uniform float lengthP; ///< Length knob: the base length of the exposure.
-uniform float reachP;  ///< Reach knob: the path's reach or the pivot's wandering.
+uniform float lengthP; ///< Length knob: the base length of the exposure, 0..1.
+uniform float reachP;  ///< Reach knob: the path's reach or the pivot's wandering, 0..1.
 uniform float hueP;    ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 // ---- shared building blocks (texture pool, noise, shapes) ----
@@ -496,21 +496,24 @@ void finish( vec3 col )
     fragColor = vec4( clamp( t, 0.0, 1.0 ), 1.0 );
 }
 
-
-// ---- the photo as a long exposure ----
-/**  The place a pixel reads at a point of the exposure's path (defined by the scene).
+/**  The path of the exposure: a shear.
  *
- * @param p  The pixel's place (screen units). (in)
+ * @param p  The pixel's place. (in)
  * @param u  The point on the path, -0.5..0.5. (in)
- * @param t  The scene's clock. (in)
+ * @param t  The clock. (in)
  *
  * @return
- *   The place to read (screen units).
+ *   The place to read.
  **/
-/// @cond
-vec2 expPath( vec2 p, float u, float t );
-/// @endcond
+vec2 expPath( vec2 p, float u, float t )
+{
+    float L = ( 0.45 + 0.9 * clamp( lengthP, 0.0, 1.0 ) ) * ( 0.5 + 0.9 * clamp( audioSwell, 0.0, 1.0 ) );
+    float R = 0.1 + 0.6 * clamp( reachP, 0.0, 1.0 );
+    float a = 0.8 * sin( 0.2 * t + 1.5 * p.x );
+    return vec2( p.x + 0.6 * L * u * p.y * cos( a ), p.y + 0.35 * L * u * p.x * sin( a ) );
+}
 
+// ---- the photo as a long exposure ----
 /**  The exposure: sixteen dithered readings of the photo along the path of expPath(), averaged (a long exposure),
  * lightened (the brightest and most colourful places leave sharp trails) or weighted with a comet's tail.
  *
@@ -547,22 +550,6 @@ vec3 expAccum( vec2 p, float t, int mode, float lodk )
     return mode == 1 ? mix( mean * 0.55, mx * 1.1, 0.85 ) : ( mode == 2 ? mean * 1.3 : mean );
 }
 
-/**  The path of the exposure: a shear.
- *
- * @param p  The pixel's place. (in)
- * @param u  The point on the path, -0.5..0.5. (in)
- * @param t  The clock. (in)
- *
- * @return
- *   The place to read.
- **/
-vec2 expPath( vec2 p, float u, float t )
-{
-    float L = ( 0.45 + 0.9 * clamp( lengthP, 0.0, 1.0 ) ) * ( 0.5 + 0.9 * clamp( audioSwell, 0.0, 1.0 ) );
-    float R = 0.1 + 0.6 * clamp( reachP, 0.0, 1.0 );
-    float a = 0.8 * sin( 0.2 * t + 1.5 * p.x );
-    return vec2( p.x + 0.6 * L * u * p.y * cos( a ), p.y + 0.35 * L * u * p.x * sin( a ) );
-}
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {

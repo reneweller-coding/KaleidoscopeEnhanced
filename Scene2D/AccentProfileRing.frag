@@ -44,7 +44,7 @@ uniform float audioSectionId; ///< Slot of the current song section in the analy
 uniform float audioSectionPrev; ///< Slot of the previous song section.
 uniform float audioSectionAge;  ///< Seconds since the current song section began.
 
-uniform float reachP; ///< Reach knob: how long the longest wedge is.
+uniform float reachP; ///< Reach knob: how long the longest wedge is, 0..1.
 uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 // @state 8 1 30 32
 uniform sampler2D texState;   ///< The scene's own field from the last step (EffectShader::stepState).

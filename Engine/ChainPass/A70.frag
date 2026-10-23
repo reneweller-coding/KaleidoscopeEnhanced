@@ -48,6 +48,17 @@ vec2 screenP()
 {
     return ( gl_FragCoord.xy / resolution - 0.5 ) * vec2( resolution.x / resolution.y, 1.0 );
 }
+/**  Gamma function's poles: the principal parts of Gamma at 0, -1, -2 ... (residues (-1)^k / k!), funnels in the
+ * plane.
+ *
+ * @param uv     The coordinate. (in)
+ * @param c      Centre of the transform. (in)
+ * @param shift  A parameter of the transform. (in)
+ * @param t      The scene's clock. (in)
+ *
+ * @return
+ *   The transformed coordinate.
+ **/
 vec2 tGammaPoles( vec2 uv, vec2 c, float shift, float t )
 {
     vec2  z = ( uv - c ) * 4.0 + vec2( -1.5 + shift + 0.4 * sin( t * 0.1 ), 0.0 );

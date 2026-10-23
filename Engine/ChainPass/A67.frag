@@ -83,6 +83,17 @@ vec2 cdiv( vec2 a, vec2 b )
 {
     return vec2( a.x * b.x + a.y * b.y, a.y * b.x - a.x * b.y ) / max( dot( b, b ), 1e-8 );
 }
+/**  Modular lambda function: lambda = (theta_2 / theta_3)^4 of the nome q = exp(i pi tau), three cusps 0, 1,
+ * infinity.
+ *
+ * @param uv     The coordinate. (in)
+ * @param c      Centre of the transform. (in)
+ * @param scale  The scale. (in)
+ * @param t      The scene's clock. (in)
+ *
+ * @return
+ *   The transformed coordinate.
+ **/
 vec2 tLambda( vec2 uv, vec2 c, float scale, float t )
 {
     vec2 tau = ( uv - c ) * scale + vec2( 0.5 * sin( t * 0.1 ), 0.0 );

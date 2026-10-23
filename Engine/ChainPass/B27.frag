@@ -48,6 +48,13 @@ vec2 screenP()
 {
     return ( gl_FragCoord.xy / resolution - 0.5 ) * vec2( resolution.x / resolution.y, 1.0 );
 }
+/**  Cantor mirror: the distance to the Cantor set along both axes (a devil's carpet of folds).
+ *
+ * @param x  The value. (in)
+ *
+ * @return
+ *   The value.
+ **/
 float cantorDist( float x )
 {
     x = abs( fract( x * 0.5 + 0.5 ) * 2.0 - 1.0 );
@@ -69,6 +76,16 @@ float cantorDist( float x )
     }
     return 0.0;
 }
+/**  A transform of the flat chain labs.
+ *
+ * @param uv     The coordinate. (in)
+ * @param c      Centre of the transform. (in)
+ * @param scale  The scale. (in)
+ * @param t      The scene's clock. (in)
+ *
+ * @return
+ *   The transformed coordinate.
+ **/
 vec2 tCantorMirror( vec2 uv, vec2 c, float scale, float t )
 {
     vec2 p = ( uv - c ) * scale + 0.5;

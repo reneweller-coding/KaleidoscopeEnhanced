@@ -48,6 +48,17 @@ vec2 screenP()
 {
     return ( gl_FragCoord.xy / resolution - 0.5 ) * vec2( resolution.x / resolution.y, 1.0 );
 }
+/**  Stage A: coordinate maps ------------------------------------------------------------------------------------
+ * Tinkerbell map: x' = x^2 - y^2 + a x + b y, y' = 2 x y + c x + d y, the strange attractor's loops.
+ *
+ * @param uv     The coordinate. (in)
+ * @param c      Centre of the transform. (in)
+ * @param steps  The number of steps. (in)
+ * @param t      The scene's clock. (in)
+ *
+ * @return
+ *   The transformed coordinate.
+ **/
 vec2 tTinkerbell( vec2 uv, vec2 c, float steps, float t )
 {
     vec2  p = ( uv - c ) * 2.0;

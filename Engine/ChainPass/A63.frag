@@ -72,6 +72,16 @@ vec2 cdiv( vec2 a, vec2 b )
 {
     return vec2( a.x * b.x + a.y * b.y, a.y * b.x - a.x * b.y ) / max( dot( b, b ), 1e-8 );
 }
+/**  Lemniscate coordinates: bipolar coordinates of z^2 with the poles +-a^2: figures of eight, the poles in the ears.
+ *
+ * @param uv  The coordinate. (in)
+ * @param c   Centre of the transform. (in)
+ * @param a   The first parameter. (in)
+ * @param t   The scene's clock. (in)
+ *
+ * @return
+ *   The transformed coordinate.
+ **/
 vec2 tLemniscate( vec2 uv, vec2 c, float a, float t )
 {
     vec2  z = ( uv - c ) * 3.0;

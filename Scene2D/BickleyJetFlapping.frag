@@ -38,7 +38,7 @@ uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unw
 uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 
-uniform float lengthP; ///< Length knob: the base smear length.
+uniform float lengthP; ///< Length knob: the base smear length, 0..1.
 uniform float scaleP;  ///< Scale knob.
 uniform float hueP;    ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
@@ -497,21 +497,27 @@ void finish( vec3 col )
     fragColor = vec4( clamp( t, 0.0, 1.0 ), 1.0 );
 }
 
-
-// ---- the photo smeared along a flow ----
-/**  The scene's velocity field (defined by the scene; the library only follows it).
+/**  The flow: a plane Bickley jet with a sinuous instability
  *
  * @param p   The place (screen units, y -0.5..0.5). (in)
- * @param t   The scene's flow clock. (in)
- * @param ch  The channel (0 for all colours; 0, 1, 2 where a scene sends each colour its own way). (in)
+ * @param t   The flow clock. (in)
+ * @param ch  The channel (unused: all colours follow the same flow). (in)
  *
  * @return
  *   The velocity.
  **/
-/// @cond
-vec2 licVel( vec2 p, float t, int ch );
-/// @endcond
+vec2 licVel( vec2 p, float t, int ch )
+{
+    vec2  q = p * ( 1.8 + 3.0 * clamp( scaleP, 0.0, 1.0 ) );
+    float eps = 0.25 + 0.5 * clamp( audioSwell, 0.0, 1.0 );
+    float k = 1.8;
+    float s = 1.0 / cosh( q.y * 1.3 );
+    float s2 = s * s;
+    float ph = k * q.x - 0.5 * t;
+    return vec2( s2 - eps * 2.0 * s2 * tanh( q.y * 1.3 ) * cos( ph ), eps * k * s2 * sin( ph ) ) * 1.2;
+}
 
+// ---- the photo smeared along a flow ----
 /**  The photo gathered along the streamline through a place (a line-integral convolution): fourteen dithered steps,
  * seven each way, a tapering kernel, the photo read at a coarser level the farther the step.
  *
@@ -545,25 +551,6 @@ vec3 licSmear( vec2 p, float t, float len, int ch )
     return sum / ws;
 }
 
-/**  The flow: a plane Bickley jet with a sinuous instability
- *
- * @param p   The place (screen units, y -0.5..0.5). (in)
- * @param t   The flow clock. (in)
- * @param ch  The channel (unused: all colours follow the same flow). (in)
- *
- * @return
- *   The velocity.
- **/
-vec2 licVel( vec2 p, float t, int ch )
-{
-    vec2  q = p * ( 1.8 + 3.0 * clamp( scaleP, 0.0, 1.0 ) );
-    float eps = 0.25 + 0.5 * clamp( audioSwell, 0.0, 1.0 );
-    float k = 1.8;
-    float s = 1.0 / cosh( q.y * 1.3 );
-    float s2 = s * s;
-    float ph = k * q.x - 0.5 * t;
-    return vec2( s2 - eps * 2.0 * s2 * tanh( q.y * 1.3 ) * cos( ph ), eps * k * s2 * sin( ph ) ) * 1.2;
-}
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {

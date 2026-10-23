@@ -60,6 +60,16 @@ vec2 screenP()
 {
     return ( gl_FragCoord.xy / resolution - 0.5 ) * vec2( resolution.x / resolution.y, 1.0 );
 }
+/**  Gosper fold: seven-fold flowsnake, scale sqrt 7 and the angle 19.1 degrees, the fold across the axis.
+ *
+ * @param uv     The coordinate. (in)
+ * @param c      Centre of the transform. (in)
+ * @param iters  The number of iterations. (in)
+ * @param turn   A parameter of the transform. (in)
+ *
+ * @return
+ *   The transformed coordinate.
+ **/
 vec2 tGosperFold( vec2 uv, vec2 c, float iters, float turn )
 {
     vec2  p = rot2( turn ) * ( uv - c ) * 2.0;

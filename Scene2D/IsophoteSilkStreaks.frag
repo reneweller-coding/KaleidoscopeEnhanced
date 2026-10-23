@@ -38,7 +38,7 @@ uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unw
 uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 
-uniform float lengthP; ///< Length knob: the base smear length.
+uniform float lengthP; ///< Length knob: the base smear length, 0..1.
 uniform float scaleP;  ///< Scale knob.
 uniform float hueP;    ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
@@ -497,21 +497,26 @@ void finish( vec3 col )
     fragColor = vec4( clamp( t, 0.0, 1.0 ), 1.0 );
 }
 
-
-// ---- the photo smeared along a flow ----
-/**  The scene's velocity field (defined by the scene; the library only follows it).
+/**  The flow: the photo smeared along its own contour lines (perpendicular to the gradient)
  *
  * @param p   The place (screen units, y -0.5..0.5). (in)
- * @param t   The scene's flow clock. (in)
- * @param ch  The channel (0 for all colours; 0, 1, 2 where a scene sends each colour its own way). (in)
+ * @param t   The flow clock. (in)
+ * @param ch  The channel (unused: all colours follow the same flow). (in)
  *
  * @return
  *   The velocity.
  **/
-/// @cond
-vec2 licVel( vec2 p, float t, int ch );
-/// @endcond
+vec2 licVel( vec2 p, float t, int ch )
+{
+    vec2  q = p * ( 1.8 + 3.0 * clamp( scaleP, 0.0, 1.0 ) );
+    vec2  uv = p * 0.8 + 0.5;
+    float e = 0.01;
+    vec2  g = vec2( luma( imgLod( uv + vec2( e, 0.0 ), 3.2 ) ) - luma( imgLod( uv - vec2( e, 0.0 ), 3.2 ) ),
+                    luma( imgLod( uv + vec2( 0.0, e ), 3.2 ) ) - luma( imgLod( uv - vec2( 0.0, e ), 3.2 ) ) );
+    return vec2( -g.y, g.x ) * 45.0 + 0.15 * vec2( cos( 0.1 * t ), sin( 0.1 * t ) );
+}
 
+// ---- the photo smeared along a flow ----
 /**  The photo gathered along the streamline through a place (a line-integral convolution): fourteen dithered steps,
  * seven each way, a tapering kernel, the photo read at a coarser level the farther the step.
  *
@@ -545,24 +550,6 @@ vec3 licSmear( vec2 p, float t, float len, int ch )
     return sum / ws;
 }
 
-/**  The flow: the photo smeared along its own contour lines (perpendicular to the gradient)
- *
- * @param p   The place (screen units, y -0.5..0.5). (in)
- * @param t   The flow clock. (in)
- * @param ch  The channel (unused: all colours follow the same flow). (in)
- *
- * @return
- *   The velocity.
- **/
-vec2 licVel( vec2 p, float t, int ch )
-{
-    vec2  q = p * ( 1.8 + 3.0 * clamp( scaleP, 0.0, 1.0 ) );
-    vec2  uv = p * 0.8 + 0.5;
-    float e = 0.01;
-    vec2  g = vec2( luma( imgLod( uv + vec2( e, 0.0 ), 3.2 ) ) - luma( imgLod( uv - vec2( e, 0.0 ), 3.2 ) ),
-                    luma( imgLod( uv + vec2( 0.0, e ), 3.2 ) ) - luma( imgLod( uv - vec2( 0.0, e ), 3.2 ) ) );
-    return vec2( -g.y, g.x ) * 45.0 + 0.15 * vec2( cos( 0.1 * t ), sin( 0.1 * t ) );
-}
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {

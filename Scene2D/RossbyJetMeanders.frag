@@ -497,21 +497,29 @@ void finish( vec3 col )
     fragColor = vec4( clamp( t, 0.0, 1.0 ), 1.0 );
 }
 
-
-// ---- the photo smeared along a flow ----
-/**  The scene's velocity field (defined by the scene; the library only follows it).
+/**  The flow: a jet stream with travelling Rossby waves
  *
  * @param p   The place (screen units, y -0.5..0.5). (in)
- * @param t   The scene's flow clock. (in)
- * @param ch  The channel (0 for all colours; 0, 1, 2 where a scene sends each colour its own way). (in)
+ * @param t   The flow clock. (in)
+ * @param ch  The channel (unused: all colours follow the same flow). (in)
  *
  * @return
  *   The velocity.
  **/
-/// @cond
-vec2 licVel( vec2 p, float t, int ch );
-/// @endcond
+vec2 licVel( vec2 p, float t, int ch )
+{
+    vec2  q = p * ( 1.8 + 3.0 * clamp( scaleP, 0.0, 1.0 ) );
+    float k = 3.0;
+    float amp = 0.15 + 0.25 * clamp( audioSwell, 0.0, 1.0 );
+    float eta = amp * sin( k * q.x * 0.5 - 0.5 * t ) + 0.4 * amp * sin( 2.3 * k * q.x * 0.5 + 0.9 * t );
+    float etax = amp * 0.5 * k * cos( k * q.x * 0.5 - 0.5 * t )
+                 + 0.4 * amp * 1.15 * k * cos( 2.3 * k * q.x * 0.5 + 0.9 * t );
+    float s = ( q.y * 0.5 - eta ) / 0.22;
+    float sech2 = 1.0 / ( cosh( s ) * cosh( s ) );
+    return sech2 * vec2( 1.0, etax * 0.5 ) * 1.1 + 0.2 * tanh( s ) * vec2( 0.0, 0.5 );
+}
 
+// ---- the photo smeared along a flow ----
 /**  The photo gathered along the streamline through a place (a line-integral convolution): fourteen dithered steps,
  * seven each way, a tapering kernel, the photo read at a coarser level the farther the step.
  *
@@ -545,27 +553,6 @@ vec3 licSmear( vec2 p, float t, float len, int ch )
     return sum / ws;
 }
 
-/**  The flow: a jet stream with travelling Rossby waves
- *
- * @param p   The place (screen units, y -0.5..0.5). (in)
- * @param t   The flow clock. (in)
- * @param ch  The channel (unused: all colours follow the same flow). (in)
- *
- * @return
- *   The velocity.
- **/
-vec2 licVel( vec2 p, float t, int ch )
-{
-    vec2  q = p * ( 1.8 + 3.0 * clamp( scaleP, 0.0, 1.0 ) );
-    float k = 3.0;
-    float amp = 0.15 + 0.25 * clamp( audioSwell, 0.0, 1.0 );
-    float eta = amp * sin( k * q.x * 0.5 - 0.5 * t ) + 0.4 * amp * sin( 2.3 * k * q.x * 0.5 + 0.9 * t );
-    float etax = amp * 0.5 * k * cos( k * q.x * 0.5 - 0.5 * t )
-                 + 0.4 * amp * 1.15 * k * cos( 2.3 * k * q.x * 0.5 + 0.9 * t );
-    float s = ( q.y * 0.5 - eta ) / 0.22;
-    float sech2 = 1.0 / ( cosh( s ) * cosh( s ) );
-    return sech2 * vec2( 1.0, etax * 0.5 ) * 1.1 + 0.2 * tanh( s ) * vec2( 0.0, 0.5 );
-}
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {

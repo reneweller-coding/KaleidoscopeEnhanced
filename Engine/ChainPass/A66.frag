@@ -59,6 +59,16 @@ vec2 cexpi( float a )
 {
     return vec2( cos( a ), sin( a ) );
 }
+/**  Epitrochoid unrolling: the point moves as the pen of a gear rolling in a ring: rho (e^{i th} - d e^{i (m+1) th}).
+ *
+ * @param uv  The coordinate. (in)
+ * @param c   Centre of the transform. (in)
+ * @param m   A parameter of the transform. (in)
+ * @param t   The scene's clock. (in)
+ *
+ * @return
+ *   The transformed coordinate.
+ **/
 vec2 tEpitrochoid( vec2 uv, vec2 c, float m, float t )
 {
     vec2  d = uv - c;

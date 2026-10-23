@@ -48,6 +48,17 @@ vec2 screenP()
 {
     return ( gl_FragCoord.xy / resolution - 0.5 ) * vec2( resolution.x / resolution.y, 1.0 );
 }
+/**  Ford circles: the point is inverted in the circle that holds it (p/q, radius 1/(2 q^2)), mirror-periodic along
+ * the axis.
+ *
+ * @param uv    The coordinate. (in)
+ * @param c     Centre of the transform. (in)
+ * @param rank  A parameter of the transform. (in)
+ * @param t     The scene's clock. (in)
+ *
+ * @return
+ *   The transformed coordinate.
+ **/
 vec2 tFord( vec2 uv, vec2 c, float rank, float t )
 {
     vec2 z = vec2( abs( fract( ( uv.x - c.x + 0.5 ) * 0.5 ) * 2.0 - 1.0 ),

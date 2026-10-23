@@ -28,7 +28,7 @@ void main()
     vec2 p = screenP();
     vec4 st = texelFetch(texState, ivec2(0, 0), 0);
     float K = 2.0 + 4.0 * (1.0 - clamp(waveP, 0.0, 1.0));
-    float gr = 0.05 + 0.3 * clamp(st.x * 2.0, 0.0, 1.0) + 0.05 * clamp(audioSwell, 0.0, 1.0);
+    float gr = 0.14 + 0.28 * clamp(st.x * 2.0, 0.0, 1.0) + 0.05 * clamp(audioSwell, 0.0, 1.0);
     float amp = gr / (6.2831853 * K);
     vec2 c1 = vec2(-0.2, 0.05), c2 = vec2(0.45, -0.12);
     vec2 d1 = p - c1, d2 = p - c2;

@@ -39,7 +39,7 @@ uniform float audioSnare;     ///< Snare envelope, 0..1.
 uniform float audioHat;       ///< Hi-hat / cymbal onset envelope, 0..1.
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 
-uniform float gainP; ///< Gain knob: how strongly the detail levels show.
+uniform float gainP; ///< Gain knob: how strongly the detail levels show, 0..1.
 uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 // @state 3 1 30 32
 uniform sampler2D texState;   ///< The scene's own field from the last step (EffectShader::stepState).

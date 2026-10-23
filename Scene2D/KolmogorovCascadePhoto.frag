@@ -40,7 +40,7 @@ uniform float audioPhase;     ///< Rotation phase driven by the music (integrate
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 uniform float audioSpread;    ///< Spectral spread, 0..1.
 
-uniform float lengthP; ///< Length knob: the base smear length.
+uniform float lengthP; ///< Length knob: the base smear length, 0..1.
 uniform float scaleP;  ///< Scale knob.
 uniform float hueP;    ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
@@ -499,21 +499,34 @@ void finish( vec3 col )
     fragColor = vec4( clamp( t, 0.0, 1.0 ), 1.0 );
 }
 
-
-// ---- the photo smeared along a flow ----
-/**  The scene's velocity field (defined by the scene; the library only follows it).
+/**  The flow: a field of eddies of all sizes with a Kolmogorov spectrum (k to the minus five thirds) carrying the
+ * photo
  *
  * @param p   The place (screen units, y -0.5..0.5). (in)
- * @param t   The scene's flow clock. (in)
- * @param ch  The channel (0 for all colours; 0, 1, 2 where a scene sends each colour its own way). (in)
+ * @param t   The flow clock. (in)
+ * @param ch  The channel (unused: all colours follow the same flow). (in)
  *
  * @return
  *   The velocity.
  **/
-/// @cond
-vec2 licVel( vec2 p, float t, int ch );
-/// @endcond
+vec2 licVel( vec2 p, float t, int ch )
+{
+    vec2  q = p * ( 1.8 + 3.0 * clamp( scaleP, 0.0, 1.0 ) );
+    vec2  v = vec2( 0.0 );
+    float hi = 0.3 + 0.7 * clamp( audioSpread, 0.0, 1.0 );
+    for ( int i = 0; i < 8; ++i )
+    {
+        float fi = float( i );
+        float kk = exp2( 0.5 * fi ) * 0.8;
+        float a = 2.399 * fi;
+        vec2  kd = vec2( cos( a ), sin( a ) );
+        float amp = pow( kk, -0.833 ) * ( i >= 5 ? hi : 1.0 );
+        v += amp * vec2( -kd.y, kd.x ) * cos( kk * dot( kd, q ) + 1.7 * fi + ( 0.2 + 0.06 * fi ) * t );
+    }
+    return v * 0.7;
+}
 
+// ---- the photo smeared along a flow ----
 /**  The photo gathered along the streamline through a place (a line-integral convolution): fourteen dithered steps,
  * seven each way, a tapering kernel, the photo read at a coarser level the farther the step.
  *
@@ -547,32 +560,6 @@ vec3 licSmear( vec2 p, float t, float len, int ch )
     return sum / ws;
 }
 
-/**  The flow: a field of eddies of all sizes with a Kolmogorov spectrum (k to the minus five thirds) carrying the
- * photo
- *
- * @param p   The place (screen units, y -0.5..0.5). (in)
- * @param t   The flow clock. (in)
- * @param ch  The channel (unused: all colours follow the same flow). (in)
- *
- * @return
- *   The velocity.
- **/
-vec2 licVel( vec2 p, float t, int ch )
-{
-    vec2  q = p * ( 1.8 + 3.0 * clamp( scaleP, 0.0, 1.0 ) );
-    vec2  v = vec2( 0.0 );
-    float hi = 0.3 + 0.7 * clamp( audioSpread, 0.0, 1.0 );
-    for ( int i = 0; i < 8; ++i )
-    {
-        float fi = float( i );
-        float kk = exp2( 0.5 * fi ) * 0.8;
-        float a = 2.399 * fi;
-        vec2  kd = vec2( cos( a ), sin( a ) );
-        float amp = pow( kk, -0.833 ) * ( i >= 5 ? hi : 1.0 );
-        v += amp * vec2( -kd.y, kd.x ) * cos( kk * dot( kd, q ) + 1.7 * fi + ( 0.2 + 0.06 * fi ) * t );
-    }
-    return v * 0.7;
-}
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {

@@ -60,6 +60,17 @@ vec2 screenP()
 {
     return ( gl_FragCoord.xy / resolution - 0.5 ) * vec2( resolution.x / resolution.y, 1.0 );
 }
+/**  Compound eye: a grid of lenslets, each showing the photo a little turned and flipped (displacement dies at the
+ * cell edge).
+ *
+ * @param uv     The coordinate. (in)
+ * @param c      Centre of the transform. (in)
+ * @param cells  The number of cells. (in)
+ * @param t      The scene's clock. (in)
+ *
+ * @return
+ *   The transformed coordinate.
+ **/
 vec2 tCompoundEye( vec2 uv, vec2 c, float cells, float t )
 {
     vec2  q = ( uv - c ) * cells;

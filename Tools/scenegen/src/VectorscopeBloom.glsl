@@ -38,8 +38,8 @@ void main()
 {
     if (statePass == 1) { fragColor = stateStep(); return; }
     vec2 p = screenP();
-    float sc = 0.7 * (0.85 + 0.3 * clamp(audioSwell, 0.0, 1.0));
-    vec2 q = rot2(0.1 * audioPhase + 0.01 * sceneTime) * p * 0.6 / sc / 0.9;
+    float sc = 0.7 * (0.85 + 0.3 * clamp(audioSwell, 0.0, 1.0)) * (1.0 + 0.08 * sin(0.5 * sceneTime));
+    vec2 q = rot2(0.1 * audioPhase + 0.05 * sceneTime) * p * 0.6 / sc / 0.9;
     float rd = 0.8 + 2.0 * clamp(glowP, 0.0, 1.0);
     float d = 0.0;
     for (int k = 0; k < 8; ++k) {

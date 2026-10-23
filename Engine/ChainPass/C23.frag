@@ -48,6 +48,16 @@ vec2 screenP()
 {
     return ( gl_FragCoord.xy / resolution - 0.5 ) * vec2( resolution.x / resolution.y, 1.0 );
 }
+/**  Maxwell fish eye: every point is imaged on another, the photo turned inside out in a disc (blended into the rim).
+ *
+ * @param uv  The coordinate. (in)
+ * @param c   Centre of the transform. (in)
+ * @param R   The radius. (in)
+ * @param t   The scene's clock. (in)
+ *
+ * @return
+ *   The transformed coordinate.
+ **/
 vec2 tMaxwell( vec2 uv, vec2 c, float R, float t )
 {
     vec2  d = ( uv - c ) / R;

@@ -45,7 +45,7 @@ uniform float audioSectionId; ///< Slot of the current song section in the analy
 uniform float audioSectionPrev; ///< Slot of the previous song section.
 uniform float audioSectionAge;  ///< Seconds since the current song section began.
 
-uniform float shiftP; ///< Shift knob: how far the cells are displaced.
+uniform float shiftP; ///< Shift knob: how far the cells are displaced, 0..1.
 uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 // @state 1 1 30 32
 uniform sampler2D texState;   ///< The scene's own field from the last step (EffectShader::stepState).

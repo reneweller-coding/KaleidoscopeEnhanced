@@ -60,6 +60,16 @@ vec2 screenP()
 {
     return ( gl_FragCoord.xy / resolution - 0.5 ) * vec2( resolution.x / resolution.y, 1.0 );
 }
+/**  Kida vortex: an elliptical patch of constant vorticity, turning as a whole, its rim wavy.
+ *
+ * @param uv   The coordinate. (in)
+ * @param c    Centre of the transform. (in)
+ * @param ell  A parameter of the transform. (in)
+ * @param t    The scene's clock. (in)
+ *
+ * @return
+ *   The transformed coordinate.
+ **/
 vec2 tKida( vec2 uv, vec2 c, float ell, float t )
 {
     vec2  d = rot2( 0.1 * t ) * ( uv - c );
