@@ -19625,4 +19625,180 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
 
+  <TextureShader file="..\\Scene2D\\ZoomBurstRose.frag" type="normal" mood="dreamy,calm,bright" probability="0.45" complexity="5">
+    <rig preset="flat"/>
+    <float name="lengthP" minValue="0" maxValue="1"></float>
+    <float name="reachP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene2D\\SpinExposureWheel.frag" type="normal" mood="dreamy,calm,bright" probability="0.45" complexity="5">
+    <rig preset="flat"/>
+    <float name="lengthP" minValue="0" maxValue="1"></float>
+    <float name="reachP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene2D\\PhotoStarTrails.frag" type="normal" mood="dreamy,calm,bright" probability="0.45" complexity="5">
+    <rig preset="flat"/>
+    <float name="lengthP" minValue="0" maxValue="1"></float>
+    <float name="reachP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene2D\\LogSpiralExposure.frag" type="normal" mood="dreamy,calm,bright" probability="0.45" complexity="5">
+    <rig preset="flat"/>
+    <float name="lengthP" minValue="0" maxValue="1"></float>
+    <float name="reachP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene2D\\ParallaxDollyStreaks.frag" type="normal" mood="dreamy,calm,bright" probability="0.45" complexity="5">
+    <rig preset="flat"/>
+    <float name="lengthP" minValue="0" maxValue="1"></float>
+    <float name="reachP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene2D\\RollingShutterPropeller.frag" type="normal" mood="dreamy,calm,bright" probability="0.45" complexity="5">
+    <rig preset="flat"/>
+    <float name="lengthP" minValue="0" maxValue="1"></float>
+    <float name="reachP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene2D\\LissajousShiftTrails.frag" type="normal" mood="dreamy,calm,bright" probability="0.45" complexity="5">
+    <rig preset="flat"/>
+    <float name="lengthP" minValue="0" maxValue="1"></float>
+    <float name="reachP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene2D\\CounterRotationDoubleExposure.frag" type="normal" mood="dreamy,calm,bright" probability="0.45" complexity="5">
+    <rig preset="flat"/>
+    <float name="lengthP" minValue="0" maxValue="1"></float>
+    <float name="reachP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene2D\\HyperbolaSqueezeExposure.frag" type="normal" mood="dreamy,calm,bright" probability="0.45" complexity="5">
+    <rig preset="flat"/>
+    <float name="lengthP" minValue="0" maxValue="1"></float>
+    <float name="reachP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene2D\\ShearExposureSlants.frag" type="normal" mood="dreamy,calm,bright" probability="0.45" complexity="5">
+    <rig preset="flat"/>
+    <float name="lengthP" minValue="0" maxValue="1"></float>
+    <float name="reachP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene2D\\ProjectileArcExposure.frag" type="normal" mood="dreamy,calm,bright" probability="0.45" complexity="5">
+    <rig preset="flat"/>
+    <float name="lengthP" minValue="0" maxValue="1"></float>
+    <float name="reachP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene2D\\EllipseOrbitBlur.frag" type="normal" mood="dreamy,calm,bright" probability="0.45" complexity="5">
+    <rig preset="flat"/>
+    <float name="lengthP" minValue="0" maxValue="1"></float>
+    <float name="reachP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene2D\\VoronoiSpinBlur.frag" type="normal" mood="dreamy,calm,bright" probability="0.45" complexity="5">
+    <rig preset="flat"/>
+    <float name="lengthP" minValue="0" maxValue="1"></float>
+    <float name="reachP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene2D\\StroboscopicCopies.frag" type="normal" mood="dreamy,calm,bright" probability="0.45" complexity="5">
+    <rig preset="flat"/>
+    <float name="lengthP" minValue="0" maxValue="1"></float>
+    <float name="reachP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene2D\\LightenStackSpiral.frag" type="normal" mood="dreamy,calm,bright" probability="0.45" complexity="5">
+    <rig preset="flat"/>
+    <float name="lengthP" minValue="0" maxValue="1"></float>
+    <float name="reachP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene2D\\LightenStackFan.frag" type="normal" mood="dreamy,calm,bright" probability="0.45" complexity="5">
+    <rig preset="flat"/>
+    <float name="lengthP" minValue="0" maxValue="1"></float>
+    <float name="reachP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene2D\\PanTrackStreak.frag" type="normal" mood="dreamy,calm,bright" probability="0.45" complexity="5">
+    <rig preset="flat"/>
+    <float name="lengthP" minValue="0" maxValue="1"></float>
+    <float name="reachP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene2D\\HarmonographExposure.frag" type="normal" mood="dreamy,calm,bright" probability="0.45" complexity="5">
+    <rig preset="flat"/>
+    <float name="lengthP" minValue="0" maxValue="1"></float>
+    <float name="reachP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene2D\\WhipPanSmear.frag" type="normal" mood="dreamy,calm,bright" probability="0.45" complexity="5">
+    <rig preset="flat"/>
+    <float name="lengthP" minValue="0" maxValue="1"></float>
+    <float name="reachP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene2D\\TiltShiftBandSweep.frag" type="normal" mood="dreamy,calm,bright" probability="0.45" complexity="5">
+    <rig preset="flat"/>
+    <float name="lengthP" minValue="0" maxValue="1"></float>
+    <float name="reachP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene2D\\FoucaultStreakPlane.frag" type="normal" mood="dreamy,calm,bright" probability="0.45" complexity="5">
+    <rig preset="flat"/>
+    <float name="lengthP" minValue="0" maxValue="1"></float>
+    <float name="reachP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene2D\\ThreeHandExposure.frag" type="normal" mood="dreamy,calm,bright" probability="0.45" complexity="5">
+    <rig preset="flat"/>
+    <float name="lengthP" minValue="0" maxValue="1"></float>
+    <float name="reachP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
 </configuration>

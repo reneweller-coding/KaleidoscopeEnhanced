@@ -520,6 +520,53 @@ vec3 licSmear(vec2 p, float t, float len, int ch)
 }
 """
 
+# Long exposures of the photo (family J of docs/proposals-2026-10-23-flaechig-400.md): a scene defines expPath() and gathers the photo along it
+# with expAccum().  Appended for sources that call expAccum(.
+EXPO_LIB = r"""
+// ---- the photo as a long exposure ----
+/**  The place a pixel reads at a point of the exposure's path (defined by the scene).
+ *
+ * @param p  The pixel's place (screen units). (in)
+ * @param u  The point on the path, -0.5..0.5. (in)
+ * @param t  The scene's clock. (in)
+ *
+ * @return
+ *   The place to read (screen units).
+ **/
+vec2 expPath(vec2 p, float u, float t);
+
+/**  The exposure: sixteen dithered readings of the photo along the path of expPath(), averaged (a long exposure), lightened
+ * (the brightest and most colourful places leave sharp trails) or weighted with a comet's tail.
+ *
+ * @param p     The pixel's place. (in)
+ * @param t     The clock. (in)
+ * @param mode  0 mean, 1 lighten stack, 2 comet (the weights fall off along the path). (in)
+ * @param lodk  How much coarser the reads get toward the ends of the path (mip levels). (in)
+ *
+ * @return
+ *   The colour.
+ **/
+vec3 expAccum(vec2 p, float t, int mode, float lodk)
+{
+    vec3 sum = vec3(0.0);
+    vec3 mx = vec3(0.0);
+    float best = -1.0;
+    float ws = 0.0;
+    float jit = hash21(gl_FragCoord.xy) - 0.5;
+    for (int i = 0; i < 16; ++i) {
+        float u = (float(i) + jit) / 15.0 - 0.5;
+        vec3 c = imgLod(expPath(p, u, t) * 0.8 + 0.5, 0.5 + lodk * abs(u));
+        float w = mode == 2 ? exp(-3.0 * (u + 0.5)) : 1.0;
+        sum += w * c;
+        ws += w;
+        float score = luma(c) * (0.3 + 2.0 * satOf(c));
+        if (score > best) { best = score; mx = c; }
+    }
+    vec3 mean = sum / ws;
+    return mode == 1 ? mix(mean * 0.55, mx * 1.1, 0.85) : (mode == 2 ? mean * 1.3 : mean);
+}
+"""
+
 # Scenes with a field of their own (//@state W H RATE [32], EffectShader::stepState): the step's helpers.
 STATE_LIB = r"""
 // ---- the scene's own field (state pass) ----
@@ -2987,6 +3034,8 @@ def assemble(name):
         out.append(FRAC_LIB)
     if re.search(r"\blicSmear\s*\(", src):
         out.append(LIC_LIB)
+    if re.search(r"\bexpAccum\s*\(", src):
+        out.append(EXPO_LIB)
     if st:
         out.append(STATE_LIB)
     if re.search(r"vec2\s+chain\s*\(", body):
