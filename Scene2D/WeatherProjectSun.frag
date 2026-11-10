@@ -338,11 +338,11 @@ void main()
         // The mirror ceiling: continue the ray downward from the hit point.
         vec3  P = ro + rd * t;
         vec3  rd2 = vec3( rd.x, -rd.y, rd.z );
-        int   mat2;
-        float t2 = traceBox( P + rd2 * 0.01, rd2, mat2 );
+        int   mat_hit;
+        float t2 = traceBox( P + rd2 * 0.01, rd2, mat_hit );
         float cov2;
         float tp2 = people( P, rd2, t2, cov2 );
-        float s2 = shade( P + rd2 * t2, mat2, t + t2 ) * sun_i;
+        float s2 = shade( P + rd2 * t2, mat_hit, t + t2 ) * sun_i;
         s2 *= 1.0 - cov2 * ( tp2 < 1e8 ? 1.0 : 0.0 );
         float T2 = exp( -rho * t2 );
         s2 = s2 * T2 + rho * sun_i * 2.2 * inscatter( P, rd2, t2 );

@@ -405,6 +405,11 @@ struct AudioFeatures
     float sectionNovelty = 0.f;   ///< The novelty behind #sectionCount, over its own median of the last minute (~1
                                   ///< ordinary, a section change needs #sectionThreshold).
     float sectionThreshold = 3.f; ///< The relative novelty a section change must exceed.
+    // The tempo's two sources before they are combined, for Tools/tempo_vs_cues.py (not sent to any shader).
+    float tempoAc = 0.f;            ///< The autocorrelation's tempo in BPM (0 = none).
+    float tempoAcConf = 0.f;        ///< Its confidence, 0..1.
+    float tempoKick = 0.f;          ///< The tempo the kick intervals give in BPM (0 = none).
+    float tempoKickExplained = 0.f; ///< The share of the kick intervals that tempo explains, 0..1.
     /** Song-structure memory: id of the CURRENT section.
      *
      * Index into the analyzer's fingerprint store, assigned at each section

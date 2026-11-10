@@ -503,9 +503,9 @@ void main()
     vec2  p = screenP();
     vec2  uv = p * 0.85 + 0.5;
     float a = 0.08 * audioHarmAdvance + 0.04 * sceneTime;
-    vec3  cast = vec3( 1.0 + 0.55 * sin( a ), 1.0 + 0.3 * sin( a + 2.1 ), 1.0 + 0.55 * sin( a + 4.2 ) );
-    vec3  c = imgLod( uv, 0.6 ) * cast;
-    vec3  mean_ = imgLod( uv, 6.5 - 1.5 * clamp( sizeP, 0.0, 1.0 ) ) * cast;
+    vec3  tint = vec3( 1.0 + 0.55 * sin( a ), 1.0 + 0.3 * sin( a + 2.1 ), 1.0 + 0.55 * sin( a + 4.2 ) );
+    vec3  c = imgLod( uv, 0.6 ) * tint;
+    vec3  mean_ = imgLod( uv, 6.5 - 1.5 * clamp( sizeP, 0.0, 1.0 ) ) * tint;
     float gm = luma( mean_ );
     vec3  rec = c / max( mean_, vec3( 0.05 ) ) * ( 0.35 + 0.4 * gm ) * 1.2;
     float ang = 1.2;

@@ -2173,6 +2173,9 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
                     sum += env[i] * env[i + lag];
                 ac[lag] = sum / var;
             }
+            // Tried and dropped (10.11.2026): letting the double lag support a lag (Ellis' duple weighting), against
+            // the dotted-quarter readings (92 for a trance at 138).  Right tempo 81 -> 84 % at 90..135 BPM, but
+            // 78 -> 54 % above 135: in the 4-s window three beats of a fast track correlate as well as two.
             float peak = 0.f, positive = 0.f, best_score = 0.f;
             int   best_lag = 0;
             for ( int lag = lag_lo; lag <= lag_hi; ++lag )
@@ -2319,8 +2322,11 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
             if ( period > 0.f )
             {
                 const float bpm = 60.f / period;
-                // Smooth BPM estimate (slow — tempo should drift, not jump); the first estimate is taken as it is.
-                m_smoothedBPM = m_smoothedBPM < 1.f ? bpm : 0.85f * m_smoothedBPM + 0.15f * bpm;
+                m_kickBPM = bpm;
+                // The kick intervals set the tempo only until the autocorrelation has one (10.11.2026, see below):
+                // smooth and slow, the first estimate taken as it is.
+                if ( m_acBPM < 1.f )
+                    m_smoothedBPM = m_smoothedBPM < 1.f ? bpm : 0.85f * m_smoothedBPM + 0.15f * bpm;
             }
         }
     }
@@ -2341,22 +2347,36 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
     // intervals and sit at a simple ratio to the autocorrelation -- its double
     // or half, or the 3:2 of a two-step (174 against 116.6) -- that ratio is
     // the metre, and the tempo is the autocorrelation's times it.
-    const bool kicks_explain = m_ioiCount >= 6 && m_ioiExplained >= 0.75f;
-    if ( m_acConf > 0.35f && m_acBPM > 1.f )
+    //
+    // The autocorrelation leads at any confidence (10.11.2026).  With the two
+    // sources logged per block (AudioFeatures::tempoAc / tempoKick,
+    // Tools/tempo_vs_cues.py) the kick tempo alone was right in 17 % of the
+    // rhythmic time of the 43 demos and the autocorrelation alone in 50 %, yet
+    // below a confidence of 0.35 the kicks used to set the tempo, and on every
+    // kick they pulled at it.  Now they set it only until the autocorrelation
+    // has a tempo at all; an unsure autocorrelation is followed slowly (two
+    // seconds), so the tempo neither jitters nor sticks.  Of the metres only
+    // the two-step's 3:2 stays: the kicks' double and half turned more right
+    // tempos into octave errors than the reverse, and their 2:3 was wrong
+    // whenever it fired (an uplifting trance read 92 for 138 in 30 % of its
+    // time).  Replayed on the logged sources: right 43 -> 50 %, on the beat
+    // grid (right, double or half) 66 -> 69 %, above 90 BPM 74 -> 80 %.  The
+    // 3:2 needs kicks that explain 95 % of their intervals (a clean two-step):
+    // from 75 % it was wrong as often as right on the demos and read a real
+    // psytrance track at 180 for 120 in a quarter of its time.
+    const bool kicks_explain = m_ioiCount >= 6 && m_ioiExplained >= 0.95f;
+    if ( m_acBPM > 1.f )
     {
         float target = fold_bpm( m_acBPM );
-        if ( kicks_explain && m_smoothedBPM > 1.f )
-        {
-            static const float Metre[] = { 2.f, 0.5f, 1.5f, 2.f / 3.f };
-            const float        ratio = m_smoothedBPM / target;
-            for ( float m : Metre )
-                if ( std::fabs( ratio / m - 1.f ) < 0.03f )
-                    target *= m;
-        }
+        if ( kicks_explain && m_kickBPM > 1.f && std::fabs( m_kickBPM / target / 1.5f - 1.f ) < 0.03f )
+            target *= 1.5f;
         if ( m_smoothedBPM < 1.f )
             m_smoothedBPM = target;
         else
-            m_smoothedBPM = 0.9f * m_smoothedBPM + 0.1f * target;
+        {
+            const float follow = ( m_acConf > 0.2f ) ? 0.1f : 0.005f;
+            m_smoothedBPM = ( 1.f - follow ) * m_smoothedBPM + follow * target;
+        }
     }
     m_smoothedBPM = fold_bpm( m_smoothedBPM );
 
@@ -3803,6 +3823,10 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
     m_features.sectionCount = m_sectionCount;
     m_features.sectionNovelty = m_secNovelty;
     m_features.sectionThreshold = m_secThr;
+    m_features.tempoAc = m_acBPM;
+    m_features.tempoAcConf = m_acConf;
+    m_features.tempoKick = m_kickBPM;
+    m_features.tempoKickExplained = ( m_ioiCount >= 6 ) ? m_ioiExplained : 0.f;
     m_features.sectionId = m_secCurId;
     m_features.sectionKnown = m_secKnown;
     m_features.onsetKick = m_onsetEnvGrp[0];

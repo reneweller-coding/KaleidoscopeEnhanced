@@ -341,6 +341,7 @@ private:
     float m_lastBeatFrame = 0.f; ///< Frame counter value at the last detected beat.
     float m_frameCounter = 0.f;  ///< Total frames processed since start (monotonic).
     float m_smoothedBPM = 0.f;   ///< Smoothed BPM estimate (from inter-beat intervals, refined by autocorrelation).
+    float m_kickBPM = 0.f;       ///< The tempo of the last kick-interval estimate alone (diagnostics).
 
     // ---- Log attack time state ----
     float m_prevLevel = 0.f;                ///< Previous overall level (for rise-rate / attack detection).

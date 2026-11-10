@@ -201,17 +201,17 @@ void main()
         float y = 0.6 - ph * 1.4; // from top to below the frame
         float wig = sin( p.y * 14.0 + col ) * 0.06 + sin( p.y * 31.0 + col * 2.0 ) * 0.02;
         float dx = cx - wig - ( hash21( vec2( col, 3.0 ) ) - 0.5 ) * 0.4;
-        float active = step( 0.35, hash21( vec2( col, floor( t * speed + hash21( vec2( col, 2.0 ) ) ) + 5.0 ) ) );
+        float drop_on = step( 0.35, hash21( vec2( col, floor( t * speed + hash21( vec2( col, 2.0 ) ) ) + 5.0 ) ) );
         vec2  d = vec2( dx * 1.3, ( p.y - y ) * 7.0 );
         float r = length( d );
-        float m = smoothstep( 0.28, 0.2, r ) * active;
+        float m = smoothstep( 0.28, 0.2, r ) * drop_on;
         off += -normalize( d + 1e-4 ) * 0.02 * m;
         drop_m = max( drop_m, m );
         // Trail above the drop: the glass is wiped clear there (less haze),
         // with a string of tiny beads.
         // (The trail dries off before the drop wraps, so nothing vanishes
         // on screen when the cell picks its next drop.)
-        float trail = smoothstep( 0.08, 0.0, abs( dx ) ) * step( y, p.y ) * smoothstep( y + 0.8, y, p.y ) * active
+        float trail = smoothstep( 0.08, 0.0, abs( dx ) ) * step( y, p.y ) * smoothstep( y + 0.8, y, p.y ) * drop_on
                       * smoothstep( 1.0, 0.7, ph );
         vec2  bg = vec2( dx * 20.0, p.y * 28.0 );
         vec2  bc = floor( bg ), bf = fract( bg ) - 0.5;

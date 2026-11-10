@@ -508,6 +508,6 @@ void main()
     float b3 = sin( y * 1.1 / w + 2.0 * t + 4.0 );
     float amp = 0.05 + 0.1 * clamp( audioSwell, 0.0, 1.0 );
     float band = amp * ( 0.6 * b1 + 0.4 * b2 + 0.25 * b3 );
-    vec3  cast = vec3( 1.0 + 0.5 * band, 1.0 - 0.3 * band, 1.0 + 0.4 * sin( y * 0.2 / w + t * 0.7 ) * amp );
-    finish( c * cast * ( 1.0 + band ) * 1.1 );
+    vec3  tint = vec3( 1.0 + 0.5 * band, 1.0 - 0.3 * band, 1.0 + 0.4 * sin( y * 0.2 / w + t * 0.7 ) * amp );
+    finish( c * tint * ( 1.0 + band ) * 1.1 );
 }
