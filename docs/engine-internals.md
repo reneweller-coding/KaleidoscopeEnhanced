@@ -7842,3 +7842,23 @@ turned out to be is not always what was claimed beforehand; where the claim was 
   break in the patched file (three times that day). Patch scripts with backslashes go into a file first.
 - `Start-Process -ArgumentList '-File x.ps1 -Names A,B'` passes `A,B` as ONE name; `-Command "& 'x.ps1' -Names A,B"`
   passes a list.
+
+**The catalogue page online (10.11.2026).** https://reneweller-coding.github.io/KaleidoscopeEnhanced/ -- GitHub Pages with
+the source "GitHub Actions"; `.github/workflows/pages.yml` publishes `docs/Catalog` and nothing else (the page reads
+its data and pictures by relative paths, so the folder is the site), whenever the catalogue changes on master.
+- The Pages side needs five to ten minutes to sync the 7,906 files (69 MB as an artifact). The first deployment sat in
+  `syncing_files` until the action's default limit of ten minutes; the next one took six. The step has 25 minutes now.
+- A failed deployment is started anew (`gh workflow run Pages --ref master`), not re-run: the re-run uploads a second
+  artifact named `github-pages` into the same run and the deployment refuses two.
+
+**Release v1.19.1 (10.11.2026, tag on 349a0c56).** What (66) changed, for the people who download: tempo, the re-timed
+and re-lit transitions, the tighter genre presets, the four scenes repaired for Mesa.
+- `Tools/release_check.py --skip snapshots`: green in all steps on the first run, 21.5 min (chain 672 s, perf 388 s,
+  doxygen 106 s, the new step `transitions` 36 s).
+- `deploy.ps1 -Build`: 4.7 min (Inno Setup needed two retries for the antivirus lock), ZIP 43.6 MB, Setup 24.2 MB, 3509
+  entries. Unpacked into a fresh folder, with an empty settings file: one export of 8 s with each of the twelve
+  presets, no FATAL, no shader error.
+- `Katalog.pdf`: 1021 pages, 79 MB, every one of the 210 transitions with its two pictures. Joining the parts took
+  most of the five minutes this time.
+- The notes are in English with the German text folded below, as v1.19.0's are now. Eleven transitions carry the
+  progress curve (`evenProgress`), Luminance is normalised instead.
