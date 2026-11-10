@@ -22632,6 +22632,8 @@ TRANSITION ACOUSTIC CHLADNI RESONANCE: 2D vibrating plate Chladni resonance tran
 
 TRANSITION AFTERIMAGE HANDOFF HALO: the old scene leaves a complementary afterimage that hovers over the new one and fades. A plain, slow cross-fade, but a pale negative of the old scene (its complementary colours) floats over the incoming picture, as the eye would see it after staring, and drains away. interpolation -> the progress of the fade (1 old scene, 0 new scene) audioRolloff -> how long the afterimage lasts …
 
+![AfterimageHandoffHalo über TunnelPlain (2D)](img/AfterimageHandoffHalo_2D.jpg) ![AfterimageHandoffHalo über AuroraBorealisOverFjord (3D)](img/AfterimageHandoffHalo_3D.jpg)
+
 
 ### AnamorphicFlareSweep
 
@@ -22648,6 +22650,8 @@ TRANSITION ANAMORPHIC FLARE SWEEP: Cinematic anamorphic lens flare transition. A
 
 TRANSITION ANAMORPHIC SQUEEZE BREATH: an anamorphic lens squeezes and stretches the picture sideways while the scene changes. The old scene is squeezed towards the middle and the new one widens out of a squeezed state, like the breathing of a cinema lens; mirrored edges fill the gaps and the change is a soft cross-fade in the middle. interpolation -> the progress of the fade (1 old scene, 0 new scene) audioSwell -> h…
 
+![AnamorphicSqueezeBreath über TunnelPlain (2D)](img/AnamorphicSqueezeBreath_2D.jpg) ![AnamorphicSqueezeBreath über AuroraBorealisOverFjord (3D)](img/AnamorphicSqueezeBreath_3D.jpg)
+
 
 ### AuroraCurtainFold
 
@@ -22663,6 +22667,8 @@ TRANSITION AURORA CURTAIN FOLD: Geomagnetic auroral curtain fold wipe transition
 `Transitions/BeatGridLatticePhaseSwap.frag` · mood=blocky · probability=0.06
 
 TRANSITION BEAT GRID LATTICE PHASE SWAP: a grid of cells changes in waves that run through it in the rhythm of the phrase. Every cell changes at a time that mixes a random order with a wave of the phrase position, so the change runs through the grid in ripples that repeat with the music without ever jumping. interpolation -> the progress of the fade (1 old scene, 0 new scene) audioPhrasePos -> the phase of the waves …
+
+![BeatGridLatticePhaseSwap über TunnelPlain (2D)](img/BeatGridLatticePhaseSwap_2D.jpg) ![BeatGridLatticePhaseSwap über AuroraBorealisOverFjord (3D)](img/BeatGridLatticePhaseSwap_3D.jpg)
 
 
 ### BioluminescentPhytoplanktonBloom
@@ -22707,6 +22713,8 @@ Venetian blinds: staggered vertical strips reveal the incoming scene one by one.
 
 TRANSITION BLOOM WHITE FLOOD HANDOFF: the lights of the old scene overflow into a soft white that clears into the new scene; the white is capped and never flashes. A bloom of the mixed picture grows, the bright parts spill over their neighbours, and the whole picture is lifted towards a pale white, to at most 45 per cent; then the white lifts again and the new scene stands there. interpolation -> the progress of the …
 
+![BloomWhiteFloodHandoff über TunnelPlain (2D)](img/BloomWhiteFloodHandoff_2D.jpg) ![BloomWhiteFloodHandoff über AuroraBorealisOverFjord (3D)](img/BloomWhiteFloodHandoff_3D.jpg)
+
 
 ### BlurThrough
 
@@ -22723,12 +22731,16 @@ Blur-through: both scenes melt through a soft-focus dip and resolve into the new
 
 TRANSITION BREATH FOG GLASS WIPE: breath fogs a pane and a finger wipes it clear; the clear places show the new scene. The old scene goes soft and pale as if behind fogged glass, wiped clear in curving swaths; what is wiped shows the new scene sharply, the rest stays milky until the last swath closes. interpolation -> the progress of the fade (1 old scene, 0 new scene) audioSwell -> the milkiness of the fog Per-activ…
 
+![BreathFogGlassWipe über TunnelPlain (2D)](img/BreathFogGlassWipe_2D.jpg) ![BreathFogGlassWipe über AuroraBorealisOverFjord (3D)](img/BreathFogGlassWipe_3D.jpg)
+
 
 ### BurnEdgeEmberRim
 
 `Transitions/BurnEdgeEmberRim.frag` · mood=dark,wipe · probability=0.06
 
 TRANSITION BURN EDGE EMBER RIM: a paper edge glows and eats its way through the old scene, and the new scene lies behind it. A ragged front of glowing ember (a narrow orange line with a pale hot core) advances; ahead of it the paper scorches brown and dark, behind it the new scene is clear. interpolation -> the progress of the fade (1 old scene, 0 new scene) audioKick -> a little more glow in the ember (light only) P…
+
+![BurnEdgeEmberRim über TunnelPlain (2D)](img/BurnEdgeEmberRim_2D.jpg) ![BurnEdgeEmberRim über AuroraBorealisOverFjord (3D)](img/BurnEdgeEmberRim_3D.jpg)
 
 
 ### CausticLiquidWarp
@@ -22764,6 +22776,8 @@ TRANSITION CELLULAR MITOSIS: Biological cell division & cytokinesis transition. 
 
 TRANSITION CHALK DUST WIPE SMEAR: a hand wipes chalk over the old scene in broad strokes and the new scene appears in the smears. Broad slanting strokes of a sponge smear both scenes along their direction; each stroke leaves the new scene behind it and a dusting of pale chalk grains at its edge. interpolation -> the progress of the fade (1 old scene, 0 new scene) audioSwell -> the breadth of the smear Per-activation …
 
+![ChalkDustWipeSmear über TunnelPlain (2D)](img/ChalkDustWipeSmear_2D.jpg) ![ChalkDustWipeSmear über AuroraBorealisOverFjord (3D)](img/ChalkDustWipeSmear_3D.jpg)
+
 
 ### ChannelStaggerTimeBlend
 
@@ -22771,12 +22785,16 @@ TRANSITION CHALK DUST WIPE SMEAR: a hand wipes chalk over the old scene in broad
 
 TRANSITION CHANNEL STAGGER TIME BLEND: red, green and blue change scenes one after the other. Not a shift in space but in time: the colour channels cross-fade with a stagger, so the middle carries a slow wandering colour cast that settles when the last channel has arrived. interpolation -> the progress of the fade (1 old scene, 0 new scene) audioSwell -> the stagger grows a little Per-activation variety: staggerP flo…
 
+![ChannelStaggerTimeBlend über TunnelPlain (2D)](img/ChannelStaggerTimeBlend_2D.jpg) ![ChannelStaggerTimeBlend über AuroraBorealisOverFjord (3D)](img/ChannelStaggerTimeBlend_3D.jpg)
+
 
 ### ChordColourBloomHandoff
 
 `Transitions/ChordColourBloomHandoff.frag` · mood=dreamy · probability=0.07
 
 TRANSITION CHORD COLOUR BLOOM HANDOFF: the colour of the sounding chord blooms as a halo in which the new scene stands. A halo in the colour of the key (the music's pitch-class hue, smoothed) grows from the centre; inside it the new scene, at its rim a soft glow in the chord colour. interpolation -> the progress of the fade (1 old scene, 0 new scene) audioChromaHue -> the colour of the halo (slowly); audioSwell -> th…
+
+![ChordColourBloomHandoff über TunnelPlain (2D)](img/ChordColourBloomHandoff_2D.jpg) ![ChordColourBloomHandoff über AuroraBorealisOverFjord (3D)](img/ChordColourBloomHandoff_3D.jpg)
 
 
 ### Chromatic
@@ -22793,6 +22811,8 @@ Chromatic dissolve: red, green and blue cross over to the new scene at slightly 
 `Transitions/ChromaticDefocusBloom.frag` · mood=dreamy,psychedelic · probability=0.07
 
 TRANSITION CHROMATIC DEFOCUS BLOOM: when the focus is lost the colour channels fall out of register in coloured halos; the new scene is brought into focus out of them. Each colour channel is blurred by its own radius (red most, blue least), so soft coloured halos stand round every light; the old scene dissolves into them and the new scene resolves from them. interpolation -> the progress of the fade (1 old scene, 0 n…
+
+![ChromaticDefocusBloom über TunnelPlain (2D)](img/ChromaticDefocusBloom_2D.jpg) ![ChromaticDefocusBloom über AuroraBorealisOverFjord (3D)](img/ChromaticDefocusBloom_3D.jpg)
 
 
 ### ChromatographySeparation
@@ -22828,6 +22848,8 @@ Clock sweep: a soft radial hand sweeps once around the centre, revealing the new
 
 TRANSITION CLOUD SHADOW PASS: shadows of clouds glide over the picture, and wherever one has passed the scene has changed. A broad soft field of cloud shadow drifts across the frame; under it the picture is darker and already the new scene, in the sunlit places the old one is still shown, and when the shadow has left the new scene stands in full light. interpolation -> the progress of the fade (1 old scene, 0 new sce…
 
+![CloudShadowPass über TunnelPlain (2D)](img/CloudShadowPass_2D.jpg) ![CloudShadowPass über AuroraBorealisOverFjord (3D)](img/CloudShadowPass_3D.jpg)
+
 
 ### ColourBlockSlideStack
 
@@ -22835,12 +22857,16 @@ TRANSITION CLOUD SHADOW PASS: shadows of clouds glide over the picture, and wher
 
 TRANSITION COLOUR BLOCK SLIDE STACK: blocks of different widths in alternate rows slide against each other and change the scene as they pass. The picture is cut into rows of blocks of random width; the blocks slide sideways, alternate rows in opposite directions, and each shows the new scene once it has slid half its way. interpolation -> the progress of the fade (1 old scene, 0 new scene) audioSwell -> a slight brea…
 
+![ColourBlockSlideStack über TunnelPlain (2D)](img/ColourBlockSlideStack_2D.jpg) ![ColourBlockSlideStack über AuroraBorealisOverFjord (3D)](img/ColourBlockSlideStack_3D.jpg)
+
 
 ### ConcentricRingRotateReveal
 
 `Transitions/ConcentricRingRotateReveal.frag` · mood=calm,wipe · probability=0.07
 
 TRANSITION CONCENTRIC RING ROTATE REVEAL: concentric rings turn against each other, each showing the new scene in a growing angle. The picture is cut into rings; in each ring a sector of the new scene grows from zero to the full circle, the rings alternately clockwise and counter-clockwise. interpolation -> the progress of the fade (1 old scene, 0 new scene) audioSwell -> a slight breath of the brightness in the midd…
+
+![ConcentricRingRotateReveal über TunnelPlain (2D)](img/ConcentricRingRotateReveal_2D.jpg) ![ConcentricRingRotateReveal über AuroraBorealisOverFjord (3D)](img/ConcentricRingRotateReveal_3D.jpg)
 
 
 ### CosmicStringLensing
@@ -22867,12 +22893,16 @@ The classic linear cross-fade between outgoing (tex0) and incoming (tex1) scene.
 
 TRANSITION CRYSTAL BALL INVERSION: a glass ball grows in the middle and shows the new scene upside down; as it fills the frame the picture turns upright. A sphere of clear glass grows from the centre; inside it the incoming scene is seen reversed and magnified, with a soft bright rim; once the ball has covered the picture the reversed image has turned upright. interpolation -> the progress of the fade (1 old scene, 0…
 
+![CrystalBallInversion über TunnelPlain (2D)](img/CrystalBallInversion_2D.jpg) ![CrystalBallInversion über AuroraBorealisOverFjord (3D)](img/CrystalBallInversion_3D.jpg)
+
 
 ### CurtainRaiseTwoPart
 
 `Transitions/CurtainRaiseTwoPart.frag` · mood=wipe · probability=0.06
 
 TRANSITION CURTAIN RAISE TWO PART: the new scene opens as a slit that widens sideways and then opens upwards and downwards, like a letterbox. A thin horizontal slit in the middle first widens to the full width, then the two curtains rise and fall until the frame is full; the edges are soft. interpolation -> the progress of the fade (1 old scene, 0 new scene) audioPhrasePos -> none; the two parts follow the progress P…
+
+![CurtainRaiseTwoPart über TunnelPlain (2D)](img/CurtainRaiseTwoPart_2D.jpg) ![CurtainRaiseTwoPart über AuroraBorealisOverFjord (3D)](img/CurtainRaiseTwoPart_3D.jpg)
 
 
 ### CyanotypeSunPrint
@@ -22890,6 +22920,8 @@ TRANSITION CYANOTYPE SUN PRINT: the incoming scene exposes itself onto the outgo
 
 TRANSITION CYMATIC NODE LINE ARRIVAL: the new scene arrives along the nodal lines of a vibrating plate and fills the areas between them last. A Chladni figure (two modes superposed, the pair changing during the fade) gives lines where the plate is at rest; the new scene settles there first, like sand, and spreads over the vibrating areas. interpolation -> the progress of the fade (1 old scene, 0 new scene) audioSwell…
 
+![CymaticNodeLineArrival über TunnelPlain (2D)](img/CymaticNodeLineArrival_2D.jpg) ![CymaticNodeLineArrival über AuroraBorealisOverFjord (3D)](img/CymaticNodeLineArrival_3D.jpg)
+
 
 ### Datamosh
 
@@ -22906,12 +22938,16 @@ Datamosh glitch: RGB-split, stuttering block-shifted 'corrupted P-frame' look, m
 
 TRANSITION DETAIL LAYER SWAP FIRST: the fine detail changes before the base colours do. A Laplacian cross-fade: both scenes are split into a blurred base and the detail above it; the detail layers are swapped first, then the bases, so in the middle the contours of the new scene stand in the colours of the old one. interpolation -> the progress of the fade (1 old scene, 0 new scene) audioSwell -> the scale that splits…
 
+![DetailLayerSwapFirst über TunnelPlain (2D)](img/DetailLayerSwapFirst_2D.jpg) ![DetailLayerSwapFirst über AuroraBorealisOverFjord (3D)](img/DetailLayerSwapFirst_3D.jpg)
+
 
 ### DewCondensationBloom
 
 `Transitions/DewCondensationBloom.frag` · mood=dreamy,calm · probability=0.07
 
 TRANSITION DEW CONDENSATION BLOOM: tiny drops condense on the old scene, each holding the new scene upside down, and grow together into the new picture. A field of round drops of different sizes appears and grows; every drop is a little lens that shows the incoming scene inverted around its own centre; as the drops merge the images turn upright and fill the frame. interpolation -> the progress of the fade (1 old scen…
+
+![DewCondensationBloom über TunnelPlain (2D)](img/DewCondensationBloom_2D.jpg) ![DewCondensationBloom über AuroraBorealisOverFjord (3D)](img/DewCondensationBloom_3D.jpg)
 
 
 ### DewettingFilmRupture
@@ -22928,6 +22964,8 @@ TRANSITION DEWETTING FILM RUPTURE: the outgoing scene is a thin film that ruptur
 `Transitions/DiagonalSliceStaircase.frag` · mood=aggressive,wipe,blocky · probability=0.06
 
 TRANSITION DIAGONAL SLICE STAIRCASE: diagonal strips step past each other like a staircase, each showing the new scene. The picture is cut into diagonal strips; they take the new scene one after the other along the diagonal, alternate strips sliding a little to the side while they change. interpolation -> the progress of the fade (1 old scene, 0 new scene) audioSwell -> a slight breath of the brightness in the middle…
+
+![DiagonalSliceStaircase über TunnelPlain (2D)](img/DiagonalSliceStaircase_2D.jpg) ![DiagonalSliceStaircase über AuroraBorealisOverFjord (3D)](img/DiagonalSliceStaircase_3D.jpg)
 
 
 ### DiagonalWipe
@@ -22999,12 +23037,16 @@ TRANSITION DREAMY BOKEH BLOOM: Smooth depth-of-field bokeh blur and lens bloom t
 
 TRANSITION DUOTONE GHOST PRELUDE: a two-colour ghost of the new scene lies over the old one first and takes on its colours afterwards. The new scene is announced as a duotone in the colour of the music's key, floats over the old picture, and then the real colours come in as the old scene leaves. interpolation -> the progress of the fade (1 old scene, 0 new scene) audioChromaHue -> the colour of the ghost (slowly) Per…
 
+![DuotoneGhostPrelude über TunnelPlain (2D)](img/DuotoneGhostPrelude_2D.jpg) ![DuotoneGhostPrelude über AuroraBorealisOverFjord (3D)](img/DuotoneGhostPrelude_3D.jpg)
+
 
 ### DustMoteLightDrift
 
 `Transitions/DustMoteLightDrift.frag` · mood=dreamy,calm · probability=0.07
 
 TRANSITION DUST MOTE LIGHT DRIFT: specks of dust in a sunbeam grow into pools of the new scene. Round specks of different sizes drift across the picture; each speck becomes a soft pool of the new scene that grows until the pools meet and the old scene is gone. interpolation -> the progress of the fade (1 old scene, 0 new scene) audioSwell -> a little more light on the specks Per-activation variety: moteP float the nu…
+
+![DustMoteLightDrift über TunnelPlain (2D)](img/DustMoteLightDrift_2D.jpg) ![DustMoteLightDrift über AuroraBorealisOverFjord (3D)](img/DustMoteLightDrift_3D.jpg)
 
 
 ### EbruMarblingRake
@@ -23022,6 +23064,8 @@ TRANSITION EBRU MARBLING RAKE: Turkish paper marbling (Ebru) rake transition. Fi
 
 TRANSITION EDGE CURRENT HALL SWEEP: a current runs round the rim of the picture and eats its way inwards, leaving the new scene. The order of change is the distance to the frame's edge, shifted by a slow wave that makes the current run round; the front is soft and carries a faint glow. interpolation -> the progress of the fade (1 old scene, 0 new scene) audioSwell -> the width of the front Per-activation variety: cur…
 
+![EdgeCurrentHallSweep über TunnelPlain (2D)](img/EdgeCurrentHallSweep_2D.jpg) ![EdgeCurrentHallSweep über AuroraBorealisOverFjord (3D)](img/EdgeCurrentHallSweep_3D.jpg)
+
 
 ### EdgeFirstSeep
 
@@ -23029,12 +23073,16 @@ TRANSITION EDGE CURRENT HALL SWEEP: a current runs round the rim of the picture 
 
 TRANSITION EDGE FIRST SEEP: the new scene seeps in along the edges of the old one and floods its flat areas last. Edges of the old scene (a blurred gradient magnitude) switch first, so the new scene creeps in like water in a net; broad flat areas are the last islands of the old picture. interpolation -> the progress of the fade (1 old scene, 0 new scene) audioSwell -> the seeping edge softens Per-activation variety: …
 
+![EdgeFirstSeep über TunnelPlain (2D)](img/EdgeFirstSeep_2D.jpg) ![EdgeFirstSeep über AuroraBorealisOverFjord (3D)](img/EdgeFirstSeep_3D.jpg)
+
 
 ### EmbroideryStitchFill
 
 `Transitions/EmbroideryStitchFill.frag` · mood=calm · probability=0.06
 
 TRANSITION EMBROIDERY STITCH FILL: stitches fill the picture one by one with the new scene's colours, and the stitched cloth smooths into the new scene. Short slanting stitches of different length and turning angle appear on the old scene, each a rounded dash of the new scene's colour with a thread-like shading; they multiply until they overlap and then the weave is smoothed into the new picture. interpolation -> the…
+
+![EmbroideryStitchFill über TunnelPlain (2D)](img/EmbroideryStitchFill_2D.jpg) ![EmbroideryStitchFill über AuroraBorealisOverFjord (3D)](img/EmbroideryStitchFill_3D.jpg)
 
 
 ### EventHorizonSwirl
@@ -23061,6 +23109,8 @@ TRANSITION FARADAY WAVE LATTICE: Parametric fluid surface Faraday wave transitio
 
 TRANSITION FELT PRESS FIBRE MERGE: two layers of felt are pressed together, their fibres interlock and the pictures merge into one fibrous weave. Fine fibres of random direction mix the two scenes pixel by pixel in a felt-like grain, with a soft darkening where the layers are pressed hardest in the middle; then the new scene is carried by the fibres. interpolation -> the progress of the fade (1 old scene, 0 new scene…
 
+![FeltPressFibreMerge über TunnelPlain (2D)](img/FeltPressFibreMerge_2D.jpg) ![FeltPressFibreMerge über AuroraBorealisOverFjord (3D)](img/FeltPressFibreMerge_3D.jpg)
+
 
 ### FerroelectricDomainFlip
 
@@ -23086,12 +23136,16 @@ TRANSITION FERROFLUID SPIKES: Magnetic ferrofluid Rosensweig instability transit
 
 TRANSITION FIFTHS WHEEL DISSOLVE: the twelve sectors of the circle of fifths change one after another, a fifth apart. The frame is cut into twelve sectors like a clock face; the sectors take the new scene in the order of the circle of fifths (every seventh), so neighbouring sectors never change together. interpolation -> the progress of the fade (1 old scene, 0 new scene) audioMode -> none; the start sector is rolled…
 
+![FifthsWheelDissolve über TunnelPlain (2D)](img/FifthsWheelDissolve_2D.jpg) ![FifthsWheelDissolve über AuroraBorealisOverFjord (3D)](img/FifthsWheelDissolve_3D.jpg)
+
 
 ### FireflyGlowHandoff
 
 `Transitions/FireflyGlowHandoff.frag` · mood=dark,dreamy · probability=0.07
 
 TRANSITION FIREFLY GLOW HANDOFF: fireflies carry the new scene as small discs of light that grow until the old scene is gone. The old scene dims into a dusk; soft green-gold lights rise in it, each a little window on the new scene with a halo, pulsing slowly; they grow and join. interpolation -> the progress of the fade (1 old scene, 0 new scene) audioSwell -> the pulse of the lights (slow) Per-activation variety: fl…
+
+![FireflyGlowHandoff über TunnelPlain (2D)](img/FireflyGlowHandoff_2D.jpg) ![FireflyGlowHandoff über AuroraBorealisOverFjord (3D)](img/FireflyGlowHandoff_3D.jpg)
 
 
 ### FlatAreasFirst
@@ -23100,6 +23154,8 @@ TRANSITION FIREFLY GLOW HANDOFF: fireflies carry the new scene as small discs of
 
 TRANSITION FLAT AREAS FIRST: the smooth areas of the old scene (sky, wall, skin) change first, its detailed areas last. The mirror image of EdgeFirstSeep: the new scene takes the flat regions and leaves the textured ones (foliage, stone, hair) as islands of the old picture until the very end. interpolation -> the progress of the fade (1 old scene, 0 new scene) audioSwell -> the border between smooth and rough breathe…
 
+![FlatAreasFirst über TunnelPlain (2D)](img/FlatAreasFirst_2D.jpg) ![FlatAreasFirst über AuroraBorealisOverFjord (3D)](img/FlatAreasFirst_3D.jpg)
+
 
 ### FogBankLayerSwap
 
@@ -23107,12 +23163,16 @@ TRANSITION FLAT AREAS FIRST: the smooth areas of the old scene (sky, wall, skin)
 
 TRANSITION FOG BANK LAYER SWAP: three banks of fog slide between the scenes, and the scene changes behind them. Three layers of drifting fog, each at its own speed and scale, thicken over the old scene, let it go and clear off the new one; nothing has an edge. interpolation -> the progress of the fade (1 old scene, 0 new scene) audioSwell -> the density of the fog Per-activation variety: fogP float how dense the fog …
 
+![FogBankLayerSwap über TunnelPlain (2D)](img/FogBankLayerSwap_2D.jpg) ![FogBankLayerSwap über AuroraBorealisOverFjord (3D)](img/FogBankLayerSwap_3D.jpg)
+
 
 ### FoldedCardFlipPair
 
 `Transitions/FoldedCardFlipPair.frag` · mood=wipe · probability=0.06
 
 TRANSITION FOLDED CARD FLIP PAIR: the picture is two cards that flip over one after the other and show the new scene on their backs. The left half turns over about its own vertical axis first, then the right half, each narrowing to a line and widening again as the new scene. interpolation -> the progress of the fade (1 old scene, 0 new scene) audioSwell -> none; the order is left then right Per-activation variety: ca…
+
+![FoldedCardFlipPair über TunnelPlain (2D)](img/FoldedCardFlipPair_2D.jpg) ![FoldedCardFlipPair über AuroraBorealisOverFjord (3D)](img/FoldedCardFlipPair_3D.jpg)
 
 
 ### FresnelDiffractionEdge
@@ -23130,6 +23190,8 @@ TRANSITION FRESNEL DIFFRACTION EDGE: Straight knife-edge optical Fresnel diffrac
 
 TRANSITION FRESNEL LENS SLIDE BANDS: a Fresnel lens sheet slides over the picture; its rings shift strips of the image and the sheet shows the new scene. A sheet of concentric prism rings moves across; where the sheet lies the incoming scene is seen through it, cut into ring-shaped strips that are each shifted a little, and in front of the sheet the old scene is seen straight. interpolation -> the progress of the fad…
 
+![FresnelLensSlideBands über TunnelPlain (2D)](img/FresnelLensSlideBands_2D.jpg) ![FresnelLensSlideBands über AuroraBorealisOverFjord (3D)](img/FresnelLensSlideBands_3D.jpg)
+
 
 ### FrostDendriteFreeze
 
@@ -23145,6 +23207,8 @@ TRANSITION FROST DENDRITE FREEZE: Hexagonal dendritic ice crystal freeze & melt.
 `Transitions/GauzeLayerLift.frag` · mood=calm,dreamy · probability=0.06
 
 TRANSITION GAUZE LAYER LIFT: three layers of gauze are lifted off one after another, each taking a part of the old scene with it. Three weaves of gauze at different angles and mesh sizes lie over the picture and are lifted away in turn; each lift takes a share of the old scene, and under the last layer lies the new one. interpolation -> the progress of the fade (1 old scene, 0 new scene) audioSwell -> how milky the g…
+
+![GauzeLayerLift über TunnelPlain (2D)](img/GauzeLayerLift_2D.jpg) ![GauzeLayerLift über AuroraBorealisOverFjord (3D)](img/GauzeLayerLift_3D.jpg)
 
 
 ### GhostExposure
@@ -23180,6 +23244,8 @@ TRANSITION GOLDEN NAUTILUS: Fibonacci golden spiral nautilus chamber sweep. Loga
 
 TRANSITION GRADIENT FLOW DISSOLVE: the blend is carried along the old scene's contours like a dye in a current. The order of change is a noise field that is pushed along the gradient of the old scene's brightness, so the new scene flows around the shapes of the old one before it covers them. interpolation -> the progress of the fade (1 old scene, 0 new scene) audioSwell -> the softness of the flow edge Per-activation…
 
+![GradientFlowDissolve über TunnelPlain (2D)](img/GradientFlowDissolve_2D.jpg) ![GradientFlowDissolve über AuroraBorealisOverFjord (3D)](img/GradientFlowDissolve_3D.jpg)
+
 
 ### GravitationalLensWarp
 
@@ -23204,6 +23270,8 @@ TRANSITION GYROID MEMBRANE MELT: Triply periodic minimal surface (TPMS) gyroid t
 `Transitions/HarmonicSeriesBarReveal.frag` · mood=wipe,blocky · probability=0.06
 
 TRANSITION HARMONIC SERIES BAR REVEAL: bars with the widths of the harmonic series open one after the other and show the new scene. The frame is divided into bars whose widths fall like 1, 1/2, 1/3 ... as the harmonics of a string do; the widest opens first and the narrow ones follow in a quick flurry at the end. interpolation -> the progress of the fade (1 old scene, 0 new scene) audioSwell -> a slight breath of the…
+
+![HarmonicSeriesBarReveal über TunnelPlain (2D)](img/HarmonicSeriesBarReveal_2D.jpg) ![HarmonicSeriesBarReveal über AuroraBorealisOverFjord (3D)](img/HarmonicSeriesBarReveal_3D.jpg)
 
 
 ### HeatShimmer
@@ -23230,12 +23298,16 @@ TRANSITION HELICOID MINIMAL SURFACE: Ruled helicoid minimal surface screw transi
 
 TRANSITION HEX SHUTTER TURN: hexagonal slats turn over one after another from a centre and show the new scene on their backs. A honeycomb of slats; each turns about its own horizontal axis (narrowing to a line and widening again), in an order that spreads from the middle with a little randomness. interpolation -> the progress of the fade (1 old scene, 0 new scene) audioSwell -> a slight breath of the brightness in th…
 
+![HexShutterTurn über TunnelPlain (2D)](img/HexShutterTurn_2D.jpg) ![HexShutterTurn über AuroraBorealisOverFjord (3D)](img/HexShutterTurn_3D.jpg)
+
 
 ### HighlightBloomReveal
 
 `Transitions/HighlightBloomReveal.frag` · mood=dreamy,bright · probability=0.07
 
 TRANSITION HIGHLIGHT BLOOM REVEAL: the lights of the new scene shine through the old one first and spread as soft halos until they close. The new scene's bright places switch first; each one carries a halo of its own blurred light, and the dark parts of the new scene arrive last. interpolation -> the progress of the fade (1 old scene, 0 new scene) audioKick -> a little extra light in the halos (light only) Per-activa…
+
+![HighlightBloomReveal über TunnelPlain (2D)](img/HighlightBloomReveal_2D.jpg) ![HighlightBloomReveal über AuroraBorealisOverFjord (3D)](img/HighlightBloomReveal_3D.jpg)
 
 
 ### HilbertCurveSweep
@@ -23262,6 +23334,8 @@ TRANSITION HOLOGRAM SCAN INTERFERENCE: Volumetric laser holographic scanline tra
 
 TRANSITION HORIZONTAL STREAK RELEASE: both scenes are drawn out into horizontal streaks and let go of each other again. A fast but smooth sideways smear, like a quick pan seen as a blur: the old scene is stretched into streaks, the new one condenses out of them, and the picture never jumps. interpolation -> the progress of the fade (1 old scene, 0 new scene) audioSwell -> the length of the streaks Per-activation vari…
 
+![HorizontalStreakRelease über TunnelPlain (2D)](img/HorizontalStreakRelease_2D.jpg) ![HorizontalStreakRelease über AuroraBorealisOverFjord (3D)](img/HorizontalStreakRelease_3D.jpg)
+
 
 ### HueGateBleed
 
@@ -23269,12 +23343,16 @@ TRANSITION HORIZONTAL STREAK RELEASE: both scenes are drawn out into horizontal 
 
 TRANSITION HUE GATE BLEED: a band of hues travels round the colour wheel and the new scene stands wherever the old scene's hue lies in the band. The scene changes colour family by colour family: greens go first, then blues, then the rest; greys, which have no hue, follow the brightness instead. interpolation -> the progress of the fade (1 old scene, 0 new scene) audioSwell -> the band's softness breathes Per-activati…
 
+![HueGateBleed über TunnelPlain (2D)](img/HueGateBleed_2D.jpg) ![HueGateBleed über AuroraBorealisOverFjord (3D)](img/HueGateBleed_3D.jpg)
+
 
 ### HuygensWaveRevealWipe
 
 `Transitions/HuygensWaveRevealWipe.frag` · mood=wipe,calm · probability=0.07
 
 TRANSITION HUYGENS WAVE REVEAL WIPE: elementary waves from a row of point sources build a front that runs over the picture and leaves the new scene. Nine point sources along the left side each send a circular wave; the order of change is the distance to the nearest source, so the front is the scalloped envelope of the circles and smooths into a straight front as it travels. Crests are lit softly. interpolation -> the…
+
+![HuygensWaveRevealWipe über TunnelPlain (2D)](img/HuygensWaveRevealWipe_2D.jpg) ![HuygensWaveRevealWipe über AuroraBorealisOverFjord (3D)](img/HuygensWaveRevealWipe_3D.jpg)
 
 
 ### HyperspaceStreak
@@ -23292,12 +23370,16 @@ TRANSITION HYPERSPACE STREAK: Relativistic warp speed streak transition. As the 
 
 TRANSITION INK BLOOM WASH HANDOFF: ink spreads in damp paper from several drops, and the clouds carry the new scene. Several drops of ink fall; each blooms into an irregular cloud with fine fibres at its rim and a darker line where the pigment collects; the clouds grow into each other and the new scene stands where the ink has been. interpolation -> the progress of the fade (1 old scene, 0 new scene) audioSwell -> th…
 
+![InkBloomWashHandoff über TunnelPlain (2D)](img/InkBloomWashHandoff_2D.jpg) ![InkBloomWashHandoff über AuroraBorealisOverFjord (3D)](img/InkBloomWashHandoff_3D.jpg)
+
 
 ### InterferenceFringeOpening
 
 `Transitions/InterferenceFringeOpening.frag` · mood=calm,dreamy · probability=0.07
 
 TRANSITION INTERFERENCE FRINGE OPENING: two coherent sources make a fan of fringes that opens until a single fringe fills the picture. The order of change is the cosine of the path difference to two point sources; the fringes are fine at first, broaden with the progress as if the sources approached each other, and end as one wide band. interpolation -> the progress of the fade (1 old scene, 0 new scene) audioSwell ->…
+
+![InterferenceFringeOpening über TunnelPlain (2D)](img/InterferenceFringeOpening_2D.jpg) ![InterferenceFringeOpening über AuroraBorealisOverFjord (3D)](img/InterferenceFringeOpening_3D.jpg)
 
 
 ### Jelly
@@ -23351,6 +23433,8 @@ TRANSITION KERR SCHILD WARP SHEET: Exact Kerr-Schild spacetime metric transition
 
 TRANSITION LACE VEIL OVERLAY FADE: a lace veil lies over the old scene, and the new one shines through its holes first. A fine lace of rosettes and meshes appears as a pale veil, its holes already show the incoming scene, the veil thins away in the order of its own thread thickness until only the new scene is left. interpolation -> the progress of the fade (1 old scene, 0 new scene) audioSwell -> a slight breath of t…
 
+![LaceVeilOverlayFade über TunnelPlain (2D)](img/LaceVeilOverlayFade_2D.jpg) ![LaceVeilOverlayFade über AuroraBorealisOverFjord (3D)](img/LaceVeilOverlayFade_3D.jpg)
+
 
 ### LaserSpeckleDecorrelation
 
@@ -23393,6 +23477,8 @@ TRANSITION LEIDENFROST SKITTER: the outgoing scene breaks into droplets that rid
 `Transitions/LensBreathingRefocusSettle.frag` · mood=calm · probability=0.07
 
 TRANSITION LENS BREATHING REFOCUS SETTLE: the lens breathes as the focus changes: the new scene comes in slightly enlarged and settles. A very slow, small change of the field of view while the scenes cross-fade: the old one recedes a few percent, the new one starts a few percent too large and settles to its true size. The change only follows the progress of the fade. interpolation -> the progress of the fade (1 old s…
+
+![LensBreathingRefocusSettle über TunnelPlain (2D)](img/LensBreathingRefocusSettle_2D.jpg) ![LensBreathingRefocusSettle über AuroraBorealisOverFjord (3D)](img/LensBreathingRefocusSettle_3D.jpg)
 
 
 ### LenticularTilt
@@ -23455,6 +23541,8 @@ TRANSITION LOGARITHMIC SPIRAL: Equiangular logarithmic spiral vortex (r = a * ex
 
 TRANSITION LUMA THRESHOLD TIDE: the new scene rises through the old one like a tide, the darkest places first. A threshold on the old scene's brightness sweeps upwards with a soft shore: shadows are swallowed first, highlights stay the longest, and a slow noise keeps the shore from being a contour line. interpolation -> the progress of the fade (1 old scene, 0 new scene) audioSwell -> the shore breathes (softness onl…
 
+![LumaThresholdTide über TunnelPlain (2D)](img/LumaThresholdTide_2D.jpg) ![LumaThresholdTide über AuroraBorealisOverFjord (3D)](img/LumaThresholdTide_3D.jpg)
+
 
 ### Luminance
 
@@ -23471,6 +23559,8 @@ Luminance-ordered dissolve: dark areas give way to the new scene first, highligh
 
 TRANSITION LUMINANCE RANK DISSOLVE: a soft grainy dissolve ordered by the new scene's brightness, so the average never drifts to light or dark. Every pixel changes at a time that mixes its brightness rank in the new scene with a coarse grain; the middle of the fade is a fine mottling of old and new rather than a veil. interpolation -> the progress of the fade (1 old scene, 0 new scene) audioSwell -> the softness of t…
 
+![LuminanceRankDissolve über TunnelPlain (2D)](img/LuminanceRankDissolve_2D.jpg) ![LuminanceRankDissolve über AuroraBorealisOverFjord (3D)](img/LuminanceRankDissolve_3D.jpg)
+
 
 ### MagmaCrustFracture
 
@@ -23486,6 +23576,8 @@ TRANSITION MAGMA CRUST FRACTURE: Tectonic basalt magma crust transition. The out
 `Transitions/MagnonRippleBeams.frag` · mood=psychedelic,wipe · probability=0.05
 
 TRANSITION MAGNON RIPPLE BEAMS: beams of spin waves zigzag across the picture, bouncing off the walls, and the new scene stands where they have been. Diagonal beams run across the picture and are reflected at the top and bottom edges; the order of change is the position along the zigzag path, with a faint ripple along each beam. interpolation -> the progress of the fade (1 old scene, 0 new scene) audioSwell -> a slig…
+
+![MagnonRippleBeams über TunnelPlain (2D)](img/MagnonRippleBeams_2D.jpg) ![MagnonRippleBeams über AuroraBorealisOverFjord (3D)](img/MagnonRippleBeams_3D.jpg)
 
 
 ### MartensiticTwinBands
@@ -23512,12 +23604,16 @@ Melt: the old scene drips downward like wax in noise-driven columns while the ne
 
 TRANSITION MELTWATER RILL REVEAL: meltwater finds rills through an iced picture, and the new scene shows in the rills. The order of change is a ridged noise: the new scene runs first along a branching net of narrow rills and then spreads sideways until nothing is left of the old picture; the ice shows as pale grain on the old scene. interpolation -> the progress of the fade (1 old scene, 0 new scene) audioSwell -> th…
 
+![MeltwaterRillReveal über TunnelPlain (2D)](img/MeltwaterRillReveal_2D.jpg) ![MeltwaterRillReveal über AuroraBorealisOverFjord (3D)](img/MeltwaterRillReveal_3D.jpg)
+
 
 ### MistRiseVeil
 
 `Transitions/MistRiseVeil.frag` · mood=calm,dreamy · probability=0.09
 
 TRANSITION MIST RISE VEIL: mist rises out of the picture and bleaches it; when it thins out the new scene stands there. A pale veil of rising mist, drawn as layered noise that drifts upwards and stretches into fine vertical streaks, thickens over the old scene, and clears from the new one. interpolation -> the progress of the fade (1 old scene, 0 new scene) audioSwell -> the density of the mist Per-activation variety…
+
+![MistRiseVeil über TunnelPlain (2D)](img/MistRiseVeil_2D.jpg) ![MistRiseVeil über AuroraBorealisOverFjord (3D)](img/MistRiseVeil_3D.jpg)
 
 
 ### MiuraFoldReveal
@@ -23526,12 +23622,16 @@ TRANSITION MIST RISE VEIL: mist rises out of the picture and bleaches it; when i
 
 TRANSITION MIURA FOLD REVEAL: the picture opens like a Miura-folded map, every fold showing a strip of the new scene. Vertical strips with zigzag edges (the Miura pattern) open one after the other from the left, each shading light or dark like a folded sheet. interpolation -> the progress of the fade (1 old scene, 0 new scene) audioSwell -> a slight breath of the brightness in the middle (light only) Per-activation v…
 
+![MiuraFoldReveal über TunnelPlain (2D)](img/MiuraFoldReveal_2D.jpg) ![MiuraFoldReveal über AuroraBorealisOverFjord (3D)](img/MiuraFoldReveal_3D.jpg)
+
 
 ### MoireDriftSwap
 
 `Transitions/MoireDriftSwap.frag` · mood=psychedelic · probability=0.06
 
 TRANSITION MOIRE DRIFT SWAP: two line gratings of almost the same pitch drift over each other and the moire fringes swap the scene. The beat of two gratings gives broad fringes that slowly travel; the new scene is in the bright fringes and then in all of them as the fringes widen to one band. interpolation -> the progress of the fade (1 old scene, 0 new scene) audioRoughness -> none; the detuning is rolled; the drift…
+
+![MoireDriftSwap über TunnelPlain (2D)](img/MoireDriftSwap_2D.jpg) ![MoireDriftSwap über AuroraBorealisOverFjord (3D)](img/MoireDriftSwap_3D.jpg)
 
 
 ### MoireInterference
@@ -23557,6 +23657,8 @@ Mosaic dissolve: the frame flips to the new scene cell by cell in random order. 
 `Transitions/MovingSourceCrestFan.frag` · mood=wipe · probability=0.06
 
 TRANSITION MOVING SOURCE CREST FAN: a source runs through the picture and its waves bunch up in front of it and spread behind, carrying the new scene. A wedge of crests, close together in front of the source and far apart behind it, sweeps across; inside the wedge the new scene, outside the old, and the crests are traced as fine lines. interpolation -> the progress of the fade (1 old scene, 0 new scene) audioSwell ->…
+
+![MovingSourceCrestFan über TunnelPlain (2D)](img/MovingSourceCrestFan_2D.jpg) ![MovingSourceCrestFan über AuroraBorealisOverFjord (3D)](img/MovingSourceCrestFan_3D.jpg)
 
 
 ### MurmurationHandoff
@@ -23592,12 +23694,16 @@ TRANSITION NAVIER STOKES MELT: Fluid advection vorticity melting transition. The
 
 TRANSITION ND GRADIENT PULL: a graduated filter is pulled over the picture: the darkened side already shows the new scene. A broad soft front sweeps across; around it the picture darkens like under a graduated neutral-density filter, and the side the filter has passed shows the new scene in full light. interpolation -> the progress of the fade (1 old scene, 0 new scene) audioSwell -> the density of the filter Per-act…
 
+![NdGradientPull über TunnelPlain (2D)](img/NdGradientPull_2D.jpg) ![NdGradientPull über AuroraBorealisOverFjord (3D)](img/NdGradientPull_3D.jpg)
+
 
 ### NeutralGreyBridgeMix
 
 `Transitions/NeutralGreyBridgeMix.frag` · mood=calm · probability=0.06
 
 TRANSITION NEUTRAL GREY BRIDGE MIX: both scenes are mixed without colour and the colour returns first in the new one. A plain cross-fade, but the colour sinks out of the mixture and comes back earlier for the new scene than it left the old one, so the middle is a black-and-white photograph made of both. interpolation -> the progress of the fade (1 old scene, 0 new scene) audioMode -> none; the return of the colour fo…
+
+![NeutralGreyBridgeMix über TunnelPlain (2D)](img/NeutralGreyBridgeMix_2D.jpg) ![NeutralGreyBridgeMix über AuroraBorealisOverFjord (3D)](img/NeutralGreyBridgeMix_3D.jpg)
 
 
 ### NewtonRingsInterference
@@ -23624,6 +23730,8 @@ TRANSITION OCEAN BREAKER WAVE: Ocean breaker wave rolling & foam wash transition
 
 TRANSITION ORIGAMI UNFOLD PLANES: the old scene is a folded sheet of triangles that opens and shows the new scene on its back. A triangulated grid of facets turns over from the centre outwards, each facet shading like paper at its fold angle; on the back of every facet lies the incoming scene. interpolation -> the progress of the fade (1 old scene, 0 new scene) audioSwell -> a slight breath of the brightness in the m…
 
+![OrigamiUnfoldPlanes über TunnelPlain (2D)](img/OrigamiUnfoldPlanes_2D.jpg) ![OrigamiUnfoldPlanes über AuroraBorealisOverFjord (3D)](img/OrigamiUnfoldPlanes_3D.jpg)
+
 
 ### PageTurnFolio
 
@@ -23640,12 +23748,16 @@ TRANSITION PAGE TURN FOLIO: the outgoing scene is a sheet of paper that lifts al
 
 TRANSITION PAPER FIBRE TEAR SLOW: a sheet of paper is torn in long fibres and shows the scene that lies below it. The old scene is a sheet of paper; a ragged tear travels across it, its edge a band of pale torn fibres with a soft shadow, and below the sheet lies the new scene. interpolation -> the progress of the fade (1 old scene, 0 new scene) audioSwell -> a slight breath of the brightness in the middle (light only…
 
+![PaperFibreTearSlow über TunnelPlain (2D)](img/PaperFibreTearSlow_2D.jpg) ![PaperFibreTearSlow über AuroraBorealisOverFjord (3D)](img/PaperFibreTearSlow_3D.jpg)
+
 
 ### PaperGrainFibreDissolve
 
 `Transitions/PaperGrainFibreDissolve.frag` · mood=calm · probability=0.06
 
 TRANSITION PAPER GRAIN FIBRE DISSOLVE: the order of change is the fibre structure of a handmade paper. Long fine fibres lying in a few directions form a net; the new scene is drawn in along the fibres and fills the gaps last, the way ink is taken up by laid paper. interpolation -> the progress of the fade (1 old scene, 0 new scene) audioSwell -> a slight breath of the brightness in the middle (light only) Per-activat…
+
+![PaperGrainFibreDissolve über TunnelPlain (2D)](img/PaperGrainFibreDissolve_2D.jpg) ![PaperGrainFibreDissolve über AuroraBorealisOverFjord (3D)](img/PaperGrainFibreDissolve_3D.jpg)
 
 
 ### ParallaxLayerSlideOut
@@ -23654,12 +23766,16 @@ TRANSITION PAPER GRAIN FIBRE DISSOLVE: the order of change is the fibre structur
 
 TRANSITION PARALLAX LAYER SLIDE OUT: the old scene slides outwards in layers by brightness, the new one slides in with its own parallax. Each scene is read as layers by its brightness (light in front); the old scene's layers fly outwards from the centre at different speeds and the new scene's layers settle from outside, so the picture has depth in the middle of the fade. interpolation -> the progress of the fade (1 o…
 
+![ParallaxLayerSlideOut über TunnelPlain (2D)](img/ParallaxLayerSlideOut_2D.jpg) ![ParallaxLayerSlideOut über AuroraBorealisOverFjord (3D)](img/ParallaxLayerSlideOut_3D.jpg)
+
 
 ### ParquetSlideInterlock
 
 `Transitions/ParquetSlideInterlock.frag` · mood=wipe,blocky · probability=0.06
 
 TRANSITION PARQUET SLIDE INTERLOCK: strips of parquet slide into one another from alternating sides and change the scene as they pass. The picture is cut into horizontal rows of planks; each row slides across in the opposite direction to its neighbours, at its own time, and the new scene is behind each sliding edge. interpolation -> the progress of the fade (1 old scene, 0 new scene) audioSwell -> a slight breath of …
+
+![ParquetSlideInterlock über TunnelPlain (2D)](img/ParquetSlideInterlock_2D.jpg) ![ParquetSlideInterlock über AuroraBorealisOverFjord (3D)](img/ParquetSlideInterlock_3D.jpg)
 
 
 ### PenroseMorph
@@ -23677,12 +23793,16 @@ TRANSITION PENROSE MORPH: 5-fold aperiodic Penrose tiling morphing between scene
 
 TRANSITION PETAL IRIS OPENING: the new scene opens out of the centre like the petals of an iris, each petal a curved blade. The boundary of the opening is a round shape with petal-like lobes that turn as it grows; the blades are soft and the opening covers the whole frame at the end. interpolation -> the progress of the fade (1 old scene, 0 new scene) audioSwell -> a slight breath of the brightness in the middle (lig…
 
+![PetalIrisOpening über TunnelPlain (2D)](img/PetalIrisOpening_2D.jpg) ![PetalIrisOpening über AuroraBorealisOverFjord (3D)](img/PetalIrisOpening_3D.jpg)
+
 
 ### PetalWindScatterMask
 
 `Transitions/PetalWindScatterMask.frag` · mood=calm,dreamy · probability=0.07
 
 TRANSITION PETAL WIND SCATTER MASK: petals drift through the picture and each shows the new scene in its shape. Soft elliptical petals of different size and turning angle appear in growing numbers; inside each one the new scene is visible, and when they have met no old scene is left. interpolation -> the progress of the fade (1 old scene, 0 new scene) audioSwell -> a slight breath of the brightness in the middle (lig…
+
+![PetalWindScatterMask über TunnelPlain (2D)](img/PetalWindScatterMask_2D.jpg) ![PetalWindScatterMask über AuroraBorealisOverFjord (3D)](img/PetalWindScatterMask_3D.jpg)
 
 
 ### PhasedBeamSweepReveal
@@ -23691,12 +23811,16 @@ TRANSITION PETAL WIND SCATTER MASK: petals drift through the picture and each sh
 
 TRANSITION PHASED BEAM SWEEP REVEAL: a beam from an antenna array sweeps over the picture and leaves the new scene, with faint side lobes beside it. A fan of angle runs from a point at the lower left over the frame; the sweep is the angle, and on both sides of the main edge fainter stripes (side lobes) show a little of the new scene early. interpolation -> the progress of the fade (1 old scene, 0 new scene) audioSwel…
 
+![PhasedBeamSweepReveal über TunnelPlain (2D)](img/PhasedBeamSweepReveal_2D.jpg) ![PhasedBeamSweepReveal über AuroraBorealisOverFjord (3D)](img/PhasedBeamSweepReveal_3D.jpg)
+
 
 ### PhraseHandArcSweep
 
 `Transitions/PhraseHandArcSweep.frag` · mood=calm,wipe · probability=0.07
 
 TRANSITION PHRASE HAND ARC SWEEP: a hand like that of a phrase clock sweeps once round the picture and leaves the new scene behind it. A soft wedge turns about the centre once during the fade; behind the hand the new scene, ahead of it the old, and a pale ring of marks at the phrase's eighths gives the sweep a scale. interpolation -> the progress of the fade (1 old scene, 0 new scene) audioPhrasePos -> the marks of t…
+
+![PhraseHandArcSweep über TunnelPlain (2D)](img/PhraseHandArcSweep_2D.jpg) ![PhraseHandArcSweep über AuroraBorealisOverFjord (3D)](img/PhraseHandArcSweep_3D.jpg)
 
 
 ### Pixelation
@@ -23732,6 +23856,8 @@ TRANSITION POINCARE SPIN: Conformal hyperbolic Poincaré disk inversion and cont
 
 TRANSITION POLARIZER ROTATION FADE: a polarising filter turns: reflections vanish, colours deepen, and the scene changes in the dark middle. The glare of the bright, unsaturated places (reflections, haze) is taken out and the saturation raised to a maximum in the middle of the turn, where the two scenes meet in deep, glare-free colour. interpolation -> the progress of the fade (1 old scene, 0 new scene) audioSwell ->…
 
+![PolarizerRotationFade über TunnelPlain (2D)](img/PolarizerRotationFade_2D.jpg) ![PolarizerRotationFade über AuroraBorealisOverFjord (3D)](img/PolarizerRotationFade_3D.jpg)
+
 
 ### PolaroidDevelopSquare
 
@@ -23748,12 +23874,16 @@ TRANSITION POLAROID DEVELOP SQUARE: the incoming scene arrives as an integral pr
 
 TRANSITION POLLEN DRIFT HAZE: clouds of golden pollen veil the scene and drift away. Slow golden haze made of noise and fine round grains of pollen; behind it the scene changes, and the haze carries off toward the edge. interpolation -> the progress of the fade (1 old scene, 0 new scene) audioSwell -> a slight breath of the brightness in the middle (light only) Per-activation variety: hazeP float how dense the haze g…
 
+![PollenDriftHaze über TunnelPlain (2D)](img/PollenDriftHaze_2D.jpg) ![PollenDriftHaze über AuroraBorealisOverFjord (3D)](img/PollenDriftHaze_3D.jpg)
+
 
 ### PoolLightLatticeWash
 
 `Transitions/PoolLightLatticeWash.frag` · mood=dreamy,bright · probability=0.07
 
 TRANSITION POOL LIGHT LATTICE WASH: light through moving water paints a lattice of bright lines, and the new scene stands where the light is gathered. A caustic network of the kind that lies on the floor of a pool bounds the change: the new scene appears first in the bright net of the focused light and the dark cells are the last islands of the old one. interpolation -> the progress of the fade (1 old scene, 0 new sc…
+
+![PoolLightLatticeWash über TunnelPlain (2D)](img/PoolLightLatticeWash_2D.jpg) ![PoolLightLatticeWash über AuroraBorealisOverFjord (3D)](img/PoolLightLatticeWash_3D.jpg)
 
 
 ### Portal
@@ -23771,12 +23901,16 @@ Portal: the new scene opens along the OLD scene's real depth - near geometry pee
 
 TRANSITION POSTER BAND RELEASE: the old scene is cut into tone bands and the bands give way one after the other. The old picture is quantised by brightness into a handful of bands, and a band at a time hands its area to the new scene, from the darkest to the lightest or the other way round; the edges are soft. interpolation -> the progress of the fade (1 old scene, 0 new scene) audioSwell -> a slight breath of the br…
 
+![PosterBandRelease über TunnelPlain (2D)](img/PosterBandRelease_2D.jpg) ![PosterBandRelease über AuroraBorealisOverFjord (3D)](img/PosterBandRelease_3D.jpg)
+
 
 ### PrismDispersionDrift
 
 `Transitions/PrismDispersionDrift.frag` · mood=dreamy,bright · probability=0.07
 
 TRANSITION PRISM DISPERSION DRIFT: a prism pulls the colour channels slowly apart and together again as the scene changes. The red and blue channels are shifted in opposite directions by a small distance that grows towards the middle and shrinks again, so the middle carries a soft coloured fringe on every edge; the scene itself cross-fades. interpolation -> the progress of the fade (1 old scene, 0 new scene) audioSwe…
+
+![PrismDispersionDrift über TunnelPlain (2D)](img/PrismDispersionDrift_2D.jpg) ![PrismDispersionDrift über AuroraBorealisOverFjord (3D)](img/PrismDispersionDrift_3D.jpg)
 
 
 ### Push
@@ -23793,6 +23927,8 @@ Push: the incoming scene shoves the old one out to the left, film-splice style. 
 `Transitions/PyramidDescentRefocus.frag` · mood=dreamy,calm · probability=0.08
 
 TRANSITION PYRAMID DESCENT REFOCUS: the old scene is taken apart by scale, the new one assembled by scale. The old scene dissolves into ever coarser blur, the new scene condenses out of the coarsest blur to full sharpness; in the middle two soft clouds lie over each other. interpolation -> the progress of the fade (1 old scene, 0 new scene) audioSwell -> a slight breath of the brightness in the middle (light only) Pe…
+
+![PyramidDescentRefocus über TunnelPlain (2D)](img/PyramidDescentRefocus_2D.jpg) ![PyramidDescentRefocus über AuroraBorealisOverFjord (3D)](img/PyramidDescentRefocus_3D.jpg)
 
 
 ### QuadtreeSubdivide
@@ -23819,6 +23955,8 @@ TRANSITION QUANTUM WAVE COLLAPSE: Quantum state superposition & wavefunction col
 
 TRANSITION RACK FOCUS BOKEH SWAP: the focus moves from the old scene to the new one: the old one melts into bokeh discs, the new one resolves from them. Both scenes are read through a disc-shaped aperture whose radius grows for the old scene and shrinks for the new one; bright points become discs, so the middle is two clouds of soft lights over each other. interpolation -> the progress of the fade (1 old scene, 0 new…
 
+![RackFocusBokehSwap über TunnelPlain (2D)](img/RackFocusBokehSwap_2D.jpg) ![RackFocusBokehSwap über AuroraBorealisOverFjord (3D)](img/RackFocusBokehSwap_3D.jpg)
+
 
 ### RadialIris
 
@@ -23835,6 +23973,8 @@ Radial iris-open wipe: the incoming scene grows from the centre in a soft-edged 
 
 TRANSITION RADIAL SPEED RUSH CUT: the picture rushes outwards in soft radial streaks, and the scene changes inside the rush. Both scenes are smeared along rays from the centre, the old one flying outwards, the new one arriving from the middle; the streaks are soft, with no flash and no jolt, and the rush grows and fades with the progress. interpolation -> the progress of the fade (1 old scene, 0 new scene) audioSwell…
 
+![RadialSpeedRushCut über TunnelPlain (2D)](img/RadialSpeedRushCut_2D.jpg) ![RadialSpeedRushCut über AuroraBorealisOverFjord (3D)](img/RadialSpeedRushCut_3D.jpg)
+
 
 ### RaindropLensRefraction
 
@@ -23842,12 +23982,16 @@ TRANSITION RADIAL SPEED RUSH CUT: the picture rushes outwards in soft radial str
 
 TRANSITION RAINDROP LENS REFRACTION: drops on the lens refract the picture, each showing the new scene inverted, and they run together. Elongated drops slide slowly down a pane in front of the picture; each is a little lens that shows the incoming scene upside down and magnified, with a bright edge; they grow and merge until the new scene fills the pane. interpolation -> the progress of the fade (1 old scene, 0 new s…
 
+![RaindropLensRefraction über TunnelPlain (2D)](img/RaindropLensRefraction_2D.jpg) ![RaindropLensRefraction über AuroraBorealisOverFjord (3D)](img/RaindropLensRefraction_3D.jpg)
+
 
 ### RainRivuletClearing
 
 `Transitions/RainRivuletClearing.frag` · mood=calm,dark · probability=0.07
 
 TRANSITION RAIN RIVULET CLEARING: rivulets run down a misted pane and clear it, and the clear streaks show the new scene. The old scene lies behind misted glass; narrow meandering rivulets of different start times run over it, each leaving a clear path with the new scene, widening until the whole pane is clear. interpolation -> the progress of the fade (1 old scene, 0 new scene) audioSwell -> a slight breath of the b…
+
+![RainRivuletClearing über TunnelPlain (2D)](img/RainRivuletClearing_2D.jpg) ![RainRivuletClearing über AuroraBorealisOverFjord (3D)](img/RainRivuletClearing_3D.jpg)
 
 
 ### RayleighTaylorInstability
@@ -23883,12 +24027,16 @@ TRANSITION RECRYSTALLISATION GRAIN GROWTH: strain-free grains of the incoming sc
 
 TRANSITION REVERB TAIL BLUR WASH: the old scene fades away like a sound into a hall, in echoes that grow softer and larger, and the new scene steps out of the tail. The old scene is added to itself in six echoes, each fainter, larger and slightly turned away from the centre; the echoes grow with the fade and give way to the new scene. interpolation -> the progress of the fade (1 old scene, 0 new scene) audioSwell -> …
 
+![ReverbTailBlurWash über TunnelPlain (2D)](img/ReverbTailBlurWash_2D.jpg) ![ReverbTailBlurWash über AuroraBorealisOverFjord (3D)](img/ReverbTailBlurWash_3D.jpg)
+
 
 ### RippleGridPhaseReveal
 
 `Transitions/RippleGridPhaseReveal.frag` · mood=dreamy · probability=0.06
 
 TRANSITION RIPPLE GRID PHASE REVEAL: a grid of wave sources sends out rings, and where a crest passes the new scene stays. Every cell has its own source with a slightly different phase; the order of change is a wave radiating from each source, so the picture is covered with small expanding rings that meet. interpolation -> the progress of the fade (1 old scene, 0 new scene) audioSwell -> a slight breath of the bright…
+
+![RippleGridPhaseReveal über TunnelPlain (2D)](img/RippleGridPhaseReveal_2D.jpg) ![RippleGridPhaseReveal über AuroraBorealisOverFjord (3D)](img/RippleGridPhaseReveal_3D.jpg)
 
 
 ### RisographDrumOffset
@@ -23915,12 +24063,16 @@ TRANSITION SAND RIPPLE AEOLIAN: Desert sand ripple saltation & wind shear transi
 
 TRANSITION SAND VEIL PASSING: a veil of fine sand blows across the picture in long bands and leaves the new scene behind it. Long streaks of blown sand cross the frame diagonally; the veil is thick in its core and fine at its edges, and the scene changes under it. interpolation -> the progress of the fade (1 old scene, 0 new scene) audioSwell -> a slight breath of the brightness in the middle (light only) Per-activat…
 
+![SandVeilPassing über TunnelPlain (2D)](img/SandVeilPassing_2D.jpg) ![SandVeilPassing über AuroraBorealisOverFjord (3D)](img/SandVeilPassing_3D.jpg)
+
 
 ### SaturationDrainBridge
 
 `Transitions/SaturationDrainBridge.frag` · mood=calm,dark · probability=0.07
 
 TRANSITION SATURATION DRAIN BRIDGE: the old scene drains to grey, the new one takes its colour back. Both scenes meet in a quiet grey middle: the old scene loses its colour, then the new scene, still grey, is coloured in. The middle of the fade is a soft black-and-white picture with a shimmer of both. interpolation -> the progress of the fade (1 old scene, 0 new scene) audioRolloff -> the length of the grey stretch P…
+
+![SaturationDrainBridge über TunnelPlain (2D)](img/SaturationDrainBridge_2D.jpg) ![SaturationDrainBridge über AuroraBorealisOverFjord (3D)](img/SaturationDrainBridge_3D.jpg)
 
 
 ### SchlierenKnifeEdge
@@ -23956,6 +24108,8 @@ TRANSITION SEAM CARVING RETARGET: seams of lowest energy are taken out of the ou
 
 TRANSITION SHADOW LIFT CROSSING: the shadows of the old scene lift and fill with the new scene; its lights stay last. Like a tide that rises from the dark, but the old picture is lifted out of its shadows as it goes, so nothing ever turns black; the lights of the old scene hold on to the end. interpolation -> the progress of the fade (1 old scene, 0 new scene) audioSwell -> the lift deepens Per-activation variety: li…
 
+![ShadowLiftCrossing über TunnelPlain (2D)](img/ShadowLiftCrossing_2D.jpg) ![ShadowLiftCrossing über AuroraBorealisOverFjord (3D)](img/ShadowLiftCrossing_3D.jpg)
+
 
 ### Shatter
 
@@ -23972,6 +24126,8 @@ Shatter: the old scene breaks into Voronoi shards that fly apart, spin and fall;
 
 TRANSITION SHIBORI FOLD UNFURL: a folded cloth is unfolded strip by strip, each strip showing the new scene with the dye run of the fold. Parallel strips of cloth unfold one after the other; at every fold edge the dye has run into the cloth, a soft darker tint that fades as the strip is opened. interpolation -> the progress of the fade (1 old scene, 0 new scene) audioSwell -> the dye run at the folds Per-activation v…
 
+![ShiboriFoldUnfurl über TunnelPlain (2D)](img/ShiboriFoldUnfurl_2D.jpg) ![ShiboriFoldUnfurl über AuroraBorealisOverFjord (3D)](img/ShiboriFoldUnfurl_3D.jpg)
+
 
 ### ShutterBladeTurbineOpen
 
@@ -23979,12 +24135,16 @@ TRANSITION SHIBORI FOLD UNFURL: a folded cloth is unfolded strip by strip, each 
 
 TRANSITION SHUTTER BLADE TURBINE OPEN: a shutter of curved blades opens in a spiral and shows the new scene through its hole. The opening is a round hole with a scalloped edge made of overlapping blades; it widens while the blades turn, so the edge runs round the hole as in a camera diaphragm. interpolation -> the progress of the fade (1 old scene, 0 new scene) audioSwell -> a slight breath of the brightness in the m…
 
+![ShutterBladeTurbineOpen über TunnelPlain (2D)](img/ShutterBladeTurbineOpen_2D.jpg) ![ShutterBladeTurbineOpen über AuroraBorealisOverFjord (3D)](img/ShutterBladeTurbineOpen_3D.jpg)
+
 
 ### SilkDrapeFoldSweep
 
 `Transitions/SilkDrapeFoldSweep.frag` · mood=calm,dreamy,wipe · probability=0.08
 
 TRANSITION SILK DRAPE FOLD SWEEP: a silk cloth glides over the picture; in front of it the old scene, on it and behind it the new one. A front with soft cloth folds travels across the picture; the cloth shows the new scene bent by its folds with a sheen of silk highlights, and the old scene is pushed a little by the drape in front of it. interpolation -> the progress of the fade (1 old scene, 0 new scene) audioSwell …
+
+![SilkDrapeFoldSweep über TunnelPlain (2D)](img/SilkDrapeFoldSweep_2D.jpg) ![SilkDrapeFoldSweep über AuroraBorealisOverFjord (3D)](img/SilkDrapeFoldSweep_3D.jpg)
 
 
 ### SlidingDoors
@@ -24011,12 +24171,16 @@ TRANSITION SMOKE TURBULENCE DRIFT: Atmospheric smoke and turbulent vapor transit
 
 TRANSITION SNOW VEIL BURY MELT: fine snow veils bury the old scene in soft white drifts, then melt and give the new scene. Three layers of round flakes of different size fall and settle until the picture is veiled in white; the old scene goes under it and the new one comes up as the veil melts away. interpolation -> the progress of the fade (1 old scene, 0 new scene) audioSwell -> how much snow falls Per-activation v…
 
+![SnowVeilBuryMelt über TunnelPlain (2D)](img/SnowVeilBuryMelt_2D.jpg) ![SnowVeilBuryMelt über AuroraBorealisOverFjord (3D)](img/SnowVeilBuryMelt_3D.jpg)
+
 
 ### SoftMatteDriftMask
 
 `Transitions/SoftMatteDriftMask.frag` · mood=calm,dreamy · probability=0.09
 
 TRANSITION SOFT MATTE DRIFT MASK: a very low, slowly drifting cloud of noise decides what is old and what is new. No structure at all, only broad soft clouds of old and new that slide over each other; the calmest dissolve in the set. interpolation -> the progress of the fade (1 old scene, 0 new scene) audioSwell -> the clouds' edges breathe Per-activation variety: cloudP float the size of the clouds (large is high) (…
+
+![SoftMatteDriftMask über TunnelPlain (2D)](img/SoftMatteDriftMask_2D.jpg) ![SoftMatteDriftMask über AuroraBorealisOverFjord (3D)](img/SoftMatteDriftMask_3D.jpg)
 
 
 ### SolitonWaveCollision
@@ -24043,6 +24207,8 @@ TRANSITION SPECTRAL PRISM SPLIT: Optical prism dispersion transition. The image 
 
 TRANSITION SPECTRUM CURTAIN RISE: a curtain of vertical bars rises from the bottom, each bar at a pace of its own, like a spectrum display. Narrow vertical bars grow from the bottom edge with heights that follow slow waves whose phase is the music's integrated phase; the new scene is seen in the risen bars and the old scene above them, until the bars reach the top. interpolation -> the progress of the fade (1 old sce…
 
+![SpectrumCurtainRise über TunnelPlain (2D)](img/SpectrumCurtainRise_2D.jpg) ![SpectrumCurtainRise über AuroraBorealisOverFjord (3D)](img/SpectrumCurtainRise_3D.jpg)
+
 
 ### SpinodalDecomposition
 
@@ -24068,6 +24234,8 @@ Spin-zoom cross-fade: the old scene twists away while the new one untwists in. S
 
 TRANSITION SPIRAL WINDOW TURNSTILE: spiral arms sweep over the picture like the blades of a turnstile and leave the new scene behind them. The picture is divided into logarithmic spiral arms; the new scene fills them from the one edge of each arm to the other as the arms turn. interpolation -> the progress of the fade (1 old scene, 0 new scene) audioSwell -> a slight breath of the brightness in the middle (light only…
 
+![SpiralWindowTurnstile über TunnelPlain (2D)](img/SpiralWindowTurnstile_2D.jpg) ![SpiralWindowTurnstile über AuroraBorealisOverFjord (3D)](img/SpiralWindowTurnstile_3D.jpg)
+
 
 ### SplitFlapDeparture
 
@@ -24084,12 +24252,16 @@ TRANSITION SPLIT FLAP DEPARTURE: a departure board flips through to the incoming
 
 TRANSITION STAINED GLASS LEAD REVEAL: the new scene appears pane by pane in a leaded window, each pane changing at its own time. Large irregular panes, bordered by dark, soft lead lines, take their change one after the other in a random order; each pane is tinted like coloured glass at the moment it changes. interpolation -> the progress of the fade (1 old scene, 0 new scene) audioSwell -> a slight breath of the brig…
 
+![StainedGlassLeadReveal über TunnelPlain (2D)](img/StainedGlassLeadReveal_2D.jpg) ![StainedGlassLeadReveal über AuroraBorealisOverFjord (3D)](img/StainedGlassLeadReveal_3D.jpg)
+
 
 ### StandingWaveNodeReveal
 
 `Transitions/StandingWaveNodeReveal.frag` · mood=calm,dreamy · probability=0.07
 
 TRANSITION STANDING WAVE NODE REVEAL: a standing wave decides the order of change: the nodes change first, the antinodes last. Stripes of a standing wave whose mode changes during the fade (two, three, five half-waves); the new scene appears on the nodal lines, widens to the stripes between, and the antinodes are the last bits of the old scene. interpolation -> the progress of the fade (1 old scene, 0 new scene) audi…
+
+![StandingWaveNodeReveal über TunnelPlain (2D)](img/StandingWaveNodeReveal_2D.jpg) ![StandingWaveNodeReveal über AuroraBorealisOverFjord (3D)](img/StandingWaveNodeReveal_3D.jpg)
 
 
 ### StarTwinkleDissolve
@@ -24098,6 +24270,8 @@ TRANSITION STANDING WAVE NODE REVEAL: a standing wave decides the order of chang
 
 TRANSITION STAR TWINKLE DISSOLVE: the old scene falls into night and the new one is born from stars, each a window on the new picture. The old picture dims into a deep blue dark; points of light appear in it, each a growing round window that shows the new scene; the points join until the frame is full. interpolation -> the progress of the fade (1 old scene, 0 new scene) audioSwell -> the stars' slow shimmer Per-activ…
 
+![StarTwinkleDissolve über TunnelPlain (2D)](img/StarTwinkleDissolve_2D.jpg) ![StarTwinkleDissolve über AuroraBorealisOverFjord (3D)](img/StarTwinkleDissolve_3D.jpg)
+
 
 ### StereoFieldPanWipe
 
@@ -24105,12 +24279,16 @@ TRANSITION STAR TWINKLE DISSOLVE: the old scene falls into night and the new one
 
 TRANSITION STEREO FIELD PAN WIPE: the width of the stereo image parts the picture: left and right change at different times. The left and right halves wipe from the centre outwards, one after the other, and the delay between them follows the stereo width of the music (smoothed). interpolation -> the progress of the fade (1 old scene, 0 new scene) audioStereo -> the delay between left and right (slow) Per-activation v…
 
+![StereoFieldPanWipe über TunnelPlain (2D)](img/StereoFieldPanWipe_2D.jpg) ![StereoFieldPanWipe über AuroraBorealisOverFjord (3D)](img/StereoFieldPanWipe_3D.jpg)
+
 
 ### SunbeamSheafSweep
 
 `Transitions/SunbeamSheafSweep.frag` · mood=bright,calm,wipe · probability=0.07
 
 TRANSITION SUNBEAM SHEAF SWEEP: a fan of sunbeams sweeps over the picture, and the scene has changed where it has passed. Soft rays fan out from a point beyond the frame's corner; the sweep follows their angle, and the front carries a warm veil of light that grows in the middle and is gone at the ends. interpolation -> the progress of the fade (1 old scene, 0 new scene) audioKick -> a little extra light on the rays (…
+
+![SunbeamSheafSweep über TunnelPlain (2D)](img/SunbeamSheafSweep_2D.jpg) ![SunbeamSheafSweep über AuroraBorealisOverFjord (3D)](img/SunbeamSheafSweep_3D.jpg)
 
 
 ### SuperfluidHe4Fountain
@@ -24164,6 +24342,8 @@ TRANSITION TAPE HEAD CROSSFADE: a splice runs across the playback head. The cut 
 
 TRANSITION TEMPO PULSE BREATH MASK: a round mask breathes in the rhythm of the phrase and each breath leaves more of the new scene. A circular opening grows through the fade; a slow sine of the phrase position makes its edge swell and fall like a breath, without the opening ever shrinking. interpolation -> the progress of the fade (1 old scene, 0 new scene) audioPhrasePos -> the breath of the edge (periodic) Per-acti…
 
+![TempoPulseBreathMask über TunnelPlain (2D)](img/TempoPulseBreathMask_2D.jpg) ![TempoPulseBreathMask über AuroraBorealisOverFjord (3D)](img/TempoPulseBreathMask_3D.jpg)
+
 
 ### Tesseract4DRotation
 
@@ -24180,12 +24360,16 @@ TRANSITION TESSERACT 4D ROTATION: 4D hypercube rotation & W-axis slice transitio
 
 TRANSITION TIDE FOAM LACEWORK REVEAL: the foam of an ebbing wave draws a net of arcs, and the new scene shows through the meshes. A cellular net of foam, thick at the cell edges and clear in the cells, advances over the picture; the new scene appears first in the clear meshes and the white edges thin out last. interpolation -> the progress of the fade (1 old scene, 0 new scene) audioSwell -> a slight breath of the br…
 
+![TideFoamLaceworkReveal über TunnelPlain (2D)](img/TideFoamLaceworkReveal_2D.jpg) ![TideFoamLaceworkReveal über AuroraBorealisOverFjord (3D)](img/TideFoamLaceworkReveal_3D.jpg)
+
 
 ### TideLineWashSand
 
 `Transitions/TideLineWashSand.frag` · mood=calm,wipe · probability=0.08
 
 TRANSITION TIDE LINE WASH SAND: the lines of waves slide over wet sand, and behind each line there is more of the new scene. Several lacy fronts of foam run diagonally across the picture; a front leaves a darker, wetter sheet of the new scene behind it and a thin bright line of foam on its edge. interpolation -> the progress of the fade (1 old scene, 0 new scene) audioSwell -> a slight breath of the brightness in the…
+
+![TideLineWashSand über TunnelPlain (2D)](img/TideLineWashSand_2D.jpg) ![TideLineWashSand über AuroraBorealisOverFjord (3D)](img/TideLineWashSand_3D.jpg)
 
 
 ### TileFlipWaveRipple
@@ -24194,12 +24378,16 @@ TRANSITION TIDE LINE WASH SAND: the lines of waves slide over wet sand, and behi
 
 TRANSITION TILE FLIP WAVE RIPPLE: square tiles flip like cards in a wave that runs outwards from the centre. The picture is a floor of square tiles; each flips about its vertical axis when the wave reaches it, the old scene on its front and the new scene on its back. interpolation -> the progress of the fade (1 old scene, 0 new scene) audioSwell -> a slight breath of the brightness in the middle (light only) Per-acti…
 
+![TileFlipWaveRipple über TunnelPlain (2D)](img/TileFlipWaveRipple_2D.jpg) ![TileFlipWaveRipple über AuroraBorealisOverFjord (3D)](img/TileFlipWaveRipple_3D.jpg)
+
 
 ### TonnetzTileFlipSlow
 
 `Transitions/TonnetzTileFlipSlow.frag` · mood=blocky,calm · probability=0.06
 
 TRANSITION TONNETZ TILE FLIP SLOW: a triangular lattice turns facet by facet in the order of a wandering chord path. The lattice of the Tonnetz (triangles for the major and minor triads) turns over triangle after triangle; the order is a path through the lattice that drifts with the pitch-class hue of the music. interpolation -> the progress of the fade (1 old scene, 0 new scene) audioChromaHue -> the drift of the pa…
+
+![TonnetzTileFlipSlow über TunnelPlain (2D)](img/TonnetzTileFlipSlow_2D.jpg) ![TonnetzTileFlipSlow über AuroraBorealisOverFjord (3D)](img/TonnetzTileFlipSlow_3D.jpg)
 
 
 ### TriangleMeshWaveSwap
@@ -24208,12 +24396,16 @@ TRANSITION TONNETZ TILE FLIP SLOW: a triangular lattice turns facet by facet in 
 
 TRANSITION TRIANGLE MESH WAVE SWAP: a mesh of triangles tilts in a wave across the picture and shows the new scene on the far side of every facet. Triangular facets flip in an order that sweeps diagonally with some randomness; each facet's brightness follows the cosine of its tilt, so the wave is seen as a glint running over the mesh. interpolation -> the progress of the fade (1 old scene, 0 new scene) audioSwell -> …
 
+![TriangleMeshWaveSwap über TunnelPlain (2D)](img/TriangleMeshWaveSwap_2D.jpg) ![TriangleMeshWaveSwap über AuroraBorealisOverFjord (3D)](img/TriangleMeshWaveSwap_3D.jpg)
+
 
 ### VoronoiPlateSlideApart
 
 `Transitions/VoronoiPlateSlideApart.frag` · mood=blocky,wipe · probability=0.06
 
 TRANSITION VORONOI PLATE SLIDE APART: plates of the old scene shrink and slide apart, and the new scene fills the gaps between them. The picture is a mosaic of irregular plates; each shrinks towards its own centre at its own time, a dark seam opens round it, and the new scene lies behind. interpolation -> the progress of the fade (1 old scene, 0 new scene) audioSwell -> a slight breath of the brightness in the middle…
+
+![VoronoiPlateSlideApart über TunnelPlain (2D)](img/VoronoiPlateSlideApart_2D.jpg) ![VoronoiPlateSlideApart über AuroraBorealisOverFjord (3D)](img/VoronoiPlateSlideApart_3D.jpg)
 
 
 ### VoronoiShatter
@@ -24230,6 +24422,8 @@ TRANSITION VORONOI SHATTER: Smooth transition where the scene dissolves through 
 `Transitions/WatercolorBleedFront.frag` · mood=calm,wipe · probability=0.08
 
 TRANSITION WATERCOLOUR BLEED FRONT: a watercolour front moves over the picture and leaves the new scene behind it. An irregular front advances; at its edge the pigment collects in a darker, slightly granular line (the coffee-ring edge of a wash), behind it the new scene lies as a pale wash that deepens to full colour. interpolation -> the progress of the fade (1 old scene, 0 new scene) audioSwell -> a slight breath o…
+
+![WatercolorBleedFront über TunnelPlain (2D)](img/WatercolorBleedFront_2D.jpg) ![WatercolorBleedFront über AuroraBorealisOverFjord (3D)](img/WatercolorBleedFront_3D.jpg)
 
 
 ### WaterRipple
@@ -24256,12 +24450,16 @@ TRANSITION WAVE FUNCTION COLLAPSE TILES: the frame is a grid of tiles held in su
 
 TRANSITION WAVEGUIDE CHANNEL FLOW: the new scene flows in along channels like a guided wave and the channels widen until they join. Horizontal channels with a smooth cross-section run through the picture; the new scene enters each channel from the left at its own time and the channels widen sideways until no old scene is left. interpolation -> the progress of the fade (1 old scene, 0 new scene) audioSwell -> a slight…
 
+![WaveguideChannelFlow über TunnelPlain (2D)](img/WaveguideChannelFlow_2D.jpg) ![WaveguideChannelFlow über AuroraBorealisOverFjord (3D)](img/WaveguideChannelFlow_3D.jpg)
+
 
 ### WaxResistDyeReveal
 
 `Transitions/WaxResistDyeReveal.frag` · mood=calm,dreamy · probability=0.07
 
 TRANSITION WAX RESIST DYE REVEAL: wax lines resist the dye, so the new scene appears first between the lines and last on them. A crackle of fine wax lines, like batik, keeps the old scene on its lines; the new scene is dyed in over the open cells with a deeper tint where the dye has just reached. interpolation -> the progress of the fade (1 old scene, 0 new scene) audioSwell -> the depth of the dye tint Per-activatio…
+
+![WaxResistDyeReveal über TunnelPlain (2D)](img/WaxResistDyeReveal_2D.jpg) ![WaxResistDyeReveal über AuroraBorealisOverFjord (3D)](img/WaxResistDyeReveal_3D.jpg)
 
 
 ### WormholeSpaceFold
@@ -24287,6 +24485,8 @@ TRANSITION ZONE PLATE FOCUS PULL: a Fresnel zone plate takes the outgoing scene 
 `Transitions/ZoomPunchBlurHandoff.frag` · mood=aggressive,bright · probability=0.07
 
 TRANSITION ZOOM PUNCH BLUR HANDOFF: the old scene zooms in with a radial blur and the new scene comes out of the middle. A soft zoom: the old picture grows and blurs radially while the new one starts enlarged and settles; the hand-over happens in the blurred middle. interpolation -> the progress of the fade (1 old scene, 0 new scene) audioSwell -> the depth of the zoom Per-activation variety: zoomP float how deep the…
+
+![ZoomPunchBlurHandoff über TunnelPlain (2D)](img/ZoomPunchBlurHandoff_2D.jpg) ![ZoomPunchBlurHandoff über AuroraBorealisOverFjord (3D)](img/ZoomPunchBlurHandoff_3D.jpg)
 
 
 ### ZoomThrough
