@@ -7817,8 +7817,9 @@ turned out to be is not always what was claimed beforehand; where the claim was 
   twelve ShipDocking entries had no `spinAxisP` (`PresetEditor --validate`; 0 = X, what they did). The build ran the
   packaging, whose Inno Setup rejects `installer.iss` on the runner (`RunDeploy=false`).
 - *What Mesa's compiler found:* four scenes with variables named `active`, `cast` and `mat2` -- reserved words and a
-  type name that NVIDIA lets pass. On Linux with Mesa these scenes did not compile. Renamed. The step stays
-  informational (continue-on-error) but is the only check with a second GLSL compiler.
+  type name that NVIDIA lets pass. On Linux with Mesa these scenes did not compile. Renamed. The compile of every
+  shader with Mesa is a gate now (it runs whenever Mesa could be installed on the runner; the jump test under Mesa
+  stays informational): the only check with a second GLSL compiler.
 - *Release notes* of v1.19.0 in English, the German text folded below. *README:* a moving picture at the top
   (`Tools/make_demo_clip.py`: eight scenes in one video export, an animated WebP of 480 x 270).
 

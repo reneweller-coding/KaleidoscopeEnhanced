@@ -44,6 +44,11 @@ jobs:
         with:
           path: docs/Catalog
 
+      # About 7,900 pictures: the Pages side takes five to ten minutes to sync them (the first run of 10.11.2026 hit the
+      # action's default limit of ten).  A failed run is started anew (workflow_dispatch), not re-run: a re-run uploads
+      # a second artifact of the same name into the run, and the deployment refuses two.
       - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v5
+        with:
+          timeout: 1500000
