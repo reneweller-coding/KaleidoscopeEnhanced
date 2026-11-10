@@ -108,7 +108,23 @@ def render(label, only, photo, timeout, jobs=1):
     os.makedirs(out, exist_ok=True)
     src = io.open(os.path.join(ROOT, "Presets", "Komplett.xml"), encoding="utf-8").read()
     fx = re.search(r"[ \t]*<CombineShader\b[^>]*[\\/]FxPlain\.frag\"[^>]*>.*?</CombineShader>", src, re.S).group(0)
+    # The fixed photo is part of the set: a set (and the baseline it is compared with) names it in photo.txt.  The
+    # default used to be "the middle one of Images/" on every run, so a photo library that grew changed every frame
+    # of the next set against its baseline.
+    note = os.path.join(out, "photo.txt")
+    if not photo:
+        candidates = [note]
+        base_file = os.path.join(ROOT, "Tools", "snapshot_baseline.txt")
+        if os.path.exists(base_file):
+            candidates.append(os.path.join(BASE, io.open(base_file, encoding="utf-8").read().strip(), "photo.txt"))
+        for c in candidates:
+            if os.path.exists(c):
+                photo = io.open(c, encoding="utf-8").read().strip()
+                break
     photo = photo or sorted(os.listdir(os.path.join(ROOT, "Images")))[len(os.listdir(os.path.join(ROOT, "Images"))) // 2]
+    if not os.path.exists(os.path.join(ROOT, "Images", photo)):
+        raise SystemExit("the set's photo is not in Images/: " + photo)
+    io.open(note, "w", encoding="utf-8").write(photo + "\n")
     global PS
     PS = PrivateSettings("snap")
     idx = io.open(os.path.join(out, "index.tsv"), "a", encoding="utf-8")

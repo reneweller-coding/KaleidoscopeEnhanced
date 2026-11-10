@@ -54,7 +54,9 @@ jobs:
       # through explicitly.
       - name: Build Kaleidoscope (main app, Release x64)
         shell: pwsh
-        run: msbuild Kaleidoscope.sln /p:Configuration=Release /p:Platform=x64 "/p:QTDIR=$env:QT_ROOT_DIR" /m /v:minimal
+        # RunDeploy=false: the post-build packaging (deploy.ps1, Inno Setup) is the release's business; on the
+        # runner its Inno Setup rejects installer.iss and fills the log with a failure that is none.
+        run: msbuild Kaleidoscope.sln /p:Configuration=Release /p:Platform=x64 "/p:QTDIR=$env:QT_ROOT_DIR" /p:RunDeploy=false /m /v:minimal
 
       - name: Build PresetEditor (Release x64)
         shell: pwsh
@@ -67,10 +69,14 @@ jobs:
       # in a second, where finding them by rendering costs a full batch pass.
       # Validated against the commit that introduced them: it flags all 17
       # broken scenes there and is clean on the fixed tree.
+      # --no-compile: the static rules only.  Since shadercheck also compiles every shader with the real driver
+      # (rule C1, PresetEditor --compile), this step failed on the runner: its default OpenGL knows no GLSL 3.30,
+      # so all 3200 shaders "did not compile" and the workflow was red from v1.18 on.  The real compile runs
+      # further down, once the software OpenGL is installed.
       - name: Self-test -- shadercheck (shader engine contracts, no GL)
         shell: pwsh
         run: |
-          python Tools\shadercheck.py
+          python Tools\shadercheck.py --no-compile
           if ($LASTEXITCODE -ne 0) { exit 1 }
 
       # Both ends of the motion budget, and both are static.  The ceiling
@@ -154,6 +160,20 @@ jobs:
         run: |
           $exe = "PresetEditor\build\Release\PresetEditor.exe"
           & $exe --transcheck
+          if ($LASTEXITCODE -ne 0) { exit 1 }
+
+      # Every shader through a second GLSL compiler (Mesa), which is the one Linux users without the vendor's
+      # driver have: the reference machine's NVIDIA compiler accepts things the standard does not.  Informational
+      # (continue-on-error) until its findings have been worked through.
+      - name: Self-test -- shader compile (every shader, Mesa's GLSL compiler)
+        shell: pwsh
+        continue-on-error: true
+        env:
+          GALLIUM_DRIVER: llvmpipe
+          MESA_GL_VERSION_OVERRIDE: '4.3'
+          MESA_GLSL_VERSION_OVERRIDE: '430'
+        run: |
+          python Tools\shadercheck.py
           if ($LASTEXITCODE -ne 0) { exit 1 }
 
       # Regression guard for the compute-FX 2D preview fix: renders
