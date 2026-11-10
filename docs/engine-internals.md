@@ -7720,3 +7720,124 @@ variants each, the rebuilt audio analysis. The chain of v1.18 held, with these a
   without `--user-data-dir`. `Tools/print_catalog_pdf.py` prints five parts of about 540 entries (5 s each) and joins them with
   Ghostscript: 1002 pages, 73 MB. The one catalogue image that changed (PolaroidDevelopSquare) was rendered again with
   `render_catalog_images.ps1 -Kind trans`, then `make_catalog.py "" docs/Catalog/rendered/fxscan`.
+
+## 10.11.2026 (66): after the release -- selection, a repaired measuring instrument, tempo, the first impression
+
+Asked whether there was still room for improvement, five points were named and then worked through. What each
+turned out to be is not always what was claimed beforehand; where the claim was wrong it says so.
+
+### 1. Selection instead of quantity
+
+- *The viewer's verdicts that exist are no ratings.* The settings file holds 307 taste weights, all of them skips,
+  221 from the test bench `TestAlle` walked from A to C; no favourite, no ban. So there was nothing to fold back yet.
+  The way back exists now: `Tools/apply_taste.py` turns the weights the app learns per preset and scene (skip x 0.8,
+  favourite x 1.25, ban) into `Tools/user_taste.tsv`, steps on that genre's fit column (Allround: interest), which
+  `make_genre_configs.py` applies. One skip is not a verdict (people skip to look around); two are a step down.
+  Benches and presets that no longer exist are ignored. Five corrections came out of the present file.
+- *The dull tail.* A quarter of the 2474 rated scenes stood at interest 4 or less, and since the plan walks through
+  all scenes of a preset before one returns, a dull scene comes as often as the best. `DULL` went from 2 to 3: the
+  185 scenes rated 3 (looked at as contact sheets: flat, murky or nearly empty in all three frames; six that look
+  fine were raised to 4) are in no genre preset any more, Allround keeps them. Scenes rated 4 or less: Noir 43 ->
+  31 %, Ambient 21 -> 15 %, Electronic 20 -> 17 %. This takes back a part of "every scene has a home" (22.10.);
+  `DULL = 2` restores it.
+- *Measured candidates are suspects, not verdicts.* How much of the frame a scene fills (pixels above 0.10 in the
+  catalogue frames) singles out the light-on-black scenes: 123 fill less than a fifth. They are neon lines, particles
+  and objects on black -- a look, not a defect, and at home in SpaceAmbient and Noir -- so no rule was made of it.
+  The screening's brightness ratio loud / quiet (`hot_vs_quiet`) is no measure of reactivity either: a scene that
+  answers the music with its geometry reads 1.0.
+
+### 2. The audio analysis
+
+- *Correction of the claim "16 of 30 drops".* The other 14 cue drops have no bass return (62); the detector is at
+  what can be heard. The gap was the tempo.
+- *Measured anew* (`Tools/tempo_vs_cues.py`, `Tools/analyser_cue_set.txt` = the 43 demos; the reference is the median
+  interval of the cues' beats within 4 s): right within 4 % in 39 % of the rhythmic time, 71 % at 90..135 BPM, 75 %
+  above, 14 % below 90 BPM. Below 90 the analyser reads the double by design (it folds every tempo into 70..180:
+  a pulse at the double is on the grid), so "on the grid" (right, double or half) is the fairer number: 61 %.
+- *The two sources, logged per block* (`AudioFeatures::tempoAc`, `tempoKick` and their confidences, in
+  `PresetEditor --features`): the kick intervals alone are right in 17 % of the time, the autocorrelation alone in
+  50 % -- yet below a confidence of 0.35 the kicks set the tempo, and they pulled at it on every kick. Replaying
+  rules on the logged sources: letting the autocorrelation lead at any confidence gains 6 points, the kicks' metres
+  2 and 1/2 turn more right tempos into octave errors than the reverse, the 2:3 is wrong whenever it fires, the 3:2
+  pays only where the kicks explain 95 % of their intervals (a clean two-step).
+- *The rule now:* the kicks set the tempo until the autocorrelation has one; then the autocorrelation leads (followed
+  in 0.1 s when confident, in 2 s when not), times 1.5 where clean kicks sit at 3:2. Measured: right 39 -> 49 %, folded
+  43 -> 55 %, on the grid 61 -> 69 %, at 90..135 BPM 71 -> 81 %. Real tracks, share of the time within 4 % of the
+  true tempo: Astrix 64 -> 97 %, Daft Punk 61 -> 100 %, DMT 74 -> 94 %, Kadafi 42 -> 80 %, Prodigy 12 -> 97 % (130; it
+  read 106..112), Thunderstruck 69 -> 100 %. *Worse:* Ironic 48 -> 25 %; it reads its dotted pulse (171 for 114) in
+  61 % of the time, where the kicks used to hold it near 116..124 for half of it. (The commit message of the change
+  gives shares of 2-BPM bins, which are smaller.) Sections and drops unchanged (125 of 281, 16 of 30); self-test 127 of 127.
+- *Tried and dropped:* letting the double lag support a lag (Ellis' duple weighting) against the dotted readings:
+  81 -> 84 % at 90..135 BPM but 78 -> 54 % above 135 -- in the 4-s window three beats of a fast track correlate as
+  well as two.
+
+### 3. The measuring instrument of the transitions was blind on one eye
+
+- *The outgoing scene was one flat colour.* `--transprofile --scene Blit.frag` was meant as "a still photo", but
+  `Engine/Blit.frag` reads `tex` at `vUV`, which the preview does not feed: one texel. Everything a transition does
+  to the OLD picture (a slide, a fold, a pixelation, a spin) was invisible, and a veil was measured against a dark
+  grey. `Engine/ProfileStill.frag` shows the photo. A cross-fade reads 58.27 now (55.30).
+- *The table was stale as well:* the rows of 96 of the 100 generated transitions did not match their shaders (measured
+  before the last tuning on 23.10.; the tell: every flash 0.0). On the flat colour several veils flashed far above
+  both scenes (snow 110, mist 83).
+- *Pinned:* `PresetEditor --transprofile --photos A,B` names the two photos (it took the first two of `Images/`, so a
+  library that grows moves every row) and refuses a folder without photos (a path with a blank passed unquoted used
+  to measure the test card silently); `--only A,B` for the loop of change and measure.
+  `Tools/transition_profile.py` runs profile and jump test, checks the cross-fade's value, merges rows by name: five
+  transitions in five seconds. `release_check.py` has the step `transitions` (33 s).
+- *`SOFT_FLICK` 1.0 -> 1.25:* the clock-driven change is measured on the whole frame now, about 1.27 times the old
+  numbers. PoincareSpin (2.12) is out of the calm genres: it spins the old picture.
+- *Veils in the scenes' light* (`trVeil()` in the template): fog, snow, gauze, pollen and foam were fixed light
+  greys mixed in up to 92 %. Their colour is dimmed until it is at most 0.09 above the brighter scene's mean
+  (nine fixed points each). Snow 110 -> 28, mist 83 -> 25, fog 62 -> 21, pollen 65 -> 21, gauze 46 -> 6.
+- *A progress curve from the measurement* (`Tools/transition_warp.py`): a transition that does its work in a third
+  of its progress is a jolt at any length. The tool measures where the change sits and writes the inverse of its
+  cumulative as a monotone cubic through 17 knots (`evenProgress(d)`, endpoints exact, never backwards; 85 % of the way
+  to an even spread, two passes; a stretch without change keeps some time). For a generated transition the knots
+  live in the draft (`warp:`), or the next build would lose them. Fitted on the flat colour it made five sliding
+  transitions worse (jump up to 56: it skipped what it could not see); on the photo it holds. Re-timed: LatentDenoise-
+  Arrival (jump 20.3 -> 1.9, core80 0.35 -> 0.78), SpinodalDecomposition (17.5 -> 1.1), Pixelation, LeidenfrostSkitter,
+  ScratchboardReveal, SeamCarvingRetarget, GoldenNautilus (6.2 -> 2.5), WaveFunctionCollapseTiles, FlatAreasFirst,
+  SandVeilPassing, TideLineWashSand.
+- *An order taken from the picture is normalised, not re-timed:* Luminance (keys around the scenes' mean
+  brightness, stretched and spread: core80 0.30 -> 0.53); a curve fitted on one photo fails the jump test on
+  another scene (13.0).
+- *Result:* all 210 pass the jump test (seven failed), 187 pass the soft limits; Ambient has 84 transitions (80),
+  Cinematic 116 (111). `tgen.py build` runs `doc_shaders.py` and `cgvr_format.py` over what it built. All 210 have
+  their catalogue frames (the 100 new ones had none).
+- *A mistake on the way:* `git checkout -- drafts/Z1.txt` to undo one edit threw away the uncommitted veil and
+  curve edits of that file; they were recovered from the built shaders (the knots are in the `K[17]` array). Commit
+  before undoing, or undo by hand.
+
+### 4. The first impression
+
+- *CI had been red since v1.18*, the release commit of v1.19.0 included. Three causes: `shadercheck.py` compiles
+  every shader with the real driver since rule C1, and the runner's default OpenGL knows no GLSL 3.30 (all 3200
+  "did not compile"); the static part runs first now (`--no-compile`), the compile after Mesa is installed. Eight of
+  twelve ShipDocking entries had no `spinAxisP` (`PresetEditor --validate`; 0 = X, what they did). The build ran the
+  packaging, whose Inno Setup rejects `installer.iss` on the runner (`RunDeploy=false`).
+- *What Mesa's compiler found:* four scenes with variables named `active`, `cast` and `mat2` -- reserved words and a
+  type name that NVIDIA lets pass. On Linux with Mesa these scenes did not compile. Renamed. The step stays
+  informational (continue-on-error) but is the only check with a second GLSL compiler.
+- *Release notes* of v1.19.0 in English, the German text folded below. *README:* a moving picture at the top
+  (`Tools/make_demo_clip.py`: eight scenes in one video export, an animated WebP of 480 x 270).
+
+### 5. The catalogue as a page
+
+- `docs/Catalog/index.html` + `catalog-data.js` (written by `make_catalog.py`): 2715 entries, search over names and
+  descriptions, filters by kind, genre preset and mood, the three frames and the full text on a click. Static, no
+  dependency, works from the disk. Hearts and crosses are kept in the browser and exported as a TSV for
+  `apply_taste.py --ratings` -- the cheap way to the ratings point 1 lacks.
+- *The weight was overestimated.* The repository is 173 MB on GitHub, the catalogue frames 86 MB of the tree at 11 KB
+  a frame. Moving them out would not shrink the history without rewriting it, which is not worth its risk. Nothing
+  was moved.
+
+### Tools and traps
+
+- Snapshot sets name their photo (`photo.txt`; it was "the middle one of `Images/`" on every run). The baseline is
+  `2026-11-10-all`: the set of 23.10. plus the 300 scenes it lacked; two old scenes re-rendered with the named photo
+  are identical to it.
+- A here-document in this shell eats one backslash even when quoted: `"\\n"` in an inline Python patch becomes a line
+  break in the patched file (three times that day). Patch scripts with backslashes go into a file first.
+- `Start-Process -ArgumentList '-File x.ps1 -Names A,B'` passes `A,B` as ONE name; `-Command "& 'x.ps1' -Names A,B"`
+  passes a list.

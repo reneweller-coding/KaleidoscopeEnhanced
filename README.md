@@ -3,12 +3,14 @@
 # Kaleidoscope Enhanced — Music Visualizer
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![CI](https://github.com/reneweller-coding/KaleidoscopeEnhanced/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/reneweller-coding/KaleidoscopeEnhanced/actions/workflows/ci.yml)
 ![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux-0078D6)
 
 <br clear="left">
 
-A real-time, audio-reactive kaleidoscope / tunnel visualizer for Windows and
-Linux. It
+A real-time, audio-reactive kaleidoscope / tunnel visualizer for Windows (the
+releases are Windows builds; it also builds from source on Linux and macOS,
+see [Building](#linux-and-macos)). It
 listens to whatever is playing on the system (Spotify, browser, foobar2000,
 a live mic, …), analyses it in real time, and drives a huge library of GLSL
 shaders whose motion, colour and structure follow the music's rhythm, timbre
@@ -18,6 +20,12 @@ down automatically for speech.
 **[⬇ Download the latest release](https://github.com/reneweller-coding/KaleidoscopeEnhanced/releases/latest)**
 — no Qt / Visual Studio needed, just run the installer or unzip the portable
 build. See [Quick start](#quick-start).
+
+![Eight scenes in motion](docs/screenshots/demo.webp)
+
+*Eight of the 2,475 scenes, three seconds each, rendered by the built-in video
+export at a quarter of Full HD (`Tools/make_demo_clip.py`); the app itself
+runs at the screen's resolution and frame rate.*
 
 |  |  |
 |---|---|
@@ -402,6 +410,11 @@ itself identically.
 **[Browse the full scene catalogue](docs/Catalog/Katalog.md)** — all 2,475
 scenes, 30 overlay effects and 210 transitions, each with a description and
 three example frames. A printable `Katalog.pdf` ships with every release.
+The same catalogue as a page with search and filters by kind, genre preset
+and mood is [`docs/Catalog/index.html`](docs/Catalog/index.html): open it
+from a clone (it has no dependencies and needs no server). It also lets you
+mark what you like and what you do not; `Tools/apply_taste.py --ratings`
+folds an export of those marks into the genre presets.
 
 **Building your own presets:** `PresetEditor.exe` (its own small Qt app,
 bundled with every release) edits `Presets\*.xml` with a live shader

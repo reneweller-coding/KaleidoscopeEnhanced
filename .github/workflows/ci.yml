@@ -142,6 +142,7 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit 1 }
 
       - name: Install software OpenGL (Mesa llvmpipe, for --transcheck)
+        id: mesa
         shell: pwsh
         continue-on-error: true
         run: |
@@ -163,11 +164,13 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit 1 }
 
       # Every shader through a second GLSL compiler (Mesa), which is the one Linux users without the vendor's
-      # driver have: the reference machine's NVIDIA compiler accepts things the standard does not.  Informational
-      # (continue-on-error) until its findings have been worked through.
+      # driver have: the reference machine's NVIDIA compiler accepts things the standard does not.  Its first run
+      # (10.11.2026) found four scenes with variables named `active`, `cast` and `mat2`; clean since, so it gates.
       - name: Self-test -- shader compile (every shader, Mesa's GLSL compiler)
+        # only with Mesa in place: without it the runner's own OpenGL would fail every shader (a download hiccup
+        # must not turn the workflow red)
+        if: steps.mesa.outcome == 'success'
         shell: pwsh
-        continue-on-error: true
         env:
           GALLIUM_DRIVER: llvmpipe
           MESA_GL_VERSION_OVERRIDE: '4.3'
