@@ -1,0 +1,49 @@
+name: Pages
+
+# The scene catalogue as a web page: https://reneweller-coding.github.io/KaleidoscopeEnhanced/
+#
+# Publishes docs/Catalog and nothing else (index.html, catalog-data.js, the pictures in img/): the page is static and
+# reads everything by relative paths, so the folder is the site.  Runs when the catalogue changes on master, or by hand.
+# The repository's Pages source is "GitHub Actions" (Settings -> Pages).
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'docs/Catalog/**'
+      - '.github/workflows/pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One deployment at a time; a running one is finished, not cancelled.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout (the catalogue only)
+        uses: actions/checkout@v7
+        with:
+          sparse-checkout: docs/Catalog
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v6
+
+      - name: Upload the catalogue
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: docs/Catalog
+
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v5

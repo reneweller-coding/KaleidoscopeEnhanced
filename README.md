@@ -411,8 +411,10 @@ itself identically.
 scenes, 30 overlay effects and 210 transitions, each with a description and
 three example frames. A printable `Katalog.pdf` ships with every release.
 The same catalogue as a page with search and filters by kind, genre preset
-and mood is [`docs/Catalog/index.html`](docs/Catalog/index.html): open it
-from a clone (it has no dependencies and needs no server). It also lets you
+and mood is online at
+**[reneweller-coding.github.io/KaleidoscopeEnhanced](https://reneweller-coding.github.io/KaleidoscopeEnhanced/)**
+(the file is [`docs/Catalog/index.html`](docs/Catalog/index.html); it has no
+dependencies and also opens from a clone without a server). It also lets you
 mark what you like and what you do not; `Tools/apply_taste.py --ratings`
 folds an export of those marks into the genre presets.
 
