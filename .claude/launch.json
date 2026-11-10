@@ -1,4 +1,11 @@
 {
   "version": "0.0.1",
-  "configurations": []
+  "configurations": [
+    {
+      "name": "catalog",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["-m", "http.server", "18765", "--bind", "127.0.0.1", "--directory", "docs/Catalog"],
+      "port": 18765
+    }
+  ]
 }

@@ -10,6 +10,9 @@ Tools/make_genre_configs.py reads, so the presets that are generated (and shippe
     python Tools/apply_taste.py --write         # write Tools/user_taste.tsv, then run make_genre_configs.py
     python Tools/apply_taste.py --ini <file>    # another settings file (an installed copy, a second machine)
     python Tools/apply_taste.py --merge         # keep the rows already in user_taste.tsv, add the new ones
+    python Tools/apply_taste.py --ratings kaleidoscope_marks.tsv --write
+                                                # the hearts and crosses exported from the catalogue page
+                                                # (docs/Catalog/index.html): a step up or down in interest
 
 A taste belongs to a preset, so it corrects that genre's fit column, not the scene as a whole: a scene skipped twice
 in Ambient loses a step in `ambient` and keeps its place in Psychedelic.  A taste learnt in Allround corrects
@@ -98,17 +101,25 @@ def main():
     ap.add_argument("--ini", default=os.path.join(ROOT, "kaleidoscope_settings.ini"))
     ap.add_argument("--write", action="store_true")
     ap.add_argument("--merge", action="store_true")
+    ap.add_argument("--ratings", help="marks exported from the catalogue page (docs/Catalog/index.html): name, like|skip")
     a = ap.parse_args()
-    if not os.path.exists(a.ini):
+    if not os.path.exists(a.ini) and not a.ratings:
         print("no settings file:", a.ini)
         return 1
-    rows = read_ini(a.ini)
+    rows = read_ini(a.ini) if os.path.exists(a.ini) else []
     out, ignored, weak = {}, {}, 0
-    if a.merge and os.path.exists(OUT):
+    if (a.merge or a.ratings) and os.path.exists(OUT):
         for ln in io.open(OUT, encoding="utf-8").read().splitlines()[1:]:
             v = ln.split("\t")
             if len(v) >= 4:
                 out[(v[0], v[1])] = (v[2], v[3])
+    if a.ratings:
+        # A mark from the catalogue page has no genre: a heart is a step up in interest, a cross a step down.  The
+        # rows already in the file are kept (the page only knows the marks of one browser); a new mark replaces an old.
+        for ln in io.open(a.ratings, encoding="utf-8").read().splitlines()[1:]:
+            v = ln.split("\t")
+            if len(v) >= 2 and v[1] in ("like", "skip"):
+                out[(v[0], "interest")] = ("+1" if v[1] == "like" else "-1", "catalogue page")
     for preset, scene, kind, value in rows:
         col = COLUMN.get(preset)
         if not col:

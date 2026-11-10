@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kaleidoscope Enhanced — Scene Catalogue</title>
+<!--
+  The browsable catalogue: every scene, overlay and transition with its pictures, searchable and filterable by kind,
+  genre preset and mood.  The data is catalog-data.js, written by Tools/make_catalog.py; this page is static and has
+  no dependencies, so it works from GitHub Pages and straight from the disk.
+
+  Marks: the heart and the cross on a card are the viewer's own verdicts, kept in this browser (localStorage).
+  "Export marks" downloads them as a TSV that `python Tools/apply_taste.py --ratings <file> --write` folds into the
+  genre presets.
+-->
+<style>
+:root { --bg:#101216; --panel:#181b21; --line:#2a2f38; --text:#e6e8ec; --dim:#98a0ad; --accent:#7cc4ff; --like:#ff6b8b; --skip:#f0b34a; }
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--text); font:15px/1.45 "Segoe UI",system-ui,Arial,sans-serif; }
+header { position:sticky; top:0; z-index:5; background:rgba(16,18,22,.96); border-bottom:1px solid var(--line); padding:12px 16px 10px; }
+h1 { margin:0 0 8px; font-size:19px; font-weight:600; }
+h1 small { color:var(--dim); font-weight:400; font-size:13px; margin-left:8px; }
+.row { display:flex; flex-wrap:wrap; gap:6px; align-items:center; margin-top:6px; }
+.row > .label { color:var(--dim); font-size:12px; width:54px; flex:none; }
+input[type=search] { flex:1 1 260px; min-width:180px; background:var(--panel); color:var(--text); border:1px solid var(--line); border-radius:6px; padding:7px 10px; font:inherit; }
+select, button { background:var(--panel); color:var(--text); border:1px solid var(--line); border-radius:6px; padding:6px 10px; font:inherit; cursor:pointer; }
+button:hover, select:hover { border-color:#3c4350; }
+.chip { background:var(--panel); border:1px solid var(--line); border-radius:999px; padding:3px 11px; font-size:13px; cursor:pointer; user-select:none; white-space:nowrap; }
+.chip:hover { border-color:#3c4350; }
+.chip.on { background:var(--accent); border-color:var(--accent); color:#06121d; }
+.chip .n { opacity:.6; margin-left:4px; font-size:11px; }
+#count { color:var(--dim); font-size:13px; margin-left:auto; }
+main { padding:14px 16px 60px; }
+#grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:12px; }
+.card { background:var(--panel); border:1px solid var(--line); border-radius:8px; overflow:hidden; display:flex; flex-direction:column; }
+.card:hover { border-color:#3c4350; }
+.shot { position:relative; aspect-ratio:16/10; background:#0a0b0e; cursor:pointer; }
+.shot img { width:100%; height:100%; object-fit:cover; display:block; }
+.shot .none { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:#4c5360; font-size:12px; }
+.kind { position:absolute; left:6px; top:6px; background:rgba(0,0,0,.62); border-radius:4px; padding:1px 6px; font-size:11px; color:#cfd5de; }
+.marks { position:absolute; right:6px; top:6px; display:flex; gap:4px; }
+.marks button { padding:1px 7px; font-size:14px; line-height:1.3; background:rgba(0,0,0,.62); border-color:transparent; color:#cfd5de; }
+.marks button.like.on { color:var(--like); border-color:var(--like); }
+.marks button.skip.on { color:var(--skip); border-color:var(--skip); }
+.body { padding:8px 10px 10px; }
+.name { font-weight:600; font-size:14px; word-break:break-word; cursor:pointer; }
+.tags { color:var(--dim); font-size:12px; margin-top:2px; }
+.desc { color:#c4c9d2; font-size:13px; margin-top:6px; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+#more { display:block; margin:18px auto 0; }
+dialog { background:var(--panel); color:var(--text); border:1px solid var(--line); border-radius:10px; padding:0; width:min(1080px,94vw); max-height:92vh; }
+dialog::backdrop { background:rgba(0,0,0,.72); }
+.dlg { padding:16px 18px 18px; }
+.dlg h2 { margin:0 34px 2px 0; font-size:18px; }
+.dlg .path { color:var(--dim); font-size:12px; font-family:Consolas,monospace; }
+.dlg .pics { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:8px; margin:12px 0; }
+.dlg figure { margin:0; }
+.dlg img { width:100%; border-radius:6px; display:block; }
+.dlg figcaption { color:var(--dim); font-size:11px; margin-top:3px; }
+.dlg .full { font-size:14px; color:#d5d9e0; }
+.dlg .meta { color:var(--dim); font-size:13px; margin-top:10px; }
+#close { position:absolute; right:10px; top:10px; padding:2px 9px; }
+footer { color:var(--dim); font-size:12px; padding:0 16px 30px; }
+a { color:var(--accent); }
+@media (max-width:600px) { .row > .label { width:auto; } #grid { grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); } }
+</style>
+</head>
+<body>
+<header>
+  <h1>Kaleidoscope Enhanced — Scene Catalogue <small id="totals"></small></h1>
+  <div class="row">
+    <input id="q" type="search" placeholder="Search names and descriptions — e.g. tunnel, aurora, moiré, fractal" autocomplete="off">
+    <select id="sort" title="Order">
+      <option value="name">A – Z</option>
+      <option value="rating">Rating, highest first</option>
+      <option value="genres">In most genres first</option>
+    </select>
+    <button id="reset" title="Clear search and filters">Reset</button>
+    <span id="count"></span>
+  </div>
+  <div class="row" id="kinds"><span class="label">Kind</span></div>
+  <div class="row" id="genres"><span class="label">Genre</span></div>
+  <div class="row" id="moods"><span class="label">Mood</span></div>
+  <div class="row" id="mine"><span class="label">Marks</span>
+    <span class="chip" data-mine="like">♥ liked <span class="n" id="nlike">0</span></span>
+    <span class="chip" data-mine="skip">✕ not for me <span class="n" id="nskip">0</span></span>
+    <button id="export" title="Download the marks as a TSV for Tools/apply_taste.py">Export marks</button>
+    <button id="clear" title="Forget all marks in this browser">Clear marks</button>
+  </div>
+</header>
+<main>
+  <div id="grid"></div>
+  <button id="more">Show more</button>
+</main>
+<footer>
+  Pictures of a scene: quiet music at 8 s and 16 s, loud music at 21 s. Overlays and transitions are shown over one 2D and one 3D
+  reference scene. The rating is the author's own estimate of how much there is to see (1 to 9); the genre list says which
+  presets play the entry. <a href="https://github.com/reneweller-coding/KaleidoscopeEnhanced">Project on GitHub</a>
+</footer>
+<dialog id="dlg"><button id="close" aria-label="Close">✕</button><div class="dlg" id="dlgbody"></div></dialog>
+
+<script src="catalog-data.js"></script>
+<script>
+(function () {
+  "use strict";
+  var data = (window.CATALOG && window.CATALOG.entries) || [];
+  var genres = (window.CATALOG && window.CATALOG.genres) || [];
+  var KIND = { "2D": "2D scene", "3D": "3D scene", "FX": "Overlay", "T": "Transition" };
+  var CAPTION = { A: "quiet, 8 s", B: "quiet, 16 s", C: "loud, 21 s", "2D": "over a 2D scene", "3D": "over a 3D scene" };
+  var PAGE = 120;
+  var state = { q: "", kind: "", genre: "", mood: "", mine: "", sort: "name", shown: PAGE };
+  var marks = {};
+  try { marks = JSON.parse(localStorage.getItem("kaleido-marks") || "{}"); } catch (e) { marks = {}; }
+  var $ = function (id) { return document.getElementById(id); };
+  var esc = function (s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); };
+
+  data.forEach(function (e) { e.s = (e.n + " " + e.n.replace(/([a-z0-9])([A-Z])/g, "$1 $2") + " " + e.d).toLowerCase(); });
+
+  function chips(host, values, key, labeller) {
+    values.forEach(function (v) {
+      var c = document.createElement("span");
+      c.className = "chip";
+      c.dataset.v = v[0];
+      c.innerHTML = esc(labeller ? labeller(v[0]) : v[0]) + '<span class="n">' + v[1] + "</span>";
+      c.onclick = function () { state[key] = state[key] === v[0] ? "" : v[0]; state.shown = PAGE; render(); };
+      host.appendChild(c);
+    });
+  }
+  function tally(get) {
+    var t = {};
+    data.forEach(function (e) { [].concat(get(e)).forEach(function (v) { if (v) t[v] = (t[v] || 0) + 1; }); });
+    return t;
+  }
+  var tk = tally(function (e) { return e.k; });
+  chips($("kinds"), ["2D", "3D", "FX", "T"].map(function (k) { return [k, tk[k] || 0]; }), "kind", function (k) { return KIND[k] + "s"; });
+  var tg = tally(function (e) { return e.g; });
+  chips($("genres"), genres.map(function (g) { return [g, tg[g] || 0]; }), "genre");
+  var tm = tally(function (e) { return e.m; });
+  chips($("moods"), Object.keys(tm).sort(function (a, b) { return tm[b] - tm[a]; }).slice(0, 14).map(function (m) { return [m, tm[m]]; }), "mood");
+  $("totals").textContent = (tk["2D"] + tk["3D"]) + " scenes · " + (tk.FX || 0) + " overlays · " + (tk.T || 0) + " transitions";
+
+  function picture(e, v) { return "img/" + e.n + "_" + v + ".jpg"; }
+  function matches(e) {
+    if (state.kind && e.k !== state.kind) return false;
+    if (state.genre && e.g.indexOf(state.genre) < 0) return false;
+    if (state.mood && e.m.indexOf(state.mood) < 0) return false;
+    if (state.mine && marks[e.n] !== state.mine) return false;
+    if (state.q) {
+      var words = state.q.toLowerCase().split(/\s+/);
+      for (var i = 0; i < words.length; ++i) if (words[i] && e.s.indexOf(words[i]) < 0) return false;
+    }
+    return true;
+  }
+  function order(list) {
+    if (state.sort === "rating") list.sort(function (a, b) { return b.r - a.r || a.n.localeCompare(b.n); });
+    else if (state.sort === "genres") list.sort(function (a, b) { return b.g.length - a.g.length || a.n.localeCompare(b.n); });
+    else list.sort(function (a, b) { return a.n.localeCompare(b.n); });
+    return list;
+  }
+  function card(e) {
+    var best = e.i.indexOf("C") >= 0 ? "C" : e.i[e.i.length - 1];
+    var el = document.createElement("div");
+    el.className = "card";
+    el.innerHTML =
+      '<div class="shot">' + (best ? '<img loading="lazy" alt="" src="' + picture(e, best) + '">' : '<div class="none">no picture</div>') +
+      '<span class="kind">' + KIND[e.k] + (e.r ? " · " + e.r : "") + "</span>" +
+      '<span class="marks"><button class="like' + (marks[e.n] === "like" ? " on" : "") + '" title="I like this">♥</button>' +
+      '<button class="skip' + (marks[e.n] === "skip" ? " on" : "") + '" title="Not for me">✕</button></span></div>' +
+      '<div class="body"><div class="name">' + esc(e.n.replace(/([a-z0-9])([A-Z])/g, "$1​$2")) + "</div>" +
+      '<div class="tags">' + esc(e.m.join(" · ")) + "</div>" +
+      '<div class="desc">' + esc(e.d) + "</div></div>";
+    el.querySelector(".shot").onclick = function (ev) { if (ev.target.tagName !== "BUTTON") open(e); };
+    el.querySelector(".name").onclick = function () { open(e); };
+    el.querySelector(".like").onclick = function () { mark(e, "like"); };
+    el.querySelector(".skip").onclick = function () { mark(e, "skip"); };
+    return el;
+  }
+  function mark(e, verdict) {
+    if (marks[e.n] === verdict) delete marks[e.n]; else marks[e.n] = verdict;
+    try { localStorage.setItem("kaleido-marks", JSON.stringify(marks)); } catch (err) { /* private mode: the marks live until the tab closes */ }
+    render();
+  }
+  function open(e) {
+    var pics = e.i.map(function (v) { return '<figure><img alt="" src="' + picture(e, v) + '"><figcaption>' + CAPTION[v] + "</figcaption></figure>"; }).join("");
+    var folder = { "2D": "Scene2D", "3D": "Scene3D", "FX": "FX", "T": "Transitions" }[e.k];
+    $("dlgbody").innerHTML = "<h2>" + esc(e.n) + '</h2><div class="path">' + folder + "/" + esc(e.n) + ".frag</div>" +
+      (pics ? '<div class="pics">' + pics + "</div>" : "") + '<div class="full">' + esc(e.d) + "</div>" +
+      '<div class="meta">' + KIND[e.k] + (e.m.length ? " · mood: " + esc(e.m.join(", ")) : "") + (e.r ? " · rating " + e.r : "") +
+      (e.c ? " · complexity " + esc(e.c) : "") + "<br>" + (e.g.length ? "Played by: " + esc(e.g.join(", ")) + " and Allround" : "Played by: Allround only") + "</div>";
+    $("dlg").showModal();
+  }
+  function render() {
+    var list = order(data.filter(matches));
+    var grid = $("grid");
+    grid.textContent = "";
+    var frag = document.createDocumentFragment();
+    list.slice(0, state.shown).forEach(function (e) { frag.appendChild(card(e)); });
+    grid.appendChild(frag);
+    $("count").textContent = list.length + " of " + data.length;
+    $("more").style.display = list.length > state.shown ? "block" : "none";
+    $("more").textContent = "Show more (" + (list.length - state.shown) + " left)";
+    [["kinds", "kind"], ["genres", "genre"], ["moods", "mood"]].forEach(function (p) {
+      [].forEach.call($(p[0]).querySelectorAll(".chip"), function (c) { c.classList.toggle("on", c.dataset.v === state[p[1]]); });
+    });
+    [].forEach.call($("mine").querySelectorAll(".chip"), function (c) { c.classList.toggle("on", c.dataset.mine === state.mine); });
+    var nl = 0, ns = 0;
+    Object.keys(marks).forEach(function (k) { if (marks[k] === "like") ++nl; else ++ns; });
+    $("nlike").textContent = nl;
+    $("nskip").textContent = ns;
+  }
+
+  var timer = 0;
+  $("q").oninput = function () { clearTimeout(timer); timer = setTimeout(function () { state.q = $("q").value.trim(); state.shown = PAGE; render(); }, 120); };
+  $("sort").onchange = function () { state.sort = $("sort").value; render(); };
+  $("more").onclick = function () { state.shown += PAGE * 2; render(); };
+  $("reset").onclick = function () { state.q = state.kind = state.genre = state.mood = state.mine = ""; state.shown = PAGE; $("q").value = ""; render(); };
+  $("close").onclick = function () { $("dlg").close(); };
+  $("dlg").onclick = function (ev) { if (ev.target === $("dlg")) $("dlg").close(); };
+  [].forEach.call($("mine").querySelectorAll(".chip"), function (c) {
+    c.onclick = function () { state.mine = state.mine === c.dataset.mine ? "" : c.dataset.mine; state.shown = PAGE; render(); };
+  });
+  $("export").onclick = function () {
+    var rows = ["name\tverdict"];
+    Object.keys(marks).sort().forEach(function (k) { rows.push(k + "\t" + marks[k]); });
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([rows.join("\n") + "\n"], { type: "text/tab-separated-values" }));
+    a.download = "kaleidoscope_marks.tsv";
+    a.click();
+    URL.revokeObjectURL(a.href);
+  };
+  $("clear").onclick = function () {
+    if (!Object.keys(marks).length || !confirm("Forget all " + Object.keys(marks).length + " marks in this browser?")) return;
+    marks = {};
+    try { localStorage.removeItem("kaleido-marks"); } catch (err) { /* nothing stored */ }
+    render();
+  };
+  if (!data.length) $("grid").textContent = "catalog-data.js is missing: run Tools/make_catalog.py.";
+  render();
+})();
+</script>
+</body>
+</html>

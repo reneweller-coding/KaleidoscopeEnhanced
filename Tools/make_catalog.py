@@ -273,5 +273,41 @@ emit_effect_section(
 ht.append("</body></html>")
 open(os.path.join(outd, "Katalog.md"), "w", encoding="utf-8", newline="\n").write("\n".join(md))
 open(os.path.join(outd, "Katalog.html"), "w", encoding="utf-8", newline="\n").write("".join(ht))
+
+# ---- the data of the browsable catalogue (docs/Catalog/index.html: search, filters by kind, genre and mood) ----
+# One line of JavaScript, loaded by a script tag, so the page also works from the disk (a fetch() of a JSON file does
+# not, there).  Per entry: n name, k kind (2D / 3D / FX / T), m moods, g the genre presets it is in, r the interest
+# rating (scenes), c complexity, d the description, i which pictures exist.
+import json
+GENRES = ["Ambient", "SpaceAmbient", "Downtempo", "Cinematic", "Club", "Electronic", "Psytrance", "Psychedelic", "Noir"]
+member = {}
+for g in GENRES:
+    p = os.path.join(root, "Presets", g + ".xml")
+    if os.path.exists(p):
+        for stem in set(re.findall(r'file="[^"]*?(\w+)\.frag"', open(p, encoding="utf-8", errors="replace").read())):
+            member.setdefault(stem, []).append(g)
+interest = {}
+fitp = os.path.join(root, "Tools", "preset_fit.tsv")
+if os.path.exists(fitp):
+    rows = [ln.split("\t") for ln in open(fitp, encoding="utf-8").read().splitlines() if ln.strip()]
+    col = rows[0].index("interest") if "interest" in rows[0] else -1
+    for v in rows[1:]:
+        if col >= 0 and len(v) > col and v[col].strip().isdigit():
+            interest[v[0]] = int(v[col])
+have = set(os.listdir(imgd))
+def pictures(stem, marks):
+    return [v for v in marks if f"{stem}_{v}.jpg" in have]
+data = []
+for s in scenes:
+    data.append({"n": s["stem"], "k": "3D" if s["folder"] == "Scene3D" else "2D", "m": [t for t in s["mood"].split(",") if t],
+                 "g": member.get(s["stem"], []), "r": interest.get(s["stem"], 0), "c": s["complexity"], "d": s["desc"],
+                 "i": pictures(s["stem"], "ABC")})
+for kind, entries in (("FX", fx), ("T", trans)):
+    for s in entries:
+        data.append({"n": s["stem"], "k": kind, "m": [t for t in s["mood"].split(",") if t], "g": member.get(s["stem"], []),
+                     "r": 0, "c": "", "d": s["desc"], "i": pictures(s["stem"], ("2D", "3D"))})
+open(os.path.join(outd, "catalog-data.js"), "w", encoding="utf-8", newline="\n").write(
+    "window.CATALOG=" + json.dumps({"genres": GENRES, "entries": data}, ensure_ascii=False, separators=(",", ":")) + ";\n")
+
 n_img = len([f for f in os.listdir(imgd) if f.endswith(".jpg")])
 print(f"catalog: {len(scenes)} Szenen, {len(fx)} FX-Overlays, {len(trans)} Übergänge, {n_img} Bilder -> {outd}")
