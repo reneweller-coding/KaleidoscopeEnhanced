@@ -96,6 +96,14 @@ public:
      * @param dir  Directory to scan for images; empty selects the procedural gradient fallback. (in)
      **/
     void setImageDirectory( const QString &dir );
+    /**  Use two named image files as tex0/tex1 instead of the first two of the image directory.
+     *
+     * A measurement must not depend on which two photos happen to sort first in a folder that grows.
+     *
+     * @param first   File for tex0; empty returns to the directory. (in)
+     * @param second  File for tex1. (in)
+     **/
+    void setImageFiles( const QString &first, const QString &second );
 
     /** Synthesized music profile driving the preview's audio uniforms.
      *
@@ -366,9 +374,10 @@ private:
                                     ///< Scene3DPreview::setShader().
     Scene3DPreview m_scenePreview;  ///< Owns the real Scene3DShader render path when m_texType == "scene3d".
 
-    QString m_imageDir; ///< Directory to load tex0/tex1 sample images from; empty means the procedural fallback.
-    bool    m_imagesDirty = true; ///< Set by setImageDirectory(); consumed (and cleared) by loadImages() in paintGL().
-    MusicModeE m_mode = BEAT;        ///< Currently selected synthetic audio profile.
+    QString     m_imageDir;    ///< Directory to load tex0/tex1 sample images from; empty means the procedural fallback.
+    QStringList m_imageFiles;  ///< Two named files for tex0/tex1 (setImageFiles()); empty: the directory decides.
+    bool m_imagesDirty = true; ///< Set by setImageDirectory(); consumed (and cleared) by loadImages() in paintGL().
+    MusicModeE  m_mode = BEAT;        ///< Currently selected synthetic audio profile.
 
     QOpenGLShaderProgram *m_texProg = nullptr;  ///< Compiled texture (pass-1) shader program (type="normal" path only).
     QOpenGLShaderProgram *m_combProg = nullptr; ///< Compiled combine (pass-2) shader program.

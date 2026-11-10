@@ -300,6 +300,34 @@ vec4 trBlurB( vec2 p, float r )
     return s;
 }
 
+/**  The mean brightness of the incoming scene, estimated from nine fixed points.
+ *
+ * @return
+ *   The mean luminance, 0..1.
+ **/
+float trMeanLumaB()
+{
+    float s = 0.0;
+    for ( int j = 0; j < 3; ++j )
+        for ( int i = 0; i < 3; ++i )
+            s += trLuma( texture( tex1, ( vec2( float( i ), float( j ) ) + 0.5 ) / 3.0 ).rgb );
+    return s / 9.0;
+}
+
+/**  The colour of a veil (fog, snow, gauze, foam) in the light of the two scenes: the tint, dimmed until it is at
+ * most a little brighter than the brighter scene, so a veil over two dark scenes is a dark veil and never a flash.
+ *
+ * @param tint  The veil's own colour in full light. (in)
+ *
+ * @return
+ *   The veil's colour.
+ **/
+vec3 trVeil( vec3 tint )
+{
+    float limit = max( trMeanLumaA(), trMeanLumaB() ) + 0.09;
+    return tint * min( 1.0, limit / max( trLuma( tint ), 0.05 ) );
+}
+
 /**  The coverage of one layer of falling round flakes.
  *
  * @param q      The place in layer units. (in)
@@ -347,7 +375,7 @@ vec4 trans( vec2 p, float d )
     float m = trMid( d );
     float cover = clamp( m * ( 0.5 + 0.7 * snow ) * drift * gKA * ( 1.0 + 0.3 * audioSwell ), 0.0, 0.92 );
     vec4  c = mix( a, b, smoothstep( 0.35, 0.65, d ) );
-    return vec4( mix( c.rgb, vec3( 0.95, 0.97, 1.0 ), cover ), c.a );
+    return vec4( mix( c.rgb, trVeil( vec3( 0.95, 0.97, 1.0 ) ), cover ), c.a );
 }
 
 /** Entry point of this shader stage (the file description says what it draws). */

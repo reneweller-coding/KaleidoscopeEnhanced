@@ -268,7 +268,12 @@ ALWAYS = {"FxPlain", "Crossfade"}
 # wipe are film's own -- and drops the blocks.
 SOFT_GENRES = {"Ambient": {"wipe", "blocky"}, "SpaceAmbient": {"wipe", "blocky"}, "Downtempo": {"wipe", "blocky"},
                "Cinematic": {"blocky"}}
-SOFT_CORE, SOFT_FLASH, SOFT_FLICK, SOFT_PEAK = 0.45, 30.0, 1.0, 0.10
+# 10.11.2026: the measurement's outgoing scene is a real still photo now (Engine/ProfileStill.frag; until then
+# Blit.frag gave one flat colour, so nothing a transition does to the old picture was seen).  The clock-driven
+# change is measured on the whole frame since, about 1.27 times the old numbers: SOFT_FLICK 1.0 -> 1.25, which keeps
+# the same transitions out (PenroseMorph 1.30, Tesseract4DRotation 1.49, HyperspaceStreak 1.34) and adds PoincareSpin
+# (2.12; it spins the OLD picture, which the flat colour hid).  The other three limits stand.
+SOFT_CORE, SOFT_FLASH, SOFT_FLICK, SOFT_PEAK = 0.45, 30.0, 1.25, 0.10
 PROFILE_FILE = "Tools/transition_profile.tsv"
 
 def load_profile():

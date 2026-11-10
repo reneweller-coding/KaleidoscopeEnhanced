@@ -37,11 +37,27 @@ vec4 blend4( vec4 a, vec4 b, float w )
     return mix( a, b, clamp( w, 0.0, 1.0 ) );
 }
 
+/**  The mean brightness of a scene, estimated from nine fixed points.
+ *
+ * @param s  The scene's texture. (in)
+ *
+ * @return
+ *   The mean luminance, 0..1.
+ **/
+float meanLuma( sampler2D s )
+{
+    float sum = 0.0;
+    for ( int j = 0; j < 3; ++j )
+        for ( int i = 0; i < 3; ++i )
+            sum += dot( texture( s, ( vec2( float( i ), float( j ) ) + 0.5 ) / 3.0 ).rgb, vec3( 0.299, 0.587, 0.114 ) );
+    return sum / 9.0;
+}
+
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec2  p = gl_FragCoord.xy / resolution;
-    float d = 1.0 - interpolation; // transition progress 0..1
+    float d = clamp( 1.0 - interpolation, 0.0, 1.0 ); // transition progress 0..1
     // No beat surge any more: pushing the progress forward on every beat
     // made the geometry jump in time with the music (speed pass 14.09.2026).
 
@@ -49,6 +65,11 @@ void main()
     vec4  c1 = texture( tex1, p );
     float key = dot( c0.rgb, vec3( 0.299, 0.587, 0.114 ) ) * 0.7
                 + dot( c1.rgb, vec3( 0.299, 0.587, 0.114 ) ) * 0.3;
+    // The order is taken around the scenes' own mean brightness and stretched: a dark pair of scenes has all of its
+    // keys in a narrow band, and the whole picture used to switch in a quarter of the fade (measured: 80 % of the
+    // change in 30 % of it).
+    float mean_key = meanLuma( tex0 ) * 0.7 + meanLuma( tex1 ) * 0.3;
+    key = smoothstep( 0.0, 1.0, clamp( 0.5 + 1.7 * ( key - mean_key ), 0.0, 1.0 ) );
     float w = smoothstep( key - 0.25, key + 0.25, d * 1.5 - 0.25 );
     fragColor = blend4( c0, c1, w );
 }

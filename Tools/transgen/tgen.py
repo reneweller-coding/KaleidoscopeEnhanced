@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 r"""Builds Transitions/<Name>.frag from compact drafts (Tools/transgen/drafts/*.txt) and registers them in Presets/Komplett.xml.
 
-    python Tools/transgen/tgen.py build  [Name ...]     write Transitions/<Name>.frag (all drafts when no name is given)
+    python Tools/transgen/tgen.py build  [Name ...]     write Transitions/<Name>.frag (all drafts when no name is given),
+                                                        then doc_shaders.py and cgvr_format.py bring them into the layout
     python Tools/transgen/tgen.py register [Name ...]   add the <TransitionShader> entries to Presets/Komplett.xml
     python Tools/transgen/tgen.py list                  the drafted names
 
@@ -16,13 +17,15 @@ A draft section starts with `=== Name`; header lines `key: value` follow, then a
     prob:     the registration's probability
     cx:       complexity 1..3
     huegain:  how far hueP turns the colours in the middle (default 0.1)
+    warp:     17 knots of a re-timed progress (written by Tools/transition_warp.py, which measures where the change sits
+              and spreads it evenly; absent: the progress runs straight)
 
 The body defines `vec4 trans( vec2 p, float d )` with the progress d = 0 (old scene) .. 1 (new scene) and may use the
 library of the template: tA/tB/tAm/tBm (the two scenes), trThresh (a soft threshold wipe), trMid, trClock, trBlurA/trBlurB,
-hueRot, hash21/hash22, noise2, fbm2 and the knob values gKA, gKB and gSpd.  Exactly the old scene at d = 0 and exactly the new
+hueRot, hash21/hash22, noise2, fbm2, trVeil (a veil colour that never outshines the two scenes) and the knob values gKA, gKB and gSpd.  Exactly the old scene at d = 0 and exactly the new
 scene at d = 1 is guaranteed by main().
 """
-import io, os, re, sys, textwrap
+import io, os, re, subprocess, sys, textwrap
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.abspath(os.path.join(HERE, "..", ".."))
@@ -348,6 +351,37 @@ TRANS_DOC = """/**  The picture at a place and progress.
 """
 
 
+VEIL_LIB = r"""
+/**  The mean brightness of the incoming scene, estimated from nine fixed points.
+ *
+ * @return
+ *   The mean luminance, 0..1.
+ **/
+float trMeanLumaB()
+{
+    float s = 0.0;
+    for ( int j = 0; j < 3; ++j )
+        for ( int i = 0; i < 3; ++i )
+            s += trLuma( texture( tex1, ( vec2( float( i ), float( j ) ) + 0.5 ) / 3.0 ).rgb );
+    return s / 9.0;
+}
+
+/**  The colour of a veil (fog, snow, gauze, foam) in the light of the two scenes: the tint, dimmed until it is at most
+ *  a little brighter than the brighter scene, so a veil over two dark scenes is a dark veil and never a flash.
+ *
+ * @param tint  The veil's own colour in full light. (in)
+ *
+ * @return
+ *   The veil's colour.
+ **/
+vec3 trVeil( vec3 tint )
+{
+    float limit = max( trMeanLumaA(), trMeanLumaB() ) + 0.09;
+    return tint * min( 1.0, limit / max( trLuma( tint ), 0.05 ) );
+}
+"""
+
+
 def build_one(meta):
     name = meta["name"]
     knobs = []
@@ -381,8 +415,10 @@ def build_one(meta):
     out.append("uniform float speedP; ///< Speed knob: clock multiplier (0.5..2.0).")
     out.append("uniform float hueP;   ///< Hue knob (radians): turns the colours a little in the middle of the fade.")
     out.append(TEMPLATE_LIB.rstrip("\n"))
-    out.append("")
     body = meta["body"]
+    if "trVeil(" in body:
+        out.append(VEIL_LIB.rstrip("\n"))
+    out.append("")
     # a doc comment for trans() when the body gives none
     m = re.search(r"(?m)^vec4 trans\(", body)
     assert m, name + ": no trans()"
@@ -391,6 +427,13 @@ def build_one(meta):
         body = body[:m.start()] + TRANS_DOC + body[m.start():]
     out.append(body)
     out.append("")
+    warp = meta.get("warp", "").split()
+    if warp:
+        assert len(warp) == 17, name + ": warp takes 17 knots"
+        sys.path.insert(0, os.path.join(ROOT, "Tools"))
+        from transition_warp import FUNC
+        out.append((FUNC % ", ".join(warp)).rstrip())
+        out.append("")
     huegain = meta.get("huegain", "0.1")
     out.append("/** Entry point of this shader stage (the file description says what it draws). */")
     out.append("void main()")
@@ -399,7 +442,7 @@ def build_one(meta):
     out.append("    gKB = ( %s > 0.0 ) ? %s : 1.0;" % (knobs[1][0], knobs[1][0]))
     out.append("    gSpd = ( speedP > 0.0 ) ? speedP : 1.0;")
     out.append("    vec2  p = gl_FragCoord.xy / resolution;")
-    out.append("    float d = clamp( 1.0 - interpolation, 0.0, 1.0 );")
+    out.append("    float d = %s;" % ("evenProgress( clamp( 1.0 - interpolation, 0.0, 1.0 ) )" if warp else "clamp( 1.0 - interpolation, 0.0, 1.0 )"))
     out.append("    if ( d <= 0.0 )")
     out.append("    {")
     out.append("        fragColor = tA( p );")
@@ -449,6 +492,13 @@ def main():
         for n in names:
             io.open(os.path.join(OUT, n + ".frag"), "w", encoding="utf-8", newline="\n").write(build_one(drafts[n]))
             print("built", n)
+        # The template's output is not yet in the house layout (comment wrapping, aligned uniform comments): the two
+        # tools the release check runs bring it there, so a built file never shows up red in it.
+        if os.environ.get("TGEN_RAW"):        # an intermediate build of the measuring loop: the layout comes at the end
+            return
+        tools = os.path.join(ROOT, "Tools")
+        subprocess.call([sys.executable, os.path.join(tools, "doc_shaders.py")], cwd=ROOT)
+        subprocess.call([sys.executable, os.path.join(tools, "cgvr_format.py")] + [os.path.join(OUT, n + ".frag") for n in names], cwd=ROOT)
     elif cmd == "register":
         s = io.open(KOMPLETT, encoding="utf-8", newline="").read()
         nl = "\r\n" if "\r\n" in s else "\n"

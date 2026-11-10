@@ -31,11 +31,14 @@
  *    PresetEditor.exe --transcheck            verify every shader in Transitions/:
  *                                             exact A at d=0 / exact B at d=1 and
  *                                             no temporal jumps across the sweep
+ *                                             (optional --only A,B)
  *    PresetEditor.exe --transprofile          measure how each registered transition
  *                                             distributes its change over the fade
  *                                             (core80, clock flicker, flash; optional
- *                                             --images dir, --steps N, --out file.tsv,
- *                                             --scene Blit.frag for a still A, drone)
+ *                                             --images dir, --photos A.jpg,B.jpg,
+ *                                             --only A,B, --steps N, --out file.tsv,
+ *                                             --scene Blit.frag for a still A, drone;
+ *                                             Tools/transition_profile.py runs it)
  *    PresetEditor.exe --compile <files|\@list> compile every shader with the real driver
  *                                             (fullscreen fragments also linked against
  *                                             Engine/Fullscreen.vert); exit code = failures
@@ -738,6 +741,19 @@ int main( int argc, char *argv[] )
         // Optional --core restricts the run to the 28 split-out FxPlain
         // styles (the fast CI set); default is the full folder.
         QStringList trans_files = QDir( root + "/Transitions" ).entryList( { "*.frag" }, QDir::Files, QDir::Name );
+        // --only A,B: just these transitions (names without .frag), for the loop of change, measure, change.
+        {
+            const int io = args.indexOf( "--only" );
+            if ( io >= 0 && io + 1 < args.size() )
+            {
+                const QStringList only = args[io + 1].split( ',', Qt::SkipEmptyParts );
+                QStringList       kept;
+                for ( const QString &f : trans_files )
+                    if ( only.contains( QFileInfo( f ).completeBaseName() ) )
+                        kept << f;
+                trans_files = kept;
+            }
+        }
         QTimer::singleShot( 800, [w, trans_files]()
         {
             auto mean_diff = []( const QImage &ia, const QImage &ib ) -> double
@@ -839,6 +855,41 @@ int main( int argc, char *argv[] )
         PreviewWidget *w = new PreviewWidget( root );
         if ( !flag( "--images" ).isEmpty() )
             w->setImageDirectory( flag( "--images" ) );
+        // --photos A.jpg,B.jpg: the two photos by name (in --images, or absolute).  Without it the first two files of
+        // the folder are taken, and a folder that gains a photo sorting earlier silently moves every row; a folder
+        // that cannot be read (a path with a blank passed unquoted) silently measures the test card.  Both are
+        // refused here: a profile on other pictures is not comparable with the thresholds tuned on these.
+        {
+            const QStringList pictures = { "*.jpg", "*.jpeg", "*.png", "*.bmp" };
+            const QString     photos = flag( "--photos" );
+            if ( !photos.isEmpty() )
+            {
+                QStringList paths;
+                for ( const QString &f : photos.split( ',', Qt::SkipEmptyParts ) )
+                {
+                    const QString p = QFileInfo( f ).isAbsolute() ? f : QDir( flag( "--images" ) ).filePath( f );
+                    if ( !QFileInfo::exists( p ) )
+                    {
+                        std::fprintf( stderr, "TRANSPROFILE: photo %s not found\n", qPrintable( p ) );
+                        return 2;
+                    }
+                    paths << p;
+                }
+                if ( paths.size() != 2 )
+                {
+                    std::fprintf( stderr, "TRANSPROFILE: --photos takes two files, A,B\n" );
+                    return 2;
+                }
+                w->setImageFiles( paths[0], paths[1] );
+            }
+            else if ( !flag( "--images" ).isEmpty()
+                      && QDir( flag( "--images" ) ).entryList( pictures, QDir::Files ).size() < 2 )
+            {
+                std::fprintf( stderr, "TRANSPROFILE: no two photos in %s (is the path quoted?)\n",
+                              qPrintable( flag( "--images" ) ) );
+                return 2;
+            }
+        }
         // "drone": the synthetic profile without transients, so what remains
         // of flick is the transition's own clock-driven motion.
         if ( args.contains( "drone" ) )
@@ -889,6 +940,15 @@ int main( int argc, char *argv[] )
                     entries->push_back( e );
                 }
             }
+        }
+        // --only A,B: just these transitions (names without .frag); the tool that keeps the table merges the rows.
+        if ( !flag( "--only" ).isEmpty() )
+        {
+            const QStringList only = flag( "--only" ).split( ',', Qt::SkipEmptyParts );
+            entries->erase( std::remove_if( entries->begin(), entries->end(),
+                                            [&]( const Entry &e )
+            { return !only.contains( QFileInfo( e.file ).completeBaseName() ); } ),
+                            entries->end() );
         }
         const int     steps = std::max( 8, flag( "--steps" ).isEmpty() ? 40 : flag( "--steps" ).toInt() );
         const QString out_path = flag( "--out" );

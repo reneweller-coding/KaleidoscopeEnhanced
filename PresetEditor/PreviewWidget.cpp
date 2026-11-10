@@ -170,6 +170,15 @@ void PreviewWidget::setImageDirectory( const QString &dir )
     update();
 }
 
+void PreviewWidget::setImageFiles( const QString &first, const QString &second )
+{
+    m_imageFiles.clear();
+    if ( !first.isEmpty() )
+        m_imageFiles << first << ( second.isEmpty() ? first : second );
+    m_imagesDirty = true;
+    update();
+}
+
 void PreviewWidget::initializeGL()
 {
     initializeOpenGLFunctions();
@@ -303,8 +312,8 @@ void PreviewWidget::loadImages()
         m_img1 = 0;
     }
 
-    QStringList files;
-    if ( !m_imageDir.isEmpty() )
+    QStringList files = m_imageFiles;
+    if ( files.isEmpty() && !m_imageDir.isEmpty() )
     {
         QDir              d( m_imageDir );
         const QStringList filt = { "*.jpg", "*.jpeg", "*.png", "*.bmp" };

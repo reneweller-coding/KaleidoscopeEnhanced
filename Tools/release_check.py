@@ -12,6 +12,9 @@ Steps (each with its own threshold; --skip leaves steps out):
              Tools/check_settings_path.py -- the settings file is named in SettingsFile.h only
   analyzer   Tools/analyzer_regress.py -- chord changes, drops and tempo of synthetic tracks with a known truth,
              every feature against Tools/analyzer_baseline.json
+  transitions Tools/transition_profile.py --dry -- every transition ends exactly on the two scenes and has no jump
+             (PresetEditor --transcheck; Tools/transcheck_known.tsv lists the accepted cases), and its measured
+             row in Tools/transition_profile.tsv is current (PresetEditor --transprofile on the pinned photos)
   shaders    Tools/shadercheck.py -- every shader compiles and links with the real driver
   shaderdoc  Tools/doc_shaders.py --check -- the shader Doxygen comments are current
   layout     Tools/cgvr_format.py --check -- C++ and GLSL in the CGVR layout (docs/cgvr-guidelines.md)
@@ -105,6 +108,13 @@ def step_analyzer():
     return rc == 0, " / ".join(l.strip() for l in last) if last else out[-300:], dt
 
 
+def step_transitions():
+    rc, out, dt = run([PY, "Tools/transition_profile.py", "--dry"], 1800)
+    last = [l for l in out.splitlines() if l.startswith(("profile:", "transcheck:", "harness off", "no profile"))]
+    stale = any(l.startswith("profile:") and " 0 differ" not in l for l in last) or any("not in the table" in l for l in last)
+    return rc == 0 and not stale and len(last) >= 2, (" / ".join(last) if last else out[-300:]), dt
+
+
 def step_shaders():
     rc, out, dt = run([PY, "Tools/shadercheck.py"], 1800)
     last = [l for l in out.splitlines() if l.startswith("shadercheck:")]
@@ -188,7 +198,7 @@ def main():
     ap.add_argument("--label", default=datetime.date.today().isoformat(), help="name of this snapshot set")
     a = ap.parse_args()
     sys.stdout.reconfigure(encoding="utf-8")
-    steps = [("selftest", step_selftest), ("schedule", step_schedule), ("rules", step_rules), ("buildlists", step_buildlists), ("analyzer", step_analyzer), ("shaders", step_shaders), ("shaderdoc", step_shaderdoc), ("layout", step_layout), ("doxygen", step_doxygen),
+    steps = [("selftest", step_selftest), ("schedule", step_schedule), ("rules", step_rules), ("buildlists", step_buildlists), ("analyzer", step_analyzer), ("transitions", step_transitions), ("shaders", step_shaders), ("shaderdoc", step_shaderdoc), ("layout", step_layout), ("doxygen", step_doxygen),
              ("chain", step_chain), ("perf", step_perf), ("snapshots", lambda: step_snapshots(a.label))]
     rows, red = [], 0
     for name, fn in steps:

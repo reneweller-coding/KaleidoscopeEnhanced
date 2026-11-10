@@ -22,7 +22,7 @@ vec4 trans( vec2 p, float d )
     float m = trMid( d );
     float mist = clamp( m * ( 0.3 + 0.7 * ( 0.6 * n0 + 0.4 * n1 ) ) * 0.75 * gKA * ( 1.0 + 0.3 * audioSwell ), 0.0, 0.62 );
     vec4  c = mix( a, b, w );
-    return vec4( mix( c.rgb, vec3( 0.86, 0.89, 0.93 ), mist ), c.a );
+    return vec4( mix( c.rgb, trVeil( vec3( 0.86, 0.89, 0.93 ) ), mist ), c.a );
 }
 
 === DewCondensationBloom
@@ -104,6 +104,7 @@ minfade: 7
 prob: 0.08
 cx: 1
 huegain: 0.05
+warp: 0.0000 0.2124 0.2486 0.3247 0.4143 0.4546 0.4734 0.4850 0.4977 0.5129 0.5256 0.5512 0.6070 0.6983 0.7544 0.7859 1.0000
 ---
 vec4 trans( vec2 p, float d )
 {
@@ -119,7 +120,7 @@ vec4 trans( vec2 p, float d )
     float w = smoothstep( f - 0.11, f + 0.11, t );
     float foam = exp( -pow( ( f - t ) / 0.025, 2.0 ) ) * smoothstep( 0.0, 0.12, d ) * ( 1.0 - smoothstep( 0.88, 1.0, d ) );
     vec4  c = mix( a, b, w );
-    c.rgb = c.rgb * ( 1.0 - 0.12 * w * ( 1.0 - w ) * 4.0 ) + vec3( 0.95, 0.97, 1.0 ) * foam * 0.55 * gKB;
+    c.rgb = c.rgb * ( 1.0 - 0.12 * w * ( 1.0 - w ) * 4.0 ) + trVeil( vec3( 0.95, 0.97, 1.0 ) ) * foam * 0.55 * gKB;
     return c;
 }
 
@@ -233,7 +234,7 @@ vec4 trans( vec2 p, float d )
     float m = trMid( d );
     float cover = clamp( m * ( 0.5 + 0.7 * snow ) * drift * gKA * ( 1.0 + 0.3 * audioSwell ), 0.0, 0.92 );
     vec4  c = mix( a, b, smoothstep( 0.35, 0.65, d ) );
-    return vec4( mix( c.rgb, vec3( 0.95, 0.97, 1.0 ), cover ), c.a );
+    return vec4( mix( c.rgb, trVeil( vec3( 0.95, 0.97, 1.0 ) ), cover ), c.a );
 }
 
 === PollenDriftHaze
@@ -263,7 +264,7 @@ vec4 trans( vec2 p, float d )
     float m = trMid( d );
     float haze = clamp( m * ( 0.25 + 0.6 * n0 ) * 0.8 * gKA, 0.0, 0.55 ) + grain * 0.25 * m;
     vec4  c = mix( a, b, w );
-    return vec4( mix( c.rgb, vec3( 1.0, 0.84, 0.42 ), clamp( haze, 0.0, 0.7 ) ), c.a );
+    return vec4( mix( c.rgb, trVeil( vec3( 1.0, 0.84, 0.42 ) ), clamp( haze, 0.0, 0.7 ) ), c.a );
 }
 
 === PetalWindScatterMask
@@ -341,8 +342,8 @@ vec4 trans( vec2 p, float d )
     float swath = 0.5 + 0.5 * sin( s * ( 3.0 / gKB ) );
     float f = clamp( 0.55 * ( 1.0 - swath ) + 0.45 * fbm2( q * 3.0 ), 0.0, 1.0 );
     float w = trThresh( f, d, 0.22 );
-    vec4  fogA = mix( a, trBlurA( p, 7.0 ) * 0.7 + 0.3 * vec4( 0.9, 0.93, 0.97, 1.0 ), clamp( 0.9 * m * gKA * ( 1.0 + 0.2 * audioSwell ), 0.0, 0.95 ) );
-    vec4  fogB = mix( b, trBlurB( p, 7.0 ) * 0.7 + 0.3 * vec4( 0.9, 0.93, 0.97, 1.0 ), clamp( 0.5 * m * gKA, 0.0, 0.7 ) );
+    vec4  fogA = mix( a, trBlurA( p, 7.0 ) * 0.7 + 0.3 * vec4( trVeil( vec3( 0.9, 0.93, 0.97 ) ), 1.0 ), clamp( 0.9 * m * gKA * ( 1.0 + 0.2 * audioSwell ), 0.0, 0.95 ) );
+    vec4  fogB = mix( b, trBlurB( p, 7.0 ) * 0.7 + 0.3 * vec4( trVeil( vec3( 0.9, 0.93, 0.97 ) ), 1.0 ), clamp( 0.5 * m * gKA, 0.0, 0.7 ) );
     return mix( fogA, fogB, w );
 }
 
@@ -387,6 +388,7 @@ minfade: 6
 prob: 0.07
 cx: 2
 huegain: 0.05
+warp: 0.0000 0.0082 0.0794 0.1724 0.2516 0.3238 0.3955 0.4677 0.5385 0.6053 0.6676 0.7263 0.7847 0.8492 0.9370 0.9925 1.0000
 ---
 vec4 trans( vec2 p, float d )
 {

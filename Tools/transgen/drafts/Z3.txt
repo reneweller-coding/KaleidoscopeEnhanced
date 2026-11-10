@@ -260,7 +260,7 @@ vec4 trans( vec2 p, float d )
     float m = clamp( v * ( 1.4 + 0.5 * audioSwell ), 0.0, 0.7 ) * min( 1.0, 4.0 * trMid( d ) );
     float w = trThresh( 0.5 * ( 1.0 - fbm2( p * 3.0 ) ) + 0.5 * ( 1.0 - p.y ), d, 0.3 );
     vec4  c = mix( a, b, w );
-    return vec4( mix( c.rgb, vec3( 0.93, 0.94, 0.96 ), m ), c.a );
+    return vec4( mix( c.rgb, trVeil( vec3( 0.93, 0.94, 0.96 ) ), m ), c.a );
 }
 
 === FeltPressFibreMerge

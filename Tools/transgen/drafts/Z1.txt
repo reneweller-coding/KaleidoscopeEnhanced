@@ -136,6 +136,7 @@ minfade: 6
 prob: 0.06
 cx: 2
 huegain: 0.05
+warp: 0.0000 0.3770 0.4918 0.5810 0.6435 0.6870 0.7191 0.7449 0.7669 0.7866 0.8051 0.8232 0.8417 0.8614 0.8839 0.9125 1.0000
 ---
 /**  The roughness of the outgoing scene at a place: the spread of its brightness over a small neighbourhood.
  *
@@ -466,7 +467,7 @@ vec4 trans( vec2 p, float d )
     float w = trThresh( f, d, 0.35 );
     float m = trMid( d );
     float fog = clamp( m * ( 0.2 + 0.6 * ( 0.5 * l0 + 0.5 * l1 ) ) * ( 0.75 + 0.25 * l2 ) * 0.8 * gKA * ( 1.0 + 0.3 * audioSwell ), 0.0, 0.6 );
-    vec3  fogc = vec3( 0.76, 0.80, 0.86 ) + 0.1 * ( audioCentroid - 0.5 );
+    vec3  fogc = trVeil( vec3( 0.76, 0.80, 0.86 ) + 0.1 * ( audioCentroid - 0.5 ) );
     vec4  c = mix( a, b, w );
     return vec4( mix( c.rgb, fogc, fog ), c.a );
 }
