@@ -6484,6 +6484,7 @@
     <float name="tintP" minValue="2.60" maxValue="2.60"></float>
     <expr name="hueP" formula="chromaHue + seed2*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+    <float name="spinAxisP" minValue="0" maxValue="0"></float>
   </TextureShader>
   <TextureShader minTimeSolo="77" maxTimeSolo="202" interest="8" file="..\Scene3D\ShipDocking.frag" type="scene3d" geom="mesh" model="..\Models\TradePromenadeStation.glb" model2="..\Models\FastCourierVessel.glb" mood="dark,psychedelic,space" probability="0.4" complexity="4" gpuMs="0.58">
     <rig preset="mesh-18-yaw3"/>
@@ -6503,6 +6504,7 @@
     <float name="tintP" minValue="0.30" maxValue="0.30"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+    <float name="spinAxisP" minValue="0" maxValue="0"></float>
   </TextureShader>
   <TextureShader minTimeSolo="77" maxTimeSolo="202" interest="8" file="..\Scene3D\AtmosphericEntry.frag" type="scene3d" geom="mesh" model="..\Models\ArmoredAssaultLander.glb" mood="dark,aggressive,space" probability="0.4" complexity="4" gpuMs="0.55">
     <rig preset="mesh-18-yaw2"/>
@@ -6798,6 +6800,7 @@
     <float name="tintP" minValue="0.75" maxValue="0.75"></float>
     <expr name="hueP" formula="chromaHue + seed3*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+    <float name="spinAxisP" minValue="0" maxValue="0"></float>
   </TextureShader>
   <TextureShader minTimeSolo="77" maxTimeSolo="202" interest="8" file="..\Scene3D\ShipDocking.frag" type="scene3d" geom="mesh" model="..\Models\ScrapRecyclingStation.glb" model2="..\Models\SalvageRepairRig.glb" mood="dark,aggressive,space" probability="0.35" complexity="4" gpuMs="0.58">
     <rig preset="mesh-18"/>
@@ -6807,6 +6810,7 @@
     <float name="tintP" minValue="1.25" maxValue="1.25"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+    <float name="spinAxisP" minValue="0" maxValue="0"></float>
   </TextureShader>
   <TextureShader minTimeSolo="77" maxTimeSolo="202" interest="8" file="..\Scene3D\ShipDocking.frag" type="scene3d" geom="mesh" model="..\Models\AgriBiosphereStation.glb" model2="..\Models\AgroPodCarrier.glb" mood="dark,calm,space" probability="0.35" complexity="4" gpuMs="0.58">
     <rig preset="mesh-18-yaw2"/>
@@ -6816,6 +6820,7 @@
     <float name="tintP" minValue="2.20" maxValue="2.20"></float>
     <expr name="hueP" formula="chromaHue + seed2*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+    <float name="spinAxisP" minValue="0" maxValue="0"></float>
   </TextureShader>
   <TextureShader minTimeSolo="77" maxTimeSolo="202" interest="8" file="..\Scene3D\ShipDocking.frag" type="scene3d" geom="mesh" model="..\Models\HyperspaceRelayStation.glb" model2="..\Models\CommsRelayShip.glb" mood="calm,space" probability="0.35" complexity="4" gpuMs="0.58">
     <rig preset="mesh-18-yaw3"/>
@@ -6825,6 +6830,7 @@
     <float name="tintP" minValue="3.45" maxValue="3.45"></float>
     <expr name="hueP" formula="chromaHue + seed3*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+    <float name="spinAxisP" minValue="0" maxValue="0"></float>
   </TextureShader>
   <TextureShader minTimeSolo="77" maxTimeSolo="202" interest="8" file="..\Scene3D\ShipDocking.frag" type="scene3d" geom="mesh" model="..\Models\FuelDepotStation.glb" model2="..\Models\ScavengerScow.glb" mood="dark,space" probability="0.35" complexity="4" gpuMs="0.58">
     <rig preset="mesh-18"/>
@@ -6834,6 +6840,7 @@
     <float name="tintP" minValue="0.45" maxValue="0.45"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+    <float name="spinAxisP" minValue="0" maxValue="0"></float>
   </TextureShader>
   <TextureShader minTimeSolo="77" maxTimeSolo="202" interest="8" file="..\Scene3D\ShipDocking.frag" type="scene3d" geom="mesh" model="..\Models\MiningCentralStation.glb" model2="..\Models\HeavyAsteroidExcavator.glb" mood="dark,aggressive,space" probability="0.35" complexity="4" gpuMs="0.58">
     <rig preset="mesh-18-yaw2"/>
@@ -6843,6 +6850,7 @@
     <float name="tintP" minValue="5.00" maxValue="5.00"></float>
     <expr name="hueP" formula="chromaHue + seed2*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+    <float name="spinAxisP" minValue="0" maxValue="0"></float>
   </TextureShader>
   <TextureShader minTimeSolo="14" maxTimeSolo="36" interest="4" file="..\Scene3D\Hologram.frag" type="scene3d" geom="mesh" model="..\Models\GcvInterestingTimes.glb" mood="dark,psychedelic,space" probability="0.35" complexity="5" gpuMs="0.58">
     <rig preset="mesh-18-yaw3"/>
