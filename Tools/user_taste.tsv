@@ -1,0 +1,6 @@
+name	column	step	source
+BlackHole	ambient	-1	Ambient 0.64
+CryovolcanicIceGeysers	ambient	-1	Ambient 0.64
+MeshTerrain	ambient	-1	Ambient 0.64
+MetamaterialCloakingHorizon	ambient	-1	Ambient 0.64
+SundialShadowSweep	ambient	-1	Ambient 0.64

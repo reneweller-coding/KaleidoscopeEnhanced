@@ -2834,7 +2834,7 @@
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <TextureShader minTimeSolo="9" maxTimeSolo="23" interest="3" file="..\Scene2D\AbacusBeadCount.frag" type="normal" mood="bright,dreamy" probability="0.45" complexity="10" gpuMs="0.43">
+  <TextureShader minTimeSolo="14" maxTimeSolo="36" interest="4" file="..\Scene2D\AbacusBeadCount.frag" type="normal" mood="bright,dreamy" probability="0.45" complexity="10" gpuMs="0.43">
     <rig preset="flat"/>
     <float name="rodsP" minValue="0" maxValue="1"></float>
     <float name="beadsP" minValue="0" maxValue="1"></float>
@@ -13276,7 +13276,7 @@
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <TextureShader minTimeSolo="9" maxTimeSolo="23" interest="3" file="..\\Scene2D\\AsawaLoopedWire.frag" type="normal" mood="dreamy,gallery,ambient" probability="0.45" complexity="8" gpuMs="0.51">
+  <TextureShader minTimeSolo="14" maxTimeSolo="36" interest="4" file="..\\Scene2D\\AsawaLoopedWire.frag" type="normal" mood="dreamy,gallery,ambient" probability="0.45" complexity="8" gpuMs="0.51">
     <rig preset="flat"/>
     <float name="formP" minValue="0" maxValue="1"></float>
     <float name="meshP" minValue="0" maxValue="1"></float>
@@ -13346,7 +13346,7 @@
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <TextureShader minTimeSolo="9" maxTimeSolo="23" interest="3" file="..\\Scene2D\\VolumetricPOVHelix.frag" type="normal" mood="electronic,club,space" probability="0.45" complexity="7" gpuMs="0.51">
+  <TextureShader minTimeSolo="14" maxTimeSolo="36" interest="4" file="..\\Scene2D\\VolumetricPOVHelix.frag" type="normal" mood="electronic,club,space" probability="0.45" complexity="7" gpuMs="0.51">
     <rig preset="flat"/>
     <float name="columnP" minValue="0" maxValue="1"></float>
     <float name="pitchP" minValue="0" maxValue="1"></float>
@@ -14333,7 +14333,7 @@
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <TextureShader minTimeSolo="9" maxTimeSolo="23" interest="3" file="..\\Scene2D\\IsoluminantShimmer.frag" type="normal" mood="psychedelic,electronic,dreamy" probability="0.45" complexity="1" gpuMs="0.60">
+  <TextureShader minTimeSolo="14" maxTimeSolo="36" interest="4" file="..\\Scene2D\\IsoluminantShimmer.frag" type="normal" mood="psychedelic,electronic,dreamy" probability="0.45" complexity="1" gpuMs="0.60">
     <rig preset="flat"/>
     <float name="scaleP" minValue="0" maxValue="1"></float>
     <float name="contrastP" minValue="0" maxValue="1"></float>
@@ -14431,14 +14431,14 @@
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <TextureShader minTimeSolo="9" maxTimeSolo="23" interest="3" file="..\\Scene2D\\ChordCathedralNave.frag" type="normal" mood="cinematic,dreamy,ambient" probability="0.45" complexity="4" gpuMs="0.48">
+  <TextureShader minTimeSolo="14" maxTimeSolo="36" interest="4" file="..\\Scene2D\\ChordCathedralNave.frag" type="normal" mood="cinematic,dreamy,ambient" probability="0.45" complexity="4" gpuMs="0.48">
     <rig preset="flat"/>
     <float name="bayP" minValue="0" maxValue="1"></float>
     <float name="lineP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <TextureShader minTimeSolo="9" maxTimeSolo="23" interest="3" file="..\\Scene2D\\MeasureRingTunnel.frag" type="normal" mood="electronic,club,psychedelic" probability="0.45" complexity="10" gpuMs="0.53">
+  <TextureShader minTimeSolo="14" maxTimeSolo="36" interest="4" file="..\\Scene2D\\MeasureRingTunnel.frag" type="normal" mood="electronic,club,psychedelic" probability="0.45" complexity="10" gpuMs="0.53">
     <rig preset="flat"/>
     <float name="ringP" minValue="0" maxValue="1"></float>
     <float name="widthP" minValue="0" maxValue="1"></float>

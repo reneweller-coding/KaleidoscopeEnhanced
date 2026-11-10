@@ -338,7 +338,11 @@ FIT_COLUMN = {"Ambient": "ambient", "SpaceAmbient": "space", "Club": "club",
 MIN_SCENES = 400
 RANK_TAKE = 6.0
 FIT_FLOOR = 3          # never fill with a scene rated below this, even short of MIN_SCENES
-DULL = 2
+# A scene with an interest at or below DULL is in no genre preset (Allround keeps it).  2 until 10.11.2026, 3 since:
+# with 2475 scenes a quarter were rated 4 or less and every genre showed them as often as its best (the plan walks
+# through all scenes before one returns), Noir to 43 %.  The 185 scenes rated 3 are flat, murky or nearly empty
+# in all three catalogue frames (looked at as contact sheets); setting DULL back to 2 brings them back.
+DULL = 3
 INTEREST_WEIGHT = 0.15
 SECOND_FIT = {"SpaceAmbient": ("ambient", 0.4)}
 # Colour grade per preset: a scene that is in the preset only as filler (its fit
@@ -376,6 +380,19 @@ if os.path.exists(FIT_FILE):
         if ln.strip():
             v = ln.split("\t")
             fit[v[0]] = {head[i]: int(v[i]) for i in range(1, min(len(head), len(v))) if v[i].strip()}
+
+# What the viewer told the app (Tools/apply_taste.py writes the file from kaleidoscope_settings.ini): steps on one
+# genre's fit, or on the interest for a taste learnt in Allround; "ban" takes the scene out of that genre.
+TASTE_FILE = "Tools/user_taste.tsv"
+if os.path.exists(TASTE_FILE):
+    for ln in open(TASTE_FILE, encoding="utf-8").read().splitlines()[1:]:
+        v = ln.split("	")
+        if len(v) < 3 or v[0] not in fit or v[1] not in fit[v[0]]:
+            continue
+        if v[2] == "ban":
+            fit[v[0]][v[1]] = 1 if v[1] == "interest" else 0
+        else:
+            fit[v[0]][v[1]] = max(0, min(10, fit[v[0]][v[1]] + int(v[2])))
 
 # Every scene has a home (22.10.2026): taking the best of each genre up to MIN_SCENES left 536 of 1815 scenes in no
 # genre preset at all -- scenes rated middling everywhere, shown only by Allround.  A scene that is not dull now also
