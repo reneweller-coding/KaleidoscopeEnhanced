@@ -1,0 +1,61 @@
+# TEMPORARY (wt-linux only): the Linux jobs while they are being made to work, so that each push runs them without
+# the twelve minutes of the Windows job.  They move into ci.yml when they are green; this file is then deleted.
+name: Linux WIP
+
+on:
+  push:
+    branches: [wt-linux]
+
+jobs:
+  linux:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Install packages (the README's list; Xvfb, Mesa and ffmpeg to run it)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y qt6-base-dev qt6-base-dev-tools qt6-multimedia-dev \
+                                  libgl1-mesa-dev libglu1-mesa-dev libpulse-dev cmake
+          sudo apt-get install -y --no-install-recommends xvfb xauth libgl1-mesa-dri mesa-utils ffmpeg
+
+      - name: Build (CMake, Release)
+        run: |
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+          cmake --build build -j"$(nproc)"
+
+      - name: Self test (Kaleidoscope -q)
+        working-directory: build
+        run: |
+          set +e
+          xvfb-run -a ./Kaleidoscope -q > selftest.txt 2>&1
+          code=$?
+          set -e
+          tail -n 15 selftest.txt
+          [ "$code" -eq 0 ] && grep -Eq '[0-9]+ passed, 0 failed' selftest.txt
+
+      - name: Export of five seconds (software GL)
+        working-directory: build
+        env:
+          LIBGL_ALWAYS_SOFTWARE: '1'
+          GALLIUM_DRIVER: llvmpipe
+          MESA_GL_VERSION_OVERRIDE: '4.3'
+          MESA_GLSL_VERSION_OVERRIDE: '430'
+          KALEIDO_SEED: '1'
+        run: |
+          python3 -c "import wave,struct,math; w=wave.open('../smoke.wav','wb'); w.setnchannels(2); w.setsampwidth(2); w.setframerate(44100); w.writeframes(b''.join(struct.pack('<hh', *([int(12000*math.exp(-(t%11025)/1500.0)*math.sin(2*math.pi*55*t/44100)+2400*math.sin(2*math.pi*220*t/44100))]*2)) for t in range(44100*5))); w.close()"
+          xvfb-run -a -s "-screen 0 1280x720x24" glxinfo -B | grep -E "OpenGL (renderer|core profile version)" || true
+          export KALEIDO_SETTINGS="$RUNNER_TEMP/settings.ini"
+          set +e
+          timeout 600 xvfb-run -a -s "-screen 0 1280x720x24" ./Kaleidoscope -e ../smoke.wav -c Club -g 640x360 -p 30 -d "$RUNNER_TEMP/smoke.mp4" -l
+          code=$?
+          set -e
+          tail -n 40 kaleidoscope.log || true
+          echo "exit code $code"
+          [ "$code" -eq 0 ]
+          grep -E "^Presets: [1-9][0-9]* files read" kaleidoscope.log
+          dur=$(ffprobe -v error -show_entries format=duration -of csv=p=0 "$RUNNER_TEMP/smoke.mp4")
+          echo "smoke.mp4: $dur s"
+          python3 -c "import sys; d=float(sys.argv[1]); sys.exit(0 if 4.5 <= d <= 5.6 else 1)" "$dur"
