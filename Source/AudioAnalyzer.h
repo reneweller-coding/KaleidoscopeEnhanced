@@ -20,6 +20,7 @@
 #include <QtCore/QList>
 #include <QtCore/QElapsedTimer>
 #include <atomic>
+#include <cstdio>
 #include <vector>
 
 #include "AudioFeatures.h"
@@ -206,6 +207,12 @@ public:
      * synthetic profile.
      **/
     static std::vector<AudioFeatures> analyzeWavToTimeline( const QString &path, unsigned int *sampleRate = nullptr );
+    /** When set, every analysed block appends the tempo's inputs and outputs to this file (14 float32: time, the
+     * block's onset-envelope samples, the kick and its interval, track change, the autocorrelation tempo and
+     * confidence, the published tempo and beat phase, the kick tempo and its explained share) -- for replaying tempo
+     * candidates offline (Tools/tempo_lab.py; PresetEditor --features ... --tempo-trace FILE).  Off (null) in the app.
+     **/
+    static FILE *M_TempoTrace;
     /**  Offline analysis of samples in memory: the same pipeline as analyzeWavToTimeline(), for checks that build
      * their own signal (`Kaleidoscope.exe -q`).
      *

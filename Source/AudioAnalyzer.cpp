@@ -752,6 +752,7 @@ float AudioAnalyzer::tapTempo()
 
 bool  AudioAnalyzer::M_ExternalClock = true;
 float AudioAnalyzer::M_ClockDelay = 0.06f;
+FILE *AudioAnalyzer::M_TempoTrace = nullptr;
 
 void AudioAnalyzer::externalBeat( const char *source, qint64 refMs, float bpm, bool phase )
 {
@@ -2102,6 +2103,8 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
     // Feed the onset detection function into a fixed-rate envelope, then autocorrelate
     // it over the natural-tempo lag range (70..180 BPM).  The peak lag gives a robust
     // tempo estimate (and confidence) that refines the inter-beat BPM below.
+    float trace_env[3] = {}; // the onset-envelope samples of this block, for #M_TempoTrace
+    int   trace_env_n = 0;
     {
         int frames_per_env = std::max( 1, sampleRate / EnvRate );
         m_envFrameAcc += numFrames;
@@ -2113,6 +2116,8 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
             m_odfEnv[m_odfEnvIdx] = m_odfFFT;
             m_sfEnv[m_odfEnvIdx] = m_odfSF;
             m_odfEnvIdx = ( m_odfEnvIdx + 1 ) % OdfEnvLen;
+            if ( trace_env_n < 3 )
+                trace_env[trace_env_n++] = m_odfSF;
         }
         const int lag_lo = ( 60 * EnvRate ) / 180; // 33 samples (180 BPM)
         const int lag_hi = ( 60 * EnvRate ) / 70;  // 85 samples (70 BPM)
@@ -2304,6 +2309,7 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
         return bpm;
     };
     float estimated_bpm = m_smoothedBPM;
+    float trace_beat_iv = 0.f; // this block's kick interval, for #M_TempoTrace
     // A new track starts its own tempo: the old one's intervals would only argue with it.
     if ( track_change )
         m_ioiCount = 0;
@@ -2312,6 +2318,7 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
         float interval_frames = m_frameCounter - m_lastBeatFrame;
         m_lastBeatFrame = m_frameCounter;
         const float interval_s = interval_frames / static_cast<float>( sampleRate );
+        trace_beat_iv = interval_s;
         if ( interval_s > 0.12f && interval_s < 3.f )
         {
             m_ioi[m_ioiIdx] = interval_s;
@@ -2405,6 +2412,27 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
             float ph = frames_since_beat / beat_period_frames;
             beat_phase = ph - std::floor( ph );
         }
+    }
+
+    // The tempo's inputs and outputs of this block, for replaying candidates offline (Tools/tempo_lab.py,
+    // PresetEditor --features ... --tempo-trace FILE): 14 float32 per block.
+    if ( M_TempoTrace )
+    {
+        const float rec[14] = { m_frameCounter / static_cast<float>( sampleRate ),
+                                static_cast<float>( trace_env_n ),
+                                trace_env[0],
+                                trace_env[1],
+                                trace_env[2],
+                                is_beat ? 1.f : 0.f,
+                                trace_beat_iv,
+                                track_change ? 1.f : 0.f,
+                                m_acBPM,
+                                m_acConf,
+                                m_smoothedBPM,
+                                beat_phase,
+                                m_kickBPM,
+                                m_ioiExplained };
+        fwrite( rec, sizeof( float ), 14, M_TempoTrace );
     }
 
     // True downbeat (bar tracking).  Every detected beat's strength is
