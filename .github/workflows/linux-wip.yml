@@ -59,3 +59,109 @@ jobs:
           dur=$(ffprobe -v error -show_entries format=duration -of csv=p=0 "$RUNNER_TEMP/smoke.mp4")
           echo "smoke.mp4: $dur s"
           python3 -c "import sys; d=float(sys.argv[1]); sys.exit(0 if 4.5 <= d <= 5.6 else 1)" "$dur"
+
+  appimage:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 40
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Install packages (distribution Qt 6.2 of Ubuntu 22.04, the oldest maintained runner -- its glibc 2.35 is the floor)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y qt6-base-dev qt6-base-dev-tools qt6-multimedia-dev libqt6opengl6-dev qmake6 \
+                                  libgl1-mesa-dev libglu1-mesa-dev libpulse-dev cmake file
+
+      - name: Build the AppImage (linuxdeploy + Qt plugin)
+        run: bash Tools/appimage/build_appimage.sh "$RUNNER_TEMP/dist"
+
+      - name: Upload
+        uses: actions/upload-artifact@v7
+        with:
+          name: Kaleidoscope-AppImage
+          path: ${{ runner.temp }}/dist/Kaleidoscope-x86_64.AppImage
+          if-no-files-found: error
+          retention-days: 14
+
+  appimage-run:
+    needs: appimage
+    runs-on: ubuntu-24.04
+    container: ubuntu:24.04
+    timeout-minutes: 30
+    env:
+      T: /opt/kaleido-test
+    steps:
+      - name: Download the AppImage
+        uses: actions/download-artifact@v8
+        with:
+          name: Kaleidoscope-AppImage
+          path: /opt/kaleido-test/app
+
+      - name: Install what a desktop has -- an X server, Mesa, fonts -- and no Qt
+        run: |
+          apt-get update
+          DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+            xvfb xauth libgl1 libegl1 libgl1-mesa-dri libglx-mesa0 libfontconfig1 libfreetype6 \
+            libx11-6 libx11-xcb1 libxkbcommon0 libxkbcommon-x11-0 libdbus-1-3 fonts-dejavu-core file binutils
+          if ls /usr/lib/x86_64-linux-gnu/ | grep -E '^libQt[56]'; then echo "Qt is installed - the test would prove nothing"; exit 1; fi
+          echo "no Qt on the system"
+
+      - name: Libraries the AppImage expects from the system (report)
+        run: |
+          chmod +x "$T/app/Kaleidoscope-x86_64.AppImage"
+          mkdir -p "$T/x" && cd "$T/x"
+          "$T/app/Kaleidoscope-x86_64.AppImage" --appimage-extract > /dev/null
+          find squashfs-root -type f \( -name '*.so*' -o -path '*/usr/bin/*' \) -exec sh -c 'file -b "$1" | grep -q ELF && echo "$1"' _ {} \; > elfs.txt
+          echo "$(wc -l < elfs.txt) ELF files"
+          LD_LIBRARY_PATH="$PWD/squashfs-root/usr/lib" xargs -a elfs.txt ldd 2> /dev/null | grep "not found" | sort | uniq -c || echo "nothing missing"
+          du -sh squashfs-root; ls squashfs-root squashfs-root/usr
+          cd / && rm -rf "$T/x"
+
+      - name: Self test from the AppImage (-q)
+        run: |
+          mkdir -p "$T/home" "$T/run" "$T/tmp"
+          export HOME="$T/home" TMPDIR="$T/tmp"
+          cd "$T/run"
+          set +e
+          xvfb-run -a "$T/app/Kaleidoscope-x86_64.AppImage" --appimage-extract-and-run -q > selftest.txt 2>&1
+          code=$?
+          set -e
+          tail -n 25 selftest.txt
+          [ "$code" -eq 0 ] && grep -Eq '[0-9]+ passed, 0 failed' selftest.txt
+
+      - name: Export of five seconds from the AppImage (software GL), nothing written beside it
+        env:
+          LIBGL_ALWAYS_SOFTWARE: '1'
+          GALLIUM_DRIVER: llvmpipe
+          MESA_GL_VERSION_OVERRIDE: '4.3'
+          MESA_GLSL_VERSION_OVERRIDE: '430'
+          KALEIDO_SEED: '1'
+        run: |
+          DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ffmpeg > /dev/null
+          export HOME="$T/home" TMPDIR="$T/tmp"
+          mkdir -p "$T/in" "$HOME/.local/share/KaleidoscopeVisualizer/Images"
+          ffmpeg -v error -f lavfi -i "sine=frequency=110:beep_factor=4:sample_rate=44100:duration=5" -ac 2 "$T/in/smoke.wav"
+          ffmpeg -v error -f lavfi -i "testsrc2=size=512x512" -frames:v 1 "$HOME/.local/share/KaleidoscopeVisualizer/Images/test.jpg"
+          ls -A "$T/app" > "$T/before.txt"
+          cd "$T/run"
+          set +e
+          # Relative paths, from a third folder: the program moves into its own and must still find them.
+          timeout 900 xvfb-run -a -s "-screen 0 1280x720x24" "$T/app/Kaleidoscope-x86_64.AppImage" --appimage-extract-and-run \
+            -e ../in/smoke.wav -c Club -g 640x360 -p 30 -d out/smoke.mp4 -l
+          code=$?
+          set -e
+          log="$HOME/.local/state/KaleidoscopeVisualizer/kaleidoscope.log"
+          echo "--- what was written below HOME:"; find "$HOME" -type f | sort
+          echo "--- the log's head and tail:"; head -n 30 "$log" || true; echo ...; tail -n 30 "$log" || true
+          echo "exit code $code"
+          [ "$code" -eq 0 ]
+          ls -A "$T/app" > "$T/after.txt"
+          diff "$T/before.txt" "$T/after.txt" && echo "nothing written beside the AppImage"
+          grep -F "Program folder: " "$log"
+          grep -F "Settings: $HOME/.config/KaleidoscopeVisualizer/kaleidoscope_settings.ini" "$log"
+          grep -E "^Presets: [1-9][0-9]* files read" "$log"
+          grep -F "Photo source: $HOME/.local/share/KaleidoscopeVisualizer/Images (preset default)" "$log"
+          dur=$(ffprobe -v error -show_entries format=duration -of csv=p=0 out/smoke.mp4)
+          echo "out/smoke.mp4: $dur s"
+          awk -v d="$dur" 'BEGIN { exit !(d >= 4.5 && d <= 5.6) }'
