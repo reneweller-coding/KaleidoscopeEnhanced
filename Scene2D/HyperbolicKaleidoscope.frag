@@ -141,6 +141,11 @@ void main()
 
     // Fold into the fundamental domain: mirror the p-fold sector, then
     // invert across the edge circle while the point lies beyond it.
+    // The wedge is [0, sector/2] with the edge midpoint at angle 0 and must map
+    // onto itself unchanged: sector/2 - |a - sector/2|.  Until 20.11.2026 it was
+    // |a - sector/2|, which turns the wedge around (a -> sector/2 - a), so a point
+    // and its image in the edge circle folded to different places (95-100 % of
+    // them, measured) and the tiling fell apart into fragments.
     float sector = 6.2831853 / pp;
     float inv = 0.0;
     float seam = 1e9;
@@ -148,8 +153,8 @@ void main()
     {
         float a = atan( z.y, z.x );
         a = mod( a, sector );
-        a = abs( a - sector * 0.5 );
-        seam = min( seam, abs( a - sector * 0.5 ) * length( z ) );
+        a = sector * 0.5 - abs( a - sector * 0.5 );
+        seam = min( seam, a * length( z ) ); // the mirror through the edge midpoints, as before
         z = length( z ) * vec2( cos( a ), sin( a ) );
         vec2  d = z - vec2( cx, 0.0 );
         float dd = dot( d, d );
