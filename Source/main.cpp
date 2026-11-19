@@ -119,6 +119,7 @@ bool cueSelfTest = false; ///< -q: run the score-cue self test and exit instead 
 
 static char      **g_argvBase = nullptr; ///< argv as main() received it; argText() finds an argument's index with it.
 static QStringList g_wargs; ///< The arguments as Unicode text (Windows: from the wide command line); empty elsewhere.
+static QString     g_startDir; ///< The folder the program was started in, if it then moved into its own; else empty.
 
 /**  A command-line argument as text, without losing what the ANSI code page cannot hold.
  *
@@ -135,6 +136,48 @@ static QString argText( char **at )
     if ( g_argvBase && i >= 0 && i < g_wargs.size() )
         return g_wargs[i];
     return QString::fromLocal8Bit( *at );
+}
+
+/**  A command-line argument that names a file or folder, taken relative to the folder the user started in.
+ *
+ * @param at  Pointer into argv at the argument. (in)
+ *
+ * @return
+ *   argText() -- made absolute against the starting folder if the program moved into its own one
+ *   (enterProgramFolder()), so that "-e song.wav" still means the song where the user is.
+ **/
+static QString argPath( char **at )
+{
+    const QString p = argText( at );
+    return g_startDir.isEmpty() || p.isEmpty() ? p : QDir( g_startDir ).absoluteFilePath( p );
+}
+
+/**  Moves into the program's folder if it was started elsewhere (not on Windows).
+ *
+ * The program finds everything relative to its working folder -- "../Engine", "../Presets" -- which on Windows the
+ * shortcuts and the package's bin\ provide.  An AppImage is started from wherever the user is, and its files lie in
+ * the mounted image beside the executable; a source build may be started as build/Kaleidoscope from the repository.
+ * So: in an AppImage always, otherwise when "../Engine" is not found from here but from the executable's folder,
+ * that folder becomes the working folder, and the paths on the command line stay the user's (argPath()).
+ *
+ * @sideeffects
+ *   Changes the working directory and g_startDir.
+ **/
+static void enterProgramFolder()
+{
+#ifndef _WIN32
+    const QString exe = QFileInfo( QStringLiteral( "/proc/self/exe" ) ).canonicalFilePath();
+    if ( exe.isEmpty() )
+        return;
+    const QString bin = QFileInfo( exe ).absolutePath();
+    if ( QDir( bin ).canonicalPath() == QDir::current().canonicalPath() )
+        return;
+    if ( ( !SettingsFile::inAppImage() && QDir( QStringLiteral( "../Engine" ) ).exists() )
+         || !QDir( bin + "/../Engine" ).exists() )
+        return;
+    g_startDir = QDir::currentPath();
+    QDir::setCurrent( bin );
+#endif
 }
 
 
@@ -320,7 +363,7 @@ void parsecommandline( int argc, char *argv[] )
                 // setting and the preset's own ImageDirectory attribute.
                 case 'f':
                     RenderPipeline::M_ImageDirCli =
-                        argText( argv + 1 );
+                        argPath( argv + 1 );
                     break;
                 case 'b': fullscreen = !fullscreen; break;
                 case 's':
@@ -338,13 +381,13 @@ void parsecommandline( int argc, char *argv[] )
                 case 'r': GLwidget::M_AutoRecord = true; break;
                 // Score cues from a file, timed by the offline WAV (-w / -x).
                 case 'k':
-                    if ( ScoreCueFile::instance().load( argText( argv + 1 ) ) < 0 )
+                    if ( ScoreCueFile::instance().load( argPath( argv + 1 ) ) < 0 )
                         exit( -1 );
                     break;
                 // Offline analysis: feed this WAV through the analyzer instead of
                 // capturing live audio (deterministic classifier testing).
                 case 'w':
-                    AudioAnalyzer::M_OfflineWav = argText( argv + 1 );
+                    AudioAnalyzer::M_OfflineWav = argPath( argv + 1 );
                     // KALEIDO_OFFLINE_FAST drops the real-time pacing, which only makes
                     // sense for a measurement run -- nobody watches a WAV played at
                     // 100x. So it also means "quit when the file ends", which lets a
@@ -362,13 +405,13 @@ void parsecommandline( int argc, char *argv[] )
                     break;
                 // Batch render: offline WAV + auto-record + auto-quit at the end.
                 case 'x':
-                    AudioAnalyzer::M_OfflineWav = argText( argv + 1 );
+                    AudioAnalyzer::M_OfflineWav = argPath( argv + 1 );
                     GLwidget::M_AutoRecord = true;
                     GLwidget::M_BatchRender = true;
                     break;
                 // Video export (VideoExport.h): the audio file, and its size, rate,
                 // output and options.  The export itself is set up after parsing.
-                case 'e': VideoExport::M_Settings.audio = argText( argv + 1 ); break;
+                case 'e': VideoExport::M_Settings.audio = argPath( argv + 1 ); break;
                 case 'g':
                     if ( !VideoExport::parseSize( argText( argv + 1 ) ) )
                     {
@@ -377,7 +420,7 @@ void parsecommandline( int argc, char *argv[] )
                     }
                     break;
                 case 'p': VideoExport::M_Settings.fps = atoi( argv[1] ); break;
-                case 'd': VideoExport::M_Settings.output = argText( argv + 1 ); break;
+                case 'd': VideoExport::M_Settings.output = argPath( argv + 1 ); break;
                 case 'j':
                     if ( !VideoExport::parseOptions( argText( argv + 1 ) ) )
                         commandlineerror( argv[0], argv[1] );
@@ -390,7 +433,7 @@ void parsecommandline( int argc, char *argv[] )
                 // Native VIDEO input: a file, or a directory played in turn.
                 // Same slot as -i; Spout wins if both are given.
                 case 'v':
-                    RenderPipeline::M_VideoPath = argText( argv + 1 );
+                    RenderPipeline::M_VideoPath = argPath( argv + 1 );
                     break;
                 // Stereoscopic output: sbs (side-by-side), tb (top-bottom),
                 // ana (red-cyan anaglyph); anything else = off.
@@ -554,6 +597,10 @@ int main( int argc, char *argv[] )
     // folder is no longer a sensible guess for a visualizer's source material
     // anyway -- it is full of holiday snaps and screenshots.
     //
+    // Into the program's folder first if started elsewhere (an AppImage always is): the settings file, the presets
+    // and the shaders are all found from there.
+    enterProgramFolder();
+
     // Restore saved look settings first, so explicit command-line flags (e.g. -s)
     // still take precedence over the persisted values.
     RenderPipeline::loadSettings();
@@ -598,18 +645,28 @@ int main( int argc, char *argv[] )
     if ( logToFile )
     {
         // Three generations: after a crash the watchdog's restart -- and a second crash -- used to overwrite the
-        // log of the first one, which is the one that tells what happened.
-        remove( "kaleidoscope.log.3" );
-        rename( "kaleidoscope.log.2", "kaleidoscope.log.3" );
-        rename( "kaleidoscope.log.1", "kaleidoscope.log.2" );
-        rename( "kaleidoscope.log", "kaleidoscope.log.1" );
-        if ( freopen( "kaleidoscope.log", "w", stderr ) )
+        // log of the first one, which is the one that tells what happened.  In the working folder (bin\), or in the
+        // user's state folder when the program's folder is not the user's (SettingsFile::userFolders()).
+        const QByteArray log =
+            SettingsFile::writablePath( QStringLiteral( "kaleidoscope.log" ), SettingsFile::UserDir::State )
+                .toLocal8Bit();
+        remove( ( log + ".3" ).constData() );
+        rename( ( log + ".2" ).constData(), ( log + ".3" ).constData() );
+        rename( ( log + ".1" ).constData(), ( log + ".2" ).constData() );
+        rename( log.constData(), ( log + ".1" ).constData() );
+        if ( freopen( log.constData(), "w", stderr ) )
         {
             time_t t = time( NULL );
             fprintf( stderr, "=== Kaleidoscope log started %s", ctime( &t ) );
             setvbuf( stderr, NULL, _IONBF, 0 ); // unbuffered: nothing lost on a hard kill
         }
     }
+    if ( !g_startDir.isEmpty() )
+        fprintf( stderr, "Program folder: %s (started in %s)\n", qPrintable( QDir::currentPath() ),
+                 qPrintable( g_startDir ) );
+    if ( SettingsFile::userFolders() )
+        fprintf( stderr, "User folders: settings, log, thumbnails and recordings go to the XDG folders (%s ...)\n",
+                 qPrintable( SettingsFile::userDir( SettingsFile::UserDir::Config ) ) );
 
     // OpenGL 4.3 CORE profile: the fixed-function remnants are gone, all
     // shaders are GLSL 330 core, and 4.3 unlocks compute shaders for the

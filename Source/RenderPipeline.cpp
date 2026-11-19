@@ -480,10 +480,11 @@ void RenderPipeline::init( const QString &directory, unsigned int timeTextureSol
     // line, then the user's persistent ini setting, then the preset's own
     // ImageDirectory attribute -- which ships as "..\\Images", the folder the
     // bundled photo library unpacks into, resolved against the executable's
-    // working directory exactly like the shader paths are.
+    // working directory exactly like the shader paths are (in the user's data folder where the program's folder is
+    // not the user's: SettingsFile::userContent()).
     m_imageDirectory = !M_ImageDirCli.isEmpty()    ? M_ImageDirCli
                        : !M_ImageDirUser.isEmpty() ? M_ImageDirUser
-                                                   : directory;
+                                                   : SettingsFile::userContent( directory );
 
     m_timeTextureSoloMin = timeTextureSoloMin;
     m_timeTextureSoloMax = timeTextureSoloMax;
@@ -1500,7 +1501,15 @@ bool RenderPipeline::saveMarkedPreset( QString *outPath )
     tr.setAttribute( "complexity", "1" );
     root.appendChild( tr );
 
-    const QString path = cfg_dir + "/Marked.xml";
+    // Beside the other presets -- or, where the program's folder is not the user's (an AppImage), in the user's
+    // presets folder, which the preset list reads too (GLwidget).
+    QString out_dir = cfg_dir;
+    if ( SettingsFile::userFolders() )
+    {
+        out_dir = SettingsFile::userDir( SettingsFile::UserDir::Data ) + "/Presets";
+        QDir().mkpath( out_dir );
+    }
+    const QString path = out_dir + "/Marked.xml";
     QFile         f( path );
     if ( !f.open( QIODevice::WriteOnly | QIODevice::Text ) )
     {

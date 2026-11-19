@@ -12,6 +12,7 @@
 
 #include "TrackMedia.h"
 #include "PlatformQt.h"
+#include "SettingsFile.h"
 
 #include <QtCore/QCryptographicHash>
 #include <QtCore/QDateTime>
@@ -76,9 +77,10 @@ static QString md5Hex( const QString &s )
 TrackMedia::TrackMedia()
 {
     m_nam = new QNetworkAccessManager();
-    QDir().mkpath( Platform::assetPath( "..\\cache\\lyrics" ) );
-    QDir().mkpath( Platform::assetPath( "..\\cache\\artist" ) );
-    QDir().mkpath( Platform::assetPath( "..\\cache\\video" ) );
+    // Below the program's folder, or in the user's cache folder where that is not the user's (an AppImage).
+    QDir().mkpath( SettingsFile::writablePath( "..\\cache\\lyrics", SettingsFile::UserDir::Cache ) );
+    QDir().mkpath( SettingsFile::writablePath( "..\\cache\\artist", SettingsFile::UserDir::Cache ) );
+    QDir().mkpath( SettingsFile::writablePath( "..\\cache\\video", SettingsFile::UserDir::Cache ) );
 }
 
 /**  Destroys the owned network manager (any in-flight QNetworkReply objects are children of it and are cleaned up via
@@ -110,19 +112,21 @@ QNetworkReply *TrackMedia::get( const QString &url )
 /** Path to this track's lyrics cache JSON, keyed by the MD5 of m_key. */
 QString TrackMedia::lyricsCachePath() const
 {
-    return Platform::assetPath( "..\\cache\\lyrics\\" + md5Hex( m_key ) + ".json" );
+    return SettingsFile::writablePath( "..\\cache\\lyrics\\" + md5Hex( m_key ) + ".json",
+                                       SettingsFile::UserDir::Cache );
 }
 
 /** Path to this track's video cache directory, keyed by the MD5 of m_key. */
 QString TrackMedia::videoCacheDir() const
 {
-    return Platform::assetPath( "..\\cache\\video\\" + md5Hex( m_key ) );
+    return SettingsFile::writablePath( "..\\cache\\video\\" + md5Hex( m_key ), SettingsFile::UserDir::Cache );
 }
 
 /** Path to this artist's image cache directory, keyed by the MD5 of the lower-cased artist name. */
 QString TrackMedia::artistCacheDir() const
 {
-    return Platform::assetPath( "..\\cache\\artist\\" + md5Hex( m_artist.toLower() ) );
+    return SettingsFile::writablePath( "..\\cache\\artist\\" + md5Hex( m_artist.toLower() ),
+                                       SettingsFile::UserDir::Cache );
 }
 
 /**  Requests lyrics + artist images (+ an optional music video) for a (possibly new) track; call on every track

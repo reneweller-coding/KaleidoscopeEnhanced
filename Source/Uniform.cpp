@@ -20,7 +20,7 @@
 #include <cstring>
 #include <string>
 #include <cstdlib>
-#include "uniform.h"
+#include "Uniform.h"
 #include "shader_setup.h"
 
 #include <GL/GLU.h>

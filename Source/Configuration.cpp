@@ -20,6 +20,7 @@
 #include "Utils.h"
 #include "Platform.h"
 #include "PlatformQt.h"
+#include "SettingsFile.h"
 
 
 #include <QtGui/QImageReader>
@@ -460,8 +461,9 @@ void Configuration::readConfiguration( const QString &filenameIn )
             // writes Windows separators; without normalising, every mesh scene
             // looks absent off Windows and all 238 of them vanish -- with the
             // perfectly plausible message that the model pack is not installed.
-            const QString m1 = Platform::assetPath( el.attribute( "model" ) );
-            const QString m2 = Platform::assetPath( el.attribute( "model2" ) );
+            // userContent(): in the user's data folder where the program's folder is not the user's (an AppImage).
+            const QString m1 = Platform::assetPath( SettingsFile::userContent( el.attribute( "model" ) ) );
+            const QString m2 = Platform::assetPath( SettingsFile::userContent( el.attribute( "model2" ) ) );
             if ( ( !m1.isEmpty() && !QFileInfo::exists( m1 ) ) || ( !m2.isEmpty() && !QFileInfo::exists( m2 ) ) )
             {
                 ++m_skippedMeshScenes;
@@ -549,11 +551,11 @@ void Configuration::readConfiguration( const QString &filenameIn )
             // geom="mesh" only: path to the .glb/.gltf/.obj this scene loads
             // instead of building procedural geometry.
             if ( el.hasAttribute( "model" ) )
-                shader->setModelPath( el.attribute( "model" ).toStdString() );
+                shader->setModelPath( SettingsFile::userContent( el.attribute( "model" ) ).toStdString() );
             // Optional SECOND mesh, for scenes staging two objects against
             // each other (a ship coming alongside a station).
             if ( el.hasAttribute( "model2" ) )
-                shader->setModelPath2( el.attribute( "model2" ).toStdString() );
+                shader->setModelPath2( SettingsFile::userContent( el.attribute( "model2" ) ).toStdString() );
 
             addUniforms( shader, el );
             shader->setComplexity( complexity );
