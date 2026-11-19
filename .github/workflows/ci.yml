@@ -41,6 +41,11 @@ jobs:
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v3
 
+      # numpy for the analyzer and scene-plan checks (Tools/analyzer_regress.py, Tools/check_schedule.py).
+      - name: Python packages
+        shell: pwsh
+        run: python -m pip install --quiet --disable-pip-version-check numpy
+
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
         with:
