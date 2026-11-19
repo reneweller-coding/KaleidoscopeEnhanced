@@ -9,7 +9,7 @@
 # (its inbox opengl32.dll is a software OpenGL 1.1 driver only) -- Mesa's
 # llvmpipe opengl32.dll is dropped next to the exe to stand in for it. That
 # swap is best-effort: if it doesn't come up cleanly on a given runner image,
-# the step is allowed to fail without blocking the pipeline.
+# the steps that need it are skipped; when it does, they gate (since 20.11.2026).
 name: CI
 
 on:
@@ -117,6 +117,30 @@ jobs:
           python Tools\check_enum_tables.py
           if ($LASTEXITCODE -ne 0) { exit 1 }
 
+      # The rest of release_check's "rules" step (Tools/release_check.py), which until 20.11.2026 ran only on the
+      # reference machine: every UI text in both languages, the mood tags against their vocabulary, and no new
+      # camera shake (rotation, zoom or position on an audio signal) against the accepted baseline.
+      - name: Self-test -- UI strings, mood tags, camera shake (no GL)
+        shell: pwsh
+        run: |
+          python Tools\check_strings.py
+          if ($LASTEXITCODE -ne 0) { exit 1 }
+          python Tools\check_mood_tags.py
+          if ($LASTEXITCODE -ne 0) { exit 1 }
+          python Tools\shake_scan.py --summary --baseline Tools\shake_baseline.tsv
+          if ($LASTEXITCODE -ne 0) { exit 1 }
+
+      # Every shader's documentation block in step with its uniforms, and the layout of C++ and GLSL after the
+      # CGVR guidelines (clang-format from the Visual Studio LLVM toolset, as on the reference machine).
+      - name: Self-test -- shader docs and source layout (no GL)
+        shell: pwsh
+        run: |
+          python Tools\doc_shaders.py --check
+          if ($LASTEXITCODE -ne 0) { exit 1 }
+          python -c "import sys; sys.path.insert(0, 'Tools'); import cgvr_format, subprocess; print(subprocess.run([cgvr_format.CLANG_FORMAT, '--version'], capture_output=True, text=True).stdout.strip())"
+          python Tools\cgvr_format.py --check
+          if ($LASTEXITCODE -ne 0) { exit 1 }
+
       - name: Self-test -- roundtrip (load+save every preset, no GL)
         shell: pwsh
         run: |
@@ -141,6 +165,37 @@ jobs:
           & $exe --validate
           if ($LASTEXITCODE -ne 0) { exit 1 }
 
+      # The app's own self test (Kaleidoscope.exe -q: score cues, analyzer and scheduler checks; no window).
+      - name: Self-test -- Kaleidoscope.exe -q (no GL)
+        shell: pwsh
+        run: |
+          $env:PATH = "$env:QT_ROOT_DIR\bin;$env:PATH"
+          Push-Location Release
+          $out = & .\Kaleidoscope.exe -q 2>&1 | Out-String
+          $code = $LASTEXITCODE
+          Pop-Location
+          $out -split "`n" | Select-Object -Last 15
+          if ($code -ne 0 -or $out -notmatch '\d+ passed, 0 failed') { exit 1 }
+
+      # The audio analysis against the synthetic tracks whose truth is known (chord changes, drops, tempo) and
+      # against Tools/analyzer_baseline.json.  broadband120.wav is not in the repository; its checks run only on
+      # the reference machine.
+      - name: Self-test -- analyzer against its truth and baseline (no GL)
+        shell: pwsh
+        run: |
+          $env:QTDIR = $env:QT_ROOT_DIR
+          python Tools\analyzer_regress.py --allow-missing
+          if ($LASTEXITCODE -ne 0) { exit 1 }
+
+      # The scene plan of the genre presets, computed by the real scheduler on a virtual clock, against the
+      # standing rules (solo ranges, fade floors, lab share, drops).
+      - name: Self-test -- scene plan (check_schedule.py --quick, no GL)
+        shell: pwsh
+        run: |
+          $env:QTDIR = $env:QT_ROOT_DIR
+          python Tools\check_schedule.py --quick
+          if ($LASTEXITCODE -ne 0) { exit 1 }
+
       - name: Install software OpenGL (Mesa llvmpipe, for --transcheck)
         id: mesa
         shell: pwsh
@@ -151,9 +206,11 @@ jobs:
           & "C:\Program Files\7-Zip\7z.exe" x mesa.7z -omesa -y | Out-Null
           Copy-Item mesa\x64\opengl32.dll,mesa\x64\libgallium_wgl.dll -Destination "PresetEditor\build\Release\"
 
+      # Gates since 20.11.2026: under Mesa all 210 transitions had passed for weeks, as on the reference machine.
+      # Runs only with Mesa in place (a download hiccup must not turn the workflow red).
       - name: Self-test -- transcheck (all Transitions/*.frag, software GL)
+        if: steps.mesa.outcome == 'success'
         shell: pwsh
-        continue-on-error: true
         env:
           GALLIUM_DRIVER: llvmpipe
           MESA_GL_VERSION_OVERRIDE: '4.3'
@@ -191,8 +248,8 @@ jobs:
       # exactly why this needs to run under the same software-GL path as
       # --transcheck rather than skipping straight to "looks fine locally".
       - name: Self-test -- cfxcheck (compute-FX 2D shaders not black, software GL)
+        if: steps.mesa.outcome == 'success'
         shell: pwsh
-        continue-on-error: true
         env:
           GALLIUM_DRIVER: llvmpipe
           MESA_GL_VERSION_OVERRIDE: '4.3'

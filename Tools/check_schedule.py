@@ -43,7 +43,7 @@ import xml.etree.ElementTree as ET
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 EXE = os.path.join(ROOT, "Release", "Kaleidoscope.exe")
-QT_BIN = r"C:\Qt\6.11.1\msvc2022_64\bin"
+QT_BIN = os.environ.get("QTDIR", r"C:\Qt\6.11.1\msvc2022_64") + r"\bin"   # QTDIR: the CI runner's Qt
 OUTDIR = os.path.join(ROOT, ".screen", "schedule")
 GENRES = ("Ambient", "Downtempo", "SpaceAmbient", "Cinematic", "Club", "Electronic", "Psytrance", "Psychedelic",
           "Noir", "Allround")
