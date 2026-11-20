@@ -1468,6 +1468,12 @@ void AudioAnalyzer::run()
     attr.fragsize = kFrames * kCh * sizeof( float );
     attr.maxlength = attr.fragsize * 4;
 
+    // Another source than the default sink's monitor -- the monitor of a second output, a line input; `pactl list
+    // short sources` names them -- is chosen with PULSE_SOURCE, libpulse's own convention: it applies when the
+    // stream names no device, so then none is named.  (Moving the stream in pavucontrol works too, for the session.)
+    const char *pulse_source = getenv( "PULSE_SOURCE" );
+    const bool  named_source = pulse_source && *pulse_source;
+
     // Outer reconnect loop, with the same intent as the WASAPI one: a server
     // restart or a change of default sink must not kill audio reactivity for
     // the rest of the session.
@@ -1475,7 +1481,7 @@ void AudioAnalyzer::run()
     {
         int        err = 0;
         pa_simple *rec = pa_simple_new( nullptr, "Kaleidoscope", PA_STREAM_RECORD,
-                                        "@DEFAULT_MONITOR@", "loopback",
+                                        named_source ? nullptr : "@DEFAULT_MONITOR@", "loopback",
                                         &ss, nullptr, &attr, &err );
         if ( !rec )
         {
@@ -1483,7 +1489,8 @@ void AudioAnalyzer::run()
             msleep( 1000 );
             continue;
         }
-        fprintf( stderr, "AUDIO: capturing @DEFAULT_MONITOR@, %d Hz, %d ch\n", kRate, kCh );
+        fprintf( stderr, "AUDIO: capturing %s, %d Hz, %d ch\n",
+                 named_source ? pulse_source : "@DEFAULT_MONITOR@", kRate, kCh );
 
         while ( m_running )
         {

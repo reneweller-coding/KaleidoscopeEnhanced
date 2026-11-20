@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Kaleidoscope Visualizer
+Comment=Music visualizer: kaleidoscopes and 2D/3D scenes that follow the music the system plays
+Exec=Kaleidoscope
+Icon=kaleidoscope
+Categories=AudioVideo;Audio;
+Terminal=false

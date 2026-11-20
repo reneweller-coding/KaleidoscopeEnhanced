@@ -490,10 +490,11 @@ void RenderPipeline::init( const QString &directory, unsigned int timeTextureSol
     // line, then the user's persistent ini setting, then the preset's own
     // ImageDirectory attribute -- which ships as "..\\Images", the folder the
     // bundled photo library unpacks into, resolved against the executable's
-    // working directory exactly like the shader paths are.
+    // working directory exactly like the shader paths are (in the user's data folder where the program's folder is
+    // not the user's: SettingsFile::userContent()).
     m_imageDirectory = !M_ImageDirCli.isEmpty()    ? M_ImageDirCli
                        : !M_ImageDirUser.isEmpty() ? M_ImageDirUser
-                                                   : directory;
+                                                   : SettingsFile::userContent( directory );
 
     m_timeTextureSoloMin = timeTextureSoloMin;
     m_timeTextureSoloMax = timeTextureSoloMax;
@@ -776,6 +777,27 @@ QString RenderPipeline::activeShaderInfo() const
     return out;
 }
 
+/**  Ends a photo loader thread before it is deleted.
+ *
+ * @param loader  The running loader. (in,out)
+ *
+ * Windows, as always: terminate(), which has ended the thread when it returns -- safe in practice because run()
+ * never holds a mutex; the worst case is an image decode aborted partway.  Linux: terminate() is a pthread_cancel
+ * there, which only asks; the thread ended at its next cancellation point, wherever that was (inside a decoder's
+ * read() as well), and deleting a QThread still running aborts the process ("QThread: Destroyed while thread is still
+ * running") -- the first Linux export in the CI ended that way, with exit code 134.  So Linux asks instead
+ * (requestInterruption(), which run() checks between photos and between candidates) and waits for the end.
+ **/
+static void endImageLoader( ImageLoader *loader )
+{
+#ifdef _WIN32
+    loader->terminate();
+#else
+    loader->requestInterruption();
+#endif
+    loader->wait();
+}
+
 void RenderPipeline::stop()
 {
     // NOTE: the global Spout facades are deliberately NOT released here —
@@ -784,13 +806,7 @@ void RenderPipeline::stop()
     // without a current GL context).  GLwidget's destructor releases them
     // once at shutdown.
 
-    // NOTE: terminate() hard-kills the loader thread immediately rather than
-    // asking it to exit its poll loop cooperatively — there is no cooperative
-    // stop flag (ImageLoader::run() only checks m_triggerImageload). Safe in
-    // practice because run() never holds a mutex; the worst case is an image
-    // decode aborted partway, and the ImageLoader object itself is deleted
-    // right below anyway.
-    m_imageLoader->terminate();
+    endImageLoader( m_imageLoader );
 
     delete m_imageLoader;
     m_imageLoader = nullptr; // start() checks this; a stale one was a dangling delete
@@ -827,7 +843,7 @@ RenderPipeline::~RenderPipeline()
     // preset never gets one). Guarded, because stop() may already have run.
     if ( m_imageLoader )
     {
-        m_imageLoader->terminate();
+        endImageLoader( m_imageLoader );
         delete m_imageLoader;
         m_imageLoader = nullptr;
     }
@@ -1554,7 +1570,15 @@ bool RenderPipeline::saveMarkedPreset( QString *outPath )
     tr.setAttribute( "complexity", "1" );
     root.appendChild( tr );
 
-    const QString path = cfg_dir + "/Marked.xml";
+    // Beside the other presets -- or, where the program's folder is not the user's (an AppImage), in the user's
+    // presets folder, which the preset list reads too (GLwidget).
+    QString out_dir = cfg_dir;
+    if ( SettingsFile::userFolders() )
+    {
+        out_dir = SettingsFile::userDir( SettingsFile::UserDir::Data ) + "/Presets";
+        QDir().mkpath( out_dir );
+    }
+    const QString path = out_dir + "/Marked.xml";
     QFile         f( path );
     if ( !f.open( QIODevice::WriteOnly | QIODevice::Text ) )
     {
@@ -4952,7 +4976,8 @@ QPair<float, float> ImageLoader::imageStats( const QString &path )
 
 void ImageLoader::run()
 {
-    while ( true )
+    // Until asked to stop -- which only Linux does (RenderPipeline::stop()); Windows ends the thread by terminate().
+    while ( !isInterruptionRequested() )
     {
         if ( m_shader->m_triggerImageload == true )
         {
@@ -4984,6 +5009,8 @@ void ImageLoader::run()
             // or a memory that blocks too much never stalls the loader.
             for ( int tries = 0, k = 0; k < 5 && tries < 60; ++tries )
             {
+                if ( isInterruptionRequested() ) // stopping (Linux; see RenderPipeline::stop())
+                    return;
                 int            idx = qrand() % n;
                 const QString &path = m_shader->m_imageList[idx];
                 if ( tries < 50 && !m_shader->photoFree( path ) )

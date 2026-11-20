@@ -371,8 +371,9 @@ static QString shotDir()
     const QString pics = QStandardPaths::writableLocation( QStandardPaths::PicturesLocation );
     if ( !pics.isEmpty() && QDir().mkpath( pics + "/Kaleidoscope" ) )
         return pics + "/Kaleidoscope";
-    QDir().mkpath( "screenshots" );
-    return QFileInfo( "screenshots" ).absoluteFilePath();
+    const QString here = SettingsFile::writablePath( QStringLiteral( "screenshots" ), SettingsFile::UserDir::Data );
+    QDir().mkpath( here );
+    return QFileInfo( here ).absoluteFilePath();
 }
 
 QString GLwidget::remoteScreenshot()
@@ -655,7 +656,8 @@ void GLwidget::remoteForceScene( int idx )
  **/
 static QString thumbCachePath( const QString &config, const QString &scene )
 {
-    return Platform::assetPath( "..\\ThumbCache\\" + config + "\\" + scene + ".jpg" );
+    return SettingsFile::writablePath( "..\\ThumbCache\\" + config + "\\" + scene + ".jpg",
+                                       SettingsFile::UserDir::Cache );
 }
 
 QByteArray GLwidget::remoteThumb( int idx ) const
@@ -945,6 +947,11 @@ GLwidget::GLwidget( QWidget *parent )
         presets_timer.start();
         traverseConfigurations( Platform::presetsDir( ".." ) /*directory*/,
                                 m_configurationList );
+        // Where the program's folder is not the user's (an AppImage): the user's own presets, and Marked.xml, are
+        // in the user's data folder.
+        if ( SettingsFile::userFolders() )
+            traverseConfigurations( SettingsFile::userDir( SettingsFile::UserDir::Data ) + "/Presets",
+                                    m_configurationList );
         fprintf( stderr, "Presets: %d files read in %.2f s\n", static_cast<int>( m_configurationList.size() ),
                  presets_timer.nsecsElapsed() * 1e-9 );
     }
@@ -1536,7 +1543,7 @@ void GLwidget::dumpSceneCost()
 {
     if ( m_sceneCost.isEmpty() )
         return;
-    QFile f( "scene-cost.json" );
+    QFile f( SettingsFile::writablePath( QStringLiteral( "scene-cost.json" ), SettingsFile::UserDir::State ) );
     if ( !f.open( QIODevice::WriteOnly | QIODevice::Text ) )
         return;
     QTextStream o( &f );

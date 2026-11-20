@@ -451,7 +451,17 @@ void Recorder::toggle()
         // frames landed in the first run's folder, numbered from 0 and
         // overwriting/interleaving with the first scene's frames.
         QString ts = QDateTime::currentDateTime().toString( "yyyyMMdd_hhmmss_zzz" );
-        m_recDir = QString( "recordings/rec_%1" ).arg( ts );
+        // recordings/ in the working folder (bin\), as always -- unless the program's folder is not the user's (an
+        // AppImage, SettingsFile::userFolders()): then under Videos/Kaleidoscope, beside the replays.
+        QString base = QStringLiteral( "recordings" );
+        if ( SettingsFile::userFolders() )
+        {
+            const QString vids = QStandardPaths::writableLocation( QStandardPaths::MoviesLocation );
+            base = ( !vids.isEmpty() && QDir().mkpath( vids + "/Kaleidoscope/recordings" ) )
+                       ? vids + "/Kaleidoscope/recordings"
+                       : SettingsFile::writablePath( base, SettingsFile::UserDir::Data );
+        }
+        m_recDir = QString( "%1/rec_%2" ).arg( base, ts );
         QDir().mkpath( m_recDir );
         m_recFrame = 0;
         m_recConcat.clear();
@@ -1138,7 +1148,7 @@ void Recorder::saveReplay()
     const QString vids = QStandardPaths::writableLocation( QStandardPaths::MoviesLocation );
     const QString base = ( !vids.isEmpty() && QDir().mkpath( vids + "/Kaleidoscope/replays" ) )
                              ? vids + "/Kaleidoscope/replays"
-                             : QString( "replays" );
+                             : SettingsFile::writablePath( QStringLiteral( "replays" ), SettingsFile::UserDir::Data );
     QString       dir = QString( "%1/replay_%2" ).arg( base, ts );
     QDir().mkpath( dir );
 

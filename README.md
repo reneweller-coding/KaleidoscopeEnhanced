@@ -9,8 +9,9 @@
 <br clear="left">
 
 A real-time, audio-reactive kaleidoscope / tunnel visualizer for Windows (the
-releases are Windows builds; it also builds from source on Linux and macOS,
-see [Building](#linux-and-macos)). It
+releases are Windows builds; on Linux it builds from source or comes as an
+AppImage from the CI, not yet confirmed on real hardware; it also compiles on
+macOS — see [Linux and macOS](#linux-and-macos)). It
 listens to whatever is playing on the system (Spotify, browser, foobar2000,
 a live mic, …), analyses it in real time, and drives a huge library of GLSL
 shaders whose motion, colour and structure follow the music's rhythm, timbre
@@ -109,7 +110,9 @@ classic visualizer.
 **The installer offers all four packs as ticked options and puts them in place
 for you.** Afterwards — or for the portable build, which has no installer —
 *Download extra content* in the [Setup tool](#setup-tool) does the same. By
-hand: unpack into the program's `Images` and `Models` folders and restart.
+hand: unpack into the program's `Images` and `Models` folders and restart
+(with the Linux AppImage: `~/.local/share/KaleidoscopeVisualizer/Images` and
+`…/Models`, see [Linux and macOS](#linux-and-macos)).
 
 | Pack | | Contains |
 |---|---|---|
@@ -818,31 +821,92 @@ crashing.
 
 ### Linux and macOS
 
+> **Linux is not yet confirmed on real hardware.** The CI builds the program on
+> Ubuntu 24.04 and an AppImage on Ubuntu 22.04 and runs both under a virtual X
+> server with Mesa's software renderer (llvmpipe): the self test and a
+> five-second video export, the AppImage in a fresh container without Qt.
+> Nobody has run it yet on a Linux machine with a graphics card and a sound
+> server; reports are welcome.
+
 `Kaleidoscope.vcxproj` stays the Windows build; everywhere else there is a
 `CMakeLists.txt`, which refuses to configure on Windows so the two cannot
-drift apart.
+drift apart. **It builds the visualizer and nothing else.** The Setup tool,
+the Preset editor and the video export tool are Windows projects without a
+Linux build. What they are for is reachable anyway: the export tool only
+drives the visualizer's own video export (`-e`, see
+[Video export](#video-export)), and the Setup tool writes keys into
+`kaleidoscope_settings.ini`, which can be edited by hand.
 
-Debian/Ubuntu:
+**The AppImage** — one file with Qt and its plugins, the shaders, the engine
+files and the presets inside. It is not a release package yet: take it from
+the artifacts of a [CI run](https://github.com/reneweller-coding/KaleidoscopeEnhanced/actions/workflows/ci.yml)
+(`Kaleidoscope-AppImage`), or build it yourself.
+
+```bash
+chmod +x Kaleidoscope-x86_64.AppImage
+./Kaleidoscope-x86_64.AppImage                  # windowed; -b fullscreen, -e song.mp3 export, ... as above
+./Kaleidoscope-x86_64.AppImage --appimage-extract-and-run   # where FUSE is missing (containers, no libfuse2)
+```
+
+It needs an x86_64 system with glibc 2.35 or newer (Ubuntu 22.04, Debian 12,
+Fedora 36 and later), an OpenGL 4.3 driver, X11 or XWayland, the libraries an
+AppImage leaves to every desktop (libGL and libOpenGL, X11/xcb, fontconfig,
+freetype, harfbuzz), and `ffmpeg` on the `PATH` for recording and the video
+export. Paths on the command line are
+taken from where you start it. The image itself is read-only, so everything
+the program keeps goes to your folders (the XDG variables move them):
+
+| What | Where |
+|---|---|
+| Settings (`kaleidoscope_settings.ini`), liked rolls | `~/.config/KaleidoscopeVisualizer/` |
+| Photos, 3D models, your own presets (and `Marked.xml`) | `~/.local/share/KaleidoscopeVisualizer/Images`, `…/Models`, `…/Presets` |
+| Log (`-l`) | `~/.local/state/KaleidoscopeVisualizer/kaleidoscope.log` |
+| Web-remote thumbnails, lyrics and artist images | `~/.cache/KaleidoscopeVisualizer/` |
+| Recordings, replays, screenshots | `~/Videos/Kaleidoscope/recordings`, `…/replays`, `~/Pictures/Kaleidoscope` |
+
+The same applies to a build started from a folder it cannot write to. To build
+the AppImage: `bash Tools/appimage/build_appimage.sh` — on the oldest
+distribution it should run on (it carries Qt, but glibc comes from the
+system); it downloads linuxdeploy and its Qt plugin at pinned versions and
+writes `dist/Kaleidoscope-x86_64.AppImage`. `bash Tools/appimage/test_appimage.sh
+dist/Kaleidoscope-x86_64.AppImage` then runs the checks the CI runs (self test,
+a five-second export, nothing written beside the file) in a scratch home folder.
+
+**From source**, Debian/Ubuntu:
 
 ```bash
 sudo apt install qt6-base-dev qt6-base-dev-tools qt6-multimedia-dev \
                  libgl1-mesa-dev libglu1-mesa-dev libpulse-dev cmake
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release && cmake --build build -j
+./build/Kaleidoscope
 ```
+
+The program looks for its assets one level above its working folder, the
+convention of the Windows package; started from elsewhere, it moves into its
+own folder (`build/`) first. A build in a writable checkout keeps its settings
+and log there, as the Windows package does.
+
+**Sound.** The program listens to what the speakers play: the default output's
+*monitor* source, through libpulse — PipeWire's pulse server (the default on
+current Ubuntu and Fedora) serves it as PulseAudio does. To listen to another
+source — the monitor of a second output, a line or microphone input — name it
+in `PULSE_SOURCE`, with a name from `pactl list short sources`:
 
 ```bash
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Release && cmake --build build -j
+PULSE_SOURCE=alsa_output.pci-0000_00_1f.3.analog-stereo.monitor ./Kaleidoscope-x86_64.AppImage
 ```
 
-The program looks for its assets one level above the working directory, the
-same convention the Windows package uses, so run it from a subfolder:
-`cd build && ./Kaleidoscope`.
+or move the stream *Kaleidoscope* in pavucontrol's *Recording* tab (for that
+session). The log names the source it captures (`AUDIO: capturing …`).
 
 What differs from Windows:
 
 | | Linux | macOS |
 |---|---|---|
-| Audio capture | the default sink's PulseAudio monitor (PipeWire's pulse server serves it too) | needs a virtual loopback device (e.g. BlackHole) plus PulseAudio; without one, use `-w`/`-x` |
+| Audio capture | the default output's monitor via libpulse (PulseAudio or PipeWire), `PULSE_SOURCE` for another | needs a virtual loopback device (e.g. BlackHole) plus PulseAudio; without one, use `-w`/`-x` |
 | Compute-shader effects | yes (OpenGL 4.3) | no — macOS froze OpenGL at 4.1, so those effects take their fragment fallbacks |
+| Setup tool, Preset editor, video export tool | no — Windows projects; `-e` and the ini instead | no |
+| Shader program cache (first draw of a lab scene) | the driver's own cache only | the driver's own cache only |
 | Spout in/out (`-o`, `-i`) | no — Windows-only technology | no |
 | Track title / lyrics / artist images | no — these read the Windows now-playing service | no |
 | MIDI input | no | no |
@@ -891,13 +955,14 @@ Top-level folders:
 - **`Engine\`** — internal pipeline passes (mood grade, feedback trails,
   bloom, the GPU fluid/reaction-diffusion/smoke simulations, compute kernels).
 - **`PresetEditor\`**, **`SetupTool\`** and **`ExportTool\`** — the
-  standalone companion tools (see [above](#presets), [above](#setup-tool),
-  [above](#video-export)).
+  standalone companion tools, Windows only (see [above](#presets),
+  [above](#setup-tool), [above](#video-export)).
 - **`AndroidRemote\`** — the Android remote app (no Gradle; plain SDK tools).
 - **`Presets\*.xml`** — presets; **`ThirdParty\SpoutGL\`** — vendored
   Spout2 SDK; **`docs\`** — this repo's documentation and the scene catalogue;
   **`Tools\`** — `verify.ps1` (smoke/roundtrip/transition self-tests) and the
-  catalogue/icon generators.
+  catalogue/icon generators; `Tools\appimage\` builds and tests the Linux
+  AppImage.
 
 Full engine architecture and per-technique notes (OIT, shadow maps, compute →
 indirect draw, tessellation, …): [docs/engine-internals.md](docs/engine-internals.md).
