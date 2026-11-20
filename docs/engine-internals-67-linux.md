@@ -97,8 +97,11 @@ says so.
   (5 and 659 files) -- nothing beside the AppImage, nothing in the extracted copy that outlives the run.
 - *The first export ended with exit code 134* ("QThread: Destroyed while thread is still running") after its video
   was complete: RenderPipeline deleted the photo loader right after `terminate()`. On Windows `terminate()` has
-  ended the thread when it returns; on Linux it is a `pthread_cancel`, and the thread ends at its next sleep. A
-  `wait()` after it (both places) -- on Windows it returns at once. On Linux the same race decided every switch of
+  ended the thread when it returns; on Linux it is a `pthread_cancel`, and the thread ends at its next cancellation
+  point -- a sleep, or a `read()` inside a JPEG decoder, leaving behind whatever that held. First fixed with a
+  `wait()` after it; now `endImageLoader()`: Windows as always (`terminate()`, then a `wait()` that returns at once),
+  Linux asks (`requestInterruption()`, which `ImageLoader::run()` checks between photos and between candidates) and
+  waits, 50 ms at most when idle. On Linux the same race decided every switch of
   preset (`RenderPipeline::stop()` from GLwidget::timerEvent) and every end through the destructors (an export, a
   batch render, closing the window; Esc/q leave by `exit()`), and the deleting thread wins it nearly always. The runs
   the October WSL entries name were `-q` and `--schedule`, neither of which starts the loader. The `linux` job now
