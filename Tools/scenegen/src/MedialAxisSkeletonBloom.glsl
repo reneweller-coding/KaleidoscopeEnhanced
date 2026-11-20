@@ -5,7 +5,7 @@
  * Audio Reactivity (structure, not only light):
  *   audioSwell   -> the threshold: the shapes grow and shrink
  *   audioPhase   -> the threshold wanders with the music (integrated)
- *   audioKick    -> the skeletons flare (light only)
+ *   audioKick    -> the skeletons and the shapes they stand in flare (light only)
  *
  * Knobs: sizeP (the smoothing of the shapes), hueP.
 //@params sizeP
@@ -42,7 +42,7 @@ void main()
     float skel = smoothstep(0.003, 0.015, -lap) * inside * smoothstep(0.01, 0.06, d0);
     vec3 c = imgLod(uv, 0.8);
     c = mix(vec3(luma(c)), c, 1.3);
-    vec3 col = c * (0.18 + 0.2 * inside) + vec3(0.02);
+    vec3 col = c * (0.18 + (0.2 + 0.25 * clamp(audioKick, 0.0, 1.0)) * inside) + vec3(0.02);
     col = mix(col, c * (1.7 + 0.7 * clamp(audioKick, 0.0, 1.0)) + 0.1, skel);
     col += vec3(1.0, 0.9, 0.7) * exp(-pow(d0 / 0.01, 2.0)) * 0.15;
     finish(col);
