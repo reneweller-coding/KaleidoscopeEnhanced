@@ -43,6 +43,12 @@ public:
     static constexpr double MultiW = 0.3;
     /** A reading outside the 4-s pick's octave family has to score this much higher to replace it. */
     static constexpr double Margin = 1.25;
+    /** Beat tracking: blocks of cumulative score kept (5 s). */
+    static constexpr int BtHist = 512;
+    /** Beat tracking: weight of the past in the cumulative score (Stark et al. 2009: 0.9). */
+    static constexpr double BtAlpha = 0.9;
+    /** Beat tracking: tightness of the log-Gaussian transition weighting (Stark et al. 2009: 5). */
+    static constexpr double BtTight = 5.0;
 
     /** A new song: the kick intervals and the autocorrelation tempo start over (AudioAnalyzer::beginSong()). */
     void reset();
@@ -53,13 +59,17 @@ public:
      **/
     void pushOnset( float sf );
 
-    /**  The block's tempo step: the autocorrelation every #AcEvery blocks, the kick, the fusion.
+    /**  The block's tempo step: the autocorrelation every #AcEvery blocks, the kick, the fusion, the beat.
      *
      * @param isBeat         A kick was detected in this block. (in)
      * @param beatIntervalS  Seconds since the previous kick (used when isBeat). (in)
      * @param trackChange    A new track started (the kick intervals start over). (in)
+     * @param blockSeconds   The block's length in seconds. (in)
      **/
-    void update( bool isBeat, float beatIntervalS, bool trackChange );
+    void update( bool isBeat, float beatIntervalS, bool trackChange, float blockSeconds );
+
+    /** @return The beat phase 0..1 (0 on the beat) from the beat tracker; 0 without a tempo. */
+    float phase() const { return m_btPhase; }
 
     /** @return The published tempo in BPM, folded into 70..180 (0 before there is one). */
     float tempo() const { return m_smoothedBPM; }
@@ -98,6 +108,35 @@ private:
      **/
     static double pulseScore( const double *env, int n, double period );
 
+    /**  The beat tracker's step for one block (BTrack: cumulative score, predicted beat).
+     *
+     * @param onset         The block's onset-envelope sample (0 if none fell into it). (in)
+     * @param blockSeconds  The block's length in seconds. (in)
+     **/
+    void beatStep( double onset, double blockSeconds );
+
+    /**  The most likely transition into the next block's cumulative score: the past #m_cs from 2 beats to half a
+     * beat back, under the log-Gaussian weighting around one beat.
+     *
+     * @param past  Function returning the cumulative score j blocks before the new one (j >= 1). (in)
+     * @param tau   The beat period in blocks. (in)
+     *
+     * @return
+     *   max over j of the weighted past score.
+     **/
+    template <typename Past>
+    static double transition( const Past &past, double tau );
+
+    /**  Blocks from now to the predicted next beat: the cumulative score continued one period into the future
+     * without onsets, weighted by a Gaussian around half a period ahead.
+     *
+     * @param tau  The beat period in blocks. (in)
+     *
+     * @return
+     *   The number of blocks until the beat (0 = this block).
+     **/
+    int predictBeat( double tau ) const;
+
     /**  The period that explains the kept kick intervals as multiples of one beat.
      *
      * @param prevPeriod  The current tempo's period in seconds, 0 if none (continuity bonus). (in)
@@ -124,6 +163,17 @@ private:
     float m_ioiExplained = 0.f;    ///< Share of #m_ioi the tempo's period explains (the rhythm's strength).
     float m_smoothedBPM = 0.f;     ///< The published tempo (folded into 70..180).
     float m_kickBPM = 0.f;         ///< The tempo of the last kick-interval estimate alone (diagnostics).
+
+    // ---- beat tracker (beatStep()) ----
+    double m_cs[BtHist] = {};       ///< Ring of the cumulative score, one value per block.
+    int    m_csIdx = 0;             ///< Next write index into #m_cs.
+    float  m_blockOnset = 0.f;      ///< The first onset-envelope sample of the current block.
+    bool   m_blockOnsetSet = false; ///< #m_blockOnset holds this block's sample.
+    int    m_btCountdown = -1;      ///< Blocks until the predicted beat (-1: none predicted).
+    int    m_btToPredict = -1;      ///< Blocks until the next prediction (-1: none scheduled).
+    double m_btClock = 0.0;         ///< Seconds since the start (the block's start time).
+    double m_btLastBeat = -1e9;     ///< Time of the last tracked beat (-1e9: none yet).
+    float  m_btPhase = 0.f;         ///< The beat phase, see phase().
 };
 
 #endif // TEMPOTRACKER_H
