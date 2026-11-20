@@ -7887,7 +7887,7 @@ What each package did and what it measured:
 | D1, G2 | the CI's net: self test, analyser regression, scene plans, UI strings, shader docs; the jump tests under Mesa as a condition | green; a red test proven to stop it |
 | D2, D4 | a Linux build, self test, export and compile-all in the CI; an AppImage built and run in a bare container | all four jobs green; TwentyFourCellBreathing compiles under Mesa; Linux exports end cleanly |
 | E1 | the catalogue page: download links, `#Name` links, filters, the reactivity badge, the strips | static as before; `DEMO_VIDEO_URL` waits for the user's video |
-| F1 | memory over hours (`Tools/soak.py`); working sets for 2D programs and procedural 3D geometry, the program cache's reference count | before +1.48 GB private and +1.41 GB GPU an hour after minute 10; now flat (3.3..4.1 GB, 2.2..2.9 GB GPU) over 616 changes, 0 GL errors -- met |
+| F1 | memory over hours (`Tools/soak.py`); working sets for 2D programs and procedural 3D geometry, the program cache's reference count | before +1.48 GB private and +1.41 GB GPU an hour after minute 10; now flat in a show's mix (3.3..4.1 GB, 2.2..2.9 GB GPU, 616 changes, 0 GL errors); in catalogue order a band of 3.3..4.0 GB, and what is left grows only with scenes shown for the first time |
 | G1 | the wedge fold of HyperbolicKaleidoscope (`a - abs(...)`) | fixed, `Tools/hyperfold_check.py` |
 
 The packages follow, each as it was written down when it was done.
@@ -8881,7 +8881,17 @@ says so.
   while the mesh working set filled (almost every big step was a model: MeshRocketLaunch +555 MB private and
   +342 MB GPU), then 3.30..4.10 GB to the end (3.54 GB); GPU 2.15..2.94 GB after the warm-up.  The line from
   minute 10: -366 MB and -404 MB an hour, from minute 20 -464 and -405: no growth.  66 models were loaded in the
-  hour, each new one replacing one given back.  **F1 met.**  Self test 137 of 137.
+  hour, each new one replacing one given back.  **F1 met** for a show's mix.  Self test 137 of 137.
+- *The same measurement as at first* (Allround in catalogue order, the plan's proof; 62 min, 625 changes, 0 GL
+  errors): private 3.31..4.01 GB and GPU 2.19..2.61 GB from minute 10 to the end -- the first run stood at 7.50 and
+  4.04 GB at minute 60.  The straight line from minute 10 says +555 MB an hour (from minute 20: +164 private, -86
+  GPU), formally not met: the curve is a sawtooth of about 0.7 GB, models of different size taking turns in the
+  16 slots, and every scene of that hour is new.  Whether something still grows with scenes seen before was asked
+  directly: `--entries 300` (the first 300 entries, almost all 3D, shown twice in 62 min, 619 changes, 0 GL errors).
+  The first round, every scene new: +1.57 GB private and +1.50 GB GPU an hour; the second round, the same scenes
+  again: +104 and +78 MB an hour, inside the sawtooth.  What is left grows with scenes shown for the first time --
+  most likely the 3D scenes' programs, compiled at the start and committed by the driver at their first draw (not in a
+  budget) -- and so is bounded by the preset; it does not grow when they come back.
 - *Not covered.*  A day-long run (one hour here).  How much of the old growth each of the three causes had: there
   was no run with each fix alone.  The meshes are the bulk of what stays: 16 models at up to a few hundred MB each
   (a model's vertex buffer and its material texture arrays); on a card with less memory `KALEIDO_MESH_BUDGET` is the
