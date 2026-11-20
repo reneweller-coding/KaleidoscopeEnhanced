@@ -3,7 +3,7 @@
  * half cool, and inside the bridge both tints stand in thin interleaved stripes that fuse to the photo's own colours at its middle.
  *
  * Audio Reactivity (structure, not only light):
- *   audioHarmAdvance -> the bridge wanders with the harmony (integrated)
+ *   audioHarmAdvance -> the bridge wanders with the harmony: a chord change carries it on (integrated)
  *   audioSwell       -> the width of the bridge
  *
  * Knobs: sizeP (the strength of the tints), hueP.
@@ -26,7 +26,7 @@ void main()
     float tint = 0.5 + 0.8 * clamp(sizeP, 0.0, 1.0);
     vec3 warm = hueRot(c, -0.55 * tint) * vec3(1.1, 1.0, 0.85);
     vec3 cool = hueRot(c, 0.7 * tint) * vec3(0.85, 1.0, 1.15);
-    float b = 0.4 * asp * 0.5 * sin(0.12 * audioHarmAdvance + 0.04 * sceneTime) + 0.06 * sin(3.0 * p.y + 0.3 * audioHarmAdvance);
+    float b = 0.4 * asp * 0.5 * sin(0.5 * audioHarmAdvance + 0.02 * sceneTime) + 0.06 * sin(3.0 * p.y + 0.9 * audioHarmAdvance);
     float w = 0.08 + 0.2 * clamp(audioSwell, 0.0, 1.0);
     float m = smoothstep(b - w, b + w, p.x);
     float stripe = 0.5 + 0.5 * sin((p.x - b) * 120.0 + 12.0 * p.y);

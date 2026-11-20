@@ -5,10 +5,12 @@
  *
  * Audio Reactivity (structure, not only light):
  *   audioSpread     -> the number of fingers (the branching exponent)
+ *   audioSwell      -> the fingers grow while the music swells and rest in silence (the state integrates it)
+ *   audioKick       -> the pressure rims light up (light only)
  *
  * Knobs: speedP (how fast the fingers grow), hueP.
 //@params speedP
-//@audio audioSpread
+//@audio audioSpread audioSwell audioKick
 //@state 240 135 600 32
 //@body
 /**  The photo coordinate of a field cell.
@@ -43,7 +45,7 @@ vec4 stateStep()
     float nb = max(max(e.r, w.r), max(n.r, s.r));
     float thick = 0.15 + 0.85 * luma(imgLod(photoUV(cell), 2.0));
     float eta = 0.8 + 1.8 * (1.0 - clamp(audioSpread, 0.0, 1.0));
-    float rate = 0.03 + 0.05 * clamp(speedP, 0.0, 1.0);
+    float rate = (0.03 + 0.05 * clamp(speedP, 0.0, 1.0)) * (0.3 + 1.2 * clamp(audioSwell, 0.0, 1.0));
     if (fluid < 0.5 && nb > 0.5 && stRand(1) < rate * pow(clamp(p, 0.0, 1.0), eta) * thick * 3.0) fluid = 1.0;
     float pn = p + 0.22 * (e.g + w.g + n.g + s.g - 4.0 * p);
     vec2 q = cell / stateRes;
@@ -64,5 +66,5 @@ void main()
     vec3 c = imgLod(p * 0.8 + 0.5, 0.7);
     float fl = smoothstep(0.35, 0.65, s.r);
     float rim = smoothstep(0.0, 0.5, s.g) * (1.0 - fl);
-    finish(c * (0.14 + 0.95 * fl + 0.0 * rim) * 1.1 + 0.12 * rim * mix(c, vec3(1.0), 0.5));
+    finish(c * (0.14 + 0.95 * fl + 0.0 * rim) * 1.1 + (0.12 + 0.25 * clamp(audioKick, 0.0, 1.0)) * rim * mix(c, vec3(1.0), 0.5));
 }

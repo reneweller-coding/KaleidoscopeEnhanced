@@ -16,7 +16,7 @@ void main()
 {
     vec2 p = screenP();
     vec2 uv = p * 0.8 + 0.5;
-    float t = sceneTime * 0.4 + 3.0 * audioAdvance;
+    float t = sceneTime * 0.25 + 12.0 * sceneAdvance;
     float ang = 0.35 + 0.25 * sin(0.05 * (sceneTime + 6.0 * audioPhase));
     float across = dot(p, vec2(cos(ang), sin(ang)));
     vec3 c = imgLod(uv, 0.5);
