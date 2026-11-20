@@ -1,6 +1,6 @@
-# TEMPORARY (wt-linux only): the preset-switch run kept llvmpipe's main thread busy for good in many runs (a deep
-# self-recursion in libgallium, various scenes).  Third round: Mesa's own symbols through Ubuntu's debuginfod, and the
-# same runs with and without GL_KHR_parallel_shader_compile (KALEIDO_NO_PARALLEL_COMPILE).  Deleted afterwards.
+# TEMPORARY (wt-linux only): the freeze inside Mesa (libgallium, deep recursion) also comes without the background
+# compile, from setShaders() -- so: every shader of Komplett compiled once under Ubuntu 24.04's Mesa 25.2.8, each with
+# its time, to name the one(s) Mesa does not finish.  Deleted afterwards.
 name: Linux hang hunt
 
 on:
@@ -8,14 +8,13 @@ on:
     branches: [wt-linux]
 
 jobs:
-  hunt:
+  compile-all:
     runs-on: ubuntu-24.04
-    timeout-minutes: 45
+    timeout-minutes: 60
     strategy:
       fail-fast: false
       matrix:
-        parallel: ['on']
-        part: [a, b, c]
+        part: [a, b]
     steps:
       - uses: actions/checkout@v7
       - name: Packages
@@ -25,13 +24,13 @@ jobs:
           sudo apt-get update -qq
           sudo apt-get install -y -qq qt6-base-dev qt6-base-dev-tools qt6-multimedia-dev \
                                   libgl1-mesa-dev libglu1-mesa-dev libpulse-dev cmake > /dev/null
-          sudo apt-get install -y -qq --no-install-recommends xvfb xauth libgl1-mesa-dri gdb ffmpeg debuginfod > /dev/null
+          sudo apt-get install -y -qq --no-install-recommends xvfb xauth libgl1-mesa-dri gdb > /dev/null
       - name: Build
         run: |
           cmake -S . -B build -DCMAKE_BUILD_TYPE=Release > /dev/null
           cmake --build build -j"$(nproc)" 2>&1 | grep -E "error|Error" || true
           test -x build/Kaleidoscope
-      - name: The export, then ten runs with switches
+      - name: Compile every shader of Komplett (KALEIDO_COMPILE_ALL), each timed
         working-directory: build
         env:
           LIBGL_ALWAYS_SOFTWARE: '1'
@@ -39,50 +38,30 @@ jobs:
           MESA_GL_VERSION_OVERRIDE: '4.3'
           MESA_GLSL_VERSION_OVERRIDE: '430'
           KALEIDO_SEED: '1'
+          KALEIDO_COMPILE_ALL: '1'
+          KALEIDO_NO_PARALLEL_COMPILE: '1'
         run: |
           set +e
-          [ "${{ matrix.parallel }}" = off ] && export KALEIDO_NO_PARALLEL_COMPILE=1
-          python3 -c "import wave,struct,math; w=wave.open('../smoke.wav','wb'); w.setnchannels(2); w.setsampwidth(2); w.setframerate(44100); w.writeframes(b''.join(struct.pack('<hh', *([int(12000*math.exp(-(t%11025)/1500.0)*math.sin(2*math.pi*55*t/44100)+2400*math.sin(2*math.pi*220*t/44100))]*2)) for t in range(44100*5))); w.close()"
-          KALEIDO_SETTINGS="$RUNNER_TEMP/e.ini" timeout 600 xvfb-run -a -s "-screen 0 1280x720x24" ./Kaleidoscope -e ../smoke.wav -c Club -g 640x360 -p 30 -d "$RUNNER_TEMP/smoke.mp4" -l
-          echo "export: exit code $?"
-          hung=0
-          symbolised=0
-          for run in 1 2 3 4 5 6 7 8 9 10; do
-            export KALEIDO_SETTINGS="$RUNNER_TEMP/s$run.ini" KALEIDO_MAX_RUNTIME_SECS=50
-            xvfb-run -a -s "-screen 0 1280x720x24" ./Kaleidoscope -w ../smoke.wav -c Club -s 0.25 -t 18091 > run$run.log 2>&1 &
-            pid=$!
-            for i in $(seq 1 40); do curl -fs -m 5 http://127.0.0.1:18091/api/state > /dev/null && break; sleep 1; done
-            sleep 5
-            for i in 2 6; do
-              curl -fs -m 30 -H "X-Kaleido: 1" "http://127.0.0.1:18091/api/config?i=$i" > /dev/null || echo "run $run: no answer to switch $i"
-              sleep 8
-              curl -fs -m 30 -o state.json http://127.0.0.1:18091/api/state || echo "run $run: no state after switch $i"
-            done
-            for i in $(seq 1 90); do kill -0 "$pid" 2> /dev/null || break; sleep 1; done
-            if kill -0 "$pid" 2> /dev/null; then
-              hung=$((hung+1))
-              app=$(pgrep -x Kaleidoscope | head -n 1)
-              echo "::error::run $run did not end (pid $app); the scenes it last named:"
-              grep -E "SEEDED|^SCENE|-> scene|Preset " run$run.log | tail -n 6
-              if [ $symbolised = 0 ]; then
-                symbolised=1
-                echo "--- Mesa's debug symbols from ddebs.ubuntu.com:"
-                sudo apt-get install -y -qq ubuntu-dbgsym-keyring > /dev/null 2>&1
-                printf 'deb http://ddebs.ubuntu.com noble main universe\ndeb http://ddebs.ubuntu.com noble-updates main universe\n' | sudo tee /etc/apt/sources.list.d/ddebs.list > /dev/null
-                sudo apt-get update -qq > /dev/null 2>&1
-                v=$(dpkg-query -W -f='${Version}' mesa-libgallium)
-                sudo apt-get install -y -qq "mesa-libgallium-dbgsym=$v" 2>&1 | tail -n 2
-                echo "--- main thread, symbolised:"
-                sudo timeout 900 gdb -p "$app" -batch -ex "thread apply 1 bt 30" -ex "thread apply 1 bt -25" 2>&1 \
-                  | grep -E "^#" | sed -E 's/^#[0-9]+ +//; s/0x[0-9a-f]+ in //' | cut -c1-300 | uniq -c | head -n 70
-              fi
-              kill -9 "$app"
-              sleep 2
-            else
-              wait "$pid"; code=$?
-              echo "run $run: ended, exit code $code"
-              [ $code -eq 0 ] || tail -n 30 run$run.log
+          export KALEIDO_SETTINGS="$RUNNER_TEMP/c.ini"
+          xvfb-run -a -s "-screen 0 1280x720x24" ./Kaleidoscope -c Komplett -t 0 -s 0.25 > raw.txt 2>&1 &
+          watcher=$!
+          # Every second: the COMPILEALL line in progress and since when; a shader that takes 5 s or more is named.
+          last=""; since=$(date +%s)
+          for i in $(seq 1 2700); do
+            kill -0 $watcher 2> /dev/null || break
+            cur=$(grep '^COMPILEALL' raw.txt | tail -n 1)
+            if [ "$cur" != "$last" ]; then
+              now=$(date +%s); [ -n "$last" ] && [ $((now - since)) -ge 5 ] && echo "SLOW $((now - since)) s: $last"
+              last=$cur; since=$now
             fi
+            sleep 1
           done
-          echo "hung: $hung of 10 (parallel compile ${{ matrix.parallel }})"
-          [ $hung -eq 0 ]
+          grep -E '^COMPILEALL done|^SHADERS:' raw.txt
+          echo "COMPILEALL lines: $(grep -c '^COMPILEALL' raw.txt)"
+          if kill -0 $watcher 2> /dev/null; then
+            app=$(pgrep -x Kaleidoscope | head -n 1)
+            echo "::error::not done after 45 min; in progress since $(( $(date +%s) - since )) s: $last"
+            sudo gdb -p "$app" -batch -ex "thread apply 1 bt 8" -ex "thread apply 1 bt -12" 2>&1 | grep -E "^#" | cut -c1-200
+            kill -9 "$app"
+            exit 1
+          fi
