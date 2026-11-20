@@ -8,12 +8,13 @@
  * lines in shades of one colour family from the photo, the folds filled darker.
  *
  * Audio Reactivity (structure, not only light):
- *   audioSwell     -> the growth's speed
+ *   audioSwell     -> the growth's speed: loud music drives it on, silence lets it rest (the state integrates the step)
+ *   audioKick      -> the folds' edges light up (light only)
  *   audioRoughness -> the folds' width (smoothed)
  *
  * Knobs: speedP (how fast it grows), lineP (the edges' width), hueP.
 //@params speedP lineP
-//@audio audioSwell audioRoughness
+//@audio audioSwell audioRoughness audioKick
 //@state 320 180 240 32
 //@body
 /**  The state pass: one Gray-Scott step (u, v), the roughness smoothed in w.
@@ -41,7 +42,7 @@ vec4 stateStep()
     float rough = mix(s.w, clamp(audioRoughness, 0.0, 1.0), 0.005);
     float F = 0.0545, k = 0.0615 + 0.0012 * rough;
     float uvv = s.x * s.y * s.y;
-    float dt = 0.6 + 0.3 * clamp(audioSwell, 0.0, 1.0) + 0.2 * clamp(speedP, 0.0, 1.0);   // stable: D dt < 0.25
+    float dt = 0.3 + 0.65 * clamp(audioSwell, 0.0, 1.0) + 0.2 * clamp(speedP, 0.0, 1.0);   // stable: D dt < 0.25
     float u = s.x + dt * (0.21 * lap.x - uvv + F * (1.0 - s.x));
     float v = s.y + dt * (0.105 * lap.y + uvv - (F + k) * s.y);
     // a slow erosion near the field's border, so the labyrinth keeps room to grow
@@ -63,6 +64,6 @@ void main()
     float lw = 0.6 + 0.8 * clamp(lineP, 0.0, 1.0);
     float edge = smoothstep(0.02, 0.12 / lw, gl);
     vec3 fold = famCol(fh, 0.35) * 0.08 + famCol(fh, 0.6) * 0.12 * smoothstep(0.15, 0.35, v);
-    vec3 col = fold + famLight(fh, 0.6, 0.5) * edge * 0.9;
+    vec3 col = fold + famLight(fh, 0.6, 0.5) * edge * (0.9 + 0.6 * clamp(audioKick, 0.0, 1.0));
     finish(col);
 }

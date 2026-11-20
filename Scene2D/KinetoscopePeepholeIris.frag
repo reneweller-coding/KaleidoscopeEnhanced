@@ -10,8 +10,9 @@
  *  interlock, each of them swelling and shrinking in its own slow rhythm.
  *
  *  Audio Reactivity (structure, not only light):
- *    audioAdvance -> the eyepieces wander on the lemniscate (integrated)
+ *    sceneAdvance -> the eyepieces wander on the lemniscate: the music carries them (integrated)
  *    audioSwell   -> the common size of the eyepieces
+ *    audioKick    -> the brass rims flash (light only)
  *
  *  Knobs: sizeP (the eyepieces' base size), hueP.
  *
@@ -34,6 +35,7 @@ uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 
 uniform float sizeP; ///< Size knob, 0..1.
 uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
@@ -497,8 +499,8 @@ void finish( vec3 col )
 void main()
 {
     vec2  p = screenP();
-    float t = 0.04 * audioAdvance + 0.06 * sceneTime;
-    float R = 0.26 + 0.2 * clamp( sizeP, 0.0, 1.0 ) + 0.03 * clamp( audioSwell, 0.0, 1.0 );
+    float t = 0.035 * sceneTime + 1.0 * sceneAdvance;
+    float R = 0.24 + 0.2 * clamp( sizeP, 0.0, 1.0 ) + 0.07 * clamp( audioSwell, 0.0, 1.0 );
     float cover = 0.0;
     vec3  acc = vec3( 0.0 );
     for ( int k = 0; k < 4; ++k )
@@ -514,7 +516,7 @@ void main()
         vec3  c = imgLod( p * 0.85 + 0.5 + 0.02 * vec2( sin( ph ), cos( ph ) ), 0.5 );
         c *= 1.0 - 0.5 * dl * dl;
         c = mix( c, vec3( 0.9, 0.8, 0.6 ) * luma( c ), 0.5 * smoothstep( 0.5, 1.0, dl ) );
-        c += 0.25 * rim * vec3( 0.9, 0.85, 0.7 );
+        c += ( 0.25 + 0.4 * clamp( audioKick, 0.0, 1.0 ) ) * rim * vec3( 0.9, 0.85, 0.7 );
         acc = max( acc, c * ( w + rim * 0.6 ) );
         cover = max( cover, w );
     }

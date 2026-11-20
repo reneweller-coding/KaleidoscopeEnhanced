@@ -7,7 +7,7 @@
  *
  * Audio Reactivity (structure, not only light):
  *   audioChroma     -> the number of charges follows how many notes the chord holds
- *   audioPhase      -> the shells turn (integrated)
+ *   audioPhase      -> the shells turn: the music carries most of the turn (integrated)
  *   audioKick       -> the charges flash (light)
  *
  * Knobs: countP (the base count), beadP (the beads' size), photoP (photo share), hueP.
@@ -66,7 +66,7 @@ void main()
     if (statePass == 1) { fragColor = stateStep(); return; }
     vec2 p = screenP();
     float rb = 0.013 + 0.008 * clamp(beadP, 0.0, 1.0);
-    float a = 0.02 * audioPhase + 0.05 * sceneTime;
+    float a = 0.25 * audioPhase + 0.025 * sceneTime;
     mat3 R = mat3(cos(a), 0.0, sin(a), 0.0, 1.0, 0.0, -sin(a), 0.0, cos(a));
     float b = 0.4 * sin(0.03 * sceneTime);
     mat3 T = mat3(1.0, 0.0, 0.0, 0.0, cos(b), -sin(b), 0.0, sin(b), cos(b));

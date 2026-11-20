@@ -14,8 +14,10 @@
  *  eye. The strands' light is shades of one colour family from the photo.
  *
  *  Audio Reactivity (structure, not only light):
- *    audioAdvance -> the plait runs toward the eye (integrated): each stretch of drive writes another crossing
+ *    sceneAdvance -> the plait runs toward the eye: the music carries it, each stretch of drive writes another
+ *                    crossing (integrated; without music it creeps)
  *    audioSwell   -> the strands' glow
+ *    audioKick    -> the strands flash (light only)
  *
  *  Knobs: strandP (how many strands), stepP (how long a step is), hueP.
  *
@@ -38,6 +40,7 @@ uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 
 uniform float strandP; ///< Strand knob: how many strands, 0..1.
 uniform float stepP;   ///< Step knob: how long a step is, 0..1.
@@ -580,8 +583,8 @@ void main()
     float fh = famHue();
     float n = floor( 4.0 + 3.0 * clamp( strandP, 0.0, 1.0 ) ); // the strands
     float step_l = 0.6 + 0.6 * clamp( stepP, 0.0, 1.0 );
-    float clock = 0.25 * sceneTime + 1.0 * audioAdvance;
-    float glow = 0.7 + 0.6 * clamp( audioSwell, 0.0, 1.0 );
+    float clock = 0.12 * sceneTime + 3.0 * sceneAdvance;
+    float glow = 0.7 + 0.6 * clamp( audioSwell, 0.0, 1.0 ) + 0.5 * clamp( audioKick, 0.0, 1.0 );
     // the plane: depth from the screen's height (horizon above), across from x
     float horizon = 0.42;
     float dz = max( horizon - p.y, 0.001 );

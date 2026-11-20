@@ -8,11 +8,13 @@
  *
  * Audio Reactivity (structure, not only light):
  *   audioSwell   -> the beams' brightness
- *   audioAdvance -> the cage turns (integrated) and the eye drifts round the core
+ *   sceneAdvance -> the cage turns: the music carries the turn (integrated)
+ *   audioAdvance -> the eye drifts round the core (integrated)
+ *   audioKick    -> the core and the beams flare (light only)
  *
  * Knobs: gridP (how fine the cage is), beamP (the beams' width), hueP.
 //@params gridP beamP
-//@audio audioSwell
+//@audio audioSwell audioKick
 //@body
 void main()
 {
@@ -21,13 +23,13 @@ void main()
     float nLat = floor(5.0 + 3.0 * clamp(gridP, 0.0, 1.0));
     float nLon = 2.0 * nLat;
     float bw = 0.006 + 0.008 * clamp(beamP, 0.0, 1.0);
-    float bright = 0.4 + 0.9 * clamp(audioSwell, 0.0, 1.0);
+    float bright = (0.4 + 0.9 * clamp(audioSwell, 0.0, 1.0)) * (1.0 + 0.5 * clamp(audioKick, 0.0, 1.0));
     float run = 0.02 * sceneTime + 0.08 * audioAdvance;
     vec3 ro = vec3(0.3 * sin(run), 0.15 * cos(0.7 * run), -0.38 + 0.05 * sin(0.5 * run));
     vec3 fw = normalize(-ro);
     vec3 rt = normalize(cross(fw, vec3(0.0, 1.0, 0.0))), up = cross(rt, fw);
     vec3 rd = normalize(fw * 0.9 + rt * p.x + up * p.y);
-    float tu = 0.6 * run;
+    float tu = 0.012 * sceneTime + 1.2 * sceneAdvance;
     mat3 R = mat3(cos(tu), 0.0, -sin(tu), 0.0, 1.0, 0.0, sin(tu), 0.0, cos(tu));   // the cage's turn
     // the cage: where the ray meets the sphere from inside
     float b = dot(ro, rd), c = dot(ro, ro) - 1.0;
