@@ -49,6 +49,8 @@ public:
     static constexpr double BtAlpha = 0.9;
     /** Beat tracking: tightness of the log-Gaussian transition weighting (Stark et al. 2009: 5). */
     static constexpr double BtTight = 5.0;
+    /** Envelope samples one block may carry for the beat tracker (16 = 160 ms; a longer block loses the rest). */
+    static constexpr int MaxBlockOnsets = 16;
 
     /** A new song: the kick intervals and the autocorrelation tempo start over (AudioAnalyzer::beginSong()). */
     void reset();
@@ -108,12 +110,14 @@ private:
      **/
     static double pulseScore( const double *env, int n, double period );
 
-    /**  The beat tracker's step for one block (BTrack: cumulative score, predicted beat).
+    /**  The beat tracker's step for one sample of the onset envelope (BTrack: cumulative score, predicted beat).
      *
-     * @param onset         The block's onset-envelope sample (0 if none fell into it). (in)
-     * @param blockSeconds  The block's length in seconds. (in)
+     * @param onset  The envelope sample. (in)
+     *
+     * @return
+     *   True if the predicted beat falls on this sample.
      **/
-    void beatStep( double onset, double blockSeconds );
+    bool beatStep( double onset );
 
     /**  The most likely transition into the next block's cumulative score: the past #m_cs from 2 beats to half a
      * beat back, under the log-Gaussian weighting around one beat.
@@ -167,8 +171,8 @@ private:
     // ---- beat tracker (beatStep()) ----
     double m_cs[BtHist] = {};       ///< Ring of the cumulative score, one value per block.
     int    m_csIdx = 0;             ///< Next write index into #m_cs.
-    float  m_blockOnset = 0.f;      ///< The first onset-envelope sample of the current block.
-    bool   m_blockOnsetSet = false; ///< #m_blockOnset holds this block's sample.
+    float  m_blockOnsets[MaxBlockOnsets] = {}; ///< The onset-envelope samples of the current block (for the beat tracker).
+    int    m_blockOnsetN = 0;      ///< Valid entries in #m_blockOnsets.
     int    m_btCountdown = -1;      ///< Blocks until the predicted beat (-1: none predicted).
     int    m_btToPredict = -1;      ///< Blocks until the next prediction (-1: none scheduled).
     double m_btClock = 0.0;         ///< Seconds since the start (the block's start time).

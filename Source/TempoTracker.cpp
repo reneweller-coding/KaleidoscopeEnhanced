@@ -33,11 +33,8 @@ void TempoTracker::pushOnset( float sf )
     m_longEnv[m_longIdx] = sf;
     m_longIdx = ( m_longIdx + 1 ) % LongLen;
     m_longFilled = std::min( m_longFilled + 1, LongLen );
-    if ( !m_blockOnsetSet )
-    {
-        m_blockOnset = sf;
-        m_blockOnsetSet = true;
-    }
+    if ( m_blockOnsetN < MaxBlockOnsets ) // the beat tracker steps through them in update(), on the block's tempo
+        m_blockOnsets[m_blockOnsetN++] = sf;
 }
 
 template <typename Past>
@@ -80,7 +77,7 @@ int TempoTracker::predictBeat( double tau ) const
     return best;
 }
 
-void TempoTracker::beatStep( double onset, double blockSeconds )
+bool TempoTracker::beatStep( double onset )
 {
     // The beat phase by beat tracking (20.11.2026, A3 of docs/PLAN_2026-11-20.md): the cumulative score and the
     // predicted next beat of BTrack (Stark, Davies & Plumley 2009, "Real-Time Beat-Synchronous Analysis of
@@ -92,22 +89,22 @@ void TempoTracker::beatStep( double onset, double blockSeconds )
     // conditioner's PLL (what the shaders see) on 25,034 annotated beats of 41 demos: F-measure 27.9 -> 48.5 %,
     // CMLt 25.8 -> 43.8 %, AMLt 32.9 -> 61.1 %; in stretches of 8 s and more without a kick the phase is within an
     // eighth of a beat 25 -> 39 % of the time (chance is 25 %).  Tightness 2 or 3 measured within two points.
+    // One step per sample of the onset envelope (EnvRate, 100 Hz) -- not per analysis block.  Offline a block is
+    // 10 ms and holds exactly one envelope sample, so the two are the same; live a block is whatever the capture
+    // hands over, at times a WASAPI packet of a millisecond.  The first version stepped per block and counted the
+    // period in blocks: a 1-ms packet at 120 BPM made it 500 blocks, predictBeat() overran its scratch and the stack
+    // cookie ended the program (0xC0000409, found 20.11.2026 by the PiP soak test; a clamp stopped the crash).  In
+    // envelope samples the period is at most 6000 / 70 = 86 (the tempo is folded into 70..180), so the ring and the
+    // scratch always hold two beats back and one ahead; the clamp stays as a guard.
     const double bpm = m_smoothedBPM;
     if ( bpm < 1.0 )
     {
         m_cs[m_csIdx] = ( 1.0 - BtAlpha ) * onset;
         m_csIdx = ( m_csIdx + 1 ) % BtHist;
         m_btCountdown = m_btToPredict = -1;
-        m_btPhase = 0.f;
-        m_btClock += blockSeconds;
-        return;
+        return false;
     }
-    // The beat period in blocks.  The ring and predictBeat()'s scratch hold two beats back and one ahead in BLOCKS,
-    // and a block is whatever the capture hands over: 10 ms as a rule, but a WASAPI loopback packet can be a
-    // millisecond.  On 20.11.2026 such a packet at 120 BPM made tau 500 blocks; predictBeat() wrote 1,500 values
-    // into its 1,024 and the stack cookie ended the program (0xC0000409, 3.6 and 4.5 minutes into a soak run).
-    // Beyond what the arrays hold the period is clamped: a short packet misjudges one block instead of the stack.
-    const double tau = std::min( 60.0 / bpm / blockSeconds, ( BtHist - 1 ) / 2.0 );
+    const double tau = std::min( 60.0 * EnvRate / bpm, ( BtHist - 1 ) / 2.0 ); // the beat period in samples
     const double past = transition( [this]( int j )
     { return m_cs[( m_csIdx - j + BtHist ) % BtHist]; }, tau );
     m_cs[m_csIdx] = ( 1.0 - BtAlpha ) * onset + BtAlpha * past;
@@ -128,21 +125,13 @@ void TempoTracker::beatStep( double onset, double blockSeconds )
     {
         if ( m_btCountdown == 0 )
         {
-            m_btLastBeat = m_btClock;
             m_btCountdown = -1;
             m_btToPredict = static_cast<int>( std::nearbyint( tau / 2.0 ) );
+            return true;
         }
-        else
-            --m_btCountdown;
+        --m_btCountdown;
     }
-    if ( m_btLastBeat > -1e8 )
-    {
-        const double ph = ( m_btClock - m_btLastBeat ) * bpm / 60.0;
-        m_btPhase = static_cast<float>( ph - std::floor( ph ) );
-    }
-    else
-        m_btPhase = 0.f;
-    m_btClock += blockSeconds;
+    return false;
 }
 
 double TempoTracker::pulseScore( const double *env, int n, double period )
@@ -499,7 +488,20 @@ void TempoTracker::update( bool isBeat, float beatIntervalS, bool trackChange, f
     }
     m_smoothedBPM = fold_bpm( m_smoothedBPM );
 
-    // The beat, on the tempo just published.
-    beatStep( m_blockOnsetSet ? m_blockOnset : 0.0, blockSeconds );
-    m_blockOnsetSet = false;
+    // The beat, on the tempo just published: one tracker step per envelope sample of the block (beatStep()), the
+    // phase from the block's start time.
+    bool beat = false;
+    for ( int k = 0; k < m_blockOnsetN; ++k )
+        beat = beatStep( m_blockOnsets[k] ) || beat;
+    m_blockOnsetN = 0;
+    if ( beat )
+        m_btLastBeat = m_btClock;
+    if ( m_smoothedBPM >= 1.f && m_btLastBeat > -1e8 )
+    {
+        const double ph = ( m_btClock - m_btLastBeat ) * m_smoothedBPM / 60.0;
+        m_btPhase = static_cast<float>( ph - std::floor( ph ) );
+    }
+    else
+        m_btPhase = 0.f;
+    m_btClock += blockSeconds;
 }

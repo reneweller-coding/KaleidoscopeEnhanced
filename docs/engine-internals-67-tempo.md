@@ -52,6 +52,14 @@ annotated demos, and the beat phase never measured at all.
   it looked as if a lead of 80 ms helped (F 40.8 %).  With BTrack's scheduling no lead is needed (48.6 %), and the
   same lead on the old kick phase made it worse (27.9 -> 22.7 %) -- the gain was the tracker's, the "lead" only
   repaired the slip.
+  *Counted in envelope samples since* (after the crash of section 67, fix): the first version stepped once per
+  analysis block and took the period in blocks, and live a block is whatever the capture hands over -- a 1-ms
+  WASAPI packet made the period 500 blocks and overran `predictBeat()`'s scratch.  Now `pushOnset()` keeps the
+  block's envelope samples and `update()` steps the tracker once per sample (100 Hz), the period in samples (at most
+  86 at 70 BPM); the phase is taken from the block's start time as before, the clamp stays as a guard.  Offline a
+  block holds exactly one sample, so nothing measured moved: `beat_lab.py --method trace` again F 48.5 %, CMLt
+  43.8 %, AMLt 61.1 %, hold 39 %; `tempo_lab.py --check` 66 % right and 0 of 41 demos off the port; self test 137
+  of 137 with the 1-ms packets of check 7.
 - *A5, section boundaries on the bar grid -- tried and dropped.*  The idea: with a trustworthy phase, a novelty
   peak near a phrase boundary counts more.  Re-simulated from the per-block novelty and the conditioner's 8-bar
   phrase position on the 43 demos (scored like `analyser_vs_cues.py`): a lower threshold near the phrase boundary
