@@ -91,7 +91,7 @@ says so.
   for 15); with `libopengl0` and `libharfbuzz0b` -- both on every desktop with Qt programs -- `ldd` finds all.
   libpulse(-simple) 15.99 and GStreamer's core libraries come along.
 - *The self test* `-q`: 127 of 127 on Ubuntu 24.04 (Qt 6.4.2, build tree) and from the AppImage (Qt 6.2.4) in the
-  container. As root in the container it was 126 of 127: "a settings file that cannot be written is noticed"
+  container; 136 of 136 after merging phos-cues' new checks. As root in the container it was 126 of 127: "a settings file that cannot be written is noticed"
   cannot fail for root, who writes to a read-only file anyway -- the test runs as a normal user now
   (Tools/appimage/test_appimage.sh refuses root).
 - *The export* under Xvfb with llvmpipe (LLVM 20.1.2, Mesa 25.2.8, OpenGL 4.3 core): 150 frames of 640 x 360 in
@@ -133,9 +133,11 @@ says so.
     each of them froze for good whenever the scene was prepared -- with radeonsi or iris too, if the unrolling is in
     Mesa's shared NIR code, which is likely but not shown.
   - *The gate:* the `linux` job compiles all of Komplett under Ubuntu's Mesa and names the shader that does not
-    finish in ten minutes; the switch step goes Club -> Cinematic -> Noir (Noir holds the scene).
-- *Times on the runners:* `linux` 3.1 min (packages 34 s, build 43 s, self test 24 s, export 20 s, switches 50 s),
-  `appimage` 2.1 min (the AppImage itself 81 s), `appimage-run` 1.1 min; the three run beside the Windows job (about
+    finish in ten minutes; the switch step goes Club -> Cinematic -> Noir (Noir holds the scene). With the fix, in
+    the CI run of 20.11.2026 03:35 UTC: compile-all done in 29 s (2426 scenes, 30 combines, 210 transitions; 25.0 s
+    compiling, 9 ms each), both switches alive, exit code 0.
+- *Times on the runners:* `linux` 3.2 min (packages about 35 s, build 37..43 s, self test 9..24 s, export 17..20 s,
+  compile-all 29 s, switches 51 s), `appimage` 2.2 min (the AppImage itself 81 s), `appimage-run` 1.0 min; the three run beside the Windows job (about
   12 min), so the workflow takes no longer than before. llvmpipe renders the 1920 x 1080 window at render scale 0.25 with 4..9 fps.
 - *apt on the 24.04 runner:* the runner's mirror list (us-east-2.ec2.archive.ubuntu.com first) delivered 34 packages
   in 6.5 minutes, three runs in a row, where the first run had needed 29 s; putting other mirrors in front of the
