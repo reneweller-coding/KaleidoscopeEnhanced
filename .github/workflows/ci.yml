@@ -379,10 +379,35 @@ jobs:
           echo "smoke.mp4: $dur s"
           python3 -c "import sys; d=float(sys.argv[1]); sys.exit(0 if 4.5 <= d <= 5.6 else 1)" "$dur"
 
+      # Every shader of Komplett through Ubuntu 24.04's own Mesa (25.2), which is what Linux users of that release
+      # compile with -- the Windows job's Mesa is a newer one.  This Mesa never finished TwentyFourCellBreathing.frag
+      # (it unrolled a loop eight times over); the program froze whenever that scene was prepared.  A shader that
+      # does not finish turns this red, with its name.  About 20 s of compiling.
+      - name: Every shader compiles under Ubuntu's Mesa in time (KALEIDO_COMPILE_ALL, software GL)
+        working-directory: build
+        env:
+          LIBGL_ALWAYS_SOFTWARE: '1'
+          GALLIUM_DRIVER: llvmpipe
+          MESA_GL_VERSION_OVERRIDE: '4.3'
+          MESA_GLSL_VERSION_OVERRIDE: '430'
+          KALEIDO_COMPILE_ALL: '1'
+          KALEIDO_NO_PARALLEL_COMPILE: '1'
+        run: |
+          export KALEIDO_SETTINGS="$RUNNER_TEMP/settings-compile.ini"
+          set +e
+          timeout 600 xvfb-run -a -s "-screen 0 1280x720x24" ./Kaleidoscope -c Komplett -t 0 -s 0.25 > compileall.txt 2>&1
+          code=$?
+          set -e
+          grep -E "^COMPILEALL done|^SHADERS:" compileall.txt || true
+          if ! grep -q "^COMPILEALL done" compileall.txt; then
+            echo "::error::not finished (exit code $code); the shader in progress: $(grep '^COMPILEALL' compileall.txt | tail -n 1)"
+            exit 1
+          fi
+
       # A preset switch stops one RenderPipeline and starts another, which the export never does; the end through
       # KALEIDO_MAX_RUNTIME_SECS runs every destructor.  Both used to abort on Linux (QThread deleted while running).
-      # Club -> Cinematic -> Noir: presets without CathedralGlass, whose first frames sometimes keep llvmpipe busy for
-      # good (3 of 10 runs; the main thread deep in libgallium -- docs/engine-internals-67-linux.md).
+      # Club -> Cinematic -> Noir: Noir holds TwentyFourCellBreathing, whose background compile froze 39 of 40 such
+      # runs before its fix (docs/engine-internals-67-linux.md).
       - name: Two preset switches over the web remote, then a regular end (software GL)
         working-directory: build
         env:
