@@ -71,3 +71,30 @@ docs/engine-internals.md.
   descriptor), to subtract the photo: the frames show the photo mirrored, tiled, dimmed and warped, and the best
   matches were wrong photos (pebbles for a field of fireflies). An image model on the CPU (the plan's option) was not
   tried: it would see the photo as well.
+
+### B4: look-alikes one after the other in the scene plan -- measured, no rule needed
+
+- *Measured* on the 20 plans of `Tools/check_schedule.py` (the real scheduler on the virtual clock: 12 h of silence and
+  6 h of the structure track per genre preset, 0 violations), with `python Tools/scene_similarity.py --plans`: of each
+  change, whether the next scene is in the same cluster, the same near-duplicate group, a looser grouping (average
+  linkage at 0.70: 789 groups, largest 20 -- warm-toned photo patterns and the like, grouped by palette and texture
+  rather than by look; a sensitivity check) or among the eight nearest scenes, against a blind pick from the scenes
+  the plan shows.
+
+  | | changes | same cluster | same group | loose grouping | among the 8 nearest | longest run in one cluster |
+  |---|---|---|---|---|---|---|
+  | all 20 plans | 7918 | 1 (0.01 %) | 0 | 26 (0.33 %) | 36 (0.45 %) | 2 scenes |
+  | worst plan | | 0.23 % (Downtempo, music) | 0 | 1.05 % (Club, silence) | 1.17 % (Psytrance, silence) | 2 (loose: 2) |
+  | blind pick | | 0.00..0.06 % | | 0.18..0.48 % | 0.33..0.58 % | |
+
+  The one change inside a cluster: WaterGlassRowFlip -> PhotoDepthParallax (Downtempo on the structure track), two
+  scenes that leave the same mirrored photo nearly alone.
+- *Why so few:* the scheduler draws evenly from several hundred scenes, the no-repeat memory holds three quarters of
+  them, and look-alike groups have two to five members -- a blind pick lands in the running scene's group less than
+  once in a thousand changes, and the plans agree. "Among the 8 nearest" is two to three times the blind pick in a few
+  plans (perhaps moodAccept, which prefers scenes of a restlessness like the music's; not followed up) and stays near
+  1 %.
+- *Decision:* the plan's limit (more than 5 % of the changes, or runs of three) is not reached under any grouping
+  tried, so `SceneScheduler::pickScene` stays as it is, no cluster attribute goes into the presets, and no rebuild was
+  needed. The measurement stays repeatable: `python Tools/check_schedule.py` then `python Tools/scene_similarity.py
+  --plans`.
