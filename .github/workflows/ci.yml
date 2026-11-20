@@ -41,11 +41,6 @@ jobs:
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v3
 
-      # numpy for the analyzer and scene-plan checks (Tools/analyzer_regress.py, Tools/check_schedule.py).
-      - name: Python packages
-        shell: pwsh
-        run: python -m pip install --quiet --disable-pip-version-check numpy
-
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
         with:
@@ -53,6 +48,12 @@ jobs:
           arch: win64_msvc2022_64
           modules: qtmultimedia
           cache: true
+
+      # numpy for the analyzer and scene-plan checks (Tools/analyzer_regress.py, Tools/check_schedule.py).  After
+      # "Install Qt": that action puts its own Python first on PATH, and pip must install into the one the steps run.
+      - name: Python packages
+        shell: pwsh
+        run: python -m pip install --quiet --disable-pip-version-check numpy
 
       # QTDIR is what both .vcxproj files read for their include/lib paths;
       # install-qt-action exports QT_ROOT_DIR, not QTDIR, so it's passed
