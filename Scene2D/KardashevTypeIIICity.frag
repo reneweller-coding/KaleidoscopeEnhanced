@@ -12,8 +12,9 @@
  *  running along its links from node to node.  The galaxy turns with slow, rigid majesty; the network hums with the
  *  music's light.
  *
- *    sceneTime/sceneAdvance -> the galaxy's turn, packets on the links
- *    audioSwell    -> brightness of the network (slow)
+ *    sceneAdvance  -> the galaxy's turn and the packets on the links: the music carries them (integrated; without
+ *                     music they creep on sceneTime)
+ *    audioSwell    -> the arms wind tighter while the music swells, and the network brightens (slow)
  *    audioKick     -> the nodes flare (light only)
  *    audioChromaHue-> photo tint of the network
  *
@@ -135,16 +136,17 @@ float fbm( vec2 p )
 
 /**  Arm density at disc point g (disc coordinates, already rotated).
  *
- * @param g  The point in disc coordinates. (in)
+ * @param g     The point in disc coordinates. (in)
+ * @param wind  How tightly the arms wind (2.6 at rest). (in)
  *
  * @return
  *   The arm density, 0..1.
  **/
-float arms( vec2 g )
+float arms( vec2 g, float wind )
 {
     float r = length( g );
     float a = atan( g.y, g.x );
-    float s = cos( 2.0 * ( a - log( r + 0.02 ) * 2.6 ) );
+    float s = cos( 2.0 * ( a - log( r + 0.02 ) * wind ) );
     return smoothstep( 0.1, 1.0, s ) * smoothstep( 0.02, 0.15, r );
 }
 
@@ -176,7 +178,10 @@ void main()
     float hue = ( hueP > 0.001 ) ? hueP : 0.0;
     float swell = clamp( audioSwell, 0.0, 1.0 );
     float kick = clamp( audioKick, 0.0, 1.0 );
-    float T = sceneTime + sceneAdvance * 0.5;
+    // The music carries the turn and the packets (sceneAdvance runs about 0.05 a second under music, 0 in silence);
+    // the swell winds the arms (B2, 20.11.2026: the scene measured among the 5 % least reactive).
+    float T = 0.5 * sceneTime + 6.0 * sceneAdvance;
+    float wind = 2.6 + 0.6 * swell;
 
     // Background: faint distant galaxies and stars.
     vec3 col = vec3( 0.005, 0.006, 0.014 );
@@ -199,10 +204,10 @@ void main()
     float r = length( g );
 
     // The galaxy itself.
-    float arm_d = arms( g + 0.06 * ( vec2( fbm( g * 4.0 ), fbm( g * 4.0 + 5.0 ) ) - 0.5 ) );
+    float arm_d = arms( g + 0.06 * ( vec2( fbm( g * 4.0 ), fbm( g * 4.0 + 5.0 ) ) - 0.5 ), wind );
     float disc = exp( -r * 1.7 );
     float bulge = exp( -r * r * 40.0 );
-    float dust = smoothstep( 0.35, 0.75, arms( g * 1.0 + vec2( 0.03, -0.02 ) ) ) * smoothstep( 0.08, 0.3, r )
+    float dust = smoothstep( 0.35, 0.75, arms( g * 1.0 + vec2( 0.03, -0.02 ), wind ) ) * smoothstep( 0.08, 0.3, r )
                  * ( 0.5 + 0.5 * fbm( g * 9.0 ) );
     float clumps = pow( fbm( g * 14.0 ), 3.0 ) * 3.0;
     vec3  gal = vec3( 1.0, 0.85, 0.6 ) * bulge * 2.2

@@ -13,9 +13,11 @@
  *  slowly.
  *
  *  Audio Reactivity (structure, not only light):
- *    audioHarmAdvance -> the order of the lattice glides (integrated)
+ *    audioHarmAdvance -> the order of the lattice glides: a chord change carries it a good way (integrated)
+ *    audioSwell       -> the scatter of the clouds breathes (slow)
  *    audioRoughness   -> the scatter of the clouds
- *    audioAdvance     -> the turn of the lattice
+ *    sceneAdvance     -> the turn of the lattice (integrated)
+ *    audioKick        -> the dust flares (light only)
  *
  *  Knobs: sizeP (the size of the dust), hueP.
  *
@@ -40,6 +42,8 @@ uniform float audioPhase;       ///< Rotation phase driven by the music (integra
 uniform float audioRoughness;   ///< Roughness (dissonance) of the sound, 0..1.
 uniform float audioHarmAdvance; ///< The harmony's advance: ~1 more with every chord change (integrated, never jumps
                                 ///< back).
+uniform float audioSwell;       ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioKick;        ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 
 uniform float sizeP; ///< Size knob, 0..1.
 uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
@@ -527,15 +531,15 @@ vec3 qamLayer( vec2 p, float M, float rot, float sg, float dust )
 void main()
 {
     vec2  p = screenP();
-    float rot = 0.03 * audioAdvance + 0.02 * sceneTime;
-    float e = 0.5 + 0.5 * sin( 0.07 * audioHarmAdvance + 0.03 * sceneTime );
-    float sg = 0.14 + 0.2 * clamp( audioRoughness, 0.0, 1.0 );
+    float rot = 0.012 * sceneTime + 0.15 * sceneAdvance;
+    float e = 0.5 + 0.5 * sin( 0.9 * audioHarmAdvance + 0.015 * sceneTime );
+    float sg = 0.1 + 0.14 * clamp( audioSwell, 0.0, 1.0 ) + 0.12 * clamp( audioRoughness, 0.0, 1.0 );
     float dust = 0.8 + 1.6 * clamp( sizeP, 0.0, 1.0 );
     float M0 = 8.0;
     float M1 = 16.0;
     vec3  a = qamLayer( p, M0, rot, sg, dust );
     vec3  b = qamLayer( p, M1, rot, sg * 1.3, dust );
-    vec3  col = mix( a, b, smoothstep( 0.2, 0.8, e ) ) * 1.6;
+    vec3  col = mix( a, b, smoothstep( 0.2, 0.8, e ) ) * ( 1.6 + 0.35 * clamp( audioKick, 0.0, 1.0 ) );
     col += imgLod( p * 0.85 + 0.5, 2.5 ) * 0.06;
     finish( col );
 }

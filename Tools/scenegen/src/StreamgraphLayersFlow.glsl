@@ -3,12 +3,13 @@
  * is centred, so the whole picture rises and falls like one body.
  *
  * Audio Reactivity (structure, not only light):
- *   audioAdvance -> the surging runs on (integrated)
+ *   sceneAdvance -> the surging runs on: the music carries most of the flow (integrated; without music it creeps)
  *   audioSwell   -> the depth of the waves
+ *   audioKick    -> the layers' crests light up (light only)
  *
  * Knobs: sizeP (the number of layers), hueP.
 //@params sizeP
-//@audio audioSwell audioAdvance
+//@audio audioSwell audioAdvance audioKick
 //@body
 void main()
 {
@@ -16,7 +17,8 @@ void main()
     float asp = resolution.x / resolution.y;
     float xn = p.x / asp + 0.5;
     float n = 5.0 + 3.0 * clamp(sizeP, 0.0, 1.0);
-    float t = 0.03 * audioAdvance + 0.03 * sceneTime;
+    float t = 0.012 * sceneTime + 0.6 * sceneAdvance;
+    float kick = clamp(audioKick, 0.0, 1.0);
     float dep = 0.3 + 0.4 * clamp(audioSwell, 0.0, 1.0);
     float w[8];
     float tot = 0.0;
@@ -41,7 +43,8 @@ void main()
         vec3 c = imgLod(p * 0.85 + 0.5, 1.0);
         float fk = float(k);
         c = mix(c, c.gbr, 0.15 * mod(fk, 3.0));
-        c *= 0.75 + 0.35 * sqrt(max(1.0 - dm * dm, 0.0));
+        float crest = max(1.0 - dm * dm, 0.0);
+        c *= 0.75 + 0.35 * sqrt(crest) + 0.35 * kick * crest * crest;
         col = mix(col, c * 1.15, al);
     }
     finish(col);
