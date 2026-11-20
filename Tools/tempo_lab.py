@@ -8,9 +8,10 @@ published (AudioAnalyzer::M_TempoTrace, 14 float32 per block).  This script repl
 in Python and scores the result exactly like Tools/tempo_vs_cues.py (strict = within 4 % of the reference, the
 median beat interval of the cues within 4 s; folded into 70..180; by tempo range; every 50 ms after the first 12 s).
 
-    python Tools/tempo_lab.py @Tools/analyser_cue_set.txt                  # today's method, ported ("current")
-    python Tools/tempo_lab.py --method current --check @Tools/analyser_cue_set.txt   # the port against the C++ trace
+    python Tools/tempo_lab.py @Tools/analyser_cue_set.txt                  # the method in the code, ported ("current")
+    python Tools/tempo_lab.py --check @Tools/analyser_cue_set.txt          # the port against the C++ trace
     python Tools/tempo_lab.py --method NAME --detail @Tools/analyser_cue_set.txt
+    python Tools/tempo_lab.py --method trace --real --calm                 # the build itself: real tracks, calm music
 
 The recordings live in .screen/beatbench/<key>.trace (and <key>.csv, every block, with the beat phase columns);
 they are made when missing or older than the editor.  The PCM copies of the demos are the ones
@@ -401,12 +402,24 @@ class Pulse(Current):
         self.smoothed = fold(self.smoothed)
 
 
+class Trace:
+    """No replay: what the C++ build published (the trace's tempo and confidence) -- to score the build itself."""
+
+    def run(self, tr):
+        self.conf_trace = tr[:, ACCONF].copy()
+        return np.where(tr[:, BPM] > 40.64, tr[:, BPM], 0.0)
+
+
 def variant(name, base, **kw):
     """A method class with some constants changed."""
     return type(name, (base,), kw)
 
 
-METHODS = {"current": Current, "pulse": Pulse,
+# "current" is the method in Source/TempoTracker.cpp (20.11.2026: the pulse trains, MULTI 0.3, MARGIN 1.25);
+# "acf1110" the one before it (10.11.2026: the 4-s autocorrelation's pick alone).  Measured on the 43 demos and the
+# seven real tracks (docs/engine-internals.md, section 67): the variants below are what was tried.
+METHODS = {"acf1110": Current, "pulse": Pulse, "trace": Trace,
+           "current": variant("PulseCurrent", Pulse, MULTI=0.3, MARGIN=1.25),
            "pulse8": variant("Pulse8", Pulse, LONG=8.0),
            "pulse_half": variant("PulseHalf", Pulse, HALF_W=0.5),
            "pulse_nokick": variant("PulseNoKick", Pulse, USE_KICK_32=False),

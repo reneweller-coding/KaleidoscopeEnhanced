@@ -30,6 +30,128 @@ void TempoTracker::pushOnset( float sf )
 {
     m_sfEnv[m_envIdx] = sf;
     m_envIdx = ( m_envIdx + 1 ) % EnvLen;
+    m_longEnv[m_longIdx] = sf;
+    m_longIdx = ( m_longIdx + 1 ) % LongLen;
+    m_longFilled = std::min( m_longFilled + 1, LongLen );
+}
+
+double TempoTracker::pulseScore( const double *env, int n, double period )
+{
+    const int p = static_cast<int>( std::ceil( period ) );
+    const int k_n = static_cast<int>( ( n - p ) / period );
+    if ( k_n < 3 || p < 1 )
+        return 0.0;
+    double best = -1e300, sum = 0.0;
+    for ( int phase = 0; phase < p; ++phase )
+    {
+        double s = 0.0;
+        for ( int k = 0; k < k_n; ++k )
+            s += env[static_cast<int>( std::nearbyint( phase + k * period ) )];
+        s /= k_n;
+        best = std::max( best, s );
+        sum += s;
+    }
+    return best - sum / p;
+}
+
+double TempoTracker::choose( double lag4 ) const
+{
+    // The tempo by pulse trains (20.11.2026, A2 of docs/PLAN_2026-11-20.md).  The 4-s autocorrelation picks one
+    // lag under a prior around 120 BPM, and in four seconds three beats of a fast track correlate as well as two:
+    // dotted readings (92 for 138) and their kin were a fifth of the errors.  Here the strongest peaks of the
+    // autocorrelation over the last 12 s and their metrical relatives (x2, /2, x3/2, x2/3) are candidates, and each
+    // is scored by a pulse train laid over the onset envelope at its best phase -- how far the envelope at the
+    // pulses stands above its mean over all phases (Percival & Tzanetakis 2014, "Streamlined Tempo Estimation Based
+    // on Autocorrelation and Cross-correlation With Pulses") -- plus 0.3 x the trains at twice and half the period
+    // (the metrical levels around a beat agree with it; a dotted period's do not), times the same prior.  A dotted
+    // period puts every second pulse between the beats.  A reading outside the 4-s pick's octave family (not a power
+    // of two away) has to score 1.25 times as high, or the family's best stays: without that margin a ternary
+    // groove (Ironic) and a cross-rhythm in a psytrance breakdown (104 for 140) switched to their 3:4 readings.
+    // Measured with Tools/tempo_lab.py on the 43 demos (strict, within 4 % of the cues' tempo): right 49 -> 66 %,
+    // at 90..135 BPM 81 -> 87 %, over 135 78 -> 80 %, under 90 25 -> 51 %, folded 55 -> 71 %.  The gate (peak,
+    // prominence, kurtosis) is untouched, so calm music reads no more rhythm than before.
+    if ( m_longFilled < EnvLen )
+        return lag4;
+    const int n = m_longFilled;
+    double    env[LongLen], envm[LongLen];
+    double    mean = 0.0;
+    for ( int i = 0; i < n; ++i )
+    {
+        env[i] = m_longEnv[( m_longIdx - n + i + LongLen ) % LongLen]; // oldest first
+        mean += env[i];
+    }
+    mean /= n;
+    double var = 1e-9;
+    for ( int i = 0; i < n; ++i )
+    {
+        env[i] -= mean;
+        var += env[i] * env[i];
+    }
+    for ( int i = 0; i < n; ++i ) // +-1 sample of timing slack (wrapping at the ends, as the lab does)
+        envm[i] = std::max( env[i], std::max( env[( i + n - 1 ) % n], env[( i + 1 ) % n] ) );
+    const int lag_lo = ( 60 * EnvRate ) / 180, lag_hi = ( 60 * EnvRate ) / 70;
+    double    ac[( 60 * EnvRate ) / 70 + 2] = {};
+    for ( int lag = lag_lo - 1; lag <= lag_hi + 1; ++lag )
+    {
+        double sum = 0.0;
+        for ( int i = 0; i + lag < n; ++i )
+            sum += env[i] * env[i + lag];
+        ac[lag] = sum / var;
+    }
+    // the strongest local maxima of the autocorrelation (inside lag_lo..lag_hi, so each has two neighbours there)
+    int peaks[( 60 * EnvRate ) / 70 + 2];
+    int np = 0;
+    for ( int lag = lag_lo + 1; lag < lag_hi; ++lag )
+        if ( ac[lag] >= ac[lag - 1] && ac[lag] >= ac[lag + 1] )
+            peaks[np++] = lag;
+    std::stable_sort( peaks, peaks + np, [&ac]( int a, int b )
+    { return ac[a] > ac[b]; } );
+    np = std::min( np, Peaks );
+    double cands[1 + Peaks];
+    int    nc = 0;
+    cands[nc++] = lag4;
+    for ( int j = 0; j < np; ++j )
+    {
+        const int    l = peaks[j];
+        const double a = ac[l - 1], b = ac[l], c = ac[l + 1];
+        const double curve = a - 2.0 * b + c;
+        const double shift = curve < 0.0 ? std::clamp( 0.5 * ( a - c ) / curve, -0.5, 0.5 ) : 0.0;
+        cands[nc++] = l + shift;
+    }
+    static const double Relatives[] = { 1.0, 2.0, 0.5, 1.5, 2.0 / 3.0 };
+    double              lags[( 1 + Peaks ) * 5];
+    int                 nl = 0;
+    for ( int j = 0; j < nc; ++j )
+        for ( double r : Relatives )
+        {
+            const double lag = std::nearbyint( cands[j] / r * 100.0 ) / 100.0;
+            if ( lag >= lag_lo && lag <= lag_hi && std::find( lags, lags + nl, lag ) == lags + nl )
+                lags[nl++] = lag;
+        }
+    std::sort( lags, lags + nl );
+    double best_s = -1e300, best = lag4, fam_s = -1e300, fam = 0.0;
+    for ( int j = 0; j < nl; ++j )
+    {
+        const double lag = lags[j];
+        const double octs = std::log2( 60.0 * EnvRate / ( 120.0 * lag ) ) / AcPriorOctaves;
+        double       s = pulseScore( envm, n, lag );
+        s += MultiW * ( pulseScore( envm, n, 2.0 * lag ) + pulseScore( envm, n, 0.5 * lag ) );
+        s *= std::exp( -0.5 * octs * octs );
+        if ( s > best_s || ( s == best_s && lag > best ) )
+        {
+            best_s = s;
+            best = lag;
+        }
+        const double rel = std::log2( lag / lag4 );
+        if ( std::fabs( rel - std::nearbyint( rel ) ) < 0.06 && ( s > fam_s || ( s == fam_s && lag > fam ) ) )
+        {
+            fam_s = s;
+            fam = lag;
+        }
+    }
+    if ( fam > 0.0 && best_s < Margin * fam_s )
+        best = fam;
+    return best;
 }
 
 float TempoTracker::ioiPeriod( float prevPeriod, float &explained ) const
@@ -149,7 +271,7 @@ void TempoTracker::autocorrelate()
         const float a = ac[best_lag - 1], b = ac[best_lag], c = ac[best_lag + 1];
         const float curve = a - 2.f * b + c;
         const float shift = curve < 0.f ? std::clamp( 0.5f * ( a - c ) / curve, -0.5f, 0.5f ) : 0.f;
-        bpm = 60.f * EnvRate / ( best_lag + shift );
+        bpm = static_cast<float>( 60.0 * EnvRate / choose( best_lag + shift ) ); // see choose()
         if ( m_acBPM < 1.f || std::fabs( std::log2( bpm / m_acBPM ) ) < 0.1f )
         {
             m_acBPM = ( m_acBPM < 1.f ) ? bpm : 0.9f * m_acBPM + 0.1f * bpm;
