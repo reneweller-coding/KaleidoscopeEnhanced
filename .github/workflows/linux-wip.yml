@@ -18,6 +18,12 @@ jobs:
         run: |
           # The runner image rebuilds the man-page index after every install: minutes, for nothing here.
           sudo rm -f /var/lib/man-db/auto-update
+          # The runner's first mirror (an EC2 one) delivered 34 packages in 6.5 minutes on 20.11.2026, twice; the
+          # Azure and Canonical mirrors go first now, the runner's own list stays behind them.
+          if [ -f /etc/apt/apt-mirrors.txt ]; then
+            { printf 'http://azure.archive.ubuntu.com/ubuntu/\nhttp://archive.ubuntu.com/ubuntu/\n'; cat /etc/apt/apt-mirrors.txt; } > "$RUNNER_TEMP/mirrors.txt"
+            sudo cp "$RUNNER_TEMP/mirrors.txt" /etc/apt/apt-mirrors.txt
+          fi
           sudo apt-get update
           sudo apt-get install -y qt6-base-dev qt6-base-dev-tools qt6-multimedia-dev \
                                   libgl1-mesa-dev libglu1-mesa-dev libpulse-dev cmake
@@ -71,6 +77,11 @@ jobs:
 
       - name: Install packages (distribution Qt 6.2 of Ubuntu 22.04, the oldest maintained runner -- its glibc 2.35 is the floor)
         run: |
+          sudo rm -f /var/lib/man-db/auto-update
+          if [ -f /etc/apt/apt-mirrors.txt ]; then
+            { printf 'http://azure.archive.ubuntu.com/ubuntu/\nhttp://archive.ubuntu.com/ubuntu/\n'; cat /etc/apt/apt-mirrors.txt; } > "$RUNNER_TEMP/mirrors.txt"
+            sudo cp "$RUNNER_TEMP/mirrors.txt" /etc/apt/apt-mirrors.txt
+          fi
           sudo apt-get update
           sudo apt-get install -y qt6-base-dev qt6-base-dev-tools qt6-multimedia-dev libqt6opengl6-dev qmake6 \
                                   libgl1-mesa-dev libglu1-mesa-dev libpulse-dev cmake file

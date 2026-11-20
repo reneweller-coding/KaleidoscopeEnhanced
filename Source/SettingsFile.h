@@ -152,7 +152,7 @@ inline QString writablePath( const QString &p, UserDir kind )
     const QString host = Platform::assetPath( p );
     if ( !userFolders() )
         return host;
-    QString rel = QDir::fromNativeSeparators( host );
+    QString rel = QDir::cleanPath( QDir::fromNativeSeparators( host ) );
     if ( rel.startsWith( QLatin1String( "../" ) ) )
         rel = rel.mid( 3 );
     return userDir( kind ) + "/" + rel;
@@ -172,7 +172,8 @@ inline QString userContent( const QString &p )
 {
     if ( !userFolders() )
         return p;
-    const QString host = QDir::fromNativeSeparators( Platform::assetPath( p ) );
+    // cleanPath(): the presets write ImageDirectory="..\\Images" with a doubled backslash, "..//Images" here.
+    const QString host = QDir::cleanPath( QDir::fromNativeSeparators( Platform::assetPath( p ) ) );
     for ( const QString dir : { QStringLiteral( "../Images" ), QStringLiteral( "../Models" ) } )
         if ( host == dir || host.startsWith( dir + "/" ) )
             return userDir( UserDir::Data ) + host.mid( 2 );

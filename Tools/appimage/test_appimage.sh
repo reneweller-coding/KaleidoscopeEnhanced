@@ -69,7 +69,8 @@ code=$?
 set -e
 log="$HOME/.local/state/KaleidoscopeVisualizer/kaleidoscope.log"
 echo "--- written below HOME:"
-(cd "$HOME" && find . -type f | sort)
+(cd "$HOME" && find . -type f | grep -v '^\./\.cache/mesa_shader_cache/' | sort)
+echo "(and $(find "$HOME/.cache/mesa_shader_cache" -type f 2> /dev/null | wc -l) files in Mesa's own shader cache)"
 echo "--- the log, head and tail:"
 head -n 25 "$log" || true
 echo "..."
