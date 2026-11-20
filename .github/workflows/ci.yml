@@ -381,6 +381,8 @@ jobs:
 
       # A preset switch stops one RenderPipeline and starts another, which the export never does; the end through
       # KALEIDO_MAX_RUNTIME_SECS runs every destructor.  Both used to abort on Linux (QThread deleted while running).
+      # Club -> Cinematic -> Noir: presets without CathedralGlass, whose first frames sometimes keep llvmpipe busy for
+      # good (3 of 10 runs; the main thread deep in libgallium -- docs/engine-internals-67-linux.md).
       - name: Two preset switches over the web remote, then a regular end (software GL)
         working-directory: build
         env:
@@ -408,7 +410,7 @@ jobs:
           }
           for i in $(seq 1 40); do curl -fs -m 5 http://127.0.0.1:18091/api/state > /dev/null && break; sleep 1; done
           sleep 5
-          for i in 0 1; do
+          for i in 2 6; do
             curl -fsS -m 30 -H "X-Kaleido: 1" "http://127.0.0.1:18091/api/config?i=$i" > /dev/null || hung "no answer to the switch to preset $i"
             sleep 8
             kill -0 "$pid" || { tail -n 40 switch.log; echo "the program ended at the switch to preset $i"; exit 1; }

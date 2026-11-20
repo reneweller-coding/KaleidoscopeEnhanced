@@ -50,7 +50,7 @@ jobs:
             pid=$!
             for i in $(seq 1 40); do curl -fs -m 5 http://127.0.0.1:18091/api/state > /dev/null && break; sleep 1; done
             sleep 5
-            for i in 0 1; do
+            for i in 2 6; do
               curl -fs -m 30 -H "X-Kaleido: 1" "http://127.0.0.1:18091/api/config?i=$i" > /dev/null || echo "run $run: no answer to switch $i"
               sleep 8
               curl -fs -m 30 -o state.json http://127.0.0.1:18091/api/state || echo "run $run: no state after switch $i"
