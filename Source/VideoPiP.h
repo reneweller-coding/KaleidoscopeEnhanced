@@ -54,6 +54,9 @@ void videoPipSetPlaying( bool playing );
  *
  * @return
  *   The GL texture id holding the latest decoded frame, or 0 if no frame has been decoded yet.
+ *
+ * GL thread only.  The frames themselves arrive on Qt's FFmpeg render thread; they are handed over under a lock and
+ * uploaded from a reference of this call's own, so a frame arriving during the upload cannot free its pixels.
  **/
 unsigned int videoPipFrame( unsigned int *width, unsigned int *height );
 

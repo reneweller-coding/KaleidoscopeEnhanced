@@ -58,7 +58,7 @@ int TempoTracker::predictBeat( double tau ) const
 {
     const int win = std::max( 1, static_cast<int>( tau ) );
     const int lo = static_cast<int>( std::nearbyint( 2.0 * tau ) );
-    double    fut[2 * BtHist];
+    double    fut[2 * BtHist]; // lo + win <= 511 + 255: beatStep() keeps tau <= (BtHist - 1) / 2
     // the last lo values of the cumulative score, then the future (without onsets)
     for ( int j = 0; j < lo; ++j )
         fut[j] = m_cs[( m_csIdx - lo + j + 2 * BtHist ) % BtHist];
@@ -102,7 +102,12 @@ void TempoTracker::beatStep( double onset, double blockSeconds )
         m_btClock += blockSeconds;
         return;
     }
-    const double tau = 60.0 / bpm / blockSeconds; // the beat period in blocks
+    // The beat period in blocks.  The ring and predictBeat()'s scratch hold two beats back and one ahead in BLOCKS,
+    // and a block is whatever the capture hands over: 10 ms as a rule, but a WASAPI loopback packet can be a
+    // millisecond.  On 20.11.2026 such a packet at 120 BPM made tau 500 blocks; predictBeat() wrote 1,500 values
+    // into its 1,024 and the stack cookie ended the program (0xC0000409, 3.6 and 4.5 minutes into a soak run).
+    // Beyond what the arrays hold the period is clamped: a short packet misjudges one block instead of the stack.
+    const double tau = std::min( 60.0 / bpm / blockSeconds, ( BtHist - 1 ) / 2.0 );
     const double past = transition( [this]( int j )
     { return m_cs[( m_csIdx - j + BtHist ) % BtHist]; }, tau );
     m_cs[m_csIdx] = ( 1.0 - BtAlpha ) * onset + BtAlpha * past;

@@ -26,18 +26,28 @@
 #include <QStringList>
 #include <QUrl>
 #include <QObject>
+#include <QMutex>
+#include <QMutexLocker>
+#include <QThread>
+#include <QCoreApplication>
 
+#include <atomic>
 #include <cstdio>
 
 namespace
 {
 
-/** Process-wide video decoder/playlist state, deliberately unsynchronized.
+/** Process-wide video decoder/playlist state.
  *
- * One decoder for the whole process, created on first use.  Everything here
- * lives on the GUI thread: QMediaPlayer emits its frames there, and paint()
- * runs there too, so the newest frame can simply be held in a member with no
- * lock at all.  Adding one would only add a way to get it wrong.
+ * One decoder for the whole process, created on first use.  The player, the
+ * playlist and the GL texture live on the GUI thread, which also renders --
+ * but the decoded FRAMES do not: QVideoSink::videoFrameChanged is emitted on
+ * Qt's FFmpeg render thread, and the frame callback (a connect() without a
+ * context object) runs there.  This struct used to say the opposite and held
+ * the newest frame in a plain member; the music-video PiP, built the same way,
+ * crashed in glTexSubImage2D because of it on 20.11.2026 (see VideoPiP.cpp and
+ * docs/engine-internals.md, "Video frames cross threads").  So the frame is
+ * handed over under `lock`, and videoInFrame() uploads from its own reference.
  **/
 struct VideoState
 {
@@ -49,8 +59,13 @@ struct VideoState
     int         index = 0;  ///< Index into files of the clip currently playing.
     QString     openedPath; ///< The path last passed to videoInInit(), used to detect a redundant re-init as a no-op.
 
-    QImage latest;         ///< newest decoded frame, RGBA
-    bool   dirty = false;  ///< a frame arrived since the last upload
+    QMutex lock;          ///< Guards `pending` and `dirty`, the only members the frame callback writes.
+    QImage pending;       ///< newest decoded frame not yet uploaded, RGBA (null once videoInFrame() took it)
+    bool   dirty = false; ///< a frame arrived since the last upload
+
+    std::atomic<long long> decoded{ 0 }; ///< Frames converted by the callback since the last init (for the log).
+    long long              uploaded = 0; ///< Frames uploaded since the last init (GUI thread only; for the log).
+
     GLuint tex = 0;        ///< GL texture holding the last-uploaded frame; 0 until the first upload.
     int    texW = 0;       ///< Width of tex as last allocated; used to decide glTexImage2D vs. glTexSubImage2D.
     int    texH = 0;       ///< Height of tex as last allocated.
@@ -122,6 +137,8 @@ bool videoInInit( const char *path )
         // No explicit context object on these connect() calls: the lambdas only touch the
         // process-wide `g` (never dangling), and g.sink/g.player are torn down together in
         // videoInRelease(), so there is no risk of a callback firing against a deleted object.
+        // Without a context object a lambda runs on the emitting thread -- for the frame callback
+        // that is Qt's FFmpeg render thread (the log says so once per run), hence the lock below.
         QObject::connect( g.sink, &QVideoSink::videoFrameChanged,
                           []( const QVideoFrame &frame )
         {
@@ -137,8 +154,16 @@ bool videoInInit( const char *path )
                 return;
             if ( img.format() != QImage::Format_RGBA8888 )
                 img = img.convertToFormat( QImage::Format_RGBA8888 );
-            g.latest = img;
-            g.dirty = true;
+            if ( g.decoded.fetch_add( 1 ) == 0 )
+                fprintf( stderr, "video input: first frame on %s\n",
+                         QThread::currentThread() == QCoreApplication::instance()->thread()
+                             ? "the GUI thread"
+                             : "a decoder thread, not the GUI thread" );
+            {
+                QMutexLocker locker( &g.lock );
+                g.pending.swap( img ); // img now holds the frame nobody took; freed on return, outside the lock
+                g.dirty = true;
+            }
         } );
 
         // End of a clip: step to the next file, or restart a single one.
@@ -164,12 +189,23 @@ bool videoInInit( const char *path )
 
 unsigned int videoInFrame( unsigned int *width, unsigned int *height )
 {
-    if ( !g.dirty && g.tex == 0 )
+    // Take the newest frame out under the lock; `frame` then holds its own
+    // reference, so a frame arriving during the upload cannot free its pixels.
+    QImage frame;
+    {
+        QMutexLocker locker( &g.lock );
+        if ( g.dirty )
+        {
+            frame.swap( g.pending );
+            g.dirty = false;
+        }
+    }
+    if ( frame.isNull() && g.tex == 0 )
         return 0; // nothing decoded yet
 
-    if ( g.dirty && !g.latest.isNull() )
+    if ( !frame.isNull() )
     {
-        const int w = g.latest.width(), h = g.latest.height();
+        const int w = frame.width(), h = frame.height();
         if ( g.tex == 0 )
         {
             glGenTextures( 1, &g.tex );
@@ -189,17 +225,17 @@ unsigned int videoInFrame( unsigned int *width, unsigned int *height )
         if ( w != g.texW || h != g.texH )
         {
             glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0,
-                          GL_RGBA, GL_UNSIGNED_BYTE, g.latest.constBits() );
+                          GL_RGBA, GL_UNSIGNED_BYTE, frame.constBits() );
             g.texW = w;
             g.texH = h;
         }
         else
         {
             glTexSubImage2D( GL_TEXTURE_2D, 0, 0, 0, w, h,
-                             GL_RGBA, GL_UNSIGNED_BYTE, g.latest.constBits() );
+                             GL_RGBA, GL_UNSIGNED_BYTE, frame.constBits() );
         }
         glBindTexture( GL_TEXTURE_2D, 0 );
-        g.dirty = false;
+        ++g.uploaded;
     }
 
     if ( width )
@@ -220,15 +256,22 @@ void videoInRelease()
         g.sink = nullptr;
         delete g.audio;
         g.audio = nullptr;
+        fprintf( stderr, "video input: released after %lld frames decoded, %lld uploaded\n",
+                 g.decoded.load(), g.uploaded );
     }
     if ( g.tex )
     {
         glDeleteTextures( 1, &g.tex );
         g.tex = 0;
     }
-    g.latest = QImage();
+    {
+        QMutexLocker locker( &g.lock ); // after the player is gone: stopping it waits for the callback
+        g.pending = QImage();
+        g.dirty = false;
+    }
+    g.decoded = 0;
+    g.uploaded = 0;
     g.files.clear();
     g.openedPath.clear();
     g.texW = g.texH = 0;
-    g.dirty = false;
 }
