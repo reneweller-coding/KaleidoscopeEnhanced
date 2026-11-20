@@ -189,7 +189,10 @@ void commandlineerror( char *cmd, char *parm )
                      "              of videos played in turn, replacing the photos.  Uses the\n"
                      "              system's own codecs; -i wins if both are given\n"
                      "-3 <mode>     stereoscopic output: sbs (side-by-side, 3D projectors and\n"
-                     "              HMD video viewers), tb (top-bottom), ana (red-cyan glasses)\n"
+                     "              HMD video viewers), tb (top-bottom), ana (red-cyan glasses);\n"
+                     "              fsbs / ftb: full side-by-side / top-bottom for headsets, each\n"
+                     "              eye at full size (the picture twice as wide / high; -g is\n"
+                     "              the size of one eye).  An export (-e) keeps the format\n"
                      "-f <dir>      photo folder for this run (searched recursively).  Normally\n"
                      "              the bundled Images folder; set 'imageDirectory' in\n"
                      "              kaleidoscope_settings.ini to change it permanently\n"
@@ -214,7 +217,8 @@ void commandlineerror( char *cmd, char *parm )
                      "u             pin/unpin the current effect (no automatic switches)\n"
                      "f             favourite the current effect (persistent selection bonus;\n"
                      "              skipping a fresh effect with 'n' learns a malus)\n"
-                     "z             cycle stereoscopic mode (off / SBS / top-bottom / anaglyph)\n"
+                     "z             cycle stereoscopic mode (off / SBS / top-bottom / anaglyph /\n"
+                     "              full SBS / full top-bottom)\n"
                      "c / m         stereo depth - weaker / stronger\n"
                      "Esc / q       quit\n"
                      "\n" );
@@ -394,13 +398,19 @@ void parsecommandline( int argc, char *argv[] )
                     break;
                 // Stereoscopic output: sbs (side-by-side), tb (top-bottom),
                 // ana (red-cyan anaglyph); anything else = off.
+                // fsbs / ftb (20.11.2026): "full" -- each eye at the frame's size, the picture twice as wide
+                // or high (-g stays the size of one eye).  A video export keeps a stereo format given here.
                 case '3':
                 {
                     QString m3 = argText( argv + 1 ).toLower();
-                    RenderPipeline::M_StereoMode = ( m3 == "sbs" )              ? 1
-                                                   : ( m3 == "tb" )             ? 2
-                                                   : ( m3.startsWith( "ana" ) ) ? 3
-                                                                                : 0;
+                    RenderPipeline::M_StereoMode = ( m3 == "sbs" || m3 == "hsbs" )                     ? 1
+                                                   : ( m3 == "tb" || m3 == "htb" )                     ? 2
+                                                   : ( m3.startsWith( "ana" ) )                        ? 3
+                                                   : ( m3 == "fsbs" || m3 == "sbsfull" || m3 == "lr" ) ? 4
+                                                   : ( m3 == "ftb" || m3 == "tbfull" )                 ? 5
+                                                                                                       : 0;
+                    RenderPipeline::M_StereoFromCli = true;
+                    VideoExport::M_Settings.stereo = RenderPipeline::M_StereoMode;
                     break;
                 }
 

@@ -362,6 +362,42 @@ public:
      *   The taste factor (1 = neutral).
      **/
     float remoteSceneTaste( int idx, bool &banned );
+    /**  Starts the rating walk of the preset on screen (the remote's "Rate" page), with feedback.
+     *
+     * @param secs  Seconds per scene (3..120). (in)
+     *
+     * @return
+     *   False when every scene of the preset already has a verdict.
+     **/
+    bool remoteRateStart( float secs );
+    /** Ends the rating walk, with feedback. */
+    void remoteRateStop();
+    /**  The rating walk's seconds per scene.
+     *
+     * @param secs  Seconds per scene (3..120). (in)
+     **/
+    void remoteRateSecs( float secs );
+    /**  A verdict on the scene being judged (RenderPipeline::rateScene()).
+     *
+     * @param verdict  like|next|never. (in)
+     * @param key      The file the page shows, or empty. (in)
+     *
+     * @return
+     *   As RenderPipeline::rateScene(); -1 without a preset.
+     **/
+    int remoteRateVerdict( const QString &verdict, const QString &key );
+    /**  Takes the walk's last verdict back, with feedback.
+     *
+     * @return
+     *   False when there was none.
+     **/
+    bool remoteRateUndo();
+    /**  Where the rating walk of the preset on screen stands.
+     *
+     * @return
+     *   Its state; all zero without a preset.
+     **/
+    RenderPipeline::RatingState remoteRateState();
     /** Takes the favourite of the scene on screen back (OSD, remote), with feedback. */
     void remoteUnfavorite();
     /** Forgets the song cues of the track playing (OSD, remote), with feedback. */

@@ -363,6 +363,11 @@ QString GLwidget::remoteActiveConfigName() const
  **/
 static QString shotDir()
 {
+    // KALEIDO_SHOT_DIR: a test's own folder (Tools/stereo_disparity.py --live), so its screenshots stay out of the
+    // user's pictures.
+    const QString forced = qEnvironmentVariable( "KALEIDO_SHOT_DIR" );
+    if ( !forced.isEmpty() && QDir().mkpath( forced ) )
+        return QDir( forced ).absolutePath();
     const QString pics = QStandardPaths::writableLocation( QStandardPaths::PicturesLocation );
     if ( !pics.isEmpty() && QDir().mkpath( pics + "/Kaleidoscope" ) )
         return pics + "/Kaleidoscope";
@@ -515,6 +520,64 @@ float GLwidget::remoteSceneTaste( int idx, bool &banned )
     return ( m_actConfiguration && m_actConfiguration->renderPipeline() )
                ? m_actConfiguration->renderPipeline()->sceneTaste( idx, banned )
                : 1.f;
+}
+
+bool GLwidget::remoteRateStart( float secs )
+{
+    if ( !m_actConfiguration || !m_actConfiguration->renderPipeline() )
+        return false;
+    RenderPipeline *rp = m_actConfiguration->renderPipeline();
+    const bool      ok = rp->startRating( secs );
+    const auto      st = rp->ratingState();
+    if ( ok )
+        feedback( ui( S_FB_RATE_START_FMT ).arg( st.rated ).arg( st.total ).arg( st.secs, 0, 'f', 0 ), 5000 );
+    else
+        feedback( ui( S_FB_RATE_DONE ), 5000 );
+    return ok;
+}
+
+void GLwidget::remoteRateStop()
+{
+    if ( !m_actConfiguration || !m_actConfiguration->renderPipeline() )
+        return;
+    RenderPipeline *rp = m_actConfiguration->renderPipeline();
+    if ( !rp->rating() )
+        return;
+    rp->stopRating();
+    const auto st = rp->ratingState();
+    feedback( ui( S_FB_RATE_STOP_FMT ).arg( st.rated ).arg( st.total ) );
+}
+
+void GLwidget::remoteRateSecs( float secs )
+{
+    if ( m_actConfiguration && m_actConfiguration->renderPipeline() )
+        m_actConfiguration->renderPipeline()->setRatingSecs( secs );
+}
+
+int GLwidget::remoteRateVerdict( const QString &verdict, const QString &key )
+{
+    if ( !m_actConfiguration || !m_actConfiguration->renderPipeline() )
+        return -1;
+    // No feedback line per verdict: the walk is about the picture, and the phone shows the count.
+    return m_actConfiguration->renderPipeline()->rateScene( verdict, key, nullptr );
+}
+
+bool GLwidget::remoteRateUndo()
+{
+    if ( !m_actConfiguration || !m_actConfiguration->renderPipeline() )
+        return false;
+    QString scene;
+    if ( !m_actConfiguration->renderPipeline()->undoRating( &scene ) )
+        return false;
+    feedback( ui( S_FB_RATE_UNDO_FMT ).arg( scene ) );
+    return true;
+}
+
+RenderPipeline::RatingState GLwidget::remoteRateState()
+{
+    if ( m_actConfiguration && m_actConfiguration->renderPipeline() )
+        return m_actConfiguration->renderPipeline()->ratingState();
+    return RenderPipeline::RatingState();
 }
 
 void GLwidget::remoteUnfavorite()
@@ -2314,8 +2377,9 @@ void GLwidget::loadUiSettings()
     // program that opens a listening port because it was installed is a surprise nobody asked for.
     m_cuePort = s.value( "cuePort", 0 ).toInt();
     m_cueBind = s.value( "cueBind", m_cueBind ).toString();
-    Strings::setLanguage( Strings::fromCode(
-        s.value( "language", Strings::toCode( Strings::language() ) ).toString().toLocal8Bit().constData() ) );
+    // Without a "language" key the system's language decides (German on a German system, else English); the answer
+    // is remembered as the session's start value (rememberUiSettings()), so the exit does not write it into the file.
+    Strings::setLanguage( Strings::fromSetting( s.value( "language" ).toString().toLocal8Bit().constData() ) );
 }
 
 QList<QPair<QString, QVariant>> GLwidget::uiSettings() const
@@ -2607,6 +2671,10 @@ void GLwidget::updateAutoConfig( const AudioFeatures &f )
 {
     if ( !m_autoConfig )
         return;
+    // A rating walk judges the scenes of ONE preset: the mood must not switch it away mid-walk.
+    if ( m_actConfiguration && m_actConfiguration->renderPipeline()
+         && m_actConfiguration->renderPipeline()->rating() )
+        return;
 
     // Map the sustained mood to a configuration bucket (preset set of 18.10.2026).
     //   0 ambient/drone -> Ambient, 1 calm with a beat -> Downtempo,
@@ -2797,6 +2865,9 @@ void GLwidget::timerEvent( QTimerEvent * )
     if ( m_pendingConfig && m_pendingConfig != m_actConfiguration )
     {
         beginConfigFade();
+        // A rating walk belongs to the preset it judges: another preset ends it (the remote shows "off").
+        if ( m_actConfiguration->renderPipeline() && m_actConfiguration->renderPipeline()->rating() )
+            m_actConfiguration->renderPipeline()->stopRating();
         m_actConfiguration->stop();
         m_actConfiguration = m_pendingConfig;
         m_actConfiguration->start( m_width, m_height );
@@ -2837,8 +2908,12 @@ void GLwidget::beginExport()
     // latency lead compensates loopback and display delays the file does not
     // have, stereo packing would halve the picture, and the adaptive scale and
     // auto-config are for a live audience.  Nothing of it is saved.
+    // A stereo format asked for on the command line (-3) is kept: that is a
+    // video for a headset or a 3D screen (20.11.2026; until then -3 with -e
+    // wrote a plain picture).  The ini's stereo mode is a live setting.
     RenderPipeline::setLatency( 0.f );
-    RenderPipeline::M_StereoMode = 0;
+    if ( !RenderPipeline::M_StereoFromCli )
+        RenderPipeline::M_StereoMode = 0;
     m_autoScale = false;
     m_autoConfig = false;
     window()->installEventFilter( this ); // the close button stops the export properly
@@ -4580,7 +4655,7 @@ std::vector<OsdItem> GLwidget::osdRootItems()
         return std::vector<OsdItem>{
             osdChoice( S_OSD_STEREOMODE,
                        { osdT( S_SETUP_STEREO_OFF ), osdT( S_SETUP_STEREO_SBS ), osdT( S_SETUP_STEREO_TB ),
-                         osdT( S_SETUP_STEREO_ANA ) },
+                         osdT( S_SETUP_STEREO_ANA ), osdT( S_SETUP_STEREO_FSBS ), osdT( S_SETUP_STEREO_FTB ) },
                        []
         { return RenderPipeline::stereoMode(); },
                        []( int m )
@@ -5034,11 +5109,10 @@ void GLwidget::keyPressEvent( QKeyEvent *event )
         case Qt::Key_Z:
         {
             RenderPipeline::cycleStereo();
-            const int mode = RenderPipeline::stereoMode() & 3;
-            feedback( ui( S_FB_STEREO_FMT )
-                          .arg( mode == 0 ? onOff( false )
-                                          : QString( mode == 1 ? "Side-by-Side" : mode == 2 ? "Top-Bottom"
-                                                                                            : "Anaglyph" ) ) );
+            static const StrIdE Names[RenderPipeline::StereoModes] = { S_SETUP_STEREO_OFF, S_SETUP_STEREO_SBS,
+                                                                       S_SETUP_STEREO_TB, S_SETUP_STEREO_ANA,
+                                                                       S_SETUP_STEREO_FSBS, S_SETUP_STEREO_FTB };
+            feedback( ui( S_FB_STEREO_FMT ).arg( ui( Names[RenderPipeline::stereoMode()] ) ) );
             break;
         }
         case Qt::Key_C:

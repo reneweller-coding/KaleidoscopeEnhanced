@@ -76,8 +76,41 @@ public:
         bool    motionBlur = false; ///< Engine at LiveRefHz, sub-frames of each output frame averaged.
         bool    fade = true;        ///< Fade in from black over the first second and out over the last two.
         bool    title = false;      ///< Weave the file's title/artist in at the start (the live title reveal).
+        int     stereo = 0;         ///< The stereo format of -3 (RenderPipeline::M_StereoMode): 4 / 5 double the
+                                    ///< video's width / height (width x height is then one eye), and the default
+                                    ///< file name carries the format's tag (stereoTag()).
     };
     static Settings M_Settings; ///< Filled by the command line; a non-empty audio path means export mode.
+
+    /**  The video frame's width: the eye's (-g) twice over in the full side-by-side format.
+     *
+     * @return
+     *   Pixels.
+     **/
+    static int frameWidth() { return M_Settings.width * ( M_Settings.stereo == 4 ? 2 : 1 ); }
+    /**  The video frame's height: the eye's (-g) twice over in the full top-bottom format.
+     *
+     * @return
+     *   Pixels.
+     **/
+    static int frameHeight() { return M_Settings.height * ( M_Settings.stereo == 5 ? 2 : 1 ); }
+    /**  The tag a headset player reads the stereo format from, for the file name.
+     *
+     * @param stereo  The format (RenderPipeline::M_StereoMode). (in)
+     *
+     * @return
+     *   "_SBS" (half side by side), "_SBSF" (full), "_TB" (half top-bottom), "_TBF" (full); empty for none and
+     *   anaglyph.  DeoVR reads SBS/LR/3DH and TB/3DV/OverUnder anywhere in the name (deovr.com/doc); HereSphere reads
+     *   "_sbs" and, for full side by side, "_SBSF" or "_LRF" (its developer, itch.io, 2023/24).  "_TBF" is the same
+     *   pattern for full top-bottom; neither player documents one.
+     **/
+    static const char *stereoTag( int stereo )
+    {
+        return stereo == 1 ? "_SBS" : stereo == 2 ? "_TB"
+                                  : stereo == 4   ? "_SBSF"
+                                  : stereo == 5   ? "_TBF"
+                                                  : "";
+    }
 
     /**  Whether this run is a video export.
      *
@@ -234,18 +267,18 @@ public:
      **/
     QString statusLine() const;
 
-    /**  Video width.
+    /**  Video width: the frame's, both eyes in a full stereo format (frameWidth()).
      *
      * @return
      *   Pixels.
      **/
-    int width() const { return M_Settings.width; }
-    /**  Video height.
+    int width() const { return frameWidth(); }
+    /**  Video height: the frame's, both eyes in a full stereo format (frameHeight()).
      *
      * @return
      *   Pixels.
      **/
-    int height() const { return M_Settings.height; }
+    int height() const { return frameHeight(); }
 
     static constexpr int    SampleRate = 48000;   ///< The analyzer's rate: one 480-frame block is exactly 10 ms.
     static constexpr int    BlockFrames = 480;    ///< Frames per analyzer block, as in live capture.

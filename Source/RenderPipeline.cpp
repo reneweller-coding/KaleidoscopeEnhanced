@@ -68,18 +68,19 @@ float RenderPipeline::M_MoodStrength = 1.0f;
 float RenderPipeline::M_RenderScale = 1.0f;
 float RenderPipeline::M_RenderScaleMax = 1.0f; // no supersampling unless asked for
 bool  RenderPipeline::M_RenderScaleFromCli = false;
-float RenderPipeline::M_LightShow = 0.0f;     // corner lamps / light-show OFF by default
-bool  RenderPipeline::M_StrictLight = false;  // strict light protection (ini lightProtectionStrict)
-bool  RenderPipeline::M_SpoutEnabled = false; // Spout sender (CLI -o)
-bool  RenderPipeline::M_SpoutClean = false;   // Spout sends the displayed frame, not the raw render
-float RenderPipeline::M_DisplayHz = 60.f;     // the panel rate (glwidget sets it)
-float RenderPipeline::M_LatencyLead = 0.05f;  // display-phase lead vs. heard audio
-float RenderPipeline::M_FrameStep = 0.f;      // video export: fixed frame step (0 = live, wall clock)
-int   RenderPipeline::M_StereoMode = 0;       // stereoscopic output (CLI -3 / 'z')
-float RenderPipeline::M_StereoDepth = 1.0f;   // disparity strength
-bool  RenderPipeline::M_Blackout = false;     // VJ blackout ('b')
-bool  RenderPipeline::M_RestDim = false;      // the rest mode's blackout (GLwidget)
-float RenderPipeline::M_Dim = 1.f;            // the sleep timer's dimming
+float RenderPipeline::M_LightShow = 0.0f;      // corner lamps / light-show OFF by default
+bool  RenderPipeline::M_StrictLight = false;   // strict light protection (ini lightProtectionStrict)
+bool  RenderPipeline::M_SpoutEnabled = false;  // Spout sender (CLI -o)
+bool  RenderPipeline::M_SpoutClean = false;    // Spout sends the displayed frame, not the raw render
+float RenderPipeline::M_DisplayHz = 60.f;      // the panel rate (glwidget sets it)
+float RenderPipeline::M_LatencyLead = 0.05f;   // display-phase lead vs. heard audio
+float RenderPipeline::M_FrameStep = 0.f;       // video export: fixed frame step (0 = live, wall clock)
+int   RenderPipeline::M_StereoMode = 0;        // stereoscopic output (CLI -3 / 'z')
+float RenderPipeline::M_StereoDepth = 1.0f;    // disparity strength
+bool  RenderPipeline::M_StereoFromCli = false; // -3 given: an export keeps the stereo format
+bool  RenderPipeline::M_Blackout = false;      // VJ blackout ('b')
+bool  RenderPipeline::M_RestDim = false;       // the rest mode's blackout (GLwidget)
+float RenderPipeline::M_Dim = 1.f;             // the sleep timer's dimming
 float RenderPipeline::M_ChainScaleIni = 1.f;
 bool  RenderPipeline::M_Freeze = false; // VJ freeze ('e'); a comparison run (KALEIDO_FREEZE_TIME) engages it after the
                                         // fade-in
@@ -90,15 +91,16 @@ float RenderPipeline::freezeTime()
                                         : -1.f;
     return FreezeTime;
 }
-bool                  RenderPipeline::M_Pinned = false;         // VJ pin ('u')
-QHash<QString, float> RenderPipeline::M_Taste;                  // taste learning (skip/favourite)
-QSet<QString>         RenderPipeline::M_Banned;                 // "never again"
-bool                  RenderPipeline::M_SpoutInEnabled = false; // Spout input (CLI -i)
-QString               RenderPipeline::M_SpoutInSender;
-QString               RenderPipeline::M_VideoPath;    // native video input (CLI -v)
-QString               RenderPipeline::M_WarmLabel;    // what the lazy warm-up did this frame (KALEIDO_FRAME_LOG)
-QString               RenderPipeline::M_ImageDirCli;  // photo source override (CLI -f)
-QString               RenderPipeline::M_ImageDirUser; // photo source override (ini)
+bool                    RenderPipeline::M_Pinned = false;         // VJ pin ('u')
+QHash<QString, float>   RenderPipeline::M_Taste;                  // taste learning (skip/favourite)
+QSet<QString>           RenderPipeline::M_Banned;                 // "never again"
+QHash<QString, QString> RenderPipeline::M_Rated;                  // the rating walk's verdicts
+bool                    RenderPipeline::M_SpoutInEnabled = false; // Spout input (CLI -i)
+QString                 RenderPipeline::M_SpoutInSender;
+QString                 RenderPipeline::M_VideoPath;    // native video input (CLI -v)
+QString                 RenderPipeline::M_WarmLabel;    // what the lazy warm-up did this frame (KALEIDO_FRAME_LOG)
+QString                 RenderPipeline::M_ImageDirCli;  // photo source override (CLI -f)
+QString                 RenderPipeline::M_ImageDirUser; // photo source override (ini)
 
 
 /**  Whether this is a scripted run (a test tool driving the app): KALEIDO_SEED, KALEIDO_FREEZE_TIME,
@@ -187,7 +189,7 @@ void RenderPipeline::loadSettings()
     if ( qEnvironmentVariableIsSet( "KALEIDO_MOOD" ) )
         M_MoodStrength = clampParam( qEnvironmentVariable( "KALEIDO_MOOD" ).toFloat(), 0.f, 2.5f );
     M_LatencyLead = clampParam( s.value( "latencyLead", M_LatencyLead ).toFloat(), 0.f, 0.25f );
-    M_StereoMode = s.value( "stereoMode", M_StereoMode ).toInt() & 3;
+    setStereoMode( s.value( "stereoMode", M_StereoMode ).toInt() ); // 0..5; anything else is off
     M_SpoutClean = s.value( "spoutSource" ).toString().trimmed().compare( "clean", Qt::CaseInsensitive ) == 0;
     // Photo source. Empty (the shipped default) means "whatever the preset
     // says", which is the bundled Images/ folder -- see init().
@@ -233,6 +235,14 @@ void RenderPipeline::loadSettings()
     for ( const QString &k : s.allKeys() ) // recursive: Preset/File.frag
         if ( s.value( k ).toBool() )
             M_Banned.insert( k );
+    s.endGroup();
+
+    // The rating walk's verdicts (web remote, "Rate"): Preset/File.frag = like|next|never.  They do not fade like the
+    // taste: a verdict says the scene was judged, which is what keeps it out of the next walk.
+    M_Rated.clear();
+    s.beginGroup( "rated" );
+    for ( const QString &k : s.allKeys() ) // recursive: Preset/File.frag
+        M_Rated.insert( k, s.value( k ).toString() );
     s.endGroup();
 
     s.beginGroup( "taste" );
@@ -903,12 +913,8 @@ void RenderPipeline::reinit( int width, int height )
     // at M_RenderScale × that; only the final present pass upscales to the display.
     m_displayW = width;
     m_displayH = height;
-    m_width = static_cast<int>( width * M_RenderScale + 0.5f );
-    if ( m_width < 16 )
-        m_width = 16;
-    m_height = static_cast<int>( height * M_RenderScale + 0.5f );
-    if ( m_height < 16 )
-        m_height = 16;
+    frameSize( width, height, m_width, m_height );
+    m_sizedStereo = stereoFull( M_StereoMode ) ? M_StereoMode : 0;
 
     m_nrTextureUploads = 0;
     /*	const GLubyte *extstr = glGetString(GL_EXTENSIONS);
@@ -979,6 +985,54 @@ void RenderPipeline::reinit( int width, int height )
 }
 
 
+void RenderPipeline::frameSize( int displayW, int displayH, unsigned int &w, unsigned int &h )
+{
+    // A full stereo format shows the frame twice -- beside or above each other -- so the frame is one eye's share of
+    // the display.  The half formats squeeze both eyes into the display; their frame is the display, as without
+    // stereo.
+    const int eye_w = ( M_StereoMode == 4 ) ? displayW / 2 : displayW;
+    const int eye_h = ( M_StereoMode == 5 ) ? displayH / 2 : displayH;
+    w = static_cast<unsigned int>( std::max( 16, static_cast<int>( eye_w * M_RenderScale + 0.5f ) ) );
+    h = static_cast<unsigned int>( std::max( 16, static_cast<int>( eye_h * M_RenderScale + 0.5f ) ) );
+}
+
+void RenderPipeline::ensureStereoTarget( StereoTarget &t, int w, int h )
+{
+    if ( t.fbo && t.w == w && t.h == h )
+        return;
+    if ( !t.fbo )
+    {
+        glGenFramebuffers( 1, &t.fbo );
+        glGenTextures( 1, &t.color );
+        glGenTextures( 1, &t.depth );
+    }
+    glBindTexture( GL_TEXTURE_2D, t.color );
+    // Mipmapped: the present pass reads coarse mips of its source (bloom, the pseudo-depth, the exposure).
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+    glTexImage2D( GL_TEXTURE_2D, 0, m_texInternalFormat, w, h, 0, m_texFormat, m_texType, NULL );
+    glGenerateMipmap( GL_TEXTURE_2D );
+    glBindTexture( GL_TEXTURE_2D, t.depth );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+    glTexImage2D( GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, w, h, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, NULL );
+    glBindTexture( GL_TEXTURE_2D, 0 );
+    glBindFramebuffer( GL_FRAMEBUFFER, t.fbo );
+    glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, t.color, 0 );
+    glFramebufferTexture2D( GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, t.depth, 0 );
+    if ( glCheckFramebufferStatus( GL_FRAMEBUFFER ) != GL_FRAMEBUFFER_COMPLETE )
+        fprintf( stderr, "STEREO: the %dx%d eye-packed target is incomplete\n", w, h );
+    else
+        fprintf( stderr, "STEREO: eye-packed target %dx%d (each eye %dx%d)\n", w, h, m_width, m_height );
+    glBindFramebuffer( GL_FRAMEBUFFER, m_defaultFBO );
+    t.w = w;
+    t.h = h;
+}
+
 // Lightweight resize – see header.  Only the off-screen FBO colour textures
 // depend on the window size; everything else (image textures, shader programs,
 // the FBOs themselves) is independent and is kept as-is.  setupFBOTexture()
@@ -990,15 +1044,11 @@ void RenderPipeline::resize( int width, int height )
     if ( width <= 0 || height <= 0 )
         return;
 
-    // width/height = display resolution; render at M_RenderScale × that.
+    // width/height = display resolution; render at M_RenderScale × that (× one eye's share in a full stereo format).
     m_displayW = width;
     m_displayH = height;
-    m_width = static_cast<int>( width * M_RenderScale + 0.5f );
-    if ( m_width < 16 )
-        m_width = 16;
-    m_height = static_cast<int>( height * M_RenderScale + 0.5f );
-    if ( m_height < 16 )
-        m_height = 16;
+    frameSize( width, height, m_width, m_height );
+    m_sizedStereo = stereoFull( M_StereoMode ) ? M_StereoMode : 0;
 
     // Effect shaders only need their reported resolution updated (no recompile).
     for ( unsigned int i = 0; i < m_effectTextures.size(); ++i )
@@ -1106,6 +1156,10 @@ void RenderPipeline::setupSafety()
         m_stereoMixTexBUni = glGetUniformLocation( m_stereoMixProgId, "texB" );
         m_stereoMixResUni = glGetUniformLocation( m_stereoMixProgId, "resolution" );
         m_stereoMixWUni = glGetUniformLocation( m_stereoMixProgId, "interpolation" );
+        m_stereoMixMonoAUni = glGetUniformLocation( m_stereoMixProgId, "monoA" );
+        m_stereoMixMonoBUni = glGetUniformLocation( m_stereoMixProgId, "monoB" );
+        m_stereoMixLayoutUni = glGetUniformLocation( m_stereoMixProgId, "eyeLayout" );
+        m_stereoMixDepthUni = glGetUniformLocation( m_stereoMixProgId, "stereoDepth" );
     }
     m_feedbackReady = m_present.ready() && trail_ok && ( m_trailProgId != 0 )
                       && ( m_trailCurUni >= 0 ) && ( m_trailPrevUni >= 0 );
@@ -1548,11 +1602,17 @@ static void logLikedRoll( const EffectShader *e )
 void RenderPipeline::favoriteCurrentEffect()
 {
     if ( m_scheduler.actTexture() < m_effectTextures.size() )
-    {
-        bumpTaste( m_effectTextures[m_scheduler.actTexture()]->fragmentName(), 1.25f );
-        bumpClassTaste( m_effectTextures[m_scheduler.actTexture()], 1.1f );
-        logLikedRoll( m_effectTextures[m_scheduler.actTexture()] );
-    }
+        favoriteScene( static_cast<int>( m_scheduler.actTexture() ) );
+}
+
+void RenderPipeline::favoriteScene( int idx )
+{
+    if ( idx < 0 || idx >= static_cast<int>( m_effectTextures.size() ) )
+        return;
+    EffectShader *e = m_effectTextures[static_cast<size_t>( idx )];
+    bumpTaste( e->fragmentName(), 1.25f );
+    bumpClassTaste( e, 1.1f );
+    logLikedRoll( e );
 }
 
 /**  Reduces a track key ("artist|title") to a QSettings-safe key for the [cues] group.
@@ -1590,9 +1650,17 @@ bool RenderPipeline::isBanned( const char *fragPath ) const
 
 bool RenderPipeline::banCurrentScene( QString &scene )
 {
-    if ( m_effectTextures.empty() )
+    if ( m_effectTextures.empty() || !banScene( static_cast<int>( m_scheduler.actTexture() ), scene ) )
         return false;
-    const QString base = tasteBase( m_effectTextures[m_scheduler.actTexture()]->fragmentName() );
+    requestSceneChange( false ); // away with it now, without the skip's taste malus
+    return true;
+}
+
+bool RenderPipeline::banScene( int idx, QString &scene )
+{
+    if ( idx < 0 || idx >= static_cast<int>( m_effectTextures.size() ) )
+        return false;
+    const QString base = tasteBase( m_effectTextures[static_cast<size_t>( idx )]->fragmentName() );
     scene = base.endsWith( ".frag" ) ? base.left( base.size() - 5 ) : base;
     // Enough has to be left, or the no-repeat memory and the mood filter run dry.
     QSet<QString> all, open;
@@ -1609,7 +1677,6 @@ bool RenderPipeline::banCurrentScene( QString &scene )
     QSettings s( SettingsFile::path(), QSettings::IniFormat );
     s.setValue( "banned/" + m_presetName + "/" + base, true );
     fprintf( stderr, "BANNED: %s/%s\n", qPrintable( m_presetName ), qPrintable( base ) );
-    requestSceneChange( false ); // away with it now, without the skip's taste malus
     return true;
 }
 
@@ -1675,6 +1742,331 @@ float RenderPipeline::sceneTaste( int idx, bool &banned ) const
         return 1.f;
     banned = isBanned( m_effectTextures[static_cast<size_t>( idx )]->fragmentName() );
     return tasteFor( m_effectTextures[static_cast<size_t>( idx )]->fragmentName() );
+}
+
+// ---------------------------------------------------------------------------
+// The rating walk (web remote, "Rate"; 20.11.2026).  2,475 scenes, and nobody
+// judges them in passing: the favourite, the skip and the ban all act on
+// whatever happens to be on screen.  The walk puts the preset's scenes without
+// a verdict on screen one after the other, for a span the viewer sets, and
+// takes a verdict on each from three buttons on the phone.  What a verdict
+// does is what the keys do today (a favourite, a ban), and it is written down
+// as a verdict too ([rated]), so the next walk skips it and
+// Tools/apply_taste.py can fold it into the presets.
+// ---------------------------------------------------------------------------
+
+/**  A file name without its ".frag".
+ *
+ * @param base  The file name. (in)
+ *
+ * @return
+ *   The name the remote shows.
+ **/
+static QString sceneShown( const QString &base )
+{
+    return base.endsWith( ".frag" ) ? base.left( base.size() - 5 ) : base;
+}
+
+int RenderPipeline::rateTargetIndex() const
+{
+    if ( m_effectTextures.empty() )
+        return -1;
+    if ( m_rating && m_rateForced >= 0 && m_rateForced < static_cast<int>( m_effectTextures.size() ) )
+        return m_rateForced;
+    const unsigned int i = m_scheduler.texState() != 0 ? m_scheduler.nextTexture() : m_scheduler.actTexture();
+    return i < m_effectTextures.size() ? static_cast<int>( i ) : -1;
+}
+
+int RenderPipeline::rateNextPick( unsigned int act )
+{
+    const QString act_base = act < m_effectTextures.size() ? tasteBase( m_effectTextures[act]->fragmentName() )
+                                                           : QString();
+    for ( int pass = 0; pass < 2; ++pass )
+    {
+        // Open files and their entries (the models of a family share one file, and one verdict).
+        QStringList                files;
+        QHash<QString, QList<int>> entries;
+        for ( size_t i = 0; i < m_effectTextures.size(); ++i )
+        {
+            const QString b = tasteBase( m_effectTextures[i]->fragmentName() );
+            const QString full = m_presetName + "/" + b;
+            if ( b == act_base || M_Rated.contains( full ) || M_Banned.contains( full )
+                 || ( pass == 0 && m_rateShown.contains( b ) ) )
+                continue;
+            if ( !entries.contains( b ) )
+                files << b;
+            entries[b] << static_cast<int>( i );
+        }
+        if ( !files.isEmpty() )
+        {
+            const QString    &b = files[rand() % files.size()];
+            const QList<int> &e = entries[b];
+            m_rateShown.insert( b );
+            return e[rand() % e.size()];
+        }
+        // Every open file was shown in this pass: the ones left without a verdict come round again.
+        m_rateShown.clear();
+    }
+    // The scene on screen may be the last one open: it keeps the walk going until it has its verdict (the normal
+    // roll fills in after it).  Otherwise nothing is left; trackRating() ends the walk (not from in here).
+    const QString act_full = m_presetName + "/" + act_base;
+    if ( act_base.isEmpty() || M_Rated.contains( act_full ) || M_Banned.contains( act_full ) )
+        m_rateFinished = true;
+    return -1;
+}
+
+void RenderPipeline::trackRating()
+{
+    if ( !m_rating )
+        return;
+    if ( m_rateFinished )
+    {
+        m_rateFinished = false;
+        m_rateDone = true;
+        stopRating();
+        fprintf( stderr, "RATING: every scene of %s has a verdict\n", qPrintable( m_presetName ) );
+        return;
+    }
+    // The scene the walk cut to is the one being judged as soon as it comes in.
+    if ( m_rateForced >= 0 )
+    {
+        const unsigned int in = m_scheduler.texState() != 0 ? m_scheduler.nextTexture() : m_scheduler.actTexture();
+        if ( static_cast<int>( in ) == m_rateForced )
+        {
+            m_rateForced = -1;
+            if ( m_rateOnArrival )
+            {
+                m_rateOnArrival = false;
+                EffectShader::noCarryOver();
+                m_scheduler.requestChange( false );
+            }
+        }
+    }
+    const int     t = rateTargetIndex();
+    const QString key = t >= 0 ? tasteBase( m_effectTextures[static_cast<size_t>( t )]->fragmentName() ) : QString();
+    if ( key != m_rateTargetKey )
+    {
+        m_ratePrevKey = m_rateTargetKey;
+        m_ratePrevAt = m_rateClock.elapsed();
+        m_rateTargetKey = key;
+        m_rateJudgedKey.clear();
+    }
+}
+
+bool RenderPipeline::startRating( float secs )
+{
+    m_rateSecs = std::clamp( secs, 3.f, 120.f );
+    m_rateDone = false;
+    m_rateFinished = false;
+    m_rateShown.clear();
+    m_rateUndo = RateUndo();
+    m_rateLast.clear();
+    const int first = rateNextPick( m_scheduler.actTexture() );
+    if ( m_rateFinished )
+    {
+        m_rateFinished = false;
+        m_rateDone = true;
+        return false;
+    }
+    // Either would hold the walk on one scene.
+    M_Pinned = false;
+    M_Freeze = false;
+    m_rating = true;
+    m_rateClock.start();
+    m_rateTargetKey.clear();
+    m_ratePrevKey.clear();
+    m_rateJudgedKey.clear();
+    m_scheduler.setRateWalk( m_rateSecs, [this]( unsigned int act )
+    { return rateNextPick( act ); } );
+    m_rateForced = first; // -1: the scene on screen is the last one open
+    m_rateOnArrival = false;
+    if ( first >= 0 )
+    {
+        EffectShader::noCarryOver();
+        m_scheduler.forceScene( first );
+    }
+    fprintf( stderr, "RATING: started in %s, %.0f s per scene\n", qPrintable( m_presetName ), m_rateSecs );
+    return true;
+}
+
+void RenderPipeline::stopRating()
+{
+    if ( !m_rating )
+        return;
+    m_rating = false;
+    m_scheduler.setRateWalk( 0.f, nullptr );
+    fprintf( stderr, "RATING: stopped\n" );
+}
+
+void RenderPipeline::setRatingSecs( float secs )
+{
+    m_rateSecs = std::clamp( secs, 3.f, 120.f );
+    m_scheduler.setRateSecs( m_rateSecs );
+}
+
+void RenderPipeline::applyVerdict( int idx, const QString &verdict )
+{
+    EffectShader *e = m_effectTextures[static_cast<size_t>( idx )];
+    const QString base = tasteBase( e->fragmentName() );
+    const QString full = m_presetName + "/" + base;
+    RateUndo      u;
+    u.valid = true;
+    u.idx = idx;
+    u.full = full;
+    u.verdict = verdict;
+    u.before = M_Rated.value( full );
+    u.hadTaste = M_Taste.contains( full );
+    u.taste = M_Taste.value( full, 1.f );
+    QString note;
+    if ( verdict == "like" )
+        favoriteScene( idx );
+    else if ( verdict == "never" )
+    {
+        QString shown;
+        u.banned = !M_Banned.contains( full ) && banScene( idx, shown );
+        if ( !M_Banned.contains( full ) )
+            note = " (not banned: too few scenes would be left)";
+    }
+    M_Rated[full] = verdict;
+    QSettings s( SettingsFile::path(), QSettings::IniFormat );
+    s.setValue( "rated/" + full, verdict );
+    s.sync();
+    m_rateUndo = u;
+    m_rateLast = sceneShown( base ) + " " + verdict;
+    fprintf( stderr, "RATED: %s %s%s\n", qPrintable( full ), qPrintable( verdict ), qPrintable( note ) );
+}
+
+int RenderPipeline::rateScene( const QString &verdict, const QString &key, QString *scene )
+{
+    if ( verdict != "like" && verdict != "next" && verdict != "never" )
+        return -2;
+    const int target = rateTargetIndex();
+    if ( !m_rating || target < 0 )
+        return -1;
+    const QString target_key = tasteBase( m_effectTextures[static_cast<size_t>( target )]->fragmentName() );
+    if ( !key.isEmpty() && key != target_key )
+    {
+        // The walk moved on by itself while the verdict was on its way: it is still meant for the scene that left.
+        const int prev = sceneIndexByBase( key );
+        if ( key == m_ratePrevKey && prev >= 0 && m_rateClock.elapsed() - m_ratePrevAt < 4000
+             && !M_Rated.contains( m_presetName + "/" + key ) )
+        {
+            applyVerdict( prev, verdict );
+            if ( scene )
+                *scene = sceneShown( key );
+            return 1;
+        }
+        fprintf( stderr, "RATED: refused %s for %s (being judged: %s, left before it: %s %.1f s ago)\n",
+                 qPrintable( verdict ), qPrintable( key ), qPrintable( target_key ), qPrintable( m_ratePrevKey ),
+                 ( m_rateClock.elapsed() - m_ratePrevAt ) / 1000.0 );
+        return -1;
+    }
+    // Judged a moment ago and still waiting for its cut (the scene's minimum stay): a second tap, not a verdict.
+    if ( target_key == m_rateJudgedKey )
+    {
+        fprintf( stderr, "RATED: refused %s for %s (judged a moment ago)\n", qPrintable( verdict ),
+                 qPrintable( target_key ) );
+        return -1;
+    }
+    applyVerdict( target, verdict );
+    m_rateJudgedKey = target_key;
+    if ( scene )
+        *scene = sceneShown( target_key );
+    // On to the next one: the walk picked it when this one came (a cut of the remote's kind, no taste malus).  A
+    // scene judged before it even came in moves on once it is in.
+    if ( m_rateForced >= 0 && target == m_rateForced )
+        m_rateOnArrival = true;
+    else
+    {
+        EffectShader::noCarryOver();
+        m_scheduler.requestChange( false );
+    }
+    return 0;
+}
+
+bool RenderPipeline::undoRating( QString *scene )
+{
+    if ( !m_rateUndo.valid || m_rateUndo.idx < 0 || m_rateUndo.idx >= static_cast<int>( m_effectTextures.size() ) )
+        return false;
+    const RateUndo u = m_rateUndo;
+    m_rateUndo = RateUndo();
+    QSettings s( SettingsFile::path(), QSettings::IniFormat );
+    if ( u.before.isEmpty() )
+    {
+        M_Rated.remove( u.full );
+        s.remove( "rated/" + u.full );
+    }
+    else
+    {
+        M_Rated[u.full] = u.before;
+        s.setValue( "rated/" + u.full, u.before );
+    }
+    if ( u.verdict == "like" )
+    {
+        if ( u.hadTaste )
+        {
+            M_Taste[u.full] = u.taste;
+            s.setValue( "taste/" + u.full, u.taste );
+        }
+        else
+        {
+            M_Taste.remove( u.full );
+            s.remove( "taste/" + u.full );
+        }
+        bumpClassTaste( m_effectTextures[static_cast<size_t>( u.idx )], 1.f / 1.1f );
+    }
+    s.sync();
+    const QString base = u.full.mid( m_presetName.size() + 1 );
+    if ( u.banned )
+        unbanScene( base );
+    m_rateLast.clear();
+    m_rateJudgedKey.clear();
+    if ( scene )
+        *scene = sceneShown( base );
+    fprintf( stderr, "RATED: %s taken back (%s)\n", qPrintable( u.full ), qPrintable( u.verdict ) );
+    // Back on screen, to be judged again.
+    if ( m_rating )
+    {
+        m_rateShown.remove( base );
+        EffectShader::noCarryOver();
+        m_scheduler.forceScene( u.idx );
+        m_rateForced = u.idx;
+        m_rateOnArrival = false;
+    }
+    return true;
+}
+
+RenderPipeline::RatingState RenderPipeline::ratingState() const
+{
+    RatingState r;
+    r.active = m_rating;
+    r.done = m_rateDone;
+    r.secs = m_rateSecs;
+    r.left = m_rating ? m_scheduler.rateSecsLeft() : 0.f;
+    r.last = m_rateLast;
+    QSet<QString> files;
+    for ( EffectShader *e : m_effectTextures )
+    {
+        const QString b = tasteBase( e->fragmentName() );
+        if ( files.contains( b ) )
+            continue;
+        files.insert( b );
+        const QString full = m_presetName + "/" + b;
+        const QString v = M_Rated.value( full );
+        if ( !v.isEmpty() || M_Banned.contains( full ) )
+            ++r.rated;
+        r.likes += ( v == "like" ) ? 1 : 0;
+        r.nexts += ( v == "next" ) ? 1 : 0;
+        r.nevers += ( v == "never" ) ? 1 : 0;
+    }
+    r.total = files.size();
+    const int t = rateTargetIndex();
+    if ( m_rating && t >= 0 )
+    {
+        r.key = tasteBase( m_effectTextures[static_cast<size_t>( t )]->fragmentName() );
+        r.scene = sceneShown( r.key );
+    }
+    return r;
 }
 
 void RenderPipeline::rememberCue( const QString &trackKey, double posSec )
@@ -2276,7 +2668,7 @@ SceneScheduler::Tick RenderPipeline::buildSchedulerTick( const AudioFeatures &au
     EffectShader::M_CueSections = sched_tick.sectionCount;
     EffectShader::M_CueDrops = sched_tick.dropCount;
     m_scheduler.tick( sched_tick );
-
+    trackRating();
 
     return sched_tick;
 }
@@ -2433,11 +2825,16 @@ void RenderPipeline::updateTrueStereoState()
     // replaces the styled combine (no warp may cross the eye boundary).
     // While packed content is up, no combine cross-fade may start.
     {
-        const bool stereo_on = ( M_StereoMode == 1 || M_StereoMode == 2 );
+        const bool stereo_on = stereoSideBySide( M_StereoMode ) || stereoTopBottom( M_StereoMode );
         const bool act_3d = m_effectTextures[m_scheduler.actTexture()]->is3D();
         const bool tex_solo = ( m_scheduler.texState() == 0 );
         const bool next_3d = m_effectTextures[m_scheduler.nextTexture()]->is3D();
-        m_trueStereoHold = stereo_on && act_3d && ( tex_solo || next_3d );
+        // A fade between a 3D and a 2D scene is packed too (20.11.2026): the 3D side renders per eye, the 2D side
+        // mono, and the mix gives it its two eyes (Engine/StereoMix.frag).  Until then such a fade dropped to the
+        // mono picture with the depth from its brightness, and the 3D scene's real depth vanished in one frame at its
+        // first (or appeared at its last): a card 8 units away jumped from 4.5 % of the eye's width in front of the
+        // screen to 0.4 % behind it.
+        m_trueStereoHold = stereo_on && ( tex_solo ? act_3d : ( act_3d || next_3d ) );
         m_trueStereoPacked = m_trueStereoHold
                              && m_scheduler.fxState() == 0;
         m_trueStereoNow = m_trueStereoPacked && tex_solo;
@@ -2451,10 +2848,18 @@ void RenderPipeline::updateTrueStereoState()
 void RenderPipeline::renderSceneStereo( EffectShader *fx ) const
 {
     Scene3DShader *s3 = static_cast<Scene3DShader *>( fx );
+    const bool     full = stereoFull( M_StereoMode );
     glEnable( GL_SCISSOR_TEST );
     for ( int e = 0; e < 2; ++e ) // e 0 = left eye, 1 = right
     {
-        if ( M_StereoMode == 1 ) // SBS: left half = left eye
+        if ( full ) // the bound target is twice the frame: each eye gets a whole frame (the projection's aspect --
+        {           // the frame's -- is then the eye's own)
+            const int x = stereoSideBySide( M_StereoMode ) ? e * m_width : 0;
+            const int y = stereoSideBySide( M_StereoMode ) ? 0 : ( e ? 0 : m_height ); // top = left eye
+            glViewport( x, y, m_width, m_height );
+            glScissor( x, y, m_width, m_height );
+        }
+        else if ( stereoSideBySide( M_StereoMode ) ) // SBS: left half = left eye
         {
             int hw = m_width / 2;
             glViewport( e * hw, 0, hw, m_height );
@@ -2488,9 +2893,15 @@ void RenderPipeline::renderActiveScenePass( const AudioFeatures &audioFx )
     if ( msaa_tex1 )
         ensureMsaaTargets( m_width, m_height );
     msaa_tex1 = msaa_tex1 && m_msaaReady;
+    // A full stereo format: the eye-packed frame is twice the frame's size, in a target of its own.
+    const bool full_packed = fullPacked() && tex1_is_3d; // the 2D side of a packed fade renders mono
+    if ( full_packed )
+        ensureStereoTarget( m_stereoTarget[0], stereoSideBySide( M_StereoMode ) ? 2 * m_width : m_width,
+                            stereoSideBySide( M_StereoMode ) ? m_height : 2 * m_height );
+    const GLuint scene_fbo = full_packed ? m_stereoTarget[0].fbo : ( msaa_tex1 ? m_msaaFbo : m_fboEffectTexture1 );
 
     // Do the FBO Stuff
-    glBindFramebuffer( GL_FRAMEBUFFER, msaa_tex1 ? m_msaaFbo : m_fboEffectTexture1 );
+    glBindFramebuffer( GL_FRAMEBUFFER, scene_fbo );
 
     // glFramebufferTexture2D( GL_FRAMEBUFFER, m_attachmentpoint, GL_TEXTURE_2D, m_texIDFBOEffectTexture1, 0);
 
@@ -2510,7 +2921,7 @@ void RenderPipeline::renderActiveScenePass( const AudioFeatures &audioFx )
     if ( m_effectTextures[m_scheduler.actTexture()]->usesShadow() )
     {
         renderShadowPass( m_effectTextures[m_scheduler.actTexture()] );
-        glBindFramebuffer( GL_FRAMEBUFFER, msaa_tex1 ? m_msaaFbo : m_fboEffectTexture1 );
+        glBindFramebuffer( GL_FRAMEBUFFER, scene_fbo );
     }
     // Second, independent shadow-casting light (studio-style two-light setup);
     // same scope as light 1 -- the active scene only, never the cross-fading
@@ -2519,7 +2930,7 @@ void RenderPipeline::renderActiveScenePass( const AudioFeatures &audioFx )
     if ( m_effectTextures[m_scheduler.actTexture()]->usesShadow2() )
     {
         renderShadowPass2( m_effectTextures[m_scheduler.actTexture()] );
-        glBindFramebuffer( GL_FRAMEBUFFER, msaa_tex1 ? m_msaaFbo : m_fboEffectTexture1 );
+        glBindFramebuffer( GL_FRAMEBUFFER, scene_fbo );
     }
 
     EffectShader::M_DepthValid[0] = tex1_is_3d ? 1.f : 0.f;
@@ -2533,7 +2944,7 @@ void RenderPipeline::renderActiveScenePass( const AudioFeatures &audioFx )
     m_effectTextures[m_scheduler.actTexture()]->enableShader();
     m_effectTextures[m_scheduler.actTexture()]->setUniforms( m_globaltime, m_interpolationTexture, 0, 1 );
     m_effectTextures[m_scheduler.actTexture()]->applyAudioFeatures( audioFx );
-    if ( m_trueStereoPacked )
+    if ( m_trueStereoPacked && tex1_is_3d )
         renderSceneStereo( m_effectTextures[m_scheduler.actTexture()] );
     else
         m_effectTextures[m_scheduler.actTexture()]->draw();
@@ -2579,9 +2990,14 @@ void RenderPipeline::renderNextScenePass( const AudioFeatures &audioFx )
         if ( msaa_tex2 )
             ensureMsaaTargets( m_width, m_height );
         msaa_tex2 = msaa_tex2 && m_msaaReady;
+        const bool full_packed = fullPacked() && tex2_is_3d;
+        if ( full_packed )
+            ensureStereoTarget( m_stereoTarget[1], stereoSideBySide( M_StereoMode ) ? 2 * m_width : m_width,
+                                stereoSideBySide( M_StereoMode ) ? m_height : 2 * m_height );
 
         // Do the FBO Stuff
-        glBindFramebuffer( GL_FRAMEBUFFER, msaa_tex2 ? m_msaaFbo : m_fboEffectTexture2 );
+        glBindFramebuffer( GL_FRAMEBUFFER,
+                           full_packed ? m_stereoTarget[1].fbo : ( msaa_tex2 ? m_msaaFbo : m_fboEffectTexture2 ) );
 
         EffectShader::M_DepthValid[1] = tex2_is_3d ? 1.f : 0.f;
         if ( EffectShader::M_DepthValid[1] == 0.f )
@@ -2593,8 +3009,8 @@ void RenderPipeline::renderNextScenePass( const AudioFeatures &audioFx )
         m_effectTextures[m_scheduler.nextTexture()]->enableShader();
         m_effectTextures[m_scheduler.nextTexture()]->setUniforms( m_globaltime, m_interpolationTexture, 0, 1 );
         m_effectTextures[m_scheduler.nextTexture()]->applyAudioFeatures( audioFx );
-        if ( m_trueStereoPacked )                                             // 3D<->3D fade: the incoming scene is
-            renderSceneStereo( m_effectTextures[m_scheduler.nextTexture()] ); // eye-packed too
+        if ( m_trueStereoPacked && tex2_is_3d )                               // a packed fade: an incoming 3D scene
+            renderSceneStereo( m_effectTextures[m_scheduler.nextTexture()] ); // is eye-packed too
         else
             m_effectTextures[m_scheduler.nextTexture()]->draw();
 
@@ -2618,11 +3034,15 @@ GLuint RenderPipeline::prepareFxInputs()
     // "next" slot only when its pass actually rendered this frame.
     GLuint fx_tex1 = m_texIDFBOEffectTexture1;
     GLuint fx_tex2 = m_texIDFBOEffectTexture2;
-    if ( !m_trueStereoPacked )
+    // The mono (2D) side of a packed fade is a frame like any other: its rig still moves it.
+    const bool packed1 = m_trueStereoPacked && m_effectTextures[m_scheduler.actTexture()]->is3D();
+    const bool packed2 = m_trueStereoPacked && m_effectTextures[m_scheduler.nextTexture()]->is3D();
+    if ( !packed1 || ( m_scheduler.texState() != 0 && !packed2 ) )
     {
-        fx_tex1 = rig2Transform( m_effectTextures[m_scheduler.actTexture()],
-                                 m_texIDFBOEffectTexture1, 0 );
-        if ( m_scheduler.texState() != 0 )
+        if ( !packed1 )
+            fx_tex1 = rig2Transform( m_effectTextures[m_scheduler.actTexture()],
+                                     m_texIDFBOEffectTexture1, 0 );
+        if ( m_scheduler.texState() != 0 && !packed2 )
             fx_tex2 = rig2Transform( m_effectTextures[m_scheduler.nextTexture()],
                                      m_texIDFBOEffectTexture2, 1 );
         glBindFramebuffer( GL_FRAMEBUFFER, m_defaultFBO );
@@ -2650,7 +3070,7 @@ GLuint RenderPipeline::prepareFxInputs()
     return fx_tex1;
 }
 
-void RenderPipeline::renderStereoMixPass()
+void RenderPipeline::renderStereoMixPass( int w, int h )
 {
     // Packed 3D<->3D cross-fade: plain per-pixel mix of the two
     // eye-packed frames — same endpoint weighting as the Crossfade
@@ -2661,11 +3081,18 @@ void RenderPipeline::renderStereoMixPass()
     if ( m_stereoMixTexBUni >= 0 )
         glUniform1i( m_stereoMixTexBUni, 4 );
     if ( m_stereoMixResUni >= 0 )
-        glUniform2f( m_stereoMixResUni,
-                     static_cast<float>( m_width ), static_cast<float>( m_height ) );
+        glUniform2f( m_stereoMixResUni, static_cast<float>( w ), static_cast<float>( h ) );
     if ( m_stereoMixWUni >= 0 )
         glUniform1f( m_stereoMixWUni,
                      m_scheduler.texInterp() );
+    if ( m_stereoMixMonoAUni >= 0 )
+        glUniform1i( m_stereoMixMonoAUni, m_effectTextures[m_scheduler.actTexture()]->is3D() ? 0 : 1 );
+    if ( m_stereoMixMonoBUni >= 0 )
+        glUniform1i( m_stereoMixMonoBUni, m_effectTextures[m_scheduler.nextTexture()]->is3D() ? 0 : 1 );
+    if ( m_stereoMixLayoutUni >= 0 )
+        glUniform1i( m_stereoMixLayoutUni, stereoSideBySide( M_StereoMode ) ? 1 : 2 );
+    if ( m_stereoMixDepthUni >= 0 )
+        glUniform1f( m_stereoMixDepthUni, M_StereoDepth );
     drawWindow();
 }
 
@@ -2750,6 +3177,47 @@ void RenderPipeline::renderNextOverlayPass( const AudioFeatures &audioFx )
 
 void RenderPipeline::renderFxStage( const AudioFeatures &audioFx )
 {
+    m_stereoPresent = 0;
+    if ( fullPacked() )
+    {
+        // The eye-packed frame of a full format is twice the frame's size and goes straight to the present pass --
+        // what the FX stage does to a packed frame of the half formats is a passthrough (solo) or a plain mix (a
+        // 3D<->3D fade) anyway.
+        const int w = static_cast<int>( m_width ), h = static_cast<int>( m_height );
+        const int pw = stereoSideBySide( M_StereoMode ) ? 2 * w : w;
+        const int ph = stereoSideBySide( M_StereoMode ) ? h : 2 * h;
+        m_stereoPresent = m_stereoTarget[0].color; // solo: always a 3D scene (updateTrueStereoState())
+        m_stereoPresentW = m_stereoTarget[0].w;
+        m_stereoPresentH = m_stereoTarget[0].h;
+        m_fadeInTex = 0;
+        if ( m_scheduler.texState() != 0 && m_stereoMixProgId != 0 )
+        {
+            // A fade: each side packed (a 3D scene, its own target) or mono (a 2D scene, its frame, rig applied).
+            const GLuint  fx_tex1 = prepareFxInputs();
+            const GLuint  fx_tex2 = m_fadeInTex; // prepareFxInputs() leaves the incoming side there
+            const bool    act_3d = m_effectTextures[m_scheduler.actTexture()]->is3D();
+            const bool    next_3d = m_effectTextures[m_scheduler.nextTexture()]->is3D();
+            const GLuint  ta = act_3d ? m_stereoTarget[0].color : fx_tex1;
+            const GLuint  tb = next_3d ? m_stereoTarget[1].color : fx_tex2;
+            StereoTarget &mix = m_stereoTarget[2];
+            ensureStereoTarget( mix, pw, ph );
+            glBindFramebuffer( GL_FRAMEBUFFER, mix.fbo );
+            glViewport( 0, 0, pw, ph );
+            glActiveTexture( GL_TEXTURE3 );
+            glBindTexture( GL_TEXTURE_2D, ta );
+            glActiveTexture( GL_TEXTURE4 );
+            glBindTexture( GL_TEXTURE_2D, tb );
+            glActiveTexture( GL_TEXTURE0 );
+            renderStereoMixPass( pw, ph );
+            m_stereoPresent = mix.color;
+            m_stereoPresentW = pw;
+            m_stereoPresentH = ph;
+            m_fadeInTex = tb; // the exposure measures the incoming scene, as in every fade
+            glViewport( 0, 0, w, h );
+        }
+        glBindFramebuffer( GL_FRAMEBUFFER, m_defaultFBO );
+        return;
+    }
     const GLuint fx_tex1 = prepareFxInputs();
 
     glBindFramebuffer( GL_FRAMEBUFFER, m_fboEffectFx1 );
@@ -2762,7 +3230,7 @@ void RenderPipeline::renderFxStage( const AudioFeatures &audioFx )
     }
     else if ( m_trueStereoPacked && m_stereoMixProgId != 0 )
     {
-        renderStereoMixPass();
+        renderStereoMixPass( m_width, m_height );
     }
     else
     {
@@ -2830,6 +3298,13 @@ GLuint RenderPipeline::renderTrailsPass( const AudioFeatures &audio, const Audio
         int   prev = 1 - m_trailIdx;
         float decay = M_TrailAmount * ( 0.90f + 0.08f * audio.ambientFactor )
                       * audio.musicPresence;
+        // The packed frame of a full stereo format bypassed the trails (paint()): what they hold is stale, so they
+        // start over with the first frame after it rather than fade an old picture in.
+        if ( m_trailRestart )
+        {
+            decay = 0.f;
+            m_trailRestart = false;
+        }
         // A loaded model gets almost no feedback trail. The trail layer's warp
         // field deliberately rides the beat (ripple below), which on abstract
         // material is the liquid MilkDrop look -- but on a solid object it
@@ -2989,8 +3464,10 @@ void RenderPipeline::runPresentPass( GLuint presentSource, const AudioFeatures &
         PresentPass::Inputs pin;
         pin.source = presentSource;
         pin.targetFbo = m_defaultFBO;
-        pin.renderW = m_width;
-        pin.renderH = m_height;
+        // The packed frame of a full stereo format is twice the frame's size.
+        const bool full_src = m_stereoPresent != 0 && presentSource == m_stereoPresent;
+        pin.renderW = full_src ? m_stereoPresentW : m_width;
+        pin.renderH = full_src ? m_stereoPresentH : m_height;
         pin.displayW = m_displayW;
         pin.displayH = m_displayH;
         pin.fx = &audioFx;
@@ -3093,7 +3570,9 @@ void RenderPipeline::runPresentPass( GLuint presentSource, const AudioFeatures &
             pin.paletteA[pi] = m_overlay.paletteA[pi];
             pin.paletteB[pi] = m_overlay.paletteB[pi];
         }
-        pin.sceneDepthTex = m_depthTexEffect1;
+        pin.sceneDepthTex = ( full_src && m_effectTextures[m_scheduler.actTexture()]->is3D() )
+                                ? m_stereoTarget[0].depth
+                                : m_depthTexEffect1;
         pin.depthPar = m_trailDepth3D;
         pin.nearZ = EffectShader::SceneNear;
         pin.farZ = EffectShader::SceneFar;
@@ -3104,6 +3583,10 @@ void RenderPipeline::runPresentPass( GLuint presentSource, const AudioFeatures &
 void RenderPipeline::paint( const float *rotMatrix, float tx, float ty, float tz,
                             const AudioFeatures &audio )
 {
+    // A full stereo format renders the frame at one eye's size: a switch into, out of or between them ('z', the
+    // remote) sizes the frame anew before anything is drawn.
+    if ( ( stereoFull( M_StereoMode ) ? M_StereoMode : 0 ) != m_sizedStereo && m_displayW > 0 && m_displayH > 0 )
+        resize( m_displayW, m_displayH );
     beginFrame( audio );
     updateLiveInput();
     updateTimingScale( audio );
@@ -3206,10 +3689,15 @@ void RenderPipeline::paint( const float *rotMatrix, float tx, float ty, float tz
     m_scheduler.tickFx( sched_tick, m_trueStereoHold );
 
     renderFxStage( audio_fx );
-    renderFinalBlend();
+    if ( !m_stereoPresent )
+        renderFinalBlend();
 
-    const GLuint present_source =
-        renderTrailsPass( audio, audio_fx, time_since_last_frame_sec, dt_wall );
+    // The packed frame of a full stereo format (renderFxStage()) is the present pass's source as it is.
+    const GLuint present_source = m_stereoPresent
+                                      ? m_stereoPresent
+                                      : renderTrailsPass( audio, audio_fx, time_since_last_frame_sec, dt_wall );
+    if ( m_stereoPresent )
+        m_trailRestart = true;
 
     glcoreDebugMark( "present" );
     runPresentPass( present_source, audio, audio_fx, time_since_last_frame_sec, dt_wall );
@@ -3225,7 +3713,8 @@ void RenderPipeline::paint( const float *rotMatrix, float tx, float ty, float tz
         if ( !m_spoutStarted )
             m_spoutStarted = spoutOutInit( "Kaleidoscope" );
         if ( M_SpoutClean )
-            spoutOutSend( present_source, m_width, m_height );
+            spoutOutSend( present_source, m_stereoPresent ? m_stereoPresentW : m_width,
+                          m_stereoPresent ? m_stereoPresentH : m_height );
         else
         {
             glBindFramebuffer( GL_FRAMEBUFFER, m_defaultFBO );

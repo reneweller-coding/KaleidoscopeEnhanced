@@ -563,6 +563,9 @@ void SceneScheduler::tick( const Tick &t )
     // scene get cut away again after the 0.6 s minimum solo -- the reported
     // "scene flashes in for a fraction of a second and is replaced".
     const bool mid_fade = ( m_texState != 0 );
+    // A bench -- the review walk of the Test* presets, or the web remote's rating walk -- holds every scene for a
+    // fixed span: no musical cut, no phrase wait, no fade floor.
+    const bool bench = m_reviewMode || m_rateSecs > 0.f;
 
     // Screen time of the scene on screen, for the lab clock (a stall counts
     // at most a second: the books are kept for hours, not frames).
@@ -583,14 +586,14 @@ void SceneScheduler::tick( const Tick &t )
     // rises in the last half phrase before the predicted drop, a section or a harmonic jump does not cut: the drop
     // does.  If no drop comes, the scene's own time ends it.  Not in a calm preset, which never cuts on a drop.
     const float beat_secs = 60.f / ( 40.f + 160.f * std::max( t.estimatedBPM, 0.004f ) );
-    const bool  run_up = !m_reviewMode && m_sceneFadeMin <= 0.f && m_regieWarm > 20.f && t.buildUp > 0.45f
+    const bool  run_up = !bench && m_sceneFadeMin <= 0.f && m_regieWarm > 20.f && t.buildUp > 0.45f
                          && t.phraseSecsLeft > 0.f && t.phraseSecsLeft <= 16.f * beat_secs;
     // ANSWERED: a natural change waits for the phrase and its fade ends on the 8-bar boundary -- where a new section
     // begins.  The analyser names the section a fraction of a second later, and the scene that had just come in for
     // that very boundary was cut away after the two-second minimum (20 of 47 section cuts in the structure track).
     // A section or a harmonic jump within 4 s after a fade ended was answered by that fade, as one during a fade is.
-    const bool answered = !m_reviewMode && m_texState == 0 && secsSince( m_clockEffectTexture ) < 4.f;
-    if ( !m_reviewMode && !run_up && !answered && m_noveltyCooldown <= 0.f && m_harmCutCooldown <= 0.f
+    const bool answered = !bench && m_texState == 0 && secsSince( m_clockEffectTexture ) < 4.f;
+    if ( !bench && !run_up && !answered && m_noveltyCooldown <= 0.f && m_harmCutCooldown <= 0.f
          && t.harmonicChange * t.musicPresence > 0.95f )
     {
         if ( !mid_fade )
@@ -620,7 +623,7 @@ void SceneScheduler::tick( const Tick &t )
     // 10 s baselines are still climbing: buildUp 0.67 in the intro, 0.43 in
     // the real build-up).  The analyzer itself spares its drop arming the
     // same way.
-    const bool drop_ahead = !m_reviewMode && m_regieWarm > 20.f && t.buildUp > 0.45f && m_buildUpPrev <= 0.45f
+    const bool drop_ahead = !bench && m_regieWarm > 20.f && t.buildUp > 0.45f && m_buildUpPrev <= 0.45f
                             && m_arcCooldown <= 0.f && t.phraseSecsLeft >= 4.f && t.phraseSecsLeft <= 45.f;
     if ( drop_ahead && m_actTexture < tex.size() && tex[m_actTexture]->usesProgress() )
     {
@@ -674,7 +677,7 @@ void SceneScheduler::tick( const Tick &t )
                      secsSince( m_clockEffectTexture ) );
         m_noveltyCooldown = 8.0f;
     }
-    else if ( !m_reviewMode && t.sectionCount == m_lastSectionCount + 1 )
+    else if ( !bench && t.sectionCount == m_lastSectionCount + 1 )
     {
         int  id = t.sectionId;
         auto it = m_sectionEffect.find( id );
@@ -802,7 +805,7 @@ void SceneScheduler::tick( const Tick &t )
         m_secsSinceDrop = 0.f;
         m_spectacleFor = 0.f;
     }
-    if ( !m_reviewMode && t.dropCount == m_lastDropCount + 1 )
+    if ( !bench && t.dropCount == m_lastDropCount + 1 )
     {
         if ( mid_fade )
         {
@@ -885,6 +888,9 @@ void SceneScheduler::tick( const Tick &t )
         // why it is a named constant rather than a number buried here.
         if ( m_reviewMode && m_texFadeDur > ReviewSoloSecs )
             m_texFadeDur = ReviewSoloSecs;
+        // The rating walk: the viewer's span, taken at once when it changes (setRateSecs()).
+        if ( m_rateSecs > 0.f )
+            m_texFadeDur = m_rateSecs;
 
         // End the solo early on a manual ('n') or trigger-driven request, but
         // only after a minimum so cuts never come back-to-back.  A human
@@ -931,7 +937,7 @@ void SceneScheduler::tick( const Tick &t )
             // four-beat fade ends on the next 8-bar boundary, where dance music turns: it starts with four beats
             // left.  At most one phrase of waiting, then as before.  A forced change is not held.
             bool phrase_wait = false, phrase_due = false;
-            if ( !m_pendingEffectForced && !m_pendingEffectSoft && !m_reviewMode && t.rhythmStrength > 0.55f
+            if ( !m_pendingEffectForced && !m_pendingEffectSoft && !bench && t.rhythmStrength > 0.55f
                  && t.estimatedBPM > 0.004f
                  && m_dropInSong && m_secsSinceDrop < 180.f && t.phraseSecsLeft > 0.f )
             {
@@ -940,7 +946,7 @@ void SceneScheduler::tick( const Tick &t )
                 phrase_wait = !phrase_due && m_pendingEffectAge < 33.f * beat;
                 m_changeHold = std::max( m_changeHold, 33.f * beat );
             }
-            if ( m_pendingEffectForced || m_reviewMode || phrase_due
+            if ( m_pendingEffectForced || bench || phrase_due
                  || ( !phrase_wait && ( t.downbeatTick || m_pendingEffectAge > 2.5f ) ) || t.gateSmooth < 0.25f )
             {
                 static const bool PhraseLog = getenv( "KALEIDO_FADE_LOG" ) != nullptr;
@@ -983,6 +989,14 @@ void SceneScheduler::tick( const Tick &t )
                         if ( zoom >= 0 )
                             m_actTransition = static_cast<unsigned int>( zoom );
                     }
+                    // The rating walk shows one scene after another to be judged: a plain cross-fade between
+                    // them, not a shatter or a spiral that would be judged along with the scene.
+                    if ( m_rateSecs > 0.f )
+                    {
+                        const int cross = findTransition( "Crossfade.frag" );
+                        if ( cross >= 0 )
+                            m_actTransition = static_cast<unsigned int>( cross );
+                    }
                     // Dev hook: KALEIDO_TRANS_STYLE forces a transition (probes
                     // of single transitions without luck of the dice) - a
                     // file name ("Shatter.frag") or a list index.
@@ -1017,7 +1031,7 @@ void SceneScheduler::tick( const Tick &t )
                     // ARTICULATION: staccato material gets snappier cross-fades,
                     // legato keeps the full dissolve.
                     cfg_t *= 1.f - 0.35f * t.logAttackTime;
-                    m_texFadeDur = ( forced_go || m_reviewMode ) ? 0.8f : cfg_t;
+                    m_texFadeDur = ( forced_go || bench ) ? 0.8f : cfg_t;
 
                     // FLOORS (never for a manual cut or the review bench).
                     // The four-beat clamp suits a cross-fade; a transition that
@@ -1027,7 +1041,7 @@ void SceneScheduler::tick( const Tick &t )
                     // Each transition carries its own measured floor (minFade);
                     // a calm preset adds one for every fade (timeSceneFadeMin).
                     float floor_t = 0.f;
-                    if ( !forced_go && !m_reviewMode )
+                    if ( !forced_go && !bench )
                     {
                         floor_t = m_sceneFadeMin;
                         if ( m_transitions && m_actTransition < m_transitions->size() )
@@ -1036,7 +1050,7 @@ void SceneScheduler::tick( const Tick &t )
                     }
                     // Into a calmer section: two to four bars, whatever the config time or the beat clamp said (a
                     // break often loses the beat's confidence, and the config's 15..50 s would outlast it).
-                    if ( soft_go && !m_reviewMode )
+                    if ( soft_go && !bench )
                     {
                         const float beat = 60.f / ( 40.f + 160.f * std::max( t.estimatedBPM, 0.4f ) );
                         m_texFadeDur = fmaxf( std::clamp( m_texFadeDur, 8.f * beat, 16.f * beat ), floor_t );
@@ -1059,9 +1073,9 @@ void SceneScheduler::tick( const Tick &t )
                 // frames), half as a shatter (the old scene bursts on the
                 // hit).  AFTER the duration computation, so nothing
                 // overwrites it.
-                if ( m_dropCutPending && !m_reviewMode && m_sceneFadeMin > 0.f )
+                if ( m_dropCutPending && !bench && m_sceneFadeMin > 0.f )
                     m_dropCutPending = false; // a calm preset never snaps on a drop
-                if ( m_dropCutPending && !m_reviewMode )
+                if ( m_dropCutPending && !bench )
                 {
                     m_dropCutPending = false;
                     m_changeWhy = "drop";
@@ -1120,7 +1134,7 @@ void SceneScheduler::tick( const Tick &t )
             tex[m_actTexture]->resetParameters();
             m_actTexture = m_nextTexture;
             noteTextureShown( m_actTexture );
-            if ( m_onHistory && !m_reviewMode )
+            if ( m_onHistory && !bench )
                 m_onHistory( m_recent.names() );
 
             // Song-structure memory: the RESTORE now happens at the START OF
@@ -1140,6 +1154,10 @@ void SceneScheduler::tick( const Tick &t )
                 m_pendingSectionStore = -1;
             }
 
+            // The rating walk names the scene after this one (a remote jump still wins).
+            const int rate_pick = ( m_rateSecs > 0.f && m_rateNext && m_forcedNextTexture < 0 )
+                                      ? m_rateNext( m_actTexture )
+                                      : -1;
             // A remote direct jump wins over EVERYTHING (review too).
             if ( m_forcedNextTexture >= 0
                  && m_forcedNextTexture < static_cast<int>( tex.size() ) )
@@ -1159,6 +1177,13 @@ void SceneScheduler::tick( const Tick &t )
                         m_reviewPos = ( k + 1 ) % static_cast<int>( m_reviewOrder.size() );
                         break;
                     }
+            }
+            else if ( rate_pick >= 0 && rate_pick < static_cast<int>( tex.size() ) )
+            {
+                m_nextTexture = static_cast<unsigned int>( rate_pick );
+                m_nextHow = "rate";
+                m_pendingSectionNext = -1;
+                m_pendingSectionNextId = -1;
             }
             else if ( m_reviewMode && !tex.empty() )
             {
@@ -1234,6 +1259,8 @@ void SceneScheduler::tick( const Tick &t )
             if ( !tex[m_actTexture]->walksWithMusic() )
                 m_texFadeDur *= std::clamp( std::sqrt( tasteOf( tex[m_actTexture]->fragmentName() ) ), 0.7f, 1.5f );
             // The scene's sceneProgress ends with this solo, not with the solo rolled from its config.
+            if ( m_rateSecs > 0.f )
+                m_texFadeDur = m_rateSecs;
             tex[m_actTexture]->setStayIn( m_reviewMode ? std::min( m_texFadeDur, ReviewSoloSecs ) : m_texFadeDur );
 
             restart( m_clockEffectTexture );

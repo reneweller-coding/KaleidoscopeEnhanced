@@ -239,8 +239,8 @@ SetupWindow::SetupWindow()
     // then a flash to the real language once loadFromIni() runs later).
     {
         QSettings s( settingsPath(), QSettings::IniFormat );
-        Strings::setLanguage( Strings::fromCode(
-            s.value( "language", "de" ).toString().toLocal8Bit().constData() ) );
+        // No "language" yet: the system's (German on a German system, else English), as in the program.
+        Strings::setLanguage( Strings::fromSetting( s.value( "language" ).toString().toLocal8Bit().constData() ) );
     }
 
     // Wider than it used to be: the download panel's rows ("3D: Raumschiffe
@@ -495,6 +495,8 @@ void SetupWindow::buildContent()
     m_stereoMode->addItem( uiString( S_SETUP_STEREO_SBS ) );
     m_stereoMode->addItem( uiString( S_SETUP_STEREO_TB ) );
     m_stereoMode->addItem( uiString( S_SETUP_STEREO_ANA ) );
+    m_stereoMode->addItem( uiString( S_SETUP_STEREO_FSBS ) ); // 4 and 5: the index is the ini's stereoMode
+    m_stereoMode->addItem( uiString( S_SETUP_STEREO_FTB ) );
     f_tune->addRow( uiString( S_SETUP_STEREOMODE ), m_stereoMode );
     m_stereoDepth = new QDoubleSpinBox();
     m_stereoDepth->setRange( 0.0, 2.0 );
@@ -598,7 +600,8 @@ void SetupWindow::loadFromIni()
     m_mood->setValue( s.value( "mood", 1.0 ).toDouble() );
     m_latencyMs->setValue( static_cast<int>( s.value( "latencyLead", 0.0 ).toDouble() * 1000.0 + 0.5 ) );
     m_renderScale->setValue( s.value( "renderScale", 1.0 ).toDouble() );
-    m_stereoMode->setCurrentIndex( s.value( "stereoMode", 0 ).toInt() & 3 );
+    const int stereo = s.value( "stereoMode", 0 ).toInt();
+    m_stereoMode->setCurrentIndex( stereo >= 0 && stereo < m_stereoMode->count() ? stereo : 0 );
     m_stereoDepth->setValue( s.value( "stereoDepth", 1.0 ).toDouble() );
     {
         const int ci = m_videoCodec->findData( s.value( "videoCodec", "h264" ).toString().toLower() );
@@ -630,7 +633,11 @@ void SetupWindow::saveToIni()
 {
     QSettings s( settingsPath(), QSettings::IniFormat );
 
-    s.setValue( "language", m_language->currentData().toString() );
+    // A file without "language" follows the system; saving the other settings must not pin it.  Written when the
+    // file has one, or when the choice differs from the system's.
+    const QString lang = m_language->currentData().toString();
+    if ( s.contains( "language" ) || lang != QLatin1String( Strings::toCode( Strings::systemLanguage() ) ) )
+        s.setValue( "language", lang );
 
     const QString cfg = m_startConfig->currentData().toString();
     if ( !cfg.isEmpty() )

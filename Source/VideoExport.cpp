@@ -216,7 +216,10 @@ static bool probeEncoder( const QStringList &args, bool hw )
     QStringList                  a;
     a << "-hide_banner" << "-loglevel" << "error" << "-nostdin"
       << "-f" << "lavfi" << "-i"
-      << QString( "color=c=black:s=%1x%2:r=%3:d=0.2" ).arg( s.width ).arg( s.height ).arg( s.fps )
+      << QString( "color=c=black:s=%1x%2:r=%3:d=0.2" )
+             .arg( VideoExport::frameWidth() )
+             .arg( VideoExport::frameHeight() )
+             .arg( s.fps )
       << "-pix_fmt" << ( hw ? "nv12" : "yuv420p" ) << args << "-f" << "null" << "-";
     p.start( VideoExport::tool( "ffmpeg" ), a );
     if ( !p.waitForFinished( 20000 ) )
@@ -232,7 +235,7 @@ bool VideoExport::pickEncoder()
 {
     QString fam = M_Settings.codec;
     if ( fam == "auto" )
-        fam = ( static_cast<long long>( M_Settings.width ) * M_Settings.height > 1920LL * 1080LL ) ? "hevc" : "h264";
+        fam = ( static_cast<long long>( frameWidth() ) * frameHeight() > 1920LL * 1080LL ) ? "hevc" : "h264";
     const int q = M_Settings.quality, step = M_Settings.qualityStep;
     auto      qs = [q, step]( int def )
     { return QString::number( q > 0 ? q : std::max( 1, def + step ) ); };
@@ -243,7 +246,7 @@ bool VideoExport::pickEncoder()
     // below their quality. The ceiling in turn sets the LEVEL the encoder writes: 400 Mbit/s made FullHD level
     // 6.1, which televisions and phones refuse; 60 Mbit/s at 1080p60 gives level 4.2, which everything plays and
     // the hardest scenes stay under. Scaled with the pixel rate to the 3/4 power.
-    const double  rate = static_cast<double>( M_Settings.width ) * M_Settings.height * M_Settings.fps;
+    const double  rate = static_cast<double>( frameWidth() ) * frameHeight() * M_Settings.fps;
     const int max_mbit = std::max( 8, static_cast<int>( 60.0 * std::pow( rate / ( 1920.0 * 1080.0 * 60.0 ), 0.75 ) ) );
     const QString maxrate = QString( "%1M" ).arg( max_mbit ), bufsize = QString( "%1M" ).arg( 2 * max_mbit );
 
@@ -353,11 +356,14 @@ bool VideoExport::prepare()
     if ( s.fps < 1 || s.fps > 240 )
         return fail( QString( "frame rate %1 is out of range (1..240)" ).arg( s.fps ) );
     // Named like the audio file, beside it -- unless that IS the audio file (the sound of an mp4).
+    // A stereo video carries its format's tag, which headset players read (stereoTag()): Song_SBSF.mp4.  A name
+    // given with -d is taken as it is.
     if ( s.output.isEmpty() )
     {
-        s.output = in.absolutePath() + "/" + in.completeBaseName() + ".mp4";
+        const QString tag = QString::fromLatin1( stereoTag( s.stereo ) );
+        s.output = in.absolutePath() + "/" + in.completeBaseName() + tag + ".mp4";
         if ( QFileInfo( s.output ).absoluteFilePath().compare( in.absoluteFilePath(), Qt::CaseInsensitive ) == 0 )
-            s.output = in.absolutePath() + "/" + in.completeBaseName() + " (Kaleidoscope).mp4";
+            s.output = in.absolutePath() + "/" + in.completeBaseName() + " (Kaleidoscope)" + tag + ".mp4";
     }
     s.output = QFileInfo( s.output ).absoluteFilePath();
     if ( QFileInfo( s.output ) == in )
@@ -412,7 +418,7 @@ bool VideoExport::prepare()
     RenderPipeline::M_FrameStep = static_cast<float>( 1.0 / ( static_cast<double>( s.fps ) * m_sub ) );
 
     fprintf( stderr, "[export] audio %.2f s, %lld frames at %d fps, %dx%d, %d sub-frame(s), encoder %s\n", m_duration,
-             m_frames, s.fps, s.width, s.height, m_sub, m_encoder.toUtf8().constData() );
+             m_frames, s.fps, frameWidth(), frameHeight(), m_sub, m_encoder.toUtf8().constData() );
     fprintf( stderr, "[export] output %s\n", s.output.toUtf8().constData() );
     fprintf( stderr, "[export] ffmpeg %s: %s\n", tool( "ffmpeg" ).toUtf8().constData(),
              m_encArgs.join( ' ' ).toUtf8().constData() );
@@ -696,7 +702,7 @@ void VideoExport::collect( int slot )
 QStringList VideoExport::ffmpegArgs() const
 {
     const Settings &s = M_Settings;
-    const QString   size = QString( "%1x%2" ).arg( s.width ).arg( s.height );
+    const QString   size = QString( "%1x%2" ).arg( frameWidth() ).arg( frameHeight() );
     QStringList     a;
     // Input 0: the frames, raw NV12 in BT.709 limited range -- said so, so ffmpeg inserts no conversion.
     // Input 1: the original audio file, re-encoded as AAC (what every player and site takes in an mp4).

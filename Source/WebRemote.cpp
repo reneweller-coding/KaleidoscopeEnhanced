@@ -132,6 +132,17 @@ static const char *kPageTemplate = R"HTML(<!DOCTYPE html>
  pre.info{background:#181826;border:1px solid #303048;border-radius:10px;
           padding:10px;font-size:.8em;color:#adf;white-space:pre-wrap;
           word-break:break-word;margin:6px 0}
+ /* The rating walk: three buttons a thumb finds without looking. */
+ button.rate{display:block;box-sizing:border-box;width:100%;margin:8px 0;
+             padding:20px 16px;font-size:1.3em}
+ button.rate.like{background:#1f4a2c;border-color:#4c8}
+ button.rate.never{background:#4a1f26;border-color:#c55}
+ button:disabled{opacity:.35}
+ .rstat{display:flex;justify-content:space-between;align-items:baseline;margin:8px 2px 2px}
+ .rstat b{color:#8cf;font-size:1.1em;font-weight:600}
+ .rscene{font-size:1em;margin:2px 2px 6px;word-break:break-word;min-height:1.3em}
+ .rbar{height:6px;background:#26263a;border-radius:3px;overflow:hidden}
+ .rbar i{display:block;height:100%;width:0;background:#8cf}
 </style></head><body>
 <h1>@@H1@@</h1>
 <img id="prev" style="width:100%;border-radius:10px;background:#000;min-height:80px"
@@ -144,6 +155,7 @@ static const char *kPageTemplate = R"HTML(<!DOCTYPE html>
 
 <div class="tabs">
  <button id="tab-live"    onclick="showTab('live')">@@TABLIVE@@</button>
+ <button id="tab-rate"    onclick="showTab('rate')">@@TABRATE@@</button>
  <button id="tab-presets" onclick="showTab('presets')">@@TABPRESETS@@</button>
  <button id="tab-capture" onclick="showTab('capture')">@@TABCAPTURE@@</button>
  <button id="tab-display" onclick="showTab('display')">@@TABDISPLAY@@</button>
@@ -178,6 +190,20 @@ static const char *kPageTemplate = R"HTML(<!DOCTYPE html>
  <label>@@LATENCY@@ <span class="val" id="vlatency"></span></label>
  <input type="range" id="latency" min="0" max="250" step="5"
         oninput="setv('latency',this.value/1000)">
+</div>
+
+<div class="panel" id="p-rate">
+ <div class="rstat"><b id="rcount">–</b><span id="rleft" style="color:#9ab"></span></div>
+ <div class="rscene" id="rscene">–</div>
+ <div class="rbar"><i id="rbar"></i></div>
+ <button class="rate like" id="rlike" onclick="rate('like')" disabled>&#9829; @@RATELIKE@@</button>
+ <button class="rate" id="rnext" onclick="rate('next')" disabled>&#9193; @@RATENEXT@@</button>
+ <button class="rate never" id="rnever" onclick="rate('never')" disabled>&#8856; @@RATENEVER@@</button>
+ <div class="row"><button id="rundo" onclick="rateCmd('/api/rate/undo')" disabled>&#8630; @@RATEUNDO@@</button></div>
+ <label>@@RATESECS@@ <span class="val" id="vratesecs"></span></label>
+ <input type="range" id="ratesecs" min="3" max="60" step="1" value="12" oninput="rateSecs(this.value)">
+ <button class="rate" id="rtoggle" onclick="rateToggle()">@@RATESTART@@</button>
+ <div class="hint">@@RATEHINT@@</div>
 </div>
 
 <div class="panel" id="p-presets">
@@ -273,7 +299,34 @@ function showTab(t){
  // The scene grid only makes sense (and only costs requests) while its own
  // tab is on screen -- leaving it means its lazy loader should stop too.
  if(t!='presets'&&scenesOpen) toggleScenes();
+ if(t=='rate') ratePoll();
  try{localStorage.setItem('krTab',t);}catch(e){}}
+// The rating walk: the server walks the scenes and keeps the verdicts; the page
+// shows where it stands (polled every second while its tab is open) and sends
+// the scene it shows with each verdict, so a second tap cannot judge the scene
+// after it.
+let rk='',rActive=false,rSecsHold=0;
+function rateShow(r){
+ rActive=!!r.active; rk=r.key||'';
+ document.getElementById('rcount').textContent='@@RATECOUNT@@'.replace('%1',r.rated).replace('%2',r.total);
+ document.getElementById('rscene').textContent=r.active?(r.scene||'–'):(r.done?'@@RATEDONE@@':'@@RATEOFF@@');
+ document.getElementById('rleft').textContent=r.active?(Math.ceil(r.left)+' s'):'';
+ document.getElementById('rbar').style.width=(r.active&&r.secs>0)?
+   Math.max(0,Math.min(100,100*(1-r.left/r.secs)))+'%':'0';
+ ['rlike','rnext','rnever'].forEach(id=>document.getElementById(id).disabled=!r.active);
+ document.getElementById('rundo').disabled=!r.last;
+ const t=document.getElementById('rtoggle');
+ t.textContent=r.active?'@@RATESTOP@@':'@@RATESTART@@'; t.className='rate'+(r.active?' active':'');
+ if(Date.now()>rSecsHold){document.getElementById('ratesecs').value=r.secs;
+  document.getElementById('vratesecs').textContent=Math.round(r.secs);}}
+function ratePoll(){fetch('/api/rate').then(r=>r.json()).then(rateShow).catch(()=>{});}
+function rateCmd(u){fetch(u,H).then(r=>r.json()).then(rateShow).catch(()=>{});}
+function rate(v){if(!rActive)return; if(navigator.vibrate)navigator.vibrate(15);
+ rateCmd('/api/rate/verdict?v='+v+'&k='+encodeURIComponent(rk));}
+function rateToggle(){rateCmd(rActive?'/api/rate/stop':'/api/rate/start?s='+document.getElementById('ratesecs').value);}
+function rateSecs(v){document.getElementById('vratesecs').textContent=v; rSecsHold=Date.now()+1500;
+ fetch('/api/rate/secs?s='+v,H);}
+setInterval(()=>{if(tab=='rate')ratePoll();},1000);
 const setCls=(id,on)=>{const e=document.getElementById(id);
  if(e) e.className=(e.id=='record'?'big rec':'')+(on?(e.id=='record'?' active':'active'):'');};
 function refresh(){ if(Date.now()<hold) return;
@@ -318,7 +371,7 @@ function refresh(){ if(Date.now()<hold) return;
    b.textContent=n; if(n===s.activeName)b.className='active';
    b.onclick=()=>cmd('/api/config?i='+i); c.appendChild(b);});
   const st=document.getElementById('stereo'); st.innerHTML='';
-  ['Aus','SBS','Top/Bottom','Anaglyph'].forEach((n,i)=>{
+  @@STEREOARR@@.forEach((n,i)=>{
    const b=document.createElement('button');
    b.textContent=n; if(i==s.stereoMode)b.className='active';
    b.onclick=()=>cmd('/api/set?k=stereomode&v='+i); st.appendChild(b);});
@@ -457,6 +510,20 @@ static QByteArray buildPage()
     // appears twice (initial button text + the JS that appends the version)
     sub( "@@INSTALLUPDATE@@", S_WR_INSTALLUPDATE );
     sub( "@@UPDATEHINT@@", S_WR_UPDATEHINT );
+    // The rating walk.  @@RATESTART@@/@@RATESTOP@@ appear twice (button text + the JS that swaps it); the texts go
+    // into single-quoted JS literals, and none of them holds a quote or a backslash.
+    sub( "@@TABRATE@@", S_WR_TAB_RATE );
+    sub( "@@RATESTART@@", S_WR_RATE_START );
+    sub( "@@RATESTOP@@", S_WR_RATE_STOP );
+    sub( "@@RATELIKE@@", S_WR_RATE_LIKE );
+    sub( "@@RATENEXT@@", S_WR_RATE_NEXT );
+    sub( "@@RATENEVER@@", S_WR_RATE_NEVER );
+    sub( "@@RATEUNDO@@", S_WR_RATE_UNDO );
+    sub( "@@RATECOUNT@@", S_WR_RATE_COUNT_FMT );
+    sub( "@@RATESECS@@", S_WR_RATE_SECS );
+    sub( "@@RATEHINT@@", S_WR_RATE_HINT );
+    sub( "@@RATEDONE@@", S_WR_RATE_DONE );
+    sub( "@@RATEOFF@@", S_WR_RATE_OFF );
     // @@LYRICSPREFIX@@ appears twice (the initial button text and the JS
     // template literal) -- QString::replace() with no count limit handles
     // both occurrences from one call, same as every sub() above.
@@ -464,6 +531,15 @@ static QByteArray buildPage()
     // The JS array literal: these three words are our OWN fixed translation
     // strings (never user data), so no JS-string escaping is needed -- see
     // Strings.cpp, none of them contain a quote/backslash.
+    // The stereo modes in the order of RenderPipeline::M_StereoMode (the button's index is the mode); our own
+    // texts again, none with a quote or a backslash.
+    {
+        QStringList modes;
+        for ( StrIdE id : { S_SETUP_STEREO_OFF, S_SETUP_STEREO_SBS, S_SETUP_STEREO_TB, S_SETUP_STEREO_ANA,
+                            S_SETUP_STEREO_FSBS, S_SETUP_STEREO_FTB } )
+            modes << "'" + QString::fromUtf8( Strings::uiText( id ) ) + "'";
+        page.replace( QLatin1String( "@@STEREOARR@@" ), "[" + modes.join( ',' ) + "]" );
+    }
     page.replace( QLatin1String( "@@LYRICSARR@@" ),
                   QString( "['%1','%2','%3']" )
                       .arg( QString::fromUtf8( Strings::uiText( S_WR_LYRICS_OFF ) ) )
@@ -616,6 +692,28 @@ static bool hostIsOurs( const QByteArray &host )
     return h == "localhost" || h == me || h == me + ".local";
 }
 
+/**  The rating walk's state as the page reads it (GET /api/rate and the answer to every /api/rate/... action).
+ *
+ * @param r       Where the walk stands. (in)
+ * @param result  The outcome of the action: a verdict's (RenderPipeline::rateScene()), else 0 or -1. (in)
+ *
+ * @return
+ *   The JSON object, UTF-8.
+ **/
+static QByteArray rateJson( const RenderPipeline::RatingState &r, int result )
+{
+    auto flag = []( bool b )
+    { return QString( b ? "1" : "0" ); };
+    return ( "{\"active\":" + flag( r.active ) + ",\"done\":" + flag( r.done )
+             + ",\"rated\":" + QString::number( r.rated ) + ",\"total\":" + QString::number( r.total )
+             + ",\"likes\":" + QString::number( r.likes ) + ",\"nexts\":" + QString::number( r.nexts )
+             + ",\"nevers\":" + QString::number( r.nevers ) + ",\"secs\":" + QString::number( r.secs, 'f', 1 )
+             + ",\"left\":" + QString::number( r.left, 'f', 1 ) + ",\"scene\":\"" + jsonEscape( r.scene )
+             + "\",\"key\":\"" + jsonEscape( r.key ) + "\",\"last\":\"" + jsonEscape( r.last )
+             + "\",\"result\":" + QString::number( result ) + "}" )
+        .toUtf8();
+}
+
 void WebRemote::handleConnection()
 {
     while ( QTcpSocket *sock = m_server->nextPendingConnection() )
@@ -685,7 +783,8 @@ void WebRemote::handleConnection()
                     const QString   path = url.path();
                     const QUrlQuery q( url );
                     const bool      reads = path == "/" || path == "/api/state" || path == "/api/snapshot"
-                                            || path == "/api/thumb" || path == "/api/scenes" || path == "/api/lastshot";
+                                            || path == "/api/thumb" || path == "/api/scenes" || path == "/api/lastshot"
+                                            || path == "/api/rate";
                     const bool      allowed = reads || headerValue( req, "X-Kaleido" ) == "1";
 
                     // A request that does something wakes a resting show; the page's own polling does not.
@@ -780,6 +879,28 @@ void WebRemote::handleConnection()
                         body = ( "{\"scenes\":[" + names.join( "," ) + "],\"taste\":[" + tastes.join( "," )
                                  + "],\"banned\":[" + bans.join( "," ) + "]}" )
                                    .toUtf8();
+                    }
+                    else if ( path.startsWith( "/api/rate" ) )
+                    {
+                        // The rating walk: every call answers with where the walk stands, so the page needs no
+                        // second request to show the next scene.  "result" is the verdict's outcome
+                        // (RenderPipeline::rateScene()) or whether start/undo took.
+                        int result = 0;
+                        if ( path == "/api/rate/start" )
+                        {
+                            const float secs = q.queryItemValue( "s" ).toFloat();
+                            result = m_widget->remoteRateStart( secs > 0.f ? secs : 12.f ) ? 0 : -1;
+                        }
+                        else if ( path == "/api/rate/stop" )
+                            m_widget->remoteRateStop();
+                        else if ( path == "/api/rate/secs" )
+                            m_widget->remoteRateSecs( q.queryItemValue( "s" ).toFloat() );
+                        else if ( path == "/api/rate/verdict" )
+                            result = m_widget->remoteRateVerdict( q.queryItemValue( "v" ),
+                                                                  q.queryItemValue( "k", QUrl::FullyDecoded ) );
+                        else if ( path == "/api/rate/undo" )
+                            result = m_widget->remoteRateUndo() ? 0 : -1;
+                        body = rateJson( m_widget->remoteRateState(), result );
                     }
                     else if ( path == "/api/ban" )
                         m_widget->remoteBan();
