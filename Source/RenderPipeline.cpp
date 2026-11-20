@@ -77,6 +77,7 @@ float RenderPipeline::M_LatencyLead = 0.05f;  // display-phase lead vs. heard au
 float RenderPipeline::M_FrameStep = 0.f;      // video export: fixed frame step (0 = live, wall clock)
 int   RenderPipeline::M_StereoMode = 0;       // stereoscopic output (CLI -3 / 'z')
 float RenderPipeline::M_StereoDepth = 1.0f;   // disparity strength
+bool  RenderPipeline::M_StereoFromCli = false; // -3 given: an export keeps the stereo format
 bool  RenderPipeline::M_Blackout = false;     // VJ blackout ('b')
 bool  RenderPipeline::M_RestDim = false;      // the rest mode's blackout (GLwidget)
 float RenderPipeline::M_Dim = 1.f;            // the sleep timer's dimming
@@ -188,7 +189,7 @@ void RenderPipeline::loadSettings()
     if ( qEnvironmentVariableIsSet( "KALEIDO_MOOD" ) )
         M_MoodStrength = clampParam( qEnvironmentVariable( "KALEIDO_MOOD" ).toFloat(), 0.f, 2.5f );
     M_LatencyLead = clampParam( s.value( "latencyLead", M_LatencyLead ).toFloat(), 0.f, 0.25f );
-    M_StereoMode = s.value( "stereoMode", M_StereoMode ).toInt() & 3;
+    setStereoMode( s.value( "stereoMode", M_StereoMode ).toInt() ); // 0..5; anything else is off
     M_SpoutClean = s.value( "spoutSource" ).toString().trimmed().compare( "clean", Qt::CaseInsensitive ) == 0;
     // Photo source. Empty (the shipped default) means "whatever the preset
     // says", which is the bundled Images/ folder -- see init().
@@ -912,12 +913,8 @@ void RenderPipeline::reinit( int width, int height )
     // at M_RenderScale × that; only the final present pass upscales to the display.
     m_displayW = width;
     m_displayH = height;
-    m_width = static_cast<int>( width * M_RenderScale + 0.5f );
-    if ( m_width < 16 )
-        m_width = 16;
-    m_height = static_cast<int>( height * M_RenderScale + 0.5f );
-    if ( m_height < 16 )
-        m_height = 16;
+    frameSize( width, height, m_width, m_height );
+    m_sizedStereo = stereoFull( M_StereoMode ) ? M_StereoMode : 0;
 
     m_nrTextureUploads = 0;
     /*	const GLubyte *extstr = glGetString(GL_EXTENSIONS);
@@ -988,6 +985,54 @@ void RenderPipeline::reinit( int width, int height )
 }
 
 
+void RenderPipeline::frameSize( int displayW, int displayH, unsigned int &w, unsigned int &h )
+{
+    // A full stereo format shows the frame twice -- beside or above each other -- so the frame is one eye's share of
+    // the display.  The half formats squeeze both eyes into the display; their frame is the display, as without
+    // stereo.
+    const int eye_w = ( M_StereoMode == 4 ) ? displayW / 2 : displayW;
+    const int eye_h = ( M_StereoMode == 5 ) ? displayH / 2 : displayH;
+    w = static_cast<unsigned int>( std::max( 16, static_cast<int>( eye_w * M_RenderScale + 0.5f ) ) );
+    h = static_cast<unsigned int>( std::max( 16, static_cast<int>( eye_h * M_RenderScale + 0.5f ) ) );
+}
+
+void RenderPipeline::ensureStereoTarget( StereoTarget &t, int w, int h )
+{
+    if ( t.fbo && t.w == w && t.h == h )
+        return;
+    if ( !t.fbo )
+    {
+        glGenFramebuffers( 1, &t.fbo );
+        glGenTextures( 1, &t.color );
+        glGenTextures( 1, &t.depth );
+    }
+    glBindTexture( GL_TEXTURE_2D, t.color );
+    // Mipmapped: the present pass reads coarse mips of its source (bloom, the pseudo-depth, the exposure).
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+    glTexImage2D( GL_TEXTURE_2D, 0, m_texInternalFormat, w, h, 0, m_texFormat, m_texType, NULL );
+    glGenerateMipmap( GL_TEXTURE_2D );
+    glBindTexture( GL_TEXTURE_2D, t.depth );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+    glTexImage2D( GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, w, h, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, NULL );
+    glBindTexture( GL_TEXTURE_2D, 0 );
+    glBindFramebuffer( GL_FRAMEBUFFER, t.fbo );
+    glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, t.color, 0 );
+    glFramebufferTexture2D( GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, t.depth, 0 );
+    if ( glCheckFramebufferStatus( GL_FRAMEBUFFER ) != GL_FRAMEBUFFER_COMPLETE )
+        fprintf( stderr, "STEREO: the %dx%d eye-packed target is incomplete\n", w, h );
+    else
+        fprintf( stderr, "STEREO: eye-packed target %dx%d (each eye %dx%d)\n", w, h, m_width, m_height );
+    glBindFramebuffer( GL_FRAMEBUFFER, m_defaultFBO );
+    t.w = w;
+    t.h = h;
+}
+
 // Lightweight resize – see header.  Only the off-screen FBO colour textures
 // depend on the window size; everything else (image textures, shader programs,
 // the FBOs themselves) is independent and is kept as-is.  setupFBOTexture()
@@ -999,15 +1044,11 @@ void RenderPipeline::resize( int width, int height )
     if ( width <= 0 || height <= 0 )
         return;
 
-    // width/height = display resolution; render at M_RenderScale × that.
+    // width/height = display resolution; render at M_RenderScale × that (× one eye's share in a full stereo format).
     m_displayW = width;
     m_displayH = height;
-    m_width = static_cast<int>( width * M_RenderScale + 0.5f );
-    if ( m_width < 16 )
-        m_width = 16;
-    m_height = static_cast<int>( height * M_RenderScale + 0.5f );
-    if ( m_height < 16 )
-        m_height = 16;
+    frameSize( width, height, m_width, m_height );
+    m_sizedStereo = stereoFull( M_StereoMode ) ? M_StereoMode : 0;
 
     // Effect shaders only need their reported resolution updated (no recompile).
     for ( unsigned int i = 0; i < m_effectTextures.size(); ++i )
@@ -1115,6 +1156,10 @@ void RenderPipeline::setupSafety()
         m_stereoMixTexBUni = glGetUniformLocation( m_stereoMixProgId, "texB" );
         m_stereoMixResUni = glGetUniformLocation( m_stereoMixProgId, "resolution" );
         m_stereoMixWUni = glGetUniformLocation( m_stereoMixProgId, "interpolation" );
+        m_stereoMixMonoAUni = glGetUniformLocation( m_stereoMixProgId, "monoA" );
+        m_stereoMixMonoBUni = glGetUniformLocation( m_stereoMixProgId, "monoB" );
+        m_stereoMixLayoutUni = glGetUniformLocation( m_stereoMixProgId, "eyeLayout" );
+        m_stereoMixDepthUni = glGetUniformLocation( m_stereoMixProgId, "stereoDepth" );
     }
     m_feedbackReady = m_present.ready() && trail_ok && ( m_trailProgId != 0 )
                       && ( m_trailCurUni >= 0 ) && ( m_trailPrevUni >= 0 );
@@ -2780,11 +2825,16 @@ void RenderPipeline::updateTrueStereoState()
     // replaces the styled combine (no warp may cross the eye boundary).
     // While packed content is up, no combine cross-fade may start.
     {
-        const bool stereo_on = ( M_StereoMode == 1 || M_StereoMode == 2 );
+        const bool stereo_on = stereoSideBySide( M_StereoMode ) || stereoTopBottom( M_StereoMode );
         const bool act_3d = m_effectTextures[m_scheduler.actTexture()]->is3D();
         const bool tex_solo = ( m_scheduler.texState() == 0 );
         const bool next_3d = m_effectTextures[m_scheduler.nextTexture()]->is3D();
-        m_trueStereoHold = stereo_on && act_3d && ( tex_solo || next_3d );
+        // A fade between a 3D and a 2D scene is packed too (20.11.2026): the 3D side renders per eye, the 2D side
+        // mono, and the mix gives it its two eyes (Engine/StereoMix.frag).  Until then such a fade dropped to the
+        // mono picture with the depth from its brightness, and the 3D scene's real depth vanished in one frame at its
+        // first (or appeared at its last): a card 8 units away jumped from 4.5 % of the eye's width in front of the
+        // screen to 0.4 % behind it.
+        m_trueStereoHold = stereo_on && ( tex_solo ? act_3d : ( act_3d || next_3d ) );
         m_trueStereoPacked = m_trueStereoHold
                              && m_scheduler.fxState() == 0;
         m_trueStereoNow = m_trueStereoPacked && tex_solo;
@@ -2798,10 +2848,18 @@ void RenderPipeline::updateTrueStereoState()
 void RenderPipeline::renderSceneStereo( EffectShader *fx ) const
 {
     Scene3DShader *s3 = static_cast<Scene3DShader *>( fx );
+    const bool     full = stereoFull( M_StereoMode );
     glEnable( GL_SCISSOR_TEST );
     for ( int e = 0; e < 2; ++e ) // e 0 = left eye, 1 = right
     {
-        if ( M_StereoMode == 1 ) // SBS: left half = left eye
+        if ( full ) // the bound target is twice the frame: each eye gets a whole frame (the projection's aspect --
+        {           // the frame's -- is then the eye's own)
+            const int x = stereoSideBySide( M_StereoMode ) ? e * m_width : 0;
+            const int y = stereoSideBySide( M_StereoMode ) ? 0 : ( e ? 0 : m_height ); // top = left eye
+            glViewport( x, y, m_width, m_height );
+            glScissor( x, y, m_width, m_height );
+        }
+        else if ( stereoSideBySide( M_StereoMode ) ) // SBS: left half = left eye
         {
             int hw = m_width / 2;
             glViewport( e * hw, 0, hw, m_height );
@@ -2835,9 +2893,15 @@ void RenderPipeline::renderActiveScenePass( const AudioFeatures &audioFx )
     if ( msaa_tex1 )
         ensureMsaaTargets( m_width, m_height );
     msaa_tex1 = msaa_tex1 && m_msaaReady;
+    // A full stereo format: the eye-packed frame is twice the frame's size, in a target of its own.
+    const bool full_packed = fullPacked() && tex1_is_3d; // the 2D side of a packed fade renders mono
+    if ( full_packed )
+        ensureStereoTarget( m_stereoTarget[0], stereoSideBySide( M_StereoMode ) ? 2 * m_width : m_width,
+                            stereoSideBySide( M_StereoMode ) ? m_height : 2 * m_height );
+    const GLuint scene_fbo = full_packed ? m_stereoTarget[0].fbo : ( msaa_tex1 ? m_msaaFbo : m_fboEffectTexture1 );
 
     // Do the FBO Stuff
-    glBindFramebuffer( GL_FRAMEBUFFER, msaa_tex1 ? m_msaaFbo : m_fboEffectTexture1 );
+    glBindFramebuffer( GL_FRAMEBUFFER, scene_fbo );
 
     // glFramebufferTexture2D( GL_FRAMEBUFFER, m_attachmentpoint, GL_TEXTURE_2D, m_texIDFBOEffectTexture1, 0);
 
@@ -2857,7 +2921,7 @@ void RenderPipeline::renderActiveScenePass( const AudioFeatures &audioFx )
     if ( m_effectTextures[m_scheduler.actTexture()]->usesShadow() )
     {
         renderShadowPass( m_effectTextures[m_scheduler.actTexture()] );
-        glBindFramebuffer( GL_FRAMEBUFFER, msaa_tex1 ? m_msaaFbo : m_fboEffectTexture1 );
+        glBindFramebuffer( GL_FRAMEBUFFER, scene_fbo );
     }
     // Second, independent shadow-casting light (studio-style two-light setup);
     // same scope as light 1 -- the active scene only, never the cross-fading
@@ -2866,7 +2930,7 @@ void RenderPipeline::renderActiveScenePass( const AudioFeatures &audioFx )
     if ( m_effectTextures[m_scheduler.actTexture()]->usesShadow2() )
     {
         renderShadowPass2( m_effectTextures[m_scheduler.actTexture()] );
-        glBindFramebuffer( GL_FRAMEBUFFER, msaa_tex1 ? m_msaaFbo : m_fboEffectTexture1 );
+        glBindFramebuffer( GL_FRAMEBUFFER, scene_fbo );
     }
 
     EffectShader::M_DepthValid[0] = tex1_is_3d ? 1.f : 0.f;
@@ -2880,7 +2944,7 @@ void RenderPipeline::renderActiveScenePass( const AudioFeatures &audioFx )
     m_effectTextures[m_scheduler.actTexture()]->enableShader();
     m_effectTextures[m_scheduler.actTexture()]->setUniforms( m_globaltime, m_interpolationTexture, 0, 1 );
     m_effectTextures[m_scheduler.actTexture()]->applyAudioFeatures( audioFx );
-    if ( m_trueStereoPacked )
+    if ( m_trueStereoPacked && tex1_is_3d )
         renderSceneStereo( m_effectTextures[m_scheduler.actTexture()] );
     else
         m_effectTextures[m_scheduler.actTexture()]->draw();
@@ -2926,9 +2990,14 @@ void RenderPipeline::renderNextScenePass( const AudioFeatures &audioFx )
         if ( msaa_tex2 )
             ensureMsaaTargets( m_width, m_height );
         msaa_tex2 = msaa_tex2 && m_msaaReady;
+        const bool full_packed = fullPacked() && tex2_is_3d;
+        if ( full_packed )
+            ensureStereoTarget( m_stereoTarget[1], stereoSideBySide( M_StereoMode ) ? 2 * m_width : m_width,
+                                stereoSideBySide( M_StereoMode ) ? m_height : 2 * m_height );
 
         // Do the FBO Stuff
-        glBindFramebuffer( GL_FRAMEBUFFER, msaa_tex2 ? m_msaaFbo : m_fboEffectTexture2 );
+        glBindFramebuffer( GL_FRAMEBUFFER,
+                           full_packed ? m_stereoTarget[1].fbo : ( msaa_tex2 ? m_msaaFbo : m_fboEffectTexture2 ) );
 
         EffectShader::M_DepthValid[1] = tex2_is_3d ? 1.f : 0.f;
         if ( EffectShader::M_DepthValid[1] == 0.f )
@@ -2940,8 +3009,8 @@ void RenderPipeline::renderNextScenePass( const AudioFeatures &audioFx )
         m_effectTextures[m_scheduler.nextTexture()]->enableShader();
         m_effectTextures[m_scheduler.nextTexture()]->setUniforms( m_globaltime, m_interpolationTexture, 0, 1 );
         m_effectTextures[m_scheduler.nextTexture()]->applyAudioFeatures( audioFx );
-        if ( m_trueStereoPacked )                                             // 3D<->3D fade: the incoming scene is
-            renderSceneStereo( m_effectTextures[m_scheduler.nextTexture()] ); // eye-packed too
+        if ( m_trueStereoPacked && tex2_is_3d )                               // a packed fade: an incoming 3D scene
+            renderSceneStereo( m_effectTextures[m_scheduler.nextTexture()] ); // is eye-packed too
         else
             m_effectTextures[m_scheduler.nextTexture()]->draw();
 
@@ -2963,13 +3032,17 @@ GLuint RenderPipeline::prepareFxInputs()
     // TRANSFORMED frame instead.  Never on eye-packed frames (warping a
     // packed stereo frame shears the two eyes against each other), and the
     // "next" slot only when its pass actually rendered this frame.
-    GLuint fx_tex1 = m_texIDFBOEffectTexture1;
-    GLuint fx_tex2 = m_texIDFBOEffectTexture2;
-    if ( !m_trueStereoPacked )
+    GLuint     fx_tex1 = m_texIDFBOEffectTexture1;
+    GLuint     fx_tex2 = m_texIDFBOEffectTexture2;
+    // The mono (2D) side of a packed fade is a frame like any other: its rig still moves it.
+    const bool packed1 = m_trueStereoPacked && m_effectTextures[m_scheduler.actTexture()]->is3D();
+    const bool packed2 = m_trueStereoPacked && m_effectTextures[m_scheduler.nextTexture()]->is3D();
+    if ( !packed1 || ( m_scheduler.texState() != 0 && !packed2 ) )
     {
-        fx_tex1 = rig2Transform( m_effectTextures[m_scheduler.actTexture()],
-                                 m_texIDFBOEffectTexture1, 0 );
-        if ( m_scheduler.texState() != 0 )
+        if ( !packed1 )
+            fx_tex1 = rig2Transform( m_effectTextures[m_scheduler.actTexture()],
+                                     m_texIDFBOEffectTexture1, 0 );
+        if ( m_scheduler.texState() != 0 && !packed2 )
             fx_tex2 = rig2Transform( m_effectTextures[m_scheduler.nextTexture()],
                                      m_texIDFBOEffectTexture2, 1 );
         glBindFramebuffer( GL_FRAMEBUFFER, m_defaultFBO );
@@ -2997,7 +3070,7 @@ GLuint RenderPipeline::prepareFxInputs()
     return fx_tex1;
 }
 
-void RenderPipeline::renderStereoMixPass()
+void RenderPipeline::renderStereoMixPass( int w, int h )
 {
     // Packed 3D<->3D cross-fade: plain per-pixel mix of the two
     // eye-packed frames — same endpoint weighting as the Crossfade
@@ -3008,11 +3081,18 @@ void RenderPipeline::renderStereoMixPass()
     if ( m_stereoMixTexBUni >= 0 )
         glUniform1i( m_stereoMixTexBUni, 4 );
     if ( m_stereoMixResUni >= 0 )
-        glUniform2f( m_stereoMixResUni,
-                     static_cast<float>( m_width ), static_cast<float>( m_height ) );
+        glUniform2f( m_stereoMixResUni, static_cast<float>( w ), static_cast<float>( h ) );
     if ( m_stereoMixWUni >= 0 )
         glUniform1f( m_stereoMixWUni,
                      m_scheduler.texInterp() );
+    if ( m_stereoMixMonoAUni >= 0 )
+        glUniform1i( m_stereoMixMonoAUni, m_effectTextures[m_scheduler.actTexture()]->is3D() ? 0 : 1 );
+    if ( m_stereoMixMonoBUni >= 0 )
+        glUniform1i( m_stereoMixMonoBUni, m_effectTextures[m_scheduler.nextTexture()]->is3D() ? 0 : 1 );
+    if ( m_stereoMixLayoutUni >= 0 )
+        glUniform1i( m_stereoMixLayoutUni, stereoSideBySide( M_StereoMode ) ? 1 : 2 );
+    if ( m_stereoMixDepthUni >= 0 )
+        glUniform1f( m_stereoMixDepthUni, M_StereoDepth );
     drawWindow();
 }
 
@@ -3097,6 +3177,47 @@ void RenderPipeline::renderNextOverlayPass( const AudioFeatures &audioFx )
 
 void RenderPipeline::renderFxStage( const AudioFeatures &audioFx )
 {
+    m_stereoPresent = 0;
+    if ( fullPacked() )
+    {
+        // The eye-packed frame of a full format is twice the frame's size and goes straight to the present pass --
+        // what the FX stage does to a packed frame of the half formats is a passthrough (solo) or a plain mix (a
+        // 3D<->3D fade) anyway.
+        const int w = static_cast<int>( m_width ), h = static_cast<int>( m_height );
+        const int pw = stereoSideBySide( M_StereoMode ) ? 2 * w : w;
+        const int ph = stereoSideBySide( M_StereoMode ) ? h : 2 * h;
+        m_stereoPresent = m_stereoTarget[0].color; // solo: always a 3D scene (updateTrueStereoState())
+        m_stereoPresentW = m_stereoTarget[0].w;
+        m_stereoPresentH = m_stereoTarget[0].h;
+        m_fadeInTex = 0;
+        if ( m_scheduler.texState() != 0 && m_stereoMixProgId != 0 )
+        {
+            // A fade: each side packed (a 3D scene, its own target) or mono (a 2D scene, its frame, rig applied).
+            const GLuint fx_tex1 = prepareFxInputs();
+            const GLuint fx_tex2 = m_fadeInTex; // prepareFxInputs() leaves the incoming side there
+            const bool   act_3d = m_effectTextures[m_scheduler.actTexture()]->is3D();
+            const bool   next_3d = m_effectTextures[m_scheduler.nextTexture()]->is3D();
+            const GLuint ta = act_3d ? m_stereoTarget[0].color : fx_tex1;
+            const GLuint tb = next_3d ? m_stereoTarget[1].color : fx_tex2;
+            StereoTarget &mix = m_stereoTarget[2];
+            ensureStereoTarget( mix, pw, ph );
+            glBindFramebuffer( GL_FRAMEBUFFER, mix.fbo );
+            glViewport( 0, 0, pw, ph );
+            glActiveTexture( GL_TEXTURE3 );
+            glBindTexture( GL_TEXTURE_2D, ta );
+            glActiveTexture( GL_TEXTURE4 );
+            glBindTexture( GL_TEXTURE_2D, tb );
+            glActiveTexture( GL_TEXTURE0 );
+            renderStereoMixPass( pw, ph );
+            m_stereoPresent = mix.color;
+            m_stereoPresentW = pw;
+            m_stereoPresentH = ph;
+            m_fadeInTex = tb; // the exposure measures the incoming scene, as in every fade
+            glViewport( 0, 0, w, h );
+        }
+        glBindFramebuffer( GL_FRAMEBUFFER, m_defaultFBO );
+        return;
+    }
     const GLuint fx_tex1 = prepareFxInputs();
 
     glBindFramebuffer( GL_FRAMEBUFFER, m_fboEffectFx1 );
@@ -3109,7 +3230,7 @@ void RenderPipeline::renderFxStage( const AudioFeatures &audioFx )
     }
     else if ( m_trueStereoPacked && m_stereoMixProgId != 0 )
     {
-        renderStereoMixPass();
+        renderStereoMixPass( m_width, m_height );
     }
     else
     {
@@ -3177,6 +3298,13 @@ GLuint RenderPipeline::renderTrailsPass( const AudioFeatures &audio, const Audio
         int   prev = 1 - m_trailIdx;
         float decay = M_TrailAmount * ( 0.90f + 0.08f * audio.ambientFactor )
                       * audio.musicPresence;
+        // The packed frame of a full stereo format bypassed the trails (paint()): what they hold is stale, so they
+        // start over with the first frame after it rather than fade an old picture in.
+        if ( m_trailRestart )
+        {
+            decay = 0.f;
+            m_trailRestart = false;
+        }
         // A loaded model gets almost no feedback trail. The trail layer's warp
         // field deliberately rides the beat (ripple below), which on abstract
         // material is the liquid MilkDrop look -- but on a solid object it
@@ -3336,8 +3464,10 @@ void RenderPipeline::runPresentPass( GLuint presentSource, const AudioFeatures &
         PresentPass::Inputs pin;
         pin.source = presentSource;
         pin.targetFbo = m_defaultFBO;
-        pin.renderW = m_width;
-        pin.renderH = m_height;
+        // The packed frame of a full stereo format is twice the frame's size.
+        const bool full_src = m_stereoPresent != 0 && presentSource == m_stereoPresent;
+        pin.renderW = full_src ? m_stereoPresentW : m_width;
+        pin.renderH = full_src ? m_stereoPresentH : m_height;
         pin.displayW = m_displayW;
         pin.displayH = m_displayH;
         pin.fx = &audioFx;
@@ -3440,7 +3570,9 @@ void RenderPipeline::runPresentPass( GLuint presentSource, const AudioFeatures &
             pin.paletteA[pi] = m_overlay.paletteA[pi];
             pin.paletteB[pi] = m_overlay.paletteB[pi];
         }
-        pin.sceneDepthTex = m_depthTexEffect1;
+        pin.sceneDepthTex = ( full_src && m_effectTextures[m_scheduler.actTexture()]->is3D() )
+                                ? m_stereoTarget[0].depth
+                                : m_depthTexEffect1;
         pin.depthPar = m_trailDepth3D;
         pin.nearZ = EffectShader::SceneNear;
         pin.farZ = EffectShader::SceneFar;
@@ -3451,6 +3583,10 @@ void RenderPipeline::runPresentPass( GLuint presentSource, const AudioFeatures &
 void RenderPipeline::paint( const float *rotMatrix, float tx, float ty, float tz,
                             const AudioFeatures &audio )
 {
+    // A full stereo format renders the frame at one eye's size: a switch into, out of or between them ('z', the
+    // remote) sizes the frame anew before anything is drawn.
+    if ( ( stereoFull( M_StereoMode ) ? M_StereoMode : 0 ) != m_sizedStereo && m_displayW > 0 && m_displayH > 0 )
+        resize( m_displayW, m_displayH );
     beginFrame( audio );
     updateLiveInput();
     updateTimingScale( audio );
@@ -3553,10 +3689,15 @@ void RenderPipeline::paint( const float *rotMatrix, float tx, float ty, float tz
     m_scheduler.tickFx( sched_tick, m_trueStereoHold );
 
     renderFxStage( audio_fx );
-    renderFinalBlend();
+    if ( !m_stereoPresent )
+        renderFinalBlend();
 
-    const GLuint present_source =
-        renderTrailsPass( audio, audio_fx, time_since_last_frame_sec, dt_wall );
+    // The packed frame of a full stereo format (renderFxStage()) is the present pass's source as it is.
+    const GLuint present_source = m_stereoPresent
+                                      ? m_stereoPresent
+                                      : renderTrailsPass( audio, audio_fx, time_since_last_frame_sec, dt_wall );
+    if ( m_stereoPresent )
+        m_trailRestart = true;
 
     glcoreDebugMark( "present" );
     runPresentPass( present_source, audio, audio_fx, time_since_last_frame_sec, dt_wall );
@@ -3572,7 +3713,8 @@ void RenderPipeline::paint( const float *rotMatrix, float tx, float ty, float tz
         if ( !m_spoutStarted )
             m_spoutStarted = spoutOutInit( "Kaleidoscope" );
         if ( M_SpoutClean )
-            spoutOutSend( present_source, m_width, m_height );
+            spoutOutSend( present_source, m_stereoPresent ? m_stereoPresentW : m_width,
+                          m_stereoPresent ? m_stereoPresentH : m_height );
         else
         {
             glBindFramebuffer( GL_FRAMEBUFFER, m_defaultFBO );

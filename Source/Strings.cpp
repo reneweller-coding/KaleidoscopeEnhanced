@@ -148,8 +148,8 @@ const char *kDE[S_COUNT] = {
     /* S_SETUP_LATENCY */ "Latenz-Vorlauf:",
     /* S_SETUP_RENDERSCALE */ "Render-Skalierung:",
     /* S_SETUP_STEREO_OFF */ "Aus",
-    /* S_SETUP_STEREO_SBS */ "Side-by-Side",
-    /* S_SETUP_STEREO_TB */ "Top-Bottom",
+    /* S_SETUP_STEREO_SBS */ "Side-by-Side halb",
+    /* S_SETUP_STEREO_TB */ "Top-Bottom halb",
     /* S_SETUP_STEREO_ANA */ "Anaglyph (Rot/Cyan)",
     /* S_SETUP_STEREOMODE */ "Stereoskopie:",
     /* S_SETUP_STEREODEPTH */ "Stereo-Tiefe:",
@@ -400,6 +400,8 @@ const char *kDE[S_COUNT] = {
     /* S_FB_RATE_STOP_FMT */ "Bewerten beendet: %1 von %2 bewertet",
     /* S_FB_RATE_DONE */ "Bewerten: alle Szenen dieses Presets sind bewertet",
     /* S_FB_RATE_UNDO_FMT */ "Urteil zurückgenommen: %1",
+    /* S_SETUP_STEREO_FSBS */ "Side-by-Side voll (Brille)",
+    /* S_SETUP_STEREO_FTB */ "Top-Bottom voll (Brille)",
 };
 
 /** The English texts, in the same order as kDE. */
@@ -525,8 +527,8 @@ const char *kEN[S_COUNT] = {
     /* S_SETUP_LATENCY */ "Latency lead:",
     /* S_SETUP_RENDERSCALE */ "Render scale:",
     /* S_SETUP_STEREO_OFF */ "Off",
-    /* S_SETUP_STEREO_SBS */ "Side-by-Side",
-    /* S_SETUP_STEREO_TB */ "Top-Bottom",
+    /* S_SETUP_STEREO_SBS */ "Side-by-side half",
+    /* S_SETUP_STEREO_TB */ "Top-bottom half",
     /* S_SETUP_STEREO_ANA */ "Anaglyph (Red/Cyan)",
     /* S_SETUP_STEREOMODE */ "Stereoscopy:",
     /* S_SETUP_STEREODEPTH */ "Stereo depth:",
@@ -777,6 +779,8 @@ const char *kEN[S_COUNT] = {
     /* S_FB_RATE_STOP_FMT */ "Rating stopped: %1 of %2 rated",
     /* S_FB_RATE_DONE */ "Rating: every scene of this preset is rated",
     /* S_FB_RATE_UNDO_FMT */ "Verdict taken back: %1",
+    /* S_SETUP_STEREO_FSBS */ "Side-by-side full (headset)",
+    /* S_SETUP_STEREO_FTB */ "Top-bottom full (headset)",
 };
 
 } // namespace

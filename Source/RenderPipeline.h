@@ -702,15 +702,24 @@ public:
      **/
     static void setStrictLight( bool on ) { M_StrictLight = on; }
 
-    // ---- Stereoscopic output (CLI -3 sbs|tb|ana; key 'z' cycles, c/m depth) --
+    // ---- Stereoscopic output (CLI -3 sbs|tb|ana|fsbs|ftb; key 'z' cycles, c/m depth) --
     // The mono frame is DEPTH-REPROJECTED in the present pass: a pseudo-depth
     // (smoothed brightness pops bright structures forward, the radial term
     // sinks the tunnel centre) drives a small horizontal disparity per eye.
     // Side-by-side / top-bottom feed 3D projectors and HMD video viewers
     // (Virtual Desktop, Bigscreen, ...); red-cyan anaglyph works on any
     // screen.  No native OpenXR — deliberately a display-format feature.
-    static int   M_StereoMode;  ///< Stereoscopic output mode: 0 off, 1 SBS, 2 top-bottom, 3 anaglyph.
-    static float M_StereoDepth; ///< Stereo disparity strength, 0..2 (default 1).
+    // The "half" formats (1, 2) squeeze both eyes into the display's size;
+    // the "full" ones (4, 5, 20.11.2026) give each eye the frame's whole size,
+    // so the display is the frame twice: the pipeline renders the frame at
+    // the size of ONE eye (frameSize()), and a solo 3D scene renders its two
+    // eyes into a target twice that size (m_stereoTarget).
+    static int   M_StereoMode;     ///< Stereoscopic output mode: 0 off, 1 SBS (half), 2 top-bottom (half), 3 anaglyph,
+                                   ///< 4 SBS full, 5 top-bottom full.
+    static float M_StereoDepth;    ///< Stereo disparity strength, 0..2 (default 1).
+    static bool  M_StereoFromCli;  ///< -3 was given: a video export keeps the stereo format (it drops the ini's).
+    /** Number of stereo output modes (0 .. StereoModes - 1). */
+    static constexpr int StereoModes = 6;
     /**  Cycles to the next stereoscopic output mode (key 'z').
      *
      * @sideeffects
@@ -718,8 +727,32 @@ public:
      **/
     static void cycleStereo()
     {
-        M_StereoMode = ( M_StereoMode + 1 ) & 3;
+        M_StereoMode = ( M_StereoMode + 1 ) % StereoModes;
     }
+    /**  Whether a mode puts the two eyes beside each other (1 half, 4 full).
+     *
+     * @param m  The mode. (in)
+     *
+     * @return
+     *   True for side-by-side.
+     **/
+    static bool stereoSideBySide( int m ) { return m == 1 || m == 4; }
+    /**  Whether a mode puts the left eye above the right one (2 half, 5 full).
+     *
+     * @param m  The mode. (in)
+     *
+     * @return
+     *   True for top-bottom.
+     **/
+    static bool stereoTopBottom( int m ) { return m == 2 || m == 5; }
+    /**  Whether a mode gives each eye the frame's whole size (the display is the frame twice).
+     *
+     * @param m  The mode. (in)
+     *
+     * @return
+     *   True for 4 and 5.
+     **/
+    static bool stereoFull( int m ) { return m == 4 || m == 5; }
     /**  Returns the current stereoscopic output mode.
      *
      * @return
@@ -752,15 +785,15 @@ public:
      *   Changes M_StereoDepth.
      **/
     static void setStereoDepth( float v ) { M_StereoDepth = clampParam( v, 0.f, 2.f ); }
-    /**  Selects a stereoscopic output mode directly (0 off, 1 SBS, 2 top-bottom, 3 anaglyph) -- the web remote picks
-     * one, the keyboard's 'z' cycles.
+    /**  Selects a stereoscopic output mode directly -- the web remote picks one, the keyboard's 'z' cycles.
      *
-     * @param m  0 off, 1 side by side, 2 top-bottom, 3 anaglyph; negative values count as 0. (in)
+     * @param m  0 off, 1 side by side, 2 top-bottom, 3 anaglyph, 4 side by side full, 5 top-bottom full; anything
+     *           else counts as 0. (in)
      *
      * @sideeffects
      *   Changes M_StereoMode.
      **/
-    static void setStereoMode( int m ) { M_StereoMode = ( m < 0 ) ? 0 : ( m & 3 ); }
+    static void setStereoMode( int m ) { M_StereoMode = ( m < 0 || m >= StereoModes ) ? 0 : m; }
 
     // ---- VJ handbrakes ----
     // Blackout (key 'b'): fade the OUTPUT to black (window, Spout, recording —
@@ -1769,6 +1802,9 @@ private:
      * inside its half.
      *
      * @param fx  The 3D scene to render per eye. (in)
+     *
+     * In the half formats the halves are those of the frame (each eye squeezed, with the frame's aspect); in the full
+     * ones the bound FBO is an m_stereoTarget, and each half is a whole frame.
      **/
     void renderSceneStereo( EffectShader *fx ) const;
     /**  Renders the ACTIVE scene: shadow maps, optional MSAA target, the scene itself, MSAA resolve and the OIT pass.
@@ -1800,10 +1836,13 @@ private:
      *   The texture the transition pass must treat as the outgoing scene.
      **/
     GLuint prepareFxInputs();
-    /**  Packed 3D<->3D cross-fade: a plain per-pixel mix of the two eye-packed frames, guaranteed warp-free (any warp
-     * would fold content across the eye boundary).
+    /**  Packed 3D<->3D cross-fade: a plain per-pixel mix of the two eye-packed frames (units 3 and 4), guaranteed
+     * warp-free (any warp would fold content across the eye boundary).
+     *
+     * @param w  Width of the bound target (the frame's; twice it for the full side-by-side format). (in)
+     * @param h  Its height. (in)
      **/
-    void renderStereoMixPass();
+    void renderStereoMixPass( int w, int h );
     /**  Blends the outgoing and incoming scene with the rolled Transitions/ shader, but only while a scene fade is
      * running.
      *
@@ -1907,6 +1946,50 @@ private:
     GLint m_stereoMixTexBUni = -1; ///< Uniform location of "texB" in m_stereoMixProgId.
     GLint m_stereoMixResUni = -1;  ///< Uniform location of "resolution" in m_stereoMixProgId.
     GLint m_stereoMixWUni = -1;    ///< Uniform location of "interpolation" (cross-fade weight) in m_stereoMixProgId.
+    GLint m_stereoMixMonoAUni = -1;  ///< Uniform location of "monoA" (texA is a mono 2D frame) in m_stereoMixProgId.
+    GLint m_stereoMixMonoBUni = -1;  ///< Uniform location of "monoB" in m_stereoMixProgId.
+    GLint m_stereoMixLayoutUni = -1; ///< Uniform location of "eyeLayout" (1 side by side, 2 top-bottom).
+    GLint m_stereoMixDepthUni = -1;  ///< Uniform location of "stereoDepth" in m_stereoMixProgId.
+    // The full stereo formats (4, 5): a packed 3D frame needs twice the frame's size -- each eye at the frame's own
+    // size -- and goes to the present pass on its own (the combine and the trails are a passthrough for it anyway).
+    /** One eye-packed target of the full formats: colour (mipmapped: the present pass reads mips) and depth. */
+    struct StereoTarget
+    {
+        GLuint fbo = 0;   ///< The framebuffer.
+        GLuint color = 0; ///< Its colour texture.
+        GLuint depth = 0; ///< Its depth texture (the scene's own depth test).
+        int    w = 0;     ///< Width the textures were allocated at.
+        int    h = 0;     ///< Height.
+    };
+    StereoTarget m_stereoTarget[3];  ///< 0 the outgoing (or solo) scene, 1 the incoming one, 2 their mix.
+    GLuint       m_stereoPresent = 0; ///< This frame's packed full-format source for the present pass (0 = none).
+    int          m_stereoPresentW = 0; ///< Its width.
+    int          m_stereoPresentH = 0; ///< Its height.
+    int          m_sizedStereo = 0;   ///< The full stereo mode (4, 5) the frame was last sized for; 0 = none.
+    bool         m_trailRestart = false; ///< The trails start over on the next frame (a packed full-format stretch
+                                         ///< left them stale).
+    /**  The size the pipeline renders at for a display of @p displayW x @p displayH: one eye's in the full stereo
+     * formats, times the render scale.
+     *
+     * @param displayW  Display width. (in)
+     * @param displayH  Display height. (in)
+     * @param w         The frame's width, at least 16. (out)
+     * @param h         The frame's height, at least 16. (out)
+     **/
+    static void frameSize( int displayW, int displayH, unsigned int &w, unsigned int &h );
+    /**  Whether the packed frame of this frame goes the full formats' way (m_stereoTarget).
+     *
+     * @return
+     *   True while a full stereo format is on and the frame is eye-packed.
+     **/
+    bool fullPacked() const { return m_trueStereoPacked && stereoFull( M_StereoMode ); }
+    /**  Allocates (or re-allocates on a size change) one eye-packed target of the full formats.
+     *
+     * @param t  The target. (in,out)
+     * @param w  Its width: twice the frame's for side by side. (in)
+     * @param h  Its height: twice the frame's for top-bottom. (in)
+     **/
+    void ensureStereoTarget( StereoTarget &t, int w, int h );
     // Fixed-function copy of a texture into the bound FBO (combine bypass).
     /**  Draws @p tex into the currently bound framebuffer unchanged (fixed-function-style blit via a tiny dedicated
      * shader).

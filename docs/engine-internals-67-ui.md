@@ -66,3 +66,71 @@ file holds their notes until they are folded into docs/engine-internals.md.
   `language` key. The Setup tool (`--script-shot`, new: saves the window as it first appears and quits) shows
   "Language: English" / "Sprache: Deutsch" under the two locales. The on-screen menu was not opened (no key presses in
   tests); it reads the same table.
+
+### H2. Stereo for headsets: full side-by-side and top-bottom, in the export too
+
+- *What was there (measured first).* Live, the half formats were right: a solo 3D scene rendered once per eye
+  (measured in the window, `Tools/stereo_disparity.py --live`: the three cards of `Engine/StereoProbe3D` at 8, 24 and
+  60 units at -4.51, 0.00 and +1.32 % of the eye's width, right minus left, predicted -4.50, 0, +1.35).  **The video
+  export wrote no stereo at all:** `GLwidget::beginExport()` set the stereo mode to 0 ("packing would halve the
+  picture"), so `-e ... -3 sbs` and `-3 tb` gave a plain 960 x 540 picture.  **A fade between a 3D and a 2D scene
+  dropped the real depth in one frame:** the packed state only covered a solo 3D scene and 3D<->3D fades, so the
+  first frame of a 3D -> 2D fade rendered the 3D scene mono and gave it the depth of its brightness -- the near card
+  went from -4.58 % (in front of the screen) to +0.42 % (behind it), and back the other way at the end of a 2D -> 3D
+  fade.
+- *What changed.*
+  - Two more modes, 4 full side-by-side and 5 full top-bottom (`-3 fsbs` / `ftb`, `z`, the menu, the Setup tool, the
+    remote): each eye gets the frame's whole size and the picture is twice as wide or high.  The pipeline renders
+    the frame at ONE eye's size (`RenderPipeline::frameSize()`: half the display's width or height; a switch at run
+    time resizes it at the start of the next frame), so a 2D scene renders as before and the present pass shows it
+    in both halves; `Present.frag` takes the frame's proportions from `frameRes` (one eye) instead of the display.
+    A solo 3D scene renders its two eyes into a target twice the frame's size (`m_stereoTarget`, each eye a whole
+    frame -- its projection then has the eye's own aspect), which goes straight to the present pass; the combine
+    and the trails were a passthrough for a packed frame anyway (the trails start over after it, `m_trailRestart`).
+  - The export keeps a stereo mode given with `-3` (the ini's stays a live setting); `-g` is one eye's size in the
+    full formats (`VideoExport::frameWidth()/frameHeight()` double it for the encoder and its probe), and the default
+    file name carries the layout: `_SBS`, `_TB`, `_SBSF`, `_TBF`.  Looked up: DeoVR reads SBS / LR / 3DH and TB / 3DV
+    / OverUnder anywhere in the name, case-insensitive (deovr.com/doc, section 10); HereSphere reads `_sbs` as
+    side-by-side and `_SBSF` / `_LRF` as full side-by-side (its developer, itch.io).  Neither documents a tag for full
+    top-bottom; `_TBF` follows the pattern.  A name given with `-d` is kept.
+  - A fade between a 3D and a 2D scene is packed now, in every packed format: the 3D side renders per eye, the 2D
+    side mono, and `Engine/StereoMix.frag` gives the mono side its two eyes with the depth the present pass would give
+    it (its bloom does not exist at that point: a bright pass over a 3 x 3 blur stands in).  The rig of the 2D side
+    still moves it.
+- *Measured* (`Tools/stereo_disparity.py`: the export at 960 x 540 per frame/eye, silence, `KALEIDO_SCENE_SWEEP=4`;
+  per eye = the image's offset from the middle of the two, in % of the eye's width):
+
+  | Format | Video | Near card (8) | Zero plane (24) | Far card (60) | Grey disc (2D) |
+  |---|---|---|---|---|---|
+  | predicted | | -4.50 | 0.00 | +1.35 | +0.40 |
+  | sbs | 960 x 540 | -4.58 | 0.00 | +1.25 | +0.41 |
+  | tb | 960 x 540 | -4.37 | 0.00 | +1.46 | +0.41 |
+  | fsbs | 1920 x 540 | -4.37 | 0.00 | +1.46 | +0.41 |
+  | ftb | 960 x 1080 | -4.39 | 0.00 | +1.46 | +0.40 |
+  | mono | 960 x 540 | 0.00 | 0.00 | 0.00 | 0.00 |
+
+  Sign per eye: the near card's image lies 2.2..2.3 % right of the middle in the left eye and as far left in the
+  right one (crossed: in front of the screen), the far card's 0.6..0.7 % the other way (behind it).  The deviations
+  are one pixel of the 480- or 960-pixel eye.  The 2D grey disc is too dark for the bloom, so its depth is the radial
+  term alone and the prediction exact; the white disc lies in front of it (+0.08..+0.15 %) -- but still behind the
+  screen: with the zero plane at a depth of 0.45, a 2D picture lies behind the screen except where its bloom is
+  bright.  Live in a 2880 x 1620 window: sbs and tb as above; fsbs (eyes 1440 x 1620, 8:9) -11.25 / -2.29 / +0.49
+  (predicted -11.26 / -2.25 / +0.45), ftb (eyes 2880 x 810, 32:9) -1.11 / +1.11 / +1.81 (-1.13 / +1.12 / +1.80) --
+  the zero plane moves with the eye's aspect (it lies where projM[0][0] / z = 0.045: 24 units at 16:9, 48 at 8:9,
+  6 at 32:9), which is the convention every 3D scene was written for; a full format on a 16:9 window has such eyes,
+  a 32:9 or doubled virtual screen has 16:9 ones.  Switching 1 -> 4 -> 5 -> 2 -> 4 -> 0 at run time over `/api`
+  measured the same.
+- *The fade, after:* the near card holds -4.58 % (sbs) and -4.37..-4.58 % (fsbs) through the fade until it is gone;
+  the white disc comes in at +0.03..+0.08 % and settles at +0.11..+0.14 % once the 2D scene stands alone (the
+  bloom stand-in; a step of at most 0.06 % of the eye's width, against the 5 % jump before).
+- *Half formats unchanged:* frozen frames (`KALEIDO_FREEZE_SHOT`, the displayed picture with its packing) of
+  StereoProbe3D, StereoProbe2D, PhotoCarousel (3D) and BreathingFractal (2D) in modes 0..3, from a build of
+  3b047c36 and from this one (`Tools/stereo_ab.py`): mean and largest difference 0 in all 16.  What does change in
+  the half formats is the 2D <-> 3D fade above, on purpose.
+- *Encoder limits* (the export's own NVENC settings, 1-s clips, RTX 5090): 2 x 1920 x 1080 -- H.265 level 5.0
+  (automatic), H.264 5.1, AV1 5.1; 2 x 2560 x 1440 (5120 x 1440) -- H.265 5.1, H.264 refuses (wider than 4096);
+  2 x 3840 x 2160 (7680 x 2160) -- H.265 6.1 at 60 fps, 6.0 at 30, AV1 6.1, no H.264.  The largest sensible size is
+  2 x 1440p: level 5.1 is the 4K60 class of decoder a headset has; 2 x 2160p needs an 8K (level 6) decoder.
+- *Not verified:* the picture in a headset (the user's part), the players' reaction to the tags (not tried on a
+  device), a virtual-screen app's full-SBS mode.  `-3` in the export tool's window: not offered there (command line
+  only).

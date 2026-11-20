@@ -371,7 +371,7 @@ function refresh(){ if(Date.now()<hold) return;
    b.textContent=n; if(n===s.activeName)b.className='active';
    b.onclick=()=>cmd('/api/config?i='+i); c.appendChild(b);});
   const st=document.getElementById('stereo'); st.innerHTML='';
-  ['Aus','SBS','Top/Bottom','Anaglyph'].forEach((n,i)=>{
+  @@STEREOARR@@.forEach((n,i)=>{
    const b=document.createElement('button');
    b.textContent=n; if(i==s.stereoMode)b.className='active';
    b.onclick=()=>cmd('/api/set?k=stereomode&v='+i); st.appendChild(b);});
@@ -531,6 +531,15 @@ static QByteArray buildPage()
     // The JS array literal: these three words are our OWN fixed translation
     // strings (never user data), so no JS-string escaping is needed -- see
     // Strings.cpp, none of them contain a quote/backslash.
+    // The stereo modes in the order of RenderPipeline::M_StereoMode (the button's index is the mode); our own
+    // texts again, none with a quote or a backslash.
+    {
+        QStringList modes;
+        for ( StrIdE id : { S_SETUP_STEREO_OFF, S_SETUP_STEREO_SBS, S_SETUP_STEREO_TB, S_SETUP_STEREO_ANA,
+                            S_SETUP_STEREO_FSBS, S_SETUP_STEREO_FTB } )
+            modes << "'" + QString::fromUtf8( Strings::uiText( id ) ) + "'";
+        page.replace( QLatin1String( "@@STEREOARR@@" ), "[" + modes.join( ',' ) + "]" );
+    }
     page.replace( QLatin1String( "@@LYRICSARR@@" ),
                   QString( "['%1','%2','%3']" )
                       .arg( QString::fromUtf8( Strings::uiText( S_WR_LYRICS_OFF ) ) )

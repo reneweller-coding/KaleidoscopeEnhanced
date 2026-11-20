@@ -363,6 +363,11 @@ QString GLwidget::remoteActiveConfigName() const
  **/
 static QString shotDir()
 {
+    // KALEIDO_SHOT_DIR: a test's own folder (Tools/stereo_disparity.py --live), so its screenshots stay out of the
+    // user's pictures.
+    const QString forced = qEnvironmentVariable( "KALEIDO_SHOT_DIR" );
+    if ( !forced.isEmpty() && QDir().mkpath( forced ) )
+        return QDir( forced ).absolutePath();
     const QString pics = QStandardPaths::writableLocation( QStandardPaths::PicturesLocation );
     if ( !pics.isEmpty() && QDir().mkpath( pics + "/Kaleidoscope" ) )
         return pics + "/Kaleidoscope";
@@ -2900,8 +2905,12 @@ void GLwidget::beginExport()
     // latency lead compensates loopback and display delays the file does not
     // have, stereo packing would halve the picture, and the adaptive scale and
     // auto-config are for a live audience.  Nothing of it is saved.
+    // A stereo format asked for on the command line (-3) is kept: that is a
+    // video for a headset or a 3D screen (20.11.2026; until then -3 with -e
+    // wrote a plain picture).  The ini's stereo mode is a live setting.
     RenderPipeline::setLatency( 0.f );
-    RenderPipeline::M_StereoMode = 0;
+    if ( !RenderPipeline::M_StereoFromCli )
+        RenderPipeline::M_StereoMode = 0;
     m_autoScale = false;
     m_autoConfig = false;
     window()->installEventFilter( this ); // the close button stops the export properly
@@ -4643,7 +4652,7 @@ std::vector<OsdItem> GLwidget::osdRootItems()
         return std::vector<OsdItem>{
             osdChoice( S_OSD_STEREOMODE,
                        { osdT( S_SETUP_STEREO_OFF ), osdT( S_SETUP_STEREO_SBS ), osdT( S_SETUP_STEREO_TB ),
-                         osdT( S_SETUP_STEREO_ANA ) },
+                         osdT( S_SETUP_STEREO_ANA ), osdT( S_SETUP_STEREO_FSBS ), osdT( S_SETUP_STEREO_FTB ) },
                        []
         { return RenderPipeline::stereoMode(); },
                        []( int m )
@@ -5097,11 +5106,10 @@ void GLwidget::keyPressEvent( QKeyEvent *event )
         case Qt::Key_Z:
         {
             RenderPipeline::cycleStereo();
-            const int mode = RenderPipeline::stereoMode() & 3;
-            feedback( ui( S_FB_STEREO_FMT )
-                          .arg( mode == 0 ? onOff( false )
-                                          : QString( mode == 1 ? "Side-by-Side" : mode == 2 ? "Top-Bottom"
-                                                                                            : "Anaglyph" ) ) );
+            static const StrIdE Names[RenderPipeline::StereoModes] = { S_SETUP_STEREO_OFF, S_SETUP_STEREO_SBS,
+                                                                       S_SETUP_STEREO_TB,  S_SETUP_STEREO_ANA,
+                                                                       S_SETUP_STEREO_FSBS, S_SETUP_STEREO_FTB };
+            feedback( ui( S_FB_STEREO_FMT ).arg( ui( Names[RenderPipeline::stereoMode()] ) ) );
             break;
         }
         case Qt::Key_C:

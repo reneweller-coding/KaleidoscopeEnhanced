@@ -432,6 +432,9 @@ enum StrIdE
     S_FB_RATE_STOP_FMT,  // %1 rated, %2 scenes
     S_FB_RATE_DONE,
     S_FB_RATE_UNDO_FMT, // %1 scene
+    // Stereo for headsets: the full formats (20.11.2026).
+    S_SETUP_STEREO_FSBS,
+    S_SETUP_STEREO_FTB,
 
     S_COUNT
 };
