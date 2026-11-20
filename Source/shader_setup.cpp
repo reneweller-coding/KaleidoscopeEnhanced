@@ -278,16 +278,23 @@ static GLuint progLookup( const std::string &key )
  *
  * @param key   The cache key (progKey()). (in)
  * @param prog  The program just built; 0 is not stored. (in)
+ * @param refs  References handed out with it: 1 when the caller takes the program (a blocking build), 0 when it
+ *              only waits in the cache (a background build -- whoever takes it, progLookup() or
+ *              shaderVariantTake(), adds its own reference). (in)
  *
  * @return
  *   prog.
  *
  * A failed build (0) is not cached -- a later attempt should get the chance to fail loudly again.
  *
+ * Until 20.11.2026 the background builds were stored with one reference that nobody held, so their programs never
+ * came back to 0 and stayed in the driver for the rest of the session: every scene the warm-up had built, and every
+ * variant a walking lab had ever asked for (Tools/soak.py, F1 of docs/PLAN_2026-11-20.md).
+ *
  * @sideeffects
  *   Changes s_progByKey, s_progRefs.
  **/
-static GLuint progStore( const std::string &key, GLuint prog )
+static GLuint progStore( const std::string &key, GLuint prog, int refs = 1 )
 {
     // Name it for the debug callback while we still know which files went in.
     if ( prog )
@@ -295,7 +302,7 @@ static GLuint progStore( const std::string &key, GLuint prog )
     if ( prog && !cacheOff() )
     {
         s_progByKey[key] = prog;
-        s_progRefs[prog] = 1;
+        s_progRefs[prog] = refs;
     }
     return prog;
 }
@@ -338,6 +345,13 @@ int shaderCacheDrop( const char *bareFileName )
             // Only the KEY goes. The program stays until its holders release it,
             // which is what lets several scenes reload one after another without
             // the first one deleting the shader the others are still drawing with.
+            // A background build nobody has taken yet has no holder: it goes now.
+            std::map<GLuint, int>::iterator r = s_progRefs.find( it->second );
+            if ( r != s_progRefs.end() && r->second <= 0 )
+            {
+                glDeleteProgram( it->second );
+                s_progRefs.erase( r );
+            }
             s_progByKey.erase( it++ );
             ++n;
         }
@@ -425,6 +439,12 @@ static bool parallelCompile()
 }
 
 // (documented in shader_setup.h)
+bool shaderPrebuildAvailable()
+{
+    return parallelCompile();
+}
+
+// (documented in shader_setup.h)
 bool shaderPrebuildStart( const char *frag_source )
 {
     if ( !parallelCompile() )
@@ -478,7 +498,7 @@ static GLuint collectPrebuild( const PrebuildJob &j )
     }
     glDeleteShader( j.fs ); // flagged; freed with the program
     if ( linked )
-        return progStore( j.key, j.prog );
+        return progStore( j.key, j.prog, 0 ); // nobody holds it yet
     glDeleteProgram( j.prog ); // the blocking path will build it again and log why
     return 0;
 }
@@ -551,7 +571,7 @@ GLuint shaderVariantTake( const char *frag_source, const std::string &defines )
     {
         s_workerPending.erase( k );
         if ( built )
-            progStore( k, built );
+            progStore( k, built, 0 ); // nobody holds it yet
         else
             s_variantFailed[k] = 1;
     }

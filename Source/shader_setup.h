@@ -60,6 +60,13 @@ GLuint setShaders( const char *vert_source, const char *frag_source );
  *   Changes s_prebuild.
  **/
 bool shaderPrebuildStart( const char *frag_source );
+/**  Whether shaderPrebuildStart() can build in the background (the driver has GL_KHR/ARB_parallel_shader_compile and
+ * KALEIDO_NO_PARALLEL_COMPILE is not set).
+ *
+ * @return
+ *   True if background builds are available.
+ **/
+bool shaderPrebuildAvailable();
 /**  Collects finished background builds; returns how many are still running.
  *
  * @return
