@@ -470,7 +470,8 @@ std::vector<float> drumTrack( int rate, double seconds )
 }
 
 /**  The input stage and the events (16.10.2026): one-block events that a frame reader missed, silence that never
- * reached the analysis, 5.1 read with the stride of stereo, 96 kHz, broken samples, a conditioner gone NaN.
+ * reached the analysis, 5.1 read with the stride of stereo, 96 kHz, broken samples, a conditioner gone NaN -- and
+ * (20.11.2026) capture packets of a millisecond under the beat tracker.
  *
  * Each check shows the old way failing beside the new one passing, where the old way can still be run.
  **/
@@ -635,6 +636,24 @@ void inputChecks()
         check( bad && !AudioConditioner::firstNonFinite( p2 ),
                "a NaN that reaches the conditioner is caught, and a reset brings it back",
                std::string( "caught in " ) + ( bad ? bad : "nothing" ) );
+    }
+
+    // 7. Short capture packets (20.11.2026): the beat tracker counts its period in BLOCKS, and the capture loop hands
+    //    over whatever WASAPI delivers. With a tempo standing, 1-ms packets made the period 500 blocks and
+    //    TempoTracker::predictBeat() overran its stack array -- the process ended with 0xC0000409, so before the
+    //    fix this check never printed. The drums (120 BPM) in 10-ms blocks, then three seconds of 48-frame packets.
+    {
+        AudioAnalyzer az;
+        for ( size_t at = 0; at + block <= drums.size(); at += block )
+            az.feedBlock( drums.data() + at, block, 1, rate );
+        const float bpm_before = 40.f + 160.f * az.getFeatures().estimatedBPM;
+        const int   pkt = 48;
+        for ( size_t at = 0; at + pkt <= static_cast<size_t>( rate ) * 3; at += pkt )
+            az.feedBlock( drums.data() + at, pkt, 1, rate );
+        const AudioFeatures f = az.getFeatures();
+        check( bpm_before > 100.f && std::isfinite( f.beatPhase ) && std::isfinite( f.estimatedBPM ),
+               "1-ms capture packets with a tempo standing leave the beat tracker running",
+               "tempo " + std::to_string( static_cast<int>( bpm_before + 0.5f ) ) + " BPM before the packets" );
     }
 }
 

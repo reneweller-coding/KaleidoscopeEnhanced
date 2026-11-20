@@ -46,7 +46,8 @@ file holds their notes until they are folded into docs/engine-internals.md.
   picture started (minidump in the worktree's `Release/`; the call stack runs from `paintGL` into the driver).
   `VideoPiP.cpp` takes frames in a `videoFrameChanged` lambda without a context object; if the backend emits it from
   its decoder thread, `g.latest` is replaced while the GL thread uploads it. Not caused by the walk (the crash came
-  with no verdict pending); left for its own look. Tests now run with `videoEnabled=false`.
+  with no verdict pending); left for its own look. Tests now run with `videoEnabled=false`. -- *Confirmed and fixed
+  the same night:* docs/engine-internals.md, (67) "Video frames cross threads"; `Tools/pip_soak_test.py` holds it.
 
 ### D3. The language follows the system until it is chosen
 

@@ -21,17 +21,28 @@
 #include <QFileInfo>
 #include <QUrl>
 #include <QObject>
+#include <QMutex>
+#include <QMutexLocker>
+#include <QThread>
+#include <QCoreApplication>
 
+#include <atomic>
 #include <cstdio>
 
 namespace
 {
 
-/** Process-wide PiP decoder state -- see VideoIn.cpp's VideoState for the same unsynchronized-on-the-GUI-thread
- * rationale.
+/** Process-wide PiP decoder state: a second, independent instance from VideoIn's `g` -- this one plays ALONGSIDE
+ * the photo/video source, not instead of it.
  *
- * A second, independent instance from VideoIn's `g`: this one plays ALONGSIDE the photo/video source, not instead of
- * it.
+ * Two threads touch it.  The player, the GL texture and everything else live on the GUI thread, which also renders;
+ * but QVideoSink::videoFrameChanged is emitted on Qt's FFmpeg render thread, and the connect() in videoPipLoad()
+ * has no context object, so the frame callback runs THERE.  Until 20.11.2026 it swapped a plain QImage member
+ * while the GUI thread was handing that image's pixels to glTexSubImage2D: the old frame was freed under the
+ * driver's feet, and a 720p frame (3.7 MB, its own VirtualAlloc block) turned that into an access violation within
+ * a minute (docs/engine-internals.md, "Video frames cross threads").  Now the callback only ever writes `pending`
+ * under `lock`, and videoPipFrame() takes the frame out under the lock and uploads it from its own reference,
+ * outside the lock -- the decoder never waits for the driver, and the driver never reads a freed frame.
  **/
 struct PipState
 {
@@ -41,11 +52,16 @@ struct PipState
 
     QString openedPath; ///< The path last passed to videoPipLoad(), used to detect a redundant re-load as a no-op.
 
-    QImage latest;        ///< Newest decoded frame.
+    QMutex lock;          ///< Guards `pending` and `dirty`, the only members the frame callback writes.
+    QImage pending;       ///< Newest decoded frame not yet uploaded (null once videoPipFrame() took it).
     bool   dirty = false; ///< A frame arrived since the last upload.
-    GLuint tex = 0;       ///< GL texture holding the last uploaded frame; 0 until the first upload.
-    int    texW = 0;      ///< Width of tex as last allocated.
-    int    texH = 0;      ///< Height of tex as last allocated.
+
+    std::atomic<long long> decoded{ 0 }; ///< Frames converted by the callback since the last load (for the log).
+    long long              uploaded = 0; ///< Frames uploaded since the last load (GUI thread only; for the log).
+
+    GLuint tex = 0;  ///< GL texture holding the last uploaded frame; 0 until the first upload.
+    int    texW = 0; ///< Width of tex as last allocated.
+    int    texH = 0; ///< Height of tex as last allocated.
 };
 
 PipState g; ///< The process-wide PiP state.
@@ -75,9 +91,11 @@ bool videoPipLoad( const char *path )
         g.player->setVideoSink( g.sink );
         g.player->setLoops( QMediaPlayer::Infinite ); // a short official video against a longer song just loops
 
-        // No explicit context object: the lambda only touches the process-wide
-        // `g`, and g.sink is torn down in videoPipRelease() together with the
-        // player that would otherwise fire it.
+        // No explicit context object, so the lambda runs on the thread that
+        // emits -- Qt's FFmpeg render thread, not the GUI thread (see
+        // PipState).  The expensive part, the YUV-to-RGBA conversion, stays
+        // there, outside the lock; only the hand-over is locked.  g.sink is
+        // torn down in videoPipRelease() after the player that fires it.
         QObject::connect( g.sink, &QVideoSink::videoFrameChanged,
                           []( const QVideoFrame &frame )
         {
@@ -88,8 +106,16 @@ bool videoPipLoad( const char *path )
                 return;
             if ( img.format() != QImage::Format_RGBA8888 )
                 img = img.convertToFormat( QImage::Format_RGBA8888 );
-            g.latest = img;
-            g.dirty = true;
+            if ( g.decoded.fetch_add( 1 ) == 0 )
+                fprintf( stderr, "video PiP: first frame on %s\n",
+                         QThread::currentThread() == QCoreApplication::instance()->thread()
+                             ? "the GUI thread"
+                             : "a decoder thread, not the GUI thread" );
+            {
+                QMutexLocker locker( &g.lock );
+                g.pending.swap( img ); // img now holds the frame nobody took; freed on return, outside the lock
+                g.dirty = true;
+            }
         } );
     }
 
@@ -125,12 +151,24 @@ void videoPipSetPlaying( bool playing )
 
 unsigned int videoPipFrame( unsigned int *width, unsigned int *height )
 {
-    if ( !g.dirty && g.tex == 0 )
+    // Take the newest frame out under the lock; from here on `frame` holds
+    // its own reference, so a frame the callback delivers DURING the upload
+    // lands in g.pending and cannot free these pixels.
+    QImage frame;
+    {
+        QMutexLocker locker( &g.lock );
+        if ( g.dirty )
+        {
+            frame.swap( g.pending );
+            g.dirty = false;
+        }
+    }
+    if ( frame.isNull() && g.tex == 0 )
         return 0;
 
-    if ( g.dirty && !g.latest.isNull() )
+    if ( !frame.isNull() )
     {
-        const int w = g.latest.width(), h = g.latest.height();
+        const int w = frame.width(), h = frame.height();
         if ( g.tex == 0 )
         {
             glGenTextures( 1, &g.tex );
@@ -148,17 +186,17 @@ unsigned int videoPipFrame( unsigned int *width, unsigned int *height )
         if ( w != g.texW || h != g.texH )
         {
             glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0,
-                          GL_RGBA, GL_UNSIGNED_BYTE, g.latest.constBits() );
+                          GL_RGBA, GL_UNSIGNED_BYTE, frame.constBits() );
             g.texW = w;
             g.texH = h;
         }
         else
         {
             glTexSubImage2D( GL_TEXTURE_2D, 0, 0, 0, w, h,
-                             GL_RGBA, GL_UNSIGNED_BYTE, g.latest.constBits() );
+                             GL_RGBA, GL_UNSIGNED_BYTE, frame.constBits() );
         }
         glBindTexture( GL_TEXTURE_2D, 0 );
-        g.dirty = false;
+        ++g.uploaded;
     }
 
     if ( width )
@@ -172,6 +210,10 @@ void videoPipRelease()
 {
     if ( g.player )
     {
+        // The player first: deleting it stops Qt's decoder threads before the
+        // sink goes (a late frame would still only land in g.pending, under
+        // the lock).  Not under g.lock itself -- the callback takes that lock,
+        // and stopping the threads waits for the callback.
         g.player->stop();
         delete g.player;
         g.player = nullptr;
@@ -179,14 +221,21 @@ void videoPipRelease()
         g.sink = nullptr;
         delete g.audio;
         g.audio = nullptr;
+        fprintf( stderr, "video PiP: released after %lld frames decoded, %lld uploaded\n",
+                 g.decoded.load(), g.uploaded );
     }
     if ( g.tex )
     {
         glDeleteTextures( 1, &g.tex );
         g.tex = 0;
     }
-    g.latest = QImage();
+    {
+        QMutexLocker locker( &g.lock );
+        g.pending = QImage();
+        g.dirty = false;
+    }
+    g.decoded = 0;
+    g.uploaded = 0;
     g.openedPath.clear();
     g.texW = g.texH = 0;
-    g.dirty = false;
 }

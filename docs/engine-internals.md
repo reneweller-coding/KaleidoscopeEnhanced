@@ -7862,3 +7862,86 @@ and re-lit transitions, the tighter genre presets, the four scenes repaired for 
   most of the five minutes this time.
 - The notes are in English with the German text folded below, as v1.19.0's are now. Eleven transitions carry the
   progress curve (`evenProgress`), Luminance is normalised instead.
+
+## 20.11.2026 (67, fix): video frames cross threads -- the PiP crash in glTexSubImage2D, and the beat tracker's stack
+
+The rating-walk test of B6 (docs/engine-internals-67-ui.md) saw the app die in `glTexSubImage2D` about 20 s after the
+music-video picture-in-picture started (`.screen/crash-20261120-010537.dmp`, a Release build of wt-ui). The guess
+then: VideoPiP swaps its frame on the video sink's thread while the GL thread uploads it. Confirmed, and fixed.
+
+- *The dump.* Main thread, `opengl32!glTexSubImage2D` into `nvoglv64` (`DrvPresentBuffers+0x13e630`, a `movups` read
+  of the source), with the arguments on the stack: 1280 x 720, `GL_RGBA`, `GL_UNSIGNED_BYTE`, pixels `0x490c8040` --
+  and the faulting read is that very address. The frame's own pixels were no longer mapped: freed. A 720p RGBA frame is
+  3.7 MB, too big for the heap's segments; Windows gives it a VirtualAlloc block of its own and returns the pages on
+  free, so a late read faults instead of quietly reading stale pixels. The Kaleidoscope frame (`Kaleidoscope+0xebd81`)
+  could not be named: a Release build links without a PDB (`GenerateDebugInformation=false` for Release|x64, although
+  the crash handler's comment counts on one), and the wt-ui exe had been rebuilt after the crash. One more thread
+  stood out: a QThread of the FFmpeg plugin inside `QMetaObject::activate`, i.e. Qt's playback engine emitting.
+- *The cause.* `VideoPiP.cpp` -- and `VideoIn.cpp`, which it was built after -- receives frames in a lambda connected
+  to `QVideoSink::videoFrameChanged` WITHOUT a context object. Such a lambda runs on the emitting thread, and Qt 6.11's
+  FFmpeg backend emits the frame on its render thread; the log says so now, once per load ("video PiP: first frame on
+  a decoder thread, not the GUI thread"). There the lambda did `g.latest = img` while the GUI thread had passed
+  `g.latest.constBits()` to the driver: the assignment dropped the last reference to the old frame, and the driver
+  read freed pages. VideoIn's state comment said the opposite ("Everything here lives on the GUI thread ... no lock at
+  all"), and VideoPiP referred to it.
+- *Seen before the fix.* `Tools/pip_soak_test.py` (new) switches the PiP on with neither a player nor the network:
+  `KALEIDO_LYRICS_TEST` with an empty artist (no artist-image download), a "not found" lyrics cache entry (no lyrics
+  request), a 1280 x 720, 30-fps testsrc2 clip as the test track's cached video, `artistImages`/`videoEnabled` on in
+  the private settings copy. phos-cues at fb9c6c7e, relinked with a PDB: **crashed after 86 s**, at the same driver
+  instruction as the 01:05 dump (`00007FFEF9F30D50`). Its dump, read with that PDB: `paintGL -> GLwidget::draw ->
+  GLwidget::updateTrackOverlays -> videoPipFrame+0x151 -> glTexSubImage2D`, locals w = 1280, h = 720; the fault is
+  the first byte of a page 1,984 bytes into the frame.
+- *The fix.* The callback still converts the frame where it arrives (the YUV-to-RGBA step stays off the GUI thread)
+  and then swaps it into `pending` under a QMutex; `videoPipFrame()` swaps it out under the lock and uploads from its
+  own reference, outside the lock. A frame arriving during the upload lands in `pending` and cannot free the pixels the
+  driver reads; the frame nobody took is freed after the lock is released. The release stops and deletes the player
+  BEFORE it takes the lock -- stopping waits for the callback, and the callback takes the lock. The same in
+  `VideoIn.cpp` (the `-v` source). Both log the thread of their first frame and, at the release, how many frames were
+  decoded and uploaded -- which is what the soak test checks.
+- *The video source too.* The unfixed exe with `-v` and the same clip, no PiP: an access violation after 73 s at the
+  same driver instruction, `RenderPipeline::paint -> updateLiveInput -> videoInFrame+0x151 -> glTexSubImage2D`.
+- *Proved.* The fixed build, PiP and `-v` at once (`pip_soak_test.py --source both --secs 600`, after the
+  TempoTracker fix below -- the first fixed run had died of that): 601 s, ended by itself, exit code 0. The PiP
+  decoded 15,855 frames and uploaded 14,631 (24.4 a second), the video source 17,910 and 15,573 (26.0) -- the
+  corner and the picture were fed to the end. Both name their frames' thread: "a decoder thread, not the GUI thread".
+
+### The second crash under it: capture packets of a millisecond in the beat tracker
+
+The first soak of the fixed build died too -- after 218 s, with exit code 0xC0000409 and nothing else: no "CRASH:"
+line, no dump. That code is a fail-fast (a `/GS` stack cookie, `abort()`, an invalid CRT parameter), and a fail-fast
+does not pass the unhandled-exception filter the crash handler sits in. Under cdb (`pip_soak_test.py --debugger`) the
+next run stopped after 272 s on thread 19: `Kaleidoscope!_GsFailureOnError` from **`TempoTracker::predictBeat`**,
+the stack above it overwritten with doubles. Not the PiP: the access violation of the old code had simply come
+first.
+- *The cause.* The beat tracker of A3 (74961bf3, two hours earlier) counts in BLOCKS -- its ring `m_cs` holds 512,
+  `predictBeat()` writes two beats back and one ahead into `fut[2 * BtHist]` -- and takes the beat period in blocks
+  from the current block's length (`tau = 60 / bpm / blockSeconds`). Offline (`-w`, `beat_lab.py`) a block is 480
+  frames; live it is whatever WASAPI loopback hands over, and the capture loop passes each packet on as it comes.
+  With the tempo folded into 70..180 BPM, 3 tau passes 1,024 only for a block under 2.5 ms; then `fut` overflows. On
+  this machine such packets came twice within five minutes.
+- *Seen before the fix.* A harness feeding TempoTracker 30 s of 10-ms blocks at 120 BPM, then 3 s of short packets:
+  480 down to 96 frames survive, 48 frames (1 ms, tau 500) end in 0xC0000409. The same as a self test (`-q`, input
+  stage, check 7: the drums in 10-ms blocks, then 3 s of 48-frame packets through `feedBlock`): with the tracker of
+  HEAD the self test itself ends in 0xC0000409.
+- *The fix.* `beatStep()` clamps tau to `(BtHist - 1) / 2` blocks, what the ring and `fut` hold (`lo + win <= 511 +
+  255`). A short packet then misjudges one block instead of the stack. The clamp only acts below 3.4 ms a block (at
+  70 BPM), so the offline measurements of A3 are untouched. `-q`: 137 passed, 0 failed; the harness survives packets
+  down to one frame.
+- *Left open.* A beat period counted in blocks of varying length is a model error beyond the crash: a run of short
+  packets shifts the tracker's sense of "one beat back". Counting it in envelope samples (100 Hz, `pushOnset()`)
+  instead of blocks would remove it; that changes what A3 measured, so it belongs to the tempo work.
+- *Tools and traps.*
+  - A Release build writes no PDB. For a readable dump the link alone can add one without touching the project:
+    `msbuild ... "/p:ForceImportBeforeCppTargets=<props>"`, the props file setting `Link/GenerateDebugInformation` to
+    true. The objects already carry their debug information (`/Zi`), so only the link runs again (2 s).
+  - The dumps read with `cdb` from `Windows Kits\10\Debuggers\x64`: `cdb -z <dmp> -y <dir with exe+pdb> -i <same>
+    -c ".ecxr; kn 30; ~*kn 12; q"`.
+  - A fail-fast (0xC0000409) leaves neither a "CRASH:" line nor a dump, and Windows records nothing either. Only a
+    debugger sees it: `pip_soak_test.py --debugger` runs the app under cdb, which writes the stacks and a dump
+    (`/mhiu`; a full `/ma` failed on an unreadable region) next to the log.
+  - Qt's own messages (`qWarning`, `qFatal`) go to the debugger, not to stderr, in an app without a console; the
+    soak test sets `QT_FORCE_STDERR_LOGGING=1` so they land in its log.
+  - PowerShell's `&` does not wait for a GUI-subsystem exe and reports exit code 0: `Kaleidoscope.exe -q` has to be
+    run from Python (`subprocess.run`) or with `Start-Process -Wait`.
+  - The PiP stays off in the other app tests (`videoEnabled=false` since B6); `pip_soak_test.py` is the one that runs
+    it, `--source both` together with `-v`.
