@@ -12,7 +12,7 @@
  *  Each sensor pixel keeps one colour channel; the other two are averaged from the neighbours that have them.
  *
  *  Audio Reactivity (structure, not only light):
- *    audioAdvance -> the photo's slow zoom through the grid frequency
+ *    sceneAdvance -> the photo's slow zoom through the grid frequency: the music carries it (integrated)
  *    audioSwell   -> the strength of the false colours
  *
  *  Knobs: sizeP (the sensor pixel size), hueP.
@@ -515,7 +515,7 @@ void main()
 {
     vec2  fc = gl_FragCoord.xy;
     float s = ( 2.2 + 2.2 * clamp( sizeP, 0.0, 1.0 ) ) * resolution.y / 270.0;
-    float z = 0.8 + 0.35 * sin( 0.04 * sceneTime + 0.02 * audioAdvance );
+    float z = 0.8 + 0.35 * sin( 0.025 * sceneTime + 0.6 * sceneAdvance );
     vec2  p = screenP();
     ivec2 ij0 = ivec2( floor( fc / s ) );
     vec3  acc = vec3( 0.0 );

@@ -8,12 +8,13 @@
  * colour family and shaded by their ring.
  *
  * Audio Reactivity (structure, not only light):
- *   audioAdvance -> the shading flows outward ring after ring (integrated: with the music's drive)
+ *   sceneAdvance -> the shading flows outward ring after ring: the music carries it (integrated)
  *   audioSwell   -> the seams' glow
+ *   audioKick    -> the seams flash (light only)
  *
  * Knobs: pieceP (how many pieces along a point's edge), sizeP (the star's size), hueP.
 //@params pieceP sizeP
-//@audio audioSwell
+//@audio audioSwell audioKick
 //@body
 /**  The photo's colour calmed toward the colour family.
  *
@@ -35,8 +36,8 @@ void main()
     float fh = famHue();
     float M = floor(6.0 + 4.0 * clamp(pieceP, 0.0, 1.0));
     float L = 0.36 + 0.12 * clamp(sizeP, 0.0, 1.0);
-    float run = 0.2 * sceneTime + 0.8 * audioAdvance;
-    float seamGlow = 0.4 + 0.6 * clamp(audioSwell, 0.0, 1.0);
+    float run = 0.08 * sceneTime + 2.5 * sceneAdvance;
+    float seamGlow = 0.4 + 0.6 * clamp(audioSwell, 0.0, 1.0) + 0.6 * clamp(audioKick, 0.0, 1.0);
     const float SEC = 0.7853982;
     float th = atan(p.y, p.x);
     float k = floor(th / SEC);

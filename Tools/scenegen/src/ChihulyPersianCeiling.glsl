@@ -9,11 +9,12 @@
  *
  * Audio Reactivity (structure, not only light):
  *   audioSwell   -> the bowls open: they widen and their rims ruffle deeper
- *   audioAdvance -> the light wanders over the ceiling and the layers drift (integrated)
+ *   sceneAdvance -> the light wanders over the ceiling and the layers drift: the music carries them (integrated)
+ *   audioKick    -> the rims catch the light (light only)
  *
  * Knobs: bowlP (the bowls' size), ribP (how many ribs), hueP.
 //@params bowlP ribP
-//@audio audioSwell
+//@audio audioSwell audioKick
 //@body
 /**  The photo's colour calmed toward the colour family.
  *
@@ -38,7 +39,7 @@ void main()
     float sw = clamp(audioSwell, 0.0, 1.0);
     float open = 0.85 + 0.25 * sw;
     float ruff = 0.05 + 0.1 * sw;
-    float run = 0.02 * sceneTime + 0.08 * audioAdvance;
+    float run = 0.012 * sceneTime + 0.6 * sceneAdvance;
     vec2 Lp = vec2(0.6 * sin(1.3 * run), 0.35 * cos(0.9 * run));
     vec3 light = famLight(fh, 0.5, 0.85) * (0.6 + 0.8 * exp(-dot(p - Lp, p - Lp) / 0.3));
     vec3 filt = vec3(1.0);
@@ -66,6 +67,6 @@ void main()
             rims += famLight(fh, h, 0.6) * smoothstep(0.86, 0.99, x) * alpha * 0.18;
         }
     }
-    vec3 col = light * filt + rims * light;
+    vec3 col = light * filt + rims * light * (1.0 + 1.2 * clamp(audioKick, 0.0, 1.0));
     finish(col);
 }

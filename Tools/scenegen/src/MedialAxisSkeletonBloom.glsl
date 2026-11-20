@@ -4,11 +4,12 @@
  *
  * Audio Reactivity (structure, not only light):
  *   audioSwell   -> the threshold: the shapes grow and shrink
- *   audioAdvance -> the threshold wanders slowly (integrated)
+ *   audioPhase   -> the threshold wanders with the music (integrated)
+ *   audioKick    -> the skeletons flare (light only)
  *
  * Knobs: sizeP (the smoothing of the shapes), hueP.
 //@params sizeP
-//@audio audioSwell audioAdvance
+//@audio audioSwell audioAdvance audioKick
 //@body
 /**  A first-order estimate of the signed distance to the edge of the photo's light areas (brightness over gradient).
  *
@@ -33,7 +34,7 @@ void main()
     vec2 p = screenP();
     vec2 uv = p * 0.85 + 0.5;
     float lod = 2.0 + 1.6 * clamp(sizeP, 0.0, 1.0);
-    float thr = 0.55 + 0.12 * sin(0.03 * audioAdvance + 0.04 * sceneTime) - 0.1 * clamp(audioSwell, 0.0, 1.0);
+    float thr = 0.55 + 0.16 * sin(0.7 * audioPhase + 0.02 * sceneTime) - 0.16 * clamp(audioSwell, 0.0, 1.0);
     float h = 0.012;
     float d0 = sdEst(uv, thr, lod);
     float lap = sdEst(uv + vec2(h, 0.0), thr, lod) + sdEst(uv - vec2(h, 0.0), thr, lod) + sdEst(uv + vec2(0.0, h), thr, lod) + sdEst(uv - vec2(0.0, h), thr, lod) - 4.0 * d0;
@@ -42,7 +43,7 @@ void main()
     vec3 c = imgLod(uv, 0.8);
     c = mix(vec3(luma(c)), c, 1.3);
     vec3 col = c * (0.18 + 0.2 * inside) + vec3(0.02);
-    col = mix(col, c * 1.7 + 0.1, skel);
+    col = mix(col, c * (1.7 + 0.7 * clamp(audioKick, 0.0, 1.0)) + 0.1, skel);
     col += vec3(1.0, 0.9, 0.7) * exp(-pow(d0 / 0.01, 2.0)) * 0.15;
     finish(col);
 }
