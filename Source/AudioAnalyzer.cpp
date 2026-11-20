@@ -2168,7 +2168,8 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
         m_lastBeatFrame = m_frameCounter;
         trace_beat_iv = interval_frames / static_cast<float>( sampleRate );
     }
-    m_tempo.update( is_beat, trace_beat_iv, track_change );
+    m_tempo.update( is_beat, trace_beat_iv, track_change,
+                    static_cast<float>( numFrames ) / static_cast<float>( sampleRate ) );
     const float tempo_bpm = m_tempo.tempo();
 
     // Normalise BPM to [0,1] over 40..200 BPM — every frame, not only on beats.
@@ -2187,16 +2188,9 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
     m_sRhythm = 0.90f * m_sRhythm + 0.10f * rhythm;
 
     // ---- Continuous beat phase 0..1 (wraps every beat) from the tempo ----
-    float beat_phase = 0.f;
-    if ( tempo_bpm > 1.f )
-    {
-        float beat_period_frames = static_cast<float>( sampleRate ) * 60.f / tempo_bpm;
-        if ( beat_period_frames > 1.f )
-        {
-            float ph = frames_since_beat / beat_period_frames;
-            beat_phase = ph - std::floor( ph );
-        }
-    }
+    // From the beat tracker since 20.11.2026 (TempoTracker::beatStep(): a cumulative score and a predicted next
+    // beat); until then it restarted at every kick and ran at the tempo in between.
+    const float beat_phase = m_tempo.phase();
 
     // The tempo's inputs and outputs of this block, for replaying candidates offline (Tools/tempo_lab.py,
     // PresetEditor --features ... --tempo-trace FILE): 14 float32 per block.

@@ -33,6 +33,111 @@ void TempoTracker::pushOnset( float sf )
     m_longEnv[m_longIdx] = sf;
     m_longIdx = ( m_longIdx + 1 ) % LongLen;
     m_longFilled = std::min( m_longFilled + 1, LongLen );
+    if ( !m_blockOnsetSet )
+    {
+        m_blockOnset = sf;
+        m_blockOnsetSet = true;
+    }
+}
+
+template <typename Past>
+double TempoTracker::transition( const Past &past, double tau )
+{
+    const int lo = static_cast<int>( std::nearbyint( 2.0 * tau ) );
+    const int hi = static_cast<int>( std::nearbyint( tau / 2.0 ) );
+    double    best = 0.0;
+    for ( int j = lo; j >= hi; --j )
+    {
+        const double l = BtTight * std::log( j / tau );
+        best = std::max( best, past( j ) * std::exp( -0.5 * l * l ) );
+    }
+    return best;
+}
+
+int TempoTracker::predictBeat( double tau ) const
+{
+    const int win = std::max( 1, static_cast<int>( tau ) );
+    const int lo = static_cast<int>( std::nearbyint( 2.0 * tau ) );
+    double    fut[2 * BtHist];
+    // the last lo values of the cumulative score, then the future (without onsets)
+    for ( int j = 0; j < lo; ++j )
+        fut[j] = m_cs[( m_csIdx - lo + j + 2 * BtHist ) % BtHist];
+    for ( int k = 0; k < win; ++k )
+        fut[lo + k] = transition( [&fut, lo, k]( int j )
+        { return fut[lo + k - j]; }, tau );
+    int    best = 0;
+    double best_v = 0.0;
+    for ( int k = 0; k < win; ++k )
+    {
+        const double d = ( k + 1 ) - tau / 2.0;
+        const double v = fut[lo + k] * std::exp( -d * d / ( 2.0 * ( tau / 2.0 ) * ( tau / 2.0 ) ) );
+        if ( v > best_v )
+        {
+            best_v = v;
+            best = k;
+        }
+    }
+    return best;
+}
+
+void TempoTracker::beatStep( double onset, double blockSeconds )
+{
+    // The beat phase by beat tracking (20.11.2026, A3 of docs/PLAN_2026-11-20.md): the cumulative score and the
+    // predicted next beat of BTrack (Stark, Davies & Plumley 2009, "Real-Time Beat-Synchronous Analysis of
+    // Musical Audio"), on the SuperFlux envelope and the published tempo.  Until then the phase restarted at every
+    // kick and ran at the tempo in between: a syncopated kick moved it off the beat, and a break without kicks let it
+    // drift.  C(m) = 0.1 O(m) + 0.9 max over 2 to 1/2 beats back of W(v) C(m + v), W log-Gaussian around one beat
+    // (tightness 5); half a beat after each beat the next one is predicted from C continued one beat ahead without
+    // onsets, weighted by a Gaussian around one beat after the last.  Measured with Tools/beat_lab.py through the
+    // conditioner's PLL (what the shaders see) on 25,034 annotated beats of 41 demos: F-measure 27.9 -> 48.5 %,
+    // CMLt 25.8 -> 43.8 %, AMLt 32.9 -> 61.1 %; in stretches of 8 s and more without a kick the phase is within an
+    // eighth of a beat 25 -> 39 % of the time (chance is 25 %).  Tightness 2 or 3 measured within two points.
+    const double bpm = m_smoothedBPM;
+    if ( bpm < 1.0 )
+    {
+        m_cs[m_csIdx] = ( 1.0 - BtAlpha ) * onset;
+        m_csIdx = ( m_csIdx + 1 ) % BtHist;
+        m_btCountdown = m_btToPredict = -1;
+        m_btPhase = 0.f;
+        m_btClock += blockSeconds;
+        return;
+    }
+    const double tau = 60.0 / bpm / blockSeconds; // the beat period in blocks
+    const double past = transition( [this]( int j )
+    { return m_cs[( m_csIdx - j + BtHist ) % BtHist]; }, tau );
+    m_cs[m_csIdx] = ( 1.0 - BtAlpha ) * onset + BtAlpha * past;
+    m_csIdx = ( m_csIdx + 1 ) % BtHist;
+    if ( m_btCountdown < 0 && m_btToPredict < 0 )
+        m_btToPredict = 0;
+    if ( m_btToPredict >= 0 )
+    {
+        if ( m_btToPredict == 0 )
+        {
+            m_btCountdown = predictBeat( tau );
+            m_btToPredict = -1;
+        }
+        else
+            --m_btToPredict;
+    }
+    if ( m_btCountdown >= 0 )
+    {
+        if ( m_btCountdown == 0 )
+        {
+            m_btLastBeat = m_btClock;
+            m_btCountdown = -1;
+            m_btToPredict = static_cast<int>( std::nearbyint( tau / 2.0 ) );
+        }
+        else
+            --m_btCountdown;
+    }
+    if ( m_btLastBeat > -1e8 )
+    {
+        const double ph = ( m_btClock - m_btLastBeat ) * bpm / 60.0;
+        m_btPhase = static_cast<float>( ph - std::floor( ph ) );
+    }
+    else
+        m_btPhase = 0.f;
+    m_btClock += blockSeconds;
 }
 
 double TempoTracker::pulseScore( const double *env, int n, double period )
@@ -290,7 +395,7 @@ void TempoTracker::autocorrelate()
                  kurtosis, bpm, m_acConf, m_acBPM );
 }
 
-void TempoTracker::update( bool isBeat, float beatIntervalS, bool trackChange )
+void TempoTracker::update( bool isBeat, float beatIntervalS, bool trackChange, float blockSeconds )
 {
     if ( ++m_acBlock >= AcEvery )
     {
@@ -388,4 +493,8 @@ void TempoTracker::update( bool isBeat, float beatIntervalS, bool trackChange )
         }
     }
     m_smoothedBPM = fold_bpm( m_smoothedBPM );
+
+    // The beat, on the tempo just published.
+    beatStep( m_blockOnsetSet ? m_blockOnset : 0.0, blockSeconds );
+    m_blockOnsetSet = false;
 }

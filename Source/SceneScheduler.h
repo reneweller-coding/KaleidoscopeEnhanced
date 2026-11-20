@@ -41,6 +41,7 @@
 // Qt-free (a RendererCore building block); PERSISTING the taste (QSettings)
 // stays with the caller and comes in as the tasteFor callback.
 
+#include <algorithm>
 #include <chrono>
 #include <functional>
 #include <map>
@@ -131,6 +132,53 @@ public:
     bool reviewMode() const
     {
         return m_reviewMode;
+    }
+    /**  The rating walk of the web remote ("Rate"): every scene holds @p secs, no musical cut, short cross-fades,
+     * and the scene after each one comes from @p next.
+     *
+     * @param secs  Seconds per scene; 0 ends the walk (the scheduler rolls again from the next fade on). (in)
+     * @param next  Called at the end of every fade with the scene now on screen; returns the index of the scene to
+     *              come after it, or -1 when none is left (then the normal roll decides). Must not call back into
+     *              this scheduler. (in)
+     *
+     * Review mode for one person with a phone: what review mode switches off (sections, drops, harmonic cuts, the
+     * phrase wait, the fade floors) is off here too, and like a review walk it leaves the no-repeat memory alone.
+     * Unlike review mode, the span is the viewer's (setRateSecs()) and the order the caller's.
+     **/
+    void setRateWalk( float secs, std::function<int( unsigned int )> next )
+    {
+        m_rateSecs = secs > 0.f ? secs : 0.f;
+        m_rateNext = m_rateSecs > 0.f ? std::move( next ) : nullptr;
+    }
+    /**  Changes the span of the rating walk; the scene on screen takes it at once (counted from when it came).
+     *
+     * @param secs  Seconds per scene, > 0; ignored while no walk runs. (in)
+     **/
+    void setRateSecs( float secs )
+    {
+        if ( m_rateSecs > 0.f && secs > 0.f )
+            m_rateSecs = secs;
+    }
+    /**  Whether the rating walk runs.
+     *
+     * @return
+     *   True between setRateWalk( secs > 0 ) and setRateWalk( 0 ).
+     **/
+    bool rateWalk() const { return m_rateSecs > 0.f; }
+    /**  Seconds until the rating walk moves on by itself.
+     *
+     * @return
+     *   The rest of the scene's span (during a fade: the span of the scene coming in, plus the rest of the fade); 0
+     *   while no walk runs.
+     **/
+    float rateSecsLeft() const
+    {
+        if ( m_rateSecs <= 0.f )
+            return 0.f;
+        const float ts = secsSince( m_clockEffectTexture );
+        if ( m_texState != 0 )
+            return m_rateSecs + std::max( 0.f, m_texFadeDur - ts );
+        return std::max( 0.f, m_rateSecs - ts );
     }
     /**  Snapshot the current mood values used by moodAccept()'s busyness/tag bias.
      *
@@ -414,6 +462,8 @@ public:
      *   Seconds.
      **/
     float texFadeDur() const { return m_texFadeDur; }
+    /** @return Seconds of scheduler time since the start (the sum of the ticks' dt; KALEIDO_FADE_LOG's stamp). */
+    double logClock() const { return m_logClock; }
     /**  The combine slot's running fade length (meaningful while fxState() != 0).
      *
      * @return
@@ -551,6 +601,7 @@ private:
                                ///< m_texState == 0, the fade span while m_texState == 1 (one dual-purpose field, as in
                                ///< the old inline code).
     float              m_fxFadeDur = 10.f;                   ///< Current Solo *or* Fade duration for the combine slot.
+    double             m_logClock = 0.0;                     ///< Sum of the ticks' dt (see logClock()).
     ClockT::time_point m_clockEffectTexture = ClockT::now(); ///< Reference clock for the effect slot's Solo/Fade
                                                              ///< timing.
     ClockT::time_point m_clockEffectFx = ClockT::now(); ///< Reference clock for the combine slot's Solo/Fade timing.
@@ -739,6 +790,9 @@ private:
                                       ///< setSceneFadeMin().
     std::vector<int> m_reviewOrder;   ///< Texture indices sorted alphabetically by fragment basename (built lazily).
     int              m_reviewPos = 0; ///< Current position within m_reviewOrder.
+    // Rating walk (setRateWalk())
+    float                              m_rateSecs = 0.f; ///< Seconds per scene of the rating walk; 0 = no walk.
+    std::function<int( unsigned int )> m_rateNext;       ///< The walk's choice of the next scene (setRateWalk()).
 
     // Transition choice (one shader per fade, from Transitions/)
     unsigned int m_actTransition = 0; ///< Transition shader rolled for the effect slot's current/last fade.

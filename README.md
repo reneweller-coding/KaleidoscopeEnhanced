@@ -186,7 +186,7 @@ Building the packs yourself, from folders you have filled:
 | `f`        | **Favourite** the current effect (persistent selection bonus) |
 | `Space`    | **Mark** / unmark the current scene (shortlist for review)     |
 | `Shift+Space` | Save all marked scenes as the **Marked** preset             |
-| `z`        | **Stereo 3D** — cycle off / side-by-side / top-bottom / anaglyph |
+| `z`        | **Stereo 3D** — cycle off / side-by-side / top-bottom / anaglyph / full side-by-side / full top-bottom ([headsets](#stereo-3d-in-a-headset)) |
 | `c` / `m`  | Stereo depth — weaker / stronger                              |
 | `a`        | Toggle **auto-config-by-mood** (auto-switch configs)          |
 | `g`        | Toggle **adaptive render scale** (auto-FPS)                   |
@@ -534,9 +534,73 @@ preview; Esc, closing it, or `quit` on stdin finishes the file with the frames
 so far. Exit code 0 done, 1 cancelled, 2 error; the progress comes as
 `[export] progress <done> <total> <seconds> <speed>` lines on stderr.
 
+With `-3` the video is a stereo video (see [Stereo 3D in a headset](#stereo-3d-in-a-headset)).
+
 Build it with `msbuild ExportTool\ExportTool.vcxproj /p:Configuration=Release /p:Platform=x64`.
 How the frame clock works, and what the encoder settings are based on:
 [docs/engine-internals.md](docs/engine-internals.md#16102026-4-video-export-on-a-frame-clock).
+
+---
+
+## Stereo 3D in a headset
+
+The show can be watched in 3D: a 3D scene is rendered once per eye (real
+geometry, real depth), a 2D scene gets its depth from the picture (bright
+structures come forward, the centre of a tunnel recedes). The formats, with
+`-3 <mode>`, the `z` key, the menu (Stereo 3D) or the remote's *Image & 3D* tab:
+
+| Mode | Picture | For |
+|---|---|---|
+| `sbs`, `tb` | both eyes squeezed into the normal frame ("half") | 3D TVs and projectors, players that expect half SBS |
+| `fsbs`, `ftb` | each eye at the full frame size, the picture **twice as wide / high** ("full") | headsets: twice the detail per eye |
+| `ana` | red/cyan in one picture | anaglyph glasses |
+
+`c` / `m` (or the remote's slider) make the depth weaker or stronger. With
+the same proportions per eye, half and full show the same depth (the same
+disparity as a share of the eye's width); full only adds detail. A fade between a 3D and a 2D scene keeps
+the 3D scene's depth until it is gone (`Tools/stereo_disparity.py` measures
+all of it on a test scene with known depth).
+
+**Live, on a virtual screen.** Any app that puts the PC's desktop on a big
+screen in the headset and can show it as side-by-side 3D (Virtual Desktop,
+Bigscreen, Immersed and the like) works: run Kaleidoscope fullscreen (`-b` or
+double-click), set the stereo mode, and switch the app's screen to SBS 3D.
+Take `sbs` (half) when the app splits a normal 16:9 desktop into two
+squeezed eyes, and `fsbs` when it shows a double-wide desktop as full SBS
+(each eye gets half of the window's width at full height, so a 32:9 or
+doubled virtual monitor is what it is made for; on a 16:9 window each eye
+is a narrow 8:9 picture).
+
+**As a video.** The export keeps the stereo mode, and `-g` is the size of
+**one eye** in the full formats:
+
+```
+Kaleidoscope.exe -c Ambient -e track.flac -g 1920x1080 -p 60 -3 fsbs
+```
+
+writes `track_SBSF.mp4`, 3840 x 1080 with the audio. The default file name
+carries the tag players read the layout from: `_SBS` / `_TB` for the half
+formats, `_SBSF` / `_TBF` for the full ones. DeoVR finds SBS and TB anywhere
+in the name ([its documentation](https://deovr.com/doc), section 10);
+HereSphere reads `_sbs` as side-by-side and `_SBSF` (or `_LRF`) as *full*
+side-by-side (its developer on itch.io). `_TBF` follows the same pattern but
+neither player documents a tag for full top-bottom -- choose the layout in the
+player if it does not switch by itself. A name given with `-d` is used as it is.
+Copy the file to the headset (USB, or stream it from the PC with the player's
+DLNA/SMB support) and play it as a flat screen in 3D.
+
+Sizes, measured with the export's encoders on an RTX 5090 (60 fps):
+
+| Per eye | Video | Encoder (automatic) | Level |
+|---|---|---|---|
+| 1920 x 1080 | 3840 x 1080 (full SBS) or 1920 x 2160 (full TB) | H.265 | 5.0 (H.264: 5.1) |
+| 2560 x 1440 | 5120 x 1440 | H.265 (H.264 cannot go wider than 4096) | 5.1 |
+| 3840 x 2160 | 7680 x 2160 | H.265 or AV1 only | 6.1 |
+
+2 x 1440p is the largest sensible size: at level 5.1 it is about the pixel
+rate of 4K at 60 fps, which a headset that plays 4K60 video decodes. 2 x 2160p
+needs a level-6 (8K) decoder -- fine for a PC player, too much for most
+standalone headsets.
 
 ---
 
@@ -620,6 +684,18 @@ virtual switch -- and OK on one shows a card with its QR code: point the
 phone's camera at it. The very first start shows the card by itself. The
 remote's screenshot button saves the picture and shows it on the phone.
 
+**Rating scenes from the sofa:** the remote's **Rate** tab walks the scenes of
+the running preset that have no verdict yet, one after the other, each for the
+seconds you set (3-60, short cross-fades, no musical cuts in between), with three
+big buttons: **Like** (a favourite), **Next** (seen, no opinion) and **Never
+again** (banned in this preset). A counter shows how far you are ("312 of 823
+rated" -- the models of one 3D family share a shader and count once). A scene you
+leave without a verdict moves on when its time is up and comes round again
+later; **Undo** takes the last verdict back and shows the scene again. The
+verdicts are kept in `kaleidoscope_settings.ini` (`[rated]`, next to the
+favourites and bans they also make), so the next walk skips them, and
+`python Tools/apply_taste.py --write` folds them into the shipped presets.
+
 **Zero-touch pairing:** the running instance broadcasts itself on the LAN
 (UDP discovery), so a client never needs the PC's IP typed in by hand.
 Several PCs or several instances on one PC show up as a picker.
@@ -659,9 +735,12 @@ or the web remote, all cached locally so a repeat play needs no network:
 
 ## Language
 
-The UI (on-screen overlays, the web remote page, and the Setup tool) speaks
-German or English, switchable from a dropdown in the Setup tool — German is
-the default. The Android app isn't part of that switch; it follows the
+The UI (on-screen overlays, the web remote page, the Setup tool and the video
+export tool) speaks German or English, switchable from a dropdown in the Setup
+tool. Until you choose, it follows the system: German on a German Windows (the
+display language decides), English everywhere else. Nothing is written into
+your settings file for that, so it keeps following the system until you pick a
+language yourself. The Android app isn't part of that switch; it follows the
 phone's own system language, the standard Android behaviour.
 
 ---
@@ -715,7 +794,7 @@ $env:Path = "C:\Qt\6.11.1\msvc2022_64\bin;" + $env:Path
 | `-k <file>`   | Score cues for the `-w`/`-x` WAV, from a file (see [Score cues](#score-cues-letting-a-generator-say-where-the-bars-are)) |
 | `-i <sender>` | Spout input: a live sender replaces the photos                     |
 | `-v <path>`   | Play a video (or folder of videos) as the image source              |
-| `-3 <mode>`   | Stereo 3D: `sbs`, `tb` or `ana`(glyph)                              |
+| `-3 <mode>`   | Stereo 3D: `sbs`, `tb`, `ana`(glyph), or `fsbs` / `ftb` (full, for headsets; an export keeps it) |
 | `-f <dir>`    | Photo folder for this run (outranks the Setup tool's setting)      |
 | `-h`          | Print usage and exit                                                |
 | `--schedule <preset> <wav\|silence> <hours> <out.tsv>` | The scene plan of a long run, from the real scheduler without a window (first argument; `Tools/check_schedule.py` checks it) |

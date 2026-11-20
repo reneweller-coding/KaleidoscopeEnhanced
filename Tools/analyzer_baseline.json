@@ -1,7 +1,7 @@
 {
  "counts": {
   "bpm_120_median": 120.0,
-  "bpm_128_median": 127.8,
+  "bpm_128_median": 127.9,
   "chord_changes_seen": 24,
   "chord_changes_total": 38,
   "chord_false_alarms": 4,
@@ -27,9 +27,24 @@
     "p90": 0.753
    },
    "beat_c": {
-    "mean": 0.4629,
+    "mean": 0.4129,
     "moves": true,
-    "p90": 0.718
+    "p90": 0.645
+   },
+   "beat_phase": {
+    "mean": 0.49,
+    "moves": true,
+    "p90": 0.882
+   },
+   "beat_phase_c": {
+    "mean": 0.51,
+    "moves": true,
+    "p90": 0.902
+   },
+   "beats": {
+    "mean": 38.5,
+    "moves": true,
+    "p90": 56.0
    },
    "buildup": {
     "mean": 0.2807,
@@ -127,7 +142,7 @@
     "p90": 0.5989
    },
    "phrase_pos": {
-    "mean": 0.5255,
+    "mean": 0.5258,
     "moves": true,
     "p90": 0.8621
    },
@@ -176,6 +191,26 @@
     "moves": true,
     "p90": 0.7282
    },
+   "tempo_ac": {
+    "mean": 120.0,
+    "moves": false,
+    "p90": 120.0
+   },
+   "tempo_ac_conf": {
+    "mean": 0.9584,
+    "moves": true,
+    "p90": 0.998
+   },
+   "tempo_kick": {
+    "mean": 120.0,
+    "moves": false,
+    "p90": 120.0
+   },
+   "tempo_kick_expl": {
+    "mean": 1.0,
+    "moves": false,
+    "p90": 1.0
+   },
    "valence": {
     "mean": 0.8718,
     "moves": true,
@@ -194,19 +229,34 @@
     "p90": 1.0
    },
    "arousal": {
-    "mean": 0.1347,
+    "mean": 0.1356,
     "moves": true,
-    "p90": 0.4891
+    "p90": 0.491
    },
    "arousal_c": {
-    "mean": 0.1347,
+    "mean": 0.1356,
     "moves": true,
-    "p90": 0.4891
+    "p90": 0.491
    },
    "beat_c": {
-    "mean": 0.0733,
+    "mean": 0.0679,
     "moves": true,
-    "p90": 0.334
+    "p90": 0.29
+   },
+   "beat_phase": {
+    "mean": 0.255,
+    "moves": true,
+    "p90": 0.8
+   },
+   "beat_phase_c": {
+    "mean": 0.2661,
+    "moves": true,
+    "p90": 0.8146
+   },
+   "beats": {
+    "mean": 26.2614,
+    "moves": true,
+    "p90": 58.0
    },
    "buildup": {
     "mean": 0.1198,
@@ -304,9 +354,9 @@
     "p90": 0.293
    },
    "phrase_pos": {
-    "mean": 0.2491,
+    "mean": 0.2586,
     "moves": true,
-    "p90": 0.775
+    "p90": 0.789
    },
    "pitch": {
     "mean": 0.1906,
@@ -353,6 +403,26 @@
     "moves": true,
     "p90": 0.05
    },
+   "tempo_ac": {
+    "mean": 63.8398,
+    "moves": true,
+    "p90": 120.0
+   },
+   "tempo_ac_conf": {
+    "mean": 0.196,
+    "moves": true,
+    "p90": 0.986
+   },
+   "tempo_kick": {
+    "mean": 60.6818,
+    "moves": true,
+    "p90": 120.0
+   },
+   "tempo_kick_expl": {
+    "mean": 0.4948,
+    "moves": true,
+    "p90": 1.0
+   },
    "valence": {
     "mean": 0.6725,
     "moves": true,
@@ -371,19 +441,34 @@
     "p90": 0.086
    },
    "arousal": {
-    "mean": 0.6184,
+    "mean": 0.6185,
     "moves": true,
     "p90": 0.821
    },
    "arousal_c": {
-    "mean": 0.6184,
+    "mean": 0.6185,
     "moves": true,
     "p90": 0.821
    },
    "beat_c": {
-    "mean": 0.3821,
+    "mean": 0.3819,
     "moves": true,
     "p90": 0.655
+   },
+   "beat_phase": {
+    "mean": 0.4877,
+    "moves": true,
+    "p90": 0.8817
+   },
+   "beat_phase_c": {
+    "mean": 0.5061,
+    "moves": true,
+    "p90": 0.9034
+   },
+   "beats": {
+    "mean": 198.8908,
+    "moves": true,
+    "p90": 329.0
    },
    "buildup": {
     "mean": 0.3232,
@@ -481,9 +566,9 @@
     "p90": 0.61
    },
    "phrase_pos": {
-    "mean": 0.4876,
+    "mean": 0.4903,
     "moves": true,
-    "p90": 0.89
+    "p90": 0.894
    },
    "pitch": {
     "mean": 0.1932,
@@ -529,6 +614,26 @@
     "mean": 0.0169,
     "moves": true,
     "p90": 0.073
+   },
+   "tempo_ac": {
+    "mean": 127.8809,
+    "moves": true,
+    "p90": 127.9
+   },
+   "tempo_ac_conf": {
+    "mean": 0.8433,
+    "moves": true,
+    "p90": 1.0
+   },
+   "tempo_kick": {
+    "mean": 128.0679,
+    "moves": true,
+    "p90": 128.3
+   },
+   "tempo_kick_expl": {
+    "mean": 0.7895,
+    "moves": true,
+    "p90": 1.0
    },
    "valence": {
     "mean": 0.8431,

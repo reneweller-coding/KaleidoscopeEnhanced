@@ -33,9 +33,11 @@
 // The CURRENT language is process-wide global state (like RenderPipeline's
 // M_Reactivity etc.) -- there is only ever one active language per running
 // process, so this needs no instance. Persisted as the "language" key in
-// kaleidoscope_settings.ini ("de"/"en"); callers (main.cpp, SetupWindow)
-// own reading/writing that key and call setLanguage() with the result --
-// this header only owns the enum, the tables, and the current selection.
+// kaleidoscope_settings.ini ("de"/"en"); callers (glwidget.cpp, SetupWindow,
+// ExportWindow) own reading/writing that key and call setLanguage() with
+// fromSetting() of it -- without the key the system's language decides
+// (systemLanguage(), 20.11.2026).  This header only owns the enum, the
+// tables, and the current selection.
 
 /** A supported UI language; the value doubles as the index of that language's string table.
  *
@@ -413,6 +415,26 @@ enum StrIdE
     // Strict photosensitivity protection (16.10.2026).
     S_OSD_STRICTLIGHT,
     S_SETUP_STRICTLIGHT,
+    // The web remote's rating walk (20.11.2026).
+    S_WR_TAB_RATE,
+    S_WR_RATE_START,
+    S_WR_RATE_STOP,
+    S_WR_RATE_LIKE,
+    S_WR_RATE_NEXT,
+    S_WR_RATE_NEVER,
+    S_WR_RATE_UNDO,
+    S_WR_RATE_COUNT_FMT, // %1 rated, %2 scenes
+    S_WR_RATE_SECS,
+    S_WR_RATE_HINT,
+    S_WR_RATE_DONE,
+    S_WR_RATE_OFF,
+    S_FB_RATE_START_FMT, // %1 rated, %2 scenes, %3 seconds per scene
+    S_FB_RATE_STOP_FMT,  // %1 rated, %2 scenes
+    S_FB_RATE_DONE,
+    S_FB_RATE_UNDO_FMT, // %1 scene
+    // Stereo for headsets: the full formats (20.11.2026).
+    S_SETUP_STEREO_FSBS,
+    S_SETUP_STEREO_FTB,
 
     S_COUNT
 };
@@ -446,6 +468,33 @@ LangE fromCode( const char *code );
  *   "en" or "de".
  **/
 const char *toCode( LangE lang );
+/**  The UI language for a locale name: German for German ("de", "de-DE", "de_AT", "de-CH"), English for any other.
+ *
+ * @param name  A BCP 47 tag or a Qt locale name; NULL counts as English. (in)
+ *
+ * @return
+ *   LangE::DE when the language part is "de", else LangE::EN.
+ **/
+LangE fromLocaleName( const char *name );
+/**  The language the UI starts in when the settings file names none: the system's.
+ *
+ * @return
+ *   fromLocaleName() of the user's first UI language (QLocale::system().uiLanguages(); on Windows the display
+ *   language), or of the system locale's name when the list is empty.  KALEIDO_LOCALE, when set, stands in for the
+ *   system (tests: "en_US", "de_DE").
+ *
+ * Since v1.19.1 the releases address everyone in English; German stays for German systems.  The answer is never
+ * written to the settings file: the file keeps saying nothing, so a later change of the system's language counts.
+ **/
+LangE systemLanguage();
+/**  The language for a settings file's "language" value.
+ *
+ * @param code  The value; NULL or empty when the file has none. (in)
+ *
+ * @return
+ *   fromCode( code ) for a value, systemLanguage() without one.
+ **/
+LangE fromSetting( const char *code );
 /**  Looks up @p id in the CURRENT language's table.
  *
  * @param id  The string's id. (in)

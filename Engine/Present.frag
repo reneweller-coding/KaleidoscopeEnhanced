@@ -72,9 +72,17 @@ uniform float     titlePhase;     ///< 0..1 while the reveal runs; >= 1 = off
 uniform float     titleAspect;    ///< title texture width/height
 uniform int       titleStyle;     ///< reveal style 0..23 (host-rolled, mood-matched)
 uniform float     titleSeed;      ///< per-reveal random seed
-uniform int       stereoMode;     ///< 0 off, 1 side-by-side, 2 top-bottom, 3 anaglyph
-uniform float     stereoDepth;    ///< disparity strength 0..2 (host, key c/m)
-uniform int       stereoSource;   ///< 1 = source is ALREADY eye-packed (true 3D stereo)
+uniform int       stereoMode;     ///< 0 off, 1 side-by-side, 2 top-bottom (both "half": each eye squeezed into
+                                  ///< its half), 3 anaglyph, 4 side-by-side full, 5 top-bottom full (each eye at the
+                                  ///< frame's own size: the display is the frame twice)
+uniform float stereoDepth;        ///< disparity strength 0..2 (host, key c/m)
+uniform int   stereoSource;       ///< 1 = source is ALREADY eye-packed (true 3D stereo)
+
+/** The size of the logical frame one eye sees: the display, but in the full stereo formats one half of it (set at
+ *  the top of main()).  Everything that is laid out in the frame's own proportions -- the camera roll, the shock
+ *  wave, the vignette, the lamps, the title, the lyrics, the artist inset -- takes its aspect from here; in the half
+ *  formats and without stereo it is the display, as before. */
+vec2 frameRes;
 
 // ---- Lyrics overlay (LRCLIB; key 'w': off / scroll / karaoke) ----
 uniform sampler2D lyricsTex;     ///< tall texture of the lines (transparent background)
@@ -265,17 +273,24 @@ vec3 sceneGradeCol( vec3 c, float mode )
 void main()
 {
     vec2 uv = gl_FragCoord.xy / resolution;
+    bool sbs = ( stereoMode == 1 || stereoMode == 4 ), tb = ( stereoMode == 2 || stereoMode == 5 );
+    frameRes = ( stereoMode == 4 )   ? vec2( resolution.x * 0.5, resolution.y )
+               : ( stereoMode == 5 ) ? vec2( resolution.x, resolution.y * 0.5 )
+                                     : resolution;
 
     // Stereoscopic split: each half shows the FULL logical frame for one eye
-    // (side-by-side "half" / top-bottom — the display or HMD player
-    // unsqueezes them, so every uv-based computation below stays correct).
+    // (side-by-side / top-bottom).  In the half formats the frame is squeezed
+    // into the half and the display or HMD player unsqueezes it; in the full
+    // ones the half IS the frame's size.  Either way every uv-based
+    // computation below stays correct, and the disparity is the same fraction
+    // of the eye's width.
     float eye_sign = 0.0; // -1 left eye, +1 right eye
-    if ( stereoMode == 1 )
+    if ( sbs )
     {
         eye_sign = ( uv.x < 0.5 ) ? -1.0 : 1.0;
         uv.x = fract( uv.x * 2.0 );
     }
-    else if ( stereoMode == 2 )
+    else if ( tb )
     {
         eye_sign = ( uv.y >= 0.5 ) ? -1.0 : 1.0; // top half = left eye
         uv.y = fract( uv.y * 2.0 );
@@ -292,7 +307,7 @@ void main()
     // combined with the beat "breath".  The host guarantees the zoom covers
     // the offset + rotation, so no edge ever samples outside the frame
     // (camZoom defaults to 0 when unset -> the max() keeps it a no-op).
-    float aspect2 = resolution.x / resolution.y;
+    float aspect2 = frameRes.x / frameRes.y;
     vec2  cuv = uv - 0.5;
     cuv.x *= aspect2;
     cuv = rot2( cuv, camRot );
@@ -331,13 +346,13 @@ void main()
     // the screen, the tunnel centre recedes).  Anaglyph packs both eyes into
     // one frame: red = left eye, green/blue = right eye.
     vec3 c;
-    if ( stereoMode == 1 || stereoMode == 2 )
+    if ( sbs || tb )
     {
         if ( stereoSource == 1 )
         {
             // TRUE stereo: the 3D scene already rendered one view per half —
             // just sample the matching half (no reprojection).
-            if ( stereoMode == 1 )
+            if ( sbs )
                 puv = vec2( puv.x * 0.5 + ( ( eye_sign > 0.0 ) ? 0.5 : 0.0 ), puv.y );
             else // top half = left eye
                 puv = vec2( puv.x, puv.y * 0.5 + ( ( eye_sign < 0.0 ) ? 0.5 : 0.0 ) );
@@ -371,7 +386,7 @@ void main()
         hc.g = texture( histTex, vec3( ruv, rewind.y ) ).g;
         hc.r = texture( histTex, vec3( ruv + vec2( 0.0016, 0.0 ), rewind.y ) ).r;
         hc.b = texture( histTex, vec3( ruv - vec2( 0.0016, 0.0 ), rewind.y ) ).b;
-        hc *= 0.90 + 0.10 * sin( ruv.y * resolution.y * 3.14159 ); // scanlines
+        hc *= 0.90 + 0.10 * sin( ruv.y * frameRes.y * 3.14159 ); // scanlines
         hc += ( hash21( gl_FragCoord.xy + fract( time * 17.0 ) * 61.0 ) - 0.5 )
               * 0.05; // tape noise
         c = mix( c, hc, rewind.x );
@@ -524,7 +539,7 @@ void main()
         float lb = dot( c, vec3( 0.299, 0.587, 0.114 ) );
         c = mix( c, vec3( lb ), 0.38 * breath ); // desaturate
         c *= 1.0 - 0.13 * breath;                // dim slightly
-        float vg = length( vec2( ( uv.x - 0.5 ) * ( resolution.x / resolution.y ),
+        float vg = length( vec2( ( uv.x - 0.5 ) * ( frameRes.x / frameRes.y ),
                                  uv.y - 0.5 ) );
         c *= 1.0 - 0.50 * breath * smoothstep( 0.34, 0.72, vg );
     }
@@ -538,7 +553,7 @@ void main()
     // Optional (key 'l'); off by default so the scene beat pulse can stand alone.
     if ( lightShow > 0.5 )
     {
-        float aspect = resolution.x / resolution.y;
+        float aspect = frameRes.x / frameRes.y;
         vec2  q = vec2( uv.x * aspect, uv.y );
         vec2  ctr = vec2( aspect * 0.5, 0.5 );
 
@@ -629,7 +644,7 @@ void main()
     if ( artistAlpha > 0.001 )
     {
         float w_u = 0.26; // 26% of the picture's width
-        float h_u = w_u * ( resolution.x / resolution.y ) / max( artistAspect, 0.2 );
+        float h_u = w_u * ( frameRes.x / frameRes.y ) / max( artistAspect, 0.2 );
         vec2  m0 = vec2( 0.035, 0.045 ); // lower left corner
         vec2  a = ( uv - m0 ) / vec2( w_u, h_u );
         if ( a.x > -0.2 && a.x < 1.2 && a.y > -0.2 && a.y < 1.2 )
@@ -661,7 +676,7 @@ void main()
     {
         float u = ( uv.x - 0.5 ) / 0.62 + 0.5; // text band: 62% of the width
         // Visible V per screen UV (the texture keeps its pixel aspect ratio).
-        float v_span = ( resolution.y / resolution.x ) * lyricsAspect / 0.62;
+        float v_span = ( frameRes.y / frameRes.x ) * lyricsAspect / 0.62;
         float v = lyricsScrollV + ( 0.5 - uv.y ) * v_span;
         if ( u > 0.0 && u < 1.0 && v > 0.0 && v < 1.0 )
         {
@@ -736,7 +751,7 @@ void main()
         int   st = titleStyle;
 
         vec2 tp = uv - vec2( 0.5, 0.52 );
-        tp.x *= resolution.x / resolution.y;
+        tp.x *= frameRes.x / frameRes.y;
 
         vec2  tq = tp;
         float blur_a = 0.0;
