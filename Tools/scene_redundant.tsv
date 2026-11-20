@@ -1,0 +1,31 @@
+name	group	source
+ChainKaleidoTunnel	1	scene_similarity 20.11.2026 (complete linkage, widest 0.474), looked at: three chain tunnels with kaleidoscopic walls, the same tunnel in A and B; ChainKaleidoTunnel shows its star in B and C
+ChainTunnelHex	1	scene_similarity 20.11.2026, looked at: see ChainKaleidoTunnel
+ChainTunnelKaleido	1	scene_similarity 20.11.2026, looked at: see ChainKaleidoTunnel
+ChannelPlateTectonics	2	scene_similarity 20.11.2026 (widest 0.442), looked at: the same mirrored leaf photo in all frames, faint colour fringes, light streaks and one lensed C frame (DamasceneFoldedSteel of the same group left out: folds of its own in C)
+SelfLensingPhoto	2	scene_similarity 20.11.2026, looked at: see ChannelPlateTectonics
+SolitonGasCollisions	2	scene_similarity 20.11.2026, looked at: see ChannelPlateTectonics
+BeatFrequencyDrift	3	scene_similarity 20.11.2026 (dup_group, widest 0.340), looked at: the same mirrored rose photo; BeatFrequencyDrift and IkatFeather the same picture, StickSlipFrictionFronts adds faint fronts
+IkatFeather	3	scene_similarity 20.11.2026, looked at: see BeatFrequencyDrift
+StickSlipFrictionFronts	3	scene_similarity 20.11.2026, looked at: see BeatFrequencyDrift
+BlinkingVortexStirring	4	scene_similarity 20.11.2026 (dup_group, widest 0.337), looked at: the same blurred lattice photo; a vortex in BlinkingVortexStirring's C frame
+IsophoteSilkStreaks	4	scene_similarity 20.11.2026, looked at: see BlinkingVortexStirring
+LedDiffuserBloom	4	scene_similarity 20.11.2026, looked at: see BlinkingVortexStirring
+BitDepthPosterBands	5	scene_similarity 20.11.2026 (0.186), looked at: the same foam photo, nearly untouched in both
+ChromaLumaSlip	5	scene_similarity 20.11.2026, looked at: see BitDepthPosterBands
+ChromaSubsampleBleed	6	scene_similarity 20.11.2026 (0.254), looked at: the same mirrored curtain photo
+LogisticRainCascade	6	scene_similarity 20.11.2026, looked at: see ChromaSubsampleBleed
+DetailTideBreakdown	7	scene_similarity 20.11.2026 (0.265), looked at: the same cracked yellow photo
+SensorRowBanding	7	scene_similarity 20.11.2026, looked at: see DetailTideBreakdown
+FocusBreathingPull	8	scene_similarity 20.11.2026 (0.292), looked at: the same blue fern photo (DispersiveWaveTrain, RunLengthStreaks and SeptarianVeinNetwork near, each with marks of its own)
+MajolicaGlazePools	8	scene_similarity 20.11.2026, looked at: see FocusBreathingPull
+FoucaultStreakPlane	9	scene_similarity 20.11.2026 (0.295), looked at: the same photo, LobeAndCleftFront's C frame smeared
+LobeAndCleftFront	9	scene_similarity 20.11.2026, looked at: see FoucaultStreakPlane
+PhotoObstacleFlow	10	scene_similarity 20.11.2026 (0.311), looked at: the same mirrored photo with a sunburst texture
+WaterGlassRowFlip	10	scene_similarity 20.11.2026, looked at: see PhotoObstacleFlow
+PlumeCapRollups	11	scene_similarity 20.11.2026 (0.288), looked at: the same photo (HarmonographExposure near, but blurred throughout)
+PolygonBokehBlades	11	scene_similarity 20.11.2026, looked at: see PlumeCapRollups
+PhotoDepthParallax	12	scene_similarity 20.11.2026 (0.402), looked at: the same mirrored photo without the sunburst of group 10
+WaterDropCurtainRefract	12	scene_similarity 20.11.2026, looked at: see PhotoDepthParallax
+MiniatureFocusBandSweep	13	scene_similarity 20.11.2026 (0.317), looked at: the same curtain photo with rings in C (BandLab near, but a walking lab: three frames are no verdict on it)
+TransmissionLineStandingWave	13	scene_similarity 20.11.2026, looked at: see MiniatureFocusBandSweep

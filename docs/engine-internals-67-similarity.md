@@ -98,3 +98,55 @@ docs/engine-internals.md.
   tried, so `SceneScheduler::pickScene` stays as it is, no cluster attribute goes into the presets, and no rebuild was
   needed. The measurement stays repeatable: `python Tools/check_schedule.py` then `python Tools/scene_similarity.py
   --plans`.
+
+### B5: near-duplicates leave the genre presets (the user's decision of 20.11.)
+
+- *Rule* (`Tools/make_genre_configs.py`, overlay `Tools/scene_redundant.tsv`: name, group, source -- read like
+  `Tools/user_taste.tsv`): the file holds groups of scenes that show the same picture, confirmed on contact sheets.
+  In each genre preset the two best members of a group stay (interest, then the genre's fit, then the name), the
+  others are only in Allround; the selection is then made again without them, so the fill to 400 scenes may take
+  another. Nothing is deleted. The generator prints every scene it leaves out and why.
+- *A pair never loses a member*, so only groups of three or more matter. The 11 groups at `DUP_CUT` hold two triples,
+  and neither has three members in one genre: on the calibrated threshold alone nothing would change. The net was
+  therefore widened for this step to complete linkage at 0.55 (the widest "same" pair of the calibration): 32 groups
+  of three or more, 14 of them with three members in some genre. Each was looked at, with this test: every member
+  shows the same picture in at least two of the three frames, and none shows a structure of its own (lines, seams,
+  folds, contours, a blur) in two or more frames; a walking lab (LAB_LIB, BandLab here) never counts -- its three
+  frames are three moments of hundreds of looks.
+  - *Confirmed, with an effect:* ChainKaleidoTunnel, ChainTunnelHex, ChainTunnelKaleido -- three chain tunnels with
+    kaleidoscopic walls, the same tunnel in A and B (ChainKaleidoTunnel shows its star in B and C). The only group of
+    this round whose sameness is its own geometry rather than a shared photo.
+  - *Confirmed, without an effect* (not three members in any genre): ChannelPlateTectonics, SelfLensingPhoto,
+    SolitonGasCollisions (DamasceneFoldedSteel left out, folds of its own); the two triples of the threshold; nine
+    pairs, kept in the file as verdicts (13 groups, 31 scenes in all).
+  - *Not confirmed:* BlackHole / ParticleGalaxy / PlanetRings and CosmicBoidsVortex / RadiolarianSilicaLattice /
+    WhiteHoleFountain (particle disks and swirls on black -- related, but different objects); RotatingSnakesPhoto /
+    TextureGlassCubeSwarm / ThresholdSeesawSpin; ConvectionRollsDye (cells) with two streaked photos; FishSchoolFlowField
+    / FlareGhostTrain / PhaseConjugateEchoReturn (flow lines, radial streaks, rings of their own in B and C);
+    HarmonographExposure (blurred throughout); HoarfrostFeatherGarden / OgeeTrellisSway / WoodblockBokashi (a trellis);
+    DispersiveWaveTrain, RunLengthStreaks, SeptarianVeinNetwork beside FocusBreathingPull / MajolicaGlazePools (wave
+    fronts, streaks, a vein network); PhotoGeodesicFronts beside two pairs on the same orange photo (contours; the pairs
+    differ by a sunburst); ImageQuiltingSeamDrift (seams); MonetLilyPond.
+- *Result:*
+
+  | genre preset | entries before | after | distinct scenes before | after | change |
+  |---|---|---|---|---|---|
+  | Ambient | 847 | 847 | 822 | 822 | -- |
+  | Downtempo | 456 | 456 | 456 | 456 | -- |
+  | SpaceAmbient | 461 | 461 | 401 | 401 | ChainTunnelKaleido out, ExposureLab in (the fill to 400) |
+  | Cinematic | 446 | 446 | 402 | 402 | -- |
+  | Club | 694 | 693 | 689 | 688 | ChainTunnelKaleido out |
+  | Electronic | 575 | 575 | 570 | 570 | -- |
+  | Psytrance | 646 | 645 | 646 | 645 | ChainTunnelKaleido out |
+  | Psychedelic | 1006 | 1005 | 1005 | 1004 | ChainTunnelKaleido out |
+  | Noir | 519 | 519 | 454 | 454 | -- |
+  | Allround | 2690 | 2690 | 2475 | 2475 | -- |
+
+  No genre below 99.8 % of its size (the plan's floor: 85 %). The solo times of the other entries move by one second
+  at most where a scene left (each preset's mean solo time is normalised to 55 s; 21 to 326 entries per preset).
+- *Checks:* `PresetEditor --roundtrip` of all 12 preset files ok, `PresetEditor --validate` ok ("all 11 file(s)
+  complete vs. Komplett.xml"), `Tools/check_schedule.py --quick` 20 plans without violations.
+- *Not verified:* the scenes in motion -- three stills cannot show what a scene does over time, and the confirmed
+  groups are mostly scenes that leave the photo alone; B1 (musical reaction) is the measure for that. Scenes that
+  look alike but drew different photos for the catalogue are not found (see B3). No app render of the changed
+  presets: apart from the one entry each, they are unchanged.
