@@ -548,9 +548,9 @@ structures come forward, the centre of a tunnel recedes). The formats, with
 | `fsbs`, `ftb` | each eye at the full frame size, the picture **twice as wide / high** ("full") | headsets: twice the detail per eye |
 | `ana` | red/cyan in one picture | anaglyph glasses |
 
-`c` / `m` (or the remote's slider) make the depth weaker or stronger. Both
-eyes sit at the same convergence in every format, so half and full show the
-same depth; full only adds detail. A fade between a 3D and a 2D scene keeps
+`c` / `m` (or the remote's slider) make the depth weaker or stronger. With
+the same proportions per eye, half and full show the same depth (the same
+disparity as a share of the eye's width); full only adds detail. A fade between a 3D and a 2D scene keeps
 the 3D scene's depth until it is gone (`Tools/stereo_disparity.py` measures
 all of it on a test scene with known depth).
 
@@ -558,10 +558,11 @@ all of it on a test scene with known depth).
 screen in the headset and can show it as side-by-side 3D (Virtual Desktop,
 Bigscreen, Immersed and the like) works: run Kaleidoscope fullscreen (`-b` or
 double-click), set the stereo mode, and switch the app's screen to SBS 3D.
-Take `sbs` (half) when the app splits a normal 16:9 desktop into two eyes --
-most do -- and `fsbs` when it can show a double-wide desktop as full SBS
+Take `sbs` (half) when the app splits a normal 16:9 desktop into two
+squeezed eyes, and `fsbs` when it shows a double-wide desktop as full SBS
 (each eye gets half of the window's width at full height, so a 32:9 or
-doubled virtual monitor is what it is made for).
+doubled virtual monitor is what it is made for; on a 16:9 window each eye
+is a narrow 8:9 picture).
 
 **As a video.** The export keeps the stereo mode, and `-g` is the size of
 **one eye** in the full formats:
