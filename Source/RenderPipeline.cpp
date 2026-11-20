@@ -781,7 +781,11 @@ void RenderPipeline::stop()
     // practice because run() never holds a mutex; the worst case is an image
     // decode aborted partway, and the ImageLoader object itself is deleted
     // right below anyway.
+    // wait(): on Windows terminate() has ended the thread when it returns; on Linux it only asks (pthread_cancel),
+    // the thread ends at its next sleep, and deleting a QThread still running aborts the process ("QThread: Destroyed
+    // while thread is still running") -- the first Linux export in the CI ended that way, with exit code 134.
     m_imageLoader->terminate();
+    m_imageLoader->wait();
 
     delete m_imageLoader;
     m_imageLoader = nullptr; // start() checks this; a stale one was a dangling delete
@@ -819,6 +823,7 @@ RenderPipeline::~RenderPipeline()
     if ( m_imageLoader )
     {
         m_imageLoader->terminate();
+        m_imageLoader->wait(); // see stop()
         delete m_imageLoader;
         m_imageLoader = nullptr;
     }
