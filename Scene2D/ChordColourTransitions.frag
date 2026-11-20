@@ -16,7 +16,7 @@
  *    (integrated)
  *    sceneAdvance     -> the circle turns (integrated)
  *    audioSwell       -> the width of the ribbons
- *    audioKick        -> the ribbons light up (light only)
+ *    audioKick        -> the ribbons and the photo behind them light up (light only)
  *
  *  Knobs: sizeP (the radius of the circle), hueP.
  *
@@ -517,10 +517,10 @@ void main()
 {
     vec2  p = screenP();
     float R = 0.36 + 0.12 * clamp( sizeP, 0.0, 1.0 );
-    float rot = 0.015 * sceneTime + 0.3 * sceneAdvance;
-    float wander = 0.02 * sceneTime + 0.25 * audioHarmAdvance + 0.4 * sceneAdvance;
+    float rot = 0.015 * sceneTime + 1.0 * sceneAdvance;
+    float wander = 0.02 * sceneTime + 0.25 * audioHarmAdvance + 1.0 * sceneAdvance;
     float kick = clamp( audioKick, 0.0, 1.0 );
-    vec3  col = imgLod( p * 0.85 + 0.5, 2.0 ) * 0.3;
+    vec3  col = imgLod( p * 0.85 + 0.5, 2.0 ) * ( 0.3 + 0.12 * kick );
     float r = length( p );
     float a = atan( p.y, p.x ) - rot;
     float ringm = smoothstep( R - 0.006, R, r ) * ( 1.0 - smoothstep( R + 0.02, R + 0.026, r ) );
@@ -528,7 +528,7 @@ void main()
     vec3  ringc = hsv2rgb( vec3( fract( a / 6.2831853 + 0.5 ), 0.7, 0.95 ) )
                   * ( 0.5 + 0.5 * smoothstep( 0.0, 0.08, sec ) * ( 1.0 - smoothstep( 0.92, 1.0, sec ) ) );
     col = mix( col, ringc, ringm );
-    float sw = 0.6 + 0.8 * clamp( audioSwell, 0.0, 1.0 );
+    float sw = 0.5 + 1.2 * clamp( audioSwell, 0.0, 1.0 );
     for ( int k = 0; k < 18; ++k )
     {
         float fk = float( k );

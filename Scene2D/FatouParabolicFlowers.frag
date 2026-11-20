@@ -14,8 +14,10 @@
  *  Audio Reactivity (structure, not only light):
  *    sceneAdvance    -> the zoom into the fractal: the music carries it (integrated, a raised cosine: no jump)
  *    audioSwell -> the parameter's distance from the parabolic value
- *    audioHarmAdvance -> the parameter turns off the axis: a chord change twists the flowers (integrated)
+ *    audioHarmAdvance -> the parameter turns off the axis: a chord change twists the flowers, the music between
+ *                        the changes too (integrated)
  *    audioSwell      -> how deep the zoom goes and how brightly the trap reads
+ *    audioKick       -> the flowers flare (light only)
  *
  *  Knobs: depthP (the zoom's depth), iterP (the quality of the iteration), hueP.
  *
@@ -40,6 +42,7 @@ uniform float audioPhase;       ///< Rotation phase driven by the music (integra
 uniform float audioSwell;       ///< Slow loudness envelope, 0..1 (seconds).
 uniform float audioHarmAdvance; ///< The harmony's advance: ~1 more with every chord change (integrated, never jumps
                                 ///< back).
+uniform float audioKick;        ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 
 uniform float depthP; ///< Depth knob, 0..1.
 uniform float iterP;  ///< Iter knob: the quality of the iteration, 0..1.
@@ -617,13 +620,13 @@ void main()
 {
     vec2  p = screenP();
     vec2  bg = p * 0.8 + 0.5;
-    float run = 0.008 * sceneTime + 0.12 * sceneAdvance;
+    float run = 0.008 * sceneTime + 0.25 * sceneAdvance;
     float sw = clamp( audioSwell, 0.0, 1.0 );
     float depth = 0.6 * ( 0.5 + 1.5 * clamp( depthP, 0.0, 1.0 ) ) * ( 0.5 + 0.7 * sw );
     float zoom = fracZoom( run, depth );
     float h = audioHarmAdvance;
     float ph = 0.3 * sceneTime + 3.0 * audioPhase;
-    vec2  c = vec2( 0.004 + 0.012 * sw, 0.008 * sin( 0.8 * h ) );
+    vec2  c = vec2( 0.004 + 0.012 * sw, 0.035 * sin( 0.8 * h + 0.6 * sceneAdvance ) );
     vec2  z = p * 3.0 * zoom;
     vec2  z0 = z;
     vec3  acc = vec3( 0.0 );
@@ -644,5 +647,5 @@ void main()
         acc += tr.rgb * w;
         accw += w;
     }
-    finish( fracCompose( acc, accw, esc, bg ) * ( 0.9 + 0.3 * sw ) );
+    finish( fracCompose( acc, accw, esc, bg ) * ( 0.9 + 0.3 * sw + 0.25 * clamp( audioKick, 0.0, 1.0 ) ) );
 }

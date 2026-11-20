@@ -6,10 +6,11 @@
  *   sceneAdvance     -> the wave of teeth runs along the edges and the leaves sway: the music carries both
  *                       (integrated)
  *   audioSwell       -> the leaves sway wider (slow)
+ *   audioKick        -> the leaves' ribs and veins light up (light only)
  *
  * Knobs: sizeP (the size of the leaves), hueP.
 //@params sizeP
-//@audio audioAdvance audioHarmAdvance audioSwell
+//@audio audioAdvance audioHarmAdvance audioSwell audioKick
 //@body
 void main()
 {
@@ -34,7 +35,9 @@ void main()
     float rib = 1.0 - smoothstep(0.0, 0.012, abs(q.y));
     float veins = 1.0 - smoothstep(0.0, 0.015, abs(abs(q.y) - 0.35 * (fract(tn * u * 0.5) - 0.2) * 0.5));
     vec3 col = c * (0.75 + 0.3 * smoothstep(0.0, 0.3, w - abs(q.y)));
-    col = mix(col, vec3(0.9, 0.95, 0.7), rib * 0.35 + veins * 0.12);
+    float kick = clamp(audioKick, 0.0, 1.0);
+    col = mix(col, vec3(0.9, 0.95, 0.7), (rib * 0.35 + veins * 0.12) * (1.0 + 1.2 * kick));
+    col *= 1.0 + 0.25 * kick;
     vec3 bg = imgLod(p * 0.85 + 0.5, 2.5) * 0.12;
     finish(mix(bg, col * 1.2, inside));
 }

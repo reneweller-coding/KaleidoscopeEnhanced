@@ -6,7 +6,7 @@
  *   audioHarmAdvance -> the distance between the groups of sources follows the key: a chord change moves them
  *                       (integrated)
  *   sceneAdvance     -> the sources wander: the music carries most of it (integrated)
- *   audioKick        -> the stitches flare (light only)
+ *   audioKick        -> the stitches and the photo flare (light only)
  *
  * Knobs: sizeP (the wavelength), hueP.
 //@params sizeP
@@ -17,7 +17,7 @@ void main()
     vec2 p = screenP();
     float k = 6.2831853 / (0.025 + 0.04 * clamp(sizeP, 0.0, 1.0));
     float t = 0.025 * sceneTime + 0.5 * sceneAdvance;
-    float sep = 0.3 + 0.12 * sin(0.5 * audioHarmAdvance + 0.01 * sceneTime);
+    float sep = 0.3 + 0.15 * sin(0.8 * audioHarmAdvance + 0.6 * sceneAdvance + 0.01 * sceneTime);
     float s1 = 0.0;
     float s2 = 0.0;
     for (int i = 0; i < 4; ++i) {
@@ -33,6 +33,7 @@ void main()
     float lines = smoothstep(0.7, 0.95, max(g1, g2));
     vec3 c = imgLod(p * 0.85 + 0.5, 0.8);
     c = mix(vec3(luma(c)), c, 1.4);
-    vec3 col = c * (0.2 + 0.7 * lines + (1.6 + 0.8 * clamp(audioKick, 0.0, 1.0)) * st) + vec3(0.02);
+    float kick = clamp(audioKick, 0.0, 1.0);
+    vec3 col = c * (0.2 + 0.15 * kick + (0.7 + 0.5 * kick) * lines + (1.6 + 0.8 * kick) * st) + vec3(0.02);
     finish(col);
 }

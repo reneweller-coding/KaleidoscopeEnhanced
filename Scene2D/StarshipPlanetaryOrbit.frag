@@ -276,7 +276,7 @@ void main()
     float t = time * 0.035 + audioAdvance * 0.06;
     // The planet's own turn: the music carries it, the camera above stays on its slow clock (B2, 20.11.2026: the scene
     // measured among the 5 % least reactive).
-    float tp = time * 0.02 + audioAdvance * 0.8;
+    float tp = time * 0.02 + audioAdvance * 1.6;
 
     // Everything below is in PLANET RADII (R = 1).  The first cut used
     // R = 60 with the centre 74 units out, so the frame filled with one
