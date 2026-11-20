@@ -75,8 +75,8 @@ uniform float     titleSeed;      ///< per-reveal random seed
 uniform int       stereoMode;     ///< 0 off, 1 side-by-side, 2 top-bottom (both "half": each eye squeezed into
                                   ///< its half), 3 anaglyph, 4 side-by-side full, 5 top-bottom full (each eye at the
                                   ///< frame's own size: the display is the frame twice)
-uniform float     stereoDepth;    ///< disparity strength 0..2 (host, key c/m)
-uniform int       stereoSource;   ///< 1 = source is ALREADY eye-packed (true 3D stereo)
+uniform float stereoDepth;        ///< disparity strength 0..2 (host, key c/m)
+uniform int   stereoSource;       ///< 1 = source is ALREADY eye-packed (true 3D stereo)
 
 /** The size of the logical frame one eye sees: the display, but in the full stereo formats one half of it (set at
  *  the top of main()).  Everything that is laid out in the frame's own proportions -- the camera roll, the shock
@@ -274,7 +274,7 @@ void main()
 {
     vec2 uv = gl_FragCoord.xy / resolution;
     bool sbs = ( stereoMode == 1 || stereoMode == 4 ), tb = ( stereoMode == 2 || stereoMode == 5 );
-    frameRes = ( stereoMode == 4 ) ? vec2( resolution.x * 0.5, resolution.y )
+    frameRes = ( stereoMode == 4 )   ? vec2( resolution.x * 0.5, resolution.y )
                : ( stereoMode == 5 ) ? vec2( resolution.x, resolution.y * 0.5 )
                                      : resolution;
 

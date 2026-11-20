@@ -106,7 +106,10 @@ public:
      **/
     static const char *stereoTag( int stereo )
     {
-        return stereo == 1 ? "_SBS" : stereo == 2 ? "_TB" : stereo == 4 ? "_SBSF" : stereo == 5 ? "_TBF" : "";
+        return stereo == 1 ? "_SBS" : stereo == 2 ? "_TB"
+                                  : stereo == 4   ? "_SBSF"
+                                  : stereo == 5   ? "_TBF"
+                                                  : "";
     }
 
     /**  Whether this run is a video export.

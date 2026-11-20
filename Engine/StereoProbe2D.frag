@@ -24,7 +24,7 @@ uniform vec2 resolution; ///< Size of the render target in pixels.
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
-    vec2  p = gl_FragCoord.xy / resolution.y;          // height units
+    vec2  p = gl_FragCoord.xy / resolution.y; // height units
     float aspect = resolution.x / resolution.y;
     float white = 1.0 - smoothstep( 0.095, 0.1, distance( p, vec2( 0.3 * aspect, 0.8 ) ) );
     float grey = 1.0 - smoothstep( 0.095, 0.1, distance( p, vec2( 0.7 * aspect, 0.8 ) ) );

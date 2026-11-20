@@ -68,19 +68,19 @@ float RenderPipeline::M_MoodStrength = 1.0f;
 float RenderPipeline::M_RenderScale = 1.0f;
 float RenderPipeline::M_RenderScaleMax = 1.0f; // no supersampling unless asked for
 bool  RenderPipeline::M_RenderScaleFromCli = false;
-float RenderPipeline::M_LightShow = 0.0f;     // corner lamps / light-show OFF by default
-bool  RenderPipeline::M_StrictLight = false;  // strict light protection (ini lightProtectionStrict)
-bool  RenderPipeline::M_SpoutEnabled = false; // Spout sender (CLI -o)
-bool  RenderPipeline::M_SpoutClean = false;   // Spout sends the displayed frame, not the raw render
-float RenderPipeline::M_DisplayHz = 60.f;     // the panel rate (glwidget sets it)
-float RenderPipeline::M_LatencyLead = 0.05f;  // display-phase lead vs. heard audio
-float RenderPipeline::M_FrameStep = 0.f;      // video export: fixed frame step (0 = live, wall clock)
-int   RenderPipeline::M_StereoMode = 0;       // stereoscopic output (CLI -3 / 'z')
-float RenderPipeline::M_StereoDepth = 1.0f;   // disparity strength
+float RenderPipeline::M_LightShow = 0.0f;      // corner lamps / light-show OFF by default
+bool  RenderPipeline::M_StrictLight = false;   // strict light protection (ini lightProtectionStrict)
+bool  RenderPipeline::M_SpoutEnabled = false;  // Spout sender (CLI -o)
+bool  RenderPipeline::M_SpoutClean = false;    // Spout sends the displayed frame, not the raw render
+float RenderPipeline::M_DisplayHz = 60.f;      // the panel rate (glwidget sets it)
+float RenderPipeline::M_LatencyLead = 0.05f;   // display-phase lead vs. heard audio
+float RenderPipeline::M_FrameStep = 0.f;       // video export: fixed frame step (0 = live, wall clock)
+int   RenderPipeline::M_StereoMode = 0;        // stereoscopic output (CLI -3 / 'z')
+float RenderPipeline::M_StereoDepth = 1.0f;    // disparity strength
 bool  RenderPipeline::M_StereoFromCli = false; // -3 given: an export keeps the stereo format
-bool  RenderPipeline::M_Blackout = false;     // VJ blackout ('b')
-bool  RenderPipeline::M_RestDim = false;      // the rest mode's blackout (GLwidget)
-float RenderPipeline::M_Dim = 1.f;            // the sleep timer's dimming
+bool  RenderPipeline::M_Blackout = false;      // VJ blackout ('b')
+bool  RenderPipeline::M_RestDim = false;       // the rest mode's blackout (GLwidget)
+float RenderPipeline::M_Dim = 1.f;             // the sleep timer's dimming
 float RenderPipeline::M_ChainScaleIni = 1.f;
 bool  RenderPipeline::M_Freeze = false; // VJ freeze ('e'); a comparison run (KALEIDO_FREEZE_TIME) engages it after the
                                         // fade-in
@@ -91,16 +91,16 @@ float RenderPipeline::freezeTime()
                                         : -1.f;
     return FreezeTime;
 }
-bool                  RenderPipeline::M_Pinned = false;         // VJ pin ('u')
-QHash<QString, float> RenderPipeline::M_Taste;                  // taste learning (skip/favourite)
-QSet<QString>         RenderPipeline::M_Banned;                 // "never again"
-QHash<QString, QString> RenderPipeline::M_Rated;                // the rating walk's verdicts
-bool                  RenderPipeline::M_SpoutInEnabled = false; // Spout input (CLI -i)
-QString               RenderPipeline::M_SpoutInSender;
-QString               RenderPipeline::M_VideoPath;    // native video input (CLI -v)
-QString               RenderPipeline::M_WarmLabel;    // what the lazy warm-up did this frame (KALEIDO_FRAME_LOG)
-QString               RenderPipeline::M_ImageDirCli;  // photo source override (CLI -f)
-QString               RenderPipeline::M_ImageDirUser; // photo source override (ini)
+bool                    RenderPipeline::M_Pinned = false;         // VJ pin ('u')
+QHash<QString, float>   RenderPipeline::M_Taste;                  // taste learning (skip/favourite)
+QSet<QString>           RenderPipeline::M_Banned;                 // "never again"
+QHash<QString, QString> RenderPipeline::M_Rated;                  // the rating walk's verdicts
+bool                    RenderPipeline::M_SpoutInEnabled = false; // Spout input (CLI -i)
+QString                 RenderPipeline::M_SpoutInSender;
+QString                 RenderPipeline::M_VideoPath;    // native video input (CLI -v)
+QString                 RenderPipeline::M_WarmLabel;    // what the lazy warm-up did this frame (KALEIDO_FRAME_LOG)
+QString                 RenderPipeline::M_ImageDirCli;  // photo source override (CLI -f)
+QString                 RenderPipeline::M_ImageDirUser; // photo source override (ini)
 
 
 /**  Whether this is a scripted run (a test tool driving the app): KALEIDO_SEED, KALEIDO_FREEZE_TIME,
@@ -1784,7 +1784,7 @@ int RenderPipeline::rateNextPick( unsigned int act )
     for ( int pass = 0; pass < 2; ++pass )
     {
         // Open files and their entries (the models of a family share one file, and one verdict).
-        QStringList               files;
+        QStringList                files;
         QHash<QString, QList<int>> entries;
         for ( size_t i = 0; i < m_effectTextures.size(); ++i )
         {
@@ -1799,7 +1799,7 @@ int RenderPipeline::rateNextPick( unsigned int act )
         }
         if ( !files.isEmpty() )
         {
-            const QString     &b = files[rand() % files.size()];
+            const QString    &b = files[rand() % files.size()];
             const QList<int> &e = entries[b];
             m_rateShown.insert( b );
             return e[rand() % e.size()];
@@ -2038,7 +2038,7 @@ bool RenderPipeline::undoRating( QString *scene )
 
 RenderPipeline::RatingState RenderPipeline::ratingState() const
 {
-    RatingState   r;
+    RatingState r;
     r.active = m_rating;
     r.done = m_rateDone;
     r.secs = m_rateSecs;
@@ -3032,8 +3032,8 @@ GLuint RenderPipeline::prepareFxInputs()
     // TRANSFORMED frame instead.  Never on eye-packed frames (warping a
     // packed stereo frame shears the two eyes against each other), and the
     // "next" slot only when its pass actually rendered this frame.
-    GLuint     fx_tex1 = m_texIDFBOEffectTexture1;
-    GLuint     fx_tex2 = m_texIDFBOEffectTexture2;
+    GLuint fx_tex1 = m_texIDFBOEffectTexture1;
+    GLuint fx_tex2 = m_texIDFBOEffectTexture2;
     // The mono (2D) side of a packed fade is a frame like any other: its rig still moves it.
     const bool packed1 = m_trueStereoPacked && m_effectTextures[m_scheduler.actTexture()]->is3D();
     const bool packed2 = m_trueStereoPacked && m_effectTextures[m_scheduler.nextTexture()]->is3D();
@@ -3193,12 +3193,12 @@ void RenderPipeline::renderFxStage( const AudioFeatures &audioFx )
         if ( m_scheduler.texState() != 0 && m_stereoMixProgId != 0 )
         {
             // A fade: each side packed (a 3D scene, its own target) or mono (a 2D scene, its frame, rig applied).
-            const GLuint fx_tex1 = prepareFxInputs();
-            const GLuint fx_tex2 = m_fadeInTex; // prepareFxInputs() leaves the incoming side there
-            const bool   act_3d = m_effectTextures[m_scheduler.actTexture()]->is3D();
-            const bool   next_3d = m_effectTextures[m_scheduler.nextTexture()]->is3D();
-            const GLuint ta = act_3d ? m_stereoTarget[0].color : fx_tex1;
-            const GLuint tb = next_3d ? m_stereoTarget[1].color : fx_tex2;
+            const GLuint  fx_tex1 = prepareFxInputs();
+            const GLuint  fx_tex2 = m_fadeInTex; // prepareFxInputs() leaves the incoming side there
+            const bool    act_3d = m_effectTextures[m_scheduler.actTexture()]->is3D();
+            const bool    next_3d = m_effectTextures[m_scheduler.nextTexture()]->is3D();
+            const GLuint  ta = act_3d ? m_stereoTarget[0].color : fx_tex1;
+            const GLuint  tb = next_3d ? m_stereoTarget[1].color : fx_tex2;
             StereoTarget &mix = m_stereoTarget[2];
             ensureStereoTarget( mix, pw, ph );
             glBindFramebuffer( GL_FRAMEBUFFER, mix.fbo );

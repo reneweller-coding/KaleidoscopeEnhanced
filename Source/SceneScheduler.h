@@ -788,8 +788,8 @@ private:
     std::vector<int> m_reviewOrder;   ///< Texture indices sorted alphabetically by fragment basename (built lazily).
     int              m_reviewPos = 0; ///< Current position within m_reviewOrder.
     // Rating walk (setRateWalk())
-    float                                  m_rateSecs = 0.f; ///< Seconds per scene of the rating walk; 0 = no walk.
-    std::function<int( unsigned int )>     m_rateNext;       ///< The walk's choice of the next scene (setRateWalk()).
+    float                              m_rateSecs = 0.f; ///< Seconds per scene of the rating walk; 0 = no walk.
+    std::function<int( unsigned int )> m_rateNext;       ///< The walk's choice of the next scene (setRateWalk()).
 
     // Transition choice (one shader per fade, from Transitions/)
     unsigned int m_actTransition = 0; ///< Transition shader rolled for the effect slot's current/last fade.

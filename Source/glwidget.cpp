@@ -5110,7 +5110,7 @@ void GLwidget::keyPressEvent( QKeyEvent *event )
         {
             RenderPipeline::cycleStereo();
             static const StrIdE Names[RenderPipeline::StereoModes] = { S_SETUP_STEREO_OFF, S_SETUP_STEREO_SBS,
-                                                                       S_SETUP_STEREO_TB,  S_SETUP_STEREO_ANA,
+                                                                       S_SETUP_STEREO_TB, S_SETUP_STEREO_ANA,
                                                                        S_SETUP_STEREO_FSBS, S_SETUP_STEREO_FTB };
             feedback( ui( S_FB_STEREO_FMT ).arg( ui( Names[RenderPipeline::stereoMode()] ) ) );
             break;

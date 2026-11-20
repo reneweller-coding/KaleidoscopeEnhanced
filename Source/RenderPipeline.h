@@ -714,10 +714,10 @@ public:
     // so the display is the frame twice: the pipeline renders the frame at
     // the size of ONE eye (frameSize()), and a solo 3D scene renders its two
     // eyes into a target twice that size (m_stereoTarget).
-    static int   M_StereoMode;     ///< Stereoscopic output mode: 0 off, 1 SBS (half), 2 top-bottom (half), 3 anaglyph,
-                                   ///< 4 SBS full, 5 top-bottom full.
-    static float M_StereoDepth;    ///< Stereo disparity strength, 0..2 (default 1).
-    static bool  M_StereoFromCli;  ///< -3 was given: a video export keeps the stereo format (it drops the ini's).
+    static int M_StereoMode;      ///< Stereoscopic output mode: 0 off, 1 SBS (half), 2 top-bottom (half), 3 anaglyph,
+                                  ///< 4 SBS full, 5 top-bottom full.
+    static float M_StereoDepth;   ///< Stereo disparity strength, 0..2 (default 1).
+    static bool  M_StereoFromCli; ///< -3 was given: a video export keeps the stereo format (it drops the ini's).
     /** Number of stereo output modes (0 .. StereoModes - 1). */
     static constexpr int StereoModes = 6;
     /**  Cycles to the next stereoscopic output mode (key 'z').
@@ -1940,12 +1940,12 @@ private:
                                      ///< texture cross-fade with the combine solo): disables combine/trail warps that
                                      ///< would smear content across the eye boundary.
     // Plain cross-mix program for packed 3D<->3D cross-fades.
-    GLuint m_stereoMixProgId = 0;  ///< Plain per-pixel cross-mix shader (Engine/StereoMix.frag) for packed 3D<->3D
-                                   ///< texture cross-fades.
-    GLint m_stereoMixTexAUni = -1; ///< Uniform location of "texA" in m_stereoMixProgId.
-    GLint m_stereoMixTexBUni = -1; ///< Uniform location of "texB" in m_stereoMixProgId.
-    GLint m_stereoMixResUni = -1;  ///< Uniform location of "resolution" in m_stereoMixProgId.
-    GLint m_stereoMixWUni = -1;    ///< Uniform location of "interpolation" (cross-fade weight) in m_stereoMixProgId.
+    GLuint m_stereoMixProgId = 0;    ///< Plain per-pixel cross-mix shader (Engine/StereoMix.frag) for packed 3D<->3D
+                                     ///< texture cross-fades.
+    GLint m_stereoMixTexAUni = -1;   ///< Uniform location of "texA" in m_stereoMixProgId.
+    GLint m_stereoMixTexBUni = -1;   ///< Uniform location of "texB" in m_stereoMixProgId.
+    GLint m_stereoMixResUni = -1;    ///< Uniform location of "resolution" in m_stereoMixProgId.
+    GLint m_stereoMixWUni = -1;      ///< Uniform location of "interpolation" (cross-fade weight) in m_stereoMixProgId.
     GLint m_stereoMixMonoAUni = -1;  ///< Uniform location of "monoA" (texA is a mono 2D frame) in m_stereoMixProgId.
     GLint m_stereoMixMonoBUni = -1;  ///< Uniform location of "monoB" in m_stereoMixProgId.
     GLint m_stereoMixLayoutUni = -1; ///< Uniform location of "eyeLayout" (1 side by side, 2 top-bottom).
@@ -1961,11 +1961,11 @@ private:
         int    w = 0;     ///< Width the textures were allocated at.
         int    h = 0;     ///< Height.
     };
-    StereoTarget m_stereoTarget[3];  ///< 0 the outgoing (or solo) scene, 1 the incoming one, 2 their mix.
-    GLuint       m_stereoPresent = 0; ///< This frame's packed full-format source for the present pass (0 = none).
-    int          m_stereoPresentW = 0; ///< Its width.
-    int          m_stereoPresentH = 0; ///< Its height.
-    int          m_sizedStereo = 0;   ///< The full stereo mode (4, 5) the frame was last sized for; 0 = none.
+    StereoTarget m_stereoTarget[3];      ///< 0 the outgoing (or solo) scene, 1 the incoming one, 2 their mix.
+    GLuint       m_stereoPresent = 0;    ///< This frame's packed full-format source for the present pass (0 = none).
+    int          m_stereoPresentW = 0;   ///< Its width.
+    int          m_stereoPresentH = 0;   ///< Its height.
+    int          m_sizedStereo = 0;      ///< The full stereo mode (4, 5) the frame was last sized for; 0 = none.
     bool         m_trailRestart = false; ///< The trails start over on the next frame (a packed full-format stretch
                                          ///< left them stale).
     /**  The size the pipeline renders at for a display of @p displayW x @p displayH: one eye's in the full stereo
@@ -2058,20 +2058,20 @@ private:
     // instances; the keys carry the preset namespace.
     static QSet<QString> M_Marked; ///< Base filenames ("Ocean.frag") of scenes marked for review; persisted under
                                    ///< [marked] in the settings ini.
-    static QSet<QString>         M_Banned; ///< "<Preset>/<file>" never rolled again (ini [banned], "never again").
-    static QHash<QString, QString> M_Rated; ///< "<Preset>/<file>" -> like|next|never: the rating walk's verdicts (ini
-                                            ///< [rated]).
+    static QSet<QString>           M_Banned; ///< "<Preset>/<file>" never rolled again (ini [banned], "never again").
+    static QHash<QString, QString> M_Rated;  ///< "<Preset>/<file>" -> like|next|never: the rating walk's verdicts (ini
+                                             ///< [rated]).
     // The rating walk (startRating() .. stopRating()).
     bool          m_rating = false;       ///< The walk runs.
     bool          m_rateDone = false;     ///< The walk ended by itself: nothing left to rate.
-    bool          m_rateFinished = false; ///< Set from inside the scheduler (nothing left); trackRating() ends the walk.
+    bool m_rateFinished = false; ///< Set from inside the scheduler (nothing left); trackRating() ends the walk.
     float         m_rateSecs = 12.f;      ///< Seconds per scene.
     QSet<QString> m_rateShown;            ///< Files shown in this pass of the walk (verdict or not).
     int           m_rateForced = -1;      ///< The entry the walk cut to itself (its start, an undo) until it is on
                                           ///< screen: it is the one being judged from the moment it is asked for.
-    bool          m_rateOnArrival = false; ///< It was judged before it came in: move on as soon as it is in.
-    QString       m_rateTargetKey;        ///< The file being judged, as of the last frame.
-    QString       m_rateJudgedKey;        ///< The file judged while it is still being judged (the cut is due): a second
+    bool    m_rateOnArrival = false;      ///< It was judged before it came in: move on as soon as it is in.
+    QString m_rateTargetKey;              ///< The file being judged, as of the last frame.
+    QString m_rateJudgedKey;              ///< The file judged while it is still being judged (the cut is due): a second
                                           ///< tap before the cut must not judge it again.
     QString       m_ratePrevKey;          ///< The file judged before it ...
     qint64        m_ratePrevAt = 0;       ///< ... and when it stopped being judged (m_rateClock, ms).
@@ -2080,15 +2080,15 @@ private:
     /** What undoRating() needs to take the last verdict back. */
     struct RateUndo
     {
-        bool    valid = false;     ///< There is a verdict to take back.
-        int     idx = -1;          ///< Its scene entry.
-        QString full;              ///< "<Preset>/<file>".
-        QString verdict;           ///< like|next|never.
-        QString before;            ///< The verdict the file had before ("" = none).
-        bool    hadTaste = false;  ///< M_Taste held the file before a like ...
-        float   taste = 1.f;       ///< ... with this weight.
-        bool    banned = false;    ///< The verdict banned it (a "never" that was not refused).
-    } m_rateUndo;                  ///< The last verdict of this walk.
+        bool    valid = false;    ///< There is a verdict to take back.
+        int     idx = -1;         ///< Its scene entry.
+        QString full;             ///< "<Preset>/<file>".
+        QString verdict;          ///< like|next|never.
+        QString before;           ///< The verdict the file had before ("" = none).
+        bool    hadTaste = false; ///< M_Taste held the file before a like ...
+        float   taste = 1.f;      ///< ... with this weight.
+        bool    banned = false;   ///< The verdict banned it (a "never" that was not refused).
+    } m_rateUndo;                 ///< The last verdict of this walk.
     /**  The scene entry being judged: the one coming in during a fade, else the one on screen.
      *
      * @return
@@ -2125,7 +2125,7 @@ private:
      *
      * @param idx  The entry. (in)
      **/
-    void favoriteScene( int idx );
+    void                         favoriteScene( int idx );
     static QHash<QString, float> M_Taste; ///< Persistent per-"<Preset>/<file>" selection-weight factors, in [0.3, 2.5],
                                           ///< default 1.0; shared (static) across all instances, loaded/saved via
                                           ///< loadSettings()/bumpTaste().
