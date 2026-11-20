@@ -93,6 +93,7 @@ float RenderPipeline::freezeTime()
 bool                  RenderPipeline::M_Pinned = false;         // VJ pin ('u')
 QHash<QString, float> RenderPipeline::M_Taste;                  // taste learning (skip/favourite)
 QSet<QString>         RenderPipeline::M_Banned;                 // "never again"
+QHash<QString, QString> RenderPipeline::M_Rated;                // the rating walk's verdicts
 bool                  RenderPipeline::M_SpoutInEnabled = false; // Spout input (CLI -i)
 QString               RenderPipeline::M_SpoutInSender;
 QString               RenderPipeline::M_VideoPath;    // native video input (CLI -v)
@@ -233,6 +234,14 @@ void RenderPipeline::loadSettings()
     for ( const QString &k : s.allKeys() ) // recursive: Preset/File.frag
         if ( s.value( k ).toBool() )
             M_Banned.insert( k );
+    s.endGroup();
+
+    // The rating walk's verdicts (web remote, "Rate"): Preset/File.frag = like|next|never.  They do not fade like the
+    // taste: a verdict says the scene was judged, which is what keeps it out of the next walk.
+    M_Rated.clear();
+    s.beginGroup( "rated" );
+    for ( const QString &k : s.allKeys() ) // recursive: Preset/File.frag
+        M_Rated.insert( k, s.value( k ).toString() );
     s.endGroup();
 
     s.beginGroup( "taste" );
@@ -1548,11 +1557,17 @@ static void logLikedRoll( const EffectShader *e )
 void RenderPipeline::favoriteCurrentEffect()
 {
     if ( m_scheduler.actTexture() < m_effectTextures.size() )
-    {
-        bumpTaste( m_effectTextures[m_scheduler.actTexture()]->fragmentName(), 1.25f );
-        bumpClassTaste( m_effectTextures[m_scheduler.actTexture()], 1.1f );
-        logLikedRoll( m_effectTextures[m_scheduler.actTexture()] );
-    }
+        favoriteScene( static_cast<int>( m_scheduler.actTexture() ) );
+}
+
+void RenderPipeline::favoriteScene( int idx )
+{
+    if ( idx < 0 || idx >= static_cast<int>( m_effectTextures.size() ) )
+        return;
+    EffectShader *e = m_effectTextures[static_cast<size_t>( idx )];
+    bumpTaste( e->fragmentName(), 1.25f );
+    bumpClassTaste( e, 1.1f );
+    logLikedRoll( e );
 }
 
 /**  Reduces a track key ("artist|title") to a QSettings-safe key for the [cues] group.
@@ -1590,9 +1605,17 @@ bool RenderPipeline::isBanned( const char *fragPath ) const
 
 bool RenderPipeline::banCurrentScene( QString &scene )
 {
-    if ( m_effectTextures.empty() )
+    if ( m_effectTextures.empty() || !banScene( static_cast<int>( m_scheduler.actTexture() ), scene ) )
         return false;
-    const QString base = tasteBase( m_effectTextures[m_scheduler.actTexture()]->fragmentName() );
+    requestSceneChange( false ); // away with it now, without the skip's taste malus
+    return true;
+}
+
+bool RenderPipeline::banScene( int idx, QString &scene )
+{
+    if ( idx < 0 || idx >= static_cast<int>( m_effectTextures.size() ) )
+        return false;
+    const QString base = tasteBase( m_effectTextures[static_cast<size_t>( idx )]->fragmentName() );
     scene = base.endsWith( ".frag" ) ? base.left( base.size() - 5 ) : base;
     // Enough has to be left, or the no-repeat memory and the mood filter run dry.
     QSet<QString> all, open;
@@ -1609,7 +1632,6 @@ bool RenderPipeline::banCurrentScene( QString &scene )
     QSettings s( SettingsFile::path(), QSettings::IniFormat );
     s.setValue( "banned/" + m_presetName + "/" + base, true );
     fprintf( stderr, "BANNED: %s/%s\n", qPrintable( m_presetName ), qPrintable( base ) );
-    requestSceneChange( false ); // away with it now, without the skip's taste malus
     return true;
 }
 
@@ -1675,6 +1697,331 @@ float RenderPipeline::sceneTaste( int idx, bool &banned ) const
         return 1.f;
     banned = isBanned( m_effectTextures[static_cast<size_t>( idx )]->fragmentName() );
     return tasteFor( m_effectTextures[static_cast<size_t>( idx )]->fragmentName() );
+}
+
+// ---------------------------------------------------------------------------
+// The rating walk (web remote, "Rate"; 20.11.2026).  2,475 scenes, and nobody
+// judges them in passing: the favourite, the skip and the ban all act on
+// whatever happens to be on screen.  The walk puts the preset's scenes without
+// a verdict on screen one after the other, for a span the viewer sets, and
+// takes a verdict on each from three buttons on the phone.  What a verdict
+// does is what the keys do today (a favourite, a ban), and it is written down
+// as a verdict too ([rated]), so the next walk skips it and
+// Tools/apply_taste.py can fold it into the presets.
+// ---------------------------------------------------------------------------
+
+/**  A file name without its ".frag".
+ *
+ * @param base  The file name. (in)
+ *
+ * @return
+ *   The name the remote shows.
+ **/
+static QString sceneShown( const QString &base )
+{
+    return base.endsWith( ".frag" ) ? base.left( base.size() - 5 ) : base;
+}
+
+int RenderPipeline::rateTargetIndex() const
+{
+    if ( m_effectTextures.empty() )
+        return -1;
+    if ( m_rating && m_rateForced >= 0 && m_rateForced < static_cast<int>( m_effectTextures.size() ) )
+        return m_rateForced;
+    const unsigned int i = m_scheduler.texState() != 0 ? m_scheduler.nextTexture() : m_scheduler.actTexture();
+    return i < m_effectTextures.size() ? static_cast<int>( i ) : -1;
+}
+
+int RenderPipeline::rateNextPick( unsigned int act )
+{
+    const QString act_base = act < m_effectTextures.size() ? tasteBase( m_effectTextures[act]->fragmentName() )
+                                                           : QString();
+    for ( int pass = 0; pass < 2; ++pass )
+    {
+        // Open files and their entries (the models of a family share one file, and one verdict).
+        QStringList               files;
+        QHash<QString, QList<int>> entries;
+        for ( size_t i = 0; i < m_effectTextures.size(); ++i )
+        {
+            const QString b = tasteBase( m_effectTextures[i]->fragmentName() );
+            const QString full = m_presetName + "/" + b;
+            if ( b == act_base || M_Rated.contains( full ) || M_Banned.contains( full )
+                 || ( pass == 0 && m_rateShown.contains( b ) ) )
+                continue;
+            if ( !entries.contains( b ) )
+                files << b;
+            entries[b] << static_cast<int>( i );
+        }
+        if ( !files.isEmpty() )
+        {
+            const QString     &b = files[rand() % files.size()];
+            const QList<int> &e = entries[b];
+            m_rateShown.insert( b );
+            return e[rand() % e.size()];
+        }
+        // Every open file was shown in this pass: the ones left without a verdict come round again.
+        m_rateShown.clear();
+    }
+    // The scene on screen may be the last one open: it keeps the walk going until it has its verdict (the normal
+    // roll fills in after it).  Otherwise nothing is left; trackRating() ends the walk (not from in here).
+    const QString act_full = m_presetName + "/" + act_base;
+    if ( act_base.isEmpty() || M_Rated.contains( act_full ) || M_Banned.contains( act_full ) )
+        m_rateFinished = true;
+    return -1;
+}
+
+void RenderPipeline::trackRating()
+{
+    if ( !m_rating )
+        return;
+    if ( m_rateFinished )
+    {
+        m_rateFinished = false;
+        m_rateDone = true;
+        stopRating();
+        fprintf( stderr, "RATING: every scene of %s has a verdict\n", qPrintable( m_presetName ) );
+        return;
+    }
+    // The scene the walk cut to is the one being judged as soon as it comes in.
+    if ( m_rateForced >= 0 )
+    {
+        const unsigned int in = m_scheduler.texState() != 0 ? m_scheduler.nextTexture() : m_scheduler.actTexture();
+        if ( static_cast<int>( in ) == m_rateForced )
+        {
+            m_rateForced = -1;
+            if ( m_rateOnArrival )
+            {
+                m_rateOnArrival = false;
+                EffectShader::noCarryOver();
+                m_scheduler.requestChange( false );
+            }
+        }
+    }
+    const int     t = rateTargetIndex();
+    const QString key = t >= 0 ? tasteBase( m_effectTextures[static_cast<size_t>( t )]->fragmentName() ) : QString();
+    if ( key != m_rateTargetKey )
+    {
+        m_ratePrevKey = m_rateTargetKey;
+        m_ratePrevAt = m_rateClock.elapsed();
+        m_rateTargetKey = key;
+        m_rateJudgedKey.clear();
+    }
+}
+
+bool RenderPipeline::startRating( float secs )
+{
+    m_rateSecs = std::clamp( secs, 3.f, 120.f );
+    m_rateDone = false;
+    m_rateFinished = false;
+    m_rateShown.clear();
+    m_rateUndo = RateUndo();
+    m_rateLast.clear();
+    const int first = rateNextPick( m_scheduler.actTexture() );
+    if ( m_rateFinished )
+    {
+        m_rateFinished = false;
+        m_rateDone = true;
+        return false;
+    }
+    // Either would hold the walk on one scene.
+    M_Pinned = false;
+    M_Freeze = false;
+    m_rating = true;
+    m_rateClock.start();
+    m_rateTargetKey.clear();
+    m_ratePrevKey.clear();
+    m_rateJudgedKey.clear();
+    m_scheduler.setRateWalk( m_rateSecs, [this]( unsigned int act )
+    { return rateNextPick( act ); } );
+    m_rateForced = first; // -1: the scene on screen is the last one open
+    m_rateOnArrival = false;
+    if ( first >= 0 )
+    {
+        EffectShader::noCarryOver();
+        m_scheduler.forceScene( first );
+    }
+    fprintf( stderr, "RATING: started in %s, %.0f s per scene\n", qPrintable( m_presetName ), m_rateSecs );
+    return true;
+}
+
+void RenderPipeline::stopRating()
+{
+    if ( !m_rating )
+        return;
+    m_rating = false;
+    m_scheduler.setRateWalk( 0.f, nullptr );
+    fprintf( stderr, "RATING: stopped\n" );
+}
+
+void RenderPipeline::setRatingSecs( float secs )
+{
+    m_rateSecs = std::clamp( secs, 3.f, 120.f );
+    m_scheduler.setRateSecs( m_rateSecs );
+}
+
+void RenderPipeline::applyVerdict( int idx, const QString &verdict )
+{
+    EffectShader *e = m_effectTextures[static_cast<size_t>( idx )];
+    const QString base = tasteBase( e->fragmentName() );
+    const QString full = m_presetName + "/" + base;
+    RateUndo      u;
+    u.valid = true;
+    u.idx = idx;
+    u.full = full;
+    u.verdict = verdict;
+    u.before = M_Rated.value( full );
+    u.hadTaste = M_Taste.contains( full );
+    u.taste = M_Taste.value( full, 1.f );
+    QString note;
+    if ( verdict == "like" )
+        favoriteScene( idx );
+    else if ( verdict == "never" )
+    {
+        QString shown;
+        u.banned = !M_Banned.contains( full ) && banScene( idx, shown );
+        if ( !M_Banned.contains( full ) )
+            note = " (not banned: too few scenes would be left)";
+    }
+    M_Rated[full] = verdict;
+    QSettings s( SettingsFile::path(), QSettings::IniFormat );
+    s.setValue( "rated/" + full, verdict );
+    s.sync();
+    m_rateUndo = u;
+    m_rateLast = sceneShown( base ) + " " + verdict;
+    fprintf( stderr, "RATED: %s %s%s\n", qPrintable( full ), qPrintable( verdict ), qPrintable( note ) );
+}
+
+int RenderPipeline::rateScene( const QString &verdict, const QString &key, QString *scene )
+{
+    if ( verdict != "like" && verdict != "next" && verdict != "never" )
+        return -2;
+    const int target = rateTargetIndex();
+    if ( !m_rating || target < 0 )
+        return -1;
+    const QString target_key = tasteBase( m_effectTextures[static_cast<size_t>( target )]->fragmentName() );
+    if ( !key.isEmpty() && key != target_key )
+    {
+        // The walk moved on by itself while the verdict was on its way: it is still meant for the scene that left.
+        const int prev = sceneIndexByBase( key );
+        if ( key == m_ratePrevKey && prev >= 0 && m_rateClock.elapsed() - m_ratePrevAt < 4000
+             && !M_Rated.contains( m_presetName + "/" + key ) )
+        {
+            applyVerdict( prev, verdict );
+            if ( scene )
+                *scene = sceneShown( key );
+            return 1;
+        }
+        fprintf( stderr, "RATED: refused %s for %s (being judged: %s, left before it: %s %.1f s ago)\n",
+                 qPrintable( verdict ), qPrintable( key ), qPrintable( target_key ), qPrintable( m_ratePrevKey ),
+                 ( m_rateClock.elapsed() - m_ratePrevAt ) / 1000.0 );
+        return -1;
+    }
+    // Judged a moment ago and still waiting for its cut (the scene's minimum stay): a second tap, not a verdict.
+    if ( target_key == m_rateJudgedKey )
+    {
+        fprintf( stderr, "RATED: refused %s for %s (judged a moment ago)\n", qPrintable( verdict ),
+                 qPrintable( target_key ) );
+        return -1;
+    }
+    applyVerdict( target, verdict );
+    m_rateJudgedKey = target_key;
+    if ( scene )
+        *scene = sceneShown( target_key );
+    // On to the next one: the walk picked it when this one came (a cut of the remote's kind, no taste malus).  A
+    // scene judged before it even came in moves on once it is in.
+    if ( m_rateForced >= 0 && target == m_rateForced )
+        m_rateOnArrival = true;
+    else
+    {
+        EffectShader::noCarryOver();
+        m_scheduler.requestChange( false );
+    }
+    return 0;
+}
+
+bool RenderPipeline::undoRating( QString *scene )
+{
+    if ( !m_rateUndo.valid || m_rateUndo.idx < 0 || m_rateUndo.idx >= static_cast<int>( m_effectTextures.size() ) )
+        return false;
+    const RateUndo u = m_rateUndo;
+    m_rateUndo = RateUndo();
+    QSettings s( SettingsFile::path(), QSettings::IniFormat );
+    if ( u.before.isEmpty() )
+    {
+        M_Rated.remove( u.full );
+        s.remove( "rated/" + u.full );
+    }
+    else
+    {
+        M_Rated[u.full] = u.before;
+        s.setValue( "rated/" + u.full, u.before );
+    }
+    if ( u.verdict == "like" )
+    {
+        if ( u.hadTaste )
+        {
+            M_Taste[u.full] = u.taste;
+            s.setValue( "taste/" + u.full, u.taste );
+        }
+        else
+        {
+            M_Taste.remove( u.full );
+            s.remove( "taste/" + u.full );
+        }
+        bumpClassTaste( m_effectTextures[static_cast<size_t>( u.idx )], 1.f / 1.1f );
+    }
+    s.sync();
+    const QString base = u.full.mid( m_presetName.size() + 1 );
+    if ( u.banned )
+        unbanScene( base );
+    m_rateLast.clear();
+    m_rateJudgedKey.clear();
+    if ( scene )
+        *scene = sceneShown( base );
+    fprintf( stderr, "RATED: %s taken back (%s)\n", qPrintable( u.full ), qPrintable( u.verdict ) );
+    // Back on screen, to be judged again.
+    if ( m_rating )
+    {
+        m_rateShown.remove( base );
+        EffectShader::noCarryOver();
+        m_scheduler.forceScene( u.idx );
+        m_rateForced = u.idx;
+        m_rateOnArrival = false;
+    }
+    return true;
+}
+
+RenderPipeline::RatingState RenderPipeline::ratingState() const
+{
+    RatingState   r;
+    r.active = m_rating;
+    r.done = m_rateDone;
+    r.secs = m_rateSecs;
+    r.left = m_rating ? m_scheduler.rateSecsLeft() : 0.f;
+    r.last = m_rateLast;
+    QSet<QString> files;
+    for ( EffectShader *e : m_effectTextures )
+    {
+        const QString b = tasteBase( e->fragmentName() );
+        if ( files.contains( b ) )
+            continue;
+        files.insert( b );
+        const QString full = m_presetName + "/" + b;
+        const QString v = M_Rated.value( full );
+        if ( !v.isEmpty() || M_Banned.contains( full ) )
+            ++r.rated;
+        r.likes += ( v == "like" ) ? 1 : 0;
+        r.nexts += ( v == "next" ) ? 1 : 0;
+        r.nevers += ( v == "never" ) ? 1 : 0;
+    }
+    r.total = files.size();
+    const int t = rateTargetIndex();
+    if ( m_rating && t >= 0 )
+    {
+        r.key = tasteBase( m_effectTextures[static_cast<size_t>( t )]->fragmentName() );
+        r.scene = sceneShown( r.key );
+    }
+    return r;
 }
 
 void RenderPipeline::rememberCue( const QString &trackKey, double posSec )
@@ -2276,7 +2623,7 @@ SceneScheduler::Tick RenderPipeline::buildSchedulerTick( const AudioFeatures &au
     EffectShader::M_CueSections = sched_tick.sectionCount;
     EffectShader::M_CueDrops = sched_tick.dropCount;
     m_scheduler.tick( sched_tick );
-
+    trackRating();
 
     return sched_tick;
 }

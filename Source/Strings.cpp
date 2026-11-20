@@ -382,6 +382,24 @@ const char *kDE[S_COUNT] = {
 };
 
 /** The English texts, in the same order as kDE. */
+    /* S_WR_TAB_RATE */ "Bewerten",
+    /* S_WR_RATE_START */ "Bewerten starten",
+    /* S_WR_RATE_STOP */ "Bewerten beenden",
+    /* S_WR_RATE_LIKE */ "Gefällt",
+    /* S_WR_RATE_NEXT */ "Weiter",
+    /* S_WR_RATE_NEVER */ "Nie wieder",
+    /* S_WR_RATE_UNDO */ "Letztes Urteil zurück",
+    /* S_WR_RATE_COUNT_FMT */ "%1 von %2 bewertet",
+    /* S_WR_RATE_SECS */ "Sekunden je Szene",
+    /* S_WR_RATE_HINT */
+    "Zeigt die Szenen dieses Presets, die noch kein Urteil haben, eine nach der anderen. Ohne Urteil geht es "
+    "nach Ablauf der Zeit weiter, und die Szene kommt später noch einmal.",
+    /* S_WR_RATE_DONE */ "Alle Szenen dieses Presets sind bewertet.",
+    /* S_WR_RATE_OFF */ "Bewerten ist aus.",
+    /* S_FB_RATE_START_FMT */ "Bewerten: %1 von %2 bewertet, %3 s je Szene",
+    /* S_FB_RATE_STOP_FMT */ "Bewerten beendet: %1 von %2 bewertet",
+    /* S_FB_RATE_DONE */ "Bewerten: alle Szenen dieses Presets sind bewertet",
+    /* S_FB_RATE_UNDO_FMT */ "Urteil zurückgenommen: %1",
 const char *kEN[S_COUNT] = {
     // ---- Help overview ----
     /* S_HELP_TITLE */ "KALEIDOSCOPE  -  Keyboard",
@@ -741,6 +759,24 @@ const char *kEN[S_COUNT] = {
 };
 
 } // namespace
+    /* S_WR_TAB_RATE */ "Rate",
+    /* S_WR_RATE_START */ "Start rating",
+    /* S_WR_RATE_STOP */ "Stop rating",
+    /* S_WR_RATE_LIKE */ "Like",
+    /* S_WR_RATE_NEXT */ "Next",
+    /* S_WR_RATE_NEVER */ "Never again",
+    /* S_WR_RATE_UNDO */ "Undo the last verdict",
+    /* S_WR_RATE_COUNT_FMT */ "%1 of %2 rated",
+    /* S_WR_RATE_SECS */ "Seconds per scene",
+    /* S_WR_RATE_HINT */
+    "Shows the scenes of this preset that have no verdict yet, one after the other. Without a verdict the walk "
+    "moves on when the time is up, and the scene comes round again later.",
+    /* S_WR_RATE_DONE */ "Every scene of this preset is rated.",
+    /* S_WR_RATE_OFF */ "Rating is off.",
+    /* S_FB_RATE_START_FMT */ "Rating: %1 of %2 rated, %3 s per scene",
+    /* S_FB_RATE_STOP_FMT */ "Rating stopped: %1 of %2 rated",
+    /* S_FB_RATE_DONE */ "Rating: every scene of this preset is rated",
+    /* S_FB_RATE_UNDO_FMT */ "Verdict taken back: %1",
 
 void Strings::setLanguage( LangE lang )
 {

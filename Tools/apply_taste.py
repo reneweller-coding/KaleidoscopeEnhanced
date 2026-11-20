@@ -22,6 +22,11 @@ in Ambient loses a step in `ambient` and keeps its place in Psychedelic.  A tast
     weight <= 0.42 (four skips)  -2        weight >= 1.55 (two favourites)   +2
     banned                       fit 0 in that genre (Allround: interest 1, which keeps it out of every genre)
 
+The rating walk of the web remote ("Rate", 20.11.2026) writes a verdict per preset and scene as well ([rated]
+Preset/File.frag = like|next|never).  A verdict is a deliberate judgement, so it holds where the learnt weight has
+faded or been skipped back to neutral: "like" is at least +1, "never" is a ban (also when the app refused the ban
+because too few scenes would have been left), "next" (seen, no opinion) changes nothing.
+
 Test benches and presets that no longer exist (TestAlle, Komplett, Modelle ...) are ignored: walking a bench from A
 to Z leaves a trail of skips that says nothing.  The weights fade by 3 % per start of the app, so an old verdict
 wears off by itself; the file written here does not fade and is under version control.
@@ -45,7 +50,8 @@ def read_ini(path):
     @param path  The settings file. (in)
 
     @return
-      A list of (preset, scene, kind, value): kind is "taste" (value = the weight) or "banned".
+      A list of (preset, scene, kind, value): kind is "taste" (value = the weight), "banned", or "rated" (value =
+      like|next|never).
     """
     rows, section = [], None
     for line in io.open(path, encoding="utf-8", errors="replace"):
@@ -54,7 +60,7 @@ def read_ini(path):
         if m:
             section = m.group(1)
             continue
-        if section not in ("taste", "banned") or "=" not in line:
+        if section not in ("taste", "banned", "rated") or "=" not in line:
             continue
         key, value = line.rsplit("=", 1)
         parts = re.split(r"[\\/]", key)
@@ -64,6 +70,9 @@ def read_ini(path):
         if section == "banned":
             if value.strip().lower() == "true":
                 rows.append((parts[0], scene, "banned", 0.0))
+        elif section == "rated":
+            if value.strip() in ("like", "next", "never"):
+                rows.append((parts[0], scene, "rated", value.strip()))
         else:
             try:
                 rows.append((parts[0], scene, "taste", float(value)))
@@ -107,7 +116,7 @@ def main():
         print("no settings file:", a.ini)
         return 1
     rows = read_ini(a.ini) if os.path.exists(a.ini) else []
-    out, ignored, weak = {}, {}, 0
+    out, ignored, weak, verdicts = {}, {}, 0, {}
     if (a.merge or a.ratings) and os.path.exists(OUT):
         for ln in io.open(OUT, encoding="utf-8").read().splitlines()[1:]:
             v = ln.split("\t")
@@ -128,12 +137,27 @@ def main():
         if kind == "banned":
             out[(scene, col)] = ("ban", "%s banned" % preset)
             continue
+        if kind == "rated":
+            verdicts[(scene, col)] = (value, preset)
+            continue
         d = step(value)
         if d == 0:
             weak += 1
             continue
         if out.get((scene, col), ("",))[0] != "ban":
             out[(scene, col)] = ("%+d" % d, "%s %.2f" % (preset, value))
+    # The rating walk's verdicts, after the weights: a like holds at +1 or above, a never is a ban.
+    for (scene, col), (verdict, preset) in sorted(verdicts.items()):
+        have = out.get((scene, col), ("",))[0]
+        if verdict == "never":
+            out[(scene, col)] = ("ban", "%s rated never" % preset)
+        elif verdict == "like" and have != "ban" and (not have or int(have) < 1):
+            out[(scene, col)] = ("+1", "%s rated like" % preset)
+    if verdicts:
+        n = {}
+        for v, _ in verdicts.values():
+            n[v] = n.get(v, 0) + 1
+        print("rating walk: %d verdicts (%s)" % (len(verdicts), ", ".join("%s %d" % kv for kv in sorted(n.items()))))
     print("%s: %d entries read; %d corrections, %d single skips or faded weights left alone" % (os.path.basename(a.ini), len(rows), len(out), weak))
     if ignored:
         print("ignored (no genre preset): " + ", ".join("%s %d" % kv for kv in sorted(ignored.items())))

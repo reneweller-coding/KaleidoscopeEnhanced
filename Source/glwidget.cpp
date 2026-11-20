@@ -517,6 +517,64 @@ float GLwidget::remoteSceneTaste( int idx, bool &banned )
                : 1.f;
 }
 
+bool GLwidget::remoteRateStart( float secs )
+{
+    if ( !m_actConfiguration || !m_actConfiguration->renderPipeline() )
+        return false;
+    RenderPipeline *rp = m_actConfiguration->renderPipeline();
+    const bool      ok = rp->startRating( secs );
+    const auto      st = rp->ratingState();
+    if ( ok )
+        feedback( ui( S_FB_RATE_START_FMT ).arg( st.rated ).arg( st.total ).arg( st.secs, 0, 'f', 0 ), 5000 );
+    else
+        feedback( ui( S_FB_RATE_DONE ), 5000 );
+    return ok;
+}
+
+void GLwidget::remoteRateStop()
+{
+    if ( !m_actConfiguration || !m_actConfiguration->renderPipeline() )
+        return;
+    RenderPipeline *rp = m_actConfiguration->renderPipeline();
+    if ( !rp->rating() )
+        return;
+    rp->stopRating();
+    const auto st = rp->ratingState();
+    feedback( ui( S_FB_RATE_STOP_FMT ).arg( st.rated ).arg( st.total ) );
+}
+
+void GLwidget::remoteRateSecs( float secs )
+{
+    if ( m_actConfiguration && m_actConfiguration->renderPipeline() )
+        m_actConfiguration->renderPipeline()->setRatingSecs( secs );
+}
+
+int GLwidget::remoteRateVerdict( const QString &verdict, const QString &key )
+{
+    if ( !m_actConfiguration || !m_actConfiguration->renderPipeline() )
+        return -1;
+    // No feedback line per verdict: the walk is about the picture, and the phone shows the count.
+    return m_actConfiguration->renderPipeline()->rateScene( verdict, key, nullptr );
+}
+
+bool GLwidget::remoteRateUndo()
+{
+    if ( !m_actConfiguration || !m_actConfiguration->renderPipeline() )
+        return false;
+    QString scene;
+    if ( !m_actConfiguration->renderPipeline()->undoRating( &scene ) )
+        return false;
+    feedback( ui( S_FB_RATE_UNDO_FMT ).arg( scene ) );
+    return true;
+}
+
+RenderPipeline::RatingState GLwidget::remoteRateState()
+{
+    if ( m_actConfiguration && m_actConfiguration->renderPipeline() )
+        return m_actConfiguration->renderPipeline()->ratingState();
+    return RenderPipeline::RatingState();
+}
+
 void GLwidget::remoteUnfavorite()
 {
     if ( m_actConfiguration && m_actConfiguration->renderPipeline() )
@@ -2608,6 +2666,10 @@ void GLwidget::updateAutoConfig( const AudioFeatures &f )
     if ( !m_autoConfig )
         return;
 
+    // A rating walk judges the scenes of ONE preset: the mood must not switch it away mid-walk.
+    if ( m_actConfiguration && m_actConfiguration->renderPipeline()
+         && m_actConfiguration->renderPipeline()->rating() )
+        return;
     // Map the sustained mood to a configuration bucket (preset set of 18.10.2026).
     //   0 ambient/drone -> Ambient, 1 calm with a beat -> Downtempo,
     //   2 normal -> Allround,       3 energetic -> Club.

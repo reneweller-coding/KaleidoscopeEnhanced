@@ -462,6 +462,81 @@ public:
      *   The file name, empty for an index out of range.
      **/
     QString sceneBase( int idx ) const;
+
+    // ---- The rating walk (web remote, "Rate") ----
+    /** Where the rating walk stands, for the web remote's "Rate" page (ratingState()). */
+    struct RatingState
+    {
+        bool    active = false; ///< The walk runs.
+        bool    done = false;   ///< The walk ended by itself: every scene of the preset has a verdict.
+        int     rated = 0;      ///< Scenes of this preset with a verdict (a ban given before counts as one).
+        int     total = 0;      ///< Scenes of this preset: distinct shader files (the models of a family share one).
+        int     likes = 0;      ///< "like" verdicts in this preset.
+        int     nexts = 0;      ///< "next" verdicts in this preset (seen, no opinion).
+        int     nevers = 0;     ///< "never" verdicts in this preset.
+        float   secs = 0.f;     ///< Seconds per scene.
+        float   left = 0.f;     ///< Seconds until the walk moves on by itself.
+        QString scene;          ///< The scene to be judged now: its file name without the extension.
+        QString key;            ///< Its file name, the key the verdict is stored under ("Voyager.frag").
+        QString last;           ///< The last verdict of this walk, "<scene> <verdict>"; empty before the first.
+    };
+    /**  Starts the rating walk: the preset's scenes without a verdict, one after the other, each for @p secs.
+     *
+     * @param secs  Seconds per scene, held in 3..120. (in)
+     *
+     * @return
+     *   False when there is nothing to rate (every scene has a verdict); the walk does not start then.
+     *
+     * A pin or a freeze is lifted (either would hold the walk on one scene).  Musical cuts stop while the walk runs
+     * (SceneScheduler::setRateWalk()); the scenes come in a random order, and a scene left without a verdict when its
+     * time is up comes again only after every other open one was shown.
+     **/
+    bool startRating( float secs );
+    /** Ends the rating walk; the show picks its scenes again from the next fade on. */
+    void stopRating();
+    /**  Whether the rating walk runs (cheap; ratingState() counts the whole preset).
+     *
+     * @return
+     *   True between startRating() and the walk's end.
+     **/
+    bool rating() const { return m_rating; }
+    /**  Changes the seconds per scene of the running walk (the scene on screen takes it at once).
+     *
+     * @param secs  Seconds per scene, held in 3..120. (in)
+     **/
+    void setRatingSecs( float secs );
+    /**  A verdict on the scene being judged, and on to the next one.
+     *
+     * @param verdict  "like" (a favourite: taste x1.25), "next" (seen, no opinion) or "never" (banned in this
+     *                 preset). (in)
+     * @param key      The file name the page shows ("Voyager.frag"), or empty for "whatever is on screen". A key that
+     *                 is not the scene being judged is refused -- a second tap must not judge the scene after it --
+     *                 except the scene the walk left by itself less than four seconds ago, which still gets the
+     *                 verdict (and the walk stays where it is). (in)
+     * @param scene    Receives the scene judged, without the extension (may be null). (out)
+     *
+     * @return
+     *   0 judged and moved on, 1 the scene just left judged, -1 refused (no walk, or another scene), -2 an unknown
+     *   verdict.
+     *
+     * The verdict is kept in the settings file at once, as [rated] Preset/File.frag = like|next|never, beside what a
+     * favourite and a ban write there; Tools/apply_taste.py folds it into the presets.
+     **/
+    int rateScene( const QString &verdict, const QString &key, QString *scene );
+    /**  Takes the last verdict of this walk back (its favourite or its ban too) and brings the scene back on screen.
+     *
+     * @param scene  Receives the scene, without the extension (may be null). (out)
+     *
+     * @return
+     *   False when there is nothing to take back.
+     **/
+    bool undoRating( QString *scene );
+    /**  Where the rating walk stands.
+     *
+     * @return
+     *   The counts over this preset, the scene being judged and the time left.
+     **/
+    RatingState ratingState() const;
     /**  Cue memory: remember "THIS scene, at THIS point of THIS track" (favourite while a track is identified).
      *
      * @param trackKey  Identity of the playing track (artist and title). (in)
@@ -1901,6 +1976,73 @@ private:
     static QSet<QString> M_Marked; ///< Base filenames ("Ocean.frag") of scenes marked for review; persisted under
                                    ///< [marked] in the settings ini.
     static QSet<QString>         M_Banned; ///< "<Preset>/<file>" never rolled again (ini [banned], "never again").
+    static QHash<QString, QString> M_Rated; ///< "<Preset>/<file>" -> like|next|never: the rating walk's verdicts (ini
+                                            ///< [rated]).
+    // The rating walk (startRating() .. stopRating()).
+    bool          m_rating = false;       ///< The walk runs.
+    bool          m_rateDone = false;     ///< The walk ended by itself: nothing left to rate.
+    bool          m_rateFinished = false; ///< Set from inside the scheduler (nothing left); trackRating() ends the walk.
+    float         m_rateSecs = 12.f;      ///< Seconds per scene.
+    QSet<QString> m_rateShown;            ///< Files shown in this pass of the walk (verdict or not).
+    int           m_rateForced = -1;      ///< The entry the walk cut to itself (its start, an undo) until it is on
+                                          ///< screen: it is the one being judged from the moment it is asked for.
+    bool          m_rateOnArrival = false; ///< It was judged before it came in: move on as soon as it is in.
+    QString       m_rateTargetKey;        ///< The file being judged, as of the last frame.
+    QString       m_rateJudgedKey;        ///< The file judged while it is still being judged (the cut is due): a second
+                                          ///< tap before the cut must not judge it again.
+    QString       m_ratePrevKey;          ///< The file judged before it ...
+    qint64        m_ratePrevAt = 0;       ///< ... and when it stopped being judged (m_rateClock, ms).
+    QElapsedTimer m_rateClock;            ///< Wall clock of the walk (the four-second grace of rateScene()).
+    QString       m_rateLast;             ///< The last verdict, for the page ("<scene> <verdict>").
+    /** What undoRating() needs to take the last verdict back. */
+    struct RateUndo
+    {
+        bool    valid = false;     ///< There is a verdict to take back.
+        int     idx = -1;          ///< Its scene entry.
+        QString full;              ///< "<Preset>/<file>".
+        QString verdict;           ///< like|next|never.
+        QString before;            ///< The verdict the file had before ("" = none).
+        bool    hadTaste = false;  ///< M_Taste held the file before a like ...
+        float   taste = 1.f;       ///< ... with this weight.
+        bool    banned = false;    ///< The verdict banned it (a "never" that was not refused).
+    } m_rateUndo;                  ///< The last verdict of this walk.
+    /**  The scene entry being judged: the one coming in during a fade, else the one on screen.
+     *
+     * @return
+     *   Its index; -1 without scenes.
+     **/
+    int rateTargetIndex() const;
+    /**  The rating walk's choice of the scene after @p act (SceneScheduler::setRateWalk()'s callback).
+     *
+     * @param act  The scene now on screen. (in)
+     *
+     * @return
+     *   A random entry of a file without a verdict, not shown in this pass and not @p act's file; a new pass when
+     *   every open one was shown; -1 when none is open (m_rateFinished is set then).
+     **/
+    int rateNextPick( unsigned int act );
+    /** Per frame while the walk runs: ends it when nothing is left, and notes when the scene being judged changes. */
+    void trackRating();
+    /**  Gives a verdict to one scene entry and keeps it (the favourite or the ban included).
+     *
+     * @param idx      The entry. (in)
+     * @param verdict  like|next|never. (in)
+     **/
+    void applyVerdict( int idx, const QString &verdict );
+    /**  Bans one scene entry's file in this preset, without moving on (banCurrentScene() moves on).
+     *
+     * @param idx    The entry. (in)
+     * @param scene  The file name without the extension. (out)
+     *
+     * @return
+     *   False (and nothing banned) when fewer than max(12, a twentieth) of the preset's scenes would be left.
+     **/
+    bool banScene( int idx, QString &scene );
+    /**  Favourite one scene entry: taste x1.25, its chain classes x1.1, its roll into liked_rolls.tsv.
+     *
+     * @param idx  The entry. (in)
+     **/
+    void favoriteScene( int idx );
     static QHash<QString, float> M_Taste; ///< Persistent per-"<Preset>/<file>" selection-weight factors, in [0.3, 2.5],
                                           ///< default 1.0; shared (static) across all instances, loaded/saved via
                                           ///< loadSettings()/bumpTaste().

@@ -613,6 +613,18 @@ virtual switch -- and OK on one shows a card with its QR code: point the
 phone's camera at it. The very first start shows the card by itself. The
 remote's screenshot button saves the picture and shows it on the phone.
 
+**Rating scenes from the sofa:** the remote's **Rate** tab walks the scenes of
+the running preset that have no verdict yet, one after the other, each for the
+seconds you set (3-60, short cross-fades, no musical cuts in between), with three
+big buttons: **Like** (a favourite), **Next** (seen, no opinion) and **Never
+again** (banned in this preset). A counter shows how far you are ("312 of 823
+rated" -- the models of one 3D family share a shader and count once). A scene you
+leave without a verdict moves on when its time is up and comes round again
+later; **Undo** takes the last verdict back and shows the scene again. The
+verdicts are kept in `kaleidoscope_settings.ini` (`[rated]`, next to the
+favourites and bans they also make), so the next walk skips them, and
+`python Tools/apply_taste.py --write` folds them into the shipped presets.
+
 **Zero-touch pairing:** the running instance broadcasts itself on the LAN
 (UDP discovery), so a client never needs the PC's IP typed in by hand.
 Several PCs or several instances on one PC show up as a picker.

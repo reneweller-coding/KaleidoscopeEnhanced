@@ -415,6 +415,23 @@ enum StrIdE
     S_SETUP_STRICTLIGHT,
 
     S_COUNT
+    // The web remote's rating walk (20.11.2026).
+    S_WR_TAB_RATE,
+    S_WR_RATE_START,
+    S_WR_RATE_STOP,
+    S_WR_RATE_LIKE,
+    S_WR_RATE_NEXT,
+    S_WR_RATE_NEVER,
+    S_WR_RATE_UNDO,
+    S_WR_RATE_COUNT_FMT, // %1 rated, %2 scenes
+    S_WR_RATE_SECS,
+    S_WR_RATE_HINT,
+    S_WR_RATE_DONE,
+    S_WR_RATE_OFF,
+    S_FB_RATE_START_FMT, // %1 rated, %2 scenes, %3 seconds per scene
+    S_FB_RATE_STOP_FMT,  // %1 rated, %2 scenes
+    S_FB_RATE_DONE,
+    S_FB_RATE_UNDO_FMT, // %1 scene
 };
 
 namespace Strings
