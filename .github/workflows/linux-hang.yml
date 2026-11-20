@@ -1,5 +1,6 @@
 # TEMPORARY (wt-linux only): repeats the preset-switch run to catch the exit hang seen once in four CI runs, with
-# the hung program's thread stacks.  Deleted once the cause is known.
+# the hung program's thread stacks.  Deleted once the cause is known.  Second round: as close to the CI job as it
+# gets -- Release build, the export first, the same timings (end after 50 s).
 name: Linux hang hunt
 
 on:
@@ -13,7 +14,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        part: [a, b, c]
+        part: [a, b, c, d, e]
     steps:
       - uses: actions/checkout@v7
       - name: Packages
@@ -23,13 +24,13 @@ jobs:
           sudo apt-get update -qq
           sudo apt-get install -y -qq qt6-base-dev qt6-base-dev-tools qt6-multimedia-dev \
                                   libgl1-mesa-dev libglu1-mesa-dev libpulse-dev cmake > /dev/null
-          sudo apt-get install -y -qq --no-install-recommends xvfb xauth libgl1-mesa-dri gdb > /dev/null
+          sudo apt-get install -y -qq --no-install-recommends xvfb xauth libgl1-mesa-dri gdb ffmpeg > /dev/null
       - name: Build
         run: |
-          cmake -S . -B build -DCMAKE_BUILD_TYPE=RelWithDebInfo > /dev/null
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release > /dev/null
           cmake --build build -j"$(nproc)" 2>&1 | grep -E "error|Error" || true
           test -x build/Kaleidoscope
-      - name: Eight runs with switches, four without
+      - name: The export, then ten runs with switches
         working-directory: build
         env:
           LIBGL_ALWAYS_SOFTWARE: '1'
@@ -38,35 +39,36 @@ jobs:
           MESA_GLSL_VERSION_OVERRIDE: '430'
           KALEIDO_SEED: '1'
         run: |
-          python3 -c "import wave,struct,math; w=wave.open('../smoke.wav','wb'); w.setnchannels(2); w.setsampwidth(2); w.setframerate(44100); w.writeframes(b''.join(struct.pack('<hh', *([int(12000*math.exp(-(t%11025)/1500.0)*math.sin(2*math.pi*55*t/44100)+2400*math.sin(2*math.pi*220*t/44100))]*2)) for t in range(44100*5))); w.close()"
           set +e
+          python3 -c "import wave,struct,math; w=wave.open('../smoke.wav','wb'); w.setnchannels(2); w.setsampwidth(2); w.setframerate(44100); w.writeframes(b''.join(struct.pack('<hh', *([int(12000*math.exp(-(t%11025)/1500.0)*math.sin(2*math.pi*55*t/44100)+2400*math.sin(2*math.pi*220*t/44100))]*2)) for t in range(44100*5))); w.close()"
+          KALEIDO_SETTINGS="$RUNNER_TEMP/e.ini" timeout 600 xvfb-run -a -s "-screen 0 1280x720x24" ./Kaleidoscope -e ../smoke.wav -c Club -g 640x360 -p 30 -d "$RUNNER_TEMP/smoke.mp4" -l
+          echo "export: exit code $?"
           hung=0
-          for run in 1 2 3 4 5 6 7 8 9 10 11 12; do
-            switches=1; [ $run -gt 8 ] && switches=0
-            export KALEIDO_SETTINGS="$RUNNER_TEMP/s$run.ini" KALEIDO_MAX_RUNTIME_SECS=30
+          for run in 1 2 3 4 5 6 7 8 9 10; do
+            export KALEIDO_SETTINGS="$RUNNER_TEMP/s$run.ini" KALEIDO_MAX_RUNTIME_SECS=50
             xvfb-run -a -s "-screen 0 1280x720x24" ./Kaleidoscope -w ../smoke.wav -c Club -s 0.25 -t 18091 > run$run.log 2>&1 &
             pid=$!
             for i in $(seq 1 40); do curl -fs -m 5 http://127.0.0.1:18091/api/state > /dev/null && break; sleep 1; done
-            if [ $switches = 1 ]; then
-              sleep 3
-              curl -fs -m 30 -H "X-Kaleido: 1" "http://127.0.0.1:18091/api/config?i=0" > /dev/null || echo "run $run: no answer to switch 0"
-              sleep 4
-              curl -fs -m 30 -H "X-Kaleido: 1" "http://127.0.0.1:18091/api/config?i=1" > /dev/null || echo "run $run: no answer to switch 1"
-            fi
-            for i in $(seq 1 75); do kill -0 "$pid" 2> /dev/null || break; sleep 1; done
+            sleep 5
+            for i in 0 1; do
+              curl -fs -m 30 -H "X-Kaleido: 1" "http://127.0.0.1:18091/api/config?i=$i" > /dev/null || echo "run $run: no answer to switch $i"
+              sleep 8
+              curl -fs -m 30 -o state.json http://127.0.0.1:18091/api/state || echo "run $run: no state after switch $i"
+            done
+            for i in $(seq 1 90); do kill -0 "$pid" 2> /dev/null || break; sleep 1; done
             if kill -0 "$pid" 2> /dev/null; then
               hung=$((hung+1))
               app=$(pgrep -x Kaleidoscope | head -n 1)
-              echo "::error::run $run (switches=$switches) did not end -- threads of pid $app:"
+              echo "::error::run $run did not end -- threads of pid $app:"
               sudo gdb -p "$app" -batch -ex "thread apply all bt 30" 2>&1 | grep -E "^Thread|^#" | head -n 250
               tail -n 40 run$run.log
-              kill -9 "$app" || true
+              kill -9 "$app"
               sleep 2
             else
               wait "$pid"; code=$?
-              echo "run $run (switches=$switches): ended, exit code $code"
-              [ $code -eq 0 ] || { tail -n 30 run$run.log; }
+              echo "run $run: ended, exit code $code"
+              [ $code -eq 0 ] || tail -n 30 run$run.log
             fi
           done
-          echo "hung: $hung of 12"
+          echo "hung: $hung of 10"
           [ $hung -eq 0 ]
