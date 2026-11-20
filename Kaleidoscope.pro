@@ -62,6 +62,7 @@ SOURCES += \
     Source/textfile.cpp \
     Source/TextureEffectKaleidoscopeBase.cpp \
     Source/TrackMedia.cpp \
+    Source/TempoTracker.cpp \
     Source/Uniform.cpp \
     Source/UpdateCheck.cpp \
     Source/Utils.cpp \
@@ -95,6 +96,7 @@ HEADERS += \
     Source/glwidget.h \
     Source/GpuSims.h \
     Source/LongRunVariety.h \
+    Source/TempoTracker.h \
     Source/mainwindow.h \
     Source/mesh.h \
     Source/MeshImport.h \

@@ -125,56 +125,6 @@ void AudioAnalyzer::computeChroma( float sampleRate )
         m_chroma[i] = chroma[i] / sum;
 }
 
-float AudioAnalyzer::ioiPeriod( float prevPeriod, float &explained ) const
-{
-    explained = 0.f;
-    if ( m_ioiCount < 3 )
-        return 0.f;
-    static const float Mult[] = { 1.f, 1.5f, 2.f, 2.5f, 3.f, 4.f };
-    const float        p_lo = 60.f / 180.f, p_hi = 60.f / 70.f;
-    float              best = 0.f, best_score = -1.f, best_share = 0.f;
-    for ( int i = 0; i < m_ioiCount; ++i )
-        for ( float n : Mult )
-        {
-            const float p = m_ioi[i] / n;
-            if ( p < p_lo || p > p_hi )
-                continue;
-            int    hits = 0;
-            float  simple = 0.f;
-            double num = 0.0, den = 0.0;
-            for ( int j = 0; j < m_ioiCount; ++j )
-            {
-                const float y = m_ioi[j];
-                float       err = 1e9f, m_best = 1.f;
-                for ( float m : Mult )
-                    if ( std::fabs( y - m * p ) < err )
-                    {
-                        err = std::fabs( y - m * p );
-                        m_best = m;
-                    }
-                if ( err < 0.03f + 0.04f * y )
-                {
-                    ++hits;
-                    simple += 1.f / m_best;
-                    num += static_cast<double>( y ) * m_best;
-                    den += static_cast<double>( m_best ) * m_best;
-                }
-            }
-            // First how many it explains, then how simply, then whether it is the tempo it was.
-            const float continuity = prevPeriod > 0.f && std::fabs( p - prevPeriod ) < 0.03f * prevPeriod ? 0.6f : 0.f;
-            const float score = static_cast<float>( hits ) + 0.3f * simple / static_cast<float>( m_ioiCount )
-                                + continuity;
-            if ( score > best_score && den > 0.0 )
-            {
-                best_score = score;
-                best = std::clamp( static_cast<float>( num / den ), p_lo, p_hi );
-                best_share = static_cast<float>( hits ) / static_cast<float>( m_ioiCount );
-            }
-        }
-    explained = best_share;
-    return best;
-}
-
 /*static*/ void AudioAnalyzer::radix2fft( float *re, float *im, int N )
 {
     // ---- Bit-reversal permutation ----
@@ -1600,9 +1550,7 @@ void AudioAnalyzer::run()
  **/
 void AudioAnalyzer::beginSong()
 {
-    m_ioiCount = 0;
-    m_acBPM = 0.f;
-    m_acRival = 0;
+    m_tempo.reset();
     ++m_songEpoch;
     m_agcFastBlocks = 500;
     // The section windows start over: the last song is no section of this one.
@@ -2114,14 +2062,12 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
             // FFT-based ODF: the old band-RMS flux rippled on sustained bass and
             // made the autocorrelation "find" a phantom tempo in pure drones.
             m_odfEnv[m_odfEnvIdx] = m_odfFFT;
-            m_sfEnv[m_odfEnvIdx] = m_odfSF;
+            m_tempo.pushOnset( m_odfSF );
             m_odfEnvIdx = ( m_odfEnvIdx + 1 ) % OdfEnvLen;
             if ( trace_env_n < 3 )
                 trace_env[trace_env_n++] = m_odfSF;
         }
-        const int lag_lo = ( 60 * EnvRate ) / 180; // 33 samples (180 BPM)
-        const int lag_hi = ( 60 * EnvRate ) / 70;  // 85 samples (70 BPM)
-        float     env_sum = 0.f;
+        float env_sum = 0.f;
         for ( int i = 0; i < OdfEnvLen; ++i )
             env_sum += m_odfEnv[i];
         float env_mean = env_sum / static_cast<float>( OdfEnvLen );
@@ -2137,91 +2083,6 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
         // Published for KALEIDO_SPEECH_DEBUG so the state below stays checkable.
         m_odfEnvMean = env_mean;
         m_odfEnvStd = env_std;
-
-        // The tempo autocorrelation runs on the SuperFlux onset function (16.10.2026).  The FFT flux above could not
-        // tell beat from drone -- an ambient piece read a clearer period than The Prodigy (docs/engine-internals.md,
-        // "Autocorrelation tempo") -- and its gate had been closed for good.  SuperFlux can, measured on seven beat
-        // tracks against three Noctuary ambient renders and synthetic drones/pads: its peak sits at 0.36..0.62 on
-        // the beat, 0.11..0.30 on the ambient.  Three bars, all measured: the peak; the prominence (peak over the
-        // mean positive value), because the peak alone let a beating synthetic drone through (0.79); and the
-        // kurtosis of the onset function, because a tremolo is periodic too -- Harmonic Hours holds a steady 0.34 s
-        // modulation that passed peak and prominence in 27 % of its seconds.  Drum onsets are spikes (median
-        // kurtosis 8..36 on the beat tracks), a modulation is a smooth wave (2.4..5.7 on the calm material); with
-        // the third bar Harmonic Hours passes 3 % of its seconds and the beat tracks 47..100 %.  acConf is the
-        // share of the last ~4 s that passed, so a stray second does not make a rhythm.  The lag is picked under a
-        // log-Gaussian tempo prior around 120 BPM (Ellis 2007) and refined by a parabola through its neighbours; a
-        // different tempo has to hold for two seconds before it replaces the estimate.
-        if ( ++m_acBlock >= AcEvery )
-        {
-            m_acBlock = 0;
-            float env[OdfEnvLen];
-            float mean = 0.f;
-            for ( int i = 0; i < OdfEnvLen; ++i )
-            {
-                env[i] = m_sfEnv[( m_odfEnvIdx + i ) % OdfEnvLen]; // oldest first: the ring's seam is no lag
-                mean += env[i];
-            }
-            mean /= OdfEnvLen;
-            float var = 1e-9f, m4 = 0.f;
-            for ( int i = 0; i < OdfEnvLen; ++i )
-            {
-                env[i] -= mean;
-                var += env[i] * env[i];
-                m4 += env[i] * env[i] * env[i] * env[i];
-            }
-            const float kurtosis = m4 * OdfEnvLen / ( var * var );
-            float       ac[( 60 * EnvRate ) / 70 + 2] = {};
-            for ( int lag = lag_lo - 1; lag <= lag_hi + 1; ++lag )
-            {
-                float sum = 0.f;
-                for ( int i = 0; i + lag < OdfEnvLen; ++i )
-                    sum += env[i] * env[i + lag];
-                ac[lag] = sum / var;
-            }
-            // Tried and dropped (10.11.2026): letting the double lag support a lag (Ellis' duple weighting), against
-            // the dotted-quarter readings (92 for a trance at 138).  Right tempo 81 -> 84 % at 90..135 BPM, but
-            // 78 -> 54 % above 135: in the 4-s window three beats of a fast track correlate as well as two.
-            float peak = 0.f, positive = 0.f, best_score = 0.f;
-            int   best_lag = 0;
-            for ( int lag = lag_lo; lag <= lag_hi; ++lag )
-            {
-                peak = std::max( peak, ac[lag] );
-                positive += std::max( ac[lag], 0.f );
-                const float octaves = std::log2( 60.f * EnvRate / ( 120.f * lag ) ) / AcPriorOctaves;
-                const float score = ac[lag] * std::exp( -0.5f * octaves * octaves );
-                if ( score > best_score )
-                {
-                    best_score = score;
-                    best_lag = lag;
-                }
-            }
-            const float prominence = peak / std::max( 1e-6f, positive / ( lag_hi - lag_lo + 1 ) );
-            const bool  periodic = best_lag > 0 && peak >= 0.30f && prominence >= 5.0f && kurtosis >= 8.f;
-            m_acConf += 0.025f * ( ( periodic ? 1.f : 0.f ) - m_acConf ); // ~4 s at 10 Hz
-            float bpm = 0.f;
-            if ( periodic )
-            {
-                const float a = ac[best_lag - 1], b = ac[best_lag], c = ac[best_lag + 1];
-                const float curve = a - 2.f * b + c;
-                const float shift = curve < 0.f ? std::clamp( 0.5f * ( a - c ) / curve, -0.5f, 0.5f ) : 0.f;
-                bpm = 60.f * EnvRate / ( best_lag + shift );
-                if ( m_acBPM < 1.f || std::fabs( std::log2( bpm / m_acBPM ) ) < 0.1f )
-                {
-                    m_acBPM = ( m_acBPM < 1.f ) ? bpm : 0.9f * m_acBPM + 0.1f * bpm;
-                    m_acRival = 0;
-                }
-                else if ( ++m_acRival >= 2 * AcEvery )
-                {
-                    m_acBPM = bpm;
-                    m_acRival = 0;
-                }
-            }
-            // KALEIDO_AC_DEBUG=1: once a second, what the gate saw.
-            static const bool AcDebug = getenv( "KALEIDO_AC_DEBUG" ) != nullptr;
-            if ( AcDebug && ( ++m_acDebugN % 10 ) == 0 )
-                fprintf( stderr, "ACDBG peak %.3f prom %.2f kurt %.1f bpm %.1f conf %.3f acbpm %.1f\n", peak,
-                         prominence, kurtosis, bpm, m_acConf, m_acBPM );
-        }
     }
 
     // ---- Spectral Centroid (6-band, log-spaced frequency weights) ----
@@ -2290,105 +2151,21 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
         m_prevLevel = level;
     }
 
-    // ---- BPM estimation from inter-beat intervals ----
-    // The last IoiLen intervals between kicks, explained as multiples of one period (ioiPeriod()); the BPM from
-    // it is smoothed to avoid jitter.
-    // Octave folding: tempo estimators readily lock onto half or double the true
-    // tempo (kicks on every 2nd beat, or a busy hi-hat grid).  Fold every
-    // estimate into the canonical [70..180) BPM dance range — visually, pulsing
-    // at exactly half/double tempo is still ON the grid, so a folded estimate is
-    // always safe, while an unfolded 240 would pulse between the beats.
-    auto fold_bpm = []( float bpm )
-    {
-        if ( bpm < 1.f )
-            return bpm;
-        while ( bpm < 70.f )
-            bpm *= 2.f;
-        while ( bpm >= 180.f )
-            bpm *= 0.5f;
-        return bpm;
-    };
-    float estimated_bpm = m_smoothedBPM;
+    // ---- BPM ----
+    // The tempo: the autocorrelation of the onset envelope and the kick intervals, fused (TempoTracker, moved out
+    // of here on 20.11.2026 unchanged).  The kick's interval is measured here, where the frame counter lives.
     float trace_beat_iv = 0.f; // this block's kick interval, for #M_TempoTrace
-    // A new track starts its own tempo: the old one's intervals would only argue with it.
-    if ( track_change )
-        m_ioiCount = 0;
     if ( is_beat )
     {
         float interval_frames = m_frameCounter - m_lastBeatFrame;
         m_lastBeatFrame = m_frameCounter;
-        const float interval_s = interval_frames / static_cast<float>( sampleRate );
-        trace_beat_iv = interval_s;
-        if ( interval_s > 0.12f && interval_s < 3.f )
-        {
-            m_ioi[m_ioiIdx] = interval_s;
-            m_ioiIdx = ( m_ioiIdx + 1 ) % IoiLen;
-            m_ioiCount = std::min( m_ioiCount + 1, IoiLen );
-            // The period that explains the recent intervals as multiples (ioiPeriod()).
-            const float period = ioiPeriod( m_smoothedBPM > 1.f ? 60.f / m_smoothedBPM : 0.f, m_ioiExplained );
-            if ( period > 0.f )
-            {
-                const float bpm = 60.f / period;
-                m_kickBPM = bpm;
-                // The kick intervals set the tempo only until the autocorrelation has one (10.11.2026, see below):
-                // smooth and slow, the first estimate taken as it is.
-                if ( m_acBPM < 1.f )
-                    m_smoothedBPM = m_smoothedBPM < 1.f ? bpm : 0.85f * m_smoothedBPM + 0.15f * bpm;
-            }
-        }
+        trace_beat_iv = interval_frames / static_cast<float>( sampleRate );
     }
-    // Refine the tempo with the autocorrelation estimate when it is confident
-    // (robust for tracks where the kick-based inter-beat estimate is noisy) --
-    // and only then: where the kicks explain their own intervals (ioiPeriod()),
-    // their tempo stands.  On a synthetic two-step 174 the autocorrelation was
-    // "confident" of 116.6 and pulled a correct kick tempo there in a second.
-    //
-    //
-    // The autocorrelation gives the number, the kicks only the metre
-    // (22.10.2026).  Measured against the beat cues of the generators' 43
-    // demos, the kick tempo wandered wherever the kicks are syncopated -- a
-    // breakbeat at 125 read 125..137 while the autocorrelation held 125.0, a
-    // lounge groove at 90 read 92..179 -- and their explained share stayed
-    // high all the same; the published tempo was right (within 4 %, both folded
-    // to 70..180) in 34 % of the rhythmic time.  Where the kicks explain their
-    // intervals and sit at a simple ratio to the autocorrelation -- its double
-    // or half, or the 3:2 of a two-step (174 against 116.6) -- that ratio is
-    // the metre, and the tempo is the autocorrelation's times it.
-    //
-    // The autocorrelation leads at any confidence (10.11.2026).  With the two
-    // sources logged per block (AudioFeatures::tempoAc / tempoKick,
-    // Tools/tempo_vs_cues.py) the kick tempo alone was right in 17 % of the
-    // rhythmic time of the 43 demos and the autocorrelation alone in 50 %, yet
-    // below a confidence of 0.35 the kicks used to set the tempo, and on every
-    // kick they pulled at it.  Now they set it only until the autocorrelation
-    // has a tempo at all; an unsure autocorrelation is followed slowly (two
-    // seconds), so the tempo neither jitters nor sticks.  Of the metres only
-    // the two-step's 3:2 stays: the kicks' double and half turned more right
-    // tempos into octave errors than the reverse, and their 2:3 was wrong
-    // whenever it fired (an uplifting trance read 92 for 138 in 30 % of its
-    // time).  Replayed on the logged sources: right 43 -> 50 %, on the beat
-    // grid (right, double or half) 66 -> 69 %, above 90 BPM 74 -> 80 %.  The
-    // 3:2 needs kicks that explain 95 % of their intervals (a clean two-step):
-    // from 75 % it was wrong as often as right on the demos and read a real
-    // psytrance track at 180 for 120 in a quarter of its time.
-    const bool kicks_explain = m_ioiCount >= 6 && m_ioiExplained >= 0.95f;
-    if ( m_acBPM > 1.f )
-    {
-        float target = fold_bpm( m_acBPM );
-        if ( kicks_explain && m_kickBPM > 1.f && std::fabs( m_kickBPM / target / 1.5f - 1.f ) < 0.03f )
-            target *= 1.5f;
-        if ( m_smoothedBPM < 1.f )
-            m_smoothedBPM = target;
-        else
-        {
-            const float follow = ( m_acConf > 0.2f ) ? 0.1f : 0.005f;
-            m_smoothedBPM = ( 1.f - follow ) * m_smoothedBPM + follow * target;
-        }
-    }
-    m_smoothedBPM = fold_bpm( m_smoothedBPM );
+    m_tempo.update( is_beat, trace_beat_iv, track_change );
+    const float tempo_bpm = m_tempo.tempo();
 
     // Normalise BPM to [0,1] over 40..200 BPM — every frame, not only on beats.
-    estimated_bpm = std::max( 0.f, std::min( ( m_smoothedBPM - 40.f ) / 160.f, 1.f ) );
+    float estimated_bpm = std::max( 0.f, std::min( ( tempo_bpm - 40.f ) / 160.f, 1.f ) );
 
     // ---- Rhythm strength: beat-interval (tempo) consistency × recency ----
     // Regular, recent beats → ~1; irregular / no recent beats / speech → ~0.
@@ -2396,17 +2173,17 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
     float recency = std::exp( -frames_since_beat / ( 2.0f * static_cast<float>( sampleRate ) ) ); // ~2 s
     // The share of the recent kick intervals the tempo explains (ioiPeriod()) -- not 1 minus their spread: a
     // boom-bap's 1.5- and 1-beat intervals are perfectly regular, and a spread said they were not.
-    float kick_rhythm = ( m_ioiCount >= 3 ? m_ioiExplained : 0.f ) * recency;
+    float kick_rhythm = ( m_tempo.kickCount() >= 3 ? m_tempo.kickExplained() : 0.f ) * recency;
     // A steady onset envelope (autocorrelation confidence) also means "rhythmic",
     // so genres without a strong kick still register a rhythm.
-    float rhythm = std::max( kick_rhythm, m_acConf );
+    float rhythm = std::max( kick_rhythm, m_tempo.acConfidence() );
     m_sRhythm = 0.90f * m_sRhythm + 0.10f * rhythm;
 
     // ---- Continuous beat phase 0..1 (wraps every beat) from the tempo ----
     float beat_phase = 0.f;
-    if ( m_smoothedBPM > 1.f )
+    if ( tempo_bpm > 1.f )
     {
-        float beat_period_frames = static_cast<float>( sampleRate ) * 60.f / m_smoothedBPM;
+        float beat_period_frames = static_cast<float>( sampleRate ) * 60.f / tempo_bpm;
         if ( beat_period_frames > 1.f )
         {
             float ph = frames_since_beat / beat_period_frames;
@@ -2426,12 +2203,12 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
                                 is_beat ? 1.f : 0.f,
                                 trace_beat_iv,
                                 track_change ? 1.f : 0.f,
-                                m_acBPM,
-                                m_acConf,
-                                m_smoothedBPM,
+                                m_tempo.acTempo(),
+                                m_tempo.acConfidence(),
+                                tempo_bpm,
                                 beat_phase,
-                                m_kickBPM,
-                                m_ioiExplained };
+                                m_tempo.kickTempo(),
+                                m_tempo.kickExplained() };
         fwrite( rec, sizeof( float ), 14, M_TempoTrace );
     }
 
@@ -2446,7 +2223,7 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
         int slot = ( m_prevBeatPhase > 0.5f ) ? ( ( m_barBeat + 1 ) & 3 ) : m_barBeat;
         m_barAccum[slot] = 0.80f * m_barAccum[slot] + ( 0.4f + beat_str );
     }
-    if ( m_smoothedBPM > 1.f && m_prevBeatPhase > 0.65f && beat_phase < 0.35f )
+    if ( tempo_bpm > 1.f && m_prevBeatPhase > 0.65f && beat_phase < 0.35f )
     {
         m_barBeat = ( m_barBeat + 1 ) & 3;
         int best = 0;
@@ -3482,7 +3259,7 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
                      "odfMean=%.4f odfStd=%.4f\n",
                      m_sMusicPresence, speechiness, speech_score,
                      low_energy, beat_ac, mid_ratio, bass_ratio, high_ratio, env_mean,
-                     m_sRhythm, m_sKeyClarity, m_sFluxVar, level, m_acConf, m_acBPM,
+                     m_sRhythm, m_sKeyClarity, m_sFluxVar, level, m_tempo.acConfidence(), m_tempo.acTempo(),
                      m_odfEnvMean, m_odfEnvStd );
     }
 
@@ -3851,10 +3628,10 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
     m_features.sectionCount = m_sectionCount;
     m_features.sectionNovelty = m_secNovelty;
     m_features.sectionThreshold = m_secThr;
-    m_features.tempoAc = m_acBPM;
-    m_features.tempoAcConf = m_acConf;
-    m_features.tempoKick = m_kickBPM;
-    m_features.tempoKickExplained = ( m_ioiCount >= 6 ) ? m_ioiExplained : 0.f;
+    m_features.tempoAc = m_tempo.acTempo();
+    m_features.tempoAcConf = m_tempo.acConfidence();
+    m_features.tempoKick = m_tempo.kickTempo();
+    m_features.tempoKickExplained = ( m_tempo.kickCount() >= 6 ) ? m_tempo.kickExplained() : 0.f;
     m_features.sectionId = m_secCurId;
     m_features.sectionKnown = m_secKnown;
     m_features.onsetKick = m_onsetEnvGrp[0];

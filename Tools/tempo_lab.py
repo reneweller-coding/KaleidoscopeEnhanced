@@ -49,15 +49,27 @@ def bench(cue, wav):
     @return
       (key, feature csv, trace) paths, or None when the PCM copy is missing and cannot be made.
     """
-    os.makedirs(BENCH, exist_ok=True)
     key = "%s_%s" % (os.path.basename(os.path.dirname(os.path.dirname(os.path.dirname(wav)))),
                      os.path.splitext(os.path.basename(wav))[0])
     pcm = os.path.join(avc.CACHE, key + ".wav")
-    csv = os.path.join(BENCH, key + ".csv")
-    trace = os.path.join(BENCH, key + ".trace")
     if not os.path.exists(pcm):
         os.makedirs(avc.CACHE, exist_ok=True)
         subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", wav, "-ar", "48000", "-c:a", "pcm_s16le", pcm], check=True)
+    return record(pcm, key)
+
+
+def record(pcm, key):
+    """The recorded inputs of a 16-bit PCM WAV under a key, made when missing or older than the editor.
+
+    @param pcm  The WAV. (in)
+    @param key  The name of the recordings in .screen/beatbench. (in)
+
+    @return
+      (key, feature csv, trace) paths.
+    """
+    os.makedirs(BENCH, exist_ok=True)
+    csv = os.path.join(BENCH, key + ".csv")
+    trace = os.path.join(BENCH, key + ".trace")
     stale = lambda p: not os.path.exists(p) or os.path.getmtime(p) < os.path.getmtime(EDITOR)
     if stale(csv) or stale(trace):
         env = dict(os.environ, PATH=avc.QT_BIN + os.pathsep + os.environ.get("PATH", ""))
@@ -229,6 +241,7 @@ class Current:
     def run(self, tr):
         """Replays a trace; returns the published tempo per block (0 = none)."""
         out = np.zeros(len(tr))
+        self.conf_trace = np.zeros(len(tr))
         for i, rec in enumerate(tr):
             self.push(rec)
             self.block += 1
@@ -237,10 +250,176 @@ class Current:
                 self.autocorrelate()
             self.fuse(rec)
             out[i] = self.smoothed if self.smoothed > 40.64 else 0.0
+            self.conf_trace[i] = self.ac_conf
         return out
 
 
-METHODS = {"current": Current}
+class Pulse(Current):
+    """Candidates from a longer window, decided by pulse trains (A2 of docs/PLAN_2026-11-20.md).
+
+    The gate (peak, prominence, kurtosis of the 4-s autocorrelation) and the confidence stay exactly as in Current,
+    so music without a pulse reads no more rhythm than before.  Only the choice of the tempo changes: the strongest
+    peaks of the autocorrelation over the last LONG seconds and their metrical relatives (x2, /2, x3/2, x2/3) are
+    candidates, and each is scored by a pulse train laid over the onset envelope at its best phase (Percival &
+    Tzanetakis 2014, "Streamlined Tempo Estimation Based on Autocorrelation and Cross-correlation With Pulses"):
+    how far the envelope at the train's pulses stands above its mean over all phases.  A dotted reading (a period of
+    1.5 beats) puts every second pulse between the beats and scores lower than the beat itself, though its
+    autocorrelation may be as high.
+    """
+
+    LONG = 12.0            # seconds of envelope for the candidates and the pulse trains
+    PEAKS = 5              # autocorrelation peaks taken as candidates
+    RELATIVES = (1.0, 2.0, 0.5, 1.5, 2.0 / 3.0)
+    PRIOR_W = 1.0          # weight of the log-Gaussian prior in the decision (exponent)
+    HALF_W = 0.0           # weight of half-beat pulses in the train
+    MULTI = 0.0            # weight of the trains at twice and half the period (the metrical levels around it)
+    MARGIN = 1.0           # a reading outside the 4-s pick's octave family must score this much higher
+    USE_KICK_32 = True     # the kicks' clean 3:2 (Current.fuse) stays
+
+    def __init__(self):
+        super().__init__()
+        self.long_len = int(self.LONG * self.ENV_RATE)
+        self.ring_long = np.zeros(self.long_len)
+        self.widx_long = 0
+        self.filled = 0
+
+    def push(self, rec):
+        for k in range(int(rec[NENV])):
+            v = rec[E0 + k]
+            self.ring[self.widx] = v
+            self.widx = (self.widx + 1) % self.ENV_LEN
+            self.ring_long[self.widx_long] = v
+            self.widx_long = (self.widx_long + 1) % self.long_len
+            self.filled = min(self.filled + 1, self.long_len)
+
+    def pulse_score(self, env, period):
+        """How far the envelope at a pulse train of this period stands above its mean over all phases."""
+        n = len(env)
+        p = int(math.ceil(period))
+        k = np.arange(int((n - p) / period))
+        if len(k) < 3:
+            return 0.0
+        pos = (np.arange(p)[:, None] + k[None, :] * period).round().astype(int)
+        s = env[pos].mean(axis=1)
+        if self.HALF_W > 0.0:
+            pos2 = (np.arange(p)[:, None] + (k[None, :] + 0.5) * period).round().astype(int)
+            pos2 = np.minimum(pos2, n - 1)
+            s = s + self.HALF_W * env[pos2].mean(axis=1)
+        return float(s.max() - s.mean())
+
+    def choose(self, lag4):
+        """The tempo lag the pulse trains prefer, starting from the 4-s pick."""
+        if self.filled < self.ENV_LEN:
+            return lag4
+        env = np.roll(self.ring_long, -self.widx_long)[self.long_len - self.filled:]
+        env = env - env.mean()
+        envm = np.maximum(np.maximum(env, np.roll(env, 1)), np.roll(env, -1))   # +-1 sample of timing slack
+        lo, hi = self.lag_lo, self.lag_hi
+        var = 1e-9 + float(np.dot(env, env))
+        n = len(env)
+        ac = np.array([float(np.dot(env[:n - lag], env[lag:])) / var for lag in range(lo - 1, hi + 2)])
+        core = ac[1:-1]
+        peaks = [i for i in range(1, len(core) - 1) if core[i] >= core[i - 1] and core[i] >= core[i + 1]]
+        peaks = sorted(peaks, key=lambda i: core[i], reverse=True)[:self.PEAKS]
+        cands = {float(lag4)}
+        for i in peaks:
+            a, b, c = core[i - 1], core[i], core[i + 1]
+            curve = a - 2.0 * b + c
+            shift = min(max(0.5 * (a - c) / curve, -0.5), 0.5) if curve < 0.0 else 0.0
+            cands.add(lo + i + shift)
+        full = set()
+        for c in cands:
+            for r in self.RELATIVES:
+                lag = c / r
+                if lo <= lag <= hi:
+                    full.add(round(lag, 2))
+        scored = []
+        for lag in sorted(full):
+            octs = math.log2(60.0 * self.ENV_RATE / (120.0 * lag)) / self.PRIOR_OCT
+            s = self.pulse_score(envm, lag)
+            if self.MULTI > 0.0:
+                s += self.MULTI * (self.pulse_score(envm, 2.0 * lag) + self.pulse_score(envm, 0.5 * lag))
+            scored.append((s * math.exp(-0.5 * octs * octs) ** self.PRIOR_W, lag))
+        best_s, best = max(scored)
+        if self.MARGIN > 1.0:
+            # a reading in another metrical family than the 4-s pick (not a power of two away) has to win clearly
+            fam = [x for x in scored if abs(math.log2(x[1] / lag4) - round(math.log2(x[1] / lag4))) < 0.06]
+            if fam:
+                fs, fl = max(fam)
+                if best_s < self.MARGIN * fs:
+                    best = fl
+        return best
+
+    def autocorrelate(self):
+        """Current.autocorrelate, with the tempo taken from choose() when the gate is open."""
+        env = np.roll(self.ring, -self.widx)
+        env = env - env.mean()
+        var = 1e-9 + float(np.dot(env, env))
+        kurt = float(np.sum(env ** 4)) * self.ENV_LEN / (var * var)
+        lo, hi = self.lag_lo, self.lag_hi
+        ac = np.array([float(np.dot(env[:self.ENV_LEN - lag], env[lag:])) / var for lag in range(lo - 1, hi + 2)])
+        core = ac[1:-1]
+        peak = max(0.0, float(core.max()))
+        positive = float(np.maximum(core, 0.0).sum())
+        score = core * self.prior
+        best = int(np.argmax(score))
+        best_lag = lo + best if score[best] > 0.0 else 0
+        prom = peak / max(1e-6, positive / (hi - lo + 1))
+        periodic = best_lag > 0 and peak >= 0.30 and prom >= 5.0 and kurt >= 8.0
+        self.ac_conf += 0.025 * ((1.0 if periodic else 0.0) - self.ac_conf)
+        if periodic:
+            a, b, c = ac[best_lag - lo], ac[best_lag - lo + 1], ac[best_lag - lo + 2]
+            curve = a - 2.0 * b + c
+            shift = min(max(0.5 * (a - c) / curve, -0.5), 0.5) if curve < 0.0 else 0.0
+            lag = self.choose(best_lag + shift)
+            bpm = 60.0 * self.ENV_RATE / lag
+            if self.ac_bpm < 1.0 or abs(math.log2(bpm / self.ac_bpm)) < 0.1:
+                self.ac_bpm = bpm if self.ac_bpm < 1.0 else 0.9 * self.ac_bpm + 0.1 * bpm
+                self.rival = 0
+            else:
+                self.rival += 1
+                if self.rival >= 2 * self.AC_EVERY:
+                    self.ac_bpm = bpm
+                    self.rival = 0
+
+    def fuse(self, rec):
+        if self.USE_KICK_32:
+            return super().fuse(rec)
+        if rec[TRACK] > 0.5:
+            self.kicks.count = 0
+        if rec[ISBEAT] > 0.5:
+            kb = self.kicks.beat(rec[BEATIV], self.smoothed)
+            if kb > 0.0 and self.ac_bpm < 1.0:
+                self.smoothed = kb if self.smoothed < 1.0 else 0.85 * self.smoothed + 0.15 * kb
+        if self.ac_bpm > 1.0:
+            target = fold(self.ac_bpm)
+            if self.smoothed < 1.0:
+                self.smoothed = target
+            else:
+                f = 0.1 if self.ac_conf > 0.2 else 0.005
+                self.smoothed = (1.0 - f) * self.smoothed + f * target
+        self.smoothed = fold(self.smoothed)
+
+
+def variant(name, base, **kw):
+    """A method class with some constants changed."""
+    return type(name, (base,), kw)
+
+
+METHODS = {"current": Current, "pulse": Pulse,
+           "pulse8": variant("Pulse8", Pulse, LONG=8.0),
+           "pulse_half": variant("PulseHalf", Pulse, HALF_W=0.5),
+           "pulse_nokick": variant("PulseNoKick", Pulse, USE_KICK_32=False),
+           "pulse_noprior": variant("PulseNoPrior", Pulse, PRIOR_W=0.0),
+           "pulse_wideprior": variant("PulseWide", Pulse, PRIOR_W=0.5),
+           "pulse_binary": variant("PulseBinary", Pulse, RELATIVES=(1.0, 2.0, 0.5)),
+           "pulse_multi": variant("PulseMulti", Pulse, MULTI=0.5),
+           "pulse_margin": variant("PulseMargin", Pulse, MARGIN=1.25),
+           "pulse_margin15": variant("PulseMargin15", Pulse, MARGIN=1.5),
+           "pulse_multi_margin": variant("PulseMultiMargin", Pulse, MULTI=0.5, MARGIN=1.25),
+           "pulse_mm115": variant("PulseMM115", Pulse, MULTI=0.5, MARGIN=1.15),
+           "pulse_mm135": variant("PulseMM135", Pulse, MULTI=0.5, MARGIN=1.35),
+           "pulse_m3_mm125": variant("PulseM3MM125", Pulse, MULTI=0.3, MARGIN=1.25)}
 
 
 def score(bpm, beats, key, per_track):
@@ -285,32 +464,133 @@ def table(per_track, out=sys.stdout):
     return right, folded / max(count, 1)
 
 
+def _below_normal():
+    """Pool initialiser: the workers run at below normal priority (Windows)."""
+    if os.name == "nt":
+        import ctypes
+        ctypes.windll.kernel32.SetPriorityClass(ctypes.windll.kernel32.GetCurrentProcess(), 0x00004000)
+
+
+def _replay(job):
+    """One demo through one method: (key, (counts, folded ok, n), share of blocks off the C++ trace)."""
+    method, key, trace, beats, check = job
+    tr = load_trace(trace)
+    bpm = METHODS[method]().run(tr)
+    off = 0.0
+    if check:
+        ref = np.where(tr[:, BPM] > 40.64, tr[:, BPM], 0.0)
+        off = float(np.mean(np.abs(bpm - ref) > 0.5))
+    per_track = {}
+    score(bpm, beats, key, per_track)
+    return key, per_track[key], off
+
+
+MUSIC = os.path.join(ROOT, ".screen", "music")
+TRUTH = os.path.join(ROOT, "Tools", "tempo_truth.tsv")
+
+
+def real_tracks(method, out=sys.stdout):
+    """The share of each real track's time (after 12 s) within 4 % of its true tempo (Tools/tempo_truth.tsv).
+
+    @param method  The method's class. (in)
+
+    @return
+      {file: share} for the tracks found in .screen/music (the music itself is not in the repository).
+    """
+    res = {}
+    for ln in io.open(TRUTH, encoding="utf-8").read().splitlines()[1:]:
+        v = ln.split("\t")
+        wav = os.path.join(MUSIC, v[0])
+        if len(v) < 2 or not os.path.exists(wav):
+            continue
+        truth = float(v[1])
+        _, _, trace = record(wav, "music_" + os.path.splitext(v[0])[0])
+        tr = load_trace(trace)
+        bpm = method().run(tr)
+        m = tr[:, T] >= tvc.WARM
+        res[v[0]] = float(np.mean(np.abs(bpm[m] / truth - 1.0) <= tvc.TOL))
+        out.write("  %-22s %5.1f BPM  %3.0f %% of the time within 4 %%\n" % (v[0], truth, 100.0 * res[v[0]]))
+    return res
+
+
+# Calm material without a pulse: the three Noctuary renders of the 16.10.2026 gate measurement, the additive ambient
+# synth's demos, and the chord test track (a drone, then held chords under a melody).
+CALM = [r"G:/Tools/VRAudio/AmbientSynth/work/demos/%s.wav" % n for n in ("consonant_expanse", "harmonic_hours",
+                                                                          "somnus_field")] \
+     + [r"G:/Tools/VRAudio/AdditivAmbientSynth/work/demos/%s.wav" % n for n in ("convective_betelgeuse", "lunar_hall",
+                                                                                "sliding_whistler", "steppe_night",
+                                                                                "teeming_garden")] \
+     + [os.path.join(ROOT, ".screen", "chords.wav")]
+
+
+def calm_rhythm(method, out=sys.stdout):
+    """How much of the calm material the method calls rhythmic: the share of blocks (after 12 s) whose confidence is
+    above 0.2 -- the threshold where the tempo is followed fast and the pulse engages (AudioAnalyzer: rhythm =
+    max(kicks, acConf)).
+
+    @return
+      {file: share}.
+    """
+    res = {}
+    for wav in CALM:
+        if not os.path.exists(wav):
+            continue
+        key = "calm_" + os.path.splitext(os.path.basename(wav))[0]
+        pcm = os.path.join(avc.CACHE, key + ".wav")
+        if not os.path.exists(pcm):
+            os.makedirs(avc.CACHE, exist_ok=True)
+            subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", wav, "-ar", "48000", "-ac", "2", "-c:a", "pcm_s16le",
+                            pcm], check=True)
+        _, _, trace = record(pcm, key)
+        tr = load_trace(trace)
+        m = method()
+        m.run(tr)
+        sel = tr[:, T] >= tvc.WARM
+        res[key] = float(np.mean(m.conf_trace[sel] > 0.2))
+    out.write("calm material: confident tempo in %s\n" % ", ".join("%s %.1f %%" % (k[5:], 100 * v)
+                                                                  for k, v in res.items()))
+    return res
+
+
 def main():
     """Replays the chosen method on every demo and prints the table."""
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--method", default="current", choices=sorted(METHODS))
     ap.add_argument("--check", action="store_true", help="compare the port's tempo with the C++ trace, block by block")
     ap.add_argument("--detail", action="store_true")
+    ap.add_argument("--real", action="store_true", help="also the real tracks against Tools/tempo_truth.tsv")
+    ap.add_argument("--calm", action="store_true", help="also how rhythmic the calm demos read")
+    ap.add_argument("--jobs", type=int, default=4, help="worker processes (below normal priority)")
     ap.add_argument("sets", nargs="*")
     a = ap.parse_args()
     sys.stdout.reconfigure(encoding="utf-8")
+    if a.real:
+        print("real tracks (%s):" % a.method)
+        real_tracks(METHODS[a.method])
+    if a.calm:
+        calm_rhythm(METHODS[a.method])
+    if not a.sets:
+        return 0
     pairs = avc.find_pairs(a.sets)
     per_track, cmp = {}, []
+    jobs = []
     for cue, wav in pairs:
         beats = tvc.beats_of(cue)
         if len(beats) < 8:
             continue
         got = bench(cue, wav)
-        if not got:
-            continue
-        key, _, trace = got
-        tr = load_trace(trace)
-        bpm = METHODS[a.method]().run(tr)
+        if got:
+            jobs.append((a.method, got[0], got[2], beats, a.check))
+    if a.jobs > 1:
+        import multiprocessing
+        with multiprocessing.Pool(a.jobs, initializer=_below_normal) as pool:
+            results = pool.map(_replay, jobs)
+    else:
+        results = [_replay(j) for j in jobs]
+    for key, per, off in results:
+        per_track[key] = per
         if a.check:
-            ref = np.where(tr[:, BPM] > 40.64, tr[:, BPM], 0.0)
-            off = np.abs(bpm - ref) > 0.5
-            cmp.append((key, float(off.mean())))
-        score(bpm, beats, key, per_track)
+            cmp.append((key, off))
         if a.detail:
             per, fok, n = per_track[key]
             if n:

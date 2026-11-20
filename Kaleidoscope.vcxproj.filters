@@ -93,6 +93,9 @@
     <ClCompile Include="Source\TrackMedia.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Source\TempoTracker.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="moc\moc_AudioAnalyzer.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
@@ -213,6 +216,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Source\LongRunVariety.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\TempoTracker.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Source\EffectShader.h">
