@@ -12,8 +12,10 @@
  *  as they grow.  The borders glow.
  *
  *  Audio Reactivity (structure, not only light):
- *    audioAdvance -> the coarsening runs on: the pace of the steps (integrated through the clock)
+ *    audioSwell   -> the pace of the coarsening: loud music drives it on, silence lets it rest (the state
+ *                    integrates the step)
  *    audioSpread  -> the width of the borders
+ *    audioKick    -> the borders light up (light only)
  *
  *  Knobs: scaleP (cell size), hueP.
  *
@@ -36,6 +38,8 @@ uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
 uniform float audioSpread;    ///< Spectral spread, 0..1.
+uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 
 uniform float scaleP; ///< Scale knob.
 uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
@@ -703,7 +707,7 @@ vec4 stateStep()
     float l = luma( phAt( vec2( ip ) + 0.5, 1.5 ) );
     float D = 2.2 + 1.6 * clamp( audioSpread, 0.0, 1.0 );
     float bias = 0.35 * ( l - 0.5 );
-    float dt = 0.06;
+    float dt = 0.025 + 0.07 * clamp( audioSwell, 0.0, 1.0 );
     float nu = u + dt * ( D * lap.r + u - u * u * u + bias );
     nu += 0.002 * ( stRand( 1 ) - 0.5 );
     return vec4( clamp( nu, -1.2, 1.2 ), 0.0, 0.0, 1.0 );
@@ -723,6 +727,7 @@ void main()
     vec3  ph = phAt( cc, 0.8 );
     float side = smoothstep( -0.4, 0.4, s.r );
     float wall = exp( -s.r * s.r * 6.0 );
-    vec3  col = mix( ph * 0.35, ph * 1.2, side ) + imgPalette( 0.6 ) * wall * 0.35;
+    vec3  col = mix( ph * 0.35, ph * 1.2, side )
+                + imgPalette( 0.6 ) * wall * ( 0.35 + 0.35 * clamp( audioKick, 0.0, 1.0 ) );
     finish( col );
 }

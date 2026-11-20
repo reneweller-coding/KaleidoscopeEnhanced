@@ -3,12 +3,14 @@
  * photo colours the flames and the haze above them.
  *
  * Audio Reactivity (structure, not only light):
- *   audioHarmAdvance -> the mode glides with the key (integrated)
+ *   audioHarmAdvance -> the mode glides with the key: a chord change moves it on (integrated)
+ *   sceneAdvance     -> the mode drifts with the music (integrated)
  *   audioSwell       -> the height of the flames
+ *   audioKick        -> the flames flare (light only)
  *
  * Knobs: sizeP (the number of flames), hueP.
 //@params sizeP
-//@audio audioSwell audioHarmAdvance
+//@audio audioSwell audioHarmAdvance audioKick
 //@body
 void main()
 {
@@ -20,7 +22,7 @@ void main()
     float i = floor(xn * N);
     float fx = fract(xn * N) - 0.5;
     float xc = (i + 0.5) / N;
-    float mode = 2.0 + 3.5 * (0.5 + 0.5 * sin(0.08 * audioHarmAdvance + 0.03 * sceneTime));
+    float mode = 2.0 + 3.5 * (0.5 + 0.5 * sin(0.5 * audioHarmAdvance + 0.8 * sceneAdvance + 0.015 * sceneTime));
     float press = abs(cos(3.1415927 * mode * xc + 0.4 * sin(0.2 * sceneTime)));
     float H = (0.1 + 0.55 * press) * (0.55 + 0.6 * clamp(audioSwell, 0.0, 1.0));
     float flick = 0.04 * sin(3.0 * sceneTime + 9.0 * i) + 0.03 * noise2(vec2(i, 2.0 * sceneTime));
@@ -35,7 +37,7 @@ void main()
     vec3 col = imgLod(p * 0.85 + 0.5, 2.5) * 0.12;
     float haze = exp(-max(y, 0.0) * 4.0) * (0.25 + 0.5 * press) * step(0.0, y) * 0.5;
     col += c * haze * 0.6;
-    col = mix(col, hot * 1.3, inside);
+    col = mix(col, hot * (1.3 + 0.45 * clamp(audioKick, 0.0, 1.0)), inside);
     float tube = smoothstep(0.0, 0.012, y0 - p.y) * smoothstep(0.1, 0.0, y0 - p.y - 0.02);
     col += vec3(0.25, 0.22, 0.2) * tube * (0.5 + 0.5 * step(0.5, abs(fx) * 0.0 + 0.6));
     finish(col);

@@ -12,8 +12,10 @@
  *  the nodal grid of the two products shows up as cross stitches in the photo's colours.
  *
  *  Audio Reactivity (structure, not only light):
- *    audioHarmAdvance -> the distance between the groups of sources follows the key (integrated)
- *    audioAdvance     -> the sources wander and the waves run (integrated)
+ *    audioHarmAdvance -> the distance between the groups of sources follows the key: a chord change moves them
+ *                        (integrated)
+ *    sceneAdvance     -> the sources wander: the music carries most of it (integrated)
+ *    audioKick        -> the stitches flare (light only)
  *
  *  Knobs: sizeP (the wavelength), hueP.
  *
@@ -37,6 +39,7 @@ uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, u
 uniform float audioPhase;       ///< Rotation phase driven by the music (integrated, never jumps).
 uniform float audioHarmAdvance; ///< The harmony's advance: ~1 more with every chord change (integrated, never jumps
                                 ///< back).
+uniform float audioKick;        ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 
 uniform float sizeP; ///< Size knob, 0..1.
 uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
@@ -501,8 +504,8 @@ void main()
 {
     vec2  p = screenP();
     float k = 6.2831853 / ( 0.025 + 0.04 * clamp( sizeP, 0.0, 1.0 ) );
-    float t = 0.03 * audioAdvance + 0.05 * sceneTime;
-    float sep = 0.3 + 0.12 * sin( 0.04 * audioHarmAdvance + 0.015 * sceneTime );
+    float t = 0.025 * sceneTime + 0.5 * sceneAdvance;
+    float sep = 0.3 + 0.12 * sin( 0.5 * audioHarmAdvance + 0.01 * sceneTime );
     float s1 = 0.0;
     float s2 = 0.0;
     for ( int i = 0; i < 4; ++i )
@@ -521,6 +524,6 @@ void main()
     float lines = smoothstep( 0.7, 0.95, max( g1, g2 ) );
     vec3  c = imgLod( p * 0.85 + 0.5, 0.8 );
     c = mix( vec3( luma( c ) ), c, 1.4 );
-    vec3 col = c * ( 0.2 + 0.7 * lines + 1.6 * st ) + vec3( 0.02 );
+    vec3 col = c * ( 0.2 + 0.7 * lines + ( 1.6 + 0.8 * clamp( audioKick, 0.0, 1.0 ) ) * st ) + vec3( 0.02 );
     finish( col );
 }

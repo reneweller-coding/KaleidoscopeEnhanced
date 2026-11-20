@@ -10,14 +10,15 @@
  *  A field of beaten gold leaf carries tendrils that coil into spirals, scattered eyes of concentric rings and
  *  little black-and-white squares; down the middle a gown of glass tesserae is set from the photo, sprinkled with
  *  ornamental discs.  A slow light moves across the panel and the gold answers it -- the leaf flares where the
- *  light passes, each spiral glows with its own band, and the treble strikes glints off the flakes.  Nothing moves
- *  but the light.
+ *  light passes, each spiral glows with its own band, and the treble strikes glints off the flakes.  The music
+ *  carries the light across, turns the spirals and sends ripples out through the eyes' rings.
  *
  *  Audio Reactivity:
  *    audioSpectrum[32] -> glow of the spirals and eyes (their bands)
  *    audioSwell        -> the passing light's strength (slow)
  *    audioHigh         -> glints on the gold flakes (light)
- *    sceneTime         -> the light moving across the panel (continuous)
+ *    sceneAdvance      -> the light moving across the panel: the music carries most of it (integrated)
+ *    audioPhase        -> the spirals turn, the eyes' rings ripple outward (integrated)
  *
  *  Per-activation variety: gownP (width of the gown), hueP.
  *
@@ -36,6 +37,7 @@ uniform float audioAdvance;      ///< The music's advance: integrated tempo-weig
                                  ///< backwards).
 uniform float audioSpectrum[32]; ///< Spectrum bands, 0..1.
 uniform float audioSwell;        ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioPhase;        ///< Rotation phase driven by the music (integrated, never jumps).
 uniform float audioHigh;         ///< High band level, 0..1.
 uniform float audioLevel;        ///< Overall loudness, 0..1.
 uniform float audioChromaHue;    ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
@@ -174,7 +176,9 @@ void main()
     float gown_w = mix( 0.22, 0.36, clamp( gownP, 0.0, 1.0 ) );
 
     // The light: a soft band that travels slowly across the panel.
-    float lx = sin( sceneTime * 0.09 ) * aspect * 0.55;
+    // (B2, 20.11.2026: the scene measured among the 5 % least reactive: the music carries the light, turns the spirals
+    // and ripples the eyes.)
+    float lx = sin( sceneTime * 0.04 + sceneAdvance * 1.6 ) * aspect * 0.55;
     float light = exp( -pow( ( p.x - lx + p.y * 0.4 ) * 2.2, 2.0 ) ) * ( 0.55 + 0.6 * swell );
 
     // Gold leaf: flakes (irregular cells) each at its own tilt, so each
@@ -201,7 +205,9 @@ void main()
         if ( abs( c.x ) < gown_w * 0.6 )
             c.x += sign( c.x + 0.001 ) * gown_w * 0.8;
         float b = 0.008 + 0.008 * hash11( fi2 * 5.5 );
-        float d = spiralD( p, c, b, 3.0 + floor( hash11( fi2 ) * 3.0 ) );
+        float turn = 0.35 * audioPhase * ( mod( fi2, 2.0 ) < 0.5 ? 1.0 : -1.0 );
+        vec2  pr = c + mat2( cos( turn ), -sin( turn ), sin( turn ), cos( turn ) ) * ( p - c );
+        float d = spiralD( pr, c, b, 3.0 + floor( hash11( fi2 ) * 3.0 ) );
         float within = smoothstep( b * 6.2831853 * 5.0, b * 6.2831853 * 3.0, length( p - c ) );
         int   band = int( mod( fi2 * 5.0 + 3.0, 32.0 ) );
         float e = clamp( audioSpectrum[band] * 1.5, 0.0, 1.0 );
@@ -218,7 +224,7 @@ void main()
     float ed = length( ( ef - ej ) * vec2( 1.0, 1.5 ) );
     float eye_on = step( 0.6, hash21( ei + 9.0 ) ) * step( gown_w, abs( p.x ) );
     float er = 0.13 + 0.05 * hash21( ei );
-    float e_rings = step( ed, er ) * ( 0.5 + 0.5 * sin( ed / er * 18.0 ) );
+    float e_rings = step( ed, er ) * ( 0.5 + 0.5 * sin( ed / er * 18.0 - 1.5 * audioPhase ) );
     int   eb = int( mod( hash21( ei + 2.0 ) * 32.0, 32.0 ) );
     float ee = clamp( audioSpectrum[eb] * 1.5, 0.0, 1.0 );
     vec3  eye_c = mix( vec3( 0.05 ), imgPalette( hue * 0.159 + hash21( ei + 6.0 ) * 0.5 ) * 1.2, e_rings );

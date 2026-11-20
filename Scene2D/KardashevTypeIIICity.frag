@@ -14,7 +14,8 @@
  *
  *    sceneAdvance  -> the galaxy's turn and the packets on the links: the music carries them (integrated; without
  *                     music they creep on sceneTime)
- *    audioSwell    -> the arms wind tighter while the music swells, and the network brightens (slow)
+ *    audioSwell    -> the arms wind tighter while the music swells, more links of the network light up and it
+ *                     brightens (slow)
  *    audioKick     -> the nodes flare (light only)
  *    audioChromaHue-> photo tint of the network
  *
@@ -181,7 +182,7 @@ void main()
     // The music carries the turn and the packets (sceneAdvance runs about 0.05 a second under music, 0 in silence);
     // the swell winds the arms (B2, 20.11.2026: the scene measured among the 5 % least reactive).
     float T = 0.5 * sceneTime + 6.0 * sceneAdvance;
-    float wind = 2.6 + 0.6 * swell;
+    float wind = 2.6 + 0.9 * swell;
 
     // Background: faint distant galaxies and stars.
     vec3 col = vec3( 0.005, 0.006, 0.014 );
@@ -199,7 +200,7 @@ void main()
     float tilt_rot = 0.35;
     q = mat2( cos( tilt_rot ), -sin( tilt_rot ), sin( tilt_rot ), cos( tilt_rot ) ) * q;
     vec2  g = vec2( q.x, q.y / 0.5 ) / 0.95;
-    float spin = -T * 0.008;
+    float spin = -( 0.004 * sceneTime + 0.25 * sceneAdvance );
     g = mat2( cos( spin ), -sin( spin ), sin( spin ), cos( spin ) ) * g;
     float r = length( g );
 
@@ -224,6 +225,9 @@ void main()
     vec3  net_c = mix( vec3( 0.35, 0.95, 1.0 ), imgPalette( 0.55 + hue * 0.159 ), 0.3 );
     vec3  node_c = mix( vec3( 1.0, 0.8, 0.45 ), imgPalette( 0.1 + hue * 0.159 ), 0.25 );
     float net = 0.0, pk = 0.0, node = 0.0;
+    // How much of the network is lit: half of the links in a quiet passage, nearly all while it swells.
+    float link_at = 0.5 - 0.42 * swell;
+    float node_at = 0.4 - 0.3 * swell;
     for ( int j = -1; j <= 1; ++j )
         for ( int i = -1; i <= 1; ++i )
         {
@@ -232,19 +236,20 @@ void main()
             float ha = hash21( c + 7.7 );
             // Node.
             float dn = length( gc - a );
-            node += exp( -dn * dn * 60.0 ) * step( 0.3, ha );
+            node += exp( -dn * dn * 60.0 ) * smoothstep( node_at, node_at + 0.08, ha );
             // Links to the right and up neighbours (present or not by hash).
             for ( int k = 0; k < 2; ++k )
             {
-                vec2 cb = c + ( ( k == 0 ) ? vec2( 1.0, 0.0 ) : vec2( 0.0, 1.0 ) );
-                if ( hash21( c * 3.1 + float( k ) * 5.0 ) < 0.35 )
+                vec2  cb = c + ( ( k == 0 ) ? vec2( 1.0, 0.0 ) : vec2( 0.0, 1.0 ) );
+                float lw = smoothstep( link_at, link_at + 0.1, hash21( c * 3.1 + float( k ) * 5.0 ) );
+                if ( lw <= 0.0 )
                     continue;
                 vec2  b = cb + 0.2 + 0.6 * hash22( cb );
                 float h;
                 float ds = sdSeg( gc, a, b, h );
-                net += exp( -ds * 30.0 );
+                net += exp( -ds * 30.0 ) * lw;
                 float pos = fract( T * 0.25 * ( 0.5 + hash21( c + float( k ) ) ) + hash21( c * 1.7 + float( k ) ) );
-                pk += exp( -ds * 30.0 ) * exp( -pow( ( h - pos ) * 12.0, 2.0 ) );
+                pk += exp( -ds * 30.0 ) * exp( -pow( ( h - pos ) * 12.0, 2.0 ) ) * lw;
             }
         }
     // The network lives on the disc: dense along the arms, thin in between.

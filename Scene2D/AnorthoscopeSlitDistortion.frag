@@ -12,8 +12,9 @@
  *  as the sum of the slits; between the slits it lies as a pale stretched ghost.
  *
  *  Audio Reactivity (structure, not only light):
- *    audioAdvance -> the slits turn (integrated)
+ *    sceneAdvance -> the slits turn: the music carries most of the turn (integrated)
  *    audioSwell   -> the width of the slits
+ *    audioKick    -> the picture in the slits flares (light only)
  *
  *  Knobs: sizeP (the stretch of the picture), hueP.
  *
@@ -36,6 +37,7 @@ uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 
 uniform float sizeP; ///< Size knob, 0..1.
 uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
@@ -501,7 +503,7 @@ void main()
     vec2  p = screenP();
     float r = length( p );
     float a = atan( p.y, p.x );
-    float th = 0.05 * audioAdvance + 0.04 * sceneTime;
+    float th = 0.02 * sceneTime + 0.7 * sceneAdvance;
     float st = 0.7 + 0.9 * clamp( sizeP, 0.0, 1.0 );
     vec2  uv = vec2( abs( a ) / 3.1415927 * 0.75 + 0.125 + 0.02 * th, r * st );
     uv = vec2( uv.x * 0.7, uv.y * 0.9 + 0.1 );
@@ -513,5 +515,5 @@ void main()
     float s2 = 1.0 - smoothstep( w, w * 2.2, d2 );
     float slits = max( s1, s2 );
     vec3  ghost = imgLod( uv, 2.0 ) * 0.22;
-    finish( ( c * slits * 1.4 + ghost ) * 1.1 );
+    finish( ( c * slits * ( 1.4 + 0.5 * clamp( audioKick, 0.0, 1.0 ) ) + ghost ) * 1.1 );
 }

@@ -13,10 +13,11 @@
  *  brightens toward the day/night line. The ship crosses in the foreground, lit from the same sun and bounce-lit
  *  from the planet below it.
  *
- *    audioAdvance -> orbital progress (planet spin + cloud advection)
+ *    audioAdvance -> the planet turns under the ship and its clouds advect: the music carries the turn
+ *                    (integrated; without music it creeps on time)
  *    audioSwell   -> engine glow and the strength of the atmospheric rim
  *    audioKick    -> thruster flare on the cruiser
- *    audioBass    -> weather system scale (the cloud deck breathes)
+ *    audioSwell   -> weather system scale (the cloud deck breathes, slow)
  *    audioBeatPhase-> navigation strobe
  *    audioChromaHue-> ocean and atmosphere hue follow the musical key
  *
@@ -273,6 +274,9 @@ void main()
 
     // Orbital time.  Slow by design; audioAdvance supplies the musical push.
     float t = time * 0.035 + audioAdvance * 0.06;
+    // The planet's own turn: the music carries it, the camera above stays on its slow clock (B2, 20.11.2026: the scene
+    // measured among the 5 % least reactive).
+    float tp = time * 0.02 + audioAdvance * 0.8;
 
     // Everything below is in PLANET RADII (R = 1).  The first cut used
     // R = 60 with the centre 74 units out, so the frame filled with one
@@ -336,7 +340,7 @@ void main()
 
         // --- surface: continents, ocean, ice caps ---
         vec3  rot = sp;
-        float spin = t * 2.4;
+        float spin = tp * 2.4;
         rot.xz = mat2( cos( spin ), -sin( spin ), sin( spin ), cos( spin ) ) * rot.xz;
 
         float cont = fbm3( rot * 2.3, 5 );
@@ -378,18 +382,18 @@ void main()
         float day = smoothstep( -0.12, 0.22, lam );
 
         vec3  crot = cp;
-        float cspin = t * 2.4 + 0.10 * audioAdvance;
+        float cspin = tp * 2.4 + 0.10 * audioAdvance;
         crot.xz = mat2( cos( cspin ), -sin( cspin ), sin( cspin ), cos( cspin ) ) * crot.xz;
 
         // Two-stage domain warp: the second fbm is displaced by the first,
         // and BOTH drift -- that is what makes the systems curl and shear
         // over time rather than translate rigidly.
-        float sc = 3.1 * ( 1.0 + 0.10 * audioBass );
+        float sc = 3.1 * ( 1.0 + 0.10 * clamp( audioSwell, 0.0, 1.0 ) );
         vec3  w1 = vec3( fbm3( crot * sc * 0.7 + 11.0, 4 ),
                          fbm3( crot * sc * 0.7 + 23.0, 4 ),
                          fbm3( crot * sc * 0.7 + 37.0, 4 ) )
                    - 0.5;
-        float cf = fbm3( crot * sc + w1 * ( 1.9 + 0.5 * sin( t * 0.7 ) ), 5 );
+        float cf = fbm3( crot * sc + w1 * ( 1.9 + 0.5 * sin( tp * 0.7 ) ), 5 );
 
         // Banding: weather organises into latitude belts on a spinning world.
         float band = 0.5 + 0.5 * sin( cp.y * 9.0 + w1.x * 2.4 );
