@@ -85,7 +85,7 @@ jobs:
           for i in $(seq 1 40); do curl -fs http://127.0.0.1:18091/api/state > /dev/null && break; sleep 1; done
           sleep 5
           for i in 0 1; do
-            curl -fsS "http://127.0.0.1:18091/api/config?i=$i" > /dev/null
+            curl -fsS -H "X-Kaleido: 1" "http://127.0.0.1:18091/api/config?i=$i" > /dev/null   # an action needs the header
             sleep 8
             kill -0 "$pid" || { tail -n 40 switch.log; echo "the program ended at the switch to preset $i"; exit 1; }
             curl -fsS -o state.json http://127.0.0.1:18091/api/state && head -c 300 state.json; echo
