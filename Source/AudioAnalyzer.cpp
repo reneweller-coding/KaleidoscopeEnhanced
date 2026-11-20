@@ -2527,7 +2527,14 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
         // 32 bands' LOG shape (dB, its mean over the bands removed) and the loudness, each difference measured in
         // the earlier window's own spread -- a two-sample test, the change against how much the section moved
         // within itself.  The novelty is then read against its own median of the last minute: a section change is
-        // three times the music's ordinary novelty and at least 1.0 absolute (22.10.2026).
+        // 2.5 times the music's ordinary novelty and at least 1.0 absolute (22.10.2026; 3 until 20.11.2026).
+        //
+        // 2.5 since 20.11.2026, measured on real music as well: 19 of the user's own tracks with the Harmonix Set's
+        // hand-made sections (Tools/harmonix_key.py) beside the 43 demos.  Pop changes all the time, its ordinary
+        // novelty is high, and three times of it was rarely reached: found 24 % -> 30 %, invented 48 % -> 44 % on the
+        // real tracks; 37 % -> 40 % and 57 % -> 59 % on the demos (the user chose it, knowing that).  Other windows,
+        // harmony and rhythm in the novelty, a spread-based threshold, peak picking and a learned combination did
+        // not help (Tools/section_lab.py, docs/engine-internals.md section 68).
         //
         // Measured against the score cues of the generators' 43 demos (Tools/analyser_vs_cues.py; prototyped in
         // Python on the same bands, the round's scratch scripts).  The detector before compared a 2.5-s and an 18-s

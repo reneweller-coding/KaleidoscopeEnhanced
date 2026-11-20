@@ -86,9 +86,10 @@ def window_z(x, a, b, floor):
 
 METHODS = {
     # name: parameters (see novelty() and decide())
-    "current": dict(a=30, b=120, w_loud=0.5, w_harm=0.0, w_rhy=0.0, thr=3.0, cool=120, abs_min=1.0),
-    # the one change that held up (20.11.2026): the threshold 2.5 instead of 3
-    "thr25": dict(a=30, b=120, w_loud=0.5, w_harm=0.0, w_rhy=0.0, thr=2.5, cool=120, abs_min=1.0),
+    # the code: the threshold 2.5 since 20.11.2026, the one change that held up (docs/engine-internals.md, 68)
+    "current": dict(a=30, b=120, w_loud=0.5, w_harm=0.0, w_rhy=0.0, thr=2.5, cool=120, abs_min=1.0),
+    # the code until 20.11.2026
+    "thr30": dict(a=30, b=120, w_loud=0.5, w_harm=0.0, w_rhy=0.0, thr=3.0, cool=120, abs_min=1.0),
 }
 
 

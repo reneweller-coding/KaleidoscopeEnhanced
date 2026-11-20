@@ -167,9 +167,9 @@
     "p90": 0.498
    },
    "sec_thr": {
-    "mean": 3.0,
+    "mean": 2.5,
     "moves": false,
-    "p90": 3.0
+    "p90": 2.5
    },
    "sharpness": {
     "mean": 0.252,
@@ -379,9 +379,9 @@
     "p90": 0.186
    },
    "sec_thr": {
-    "mean": 3.0,
+    "mean": 2.5,
     "moves": false,
-    "p90": 3.0
+    "p90": 2.5
    },
    "sharpness": {
     "mean": 0.2524,
@@ -451,19 +451,19 @@
     "p90": 0.821
    },
    "beat_c": {
-    "mean": 0.3819,
+    "mean": 0.3795,
     "moves": true,
-    "p90": 0.655
+    "p90": 0.653
    },
    "beat_phase": {
-    "mean": 0.4877,
+    "mean": 0.4878,
     "moves": true,
     "p90": 0.8817
    },
    "beat_phase_c": {
-    "mean": 0.5061,
+    "mean": 0.5018,
     "moves": true,
-    "p90": 0.9034
+    "p90": 0.902
    },
    "beats": {
     "mean": 198.8908,
@@ -591,9 +591,9 @@
     "p90": 0.199
    },
    "sec_thr": {
-    "mean": 3.0,
+    "mean": 2.5,
     "moves": false,
-    "p90": 3.0
+    "p90": 2.5
    },
    "sharpness": {
     "mean": 0.2839,

@@ -9065,8 +9065,13 @@ The detector had only ever been measured on the 43 demos of our own generators.
   66 %).  Not taken.
 - *The result:* the only change that held up is the threshold -- on real music better on both counts (found 24 ->
   30 %, invented 48 -> 44 %), on the demos a trade (found 37 -> 40 %, invented 57 -> 59 %), about one section more per
-  real track.  The plan's rule for A5 (no more invented than today) is broken on the demos by 2 points; the code is
-  left as it was, for the user to decide (`section_lab.py --method thr25` reproduces it).
+  real track.  The plan's rule for A5 (no more invented than today) is broken on the demos by 2 points; the user
+  chose the threshold anyway ("real music is what plays"): `m_secThr` and `AudioFeatures::sectionThreshold` are 2.5.
+  The build confirms the lab (`analyser_vs_cues.py`): sections on the demos 40 % found, 58 % invented; on the real
+  tracks 30 % and 44 %.  What the scene plan cuts on (a section or a drop): demos 44 -> 48 % found, 52 -> 54 %
+  invented; real 27 -> 33 % and 45 -> 42 %.  `analyzer_regress.py`: only the reported threshold differed (the
+  baseline updated); `check_schedule.py --quick` 20 plans without a violation; self test 137.  In the lab
+  `current` is the code (2.5), `thr30` the threshold before.
 - *Not tried:* the song-structure memory as a cue (a chorus coming back), sections shorter than 12 s (a prechorus of
   8 s cannot be found at all with 12 s between sections -- 9 s apart found more and invented more), a trained model
   on spectrogram patches (Ullrich, Schlüter & Grill 2014) or an offline teacher for the user's other 1,300 tracks

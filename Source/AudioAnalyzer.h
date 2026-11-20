@@ -546,7 +546,7 @@ private:
     int   m_secCooldown = 0;                                      ///< Frames until the next section trigger is allowed.
     bool  m_secPending = false; ///< A change found in the last frame, published in this one unless a drop came.
     int   m_secPendingDrops = 0;                                  ///< #m_dropCount when it was found.
-    float m_secThr = 3.f;     ///< The relative novelty a change must exceed (see AudioFeatures::sectionThreshold).
+    float m_secThr = 2.5f;    ///< The relative novelty a change must exceed (see AudioFeatures::sectionThreshold).
     int   m_sectionCount = 0; ///< Cumulative section-change count; see AudioFeatures::sectionCount.
 
     /** Song-structure memory: spectral fingerprints of the sections heard so far.

@@ -402,9 +402,9 @@ struct AudioFeatures
      * analyzer (at least ~12 s between triggers).
      **/
     int   sectionCount = 0;
-    float sectionNovelty = 0.f;   ///< The novelty behind #sectionCount, over its own median of the last minute (~1
-                                  ///< ordinary, a section change needs #sectionThreshold).
-    float sectionThreshold = 3.f; ///< The relative novelty a section change must exceed.
+    float sectionNovelty = 0.f;    ///< The novelty behind #sectionCount, over its own median of the last minute (~1
+                                   ///< ordinary, a section change needs #sectionThreshold).
+    float sectionThreshold = 2.5f; ///< The relative novelty a section change must exceed.
     // The tempo's two sources before they are combined, for Tools/tempo_vs_cues.py (not sent to any shader).
     float tempoAc = 0.f;            ///< The autocorrelation's tempo in BPM (0 = none).
     float tempoAcConf = 0.f;        ///< Its confidence, 0..1.
