@@ -1162,6 +1162,32 @@ void exportChecks()
                && !st.fade && st.title && st.qualityStep == 4 && st.quality == 20,
            "-j hevc,blur,nofade,title,q=compact,cq=20" );
     check( !VideoExport::parseOptions( "sharpen" ), "an unknown -j option is reported" );
+    // Stereo for headsets (20.11.2026): -g is one eye in the full formats, the file name carries the layout.
+    st.stereo = 4;
+    const bool fsbs = VideoExport::frameWidth() == 3840 && VideoExport::frameHeight() == 1080;
+    st.stereo = 5;
+    const bool ftb = VideoExport::frameWidth() == 1920 && VideoExport::frameHeight() == 2160;
+    st.stereo = 1;
+    const bool hsbs = VideoExport::frameWidth() == 1920 && VideoExport::frameHeight() == 1080;
+    check( fsbs && ftb && hsbs, "full side by side doubles the width, full top-bottom the height, half keeps -g" );
+    check( std::string( VideoExport::stereoTag( 1 ) ) == "_SBS" && std::string( VideoExport::stereoTag( 2 ) ) == "_TB"
+               && std::string( VideoExport::stereoTag( 4 ) ) == "_SBSF"
+               && std::string( VideoExport::stereoTag( 5 ) ) == "_TBF" && VideoExport::stereoTag( 0 )[0] == '\0'
+               && VideoExport::stereoTag( 3 )[0] == '\0',
+           "the stereo file tags: _SBS, _TB, _SBSF, _TBF; none for mono and anaglyph" );
+    check( RenderPipeline::stereoSideBySide( 1 ) && RenderPipeline::stereoSideBySide( 4 )
+               && RenderPipeline::stereoTopBottom( 2 ) && RenderPipeline::stereoTopBottom( 5 )
+               && !RenderPipeline::stereoFull( 1 ) && RenderPipeline::stereoFull( 4 ) && RenderPipeline::stereoFull( 5 )
+               && !RenderPipeline::stereoSideBySide( 3 ) && !RenderPipeline::stereoTopBottom( 3 ),
+           "the six stereo modes: 1/4 side by side, 2/5 top-bottom, 4/5 full, 3 anaglyph neither" );
+    RenderPipeline::setStereoMode( 5 );
+    const int five = RenderPipeline::stereoMode();
+    RenderPipeline::cycleStereo();
+    const int wrapped = RenderPipeline::stereoMode();
+    RenderPipeline::setStereoMode( 6 );
+    const int six = RenderPipeline::stereoMode();
+    RenderPipeline::setStereoMode( 0 );
+    check( five == 5 && wrapped == 0 && six == 0, "'z' runs through all six modes and wraps; a mode beyond 5 is off" );
     st = VideoExport::Settings(); // nothing left behind: this run is no export
 }
 
