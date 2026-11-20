@@ -66,10 +66,15 @@ jobs:
               grep -E "SEEDED|^SCENE|-> scene|Preset " run$run.log | tail -n 6
               if [ $symbolised = 0 ]; then
                 symbolised=1
+                echo "--- Mesa's debug symbols from ddebs.ubuntu.com:"
+                sudo apt-get install -y -qq ubuntu-dbgsym-keyring > /dev/null 2>&1
+                printf 'deb http://ddebs.ubuntu.com noble main universe\ndeb http://ddebs.ubuntu.com noble-updates main universe\n' | sudo tee /etc/apt/sources.list.d/ddebs.list > /dev/null
+                sudo apt-get update -qq > /dev/null 2>&1
+                v=$(dpkg-query -W -f='${Version}' mesa-libgallium)
+                sudo apt-get install -y -qq "mesa-libgallium-dbgsym=$v" 2>&1 | tail -n 2
                 echo "--- main thread, symbolised:"
-                sudo env DEBUGINFOD_URLS=https://debuginfod.ubuntu.com timeout 900 gdb -p "$app" -batch \
-                  -iex "set debuginfod enabled on" -ex "thread apply 1 bt 12" -ex "thread apply 1 bt -70" 2>&1 \
-                  | grep -E "^#" | sed -E 's/^#[0-9]+ +//; s/0x[0-9a-f]+ in //' | cut -c1-260 | uniq -c | head -n 90
+                sudo timeout 900 gdb -p "$app" -batch -ex "thread apply 1 bt 30" -ex "thread apply 1 bt -25" 2>&1 \
+                  | grep -E "^#" | sed -E 's/^#[0-9]+ +//; s/0x[0-9a-f]+ in //' | cut -c1-300 | uniq -c | head -n 70
               fi
               kill -9 "$app"
               sleep 2
