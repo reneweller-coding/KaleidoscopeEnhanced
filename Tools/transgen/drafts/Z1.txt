@@ -401,7 +401,7 @@ about: The old picture is quantised by brightness into a handful of bands, and a
 music: audioSwell -> a slight breath of the brightness in the middle (light only)
 knob: bandsP 0.5 2.2 the number of bands
 knob: softP 0.5 2.0 how soft the band edges are
-moods: calm,blocky
+moods: calm
 minfade: 5
 prob: 0.06
 cx: 1
